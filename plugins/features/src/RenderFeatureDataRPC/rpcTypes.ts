@@ -81,11 +81,11 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
       // Only the data half owns buffers to transfer, so only it is wrapped.
       transferables: FeatureDataResult
     }
-    GetCanvasFeatureDetails: {
+    GetBasicFeatureDetails: {
       args: GetFeatureDetailsArgs
       return: { feature?: SimpleFeatureSerialized }
     }
-    GetCanvasGroupByCandidates: {
+    GetBasicGroupByCandidates: {
       args: GetGroupByCandidatesArgs
       return: GroupByCandidate[] | RegionTooLargeResult
     }

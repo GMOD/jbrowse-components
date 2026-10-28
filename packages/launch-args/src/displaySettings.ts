@@ -475,7 +475,7 @@ function parseFlagMask(prefix: string, val: string) {
         .reduce((a, b) => a | b, 0)
 }
 
-// The feature display and the variant display share LinearCanvasBaseDisplay's
+// The feature display and the variant display share LinearFeatureBaseDisplay's
 // schema, so a modifier reading one of its slots takes both.
 const CANVAS = ['feature', 'variant'] as const satisfies readonly Category[]
 

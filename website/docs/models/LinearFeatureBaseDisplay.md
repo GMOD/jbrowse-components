@@ -1,15 +1,15 @@
 ---
-id: linearcanvasbasedisplay
-title: LinearCanvasBaseDisplay
+id: linearfeaturebasedisplay
+title: LinearFeatureBaseDisplay
 description: "Shared GPU-accelerated feature display base for canvas-rendered tracks."
-sidebar_label: Display -> LinearCanvasBaseDisplay
+sidebar_label: Display -> LinearFeatureBaseDisplay
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/LinearBasicDisplay/baseModel.ts).
 
 Shared GPU-accelerated feature display base for canvas-rendered tracks.
 
-The configuration slots for this model are documented on its [config schema page](../../config/linearcanvasbasedisplay).
+The configuration slots for this model are documented on its [config schema page](../../config/linearfeaturebasedisplay).
 
 Each section ends with the members a composed model contributes, linked to the page that documents them.
 
@@ -65,7 +65,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 
 From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo">[`contextMenuInfo`](../contextmenumixin#volatile-contextmenuinfo)</span>
 
-From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="volatile-densitystatsperregion">[`densityStatsPerRegion`](../canvasfeaturegatemixin#volatile-densitystatsperregion)</span>
+From [FeatureGateMixin](../featuregatemixin): <span id="volatile-densitystatsperregion">[`densityStatsPerRegion`](../featuregatemixin#volatile-densitystatsperregion)</span>
 
 From [LegendMixin](../legendmixin): <span id="volatile-dismissedlegendsections">[`dismissedLegendSections`](../legendmixin#volatile-dismissedlegendsections)</span>
 
@@ -87,7 +87,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | Member | Description |
 | --- | --- |
 | <span id="getter-rpcdatamap">**rpcDataMap**</span><br><code>ReadonlyMap&lt;number, LoadedFeatureData&gt;</code> | The fetched features, keyed by displayedRegionIndex — the foundation's per-region store, narrowed. |
-| <span id="getter-conf">**conf**</span><br><code><a href="../../config/linearcanvasbasedisplay">LinearCanvasBaseDisplayConfig</a></code> | the config typed off the concrete schema; `ConfigurationReference` erases `self.configuration` to `any`, so direct reads route through this to stay typed (same move as `BaseAdapter<CONF>`). |
+| <span id="getter-conf">**conf**</span><br><code><a href="../../config/linearfeaturebasedisplay">LinearFeatureBaseDisplayConfig</a></code> | the config typed off the concrete schema; `ConfigurationReference` erases `self.configuration` to `any`, so direct reads route through this to stay typed (same move as `BaseAdapter<CONF>`). |
 | <span id="getter-colorsetting">**colorSetting**</span><br><code>ColorSetting</code> | The `color` object as written, its `value` and `field` raw: either may be a `jexl:` expression over a feature, which has none here. |
 | <span id="getter-workercolor">**workerColor**</span><br><code>WorkerColor</code> | The two members the worker reads, the rest being the main thread's. |
 | <span id="getter-colorencoding">**colorEncoding**</span><br><code>string &#124; FieldColorEncoding &#124; undefined</code> | `colorSetting` as it paints, through the one resolver every display's color channel goes through: `encoding.color.value`, or a field through its scale, `score` a ramp and any other field ordinal while `scale.type` is unset. |
@@ -218,7 +218,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-owngroupstate">[`ownGroupState`](../hiddengroupsmixin#getter-owngroupstate)</span>, <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span>
 
-From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="getter-gateenabled">[`gateEnabled`](../canvasfeaturegatemixin#getter-gateenabled)</span>, <span id="getter-visiblefeaturedensityperpx">[`visibleFeatureDensityPerPx`](../canvasfeaturegatemixin#getter-visiblefeaturedensityperpx)</span>, <span id="getter-maxfeaturedensity">[`maxFeatureDensity`](../canvasfeaturegatemixin#getter-maxfeaturedensity)</span>, <span id="getter-densitytoolarge">[`densityTooLarge`](../canvasfeaturegatemixin#getter-densitytoolarge)</span>
+From [FeatureGateMixin](../featuregatemixin): <span id="getter-gateenabled">[`gateEnabled`](../featuregatemixin#getter-gateenabled)</span>, <span id="getter-visiblefeaturedensityperpx">[`visibleFeatureDensityPerPx`](../featuregatemixin#getter-visiblefeaturedensityperpx)</span>, <span id="getter-maxfeaturedensity">[`maxFeatureDensity`](../featuregatemixin#getter-maxfeaturedensity)</span>, <span id="getter-densitytoolarge">[`densityTooLarge`](../featuregatemixin#getter-densitytoolarge)</span>
 
 From [FacetWritesMixin](../facetwritesmixin): <span id="getter-writtenfacet">[`writtenFacet`](../facetwritesmixin#getter-writtenfacet)</span>
 
@@ -280,7 +280,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <details class="inherited-members" data-pagefind-ignore>
 <summary>12 inherited methods from 6 models</summary>
 
-From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="method-observedmaxdensity">[`observedMaxDensity`](../canvasfeaturegatemixin#method-observedmaxdensity)</span>
+From [FeatureGateMixin](../featuregatemixin): <span id="method-observedmaxdensity">[`observedMaxDensity`](../featuregatemixin#method-observedmaxdensity)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
@@ -304,7 +304,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-advanceanimation">**advanceAnimation**</span><br><code>(nowMs: number) =&gt; void</code> | the chrome's frame clock |
 | <span id="action-endanimation">**endAnimation**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setrpcdata">**setRpcData**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(displayedRegionIndex: number, data: FeatureDataResult, region:…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(displayedRegionIndex: number, data: FeatureDataResult, region: Region) =&gt; void</code></pre></dialog></span> | Stage a region as fetched — the store's raw write with this display's payload shape, so a test stands up a loaded display in one call. |
-| <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: CanvasFeatureRenderingBackend) =&gt; void</code> |  |
+| <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: FeatureRenderingBackend) =&gt; void</code> |  |
 | <span id="action-togglepinnedfeature">**togglePinnedFeature**</span><br><code>(featureId: string) =&gt; void</code> |  |
 | <span id="action-clearpinnedfeatures">**clearPinnedFeatures**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-toggleexpandedgene">**toggleExpandedGene**</span><br><code>(featureId: string) =&gt; void</code> | Open or re-collapse one gene's isoforms, from the badge on the gene's label. |
@@ -352,7 +352,7 @@ From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-hidegroup">[`hi
 
 From [ContextMenuMixin](../contextmenumixin): <span id="action-closecontextmenu">[`closeContextMenu`](../contextmenumixin#action-closecontextmenu)</span>
 
-From [CanvasFeatureGateMixin](../canvasfeaturegatemixin): <span id="action-setdensitystats">[`setDensityStats`](../canvasfeaturegatemixin#action-setdensitystats)</span>, <span id="action-cleargatemeasurements">[`clearGateMeasurements`](../canvasfeaturegatemixin#action-cleargatemeasurements)</span>, <span id="action-commitgatemeasurements">[`commitGateMeasurements`](../canvasfeaturegatemixin#action-commitgatemeasurements)</span>
+From [FeatureGateMixin](../featuregatemixin): <span id="action-setdensitystats">[`setDensityStats`](../featuregatemixin#action-setdensitystats)</span>, <span id="action-cleargatemeasurements">[`clearGateMeasurements`](../featuregatemixin#action-cleargatemeasurements)</span>, <span id="action-commitgatemeasurements">[`commitGateMeasurements`](../featuregatemixin#action-commitgatemeasurements)</span>
 
 From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetsort">[`setFacetSort`](../facetwritesmixin#action-setfacetsort)</span>
 

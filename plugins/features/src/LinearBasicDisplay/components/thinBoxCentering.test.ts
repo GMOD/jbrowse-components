@@ -4,7 +4,7 @@
 // pin the symmetry it buys.
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
-import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
+import { BASIC_FEATURE_MARKS } from '../marks/basicFeatureMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -80,7 +80,7 @@ function drawTranscript(heightPx: number, topY: number) {
     // No chevrons, so moveTo fires once, for the line itself.
     lineDirections: new Int8Array([0]),
   }
-  paintMarkBlocks(ctx, CANVAS_FEATURE_MARKS, new Map([[0, region]]), [block], {
+  paintMarkBlocks(ctx, BASIC_FEATURE_MARKS, new Map([[0, region]]), [block], {
     scrollY: 0,
     canvasWidth: 800,
     canvasHeight: 50,

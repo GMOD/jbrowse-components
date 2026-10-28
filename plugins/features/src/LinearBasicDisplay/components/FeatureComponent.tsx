@@ -17,7 +17,7 @@ import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { observer } from 'mobx-react'
 
-import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
+import { BASIC_FEATURE_MARKS } from '../marks/basicFeatureMarks.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import GeneGlyphControl from './GeneGlyphControl.tsx'
 import GroupLabelsLayer from './GroupLabelsLayer.tsx'
@@ -30,15 +30,15 @@ import {
 } from './hoverReadout.ts'
 import { FloatingLabelsLayer } from './overlayElements.tsx'
 
-import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
+import type { LinearFeatureBaseDisplayModel } from '../baseModel.ts'
 import type { HitFeatureResult } from './hitTesting.ts'
 
-function createCanvasFeatureBackend(canvas: HTMLCanvasElement) {
-  return createMarkBackend(canvas, CANVAS_FEATURE_MARKS)
+function createFeatureRenderingBackend(canvas: HTMLCanvasElement) {
+  return createMarkBackend(canvas, BASIC_FEATURE_MARKS)
 }
 
 export interface LinearBasicDisplayComponentProps {
-  model: LinearCanvasBaseDisplayModel
+  model: LinearFeatureBaseDisplayModel
 }
 
 const useStyles = makeStyles()({
@@ -101,7 +101,7 @@ const OverlayScrollLayer = observer(function OverlayScrollLayer({
   model,
   children,
 }: {
-  model: LinearCanvasBaseDisplayModel
+  model: LinearFeatureBaseDisplayModel
   children: React.ReactNode
 }) {
   return (
@@ -124,7 +124,7 @@ const FeatureComponent = observer(function FeatureComponent({
   return (
     <DisplayChrome
       model={model}
-      factory={createCanvasFeatureBackend}
+      factory={createFeatureRenderingBackend}
       testid="feature-display"
       className={classes.root}
     >

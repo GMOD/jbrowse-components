@@ -1,9 +1,9 @@
 import { featureGlyphMarks } from './featureGlyphMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { RenderState } from '../components/canvasFeatureRenderingBackendTypes.ts'
+import type { RenderState } from '../components/featureRenderingBackendTypes.ts'
 
-export const CANVAS_FEATURE_MARKS = featureGlyphMarks<
+export const BASIC_FEATURE_MARKS = featureGlyphMarks<
   RegionRenderData,
   RenderState
 >({

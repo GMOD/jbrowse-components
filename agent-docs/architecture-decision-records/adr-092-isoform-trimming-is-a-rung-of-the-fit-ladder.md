@@ -64,7 +64,7 @@ isoform goes before any name does. A gene the user expanded from its own badge
 is never trimmed, in any mode.
 
 **"All transcripts" withholds the rung** (`showsEveryIsoform`, a
-`LinearCanvasBaseDisplay` hook the basic display answers off the RAW
+`LinearFeatureBaseDisplay` hook the basic display answers off the RAW
 `geneGlyphMode` — `auto` resolves to `all` under 100bp/px and that mode's whole
 job is to fit the track). Withheld, not solved to `undefined`: it is the last
 rung of the fixed-height ladder, which is always the one resolved, so a no-op

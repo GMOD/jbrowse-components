@@ -33,7 +33,7 @@ function misses(session: { notifications: { message: string }[] }) {
 // per-region fetch too, and the display stores that reply as region data.
 function onlyDetails(mock: jest.Mock, reply: () => unknown) {
   mock.mockImplementation((_sessionId: string, method: string) => {
-    if (method === 'GetCanvasFeatureDetails') {
+    if (method === 'GetBasicFeatureDetails') {
       return reply()
     }
     return new Promise(() => {})

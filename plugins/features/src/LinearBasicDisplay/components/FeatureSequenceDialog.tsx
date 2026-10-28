@@ -38,7 +38,7 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
 }) {
   const { data: feature, error } = useFetch(
     [
-      'canvasFeatureSequence',
+      'basicFeatureSequence',
       parentFeatureId,
       featureId,
       displayedRegionIndex,

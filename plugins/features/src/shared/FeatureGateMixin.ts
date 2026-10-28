@@ -9,7 +9,7 @@ import {
   overDensityBudget,
 } from '../RenderFeatureDataRPC/densityGate.ts'
 
-import type { LinearCanvasBaseDisplayConfigModel } from '../LinearBasicDisplay/baseConfigSchema.ts'
+import type { LinearFeatureBaseDisplayConfigModel } from '../LinearBasicDisplay/baseConfigSchema.ts'
 import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -19,7 +19,7 @@ export interface RegionDensityStats {
 }
 
 export interface GateHost {
-  configuration: Instance<LinearCanvasBaseDisplayConfigModel>
+  configuration: Instance<LinearFeatureBaseDisplayConfigModel>
   densityGateActive: boolean
   byteGateAdapterConfig: Record<string, unknown>
 }
@@ -39,12 +39,12 @@ export interface RegionGateMeasurement {
  * `MultiRegionDisplayMixin`. A display opts in by composing this and calling
  * `commitGateMeasurements` from its fetch's `onComplete`.
  *
- * #stateModel CanvasFeatureGateMixin
+ * #stateModel FeatureGateMixin
  * #category display
  */
-export default function CanvasFeatureGateMixin() {
+export default function FeatureGateMixin() {
   return types
-    .model('CanvasFeatureGateMixin', {})
+    .model('FeatureGateMixin', {})
     .volatile(() => ({
       /**
        * #volatile

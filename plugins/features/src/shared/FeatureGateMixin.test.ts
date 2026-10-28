@@ -2,10 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 
 import { createTestEnvironment } from '../LinearBasicDisplay/testEnv.ts'
 
-import type {
-  GateHost,
-  RegionGateMeasurement,
-} from './CanvasFeatureGateMixin.ts'
+import type { GateHost, RegionGateMeasurement } from './FeatureGateMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 
 // The gate reads `maxFeatureScreenDensity` through a host cast it declares

@@ -172,7 +172,7 @@ plugins/features/src/LinearBasicDisplay/CollapseIntronsDialog/util.ts  (1)
   76	readConfObject('trackId')
 plugins/features/src/LinearBasicDisplay/searchResultHighlight.ts  (1)
   51	readConfObject('trackId')
-plugins/features/src/shared/CanvasFeatureGateMixin.test.ts  (1)  [test]
+plugins/features/src/shared/FeatureGateMixin.test.ts  (1)  [test]
   20	getConf('maxFeatureScreenDensty')
 plugins/circular-view/src/CircularView/model.ts  (1)
   1150	readConfObject('trackId')

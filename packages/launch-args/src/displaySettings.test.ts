@@ -275,7 +275,7 @@ describe('feature modifiers', () => {
     ).toThrow(/Invalid heightMode/)
   })
 
-  // feature and variant displays extend the same LinearCanvasBaseDisplay, so
+  // feature and variant displays extend the same LinearFeatureBaseDisplay, so
   // every modifier that reads one of its slots must accept both
   test('the canvas-base modifiers apply to feature and variant alike', () => {
     for (const category of ['feature', 'variant'] as const) {

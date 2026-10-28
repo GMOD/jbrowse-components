@@ -24,7 +24,7 @@
 // declares. Two consequences worth knowing rather than rediscovering:
 //
 //   - `LinearBasicDisplay`'s row includes `baseConfigSchema.ts`, i.e. the slots
-//     `LinearCanvasBaseDisplay` declares for it and for `LinearVariantDisplay`.
+//     `LinearFeatureBaseDisplay` declares for it and for `LinearVariantDisplay`.
 //     The base lives inside the one directory, so the directory rule keeps them
 //     together.
 //   - Slots contributed by a shared fields file outside every display directory

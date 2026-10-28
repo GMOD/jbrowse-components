@@ -114,7 +114,7 @@ green. Five getters across three plugins were found doing it; two were worth
 holding.
 
 The fix is an `autorunOnReadyView` reading them bare, named `*HitIndexes`
-(`CanvasHitIndexes`) so the set is greppable. Where the read
+(`FeatureHitIndexes`) so the set is greppable. Where the read
 goes through a structural `self`, **type it
 with the getters' real types**, not `unknown`: a rename otherwise reads
 `undefined`, establishes no dependency, and leaves a keep-alive holding nothing.
@@ -264,7 +264,7 @@ buys nothing: a second derivation misses the field the args gain next, latches
   two tiers report their `refusalScope` abort.
 - **Both gate axes clear on one trigger.** `RegionTooLargeMixin`'s
   `ClearGateMeasurementsOnNavOrTierSwap` drops the byte estimate and calls
-  `clearGateMeasurements`, the hook `CanvasFeatureGateMixin` fills with its
+  `clearGateMeasurements`, the hook `FeatureGateMixin` fills with its
   density counts. Two autoruns on two trigger lists is how the density axis came
   to survive an adapter re-point the byte axis dropped.
 - The foundation's own tests come in two halves, and a change usually belongs in

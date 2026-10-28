@@ -842,10 +842,20 @@ walking a menu, where the failure reads as "my item was never added" rather than
 
 ## `@jbrowse/plugin-canvas` is `@jbrowse/plugin-features`
 
-The plugin that provides `LinearBasicDisplay`, the feature track's display, is
-published as `@jbrowse/plugin-features` and registers as `FeaturesPlugin`. Its
-exports are unchanged. Code importing `@jbrowse/plugin-canvas` or calling
-`pluginManager.hasPlugin('CanvasPlugin')` needs the new names.
+The plugin that provides `FeatureTrack` and its `LinearBasicDisplay` is
+published as `@jbrowse/plugin-features` and registers as `FeaturesPlugin`. Code
+importing `@jbrowse/plugin-canvas` or calling
+`pluginManager.hasPlugin('CanvasPlugin')` needs the new names, as do these
+exports:
+
+- `linearCanvasBaseDisplayConfigSchemaFactory` →
+  `linearFeatureBaseDisplayConfigSchemaFactory`
+- `LinearCanvasBaseDisplayModel` → `LinearFeatureBaseDisplayModel`
+- `LinearCanvasBaseDisplayConfigModel` → `LinearFeatureBaseDisplayConfigModel`
+- `CanvasFeatureRenderingBackend` → `FeatureRenderingBackend`
+
+The RPC methods `GetCanvasFeatureDetails` and `GetCanvasGroupByCandidates` are
+now `GetBasicFeatureDetails` and `GetBasicGroupByCandidates`.
 
 ## Removals with no replacement
 

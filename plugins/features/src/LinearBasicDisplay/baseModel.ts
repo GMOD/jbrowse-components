@@ -59,14 +59,14 @@ import { renderedTextWidth } from '../RenderFeatureDataRPC/constants.ts'
 import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { pickDisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
-import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
+import FeatureGateMixin from '../shared/FeatureGateMixin.ts'
 import { featureColorViews } from '../shared/featureColorViews.ts'
 import {
   featureSpanRegion,
-  fetchCanvasFeatureDetails,
-} from '../shared/fetchCanvasFeatureDetails.ts'
+  fetchFeatureDetails,
+} from '../shared/fetchFeatureDetails.ts'
 import { fetchGatedRegions } from '../shared/fetchGatedRegions.ts'
-import { createCanvasFeatureDetailsOpener } from '../shared/openCanvasFeatureDetails.ts'
+import { createFeatureDetailsOpener } from '../shared/openFeatureDetails.ts'
 import { scaleLaidOutData } from './applyLayout.ts'
 import { findSubfeatureById, indexById } from './baseModelHelpers.ts'
 import { colorViews } from './colorViews.ts'
@@ -112,7 +112,7 @@ import {
   modeCanShowName,
 } from './showLabelsMode.ts'
 import {
-  canvasTrackMenuItems,
+  featureTrackMenuItems,
   colorBySubMenuItems,
   colorMenuItems,
   featureHeightMenuItems,
@@ -137,8 +137,8 @@ import type {
   FeatureDataResult,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
-import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
+import type { LinearFeatureBaseDisplayConfigModel } from './baseConfigSchema.ts'
+import type { FeatureRenderingBackend } from './components/featureRenderingBackendTypes.ts'
 import type { FlatbushRegionIndexes } from './components/hitTesting.ts'
 import type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
@@ -222,24 +222,24 @@ const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 
 /**
- * #stateModel LinearCanvasBaseDisplay
+ * #stateModel LinearFeatureBaseDisplay
  * #displayFoundation MultiRegionDisplayMixin
  * #category display
  * Shared GPU-accelerated feature display base for canvas-rendered tracks.
  */
 export default function baseStateModelFactory(
-  configSchema: LinearCanvasBaseDisplayConfigModel,
+  configSchema: LinearFeatureBaseDisplayConfigModel,
 ) {
   return types
     .compose(
-      'LinearCanvasBaseDisplay',
+      'LinearFeatureBaseDisplay',
       BaseDisplay,
       HeightModeMixin(),
       MultiRegionDisplayMixin(),
       LegendMixin(),
       ColorWritesMixin(),
       FacetWritesMixin(),
-      CanvasFeatureGateMixin(),
+      FeatureGateMixin(),
       ContextMenuMixin<FeatureContextMenuInfo>(),
       HiddenGroupsMixin(),
       types.model({
@@ -336,7 +336,7 @@ export default function baseStateModelFactory(
        * erases `self.configuration` to `any`, so direct reads route through
        * this to stay typed (same move as `BaseAdapter<CONF>`).
        */
-      get conf(): Instance<LinearCanvasBaseDisplayConfigModel> {
+      get conf(): Instance<LinearFeatureBaseDisplayConfigModel> {
         return self.configuration
       },
 
@@ -1220,7 +1220,7 @@ export default function baseStateModelFactory(
       /**
        * #action
        */
-      startRenderingBackend(backend: CanvasFeatureRenderingBackend) {
+      startRenderingBackend(backend: FeatureRenderingBackend) {
         // `renderDataMap` is `laidOutDataMap` by reference when idle and
         // fresh per-frame objects during a Y morph, so only changed regions
         // re-upload.
@@ -1252,7 +1252,7 @@ export default function baseStateModelFactory(
       }
     })
     .actions(self => {
-      const openDetails = createCanvasFeatureDetailsOpener(self)
+      const openDetails = createFeatureDetailsOpener(self)
       return {
         /**
          * #action
@@ -1401,7 +1401,7 @@ export default function baseStateModelFactory(
         // The feature's own span, not the buffered region: the whole region
         // is a second download of everything on screen.
         const item = self.featureIdIndex.get(featureId)
-        return fetchCanvasFeatureDetails(
+        return fetchFeatureDetails(
           getSession(self),
           getRpcSessionId(self),
           self.adapterConfig,
@@ -1496,7 +1496,7 @@ export default function baseStateModelFactory(
        * #action
        */
       // Always fetches `featureId`, the top-level id, not
-      // `subfeatureInfo.parentFeatureId`: GetCanvasFeatureDetails searches
+      // `subfeatureInfo.parentFeatureId`: GetBasicFeatureDetails searches
       // top-level features only, and `findSubfeatureById` recurses from the
       // root.
       selectFeatureById(
@@ -1746,7 +1746,7 @@ export default function baseStateModelFactory(
             () => {
               self.setScrollTop(0)
             },
-            'CanvasResetScrollOnDisplayedRegions',
+            'FeatureResetScrollOnDisplayedRegions',
           )
 
           // Holding the hit-test indexes observed is the only reason MobX
@@ -1761,7 +1761,7 @@ export default function baseStateModelFactory(
               void self.featureIdIndex
               void self.subfeatureIdIndex
             },
-            { name: 'CanvasHitIndexes' },
+            { name: 'FeatureHitIndexes' },
           )
 
           installYMorphAutorun(self)
@@ -1848,13 +1848,13 @@ export default function baseStateModelFactory(
        * #method
        */
       trackMenuItems(): MenuItem[] {
-        return canvasTrackMenuItems(self)
+        return featureTrackMenuItems(self)
       },
     }))
 }
 
-type LinearCanvasBaseDisplayStateModel = ReturnType<
+type LinearFeatureBaseDisplayStateModel = ReturnType<
   typeof baseStateModelFactory
 >
-export type LinearCanvasBaseDisplayModel =
-  Instance<LinearCanvasBaseDisplayStateModel>
+export type LinearFeatureBaseDisplayModel =
+  Instance<LinearFeatureBaseDisplayStateModel>

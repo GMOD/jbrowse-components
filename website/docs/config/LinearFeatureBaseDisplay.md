@@ -1,8 +1,8 @@
 ---
-id: linearcanvasbasedisplay
-title: LinearCanvasBaseDisplay
+id: linearfeaturebasedisplay
+title: LinearFeatureBaseDisplay
 description: "Holds the slots shared by the canvas-drawn linear feature displays, which stack overlapping features in rows (pileup-style glyphs)."
-sidebar_label: Display -> LinearCanvasBaseDisplay
+sidebar_label: Display -> LinearFeatureBaseDisplay
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/LinearBasicDisplay/baseConfigSchema.ts).
@@ -14,12 +14,12 @@ stack overlapping features in rows (pileup-style glyphs).
 
 - **Extended by:** [LinearBasicDisplay](../linearbasicdisplay)
 - **Extended by:** [LinearVariantDisplay](../linearvariantdisplay)
-- **State model:** [runtime API](../../models/linearcanvasbasedisplay)
+- **State model:** [runtime API](../../models/linearfeaturebasedisplay)
 - **Base config:** [BaseLinearDisplay](../baselineardisplay)
 
 ## Config slots
 
-`LinearCanvasBaseDisplay` is a shared base schema, not a type you name in a config. Set these slots on one of the configs under **Extended by** above, each of which lists them as inherited and shows the shape in an example. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+`LinearFeatureBaseDisplay` is a shared base schema, not a type you name in a config. Set these slots on one of the configs under **Extended by** above, each of which lists them as inherited and shows the shape in an example. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

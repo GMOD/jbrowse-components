@@ -6,7 +6,7 @@ import type { LinearGenomeViewModel } from '../index.ts'
 
 // Duck-typed so the generic LGV header doesn't depend on the canvas plugin: any
 // display that exposes a featureHighlights list + clearFeatureHighlights action
-// (see canvas LinearCanvasBaseDisplay) participates.
+// (see canvas LinearFeatureBaseDisplay) participates.
 interface FeatureHighlightCapableDisplay {
   featureHighlights: { length: number }
   clearFeatureHighlights: () => void

@@ -1,10 +1,10 @@
 import { createTestEnvironment } from './testEnv.ts'
 
-import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
+import type { FeatureRenderingBackend } from './components/featureRenderingBackendTypes.ts'
 
 function makeBackend() {
   const calls = { uploads: 0, renders: 0, releases: 0 }
-  const backend: CanvasFeatureRenderingBackend = {
+  const backend: FeatureRenderingBackend = {
     upload() {
       calls.uploads++
     },

@@ -1,6 +1,6 @@
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 
-import type { RegionGateMeasurement } from './CanvasFeatureGateMixin.ts'
+import type { RegionGateMeasurement } from './FeatureGateMixin.ts'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 import type { Region } from '@jbrowse/core/util'
 import type { FetchContext } from '@jbrowse/display-kit/FetchMixin'

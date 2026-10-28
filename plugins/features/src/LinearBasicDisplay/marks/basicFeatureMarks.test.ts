@@ -6,11 +6,11 @@ import {
   chevronSlotBudget,
 } from '../components/sharedRendererConstants.ts'
 import { lineShader } from '../passes/index.ts'
-import { CANVAS_FEATURE_MARKS } from './canvasFeatureMarks.ts'
+import { BASIC_FEATURE_MARKS } from './basicFeatureMarks.ts'
 import { featureGlyphMarks, glyphMarkIndex } from './featureGlyphMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { RenderState } from '../components/canvasFeatureRenderingBackendTypes.ts'
+import type { RenderState } from '../components/featureRenderingBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // The parity and snapshot tests exercise the Canvas2D path, so an extra upload or
@@ -70,10 +70,10 @@ function block(over: Partial<RenderBlock> = {}): RenderBlock {
 }
 
 function setup() {
-  const hal = new MockHal(CANVAS_FEATURE_MARKS.map(m => m.pass))
+  const hal = new MockHal(BASIC_FEATURE_MARKS.map(m => m.pass))
   return {
     hal,
-    renderer: new GpuMarkBackend(hal, CANVAS_FEATURE_MARKS),
+    renderer: new GpuMarkBackend(hal, BASIC_FEATURE_MARKS),
   }
 }
 
@@ -159,7 +159,7 @@ describe('draw passes', () => {
     renderer.renderBlocks([block()], new Map([[REGION, data]]), STATE)
 
     expect(new Set(callsTo(hal, 'drawPass').map(c => c.args[0]))).toStrictEqual(
-      new Set(CANVAS_FEATURE_MARKS.map(m => m.pass.id)),
+      new Set(BASIC_FEATURE_MARKS.map(m => m.pass.id)),
     )
   })
 
@@ -222,7 +222,7 @@ describe('the index a primitive family is filed under', () => {
 
   it('names the mark that draws it', () => {
     for (const family of FAMILIES) {
-      expect(CANVAS_FEATURE_MARKS[glyphMarkIndex(family)]!.pass.id).toBe(family)
+      expect(BASIC_FEATURE_MARKS[glyphMarkIndex(family)]!.pass.id).toBe(family)
     }
   })
 

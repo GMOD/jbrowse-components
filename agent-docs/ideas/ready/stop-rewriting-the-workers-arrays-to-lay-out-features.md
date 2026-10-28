@@ -100,7 +100,7 @@ display-mode toggle.
 Measured over the same fixture at N=60k, per committed layout:
 `buildFeatureFlatbushIndex` 168ms, `buildSubfeatureFlatbushIndex` 169ms,
 `interpolateYData` 41ms. Each is comparable to the entire clone, and the two
-Flatbush builds run on every layout because `CanvasHitIndexes` keeps them
+Flatbush builds run on every layout because `FeatureHitIndexes` keeps them
 observed. Whether a region's subfeature index can be built lazily — nothing
 reads it until a hover — is a separate and probably larger win than anything
 above.

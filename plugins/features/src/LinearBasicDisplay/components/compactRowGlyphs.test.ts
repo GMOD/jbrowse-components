@@ -8,7 +8,7 @@ import {
   centerShrink,
 } from '../../RenderFeatureDataRPC/collect/emitPrimitives.ts'
 import { HEIGHT_MULTIPLIERS } from '../../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
+import { BASIC_FEATURE_MARKS } from '../marks/basicFeatureMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -107,7 +107,7 @@ function drawTranscriptRow(rowTop: number, bodyHeight: number) {
     arrowDirections: new Int8Array([1]),
     arrowColors: new Uint32Array([0xff_00_00_00]),
   }
-  paintMarkBlocks(ctx, CANVAS_FEATURE_MARKS, new Map([[0, region]]), [block], {
+  paintMarkBlocks(ctx, BASIC_FEATURE_MARKS, new Map([[0, region]]), [block], {
     scrollY: 0,
     canvasWidth: 800,
     canvasHeight: 60,

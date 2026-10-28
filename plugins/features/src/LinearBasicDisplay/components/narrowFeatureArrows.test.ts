@@ -3,7 +3,7 @@
 // neighbour. A feature too narrow to be worth a direction marker gets none.
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
-import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
+import { BASIC_FEATURE_MARKS } from '../marks/basicFeatureMarks.ts'
 import {
   ARROW_MIN_FEATURE_WIDTH_PX,
   GENE_ARROW_MIN_FEATURE_WIDTH_PX,
@@ -75,7 +75,7 @@ function countArrowheads(region: RegionRenderData, reversed: boolean) {
     screenEndPx: 100,
     reversed,
   }
-  paintMarkBlocks(ctx, CANVAS_FEATURE_MARKS, new Map([[0, region]]), [block], {
+  paintMarkBlocks(ctx, BASIC_FEATURE_MARKS, new Map([[0, region]]), [block], {
     scrollY: 0,
     canvasWidth: 100,
     canvasHeight: 50,

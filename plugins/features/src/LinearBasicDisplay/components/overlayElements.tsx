@@ -22,7 +22,7 @@ import type {
   MoreIsoformsLabel,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
-import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
+import type { LinearFeatureBaseDisplayModel } from '../baseModel.ts'
 import type { FeatureContextMenuInfo } from '../featureContextMenu.ts'
 import type { HitFeatureResult, VisibleRegion } from './hitTesting.ts'
 import type {
@@ -61,7 +61,7 @@ interface FloatingLabelsModel {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type _ModelSatisfiesFloatingLabels = AssignableTo<
-  LinearCanvasBaseDisplayModel,
+  LinearFeatureBaseDisplayModel,
   FloatingLabelsModel
 >
 

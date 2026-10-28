@@ -9,7 +9,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 Shared base config for linear displays — its slots (`height`,
 `fetchSizeLimit`) are common to all of them. The GPU stack's
-`LinearCanvasBaseDisplay` config extends it, and third-party plugins extend
+`LinearFeatureBaseDisplay` config extends it, and third-party plugins extend
 it too. `filter` is not here: only the displays that read it declare it, a
 list of field predicates (`fieldPredicateList`).
 Nor is `mouseover`, which a display declares only where its hover reads it.
@@ -23,7 +23,7 @@ Every BaseLinearDisplay has a unique `displayId`, a required top-level field tha
 ## Related links
 
 - **Extended by:** [BaseLinearAlignmentsDisplay](../baselinearalignmentsdisplay)
-- **Extended by:** [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
+- **Extended by:** [LinearFeatureBaseDisplay](../linearfeaturebasedisplay)
 - **Extended by:** [LinearMafDisplay](../linearmafdisplay)
 - **Extended by:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
 - **Extended by:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)

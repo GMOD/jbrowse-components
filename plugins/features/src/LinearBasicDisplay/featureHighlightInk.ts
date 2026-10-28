@@ -8,11 +8,11 @@ import {
   labelsReachRegion,
   placeFeatureLabels,
 } from './components/labelPositioning.ts'
-import { CANVAS_FEATURE_MARKS } from './marks/canvasFeatureMarks.ts'
+import { BASIC_FEATURE_MARKS } from './marks/basicFeatureMarks.ts'
 import { glyphMarkIndex } from './marks/featureGlyphMarks.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { RenderState } from './components/canvasFeatureRenderingBackendTypes.ts'
+import type { RenderState } from './components/featureRenderingBackendTypes.ts'
 import type { PlacedLabel } from './components/labelPositioning.ts'
 import type { NamedFeature } from '@jbrowse/display-kit/floatingLabelHost'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
@@ -220,7 +220,7 @@ export function namedFeatureInk(self: FeatureInkHost): NamedFeature[] {
       }
       const merged = mergeBounds(
         inkOfInstances(
-          CANVAS_FEATURE_MARKS,
+          BASIC_FEATURE_MARKS,
           blocks,
           () => data,
           self.renderState,
@@ -273,7 +273,7 @@ export function featureHighlightInk(
         continue
       }
       const rects = inkOfInstances(
-        CANVAS_FEATURE_MARKS,
+        BASIC_FEATURE_MARKS,
         blocks,
         () => data,
         self.renderState,

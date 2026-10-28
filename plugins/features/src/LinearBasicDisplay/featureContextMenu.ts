@@ -194,7 +194,7 @@ function inspectItems({ self, info }: MenuContext): MenuItem[] {
             {
               model: self,
               // `item.featureId`, never `subfeature.parentFeatureId`:
-              // GetCanvasFeatureDetails resolves top-level features only, and
+              // GetBasicFeatureDetails resolves top-level features only, and
               // the panel descends from the root.
               parentFeatureId: featureId,
               featureId: subfeature?.featureId ?? featureId,

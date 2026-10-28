@@ -9,7 +9,7 @@ export interface RenderState {
   hideChevrons?: boolean
 }
 
-export type CanvasFeatureRenderingBackend = PerRegionRenderingBackend<
+export type FeatureRenderingBackend = PerRegionRenderingBackend<
   RegionRenderData,
   RenderState
 >

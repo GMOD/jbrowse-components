@@ -964,7 +964,7 @@ const SHOW_LEGEND_DISPLAYS = new Set([
   'MultiWaySyntenyDisplay',
 ])
 
-// The displays composing LinearCanvasBaseDisplay, so they share its whole track
+// The displays composing LinearFeatureBaseDisplay, so they share its whole track
 // menu: the size submenu, the flattened "Show" one, and the right-click item
 // that writes `featureHighlights`. LinearVariantDisplay is in it because it
 // renames its noun rather than its behaviour — its menu row reads "Highlight

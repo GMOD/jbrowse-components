@@ -30,7 +30,7 @@ only way to open one gene, and switching the whole track's mode from the chip is
 not the same gesture.
 
 **`showLabels: 'auto'` read a region average.** `visibleFeatureDensityPerPx`
-(`shared/CanvasFeatureGateMixin.ts`, `shared/regionDensity.ts`) is a region's
+(`shared/FeatureGateMixin.ts`, `shared/regionDensity.ts`) is a region's
 feature count divided by its whole FETCHED span, and the fetch buffers half a
 viewport either side. So names and descriptions toggled off the buffer's
 average, and a refetch that widened the buffer moved the verdict with nothing on

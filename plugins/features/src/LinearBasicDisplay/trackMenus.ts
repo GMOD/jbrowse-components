@@ -239,7 +239,7 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
 
 // Reads its sections back off `self` rather than calling the builders
 // directly, so a subclass override of any of them lands here.
-export function canvasTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
+export function featureTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
   return [
     ...makeShowSubMenu(self.showSubmenuMenuItems()),
     ...self.featureHeightMenuItems(),
@@ -247,13 +247,13 @@ export function canvasTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
     ...groupByMenuItems(self),
     ...editPlotMenuItems(self),
     ...featureSetRecoveryMenuItems(self),
-    ...canvasFilterMenuItems(self),
+    ...featureFilterMenuItems(self),
   ]
 }
 
 // The priority rides the top-level row the builder returns, never the dialog
 // opener inside it, where it would sort below the recovery rows it heads.
-function canvasFilterMenuItems(self: TrackMenuSelf): MenuItem[] {
+function featureFilterMenuItems(self: TrackMenuSelf): MenuItem[] {
   return filterMenuItems({
     narrowings: self.featureNarrowings(),
     onEdit: () => {

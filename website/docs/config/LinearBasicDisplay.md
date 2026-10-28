@@ -54,7 +54,7 @@ A `FeatureTrack` with compact features. `displayMode` is `normal`,
 - **Adapter:** [SequenceSearchAdapter](../sequencesearchadapter)
 - **Adapter:** [SPARQLAdapter](../sparqladapter)
 - **State model:** [runtime API](../../models/linearbasicdisplay)
-- **Base config:** [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
+- **Base config:** [LinearFeatureBaseDisplay](../linearfeaturebasedisplay)
 
 ## Color channels
 
@@ -81,7 +81,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearBasicDisplay
 | <span id="slot-chevronsshow">**chevrons.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw chevrons on intron lines pointing the way the feature reads |
 | <span id="slot-transcripts">**transcripts**</span><br>[FeatureTranscripts](../featuretranscripts) | How a gene's isoforms are read and ranked, a [](/docs/config/featuretranscripts) object. |
 | <span id="slot-containers">**containers**</span><br>[FeatureContainers](../featurecontainers) | The top-level types whose children stack on rows of their own, a [](/docs/config/featurecontainers) object. |
-| <span class="slot-group">Inherited from [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)</span> | <span class="slot-group-count">10 slots</span> |
+| <span class="slot-group">Inherited from [LinearFeatureBaseDisplay](../linearfeaturebasedisplay)</span> | <span class="slot-group-count">10 slots</span> |
 | <span id="slot-filter">**filter**</span><br><code>fieldPredicateList()</code> | The features the display draws, a list of [](/docs/config/fieldpredicate) entries a feature must all pass: a field of the feature's own (`{ field: "score", gte: 100 }`), a `jexl:` expression that must hold (`"jexl:feature.type == 'gene'"`), or `geneLike`, true for every gene, transcript and RNA type, the `transcripts.types` and `containers.types`, and a top-level CDS. |
 | <span id="slot-tooltip">**tooltip**</span><br>[FeatureTooltip](../featuretooltip) | The box hovering a feature opens, a [](/docs/config/featuretooltip) object. |
 | <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message<br>_advanced_ |

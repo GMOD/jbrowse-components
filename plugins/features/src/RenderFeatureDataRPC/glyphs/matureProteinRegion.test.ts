@@ -597,7 +597,7 @@ describe('collectRenderData for mature protein regions', () => {
     expect([...result.rectPositions]).toEqual([266, 805, 805, 2719, 2719, 8554])
     expect(new Set(result.rectYs).size).toBe(3)
     expect(new Set(result.rectColors).size).toBe(3)
-    // Parented to the top-level gene, the id GetCanvasFeatureDetails resolves,
+    // Parented to the top-level gene, the id GetBasicFeatureDetails resolves,
     // so findSubfeatureById can recurse gene → CDS → region.
     expect(result.subfeatureInfos).toHaveLength(3)
     expect(

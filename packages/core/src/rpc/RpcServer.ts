@@ -11,7 +11,7 @@ import type { ErrorObject } from './serializeError/index.ts'
 // This ESM package builds without @types/node, but consuming bundlers still
 // string-replace `process.env.NODE_ENV`, so keep the reference and give it a
 // minimal module-scoped type for tsc. Same declaration, for the same reason, as
-// plugins/features's CanvasFeatureGateMixin.
+// plugins/features's FeatureGateMixin.
 declare const process: { env: { NODE_ENV?: string } }
 
 interface WorkerSelf {

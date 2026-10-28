@@ -235,7 +235,7 @@ export default abstract class RpcMethodType<
    * a method that nothing checked was this one: `RpcMethodType<'A'>` with
    * `name = 'B'` type-checked, and then `execute` was checked against B's
    * registry entry while the worker ran it for A. Not hypothetical here —
-   * `GetPileupFeatureDetails` and `GetCanvasFeatureDetails` are two registry
+   * `GetPileupFeatureDetails` and `GetBasicFeatureDetails` are two registry
    * keys held by two same-bodied classes both called `GetFeatureDetails`.
    *
    * A class field initializer is not contextually typed by the base property,

@@ -165,7 +165,7 @@ test('undoing a track open is no worse than closing the track', async () => {
   const onlyDisplayScalars = (reads: string[]) =>
     reads.every(
       r =>
-        r.includes("Object type: 'LinearCanvasBaseDisplay'") &&
+        r.includes("Object type: 'LinearFeatureBaseDisplay'") &&
         /Subpath: '(configuration|type)'/.test(r),
     )
   expect(viaHideTrack.thrown).toEqual([])

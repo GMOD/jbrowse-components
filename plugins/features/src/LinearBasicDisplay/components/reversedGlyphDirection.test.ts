@@ -4,7 +4,7 @@
 // same genomic field, so they are wrong together.
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
-import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
+import { BASIC_FEATURE_MARKS } from '../marks/basicFeatureMarks.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -81,7 +81,7 @@ function draw(region: RegionRenderData, reversed: boolean) {
     screenEndPx: 100,
     reversed,
   }
-  paintMarkBlocks(ctx, CANVAS_FEATURE_MARKS, new Map([[0, region]]), [block], {
+  paintMarkBlocks(ctx, BASIC_FEATURE_MARKS, new Map([[0, region]]), [block], {
     scrollY: 0,
     canvasWidth: 100,
     canvasHeight: 50,

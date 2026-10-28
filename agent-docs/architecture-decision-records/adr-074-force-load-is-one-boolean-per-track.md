@@ -35,7 +35,7 @@ A ceiling has to answer four questions, and none of them has a good answer:
   returned `undefined` whenever `userByteLimit` was set, so approving a track's
   *size* silently switched off its *density* gate for the rest of the chromosome.
 - **When does a ceiling expire?** On chromosome navigation — but only
-  `CanvasFeatureGateMixin` did the clearing, so the five non-canvas gated
+  `FeatureGateMixin` did the clearing, so the five non-canvas gated
   displays carried a raised ceiling to the next locus and downloaded it unguarded
   with no banner.
 

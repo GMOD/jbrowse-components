@@ -17,7 +17,7 @@ export interface FeatureDetailsHost extends IStateTreeNode {
  * A factory called once per display inside an `.actions` closure, because the
  * header-metadata memo it holds has to outlive the click.
  */
-export function createCanvasFeatureDetailsOpener(self: FeatureDetailsHost) {
+export function createFeatureDetailsOpener(self: FeatureDetailsHost) {
   const fetchMetadata = createAdapterMetadataFetch(self)
   return (
     fetch: () => Promise<Feature | undefined>,

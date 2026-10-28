@@ -83,7 +83,7 @@ Fail 1 or 2 and there is no list. Fail 3 and there is nothing to drift against.
 | alignments coverage | 5 | yes | yes | GPU, Canvas2D | `ALIGNMENTS_COVERAGE_MARKS`, a mark list MAF declares too |
 | alignments read connections | 7 | yes | yes | GPU, Canvas2D, hit, SVG | `ARC_BAND_MARKS`, link and point marks |
 | alignments SVG overlays | 2 | yes | upstream geometry | overlay, `*Svg` export | order stated twice, below threshold |
-| canvas `LinearBasicDisplay` | 5 | yes | no | GPU, Canvas2D, SVG | `CANVAS_FEATURE_MARKS`, a mark list |
+| canvas `LinearBasicDisplay` | 5 | yes | no | GPU, Canvas2D, SVG | `BASIC_FEATURE_MARKS`, a mark list |
 | sequence rows | 3 kinds | yes | yes | painter, hover, height | `rowLayout` |
 | wiggle | 4 | mode-exclusive | yes, by rendering family | GPU, Canvas2D, SVG | `WIGGLE_MARKS`, a mark list |
 | synteny | 4 | 2x2 mode grid | yes, by mode and cell kind | GPU, Canvas2D, SVG | `syntenyRibbonMarks`, a mark list the multi-way stack declares too |

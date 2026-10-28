@@ -39,7 +39,7 @@ function setup() {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
   display.setRpcData(0, regionData(50), ctgA)
-  // Nothing here observes flatbushIndexes; only the model's CanvasHitIndexes
+  // Nothing here observes flatbushIndexes; only the model's FeatureHitIndexes
   // autorun does, and that subscription is what makes MobX cache it.
   const dispose = autorun(() => {
     void display.renderDataMap

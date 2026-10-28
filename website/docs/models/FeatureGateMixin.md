@@ -1,11 +1,11 @@
 ---
-id: canvasfeaturegatemixin
-title: CanvasFeatureGateMixin
+id: featuregatemixin
+title: FeatureGateMixin
 description: "The density axis of the region-too-large gate, composed after MultiRegionDisplayMixin. A display opts in by composing this and calling commitGateMeasurements from its fetch's onComplete."
-sidebar_label: Mixin -> CanvasFeatureGateMixin
+sidebar_label: Mixin -> FeatureGateMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/shared/CanvasFeatureGateMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/shared/FeatureGateMixin.ts).
 
 The density axis of the region-too-large gate, composed after
 `MultiRegionDisplayMixin`. A display opts in by composing this and calling

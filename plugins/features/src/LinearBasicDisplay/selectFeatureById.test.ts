@@ -59,7 +59,7 @@ function setup() {
 
 function fetchedIds(mockRpcCall: jest.Mock) {
   return mockRpcCall.mock.calls
-    .filter(([, method]) => method === 'GetCanvasFeatureDetails')
+    .filter(([, method]) => method === 'GetBasicFeatureDetails')
     .map(([, , args]) => (args as { featureId: string }).featureId)
 }
 
@@ -104,7 +104,7 @@ it('sends the worker the feature span and nothing of the loaded payload', async 
     expect(fetchedIds(mockRpcCall)).toEqual(['EDEN'])
   })
   const [, , args] = mockRpcCall.mock.calls.find(
-    ([, method]) => method === 'GetCanvasFeatureDetails',
+    ([, method]) => method === 'GetBasicFeatureDetails',
   )!
   expect((args as { region: unknown }).region).toEqual({
     assemblyName: 'volvox',
@@ -120,7 +120,7 @@ describe('the containing feature the panel is told about', () => {
     const { display, mockRpcCall, session } = createDisplay()
     mockRpcCall.mockImplementation(
       async (_sessionId: string, method: string) =>
-        method === 'GetCanvasFeatureDetails'
+        method === 'GetBasicFeatureDetails'
           ? { feature: edenRecord }
           : undefined,
     )

@@ -96,7 +96,7 @@ and save/restore UBO scratch where a pass mutates uniforms. Do NOT keep:
   have buffers.
 - **Per-region metadata derivable from `rpcDataMap`** (`hasRects`, `outlineColor`).
   `drawPass` skips missing buffers, and per-region scalars reach uniforms through
-  a mark's `params(state, region)` (`outlineColor` in `canvasFeatureMarks.ts`).
+  a mark's `params(state, region)` (`outlineColor` in `basicFeatureMarks.ts`).
 - **Write-only mirror copies** of upload data.
 
 **The one legal renderer-held region map** is a private `regions` map written

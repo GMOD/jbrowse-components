@@ -50,7 +50,7 @@ export type { Region } from '@jbrowse/core/util'
 /**
  * #stateModel LinearBasicDisplay
  * GPU-accelerated feature display with gene-specific UI on top of the shared
- * canvas base display (`LinearCanvasBaseDisplay`).
+ * canvas base display (`LinearFeatureBaseDisplay`).
  * #example
  * A `FeatureTrack` with compact features. `displayMode` is `normal`,
  * `compact`, `superCompact` or `collapsed` (one row):

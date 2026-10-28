@@ -330,7 +330,7 @@ function collectBaseConfigs(config: ConfigWithHeader, index: ConfigIndex) {
 //
 // Each base's slots sit under a header row naming it rather than repeating the
 // base link in a "From" column of their own: LinearBasicDisplay printed the
-// same LinearCanvasBaseDisplay link on 21 consecutive rows, spending a column's
+// same LinearFeatureBaseDisplay link on 21 consecutive rows, spending a column's
 // width to say once per row what one row can say for the run. The header also
 // gives the run a boundary, so a reader who only wants this config's slots can
 // stop at the first one.

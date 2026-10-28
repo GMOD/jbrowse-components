@@ -125,7 +125,7 @@ export default function RegionTooLargeMixin() {
       /**
        * #getter
        * The density axis's verdict, and the whole of that axis's opt-in:
-       * `CanvasFeatureGateMixin` overrides it beside the measurement that
+       * `FeatureGateMixin` overrides it beside the measurement that
        * fills it, and a byte-only display leaves it false.
        */
       get densityTooLarge(): boolean {

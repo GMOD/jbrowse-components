@@ -20,14 +20,14 @@ import {
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
- * #config LinearCanvasBaseDisplay
+ * #config LinearFeatureBaseDisplay
  * #category display
  * Holds the slots shared by the canvas-drawn linear feature displays, which
  * stack overlapping features in rows (pileup-style glyphs).
  */
 export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
   return ConfigurationSchema(
-    'LinearCanvasBaseDisplay',
+    'LinearFeatureBaseDisplay',
     {
       // `growMaxHeight` is the only height ceiling; a former `maxHeight` slot
       // was a second grow clamp dead at its default, dropped in
@@ -136,6 +136,6 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
   )
 }
 
-export type LinearCanvasBaseDisplayConfigModel = ReturnType<
+export type LinearFeatureBaseDisplayConfigModel = ReturnType<
   typeof baseConfigSchemaFactory
 >

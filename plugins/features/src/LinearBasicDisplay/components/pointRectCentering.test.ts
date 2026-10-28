@@ -5,7 +5,7 @@
 // off its start edge.
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
-import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
+import { BASIC_FEATURE_MARKS } from '../marks/basicFeatureMarks.ts'
 import { MIN_RECT_WIDTH_PX } from './sharedRendererConstants.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
@@ -74,7 +74,7 @@ function drawnRect(startBp: number, endBp: number, reversed = false) {
     rectStrands: new Float32Array([0]),
     rectDensityFade: new Uint32Array([0]),
   }
-  paintMarkBlocks(ctx, CANVAS_FEATURE_MARKS, new Map([[0, region]]), [block], {
+  paintMarkBlocks(ctx, BASIC_FEATURE_MARKS, new Map([[0, region]]), [block], {
     scrollY: 0,
     canvasWidth: 800,
     canvasHeight: 50,

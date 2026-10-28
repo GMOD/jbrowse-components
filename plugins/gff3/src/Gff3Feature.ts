@@ -18,7 +18,7 @@ import type {
  * `gbkey` for the stock NCBI filter — and then packs the result into typed
  * arrays, so the feature objects are dropped and never cross the RPC boundary.
  * The feature details panel wants everything, and re-fetches the region from
- * scratch to get it (`GetCanvasFeatureDetails`). Parsing every attribute during
+ * scratch to get it (`GetBasicFeatureDetails`). Parsing every attribute during
  * a render therefore did work that rendering did not use and that the details
  * path did not reuse.
  *

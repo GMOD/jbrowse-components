@@ -21,7 +21,7 @@ export async function executeGetGroupByCandidates({
   args,
 }: {
   pluginManager: PluginManager
-  args: RpcExecuteArgs<'GetCanvasGroupByCandidates'>
+  args: RpcExecuteArgs<'GetBasicGroupByCandidates'>
 }) {
   const {
     regions,

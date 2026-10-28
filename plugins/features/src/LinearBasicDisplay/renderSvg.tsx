@@ -15,11 +15,11 @@ import {
 import { paintLabels } from './components/paintLabels.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
 import { resolveMapColors } from './components/resolveRegionColors.ts'
-import { CANVAS_FEATURE_MARKS } from './marks/canvasFeatureMarks.ts'
+import { BASIC_FEATURE_MARKS } from './marks/basicFeatureMarks.ts'
 
 import type { FieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { RenderState } from './components/canvasFeatureRenderingBackendTypes.ts'
+import type { RenderState } from './components/featureRenderingBackendTypes.ts'
 import type { FeatureGroupSection } from './facet.ts'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type {
@@ -47,10 +47,10 @@ export async function renderSvg(
   model: RenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  return renderDisplaySvg(model, opts, CanvasFeaturesSvgBody)
+  return renderDisplaySvg(model, opts, FeaturesSvgBody)
 }
 
-function CanvasFeaturesSvgBody({
+function FeaturesSvgBody({
   model,
   view,
   height,
@@ -90,7 +90,7 @@ function CanvasFeaturesSvgBody({
   return (
     <>
       <MarkSvgLayer
-        marks={CANVAS_FEATURE_MARKS}
+        marks={BASIC_FEATURE_MARKS}
         regions={dataMap}
         blocks={renderBlocks}
         state={renderState}

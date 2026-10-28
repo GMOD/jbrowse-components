@@ -32,7 +32,7 @@ export default class FeaturesPlugin extends Plugin {
 // would keep the display model subgraph eager, defeating the lazy registration.
 export {
   linearBasicDisplayConfigSchemaFactory,
-  linearCanvasBaseDisplayConfigSchemaFactory,
+  linearFeatureBaseDisplayConfigSchemaFactory,
 } from './LinearBasicDisplay/index.ts'
 // The label parts, for a display outside this plugin labeling the same
 // records: `labels.name` and `labels.description`.
@@ -46,21 +46,21 @@ export {
 } from './LinearBasicDisplay/showLabelsMode.ts'
 export type {
   LinearBasicDisplayModel,
-  LinearCanvasBaseDisplayModel,
+  LinearFeatureBaseDisplayModel,
 } from './LinearBasicDisplay/index.ts'
 export { isLinearBasicDisplay } from './LinearBasicDisplay/isLinearBasicDisplay.ts'
 
 // Types in the inferred shape of the exported display models: unreachable from
 // this entry, tsc names them by source path in consumers' .d.ts.
 export type { GeneGlyphNotice } from './LinearBasicDisplay/baseModel.ts'
-export type { RegionDensityStats } from './shared/CanvasFeatureGateMixin.ts'
-export type { CanvasFeatureRenderingBackend } from './LinearBasicDisplay/components/canvasFeatureRenderingBackendTypes.ts'
+export type { RegionDensityStats } from './shared/FeatureGateMixin.ts'
+export type { FeatureRenderingBackend } from './LinearBasicDisplay/components/featureRenderingBackendTypes.ts'
 export type { FlatbushRegionIndexes } from './LinearBasicDisplay/components/hitTesting.ts'
 export type {
   LinearBasicDisplayConfig,
   LinearBasicDisplayConfigModel,
 } from './LinearBasicDisplay/configSchema.ts'
-export type { LinearCanvasBaseDisplayConfigModel } from './LinearBasicDisplay/baseConfigSchema.ts'
+export type { LinearFeatureBaseDisplayConfigModel } from './LinearBasicDisplay/baseConfigSchema.ts'
 export type { FeatureContextMenuInfo } from './LinearBasicDisplay/featureContextMenu.ts'
 export type {
   FeatureHighlight,
@@ -95,7 +95,7 @@ export type {
   RegionRenderData,
   SubfeatureInfo,
 } from './RenderFeatureDataRPC/rpcTypes.ts'
-export type { RegionGateMeasurement } from './shared/CanvasFeatureGateMixin.ts'
+export type { RegionGateMeasurement } from './shared/FeatureGateMixin.ts'
 export type { GroupByCandidate } from './RenderFeatureDataRPC/groupByCandidates.ts'
 export type { GroupByScanOptions } from './LinearBasicDisplay/scanGroupByCandidates.ts'
 

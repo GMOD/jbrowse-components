@@ -1,12 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { linearCanvasBaseDisplayConfigSchemaFactory } from '@jbrowse/plugin-features'
+import { linearFeatureBaseDisplayConfigSchemaFactory } from '@jbrowse/plugin-features'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config LinearVariantDisplay
  *
- * Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
+ * Extends LinearFeatureBaseDisplay for GPU-accelerated variant rendering.
  *
  * #example
  * Minimal `VariantTrack` config. See the
@@ -52,7 +52,7 @@ export default function configSchemaF(pluginManager: PluginManager) {
        * #baseConfiguration
        */
       baseConfiguration:
-        linearCanvasBaseDisplayConfigSchemaFactory(pluginManager),
+        linearFeatureBaseDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
     },
   )

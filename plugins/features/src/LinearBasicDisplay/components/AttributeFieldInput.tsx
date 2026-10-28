@@ -41,7 +41,7 @@ const AttributeFieldInput = observer(function AttributeFieldInput({
     isLoading,
     status,
   } = useFetch(
-    ['canvasGroupByCandidates', model.id] as const,
+    ['featureGroupByCandidates', model.id] as const,
     (_name, _id, signal, statusCallback) =>
       model.scanGroupByCandidates({ signal, statusCallback }),
   )

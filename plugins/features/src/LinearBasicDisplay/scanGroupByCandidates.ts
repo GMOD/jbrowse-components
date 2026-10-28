@@ -36,7 +36,7 @@ export function scanGroupByCandidates(
   const onTrack = onTrackAssembly(self)
   return getSession(self).rpcManager.call(
     getRpcSessionId(self),
-    'GetCanvasGroupByCandidates',
+    'GetBasicGroupByCandidates',
     {
       adapterConfig: self.adapterConfig,
       displayConfig,

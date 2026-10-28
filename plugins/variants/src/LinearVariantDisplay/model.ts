@@ -5,7 +5,7 @@ import { colorFieldRows } from '@jbrowse/display-kit/colorByMenu'
 import { types } from '@jbrowse/mobx-state-tree'
 // the subpath, not the barrel: the barrel is eager, and a value edge from it
 // into the canvas base display model would undo that display's lazy loading
-import linearCanvasBaseDisplayStateModelFactory from '@jbrowse/plugin-features/LinearBasicDisplay/baseStateModel'
+import linearFeatureBaseDisplayStateModelFactory from '@jbrowse/plugin-features/LinearBasicDisplay/baseStateModel'
 
 import { VARIANT_FEATURE_WIDGET } from '../shared/constants.ts'
 import { JexlFilterDialog } from '../shared/lazyDialogs.ts'
@@ -48,7 +48,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 export default function stateModelFactory(
   configSchema: LinearVariantDisplayConfigModel,
 ) {
-  return linearCanvasBaseDisplayStateModelFactory(configSchema)
+  return linearFeatureBaseDisplayStateModelFactory(configSchema)
     .props({
       /**
        * #property

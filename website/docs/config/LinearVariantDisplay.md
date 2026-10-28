@@ -1,13 +1,13 @@
 ---
 id: linearvariantdisplay
 title: LinearVariantDisplay
-description: "Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering."
+description: "Extends LinearFeatureBaseDisplay for GPU-accelerated variant rendering."
 sidebar_label: Display -> LinearVariantDisplay
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/configSchema.ts).
 
-Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
+Extends LinearFeatureBaseDisplay for GPU-accelerated variant rendering.
 
 ## Example usage
 
@@ -53,7 +53,7 @@ Taller track. The `displayDefaults` object shorthand is equivalent to
 - **Adapter:** [VcfAdapter](../vcfadapter)
 - **Adapter:** [VcfTabixAdapter](../vcftabixadapter)
 - **State model:** [runtime API](../../models/linearvariantdisplay)
-- **Base config:** [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
+- **Base config:** [LinearFeatureBaseDisplay](../linearfeaturebasedisplay)
 
 ## Color channels
 
@@ -69,7 +69,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearVariantDispl
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span class="slot-group">Inherited from [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)</span> | <span class="slot-group-count">13 slots</span> |
+| <span class="slot-group">Inherited from [LinearFeatureBaseDisplay](../linearfeaturebasedisplay)</span> | <span class="slot-group-count">13 slots</span> |
 | <span id="slot-filter">**filter**</span><br><code>fieldPredicateList()</code> | The features the display draws, a list of [](/docs/config/fieldpredicate) entries a feature must all pass: a field of the feature's own (`{ field: "score", gte: 100 }`), a `jexl:` expression that must hold (`"jexl:feature.type == 'gene'"`), or `geneLike`, true for every gene, transcript and RNA type, the `transcripts.types` and `containers.types`, and a top-level CDS. |
 | <span id="slot-tooltip">**tooltip**</span><br>[FeatureTooltip](../featuretooltip) | The box hovering a feature opens, a [](/docs/config/featuretooltip) object. |
 | <span id="slot-maxfeaturescreendensity">**maxFeatureScreenDensity**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | maximum features per pixel before showing a "too many features" message<br>_advanced_ |

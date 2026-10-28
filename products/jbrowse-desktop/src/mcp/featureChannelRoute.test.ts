@@ -5,7 +5,7 @@ import corePlugins from '../corePlugins.ts'
 import rootModelFactory from '../rootModel/rootModel.ts'
 import sessionModelFactory from '../sessionModel/sessionModel.ts'
 
-import type { LinearCanvasBaseDisplayModel } from '@jbrowse/plugin-features/LinearBasicDisplay/baseStateModel'
+import type { LinearFeatureBaseDisplayModel } from '@jbrowse/plugin-features/LinearBasicDisplay/baseStateModel'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('../makeWorkerInstance.ts', () => ({
@@ -59,7 +59,8 @@ test('a feature track groups and colors through the two settings jb.help names, 
   const jb = appWithGeneTrack()
   await (jb.view() as LinearGenomeViewModel).launchTrack('genes')
   const track = jb.trackModel('genes')
-  const display = track.activeDisplay as unknown as LinearCanvasBaseDisplayModel
+  const display =
+    track.activeDisplay as unknown as LinearFeatureBaseDisplayModel
   expect(
     display.applyDisplaySettings({
       facet: 'strand',

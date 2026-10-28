@@ -70,7 +70,7 @@ test('a good render after a failed one is unaffected', async () => {
 })
 
 // The canvas-based feature and variant displays take a CSS color or a jexl in
-// LinearCanvasBaseDisplay's `encoding.color.value`. `color:` used to write a
+// LinearFeatureBaseDisplay's `encoding.color.value`. `color:` used to write a
 // `colorBy` object neither of them has, which was dropped as an unknown MST key,
 // so the modifier did nothing at all on these track types. Colors reach the SVG
 // resolved to rgb(), so assert on that rather than the CSS name.

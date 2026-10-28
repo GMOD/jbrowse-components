@@ -14,7 +14,7 @@ sub-pixel density-collapse already covers that case, and better.
 ## Context
 
 The canvas feature layout (`LinearBasicDisplay`, and everything that extends
-`LinearCanvasBaseDisplay` — including `LinearVariantDisplay`) has **two**
+`LinearFeatureBaseDisplay` — including `LinearVariantDisplay`) has **two**
 separate things that put features on a single row. They share the word
 "collapse" and are easy to conflate. They are not the same, and they were not
 introduced together.

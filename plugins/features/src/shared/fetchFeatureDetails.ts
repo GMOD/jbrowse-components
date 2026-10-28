@@ -30,7 +30,7 @@ export function featureSpanRegion(
 // Errors are let out and `undefined` means the adapter found nothing;
 // `withFeatureDetails` reports both, so collapsing them here would lose the
 // only point that can still tell them apart.
-export async function fetchCanvasFeatureDetails(
+export async function fetchFeatureDetails(
   session: { rpcManager: RpcManager },
   sessionId: string,
   adapterConfig: Record<string, unknown>,
@@ -40,7 +40,7 @@ export async function fetchCanvasFeatureDetails(
 ) {
   const result = await session.rpcManager.call(
     sessionId,
-    'GetCanvasFeatureDetails',
+    'GetBasicFeatureDetails',
     { adapterConfig, featureId, region: locusOf(region), ...opts },
   )
   return result.feature ? new SimpleFeature(result.feature) : undefined

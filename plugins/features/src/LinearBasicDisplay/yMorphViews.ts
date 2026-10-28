@@ -221,7 +221,7 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
         self.endAnimation()
       }
     },
-    { name: 'CanvasYMorph' },
+    { name: 'FeatureYMorph' },
   )
   installAnimationDeadline(
     self,
@@ -232,6 +232,6 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
     () => {
       self.endAnimation()
     },
-    'CanvasYMorphDeadline',
+    'FeatureYMorphDeadline',
   )
 }
