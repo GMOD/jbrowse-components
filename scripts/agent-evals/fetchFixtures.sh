@@ -15,8 +15,8 @@ curl -sfo k12.fna.gz $ncbi/000/005/845/GCF_000005845.2_ASM584v2/GCF_000005845.2_
 curl -sfo sakai.fna.gz $ncbi/000/008/865/GCF_000008865.2_ASM886v2/GCF_000008865.2_ASM886v2_genomic.fna.gz
 
 # the first 300,000 reads of ERR022075, E. coli K-12 MG1655 Illumina
-curl -s https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR022/ERR022075/ERR022075_1.fastq.gz |
-  { gzip -dc 2>/dev/null || true; } | head -n 1200000 | gzip >reads.fastq.gz
+{ curl -s https://ftp.sra.ebi.ac.uk/vol1/fastq/ERR022/ERR022075/ERR022075_1.fastq.gz || true; } |
+  { gzip -dc 2>/dev/null || true; } | awk 'NR <= 1200000; NR == 1200000 { exit }' | gzip >reads.fastq.gz
 
 # NA12878 1000 Genomes high-coverage CRAM, sliced around BRCA1
 curl -sf https://hgdownload.soe.ucsc.edu/goldenPath/hg38/chromosomes/chr17.fa.gz | gzip -dc >"$tmp/chr17.fa"
