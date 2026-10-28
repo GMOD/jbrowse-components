@@ -8,6 +8,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import * as getFeatureAdapter from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import * as util from '@jbrowse/core/util'
 import * as aborting from '@jbrowse/core/util/aborting'
+// eslint-disable-next-line no-restricted-imports -- the namespace jb.mst hands to scripts
 import * as mst from '@jbrowse/mobx-state-tree'
 import * as mobx from 'mobx'
 
