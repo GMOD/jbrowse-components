@@ -98,10 +98,8 @@ const RS334 = 'chr11:5,227,002'
 const SUPERPOPULATIONS = ['AFR', 'AMR', 'EUR', 'SAS', 'EAS']
 
 // The renewal's figure: the tutorial's 1000 Genomes figure with the rows in
-// one band per superpopulation and the alignment colored by domain. The
-// sample table comes from the 1000 Genomes 3,202-sample pedigree file, and
-// only the generator's own server, on its default port, serves it.
-const KG_SAMPLES = 'http://localhost:3334/test_data/1000g_3202/samples.tsv'
+// one band per superpopulation and the alignment colored by domain.
+const KG_SAMPLES = 'https://jbrowse.org/demos/1000g/1000g_3202_samples.tsv'
 const hbb1000g = byName(
   proteinVariantSpecs,
   'protein/hbb_1000_genomes',
