@@ -58,6 +58,17 @@ together.
   through the column. Position 6 is not acidic in every mammal: murine
   rodents, elephants, hyrax and tenrec carry Ala, ground squirrels Gly. The
   Mouse row says so; no reviewed mammalian beta globin carries Val.
+  - The strip fills UniProt's Globin domain (His2 on) as a `features` layer.
+    NCBI CDD, the plugin's own source, starts it at Glu7 and would leave Glu6
+    outside; helix A is in UniProt for half the rows only, so it stays out.
+  - Structures run WILD TYPE | SICKLE, TWO MOLECULES | SICKLE CONTACT. 2HBS
+    draws EFGH grey and the neighbouring ABCD as light-teal cartoon marks, and
+    the pocket spheres are a darker teal, so the color names the molecule.
+  - Both close-ups roll a quarter turn so the Val6 tetramer sits below, as in
+    the zoom-out. Cameras: `/var/tmp/hero2/bin/hbb_e6v_roll.py` and
+    `hbb_e6v_overview.py`.
+  - Protein3d puts the zoom-out's Val6 label on chain F, away from the
+    contact, so the spec hides that view's highlight labels.
 - **Variant pairs** `protein_figure_brca1_m1775r.ts` and
   `protein_figure_snca_e46k.ts`; the SNCA builder looks down each fibril's rung
   axis and turns the E46K layer to put Lys80 on the wild type's pixel.
