@@ -51,7 +51,7 @@ opens by path and JBrowse Web takes through **Add track**.
 
 The Dog10K consortium's public share
 ([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)), read
-directly over HTTP with no local copy of the callset.
+directly over HTTP with no local copy of the callset.[^cert]
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
@@ -443,3 +443,11 @@ bash build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
     The widest stripe sits on a CpG island, whose high GC content lowers read
     depth in every canid, and each 5 kb window spreads that over the blocks
     around it.
+
+[^cert]:
+    The share's TLS certificate expired in October 2026, so `curl`, `bcftools`
+    and the build script refuse its links until it is renewed. JBrowse hosts
+    copies of the
+    [stop site over every canid](https://jbrowse.org/code/jb2/main/test_data/dog10k/dog10k_cyp1a2_stop_site.vcf.gz)
+    and the
+    [sample table](https://jbrowse.org/code/jb2/main/test_data/dog10k/dog10k_sample_table.tsv).
