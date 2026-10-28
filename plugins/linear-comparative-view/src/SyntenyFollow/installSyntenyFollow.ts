@@ -59,8 +59,9 @@ export interface SyntenyFollowHost extends FollowAnchorHost {
 }
 
 // The root actions a person's own gesture on a row produces: the search box
-// navigates by `navToLocations`. `gestureTakesAnchor.integration.test.ts`
-// holds this set and the next against the view's action list.
+// navigates by `navToLocations`, the highlight list by `navToHighlight`.
+// `gestureTakesAnchor.integration.test.ts` holds this set and the next against
+// the view's action list.
 export const ROW_GESTURES = new Set([
   'horizontalScroll',
   'zoomTo',
@@ -75,6 +76,7 @@ export const ROW_GESTURES = new Set([
   'navToLocString',
   'navToLocations',
   'navToLocation',
+  'navToHighlight',
   'navigateNewestHighlight',
   'editDisplayedRegions',
   'showAllRegions',
