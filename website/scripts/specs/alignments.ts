@@ -1144,15 +1144,35 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // filter removes.
   ...(
     [
-      { suffix: 'all_junctions', display: {} },
+      {
+        suffix: 'all_junctions',
+        display: {},
+        // the two thin red arcs, which the canonical filter removes
+        annotations: [
+          {
+            type: 'text',
+            text: 'Non-canonical',
+            leader: true,
+            anchor: {
+              trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+              loc: 'chr7:5,567,615',
+              fracY: 0,
+              dy: 91,
+            },
+            dx: 30,
+            dy: -55,
+          },
+        ],
+      },
       {
         suffix: 'canonical_only',
         display: {
           filter: [{ field: 'junction.canonical', equal: true }],
         },
+        annotations: [],
       },
     ] as const
-  ).map(({ suffix, display }) => ({
+  ).map(({ suffix, display, annotations }) => ({
     mode: 'url' as const,
     name: `rnaseq/sashimi_${suffix}`,
     url: lgvSession(DEMO_CONFIG, {
@@ -1174,6 +1194,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     // 720 clips the bottom
     viewportHeight: 732,
+    annotations: [...annotations],
   })),
 
   {

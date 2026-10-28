@@ -1319,6 +1319,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'MG1655',
           loc: 'NC_000913.3:3,910,000-3,925,000',
+          // atpI through atpC in the demo's MG1655 annotation
+          highlight: [
+            {
+              refName: 'NC_000913.3',
+              start: 3915552,
+              end: 3922440,
+              label: 'atp operon',
+            },
+          ],
           tracks: [
             {
               trackId: 'ecoli_orthologs',
@@ -1347,6 +1356,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'MG1655',
           loc: 'NC_000913.3:2,095,000-2,115,000',
+          // wbbL through rfbB, between gnd and galF in the demo's annotation
+          highlight: [
+            {
+              refName: 'NC_000913.3',
+              start: 2101395,
+              end: 2113061,
+              label: 'O-antigen cluster',
+            },
+          ],
           tracks: [
             {
               trackId: 'ecoli_orthologs',
@@ -1471,6 +1489,17 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportHeight: 900,
+    // the first label in document order is the topmost lane carrying the gene
+    annotations: [
+      {
+        type: 'text',
+        text: 'GSTT1',
+        leader: true,
+        anchor: { text: 'GSTT1', alignY: 'top', dy: -6 },
+        dx: -60,
+        dy: 0,
+      },
+    ],
   },
 
   // built by scripts/build_syri_synteny.sh
@@ -2007,6 +2036,30 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
+    annotations: [
+      {
+        type: 'text',
+        text: 'maize 1',
+        anchor: {
+          view: [0, 2],
+          trackId: 'maize_genes',
+          loc: '1:286,900,000',
+          fracY: 0,
+        },
+        dy: -60,
+      },
+      {
+        type: 'text',
+        text: 'maize 5',
+        anchor: {
+          view: [0, 2],
+          trackId: 'maize_genes',
+          loc: '5:6,450,000',
+          fracY: 0,
+        },
+        dy: -60,
+      },
+    ],
   },
 
   // The row order follows the evolutionary chain, so each band is a real step.

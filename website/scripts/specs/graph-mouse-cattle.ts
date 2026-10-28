@@ -135,6 +135,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           refName: 'chr1',
           start: 2429108,
           end: 2429320,
+          label: 'Duplicated in Celtic polled',
           color: 'rgba(255,193,7,0.30)',
         },
       ],
