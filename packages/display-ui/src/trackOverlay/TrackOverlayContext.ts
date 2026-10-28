@@ -17,3 +17,7 @@ import { createContext } from 'react'
 // null when a display renders outside a TrackContainer (e.g. some tests); a
 // consumer must render nothing in that case.
 export const TrackOverlayContext = createContext<HTMLElement | null>(null)
+
+// Height of the host's in-flow track label above the display box, so floating
+// chrome can climb beside the label instead of below it.
+export const TrackLabelBandContext = createContext(0)

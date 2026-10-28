@@ -54,7 +54,6 @@ export { default as FloatingLegend } from './FloatingLegend.tsx'
 export {
   FLOATING_LEGEND_RIGHT_PX,
   FLOATING_LEGEND_TOP_PX,
-  TRACK_LABEL_BAND_VAR,
 } from './floatingLegendTop.ts'
 export type { LegendItem, LegendSection } from './FloatingLegend.tsx'
 

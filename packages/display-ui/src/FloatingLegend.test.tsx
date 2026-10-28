@@ -1,6 +1,7 @@
 import { fireEvent, render, within } from '@testing-library/react'
 
 import FloatingLegend from './FloatingLegend.tsx'
+import { TrackOverlaySlot } from './trackOverlay/TrackOverlaySlot.tsx'
 
 import type { LegendItem } from './FloatingLegend.tsx'
 
@@ -358,4 +359,14 @@ describe('the close button', () => {
     expect(rowPadding('item0', baseElement)).toBe('13px')
     expect(rowPadding('item1', baseElement)).not.toBe('13px')
   })
+})
+
+test('the key climbs beside an in-flow track label', () => {
+  const { getByTestId } = render(
+    <TrackOverlaySlot zIndex={1} labelBand={30}>
+      <FloatingLegend sections={one(items(2))} />
+    </TrackOverlaySlot>,
+  )
+  const { style } = getByTestId('floating-legend')
+  expect([style.top, style.maxHeight]).toEqual(['-20px', 'calc(100% - -16px)'])
 })

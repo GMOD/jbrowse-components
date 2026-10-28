@@ -2,7 +2,10 @@ import { useState } from 'react'
 
 import { observer } from 'mobx-react'
 
-import { TrackOverlayContext } from './TrackOverlayContext.ts'
+import {
+  TrackLabelBandContext,
+  TrackOverlayContext,
+} from './TrackOverlayContext.ts'
 
 /**
  * #api
@@ -51,6 +54,7 @@ export const TrackOverlaySlot = observer(function TrackOverlaySlot({
   zIndex,
   style,
   overlayStyle,
+  labelBand = 0,
 }: {
   children: React.ReactNode
   /** Paint order for the overlay node, against whatever the caller draws over
@@ -62,6 +66,9 @@ export const TrackOverlaySlot = observer(function TrackOverlaySlot({
    * `left` to cancel its Paper border, so the node covers the canvas
    * edge-to-edge rather than leaving a sliver. */
   overlayStyle?: React.CSSProperties
+  /** Height of an in-flow track label above the display box, which the
+   * floating legend climbs into. */
+  labelBand?: number
 }) {
   // element state rather than a ref, so consumers re-render once the portal
   // target mounts and the context value flips from null to the node
@@ -78,7 +85,11 @@ export const TrackOverlaySlot = observer(function TrackOverlaySlot({
       data-track-overlay-slot="true"
       style={{ position: 'relative', ...style }}
     >
-      <TrackOverlayContext value={overlayEl}>{children}</TrackOverlayContext>
+      <TrackOverlayContext value={overlayEl}>
+        <TrackLabelBandContext value={labelBand}>
+          {children}
+        </TrackLabelBandContext>
+      </TrackOverlayContext>
       {/* outside the display's sandbox, and after it in paint order */}
       <div
         ref={setOverlayEl}

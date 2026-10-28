@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react'
+import { use, useLayoutEffect, useState } from 'react'
 
 // deep subpaths, never the `@jbrowse/core/ui` barrel: a display renders this
 // legend directly, so it sits behind neither bring-your-own seam, and one named
@@ -15,9 +15,9 @@ import { observer } from 'mobx-react'
 import {
   FLOATING_LEGEND_RIGHT_PX,
   FLOATING_LEGEND_TOP_PX,
-  TRACK_LABEL_BAND_VAR,
 } from './floatingLegendTop.ts'
 import Tooltip from './tooltip/Tooltip.tsx'
+import { TrackLabelBandContext } from './trackOverlay/TrackOverlayContext.ts'
 import { TrackOverlayPortal } from './trackOverlay/TrackOverlayPortal.tsx'
 
 import type {
@@ -231,7 +231,6 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const DEFAULT_MAX_ITEMS = 12
-const band = `var(${TRACK_LABEL_BAND_VAR}, 0px)`
 const DEFAULT_MAX_WIDTH = 200
 const GRADIENT_BAR_WIDTH = 100
 
@@ -595,6 +594,7 @@ const FloatingLegend = observer(function FloatingLegend({
   const { classes } = useStyles()
   const [scroller, setScroller] = useState<HTMLDivElement | null>(null)
   const below = useEntriesBelow(scroller)
+  const raisedTop = top - use(TrackLabelBandContext)
 
   const nonEmpty = nonEmptyLegendSections(sections)
   if (nonEmpty.length === 0) {
@@ -609,10 +609,10 @@ const FloatingLegend = observer(function FloatingLegend({
       <div
         className={classes.legend}
         style={{
-          top: `calc(${top}px - ${band})`,
+          top: raisedTop,
           right,
           maxWidth,
-          maxHeight: `calc(100% - ${top + 4}px + ${band})`,
+          maxHeight: `calc(100% - ${raisedTop + 4}px)`,
         }}
         // Same doctrine as `plainChromeOverlays`' testids: a stable hook for the
         // harnesses that have to find this box. The build-your-own site's smoke

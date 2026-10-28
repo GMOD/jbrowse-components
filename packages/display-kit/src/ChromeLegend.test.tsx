@@ -16,18 +16,14 @@ function host(clearance: Pick<LegendHost, 'legendRight' | 'legendTop'>) {
   } as unknown as LegendHost
 }
 
-function belowLabel(px: number) {
-  return `calc(${px}px - var(--track-label-band, 0px))`
-}
-
 test('a display clears its own corner text by pushing the key left', () => {
   const { getByTestId, rerender } = render(<ChromeLegend model={host({})} />)
   const { style } = getByTestId('floating-legend')
-  expect([style.top, style.right]).toEqual([belowLabel(10), '10px'])
+  expect([style.top, style.right]).toEqual(['10px', '10px'])
 
   rerender(<ChromeLegend model={host({ legendRight: 70 })} />)
   const moved = getByTestId('floating-legend').style
-  expect([moved.top, moved.right]).toEqual([belowLabel(10), '80px'])
+  expect([moved.top, moved.right]).toEqual(['10px', '80px'])
 })
 
 test('a display clears its top rows by pushing the key down', () => {
@@ -35,7 +31,7 @@ test('a display clears its top rows by pushing the key down', () => {
     <ChromeLegend model={host({ legendTop: 60 })} />,
   )
   const { style } = getByTestId('floating-legend')
-  expect([style.top, style.right]).toEqual([belowLabel(70), '10px'])
+  expect([style.top, style.right]).toEqual(['70px', '10px'])
 })
 
 test('a hidden legend never derives its key', () => {
