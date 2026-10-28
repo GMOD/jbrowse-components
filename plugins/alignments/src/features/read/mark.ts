@@ -28,6 +28,7 @@ import type { AlignmentsUnit } from '../../LinearAlignmentsDisplay/constants.ts'
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { MarkContext2D, MarkShape } from '@jbrowse/render-core/marks'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 /**
  * What the read mark reads: the per-read arrays every CIGAR, coverage and
@@ -223,17 +224,22 @@ function traceReadArrow(
   ctx.closePath()
 }
 
-function drawReads(
-  ctx: MarkContext2D,
+const PLACED = new Float64Array(4)
+
+/**
+ * Segments `from..to` in paint order, and the one statement of where each
+ * goes. With a `ctx` it paints them; without one it stops at the first on the
+ * canvas and writes its box, arrowhead included, as `[left, top, width,
+ * height]` to `out`, so the hover box is the painted ink by construction.
+ */
+function walkReads(
+  ctx: MarkContext2D | undefined,
   region: ReadMarkRegion,
-  block: {
-    start: number
-    end: number
-    screenStartPx: number
-    screenEndPx: number
-    reversed: boolean
-  },
+  block: RenderBlock,
   state: RenderState,
+  from: number,
+  to: number,
+  out: Float64Array,
 ) {
   const toX = makeBpMapper(block)
   const fH = state.featureHeight
@@ -243,32 +249,24 @@ function drawReads(
     featureHeight: fH,
   }
 
-  // Outline paint state is constant across reads; set it once.
-  ctx.strokeStyle = OUTLINE_STYLE
-  ctx.lineWidth = READ_OUTLINE_PX
-
-  // The frame-level half of the outline gate, which the GPU spends a uniform on
-  // for the same reason: it cannot vary per read. Reading it through the shared
-  // predicate is what stops this painter and `GpuAlignmentsRenderer` from
-  // answering the height question differently, which they did — this side used
-  // to say `fH > 2` against the GPU's `>= 4`, so Compact reads outlined here and
-  // in the SVG export but not on screen.
+  // The frame-level half of the outline gate, which the GPU spends a uniform
+  // on: it cannot vary per read (`shouldOutlineReads`).
   const outlineFrame = shouldOutlineReads(state)
+  if (ctx !== undefined) {
+    ctx.strokeStyle = OUTLINE_STYLE
+    ctx.lineWidth = READ_OUTLINE_PX
+  }
 
   // Assigning fillStyle re-parses the CSS string, which is the per-read cost
-  // that matters here — the category→CSS lookup is minor next to it. Under
-  // the default field every read resolves to the same color, so guarding the
-  // assignment collapses a deep pileup's parses to one; fields that do vary
-  // per read (mapq, tag, insert-size gradient) just fall through and assign as
-  // before. Strings compare by value, so a freshly built one still matches.
+  // that matters here. Under the default field every read resolves to the
+  // same color, so guarding the assignment collapses a deep pileup's parses
+  // to one.
   let lastFill: string | undefined
 
-  // Walk per-exon segments, not whole reads: a spliced read contributes one
-  // body rect per exon, so the intron span between them is never filled — the
-  // skip pass (drawGaps) draws only its 1px centerline there, with no
-  // clearRect. Mirrors the GPU read pass (read.slang / packReadSegments).
-  const numSegments = region.segmentReadIndices.length
-  for (let s = 0; s < numSegments; s++) {
+  // Per-exon segments, not whole reads: a spliced read contributes one body
+  // rect per exon, so the intron span between them is never filled, as in
+  // read.slang.
+  for (let s = from; s < to; s++) {
     const i = region.segmentReadIndices[s]!
     const y = pileupRowY(region.readYs[i]!, state)
     if (pileupRowOffCanvas(y, state)) {
@@ -277,30 +275,11 @@ function drawReads(
     const xStart = toX(region.segmentPositions[s * 2]!)
     const xEnd = toX(region.segmentPositions[s * 2 + 1]!)
     // The 1 px floor grows away from the read's start, like every pileup cell
-    // (`pileupCellX`) and read.slang's body quad, so a reversed block mirrors a
-    // forward one. Anchoring the leftmost edge instead slid a sub-pixel read
-    // on a flipped region by up to a pixel from where the shader put it.
+    // (`pileupCellX`) and read.slang's body quad, so a reversed block mirrors
+    // a forward one.
     const w = Math.max(1, Math.abs(xEnd - xStart))
     const xL = spanLeft(xStart, xEnd, w)
     const xR = xL + w
-    // The per-read half of the gate. Width is a property of one read, so it
-    // belongs in the loop; the frame-level half was decided once, above.
-    const outline = outlineFrame && w > READ_OUTLINE_MIN_WIDTH_PX
-
-    // Paints the category the classification pass already decided — the exact
-    // byte read.slang gets as `inst.colorCategory`, so the two backends cannot
-    // disagree about a read's color.
-    const fill = readColorFromCategoryIndex(
-      region.readColorCategories[i]!,
-      i,
-      region,
-      state.colors,
-    )
-    if (fill !== lastFill) {
-      ctx.fillStyle = fill
-      lastFill = fill
-    }
-
     const capsEdge = chevronCapsEdge(
       region.readStrands[i]!,
       region.segmentEdgeFlags[s]!,
@@ -315,31 +294,49 @@ function drawReads(
         region.readInsertSizes[i]!,
         w,
       )
+    const apexX = hasChev ? chevronApexX(capsEdge, xL, xR, block.reversed) : xL
 
+    if (ctx === undefined) {
+      const left = Math.min(xL, apexX)
+      out[0] = left
+      out[1] = y
+      out[2] = Math.max(xR, apexX) - left
+      out[3] = fH
+      return true
+    }
+
+    // The category the classification pass already decided, the byte
+    // read.slang gets as `inst.colorCategory`.
+    const fill = readColorFromCategoryIndex(
+      region.readColorCategories[i]!,
+      i,
+      region,
+      state.colors,
+    )
+    if (fill !== lastFill) {
+      ctx.fillStyle = fill
+      lastFill = fill
+    }
+
+    const outline = outlineFrame && w > READ_OUTLINE_MIN_WIDTH_PX
     if (hasChev) {
-      const apexX = chevronApexX(capsEdge, xL, xR, block.reversed)
       traceReadArrow(ctx, xL, xR, y, fH, apexX)
       ctx.fill()
       if (outline) {
-        // Re-traced inset rather than stroked on the fill's own path, for the
-        // same reason the rect branch uses strokeRectInside: a centred stroke
-        // puts half its width outside the read, where read.slang's outline is a
-        // fragment test on distance-to-edge and cannot leave the glyph. On a
-        // pileup that half-width lands in the 1px gap between rows and smudges
-        // two neighbours together.
+        // Re-traced inset rather than stroked on the fill's own path: a
+        // centred stroke puts half its width outside the read, in the 1px gap
+        // between rows, where read.slang's distance-to-edge outline cannot go.
         traceReadArrow(ctx, xL, xR, y, fH, apexX, READ_OUTLINE_PX / 2)
         ctx.stroke()
       }
     } else {
       ctx.fillRect(xL, y, w, fH)
       if (outline) {
-        // Inside the rect, not straddling its edge — the shader's outline is a
-        // fragment test on distance-to-edge and cannot paint outside the glyph.
-        // See strokeRectInside for why this matters most in the SVG export.
         strokeRectInside(ctx, xL, y, w, fH, READ_OUTLINE_PX)
       }
     }
   }
+  return false
 }
 
 /**
@@ -359,49 +356,28 @@ const readShape: MarkShape<ReadMarkRegion, RenderState> = {
   },
   writeUniforms: writePileupUniforms,
   paintBlock(ctx, region, block, _frame, state) {
-    drawReads(ctx, region, block, state)
+    walkReads(
+      ctx,
+      region,
+      block,
+      state,
+      0,
+      region.segmentReadIndices.length,
+      PLACED,
+    )
   },
   ink(region, block, _frame, state, s) {
-    const i = region.segmentReadIndices[s]
-    if (i === undefined) {
+    if (
+      s >= region.segmentReadIndices.length ||
+      !walkReads(undefined, region, block, state, s, s + 1, PLACED)
+    ) {
       return undefined
     }
-    const y = pileupRowY(region.readYs[i]!, state)
-    if (pileupRowOffCanvas(y, state)) {
-      return undefined
-    }
-    const toX = makeBpMapper(block)
-    const xStart = toX(region.segmentPositions[s * 2]!)
-    const xEnd = toX(region.segmentPositions[s * 2 + 1]!)
-    const w = Math.max(1, Math.abs(xEnd - xStart))
-    const xL = spanLeft(xStart, xEnd, w)
-    const capsEdge = chevronCapsEdge(
-      region.readStrands[i]!,
-      region.segmentEdgeFlags[s]!,
-    )
-    const chevron =
-      capsEdge !== 0 &&
-      showChevron(
-        {
-          pxPerBp: pxPerBpOf(block),
-          unit: state.unit,
-          featureHeight: state.featureHeight,
-        },
-        region.readColorCategories[i]!,
-        region.readFlags[i]!,
-        region.readInterchrom[i]!,
-        region.readInsertSizes[i]!,
-        w,
-      )
-    const apexX = chevron
-      ? chevronApexX(capsEdge, xL, xL + w, block.reversed)
-      : xL
-    const left = Math.min(xL, apexX)
     return {
-      left,
-      top: y,
-      width: Math.max(xL + w, apexX) - left,
-      height: state.featureHeight,
+      left: PLACED[0]!,
+      top: PLACED[1]!,
+      width: PLACED[2]!,
+      height: PLACED[3]!,
     }
   },
 }

@@ -120,7 +120,7 @@ function draw(
 const wideFwd = { start: 10, end: 50, strand: 1 }
 const wideRev = { start: 10, end: 50, strand: -1 }
 
-// drawReads only re-assigns fillStyle when the resolved color changes, since
+// walkReads only re-assigns fillStyle when the resolved color changes, since
 // the assignment re-parses the CSS string and the plain fill paints every
 // read the same color. These pin that the skip can never leave a read wearing
 // its predecessor's color. Zoomed out (0.05 px/bp) so bodies are plain rects.
@@ -218,11 +218,11 @@ test('paired read with a wide-enough span keeps the arrowhead', () => {
   expect(svg).toContain('<path')
 })
 
-// Deep-coverage scroll cost guard: drawReads must draw only the rows that reach
+// Deep-coverage scroll cost guard: walkReads must draw only the rows that reach
 // the canvas band [0, canvasHeight], not every fetched row — otherwise a deep
 // pileup redraws thousands of rects per scroll frame. If a future refactor drops
 // the pileupRowOffCanvas guard, the first two expectations blow past their bound.
-describe('drawReads visible-row-band cull', () => {
+describe('walkReads visible-row-band cull', () => {
   const rows = 1000
   // strand 0 => plain rect (no chevron path), one <rect> per drawn row.
   const reads = Array.from({ length: rows }, () => ({

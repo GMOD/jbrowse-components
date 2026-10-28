@@ -101,7 +101,7 @@ test('a repeat stack collapses to one row with depth-proportional tinting', () =
 })
 
 // The tint carries the depth, and a spliced read has none across its intron —
-// the coverage histogram above subtracts skips, and drawReads leaves the span
+// the coverage histogram above subtracts skips, and walkReads leaves the span
 // unpainted. Taking the read's full extent tinted the intron solid, with the
 // 1px junction line landing on a filled bar.
 test('a read spliced over a mate does not tint its own intron', () => {

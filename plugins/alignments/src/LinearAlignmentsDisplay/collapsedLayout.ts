@@ -46,7 +46,7 @@ export function collapsedLayoutMaxY(
 // extent, intron included, so a spliced read tinted its own introns as covered
 // — a solid depth bar with the 1px junction line sitting on it, disagreeing
 // with the coverage histogram directly above, which subtracts skips. Segments
-// are the spans `drawReads` paints, and two segments of one read cannot overlap
+// are the spans `walkReads` paints, and two segments of one read cannot overlap
 // each other, so the depth stays right.
 function collapsedOverlaps({
   segmentPositions,

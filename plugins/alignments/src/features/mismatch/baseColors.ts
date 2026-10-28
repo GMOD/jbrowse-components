@@ -102,7 +102,7 @@ function baseTables(state: BaseColorState) {
 // The formatting is what the table removes, not the `fillStyle` assignment —
 // these passes emit one entry per visible base per read, the largest arrays the
 // display produces, so an `rgb()` template literal per cell is real allocation.
-// Whether de-duplicating the *assignment* on top of that pays (as `drawReads`
+// Whether de-duplicating the *assignment* on top of that pays (as `walkReads`
 // does with its `lastFill`) is unmeasured here.
 //
 // Memoized for the reason `lineCss` in linkedReads/drawCanvas.ts is: three
