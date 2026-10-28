@@ -1399,7 +1399,9 @@ TASKS.push(
       return String(homAlt)`,
     grade: `${LCT_SNP}
       ${said}
-      return { pass: homAlt > 0 && said.includes(homAlt) && !said.includes(homRef), detail: { homAlt, homRef, n: gts.length, said } }`,
+      const sentences = answer.split(/(?<=[.!?\\n])\\s*/).filter(t => /homozygous|1\\|1/i.test(t) && !/reference|0\\|0/i.test(t))
+      const stated = sentences.some(t => new RegExp('(^|[^\\\\d,])' + homAlt + '(?![\\\\d,])').test(t)) || answer.trim().split(/\\s+/).at(-1) === String(homAlt)
+      return { pass: homAlt > 0 && said.includes(homAlt) && stated, detail: { homAlt, homRef, n: gts.length, said, sentences: sentences.slice(0, 4) } }`,
   },
   {
     name: 'fr-pli-near-lct',
