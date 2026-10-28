@@ -14,11 +14,14 @@ interface CallArgs {
 }
 type Call = (a: unknown, b: unknown, args: CallArgs) => Promise<unknown>
 
-// volvox's ctgA is 50,001 bp
+// volvox.fa
 const assemblyManager = {
   has: (name: string) => name === 'volvox',
   get: () => ({
-    regions: [{ refName: 'ctgA', start: 0, end: 50_001 }],
+    regions: [
+      { refName: 'ctgA', start: 0, end: 50_001 },
+      { refName: 'ctgB', start: 0, end: 6079 },
+    ],
     getCanonicalRefName2: (name: string) => name,
   }),
 }
@@ -85,10 +88,17 @@ test("lists the stated lengths, and the assembly's where they differ", async () 
   const { findByText } = renderDialog(['volvox'], async () => [
     { refName: 'ctgA', length: 1_078_177 },
     { refName: 'ctgB', length: 6079 },
+    { refName: 'ctgC' },
+    { refName: 'notInVolvox', length: 10 },
   ])
   const text = (await findByText(/--- volvox ---/)).textContent
-  expect(text).toContain('ctgA\t1078177\tassembly: 50001')
-  expect(text).toContain('ctgB\t6079')
+  expect(text.split('\n')).toEqual([
+    '--- volvox ---',
+    'ctgA\t1078177\tassembly: 50001',
+    'ctgB\t6079',
+    'ctgC',
+    'notInVolvox\t10',
+  ])
 })
 
 // regression: a ReferenceSequenceTrack config declares no `assemblyNames` slot,

@@ -54,14 +54,22 @@ test('a different-build file gets the length warning', () => {
     differences: [
       { refName: 'chr1', fileLength: 248_956_422, assemblyLength: 248_387_328 },
     ],
-    differing: 24,
-    compared: 25,
   })
   fireEvent.click(getByTestId('track-refname-warning-t1'))
   expect(
     getByText('Reference sequence lengths do not match the assembly'),
   ).toBeTruthy()
   const text = getByText(/chm13/).textContent
-  expect(text).toContain('24 of the 25')
   expect(text).toContain('chr1 is 248,956,422 bp in the file')
+})
+
+// a file sharing no names with the assembly has no lengths to compare, so the
+// name verdict is the one shown
+test('the name warning wins over the length warning', () => {
+  const { getByTestId, getByText } = subject(mismatch, {
+    assemblyName: 'hg38',
+    differences: [],
+  })
+  fireEvent.click(getByTestId('track-refname-warning-t1'))
+  expect(getByText('Reference names do not match the assembly')).toBeTruthy()
 })

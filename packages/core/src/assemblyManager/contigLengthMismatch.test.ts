@@ -65,15 +65,12 @@ test('reports hg38 data on CHM13 despite the matching chrM', () => {
     differences: [
       { refName: 'chr1', fileLength: 248_956_422, assemblyLength: 248_387_328 },
       { refName: 'chr2', fileLength: 242_193_529, assemblyLength: 242_696_752 },
-      { refName: 'chrX', fileLength: 156_040_895, assemblyLength: 154_259_566 },
     ],
-    differing: 3,
-    compared: 4,
   })
 })
 
 test('reports hg19 data on hg38', () => {
-  expect(detect(HG19, HG38)?.differing).toBe(4)
+  expect(detect(HG19, HG38)).toBeDefined()
 })
 
 test('does not report a file of the same build', () => {
@@ -88,6 +85,7 @@ test('does not report b37 on hg19, which differ only on chrM', () => {
   ).toBeUndefined()
 })
 
+// chr2 states no length and the HLA contig does not resolve, so chr1 decides
 test('compares only contigs that resolve and state a length', () => {
   expect(
     detectContigLengthMismatch({
@@ -99,8 +97,25 @@ test('compares only contigs that resolve and state a length', () => {
       ],
       assemblyLengths: assemblyContigLengths(regionsOf(HG19)),
       getCanonicalRefName: name => (name in HG19 ? name : undefined),
-    })?.compared,
-  ).toBe(1)
+    })?.differences,
+  ).toEqual([
+    { refName: 'chr1', fileLength: HG38.chr1, assemblyLength: HG19.chr1 },
+  ])
+})
+
+// a demo FASTA cut from the start of chr20, with the BAM keeping its full @SQ
+test('does not report an assembly that is a slice of the file', () => {
+  expect(detect({ chr20: 64_444_167 }, { chr20: 29_565 })).toBeUndefined()
+  expect(detect({ chr20: 29_565 }, { chr20: 64_444_167 })).toBeUndefined()
+})
+
+test('leaves sliced contigs out of the comparison', () => {
+  expect(
+    detect(
+      { ...HG38, chr2: 1_000_000 },
+      { ...CHM13, chr2: HG38.chr2 },
+    )?.differences.map(d => d.refName),
+  ).toEqual(['chr1', 'chrX'])
 })
 
 test('does not report when nothing is comparable', () => {
@@ -126,11 +141,10 @@ test('takes no length from a region that starts past 0', () => {
 test('the message names the build and the differing lengths', () => {
   expect(contigLengthMismatchMessage(detect(HG38, CHM13)!)).toBe(
     'This track\'s file looks to be from a different genome build than assembly "asm": ' +
-      '3 of the 4 reference sequences they share differ in length ' +
+      'most of the sequence they share is on reference sequences of different lengths ' +
       '(chr1 is 248,956,422 bp in the file, 248,387,328 bp in the assembly; ' +
-      'chr2 is 242,193,529 bp in the file, 242,696,752 bp in the assembly; ' +
-      'chrX is 156,040,895 bp in the file, 154,259,566 bp in the assembly). ' +
-      'Its data will be drawn against the wrong sequence. ' +
+      'chr2 is 242,193,529 bp in the file, 242,696,752 bp in the assembly). ' +
+      "Its positions refer to the other build's sequence. " +
       'Load it against the assembly it was made with.',
   )
 })

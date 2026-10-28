@@ -10,6 +10,11 @@ import type { Contig } from '../data_adapters/BaseAdapter/util.ts'
  * contigs whose lengths differ. A few differing contigs are ordinary — b37 and
  * hg19 agree on every chromosome but chrM — and belong in
  * `RefNameInfoDialog`, which lists each one.
+ *
+ * Two builds' versions of a chromosome differ by a few percent. A contig under
+ * half the other side's length is a slice of it instead (a demo FASTA cut from
+ * a chromosome, with the BAM keeping its full `@SQ`), and positions in a slice
+ * starting at 0 are right, so a slice is left out of the comparison.
  */
 
 export interface ContigLengthDifference {
@@ -23,12 +28,9 @@ export interface ContigLengthMismatch {
   assemblyName: string
   /** the shared contigs whose lengths differ, longest first, the first few */
   differences: ContigLengthDifference[]
-  /** how many shared contigs differ, of how many with a length on both sides */
-  differing: number
-  compared: number
 }
 
-const SAMPLE_SIZE = 3
+const SAMPLE_SIZE = 2
 
 /**
  * Each region's length by canonical name. A region starting past 0 is a slice,
@@ -71,7 +73,11 @@ export function detectContigLengthMismatch({
   assemblyLengths: ReadonlyMap<string, number>
   getCanonicalRefName: (refName: string) => string | undefined
 }): ContigLengthMismatch | undefined {
-  const shared = sharedContigLengths(rest)
+  const shared = sharedContigLengths(rest).filter(
+    c =>
+      Math.max(c.fileLength, c.assemblyLength) <
+      2 * Math.min(c.fileLength, c.assemblyLength),
+  )
   const differences = shared
     .filter(c => c.fileLength !== c.assemblyLength)
     .sort((a, b) => b.assemblyLength - a.assemblyLength)
@@ -81,8 +87,6 @@ export function detectContigLengthMismatch({
     ? {
         assemblyName,
         differences: differences.slice(0, SAMPLE_SIZE),
-        differing: differences.length,
-        compared: shared.length,
       }
     : undefined
 }
@@ -94,8 +98,6 @@ function bp(n: number) {
 export function contigLengthMismatchMessage({
   assemblyName,
   differences,
-  differing,
-  compared,
 }: ContigLengthMismatch) {
   const examples = differences
     .map(
@@ -105,8 +107,8 @@ export function contigLengthMismatchMessage({
     .join('; ')
   return (
     `This track's file looks to be from a different genome build than assembly "${assemblyName}": ` +
-    `${differing} of the ${compared} reference sequences they share differ in length (${examples}). ` +
-    'Its data will be drawn against the wrong sequence. ' +
+    `most of the sequence they share is on reference sequences of different lengths (${examples}). ` +
+    "Its positions refer to the other build's sequence. " +
     'Load it against the assembly it was made with.'
   )
 }

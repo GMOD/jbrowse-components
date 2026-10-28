@@ -8,9 +8,9 @@ import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
 /**
- * The file's contigs with the lengths its header states. An adapter whose
- * file states none answers with its refNames alone, so a caller listing
- * contigs needs no second RPC for those.
+ * The file's contigs with the lengths its header states. `loadRefNameMap`
+ * builds the rename map from these names, so an adapter whose file states no
+ * lengths answers with its refNames alone.
  */
 export default class CoreGetContigs extends RpcMethodType<'CoreGetContigs'> {
   name = 'CoreGetContigs' as const

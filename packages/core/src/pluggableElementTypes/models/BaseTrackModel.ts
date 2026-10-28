@@ -294,8 +294,8 @@ export function createBaseTrackModel<SCHEMA extends AnyConfigurationSchemaType>(
          * #getter
          * Set when most of the bases this track's file shares with one of its
          * assemblies sit on contigs of different lengths: the file was made
-         * against another build with the same names. Found the way
-         * `refNameMismatch` is, after the first fetch.
+         * against another build with the same names. Found and kept the way
+         * `refNameMismatch` is.
          */
         get contigLengthMismatch(): ContigLengthMismatch | undefined {
           return firstAssemblyVerdict(a =>

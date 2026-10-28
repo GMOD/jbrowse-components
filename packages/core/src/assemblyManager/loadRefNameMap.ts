@@ -1,5 +1,3 @@
-import { isAlive } from '@jbrowse/mobx-state-tree'
-
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import { updateStatus } from '../util/progress.ts'
 import {
@@ -51,8 +49,10 @@ export async function loadRefNameMap(
   // load reads as a bare percentage climbing under no heading. The wording is
   // deliberately generic: refname resolution is an implementation detail a
   // user has no use for, and this is just the front of the load to them.
-  const refNames = await updateStatus('Loading', options.statusCallback, () =>
-    assembly.rpcManager.call(sessionId, 'CoreGetRefNames', {
+  // contigs rather than bare refNames: the lengths a file's header states cost
+  // no extra read, and they are what gives away a file from another build
+  const contigs = await updateStatus('Loading', options.statusCallback, () =>
+    assembly.rpcManager.call(sessionId, 'CoreGetContigs', {
       adapterConfig: adapterConfig as Record<string, unknown>,
       assemblyName: assembly.name,
       haplotypes: options.haplotypes,
@@ -61,7 +61,7 @@ export async function loadRefNameMap(
       signal: undefined,
       // Forwarded rather than dropped (unlike signal above), because the
       // adapter's index download happens here during refname mapping
-      // (getRefNames -> setup) and this is the only place its "Downloading
+      // (getContigs or getRefNames -> setup) and this is the only place its "Downloading
       // index" progress can surface. For an in-memory adapter it is not an
       // index but the whole file — GWAS LD coloring resolves a second map
       // against its PLINK `.ld` sub-adapter, and that adapter parses all of it
@@ -77,6 +77,7 @@ export async function loadRefNameMap(
     }),
   )
 
+  const refNames = contigs.map(c => c.refName)
   const { refNameAliases } = assembly
   if (!refNameAliases) {
     throw new Error(`error loading assembly ${assembly.name}'s refNameAliases`)
@@ -99,7 +100,8 @@ export async function loadRefNameMap(
   // here, and failing on a guess would take a working track away from someone.
   // The record is keyed by adapter cache key and the map load is memoized under
   // the same key, so this runs once per (assembly, adapter config) — a track
-  // reads it back through `BaseTrackModel.refNameMismatch`.
+  // reads it back through `BaseTrackModel.refNameMismatch` and
+  // `contigLengthMismatch`.
   const mismatch = detectRefNameMismatch({
     assemblyName: assembly.name,
     adapterRefNames: refNames,
@@ -112,39 +114,15 @@ export async function loadRefNameMap(
   if (mismatch) {
     assembly.setRefNameMismatch(adapterCacheKey, mismatch)
   } else {
-    void checkContigLengths(assembly, adapterConfig, adapterCacheKey, options)
-  }
-  return result
-}
-
-// Not awaited: every fetch waits on the map, and a diagnostic must not delay
-// a first draw. A failure here says nothing about the track, so it is dropped.
-async function checkContigLengths(
-  assembly: RefNameMapAssembly,
-  adapterConfig: unknown,
-  adapterCacheKey: string,
-  { sessionId, haplotypes }: BaseOptions,
-) {
-  try {
-    const contigs = await assembly.rpcManager.call(
-      sessionId!,
-      'CoreGetContigs',
-      // background: no phase to show, and a header read is not worth cancelling
-      // eslint-disable-next-line no-restricted-syntax
-      {
-        adapterConfig: adapterConfig as Record<string, unknown>,
-        assemblyName: assembly.name,
-        haplotypes,
-      },
-    )
-    const mismatch = detectContigLengthMismatch({
+    const lengthMismatch = detectContigLengthMismatch({
       assemblyName: assembly.name,
       contigs,
       assemblyLengths: assemblyContigLengths(assembly.regions ?? []),
       getCanonicalRefName: name => assembly.getCanonicalRefName(name),
     })
-    if (mismatch && isAlive(assembly)) {
-      assembly.setContigLengthMismatch(adapterCacheKey, mismatch)
+    if (lengthMismatch) {
+      assembly.setContigLengthMismatch(adapterCacheKey, lengthMismatch)
     }
-  } catch {}
+  }
+  return result
 }

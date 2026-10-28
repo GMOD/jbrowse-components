@@ -115,9 +115,13 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   // that one is still in flight — `isLoading` is what says that. Treating the
   // two as the same thing is what left the dialog spinning with nothing behind
   // it; an empty list at least says so
-  const refNames = (data ?? []).map(
-    ([assemblyName, contigs]) =>
-      [assemblyName, contigLines(session, assemblyName, contigs)] as const,
+  const contigs = data ?? []
+  const refNames = contigs.map(
+    ([assemblyName, list]) => [assemblyName, list.map(c => c.refName)] as const,
+  )
+  const lines = contigs.map(
+    ([assemblyName, list]) =>
+      [assemblyName, contigLines(session, assemblyName, list)] as const,
   )
 
   return (
@@ -144,7 +148,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
             </CopyToClipboardButton>
 
             <pre className={classes.refNames}>
-              {formatRefNames(refNames, true)}
+              {formatRefNames(lines, true)}
             </pre>
           </>
         )}

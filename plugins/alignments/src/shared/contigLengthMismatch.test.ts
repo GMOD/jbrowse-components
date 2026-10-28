@@ -42,33 +42,45 @@ function cram(path: string) {
   )
 }
 
-// volvox.fa
-const volvox = assemblyContigLengths([
-  { refName: 'ctgA', start: 0, end: 50_001 },
-  { refName: 'ctgB', start: 0, end: 6079 },
-])
-
-function detect(contigs: Contig[]) {
+function detect(contigs: Contig[], regions: Record<string, number>) {
+  const lengths = assemblyContigLengths(
+    Object.entries(regions).map(([refName, end]) => ({
+      refName,
+      start: 0,
+      end,
+    })),
+  )
   return detectContigLengthMismatch({
-    assemblyName: 'volvox',
+    assemblyName: 'asm',
     contigs,
-    assemblyLengths: volvox,
-    getCanonicalRefName: name => (volvox.has(name) ? name : undefined),
+    assemblyLengths: lengths,
+    getCanonicalRefName: name => (lengths.has(name) ? name : undefined),
   })
 }
+
+const volvox = { ctgA: 50_001, ctgB: 6079 }
 
 test('a CRAM made against volvox states its lengths and passes', async () => {
   const contigs = await cram('../../test_data/volvox-sorted.cram').getContigs()
   expect(contigs.find(c => c.refName === 'ctgA')?.length).toBe(50_001)
-  expect(detect(contigs)).toBeUndefined()
+  expect(detect(contigs, volvox)).toBeUndefined()
 })
 
-// paired_rnaseq.bam's ctgA is a 1,078,177 bp sequence of another genome
-test('a BAM made against another ctgA is reported', async () => {
-  const contigs = await bam(
-    '../../../../test_data/volvox/paired_rnaseq.bam',
-  ).getContigs()
-  expect(detect(contigs)?.differences).toEqual([
-    { refName: 'ctgA', fileLength: 1_078_177, assemblyLength: 50_001 },
+test('the same CRAM on another version of ctgA is reported', async () => {
+  const contigs = await cram('../../test_data/volvox-sorted.cram').getContigs()
+  expect(detect(contigs, { ...volvox, ctgA: 48_000 })?.differences).toEqual([
+    { refName: 'ctgA', fileLength: 50_001, assemblyLength: 48_000 },
   ])
+})
+
+// the methylation demo's assembly is 29,565 bp cut from the start of hg38's
+// chr20, and its BAM keeps the full 64,444,167 bp @SQ
+test('a demo assembly sliced from the file contig passes', async () => {
+  const contigs = await bam(
+    '../../../../test_data/methylation_test/methylation_clip.bam',
+  ).getContigs()
+  expect(contigs).toEqual([
+    expect.objectContaining({ refName: '20', length: 64_444_167 }),
+  ])
+  expect(detect(contigs, { 20: 29_565 })).toBeUndefined()
 })

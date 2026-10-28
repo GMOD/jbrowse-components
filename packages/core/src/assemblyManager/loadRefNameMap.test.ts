@@ -1,14 +1,7 @@
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import { loadRefNameMap } from './loadRefNameMap.ts'
 
-import type { Contig } from '../data_adapters/BaseAdapter/util.ts'
 import type { RefNameMapAssembly } from './loadRefNameMap.ts'
-
-// the assembly here is a plain object standing in for the MST node
-jest.mock('@jbrowse/mobx-state-tree', () => ({
-  ...jest.requireActual('@jbrowse/mobx-state-tree'),
-  isAlive: () => true,
-}))
 
 const adapterConfig = { type: 'BamAdapter', bamLocation: { uri: 'x.bam' } }
 
@@ -16,14 +9,12 @@ function setup({
   fileRefNames,
   assemblyRefNames,
   aliases = {},
-  assemblyLength = 1000,
-  getContigs = async () => fileRefNames.map(refName => ({ refName })),
+  fileLength,
 }: {
   fileRefNames: string[]
   assemblyRefNames: string[]
   aliases?: Record<string, string>
-  assemblyLength?: number
-  getContigs?: () => Promise<Contig[]>
+  fileLength?: number
 }) {
   const setRefNameMismatch = jest.fn()
   const setContigLengthMismatch = jest.fn()
@@ -35,15 +26,15 @@ function setup({
     regions: assemblyRefNames.map(refName => ({
       refName,
       start: 0,
-      end: assemblyLength,
+      end: 1000,
     })),
     refNames: assemblyRefNames,
     refNameAliases: Object.fromEntries(
       assemblyRefNames.map(n => [n, n] as const),
     ),
     rpcManager: {
-      call: jest.fn(async (_sessionId: string, method: string) =>
-        method === 'CoreGetContigs' ? getContigs() : fileRefNames,
+      call: jest.fn(async () =>
+        fileRefNames.map(refName => ({ refName, length: fileLength })),
       ),
     },
     getCanonicalRefName: (name: string) =>
@@ -52,11 +43,6 @@ function setup({
     setContigLengthMismatch,
   } as unknown as RefNameMapAssembly
   return { assembly, setRefNameMismatch, setContigLengthMismatch }
-}
-
-// the length check is not awaited; a macrotask runs after every settled mock
-function settle() {
-  return new Promise(resolve => setTimeout(resolve, 0))
 }
 
 // a source that declares its lanes reads an index per lane named, so the lanes
@@ -69,7 +55,7 @@ test('forwards the lanes the fetch names', async () => {
   })
   expect(assembly.rpcManager.call).toHaveBeenCalledWith(
     'sesh',
-    'CoreGetRefNames',
+    'CoreGetContigs',
     expect.objectContaining({ haplotypes: ['panTro6', 'mm39'] }),
   )
 })
@@ -149,66 +135,39 @@ test('does not record when the adapter reports no refNames', async () => {
   expect(setRefNameMismatch).not.toHaveBeenCalled()
 })
 
-test('records a length mismatch after the map, keyed like the name one', async () => {
+test('records a length mismatch, keyed like the name one', async () => {
   const { assembly, setContigLengthMismatch } = setup({
     fileRefNames: CHR,
     assemblyRefNames: CHR,
-    getContigs: async () => CHR.map(refName => ({ refName, length: 2000 })),
+    fileLength: 1500,
   })
   await loadRefNameMap(assembly, adapterConfig, { sessionId: 'sesh' })
-  await settle()
   expect(setContigLengthMismatch).toHaveBeenCalledTimes(1)
   const [key, mismatch] = setContigLengthMismatch.mock.calls[0]!
   expect(key).toBe(adapterConfigCacheKey(structuredClone(adapterConfig)))
-  expect(mismatch).toMatchObject({ differing: 3, compared: 3 })
+  expect(mismatch.differences).toHaveLength(2)
 })
 
 test('does not record when the lengths agree', async () => {
   const { assembly, setContigLengthMismatch } = setup({
     fileRefNames: CHR,
     assemblyRefNames: CHR,
-    getContigs: async () => CHR.map(refName => ({ refName, length: 1000 })),
+    fileLength: 1000,
   })
   await loadRefNameMap(assembly, adapterConfig, { sessionId: 'sesh' })
-  await settle()
   expect(setContigLengthMismatch).not.toHaveBeenCalled()
 })
 
-// every fetch waits on the map, so the diagnostic must not
-test('returns the map without waiting for the contig lengths', async () => {
-  const { assembly } = setup({
-    fileRefNames: CHR,
-    assemblyRefNames: CHR,
-    getContigs: () => new Promise(() => {}),
-  })
-  expect(
-    await loadRefNameMap(assembly, adapterConfig, { sessionId: 'sesh' }),
-  ).toEqual({ chr1: 'chr1', chr2: 'chr2', chr3: 'chr3' })
-})
-
-test('a failing contig read records nothing and fails nothing', async () => {
+test('compares lengths under the assembly names the aliases resolve to', async () => {
   const { assembly, setContigLengthMismatch } = setup({
-    fileRefNames: CHR,
-    assemblyRefNames: CHR,
-    getContigs: () => Promise.reject(new Error('header boom')),
-  })
-  expect(
-    await loadRefNameMap(assembly, adapterConfig, { sessionId: 'sesh' }),
-  ).toEqual({ chr1: 'chr1', chr2: 'chr2', chr3: 'chr3' })
-  await settle()
-  expect(setContigLengthMismatch).not.toHaveBeenCalled()
-})
-
-// a file sharing no names already has the louder verdict
-test('skips the length check when no names match', async () => {
-  const { assembly } = setup({
     fileRefNames: ['1', '2', '3'],
     assemblyRefNames: CHR,
+    aliases: { 1: 'chr1', 2: 'chr2', 3: 'chr3' },
+    fileLength: 1500,
   })
   await loadRefNameMap(assembly, adapterConfig, { sessionId: 'sesh' })
-  expect(assembly.rpcManager.call).not.toHaveBeenCalledWith(
-    'sesh',
-    'CoreGetContigs',
-    expect.anything(),
-  )
+  expect(setContigLengthMismatch.mock.calls[0]![1].differences).toEqual([
+    { refName: 'chr1', fileLength: 1500, assemblyLength: 1000 },
+    { refName: 'chr2', fileLength: 1500, assemblyLength: 1000 },
+  ])
 })

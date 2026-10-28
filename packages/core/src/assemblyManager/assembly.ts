@@ -747,9 +747,8 @@ export default function assemblyFactory(
       },
       /**
        * #method
-       * The different-build verdict for an adapter under this assembly. Lands
-       * after the track's first fetch, since the check that reaches it runs off
-       * the load path.
+       * The different-build verdict for an adapter under this assembly, kept
+       * like `getRefNameMismatch`'s.
        */
       getContigLengthMismatch(adapterCacheKey: string) {
         return self.contigLengthMismatches.get(adapterCacheKey)
