@@ -2,9 +2,9 @@ import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as shader from './shaders/ringWarp.generated.ts'
-import { warpRing } from './warpRing.ts'
+import { annulusRects, warpRing } from './warpRing.ts'
 
-import type { Pixels } from './warpRing.ts'
+import type { PixelRect, Pixels } from './warpRing.ts'
 import type { MarkImage, MarkShape } from '@jbrowse/render-core/marks'
 
 /**
@@ -27,18 +27,36 @@ export interface RingParams {
   strip: MarkImage | undefined
 }
 
+const BAND_ROWS = 64
+
 let scratchCanvas: HTMLCanvasElement | undefined
+let ringCanvas: HTMLCanvasElement | undefined
 let ringPixels: ImageData | undefined
+
+function context2d(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  if (!ctx) {
+    throw new Error('ring painter: 2D context unavailable')
+  }
+  return ctx
+}
 
 function scratchContext(width: number, height: number) {
   scratchCanvas ??= document.createElement('canvas')
   scratchCanvas.width = width
   scratchCanvas.height = height
-  const ctx = scratchCanvas.getContext('2d', { willReadFrequently: true })
-  if (!ctx) {
-    throw new Error('ring painter: 2D context unavailable')
+  return context2d(scratchCanvas)
+}
+
+// Every pixel drawn from this canvas is first put from `ringPixels`, so a
+// resize is the only reason to touch its size.
+function ringContext(width: number, height: number) {
+  ringCanvas ??= document.createElement('canvas')
+  if (ringCanvas.width !== width || ringCanvas.height !== height) {
+    ringCanvas.width = width
+    ringCanvas.height = height
   }
-  return ctx
+  return context2d(ringCanvas)
 }
 
 const stripPixels = new WeakMap<MarkImage, Pixels>()
@@ -58,13 +76,22 @@ function pixelsOf(strip: MarkImage) {
   return pixels
 }
 
-/** A transparent `ImageData` the size of `ctx`'s canvas, reused across frames. */
-function blankPixels(ctx: CanvasRenderingContext2D) {
+/**
+ * An `ImageData` the size of `ctx`'s canvas, reused across frames, with `rects`
+ * cleared: the only pixels the painter reads back.
+ */
+function clearedPixels(ctx: CanvasRenderingContext2D, rects: PixelRect[]) {
   const { width, height } = ctx.canvas
-  if (ringPixels?.width === width && ringPixels.height === height) {
-    ringPixels.data.fill(0)
-  } else {
+  if (ringPixels?.width !== width || ringPixels.height !== height) {
     ringPixels = ctx.createImageData(width, height)
+    return ringPixels
+  }
+  const { data } = ringPixels
+  for (const { x, y, width: w, height: h } of rects) {
+    for (let row = y; row < y + h; row++) {
+      const o = (row * width + x) * 4
+      data.fill(0, o, o + w * 4)
+    }
   }
   return ringPixels
 }
@@ -118,30 +145,41 @@ export function ringShape(id: string): MarkShape<RingChannels, RingParams> {
         if (right - left < 1 || bottom - top < 1) {
           continue
         }
-        const out = scratchContext(
+        const out = ringContext(
           Math.ceil(right - left),
           Math.ceil(bottom - top),
         )
-        const ring = blankPixels(out)
-        warpRing(ring, pixels, {
+        const annulus = {
           centerX: cx - left,
           centerY: cy - top,
           innerPx: channels.innerPx[i]! * dpr,
           outerPx,
           offsetRadians,
-        })
-        out.putImageData(ring, 0, 0)
-        ctx.drawImage(
-          out.canvas,
-          0,
-          0,
-          ring.width,
-          ring.height,
-          left / dpr,
-          top / dpr,
-          ring.width / dpr,
-          ring.height / dpr,
+        }
+        const rects = annulusRects(
+          out.canvas.width,
+          out.canvas.height,
+          annulus,
+          BAND_ROWS,
         )
+        const ring = clearedPixels(out, rects)
+        warpRing(ring, pixels, annulus)
+        for (const { x, y, width, height } of rects) {
+          out.putImageData(ring, 0, 0, x, y, width, height)
+        }
+        for (const { x, y, width, height } of rects) {
+          ctx.drawImage(
+            out.canvas,
+            x,
+            y,
+            width,
+            height,
+            (left + x) / dpr,
+            (top + y) / dpr,
+            width / dpr,
+            height / dpr,
+          )
+        }
       }
     },
   }

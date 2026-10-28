@@ -123,6 +123,70 @@ export function warpRing(out: Pixels, strip: Pixels, ring: Annulus) {
   }
 }
 
+/** An axis-aligned run of a `Pixels`, in its px. */
+export interface PixelRect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+/**
+ * Rects holding every pixel `warpRing` can write for `ring` into a `width` x
+ * `height` image, at most two per band of `bandRows` rows: the band's widest
+ * row less the hole its smallest-holed row leaves, shrunk a pixel each side so
+ * a rim pixel's rounding cannot fall outside.
+ */
+export function annulusRects(
+  width: number,
+  height: number,
+  ring: Annulus,
+  bandRows: number,
+) {
+  const { centerX: cx, centerY: cy, innerPx: inner, outerPx: outer } = ring
+  const rects: PixelRect[] = []
+  if (outer - inner <= 0) {
+    return rects
+  }
+  const lo = Math.max(0, inner - 0.5)
+  const hi = outer + 0.5
+  const yEnd = Math.min(height, Math.ceil(cy + hi))
+  for (let y0 = Math.max(0, Math.floor(cy - hi)); y0 < yEnd; y0 += bandRows) {
+    const y1 = Math.min(yEnd, y0 + bandRows)
+    let start = width
+    let end = 0
+    let holeStart = -Infinity
+    let holeEnd = Infinity
+    for (let y = y0; y < y1; y++) {
+      const dy2 = (y + 0.5 - cy) ** 2
+      const reach2 = hi * hi - dy2
+      if (reach2 <= 0) {
+        continue
+      }
+      const reach = Math.sqrt(reach2)
+      start = Math.min(start, Math.max(0, Math.floor(cx - reach - 0.5)))
+      end = Math.max(end, Math.min(width, Math.ceil(cx + reach - 0.5) + 1))
+      const hole2 = lo * lo - dy2
+      if (hole2 > 0) {
+        const hole = Math.sqrt(hole2)
+        holeStart = Math.max(holeStart, Math.ceil(cx - hole - 0.5) + 1)
+        holeEnd = Math.min(holeEnd, Math.floor(cx + hole - 0.5))
+      } else {
+        holeStart = Infinity
+      }
+    }
+    const left = Math.min(end, Math.max(start, holeStart))
+    const right = Math.max(left, Math.min(end, holeEnd))
+    if (left > start) {
+      rects.push({ x: start, y: y0, width: left - start, height: y1 - y0 })
+    }
+    if (end > right) {
+      rects.push({ x: right, y: y0, width: end - right, height: y1 - y0 })
+    }
+  }
+  return rects
+}
+
 function clampIndex(i: number, n: number) {
   return i < 0 ? 0 : i >= n ? n - 1 : i
 }
