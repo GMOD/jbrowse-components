@@ -5,7 +5,6 @@ import { VIEW_TRACK_LABEL_MODES } from '@jbrowse/display-kit/types'
 import { types } from '@jbrowse/mobx-state-tree'
 import LineStyleIcon from '@mui/icons-material/LineStyle'
 
-import FeatureTrackF from './FeatureTrack/index.ts'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView/index.ts'
 import SequenceFeatureHoverHighlightExtensionF from './LinearGenomeView/components/SequenceFeatureHoverHighlightExtension.tsx'
 import LinearGenomeViewF from './LinearGenomeView/index.ts'
@@ -40,7 +39,6 @@ export default class LinearGenomeViewPlugin extends Plugin {
   })
 
   install(pluginManager: PluginManager) {
-    FeatureTrackF(pluginManager)
     LinearGenomeViewF(pluginManager)
     LaunchLinearGenomeViewF(pluginManager)
     SequenceFeatureHoverHighlightExtensionF(pluginManager)

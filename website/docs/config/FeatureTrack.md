@@ -5,15 +5,14 @@ description: "Holds gene and other feature annotations, such as a GFF3 or BED fi
 sidebar_label: Track -> FeatureTrack
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `linear-genome-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/FeatureTrack/configSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/FeatureTrack/configSchema.ts).
 
 Holds gene and other feature annotations, such as a GFF3 or BED file, which
 `LinearBasicDisplay` usually draws.
 
 ## Example usage
 
-A minimal hand-authored entry in the top-level `tracks` array — `adapter`
-points at the data file, and the track opens with a `LinearBasicDisplay`:
+A minimal track. `adapter` points at the data file:
 
 ```js
 {
@@ -38,11 +37,8 @@ JBrowse infers `Gff3TabixAdapter` and `FeatureTrack` from `genes.sorted.gff.gz`,
 }
 ```
 
-The same track, colored. Rather than writing out the full `displays` array,
-you can put appearance settings in a `displayDefaults` object — JBrowse works
-out which display they belong to and applies them for you (here, the track's
-`LinearBasicDisplay`), so you don't have to know display names. A `jexl:`
-value gives per-feature coloring:
+The same track, colored per feature. `displayDefaults` applies settings to
+whichever display takes them, here `LinearBasicDisplay`:
 
 ```js
 {

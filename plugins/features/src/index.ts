@@ -1,5 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 
+import FeatureTrackF from './FeatureTrack/index.ts'
 import LinearBasicDisplayF from './LinearBasicDisplay/index.ts'
 import { highlightSearchResultFeature } from './LinearBasicDisplay/searchResultHighlight.ts'
 import FeatureDataRPCMethodsF from './RenderFeatureDataRPC/index.ts'
@@ -10,6 +11,7 @@ export default class FeaturesPlugin extends Plugin {
   name = 'FeaturesPlugin'
 
   install(pluginManager: PluginManager) {
+    FeatureTrackF(pluginManager)
     LinearBasicDisplayF(pluginManager)
     FeatureDataRPCMethodsF(pluginManager)
   }

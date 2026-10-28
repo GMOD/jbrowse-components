@@ -1,4 +1,4 @@
-# Canvas plugin
+# Features plugin
 
 ## Layout is per reference sequence
 
@@ -8,7 +8,7 @@ The key and the region's bounds (`regionKey`, `regionStart`, `regionEnd`) are
 stapled onto `LayoutRegionData` at fetch time — **keep them on the region, not
 in a parallel map**: a region missing from a map falls into one group with every
 other missing region and mis-stacks. Don't derive them from `loadedRegions`
-either; that map is empty during the refetch window canvas paints through.
+either; that map is empty during the refetch window the display paints through.
 
 **Every bp in the pack is on the drawn axis.** The packer cuts the stretches
 hidden between a group's regions (`drawnAxis.ts`), so map anything new it reads

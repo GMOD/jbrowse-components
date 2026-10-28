@@ -10,8 +10,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * `LinearBasicDisplay` usually draws.
  *
  * #example
- * A minimal hand-authored entry in the top-level `tracks` array — `adapter`
- * points at the data file, and the track opens with a `LinearBasicDisplay`:
+ * A minimal track. `adapter` points at the data file:
  * ```js
  * {
  *   type: 'FeatureTrack',
@@ -26,11 +25,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * ```
  *
  * #example
- * The same track, colored. Rather than writing out the full `displays` array,
- * you can put appearance settings in a `displayDefaults` object — JBrowse works
- * out which display they belong to and applies them for you (here, the track's
- * `LinearBasicDisplay`), so you don't have to know display names. A `jexl:`
- * value gives per-feature coloring:
+ * The same track, colored per feature. `displayDefaults` applies settings to
+ * whichever display takes them, here `LinearBasicDisplay`:
  * ```js
  * {
  *   type: 'FeatureTrack',

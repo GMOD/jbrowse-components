@@ -15,9 +15,8 @@ strand arrows take the theme's stroke color.
 
 ## Example usage
 
-A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
-`tracks`. `displayMode` sets the feature height preset (`normal`, `compact`,
-or `superCompact`), or `collapsed` for a single-row overview:
+A `FeatureTrack` with compact features. `displayMode` is `normal`,
+`compact`, `superCompact` or `collapsed` (one row):
 
 ```js
 {

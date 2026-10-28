@@ -52,9 +52,8 @@ export type { Region } from '@jbrowse/core/util'
  * GPU-accelerated feature display with gene-specific UI on top of the shared
  * canvas base display (`LinearCanvasBaseDisplay`).
  * #example
- * A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
- * `tracks`. `displayMode` sets the feature height preset (`normal`, `compact`,
- * or `superCompact`), or `collapsed` for a single-row overview:
+ * A `FeatureTrack` with compact features. `displayMode` is `normal`,
+ * `compact`, `superCompact` or `collapsed` (one row):
  * ```js
  * {
  *   type: 'FeatureTrack',
