@@ -1440,7 +1440,7 @@ TASKS.push(
       ${FINAL}
       const names = [...new Set(genes.map(g => String(g.get('geneName'))))].filter(n => /^[\\w.-]+$/.test(n))
       const firstIn = t => names.map(n => ({ n, i: t.search(new RegExp('\\\\b' + n + '\\\\b')) })).filter(m => m.i >= 0).sort((a, b) => a.i - b.i)[0]?.n
-      const claim = final.split(/(?<=[.!?\\n])\\s*/).find(t => /pLI|most|highest|intolerant|answer/i.test(t) && firstIn(t))
+      const claim = final.split(/(?<=[.!?\\n])\\s*/).find(t => firstIn(t) && (/pLI|most|highest|intolerant|answer/i.test(t) || t.trim().split(/\\s+/).length <= 4))
       const first = claim ? firstIn(claim) : firstIn(final)
       return { pass: best.includes(first), detail: { best, top, first, final: final.slice(0, 300) } }`,
   },
