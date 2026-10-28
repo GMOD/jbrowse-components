@@ -101,6 +101,7 @@ export const agentSyntenySpecs: ScreenshotSpec[] = [
       views: [
         flySynteny('chr2R:1-2,400,000', 'chr2R:500,000-3,800,000', {
           filter: [{ field: 'length', gte: 5000 }],
+          indels: { show: false },
         }),
       ],
     }),
@@ -112,7 +113,9 @@ export const agentSyntenySpecs: ScreenshotSpec[] = [
     name: 'agent_synteny/inversion_x',
     url: sessionSpec(FLY_CONFIG, {
       views: [
-        flySynteny('chrX:8,100,000-8,950,000', 'chrX:8,330,000-9,180,000'),
+        flySynteny('chrX:8,100,000-8,950,000', 'chrX:8,330,000-9,180,000', {
+          indels: { show: false },
+        }),
       ],
     }),
     ...SYNTENY_FRAME,
