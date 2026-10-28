@@ -594,15 +594,15 @@ test('mix returns b exactly at t=1, which the lerp form does not', () => {
 })
 
 // `pnpm check-shader-oracle` covers a translation rule only if some shader in
-// the tree happens to call that builtin from a liftable function. Measured
-// against the current tree, it reaches eight of the seventeen — `abs`, `clamp`,
-// `floor`, `log2`, `max`, `min`, `smoothstep`, `sqrt` — and the other nine are
-// translated by rules no differential check has ever run.
+// the tree happens to call that builtin from a liftable function. When this was
+// written it reached eight of seventeen — `abs`, `clamp`, `floor`, `log2`,
+// `max`, `min`, `smoothstep`, `sqrt` — and the other nine were translated by
+// rules no differential check had ever run.
 //
 // That is not a fixable gap in the oracle: two of the nine (`mix`, `step`) are
 // ones it *cannot* referee, because slangc's C++ target lowers them to different
 // expressions than the WGSL it hands the GPU. So the floor has to be here, and
-// the completeness assertion below is what keeps a tenth from being added
+// the completeness assertion below is what keeps another from being added
 // silently — the failure mode this whole subset exists to rule out is a builtin
 // whose JS namesake is nearly right, which is exactly what `round` was.
 describe('every translated builtin, at inputs where a near-miss differs', () => {
@@ -649,6 +649,17 @@ describe('every translated builtin, at inputs where a near-miss differs', () => 
       },
     },
     {
+      rule: 'atan2',
+      check: () => {
+        const atan2 = call2('atan2')
+        // y first, as in Math.atan2: swapping them reflects about the
+        // diagonal, and the left half-plane tells it from a plain atan(y / x).
+        expect(atan2(1, 0)).toBeCloseTo(Math.PI / 2, 12)
+        expect(atan2(0, 1)).toBe(0)
+        expect(atan2(1, -1)).toBeCloseTo((3 * Math.PI) / 4, 12)
+      },
+    },
+    {
       rule: 'ceil',
       check: () => {
         const ceil = call1('ceil')
@@ -665,6 +676,17 @@ describe('every translated builtin, at inputs where a near-miss differs', () => 
         expect(clamp(5, 0, 1)).toBe(1)
         expect(clamp(-5, 0, 1)).toBe(0)
         expect(clamp(0.25, 0, 1)).toBe(0.25)
+      },
+    },
+    {
+      rule: 'cos',
+      check: () => {
+        const cos = call1('cos')
+        // Radians, and the cosine rather than the sine: 0 is 1, and a
+        // quarter turn is 0.
+        expect(cos(0)).toBe(1)
+        expect(cos(Math.PI / 2)).toBeCloseTo(0, 12)
+        expect(cos(Math.PI)).toBe(-1)
       },
     },
     {
@@ -764,6 +786,15 @@ describe('every translated builtin, at inputs where a near-miss differs', () => 
         expect(ss(0, 1, 0.25)).toBe(0.15625)
         expect(ss(0, 1, -1)).toBe(0)
         expect(ss(0, 1, 2)).toBe(1)
+      },
+    },
+    {
+      rule: 'sin',
+      check: () => {
+        const sin = call1('sin')
+        expect(sin(0)).toBe(0)
+        expect(sin(Math.PI / 2)).toBe(1)
+        expect(sin(-Math.PI / 6)).toBeCloseTo(-0.5, 12)
       },
     },
     {
