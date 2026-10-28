@@ -284,6 +284,9 @@ export default function jobsModelFactory() {
             trackIds,
           ).map(c => toJS(c))
           const userData = await invokeIpc('userData')
+          // A fresh folder per run, and the previous one kept: a copied track
+          // or another saved session can still point at it, and nothing here
+          // knows which do. Reset is what reclaims them.
           const outLocation = path.join(
             userData,
             NAME_INDICES_DIR,
