@@ -2,47 +2,31 @@
 
 # JBrowse config types
 
-Every type the core plugins register. For the slots a type accepts, fetch its
-page — the URL pattern is
-`https://jbrowse.org/jb2/docs/config/<lowercased type name>.md`.
+Every type the core plugins register. For the slots a type accepts, fetch
+its page — the URL pattern is `https://jbrowse.org/jb2/docs/config/<lowercased type name>.md`.
 
 A type not listed here is not necessarily wrong: plugins register their own.
 
 ## Track types
 
-A track pairs one adapter (where the data is) with one or more displays (how it
-is drawn). The shortest track is `{ "trackId", "uri", "assemblyNames" }`, and in
-a config declaring one assembly the last of those goes too: the type and adapter
-come from the file's extension, and any key written beside `uri` overrides the
-inference.
+A track pairs one adapter (where the data is) with one or more displays (how it is drawn).
+The shortest track is `{ "trackId", "uri", "assemblyNames" }`, and in a
+config declaring one assembly the last of those goes too: the type and
+adapter come from the file's extension, and any key written beside `uri`
+overrides the inference.
 
-- [FeatureTrack](https://jbrowse.org/jb2/docs/config/featuretrack.md) —
-  displays: LinearBasicDisplay, LinearWiggleDisplay, LinearManhattanDisplay,
-  LinearMarkDisplay, LinearMultiRowFeatureDisplay
-- [AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack.md) —
-  displays: LinearAlignmentsDisplay, LinearMarkDisplay
-- [ReferenceSequenceTrack](https://jbrowse.org/jb2/docs/config/referencesequencetrack.md)
-  — displays: LinearReferenceSequenceDisplay
-- [VariantTrack](https://jbrowse.org/jb2/docs/config/varianttrack.md) —
-  displays: ChordVariantDisplay, LinearVariantDisplay,
-  LinearMultiSampleVariantDisplay, LinearMarkDisplay
-- [LDTrack](https://jbrowse.org/jb2/docs/config/ldtrack.md) — displays:
-  LDTrackDisplay
-- [QuantitativeTrack](https://jbrowse.org/jb2/docs/config/quantitativetrack.md)
-  — displays: LinearWiggleDisplay, LinearMarkDisplay
-- [MultiQuantitativeTrack](https://jbrowse.org/jb2/docs/config/multiquantitativetrack.md)
-  — displays: LinearWiggleDisplay, LinearMarkDisplay
-- [GCContentTrack](https://jbrowse.org/jb2/docs/config/gccontenttrack.md) —
-  displays: LinearWiggleDisplay
-- [MafTrack](https://jbrowse.org/jb2/docs/config/maftrack.md) — displays:
-  LinearMafDisplay, LinearMarkDisplay
-- [HicTrack](https://jbrowse.org/jb2/docs/config/hictrack.md) — displays:
-  LinearHicDisplay
-- [SyntenyTrack](https://jbrowse.org/jb2/docs/config/syntenytrack.md) —
-  displays: ChordSyntenyDisplay, DotplotDisplay, LinearSyntenyDisplay,
-  LGVSyntenyDisplay, MultiWaySyntenyDisplay, LinearMarkDisplay
-- [GWASTrack](https://jbrowse.org/jb2/docs/config/gwastrack.md) — displays:
-  LinearManhattanDisplay
+- [FeatureTrack](https://jbrowse.org/jb2/docs/config/featuretrack.md) — displays: LinearBasicDisplay, LinearWiggleDisplay, LinearManhattanDisplay, LinearMarkDisplay, LinearMultiRowFeatureDisplay
+- [AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack.md) — displays: LinearAlignmentsDisplay, LinearMarkDisplay
+- [ReferenceSequenceTrack](https://jbrowse.org/jb2/docs/config/referencesequencetrack.md) — displays: LinearReferenceSequenceDisplay
+- [VariantTrack](https://jbrowse.org/jb2/docs/config/varianttrack.md) — displays: ChordVariantDisplay, LinearVariantDisplay, LinearMultiSampleVariantDisplay, LinearMarkDisplay
+- [LDTrack](https://jbrowse.org/jb2/docs/config/ldtrack.md) — displays: LDTrackDisplay
+- [QuantitativeTrack](https://jbrowse.org/jb2/docs/config/quantitativetrack.md) — displays: LinearWiggleDisplay, LinearMarkDisplay
+- [MultiQuantitativeTrack](https://jbrowse.org/jb2/docs/config/multiquantitativetrack.md) — displays: LinearWiggleDisplay, LinearMarkDisplay
+- [GCContentTrack](https://jbrowse.org/jb2/docs/config/gccontenttrack.md) — displays: LinearWiggleDisplay
+- [MafTrack](https://jbrowse.org/jb2/docs/config/maftrack.md) — displays: LinearMafDisplay, LinearMarkDisplay
+- [HicTrack](https://jbrowse.org/jb2/docs/config/hictrack.md) — displays: LinearHicDisplay
+- [SyntenyTrack](https://jbrowse.org/jb2/docs/config/syntenytrack.md) — displays: ChordSyntenyDisplay, DotplotDisplay, LinearSyntenyDisplay, LGVSyntenyDisplay, MultiWaySyntenyDisplay, LinearMarkDisplay
+- [GWASTrack](https://jbrowse.org/jb2/docs/config/gwastrack.md) — displays: LinearManhattanDisplay
 
 ## Display types
 
@@ -67,110 +51,66 @@ inference.
 
 ## Adapter types
 
-Adapters marked `uri` accept the `uri` shorthand (`{type, uri}`) instead of the
-explicit location slot, and derive the index location from it.
+Adapters marked `uri` accept the `uri` shorthand (`{type, uri}`) instead of
+the explicit location slot, and derive the index location from it.
 
-- [CytobandAdapter](https://jbrowse.org/jb2/docs/config/cytobandadapter.md) —
-  shorthands: uri, baseUri
-- [CramAdapter](https://jbrowse.org/jb2/docs/config/cramadapter.md) —
-  shorthands: uri, baseUri
-- [BamAdapter](https://jbrowse.org/jb2/docs/config/bamadapter.md) — shorthands:
-  uri, baseUri, csi
-- [SamAdapter](https://jbrowse.org/jb2/docs/config/samadapter.md) — shorthands:
-  uri, baseUri
+- [CytobandAdapter](https://jbrowse.org/jb2/docs/config/cytobandadapter.md) — shorthands: uri, baseUri
+- [CramAdapter](https://jbrowse.org/jb2/docs/config/cramadapter.md) — shorthands: uri, baseUri
+- [BamAdapter](https://jbrowse.org/jb2/docs/config/bamadapter.md) — shorthands: uri, baseUri, csi
+- [SamAdapter](https://jbrowse.org/jb2/docs/config/samadapter.md) — shorthands: uri, baseUri
 - [HtsgetBamAdapter](https://jbrowse.org/jb2/docs/config/htsgetbamadapter.md)
-- [BigBedAdapter](https://jbrowse.org/jb2/docs/config/bigbedadapter.md) —
-  shorthands: uri, baseUri
-- [BedAdapter](https://jbrowse.org/jb2/docs/config/bedadapter.md) — shorthands:
-  uri, baseUri
-- [BedpeAdapter](https://jbrowse.org/jb2/docs/config/bedpeadapter.md) —
-  shorthands: uri, baseUri
-- [BedTabixAdapter](https://jbrowse.org/jb2/docs/config/bedtabixadapter.md) —
-  shorthands: uri, baseUri, csi
-- [BedGraphAdapter](https://jbrowse.org/jb2/docs/config/bedgraphadapter.md) —
-  shorthands: uri, baseUri
-- [BedGraphTabixAdapter](https://jbrowse.org/jb2/docs/config/bedgraphtabixadapter.md)
-  — shorthands: uri, baseUri, csi
+- [BigBedAdapter](https://jbrowse.org/jb2/docs/config/bigbedadapter.md) — shorthands: uri, baseUri
+- [BedAdapter](https://jbrowse.org/jb2/docs/config/bedadapter.md) — shorthands: uri, baseUri
+- [BedpeAdapter](https://jbrowse.org/jb2/docs/config/bedpeadapter.md) — shorthands: uri, baseUri
+- [BedTabixAdapter](https://jbrowse.org/jb2/docs/config/bedtabixadapter.md) — shorthands: uri, baseUri, csi
+- [BedGraphAdapter](https://jbrowse.org/jb2/docs/config/bedgraphadapter.md) — shorthands: uri, baseUri
+- [BedGraphTabixAdapter](https://jbrowse.org/jb2/docs/config/bedgraphtabixadapter.md) — shorthands: uri, baseUri, csi
 - [FromConfigAdapter](https://jbrowse.org/jb2/docs/config/fromconfigadapter.md)
 - [FromConfigRegionsAdapter](https://jbrowse.org/jb2/docs/config/fromconfigregionsadapter.md)
 - [FromConfigSequenceAdapter](https://jbrowse.org/jb2/docs/config/fromconfigsequenceadapter.md)
-- [RefNameAliasAdapter](https://jbrowse.org/jb2/docs/config/refnamealiasadapter.md)
-  — shorthands: uri, baseUri
-- [NcbiSequenceReportAliasAdapter](https://jbrowse.org/jb2/docs/config/ncbisequencereportaliasadapter.md)
-  — shorthands: uri, baseUri
-- [GtfAdapter](https://jbrowse.org/jb2/docs/config/gtfadapter.md) — shorthands:
-  uri, baseUri
-- [GtfTabixAdapter](https://jbrowse.org/jb2/docs/config/gtftabixadapter.md) —
-  shorthands: uri, baseUri, csi
-- [Gff3TabixAdapter](https://jbrowse.org/jb2/docs/config/gff3tabixadapter.md) —
-  shorthands: uri, baseUri, csi
-- [Gff3Adapter](https://jbrowse.org/jb2/docs/config/gff3adapter.md) —
-  shorthands: uri, baseUri
+- [RefNameAliasAdapter](https://jbrowse.org/jb2/docs/config/refnamealiasadapter.md) — shorthands: uri, baseUri
+- [NcbiSequenceReportAliasAdapter](https://jbrowse.org/jb2/docs/config/ncbisequencereportaliasadapter.md) — shorthands: uri, baseUri
+- [GtfAdapter](https://jbrowse.org/jb2/docs/config/gtfadapter.md) — shorthands: uri, baseUri
+- [GtfTabixAdapter](https://jbrowse.org/jb2/docs/config/gtftabixadapter.md) — shorthands: uri, baseUri, csi
+- [Gff3TabixAdapter](https://jbrowse.org/jb2/docs/config/gff3tabixadapter.md) — shorthands: uri, baseUri, csi
+- [Gff3Adapter](https://jbrowse.org/jb2/docs/config/gff3adapter.md) — shorthands: uri, baseUri
 - [NCListAdapter](https://jbrowse.org/jb2/docs/config/nclistadapter.md)
 - [SPARQLAdapter](https://jbrowse.org/jb2/docs/config/sparqladapter.md)
-- [TwoBitAdapter](https://jbrowse.org/jb2/docs/config/twobitadapter.md) —
-  shorthands: uri, baseUri, chromSizes
-- [BgzipFastaAdapter](https://jbrowse.org/jb2/docs/config/bgzipfastaadapter.md)
-  — shorthands: uri, baseUri
-- [ChromSizesAdapter](https://jbrowse.org/jb2/docs/config/chromsizesadapter.md)
-  — shorthands: uri, baseUri
-- [IndexedFastaAdapter](https://jbrowse.org/jb2/docs/config/indexedfastaadapter.md)
-  — shorthands: uri, baseUri
-- [UnindexedFastaAdapter](https://jbrowse.org/jb2/docs/config/unindexedfastaadapter.md)
-  — shorthands: uri, baseUri
+- [TwoBitAdapter](https://jbrowse.org/jb2/docs/config/twobitadapter.md) — shorthands: uri, baseUri, chromSizes
+- [BgzipFastaAdapter](https://jbrowse.org/jb2/docs/config/bgzipfastaadapter.md) — shorthands: uri, baseUri
+- [ChromSizesAdapter](https://jbrowse.org/jb2/docs/config/chromsizesadapter.md) — shorthands: uri, baseUri
+- [IndexedFastaAdapter](https://jbrowse.org/jb2/docs/config/indexedfastaadapter.md) — shorthands: uri, baseUri
+- [UnindexedFastaAdapter](https://jbrowse.org/jb2/docs/config/unindexedfastaadapter.md) — shorthands: uri, baseUri
 - [SequenceSearchAdapter](https://jbrowse.org/jb2/docs/config/sequencesearchadapter.md)
 - [CrisprGuideAdapter](https://jbrowse.org/jb2/docs/config/crisprguideadapter.md)
 - [MotifListAdapter](https://jbrowse.org/jb2/docs/config/motiflistadapter.md)
-- [VcfAdapter](https://jbrowse.org/jb2/docs/config/vcfadapter.md) — shorthands:
-  uri, baseUri
-- [VcfTabixAdapter](https://jbrowse.org/jb2/docs/config/vcftabixadapter.md) —
-  shorthands: uri, baseUri, csi
+- [VcfAdapter](https://jbrowse.org/jb2/docs/config/vcfadapter.md) — shorthands: uri, baseUri
+- [VcfTabixAdapter](https://jbrowse.org/jb2/docs/config/vcftabixadapter.md) — shorthands: uri, baseUri, csi
 - [SplitVcfTabixAdapter](https://jbrowse.org/jb2/docs/config/splitvcftabixadapter.md)
-- [PlinkLDAdapter](https://jbrowse.org/jb2/docs/config/plinkldadapter.md) —
-  shorthands: uri, baseUri
-- [PlinkLDTabixAdapter](https://jbrowse.org/jb2/docs/config/plinkldtabixadapter.md)
-  — shorthands: uri, baseUri, csi
-- [StarFusionAdapter](https://jbrowse.org/jb2/docs/config/starfusionadapter.md)
-  — shorthands: uri, baseUri
+- [PlinkLDAdapter](https://jbrowse.org/jb2/docs/config/plinkldadapter.md) — shorthands: uri, baseUri
+- [PlinkLDTabixAdapter](https://jbrowse.org/jb2/docs/config/plinkldtabixadapter.md) — shorthands: uri, baseUri, csi
+- [StarFusionAdapter](https://jbrowse.org/jb2/docs/config/starfusionadapter.md) — shorthands: uri, baseUri
 - [MultiWiggleAdapter](https://jbrowse.org/jb2/docs/config/multiwiggleadapter.md)
-- [BigWigAdapter](https://jbrowse.org/jb2/docs/config/bigwigadapter.md) —
-  shorthands: uri, baseUri
+- [BigWigAdapter](https://jbrowse.org/jb2/docs/config/bigwigadapter.md) — shorthands: uri, baseUri
 - [GCContentAdapter](https://jbrowse.org/jb2/docs/config/gccontentadapter.md)
-- [BgzipMafAdapter](https://jbrowse.org/jb2/docs/config/bgzipmafadapter.md) —
-  shorthands: uri, baseUri, nhUri
-- [BgzipTaffyAdapter](https://jbrowse.org/jb2/docs/config/bgziptaffyadapter.md)
-  — shorthands: uri, baseUri, nhUri
-- [BigMafAdapter](https://jbrowse.org/jb2/docs/config/bigmafadapter.md) —
-  shorthands: uri, baseUri, nhUri
-- [MafTabixAdapter](https://jbrowse.org/jb2/docs/config/maftabixadapter.md) —
-  shorthands: uri, baseUri, csi, nhUri
-- [HicAdapter](https://jbrowse.org/jb2/docs/config/hicadapter.md) — shorthands:
-  uri, baseUri
-- [MultiGenomePAFAdapter](https://jbrowse.org/jb2/docs/config/multigenomepafadapter.md)
-  — shorthands: uri, baseUri
-- [MultiGenomeIndexedPAFAdapter](https://jbrowse.org/jb2/docs/config/multigenomeindexedpafadapter.md)
-  — shorthands: uri, baseUri, csi
-- [PAFAdapter](https://jbrowse.org/jb2/docs/config/pafadapter.md) — shorthands:
-  uri, baseUri
-- [PairwiseIndexedPAFAdapter](https://jbrowse.org/jb2/docs/config/pairwiseindexedpafadapter.md)
-  — shorthands: uri, baseUri, csi
+- [BgzipMafAdapter](https://jbrowse.org/jb2/docs/config/bgzipmafadapter.md) — shorthands: uri, baseUri, nhUri
+- [BgzipTaffyAdapter](https://jbrowse.org/jb2/docs/config/bgziptaffyadapter.md) — shorthands: uri, baseUri, nhUri
+- [BigMafAdapter](https://jbrowse.org/jb2/docs/config/bigmafadapter.md) — shorthands: uri, baseUri, nhUri
+- [MafTabixAdapter](https://jbrowse.org/jb2/docs/config/maftabixadapter.md) — shorthands: uri, baseUri, csi, nhUri
+- [HicAdapter](https://jbrowse.org/jb2/docs/config/hicadapter.md) — shorthands: uri, baseUri
+- [MultiGenomePAFAdapter](https://jbrowse.org/jb2/docs/config/multigenomepafadapter.md) — shorthands: uri, baseUri
+- [MultiGenomeIndexedPAFAdapter](https://jbrowse.org/jb2/docs/config/multigenomeindexedpafadapter.md) — shorthands: uri, baseUri, csi
+- [PAFAdapter](https://jbrowse.org/jb2/docs/config/pafadapter.md) — shorthands: uri, baseUri
+- [PairwiseIndexedPAFAdapter](https://jbrowse.org/jb2/docs/config/pairwiseindexedpafadapter.md) — shorthands: uri, baseUri, csi
 - [MultiPairwiseSyntenyAdapter](https://jbrowse.org/jb2/docs/config/multipairwisesyntenyadapter.md)
-- [DeltaAdapter](https://jbrowse.org/jb2/docs/config/deltaadapter.md) —
-  shorthands: uri, baseUri
-- [ChainAdapter](https://jbrowse.org/jb2/docs/config/chainadapter.md) —
-  shorthands: uri, baseUri
-- [MCScanAnchorsAdapter](https://jbrowse.org/jb2/docs/config/mcscananchorsadapter.md)
-  — shorthands: uri, baseUri, bed1, bed2
-- [MCScanBlocksAdapter](https://jbrowse.org/jb2/docs/config/mcscanblocksadapter.md)
-  — shorthands: uri, baseUri
-- [MCScanSimpleAnchorsAdapter](https://jbrowse.org/jb2/docs/config/mcscansimpleanchorsadapter.md)
-  — shorthands: uri, baseUri, bed1, bed2
-- [MashMapAdapter](https://jbrowse.org/jb2/docs/config/mashmapadapter.md) —
-  shorthands: uri, baseUri
-- [BlastTabularAdapter](https://jbrowse.org/jb2/docs/config/blasttabularadapter.md)
-  — shorthands: uri, baseUri
-- [GWASAdapter](https://jbrowse.org/jb2/docs/config/gwasadapter.md) —
-  shorthands: uri, baseUri, csi
+- [DeltaAdapter](https://jbrowse.org/jb2/docs/config/deltaadapter.md) — shorthands: uri, baseUri
+- [ChainAdapter](https://jbrowse.org/jb2/docs/config/chainadapter.md) — shorthands: uri, baseUri
+- [MCScanAnchorsAdapter](https://jbrowse.org/jb2/docs/config/mcscananchorsadapter.md) — shorthands: uri, baseUri, bed1, bed2
+- [MCScanBlocksAdapter](https://jbrowse.org/jb2/docs/config/mcscanblocksadapter.md) — shorthands: uri, baseUri
+- [MCScanSimpleAnchorsAdapter](https://jbrowse.org/jb2/docs/config/mcscansimpleanchorsadapter.md) — shorthands: uri, baseUri, bed1, bed2
+- [MashMapAdapter](https://jbrowse.org/jb2/docs/config/mashmapadapter.md) — shorthands: uri, baseUri
+- [BlastTabularAdapter](https://jbrowse.org/jb2/docs/config/blasttabularadapter.md) — shorthands: uri, baseUri
+- [GWASAdapter](https://jbrowse.org/jb2/docs/config/gwasadapter.md) — shorthands: uri, baseUri, csi
 
 ## Text search adapters
 
@@ -183,3 +123,4 @@ explicit location slot, and derive the index location from it.
 - [UCSCTrackHubConnection](https://jbrowse.org/jb2/docs/config/ucsctrackhubconnection.md)
 - [JB2TrackHubConnection](https://jbrowse.org/jb2/docs/config/jb2trackhubconnection.md)
 - [JBrowse1Connection](https://jbrowse.org/jb2/docs/config/jbrowse1connection.md)
+

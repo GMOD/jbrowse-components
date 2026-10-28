@@ -10,10 +10,10 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
 ### registerConfigAdapters
 
-Registers `FromConfigAdapter`, whose features a track config writes inline, and
-the alias adapters an assembly's `refNameAliases` reads through, on a plugin
-manager that wants them without the configuration editor, as a headless host
-does.
+Registers `FromConfigAdapter`, whose features a track config writes inline,
+and the alias adapters an assembly's `refNameAliases` reads through, on a
+plugin manager that wants them without the configuration editor, as a
+headless host does.
 
 ```js
 // type signature
