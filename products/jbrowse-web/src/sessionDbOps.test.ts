@@ -32,6 +32,13 @@ it('carries a favorite over from the row it replaces', () => {
   expect(nextSessionMetadata(existing(), snap, ident).favorite).toBe(false)
 })
 
+it('carries a thumbnail over from the row it replaces', () => {
+  const thumbnail = 'data:image/webp;base64,AAAA'
+  expect(
+    nextSessionMetadata(existing({ thumbnail }), snap, ident).thumbnail,
+  ).toBe(thumbnail)
+})
+
 it('defaults favorite to false for a session with no row yet', () => {
   expect(nextSessionMetadata(undefined, snap, ident).favorite).toBe(false)
 })
