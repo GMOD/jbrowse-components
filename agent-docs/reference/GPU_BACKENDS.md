@@ -54,7 +54,9 @@ kept by construction. Preserve whichever of these the display uses:
   against the window it feeds. `chevronSlotBudget`
   (`sharedRendererConstants.ts`, walked by `chevronWindow.test.ts`) is the
   worked example: a fixed 128 chevrons a line dropped them on wide canvases,
-  and the first per-frame budget was one slot short.
+  and the first per-frame budget was one slot short. `chevronDrawSlots` caps
+  each draw further by its block's width and its longest line, which
+  `chevronDrawSlots.test.ts` walks against the canvas-wide budget.
 
 **Intentional divergences — do NOT "fix" these into parity.** GPU rasterization
 is watertight while Canvas2D antialiases each primitive independently.
