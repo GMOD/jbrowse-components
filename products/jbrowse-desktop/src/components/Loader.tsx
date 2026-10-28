@@ -26,6 +26,7 @@ import {
   openLaunchPlan,
   openSpecLink,
 } from './StartScreen/util.tsx'
+import { removeRecentAction } from './removeRecentAction.ts'
 import { useLaunchTarget } from './useLaunchTarget.ts'
 import { usePluginManagerLoad } from './usePluginManagerLoad.ts'
 import { useSessionSwap } from './useSessionSwap.ts'
@@ -61,18 +62,6 @@ function loadLaunchTarget(target: LaunchTarget) {
 // narrowing is written down rather than restated at each of the reads below.
 function desktopRootModel(pluginManager: PluginManager | undefined) {
   return pluginManager?.rootModel as DesktopRootModel | undefined
-}
-
-// A failing config path is a recent-session entry we can prune, so offer it as a
-// toast action rather than leaving a dead row behind. A bad link is not one, so
-// it gets a plain error.
-function removeRecentAction(path: string) {
-  return {
-    label: 'Remove from recent sessions',
-    onClick: () => {
-      invokeIpc('removeRecentSession', path).catch(console.error)
-    },
-  }
 }
 
 const LoaderContents = observer(function LoaderContents() {

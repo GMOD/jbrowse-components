@@ -34,6 +34,10 @@ import { invokeIpc } from '../../../ipc.ts'
 import { useNotifyError } from '../../NotifyContext.ts'
 import OpenLinkDialog from '../../OpenLinkDialog.tsx'
 import SessionLoadingScreen from '../../SessionLoadingScreen.tsx'
+import {
+  LIST_SESSIONS_KEY,
+  removeRecentAction,
+} from '../../removeRecentAction.ts'
 import { useUpdateStatus } from '../../useUpdateStatus.ts'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
@@ -137,7 +141,7 @@ const RecentSessionPanel = observer(function RecentSessionPanel({
     error: listSessionsError,
     mutate: refreshSessions,
   } = useFetch(
-    ['listSessions'],
+    LIST_SESSIONS_KEY,
     async () =>
       (await invokeIpc('listSessions')).map(s => ({
         ...s,
@@ -161,16 +165,7 @@ const RecentSessionPanel = observer(function RecentSessionPanel({
       })
     } catch (e) {
       console.error(e)
-      notifyError(e, {
-        label: 'Remove from recent sessions',
-        onClick: () => {
-          invokeIpc('removeRecentSession', path)
-            .then(() => {
-              refreshSessions()
-            })
-            .catch(console.error)
-        },
-      })
+      notifyError(e, removeRecentAction(path))
     }
   }
 
