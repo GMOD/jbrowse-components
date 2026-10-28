@@ -664,6 +664,20 @@ import { DEFAULT_COLOR_SCHEME } from '@jbrowse/core/util/colorSchemes'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorSchemes.ts)
 
+### electronRenderer
+
+The renderer half of `electron`, reached through the Node `require` an Electron
+window runs with. Throws outside Electron.
+
+```js
+import { electronRenderer } from '@jbrowse/core/util/electron'
+
+// type signature
+;() => ElectronRenderer
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/electron.ts)
+
 ### EncodeContext
 
 What surrounds an encode: the jexl instance a `jexl:` channel compiles against —
@@ -1169,6 +1183,19 @@ BED color column under whichever name the file gives it, keyed by the `r,g,b` it
 parses to. A feature carrying none keys as `''`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+### invokeElectronMain
+
+Calls an Electron main-process handler, checked against ElectronMainChannels.
+
+```js
+import { invokeElectronMain } from '@jbrowse/core/util/electron'
+
+// type signature
+<K extends keyof ElectronMainChannels>(channel: K, ...args: ElectronMainChannels[K]["args"]) => Promise<ElectronMainChannels[K]["return"]>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/electron.ts)
 
 ### isBreakend
 

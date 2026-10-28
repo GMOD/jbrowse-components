@@ -129,6 +129,20 @@ import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
 
+## electronRenderer
+
+The renderer half of `electron`, reached through the Node `require` an
+Electron window runs with. Throws outside Electron.
+
+```js
+import { electronRenderer } from '@jbrowse/core/util/electron'
+
+// type signature
+() => ElectronRenderer
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/electron.ts)
+
 ## getAssemblyHost
 
 The host's assembly manager, for a module that resolves names and nothing
@@ -299,6 +313,20 @@ import { getSessionServices } from '@jbrowse/core/util'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
+
+## invokeElectronMain
+
+Calls an Electron main-process handler, checked against
+ElectronMainChannels.
+
+```js
+import { invokeElectronMain } from '@jbrowse/core/util/electron'
+
+// type signature
+<K extends keyof ElectronMainChannels>(channel: K, ...args: ElectronMainChannels[K]["args"]) => Promise<ElectronMainChannels[K]["return"]>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/electron.ts)
 
 ## launchOrReplaceView
 
