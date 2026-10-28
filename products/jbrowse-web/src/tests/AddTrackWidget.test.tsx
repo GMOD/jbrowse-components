@@ -41,11 +41,14 @@ test('adds a PAF via the add track workflow', async () => {
       value: 'volvox_del vs volvox',
     },
   })
-  // change query assembly
   fireEvent.mouseDown(
     await findByRole('combobox', { name: 'Query assembly', hidden: true }),
   )
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
+  fireEvent.mouseDown(
+    await findByRole('combobox', { name: 'Target assembly', hidden: true }),
+  )
+  fireEvent.click(within(await findByRole('listbox')).getByText('volvox'))
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
 
   const display = await findAnyDisplayPainted(delay)
