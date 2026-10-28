@@ -18,7 +18,7 @@ async function showAndSnapshot(
 ): Promise<TrackSnap> {
   await view.launchTrack(trackId)
   const track = view.tracks.find(t => t.trackId === trackId)!
-  return getSnapshot(track.configuration)
+  return getSnapshot(track.configuration) as TrackSnap
 }
 
 // guards the "Copy track" displayId regeneration in getTrackActions: every

@@ -9,7 +9,10 @@ import {
 import Save from '@mui/icons-material/Save'
 import { compareStructural, reaction } from 'mobx'
 
-import { ConfigurationReference, getConf } from '../../configuration/index.ts'
+import {
+  ConfigurationReference,
+  readConfObject,
+} from '../../configuration/index.ts'
 import {
   releaseAdapterSession,
   retainAdapterSession,
@@ -44,6 +47,10 @@ import type {
 import type { MenuItem } from '../../ui/index.ts'
 import type { DisplaySnapshot } from '../../util/tracks.ts'
 import type { DisplayModel } from './BaseDisplayModel.tsx'
+import type {
+  BaseTrackConfig,
+  BaseTrackConfigSchema,
+} from './baseTrackConfig.ts'
 import type { FileTypeExporter } from './saveTrackFileTypes/types.ts'
 import type {
   IAnyStateTreeNode,
@@ -56,10 +63,18 @@ const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData.tsx'))
 
 const DEFAULT_EXPORT_BYTE_LIMIT = 5_000_000
 
-function getCompatibleDisplays(self: IAnyStateTreeNode) {
+// Every track schema extends the base track config, the only slots this model
+// reads; inside the factory its own SCHEMA is still generic.
+function baseConfOf(track: { configuration: unknown }) {
+  return track.configuration as BaseTrackConfig
+}
+
+function getCompatibleDisplays(
+  self: IAnyStateTreeNode & { configuration: unknown },
+) {
   const { pluginManager } = getEnv(self)
   const view = getContainingView(self)
-  const { configuration } = self
+  const configuration = baseConfOf(self)
   const viewDisplays = viewDisplayNames(pluginManager, view.type)
   const fed = new Set(
     displayTypesFedBy(pluginManager, configuration.type, configuration.adapter),
@@ -84,10 +99,10 @@ function getDisplayConf(displays: AnyConfigurationModel[], displayId: string) {
  * its track configuration and the displays drawing it. Only shown tracks have
  * this model, and several shown tracks can use the same configuration.
  */
-export function createBaseTrackModel(
+export function createBaseTrackModel<SCHEMA extends AnyConfigurationSchemaType>(
   pm: PluginManager,
   trackType: string,
-  baseTrackConfig: AnyConfigurationSchemaType,
+  baseTrackConfig: SCHEMA,
 ) {
   return types
     .model(trackType, {
@@ -136,7 +151,7 @@ export function createBaseTrackModel(
        * #getter
        */
       get trackId() {
-        return self.configuration.trackId as string
+        return baseConfOf(self).trackId
       },
       /**
        * #getter
@@ -156,7 +171,7 @@ export function createBaseTrackModel(
        * #getter
        */
       get name() {
-        return (getConf(self, 'name') as string) || this.trackId
+        return readConfObject(baseConfOf(self), 'name') || this.trackId
       },
       /**
        * #getter
@@ -172,7 +187,10 @@ export function createBaseTrackModel(
        * nothing noticed.
        */
       get textSearchAdapter() {
-        return getConf(self, ['textSearching', 'textSearchAdapter'])
+        return readConfObject(baseConfOf(self), [
+          'textSearching',
+          'textSearchAdapter',
+        ])
       },
 
       /**
@@ -190,7 +208,7 @@ export function createBaseTrackModel(
         // both ways: omitting `adapter` entirely, and passing it explicitly as
         // `undefined`, each read back as an object. So `| undefined` propagates a
         // case that cannot happen to ~33 call sites.
-        return getConf(self, 'adapter')
+        return readConfObject(baseConfOf(self), 'adapter')
       },
 
       /**
@@ -364,7 +382,7 @@ export function createBaseTrackModel(
             )
           }
           const displayConf = getDisplayConf(
-            self.configuration.displays,
+            baseConfOf(self).displays,
             newDisplayId,
           )
           // same interception showTrackGeneric makes: a registered-but-unloaded
@@ -466,7 +484,7 @@ export function createBaseTrackModel(
        * one level up.
        */
       async launchDisplay(displayId: string) {
-        const { type } = getDisplayConf(self.configuration.displays, displayId)
+        const { type } = getDisplayConf(baseConfOf(self).displays, displayId)
         await pm.resolveDisplayTypeRecord(type)?.loadStateModel()
         if (isAlive(self)) {
           self.replaceDisplay(
@@ -487,7 +505,9 @@ export function createBaseTrackModel(
        */
       get exportsDataViaAdapter(): boolean {
         return getEnv(self)
-          .pluginManager.getAdapterType(getConf(self, ['adapter']).type)
+          .pluginManager.getAdapterType(
+            readConfObject(baseConfOf(self), 'adapter').type,
+          )
           .adapterCapabilities.includes('exportData')
       },
       /**
@@ -501,7 +521,7 @@ export function createBaseTrackModel(
        */
       get exportByteLimit(): number {
         return adapterByteLimit(
-          getConf(self, ['adapter', 'fetchSizeLimit']),
+          readConfObject(baseConfOf(self), ['adapter', 'fetchSizeLimit']),
           DEFAULT_EXPORT_BYTE_LIMIT,
         )
       },
@@ -603,7 +623,9 @@ export function createBaseTrackModel(
     }))
 }
 
-export type BaseTrackStateModel = ReturnType<typeof createBaseTrackModel>
+export type BaseTrackStateModel = ReturnType<
+  typeof createBaseTrackModel<BaseTrackConfigSchema>
+>
 export type BaseTrackModel = Instance<BaseTrackStateModel>
 
 /**

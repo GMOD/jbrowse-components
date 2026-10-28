@@ -22,7 +22,7 @@ interface TrackSnap {
 
 test('getSnapshot(trackConfig).displays keeps type + displayId (not stripped to {})', async () => {
   const track = await getTrack('volvox_filtered_vcf')
-  const snap: TrackSnap = getSnapshot(track.configuration)
+  const snap = getSnapshot(track.configuration) as TrackSnap
   expect(snap.displays?.length).toBeGreaterThan(0)
   for (const d of snap.displays!) {
     expect(d).not.toEqual({})

@@ -260,7 +260,7 @@ test('an edit to a shown catalog track reaches the session snapshot', async () =
   await waitFor(() => {
     expect(view.getTrack(TRACK_ID)).toBeTruthy()
   })
-  setConf(view.getTrack(TRACK_ID), 'name', 'Edited name')
+  setConf(view.getTrack(TRACK_ID)!, 'name', 'Edited name')
 
   await waitFor(() => {
     expect(
