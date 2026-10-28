@@ -143,6 +143,7 @@ async function discoverDevice(cwd: string) {
     'You are a probe. Make the one tool call asked for and reply with its raw result.',
     cwd,
     4,
+    false,
   )
   const text = events.find(ev => ev.type === 'result')?.result ?? ''
   const found = /"deviceId"\s*:\s*"([^"]+)"/.exec(text)
