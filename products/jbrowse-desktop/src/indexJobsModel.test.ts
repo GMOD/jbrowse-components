@@ -116,7 +116,7 @@ function setup({
   const updateTrackBase = (trackConf: { trackId: string }) => {
     const idx = tracks.findLastIndex(t => t.trackId === trackConf.trackId)
     if (idx !== -1) {
-      tracks[idx] = trackConf as Track
+      tracks[idx] = trackConf
     }
   }
 
