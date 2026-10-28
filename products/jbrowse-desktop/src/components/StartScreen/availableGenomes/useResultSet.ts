@@ -1,4 +1,8 @@
-import { applyRowFilters, useGenomesData } from './useGenomesData.ts'
+import {
+  applyRowFilters,
+  searchesAllGroups,
+  useGenomesData,
+} from './useGenomesData.ts'
 import { useGlobalSearch } from './useGlobalSearch.ts'
 
 import type { Entry } from './getColumnDefinitions.tsx'
@@ -67,9 +71,7 @@ export function useResultSet({
     error: globalError,
   } = useGlobalSearch({ enabled: allGroups, searchQuery })
 
-  // the toggle only changes what a *search* covers; with no query there is
-  // nothing to search and the selected group is still what to browse
-  return allGroups && searchQuery.trim()
+  return searchesAllGroups(allGroups, searchQuery)
     ? {
         // searchAllGroups only searches, so the status and favorites filters
         // have to be applied to its hits here

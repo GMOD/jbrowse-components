@@ -294,26 +294,28 @@ test('a failed search index does not block browsing the selected group', async (
 })
 
 // The NCBI status filter is only offered where its fields exist, and it used to
-// go on being applied where it isn't offered. Leaving the cross-group search on
-// a UCSC group was three clicks to a table stuck empty: `refseq` testing db
-// names for the `GCF_` prefix they never carry, with the menu item that set it
-// no longer on screen to unset it.
+// go on being applied where it isn't offered: with "Search all groups" on and
+// the query cleared, or the toggle turned off, `refseq` tested UCSC db names for
+// the `GCF_` prefix they never carry and the table stuck empty.
 test('an NCBI filter left over from a cross-group search is not applied where it cannot match', async () => {
   setup()
+  const search = await screen.findByPlaceholderText('Search genomes...')
+  fireEvent.change(search, { target: { value: 'panda' } })
   const settings = await screen.findByRole('button', { name: 'Table settings' })
   fireEvent.click(settings)
   fireEvent.click(await screen.findByText('Search all groups'))
-
   fireEvent.click(await screen.findByText('Filter by NCBI status'))
   fireEvent.click(await screen.findByText('RefSeq only'))
+  expect(await screen.findByText('Ailuropoda melanoleuca')).toBeTruthy()
 
-  // back to the one group, where the filter is no longer offered
+  fireEvent.change(search, { target: { value: '' } })
+  expect(await screen.findByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
+  expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
+
   fireEvent.click(screen.getByText('Search all groups'))
   fireEvent.keyDown(screen.getAllByRole('menu')[0]!, { key: 'Escape' })
-
   expect(await screen.findByText('Dec. 2013 (GRCh38/hg38)')).toBeTruthy()
   expect(screen.getByText('Jun. 2020 (GRCm39/mm39)')).toBeTruthy()
-  expect(screen.getByText('Showing 1–2 of 2 in this group')).toBeTruthy()
 })
 
 test('sort headers are buttons and expose their direction', async () => {

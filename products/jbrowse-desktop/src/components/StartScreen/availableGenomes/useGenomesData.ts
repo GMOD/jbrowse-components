@@ -42,7 +42,7 @@ export type FilterOption = 'all' | 'refseq' | 'genbank' | 'designatedReference'
  * Whether the NCBI status filter means anything for the rows on screen. The
  * fields it reads — a GC[AF] accession, a refseq category — exist only on
  * GenArk/NCBI rows, so the UCSC main genomes have nothing to filter on, unless
- * the search spans every group and its hits are mostly GenArk.
+ * a search is running across every group and its hits are mostly GenArk.
  *
  * One predicate, read both by the settings menu that offers the filter and by
  * the derivation that applies it. As two separate readings they drifted, and the
@@ -51,8 +51,18 @@ export type FilterOption = 'all' | 'refseq' | 'genbank' | 'designatedReference'
  * being applied, so `refseq` sat there testing UCSC db names for a `GCF_` prefix
  * they never carry — an empty table with nothing left on screen to undo it.
  */
-export function ncbiFilterApplies(typeOption: string, allGroups: boolean) {
-  return typeOption !== 'ucsc' || allGroups
+export function ncbiFilterApplies(
+  typeOption: string,
+  allGroups: boolean,
+  searchQuery: string,
+) {
+  return typeOption !== 'ucsc' || searchesAllGroups(allGroups, searchQuery)
+}
+
+// "Search all groups" only changes what a search covers: with no query the
+// table still browses the selected group
+export function searchesAllGroups(allGroups: boolean, searchQuery: string) {
+  return allGroups && !!searchQuery.trim()
 }
 
 // Reads the accession rather than ncbiName because search-index rows carry no

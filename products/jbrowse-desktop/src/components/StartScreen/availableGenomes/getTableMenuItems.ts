@@ -31,6 +31,7 @@ export function getTableMenuItems({
     setFilterOption,
     allGroups,
     setAllGroups,
+    searchQuery,
   } = state
 
   return [
@@ -70,7 +71,7 @@ export function getTableMenuItems({
     },
     // offered exactly where it applies, which is also exactly where it is
     // applied — see ncbiFilterApplies
-    ...(ncbiFilterApplies(typeOption, allGroups)
+    ...(ncbiFilterApplies(typeOption, allGroups, searchQuery)
       ? ([
           {
             label: 'Filter by NCBI status',

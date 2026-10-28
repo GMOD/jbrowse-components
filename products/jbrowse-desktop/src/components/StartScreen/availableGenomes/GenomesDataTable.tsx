@@ -107,7 +107,7 @@ const GenomesDataTable = observer(function GenomesDataTable({
     searchQuery,
     // The remembered choice is only applied where its fields exist, so a filter
     // whose menu item is not on screen cannot be silently emptying the table.
-    filterOption: ncbiFilterApplies(activeTypeOption, allGroups)
+    filterOption: ncbiFilterApplies(activeTypeOption, allGroups, searchQuery)
       ? filterOption
       : 'all',
     showOnlyFavs,
