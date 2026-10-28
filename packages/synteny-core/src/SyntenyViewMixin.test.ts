@@ -8,9 +8,6 @@ function strandView(snapshot: Record<string, unknown> = {}) {
       syntenyTracks() {
         return []
       },
-      colorSurface() {
-        return 'points' as const
-      },
     }))
     .create({ encoding: { color: 'strand' }, ...snapshot })
 }

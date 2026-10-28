@@ -8,6 +8,7 @@ import { TrackColorsMixin } from './TrackColorsMixin.ts'
 import { colorByMenuItems } from './colorByMenuItems.tsx'
 import { colorByMenuTargetFor } from './colorByMenuTarget.ts'
 import { categoricalColor } from './colorFunctions.ts'
+import { CIGAR_OP_D, CIGAR_OP_I } from './colorLegend.ts'
 import { resolveCategoricalMode } from './colorRamps.ts'
 
 import type { AttributeRange } from './colorRamps.ts'
@@ -309,26 +310,33 @@ describe("a text column's range, names and title", () => {
   })
 })
 
-// A whole-genome dotplot is mostly dots with no slope, so its strand color is
-// the only strand cue on screen and gets the key a ribbon's twist makes
-// unnecessary.
-test('strand keys its two colors on points, and nothing on ribbons', () => {
-  const on = (surface: 'points' | 'ribbons') =>
-    TrackColorsMixin()
+// Strand recolors the indel wedges along with the match blocks, so a ribbon
+// view keys both, listing only the wedges on screen; a point draws none.
+test('strand keys its two colors, and on ribbons the indels drawn', () => {
+  const labels = (surface: 'points' | 'ribbons', ops: number) => {
+    const view = TrackColorsMixin()
       .views(() => ({
         colorSurface() {
           return surface
         },
+        legendCigarOps() {
+          return ops
+        },
       }))
       .create({ encoding: { color: 'strand' } })
-  expect(
-    legendSpecOf(on('points').colorScales).sections[0]!.items.map(
+    expect(view.hasLegendKey).toBe(true)
+    return legendSpecOf(view.colorScales).sections[0]!.items.map(
       item => item.label,
-    ),
-  ).toEqual(['forward', 'reverse'])
-  expect(on('points').hasLegendKey).toBe(true)
-  expect(on('ribbons').hasLegendKey).toBe(false)
-  expect(legendSpecOf(on('ribbons').colorScales).sections).toEqual([])
+    )
+  }
+  expect(labels('points', CIGAR_OP_I)).toEqual(['forward', 'reverse'])
+  expect(labels('ribbons', 0)).toEqual(['forward', 'reverse'])
+  expect(labels('ribbons', CIGAR_OP_I | CIGAR_OP_D)).toEqual([
+    'forward',
+    'reverse',
+    'insertion',
+    'deletion',
+  ])
 })
 
 // A launched stack puts one track on every level, so the view lists it once per
