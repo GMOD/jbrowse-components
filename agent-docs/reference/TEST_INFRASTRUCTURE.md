@@ -68,9 +68,12 @@ session or a view stays in `src/tests`.
 ### Which suites a change runs
 
 `pnpm test-related` selects by **footprint**: every jest run records, per suite,
-the repo files it loaded through jest's module system
+the repo files it loaded through jest's module system or read through `fs`
 (`config/jest/footprintRuntime.cjs`), and a suite runs when its footprint holds a
-changed file. A changed file whose `@babel/preset-typescript` output is
+changed file. The `fs` reads select a suite that scans the repo, such as a
+public-API snapshot reading `package.json`. A directory the suite listed
+selects it when a file there is added or removed. A file a suite reads in a
+subprocess stays in no footprint. A changed file whose `@babel/preset-typescript` output is
 unchanged (comment, type, reflow) selects nothing. `jest.config.js`,
 `babel.config.cjs`, `pnpm-lock.yaml` and the `.cjs` files under `config/jest/`
 are in no footprint, so a change to one reports a pointer to `pnpm test`. The

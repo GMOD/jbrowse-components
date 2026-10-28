@@ -164,8 +164,19 @@ function suiteSeconds(tests: string[]) {
 
 const selected = new Set(live.filter(f => TEST.test(f) && fs.existsSync(f)))
 const liveSources = live.filter(f => !TEST.test(f))
+// a listed directory changes when a file there is added or removed
+const atBase = new Set(
+  liveSources.length > 0
+    ? lines(git('ls-tree', '-r', '--name-only', base, '--', ...liveSources))
+    : [],
+)
+const comesOrGoes = liveSources.filter(f => !atBase.has(f) || !fs.existsSync(f))
 for (const [test, files] of footprints) {
-  if (fs.existsSync(test) && liveSources.some(f => files.has(f))) {
+  if (
+    fs.existsSync(test) &&
+    (liveSources.some(f => files.has(f)) ||
+      comesOrGoes.some(f => files.has(`${path.dirname(f)}/`)))
+  ) {
     selected.add(test)
   }
 }

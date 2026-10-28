@@ -1,5 +1,6 @@
-// A footprint is the list of repo files one suite loaded on its last run,
-// gzipped JSON under `<cacheDirectory>/footprints/<checkout>/`. Each checkout
+// A footprint is the list of repo files one suite loaded or read on its last
+// run, plus each directory it listed as `dir/`, gzipped JSON under
+// `<cacheDirectory>/footprints/<checkout>/`. Each checkout
 // writes its own directory, so a worktree whose branch dropped an import never
 // narrows what the primary checkout recorded; a reader takes the union of its
 // own and the primary's.
