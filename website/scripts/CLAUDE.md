@@ -6,10 +6,12 @@ Capture races and callout anchoring: `agent-docs/reference/FIGURE_CAPTURE.md`.
 
 - Run `generate-screenshots.ts` with `node`, **never `npx tsx`**: its
   `keepNames` breaks `page.evaluate`'d functions.
-- A build older than the checkout reports itself
-  (`FIGURES CAPTURED AGAINST A STALE APP BUILD`; `--strict-build` stops the run
-  instead). The package to rebuild is `@jbrowse/web`, and
-  `pnpm --filter jbrowse-web build` matches nothing and exits 0.
+- **Never capture against a stale app.** Rebuilding `@jbrowse/web` is always
+  fine, and the run rebuilds a local build older than the checkout before it
+  captures. Don't pass `--allow-stale` to save the build time. An app behind
+  `--port` only reports itself (`FIGURES CAPTURED AGAINST A STALE APP BUILD`);
+  restart it from current source. `pnpm --filter jbrowse-web build` matches
+  nothing and exits 0; the package is `@jbrowse/web`.
 - `--cover` proves every type still paints, never that a figure is current.
 - Size a figure from the run's `CONTENT CLIPPED BELOW THE FOLD` /
   `blank below the last content` report, not off the PNG. Neither sees a display

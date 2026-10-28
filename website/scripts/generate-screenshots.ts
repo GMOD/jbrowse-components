@@ -14,6 +14,7 @@ import { createTestServer } from '@jbrowse/browser-test-utils'
 
 import { collectStalenessFacts, stalenessReport } from './build-staleness.ts'
 import {
+  allowStale,
   buildPath,
   check,
   externalPort,
@@ -64,7 +65,7 @@ async function startServerIfNeeded(specs: ScreenshotSpec[]) {
   if (!specs.some(s => s.mode === 'url' && !s.url.startsWith('http'))) {
     return undefined
   }
-  if (!externalPort && !fs.existsSync(buildPath)) {
+  if (!externalPort && (!fs.existsSync(buildPath) || (await localBuildIsStale()))) {
     buildJbrowseWeb()
   }
   const server = await createTestServer(servePort, {
@@ -78,6 +79,19 @@ async function startServerIfNeeded(specs: ScreenshotSpec[]) {
       : `Server on port ${servePort}`,
   )
   return server
+}
+
+async function localBuildIsStale() {
+  if (allowStale) {
+    return false
+  }
+  const report = stalenessReport(
+    await collectStalenessFacts({ buildPath, repoRoot, externalPort }),
+  )
+  if (report) {
+    console.log(`${report.title}: rebuilding before capturing`)
+  }
+  return !!report
 }
 
 // Whether the app on the other end of that server holds the source in this

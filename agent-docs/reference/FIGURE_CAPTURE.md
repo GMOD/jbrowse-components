@@ -86,8 +86,9 @@ BUILD` with the files that differ.
 - The snapshot uses a scratch index, so it never touches the checkout's index
   or the shared stash list.
 
-- The run reports and keeps going, since a docs-only figure run is right to
-  capture against whatever is built. `--strict-build` stops it instead.
+- The run rebuilds a stale local build before capturing; `--allow-stale` skips
+  that. An app behind `--port` cannot be rebuilt from here, so the run reports
+  it and keeps going, and `--strict-build` stops it instead.
 - The loud version of the bug fails the spec: a build from 2026-10-20 answered
   a session written against the renamed alignments `sort` key with
   "AlignmentsSort takes type, pos, refName, tag and within, not field". The
