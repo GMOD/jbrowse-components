@@ -3375,15 +3375,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 602,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 180000,
-    // Far left, the one stretch of band carrying only the two colors the pill
-    // names. A synteny band has no locus anchor, so the pill anchors on the
-    // canvas.
+    // Far left, where the band holds only the self match and the mirror arm. A
+    // synteny band has no locus anchor, so the pill anchors on the canvas.
     annotations: [
       {
         type: 'text',
         fontSize: 17,
         maxWidth: 380,
-        text: 'a palindrome: a forward match (salmon) and an inverted one (lavender)',
+        text: 'Two overlaid alignments of the same sequence: to itself, and to its mirror image',
         anchor: {
           selector: '[data-testid="synteny_canvas"]',
           alignX: 'left',
