@@ -1,6 +1,6 @@
-// `hpToClipX` and `hpScaleLinear` clamp each half of the hi/lo split to a floor
-// nothing can reach, and the clamp is there so no backend folds the split into
-// one large subtraction. The floor used to be `-1.0 / hpZero`, and `hpZero` is
+// `hpToClipX` and `hpViewportOffsetBp` clamp each half of the hi/lo split to a
+// floor nothing can reach, and the clamp is there so no backend folds the split
+// into one large subtraction. The floor used to be `-1.0 / hpZero`, and `hpZero` is
 // uploaded as exactly 0 — a division by zero in every emitted backend, which
 // WGSL lets an implementation answer with an indeterminate value rather than an
 // infinity. (`coverageBandMarks.test.ts`, `coverageBandUboParity.test.ts` and
@@ -8,37 +8,22 @@
 //
 // So: the floor must be a finite literal, the two clamps must survive, and
 // `hpZero` must reach neither as a divisor.
-import { GLSL_VERTEX as barMarkGlsl } from './barMark.glsl.generated.ts'
-import { WGSL_SOURCE as barMarkWgsl } from './barMark.wgsl.generated.ts'
-import { GLSL_VERTEX as coverageBarGlsl } from './coverageBar.glsl.generated.ts'
-import { WGSL_SOURCE as coverageBarWgsl } from './coverageBar.wgsl.generated.ts'
-import { GLSL_VERTEX as coverageInterbaseGlsl } from './coverageInterbase.glsl.generated.ts'
-import { WGSL_SOURCE as coverageInterbaseWgsl } from './coverageInterbase.wgsl.generated.ts'
-import { GLSL_VERTEX as coverageModGlsl } from './coverageMod.glsl.generated.ts'
-import { WGSL_SOURCE as coverageModWgsl } from './coverageMod.wgsl.generated.ts'
-import { GLSL_VERTEX as coverageSnpGlsl } from './coverageSnp.glsl.generated.ts'
-import { WGSL_SOURCE as coverageSnpWgsl } from './coverageSnp.wgsl.generated.ts'
-import { GLSL_VERTEX as pointMarkGlsl } from './pointMark.glsl.generated.ts'
-import { WGSL_SOURCE as pointMarkWgsl } from './pointMark.wgsl.generated.ts'
-import { GLSL_VERTEX as spanMarkGlsl } from './spanMark.glsl.generated.ts'
-import { WGSL_SOURCE as spanMarkWgsl } from './spanMark.wgsl.generated.ts'
+import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 
-const SOURCES = {
-  'barMark wgsl': barMarkWgsl,
-  'barMark glsl': barMarkGlsl,
-  'coverageBar wgsl': coverageBarWgsl,
-  'coverageBar glsl': coverageBarGlsl,
-  'coverageInterbase wgsl': coverageInterbaseWgsl,
-  'coverageInterbase glsl': coverageInterbaseGlsl,
-  'coverageMod wgsl': coverageModWgsl,
-  'coverageMod glsl': coverageModGlsl,
-  'coverageSnp wgsl': coverageSnpWgsl,
-  'coverageSnp glsl': coverageSnpGlsl,
-  'pointMark wgsl': pointMarkWgsl,
-  'pointMark glsl': pointMarkGlsl,
-  'spanMark wgsl': spanMarkWgsl,
-  'spanMark glsl': spanMarkGlsl,
-}
+const root = path.resolve(__dirname, '../../../..')
+
+const HP_FUNCTIONS = ['hpToClipX_0', 'hpViewportOffsetBp_0']
+
+const SOURCES = execFileSync(
+  'git',
+  ['ls-files', '*.wgsl.generated.ts', '*.glsl.generated.ts'],
+  { cwd: root, encoding: 'utf8' },
+)
+  .split('\n')
+  .filter(Boolean)
+  .map(rel => [rel, readFileSync(path.join(root, rel), 'utf8')] as const)
 
 function bodyOf(source: string, name: string) {
   const open = source.indexOf('{', source.indexOf(`${name}(`))
@@ -50,14 +35,19 @@ function bodyOf(source: string, name: string) {
 // them reaches -2^33.
 const BP_REACH = -(2 ** 33)
 
-const CASES = Object.entries(SOURCES).flatMap(([where, source]) =>
-  ['hpToClipX_0', 'hpScaleLinear_0']
-    .filter(name => source.includes(`${name}(`))
-    .map(name => [`${where} ${name}`, bodyOf(source, name)] as const),
+const CASES = SOURCES.flatMap(([where, source]) =>
+  HP_FUNCTIONS.filter(name => source.includes(`${name}(`)).map(
+    name => [`${where} ${name}`, bodyOf(source, name)] as const,
+  ),
 )
 
-test('every hp conversion the emitted backends carry is covered', () => {
-  expect(CASES.length).toBe(Object.keys(SOURCES).length)
+test('finds the hp conversions across the tree', () => {
+  expect(SOURCES.length).toBeGreaterThan(60)
+  for (const name of HP_FUNCTIONS) {
+    expect(
+      CASES.filter(([where]) => where.endsWith(name)).length,
+    ).toBeGreaterThan(4)
+  }
 })
 
 describe.each(CASES)('%s', (_where, body) => {

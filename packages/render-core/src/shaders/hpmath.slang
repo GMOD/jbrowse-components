@@ -66,14 +66,6 @@ public float hpToClipX(float2 splitPos, float3 bpRange, float hpZero) {
   return dot(float3(-1.0, hi, lo), float3(1.0, step, step));
 }
 
-public float hpScaleLinear(float2 splitPos, float3 bpRange, float hpZero) {
-  float floorBp = HP_CLAMP_FLOOR + hpZero;
-  float step = 1.0 / bpRange.z;
-  float hi = max(splitPos.x - bpRange.x, floorBp);
-  float lo = max(splitPos.y - bpRange.y, floorBp);
-  return dot(float2(hi, lo), float2(step, step));
-}
-
 // Exact-as-possible bp offset from a split position to the viewport start
 // stored in bpRange.xy. Subtracts the hi/lo components separately so the result
 // stays precise at high genomic coordinates — recombining bpStartHi+bpStartLo

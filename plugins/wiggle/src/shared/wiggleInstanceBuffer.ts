@@ -77,6 +77,9 @@ export function packFillInstances(sources: SourceRenderData[]) {
   const f32 = new Float32Array(buf)
   let off = 0
   for (const source of sources) {
+    if (source.band) {
+      continue
+    }
     const row = source.rowIndex
     const colorAbgr = colorOf(source)
     const positions = source.featurePositions
