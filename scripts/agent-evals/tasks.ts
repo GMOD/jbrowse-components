@@ -1962,7 +1962,7 @@ TASKS.push(
           let facet, transform, filter
           try { facet = jb.readConfObject(d.configuration, 'facet'); transform = jb.readConfObject(d.configuration, 'transform'); filter = jb.readConfObject(d.configuration, 'filter') } catch {}
           const marks = marksOf(d)
-          const steps = [...(transform ?? []), ...marks.flatMap(m => m.transform ?? [])]
+          const steps = [...(transform ?? []), ...(facet?.transform ?? []), ...marks.flatMap(m => m.transform ?? [])]
           const pass = JSON.stringify([...steps, ...marks.map(m => m.encoding ?? {}), facet, filter, ...marks.map(m => m.filter ?? [])]).match(/FILTER[^"]*PASS|PASS[^"]*FILTER/) !== null
           const bin = steps.some(s => s.type === 'bin' && [s.step, s.width, s.binWidth, s.size, s.bp].some(v => Number(v) === 1000000))
           const count = steps.some(s => s.type === 'aggregate' && (s.ops ?? [{}]).some(o => (o.op ?? 'count') === 'count'))
