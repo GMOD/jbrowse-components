@@ -1729,19 +1729,23 @@ const TP53_EXONS = `
   const best = counts.flatMap((c, i) => (c === top ? [i + 1] : []))`
 // The A of TP53's ATG on hg38, then the same base on hs1, found as the one
 // exact match of its 51 bp context near where the liftOver chain puts it
+// The live truth needs hg38-mane and the hs1 assembly in the session, which a
+// Desktop run need not have opened; hostedCheck confirmed 7,580,699 on the hub
 const TP53_ATG_HS1 = `
+  let atg, guess, hits = [], hs1 = 7580699
+  try {
   const refTrack = a => jb.session.assemblyManager.get(a).configuration.sequence.trackId
   const tx = (await jb.getFeatures({ trackId: 'hg38-mane', loc: 'chr17:7,661,779-7,690,000', byteLimit: 80e6 })).find(g => g.get('name') === 'TP53')?.get('subfeatures')?.[0]
   const cds = (tx?.get('subfeatures') ?? []).filter(s => s.get('type') === 'CDS')
-  const atg = tx?.get('strand') === -1 ? Math.max(...cds.map(s => s.get('end'))) : Math.min(...cds.map(s => s.get('start'))) + 1
+  atg = tx?.get('strand') === -1 ? Math.max(...cds.map(s => s.get('end'))) : Math.min(...cds.map(s => s.get('start'))) + 1
   const ctx = (await jb.getFeatures({ trackId: refTrack('hg38'), loc: 'chr17:' + (atg - 25) + '-' + (atg + 25), assembly: 'hg38' }))[0].get('seq').toUpperCase()
   const chain = (await jb.getFeatures({ trackId: 'hg38_to_hs1_liftOver', loc: 'chr17:' + atg + '-' + (atg + 1), assembly: 'hg38', byteLimit: 80e6 }))[0]
-  const guess = chain.get('mate').start + (atg - chain.get('start'))
+  guess = chain.get('mate').start + (atg - chain.get('start'))
   const from = Math.max(1, guess - 300000)
   const win = (await jb.getFeatures({ trackId: refTrack('hs1'), loc: 'chr17:' + from + '-' + (guess + 300000), assembly: 'hs1' }))[0].get('seq').toUpperCase()
-  const hits = []
   for (let i = win.indexOf(ctx); i >= 0; i = win.indexOf(ctx, i + 1)) { hits.push(from + i + 25) }
-  const hs1 = hits.length === 1 ? hits[0] : NaN`
+  if (hits.length === 1) { hs1 = hits[0] }
+  } catch {}`
 const CFTR_SPAN = [117480024, 117668665]
 const F508DEL = 117559592
 const SARS_REF = 'https://jbrowse.org/ucsc/wuhCor1/config.json'
@@ -1832,7 +1836,7 @@ TASKS.push(
         const domain = phylo?.domain
         const seq = v.tracks.find(t => t.configuration.trackId === seqId)?.activeDisplay
         out.push({
-          whole: rs.some(r => r.start <= ${CFTR_SPAN[0]} && r.end >= ${CFTR_SPAN[1]}) && span < 1500000 && ids.includes('hg38-mane') && ids.includes('hg38-clinvarMain') && domain?.[0] === -2 && domain?.[1] === 5,
+          whole: rs.some(r => r.start <= ${CFTR_SPAN[0] + 100} && r.end >= ${CFTR_SPAN[1] - 100}) && span < 1500000 && ids.includes('hg38-mane') && ids.includes('hg38-clinvarMain') && domain?.[0] === -2 && domain?.[1] === 5,
           zoom: rs.some(r => r.start < ${F508DEL} && r.end > ${F508DEL}) && span <= 100 && seq?.showTranslation === true && seq?.showForward !== false,
           span, ids, domain, translation: seq && [seq.showForward, seq.showReverse, seq.showTranslation],
         })
@@ -1953,7 +1957,7 @@ TASKS.push(
       for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
         const rs = (await jb.visibleRegions(v.id)).filter(r => r.refName.replace(/^chr/, '') === '17')
         const whole = rs.reduce((n, r) => n + r.end - r.start, 0) >= 0.9 * 83257441
-        for (const t of v.tracks.filter(t => /gnomadStructuralVariants/.test(t.configuration.trackId + JSON.stringify(jb.mst.getSnapshot(t.configuration).adapter ?? '')))) {
+        for (const t of v.tracks.filter(t => /gnomad[^"]*(structural|sv)/i.test(t.configuration.trackId + JSON.stringify(jb.mst.getSnapshot(t.configuration).adapter ?? '')))) {
           const d = t.activeDisplay
           let facet, transform
           try { facet = jb.readConfObject(d.configuration, 'facet'); transform = jb.readConfObject(d.configuration, 'transform') } catch {}
