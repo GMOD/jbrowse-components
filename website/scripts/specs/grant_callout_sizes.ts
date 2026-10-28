@@ -2,12 +2,15 @@
 // without callouts and with callouts sized to a printed point size at that
 // width. NIH accepts figure text under 11 pt only if it reads at 100%. The
 // renewal's captions name panels by position, so the panel letters go.
+import { deflateSync, inflateSync } from 'node:zlib'
+
 import { junctionScaffold, scaffoldOverview } from './cgiab-junction.ts'
 import { paperSvReadsSpecs } from './paper-sv-reads.ts'
 import { proteinTp53Y220cSpecs } from './protein_figure_tp53_y220c.ts'
 import { proteinVariantSpecs } from './protein_variants.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type { SessionJson, ViewJson } from './protein_variants.ts'
 
 const SIZES = [6, 8, 11]
 
@@ -80,33 +83,91 @@ function variants(f: Figure): ScreenshotSpec[] {
   ]
 }
 
-const hbbThreeViews = byName(
-  proteinVariantSpecs,
-  'protein/hbb_domains_three_views',
-) as Annotated & { actions: { type: string; selector?: string }[] }
+function editSession(url: string, edit: (session: SessionJson) => void) {
+  const [head, encoded] = url.split('&session=encoded-') as [string, string]
+  const session = JSON.parse(
+    inflateSync(Buffer.from(encoded, 'base64url')).toString(),
+  ) as SessionJson
+  edit(session)
+  return `${head}&session=encoded-${deflateSync(JSON.stringify(session)).toString('base64url')}`
+}
 
-// main's domain track draws no legend, so the tutorial's click to hide it misses
+const KG = 'kgp3202_chr11_snv'
+const GWAS_SUBSET = 'gwasCatalog_sickle_cell_traits'
+const RS334 = 'chr11:5,227,002'
+const SUPERPOPULATIONS = ['AFR', 'AMR', 'EUR', 'SAS', 'EAS']
+
+// The renewal's figure: the tutorial's 1000 Genomes figure with the rows in
+// one band per superpopulation and the alignment colored by domain. The
+// sample table comes from the 1000 Genomes 3,202-sample pedigree file, and
+// only the generator's own server, on its default port, serves it.
+const KG_SAMPLES = 'http://localhost:3334/test_data/1000g_3202/samples.tsv'
+const hbb1000g = byName(
+  proteinVariantSpecs,
+  'protein/hbb_1000_genomes',
+) as Annotated & { url: string }
+const sickleSpec = {
+  ...hbb1000g,
+  url: editSession(hbb1000g.url, session => {
+    const kg = session.sessionTracks?.find(
+      t => (t as { trackId: string }).trackId === KG,
+    ) as { adapter: object }
+    kg.adapter = {
+      ...kg.adapter,
+      samplesTsvLocation: { uri: KG_SAMPLES },
+    }
+    const [lgv, msa, protein] = session.views as [ViewJson, ViewJson, ViewJson]
+    const init = lgv.init as { tracks: { trackId: string }[] }
+    init.tracks = init.tracks.map(t =>
+      t.trackId === KG
+        ? {
+            ...t,
+            rowColor: 'superpopulation',
+            facet: { field: 'superpopulation', sort: SUPERPOPULATIONS },
+          }
+        : t,
+    )
+    msa.showDomains = true
+    msa.height = 400
+    protein.height = 1000
+  }),
+  viewportHeight: 1310,
+  annotations: [
+    {
+      type: 'text',
+      text: 'Malaria',
+      leader: true,
+      anchor: { trackId: GWAS_SUBSET, loc: RS334, fracY: 0.62 },
+      dx: 220,
+      dy: 0,
+    },
+    {
+      type: 'text',
+      text: 'African\nancestry\ncarriers',
+      leader: true,
+      anchor: { trackId: KG, loc: RS334, fracY: 0.03 },
+      dx: 100,
+      dy: 90,
+    },
+    {
+      type: 'text',
+      text: 'Val6',
+      leader: true,
+      anchor: { residue: 'B:6' },
+      dx: 60,
+      dy: 300,
+    },
+  ],
+} as Annotated
+
 const sickle: Figure = {
   key: 'sickle_cell',
-  spec: {
-    ...hbbThreeViews,
-    actions: hbbThreeViews.actions.filter(
-      a => !a.selector?.includes('Hide legend'),
-    ),
-  } as Annotated,
-  cssWidth: 2300,
+  spec: sickleSpec,
+  cssWidth: 2000,
   printPt: 259.2,
+  // the pill's top stays on the 1000 Genomes track at every size
   edits: (_pt, font) => ({
-    'One copy protects against malaria; two cause sickle cell disease': {
-      text: 'Malaria',
-    },
-    'Sickle allele carriers, nearly all with one copy': {
-      text: 'Sickle carriers',
-      maxWidth: font * 5.5,
-    },
-    'No heme or interface site at glutamate 6': 'drop',
-    'Valine 6 docks into a pocket on the next tetramer, stringing haemoglobin S into fibres':
-      { text: 'Val6' },
+    'African\nancestry\ncarriers': { dy: font * 2 },
   }),
 }
 
