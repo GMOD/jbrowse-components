@@ -31,8 +31,8 @@ looks one up by name or alias.
 | --- | --- |
 | <span id="getter-assemblynamemap">**assemblyNameMap**</span><br><code>Record&lt;string, <a href="../assembly">Assembly</a>&gt;</code> |  |
 | <span id="getter-assemblynameslist">**assemblyNamesList**</span><br><code>string[]</code> | the canonical name of every configured assembly, read the way the afterAttach autorun names the models it builds |
-| <span id="getter-confbyname">**confByName**</span><br><code>Map&lt;string, AnyConfigurationModel&gt;</code> | Every name the *configs* answer to — each assembly's `name` and its `aliases` — mapped to its config, which exists before the assembly's model does. What has knows before the models exist, and resolved by the same precedence as `assemblyNameMap`. |
-| <span id="getter-assemblylist">**assemblyList**</span><br><code>AnyConfigurationModel[]</code> | combined jbrowse.assemblies, session.sessionAssemblies, and session.temporaryAssemblies |
+| <span id="getter-confbyname">**confByName**</span><br><code>Map&lt;string, <a href="../../config/baseassembly">BaseAssemblyConfig</a>&gt;</code> | Every name the *configs* answer to — each assembly's `name` and its `aliases` — mapped to its config, which exists before the assembly's model does. What has knows before the models exist, and resolved by the same precedence as `assemblyNameMap`. |
+| <span id="getter-assemblylist">**assemblyList**</span><br><code><a href="../../config/baseassembly">BaseAssemblyConfig</a>[]</code> | combined jbrowse.assemblies, session.sessionAssemblies, and session.temporaryAssemblies |
 | <span id="getter-rpcmanager">**rpcManager**</span><br><code>RpcManager</code> |  |
 
 ## Methods
@@ -57,4 +57,4 @@ looks one up by name or alias.
 | Member | Description |
 | --- | --- |
 | <span id="action-removeassembly">**removeAssembly**</span><br><code>(asm: <a href="../assembly">Assembly</a>) =&gt; void</code> | private: you would generally want to add to manipulate jbrowse.assemblies, session.sessionAssemblies, or session.temporaryAssemblies instead of using this directly |
-| <span id="action-addassembly">**addAssembly**</span><br><code>(configuration: any) =&gt; void</code> | private: you would generally want to add to manipulate jbrowse.assemblies, session.sessionAssemblies, or session.temporaryAssemblies instead of using this directly<br><br>this can take an active instance of an assembly, in which case it is referred to, or it can take an identifier e.g. assembly name, which is used as a reference. snapshots cannot be used |
+| <span id="action-addassembly">**addAssembly**</span><br><code>(configuration: <a href="../../config/baseassembly">BaseAssemblyConfig</a>) =&gt; void</code> | private: you would generally want to add to manipulate jbrowse.assemblies, session.sessionAssemblies, or session.temporaryAssemblies instead of using this directly<br><br>this can take an active instance of an assembly, in which case it is referred to, or it can take an identifier e.g. assembly name, which is used as a reference. snapshots cannot be used |
