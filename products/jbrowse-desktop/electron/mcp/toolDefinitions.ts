@@ -58,7 +58,7 @@ Introspect, never guess: jb.listTracks() for trackIds; jb.describeSlots(jb.track
 
 Traps: mutate the model only via actions. Write display settings with track.applyDisplaySettings(settings), never raw assignment; an unknown key lands in its "unapplied" list, so read the report. jb.getFeatures handles refNames a file spells differently. Read a fresh view's region with await jb.visibleRegions(viewId).`
 
-export interface McpToolDefinition {
+interface McpToolDefinition {
   name: string
   // 'stdio' is answered inside the stdio server itself, without the app
   handledBy: 'main' | 'renderer' | 'stdio'

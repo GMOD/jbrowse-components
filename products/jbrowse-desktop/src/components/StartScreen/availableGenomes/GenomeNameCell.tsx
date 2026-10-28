@@ -84,7 +84,7 @@ const GenomeNameCell = observer(function GenomeNameCell({
           ...(handleMinimalLaunch
             ? [
                 {
-                  label: 'Launch (minimal)',
+                  label: 'Launch (minimal config)',
                   onClick: () => {
                     handleMinimalLaunch()
                   },

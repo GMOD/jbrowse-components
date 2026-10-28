@@ -19,7 +19,7 @@ import type { FilterOption } from './useGenomesData.ts'
  * separate `globalMode ? … : …` expressions scattered down the component, each
  * new filter got wired into one branch and silently skipped in the other.
  */
-export interface ResultSet {
+interface ResultSet {
   /** filtered and ready to sort and paginate */
   rows: Entry[]
   /** the entries for a selection, which outlives the query that surfaced them */

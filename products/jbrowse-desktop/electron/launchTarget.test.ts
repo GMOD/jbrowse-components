@@ -2,8 +2,16 @@ import {
   findLaunchTarget,
   openFileTarget,
   parseProtocolUrl,
+  rendererArg,
   toProtocolUrl,
 } from './launchTarget.ts'
+
+test('rendererArg reads the value launchArgs skips', () => {
+  expect(rendererArg(['app', '--renderer', 'webgl'])).toBe('webgl')
+  expect(rendererArg(['app', '--renderer=canvas2d', 'x.bam'])).toBe('canvas2d')
+  expect(rendererArg(['app', '--renderer', '--loc', 'chr1'])).toBeUndefined()
+  expect(rendererArg(['app', 'x.bam'])).toBeUndefined()
+})
 
 const webUrl =
   'https://jbrowse.org/code/jb2/latest/?config=test_data/volvox/config.json&session=spec-%7B%22views%22%3A%5B%5D%7D'

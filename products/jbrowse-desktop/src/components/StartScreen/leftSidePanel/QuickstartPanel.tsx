@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 
 import { invokeIpc } from '../../../ipc.ts'
 import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog.tsx'
-import RenameQuickstartDialog from '../dialogs/RenameQuickstartDialog.tsx'
+import RenameDialog from '../dialogs/RenameDialog.tsx'
 import { useInnerDims } from '../useInnerDims.ts'
 import CollapsibleSection from './CollapsibleSection.tsx'
 import LinkMenuRow from './LinkMenuRow.tsx'
@@ -91,9 +91,13 @@ const QuickstartPanel = observer(function QuickstartPanel({
       ) : null}
 
       {renameDialogOpen && quickstarts ? (
-        <RenameQuickstartDialog
-          quickstartNames={quickstarts}
-          quickstartToRename={renameDialogOpen}
+        <RenameDialog
+          noun="quickstart"
+          name={renameDialogOpen}
+          takenNames={quickstarts}
+          rename={newName =>
+            invokeIpc('renameQuickstart', renameDialogOpen, newName)
+          }
           onClose={() => {
             setRenameDialogOpen(undefined)
             refetchQuickstarts()

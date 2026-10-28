@@ -12,7 +12,7 @@ export type Subscribe = (
   listener: (...args: unknown[]) => void,
 ) => () => void
 
-export interface RendererElectron {
+interface RendererElectron {
   ipcRenderer: {
     invoke: Invoke
     // Returns its own unsubscribe rather than pairing with an `off`: a function

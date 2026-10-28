@@ -198,6 +198,23 @@ export function markGlobalPluginLoadFinished() {
 }
 
 /**
+ * Builds with the global plugins loaded, then clears the crash marker in a
+ * finally: a plugin that takes the renderer down while registering extension
+ * points or MST hooks does so as thoroughly as one that does while its module
+ * is evaluated, and a throw caught here is a renderer that lived to report it.
+ */
+export async function withGlobalPlugins<T>(
+  build: (load: GlobalPluginLoad) => Promise<T>,
+) {
+  const load = await getGlobalPlugins()
+  try {
+    return await build(load)
+  } finally {
+    markGlobalPluginLoadFinished()
+  }
+}
+
+/**
  * Forget that a launch failed — the user's call, or a reset that has just
  * emptied the list the marker was about to accuse.
  */

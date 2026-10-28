@@ -23,6 +23,7 @@ import {
   findLaunchTarget,
   openFileTarget,
   protocolTarget,
+  rendererArg,
 } from './launchTarget.ts'
 import { describeLaunchLink } from './linkPrompt.ts'
 import { startMcpBridge } from './mcp/bridge.ts'
@@ -53,22 +54,9 @@ registerDevToolsShortcuts()
 
 const DEV_SERVER_URL = process.env.DEV_SERVER_URL
 
-// Accepts either --renderer=webgl or --renderer webgl. The value is forwarded
-// to the renderer as a ?renderer= query param and consumed by setGpuOverride.
-function findRendererArg(argv: readonly string[]) {
-  const args = argv.slice(1)
-  const inline = args.find(a => a.startsWith('--renderer='))
-  const flagIndex = args.indexOf('--renderer')
-  return inline
-    ? inline.slice('--renderer='.length)
-    : flagIndex === -1
-      ? undefined
-      : args[flagIndex + 1]
-}
-
 // Parsed once at launch; forwarded to every window/session load so a session
 // reopened via second-instance keeps the same backend override.
-const RENDERER_OVERRIDE = findRendererArg(process.argv)
+const RENDERER_OVERRIDE = rendererArg(process.argv)
 
 function showFatalError(title: string, error: unknown) {
   const message = error instanceof Error ? error.message : String(error)

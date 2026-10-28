@@ -5,7 +5,7 @@ export interface NotifyAction {
   onClick: () => void
 }
 
-export type NotifyError = (error: unknown, action?: NotifyAction) => void
+type NotifyError = (error: unknown, action?: NotifyAction) => void
 
 export const NotifyContext = createContext<NotifyError | undefined>(undefined)
 

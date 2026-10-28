@@ -40,7 +40,7 @@ import {
 } from '../../removeRecentAction.ts'
 import { useUpdateStatus } from '../../useUpdateStatus.ts'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
-import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
+import RenameDialog from '../dialogs/RenameDialog.tsx'
 import { NARROW_QUERY } from '../narrow.ts'
 import { useInnerDims } from '../useInnerDims.ts'
 import { loadPluginManager, openSpecLink } from '../util.tsx'
@@ -217,8 +217,12 @@ const RecentSessionPanel = observer(function RecentSessionPanel({
     <div>
       {listSessionsError ? <ErrorMessage error={listSessionsError} /> : null}
       {sessionToRename ? (
-        <RenameSessionDialog
-          sessionToRename={sessionToRename}
+        <RenameDialog
+          noun="session"
+          name={sessionToRename.name}
+          rename={newName =>
+            invokeIpc('renameSession', sessionToRename.path, newName)
+          }
           onClose={() => {
             setSessionToRename(undefined)
             refreshSessions()

@@ -1,9 +1,9 @@
-export interface TypePage {
+interface TypePage {
   category: string
   text: string
 }
 
-export interface TypePages {
+interface TypePages {
   models: Record<string, TypePage>
   configs: Record<string, TypePage>
 }

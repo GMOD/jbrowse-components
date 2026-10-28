@@ -7,7 +7,7 @@ import {
 // Every text a client shows the model before the agent reads a doc, measured
 // the way Claude Code measures it: string length in UTF-16 code units, the
 // `e.length` its truncation compares against CLIENT_TEXT_CAP_CHARS.
-export function clientTexts() {
+function clientTexts() {
   return {
     'server instructions': SERVER_INSTRUCTIONS,
     ...Object.fromEntries(

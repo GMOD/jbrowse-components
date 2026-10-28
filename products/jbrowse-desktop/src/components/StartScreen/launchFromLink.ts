@@ -29,7 +29,7 @@ import type { HostedConfig } from '@jbrowse/launch-args/hostedGenomes'
 //
 // Both steps are injected, so the flow is exercisable without Electron and
 // neither fetching nor session-file bookkeeping is duplicated here.
-export interface LaunchFromLinkDeps {
+interface LaunchFromLinkDeps {
   // fetch a hosted config, resolved and normalized the way Desktop loads any
   // other remote config (relative uris rebased, source url recorded)
   fetchConfig: (url: string) => Promise<JBrowseConfig>
@@ -150,7 +150,7 @@ export async function launchFromLink(
   return pluginManager
 }
 
-export interface LaunchFromPlanDeps {
+interface LaunchFromPlanDeps {
   fetchConfig: LaunchFromLinkDeps['fetchConfig']
   createPluginManager: (config?: JBrowseConfigInput) => Promise<PluginManager>
   // a config.json on disk, its relative paths resolved against its folder

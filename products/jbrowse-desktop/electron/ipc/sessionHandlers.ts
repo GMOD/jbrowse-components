@@ -15,7 +15,7 @@ import {
   stringifySession,
 } from '../paths.ts'
 import { readRecentSessions } from '../recentSessions.ts'
-import { logError } from '../util.ts'
+import { createQueue, logError } from '../util.ts'
 import { writeFileAtomic } from '../writeFileAtomic.ts'
 import { ipcHandle } from './channels.ts'
 import { writeGlobalPlugins } from './globalPluginHandlers.ts'
@@ -123,17 +123,6 @@ function upsertRecentSession(sessions: RecentSession[], entry: RecentSession) {
   return sessions
 }
 
-// Runs each job after the one before it has settled. A failing job does not
-// block the ones behind it; its rejection reaches its own caller only.
-function createQueue() {
-  let tail: Promise<unknown> = Promise.resolve()
-  return function enqueue<T>(fn: () => Promise<T>): Promise<T> {
-    const run = tail.then(fn)
-    tail = run.catch(() => {})
-    return run
-  }
-}
-
 // recent_sessions.json is rewritten whole on every change with no file locking.
 // The 1s autosave autorun can interleave with a delete/rename at an await point
 // and clobber it (or a reader can observe a half-written file). Funnel every
@@ -200,10 +189,6 @@ function forgetSessionWrites(sessionPaths: string[]) {
   if (lastSave && sessionPaths.includes(lastSave.path)) {
     lastSave = undefined
   }
-}
-
-function forgetAllSessionWrites() {
-  lastSave = undefined
 }
 
 export function registerSessionHandlers(
@@ -414,7 +399,7 @@ export function registerSessionHandlers(
       )
     ).flat()
     // saveSession's caches describe files that are about to stop existing
-    forgetAllSessionWrites()
+    lastSave = undefined
     await Promise.all([
       updateRecentSessions(paths.recentSessionsPath, () => []),
       // a global plugin loads into every session, so one that crashes on load

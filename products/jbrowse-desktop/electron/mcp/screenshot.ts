@@ -1,5 +1,6 @@
 import { nativeImage } from 'electron'
 
+import { createQueue } from '../util.ts'
 import {
   SCREENSHOT_WAIT_MAX_MS,
   SCREENSHOT_WAIT_MS,
@@ -15,7 +16,7 @@ const MEASURE_WAIT_MS = 30_000
 const SCALE_MIN = 0.1
 const SCALE_MAX = 4
 
-export type Relay = (
+type Relay = (
   tool: string,
   args: Record<string, unknown>,
   timeoutMs?: number,
@@ -100,7 +101,7 @@ export function requestedScale(value: unknown) {
  * whatever the display does. Capping it at 1 by default also stops a retina
  * capture spending four times the bytes on detail every client resizes away.
  */
-export function atScale(png: Buffer, cssWidth: number, scale: number) {
+function atScale(png: Buffer, cssWidth: number, scale: number) {
   const wanted = Math.max(1, Math.round(cssWidth * scale))
   return pngSize(png).width === wanted
     ? png
@@ -312,12 +313,7 @@ export function createScreenshotTool({
   // already attached". Serialized rather than refused: two clients both asked
   // for the document, and answering one of them with the viewport is the wrong
   // picture under a plausible result.
-  let fullPageTurn: Promise<unknown> = Promise.resolve()
-  function takeTurn<T>(work: () => Promise<T>): Promise<T> {
-    const next = fullPageTurn.then(work, work)
-    fullPageTurn = next.catch(() => {})
-    return next
-  }
+  const takeTurn = createQueue()
 
   return async function screenshot(
     args: Record<string, unknown>,

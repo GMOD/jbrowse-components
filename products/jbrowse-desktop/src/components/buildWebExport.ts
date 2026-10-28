@@ -25,7 +25,7 @@ import type {
 // dialog runs `prepareExport` once and `buildLink` per mode, so switching modes
 // doesn't re-fetch the hosted base config or re-read the live session.
 
-export interface PreparedExport {
+interface PreparedExport {
   plan: WebExportPlan
   // the share store a short link must upload to, see below
   shareURL: string

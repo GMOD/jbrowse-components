@@ -13,7 +13,7 @@
 // informative prefix, and everything after it is spec payload.
 const MAX_DISPLAY_LENGTH = 200
 
-export interface LinkDescription {
+interface LinkDescription {
   // the link's origin, when it has one — what the user is really being asked to
   // trust. Undefined for a url that doesn't parse, which the caller words around
   // rather than showing "null".

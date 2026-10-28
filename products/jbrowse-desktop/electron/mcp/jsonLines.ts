@@ -7,7 +7,7 @@ import readline from 'node:readline'
  * both of the lessons below were learnt at one of them and not the others.
  */
 
-export type JsonLine =
+type JsonLine =
   | { value: Record<string, unknown> }
   // JSON.parse threw. A killed peer can leave a truncated final line — a
   // screenshot is one multi-MB line — which must fail that call, not the reader.

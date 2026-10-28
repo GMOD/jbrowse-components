@@ -14,7 +14,7 @@ export class UntrustedPluginsError extends Error {
   }
 }
 
-export interface AssertPluginsTrustedDeps {
+interface AssertPluginsTrustedDeps {
   // resolves true when the plugins are known-good and need no prompt
   checkPlugins: (plugins: PluginDefinition[]) => Promise<boolean>
   // asks the user to vouch for them; resolves true if they accept

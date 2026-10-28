@@ -73,7 +73,7 @@ Documentation: https://jbrowse.org/jb2/docs/`
 
 // Text to print for an informational flag (--version/--help), or undefined when
 // the app should launch normally.
-export function cliInfoOutput(argv: readonly string[], version: string) {
+function cliInfoOutput(argv: readonly string[], version: string) {
   const args = argv.slice(1)
   return args.includes('--version')
     ? version
@@ -82,7 +82,7 @@ export function cliInfoOutput(argv: readonly string[], version: string) {
       : undefined
 }
 
-export type LaunchMode =
+type LaunchMode =
   | { type: 'info'; output: string }
   | { type: 'mcp' }
   | { type: 'run' }

@@ -167,6 +167,24 @@ const flagName = (arg: string) => arg.replace(/^-+/, '').split('=')[0] ?? ''
 
 const isFlag = (arg: string) => arg.startsWith('-') && arg !== '-'
 
+/**
+ * `--renderer webgl` or `--renderer=webgl`, read by the rule launchArgs skips
+ * it by, so `--renderer --loc x` names no renderer rather than `--loc`.
+ */
+export function rendererArg(argv: readonly string[]) {
+  const args = argv.slice(1)
+  const i = args.findIndex(a => isFlag(a) && flagName(a) === 'renderer')
+  const arg = args[i]
+  const next = args[i + 1]
+  return arg === undefined
+    ? undefined
+    : arg.includes('=')
+      ? arg.slice(arg.indexOf('=') + 1)
+      : next !== undefined && !isFlag(next)
+        ? next
+        : undefined
+}
+
 // Desktop's own flags, and whether each takes the argument after it
 const DESKTOP_FLAGS = new Map([
   ['renderer', true],
