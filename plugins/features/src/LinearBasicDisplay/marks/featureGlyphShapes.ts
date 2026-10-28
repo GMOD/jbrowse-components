@@ -29,11 +29,9 @@ import {
   CHEVRON_THICKNESS_PX,
   CHEVRON_VERTS,
   CHEVRON_W_PX,
-  CONT_EDGE_MARGIN_PX,
   CONT_MARK_ALPHA,
   CONT_MIN_OVERHANG_PX,
   CONT_STROKE_PX,
-  CONT_TRI_GAP_PX,
   CONT_TRI_W_PX,
   MIN_DENSITY_ALPHA,
   STEM_HALF_H_PX,
@@ -62,11 +60,11 @@ import {
   showChevrons,
 } from '../passes/shaders/chevron.js.generated.ts'
 import {
+  markerApexInsetPx,
   markerDirection,
   markerHalfHeight,
   markerIsDark,
   runsOffEdge,
-  strandMatchesEdge,
 } from '../passes/shaders/continuation.js.generated.ts'
 import {
   rectDrawsOutline,
@@ -546,9 +544,7 @@ function strokeChevron(
   ctx.stroke()
 }
 
-// `edgeSide` (+1 right, -1 left) is the only difference between the two edges:
-// every direction below reads `edgeSide × …`, so the pair is one piece of
-// arithmetic rather than two hand-mirrored copies to keep in sign agreement.
+// `edgeSide` (+1 right, -1 left) is the only difference between the two edges.
 function drawEdgeMarker(
   ctx: MarkContext2D,
   args: {
@@ -561,14 +557,9 @@ function drawEdgeMarker(
 ) {
   const { edgeX, edgeSide, strand, cy, halfH } = args
   const dir = markerDirection(strand, edgeSide)
-  // A chevron pointing out of this edge puts its apex on the anchor; one pointing
-  // inward shifts a triangle-width so its apex lands there instead of its base
-  // and the whole glyph stays inside the scissor.
-  const apexInset = CONT_TRI_W_PX * (1 - strandMatchesEdge(strand, edgeSide))
   for (let p = 0; p < 2; p++) {
-    const anchorX =
-      edgeX - edgeSide * (CONT_EDGE_MARGIN_PX + CONT_TRI_GAP_PX * p)
-    strokeChevron(ctx, anchorX - edgeSide * apexInset, dir, cy, halfH)
+    const apexX = edgeX - edgeSide * markerApexInsetPx(p, strand, edgeSide)
+    strokeChevron(ctx, apexX, dir, cy, halfH)
   }
 }
 

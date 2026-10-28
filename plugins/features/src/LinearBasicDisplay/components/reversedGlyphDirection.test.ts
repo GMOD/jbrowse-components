@@ -5,6 +5,11 @@
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import { BASIC_FEATURE_MARKS } from '../marks/basicFeatureMarks.ts'
+import {
+  CONT_EDGE_MARGIN_PX,
+  CONT_TRI_GAP_PX,
+  CONT_TRI_W_PX,
+} from './sharedRendererConstants.ts'
 
 import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -186,4 +191,31 @@ test('strand-less continuation markers point outward regardless of orientation',
   for (const d of chevronApexOffsets(region, true)) {
     expect(d).toBeGreaterThan(0)
   }
+})
+
+test('continuation markers sit a margin, then a gap per pair, in from the edge', () => {
+  const apexXs = (strand: number, reversed: boolean) =>
+    draw(
+      {
+        ...EMPTY,
+        rectPositions: new Uint32Array([20, 100]),
+        rectYs: new Float32Array([0]),
+        rectHeights: new Float32Array([10]),
+        rectColors: new Uint32Array([0xff_00_00_00]),
+        rectStrands: new Float32Array([strand]),
+        rectDensityFade: new Uint32Array([0]),
+      },
+      reversed,
+    ).map(([, apex]) => apex!.x)
+  // A marker pointing inward sits a triangle-width further in, base to anchor.
+  const inset = (pair: number, inward: boolean) =>
+    CONT_EDGE_MARGIN_PX + CONT_TRI_GAP_PX * pair + (inward ? CONT_TRI_W_PX : 0)
+  // Forward it runs off the left edge at 0, reversed off the right at 100.
+  expect(apexXs(1, false)).toEqual([inset(0, true), inset(1, true)])
+  expect(apexXs(1, true)).toEqual([100 - inset(0, true), 100 - inset(1, true)])
+  expect(apexXs(0, false)).toEqual([inset(0, false), inset(1, false)])
+  expect(apexXs(0, true)).toEqual([
+    100 - inset(0, false),
+    100 - inset(1, false),
+  ])
 })

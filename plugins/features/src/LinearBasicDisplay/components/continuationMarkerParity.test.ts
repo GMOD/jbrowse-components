@@ -1,8 +1,12 @@
 import {
+  markerApexInsetPx,
   markerDirection,
-  strandMatchesEdge,
 } from '../passes/shaders/continuation.js.generated.ts'
-import { CONT_TRI_W_PX } from './sharedRendererConstants.ts'
+import {
+  CONT_EDGE_MARGIN_PX,
+  CONT_TRI_GAP_PX,
+  CONT_TRI_W_PX,
+} from './sharedRendererConstants.ts'
 
 // Screen strand is -1, 0 or +1 and edgeSide is ±1, so these six cases are the
 // whole domain.
@@ -23,24 +27,29 @@ test('markerDirection matches the `strand === 0 ? edgeSide : strand` it replaced
   }
 })
 
-test('the apex inset matches the `dir === edgeSide ? 0 : triW` it replaced', () => {
+test('the apex inset matches the margin, gap and `dir === edgeSide ? 0 : triW` it replaced', () => {
   for (const { strand, edgeSide } of CASES) {
-    expect(CONT_TRI_W_PX * (1 - strandMatchesEdge(strand, edgeSide))).toBe(
-      retiredApexInset(strand, edgeSide),
-    )
+    for (const pair of [0, 1]) {
+      expect(markerApexInsetPx(pair, strand, edgeSide)).toBe(
+        CONT_EDGE_MARGIN_PX +
+          CONT_TRI_GAP_PX * pair +
+          retiredApexInset(strand, edgeSide),
+      )
+    }
   }
 })
 
 test('a strand-less feature points out of whichever edge it ran past', () => {
   expect(markerDirection(0, 1)).toBe(1)
   expect(markerDirection(0, -1)).toBe(-1)
-  expect(strandMatchesEdge(0, 1)).toBe(1)
-  expect(strandMatchesEdge(0, -1)).toBe(1)
+  expect(markerApexInsetPx(0, 0, 1)).toBe(CONT_EDGE_MARGIN_PX)
+  expect(markerApexInsetPx(0, 0, -1)).toBe(CONT_EDGE_MARGIN_PX)
 })
 
 test('a marker pointing back inward is shifted, one pointing out is not', () => {
-  expect(strandMatchesEdge(1, 1)).toBe(1)
-  expect(strandMatchesEdge(1, -1)).toBe(0)
-  expect(strandMatchesEdge(-1, -1)).toBe(1)
-  expect(strandMatchesEdge(-1, 1)).toBe(0)
+  const inward = CONT_EDGE_MARGIN_PX + CONT_TRI_W_PX
+  expect(markerApexInsetPx(0, 1, 1)).toBe(CONT_EDGE_MARGIN_PX)
+  expect(markerApexInsetPx(0, 1, -1)).toBe(inward)
+  expect(markerApexInsetPx(0, -1, -1)).toBe(CONT_EDGE_MARGIN_PX)
+  expect(markerApexInsetPx(0, -1, 1)).toBe(inward)
 })

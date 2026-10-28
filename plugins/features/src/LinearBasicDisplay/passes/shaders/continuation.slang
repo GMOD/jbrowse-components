@@ -11,7 +11,8 @@
 // (chevronStroke.slang). An edge's pair goes OFFSCREEN unless the rect runs off
 // that edge.
 //! targets: wgsl, glsl
-//! js-export: markerDirection, strandMatchesEdge, markerIsDark, markerHalfHeight, runsOffEdge
+//! js-export: markerDirection, markerApexInsetPx, markerIsDark, markerHalfHeight, runsOffEdge
+//! js-skip: strandMatchesEdge — reached as a private helper inside the generated markerApexInsetPx, which is the only question a painter asks of it
 //! export-consts: CONT_TRI_W_PX, CONT_TRI_HALF_H_PX, CONT_EDGE_MARGIN_PX, CONT_TRI_GAP_PX, CONT_MIN_OVERHANG_PX, CONT_MARK_ALPHA, CONT_STROKE_PX
 
 import hpmath;
@@ -50,11 +51,20 @@ public float markerDirection(float screenStrand, float edgeSide) {
   return screenStrand == 0.0 ? edgeSide : screenStrand;
 }
 
-// 1 when the marker points out of this edge, putting its apex on the anchor; 0
-// when it points inward, shifting the apex a triangle-width in so the glyph
-// stays inside the scissor.
+// 1 when the marker points out of this edge, 0 when it points inward.
 public float strandMatchesEdge(float screenStrand, float edgeSide) {
   return max(0.0, markerDirection(screenStrand, edgeSide) * edgeSide);
+}
+
+// How far in from the edge pair `pairIndex`'s apex sits (0 nearest the edge):
+// a margin, a gap per pair, and a triangle-width more for a marker pointing
+// inward, so its base rather than its apex meets the anchor and the glyph stays
+// inside the scissor.
+public float markerApexInsetPx(
+  float pairIndex, float screenStrand, float edgeSide
+) {
+  return CONT_EDGE_MARGIN_PX + CONT_TRI_GAP_PX * pairIndex
+       + CONT_TRI_W_PX * (1.0 - strandMatchesEdge(screenStrand, edgeSide));
 }
 
 // Whether the marker draws dark rather than light, by the BT.601 luma of the
@@ -116,22 +126,15 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
     return o;
   }
 
-  float marginClip = pxToClipW(CONT_EDGE_MARGIN_PX, u);
-  float triWClip   = pxToClipW(CONT_TRI_W_PX, u);
-  float gapClip    = pxToClipW(CONT_TRI_GAP_PX, u);
-
   float cy = snapBoxCenterY(inst.y + inst.height * 0.5, u.scrollY, u.canvasHeight);
 
+  // Clip x = edgeSide is the edge itself.
   float edgeSide = isRight ? 1.0 : -1.0;
-  float edgeX    = edgeSide;
-  // 0 = outer triangle (nearest the edge), 1 = inner.
   float pairIndex = float(isRight ? chev : chev - 2u);
-  // The triangle's outermost x, margin + gap*pair px in from the edge.
-  float anchorX = edgeX - edgeSide * (marginClip + gapClip * pairIndex);
   // The strand is genomic, so a reversed block's markers flip with its glyphs.
   float screenStrand = flipX(inst.strand, u);
-  float matches = strandMatchesEdge(screenStrand, edgeSide);
-  float apexX = anchorX - edgeSide * triWClip * (1.0 - matches);
+  float apexX = edgeSide - edgeSide * pxToClipW(
+    markerApexInsetPx(pairIndex, screenStrand, edgeSide), u);
   float dir = markerDirection(screenStrand, edgeSide);
   ChevronCorner c = chevronCorner(
     vid % 3u, CONT_TRI_W_PX, markerHalfHeight(inst.height),

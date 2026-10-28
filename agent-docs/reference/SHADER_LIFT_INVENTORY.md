@@ -14,7 +14,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 48 shaders with entry points. 164 functions
+Scanned 48 shaders with entry points. 165 functions
 are inside the emitter's subset, of which **131 are exported**.
 
 ## Candidates
@@ -63,6 +63,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `snapBoxCenterY` | `(f32, f32, f32) -> f32` | clip-space wrapper over the exported snapBoxCenterYPx |
 | `snapCellEdgePx` | `(f32) -> f32` | reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor |
 | `snapToPixelX` | `(f32, f32) -> f32` | clip in, clip out; its px core is `floor(x + 0.5)`, which is Math.round and needs no twin |
+| `strandMatchesEdge` | `(f32, f32) -> f32` | reached as a private helper inside the generated markerApexInsetPx, which is the only question a painter asks of it |
 | `symlogInverse` | `(f32, f32) -> f32` | render-core scoreScale.ts reaches Math.expm1 directly; what both backends agree on is denormalizeScore, exported and swept against scoreScale.ts's |
 | `symlogTransform` | `(f32, f32) -> f32` | render-core scoreScale.ts reaches Math.log1p directly, one call inside a normalizer it hoists the whole log domain out of, so a per-call twin of this would have no caller. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts |
 | `valueToYPx` | `(f32, f32, f32, f32) -> f32` | the linear case of valueToYPxScaled, whose twin pointMark.slang lifts; a shader reading it alone (the score example's scoreBarHeightPx) lifts the caller it sits inside |
