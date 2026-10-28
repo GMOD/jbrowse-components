@@ -61,10 +61,8 @@ import type {
 } from '@jbrowse/product-core'
 import type React from 'react'
 
-// lazies. A dialog reached through session.queueDialog can always be one:
-// DialogQueue Suspense-wraps whatever it is handed. OpenSequenceDialog was the
-// last one named directly here, which put AddGenomePane and the assembly-config
-// builders in the root model — as eager a module as this app has.
+// DialogQueue Suspense-wraps whatever session.queueDialog hands it, so every
+// dialog here stays out of this eager module
 const OpenSequenceDialog = lazy(
   () => import('../components/OpenSequenceDialog.tsx'),
 )
@@ -73,10 +71,8 @@ const ExportToWebDialog = lazy(
 )
 const OpenLinkDialog = lazy(() => import('../components/OpenLinkDialog.tsx'))
 
-// Add a whole batch of assemblies, or none of it. Every name is checked before
-// anything is added because jbrowse.addAssemblyConf throws on a name or alias it
-// already holds, and a loop that added as it went would open the genomes before
-// the collision, drop the ones after it, and report one error for all three.
+// All of a batch or none of it: addAssemblyConf throws on a name or alias it
+// already holds, so a loop that added as it went would keep half the batch
 function addAssemblyConfs(
   jbrowse: {
     assemblies: { name: string; aliases: string[] }[]
@@ -107,8 +103,6 @@ function getSaveSession(model: BaseRootModel): SessionSnap {
   }
 }
 
-// Every menu action that can throw reports the same way: logged for the devtools
-// console, then surfaced in the session's notification area.
 function reportError(
   session:
     | { notifyError: (message: string, error: unknown) => void }
@@ -119,9 +113,7 @@ function reportError(
   session?.notifyError(`${e}`, e)
 }
 
-// Four of the menu items below open a dialog, and each needs the same two things
-// first: `self.session` narrowed to the type that carries queueDialog, and a
-// guard, since a root can be between sessions.
+// a root can be between sessions, so every dialog opener guards for one
 function queueSessionDialog<T extends DialogComponentType>(
   maybeSession: unknown,
   build: (
@@ -282,10 +274,8 @@ export default function rootModelFactory({
         },
         /**
          * #action
-         * Save now rather than waiting out the autosave's 1s debounce, so the
-         * last second of edits survives. Every path that tears the session down
-         * — quitting, returning to the start screen — has to call this first;
-         * Exit did not, and lost whatever was still inside the debounce window.
+         * Save now rather than waiting out the autosave's 1s throttle. Every
+         * path that tears the session down has to call this first.
          */
         async flushSession() {
           // capture the session up front so a save failure reports to the same
@@ -381,12 +371,9 @@ export default function rootModelFactory({
                           try {
                             const path = await invokeIpc('promptOpenFile')
                             if (path) {
-                              // no flush here: the swap behind this callback
-                              // flushes between loading the replacement and
-                              // installing it, which also covers whatever is
-                              // edited while the load is in flight. Flushing
-                              // first, as this used to, covered only up to the
-                              // click. See useSessionSwap.
+                              // the swap flushes when it installs the
+                              // replacement, covering edits made during the
+                              // load (useSessionSwap)
                               await self.openNewSessionCallback(path)
                             }
                           } catch (e) {
@@ -394,10 +381,7 @@ export default function rootModelFactory({
                           }
                         },
                       },
-                      // A session can also come from a JBrowse Web link (the
-                      // docs' figure links), so it opens alongside the file
-                      // that is its closest equivalent. The dialog reports its
-                      // own errors, hence no try/catch here.
+                      // the dialog reports its own errors inline
                       {
                         label: 'Open JBrowse Web link...',
                         icon: LinkIcon,
@@ -407,11 +391,6 @@ export default function rootModelFactory({
                             (_session, handleClose) => [
                               OpenLinkDialog,
                               {
-                                // not flushed here for the same reason opening
-                                // a file above is not: the swap behind the
-                                // callback does it at the moment of
-                                // replacement. A rejection reaches the dialog,
-                                // which reports it inline and stays open.
                                 onSubmit: async (link: string) => {
                                   await self.openLinkCallback(link)
                                 },
@@ -468,10 +447,8 @@ export default function rootModelFactory({
                     label: 'Return to start screen',
                     icon: AppsIcon,
                     onClick: async () => {
-                      // flush a final save so edits still inside the autosave
-                      // debounce window aren't lost, then let the Loader tear
-                      // down this plugin manager (workers + autosave) rather
-                      // than leaving it orphaned behind the start screen
+                      // the Loader tears down this plugin manager, workers
+                      // and autosave included
                       await self.flushSession()
                       self.returnToStartScreenCallback()
                     },
@@ -480,9 +457,6 @@ export default function rootModelFactory({
                     label: 'Exit',
                     icon: MeetingRoomIcon,
                     onClick: async () => {
-                      // quitting destroys the window, so the pending debounced
-                      // autosave would never run: flush first, exactly as
-                      // returning to the start screen above does
                       await self.flushSession()
                       await invokeIpc('quit')
                     },

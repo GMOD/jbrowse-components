@@ -29,10 +29,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { AssertExtends } from '@jbrowse/product-core'
 import type { Track } from '@jbrowse/text-indexing-core'
 
-// The jobs manager lives at rootModel.jobsManager, so its MST parent is the root
-// model; this is the slice it reaches for. One typed contract in place of the
-// per-getter getParent<{...}> shapes, mirroring the react session models'
-// SessionModelParent.
+// the slice of the root model (this manager's MST parent) that it reaches for
 export interface JobsManagerParent {
   jbrowse: {
     rpcManager: RpcManager
@@ -174,12 +171,9 @@ export default function jobsModelFactory() {
     .actions(self => ({
       /**
        * #method
-       * No isSessionModelWithWidgets guard, here or in the callers. The desktop
-       * session always has widgets (asserted in sessionModel.ts), and the guard
-       * cannot detect the case it looks like it covers: `'rpcManager' in node`
-       * is still true after a destroy, so it returns true for a dead session —
-       * and `self.session` is a getParent hop, which throws on a dead node
-       * before the guard would run anyway.
+       * Unguarded: the desktop session always has widgets (asserted in
+       * sessionModel.ts), and isSessionModelWithWidgets answers true for a
+       * destroyed session anyway.
        */
       getJobStatusWidget() {
         return getOrCreateJobsListWidget(self.session)
@@ -209,8 +203,6 @@ export default function jobsModelFactory() {
       },
       /**
        * #action
-       * The job card is the only copy of the message and the fraction; this
-       * model kept a second one that nothing outside it read.
        */
       reportStatus(jobName: string, status: RpcStatus) {
         const fraction = statusFraction(status)
@@ -272,9 +264,8 @@ export default function jobsModelFactory() {
         const rpcManager = self.rpcManager
         const controller = new AbortController()
         this.setController(controller)
-        // `aborted` is only cleared by clear(), so a flag standing here was set
-        // against a queue this entry was already in. Without the stop the entry
-        // ran the full index and was then merely *reported* as cancelled
+        // only clear() resets `aborted`, so a flag standing here is a cancel
+        // aimed at this entry
         if (self.aborted) {
           controller.abort()
         }
