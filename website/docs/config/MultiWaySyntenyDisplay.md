@@ -12,11 +12,12 @@ assembly, with ribbons joining each gene's placements in adjacent lanes.
 
 ## Example usage
 
-Selected on a multi-genome `SyntenyTrack` (an `MCScanBlocksAdapter` listing
-several assemblies) shown in a plain linear genome view. Draws one lane per
-assembly in that assembly's own local coordinate frame — non-anchored, like
-the multi-sample variant matrix — with ribbons connecting each gene's
-placements between adjacent lanes:
+A multi-genome `SyntenyTrack` listing this display first opens as lanes in
+a linear genome view, each lane in its own genome's coordinates, with
+ribbons connecting each gene's placements between adjacent lanes. The track
+below reads an ortholog table;
+[three or more genomes](/docs/config_guides/synteny_track#three-or-more-genomes)
+configures alignment files too:
 
 ```js
 {

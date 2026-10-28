@@ -189,6 +189,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-laneheaderrows">**laneHeaderRows**</span><br><code>LaneHeaderRow[]</code> |  |
 | <span id="getter-pairlinks">**pairLinks**</span><br><code>ReadonlyMap&lt;string, LaneLinks&gt;</code> | the alignments the source answered for each adjacent mate-lane pair, keyed `upper\|lower`; a pair it has not answered draws nothing |
 | <span id="getter-loadinggutterys">**loadingGutterYs**</span><br><code>number[]</code> | the centre, in stack px, of each gutter whose lane pair was asked for and has not landed |
+| <span id="getter-unheldgutters">**unheldGutters**</span><br><code>{ y: number; labels: string[]; }[]</code> | the centre, in stack px, of each gutter left empty because a lane's genome is not in the session and no plugin described it, with those lanes' labels |
 | <span id="getter-ribbongeometry">**ribbonGeometry**</span><br><code>RibbonGeometry</code> | in the stack's own px |
 | <span id="getter-tickgeometry">**tickGeometry**</span><br><code>TickGeometry</code> |  |
 | <span id="getter-bandcell">**bandCell**</span><br><code>MultiWayCell</code> |  |
