@@ -14,7 +14,7 @@
 // INSERTION_SERIF_MIN_PX_PER_BP.
 //! export-consts: LONG_INSERTION_MIN_LENGTH, LONG_INSERTION_TEXT_THRESHOLD_PX, MIN_HEIGHT_FOR_TEXT, INSERTION_SERIF_MIN_PX_PER_BP, SERIF_HALF_W_PX, SERIF_H_PX
 //! consts-out: packages/alignments-core/src/insertionLabel.generated.ts
-//! js-export: insertionBarWidthPx, textWidth, insertionSerifsDraw, insertionMarkerDraws
+//! js-export: insertionBarWidthPx, textWidth, insertionSerifsDraw, insertionMarkerDraws, insertionSerifCorner
 //! js-export-out: packages/alignments-core/src/insertionWidth.generated.ts
 module insertionGlyph;
 
@@ -49,6 +49,14 @@ public float insertionBarWidthPx(uint length, float pxPerBp, float featHeight) {
 
 public bool insertionSerifsDraw(uint length, float pxPerBp) {
   return length < LONG_INSERTION_MIN_LENGTH && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP;
+}
+
+// Quad corner (qx, qy) of a serif cap: a wedge `halfW` either side of `cx` at
+// `baseY`, tapering to a point `depth` further along y, so the quad's far edge
+// collapses onto the apex. In whatever unit the caller works in: clip space for
+// the pileup pass, px for the mark and the Canvas2D painter.
+public float2 insertionSerifCorner(float qx, float qy, float cx, float baseY, float halfW, float depth) {
+  return float2(cx + halfW * (2.0 * qx - 1.0) * (1.0 - qy), lerp(baseY, baseY + depth, qy));
 }
 
 // A marker standing on a reference span draws only where it is wider than

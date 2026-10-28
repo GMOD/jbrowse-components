@@ -32,19 +32,6 @@ float insertionSizeAlpha(uint length, float pxPerBp) {
   return sizeAlpha(float(length) * pxPerBp);
 }
 
-// One corner of a serif cap: a wedge whose base is `halfWClip` either side of
-// `cx` at `baseY`, tapering to a point at `apexY`. The taper is what makes it a
-// triangle rather than a box — the quad's far edge collapses onto the apex, so
-// its second triangle is degenerate and rasterizes to nothing.
-//
-// A cap can't go through `flippedQuadPos` because its x depends on local.y,
-// which is exactly the difference this replaces: the cap used to be a plain
-// quad, and a quad is the one thing the CPU twin was not drawing.
-float4 serifPos(float cx, float baseY, float apexY, float halfWClip, float2 local, Uniforms u) {
-  float x = cx + halfWClip * (2.0 * local.x - 1.0) * (1.0 - local.y);
-  return float4(flipX(x, u), lerp(baseY, apexY, local.y), 0.0, 1.0);
-}
-
 [shader("vertex")]
 ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   ColorVsOut o;
@@ -78,12 +65,13 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   if (rectIdx == 0u) {
     o.position = flippedQuadPos(cx - rectWClip * 0.5, cx + rectWClip * 0.5,
                                 syBot, syTop, local, u);
-  } else if (rectIdx == 1u) {
-    // Top cap: base on the row's top edge, point down into the row. Clip y
-    // decreases downward, hence the subtraction.
-    o.position = serifPos(cx, syTop, syTop - serifHClip, serifHalfWClip, local, u);
   } else {
-    o.position = serifPos(cx, syBot, syBot + serifHClip, serifHalfWClip, local, u);
+    // Each cap stands on its row edge and points into the row; clip y runs up,
+    // so the top cap's depth is negative.
+    bool topCap = rectIdx == 1u;
+    float2 p = insertionSerifCorner(local.x, local.y, cx, topCap ? syTop : syBot,
+                                    serifHalfWClip, topCap ? -serifHClip : serifHClip);
+    o.position = float4(flipX(p.x, u), p.y, 0.0, 1.0);
   }
   o.color = float4(unpackRGBA(u.colorInsertion).xyz, alpha);
   return o;

@@ -94,10 +94,11 @@ VsOut vs_main(InsertionInstance inst, uint vid : SV_VertexID) {
     xPx = cx + barW * (q.x - 0.5);
     yPx = top + h * (1.0 - q.y);
   } else {
-    float baseY = rectIdx == 1u ? top : top + h;
-    float apexY = rectIdx == 1u ? top + SERIF_H_PX : top + h - SERIF_H_PX;
-    xPx = cx + SERIF_HALF_W_PX * (2.0 * q.x - 1.0) * (1.0 - q.y);
-    yPx = lerp(baseY, apexY, q.y);
+    bool topCap = rectIdx == 1u;
+    float2 p = insertionSerifCorner(q.x, q.y, cx, topCap ? top : top + h,
+                                    SERIF_HALF_W_PX, topCap ? SERIF_H_PX : -SERIF_H_PX);
+    xPx = p.x;
+    yPx = p.y;
   }
 
   VsOut o;

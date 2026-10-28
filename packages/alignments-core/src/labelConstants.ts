@@ -15,6 +15,7 @@ import {
 import { insertionSizeAlpha } from './insertionSizeAlpha.generated.ts'
 import {
   insertionBarWidthPx,
+  insertionSerifCorner,
   insertionSerifsDraw,
 } from './insertionWidth.generated.ts'
 
@@ -207,8 +208,8 @@ export function drawInsertionSerifs(
   pxPerBp: number,
 ) {
   if (insertionSerifsWidthPx(length, pxPerBp) > 0) {
-    drawSerif(ctx, xCenter, y, y + SERIF_H_PX)
-    drawSerif(ctx, xCenter, y + height, y + height - SERIF_H_PX)
+    drawSerif(ctx, xCenter, y, SERIF_H_PX)
+    drawSerif(ctx, xCenter, y + height, -SERIF_H_PX)
   }
 }
 
@@ -217,18 +218,19 @@ export function insertionSerifsWidthPx(length: number, pxPerBp: number) {
   return insertionSerifsDraw(length, pxPerBp) ? 2 * SERIF_HALF_W_PX : 0
 }
 
-// One serif cap: a wedge `SERIF_HALF_W_PX` either side of `xCenter` at `baseY`,
-// tapering to a point at `apexY`. Mirrors the serif quads of insertion.slang and insertionMark.slang.
+// One serif cap, traced through the three distinct corners of the shaders' quad.
 function drawSerif(
   ctx: DrawCtx,
   xCenter: number,
   baseY: number,
-  apexY: number,
+  depth: number,
 ) {
+  const corner = (qx: number, qy: number) =>
+    insertionSerifCorner(qx, qy, xCenter, baseY, SERIF_HALF_W_PX, depth)
   ctx.beginPath()
-  ctx.moveTo(xCenter - SERIF_HALF_W_PX, baseY)
-  ctx.lineTo(xCenter + SERIF_HALF_W_PX, baseY)
-  ctx.lineTo(xCenter, apexY)
+  ctx.moveTo(...corner(0, 0))
+  ctx.lineTo(...corner(1, 0))
+  ctx.lineTo(...corner(0, 1))
   ctx.closePath()
   ctx.fill()
 }
