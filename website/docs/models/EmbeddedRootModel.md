@@ -47,7 +47,7 @@ From [InternetAccountsMixin](../internetaccountsmixin): <span id="property-inter
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-jbrowse">**jbrowse**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelPropertiesDeclarationToProperties&lt;{ config: IModelType&lt;…&gt;;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelPropertiesDeclarationToProperties&lt;{ config: IModelType&lt;…&gt;; session: SESSION; assemblyManager: IOptionalIType&lt;IModelType&lt;{…}, {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; { afterAttach(): void; removeAssembly(asm: <a href="../assembly">Assembly</a>): void; addAssembly(configuration: any): void; }, _NotCustomized, _NotCustomized&gt;, [undefined]&gt;; }&gt;["config"]["Type"]</code></pre></dialog></span> |  |
+| <span id="getter-jbrowse">**jbrowse**</span><br><code>JBrowseConfigModel</code> |  |
 | <span id="getter-pluginmanager">**pluginManager**</span><br><code>PluginManager</code> |  |
 
 ## Actions

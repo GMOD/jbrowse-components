@@ -48,9 +48,9 @@ From [SnackbarModel](../snackbarmodel): <span id="volatile-snackbarmessages">[`s
 | Member | Description |
 | --- | --- |
 | <span id="getter-root">**root**</span><br><code>TypeOrStateTreeNodeToStateTreeNode&lt;ROOT_MODEL_TYPE&gt;</code> |  |
-| <span id="getter-jbrowse">**jbrowse**</span><br><code>any</code> |  |
+| <span id="getter-jbrowse">**jbrowse**</span><br><code>JBrowseConfigModel</code> |  |
 | <span id="getter-rpcmanager">**rpcManager**</span><br><code>RpcManager</code> |  |
-| <span id="getter-configuration">**configuration**</span><br><code>Instance&lt;JB_CONFIG_SCHEMA&gt;</code> |  |
+| <span id="getter-configuration">**configuration**</span><br><code>AnyConfigurationModel</code> |  |
 | <span id="getter-adminmode">**adminMode**</span><br><code>boolean</code> |  |
 | <span id="getter-textsearchmanager">**textSearchManager**</span><br><code>TextSearchManager</code> |  |
 | <span id="getter-assemblies">**assemblies**</span><br><code><a href="../../config/baseassembly">BaseAssemblyConfig</a>[]</code> |  |

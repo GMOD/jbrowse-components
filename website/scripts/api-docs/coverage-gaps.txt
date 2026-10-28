@@ -1357,11 +1357,10 @@ plugins/gccontent/src/GCContentTrack/index.ts window
 # adapters whose #example defaulted to FeatureTrack (0)
 # fix: add #trackType to the adapter’s #config JSDoc
 
-# model members and #api exports whose type prints as MST internals or collapses to nothing (7)
+# model members and #api exports whose type prints as MST internals or collapses to nothing (6)
 # fix: tag the model it names #stateModel (#internal keeps it off the site), or write the type it should read as
 BaseDisplay.renderingProps
 BaseInternetAccountModel.getPreAuthorizationInformation
-EmbeddedRootModel.jbrowse
 LinearCanvasBaseDisplay.rpcProps
 LinearCanvasBaseDisplay.zoomFetchArgs
 api:alignments.alignmentTables
