@@ -180,6 +180,8 @@ Page: https://jbrowse.org/jb2/docs/tutorials/dog10k_lof/
 - https://hgdownload.soe.ucsc.edu/goldenPath/canFam4/bigZips/canFam4.2bit
 - https://jbrowse.org/code/jb2/main/test_data/dog10k/config.json
 - https://jbrowse.org/code/jb2/main/test_data/dog10k/dog10k_cyp1a2_cpg.bed.gz
+- https://jbrowse.org/code/jb2/main/test_data/dog10k/dog10k_cyp1a2_stop_site.vcf.gz
+- https://jbrowse.org/code/jb2/main/test_data/dog10k/dog10k_sample_table.tsv
 - https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz
 - https://jbrowse.org/ucsc/canFam4/ncbiRefSeq.gff.gz.csi
 - https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
