@@ -30,11 +30,10 @@ history has each landing.
 
 1. **Pass B's leftovers.** Every value axis is `encoding.y` (ADR-238's "The y
    channel"), and 825d53c1d7 deleted the beta `scales.y` and `y` lifts. `scales`
-   appears in none of the hosted UCSC configs regenerated 2026-10-28. What
-   stays open:
-   - **Demos:** every hosted `demos/` config matches its committed copy.
-   - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
-     `scripts/agent-evals/tasks.ts`.
+   appears in none of the hosted UCSC configs regenerated 2026-10-28, and
+   every hosted `demos/` config matched its committed copy that day. What
+   stays open: the unlanded `chat-request-evals` branch writes 8 `scales.y`
+   lines in `scripts/agent-evals/tasks.ts`.
 
 ADR-238's 2026-10-27 amendment rules the layout words, the multi-way
 leftovers and the zoom and density gates. One multi-way gap stays open:

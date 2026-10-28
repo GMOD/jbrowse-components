@@ -60,7 +60,9 @@ once per display that embeds it, so read the trend, not the size.
      its tests and the population-genomics tutorial) write `mark.extent` in
      place of the wiggle display's beta `extent` (2026-10-27). A grep that
      day found `extent` in none of jb2hubs' checked-in configs nor a sample
-     of the hosted ones, since no hub's trackDb sets `mean+whiskers`. Both
+     of the hosted ones, since no hub's trackDb sets `mean+whiskers`. The
+     hosted `cgiab` and `gene_density` demos wrote it until their committed
+     copies were deployed on 2026-10-28. Both
      repos pushed it on 2026-10-27 (jb2hubs `3b85f2de`, ggjbrowse
      `b738e6d`). ggjbrowse installs from GitHub, so an install made before
      then still sends `display = list(extent = )`: delete `retired.extent`
