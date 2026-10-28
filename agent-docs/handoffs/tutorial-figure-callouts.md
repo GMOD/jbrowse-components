@@ -46,9 +46,6 @@ could take an "RHD" highlight.
 
 ## Seen in passing
 
-- `agent_synteny/inversion_2r`'s published PNG (the lock's, shot before
-  ab0faca9f0) draws four ribbon colors, while its spec and caption say strand
-  colors. It needs a reshoot.
 - The all-vs-all lanes now draw a "Show 1 hidden" chip on CFT073
   (`multiway_synteny/ecoli_launch_selection`), from a display change on main.
 
