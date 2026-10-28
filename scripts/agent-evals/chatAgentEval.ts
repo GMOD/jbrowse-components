@@ -111,11 +111,15 @@ const stats = {
   started: 0,
   lastEnd: 0,
   inputTokens: 0,
+  cacheReadTokens: 0,
+  cacheWriteTokens: 0,
+  billedInputTokens: 0,
   outputTokens: 0,
   toolLog: [] as string[],
   textTail: '',
 }
-const spend = () => stats.inputTokens * priceIn + stats.outputTokens * priceOut
+const spend = () =>
+  stats.billedInputTokens * priceIn + stats.outputTokens * priceOut
 
 function countUsage(body: string) {
   let outputs = 0
@@ -127,10 +131,14 @@ function countUsage(body: string) {
       const e = JSON.parse(line.slice(5))
       if (e.type === 'message_start') {
         const u = e.message?.usage ?? {}
-        stats.inputTokens +=
-          (u.input_tokens ?? 0) +
-          (u.cache_creation_input_tokens ?? 0) +
-          (u.cache_read_input_tokens ?? 0)
+        const read = u.cache_read_input_tokens ?? 0
+        const write = u.cache_creation_input_tokens ?? 0
+        stats.inputTokens += (u.input_tokens ?? 0) + write + read
+        stats.cacheReadTokens += read
+        stats.cacheWriteTokens += write
+        // the 5-minute cache: writes at 1.25x the input rate, reads at 0.1x
+        stats.billedInputTokens +=
+          (u.input_tokens ?? 0) + write * 1.25 + read * 0.1
       } else if (
         e.type === 'content_block_start' &&
         e.content_block?.type === 'tool_use'
@@ -168,6 +176,7 @@ function countOllamaUsage(body: string) {
         stats.textTail = (stats.textTail + e.message.content).slice(-2500)
       }
       stats.inputTokens += e.prompt_eval_count ?? 0
+      stats.billedInputTokens += e.prompt_eval_count ?? 0
       stats.outputTokens += e.eval_count ?? 0
     } catch {}
   }
@@ -538,6 +547,9 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
   const startedBefore = stats.started
   const toolsBefore = stats.toolLog.length
   const inBefore = stats.inputTokens
+  const billedBefore = stats.billedInputTokens
+  const readBefore = stats.cacheReadTokens
+  const writeBefore = stats.cacheWriteTokens
   const outBefore = stats.outputTokens
   let answer = ''
   let error = ''
@@ -636,6 +648,7 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
     : []
   await context.close().catch(() => {})
   const inputTokens = stats.inputTokens - inBefore
+  const billedInputTokens = stats.billedInputTokens - billedBefore
   const outputTokens = stats.outputTokens - outBefore
   const row = {
     task: task.name,
@@ -647,8 +660,12 @@ async function runOnce(task: EvalTask, run: number, attempt: number) {
     error,
     calls: stats.started - startedBefore,
     inputTokens,
+    cacheReadTokens: stats.cacheReadTokens - readBefore,
+    cacheWriteTokens: stats.cacheWriteTokens - writeBefore,
     outputTokens,
-    usd: Number((inputTokens * priceIn + outputTokens * priceOut).toFixed(3)),
+    usd: Number(
+      (billedInputTokens * priceIn + outputTokens * priceOut).toFixed(3),
+    ),
     seconds: Math.round((Date.now() - before) / 1000),
     attempt,
     tools: stats.toolLog.slice(toolsBefore).map(t => t.slice(0, 300)),
