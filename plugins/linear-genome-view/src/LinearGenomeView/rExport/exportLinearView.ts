@@ -6,6 +6,7 @@ import { exportTracksToR } from './rScript.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { RExportTrack, Region } from './rScript.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /** The regions on screen, each displayed region cut to what the view shows of it. */
 function viewRegions(view: LinearGenomeViewModel): Region[] {
@@ -38,7 +39,7 @@ function viewRegions(view: LinearGenomeViewModel): Region[] {
 /** The view's assembly config as written. */
 function assemblyOf(view: LinearGenomeViewModel) {
   const name = view.assemblyNames[0]
-  const configuration = name
+  const configuration: AnyConfigurationModel | undefined = name
     ? getSession(view).assemblyManager.get(name)?.configuration
     : undefined
   return configuration

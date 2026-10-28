@@ -13,7 +13,7 @@ import type { Assembly } from './assembly.ts'
 export function getSequenceAdapterConfig(
   assembly?: Pick<Assembly, 'configuration'>,
 ): Record<string, unknown> | undefined {
-  const adapter = assembly?.configuration?.sequence?.adapter
+  const adapter = assembly?.configuration?.sequence.adapter
   return adapter ? getSnapshot(adapter) : undefined
 }
 

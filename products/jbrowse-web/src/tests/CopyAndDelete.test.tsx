@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { fireEvent, waitFor } from '@testing-library/react'
 
@@ -73,7 +73,10 @@ test('copy and delete reference sequence track disabled', () => {
     const { assemblyManager } = session
 
     view.setNewView(0.05, 5000)
-    const trackConf = getConf(assemblyManager.get('volvox')!, 'sequence')
+    const trackConf = readConfObject(
+      assemblyManager.get('volvox')!.configuration!,
+      'sequence',
+    )
 
     const trackMenuItems = session.getTrackActionMenuItems({
       config: trackConf,

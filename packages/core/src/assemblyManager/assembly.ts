@@ -6,7 +6,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { onBecomeObserved } from 'mobx'
 
-import { getConf } from '../configuration/index.ts'
+import { readConfObject } from '../configuration/index.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 import {
   createStatusFanOut,
@@ -31,13 +31,15 @@ import {
 } from './refNameMaps.ts'
 
 import type PluginManager from '../PluginManager.ts'
+import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 import type RpcManager from '../rpc/RpcManager.ts'
 import type { Feature, Region } from '../util/index.ts'
 import type { RpcStatus } from '../util/progress.ts'
+import type { BaseAssemblyConfigSchema } from './assemblyConfigSchema.ts'
 import type { RefNameAliases, RefNameMaps } from './refNameMaps.ts'
 import type { RefNameMismatch } from './refNameMismatch.ts'
-import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // re-exported so `@jbrowse/core/assemblyManager/assembly` stays the public entry
 // point for these, as plugins import them from here
@@ -64,7 +66,7 @@ export interface BasicRegion {
  * names.
  */
 export default function assemblyFactory(
-  assemblyConfigType: IAnyType,
+  assemblyConfigType: BaseAssemblyConfigSchema,
   pluginManager: PluginManager,
 ) {
   return types
@@ -172,7 +174,8 @@ export default function assemblyFactory(
        * #method
        */
       getConf(arg: string) {
-        return self.configuration ? getConf(self, arg) : undefined
+        const conf: AnyConfigurationModel | undefined = self.configuration
+        return conf ? readConfObject(conf, arg) : undefined
       },
     }))
     .views(self => ({
@@ -347,12 +350,12 @@ export default function assemblyFactory(
                 opts: optsFor(),
               }),
               getRefNameAliases({
-                config: conf.refNameAliases?.adapter,
+                config: conf.refNameAliases.adapter,
                 pluginManager,
                 opts: optsFor(),
               }),
               getCytobands({
-                config: conf.cytobands?.adapter,
+                config: conf.cytobands.adapter,
                 pluginManager,
                 opts: optsFor(),
               }),

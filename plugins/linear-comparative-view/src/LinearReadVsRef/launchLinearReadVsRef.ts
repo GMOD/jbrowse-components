@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { getSession, launchOrReplaceView } from '@jbrowse/core/util'
 
 import { buildReadVsRefSpec } from './buildReadVsRefSpec.ts'
@@ -20,10 +20,13 @@ export async function launchLinearReadVsRef({
     throw new Error('track has no assembly')
   }
   const assembly = await session.assemblyManager.waitForAssembly(trackAssembly)
-  if (!assembly) {
+  if (!assembly?.configuration) {
     throw new Error('assembly not found')
   }
-  const sequenceTrackConf = getConf(assembly, 'sequence') as {
+  const sequenceTrackConf = readConfObject(
+    assembly.configuration,
+    'sequence',
+  ) as {
     trackId: string
   }
 

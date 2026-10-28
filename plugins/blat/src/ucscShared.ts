@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { withAdapterId } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
   getEnv,
@@ -56,9 +56,9 @@ export function ucscDbStamp(
   session: UcscHost,
   name: string,
 ): string | undefined {
-  const assembly = session.assemblyManager.get(name)
-  return assembly
-    ? getConf(assembly, ['sequence', 'metadata', 'blatDb'])
+  const conf = session.assemblyManager.get(name)?.configuration
+  return conf
+    ? readConfObject(conf, ['sequence', 'metadata', 'blatDb'])
     : undefined
 }
 

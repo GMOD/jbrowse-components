@@ -32,7 +32,7 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 63 unchecked in source, 144 in tests,
+# 59 unchecked in source, 144 in tests,
 # of 1370 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/AssemblyManager/AssemblyTable.tsx  (4)
@@ -42,11 +42,6 @@ packages/app-core/src/AssemblyManager/AssemblyTable.tsx  (4)
   36	readConfObject('aliases')
 packages/app-core/src/JbApi/jbApi.ts  (1)
   1229	readConfObject('adapter')
-packages/core/src/assemblyManager/assemblyManager.ts  (4)
-  298	readConfObject('name')
-  310	readConfObject('name')
-  311	readConfObject('aliases')
-  486	readConfObject('name')
 packages/core/src/BaseFeatureWidget/formatDetails.ts  (1)
   56	readConfObject('trackId')
 packages/core/src/configuration/configTypeNarrowing.test.ts  (6)  [test]
@@ -99,8 +94,8 @@ packages/core/src/pluggableElementTypes/models/adapterSlotAlwaysMaterializes.tes
 packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx  (1)
   126	getConf('adapter')
 packages/core/src/pluggableElementTypes/models/BaseTrackModel.ts  (2)
-  209	readConfObject('adapter')
-  507	readConfObject('adapter')
+  211	readConfObject('adapter')
+  509	readConfObject('adapter')
 packages/core/src/pluggableElementTypes/models/components/SaveTrackData.tsx  (1)
   82	getConf('trackId')
 packages/core/src/pluggableElementTypes/models/expandTrackConfigShorthandE2e.test.ts  (14)  [test]
@@ -217,12 +212,12 @@ plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/JBrowse1TextSearchAdapter.t
 plugins/linear-comparative-view/src/LaunchSyntenyView/discoverMates.ts  (1)
   77	readConfObject('adapter')
 plugins/linear-comparative-view/src/LinearReadVsRef/launchLinearReadVsRef.ts  (1)
-  26	getConf('sequence')
+  26	readConfObject('sequence')
 plugins/linear-comparative-view/src/LinearSyntenyView/initTracks.integration.test.ts  (2)  [test]
   108	readConfObject('trackId')
   115	readConfObject('trackId')
 plugins/linear-genome-view/src/LinearGenomeView/rExport/exportLinearView.ts  (1)
-  71	readConfObject('adapter')
+  65	readConfObject('adapter')
 plugins/linear-genome-view/src/LinearGenomeView/svgcomponents/useViewSvgFigure.test.tsx  (1)  [test]
   100	getConf('color')
 plugins/maf/src/BgzipTaffyAdapter/configSchema.test.ts  (1)  [test]
@@ -299,10 +294,10 @@ products/jbrowse-web/src/tests/ConfigEditorWorkingCopy.test.ts  (3)  [test]
   97	readConfObject('name')
   98	readConfObject('name')
 products/jbrowse-web/src/tests/CopyAndDelete.test.tsx  (1)  [test]
-  76	getConf('sequence')
+  76	readConfObject('sequence')
 products/jbrowse-web/src/tests/GCContentTrack.test.ts  (2)  [test]
-  147	readConfObject('type')
-  154	readConfObject('type')
+  148	readConfObject('type')
+  155	readConfObject('type')
 products/jbrowse-web/src/tests/LooseTrackConfig.test.tsx  (1)  [test]
   194	readConfObject('ixFilePath')
 products/jbrowse-web/src/tests/MultiSampleVariantDemoConfig.test.ts  (4)  [test]

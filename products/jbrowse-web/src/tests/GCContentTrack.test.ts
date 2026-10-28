@@ -5,6 +5,7 @@ import { waitFor } from '@testing-library/react'
 import { createTestSessionAsync } from '../rootModel/test_util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -70,7 +71,7 @@ function findGCTrack(session: Awaited<ReturnType<typeof makeSession>>) {
 // which the hierarchical selector and the in-view track menu both reach.
 function addViaMenu(session: Awaited<ReturnType<typeof makeSession>>) {
   const refseqConf =
-    session.assemblyManager.get('volvox')!.configuration.sequence
+    session.assemblyManager.get('volvox')!.configuration!.sequence
   const addGc = session
     .getTrackListMenuItems(
       refseqConf,
@@ -90,7 +91,7 @@ test('hierarchical track selector menu offers "Add GC content track" on refseq',
   // the track selector sources the refseq config from the assembly, not from
   // session.tracks
   const refseqConf =
-    session.assemblyManager.get('volvox')!.configuration.sequence
+    session.assemblyManager.get('volvox')!.configuration!.sequence
   const items = session.getTrackListMenuItems(
     refseqConf,
     session.views[0] as LinearGenomeViewModel,
@@ -114,9 +115,9 @@ test('in-view track menu offers "Add GC content track" on refseq', async () => {
     { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
   ])
   const refseqConf =
-    session.assemblyManager.get('volvox')!.configuration.sequence
+    session.assemblyManager.get('volvox')!.configuration!.sequence
   const items = session.getTrackActionMenuItems({
-    config: refseqConf,
+    config: refseqConf as BaseTrackConfig,
     view: session.views[0] as LinearGenomeViewModel,
   })
   const trackActions = items.find(

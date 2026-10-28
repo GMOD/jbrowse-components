@@ -45,7 +45,7 @@
       "values": {
         "scope": "source",
         "calls": 598,
-        "unchecked": 63
+        "unchecked": 59
       }
     },
     {
@@ -59,7 +59,7 @@
       "values": {
         "scope": "all",
         "calls": 1370,
-        "unchecked": 207
+        "unchecked": 203
       }
     }
   ]

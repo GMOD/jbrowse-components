@@ -1,4 +1,9 @@
-import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
+import {
+  addDisposer,
+  castToReferenceSnapshot,
+  getParent,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { autorun, untracked, when } from 'mobx'
 
 import { readConfObject } from '../configuration/index.ts'
@@ -6,11 +11,13 @@ import assemblyFactory from './assembly.ts'
 import { indexAssemblyNames } from './indexAssemblyNames.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type RpcManager from '../rpc/RpcManager.ts'
 import type { StatusCallback } from '../util/progress.ts'
 import type { Assembly } from './assembly.ts'
-import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
+import type {
+  BaseAssemblyConfigModel,
+  BaseAssemblyConfigSchema,
+} from './assemblyConfigSchema.ts'
 
 type AdapterConf = Record<string, unknown>
 
@@ -18,10 +25,10 @@ type AdapterConf = Record<string, unknown>
 // covering only the fields read here
 interface AssemblyManagerParent {
   rpcManager: RpcManager
-  jbrowse: { assemblies: AnyConfigurationModel[] }
+  jbrowse: { assemblies: BaseAssemblyConfigModel[] }
   session?: {
-    sessionAssemblies?: AnyConfigurationModel[]
-    temporaryAssemblies?: AnyConfigurationModel[]
+    sessionAssemblies?: BaseAssemblyConfigModel[]
+    temporaryAssemblies?: BaseAssemblyConfigModel[]
     // only `loading` is read: a connection mid-fetch is something that could
     // still add an assembly, and settleAssemblyResolution waits for that to
     // finish rather than for a timeout
@@ -143,8 +150,10 @@ function createUnrecognizedAssemblyReports() {
  * Keeps an `Assembly` for each assembly in the config and the session, and
  * looks one up by name or alias.
  */
-function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
-  type Conf = Instance<typeof conf> // this is type any, try to narrow...
+function assemblyManagerFactory(
+  conf: BaseAssemblyConfigSchema,
+  pm: PluginManager,
+) {
   return types
     .model({
       /**
@@ -305,10 +314,10 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * model does. What {@link has} knows before the models exist, and
        * resolved by the same precedence as `assemblyNameMap`.
        */
-      get confByName(): Map<string, AnyConfigurationModel> {
+      get confByName(): Map<string, BaseAssemblyConfigModel> {
         return indexAssemblyNames(this.assemblyList, asm => ({
           name: readConfObject(asm, 'name'),
-          aliases: readConfObject(asm, 'aliases') ?? [],
+          aliases: readConfObject(asm, 'aliases'),
         }))
       },
 
@@ -473,7 +482,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
-        const reconcile = (assemblyConfs: Conf[]) => {
+        const reconcile = (assemblyConfs: BaseAssemblyConfigModel[]) => {
           // filter() returns a new plain array, so removing from
           // self.assemblies in the loop below does not skip elements
           // (removeAssembly splices the live observable array)
@@ -526,8 +535,10 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * referred to, or it can take an identifier e.g. assembly name, which is
        * used as a reference. snapshots cannot be used
        */
-      addAssembly(configuration: Conf) {
-        self.assemblies.push({ configuration })
+      addAssembly(configuration: BaseAssemblyConfigModel) {
+        self.assemblies.push({
+          configuration: castToReferenceSnapshot(configuration),
+        })
       },
     }))
 }

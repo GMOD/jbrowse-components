@@ -1050,7 +1050,7 @@ function refSeqTrackConf(
 ) {
   const { assemblyManager } = getSession(view)
   const { pluginManager } = getEnv(view)
-  const conf = assemblyManager.get(assemblyName)?.configuration.sequence as
+  const conf = assemblyManager.get(assemblyName)?.configuration?.sequence as
     | AnyConfigurationModel
     | undefined
   // the same display-compatibility question filterTracks asks of every other

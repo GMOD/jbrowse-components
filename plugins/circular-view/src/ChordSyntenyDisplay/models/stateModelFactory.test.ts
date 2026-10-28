@@ -154,7 +154,7 @@ test('a track spelling an assembly by its alias places and reorders by the canon
   addAssemblyConf(session, 'volvox2')
   session.assemblyManager
     .get('volvox2')!
-    .configuration.setSlot('aliases', ['v2'])
+    .configuration!.setSlot('aliases', ['v2'])
   addTrackConf(session, ['volvox', 'v2'])
   const view = (await session.launchView('CircularView', {
     assembly: ['volvox', 'volvox2'],
