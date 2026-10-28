@@ -119,7 +119,7 @@ translation. The view opens slowly because the plugin loads each model as a
 separate structure. Click **Reset Zoom**, the circular arrow at the top right of
 the canvas, to fit the whole ensemble.
 
-<Figure src="/img/protein/tp53_nmr_ensemble.png" caption="TP53's first coding exons beside every model of 2L14. Bands on the gene mark the codons of the helices in magenta." />
+<Figure src="/img/protein/tp53_nmr_ensemble.png" caption="TP53's first coding exons beside every model of 2L14. Yellow bands on the gene mark the codons of the helices the structure draws in magenta." />
 
 The grey spray on the right is the C-terminal tail of CBP. The first helix lies
 within the stretch the 1YCR peptide covers, and its codons straddle an intron,

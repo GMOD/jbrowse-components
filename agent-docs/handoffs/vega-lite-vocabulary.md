@@ -1,6 +1,6 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A), the y channel (Pass B), wiggle and Hi-C `data`, the tree sidebar's axis, the pileup's `mark.height`, the comparative `indels` part, the band layers' filters, `pileup.bases.unmodified`, `coverage.alleles.show`, and the feature display's labels parts, `tooltip`, `mark.height` and `representative`. Open: deleting the retired-spelling lifts once hosted configs regenerate, and the writers. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A), the y channel (Pass B), wiggle and Hi-C `data`, the tree sidebar's axis, the pileup's `mark.height`, the comparative `indels` part, the band layers' filters, `pileup.bases.unmodified`, `coverage.alleles.show`, and the feature display's labels parts, `tooltip`, `mark.height` and `representative`. Open: hosted demos matching their committed copies, the multi-way mates' attribute filters, and the writers. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
@@ -29,17 +29,9 @@ history has each landing.
 ## Next
 
 1. **Pass B's leftovers.** Every value axis is `encoding.y` (ADR-238's "The y
-   channel"): wiggle's a `YFieldChannel`, the mark display's and Manhattan's a
-   `YChannel` under `YEncoding`, the coverage band's at `coverage.encoding.y`.
-   Each display's `YScalePaths` map sits beside its schema. What stays open:
-   - **jb2hubs writes `encoding.y`** on its main (`05cef0fa`, `09cbdbca`,
-     2026-10-23), and its derivers own paths, so two share `encoding`
-     (`hubtools/src/derivedDisplay.ts`). A host that predates `encoding.y`
-     boots and loses the scale settings.
-   - **Delete the lifts once the hosted hub configs regenerate:** `retiredScalesSpelling` on the alignments, MAF,
-     wiggle and mark displays, and the `y` lift on wiggle and MAF. Until then
-     `jbrowse validate` warns on an old `scales`, in a display entry or a
-     `displayDefaults`.
+   channel"), and 825d53c1d7 deleted the beta `scales.y` and `y` lifts. `scales`
+   appears in none of the hosted UCSC configs regenerated 2026-10-28. What
+   stays open:
    - **Demos:** every hosted `demos/` config matches its committed copy.
    - The unlanded `chat-request-evals` branch writes 8 `scales.y` lines in
      `scripts/agent-evals/tasks.ts`.
@@ -65,9 +57,6 @@ deployed. Still open, each needing no further call:
   amendment and its todo `beta18-joins-host-versions`). The Trix adapter's
   `textSearchAdapterId` and `metaFilePath` stay until the merge lambda
   dedupes on `ixFilePath`.
-- **`jbrowse validate` misreads a lifted sub-schema:** it calls the flat
-  `rowColor: { domain, range }` unknown, though `rowColorConfigSchema`'s
-  preprocess lifts it at runtime.
 
 The cross-display color test is built:
 `products/jbrowse-web/src/schemaTests/colorConformance.test.ts` runs one
@@ -76,10 +65,6 @@ list names each divergence and can only shrink.
 
 ## Writers to update after each landing
 
-- **jb2hubs' hosted bovine config still writes the removed `variants` band**
-  (ADR-250): jb2hubs stopped writing it (`19eeecbe06`), and the hosted copy
-  loses the key at the next `pangenome-config/upload.sh`. A closed-schema bundle
-  drops the key silently meanwhile. Nothing under `~/src/jb2plugins` writes it.
 - **ggjbrowse:** Its R code, docs and tutorials write every setting above in
   its current spelling. Each rename needs a ggjbrowse engine re-pin, an R
   respell and a tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`),
@@ -87,12 +72,6 @@ list names each divergence and can only shrink.
   the re-pin too. The engine and tutorial pin is `d0feecc145`, which writes
   the feature display's amendment. `dog10k_lof` keeps its `557791197f` knit
   until the callset host's certificate is renewed.
-- **The wiggle `mark.extent` move:** ggjbrowse's `R/wiggle.R`, its man pages,
-  `test-wiggle.R` and tutorials write a display-level `extent`, and jb2hubs'
-  `hubtools/src/wiggleDisplay.ts` and `derivedDisplay.ts`
-  (`WIGGLE_DERIVED_PATHS`) do too. The wiggle display's `retired.extent`
-  lifts it, so the hosted configs keep loading; respell each once a release
-  ships `mark.extent`, since jb2hubs' host floor is the latest release.
 - **Figure specs:** [screenshot-spec-elegance.md](screenshot-spec-elegance.md)
   owns the respell. It can use the landed words now: filters (plain-equality
   jexl entries become predicates), constant color, legends, rows, facet and

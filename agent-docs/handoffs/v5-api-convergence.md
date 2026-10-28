@@ -60,13 +60,12 @@ once per display that embeds it, so read the trend, not the size.
      its tests and the population-genomics tutorial) write `mark.extent` in
      place of the wiggle display's beta `extent` (2026-10-27). A grep that
      day found `extent` in none of jb2hubs' checked-in configs nor a sample
-     of the hosted ones, since no hub's trackDb sets `mean+whiskers`. What keeps `retired.extent` on `LinearWiggleDisplay`'s
-     schema:
-     - Both commits sit on local main, unpushed.
-     - ggjbrowse installs from GitHub, so an install made before the push
-       still sends `display = list(extent = )`. Delete `retired.extent` once
-       the push has been out for a while, or at ggjbrowse's first tagged
-       release.
+     of the hosted ones, since no hub's trackDb sets `mean+whiskers`. Both
+     repos pushed it on 2026-10-27 (jb2hubs `3b85f2de`, ggjbrowse
+     `b738e6d`). ggjbrowse installs from GitHub, so an install made before
+     then still sends `display = list(extent = )`: delete `retired.extent`
+     on `LinearWiggleDisplay`'s schema once the push has been out for a
+     while, or at ggjbrowse's first tagged release.
 2. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
    `@jbrowse/tables` and `@jbrowse/launch-args` ship with v5 at its version,
    betas included (Colin, 2026-10-27). Left: baseline

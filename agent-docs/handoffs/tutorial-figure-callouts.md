@@ -46,10 +46,9 @@ could take an "RHD" highlight.
 
 ## Seen in passing
 
-- `agent_synteny/inversion_2r`'s published PNG shows four ribbon colors while its
-  spec sets `color: 'strand'`; it may be stale.
-- `tp53_structures/tp53_nmr_ensemble`'s caption says the gene bands are magenta;
-  the genome view draws them yellow.
+- `agent_synteny/inversion_2r`'s published PNG (the lock's, shot before
+  ab0faca9f0) draws four ribbon colors, while its spec and caption say strand
+  colors. It needs a reshoot.
 - The all-vs-all lanes now draw a "Show 1 hidden" chip on CFT073
   (`multiway_synteny/ecoli_launch_selection`), from a display change on main.
 
