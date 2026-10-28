@@ -462,12 +462,6 @@ export function startMcpBridge({
     return handler?.(args, caller) ?? { error: `Unknown tool: ${tool}` }
   }
 
-  if (process.platform !== 'win32' && fs.existsSync(socketPath)) {
-    // a leftover from a crashed instance; the single-instance lock says no
-    // other live one holds it
-    fs.unlinkSync(socketPath)
-  }
-
   let connectionId = 0
   const server = net.createServer(socket => {
     const connection = connectionId++
@@ -529,8 +523,32 @@ export function startMcpBridge({
       }
     })
   })
-  server.on('error', (e: Error) => {
-    console.error('MCP bridge failed to listen:', e)
+  // A socket already at the path is a crashed instance's leftover only if
+  // nothing answers on it. The single-instance lock is per userData, so a test
+  // harness's --user-data-dir app runs beside the user's and must not take over
+  // its socket, nor remove it on quit.
+  let ownsSocket = false
+  let retried = false
+  server.on('listening', () => {
+    ownsSocket = true
+  })
+  server.on('error', (e: NodeJS.ErrnoException) => {
+    if (e.code !== 'EADDRINUSE' || process.platform === 'win32' || retried) {
+      console.error('MCP bridge failed to listen:', e)
+      return
+    }
+    retried = true
+    const probe = net.createConnection(socketPath)
+    probe.on('connect', () => {
+      probe.destroy()
+      console.error(
+        `MCP bridge not started: another JBrowse Desktop is serving ${socketPath}`,
+      )
+    })
+    probe.on('error', () => {
+      fs.rmSync(socketPath, { force: true })
+      server.listen(socketPath)
+    })
   })
   server.listen(socketPath)
 
@@ -541,7 +559,7 @@ export function startMcpBridge({
     // It is also what lets the relay timers go, which is how a test that starts
     // a bridge stops holding its worker open.
     settleOrphans('JBrowse Desktop is shutting down')
-    if (process.platform !== 'win32') {
+    if (ownsSocket && process.platform !== 'win32') {
       fs.rmSync(socketPath, { force: true })
     }
   }

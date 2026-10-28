@@ -186,6 +186,69 @@ function bridge(openTarget?: () => Promise<unknown>) {
   return started
 }
 
+describe('taking the socket', () => {
+  function startAt(socketPath: string) {
+    return startMcpBridge({
+      paths: {} as AppPaths,
+      appVersion: '9.9.9',
+      socketPath,
+      getWindow: () => null,
+      openTarget: () => Promise.resolve(),
+    })
+  }
+  function answers(socketPath: string) {
+    // the other app greets; the bridge waits for a request
+    return new Promise<string>(resolve => {
+      const s = net.createConnection(socketPath, () => {
+        setTimeout(() => {
+          s.destroy()
+          resolve('bridge')
+        }, 100)
+      })
+      s.on('data', data => {
+        s.destroy()
+        resolve(String(data))
+      })
+      s.on('error', () => {
+        resolve('refused')
+      })
+    })
+  }
+  const tempSocket = () =>
+    path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'jb-bridge-sock-')), 's')
+
+  // the single-instance lock is per userData, so an app run with its own
+  // --user-data-dir starts beside one already serving the same path
+  it('leaves a socket another live app is serving alone', async () => {
+    const socketPath = tempSocket()
+    const other = net.createServer(s => {
+      // the bridge's probe hangs up as soon as it connects
+      s.on('error', () => {})
+      s.end('other app')
+    })
+    await new Promise<void>(resolve => other.listen(socketPath, resolve))
+
+    const stop = startAt(socketPath)
+    await settle(100)
+    expect(await answers(socketPath)).toBe('other app')
+    stop()
+    expect(fs.existsSync(socketPath)).toBe(true)
+    expect(await answers(socketPath)).toBe('other app')
+    await new Promise(resolve => other.close(resolve))
+  })
+
+  it('replaces a crashed instance’s leftover socket file', async () => {
+    const socketPath = tempSocket()
+    fs.writeFileSync(socketPath, '')
+
+    const stop = startAt(socketPath)
+    await settle(100)
+    expect(await answers(socketPath)).toBe('bridge')
+    stop()
+    expect(fs.existsSync(socketPath)).toBe(false)
+  })
+})
+
 describe('relaying a tool call', () => {
   it('pushes it to the renderer and answers with what came back', async () => {
     const b = bridge()
