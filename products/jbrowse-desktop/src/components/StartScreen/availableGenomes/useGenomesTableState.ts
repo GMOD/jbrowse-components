@@ -55,12 +55,15 @@ export function useGenomesTableState() {
     allGroups,
 
     // cross-group results have their own columns, so a sort naming a
-    // group-only column has to go, as does a selection of rows about to be
-    // replaced by hits from every group
+    // group-only column has to go. A selection survives turning the search on,
+    // since the index resolves every group, but not turning it off, which
+    // would leave other groups' picks counted and never launched.
     setAllGroups: (v: boolean) => {
       setAllGroups(v)
       setSorting(undefined)
-      setSelected(new Set())
+      if (!v) {
+        setSelected(new Set())
+      }
       setPageIndex(0)
     },
     setMultipleSelection: (v: boolean) => {

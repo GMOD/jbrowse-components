@@ -71,6 +71,22 @@ export function useResultSet({
     error: globalError,
   } = useGlobalSearch({ enabled: allGroups, searchQuery })
 
+  // Against the whole group, not the rows the current filters leave, in the
+  // group's own order. With "Search all groups" on, a selection can also hold
+  // hits from other groups that clearing the query took off screen; the index
+  // still resolves those.
+  const resolveSelection = (accessions: Set<string>) => {
+    const inGroup = allData.filter(row => accessions.has(row.accession))
+    if (!allGroups) {
+      return inGroup
+    }
+    const found = new Set(inGroup.map(row => row.accession))
+    const elsewhere = new Set([...accessions].filter(a => !found.has(a)))
+    return elsewhere.size
+      ? [...inGroup, ...resolveAccessions(elsewhere)]
+      : inGroup
+  }
+
   return searchesAllGroups(allGroups, searchQuery)
     ? {
         // searchAllGroups only searches, so the status and favorites filters
@@ -81,7 +97,7 @@ export function useResultSet({
           showOnlyFavs,
           favoriteIds,
         }),
-        resolveSelection: resolveAccessions,
+        resolveSelection,
         isLoading: globalLoading,
         error: globalError,
         scopeTotal: indexedCount,
@@ -90,14 +106,7 @@ export function useResultSet({
       }
     : {
         rows: data,
-        // Against the whole group, not the rows the current filters leave. Walks
-        // the rows rather than the selection so this is one pass instead of one
-        // scan per selected accession, and so it yields them in the group's own
-        // order — which is what entriesForAccessions does on the other branch,
-        // and the two disagreeing on the order a multi-launch merges in was not
-        // a distinction anything wanted.
-        resolveSelection: accessions =>
-          allData.filter(row => accessions.has(row.accession)),
+        resolveSelection,
         // an unresolved url is the pre-fetch state, not an idle one
         isLoading: categoriesLoading || genomesLoading || !url,
         error,

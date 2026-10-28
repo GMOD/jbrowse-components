@@ -250,6 +250,28 @@ test('a cross-group selection built across two searches launches both', async ()
   ])
 })
 
+test('a cross-group pick still launches after the query is cleared', async () => {
+  const { launch } = setup()
+  const settings = await screen.findByRole('button', { name: 'Table settings' })
+  fireEvent.click(settings)
+  fireEvent.click(await screen.findByText('Enable multiple selection'))
+  fireEvent.click(await screen.findByText('Search all groups'))
+  fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' })
+
+  const search = screen.getByPlaceholderText('Search genomes...')
+  fireEvent.change(search, { target: { value: 'panda' } })
+  await screen.findByText('Ailuropoda melanoleuca')
+  fireEvent.click(screen.getAllByRole('checkbox')[1]!)
+
+  // back to browsing the UCSC group, which has no panda
+  fireEvent.change(search, { target: { value: '' } })
+  await screen.findByText('Dec. 2013 (GRCh38/hg38)')
+  fireEvent.click(screen.getByText('Open 1 selected'))
+  expect(launch).toHaveBeenCalledWith([
+    'https://jbrowse.org/hubs/genark/GCF/000/004/335/GCF_000004335.4/config.json',
+  ])
+})
+
 test('select-all adds the rows on screen without dropping the rest', async () => {
   setup()
   const settings = await screen.findByRole('button', { name: 'Table settings' })
