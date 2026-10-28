@@ -593,7 +593,9 @@ In the tier track's menu, **Display types → Feature display** draws the tier's
 segments as a row at any zoom. The tier marks where the strains differ, and
 between the tier and the graph the
 [MAF track](#whole-genome-alignment-maf-projection) shows which strain, since
-its row breaks across each bubble it skips.
+its row breaks across each bubble it skips. The figure's top track is a second
+copy of the K12 genes, kept to the insertion sequences with **Filter by → Edit
+filters...** and `startsWith(get(feature,'name') || '','ins')`.
 
 <Figure caption="K12 around two insertion sequences: the bubble tier, the MAF's strain rows and the graph track. The highlight and boxed node are insH21." src="/img/pangenome/pggb_bubble_tier.png" />
 

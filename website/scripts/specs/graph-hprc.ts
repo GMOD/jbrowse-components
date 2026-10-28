@@ -582,7 +582,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr6:32,510,000-32,600,000',
+          loc: 'chr6:32,500,000-32,560,000',
           highlight: [MHC_MARKED_DELETION],
           tracks: [
             hg38GeneLane(60),
@@ -597,7 +597,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               layoutMode: 'force',
               paneHeight: 600,
               color: { field: 'position' },
-              maxRegionBp: cutNear(90_000),
+              maxRegionBp: cutNear(60_000),
             }),
           ],
         },
