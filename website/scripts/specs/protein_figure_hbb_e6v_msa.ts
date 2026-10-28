@@ -238,9 +238,9 @@ function hbbMsaSession() {
     ]
   }
   const [top, bottom] = layout.children
-  top.size = 48
+  top.size = 49.5
   top.tabs[0]!.viewIds.push('msa-HBB')
-  bottom.size = 52
+  bottom.size = 50.5
   const [wildPanel, sicklePanel] = bottom.children
   bottom.children = [
     { ...wildPanel, size: 33 },
@@ -289,7 +289,7 @@ export const proteinHbbE6vMsaSpecs: ScreenshotSpec[] = [
     ],
     tooltip: 'hide',
     viewportWidth: VIEW_WIDTH,
-    viewportHeight: 1515,
+    viewportHeight: 1560,
     actions: [
       { type: 'waitForAppSettled' },
       PARK_CURSOR,
