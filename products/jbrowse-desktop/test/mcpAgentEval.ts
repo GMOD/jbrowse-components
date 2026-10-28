@@ -52,6 +52,7 @@ import {
 } from '../../../scripts/agent-evals/jbUsage.ts'
 import {
   BASELINE_SPEC,
+  NOT_DRAWN,
   selectTasks,
   stageWork,
 } from '../../../scripts/agent-evals/tasks.ts'
@@ -146,6 +147,7 @@ interface RunMetrics {
   task: string
   run: number
   client: string
+  notDrawn: unknown
   pass: boolean
   detail: unknown
   answer: string
@@ -450,11 +452,20 @@ try {
       if (refusal) {
         break
       }
+      const notDrawn = task.grade
+        ? await session.client
+            .callJson('run_javascript', { code: NOT_DRAWN, timeoutMs: 40_000 })
+            .then(r => r.value)
+            .catch((e: unknown) => [
+              { trackId: '?', phase: 'unread', reason: `${e}`.slice(0, 200) },
+            ])
+        : []
       const row: RunMetrics = {
         task: task.name,
         run,
         client,
         ...verdict,
+        notDrawn,
         ...counted,
       }
       metrics.push(row)
