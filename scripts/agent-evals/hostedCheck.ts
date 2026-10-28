@@ -1,10 +1,12 @@
 import puppeteer from 'puppeteer'
 
 import { servePageBridge } from './pageBridge.ts'
-import { TASKS } from './tasks.ts'
+import { NOT_DRAWN, TASKS, drawnPass } from './tasks.ts'
 
 const prefix = process.argv[2] ?? 'fr-'
-const build = process.argv[3] ?? '/home/cdiesh/src/jbrowse-components/products/jbrowse-web/build'
+const build =
+  process.argv[3] ??
+  '/home/cdiesh/src/jbrowse-components/products/jbrowse-web/build'
 const bridge = await servePageBridge(build)
 const browser = await puppeteer.launch({
   headless: true,
@@ -48,7 +50,15 @@ try {
       if (!after.pass) {
         problems.push(`fails solution ${JSON.stringify(after.detail)}`)
       }
-      console.log(`${problems.length ? 'BAD' : 'ok '} ${t.name} ${problems.join('; ').slice(0, 900) || JSON.stringify(after.detail).slice(0, 300)}`)
+      if (after.pass && t.draws) {
+        const notDrawn = await run(NOT_DRAWN)
+        if (!drawnPass(t, after.pass, notDrawn)) {
+          problems.push(`solution leaves undrawn ${JSON.stringify(notDrawn)}`)
+        }
+      }
+      console.log(
+        `${problems.length ? 'BAD' : 'ok '} ${t.name} ${problems.join('; ').slice(0, 900) || JSON.stringify(after.detail).slice(0, 300)}`,
+      )
     } catch (e) {
       problems.push(String(e).slice(0, 600))
       console.log(`BAD ${t.name} ${problems.join('; ')}`)
