@@ -1878,7 +1878,7 @@ TASKS.push(
           haplotypes: hprc?.type === 'LinearMultiSampleVariantDisplay' && hprc.unit === 'haplotype' && (hprc.sources ?? []).some(s => s.HP === 1),
           line: (typeof mark === 'string' ? mark : mark?.type) === 'line' && phylo?.domain?.[0] === -4 && phylo?.domain?.[1] === 8,
           compact: genes?.displayMode === 'compact',
-          pathogenic: /clinSign|_clinSignCode|aggrGermClass/.test(filters) && /Pathogenic|PATH|\\bP\\b/.test(filters),
+          pathogenic: /clinSign|_clinSignCode|aggrGermClass/.test(filters) && /Pathogenic|PATH|\\bP\\b|'PG'|"PG"/.test(filters),
         }
         out.push({ checks, mark, domain: phylo?.domain, filters: filters.slice(0, 200) })
       }
