@@ -1,18 +1,18 @@
 import { hydrateTrackConfig, readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import {
+  getEnv,
   isSessionModelWithConnectionEditing,
   isSessionWithPublishTrackConf,
 } from '@jbrowse/core/util'
-import { getEnv, getSnapshot } from '@jbrowse/mobx-state-tree'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import createViewState from './createViewState.ts'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 function hydratedSnapshot(state: IStateTreeNode, conf: unknown) {
-  const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(state)
+  const { pluginManager } = getEnv(state)
   return getSnapshot(
     hydrateTrackConfig(pluginManager, conf as Record<string, unknown>)!,
   )

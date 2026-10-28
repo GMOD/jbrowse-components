@@ -1088,7 +1088,7 @@ export default defineConfig(
       'no-restricted-imports': [
         'error',
         {
-          paths: [noUseEffectEvent],
+          paths: [noUseEffectEvent, noMstGetEnv],
           patterns: [noSrcImport],
         },
       ],
@@ -1153,14 +1153,14 @@ export default defineConfig(
   // The one file that has to reach another package's src: it pins the app's
   // format guesser to the CLI's, and @jbrowse/cli publishes a binary rather
   // than an importable entry point, so there is no public API to compare
-  // against. The useEffectEvent path stays on.
+  // against. The paths stay on.
   {
     files: ['products/jbrowse-web/src/addTrackFormats.test.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
         {
-          paths: [noUseEffectEvent],
+          paths: [noUseEffectEvent, noMstGetEnv],
         },
       ],
     },

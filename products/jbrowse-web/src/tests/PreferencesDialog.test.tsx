@@ -1,19 +1,17 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getEnv } from '@jbrowse/mobx-state-tree'
+import { getEnv } from '@jbrowse/core/util'
 import { PreferencesDialog } from '@jbrowse/product-core'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
 import { createTestSession } from '../rootModel/test_util.ts'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
-
 jest.mock('../makeWorkerInstance', () => () => {})
 
 function renderPrefs() {
   localStorage.clear()
   const session = createTestSession()
-  const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(session)
+  const { pluginManager } = getEnv(session)
   const utils = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <PreferencesDialog

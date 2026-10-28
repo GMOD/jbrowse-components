@@ -7,14 +7,10 @@ import {
 } from '@jbrowse/core/configuration'
 import { extendViewType } from '@jbrowse/core/pluggableElementTypes'
 import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearchAdapterType'
+import { getEnv } from '@jbrowse/core/util'
 import { resolveUriLocation } from '@jbrowse/core/util/io'
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
-import {
-  getEnv,
-  getSnapshot,
-  isAlive,
-  isStateTreeNode,
-} from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
 import { createLinearGenomeView } from './index.ts'
@@ -232,7 +228,7 @@ test('assemblyNames is stamped onto full configs arriving after mount', async ()
 // A worker started from a blob: URL has no base to resolve a relative path
 // against, so the location has to arrive carrying the page's
 function resolvedUri(session: ViewModel['session'], trackId: string) {
-  const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(session)
+  const { pluginManager } = getEnv(session)
   const conf = session.getTrackById(trackId)
   const snapshot = isStateTreeNode(conf) ? getSnapshot(conf) : conf
   const { bedGzLocation } = readConfObject(

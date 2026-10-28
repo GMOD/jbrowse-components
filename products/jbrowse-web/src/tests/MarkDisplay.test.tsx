@@ -1,8 +1,7 @@
 import './svgExportMocks.ts'
 
-import { saveAs } from '@jbrowse/core/util'
+import { getEnv, saveAs } from '@jbrowse/core/util'
 import { featureIndexAt } from '@jbrowse/core/util/markEncoding'
-import { getEnv } from '@jbrowse/mobx-state-tree'
 import { fireEvent, waitFor } from '@testing-library/react'
 
 import {
@@ -15,7 +14,6 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
 import type { LinearMarkDisplayModel } from '@jbrowse/plugin-marks/LinearMarkDisplay/stateModel'
 
@@ -327,7 +325,7 @@ test('a binned count and the raw features share one fetch, and each draws in its
 
 test('the mark display is offered on every track type whose adapters it reads', async () => {
   const { session } = await createView(volvoxConfigWithTracks(['volvox_bam']))
-  const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(session)
+  const { pluginManager } = getEnv(session)
   for (const trackType of ['FeatureTrack', 'AlignmentsTrack', 'VariantTrack']) {
     expect(
       pluginManager.getTrackType(trackType).displayTypes.map(d => d.name),

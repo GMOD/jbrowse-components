@@ -39,6 +39,7 @@ import {
   viewDisplayNames,
 } from '@jbrowse/core/util/tracks'
 import { unknownKeysMessage } from '@jbrowse/core/util/withLaunchInput'
+// eslint-disable-next-line no-restricted-imports -- jb.mst hands scripts the whole MST namespace
 import * as mst from '@jbrowse/mobx-state-tree'
 import {
   applySnapshot,

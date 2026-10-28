@@ -4,9 +4,9 @@ import {
   readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
+import { getEnv } from '@jbrowse/core/util'
 import {
   applySnapshot,
-  getEnv,
   getSnapshot,
   isStateTreeNode,
   recordPatches,
@@ -17,12 +17,11 @@ import { autorun, getDependencyTree } from 'mobx'
 
 import { createViewState, createViewStateAsync } from './index.ts'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 function hydratedSnapshot(state: IStateTreeNode, conf: unknown) {
-  const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(state)
+  const { pluginManager } = getEnv(state)
   return getSnapshot(
     hydrateTrackConfig(pluginManager, conf as Record<string, unknown>)!,
   )
@@ -318,7 +317,7 @@ describe('a reset of an admin-set slot survives a reload', () => {
   }
 
   function pluginManagerOf(state: IStateTreeNode) {
-    return getEnv<{ pluginManager: PluginManager }>(state).pluginManager
+    return getEnv(state).pluginManager
   }
 
   function manhattan(trackConf: AnyConfigurationModel) {
@@ -487,9 +486,7 @@ test('a desktop export diffs a hub track and assembly through their schemas', ()
     },
   }
   const state = createViewState({ assembly, tracks: [hubTrack] })
-  const pluginManager = getEnv<{ pluginManager: PluginManager }>(
-    state,
-  ).pluginManager
+  const pluginManager = getEnv(state).pluginManager
   const forms = hydratedForms(
     pluginManager,
     assemblyConfigSchemaFactory(pluginManager),

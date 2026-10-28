@@ -1,5 +1,5 @@
+import { getEnv } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { getEnv } from '@jbrowse/mobx-state-tree'
 import { WIDTH_FADE_FLOOR } from '@jbrowse/synteny-core'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { reaction, when } from 'mobx'
