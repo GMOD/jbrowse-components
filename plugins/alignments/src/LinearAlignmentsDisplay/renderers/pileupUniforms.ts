@@ -43,17 +43,13 @@ export function pileupUniformViews(scratch: ArrayBuffer): PileupUniformViews {
 }
 
 // Which ColorPalette entry backs each NAMED shader color uniform — the ones a
-// pass reads by name (`u.colorBaseA` in snpCoverage, `u.colorInsertion` in
-// insertion). The indexed palettes are separate and written below.
+// pass reads by name (`u.colorInsertion` in insertion). The five base colors
+// are named slots too, written below from `effectiveBaseColors`; the indexed
+// palettes are separate.
 //
 // EVERY ENTRY IS A MARK, none a read fill: a read's color is its RC_* category
 // and reaches the GPU through `readCategoryColor` (see alignmentsUniforms.slang).
 export const PALETTE_UNIFORM_FIELDS = {
-  colorBaseA: 'colorBaseA',
-  colorBaseC: 'colorBaseC',
-  colorBaseG: 'colorBaseG',
-  colorBaseT: 'colorBaseT',
-  colorBaseN: 'colorBaseN',
   colorInsertion: 'colorInsertion',
   colorDeletion: 'colorDeletion',
   colorSkip: 'colorSkip',
@@ -122,8 +118,8 @@ export function writePileupPalette(
     const rgb = c.readCategoryColors[category]
     readShader.setUniformReadCategoryColor(f32, slot, rgb[0], rgb[1], rgb[2], 1)
   }
-  // The five base slots again, resolved: `effectiveBaseColors` is where the
-  // modifications-mode mute is decided for both backends.
+  // `effectiveBaseColors` is where the modifications-mode mute is decided for
+  // both backends.
   const base = effectiveBaseColors(state)
   u32[UU.colorBaseA] = packRgb(base.A)
   u32[UU.colorBaseC] = packRgb(base.C)
