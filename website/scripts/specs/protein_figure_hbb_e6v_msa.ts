@@ -28,10 +28,12 @@ const ROWS = [
 
 // The genome view spans 60 bp: 19 of 5' UTR, then codons 1-13 and a part.
 // The label column covers the UTR and each alignment column one codon, so
-// residue N sits under codon N at the figure's width.
+// residue N sits under codon N at the figure's width. Both views are 1790px
+// inside the panel's border, and the alignment's first column starts 7px past
+// the label column: the 5px resize handle and 2px measured off a capture.
 const VIEW_WIDTH = 1800
-const BP_PX = VIEW_WIDTH / 60
-const RESIZE_HANDLE = 5
+const BP_PX = (VIEW_WIDTH - 10) / 60
+const LABEL_GUTTER = 7
 
 function msaView(feature: object) {
   return {
@@ -47,7 +49,7 @@ function msaView(feature: object) {
     drawTree: false,
     treeOrder: 'input',
     labelsAlignRight: true,
-    treeAreaWidth: 19 * BP_PX - RESIZE_HANDLE,
+    treeAreaWidth: Math.round(19 * BP_PX - LABEL_GUTTER),
     colWidth: 3 * BP_PX,
     rowHeight: 22,
     showDomains: false,
@@ -66,9 +68,9 @@ function hbbMsaSession() {
     ]
   }
   const [top, bottom] = layout.children
-  top.size = 46
+  top.size = 47
   top.tabs[0]!.viewIds.push('msa-HBB')
-  bottom.size = 54
+  bottom.size = 53
   return `?config=${UCSC_HG38_CONFIG}&session=encoded-${deflateSync(
     JSON.stringify(session),
   ).toString('base64url')}`
@@ -101,7 +103,7 @@ export const proteinHbbE6vMsaSpecs: ScreenshotSpec[] = [
     ],
     tooltip: 'hide',
     viewportWidth: VIEW_WIDTH,
-    viewportHeight: 1530,
+    viewportHeight: 1500,
     actions: [
       { type: 'waitForAppSettled' },
       PARK_CURSOR,
