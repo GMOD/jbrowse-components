@@ -1153,7 +1153,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           if (!onGenome || isSyntenyTrack(configuration)) {
             return []
           }
-          const trackId = readConfObject(configuration, 'trackId') as string
+          const trackId = readConfObject(configuration, 'trackId')
           const display = displays[0]
           return [
             display && ringDisplays.some(ring => ring.id === display.id)

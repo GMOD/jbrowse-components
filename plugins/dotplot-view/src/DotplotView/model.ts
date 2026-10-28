@@ -1267,9 +1267,7 @@ export default function stateModelFactory(pm: PluginManager) {
           const assembly = [...new Set(self.assemblyNames)]
           void getSession(self).launchView('CircularView', {
             assembly,
-            tracks: self.tracks.map(
-              track => track.configuration.trackId as string,
-            ),
+            tracks: self.tracks.map(track => track.configuration.trackId),
             autoDiagonalize: assembly.length === 2,
             ...carriedSyntenySettings(self),
           })

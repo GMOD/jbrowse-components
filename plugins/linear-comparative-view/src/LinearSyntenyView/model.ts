@@ -870,7 +870,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
         const shown = new Set(
           removedBands.flatMap(band =>
-            band.tracks.map(t => t.configuration.trackId as string),
+            band.tracks.map(t => t.configuration.trackId),
           ),
         )
         const height = removedBands[0]?.height
@@ -1240,7 +1240,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const tracks = [
           ...new Set(
             self.levels.flatMap(level =>
-              level.tracks.map(track => track.configuration.trackId as string),
+              level.tracks.map(track => track.configuration.trackId),
             ),
           ),
         ]

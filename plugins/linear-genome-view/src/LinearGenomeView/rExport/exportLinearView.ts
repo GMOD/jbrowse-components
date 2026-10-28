@@ -6,13 +6,6 @@ import { exportTracksToR } from './rScript.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { RExportTrack, Region } from './rScript.ts'
-import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
-
-type Track = LinearGenomeViewModel['tracks'][number]
-
-function trackConf(track: Track) {
-  return track.configuration as BaseTrackConfig
-}
 
 /** The regions on screen, each displayed region cut to what the view shows of it. */
 function viewRegions(view: LinearGenomeViewModel): Region[] {
@@ -65,10 +58,10 @@ function tracksOf(view: LinearGenomeViewModel) {
       tracks.push({
         trackId: track.configuration.trackId,
         trackName:
-          readConfObject(trackConf(track), 'name') ||
+          readConfObject(track.configuration, 'name') ||
           track.configuration.trackId,
         displayType: display.type,
-        adapter: readConfObject(trackConf(track), 'adapter') as Record<
+        adapter: readConfObject(track.configuration, 'adapter') as Record<
           string,
           unknown
         >,

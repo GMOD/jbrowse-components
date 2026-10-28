@@ -112,7 +112,7 @@ test('autorun fires exactly once when the track config is edited', async () => {
 
   const names: string[] = []
   const dispose = autorun(() => {
-    names.push(readConfObject(track.configuration, 'name') as string)
+    names.push(readConfObject(track.configuration, 'name'))
   })
   expect(names).toEqual(['GCContent'])
 

@@ -100,7 +100,7 @@ const rows = (view: LinearSyntenyViewModel) =>
   view.views.map(v => v.assemblyNames[0])
 
 const bands = (view: LinearSyntenyViewModel) =>
-  view.levels.map(l => l.tracks.map(t => t.configuration.trackId as string))
+  view.levels.map(l => l.tracks.map(t => t.configuration.trackId))
 
 test('the top row goes with its band, and the bands below keep their tracks', async () => {
   const { view } = await openStack()
