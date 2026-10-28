@@ -2193,3 +2193,215 @@ for (const [name, prompt] of Object.entries(UNNAMED)) {
   const task = TASKS.find(t => t.name === name)!
   TASKS.push({ ...task, name: name.replace(/^tut-/, 'un-'), prompt })
 }
+
+// Novel tasks: questions no tutorial or doc covers, on hosted hg38 data no
+// tutorial points at. Each grader computes its truth live from the hub.
+// Uncalibrated: proven only by hostedCheck, never yet run with an agent.
+const HG002_CPG = 'hg38-fiberSeqCompendium_PM00002_cpgHap'
+const MEG3_DMR = ['14', 100824000, 100828000] as const
+const PEG3_DMR = ['19', 56837000, 56841000] as const
+// `hapMeans(chrom, from, to)` is HG002's mean CpG methylation per haplotype
+const HAP_MEANS = `
+  const hapMeans = async (chrom, from, to) => {
+    const f = await jb.getFeatures({ trackId: '${HG002_CPG}', loc: 'chr' + chrom + ':' + (from + 1) + '-' + to, byteLimit: 80e6 })
+    return [1, 2].map(h => { const xs = f.filter(x => String(x.get('source')).endsWith('Hap' + h)).map(x => x.get('score')); return xs.reduce((a, b) => a + b, 0) / xs.length })
+  }`
+// `views(chrom, from, to, maxSpan, cover)`: the hg38 views showing that
+// window, each with its track ids; `cover` asks for the whole window
+const NV_VIEWS = `
+  const views = async (chrom, from, to, maxSpan, cover) => {
+    const out = []
+    for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
+      const rs = await jb.visibleRegions(v.id)
+      if (rs.some(r => r.refName.replace(/^chr/, '') === chrom && (cover ? r.start <= from && r.end >= to : r.start < to && r.end > from) && r.end - r.start < maxSpan)) {
+        out.push({ id: v.id, ids: v.tracks.map(t => t.configuration.trackId) })
+      }
+    }
+    return out
+  }
+  const GENES = /^hg38-(ncbiRefSeq\\w*|knownGene\\w*|ensGene|mane|wgEncodeGencode\\w*)$/`
+// The haplotype numbers a reply calls methylated, and the ones it calls
+// paternal (a haplotype called maternal counts as the other one)
+const HAP_CLAIMS = `${FINAL}
+  const HAP = '(?:hap(?:lotype)?|HP)\\\\s*[=:#]?\\\\s*([12])\\\\b'
+  const GAP = '((?:(?!hap|HP\\\\s*[=:#]?\\\\s*[12])[^.;\\\\n]){0,80}?)'
+  const claimed = (forward, reverse, flip) => {
+    const out = new Set()
+    for (const m of final.matchAll(new RegExp(HAP + GAP + forward, 'gi'))) {
+      if (!/\\b(less|lower|low|not|no|barely|hypo\\w*|un\\w*)\\b/i.test(m[2])) out.add(flip(m[0]) ? 3 - Number(m[1]) : Number(m[1]))
+    }
+    for (const m of final.matchAll(new RegExp(reverse + '\\\\s+(?:haplotype|copy|allele|chromosome|homolog|one)?\\\\s*(?:is|=|:|corresponds to|maps to|is on|on)?\\\\s*(?:the\\\\s+)?' + HAP, 'gi'))) {
+      out.add(flip(m[0]) ? 3 - Number(m[1]) : Number(m[1]))
+    }
+    return [...out]
+  }
+  const methylated = claimed('\\\\b(?:(?:hyper)?methylated|(?:carries|has|holds|bears) (?:the |most )?methylation)', '\\\\b(?:hyper)?methylated', () => false)
+  const paternal = claimed('\\\\b(paternal|maternal|father|mother)', '\\\\b(?:paternal|maternal)', s => /maternal|mother/i.test(s))`
+
+TASKS.push(
+  {
+    name: 'nv-meg3-imprint-haplotype',
+    tutorial: true,
+    draws: 'cpgHap|cpgDiff',
+    config: HG38_HUB,
+    prompt:
+      'Is the MEG3 promoter imprinted in HG002, methylated on only one of its two haplotypes? Show me haplotype-resolved methylation there in hg38 and tell me which haplotype carries the methylation.',
+    solution: `${HAP_MEANS}
+      await jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr14:100,818,000-100,834,000', tracks: ['hg38-mane', '${HG002_CPG}'] }] }, 90000)
+      const [h1, h2] = await hapMeans(${MEG3_DMR.map(x => JSON.stringify(x)).join(', ')})
+      return 'Yes. Haplotype ' + (h1 > h2 ? 1 : 2) + ' is methylated across the MEG3 promoter DMR, and haplotype ' + (h1 > h2 ? 2 : 1) + ' is largely unmethylated.'`,
+    grade: `${HAP_MEANS}
+      ${NV_VIEWS}
+      ${HAP_CLAIMS}
+      const [h1, h2] = await hapMeans(${MEG3_DMR.map(x => JSON.stringify(x)).join(', ')})
+      const truth = h1 > h2 ? 1 : 2
+      const shown = (await views(${MEG3_DMR.map(x => JSON.stringify(x)).join(', ')}, 500000)).filter(v => v.ids.some(i => /^hg38-fiberSeqCompendium_PM00002_cpg(Hap|Diff)$/.test(i)))
+      return { pass: Math.abs(h1 - h2) >= 20 && shown.length > 0 && methylated.length === 1 && methylated[0] === truth, detail: { h1, h2, truth, methylated, shown, final: final.slice(-300) } }`,
+  },
+  {
+    name: 'nv-hg002-paternal-haplotype',
+    tutorial: true,
+    draws: 'cpgHap|cpgDiff',
+    config: HG38_HUB,
+    prompt:
+      "HG002's long-read methylation tracks number its haplotypes 1 and 2 rather than by parent. Use the imprinted DMRs at PEG3 and MEG3 to work out which haplotype is the paternal one, and show me both DMRs side by side in hg38.",
+    solution: `${HAP_MEANS}
+      await jb.loadSessionSpec({ views: [
+        { type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr19:56,834,000-56,844,000', tracks: ['hg38-mane', '${HG002_CPG}'] },
+        { type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr14:100,818,000-100,834,000', tracks: ['hg38-mane', '${HG002_CPG}'] } ] }, 90000)
+      const [m1, m2] = await hapMeans(${MEG3_DMR.map(x => JSON.stringify(x)).join(', ')})
+      const pat = m1 > m2 ? 1 : 2
+      return 'MEG3 is methylated on the paternal copy and PEG3 on the maternal one; haplotype ' + pat + ' carries the MEG3 methylation, so haplotype ' + pat + ' is paternal.'`,
+    grade: `${HAP_MEANS}
+      ${NV_VIEWS}
+      ${HAP_CLAIMS}
+      const [m1, m2] = await hapMeans(${MEG3_DMR.map(x => JSON.stringify(x)).join(', ')})
+      const [p1, p2] = await hapMeans(${PEG3_DMR.map(x => JSON.stringify(x)).join(', ')})
+      const truth = m1 > m2 ? 1 : 2
+      const agree = (m1 > m2) === (p2 > p1) && Math.abs(m1 - m2) >= 20 && Math.abs(p1 - p2) >= 20
+      const meth = v => v.ids.some(i => /^hg38-fiberSeqCompendium_PM00002_cpg(Hap|Diff)$/.test(i))
+      const meg3 = (await views(${MEG3_DMR.map(x => JSON.stringify(x)).join(', ')}, 500000)).filter(meth)
+      const peg3 = (await views(${PEG3_DMR.map(x => JSON.stringify(x)).join(', ')}, 500000)).filter(meth)
+      return { pass: agree && meg3.length > 0 && peg3.length > 0 && paternal.length === 1 && paternal[0] === truth, detail: { meg3Means: [m1, m2], peg3Means: [p1, p2], truth, paternal, meg3, peg3, final: final.slice(-300) } }`,
+  },
+)
+
+// ε4 is rs429358 C on a haplotype with rs7412 C; `loose` counts rs429358 C
+// alone, which differs only on a rare ε1 haplotype
+const APOE_E4 = `
+  const recs = await jb.getFeatures({ trackId: 'hg38-hprc-v2.0-pangenome-vcf', loc: 'chr19:44,908,600-44,908,900', byteLimit: 80e6 })
+  const site = (pos, ref, alt) => recs.find(f => f.get('POS') === pos && f.get('REF') === ref && f.get('ALT')?.[0] === alt)
+  const rs429358 = site(44908684, 'T', 'C')
+  const rs7412 = site(44908822, 'C', 'T')
+  const haps = (f, s) => String(f?.get('samples')?.[s]?.GT ?? '').split(/[|/]/)
+  let e4 = 0
+  let loose = 0
+  let homs = 0
+  let looseHoms = 0
+  for (const s of Object.keys(rs429358?.get('samples') ?? {})) {
+    const a = haps(rs429358, s)
+    const b = haps(rs7412, s)
+    const strict = [0, 1].filter(i => a[i] === '1' && b[i] !== '1').length
+    const any = [0, 1].filter(i => a[i] === '1').length
+    e4 += strict
+    loose += any
+    homs += strict === 2 ? 1 : 0
+    looseHoms += any === 2 ? 1 : 0
+  }`
+const MYC_TSS = 127736231
+// Mean phyloP 100-way over each distal enhancer-like cCRE wholly inside the
+// 500 kb upstream of MYC's TSS
+const MYC_ELS = `
+  const ccres = (await jb.getFeatures({ trackId: 'hg38-cCREregistry', loc: 'chr8:${MYC_TSS - 500000}-${MYC_TSS}', byteLimit: 80e6 }))
+    .filter(f => f.get('cCRE_class') === 'Distal enhancer' && f.get('start') >= ${MYC_TSS - 500001} && f.get('end') <= ${MYC_TSS})
+  const means = Object.fromEntries(await Promise.all(ccres.map(async f => {
+    let sum = 0
+    for (const x of await jb.getFeatures({ trackId: 'hg38-phyloP100way', loc: 'chr8:' + (f.get('start') + 1) + '-' + f.get('end'), byteLimit: 80e6 })) {
+      const from = Math.max(x.get('start'), f.get('start'))
+      const to = Math.min(x.get('end'), f.get('end'))
+      if (to > from) { sum += (to - from) * x.get('score') }
+    }
+    return [f.get('name'), sum / (f.get('end') - f.get('start'))]
+  })))
+  const ranked = Object.entries(means).sort((a, b) => b[1] - a[1])
+  const top = ranked[0]?.[1]`
+const RS12740374 = `
+  const snp = (await jb.getFeatures({ trackId: 'hg38-dbSnp155Common', loc: 'chr1:109,274,900-109,275,000', byteLimit: 80e6 })).find(f => f.get('name') === 'rs12740374')
+  const pos = snp?.get('end')
+  const host = (await jb.getFeatures({ trackId: 'hg38-mane', loc: 'chr1:' + pos + '-' + pos, byteLimit: 80e6 })).filter(g => g.get('start') < pos && g.get('end') >= pos).map(g => g.get('name'))
+  const lof = (await jb.getFeatures({ trackId: 'hg38-pliByGene', loc: 'chr1:' + pos + '-' + pos, byteLimit: 80e6 })).find(g => host.includes(g.get('geneName')))
+  const pli = Number(lof?.get('_pli'))
+  const loeuf = Number(lof?.get('_loeuf'))`
+const MAPT_INV = `
+  const inv = (await jb.getFeatures({ trackId: 'hg38-hprcArrInvBedV1', loc: 'chr17:45,894,554-46,028,334', byteLimit: 80e6 }))
+    .sort((a, b) => (b.get('end') - b.get('start')) - (a.get('end') - a.get('start')))[0]
+  const invLen = inv ? inv.get('end') - inv.get('start') : NaN
+  const carriers = Number(inv?.get('score'))`
+
+TASKS.push(
+  {
+    name: 'nv-apoe-e4-hprc',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      'In hg38, how many of the HPRC pangenome haplotypes carry the APOE ε4 allele, and how many HPRC samples are ε4/ε4 homozygotes?',
+    solution: `${APOE_E4}
+      return e4 + ' haplotypes carry APOE ε4, and ' + homs + ' samples are ε4/ε4.'`,
+    grade: `${APOE_E4}
+      ${said}
+      return { pass: e4 > 0 && (said.includes(e4) || said.includes(loose)) && (said.includes(homs) || said.includes(looseHoms)), detail: { e4, loose, homs, looseHoms, said, final: final.slice(-300) } }`,
+  },
+  {
+    name: 'nv-myc-desert-enhancer',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      "In hg38, the 500 kb upstream of MYC's transcription start is a gene desert full of enhancers. Which ENCODE candidate enhancer there, of the distal enhancer-like class, is the most conserved by mean phyloP 100-way score? Reply with its cCRE accession.",
+    solution: `${MYC_ELS}
+      return ranked[0][0] + ' is the most conserved, with mean phyloP ' + top.toFixed(2) + '.'`,
+    grade: `${MYC_ELS}
+      ${FINAL}
+      const ids = [...final.matchAll(/EH38E\\d+/g)].map(m => m[0])
+      const claim = final.split(/(?<=[.!?\\n])\\s*/).find(t => /EH38E\\d+/.test(t) && /most|highest|top|best|answer/i.test(t))?.match(/EH38E\\d+/)?.[0] ?? ids[0]
+      return { pass: ranked.length > 50 && claim in means && means[claim] >= 0.98 * top, detail: { top: ranked.slice(0, 3), claim, claimed: means[claim], n: ranked.length } }`,
+  },
+  {
+    name: 'nv-sort1-snp-host',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      "rs12740374 is the LDL-cholesterol SNP credited to SORT1. In hg38, which gene's body does it actually lie in, and how constrained is that gene against loss of function in gnomAD (its pLI and LOEUF)? Show me the SNP with genes and the gnomAD constraint track.",
+    solution: `${RS12740374}
+      await jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr1:109,230,000-109,400,000', tracks: ['hg38-mane', 'hg38-dbSnp155Common', 'hg38-pliByGene'] }] }, 90000)
+      return 'rs12740374 lies in ' + host[0] + ', not SORT1. ' + host[0] + ' has pLI ' + pli + ' and LOEUF ' + loeuf + '.'`,
+    grade: `${RS12740374}
+      ${NV_VIEWS}
+      ${FINAL}
+      const nums = (final.match(/\\d*\\.?\\d+/g) ?? []).map(Number)
+      const named = host.some(h => new RegExp('\\\\b' + h + '\\\\b').test(final))
+      const values = [pli, loeuf].every(x => nums.some(n => Math.abs(n - x) < 0.006))
+      const shown = (await views('1', pos - 1, pos, 2000000)).filter(v => v.ids.some(i => /^hg38-pliBy/.test(i)) && v.ids.some(i => GENES.test(i)))
+      return { pass: host.length > 0 && !host.includes('SORT1') && named && values && shown.length > 0, detail: { pos, host, pli, loeuf, named, values, shown, final: final.slice(-300) } }`,
+  },
+  {
+    name: 'nv-mapt-inversion',
+    tutorial: true,
+    draws: 'hprcArrInv|genomicSuperDups',
+    config: HG38_HUB,
+    prompt:
+      'In hg38, how long is the 17q21.31 inversion over MAPT that the HPRC assemblies show, and how many of those assemblies carry it? Show me the whole inversion with MAPT and the segmental duplications flanking it, every track actually drawn.',
+    solution: `${MAPT_INV}
+      await jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr17:' + (inv.get('start') - 200000) + '-' + (inv.get('end') + 200000), tracks: ['hg38-mane', 'hg38-hprcArrInvBedV1', 'hg38-genomicSuperDups'] }] }, 90000)
+      await jb.trackModel('hg38-genomicSuperDups').applyDisplaySettings({ forceLoad: true })
+      await jb.waitReady(120000)
+      return 'The inversion spans ' + invLen.toLocaleString('en-US') + ' bp, carried by ' + carriers + ' HPRC assemblies.'`,
+    grade: `${MAPT_INV}
+      ${NV_VIEWS}
+      ${said}
+      const UNIT = { bp: 1, kb: 1e3, mb: 1e6 }
+      const lengths = [...final.matchAll(/(\\d[\\d,]*(?:\\.\\d+)?)\\s*(bp|kb|mb)\\b/gi)].map(m => Number(m[1].replaceAll(',', '')) * UNIT[m[2].toLowerCase()])
+      const length = lengths.some(l => Math.abs(l - invLen) <= 0.02 * invLen)
+      const shown = (await views('17', inv?.get('start'), inv?.get('end'), 3 * invLen, true)).filter(v => v.ids.includes('hg38-hprcArrInvBedV1') && v.ids.includes('hg38-genomicSuperDups') && v.ids.some(i => GENES.test(i)))
+      return { pass: invLen > 500000 && length && said.includes(carriers) && shown.length > 0, detail: { invLen, carriers, lengths, shown, final: final.slice(-300) } }`,
+  },
+)
