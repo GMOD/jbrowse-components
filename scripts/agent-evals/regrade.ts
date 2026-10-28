@@ -40,12 +40,18 @@ try {
       detail: unknown
     }
     if (verdict.pass !== row.pass) {
-      row.regraded = { from: row.pass, detail: row.detail, at: new Date().toISOString() }
+      row.regraded = {
+        from: row.pass,
+        detail: row.detail,
+        at: new Date().toISOString(),
+      }
       row.pass = verdict.pass
       row.detail = verdict.detail
       fs.writeFileSync(file, JSON.stringify(doc, null, 2))
     }
-    console.log(`${verdict.pass ? 'pass' : 'FAIL'} ${row.regraded ? '(changed)' : ''} ${file.split('/').slice(-2).join('/')} ${JSON.stringify(verdict.detail).slice(0, 160)}`)
+    console.log(
+      `${verdict.pass ? 'pass' : 'FAIL'} ${row.regraded ? '(changed)' : ''} ${file.split('/').slice(-2).join('/')} ${JSON.stringify(verdict.detail).slice(0, 160)}`,
+    )
   }
 } finally {
   await browser.close()

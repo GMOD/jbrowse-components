@@ -321,15 +321,13 @@ try {
         }
       }
       const notDrawn = task.grade
-        ? await bridge
-            .evaluate(NOT_DRAWN)
-            .catch((e: unknown) => [
-              {
-                trackId: '?',
-                phase: 'unread',
-                reason: String(e).slice(0, 200),
-              },
-            ])
+        ? await bridge.evaluate(NOT_DRAWN).catch((e: unknown) => [
+            {
+              trackId: '?',
+              phase: 'unread',
+              reason: String(e).slice(0, 200),
+            },
+          ])
         : []
       const row: RunMetrics = {
         task: task.name,
