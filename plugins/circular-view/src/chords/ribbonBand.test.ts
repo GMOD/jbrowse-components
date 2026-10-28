@@ -123,7 +123,10 @@ function bandStrip({ a1, a2, m1, m2 }: RibbonAngles, r: number, br: number) {
     }
     const l = first(tl)
     const q = second(tq)
-    let dir = bandNormal(tl, tq)
+    let dir =
+      k === 0 || k === N
+        ? scale(sub(q, l), 1 / Math.max(len(sub(q, l)), 1e-6))
+        : bandNormal(tl, tq)
     if (dot(sub(q, l), dir) < 0) {
       dir = scale(dir, -1)
     }
@@ -205,18 +208,18 @@ const TWISTED: [string, RibbonAngles, number, number][] = [
     20,
   ],
   [
-    'abutting ends',
-    { a1: -0.959, a2: -1.4188, m1: -1.624, m2: -1.4194 },
-    200,
-    20,
-  ],
-  [
     'curves a pixel apart for a stretch',
     { a1: 1.804, a2: 2.6397, m1: -0.5086, m2: -0.538 },
     594,
     0,
   ],
 ]
+const ABUTTING: RibbonAngles = {
+  a1: -0.959,
+  a2: -1.4188,
+  m1: -1.624,
+  m2: -1.4194,
+}
 
 test.each(TWISTED)(
   'a twisted ribbon with %s pinches at its crossing and covers each pixel once',
@@ -228,6 +231,42 @@ test.each(TWISTED)(
   },
 )
 
+// ends a fraction of a pixel apart, so the crossing sits on the rim and every
+// rung fans from it; only the end rungs, laid along the caps' chords, fold
+// against their neighbours
+test('a twisted ribbon with abutting ends grows no further than its crossing', () => {
+  const { verts, crossing } = bandStrip(ABUTTING, 200, 20)
+  expect(crossing).toBeDefined()
+  expect(overlapArea(verts.slice(2, -2))).toBeLessThan(1e-3)
+})
+
+// px from the cap's chord across the end's two angles, which the cap's inner
+// edge runs along
+function offChord(p: Vec, from: number, to: number, r: number) {
+  const a = polarPoint(r, from)
+  const chord = sub(polarPoint(r, to), a)
+  return Math.abs(cross(sub(p, a), chord)) / len(chord)
+}
+
+test.each([
+  ...TWISTED,
+  ['abutting ends', ABUTTING, 200, 20] as const,
+  ['no twist', { a1: 0, a2: 0.4, m1: 2, m2: 2.05 }, 300, 30] as const,
+])(
+  'a ribbon with %s meets each cap along its chord, leaving no seam',
+  (_, angles, r, br) => {
+    const { a1, a2, m1, m2 } = angles
+    const { verts } = bandStrip(angles, r, br)
+    const last = verts.length - 1
+    expect([
+      offChord(verts[0]!, a1, a2, r),
+      offChord(verts[1]!, a1, a2, r),
+      offChord(verts[last - 1]!, m1, m2, r),
+      offChord(verts[last]!, m1, m2, r),
+    ]).toEqual(Array.from({ length: 4 }, () => expect.closeTo(0, 6)))
+  },
+)
+
 test('an untwisted ribbon keeps its band as it was', () => {
   const angles = { a1: 0, a2: 0.15, m1: 2.5, m2: 2.65 }
   const { verts, crossing } = bandStrip(angles, 400, 0)
@@ -235,8 +274,8 @@ test('an untwisted ribbon keeps its band as it was', () => {
   expect(overlapArea(verts)).toBeLessThan(1e-3)
 })
 
-// ends apart on the circle; a ribbon whose two ends overlap folds for a
-// reason of its own
+// ends apart on the circle; a ribbon whose two ends overlap, or come within a
+// few px, folds for a reason of its own
 test('no twisted ribbon between two separate spans folds', () => {
   const rand = mulberry32(11)
   const onArc = (x: number, from: number, to: number) => {
@@ -260,6 +299,14 @@ test('no twisted ribbon between two separate spans folds', () => {
       continue
     }
     const [r, br] = i % 2 ? [200, 20] : [400, 0]
+    const nearestPx = Math.min(
+      ...[a1, a2].flatMap(a =>
+        [m1, m2].map(m => Math.abs(chordTurn(a, m)) * r),
+      ),
+    )
+    if (nearestPx < 10) {
+      continue
+    }
     const { verts, crossing } = bandStrip({ a1, a2, m1, m2 }, r, br)
     if (crossing) {
       twisted++

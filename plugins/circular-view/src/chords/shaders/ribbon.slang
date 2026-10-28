@@ -274,7 +274,10 @@ VsOut vs_main(RibbonInstance inst, uint vid : SV_VertexID) {
   }
   float2 l = firstCurve(c, tl);
   float2 q = secondCurve(c, tq);
-  float2 dir = bandNormal(c, tl, tq);
+  // an end's rung grows along its cap's chord, so the two meet edge to edge
+  float2 dir = k == 0u || k == RIBBON_BAND_SEGMENTS
+                   ? (q - l) / max(length(q - l), 1.0e-6)
+                   : bandNormal(c, tl, tq);
   float signedWidth = dot(q - l, dir);
   if (signedWidth < 0.0) {
     dir = -dir;

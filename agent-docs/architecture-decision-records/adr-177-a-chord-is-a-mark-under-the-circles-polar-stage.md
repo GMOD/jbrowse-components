@@ -79,10 +79,16 @@ rotation writes the frame and no buffer.
 triangle strip: a cap over each arc and the band between the two curves,
 paired at one parameter and grown by the antialiasing ramp's reach across the
 band's own normal, not along the pairing, which slides where the curves' speeds
-differ. A twisted ribbon's band pinches to one vertex where its curves cross,
-each curve walking evenly to it: pairing them at one parameter there folds the
-strip, and a translucent ribbon blends twice where triangles overlap
-(`ribbonBand.test.ts`). The fragment measures its distance from both curves
+differ. The two end rungs grow along their caps' chords instead. Grown across
+the normal, each one pivoted on its chord and left a seam of doubled and empty
+pixels. A twisted ribbon's band pinches to one vertex where its curves
+cross, each curve walking evenly to it: pairing them at one parameter there
+folds the strip, and a translucent ribbon blends twice where triangles overlap
+(`ribbonBand.test.ts`). The shader starts its search where the curves' chords
+cross, and those chords cross exactly when the ribbon twists. It falls back to a
+bisection only where that start leaves Newton's method unconverged. Bisecting
+every ribbon cost 13 ms per vertex-bound frame at 67k ribbons on an Intel UHD
+630; the chord start costs 3 ms. The fragment measures its distance from both curves
 across the band and from the rim radially. A chord is a strip along its curve, measured across
 it. Both declare `//! coverage: analytic`, so the display draws at one sample,
 which the WebGL2 rung now honours as the WebGPU one did.
