@@ -145,16 +145,53 @@ float bandWidthAt(RibbonCurves c, float t) {
   return dot(secondCurve(c, t) - firstCurve(c, t), bandNormal(c, t, t));
 }
 
+float perpDot(float2 a, float2 b) {
+  return a.x * b.y - a.y * b.x;
+}
+
+// Newton's method on the two curves from `at`, each one's parameter.
+float2 refineCrossing(RibbonCurves c, float2 at, int steps) {
+  for (int k = 0; k < steps; k++) {
+    float2 f = firstCurve(c, at.x) - secondCurve(c, at.y);
+    float2 dl = quadBezierTangent(c.p0, c.c0, c.p1, at.x);
+    float2 dq = quadBezierTangent(c.q0, c.c1, c.q1, 1.0 - at.y);
+    float det = perpDot(dl, dq);
+    if (abs(det) > 1.0e-6) {
+      at = clamp(at + float2(perpDot(dq, f), perpDot(f, dl)) / det,
+                 float2(0.0), float2(1.0));
+    }
+  }
+  return at;
+}
+
+bool curvesMeet(RibbonCurves c, float2 at) {
+  return length(firstCurve(c, at.x) - secondCurve(c, at.y)) < 0.25;
+}
+
 // Where a twisted ribbon's two curves cross, as each one's parameter there.
-// The band's width changes sign once between its ends, a bisection on it
-// starts Newton's method on the two curves, and a crossing it does not find
-// within a quarter pixel leaves the band as it was.
+// The curves' chords cross exactly when the ribbon's ends interleave on the
+// circle, and Newton's method starts where the chords do. Curves within a
+// pixel of each other for a stretch can leave that start unconverged, so a
+// bisection on the band's signed width starts it again, and a crossing
+// neither finds within a quarter pixel leaves the band as it was.
 bool curvesCross(RibbonCurves c, out float2 at) {
   at = float2(0.0);
-  bool startNegative = bandWidthAt(c, 0.0) < 0.0;
-  if (startNegative == (bandWidthAt(c, 1.0) < 0.0)) {
+  float2 d1 = c.p1 - c.p0;
+  float2 d2 = c.q0 - c.q1;
+  float den = perpDot(d1, d2);
+  if (abs(den) < 1.0e-6) {
     return false;
   }
+  float2 w = c.q1 - c.p0;
+  float2 chords = float2(perpDot(w, d2), perpDot(w, d1)) / den;
+  if (any(chords < float2(0.0)) || any(chords > float2(1.0))) {
+    return false;
+  }
+  at = refineCrossing(c, chords, 3);
+  if (curvesMeet(c, at)) {
+    return true;
+  }
+  bool startNegative = bandWidthAt(c, 0.0) < 0.0;
   float lo = 0.0;
   float hi = 1.0;
   for (int k = 0; k < 8; k++) {
@@ -165,18 +202,8 @@ bool curvesCross(RibbonCurves c, out float2 at) {
       hi = mid;
     }
   }
-  at = float2(0.5 * (lo + hi));
-  for (int k = 0; k < 4; k++) {
-    float2 f = firstCurve(c, at.x) - secondCurve(c, at.y);
-    float2 dl = quadBezierTangent(c.p0, c.c0, c.p1, at.x);
-    float2 dq = quadBezierTangent(c.q0, c.c1, c.q1, 1.0 - at.y);
-    float det = dl.x * dq.y - dl.y * dq.x;
-    if (abs(det) > 1.0e-6) {
-      float2 step = float2(f.y * dq.x - f.x * dq.y, f.x * dl.y - f.y * dl.x) / det;
-      at = clamp(at + step, float2(0.0), float2(1.0));
-    }
-  }
-  return length(firstCurve(c, at.x) - secondCurve(c, at.y)) < 0.25;
+  at = refineCrossing(c, float2(0.5 * (lo + hi)), 4);
+  return curvesMeet(c, at);
 }
 
 // A twisted band's parameter on one curve at `s` of the way along the strip,

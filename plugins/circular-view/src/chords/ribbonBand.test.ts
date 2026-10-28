@@ -53,11 +53,41 @@ function bandStrip({ a1, a2, m1, m2 }: RibbonAngles, r: number, br: number) {
   }
   const widthAt = (t: number) => dot(sub(second(t), first(t)), bandNormal(t, t))
 
+  function refineCrossing(start: Vec, steps: number) {
+    let at = start
+    for (let k = 0; k < steps; k++) {
+      const f = sub(first(at[0]), second(at[1]))
+      const dl = firstTangent(at[0])
+      const dq = secondTangent(at[1])
+      const det = cross(dl, dq)
+      if (Math.abs(det) > 1e-6) {
+        at = [
+          Math.min(Math.max(at[0] + cross(dq, f) / det, 0), 1),
+          Math.min(Math.max(at[1] + cross(f, dl) / det, 0), 1),
+        ]
+      }
+    }
+    return at
+  }
+  const curvesMeet = (at: Vec) => len(sub(first(at[0]), second(at[1]))) < 0.25
+
   function curvesCross(): Vec | undefined {
-    const startNegative = widthAt(0) < 0
-    if (startNegative === widthAt(1) < 0) {
+    const d1 = sub(p1, p0)
+    const d2 = sub(q0, q1)
+    const den = cross(d1, d2)
+    if (Math.abs(den) < 1e-6) {
       return undefined
     }
+    const w = sub(q1, p0)
+    const chords: Vec = [cross(w, d2) / den, cross(w, d1) / den]
+    if (chords.some(v => v < 0 || v > 1)) {
+      return undefined
+    }
+    const fromChords = refineCrossing(chords, 3)
+    if (curvesMeet(fromChords)) {
+      return fromChords
+    }
+    const startNegative = widthAt(0) < 0
     let lo = 0
     let hi = 1
     for (let k = 0; k < 8; k++) {
@@ -68,21 +98,8 @@ function bandStrip({ a1, a2, m1, m2 }: RibbonAngles, r: number, br: number) {
         hi = mid
       }
     }
-    let at: Vec = [0.5 * (lo + hi), 0.5 * (lo + hi)]
-    for (let k = 0; k < 4; k++) {
-      const f = sub(first(at[0]), second(at[1]))
-      const dl = firstTangent(at[0])
-      const dq = secondTangent(at[1])
-      const det = cross(dl, dq)
-      if (Math.abs(det) > 1e-6) {
-        const step: Vec = [-cross(f, dq) / det, -cross(dl, f) / det]
-        at = [
-          Math.min(Math.max(at[0] + step[0], 0), 1),
-          Math.min(Math.max(at[1] + step[1], 0), 1),
-        ]
-      }
-    }
-    return len(sub(first(at[0]), second(at[1]))) < 0.25 ? at : undefined
+    const bisected = refineCrossing([0.5 * (lo + hi), 0.5 * (lo + hi)], 4)
+    return curvesMeet(bisected) ? bisected : undefined
   }
 
   const at = curvesCross()
@@ -192,6 +209,12 @@ const TWISTED: [string, RibbonAngles, number, number][] = [
     { a1: -0.959, a2: -1.4188, m1: -1.624, m2: -1.4194 },
     200,
     20,
+  ],
+  [
+    'curves a pixel apart for a stretch',
+    { a1: 1.804, a2: 2.6397, m1: -0.5086, m2: -0.538 },
+    594,
+    0,
   ],
 ]
 
