@@ -1,4 +1,5 @@
 import {
+  LOG_SCORE_MIN,
   SCALE_TYPE_LOG as GENERATED_SCALE_TYPE_LOG,
   SCALE_TYPE_SYMLOG as GENERATED_SCALE_TYPE_SYMLOG,
 } from './shaders/scoreScale.generated.ts'
@@ -100,8 +101,8 @@ export function makeUnclampedScoreNormalizer(
     const logRange = Math.log2(Math.max(max, floor)) - logMin
     return logRange > 0
       ? (score: number) =>
-          (Math.log2(Math.max(score, floor)) - logMin) / logRange
-      : (score: number) => (Math.log2(Math.max(score, floor)) > logMin ? 1 : 0)
+          (Math.log2(Math.max(score, LOG_SCORE_MIN)) - logMin) / logRange
+      : (score: number) => (score > floor ? 1 : 0)
   }
   const range = max - min
   return range > 0

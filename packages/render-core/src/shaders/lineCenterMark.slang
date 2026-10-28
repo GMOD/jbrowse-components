@@ -122,5 +122,6 @@ float4 fs_main(VsOut v) : SV_Target {
   float4 color = lineFragmentColor(
     v.colorLine.x + v.colorLine.y * along, v.cutYsLo, v.cutYsHi, v.color, v.colorAlongY, v.bandTop, u, colorRamp);
   // premultiplied, so same-color overlaps union under the max blend
-  return float4(color.rgb * alpha, color.a * alpha);
+  float a = color.a * alpha;
+  return float4(color.rgb * a, a);
 }

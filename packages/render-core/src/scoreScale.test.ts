@@ -103,13 +103,8 @@ describe.each(CASES)('$name, unclamped', ({ scaleType, domain, c }) => {
   })
 })
 
-// log alone has a second floor of its own — the domain's min, or 1 — so a score
-// under it has nowhere below 0 to sit.
-test('a score below a non-log domain sits below its floor', () => {
+test('a score below the domain sits below its floor', () => {
   for (const { scaleType, domain, c } of CASES) {
-    if (scaleType === SCALE_TYPE_LOG) {
-      continue
-    }
     const [min, max] = domain
     const below = denormalizeScore(-0.5, min, max, scaleType, c)
     expect(normalizeScoreUnclamped(below, min, max, scaleType, c)).toBeCloseTo(
@@ -117,6 +112,26 @@ test('a score below a non-log domain sits below its floor', () => {
       9,
     )
   }
+})
+
+test('a log score and a cut both under the floor keep their order', () => {
+  const hoisted = makeUnclampedScoreNormalizer(10, 1000, SCALE_TYPE_LOG, 1)
+  for (const norm of [
+    hoisted,
+    (s: number) => normalizeScoreUnclamped(s, 10, 1000, SCALE_TYPE_LOG, 1),
+  ]) {
+    expect(norm(2)).toBeLessThan(norm(5))
+    expect(norm(5)).toBeLessThan(0)
+    expect(norm(0)).toBeLessThan(norm(2))
+    expect(norm(-3)).toBe(norm(0))
+  }
+})
+
+test('an infinite symlog score normalizes to the top, not NaN', () => {
+  expect(normalizeScore(Infinity, 0, 1000, SCALE_TYPE_SYMLOG, 1)).toBe(1)
+  expect(normalizeScoreUnclamped(Infinity, 0, 1000, SCALE_TYPE_SYMLOG, 1)).toBe(
+    Infinity,
+  )
 })
 
 test('a domain with no range answers where the forward step sits', () => {
