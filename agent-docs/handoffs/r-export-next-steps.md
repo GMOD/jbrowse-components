@@ -1,6 +1,6 @@
 ---
 name: r-export-next-steps
-description: "The R script export (view menu → Export R script, plugins/linear-genome-view/src/LinearGenomeView/rExport/) is a doorway to ggjbrowse: reader calls plus one jbrowse_stack(). On main. Open: the ggjbrowse vignette, release and first R users, real-data checks, and the export passing color_by_cds, amino_acids and band titles."
+description: "The R script export (view menu → Export R script, plugins/linear-genome-view/src/LinearGenomeView/rExport/) is a doorway to ggjbrowse: reader calls plus one jbrowse_stack(). On main. Open: the ggjbrowse vignette, release and first R users, and real-data checks."
 ---
 
 # R export: what is left
@@ -22,10 +22,6 @@ not wanted.
 
 ## Export side
 
-- `jbrowse_features()` takes `color_by_cds =` and `amino_acids =`. The export
-  passes neither, so a feature track's CDS coloring and amino acids drop.
-- `jbrowse_stack()` titles its bands from named arguments; the export writes
-  `jbrowse_stack(a, b)`.
 - The menu label reads "Export R script"; "(beta)" is Colin's call.
 
 Small ggjbrowse defects:
