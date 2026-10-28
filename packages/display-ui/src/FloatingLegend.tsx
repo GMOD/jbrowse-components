@@ -15,6 +15,7 @@ import { observer } from 'mobx-react'
 import {
   FLOATING_LEGEND_RIGHT_PX,
   FLOATING_LEGEND_TOP_PX,
+  TRACK_LABEL_BAND_VAR,
 } from './floatingLegendTop.ts'
 import Tooltip from './tooltip/Tooltip.tsx'
 import { TrackOverlayPortal } from './trackOverlay/TrackOverlayPortal.tsx'
@@ -230,6 +231,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const DEFAULT_MAX_ITEMS = 12
+const band = `var(${TRACK_LABEL_BAND_VAR}, 0px)`
 const DEFAULT_MAX_WIDTH = 200
 const GRADIENT_BAR_WIDTH = 100
 
@@ -556,7 +558,8 @@ function useEntriesBelow(scroller: HTMLDivElement | null) {
 // cells stays inert text beside it.
 //
 // The key covers data at the lane's top right, an overlap Colin accepted on
-// 2026-09-30. A lane shorter than the key scrolls it, and a "N more" row under
+// 2026-09-30, and rises beside an in-flow track label, which a long label on a
+// narrow view can collide with. A lane shorter than the key scrolls it, and a "N more" row under
 // the visible entries names what lies below, so neither the screen nor a still
 // of it hides an entry.
 const FloatingLegend = observer(function FloatingLegend({
@@ -606,10 +609,10 @@ const FloatingLegend = observer(function FloatingLegend({
       <div
         className={classes.legend}
         style={{
-          top,
+          top: `calc(${top}px - ${band})`,
           right,
           maxWidth,
-          maxHeight: `calc(100% - ${top + 4}px)`,
+          maxHeight: `calc(100% - ${top + 4}px + ${band})`,
         }}
         // Same doctrine as `plainChromeOverlays`' testids: a stable hook for the
         // harnesses that have to find this box. The build-your-own site's smoke

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { ErrorBanner, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import { TrackOverlaySlot } from '@jbrowse/display-ui'
+import { TRACK_LABEL_BAND_VAR, TrackOverlaySlot } from '@jbrowse/display-ui'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -192,7 +192,15 @@ const TrackContainer = observer(function TrackContainer({
           `TrackOverlayPortal` rather than by also knowing about `useSideScroll`.
           Chrome that lives inline (LDColorLegend) or runs its own drag
           (ResizeHandle, VerticalScrollbar) still carries its own marker. */}
-      <TrackOverlaySlot zIndex={100} overlayStyle={{ left: -outlineOffset }}>
+      <TrackOverlaySlot
+        zIndex={100}
+        overlayStyle={
+          {
+            left: -outlineOffset,
+            [TRACK_LABEL_BAND_VAR]: `${model.trackLabelBand(track)}px`,
+          } as React.CSSProperties
+        }
+      >
         {/* Keyed on the display: a display swap destroys the old node, so its
             subtree remounts rather than re-rendering with the dead node in its
             previous props, which React's dev-mode props diff reads. The remount
