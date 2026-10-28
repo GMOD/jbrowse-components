@@ -16,7 +16,9 @@ page — has Node. Two paths to that privilege are gated: remote-config plugins 
 and navigation (`electron/navigationGuard.ts`). Gating paths one at a time does
 not remove the privilege; the flip does.
 
-`build/preload.js` parses as ESM and throws on its own `require()`. A throwing
+The build writes the preload as `build/preload.cjs`. This package is
+`"type": "module"`, so Node parses a `preload.js` as ESM, and it throws on its
+own `require()`. A throwing
 preload does not stop the page; the renderer just has no bridge, which looks like
 `contextBridge` being broken (`buildElectronMain.ts` carries the why).
 
@@ -49,6 +51,13 @@ renderer alone. The fix is an import change: keep the alias and stop
 `LocalFile` dynamic is not enough, because `BlobFile` comes off the same index;
 deep-import `BlobFile`/`RemoteFile` too, and load `LocalFile` behind the
 capability check.
+
+The renderer also requires `node:path`. Desktop's text-indexing job
+(`src/indexJobsModel.ts`) joins its output path with it, and
+`createTextSearchConf` reaches it through `text-indexing-core`'s
+`trixFilePaths`. The worker writes the index; the renderer only names where.
+Computing those paths in the main process, which knows `userData` anyway,
+would clear both.
 
 ### 3. `isElectron` is a userAgent sniff
 

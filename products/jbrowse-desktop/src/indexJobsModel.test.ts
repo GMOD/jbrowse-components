@@ -13,13 +13,11 @@ interface RpcArgs {
   signal: AbortSignal
 }
 
-// invokeIpc reaches the main process for the userData directory, and the model
-// then mkdirs the trix output under it. Both are stubbed so a run touches no
-// disk: what these tests are about is the queue's bookkeeping, not the indexer.
+// invokeIpc reaches the main process for the userData directory; the RPC that
+// would write under it is stubbed too, so a run touches no disk.
 jest.mock('./ipc.ts', () => ({
   invokeIpc: jest.fn().mockResolvedValue('/userData'),
 }))
-jest.mock('node:fs', () => ({ mkdirSync: jest.fn() }))
 
 const JobsManager = jobsModelFactory()
 

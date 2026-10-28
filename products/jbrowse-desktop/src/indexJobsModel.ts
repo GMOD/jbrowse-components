@@ -1,4 +1,3 @@
-import fs from 'node:fs'
 import path from 'node:path'
 
 import { getOrCreateJobsListWidget } from '@jbrowse/app-core'
@@ -294,7 +293,6 @@ export default function jobsModelFactory() {
             NAME_INDICES_DIR,
             `trix-${Date.now()}`,
           )
-          fs.mkdirSync(outLocation, { recursive: true })
           await rpcManager.call('indexTracksSessionId', 'TextIndexRpcMethod', {
             tracks: trackConfigs,
             policy: { attributes, exclude },
