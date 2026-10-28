@@ -1,11 +1,11 @@
 ---
 name: protein-figures-and-viz-features
-description: "Hero figures for the protein browser (genome view linked to Mol* structures), each showing what a variant does. On main: TP53 Y220C, KRAS G12C, SNCA E46K, BRCA1 M1775R and the CCR5 Δ32 set. Open: picking the hero among them (Colin left it to us), the HBB E6V and TP53 zinc prototypes, and more figures where genome evidence drives the structure."
+description: "Hero figures for the protein browser (genome view linked to Mol* structures), each showing what a variant does. On main: the heroes TP53 Y220C and HBB E6V, then KRAS G12C, SNCA E46K, BRCA1 M1775R and the CCR5 Δ32 set. Open: more figures where genome evidence drives the structure, and the painted fold as a supporting layer."
 ---
 
 # Protein figures and 3D visualization features: what is left
 
-Revised 2026-10-21, night. Colin wants figures that win an NIH R01: one story
+Revised 2026-10-28. Colin wants figures that win an NIH R01: one story
 each, a variant whose structural consequence the reader can see, the JBrowse
 app UI in frame, short callouts, and several candidates to pick from or present
 together.
@@ -34,13 +34,23 @@ together.
   and by `alphaMissense`, one camera. Sessions beside the spec; the builders,
   the in-page camera reader and the capture script with a paint gate are
   machine-local in `/var/tmp/hero-figures/`.
-- **TP53 Y220C, the hero candidate**, `protein_figure_tp53_y220c.ts`: the
+- **TP53 Y220C, a hero**, `protein_figure_tp53_y220c.ts`: the
   scan over codons 198–224 above three opaque-surface panels at residue 220,
   2XWR (Tyr220 fills the spot), 2J1X (an empty pocket) and 9S9O (rezatapopt in
   it). The builder carries one camera through a CA superposition onto 2XWR
   (0.5 Å over 189 residues) and aims it down the pocket's least-occluded
   direction. Pills name the
   state; one callout points at the empty pocket.
+- **HBB E6V, the other hero**, `protein_figure_hbb_e6v.ts` with
+  `hbb_e6v.session.json`, built by `/var/tmp/hero2/bin/build_hbb_e6v.py`
+  (the `hb_j` prototype in main's spelling): 2HHB with Glu6 and nothing
+  beside it; 2HBS with Val6 of one tetramer in the Phe85/Leu88 pocket of the
+  next, cartoon with sphere marks. The builder carries one camera through a
+  CA superposition of 2HHB chain B onto 2HBS chain H, 48 Å out. At 58 Å
+  Protein3d wrote the Glu6 label on the other β chain in the corner, under
+  either chain fit; at 48 Å that copy leaves the frame and 2HHB draws no
+  residue label, so only the legend names Glu6. It replaced the GWAS-and-hydrophobicity
+  pair of the same name.
 - **Variant pairs** `protein_figure_brca1_m1775r.ts` and
   `protein_figure_snca_e46k.ts`; the SNCA builder looks down each fibril's rung
   axis and turns the E46K layer to put Lys80 on the wild type's pixel.
@@ -88,21 +98,10 @@ blinded ideator given only a capability sheet, a landscape survey):
 
 ## Next
 
-1. **Colin's pick among the cause figures.** He liked the three-panel Y220C,
-   asked for more options, then left the choice to us. KRAS G12C landed as
-   `protein/kras_g12c` (4OBE Gly12, 4LDJ Cys12, 6OIM sotorasib bonded to Cys12,
-   one camera with switch I and II left out of the fit) and retired
-   `kras_two_drugs`. Two prototypes remain, unlanded, on the same recipe
-   (sessions and PNGs in `/var/tmp/hero2/shots/`, contact sheet
-   `/var/tmp/hero2/candidates.png`):
-   - **HBB E6V** (`hb_j`, `build_hbb.py`): 2HHB Glu6 with nothing beside it;
-     2HBS Val6 of one tetramer in the Phe85/Leu88 pocket of the next, as
-     cartoon with sphere marks (opaque surfaces hide the contact).
-   - **TP53 zinc** (`zn_b`, `build_zinc.py`): exons 5 and 7 as two regions,
-     Cys176, His179, Cys238 and Cys242 around one zinc in 3KMD. The weakest:
-     the scan is red across the whole stretch, so the four codons do not
-     stand out, and no structure shows a mutant.
-   - R273H was dropped: no R273H crystal with DNA except with a suppressor.
+1. **The heroes are TP53 Y220C and HBB E6V** (PI, 2026-10-28). KRAS G12C
+   stays in the gallery. We dropped the TP53 zinc prototype because the scan is
+   red across the whole stretch, so its four codons do not stand out, and
+   R273H because no R273H crystal with DNA exists except with a suppressor.
 2. **Genome evidence that drives the figure.** Colin asked that the linear
    view stay critical. `protein/ccr5_delta32` is the first: three 1000
    Genomes 30x CRAMs streamed from the public S3 bucket (HG00137 Δ32/Δ32,
@@ -158,6 +157,10 @@ blinded ideator given only a capability sheet, a landscape survey):
   SNCA's codon labels overprint at the two-region boundary (an LGV
   rendering fault, unfiled). Declined: a wild-type Glu46–Lys80 distance,
   per the trap below.
+- HBB E6V: the gene track names the codon E7 (HGVS counts Met1) where the
+  pills and legend say Glu6/Val6; the codon track's labels give both. Panel B
+  has no residue label, and the "Next molecule's pocket" callout box touches
+  panel C's right edge (a smaller `dx` fixes it on the next shoot).
 - M1775R's BACH1 peptide in the mutant panel is superposed from 1T15 (1N5O has
   none); the view's title names that source, and the reviewer wants "modeled"
   in large type.
@@ -166,7 +169,7 @@ blinded ideator given only a capability sheet, a landscape survey):
   No segment superposes well (16-residue windows above 4.5 Å; the 80–97 fit
   in the layer plane is 10.7 Å), and the panels share only Lys80's spot and the
   C-terminal strand's direction.
-- Older figures: HBB pair is the weakest; BRAF, CFTR, APOE and F5 show an orange
+- Older figures: BRAF, CFTR, APOE and F5 show an orange
   "Not in the link" in the alignment toolbar; the Factor V Manhattan reads as a
   haplotype block.
 
@@ -197,8 +200,8 @@ blinded ideator given only a capability sheet, a landscape survey):
   rejected a session current main accepts. The scratch `shoot.mjs` hid it by
   loading the hosted build. Capture without `--port` to build the worktree's
   own, or rebuild the primary's.
-- Every protein figure session still nests the genome view's settings under
-  `init`, which main now warns is deprecated.
+- Every protein figure session but `hbb_e6v` still nests the genome view's
+  settings under `init`, which main now warns is deprecated.
 - A 3 Å distance line's label lands on the residue labels; the wild-type
   Glu46–Lys80 line was tried on SNCA and dropped.
 - `/tmp` is a 16 GB quota tmpfs, so run captures with `TMPDIR=/var/tmp/<dir>`.
