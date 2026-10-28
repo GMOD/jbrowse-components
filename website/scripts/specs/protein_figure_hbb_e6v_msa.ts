@@ -27,15 +27,11 @@ const ROWS = [
   ['Dolphin', 'P18990', 'MVHLTGEEKSAVT'],
 ] as const
 
-// UniProt puts every entry's Globin domain from His2 (residue 3 counting Met)
-// and P68871's helix A from Pro5. The plugin's own source, NCBI CDD, starts
-// its domain at Glu7, which would leave Glu6 outside it.
+// UniProt puts every entry's Globin domain from His2 (residue 3 counting Met).
+// The plugin's own source, NCBI CDD, starts its domain at Glu7, which would
+// leave Glu6 outside it.
 const GLOBIN = { name: 'Globin domain', color: '#c9a227' }
-const HELIX_A = { name: 'Helix A', color: '#6b4f0e' }
-const FEATURES = [
-  ...ROWS.map(([row]) => ({ row, start: 3, end: 13, ...GLOBIN })),
-  { row: 'Human', start: 6, end: 13, ...HELIX_A },
-]
+const FEATURES = ROWS.map(([row]) => ({ row, start: 3, end: 13, ...GLOBIN }))
 
 // The genome view spans 60 bp: 19 of 5' UTR, then codons 1-13 and a part.
 // The label column covers the UTR and each alignment column one codon, so
@@ -152,9 +148,9 @@ function hbbMsaSession() {
     ]
   }
   const [top, bottom] = layout.children
-  top.size = 45
+  top.size = 48
   top.tabs[0]!.viewIds.push('msa-HBB')
-  bottom.size = 55
+  bottom.size = 52
   const [wildPanel, sicklePanel] = bottom.children
   bottom.children = [
     { ...wildPanel, size: 33 },
@@ -198,6 +194,7 @@ export const proteinHbbE6vMsaSpecs: ScreenshotSpec[] = [
       '.msp-background-tasks',
       '.msp-highlight-info',
       '[data-testid="header-alignment-quality"]',
+      `[data-testid="view-container-${PANELS[1].id}"] [data-testid="protein-view-highlight-labels"]`,
     ],
     tooltip: 'hide',
     viewportWidth: VIEW_WIDTH,
@@ -244,10 +241,7 @@ export const proteinHbbE6vMsaSpecs: ScreenshotSpec[] = [
       {
         type: 'legend',
         fontSize: 20,
-        entries: [
-          { label: GLOBIN.name, color: GLOBIN.color },
-          { label: HELIX_A.name, color: HELIX_A.color },
-        ],
+        entries: [{ label: GLOBIN.name, color: GLOBIN.color }],
         anchor: {
           selector: '[data-testid="view-container-msa-HBB"]',
           alignX: 'left',
@@ -259,8 +253,8 @@ export const proteinHbbE6vMsaSpecs: ScreenshotSpec[] = [
       {
         type: 'box',
         color: '#333',
-        strokeWidth: 3,
-        pad: 18,
+        strokeWidth: 4,
+        pad: 28,
         anchor: { residue: 'H:6', view: PANELS[1].view },
         fromAnchor: { residue: 'B:88', view: PANELS[1].view },
       },
@@ -272,8 +266,8 @@ export const proteinHbbE6vMsaSpecs: ScreenshotSpec[] = [
         color: POCKET,
         leader: true,
         anchor: { residue: 'B:85', view: PANELS[2].view },
-        dx: -60,
-        dy: 230,
+        dx: 40,
+        dy: -120,
       },
     ],
   },
