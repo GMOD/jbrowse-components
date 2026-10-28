@@ -30,7 +30,7 @@ const ROWS = [
 // UniProt puts every entry's Globin domain from His2 (residue 3 counting Met).
 // The plugin's own source, NCBI CDD, starts its domain at Glu7, which would
 // leave Glu6 outside it.
-const GLOBIN = { name: 'Globin domain', color: '#c9a227' }
+const GLOBIN = { name: 'Globin domain', color: '#dfc98a' }
 const FEATURES = ROWS.map(([row]) => ({ row, start: 3, end: 13, ...GLOBIN }))
 
 // The genome view spans 60 bp: 19 of 5' UTR, then codons 1-13 and a part.
@@ -60,7 +60,6 @@ function msaView(feature: object) {
     treeAreaWidth: Math.round(19 * BP_PX - LABEL_GUTTER),
     colWidth: 3 * BP_PX,
     rowHeight: 22,
-    domainFill: false,
     showDomainLegend: false,
     turnedOffTracks: { conservation: true, 'property-conservation': true },
   }
@@ -195,10 +194,11 @@ export const proteinHbbE6vMsaSpecs: ScreenshotSpec[] = [
       '.msp-highlight-info',
       '[data-testid="header-alignment-quality"]',
       `[data-testid="view-container-${PANELS[1].id}"] [data-testid="protein-view-highlight-labels"]`,
+      '[data-testid="view-container-msa-HBB"] .MuiPaper-root:has(> button[title="Expand key"])',
     ],
     tooltip: 'hide',
     viewportWidth: VIEW_WIDTH,
-    viewportHeight: 1500,
+    viewportHeight: 1515,
     actions: [
       { type: 'waitForAppSettled' },
       PARK_CURSOR,
