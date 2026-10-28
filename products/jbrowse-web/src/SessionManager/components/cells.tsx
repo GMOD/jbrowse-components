@@ -166,8 +166,8 @@ export const ThumbnailCell = observer(function ThumbnailCell({
 // A native `title`, not a MUI Tooltip: the drawer is narrow enough that a long
 // session name ellipses, and a tooltip here would mean a popper laid over the
 // row underneath — which is exactly how this column lost its clicks once
-// already (see the scrollbar note in SessionManager's useStyles). Dated by last
-// use, since that is the order the rows arrive in.
+// already (see the scrollbar note in SessionManager's useStyles). Last use leads
+// the second line, so the ellipsis eats the summary rather than the date.
 export const NameCell = observer(function NameCell({
   row,
   session,
@@ -190,7 +190,7 @@ export const NameCell = observer(function NameCell({
         </SessionLink>
       </div>
       <div className={classes.detail}>
-        {row.summary ? `${row.summary} · ${lastUsed}` : lastUsed}
+        {row.summary ? `${lastUsed} · ${row.summary}` : lastUsed}
       </div>
     </div>
   )
