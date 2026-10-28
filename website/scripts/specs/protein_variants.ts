@@ -545,30 +545,6 @@ const FINNGEN_AD_TRACK = {
   displayDefaults: { height: 200 },
 }
 
-const HBB_GWAS_STORY = 'gwasCatalog_hbb_story'
-const HBB_GWAS_STORY_TRACK = {
-  type: 'FeatureTrack',
-  trackId: HBB_GWAS_STORY,
-  name: 'GWAS Catalog at rs334, one record per trait',
-  assemblyNames: ['hg38'],
-  adapter: {
-    type: 'BedTabixAdapter',
-    bedGzLocation: { uri: 'https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz' },
-    index: {
-      indexType: 'CSI',
-      location: { uri: 'https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz.csi' },
-    },
-  },
-  displayDefaults: {
-    filter: [
-      "jexl:feature.name == 'rs334'",
-      "jexl:feature.trait in ['Malaria', 'Hereditary hemolytic anemias (PheCode 282)']",
-      "jexl:feature.pValue in ['4E-69', '1E-323']",
-    ],
-    labels: { name: 'trait', description: { show: false } },
-  },
-}
-
 const F5: HotspotGene = {
   session: readSession('protein_browser_f5.session.json'),
   gene: 'F5',
@@ -761,36 +737,6 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         dx: 20,
         dy: 470,
       },
-    ],
-  },
-  {
-    mode: 'url',
-    name: 'protein/hbb_e6v',
-    url: hbbSession({
-      tracks: [HBB_GENE_TRACK, { trackId: HBB_GWAS_STORY, height: 170 }],
-      sessionTracks: [HBB_GWAS_STORY_TRACK],
-      msaHeight: 420,
-      pdbId: '2hhb',
-      pairStructure: { pdbId: '2hbs' },
-      proteinColor: { field: 'hydrophobicity' },
-    }),
-    ...READY,
-    viewportWidth: 2600,
-    viewportHeight: 1150,
-    actions: [
-      { type: 'waitForAppSettled' },
-      {
-        type: 'click',
-        selector:
-          '[data-testid="view-container-protein-HBB-2hbs"] button[title="Reset Zoom"]',
-      },
-      {
-        type: 'click',
-        selector:
-          '[data-testid="view-container-protein-HBB-2hbs-pair"] button[title="Reset Zoom"]',
-      },
-      PARK_CURSOR,
-      { type: 'delay', ms: 1500 },
     ],
   },
   {

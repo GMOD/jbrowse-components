@@ -1,0 +1,631 @@
+{
+  "name": "HBB E6V",
+  "views": [
+    {
+      "id": "lgv-HBB",
+      "type": "LinearGenomeView",
+      "colorByFrame": false,
+      "hideHeaderOverview": true,
+      "axis": {
+        "grid": true
+      },
+      "assembly": "hg38",
+      "loc": "chr11:5226981-5227040[rev]",
+      "tracks": [
+        {
+          "trackId": "hbb-mane",
+          "height": 40
+        },
+        {
+          "trackId": "hbb-codon6",
+          "type": "LinearBasicDisplay",
+          "height": 80,
+          "encoding": {
+            "color": {
+              "value": "jexl:get(feature,'color')"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "protein-HBB-2hhb",
+      "type": "ProteinView",
+      "displayName": "Wild-type hemoglobin (PDB 2HHB)",
+      "height": 640,
+      "zoomToBaseLevel": false,
+      "showAlignment": false,
+      "color": {
+        "field": "values",
+        "values": {
+          "1": 1,
+          "2": 1,
+          "3": 1,
+          "4": 1,
+          "5": 1,
+          "6": 1,
+          "7": 2,
+          "8": 1,
+          "9": 1,
+          "10": 1,
+          "11": 1,
+          "12": 1,
+          "13": 1,
+          "14": 1,
+          "15": 1,
+          "16": 1,
+          "17": 1,
+          "18": 1,
+          "19": 1,
+          "20": 1,
+          "21": 1,
+          "22": 1,
+          "23": 1,
+          "24": 1,
+          "25": 1,
+          "26": 1,
+          "27": 1,
+          "28": 1,
+          "29": 1,
+          "30": 1,
+          "31": 1,
+          "32": 1,
+          "33": 1,
+          "34": 1,
+          "35": 1,
+          "36": 1,
+          "37": 1,
+          "38": 1,
+          "39": 1,
+          "40": 1,
+          "41": 1,
+          "42": 1,
+          "43": 1,
+          "44": 1,
+          "45": 1,
+          "46": 1,
+          "47": 1,
+          "48": 1,
+          "49": 1,
+          "50": 1,
+          "51": 1,
+          "52": 1,
+          "53": 1,
+          "54": 1,
+          "55": 1,
+          "56": 1,
+          "57": 1,
+          "58": 1,
+          "59": 1,
+          "60": 1,
+          "61": 1,
+          "62": 1,
+          "63": 1,
+          "64": 1,
+          "65": 1,
+          "66": 1,
+          "67": 1,
+          "68": 1,
+          "69": 1,
+          "70": 1,
+          "71": 1,
+          "72": 1,
+          "73": 1,
+          "74": 1,
+          "75": 1,
+          "76": 1,
+          "77": 1,
+          "78": 1,
+          "79": 1,
+          "80": 1,
+          "81": 1,
+          "82": 1,
+          "83": 1,
+          "84": 1,
+          "85": 1,
+          "86": 1,
+          "87": 1,
+          "88": 1,
+          "89": 1,
+          "90": 1,
+          "91": 1,
+          "92": 1,
+          "93": 1,
+          "94": 1,
+          "95": 1,
+          "96": 1,
+          "97": 1,
+          "98": 1,
+          "99": 1,
+          "100": 1,
+          "101": 1,
+          "102": 1,
+          "103": 1,
+          "104": 1,
+          "105": 1,
+          "106": 1,
+          "107": 1,
+          "108": 1,
+          "109": 1,
+          "110": 1,
+          "111": 1,
+          "112": 1,
+          "113": 1,
+          "114": 1,
+          "115": 1,
+          "116": 1,
+          "117": 1,
+          "118": 1,
+          "119": 1,
+          "120": 1,
+          "121": 1,
+          "122": 1,
+          "123": 1,
+          "124": 1,
+          "125": 1,
+          "126": 1,
+          "127": 1,
+          "128": 1,
+          "129": 1,
+          "130": 1,
+          "131": 1,
+          "132": 1,
+          "133": 1,
+          "134": 1,
+          "135": 1,
+          "136": 1,
+          "137": 1,
+          "138": 1,
+          "139": 1,
+          "140": 1,
+          "141": 1,
+          "142": 1,
+          "143": 1,
+          "144": 1,
+          "145": 1,
+          "146": 1,
+          "147": 1
+        },
+        "scale": "threshold",
+        "domain": [1.5],
+        "range": ["#c9ced6", "#d1007a"],
+        "labels": ["hemoglobin", "Glu6"],
+        "title": "Color"
+      },
+      "camera": {
+        "position": [30.663, -34.585, 72.651],
+        "target": [29.472, -10.754, 31.002],
+        "up": [0.8212, 0.5052, 0.2656],
+        "mode": "orthographic"
+      },
+      "silhouettes": true,
+      "occlusion": true,
+      "marks": [
+        {
+          "site": "B:6",
+          "mark": "spheres",
+          "encoding": {
+            "color": {
+              "value": "#d1007a"
+            }
+          }
+        }
+      ],
+      "structures": [
+        {
+          "pdbId": "2hhb",
+          "assembly": "deposited",
+          "chains": ["A", "B", "C", "D"],
+          "feature": {
+            "uniqueId": "NM_000518.5",
+            "type": "mRNA",
+            "refName": "chr11",
+            "start": 5225597,
+            "end": 5227021,
+            "strand": -1,
+            "name": "NM_000518.5",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 5225597,
+                "end": 5225726,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 5226576,
+                "end": 5226799,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 5226929,
+                "end": 5227021,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MVHLTPEEKSAVTALWGKVNVDEVGGEALGRLLVVYPWTQRFFESFGDLSTPDAVMGNPKVKAHGKKVLGAFSDGLAHLDNLKGTFATLSELHCDKLHVDPENFRLLGNVLVCVLAHHFGKEFTPPVQAAYQKVVAGVANALAHKYH",
+          "connectedViewId": "lgv-HBB"
+        }
+      ]
+    },
+    {
+      "id": "protein-HBB-2hbs",
+      "type": "ProteinView",
+      "displayName": "Sickle hemoglobin, two molecules (PDB 2HBS)",
+      "height": 640,
+      "zoomToBaseLevel": false,
+      "showAlignment": false,
+      "color": {
+        "field": "values",
+        "values": {
+          "1": 1,
+          "2": 1,
+          "3": 1,
+          "4": 1,
+          "5": 1,
+          "6": 1,
+          "7": 2,
+          "8": 1,
+          "9": 1,
+          "10": 1,
+          "11": 1,
+          "12": 1,
+          "13": 1,
+          "14": 1,
+          "15": 1,
+          "16": 1,
+          "17": 1,
+          "18": 1,
+          "19": 1,
+          "20": 1,
+          "21": 1,
+          "22": 1,
+          "23": 1,
+          "24": 1,
+          "25": 1,
+          "26": 1,
+          "27": 1,
+          "28": 1,
+          "29": 1,
+          "30": 1,
+          "31": 1,
+          "32": 1,
+          "33": 1,
+          "34": 1,
+          "35": 1,
+          "36": 1,
+          "37": 1,
+          "38": 1,
+          "39": 1,
+          "40": 1,
+          "41": 1,
+          "42": 1,
+          "43": 1,
+          "44": 1,
+          "45": 1,
+          "46": 1,
+          "47": 1,
+          "48": 1,
+          "49": 1,
+          "50": 1,
+          "51": 1,
+          "52": 1,
+          "53": 1,
+          "54": 1,
+          "55": 1,
+          "56": 1,
+          "57": 1,
+          "58": 1,
+          "59": 1,
+          "60": 1,
+          "61": 1,
+          "62": 1,
+          "63": 1,
+          "64": 1,
+          "65": 1,
+          "66": 1,
+          "67": 1,
+          "68": 1,
+          "69": 1,
+          "70": 1,
+          "71": 1,
+          "72": 1,
+          "73": 1,
+          "74": 1,
+          "75": 1,
+          "76": 1,
+          "77": 1,
+          "78": 1,
+          "79": 1,
+          "80": 1,
+          "81": 1,
+          "82": 1,
+          "83": 1,
+          "84": 1,
+          "85": 1,
+          "86": 1,
+          "87": 1,
+          "88": 1,
+          "89": 1,
+          "90": 1,
+          "91": 1,
+          "92": 1,
+          "93": 1,
+          "94": 1,
+          "95": 1,
+          "96": 1,
+          "97": 1,
+          "98": 1,
+          "99": 1,
+          "100": 1,
+          "101": 1,
+          "102": 1,
+          "103": 1,
+          "104": 1,
+          "105": 1,
+          "106": 1,
+          "107": 1,
+          "108": 1,
+          "109": 1,
+          "110": 1,
+          "111": 1,
+          "112": 1,
+          "113": 1,
+          "114": 1,
+          "115": 1,
+          "116": 1,
+          "117": 1,
+          "118": 1,
+          "119": 1,
+          "120": 1,
+          "121": 1,
+          "122": 1,
+          "123": 1,
+          "124": 1,
+          "125": 1,
+          "126": 1,
+          "127": 1,
+          "128": 1,
+          "129": 1,
+          "130": 1,
+          "131": 1,
+          "132": 1,
+          "133": 1,
+          "134": 1,
+          "135": 1,
+          "136": 1,
+          "137": 1,
+          "138": 1,
+          "139": 1,
+          "140": 1,
+          "141": 1,
+          "142": 1,
+          "143": 1,
+          "144": 1,
+          "145": 1,
+          "146": 1,
+          "147": 1
+        },
+        "scale": "threshold",
+        "domain": [1.5, 2.5],
+        "range": ["#c9ced6", "#d1007a", "#009696"],
+        "labels": ["hemoglobin", "Val6", "Phe85, Leu88"],
+        "title": "Color"
+      },
+      "camera": {
+        "position": [17.896, 63.805, -9.307],
+        "target": [18.473, 46.427, 35.433],
+        "up": [-0.8249, 0.5233, 0.2139],
+        "mode": "orthographic"
+      },
+      "silhouettes": true,
+      "occlusion": true,
+      "marks": [
+        {
+          "site": "H:6",
+          "mark": "spheres",
+          "encoding": {
+            "color": {
+              "value": "#d1007a"
+            }
+          }
+        },
+        {
+          "site": "B:85",
+          "mark": "spheres",
+          "encoding": {
+            "color": {
+              "value": "#009696"
+            }
+          }
+        },
+        {
+          "site": "B:88",
+          "mark": "spheres",
+          "encoding": {
+            "color": {
+              "value": "#009696"
+            }
+          }
+        }
+      ],
+      "structures": [
+        {
+          "pdbId": "2hbs",
+          "assembly": "deposited",
+          "chains": ["A", "B", "C", "D", "E", "F", "G", "H"],
+          "feature": {
+            "uniqueId": "NM_000518.5",
+            "type": "mRNA",
+            "refName": "chr11",
+            "start": 5225597,
+            "end": 5227021,
+            "strand": -1,
+            "name": "NM_000518.5",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 5225597,
+                "end": 5225726,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 5226576,
+                "end": 5226799,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 5226929,
+                "end": 5227021,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MVHLTPEEKSAVTALWGKVNVDEVGGEALGRLLVVYPWTQRFFESFGDLSTPDAVMGNPKVKAHGKKVLGAFSDGLAHLDNLKGTFATLSELHCDKLHVDPENFRLLGNVLVCVLAHHFGKEFTPPVQAAYQKVVAGVANALAHKYH",
+          "connectedViewId": "lgv-HBB"
+        }
+      ]
+    }
+  ],
+  "sessionTracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "hbb-mane",
+      "name": "HBB NM_000518.5 (MANE Select)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "features": [
+          {
+            "uniqueId": "NM_000518.5",
+            "type": "mRNA",
+            "refName": "chr11",
+            "start": 5225597,
+            "end": 5227021,
+            "strand": -1,
+            "name": "NM_000518.5",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 5225597,
+                "end": 5225726,
+                "strand": -1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 5226576,
+                "end": 5226799,
+                "strand": -1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 5226929,
+                "end": 5227021,
+                "strand": -1,
+                "phase": 0
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hbb-codon6",
+      "name": "Codon 6 changes",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "features": [
+          {
+            "uniqueId": "h0",
+            "refName": "chr11",
+            "start": 5227001,
+            "end": 5227002,
+            "name": "E6V sickle, p.Glu7Val (c.20A>T)",
+            "color": "#d1007a"
+          },
+          {
+            "uniqueId": "h1",
+            "refName": "chr11",
+            "start": 5227002,
+            "end": 5227003,
+            "name": "E6K HbC, p.Glu7Lys (c.19G>A)",
+            "color": "#8a8f98"
+          }
+        ]
+      }
+    }
+  ],
+  "highlights": [
+    {
+      "assemblyName": "hg38",
+      "refName": "chr11",
+      "start": 5227000,
+      "end": 5227003,
+      "color": "rgba(209,0,122,0.16)",
+      "label": "E6V"
+    }
+  ],
+  "useWorkspaces": true,
+  "activePanelId": "panel-top",
+  "layout": {
+    "id": "branch-root",
+    "direction": "column",
+    "size": 1,
+    "children": [
+      {
+        "id": "panel-top",
+        "size": 28,
+        "activeTabId": "tab-top",
+        "tabs": [
+          {
+            "id": "tab-top",
+            "viewIds": ["lgv-HBB"]
+          }
+        ]
+      },
+      {
+        "id": "branch-bottom",
+        "direction": "row",
+        "size": 72,
+        "children": [
+          {
+            "id": "panel-2hhb",
+            "size": 50,
+            "activeTabId": "tab-2hhb",
+            "tabs": [
+              {
+                "id": "tab-2hhb",
+                "viewIds": ["protein-HBB-2hhb"]
+              }
+            ]
+          },
+          {
+            "id": "panel-2hbs",
+            "size": 50,
+            "activeTabId": "tab-2hbs",
+            "tabs": [
+              {
+                "id": "tab-2hbs",
+                "viewIds": ["protein-HBB-2hbs"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

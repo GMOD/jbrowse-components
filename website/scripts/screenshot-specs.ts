@@ -68,6 +68,7 @@ import { proteinBrca1M1775rSpecs } from './specs/protein_figure_brca1_m1775r.ts'
 import { proteinCcr5ComboSpecs } from './specs/protein_figure_ccr5_combo.ts'
 import { proteinCcr5Delta32Specs } from './specs/protein_figure_ccr5_delta32.ts'
 import { proteinCcr5GeneSpecs } from './specs/protein_figure_ccr5_gene.ts'
+import { proteinHbbE6vSpecs } from './specs/protein_figure_hbb_e6v.ts'
 import { proteinKrasG12cSpecs } from './specs/protein_figure_kras_g12c.ts'
 import { proteinScanVsAlphaMissenseSpecs } from './specs/protein_figure_scan_vs_alphamissense.ts'
 import { proteinSncaE46kSpecs } from './specs/protein_figure_snca_e46k.ts'
@@ -112,6 +113,7 @@ export const specs: ScreenshotSpec[] = [
   ...proteinScanVsAlphaMissenseSpecs,
   ...proteinTp53Y220cSpecs,
   ...proteinKrasG12cSpecs,
+  ...proteinHbbE6vSpecs,
   ...proteinCcr5ComboSpecs,
   ...proteinCcr5Delta32Specs,
   ...proteinCcr5GeneSpecs,
