@@ -363,7 +363,7 @@ click-drag pan.
 import { TrackOverlaySlot } from '@jbrowse/display-ui'
 
 // type signature
-({ children, zIndex, style, overlayStyle, }: { children: ReactNode; zIndex: number; style?: CSSProperties | undefined; overlayStyle?: CSSProperties | undefined; }) => Element
+({ children, zIndex, style, overlayStyle, labelBand, }: { children: ReactNode; zIndex: number; style?: CSSProperties | undefined; overlayStyle?: CSSProperties | undefined; labelBand?: number | undefined; }) => Element
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-ui/src/trackOverlay/TrackOverlaySlot.tsx)
