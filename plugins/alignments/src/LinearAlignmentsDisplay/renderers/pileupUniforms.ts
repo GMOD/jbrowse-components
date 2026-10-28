@@ -29,8 +29,8 @@ export interface PileupUniformViews {
 }
 
 /**
- * The size of the struct every pileup pass reads, and so of its scratch: a
- * write uploads the whole buffer it is handed.
+ * The size of the struct every pileup pass reads. The scratch buffer takes
+ * this size because a write uploads the whole buffer it is handed.
  */
 export const PILEUP_UNIFORMS_SIZE_BYTES = readShader.UNIFORMS_SIZE_BYTES
 
@@ -118,8 +118,8 @@ export function writePileupPalette(
     const rgb = c.readCategoryColors[category]
     readShader.setUniformReadCategoryColor(f32, slot, rgb[0], rgb[1], rgb[2], 1)
   }
-  // `effectiveBaseColors` is where the modifications-mode mute is decided for
-  // both backends.
+  // `effectiveBaseColors` decides the modifications-mode mute for both
+  // backends.
   const base = effectiveBaseColors(state)
   u32[UU.colorBaseA] = packRgb(base.A)
   u32[UU.colorBaseC] = packRgb(base.C)

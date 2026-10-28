@@ -291,25 +291,24 @@ function fillCategory(
   }
 }
 
-// Whether a read of this category paints its own baked color
-// (`readFillColors`) where it has one: the mapq ramp and the tag's value.
-// read.slang's `getReadColor` is the GPU twin.
+// Whether the painters fill a read of this category with its own baked color
+// (`readFillColors`, the mapq ramp or the tag's value) where it has one.
+// read.slang's `getReadColor` makes the same choice.
 export function paintsReadFillColor(categoryIndex: number) {
   return categoryIndex === RC_MAPQ || categoryIndex === RC_TAG
 }
 
-// Each category's palette color as CSS, by category index: what a read paints
-// unless `paintsReadFillColor` gives it its own. A painter builds it once per
-// frame rather than a string per read.
+// Each category's palette color as CSS, indexed by category, which is a read's
+// fill unless `paintsReadFillColor` picks its baked color. The read painter
+// builds the table once per frame.
 export function readCategoryCss(palette: ColorPalette) {
   return READ_COLOR_CATEGORY_BY_INDEX.map(cat =>
     rgb255(palette.readCategoryColors[cat]),
   )
 }
 
-// The CSS fill of read `i`, whose category was already baked: the one place a
-// category becomes a color, which the read painter inlines over
-// `readCategoryCss`.
+// The CSS fill of read `i` from its baked category. The read painter inlines
+// the same choice over `readCategoryCss`.
 export function readColorFromCategoryIndex(
   categoryIndex: number,
   i: number,

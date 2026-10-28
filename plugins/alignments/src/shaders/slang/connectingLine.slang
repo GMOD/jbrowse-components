@@ -1,5 +1,6 @@
 // Linked-read connecting line: a 1px horizontal hairline between each pair of
-// mates in a chain, in the theme's foreground, on the row the intron line takes.
+// mates in a chain, in the theme's foreground, on the pixel row the intron line
+// also uses.
 //! targets: wgsl, glsl
 //! export-consts: CONNECTING_LINE_ALPHA
 

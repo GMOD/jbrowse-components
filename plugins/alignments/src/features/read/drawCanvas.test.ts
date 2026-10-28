@@ -147,8 +147,8 @@ test('consecutive same-color reads each still paint their fill', () => {
   expect(fills).toEqual(['rgb(255,0,0)', 'rgb(255,0,0)'])
 })
 
-// Under mapq and tag a read paints the color baked for it, formatted once per
-// run of that color, and the field's palette color where none was baked.
+// Under mapq and tag the painter fills a read with the color baked for it, and
+// with the field's palette color where none was baked.
 test('a baked read color paints per read, and its absence the palette', () => {
   const red = 0xff0000ff
   const blue = 0xffff0000

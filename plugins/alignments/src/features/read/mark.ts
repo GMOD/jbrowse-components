@@ -231,10 +231,10 @@ function traceReadArrow(
 const PLACED = new Float64Array(4)
 
 /**
- * Segments `from..to` in paint order, and the one statement of where each
- * goes. With a `ctx` it paints them; without one it stops at the first on the
- * canvas and writes its box, arrowhead included, as `[left, top, width,
- * height]` to `out`, so the hover box is the painted ink by construction.
+ * Places segments `from..to` in paint order. With a `ctx` it paints them;
+ * without one it stops at the first segment on the canvas and writes that
+ * segment's box, arrowhead included, as `[left, top, width, height]` to `out`,
+ * so the hover box and the painted ink come from one placement.
  */
 function walkReads(
   ctx: MarkContext2D | undefined,
@@ -253,27 +253,27 @@ function walkReads(
     featureHeight: fH,
   }
 
-  // The frame-level half of the outline gate, which the GPU spends a uniform
-  // on: it cannot vary per read (`shouldOutlineReads`).
+  // The frame-level half of the outline gate (`shouldOutlineReads`), which the
+  // GPU also holds in a uniform because it cannot vary per read.
   const outlineFrame = shouldOutlineReads(state)
   if (ctx !== undefined) {
     ctx.strokeStyle = OUTLINE_STYLE
     ctx.lineWidth = READ_OUTLINE_PX
   }
 
-  // `readColorFromCategoryIndex` inlined over a table built once per frame,
-  // with a read's own color formatted once per run of it: a string built per
-  // read made this walk 2.3-6x slower on a counting context, which parses no
-  // fillStyle. A real one does, so the assignment is guarded too.
+  // `readColorFromCategoryIndex`, inlined over a table built once per frame,
+  // formats a read's baked color once per run of it. Building a string per read
+  // made this walk 2.3-6x slower on a counting context, which parses no
+  // fillStyle; a real context parses each assignment, so the walk also skips a
+  // repeated one.
   const categoryCss = readCategoryCss(state.colors)
   const fillColors = region.readFillColors
   let lastPacked = 0
   let lastPackedCss = ''
   let lastFill: string | undefined
 
-  // Per-exon segments, not whole reads: a spliced read contributes one body
-  // rect per exon, so the intron span between them is never filled, as in
-  // read.slang.
+  // The loop walks per-exon segments, so a spliced read paints one body rect
+  // per exon and leaves the intron span unfilled, as read.slang does.
   for (let s = from; s < to; s++) {
     const i = region.segmentReadIndices[s]!
     const y = pileupRowY(region.readYs[i]!, state)
@@ -333,9 +333,9 @@ function walkReads(
       traceReadArrow(ctx, xL, xR, y, fH, apexX)
       ctx.fill()
       if (outline) {
-        // Re-traced inset rather than stroked on the fill's own path: a
-        // centred stroke puts half its width outside the read, in the 1px gap
-        // between rows, where read.slang's distance-to-edge outline cannot go.
+        // The outline re-traces the arrow inset, because stroking the fill's
+        // own path would put half the stroke outside the read, in the 1px gap
+        // between rows, where read.slang's distance-to-edge outline never goes.
         traceReadArrow(ctx, xL, xR, y, fH, apexX, READ_OUTLINE_PX / 2)
         ctx.stroke()
       }

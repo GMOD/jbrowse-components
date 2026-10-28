@@ -323,8 +323,9 @@ export { intronAlpha }
 // so the two backends cannot disagree (adr-051).
 export { sizeAlpha }
 
-// Canvas Y for a pileup row index, which every Canvas2D pileup painter places
-// rows by: the twin of alignmentsUniforms.slang's `pileupRowTopPx`.
+// Canvas Y of a pileup row's top, the Canvas2D twin of
+// alignmentsUniforms.slang's `pileupRowTopPx`. Every Canvas2D pileup painter
+// places rows by it.
 export function pileupRowY(yRow: number, state: RenderState) {
   return (
     yRow * (state.featureHeight + state.featureSpacing) +
@@ -333,8 +334,9 @@ export function pileupRowY(yRow: number, state: RenderState) {
   )
 }
 
-// Top of the 1px hairline on the row at screen-Y `rowY`, the intron line and
-// the chain connector: alignmentsUniforms.slang's `pileupCenterlineY`.
+// Top of the 1px hairline that the intron line and the chain connector draw on
+// the row at screen-Y `rowY`. alignmentsUniforms.slang's `pileupCenterlineY` is
+// the GPU twin.
 export function pileupCenterlineTopPx(rowY: number, state: RenderState) {
   return snapBoxCenterYPx(rowY + state.featureHeight / 2, 0) - 0.5
 }

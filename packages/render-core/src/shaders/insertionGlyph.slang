@@ -51,10 +51,10 @@ public bool insertionSerifsDraw(uint length, float pxPerBp) {
   return length < LONG_INSERTION_MIN_LENGTH && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP;
 }
 
-// Quad corner (qx, qy) of a serif cap: a wedge `halfW` either side of `cx` at
-// `baseY`, tapering to a point `depth` further along y, so the quad's far edge
-// collapses onto the apex. In whatever unit the caller works in: clip space for
-// the pileup pass, px for the mark and the Canvas2D painter.
+// Corner (qx, qy) of a serif cap's quad. The cap is a wedge `halfW` either
+// side of `cx` at `baseY`, tapering to a point `depth` further along y, so the
+// quad's far edge collapses onto the apex. The pileup pass calls it in clip
+// space, the mark and the Canvas2D painter in px.
 public float2 insertionSerifCorner(float qx, float qy, float cx, float baseY, float halfW, float depth) {
   return float2(cx + halfW * (2.0 * qx - 1.0) * (1.0 - qy), lerp(baseY, baseY + depth, qy));
 }

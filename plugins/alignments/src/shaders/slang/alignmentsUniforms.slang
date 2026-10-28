@@ -46,7 +46,8 @@ public struct Uniforms {
   // Canvas metadata
   public float canvasW;
   public float canvasH;
-  // The scroll, and pileup row 0's top before it, in px: `pileupRowTopPx`.
+  // The scroll and pileup row 0's unscrolled top, in px, which
+  // `pileupRowTopPx` combines.
   public float rangeY0;
   public float covOffset;
   public float featHeight;
@@ -99,13 +100,14 @@ public struct Uniforms {
   public uint colorHardclip;
   // The chain's mate-joining hairline (connectingLine.slang) and the
   // collapsed-row overlap tint (overlap.slang). colors.ts says which neutral
-  // each wants and why.
+  // each takes and why.
   public uint colorConnectingLine;
   public uint colorOverlapTint;
-  // The chain-layout overlap span (overlap.slang). Two segments of one molecule
-  // cover that span, so no read color is right there, and unlike a hairline
-  // over the track background it is an opaque fill between two read fills, so
-  // it takes its own theme slot (`readOverlap`) rather than the foreground.
+  // The chain-layout overlap span (overlap.slang), which two segments of one
+  // molecule cover, so no read color fits it. The span is an opaque fill
+  // between two read fills, so colors.ts gives it its own theme slot
+  // (`readOverlap`) where the hairline above, over the track background, takes
+  // the foreground.
   public uint colorOverlap;
   // Which field's slot a connector's `colorType` paints: the field's index
   // times CONNECTOR_COLOR_BITS (`connectorColorShift` in TS).
@@ -182,9 +184,10 @@ public float pileupRowCenterPx(float row, Uniforms u) {
   return pileupRowTopPx(row, u) + u.featHeight * 0.5;
 }
 
-// (yTopClip, yBotClip) of the 1px hairline on a row's centre, the intron line
-// and the chain connector: the pixel row holding the centre, as every feature's
-// intron line lands. `pileupCenterlineTopPx` is the Canvas2D spelling.
+// The intron line and the chain connector draw a 1px hairline on the pixel row
+// holding a row's centre, where every feature's intron line also lands; this
+// returns its (yTopClip, yBotClip). `pileupCenterlineTopPx` is the Canvas2D
+// twin.
 public float2 pileupCenterlineY(float row, Uniforms u) {
   float mid = snapBoxCenterYPx(pileupRowCenterPx(row, u), 0.0);
   return float2(yPxToClipY(mid - 0.5, u.canvasH), yPxToClipY(mid + 0.5, u.canvasH));

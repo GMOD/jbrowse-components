@@ -113,7 +113,7 @@ export const DELETION_MARK = defineMark({
   enabled: s => s.showMismatches,
 })
 
-// An intron collapses to a 1px centerline on the pixel row holding the row's
+// An intron draws as a 1px centerline on the pixel row holding the row's
 // centre (`pileupCenterlineY` in gap.slang). No clearRect under it:
 // the read mark splits a spliced read into per-exon segments, so the intron span
 // is already unpainted — and clearRect is a no-op on SvgCanvas, which left the
