@@ -1374,7 +1374,15 @@ TASKS.push({
 // Frontier tasks: human requests on the hosted hg38 hub that today's agents
 // are expected to miss some of the time. Answers come from the data, read live
 // by the grader, so a hub update moves the truth and the grader together.
-const said = `const said = (answer.match(/\\d[\\d,]*/g) ?? []).map(n => Number(n.replaceAll(',', '')))`
+// The chat plugin's answer is its whole reply, narration and tool markers
+// included; the result is what follows the last tool call, without the UI's
+// Copy and Refresh labels, with small number words as digits
+const FINAL = `
+  const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty']
+  const final = (answer.split(/Used tool: \\w+/).at(-1).replace(/\\b(Copy|Refresh)\\s*$/g, '').replace(/\\b(Copy|Refresh)\\s*$/g, '').trim() || answer)
+    .replace(new RegExp('\\\\b(' + WORDS.join('|') + ')\\\\b', 'gi'), w => String(WORDS.indexOf(w.toLowerCase())))`
+const said = `${FINAL}
+  const said = (final.match(/\\d[\\d,]*/g) ?? []).map(n => Number(n.replaceAll(',', '')))`
 const LCT_SNP = `
   const snp = (await jb.getFeatures({ trackId: 'hg38-hprc-v2.0-pangenome-vcf', loc: 'chr2:135,851,070-135,851,082', byteLimit: 80e6 }))
     .find(f => f.get('POS') === 135851076 && f.get('REF') === 'G' && f.get('ALT')?.[0] === 'A')
@@ -1388,7 +1396,14 @@ const NEAR_LCT = `
 const TP53_PATHOGENIC = `
   const tp53 = (await jb.getFeatures({ trackId: 'hg38-clinvarMain', loc: 'chr17:7,661,779-7,687,546', byteLimit: 80e6 }))
     .filter(f => f.get('clinSign') === 'Pathogenic')
-  const counts = [tp53.length, tp53.filter(f => String(f.get('geneId')).split(/[,|]/).includes('TP53')).length]`
+  const spans = (await jb.getFeatures({ trackId: 'hg38-ncbiRefSeq', loc: 'chr17:7,661,779-7,687,546', byteLimit: 80e6 }))
+    .filter(g => [g.get('id'), g.get('gene_id'), g.get('name'), g.get('Name')].includes('TP53'))
+    .map(t => [t.get('start'), t.get('end')])
+  const counts = [...new Set([
+    tp53.length,
+    tp53.filter(f => String(f.get('geneId')).split(/[,|]/).includes('TP53')).length,
+    ...spans.map(([s, e]) => tp53.filter(f => f.get('start') < e && f.get('end') > s).length),
+  ])]`
 const BRCA1_DEL = `
   const dels = (await jb.getFeatures({ trackId: 'hg38-gnomadStructuralVariants', loc: '${BRCA1_LOC}', byteLimit: 80e6 }))
     .filter(f => f.get('svtype') === 'DEL' && f.get('FILTER') === 'PASS')
@@ -1409,8 +1424,8 @@ TASKS.push(
       return String(homAlt)`,
     grade: `${LCT_SNP}
       ${said}
-      const sentences = answer.split(/(?<=[.!?\\n])\\s*/).filter(t => /homozygous|1\\|1/i.test(t) && !/reference|0\\|0/i.test(t))
-      const stated = sentences.some(t => new RegExp('(^|[^\\\\d,])' + homAlt + '(?![\\\\d,])').test(t)) || answer.trim().split(/\\s+/).at(-1) === String(homAlt)
+      const sentences = final.split(/(?<=[.!?\\n])\\s*/).filter(t => /homozygous|1\\|1/i.test(t) && !/reference|0\\|0/i.test(t))
+      const stated = sentences.some(t => new RegExp('(^|[^\\\\d,])' + homAlt + '(?![\\\\d,])').test(t)) || final.split(/\\s+/).at(-1) === String(homAlt)
       return { pass: homAlt > 0 && said.includes(homAlt) && stated, detail: { homAlt, homRef, n: gts.length, said, sentences: sentences.slice(0, 4) } }`,
   },
   {
@@ -1422,9 +1437,12 @@ TASKS.push(
     solution: `${NEAR_LCT}
       return best[0]`,
     grade: `${NEAR_LCT}
+      ${FINAL}
       const names = [...new Set(genes.map(g => String(g.get('geneName'))))].filter(n => /^[\\w.-]+$/.test(n))
-      const first = names.map(n => ({ n, i: answer.search(new RegExp('\\\\b' + n + '\\\\b')) })).filter(m => m.i >= 0).sort((a, b) => a.i - b.i)[0]?.n
-      return { pass: best.includes(first), detail: { best, top, first, answer: answer.slice(0, 300) } }`,
+      const firstIn = t => names.map(n => ({ n, i: t.search(new RegExp('\\\\b' + n + '\\\\b')) })).filter(m => m.i >= 0).sort((a, b) => a.i - b.i)[0]?.n
+      const claim = final.split(/(?<=[.!?\\n])\\s*/).find(t => /pLI|most|highest|intolerant|answer/i.test(t) && firstIn(t))
+      const first = claim ? firstIn(claim) : firstIn(final)
+      return { pass: best.includes(first), detail: { best, top, first, final: final.slice(0, 300) } }`,
   },
   {
     name: 'fr-tp53-pathogenic-count',
@@ -1433,10 +1451,10 @@ TASKS.push(
     prompt:
       'In hg38, how many ClinVar variants in TP53 are classified Pathogenic, leaving out Likely pathogenic and conflicting classifications? Reply with the number.',
     solution: `${TP53_PATHOGENIC}
-      return String(counts[1])`,
+      return String(counts[0])`,
     grade: `${TP53_PATHOGENIC}
       ${said}
-      return { pass: counts[0] > 0 && counts.some(c => said.includes(c)), detail: { counts, said } }`,
+      return { pass: counts[0] > 0 && counts.some(c => said.includes(c)), detail: { counts, spans, said } }`,
   },
   {
     name: 'fr-brca1-longest-deletion',
