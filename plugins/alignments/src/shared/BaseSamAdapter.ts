@@ -57,13 +57,15 @@ export abstract class BaseSamAdapter<
    */
   async getContigs(opts?: BaseOptions) {
     const { idToName, idToLength } = await this.setup(opts)
-    return Promise.all(
-      idToName.map(async (refName, id) => ({
-        refName,
-        length: idToLength[id],
-        hasData: await this.indexHasData(id, opts),
-      })),
-    )
+    return opts?.contigLengthsOnly
+      ? idToName.map((refName, id) => ({ refName, length: idToLength[id] }))
+      : Promise.all(
+          idToName.map(async (refName, id) => ({
+            refName,
+            length: idToLength[id],
+            hasData: await this.indexHasData(id, opts),
+          })),
+        )
   }
 
   protected async indexHasData(

@@ -84,3 +84,11 @@ test('a demo assembly sliced from the file contig passes', async () => {
   ])
   expect(detect(contigs, { 20: 29_565 })).toBeUndefined()
 })
+
+test('a lengths-only read skips the index walk for hasData', async () => {
+  const adapter = cram('../../test_data/volvox-sorted.cram')
+  expect(await adapter.getContigs({ contigLengthsOnly: true })).toEqual([
+    { refName: 'ctgA', length: 50_001 },
+  ])
+  expect((await adapter.getContigs())[0]).toMatchObject({ hasData: true })
+})

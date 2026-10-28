@@ -19,11 +19,16 @@ function run(dataAdapter: unknown) {
   })
 }
 
-test('returns the contigs a file states, with their lengths', async () => {
-  const contigs = [{ refName: 'chr1', length: 248_956_422, hasData: true }]
+// every fetch waits on this call, so it asks for no index walk
+test('returns the contigs a file states, asking for lengths only', async () => {
+  const contigs = [{ refName: 'chr1', length: 248_956_422 }]
+  const getContigs = jest.fn(async () => contigs)
   await expect(
-    run({ getContigs: async () => contigs, getRefNames: async () => ['x'] }),
+    run({ getContigs, getRefNames: async () => ['x'] }),
   ).resolves.toEqual(contigs)
+  expect(getContigs).toHaveBeenCalledWith(
+    expect.objectContaining({ contigLengthsOnly: true }),
+  )
 })
 
 // the rename pass reads its names from here, so an adapter stating no lengths

@@ -24,7 +24,7 @@ export default class CoreGetContigs extends RpcMethodType<'CoreGetContigs'> {
       sequenceAdapter,
     )
     if (isContigSource(dataAdapter)) {
-      return dataAdapter.getContigs(args)
+      return dataAdapter.getContigs({ ...args, contigLengthsOnly: true })
     }
     return isRefNameSource(dataAdapter)
       ? (await dataAdapter.getRefNames(args)).map(refName => ({ refName }))

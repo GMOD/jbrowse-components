@@ -52,6 +52,10 @@ export interface BaseOptions {
   // Set by the pre-fetch density probe, which counts and draws nothing. Not a
   // rendering mode: a caller that will lay features out wants the whole tree.
   topLevelOnly?: boolean
+  // "I read only names and lengths", so a `getContigs` may skip the index walk
+  // that fills `hasData`. Set by `CoreGetContigs`, which every fetch waits on;
+  // on a BAM of 200,000 contigs that walk costs most of a second.
+  contigLengthsOnly?: boolean
 }
 // #endregion
 
