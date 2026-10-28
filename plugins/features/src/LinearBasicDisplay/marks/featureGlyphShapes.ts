@@ -13,6 +13,7 @@ import {
   getDpr,
   makeBpMapper,
   projectBp,
+  pxPerBpOf,
   spanLeft,
   strokeRectInside,
 } from '@jbrowse/render-core/canvas2dUtils'
@@ -442,34 +443,34 @@ export const chevronShape: MarkShape<LineChannels, FeatureGlyphParams> = {
   paintBlock() {},
 }
 
+// A feature too narrow to be worth a direction marker gets none, so a dense
+// repeat run does not drown in overlapping arrowheads.
+function drawsArrow(c: ArrowChannels, i: number, pxPerBp: number) {
+  return arrowDraws(c.widthBp[i]! * pxPerBp, c.gene[i] === 1)
+}
+
 export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
   id: 'arrow',
   pass: { ...ArrowPass, pack: c => arrowShader.packInstances(c, c.count) },
   writeUniforms: writeFeatureGlyphUniforms,
 
   paintBlock(ctx, channels, block, frame, params) {
-    const { x: xs, y: ys, height, widthBp, gene } = channels
-    const { direction, color, count } = channels
+    const { x: xs, y: ys, height, direction, color, count } = channels
     const { scrollY } = params
     const { canvasHeight } = frame
     const toX = makeBpMapper(block)
+    const pxPerBp = pxPerBpOf(block)
     const setFill = makeAbgrFill(ctx)
     for (let i = 0; i < count; i++) {
-      if (!centeredRowVisible(scrollY, canvasHeight, ys[i]!, height[i]!)) {
+      if (
+        !centeredRowVisible(scrollY, canvasHeight, ys[i]!, height[i]!) ||
+        !drawsArrow(channels, i, pxPerBp)
+      ) {
         continue
       }
-      const xBp = xs[i]!
-      const rawDir = direction[i]!
-      // `xBp` is whichever end the arrow points off, so the feature's other end
-      // is a widthBp step back along its strand.
-      const otherEndBp = rawDir === 1 ? xBp - widthBp[i]! : xBp + widthBp[i]!
-      const cx = toX(xBp)
-      // A feature too narrow to be worth a direction marker gets none, so a
-      // dense repeat run does not drown in overlapping arrowheads.
-      if (!arrowDraws(Math.abs(toX(otherEndBp) - cx), gene[i] === 1)) {
-        continue
-      }
+      const cx = toX(xs[i]!)
       const y = snapBoxCenterYPx(ys[i]!, scrollY)
+      const rawDir = direction[i]!
       const dir = block.reversed ? -rawDir : rawDir
       setFill(color[i]!)
 
@@ -495,25 +496,20 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
   // `ARROW_LENGTH_PX` out from the feature's end, as tall as the taller of stem
   // and head.
   ink(channels, block, frame, params, i) {
-    const { x: xs, y: ys, height, widthBp, gene, direction } = channels
+    const { x: xs, y: ys, height, direction } = channels
     if (
       !centeredRowVisible(
         params.scrollY,
         frame.canvasHeight,
         ys[i]!,
         height[i]!,
-      )
+      ) ||
+      !drawsArrow(channels, i, pxPerBpOf(block))
     ) {
       return undefined
     }
-    const xBp = xs[i]!
+    const cx = makeBpMapper(block)(xs[i]!)
     const rawDir = direction[i]!
-    const otherEndBp = rawDir === 1 ? xBp - widthBp[i]! : xBp + widthBp[i]!
-    const toX = makeBpMapper(block)
-    const cx = toX(xBp)
-    if (!arrowDraws(Math.abs(toX(otherEndBp) - cx), gene[i] === 1)) {
-      return undefined
-    }
     const dir = block.reversed ? -rawDir : rawDir
     const y = snapBoxCenterYPx(ys[i]!, params.scrollY)
     const tipX = cx + ARROW_LENGTH_PX * dir

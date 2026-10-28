@@ -119,6 +119,14 @@ test('the gate measures the same feature on either strand', () => {
   expect(countArrowheads(arrowRegion(100, wide, -1), false)).toBe(1)
 })
 
+// Exactly the threshold wide at 1 bp/px. The shader gates on widthBp / bpPerPx,
+// and projecting this feature's two ends instead rounds its span to
+// 13.999999999999996 px.
+test('a feature exactly at the threshold keeps its arrow, as on the GPU', () => {
+  const region = arrowRegion(65, ARROW_MIN_FEATURE_WIDTH_PX, -1)
+  expect(countArrowheads(region, false)).toBe(1)
+})
+
 // Genes are sparse next to repeats and their direction is the main fact, so
 // they keep the arrow below the repeat gate, down to one arrow length.
 test.each([false, true])(
