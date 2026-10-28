@@ -43,6 +43,23 @@ export interface EvalTask {
   outside?: boolean
   // files from FIXTURES (fetchFixtures.sh downloads them) copied into WORK
   inputs?: string[]
+  // RegExp source for the trackIds the result needs drawn: `drawnPass` fails a
+  // pass whose notDrawn names one, which `pass` alone lets through
+  draws?: string
+}
+
+export function drawnPass(task: EvalTask, pass: boolean, notDrawn: unknown) {
+  if (!pass || !task.draws) {
+    return pass
+  }
+  const re = new RegExp(task.draws)
+  const rows = Array.isArray(notDrawn)
+    ? (notDrawn as { trackId?: string; phase?: string; reason?: string }[])
+    : []
+  return !rows.some(
+    t =>
+      (t.trackId === '?' || re.test(t.trackId ?? '')) && (t.phase || t.reason),
+  )
 }
 
 export interface Verdict {
@@ -118,6 +135,23 @@ const DECLINES =
 
 const shownTrack = (trackId: string) =>
   `jb.view().tracks.find(t => t.configuration.trackId === '${trackId}')`
+
+// The first synteny view, its rows top to bottom as { assembly, regions }, and
+// per band whether a shown track joins the two rows it sits between and drew.
+// `at(row, chrom, from, to, maxSpan)` tests a row's visible region.
+const SYNTENY_STACK = `
+  const view = session.views.find(v => v.type === 'LinearSyntenyView')
+  const canon = a => { try { return session.assemblyManager?.get(a)?.name ?? a } catch { return a } }
+  const rows = []
+  for (const v of view?.views ?? []) {
+    rows.push({ assembly: canon(v.assemblyNames[0]), regions: (await jb.visibleRegions(v.id)).map(r => ({ refName: r.refName, start: r.start, end: r.end })) })
+  }
+  const linked = (view?.levels ?? []).map((l, i) => l.tracks.some(t => {
+    const names = (jb.readConfObject(t.configuration, 'assemblyNames') ?? []).map(canon)
+    const drew = t.displays.every(d => !d.error && (d.displayPhase === undefined || d.displayPhase === 'ready'))
+    return drew && [rows[i]?.assembly, rows[i + 1]?.assembly].every(a => names.includes(a))
+  }))
+  const at = (row, chrom, from, to, maxSpan) => !!row?.regions.some(r => r.refName.replace(/^chr/, '') === chrom && r.start < to && r.end > from && r.end - r.start < maxSpan)`
 
 export const TASKS: EvalTask[] = [
   {
@@ -726,10 +760,11 @@ export const TASKS: EvalTask[] = [
         return { pass: false, detail: session.views.map(v => v.type) }
       }
       const regions = await jb.visibleRegions(view.id)
-      const atSnrpn = regions.some(r => r.refName.replace(/^chr/, '') === '15' && r.start < 24962000 && r.end > 24948000)
+      const atSnrpn = regions.some(r => r.refName.replace(/^chr/, '') === '15' && r.start < 24962000 && r.end > 24948000 && r.end - r.start < 200000)
       const track = view.tracks.find(t => JSON.stringify(jb.mst.getSnapshot(t.configuration)).includes('HG002_SNRPN_5mC_haplotagged.bam'))
       const conf = track?.activeDisplay.configuration
-      const bases = conf && jb.readConfObject(conf, ['pileup', 'bases', 'encoding', 'color', 'field'])
+      const slot = path => { try { return jb.readConfObject(conf, path) } catch { return undefined } }
+      const bases = conf && (slot(['pileup', 'bases', 'encoding', 'color', 'field']) || slot(['baseColor', 'field']))
       const facet = conf && jb.readConfObject(conf, 'facet')
       const facetField = typeof facet === 'string' ? facet : facet?.field
       return {
@@ -742,21 +777,16 @@ export const TASKS: EvalTask[] = [
     tutorial: true,
     prompt:
       'As in the genomes synteny tutorial, compare hg38 with T2T-CHM13 (hs1) at TNNT3 in a synteny view, ribbons colored by strand.',
-    grade: `
-      const view = session.views.find(v => v.type === 'LinearSyntenyView')
-      if (!view) {
-        return { pass: false, detail: session.views.map(v => v.type) }
-      }
-      const rows = view.views.map(v => ({ assembly: v.assemblyNames[0], regions: v.displayedRegions.map(r => r.refName + ':' + r.start + '-' + r.end) }))
-      const hg38 = view.views.find(v => v.assemblyNames.includes('hg38'))
-      const hs1 = view.views.find(v => v.assemblyNames.includes('hs1'))
-      const hg38Regions = hg38 ? await jb.visibleRegions(hg38.id) : []
-      const atTnnt3 = hg38Regions.some(r => r.refName.replace(/^chr/, '') === '11' && r.start < 1938706 && r.end > 1919568)
-      const synteny = view.syntenyTracks().length > 0
-      const field = view.colorSetting?.field
+    grade: `${SYNTENY_STACK}
+      const hg38 = rows.findIndex(r => r.assembly === 'hg38')
+      const hs1 = rows.findIndex(r => r.assembly === 'hs1')
+      const atTnnt3 = at(rows[hg38], '11', 1919568, 1938706, 2000000)
+      const hs1AtTnnt3 = at(rows[hs1], '11', 1979763, 2006581, 5000000)
+      const joined = hg38 >= 0 && hs1 >= 0 && Math.abs(hg38 - hs1) === 1 && linked[Math.min(hg38, hs1)] === true
+      const field = view?.colorSetting?.field
       return {
-        pass: Boolean(hs1) && atTnnt3 && synteny && field === 'strand',
-        detail: { rows, hg38Regions, tracks: view.syntenyTracks().map(t => t.configuration.trackId), color: view.colorSetting },
+        pass: atTnnt3 && hs1AtTnnt3 && joined && field === 'strand',
+        detail: { rows, linked, color: view?.colorSetting },
       }`,
   },
 ]
@@ -809,7 +839,7 @@ TASKS.push(
       'In hg38, go to CFTR and open tracks for the genes, common SNPs and transcription factor binding sites.',
     grade: `${CFTR}
       const hasSnps = ids.some(i => /^hg38-dbSnp\\d+Common$/.test(i))
-      const hasTfbs = ids.some(i => /^hg38-jaspar\\d{4}$/.test(i))
+      const hasTfbs = ids.some(i => /^hg38-jaspar\\d{4}$/.test(i)) || !!view?.tracks.some(t => /jaspar/i.test(JSON.stringify(jb.mst.getSnapshot(t.configuration).adapter ?? {})))
       const hasGenes = ids.some(i => /^hg38-(ncbiRefSeq\\w*|knownGene|ensGene)$/.test(i))
       return { pass: !!view && hasGenes && hasSnps && hasTfbs, detail: { regions, ids } }`,
   },
@@ -842,17 +872,13 @@ TASKS.push(
     name: 'hs-synteny-mouse-brca1',
     tutorial: true,
     prompt: 'Show a synteny view of human and mouse across the BRCA1 locus.',
-    grade: `
-      const view = session.views.find(v => v.type === 'LinearSyntenyView')
-      if (!view) {
-        return { pass: false, detail: session.views.map(v => v.type) }
-      }
-      const human = view.views.find(v => v.assemblyNames.includes('hg38'))
-      const mouse = view.views.find(v => v.assemblyNames.some(a => a.startsWith('mm')))
-      const regions = human ? await jb.visibleRegions(human.id) : []
-      const atBrca1 = regions.some(r => r.refName.replace(/^chr/, '') === '17' && r.start < 43100000 && r.end > 43060000 && r.end - r.start < 2000000)
-      const tracks = view.syntenyTracks().map(t => t.configuration.trackId)
-      return { pass: Boolean(mouse) && atBrca1 && tracks.length > 0, detail: { regions, tracks, mouse: mouse?.assemblyNames } }`,
+    grade: `${SYNTENY_STACK}
+      const human = rows.findIndex(r => r.assembly === 'hg38')
+      const mouse = rows.findIndex(r => /^mm/.test(r.assembly))
+      const atBrca1 = at(rows[human], '17', 43060000, 43100000, 2000000)
+      const mouseAtBrca1 = at(rows[mouse], '11', 101000000, 102000000, 20000000)
+      const joined = human >= 0 && mouse >= 0 && Math.abs(human - mouse) === 1 && linked[Math.min(human, mouse)] === true
+      return { pass: atBrca1 && mouseAtBrca1 && joined, detail: { rows, linked } }`,
   },
   {
     name: 'hs-which-tfbs-track',
@@ -860,8 +886,9 @@ TASKS.push(
     prompt:
       'Which track in human hg38 shows transcription factor binding sites? Reply with its track ID only.',
     grade: `
-      const said = /hg38-jaspar\\d{4}/.test(answer)
-      return { pass: said, detail: { answer } }`,
+      const named = answer.match(/hg38-jaspar\\d{4}/)?.[0]
+      const exists = !!named && jb.listTracks(named, 5).tracks.some(t => t.trackId === named)
+      return { pass: exists, detail: { answer, named, exists } }`,
   },
 )
 
@@ -887,18 +914,14 @@ TASKS.push(
     config: ALL_HUB,
     prompt:
       'Show human, mouse and rat stacked in one synteny view across the BRCA1 locus, with human on top.',
-    grade: `
-      const view = session.views.find(v => v.type === 'LinearSyntenyView')
-      if (!view) {
-        return { pass: false, detail: session.views.map(v => v.type) }
-      }
-      const names = view.views.map(v => v.assemblyNames[0])
-      const human = view.views.find(v => v.assemblyNames.includes('hg38'))
-      const regions = human ? await jb.visibleRegions(human.id) : []
-      const atBrca1 = regions.some(r => r.refName.replace(/^chr/, '') === '17' && r.start < 43100000 && r.end > 43060000 && r.end - r.start < 3000000)
-      const tracks = view.syntenyTracks().length
-      const pass = names.length >= 3 && atBrca1 && names.some(n => /^mm/.test(n)) && names.some(n => /^rn/.test(n)) && tracks >= 2
-      return { pass, detail: { names, regions, tracks } }`,
+    grade: `${SYNTENY_STACK}
+      const names = rows.map(r => r.assembly)
+      const mouse = rows.find(r => /^mm/.test(r.assembly))
+      const rat = rows.find(r => /^rn/.test(r.assembly))
+      const humanOnTop = names[0] === 'hg38' && at(rows[0], '17', 43060000, 43100000, 3000000)
+      const orthologs = at(mouse, '11', 101000000, 102000000, 20000000) && at(rat, '10', 80000000, 95000000, 20000000)
+      const pass = names.length === 3 && humanOnTop && orthologs && linked.length === 2 && linked.every(Boolean)
+      return { pass, detail: { rows, linked } }`,
   },
   {
     name: 'rc-mouse-ortholog',
@@ -925,8 +948,15 @@ TASKS.push(
       'In hg38 at BRCA1, show ClinVar variants colored by their clinical significance.',
     grade: `${BRCA1}
       const track = view?.tracks.find(t => t.configuration.trackId === 'hg38-clinvarMain')
-      const colored = track ? JSON.stringify(jb.mst.getSnapshot(track.activeDisplay.configuration)) : ''
-      return { pass: !!track && /signif|clinsig|pathogenic/i.test(colored), detail: { regions, ids, colored: colored.slice(0, 300) } }`,
+      const conf = track?.activeDisplay.configuration
+      const slot = path => { try { return jb.readConfObject(conf, path) } catch { return undefined } }
+      const field = String(slot(['color', 'field']) || slot(['encoding', 'color', 'field']) || '')
+      const raw = slot('color')
+      const value = String((typeof raw === 'string' ? raw : slot(['color', 'value'])) || '')
+      const bySignificance = /clinsign|signif|aggrGermClass/i.test(field + value)
+      // the hub's itemRgb is UCSC's significance palette, so an unset color already paints it
+      const byItemRgb = !!conf && !field && !value
+      return { pass: !!track && (bySignificance || byItemRgb), detail: { regions, ids, field, value: value.slice(0, 200), bySignificance, byItemRgb } }`,
   },
   {
     name: 'rc-three-genes-side-by-side',
@@ -943,7 +973,7 @@ TASKS.push(
         const rs = await jb.visibleRegions(v.id)
         regs.push(...rs.map(r => ({ refName: r.refName.replace(/^chr/, ''), start: r.start, end: r.end, ok })))
       }
-      const hit = (chrom, from, to) => regs.some(r => r.ok && r.refName === chrom && r.start < to && r.end > from)
+      const hit = (chrom, from, to) => regs.some(r => r.ok && r.refName === chrom && r.start < to && r.end > from && r.end - r.start < 2000000)
       const brca1 = hit('17', 43060000, 43100000)
       const brca2 = hit('13', 32320000, 32390000)
       const tp53 = hit('17', 7668000, 7687000)
@@ -974,11 +1004,14 @@ const HOSTED_SOLUTIONS: Record<string, string> = {
     'hg38-ncbiRefSeq',
     'hg38-dbSnp155Common',
   ]),
-  'hs-cftr-tracks': lgv('chr7:117,480,025-117,668,665', [
+  // The hub's hg38-jaspar2026 config fails to load in the Oct 21 build, and
+  // JASPAR force-loaded across all of CFTR runs the worker out of memory
+  'hs-cftr-tracks': `${lgv('chr7:117,470,000-117,500,000', [
     'hg38-ncbiRefSeq',
     'hg38-dbSnp155Common',
-    'hg38-jaspar2026',
-  ]),
+  ]).replace('return ', 'await ')}
+    await jb.addTrack({ location: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/jaspar/JASPAR2026.bb', name: 'JASPAR 2026 TFBS', assembly: 'hg38', settings: { forceLoad: true } })
+    return jb.waitReady(180000)`,
   'hs-phylop-scale': `${lgv(BRCA1_LOC, ['hg38-ncbiRefSeq', 'hg38-phyloP100way']).replace('return ', 'await ')}
     return jb.trackModel('hg38-phyloP100way').applyDisplaySettings({ scales: { y: { domainMin: 0, domainMax: 5 } } })`,
   'hs-short-arm-chr2': lgv('chr2:1-93,900,000', []),
@@ -987,7 +1020,7 @@ const HOSTED_SOLUTIONS: Record<string, string> = {
   'rc-three-way-synteny': `return jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', tracks: ['hg38_to_mm39_liftOver', 'mm39_to_rn7_liftOver'], views: [{ assembly: 'hg38', loc: '${BRCA1_LOC}' }, { assembly: 'mm39', loc: 'chr11:101,379,590-101,442,808' }, { assembly: 'rn7', loc: 'Brca1' }] }] }, 90000)`,
   'rc-mouse-ortholog': lgv('chr11:101,379,590-101,442,808', [], 'mm39'),
   'rc-clinvar-color': `${lgv(BRCA1_LOC, ['hg38-clinvarMain']).replace('return ', 'await ')}
-    return jb.trackModel('hg38-clinvarMain').applyDisplaySettings({ encoding: { color: { field: '_clinSignCode' } } })`,
+    return jb.trackModel('hg38-clinvarMain').applyDisplaySettings({ color: { field: '_clinSignCode' }, forceLoad: true })`,
   'rc-three-genes-side-by-side': `return jb.loadSessionSpec({ views: ${JSON.stringify(
     [BRCA1_LOC, 'chr13:32,315,508-32,400,268', 'chr17:7,668,421-7,687,490'].map(
       loc => ({
@@ -998,15 +1031,23 @@ const HOSTED_SOLUTIONS: Record<string, string> = {
       }),
     ),
   )} }, 90000)`,
-  'rc-protein-viewer': `return jb.loadSessionSpec({ views: [{ type: 'ProteinView', gene: 'BRCA1', connectedView: { assembly: 'hg38', tracks: ['hg38-clinvarMain'] } }] }, 90000)`,
+  'rc-protein-viewer': `return jb.loadSessionSpec({ views: [{ type: 'ProteinView', gene: 'BRCA1', connectedView: { assembly: 'hg38', tracks: [{ trackId: 'hg38-clinvarMain', forceLoad: true }] } }] }, 90000).then(() => jb.waitReady(120000))`,
   'tut-methylation-haplotypes': `${lgv('chr15:24,954,000-24,957,000', []).replace('return ', 'await ')}
     await jb.addTrack({ location: 'https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam', assembly: 'hg38' })
     const id = jb.view().tracks[0].configuration.trackId
-    return jb.trackModel(id).applyDisplaySettings({ pileup: { bases: { encoding: { color: { field: 'modifications' } } } }, facet: { field: 'tags.HP' } })`,
+    const newer = jb.trackModel(id).applyDisplaySettings({ pileup: { bases: { encoding: { color: { field: 'modifications' } } } }, facet: { field: 'tags.HP' } })
+    return newer.failed.length ? jb.trackModel(id).applyDisplaySettings({ baseColor: { field: 'modifications' } }) : newer`,
   'tut-synteny-tnnt3': `return jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', tracks: ['hg38_to_hs1_liftOver'], color: { field: 'strand' }, views: [{ assembly: 'hg38', loc: 'chr11:1,919,568-1,938,706' }, { assembly: 'hs1', loc: 'TNNT3' }] }] }, 90000)`,
 }
 for (const task of TASKS) {
   task.solution ??= HOSTED_SOLUTIONS[task.name]
+}
+// A figure task's user sees every track it shows, so a "too much data" banner
+// on any of them is a figure they cannot use
+for (const task of TASKS.filter(
+  t => /^(hs|rc|tut)-/.test(t.name) && t.name !== 'hs-which-tfbs-track',
+)) {
+  task.draws ??= '.'
 }
 
 // Outside tasks: real public data in local files, and steps no JBrowse tool
@@ -1343,7 +1384,8 @@ const BRCA1_DEL = `
     .filter(f => f.get('svtype') === 'DEL' && f.get('FILTER') === 'PASS')
   const longest = dels.reduce((a, f) => (Number(f.get('svlen')) > Number(a?.get('svlen') ?? 0) ? f : a), undefined)
   const truth = [Number(longest?.get('svlen')), longest ? longest.get('end') - longest.get('start') : NaN]`
-const PATIENT_SVS = 'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz'
+const PATIENT_SVS =
+  'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz'
 const RS80357906 = 43057062
 
 TASKS.push(
@@ -1368,7 +1410,9 @@ TASKS.push(
     solution: `${NEAR_LCT}
       return best[0]`,
     grade: `${NEAR_LCT}
-      return { pass: best.some(b => new RegExp('\\\\b' + b + '\\\\b').test(answer)), detail: { best, top, answer: answer.slice(0, 300) } }`,
+      const names = [...new Set(genes.map(g => String(g.get('geneName'))))].filter(n => /^[\\w.-]+$/.test(n))
+      const first = names.map(n => ({ n, i: answer.search(new RegExp('\\\\b' + n + '\\\\b')) })).filter(m => m.i >= 0).sort((a, b) => a.i - b.i)[0]?.n
+      return { pass: best.includes(first), detail: { best, top, first, answer: answer.slice(0, 300) } }`,
   },
   {
     name: 'fr-tp53-pathogenic-count',
@@ -1483,5 +1527,146 @@ TASKS.push(
         }
       }
       return { pass: out.some(o => o.at && o.reverse === true && o.translation === true), detail: out }`,
+  },
+)
+
+for (const name of [
+  'fr-brca1-wrong-chromosome',
+  'fr-brca1-variants-drawn',
+  'fr-repair-broken-index',
+  'fr-brca1-founder-codon',
+]) {
+  TASKS.find(t => t.name === name)!.draws = '.'
+}
+
+// Tutorial reach tasks on each tutorial's own hosted config. Every grader
+// reads the figure the tutorial shows and fails a track that did not draw.
+const drew = `const drew = d => !!d && !d.error && !d.renderError && (d.displayPhase === undefined || d.displayPhase === 'ready')`
+const GRAPE = 'GCF_030704535.1'
+const PEACH = 'GCF_000346465.2'
+const CACAO = 'GCF_000208745.1'
+const TREE_ORDER = [
+  'panTro6',
+  'gorGor6',
+  'ponAbe3',
+  'rheMac10',
+  'calJac4',
+  'mm39',
+  'canFam6',
+  'bosTau9',
+]
+const DER3_PANELS = [
+  ['3', 25359111, 25359568],
+  ['10', 58717464, 58717662],
+  ['12', 72273112, 72273294],
+]
+const tumorPanel = (loc: string) => ({
+  assembly: 'hg38',
+  loc,
+  tracks: [
+    {
+      trackId: 'COLO829_tumor_ont',
+      forceLoad: true,
+      pileup: { showSoftClipping: true, readHeight: 2 },
+      height: 200,
+    },
+  ],
+})
+
+TASKS.push(
+  {
+    name: 'tut-multiway-grape-peach-cacao',
+    tutorial: true,
+    draws: '.',
+    config: 'https://jbrowse.org/demos/grape_peach_cacao/config.json',
+    prompt:
+      "Reproduce the multi-way synteny tutorial's conserved block: peach stacked over grape over cacao in one synteny view, at peach chrG7:18,565,100-18,700,100, grape chr11:787,000-914,000 and cacao chr9:3,898,700-4,003,700, ribbons colored by syntenic depth.",
+    solution: `return jb.loadSessionSpec({ views: [{ type: 'LinearSyntenyView', tracks: ['grape_peach_cacao_blocks'], color: { field: 'syntenicDepth' }, views: [
+      { assembly: '${PEACH}', loc: 'chrG7:18,565,100-18,700,100', tracks: ['${PEACH}-ncbiRefSeq'] },
+      { assembly: '${GRAPE}', loc: 'chr11:787,000-914,000', tracks: ['${GRAPE}-ncbiRefSeq'] },
+      { assembly: '${CACAO}', loc: 'chr9:3,898,700-4,003,700', tracks: ['${CACAO}-ncbiRefSeq'] } ] }] }, 120000)`,
+    grade: `${SYNTENY_STACK}
+      const order = rows.map(r => r.assembly).join() === ['${PEACH}', '${GRAPE}', '${CACAO}'].join()
+      const loci = at(rows[0], 'G7', 18565100, 18700100, 400000) && at(rows[1], '11', 787000, 914000, 400000) && at(rows[2], '9', 3898700, 4003700, 400000)
+      const field = view?.colorSetting?.field
+      return { pass: order && loci && linked.length === 2 && linked.every(Boolean) && field === 'syntenicDepth', detail: { rows, linked, field } }`,
+  },
+  {
+    name: 'tut-multiway-hg38-tp53',
+    tutorial: true,
+    draws: '.',
+    config: 'https://jbrowse.org/demos/hg38_vertebrates/config.json',
+    prompt:
+      'As in the hg38 vertebrates synteny tutorial, show TP53 on hg38 with the liftOver chains drawn as one lane per genome beneath it, stacked down the tree: chimp, gorilla, orangutan, macaque, marmoset, mouse, dog, then cow.',
+    solution: `return jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr17:7,400,000-7,700,000', tracks: ['hg38-ncbiRefSeq', { trackId: 'hg38_liftover_multiway', type: 'MultiWaySyntenyDisplay', rows: { domain: ${JSON.stringify(TREE_ORDER)} }, height: 600 }] }] }, 180000)`,
+    grade: `${atLocus('17', 7668402, 7687550, 3000000)}
+      ${drew}
+      const want = ${JSON.stringify(TREE_ORDER)}
+      const out = (view?.tracks ?? []).filter(t => t.activeDisplay?.type === 'MultiWaySyntenyDisplay').map(t => {
+        const d = t.activeDisplay
+        const lanes = (d.laneStack?.lanes ?? []).filter(l => !l.isAnchor)
+        return { id: t.configuration.trackId, lanes: lanes.map(l => l.assemblyName), placed: lanes.filter(l => l.frame).length, painted: d.painted === true, drew: drew(d) }
+      })
+      return { pass: out.some(o => o.lanes.join() === want.join() && o.placed >= 7 && o.painted && o.drew), detail: { regions, ids, out } }`,
+  },
+  {
+    name: 'tut-hic-bcr-abl1',
+    tutorial: true,
+    draws: '.',
+    config: 'https://jbrowse.org/code/jb2/main/test_data/config_demo.json',
+    prompt:
+      "Reproduce the Hi-C tutorial's BCR-ABL1 figure: one hg38 view with a window on ABL1 (chr9) beside a window on BCR (chr22), showing K562 Hi-C and GM12878 Hi-C as the control, both as raw counts with no normalization.",
+    solution: `return jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr9:129,730,000-131,730,000 chr22:22,285,000-24,285,000', tracks: [{ trackId: 'hic_gm12878_insitu', selectedNormalization: 'NONE' }, { trackId: 'hic_k562_insitu', selectedNormalization: 'NONE' }] }] }, 240000)`,
+    grade: `
+      ${drew}
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
+        const rs = await jb.visibleRegions(v.id)
+        const hit = (chrom, from, to) => rs.some(r => r.refName.replace(/^chr/, '') === chrom && r.start < to && r.end > from && r.end - r.start < 10000000)
+        const hic = v.tracks.filter(t => t.type === 'HicTrack').map(t => {
+          const d = t.activeDisplay
+          const text = String(t.configuration.name) + JSON.stringify(jb.mst.getSnapshot(t.configuration).adapter ?? {})
+          let norm
+          try { norm = d.activeNormalization ?? jb.readConfObject(d.configuration, 'selectedNormalization') } catch {}
+          return { id: t.configuration.trackId, k562: /K562|ENCFF080DPJ/i.test(text), gm12878: /GM12878/i.test(text), norm, drew: drew(d) }
+        })
+        const good = hic.filter(h => h.norm === 'NONE' && h.drew)
+        out.push({ abl1: hit('9', 130713881, 130887675), bcr: hit('22', 23180509, 23318037), hic, ok: good.some(h => h.k562) && good.some(h => h.gm12878 && !h.k562) })
+      }
+      return { pass: out.some(o => o.abl1 && o.bcr && o.ok), detail: out }`,
+  },
+  {
+    name: 'tut-cancer-sv-der3-chain',
+    tutorial: true,
+    draws: '.',
+    config: 'https://jbrowse.org/demos/cancer_sv/config.json',
+    prompt:
+      "As in the cancer SV tutorial, follow COLO829's der(3) rearrangement chain through chr3, chr10 and chr12 in a breakpoint split view, one panel per breakpoint, with the tumor reads drawn in every panel and their soft clipping shown.",
+    solution: `return jb.loadSessionSpec({ views: [{ type: 'BreakpointSplitView', views: ${JSON.stringify(
+      [
+        'chr3:25,357,000-25,362,000',
+        'chr10:58,715,000-58,720,000',
+        'chr12:72,270,700-72,275,700',
+      ].map(tumorPanel),
+    )} }] }, 300000)`,
+    grade: `
+      ${drew}
+      const want = ${JSON.stringify(DER3_PANELS)}
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'BreakpointSplitView')) {
+        const panels = []
+        for (const p of v.views) {
+          const rs = await jb.visibleRegions(p.id)
+          const tumor = p.tracks.filter(t => /COLO829_tumor|COLO829_tumor\\.ht\\.cram/.test(JSON.stringify(jb.mst.getSnapshot(t.configuration)))).map(t => {
+            const c = t.activeDisplay.configuration
+            const slot = path => { try { return jb.readConfObject(c, path) } catch { return undefined } }
+            return { drew: drew(t.activeDisplay), clips: slot(['pileup', 'showSoftClipping']) === true || slot(['pileup', 'softClips', 'show']) === true }
+          })
+          panels.push({ rs: rs.map(r => r.refName + ':' + r.start + '-' + r.end), ok: tumor.some(t => t.drew && t.clips), rsRaw: rs })
+        }
+        const covered = want.map(([chrom, from, to]) => panels.some(p => p.ok && p.rsRaw.some(r => r.refName.replace(/^chr/, '') === chrom && r.start < to && r.end > from && r.end - r.start < 100000)))
+        out.push({ panels: panels.map(({ rsRaw, ...p }) => p), covered })
+      }
+      return { pass: out.some(o => o.covered.every(Boolean)), detail: out }`,
   },
 )
