@@ -96,17 +96,22 @@ async function launchSessionSnapshot(
   return pluginManager
 }
 
-// A url whose path ends in .json is a config, not a link to a view of one:
-// a hub's own `config.json`, or one of genomes.jbrowse.org's per-assembly
-// files. It describes no session, which is why parseSessionSpecUrl reports
-// that it has none — true, and no use to someone whose link is the config.
-// Checked only after that parse fails, so `config.json?session=spec-...` is
-// still read as the spec link it is.
-function namesAConfig(link: string) {
+// The config a link opens when it carries no session: a url whose path ends in
+// .json is one itself (a hub's config.json, or a genomes.jbrowse.org
+// per-assembly file), and a JBrowse Web link naming only `?config=` opens that
+// config's defaultSession, as web does. Checked only after parseSessionSpecUrl
+// fails, so `config.json?session=spec-...` is still read as the spec link it is.
+function linkedConfig(link: string) {
   try {
-    return new URL(link).pathname.endsWith('.json')
+    const url = new URL(link)
+    const config = url.searchParams.get('config')
+    return url.pathname.endsWith('.json')
+      ? link
+      : config && !url.searchParams.has('session')
+        ? new URL(config, url.href).href
+        : undefined
   } catch {
-    return false
+    return undefined
   }
 }
 
@@ -123,28 +128,26 @@ export async function launchFromLink(
   try {
     parsed = parseSessionSpecUrl(link)
   } catch (e) {
-    if (!namesAConfig(link)) {
+    const configUrl = linkedConfig(link)
+    if (!configUrl) {
       throw e
     }
-  }
-  if (parsed) {
-    // a spec carrying its own sessionAssemblies needs no config; anything else
-    // resolves its assembly/track names against the config the link points at
-    const config = parsed.configUrl
-      ? await fetchConfig(parsed.configUrl)
-      : undefined
-    const pluginManager = await createPluginManager(config)
-    const { spec, sessionName } = parsed
-    await loadSessionSpec(
-      sessionName ? { ...spec, sessionName } : spec,
-      pluginManager,
-    )
-    return pluginManager
-  } else {
     // no spec to run: the config's own defaultSession is the session, the same
     // as opening that config from a file
-    return createPluginManager(await fetchConfig(link))
+    return createPluginManager(await fetchConfig(configUrl))
   }
+  // a spec carrying its own sessionAssemblies needs no config; anything else
+  // resolves its assembly/track names against the config the link points at
+  const config = parsed.configUrl
+    ? await fetchConfig(parsed.configUrl)
+    : undefined
+  const pluginManager = await createPluginManager(config)
+  const { spec, sessionName } = parsed
+  await loadSessionSpec(
+    sessionName ? { ...spec, sessionName } : spec,
+    pluginManager,
+  )
+  return pluginManager
 }
 
 export interface LaunchFromPlanDeps {

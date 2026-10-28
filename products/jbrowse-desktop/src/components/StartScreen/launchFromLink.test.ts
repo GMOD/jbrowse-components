@@ -129,6 +129,38 @@ test('a url that is itself a config opens it, with no spec to run', async () => 
   expect(result).toBe(pluginManager)
 })
 
+test('a web link naming only a config opens its default session', async () => {
+  const fetchConfig = jest.fn().mockResolvedValue(config)
+  const createPluginManager = jest.fn().mockResolvedValue(pluginManager)
+
+  const result = await launchFromLink(
+    'https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json',
+    { fetchConfig, createPluginManager, trustPlugins },
+  )
+
+  expect(fetchConfig).toHaveBeenCalledWith(
+    'https://jbrowse.org/code/jb2/main/test_data/volvox/config.json',
+  )
+  expect(createPluginManager).toHaveBeenCalledWith(config)
+  expect(mockLoadSessionSpec).not.toHaveBeenCalled()
+  expect(result).toBe(pluginManager)
+})
+
+test('a link whose session does not parse is not opened as its bare config', async () => {
+  const fetchConfig = jest.fn().mockResolvedValue(config)
+  await expect(
+    launchFromLink(
+      'https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=garbage',
+      {
+        fetchConfig,
+        createPluginManager: jest.fn().mockResolvedValue(pluginManager),
+        trustPlugins,
+      },
+    ),
+  ).rejects.toThrow()
+  expect(fetchConfig).not.toHaveBeenCalled()
+})
+
 test('a spec on a .json url is still read as the spec link it is', async () => {
   const fetchConfig = jest.fn().mockResolvedValue(config)
   const createPluginManager = jest.fn().mockResolvedValue(pluginManager)
