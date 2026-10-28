@@ -1707,3 +1707,463 @@ TASKS.push(
       return { pass: out.some(o => o.covered.every(Boolean)), detail: out }`,
   },
 )
+
+// Hard tasks: several sources joined, a step where the naive path answers
+// wrong, a second assembly, or a figure with many graded constraints. Each
+// grader reads its truth live from the hub.
+const HPRC_DEMO = 'https://jbrowse.org/demos/hprc/config.json'
+const sentences = `const sentences = answer.split(/(?<=[.!?\\n])\\s*/)`
+const TP53_EXONS = `
+  const tx = (await jb.getFeatures({ trackId: 'hg38-mane', loc: 'chr17:7,661,779-7,690,000', byteLimit: 80e6 })).find(g => g.get('name') === 'TP53')?.get('subfeatures')?.[0]
+  const parts = (tx?.get('subfeatures') ?? []).map(s => [s.get('start'), s.get('end')]).sort((a, b) => a[0] - b[0])
+  const exons = []
+  for (const [s, e] of parts) {
+    const last = exons.at(-1)
+    if (last && last[1] === s) { last[1] = e } else { exons.push([s, e]) }
+  }
+  if (tx?.get('strand') === -1) { exons.reverse() }
+  const pathogenic = (await jb.getFeatures({ trackId: 'hg38-clinvarMain', loc: 'chr17:7,661,779-7,690,000', byteLimit: 80e6 })).filter(f => f.get('clinSign') === 'Pathogenic')
+  const counts = exons.map(([s, e]) => pathogenic.filter(f => f.get('start') >= s && f.get('end') <= e).length)
+  const top = Math.max(...counts)
+  const best = counts.flatMap((c, i) => (c === top ? [i + 1] : []))`
+// The A of TP53's ATG on hg38, then the same base on hs1, found as the one
+// exact match of its 51 bp context near where the liftOver chain puts it
+const TP53_ATG_HS1 = `
+  const refTrack = a => jb.session.assemblyManager.get(a).configuration.sequence.trackId
+  const tx = (await jb.getFeatures({ trackId: 'hg38-mane', loc: 'chr17:7,661,779-7,690,000', byteLimit: 80e6 })).find(g => g.get('name') === 'TP53')?.get('subfeatures')?.[0]
+  const cds = (tx?.get('subfeatures') ?? []).filter(s => s.get('type') === 'CDS')
+  const atg = tx?.get('strand') === -1 ? Math.max(...cds.map(s => s.get('end'))) : Math.min(...cds.map(s => s.get('start'))) + 1
+  const ctx = (await jb.getFeatures({ trackId: refTrack('hg38'), loc: 'chr17:' + (atg - 25) + '-' + (atg + 25), assembly: 'hg38' }))[0].get('seq').toUpperCase()
+  const chain = (await jb.getFeatures({ trackId: 'hg38_to_hs1_liftOver', loc: 'chr17:' + atg + '-' + (atg + 1), assembly: 'hg38', byteLimit: 80e6 }))[0]
+  const guess = chain.get('mate').start + (atg - chain.get('start'))
+  const from = Math.max(1, guess - 300000)
+  const win = (await jb.getFeatures({ trackId: refTrack('hs1'), loc: 'chr17:' + from + '-' + (guess + 300000), assembly: 'hs1' }))[0].get('seq').toUpperCase()
+  const hits = []
+  for (let i = win.indexOf(ctx); i >= 0; i = win.indexOf(ctx, i + 1)) { hits.push(from + i + 25) }
+  const hs1 = hits.length === 1 ? hits[0] : NaN`
+const CFTR_SPAN = [117480024, 117668665]
+const F508DEL = 117559592
+const SARS_REF = 'https://jbrowse.org/ucsc/wuhCor1/config.json'
+const CHIMP_T2T =
+  'https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/'
+// Adds an assembly and some of its tracks from another hub's config.json to
+// the open session, its relative uris resolved against that config
+const importHub = (base: string, file: string, tracks: string) => `
+  const base = '${base}'
+  const conf = await (await fetch(base + '${file}')).json()
+  const abs = o => JSON.parse(JSON.stringify(o), (k, v) => ((k === 'uri' || k === 'chromSizes') && typeof v === 'string' && !/^https?:/.test(v) ? new URL(v, base).href : v))
+  const asm = abs(conf.assemblies[0])
+  jb.session.addAssemblyConf(asm)
+  for (const t of conf.tracks.filter(t => ${tracks}.test(t.trackId))) { jb.session.addTrackConf(abs(t)) }
+  await jb.session.assemblyManager.waitForAssembly(asm.name)`
+// HG00133's KIV-2 copies per haplotype: an allele's copies are the RUC of
+// its RN runs, which RUC lists allele after allele
+const KIV2 = `
+  const kiv2 = (await jb.getFeatures({ trackId: 'hprc_kiv2_copies_all', loc: 'chr6:160,610,000-160,652,000', byteLimit: 80e6 }))[0]
+  const info = kiv2.get('INFO')
+  const ends = info.RN.reduce((a, n) => [...a, a.at(-1) + n], [0])
+  const copies = String(kiv2.get('samples').HG00133.GT).split(/[|/]/).filter(a => a !== '.' && a !== '0').map(a => info.RUC.slice(ends[a - 1], ends[a]).reduce((n, x) => n + Number(x), 0))`
+const marksOf = `const marksOf = d => { try { return jb.readConfObject(d.configuration, 'marks') ?? [] } catch { return [] } }
+  const markType = m => (typeof m.mark === 'string' ? m.mark : m.mark?.type) ?? 'bar'
+  const field = c => (typeof c === 'string' ? c : c?.field ?? c?.value ?? '')`
+
+TASKS.push(
+  {
+    name: 'fx-tp53-exon-hotspot',
+    tutorial: true,
+    config: HG38_HUB,
+    prompt:
+      "In hg38, which exon of TP53's MANE Select transcript, numbered from the transcript's 5' end, holds the most ClinVar variants classified Pathogenic (leaving out Likely pathogenic and conflicting), counting variants that lie wholly inside the exon? Reply with the exon number.",
+    solution: `${TP53_EXONS}
+      return 'Exon ' + best[0] + ' has the most, with ' + top + ' Pathogenic variants.'`,
+    grade: `${TP53_EXONS}
+      ${sentences}
+      const claims = sentences.filter(t => /\\bexon\\s*\\d+/i.test(t) && /most|highest|largest|greatest|top|densest|answer/i.test(t))
+      const lastClaim = claims.at(-1)?.match(/\\bexon\\s*(\\d+)/i)?.[1]
+      const bare = answer.trim().match(/(\\d+)\\D*$/)?.[1]
+      const claimed = Number(lastClaim ?? bare)
+      return { pass: top > 0 && best.includes(claimed), detail: { counts, best, claimed, claim: lastClaim && claims.at(-1).slice(0, 200) } }`,
+  },
+  {
+    name: 'fx-tp53-atg-hs1',
+    tutorial: true,
+    config: ALL_HUB,
+    prompt:
+      "Where is the first base (the A) of TP53's start codon, from its MANE Select transcript on hg38, in the T2T-CHM13 assembly (hs1)? Reply with the hs1 position as a 1-based chr:position.",
+    solution: `${TP53_ATG_HS1}
+      return 'On hs1 the A of the TP53 ATG is at chr17:' + hs1.toLocaleString('en-US') + '.'`,
+    grade: `${TP53_ATG_HS1}
+      const near = (answer.match(/\\d[\\d,]*/g) ?? []).map(n => Number(n.replaceAll(',', ''))).filter(n => Math.abs(n - hs1) <= 50000)
+      return { pass: Number.isFinite(hs1) && near.at(-1) === hs1, detail: { atg, hs1, guess, hits, near } }`,
+  },
+  {
+    name: 'fx-cftr-three-panel',
+    tutorial: true,
+    draws: '.',
+    config: ALL_HUB,
+    prompt:
+      'In hg38, build a three-part figure of CFTR: (1) a view of the whole CFTR gene with MANE transcripts, ClinVar variants and phyloP 100-way conservation, its scale fixed from -2 to 5; (2) a second view under 100 bp wide on the F508del deletion (rs113993960), with the reference sequence translated in the direction CFTR is read; (3) a synteny view of the human CFTR locus over mouse Cftr. Every track must actually draw.',
+    solution: `
+      await jb.loadSessionSpec({ views: [
+        { type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr7:117,470,000-117,680,000', tracks: ['hg38-mane', 'hg38-clinvarMain', 'hg38-phyloP100way'] },
+        { type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr7:117,559,560-117,559,620', tracks: ['hg38-mane'] },
+        { type: 'LinearSyntenyView', tracks: ['hg38_to_mm39_liftOver'], views: [
+          { assembly: 'hg38', loc: 'chr7:117,400,000-117,750,000', tracks: [] },
+          { assembly: 'mm39', loc: 'chr6:18,100,000-18,400,000', tracks: [] } ] } ] }, 120000)
+      const [whole, zoom] = jb.session.views
+      const t = (id, v) => jb.trackModel(id, v.id)
+      await t('hg38-clinvarMain', whole).applyDisplaySettings({ forceLoad: true })
+      const phylo = t('hg38-phyloP100way', whole)
+      const r = await phylo.applyDisplaySettings({ encoding: { y: { scale: { domainMin: -2, domainMax: 5 } } } })
+      if (!r.applied.includes('encoding')) { await phylo.applyDisplaySettings({ scales: { y: { domainMin: -2, domainMax: 5 } } }) }
+      await zoom.launchTrack(jb.session.assemblyManager.get('hg38').configuration.sequence.trackId, {}, { showTranslation: true, showForward: true, showReverse: false })
+      return jb.waitReady(120000)`,
+    grade: `${SYNTENY_STACK}
+      const seqId = jb.session.assemblyManager.get('hg38').configuration.sequence.trackId
+      const lgvs = session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))
+      const out = []
+      for (const v of lgvs) {
+        const rs = (await jb.visibleRegions(v.id)).filter(r => r.refName.replace(/^chr/, '') === '7')
+        const span = rs.reduce((n, r) => n + r.end - r.start, 0)
+        const ids = v.tracks.map(t => t.configuration.trackId)
+        const phylo = v.tracks.find(t => t.configuration.trackId === 'hg38-phyloP100way')?.activeDisplay
+        const domain = phylo?.domain
+        const seq = v.tracks.find(t => t.configuration.trackId === seqId)?.activeDisplay
+        out.push({
+          whole: rs.some(r => r.start <= ${CFTR_SPAN[0]} && r.end >= ${CFTR_SPAN[1]}) && span < 1500000 && ids.includes('hg38-mane') && ids.includes('hg38-clinvarMain') && domain?.[0] === -2 && domain?.[1] === 5,
+          zoom: rs.some(r => r.start < ${F508DEL} && r.end > ${F508DEL}) && span <= 100 && seq?.showTranslation === true && seq?.showForward !== false,
+          span, ids, domain, translation: seq && [seq.showForward, seq.showReverse, seq.showTranslation],
+        })
+      }
+      const human = rows.findIndex(r => r.assembly === 'hg38')
+      const mouse = rows.findIndex(r => r.assembly === 'mm39')
+      const synteny = human >= 0 && mouse >= 0 && Math.abs(human - mouse) === 1 && linked[Math.min(human, mouse)] === true && at(rows[human], '7', ${CFTR_SPAN[0]}, ${CFTR_SPAN[1]}, 5000000) && at(rows[mouse], '6', 18170000, 18320000, 5000000)
+      return { pass: out.some(o => o.whole) && out.some(o => o.zoom) && synteny, detail: { out, rows, linked } }`,
+  },
+  {
+    name: 'fx-lct-figure',
+    tutorial: true,
+    draws: '.',
+    config: HG38_HUB,
+    prompt:
+      'In hg38, make one view of the lactase-persistence enhancer, rs4988235 with about 1 kb either side, styled as a figure: the HPRC pangenome genotypes as a matrix with one row per haplotype, phyloP 100-way conservation as a line plot fixed from -4 to 8, RefSeq curated genes squeezed into compact rows, and ClinVar showing only variants classified Pathogenic. Every track must actually draw.',
+    solution: `
+      await jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr2:135,850,076-135,852,076', tracks: ['hg38-phyloP100way', 'hg38-ncbiRefSeqCurated', 'hg38-clinvarMain'] }] }, 90000)
+      await jb.view().launchTrack('hg38-hprc-v2.0-pangenome-vcf', {}, { type: 'LinearMultiSampleVariantDisplay', unit: 'haplotype' })
+      const phylo = jb.trackModel('hg38-phyloP100way')
+      const r = await phylo.applyDisplaySettings({ mark: 'line', encoding: { y: { scale: { domainMin: -4, domainMax: 8 } } } })
+      if (!r.applied.includes('encoding')) { await phylo.applyDisplaySettings({ scales: { y: { domainMin: -4, domainMax: 8 } } }) }
+      await jb.trackModel('hg38-ncbiRefSeqCurated').applyDisplaySettings({ displayMode: 'compact' })
+      await jb.trackModel('hg38-clinvarMain').applyDisplaySettings({ filter: ["jexl:get(feature,'clinSign') == 'Pathogenic'"] })
+      return jb.waitReady(120000)`,
+    grade: `
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
+        const rs = await jb.visibleRegions(v.id)
+        const at = rs.some(r => r.refName.replace(/^chr/, '') === '2' && r.start < 135851076 && r.end >= 135851076 && r.end - r.start >= 1000 && r.end - r.start <= 5000)
+        const d = id => v.tracks.find(t => t.configuration.trackId === id)?.activeDisplay
+        const hprc = d('hg38-hprc-v2.0-pangenome-vcf')
+        const phylo = d('hg38-phyloP100way')
+        const mark = phylo?.plot?.mark
+        const genes = d('hg38-ncbiRefSeqCurated')
+        const filters = JSON.stringify(d('hg38-clinvarMain')?.plot?.filter ?? '')
+        const checks = {
+          at,
+          haplotypes: hprc?.type === 'LinearMultiSampleVariantDisplay' && hprc.unit === 'haplotype' && (hprc.sources ?? []).some(s => s.HP === 1),
+          line: (typeof mark === 'string' ? mark : mark?.type) === 'line' && phylo?.domain?.[0] === -4 && phylo?.domain?.[1] === 8,
+          compact: genes?.displayMode === 'compact',
+          pathogenic: /clinSign|_clinSignCode|aggrGermClass/.test(filters) && /Pathogenic|PATH|\\bP\\b/.test(filters),
+        }
+        out.push({ checks, mark, domain: phylo?.domain, filters: filters.slice(0, 200) })
+      }
+      return { pass: out.some(o => Object.values(o.checks).every(Boolean)), detail: out }`,
+  },
+  {
+    name: 'fx-kiv2-walk-rows',
+    tutorial: true,
+    draws: '.',
+    config: HPRC_DEMO,
+    prompt:
+      "On this HPRC pangenome site, show the LPA KIV-2 array on hg38 with the HPRC v2.1 walks graph track laid out as one bar per haplotype walk, showing only HG00133's haplotypes, and tell me how many KIV-2 copies, KIV-2A and KIV-2B together, each of HG00133's two haplotypes carries.",
+    solution: `
+      await jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr6:160,610,000-160,652,000', tracks: ['hprc_v2_1_walks'] }] }, 120000)
+      await jb.trackModel('hprc_v2_1_walks').applyDisplaySettings({ layoutMode: 'walkrows', rows: { kept: ['HG00133'] } })
+      await jb.waitReady(120000)
+      ${KIV2}
+      return "HG00133's haplotypes carry " + copies.join(' and ') + ' KIV-2 copies.'`,
+    grade: `${KIV2}
+      ${said}
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
+        const rs = await jb.visibleRegions(v.id)
+        const at = rs.some(r => r.refName.replace(/^chr/, '') === '6' && r.start < 160646753 && r.end > 160616002 && r.end - r.start < 1000000)
+        for (const t of v.tracks.filter(t => t.type === 'GraphTrack')) {
+          const d = t.activeDisplay
+          const samples = [...(d.walkRowSamples ?? [])]
+          out.push({ at, id: t.configuration.trackId, mode: d.chosenLayoutMode, samples, ok: at && d.chosenLayoutMode === 'walkrows' && samples.length > 0 && samples.every(s => /^HG00133\\b/.test(s)) && !d.error })
+        }
+      }
+      return { pass: copies.length === 2 && copies.every(c => said.includes(c)) && out.some(o => o.ok), detail: { copies, said, out } }`,
+  },
+  {
+    name: 'fx-clinvar-lollipop',
+    tutorial: true,
+    draws: '.',
+    config: HG38_HUB,
+    prompt:
+      'In hg38 at BRCA1, draw ClinVar as a lollipop plot: each variant a dot whose height is its review-status star count and whose color is its clinical significance, standing on a thin stem from the baseline.',
+    solution: `
+      await jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly: 'hg38', loc: '${BRCA1_LOC}', tracks: [] }] }, 90000)
+      await jb.view().launchTrack('hg38-clinvarMain', {}, { type: 'LinearMarkDisplay', forceLoad: true, marks: [
+        { mark: 'bar', encoding: { y: '_starCount', color: { value: '#999' } } },
+        { mark: 'point', encoding: { y: '_starCount', color: { field: 'clinSign' }, size: 6 } } ] })
+      await jb.trackModel('hg38-clinvarMain').applyDisplaySettings({ forceLoad: true })
+      return jb.waitReady(120000)`,
+    grade: `${BRCA1}
+      ${marksOf}
+      const stars = y => /_starCount|reviewStatus|stars?/i.test(String(y))
+      const out = (view?.tracks ?? []).filter(t => t.configuration.trackId === 'hg38-clinvarMain' || /clinvarMain/.test(JSON.stringify(jb.mst.getSnapshot(t.configuration).adapter ?? ''))).map(t => {
+        const d = t.activeDisplay
+        const marks = marksOf(d)
+        const dot = marks.some(m => markType(m) === 'point' && stars(field(m.encoding?.y)) && /clinSign|_clinSignCode|aggrGermClass|signif/i.test(JSON.stringify(m.encoding?.color ?? '')))
+        const stem = marks.some(m => ['bar', 'rule'].includes(markType(m)) && stars(field(m.encoding?.y)))
+        const errors = (d.notices ?? []).filter(n => n.level === 'error')
+        return { id: t.configuration.trackId, type: d.type, dot, stem, errors, marks: JSON.stringify(marks).slice(0, 400) }
+      })
+      return { pass: !!view && out.some(o => o.type === 'LinearMarkDisplay' && o.dot && o.stem && !o.errors.length), detail: { regions, out } }`,
+  },
+  {
+    name: 'fx-gnomad-sv-density',
+    tutorial: true,
+    draws: '.',
+    config: HG38_HUB,
+    prompt:
+      'In hg38, across the whole of chromosome 17, plot how many gnomAD structural variants that passed all filters start in each 1 Mb window, as bars, with a separate panel for each SV type.',
+    solution: `
+      await jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr17', tracks: [] }] }, 90000)
+      await jb.view().launchTrack('hg38-gnomadStructuralVariants', {}, { type: 'LinearMarkDisplay', facet: 'svtype', transform: [{ type: 'filter', expr: "jexl:feature.FILTER == 'PASS'" }], marks: [
+        { mark: 'bar', transform: [{ type: 'bin', step: 1000000 }, { type: 'aggregate', ops: [{ op: 'count' }] }], encoding: { y: 'count' } } ] })
+      await jb.trackModel('hg38-gnomadStructuralVariants').applyDisplaySettings({ forceLoad: true })
+      return jb.waitReady(240000)`,
+    grade: `
+      ${marksOf}
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
+        const rs = (await jb.visibleRegions(v.id)).filter(r => r.refName.replace(/^chr/, '') === '17')
+        const whole = rs.reduce((n, r) => n + r.end - r.start, 0) >= 0.9 * 83257441
+        for (const t of v.tracks.filter(t => /gnomadStructuralVariants/.test(t.configuration.trackId + JSON.stringify(jb.mst.getSnapshot(t.configuration).adapter ?? '')))) {
+          const d = t.activeDisplay
+          let facet, transform
+          try { facet = jb.readConfObject(d.configuration, 'facet'); transform = jb.readConfObject(d.configuration, 'transform') } catch {}
+          const marks = marksOf(d)
+          const steps = [...(transform ?? []), ...marks.flatMap(m => m.transform ?? [])]
+          const pass = JSON.stringify([...steps, ...marks.map(m => m.encoding ?? {}), facet]).match(/FILTER[^"]*PASS|PASS[^"]*FILTER/) !== null
+          const bin = steps.some(s => s.type === 'bin' && Number(s.step) === 1000000)
+          const count = steps.some(s => s.type === 'aggregate' && (s.ops ?? [{}]).some(o => (o.op ?? 'count') === 'count'))
+          const bars = marks.some(m => markType(m) === 'bar')
+          const byType = /svtype|SVTYPE/.test(JSON.stringify(facet ?? ''))
+          const errors = (d.notices ?? []).filter(n => n.level === 'error')
+          out.push({ whole, type: d.type, pass, bin, count, bars, byType, errors, ok: whole && d.type === 'LinearMarkDisplay' && pass && bin && count && bars && byType && !errors.length })
+        }
+      }
+      return { pass: out.some(o => o.ok), detail: out }`,
+  },
+  {
+    name: 'fx-genark-chimp-foxp2',
+    tutorial: true,
+    draws: '.',
+    config: HG38_HUB,
+    prompt:
+      "From genomes.jbrowse.org, open the telomere-to-telomere chimpanzee assembly (mPanTro3, the RefSeq primary haplotype) and show chimpanzee FOXP2 with that assembly's RefSeq genes.",
+    solution: `${importHub(CHIMP_T2T, 'config.json', '/ncbiRefSeq$/')}
+      await jb.addView({ type: 'LinearGenomeView', assembly: asm.name, loc: 'NC_072404.2:129,400,000-130,100,000', tracks: [asm.name + '-ncbiRefSeq'] })
+      return jb.waitReady(120000)`,
+    grade: `
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.some(a => /^GC[AF]_028858775\\.\\d+$/.test(a)))) {
+        const rs = await jb.visibleRegions(v.id)
+        const span = rs.reduce((n, r) => n + r.end - r.start, 0)
+        const hits = []
+        for (const t of v.tracks.filter(t => t.type === 'FeatureTrack')) {
+          for (const r of rs) {
+            const fs = await jb.getFeatures({ trackId: t.configuration.trackId, viewId: v.id, loc: r.refName + ':' + (r.start + 1) + '-' + r.end, byteLimit: 80e6 }).catch(() => [])
+            if (fs.some(f => [f.get('name'), f.get('geneName'), f.get('gene'), f.get('name2')].includes('FOXP2'))) { hits.push(t.configuration.trackId) }
+          }
+        }
+        out.push({ asm: v.assemblyNames[0], rs: rs.map(r => r.refName + ':' + r.start + '-' + r.end), span, hits })
+      }
+      return { pass: out.some(o => o.hits.length > 0 && o.span < 2000000), detail: out }`,
+  },
+  {
+    name: 'fx-genark-sars-furin',
+    tutorial: true,
+    draws: '.',
+    config: HG38_HUB,
+    prompt:
+      "From genomes.jbrowse.org, open the SARS-CoV-2 reference genome and zoom to base level on the spike protein's furin cleavage site (the PRRAR motif, residues 681-685), with its genes and the reference sequence translated so the motif reads out.",
+    solution: `${importHub('https://jbrowse.org/ucsc/wuhCor1/', 'config.json', '/ncbiGeneBGP$/')}
+      await jb.addView({ type: 'LinearGenomeView', assembly: asm.name, loc: 'NC_045512v2:23,560-23,660', tracks: [asm.name + '-ncbiGeneBGP'] })
+      const v = jb.session.views.at(-1)
+      await v.launchTrack(jb.session.assemblyManager.get(asm.name).configuration.sequence.trackId, {}, { showTranslation: true })
+      return jb.waitReady(120000)`,
+    grade: `
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.some(a => /wuhCor1|GC[AF]_009858895/.test(a)))) {
+        const asm = v.assemblyNames[0]
+        const rs = await jb.visibleRegions(v.id)
+        const r = rs[0]
+        let spike
+        for (const t of v.tracks.filter(t => t.type === 'FeatureTrack')) {
+          const fs = await jb.getFeatures({ trackId: t.configuration.trackId, viewId: v.id, loc: r.refName + ':21000-25500', byteLimit: 80e6 }).catch(() => [])
+          spike ??= fs.find(f => /^(S|spike|surface glycoprotein)$/i.test(String(f.get('name') ?? f.get('gene') ?? f.get('geneName'))) && f.get('start') < 21600)
+        }
+        const from = spike ? spike.get('start') + 680 * 3 : NaN
+        const seqId = jb.session.assemblyManager.get(asm).configuration.sequence.trackId
+        const codons = spike ? (await jb.getFeatures({ trackId: seqId, viewId: v.id, loc: r.refName + ':' + (from + 1) + '-' + (from + 15) }))[0]?.get('seq').toUpperCase() : ''
+        const seq = v.tracks.find(t => t.configuration.trackId === seqId)?.activeDisplay
+        const covers = rs.some(x => x.start <= from && x.end >= from + 15 && x.end - x.start <= 300)
+        out.push({ asm, rs: rs.map(x => x.refName + ':' + x.start + '-' + x.end), from, codons, covers, translation: seq?.showTranslation, forward: seq?.showForward })
+      }
+      const furin = c => /^CC[TCAG][CA]G[TCAG][CA]G[TCAG]GC[TCAG][CA]G[TCAG]$/.test(c)
+      return { pass: out.some(o => furin(o.codons) && o.covers && o.translation === true && o.forward !== false), detail: out }`,
+  },
+)
+
+// Open-world outside tasks: find public data by accession, transform it with
+// command-line tools, and show the result. Probe truths came from my own
+// shell pipelines over the same public files.
+const windowMean = `
+  const windowMean = async (t, v, p) => {
+    let sum = 0
+    for (const f of await jb.getFeatures({ trackId: t.configuration.trackId, viewId: v.id, loc: p.loc, byteLimit: 80e6 })) {
+      const from = Math.max(f.get('start'), p.start)
+      const to = Math.min(f.get('end'), p.end)
+      if (to > from) { sum += (to - from) * f.get('score') }
+    }
+    return Math.round((sum / (p.end - p.start)) * 100) / 100
+  }
+  const near = (m, e, rel, abs) => Math.abs(m - e) <= rel * Math.abs(e) + abs`
+// Per-base means over GSE115749's 786-M1A H3K27ac bigWigs (GSM3188593 empty
+// vector, GSM3188594 HA-VHL), and log2((VHL + 1) / (EV + 1)) averaged per base
+const VHL_PROBES = [
+  {
+    loc: 'chr6:43,668,001-43,670,000',
+    start: 43668000,
+    end: 43670000,
+    ratio: -1.11,
+    ev: 2.46,
+    vhl: 0.51,
+  },
+  {
+    loc: 'chr6:43,768,001-43,770,000',
+    start: 43768000,
+    end: 43770000,
+    ratio: -0.94,
+    ev: 1.98,
+    vhl: 0.58,
+  },
+  {
+    loc: 'chr6:43,804,001-43,806,000',
+    start: 43804000,
+    end: 43806000,
+    ratio: 0.16,
+    ev: 0.4,
+    vhl: 0.58,
+  },
+]
+// wgEncodeBroadHistoneK562H3k27acStdSig lifted hg19 to hg38 with UCSC's
+// hg19ToHg38 chain; read unlifted on hg38 these windows hold 3.34, 0, 7.41, 51.99
+const LIFT_PROBES = [
+  {
+    loc: 'chr11:5,225,001-5,227,000',
+    start: 5225000,
+    end: 5227000,
+    expect: 12.45,
+  },
+  {
+    loc: 'chr11:5,240,001-5,242,000',
+    start: 5240000,
+    end: 5242000,
+    expect: 9.7,
+  },
+  {
+    loc: 'chr11:5,280,001-5,282,000',
+    start: 5280000,
+    end: 5282000,
+    expect: 49.4,
+  },
+  {
+    loc: 'chr11:5,300,001-5,302,000',
+    start: 5300000,
+    end: 5302000,
+    expect: 4.61,
+  },
+]
+// minimap2 -ax splice puts SRR5660151_97 on BCR to the end of its MANE exon
+// 14 (chr22:23,290,413) and on ABL1 from the start of exon 2 (chr9:130,854,064)
+const BCR_EXON14_END = 23290413
+
+TASKS.push(
+  {
+    name: 'fx-geo-vhl-ratio',
+    outside: true,
+    prompt:
+      'GEO series GSE115749 has hg38 H3K27ac ChIP-seq bigWigs for 786-M1A renal cancer cells carrying an empty vector and with VHL restored. Make a bigWig of log2((VHL + 1) / (empty vector + 1)) across VEGFA and 150 kb either side, save it as WORK/vhl_vs_ev.bw, and show it on hg38 at VEGFA beside the two source signals.',
+    grade: `${windowMean}
+      const probes = ${JSON.stringify(VHL_PROBES)}
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
+        const rs = await jb.visibleRegions(v.id)
+        const atVegfa = rs.some(r => r.refName.replace(/^chr/, '') === '6' && r.start < 43786487 && r.end > 43770207 && r.end - r.start < 1000000)
+        const tracks = []
+        for (const t of v.tracks.filter(t => t.type === 'QuantitativeTrack')) {
+          const means = []
+          for (const p of probes) { means.push(await windowMean(t, v, p).catch(() => NaN)) }
+          tracks.push({ id: t.configuration.trackId, ratioFile: JSON.stringify(jb.mst.getSnapshot(t.configuration)).includes('vhl_vs_ev.bw'), means })
+        }
+        const ratio = tracks.some(t => t.ratioFile && t.means.every((m, i) => near(m, probes[i].ratio, 0, 0.3)))
+        const ev = tracks.some(t => t.means.every((m, i) => near(m, probes[i].ev, 0.25, 0.1)))
+        const vhl = tracks.some(t => t.means.every((m, i) => near(m, probes[i].vhl, 0.25, 0.1)))
+        out.push({ atVegfa, ratio, ev, vhl, tracks })
+      }
+      return { pass: out.some(o => o.atVegfa && o.ratio && o.ev && o.vhl), detail: out }`,
+  },
+  {
+    name: 'fx-hg19-lift-k562',
+    outside: true,
+    prompt:
+      "UCSC's ENCODE Broad Histone K562 H3K27ac signal track (wgEncodeBroadHistoneK562H3k27acStdSig) exists only on hg19. Show it on hg38 across the beta-globin locus, chr11:5,200,000-5,320,000, at its correct hg38 positions: save the converted signal as WORK/k562_h3k27ac_hg38.bw and display it there.",
+    grade: `${windowMean}
+      const probes = ${JSON.stringify(LIFT_PROBES)}
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
+        const rs = await jb.visibleRegions(v.id)
+        const atLocus = rs.some(r => r.refName.replace(/^chr/, '') === '11' && r.start < 5320000 && r.end > 5200000 && r.end - r.start < 2000000)
+        for (const t of v.tracks.filter(t => JSON.stringify(jb.mst.getSnapshot(t.configuration)).includes('k562_h3k27ac_hg38'))) {
+          const means = []
+          for (const p of probes) { means.push(await windowMean(t, v, p).catch(() => NaN)) }
+          out.push({ atLocus, id: t.configuration.trackId, means, ok: atLocus && means.every((m, i) => near(m, probes[i].expect, 0.15, 0.5)) })
+        }
+      }
+      return { pass: out.some(o => o.ok), detail: out }`,
+  },
+  {
+    name: 'fx-logan-bcr-abl1',
+    outside: true,
+    prompt:
+      'Logan (indextheplanet.com) has assembled contigs for every SRA run. Fetch the Logan contigs for the K562 RNA-seq run SRR5660151, find the contig that spells the BCR-ABL1 fusion transcript, and show it aligned on hg38 at the BCR side of the junction. Reply with the contig name and which BCR exon joins which ABL1 exon.',
+    grade: `
+      const out = []
+      for (const v of session.views.filter(v => v.type === 'LinearGenomeView' && v.assemblyNames?.includes('hg38'))) {
+        const rs = await jb.visibleRegions(v.id)
+        const atJunction = rs.some(r => r.refName.replace(/^chr/, '') === '22' && r.start < ${BCR_EXON14_END} && r.end >= ${BCR_EXON14_END} && r.end - r.start < 500000)
+        for (const t of v.tracks) {
+          const names = (await jb.getFeatures({ trackId: t.configuration.trackId, viewId: v.id, loc: 'chr22:${BCR_EXON14_END - 100}-${BCR_EXON14_END}', byteLimit: 80e6 }).catch(() => [])).map(f => f.get('name') ?? f.get('id'))
+          if (names.includes('SRR5660151_97')) { out.push({ atJunction, id: t.configuration.trackId }) }
+        }
+      }
+      const named = /SRR5660151_97\\b/.test(answer)
+      const junction = /e14a2|b3a2|(\\be14|\\bb3|exon\\s*14)\\b[^.]{0,120}(\\ba2|exon\\s*2)\\b|(\\ba2|exon\\s*2)\\b[^.]{0,120}(\\be14|\\bb3|exon\\s*14)\\b/i.test(answer)
+      return { pass: named && junction && out.some(o => o.atJunction), detail: { named, junction, out, answer: answer.slice(-300) } }`,
+  },
+)
