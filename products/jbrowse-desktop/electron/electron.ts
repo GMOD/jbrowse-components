@@ -22,7 +22,7 @@ import {
   JBROWSE_PROTOCOL,
   findLaunchTarget,
   openFileTarget,
-  parseProtocolUrl,
+  protocolTarget,
 } from './launchTarget.ts'
 import { describeLaunchLink } from './linkPrompt.ts'
 import { startMcpBridge } from './mcp/bridge.ts'
@@ -99,10 +99,7 @@ function getInitialTarget(): Promise<ArgvTarget | undefined> {
     }
     const onOpenUrl = (event: Electron.Event, url: string) => {
       event.preventDefault()
-      const link = parseProtocolUrl(url)
-      if (link) {
-        resolve({ type: 'link', url: link })
-      }
+      resolve(protocolTarget(url))
     }
     app.on('open-file', onOpenFile)
     app.on('open-url', onOpenUrl)
@@ -179,8 +176,8 @@ function appArgv(argv: readonly string[]) {
   return process.defaultApp ? argv.slice(1) : argv
 }
 
-// The command line named something to open and it could not be built, so the
-// start screen is up with nothing on it; say why.
+// A launch named something to open and it could not be built, so the start
+// screen is up with nothing on it; say why.
 async function reportInvalidLaunch(
   message: string,
   parent: BrowserWindow | null,
@@ -188,7 +185,7 @@ async function reportInvalidLaunch(
   console.error(`jbrowse-desktop: ${message}`)
   const options = {
     type: 'error' as const,
-    message: 'JBrowse Desktop could not open what the command line named',
+    message: 'JBrowse Desktop could not open what it was asked to',
     detail: message,
   }
   await (parent
@@ -405,10 +402,7 @@ function runApp() {
       // already running
       app.on('open-url', (event, url) => {
         event.preventDefault()
-        const link = parseProtocolUrl(url)
-        if (link) {
-          openTarget({ type: 'link', url: link }).catch(logError)
-        }
+        openTarget(protocolTarget(url)).catch(logError)
       })
       app.on('activate', () => {
         wm.ensureWindow().catch(logError)

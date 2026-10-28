@@ -136,6 +136,17 @@ function isProtocolUrl(arg: string) {
   return arg.toLowerCase().startsWith(`${JBROWSE_PROTOCOL}:`)
 }
 
+/** A jbrowse:// link as the session it opens, or why it opens none. */
+export function protocolTarget(input: string): ArgvTarget {
+  const url = parseProtocolUrl(input)
+  return url
+    ? { type: 'link', url }
+    : {
+        type: 'invalid',
+        message: `${input} is not a link JBrowse Desktop can open: it needs a ?url= naming an http(s) JBrowse Web page`,
+      }
+}
+
 /**
  * What a file macOS hands over in an 'open-file' event opens as: a session or
  * config as itself, and a data file as `jbrowse-desktop <file>` would.
@@ -246,8 +257,9 @@ export function findLaunchTarget(
   // `jbrowse://open?url=file:///secret.json` would be re-read as a path to open.
   const protocolArgs = args.filter(isProtocolUrl)
   if (protocolArgs.length) {
-    const url = protocolArgs.map(parseProtocolUrl).find(Boolean)
-    return url ? { type: 'link', url } : undefined
+    return protocolTarget(
+      protocolArgs.find(a => parseProtocolUrl(a)) ?? protocolArgs[0]!,
+    )
   }
   const { kept: all, ignored } = launchArgs(args)
   const viewType = all[0] === undefined ? undefined : launchViewType(all[0])

@@ -57,7 +57,7 @@ test('a link wins over a file, and a malformed link never falls back to one', ()
       ['jbrowse-desktop', 'jbrowse://open?url=file%3A%2F%2F%2Fetc%2Fpasswd'],
       '/home/me',
     ),
-  ).toBeUndefined()
+  ).toMatchObject({ type: 'invalid' })
   // ...and not even when a real file argument sits alongside the bad link: the
   // link claims the launch, so its rejection is a bad link, not "open the file"
   expect(
@@ -69,7 +69,16 @@ test('a link wins over a file, and a malformed link never falls back to one', ()
       ],
       '/home/me',
     ),
-  ).toBeUndefined()
+  ).toMatchObject({ type: 'invalid' })
+})
+
+test('a jbrowse:// link with no usable url says so', () => {
+  expect(
+    findLaunchTarget(['jbrowse-desktop', 'jbrowse://open'], '/home/me'),
+  ).toEqual({
+    type: 'invalid',
+    message: expect.stringContaining('needs a ?url='),
+  })
 })
 
 test('claims the authority-less jbrowse: form too', () => {
@@ -92,9 +101,9 @@ test('an authority-less link cannot traverse into a local file to open', () => {
     'jbrowse:x/../../../../Downloads/evil.jbrowse',
     'jbrowse:open?url=file%3A%2F%2F%2Fetc%2Fsecret.json',
   ]) {
-    expect(findLaunchTarget(['jbrowse-desktop', arg], '/home/me/work')).toBe(
-      undefined,
-    )
+    expect(
+      findLaunchTarget(['jbrowse-desktop', arg], '/home/me/work'),
+    ).toMatchObject({ type: 'invalid' })
   }
 })
 
