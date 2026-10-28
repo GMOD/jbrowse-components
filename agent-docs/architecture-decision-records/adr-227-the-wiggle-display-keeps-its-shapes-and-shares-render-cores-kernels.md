@@ -77,6 +77,15 @@ line painter as well as wiggle's, and the shared `thresholdBandOf` fixed both.
   implementation, as ADR-199 has the MAF display do: the threshold compare,
   the band pen and the band pick moved on 2026-10-12, and the next candidates
   are named when someone finds two copies.
+- On 2026-10-28 the color-y and cut placement (`valueToYPxUnclamped`,
+  `colorCutYsPx`), the bar's slab (`slabVertexYPx`, `slabCoverage`), the clip
+  strip's top (`clipStripTopPx`) and the centre line's capsule corner
+  (`clipXCapsuleCorner`) moved. They sit in render-core modules with no
+  uniform struct, because `wiggleCommon` and `lineCommon` each declare
+  `Uniforms` and slangc refuses a shader that imports both. Wiggle's shaders
+  and render-core's still convert y to clip space each their own way, and the
+  two results differ by up to one float32 rounding step. The step line's quad
+  is the copy left.
 - Two pieces stand on their own and need no port: wiggle's shaders can read
   render-core's row table for the row's slot and visibility, so a sort, a
   cluster or a hidden row would upload a texture rather than re-encode every

@@ -320,6 +320,27 @@ test('a line on a cut takes the color above it, the cut compared in float32 as t
   )
 })
 
+// Both tops draw clamped onto the band's top edge, where a clamped cut at 15
+// would land too and tie with each.
+test('past the domain, a step top takes its own side of a cut past the domain', () => {
+  const c = channels([
+    { x: 10, x2: 20, y: 12 },
+    { x: 60, x2: 70, y: 20 },
+  ])
+  c.colorValue = c.y
+  const { ctx, calls } = mockCtx()
+  lineStepMark.paintBlock(ctx, c, block, frame, {
+    ...params,
+    colorScale: { cuts: [15], colors: Uint32Array.of(RED, BLUE) },
+    colorFromY: true,
+  })
+  const tops = calls.filter(r => r.w > r.h)
+  expect(tops.map(r => [r.x < 500, r.fillStyle])).toEqual([
+    [true, abgrToCssRgba(RED)],
+    [false, abgrToCssRgba(BLUE)],
+  ])
+})
+
 test('a threshold over another field colors each instance by its own value', () => {
   const c = channels([
     { x: 10, x2: 20, y: 9 },
