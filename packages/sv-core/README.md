@@ -15,15 +15,14 @@ equal in.
 
 Case, because that is what the two halves of one record disagree about:
 nanomonsv writes CHROM `chr3` and spells the same contig `CHR3` inside the ALT
-bracket, and all 66 BND records of the COLO829 callset the cancer_sv demo
-serves do it. Case is also the whole of the fallback `getCanonicalRefName`
-makes, through `lowerCaseRefNameAliases`.
+bracket, and all 66 BND records of the COLO829 callset the cancer_sv demo serves
+do it. Case is also the whole of the fallback `getCanonicalRefName` makes,
+through `lowerCaseRefNameAliases`.
 
-For grouping two ends of one junction, not for navigation: `chr10` against
-`10` still needs an assembly, and the callers here — the overlay's alt
-matching and its breakend bucketing — hold features and no assembly. A
-producer that has one resolves properly instead, through
-`toCanonicalRefName`.
+For grouping two ends of one junction, not for navigation: `chr10` against `10`
+still needs an assembly, and the callers here — the overlay's alt matching and
+its breakend bucketing — hold features and no assembly. A producer that has one
+resolves properly instead, through `toCanonicalRefName`.
 
 ```js
 // type signature
@@ -37,10 +36,10 @@ producer that has one resolves properly instead, through
 Screen-x of the far end of a breakend's direction tick at screen-x `x`.
 
 `keepsDir` is genomic (see `breakendKeepsDirections`) and `reversed` is what
-turns it into a screen direction, so both are required: a caller cannot
-compile without answering the question. A reversed displayed region mirrors
-the axis, so a tick that ignores it points at the side the derivative
-discards rather than the side it keeps.
+turns it into a screen direction, so both are required: a caller cannot compile
+without answering the question. A reversed displayed region mirrors the axis, so
+a tick that ignores it points at the side the derivative discards rather than
+the side it keeps.
 
 ```js
 // type signature
@@ -51,8 +50,8 @@ discards rather than the side it keeps.
 
 ### breakpointBpPerPx
 
-bpPerPx that fits `windowSize` bp on each side of a breakpoint across the
-view width. Falls back to a zoomed-in default when no window is requested.
+bpPerPx that fits `windowSize` bp on each side of a breakpoint across the view
+width. Falls back to a zoomed-in default when no window is requested.
 
 ```js
 // type signature
@@ -64,15 +63,14 @@ view width. Falls back to a zoomed-in default when no window is requested.
 ### breakpointSplitViewId
 
 Stable id for the breakpoint split view a given launcher spawns, so repeated
-launches from the same place reuse one view instead of stacking a new one
-each time. `ownerId` is whatever the launcher is: a spreadsheet view (shared
-by the sheet's row menu and the SV inspector's chord clicks, which then open
-the same view), or a variant feature widget.
+launches from the same place reuse one view instead of stacking a new one each
+time. `ownerId` is whatever the launcher is: a spreadsheet view (shared by the
+sheet's row menu and the SV inspector's chord clicks, which then open the same
+view), or a variant feature widget.
 
-Spelling the id out inline works only while it matches this string: the
-dialog appends a shape suffix to whatever id it receives, so a launcher that
-respells the prefix opens a second view instead of reusing the first, with no
-error.
+Spelling the id out inline works only while it matches this string: the dialog
+appends a shape suffix to whatever id it receives, so a launcher that respells
+the prefix opens a second view instead of reusing the first, with no error.
 
 ```js
 // type signature
@@ -84,8 +82,8 @@ error.
 ### getBreakendAssemblyRegions
 
 Loads the assembly for a breakend feature and resolves the two regions its
-endpoints span. Throws if the assembly, its regions, or either endpoint's
-region cannot be found.
+endpoints span. Throws if the assembly, its regions, or either endpoint's region
+cannot be found.
 
 ```js
 // type signature
@@ -97,8 +95,7 @@ region cannot be found.
 ### getBreakendCoveringRegions
 
 The two canonical-refName junction positions a breakend/SV feature spans,
-through `junctionEnds`; a record with no other end spans the feature's
-extent.
+through `junctionEnds`; a record with no other end spans the feature's extent.
 
 ```js
 // type signature
@@ -109,8 +106,8 @@ extent.
 
 ### linearGenomeViewOf
 
-A feature widget's view when a launch can copy its tracks: a linear genome
-view, never a circle, whose tracks have displays a linear panel cannot draw.
+A feature widget's view when a launch can copy its tracks: a linear genome view,
+never a circle, whose tracks have displays a linear panel cannot draw.
 
 ```js
 // type signature
@@ -123,15 +120,15 @@ view, never a circle, whose tracks have displays a linear panel cannot draw.
 
 A paired record's two ends, read from whichever of the two things a producer
 states the far one with: the `mate` field a paired adapter fills in, or a VCF
-`ALT` this parses. `paired` is false for a record that names no other end,
-and `k2` is then a placeholder no view resolves.
+`ALT` this parses. `paired` is false for a record that names no other end, and
+`k2` is then a placeholder no view resolves.
 
 One resolver where there were three — the arc display's endpoint pair,
 `svMateLocus`'s far end for a chain walk, and `pairedEndsLocString`'s two
 windows for the row menu. Each spelled the 1-based-to-interbase shift itself
 (`parseSvAlt` reports VCF's 1-based position while `mate.start` is already
-0-based) and two of them read `ALT` ahead of `mate` while the third read
-`mate` first.
+0-based) and two of them read `ALT` ahead of `mate` while the third read `mate`
+first.
 
 ```js
 // type signature
@@ -142,9 +139,9 @@ windows for the row menu. Each spelled the 1-based-to-interbase shift itself
 
 ### navToLoc
 
-Navigate a feature widget's view to `locString`. A view that cannot navigate
-to a locus, such as the circular view, opens the locus in a linear genome
-view of its first assembly with the widget's track.
+Navigate a feature widget's view to `locString`. A view that cannot navigate to
+a locus, such as the circular view, opens the locus in a linear genome view of
+its first assembly with the widget's track.
 
 ```js
 // type signature
@@ -157,9 +154,9 @@ view of its first assembly with the widget's track.
 
 A paired record's two ends as one loc string an LGV opens side by side,
 `windowBp` either side of each junction. Each panel is turned so the sequence
-its end keeps reads left to right into the join. Two ends of one contig
-closer than a window merge into the single span between them. `undefined`
-for a record with one end.
+its end keeps reads left to right into the join. Two ends of one contig closer
+than a window merge into the single span between them. `undefined` for a record
+with one end.
 
 ```js
 // type signature
@@ -170,9 +167,9 @@ for a record with one end.
 
 ### panelIsTurned
 
-Whether the panel showing an end has to be turned for the join to read left
-to right across the seam: an end keeping the sequence to its RIGHT is
-reversed on the left panel, one keeping its LEFT is reversed on the right.
+Whether the panel showing an end has to be turned for the join to read left to
+right across the seam: an end keeping the sequence to its RIGHT is reversed on
+the left panel, one keeping its LEFT is reversed on the right.
 
 ```js
 // type signature
@@ -183,8 +180,8 @@ reversed on the left panel, one keeping its LEFT is reversed on the right.
 
 ### splitRegionAtPosition
 
-Splits a region at `pos` into two halves that both include `pos`, so a
-breakend there stays visible in each.
+Splits a region at `pos` into two halves that both include `pos`, so a breakend
+there stays visible in each.
 
 ```js
 // type signature
@@ -198,8 +195,8 @@ breakend there stays visible in each.
 Where a record's other end is, in the feature's own refName namespace and
 0-based like every other coordinate on a feature.
 
-`undefined` when the record names no other end, which is most of a VCF: a
-plain SNV, or an indel, which is a single span.
+`undefined` when the record names no other end, which is most of a VCF: a plain
+SNV, or an indel, which is a single span.
 
 ```js
 // type signature

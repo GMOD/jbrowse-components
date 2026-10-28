@@ -10,16 +10,15 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
 ### alignmentMarkAlpha
 
-Each insertion's width in px and each insertion's, deletion's, mismatch's
-and clip's alpha as the pileup draws them at `pxPerBp`, through the
-shaders' generated twins, for a host that draws the marks at its figure's
-scale. `fade` is a mark's `fade` column, `length` its length in bp (a
-deletion's `end - start`) and `quality` a mismatch's, 255 where the read
-has none. A column may be a number, for one mark. `featureHeight` is
-`readPitch.featureHeight`, `fadeLowFrequency` the display's
-`pileup.fadeLowFrequency`, and `mismatchOpacity` its
-`pileup.mismatches.encoding.opacity` as a config writes it; each of the
-three takes the pileup config's default when left out.
+Each insertion's width in px and each insertion's, deletion's, mismatch's and
+clip's alpha as the pileup draws them at `pxPerBp`, through the shaders'
+generated twins, for a host that draws the marks at its figure's scale. `fade`
+is a mark's `fade` column, `length` its length in bp (a deletion's
+`end - start`) and `quality` a mismatch's, 255 where the read has none. A column
+may be a number, for one mark. `featureHeight` is `readPitch.featureHeight`,
+`fadeLowFrequency` the display's `pileup.fadeLowFrequency`, and
+`mismatchOpacity` its `pileup.mismatches.encoding.opacity` as a config writes
+it; each of the three takes the pileup config's default when left out.
 
 - An insertion's `widthPx` is `insertionBarWidthPx`, and its `alpha`
   `insertionSizeAlpha` times, under `LONG_INSERTION_MIN_LENGTH`,
@@ -27,8 +26,8 @@ three takes the pileup config's default when left out.
 - A deletion's `alpha` is `sizeAlpha` of its width in px times
   `frequencyFadeGate` over that width squared.
 - A mismatch's `alpha` is `qualityFade` times `frequencyFadeGate` over
-  `pxPerBp`, and a clip's that gate alone. `quality` may be left out
-  while `mismatchOpacity` names no field.
+  `pxPerBp`, and a clip's that gate alone. `quality` may be left out while
+  `mismatchOpacity` names no field.
 
 ```js
 // type signature
@@ -40,19 +39,18 @@ three takes the pileup config's default when left out.
 ### alignmentTables
 
 A region's reads, or several regions', as the alignments display fetches,
-filters, lays out and colors them, as tables: the worker's reads,
-mismatches, gaps, insertions, clips, modifications, per-base qualities,
-coverage and splice junctions, each read on the row the display's pileup
-layout gives it and in the color the display's `encoding.color` paints it,
-with the key the display shows: `legend`, and `ramps`, its color bars
-(`rampKeyOf`). Under a `facet` each section lays out separately, every row
-has a `section`, and `sections` lists them in stacking order;
-ungrouped, there is one section, labelled `''`. Several regions lay out as
-the display lays out a view's regions, on one set of rows: a read crossing
-regions is listed in each, under one `key` and on one `row`, and every row
-names its `region`'s index. `warnings` names what the config asked for
-that the tables dropped. For a host that draws them itself, such as R
-through V8. The adapters must be registered on `pluginManager`
+filters, lays out and colors them, as tables: the worker's reads, mismatches,
+gaps, insertions, clips, modifications, per-base qualities, coverage and splice
+junctions, each read on the row the display's pileup layout gives it and in the
+color the display's `encoding.color` paints it, with the key the display shows:
+`legend`, and `ramps`, its color bars (`rampKeyOf`). Under a `facet` each
+section lays out separately, every row has a `section`, and `sections` lists
+them in stacking order; ungrouped, there is one section, labelled `''`. Several
+regions lay out as the display lays out a view's regions, on one set of rows: a
+read crossing regions is listed in each, under one `key` and on one `row`, and
+every row names its `region`'s index. `warnings` names what the config asked for
+that the tables dropped. For a host that draws them itself, such as R through
+V8. The adapters must be registered on `pluginManager`
 (`registerAlignmentsAdapters`).
 
 ```js

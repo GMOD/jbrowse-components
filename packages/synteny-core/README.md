@@ -14,9 +14,9 @@ Map each overlaid track to the color it draws in under the `track` field.
 
 Two passes so an automatic slot never duplicates a color the user pinned by
 hand: pass one reserves every explicit color, pass two hands each remaining
-track the next palette entry that isn't reserved. Past the end of the palette
-it wraps rather than falling back to a hash — a hashed color collides ~20% of
-the time at four tracks, and distinguishability is the whole point.
+track the next palette entry that isn't reserved. Past the end of the palette it
+wraps rather than falling back to a hash — a hashed color collides ~20% of the
+time at four tracks, and distinguishability is the whole point.
 
 Positional, so colors reshuffle when tracks are added, hidden, or reordered.
 That is intended: this is a within-view distinguishability aid, not a stable
@@ -31,9 +31,9 @@ identity. Anything worth keeping gets pinned.
 
 ### attributeOf
 
-The per-feature attribute a field reads: `mapq` is the comparative
-adapters' `mappingQual`, which they omit for MAPQ 255, so it paints and
-keys as no value; any other field uses its name.
+The per-feature attribute a field reads: `mapq` is the comparative adapters'
+`mappingQual`, which they omit for MAPQ 255, so it paints and keys as no value;
+any other field uses its name.
 
 ```js
 // type signature
@@ -44,20 +44,20 @@ keys as no value; any other field uses its name.
 
 ### BAND_GROUND_COLOR
 
-The color a comparative band is painted on, for every surface that has to
-agree about it: the two backends' clear, the pre-blended indel wedges, every
-mark, tick, label halo and outline (`getContrastText` of it), the legend
-chips and the SVG export.
+The color a comparative band is painted on, for every surface that has to agree
+about it: the two backends' clear, the pre-blended indel wedges, every mark,
+tick, label halo and outline (`getContrastText` of it), the legend chips and the
+SVG export.
 
-Light in every theme. The ribbons are translucent color that reads as tint
-over a light ground and as murk over a dark one, so a dark theme's paper made
-a whole-genome band nearly unreadable. The band is the one sheet in the app
-with a fixed light ground. The dotplot's plot area is the same sheet, since
-it paints the same color schemes, whose default is black.
+Light in every theme. The ribbons are translucent color that reads as tint over
+a light ground and as murk over a dark one, so a dark theme's paper made a
+whole-genome band nearly unreadable. The band is the one sheet in the app with a
+fixed light ground. The dotplot's plot area is the same sheet, since it paints
+the same color schemes, whose default is black.
 
 ```js
 // type signature
-"#fff"
+'#fff'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/bandGround.ts)
@@ -65,21 +65,26 @@ it paints the same color schemes, whose default is black.
 ### bandInk
 
 The inks a band draws in, from the band's ground rather than the page theme, at
-the light theme's weights: a dark theme's text and dividers are white and
-vanish on the band.
+the light theme's weights: a dark theme's text and dividers are white and vanish
+on the band.
 
 ```js
 // type signature
-() => { text: string; divider: string; gridline: string; stripe: string; }
+;() => {
+  text: string
+  divider: string
+  gridline: string
+  stripe: string
+}
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/bandGround.ts)
 
 ### bandPalette
 
-The light palette, whose paper is `BAND_GROUND_COLOR`. Chrome on the band
-with a palette token, such as the dotplot's gridlines and region boundaries,
-takes it from this palette and so matches the light theme in either mode.
+The light palette, whose paper is `BAND_GROUND_COLOR`. Chrome on the band with a
+palette token, such as the dotplot's gridlines and region boundaries, takes it
+from this palette and so matches the light theme in either mode.
 
 ```js
 // type signature
@@ -90,13 +95,13 @@ JBrowsePalette
 
 ### blendOverGround
 
-Composite a CSS color over `ground` by `a`, returning an opaque `rgb(...)`.
-The synteny canvas draws every ribbon at the view's global alpha over the
-band's ground (shadeFill in syntenyTypes.slang / resolveInstanceFill in the
-Canvas2D renderer), so a full-saturation legend swatch reads wrong — a red
-match ribbon shows as salmon over a white band, a blue deletion as pale blue.
-Blend the legend chip the same way, over the ground the renderers cleared to
-rather than an assumed white, so the key matches what is on screen.
+Composite a CSS color over `ground` by `a`, returning an opaque `rgb(...)`. The
+synteny canvas draws every ribbon at the view's global alpha over the band's
+ground (shadeFill in syntenyTypes.slang / resolveInstanceFill in the Canvas2D
+renderer), so a full-saturation legend swatch reads wrong — a red match ribbon
+shows as salmon over a white band, a blue deletion as pale blue. Blend the
+legend chip the same way, over the ground the renderers cleared to rather than
+an assumed white, so the key matches what is on screen.
 
 ```js
 // type signature
@@ -110,8 +115,8 @@ rather than an assumed white, so the key matches what is on screen.
 What a view holding `SyntenyColorsMixin` hands the view it opens on the same
 alignments: the `encoding.color` it paints by, which a view on its default
 scheme leaves to the new view's default, the pinned track colors and the
-`filter`. `encoding.opacity` keeps each view's default, since a linear
-ribbon, a dotplot point and a circle's ribbon draw at different densities.
+`filter`. `encoding.opacity` keeps each view's default, since a linear ribbon, a
+dotplot point and a circle's ribbon draw at different densities.
 
 ```js
 // type signature
@@ -122,10 +127,10 @@ ribbon, a dotplot point and a circle's ribbon draw at different densities.
 
 ### colorByMenuItems
 
-The color-by menu shared by the dotplot and linear-synteny palette buttons
-and the multi-way synteny track's Color by: the structural modes the
-surface paints, the measurements one hop in, the text-column rows while one
-is painting, and the per-track swatches once more than one track overlays.
+The color-by menu shared by the dotplot and linear-synteny palette buttons and
+the multi-way synteny track's Color by: the structural modes the surface paints,
+the measurements one hop in, the text-column rows while one is painting, and the
+per-track swatches once more than one track overlays.
 
 ```js
 // type signature
@@ -136,9 +141,9 @@ is painting, and the per-track swatches once more than one track overlays.
 
 ### colorByMenuTargetFor
 
-Project a view with `TrackColorsMixin` onto the menu builder's input.
-`track` is offered once two tracks overlay, and `reference` where the view
-has a reference to anchor on.
+Project a view with `TrackColorsMixin` onto the menu builder's input. `track` is
+offered once two tracks overlay, and `reference` where the view has a reference
+to anchor on.
 
 ```js
 // type signature
@@ -149,16 +154,15 @@ has a reference to anchor on.
 
 ### colorByScales
 
-The active mode's key as color scales — what a view's `colorScales` lists,
-and so what `ChromeLegend` and `SvgLegend` draw. A ramp takes its end
-labels (identity's `0%` and `100%`, dN/dS's `≥2`) from `format`, and a
-no-value row follows it once a row has no value; chips are blended
-over the band's ground by the view's alpha, so the key matches the
-on-screen composited ribbon colors, subject to `legendChipColor`'s
-legibility floor; a mode with no fixed key (a color per sequence name) is a
-note row saying so. A threshold keys its bins as chips. `title` is
-`legend.title` as written: unset keeps the field's own heading, `''` draws
-none.
+The active mode's key as color scales — what a view's `colorScales` lists, and
+so what `ChromeLegend` and `SvgLegend` draw. A ramp takes its end labels
+(identity's `0%` and `100%`, dN/dS's `≥2`) from `format`, and a no-value row
+follows it once a row has no value; chips are blended over the band's ground by
+the view's alpha, so the key matches the on-screen composited ribbon colors,
+subject to `legendChipColor`'s legibility floor; a mode with no fixed key (a
+color per sequence name) is a note row saying so. A threshold keys its bins as
+chips. `title` is `legend.title` as written: unset keeps the field's own
+heading, `''` draws none.
 
 ```js
 // type signature
@@ -170,8 +174,8 @@ none.
 ### ColorBySelector
 
 The palette button both comparative headers render, over the view's
-`TrackColorsMixin`: what the view draws and whether it has a reference to
-anchor on are the view's own hooks, so the button takes nothing else.
+`TrackColorsMixin`: what the view draws and whether it has a reference to anchor
+on are the view's own hooks, so the button takes nothing else.
 
 ```js
 // type signature
@@ -183,8 +187,8 @@ anchor on are the view's own hooks, so the button takes nothing else.
 ### colorByShortLabel
 
 Short human-readable title for the floating legend header: a measurement's
-preset title, and a column's own name, which is the point of it — the
-reader named it.
+preset title, and a column's own name, which is the point of it — the reader
+named it.
 
 ```js
 // type signature
@@ -201,22 +205,21 @@ Annotated at every site that walks a synteny view's `levels[].tracks` or a
 dotplot's `tracks`, because those arrays type out as `any`: the level model is
 deliberately `IAnyModelType` to break a real type cycle, and `any` propagates
 through the array and switches off checking on everything read from it. The
-`any` let `getConf(t.configuration, ...)` compile where getConf wants the
-MODEL, and the call threw at runtime reading
-`configuration.configuration.adapter`. With this interface the compiler checks
-those calls again.
+`any` let `getConf(t.configuration, ...)` compile where getConf wants the MODEL,
+and the call threw at runtime reading `configuration.configuration.adapter`.
+With this interface the compiler checks those calls again.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/lodTier.ts)
 
 ### createOpacityFunction
 
 Each feature's fade, 0 to 1, as a share of `opacityLevel`; undefined while
-`encoding.opacity` draws its constant. A feature with no value for the field draws
-at the level.
+`encoding.opacity` draws its constant. A feature with no value for the field
+draws at the level.
 
-`viewRanges` is the domain a number column fades across, the view's
-accumulated one as the color ramp's is, and `fetchRanges` the fetch's own,
-whose label lists a text column's values index.
+`viewRanges` is the domain a number column fades across, the view's accumulated
+one as the color ramp's is, and `fetchRanges` the fetch's own, whose label lists
+a text column's values index.
 
 ```js
 // type signature
@@ -227,10 +230,10 @@ whose label lists a text column's values index.
 
 ### featureColorInputs
 
-The lanes `createComparativeColorFunction` reads, built from features a
-display holds on the main thread rather than from a worker's payload. `ends`
-answers a feature's two refNames in the order the color modes read them:
-`query` paints by the first and `target` by the second.
+The lanes `createComparativeColorFunction` reads, built from features a display
+holds on the main thread rather than from a worker's payload. `ends` answers a
+feature's two refNames in the order the color modes read them: `query` paints by
+the first and `target` by the second.
 
 ```js
 // type signature
@@ -241,8 +244,8 @@ answers a feature's two refNames in the order the color modes read them:
 
 ### identityFadeMenuItem
 
-The Identity fade toggle of a view with `SyntenyViewMixin`: `opacity`
-read from `identity`, or back to the constant.
+The Identity fade toggle of a view with `SyntenyViewMixin`: `opacity` read from
+`identity`, or back to the constant.
 
 ```js
 // type signature
@@ -253,8 +256,8 @@ read from `identity`, or back to the constant.
 
 ### isMeasureField
 
-Whether `field` is a preset measurement. An own-property lookup: a field
-spelled `toString` is a column nobody declared, not `Object`'s method.
+Whether `field` is a preset measurement. An own-property lookup: a field spelled
+`toString` is a column nobody declared, not `Object`'s method.
 
 ```js
 // type signature
@@ -268,11 +271,11 @@ spelled `toString` is a column nobody declared, not `Object`'s method.
 The alpha a legend chip is blended at however faint the ribbons are.
 
 Matching the chip to the composited ribbon is right down to a point and then
-inverts: the linear-synteny default alpha is 0.25, and at that value every
-chip washes to within a few percent of white, so a key meant to say "blue is
-this track, orange is that one" identifies nothing. Below the floor the chip
-gives up exactness for the one job it has. The ribbons themselves still draw
-at the real alpha.
+inverts: the linear-synteny default alpha is 0.25, and at that value every chip
+washes to within a few percent of white, so a key meant to say "blue is this
+track, orange is that one" identifies nothing. Below the floor the chip gives up
+exactness for the one job it has. The ribbons themselves still draw at the real
+alpha.
 
 ```js
 // type signature
@@ -283,8 +286,7 @@ at the real alpha.
 
 ### legendChipColor
 
-blendOverGround for a legend chip, floored at
-LEGEND_CHIP_ALPHA_FLOOR.
+blendOverGround for a legend chip, floored at LEGEND_CHIP_ALPHA_FLOOR.
 
 ```js
 // type signature
@@ -295,8 +297,8 @@ LEGEND_CHIP_ALPHA_FLOOR.
 
 ### LIFTED_DISPLAY_KEYS
 
-The display keys `liftSyntenyViewSettings` moves onto the view, by display
-type, for a validator reading a v4.3.0 session.
+The display keys `liftSyntenyViewSettings` moves onto the view, by display type,
+for a validator reading a v4.3.0 session.
 
 ```js
 // type signature
@@ -307,13 +309,13 @@ Record<string, readonly string[]>
 
 ### LIFTED_VIEW_KEYS
 
-The view keys `liftSyntenyViewSettings` converts, which the linear synteny
-and dotplot views name as their launch keys' `passThrough` so a validator
-accepts them.
+The view keys `liftSyntenyViewSettings` converts, which the linear synteny and
+dotplot views name as their launch keys' `passThrough` so a validator accepts
+them.
 
 ```js
 // type signature
-readonly ["colorBy", "alpha", "drawCigar"]
+readonly[('colorBy', 'alpha', 'drawCigar')]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/liftSyntenyViewSettings.ts)
@@ -322,11 +324,10 @@ readonly ["colorBy", "alpha", "drawCigar"]
 
 A linear synteny or dotplot view snapshot's v4.3.0 settings, lifted onto the
 view: `colorBy` (a mode string), `alpha` and `minAlignmentLength` sat on each
-synteny display, and land as `encoding.color`, `encoding.opacity` and a
-`filter` predicate on `length`.
-An older genomes-portal launch link puts the mode string on the view
-itself, which lifts the same way. The dotplot's own `drawCigar` lands as
-the `indels` part.
+synteny display, and land as `encoding.color`, `encoding.opacity` and a `filter`
+predicate on `length`. An older genomes-portal launch link puts the mode string
+on the view itself, which lifts the same way. The dotplot's own `drawCigar`
+lands as the `indels` part.
 
 ```js
 // type signature
@@ -337,9 +338,9 @@ the `indels` part.
 
 ### minIdentityMenuItem
 
-The Min identity row of a view with `SyntenyFilterMixin`: the `filter`'s
-lower bound on `identity`. A filter on identity drops an alignment that
-reports none, so the row is disabled while no loaded alignment reports one.
+The Min identity row of a view with `SyntenyFilterMixin`: the `filter`'s lower
+bound on `identity`. A filter on identity drops an alignment that reports none,
+so the row is disabled while no loaded alignment reports one.
 
 ```js
 // type signature
@@ -350,8 +351,8 @@ reports none, so the row is disabled while no loaded alignment reports one.
 
 ### minLengthMenuItem
 
-The Min length row of a view with `SyntenyFilterMixin`: the `filter`'s
-lower bound on `length`.
+The Min length row of a view with `SyntenyFilterMixin`: the `filter`'s lower
+bound on `length`.
 
 ```js
 // type signature
@@ -363,15 +364,15 @@ lower bound on `length`.
 ### nameColorCss
 
 One name's chromosome-painting color, resolved against an assembly's refName
-list and handed back as CSS — what a Canvas2D overlay needs, where the
-renderers want packed ABGR.
+list and handed back as CSS — what a Canvas2D overlay needs, where the renderers
+want packed ABGR.
 
 The single-name form of the LUT above, because a second reader has turned up
-that is not painting features: the off-screen mate marks stand for alignments
-to a contig the facing row is not showing, and a mark colored like the ribbons
-to that contig shows that a ribbon moved rather than vanished. Two palettes
-would color a mark and its ribbons differently, which this module prevents;
-see the header.
+that is not painting features: the off-screen mate marks stand for alignments to
+a contig the facing row is not showing, and a mark colored like the ribbons to
+that contig shows that a ribbon moved rather than vanished. Two palettes would
+color a mark and its ribbons differently, which this module prevents; see the
+header.
 
 ```js
 // type signature
@@ -382,8 +383,8 @@ see the header.
 
 ### opacityFadeOf
 
-The part of `encoding.opacity` the color pass reads: undefined for the
-constant, else the mapping with `scale.range` as shares of its most opaque entry, so a
+The part of `encoding.opacity` the color pass reads: undefined for the constant,
+else the mapping with `scale.range` as shares of its most opaque entry, so a
 mapping scaled alike at both ends answers the same.
 
 ```js
@@ -396,8 +397,8 @@ mapping scaled alike at both ends answers the same.
 ### opacityLevel
 
 The opacity every alignment is drawn at before the fade: the constant,
-`defaultValue` while it is unset, or under a field the most opaque value
-its range reaches.
+`defaultValue` while it is unset, or under a field the most opaque value its
+range reaches.
 
 ```js
 // type signature
@@ -408,8 +409,8 @@ its range reaches.
 
 ### opacityMenuItem
 
-The Opacity row of a view with `SyntenyViewMixin`, reset to that view's
-default. Under a field it moves the field's most opaque end.
+The Opacity row of a view with `SyntenyViewMixin`, reset to that view's default.
+Under a field it moves the field's most opaque end.
 
 ```js
 // type signature
@@ -420,10 +421,10 @@ default. Under a field it moves the field's most opaque end.
 
 ### opacityRangeAt
 
-`scale.range` rescaled so the mapping's most opaque end equals `value`,
-keeping each entry's share of it. A threshold or a text column with no
-range written draws every bin at the level, so it gets one `value` per bin
-rather than the number column's default fade.
+`scale.range` rescaled so the mapping's most opaque end equals `value`, keeping
+each entry's share of it. A threshold or a text column with no range written
+draws every bin at the level, so it gets one `value` per bin rather than the
+number column's default fade.
 
 ```js
 // type signature
@@ -434,9 +435,8 @@ rather than the number column's default fade.
 
 ### paintedField
 
-The field a synteny color channel paints by, or undefined while it names
-none. Read through the one resolver every display's color channel goes
-through.
+The field a synteny color channel paints by, or undefined while it names none.
+Read through the one resolver every display's color channel goes through.
 
 ```js
 // type signature
@@ -448,8 +448,8 @@ through.
 ### refNamePositionFor
 
 The `RefNamePosition` a chromosome-painting field hands its palette out by:
-`query` reads the first of the alignment's two assemblies, `target` the
-second. Undefined for any other field, and while that assembly loads.
+`query` reads the first of the alignment's two assemblies, `target` the second.
+Undefined for any other field, and while that assembly loads.
 
 ```js
 // type signature
@@ -460,8 +460,8 @@ second. Undefined for any other field, and while that assembly loads.
 
 ### reorderChromosomesMenuItem
 
-The Re-order chromosomes row every comparative view offers; `open` queues
-that view's own dialog.
+The Re-order chromosomes row every comparative view offers; `open` queues that
+view's own dialog.
 
 ```js
 // type signature
@@ -474,10 +474,10 @@ that view's own dialog.
 
 How a numeric field paints under `paint`: a preset measurement through its
 preset, and a column a track declares on a viridis ramp over the span seen,
-labelled with the actual numbers, the honest reading when nothing declares
-what the column's range is supposed to be. A written `scale.type` names a ramp
-or a threshold's bins either way. Undefined for the constant, a structural
-field and a text column.
+labelled with the actual numbers, the honest reading when nothing declares what
+the column's range is supposed to be. A written `scale.type` names a ramp or a
+threshold's bins either way. Undefined for the constant, a structural field and
+a text column.
 
 ```js
 // type signature
@@ -488,9 +488,9 @@ field and a text column.
 
 ### strandLevels
 
-Each strand's color under `paint`, forward then reverse: the universal
-strand preset's, or `range`'s in `domain` order where the channel writes
-them, and the name `names` gives it, if any.
+Each strand's color under `paint`, forward then reverse: the universal strand
+preset's, or `range`'s in `domain` order where the channel writes them, and the
+name `names` gives it, if any.
 
 ```js
 // type signature
@@ -501,9 +501,9 @@ them, and the name `names` gives it, if any.
 
 ### SYNTENY_FIELD_PRESETS
 
-The fields every comparative view paints through a preset: core's
-measurements, so `identity` and `mapq` paint here as they do on the MAF and
-alignments displays.
+The fields every comparative view paints through a preset: core's measurements,
+so `identity` and `mapq` paint here as they do on the MAF and alignments
+displays.
 
 ```js
 // type signature
@@ -527,10 +527,11 @@ Color by pick writes by.
 
 ### trackSubMenuItem
 
-One track's menu as a submenu named for the track: the session's track
-actions (About track, Settings) beside the track's own items; the menu orders
-them by priority. A linear view attaches this to the track label; a view that draws no label
-puts it in the view's menu. `view` is whatever shows and launches the track.
+One track's menu as a submenu named for the track: the session's track actions
+(About track, Settings) beside the track's own items; the menu orders them by
+priority. A linear view attaches this to the track label; a view that draws no
+label puts it in the view's menu. `view` is whatever shows and launches the
+track.
 
 ```js
 // type signature
