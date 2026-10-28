@@ -92,6 +92,7 @@ const outDir = path.resolve(
   ),
 )
 const attach = args.includes('--attach')
+const noDocs = args.includes('--no-docs')
 
 if (client !== 'code' && client !== 'desktop') {
   throw new Error(`--client takes "code" or "desktop", not "${client}"`)
@@ -189,8 +190,16 @@ async function runAgent(
   mcpConfig: string,
   outside: boolean,
 ) {
-  const allowed = outside ? [...MCP_TOOLS, ...OUTSIDE_TOOLS] : MCP_TOOLS
-  const disallowed = ['Task', 'TodoWrite', ...(outside ? [] : OUTSIDE_TOOLS)]
+  const tools = noDocs
+    ? MCP_TOOLS.filter(t => t !== 'mcp__jbrowse__docs')
+    : MCP_TOOLS
+  const allowed = outside ? [...tools, ...OUTSIDE_TOOLS] : tools
+  const disallowed = [
+    'Task',
+    'TodoWrite',
+    ...(noDocs ? ['mcp__jbrowse__docs'] : []),
+    ...(outside ? [] : OUTSIDE_TOOLS),
+  ]
   const events: StreamEvent[] = []
   const child = spawn(
     'claude',

@@ -2170,3 +2170,26 @@ TASKS.push(
       return { pass: named && junction && out.some(o => o.atJunction), detail: { named, junction, out, final: final.slice(-300) } }`,
   },
 )
+
+// The tutorial tasks name their tutorial and spell out the figure, and the
+// docs list each tutorial's files, so they measure following a recipe. These
+// ask the question a researcher would, with the same graders: the agent has to
+// work out which data and which view answer it.
+const UNNAMED: Record<string, string> = {
+  'tut-methylation-haplotypes':
+    "Is SNRPN's promoter methylated on only one parental copy in HG002? Show me the per-read nanopore evidence in hg38 that would convince me.",
+  'tut-synteny-tnnt3':
+    'How does the TNNT3 region of hg38 line up against the T2T-CHM13 genome? Show me the alignment between the two assemblies there, so I can tell inverted pieces from same-strand ones.',
+  'tut-multiway-grape-peach-cacao':
+    'Peach chromosome G7 has a gene block near 18.6 Mb. Show me where it is conserved in grape and cacao, with all three genomes stacked peach, grape, cacao, colored so I can see how many genomes share each block.',
+  'tut-multiway-hg38-tp53':
+    'Show me how TP53 in hg38 aligns to chimp, gorilla, orangutan, macaque, marmoset, mouse, dog and cow, one lane per species, ordered by how closely related each is to human.',
+  'tut-hic-bcr-abl1':
+    'Is there 3D-contact evidence for the BCR-ABL1 fusion in K562 cells? Show me ABL1 and BCR side by side in one hg38 view with K562 Hi-C, against a normal cell line as a control, without normalization hiding the signal.',
+  'tut-cancer-sv-der3-chain':
+    "COLO829's derivative chromosome 3 is stitched together from pieces of chr3, chr10 and chr12. Show me each junction side by side with the tumor reads that cross it, including the parts of reads that don't align.",
+}
+for (const [name, prompt] of Object.entries(UNNAMED)) {
+  const task = TASKS.find(t => t.name === name)!
+  TASKS.push({ ...task, name: name.replace(/^tut-/, 'un-'), prompt })
+}
