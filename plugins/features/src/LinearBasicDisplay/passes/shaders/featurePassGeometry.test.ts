@@ -1,23 +1,16 @@
 // Two agreements between these passes that the compiler cannot see, both
 // load-bearing at the HAL and neither stated anywhere in TypeScript.
 //
-// The first is the instance layout. The chevron mark is declared `bufferOf` the
-// line mark, so `drawPass(chevron, region, bufferPassId=line)` has the chevron
-// pipeline rasterize bytes that were packed for `line` — a layout that drifted would
-// silently reinterpret them, on both backends, with nothing to attribute the
-// picture to. What makes that safe is that both shaders declare the same
-// `LineInstance` struct out of `lineInstance.slang`, so both modules reflect the
-// same stride and the same attributes.
-//
-// The chevron pass used to state it a second way, copying line's
-// `INSTANCE_STRIDE_BYTES` and `VERTEX_ATTRIBUTES` onto the chevron descriptor
-// through `slangPass`'s `bufferStride` / `bufferAttributes`. That pair is gone:
-// it restated the agreement rather than causing it, and would have masked the
-// two structs parting company — the chevron pass would have gone on reading
-// line's bytes through line's layout while its own shader declared something
-// else. Removing it is what makes this test necessary rather than redundant.
-// `syntenyPassGeometry.test.ts` is the same argument one plugin over, and made
-// the same transition first.
+// The first is the instance layout. The chevron and continuation marks are
+// declared `bufferOf` the line and rect marks, so each pipeline rasterizes bytes
+// packed for its lender, and the WebGPU HAL takes each `shaderLocation` from the
+// lender's VERTEX_ATTRIBUTES index. A field inserted on one side alone re-points
+// every later attribute, on GPU machines only, with nothing thrown.
+// `lineInstance.slang` and `rectInstance.slang` declare each pair's struct once;
+// this checks no shader has re-declared a local one. The chevron pass used to
+// copy line's stride and attributes onto its descriptor (`bufferStride` /
+// `bufferAttributes`), which would have masked the two structs parting company,
+// and `syntenyPassGeometry.test.ts` is the same argument one plugin over.
 //
 // The second is the uniform block. The renderer writes ONE buffer, sized by
 // `rectShader.UNIFORMS_SIZE_BYTES` and packed by `rectShader.writeUniforms`, and
@@ -29,44 +22,48 @@ import * as continuationShader from './continuation.iface.generated.ts'
 import * as lineShader from './line.iface.generated.ts'
 import * as rectShader from './rect.iface.generated.ts'
 
+const SHARED_LAYOUT_PAIRS = [
+  { borrower: 'chevron', lender: 'line', b: chevronShader, a: lineShader },
+  {
+    borrower: 'continuation',
+    lender: 'rect',
+    b: continuationShader,
+    a: rectShader,
+  },
+] as const
+
 describe('feature pass geometry', () => {
   // Every assertion below compares two generated values, so all of them pass if
   // both sides go missing — the emitter drops an offset map a struct no longer
   // needs, and this becomes `undefined === undefined`. Anchor on what the
   // structs hold today so that the check fails rather than empties. Same
   // reasoning as `assertParsedSomething` in assertVertexInputs.ts.
-  test('the layouts under test are not empty', () => {
-    expect(lineShader.INSTANCE_STRIDE_BYTES).toBeGreaterThan(0)
-    expect(Object.keys(lineShader.INSTANCE_OFFSET_F32).length).toBeGreaterThan(
-      0,
-    )
-    expect(Object.keys(lineShader.INSTANCE_OFFSET_U32).length).toBeGreaterThan(
-      0,
-    )
-    expect(lineShader.VERTEX_ATTRIBUTES.length).toBeGreaterThan(0)
+  test.each(SHARED_LAYOUT_PAIRS)(
+    '$lender’s instance layout is not empty',
+    ({ a }) => {
+      expect(a.INSTANCE_STRIDE_BYTES).toBeGreaterThan(0)
+      expect(Object.keys(a.INSTANCE_OFFSET_F32).length).toBeGreaterThan(0)
+      expect(Object.keys(a.INSTANCE_OFFSET_U32).length).toBeGreaterThan(0)
+      expect(a.VERTEX_ATTRIBUTES.length).toBeGreaterThan(0)
+    },
+  )
+
+  test('the uniform block under test is not empty', () => {
     expect(rectShader.UNIFORMS_SIZE_BYTES).toBeGreaterThan(0)
     expect(Object.keys(rectShader.UNIFORM_OFFSET_F32).length).toBeGreaterThan(0)
   })
 
-  test('chevron and line share an instance layout', () => {
-    expect(chevronShader.INSTANCE_STRIDE_BYTES).toBe(
-      lineShader.INSTANCE_STRIDE_BYTES,
-    )
-    // Per view, so this also says the two agree about each field's TYPE — a
-    // field that moved between the f32 and u32 maps would keep its word offset
-    // and still fail here.
-    expect(chevronShader.INSTANCE_OFFSET_F32).toEqual(
-      lineShader.INSTANCE_OFFSET_F32,
-    )
-    expect(chevronShader.INSTANCE_OFFSET_U32).toEqual(
-      lineShader.INSTANCE_OFFSET_U32,
-    )
-    // The layout each HAL builds its pipeline from, and the one the dropped
-    // `bufferAttributes` override used to supply.
-    expect(chevronShader.VERTEX_ATTRIBUTES).toEqual(
-      lineShader.VERTEX_ATTRIBUTES,
-    )
-  })
+  test.each(SHARED_LAYOUT_PAIRS)(
+    '$borrower draws from $lender’s instance layout',
+    ({ a, b }) => {
+      expect(b.INSTANCE_STRIDE_BYTES).toBe(a.INSTANCE_STRIDE_BYTES)
+      // Per view, so a field that moved between the f32 and u32 maps keeps
+      // its word offset and still fails here.
+      expect(b.INSTANCE_OFFSET_F32).toEqual(a.INSTANCE_OFFSET_F32)
+      expect(b.INSTANCE_OFFSET_U32).toEqual(a.INSTANCE_OFFSET_U32)
+      expect(b.VERTEX_ATTRIBUTES).toEqual(a.VERTEX_ATTRIBUTES)
+    },
+  )
 
   test('every pass shares the uniform block the renderer writes', () => {
     for (const mod of [
