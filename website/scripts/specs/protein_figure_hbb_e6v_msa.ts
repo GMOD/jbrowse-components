@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { deflateSync } from 'node:zlib'
 
 import { UCSC_HG38_CONFIG } from '../screenshot-spec-helpers.ts'
@@ -27,11 +28,69 @@ const ROWS = [
   ['Dolphin', 'P18990', 'MVHLTGEEKSAVT'],
 ] as const
 
-// UniProt puts every entry's Globin domain from His2 (residue 3 counting Met).
-// The plugin's own source, NCBI CDD, starts its domain at Glu7, which would
-// leave Glu6 outside it.
-const GLOBIN = { name: 'Globin domain', color: '#dfc98a' }
-const FEATURES = ROWS.map(([row]) => ({ row, start: 3, end: 13, ...GLOBIN }))
+// Helix A is Thr4-Val18 of each beta chain in the HELIX records of 2HHB and
+// 2HBS, residues 5-19 counting Met, so it fills the strip from Thr4 on and
+// colors the same residues on the genome and the structures. hbb_helix_a/
+// holds the genome placement, re-run from that directory with
+//   npx domains2genome@2.3.0 hbb.gff3 helix_a.gff3 --out helix_a.bed
+// where hbb.gff3 is NM_000518.5 sliced from
+// https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.
+const HELIX = { name: 'Helix A', color: '#f28e2b' }
+const HELIX_RESIDUES = [5, 19]
+const FEATURES = ROWS.map(([row]) => ({ row, start: 5, end: 13, ...HELIX }))
+
+function helixTrack() {
+  const row = readFileSync(
+    new URL('hbb_helix_a/helix_a.bed', import.meta.url),
+    'utf8',
+  )
+    .split('\n')
+    .find(line => line && !line.startsWith('#'))!
+  const [refName, start, end, name, , strand] = row.split('\t')
+  return {
+    type: 'FeatureTrack',
+    trackId: 'hbb-helix-a',
+    name: 'Helix A (PDB 2HHB)',
+    assemblyNames: ['hg38'],
+    adapter: {
+      type: 'FromConfigAdapter',
+      features: [
+        {
+          uniqueId: 'helix-a',
+          refName,
+          start: Number(start),
+          end: Number(end),
+          strand: strand === '-' ? -1 : 1,
+          name,
+        },
+      ],
+    },
+  }
+}
+
+interface ResidueColor {
+  values: Record<string, number>
+  range: string[]
+  labels: string[]
+}
+
+// helix A takes the next color, under the variant's own
+function withHelix(color: ResidueColor) {
+  const helix = color.range.length + 1
+  const [first, last] = HELIX_RESIDUES as [number, number]
+  return {
+    ...color,
+    values: Object.fromEntries(
+      Object.entries(color.values).map(([pos, value]) => [
+        pos,
+        value === 1 && +pos >= first && +pos <= last ? helix : value,
+      ]),
+    ),
+    domain: color.range.map((_, i) => i + 1.5),
+    range: [...color.range, HELIX.color],
+    labels: [...color.labels, HELIX.name],
+  }
+}
 
 // The genome view spans 60 bp: 19 of 5' UTR, then codons 1-13 and a part.
 // The label column covers the UTR and each alignment column one codon, so
@@ -47,7 +106,7 @@ function msaView(feature: object) {
     id: 'msa-HBB',
     type: 'MsaView',
     displayName: 'HBB residues 1-13 across mammals (UniProt)',
-    height: 330,
+    height: 304,
     connectedViewId: 'lgv-HBB',
     connectedFeature: feature,
     querySeqName: 'Human',
@@ -68,15 +127,21 @@ function msaView(feature: object) {
 // 2HBS holds two sickle tetramers at the fiber contact: Val6 of chain H (EFGH)
 // in the pocket Phe85 and Leu88 make on chain B (ABCD). The neighbour draws in
 // its own color as cartoon marks, so chains lists the Val6 tetramer alone.
+// The other beta chain of each molecule's pair draws as a plain cartoon mark
+// too, so the session's E6V highlight and its label land on the marked chain
+// alone: Protein3d labels the copy nearest the viewer, which was out of frame.
+const GREY = '#c9ced6'
 const NEIGHBOR = '#86cbc5'
 const POCKET = '#009696'
 const VAL6 = '#d1007a'
+const cartoon = (chain: string, color: string) => ({
+  site: `${chain}:*`,
+  mark: 'cartoon',
+  encoding: { color: { value: color } },
+})
 const neighborMarks = [
-  ...['A', 'B', 'C', 'D'].map(chain => ({
-    site: `${chain}:*`,
-    mark: 'cartoon',
-    encoding: { color: { value: NEIGHBOR } },
-  })),
+  ...['A', 'B', 'C', 'D'].map(chain => cartoon(chain, NEIGHBOR)),
+  cartoon('F', GREY),
   { site: 'H:6', mark: 'spheres', encoding: { color: { value: VAL6 } } },
   ...['B:85', 'B:88'].map(site => ({
     site,
@@ -105,13 +170,13 @@ function sickle(view: ViewJson, id: string, displayName: string) {
     ...view,
     id,
     displayName,
-    color: {
-      ...(view.color as object),
-      range: ['#c9ced6', VAL6, NEIGHBOR],
+    color: withHelix({
+      ...(view.color as ResidueColor),
+      range: [GREY, VAL6, NEIGHBOR],
       labels: ['hemoglobin', 'Val6', 'neighboring hemoglobin'],
-    },
+    }),
     marks: neighborMarks,
-    structures: structures.map(s => ({ ...s, chains: ['E', 'F', 'G', 'H'] })),
+    structures: structures.map(s => ({ ...s, chains: ['E', 'G', 'H'] })),
   }
 }
 
@@ -123,7 +188,33 @@ function hbbMsaSession() {
     ...(view.camera as object),
     up,
   })
-  session.views[1] = { ...wild, camera: camera(wild, CLOSE_UP_UP['2hhb']) }
+  session.views[1] = {
+    ...wild,
+    color: withHelix(wild.color as ResidueColor),
+    marks: [...(wild.marks as object[]), cartoon('D', GREY)],
+    structures: (wild.structures as object[]).map(s => ({
+      ...s,
+      chains: ['A', 'B', 'C'],
+    })),
+    camera: camera(wild, CLOSE_UP_UP['2hhb']),
+  }
+  session.sessionTracks = [...(session.sessionTracks ?? []), helixTrack()]
+  const lgv = session.views[0] as { tracks: { trackId: string }[] }
+  lgv.tracks = lgv.tracks.flatMap(track =>
+    track.trackId === 'hbb-mane'
+      ? [
+          track,
+          {
+            trackId: 'hbb-helix-a',
+            type: 'LinearBasicDisplay',
+            height: 36,
+            encoding: { color: { value: HELIX.color } },
+          },
+        ]
+      : track.trackId === 'hbb-codon6'
+        ? [{ ...track, height: 70 }]
+        : [track],
+  )
   session.views[2] = {
     ...sickle(
       sickleView,
@@ -241,7 +332,7 @@ export const proteinHbbE6vMsaSpecs: ScreenshotSpec[] = [
       {
         type: 'legend',
         fontSize: 20,
-        entries: [{ label: GLOBIN.name, color: GLOBIN.color }],
+        entries: [{ label: HELIX.name, color: HELIX.color }],
         anchor: {
           selector: '[data-testid="view-container-msa-HBB"]',
           alignX: 'left',
@@ -252,9 +343,9 @@ export const proteinHbbE6vMsaSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'box',
-        color: '#333',
-        strokeWidth: 4,
-        pad: 28,
+        color: '#222',
+        strokeWidth: 7,
+        pad: 34,
         anchor: { residue: 'H:6', view: PANELS[1].view },
         fromAnchor: { residue: 'B:88', view: PANELS[1].view },
       },

@@ -1,0 +1,3 @@
+##gff-version 3
+# HELIX BA of PDB 2HHB and 2HBS, Thr4-Val18 of each beta chain, here counting Met as 1
+NM_000518.5	PDB	helix	5	19	.	+	.	Name=Helix A

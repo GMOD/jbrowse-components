@@ -1,0 +1,2 @@
+#chrom	chromStart	chromEnd	name	score	strand	thickStart	thickEnd	itemRgb	blockCount	blockSizes	chromStarts	accession	description	source	transcript	proteinStart	proteinEnd	evalue
+chr11	5226964	5227009	Helix A	0	-	5226964	5227009	0	1	45	0	Helix A		PDB	NM_000518.5	5	19	-

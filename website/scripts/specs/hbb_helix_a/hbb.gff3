@@ -1,0 +1,9 @@
+##gff-version 3
+chr11	bed2gff	gene	5225464	5227071	.	-	.	ID=HBB;gene_id=HBB
+chr11	bed2gff	transcript	5225464	5227071	.	-	.	ID=NM_000518.5;Parent=HBB;Name=NM_000518.5;gene_id=HBB;transcript_id=NM_000518.5
+chr11	bed2gff	exon	5225464	5225726	.	-	.	ID=exon:NM_000518.5.3;Parent=NM_000518.5;gene_id=HBB;transcript_id=NM_000518.5;exon_number=3
+chr11	bed2gff	CDS	5225601	5225726	.	-	0	ID=CDS:NM_000518.5.3;Parent=NM_000518.5;gene_id=HBB;transcript_id=NM_000518.5;exon_number=3
+chr11	bed2gff	exon	5226577	5226799	.	-	.	ID=exon:NM_000518.5.2;Parent=NM_000518.5;gene_id=HBB;transcript_id=NM_000518.5;exon_number=2
+chr11	bed2gff	CDS	5226577	5226799	.	-	1	ID=CDS:NM_000518.5.2;Parent=NM_000518.5;gene_id=HBB;transcript_id=NM_000518.5;exon_number=2
+chr11	bed2gff	exon	5226930	5227071	.	-	.	ID=exon:NM_000518.5.1;Parent=NM_000518.5;gene_id=HBB;transcript_id=NM_000518.5;exon_number=1
+chr11	bed2gff	CDS	5226930	5227021	.	-	0	ID=CDS:NM_000518.5.1;Parent=NM_000518.5;gene_id=HBB;transcript_id=NM_000518.5;exon_number=1
