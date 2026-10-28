@@ -315,12 +315,9 @@ orders them:
 }
 ```
 
-We'll open a linear genome view on Col-0 at `Chr4:1-6,000,000`. Then:
-
-- Turn on **SyRI regions on Col-0, by accession** and **SyRI regions**.
-- Switch **SyRI regions** to **Display types → Multi-way synteny display**,
-  which takes its lanes and colors from the track's `MultiWaySyntenyDisplay`
-  entry.
+We'll open a linear genome view on Col-0 at `Chr4:1-6,000,000` and turn on
+**SyRI regions on Col-0, by accession** and **SyRI regions**. **SyRI regions**
+opens as lanes, since its config lists `MultiWaySyntenyDisplay` first.
 
 Each accession is a lane, drawn in its assembly's coordinates and placed by the
 SyRI run against Col-0. The band between two lanes comes from the run between

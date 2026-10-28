@@ -12,20 +12,23 @@ between lanes.
 
 A synteny track over several genomes draws this way from its track menu:
 **Display types → Multi-way synteny display**.
+[Three or more genomes](/docs/config_guides/synteny_track#three-or-more-genomes)
+has a config for each kind of input, from an ortholog table or alignment files
+of your own.
 
 ## What a ribbon joins
 
 The track's source decides which two lanes a ribbon connects:
 
-| Source                                                                | A ribbon joins                                     | Worked through in                                                                                                                                                                           |
-| --------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pairwise chains against one genome (`MultiPairwiseSyntenyAdapter`)    | a lane to the anchor, whichever lane sits above it | [](/docs/tutorials/hg38_vertebrates_synteny), [](/docs/tutorials/genomes_synteny)                                                                                                           |
-| One PAF holding many pairs (`MultiGenomePAFAdapter`, indexed or not)  | a lane to the lane above it                        | [](/docs/tutorials/t2t_apes_cactus_synteny), [](/docs/tutorials/allvsall_synteny), [](/docs/tutorials/syri_synteny)                                                                         |
-| An ortholog table (`MCScanBlocksAdapter`)                             | one ortholog group, down adjacent lanes            | [](/docs/tutorials/multiway_synteny_grape_peach_cacao), [](/docs/tutorials/primate_orthologs_synteny), [](/docs/tutorials/ecoli_orthologs_synteny), [](/docs/tutorials/orthofinder_synteny) |
-| Haplotype walks through a pangenome graph (`WalkTabixSyntenyAdapter`) | the nodes two neighbouring haplotypes share        | [](/docs/tutorials/pangenome_hprc_haplotypes)                                                                                                                                               |
+| Source                                                                 | A ribbon joins                                                                                    | Worked through in                                                                                                                                                                           |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pairwise alignments against one genome (`MultiPairwiseSyntenyAdapter`) | a lane to the anchor, whichever lane sits above it                                                | [](/docs/tutorials/hg38_vertebrates_synteny), [](/docs/tutorials/genomes_synteny)                                                                                                           |
+| One PAF holding many pairs (`MultiGenomePAFAdapter`, indexed or not)   | a lane to the lane above it, or to the anchor where the file aligns every genome to one reference | [](/docs/tutorials/t2t_apes_cactus_synteny), [](/docs/tutorials/syri_synteny)                                                                                                               |
+| An ortholog table (`MCScanBlocksAdapter`)                              | one ortholog group, down adjacent lanes                                                           | [](/docs/tutorials/multiway_synteny_grape_peach_cacao), [](/docs/tutorials/primate_orthologs_synteny), [](/docs/tutorials/ecoli_orthologs_synteny), [](/docs/tutorials/orthofinder_synteny) |
+| Haplotype walks through a pangenome graph (`WalkTabixSyntenyAdapter`)  | the nodes two neighbouring haplotypes share                                                       | [](/docs/tutorials/pangenome_hprc_haplotypes)                                                                                                                                               |
 
-So a blue ribbon means "inverted against the anchor" on a chain track and
-"inverted against the lane above" on a neighbour-pair track. Stacking the
+A blue ribbon means "inverted against the anchor" on a track against one genome
+and "inverted against the lane above" on a neighbour-pair track. Stacking the
 genomes in tree order makes the second kind read as a walk down the tree.
 
 ## Reading a lane header

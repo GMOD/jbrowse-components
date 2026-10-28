@@ -308,9 +308,9 @@ We'll stack peach over grape over cacao. Then:
 
 ## One grape locus against all the genomes
 
-`grape.blocks` has seven columns. A track naming all seven in `blockAssemblies`
-and `bedLocations` draws every mate (the ortholog in each other genome) at once
-in a linear genome view on grape:
+`grape.blocks` has seven columns, and the hosted track names all seven in
+`blockAssemblies` and `bedLocations`, so it draws every mate (the ortholog in
+each other genome) at once in a linear genome view on grape:
 
 - Navigate to `chr11:778,000-866,000` and turn on grape's **NCBI RefSeq - RefSeq
   All** track.

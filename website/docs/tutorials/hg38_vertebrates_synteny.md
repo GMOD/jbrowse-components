@@ -91,7 +91,8 @@ uncompressed chain, then run `make-pif`:
 ```bash
 gzip -dc genomeA.genomeB.over.chain.gz > genomeA_genomeB.chain
 chain2paf -i genomeA_genomeB.chain > genomeA_genomeB.paf
-jbrowse make-pif genomeA_genomeB.paf
+# --csi writes the .csi index that "csi": true in the track below reads
+jbrowse make-pif genomeA_genomeB.paf --csi
 ```
 
 <!-- from: scripts/build_hg38_liftover_multiway.sh -->

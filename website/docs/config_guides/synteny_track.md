@@ -235,13 +235,125 @@ single haplotype (`grape#1`):
 
 ## Three or more genomes
 
-`MCScanBlocksAdapter`, the two multi-genome PAF adapters and
-`MultiPairwiseSyntenyAdapter` draw in the two-way linear synteny view and in
-`MultiWaySyntenyDisplay`, one lane per assembly under a linear genome view. The
-[multi-way synteny display guide](/docs/user_guides/multiway_synteny_display)
-says which lanes each adapter's ribbons join, and
-[grouping and lane order](/docs/config_guides/grouping_and_ordering#multiway-synteny)
-has the display's `rows` config.
+One `SyntenyTrack` naming every genome draws them as rows of a linear synteny
+view, or as [](/docs/config/multiwaysyntenydisplay): one lane per genome under a
+linear genome view, whose own assembly is the anchor on top. Three kinds of
+input feed it, each shown below with a `displays` entry that opens the track as
+lanes. For every one:
+
+- **Declare every lane's genome as an assembly.** A lane whose genome the
+  session lacks still draws from the alignment, but shows no gene models, and on
+  an all-vs-all PAF its gutters stay empty and name the assembly to add
+- **The first `displays` entry the view draws is the one the track opens as.**
+  Without the entry, a linear genome view opens the track as
+  [](/docs/config/lgvsyntenydisplay), and **Display types → Multi-way synteny
+  display** in the track menu switches it. A `displayDefaults.type` routes
+  settings to a display, and leaves the one the track opens as unchanged
+- **Each lane draws gene models from a gene track on its assembly** (GFF3, GTF,
+  BigBed or BED);
+  [`laneGeneTracks`](/docs/config/multiwaysyntenydisplay#slot-lanegenetracks)
+  picks one where an assembly has several
+
+Which lanes each kind's ribbons join, and the lane menus, are in the
+[multi-way synteny display guide](/docs/user_guides/multiway_synteny_display);
+the display's `rows` config is in
+[grouping and lane order](/docs/config_guides/grouping_and_ordering#multiway-synteny).
+
+### From an ortholog table
+
+An MCScan `.blocks` table, or another tool's output
+[converted to one](#building-a-table-for-mcscanblocksadapter), with a BED per
+genome:
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "grape_peach_cacao_orthologs",
+  "name": "Grape, peach and cacao orthologs",
+  "assemblyNames": ["grape", "peach", "cacao"],
+  "adapter": {
+    "type": "MCScanBlocksAdapter",
+    "uri": "grape.blocks",
+    "blockAssemblies": ["grape", "peach", "cacao"],
+    "bedLocations": ["grape.bed", "peach.bed", "cacao.bed"]
+  },
+  "displays": [{ "type": "MultiWaySyntenyDisplay" }]
+}
+```
+
+- `blockAssemblies` names the table's columns in file order, and `bedLocations`
+  gives each column's BED in that same order
+- [Gene id matching](#gene-ids-are-the-join-in-the-mcscan-adapters) covers the
+  ids a BED has to share with the table
+
+### From pairwise alignments against one genome
+
+One PAF, PIF, chain or delta file per genome, each aligned to the same
+reference:
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "grape_vs_others",
+  "name": "Grape vs peach and cacao",
+  "assemblyNames": ["grape", "peach", "cacao"],
+  "adapter": {
+    "type": "MultiPairwiseSyntenyAdapter",
+    "adapters": [
+      {
+        "type": "PAFAdapter",
+        "uri": "peach_on_grape.paf",
+        "assemblyNames": ["peach", "grape"]
+      },
+      {
+        "type": "PAFAdapter",
+        "uri": "cacao_on_grape.paf",
+        "assemblyNames": ["cacao", "grape"]
+      }
+    ]
+  },
+  "displays": [{ "type": "MultiWaySyntenyDisplay" }]
+}
+```
+
+- Each child's `assemblyNames` is `[query, target]`:
+  `minimap2 -cx asm20 grape.fa peach.fa` writes peach as the query, so its child
+  reads `["peach", "grape"]`
+- The reference is the one genome every child names. Open the view on it, and
+  each lane draws against it
+- A large alignment goes in a `PairwiseIndexedPAFAdapter` child, built with
+  `jbrowse make-pif`;
+  [stacking UCSC liftOver chains](/docs/tutorials/hg38_vertebrates_synteny#composing-the-chains-into-one-track)
+  composes one such track
+
+### From one multi-genome PAF
+
+One file holding every genome, all-vs-all or each against one reference, its
+sequence names PanSN-prefixed (`peach#1#chr1`), indexed with
+`jbrowse make-pif all.paf`:
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "grape_peach_cacao_pangenome",
+  "name": "Grape, peach and cacao alignments",
+  "assemblyNames": ["grape", "peach", "cacao"],
+  "adapter": {
+    "type": "MultiGenomeIndexedPAFAdapter",
+    "uri": "all.pif.gz"
+  },
+  "displays": [{ "type": "MultiWaySyntenyDisplay" }]
+}
+```
+
+- Each PanSN sample must match an assembly name;
+  [PanSN depth](#pansn-depth-sample-or-haplotype) maps names that differ, and
+  lists each haplotype where `grape#1` and `grape#2` should be separate lanes
+- A file aligning each genome to one reference needs the indexed form, which
+  reads the reference from the index. `MultiGenomePAFAdapter` reads it as
+  all-vs-all and draws only the gutters touching the reference
+- An unindexed all-vs-all file loads in `MultiGenomePAFAdapter` with `uri`
+  pointing at the `.paf`
 
 ## Building a table for MCScanBlocksAdapter
 
