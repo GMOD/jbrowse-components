@@ -1,5 +1,5 @@
 // The grant's synteny figure: Drosophila blocks, TP53 across T2T apes and the
-// E. coli O-antigen cluster, one frame size so the three sit in one row at one
+// E. coli O-antigen cluster, one frame height so the three sit in one row at one
 // text size.
 import { displaySettled } from '@jbrowse/browser-test-utils'
 
@@ -98,8 +98,7 @@ export const grantSyntenySpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'MG1655',
-          // gnd to galF, the genes flanking every strain's O-antigen cluster
-          loc: 'NC_000913.3:2,099,300-2,113,300',
+          loc: 'NC_000913.3:2,095,000-2,115,000',
           tracks: [
             {
               trackId: 'ecoli_orthologs',
@@ -117,6 +116,8 @@ export const grantSyntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     ...SIZE,
+    // the paper figure's width, which the cluster's gene labels need
+    viewportWidth: 1500,
     hideSelectors: CHROME,
   },
   {
