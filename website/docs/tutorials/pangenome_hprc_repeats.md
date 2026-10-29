@@ -459,7 +459,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 ```
 
 ```bash
-npm install @jbrowse/graph-walks @gmod/tabix generic-filehandle2
+# the majors walk_spans.mjs is written against; a new major can change the API
+npm install @jbrowse/graph-walks@4 @gmod/tabix@3 generic-filehandle2@2
 ```
 
 Where a haplotype's walk crosses a single-copy window on either side of the
