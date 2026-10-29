@@ -18,11 +18,12 @@ const APP_BAR_HEIGHT = 48
 const SIZE = { viewportWidth: 1100, viewportHeight: 832 }
 const LEGEND = '[data-testid="floating-legend"]'
 
-// A bare letter in the white margin the compose gutter leaves above each part
+// A part's letter and title, bare, in the margin the gutter leaves above it
 const partLabel = (part: number, text: string): Annotation => ({
   type: 'text',
   text,
   fontSize: 96,
+  maxWidth: 3000,
   color: 'none',
   background: 'none',
   anchor: {
@@ -148,7 +149,11 @@ export const grantSpecs: ScreenshotSpec[] = [
     ],
     columns: 3,
     gutter: 240,
-    annotations: [partLabel(0, 'A'), partLabel(1, 'B'), partLabel(2, 'C')],
+    annotations: [
+      partLabel(0, 'A) Five Drosophila species'),
+      partLabel(1, 'B) TP53 region across seven apes'),
+      partLabel(2, 'C) E. coli O-antigen cluster'),
+    ],
   },
   asPart(proteinHbbE6vSpecs[0]!, 'grant/hbb_e6v'),
   asPart(proteinTp53Y220cSpecs[0]!, 'grant/tp53_y220c'),
@@ -158,6 +163,9 @@ export const grantSpecs: ScreenshotSpec[] = [
     parts: ['grant/hbb_e6v', 'grant/tp53_y220c'],
     columns: 2,
     gutter: 240,
-    annotations: [partLabel(0, 'A'), partLabel(1, 'B')],
+    annotations: [
+      partLabel(0, 'A) Sickle cell mutation'),
+      partLabel(1, 'B) TP53 mutation with drug rescue'),
+    ],
   },
 ]
