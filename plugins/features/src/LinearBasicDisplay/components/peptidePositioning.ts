@@ -90,7 +90,7 @@ export function forEachRenderedPeptide(
   const codonPx = BASES_PER_CODON * pxPerBpOf(vr)
   let row: PeptideRow | undefined
   for (const item of aminoAcidOverlay) {
-    if (item.endBp < vr.start || item.startBp > vr.end) {
+    if (item.endBp <= vr.start || item.startBp >= vr.end) {
       continue
     }
     const fontSize = Math.min(item.heightPx, PEPTIDE_MAX_FONT_SIZE)

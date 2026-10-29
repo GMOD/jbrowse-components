@@ -63,6 +63,18 @@ describe('forEachRenderedPeptide', () => {
     )
   })
 
+  // Two displayed regions abut with no padding, so a codon touching one's edge
+  // would draw over the neighbouring region's first codon.
+  test('skips cells that only touch the region edge', () => {
+    const data = makeData([
+      makeItem({ startBp: 497, endBp: 500 }),
+      makeItem({ startBp: 500, endBp: 503 }),
+      makeItem({ startBp: 600, endBp: 603 }),
+    ])
+    const emitted = collect(data, { ...FULL_REGION, start: 500, end: 600 })
+    expect(emitted.map(e => e.item.startBp)).toEqual([500])
+  })
+
   test('centers the cell at the midpoint of its mapped px span', () => {
     const [emitted] = collect(makeData([makeItem()]), FULL_REGION)
     expect(emitted!.cell.centerPx).toBe(115)
