@@ -118,8 +118,10 @@ together.
   - Open, Protein3d's color key prints at about 4 pt and no session setting
     hides it (`ProteinViewHeader.tsx` draws it whenever the paint has a
     legend).
-  - Open, the frame never says the view skips codons 14-79. A "not shown"
-    pill like SNCA's does not fit at 11 pt between the E6V and Phe85 pills.
+  - A grey "codons 14–79 / not shown" pill sits on the genome view's seam,
+    the seam line running through it as through SNCA's. It hangs left of
+    centre to clear Phe85, and has no leader: between the E band and the
+    seam a leader gets no shaft past its 32px head.
 - **Variant pairs** `protein_figure_brca1_m1775r.ts` and
   `protein_figure_snca_e46k.ts`; the SNCA builder looks down each fibril's rung
   axis and turns the E46K layer to put Lys80 on the wild type's pixel.
