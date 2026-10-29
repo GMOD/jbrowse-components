@@ -8,25 +8,32 @@ import { readSession } from './protein_variants.ts'
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 import type { ViewJson } from './protein_variants.ts'
 
-// UniProt Swiss-Prot beta globins, residues 1-13 counting Met, which most
+// UniProt Swiss-Prot beta globins, residues 1-30 counting Met, which most
 // entries leave out since they were sequenced as protein. Every one is 146
 // residues after Met, so the rows align with no gaps. Residue 7 (Glu6 in
 // the mature protein's numbering) is E or D in most mammals; murine rodents,
 // elephants, hyrax and tenrec carry Ala there, and Mouse stands for them.
 const ROWS = [
-  ['Human', 'P68871', 'MVHLTPEEKSAVT'],
-  ['Macaque', 'P02026', 'MVHLTPEEKNAVT'],
-  ['Colobus', 'P19885', 'MVHLTPDEKAAVT'],
-  ['Mouse', 'P02088', 'MVHLTDAEKAAVS'],
-  ['Rabbit', 'P02057', 'MVHLSSEEKSAVT'],
-  ['Bat', 'P11758', 'MVHLTADEKAAVS'],
-  ['Dog', 'P60524', 'MVHLTAEEKSLVS'],
-  ['Walrus', 'P68046', 'MVHLTADEKAAVT'],
-  ['Horse', 'P02062', 'MVQLSGEEKAAVL'],
-  ['Pig', 'P02067', 'MVHLSAEEKEAVL'],
-  ['Camel', 'P68231', 'MVHLSGDEKNAVH'],
-  ['Dolphin', 'P18990', 'MVHLTGEEKSAVT'],
+  ['Human', 'P68871', 'MVHLTPEEKSAVTALWGKVNVDEVGGEALG'],
+  ['Macaque', 'P02026', 'MVHLTPEEKNAVTTLWGKVNVDEVGGEALG'],
+  ['Colobus', 'P19885', 'MVHLTPDEKAAVTALWGKVNVDEVGGEALG'],
+  ['Mouse', 'P02088', 'MVHLTDAEKAAVSCLWGKVNSDEVGGEALG'],
+  ['Rabbit', 'P02057', 'MVHLSSEEKSAVTALWGKVNVEEVGGEALG'],
+  ['Bat', 'P11758', 'MVHLTADEKAAVSGLWGKVNVDEVGGEALG'],
+  ['Dog', 'P60524', 'MVHLTAEEKSLVSGLWGKVNVDEVGGEALG'],
+  ['Walrus', 'P68046', 'MVHLTADEKAAVTALWGKVNVDEVGGEALG'],
+  ['Horse', 'P02062', 'MVQLSGEEKAAVLALWDKVNEEEVGGEALG'],
+  ['Pig', 'P02067', 'MVHLSAEEKEAVLGLWGKVNVDEVGGEALG'],
+  ['Camel', 'P68231', 'MVHLSGDEKNAVHGLWSKVKVDEVGGEALG'],
+  ['Dolphin', 'P18990', 'MVHLTGEEKSAVTALWGKVNVEEVGGEALG'],
 ] as const
+
+// The twelve species' NCBI Taxonomy lineages (E-utilities efetch, taxids
+// 9606 9544 9572 10090 9986 9435 9615 9708 9796 9823 9838 9739), topology
+// only. NCBI leaves Laurasiatheria's four orders and Artiodactyla's three
+// suborders unresolved, and the tree keeps those polytomies.
+const SPECIES_TREE =
+  '(((Human,(Macaque,Colobus)),(Mouse,Rabbit)),(Bat,(Dog,Walrus),Horse,(Pig,Camel,Dolphin)));'
 
 // Helix A is Thr4-Val18 of each beta chain in the HELIX records of 2HHB and
 // 2HBS, residues 5-19 counting Met, so it fills the strip from Thr4 on and
@@ -36,8 +43,16 @@ const ROWS = [
 // where hbb.gff3 is NM_000518.5 sliced from
 // https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.
 const HELIX = { name: 'Helix A', color: '#f28e2b' }
-const HELIX_RESIDUES = [5, 19]
-const FEATURES = ROWS.map(([row]) => ({ row, start: 5, end: 13, ...HELIX }))
+const HELIX_RESIDUES = [5, 19] as const
+// the MSA fills helix A in the lighter orange of the pair, so the magenta E6V
+// band over it stays magenta instead of reading red
+const MSA_HELIX = { name: HELIX.name, color: '#ffbe7d' }
+const FEATURES = ROWS.map(([row]) => ({
+  row,
+  start: HELIX_RESIDUES[0],
+  end: HELIX_RESIDUES[1],
+  ...MSA_HELIX,
+}))
 
 function helixTrack() {
   const row = readFileSync(
@@ -77,7 +92,7 @@ interface ResidueColor {
 // helix A takes the next color, under the variant's own
 function withHelix(color: ResidueColor) {
   const helix = color.range.length + 1
-  const [first, last] = HELIX_RESIDUES as [number, number]
+  const [first, last] = HELIX_RESIDUES
   return {
     ...color,
     values: Object.fromEntries(
@@ -92,31 +107,39 @@ function withHelix(color: ResidueColor) {
   }
 }
 
-// The genome view spans 60 bp: 19 of 5' UTR, then codons 1-13 and a part.
-// The label column covers the UTR and each alignment column one codon, so
-// residue N sits under codon N at the figure's width. Both views are 1790px
-// inside the panel's border, and the alignment's first column starts 7px past
-// the label column: the 5px resize handle and 2px measured off a capture.
+// The genome view spans exon 1's 30 whole codons and 20 bp of its 5' UTR; the
+// window stops where codon 31 crosses into intron 1. The tree and the names
+// cover the UTR and each alignment column one codon, so residue N sits under
+// codon N at the figure's width. Both views are 1790px inside the panel's
+// border, and the alignment's first column starts 7px past the label column:
+// the 5px resize handle and 2px measured off a capture.
+const LOC = 'chr11:5226932-5227041[rev]'
+const UTR_BP = 20
+const WINDOW_BP = UTR_BP + 90
 const VIEW_WIDTH = 1800
-const BP_PX = (VIEW_WIDTH - 10) / 60
+const BP_PX = (VIEW_WIDTH - 10) / WINDOW_BP
 const LABEL_GUTTER = 7
 
 function msaView(feature: object) {
   return {
     id: 'msa-HBB',
     type: 'MsaView',
-    displayName: 'HBB residues 1-13 across mammals (UniProt)',
+    displayName: 'HBB residues 1-30 across mammals (UniProt)',
     height: 304,
     connectedViewId: 'lgv-HBB',
     connectedFeature: feature,
     querySeqName: 'Human',
-    data: { msa: ROWS.map(([name, , seq]) => `>${name}\n${seq}`).join('\n') },
+    data: {
+      msa: ROWS.map(([name, , seq]) => `>${name}\n${seq}`).join('\n'),
+      tree: SPECIES_TREE,
+    },
     features: FEATURES,
     colorSchemeName: 'none',
-    drawTree: false,
+    showBranchLen: false,
+    drawNodeBubbles: false,
     treeOrder: 'input',
     labelsAlignRight: true,
-    treeAreaWidth: Math.round(19 * BP_PX - LABEL_GUTTER),
+    treeAreaWidth: Math.round(UTR_BP * BP_PX - LABEL_GUTTER),
     colWidth: 3 * BP_PX,
     rowHeight: 22,
     showDomainLegend: false,
@@ -130,18 +153,29 @@ function msaView(feature: object) {
 // The other beta chain of each molecule's pair draws as a plain cartoon mark
 // too, so the session's E6V highlight and its label land on the marked chain
 // alone: Protein3d labels the copy nearest the viewer, which was out of frame.
+// Protein3d has no range site, so chain B draws residue by residue to carry
+// its own helix A, Thr4-Val18 in the PDB's numbering.
 const GREY = '#c9ced6'
 const NEIGHBOR = '#86cbc5'
 const POCKET = '#009696'
 const VAL6 = '#d1007a'
-const cartoon = (chain: string, color: string) => ({
-  site: `${chain}:*`,
+const cartoon = (site: string, color: string) => ({
+  site,
   mark: 'cartoon',
   encoding: { color: { value: color } },
 })
+const neighborBeta = Array.from({ length: 146 }, (_, i) => i + 1).map(seq =>
+  cartoon(
+    `B:${seq}`,
+    seq >= HELIX_RESIDUES[0] - 1 && seq <= HELIX_RESIDUES[1] - 1
+      ? HELIX.color
+      : NEIGHBOR,
+  ),
+)
 const neighborMarks = [
-  ...['A', 'B', 'C', 'D'].map(chain => cartoon(chain, NEIGHBOR)),
-  cartoon('F', GREY),
+  ...['A', 'C', 'D'].map(chain => cartoon(`${chain}:*`, NEIGHBOR)),
+  ...neighborBeta,
+  cartoon('F:*', GREY),
   { site: 'H:6', mark: 'spheres', encoding: { color: { value: VAL6 } } },
   ...['B:85', 'B:88'].map(site => ({
     site,
@@ -191,7 +225,7 @@ function hbbMsaSession() {
   session.views[1] = {
     ...wild,
     color: withHelix(wild.color as ResidueColor),
-    marks: [...(wild.marks as object[]), cartoon('D', GREY)],
+    marks: [...(wild.marks as object[]), cartoon('D:*', GREY)],
     structures: (wild.structures as object[]).map(s => ({
       ...s,
       chains: ['A', 'B', 'C'],
@@ -199,7 +233,8 @@ function hbbMsaSession() {
     camera: camera(wild, CLOSE_UP_UP['2hhb']),
   }
   session.sessionTracks = [...(session.sessionTracks ?? []), helixTrack()]
-  const lgv = session.views[0] as { tracks: { trackId: string }[] }
+  const lgv = session.views[0] as { loc: string; tracks: { trackId: string }[] }
+  lgv.loc = LOC
   lgv.tracks = lgv.tracks.flatMap(track =>
     track.trackId === 'hbb-mane'
       ? [
@@ -331,15 +366,16 @@ export const proteinHbbE6vMsaSpecs: ScreenshotSpec[] = [
       })),
       {
         type: 'legend',
-        fontSize: 20,
-        entries: [{ label: HELIX.name, color: HELIX.color }],
+        fontSize: 16,
+        entries: [MSA_HELIX],
+        textAlign: 'end',
         anchor: {
           selector: '[data-testid="view-container-msa-HBB"]',
-          alignX: 'left',
+          alignX: 'right',
           alignY: 'top',
         },
-        dx: 40,
-        dy: 110,
+        dx: -24,
+        dy: 30,
       },
       {
         type: 'box',
