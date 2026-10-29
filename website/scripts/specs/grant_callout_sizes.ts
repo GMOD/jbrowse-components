@@ -338,31 +338,31 @@ const inversion: SvReads = {
   key: 'sv_inv',
   viewportHeight: 1348,
   callouts: [
-    { text: 'SV\ncalls', side: 'left', x: 1202, y: 307 },
+    { text: 'SV\ncalls', side: 'left', x: 1214, y: 307 },
     {
       text: 'SV call\narcs',
       side: 'right',
       x: 1816,
       y: 673,
       maxPt: 6,
-      // clears the split read arcs' pill below
+      // clears the PacBio coverage pill below
       dy: -140,
     },
-    { text: 'PacBio\ncoverage', side: 'left', x: 700, y: 830, maxPt: 6 },
+    { text: 'PacBio\ncoverage', side: 'right', x: 2850, y: 820, maxPt: 6 },
+    // the arcs' left limb, from the left since the reads' legend fills their
+    // row on the right; the leader runs under the facet chips
     {
       text: 'PacBio\nsplit read\narcs',
-      side: 'right',
-      x: 1779,
-      y: 968,
+      side: 'left',
+      x: 1232,
+      y: 1025,
       maxPt: 6,
-      // the arc's top, so the leader runs over the reads' legend
-      dy: -78,
     },
     // a read's tip, the leader along the white of its row
-    { text: 'PacBio\nsplit reads', side: 'left', x: 965, y: 1189 },
+    { text: 'PacBio\nsplit reads', side: 'left', x: 475, y: 1670 },
     { text: 'Illumina\ncoverage', side: 'right', x: 2850, y: 1882, maxPt: 6 },
     { text: 'Illumina\npair arcs', side: 'left', x: 1135, y: 2030 },
-    { text: 'Illumina\nread cloud', side: 'right', x: 1790, y: 2580 },
+    { text: 'Illumina\nread cloud', side: 'right', x: 1868, y: 2596 },
   ],
 }
 
