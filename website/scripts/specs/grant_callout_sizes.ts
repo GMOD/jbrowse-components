@@ -224,6 +224,8 @@ interface Callout {
   x: number
   y: number
   maxPt?: number
+  // moves the pill off its leader's level, so the leader clears a legend
+  dy?: number
 }
 
 const svReadsCallouts: Callout[] = [
@@ -233,9 +235,11 @@ const svReadsCallouts: Callout[] = [
   {
     text: 'PacBio\nsplit read\narcs',
     side: 'right',
-    x: 2164,
-    y: 1008,
+    x: 1744,
+    y: 1080,
     maxPt: 6,
+    // the arc's low point, so the leader runs under the reads' legend
+    dy: 60,
   },
   { text: 'PacBio\nsplit reads', side: 'left', x: 670, y: 1145 },
   { text: 'Illumina\ncoverage', side: 'right', x: 2850, y: 1690, maxPt: 6 },
@@ -302,7 +306,13 @@ function svReadsVariant(pt?: number): ScreenshotSpec {
     annotations: svReadsCallouts
       .filter(c => pt <= (c.maxPt ?? pt))
       .map(c =>
-        marginCallout(c, font, FRAME_WIDTH, LABEL_EM, clampDy(c.y, font)),
+        marginCallout(
+          c,
+          font,
+          FRAME_WIDTH,
+          LABEL_EM,
+          c.dy ?? clampDy(c.y, font),
+        ),
       ),
   }
 }
