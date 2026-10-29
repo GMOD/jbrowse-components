@@ -337,22 +337,23 @@ const codonLabel = (m: number, text: string, color: string, dx: number) => ({
 
 // A lone position anchors the zero-width point before it: region 1's start,
 // which the [rev] view draws at its right edge, the seam where the genome view
-// and the alignment both skip codons 14-79. The E6V pill hangs left of its
-// codon to leave this one room.
+// and the alignment both skip codons 14-79. The pill sits on the seam as
+// SNCA's does, the line running down into it. Between the E band and the Phe85
+// pill there is no room for a leader's shaft, nor to centre the pill, so it
+// hangs left of centre to clear Phe85.
 const seamLabel = {
   type: 'text' as const,
   text: 'codons 14–79\nnot shown',
   color: '#777777',
   fontSize: FONT,
-  leader: true,
   anchor: {
     loc: `chr11:${REGIONS[0]!.start + 1}`,
     view: 0,
     trackId: 'hbb-mane',
     fracY: 0.12,
   },
-  dx: -20,
-  dy: 60,
+  dx: -99,
+  dy: 55,
 }
 
 const residueLabel = (
@@ -429,7 +430,7 @@ export const proteinHbbE6vPocketSpecs: ScreenshotSpec[] = [
         dx: 18,
         dy: 16,
       })),
-      codonLabel(6, 'E6V', VAL6, -2),
+      codonLabel(6, 'E6V', VAL6, 2),
       seamLabel,
       codonLabel(85, 'Phe85', POCKET, -2),
       codonLabel(88, 'Leu88', POCKET, 2),
