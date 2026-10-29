@@ -381,10 +381,10 @@ export const proteinHbbE6vMsaSpecs: ScreenshotSpec[] = [
         anchor: {
           selector: '[data-testid="view-container-msa-HBB"]',
           alignX: 'left',
-          alignY: 'top',
+          alignY: 'bottom',
         },
         dx: 8,
-        dy: 72,
+        dy: -58,
       },
       {
         type: 'box',
