@@ -69,7 +69,7 @@ function lineCss(colors: ColorPalette, field: ArcColorField) {
 }
 
 /**
- * A straight connector between normal-orientation mates in pileup layout. Its
+ * A straight connector between normal-orientation mates or split segments. Its
  * own shape: each instance carries TWO rows (`y1`, `y2`, a diagonal between
  * mates), where the pileup shape's row scan and off-canvas cull each read one
  * — this cull has to see both endpoints leave on the same side before it can

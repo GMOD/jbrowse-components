@@ -517,12 +517,12 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Whether the straight-line pass connects normal read pairs. Chain
-         * layout has a separate pass for them. Neither pass reaches across
-         * regions; that is `bezierArcScope`'s `crossRegion`.
+         * Whether the straight-line pass connects normal read pairs, in the
+         * pair's color, over chain layout's connecting line too. Neither line
+         * reaches across regions; that is `bezierArcScope`'s `crossRegion`.
          */
         get showLinkedReadLines() {
-          return self.showConnectors && self.unit !== 'chain'
+          return self.showConnectors
         },
 
         /**

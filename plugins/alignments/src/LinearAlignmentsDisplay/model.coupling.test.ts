@@ -7,6 +7,7 @@ import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PAIRED,
   SAM_FLAG_SECOND_IN_PAIR,
+  SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 import { setConf } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
@@ -948,6 +949,46 @@ describe('curved connectors', () => {
     display.toggleGroupCollapsed('')
     expect(display.connectorsByGroup.get('')?.lines.size).toBe(0)
     expect(connectionCategories(display)).toEqual(['pairRL'])
+  })
+
+  // `del` jumps forward across a deletion and `dup` back over a duplication
+  test('chain layout keeps a deletion junction straight and a duplication a loop', () => {
+    const display = createDisplay({ withRegions: true })
+    display.setRpcData(
+      0,
+      {
+        groups: [
+          {
+            key: '',
+            label: '',
+            data: {
+              ...baseWorkerPileupData(4),
+              ...namesToBlock(['del', 'del', 'dup', 'dup']),
+              readPositions: new Uint32Array([
+                100, 200, 300, 400, 1300, 1600, 1200, 1500,
+              ]),
+              readFlags: new Uint16Array([
+                0,
+                SAM_FLAG_SUPPLEMENTARY,
+                0,
+                SAM_FLAG_SUPPLEMENTARY,
+              ]),
+              readStrands: new Int8Array([1, 1, 1, 1]),
+            },
+          },
+        ],
+      },
+      region(0),
+    )
+    display.setShowConnectors(true)
+    display.setUnit('chain')
+
+    const connectors = display.connectorsByGroup.get('')!
+    const lines = connectors.lines.get(0)!
+    expect(lines.numLinkedReadLines).toBe(1)
+    expect([...lines.linkedReadLinePositions]).toEqual([200, 300])
+    expect(lines.linkedReadLineYs[0]).toBe(lines.linkedReadLineYs[1])
+    expect(connectors.overlayPairs.map(p => p.c.mapsBack)).toEqual([true])
   })
 
   // The `connection` filter fields reach the connectors with the arc band off, the
