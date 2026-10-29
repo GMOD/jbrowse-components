@@ -661,12 +661,8 @@ One command turns your pangenome graph into the indexed files JBrowse browses by
 
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_prepare_graph/
 
-- https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/config.json
 - https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/hprc.json
 - https://jbrowse.org/demos/arabidopsis_pangenome/config.json
-- https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz
-- https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz.tbi
-- https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_depth.bw
 - https://jbrowse.org/demos/hprc/config.json
 - https://jbrowse.org/demos/hprc_multiway/config.json
 - https://jbrowse.org/pangenome/hprc-grch38/config.json
