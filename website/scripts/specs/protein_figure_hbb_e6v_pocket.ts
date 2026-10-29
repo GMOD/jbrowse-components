@@ -316,26 +316,23 @@ const pill = (id: string, text: string) => ({
   dy: FONT + 14,
 })
 
-const codonLabel = (
-  m: number,
-  text: string,
-  color: string,
-  dx: number,
-  dy = 62,
-) => ({
+// The anchor is the whole codon, so the leader aims at its centre. The pill
+// hangs just to one side, since the head stops 14px short of the target along
+// the leader and only a steep leader keeps that gap inside the codon.
+const codonLabel = (m: number, text: string, color: string, dx: number) => ({
   type: 'text' as const,
   text,
   color,
   fontSize: FONT,
   leader: true,
   anchor: {
-    loc: `chr11:${codon(m).start + 2}`,
+    loc: `chr11:${codon(m).start + 1}-${codon(m).end}`,
     view: 0,
     trackId: 'hbb-mane',
     fracY: 0.12,
   },
   dx,
-  dy,
+  dy: 70,
 })
 
 const residueLabel = (
@@ -412,9 +409,9 @@ export const proteinHbbE6vPocketSpecs: ScreenshotSpec[] = [
         dx: 18,
         dy: 16,
       })),
-      codonLabel(6, 'E6V', VAL6, 80),
-      codonLabel(85, 'Phe85', POCKET, -80),
-      codonLabel(88, 'Leu88', POCKET, 40, 74),
+      codonLabel(6, 'E6V', VAL6, 2),
+      codonLabel(85, 'Phe85', POCKET, -2),
+      codonLabel(88, 'Leu88', POCKET, 2),
       {
         type: 'box',
         color: '#222',
