@@ -11,23 +11,24 @@ import {
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The app bar, three times over, would read as three apps; the view menu icon
-// sits where each part's label goes
-const CHROME = ['header.MuiAppBar-root', '[data-testid="view_menu_icon"]']
+// The app bar, three times over, would read as three apps
+const CHROME = ['header.MuiAppBar-root']
 const SIZE = { viewportWidth: 1100, viewportHeight: 832 }
 const LEGEND = '[data-testid="floating-legend"]'
 
+// A bare letter in the white margin the compose gutter leaves above each part
 const partLabel = (part: number, text: string): Annotation => ({
   type: 'text',
   text,
-  fontSize: 36,
-  color: '#000',
+  fontSize: 96,
+  color: '#fff',
+  background: '#fff',
   anchor: {
     selector: `[data-part="${part}"]`,
     alignX: 'left',
     alignY: 'top',
-    dx: 12,
-    dy: 44,
+    dx: 0,
+    dy: -14,
   },
 })
 
@@ -97,12 +98,16 @@ export const grantSyntenySpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'MG1655',
-          loc: 'NC_000913.3:2,095,000-2,115,000',
+          // gnd to galF, the genes flanking every strain's O-antigen cluster
+          loc: 'NC_000913.3:2,099,300-2,113,300',
           tracks: [
             {
               trackId: 'ecoli_orthologs',
               height: 640,
               rows: { kept: ECOLI_LANES },
+              ribbons: {
+                encoding: { color: { value: 'rgb(130,130,130)' } },
+              },
               labels: { lanes: { placement: 'overlay' } },
             },
           ],
@@ -123,7 +128,7 @@ export const grantSyntenySpecs: ScreenshotSpec[] = [
       'grant/ecoli_oantigen',
     ],
     columns: 3,
-    gutter: 40,
+    gutter: 180,
     annotations: [partLabel(0, 'A'), partLabel(1, 'B'), partLabel(2, 'C')],
   },
 ]
