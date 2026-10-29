@@ -140,6 +140,7 @@ function msaView(feature: object) {
     treeOrder: 'input',
     labelsAlignRight: true,
     treeAreaWidth: Math.round(UTR_BP * BP_PX - LABEL_GUTTER),
+    treeWidth: 200,
     colWidth: 3 * BP_PX,
     rowHeight: 22,
     showDomainLegend: false,
@@ -154,9 +155,12 @@ function msaView(feature: object) {
 // too, so the session's E6V highlight and its label land on the marked chain
 // alone: Protein3d labels the copy nearest the viewer, which was out of frame.
 // Protein3d has no range site, so chain B draws residue by residue to carry
-// its own helix A, Thr4-Val18 in the PDB's numbering.
+// its own helix A, Thr4-Val18 in the PDB's numbering, in a darker orange: in
+// the zoom-out it lies against the Val6 chain's helix A, and one orange read
+// as one helix.
 const GREY = '#c9ced6'
 const NEIGHBOR = '#86cbc5'
+const NEIGHBOR_HELIX = '#a84a00'
 const POCKET = '#009696'
 const VAL6 = '#d1007a'
 const cartoon = (site: string, color: string) => ({
@@ -168,7 +172,7 @@ const neighborBeta = Array.from({ length: 146 }, (_, i) => i + 1).map(seq =>
   cartoon(
     `B:${seq}`,
     seq >= HELIX_RESIDUES[0] - 1 && seq <= HELIX_RESIDUES[1] - 1
-      ? HELIX.color
+      ? NEIGHBOR_HELIX
       : NEIGHBOR,
   ),
 )
@@ -200,15 +204,21 @@ const OVERVIEW_CAMERA = {
 
 function sickle(view: ViewJson, id: string, displayName: string) {
   const structures = view.structures as object[]
+  const color = withHelix({
+    ...(view.color as ResidueColor),
+    range: [GREY, VAL6, NEIGHBOR],
+    labels: ['hemoglobin', 'Val6', 'neighboring hemoglobin'],
+  })
   return {
     ...view,
     id,
     displayName,
-    color: withHelix({
-      ...(view.color as ResidueColor),
-      range: [GREY, VAL6, NEIGHBOR],
-      labels: ['hemoglobin', 'Val6', 'neighboring hemoglobin'],
-    }),
+    color: {
+      ...color,
+      domain: [...color.domain, color.range.length + 0.5],
+      range: [...color.range, NEIGHBOR_HELIX],
+      labels: [...color.labels, "neighbor's helix A"],
+    },
     marks: neighborMarks,
     structures: structures.map(s => ({ ...s, chains: ['E', 'G', 'H'] })),
   }
@@ -367,15 +377,14 @@ export const proteinHbbE6vMsaSpecs: ScreenshotSpec[] = [
       {
         type: 'legend',
         fontSize: 16,
-        entries: [MSA_HELIX],
-        textAlign: 'end',
+        entries: [{ label: MSA_HELIX.name, color: MSA_HELIX.color }],
         anchor: {
           selector: '[data-testid="view-container-msa-HBB"]',
-          alignX: 'right',
+          alignX: 'left',
           alignY: 'top',
         },
-        dx: -24,
-        dy: 30,
+        dx: 8,
+        dy: 72,
       },
       {
         type: 'box',
