@@ -39,7 +39,9 @@ const LOC = REGIONS.map(r => `chr11:${r.start + 1}-${r.end}[rev]`).join(' ')
 // The genome view's two regions abut, so the alignment's two windows abut too
 // once react-msaview hides every column outside them. Both views are 990px
 // inside the panel's border, and the alignment's first column starts 7px past
-// the label column: the 5px resize handle and 2px measured off a capture.
+// the label column: the 5px resize handle and 2px measured off a capture. The
+// label column rounds down, since columns overflowing by over half a pixel
+// turn on react-msaview's scrollbar and minimap.
 const VIEW_WIDTH = 1000
 const WINDOW_BP = REGIONS.reduce((sum, r) => sum + r.end - r.start, 0)
 const BP_PX = (VIEW_WIDTH - 10) / WINDOW_BP
@@ -99,8 +101,8 @@ function msaView(feature: object) {
   return {
     id: 'msa-HBB',
     type: 'MsaView',
-    displayName: 'HBB residues 1-13 and 80-92 across mammals (UniProt)',
-    height: (ROWS.length + 1) * ROW_HEIGHT + 30,
+    displayName: 'HBB across mammals (UniProt)',
+    height: (ROWS.length + 1) * ROW_HEIGHT + 50,
     connectedViewId: 'lgv-HBB',
     connectedFeature: feature,
     querySeqName: QUERY,
@@ -127,7 +129,7 @@ function msaView(feature: object) {
     drawNodeBubbles: false,
     treeOrder: 'input',
     labelsAlignRight: true,
-    treeAreaWidth: Math.round(TREE_BP * BP_PX - LABEL_GUTTER),
+    treeAreaWidth: Math.floor(TREE_BP * BP_PX - LABEL_GUTTER),
     treeWidth: 120,
     colWidth: 3 * BP_PX,
     rowHeight: ROW_HEIGHT,
@@ -271,11 +273,11 @@ function pocketSession() {
       direction: 'column',
       size: 1,
       children: [
-        panel('top', 54, ['lgv-HBB', 'msa-HBB']),
+        panel('top', 55, ['lgv-HBB', 'msa-HBB']),
         {
           id: 'branch-bottom',
           direction: 'row',
-          size: 46,
+          size: 45,
           children: [
             panel('2hbs-overview', 50, [OVERVIEW_ID]),
             panel('2hbs', 50, [CLOSE_UP_ID]),
@@ -327,7 +329,7 @@ const codonLabel = (m: number, text: string, color: string, dx: number) => ({
     fracY: 0.12,
   },
   dx,
-  dy: 50,
+  dy: 62,
 })
 
 const residueLabel = (
@@ -375,7 +377,7 @@ export const proteinHbbE6vPocketSpecs: ScreenshotSpec[] = [
     ],
     tooltip: 'hide',
     viewportWidth: VIEW_WIDTH,
-    viewportHeight: 1240,
+    viewportHeight: 1270,
     actions: [
       { type: 'waitForAppSettled' },
       PARK_CURSOR,
@@ -404,9 +406,9 @@ export const proteinHbbE6vPocketSpecs: ScreenshotSpec[] = [
         dx: 18,
         dy: 16,
       })),
-      codonLabel(6, 'E6V', VAL6, 40),
-      codonLabel(85, 'Phe85', POCKET, -40),
-      codonLabel(88, 'Leu88', POCKET, 40),
+      codonLabel(6, 'E6V', VAL6, 80),
+      codonLabel(85, 'Phe85', POCKET, -80),
+      codonLabel(88, 'Leu88', POCKET, 70),
       {
         type: 'box',
         color: '#222',
