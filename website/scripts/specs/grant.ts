@@ -159,7 +159,7 @@ const anchorOf = (spec: SessionUrlSpec, text: string) => {
 const svParts: ScreenshotSpec[] = [
   withFont(junction, svFont, {
     'SV calls': {
-      anchor: { ...anchorOf(junction, 'SV calls'), alignX: 'right', dx: 10 },
+      anchor: { ...anchorOf(junction, 'SV calls'), alignX: 'right', dx: 28 },
     },
     'split reads': {
       anchor: { ...anchorOf(junction, 'split reads'), dx: 195 },
