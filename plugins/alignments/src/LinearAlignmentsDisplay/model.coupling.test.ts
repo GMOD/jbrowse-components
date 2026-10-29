@@ -991,6 +991,55 @@ describe('curved connectors', () => {
     expect(connectors.overlayPairs.map(p => p.c.mapsBack)).toEqual([true])
   })
 
+  test('chain layout curves a deletion junction across two displayed regions', () => {
+    const display = createDisplay()
+    const spans = [0, 2000].map(start => ({
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start,
+      end: start + 1000,
+    }))
+    display.view.setDisplayedRegions(spans)
+    for (const [i, span] of spans.entries()) {
+      display.setRpcData(
+        i,
+        {
+          groups: [
+            {
+              key: '',
+              label: '',
+              data: {
+                ...baseWorkerPileupData(1),
+                ...namesToBlock(['del']),
+                readKeys: [`del-${i}`],
+                readPositions: new Uint32Array([
+                  span.start + 100,
+                  span.start + 200,
+                ]),
+                readFlags: new Uint16Array([
+                  i === 0 ? 0 : SAM_FLAG_SUPPLEMENTARY,
+                ]),
+                readStrands: new Int8Array([1]),
+              },
+            },
+          ],
+        },
+        span,
+      )
+    }
+    display.setShowConnectors(true)
+    display.setUnit('chain')
+
+    const connectors = display.connectorsByGroup.get('')!
+    expect(connectors.lines.size).toBe(0)
+    expect(
+      connectors.overlayPairs.map(({ e1, e2 }) => [
+        e1.displayedRegionIndex,
+        e2.displayedRegionIndex,
+      ]),
+    ).toEqual([[0, 1]])
+  })
+
   // The `connection` filter fields reach the connectors with the arc band off, the
   // inter-chromosomal floor included: a lone pair across two contigs gathers
   // one read at its breakpoint, under the default floor of 2, and two pairs
