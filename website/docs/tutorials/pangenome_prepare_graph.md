@@ -292,6 +292,10 @@ config:
 }
 ```
 
+The arabidopsis pangenome config hosts one such file as
+`arabidopsis_minigraph_paths`. Open it over _FLC_ at `Chr5:3,170,000-3,186,000`,
+under `TAIR10_genes`:
+
 <Figure caption="The 1001 Genomes+ minigraph graph's paths file over FLC on TAIR10: one row per accession, each block its allele at a bubble." src="/img/pangenome/prepare_graph_paths.png" />
 
 With a **plain GFA**, the command records the haplotypes whose paths visit each
@@ -337,8 +341,6 @@ indexed against K12.
 The `encoding.color` block is a color scale that maps the `sampleCount` field
 linearly from `scale.domainMin` onto the two colors of `scale.range`. The count
 is per haplotype (`HG002.1`), so a diploid sample's two copies count separately.
-
-<Figure caption="The pggb E. coli graph's segments over the IS5 element, colored by sampleCount with one color per count, under the depth curve. Red marks a segment K12 alone has." src="/img/pangenome/pggb_carriage_lane.png" />
 
 ## Indexing haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
 
