@@ -1,6 +1,6 @@
 // The grant's synteny figure: Drosophila blocks, TP53 across T2T apes and the
 // E. coli O-antigen cluster, one frame size so the three sit in one row at one
-// text size. No app bar, since three copies of it would read as three apps.
+// text size.
 import { displaySettled } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
@@ -11,22 +11,23 @@ import {
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-const APP_BAR = 'header.MuiAppBar-root'
+// The app bar, three times over, would read as three apps; the view menu icon
+// sits where each part's label goes
+const CHROME = ['header.MuiAppBar-root', '[data-testid="view_menu_icon"]']
 const SIZE = { viewportWidth: 1100, viewportHeight: 832 }
 const LEGEND = '[data-testid="floating-legend"]'
 
-// Over the view title bar's menu icon, the one spot every part has free
 const partLabel = (part: number, text: string): Annotation => ({
   type: 'text',
   text,
-  fontSize: 44,
+  fontSize: 36,
   color: '#000',
   anchor: {
     selector: `[data-part="${part}"]`,
     alignX: 'left',
     alignY: 'top',
-    dx: 10,
-    dy: 50,
+    dx: 12,
+    dy: 44,
   },
 })
 
@@ -61,7 +62,7 @@ export const grantSyntenySpecs: ScreenshotSpec[] = [
     name: 'grant/drosophila_blocks',
     url: drosophilaBlocksUrl(150),
     ...SIZE,
-    hideSelectors: [LEGEND, '[data-testid="lgv-mini-controls"]', APP_BAR],
+    hideSelectors: [LEGEND, '[data-testid="lgv-mini-controls"]', ...CHROME],
   },
   {
     mode: 'url',
@@ -86,7 +87,7 @@ export const grantSyntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     ...SIZE,
-    hideSelectors: [LEGEND, APP_BAR],
+    hideSelectors: [LEGEND, ...CHROME],
   },
   {
     mode: 'url',
@@ -111,7 +112,7 @@ export const grantSyntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     ...SIZE,
-    hideSelectors: [APP_BAR],
+    hideSelectors: CHROME,
   },
   {
     mode: 'compose',
