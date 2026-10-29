@@ -236,10 +236,6 @@ the graph around _HSPA1A_. Then:
 
 <Figure caption="HSPA1A with the deconstructed callset, one row per assembly, the allele inventory and the graph track. The graph draws the insertion as the charcoal loop." src="/img/pangenome/bovine_bola.png" />
 
-The band above the callset's rows draws one bar per record. Its label names the
-bubble by its entry and exit nodes (`>3423>3424`), then the reference allele and
-the alternatives (`A -> 66bp`).
-
 ## Published variants in the callset
 
 Each locus below is a structural variant a paper reported in one of these breeds
