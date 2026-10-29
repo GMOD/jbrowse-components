@@ -134,6 +134,10 @@ export interface FrameLayout {
   // white columns down both sides of a stack, for a `trapezoid` from the first
   // region of a row, which the image edge would otherwise clip
   sideMargin?: number
+  // white strip above each row of a grid, for part titles drawn over it
+  labelMargin?: number
+  // crop the finished figure to its content plus this much white
+  trim?: number
 }
 
 // Fields every spec shares, whatever produces its PNG; CommonSpecFields is

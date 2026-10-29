@@ -51,6 +51,20 @@ export async function arrangeFrames(
     if (layout.annotations?.length) {
       await overlayOnComposition(out, layout.annotations, boxes)
     }
+    if (layout.trim !== undefined) {
+      magick(
+        [
+          out,
+          '-trim',
+          '+repage',
+          '-bordercolor',
+          'white',
+          '-border',
+          `${layout.trim}`,
+        ],
+        out,
+      )
+    }
   } finally {
     for (const f of scratch) {
       fs.rmSync(f, { force: true })
@@ -69,7 +83,7 @@ function appendGrid(
   files: string[],
   sizes: Size[],
   out: string,
-  { columns = 1, gutter = GRID_GUTTER_PX }: FrameLayout,
+  { columns = 1, gutter = GRID_GUTTER_PX, labelMargin = 0 }: FrameLayout,
   temp: (label: string) => string,
 ) {
   const boxes: FrameBox[] = []
@@ -79,13 +93,29 @@ function appendGrid(
     const row = sizes.slice(start, start + columns)
     let left = 0
     for (const size of row) {
-      boxes.push({ ...size, left: left + gutter / 2, top: top + gutter / 2 })
+      boxes.push({
+        ...size,
+        left: left + gutter / 2,
+        top: top + labelMargin + gutter / 2,
+      })
       left += size.width + gutter
     }
-    top += Math.max(...row.map(s => s.height)) + gutter
+    top += labelMargin + Math.max(...row.map(s => s.height)) + gutter
     const framed = files.slice(start, start + columns).map(f => {
       const t = temp('frame')
-      magick([f, '-bordercolor', 'white', '-border', `${gutter / 2}`], t)
+      magick(
+        [
+          f,
+          '-bordercolor',
+          'white',
+          '-border',
+          `${gutter / 2}`,
+          ...(labelMargin
+            ? ['-background', 'white', '-splice', `0x${labelMargin}`]
+            : []),
+        ],
+        t,
+      )
       return t
     })
     const rowFile = temp('row')

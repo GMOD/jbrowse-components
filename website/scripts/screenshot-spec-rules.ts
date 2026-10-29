@@ -151,9 +151,9 @@ function frameLayoutProblems(spec: ScreenshotSpec) {
     return []
   }
   if (spec.mode !== 'compose' && !spec.stages?.length) {
-    const set = (['columns', 'gutter', 'sideMargin'] as const).filter(
-      field => spec[field] !== undefined,
-    )
+    const set = (
+      ['columns', 'gutter', 'sideMargin', 'labelMargin', 'trim'] as const
+    ).filter(field => spec[field] !== undefined)
     return set.length > 0
       ? [`${spec.name}: ${set.join(', ')} without stages`]
       : []
@@ -162,6 +162,9 @@ function frameLayoutProblems(spec: ScreenshotSpec) {
   const columns = spec.columns ?? 1
   if (spec.sideMargin !== undefined && columns > 1) {
     problems.push(`${spec.name}: sideMargin on a row; only a stack has one`)
+  }
+  if (spec.labelMargin !== undefined && columns < 2) {
+    problems.push(`${spec.name}: labelMargin on a stack; only a row has one`)
   }
   if (spec.mode === 'compose' && columns > 1 && columns < spec.parts.length) {
     problems.push(
