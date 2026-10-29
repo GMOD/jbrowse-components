@@ -385,7 +385,7 @@ const overviewPart = (suffix: string, font: number | undefined) => {
     'chr3 breakend': {
       text: 'chr3\nbreakpoint',
       dx: -140,
-      dy: 40 - 2.2 * css,
+      dy: 40 - 3.2 * css,
       maxWidth: css * 6,
     },
     junction: { dy: -css },
