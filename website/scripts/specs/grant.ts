@@ -55,25 +55,36 @@ function asPart(spec: ScreenshotSpec, name: string) {
   } satisfies SessionUrlSpec
 }
 
-// Every callout, pill and legend at one font size
-function withFont(part: SessionUrlSpec, font: number): SessionUrlSpec {
+// Every callout and pill at one font size, with per-callout edits keyed by text
+function withFont(
+  part: SessionUrlSpec,
+  font: number,
+  edits: Record<string, Partial<Annotation> | 'drop'>,
+): SessionUrlSpec {
   return {
     ...part,
-    annotations: part.annotations?.map(a =>
-      a.type === 'text' || a.type === 'legend'
-        ? {
-            ...a,
-            fontSize: font,
-            ...(a.maxWidth
-              ? {
-                  maxWidth: Math.round(
-                    (a.maxWidth * font) / (a.fontSize ?? 22),
-                  ),
-                }
-              : {}),
-          }
-        : a,
-    ),
+    annotations: part.annotations?.flatMap(a => {
+      const edit = edits[a.text ?? a.type]
+      if (edit === 'drop') {
+        return []
+      }
+      return a.type === 'text'
+        ? [
+            {
+              ...a,
+              fontSize: font,
+              ...(a.maxWidth
+                ? {
+                    maxWidth: Math.round(
+                      (a.maxWidth * font) / (a.fontSize ?? 22),
+                    ),
+                  }
+                : {}),
+              ...edit,
+            },
+          ]
+        : [a]
+    }),
   }
 }
 
@@ -82,10 +93,30 @@ const tp53 = asPart(proteinTp53Y220cSpecs[0]!, 'grant/tp53_y220c')
 // The sickle figure is the shorter, so it renders at a higher scale to stand
 // as tall as TP53's, and TP53's callouts take the size the sickle's print at
 const sickleScale = tp53.viewportHeight / sickle.viewportHeight
-const sickleFont = sickle.annotations?.find(a => a.type === 'text')?.fontSize
+const font = Math.round(
+  (sickle.annotations?.find(a => a.type === 'text')?.fontSize ?? 22) *
+    sickleScale,
+)
 const proteinParts = [
   { ...sickle, scale: sickleScale },
-  sickleFont ? withFont(tp53, Math.round(sickleFont * sickleScale)) : tp53,
+  // At this size the legend and the two pills cover the scan's dots, so the
+  // pills' colors stand in for the legend and each sits clear of the dots, as
+  // grant_callout_sizes.ts has them
+  withFont(tp53, font, {
+    legend: 'drop',
+    'Y220C: broken': {
+      text: 'Y220C breaks p53',
+      dx: -1.5 * font,
+      dy: -0.9 * font,
+    },
+    'Y220F keeps the ring: works': {
+      text: 'Y220F keeps p53 working',
+      dx: -1.5 * font,
+      dy: 0.9 * font,
+    },
+    'Y220C + REZATAPOPT': { maxWidth: font * 7 },
+    'Empty pocket': { dx: -40, maxWidth: font * 4 },
+  }),
 ]
 
 // The synteny row shares one frame height, so the three draw text at one size.
