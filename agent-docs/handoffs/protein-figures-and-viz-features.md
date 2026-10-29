@@ -92,6 +92,22 @@ together.
     `hbb_e6v_overview.py`.
   - Protein3d has no range site (`B:4-18`), so a sub-chain color goes through
     `color.values`, which paints every drawn copy of the mapped entity.
+- **HBB E6V, plug and pocket**, `protein_figure_hbb_e6v_pocket.ts`, published
+  and in no doc (a grant renewal figure, 1000 px wide for a 7 in print):
+  magenta codon 6 → column 6 → Val6, teal codons 85/88 → columns → Phe85/Leu88
+  on the neighbour. Panels: genome, alignment, the 2HBS zoom-out, the contact.
+  - The genome view shows two abutting regions (codons 1-13, 80-92). The
+    alignment matches them by hiding columns: a full-length `HBB` query row
+    sits outside the tree (so it is never drawn), the drawn rows are gapped
+    outside the windows, and `allowedGappyness: 99` hides the rest.
+  - HbS is a `columnTracks` text row over the tree, dots except a magenta V.
+  - Session highlights band all three codons, with `highlightLabelsVisible`
+    off: react-msaview writes a label over the top row's cell, which hid
+    Human's Glu6. Callouts name them at 11 pt.
+  - 2HBS `chains: ['H']` with `filter` residue ≤ 84, the rest as cartoon marks,
+    so the teal highlights skip H's own Phe85/Leu88.
+  - The gene track numbers codons counting Met, but at this zoom it prints
+    letters alone, so nothing on screen disagrees with the mature labels.
 - **Variant pairs** `protein_figure_brca1_m1775r.ts` and
   `protein_figure_snca_e46k.ts`; the SNCA builder looks down each fibril's rung
   axis and turns the E46K layer to put Lys80 on the wild type's pixel.
@@ -195,8 +211,9 @@ blinded ideator given only a capability sheet, a landscape survey):
   "Pocket closed" in C, the construct mutations in a tutorial footnote,
   SNCA "rod polymorph" and its empty ClinVar row dropped. Still open: KRAS
   shows what the drug needs, not G12C's own effect (KRAS locked on), and
-  SNCA's codon labels overprint at the two-region boundary (an LGV
-  rendering fault, unfiled). Declined: a wild-type Glu46–Lys80 distance,
+  SNCA's codon labels overprint at the two-region boundary until a reshoot
+  (`peptidePositioning.ts` drew each region's edge-touching codon; fixed).
+  Declined: a wild-type Glu46–Lys80 distance,
   per the trap below.
 - HBB E6V: the gene track names the codon E7 (HGVS counts Met1) where the
   pills and legend say Glu6/Val6; the codon track's labels give both. Panel B
