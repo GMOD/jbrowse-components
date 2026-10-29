@@ -32,6 +32,7 @@ import { featuresSpecs } from './specs/features.ts'
 import { geneDensitySpecs } from './specs/gene_density.ts'
 import { genomesBasicsSpecs } from './specs/genomes_basics.ts'
 import { genomesPangenomeSpecs } from './specs/genomes_pangenome.ts'
+import { grantSyntenySpecs } from './specs/grant-synteny.ts'
 // the pangenome graph figures, split by organism — see specs/graph-fixtures.ts
 import { ecoliGraphSpecs } from './specs/graph-ecoli.ts'
 import { hprcGraphSpecs } from './specs/graph-hprc.ts'
@@ -62,7 +63,6 @@ import { paperEcoliSpecs } from './specs/paper-ecoli.ts'
 import { paperHprcWorkspaceSpecs } from './specs/paper-hprc-workspace.ts'
 import { paperSvReadsSpecs } from './specs/paper-sv-reads.ts'
 import { paperSvSpecs } from './specs/paper-sv.ts'
-import { paperTp53Specs } from './specs/paper-tp53.ts'
 import { popgenSpecs } from './specs/popgen.ts'
 import { proteinDomainsSpecs } from './specs/protein_domains.ts'
 import { proteinBrca1M1775rSpecs } from './specs/protein_figure_brca1_m1775r.ts'
@@ -157,7 +157,7 @@ export const specs: ScreenshotSpec[] = [
   ...paperHprcWorkspaceSpecs,
   ...paperCohortSpecs,
   ...paperDrosophilaSpecs,
-  ...paperTp53Specs,
+  ...grantSyntenySpecs,
   ...paperSvReadsSpecs,
   ...paperEcoliSpecs,
   ...paperSvSpecs,

@@ -36,56 +36,60 @@ const ROWS = [
   },
 ]
 
+export function drosophilaBlocksUrl(levelHeight: number) {
+  return sessionSpec(CONFIG, {
+    views: [
+      {
+        type: 'LinearSyntenyView',
+        views: ROWS,
+        tracks: [TRACK],
+        encoding: {
+          color: {
+            field: 'muller',
+            scale: {
+              domain: ['A', 'B', 'C', 'D', 'E', 'F'],
+              range: [
+                '#1f77b4',
+                '#ff7f0e',
+                '#2ca02c',
+                '#d62728',
+                '#9467bd',
+                '#8c564b',
+              ],
+              names: [
+                'A (mel X)',
+                'B (mel 2L)',
+                'C (mel 2R)',
+                'D (mel 3L)',
+                'E (mel 3R)',
+                'F (mel 4)',
+              ],
+            },
+            legend: { title: 'Muller element' },
+          },
+          opacity: 0.5,
+        },
+        filter: [{ field: 'muller', valid: true }],
+        autoDiagonalize: false,
+        collapseEmptyRows: true,
+        mark: { interpolate: 'bump' },
+        offscreen: { show: false },
+        render: { antialias: false },
+        levelHeights: ROWS.slice(1).map(() => levelHeight),
+      },
+    ],
+  })
+}
+
 export const paperDrosophilaSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'paper/drosophila_blocks',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearSyntenyView',
-          views: ROWS,
-          tracks: [TRACK],
-          encoding: {
-            color: {
-              field: 'muller',
-              scale: {
-                domain: ['A', 'B', 'C', 'D', 'E', 'F'],
-                range: [
-                  '#1f77b4',
-                  '#ff7f0e',
-                  '#2ca02c',
-                  '#d62728',
-                  '#9467bd',
-                  '#8c564b',
-                ],
-                names: [
-                  'A (mel X)',
-                  'B (mel 2L)',
-                  'C (mel 2R)',
-                  'D (mel 3L)',
-                  'E (mel 3R)',
-                  'F (mel 4)',
-                ],
-              },
-              legend: { title: 'Muller element' },
-            },
-            opacity: 0.5,
-          },
-          filter: [{ field: 'muller', valid: true }],
-          autoDiagonalize: false,
-          collapseEmptyRows: true,
-          mark: { interpolate: 'bump' },
-          offscreen: { show: false },
-          render: { antialias: false },
-          levelHeights: ROWS.slice(1).map(() => 150),
-        },
-      ],
-    }),
+    url: drosophilaBlocksUrl(100),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 240000,
-    viewportWidth: 1100,
-    viewportHeight: 880,
+    viewportWidth: 1900,
+    viewportHeight: 680,
     // No session setting closes the legend or a row's zoom controls. Hidden
     // rather than clicked closed, since a click focuses the view and restyles
     // its header.
