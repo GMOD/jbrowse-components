@@ -231,7 +231,7 @@ function pocketSession() {
         {
           trackId: 'hbb-mane',
           type: 'LinearBasicDisplay',
-          height: 100,
+          height: 112,
           mark: { height: 20 },
         },
       ],
@@ -316,7 +316,13 @@ const pill = (id: string, text: string) => ({
   dy: FONT + 14,
 })
 
-const codonLabel = (m: number, text: string, color: string, dx: number) => ({
+const codonLabel = (
+  m: number,
+  text: string,
+  color: string,
+  dx: number,
+  dy = 62,
+) => ({
   type: 'text' as const,
   text,
   color,
@@ -329,7 +335,7 @@ const codonLabel = (m: number, text: string, color: string, dx: number) => ({
     fracY: 0.12,
   },
   dx,
-  dy: 62,
+  dy,
 })
 
 const residueLabel = (
@@ -377,7 +383,7 @@ export const proteinHbbE6vPocketSpecs: ScreenshotSpec[] = [
     ],
     tooltip: 'hide',
     viewportWidth: VIEW_WIDTH,
-    viewportHeight: 1270,
+    viewportHeight: 1282,
     actions: [
       { type: 'waitForAppSettled' },
       PARK_CURSOR,
@@ -408,7 +414,7 @@ export const proteinHbbE6vPocketSpecs: ScreenshotSpec[] = [
       })),
       codonLabel(6, 'E6V', VAL6, 80),
       codonLabel(85, 'Phe85', POCKET, -80),
-      codonLabel(88, 'Leu88', POCKET, 70),
+      codonLabel(88, 'Leu88', POCKET, 40, 74),
       {
         type: 'box',
         color: '#222',
