@@ -267,6 +267,33 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // KTa004's surjected reads across K12's prophage near intD, which KTa004
+  // lacks: coverage falls to nothing over chr:565,000-585,000.
+  {
+    mode: 'url',
+    name: 'pangenome_cactus/reads',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [ecoliPageTrack(CACTUS_DOC, 'ecoli_cactus_reads')],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:555,000-595,000',
+          tracks: [
+            { trackId: 'K12_genes' },
+            { trackId: 'ecoli_cactus_reads', height: 260 },
+          ],
+        },
+      ],
+    }),
+    readySelector: displayPainted('pileup-display'),
+    readyTimeout: 120000,
+    viewportWidth: 1000,
+    viewportHeight: 560,
+    tooltip: 'hide',
+    actions: [PARK_CURSOR],
+  },
+
   // The window needs rows that drop out; on shared backbone every row is solid.
   {
     mode: 'url',

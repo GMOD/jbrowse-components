@@ -485,8 +485,7 @@ samtools sort -o ecoli_cactus_reads.bam reads_mapped.bam
 samtools index ecoli_cactus_reads.bam
 ```
 
-The [build script](#reproduce-it-end-to-end) also subsamples the reads. The
-result loads as an ordinary alignments track:
+The result loads as an ordinary alignments track:
 
 ```json addtrack
 {
@@ -496,6 +495,12 @@ result loads as an ordinary alignments track:
   "assemblyNames": ["K12"]
 }
 ```
+
+Type `chr:555,000-595,000`. KTa004's reads cover K12 on either side of the
+prophage that begins at _intD_ and nearly vanish across it, sequence K12 carries
+and KTa004 lacks.
+
+<Figure caption="KTa004's short reads, mapped through the graph and surjected onto K12, across the prophage that begins at intD." src="/img/pangenome_cactus/reads.png" />
 
 `vg giraffe` rewrites `ecoli.d2.dist` as it runs, leaving it newer than the
 `.min` and `.zipcodes` built from it, so a second run refuses to start. `touch`
