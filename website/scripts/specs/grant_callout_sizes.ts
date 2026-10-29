@@ -95,11 +95,9 @@ function editSession(url: string, edit: (session: SessionJson) => void) {
 const KG = 'kgp3202_chr11_snv'
 const GWAS_SUBSET = 'gwasCatalog_sickle_cell_traits'
 const RS334 = 'chr11:5,227,002'
-const SUPERPOPULATIONS = ['AFR', 'AMR', 'EUR', 'SAS', 'EAS']
 
-// The renewal's figure: the tutorial's 1000 Genomes figure with the rows in
-// one band per superpopulation and the alignment colored by domain.
-const KG_SAMPLES = 'https://jbrowse.org/demos/1000g/1000g_3202_samples.tsv'
+// The renewal's figure: the tutorial's 1000 Genomes figure without the 1000
+// Genomes track, its alignment colored by domain and given the freed height.
 const hbb1000g = byName(
   proteinVariantSpecs,
   'protein/hbb_1000_genomes',
@@ -107,29 +105,17 @@ const hbb1000g = byName(
 const sickleSpec = {
   ...hbb1000g,
   url: editSession(hbb1000g.url, session => {
-    const kg = session.sessionTracks?.find(
-      t => (t as { trackId: string }).trackId === KG,
-    ) as { adapter: object }
-    kg.adapter = {
-      ...kg.adapter,
-      samplesTsvLocation: { uri: KG_SAMPLES },
-    }
+    session.sessionTracks = session.sessionTracks?.filter(
+      t => (t as { trackId: string }).trackId !== KG,
+    )
     const [lgv, msa, protein] = session.views as [ViewJson, ViewJson, ViewJson]
     const init = lgv.init as { tracks: { trackId: string }[] }
-    init.tracks = init.tracks.map(t =>
-      t.trackId === KG
-        ? {
-            ...t,
-            rowColor: 'superpopulation',
-            facet: { field: 'superpopulation', sort: SUPERPOPULATIONS },
-          }
-        : t,
-    )
+    init.tracks = init.tracks.filter(t => t.trackId !== KG)
     msa.showDomains = true
-    msa.height = 400
-    protein.height = 1000
+    msa.height = 490
+    protein.height = 800
   }),
-  viewportHeight: 1310,
+  viewportHeight: 1120,
   annotations: [
     {
       type: 'text',
@@ -141,19 +127,11 @@ const sickleSpec = {
     },
     {
       type: 'text',
-      text: 'African\nancestry\ncarriers',
-      leader: true,
-      anchor: { trackId: KG, loc: RS334, fracY: 0.03 },
-      dx: 100,
-      dy: 90,
-    },
-    {
-      type: 'text',
       text: 'Val6',
       leader: true,
       anchor: { residue: 'B:6' },
       dx: 60,
-      dy: 300,
+      dy: 260,
     },
   ],
 } as Annotated
@@ -163,10 +141,6 @@ const sickle: Figure = {
   spec: sickleSpec,
   cssWidth: 2000,
   printPt: 259.2,
-  // the pill's top stays on the 1000 Genomes track at every size
-  edits: (_pt, font) => ({
-    'African\nancestry\ncarriers': { dy: font * 2 },
-  }),
 }
 
 const y220c: Figure = {
