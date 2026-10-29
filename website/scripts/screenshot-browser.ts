@@ -68,11 +68,14 @@ async function openPage(browser: Browser, spec: BrowserScreenshotSpec) {
   await freezeAnimations(page)
   await trustCapturePlugins(page)
   await serveUrlOverrides(page)
-  if (spec.viewportHeight || spec.viewportWidth) {
+  if (spec.viewportHeight || spec.viewportWidth || spec.scale) {
     await page.setViewport({
       ...defaultViewport,
       ...(spec.viewportWidth ? { width: spec.viewportWidth } : {}),
       ...(spec.viewportHeight ? { height: spec.viewportHeight } : {}),
+      ...(spec.scale
+        ? { deviceScaleFactor: DEVICE_SCALE_FACTOR * spec.scale }
+        : {}),
     })
   }
   let fatal: string | undefined

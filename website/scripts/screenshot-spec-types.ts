@@ -159,6 +159,9 @@ export interface CommonSpecFields extends BaseSpecFields, FrameLayout {
   // capture-viewport width in CSS px (DEFAULT_VIEWPORT otherwise); raise it for
   // wide multi-panel layouts (dotplot/synteny/whole-genome) that get cut off
   viewportWidth?: number
+  // multiple of the run's device scale factor, for a compose part that must
+  // match a taller neighbour's pixel height without resampling
+  scale?: number
   // callouts drawn over the page before capture (arrows/boxes/text/circles);
   // with `stages`, over the arranged frames as on a compose spec, each frame
   // anchorable as `[data-part="N"]`

@@ -11,7 +11,11 @@ import {
 import { proteinHbbE6vPocketSpecs } from './protein_figure_hbb_e6v_pocket.ts'
 import { proteinTp53Y220cSpecs } from './protein_figure_tp53_y220c.ts'
 
-import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type {
+  Annotation,
+  ScreenshotSpec,
+  SessionUrlSpec,
+} from '../screenshot-spec-types.ts'
 
 const CHROME = ['header.MuiAppBar-root']
 const APP_BAR_HEIGHT = 48
@@ -35,20 +39,26 @@ const partLabel = (part: number, text: string): Annotation => ({
   },
 })
 
-// A figure as a grant part: the row's letter replaces its own lettered circles
-function asPart(spec: ScreenshotSpec, name: string): ScreenshotSpec {
+// A figure as a grant part: the row's letter replaces its own lettered circles.
+// `matchHeight` renders a shorter figure at a higher scale so it stands as tall
+// as its neighbour, rather than leaving white under it.
+function asPart(spec: ScreenshotSpec, name: string, matchHeight?: number) {
   if (spec.mode !== 'url') {
     throw new Error(`${spec.name} is not a url spec`)
   }
+  const viewportHeight =
+    (spec.viewportHeight ?? DEFAULT_VIEWPORT.height) - APP_BAR_HEIGHT
   return {
     ...spec,
     name,
-    viewportHeight:
-      (spec.viewportHeight ?? DEFAULT_VIEWPORT.height) - APP_BAR_HEIGHT,
+    viewportHeight,
+    ...(matchHeight ? { scale: matchHeight / viewportHeight } : {}),
     hideSelectors: [...(spec.hideSelectors ?? []), ...CHROME],
     annotations: spec.annotations?.filter(a => a.type !== 'circle'),
-  }
+  } satisfies SessionUrlSpec
 }
+
+const tp53Part = asPart(proteinTp53Y220cSpecs[0]!, 'grant/tp53_y220c')
 
 // The synteny row shares one frame height, so the three draw text at one size.
 // MG1655 is the reference row. One strain per lab lineage (BL21 for B), since
@@ -155,8 +165,12 @@ export const grantSpecs: ScreenshotSpec[] = [
       partLabel(2, 'C) E. coli O-antigen cluster'),
     ],
   },
-  asPart(proteinHbbE6vPocketSpecs[0]!, 'grant/hbb_e6v_pocket'),
-  asPart(proteinTp53Y220cSpecs[0]!, 'grant/tp53_y220c'),
+  asPart(
+    proteinHbbE6vPocketSpecs[0]!,
+    'grant/hbb_e6v_pocket',
+    tp53Part.viewportHeight,
+  ),
+  tp53Part,
   {
     mode: 'compose',
     name: 'grant/protein_row',
