@@ -88,7 +88,7 @@ adds it, and the config below is the one to adapt for your own graph:
   "assemblyNames": ["hg38", "HG00097.1", "HG00099.1"],
   "adapter": {
     "type": "WalkTabixSyntenyAdapter",
-    "walksUri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f5.GRCh38",
+    "walksUri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38-f5s.GRCh38",
     "assemblyNames": ["hg38"],
     "assemblyNameToPanSN": { "hg38": "GRCh38#0" }
   },

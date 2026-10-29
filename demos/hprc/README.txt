@@ -220,7 +220,11 @@ count", not a measurement.
 Haplotype walks
 ---------------
 
-  hprc-v2.1-mc-grch38-f5.GRCh38.walks.bed.gz       1,550,433,855 bytes
+  hprc-v2.1-mc-grch38-f5s.GRCh38.walks.bed.gz      1,550,816,162 bytes
+  hprc-v2.1-mc-grch38-f5s.GRCh38.walks.bed.gz.tbi    1,332,701
+  hprc-v2.1-mc-grch38-f5s.CHM13.walks.bed.gz       1,463,176,959
+  hprc-v2.1-mc-grch38-f5s.CHM13.walks.bed.gz.tbi     1,010,636
+  hprc-v2.1-mc-grch38-f5.GRCh38.walks.bed.gz       1,550,433,855
   hprc-v2.1-mc-grch38-f5.GRCh38.walks.bed.gz.tbi     1,332,761
   hprc-v2.1-mc-grch38-f5.CHM13.walks.bed.gz        1,462,001,275
   hprc-v2.1-mc-grch38-f5.CHM13.walks.bed.gz.tbi      1,007,257
@@ -242,7 +246,7 @@ Haplotype walks
   it aligns each haplotype's walk to the reference's, and each lane to the
   next, on the nodes both visit, with no base compared. It reads no gbz.db
   and no haplotype index. Its walksUri names the file by its prefix,
-  hprc-v2.1-mc-grch38-f5.GRCh38, and defaultHaplotypes names the lanes it
+  hprc-v2.1-mc-grch38-f5s.GRCh38, and defaultHaplotypes names the lanes it
   draws unless the haplotype menu says otherwise.
 
   Each file's first header line gives format:i:5; chunk:i:65536, the chunk
@@ -267,6 +271,13 @@ Haplotype walks
       -o hprc-v2.1-mc-grch38-f5                      # 39:10, 13.1 GB RSS
 
   The defaults --chunk 65536 and --stay 311 apply.
+
+  The -f5s set is the same command with gfa-to-tabix 2.0.0, built 2026-10-28
+  (-o hprc-v2.1-mc-grch38-f5s; 2:25:03, 13.1 GB RSS). It adds skip rows, one
+  per haplotype and chunk that its deletion jumps over (ADR 0006 in
+  gfa-to-tabix): 24,795 on GRCh38 and 86,958 on CHM13. Every other row
+  matches the -f5 set's. The configs read -f5s, and -f5 stays for sessions
+  that name it.
 
   @jbrowse/graph-walks 3 reads format 4 only, so the -f3 set (gfa-to-tabix
   1.1.0) is due for removal. The format 1 and format 2 sets (gfa-to-tabix
