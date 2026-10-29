@@ -151,7 +151,7 @@ deletion above its map and cites
 other strains' insertion "intact Nnt", and each launch from it opens a **Known
 alleles** row over the site.
 
-<Figure caption="Nnt with the RefSeq genes and the bubbles track above the force-directed graph track. The haloed node beside Nnt is labelled as an insertion." src="/img/pangenome/graph_mouse_nnt_halos.png" />
+<Figure caption="Nnt with the RefSeq genes and the bubbles track above the force-directed graph track. Of its four haloed bubbles, the one inside Nnt, labelled as a 17 kb insertion with five alleles, is the sequence the other strains have and C57BL/6J lacks." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
 The graph holds no path per strain, so it cannot say which strains have the
 exons. mm39's liftOver chains can, one lane per strain assembly:

@@ -231,10 +231,14 @@ the graph around _HSPA1A_. Then:
 
 - Turn on the callset and the allele inventory in the track selector.
 - Open **Graph settings...** in the graph track's menu and set **Bubble spread**
-  to **Compress lengths**. An insertion has no reference span to draw along, and
-  the portal opens the graph force-directed, which draws it by its shape.
+  to **Compress lengths**, which pulls the longest and shortest nodes towards
+  the mean so a cut spanning kb and bp nodes fits one pane.
 
 <Figure caption="HSPA1A with the deconstructed callset, one row per assembly, the allele inventory and the graph track. The graph draws the insertion as the charcoal loop." src="/img/pangenome/bovine_bola.png" />
+
+The band above the callset's rows draws one bar per record. Its label names the
+bubble by its entry and exit nodes (`>3423>3424`), then the reference allele and
+the alternatives (`A -> 66bp`).
 
 ## Published variants in the callset
 

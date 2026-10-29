@@ -485,6 +485,11 @@ Open `chr:450,000-590,000` with the K12 genes on. The figure shades
 
 <Figure caption="K12 genes, the aggregate depth curve, and odgi pav below it, one row per non-K12 strain." src="/img/pangenome/pav.png" />
 
+Across the shaded span IAI39's row is empty and depth drops to about 4. The
+deeper trough to its right, `chr:565,000-585,000`, is the prophage that begins
+at _intD_: depth falls to 1 or 2 there, so at most one other strain carries any
+of it.
+
 ### Testing the CPZ-55 depth trough with nanopore reads
 
 We'll check the depth trough at CPZ-55, a cryptic prophage found in K12 alone,
