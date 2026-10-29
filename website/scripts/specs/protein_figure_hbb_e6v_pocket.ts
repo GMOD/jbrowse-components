@@ -187,17 +187,18 @@ const MARKS = [
   spheres('B:88', POCKET),
 ]
 
-// /var/tmp/hero2/bin/hbb_e6v_roll.py rolls the close-up a quarter turn, so the
-// Val6 tetramer sits below its neighbour as in the zoom-out, which
-// hbb_e6v_overview.py frames along the close-up's line of sight.
-const CLOSE_UP_UP = [-0.567, -0.7703, -0.2919]
+// hbb_e6v_overview.py frames the zoom-out along the close-up's line of sight,
+// brought in to 0.75 of its distance to fill the shorter panel.
+// Both take this up vector, the line of sight crossed with the up that
+// /var/tmp/hero2/bin/hbb_e6v_roll.py gave them, so in the landscape panels the
+// two molecules sit side by side.
+const SIDE_BY_SIDE_UP = [0.8236, -0.525, -0.2145]
 const OVERVIEW_CAMERA = {
-  position: [23.267, 109.785, -107.268],
+  position: [23.032, 94.546, -70.278],
   target: [22.954, 48.829, 40.691],
-  up: [-0.5671, -0.7611, -0.3148],
+  up: SIDE_BY_SIDE_UP,
   mode: 'orthographic',
 }
-const PROTEIN_HEIGHT = 350
 
 function sickle(view: ViewJson, id: string, displayName: string) {
   return {
@@ -243,14 +244,20 @@ const GWAS_TRACK = {
 }
 const GWAS_HEIGHT = 80
 
-// Each panel is sized to what it holds, since height is what the figure is
-// short of. The GWAS track's header adds 40px over its height, and the genome
-// view hides its location bar, which the ruler's coordinates stand in for.
+// The genome view and the alignment take the left column, the two structures
+// stack in the right, each column as tall as the left one's views need. The
+// GWAS track's header adds 40px over its height, and the genome view hides its
+// location bar, which the ruler's coordinates stand in for. A structure
+// panel's tab, title and color key take 124px over its view.
 const APP_BAR_PX = 50
 const LOCATION_BAR_PX = 44
-const TOP_PX = 678 + GWAS_HEIGHT + 40 - LOCATION_BAR_PX
-const STRUCTURES_PX = PROTEIN_HEIGHT + 124
-const VIEWPORT_HEIGHT = APP_BAR_PX + TOP_PX + STRUCTURES_PX
+const LEFT_PX = 678 + GWAS_HEIGHT + 40 - LOCATION_BAR_PX
+const STRUCTURES_WIDTH = 520
+// the column divider takes 3px off the left column, measured off a capture
+const DIVIDER_PX = 3
+const FRAME_WIDTH = VIEW_WIDTH + DIVIDER_PX + STRUCTURES_WIDTH
+const PROTEIN_HEIGHT = Math.floor(LEFT_PX / 2) - 124
+const VIEWPORT_HEIGHT = APP_BAR_PX + LEFT_PX
 
 const OVERVIEW_ID = 'protein-HBB-2hbs-overview'
 const CLOSE_UP_ID = 'protein-HBB-2hbs'
@@ -294,7 +301,7 @@ function pocketSession() {
         CLOSE_UP_ID,
         'Sickle hemoglobin contact (PDB 2HBS)',
       ),
-      camera: { ...(sickleView.camera as object), up: CLOSE_UP_UP },
+      camera: { ...(sickleView.camera as object), up: SIDE_BY_SIDE_UP },
     },
   ]
   session.sessionTracks = [
@@ -313,17 +320,17 @@ function pocketSession() {
   const json = {
     ...session,
     highlightLabelsVisible: false,
-    activePanelId: 'panel-top',
+    activePanelId: 'panel-left',
     layout: {
       id: 'branch-root',
-      direction: 'column',
+      direction: 'row',
       size: 1,
       children: [
-        panel('top', TOP_PX, ['lgv-HBB', 'msa-HBB']),
+        panel('left', VIEW_WIDTH + DIVIDER_PX, ['lgv-HBB', 'msa-HBB']),
         {
-          id: 'branch-bottom',
-          direction: 'row',
-          size: STRUCTURES_PX,
+          id: 'branch-right',
+          direction: 'column',
+          size: STRUCTURES_WIDTH,
           children: [
             panel('2hbs-overview', 50, [OVERVIEW_ID]),
             panel('2hbs', 50, [CLOSE_UP_ID]),
@@ -337,11 +344,11 @@ function pocketSession() {
   ).toString('base64url')}`
 }
 
-// Callouts read at 11 pt with the figure printed 7 in wide, the rule
-// grant_callout_sizes.ts sizes the renewal's figures by: font px = pt *
-// frame width / print width in pt.
+// Callouts read at 8 pt with the figure printed 7 in wide, the size
+// grant_callout_sizes.ts suggests: font px = pt * frame width / print width in
+// pt. At 11 pt the wider frame's pills would overrun the gene track.
 const PRINT_PT = 7 * 72
-const FONT = Math.round((11 * VIEW_WIDTH) / PRINT_PT)
+const FONT = Math.round((8 * FRAME_WIDTH) / PRINT_PT)
 
 const OVERVIEW_VIEW = 2
 const CLOSE_UP_VIEW = 3
@@ -447,7 +454,7 @@ export const proteinHbbE6vPocketSpecs: ScreenshotSpec[] = [
       '[data-testid="view-container-msa-HBB"] .MuiPaper-root:has(> button[title="Expand key"])',
     ],
     tooltip: 'hide',
-    viewportWidth: VIEW_WIDTH,
+    viewportWidth: FRAME_WIDTH,
     viewportHeight: VIEWPORT_HEIGHT,
     actions: [
       { type: 'waitForAppSettled' },
@@ -489,8 +496,8 @@ export const proteinHbbE6vPocketSpecs: ScreenshotSpec[] = [
         anchor: { residue: 'H:6', view: OVERVIEW_VIEW },
         fromAnchor: { residue: 'B:88', view: OVERVIEW_VIEW },
       },
-      residueLabel('B:85', 'Phe85, Leu88', POCKET, 60, -120),
-      residueLabel('H:6', 'Val6', VAL6, 70, 110),
+      residueLabel('B:85', 'Phe85, Leu88', POCKET, -60, 100),
+      residueLabel('H:6', 'Val6', VAL6, 60, -90),
     ],
   },
 ]
