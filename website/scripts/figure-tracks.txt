@@ -13,7 +13,7 @@ tutorials/genomes_synteny.md 10
 tutorials/hg002_haplotypes.md 3
 tutorials/ld_mosquitoes.md 3
 tutorials/mappability_qc.md 6
-tutorials/pangenome_cactus.md 5
+tutorials/pangenome_cactus.md 2
 tutorials/pangenome_cattle.md 7
 tutorials/pangenome_ecoli.md 1
 tutorials/pangenome_hprc_haplotypes.md 3

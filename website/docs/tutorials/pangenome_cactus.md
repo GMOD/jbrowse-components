@@ -496,9 +496,9 @@ The result loads as an ordinary alignments track:
 }
 ```
 
-Type `chr:555,000-595,000`. KTa004's reads cover K12 on either side of the
-prophage that begins at _intD_ and nearly vanish across it, sequence K12 carries
-and KTa004 lacks.
+Turn on **K12 genes** and type `chr:555,000-595,000`. KTa004's reads cover K12
+on either side of the prophage that begins at _intD_ and nearly vanish across
+it, sequence K12 carries and KTa004 lacks.
 
 <Figure caption="KTa004's short reads, mapped through the graph and surjected onto K12, across the prophage that begins at intD." src="/img/pangenome_cactus/reads.png" />
 
