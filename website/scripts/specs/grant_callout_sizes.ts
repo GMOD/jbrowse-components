@@ -226,6 +226,8 @@ interface Callout {
   maxPt?: number
   // moves the pill off its leader's level, so the leader clears a legend
   dy?: number
+  // a pill colored to pair it with the same feature's callout in another panel
+  pill?: Pick<Annotation, 'color' | 'background'>
 }
 
 const svReadsCallouts: Callout[] = [
@@ -280,6 +282,7 @@ function marginCallout(
     },
     dx: c.side === 'left' ? -(c.x + gap) : frameWidth + gap - c.x,
     dy,
+    ...c.pill,
   }
 }
 
@@ -320,7 +323,7 @@ function svReadsVariant(pt?: number): ScreenshotSpec {
 const HIDE_APP_BAR = { hideAppBar: true }
 const TRANSLOCATION_PRINT_PT = 241.2
 const TRANSLOCATION_WIDTH = 3600
-const ROW_LABEL_EM = 4.5
+const ROW_LABEL_EM = 6
 
 // the top panel is the read view alone: the synteny ribbons under it are in the
 // bottom panel
@@ -374,13 +377,13 @@ const overviewPart = (suffix: string, font: number | undefined) => {
     GRCh38: 'drop',
     hap1: 'drop',
     'chr13 breakend': {
-      text: 'chr13',
+      text: 'chr13\nbreakpoint',
       dx: 100,
       dy: 40 + 0.6 * css,
       maxWidth: css * 6,
     },
     'chr3 breakend': {
-      text: 'chr3',
+      text: 'chr3\nbreakpoint',
       dx: -140,
       dy: 40 - 2.2 * css,
       maxWidth: css * 6,
@@ -393,9 +396,25 @@ const overviewPart = (suffix: string, font: number | undefined) => {
   } as Annotated
 }
 
+// the overview's breakpoint pills' blue, so each read-view breakpoint pairs
+// with its place on GRCh38
+const BREAKPOINT = { color: '#1f77b4', background: '#dceaf6' }
+
 const READ_CALLOUTS: Callout[] = [
-  { text: 'chr13', side: 'left', x: 907, y: 306 },
-  { text: 'chr3', side: 'right', x: 2695, y: 306 },
+  {
+    text: 'chr13\nbreakpoint',
+    side: 'left',
+    x: 907,
+    y: 306,
+    pill: BREAKPOINT,
+  },
+  {
+    text: 'chr3\nbreakpoint',
+    side: 'right',
+    x: 2695,
+    y: 306,
+    pill: BREAKPOINT,
+  },
   { text: 'split\nreads', side: 'right', x: 2600, y: 845 },
 ]
 
