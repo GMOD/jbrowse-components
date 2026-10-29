@@ -220,12 +220,33 @@ function sickle(view: ViewJson, id: string, displayName: string) {
   }
 }
 
-// rs334's GWAS Catalog records, magenta as part of the plug's chain. The
-// structures' row keeps its height; the genome view's panel takes the track.
-const GWAS_HEIGHT = 170
+// The tutorial's rs334 records, narrowed to the two the figure tells: the
+// disease, and malaria, which one copy protects against. The PheCode suffix
+// would run the anemia label across the seam. Magenta, as part of the plug's
+// chain.
+const PHECODE_282 = ' (PheCode 282)'
+const GWAS_TRACK = {
+  ...GWAS_SUBSET_TRACK,
+  name: 'GWAS Catalog at rs334',
+  displayDefaults: {
+    filter: [
+      "jexl:feature.name == 'rs334'",
+      `jexl:feature.trait in ['Malaria', 'Hereditary hemolytic anemias${PHECODE_282}']`,
+      "jexl:feature.pValue in ['4E-69', '1E-323']",
+    ],
+    labels: {
+      ...(GWAS_SUBSET_TRACK.displayDefaults as { labels: object }).labels,
+      name: `jexl:replace(feature.trait, '${PHECODE_282}', '')`,
+    },
+  },
+}
+const GWAS_HEIGHT = 90
+
+// The structures' row keeps its height and the genome view's panel takes the
+// track, whose header adds 40px over its height.
 const APP_BAR_PX = 50
 const STRUCTURES_PX = 554
-const VIEWPORT_HEIGHT = 1282 + GWAS_HEIGHT
+const VIEWPORT_HEIGHT = 1282 + GWAS_HEIGHT + 40
 
 const OVERVIEW_ID = 'protein-HBB-2hbs-overview'
 const CLOSE_UP_ID = 'protein-HBB-2hbs'
@@ -275,7 +296,7 @@ function pocketSession() {
     ...(session.sessionTracks ?? []).filter(
       t => (t as { trackId: string }).trackId === 'hbb-mane',
     ),
-    GWAS_SUBSET_TRACK,
+    GWAS_TRACK,
   ]
   session.highlights = HIGHLIGHTS
   const panel = (id: string, size: number, viewIds: string[]) => ({
