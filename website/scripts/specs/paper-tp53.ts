@@ -31,5 +31,6 @@ export const paperTp53Specs: ScreenshotSpec[] = [
     readyTimeout: 240000,
     viewportWidth: 1100,
     viewportHeight: 880,
+    hideSelectors: ['[data-testid="floating-legend"]'],
   },
 ]
