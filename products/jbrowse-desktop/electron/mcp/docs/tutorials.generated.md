@@ -563,6 +563,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_cactus/
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus_pav_IAI39.bw
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus_pav_NCTC86.bw
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus_pav_Sakai.bw
+- https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus_reads.bam
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_depth.bw
 
 ## Pangenome (cattle)
