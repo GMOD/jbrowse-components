@@ -668,6 +668,57 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
   // The depth lane is the carriage lane's control. Needs the fixture's plugin
   // bundle at 0093d998d280 or later, or `sampleCount` is absent and the lane
   // draws one color.
+  // pangenome_prepare_graph's haplotypes-per-segment fence, verbatim but for
+  // the hosted pggb index, so the figure draws the ramp the page configures.
+  {
+    mode: 'url',
+    name: 'pangenome/prepare_graph_haplotypes_per_segment',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'graph_haplotypes_per_segment',
+          name: 'graph: haplotypes per segment',
+          assemblyNames: ['K12'],
+          adapter: {
+            type: 'RgfaTabixAdapter',
+            uri: 'https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb',
+          },
+          displayDefaults: {
+            encoding: {
+              color: {
+                field: 'sampleCount',
+                scale: {
+                  type: 'linear',
+                  domainMin: 1,
+                  range: ['#e31a1c', '#bdbdbd'],
+                },
+                legend: { title: 'Haplotypes' },
+              },
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:1,296,000-1,304,000',
+          tracks: [
+            {
+              trackId: 'graph_haplotypes_per_segment',
+              type: 'LinearBasicDisplay',
+              height: 150,
+            },
+          ],
+        },
+      ],
+    }),
+    readyTimeout: 120000,
+    viewportWidth: 1000,
+    viewportHeight: 330,
+    tooltip: 'hide',
+  },
   {
     mode: 'url',
     name: 'pangenome/pggb_carriage_lane',

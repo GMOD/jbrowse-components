@@ -342,6 +342,8 @@ The `encoding.color` block is a color scale that maps the `sampleCount` field
 linearly from `scale.domainMin` onto the two colors of `scale.range`. The count
 is per haplotype (`HG002.1`), so a diploid sample's two copies count separately.
 
+<Figure caption="The haplotypes-per-segment track over the pggb E. coli graph near insH21, red for a segment on one strain and grey for a segment on all five." src="/img/pangenome/prepare_graph_haplotypes_per_segment.png" />
+
 ## Indexing haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
 
 A **walk** is one haplotype's route through the graph. `gfa-to-tabix --walks`
