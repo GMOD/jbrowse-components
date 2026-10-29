@@ -39,10 +39,8 @@ const partLabel = (part: number, text: string): Annotation => ({
   },
 })
 
-// A figure as a grant part: the row's letter replaces its own lettered circles.
-// `matchHeight` renders a shorter figure at a higher scale so it stands as tall
-// as its neighbour, rather than leaving white under it.
-function asPart(spec: ScreenshotSpec, name: string, matchHeight?: number) {
+// A figure as a grant part: the row's letter replaces its own lettered circles
+function asPart(spec: ScreenshotSpec, name: string) {
   if (spec.mode !== 'url') {
     throw new Error(`${spec.name} is not a url spec`)
   }
@@ -52,13 +50,43 @@ function asPart(spec: ScreenshotSpec, name: string, matchHeight?: number) {
     ...spec,
     name,
     viewportHeight,
-    ...(matchHeight ? { scale: matchHeight / viewportHeight } : {}),
     hideSelectors: [...(spec.hideSelectors ?? []), ...CHROME],
     annotations: spec.annotations?.filter(a => a.type !== 'circle'),
   } satisfies SessionUrlSpec
 }
 
-const tp53Part = asPart(proteinTp53Y220cSpecs[0]!, 'grant/tp53_y220c')
+// Every callout, pill and legend at one font size
+function withFont(part: SessionUrlSpec, font: number): SessionUrlSpec {
+  return {
+    ...part,
+    annotations: part.annotations?.map(a =>
+      a.type === 'text' || a.type === 'legend'
+        ? {
+            ...a,
+            fontSize: font,
+            ...(a.maxWidth
+              ? {
+                  maxWidth: Math.round(
+                    (a.maxWidth * font) / (a.fontSize ?? 22),
+                  ),
+                }
+              : {}),
+          }
+        : a,
+    ),
+  }
+}
+
+const sickle = asPart(proteinHbbE6vPocketSpecs[0]!, 'grant/hbb_e6v_pocket')
+const tp53 = asPart(proteinTp53Y220cSpecs[0]!, 'grant/tp53_y220c')
+// The sickle figure is the shorter, so it renders at a higher scale to stand
+// as tall as TP53's, and TP53's callouts take the size the sickle's print at
+const sickleScale = tp53.viewportHeight / sickle.viewportHeight
+const sickleFont = sickle.annotations?.find(a => a.type === 'text')?.fontSize
+const proteinParts = [
+  { ...sickle, scale: sickleScale },
+  sickleFont ? withFont(tp53, Math.round(sickleFont * sickleScale)) : tp53,
+]
 
 // The synteny row shares one frame height, so the three draw text at one size.
 // MG1655 is the reference row. One strain per lab lineage (BL21 for B), since
@@ -165,12 +193,7 @@ export const grantSpecs: ScreenshotSpec[] = [
       partLabel(2, 'C) E. coli O-antigen cluster'),
     ],
   },
-  asPart(
-    proteinHbbE6vPocketSpecs[0]!,
-    'grant/hbb_e6v_pocket',
-    tp53Part.viewportHeight,
-  ),
-  tp53Part,
+  ...proteinParts,
   {
     mode: 'compose',
     name: 'grant/protein_row',
