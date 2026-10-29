@@ -143,14 +143,69 @@ const inversion = urlSpec(paperSvReadsSpecs[1]!)
 const stackHeight =
   junction.viewportHeight! + overview.viewportHeight! + STACK_GUTTER_2X / 2
 const inversionScale = stackHeight / inversion.viewportHeight!
-const svFont = Math.round(
-  (inversion.annotations?.find(a => a.type === 'text')?.fontSize ?? 16) *
-    inversionScale,
-)
+const inversionFont =
+  inversion.annotations?.find(a => a.type === 'text')?.fontSize ?? 16
+const svFont = Math.round(inversionFont * inversionScale)
+const anchorOf = (spec: SessionUrlSpec, text: string) => {
+  const anchor = spec.annotations?.find(a => a.text === text)?.anchor
+  if (!anchor) {
+    throw new Error(`${spec.name} has no callout ${text}`)
+  }
+  return anchor
+}
+
+// The band labels move off the reads and coverage they would cover: into the
+// white beside them on a leader, or beside the track's own label
 const svParts: ScreenshotSpec[] = [
-  withFont(junction, svFont, {}),
+  withFont(junction, svFont, {
+    'SV calls': {
+      anchor: { ...anchorOf(junction, 'SV calls'), alignX: 'right', dx: 10 },
+    },
+    'split reads': {
+      anchor: { ...anchorOf(junction, 'split reads'), dx: 195 },
+      leader: true,
+      dx: -20,
+      dy: 205,
+    },
+    'unsplit reads': {
+      anchor: { ...anchorOf(junction, 'unsplit reads'), dx: 465 },
+      leader: true,
+      dx: 100,
+      dy: 0,
+    },
+  }),
   withFont(overview, svFont, {}),
-  { ...inversion, name: 'grant/sv_row_inversion', scale: inversionScale },
+  {
+    ...withFont(inversion, inversionFont, {
+      'PacBio: coverage': {
+        anchor: {
+          text: 'PacBio HiFi: coverage',
+          alignX: 'right',
+          alignY: 'center',
+          dx: 30,
+          dy: 6,
+        },
+      },
+      'PacBio: unsplit reads': 'drop',
+      'Illumina: coverage': {
+        anchor: {
+          text: 'Illumina: coverage and read arcs',
+          alignX: 'right',
+          alignY: 'center',
+          dx: 30,
+          dy: 6,
+        },
+      },
+      'Illumina: read-pair arcs': {
+        anchor: { ...anchorOf(inversion, 'Illumina: read-pair arcs'), dx: 120 },
+        leader: true,
+        dx: 50,
+        dy: 58,
+      },
+    }),
+    name: 'grant/sv_row_inversion',
+    scale: inversionScale,
+  },
   {
     mode: 'compose',
     name: 'grant/sv_row_translocation',
