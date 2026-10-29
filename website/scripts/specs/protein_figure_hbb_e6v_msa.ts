@@ -306,8 +306,12 @@ function hbbMsaSession() {
 
 const PANELS = [
   { id: 'protein-HBB-2hhb', view: 1, pill: 'WILD TYPE' },
-  { id: 'protein-HBB-2hbs-overview', view: 4, pill: 'SICKLE, TWO MOLECULES' },
-  { id: 'protein-HBB-2hbs', view: 2, pill: 'SICKLE CONTACT' },
+  {
+    id: 'protein-HBB-2hbs-overview',
+    view: 4,
+    pill: 'TWO SICKLE HEMOGLOBINS STICK TOGETHER',
+  },
+  { id: 'protein-HBB-2hbs', view: 2, pill: 'WHERE THEY STICK' },
 ] as const
 
 const molstar = (id: string) =>
