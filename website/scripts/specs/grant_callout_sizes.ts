@@ -184,22 +184,31 @@ const svReadsBase = byName(
   paperSvReadsSpecs,
   'paper/sv_read_evidence',
 ) as Annotated & { url: string }
-const TRACK_HEIGHTS: Record<string, number> = {
-  hg008t_benchmark_sv_hosted: 70,
-  hg008t_benchmark_sv_arcs: 60,
-}
 const svReadsFrame = {
   ...svReadsBase,
   name: 'grant/sv_read_frame',
   annotations: [],
   url: editSpecSession(svReadsBase.url, session => {
     const [lgv] = session.views as [ViewJson]
-    const tracks = lgv.tracks as { trackId: string; height: number }[]
+    const tracks = lgv.tracks as {
+      trackId: string
+      facet?: string
+      pileup?: object
+    }[]
+    // one read level; the read arcs alone draw each junction, not sashimi too
     lgv.tracks = tracks
       .filter(t => t.trackId !== 'hg38_ncbiRefSeq_ucsc')
-      .map(t => ({ ...t, height: TRACK_HEIGHTS[t.trackId] ?? t.height }))
+      .map(({ facet, ...t }) => ({
+        ...t,
+        ...(t.trackId.startsWith('hg008_t_')
+          ? { sashimi: { show: false } }
+          : {}),
+        ...(t.trackId === 'hg008_t_hifi_chains'
+          ? { heightMode: 'grow', pileup: { ...t.pileup, mark: { height: 4 } } }
+          : {}),
+      }))
   }),
-  viewportHeight: 1300,
+  viewportHeight: 1472,
 } as Annotated
 
 // The frame is 3000 px wide (1500 CSS px at 2x). Callouts sit in white side
@@ -221,17 +230,23 @@ interface Callout {
 // x, y: where the leader ends, in the frame's own px
 const svReadsCallouts: Callout[] = [
   { text: 'SV\ncalls', side: 'left', x: 885, y: 308 },
-  { text: 'SV call\narcs', side: 'right', x: 2198, y: 622, from: 6 },
-  { text: 'PacBio\ncoverage', side: 'left', x: 780, y: 780, from: 6 },
-  { text: 'PacBio\nsplit arcs', side: 'right', x: 2160, y: 960, from: 6 },
-  { text: 'PacBio\nsplit reads', side: 'left', x: 683, y: 1180 },
-  { text: 'PacBio\nunsplit', side: 'right', x: 2850, y: 1485 },
-  { text: 'Illumina\ncoverage', side: 'right', x: 2850, y: 1740, from: 6 },
-  { text: 'Illumina\npair arcs', side: 'left', x: 893, y: 1890 },
-  { text: 'Illumina\nread cloud', side: 'right', x: 2175, y: 2352 },
+  { text: 'SV call\narcs', side: 'right', x: 2198, y: 652, from: 6 },
+  { text: 'PacBio\ncoverage', side: 'left', x: 780, y: 830, from: 6 },
+  {
+    text: 'PacBio\nsplit read\narcs',
+    side: 'right',
+    x: 2160,
+    y: 1010,
+    from: 6,
+  },
+  { text: 'PacBio\nsplit reads', side: 'left', x: 662, y: 1910 },
+  { text: 'PacBio\nunsplit', side: 'right', x: 2850, y: 1500 },
+  { text: 'Illumina\ncoverage', side: 'right', x: 2850, y: 2160, from: 6 },
+  { text: 'Illumina\npair arcs', side: 'left', x: 893, y: 2310 },
+  { text: 'Illumina\nread cloud', side: 'right', x: 2175, y: 2772 },
 ]
 
-const FRAME_HEIGHT = 2600
+const FRAME_HEIGHT = 2942
 
 // keeps a two-line label inside the frame by moving it off its leader's level
 const clampDy = (y: number, font: number) => {
@@ -254,7 +269,7 @@ function svReadsVariant(pt?: number): ScreenshotSpec {
   const margin = Math.round(LABEL_EM * font)
   const gap = Math.round(font / 4)
   const shown = svReadsCallouts.filter(
-    c => pt === 6 || (c.from === undefined && !(pt >= 11 && c.y === 780)),
+    c => pt === 6 || (c.from === undefined && !(pt >= 11 && c.y === 830)),
   )
   return {
     mode: 'compose',
@@ -282,45 +297,41 @@ const ROW_LABEL_EM = 4.5
 
 // the top panel is the read view alone: the synteny ribbons under it are in the
 // bottom panel
-const readsPart = (suffix: string, font: number | undefined) => {
-  const spec = junctionReads(
+const readsPart = (suffix: string) => {
+  const base = junctionReads(
     `grant/sv_reads_${suffix}`,
     HIDE_APP_BAR,
-  ) as Annotated
-  const css = (font ?? 0) / 2
-  const at = (x: number, y: number) => ({
-    selector: '#root',
-    alignX: 'left' as const,
-    alignY: 'top' as const,
-    dx: x,
-    dy: y,
-  })
-  const label = (
-    text: string,
-    x: number,
-    y: number,
-    dx: number,
-    dy: number,
-  ) => ({
-    type: 'text' as const,
-    text,
-    leader: true,
-    fontSize: css,
-    maxWidth: css * 12,
-    strokeWidth: Math.max(4, Math.round(css / 10)),
-    anchor: at(x, y),
-    dx,
-    dy,
-  })
+  ) as Annotated & { url: string }
   return {
-    ...spec,
-    annotations: font
-      ? [
-          label('chr3', 901, 135, 330, -10),
-          label('chr13', 901, 474, 330, -30),
-          label('split reads', 934, 660, 60, 0),
-        ]
-      : [],
+    ...base,
+    // one view row, chr13 then chr3 as the overview's GRCh38 row runs
+    url: editSpecSession(base.url, session => {
+      const [split] = session.views as [ViewJson]
+      type Panel = { loc: string; assembly: string; tracks: [object, object] }
+      const [chr3, chr13] = split.views as [Panel, Panel]
+      session.views = [
+        {
+          type: 'LinearGenomeView',
+          assembly: chr3.assembly,
+          loc: `${chr13.loc} ${chr3.loc}`,
+          tracks: [
+            chr3.tracks[0],
+            {
+              ...chr3.tracks[1],
+              unit: 'chain',
+              encoding: { color: 'pairOrientation' },
+              readConnections: { show: true, height: 70 },
+              sashimi: { show: false },
+              legend: { show: true },
+              pileup: { mark: { height: 2 } },
+              height: 530,
+            },
+          ],
+        },
+      ]
+    }),
+    viewportHeight: 770,
+    annotations: [],
   } as Annotated
 }
 
@@ -354,6 +365,13 @@ const overviewPart = (suffix: string, font: number | undefined, pt = 0) => {
   } as Annotated
 }
 
+// x, y: where the leader ends, in the read panel's own px
+const READ_CALLOUTS: Callout[] = [
+  { text: 'chr13', side: 'left', x: 907, y: 306 },
+  { text: 'chr3', side: 'right', x: 2695, y: 306 },
+  { text: 'split\nreads', side: 'right', x: 2650, y: 1250 },
+]
+
 const ROWS = [
   { text: 'hap2', y: 270 },
   { text: 'GRCh38', y: 810 },
@@ -369,7 +387,7 @@ function translocationVariant(pt?: number): ScreenshotSpec[] {
       )
     : undefined
   const margin = font ? Math.round(ROW_LABEL_EM * font) : 0
-  const reads = readsPart(suffix, font)
+  const reads = readsPart(suffix)
   const overview = overviewPart(suffix, font, pt)
   return [
     reads,
@@ -381,19 +399,41 @@ function translocationVariant(pt?: number): ScreenshotSpec[] {
       gutter: 40,
       ...(font ? { sideMargin: margin } : {}),
       annotations: font
-        ? ROWS.map(r => ({
-            type: 'text',
-            text: r.text,
-            fontSize: font,
-            textAlign: 'end',
-            anchor: {
-              selector: '[data-part="1"]',
-              alignX: 'left',
-              alignY: 'top',
-              dx: -Math.round(font / 4),
-              dy: r.y - Math.round(font * 0.7),
-            },
-          }))
+        ? [
+            ...READ_CALLOUTS.map(c => ({
+              type: 'text',
+              text: c.text,
+              leader: true,
+              fontSize: font,
+              maxWidth: font * ROW_LABEL_EM,
+              strokeWidth: Math.max(6, Math.round(font / 12)),
+              anchor: {
+                selector: '[data-part="0"]',
+                alignX: 'left',
+                alignY: 'top',
+                dx: c.x,
+                dy: c.y,
+              },
+              dx:
+                c.side === 'left'
+                  ? -(c.x + Math.round(font / 4))
+                  : TRANSLOCATION_WIDTH + Math.round(font / 4) - c.x,
+              dy: 0,
+            })),
+            ...ROWS.map(r => ({
+              type: 'text',
+              text: r.text,
+              fontSize: font,
+              textAlign: 'end',
+              anchor: {
+                selector: '[data-part="1"]',
+                alignX: 'left',
+                alignY: 'top',
+                dx: -Math.round(font / 4),
+                dy: r.y - Math.round(font * 0.7),
+              },
+            })),
+          ]
         : [],
     },
   ]
