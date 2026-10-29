@@ -341,7 +341,9 @@ export const grantSpecs: ScreenshotSpec[] = [
     name: 'grant/sv_row',
     parts: ['grant/sv_row_translocation', 'grant/sv_row_inversion'],
     columns: 2,
-    gutter: 280,
+    gutter: 60,
+    labelMargin: 150,
+    trim: 12,
     annotations: [
       partLabel(0, 'A) Translocation between chr3 and chr13'),
       partLabel(1, 'B) Inversion: read evidence'),
