@@ -222,8 +222,8 @@ function sickle(view: ViewJson, id: string, displayName: string) {
 
 // The tutorial's rs334 records, narrowed to the two the figure tells: the
 // disease, and malaria, which one copy protects against. The PheCode suffix
-// would run the anemia label across the seam. Magenta, as part of the plug's
-// chain.
+// would run the anemia label across the seam, and the malaria paper's author,
+// a consortium, truncates. Magenta, as part of the plug's chain.
 const PHECODE_282 = ' (PheCode 282)'
 const GWAS_TRACK = {
   ...GWAS_SUBSET_TRACK,
@@ -235,12 +235,13 @@ const GWAS_TRACK = {
       "jexl:feature.pValue in ['4E-69', '1E-323']",
     ],
     labels: {
-      ...(GWAS_SUBSET_TRACK.displayDefaults as { labels: object }).labels,
       name: `jexl:replace(feature.trait, '${PHECODE_282}', '')`,
+      description:
+        "jexl:'p=' + feature.pValue + ', ' + substring(feature.pubDate, 0, 4)",
     },
   },
 }
-const GWAS_HEIGHT = 90
+const GWAS_HEIGHT = 80
 
 // The structures' row keeps its height and the genome view's panel takes the
 // track, whose header adds 40px over its height.
