@@ -21,14 +21,14 @@ const partLabel = (part: number, text: string): Annotation => ({
   type: 'text',
   text,
   fontSize: 96,
-  color: '#fff',
-  background: '#fff',
+  color: 'none',
+  background: 'none',
   anchor: {
     selector: `[data-part="${part}"]`,
     alignX: 'left',
     alignY: 'top',
     dx: 0,
-    dy: -14,
+    dy: -8,
   },
 })
 
@@ -128,7 +128,7 @@ export const grantSyntenySpecs: ScreenshotSpec[] = [
       'grant/ecoli_oantigen',
     ],
     columns: 3,
-    gutter: 180,
+    gutter: 240,
     annotations: [partLabel(0, 'A'), partLabel(1, 'B'), partLabel(2, 'C')],
   },
 ]
