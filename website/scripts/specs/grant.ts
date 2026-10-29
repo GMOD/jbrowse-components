@@ -4,10 +4,12 @@ import { displaySettled } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { DEFAULT_VIEWPORT } from '../screenshot-spec-types.ts'
+import { junctionScaffold, scaffoldOverview } from './cgiab-junction.ts'
 import {
   drosophilaBlocksUrl,
   paperDrosophilaSpecs,
 } from './paper-drosophila.ts'
+import { paperSvReadsSpecs } from './paper-sv-reads.ts'
 import { proteinHbbE6vPocketSpecs } from './protein_figure_hbb_e6v_pocket.ts'
 import { proteinTp53Y220cSpecs } from './protein_figure_tp53_y220c.ts'
 
@@ -117,6 +119,44 @@ const proteinParts = [
     'Y220C + REZATAPOPT': { maxWidth: font * 7 },
     'Empty pocket': { dx: -40, maxWidth: font * 4 },
   }),
+]
+
+function urlSpec(spec: ScreenshotSpec) {
+  if (spec.mode !== 'url') {
+    throw new Error(`${spec.name} is not a url spec`)
+  }
+  return spec
+}
+
+// The translocation stacks the junction over the scaffold overview, both at the
+// app's 2x, so the inversion renders at the scale that draws it as tall as the
+// stack, and the translocation's callouts take the size the inversion's print at
+const HIDE_APP_BAR = { hideAppBar: true }
+const STACK_GUTTER_2X = 40
+const junction = urlSpec(
+  junctionScaffold('grant/sv_row_junction', HIDE_APP_BAR),
+)
+const overview = urlSpec(
+  scaffoldOverview('grant/sv_row_overview', HIDE_APP_BAR),
+)
+const inversion = urlSpec(paperSvReadsSpecs[1]!)
+const stackHeight =
+  junction.viewportHeight! + overview.viewportHeight! + STACK_GUTTER_2X / 2
+const inversionScale = stackHeight / inversion.viewportHeight!
+const svFont = Math.round(
+  (inversion.annotations?.find(a => a.type === 'text')?.fontSize ?? 16) *
+    inversionScale,
+)
+const svParts: ScreenshotSpec[] = [
+  withFont(junction, svFont, {}),
+  withFont(overview, svFont, {}),
+  { ...inversion, name: 'grant/sv_row_inversion', scale: inversionScale },
+  {
+    mode: 'compose',
+    name: 'grant/sv_row_translocation',
+    parts: ['grant/sv_row_junction', 'grant/sv_row_overview'],
+    gutter: STACK_GUTTER_2X,
+  },
 ]
 
 // The synteny row shares one frame height, so the three draw text at one size.
@@ -238,6 +278,18 @@ export const grantSpecs: ScreenshotSpec[] = [
     annotations: [
       partLabel(0, 'A) Sickle cell mutation'),
       partLabel(1, 'B) TP53 mutation with drug rescue'),
+    ],
+  },
+  ...svParts,
+  {
+    mode: 'compose',
+    name: 'grant/sv_row',
+    parts: ['grant/sv_row_translocation', 'grant/sv_row_inversion'],
+    columns: 2,
+    gutter: 280,
+    annotations: [
+      partLabel(0, 'A) Translocation between chr3 and chr13'),
+      partLabel(1, 'B) Inversion: read evidence'),
     ],
   },
 ]
