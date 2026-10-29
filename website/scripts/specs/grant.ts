@@ -104,7 +104,18 @@ const sickleFont = Math.round(
 )
 const font = Math.round(sickleFont * sickleScale)
 const proteinParts = [
-  { ...withFont(sickle, sickleFont, {}), scale: sickleScale },
+  {
+    ...withFont(sickle, sickleFont, {
+      // the seam between the two regions only has room for it at its own size
+      'codons 14–79\nnot shown': {
+        fontSize: Math.round(sickleFont / CALLOUT_GROWTH),
+      },
+      'Hemolytic anemias, p = 1E-323\nMalaria, p = 4E-69': {
+        maxWidth: sickleFont * 20,
+      },
+    }),
+    scale: sickleScale,
+  },
   // At this size the legend and the two pills cover the scan's dots, so the
   // pills' colors stand in for the legend and each sits clear of the dots, as
   // grant_callout_sizes.ts has them
