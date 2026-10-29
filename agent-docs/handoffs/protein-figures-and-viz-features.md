@@ -122,6 +122,11 @@ together.
     the seam line running through it as through SNCA's. It hangs left of
     centre to clear Phe85, and has no leader: between the E band and the
     seam a leader gets no shaft past its 32px head.
+  - Under the gene track, the tutorial's `gwasCatalog_sickle_cell_traits`
+    narrowed to two rs334 records, hemolytic anemias and malaria, in magenta
+    inside the E6V band. The labels drop the PheCode and the author, which
+    crossed the seam and truncated. The kidney and HbA1c records cost two
+    more rows and are off the story. The viewport grew; the pills stayed put.
 - **Variant pairs** `protein_figure_brca1_m1775r.ts` and
   `protein_figure_snca_e46k.ts`; the SNCA builder looks down each fibril's rung
   axis and turns the E46K layer to put Lys80 on the wild type's pixel.
