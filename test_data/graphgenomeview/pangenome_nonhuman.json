@@ -67,11 +67,13 @@
       "adapter": {
         "type": "RgfaTabixAdapter",
         "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph",
+        "format": 2,
         "assemblyNameToPanSN": {
           "mm39": "mm39"
         },
         "coarse": {
           "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000",
+          "format": 2,
           "aboveBpPerPx": 1000
         }
       },
@@ -108,6 +110,7 @@
       "adapter": {
         "type": "RgfaTabixAdapter",
         "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000",
+        "format": 2,
         "assemblyNameToPanSN": {
           "mm39": "mm39"
         }
@@ -196,11 +199,13 @@
       "adapter": {
         "type": "RgfaTabixAdapter",
         "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph",
+        "format": 2,
         "assemblyNameToPanSN": {
           "bosTau9": "bosTau9"
         },
         "coarse": {
           "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000",
+          "format": 2,
           "aboveBpPerPx": 1000
         }
       },
@@ -237,6 +242,7 @@
       "adapter": {
         "type": "RgfaTabixAdapter",
         "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000",
+        "format": 2,
         "assemblyNameToPanSN": {
           "bosTau9": "bosTau9"
         }

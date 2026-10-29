@@ -246,7 +246,8 @@
       "assemblyNames": ["K12"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph"
+        "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph",
+        "format": 2
       },
       "displayDefaults": {
         "encoding": {

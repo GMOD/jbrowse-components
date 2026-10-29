@@ -111,6 +111,12 @@ Files
                                                                rGFA itself
                                                  425,796 segments, 604,543 links
 
+  bovine-arsucd12-minigraph.graph.bed.gz          19,779,752   nodes and links
+  bovine-arsucd12-minigraph.fold10000.graph.bed.gz   236,200   in one file,
+                                    (+ .tbi)                   gfa-to-tabix's
+                                                               format 2, read
+                                                               since 2026-10-28
+
   bovine-arsucd12-minigraph.segs.bed.gz            4,069,833   one row per
                                     .tbi           1,233,582   segment: stable
                                                                name, span, id,
@@ -230,7 +236,8 @@ Using them
   https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc/ describes the same
   five tracks on the human graph; the shapes are identical here.
 
-  RgfaTabixAdapter takes the shared prefix (no suffix):
+  RgfaTabixAdapter takes the shared prefix (no suffix), with "format": 2 for
+  the .graph.bed.gz file:
     https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph
   and for the coarse tier:
     https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000

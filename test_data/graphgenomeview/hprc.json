@@ -124,12 +124,14 @@
       "adapter": {
         "type": "RgfaTabixAdapter",
         "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.anchored",
+        "format": 2,
         "assemblyNameToPanSN": {
           "hg38": "GRCh38",
           "hs1": "CHM13"
         },
         "coarse": {
           "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.fold10000",
+          "format": 2,
           "aboveBpPerPx": 1000
         }
       },

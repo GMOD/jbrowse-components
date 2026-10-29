@@ -486,13 +486,12 @@ jb add-track-json pav_track.json --update --out "$APP"
 jb add-track ecoli_cactus_reads.bam --trackId ecoli_cactus_reads \
   --name "KTa004 reads mapped through the graph (vs K12)" -a K12 --load copy --force --out "$APP"
 
-# the graph itself: RgfaTabixAdapter reads the two indexes built above; its `uri`
-# is the shared prefix, and it resolves `.segs.bed.gz`/`.links.bed.gz` and their
-# `.tbi`. The graph's stable names are PanSN and the sample prefix already equals
-# the assembly name, so no assemblyNameToPanSN mapping is needed. Needs the four
-# files beside config.json, since add-track-json copies nothing.
-cp ecoli_cactus.segs.bed.gz ecoli_cactus.segs.bed.gz.tbi \
-   ecoli_cactus.links.bed.gz ecoli_cactus.links.bed.gz.tbi "$APP/"
+# the graph itself: RgfaTabixAdapter reads the index built above; its `uri` is
+# the prefix, and with `format: 2` it resolves `.graph.bed.gz` and its `.tbi`.
+# The graph's stable names are PanSN and the sample prefix already equals the
+# assembly name, so no assemblyNameToPanSN mapping is needed. Needs both files
+# beside config.json, since add-track-json copies nothing.
+cp ecoli_cactus.graph.bed.gz ecoli_cactus.graph.bed.gz.tbi "$APP/"
 cat > segments_track.json <<'JSON'
 {
   "type": "GraphTrack",
@@ -501,7 +500,8 @@ cat > segments_track.json <<'JSON'
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "ecoli_cactus"
+    "uri": "ecoli_cactus",
+    "format": 2
   },
   "displays": [
     {

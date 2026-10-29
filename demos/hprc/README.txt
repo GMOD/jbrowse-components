@@ -41,6 +41,21 @@ Source
 Files
 -----
 
+  hprc-v2.1-mc-grch38.anchored.graph.bed.gz{,.tbi}
+  hprc-v2.1-mc-grch38.fold10000.graph.bed.gz{,.tbi}
+  hprc-v2.1-mc-grch38.graph.bed.gz{,.tbi}
+                                             what the graph tracks read since
+                                             2026-10-28: the three indexes
+                                             below in gfa-to-tabix's format 2,
+                                             nodes and links in one file, built
+                                             with gfa-to-tabix 2.0.0 by the same
+                                             commands. The anchored one files
+                                             the 22,501-node bubble at
+                                             chr1:2.65 Mb on its own
+                                             coordinates (--max-component,
+                                             default 10,000). The format 1
+                                             pairs below stay for sessions
+                                             that name them.
   hprc-v2.1-mc-grch38.anchored.segs.bed.gz{,.tbi}
   hprc-v2.1-mc-grch38.anchored.links.bed.gz{,.tbi}
                                              what the graph track reads: the
@@ -188,7 +203,8 @@ Using them
 
   https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc/
 
-  RgfaTabixAdapter takes the shared prefix (no suffix):
+  RgfaTabixAdapter takes the shared prefix (no suffix), with "format": 2 for
+  the .graph.bed.gz file:
     https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38
   MinigraphBubbleAdapter takes the bubbles file directly:
     https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.bubbles.bed.gz

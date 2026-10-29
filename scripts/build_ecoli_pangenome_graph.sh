@@ -29,7 +29,7 @@
 #
 # Requires: docker, apptainer or singularity (the pggb image, which also carries odgi for
 #           the depth projection, and the cactus image for minigraph/gfatools),
-#           gfa-to-tabix 0.12.0 or later, the NCBI `datasets` CLI, samtools,
+#           gfa-to-tabix 2.0.0 or later, the NCBI `datasets` CLI, samtools,
 #           bedGraphToBigWig (UCSC kentUtils), python3, bgzip/tabix (htslib), unzip, and node (JBrowse CLI, via npx
 #           unless `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_graph.sh [outdir]
@@ -51,8 +51,8 @@ if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { 
 
 # Checked up front, since the graph track is built after pggb has run.
 G2T_VERSION=$(gfa-to-tabix --version 2>/dev/null | awk '{print $2}')
-if [ "$(printf '0.12.0\n%s\n' "$G2T_VERSION" | sort -V | head -1)" != 0.12.0 ]; then
-  echo "need gfa-to-tabix 0.12.0 or later, found '${G2T_VERSION:-none}' on PATH: cargo install gfa-to-tabix," >&2
+if [ "$(printf '2.0.0\n%s\n' "$G2T_VERSION" | sort -V | head -1)" != 2.0.0 ]; then
+  echo "need gfa-to-tabix 2.0.0 or later, found '${G2T_VERSION:-none}' on PATH: cargo install gfa-to-tabix," >&2
   echo "or a binary from https://github.com/GMOD/gfa-to-tabix/releases" >&2
   exit 1
 fi
@@ -416,8 +416,8 @@ python3 "$SCRIPT_DIR/gfa_nodes_to_bed.py" ecoli_pggb_subgraph.gfa "${REF}#1#chr"
 tabix -f -p bed ecoli_pggb_subgraph_nodes.bed.gz
 
 # The same walk over the WHOLE pggb graph, so it is browsable by locus: the
-# segment and link indexes RgfaTabixAdapter reads, with each segment's haplotypes
-# as an SM:Z: tag, and the coarse tier with variants under 50 bp folded into the
+# node and link index RgfaTabixAdapter reads, with each segment's haplotypes
+# as SB:H: bits, and the coarse tier with variants under 50 bp folded into the
 # reference (ecoli_pggb.fold50). Runs on the host, no docker.
 gfa-to-tabix build "$GFA" -o ecoli_pggb --reference "$REF" \
   --snarls ecoli_pggb_snarls.vcf.gz
@@ -620,14 +620,13 @@ JSON
 jb add-track-json pav_track.json --update --out "$APP"
 
 # ── The graph itself, browsable by locus (rGFA segments as a feature track) ────
-# RgfaTabixAdapter reads the two indexes built above; its `uri` is the shared
-# prefix, and it resolves `.segs.bed.gz`/`.links.bed.gz` and their `.tbi`. The
-# graph's stable names are PanSN (`K12#1#chr`), and the sample prefix already
-# equals the assembly name, so no assemblyNameToPanSN mapping is needed. The
-# track opens as the graph and its segments lane is the second display. Needs
-# the four files beside config.json, since add-track-json copies nothing.
-cp ecoli_minigraph.segs.bed.gz ecoli_minigraph.segs.bed.gz.tbi \
-   ecoli_minigraph.links.bed.gz ecoli_minigraph.links.bed.gz.tbi "$APP/"
+# RgfaTabixAdapter reads the index built above; its `uri` is the prefix, and
+# with `format: 2` it resolves `.graph.bed.gz` and its `.tbi`. The graph's
+# stable names are PanSN (`K12#1#chr`), and the sample prefix already equals
+# the assembly name, so no assemblyNameToPanSN mapping is needed. The track
+# opens as the graph and its segments lane is the second display. Needs both
+# files beside config.json, since add-track-json copies nothing.
+cp ecoli_minigraph.graph.bed.gz ecoli_minigraph.graph.bed.gz.tbi "$APP/"
 cat > rgfa_track.json <<'JSON'
 {
   "type": "GraphTrack",
@@ -636,7 +635,8 @@ cat > rgfa_track.json <<'JSON'
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "ecoli_minigraph"
+    "uri": "ecoli_minigraph",
+    "format": 2
   },
   "displays": [
     {
@@ -697,14 +697,14 @@ jb add-track-json subgraph_nodes_track.json --update --out "$APP"
 # The whole pggb graph as a track, drawing from the coarse tier past five bp per
 # pixel; the tier as a separate track; and the segments colored by how many
 # strains walk each one.
-# The fine pair is the contig layout, with rows on each strain's own contig.
-# The anchored pair files a segment under every K12 position its branch spans,
-# so on this graph it draws multi-megabase rows across every window.
-for k in segs links; do
-  cp ecoli_pggb.contig.$k.bed.gz "$APP/ecoli_pggb.$k.bed.gz"
-  cp ecoli_pggb.contig.$k.bed.gz.tbi "$APP/ecoli_pggb.$k.bed.gz.tbi"
-  cp ecoli_pggb.fold50.$k.bed.gz ecoli_pggb.fold50.$k.bed.gz.tbi "$APP/"
-done
+# The fine index is the contig layout, with rows on each strain's own contig.
+# The anchored layout `build` writes files a segment under every K12 position
+# its branch spans, so on this graph it draws multi-megabase rows across every
+# window.
+gfa-to-tabix "$GFA" --layout contig --reference "$REF" -o ecoli_pggb.fine
+cp ecoli_pggb.fine.graph.bed.gz "$APP/ecoli_pggb.graph.bed.gz"
+cp ecoli_pggb.fine.graph.bed.gz.tbi "$APP/ecoli_pggb.graph.bed.gz.tbi"
+cp ecoli_pggb.fold50.graph.bed.gz ecoli_pggb.fold50.graph.bed.gz.tbi "$APP/"
 cat > pggb_segments_track.json <<'JSON'
 {
   "type": "GraphTrack",
@@ -714,7 +714,8 @@ cat > pggb_segments_track.json <<'JSON'
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "ecoli_pggb",
-    "coarse": { "uri": "ecoli_pggb.fold50", "aboveBpPerPx": 5 }
+    "format": 2,
+    "coarse": { "uri": "ecoli_pggb.fold50", "format": 2, "aboveBpPerPx": 5 }
   },
   "displayDefaults": { "showLabels": "none" },
   "displays": [
@@ -732,7 +733,8 @@ cat > pggb_tier_track.json <<'JSON'
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "ecoli_pggb.fold50"
+    "uri": "ecoli_pggb.fold50",
+    "format": 2
   },
   "displays": [
     { "type": "LinearGraphDisplay" },
@@ -749,7 +751,8 @@ cat > pggb_carriage_track.json <<'JSON'
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "ecoli_pggb"
+    "uri": "ecoli_pggb",
+    "format": 2
   },
   "displayDefaults": {
     "displayMode": "collapsed",

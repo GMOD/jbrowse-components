@@ -632,11 +632,13 @@
       "adapter": {
         "type": "RgfaTabixAdapter",
         "uri": "arabidopsis-tair10-minigraph",
+        "format": 2,
         "assemblyNameToPanSN": {
           "TAIR10": "TAIR10"
         },
         "coarse": {
           "uri": "arabidopsis-tair10-minigraph.fold10000",
+          "format": 2,
           "aboveBpPerPx": 1000
         }
       },
@@ -673,6 +675,7 @@
       "adapter": {
         "type": "RgfaTabixAdapter",
         "uri": "arabidopsis-tair10-minigraph.fold10000",
+        "format": 2,
         "assemblyNameToPanSN": {
           "TAIR10": "TAIR10"
         }

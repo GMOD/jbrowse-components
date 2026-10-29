@@ -279,7 +279,7 @@ dups=$(awk '$1=="S"{print $2}' "$PREFIX.rgfa" | sort | uniq -d | awk 'NR<=5')
 echo "  no duplicate segment ids"
 
 echo "=== segments + links ==="
-[ -s "$PREFIX.segs.bed.gz" ] ||
+[ -s "$PREFIX.graph.bed.gz" ] ||
   gfa-to-tabix "$PREFIX.rgfa.gz" --layout contig -o "$PREFIX"
 
 echo "=== allele inventory ==="
@@ -295,7 +295,7 @@ if [ ! -s "$PREFIX.bubbles.bed.gz" ]; then
 fi
 
 echo "=== coarse tier: variants under 10 kb folded into the reference ==="
-[ -s "$PREFIX.fold10000.segs.bed.gz" ] ||
+[ -s "$PREFIX.fold10000.graph.bed.gz" ] ||
   gfa-to-tabix fold "$PREFIX.rgfa.gz" --below 10000 --layout contig -o "$PREFIX.fold10000"
 
 echo

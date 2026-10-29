@@ -11,7 +11,7 @@
 # Requires: curl, unzip, awk (gawk), python3, samtools, minimap2, minigraph,
 #           gfatools, bgzip and tabix, bedGraphToBigWig, the NCBI `datasets`
 #           CLI, and SyRI (`syri` on the PATH, or Docker, which runs the
-#           biocontainers image), node (npx) and gfa-to-tabix 0.12.0
+#           biocontainers image), node (npx) and gfa-to-tabix 2.0.0
 #           or later
 # Usage:    bash build_arabidopsis_pangenome.sh [outdir]
 #
@@ -175,13 +175,13 @@ cd graph
 gfatools stat "$GRAPH.rgfa" | tee "$GRAPH.stat.txt"
 bad=$(awk '$1=="S"' "$GRAPH.rgfa" | grep -oP 'SN:Z:\K\S+' | sort -u | grep -vcE '^[A-Za-z0-9_.-]+#1#Chr[1-5]$' || true)
 [ "$bad" -eq 0 ] || { echo "refusing: $bad SN tags do not match <genome>#1#Chr[1-5]" >&2; exit 1; }
-[ -s "$GRAPH.segs.bed.gz" ] || gfa-to-tabix "$GRAPH.rgfa.gz" --layout contig -o "$GRAPH"
+[ -s "$GRAPH.graph.bed.gz" ] || gfa-to-tabix "$GRAPH.rgfa.gz" --layout contig -o "$GRAPH"
 [ -s "$GRAPH.alleles.bed.gz" ] || gfa-to-tabix alleles "$GRAPH"
 if [ ! -s "$GRAPH.bubbles.bed.gz" ]; then
   gzip -dc "$GRAPH.rgfa.gz" | gfatools bubble - | sort -k1,1 -k2,2n | bgzip >"$GRAPH.bubbles.bed.gz"
   tabix -f -p bed "$GRAPH.bubbles.bed.gz"
 fi
-[ -s "$GRAPH.fold10000.segs.bed.gz" ] ||
+[ -s "$GRAPH.fold10000.graph.bed.gz" ] ||
   gfa-to-tabix fold "$GRAPH.rgfa.gz" --below 10000 --layout contig -o "$GRAPH.fold10000"
 PANSN_FASTAS=()
 for fa in "${FASTAS[@]}"; do PANSN_FASTAS+=("$(basename "$fa")"); done

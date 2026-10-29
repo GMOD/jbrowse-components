@@ -148,11 +148,13 @@ How the graph was built
 
   Projections, each tabix-indexed:
 
-    gfa-to-tabix --layout contig        .segs.bed.gz, .links.bed.gz
+    gfa-to-tabix --layout contig        .graph.bed.gz (format 2, since
+                                        2026-10-28), and the format 1
+                                        .segs.bed.gz, .links.bed.gz before it
     gfa-to-tabix alleles                .alleles.bed.gz, one row per allele the
                                         graph holds, with a CIGAR for its size
     gfatools bubble                     .bubbles.bed.gz
-    gfa-to-tabix fold                   .fold10000.segs.bed.gz, the graph with
+    gfa-to-tabix fold                   .fold10000.graph.bed.gz, the graph with
                                         variants under 10 kb folded into the
                                         reference
     gfa-to-tabix paths                  .paths.bed.gz, each accession's path

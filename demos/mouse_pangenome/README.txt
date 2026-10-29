@@ -91,6 +91,12 @@ Files
 
   mouse-mm39-minigraph.rgfa.gz              the graph itself (bgzipped rGFA)
 
+  mouse-mm39-minigraph.graph.bed.gz         nodes and links in one file,
+  mouse-mm39-minigraph.fold10000.graph.bed.gz  gfa-to-tabix's format 2, which
+    (+ .tbi)                                the configs read since 2026-10-28;
+                                            built with gfa-to-tabix 2.0.0 by
+                                            the same commands as the pairs below
+
   mouse-mm39-minigraph.segs.bed.gz          rGFA segments, one row per node
   mouse-mm39-minigraph.links.bed.gz         rGFA links, one row per edge
     (+ .tbi; these two are one track -- JBrowse's RgfaTabixAdapter is given the

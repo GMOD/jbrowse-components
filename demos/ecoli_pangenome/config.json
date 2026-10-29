@@ -445,7 +445,8 @@
       "assemblyNames": ["K12"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "uri": "ecoli_minigraph"
+        "uri": "ecoli_minigraph",
+        "format": 2
       },
       "displays": [
         {
@@ -503,8 +504,10 @@
       "adapter": {
         "type": "RgfaTabixAdapter",
         "uri": "ecoli_pggb",
+        "format": 2,
         "coarse": {
           "uri": "ecoli_pggb.fold50",
+          "format": 2,
           "aboveBpPerPx": 5
         }
       },
@@ -530,7 +533,8 @@
       "assemblyNames": ["K12"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "uri": "ecoli_pggb.fold50"
+        "uri": "ecoli_pggb.fold50",
+        "format": 2
       },
       "displays": [
         {
@@ -556,8 +560,10 @@
       "adapter": {
         "type": "RgfaTabixAdapter",
         "uri": "ecoli_pggb",
+        "format": 2,
         "coarse": {
           "uri": "ecoli_pggb.fold50",
+          "format": 2,
           "aboveBpPerPx": 5
         }
       },
@@ -709,7 +715,8 @@
       "assemblyNames": ["K12"],
       "adapter": {
         "type": "RgfaTabixAdapter",
-        "uri": "ecoli_cactus"
+        "uri": "ecoli_cactus",
+        "format": 2
       },
       "displays": [
         {

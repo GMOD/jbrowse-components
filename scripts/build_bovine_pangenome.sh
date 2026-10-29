@@ -36,7 +36,7 @@
 # carriage.
 #
 # Requires: curl, tar, md5sum, python3, gfatools, vg, gawk (as `awk`), sort,
-#           bgzip/tabix (htslib), node (npx) and gfa-to-tabix 0.12.0 or later,
+#           bgzip/tabix (htslib), node (npx) and gfa-to-tabix 2.0.0 or later,
 #           for the index and the coarse tier
 # Usage:    bash scripts/build_bovine_pangenome.sh [outdir]
 #
@@ -156,8 +156,8 @@ if [ "$got_rank0" != "$want_rank0" ]; then
 fi
 echo "  rank-0 total $got_rank0 bp == sum of bosTau9 chr1..chr29"
 
-echo "=== segments + links (RgfaTabixAdapter reads this pair by shared prefix) ==="
-[ -s "$PREFIX.segs.bed.gz" ] ||
+echo "=== node and link index (RgfaTabixAdapter reads it by prefix) ==="
+[ -s "$PREFIX.graph.bed.gz" ] ||
   gfa-to-tabix "$PREFIX.rgfa.gz" --layout contig -o "$PREFIX"
 
 echo "=== allele inventory ==="
@@ -180,7 +180,7 @@ echo "=== coarse tier: variants under 10 kb folded into the reference ==="
 # draws the same way, so zooming out onto this tier keeps every loop over 10 kb
 # where the fine cut had it. Contig rows, as gfa-to-tabix --layout contig writes the fine
 # pair, so a tier window returns what a fine one does.
-[ -s "$PREFIX.fold10000.segs.bed.gz" ] ||
+[ -s "$PREFIX.fold10000.graph.bed.gz" ] ||
   gfa-to-tabix fold "$PREFIX.rgfa.gz" --below 10000 --layout contig -o "$PREFIX.fold10000"
 
 echo "=== variant route: vg deconstruct per chromosome ==="
@@ -255,7 +255,7 @@ provenance ships beside the data; see agent-docs/reference/HOSTING.md.
 
 Serving it: website/pangenome-config/bovine-arsucd12.json in GMOD/jb2hubs is the
 config that names these files. RgfaTabixAdapter takes the shared PREFIX with no
-suffix and appends .segs/.links itself; MinigraphBubbleAdapter takes the bubbles
+suffix and "format": 2, and appends .graph.bed.gz itself; MinigraphBubbleAdapter takes the bubbles
 file directly; the alleles file is a plain BedTabixAdapter uri on an
 AlignmentsTrack. Stable names are PanSN with bosTau9 as the reference's
 sample, the assembly's own name, so no track needs an assemblyNameToPanSN map;

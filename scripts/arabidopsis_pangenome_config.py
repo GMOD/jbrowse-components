@@ -144,7 +144,7 @@ def graph_tracks(names):
             'trackId': 'arabidopsis_minigraph_segments',
             'name': '1001G+ minigraph pangenome (rGFA segments)',
             'assemblyNames': ['TAIR10'],
-            'adapter': {'type': 'RgfaTabixAdapter', 'uri': GRAPH, **PANSN},
+            'adapter': {'type': 'RgfaTabixAdapter', 'uri': GRAPH, 'format': 2, **PANSN},
             'displayDefaults': {
                 'encoding': {
                     'color': {
@@ -166,7 +166,7 @@ def graph_tracks(names):
             'trackId': 'arabidopsis_minigraph_tier',
             'name': '1001G+ minigraph pangenome: variants under 10 kb folded (coarse tier)',
             'assemblyNames': ['TAIR10'],
-            'adapter': {'type': 'RgfaTabixAdapter', 'uri': f'{GRAPH}.fold10000', **PANSN},
+            'adapter': {'type': 'RgfaTabixAdapter', 'uri': f'{GRAPH}.fold10000', 'format': 2, **PANSN},
             'displays': graph_displays('arabidopsis_minigraph_tier'),
         },
         {
