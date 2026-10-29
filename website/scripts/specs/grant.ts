@@ -1,18 +1,20 @@
-// The grant's synteny figure: Drosophila blocks, TP53 across T2T apes and the
-// E. coli O-antigen cluster, one frame height so the three sit in one row at one
-// text size.
+// The grant's figures, each a row of JBrowse frames lettered in the margin
+// above them. No frame shows the app bar, which repeated reads as several apps.
 import { displaySettled } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
+import { DEFAULT_VIEWPORT } from '../screenshot-spec-types.ts'
 import {
   drosophilaBlocksUrl,
   paperDrosophilaSpecs,
 } from './paper-drosophila.ts'
+import { proteinHbbE6vSpecs } from './protein_figure_hbb_e6v.ts'
+import { proteinTp53Y220cSpecs } from './protein_figure_tp53_y220c.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// The app bar, three times over, would read as three apps
 const CHROME = ['header.MuiAppBar-root']
+const APP_BAR_HEIGHT = 48
 const SIZE = { viewportWidth: 1100, viewportHeight: 832 }
 const LEGEND = '[data-testid="floating-legend"]'
 
@@ -32,6 +34,22 @@ const partLabel = (part: number, text: string): Annotation => ({
   },
 })
 
+// A figure as a grant part: the row's letter replaces its own lettered circles
+function asPart(spec: ScreenshotSpec, name: string): ScreenshotSpec {
+  if (spec.mode !== 'url') {
+    throw new Error(`${spec.name} is not a url spec`)
+  }
+  return {
+    ...spec,
+    name,
+    viewportHeight:
+      (spec.viewportHeight ?? DEFAULT_VIEWPORT.height) - APP_BAR_HEIGHT,
+    hideSelectors: [...(spec.hideSelectors ?? []), ...CHROME],
+    annotations: spec.annotations?.filter(a => a.type !== 'circle'),
+  }
+}
+
+// The synteny row shares one frame height, so the three draw text at one size.
 // MG1655 is the reference row. One strain per lab lineage (BL21 for B), since
 // the K-12 and B derivatives repeat their parent's cluster.
 const ECOLI_LANES = [
@@ -57,7 +75,7 @@ const ECOLI_LANES = [
   'Ssonnei_53G',
 ]
 
-export const grantSyntenySpecs: ScreenshotSpec[] = [
+export const grantSpecs: ScreenshotSpec[] = [
   {
     ...paperDrosophilaSpecs[0]!,
     name: 'grant/drosophila_blocks',
@@ -131,5 +149,15 @@ export const grantSyntenySpecs: ScreenshotSpec[] = [
     columns: 3,
     gutter: 240,
     annotations: [partLabel(0, 'A'), partLabel(1, 'B'), partLabel(2, 'C')],
+  },
+  asPart(proteinHbbE6vSpecs[0]!, 'grant/hbb_e6v'),
+  asPart(proteinTp53Y220cSpecs[0]!, 'grant/tp53_y220c'),
+  {
+    mode: 'compose',
+    name: 'grant/protein_row',
+    parts: ['grant/hbb_e6v', 'grant/tp53_y220c'],
+    columns: 2,
+    gutter: 240,
+    annotations: [partLabel(0, 'A'), partLabel(1, 'B')],
   },
 ]
