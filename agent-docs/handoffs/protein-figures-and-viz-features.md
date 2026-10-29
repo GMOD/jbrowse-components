@@ -53,19 +53,35 @@ together.
   pair of the same name.
 - **HBB E6V with an MSA**, `protein_figure_hbb_e6v_msa.ts`, published and in no
   doc yet (the PI picks between the two): the same structures under a strip of
-  twelve UniProt beta globins, residues 1-13, each column sized to sit under
+  twelve UniProt beta globins, residues 1-30, each column sized to sit under
   its codon, so the session's E6V highlight runs as one band from the codon
-  through the column. Position 6 is not acidic in every mammal: murine
+  through the column. The genome window is exon 1's 30 whole codons plus 20 bp
+  of UTR, which the tree and names fill; codon 31 crosses the intron, so a
+  wider window breaks the fit. Position 6 is not acidic in every mammal: murine
   rodents, elephants, hyrax and tenrec carry Ala, ground squirrels Gly. The
   Mouse row says so; no reviewed mammalian beta globin carries Val.
   - Helix A (Thr4-Val18, the PDB HELIX records) is orange in all three views:
     a genome track from domains2genome (inputs and command in
     `specs/hbb_helix_a/`), the strip's `features` fill, and the structures'
     `color.values`. The Globin domain it replaced spans the whole chain, so on
-    a structure it would point at nothing.
+    a structure it would point at nothing. The strip fills it a lighter orange
+    (`#ffbe7d`) so the magenta E6V band over it stays magenta.
+  - The tree is NCBI Taxonomy's lineages for the twelve taxids, topology only,
+    polytomies kept (Laurasiatheria, Artiodactyla). `treeWidth` is set because
+    the fitted label column ellipsized the names.
+  - No residue row under the codons: the gene track already prints M1..G30 in
+    each codon, directly above the Human row.
+  - No shared E6V pill: none of the three label styles is session-settable
+    beyond the highlight's color. The genome chip is a link icon plus caption,
+    react-msaview's column label is a borderless 11px box ignoring the color,
+    and Protein3d's is a white box stroked in the color. One pill needs a code
+    change in the chip and in react-msaview's `renderHighlights`.
   - Structures run WILD TYPE | SICKLE, TWO MOLECULES | SICKLE CONTACT. 2HBS
     draws EFGH grey and the neighbouring ABCD as light-teal cartoon marks, and
     the pocket spheres are a darker teal, so the color names the molecule.
+    Chain B draws as 146 per-residue cartoon marks so its own helix A shows,
+    in a darker orange (`#a84a00`): in the zoom-out it lies against the Val6
+    chain's helix A, and one orange read as one helix.
   - Each molecule's second beta chain (2HHB D, 2HBS F) leaves `chains` and
     draws as a grey cartoon mark, so the session highlight lands on the marked
     chain only: C and E get their Glu6/Val6 labels and D loses the stray Val6.
