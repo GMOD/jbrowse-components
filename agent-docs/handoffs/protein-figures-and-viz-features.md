@@ -108,6 +108,18 @@ together.
     so the teal highlights skip H's own Phe85/Leu88.
   - The gene track numbers codons counting Met, but at this zoom it prints
     letters alone, so nothing on screen disagrees with the mature labels.
+  - Each codon callout anchors on the whole codon and hangs just beside it.
+    The leader's head stops 14px short of the codon's centre
+    (`LEADER_HEAD_GAP` in `products/jbrowse-capture/src/annotationOverlay.ts`),
+    so the tip lands 6-10px off centre, inside the codon.
+  - Open, the alignment draws no break where the genome view's seam is.
+    react-msaview has no mark for a run of hidden columns, so the fix is a
+    seam drawn by the plugin.
+  - Open, Protein3d's color key prints at about 4 pt and no session setting
+    hides it (`ProteinViewHeader.tsx` draws it whenever the paint has a
+    legend).
+  - Open, the frame never says the view skips codons 14-79. A "not shown"
+    pill like SNCA's does not fit at 11 pt between the E6V and Phe85 pills.
 - **Variant pairs** `protein_figure_brca1_m1775r.ts` and
   `protein_figure_snca_e46k.ts`; the SNCA builder looks down each fibril's rung
   axis and turns the E46K layer to put Lys80 on the wild type's pixel.
@@ -210,9 +222,7 @@ blinded ideator given only a capability sheet, a landscape survey):
   a fainter band so the Y220F dot reads blue, KRAS switch II colored with
   "Pocket closed" in C, the construct mutations in a tutorial footnote,
   SNCA "rod polymorph" and its empty ClinVar row dropped. Still open: KRAS
-  shows what the drug needs, not G12C's own effect (KRAS locked on), and
-  SNCA's codon labels overprint at the two-region boundary until a reshoot
-  (`peptidePositioning.ts` drew each region's edge-touching codon; fixed).
+  shows what the drug needs, not G12C's own effect (KRAS locked on).
   Declined: a wild-type Glu46–Lys80 distance,
   per the trap below.
 - HBB E6V: the gene track names the codon E7 (HGVS counts Met1) where the
