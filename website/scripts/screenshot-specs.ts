@@ -62,6 +62,7 @@ import { paperEcoliSpecs } from './specs/paper-ecoli.ts'
 import { paperHprcWorkspaceSpecs } from './specs/paper-hprc-workspace.ts'
 import { paperSvReadsSpecs } from './specs/paper-sv-reads.ts'
 import { paperSvSpecs } from './specs/paper-sv.ts'
+import { paperTp53Specs } from './specs/paper-tp53.ts'
 import { popgenSpecs } from './specs/popgen.ts'
 import { proteinDomainsSpecs } from './specs/protein_domains.ts'
 import { proteinBrca1M1775rSpecs } from './specs/protein_figure_brca1_m1775r.ts'
@@ -156,6 +157,7 @@ export const specs: ScreenshotSpec[] = [
   ...paperHprcWorkspaceSpecs,
   ...paperCohortSpecs,
   ...paperDrosophilaSpecs,
+  ...paperTp53Specs,
   ...paperSvReadsSpecs,
   ...paperEcoliSpecs,
   ...paperSvSpecs,
