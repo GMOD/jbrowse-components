@@ -1,6 +1,6 @@
-// The grant's synteny row: Drosophila blocks, TP53 across T2T apes and the
-// E. coli O-antigen cluster, each 1100x880 so the three sit side by side at one
-// text size.
+// The grant's synteny figure: Drosophila blocks, TP53 across T2T apes and the
+// E. coli O-antigen cluster, one frame size so the three sit in one row at one
+// text size. No app bar, since three copies of it would read as three apps.
 import { displaySettled } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
@@ -9,9 +9,26 @@ import {
   paperDrosophilaSpecs,
 } from './paper-drosophila.ts'
 
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-const SIZE = { viewportWidth: 1100, viewportHeight: 880 }
+const APP_BAR = 'header.MuiAppBar-root'
+const SIZE = { viewportWidth: 1100, viewportHeight: 832 }
+const LEGEND = '[data-testid="floating-legend"]'
+
+// Over the view title bar's menu icon, the one spot every part has free
+const partLabel = (part: number, text: string): Annotation => ({
+  type: 'text',
+  text,
+  fontSize: 44,
+  color: '#000',
+  anchor: {
+    selector: `[data-part="${part}"]`,
+    alignX: 'left',
+    alignY: 'top',
+    dx: 10,
+    dy: 50,
+  },
+})
 
 // MG1655 is the reference row. One strain per lab lineage (BL21 for B), since
 // the K-12 and B derivatives repeat their parent's cluster.
@@ -44,6 +61,7 @@ export const grantSyntenySpecs: ScreenshotSpec[] = [
     name: 'grant/drosophila_blocks',
     url: drosophilaBlocksUrl(150),
     ...SIZE,
+    hideSelectors: [LEGEND, '[data-testid="lgv-mini-controls"]', APP_BAR],
   },
   {
     mode: 'url',
@@ -68,7 +86,7 @@ export const grantSyntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     ...SIZE,
-    hideSelectors: ['[data-testid="floating-legend"]'],
+    hideSelectors: [LEGEND, APP_BAR],
   },
   {
     mode: 'url',
@@ -93,5 +111,18 @@ export const grantSyntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     ...SIZE,
+    hideSelectors: [APP_BAR],
+  },
+  {
+    mode: 'compose',
+    name: 'grant/synteny_row',
+    parts: [
+      'grant/drosophila_blocks',
+      'grant/tp53_cactus',
+      'grant/ecoli_oantigen',
+    ],
+    columns: 3,
+    gutter: 40,
+    annotations: [partLabel(0, 'A'), partLabel(1, 'B'), partLabel(2, 'C')],
   },
 ]
