@@ -354,7 +354,7 @@ const inversion: SvReads = {
     {
       text: 'PacBio\nsplit read\narcs',
       side: 'left',
-      x: 1232,
+      x: 1244,
       y: 1025,
       maxPt: 6,
     },
