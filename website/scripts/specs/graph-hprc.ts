@@ -430,8 +430,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // No deletion callout: the renderer writes "32.7 kb del" across the arc.
     // Each leader meets its node near a right angle, so none reads as an edge.
     annotations: [
-      // s329762+ is the 6.3 kb reference node beside C4A. The legend floats
-      // over CYP21A2, so the leader drops from the empty top-left instead.
+      // s329762+ is the 6.3 kb reference node beside C4A, clear of the legend
+      // floating over CYP21A2.
       {
         type: 'text',
         text: 'backbone',

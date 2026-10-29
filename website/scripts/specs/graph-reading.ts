@@ -128,7 +128,8 @@ const kiv2WalksSpec: ScreenshotSpec = {
     { type: 'waitForSelector', selector: WALK_READOUT },
   ],
   annotations: [
-    // the readout is the legend's top entry; a tight pad keeps its headings
+    // the readout is the legend's top entry; a tight pad keeps the box off
+    // the legend's headings
     { type: 'box', pad: 2, anchor: { selector: WALK_READOUT } },
     // 165798390 is the loop's far wall, a CHM13 KIV2 copy HG00133 also walks
     {

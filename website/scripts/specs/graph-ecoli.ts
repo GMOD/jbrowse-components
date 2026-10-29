@@ -1126,7 +1126,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         anchor: { graphNode: HOVERED_ALLELE },
         radius: 22,
       },
-      // Left of the loop: the tooltip and legend fill the right side.
+      // The tooltip and legend fill the right side, so the pill sits left of
+      // the loop.
       {
         type: 'text',
         text: 'the ringed node is sequence only CFT073 has',
