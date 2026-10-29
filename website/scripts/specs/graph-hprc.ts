@@ -430,17 +430,16 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // No deletion callout: the renderer writes "32.7 kb del" across the arc.
     // Each leader meets its node near a right angle, so none reads as an edge.
     annotations: [
-      // s329770+ is the 14.3 kb CYP21A2 node. A leader into the ramp-red 52 kb
-      // node read as one arrow; this one drops from above, clear of the CYP21A2
-      // label.
+      // s329762+ is the 6.3 kb reference node beside C4A. The legend floats
+      // over CYP21A2, so the leader drops from the empty top-left instead.
       {
         type: 'text',
         text: 'backbone',
         leader: true,
         fontSize: 20,
-        anchor: { graphNode: 's329770+' },
-        dx: -10,
-        dy: -80,
+        anchor: { graphNode: 's329762+' },
+        dx: 10,
+        dy: -90,
       },
       // s352179+ is NA18948's 21 kb allele, the cut's largest off-reference
       // node.

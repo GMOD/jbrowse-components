@@ -1126,13 +1126,12 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         anchor: { graphNode: HOVERED_ALLELE },
         radius: 22,
       },
-      // Right of the loop: an annotation painted past the viewport edge raises
-      // no error, and this one once sat below the frame.
+      // Left of the loop: the tooltip and legend fill the right side.
       {
         type: 'text',
         text: 'the ringed node is sequence only CFT073 has',
         anchor: { graphNode: HOVERED_ALLELE },
-        dx: 300,
+        dx: -380,
         dy: -60,
         maxWidth: 230,
         fontSize: 16,

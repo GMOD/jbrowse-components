@@ -128,16 +128,17 @@ const kiv2WalksSpec: ScreenshotSpec = {
     { type: 'waitForSelector', selector: WALK_READOUT },
   ],
   annotations: [
-    { type: 'box', anchor: { selector: WALK_READOUT } },
+    // the readout is the legend's top entry; a tight pad keeps its headings
+    { type: 'box', pad: 2, anchor: { selector: WALK_READOUT } },
+    // 165798390 is the loop's far wall, a CHM13 KIV2 copy HG00133 also walks
     {
       type: 'text',
       text: 'HG00133 walks this loop',
       fontSize: 18,
       leader: true,
-      anchor: { graphNode: '165812967' },
-      dx: 120,
-      // under the legend stack, whose strip rows push the readout down
-      dy: 80,
+      anchor: { graphNode: '165798390' },
+      dx: 130,
+      dy: 60,
     },
   ],
 }
