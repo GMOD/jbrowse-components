@@ -336,8 +336,34 @@ const deldup: SvReads = {
 const inversion: SvReads = {
   base: 'paper/sv_read_evidence_inversion',
   key: 'sv_inv',
-  viewportHeight: 1206,
-  callouts: [],
+  viewportHeight: 1348,
+  callouts: [
+    { text: 'SV\ncalls', side: 'left', x: 1202, y: 307 },
+    {
+      text: 'SV call\narcs',
+      side: 'right',
+      x: 1816,
+      y: 673,
+      maxPt: 6,
+      // clears the split read arcs' pill below
+      dy: -140,
+    },
+    { text: 'PacBio\ncoverage', side: 'left', x: 700, y: 830, maxPt: 6 },
+    {
+      text: 'PacBio\nsplit read\narcs',
+      side: 'right',
+      x: 1779,
+      y: 968,
+      maxPt: 6,
+      // the arc's top, so the leader runs over the reads' legend
+      dy: -78,
+    },
+    // a read's tip, the leader along the white of its row
+    { text: 'PacBio\nsplit reads', side: 'left', x: 965, y: 1189 },
+    { text: 'Illumina\ncoverage', side: 'right', x: 2850, y: 1882, maxPt: 6 },
+    { text: 'Illumina\npair arcs', side: 'left', x: 1135, y: 2030 },
+    { text: 'Illumina\nread cloud', side: 'right', x: 1790, y: 2580 },
+  ],
 }
 
 const HIDE_APP_BAR = { hideAppBar: true }
