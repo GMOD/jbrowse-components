@@ -37,8 +37,11 @@ if [ ! -f tair10.fa ]; then
 fi
 
 # ── Reads, trim, bisulfite-align (bwameth keeps original seqs, C->T preserved) ─
-[ -f DRR029742_1.fastq.gz ] || wget -q "${FQ}_1.fastq.gz"
-[ -f DRR029742_2.fastq.gz ] || wget -q "${FQ}_2.fastq.gz"
+# a .part name keeps an interrupted download from passing for a finished one
+for r in 1 2; do
+  f=DRR029742_$r.fastq.gz
+  [ -f "$f" ] || { wget -q --continue -O "$f.part" "${FQ}_$r.fastq.gz" && mv "$f.part" "$f"; }
+done
 [ -f DRR029742_1_val_1.fq.gz ] || trim_galore --paired DRR029742_1.fastq.gz DRR029742_2.fastq.gz
 if [ ! -f arabidopsis_wgbs.bam ]; then
   bwameth.py index tair10.fa

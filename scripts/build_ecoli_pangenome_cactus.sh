@@ -343,15 +343,20 @@ for r in 1 2; do
   [ -f "reads/sub_$r.fastq.gz" ] && continue
   # -nv not -q, and retries: these are ~90 MB each off a public FTP mirror, and a
   # silent `wget -q` failure here aborts the whole run under `set -e` with no
-  # message at all, after the graph has already been built.
-  [ -f "reads/${READS_ACC}_$r.fastq.gz" ] || wget -nv --tries=5 --continue \
-    -O "reads/${READS_ACC}_$r.fastq.gz" \
-    "https://ftp.sra.ebi.ac.uk/vol1/fastq/${READS_ACC:0:6}/${READS_ACC}/${READS_ACC}_$r.fastq.gz"
+  # message at all, after the graph has already been built. The .part name keeps
+  # a download the mirror dropped from passing for a finished one on a re-run.
+  if [ ! -f "reads/${READS_ACC}_$r.fastq.gz" ]; then
+    wget -nv --tries=20 --continue -O "reads/${READS_ACC}_$r.fastq.gz.part" \
+      "https://ftp.sra.ebi.ac.uk/vol1/fastq/${READS_ACC:0:6}/${READS_ACC}/${READS_ACC}_$r.fastq.gz"
+    gzip -t "reads/${READS_ACC}_$r.fastq.gz.part"
+    mv "reads/${READS_ACC}_$r.fastq.gz.part" "reads/${READS_ACC}_$r.fastq.gz"
+  fi
   # awk does the head: `| head -600000` closes the pipe on gzip, which dies of
   # SIGPIPE, and under `set -o pipefail` that aborts the run after the reads
   # are already downloaded.
   gzip -dc "reads/${READS_ACC}_$r.fastq.gz" |
-    awk 'NR<=600000' | gzip > "reads/sub_$r.fastq.gz"
+    awk 'NR<=600000' | gzip > "reads/sub_$r.fastq.gz.part"
+  mv "reads/sub_$r.fastq.gz.part" "reads/sub_$r.fastq.gz"
 done
 
 # vg refuses to map when an index is older than something it depends on, and

@@ -48,7 +48,7 @@ bed_file() { echo "wgEncodeBroadHmm${1%%:*}HMM.bed.gz"; }
 
 for entry in "${CELL_TYPES[@]}"; do
   f=$(bed_file "$entry")
-  [ -f "$f" ] || wget -q -O "$f" "$UCSC/$f"
+  [ -f "$f" ] || { wget -q -O "$f.part" "$UCSC/$f" && mv "$f.part" "$f"; }
 done
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ───────
