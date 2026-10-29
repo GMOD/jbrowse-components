@@ -661,6 +661,7 @@ One command turns your pangenome graph into the indexed files JBrowse browses by
 
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_prepare_graph/
 
+- https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/config.json
 - https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/hprc.json
 - https://jbrowse.org/demos/arabidopsis_pangenome/config.json
 - https://jbrowse.org/demos/hprc/config.json
