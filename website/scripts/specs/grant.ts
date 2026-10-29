@@ -31,7 +31,7 @@ const partLabel = (part: number, text: string): Annotation => ({
     alignX: 'left',
     alignY: 'top',
     dx: 0,
-    dy: -8,
+    dy: -26,
   },
 })
 
@@ -148,7 +148,7 @@ export const grantSpecs: ScreenshotSpec[] = [
       'grant/ecoli_oantigen',
     ],
     columns: 3,
-    gutter: 240,
+    gutter: 280,
     annotations: [
       partLabel(0, 'A) Five Drosophila species'),
       partLabel(1, 'B) TP53 region across seven apes'),
@@ -162,7 +162,7 @@ export const grantSpecs: ScreenshotSpec[] = [
     name: 'grant/protein_row',
     parts: ['grant/hbb_e6v', 'grant/tp53_y220c'],
     columns: 2,
-    gutter: 240,
+    gutter: 280,
     annotations: [
       partLabel(0, 'A) Sickle cell mutation'),
       partLabel(1, 'B) TP53 mutation with drug rescue'),
