@@ -895,6 +895,32 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // the lane grown to its rows held 404; the fixed 110 px lane takes 50 more
     viewportHeight: 454,
   },
+  // gfa-to-tabix paths over FLC: one lane per accession, each block its
+  // allele at a bubble, colored by class from the file's itemRgb.
+  {
+    mode: 'url',
+    name: 'pangenome/prepare_graph_paths',
+    url: sessionSpec(
+      'https://jbrowse.org/demos/arabidopsis_pangenome/config.json',
+      {
+        views: [
+          {
+            type: 'LinearGenomeView',
+            assembly: 'TAIR10',
+            loc: 'Chr5:3,170,000-3,186,000',
+            tracks: [
+              { trackId: 'TAIR10_genes', height: 70 },
+              { trackId: 'arabidopsis_minigraph_paths', height: 560 },
+            ],
+          },
+        ],
+      },
+    ),
+    readyText: 'Tnz-1',
+    readySelector: displayPainted('mark-display'),
+    readyTimeout: 120000,
+    viewportHeight: 830,
+  },
   {
     mode: 'url',
     name: 'pangenome/hprc_amylase_walk_rows',

@@ -268,6 +268,32 @@ bubble per sample, drawn as one row per haplotype:
 gfa-to-tabix paths -o graph.paths ref.call.bed sample.call.bed
 ```
 
+The file loads as a feature track with one row per haplotype, partitioned on
+`strain`. Its `itemRgb` colors each block by class, so the track needs no color
+config:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "graph_paths",
+  "name": "graph: each haplotype's allele at every bubble",
+  "assemblyNames": ["TAIR10"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "graph.paths.bed.gz",
+    "disableGeneHeuristic": true
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "rows": { "field": "strain" }
+    }
+  ]
+}
+```
+
+<Figure caption="The 1001 Genomes+ minigraph graph's paths file over FLC on TAIR10: one row per accession, each block its allele at a bubble." src="/img/pangenome/prepare_graph_paths.png" />
+
 With a **plain GFA**, the command records the haplotypes whose paths visit each
 segment as an `SM:Z:` tag while it reads the paths. The track below is written
 for a build like the
@@ -311,6 +337,8 @@ indexed against K12.
 The `encoding.color` block is a color scale that maps the `sampleCount` field
 linearly from `scale.domainMin` onto the two colors of `scale.range`. The count
 is per haplotype (`HG002.1`), so a diploid sample's two copies count separately.
+
+<Figure caption="The pggb E. coli graph's segments over the IS5 element, colored by sampleCount with one color per count, under the depth curve. Red marks a segment K12 alone has." src="/img/pangenome/pggb_carriage_lane.png" />
 
 ## Indexing haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
 
