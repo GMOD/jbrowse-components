@@ -78,14 +78,14 @@ export const paperDrosophilaSpecs: ScreenshotSpec[] = [
           mark: { interpolate: 'bump' },
           offscreen: { show: false },
           render: { antialias: false },
-          levelHeights: ROWS.slice(1).map(() => 100),
+          levelHeights: ROWS.slice(1).map(() => 150),
         },
       ],
     }),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 240000,
-    viewportWidth: 1900,
-    viewportHeight: 680,
+    viewportWidth: 1100,
+    viewportHeight: 880,
     // No session setting closes the legend or a row's zoom controls. Hidden
     // rather than clicked closed, since a click focuses the view and restyles
     // its header.
