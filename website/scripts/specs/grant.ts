@@ -8,7 +8,7 @@ import {
   drosophilaBlocksUrl,
   paperDrosophilaSpecs,
 } from './paper-drosophila.ts'
-import { proteinHbbE6vSpecs } from './protein_figure_hbb_e6v.ts'
+import { proteinHbbE6vPocketSpecs } from './protein_figure_hbb_e6v_pocket.ts'
 import { proteinTp53Y220cSpecs } from './protein_figure_tp53_y220c.ts'
 
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
@@ -155,12 +155,12 @@ export const grantSpecs: ScreenshotSpec[] = [
       partLabel(2, 'C) E. coli O-antigen cluster'),
     ],
   },
-  asPart(proteinHbbE6vSpecs[0]!, 'grant/hbb_e6v'),
+  asPart(proteinHbbE6vPocketSpecs[0]!, 'grant/hbb_e6v_pocket'),
   asPart(proteinTp53Y220cSpecs[0]!, 'grant/tp53_y220c'),
   {
     mode: 'compose',
     name: 'grant/protein_row',
-    parts: ['grant/hbb_e6v', 'grant/tp53_y220c'],
+    parts: ['grant/hbb_e6v_pocket', 'grant/tp53_y220c'],
     columns: 2,
     gutter: 280,
     annotations: [
