@@ -177,43 +177,9 @@ function editSpecSession(url: string, edit: (session: SessionJson) => void) {
   return `${head}&session=spec-${encodeURIComponent(JSON.stringify(session))}&sessionName=${tail}`
 }
 
-const SV_READS_VIEWPORT_HEIGHT = 1240
-
-const svReadsBase = byName(
-  paperSvReadsSpecs,
-  'paper/sv_read_evidence',
-) as Annotated & { url: string }
-const svReadsFrame = {
-  ...svReadsBase,
-  name: 'grant/sv_read_frame',
-  annotations: [],
-  url: editSpecSession(svReadsBase.url, session => {
-    const [lgv] = session.views as [ViewJson]
-    const tracks = lgv.tracks as { trackId: string; pileup?: object }[]
-    // split reads alone, grouped by split; the read arcs draw each junction, not sashimi too
-    lgv.tracks = tracks
-      .filter(t => t.trackId !== 'hg38_ncbiRefSeq_ucsc')
-      .map(t => ({
-        ...t,
-        ...(t.trackId.startsWith('hg008_t_')
-          ? { sashimi: { show: false } }
-          : {}),
-        ...(t.trackId === 'hg008_t_hifi_chains'
-          ? {
-              facet: { field: 'split', hidden: ['unsplit'] },
-              heightMode: 'grow',
-              pileup: { ...t.pileup, mark: { height: 4 } },
-            }
-          : {}),
-      }))
-  }),
-  viewportHeight: SV_READS_VIEWPORT_HEIGHT,
-} as Annotated
-
 // The frame is 1500 CSS px wide at 2x. Callouts sit in white side margins,
 // centered on a leader to the band they name, so none covers reads.
 const FRAME_WIDTH = 3000
-const FRAME_HEIGHT = 2 * SV_READS_VIEWPORT_HEIGHT
 const SV_READS_PRINT_PT = 271.4
 const LABEL_EM = 6.2
 
@@ -230,24 +196,44 @@ interface Callout {
   pill?: Pick<Annotation, 'color' | 'background'>
 }
 
-const svReadsCallouts: Callout[] = [
-  { text: 'SV\ncalls', side: 'left', x: 887, y: 307 },
-  { text: 'SV call\narcs', side: 'right', x: 2206, y: 674, maxPt: 6 },
-  { text: 'PacBio\ncoverage', side: 'left', x: 775, y: 837, maxPt: 6 },
-  {
-    text: 'PacBio\nsplit read\narcs',
-    side: 'right',
-    x: 1744,
-    y: 1080,
-    maxPt: 6,
-    // the arc's low point, so the leader runs under the reads' legend
-    dy: 60,
-  },
-  { text: 'PacBio\nsplit reads', side: 'left', x: 670, y: 1145 },
-  { text: 'Illumina\ncoverage', side: 'right', x: 2850, y: 1690, maxPt: 6 },
-  { text: 'Illumina\npair arcs', side: 'left', x: 891, y: 1814 },
-  { text: 'Illumina\nread cloud', side: 'right', x: 2186, y: 2299 },
-]
+// A paper read-evidence figure reframed for the renewal: names
+// grant/<key>_frame and grant/<key>_evidence_<pt>pt
+interface SvReads {
+  base: string
+  key: string
+  viewportHeight: number
+  callouts: Callout[]
+}
+
+function svReadsFrame({ base, key, viewportHeight }: SvReads) {
+  const spec = byName(paperSvReadsSpecs, base) as Annotated & { url: string }
+  return {
+    ...spec,
+    name: `grant/${key}_frame`,
+    annotations: [],
+    url: editSpecSession(spec.url, session => {
+      const [lgv] = session.views as [ViewJson]
+      const tracks = lgv.tracks as { trackId: string; pileup?: object }[]
+      // split reads alone, grouped by split; the read arcs draw each junction, not sashimi too
+      lgv.tracks = tracks
+        .filter(t => t.trackId !== 'hg38_ncbiRefSeq_ucsc')
+        .map(t => ({
+          ...t,
+          ...(t.trackId.startsWith('hg008_t_')
+            ? { sashimi: { show: false } }
+            : {}),
+          ...(t.trackId === 'hg008_t_hifi_chains'
+            ? {
+                facet: { field: 'split', hidden: ['unsplit'] },
+                heightMode: 'grow',
+                pileup: { ...t.pileup, mark: { height: 4 } },
+              }
+            : {}),
+        }))
+    }),
+    viewportHeight,
+  } as Annotated
+}
 
 // Margins of `em` font sizes each side shrink the frame on the page, so the
 // font f solves f = pt * (frameWidth + 2 * em * f) / printPt.
@@ -287,26 +273,23 @@ function marginCallout(
 }
 
 // keeps a two-line label inside the frame by moving it off its leader's level
-const clampDy = (y: number, font: number) => {
+const clampDy = (y: number, font: number, frameHeight: number) => {
   const half = Math.round(1.4 * font)
-  return Math.min(Math.max(y, half), FRAME_HEIGHT - half) - y
+  return Math.min(Math.max(y, half), frameHeight - half) - y
 }
 
-function svReadsVariant(pt?: number): ScreenshotSpec {
+function svReadsVariant(f: SvReads, pt?: number): ScreenshotSpec {
+  const parts = [`grant/${f.key}_frame`]
   if (!pt) {
-    return {
-      mode: 'compose',
-      name: 'grant/sv_read_evidence_none',
-      parts: [svReadsFrame.name],
-    }
+    return { mode: 'compose', name: `grant/${f.key}_evidence_none`, parts }
   }
   const font = marginFont(pt, FRAME_WIDTH, SV_READS_PRINT_PT, LABEL_EM)
   return {
     mode: 'compose',
-    name: `grant/sv_read_evidence_${pt}pt`,
-    parts: [svReadsFrame.name],
+    name: `grant/${f.key}_evidence_${pt}pt`,
+    parts,
     sideMargin: Math.round(LABEL_EM * font),
-    annotations: svReadsCallouts
+    annotations: f.callouts
       .filter(c => pt <= (c.maxPt ?? pt))
       .map(c =>
         marginCallout(
@@ -314,10 +297,47 @@ function svReadsVariant(pt?: number): ScreenshotSpec {
           font,
           FRAME_WIDTH,
           LABEL_EM,
-          c.dy ?? clampDy(c.y, font),
+          c.dy ?? clampDy(c.y, font, 2 * f.viewportHeight),
         ),
       ),
   }
+}
+
+const svReadsSpecs = (f: SvReads): ScreenshotSpec[] => [
+  svReadsFrame(f),
+  svReadsVariant(f),
+  ...SIZES.map(pt => svReadsVariant(f, pt)),
+]
+
+const deldup: SvReads = {
+  base: 'paper/sv_read_evidence',
+  key: 'sv_read',
+  viewportHeight: 1240,
+  callouts: [
+    { text: 'SV\ncalls', side: 'left', x: 887, y: 307 },
+    { text: 'SV call\narcs', side: 'right', x: 2206, y: 674, maxPt: 6 },
+    { text: 'PacBio\ncoverage', side: 'left', x: 775, y: 837, maxPt: 6 },
+    {
+      text: 'PacBio\nsplit read\narcs',
+      side: 'right',
+      x: 1744,
+      y: 1080,
+      maxPt: 6,
+      // the arc's low point, so the leader runs under the reads' legend
+      dy: 60,
+    },
+    { text: 'PacBio\nsplit reads', side: 'left', x: 670, y: 1145 },
+    { text: 'Illumina\ncoverage', side: 'right', x: 2850, y: 1690, maxPt: 6 },
+    { text: 'Illumina\npair arcs', side: 'left', x: 891, y: 1814 },
+    { text: 'Illumina\nread cloud', side: 'right', x: 2186, y: 2299 },
+  ],
+}
+
+const inversion: SvReads = {
+  base: 'paper/sv_read_evidence_inversion',
+  key: 'sv_inv',
+  viewportHeight: 1206,
+  callouts: [],
 }
 
 const HIDE_APP_BAR = { hideAppBar: true }
@@ -471,9 +491,8 @@ function translocationVariant(pt?: number): ScreenshotSpec[] {
 export const grantCalloutSizeSpecs: ScreenshotSpec[] = [
   ...variants(sickle),
   ...variants(y220c),
-  svReadsFrame,
-  svReadsVariant(),
-  ...SIZES.map(pt => svReadsVariant(pt)),
+  ...svReadsSpecs(deldup),
+  ...svReadsSpecs(inversion),
   ...translocationVariant(),
   ...SIZES.flatMap(pt => translocationVariant(pt)),
 ]
