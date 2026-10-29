@@ -13,6 +13,8 @@ Capture races and callout anchoring: `agent-docs/reference/FIGURE_CAPTURE.md`.
   restart it from current source. `pnpm --filter jbrowse-web build` matches
   nothing and exits 0; the package is `@jbrowse/web`.
 - `--cover` proves every type still paints, never that a figure is current.
+- `python3 website/scripts/report-stale-figures.py` lists figures shot before a
+  hosted file they draw last changed. Run it after rebuilding hosted data.
 - Size a figure from the run's `CONTENT CLIPPED BELOW THE FOLD` /
   `blank below the last content` report, not off the PNG. Neither sees a display
   overflowing its own fixed height; `heightMode: 'grow'` exposes a pileup's.
