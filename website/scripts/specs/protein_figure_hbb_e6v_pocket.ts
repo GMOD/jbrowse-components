@@ -188,14 +188,15 @@ const MARKS = [
 ]
 
 // hbb_e6v_overview.py frames the zoom-out along the close-up's line of sight,
-// brought in to 0.75 of its distance to fill the shorter panel.
+// brought in to 0.75 of its distance to fill the shorter panel and moved 9 Å
+// along its up vector, so the molecules sit clear of the panel's pill.
 // Both take this up vector, the line of sight crossed with the up that
 // /var/tmp/hero2/bin/hbb_e6v_roll.py gave them, so in the landscape panels the
 // two molecules sit side by side.
 const SIDE_BY_SIDE_UP = [0.8236, -0.525, -0.2145]
 const OVERVIEW_CAMERA = {
-  position: [23.032, 94.546, -70.278],
-  target: [22.954, 48.829, 40.691],
+  position: [30.444, 89.821, -72.209],
+  target: [30.366, 44.104, 38.76],
   up: SIDE_BY_SIDE_UP,
   mode: 'orthographic',
 }
@@ -235,10 +236,18 @@ const GWAS_TRACK = {
       `jexl:feature.trait in ['Malaria', 'Hereditary hemolytic anemias${PHECODE_282}']`,
       "jexl:feature.pValue in ['4E-69', '1E-323']",
     ],
+    // The labels print at about 4 pt in the figure, which names the two records
+    // in a callout instead. The live link can turn them back on.
     labels: {
-      name: `jexl:replace(feature.trait, '${PHECODE_282}', '')`,
-      description:
-        "jexl:'p=' + feature.pValue + ', ' + substring(feature.pubDate, 0, 4)",
+      name: {
+        show: false,
+        field: `jexl:replace(feature.trait, '${PHECODE_282}', '')`,
+      },
+      description: {
+        show: false,
+        field:
+          "jexl:'p=' + feature.pValue + ', ' + substring(feature.pubDate, 0, 4)",
+      },
     },
   },
 }
@@ -409,6 +418,23 @@ const seamLabel = {
   dy: 55,
 }
 
+// The two records stack at codon 6 in one row each, so one magenta pill beside
+// them names both.
+const gwasLabel = {
+  type: 'text' as const,
+  text: 'Hemolytic anemias, p = 1E-323\nMalaria, p = 4E-69',
+  color: VAL6,
+  fontSize: FONT,
+  anchor: {
+    loc: `chr11:${codon(6).start + 1}-${codon(6).end}`,
+    view: 0,
+    trackId: GWAS_SUBSET,
+    fracY: 0,
+  },
+  dx: 40,
+  dy: 34,
+}
+
 const residueLabel = (
   residue: string,
   text: string,
@@ -474,15 +500,15 @@ export const proteinHbbE6vPocketSpecs: ScreenshotSpec[] = [
       ).map(([text, id]) => ({
         type: 'circle' as const,
         text,
-        fontSize: FONT,
-        radius: 18,
+        fontSize: 20,
+        radius: 13,
         anchor: {
           selector: `[data-testid="view-container-${id}"]`,
           alignX: 'left' as const,
           alignY: 'top' as const,
         },
-        dx: 18,
-        dy: 16,
+        dx: 16,
+        dy: 13,
       })),
       codonLabel(6, 'E6V', VAL6, 2),
       seamLabel,
@@ -496,6 +522,7 @@ export const proteinHbbE6vPocketSpecs: ScreenshotSpec[] = [
         anchor: { residue: 'H:6', view: OVERVIEW_VIEW },
         fromAnchor: { residue: 'B:88', view: OVERVIEW_VIEW },
       },
+      gwasLabel,
       residueLabel('B:85', 'Phe85, Leu88', POCKET, -60, 100),
       residueLabel('H:6', 'Val6', VAL6, 60, -90),
     ],
