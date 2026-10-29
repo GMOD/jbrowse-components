@@ -708,7 +708,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'graph_haplotypes_per_segment',
               type: 'LinearBasicDisplay',
-              height: 150,
+              height: 200,
             },
           ],
         },
@@ -716,7 +716,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     viewportWidth: 1000,
-    viewportHeight: 330,
+    viewportHeight: 390,
     tooltip: 'hide',
   },
   {
