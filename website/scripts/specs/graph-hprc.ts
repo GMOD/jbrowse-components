@@ -919,7 +919,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyText: 'Tnz-1',
     readySelector: displayPainted('mark-display'),
     readyTimeout: 120000,
-    viewportHeight: 830,
+    viewportHeight: 890,
   },
   {
     mode: 'url',
