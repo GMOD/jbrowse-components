@@ -289,7 +289,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 120000,
     viewportWidth: 1000,
-    viewportHeight: 560,
+    viewportHeight: 615,
     tooltip: 'hide',
     actions: [PARK_CURSOR],
   },
