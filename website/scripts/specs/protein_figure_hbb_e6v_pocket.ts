@@ -409,7 +409,7 @@ export const proteinHbbE6vPocketSpecs: ScreenshotSpec[] = [
     ],
     annotations: [
       pill(OVERVIEW_ID, 'SICKLE HEMOGLOBINS STICK'),
-      pill(CLOSE_UP_ID, 'WHERE THEY STICK'),
+      pill(CLOSE_UP_ID, 'ZOOMED IN'),
       ...(
         [
           ['A', 'lgv-HBB'],
