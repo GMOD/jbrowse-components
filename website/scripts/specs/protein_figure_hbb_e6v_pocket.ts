@@ -2,7 +2,11 @@ import { deflateSync } from 'node:zlib'
 
 import { UCSC_HG38_CONFIG } from '../screenshot-spec-helpers.ts'
 import { PARK_CURSOR } from '../screenshot-spec-types.ts'
-import { readSession } from './protein_variants.ts'
+import {
+  GWAS_SUBSET,
+  GWAS_SUBSET_TRACK,
+  readSession,
+} from './protein_variants.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 import type { ViewJson } from './protein_variants.ts'
@@ -216,6 +220,13 @@ function sickle(view: ViewJson, id: string, displayName: string) {
   }
 }
 
+// rs334's GWAS Catalog records, magenta as part of the plug's chain. The
+// structures' row keeps its height; the genome view's panel takes the track.
+const GWAS_HEIGHT = 170
+const APP_BAR_PX = 50
+const STRUCTURES_PX = 554
+const VIEWPORT_HEIGHT = 1282 + GWAS_HEIGHT
+
 const OVERVIEW_ID = 'protein-HBB-2hbs-overview'
 const CLOSE_UP_ID = 'protein-HBB-2hbs'
 
@@ -233,6 +244,12 @@ function pocketSession() {
           type: 'LinearBasicDisplay',
           height: 112,
           mark: { height: 20 },
+        },
+        {
+          trackId: GWAS_SUBSET,
+          type: 'LinearBasicDisplay',
+          height: GWAS_HEIGHT,
+          encoding: { color: { value: VAL6 } },
         },
       ],
     },
@@ -254,9 +271,12 @@ function pocketSession() {
       camera: { ...(sickleView.camera as object), up: CLOSE_UP_UP },
     },
   ]
-  session.sessionTracks = session.sessionTracks?.filter(
-    t => (t as { trackId: string }).trackId === 'hbb-mane',
-  )
+  session.sessionTracks = [
+    ...(session.sessionTracks ?? []).filter(
+      t => (t as { trackId: string }).trackId === 'hbb-mane',
+    ),
+    GWAS_SUBSET_TRACK,
+  ]
   session.highlights = HIGHLIGHTS
   const panel = (id: string, size: number, viewIds: string[]) => ({
     id: `panel-${id}`,
@@ -273,11 +293,14 @@ function pocketSession() {
       direction: 'column',
       size: 1,
       children: [
-        panel('top', 55, ['lgv-HBB', 'msa-HBB']),
+        panel('top', VIEWPORT_HEIGHT - APP_BAR_PX - STRUCTURES_PX, [
+          'lgv-HBB',
+          'msa-HBB',
+        ]),
         {
           id: 'branch-bottom',
           direction: 'row',
-          size: 45,
+          size: STRUCTURES_PX,
           children: [
             panel('2hbs-overview', 50, [OVERVIEW_ID]),
             panel('2hbs', 50, [CLOSE_UP_ID]),
@@ -401,7 +424,7 @@ export const proteinHbbE6vPocketSpecs: ScreenshotSpec[] = [
     ],
     tooltip: 'hide',
     viewportWidth: VIEW_WIDTH,
-    viewportHeight: 1282,
+    viewportHeight: VIEWPORT_HEIGHT,
     actions: [
       { type: 'waitForAppSettled' },
       PARK_CURSOR,
