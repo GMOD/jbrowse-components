@@ -776,7 +776,6 @@ Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_sickle_cell/
 
 - https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr11.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
 - https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr11.filtered.SNV_INDEL_SV_phased_panel.vcf.gz.tbi
-- https://jbrowse.org/demos/1000g/1000g_3202_samples.tsv
 - https://jbrowse.org/ucsc/hg38/config.json
 - https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz
 - https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz.csi
