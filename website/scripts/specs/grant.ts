@@ -106,10 +106,13 @@ const font = Math.round(sickleFont * sickleScale)
 const proteinParts = [
   {
     ...withFont(sickle, sickleFont, {
-      // the seam between the two regions only has room for it at its own size
-      'codons 14–79\nnot shown': {
-        fontSize: Math.round(sickleFont / CALLOUT_GROWTH),
-      },
+      // the codon row only has room for its pills at their own size
+      ...Object.fromEntries(
+        ['codons 14–79\nnot shown', 'E6V', 'Phe85', 'Leu88'].map(text => [
+          text,
+          { fontSize: Math.round(sickleFont / CALLOUT_GROWTH) },
+        ]),
+      ),
       'Hemolytic anemias, p = 1E-323\nMalaria, p = 4E-69': {
         maxWidth: sickleFont * 20,
       },
