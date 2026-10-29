@@ -190,25 +190,25 @@ const svReadsFrame = {
   annotations: [],
   url: editSpecSession(svReadsBase.url, session => {
     const [lgv] = session.views as [ViewJson]
-    const tracks = lgv.tracks as {
-      trackId: string
-      facet?: string
-      pileup?: object
-    }[]
-    // one read level; the read arcs alone draw each junction, not sashimi too
+    const tracks = lgv.tracks as { trackId: string; pileup?: object }[]
+    // split reads alone, grouped by split; the read arcs draw each junction, not sashimi too
     lgv.tracks = tracks
       .filter(t => t.trackId !== 'hg38_ncbiRefSeq_ucsc')
-      .map(({ facet, ...t }) => ({
+      .map(t => ({
         ...t,
         ...(t.trackId.startsWith('hg008_t_')
           ? { sashimi: { show: false } }
           : {}),
         ...(t.trackId === 'hg008_t_hifi_chains'
-          ? { heightMode: 'grow', pileup: { ...t.pileup, mark: { height: 4 } } }
+          ? {
+              facet: { field: 'split', hidden: ['unsplit'] },
+              heightMode: 'grow',
+              pileup: { ...t.pileup, mark: { height: 4 } },
+            }
           : {}),
       }))
   }),
-  viewportHeight: 1472,
+  viewportHeight: 1240,
 } as Annotated
 
 // The frame is 3000 px wide (1500 CSS px at 2x). Callouts sit in white side
@@ -229,24 +229,23 @@ interface Callout {
 
 // x, y: where the leader ends, in the frame's own px
 const svReadsCallouts: Callout[] = [
-  { text: 'SV\ncalls', side: 'left', x: 885, y: 308 },
-  { text: 'SV call\narcs', side: 'right', x: 2198, y: 652, from: 6 },
-  { text: 'PacBio\ncoverage', side: 'left', x: 780, y: 830, from: 6 },
+  { text: 'SV\ncalls', side: 'left', x: 887, y: 307 },
+  { text: 'SV call\narcs', side: 'right', x: 2206, y: 674, from: 6 },
+  { text: 'PacBio\ncoverage', side: 'left', x: 775, y: 837, from: 6 },
   {
     text: 'PacBio\nsplit read\narcs',
     side: 'right',
-    x: 2160,
-    y: 1010,
+    x: 2164,
+    y: 1008,
     from: 6,
   },
-  { text: 'PacBio\nsplit reads', side: 'left', x: 662, y: 1910 },
-  { text: 'PacBio\nunsplit', side: 'right', x: 2850, y: 1500 },
-  { text: 'Illumina\ncoverage', side: 'right', x: 2850, y: 2160, from: 6 },
-  { text: 'Illumina\npair arcs', side: 'left', x: 893, y: 2310 },
-  { text: 'Illumina\nread cloud', side: 'right', x: 2175, y: 2772 },
+  { text: 'PacBio\nsplit reads', side: 'left', x: 670, y: 1145 },
+  { text: 'Illumina\ncoverage', side: 'right', x: 2850, y: 1690, from: 6 },
+  { text: 'Illumina\npair arcs', side: 'left', x: 891, y: 1814 },
+  { text: 'Illumina\nread cloud', side: 'right', x: 2186, y: 2299 },
 ]
 
-const FRAME_HEIGHT = 2942
+const FRAME_HEIGHT = 2480
 
 // keeps a two-line label inside the frame by moving it off its leader's level
 const clampDy = (y: number, font: number) => {
@@ -269,7 +268,7 @@ function svReadsVariant(pt?: number): ScreenshotSpec {
   const margin = Math.round(LABEL_EM * font)
   const gap = Math.round(font / 4)
   const shown = svReadsCallouts.filter(
-    c => pt === 6 || (c.from === undefined && !(pt >= 11 && c.y === 830)),
+    c => pt === 6 || (c.from === undefined && !(pt >= 11 && c.y === 837)),
   )
   return {
     mode: 'compose',
@@ -319,6 +318,7 @@ const readsPart = (suffix: string) => {
             {
               ...chr3.tracks[1],
               unit: 'chain',
+              facet: { field: 'split', hidden: ['unsplit'] },
               encoding: { color: 'pairOrientation' },
               readConnections: { show: true, height: 70 },
               sashimi: { show: false },
