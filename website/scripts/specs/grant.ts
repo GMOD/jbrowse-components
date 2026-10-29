@@ -95,12 +95,16 @@ const tp53 = asPart(proteinTp53Y220cSpecs[0]!, 'grant/tp53_y220c')
 // The sickle figure is the shorter, so it renders at a higher scale to stand
 // as tall as TP53's, and TP53's callouts take the size the sickle's print at
 const sickleScale = tp53.viewportHeight / sickle.viewportHeight
-const font = Math.round(
+// The sickle figure's callouts are sized to print at 8 pt across a whole page;
+// half a page wide they need this much more
+const CALLOUT_GROWTH = 1.3
+const sickleFont = Math.round(
   (sickle.annotations?.find(a => a.type === 'text')?.fontSize ?? 22) *
-    sickleScale,
+    CALLOUT_GROWTH,
 )
+const font = Math.round(sickleFont * sickleScale)
 const proteinParts = [
-  { ...sickle, scale: sickleScale },
+  { ...withFont(sickle, sickleFont, {}), scale: sickleScale },
   // At this size the legend and the two pills cover the scan's dots, so the
   // pills' colors stand in for the legend and each sits clear of the dots, as
   // grant_callout_sizes.ts has them
