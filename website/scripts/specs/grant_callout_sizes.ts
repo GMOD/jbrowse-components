@@ -12,7 +12,7 @@ import { proteinVariantSpecs } from './protein_variants.ts'
 import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 import type { SessionJson, ViewJson } from './protein_variants.ts'
 
-const SIZES = [6, 8, 11]
+const SIZES = [6, 8]
 
 type Edit = Partial<Pick<Annotation, 'text' | 'dx' | 'dy' | 'maxWidth'>>
 // keyed by the callout's text, or by its type for every callout of that type
@@ -51,7 +51,7 @@ function sized(a: Annotation, font: number, edit: Edit = {}): Annotation {
 
 function resize(annotations: Annotation[] = [], font: number, edits: Edits) {
   return annotations.flatMap(a => {
-    const edit = (a.text && edits[a.text]) ?? edits[a.type]
+    const edit = (a.text ? edits[a.text] : undefined) ?? edits[a.type]
     return edit === 'drop' ? [] : [sized(a, font, edit)]
   })
 }
@@ -165,10 +165,7 @@ const y220c: Figure = {
       dx: -1.5 * font,
       dy: 0.9 * font,
     },
-    'Empty pocket':
-      pt >= 11
-        ? { dx: -5, dy: 210, maxWidth: font * 4 }
-        : { dx: -40, maxWidth: font * 4 },
+    'Empty pocket': { dx: -40, maxWidth: font * 4 },
   }),
 }
 
@@ -179,6 +176,8 @@ function editSpecSession(url: string, edit: (session: SessionJson) => void) {
   edit(session)
   return `${head}&session=spec-${encodeURIComponent(JSON.stringify(session))}&sessionName=${tail}`
 }
+
+const SV_READS_VIEWPORT_HEIGHT = 1240
 
 const svReadsBase = byName(
   paperSvReadsSpecs,
@@ -208,44 +207,77 @@ const svReadsFrame = {
           : {}),
       }))
   }),
-  viewportHeight: 1240,
+  viewportHeight: SV_READS_VIEWPORT_HEIGHT,
 } as Annotated
 
-// The frame is 3000 px wide (1500 CSS px at 2x). Callouts sit in white side
-// margins, centered on a leader to the band they name, so none covers reads.
-// A label is about 6.2 type heights wide, and the frame shrinks to make room
-// for the margins, so the type height solves f = pt * (3000 + 2 * 6.2f) / printPt.
+// The frame is 1500 CSS px wide at 2x. Callouts sit in white side margins,
+// centered on a leader to the band they name, so none covers reads.
 const FRAME_WIDTH = 3000
+const FRAME_HEIGHT = 2 * SV_READS_VIEWPORT_HEIGHT
 const SV_READS_PRINT_PT = 271.4
 const LABEL_EM = 6.2
 
 interface Callout {
   text: string
   side: 'left' | 'right'
+  // where the leader ends, in the first part's own px
   x: number
   y: number
-  from?: number
+  maxPt?: number
 }
 
-// x, y: where the leader ends, in the frame's own px
 const svReadsCallouts: Callout[] = [
   { text: 'SV\ncalls', side: 'left', x: 887, y: 307 },
-  { text: 'SV call\narcs', side: 'right', x: 2206, y: 674, from: 6 },
-  { text: 'PacBio\ncoverage', side: 'left', x: 775, y: 837, from: 6 },
+  { text: 'SV call\narcs', side: 'right', x: 2206, y: 674, maxPt: 6 },
+  { text: 'PacBio\ncoverage', side: 'left', x: 775, y: 837, maxPt: 6 },
   {
     text: 'PacBio\nsplit read\narcs',
     side: 'right',
     x: 2164,
     y: 1008,
-    from: 6,
+    maxPt: 6,
   },
   { text: 'PacBio\nsplit reads', side: 'left', x: 670, y: 1145 },
-  { text: 'Illumina\ncoverage', side: 'right', x: 2850, y: 1690, from: 6 },
+  { text: 'Illumina\ncoverage', side: 'right', x: 2850, y: 1690, maxPt: 6 },
   { text: 'Illumina\npair arcs', side: 'left', x: 891, y: 1814 },
   { text: 'Illumina\nread cloud', side: 'right', x: 2186, y: 2299 },
 ]
 
-const FRAME_HEIGHT = 2480
+// Margins of `em` font sizes each side shrink the frame on the page, so the
+// font f solves f = pt * (frameWidth + 2 * em * f) / printPt.
+const marginFont = (
+  pt: number,
+  frameWidth: number,
+  printPt: number,
+  em: number,
+) => Math.round((pt * frameWidth) / (printPt - pt * 2 * em))
+
+function marginCallout(
+  c: Callout,
+  font: number,
+  frameWidth: number,
+  em: number,
+  dy = 0,
+): Annotation {
+  const gap = Math.round(font / 4)
+  return {
+    type: 'text',
+    text: c.text,
+    leader: true,
+    fontSize: font,
+    maxWidth: font * em,
+    strokeWidth: Math.max(6, Math.round(font / 12)),
+    anchor: {
+      selector: '[data-part="0"]',
+      alignX: 'left',
+      alignY: 'top',
+      dx: c.x,
+      dy: c.y,
+    },
+    dx: c.side === 'left' ? -(c.x + gap) : frameWidth + gap - c.x,
+    dy,
+  }
+}
 
 // keeps a two-line label inside the frame by moving it off its leader's level
 const clampDy = (y: number, font: number) => {
@@ -254,7 +286,6 @@ const clampDy = (y: number, font: number) => {
 }
 
 function svReadsVariant(pt?: number): ScreenshotSpec {
-  const part = { selector: '[data-part="0"]' }
   if (!pt) {
     return {
       mode: 'compose',
@@ -262,30 +293,17 @@ function svReadsVariant(pt?: number): ScreenshotSpec {
       parts: [svReadsFrame.name],
     }
   }
-  const font = Math.round(
-    (pt * FRAME_WIDTH) / (SV_READS_PRINT_PT - pt * 2 * LABEL_EM),
-  )
-  const margin = Math.round(LABEL_EM * font)
-  const gap = Math.round(font / 4)
-  const shown = svReadsCallouts.filter(
-    c => pt === 6 || (c.from === undefined && !(pt >= 11 && c.y === 837)),
-  )
+  const font = marginFont(pt, FRAME_WIDTH, SV_READS_PRINT_PT, LABEL_EM)
   return {
     mode: 'compose',
     name: `grant/sv_read_evidence_${pt}pt`,
     parts: [svReadsFrame.name],
-    sideMargin: margin,
-    annotations: shown.map(c => ({
-      type: 'text',
-      text: c.text,
-      leader: true,
-      fontSize: font,
-      maxWidth: font * LABEL_EM,
-      strokeWidth: Math.max(6, Math.round(font / 12)),
-      anchor: { ...part, alignX: 'left', alignY: 'top', dx: c.x, dy: c.y },
-      dx: c.side === 'left' ? -(c.x + gap) : FRAME_WIDTH + gap - c.x,
-      dy: clampDy(c.y, font),
-    })),
+    sideMargin: Math.round(LABEL_EM * font),
+    annotations: svReadsCallouts
+      .filter(c => pt <= (c.maxPt ?? pt))
+      .map(c =>
+        marginCallout(c, font, FRAME_WIDTH, LABEL_EM, clampDy(c.y, font)),
+      ),
   }
 }
 
@@ -335,7 +353,7 @@ const readsPart = (suffix: string) => {
   } as Annotated
 }
 
-const overviewPart = (suffix: string, font: number | undefined, pt = 0) => {
+const overviewPart = (suffix: string, font: number | undefined) => {
   const spec = scaffoldOverview(
     `grant/sv_overview_${suffix}`,
     HIDE_APP_BAR,
@@ -357,7 +375,7 @@ const overviewPart = (suffix: string, font: number | undefined, pt = 0) => {
       dy: 40 - 2.2 * css,
       maxWidth: css * 6,
     },
-    junction: pt >= 11 ? 'drop' : { dy: -css },
+    junction: { dy: -css },
   }
   return {
     ...spec,
@@ -365,30 +383,48 @@ const overviewPart = (suffix: string, font: number | undefined, pt = 0) => {
   } as Annotated
 }
 
-// x, y: where the leader ends, in the read panel's own px
 const READ_CALLOUTS: Callout[] = [
   { text: 'chr13', side: 'left', x: 907, y: 306 },
   { text: 'chr3', side: 'right', x: 2695, y: 306 },
-  { text: 'split\nreads', side: 'right', x: 2650, y: 1250 },
+  { text: 'split\nreads', side: 'right', x: 2600, y: 845 },
 ]
 
+// y: the row's center in the overview part's own px
 const ROWS = [
   { text: 'hap2', y: 270 },
   { text: 'GRCh38', y: 810 },
   { text: 'hap1', y: 1368 },
 ]
 
+function translocationCallouts(font: number): Annotation[] {
+  return [
+    ...READ_CALLOUTS.map(c =>
+      marginCallout(c, font, TRANSLOCATION_WIDTH, ROW_LABEL_EM),
+    ),
+    // a label's baseline sits on its anchor, so this centers capitals on the row
+    ...ROWS.map((r): Annotation => ({
+      type: 'text',
+      text: r.text,
+      fontSize: font,
+      textAlign: 'end',
+      anchor: {
+        selector: '[data-part="1"]',
+        alignX: 'left',
+        alignY: 'top',
+        dx: -Math.round(font / 4),
+        dy: r.y + Math.round(font * 0.35),
+      },
+    })),
+  ]
+}
+
 function translocationVariant(pt?: number): ScreenshotSpec[] {
   const suffix = pt ? `${pt}pt` : 'none'
   const font = pt
-    ? Math.round(
-        (pt * TRANSLOCATION_WIDTH) /
-          (TRANSLOCATION_PRINT_PT - pt * 2 * ROW_LABEL_EM),
-      )
+    ? marginFont(pt, TRANSLOCATION_WIDTH, TRANSLOCATION_PRINT_PT, ROW_LABEL_EM)
     : undefined
-  const margin = font ? Math.round(ROW_LABEL_EM * font) : 0
   const reads = readsPart(suffix)
-  const overview = overviewPart(suffix, font, pt)
+  const overview = overviewPart(suffix, font)
   return [
     reads,
     overview,
@@ -397,44 +433,8 @@ function translocationVariant(pt?: number): ScreenshotSpec[] {
       name: `grant/sv_translocation_${suffix}`,
       parts: [reads.name, overview.name],
       gutter: 40,
-      ...(font ? { sideMargin: margin } : {}),
-      annotations: font
-        ? [
-            ...READ_CALLOUTS.map(c => ({
-              type: 'text',
-              text: c.text,
-              leader: true,
-              fontSize: font,
-              maxWidth: font * ROW_LABEL_EM,
-              strokeWidth: Math.max(6, Math.round(font / 12)),
-              anchor: {
-                selector: '[data-part="0"]',
-                alignX: 'left',
-                alignY: 'top',
-                dx: c.x,
-                dy: c.y,
-              },
-              dx:
-                c.side === 'left'
-                  ? -(c.x + Math.round(font / 4))
-                  : TRANSLOCATION_WIDTH + Math.round(font / 4) - c.x,
-              dy: 0,
-            })),
-            ...ROWS.map(r => ({
-              type: 'text',
-              text: r.text,
-              fontSize: font,
-              textAlign: 'end',
-              anchor: {
-                selector: '[data-part="1"]',
-                alignX: 'left',
-                alignY: 'top',
-                dx: -Math.round(font / 4),
-                dy: r.y - Math.round(font * 0.7),
-              },
-            })),
-          ]
-        : [],
+      ...(font ? { sideMargin: Math.round(ROW_LABEL_EM * font) } : {}),
+      annotations: font ? translocationCallouts(font) : [],
     },
   ]
 }
