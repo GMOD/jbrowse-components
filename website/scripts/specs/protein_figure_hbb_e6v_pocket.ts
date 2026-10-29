@@ -197,7 +197,7 @@ const OVERVIEW_CAMERA = {
   up: [-0.5671, -0.7611, -0.3148],
   mode: 'orthographic',
 }
-const PROTEIN_HEIGHT = 430
+const PROTEIN_HEIGHT = 350
 
 function sickle(view: ViewJson, id: string, displayName: string) {
   return {
@@ -243,11 +243,14 @@ const GWAS_TRACK = {
 }
 const GWAS_HEIGHT = 80
 
-// The structures' row keeps its height and the genome view's panel takes the
-// track, whose header adds 40px over its height.
+// Each panel is sized to what it holds, since height is what the figure is
+// short of. The GWAS track's header adds 40px over its height, and the genome
+// view hides its location bar, which the ruler's coordinates stand in for.
 const APP_BAR_PX = 50
-const STRUCTURES_PX = 554
-const VIEWPORT_HEIGHT = 1282 + GWAS_HEIGHT + 40
+const LOCATION_BAR_PX = 44
+const TOP_PX = 678 + GWAS_HEIGHT + 40 - LOCATION_BAR_PX
+const STRUCTURES_PX = PROTEIN_HEIGHT + 124
+const VIEWPORT_HEIGHT = APP_BAR_PX + TOP_PX + STRUCTURES_PX
 
 const OVERVIEW_ID = 'protein-HBB-2hbs-overview'
 const CLOSE_UP_ID = 'protein-HBB-2hbs'
@@ -260,6 +263,7 @@ function pocketSession() {
     {
       ...lgv,
       loc: LOC,
+      hideHeader: true,
       tracks: [
         {
           trackId: 'hbb-mane',
@@ -315,10 +319,7 @@ function pocketSession() {
       direction: 'column',
       size: 1,
       children: [
-        panel('top', VIEWPORT_HEIGHT - APP_BAR_PX - STRUCTURES_PX, [
-          'lgv-HBB',
-          'msa-HBB',
-        ]),
+        panel('top', TOP_PX, ['lgv-HBB', 'msa-HBB']),
         {
           id: 'branch-bottom',
           direction: 'row',
@@ -439,6 +440,7 @@ export const proteinHbbE6vPocketSpecs: ScreenshotSpec[] = [
       '.msp-background-tasks',
       '.msp-highlight-info',
       '[data-testid="header-alignment-quality"]',
+      '[data-testid="lgv-mini-controls"]',
       '[data-testid="hidden_columns_chip"]',
       `[aria-label="Hide ${HBS} track"]`,
       `[aria-label="${HBS} track menu"]`,
