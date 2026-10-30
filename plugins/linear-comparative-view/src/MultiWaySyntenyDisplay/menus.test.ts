@@ -303,14 +303,18 @@ test('a constant gene color ticks Solid color..., and Default takes it back', ()
   expect(calls).toEqual(['gene default', 'gene solid'])
 })
 
-test('Show offers the legend only when something is keyed, and the hidden lanes once there are some', () => {
-  const { model, calls } = trackModel({
-    hasLegendKey: true,
-    hiddenLanes: ['peach', 'cacao'],
-  })
-  const show = showSubMenuItems(model)
-  expect(labelsOf(show).slice(4)).toEqual(['Show 2 hidden lanes', 'Legend'])
-  click(show[4])
+test('Show offers the legend only when something is keyed', () => {
+  const { model } = trackModel({ hasLegendKey: true })
+  expect(labelsOf(showSubMenuItems(model)).slice(4)).toEqual(['Legend'])
+})
+
+test('Lanes offers the hidden lanes back once there are some', () => {
+  const { model, calls } = trackModel({ hiddenLanes: ['peach', 'cacao'] })
+  const lanes = lanesMenuItem(model).subMenu
+  const item = lanes.find(
+    i => 'label' in i && i.label === 'Show 2 hidden lanes',
+  )
+  click(item)
   expect(calls).toEqual(['show hidden'])
 })
 
@@ -390,9 +394,9 @@ test('the picker is offered once there are lanes to choose among, and a choice o
       lanesOf({ laneChoice: ['lane2'], configuredLanes: ['lane1'] }).lanes,
     )[1],
   ).toBe("Show the track's lanes (1)")
-  expect(labelsOf(lanesOf({ hiddenLanes: ['lane2'] }).lanes)[1]).toBe(
-    'Reset lane order',
-  )
+  expect(
+    labelsOf(lanesOf({ hiddenLanes: ['lane2'] }).lanes).slice(1, 3),
+  ).toEqual(['Show 1 hidden lane', 'Reset lane order'])
 })
 
 test('a lane moves and hides through the display', () => {
