@@ -1061,8 +1061,8 @@ importers:
         specifier: ^2.3.3
         version: 2.3.3
       '@gmod/tabix':
-        specifier: ^3.13.0
-        version: 3.13.0
+        specifier: ^3.13.1
+        version: 3.13.1
       '@gmod/trix':
         specifier: ^3.1.0
         version: 3.1.0
@@ -1201,8 +1201,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.13.0
-        version: 3.13.0
+        specifier: ^3.13.1
+        version: 3.13.1
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -1458,8 +1458,8 @@ importers:
         specifier: ^5.6.4
         version: 5.6.4
       '@gmod/tabix':
-        specifier: ^3.13.0
-        version: 3.13.0
+        specifier: ^3.13.1
+        version: 3.13.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1482,8 +1482,8 @@ importers:
   plugins/gtf:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.13.0
-        version: 3.13.0
+        specifier: ^3.13.1
+        version: 3.13.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2032,8 +2032,8 @@ importers:
   plugins/variants:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.13.0
-        version: 3.13.0
+        specifier: ^3.13.1
+        version: 3.13.1
       '@gmod/vcf':
         specifier: ^7.4.0
         version: 7.4.0
@@ -4730,8 +4730,8 @@ packages:
   '@gmod/shared-read-cache@2.1.0':
     resolution: {integrity: sha512-AyiUt0hiEGl7lWc1fuigbXR/RToIw3h72dalaRoSNau9WL9ux9rEfkcsXDYTgSDudehfAEQac1jTvn2zrfnELQ==}
 
-  '@gmod/tabix@3.13.0':
-    resolution: {integrity: sha512-pOWzGY7sm79zVGRq7EH9PiupqcfELLWdAHUAKjUiwMIErJWzr//FVeIdA/Dx7+8yVN2n+gbTqNIF4xBghOs3lA==}
+  '@gmod/tabix@3.13.1':
+    resolution: {integrity: sha512-usyBxD1EQ/wfIzeT/wQsqJBT6aGZwgaIFG94lBYFhWdK+csHjQU7t9i/iIjDSCIcZFTFiQ1TFp3McCMf4aH/4A==}
 
   '@gmod/trix@3.1.0':
     resolution: {integrity: sha512-A+JPMdH87Ncie4WyFC7L6H/mTVGsL5qYZkojMveBDcLYQsFwS9ralYMsOio5vxGLoqphV/1G2xhKr7nyn4b06g==}
@@ -12772,7 +12772,7 @@ snapshots:
 
   '@gmod/shared-read-cache@2.1.0': {}
 
-  '@gmod/tabix@3.13.0':
+  '@gmod/tabix@3.13.1':
     dependencies:
       '@gmod/bgzf-filehandle': 6.8.4
       '@gmod/shared-read-cache': 2.1.0
