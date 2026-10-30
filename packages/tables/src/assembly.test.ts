@@ -109,6 +109,26 @@ test('a CRAM spelling its contig another way decodes against the assembly’s se
   expect(t.reads.start).toEqual((await engine.alignments(CRAM)).reads.start)
 })
 
+test('a CRAM read first under an assembly without its alias decodes against the reference once the alias is given', async () => {
+  const { sequenceAdapter: _, ...cram } = CRAM
+  const altname = {
+    ...cram,
+    adapterConfig: {
+      type: 'CramAdapter',
+      cramLocation: volvox('volvox-sorted-altname.cram'),
+      craiLocation: volvox('volvox-sorted-altname.cram.crai'),
+    },
+    region: { ...cram.region, refName: 'contigA' },
+  }
+  const { refNameAliases: __, ...unaliased } = assembly
+  const lost = await engine.alignments({ ...altname, assembly: unaliased })
+  const found = await engine.alignments({ ...altname, assembly })
+  const plain = await engine.alignments(CRAM)
+  expect(lost.reads.start).toEqual(plain.reads.start)
+  expect(lost.mismatches.base).not.toEqual(plain.mismatches.base)
+  expect(found.mismatches).toEqual(plain.mismatches)
+})
+
 test('features and the sequence read under an alias, and the regions list the sequence’s contigs', async () => {
   const genes = await engine.features({
     ...GFF3,

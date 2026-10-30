@@ -73,6 +73,8 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
 
   private seqIdToOriginalRefName: string[] = []
 
+  private seqIdDecodedAgainst: string[] = []
+
   private getSeqAdapterRefNames = cachedSetup({
     setup: async () => {
       const adapter = await this.getSequenceAdapter()
@@ -103,6 +105,7 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
     if (!refName) {
       throw new Error('unknown refName')
     }
+    this.seqIdDecodedAgainst[seqId] = refName
     // @gmod/cram is 0-based half-open since v10, which is what getSequence
     // already takes, so the coordinates pass straight through
     const seq = await sequenceAdapter.getSequence({
@@ -201,6 +204,16 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
 
       if (originalRefName) {
         this.seqIdToOriginalRefName[refId] = originalRefName
+      }
+      // cached records hold bases decoded against the reference name of the
+      // read that decoded them, which a read under another assembly changes
+      const decodedAgainst = this.seqIdDecodedAgainst[refId]
+      if (
+        decodedAgainst !== undefined &&
+        decodedAgainst !== (await this.resolveSeqFetchRefName(refId))
+      ) {
+        cram.clearFeatureCache()
+        this.seqIdDecodedAgainst = []
       }
       // A failed region fetch (e.g. a transient network error mid-pan) must not
       // wipe the header/index caches — those are memoized in setup() and only
