@@ -75,8 +75,8 @@
     "figures:triage": "node scripts/triage-figure-diffs.ts"
   },
   "dependencies": {
-    "@astrojs/markdown-remark": "^7.3.4",
-    "astro": "^7.4.2",
+    "@astrojs/markdown-remark": "^7.3.5",
+    "astro": "^7.4.4",
     "astro-icon": "^1.2.0",
     "github-slugger": "2.0.0",
     "rehype-raw": "^7.0.0",

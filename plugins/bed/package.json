@@ -32,11 +32,11 @@
   "dependencies": {
     "@gmod/bbi": "^12.0.0",
     "@gmod/bed": "^2.3.3",
-    "@gmod/tabix": "^3.12.0",
+    "@gmod/tabix": "^3.13.0",
     "@gmod/trix": "^3.1.0",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.10.0",
-    "mobx": "^7.1.1",
+    "mobx": "^7.1.3",
     "rxjs": "^7.8.2"
   },
   "peerDependencies": {
