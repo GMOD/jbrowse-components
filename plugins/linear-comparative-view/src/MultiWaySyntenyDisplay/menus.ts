@@ -294,6 +294,9 @@ export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
     toggleItem('Curved lines', model.interpolate === 'bump', v => {
       model.setInterpolate(v ? 'bump' : 'linear')
     }),
+    ...showHiddenItems(model.hiddenLanes.length, 'lane', () => {
+      model.showHiddenLanes()
+    }),
     ...(model.hasLegendKey ? [legendCheckboxItem(model)] : []),
   ]
 }
@@ -395,9 +398,6 @@ function laneSelectionMenuItems(model: MultiWayMenuModel): MenuItem[] {
 export function lanesMenuItem(model: MultiWayMenuModel) {
   const subMenu: MenuItem[] = [
     ...laneSelectionMenuItems(model),
-    ...showHiddenItems(model.hiddenLanes.length, 'lane', () => {
-      model.showHiddenLanes()
-    }),
     ...(model.laneStructureOrder.length > 2
       ? [
           {

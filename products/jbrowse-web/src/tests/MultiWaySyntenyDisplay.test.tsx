@@ -291,7 +291,12 @@ test('MultiWaySyntenyDisplay reorders its lanes from the track menu', async () =
     'cacao',
   ])
   expect(display.hiddenLanes).toEqual(['peach'])
-  click(rowNamed(laneOrder(), 'Show 1 hidden lane'))
+  click(
+    rowNamed(
+      subMenuOf(rowNamed(display.trackMenuItems(), 'Show')),
+      'Show 1 hidden lane',
+    ),
+  )
   expect(display.hiddenLanes).toEqual([])
   expect(display.rowAssemblies).toEqual(['peach', 'cacao'])
 }, 40000)
