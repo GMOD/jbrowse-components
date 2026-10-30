@@ -9,7 +9,7 @@ import {
 } from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/shaders/variant.js.generated.ts'
 import { abgr, defineFixture, paintOver, rgba } from '../fixture.ts'
 
-import type { Shape } from '../fixture.ts'
+import type { Budget, Shape } from '../fixture.ts'
 
 const W = 160
 const H = 40
@@ -54,8 +54,8 @@ function referenceOf(c: ReturnType<typeof cells>, rowHeight: number) {
       for (let i = 0; i < c.count; i++) {
         const rx1 = px(c.startEnd[i * 2]!)
         const rx2 = px(c.startEnd[i * 2 + 1]!)
-        const w = snappedCellWidthPx(rx1, rx2)
-        const left = snappedCellLeftPx(rx1, rx2, w)
+        const w = snappedCellWidthPx(rx1, rx2, dpr)
+        const left = snappedCellLeftPx(rx1, rx2, w, dpr)
         const top = snappedRowTopPx(c.row[i]!, rowHeight, 0, dpr)
         const bottom = snappedRowBottomPx(
           c.row[i]!,
@@ -95,6 +95,7 @@ function fixture(
   about: string,
   rowHeight: number,
   inversions: boolean,
+  budget: Budget,
 ) {
   const c = cells(rowHeight, inversions)
   return defineFixture({
@@ -110,28 +111,34 @@ function fixture(
     uniforms: dpr => ({
       bpRangeX: [START, 0, W * BP_PER_PX] as [number, number, number],
       canvasHeight: H,
+      viewportLeft: 0,
       viewportWidth: W,
+      viewportDeviceLeft: 0,
+      viewportDeviceWidth: W * dpr,
+      scaleX: dpr,
       rowHeight,
       scrollTop: 0,
       zero: 0,
       devicePixelRatio: dpr,
     }),
     reference: referenceOf(c, rowHeight),
-    budget: { max: 0.51, meanErr: 0.075 },
+    budget,
   })
 }
 
 export default [
   fixture(
     'variant-cells',
-    'a dense genotype matrix, rows 2.6 px tall snapped to the device grid; x stays on the CSS grid, so at dpr 1.5 cell sides land mid-pixel',
+    'a dense genotype matrix, rows 2.6 px tall, both axes snapped to the device grid',
     2.6,
     false,
+    { max: 0.01, meanErr: 0.001 },
   ),
   fixture(
     'variant-inversions',
     'cells with the inversion glyph, whose two slants ramp, rows 7.3 px tall',
     7.3,
     true,
+    { max: 0.3, meanErr: 0.01 },
   ),
 ]
