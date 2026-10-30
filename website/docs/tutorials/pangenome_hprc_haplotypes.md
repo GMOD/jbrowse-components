@@ -111,27 +111,29 @@ genes across the graph.
 - **What we host:** one gene model per named gene for each haplotype, as
   `https://jbrowse.org/pangenome/hprc-grch38/genes/<sample>.<haplotype>.genes.bed.gz`.
   A haplotype keeps about 43,500 of CAT's 83,000 genes:
-  - Each model is the projection of the gene's Ensembl canonical transcript.
+  - Each model is the gene's Ensembl canonical transcript as CAT projected it,
+    else its longest coding transcript.
   - A gene with no symbol is dropped, and so is one spanning over 5 Mb.
   - Where CAT projected two paralogs onto one locus, such as _GSTM1_ onto
     _GSTM2_, we keep the gene whose GRCh38 span the haplotype's walk crosses
     there, in the -f5s walk file the lanes read.
   - CAT misses genes that only GRCh38's alternate contigs hold. We splice
-    GENCODE's models of _GSTT1_, _LILRA3_ and the _HLA-DRB_ genes onto each
-    haplotype's assembly instead, where its walk crosses them.
+    GENCODE's models of _GSTT1_, _LILRA3_, _HLA-DRB3_, _HLA-DRB4_ and _HLA-DRB5_
+    onto each haplotype's assembly instead, where its walk crosses them.
   - [README.txt](https://jbrowse.org/pangenome/hprc-grch38/genes/README.txt)
     beside the files gives every rule and what CAT still misses.
 - **How a lane finds them:** each haplotype is an assembly, such as `HG00097.1`
   aliased `HG00097#1`, holding one track, **CAT genes (HG00097 haplotype 1, HPRC
-  release 2)**. JBrowse draws that track in the haplotype's lane, and for a
-  walk-row bar reads it over the bar's span on the haplotype's contig and boxes
-  each gene where it falls along the bar.
+  release 2)**. JBrowse draws that track in the haplotype's lane, and for each
+  of the first 40 walk-row bars reads it over the bar's span on the haplotype's
+  contig and boxes each gene where it falls along the bar.
 - **Reading them:**
   - A gene missing from a lane is missing from that haplotype's annotation,
-    through a deletion or a copy CAT did not project.
+    through a deletion, a copy CAT did not project, or a gene the rules above
+    dropped.
   - CAT names each copy of a duplicated gene after the GRCh38 copy it projected,
     so HG00232.1, with seven _AMY1_ copies, reads _AMY1C_ five times. The number
-    of boxes gives the copy number.
+    of _AMY1_ boxes gives the copy number, unless CAT missed a copy.
   - HG002's two haplotypes have no CAT annotation, so their lanes and bars draw
     no genes.
 

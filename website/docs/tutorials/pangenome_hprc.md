@@ -139,8 +139,9 @@ other loci, a picture that looks simple or empty is often one of these cases:
   come from lymphoblastoid cell lines, B cells whose V(D)J recombination deletes
   hundreds of kb of IGH, IGK and IGL
   ([Rodriguez et al. 2021](https://doi.org/10.1371/journal.pone.0261374),
-  [IGLoo](https://doi.org/10.1016/j.crmeth.2025.101033)). In the -f5s walk file,
-  282 haplotypes jump over at least one 64 kb chunk of IGH, 200 over IGK and 29
+  [IGLoo](https://doi.org/10.1016/j.crmeth.2025.101033) for IGH). In the walk
+  file the lanes read, `hprc-v2.1-mc-grch38-f5s.GRCh38.walks.bed.gz`, 282 of the
+  464 haplotypes jump over at least one 64 kb chunk of IGH, 200 over IGK and 29
   over IGL, across 90 kb to 2 Mb, and none over the T-cell receptor loci TRA and
   TRB. Check a deletion there against the donor's own germline data before
   reporting it.
