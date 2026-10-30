@@ -70,6 +70,14 @@ test('one line per slot path and enum member, rooted at the registered type', ()
   ])
 })
 
+test('live paths leave out a retired key and a legacy enum value', () => {
+  const live = slotPaths(schema, { live: true })
+  expect(live).toContain('DemoTrack.mode=a')
+  expect(live).not.toContain('DemoTrack.mode=old')
+  expect(live).not.toContain('DemoTrack.gone')
+  expect(live).toHaveLength(slotPaths(schema).length - 2)
+})
+
 test('by type, a path drops its type and its union member markers', () => {
   const byType = slotPathsByType(schema)
   expect([...byType.keys()]).toEqual(['DemoTrack', 'config'])

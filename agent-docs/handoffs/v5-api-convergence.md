@@ -37,6 +37,9 @@ Claim a step here before starting it.
 committed schema gained and lost per day, shared and `LinearMarkDisplay` apart,
 with a net line; `--list <day>` names them. One shared sub-schema change counts
 once per display that embeds it, so read the trend, not the size.
+[reference/CONFIG_SPELLINGS.md](../reference/CONFIG_SPELLINGS.md) is today's
+surface on one page, its first table each shared path whose members differ
+between displays.
 
 - 2026-10-15 to 10-26 net: +1754 / −979 shared, +168 / −79 mark display.
   10-22 alone moved about 3000 paths each way in one sub-schema move.

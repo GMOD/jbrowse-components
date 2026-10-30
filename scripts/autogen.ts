@@ -282,6 +282,15 @@ const GENERATORS: Generator[] = [
     needs: ['config schema manifest'],
   },
   {
+    // agent-docs/reference/CONFIG_SPELLINGS.md: every display setting's
+    // spelling, where a shared path differs between displays, and the retired
+    // keys.
+    name: 'config spellings',
+    argv: rootScript('generateConfigSpellings.ts'),
+    independent: true,
+    needs: ['config schema manifest'],
+  },
+  {
     // Writes nothing: the schema above still admits every slot path and enum
     // member in scripts/configSlotPaths.v<major>.txt, which a stable release
     // freezes.

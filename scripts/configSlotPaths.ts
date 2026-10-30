@@ -30,7 +30,12 @@ function discriminator(schema: JsonSchema) {
     : undefined
 }
 
-export function slotPaths(schema: JsonSchema) {
+/**
+ * `live` leaves out what the schema marks deprecated: a retired key and a
+ * legacy enum value, the spellings a config may still load but no writer
+ * should write.
+ */
+export function slotPaths(schema: JsonSchema, { live = false } = {}) {
   const defs = isSchema(schema.$defs) ? schema.$defs : {}
   // a registered type is listed under its own name, so a path stops at one
   const registered = new Set(
@@ -38,8 +43,11 @@ export function slotPaths(schema: JsonSchema) {
   )
   const paths = new Set<string>()
 
+  const retired = (node: unknown) =>
+    live && isSchema(node) && node.deprecated === true
+
   function walk(node: unknown, path: string, inside: readonly string[]) {
-    if (!isSchema(node)) {
+    if (!isSchema(node) || retired(node)) {
       return
     }
     const target = refName(node)
@@ -53,8 +61,10 @@ export function slotPaths(schema: JsonSchema) {
     }
     if (isSchema(node.properties)) {
       for (const [key, value] of Object.entries(node.properties)) {
-        paths.add(`${path}.${key}`)
-        walk(value, `${path}.${key}`, inside)
+        if (!retired(value)) {
+          paths.add(`${path}.${key}`)
+          walk(value, `${path}.${key}`, inside)
+        }
       }
     }
     walk(node.items, `${path}[]`, inside)
@@ -92,9 +102,9 @@ export function slotPaths(schema: JsonSchema) {
  * member markers: `pileup.bases.show` and `heightMode=fit` under
  * `LinearAlignmentsDisplay`.
  */
-export function slotPathsByType(schema: JsonSchema) {
+export function slotPathsByType(schema: JsonSchema, { live = false } = {}) {
   const byType = new Map<string, Set<string>>()
-  for (const line of slotPaths(schema)) {
+  for (const line of slotPaths(schema, { live })) {
     const eq = line.indexOf('=')
     const path = eq === -1 ? line : line.slice(0, eq)
     const [type = '', ...rest] = path.replaceAll(/<[^>]*>/g, '').split('.')
