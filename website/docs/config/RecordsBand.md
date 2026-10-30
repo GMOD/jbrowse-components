@@ -13,10 +13,10 @@ stacks them, so a nested SV sits under the one holding it. SNVs and small
 indels are left out, so a region without SVs spends no height on it. A
 record is colored by its SV type, keyed, or by `encoding.color` when that
 is set, and lettered on one line with its ID, description and the share of
-the samples shown as rows that carry it. The band grows to its stack, up to
-`growMaxHeight`; past that names thin and go, then boxes shrink. Hovering a
-record reports it and its carriers, and clicking opens its details. At
-genomic positions only.
+the samples shown as rows, no-calls included, that carry it. The band grows
+to its stack, up to `growMaxHeight`; past that names thin and go, then boxes
+shrink. Hovering a record reports it and its carriers, and clicking opens
+its details. At genomic positions only.
 
 ## Example usage
 

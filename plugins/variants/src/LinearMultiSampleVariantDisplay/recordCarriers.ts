@@ -2,10 +2,13 @@ import { altDosageByte, isNoCall } from '../shared/getPhasedColor.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 
-/** People, not haplotypes: a sample counts once, however many alts it carries. */
+/**
+ * People, not haplotypes: a sample counts once, however many alts it carries.
+ * Every shown sample is one of the three, so their sum is the denominator.
+ */
 export interface RecordCarriers {
   carriers: number
-  called: number
+  nonCarriers: number
   noCall: number
 }
 
@@ -25,26 +28,23 @@ function countRecord(
   columns: readonly number[],
   classes: Uint8Array,
 ): RecordCarriers {
-  let carriers = 0
-  let called = 0
-  let noCall = 0
+  const counts = [0, 0, 0]
   for (const column of columns) {
     const code = codes[column]!
     const cls = code === 0 ? NO_CALL : classes[code - 1]!
-    if (cls === NO_CALL) {
-      noCall++
-    } else {
-      called++
-      carriers += cls === ALT ? 1 : 0
-    }
+    counts[cls] = counts[cls]! + 1
   }
-  return { carriers, called, noCall }
+  return {
+    carriers: counts[ALT]!,
+    nonCarriers: counts[REF]!,
+    noCall: counts[NO_CALL]!,
+  }
 }
 
 /**
  * Each SV record's carriers among `samples`: a sample with any called alt
- * allele carries it, one with no called allele is a no-call and leaves the
- * denominator.
+ * allele carries it, and one with no called allele is a no-call, which still
+ * counts toward the samples.
  */
 export function countRecordCarriers(
   cellData: CellDataResult,
@@ -70,19 +70,25 @@ export function countRecordCarriers(
   return out
 }
 
-/** "41%", "<1%" for a carrier that rounds to none, '' with nobody called. */
-export function carrierPercent({ carriers, called }: RecordCarriers) {
-  const percent = Math.round((100 * carriers) / called)
-  return called === 0
+function sampleCount({ carriers, nonCarriers, noCall }: RecordCarriers) {
+  return carriers + nonCarriers + noCall
+}
+
+/** "17%" of every shown sample, "<1%" for a carrier that rounds to none. */
+export function carrierPercent(c: RecordCarriers) {
+  const samples = sampleCount(c)
+  const percent = Math.round((100 * c.carriers) / samples)
+  return samples === 0
     ? ''
-    : carriers > 0 && percent === 0
+    : c.carriers > 0 && percent === 0
       ? '<1%'
       : `${percent}%`
 }
 
-/** "1,312 of 3,202 samples (41%)", and ", 5 no-call" when any. */
+/** "538 of 3,202 samples (17%); 1 non-carrier, 2,663 no-call" */
 export function carrierSummary(c: RecordCarriers) {
   const count = (n: number) => n.toLocaleString('en-US')
+  const nonCarriers = `${count(c.nonCarriers)} non-carrier${c.nonCarriers === 1 ? '' : 's'}`
   const noCall = c.noCall > 0 ? `, ${count(c.noCall)} no-call` : ''
-  return `${count(c.carriers)} of ${count(c.called)} samples (${carrierPercent(c)})${noCall}`
+  return `${count(c.carriers)} of ${count(sampleCount(c))} samples (${carrierPercent(c)}); ${nonCarriers}${noCall}`
 }

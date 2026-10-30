@@ -44,14 +44,10 @@ function cellData(codes: number[], svType = 'DEL') {
   })
 }
 
-test('a sample counts once, whatever it carries, and a no-call leaves the denominator', () => {
+test('a sample counts once, whatever it carries, and a no-call still counts', () => {
   expect(
     countRecordCarriers(cellData([1, 2, 3, 4]), SAMPLES).get('sv1'),
-  ).toEqual({
-    carriers: 2,
-    called: 3,
-    noCall: 1,
-  })
+  ).toEqual({ carriers: 2, nonCarriers: 1, noCall: 1 })
 })
 
 test('a sample carrying another alt allele carries the record', () => {
@@ -64,30 +60,34 @@ test('a record with no SV class is not counted', () => {
   expect(countRecordCarriers(cellData([1, 1, 1, 1], ''), SAMPLES).size).toBe(0)
 })
 
-test('the share rounds to a whole percent, a rare carrier to <1%', () => {
-  expect(carrierPercent({ carriers: 1312, called: 3202, noCall: 0 })).toBe(
-    '41%',
+// HGSV_1823 at RHD: 538 carriers, 1 non-carrier and 2,663 no-calls of 3,202
+const HGSV_1823 = { carriers: 538, nonCarriers: 1, noCall: 2663 }
+
+test('the share is of every shown sample, no-calls included', () => {
+  expect(carrierPercent(HGSV_1823)).toBe('17%')
+  expect(carrierPercent({ carriers: 1, nonCarriers: 3201, noCall: 0 })).toBe(
+    '<1%',
   )
-  expect(carrierPercent({ carriers: 1, called: 3202, noCall: 0 })).toBe('<1%')
-  expect(carrierPercent({ carriers: 0, called: 3202, noCall: 0 })).toBe('0%')
+  expect(carrierPercent({ carriers: 0, nonCarriers: 3202, noCall: 0 })).toBe(
+    '0%',
+  )
 })
 
-test('the tooltip names the carriers out of the samples called', () => {
-  const info = featureInfoOf('sv1', { svType: 'DEL' })
+test('the tooltip breaks the samples down', () => {
   const rows = getTooltipRows(
     buildRecordHit({
-      info,
+      info: featureInfoOf('sv1', { svType: 'DEL' }),
       featureId: 'sv1',
-      carriers: { carriers: 1312, called: 3202, noCall: 7 },
+      carriers: HGSV_1823,
     }),
   )
   expect(rows.find(r => r.key === 'carriers')).toEqual({
     key: 'carriers',
     label: 'Carriers',
-    value: '1,312 of 3,202 samples (41%), 7 no-call',
+    value: '538 of 3,202 samples (17%); 1 non-carrier, 2,663 no-call',
   })
-  expect(carrierSummary({ carriers: 1312, called: 3202, noCall: 0 })).toBe(
-    '1,312 of 3,202 samples (41%)',
+  expect(carrierSummary({ carriers: 969, nonCarriers: 2233, noCall: 0 })).toBe(
+    '969 of 3,202 samples (30%); 2,233 non-carriers',
   )
 })
 
@@ -109,13 +109,13 @@ function labelOf(display: ReturnType<typeof recordsDisplay>) {
 
 test('the label ends with the share of the samples shown as rows', () => {
   const display = recordsDisplay()
-  expect(labelOf(display)).toBe('sv1 <DEL> 7Kbp 67%')
+  expect(labelOf(display)).toBe('sv1 <DEL> 7Kbp 50%')
 
   // a row filter is a fetch input, which drops the payload until it lands
-  display.setRowFocus(['S0', 'S2'])
+  display.setRowFocus(['S0', 'S1', 'S2'])
   display.setCellData(cellData([1, 2, 3, 4]), [0])
-  expect(display.recordCarrierSamples).toEqual(['S0', 'S2'])
-  expect(labelOf(display)).toBe('sv1 <DEL> 7Kbp 50%')
+  expect(display.recordCarrierSamples).toEqual(['S0', 'S1', 'S2'])
+  expect(labelOf(display)).toBe('sv1 <DEL> 7Kbp 67%')
 })
 
 test('haplotype rows count their sample once', () => {
@@ -124,9 +124,10 @@ test('haplotype rows count their sample once', () => {
   display.setCellData(cellData([1, 2, 3, 4]), [0])
   expect(display.sources.length).toBe(8)
   expect(display.recordCarrierSamples).toEqual(SAMPLES)
-  expect(display.recordCarriers.get('sv1')).toMatchObject({
+  expect(display.recordCarriers.get('sv1')).toEqual({
     carriers: 2,
-    called: 3,
+    nonCarriers: 1,
+    noCall: 1,
   })
 })
 
