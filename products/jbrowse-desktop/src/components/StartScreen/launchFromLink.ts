@@ -238,6 +238,12 @@ async function launchLinearPlan(
   )
   // a file's trackId is exact; a --track token gets jb2export's leniency
   const fileIds = new Set(plan.tracks.map(t => t.trackId))
+  const shownTracks = plan.show.map(({ trackId: token, modifiers }) => ({
+    trackId: fileIds.has(token)
+      ? token
+      : resolveTrackId(configTracks, token, assembly),
+    modifiers,
+  }))
   const pluginManager = await createPluginManager(config)
   await loadSessionSpec(
     {
@@ -251,12 +257,7 @@ async function launchLinearPlan(
           type: 'LinearGenomeView',
           assembly,
           ...(plan.loc ? { loc: plan.loc } : {}),
-          tracks: plan.show.map(({ trackId: token, modifiers }) => ({
-            trackId: fileIds.has(token)
-              ? token
-              : resolveTrackId(configTracks, token, assembly),
-            modifiers,
-          })),
+          tracks: shownTracks,
         },
       ],
     },

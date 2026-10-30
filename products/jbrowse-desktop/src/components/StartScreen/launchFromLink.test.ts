@@ -577,7 +577,8 @@ describe('a command-line plan', () => {
     )
   })
 
-  test('a --track the config lacks fails with near matches', async () => {
+  test('a --track the config lacks fails before building a plugin manager', async () => {
+    const d = deps()
     await expect(
       launchFromPlan(
         {
@@ -588,9 +589,10 @@ describe('a command-line plan', () => {
           show: [{ trackId: 'nope', modifiers: [] }],
           unapplied: [],
         },
-        deps(),
+        d,
       ),
     ).rejects.toThrow('--track "nope" not found in the config')
+    expect(d.createPluginManager).not.toHaveBeenCalled()
   })
 
   test('reads a local config from disk, not over the network', async () => {
