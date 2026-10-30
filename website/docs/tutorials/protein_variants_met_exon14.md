@@ -92,8 +92,8 @@ species and a structure, linked:
 - pick **Assembly** in the protein view's menu, then the entry for assembly 5,
   marked dimeric. 3BUX opens on its first assembly, the MET stretch alone;
   assembly 5 adds CBL
-- close the alignment view with the × on its title bar, and the ClinVar and
-  AlphaMissense tracks with the × on each track's label
+- close the alignment view under the genome view with the × on its title bar,
+  and the ClinVar and AlphaMissense tracks with the × on each track's label
 - type
   `chr7:116771458-116771694 chr7:116771809-116772029 chr7:116774841-116775151`
   into the location box, which keeps exons 13, 14 and 15 with a little intron on
@@ -127,8 +127,8 @@ The first two bases of an intron are almost always GT, and the splicing
 machinery reads them to find the end of the exon. We copy the view to the end of
 exon 14:
 
-- pick **Copy view** in the view's menu, and close the RNA-seq tracks in the
-  copy
+- pick **View options → Copy view** in the view's menu; the copy opens under the
+  first view, so scroll down to it and close its RNA-seq tracks
 - type `chr7:116771975-116772005` into the copy's location box
 - right-click a read at chr7:116,771,990 and pick **Sort by → Base**
 

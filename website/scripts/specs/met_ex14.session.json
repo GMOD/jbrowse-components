@@ -244,7 +244,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "NCI-H596_DNA",
-      "name": "NCI-H596_DNA",
+      "name": "NCI-H596_DNA.bam",
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "BamAdapter",
@@ -259,7 +259,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "NCI-H596_RNA",
-      "name": "NCI-H596_RNA",
+      "name": "NCI-H596_RNA.bam",
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "BamAdapter",
@@ -274,7 +274,7 @@
     {
       "type": "AlignmentsTrack",
       "trackId": "EBC-1_RNA_5pct",
-      "name": "EBC-1_RNA_5pct",
+      "name": "EBC-1_RNA_5pct.bam",
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "BamAdapter",
