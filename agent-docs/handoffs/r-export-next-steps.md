@@ -16,7 +16,7 @@ not wanted.
 
 1. **A tagged ggjbrowse release.** Its bundle (`inst/js/jbrowse-tables.js`) is
    jbrowse-components dc06068, which predates e2cf9b5d19 and 4ee57bcfa7, the
-   CRAM fixes below. Once those commits are on GitHub, rebuild the bundle with `scripts/build-js.sh` from a clean
+   CRAM fixes below. Once those commits are on GitHub, rebuild the bundle with [ggjbrowse's build-js.sh](https://github.com/GMOD/ggjbrowse/blob/main/scripts/build-js.sh) from a clean
    checkout at it, then bump DESCRIPTION and tag. ggjbrowse's "Get started"
    vignette (`vignettes/ggjbrowse.Rmd`) is on main and passes `R CMD check`.
 2. **An r-universe build**, so V8 installs as a binary and the vignette ships
