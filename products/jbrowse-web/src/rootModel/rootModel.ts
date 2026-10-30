@@ -89,9 +89,9 @@ function isOpenSession(self: SessionDbHost, id: string) {
   return id === self.session?.id
 }
 
-// roots with an export in flight: a slow one would otherwise pile up behind
-// itself
-const capturingThumbnail = new WeakSet<object>()
+// per root, the newest activateSession call, which wins over a click on another
+// session that is still opening
+const latestActivation = new WeakMap<object, object>()
 
 // per session node, the snapshot its last picture shows, so hiding the tab
 // again without an edit in between draws nothing
@@ -335,7 +335,13 @@ export default function RootModel({
         if (isOpenSession(self, id)) {
           return
         }
+        const activation = {}
+        latestActivation.set(self, activation)
         await withSessionDB(self, async sessionDB => {
+          // ahead of the flush below, so an edit made during the export is
+          // flushed too. The export blocks the main thread while the switch
+          // repaints the app anyway.
+          await this.captureSessionThumbnail()
           const ret = await sessionDB.get('sessions', id)
           if (!ret) {
             self.session?.notifyError('Session not found')
@@ -356,12 +362,10 @@ export default function RootModel({
           if (flushed) {
             self.upsertSessionMetadata(flushed)
           }
-          // the export blocks the main thread while the switch repaints the
-          // app anyway. An export of a session still loading waits on its fetch.
-          if (self.session && !sessionLoading(self.session)) {
-            await this.captureSessionThumbnail()
-          }
           await self.pluginManager.preloadSessionTypes(ret)
+          if (latestActivation.get(self) !== activation) {
+            return
+          }
           // another tab is autosaving this id, and sharing it would have the
           // two overwrite one row (sessionLock.ts)
           if ((await claimSessionId(id)) === 'held-elsewhere') {
@@ -401,19 +405,19 @@ export default function RootModel({
        * #action
        * Pictures the open session for the session manager. Silent on failure,
        * since the usual ones are normal states (a view still on its import
-       * form, a fetch outlasting the export's bound, a session swapped out
+       * form, another export still running, a session swapped out
        * mid-export), and the row keeps its previous picture.
        */
       async captureSessionThumbnail() {
         const { session, sessionDB } = self
-        if (!session || !sessionDB || capturingThumbnail.has(self)) {
+        // an export of a session still loading waits on its fetch
+        if (!session || !sessionDB || sessionLoading(session)) {
           return
         }
         const snap = getSnapshot(session)
         if (thumbnailSnapshots.get(session) === snap) {
           return
         }
-        capturingThumbnail.add(self)
         try {
           const { id } = session
           const thumbnail = await renderSessionThumbnail(session.views)
@@ -426,8 +430,6 @@ export default function RootModel({
           }
         } catch {
           // see above
-        } finally {
-          capturingThumbnail.delete(self)
         }
       },
       /**

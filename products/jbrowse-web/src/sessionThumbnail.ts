@@ -6,8 +6,13 @@ const WIDTH = THUMBNAIL_WIDTH * 2
 const MAX_HEIGHT = THUMBNAIL_HEIGHT * 2
 
 // An export of a settled view takes well under a second. One still waiting on
-// a fetch would hold the in-flight guard for the export's own half-hour bound.
+// a fetch runs to the export's own half-hour bound, so the picture gives up
+// sooner.
 const TIMEOUT_MS = 10_000
+
+// Held until the export settles, even past TIMEOUT_MS, so stalled exports
+// cannot pile up
+let exporting: Promise<unknown> | undefined
 
 interface SvgExportingView {
   exportSvg(opts: { save: false; announceSkipped: false }): Promise<string>
@@ -20,12 +25,34 @@ function exportsSvg(view: unknown): view is SvgExportingView {
   )
 }
 
-function timeout(ms: number) {
-  return new Promise<never>((_, reject) => {
-    setTimeout(() => {
-      reject(new Error(`session thumbnail took over ${ms}ms`))
-    }, ms)
-  })
+async function withTimeout<T>(promise: Promise<T>, ms: number) {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          reject(new Error(`session thumbnail took over ${ms}ms`))
+        }, ms)
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+async function exportView(view: SvgExportingView) {
+  if (exporting) {
+    throw new Error('a session thumbnail export is still running')
+  }
+  const svg = view.exportSvg({ save: false, announceSkipped: false })
+  exporting = svg
+  svg
+    .catch(() => {})
+    .finally(() => {
+      exporting = undefined
+    })
+  return withTimeout(svg, TIMEOUT_MS)
 }
 
 /**
@@ -33,18 +60,11 @@ function timeout(ms: number) {
  * export. A browser cannot capture its page the way Desktop's `capturePage`
  * does, and every view type already renders itself for export. Undefined when
  * the session has no view that exports or the picture comes out empty; rejects
- * when the export fails or outlasts TIMEOUT_MS.
+ * when the export fails, outlasts TIMEOUT_MS or finds another still running.
  */
 export async function renderSessionThumbnail(views: readonly unknown[]) {
   const view = views[0]
-  return exportsSvg(view)
-    ? rasterizeSvg(
-        await Promise.race([
-          view.exportSvg({ save: false, announceSkipped: false }),
-          timeout(TIMEOUT_MS),
-        ]),
-      )
-    : undefined
+  return exportsSvg(view) ? rasterizeSvg(await exportView(view)) : undefined
 }
 
 async function rasterizeSvg(svg: string) {
