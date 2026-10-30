@@ -75,9 +75,12 @@ pass draws at one sample without a visual trade, the question
   through today's buffers, and warns when the interface moved since.
   **`--png=<dir>`** writes reference, 1x, 4x and the 1x error, stacked.
 - **`--adapter=llvmpipe`** picks Mesa's software Vulkan (lavapipe), which
-  scores every fixture within 0.1 of a percentage point of the Intel GPU here,
-  all of them in 27 s. No CI job runs it; a runner would need
-  `mesa-vulkan-drivers`, untested.
+  scores every fixture within 0.1 of a percentage point of the Intel GPU here.
+  The Shaders job in `push.yml` runs it on every push, so a fixture without a
+  `budget` is a measurement and one with a budget is a gate.
+- **`--supersample=32`** for a pass that measures its own coverage: the
+  default 8x8 reference rounds a straight edge as 4x MSAA does, which reads
+  such a pass up to ~5 points worse than it is.
 
 ## Canvas scaling & hi-DPI
 

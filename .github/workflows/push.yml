@@ -387,14 +387,14 @@ jobs:
     name: Shaders
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
         with:
-          apt-packages: glslang-tools
+          apt-packages: glslang-tools mesa-vulkan-drivers
       # build-shaders skips a validator it cannot find, with a warning, which is
       # right for a contributor and wrong here: a missing glslangValidator would
       # turn the GLSL check into a green no-op nobody reads the log of.
@@ -442,6 +442,13 @@ jobs:
       # need not satisfy.
       - name: Check the published build works in a plugin's tree
         run: pnpm check-shader-tools-out-of-tree
+      # Draws each scripts/gpu-pixels fixture on Mesa's software Vulkan and
+      # fails a pass whose one-sample render breaks its budget against the
+      # exact shapes: the regression jest cannot see, a shader that compiles
+      # and packs right and draws wrong (a step line that beaded at dense
+      # joints reached a release that way).
+      - name: Score shader pixels on lavapipe
+        run: node scripts/gpu-pixels/run.ts --adapter=llvmpipe
 
   # Each Lambda is a standalone project with its own lockfile, outside the root
   # workspace: the newsletter on npm, blat-proxy on pnpm (its pnpm-workspace.yaml

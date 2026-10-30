@@ -109,9 +109,8 @@ A display draws at one sample when every pass it registers declares
      measures its own coverage reads up to ~5 points worse than it is. Judge
      one with `--supersample=32` (~16x slower). Hard-edged passes (bars,
      spans, density) barely move at 32.
-   - CI. It runs on lavapipe here (`--adapter=llvmpipe`, within 0.1 point
-     of the Intel GPU, 27 s for every fixture); a runner needs
-     `mesa-vulkan-drivers`, untested.
+   - It runs in CI (the Shaders job, lavapipe). The dense step-line
+     fixtures' budgets fail it when the wiggle step line loses its max blend.
 
 Also at four, each small, and none a free flip:
 

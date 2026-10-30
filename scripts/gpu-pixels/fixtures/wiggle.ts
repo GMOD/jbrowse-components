@@ -312,13 +312,14 @@ export default [
     'a 1 px step line over 0.7 to 2.1 px bins at one score',
     denseSteps(() => 40.37),
     1,
-    {},
+    // the src-over version that beaded scored 0.44 at dpr 1
+    { meanErr: 0.075 },
   ),
   stepFixture(
     'wiggle-step-dense-varied',
     'a 1 px step line over 0.7 to 2.1 px bins of varied scores',
     denseSteps(i => 30 + ((i * 17) % 23) * 1.3),
     1,
-    {},
+    { meanErr: 0.11 },
   ),
 ]
