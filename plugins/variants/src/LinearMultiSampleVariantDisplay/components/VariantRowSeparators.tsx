@@ -1,5 +1,5 @@
 import { backingScale } from '@jbrowse/render-core/canvas2dUtils'
-import { RowSeparatorBoxes } from '@jbrowse/tree-sidebar'
+import { RowSeparatorLines } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { SEPARATOR_OPACITY } from '../../shared/constants.ts'
@@ -22,8 +22,7 @@ const VariantRowSeparators = observer(function VariantRowSeparators({
     canvasWidthPx,
   } = model
   return showRowSeparators ? (
-    <div
-      data-testid="variant-row-separators"
+    <svg
       style={{
         position: 'absolute',
         top: 0,
@@ -34,7 +33,7 @@ const VariantRowSeparators = observer(function VariantRowSeparators({
         overflow: 'hidden',
       }}
     >
-      <RowSeparatorBoxes
+      <RowSeparatorLines
         numRows={sources.length}
         rowHeight={effectiveRowHeight}
         width={canvasWidthPx}
@@ -43,7 +42,7 @@ const VariantRowSeparators = observer(function VariantRowSeparators({
         viewportHeight={availableHeight}
         dpr={backingScale(availableHeight)}
       />
-    </div>
+    </svg>
   ) : null
 })
 

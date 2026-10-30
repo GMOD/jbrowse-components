@@ -2,7 +2,6 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { getStrokeProps } from '@jbrowse/core/util'
 import { snappedRowTopPx } from '@jbrowse/render-core/shaders/rowSnap'
-import { observer } from 'mobx-react'
 
 // Hairlines on the boundaries between stacked rows, for the row displays that
 // draw a grid over their painting (multi-wiggle, the multi-row feature
@@ -36,117 +35,70 @@ export const MIN_SEPARATOR_ROW_PX = 4
 /** The divider color's alpha over blocks filling their rows edge to edge. */
 export const FILLED_ROW_SEPARATOR_OPACITY = 0.4
 
-interface SeparatorGeometry {
-  numRows: number
-  rowHeight: number
-  // For a display whose rows scroll inside a viewport: the separators are
-  // placed in viewport coordinates, and the ones outside it are skipped rather
-  // than emitted — a 3,000-sample cohort at a fixed row height is 3,000 of
-  // them otherwise, of which a screenful is visible.
-  scrollTop?: number
-  viewportHeight?: number
-  // For a display whose rows snap to the device grid (`rowSnap.slang`): the
-  // backing-store scale they snapped to. Each separator then fills the whole
-  // device pixels just below its row's snapped top.
-  dpr?: number
-}
-
-/** Each separator's top edge and thickness, in the rows' CSS px. */
-function separatorBands({
+// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
+export function RowSeparatorLines({
   numRows,
   rowHeight,
+  width,
+  opacity,
   scrollTop = 0,
   viewportHeight,
   dpr,
-}: SeparatorGeometry) {
-  const bands: { idx: number; top: number; height: number }[] = []
-  if (numRows < 2 || rowHeight < MIN_SEPARATOR_ROW_PX) {
-    return bands
-  }
-  const height = dpr === undefined ? 1 : Math.max(1, Math.round(dpr)) / dpr
-  for (let idx = 0; idx < numRows - 1; idx++) {
-    // Unsnapped, the line has to cover the pixel the boundary falls in, which
-    // is `floor(boundary)` — not `round(boundary)`, which is a pixel too low
-    // for every boundary whose fractional part is >= 0.5. rowHeight is
-    // fractional whenever a display auto-fits its rows into a height, so the
-    // content either side of a boundary already shares, and blends into, that
-    // one pixel; a line one pixel below it leaves the blend showing as a
-    // stripe of the neighbouring row's color and reads as the grid being out
-    // of step with the painting.
-    const top =
-      dpr === undefined
-        ? Math.floor(rowHeight * (idx + 1)) - scrollTop
-        : snappedRowTopPx(idx + 1, rowHeight, scrollTop, dpr)
-    const mid = top + height / 2
-    if (mid >= 0 && (viewportHeight === undefined || mid <= viewportHeight)) {
-      bands.push({ idx, top, height })
-    }
-  }
-  return bands
-}
-
-// eslint-disable-next-line no-restricted-syntax -- drawn inside a frozen SVG figure
-export function RowSeparatorLines({
-  width,
-  opacity,
-  ...geometry
-}: SeparatorGeometry & {
+}: {
+  numRows: number
+  rowHeight: number
   width: number
   // Alpha applied to the theme's divider color.
   opacity: number
+  // For a display whose rows scroll inside a viewport: the lines are drawn in
+  // viewport coordinates, and the ones outside it are skipped rather than
+  // emitted — a 3,000-sample cohort at a fixed row height is 3,000 `<line>`s
+  // otherwise, of which a screenful is visible.
+  scrollTop?: number
+  viewportHeight?: number
+  // For a display whose rows snap to the device grid (`rowSnap.slang`): the
+  // backing-store scale they snapped to. Each line then fills the whole device
+  // pixels just below its row's snapped top.
+  dpr?: number
 }) {
   const palette = usePalette()
-  return (
-    <>
-      {separatorBands(geometry).map(({ idx, top, height }) => (
-        <line
-          key={`sep-${idx}`}
-          x1={0}
-          y1={top + height / 2}
-          x2={width}
-          y2={top + height / 2}
-          // getStrokeProps splits the alpha onto a separate stroke-opacity
-          // attribute so it survives the SVG export, which strips rgba()
-          // alpha. See CrossHatches.
-          {...getStrokeProps(alpha(palette.divider, opacity))}
-          strokeWidth={height}
-        />
-      ))}
-    </>
-  )
+  if (numRows < 2 || rowHeight < MIN_SEPARATOR_ROW_PX) {
+    return null
+  }
+  const strokeWidth = dpr === undefined ? 1 : Math.max(1, Math.round(dpr)) / dpr
+  const lines = []
+  for (let idx = 0; idx < numRows - 1; idx++) {
+    // The line has to cover the pixel the boundary falls in, which is
+    // `floor(boundary)` — not `round(boundary)`, which is a pixel too low
+    // for every boundary whose fractional part is >= 0.5. rowHeight is
+    // fractional whenever a display auto-fits its rows into a height, so
+    // the content either side of a boundary already shares, and blends
+    // into, that one pixel; a line one pixel below it leaves the blend
+    // showing as a stripe of the neighbouring row's color and reads as the
+    // grid being out of step with the painting. Half-pixel offset so the
+    // 1px stroke fills that pixel rather than straddling two.
+    const y =
+      dpr === undefined
+        ? Math.floor(rowHeight * (idx + 1)) + 0.5 - scrollTop
+        : snappedRowTopPx(idx + 1, rowHeight, scrollTop, dpr) + strokeWidth / 2
+    if (y < 0 || (viewportHeight !== undefined && y > viewportHeight)) {
+      continue
+    }
+    lines.push(
+      <line
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed positional list, one separator per row boundary
+        key={`sep-${idx}`}
+        x1={0}
+        y1={y}
+        x2={width}
+        y2={y}
+        // getStrokeProps splits the alpha onto a separate stroke-opacity
+        // attribute so it survives the SVG export, which strips rgba()
+        // alpha. See CrossHatches.
+        {...getStrokeProps(alpha(palette.divider, opacity))}
+        strokeWidth={strokeWidth}
+      />,
+    )
+  }
+  return <>{lines}</>
 }
-
-/**
- * The on-screen separators as HTML boxes, for rows on the device grid. The
- * browser snaps a box to device pixels as it snaps the canvas beside it, but
- * leaves SVG content where it falls: on a page that puts the display at a
- * fractional device offset, an SVG line lands part-way into a row.
- */
-export const RowSeparatorBoxes = observer(function RowSeparatorBoxes({
-  width,
-  opacity,
-  ...geometry
-}: SeparatorGeometry & {
-  width: number
-  opacity: number
-}) {
-  const palette = usePalette()
-  const background = alpha(palette.divider, opacity)
-  return (
-    <>
-      {separatorBands(geometry).map(({ idx, top, height }) => (
-        <div
-          key={`sep-${idx}`}
-          style={{
-            position: 'absolute',
-            left: 0,
-            top,
-            width,
-            height,
-            background,
-          }}
-        />
-      ))}
-    </>
-  )
-})

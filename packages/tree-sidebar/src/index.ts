@@ -19,7 +19,6 @@ export type { RowsPanelModel } from './RowsPanel.tsx'
 export {
   FILLED_ROW_SEPARATOR_OPACITY,
   MIN_SEPARATOR_ROW_PX,
-  RowSeparatorBoxes,
   RowSeparatorLines,
 } from './RowSeparatorLines.tsx'
 export { StaleTreeHint } from './StaleTreeHint.tsx'
