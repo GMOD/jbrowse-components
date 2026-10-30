@@ -98,7 +98,6 @@ noticing in a diff.
 | type 'RibbonInstance' is outside the supported scalar subset | 2 | `footAngles`, `ribbonAngles` |
 | vec2 element type 'u32' is outside the supported scalar subset | 2 | `decodeBanded`, `decodeTriangular` |
 | //! js-export: 'bpToClipX' reaches hpClipX(), which is outside the supported scalar subset | 1 | `bpToClipX` |
-| //! js-export: 'rowScoreToClipY' reaches rowScoreToYPx(), which is outside the supported scalar subset | 1 | `rowScoreToClipY` |
 | type 'ChevronCorner' is outside the supported scalar subset | 1 | `chevronCorner` |
 | type 'ClipXCorner' is outside the supported scalar subset | 1 | `clipXCapsuleCorner` |
 | type 'ColorVsOut' is outside the supported scalar subset | 1 | `discardVertex` |

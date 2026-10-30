@@ -1,6 +1,6 @@
 ---
 name: msaa-remaining-displays
-description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28, multi-sample variant tracks on 2026-10-30 (cells snapped to the device grid on both axes, awaiting Colin's review), and grammar points, rules and step lines the same day. Open: alignments, wiggle, `spanMark` and `barMark`, each trading some edges and each Colin's call; `scripts/gpu-pixels/run.ts` scores a flip. Hi-C and LD stay at four."
+description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28, multi-sample variant tracks on 2026-10-30 (cells snapped to the device grid on both axes, awaiting Colin's review), and grammar points, rules and step lines the same day, and wiggle's step line too. Open: alignments, wiggle's bars and density, `spanMark` and `barMark`, each trading some edges and each Colin's call; `scripts/gpu-pixels/run.ts` now has a fixture scoring each one. Hi-C and LD stay at four."
 ---
 
 # Displays still at four samples
@@ -20,19 +20,29 @@ A display draws at one sample when every pass it registers declares
 ## Next, in order
 
 1. **Alignments, Colin's call.** One tall track at dpr 2 holds about 316 MiB.
-   - The read, mismatch, gap, insertion and connector passes can be made
-     analytic as the feature passes were.
-   - The coverage band (`coverageBar`, `coverageSnp`, `coverageMod`,
-     `coverageInterbase`, `coverageClip`) cannot: its bars share edges, and
-     ramping each bar seams them.
-   - So flipping draws hard bar tops at one sample.
-2. **Wiggle, Colin's call.** `wiggle.slang`'s bar verticals,
-   `wiggleDensity.slang` and `wiggleLine.slang` keep it at four, and the idea
-   doc lists density and the step line as refusals. The flip is one judgement
-   about all three renderings. The scatter's small-point square already inks
-   its box by area through `pointGlyph.slang`'s `crispSquareCorner`, as
-   `pointMark`'s does (`wiggle-scatter-square` fixture). Density's rows tile,
-   so they could snap through `rowSnap.slang` as the variant passes do.
+   Mean error over reference ink, one sample against four, at dpr 1 / 1.5 / 2
+   (`scripts/gpu-pixels/fixtures/alignments.ts`):
+   - `alignments-coverage-bar`: 5.5 / 4.8 / 2.7% against 1.5 / 1.0 / 0.7%.
+     All of it at the fractional bar tops and height steps; no seam between
+     bars. The band (`coverageBar`, `coverageSnp`, `coverageMod`,
+     `coverageInterbase`, `coverageClip`) cannot ramp, as its bars share
+     edges, so this is the cost of flipping, and it is permanent.
+   - `alignments-read`: 1.3 / 5.9 / 0.7% against 0.5 / 1.0 / 0.3%. Close at a
+     whole dpr; the loss is at 1.5, where 7 px rows put y edges mid-pixel. Needs
+     `rect.slang`'s fractional-dpr ramp, or rows snapped, first.
+   - `alignments-mismatch` and `-subpixel`: byte-identical at dpr 1 and 2;
+     16.2% and 36.5% at 1.5, where whole-CSS-px cells land on half device
+     pixels. Needs the variant cells' `snapCellEdgePx` first.
+   - Gap, insertion and connector have no fixture yet.
+2. **Wiggle's bars and density, Colin's call.** The step line and the
+   scatter's square draw at one already (`wiggle-step-*`,
+   `wiggle-scatter-square`), so these two decide the display:
+   - `wiggle-xyplot-bars`: 9.3 / 6.1 / 5.5% at one against 2.5 / 1.6 / 1.3%
+     at four, all at the hard vertical cuts between bins of different heights.
+   - `wiggle-density`: 5.9 / 4.1 / 3.1% against 1.7 / 1.2 / 0.9%, rows and bin
+     edges both hard. Its rows tile, so they could snap through `rowSnap.slang`
+     as the variant passes do; its sub-pixel bins would still own or miss a
+     pixel, as `spanMark`'s cells do.
 3. **The grammar marks: only `spanMark` and `barMark` remain.** A mark
    display samples at four if any mark it lists does. Numbers are mean error
    over reference ink at dpr 1 / 1.5 / 2, from
@@ -66,11 +76,18 @@ A display draws at one sample when every pass it registers declares
    - CI. It runs on lavapipe here (`--adapter=llvmpipe`, within 0.1 point
      of the Intel GPU, 27 s for every fixture); a runner needs
      `mesa-vulkan-drivers`, untested.
-   - Fixtures for the alignments and wiggle passes, before either flip.
 
-Also at four, each small: the sequence track (`sequenceCell.slang`), the tree
-sidebar's distance matrix (`sampleDistance.slang`), alignments-core's
-`insertionMark.slang`, and the score example plugin.
+Also at four, each small, and none a free flip:
+
+- **The sequence track (`sequenceCell.slang`).** It draws down to 10 bp/px, so
+  its base cells tile at 0.1 px: the `spanMark` trade again.
+- **alignments-core's `insertionMark.slang`.** Only MAF registers it, beside
+  `barMark`, `spanMark` and the coverage band, so flipping it alone saves
+  nothing.
+- **The score example plugin's `score`.** Its boxes abut as coverage bins do.
+
+The tree sidebar's `sampleDistance.slang` used to be listed here, but it is a
+compute pass and allocates no target.
 
 ## Stays at four
 

@@ -297,9 +297,6 @@ four.
 - `wiggle.slang` — the bar's vertical cuts, in the list above. Its
   small-point square inks its box by area since 2026-10-30, through the
   kernel `pointMark` uses.
-- `wiggleLine.slang` — the step-line's quads. Also now a refusal: a feature draws
-  three square-capped quads that deliberately overlap at the joints, so
-  per-fragment coverage would double-blend a lattice of darker joints.
 - `read.slang`, `coverageBar.slang`, `coverageSnp.slang`, `mismatch.slang`,
   `gap.slang`, `insertion.slang`, `coverageInterbase.slang`, `coverageMod.slang`
   — flat fills with **no** pixel snap. Read ends are pointed, so those quads
@@ -794,8 +791,13 @@ Concretely, in the order to take it:
   edge is the datum, and it is measured"). What it still loses at 1 is the
   soft fringe on the *vertical* edge between two bars of different heights —
   silhouette, not datum, and the thing to actually look at before flipping.
-  Density and the step line lose their edges outright and share the display, so
-  the flip is a judgement about all three renderings at once.
+  Density loses its edges outright and shares the display, so the flip is a
+  judgement about both. The step line is out of it: since 2026-10-30 each of
+  its quads inks its box by area, as `lineStepMark`'s do, and declares
+  `//! coverage: analytic`. Refusing it for double-blended joints was wrong
+  for an opaque line. Its `wiggle-step-1px` pixel fixture scores 6.9 / 4.2 /
+  3.8% at one sample, against 8.9 / 10.1 / 4.0% for the flat quads at four
+  and 43 / 33 / 33% at one.
 - **Hi-C and LD stay at 4**, per option 5, and that is not a decision anyone
   needs to retake.
 - **The alignments display is the hard one.** Its coverage band cannot be given

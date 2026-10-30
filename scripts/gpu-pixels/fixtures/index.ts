@@ -1,3 +1,4 @@
+import alignments from './alignments.ts'
 import features from './features.ts'
 import marks from './marks.ts'
 import variant from './variant.ts'
@@ -10,4 +11,5 @@ export const FIXTURES: readonly PixelFixture[] = [
   ...variant,
   ...marks,
   ...wiggle,
+  ...alignments,
 ]
