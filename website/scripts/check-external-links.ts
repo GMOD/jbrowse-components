@@ -168,7 +168,6 @@ const EXPECTED_NON_2XX = new Set([
   'https://api.jbrowse.org/ucsc/v1/blat',
   'https://api.jbrowse.org/ucsc/v1/ispcr',
   'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi',
-  'https://rest.ensembl.org/lookup/symbol/homo_sapiens',
   'https://share.jbrowse.org/api/v1/',
   'https://www.ebi.ac.uk/rdf/services/sparql',
   'https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma',
