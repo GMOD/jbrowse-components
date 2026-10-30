@@ -168,6 +168,45 @@ const suite: TestSuite = {
         )
       },
     },
+    {
+      name: 'of two quick switches in the drawer, the second one opens',
+      fn: async page => {
+        const volvox = 'test_data/volvox/config.json'
+        await navigateToApp(page, volvox, 'Clicked first')
+        await zoomOut(page)
+        await delay(1200)
+        await navigateToApp(page, volvox, 'Clicked second')
+        await zoomOut(page)
+        await delay(1200)
+        const secondId = await sessionId(page)
+        await navigateToApp(page, volvox, 'Starting point')
+        await zoomOut(page)
+        await delay(1200)
+        await (await findByText(page, 'File')).click()
+        await delay(400)
+        await (await findByText(page, 'Recent sessions...')).click()
+        await findByText(page, 'Clicked second')
+        // in one task, so the second lands before the first can finish
+        await page.evaluate(() => {
+          const link = (name: string) =>
+            [...document.querySelectorAll('.MuiDataGrid-row a')].find(
+              a => a.textContent === name,
+            ) as HTMLAnchorElement
+          link('Clicked first').click()
+          link('Clicked second').click()
+        })
+        await page.waitForFunction(
+          (id: string) => window.location.search.includes(id),
+          { timeout: 20000 },
+          secondId,
+        )
+        await delay(3000)
+        const open = await sessionId(page)
+        if (open !== secondId) {
+          throw new Error(`the first click's session ${open} opened last`)
+        }
+      },
+    },
   ],
 }
 
