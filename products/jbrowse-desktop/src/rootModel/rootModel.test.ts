@@ -164,10 +164,7 @@ test('nothing is written for a session with no path to write to', async () => {
   expect(saveCount()).toBe(0)
 })
 
-// OpenSequenceDialog's Cancel calls onClose() and chains .catch on the result,
-// so a synchronous onClose here made every Cancel throw a TypeError
-test('Open genome cancels through a promise and closes the dialog', async () => {
-  const root = createRootModel()
+function openGenomeDialog(root: ReturnType<typeof createRootModel>) {
   const item = root
     .menus()
     .find(m => m.label === 'File')!
@@ -177,11 +174,38 @@ test('Open genome cancels through a promise and closes the dialog', async () => 
     throw new Error('no clickable Open genome item')
   }
   item.onClick()
-  const { onClose } = root.session!.DialogProps as {
-    onClose: () => Promise<void>
+  return root.session!.DialogProps as {
+    existingAssemblyNames: string[]
+    onClose: (confs?: { name: string }[]) => Promise<void>
   }
+}
+
+// OpenSequenceDialog's Cancel calls onClose() and chains .catch on the result,
+// so a synchronous onClose here made every Cancel throw a TypeError
+test('Open genome cancels through a promise and closes the dialog', async () => {
+  const root = createRootModel()
+  const { onClose } = openGenomeDialog(root)
   await expect(onClose()).resolves.toBeUndefined()
   expect(root.session!.DialogComponent).toBeUndefined()
+})
+
+test('Open genome refuses a name a session assembly already has', async () => {
+  const root = createRootModel()
+  root.session!.addSessionAssembly({
+    name: 'volvox',
+    sequence: {
+      type: 'ReferenceSequenceTrack',
+      trackId: 'volvox_refseq',
+      adapter: { type: 'FromConfigSequenceAdapter', features: [] },
+    },
+  })
+  const { existingAssemblyNames, onClose } = openGenomeDialog(root)
+
+  expect(existingAssemblyNames).toContain('volvox')
+  await expect(onClose([{ name: 'volvox' }])).rejects.toThrow(
+    'already open under this name: volvox',
+  )
+  expect(root.jbrowse.assemblies.length).toBe(0)
 })
 
 // the plugin store's add and remove drop setPluginsUpdated's promise, so a

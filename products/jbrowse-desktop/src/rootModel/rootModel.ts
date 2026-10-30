@@ -72,20 +72,17 @@ const ExportToWebDialog = lazy(
 )
 const OpenLinkDialog = lazy(() => import('../components/OpenLinkDialog.tsx'))
 
-// All of a batch or none of it: addAssemblyConf throws on a name or alias it
-// already holds, so a loop that added as it went would keep half the batch
+// All of a batch or none of it, checked against every array the session's
+// assemblyManager draws on: a name a session assembly already has makes each
+// assembly reference ambiguous (findAssemblyConf)
 function addAssemblyConfs(
-  jbrowse: {
-    assemblies: { name: string; aliases: string[] }[]
-    addAssemblyConf: (conf: AnyConfiguration) => unknown
-  },
+  session: { findAssemblyConf: (name: string) => unknown },
+  jbrowse: { addAssemblyConf: (conf: AnyConfiguration) => unknown },
   confs: AssemblyConf[],
 ) {
   const taken = confs
     .map(conf => conf.name)
-    .filter(name =>
-      jbrowse.assemblies.some(a => a.name === name || a.aliases.includes(name)),
-    )
+    .filter(name => session.findAssemblyConf(name))
   if (taken.length) {
     throw new Error(
       `An assembly is already open under ${taken.length > 1 ? 'these names' : 'this name'}: ${taken.join(', ')}. Rename and try again.`,
@@ -336,20 +333,19 @@ export default function rootModelFactory({
                     label: 'Open genome...',
                     icon: DNA,
                     onClick: () => {
-                      queueSessionDialog(self.session, (_session, done) => [
+                      const session = self.session
+                      queueSessionDialog(session, (_session, done) => [
                         OpenSequenceDialog,
                         {
-                          existingAssemblyNames: [
-                            ...self.jbrowse.assemblyNames,
-                          ],
+                          existingAssemblyNames: session?.assemblyNames,
                           // deliberately unguarded: a throw here leaves the
                           // dialog open showing the reason, with the staged
                           // genomes still in it. Catching would report the
                           // failure to a snackbar and close over work that has
                           // nowhere left to go.
                           onClose: async (confs?: AssemblyConf[]) => {
-                            if (confs) {
-                              addAssemblyConfs(self.jbrowse, confs)
+                            if (confs && session) {
+                              addAssemblyConfs(session, self.jbrowse, confs)
                             }
                             done()
                           },
