@@ -29,26 +29,6 @@ await esbuild.build({
   minify: process.env.NODE_ENV === 'production',
 })
 
-// The preload runs in the renderer, before the page, and must be CommonJS: an
-// ESM preload needs an .mjs extension and is only loaded when the window is
-// unsandboxed, so cjs is the form that works either way.
-//
-// The .cjs extension is load-bearing. This package is "type": "module", so a
-// preload written to build/preload.js is parsed as ESM, throws on its own
-// require() call before it can expose anything, and leaves the renderer with no
-// bridge at all — silently, since a preload that throws does not stop the page.
-await esbuild.build({
-  entryPoints: [path.join(rootDir, 'electron/preload.ts')],
-  bundle: true,
-  platform: 'node',
-  target: 'node20',
-  format: 'cjs',
-  outfile: path.join(rootDir, 'build/preload.cjs'),
-  external: ['electron'],
-  sourcemap: false,
-  minify: process.env.NODE_ENV === 'production',
-})
-
 // The MCP stdio server as a plain-node entry (no electron import anywhere in
 // its graph), for MCP clients configured with `node build/mcpServer.js`; the
 // packaged app serves the same role via `--mcp` from the electron.js bundle.

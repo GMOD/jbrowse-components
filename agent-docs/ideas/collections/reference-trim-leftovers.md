@@ -37,8 +37,6 @@ has been re-checked since the cut.
   Canvas2D after K losses.
 - **EAGER_BUNDLE:** retry the Desktop start-screen split; Material UI holders in the SVG export path and
   `session.theme`; a proportional ratchet for the examples-site budget.
-- **Desktop isolation** (DESKTOP_CONTEXT_ISOLATION): probe whether page-built
-  Workers inherit Node access; try the `contextIsolation` flip on the real app.
 - **R export** (R_EXPORT): bisulfite C→T needs a reference walk;
   `shownModifications` filtering; phased-HP PS hue flattens to the secondary
   color; the multi-wiggle pos/neg split and group/cluster tree order; CI does
@@ -119,8 +117,6 @@ Open items the second, harder trim removed from the docs.
   is a flat list that stays slow at thousands of haplotypes.
 - **R export** (R_EXPORT): `GRanges` `[[` and label-decimation parity traps.
 - **SV** (SV_MULTIHOP): seven unexplained HG008-T misses.
-- **Desktop isolation** (DESKTOP_CONTEXT_ISOLATION): the `isNode` claim is
-  unprobed.
 
 ## Third pass (2026-09-30)
 
@@ -137,9 +133,6 @@ Items the whole-unit cuts removed. Same caveat: unverified since the cut.
   synteny; show the launcher when no synteny track is open.
 - **Pangenome** (PANGENOME_GRAPHS): a linearized deletion track; release-2 files
   nothing reads yet; the abandoned gfa-to-tabix lessons.
-- **Desktop isolation** (DESKTOP_CONTEXT_ISOLATION): the six-step isolation
-  order; probe whether a page-built Worker inherits `nodeIntegrationInWorker`;
-  argument validation; the `.cjs` preload note.
 - **ARC_BAND:** draw one mark per cluster.
 - **TOOLCHAIN:** the list of lint rules measured and rejected.
 - **Session and fetch** (SESSION_SPEC_FORMAT, REGION_TOO_LARGE): spreadsheet

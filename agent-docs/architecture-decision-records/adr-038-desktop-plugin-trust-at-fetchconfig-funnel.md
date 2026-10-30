@@ -1,14 +1,14 @@
 ---
 status: Accepted
-summary: "Desktop vets remote-config plugins at the `fetchConfig` funnel, not per caller; mitigation until contextIsolation"
+summary: "Desktop vets remote-config plugins at the `fetchConfig` funnel, not per caller; the renderer keeps Node (ADR-253), so this gate is the control"
 ---
 
 # ADR-038: Desktop vets remote-config plugins at the `fetchConfig` funnel
 
 ## Status
 
-Accepted (2026-07). Mitigation only — the underlying privilege is the subject of
-`reference/DESKTOP_CONTEXT_ISOLATION.md`, which this ADR does not resolve.
+Accepted (2026-07). The renderer keeps Node (ADR-253), so this gate is the
+control for untrusted plugins rather than a stopgap.
 
 Amended 2026-09-25: `fetchCJS` is gone with the CJS plugin format, so the
 Context below describes the loader as it was. The gate is unchanged and still
@@ -94,14 +94,11 @@ traverse into a local file to open".
 
 ### What this does not decide
 
-This is a mitigation, not the fix. It narrows *which configs* can reach
-`require()`; it does not remove `require()` from the renderer. Any injected
-content is still RCE, and a user who clicks "Load plugins" still gets a plugin
-with full Node. The fix is `contextIsolation`, which
-`reference/DESKTOP_CONTEXT_ISOLATION.md` plans and `electron/preload.ts` +
-`electron/requireShim.ts` prepare for. Once that lands, this gate goes back to
-being defense-in-depth rather than the thing standing between a link click and
-code execution.
+It narrows *which configs* can reach `require()`; it does not remove
+`require()` from the renderer. Injected content is still code execution, and a
+user who clicks "Load plugins" still gets a plugin with full Node. ADR-253
+records why the contextIsolation flip does not change that while the RPC
+workers have Node.
 
 ## Consequences
 
