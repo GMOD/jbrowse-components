@@ -129,15 +129,15 @@ Files
                                                                both endpoints
                                                  1,209,086 rows
 
-  bovine-arsucd12-minigraph.alleles.bed.gz         4,265,145   one row per
-                                    .tbi             696,139   allele the graph
+  bovine-arsucd12-minigraph.alleles.bed.gz         4,397,871   one row per
+                                    .tbi             723,819   allele the graph
                                                                holds, derived
                                                                from segs+links
-                                                 171,334 alleles
-                                                 (94,635 insertions,
-                                                  76,365 deletions,
-                                                  334 same-length
-                                                  substitutions; 4,780 nested)
+                                                 173,449 alleles
+                                                 (96,619 insertions,
+                                                  76,479 deletions,
+                                                  351 same-length
+                                                  substitutions; 6,336 nested)
 
   bovine-arsucd12-minigraph.bubbles.bed.gz        50,466,192   gfatools bubble
                                     .tbi             771,214   output

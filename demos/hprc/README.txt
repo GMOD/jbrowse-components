@@ -104,9 +104,9 @@ Files
 
   hprc-v2.1-mc-grch38.alleles.bed.gz{,.tbi}  one row per allele the graph
                                              holds, derived from segs+links:
-                                             206,016 alleles (111,408
-                                             insertions, 90,204 deletions,
-                                             4,404 same-length substitutions)
+                                             221,981 alleles (124,466
+                                             insertions, 92,845 deletions,
+                                             4,670 same-length substitutions)
 
   hprc-v2.1-mc-grch38.haplotype-index.f3.db
                                              the companion gbz-base index
