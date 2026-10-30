@@ -96,6 +96,11 @@ const THRESHOLD_OVERRIDES: { match: string; threshold: number }[] = [
   // A 1 px step line crossing the pivot: Canvas2D cuts each crossing with a
   // capped stroke, the shader per fragment. Moves between rasterizers.
   { match: 'whiskers-band', threshold: 0.025 },
+  // A pileup 46 kb wide: the alignments display draws at one sample
+  // (AlignmentsRenderer.ts), so read ends and coverage-bar tops are hard on
+  // the GPU where Canvas2D antialiases them. 1.68% before this entry; does NOT
+  // move between rasterizers, since the sample count, not the driver, makes it.
+  { match: 'insert-size-orientation', threshold: 0.025 },
   // Accumulate-vs-resolve on SNP ticks and indicator triangles at arbitrary
   // sub-pixel x, ~40 deep per column: Canvas2D composites each and saturates,
   // the GPU resolves coverage once. Closing it means one merged mark per

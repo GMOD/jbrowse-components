@@ -83,6 +83,13 @@ drift nobody intends to fix is not an override: record the finding here instead,
 as the per-base wall does. `thresholdFor` takes the first substring match, so a
 specific entry sits above a broader one.
 
+One kind of entry fails that test on purpose: a display that draws at one
+sample (`sampleCount: 1`) is hard-edged on the GPU by design, so its drift
+against Canvas2D is identical under `--swiftshader` and `--real-gpu`. The
+alignments display's `insert-size-orientation` entry is that kind: 1.68% on
+both, all of it at read ends and coverage-bar tops. Its comment says so, and
+it is the only such entry.
+
 ### What the gate cannot see: geometry on an already-antialiased edge
 
 `comparePngBuffers` (`pngDiff.ts`) calls pixelmatch with `includeAA: false`. On
