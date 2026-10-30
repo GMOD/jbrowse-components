@@ -31,8 +31,8 @@ A display draws at one sample when every pass it registers declares
    doc lists density and the step line as refusals. The flip is one judgement
    about all three renderings. The scatter's small-point square already inks
    its box by area through `pointGlyph.slang`'s `crispSquareCorner`, as
-   `pointMark`'s does (`wiggle-scatter-square` fixture). Density's rows tile, so they could snap through
-   `rowSnap.slang` as the variant passes do.
+   `pointMark`'s does (`wiggle-scatter-square` fixture). Density's rows tile,
+   so they could snap through `rowSnap.slang` as the variant passes do.
 3. **The grammar marks: only `spanMark` and `barMark` remain.** A mark
    display samples at four if any mark it lists does. Numbers are mean error
    over reference ink at dpr 1 / 1.5 / 2, from
