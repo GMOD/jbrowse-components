@@ -105,9 +105,8 @@ const LoaderContents = observer(function LoaderContents() {
     invokeIpc('setSessionOpen', Boolean(pm)).catch(console.error)
   })
 
-  // Closing the window (title bar, Cmd+W, macOS Quit) never went through the
-  // renderer, so the last second of edits died with it — the Exit menu item has
-  // flushed for exactly this reason for a while. Main asks; this answers, and
+  // Closing the window (title bar, Cmd+W, macOS Quit, the Exit menu item)
+  // would take the last second of edits with it. Main asks; this answers, and
   // must answer even when the flush fails, or the close it is holding never
   // completes.
   useIpc('flushSessionForClose', () => {

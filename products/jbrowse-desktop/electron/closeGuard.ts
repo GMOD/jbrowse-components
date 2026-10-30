@@ -5,10 +5,9 @@ import { ipcHandle, ipcSend } from './ipc/channels.ts'
  *
  * The autosave runs on a 1s throttle, so closing the window within a second of
  * an edit lost it — usually the last thing you did, which is the visible half:
- * add a track, close, reopen, no track. The in-app Exit and "Return to start
- * screen" menu items already flush for exactly this reason; the title-bar
- * close, Cmd+W and the macOS app-menu Quit did not, because they never go
- * through the renderer at all.
+ * add a track, close, reopen, no track. The title-bar close, Cmd+W, the macOS
+ * app-menu Quit and the in-app Exit all end here; "Return to start screen"
+ * flushes for itself, since it closes no window.
  *
  * The shape here is dictated by what can go wrong, not by what is tidy:
  *

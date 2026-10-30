@@ -18,8 +18,8 @@ pan is a stream of session writes — each one serializing the whole session.
 ## Why the number is looser than it was
 
 The data-loss window that 1s was chosen against is much smaller now.
-`closeGuard` flushes on window close, and Exit, return-to-start-screen and
-session-swap all flush too. So the cadence is no longer the only thing standing
+`closeGuard` flushes on window close and Exit, and return-to-start-screen and
+session-swap both flush too. So the cadence is no longer the only thing standing
 between a user and losing work; it is the backstop for a crash or a kill.
 
 ## The proposal
