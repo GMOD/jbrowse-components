@@ -287,3 +287,21 @@ test('the backing width is the scale the HAL reported, not the dpr', () => {
     hal.getLastUniformsF32()![shader.UNIFORM_OFFSET_F32.backingWidthPx],
   ).toBe(600)
 })
+
+// At a fractional dpr the store rounds (1266 x 1.25 = 1582.5 → 1583), and a
+// width rebuilt from the dpr misses the last column's pixel centre.
+test('the backing width is the store the viewport spans at a fractional dpr', () => {
+  const data = makeData()
+  const hal = new MockHal([MARK.pass])
+  const scratch = new ArrayBuffer(MARK.pass.uniformByteSize)
+  const state = { ...STATE, canvasWidth: 1266 }
+  const b = block(data, state)
+  const clip = clipBlock(b, state.canvasWidth, state.canvasHeight, {
+    x: 1.25,
+    y: 1.25,
+  })!
+  MARK.drawRegion(hal, scratch, b, clip, data, state, b.displayedRegionIndex)
+  expect(
+    hal.getLastUniformsF32()![shader.UNIFORM_OFFSET_F32.backingWidthPx],
+  ).toBe(1583)
+})
