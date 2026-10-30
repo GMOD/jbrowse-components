@@ -108,7 +108,7 @@ draws.
 
 **Status:** Mitigated; kept because the trap recurs.
 
-`backingSize` (`canvas2dUtils.ts`) caps a backing store at `MAX_CANVAS_DIM_PX`
+`canvasAxis` (`canvas2dUtils.ts`) caps a backing store at `MAX_CANVAS_DIM_PX`
 per axis, so an oversized canvas cannot throw `InvalidStateError`. Display
 height is user-dragged with no maximum, and the resize handle's double-click
 grows a track to its whole content.
@@ -126,6 +126,15 @@ grows a track to its whole content.
   cell pass's x (`clip.scaleX`, placed through `pxX`/`pxW`). Their Canvas2D
   painters and hit tests snap to `backingScale` of the canvas's height and
   width, which matches except on a drawing buffer Chrome shrank.
+- **Uncapped, the reported scale is the dpr itself**, and the canvas's CSS box
+  is the store over the dpr, so the browser draws the store 1:1
+  (GPU_SHADERS.md §"Canvas scaling & hi-DPI").
+- **A DOM overlay over a canvas lands on the device grid when its offset from
+  the canvas is whole device px**, as the variant row separators' is
+  (`RowSeparatorLines` with `dpr`). The page offset above the canvas need not
+  be: Chrome and Firefox snap the canvas and its overlays together
+  (TEST_INFRASTRUCTURE.md §"A fractional dpr needs Chrome's real device
+  scale").
 - **A shader that rebuilds device px from the dpr breaks this.** The variant
   matrix did, and painted 0.2% of its columns on a shrunk buffer. The `dpr`
   uniforms that remain size antialias ramps and minimum stroke widths

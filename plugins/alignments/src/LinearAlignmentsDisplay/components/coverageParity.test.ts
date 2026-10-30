@@ -326,6 +326,7 @@ describe('coverage packing parity between GPU and Canvas2D', () => {
       getContext: () => ctx,
       width: 0,
       height: 0,
+      style: {},
     } as unknown as HTMLCanvasElement
     const renderer = new Canvas2DAlignmentsRenderer(canvas)
 
@@ -670,6 +671,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       getContext: () => ctx,
       width: 0,
       height: 0,
+      style: {},
     } as unknown as HTMLCanvasElement)
   }
 

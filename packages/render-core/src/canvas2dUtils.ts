@@ -61,21 +61,34 @@ export function maxCanvasCssPx() {
   return MAX_CANVAS_DIM_PX / getDpr()
 }
 
-// CSS px → backing-store px, each axis under MAX_CANVAS_DIM_PX. Every device-px
-// rect derives from the scale this leaves (`syncCanvasSize`, `prepareCanvas`),
-// so a capped canvas draws whole at a lower resolution on that axis.
-function backingSize(cssWidth: number, cssHeight: number, dpr: number) {
-  return {
-    width: Math.min(Math.round(cssWidth * dpr), MAX_CANVAS_DIM_PX),
-    height: Math.min(Math.round(cssHeight * dpr), MAX_CANVAS_DIM_PX),
-  }
+/**
+ * One axis of a canvas: its backing store, under {@link MAX_CANVAS_DIM_PX}, the
+ * CSS box it displays in, and the backing px per CSS px. Every device-px rect
+ * derives from `scale` (`syncCanvasSize`, `prepareCanvas`).
+ *
+ * Uncapped, the box is the store over the dpr, so the browser draws the store
+ * 1:1 on device px. A box of the CSS extent asked for spans a fractional
+ * number of device px whenever extent x dpr is fractional (1266 CSS px at dpr
+ * 1.25 is 1582.5), and the browser stretched the 1583 px store into it,
+ * blurring every column and shifting the cells off the overlays drawn over
+ * them. The box differs from the extent by under half a device px.
+ *
+ * Capped, the box keeps the extent and the store draws whole at a reduced
+ * scale.
+ */
+function canvasAxis(cssPx: number, dpr: number) {
+  const exact = Math.round(cssPx * dpr)
+  const backing = Math.min(exact, MAX_CANVAS_DIM_PX)
+  return backing === exact
+    ? { backing, boxPx: backing / dpr, scale: dpr }
+    : { backing, boxPx: cssPx, scale: backing / cssPx }
 }
 
 /**
  * The ratio a canvas's backing store ACTUALLY has to its CSS box, per axis.
  *
- * `getDpr()` on both axes until `backingSize` caps the store, and below it
- * after, so every device-px rect a renderer hands the GPU derives from this.
+ * `getDpr()` on both axes until the store caps, and below it after, so every
+ * device-px rect a renderer hands the GPU derives from this.
  * See ARCHITECTURAL_LIMITS.md §"A canvas past
  * the backing-store caps draws at reduced resolution".
  */
@@ -84,54 +97,49 @@ export interface CanvasScale {
   y: number
 }
 
-function effectiveScale(cssPx: number, backing: number) {
-  // A zero-width or zero-height canvas has no ratio to report; the true dpr is
-  // the answer that makes the arithmetic downstream a no-op.
-  return cssPx > 0 ? backing / cssPx : getDpr()
-}
-
 /**
  * The scale a canvas `cssPx` long gets on that axis: what `syncCanvasSize`
  * reports and `prepareCanvas` transforms by. A painter snapping to device
- * pixels asks this rather than `getDpr()`, which a rounded or capped backing
- * store departs from.
+ * pixels asks this rather than `getDpr()`, which a capped backing store
+ * departs from.
  */
 export function backingScale(cssPx: number) {
-  return effectiveScale(cssPx, backingSize(cssPx, cssPx, getDpr()).width)
+  return canvasAxis(cssPx, getDpr()).scale
 }
 
-// Apply CSS dimensions + dpr-scaled physical dimensions to `canvas`. Returns
-// whether the backing dimensions actually changed, and the scale each axis
-// ended up with — both HAL impls and any 2D-canvas backend use this so the dpr
-// math and style-vs-attribute logic live in one place.
+// Sizes `canvas`'s backing store and CSS box for a `width` x `height` CSS px
+// extent and returns whether the store changed and the scale each axis got.
+// Both HALs and `prepareCanvas` go through here.
+//
+// The box goes in min- and max- as well as width and height: a component that
+// also sizes the canvas through React's `style` writes width and height on its
+// own commits, which can land after a draw, and min and max outrank them.
 export function syncCanvasSize(
   canvas: HTMLCanvasElement,
   width: number,
   height: number,
 ): { changed: boolean; scale: CanvasScale } {
-  const { width: pw, height: ph } = backingSize(width, height, getDpr())
-  const changed = canvas.width !== pw || canvas.height !== ph
+  const dpr = getDpr()
+  const x = canvasAxis(width, dpr)
+  const y = canvasAxis(height, dpr)
+  const changed = canvas.width !== x.backing || canvas.height !== y.backing
   if (changed) {
-    canvas.width = pw
-    canvas.height = ph
+    canvas.width = x.backing
+    canvas.height = y.backing
   }
-  // CSS size is set independently of `changed`: once a dimension clamps to
-  // MAX_CANVAS_DIM_PX the backing store stops tracking the CSS size, so gating
-  // the style write on the backing store froze the element at whatever CSS size
-  // it had when it first clamped. Assigning the same string is a no-op in the
-  // browser, so this costs nothing on the common path.
-  const cssWidth = `${width}px`
-  const cssHeight = `${height}px`
-  if (canvas.style.width !== cssWidth) {
-    canvas.style.width = cssWidth
+  // Written whether or not the store changed: past the cap the store stops
+  // tracking the extent, and gating on it froze the box at whatever size it had
+  // when it first capped. Assigning the same string is a no-op.
+  const boxWidth = `${x.boxPx}px`
+  const boxHeight = `${y.boxPx}px`
+  const { style } = canvas
+  if (style.width !== boxWidth || style.minWidth !== boxWidth) {
+    style.width = style.minWidth = style.maxWidth = boxWidth
   }
-  if (canvas.style.height !== cssHeight) {
-    canvas.style.height = cssHeight
+  if (style.height !== boxHeight || style.minHeight !== boxHeight) {
+    style.height = style.minHeight = style.maxHeight = boxHeight
   }
-  return {
-    changed,
-    scale: { x: effectiveScale(width, pw), y: effectiveScale(height, ph) },
-  }
+  return { changed, scale: { x: x.scale, y: y.scale } }
 }
 
 export function prepareCanvas(
@@ -140,29 +148,10 @@ export function prepareCanvas(
   canvasWidth: number,
   canvasHeight: number,
 ) {
-  const { width: bufW, height: bufH } = backingSize(
-    canvasWidth,
-    canvasHeight,
-    getDpr(),
-  )
-
-  if (canvas.width !== bufW || canvas.height !== bufH) {
-    canvas.width = bufW
-    canvas.height = bufH
-  }
-
-  // The scale the backing store actually got, not the one the screen has: past
-  // the clamp these differ, and transforming by the true dpr is what made a
-  // clamped 2D canvas paint its top slice stretched over the whole track
-  // instead of the whole track at reduced resolution.
-  ctx.setTransform(
-    effectiveScale(canvasWidth, bufW),
-    0,
-    0,
-    effectiveScale(canvasHeight, bufH),
-    0,
-    0,
-  )
+  // The scale the store got, not the dpr: past the cap, transforming by the dpr
+  // painted a capped canvas's top slice stretched over the whole track.
+  const { scale } = syncCanvasSize(canvas, canvasWidth, canvasHeight)
+  ctx.setTransform(scale.x, 0, 0, scale.y, 0, 0)
   ctx.clearRect(0, 0, canvasWidth, canvasHeight)
 }
 

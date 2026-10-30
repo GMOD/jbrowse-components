@@ -160,6 +160,7 @@ function createMockCanvas() {
   const canvas = {
     width: 0,
     height: 0,
+    style: {},
     getContext: jest.fn(() => ctx),
   } as unknown as HTMLCanvasElement
   return { canvas, ctx, pathOps }

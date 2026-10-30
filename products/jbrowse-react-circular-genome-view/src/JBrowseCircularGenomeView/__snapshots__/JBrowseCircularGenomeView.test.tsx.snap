@@ -22,7 +22,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             data-display-phase="ready"
             data-testid="circular-chord-canvas"
             height="400"
-            style="width: 808px; height: 400px;"
+            style="width: 808px; height: 400px; max-width: 808px; min-width: 808px; max-height: 400px; min-height: 400px;"
             width="808"
           />
           <div

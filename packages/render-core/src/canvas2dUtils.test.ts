@@ -3,6 +3,7 @@ import {
   MAX_DPR,
   bpAtPx,
   bpAtPxExact,
+  backingScale,
   bpProjection,
   devicePxSpan,
   forEachClippedBlock,
@@ -34,6 +35,7 @@ function makeFakeCanvas(ctx: unknown) {
   const canvas = {
     width: 0,
     height: 0,
+    style: {},
     getContext: () => (ctx === undefined ? fakeCtx : ctx),
   }
   return { canvas, fakeCtx, calls }
@@ -116,6 +118,43 @@ test('the reported scale follows the backing store, not the screen', () => {
   expect(scale.y).toBeLessThan(getDpr())
   // and the rect a caller builds from it lands inside the store
   expect(Math.round(cssHeight * scale.y)).toBe(MAX_CANVAS_DIM_PX)
+})
+
+function withDpr<T>(dpr: number, run: () => T) {
+  const before = window.devicePixelRatio
+  window.devicePixelRatio = dpr
+  try {
+    return run()
+  } finally {
+    window.devicePixelRatio = before
+  }
+}
+
+// 1266 CSS px at dpr 1.25 is 1582.5 device px: a box that size made the
+// browser stretch the 1583 px store into it and resample every column.
+test('the CSS box spans the whole device px the store holds', () => {
+  withDpr(1.25, () => {
+    const canvas = document.createElement('canvas')
+    canvas.style.width = '1266px'
+    const { scale } = syncCanvasSize(canvas, 1266, 361)
+    expect(canvas.width).toBe(1583)
+    expect(canvas.height).toBe(451)
+    expect(scale).toEqual({ x: 1.25, y: 1.25 })
+    expect(backingScale(1266)).toBe(1.25)
+    for (const [extent, min, max, backing] of [
+      [canvas.style.width, canvas.style.minWidth, canvas.style.maxWidth, 1583],
+      [
+        canvas.style.height,
+        canvas.style.minHeight,
+        canvas.style.maxHeight,
+        451,
+      ],
+    ] as const) {
+      expect(Number.parseFloat(extent) * 1.25).toBeCloseTo(backing, 9)
+      expect(min).toBe(extent)
+      expect(max).toBe(extent)
+    }
+  })
 })
 
 // The Canvas2D twin of the pivot inside the shaders' extendToMinWidthX. When a

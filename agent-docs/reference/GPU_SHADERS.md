@@ -82,12 +82,17 @@ pass draws at one sample without a visual trade, the question
 ## Canvas scaling & hi-DPI
 
 **GPU canvases (HAL-managed):** uniforms are in CSS pixels and the HAL sets the
-backing store to `css × dpr`. Do not scale by `devicePixelRatio`.
+backing store to `round(css × dpr)`. Do not scale by `devicePixelRatio`.
 
-**2D overlay canvases** (`MafRowOverlays` and the like): the caller owns
-DPR. Set `canvas.width = w * dpr`, call `ctx.scale(dpr, dpr)`, and put CSS
-`width`/`height` in the style, as `prepareCanvas`
-(`packages/render-core/src/canvas2dUtils.ts`) does. Skipping this blurs on Retina.
+**2D overlay canvases** (`MafRowOverlays` and the like) go through
+`prepareCanvas` (`packages/render-core/src/canvas2dUtils.ts`), which sizes the
+store and the box and scales the context. Skipping it blurs on Retina.
+
+**The CSS box is the store over the dpr** (`syncCanvasSize`), within half a
+device px of the extent asked for. A box spanning a fractional number of device px (1266 CSS
+px at dpr 1.25 is 1582.5) made Chrome stretch the 1583 px store into it,
+resampling every column; Firefox snaps the box to the store. The box goes in
+`min-`/`max-` too, so a component's own React `width` cannot undo it.
 
 ## Antialiasing ramps: how wide, and where the width comes from
 

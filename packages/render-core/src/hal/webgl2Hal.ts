@@ -400,14 +400,15 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       return { x: getDpr(), y: getDpr() }
     }
     // Resized past 7680x4320 px of area, Chrome shrinks the drawing buffer and
-    // leaves canvas.width/height at the requested size, so the scale comes from
-    // the buffer. A lost context reads 0x0 and falls back to syncCanvasSize's.
+    // leaves canvas.width/height at the requested size, so the scale shrinks
+    // with the buffer. A lost context reads 0x0 and keeps syncCanvasSize's.
     const { scale } = syncCanvasSize(this.canvas, width, height)
     const { drawingBufferWidth: bufferW, drawingBufferHeight: bufferH } =
       this.gl
+    const { width: canvasW, height: canvasH } = this.canvas
     return {
-      x: width > 0 && bufferW > 0 ? bufferW / width : scale.x,
-      y: height > 0 && bufferH > 0 ? bufferH / height : scale.y,
+      x: canvasW > 0 && bufferW > 0 ? (scale.x * bufferW) / canvasW : scale.x,
+      y: canvasH > 0 && bufferH > 0 ? (scale.y * bufferH) / canvasH : scale.y,
     }
   }
 

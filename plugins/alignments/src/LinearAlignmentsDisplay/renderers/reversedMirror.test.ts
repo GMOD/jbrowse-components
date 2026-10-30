@@ -283,6 +283,7 @@ function drawAt(reversed: boolean, overrides: Partial<RenderState> = {}) {
     getContext: () => ctx,
     width: 0,
     height: 0,
+    style: {},
   } as unknown as HTMLCanvasElement
   const renderer = new Canvas2DAlignmentsRenderer(canvas)
   renderer.upload('sources', {

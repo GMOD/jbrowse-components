@@ -11,10 +11,11 @@ import type { CellChannels, CellParams } from './cellMark.ts'
 import type { MarkShape } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-// Rows on the canvas's device pixel grid, a whole device px at least.
-function rowBand(row: number, canvasHeight: number, params: CellParams) {
+// Rows on the canvas's device pixel grid, a whole device px at least. An
+// uncapped canvas's backing scale is the dpr itself.
+function rowBand(row: number, params: CellParams) {
   const { rowHeight, scrollTop } = params
-  const dpr = Math.round(canvasHeight * getDpr()) / canvasHeight
+  const dpr = getDpr()
   const y = row * rowHeight - scrollTop
   const top = Math.floor(y * dpr + 0.5) / dpr
   const bottom = Math.max(
@@ -26,8 +27,8 @@ function rowBand(row: number, canvasHeight: number, params: CellParams) {
 
 // Sides on the device grid, the floor rounded up to it, hung off the record's
 // start.
-function cellX(x1: number, x2: number, canvasWidth: number) {
-  const dpr = Math.round(canvasWidth * getDpr()) / canvasWidth
+function cellX(x1: number, x2: number) {
+  const dpr = getDpr()
   const snap = (x: number) => Math.floor(x * dpr + 0.5) / dpr
   const width = Math.max(
     Math.ceil(2 * dpr) / dpr,
@@ -45,12 +46,11 @@ const retired: Required<
     const toX = makeBpMapper(block)
     const setFill = makeAbgrFill(ctx)
     for (let i = 0; i < count; i++) {
-      const { top, height } = rowBand(row[i]!, canvasHeight, params)
+      const { top, height } = rowBand(row[i]!, params)
       if (top + height >= 0 && top <= canvasHeight) {
         const { x, width } = cellX(
           toX(startEnd[i * 2]!),
           toX(startEnd[i * 2 + 1]!),
-          frame.canvasWidth,
         )
         setFill(color[i]!)
         drawVariantShape(ctx, shapeType[i]!, x, top, width, height)
@@ -61,16 +61,12 @@ const retired: Required<
   ink(channels, block, frame, params, i) {
     const { startEnd, row } = channels
     const { canvasHeight } = frame
-    const { top, height } = rowBand(row[i]!, canvasHeight, params)
+    const { top, height } = rowBand(row[i]!, params)
     if (top + height < 0 || top > canvasHeight) {
       return undefined
     }
     const toX = makeBpMapper(block)
-    const { x, width } = cellX(
-      toX(startEnd[i * 2]!),
-      toX(startEnd[i * 2 + 1]!),
-      frame.canvasWidth,
-    )
+    const { x, width } = cellX(toX(startEnd[i * 2]!), toX(startEnd[i * 2 + 1]!))
     return { left: x, top, width, height }
   },
 }
