@@ -26,10 +26,11 @@ A display draws at one sample when every pass it registers declares
    Left over:
    - The track label above a display is 23.14 CSS px tall, so the display's
      canvas starts at a fractional page y (197.14 at dpr 1.5 in the probe's
-     layout). The separators over the canvas land at that fraction and smear
-     across two or three device rows in Chrome, where the cells beside them
-     stay crisp. HTML boxes in place of SVG lines landed no closer. A whole-px
-     track label height would fix every overlay at once.
+     layout). SVG separators over the canvas land at that fraction and smear
+     across three device rows in both browsers, where the cells beside them
+     stay crisp. The on-screen separators are HTML boxes now: crisp in Firefox,
+     still one full row and one half row in Chrome. A whole-px track label
+     height would fix every overlay at once.
 2. **Alignments, Colin's call.** One tall track at dpr 2 holds about 316 MiB.
    - The read, mismatch, gap, insertion and connector passes can be made
      analytic as the feature passes were.
