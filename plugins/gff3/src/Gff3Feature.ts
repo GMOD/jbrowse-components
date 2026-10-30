@@ -111,6 +111,11 @@ export class Gff3Feature implements Feature {
     return this.uniqueId
   }
 
+  /** None: GFF3 has no BED color column (`featureBedColor`). */
+  public bedColor() {
+    return undefined
+  }
+
   /** The feature's column 9 keyed as the file writes it (`fileAttributes`). */
   public fileAttributes() {
     return fileAttributes(this.data.attributeString)

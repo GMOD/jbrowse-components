@@ -97,6 +97,15 @@ export function featureItemRgb(
 // write) keeps working, and can now just be deleted.
 export const BED_COLOR_FIELDS = ['itemRgb', 'reserved', 'field8'] as const
 
+// A feature that knows its format answers for itself: GFF3 has no BED color
+// column, and asking a GFF3 feature for three absent attributes scans its
+// column 9 three times, at every level of the glyph's color walk.
+function hasOwnBedColor(feature: Feature): feature is Feature & {
+  bedColor: (itemRgbOn: boolean) => string | undefined
+} {
+  return 'bedColor' in feature
+}
+
 /**
  * The BED color a feature declares for itself, under any column name, or
  * undefined if it declares none. `itemRgbOn` reads "0,0,0" as black and a
@@ -106,6 +115,9 @@ export function featureBedColor(
   feature: Feature,
   itemRgbOn = false,
 ): string | undefined {
+  if (hasOwnBedColor(feature)) {
+    return feature.bedColor(itemRgbOn)
+  }
   let found: string | undefined
   for (const field of BED_COLOR_FIELDS) {
     found ??= featureItemRgb(feature.get(field), itemRgbOn)

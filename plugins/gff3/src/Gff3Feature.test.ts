@@ -1,4 +1,5 @@
 import { parseLines, parseLinesLazy } from '@gmod/gff-nostream'
+import { featureBedColor } from '@jbrowse/core/util/colorBits'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { Gff3Feature } from './Gff3Feature.ts'
@@ -60,6 +61,14 @@ describe('Gff3Feature', () => {
     expect(f.get('alias')).toEqual(['a', 'b'])
     expect(f.get('reserved')).toBeUndefined()
     expect(f.get('reserved')).toBeUndefined()
+  })
+
+  it('declares no BED color, even under a BED color column name', () => {
+    const f = lazy([
+      'ctgA\texample\tgene\t1051\t9000\t.\t+\t.\tID=gene1;reserved=1,2,3',
+    ])
+    expect(featureBedColor(f)).toBeUndefined()
+    expect(f.get('reserved')).toEqual(['1', '2', '3'])
   })
 
   it('unescapes a deferred attribute only when asked for it', () => {

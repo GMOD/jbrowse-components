@@ -269,6 +269,15 @@ describe('colorBits helpers', () => {
       )
     })
 
+    test("a feature's own bedColor answers instead of its columns", () => {
+      const feature = {
+        get: () => '1,1,1',
+        bedColor: (itemRgbOn: boolean) => (itemRgbOn ? '0,0,0' : undefined),
+      } as unknown as Feature
+      expect(featureBedColor(feature)).toBeUndefined()
+      expect(featureBedColor(feature, true)).toBe('0,0,0')
+    })
+
     test('itemRgb wins when a file somehow carries both', () => {
       expect(
         featureBedColor(mockFeature({ itemRgb: '1,1,1', reserved: '2,2,2' })),
