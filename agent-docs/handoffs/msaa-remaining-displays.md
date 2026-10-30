@@ -1,6 +1,6 @@
 ---
 name: msaa-remaining-displays
-description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28, multi-sample variant tracks on 2026-10-30 (cells snapped to the device grid on both axes, awaiting Colin's review), grammar points and rules the same day, and wiggle's step line too (by max blend; the grammar step line went back to four). Wiggle's bars and density stay at four by choice. Alignments stays at four: a whole-dpr flip was built and declined for its coverage band and browser zoom. Open: `spanMark` and `barMark`, each Colin's call. Hi-C and LD stay at four."
+description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28, multi-sample variant tracks on 2026-10-30 (cells snapped to the device grid on both axes, awaiting Colin's review), grammar points and rules the same day, and wiggle's step line too (by max blend; the grammar step line went back to four). Wiggle's bars and density stay at four by choice. Alignments draws at one sample since 2026-10-30, sub-pixel coverage segments drawing whole or not at all. Open: `spanMark` and `barMark`, each Colin's call. Hi-C and LD stay at four."
 ---
 
 # Displays still at four samples
@@ -20,7 +20,7 @@ A display draws at one sample when every pass it registers declares
   that measures its own coverage can compound where its pieces overlap (the
   step lines; give it a dense fixture), and a stack of sub-pixel segments
   turns from a tint into a full pixel or nothing (alignments' coverage band,
-  item 1). Wiggle keeps four by choice: ~8 MiB a track does not pay for its
+  item 1, accepted: a common allele is many px tall). Wiggle keeps four by choice: ~8 MiB a track does not pay for its
   bars' and density's edges.
 - **The pattern to copy:** the five feature passes under
   `plugins/features/src/LinearBasicDisplay/passes/shaders/`, and
@@ -28,26 +28,25 @@ A display draws at one sample when every pass it registers declares
 
 ## Next, in order
 
-1. **Alignments stays at four; a whole-dpr flip was built, captured and
-   declined on 2026-10-30.** One tall track at dpr 2 holds 340 MiB of MSAA.
-   Drawing at one sample when dpr was 1 or 2 moved few pixels in the pileup
-   (`products/jbrowse-web/browser-tests/probe-alignments-sample-count.ts`,
-   Chrome WebGL2, dpr 1 / 2: base level 0.40 / 0.21%, long reads 0.38 /
-   0.15%, zoomed out 2.3 / 1.3%, fit squeeze 7.7 / 4.3%). Two things stopped
-   it:
-   - **The coverage band changes what it encodes.** `coverageSnp` and
-     `coverageMod` segments have no minimum height, so at one sample a
-     sliver under a device px is a full-color pixel or nothing, by where it
-     falls: sequencing noise in a deep pileup reads as a real ~3% allele and
-     flickers as the band rescales. Zoomed out, a pixel shows one allele's
-     color, not their mix, while Canvas2D and SVG still blend. A fix would
-     have to preserve each segment's area at one sample.
-   - **Browser zoom reaches a fractional dpr.** The count is read once, at
-     construction; `syncCanvasSize` follows a Ctrl+ to 125% while the
-     backend stays at one sample, where whole-CSS-px cells land on half
-     device px (16% of `alignments-mismatch`'s ink off). Switching counts
-     needs a rebuild on a fresh canvas, since WebGL2 fixes `antialias` for a
-     canvas's life; nothing in render-core does that today.
+1. **Alignments draws at one sample at every dpr** (`AlignmentsRenderer.ts`,
+   2026-10-30, Colin's call after the trade below). One tall track at dpr 2
+   held 340 MiB of MSAA. Pixels that moved against four samples, in Chrome
+   WebGL2 (`products/jbrowse-web/browser-tests/probe-alignments-sample-count.ts`),
+   dpr 1 / 1.5 / 2: base level 0.40 / 3.9 / 0.21%, long reads 0.38 / 0.74 /
+   0.15%, zoomed out 2.3 / 6.3 / 1.3%, fit squeeze 7.7 / 13 / 4.3%. At 1.5
+   most of that is row edges four samples had blended into a fringe, now
+   crisp. What it costs:
+   - **Coverage segments under a device px draw whole or not at all.** A
+     segment's height is its share of depth times the band height, so a
+     common allele is many px tall and keeps its value; a rare one (under
+     max depth / band px reads) is a full-color pixel or nothing, by where it
+     falls, where four samples gave a tint (and dropped one under ~1/4 px).
+     Zoomed out, a pixel shows one allele's color, not their mix, while
+     Canvas2D and SVG still blend.
+   - **Hard read tips and coverage-bar tops**, and at a fractional dpr equal
+     1 CSS px cells come out 1 or 2 device px wide.
+   - A whole-dpr-only gate was tried first and dropped: the count is read at
+     construction, and browser zoom reaches a fractional dpr after it.
 
    Mean error over reference ink, one sample against four, at dpr 1 / 1.5 / 2
    (`scripts/gpu-pixels/fixtures/alignments.ts`):

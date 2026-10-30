@@ -70,7 +70,8 @@ a 2532x8180 device px target (a 1266x4090 CSS px track at dpr 2, priced at
 (i915, from the first draw) and in VRAM on the AMD discrete GPU (radv, from
 creation), against 80 MiB for the one-sample canvas texture alone. Neither
 returned the memory to the process's counters within the probe after
-`destroy()`. `scripts/gpu-pixels/probe-msaa-residency.ts`
+`destroy()`. The alignments display, the tallest, draws at one sample and
+allocates none since 2026-10-30. `scripts/gpu-pixels/probe-msaa-residency.ts`
 takes it from `/proc/self/fdinfo` through Dawn. Which displays can draw at one
 sample:
 [arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md).

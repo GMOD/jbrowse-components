@@ -804,13 +804,11 @@ Concretely, in the order to take it:
   committed scored 44% at dpr 1.
 - **Hi-C and LD stay at 4**, per option 5, and that is not a decision anyone
   needs to retake.
-- **The alignments display stays at four.** A flip at a whole dpr was built
-  and captured on 2026-10-30 (`probe-alignments-sample-count.ts`: 0.2-0.4% of
-  pixels moved at base level, 4-8% in the fit squeeze) and declined. The
-  coverage band's sub-pixel allele segments turn from a tint into a full
-  pixel or nothing, so noise reads as an allele, and browser zoom reaches a
-  fractional dpr after the count is fixed at construction. The handoff
-  `msaa-remaining-displays.md` item 1 has the detail.
+- **The alignments display draws at one sample since 2026-10-30**, passing
+  `sampleCount: 1` at every dpr. Its coverage band's sub-pixel allele
+  segments draw whole or not at all, where four samples gave a tint; a
+  common allele is many px tall and unaffected. The handoff
+  `msaa-remaining-displays.md` item 1 has the captures.
 - **Wiggle stays at four, by choice.** Its bars' vertical cuts and density's
   edges go hard at one sample (`wiggle-xyplot-bars`, `wiggle-density`) for
   ~8 MiB a single-row track at dpr 2, which is not worth the edges.
