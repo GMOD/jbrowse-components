@@ -277,13 +277,23 @@ export async function captureFullPage(
 
 // A minimized window produces no frame, and capturePage then answers with an
 // empty image, whose missing PNG header the size read threw a RangeError on.
+// The crop box is CSS pixels and capturePage takes window units, which page
+// zoom (View → Zoom In) sets apart.
 async function captureViewport(
   contents: BrowserWindow['webContents'],
   rect: Rectangle | undefined,
   width: number,
   scale: number,
 ): Promise<CapturedImage | { error: string }> {
-  const image = await contents.capturePage(rect)
+  const zoom = contents.getZoomFactor()
+  const image = await contents.capturePage(
+    rect && {
+      x: Math.floor(rect.x * zoom),
+      y: Math.floor(rect.y * zoom),
+      width: Math.ceil(rect.width * zoom),
+      height: Math.ceil(rect.height * zoom),
+    },
+  )
   return image.isEmpty()
     ? {
         error:
@@ -349,8 +359,9 @@ export function createScreenshotTool({
       }
     }
     const scale = requestedScale(args.scale)
+    const zoom = win.webContents.getZoomFactor()
     const { width, height } = win.getContentBounds()
-    const viewport = { x: 0, y: 0, width, height }
+    const viewport = { x: 0, y: 0, width: width / zoom, height: height / zoom }
     // DevTools holds the only debugger slot a webContents has, so a full-page
     // capture with it open used to throw. The viewport is the honest fallback,
     // and it says which of the two it gave back.
@@ -372,7 +383,7 @@ export function createScreenshotTool({
       ? await takeTurn(() =>
           captureFullPage(contents, args, scale, relay, overflowOf(settled)),
         )
-      : await captureViewport(contents, crop.rect, width, scale)
+      : await captureViewport(contents, crop.rect, viewport.width, scale)
     if ('error' in captured) {
       return errorAfterSettle(captured.error, settled)
     }

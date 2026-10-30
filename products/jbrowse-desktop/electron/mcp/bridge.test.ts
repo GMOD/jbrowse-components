@@ -77,6 +77,8 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
   // webContents, and a fresh object each time would leave those on a throwaway
   const contentsEvents = new Map<string, (...a: never[]) => void>()
   let crashed = false
+  let zoom = 1
+  const captured: unknown[] = []
   const webContents = {
     id: 1,
     send: (channel: string, payload: McpBridgeRequest) => {
@@ -89,8 +91,12 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
     setBackgroundThrottling: () => {},
     isCrashed: () => crashed,
     isDevToolsOpened: () => false,
+    getZoomFactor: () => zoom,
     // what a minimized window's capture comes back as
-    capturePage: async () => ({ isEmpty: () => true }),
+    capturePage: async (rect?: unknown) => {
+      captured.push(rect)
+      return { isEmpty: () => true }
+    },
   }
   const win = {
     webContents,
@@ -120,6 +126,10 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
     recentSessionsPath,
     pushed,
     launched,
+    captured,
+    setZoom: (factor: number) => {
+      zoom = factor
+    },
     stop: () => {
       for (const socket of clients) {
         socket.destroy()
@@ -463,6 +473,26 @@ it('a screenshot of a window that yields no image says why', async () => {
     error:
       'the window produced no image to capture, which a minimized JBrowse Desktop does; restore it and try again',
   })
+})
+
+// a crop box is CSS pixels; capturePage takes window units, which page zoom
+// sets apart
+it('a zoomed page captures the crop box in window units', async () => {
+  const b = bridge()
+  const c = b.connect()
+  await settle()
+  b.ready({ install: 'first', phase: 'session' })
+  b.setZoom(2)
+  void c.send(1, 'screenshot', {
+    rect: { x: 10, y: 20, width: 100, height: 50 },
+  })
+  await settle()
+  b.answer(b.lastPush().id, { result: { settled: true } })
+  await settle()
+  b.answer(b.lastPush().id, { result: { painted: true } })
+  await settle()
+
+  expect(b.captured).toEqual([{ x: 20, y: 40, width: 200, height: 100 }])
 })
 
 it('cancels the code of a client that exits mid-call', async () => {
