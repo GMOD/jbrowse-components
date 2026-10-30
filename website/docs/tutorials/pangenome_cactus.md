@@ -34,7 +34,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
   [drawing the graph as a graph](#opening-the-graph-in-the-graph-genome-view).
   In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store)
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.0.0 or later, for
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.1.0 or later, for
   [indexing the graph](#indexing-the-graph)
 - for the [whole build](#reproduce-it-end-to-end): the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
@@ -525,11 +525,8 @@ gfa-to-tabix build mc/ecoli.gfa.gz -o ecoli_cactus --reference K12
 Without `--snarls` the command writes no bubble file. Our hosted copy of the
 index loads as one `GraphTrack` at the shared prefix. A local build's track
 reads the contig layout instead, since the anchored layout at the bare prefix
-draws multi-megabase rows across every window:
-
-- set `uri` to `ecoli_cactus.contig`
-- drop `"format": 2`, because `build` writes the contig layout as a format 1
-  pair, `.contig.segs.bed.gz` and `.contig.links.bed.gz`
+draws multi-megabase rows across every window, so set `uri` to
+`ecoli_cactus.contig`.
 
 ```json addtrack
 {
