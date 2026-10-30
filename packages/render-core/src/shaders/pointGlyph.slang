@@ -17,11 +17,6 @@ import hpmath;
 // A disc's edge is ramped by `glyphEdgeAlpha`, whose width is one OUTPUT pixel
 // measured in the SDF's own units — so in CSS px the ramp reaches `aaHalfPx`
 // past the boundary and the quad has to grow by exactly that.
-//
-// This was a flat 1.0 under a comment calling it device px while both consumers
-// added it in CSS px: 2x the reach at dpr 1 and 4x at dpr 2, every surplus
-// fragment shading to alpha 0. A pad is the one place the two units cannot be
-// swapped without anyone seeing.
 
 // At/below this diameter an AA disc reads as a muddy blob, so callers draw a
 // crisp filled square instead.

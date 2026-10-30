@@ -51,14 +51,16 @@ public float2 arrowReachPx(float headHalfPx, float dpr) {
   float stemEnd = ARROW_LENGTH_PX * 0.5;
   float slantPx = sqrt(headHalfPx * headHalfPx + stemEnd * stemEnd);
   return float2(
-    ARROW_LENGTH_PX + pad * slantPx / max(headHalfPx, pad),
+    headHalfPx > 0.0 ? ARROW_LENGTH_PX + pad * slantPx / max(headHalfPx, pad)
+                     : stemEnd + 0.5 + pad,
     max(STEM_HALF_H_PX + pad,
         headHalfPx + pad * (headHalfPx + slantPx) / stemEnd));
 }
 
 // Coverage at `alongPx` from the arrow's root and `acrossPx` off its axis. The
 // stem runs half a px into the head, which holds it there, so the union of the
-// two has no seam where the head's base ramps up.
+// two has no seam where the head's base ramps up. A box too short to snap to a
+// pixel has no head, as the Canvas2D triangle it fills has no area.
 public float arrowCoverage(float alongPx, float acrossPx, float headHalfPx, float dpr) {
   float across = abs(acrossPx);
   float stemEnd = ARROW_LENGTH_PX * 0.5;
@@ -67,7 +69,9 @@ public float arrowCoverage(float alongPx, float acrossPx, float headHalfPx, floa
              * edgeCoverage(stemEnd + 0.5 - alongPx, dpr);
   float slant = (headHalfPx * (ARROW_LENGTH_PX - alongPx) - stemEnd * across)
               / sqrt(headHalfPx * headHalfPx + stemEnd * stemEnd);
-  float head = edgeCoverage(alongPx - stemEnd, dpr) * edgeCoverage(slant, dpr);
+  float head = headHalfPx > 0.0
+    ? edgeCoverage(alongPx - stemEnd, dpr) * edgeCoverage(slant, dpr)
+    : 0.0;
   return max(stem, head);
 }
 

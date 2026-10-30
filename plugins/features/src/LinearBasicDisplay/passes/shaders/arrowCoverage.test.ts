@@ -6,7 +6,7 @@ import { arrowCoverage, arrowReachPx } from './arrow.js.generated.ts'
 // sharpest corner and reaches furthest.
 test.each(
   [1, 1.5, 2].flatMap(dpr =>
-    [HEAD_HALF_H_PX, 1, 0.5].map(headHalf => [dpr, headHalf]),
+    [HEAD_HALF_H_PX, 1, 0.5, 0].map(headHalf => [dpr, headHalf]),
   ),
 )('at dpr %s the quad holds a head %s px tall', (dpr, headHalf) => {
   const [tip, halfH] = arrowReachPx(headHalf, dpr)

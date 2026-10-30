@@ -69,7 +69,7 @@ struct Uniforms {
   // Ends of the value range, inset by `glyphPaint`'s `pointInsetPx` where the
   // display wants its edge glyphs whole; 0 centres a point on the plot's edge.
   float  insetPx;
-  // Read by the glyph pad alone; every other length in this block is CSS px.
+  // Read by the pads and box coverage; every other length here is CSS px.
   float  devicePixelRatio;
   int    rowTableKeys;
   int    rule;
@@ -88,7 +88,7 @@ struct VsOut {
   float4 color    : COLOR0;
   float2 localPos : TEXCOORD0;
   // Shape discriminator passed to the fragment shader: 0 = disc, 1 = diamond,
-  // 2 = inverted triangle, 3 = solid fill.
+  // 2 = inverted triangle, 3 = a box inked by its area (a rule, or the square).
   nointerpolation float shape : TEXCOORD1;
   // A flat shape's own box and the fragment's place, both CSS px, which its
   // coverage is measured from.

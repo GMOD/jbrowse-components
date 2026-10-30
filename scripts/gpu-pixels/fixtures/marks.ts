@@ -418,6 +418,7 @@ export default [
     'disc, triangle and diamond glyphs, radius 4.2',
     4.2,
     scattered(15, 12.4, [GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND]),
+    { max: 0.5, meanErr: 0.025 },
   ),
   pointFixture(
     'mark-point-square',
@@ -431,6 +432,7 @@ export default [
     'radius 1.2, where the disc draws as the crisp square',
     1.2,
     scattered(24, 7.9, [GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND]),
+    { max: 0.5, meanErr: 0.1 },
   ),
   ruleFixture,
   spanFixture(
@@ -467,6 +469,6 @@ export default [
     0,
     'device',
   ),
-  stepFixture(1, { meanErr: 0.09 }),
-  stepFixture(2, { meanErr: 0.075 }),
+  stepFixture(1, { meanErr: 0.09, twice: 60, holes: 7 }),
+  stepFixture(2, { meanErr: 0.075, twice: 238, holes: 0 }),
 ]
