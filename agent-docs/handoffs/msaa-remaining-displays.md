@@ -19,33 +19,21 @@ A display draws at one sample when every pass it registers declares
 
 ## Next, in order
 
-1. **Variant tracks: DOM overlays inherit a fractional page offset.** Cells and
-   rows draw on the device grid at one sample on every rung, and the hover box
-   and row separators place themselves on the same snapped edges
-   (`probe-variant-device-grid.ts` captures both layouts, dense and sparse).
-   Left over:
-   - The track label above a display is 23.14 CSS px tall, so the display's
-     canvas starts at a fractional page y (197.14 at dpr 1.5 in the probe's
-     layout). SVG separators over the canvas land at that fraction and smear
-     across three device rows in both browsers, where the cells beside them
-     stay crisp. The on-screen separators are HTML boxes now: crisp in Firefox,
-     still one full row and one half row in Chrome. A whole-px track label
-     height would fix every overlay at once.
-2. **Alignments, Colin's call.** One tall track at dpr 2 holds about 316 MiB.
+1. **Alignments, Colin's call.** One tall track at dpr 2 holds about 316 MiB.
    - The read, mismatch, gap, insertion and connector passes can be made
      analytic as the feature passes were.
    - The coverage band (`coverageBar`, `coverageSnp`, `coverageMod`,
      `coverageInterbase`, `coverageClip`) cannot: its bars share edges, and
      ramping each bar seams them.
    - So flipping draws hard bar tops at one sample.
-3. **Wiggle, Colin's call.** `wiggle.slang`'s bar verticals,
+2. **Wiggle, Colin's call.** `wiggle.slang`'s bar verticals,
    `wiggleDensity.slang` and `wiggleLine.slang` keep it at four, and the idea
    doc lists density and the step line as refusals. The flip is one judgement
    about all three renderings. The scatter's small-point square already inks
    its box by area through `pointGlyph.slang`'s `crispSquareCorner`, as
    `pointMark`'s does (`wiggle-scatter-square` fixture). Density's rows tile, so they could snap through
    `rowSnap.slang` as the variant passes do.
-4. **The grammar marks: only `spanMark` and `barMark` remain.** A mark
+3. **The grammar marks: only `spanMark` and `barMark` remain.** A mark
    display samples at four if any mark it lists does. Numbers are mean error
    over reference ink at dpr 1 / 1.5 / 2, from
    `node scripts/gpu-pixels/run.ts mark` (8x8 supersample, so under ~1% is
@@ -71,7 +59,7 @@ A display draws at one sample when every pass it registers declares
      Canvas2D painter's do.
    - **`barMark` stays at four:** its vertical cuts stay hard and lean on MSAA
      (its header says why).
-5. **The GPU pixel harness exists:** `node scripts/gpu-pixels/run.ts`, written
+4. **The GPU pixel harness exists:** `node scripts/gpu-pixels/run.ts`, written
    up in [GPU_SHADERS.md](../reference/GPU_SHADERS.md) §"Scoring a pass's
    pixels on a real GPU". Its `--base=bdc1f15242~1` run shows the feature
    flip: `rect` at dpr 1.5 and one sample went from 5.04% to 0.02%. Open:
