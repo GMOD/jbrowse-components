@@ -361,7 +361,13 @@ export function createScreenshotTool({
     const scale = requestedScale(args.scale)
     const zoom = win.webContents.getZoomFactor()
     const { width, height } = win.getContentBounds()
-    const viewport = { x: 0, y: 0, width: width / zoom, height: height / zoom }
+    // whole CSS pixels, so a crop box never reports a fractional size
+    const viewport = {
+      x: 0,
+      y: 0,
+      width: Math.floor(width / zoom),
+      height: Math.floor(height / zoom),
+    }
     // DevTools holds the only debugger slot a webContents has, so a full-page
     // capture with it open used to throw. The viewport is the honest fallback,
     // and it says which of the two it gave back.

@@ -104,9 +104,9 @@ export function startMcpBridge({
     }
   }
 
-  ipcHandle('mcpReady', (_event, state) => {
+  ipcHandle('mcpReady', (event, state) => {
     // before trusting the announcement, so the page's own reload revokes it
-    watchWindow()
+    watchWindow(event.sender)
     listening = state
     crashed = undefined
     wakeWaiters()
@@ -155,26 +155,28 @@ export function startMcpBridge({
   }
 
   let watchedContents: number | undefined
-  function watchWindow() {
-    const win = getWindow()
-    if (!win || win.webContents.id === watchedContents) {
+  // The page that announced, not getWindow(): the window manager names the
+  // window only once its first load resolves, and the page announces before
+  // that, so a reload in between would have left nothing watched.
+  function watchWindow(contents = getWindow()?.webContents) {
+    if (!contents || contents.id === watchedContents) {
       return
     }
-    watchedContents = win.webContents.id
+    watchedContents = contents.id
     // a new window's page owes nothing to the last one's crash
     crashed = undefined
-    applyThrottling()
+    contents.setBackgroundThrottling(connectedClients === 0)
     // a committed main-frame page load: did-start-navigation also fires for a
     // link click that will-navigate cancels, which leaves the page listening
     // with nothing to announce it again
-    win.webContents.on('did-navigate', () => {
+    contents.on('did-navigate', () => {
       crashed = undefined
       stopListening()
     })
     // A load that fails commits an error page in place of the app, which
     // announces nothing and fires no did-navigate. -3 is a navigation aborted
     // before it left, the cancelled link click above, and changes nothing.
-    win.webContents.on(
+    contents.on(
       'did-fail-load',
       (_event, errorCode, _description, _url, isMainFrame) => {
         if (isMainFrame && errorCode !== -3) {
@@ -182,12 +184,12 @@ export function startMcpBridge({
         }
       },
     )
-    win.webContents.on('render-process-gone', (_event, { reason }) => {
+    contents.on('render-process-gone', (_event, { reason }) => {
       markCrashed(reason)
     })
-    win.webContents.on('destroyed', stopListening)
+    contents.on('destroyed', stopListening)
     // these listeners attach on the first call, which can come after a crash
-    if (win.webContents.isCrashed()) {
+    if (contents.isCrashed()) {
       markCrashed(undefined)
     }
   }

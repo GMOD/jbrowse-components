@@ -78,6 +78,8 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
   const contentsEvents = new Map<string, (...a: never[]) => void>()
   let crashed = false
   let zoom = 1
+  // the window manager names the window only once its first load resolves
+  let named = true
   const captured: unknown[] = []
   const webContents = {
     id: 1,
@@ -107,7 +109,7 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
     paths: { recentSessionsPath } as AppPaths,
     appVersion: '9.9.9',
     socketPath,
-    getWindow: () => win,
+    getWindow: () => (named ? win : null),
     openTarget: target => {
       launched.push(target)
       return openTarget()
@@ -127,6 +129,9 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
     pushed,
     launched,
     captured,
+    setNamed: (value: boolean) => {
+      named = value
+    },
     setZoom: (factor: number) => {
       zoom = factor
     },
@@ -138,7 +143,7 @@ function start(openTarget: () => Promise<unknown> = () => Promise.resolve()) {
     },
     connect: () => client(socketPath, clients),
     ready: (state: McpReadyState) => {
-      void listeners.get('mcpReady')?.(undefined, state as never)
+      void listeners.get('mcpReady')?.({ sender: webContents }, state as never)
     },
     answer: (id: number, outcome: Record<string, unknown>) => {
       void listeners.get('mcpResponse')?.(undefined, {
@@ -356,6 +361,21 @@ it('stops trusting a page that reloaded before the first call', async () => {
   b.ready({ install: 'second', phase: 'session' })
   await settle()
   expect(b.lastPush()).toMatchObject({ tool: 'run_javascript' })
+})
+
+// the page announces before createMainWindow resolves and the window manager
+// names the window, so the announcement is what has to say which page to watch
+it('stops trusting a page that reloaded before its window was named', async () => {
+  const b = bridge()
+  const c = b.connect()
+  await settle()
+  b.setNamed(false)
+  b.ready({ install: 'first', phase: 'startScreen' })
+  b.setNamed(true)
+  b.navigate()
+  void c.send(1, 'run_javascript', { code: 'return 1' })
+  await settle()
+  expect(b.pushed).toHaveLength(0)
 })
 
 it('keeps trusting a page whose navigation never commits', async () => {
