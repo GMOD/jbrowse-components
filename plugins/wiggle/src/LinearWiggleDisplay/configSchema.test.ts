@@ -234,11 +234,10 @@ test("v4's rendering and summary mode both land on the mark", () => {
   expect(readConfObject(center, ['mark', 'extent'])).toBe('none')
 })
 
-test('a display-level extent lands on the mark beside a bare mark name', () => {
-  const conf = create({ mark: 'line', extent: 'none' })
+test("a bare mark name keeps the mark's default extent", () => {
+  const conf = create({ mark: 'line' })
   expect(readConfObject(conf, ['mark', 'type'])).toBe('line')
-  expect(readConfObject(conf, ['mark', 'extent'])).toBe('none')
-  expect(readConfObject(create({}), ['mark', 'extent'])).toBe('min-max')
+  expect(readConfObject(conf, ['mark', 'extent'])).toBe('min-max')
 })
 
 test('a v4 renderers block keeps its color beside its summary mode', () => {

@@ -58,19 +58,9 @@ between displays.
 1. **Writers outside the tree.** jb2hubs with its hosted configs and both
    genomes sites, JBrowseR, ggjbrowse (engine and tutorials re-knit), the
    graph plugin (`facet.sort` from bandage-core 12) and the figure specs write
-   main's spellings. Left:
-   - jb2hubs' `hubtools/src/wiggleDisplay.ts` and ggjbrowse (`R/wiggle.R`,
-     its tests and the population-genomics tutorial) write `mark.extent` in
-     place of the wiggle display's beta `extent` (2026-10-27). A grep that
-     day found `extent` in none of jb2hubs' checked-in configs nor a sample
-     of the hosted ones, since no hub's trackDb sets `mean+whiskers`. The
-     hosted `cgiab` and `gene_density` demos wrote it until their committed
-     copies were deployed on 2026-10-28. Both
-     repos pushed it on 2026-10-27 (jb2hubs `3b85f2de`, ggjbrowse
-     `b738e6d`). ggjbrowse installs from GitHub, so an install made before
-     then still sends `display = list(extent = )`: delete `retired.extent`
-     on `LinearWiggleDisplay`'s schema once the push has been out for a
-     while, or at ggjbrowse's first tagged release.
+   main's spellings. ggjbrowse tags its releases on GitHub from v0.10.0
+   (2026-10-30, CONTRIBUTING.md's Releases), and the wiggle display's beta
+   `extent` lift went with that tag.
 2. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
    `@jbrowse/tables` and `@jbrowse/launch-args` ship with v5 at its version,
    betas included (Colin, 2026-10-27). Left: baseline
@@ -97,8 +87,8 @@ between displays.
   v4.3.0` over the legacy keys in `website/static/schema/v5/config.json` finds
   six missing from v4.3.0 on 2026-10-27, each from an earlier release, so
   the check greps every v1–v4 tag. Rechecked 2026-10-30 over every retired
-  top-level key: the same answer. Only `LinearWiggleDisplay.extent`
-  is beta-only, waiting on the ggjbrowse push (step 1). v1.3.1–v1.3.5 declared
+  top-level key: none is beta-only once `LinearWiggleDisplay.extent` went
+  with ggjbrowse v0.10.0. v1.3.1–v1.3.5 declared
   `textSearchIndexingAttributes`, and desktop's open-sequence dialog wrote
   `cytobandsLocation` from v2.10.0 through v4.3.0, so both stay.
 - `jbrowse validate` reports no warning outside plugin-registered types on

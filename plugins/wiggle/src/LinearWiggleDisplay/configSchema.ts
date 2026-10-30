@@ -205,7 +205,6 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       ...retiredAxisSpellings(WIGGLE_Y_PATHS.members),
       ...retiredScaleSpellings(WIGGLE_Y_PATHS.members),
       ...retiredConfigSpellings,
-      extent: extent => ({ mark: { extent } }),
       // The object form, so a v4 `summaryScoreMode` lifting `mark.extent`
       // beside it merges rather than losing to a bare string
       defaultRendering: rendering => {
