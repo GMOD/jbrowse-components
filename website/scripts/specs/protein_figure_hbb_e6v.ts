@@ -90,7 +90,7 @@ export const proteinHbbE6vSpecs: ScreenshotSpec[] = [
         maxWidth: 320,
         leader: true,
         anchor: { residue: 'B:85', view: PANELS[1].view },
-        dx: 120,
+        dx: 70,
         dy: 200,
       },
     ],

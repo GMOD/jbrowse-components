@@ -241,8 +241,7 @@ blinded ideator given only a capability sheet, a landscape survey):
   per the trap below.
 - HBB E6V: the gene track names the codon E7 (HGVS counts Met1) where the
   pills and legend say Glu6/Val6; the codon track's labels give both. Panel B
-  has no residue label, and the "Next molecule's pocket" callout box touches
-  panel C's right edge (a smaller `dx` fixes it on the next shoot).
+  has no residue label.
 - M1775R's BACH1 peptide in the mutant panel is superposed from 1T15 (1N5O has
   none); the view's title names that source, and the reviewer wants "modeled"
   in large type.
