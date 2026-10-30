@@ -45,17 +45,17 @@ function hoursSince(epochSeconds: number) {
 
 function worktreeRows(): Row[] {
   const rows: Row[] = []
-  let path = ''
-  let branch = ''
-  for (const line of git(['worktree', 'list', '--porcelain']).split('\n')) {
-    if (line.startsWith('worktree ')) {
-      path = line.slice('worktree '.length)
-      branch = ''
-    } else if (line.startsWith('branch ')) {
-      branch = line.slice('branch refs/heads/'.length)
-    } else if (line === 'detached') {
-      branch = '(detached)'
-    } else if (line === '' && path && path !== root) {
+  const [, ...linked] = git(['worktree', 'list', '--porcelain']).split('\n\n')
+  for (const block of linked) {
+    const lines = block.split('\n')
+    const path = lines
+      .find(l => l.startsWith('worktree '))
+      ?.slice('worktree '.length)
+    const branch =
+      lines
+        .find(l => l.startsWith('branch '))
+        ?.slice('branch refs/heads/'.length) ?? '(detached)'
+    if (path) {
       rows.push(rowFor(path, branch))
     }
   }
