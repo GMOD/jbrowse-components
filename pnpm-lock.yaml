@@ -1455,8 +1455,8 @@ importers:
   plugins/gff3:
     dependencies:
       '@gmod/gff-nostream':
-        specifier: ^5.6.3
-        version: 5.6.3
+        specifier: ^5.6.4
+        version: 5.6.4
       '@gmod/tabix':
         specifier: ^3.13.0
         version: 3.13.0
@@ -4703,8 +4703,8 @@ packages:
   '@gmod/faidx@3.0.1':
     resolution: {integrity: sha512-VvAPjPbZ1wGKQKFnyfaZJnhSiowon6eLQlgRuukmZb4InwVv8yAEzlCTvRyCl2Nlqjw6VN7W+jyHEVgWAD0uNQ==}
 
-  '@gmod/gff-nostream@5.6.3':
-    resolution: {integrity: sha512-BiW2bYBVt7Ru2sqsuAA1glrkHO/IV/lXUhqNCxIfdil4OjkOED9InOO0djxJXvSiIdOjMSMUDmxnm942zo7Ebg==}
+  '@gmod/gff-nostream@5.6.4':
+    resolution: {integrity: sha512-y9AyL+CJFo7Mv0OMpEQTSk0ZP2eXDCKfzeOujc5ndb0iDpegzHDOSrPqloITjSBcWDSb6Ey3glXtaVHEWD2pkA==}
 
   '@gmod/hclust@6.0.0':
     resolution: {integrity: sha512-/vCkUXOhCcNmLp13Alw8Vyf+48tYg8La4SfziOJkpgX0HrHCHa6xJZQSenpYuhYCc++kK0X+mQCbSTESKGanIg==}
@@ -12739,7 +12739,7 @@ snapshots:
 
   '@gmod/faidx@3.0.1': {}
 
-  '@gmod/gff-nostream@5.6.3': {}
+  '@gmod/gff-nostream@5.6.4': {}
 
   '@gmod/hclust@6.0.0':
     dependencies:
