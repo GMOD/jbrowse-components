@@ -47,7 +47,7 @@ VsOut vs_main(LineInstance inst, uint vid : SV_VertexID) {
 float4 fs_main(VsOut v) : SV_Target {
   float dpr = u.devicePixelRatio;
   float a = v.color.a * strokeCoverage(0.5, abs(v.inside.z), dpr)
-          * edgeCoverage(v.inside.x, dpr) * edgeCoverage(v.inside.y, dpr);
+          * slabCoverage(v.inside.x, -v.inside.y, dpr);
   if (a <= 0.0) discard;
   return float4(v.color.rgb, a);
 }
