@@ -42,57 +42,32 @@ Files
 -----
 
   hprc-v2.1-mc-grch38.anchored.graph.bed.gz{,.tbi}
-  hprc-v2.1-mc-grch38.fold10000.graph.bed.gz{,.tbi}
-  hprc-v2.1-mc-grch38.graph.bed.gz{,.tbi}
-                                             what the graph tracks read since
-                                             2026-10-28: the three indexes
-                                             below in gfa-to-tabix's format 2,
-                                             nodes and links in one file, built
-                                             with gfa-to-tabix 2.0.0 by the same
-                                             commands. The anchored one files
+                                             what the graph track reads, in
+                                             gfa-to-tabix's format 2: nodes and
+                                             links in one file, each filed under
+                                             the reference interval its bubble
+                                             hangs from, so one query cuts a
+                                             region whole. gfa-to-tabix files
                                              the 22,501-node bubble at
                                              chr1:2.65 Mb on its own
                                              coordinates (--max-component,
-                                             default 10,000). The format 1
-                                             pairs below stay for sessions
-                                             that name them.
-  hprc-v2.1-mc-grch38.anchored.segs.bed.gz{,.tbi}
-  hprc-v2.1-mc-grch38.anchored.links.bed.gz{,.tbi}
-                                             what the graph track reads: the
-                                             same segments and links, each filed
-                                             under the reference interval its
-                                             bubble hangs from, so one query per
-                                             file cuts a region whole. Built
-                                             2026-10-07 with
-                                               gfa-to-tabix hprc-v2.1-mc-grch38.sv.gfa.gz \
-                                                 -o hprc-v2.1-mc-grch38.anchored
-                                             (gfa-to-tabix 0.2.0). The pair
-                                             below is the contig layout, kept
-                                             for the allele inventory.
-  hprc-v2.1-mc-grch38.segs.bed.gz{,.tbi}     one row per segment:
-                                             stable name, span, id, rank
-                                             759,223 segments
+                                             default 10,000).
 
-  hprc-v2.1-mc-grch38.links.bed.gz{,.tbi}    one row per link per endpoint,
-                                             each repeating both endpoints
-                                             2,214,398 rows
+  hprc-v2.1-mc-grch38.graph.bed.gz{,.tbi}    the contig layout of the same
+                                             graph, which gfa-to-tabix alleles
+                                             reads: 759,223 segments
 
-  hprc-v2.1-mc-grch38.ref.{segs,links}.bed.gz{,.tbi}
-                                             the same rows keyed only under
-                                             GRCh38's sequences, for a
-                                             segments track drawn on hg38
-                                             (not for the graph cut: a hop
-                                             follows donor-contig segments
-                                             this pair drops)
+  hprc-v2.1-mc-grch38.fold10000.graph.bed.gz{,.tbi}
+                                             the graph with variants under 10 kb
+                                             folded into the reference, anchored
+                                             like the fine file: 24,928
+                                             segments, 35,074 links
+
+  The three .graph.bed.gz files replaced format 1 segs/links pairs on
+  2026-10-28, built with gfa-to-tabix 2.0.0 by the commands below.
 
   hprc-v2.1-mc-grch38.bubbles.bed.gz{,.tbi}  gfatools bubble output,
                                              129,611 bubbles
-
-  hprc-v2.1-mc-grch38.fold10000.{segs,links}.bed.gz{,.tbi}
-                                             the graph with variants under 10 kb
-                                             folded into the reference, anchored
-                                             rows like the fine pair: 24,928
-                                             segments, 35,074 links
 
   hprc-v2.1-mc-grch38.tier10000.{segs,links}.bed.gz{,.tbi}
                                              the earlier tier, one node per
@@ -100,7 +75,10 @@ Files
                                              span or longest allele) is 10 kb
                                              or more, backbone between:
                                              3,442 bubbles, 6,858 links, the
-                                             whole-chromosome level of detail
+                                             whole-chromosome level of detail.
+                                             Still format 1: the
+                                             hprc_whole_chromosome figure
+                                             draws it.
 
   hprc-v2.1-mc-grch38.alleles.bed.gz{,.tbi}  one row per allele the graph
                                              holds, derived from segs+links:
@@ -153,8 +131,8 @@ Files
 
   Stable names are PanSN (GRCh38#0#chr1), so a JBrowse track on an ordinary
   hg38 assembly needs assemblyNameToPanSN: { "hg38": "GRCh38" }, and one on
-  T2T-CHM13 needs { "hs1": "CHM13" } beside it. That covers segs, links, the
-  ref pair, the tier and bubbles. The alleles file is the exception: its rows
+  T2T-CHM13 needs { "hs1": "CHM13" } beside it. That covers the graph files,
+  the tier and bubbles. The alleles file is the exception: its rows
   carry the reference's own refNames (chr1), since gfa-to-tabix alleles drops
   the prefix, so its track takes a plain BedTabixAdapter with no mapping.
 
@@ -163,17 +141,11 @@ How they were built
 
   wget <source URL above>
 
-  # segs + links, via gfa-to-tabix (https://github.com/GMOD/gfa-to-tabix)
+  # the anchored and contig layouts, via gfa-to-tabix
+  # (https://github.com/GMOD/gfa-to-tabix)
+  gfa-to-tabix hprc-v2.1-mc-grch38.sv.gfa.gz -o hprc-v2.1-mc-grch38.anchored
   gfa-to-tabix hprc-v2.1-mc-grch38.sv.gfa.gz --layout contig \
     -o hprc-v2.1-mc-grch38
-
-  # the ref pair: the same rows keyed under GRCh38's stable sequences only
-  for kind in segs links; do
-    gzip -dc hprc-v2.1-mc-grch38.$kind.bed.gz \
-      | awk -F'\t' 'index($1, "GRCh38#") == 1' \
-      | bgzip > hprc-v2.1-mc-grch38.ref.$kind.bed.gz
-    tabix -p bed hprc-v2.1-mc-grch38.ref.$kind.bed.gz
-  done
 
   # bubbles
   gzip -dc hprc-v2.1-mc-grch38.sv.gfa.gz | gfatools bubble - \
@@ -224,10 +196,6 @@ Haplotype walks
   hprc-v2.1-mc-grch38-f5s.GRCh38.walks.bed.gz.tbi    1,332,701
   hprc-v2.1-mc-grch38-f5s.CHM13.walks.bed.gz       1,463,176,959
   hprc-v2.1-mc-grch38-f5s.CHM13.walks.bed.gz.tbi     1,010,636
-  hprc-v2.1-mc-grch38-f5.GRCh38.walks.bed.gz       1,550,433,855
-  hprc-v2.1-mc-grch38-f5.GRCh38.walks.bed.gz.tbi     1,332,761
-  hprc-v2.1-mc-grch38-f5.CHM13.walks.bed.gz        1,462,001,275
-  hprc-v2.1-mc-grch38-f5.CHM13.walks.bed.gz.tbi      1,007,257
 
   Every haplotype's path through the base-level v2.1 graph, in walk format 5
   (gfa-to-tabix 1.4, docs/walks-format.md): one file per reference, filed under
@@ -276,14 +244,30 @@ Haplotype walks
   (-o hprc-v2.1-mc-grch38-f5s; 2:25:03, 13.1 GB RSS). It adds skip rows, one
   per haplotype and chunk that its deletion jumps over (ADR 0006 in
   gfa-to-tabix): 24,795 on GRCh38 and 86,958 on CHM13. Every other row
-  matches the -f5 set's. The configs read -f5s, and -f5 stays for sessions
-  that name it.
+  matches the -f5 set's. The configs read -f5s.
 
-  @jbrowse/graph-walks 3 reads format 4 only, so the -f3 set (gfa-to-tabix
-  1.1.0) is due for removal. The format 1 and format 2 sets (gfa-to-tabix
-  0.4.0 to 1.0.0) were removed on 2026-10-16. The jb2bench traces that
-  measured them keep their numbers.
+  The -f5 set was retired on 2026-10-30 (see Retired files below), and the
+  -f3 set (gfa-to-tabix 1.1.0) is gone too. The format 1 and format 2 sets
+  (gfa-to-tabix 0.4.0 to 1.0.0) were removed on 2026-10-16. The jb2bench
+  traces that measured them keep their numbers.
 
+
+Retired files
+-------------
+
+  Nothing live read these, so on 2026-10-30 they moved to
+  s3://jbrowse.org/archive/demos/hprc/ in the S3 Deep Archive storage class,
+  where a restore takes hours.
+
+  hprc-v2.1-mc-grch38{,.anchored,.fold10000}.{segs,links}.bed.gz{,.tbi}
+                                             the format 1 pairs the
+                                             .graph.bed.gz files replaced
+  hprc-v2.1-mc-grch38.ref.{segs,links}.bed.gz{,.tbi}
+                                             the contig pair's rows under
+                                             GRCh38's sequences only, which no
+                                             config read
+  hprc-v2.1-mc-grch38-f5.{GRCh38,CHM13}.walks.bed.gz{,.tbi}
+                                             the walk set -f5s replaced
 
 repeat_density/ - per-class RepeatMasker density
 ------------------------------------------------

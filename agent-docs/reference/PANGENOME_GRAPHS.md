@@ -163,14 +163,14 @@ the `jexl:` ternary, since they load in older releases.
 ## The hosted HPRC link index
 
 **The hosted index is dominated by donor-contig index weight**, which every graph
-track downloads before cutting. A `GRCh38`-only pair (`demos/hprc/hprc-v2.1-mc-grch38.ref.*`, filtered
-from the contig pair as `demos/hprc/README.txt` shows) returns identical rows for far
-less index, **but only at `subgraphContext: 0`.** The default is 1 hop, which
-follows an allele's interior segments indexed under the donor contig; on the
-small pair the expansion finds nothing and the cut silently degrades to context 0
-(two stubs ending in mid-air). Use the small pair for a segments track drawn on
-the reference or a session that sets `subgraphContext: 0`; keep the full pair for
-the graph cut and for a track on a contributing assembly.
+track downloads before cutting. A `GRCh38`-only format 1 pair
+(`hprc-v2.1-mc-grch38.ref.*`, retired to `s3://jbrowse.org/archive/demos/hprc/`
+on 2026-10-30) returned identical rows for far less index, **but only at
+`subgraphContext: 0`.** The default is 1 hop, which follows an allele's interior
+segments indexed under the donor contig; on the small pair the expansion found
+nothing and the cut silently degraded to context 0 (two stubs ending in
+mid-air). A reference-only file suits a segments track drawn on the reference,
+never the graph cut or a track on a contributing assembly.
 
 ## Pairwise alignments unpacked from the GFA
 

@@ -18,7 +18,6 @@ has been re-checked since the cut.
   entries with one `trackId`. A non-admin `deleteTrackConf` dereferences every
   open view and removes nothing (TRACK_REGISTRATION).
 - **Worker sort/layout loops** emit no progress (PROGRESS_REPORTING).
-- **HOSTING:** orphaned `ecoli_minigraph.tier*` objects (delete or wire up).
 
 ## Unbuilt follow-ups
 
