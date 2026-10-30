@@ -555,9 +555,8 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_cactus/
 - https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz
 - https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz.tbi
 - https://jbrowse.org/demos/ecoli_pangenome/config.json
-- https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.links.bed.gz
+- https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.graph.bed.gz
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.maf.bed.gz
-- https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.segs.bed.gz
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus_depth.bw
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus_pav_CFT073.bw
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus_pav_IAI39.bw
@@ -576,11 +575,9 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_cattle/
 - https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/pangenome_nonhuman.json
 - https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.alleles.bed.gz
 - https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz
-- https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.links.bed.gz
-- https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.segs.bed.gz
-- https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.links.bed.gz
+- https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.graph.bed.gz
+- https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.graph.bed.gz
 - https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.samples.tsv
-- https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.segs.bed.gz
 - https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.vcf.gz
 
 ## Pangenome (pggb)
@@ -650,10 +647,8 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_mouse/
 - https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/pangenome_nonhuman.json
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.alleles.bed.gz
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz
-- https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.links.bed.gz
-- https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.segs.bed.gz
-- https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.links.bed.gz
-- https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.segs.bed.gz
+- https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.graph.bed.gz
+- https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.graph.bed.gz
 - https://jbrowse.org/ucsc/mm39/config-staging.json
 
 ## Pangenome (hosting your own graph)
