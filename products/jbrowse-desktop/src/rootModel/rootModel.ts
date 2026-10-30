@@ -213,7 +213,10 @@ export default function rootModelFactory({
         /**
          * #action
          */
-        async saveSession(val: SessionSnap, sessionPath = self.sessionPath) {
+        async saveSession(
+          val: SessionSnap,
+          sessionPath: string = self.sessionPath,
+        ) {
           if (sessionPath) {
             await invokeIpc(
               'saveSession',
