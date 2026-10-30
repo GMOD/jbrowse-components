@@ -5579,9 +5579,13 @@
       "trackId": "homo_sapiens.grch38.regulatory_build.regulatory_features",
       "name": "Ensembl Regulatory build",
       "assemblyNames": ["hg38"],
+      "metadata": {
+        "source": "https://ftp.ensembl.org/pub/release-113/regulation/homo_sapiens/homo_sapiens.GRCh38.Regulatory_Build.regulatory_features.20240230.gff.gz",
+        "note": "Sorted, bgzipped and tabix-indexed copy"
+      },
       "adapter": {
-        "type": "Gff3Adapter",
-        "uri": "https://ftp.ensembl.org/pub/release-113/regulation/homo_sapiens/homo_sapiens.GRCh38.Regulatory_Build.regulatory_features.20240230.gff.gz"
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/demos/ensembl_regulatory_build/homo_sapiens.GRCh38.Regulatory_Build.regulatory_features.20240230.sorted.gff.gz"
       }
     },
     {
