@@ -111,7 +111,9 @@ genes across the graph.
   [Q100 assembly](https://github.com/marbl/HG002) hg002v1.1, whose project
   annotated it with RefSeq's genes through JHU's Liftoff; we keep each gene's
   MANE Select transcript there, so a few symbols and isoforms differ from the
-  CAT lanes.
+  CAT lanes. Liftoff leaves out the functional V, D and J segments of the
+  antibody and T-cell receptor loci, so HG002's lanes there show only their
+  pseudogene segments.
 - **What we host:** one gene model per named gene for each haplotype, as
   `https://jbrowse.org/pangenome/hprc-grch38/genes/<sample>.<haplotype>.genes.bed.gz`.
   A haplotype keeps about 43,500 of CAT's 83,000 genes:
@@ -211,7 +213,7 @@ At IGL, `chr22:22,800,001-22,850,000`, **Lanes → Choose lanes...** with
 `HG00099.1`, `HG002.1`, `HG00097.1`, `HG002.2` and `HG01074.1` puts two such
 rows at the foot.
 
-<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 sit inside their cell lines' V(D)J deletions, so their rows at the foot draw no ribbons." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
+<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 sit inside their cell lines' V(D)J deletions, so their rows at the foot draw no ribbons. HG002 haplotype 1 walks the window but draws only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
 
 - **A lane can stop partway**, at the end of the graph's alignment of that
   haplotype; its sequence can run on past it.
