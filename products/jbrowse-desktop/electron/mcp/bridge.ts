@@ -105,6 +105,8 @@ export function startMcpBridge({
   }
 
   ipcHandle('mcpReady', (_event, state) => {
+    // before trusting the announcement, so the page's own reload revokes it
+    watchWindow()
     listening = state
     crashed = undefined
     wakeWaiters()
@@ -136,7 +138,8 @@ export function startMcpBridge({
 
   // A page load tears the subscription down without telling anyone, so the
   // bridge has to notice for itself or it would keep trusting the outgoing
-  // page's announcement. Attached per window, once.
+  // page's announcement. Attached per window, once, by the first announcement
+  // or call.
   // A window in the background has its timers throttled to one tick a second,
   // which is the rate the settle poll and the rAF that publishes a view's
   // width then run at. An app with an agent on the socket is in use whichever

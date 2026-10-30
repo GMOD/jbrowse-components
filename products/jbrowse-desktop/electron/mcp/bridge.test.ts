@@ -331,6 +331,23 @@ it('settles the calls a page took with it when it navigated', async () => {
   })
 })
 
+// opening a file from the start screen reloads the page before any tool call
+// has attached the bridge's navigation listeners
+it('stops trusting a page that reloaded before the first call', async () => {
+  const b = bridge()
+  const c = b.connect()
+  await settle()
+  b.ready({ install: 'first', phase: 'startScreen' })
+  b.navigate()
+  void c.send(1, 'run_javascript', { code: 'return 1' })
+  await settle()
+  expect(b.pushed).toHaveLength(0)
+
+  b.ready({ install: 'second', phase: 'session' })
+  await settle()
+  expect(b.lastPush()).toMatchObject({ tool: 'run_javascript' })
+})
+
 it('keeps trusting a page whose navigation never commits', async () => {
   const b = bridge()
   const c = b.connect()
@@ -376,11 +393,12 @@ it('answers at once while the page is crashed, and relays again once reloaded', 
   expect(b.pushed).toHaveLength(pushes + 1)
 })
 
+// a page announcing itself attaches the listeners, so only a crash before the
+// first announcement goes unheard
 it('sees a crash that happened before its first call', async () => {
   const b = bridge()
   const c = b.connect()
   await settle()
-  b.ready({ install: 'first', phase: 'session' })
   b.crashUnheard()
 
   expect(await c.send(1, 'run_javascript', { code: 'return 1' })).toEqual({
