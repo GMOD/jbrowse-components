@@ -254,10 +254,11 @@ supersample of a 40x60 CSS px crop:
   ~65/255 from both, because rare alts fade to their frequency; the floor
   exists to stop that.
 - **The inversion glyph ramps only its two slants** (`inversionCoverage`); its
-  other edges are the snapped cell's. The quad grows left by `inversionReachPx`,
-  `aaHalfPx` over the sine of the point's half-angle. Against an exact cover of
-  the snapped shape its mean error is 0.03 to 0.12/255 and its ink 0.99 to
-  1.01; the old glyph read half alpha along the quad's edges.
+  other edges are the snapped cell's, the point's included: the quad stops at
+  the left breakpoint. Growing it by the point's ramp reach was sized for a
+  point capped at the cell height; on the full-width triangle that reach is
+  hundreds of px on a long inversion, and inked a faint line before the
+  breakpoint.
 - **`cell` snaps x to the device grid too** (`snapCellEdgePx`, fed
   `clip.scaleX`), placing the snapped edges through the HAL's device viewport
   (`pxX`, `pxW`), and its 2px floor rounds up to whole device px. The pixel

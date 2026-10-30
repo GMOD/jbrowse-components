@@ -1,7 +1,6 @@
 import * as variant from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/shaders/variant.generated.ts'
 import {
   drawnCellHeightPx,
-  inversionTipPx,
   snappedCellLeftPx,
   snappedCellWidthPx,
   snappedRowBottomPx,
@@ -65,7 +64,6 @@ function referenceOf(c: ReturnType<typeof cells>, rowHeight: number) {
           dpr,
         )
         const h = bottom - top
-        const tip = inversionTipPx(w, h)
         const inversion = c.shapeType[i] !== variant.SHAPE_RECT
         shapes.push({
           color: rgba(COLORS[(c.row[i]! + Math.floor(i % 9)) % 3]!),
@@ -75,11 +73,7 @@ function referenceOf(c: ReturnType<typeof cells>, rowHeight: number) {
             if (lx < 0 || lx >= w || ly < 0 || ly >= h) {
               return false
             }
-            return (
-              !inversion ||
-              lx >= tip ||
-              Math.abs(ly - h / 2) <= (h / 2) * (lx / tip)
-            )
+            return !inversion || Math.abs(ly - h / 2) <= (h / 2) * (lx / w)
           },
         })
       }

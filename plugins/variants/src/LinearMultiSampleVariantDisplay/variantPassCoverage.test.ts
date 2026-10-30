@@ -30,11 +30,3 @@ test.each([
     }
   },
 )
-
-// inversionGlyphInk.test.ts proves the reach holds the point's ramp; this
-// proves the quad is the one grown by it.
-test('cell grows the inversion quad by the point reach on every backend', () => {
-  for (const src of [cellWgsl.WGSL_SOURCE, cellGlsl.GLSL_VERTEX]) {
-    expect(src).toContain('inversionReachPx_0(')
-  }
-})

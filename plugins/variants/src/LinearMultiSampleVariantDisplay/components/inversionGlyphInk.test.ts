@@ -5,9 +5,6 @@ import { cellMark } from './cellMark.ts'
 import { GLSL_FRAGMENT } from './shaders/variant.glsl.generated.ts'
 import {
   drawnCellHeightPx,
-  inversionCoverage,
-  inversionReachPx,
-  inversionTipPx,
   snappedCellWidthPx,
 } from './shaders/variant.js.generated.ts'
 import { WGSL_SOURCE } from './shaders/variant.wgsl.generated.ts'
@@ -105,11 +102,7 @@ test('the Canvas2D twin paints a floored inversion in the cell color, at the cel
   ])
 })
 
-// The point is as long as the cell is tall, so a wide cell is a bar with a
-// pointed end and a 2 px row draws solid past its first 2 px. A point spanning
-// the whole width drew an 11 Mb inversion in 2 px rows as a sliver whose
-// antialiased edges read as a fade across the chromosome arm.
-test('the Canvas2D twin caps the inversion point at the cell height', () => {
+test('the Canvas2D twin draws the inversion as a triangle spanning the cell', () => {
   const path: string[] = []
   const ctx = {
     fillRect: () => {},
@@ -119,47 +112,5 @@ test('the Canvas2D twin caps the inversion point at the cell height', () => {
     fill: () => {},
   }
   drawVariantShape(ctx, SHAPE_TRI_LEFT, 100, 10, 900, 2)
-  expect(path).toEqual([
-    'M1000,10',
-    'L102,10',
-    'L100,11',
-    'L102,12',
-    'L1000,12',
-  ])
-  path.length = 0
-  drawVariantShape(ctx, SHAPE_TRI_LEFT, 0, 0, 4, 8)
-  expect(path).toEqual(['M4,0', 'L4,0', 'L0,4', 'L4,8', 'L4,8'])
-  expect(inversionTipPx(900, 2)).toBe(2)
-  expect(inversionTipPx(4, 8)).toBe(4)
+  expect(path).toEqual(['M1000,10', 'L100,11', 'L1000,12'])
 })
-
-// At one sample a fragment draws only if its centre is inside the quad, so the
-// quad has to reach as far left as the point's ramp does, and no further.
-test.each(
-  [1, 1.5, 2].flatMap(dpr =>
-    [
-      [2, 2],
-      [7.3, 7.3],
-      [4, 12.7],
-      [0.5, 2],
-    ].map(([tip, h]) => [dpr, tip!, h!]),
-  ),
-)(
-  'at dpr %s the quad holds a point %s px long on a %s px row',
-  (dpr, tip, h) => {
-    const reach = inversionReachPx(tip, h, dpr)
-    let outside = 0
-    let justInside = 0
-    for (let y = 0; y <= h; y += 0.005) {
-      for (let x = -reach - 2; x < -reach; x += 0.01) {
-        outside = Math.max(outside, inversionCoverage(x, y, tip, h, dpr))
-      }
-      justInside = Math.max(
-        justInside,
-        inversionCoverage(-reach + 0.02, y, tip, h, dpr),
-      )
-    }
-    expect(outside).toBe(0)
-    expect(justInside).toBeGreaterThan(0)
-  },
-)

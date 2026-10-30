@@ -1,15 +1,17 @@
 // Multi-variant display — one instance per variant cell. Emits a
-// bounding-box quad; the fragment shader carves the inversion glyph, a bar
-// pointed at its left end, out of the quad when shapeType != RECT.
+// bounding-box quad; the fragment shader carves the inversion glyph, a
+// left-pointing triangle spanning the cell, out of the quad when
+// shapeType != RECT.
 //
 // A cell's edges are hard and sit on device pixel boundaries (`snapCellEdgePx`,
 // `snappedRowTopPx`), so cells and rows tile with every pixel owned by one
-// cell. Only the inversion's two slants ramp.
+// cell. Only the inversion's two slants ramp; its point sits on the cell's
+// left edge, so nothing draws before the breakpoint.
 //! targets: wgsl, glsl
 //! blend: premultiplied
 //! coverage: analytic
 //! export-consts: SHAPE_RECT, SHAPE_TRI_LEFT, MIN_CELL_PX
-//! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx, inversionTipPx, inversionReachPx, inversionCoverage, snappedRowTopPx, snappedRowBottomPx
+//! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx, inversionCoverage, snappedRowTopPx, snappedRowBottomPx
 //! js-skip: snapCellEdgePx — reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor
 
 import antialias;
@@ -90,38 +92,21 @@ float snappedCellLeftPx(float x1Px, float x2Px, float widthPx, float dpr) {
   return x2Px < x1Px ? startPx - widthPx : startPx;
 }
 
-// How far the inversion glyph's point reaches into the cell: the cell's own
-// height, so the tip keeps one angle whatever the cell's width, and the rest
-// of a wide cell is solid. A tip spanning the whole width drew an 11 Mb
-// inversion in 2 px rows as a 900 px sliver whose antialiased edges read as a
-// fade from white at one breakpoint to full color at the other
-// (popgen/in2lt_inversion). A cell no wider than it is tall is the same
-// triangle it was.
-//
-// `//! js-export`ed: the Canvas2D twin and the SVG export trace the same
-// outline.
-float inversionTipPx(float widthPx, float heightPx) {
-  return min(widthPx, heightPx);
-}
-
 // Coverage of the inversion glyph at (`xPx`, `yPx`) from the cell's top-left:
 // the ramp of the nearer of its two slants, which run from the point
-// (0, h/2) to (tip, 0) and (tip, h). The bar's top, bottom and right edges are
-// the cell's own, already on pixel boundaries, so they cut hard.
-float inversionCoverage(float xPx, float yPx, float tipPx, float heightPx, float dpr) {
+// (0, h/2) to (w, 0) and (w, h). The right edge is the cell's own, already on
+// a pixel boundary, so it cuts hard.
+//
+// The point spans the whole cell. Capping it at the cell height, so a wide
+// inversion drew as a bar with a pointed end, was tried twice (66f38c315b,
+// ca00c0d9d1) and reverted both times: the full-width triangle is the glyph.
+float inversionCoverage(float xPx, float yPx, float widthPx, float heightPx, float dpr) {
   float halfH = 0.5 * heightPx;
-  float hyp = sqrt(halfH * halfH + tipPx * tipPx);
-  float fromTip = tipPx - xPx;
-  float dTop = (tipPx * yPx - halfH * fromTip) / hyp;
-  float dBot = (tipPx * (heightPx - yPx) - halfH * fromTip) / hyp;
+  float hyp = sqrt(halfH * halfH + widthPx * widthPx);
+  float fromRight = widthPx - xPx;
+  float dTop = (widthPx * yPx - halfH * fromRight) / hyp;
+  float dBot = (widthPx * (heightPx - yPx) - halfH * fromRight) / hyp;
   return edgeCoverage(min(dTop, dBot), dpr);
-}
-
-// How far left of the cell the point's ramp reaches: `aaHalfPx` over the sine
-// of the point's half-angle, where the two slants' ramps meet.
-float inversionReachPx(float tipPx, float heightPx, float dpr) {
-  float halfH = 0.5 * heightPx;
-  return aaHalfPx(dpr) * sqrt(halfH * halfH + tipPx * tipPx) / halfH;
 }
 
 struct CellInstance {
@@ -161,7 +146,7 @@ struct VsOut {
   float2 localPx  : COLOR1;
   nointerpolation float  heightPx  : COLOR2;
   nointerpolation uint   shapeType : COLOR3;
-  nointerpolation float  tipPx     : COLOR4;
+  nointerpolation float  widthPx   : COLOR4;
 };
 
 [shader("vertex")]
@@ -190,11 +175,9 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float yBot = snappedRowBottomPx(
     row, u.rowHeight, drawnCellHeightPx(u.rowHeight), u.scrollTop, dpr);
   float hPx = yBot - yTop;
-  float tipPx = inversionTipPx(wPx, hPx);
-  float padPx = inst.shapeType != SHAPE_RECT ? inversionReachPx(tipPx, hPx, dpr) : 0.0;
 
   float2 q = quadLocal(vid);
-  float localX = lerp(-padPx, wPx, q.x);
+  float localX = q.x * wPx;
 
   VsOut o;
   o.position = float4(
@@ -205,7 +188,7 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   o.localPx = float2(localX, (1.0 - q.y) * hPx);
   o.heightPx = hPx;
   o.shapeType = inst.shapeType;
-  o.tipPx = tipPx;
+  o.widthPx = wPx;
   return o;
 }
 
@@ -220,7 +203,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     // No whole-mark size fade here: both cell sides floor at 2px, so one is a
     // constant dim on the inversion alone (inversionGlyphInk.test.ts).
     alpha *= inversionCoverage(
-      fragIn.localPx.x, fragIn.localPx.y, fragIn.tipPx, fragIn.heightPx,
+      fragIn.localPx.x, fragIn.localPx.y, fragIn.widthPx, fragIn.heightPx,
       u.devicePixelRatio);
   }
 
