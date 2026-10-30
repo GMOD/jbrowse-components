@@ -1,3 +1,4 @@
+import { TrackOverlaySlot } from '@jbrowse/display-ui'
 import { render } from '@testing-library/react'
 
 import ChromeLegend from './ChromeLegend.tsx'
@@ -32,6 +33,23 @@ test('a display clears its top rows by pushing the key down', () => {
   )
   const { style } = getByTestId('floating-legend')
   expect([style.top, style.right]).toEqual(['70px', '10px'])
+})
+
+// The key climbs beside an in-flow track label only from the display's top
+// edge; one a display pushed down under its own content stays under it.
+test('a key pushed down does not climb into the track label band', () => {
+  const inSlot = (legendTop?: number) => {
+    const { getByTestId, unmount } = render(
+      <TrackOverlaySlot zIndex={1} labelBand={30}>
+        <ChromeLegend model={host({ legendTop })} />
+      </TrackOverlaySlot>,
+    )
+    const { top } = getByTestId('floating-legend').style
+    unmount()
+    return top
+  }
+  expect(inSlot(60)).toBe('70px')
+  expect(inSlot()).toBe('-20px')
 })
 
 test('a hidden legend never derives its key', () => {
