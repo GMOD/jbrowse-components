@@ -164,6 +164,33 @@ test('nothing is written for a session with no path to write to', async () => {
   expect(saveCount()).toBe(0)
 })
 
+test('a Save session as that fails keeps the path that works', async () => {
+  const root = createRootModel()
+  mockInvokeIpc.mockImplementation(async (channel, ...args) => {
+    if (channel === 'promptSessionSaveAs') {
+      return '/read-only/new.jbrowse'
+    }
+    if (channel === 'saveSession' && args[0] === '/read-only/new.jbrowse') {
+      throw new Error('EACCES')
+    }
+    return undefined
+  })
+  const item = root
+    .menus()
+    .find(m => m.label === 'File')!
+    .menuItems()
+    .flatMap(m => ('subMenu' in m ? m.subMenu : [m]))
+    .find(m => 'label' in m && m.label === 'Save session as...')
+  if (!item || !('onClick' in item)) {
+    throw new Error('no clickable Save session as item')
+  }
+
+  await item.onClick()
+
+  expect(root.sessionPath).toBe(SESSION_PATH)
+  expect(root.session!.snackbarMessages.length).toBe(1)
+})
+
 function openGenomeDialog(root: ReturnType<typeof createRootModel>) {
   const item = root
     .menus()

@@ -213,11 +213,11 @@ export default function rootModelFactory({
         /**
          * #action
          */
-        async saveSession(val: SessionSnap) {
-          if (self.sessionPath) {
+        async saveSession(val: SessionSnap, sessionPath = self.sessionPath) {
+          if (sessionPath) {
             await invokeIpc(
               'saveSession',
-              self.sessionPath,
+              sessionPath,
               val,
               summarizeSession(val.defaultSession),
             )
@@ -406,8 +406,13 @@ export default function rootModelFactory({
                               'promptSessionSaveAs',
                             )
                             if (filePath) {
+                              // switched only once the file exists, or every
+                              // later autosave fails against the new path
+                              await self.saveSession(
+                                getSaveSession(self),
+                                filePath,
+                              )
                               self.setSessionPath(filePath)
-                              await self.saveSession(getSaveSession(self))
                             }
                           } catch (e) {
                             reportError(self.session, e)
@@ -453,8 +458,8 @@ export default function rootModelFactory({
                   {
                     label: 'Exit',
                     icon: MeetingRoomIcon,
+                    // the close guard flushes the session on the way out
                     onClick: async () => {
-                      await self.flushSession()
                       await invokeIpc('quit')
                     },
                   },
