@@ -34,7 +34,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
   [drawing the graph as a graph](#opening-the-graph-in-the-graph-genome-view).
   In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store)
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 1.4.0 or later, for
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.0.0 or later, for
   [indexing the graph](#indexing-the-graph)
 - for the [whole build](#reproduce-it-end-to-end): the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
@@ -84,10 +84,9 @@ your own set of assemblies to build the graph.
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-| What it is                                                             | File                                                                                             |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| The graph's segments, tabix-indexed, which the graph track below reads | [ecoli_cactus.segs.bed.gz](https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.segs.bed.gz)   |
-| The graph's links                                                      | [ecoli_cactus.links.bed.gz](https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.links.bed.gz) |
+| What it is                                                                       | File                                                                                             |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| The graph's segments and links, tabix-indexed, which the graph track below reads | [ecoli_cactus.graph.bed.gz](https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.graph.bed.gz) |
 
 </details>
 
@@ -525,8 +524,12 @@ gfa-to-tabix build mc/ecoli.gfa.gz -o ecoli_cactus --reference K12
 
 Without `--snarls` the command writes no bubble file. Our hosted copy of the
 index loads as one `GraphTrack` at the shared prefix. A local build's track
-reads `ecoli_cactus.contig`, the contig layout, since the anchored layout at the
-bare prefix draws multi-megabase rows across every window:
+reads the contig layout instead, since the anchored layout at the bare prefix
+draws multi-megabase rows across every window:
+
+- set `uri` to `ecoli_cactus.contig`
+- drop `"format": 2`, because `build` writes the contig layout as a format 1
+  pair, `.contig.segs.bed.gz` and `.contig.links.bed.gz`
 
 ```json addtrack
 {
@@ -536,7 +539,8 @@ bare prefix draws multi-megabase rows across every window:
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus"
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus",
+    "format": 2
   },
   "displayDefaults": {
     "labels": { "name": { "show": false }, "description": { "show": false } }
@@ -560,7 +564,7 @@ the other four skip. To see it:
 - Type `chr:1,978,100-1,979,700`.
 - Pick **Force-directed** under the **Layout** row of the graph track's menu.
 - Add a second copy of the segments track, colored by how many strains the
-  `SM:Z:` tag lists for each segment
+  index's `SB:H:` bits mark for each segment
   ([config on the pggb page](/docs/tutorials/pangenome_ecoli#strains-per-segment-as-a-track)).
 - Show the [MAF track](#whole-genome-alignment-maf-projection) above the graph:
   the strains-per-segment track counts the strains, and the MAF's rows name

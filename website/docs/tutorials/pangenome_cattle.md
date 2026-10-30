@@ -64,12 +64,12 @@ graph_ shows.
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-| What it is                                                                                   | File                                                                                                                                                                                                                                                                                             |
-| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| The segment and link index                                                                   | [bovine-arsucd12-minigraph.segs.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.segs.bed.gz)<br>[bovine-arsucd12-minigraph.links.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.links.bed.gz)                                         |
-| The bubble index, where assemblies' paths split and rejoin                                   | [bovine-arsucd12-minigraph.bubbles.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz)                                                                                                                                                                  |
-| The allele inventory, one row per alternative sequence at a bubble                           | [bovine-arsucd12-minigraph.alleles.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.alleles.bed.gz)                                                                                                                                                                  |
-| The overview used for whole chromosomes, with variants under 10 kb folded into the reference | [bovine-arsucd12-minigraph.fold10000.segs.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.segs.bed.gz)<br>[bovine-arsucd12-minigraph.fold10000.links.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.links.bed.gz) |
+| What it is                                                                                   | File                                                                                                                                            |
+| -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| The segment and link index                                                                   | [bovine-arsucd12-minigraph.graph.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.graph.bed.gz)                     |
+| The bubble index, where assemblies' paths split and rejoin                                   | [bovine-arsucd12-minigraph.bubbles.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz)                 |
+| The allele inventory, one row per alternative sequence at a bubble                           | [bovine-arsucd12-minigraph.alleles.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.alleles.bed.gz)                 |
+| The overview used for whole chromosomes, with variants under 10 kb folded into the reference | [bovine-arsucd12-minigraph.fold10000.graph.bed.gz](https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.graph.bed.gz) |
 
 </details>
 
@@ -99,8 +99,10 @@ tabix-indexed segments and links and the overview.
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph",
+    "format": 2,
     "coarse": {
       "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000",
+      "format": 2,
       "aboveBpPerPx": 1000
     }
   },
@@ -336,9 +338,9 @@ chromosome lengths, and a
 hosted files records the source and every modification.
 
 Leonard et al. also built pggb and Minigraph-Cactus graphs of the same twelve
-assemblies, base-level GFAs with path lines and no rGFA tags.
-`gfa-to-tabix build` writes an `SM:Z:` tag per segment listing the assemblies
-that pass through it.
+assemblies, base-level GFAs with path lines and no rGFA tags. From those,
+`gfa-to-tabix build` writes an `SB:H:` bitmask per segment marking the
+assemblies that pass through it.
 
 ## See also
 

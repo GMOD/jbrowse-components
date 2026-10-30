@@ -29,9 +29,9 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
 - htslib (`bgzip`, `tabix`) and `bcftools`
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 1.4.0 or later, for the
-  graph's files and the walk index (walk format 5, the only one the plugin
-  reads)
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.0.0 or later, for the
+  graph's files in format 2, which the configs below read, and the walk index
+  (walk format 5, the only one the plugin reads)
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
 - [`minigraph`](https://github.com/lh3/minigraph), for each assembly's path
   through the graph
@@ -147,17 +147,19 @@ does not finish there.
 
 The command writes these files beside the prefix:
 
-| file                                          | what it holds                                                                                   |
-| --------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `.segs.bed.gz`                                | one row per segment, at its reference coordinate                                                |
-| `.links.bed.gz`                               | one row per link per endpoint, both ends stated in full                                         |
-| `.bubbles.bed.gz`                             | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele             |
-| `.fold10000.segs.bed.gz`                      | the graph with variants under 10 kb folded into the reference, so a whole chromosome draws      |
-| `.fold10000.links.bed.gz`                     | the tier's links                                                                                |
-| `.contig.segs.bed.gz`, `.contig.links.bed.gz` | the segment and link rows under each segment's own coordinate, which the allele inventory reads |
-| `.alleles.bed.gz`                             | one row per allele, with a CIGAR that states its size                                           |
-| `.graph.json`                                 | a manifest naming the files above and the tier's fold size                                      |
-| `.config.json`                                | the tracks below, with the plugin entry                                                         |
+| file                                          | what it holds                                                                                                       |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `.graph.bed.gz`                               | one row per segment and one per link, filed under reference coordinates; a link row states both ends in full        |
+| `.bubbles.bed.gz`                             | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele                                 |
+| `.fold10000.graph.bed.gz`                     | the graph with variants under 10 kb folded into the reference, so a whole chromosome draws                          |
+| `.contig.segs.bed.gz`, `.contig.links.bed.gz` | the segment and link rows under each segment's own coordinate, as a format 1 pair, which the allele inventory reads |
+| `.alleles.bed.gz`                             | one row per allele, with a CIGAR that states its size                                                               |
+| `.graph.json`                                 | a manifest naming the files above and the tier's fold size                                                          |
+| `.config.json`                                | the tracks below, with the plugin entry                                                                             |
+
+Each `.bed.gz` gets a tabix index beside it. `--format 1` writes the index and
+the tier as `.segs.bed.gz` and `.links.bed.gz` pairs, as gfa-to-tabix did before
+2.0; a track reading such a pair leaves out `"format": 2`.
 
 ### The coarse tier for whole-chromosome views {#a-whole-chromosome-the-bubble-tier}
 
@@ -174,7 +176,7 @@ single bases.
 
 The config's first track is the graph. Its adapter holds:
 
-- `uri`, the prefix
+- `uri`, the prefix, and `"format": 2`, which reads `<prefix>.graph.bed.gz`
 - `coarse`, which names the tier and its threshold, `foldBelowBp`; the track
   draws the tier past a tenth of that in bp per pixel
 - `assemblyNameToPanSN`, which maps your assembly name to the graph's PanSN
@@ -189,8 +191,9 @@ The config's first track is the graph. Its adapter holds:
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "hprc",
+    "format": 2,
     "assemblyNameToPanSN": { "hg38": "GRCh38" },
-    "coarse": { "uri": "hprc.fold10000", "foldBelowBp": 10000 }
+    "coarse": { "uri": "hprc.fold10000", "format": 2, "foldBelowBp": 10000 }
   },
   "displayDefaults": {
     "labels": { "name": { "show": false }, "description": { "show": false } }
@@ -206,7 +209,7 @@ The config's first track is the graph. Its adapter holds:
 Merge its `plugins` and `tracks` entries into your own config, then run
 `jbrowse validate config.json`, which reports a misspelled or undeclared slot
 JBrowse otherwise ignores. Without a config, the plugin's Add pangenome graph
-track workflow reads `hprc.graph.json` beside `hprc.segs.bed.gz`, so a track
+track workflow reads `hprc.graph.json` beside `hprc.graph.bed.gz`, so a track
 opened from that url gets the coarse tier too.
 
 Turned on, the track draws as a graph. **Display types → Feature display** in
@@ -232,11 +235,14 @@ Query a locus out of the index, by the graph's PanSN name for the reference
 contig:
 
 ```bash
-tabix hprc.segs.bed.gz 'GRCh38#0#chr1:103,690,000-103,700,000' | head -3
+tabix hprc.graph.bed.gz 'GRCh38#0#chr1:103,690,000-103,700,000' \
+  | awk '$4 == "N"' | head -3
 ```
 
-Columns one to three are the contig and span, four is the segment id, and five
-is its rank (build order).
+The `awk` keeps the segment rows, which have `N` in column four where a link row
+has `L`. In a segment row, columns one to three give the reference interval the
+command filed it under, five the segment id, six its rank (build order), and
+seven to nine the segment's contig and span.
 
 - **An empty result** over a tiled reference means the query used the wrong
   name: `chr1` finds nothing where `GRCh38#0#chr1` finds every segment.
@@ -299,8 +305,9 @@ under `TAIR10_genes`:
 <Figure caption="The 1001 Genomes+ minigraph graph's paths file over FLC on TAIR10: one row per accession, each block its allele at a bubble." src="/img/pangenome/prepare_graph_paths.png" />
 
 With a **plain GFA**, the command records the haplotypes whose paths visit each
-segment as an `SM:Z:` tag while it reads the paths. The track below is written
-for a build like the
+segment while it reads the paths, as an `SB:H:` bitmask over the haplotypes the
+file's `#samples` header lists (`SM:Z:` names in format 1). The track below is
+written for a build like the
 [pggb graph of five _E. coli_ strains](/docs/tutorials/pangenome_ecoli#strains-per-segment-as-a-track),
 indexed against K12.
 
@@ -320,7 +327,8 @@ indexed against K12.
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "graph"
+    "uri": "graph",
+    "format": 2
   },
   "displayDefaults": {
     "encoding": {

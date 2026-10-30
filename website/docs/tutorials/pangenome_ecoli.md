@@ -36,7 +36,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 1.4.0 or later, for
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.0.0 or later, for
   [the graph track](#opening-the-graph-in-the-graph-genome-view)
 - the GraphGenomeView plugin, for the same track. In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store)
@@ -539,9 +539,14 @@ gfa-to-tabix build pggb/*.smooth.final.gfa -o ecoli_pggb --reference K12 --snarl
 
 The command writes the segments and links, a coarse tier with variants under 50
 bp folded into the reference, and `ecoli_pggb.config.json`. The `uri`s below are
-our hosted copy; a local build uses `ecoli_pggb.contig`, the contig layout,
-since the anchored layout at the bare prefix draws multi-megabase rows across
-every window:
+our hosted copy. A local build reads the contig layout instead, since the
+anchored layout at the bare prefix draws multi-megabase rows across every
+window:
+
+- set the top-level `uri` to `ecoli_pggb.contig`
+- drop the top-level `"format": 2` and leave the one in `coarse`: `build` writes
+  the tier in format 2 but the contig layout as a format 1 pair,
+  `.contig.segs.bed.gz` and `.contig.links.bed.gz`
 
 ```json addtrack
 {
@@ -552,8 +557,10 @@ every window:
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb",
+    "format": 2,
     "coarse": {
       "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.fold50",
+      "format": 2,
       "aboveBpPerPx": 5
     }
   },
@@ -585,7 +592,8 @@ separate track:
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.fold50"
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.fold50",
+    "format": 2
   },
   "displays": [
     { "type": "LinearGraphDisplay" },
@@ -625,7 +633,8 @@ over the same files colors each segment by that count:
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb"
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb",
+    "format": 2
   },
   "displayDefaults": {
     "displayMode": "collapsed",

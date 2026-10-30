@@ -56,15 +56,14 @@ adapter.
 
 ## Quick start
 
-To index a graph, convert it once into tabix-indexed BED files that JBrowse can
-query by locus: `.segs.bed.gz` for the segments and `.links.bed.gz` for the
-links between them. One command, `gfa-to-tabix build`, builds them and writes a
-track config for them, as [](/docs/tutorials/pangenome_prepare_graph) describes.
-Then **Add track** with that config, whose adapter is `RgfaTabixAdapter`, and
-the track opens as the graph.
-[Route 1](#route-1-a-graph-track-browsable-by-locus) builds the index. Skip to
-[Seven layouts](#three-layouts) if you just need to know what the track menu's
-items do.
+To index a graph, convert it once into a tabix-indexed BED file that JBrowse can
+query by locus, `.graph.bed.gz`, which holds the segments and the links between
+them. One command, `gfa-to-tabix build`, builds it and writes a track config for
+it, as [](/docs/tutorials/pangenome_prepare_graph) describes. Then **Add track**
+with that config, whose adapter is `RgfaTabixAdapter`, and the track opens as
+the graph. [Route 1](#route-1-a-graph-track-browsable-by-locus) builds the
+index. Skip to [Seven layouts](#three-layouts) if you just need to know what the
+track menu's items do.
 
 The graph opens in the **Anchored** layout, on the view's coordinates, so typing
 in the location box, a gene search, a click on the cytoband and a drag-zoom move
@@ -79,8 +78,8 @@ again.
 Two adapters cut a subgraph: `RgfaTabixAdapter` over the index, and
 `WalkTabixSyntenyAdapter` over `gfa-to-tabix --walks` files, whose cut includes
 the haplotypes' walks. A `BedTabixAdapter` over the `RgfaTabixAdapter` index
-pair draws only as a lane. To skip indexing entirely,
-[Route 2](#route-2-a-gfa-file) opens a GFA as a file.
+draws only as a lane. To skip indexing entirely, [Route 2](#route-2-a-gfa-file)
+opens a GFA as a file.
 
 ## Segment coordinates by format
 
@@ -107,7 +106,7 @@ layout here, was built for assembly graphs, so use Bandage for one.
 Once indexed, the graph loads as a `GraphTrack` that draws whatever window is on
 screen as a graph.
 [`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#build)
-0.12.0 or later builds the index by the route the input format requires, and
+2.0.0 or later builds the index by the route the input format requires, and
 every step after that is the same. An rGFA's bubbles also need
 [`gfatools`](https://github.com/lh3/gfatools) on PATH:
 
@@ -141,20 +140,19 @@ command can query by strain.
   to whichever donor path reaches them first. A bare sample (`GRCh38`) is enough
   where the reference is haploid. For a diploid reference, write the haplotype
   (`HG002#1`), or the command picks one and names it on stderr.
-- The walk also records **which haplotypes visit each segment**, as `SM:Z:` in
-  the index. rGFA has no field for them. On this route that value fills
-  `samples` in the node popup.
+- The walk also records **which haplotypes visit each segment**, as an `SB:H:`
+  bitmask in the index over the haplotypes its `#samples` header lists. rGFA has
+  no field for them. On this route that value fills `samples` in the node popup.
 - When a path reaches a segment twice, **the first visit wins**, and the node
   draws as one tube at one x, and the repeat stays visible as depth.
 - A segment the reference never visits is placed on **the coordinates of the
   assembly it comes from**. rGFA places such segments the same way, which is why
-  a reference query reaches them through the links file.
+  a reference query reaches them through the link rows.
 
-`gfa-to-tabix build` writes `<prefix>.segs.bed.gz` and `<prefix>.links.bed.gz`
-with their tabix indexes for an rGFA or a plain GFA, and a second such pair for
-the coarse tier, which is the same graph with every variant under 10 kb folded
-into the reference. One adapter reads all four, and `<prefix>.config.json` holds
-the track:
+`gfa-to-tabix build` writes `<prefix>.graph.bed.gz` with its tabix index for an
+rGFA or a plain GFA, and a second such file for the coarse tier, which is the
+same graph with every variant under 10 kb folded into the reference. One adapter
+reads both, and `<prefix>.config.json` holds the track:
 
 ```json addtrack
 {
@@ -165,7 +163,12 @@ the track:
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "ecoli_minigraph",
-    "coarse": { "uri": "ecoli_minigraph.fold10000", "foldBelowBp": 10000 }
+    "format": 2,
+    "coarse": {
+      "uri": "ecoli_minigraph.fold10000",
+      "format": 2,
+      "foldBelowBp": 10000
+    }
   },
   "displays": [
     {
@@ -180,15 +183,23 @@ the track:
 }
 ```
 
-The `uri` is the shared prefix, from which the adapter resolves `.segs.bed.gz`,
-`.links.bed.gz` and both `.tbi` files. `coarse` gives the tier's prefix and fold
-size, `foldBelowBp`. A tenth of that is the handover, the linear view's zoom in
-bp per pixel past which the graph track cuts the tier; `aboveBpPerPx` in
-`coarse` sets the handover directly. `<prefix>.graph.json` lists the same files
-and fold size, and Add pangenome graph track reads it beside the segments file,
-so a track opened there gets the tier with no config. These stable names are
-PanSN (`K12#1#chr`), and their sample prefix is already the assembly name, so
-the track needs no `assemblyNameToPanSN` mapping.
+The adapter takes three keys here:
+
+- `uri`, the shared prefix, from which the adapter resolves `.graph.bed.gz` and
+  its `.tbi`
+- `"format": 2`, which names that one-file layout, gfa-to-tabix's default since
+  2.0. Without it the adapter reads format 1, the `.segs.bed.gz` and
+  `.links.bed.gz` pair that `--format 1` and earlier releases write
+- `coarse`, the tier's prefix, format and fold size, `foldBelowBp`. A tenth of
+  that is the handover, the linear view's zoom in bp per pixel past which the
+  graph track cuts the tier; `aboveBpPerPx` in `coarse` sets the handover
+  directly
+
+`<prefix>.graph.json` lists the same files and fold size, and Add pangenome
+graph track reads it beside the graph file, so a track opened there gets the
+tier with no config. The E. coli graph's stable names are PanSN (`K12#1#chr`),
+and their sample prefix is already the assembly name, so the track needs no
+`assemblyNameToPanSN` mapping.
 [HPRC's graph track](/docs/tutorials/pangenome_prepare_graph#the-two-indexes-a-graph-track-reads)
 needs one, because that graph calls the reference `GRCh38` while the assembly is
 `hg38`.
@@ -248,8 +259,8 @@ has no traversals to read. There `samples` is empty, and the panel reports
 
 Route 1 gives the same answer without the GFA file when the index came from a
 plain GFA. On that route `gfa-to-tabix build` does the traversal walk offline
-and writes each segment's haplotypes into the index as `SM:Z:`. Only an index
-built from a minigraph rGFA lacks them.
+and writes each segment's haplotypes into the index as `SB:H:` bits. Only an
+index built from a minigraph rGFA lacks them.
 
 **Sample rows** draws a row per contributing assembly. Each node is drawn once,
 on the row of the first path that reaches it, and the other haplotypes stay in
@@ -261,7 +272,7 @@ rows.
 [JBrowse Desktop](/docs/quickstart_desktop) opens your own graph from files on
 disk, with no server and no config file, by either route. Desktop reads a file
 by its path, so a graph track finds the files `gfa-to-tabix build` wrote beside
-the one you pick: the links file, the tabix indexes and `<prefix>.graph.json`.
+the one you pick: the tabix index, the coarse tier and `<prefix>.graph.json`.
 JBrowse Web's file picker hands over only the file picked, so there an indexed
 graph opens by URL.
 
@@ -289,9 +300,10 @@ as you browse ([Route 1](#route-1-a-graph-track-browsable-by-locus)):
 2. **File → Open track...**, then pick **Add pangenome graph track** from the
    dropdown at the top of the form
 3. Choose the file type, then **Choose File** for the one file it names:
-   - **rGFA segments (tabix BED pair):** `<prefix>.segs.bed.gz`, for an rGFA or
-     a plain GFA. The form also reads `<prefix>.graph.json`, so the track gets
-     the coarse tier
+   - **Indexed GFA (gfa-to-tabix .segs.bed.gz or .graph.bed.gz):**
+     `<prefix>.graph.bed.gz`, for an rGFA or a plain GFA, or the
+     `<prefix>.segs.bed.gz` of a format 1 pair. The form also reads
+     `<prefix>.graph.json`, so the track gets the coarse tier
    - **Haplotype walks (.walks.bed.gz):** `<prefix>.<sample>.walks.bed.gz`, from
      `gfa-to-tabix --walks`
    - **GBZ database (.gbz.db):** the database, with the haplotype index from
@@ -505,7 +517,12 @@ from, is:
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "ecoli_minigraph",
-    "coarse": { "uri": "ecoli_minigraph.fold10000", "aboveBpPerPx": 1000 }
+    "format": 2,
+    "coarse": {
+      "uri": "ecoli_minigraph.fold10000",
+      "format": 2,
+      "aboveBpPerPx": 1000
+    }
   },
   "displayDefaults": {
     "encoding": {
@@ -564,8 +581,8 @@ and the ringed node in the graph track is that 65 kb.
 <Figure caption="Hovering an allele in the graph highlights its reference interval across every lane above." src="/img/pangenome/rgfa_hover_sync.png" />
 
 An alignment of the same insertion is independent evidence. The graph's
-insertion comes from the graph's segment and link indexes, and the alignment
-below comes from a whole-genome alignment made without the graph.
+insertion comes from the graph's index, and the alignment below comes from a
+whole-genome alignment made without the graph.
 
 <Figure caption="The same insertion as an alignment, K12 above and CFT073 below." src="/img/pangenome/rgfa_insertion_synteny.png" />
 
@@ -625,13 +642,14 @@ reference-position ramp shows _where_ each segment sits.
 ## Alleles from the rGFA alone {#when-all-you-have-is-the-graph}
 
 Someone else's rGFA usually comes without the assemblies it was built from. The
-two indexes still record every allele in the graph, because each L-line row
-records both of its endpoints in full. A link between two backbone segments that
-leaves a coordinate _gap_ is a deletion. A link from the backbone into a rank>0
-segment enters an allele, and the allele's length is the total of the segments
-it walks before rejoining.
+index still records every allele in the graph, because each L-line row records
+both of its endpoints in full. A link between two backbone segments that leaves
+a coordinate _gap_ is a deletion. A link from the backbone into a rank>0 segment
+enters an allele, and the allele's length is the total of the segments it walks
+before rejoining.
 [`gfa-to-tabix alleles`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#alleles)
-does that walk and needs only the two files, indexed with `--layout contig`:
+does that walk and needs only the index, built with `--layout contig` in either
+format:
 
 ```bash
 gfa-to-tabix alleles ecoli_minigraph   # -> ecoli_minigraph.alleles.bed.gz

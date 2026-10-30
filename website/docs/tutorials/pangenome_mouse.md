@@ -66,15 +66,14 @@ strains of your own.
 <details>
 <summary>The files</summary>
 
-| What it is                                                                         | File                                                                                                                                                                                                                                                                       |
-| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Mm39 (GRCm39)                                                                      | [mm39.fa.gz](https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz)                                                                                                                                                                                           |
-| The eighteen assemblies, one GenArk folder per GenBank accession                   | [GCA/](https://hgdownload.soe.ucsc.edu/hubs/GCA/)                                                                                                                                                                                                                          |
-| Segments, the graph's nodes at their reference coordinates                         | [mouse-mm39-minigraph.segs.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.segs.bed.gz)                                                                                                                                                             |
-| Links, the edges between segments                                                  | [mouse-mm39-minigraph.links.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.links.bed.gz)                                                                                                                                                           |
-| Bubbles, where the strains' paths split and rejoin                                 | [mouse-mm39-minigraph.bubbles.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz)                                                                                                                                                       |
-| The allele inventory, one row per alternative sequence at a bubble                 | [mouse-mm39-minigraph.alleles.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.alleles.bed.gz)                                                                                                                                                       |
-| The whole-chromosome overview, with variants under 10 kb folded into the reference | [mouse-mm39-minigraph.fold10000.segs.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.segs.bed.gz)<br>[mouse-mm39-minigraph.fold10000.links.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.links.bed.gz) |
+| What it is                                                                         | File                                                                                                                                 |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Mm39 (GRCm39)                                                                      | [mm39.fa.gz](https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz)                                                     |
+| The eighteen assemblies, one GenArk folder per GenBank accession                   | [GCA/](https://hgdownload.soe.ucsc.edu/hubs/GCA/)                                                                                    |
+| Segments and links, the graph's nodes and edges at their reference coordinates     | [mouse-mm39-minigraph.graph.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.graph.bed.gz)                     |
+| Bubbles, where the strains' paths split and rejoin                                 | [mouse-mm39-minigraph.bubbles.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz)                 |
+| The allele inventory, one row per alternative sequence at a bubble                 | [mouse-mm39-minigraph.alleles.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.alleles.bed.gz)                 |
+| The whole-chromosome overview, with variants under 10 kb folded into the reference | [mouse-mm39-minigraph.fold10000.graph.bed.gz](https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.graph.bed.gz) |
 
 </details>
 
@@ -104,8 +103,10 @@ copy, so swap the prefix for your own build.
   "adapter": {
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph",
+    "format": 2,
     "coarse": {
       "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000",
+      "format": 2,
       "aboveBpPerPx": 1000
     }
   },
