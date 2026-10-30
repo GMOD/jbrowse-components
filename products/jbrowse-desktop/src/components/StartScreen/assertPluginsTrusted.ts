@@ -3,9 +3,15 @@ import {
   dropVendoredPlugins,
   pluginDescriptionString,
   pluginUrl,
+  resolvedPluginUrl,
 } from '@jbrowse/core/pluginDefinitions'
 
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
+
+// where the plugin will actually load from, which a umdLoc's baseUri can make
+// look nothing like its uri
+const resolvedUrl = (p: PluginDefinition) =>
+  resolvedPluginUrl(p) ?? pluginUrl(p)
 
 export class UntrustedPluginsError extends Error {
   constructor() {
@@ -44,11 +50,20 @@ export async function assertPluginsTrusted(
     plugins ?? [],
     desktopVendoredPluginNames,
   )
+  // A packaged Desktop loads a umdLoc/esmLoc that resolves to a local file,
+  // for a config the user opened from disk. One from outside could aim that at
+  // a file it planted, so it gets no prompt to misread: http(s) or nothing.
+  const local = untrusted.filter(p => !/^https?:/.test(resolvedUrl(p)))
+  if (local.length > 0) {
+    throw new Error(
+      `A config from outside this computer cannot load plugins from it: ${local.map(resolvedUrl).join(', ')}`,
+    )
+  }
   if (untrusted.length > 0 && !(await checkPlugins(untrusted))) {
     const accepted = await confirm(
       untrusted.map(p => ({
         description: pluginDescriptionString(p),
-        url: pluginUrl(p),
+        url: resolvedUrl(p),
       })),
     )
     if (!accepted) {

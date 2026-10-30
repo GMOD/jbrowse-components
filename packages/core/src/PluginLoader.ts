@@ -186,16 +186,24 @@ async function loadScript(scriptUrl: string, integrity?: string) {
  * plugins using protocol file:") named the symptom and nothing else, and the
  * reader is usually looking at a third-party hub config.
  *
- * The one `file:` url that loads is a `umdLoc`/`esmLoc` beside a config opened
- * from disk, in an instance that is itself a `file:` page (a packaged Desktop):
- * the user chose that config, and a fetched config's `baseUri` is its own
- * http(s) url, so a remote one cannot reach the disk. `instance` is the page's
- * url in the worker too, so both realms decide alike; an http(s) page's worker
- * cannot import a `file:` script, and loading it on the page alone left every
- * RPC failing on a terminated worker.
+ * The one `file:` url that loads is a `umdLoc`/`esmLoc` in an instance that is
+ * itself a `file:` page (a packaged Desktop), for a config opened from disk.
+ * A config from outside sets its own `baseUri` and could aim one at a planted
+ * file, so Desktop's trust funnel refuses those before anything loads
+ * (`assertPluginsTrusted`). `instance` is the page's url in the worker too, so
+ * both realms decide alike; an http(s) page's worker cannot import a `file:`
+ * script, and loading it on the page alone left every RPC failing on a
+ * terminated worker.
  */
 function resolvePluginUrl(spec: string, base?: string, instance?: string) {
-  const url = new URL(spec, base)
+  let url: URL
+  try {
+    url = new URL(spec, base)
+  } catch {
+    throw new Error(
+      `Cannot load plugin "${spec}": it is not a url, and nothing gave it a base to resolve against`,
+    )
+  }
   const besideLocalConfig =
     url.protocol === 'file:' && !!instance?.startsWith('file:')
   if (
@@ -204,12 +212,12 @@ function resolvePluginUrl(spec: string, base?: string, instance?: string) {
     !besideLocalConfig
   ) {
     throw new Error(
-      // a spec with a scheme of its own resolved to exactly what it asked for,
-      // so there is nothing to explain beyond refusing it
-      /^[a-z][a-z0-9+.-]*:/i.test(spec)
-        ? `Cannot load plugins using protocol "${url.protocol}"`
-        : instance !== undefined
-          ? `Cannot load plugin "${spec}": it resolves to ${url.href}, and a plugin loads from a local file only in a packaged JBrowse Desktop.`
+      instance !== undefined && url.protocol === 'file:'
+        ? `Cannot load plugin "${spec}": it resolves to ${url.href}, and a plugin loads from a local file only in a packaged JBrowse Desktop.`
+        : // a spec with a scheme of its own resolved to exactly what it asked
+          // for, so there is nothing to explain beyond refusing it
+          /^[a-z][a-z0-9+.-]*:/i.test(spec)
+          ? `Cannot load plugins using protocol "${url.protocol}"`
           : `Cannot load plugin from relative url "${spec}": it resolves against this JBrowse instance (${base}), not against the config that named it. Give it an absolute http(s) url, or use the umdLoc/esmLoc form to resolve it against the config.`,
     )
   }

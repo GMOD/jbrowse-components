@@ -16,11 +16,11 @@ function recordingLoader(
   return { loader, loaded }
 }
 
-// test_data/volvox names its plugin this way, and Desktop opening that config
-// from disk stamps the config's own directory as the baseUri
+// test_data/volvox names its plugin `{ uri: 'plugin.js' }`, and Desktop opening
+// that config from disk rewrites it to the file beside the config
 const besideConfig = {
   name: 'Local',
-  esmLoc: { uri: 'plugin.js', baseUri: 'file:///data/volvox/' },
+  esmLoc: { uri: 'file:///data/volvox/plugin.js' },
 }
 
 test('a packaged Desktop loads a plugin beside a config opened from disk', async () => {
@@ -55,4 +55,14 @@ test('a packaged Desktop still refuses other file: plugin urls', async () => {
     expect.stringMatching(/protocol "file:"/),
   ])
   expect(loaded).toEqual([])
+})
+
+// a link's sessionPlugins or a config built in code carries no baseUri
+test('an esmLoc with nothing to resolve against says so', async () => {
+  const { loader } = recordingLoader([
+    { name: 'Bare', esmLoc: { uri: 'plugin.js' } },
+  ])
+  const { failures } = await loader.loadSettled(PACKAGED_PAGE)
+
+  expect(`${failures[0]!.error}`).toMatch(/"plugin\.js": it is not a url/)
 })

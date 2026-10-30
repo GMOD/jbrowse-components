@@ -29,25 +29,24 @@ test('a bare relative uri on a location node becomes a localPath', () => {
   })
 })
 
-// The plugin loader resolves umdLoc/esmLoc as a url against its baseUri; turned
-// into a localPath it had no uri left, and test_data/volvox's UMD plugin failed
-// with a bare "Invalid URL"
-test('a plugin location keeps its uri and gains the config dir as baseUri', () => {
+// The plugin loader resolves umdLoc/esmLoc as a url; turned into a localPath it
+// had no uri left, and test_data/volvox's UMD plugin failed with a bare
+// "Invalid URL". Built from the path, a `#` or a drive letter stays a path.
+test('a plugin location becomes a file: url beside the config', () => {
   const cfg: { plugins: { name: string; umdLoc?: Loc; esmLoc?: Loc }[] } = {
     plugins: [
       { name: 'U', umdLoc: { uri: 'umd_plugin.js' } },
-      { name: 'E', esmLoc: { uri: 'esm_plugin.js' } },
+      { name: 'E', esmLoc: { uri: 'plugins/#1/esm_plugin.js' } },
     ],
   }
   relativeUrisToLocalPaths(cfg, dir)
   expect(cfg.plugins[0]!.umdLoc).toEqual({
-    uri: 'umd_plugin.js',
-    baseUri: base,
+    uri: pathToFileURL(abs('umd_plugin.js')).href,
   })
   expect(cfg.plugins[1]!.esmLoc).toEqual({
-    uri: 'esm_plugin.js',
-    baseUri: base,
+    uri: pathToFileURL(abs('plugins/#1/esm_plugin.js')).href,
   })
+  expect(cfg.plugins[1]!.esmLoc!.uri).toContain('%231')
 })
 
 // regression: the rewrite used to fire on the adapter itself, deleting the `uri`

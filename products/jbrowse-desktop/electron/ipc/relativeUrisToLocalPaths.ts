@@ -8,15 +8,16 @@ import { pathToFileURL } from 'node:url'
 // sibling index from it. Same rule, and same reason, as localFiles.ts.
 const LOCATION_KEYS = new Set(['uri', 'baseUri', 'locationType'])
 
-// Two nodes are shaped like a location node and are not one, so the key they
-// hang off tells them apart. `sequence: { adapter: { uri } }` is the one adapter
-// shorthand with no `type`. A plugin's `umdLoc`/`esmLoc` is a url the plugin
-// loader resolves against its `baseUri`, never a file openLocation reads.
-const URI_KEEPING_PARENTS = new Set(['adapter', 'umdLoc', 'esmLoc'])
+// A plugin's `umdLoc`/`esmLoc` is shaped like a location node and is a url the
+// plugin loader resolves, never a file openLocation reads
+const PLUGIN_LOCATION_KEYS = new Set(['umdLoc', 'esmLoc'])
 
+// `sequence: { adapter: { uri } }` is the one adapter shorthand with no `type`,
+// so it too is told apart from a location node only by the key it hangs off
 function isLocationNode(record: Record<string, unknown>, parentKey?: string) {
   return (
-    !URI_KEEPING_PARENTS.has(parentKey ?? '') &&
+    parentKey !== 'adapter' &&
+    !PLUGIN_LOCATION_KEYS.has(parentKey ?? '') &&
     Object.keys(record).every(key => LOCATION_KEYS.has(key))
   )
 }
@@ -60,6 +61,10 @@ export function relativeUrisToLocalPaths(
       obj.localPath = path.resolve(configDir, uri)
       obj.locationType = 'LocalPathLocation'
       delete obj.uri
+    } else if (PLUGIN_LOCATION_KEYS.has(parentKey ?? '')) {
+      // a file: url built from the path, so a drive letter or a `#` in it is
+      // not read as url syntax
+      obj.uri = pathToFileURL(path.resolve(configDir, uri)).href
     } else {
       // trailing separator so the directory itself is the base, rather than its
       // last segment being replaced by the relative uri

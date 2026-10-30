@@ -56,3 +56,33 @@ test('vendored plugins are dropped rather than prompted for', async () => {
   expect(d.checkPlugins).not.toHaveBeenCalled()
   expect(d.confirm).not.toHaveBeenCalled()
 })
+
+// a packaged Desktop loads a umdLoc/esmLoc that resolves to a local file, which
+// is for a config the user opened from disk, not one a link handed over
+test('a config from outside cannot name a plugin on this computer', async () => {
+  for (const plugin of [
+    { name: 'A', esmLoc: { uri: 'file:///home/u/Downloads/x.js' } },
+    {
+      name: 'B',
+      umdLoc: { uri: 'x.js', baseUri: 'file:///home/u/Downloads/' },
+    },
+  ]) {
+    const d = deps(false, true)
+    await expect(assertPluginsTrusted([plugin], d)).rejects.toThrow(
+      'file:///home/u/Downloads/x.js',
+    )
+    expect(d.confirm).not.toHaveBeenCalled()
+  }
+})
+
+// the prompt names where the plugin loads from, which a baseUri decides
+test('the prompt shows the url a umdLoc resolves to', async () => {
+  const d = deps(false, true)
+  await assertPluginsTrusted(
+    [{ name: 'Hub', umdLoc: { uri: 'p.js', baseUri: 'https://hub.org/c/' } }],
+    d,
+  )
+  expect(d.confirm).toHaveBeenCalledWith([
+    { description: 'UMD plugin Hub', url: 'https://hub.org/c/p.js' },
+  ])
+})
