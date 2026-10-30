@@ -1,5 +1,7 @@
 import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { isRegionsAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { tablesAdapter } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import {
   alignmentMarkAlpha,
   alignmentTables,
@@ -230,20 +232,59 @@ const LISTED_CONTIGS = 20
  * browser draws a track with no such contig, and a host can say why. Empty
  * where the contig is there, or the adapter cannot list its contigs.
  */
-function missingContigsOf(
-  names: string[],
-  regions: { refName: string; originalRefName?: string }[],
-) {
-  const has = new Set(names)
-  const listed = names.slice(0, LISTED_CONTIGS).join(', ')
+function listContigs(names: string[]) {
   const more =
     names.length > LISTED_CONTIGS
       ? `, and ${names.length - LISTED_CONTIGS} more`
       : ''
-  return regions.map(({ refName, originalRefName = refName }) =>
-    has.size === 0 || has.has(refName) || has.has(originalRefName)
-      ? ''
-      : `${refName} is not a contig of this file, whose contigs are ${listed}${more}`,
+  return `${names.slice(0, LISTED_CONTIGS).join(', ')}${more}`
+}
+
+interface NamedRegion {
+  refName: string
+  originalRefName?: string
+}
+
+function lacks(names: string[]) {
+  const has = new Set(names)
+  return ({ refName, originalRefName = refName }: NamedRegion) =>
+    has.size > 0 && !has.has(refName) && !has.has(originalRefName)
+}
+
+function missingContigsOf(names: string[], regions: NamedRegion[]) {
+  const missing = lacks(names)
+  return regions.map(region =>
+    missing(region)
+      ? `${region.refName} is not a contig of this file, whose contigs are ${listContigs(names)}`
+      : '',
+  )
+}
+
+/** Adapters whose reads store their bases as differences from the reference. */
+const DECODES_AGAINST_REFERENCE = new Set(['CramAdapter'])
+
+/**
+ * A warning for each contig of the regions that the assembly's sequence does
+ * not name, under the file's spelling or the reference's, where the file's
+ * bases decode against that sequence: a CRAM decodes them as N there.
+ */
+async function undecodableContigs(
+  pluginManager: PluginManager,
+  { adapterConfig, sequenceAdapter, regions }: RegionArgs,
+) {
+  const sequence =
+    sequenceAdapter && DECODES_AGAINST_REFERENCE.has(String(adapterConfig.type))
+      ? await tablesAdapter(pluginManager, sequenceAdapter, undefined)
+      : undefined
+  const names =
+    sequence && isRegionsAdapter(sequence)
+      ? (await sequence.getRegions({})).map(r => r.refName)
+      : []
+  const missing = lacks(names)
+  const contigs = new Set(regions.filter(missing).map(r => r.refName))
+  return [...contigs].map(
+    refName =>
+      `${refName} is not a contig of the assembly's sequence, whose contigs are ${listContigs(names)}, so the CRAM's bases on ${refName} decode as N: an alias table on the assembly can name it as the sequence does`,
   )
 }
 
@@ -393,7 +434,17 @@ export function createTablesEngine() {
       },
     )
   return {
-    alignments: regionRead('alignments', ALIGNMENTS_ARGS, alignmentTables),
+    alignments: regionRead(
+      'alignments',
+      ALIGNMENTS_ARGS,
+      async (pm, args: AlignmentReadArgs) => {
+        const [tables, undecodable] = await Promise.all([
+          alignmentTables(pm, args),
+          undecodableContigs(pm, args),
+        ])
+        return { ...tables, warnings: [...tables.warnings, ...undecodable] }
+      },
+    ),
     features: regionRead('features', FEATURES_ARGS, featureAndRecordTables),
     wiggle: regionRead('wiggle', WIGGLE_ARGS, wiggleTables),
     variants: regionRead('variants', VARIANTS_ARGS, variantTables),

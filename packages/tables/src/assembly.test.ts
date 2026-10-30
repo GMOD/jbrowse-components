@@ -126,7 +126,11 @@ test('a CRAM read first under an assembly without its alias decodes against the 
   const plain = await engine.alignments(CRAM)
   expect(lost.reads.start).toEqual(plain.reads.start)
   expect(lost.mismatches.base).not.toEqual(plain.mismatches.base)
+  expect(lost.warnings).toEqual([
+    "contigA is not a contig of the assembly's sequence, whose contigs are ctgA, ctgB, so the CRAM's bases on contigA decode as N: an alias table on the assembly can name it as the sequence does",
+  ])
   expect(found.mismatches).toEqual(plain.mismatches)
+  expect(found.warnings).toEqual([])
 })
 
 test('features and the sequence read under an alias, and the regions list the sequence’s contigs', async () => {
