@@ -3,7 +3,7 @@
 //! targets: wgsl, glsl
 //! coverage: analytic
 //! export-consts: ARROW_LENGTH_PX, STEM_HALF_H_PX, HEAD_HALF_H_PX, ARROW_MIN_FEATURE_WIDTH_PX, GENE_ARROW_MIN_FEATURE_WIDTH_PX
-//! js-export: arrowDraws, arrowHeadHalfHeightPx
+//! js-export: arrowDraws, arrowHeadHalfHeightPx, arrowReachPx, arrowCoverage
 
 import antialias;
 import hpmath;
@@ -40,6 +40,35 @@ public bool arrowDraws(float featureWidthPx, bool gene) {
 // never overhangs a short box.
 public float arrowHeadHalfHeightPx(float boxHeightPx) {
   return min(HEAD_HALF_H_PX, snapBoxHeightPx(boxHeightPx) * 0.5);
+}
+
+// How far the arrow's ink reaches, ramp included: (along to the tip, across
+// either side of the axis). The head's ramp reaches past its tip and base
+// corners by more than a centred edge's pad, the further the sharper the
+// corner.
+public float2 arrowReachPx(float headHalfPx, float dpr) {
+  float pad = aaHalfPx(dpr);
+  float stemEnd = ARROW_LENGTH_PX * 0.5;
+  float slantPx = sqrt(headHalfPx * headHalfPx + stemEnd * stemEnd);
+  return float2(
+    ARROW_LENGTH_PX + pad * slantPx / max(headHalfPx, pad),
+    max(STEM_HALF_H_PX + pad,
+        headHalfPx + pad * (headHalfPx + slantPx) / stemEnd));
+}
+
+// Coverage at `alongPx` from the arrow's root and `acrossPx` off its axis. The
+// stem runs half a px into the head, which holds it there, so the union of the
+// two has no seam where the head's base ramps up.
+public float arrowCoverage(float alongPx, float acrossPx, float headHalfPx, float dpr) {
+  float across = abs(acrossPx);
+  float stemEnd = ARROW_LENGTH_PX * 0.5;
+  float stem = strokeCoverage(STEM_HALF_H_PX, across, dpr)
+             * edgeCoverage(alongPx, dpr)
+             * edgeCoverage(stemEnd + 0.5 - alongPx, dpr);
+  float slant = (headHalfPx * (ARROW_LENGTH_PX - alongPx) - stemEnd * across)
+              / sqrt(headHalfPx * headHalfPx + stemEnd * stemEnd);
+  float head = edgeCoverage(alongPx - stemEnd, dpr) * edgeCoverage(slant, dpr);
+  return max(stem, head);
 }
 
 struct ArrowInstance {
@@ -83,12 +112,11 @@ VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
   float cy = snapBoxCenterYPx(inst.y, u.scrollY);
   float dir = flipX(inst.direction, u);
   float headHalf = arrowHeadHalfHeightPx(inst.height);
-  float pad = aaHalfPx(u.devicePixelRatio);
-  float halfH = max(STEM_HALF_H_PX, headHalf) + pad;
+  float2 reach = arrowReachPx(headHalf, u.devicePixelRatio);
 
   float2 q = quadLocal(vid);
-  float along = lerp(-pad, ARROW_LENGTH_PX + pad, q.x);
-  float across = lerp(-halfH, halfH, q.y);
+  float along = lerp(-aaHalfPx(u.devicePixelRatio), reach.x, q.x);
+  float across = lerp(-reach.y, reach.y, q.y);
 
   o.position = float4(
     pxToClipX(cx + along * dir, cw), yPxToClipY(cy + across, u.canvasHeight),
@@ -98,22 +126,10 @@ VsOut vs_main(ArrowInstance inst, uint vid : SV_VertexID) {
   return o;
 }
 
-// The stem runs half a px into the head, which holds it there, so the union
-// of the two has no seam where the head's base ramps up.
 [shader("fragment")]
 float4 fs_main(VsOut v) : SV_Target {
-  float dpr = u.devicePixelRatio;
-  float along = v.local.x;
-  float across = abs(v.local.y);
-  float stemEnd = ARROW_LENGTH_PX * 0.5;
-  float stem = strokeCoverage(STEM_HALF_H_PX, across, dpr)
-             * edgeCoverage(along, dpr)
-             * edgeCoverage(stemEnd + 0.5 - along, dpr);
-  float hh = v.headHalfPx;
-  float slant = (hh * (ARROW_LENGTH_PX - along) - stemEnd * across)
-              / sqrt(hh * hh + stemEnd * stemEnd);
-  float head = edgeCoverage(along - stemEnd, dpr) * edgeCoverage(slant, dpr);
-  float a = v.color.a * max(stem, head);
+  float a = v.color.a
+          * arrowCoverage(v.local.x, v.local.y, v.headHalfPx, u.devicePixelRatio);
   if (a <= 0.0) discard;
   return float4(v.color.rgb, a);
 }

@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 48 shaders with entry points. 165 functions
-are inside the emitter's subset, of which **131 are exported**.
+Scanned 48 shaders with entry points. 167 functions
+are inside the emitter's subset, of which **133 are exported**.
 
 ## Candidates
 
@@ -124,6 +124,8 @@ is no longer shared with anything.
 | `aaRamp` | tests only — `barCutCoverage.test.ts`, `pointGlyphPad.test.ts` |
 | `armCoverage` | tests only — `chevronStroke.test.ts` |
 | `armLocalPx` | tests only — `chevronStroke.test.ts` |
+| `arrowCoverage` | tests only — `arrowCoverage.test.ts` |
+| `arrowReachPx` | tests only — `arrowCoverage.test.ts` |
 | `chevronCornerPx` | tests only — `chevronStroke.test.ts` |
 | `discExpand` | tests only — `pointGlyphPad.test.ts` |
 | `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts`, `strokeCoverage.test.ts` |
