@@ -131,6 +131,43 @@ const suite: TestSuite = {
         }
       },
     },
+    {
+      // the tab never hides here, so the switch is the only capture
+      name: 'switching sessions in the drawer pictures the one left behind',
+      fn: async page => {
+        const volvox = 'test_data/volvox/config.json'
+        await navigateToApp(page, volvox, 'Switched to')
+        await zoomOut(page)
+        await delay(1200)
+        await navigateToApp(page, volvox, 'Left behind')
+        await zoomOut(page)
+        await delay(1200)
+        const openDrawer = async () => {
+          await (await findByText(page, 'File')).click()
+          await delay(400)
+          await (await findByText(page, 'Recent sessions...')).click()
+        }
+        const leftId = await sessionId(page)
+        await openDrawer()
+        await (await findByText(page, 'Switched to')).click()
+        await page.waitForFunction(
+          (id: string) => !window.location.search.includes(id),
+          { timeout: 20000 },
+          leftId,
+        )
+        await delay(500)
+        await openDrawer()
+        await page.waitForFunction(
+          () =>
+            [...document.querySelectorAll('.MuiDataGrid-row')].some(
+              row =>
+                row.textContent.includes('Left behind') &&
+                row.querySelector('img[src^="data:image/"]'),
+            ),
+          { timeout: 15000 },
+        )
+      },
+    },
   ],
 }
 
