@@ -25,7 +25,12 @@ import {
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
 import type { LaneDecision } from './laneDecision.ts'
-import type { MultiWayGroup, RowFrame, Span } from './layoutMultiWay.ts'
+import type {
+  LaneChange,
+  MultiWayGroup,
+  RowFrame,
+  Span,
+} from './layoutMultiWay.ts'
 import type { MultiWayCell } from './multiwayRenderTypes.ts'
 
 // HPRC v2.1 at CFH: four haplotypes carry the 84,684 bp CFHR3-CFHR1 deletion
@@ -172,6 +177,10 @@ function ribbonSpans(cells: Map<string, MultiWayCell>, key: string) {
     upper: [bp1[i]!, bp2[i]!],
     lower: [bp4[i]!, bp3[i]!],
   }))
+}
+
+function withoutAnchor({ anchor: _, ...change }: LaneChange) {
+  return change
 }
 
 describe('a deletion the lane carries against the anchor', () => {
@@ -510,9 +519,27 @@ describe('what a lane states across a gap against the anchor', () => {
     const { openings, changes } = laneIndelsOf(groups)
     return {
       openings: openings('HG01123.1', ref),
-      changes: changes('HG01123.1', ref),
+      changes: changes('HG01123.1', ref).map(withoutAnchor),
     }
   }
+
+  test('a change names the anchor stretch it sits on', () => {
+    const anchorOf = (groups: MultiWayGroup[]) =>
+      laneIndelsOf(groups)
+        .changes('HG01123.1', ref)
+        .map(c => [
+          c.kind,
+          c.anchor.start - WINDOW_START,
+          c.anchor.end - WINDOW_START,
+        ])
+    expect(anchorOf(gapped(935_000, 900_000, ['r', 'r']))).toEqual([
+      ['deletion', 40_000, 975_000],
+      ['insertion', 40_000, 975_000],
+    ])
+    expect(anchorOf(gapped(0, 30_000, ['r', 'r']))).toEqual([
+      ['insertion', 40_000, 40_000],
+    ])
+  })
 
   test('an insertion between two runs of one record, at its breakpoint, its length', () => {
     expect(read(gapped(0, 30_000, ['r', 'r']))).toEqual({
@@ -608,6 +635,22 @@ describe('an inversion the lane carries against the anchor', () => {
     laneIndelsOf(groupFeatures(features))
       .changes('HG01123.1', ref)
       .filter(c => c.kind === 'inversion')
+      .map(withoutAnchor)
+
+  test('an inversion names the anchor stretch inverted', () => {
+    const [inversion] = laneIndelsOf(
+      groupFeatures([
+        run('l', 0, 0, 40_000, 1),
+        run('m', 40_000, 40_000, 900_000, -1),
+        run('r', 940_000, 940_000, 40_000, 1),
+      ]),
+    ).changes('HG01123.1', ref)
+    expect(inversion?.anchor).toEqual({
+      refName: 'chr1',
+      start: WINDOW_START + 40_000,
+      end: WINDOW_START + 940_000,
+    })
+  })
 
   test('names a run of the other strand set in place between two collinear runs', () => {
     expect(

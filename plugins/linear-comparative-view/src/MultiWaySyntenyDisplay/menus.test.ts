@@ -13,6 +13,7 @@ import {
 } from './menus.ts'
 
 import type { LanePlacePin } from './lanePins.ts'
+import type { LaneChange } from './layoutMultiWay.ts'
 import type { HeaderLane } from './menus.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -64,12 +65,14 @@ function headerModel({
   flipPinned,
   canReanchor = true,
   lanesFrozen = false,
+  changes = [],
 }: {
   held?: boolean
   pinned?: string
   flipPinned?: string
   canReanchor?: boolean
   lanesFrozen?: boolean
+  changes?: LaneChange[]
 } = {}) {
   const calls: string[] = []
   const model = {
@@ -96,6 +99,10 @@ function headerModel({
     reanchor: (name: string, loc: string) => {
       calls.push(`reanchor ${name} ${loc}`)
     },
+    zoomTo: (loc: string) => {
+      calls.push(`zoom ${loc}`)
+    },
+    shownChangesOf: () => changes,
     pinLane: (name: string, pin: Omit<LanePlacePin, 'lane'> | undefined) => {
       calls.push(
         `pin ${name} ${pin?.refName}${pin?.at === undefined ? '' : `@${pin.at}`}`,
@@ -580,12 +587,7 @@ test('the anchor lane header only opens the view region elsewhere', () => {
 
 describe('a lane glyph menu', () => {
   const locus = { refName: 'pp1', start: 99, end: 500, name: 'GENE1' }
-  const withZoom = (model: ReturnType<typeof headerModel>) => ({
-    ...model.model,
-    zoomTo: (loc: string) => {
-      model.calls.push(`zoom ${loc}`)
-    },
-  })
+  const withZoom = (model: ReturnType<typeof headerModel>) => model.model
 
   test('opens or re-anchors on the lane at the glyph', () => {
     const model = headerModel()
@@ -627,4 +629,35 @@ describe('a lane glyph menu', () => {
     items.forEach(click)
     expect(model.calls).toEqual(['zoom pp1:100..500'])
   })
+})
+
+test('a lane menu goes to each change its chip names, largest first', () => {
+  const changes: LaneChange[] = [
+    {
+      at: 0,
+      laneBp: 0,
+      bp: 935_000,
+      kind: 'deletion',
+      anchor: { refName: 'chr1', start: 2_000_000, end: 2_935_000 },
+    },
+    {
+      at: 0,
+      laneBp: 30_000,
+      bp: 30_000,
+      kind: 'insertion',
+      anchor: { refName: 'chr1', start: 5_000_000, end: 5_000_000 },
+    },
+  ]
+  const { model, calls } = headerModel({ changes })
+  const goTo = subMenuOf(
+    laneHeaderMenuItems(model, peach).find(
+      item => 'label' in item && item.label === 'Go to',
+    ),
+  )
+  expect(labelsOf(goTo)).toEqual(['940 kb deletion', '30 kb insertion'])
+  goTo.forEach(click)
+  expect(calls).toEqual([
+    'zoom chr1:1532501..3402500',
+    'zoom chr1:4985001..5015000',
+  ])
 })

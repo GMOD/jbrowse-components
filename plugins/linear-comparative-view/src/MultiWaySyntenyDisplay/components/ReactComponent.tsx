@@ -97,7 +97,7 @@ const MultiWaySyntenyReactComponent = observer(
           const { clientX, clientY } = event
           model.setPointer({ ...eventPoint(event), clientX, clientY })
           const target = model.hoverTarget
-          if (target?.lane) {
+          if (target?.loci?.length) {
             event.preventDefault()
             model.openContextMenu({ clientX, clientY, target })
           }

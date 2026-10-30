@@ -22,13 +22,19 @@ import { colorByMenuItems } from '@jbrowse/synteny-core'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import { CLUSTER_FIELD } from './geneColor.ts'
-import { blockLocString, laneRegion } from './laneHeader.ts'
+import {
+  blockLocString,
+  changeLabel,
+  changeWindow,
+  laneRegion,
+} from './laneHeader.ts'
 import { flipPinOf, placePinOf } from './lanePins.ts'
 import { laneResetLabel } from './laneSelection.ts'
 
 import type { LanePin, LanePlacePin } from './lanePins.ts'
 import type { LaneSelectionModel } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
+import type { LaneChange } from './layoutMultiWay.ts'
 import type { LaneLocus } from './multiwayRenderTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { RadioOption } from '@jbrowse/core/ui/menuItems'
@@ -54,6 +60,8 @@ export interface LaneHeaderModel {
   pinsInForce: readonly LanePin[]
   openInNewView: (assemblyName: string, loc: string) => void
   reanchor: (assemblyName: string, loc: string) => void
+  zoomTo: (loc: string) => void
+  shownChangesOf: (lane: HeaderLane) => readonly LaneChange[]
   pinLane: (
     assemblyName: string,
     pin: Omit<LanePlacePin, 'lane'> | undefined,
@@ -146,6 +154,7 @@ export function laneHeaderMenuItems(
           },
         ]
       : []),
+    ...laneChangeMenuItems(model, lane),
     ...laneContigMenuItems(model, lane),
     ...laneFlipMenuItems(model, lane),
     ...(model.lanesFrozen
@@ -172,9 +181,30 @@ export function laneHeaderMenuItems(
   ]
 }
 
+/** the changes the lane's header chip names, each zooming the anchor to it */
+function laneChangeMenuItems(
+  model: LaneHeaderModel,
+  lane: HeaderLane,
+): MenuItem[] {
+  const changes = model.shownChangesOf(lane)
+  return changes.length
+    ? [
+        {
+          label: 'Go to',
+          subMenu: changes.map(change => ({
+            label: changeLabel(change),
+            onClick: () => {
+              model.zoomTo(assembleLocStringRaw(changeWindow(change)))
+            },
+          })),
+        },
+      ]
+    : []
+}
+
 /** a lane glyph's right-click menu: go to where it sits on its own genome */
 export function laneLocusMenuItems(
-  model: LaneHeaderModel & { zoomTo: (loc: string) => void },
+  model: LaneHeaderModel,
   lane: HeaderLane,
   { refName, start, end, name }: LaneLocus,
 ): MenuItem[] {

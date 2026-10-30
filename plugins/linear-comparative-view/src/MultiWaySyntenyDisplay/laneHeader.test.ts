@@ -3,6 +3,9 @@ import { LABEL_FONT_SIZE, labelBoxTop, laneHeaderRows } from './laneHeader.ts'
 import type { Lane } from './laneStack.ts'
 import type { LaneChange, RowFrame } from './layoutMultiWay.ts'
 
+// where a change sits on the anchor; no header reads it
+const ON = { refName: 'chr1', start: 0, end: 1 }
+
 const frame: RowFrame = {
   refName: 'Pp1',
   min: -40,
@@ -189,9 +192,9 @@ describe('the changes chip', () => {
     },
   })
   const deletions: LaneChange[] = [
-    { at: 10_000, laneBp: 0, bp: 18_000, kind: 'deletion' },
-    { at: 50_000, laneBp: 0, bp: 30_000, kind: 'deletion' },
-    { at: 400_000, laneBp: 0, bp: 1_234_567, kind: 'deletion' },
+    { at: 10_000, laneBp: 0, bp: 18_000, kind: 'deletion', anchor: ON },
+    { at: 50_000, laneBp: 0, bp: 30_000, kind: 'deletion', anchor: ON },
+    { at: 400_000, laneBp: 0, bp: 1_234_567, kind: 'deletion', anchor: ON },
   ]
   const changesOf = (changes: LaneChange[]) =>
     laneHeaderRows(
@@ -208,9 +211,27 @@ describe('the changes chip', () => {
     expect(
       changesOf([
         ...deletions,
-        { at: 20_000, laneBp: 54_000, bp: 54_000, kind: 'insertion' },
-        { at: 140_000, laneBp: 11_000, bp: 11_000, kind: 'insertion' },
-        { at: 300_000, laneBp: 90_000, bp: 90_000, kind: 'insertion' },
+        {
+          at: 20_000,
+          laneBp: 54_000,
+          bp: 54_000,
+          kind: 'insertion',
+          anchor: ON,
+        },
+        {
+          at: 140_000,
+          laneBp: 11_000,
+          bp: 11_000,
+          kind: 'insertion',
+          anchor: ON,
+        },
+        {
+          at: 300_000,
+          laneBp: 90_000,
+          bp: 90_000,
+          kind: 'insertion',
+          anchor: ON,
+        },
       ]),
     ).toEqual([
       undefined,
@@ -229,7 +250,7 @@ describe('the changes chip', () => {
     })
     expect(
       laneHeaderRows([anchorLane, wide], 2000, '', undefined, undefined, () => [
-        { at: 1000, laneBp: 0, bp: 1_234_567, kind: 'deletion' },
+        { at: 1000, laneBp: 0, bp: 1_234_567, kind: 'deletion', anchor: ON },
       ])[1]!.changes,
     ).toEqual({
       text: '1.2 Mb deletion',
@@ -240,7 +261,13 @@ describe('the changes chip', () => {
   test('names an inversion the shown frame meets by its anchor span', () => {
     expect(
       changesOf([
-        { at: 100_000, laneBp: 900_000, bp: 900_000, kind: 'inversion' },
+        {
+          at: 100_000,
+          laneBp: 900_000,
+          bp: 900_000,
+          kind: 'inversion',
+          anchor: ON,
+        },
       ])[1]?.text,
     ).toBe('900 kb inversion')
   })

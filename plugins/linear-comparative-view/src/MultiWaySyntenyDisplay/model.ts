@@ -118,7 +118,11 @@ import {
   staleLaneSpecs,
   unheldLanePairsOf,
 } from './laneFetch.ts'
-import { LABEL_FONT_SIZE, laneHeaderRows } from './laneHeader.ts'
+import {
+  LABEL_FONT_SIZE,
+  laneHeaderRows,
+  shownLaneChanges,
+} from './laneHeader.ts'
 import { releaseLaneAssembly } from './laneHolders.ts'
 import { GENE_LABEL_FONT_PX, placeLaneLabels } from './laneLabels.ts'
 import {
@@ -193,6 +197,7 @@ import {
   anchorRuleY,
   glyphHitAt,
   glyphsKey,
+  ribbonEnds,
   outlineKey,
   ribbonFeatureId,
   ribbonTooltip,
@@ -262,7 +267,7 @@ import type {
   MultiWayLayer,
   MultiWayRenderState,
   MultiWayRenderingBackend,
-  LaneLocus,
+  LaneEnd,
   RibbonRef,
 } from './multiwayRenderTypes.ts'
 import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
@@ -286,11 +291,11 @@ import type { MarkColorScale } from '@jbrowse/render-core/marks'
 import type { AttributeRange, DeclaredLane } from '@jbrowse/synteny-core'
 import type React from 'react'
 
-/** `lane` is the glyph's lane and where it sits there; ribbons have none */
+/** `loci`: where the glyph, or each end of the ribbon, sits on its lane */
 export interface HoverTarget extends RibbonRef {
   label: string
   feature: Feature
-  lane?: LaneLocus & { assemblyName: string }
+  loci?: LaneEnd[]
 }
 
 export interface MultiWayContextMenu extends ContextMenuAnchor {
@@ -2062,6 +2067,18 @@ export function stateModelFactory(
         )
       },
       /**
+       * #method
+       * the changes a lane's header chip names, largest first
+       */
+      shownChangesOf(lane: Pick<Lane, 'frame' | 'canon' | 'assemblyName'>) {
+        return lane.frame
+          ? shownLaneChanges(
+              lane,
+              self.laneChanges(lane.assemblyName, lane.frame.refName),
+            )
+          : []
+      },
+      /**
        * #getter
        * the alignments the source answered for each adjacent mate-lane pair,
        * keyed `upper|lower`; a pair it has not answered draws nothing
@@ -2874,6 +2891,18 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * the upper and lower row of each ribbon layer, keyed by
+       * `sharedBackendKey`
+       */
+      get ribbonLayerRows(): ReadonlyMap<number, readonly [number, number]> {
+        return new Map(
+          self.ribbonGeometry.layers.map(
+            layer => [sharedBackendKey(layer.key), layer.rows] as const,
+          ),
+        )
+      },
+      /**
+       * #getter
        * `ribbonGeometry.records` keyed by `sharedBackendKey`
        */
       get ribbonRecords(): ReadonlyMap<number, ReadonlyMap<number, Feature>> {
@@ -2969,7 +2998,9 @@ export function stateModelFactory(
                 label: hit.label,
                 feature: hit.feature,
                 groupKey: hit.groupKey,
-                lane: { ...hit.locus, assemblyName: lanes[row]!.assemblyName },
+                loci: [
+                  { ...hit.locus, assemblyName: lanes[row]!.assemblyName },
+                ],
               }
             }
           }
@@ -2985,6 +3016,9 @@ export function stateModelFactory(
         const record =
           (hit && self.ribbonRecords.get(hit.key)?.get(hit.instanceIndex)) ??
           target?.feature
+        const rows = hit && self.ribbonLayerRows.get(hit.key)
+        const upper = rows && lanes[self.rowsVsAnchor ? 0 : rows[0]]
+        const lower = rows && lanes[rows[1]]
         return target && record
           ? {
               ...target,
@@ -2994,6 +3028,8 @@ export function stateModelFactory(
                 record,
                 self.ribbonAttributeRanges,
               ),
+              loci:
+                upper && lower ? ribbonEnds(upper, lower, target, record) : [],
             }
           : undefined
       },
@@ -3119,11 +3155,11 @@ export function stateModelFactory(
       return {
         /** #method */
         contextMenuItems(): MenuItem[] {
-          const locus = self.contextMenuInfo?.target.lane
-          const lane = self.laneStack.lanes.find(
-            l => l.assemblyName === locus?.assemblyName,
-          )
-          return lane && locus ? laneLocusMenuItems(self, lane, locus) : []
+          const { lanes } = self.laneStack
+          return (self.contextMenuInfo?.target.loci ?? []).flatMap(locus => {
+            const lane = lanes.find(l => l.assemblyName === locus.assemblyName)
+            return lane ? laneLocusMenuItems(self, lane, locus) : []
+          })
         },
         /** #method */
         trackMenuItems(): MenuItem[] {

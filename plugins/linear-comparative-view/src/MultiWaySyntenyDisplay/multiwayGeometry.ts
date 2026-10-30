@@ -8,7 +8,7 @@ import {
   CIGAR_X,
   visitCigarRenderedSegments,
 } from '@jbrowse/cigar-utils'
-import { assembleLocString } from '@jbrowse/core/util'
+import { assembleLocString, assembleLocStringRaw } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 import {
   UTR_HEIGHT_FRACTION,
@@ -49,6 +49,7 @@ import type { Lane, LaneBand, LaneStack } from './laneStack.ts'
 import type { PlacedGroup, MultiWayPlacement, Span } from './layoutMultiWay.ts'
 import type {
   GlyphHit,
+  LaneEnd,
   LaneGlyphData,
   MultiWayCell,
   RibbonLayer,
@@ -1127,4 +1128,53 @@ export function glyphHitAt(hits: GlyphHit[], x: number, y: number) {
     }
   }
   return undefined
+}
+
+function laneEndOf(
+  lane: Lane,
+  { refName, start, end, name }: MultiWayPlacement,
+): LaneEnd {
+  return {
+    assemblyName: lane.assemblyName,
+    refName,
+    start,
+    end,
+    name: name ?? assembleLocStringRaw({ refName, start, end }),
+  }
+}
+
+/**
+ * Where a ribbon between `upper` and `lower` sits on each lane's genome: a
+ * lane-pair record and its mate, or the group's placement on each lane. A
+ * lane placing the group more than once names the placement only where the
+ * ribbon's own record picks it.
+ */
+export function ribbonEnds(
+  upper: Lane,
+  lower: Lane,
+  target: RibbonRef,
+  record: Feature,
+): LaneEnd[] {
+  if (target.linkId !== undefined) {
+    const mate = getMate(record)
+    return mate
+      ? [
+          laneEndOf(upper, {
+            refName: record.get('refName'),
+            start: record.get('start'),
+            end: record.get('end'),
+          }),
+          laneEndOf(lower, mate),
+        ]
+      : []
+  }
+  const key = target.groupKey
+  const placedOn = (lane: Lane) => {
+    const placed = key === undefined ? undefined : lane.placements.get(key)
+    const picked = placed?.features.indexOf(record) ?? -1
+    const index = picked >= 0 ? picked : placed?.intervals.length === 1 ? 0 : -1
+    const interval = placed?.intervals[index]
+    return interval ? [laneEndOf(lane, interval)] : []
+  }
+  return [...placedOn(upper), ...placedOn(lower)]
 }

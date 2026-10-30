@@ -100,13 +100,21 @@ export interface LaneOpening {
  * What a lane's records state over lane bp `at` to `at + laneBp`: `bp` of
  * anchor its sequence lacks, `bp` of its own sequence the anchor lacks, or an
  * inverted stretch of `bp` anchor. One record's gap can state both of the
- * first two, and each is its own change.
+ * first two, and each is its own change. `anchor` is where it sits on the
+ * anchor: the stretch deleted or inverted, or the point of an insertion.
  */
 export interface LaneChange {
   at: number
   laneBp: number
   bp: number
   kind: 'deletion' | 'insertion' | 'inversion'
+  anchor: AnchorStretch
+}
+
+export interface AnchorStretch {
+  refName: string
+  start: number
+  end: number
 }
 
 interface LaneRun {
@@ -203,6 +211,11 @@ function laneInversionsOf(sorted: readonly LanePiece[]): LaneChange[] {
           laneBp: run.laneEnd - run.laneStart,
           bp: span,
           kind: 'inversion',
+          anchor: {
+            refName: run.refName,
+            start: run.anchorStart,
+            end: run.anchorEnd,
+          },
         })
       }
     }
@@ -404,28 +417,34 @@ export function laneIndelsOf(groups: MultiWayGroup[]) {
       if (anchorGap === undefined) {
         return
       }
+      const [lo, hi] =
+        left.lane.orientation < 0
+          ? [right.anchor.end, left.anchor.start]
+          : [left.anchor.end, right.anchor.start]
       if (
         !oneWindow(left.lane, right.lane) ||
         (!oneRecord(left.lane, right.lane) &&
-          placedAnchor(
-            assemblyName,
-            left.anchor.refName,
-            left.lane.orientation < 0 ? right.anchor.end : left.anchor.end,
-            left.lane.orientation < 0 ? left.anchor.start : right.anchor.start,
-          ))
+          placedAnchor(assemblyName, left.anchor.refName, lo, hi))
       ) {
         return
       }
       const at = left.lane.end
       const net = anchorGap - laneGap
+      const anchor = { refName: left.anchor.refName, start: lo, end: hi }
       if (laneGap >= 0 && net >= SPLIT_AT_GAP_BP) {
         openings.push({ at, bp: net })
       }
       if (anchorGap >= SPLIT_AT_GAP_BP) {
-        changes.push({ at, laneBp: 0, bp: anchorGap, kind: 'deletion' })
+        changes.push({ at, laneBp: 0, bp: anchorGap, kind: 'deletion', anchor })
       }
       if (anchorGap >= 0 && laneGap >= SPLIT_AT_GAP_BP) {
-        changes.push({ at, laneBp: laneGap, bp: laneGap, kind: 'insertion' })
+        changes.push({
+          at,
+          laneBp: laneGap,
+          bp: laneGap,
+          kind: 'insertion',
+          anchor,
+        })
       }
     })
     changes.push(...laneInversionsOf(list))

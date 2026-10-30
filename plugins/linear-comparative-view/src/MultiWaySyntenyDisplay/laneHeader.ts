@@ -54,6 +54,8 @@ export interface LaneHeaderRow {
 
 const LISTED_CHANGES = 2
 
+const MIN_CHANGE_PAD_BP = 1000
+
 function bpText(n: number) {
   return n >= 1_000_000
     ? `${Number((n / 1_000_000).toPrecision(2))} Mb`
@@ -62,21 +64,41 @@ function bpText(n: number) {
       : `${n} bp`
 }
 
-function laneChanges(
+/** the stated changes the lane's shown frame meets, largest first */
+export function shownLaneChanges(
   lane: Pick<Lane, 'frame' | 'canon'>,
   stated: readonly LaneChange[],
 ) {
   const region = laneRegion(lane)
-  if (!region) {
-    return undefined
+  return region
+    ? stated
+        .filter(
+          ({ at, laneBp }) => at <= region.end && at + laneBp >= region.start,
+        )
+        .toSorted((a, b) => b.bp - a.bp)
+    : []
+}
+
+export function changeLabel({ bp, kind }: LaneChange) {
+  return `${bpText(bp)} ${kind}`
+}
+
+/** the anchor a change sits on, padded by half its size either side */
+export function changeWindow({ anchor, bp }: LaneChange) {
+  const pad = Math.max(Math.round(bp / 2), MIN_CHANGE_PAD_BP)
+  return {
+    refName: anchor.refName,
+    start: Math.max(0, anchor.start - pad),
+    end: anchor.end + pad,
   }
-  const { start, end } = region
-  const changes = stated
-    .filter(({ at, laneBp }) => at <= end && at + laneBp >= start)
-    .toSorted((a, b) => b.bp - a.bp)
-  const listed = changes
-    .slice(0, LISTED_CHANGES)
-    .map(({ bp, kind }) => `${bpText(bp)} ${kind}`)
+}
+
+function laneChanges(
+  lane: Pick<Lane, 'frame' | 'canon'>,
+  stated: readonly LaneChange[],
+) {
+  const changes = shownLaneChanges(lane, stated)
+  const listed = changes.slice(0, LISTED_CHANGES).map(changeLabel)
   const more = changes.length - listed.length
   return listed.length
     ? [...listed, ...(more ? [`${more} more`] : [])].join(', ')

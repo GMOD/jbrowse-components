@@ -27,6 +27,11 @@ export interface LaneLocus {
   name: string
 }
 
+/** a stretch of one lane's genome, named by the lane's assembly */
+export interface LaneEnd extends LaneLocus {
+  assemblyName: string
+}
+
 export interface GlyphHit {
   x1: number
   x2: number

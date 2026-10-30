@@ -1113,10 +1113,9 @@ describe('the lane stack scrolls once lanes would crush', () => {
       (x1 + x2) / 2,
       lane.glyphTop + glyphHeight / 2,
     )
-    expect(target?.lane).toMatchObject({
-      assemblyName: 'mate0',
-      refName: 'ctgB',
-    })
+    expect(target?.loci).toEqual([
+      expect.objectContaining({ assemblyName: 'mate0', refName: 'ctgB' }),
+    ])
 
     display.openContextMenu({ clientX: 0, clientY: 0, target: target! })
     expect(
@@ -1126,6 +1125,17 @@ describe('the lane stack scrolls once lanes would crush', () => {
     ).toEqual(
       expect.arrayContaining([expect.stringMatching(/^Open .* at gene1$/)]),
     )
+
+    const [anchor] = lanes
+    const [a1, a2] = anchor!.placements.get('gene1')!.spans[0]!
+    const ribbon = display.hitTest(
+      (a1 + a2 + x1 + x2) / 4,
+      (anchor!.glyphTop + glyphHeight + lane.layerTop) / 2,
+    )
+    expect(ribbon?.loci?.map(l => l.assemblyName)).toEqual([
+      anchor!.assemblyName,
+      'mate0',
+    ])
   })
 })
 
