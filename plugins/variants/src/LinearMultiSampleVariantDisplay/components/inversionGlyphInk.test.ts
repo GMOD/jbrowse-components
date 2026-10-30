@@ -80,8 +80,10 @@ test.each([
   (_, src) => {
     const stmt = onlyStatement(src, 'inversionCoverage', 'alpha')
     expect(stripCallsTo(stmt, 'inversionCoverage').split('*')).toHaveLength(2)
-    const coverage = onlyStatement(src, 'return edgeCoverage')
-    expect(stripCallsTo(coverage, 'edgeCoverage').trim()).toBe('return')
+    const coverage = onlyStatement(src, 'return max(', 'edgeCoverage')
+    expect(
+      stripCallsTo(coverage, 'edgeCoverage').replaceAll(/\s/g, ''),
+    ).toMatch(/^returnmax\(0\.0f?,\+-1\.0f?\)$/)
     expect(src).not.toContain('smoothstep')
   },
 )

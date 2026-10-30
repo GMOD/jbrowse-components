@@ -93,9 +93,11 @@ float snappedCellLeftPx(float x1Px, float x2Px, float widthPx, float dpr) {
 }
 
 // Coverage of the inversion glyph at (`xPx`, `yPx`) from the cell's top-left:
-// the ramp of the nearer of its two slants, which run from the point
-// (0, h/2) to (w, 0) and (w, h). The right edge is the cell's own, already on
-// a pixel boundary, so it cuts hard.
+// the two slants' ramps less one, the area between them, as `slabCoverage`
+// takes a band's. The slants run from the point (0, h/2) to (w, 0) and (w, h),
+// so near the point the wedge is thinner than a pixel, where the nearer
+// slant's ramp alone inks half a pixel on the axis. The right edge is the
+// cell's own, already on a pixel boundary, so it cuts hard.
 //
 // The point spans the whole cell. Capping it at the cell height, so a wide
 // inversion drew as a bar with a pointed end, was tried twice (66f38c315b,
@@ -106,7 +108,7 @@ float inversionCoverage(float xPx, float yPx, float widthPx, float heightPx, flo
   float fromRight = widthPx - xPx;
   float dTop = (widthPx * yPx - halfH * fromRight) / hyp;
   float dBot = (widthPx * (heightPx - yPx) - halfH * fromRight) / hyp;
-  return edgeCoverage(min(dTop, dBot), dpr);
+  return max(0.0, edgeCoverage(dTop, dpr) + edgeCoverage(dBot, dpr) - 1.0);
 }
 
 struct CellInstance {

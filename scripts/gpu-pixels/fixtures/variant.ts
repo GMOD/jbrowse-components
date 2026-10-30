@@ -133,6 +133,6 @@ export default [
     'cells with the inversion glyph, whose two slants ramp, rows 7.3 px tall',
     7.3,
     true,
-    { max: 0.3, meanErr: 0.01 },
+    { max: 0.1, meanErr: 0.01 },
   ),
 ]
