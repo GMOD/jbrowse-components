@@ -18,6 +18,7 @@
 //  - `--emulate-dpr` is the control: Chrome under puppeteer's
 //    `deviceScaleFactor` emulation, which blurs the cells and smears both
 //    overlays at a fractional dpr.
+import { Buffer } from 'node:buffer'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -49,6 +50,7 @@ const BACKEND = arg('backend') ?? (BROWSER === 'firefox' ? 'webgpu' : 'webgl')
 const NUDGE = arg('nudge')
 const WILL_CHANGE = arg('will-change')
 const EMULATE = process.argv.includes('--emulate-dpr')
+const EXACT_WIDTH = process.argv.includes('--exact-width')
 const TRACK = 'volvox multi-sample sv'
 const SEL = `[data-display-id^="${TRACK}"]`
 
@@ -73,9 +75,6 @@ async function geometry(page: Page) {
     const canvas = [...display.querySelectorAll('canvas')].sort(
       (a, b) => b.width * b.height - a.width * a.height,
     )[0]!
-    const seps = display.querySelector(
-      '[data-testid="variant-row-separators"]',
-    ) as HTMLElement | null
     const dpr = window.devicePixelRatio
     const chain: string[] = []
     for (
@@ -97,7 +96,6 @@ async function geometry(page: Page) {
         `${el.tagName.toLowerCase()}${testid ? `[${testid}]` : ''} top ${t.toFixed(3)} css = ${(t * dpr).toFixed(3)} dev ${flags.join(' ')}`,
       )
     }
-    const firstBox = seps?.firstElementChild as HTMLElement | null
     const c = canvas.getBoundingClientRect()
     return {
       dpr,
@@ -105,12 +103,6 @@ async function geometry(page: Page) {
       canvasLeftDev: c.left * dpr,
       canvasWidthDev: c.width * dpr,
       backing: `${canvas.width}x${canvas.height}`,
-      boxTopDev: firstBox
-        ? firstBox.getBoundingClientRect().top * dpr
-        : undefined,
-      boxHeightDev: firstBox
-        ? firstBox.getBoundingClientRect().height * dpr
-        : undefined,
       chain,
     }
   }, SEL)
@@ -141,9 +133,9 @@ function inkRows(
     for (let x = x0; x < x1; x++) {
       const i = (y * a.width + x) * 4
       sum +=
-        Math.abs(a.data[i] - b.data[i]) +
-        Math.abs(a.data[i + 1] - b.data[i + 1]) +
-        Math.abs(a.data[i + 2] - b.data[i + 2])
+        Math.abs(a.data[i]! - b.data[i]!) +
+        Math.abs(a.data[i + 1]! - b.data[i + 1]!) +
+        Math.abs(a.data[i + 2]! - b.data[i + 2]!)
     }
     rows.push({ y, d: sum / (x1 - x0) })
   }
@@ -179,7 +171,7 @@ function cellEdges(
     for (let x = x0; x < x1; x++) {
       const px = (yy: number) => {
         const i = (yy * p.width + x) * 4
-        return (p.data[i] << 16) | (p.data[i + 1] << 8) | p.data[i + 2]
+        return (p.data[i]! << 16) | (p.data[i + 1]! << 8) | p.data[i + 2]!
       }
       const u = px(y - 1)
       const c = px(y)
@@ -214,7 +206,7 @@ function rowsDump(
       const x = Math.round(left + 20 + ((width - 40) * k) / 11)
       const i = (y * p.width + x) * 4
       cells.push(
-        ((p.data[i] << 16) | (p.data[i + 1] << 8) | p.data[i + 2])
+        ((p.data[i]! << 16) | (p.data[i + 1]! << 8) | p.data[i + 2]!)
           .toString(16)
           .padStart(6, '0'),
       )
@@ -222,6 +214,70 @@ function rowsDump(
     lines.push(`  ${y} ${cells.join(' ')}`)
   }
   return lines.join('\n')
+}
+
+// The whole-device-px offset at which the screen best reproduces the backing
+// store, and the share of backing px that differ there. Zero means the browser
+// drew the canvas unresampled.
+function backingMatch(
+  backing: { w: number; h: number; data: Uint8Array },
+  screen: Uint8Array,
+  g: { canvasTopDev: number; canvasLeftDev: number },
+) {
+  const p = readPng(screen)
+  let best = { dx: 0, dy: 0, differing: Infinity, total: 0 }
+  for (const dy of [-1, 0, 1]) {
+    for (const dx of [-1, 0, 1]) {
+      const oy = Math.round(g.canvasTopDev) + dy
+      const ox = Math.round(g.canvasLeftDev) + dx
+      let differing = 0
+      let total = 0
+      // the middle columns, clear of the row labels drawn over the left
+      for (let y = 0; y < Math.min(backing.h, p.height - oy); y++) {
+        for (
+          let x = Math.round(backing.w * 0.3);
+          x < Math.round(backing.w * 0.7);
+          x += 3
+        ) {
+          const b = (y * backing.w + x) * 4
+          if (backing.data[b + 3] !== 255) {
+            continue
+          }
+          const s = ((oy + y) * p.width + ox + x) * 4
+          total++
+          if (
+            Math.abs(backing.data[b]! - p.data[s]!) > 2 ||
+            Math.abs(backing.data[b + 1]! - p.data[s + 1]!) > 2 ||
+            Math.abs(backing.data[b + 2]! - p.data[s + 2]!) > 2
+          ) {
+            differing++
+          }
+        }
+      }
+      if (differing < best.differing) {
+        best = { dx: ox, dy: oy, differing, total }
+      }
+    }
+  }
+  const y = Math.round(backing.h / 3)
+  const row = (get: (x: number) => number) =>
+    Array.from({ length: 24 }, (_, i) =>
+      get(Math.round(backing.w * 0.3) + i)
+        .toString(16)
+        .padStart(6, '0'),
+    ).join(' ')
+  const sample = `\n  backing row ${y}: ${row(x => {
+    const b = (y * backing.w + x) * 4
+    return (
+      (backing.data[b]! << 16) |
+      (backing.data[b + 1]! << 8) |
+      backing.data[b + 2]!
+    )
+  })}\n  screen  row ${best.dy + y}: ${row(x => {
+    const s = ((best.dy + y) * p.width + best.dx + x) * 4
+    return (p.data[s]! << 16) | (p.data[s + 1]! << 8) | p.data[s + 2]!
+  })}`
+  return `best at device (${best.dx}, ${best.dy}), ${best.differing} of ${best.total} opaque backing px differ${sample}`
 }
 
 async function main() {
@@ -305,6 +361,13 @@ async function main() {
         Number(NUDGE),
       )
     }
+    if (EXACT_WIDTH) {
+      await page.evaluate(sel => {
+        const canvas = document.querySelector(sel)!.querySelector('canvas')!
+        canvas.style.width = `${canvas.width / window.devicePixelRatio}px`
+        canvas.style.height = `${canvas.height / window.devicePixelRatio}px`
+      }, SEL)
+    }
     if (WILL_CHANGE) {
       await page.evaluate(
         (sel, target) => {
@@ -326,51 +389,56 @@ async function main() {
       const seps = document
         .querySelector(sel)!
         .querySelector('[data-testid="variant-row-separators"]')
-      return [...(seps?.children ?? [])].map(el => {
-        const st = (el as HTMLElement).style
-        return {
-          top: Number.parseFloat(st.top),
-          height: Number.parseFloat(st.height),
-        }
+      return [...(seps?.querySelectorAll('line') ?? [])].map(line => {
+        const height = Number(line.getAttribute('stroke-width'))
+        return { top: Number(line.getAttribute('y1')) - height / 2, height }
       })
     }, SEL)
     await setSeparators(page, false)
     const off = await page.screenshot({ type: 'png' })
     const elOff = await (await page.$(SEL))!.screenshot({ type: 'png' })
+    // A Canvas2D backing read back directly: the screen holds it 1:1 at some
+    // whole device offset unless the browser resampled the canvas.
+    // A PNG, not an array: a few million numbers time out over WebDriver BiDi.
+    const backingUrl = await page.evaluate(() => {
+      const canvas = document.querySelector<HTMLCanvasElement>(
+        '[data-testid="variant_canvas"]',
+      )!
+      return canvas.getContext('2d') ? canvas.toDataURL('image/png') : undefined
+    })
+    const backingPng =
+      backingUrl &&
+      readPng(
+        Buffer.from(backingUrl.slice(backingUrl.indexOf(',') + 1), 'base64'),
+      )
+    const backing = backingPng && {
+      w: backingPng.width,
+      h: backingPng.height,
+      data: backingPng.data,
+    }
     writeFileSync(join(OUT, 'element-on.png'), elOn)
-    // The same bands as SVG lines, the overlay shape the boxes replaced.
+    // The same bands as HTML boxes, the other shape an overlay takes.
     await page.evaluate(
       (sel, bands) => {
         const panel = document
           .querySelector(sel)!
           .querySelector('[data-testid$="-rows"]')!
-        const ns = 'http://www.w3.org/2000/svg'
-        const svg = document.createElementNS(ns, 'svg')
-        svg.id = 'probe-svg'
-        svg.setAttribute(
-          'style',
-          'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none',
-        )
+        const layer = document.createElement('div')
+        layer.id = 'probe-boxes'
         for (const b of bands) {
-          const line = document.createElementNS(ns, 'line')
-          line.setAttribute('x1', '0')
-          line.setAttribute('x2', '5000')
-          line.setAttribute('y1', String(b.top + b.height / 2))
-          line.setAttribute('y2', String(b.top + b.height / 2))
-          line.setAttribute('stroke', 'black')
-          line.setAttribute('stroke-opacity', '0.4')
-          line.setAttribute('stroke-width', String(b.height))
-          svg.append(line)
+          const box = document.createElement('div')
+          box.style.cssText = `position:absolute;left:0;width:5000px;top:${b.top}px;height:${b.height}px;background:rgba(0,0,0,0.4)`
+          layer.append(box)
         }
-        panel.append(svg)
+        panel.append(layer)
       },
       SEL,
       bands,
     )
     await settle(page)
-    const svgShot = await page.screenshot({ type: 'png' })
-    writeFileSync(join(OUT, 'svg.png'), svgShot)
-    await page.evaluate(() => document.getElementById('probe-svg')?.remove())
+    const boxShot = await page.screenshot({ type: 'png' })
+    writeFileSync(join(OUT, 'boxes.png'), boxShot)
+    await page.evaluate(() => document.getElementById('probe-boxes')?.remove())
     writeFileSync(join(OUT, 'on.png'), on)
     writeFileSync(join(OUT, 'off.png'), off)
     const x0 = Math.ceil(g.canvasLeftDev + g.canvasWidthDev * 0.3)
@@ -386,8 +454,10 @@ async function main() {
           dpr: g.dpr,
           backing: g.backing,
           canvasTopDev: +g.canvasTopDev.toFixed(3),
-          boxTopDev: g.boxTopDev && +g.boxTopDev.toFixed(3),
-          boxHeightDev: g.boxHeightDev && +g.boxHeightDev.toFixed(3),
+          canvasLeftDev: +g.canvasLeftDev.toFixed(3),
+          canvasWidthDev: +g.canvasWidthDev.toFixed(3),
+          firstSeparatorTopDev:
+            bands[0] && +(g.canvasTopDev + bands[0].top * g.dpr).toFixed(3),
           screenshot: `${readPng(on).width}x${readPng(on).height}`,
         },
         null,
@@ -397,17 +467,24 @@ async function main() {
     console.log(g.chain.join('\n'))
     console.log('cell edges (device rows):', edges.join(' '))
     console.log('cell blended px:', partial)
+    if (backing && backingUrl) {
+      writeFileSync(
+        join(OUT, 'backing.png'),
+        Buffer.from(backingUrl.slice(backingUrl.indexOf(',') + 1), 'base64'),
+      )
+      console.log('canvas2d backing vs screen:', backingMatch(backing, off, g))
+    }
     const top = Math.floor(g.canvasTopDev)
     console.log('off, rows at the canvas top:')
     console.log(rowsDump(off, g.canvasLeftDev, g.canvasWidthDev, top - 2, 5))
-    if (g.boxTopDev !== undefined) {
-      const b = Math.floor(g.boxTopDev)
+    if (bands[0]) {
+      const b = Math.floor(g.canvasTopDev + bands[0].top * g.dpr)
       console.log('off, rows at the first separator:')
       console.log(rowsDump(off, g.canvasLeftDev, g.canvasWidthDev, b - 2, 6))
       console.log('on, rows at the first separator:')
       console.log(rowsDump(on, g.canvasLeftDev, g.canvasWidthDev, b - 2, 6))
     }
-    console.log('separator ink runs:')
+    console.log('on-screen separator ink runs:')
     for (const r of inkRows(on, off, x0, x1, y0, y1)) {
       console.log('  ', r)
     }
@@ -423,8 +500,8 @@ async function main() {
     )) {
       console.log('  ', r)
     }
-    console.log('svg line ink runs:')
-    for (const r of inkRows(svgShot, off, x0, x1, y0, y1)) {
+    console.log('html box ink runs:')
+    for (const r of inkRows(boxShot, off, x0, x1, y0, y1)) {
       console.log('  ', r)
     }
   } finally {

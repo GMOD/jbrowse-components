@@ -49,6 +49,31 @@ the wait burns its whole timeout on a test that is not broken. Pass `polling:
 'mutation'` and give a wait an explicit failure dump. Wall-clock numbers from a
 backgrounded run are untrustworthy.
 
+### A fractional dpr needs Chrome's real device scale
+
+**Puppeteer's `deviceScaleFactor` emulation misrenders a fractional dpr.** It
+lays the page out on whole CSS px and scales the result. At dpr 1.5 a canvas on
+an odd CSS px lands half a device px off, so its cells blur and the overlays
+over it smear: SVG lines across three device rows, HTML boxes as one full row
+and a half.
+
+- **A screen shows none of it.** With `--force-device-scale-factor`, Chrome
+  snaps the canvas and the HTML or SVG over it from the same page offset, as
+  Firefox does at `layout.css.devPixelsPerPx`. Both stay crisp at dpr 1 to 2
+  and at every page offset `probe-overlay-device-origin.ts --nudge` tried at
+  1.25 and 1.5. With the canvas box on whole device px (GPU_SHADERS.md
+  §"Canvas scaling & hi-DPI"), its Canvas2D readback finds the store on
+  screen 1:1.
+- **Element screenshots smear too.** Puppeteer rounds the clip to whole CSS
+  px, and Firefox re-renders it a fraction of a device px off. Cut the
+  element's device px from a viewport screenshot (`probe-variant-device-grid.ts`'s
+  `cropToElement`).
+- **`chromeAtDpr`** (`@jbrowse/browser-test-utils`) gives the launch args and
+  viewport for a real scale. `probe-overlay-device-origin.ts --emulate-dpr` is
+  the control that reproduces the smear.
+- **`@jbrowse/capture`'s `dpr` is still emulated**, so a figure takes an
+  integer dpr; emulation at dpr 2 draws crisp too.
+
 ## Unit tests
 
 Jest, co-located, `pnpm test-ci`. Node-based and fast: use for logic, config, RPC

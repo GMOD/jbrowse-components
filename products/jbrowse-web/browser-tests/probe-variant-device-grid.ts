@@ -22,8 +22,9 @@
 //  - **Chrome takes the dpr as a real scale (`chromeAtDpr`).** Puppeteer's
 //    `deviceScaleFactor` emulation blurs the canvas and smears its overlays at
 //    a fractional dpr (`probe-overlay-device-origin.ts --emulate-dpr`).
-//  - The capture is the display element's screenshot, so it holds the DOM
-//    overlays (row separators, connector lines) drawn over the canvas.
+//  - The capture is the display element's device px cut from a viewport
+//    screenshot, so it holds the DOM overlays (row separators, connector lines)
+//    drawn over the canvas.
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -76,6 +77,31 @@ const SCENES = [
 function readPng(buf: Uint8Array) {
   // @ts-expect-error pngjs accepts a Uint8Array at runtime
   return PNG.sync.read(buf)
+}
+
+// The element's device px cut from a viewport screenshot. An element
+// screenshot rounds its clip to whole CSS px, and Firefox re-renders that clip
+// a fraction of a device px off at a fractional dpr, smearing what it holds.
+function cropToElement(
+  viewport: Uint8Array,
+  box: { x: number; y: number; width: number; height: number },
+  dpr: number,
+) {
+  const p = readPng(viewport)
+  const x0 = Math.round(box.x * dpr)
+  const y0 = Math.round(box.y * dpr)
+  const w = Math.min(Math.round(box.width * dpr), p.width - x0)
+  const h = Math.min(Math.round(box.height * dpr), p.height - y0)
+  const out = new PNG({ width: w, height: h })
+  for (let y = 0; y < h; y++) {
+    p.data.copy(
+      out.data,
+      y * w * 4,
+      ((y0 + y) * p.width + x0) * 4,
+      ((y0 + y) * p.width + x0 + w) * 4,
+    )
+  }
+  return PNG.sync.write(out)
 }
 
 // Nearest-neighbour, so a one-device-pixel seam stays one block wide.
@@ -227,7 +253,11 @@ async function captureScene(page: Page, scene: (typeof SCENES)[number]) {
     const el = await page.waitForSelector(
       `${selector}[data-display-drawn="true"]`,
     )
-    shot = await el!.screenshot({ type: 'png' })
+    shot = cropToElement(
+      await page.screenshot({ type: 'png' }),
+      (await el!.boundingBox())!,
+      info.dpr,
+    )
     s = blendStats(shot)
   }
   writeFileSync(join(OUT!, `${scene.name}.png`), shot)
