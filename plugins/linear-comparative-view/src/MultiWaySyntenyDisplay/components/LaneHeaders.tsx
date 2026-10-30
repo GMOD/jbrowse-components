@@ -76,12 +76,14 @@ const LoadFailure = observer(function LoadFailure({
   testId: string
   what?: string
 }) {
-  const palette = usePalette()
   return (
     <span
       data-testid={testId}
       title={`${error}`}
-      style={{ color: palette.error.main, pointerEvents: 'all' }}
+      style={{ color: bandPalette.error.main, pointerEvents: 'all' }}
+      onContextMenu={event => {
+        event.stopPropagation()
+      }}
     >
       {what ? `Failed to load ${what}` : 'Failed to load'}{' '}
       <button
@@ -284,6 +286,10 @@ const LaneHeaders = observer(function LaneHeaders({
             whiteSpace: 'nowrap',
             textShadow: textHalo(bandGroundColor()),
           }}
+          // a right-click on a header control is not one on the gene under it
+          onContextMenu={event => {
+            event.stopPropagation()
+          }}
         >
           {row.against ? (
             <span
@@ -342,7 +348,7 @@ const LaneHeaders = observer(function LaneHeaders({
           ) : null}
           <button
             type="button"
-            aria-label={`${row.label} lane options`}
+            aria-label={`${model.laneLabel(row.assemblyName)} lane options`}
             data-testid={`multiway-lane-menu-${row.assemblyName}`}
             style={{
               all: 'unset',

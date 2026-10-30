@@ -178,7 +178,12 @@ export function laneLocusMenuItems(
   lane: HeaderLane,
   { refName, start, end, name }: LaneLocus,
 ): MenuItem[] {
-  const loc = assembleLocStringRaw({ refName, start, end })
+  const loc = assembleLocStringRaw({
+    refName,
+    start,
+    end,
+    reversed: lane.frame?.flipped,
+  })
   if (lane.isAnchor) {
     return [
       {

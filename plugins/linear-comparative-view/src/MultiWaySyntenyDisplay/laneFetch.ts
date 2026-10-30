@@ -124,10 +124,17 @@ export function landLaneFetch<Held extends HeldLane>(
   }
 }
 
+/** each current spec whose held answer is a failure, with that answer */
 export function failedLanesOf<Held extends HeldLane>(
   state: LaneFetchState<Held>,
+  specs: readonly LaneFetchSpec[],
 ) {
-  return [...(state.held ?? [])].filter(([, held]) => held.error !== undefined)
+  return specs.flatMap(spec => {
+    const held = state.held?.get(spec.lane)
+    return held?.key === spec.key && held.error !== undefined
+      ? [[spec, held] as const]
+      : []
+  })
 }
 
 /** drops each failed lane, so the next run asks for it again */

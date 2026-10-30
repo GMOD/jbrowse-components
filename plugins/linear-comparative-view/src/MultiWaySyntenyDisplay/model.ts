@@ -2109,19 +2109,14 @@ export function stateModelFactory(
        * the error each lane's gene, group or layer fetch failed with, by lane
        */
       get laneFetchErrors(): ReadonlyMap<string, unknown> {
-        const out = new Map<string, unknown>()
-        for (const [lane, { error }] of [
-          ...failedLanesOf(self.laneGenes),
-          ...failedLanesOf(self.laneGroups),
-        ]) {
-          out.set(lane, error)
-        }
-        for (const [, { assemblyName, error }] of failedLanesOf(
-          self.laneLayerData,
-        )) {
-          out.set(assemblyName, error)
-        }
-        return out
+        const failed = [
+          ...failedLanesOf(self.laneGenes, self.laneGenesFetchSpecs),
+          ...failedLanesOf(self.laneGroups, self.laneGroupsFetchSpecs),
+          ...failedLanesOf(self.laneLayerData, self.laneLayersFetchSpecs),
+        ]
+        return new Map(
+          failed.map(([spec, { error }]) => [spec.assemblyName, error]),
+        )
       },
       /**
        * #getter
@@ -2129,7 +2124,11 @@ export function stateModelFactory(
        * load, with the error
        */
       get failedGutters(): { y: number; error: unknown }[] {
-        const failed = new Map(failedLanesOf(self.laneLinks))
+        const failed = new Map(
+          failedLanesOf(self.laneLinks, self.laneLinksFetchSpecs).map(
+            ([spec, held]) => [spec.lane, held],
+          ),
+        )
         return self.lanePairs.flatMap(({ key }, i) => {
           const error = failed.get(key)?.error
           const y = this.gutterY(i)

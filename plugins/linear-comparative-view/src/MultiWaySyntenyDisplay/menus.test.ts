@@ -601,6 +601,16 @@ describe('a lane glyph menu', () => {
     ])
   })
 
+  test('a flipped lane opens reversed, as its header menu does', () => {
+    const model = headerModel()
+    const flipped = { ...peach, frame: { ...peach.frame, flipped: true } }
+    laneLocusMenuItems(withZoom(model), flipped, locus).forEach(click)
+    expect(model.calls).toEqual([
+      'open peach pp1:100..500[rev]',
+      'reanchor peach pp1:100..500[rev]',
+    ])
+  })
+
   test('an unheld lane cannot be opened', () => {
     const items = laneLocusMenuItems(
       withZoom(headerModel({ held: false })),

@@ -3,9 +3,8 @@ import '@testing-library/jest-dom'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 
-import { lanePairKey } from '../alignmentOps.ts'
 import { createDisplay } from '../testEnv.ts'
 import LaneHeaders from './LaneHeaders.tsx'
 
@@ -70,46 +69,50 @@ test('a gutter next to an undescribed genome names the assembly to add', () => {
 
 test('a lane whose fetch failed says so, and Retry asks for it again', () => {
   const display = twoLaneDisplay(['volvox_random', 'volvox_ins'])
-  const spec = {
-    lane: 'volvox_random',
-    key: 'k',
-    assemblyName: 'volvox_random',
+  const [spec] = display.laneGenesFetchSpecs
+  const fail = (key: string) => {
+    display.setLaneGenes(
+      new Map([[spec!.lane, { key, genes: [], error: new Error('503') }]]),
+      display.laneGenesFetchSpecs,
+      display.anchorAssemblyName,
+    )
   }
-  display.setLaneGenes(
-    new Map([
-      [spec.lane, { key: spec.key, genes: [], error: new Error('503') }],
-    ]),
-    [spec],
-    display.anchorAssemblyName,
-  )
+  fail('an-earlier-window')
   renderHeaders(display)
-  const failure = screen.getByTestId('multiway-lane-failed-volvox_random')
+  const testId = `multiway-lane-failed-${spec!.assemblyName}`
+  expect(screen.queryByTestId(testId)).not.toBeInTheDocument()
+
+  act(() => {
+    fail(spec!.key)
+  })
+  const failure = screen.getByTestId(testId)
   expect(failure).toHaveTextContent('Failed to load Retry')
   expect(failure).toHaveAttribute('title', 'Error: 503')
 
-  fireEvent.click(
-    screen.getByTestId('multiway-lane-failed-volvox_random-retry'),
-  )
+  fireEvent.click(screen.getByTestId(`${testId}-retry`))
   expect(display.laneFetchErrors.size).toBe(0)
-  expect(display.laneGenes.held?.has(spec.lane)).toBe(false)
-  expect(
-    screen.queryByTestId('multiway-lane-failed-volvox_random'),
-  ).not.toBeInTheDocument()
+  expect(display.laneGenes.held?.has(spec!.lane)).toBe(false)
+  expect(screen.queryByTestId(testId)).not.toBeInTheDocument()
 })
 
 test('a lane pair whose fetch failed says so in its gutter', () => {
   const display = twoLaneDisplay(['volvox_random', 'volvox_ins'])
-  const [upper, lower] = display.rowAssemblies
-  const lane = lanePairKey(upper!, lower!)
+  const [spec] = display.laneLinksFetchSpecs
   display.setLaneLinks(
     new Map([
-      [lane, { key: 'k', links: [], ops: new Map(), error: new Error('503') }],
+      [
+        spec!.lane,
+        { key: spec!.key, links: [], ops: new Map(), error: new Error('503') },
+      ],
     ]),
-    [{ lane, key: 'k', assemblyName: upper! }],
+    display.laneLinksFetchSpecs,
     display.anchorAssemblyName,
   )
   renderHeaders(display)
   expect(screen.getByTestId('multiway-gutter-failed')).toHaveTextContent(
     'Failed to load alignments Retry',
   )
+  expect(
+    screen.queryByTestId('multiway-gutter-loading'),
+  ).not.toBeInTheDocument()
 })
