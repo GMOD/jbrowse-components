@@ -19,12 +19,15 @@
 //    SwiftShader, not the GPU.
 //  - **`layout.css.devPixelsPerPx` is a STRING pref.** A number makes Firefox
 //    exit 0 before any page loads.
+//  - **Chrome takes the dpr as a real scale (`chromeAtDpr`).** Puppeteer's
+//    `deviceScaleFactor` emulation blurs the canvas and smears its overlays at
+//    a fractional dpr (`probe-overlay-device-origin.ts --emulate-dpr`).
 //  - The capture is the display element's screenshot, so it holds the DOM
 //    overlays (row separators, connector lines) drawn over the canvas.
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { BASE_CHROME_ARGS } from '@jbrowse/browser-test-utils'
+import { BASE_CHROME_ARGS, chromeAtDpr } from '@jbrowse/browser-test-utils'
 import { PNG } from 'pngjs'
 import { launch } from 'puppeteer'
 
@@ -272,12 +275,9 @@ async function main() {
           args: [
             ...BASE_CHROME_ARGS,
             BACKEND === 'canvas2d' ? '--disable-gpu' : '--use-gl=angle',
+            ...chromeAtDpr(DPR, 1280, 700).args,
           ],
-          defaultViewport: {
-            width: 1280,
-            height: 700,
-            deviceScaleFactor: DPR,
-          },
+          defaultViewport: chromeAtDpr(DPR, 1280, 700).defaultViewport,
         })
   const page = await browser.newPage()
   const consoleLines: string[] = []

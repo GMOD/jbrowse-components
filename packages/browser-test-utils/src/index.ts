@@ -36,7 +36,7 @@ export {
   waitForViewPhases,
 } from './phaseWaits.ts'
 
-export { BASE_CHROME_ARGS } from './chromeArgs.ts'
+export { BASE_CHROME_ARGS, chromeAtDpr } from './chromeArgs.ts'
 export { createSecureTestServer, createTestServer } from './server.ts'
 export { DESKTOP_VIEWPORT, smokeExamplesSite } from './examplesSmoke.ts'
 export { measureDemoHeights } from './examplesDemoHeights.ts'
