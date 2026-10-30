@@ -7,4 +7,5 @@
 # is a visual claim, so show what it does rather than describing it.
 tutorials/dog10k_lof.md 1
 tutorials/local_ancestry.md 1
+tutorials/protein_variants_met_exon14.md 1
 tutorials/tcga_cohort_mutations.md 2
