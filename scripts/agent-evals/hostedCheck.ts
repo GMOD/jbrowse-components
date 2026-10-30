@@ -1,3 +1,6 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import puppeteer from 'puppeteer'
 
 import { servePageBridge } from './pageBridge.ts'
@@ -6,7 +9,10 @@ import { NOT_DRAWN, TASKS, drawnPass } from './tasks.ts'
 const prefix = process.argv[2] ?? 'fr-'
 const build =
   process.argv[3] ??
-  '/home/cdiesh/src/jbrowse-components/products/jbrowse-web/build'
+  path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../../products/jbrowse-web/build',
+  )
 const bridge = await servePageBridge(build)
 const browser = await puppeteer.launch({
   headless: true,
