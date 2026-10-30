@@ -112,8 +112,8 @@ The agent gets four tools:
 - **A person clicking between calls changes the state.** The agent re-reads the
   session each call; if it seems confused, tell it what you did.
 - **Work the app cannot do needs a shell.** An aligner, a fold, a consensus:
-  Claude Code has one, and in Claude Desktop the agent can reach the machine's
-  tools through JBrowse Desktop's own Node runtime.
+  Claude Code runs them with its own tools and permissions. A client with no
+  shell leaves that step to you; the agent then loads the result.
 - **Claude Code is the better-briefed client.** It shows the agent the server's
   instructions; Claude Desktop currently does not
   ([anthropics/claude-ai-mcp#93](https://github.com/anthropics/claude-ai-mcp/issues/93)),

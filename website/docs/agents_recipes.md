@@ -452,34 +452,25 @@ return {
 
 A screenshot is the window; `view.exportSvg` is the figure — vector, no browser
 chrome, the same output the Export SVG dialog writes. `save: false` returns the
-markup instead of handing it to the browser's download path, so it lands where
-you say rather than in the download folder under a name you did not choose:
+markup, and your own file tools write it where you want. Raise `maxBytes` on the
+call to get the whole document back:
 
 ```js
 const view = jb.view()
 await jb.waitReady(30000)
 const svg = await view.exportSvg({ save: false })
-const fs = window.require('fs')
-const path = window.require('path')
-const os = window.require('os')
-const out = path.join(os.tmpdir(), 'figure.svg')
-fs.writeFileSync(out, svg)
-return { out, bytes: svg.length, loc: view.visibleLocStrings }
+return { svg, loc: view.visibleLocStrings }
 ```
 
 - Every view type that exports takes the same call: linear, circular, dotplot,
   linear synteny, breakpoint split.
-- `{ format: 'png' }` rasterizes on the way to the file, and is the one case
-  where the return value is still the SVG markup rather than the bytes written.
-- Leave `save` alone to get the normal download instead.
+- For a raster image, use the `screenshot` tool cropped to the view.
 - `rasterizeLayers: true` embeds each display's heavy layer as a PNG instead of
   vector elements, useful for a hundred-thousand-read pileup.
 - A track that failed to load makes the export fail rather than come out with a
   gap: `exportSvg` rejects with `Cannot export:` and the errors behind it. Read
   `notReady` from `jb.waitReady` first, and hide the offending track if the
   figure is meant without it.
-- Only Desktop can write a file. In JBrowse Web, take the markup and put it
-  somewhere the page can reach.
 
 ## Add a file by URL, and check it lines up
 

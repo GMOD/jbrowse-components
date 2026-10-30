@@ -18,8 +18,7 @@ expression. In scope either way:
 - `jb`, the helper library below; `jb.help` restates it in one string
 - `signal` (Desktop only), an `AbortSignal` that fires when `timeoutMs` expires;
   check it in long loops
-- `window`, the real DOM. In Desktop that is an Electron renderer with
-  nodeIntegration, so Node is one `window.require` away
+- `window`, the real DOM
 
 ## The helper library
 
@@ -435,24 +434,19 @@ session.addSessionTrackConf({
 await jb.view().launchTrack('nutlin-log2')
 ```
 
-## Shell tools and files, from Desktop
+## Files and programs
 
-`window.require` gives access to the machine's tools, the route for a client
-with no shell of its own. A real pipeline step runs here and its output loads
-with `jb.addTrack`:
+`run_javascript` drives the JBrowse model. Run programs, write files and fetch
+from hosts that refuse a browser with your own tools, under the permissions your
+client gives you, never through `window.require`:
 
-```js
-const { execFile } = window.require('child_process')
-const { promisify } = window.require('util')
-const run = promisify(execFile)
-const { stdout } = await run('samtools', ['idxstats', '/data/sample.bam'])
-return stdout.split('\n').slice(0, 5)
-```
-
-A `fetch` from here has a browser Origin and obeys CORS, and some hosts refuse
-it (NCBI's acc.cgi answers 403; eutils does not). `window.require('https')` or
-`curl` under `window.require('child_process')` has neither and reads the same
-bytes.
+- **A pipeline step** (samtools, an aligner, a script) runs in your shell, and
+  its output file loads with `jb.addTrack`.
+- **Data out of JBrowse** comes back as the value you `return` (features, a
+  table, an SVG), and your file tools write it to disk.
+- **A `fetch` from the app** has a browser Origin and obeys CORS, and some hosts
+  refuse it (NCBI's acc.cgi answers 403; eutils does not). Fetch those with your
+  own tools, then load the file.
 
 ## In a browser
 
