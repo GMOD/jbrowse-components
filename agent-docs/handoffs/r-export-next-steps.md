@@ -1,6 +1,6 @@
 ---
 name: r-export-next-steps
-description: "The R script export (view menu → Export R script, plugins/linear-genome-view/src/LinearGenomeView/rExport/) is a doorway to ggjbrowse: reader calls plus one jbrowse_stack(). On main. Open: a ggjbrowse release bundling the CRAM fixes, its r-universe build, first R users, and how tall a deep pileup exports."
+description: "The R script export (view menu → Export R script, plugins/linear-genome-view/src/LinearGenomeView/rExport/) is a doorway to ggjbrowse: reader calls plus one jbrowse_stack(). On main. Open: an r-universe build, first R users, and how tall a deep pileup exports."
 ---
 
 # R export: what is left
@@ -14,11 +14,9 @@ not wanted.
 
 ## Next, in order
 
-1. **A tagged ggjbrowse release.** Its bundle (`inst/js/jbrowse-tables.js`) is
-   jbrowse-components dc06068, which predates e2cf9b5d19 and 4ee57bcfa7, the
-   CRAM fixes below. Once those commits are on GitHub, rebuild the bundle with [ggjbrowse's build-js.sh](https://github.com/GMOD/ggjbrowse/blob/main/scripts/build-js.sh) from a clean
-   checkout at it, then bump DESCRIPTION and tag. ggjbrowse's "Get started"
-   vignette (`vignettes/ggjbrowse.Rmd`) is on main and passes `R CMD check`.
+1. **ggjbrowse is released** as v0.10.0 and v0.11.0 (GitHub releases, not
+   CRAN). 0.11.0 bundles the engine at d5a0299d00, with both CRAM fixes, and
+   has the "Get started" vignette.
 2. **An r-universe build**, so V8 installs as a binary and the vignette ships
    built (`install_github` skips vignettes). gmod.r-universe.dev exists but
    lists only JBrowseR, picked up from CRAN. Adding ggjbrowse needs a
