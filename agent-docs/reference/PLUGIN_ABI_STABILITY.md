@@ -27,11 +27,12 @@ stability policy; RFC-001 deferred one.
   callback returns its own single-element array in place of everyone else's
   entries. Nothing throws, and the plugins that lose entries are the other ones.
 
-**The served set is four packages' exports maps, less two kinds of subpath.**
+**The served set is four packages' exports maps, less three kinds of subpath.**
 `scripts/generateReExports.ts` serves core, display-kit, display-ui and
-render-core, and leaves out the re-export registry and render-core's
-`shaders/*`. A plugin draws on the GPU through `defineMark`, and a plugin that
-imports a shader source bundles its own copy.
+render-core, and leaves out the re-export registry, render-core's `shaders/*`
+and display-kit's `conformance/*`. A plugin draws on the GPU through
+`defineMark`, and a plugin that imports a shader source bundles its own copy.
+`conformance/*` is lint and test setup, which a plugin's bundle never reaches.
 
 **A baseline per surface was tried and dropped.** Maintaining one per refactor
 costs more than the removals it catches. Only `preservedExports` survives.
@@ -45,6 +46,15 @@ costs more than the removals it catches. Only `preservedExports` survives.
 once the plugin releases without the read. `pnpm check-published-plugins --write`
 refreshes the list from the store, so a plugin published since the last refresh
 is not covered, and neither is a UMD bundle or a plugin outside the store.
+
+**The members an external display reads are pinned by hand.** A name check
+cannot see `display.regionPayloads`, so
+`plugins/linear-genome-view/src/displayKitTests/externalDisplayReads.test.ts`
+lists the foundation members the ARG and graph displays read, measured from
+their source, and fails typecheck and jest when one goes. It also pins the
+exact set of `ChromeModel`'s required keys, since the host's `DisplayChrome`
+reads those off a plugin's model: a new chrome input goes in optional. A read a
+plugin adds after the measurement is not covered until someone adds it.
 
 **The signature is as public as the name.** A required second argument breaks
 a duck-typed caller as deleting the member does, so add plugin-facing

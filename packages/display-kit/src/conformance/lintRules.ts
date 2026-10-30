@@ -79,7 +79,7 @@ export const noUncancellableRpcCall = {
 export const noHandRolledAttach = {
   selector: "CallExpression[callee.property.name='attachRenderingBackend']",
   message:
-    'Call installUpload rather than attachRenderingBackend. The mixin keeps the callbacks from the first call only, so an upload diff’s memo has to live in the setup thunk — the installer owns that, and a hand-rolled attach rebuilds and drops it on every context-loss recovery. See ADR-079.',
+    'Call installUpload rather than attachRenderingBackend. The mixin keeps the callbacks from the first call only, so an upload diff’s memo has to live in the setup thunk — the installer owns that, and a hand-rolled attach rebuilds and drops it on every context-loss recovery. A backend that takes one batch rather than keyed cells has no installUpload form: build everything its callbacks close over inside the setup thunk and disable this line saying so. See ADR-079.',
 }
 
 // `initialized` and `ready` are one-sided: neither ever goes true on the error

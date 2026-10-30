@@ -1,6 +1,6 @@
 ---
 name: display-kit-external-surface
-description: "What still fails silently for an external display built on @jbrowse/display-kit: a member-level contract no check outside the tree sees, a version pin that guards only types (a version gate at load is declined), chrome props with no check (the graph display now reads them), lint rules, a contract gate and a display harness published as display-kit/conformance but not yet released or adopted, and host-compat tooling copied across eight plugin repos. Read before changing a mixin member a plugin display reads, adding a display-kit subpath, or touching a plugin template's build."
+description: "What still fails silently for an external display built on @jbrowse/display-kit: a member-level contract pinned only by a hand-measured test, a version pin that guards only types (a version gate at load is declined), chrome props with no check (the graph display now reads them), lint rules, a contract gate and a display harness published as display-kit/conformance but not yet released or adopted, and host-compat tooling copied across eight plugin repos. Read before changing a mixin member a plugin display reads, adding a display-kit subpath, or touching a plugin template's build."
 ---
 
 # display-kit as an external-plugin surface
@@ -23,11 +23,15 @@ Claim a step here before starting it.
   (FetchMixin's `fetchInputs: FetchInputs`; dropping one fails a plugin's
   declaration build with TS2742). Five were foundation machinery and left the
   map; the package README states the rule.
-- **The external checks see names, and the contract is members.**
-  `publishedPluginReads.json` records `module#name`. ARG's display reads
-  `regionPayloads`, `canvasWidthPx`, `renderBlocks` and `hoveredFeature` off
-  the foundation, and no check records those reads. ARG is not a store
-  plugin, so its foundation imports go unrecorded too.
+- **The external checks see names; the members are pinned by hand.**
+  `publishedPluginReads.json` records `module#name`, so
+  `displayKitTests/externalDisplayReads.test.ts` lists the foundation members
+  the ARG and graph displays read (measured 2026-10-30 by intersecting their
+  source's property accesses with the composed foundation's `getMembers`)
+  and the exact required keys of `ChromeModel`, which the host's chrome reads
+  off a plugin's model. A sabotage of each turned typecheck red. A read added
+  in a plugin later is not covered; deriving the list from the store bundles
+  would need each minified `.name` access tied to the object it reads.
 - **The tree's display checks are published, unreleased.** The display
   `no-restricted-syntax` selectors, the contract gate and the display
   harness live in `@jbrowse/display-kit/conformance/*`: `lintRules`,
@@ -69,7 +73,13 @@ Claim a step here before starting it.
    recipe on graphgenomeviewer `11a67c3` reports one `attachRenderingBackend`
    (`pane/renderingActions.ts`), four `rpcManager.call`s with no
    `statusCallback` (three in `pane/loadActions.ts`) and 26 non-observer
-   components, most of them dialogs and the pieces in `PaneSvg.tsx`.
+   components, most of them dialogs and the pieces in `PaneSvg.tsx`. None is a
+   live bug. The attach is the pane's single-batch upload, which
+   `installUpload` has no form for, so it takes a disable with the reason. The
+   `statusCallback`s would only replace the pane's own status line with
+   worker phases, which `GetSubgraph` would have to forward to the adapters'
+   cuts. The components are mostly pure-prop, so wrapping them is the tree's
+   convention, not a stale read.
 2. **Point the jb2plugins builds at `@jbrowse/core/ReExports/hostShim`** once
    a release publishes it (beta.18 does not). Core's copy reads the installed
    core's names, so the graph plugin drops `hostShim.mjs`,
