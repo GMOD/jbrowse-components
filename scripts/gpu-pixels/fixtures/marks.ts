@@ -335,9 +335,7 @@ function stepFixture(lineWidth: number) {
   const prevY = STEPS.map((s, i) =>
     abuts(STEPS[i - 1], s) ? STEPS[i - 1]![2] : GAP_Y,
   )
-  const nextY = STEPS.map((s, i) =>
-    abuts(s, STEPS[i + 1]) ? STEPS[i + 1]![2] : GAP_Y,
-  )
+  const nextY = STEPS.map((s, i) => (abuts(s, STEPS[i + 1]) ? s[2] : GAP_Y))
   const hw = lineWidth / 2
   const pieces: Shape['inside'][] = []
   STEPS.forEach(([x1v, x2v, v], i) => {

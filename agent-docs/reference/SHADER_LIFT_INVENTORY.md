@@ -130,13 +130,12 @@ is no longer shared with anything.
 | `discExpand` | tests only — `pointGlyphPad.test.ts` |
 | `edgeCoverage` | tests only — `arcHull.test.ts`, `buttSegmentCoverage.test.ts`, `dotplotCapsulePad.test.ts`, `sdEllipse.test.ts`, `strokeCoverage.test.ts` |
 | `ellipseHullPoint` | tests only — `arcHull.test.ts` |
-| `extendToMinWidthPx` | tests only — `densityMinWidth.test.ts`, `hpmathParity.test.ts`, `markParity.test.ts`, `rectSpanParity.test.ts` |
 | `farDomeDistancePx` | tests only — `arcHull.test.ts`, `farDome.test.ts` |
 | `farDomeHullPoint` | tests only — `arcHull.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `glyphExpand` | tests only — `pointGlyphPad.test.ts` |
-| `inversionCoverage` | nothing |
-| `inversionReachPx` | nothing |
+| `inversionCoverage` | tests only — `inversionGlyphInk.test.ts` |
+| `inversionReachPx` | tests only — `inversionGlyphInk.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `lineValueAtColorYPx` | tests only — `lineRampAlongY.test.ts` |
 | `pinchedParam` | tests only — `ribbonBand.test.ts` |
