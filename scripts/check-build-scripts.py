@@ -185,8 +185,9 @@ for f in scripts:
     # Only indexing invocations can hit that. The read-only modes never write an
     # index, so -f is meaningless on them and requiring it reads as cargo cult:
     # build_hprc_kiv2_copynumber.sh pulls the sample list out of a remote VCF
-    # header with `tabix -H`, which creates nothing and is safe to re-run.
-    readonly_mode = re.compile(r"\s-(?:H|l)\b|\s--(?:only-header|list-chroms)\b")
+    # header with `tabix -H`, which creates nothing and is safe to re-run. -D
+    # (don't download a remote index) only applies to a query.
+    readonly_mode = re.compile(r"\s-(?:H|l|D)\b|\s--(?:only-header|list-chroms)\b")
     for i, ln in enumerate(lines):
         code = ln.split("#", 1)[0]
         if (

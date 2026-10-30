@@ -57,6 +57,7 @@ const ECOLI_SEGMENTS_SESSION_TRACK = {
   adapter: {
     type: 'RgfaTabixAdapter',
     uri: `${DATA}/ecoli_minigraph`,
+    format: 2,
   },
   displayDefaults: RANK_COLOR_DEFAULTS,
 }
@@ -683,6 +684,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           adapter: {
             type: 'RgfaTabixAdapter',
             uri: 'https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb',
+            format: 2,
           },
           displayDefaults: {
             encoding: {

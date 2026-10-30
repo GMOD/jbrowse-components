@@ -115,7 +115,7 @@ export const pages: ExamplePage[] = [
     slug: 'inline-plugin',
     title: 'Your own data source',
     description:
-      "A plugin in the page adds an adapter that reads genes from Ensembl's REST API.",
+      'A plugin in the page adds an adapter that reads genes from a JSON file.',
     group: 'Data sources',
   },
   {

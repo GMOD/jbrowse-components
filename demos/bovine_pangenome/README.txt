@@ -115,19 +115,10 @@ Files
   bovine-arsucd12-minigraph.fold10000.graph.bed.gz   236,200   in one file,
                                     (+ .tbi)                   gfa-to-tabix's
                                                                format 2, read
-                                                               since 2026-10-28
-
-  bovine-arsucd12-minigraph.segs.bed.gz            4,069,833   one row per
-                                    .tbi           1,233,582   segment: stable
-                                                               name, span, id,
-                                                               rank
-                                                 425,796 segments
-
-  bovine-arsucd12-minigraph.links.bed.gz          17,296,108   one row per link
-                                    .tbi           1,477,888   per endpoint,
-                                                               each repeating
-                                                               both endpoints
-                                                 1,209,086 rows
+                                                               since 2026-10-28;
+                                                               the fold10000
+                                                               file is the
+                                                               coarse tier
 
   bovine-arsucd12-minigraph.alleles.bed.gz         4,397,871   one row per
                                     .tbi             723,819   allele the graph
@@ -142,13 +133,6 @@ Files
   bovine-arsucd12-minigraph.bubbles.bed.gz        50,466,192   gfatools bubble
                                     .tbi             771,214   output
                                                  153,719 bubbles
-
-  bovine-arsucd12-minigraph.fold10000.segs.bed.gz     58,389   coarse tier: the
-                                    .tbi              55,677   graph with variants
-  bovine-arsucd12-minigraph.fold10000.links.bed.gz   212,684   under 10 kb folded
-                                    .tbi              61,670   into the reference
-                                                 5,136 segments, 7,344 links
-  (the .tier10000 pair, one node per bubble, stays for sessions that name it)
 
   bovine-arsucd12-minigraph.vcf.gz             88,349,570   the variant route:
                                     .tbi          786,027   the graph
@@ -210,7 +194,7 @@ How they were built
   python3 make_rgfa.py bosTau9.chrom.sizes Zenodo/minigraph $(seq -s, 1 29) \
     | bgzip -@ 8 > bovine-arsucd12-minigraph.rgfa.gz
 
-  # segs + links, via gfa-to-tabix (https://github.com/GMOD/gfa-to-tabix)
+  # the graph file, via gfa-to-tabix (https://github.com/GMOD/gfa-to-tabix)
   gfa-to-tabix bovine-arsucd12-minigraph.rgfa.gz --layout contig \
     -o bovine-arsucd12-minigraph
 
@@ -265,6 +249,22 @@ Published variants the callset reproduces
   chr23:27,520,698   11 kb HSPA1B segment ARS-UCD1.2       all but YAK
                      lacks
                      Leonard et al. 2022, Nat Commun 13:3012
+
+Retired files
+-------------
+
+  Nothing live read these, so on 2026-10-30 they moved to
+  s3://jbrowse.org/archive/demos/bovine_pangenome/ in the S3 Deep Archive storage class,
+  where a restore takes hours.
+
+  bovine-arsucd12-minigraph{,.fold10000}.{segs,links}.bed.gz{,.tbi}
+                                    the format 1 pairs the .graph.bed.gz files
+                                    replaced: 425,796 segments and 1,209,086
+                                    link rows in the fine pair, 5,136 segments
+                                    and 7,344 links in the fold10000 one
+  bovine-arsucd12-minigraph.tier10000.{segs,links}.bed.gz{,.tbi}
+                                    one node per bubble, from the retired
+                                    build_bubble_tier.sh
 
 Two gotchas worth recording
 ---------------------------

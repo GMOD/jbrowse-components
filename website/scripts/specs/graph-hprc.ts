@@ -635,15 +635,15 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         // no length: the graph labels its longer nodes, and a length would read
         // as one
         text: 'the same allele, in the graph',
-        // between the legend (top ~120 px) and the drawing (from ~210)
+        // top left, clear of the legend and the deletion arc
         anchor: {
           selector: '[data-testid="graph-genome-canvas"]',
-          alignX: 'right',
+          alignX: 'left',
           alignY: 'top',
         },
-        dx: -20,
-        dy: 150,
-        textAlign: 'end',
+        dx: 20,
+        dy: 40,
+        textAlign: 'start',
         maxWidth: 340,
         fontSize: 20,
       },

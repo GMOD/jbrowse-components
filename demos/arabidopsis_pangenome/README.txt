@@ -149,8 +149,7 @@ How the graph was built
   Projections, each tabix-indexed:
 
     gfa-to-tabix --layout contig        .graph.bed.gz (format 2, since
-                                        2026-10-28), and the format 1
-                                        .segs.bed.gz, .links.bed.gz before it
+                                        2026-10-28)
     gfa-to-tabix alleles                .alleles.bed.gz, one row per allele the
                                         graph holds, with a CIGAR for its size
     gfatools bubble                     .bubbles.bed.gz
@@ -160,6 +159,13 @@ How the graph was built
     gfa-to-tabix paths                  .paths.bed.gz, each accession's path
                                         through every bubble (minigraph --call
                                         per accession), rows by `strain`
+
+  Retired on 2026-10-30 to s3://jbrowse.org/archive/demos/arabidopsis_pangenome/
+  (S3 Deep Archive, where a restore takes hours), since nothing live read them:
+  the format 1 pairs .{segs,links}.bed.gz and .fold10000.{segs,links}.bed.gz
+  that the .graph.bed.gz files replaced, the .ref.{segs,links}.bed.gz pair
+  keyed under TAIR10 only, and the .tier10000.{segs,links}.bed.gz pair, one
+  node per bubble.
 
 Other tracks on TAIR10
 ----------------------
