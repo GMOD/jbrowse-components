@@ -14,8 +14,10 @@ const useStyles = makeStyles()({
     fontWeight: 'bold',
     verticalAlign: 'top',
   },
+  // wraps, since BaseTooltip caps the box at 300px and a nowrap value runs
+  // past its edge: a record's carriers line is longer than that
   valueCell: {
-    whiteSpace: 'nowrap',
+    whiteSpace: 'normal',
   },
   colorBox: {
     width: 10,
