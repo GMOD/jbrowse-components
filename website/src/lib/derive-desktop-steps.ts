@@ -112,17 +112,22 @@ export const GRAPH_FORM_LABELS = {
 
 const GRAPH_ADAPTERS: Record<
   string,
-  { choice: string; locationSlot: string; suffix: string }
+  {
+    choice: string
+    locationSlot: string
+    suffix: (adapter: Record<string, unknown>) => string
+  }
 > = {
   RgfaTabixAdapter: {
-    choice: 'rGFA segments (tabix BED pair)',
+    choice: 'Indexed GFA (gfa-to-tabix .segs.bed.gz or .graph.bed.gz)',
     locationSlot: 'segmentsLocation',
-    suffix: '.segs.bed.gz',
+    suffix: adapter =>
+      adapter.format === 2 ? '.graph.bed.gz' : '.segs.bed.gz',
   },
   MinigraphBubbleAdapter: {
     choice: 'Minigraph bubbles (tabix BED)',
     locationSlot: 'bubblesLocation',
-    suffix: '',
+    suffix: () => '',
   },
 }
 
@@ -193,7 +198,7 @@ function graphFormNodes(
   }
   const file =
     typeof adapter.uri === 'string'
-      ? `${adapter.uri}${form.suffix}`
+      ? `${adapter.uri}${form.suffix(adapter)}`
       : asRecord(adapter[form.locationSlot]).uri
   if (typeof file !== 'string') {
     return undefined

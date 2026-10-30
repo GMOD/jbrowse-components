@@ -119,12 +119,31 @@ test('a graph adapter walks the plugin form instead of the paste box', () => {
   }
   const out = flatten(desktopTrackNodes(config, JSON.stringify(config)))
   expect(out).toContain('Add pangenome graph track')
-  expect(out).toContain('rGFA segments (tabix BED pair)')
+  expect(out).toContain(
+    'Indexed GFA (gfa-to-tabix .segs.bed.gz or .graph.bed.gz)',
+  )
   expect(out).toContain(
     'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.segs.bed.gz',
   )
   expect(out).toContain('GRCh38')
   expect(out).not.toContain('Add track from pasted JSON')
+})
+
+test('a format 2 graph track opens its .graph.bed.gz in the form', () => {
+  const config = {
+    type: 'GraphTrack',
+    trackId: 'hprc_graph',
+    name: 'HPRC graph',
+    assemblyNames: ['hg38'],
+    adapter: {
+      type: 'RgfaTabixAdapter',
+      uri: 'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38',
+      format: 2,
+    },
+  }
+  expect(flatten(desktopTrackNodes(config, JSON.stringify(config)))).toContain(
+    'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.graph.bed.gz',
+  )
 })
 
 test('a graph track with hand-set displays falls back to the paste box', () => {
