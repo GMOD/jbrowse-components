@@ -4,7 +4,7 @@
     {
       "id": "lgv-TP53",
       "type": "LinearGenomeView",
-      "colorByCDS": false,
+      "colorByFrame": false,
       "hideHeaderOverview": true,
       "assembly": "hg38",
       "loc": "chr17:7674169-7674302[rev]",

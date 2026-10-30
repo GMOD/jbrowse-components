@@ -6,8 +6,7 @@
       "filter": [{ "field": "length", "gte": 500000 }],
       "mark": { "interpolate": "bump" },
       "autoDiagonalize": true,
-      "encoding": { "color": "query" },
-      "alpha": 0.4,
+      "encoding": { "color": "query", "opacity": 0.4 },
       "levelHeights": [350],
       "views": [{ "assembly": "hs1" }, { "assembly": "mm39" }]
     }

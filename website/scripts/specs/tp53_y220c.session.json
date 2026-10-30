@@ -4,7 +4,7 @@
     {
       "id": "lgv-TP53",
       "type": "LinearGenomeView",
-      "colorByCDS": false,
+      "colorByFrame": false,
       "hideHeaderOverview": true,
       "axis": {
         "grid": true

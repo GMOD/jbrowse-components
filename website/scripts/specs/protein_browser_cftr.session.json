@@ -4,7 +4,7 @@
     {
       "id": "lgv-CFTR",
       "type": "LinearGenomeView",
-      "colorByCDS": true,
+      "colorByFrame": true,
       "hideHeaderOverview": true,
       "showGridlines": false,
       "assembly": "hg38",

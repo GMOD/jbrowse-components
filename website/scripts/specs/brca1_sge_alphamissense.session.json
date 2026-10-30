@@ -4,7 +4,7 @@
     {
       "id": "lgv-BRCA1",
       "type": "LinearGenomeView",
-      "colorByCDS": false,
+      "colorByFrame": false,
       "hideHeaderOverview": true,
       "assembly": "hg38",
       "loc": "chr17:43051051-43051129[rev]",

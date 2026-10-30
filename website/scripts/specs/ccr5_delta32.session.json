@@ -4,7 +4,7 @@
     {
       "id": "lgv-CCR5",
       "type": "LinearGenomeView",
-      "colorByCDS": false,
+      "colorByFrame": false,
       "hideHeaderOverview": true,
       "assembly": "hg38",
       "loc": "chr3:46373391-46373606",

@@ -5,8 +5,7 @@
       "tracks": ["peach_grape_minimap2"],
       "mark": { "interpolate": "bump" },
       "autoDiagonalize": true,
-      "encoding": { "color": "query" },
-      "alpha": 0.4,
+      "encoding": { "color": "query", "opacity": 0.4 },
       "levelHeights": [350],
       "views": [{ "assembly": "peach" }, { "assembly": "grape" }]
     }

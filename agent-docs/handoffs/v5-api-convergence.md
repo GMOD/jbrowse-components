@@ -82,27 +82,14 @@ between displays.
    The graph plugin's `facet.domain` survived core's rename to `sort` that
    way. Every warning `demos/` raises is one of these: `GraphTrack`,
    `ArgTrack`, `ApolloPlugin`.
-4. **Members one display has and the next lacks**, from
-   CONFIG_SPELLINGS.md's first table (2026-10-30). The rest of that table is
-   ruled in ADR-238, ADR-240 or the schema's own comment.
-   - `encoding.y.axis` has no `show`, so the value axis of wiggle, the mark
-     displays and the coverage bands only hides by height, while ADR-238
-     turns every guide off through `show`. Colin's call.
-   - ChordVariant's color takes no ramp (`linear`), as the multi-sample and
-     multi-way displays took none before 9fbed135aa; colorConformance.test.ts
-     leaves chord, LD and Hi-C out.
-   - LD and Hi-C take no `scale.range`: `MatrixRampMixin` passes the ramp
-     `scheme` and `reverse` alone.
-   - Wiggle builds its own threshold key, so its legend has no `descending`.
-   - MAF's one-scale color declares no `scale.type`, where LD's declares a
-     one-value enum.
-5. **Writers still on a retired spelling.** The figure-spec sessions write
-   the view's `colorByCDS` (`colorByFrame`); jbrowse-img's `data/` session
-   writes wiggle `resolution` and `constraints` and alignments
-   `filterBySetting`, and its comparative specs `alpha`; the ecoli graph
-   build's `GraphTrack` `displayDefaults` writes `showLabels`, which waits on
-   the graph plugin's own label slot. The volvox fixtures keep retired types
-   on purpose.
+4. **The value axis has no `show`.** `encoding.y.axis` on wiggle, the mark
+   displays and the coverage bands hides only by height, while ADR-238 turns
+   every guide off through `show`. Colin's call. CONFIG_SPELLINGS.md's first
+   table holds the other member differences, each ruled in ADR-238, ADR-240
+   or the schema's own comment, or left as taste (Colin, 2026-10-30: the
+   chord and matrix ramps and wiggle's key direction).
+5. **The ecoli graph build's `GraphTrack` `displayDefaults` writes
+   `showLabels`**, which waits on the graph plugin's own label slot.
 
 ## Release candidate gates
 

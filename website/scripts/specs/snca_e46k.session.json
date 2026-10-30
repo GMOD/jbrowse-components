@@ -4,7 +4,7 @@
     {
       "id": "lgv-SNCA",
       "type": "LinearGenomeView",
-      "colorByCDS": false,
+      "colorByFrame": false,
       "hideHeaderOverview": true,
       "assembly": "hg38",
       "loc": "chr4:89828159-89828179[rev] chr4:89822303-89822323[rev]",

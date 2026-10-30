@@ -5,15 +5,12 @@ import {
   colorLegendOptions,
   colorRampSlots,
   colorScaleOptions,
-  colorScaleTypeSlot,
   colorTitleSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { LDMetric } from '../RenderLDDataRPC/ldTypes.ts'
 import type { FieldPreset } from '@jbrowse/display-kit/colorConfigSchema'
-
-const LD_COLOR_SCALES = ['linear'] as const
 
 /** Each metric's ramp and key title while the config leaves them unwritten. */
 export const LD_FIELD_PRESETS = {
@@ -67,16 +64,12 @@ export const ldColorConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot scale
-     * The ramp the statistic runs along, Vega-Lite's scale object.
+     * The ramp the statistic runs along, Vega-Lite's scale object. Each
+     * statistic runs along a linear ramp, so the object names no type.
      */
     scale: ConfigurationSchema(
       'LDColorScale',
       {
-        ...colorScaleTypeSlot({
-          scales: LD_COLOR_SCALES,
-          scaleName: 'LDColorScaleType',
-          type: 'linear, the one scale; unset is linear',
-        }),
         /**
          * #slot scale.scheme
          */
