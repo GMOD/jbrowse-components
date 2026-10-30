@@ -6,8 +6,8 @@ import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { DEFAULT_VIEWPORT } from '../screenshot-spec-types.ts'
 import { junctionScaffold, scaffoldOverview } from './cgiab-junction.ts'
 import {
+  drosophilaBlocksSpec,
   drosophilaBlocksUrl,
-  paperDrosophilaSpecs,
 } from './paper-drosophila.ts'
 import { paperSvReadsSpecs } from './paper-sv-reads.ts'
 import { proteinHbbE6vPocketSpecs } from './protein_figure_hbb_e6v_pocket.ts'
@@ -260,7 +260,7 @@ const ECOLI_LANES = [
 
 export const grantSpecs: ScreenshotSpec[] = [
   {
-    ...paperDrosophilaSpecs[0]!,
+    ...drosophilaBlocksSpec,
     name: 'grant/drosophila_blocks',
     url: drosophilaBlocksUrl(150),
     ...SIZE,

@@ -5,7 +5,10 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type {
+  ScreenshotSpec,
+  SessionUrlSpec,
+} from '../screenshot-spec-types.ts'
 
 const CONFIG =
   'https://jbrowse.org/demos/orthofinder_drosophila_blocks/config.json'
@@ -81,21 +84,21 @@ export function drosophilaBlocksUrl(levelHeight: number) {
   })
 }
 
-export const paperDrosophilaSpecs: ScreenshotSpec[] = [
-  {
-    mode: 'url',
-    name: 'paper/drosophila_blocks',
-    url: drosophilaBlocksUrl(100),
-    readySelector: displayPainted('synteny_canvas'),
-    readyTimeout: 240000,
-    viewportWidth: 1900,
-    viewportHeight: 680,
-    // No session setting closes the legend or a row's zoom controls. Hidden
-    // rather than clicked closed, since a click focuses the view and restyles
-    // its header.
-    hideSelectors: [
-      '[data-testid="floating-legend"]',
-      '[data-testid="lgv-mini-controls"]',
-    ],
-  },
-]
+export const drosophilaBlocksSpec: SessionUrlSpec = {
+  mode: 'url',
+  name: 'paper/drosophila_blocks',
+  url: drosophilaBlocksUrl(100),
+  readySelector: displayPainted('synteny_canvas'),
+  readyTimeout: 240000,
+  viewportWidth: 1900,
+  viewportHeight: 680,
+  // No session setting closes the legend or a row's zoom controls. Hidden
+  // rather than clicked closed, since a click focuses the view and restyles
+  // its header.
+  hideSelectors: [
+    '[data-testid="floating-legend"]',
+    '[data-testid="lgv-mini-controls"]',
+  ],
+}
+
+export const paperDrosophilaSpecs: ScreenshotSpec[] = [drosophilaBlocksSpec]
