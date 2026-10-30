@@ -1,6 +1,11 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { axisSpan, axisSpans, displayedRegionSpans } from './anchorAxis.ts'
+import {
+  axisSpan,
+  axisSpans,
+  axisTickXs,
+  displayedRegionSpans,
+} from './anchorAxis.ts'
 import { createDisplay } from './testEnv.ts'
 
 // The harness displays ctgA:0..1000 and nothing else.
@@ -92,4 +97,16 @@ test('an interval across two displayed regions of one refName opens a gap at the
   // the reversed region reads right to left from its end at the seam
   expect(spans[1]![0]).toBeGreaterThan(spans[1]![1])
   expect(Math.max(...spans[1]!)).toBeLessThanOrEqual(seam + 400 / view.bpPerPx)
+})
+
+test('a region shown twice ticks each copy where it draws', () => {
+  const region = { assemblyName: 'volvox', refName: 'chr1', start: 0, end: 100 }
+  const view = {
+    displayedRegions: [region, region],
+    bpPerPx: 1,
+    offsetPx: 0,
+  }
+  expect(axisTickXs(view, 25, [0, 200])).toEqual([
+    0, 25, 50, 75, 100, 125, 150, 175,
+  ])
 })

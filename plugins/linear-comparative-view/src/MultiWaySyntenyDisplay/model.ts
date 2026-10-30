@@ -105,6 +105,8 @@ import { dealGeneColors, geneColorRampOf, geneColors } from './geneColor.ts'
 import { laneGeneTracksOf } from './laneAnnotation.ts'
 import { nudgeDecision, sameDecisions } from './laneDecision.ts'
 import {
+  failedLanesOf,
+  forgetFailedLanes,
   landLaneFetch,
   laneFetchAwaits,
   laneGenesFetchSpecsOf,
@@ -561,6 +563,13 @@ export function stateModelFactory(
           for (const { features } of fetched.values()) {
             observeRibbonFeatures(features)
           }
+        },
+        /** #action */
+        retryFailedLanes() {
+          self.laneGenes = forgetFailedLanes(self.laneGenes)
+          self.laneLayerData = forgetFailedLanes(self.laneLayerData)
+          self.laneLinks = forgetFailedLanes(self.laneLinks)
+          self.laneGroups = forgetFailedLanes(self.laneGroups)
         },
         /**
          * #action
@@ -2052,18 +2061,58 @@ export function stateModelFactory(
        * and has not landed
        */
       get loadingGutterYs(): number[] {
-        const { lanes, glyphHeight } = self.laneStack
         const pending = new Set(
           staleLaneSpecs(self.laneLinksFetchSpecs, self.laneLinks).map(
             spec => spec.lane,
           ),
         )
         return self.lanePairs.flatMap(({ key }, i) => {
-          const upper = lanes[i + 1]
-          const lower = lanes[i + 2]
-          return pending.has(key) && upper && lower
-            ? [(upper.glyphTop + glyphHeight + lower.layerTop) / 2]
-            : []
+          const y = this.gutterY(i)
+          return pending.has(key) && y !== undefined ? [y] : []
+        })
+      },
+      /**
+       * #method
+       * the centre, in stack px, of the gutter under the `index`th lane pair
+       */
+      gutterY(index: number) {
+        const { lanes, glyphHeight } = self.laneStack
+        const upper = lanes[index + 1]
+        const lower = lanes[index + 2]
+        return upper && lower
+          ? (upper.glyphTop + glyphHeight + lower.layerTop) / 2
+          : undefined
+      },
+      /**
+       * #getter
+       * the error each lane's gene, group or layer fetch failed with, by lane
+       */
+      get laneFetchErrors(): ReadonlyMap<string, unknown> {
+        const out = new Map<string, unknown>()
+        for (const [lane, { error }] of [
+          ...failedLanesOf(self.laneGenes),
+          ...failedLanesOf(self.laneGroups),
+        ]) {
+          out.set(lane, error)
+        }
+        for (const [, { assemblyName, error }] of failedLanesOf(
+          self.laneLayerData,
+        )) {
+          out.set(assemblyName, error)
+        }
+        return out
+      },
+      /**
+       * #getter
+       * the centre, in stack px, of each gutter whose lane pair failed to
+       * load, with the error
+       */
+      get failedGutters(): { y: number; error: unknown }[] {
+        const failed = new Map(failedLanesOf(self.laneLinks))
+        return self.lanePairs.flatMap(({ key }, i) => {
+          const error = failed.get(key)?.error
+          const y = this.gutterY(i)
+          return error !== undefined && y !== undefined ? [{ y, error }] : []
         })
       },
       /**
@@ -2076,7 +2125,6 @@ export function stateModelFactory(
         if (!self.laneFetchKinds.lanePairs) {
           return []
         }
-        const { lanes, glyphHeight } = self.laneStack
         return unheldLanePairsOf({
           pairs: self.lanePairs,
           rowFrames: self.rowFrames,
@@ -2086,16 +2134,10 @@ export function stateModelFactory(
             self.describedLanes.has(name) &&
             !self.lanesBeingDescribed.has(name),
         }).flatMap(({ index, missing }) => {
-          const upper = lanes[index + 1]
-          const lower = lanes[index + 2]
-          return upper && lower
-            ? [
-                {
-                  y: (upper.glyphTop + glyphHeight + lower.layerTop) / 2,
-                  labels: missing.map(name => self.laneLabel(name)),
-                },
-              ]
-            : []
+          const y = this.gutterY(index)
+          return y === undefined
+            ? []
+            : [{ y, labels: missing.map(name => self.laneLabel(name)) }]
         })
       },
     }))

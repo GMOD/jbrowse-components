@@ -60,8 +60,10 @@ export interface LaneGroupsFetchSpec extends LaneFetchSpec {
   lodTier: LodTier
 }
 
+/** a failed fetch holds its empty result and the error, so it is not refetched */
 export interface HeldLane {
   key: string
+  error?: unknown
 }
 
 export interface HeldLaneGroups extends HeldLane {
@@ -120,6 +122,26 @@ export function landLaneFetch<Held extends HeldLane>(
     held,
     landedFor: specsCoverMate(specs, anchor) ? anchor : state.landedFor,
   }
+}
+
+export function failedLanesOf<Held extends HeldLane>(
+  state: LaneFetchState<Held>,
+) {
+  return [...(state.held ?? [])].filter(([, held]) => held.error !== undefined)
+}
+
+/** drops each failed lane, so the next run asks for it again */
+export function forgetFailedLanes<Held extends HeldLane>(
+  state: LaneFetchState<Held>,
+): LaneFetchState<Held> {
+  return state.held
+    ? {
+        ...state,
+        held: new Map(
+          [...state.held].filter(([, held]) => held.error === undefined),
+        ),
+      }
+    : state
 }
 
 export function laneFetchAwaits(

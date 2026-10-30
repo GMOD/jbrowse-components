@@ -135,7 +135,7 @@ export function axisTickXs(
   const { bpPerPx, displayedRegions } = view
   const xs: number[] = []
   let before = 0
-  for (const { refName, start, end, reversed } of displayedRegions) {
+  displayedRegions.forEach(({ refName, start, end, reversed }, index) => {
     const left = before / bpPerPx - originPx
     before += end - start
     const bpAt = (px: number) =>
@@ -143,11 +143,11 @@ export function axisTickXs(
     const from = Math.max(start, Math.min(bpAt(lo), bpAt(hi)))
     const to = Math.min(end, Math.max(bpAt(lo), bpAt(hi)))
     for (let bp = Math.ceil(from / step) * step; bp < to; bp += step) {
-      const span = axisSpan(view, refName, bp, bp + 1, originPx)
-      if (span) {
-        xs.push(span[0])
+      const px = anchorPx(view, refName, bp, index)
+      if (px !== undefined) {
+        xs.push(px - originPx)
       }
     }
-  }
+  })
   return xs
 }

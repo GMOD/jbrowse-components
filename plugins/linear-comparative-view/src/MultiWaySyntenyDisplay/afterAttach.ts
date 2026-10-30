@@ -103,7 +103,7 @@ async function laneRegions(
   return regions.map(r => ({ ...r, refName: canonical(r.refName) }))
 }
 
-/** One lane failing is a partial result: it commits `empty` under its key. */
+/** A lane that fails commits `empty` and its error under its key. */
 async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
   label: string,
   specs: Spec[],
@@ -120,14 +120,13 @@ async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
     const result = settled[i]!
     if (result.status === 'fulfilled') {
       byLane.set(spec.lane, result.value)
-    } else {
-      if (!ctx.isStale() && !isAbortException(result.reason)) {
-        console.error(
-          `${label}: one lane failed, the rest still draw`,
-          result.reason,
-        )
-      }
+    } else if (isAbortException(result.reason)) {
       byLane.set(spec.lane, empty(spec))
+    } else {
+      if (!ctx.isStale()) {
+        console.error(`${label}: one lane failed`, result.reason)
+      }
+      byLane.set(spec.lane, { ...empty(spec), error: result.reason })
     }
   })
   return byLane
@@ -136,8 +135,7 @@ async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
 /**
  * Every pair on one window in one call, which the adapter answers from a
  * single cut; a record goes to the pair its lane and its mate's lane name. A
- * failed call is every pair's partial result, as one lane's is in
- * `fetchEachLane`.
+ * failed call fails every pair in it.
  */
 async function fetchLanePairBatch(
   self: MultiWaySyntenyDisplayModel,
@@ -152,9 +150,14 @@ async function fetchLanePairBatch(
       const held = new Map(
         group.map(spec => [
           spec.lane,
-          { key: spec.key, links: [] as Feature[], ops: new Map() },
+          {
+            key: spec.key,
+            links: [] as Feature[],
+            ops: new Map<string, Uint32Array>(),
+          },
         ]),
       )
+      let failure: unknown
       try {
         const { features, ops } = await ctx.callRpc('MultiWayGetFeatures', {
           adapterConfig: self.adapterConfig,
@@ -186,12 +189,18 @@ async function fetchLanePairBatch(
           }
         }
       } catch (error) {
-        if (!ctx.isStale() && !isAbortException(error)) {
-          console.error('MultiWayLaneLinks: the pair batch failed', error)
+        if (!isAbortException(error)) {
+          if (!ctx.isStale()) {
+            console.error('MultiWayLaneLinks: the pair batch failed', error)
+          }
+          failure = error
         }
       }
       for (const [lane, result] of held) {
-        byLane.set(lane, result)
+        byLane.set(
+          lane,
+          failure === undefined ? result : { ...result, error: failure },
+        )
       }
     }),
   )
@@ -199,8 +208,8 @@ async function fetchLanePairBatch(
 }
 
 /**
- * `setError` stays a noop, so a lane failure never reaches the error slot the
- * ortholog fetch owns.
+ * `setError` stays a noop: a lane failure shows on its own lane, not in the
+ * error slot the ortholog fetch owns.
  */
 function installLaneFetch<Spec extends LaneFetchSpec, Result extends HeldLane>(
   self: MultiWaySyntenyDisplayModel,
@@ -379,6 +388,10 @@ function installLaneDescriptions(self: MultiWaySyntenyDisplayModel) {
             })
             .catch((error: unknown) => {
               console.error(error)
+              clearTimeout(deadline)
+              if (isAlive(self)) {
+                self.endDescribingLanes(names, {})
+              }
             })
         }
       },

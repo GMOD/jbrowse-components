@@ -65,6 +65,47 @@ const GutterNote = observer(function GutterNote({
   )
 })
 
+const LoadFailure = observer(function LoadFailure({
+  model,
+  error,
+  testId,
+  what,
+}: {
+  model: MultiWaySyntenyDisplayModel
+  error: unknown
+  testId: string
+  what?: string
+}) {
+  const palette = usePalette()
+  return (
+    <span
+      data-testid={testId}
+      title={`${error}`}
+      style={{ color: palette.error.main, pointerEvents: 'all' }}
+    >
+      {what ? `Failed to load ${what}` : 'Failed to load'}{' '}
+      <button
+        type="button"
+        data-testid={`${testId}-retry`}
+        style={{
+          all: 'unset',
+          cursor: 'pointer',
+          textDecoration: 'underline',
+        }}
+        onMouseDown={event => {
+          event.stopPropagation()
+        }}
+        onClick={event => {
+          event.stopPropagation()
+          model.retryFailedLanes()
+        }}
+      >
+        Retry
+      </button>
+    </span>
+  )
+})
+
 const LaneHeaders = observer(function LaneHeaders({
   model,
 }: {
@@ -86,12 +127,16 @@ const LaneHeaders = observer(function LaneHeaders({
   if (menu && !menuLane) {
     setMenu(undefined)
   }
-  const openMenu = (assemblyName: string, event: React.MouseEvent) => {
+  const openMenu = (
+    assemblyName: string,
+    event: React.MouseEvent,
+    anchor: ContextMenuAnchor = event,
+  ) => {
     event.preventDefault()
     event.stopPropagation()
     setMenu({
       assemblyName,
-      anchor: { clientX: event.clientX, clientY: event.clientY },
+      anchor: { clientX: anchor.clientX, clientY: anchor.clientY },
     })
   }
   // pointer ys are viewport-relative and the lanes are in stack px
@@ -209,6 +254,21 @@ const LaneHeaders = observer(function LaneHeaders({
           Add {labels.join(' and ')} as an assembly to draw these ribbons
         </GutterNote>
       ))}
+      {model.failedGutters.map(({ y, error }) => (
+        <GutterNote
+          key={`failed-${y}`}
+          testId="multiway-gutter-failed"
+          top={y - scrollTop}
+          width={width}
+        >
+          <LoadFailure
+            model={model}
+            error={error}
+            testId="multiway-gutter-failure"
+            what="alignments"
+          />
+        </GutterNote>
+      ))}
       {rows.map(row => (
         <div
           key={`header-${row.assemblyName}`}
@@ -282,7 +342,7 @@ const LaneHeaders = observer(function LaneHeaders({
           ) : null}
           <button
             type="button"
-            aria-label={`${row.assemblyName} lane options`}
+            aria-label={`${row.label} lane options`}
             data-testid={`multiway-lane-menu-${row.assemblyName}`}
             style={{
               all: 'unset',
@@ -295,11 +355,23 @@ const LaneHeaders = observer(function LaneHeaders({
               event.stopPropagation()
             }}
             onClick={event => {
-              openMenu(row.assemblyName, event)
+              // a keyboard click reports 0,0, so the menu opens under the button
+              const box = event.currentTarget.getBoundingClientRect()
+              openMenu(row.assemblyName, event, {
+                clientX: box.left,
+                clientY: box.bottom,
+              })
             }}
           >
             ⋮
           </button>
+          {model.laneFetchErrors.has(row.assemblyName) ? (
+            <LoadFailure
+              model={model}
+              error={model.laneFetchErrors.get(row.assemblyName)}
+              testId={`multiway-lane-failed-${row.assemblyName}`}
+            />
+          ) : null}
           {row.changes ? (
             <span
               data-testid={`multiway-lane-changes-${row.assemblyName}`}
