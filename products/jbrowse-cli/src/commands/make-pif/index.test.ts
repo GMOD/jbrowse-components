@@ -474,7 +474,7 @@ test('the header line sorts first and states the tiers, the bound and the CIGAR 
     expect(lines[0]).toBe(
       `${HEADER}\ttiers:Z:fine,coarse\tcoarse:i:500\tcigars:Z:all`,
     )
-    expect(lines.filter(l => l.startsWith('#'))).toHaveLength(1)
+    expect(lines.filter(l => l.startsWith('#pif'))).toHaveLength(1)
   })
 })
 
@@ -548,8 +548,26 @@ test('a pass that saw no rows at all carries no CIGAR census either', () => {
       rows: 0,
       cigarRows: 0,
       skipped: 1,
+      contigLengths: new Map(),
     }),
   ).toBe(`${HEADER}\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:none\n`)
+})
+
+test('the header states each fine-tier contig length once, from the first row naming it', async () => {
+  await runInTmpDir(async () => {
+    const lines = await pifLines(
+      pafRow([]) +
+        pafRow([], { 0: 'a', 1: '*', 6: '999' }) +
+        pafRow([], { 0: 'b', 1: '300', 3: '50' }),
+      ['--coarse', '500'],
+    )
+    expect(lines[0]).toMatch(/^#pif\t/)
+    expect(lines.filter(l => l.startsWith('#sq'))).toEqual([
+      '#sq\tname:Z:qq1\tlength:i:100',
+      '#sq\tname:Z:tt1\tlength:i:100',
+      '#sq\tname:Z:qb\tlength:i:300',
+    ])
+  })
 })
 
 test('an incoming cr:Z: is dropped from both tiers', async () => {

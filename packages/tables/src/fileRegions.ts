@@ -45,7 +45,7 @@ async function contigsOf(
     sequenceAdapter,
   )
   if (isContigSource(dataAdapter)) {
-    return dataAdapter.getContigs()
+    return dataAdapter.getContigs({ assemblyName })
   }
   const refNames: string[] =
     'getRefNames' in dataAdapter

@@ -279,6 +279,53 @@ test('a self-alignment reports both sides of the file as its refNames', async ()
   expect([...refNames].sort()).toEqual(['ctgA', 'ctgB', 'ctgC'])
 })
 
+// The rename pass builds its map from these names, and the contig-length check
+// reads the lengths: a reach stands in for no length, since it would read as a
+// shorter contig
+test('getContigs states each facing contig length from its PAF column', async () => {
+  const path = join(mkdtempSync(join(tmpdir(), 'paf-len-')), 'in.paf')
+  writeFileSync(
+    path,
+    'q1\t1000\t100\t200\t+\tt1\t2000\t300\t400\t95\t100\t60\n' +
+      'q2\t*\t0\t100\t+\tt1\t2000\t500\t600\t95\t100\t60\n',
+  )
+  const adapter = new Adapter(
+    MyConfigSchema.create({
+      pafLocation: { localPath: path, locationType: 'LocalPathLocation' },
+      assemblyNames: ['qry', 'tgt'],
+    }),
+  )
+  await expect(adapter.getContigs({ assemblyName: 'qry' })).resolves.toEqual([
+    { refName: 'q1', length: 1000 },
+    { refName: 'q2', length: undefined },
+  ])
+  await expect(adapter.getContigs({ assemblyName: 'tgt' })).resolves.toEqual([
+    { refName: 't1', length: 2000 },
+  ])
+  await expect(adapter.getContigs({ assemblyName: 'mouse' })).resolves.toEqual(
+    [],
+  )
+})
+
+test('getContigs names what getRefNames names, which the rename map is built from', async () => {
+  const adapter = makeAdapter()
+  for (const assemblyName of ['peach', 'grape', 'mouse', undefined]) {
+    const contigs = await adapter.getContigs({ assemblyName })
+    expect(contigs.map(c => c.refName)).toEqual(
+      await adapter.getRefNames({ assemblyName }),
+    )
+  }
+})
+
+test('a self-alignment lists the contigs of both sides once each', async () => {
+  const contigs = await makeSelfAdapter().getContigs({ assemblyName: 'vvx' })
+  expect(contigs).toEqual([
+    { refName: 'ctgA', length: 1000 },
+    { refName: 'ctgC', length: 1000 },
+    { refName: 'ctgB', length: 2000 },
+  ])
+})
+
 // Both ends of a row within one contig face the query, and each has to draw
 // against the other, so they are two features and cannot share a uniqueId.
 test('a self-alignment draws both ends of a row anchored on one contig', async () => {

@@ -45,6 +45,20 @@ export default class PAFAdapter extends PairwiseAdapterBase {
     )
   }
 
+  async getContigs(opts: BaseOptions = {}) {
+    return this.facingContigs(opts.assemblyName, async side => {
+      const { records, byRefName } = await this.setup(opts)
+      return new Map(
+        [...byRefName[side]].map(([refName, rows]) => [
+          refName,
+          rows
+            .map(i => (side === 0 ? records[i]!.qlen : records[i]!.tlen))
+            .find(length => length !== undefined && Number.isFinite(length)),
+        ]),
+      )
+    })
+  }
+
   async getContigLengths(side: 0 | 1, opts: BaseOptions = {}) {
     const { records, byRefName } = await this.setup(opts)
     const lengths = new Map<string, number>()

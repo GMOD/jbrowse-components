@@ -45,6 +45,8 @@ export interface PifStats {
   // run or an alignment nothing could fold
   cigarRows: number
   skipped: number
+  // each fine-tier seqid's contig length, as the first row naming it states it
+  contigLengths: Map<string, string>
 }
 
 // Generation 2 (2026-09) writes `pi:i:`, the input row's index, on every row.
@@ -53,8 +55,8 @@ export interface PifStats {
 export const PIF_FORMAT_VERSION = 2
 
 /**
- * The one meta line a PIF carries, sorted first by the C-locale sort and kept
- * by tabix as a header. It states the format generation, the tiers
+ * The `#pif` meta line, sorted first by the C-locale sort and kept by tabix as
+ * a header. It states the format generation, the tiers
  * written, the coarse tier's accuracy bound (`--coarse`), and whether every
  * input row had a CIGAR — the facts a reader cannot recover from the rows. It
  * states no writer or CLI release, so a PIF's bytes change with its generation
@@ -70,6 +72,24 @@ export function pifHeader(coarseGap: number | undefined, stats: PifStats) {
   const tiers = coarseGap === undefined ? 'fine' : 'fine,coarse'
   const bound = coarseGap === undefined ? '' : `\tcoarse:i:${coarseGap}`
   return `#pif\tversion:i:${PIF_FORMAT_VERSION}\ttiers:Z:${tiers}${bound}\tcigars:Z:${cigars}\n`
+}
+
+/**
+ * A `#sq` line per fine-tier seqid with the length its PAF column states, so a
+ * reader learns every contig's length from the header it already fetches
+ * rather than from a range read per contig. `#sq` sorts after `#pif`, and the
+ * lines tie on the sort keys, so they keep the order rows first named them.
+ */
+export function pifContigLines(stats: PifStats) {
+  return [...stats.contigLengths]
+    .map(([seqid, length]) => `#sq\tname:Z:${seqid}\tlength:i:${length}\n`)
+    .join('')
+}
+
+function noteContigLength(stats: PifStats, seqid: string, length: string) {
+  if (/^\d+$/.test(length) && !stats.contigLengths.has(seqid)) {
+    stats.contigLengths.set(seqid, length)
+  }
 }
 
 function panSNSample(refName: string) {
@@ -192,6 +212,8 @@ function processLine(
   // rest[0]=num_matches, rest[1]=block_len, rest[2]=mapq, rest[3+]=optional tags
   const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = parts
   addPanSNPair(stats, c1!, c2!)
+  noteContigLength(stats, `q${c1}`, l1!)
+  noteContigLength(stats, `t${c2}`, l2!)
 
   // an incoming cr:Z: or pi:i: (a PIF turned back into PAF, or a tool that
   // adopted the tags) is dropped: the coarse tier writes its own fold below,
@@ -282,7 +304,8 @@ function makePifTransform(
       callback(
         null,
         (tail ? processLine(tail, coarseGap, stats) : '') +
-          pifHeader(coarseGap, stats),
+          pifHeader(coarseGap, stats) +
+          pifContigLines(stats),
       )
     },
   })
@@ -302,6 +325,7 @@ export async function createPIF(
     rows: 0,
     cigarRows: 0,
     skipped: 0,
+    contigLengths: new Map(),
   }
   const transform = makePifTransform(coarseGap, stats)
   if (filename) {

@@ -2,7 +2,10 @@ import { ComparativeAdapterBase } from './ComparativeAdapterBase.ts'
 import { getAssemblyNamesFromConf } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseOptions,
+  Contig,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 
 /**
  * A region reached a pairwise adapter naming an assembly its `assemblyNames`
@@ -98,6 +101,32 @@ export abstract class PairwiseAdapterBase<
     }
     const indexes = await sideIndexes()
     return [...new Set(sides.flatMap(side => [...indexes[side]!.keys()]))]
+  }
+
+  /**
+   * The contigs on the sides facing `assemblyName`, each with the length the
+   * file states, for an adapter that knows them. `CoreGetContigs` builds the
+   * rename map from these names, so they are `getRefNames`' names; a contig a
+   * self-alignment names on both sides takes the first stated length.
+   */
+  protected async facingContigs(
+    assemblyName: string | undefined,
+    sideLengths: (
+      side: 0 | 1,
+    ) => Promise<ReadonlyMap<string, number | undefined>>,
+  ) {
+    const lengths = new Map<string, number | undefined>()
+    for (const side of this.facingSides(assemblyName)) {
+      for (const [refName, length] of await sideLengths(side)) {
+        if (lengths.get(refName) === undefined) {
+          lengths.set(refName, length)
+        }
+      }
+    }
+    return [...lengths].map(([refName, length]): Contig => ({
+      refName,
+      length,
+    }))
   }
 
   /**
