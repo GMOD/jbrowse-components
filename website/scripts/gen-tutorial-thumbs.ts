@@ -357,6 +357,13 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0.62, 0.98],
     position: 'center',
   },
+  protein_variants_met_exon14: {
+    // panel A's DNA reads and junction arcs, where the skip shows
+    src: 'protein/met_ex14.png',
+    band: [0.24, 0.62],
+    xband: [0, 0.6],
+    position: 'center',
+  },
   synteny_visualization: {
     // gene-level ribbons, not the near-empty dotplot the hand-made thumb used
     src: 'sv_synteny/linear_synteny_genes.png',
