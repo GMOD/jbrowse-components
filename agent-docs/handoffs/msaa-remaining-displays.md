@@ -1,6 +1,6 @@
 ---
 name: msaa-remaining-displays
-description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28 and multi-sample variant tracks on 2026-10-30 (rows snapped to the device grid, awaiting Colin's review). Open: alignments, wiggle and the grammar marks, each trading some edges and each Colin's call; `scripts/gpu-pixels/run.ts` scores a flip. Hi-C and LD stay at four."
+description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28 and multi-sample variant tracks on 2026-10-30 (rows snapped to the device grid, awaiting Colin's review). Grammar points, rules and step lines on 2026-10-30. Open: alignments, wiggle, `spanMark` and `barMark`, each trading some edges and each Colin's call; `scripts/gpu-pixels/run.ts` scores a flip. Hi-C and LD stay at four."
 ---
 
 # Displays still at four samples
@@ -45,43 +45,33 @@ A display draws at one sample when every pass it registers declares
    doc lists density and the step line as refusals. The flip is one judgement
    about all three renderings. Density's rows tile, so they could snap through
    `rowSnap.slang` as the variant passes do.
-4. **The grammar marks, Colin's call: none flips cleanly.** A mark display
-   samples at four if any mark it lists does, so a track listing only clean
-   marks would move. `barMark` does NOT declare the directive either: its
-   vertical cuts stay hard and lean on MSAA (its header says why). Numbers are
-   mean error over reference ink, at dpr 1 / 1.5 / 2, from
-   `node scripts/gpu-pixels/run.ts mark`:
-   - **`pointMark`'s glyphs are clean.** Disc, triangle and diamond already
-     ramp their own SDF in a padded quad: 1.97 / 1.31 / 0.90% at one sample
-     against 1.98 / 1.32 / 0.92% at four. Two shapes in the same pass are not:
-   - **The rule** is a flat fill whose four cuts sit at fractional px: 20.5 /
-     11.5 / 4.2% at one sample, 3.2 / 3.5 / 3.6% at four. Ramping all four
-     cuts (prototype, not landed) scores 3.6 / 1.9 / 1.35%, but two rules
-     abutting at one value seam to alpha 0.75 in the shared column, at either
-     sample count. Ramping only the y cuts, as `barMark` does, scores 4.5 /
-     2.6 / 2.0% with no seam; the trade is ends rounded to the device grid,
-     off by up to 0.5 there. That is `barMark`'s vertical-cut trade, so both
-     marks want the same answer.
-   - **The crisp square** snaps its corner to the CSS grid but its size is
-     `2 * radiusPx`, so its far edges, and every edge at a fractional dpr, sit
-     mid-pixel: 8.8 / 7.7 / 3.0% at one sample, 3.1 / 2.0 / 0.04% at four.
-     Clean only if the square snaps to the device grid, which moves
-     `crispSquareTopLeftPx` for wiggle and both painters too.
-   - **`spanMark` tiles** (MAF, chromHMM), so ramping its x cuts seams it as
-     the coverage band would. Left hard at one sample, a cell narrower than a
-     device pixel either owns the pixel or vanishes: the MAF-like fixture
-     scores 18.9 / 20.0 / 12.7% against 3.3 / 2.5 / 3.8% at four. One sample
-     per pixel should also shimmer as the view pans (not filmed). Row edges
-     round to the device grid at one sample, which the Canvas2D painter
-     (`onDevicePx`) already does.
-   - **`lineStepMark`'s quads overlap at every joint**, so ramping them
-     double-blends there (the refusal `wiggleLine.slang` got). Left hard, a
-     1 px step line snaps to whole device rows: 44.9 / 34.3 / 34.6% at one
-     sample against 10.3 / 11.5 / 5.6% at four.
-   - **Found on the way:** a translucent step line already blends its joints
-     twice, at four samples as at one (14–208 pixels in the fixtures at alpha
-     0.6): the horizontal's square cap, the collapsed third quad and the next
-     rise all cover the corner.
+4. **The grammar marks: only `spanMark` and `barMark` remain.** A mark
+   display samples at four if any mark it lists does. Numbers are mean error
+   over reference ink at dpr 1 / 1.5 / 2, from
+   `node scripts/gpu-pixels/run.ts mark` (8x8 supersample, so under ~1% is
+   noise).
+   - **At one sample now:** `pointMark` (glyphs; the square inks its box by
+     area; a rule ramps its y cuts and keeps its ends hard, so abutting rules
+     share no seam) and `lineStepMark` (each quad inks its box by area). The
+     square scores 0.6 / 0.4 / 0.6%, the rule 4.5 / 2.6 / 2.0% and a 1 px step
+     line 8.2 / 5.6 / 5.2%, each at or under the old four-sample render except
+     the square at dpr 2. A translucent step line still blends its joints
+     twice, as it did at four; a max blend would union them but composites
+     wrong over other marks. `wiggle.slang`'s square is still hard, so it now
+     differs from the mark display's.
+   - **What moves:** the mark display and Manhattan when every listed mark is
+     a point, rule, line or link. MAF also registers `barMark` and the
+     coverage band, and alignments' arcs and indicators stay with alignments.
+     A 1266x100 CSS px track saves about 1.9 MiB at dpr 1 and 7.7 MiB at dpr 2.
+   - **`spanMark` stays at four: its cells tile** (MAF, chromHMM). Ramping x
+     seams them; left hard, a sub-pixel cell owns its pixel or vanishes: 11.8 /
+     8.5 / 6.2% at one sample against rows on the device grid, 2.7 / 2.1 /
+     1.5% at four. Widening it with alpha by true width, as
+     `variantMatrix.slang` does, scores worse (12.8%): the next opaque cell
+     overwrites the pixel. Its rows now snap through `rowSnap.slang`, as the
+     Canvas2D painter's do.
+   - **`barMark` stays at four:** its vertical cuts stay hard and lean on MSAA
+     (its header says why).
 5. **The GPU pixel harness exists:** `node scripts/gpu-pixels/run.ts`, written
    up in [GPU_SHADERS.md](../reference/GPU_SHADERS.md) §"Scoring a pass's
    pixels on a real GPU". Its `--base=bdc1f15242~1` run shows the feature

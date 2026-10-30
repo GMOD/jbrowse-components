@@ -214,11 +214,12 @@ would cost:
   `//! coverage: analytic` on the strength of the sloped edges; the exposure is
   two columns per run rather than per bin, which is why this is a footnote and
   `barMark`'s is not.
-- **`pointMark` (manhattan and the wiggle scatter), but not `ruleMark`.**
-  The disc, diamond and triangle pad by their own miter reaches
-  (`glyphExpand`, `pointGlyphPad.test.ts`) and substitute to 0. `SHAPE_BAR` —
-  the rule, which draws through the same shader — is `coverage = 1.0` on an
-  unpadded, unsnapped quad.
+- **`pointMark` (manhattan and the wiggle scatter), and `ruleMark` through
+  it.** The disc, diamond and triangle pad by their own miter reaches
+  (`glyphExpand`, `pointGlyphPad.test.ts`) and substitute to 0. Since
+  2026-10-30 the square inks its box by area, and the rule ramps its y cuts
+  and keeps its ends hard, so the pass declares `//! coverage: analytic`;
+  `lineStepMark` does the same per quad.
 - **`chevronStroke.slang` (the intron chevron and the continuation marker),
   except past Canvas2D's miter limit**, which only a marker on a box under
   1.3 px tall reaches. One triangle per ">" whose sides and base sit the ramp's
