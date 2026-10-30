@@ -157,7 +157,7 @@ function maneGeneLane({
     },
     lane: {
       trackId,
-      filter: [`jexl:get(feature,'name')=='${accession}'`],
+      filter: [{ field: 'name', equal: accession }],
       forceLoad: true,
       height,
       ...(featureHighlights ? { featureHighlights } : {}),

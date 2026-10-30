@@ -486,7 +486,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // The 3,432 bp deletion 4 kb downstream is no-call in the four
           // homozygous Collies and paints a yellow stripe against them. `start`
           // is POS-1.
-          filter: ["jexl:get(feature,'start') == 25574004"],
+          filter: [{ field: 'start', equal: 25574004 }],
         },
       ],
     }),
@@ -886,7 +886,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           // Only the stop-gained site: every wolf here carries 38,261,650, and
           // an unfiltered column would put a full wolf row beside the claim.
           // `start` is POS-1.
-          filter: ["jexl:get(feature,'start') == 38261634"],
+          filter: [{ field: 'start', equal: 38261634 }],
         },
       ],
     }),

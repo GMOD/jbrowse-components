@@ -315,7 +315,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'hsv1_genes',
           // the GFF3's first record is the 108 kb long-unique region, which
           // packs above the genes and takes their label lane
-          filter: ["jexl:feature.type=='gene'"],
+          filter: [{ field: 'type', equal: 'gene' }],
           height: 70,
         },
         {

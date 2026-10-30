@@ -102,7 +102,7 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
               height: 60,
               encoding: { color: { value: 'rgb(130,130,130)' } },
               // Drops the IS1's unnamed record, which draws as the widest box.
-              filter: ["jexl:feature.type=='gene'"],
+              filter: [{ field: 'type', equal: 'gene' }],
             },
             {
               trackId: MC_CARRIAGE_TRACK,

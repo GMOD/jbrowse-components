@@ -416,7 +416,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               trackId: 'hg38-clinvarMain',
               height: 56,
               filter: [
-                "jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'",
+                { field: 'phenotypeList', equal: 'LACTASE PERSISTENCE' },
               ],
             },
             // The apex is 343 px down; 260 cuts it and keeps both edges, which
@@ -510,7 +510,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               trackId: 'hg38-clinvarMain',
               height: 56,
               filter: [
-                "jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'",
+                { field: 'phenotypeList', equal: 'LACTASE PERSISTENCE' },
               ],
             },
             {

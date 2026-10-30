@@ -229,7 +229,7 @@ export const msaSpecs: ScreenshotSpec[] = [
             // FIIND appears eleven times.
             {
               trackId: 'hg38-unipDomain',
-              filter: ["jexl:get(feature,'uniProtId')=='Q9C000'"],
+              filter: [{ field: 'uniProtId', equal: 'Q9C000' }],
               height: 90,
             },
           ],

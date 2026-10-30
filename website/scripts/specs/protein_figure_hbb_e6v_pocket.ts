@@ -232,9 +232,12 @@ const GWAS_TRACK = {
   name: 'GWAS Catalog at rs334',
   displayDefaults: {
     filter: [
-      "jexl:feature.name == 'rs334'",
-      `jexl:feature.trait in ['Malaria', 'Hereditary hemolytic anemias${PHECODE_282}']`,
-      "jexl:feature.pValue in ['4E-69', '1E-323']",
+      { field: 'name', equal: 'rs334' },
+      {
+        field: 'trait',
+        oneOf: ['Malaria', `Hereditary hemolytic anemias${PHECODE_282}`],
+      },
+      { field: 'pValue', oneOf: ['4E-69', '1E-323'] },
     ],
     // The labels print at about 4 pt in the figure, which names the two records
     // in a callout instead. The live link can turn them back on.

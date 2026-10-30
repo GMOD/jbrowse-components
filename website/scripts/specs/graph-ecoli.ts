@@ -739,7 +739,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
               height: 70,
               // the IS5's nameless record drew its raw RefSeq ID; insH21 names
               // the element
-              filter: ["jexl:feature.type=='gene'"],
+              filter: [{ field: 'type', equal: 'gene' }],
             },
             {
               trackId: PGGB_DEPTH_TRACK,

@@ -19,7 +19,7 @@ const locusPanel = (
     tracks: [
       {
         trackId: 'mm10_ncbi_refseq',
-        filter: [`jexl:get(feature,'name')=='${gene}'`, 'geneLike'],
+        filter: [{ field: 'name', equal: gene }, 'geneLike'],
         forceLoad: true,
         height: 50,
       },

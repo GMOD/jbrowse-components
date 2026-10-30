@@ -64,11 +64,9 @@ list names each divergence and can only shrink.
   the re-pin too. The engine and tutorial pin is `d0feecc145`, which writes
   the feature display's amendment. `dog10k_lof` keeps its `557791197f` knit
   until the callset host's certificate is renewed.
-- **Figure specs** (`website/scripts/specs/`): one respell into the landed
-  words (filters, constant color, legends, rows, facet, `encoding.y`). Rows and
-  facet have seven spellings there, compact four, constant color four and the
-  y axis three homes, and about half the jexl filters are plain equality, which
-  become predicates. Write the table-driven spec families (`synteny.ts`
-  multiway lanes, OrthoFinder stacks) after it, or they are written twice.
+- **Figure specs:** `pnpm check-specs` (in `website/`) refuses a key the
+  display does not declare, so a rename that misses a spec fails there. A jexl
+  filter never trips it: an equality or a bound is a predicate, and the jexl
+  ones left are negations, arithmetic and function calls.
 - **Tutorials and `demos/` configs:** `pnpm verify --full` and the pre-commit
   config check catch a dead key, and a jexl filter never trips them.
