@@ -5,7 +5,6 @@ import { recordingContext } from '@jbrowse/render-core/marks/drawAgainstHit'
 import { HIDDEN_ROW } from '../../shared/constants.ts'
 import { cellMark } from './cellMark.ts'
 import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
-import { snapVariantCellX } from './snapVariantCellX.ts'
 import { SHAPE_RECT, SHAPE_TRI_LEFT, drawVariantShape } from './variantShape.ts'
 
 import type { CellChannels, CellParams } from './cellMark.ts'
@@ -17,12 +16,24 @@ function rowBand(row: number, canvasHeight: number, params: CellParams) {
   const { rowHeight, scrollTop } = params
   const dpr = Math.round(canvasHeight * getDpr()) / canvasHeight
   const y = row * rowHeight - scrollTop
-  const top = Math.round(y * dpr) / dpr
+  const top = Math.floor(y * dpr + 0.5) / dpr
   const bottom = Math.max(
-    Math.round((y + drawnCellHeightPx(rowHeight)) * dpr) / dpr,
+    Math.floor((y + drawnCellHeightPx(rowHeight)) * dpr + 0.5) / dpr,
     top + 1 / dpr,
   )
   return { top, height: bottom - top }
+}
+
+// Sides on the device grid, the floor rounded up to it, hung off the record's
+// start.
+function cellX(x1: number, x2: number, canvasWidth: number) {
+  const dpr = Math.round(canvasWidth * getDpr()) / canvasWidth
+  const snap = (x: number) => Math.floor(x * dpr + 0.5) / dpr
+  const width = Math.max(
+    Math.ceil(2 * dpr) / dpr,
+    Math.abs(snap(x2) - snap(x1)),
+  )
+  return { x: x2 < x1 ? snap(x1) - width : snap(x1), width }
 }
 
 const retired: Required<
@@ -36,9 +47,10 @@ const retired: Required<
     for (let i = 0; i < count; i++) {
       const { top, height } = rowBand(row[i]!, canvasHeight, params)
       if (top + height >= 0 && top <= canvasHeight) {
-        const { x, width } = snapVariantCellX(
+        const { x, width } = cellX(
           toX(startEnd[i * 2]!),
           toX(startEnd[i * 2 + 1]!),
+          frame.canvasWidth,
         )
         setFill(color[i]!)
         drawVariantShape(ctx, shapeType[i]!, x, top, width, height)
@@ -54,9 +66,10 @@ const retired: Required<
       return undefined
     }
     const toX = makeBpMapper(block)
-    const { x, width } = snapVariantCellX(
+    const { x, width } = cellX(
       toX(startEnd[i * 2]!),
       toX(startEnd[i * 2 + 1]!),
+      frame.canvasWidth,
     )
     return { left: x, top, width, height }
   },
@@ -97,7 +110,7 @@ function paintWith(
   return { calls, styles }
 }
 
-const FRAME = { canvasWidth: 1600, canvasHeight: 300 }
+const FRAME = { canvasWidth: 1601, canvasHeight: 300 }
 const GENOTYPES = [0xffcc4411, 0xff1133bb, 0xffeeeeee, 0x80336699]
 
 function cells(regionStart: number, regionBp: number): CellChannels {
@@ -153,6 +166,8 @@ const paramsCases: [string, CellParams, number][] = [
   ['scrolled between rows', { rowHeight: 7.5, scrollTop: 37.25 }, 1],
   ['sub-pixel rows', { rowHeight: 0.5, scrollTop: 0 }, 1],
   ['fractional rows at dpr 1.5', { rowHeight: 7.3, scrollTop: 0.37 }, 1.5],
+  ['fractional rows at dpr 1.25', { rowHeight: 7.3, scrollTop: 0.37 }, 1.25],
+  ['dpr 2', { rowHeight: 7.5, scrollTop: 0 }, 2],
 ]
 
 function withDpr<T>(dpr: number, run: () => T) {

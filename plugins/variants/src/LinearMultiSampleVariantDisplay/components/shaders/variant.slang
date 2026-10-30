@@ -2,9 +2,9 @@
 // bounding-box quad; the fragment shader carves the inversion glyph, a bar
 // pointed at its left end, out of the quad when shapeType != RECT.
 //
-// A cell's edges are hard and sit on pixel boundaries: x on whole CSS px, y on
-// the device grid (`snappedRowTopPx`), so rows tile with every pixel owned by
-// one row. Only the inversion's two slants ramp.
+// A cell's edges are hard and sit on device pixel boundaries (`snapCellEdgePx`,
+// `snappedRowTopPx`), so cells and rows tile with every pixel owned by one
+// cell. Only the inversion's two slants ramp.
 //! targets: wgsl, glsl
 //! blend: premultiplied
 //! coverage: analytic
@@ -45,20 +45,19 @@ float drawnCellHeightPx(float rowHeight) {
   return max(rowHeight, 2.0);
 }
 
-// Snap a cell edge to the pixel grid. The Canvas2D backend and the SVG export
-// both have to land on the pixels the GPU already drew — at genome-wide zoom
-// every variant is thinner than 1px, so a half-pixel disagreement is not a
-// corner case there, it is every cell — and they get that by importing the two
-// functions below, which reach this one inside the generated module.
-//
-// The shader snaps in viewport px and a CPU painter in canvas px, and the two
-// grids agree because the viewport's left edge (`scissorX`) is a whole pixel.
-float snapCellEdgePx(float xPx) {
-  return floor(xPx + 0.5);
+// Snap a cell edge, in canvas CSS px, to the backing store's pixel grid at x
+// scale `dpr`. The Canvas2D backend and the SVG export both have to land on the
+// pixels the GPU already drew — at genome-wide zoom every variant is thinner
+// than 1px, so a half-pixel disagreement is not a corner case there, it is
+// every cell — and they get that by importing the two functions below, which
+// reach this one inside the generated module.
+float snapCellEdgePx(float xPx, float dpr) {
+  return floor(xPx * dpr + 0.5) / dpr;
 }
 
-// A snapped cell paints at least MIN_CELL_PX wide, so a lone variant in a
-// sparse matrix stays visible rather than collapsing to a sliver.
+// A snapped cell paints at least MIN_CELL_PX wide, rounded up to whole device
+// px, so a lone variant in a sparse matrix stays visible rather than
+// collapsing to a sliver.
 static const float MIN_CELL_PX = 2.0;
 //
 // Both this and its pivot twin below take the cell's RAW px edges in RECORD
@@ -68,8 +67,10 @@ static const float MIN_CELL_PX = 2.0;
 // can no longer tell which way the block ran. Since that is every record at
 // genome-wide zoom, a pivot reading snapped edges would be a no-op exactly where
 // it is needed. Raw in, decision inside, so the orientation survives the snap.
-float snappedCellWidthPx(float x1Px, float x2Px) {
-  return max(MIN_CELL_PX, abs(snapCellEdgePx(x2Px) - snapCellEdgePx(x1Px)));
+float snappedCellWidthPx(float x1Px, float x2Px, float dpr) {
+  return max(
+    ceil(MIN_CELL_PX * dpr) / dpr,
+    abs(snapCellEdgePx(x2Px, dpr) - snapCellEdgePx(x1Px, dpr)));
 }
 
 // Which edge the widened cell hangs off: the record's START, always.
@@ -84,8 +85,8 @@ float snappedCellWidthPx(float x1Px, float x2Px) {
 // LinearVariantDisplay beside it, which pivots correctly.
 //
 // `widthPx` is passed rather than recomputed so the floor stays one expression.
-float snappedCellLeftPx(float x1Px, float x2Px, float widthPx) {
-  float startPx = snapCellEdgePx(x1Px);
+float snappedCellLeftPx(float x1Px, float x2Px, float widthPx, float dpr) {
+  float startPx = snapCellEdgePx(x1Px, dpr);
   return x2Px < x1Px ? startPx - widthPx : startPx;
 }
 
@@ -133,9 +134,15 @@ struct CellInstance {
 struct Uniforms {
   float3 bpRangeX;
   float  canvasHeight;
-  // The clipped block's width, i.e. the draw's viewport/scissor span — what
-  // clip-space x actually spans, so it alone converts clip px.
+  // The clipped block's CSS px span (`scissorX`, `scissorW`), which clip-space
+  // x spans, and the device px span the HAL set as its viewport (`pxX`,
+  // `pxW`), which cells snap to.
+  float  viewportLeft;
   float  viewportWidth;
+  float  viewportDeviceLeft;
+  float  viewportDeviceWidth;
+  // The backing store's x scale (`clip.scaleX`).
+  float  scaleX;
   float  rowHeight;
   float  scrollTop;
   float  zero;
@@ -161,20 +168,21 @@ struct VsOut {
 VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float clipX1 = bpToClipX(inst.startEnd.x, u);
   float clipX2 = bpToClipX(inst.startEnd.y, u);
-  // Pixel-snap + 2px floor, in px space (see snapCellEdgePx) so the CPU runs the
-  // identical rounding. clipX/pxSize is already `px - viewportWidth/2` — the
-  // viewport spans the clipped block, so its width converts clip px.
+  // Snap in canvas CSS px, as the CPU painters do, then place through the
+  // device viewport: a viewport starting mid-device-pixel at a fractional dpr
+  // would otherwise carry every edge off the grid.
   //
   // The edges stay in RECORD order: reversal is baked into bpRangeX (negated
   // length), so clipX2 < clipX1 on a reversed region, and that is exactly what
   // snappedCellLeftPx needs to know. Ordering them left/right first would throw
   // the orientation away before the pivot could read it.
   float pxSize = pxToClipLen(1.0, u.viewportWidth);
-  float halfW = u.viewportWidth * 0.5;
-  float rx1 = clipX1 / pxSize + halfW;
-  float rx2 = clipX2 / pxSize + halfW;
-  float wPx = snappedCellWidthPx(rx1, rx2);
-  float x1Px = snappedCellLeftPx(rx1, rx2, wPx);
+  float left = u.viewportLeft + u.viewportWidth * 0.5;
+  float rx1 = clipX1 / pxSize + left;
+  float rx2 = clipX2 / pxSize + left;
+  float sx = u.scaleX;
+  float wPx = snappedCellWidthPx(rx1, rx2, sx);
+  float x1Px = snappedCellLeftPx(rx1, rx2, wPx, sx);
 
   float row = float(inst.row);
   float dpr = u.devicePixelRatio;
@@ -190,7 +198,7 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
 
   VsOut o;
   o.position = float4(
-    (x1Px + localX - halfW) * pxSize,
+    pxToClipX((x1Px + localX) * sx - u.viewportDeviceLeft, u.viewportDeviceWidth),
     lerp(yPxToClipY(yBot, u.canvasHeight), yPxToClipY(yTop, u.canvasHeight), q.y),
     0.0, 1.0);
   o.color = unpackRGBA(inst.color);

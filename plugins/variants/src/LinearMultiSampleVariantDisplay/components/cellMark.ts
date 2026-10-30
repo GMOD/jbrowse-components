@@ -46,6 +46,7 @@ interface CellFrame extends BpProjection {
   scrollTop: number
   drawnHeight: number
   dpr: number
+  dprX: number
   height: number
   left: number
   top: number
@@ -68,6 +69,7 @@ function cellFrame(
     scrollTop: params.scrollTop,
     drawnHeight: drawnCellHeightPx(params.rowHeight),
     dpr: backingScale(frame.canvasHeight),
+    dprX: backingScale(frame.canvasWidth),
     height: 0,
     left: 0,
     top: 0,
@@ -96,13 +98,13 @@ function placeCellY(c: CellChannels, g: CellFrame, i: number) {
 function placeCellX(c: CellChannels, g: CellFrame, i: number) {
   const x1 = projectBp(g, c.startEnd[i * 2]!)
   const x2 = projectBp(g, c.startEnd[i * 2 + 1]!)
-  const width = snappedCellWidthPx(x1, x2)
-  g.left = snappedCellLeftPx(x1, x2, width)
+  const width = snappedCellWidthPx(x1, x2, g.dprX)
+  g.left = snappedCellLeftPx(x1, x2, width, g.dprX)
   g.width = width
 }
 
 /**
- * A pixel-snapped matrix cell on the pixel grid `variant.slang` owns, x and y
+ * A matrix cell on the device pixel grid `variant.slang` snaps to, x and y
  * through the shader's generated twins. An inversion's triangle
  * inks its bounding box. Not render-core's `spanMark`: teaching it the snapping
  * and the glyph shapes would add about 400 lines there to delete about 350
@@ -119,7 +121,11 @@ export const cellMark: MarkShape<CellChannels, CellParams> = {
     shader.writeUniforms(scratch, {
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: frame.canvasHeight,
+      viewportLeft: clip.scissorX,
       viewportWidth: clip.scissorW,
+      viewportDeviceLeft: clip.pxX,
+      viewportDeviceWidth: clip.pxW,
+      scaleX: clip.scaleX,
       rowHeight: params.rowHeight,
       scrollTop: params.scrollTop,
       zero: 0,
@@ -142,6 +148,7 @@ export const cellMark: MarkShape<CellChannels, CellParams> = {
       scrollTop: params.scrollTop,
       drawnHeight: drawnCellHeightPx(params.rowHeight),
       dpr: backingScale(frame.canvasHeight),
+      dprX: backingScale(frame.canvasWidth),
       height: 0,
       left: 0,
       top: 0,

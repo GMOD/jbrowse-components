@@ -61,7 +61,7 @@ longer see, or one that is exported after all, fails `pnpm gen:shaders`.
 | `rowYPxToNorm` | `(f32, f32, f32) -> f32` | a GPU line reads its gradient position back off a y; Canvas2D and the SVG export stroke a gradient line as threshold bands placed by score (rampAsBands), so nothing there maps a y back |
 | `sBlendDeriv` | `(f32) -> f32` | the ribbon tangent, for extruding an edge normal per fragment; Canvas2D draws one bezierCurveTo and never needs the derivative |
 | `snapBoxCenterY` | `(f32, f32, f32) -> f32` | clip-space wrapper over the exported snapBoxCenterYPx |
-| `snapCellEdgePx` | `(f32) -> f32` | reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor |
+| `snapCellEdgePx` | `(f32, f32) -> f32` | reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor |
 | `snapToPixelX` | `(f32, f32) -> f32` | clip in, clip out; its px core is `floor(x + 0.5)`, which is Math.round and needs no twin |
 | `strandMatchesEdge` | `(f32, f32) -> f32` | reached as a private helper inside the generated markerApexInsetPx, which is the only question a painter asks of it |
 | `symlogInverse` | `(f32, f32) -> f32` | render-core scoreScale.ts reaches Math.expm1 directly; what both backends agree on is denormalizeScore, exported and swept against scoreScale.ts's |

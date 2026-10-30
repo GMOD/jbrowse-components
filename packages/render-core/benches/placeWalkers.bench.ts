@@ -366,6 +366,7 @@ const retiredCell: Pick<MarkShape<CellChannels, CellParams>, 'paintBlock'> = {
         const { x, width } = snapVariantCellX(
           toX(startEnd[i * 2]!),
           toX(startEnd[i * 2 + 1]!),
+          1,
         )
         setFill(color[i]!)
         drawVariantShape(ctx, shapeType[i]!, x, y, width, h)
@@ -388,6 +389,7 @@ const controlCell: Pick<MarkShape<CellChannels, CellParams>, 'paintBlock'> = {
         const { x, width } = snapVariantCellX(
           toX(startEnd[i * 2]!),
           toX(startEnd[i * 2 + 1]!),
+          1,
         )
         setFill(color[i]!)
         drawVariantShape(ctx, shapeType[i]!, x, y, width, h)
