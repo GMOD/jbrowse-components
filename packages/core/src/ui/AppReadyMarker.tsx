@@ -74,6 +74,17 @@ function viewLoading(view: AbstractViewModel) {
 }
 
 /**
+ * The marker's phase as a value. A session thumbnail checks it first, since an
+ * export of a loading session waits on its fetch.
+ */
+export function sessionLoading(session: AbstractSessionModel) {
+  return (
+    openViews(session).some(viewLoading) ||
+    openTracks(session).some(trackLoading)
+  )
+}
+
+/**
  * One element that says whether the whole app has finished, and what is open.
  *
  * `[data-app-phase="ready"]` is the entire readiness contract for anything
@@ -120,7 +131,7 @@ const AppReadyMarker = observer(function AppReadyMarker({
 }) {
   const views = openViews(session)
   const tracks = openTracks(session)
-  const loading = views.some(viewLoading) || tracks.some(trackLoading)
+  const loading = sessionLoading(session)
   return (
     <span
       hidden

@@ -9,6 +9,7 @@ import {
   processMutableMenuActions,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import { sessionLoading } from '@jbrowse/core/ui/AppReadyMarker'
 import { DNA } from '@jbrowse/core/ui/Icons'
 import { indexedDBAvailable } from '@jbrowse/core/util'
 import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -355,6 +356,11 @@ export default function RootModel({
           if (flushed) {
             self.upsertSessionMetadata(flushed)
           }
+          // the export blocks the main thread while the switch repaints the
+          // app anyway. An export of a session still loading waits on its fetch.
+          if (self.session && !sessionLoading(self.session)) {
+            await this.captureSessionThumbnail()
+          }
           await self.pluginManager.preloadSessionTypes(ret)
           // another tab is autosaving this id, and sharing it would have the
           // two overwrite one row (sessionLock.ts)
@@ -395,8 +401,8 @@ export default function RootModel({
        * #action
        * Pictures the open session for the session manager. Silent on failure,
        * since the usual ones are normal states (a view still on its import
-       * form, a session swapped out mid-export), and the row keeps its
-       * previous picture.
+       * form, a fetch outlasting the export's bound, a session swapped out
+       * mid-export), and the row keeps its previous picture.
        */
       async captureSessionThumbnail() {
         const { session, sessionDB } = self
