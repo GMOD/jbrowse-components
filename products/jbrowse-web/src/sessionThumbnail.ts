@@ -56,15 +56,16 @@ async function exportView(view: SvgExportingView) {
 }
 
 /**
- * A small picture of the session's first view, drawn by the view's own SVG
- * export. A browser cannot capture its page the way Desktop's `capturePage`
- * does, and every view type already renders itself for export. Undefined when
- * the session has no view that exports or the picture comes out empty; rejects
- * when the export fails, outlasts TIMEOUT_MS or finds another still running.
+ * A small picture of the session's first view that exports, rasterized from
+ * that view's SVG export. A browser cannot capture its page the way Desktop's
+ * `capturePage` does, and most view types already render themselves for
+ * export. Undefined when the session has no view that exports or the picture
+ * comes out empty; rejects when the export fails, outlasts TIMEOUT_MS or finds
+ * another still running.
  */
 export async function renderSessionThumbnail(views: readonly unknown[]) {
-  const view = views[0]
-  return exportsSvg(view) ? rasterizeSvg(await exportView(view)) : undefined
+  const view = views.find(exportsSvg)
+  return view ? rasterizeSvg(await exportView(view)) : undefined
 }
 
 async function rasterizeSvg(svg: string) {
