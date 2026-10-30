@@ -141,6 +141,9 @@ together.
   `color` migrate in `preProcessSnapshot` (`checkedLayers`). The view-level
   `color` is still flat; the plugin's idea `view-color-in-the-encoding-spelling`
   lays out moving it to ADR-238's channel.
+- The 21 `website/scripts/specs/*.session.json` snapshots predate the
+  released `LaunchView-ProteinView` and `LaunchView-MsaView` session-spec
+  entries; one a spec entry can state goes when its figure is next touched.
 - Protein3d 1.24.0: `protein-view-ready` waits for a color field's values and
   the paint that follows (1.23.0 flipped it 20–40 s early for `track`,
   `alphaMissense` and `clinvar`, and a capture showed Mol*'s chain colors under

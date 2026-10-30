@@ -64,9 +64,11 @@ list names each divergence and can only shrink.
   the re-pin too. The engine and tutorial pin is `d0feecc145`, which writes
   the feature display's amendment. `dog10k_lof` keeps its `557791197f` knit
   until the callset host's certificate is renewed.
-- **Figure specs:** [screenshot-spec-elegance.md](screenshot-spec-elegance.md)
-  owns the respell. It can use the landed words now: filters (plain-equality
-  jexl entries become predicates), constant color, legends, rows, facet and
-  `encoding.y`.
+- **Figure specs** (`website/scripts/specs/`): one respell into the landed
+  words (filters, constant color, legends, rows, facet, `encoding.y`). Rows and
+  facet have seven spellings there, compact four, constant color four and the
+  y axis three homes, and about half the jexl filters are plain equality, which
+  become predicates. Write the table-driven spec families (`synteny.ts`
+  multiway lanes, OrthoFinder stacks) after it, or they are written twice.
 - **Tutorials and `demos/` configs:** `pnpm verify --full` and the pre-commit
   config check catch a dead key, and a jexl filter never trips them.
