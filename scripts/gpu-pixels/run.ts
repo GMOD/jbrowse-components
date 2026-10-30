@@ -52,7 +52,7 @@ function wgslAt(ref: string, slang: string) {
     withoutStamp(generatedAt(undefined, slang, 'iface'))
   ) {
     console.warn(
-      `  ${slang}'s interface differs at ${ref}; the rows below read today's buffers through the old layout`,
+      `  ${slang}'s interface differs at ${ref}; its rows mean nothing if the instance or uniform layout moved`,
     )
   }
   const m = /export const WGSL_SOURCE = (".*")\n/.exec(

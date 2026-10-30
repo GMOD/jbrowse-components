@@ -1,6 +1,6 @@
 ---
 name: gpu-shaders
-description: How are GPU shaders kept correct — generated modules, WGSL-only validation, hi-DPI scaling, antialiasing ramp widths, the xyplot bar-top measurement and what the coverage band cannot antialias?
+description: How are GPU shaders kept correct — generated modules, WGSL-only validation, hi-DPI scaling, antialiasing ramp widths, the xyplot bar-top measurement, what the coverage band cannot antialias, and how to score a pass's pixels on a real GPU?
 kind: spec
 ---
 
@@ -54,6 +54,30 @@ state and bind group layout to the same validation a browser applies.
   (`pointMark.slang`), or compute every alpha before the branch (`wiggle.slang`).
 - **A `max` blend takes no factors.** `BlendState` makes `{ op: 'max' }` a variant
   with no factor fields.
+
+## Scoring a pass's pixels on a real GPU
+
+`node scripts/gpu-pixels/run.ts [fixture…]` draws a pass's generated WGSL at 4
+samples and at 1 and scores both against an ideal scene. It answers whether a
+pass draws at one sample without a visual trade, the question
+`//! coverage: analytic` turns on.
+
+- **How it draws:** on Dawn (the repo's `webgpu` package), through the HAL's
+  own `pipelineRecipe`, so layout, blend and topology are production's.
+- **The reference:** each fixture in `scripts/gpu-pixels/fixtures/` states its
+  scene as shapes composited in draw order, and the harness supersamples it
+  8×8 per device pixel. Judge one sample against it, not against the 4-sample
+  render: a pass that ramps its own edges still differs under MSAA.
+- **What it reports:** worst and mean per-pixel error, and for a translucent
+  fixture the pixels blended twice and the holes. A fixture's `budget` makes
+  the run exit 1 when its one-sample render regresses.
+- **`--base=<ref>`** scores the pass's WGSL at a git ref beside today's, read
+  through today's buffers, and warns when the interface moved since.
+  **`--png=<dir>`** writes reference, 1x, 4x and the 1x error, stacked.
+- **`--adapter=llvmpipe`** picks Mesa's software Vulkan (lavapipe), which
+  scores every fixture within 0.1 of a percentage point of the Intel GPU here,
+  all of them in 27 s. No CI job runs it; a runner would need
+  `mesa-vulkan-drivers`, untested.
 
 ## Canvas scaling & hi-DPI
 
