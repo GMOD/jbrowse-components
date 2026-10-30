@@ -135,6 +135,15 @@ other loci, a picture that looks simple or empty is often one of these cases:
   **Variants** launch cannot show the UGT2B17 deletion. The page's map reads
   each haplotype's forms from the graph itself, so it draws the deletion and
   names it.
+- **The antibody loci hold the cell lines' deletions.** Many HPRC assemblies
+  come from lymphoblastoid cell lines, B cells whose V(D)J recombination deletes
+  hundreds of kb of IGH, IGK and IGL
+  ([Rodriguez et al. 2021](https://doi.org/10.1371/journal.pone.0261374),
+  [IGLoo](https://doi.org/10.1016/j.crmeth.2025.101033)). In the -f5s walk file,
+  282 haplotypes jump over at least one 64 kb chunk of IGH, 200 over IGK and 29
+  over IGL, across 90 kb to 2 Mb, and none over the T-cell receptor loci TRA and
+  TRB. Check a deletion there against the donor's own germline data before
+  reporting it.
 - **Only the examples are checked.** A gene or region you type can still land
   where the graph is a thread or the VCF is blank, and the page will offer the
   launch anyway.
