@@ -1565,6 +1565,14 @@ export function stateModelFactory(
           },
           /**
            * #getter
+           * `LegendMixin`'s hook: the key sits under the records band, over
+           * the rows, so it hides no record.
+           */
+          get legendTop() {
+            return self.topBands.recordsHeight
+          },
+          /**
+           * #getter
            * Height left for the rows under the bands above them, floored at 0:
            * every consumer treats it as a pixel dimension.
            */

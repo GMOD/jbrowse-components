@@ -129,7 +129,18 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
   const { visibleRegions } = model.host
   const { recordsHeight } = topBands
   return recordsHeight > 0 ? (
-    <div style={{ position: 'absolute', top: 0, left: 0 }}>
+    // sized, because every child is absolute and the seam handle spans its
+    // parent's width: a 0px box leaves nothing to grab
+    <div
+      data-testid="records_band_box"
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: canvasWidthPx,
+        height: recordsHeight,
+      }}
+    >
       <OverlayCanvas
         width={canvasWidthPx}
         height={recordsHeight}

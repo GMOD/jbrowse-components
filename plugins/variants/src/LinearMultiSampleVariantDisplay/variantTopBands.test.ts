@@ -127,6 +127,14 @@ describe('the band on a display', () => {
     expect(display.rpcProps()).toEqual(key)
   })
 
+  test('the key sits under the band, over the rows', () => {
+    const { display } = recordsDisplayAt(KIT, 51)
+    expect(display.legendTop).toBe(display.topBands.recordsHeight)
+    expect(display.legendTop).toBeGreaterThan(0)
+    display.setShowRecords(false)
+    expect(display.legendTop).toBe(0)
+  })
+
   test('the matrix reserves nothing for it', () => {
     const { display } = createTestEnvironment({
       displayConfig: { records: { show: true }, variantLayout: 'columns' },

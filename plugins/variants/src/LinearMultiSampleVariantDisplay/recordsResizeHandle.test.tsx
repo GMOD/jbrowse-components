@@ -45,6 +45,17 @@ test('a band dragged shut stops at the floor and stays grabbable', () => {
   expect(screen.getByTestId('records_band_resize_handle')).toBeTruthy()
 })
 
+// The handle is `width: 100%` of a box whose children are all absolute, so
+// the box carries the band's width or the seam is 0px wide and ungrabbable.
+test('the seam spans the band', () => {
+  const { display } = recordsDisplayAt(KIT, 51)
+  render(<RecordsBandOverlay model={display} />)
+
+  expect(screen.getByTestId('records_band_box').style.width).toBe(
+    `${display.canvasWidthPx}px`,
+  )
+})
+
 test('a band that is off has no handle', () => {
   const { display } = createTestEnvironment().createDisplay()
   render(<RecordsBandOverlay model={display} />)
