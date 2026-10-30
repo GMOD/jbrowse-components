@@ -12730,6 +12730,72 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "RecordsBandLabels": {
+      "title": "RecordsBandLabels",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "name": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureNameLabel"
+          }
+        },
+        "description": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/FeatureDescriptionLabel"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "RecordsBand": {
+      "title": "RecordsBand",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the records themselves above the genotype rows, at their genomic positions.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "growMaxHeight": {
+          "description": "ceiling in pixels on the band, which grows to its stack of records and takes that height from the rows.",
+          "default": 170,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "labels": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RecordsBandLabels"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearMultiSampleVariantDisplaySlots": {
       "type": "object",
       "properties": {
@@ -12896,6 +12962,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "draw",
               "skip"
             ]
+          }
+        },
+        "records": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RecordsBand"
           }
         },
         "maxFeatureScreenDensity": {
@@ -18346,6 +18420,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "referenceDrawingMode": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/referenceDrawingMode"
+            },
+            "records": {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/records"
             },
             "renderingMode": {
               "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots/properties/renderingMode"

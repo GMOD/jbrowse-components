@@ -5,7 +5,9 @@ import type { VariantFeatureInfo } from '../../shared/types.ts'
 export function enrichFeatureFromClick(
   baseFeature: { id(): string; toJSON(): Record<string, unknown> },
   featureInfo: VariantFeatureInfo | undefined,
-  clickResult: {
+  // omitted by the records band, whose marks name a record and no sample: the
+  // widget's "Sample:" card keys off `clickedSample`
+  clickResult?: {
     sampleName: string
     genotype: string
     alleles: string
@@ -28,9 +30,13 @@ export function enrichFeatureFromClick(
             type: featureInfo.type,
           }
         : {}),
-      clickedSample: clickResult.sampleName,
-      clickedGenotype: clickResult.genotype,
-      clickedAlleles: clickResult.alleles,
+      ...(clickResult
+        ? {
+            clickedSample: clickResult.sampleName,
+            clickedGenotype: clickResult.genotype,
+            clickedAlleles: clickResult.alleles,
+          }
+        : {}),
     },
   })
 }

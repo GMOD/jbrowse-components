@@ -7375,6 +7375,68 @@ export const configManifest: ConfigManifest = {
         {
           "name": "referenceDrawingMode",
           "type": "ReferenceDrawingMode"
+        },
+        {
+          "name": "records",
+          "type": "RecordsBandConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "growMaxHeight",
+              "type": "number"
+            },
+            {
+              "name": "labels",
+              "type": "RecordsBandLabelsConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "name",
+                  "type": "FeatureNameLabelConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "show",
+                      "type": "boolean"
+                    },
+                    {
+                      "name": "field",
+                      "type": "string"
+                    }
+                  ],
+                  "schema": "FeatureNameLabel",
+                  "writes": "members",
+                  "shorthand": {
+                    "string": "field"
+                  }
+                },
+                {
+                  "name": "description",
+                  "type": "FeatureDescriptionLabelConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "show",
+                      "type": "boolean"
+                    },
+                    {
+                      "name": "field",
+                      "type": "string"
+                    }
+                  ],
+                  "schema": "FeatureDescriptionLabel",
+                  "writes": "members",
+                  "shorthand": {
+                    "string": "field"
+                  }
+                }
+              ],
+              "schema": "RecordsBandLabels",
+              "writes": "members"
+            }
+          ],
+          "schema": "RecordsBand",
+          "writes": "members"
         }
       ],
       "legacyKeys": [

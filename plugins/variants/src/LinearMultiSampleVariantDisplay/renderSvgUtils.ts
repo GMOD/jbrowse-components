@@ -1,4 +1,5 @@
 import type { Source } from '../shared/types.ts'
+import type { VariantTopBands } from './variantTopBands.ts'
 import type { LgvSvgExportable } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
 
@@ -13,7 +14,9 @@ export interface RenderSvgBaseModel extends LgvSvgExportable {
   sources: Source[]
   showRowSeparators: boolean
   canvasWidthPx: number
-  // Px the rows sit below: the columns layout's connector-line zone.
+  // Px the rows sit below: the records band and the columns layout's
+  // connector-line zone. See variantTopBands.ts.
   rowsTopOffset: number
+  topBands: VariantTopBands
   svgSidebar: SvgSidebarProps
 }

@@ -14,6 +14,7 @@ import {
   VARIANT_UNITS,
 } from '../shared/constants.ts'
 import { cellEncodingConfigSchema } from './cellEncodingConfigSchema.ts'
+import { recordsBandConfigSchema } from './recordsBandConfigSchema.ts'
 
 /**
  * #config LinearMultiSampleVariantDisplay
@@ -269,6 +270,13 @@ export default function configSchemaFactory() {
         description:
           "reference-allele drawing: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype",
       },
+      /**
+       * #slot records
+       * The records band above the genotype rows, stacked as a
+       * `LinearVariantDisplay` stacks them: `show` (default off),
+       * `growMaxHeight`, the most it takes from the rows, and `labels`.
+       */
+      records: recordsBandConfigSchema,
     },
     {
       /**

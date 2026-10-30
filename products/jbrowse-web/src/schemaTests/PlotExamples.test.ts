@@ -170,6 +170,7 @@ test("each display's plot settings", () => {
       'facet',
       'filter',
       'legend',
+      'records',
       'rowColor',
       'rows',
       'unit',

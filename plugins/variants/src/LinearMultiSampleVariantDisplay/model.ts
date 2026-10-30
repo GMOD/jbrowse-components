@@ -14,6 +14,7 @@ import {
   SimpleFeature,
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
+import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import {
   FEATURE_FIELD_PRESETS,
   withPreset,
@@ -46,6 +47,7 @@ import {
   colorSnapshotOf,
   paintedColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
+import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
@@ -54,7 +56,16 @@ import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  buildFeatureFlatbushIndex,
+  fitLadderViews,
+  fitLadderVolatiles,
+  labelFontSize,
+  maxBottom,
+  scaleLaidOutData,
+} from '@jbrowse/plugin-features/band'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
+import { makeBpMapper, spanRect } from '@jbrowse/render-core/canvas2dUtils'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, shiftInk } from '@jbrowse/render-core/marks'
 import {
@@ -63,6 +74,7 @@ import {
   keptRows,
   loadedRegionIndexAt,
 } from '@jbrowse/tree-sidebar'
+import { computed, observable } from 'mobx'
 
 import {
   cellColorEncodingOf,
@@ -103,9 +115,21 @@ import {
   variantContextMenuItems,
   variantTrackMenuItems,
 } from './multiSampleVariantMenuItems.ts'
-import { paintCellColors, paintedColorKeys } from './paintCells.ts'
+import {
+  paintCellColors,
+  paintFeatureColors,
+  paintedColorKeys,
+} from './paintCells.ts'
 import { placeVariantRows } from './placeVariantRows.ts'
+import {
+  buildRecordsRenderData,
+  recordsDisplayConfig,
+} from './recordsRenderData.ts'
 import { getVariantColorScales } from './variantLegend.ts'
+import {
+  recordsBandBounds,
+  variantTopBandsGeometry,
+} from './variantTopBands.ts'
 
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -128,6 +152,7 @@ import type {
   VariantMatrixRenderingBackend,
 } from './matrix/variantMatrixRenderingBackendTypes.ts'
 import type { Placed } from './placeVariantRows.ts'
+import type { RecordsLabels } from './recordsRenderData.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
@@ -143,6 +168,14 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type {
+  FeatureDataResult,
+  FitLadderHost,
+  FitStage,
+  FlatbushRegionIndexes,
+  HitFeatureResult,
+  LayoutRegionData,
+} from '@jbrowse/plugin-features/band'
 import type {
   RowAlias,
   RowBanding,
@@ -225,6 +258,16 @@ function fetchRegionsForLayout(
   }
   return view.bufferedVisibleRegions.filter(b => onTrack(b.region.assemblyName))
 }
+
+/**
+ * plugin-features's own `featureHeight` default and display mode, so a record
+ * in the band and the same record in a `LinearVariantDisplay` start from one
+ * size: the band's natural height is its stack at full feature size.
+ */
+const RECORDS_FEATURE_HEIGHT = 10
+const RECORDS_DISPLAY_MODE = 'normal' as const
+
+const NO_FEATURE_IDS: ReadonlySet<string> = new Set()
 
 /**
  * The GPU program each layout draws with, tagged so the one upload lifecycle
@@ -362,6 +405,12 @@ export function stateModelFactory(
         hoveredCell: undefined as HoveredCell | undefined,
         /**
          * #volatile
+         * The record under the pointer in the records band, plugin-features's
+         * hit result, so `hoverInk` lights the box the band painted.
+         */
+        hoveredRecord: undefined as HitFeatureResult | undefined,
+        /**
+         * #volatile
          * The matrix cell under the pointer, in the equal-width column layout.
          */
         hoveredMatrixCell: undefined as MatrixHoveredCell | undefined,
@@ -384,6 +433,12 @@ export function stateModelFactory(
           /**
            * #action
            */
+          setHoveredRecord(record?: HitFeatureResult) {
+            self.hoveredRecord = record
+          },
+          /**
+           * #action
+           */
           setHoveredMatrixCell(cell?: MatrixHoveredCell) {
             self.hoveredMatrixCell = cell
           },
@@ -395,6 +450,7 @@ export function stateModelFactory(
           clearHoveredFeature() {
             superClearHoveredFeature()
             self.hoveredCell = undefined
+            self.hoveredRecord = undefined
             self.hoveredMatrixCell = undefined
           },
         }
@@ -627,6 +683,34 @@ export function stateModelFactory(
          */
         get lineZoneHeight(): number {
           return this.atGenomicPositions ? 0 : getConf(self, 'lineZoneHeight')
+        },
+        /**
+         * #getter
+         * Whether the records band is drawn: at genomic positions only, where
+         * a record lines up with the cells under it.
+         */
+        get showRecords(): boolean {
+          return this.atGenomicPositions && getConf(self, ['records', 'show'])
+        },
+        /**
+         * #getter
+         * `records.growMaxHeight`, the cap on the band. Raw: what the band
+         * spends is `topBands.recordsHeight`.
+         */
+        get recordsGrowMaxHeight(): number {
+          return getConf(self, ['records', 'growMaxHeight'])
+        },
+        /**
+         * #getter
+         * The field each label kind of the records band reads, empty where it
+         * is hidden; what it draws is `recordsRenderedLabels`.
+         */
+        get recordsLabels(): RecordsLabels {
+          const field = (kind: 'name' | 'description') =>
+            getConf(self, ['records', 'labels', kind, 'show'])
+              ? getConf(self, ['records', 'labels', kind, 'field'])
+              : ''
+          return { name: field('name'), description: field('description') }
         },
 
         /**
@@ -865,6 +949,30 @@ export function stateModelFactory(
               self,
               'lineZoneHeight',
               clampLineZoneHeight(self.lineZoneHeight, n),
+            )
+          },
+          /**
+           * #action
+           * Switch the records band on or off; it takes its space from the
+           * rows.
+           */
+          setShowRecords(arg: boolean) {
+            setConf(self, ['records', 'show'], arg)
+          },
+          /**
+           * #action
+           * Set the records band's cap, clamped here because a drag can
+           * deliver any number and a band dragged shut has to stay grabbable.
+           */
+          setRecordsGrowMaxHeight(arg: number) {
+            setConf(
+              self,
+              ['records', 'growMaxHeight'],
+              clampBandHeight(
+                self.recordsGrowMaxHeight,
+                arg,
+                recordsBandBounds(self.height),
+              ),
             )
           },
           /**
@@ -1162,6 +1270,231 @@ export function stateModelFactory(
             : []
         },
       }))
+      .views(self => ({
+        /**
+         * #getter
+         * Each fetched region's record colors, the alt cells' hue at full
+         * dose, which neither shading nor the phased mode moves.
+         */
+        get regionFeatureColors() {
+          const { cellData, cellHue, cellHueValuesRead } = self
+          const out = new Map<number, Uint32Array>()
+          if (cellData) {
+            for (const k in cellData.perRegionCellData) {
+              const data = cellData.perRegionCellData[k]!
+              out.set(
+                Number(k),
+                paintFeatureColors(data, cellHue, cellHueValuesRead),
+              )
+            }
+          }
+          return out
+        },
+        /**
+         * #getter
+         * The plugin-features display config the records band is laid out
+         * with (`recordsDisplayConfig`).
+         */
+        get recordsDisplayConfig() {
+          return recordsDisplayConfig({
+            labels: self.recordsLabels,
+            featureHeight: RECORDS_FEATURE_HEIGHT,
+          })
+        },
+        /**
+         * #getter
+         * The size the band letters at, plugin-features's for its display
+         * mode, so the width its packer reserved is the width the text draws.
+         */
+        get recordsFontSize() {
+          return labelFontSize(RECORDS_DISPLAY_MODE)
+        },
+        /**
+         * #getter
+         * What the band's packer reads, minus the label reservation each fit
+         * rung varies. `coarseBpPerPx`, so packing does not recompute per
+         * frame of a zoom.
+         */
+        get recordsLayoutInputs(): FitLadderHost['layoutInputs'] {
+          const reversedRegions = new Set<number>()
+          const { displayedRegions } = self.view
+          for (let i = 0; i < displayedRegions.length; i++) {
+            if (displayedRegions[i]!.reversed) {
+              reversedRegions.add(i)
+            }
+          }
+          return {
+            bpPerPx: self.view.coarseBpPerPx,
+            reversedRegions,
+            displayMode: RECORDS_DISPLAY_MODE,
+            pinnedFeatureIds: NO_FEATURE_IDS,
+            expandedGeneIds: NO_FEATURE_IDS,
+          }
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * The band's records as plugin-features render data, one entry per
+         * fetched region, empty while the band is off. Keyed off the payload
+         * and the displayed regions' bounds, never the row-placed map or
+         * `visibleRegions`, which would rebuild it per reorder or per frame.
+         */
+        get recordsRenderDataMap(): ReadonlyMap<number, LayoutRegionData> {
+          const out = new Map<number, LayoutRegionData>()
+          const cellData =
+            self.canRender && self.showRecords ? self.cellData : undefined
+          if (cellData) {
+            const config = self.recordsDisplayConfig
+            const { jexl } = getEnv(self).pluginManager
+            const { displayedRegions } = self.view
+            const featureColors = self.regionFeatureColors
+            for (const k in cellData.perRegionCellData) {
+              const displayedRegionIndex = Number(k)
+              const data = cellData.perRegionCellData[k]!
+              const region = displayedRegions[displayedRegionIndex]
+              if (region && data.featureInfo.length) {
+                out.set(
+                  displayedRegionIndex,
+                  buildRecordsRenderData({
+                    data: {
+                      ...data,
+                      featureColors: featureColors.get(displayedRegionIndex)!,
+                    },
+                    region,
+                    config,
+                    jexl,
+                  }),
+                )
+              }
+            }
+          }
+          return out
+        },
+      }))
+      .views(self => {
+        // LinearBasicDisplay's own fit ladder, hosted for the band. Its host
+        // is a plain object and not this model, whose `facet` is the sample
+        // facet and not a feature one; `observable` caches each ladder getter
+        // as a computed, as spreading it into a model's views would.
+        const host: FitLadderHost = {
+          ...fitLadderVolatiles(),
+          get rpcDataMap() {
+            return self.recordsRenderDataMap
+          },
+          get layoutReady() {
+            return self.showRecords && self.canRender
+          },
+          get layoutInputs() {
+            return self.recordsLayoutInputs
+          },
+          get showLabels() {
+            return self.recordsLabels.name !== ''
+          },
+          get effectiveShowDescriptions() {
+            return self.recordsLabels.description !== ''
+          },
+          facet: undefined,
+          fitMeasureFeatureIds: undefined,
+          fitHeightToDisplay: true,
+          autoHeight: false,
+          showsEveryIsoform: true,
+          reservesBelowLabelRows: false,
+          get fitTargetHeight() {
+            return bands.get().recordsHeight
+          },
+          labelFontSize: labelFontSize(RECORDS_DISPLAY_MODE),
+        }
+        const ladder = observable(fitLadderViews(host), {
+          fitLayoutAt: false,
+          decimatedLayoutInputs: false,
+          solveLabelRoomFactors: false,
+          bodyScaleHeightProbe: false,
+        })
+        const bands = computed(() =>
+          variantTopBandsGeometry({
+            showRecords: self.showRecords,
+            recordsGrowMaxHeight: self.recordsGrowMaxHeight,
+            recordsContentHeight: maxBottom(ladder.baseLaidOutDataMap),
+            recordsBounds: recordsBandBounds(self.height),
+            lineZoneHeight: self.lineZoneHeight,
+          }),
+        )
+        return {
+          /**
+           * #getter
+           * The bands stacked above the rows, resolved once: the layout below
+           * and the painters read this instead of summing the bands
+           * (`variantTopBands.ts`). The records band is its `full` rung's
+           * stack, up to `records.growMaxHeight`.
+           */
+          get topBands() {
+            return bands.get()
+          },
+          /**
+           * #getter
+           * The rung the band keeps and the scale that fits it, off
+           * LinearBasicDisplay's ladder run against `recordsHeight`: under the
+           * cap the `full` rung fits at scale 1; past it descriptions go, then
+           * bodies thin, names decimate, names go, and the boxes squeeze.
+           */
+          get recordsFitStage(): FitStage {
+            return ladder.fitStage
+          },
+        }
+      })
+      .views(self => ({
+        /**
+         * #getter
+         * What the band's painter, labels and hit test all read: the kept
+         * stack, scaled only when the fit squeezed it.
+         */
+        get recordsLaidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
+          const { layout, scale } = self.recordsFitStage
+          return scale === 1 ? layout : scaleLaidOutData(layout, scale)
+        },
+        /**
+         * #getter
+         * Which label kinds the band paints: what the kept rung reserved, so a
+         * box never claims width for a description the band had no room for.
+         */
+        get recordsRenderedLabels() {
+          const { showLabels, showDescriptions } = self.recordsFitStage
+          return { showLabels, showDescriptions }
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Per-region hit index over the band's laid-out records, off the
+         * painted stack and the RENDERED label flags, a label's overhang being
+         * part of its hit box. Held alive by the `RecordsHitIndexes` autorun
+         * across pointer frames.
+         */
+        get recordsFlatbushIndexes() {
+          const { showLabels, showDescriptions } = self.recordsRenderedLabels
+          const { reversedRegions } = self.recordsLayoutInputs
+          const bpPerPx = self.view.coarseBpPerPx
+          const out = new Map<number, FlatbushRegionIndexes>()
+          for (const [idx, data] of self.recordsLaidOutDataMap) {
+            out.set(idx, {
+              feature: buildFeatureFlatbushIndex(
+                data.flatbushItems,
+                data.floatingLabelsData,
+                bpPerPx,
+                reversedRegions.has(idx),
+                {
+                  showLabels,
+                  showDescriptions,
+                  fontSize: self.recordsFontSize,
+                },
+              ),
+              subfeature: null,
+            })
+          }
+          return out
+        },
+      }))
       .views(self => {
         // the last placement handed out, so a change that moves no row (a
         // relabel, a tint) returns the same array and re-places nothing
@@ -1224,11 +1557,11 @@ export function stateModelFactory(
           },
           /**
            * #getter
-           * `TreeSidebarMixin`'s hook: the connector-line zone, which
-           * `rowsTopOffset` stacks the focus chip's line under.
+           * `TreeSidebarMixin`'s hook: the records band and the connector-line
+           * zone, which `rowsTopOffset` stacks the focus chip's line under.
            */
           get rowsHeaderHeight() {
-            return self.lineZoneHeight
+            return self.topBands.bottom
           },
           /**
            * #getter
@@ -1797,12 +2130,37 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The box of the hovered genotype cell, for the chrome's highlight: its
-         * instance through the cell mark's ink, moved down by the bands above
-         * the rows.
+         * The box of the hovered genotype cell or record, for the chrome's
+         * highlight. A cell is its instance through the cell mark's ink, moved
+         * down by the bands above the rows; a record is the box plugin-features
+         * laid out and the band painted, at the top.
          */
         get hoverInk(): HighlightRect[] {
-          const { hoveredCell: cell, hoveredMatrixCell: matrixCell } = self
+          const {
+            hoveredCell: cell,
+            hoveredRecord: record,
+            hoveredMatrixCell: matrixCell,
+          } = self
+          if (record) {
+            const region = self.host.visibleRegions.find(
+              r => r.displayedRegionIndex === record.displayedRegionIndex,
+            )
+            const { feature } = record
+            return region
+              ? [
+                  {
+                    ...spanRect(
+                      makeBpMapper(region),
+                      feature.startBp,
+                      feature.endBp,
+                      1,
+                    ),
+                    top: feature.topPx,
+                    height: feature.bottomPx - feature.topPx,
+                  },
+                ]
+              : []
+          }
           if (matrixCell) {
             const { left } = self.columnGeometry
             const top = self.rowsTopOffset
@@ -1930,6 +2288,14 @@ export function stateModelFactory(
             async () =>
               (await import('./setupMultiSampleVariantAutoruns.ts'))
                 .setupMultiSampleVariantAutoruns,
+          )
+          // read only from untracked pointer handlers, so held alive here
+          autorunOnReadyView(
+            self,
+            () => {
+              void self.recordsFlatbushIndexes
+            },
+            { name: 'RecordsHitIndexes' },
           )
         },
       }))

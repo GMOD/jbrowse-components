@@ -1,3 +1,5 @@
+import { featureInfoOf } from '../shared/cellDataFixtures.ts'
+import { buildRecordHit } from './components/buildVariantHit.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 function displayWithSamples() {
@@ -15,4 +17,19 @@ test('a genotype hover merges the hovered rows metadata in', () => {
     genotype: '0|1',
     population: 'EUR',
   })
+})
+
+// A records-band hover names a record and no row, so the tooltip is the
+// record's fields with nothing merged in: one hover slot serves both bands.
+test('a record hover reports the record with no row merged in', () => {
+  const display = displayWithSamples()
+  display.setHoveredFeature(
+    buildRecordHit({ info: featureInfoOf('rs123'), featureId: 'v0' }),
+  )
+  expect(display.hoveredTooltipSource).toMatchObject({
+    featureName: 'rs123',
+    alleles: 'A > T',
+    genotype: '',
+  })
+  expect(display.hoveredTooltipSource).not.toHaveProperty('population')
 })

@@ -256,3 +256,19 @@ test('records too short to see that share pixels paint their cells faded, keepin
   expect(painted.every(c => c >>> 24 < full >>> 24)).toBe(true)
   expect(painted.every(c => (c & 0xffffff) === (full & 0xffffff))).toBe(true)
 })
+
+test('a record takes the color of its cells, and a recolor repaints it with no fetch', () => {
+  const { display } = createTestEnvironment({
+    displayConfig: { records: { show: true } },
+  }).createDisplay()
+  display.setSources(SAMPLES.map(name => ({ name })))
+  display.applyPlot(afIn(['#aa0000']))
+  display.setCellData(cellData({ field: 'INFO.AF' }), [0])
+  const colorOf = () => [...display.recordsRenderDataMap.get(0)!.rectColors]
+  const key = display.rpcProps()
+  expect(colorOf()).toEqual([getCachedABGR('#aa0000')])
+
+  display.applyPlot(afIn(['#00aa00']))
+  expect(colorOf()).toEqual([getCachedABGR('#00aa00')])
+  expect(display.rpcProps()).toEqual(key)
+})

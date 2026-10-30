@@ -1,4 +1,4 @@
-import { buildVariantHit } from './buildVariantHit.ts'
+import { buildRecordHit, buildVariantHit } from './buildVariantHit.ts'
 import { getTooltipRows } from './getTooltipRows.ts'
 
 import type { VariantFeatureInfo } from '../../shared/types.ts'
@@ -69,5 +69,29 @@ describe('a genotype hit', () => {
   test('an insertion reports the bp this cell carries, none for a reference cell', () => {
     expect(hit({ alt: ['T'], insertedBp: 42 }, 42).insertion).toBe('42bp')
     expect(hit({ alt: ['T'], insertedBp: 42 }, 0).insertion).toBe('')
+  })
+})
+
+describe('a records-band hit', () => {
+  const info: VariantFeatureInfo = {
+    featureId: 'rs123',
+    ref: 'A',
+    alt: ['T', 'G', 'C'],
+    name: 'rs123',
+    description: 'SNV',
+    length: 1,
+    insertedBp: 42,
+    type: 'SNV',
+    genotypeCodes: new Uint32Array(),
+  }
+
+  test('reports the record and its every ALT, with no genotype or sample rows', () => {
+    expect(getTooltipRows(buildRecordHit({ info, featureId: 'v0' }))).toEqual([
+      { key: 'featureName', label: 'Name', value: 'rs123' },
+      { key: 'alleles', label: 'Alleles', value: 'A > T,G,C' },
+      { key: 'length', label: 'Length', value: '1bp' },
+      { key: 'insertion', label: 'Insertion', value: '42bp' },
+      { key: 'description', label: 'Description', value: 'SNV' },
+    ])
   })
 })

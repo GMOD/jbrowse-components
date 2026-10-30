@@ -10,6 +10,9 @@ import VariantMatrixBody, {
 } from '../matrix/VariantMatrixComponent.tsx'
 import { VARIANT_MATRIX_MARKS } from '../matrix/variantMatrixMarks.ts'
 import Crosshair from './MultiSampleVariantCrosshairs.tsx'
+import RecordsBandOverlay, {
+  recordsBandSurface,
+} from './RecordsBandOverlay.tsx'
 import VariantBody, { variantRowsSurface } from './VariantComponent.tsx'
 import VariantRowSeparators from './VariantRowSeparators.tsx'
 import { VARIANT_MARKS } from './variantMarks.ts'
@@ -38,9 +41,13 @@ const layoutBackends: Record<
     }),
 }
 
+// The sidebar overlays only the rows, so its x-gate applies there alone; the
+// records band spans the full width above.
 function hoverGenomic(model: Model, state: MouseState) {
   const { rowsTopOffset } = model
-  if (state.y < rowsTopOffset || state.x < treeSidebarRightEdge(model)) {
+  if (state.y < model.topBands.recordsHeight) {
+    hoverVariantSurface(model, recordsBandSurface(model), state.x, state.y)
+  } else if (state.y < rowsTopOffset || state.x < treeSidebarRightEdge(model)) {
     model.clearHoveredFeature()
   } else {
     hoverVariantSurface(
@@ -110,7 +117,9 @@ const VariantDisplayComponent = observer(function VariantDisplayComponent({
     >
       {({ canvasRef, mouseTracker }) => (
         <>
-          {genomic ? null : (
+          {genomic ? (
+            <RecordsBandOverlay model={model} />
+          ) : (
             <PointerLayer
               mouseTracker={mouseTracker}
               rowsTopOffset={rowsTopOffset}
@@ -141,8 +150,12 @@ const VariantDisplayComponent = observer(function VariantDisplayComponent({
             rowsTopOffset={rowsTopOffset}
           >
             {(mouseState, inRows) =>
-              mouseState && inRows ? (
-                <Crosshair mouseState={mouseState} model={model} />
+              mouseState && (genomic || inRows) ? (
+                <Crosshair
+                  mouseState={mouseState}
+                  model={model}
+                  crosshairs={inRows}
+                />
               ) : null
             }
           </PointerLayer>

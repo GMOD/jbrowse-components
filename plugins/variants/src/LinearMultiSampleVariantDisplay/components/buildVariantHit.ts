@@ -78,3 +78,33 @@ export function buildVariantHit({
     displayedRegionIndex,
   }
 }
+
+/**
+ * The same fields for a hover naming a RECORD rather than a (record, sample)
+ * cell: the records band, which has no row to read a genotype off. The sample
+ * fields are `''`, so one hover slot serves both bands: `getTooltipRows` drops
+ * an empty value, and `hoveredTooltipSource` reads the empty `name` as no row
+ * to merge. `alleles` is the record's own `REF > ALT`, every ALT spelled out.
+ */
+export function buildRecordHit({
+  info,
+  featureId,
+  displayedRegionIndex,
+}: {
+  info: VariantFeatureInfo
+  featureId: string
+  displayedRegionIndex?: number
+}): VariantTooltipFields {
+  return {
+    genotype: '',
+    sampleName: '',
+    name: '',
+    alleles: `${info.ref} > ${info.alt.join(',')}`,
+    featureName: info.name,
+    description: info.description,
+    length: getBpDisplayStr(info.length),
+    insertion: info.insertedBp > 0 ? `${info.insertedBp}bp` : '',
+    featureId,
+    displayedRegionIndex,
+  }
+}

@@ -21,7 +21,8 @@
     ".": "./src/index.ts",
     "./LinearBasicDisplay/stateModel": "./src/LinearBasicDisplay/model.ts",
     "./LinearBasicDisplay/baseStateModel": "./src/LinearBasicDisplay/baseModel.ts",
-    "./tables": "./src/tables.ts"
+    "./tables": "./src/tables.ts",
+    "./band": "./src/band.ts"
   },
   "files": [
     "esm"
@@ -61,7 +62,8 @@
       ".": "./esm/index.js",
       "./LinearBasicDisplay/stateModel": "./esm/LinearBasicDisplay/model.js",
       "./LinearBasicDisplay/baseStateModel": "./esm/LinearBasicDisplay/baseModel.js",
-      "./tables": "./esm/tables.js"
+      "./tables": "./esm/tables.js",
+      "./band": "./esm/band.js"
     }
   },
   "sideEffects": false,
