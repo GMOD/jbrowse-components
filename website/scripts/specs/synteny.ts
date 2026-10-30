@@ -1061,6 +1061,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   {
     mode: 'url',
+    name: 'pangenome/hprc_igl_deletion_lanes',
+    url: portalHaplotypeLanes(PORTAL_LOCI.igl),
+    readySelector: displaySettled('multiway-synteny-display'),
+    readyTimeout: 240000,
+    viewportHeight: 620,
+  },
+
+  {
+    mode: 'url',
     name: 'multiway_synteny/ecoli_island_lanes',
     url: sessionSpec('https://jbrowse.org/demos/ecoli_pangenome/config.json', {
       views: [

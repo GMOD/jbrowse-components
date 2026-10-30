@@ -69,3 +69,5 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. Here, additionally:
 - Removing a plugin export, session member or extension point fails quietly:
   `reference/PLUGIN_ABI_STABILITY.md`.
 - Deploy demos with `scripts/deploy-demo.sh`, never `aws s3 cp` (no versioning).
+- **Examples, demo configs, tests and CI never fetch from Ensembl** (REST or
+  FTP) — its outages turn main red. Rehost the data on jbrowse.org.

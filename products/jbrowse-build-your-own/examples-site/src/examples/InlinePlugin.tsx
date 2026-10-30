@@ -19,89 +19,88 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
-const ensembl = 'https://rest.ensembl.org'
-const MAX_SPAN = 5_000_000
-
-interface EnsemblGene {
+interface Gene {
   id: string
   start: number
   end: number
   strand: number
+  name: string
   biotype: string
-  external_name?: string
-  description?: string
 }
 
-async function getJson<T>(path: string, signal?: AbortSignal) {
-  const url = new URL(path, ensembl)
-  url.searchParams.set('content-type', 'application/json')
-  const response = await fetch(url, { signal })
+type GenesByRefName = Record<string, Gene[]>
+
+async function getJson<T>(url: string) {
+  const response = await fetch(url)
   if (!response.ok) {
-    throw new Error(`Ensembl answered ${response.status} for ${url}`)
+    throw new Error(`HTTP ${response.status} fetching ${url}`)
   }
   return (await response.json()) as T
 }
 
 const configSchema = ConfigurationSchema(
-  'EnsemblGenesAdapter',
-  { species: { type: 'string', defaultValue: 'homo_sapiens' } },
+  'GeneListAdapter',
+  {
+    uri: {
+      type: 'string',
+      defaultValue: 'https://jbrowse.org/demos/inline_plugin/genes.json',
+    },
+  },
   { explicitlyTyped: true },
 )
 
-class EnsemblGenesAdapter extends BaseFeatureDataAdapter {
-  async getRefNames(opts?: BaseOptions) {
-    const species = this.getConf('species') as string
-    const { karyotype } = await getJson<{ karyotype: string[] }>(
-      `/info/assembly/${species}`,
-      opts?.signal,
+class GeneListAdapter extends BaseFeatureDataAdapter {
+  private genes?: Promise<GenesByRefName>
+
+  private loadGenes() {
+    this.genes ??= getJson<GenesByRefName>(this.getConf('uri')).catch(
+      (error: unknown) => {
+        this.genes = undefined
+        throw error
+      },
     )
-    return karyotype
+    return this.genes
+  }
+
+  async getRefNames() {
+    return Object.keys(await this.loadGenes())
   }
 
   getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
     return ObservableCreate<Feature>(async observer => {
       const { refName, start, end } = region
-      if (end - start > MAX_SPAN) {
-        throw Object.assign(
-          new Error('Ensembl serves 5 Mb at a time; zoom in to see genes'),
-          { regionTooLarge: true },
-        )
-      }
-      const species = this.getConf('species') as string
-      const genes = await getJson<EnsemblGene[]>(
-        `/overlap/region/${species}/${refName}:${start + 1}-${end}?feature=gene`,
-        opts?.signal,
-      )
+      const genes = (await this.loadGenes())[refName] ?? []
       for (const gene of genes) {
-        observer.next(
-          new SimpleFeature({
-            uniqueId: `${this.id}-${gene.id}`,
-            refName,
-            start: gene.start - 1,
-            end: gene.end,
-            strand: gene.strand,
-            type: 'gene',
-            name: gene.external_name ?? gene.id,
-            biotype: gene.biotype,
-            description: gene.description,
-          }),
-        )
+        if (gene.start < end && gene.end > start) {
+          observer.next(
+            new SimpleFeature({
+              uniqueId: `${this.id}-${gene.id}`,
+              refName,
+              start: gene.start,
+              end: gene.end,
+              strand: gene.strand,
+              type: 'gene',
+              name: gene.name,
+              biotype: gene.biotype,
+            }),
+          )
+        }
       }
       observer.complete()
     }, opts?.signal)
   }
 }
 
-class EnsemblPlugin extends Plugin {
-  name = 'EnsemblPlugin'
+class GeneListPlugin extends Plugin {
+  name = 'GeneListPlugin'
 
   install(pluginManager: PluginManager) {
     pluginManager.addAdapterType(
       () =>
         new AdapterType({
-          name: 'EnsemblGenesAdapter',
+          name: 'GeneListAdapter',
           configSchema,
-          AdapterClass: EnsemblGenesAdapter,
+          AdapterClass: GeneListAdapter,
         }),
     )
   }
@@ -109,7 +108,7 @@ class EnsemblPlugin extends Plugin {
 
 const InlinePlugin = observer(function InlinePlugin() {
   const state = useCreateViewState({
-    plugins: [EnsemblPlugin],
+    plugins: [GeneListPlugin],
     assembly: {
       name: 'hg38',
       uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
@@ -120,17 +119,18 @@ const InlinePlugin = observer(function InlinePlugin() {
     tracks: [
       {
         type: 'FeatureTrack',
-        trackId: 'ensembl_genes',
-        name: 'Ensembl genes',
+        trackId: 'gencode_genes',
+        name: 'GENCODE genes',
         assemblyNames: ['hg38'],
-        adapter: { type: 'EnsemblGenesAdapter' },
+        adapter: {
+          type: 'GeneListAdapter',
+          uri: 'https://jbrowse.org/demos/inline_plugin/genes.json',
+        },
         displays: [
           {
             type: 'LinearBasicDisplay',
-            displayId: 'ensembl_genes-LinearBasicDisplay',
+            displayId: 'gencode_genes-LinearBasicDisplay',
             height: 160,
-            // skips the density probe, which samples the server window by window
-            forceLoad: true,
             encoding: { color: 'biotype' },
             legend: { show: false },
           },
@@ -139,7 +139,7 @@ const InlinePlugin = observer(function InlinePlugin() {
     ],
     view: {
       loc: 'chr17:42,950,000..43,250,000',
-      tracks: ['ensembl_genes'],
+      tracks: ['gencode_genes'],
     },
   })
   if (!state) {
@@ -150,7 +150,7 @@ const InlinePlugin = observer(function InlinePlugin() {
     <EmbedProvider session={state.session}>
       <Toolbar>
         <LocationBox view={view} />
-        <Legend view={view} trackId="ensembl_genes" />
+        <Legend view={view} trackId="gencode_genes" />
       </Toolbar>
       <TrackStack view={view} />
     </EmbedProvider>

@@ -135,6 +135,16 @@ other loci, a picture that looks simple or empty is often one of these cases:
   **Variants** launch cannot show the UGT2B17 deletion. The page's map reads
   each haplotype's forms from the graph itself, so it draws the deletion and
   names it.
+- **The antibody loci hold the cell lines' deletions.** Many HPRC assemblies
+  come from lymphoblastoid cell lines, B cells whose V(D)J recombination deletes
+  hundreds of kb of IGH, IGK and IGL
+  ([Rodriguez et al. 2021](https://doi.org/10.1371/journal.pone.0261374),
+  [IGLoo](https://doi.org/10.1016/j.crmeth.2025.101033) for IGH). In the walk
+  file the lanes read, `hprc-v2.1-mc-grch38-f5s.GRCh38.walks.bed.gz`, 282 of the
+  464 haplotypes jump over at least one 64 kb chunk of IGH, 200 over IGK and 29
+  over IGL, across 90 kb to 2 Mb, and none over the T-cell receptor loci TRA and
+  TRB. Check a deletion there against the donor's own germline data before
+  reporting it.
 - **Only the examples are checked.** A gene or region you type can still land
   where the graph is a thread or the VCF is blank, and the page will offer the
   launch anyway.
@@ -202,8 +212,9 @@ under a display name, with the graph's name as an alias:
 
 Right-click the allele and take **Open in NA20809.2**. A second linear view
 opens below the first, on that haplotype's chromosome 6, framed on the allele
-with its CAT (Comparative Annotation Toolkit) gene annotation. Zoom out a few
-steps.
+with its CAT (Comparative Annotation Toolkit) gene annotation, which
+[part 2](/docs/tutorials/pangenome_hprc_haplotypes#haplotype-genes) describes.
+Zoom out a few steps.
 
 <Figure caption="MHC class II with an allele's right-click menu open, and the view Open in NA20809.2 opens." src="/img/pangenome/hprc_haplotype_launch.png" />
 

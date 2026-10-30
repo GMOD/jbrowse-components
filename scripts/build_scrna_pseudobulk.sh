@@ -530,6 +530,7 @@ PY
 
 # ── The two files the embedded UMAP demo fetches ─────────────────────────────
 BASE="$BASE" ./venv/bin/python - <<'PY'
+import gzip
 import json
 import os
 import urllib.request
@@ -592,15 +593,34 @@ for g in range(len(genes)):
     running += int(nz.size)
 (web / "expr.bin").write_bytes(np.concatenate(records).tobytes())
 
-# GRCh38 coordinates for the panel, so picking a gene can also navigate
-req = urllib.request.Request(
-    "https://rest.ensembl.org/lookup/symbol/homo_sapiens",
-    data=json.dumps({"symbols": genes}).encode(),
-    headers={"Content-Type": "application/json", "Accept": "application/json"},
-)
-found = json.load(urllib.request.urlopen(req, timeout=120))
-missing = [g for g in genes if g not in found]
-assert not missing, f"Ensembl did not resolve {missing}"
+# GRCh38 coordinates for the panel, so picking a gene can also navigate. Alt
+# contigs are skipped, a pseudoautosomal gene resolves to its chrX copy, and
+# names follow the hg38 FASTA (17, X, MT).
+GENCODE = "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz"
+primary = {f"chr{c}" for c in [*map(str, range(1, 23)), "X", "Y", "M"]}
+wanted = set(genes)
+hits = {}
+with urllib.request.urlopen(GENCODE, timeout=120) as response:
+    for line in gzip.open(response, "rt"):
+        f = line.split("\t")
+        if len(f) < 9 or f[2] != "gene" or f[0] not in primary:
+            continue
+        attrs = dict(kv.split("=", 1) for kv in f[8].strip().split(";"))
+        if attrs.get("gene_name") in wanted:
+            hits.setdefault(attrs["gene_name"], []).append(
+                {
+                    "seq_region_name": "MT" if f[0] == "chrM" else f[0][3:],
+                    "start": int(f[3]),
+                    "end": int(f[4]),
+                }
+            )
+missing = [g for g in genes if g not in hits]
+assert not missing, f"GENCODE v47 has no gene named {missing}"
+found = {}
+for g, h in hits.items():
+    h = [r for r in h if r["seq_region_name"] != "Y"] or h
+    assert len(h) == 1, f"GENCODE v47 has {len(h)} genes named {g}"
+    found[g] = h[0]
 
 json.dump(
     {

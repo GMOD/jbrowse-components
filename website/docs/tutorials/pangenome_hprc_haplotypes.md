@@ -99,12 +99,56 @@ adds it, and the config below is the one to adapt for your own graph:
 }
 ```
 
+## Where each haplotype's genes come from {#haplotype-genes}
+
+JBrowse draws each lane, and each bar under **Walk rows**, with the genes of
+that haplotype's own assembly, at its own coordinates. It does not lift GRCh38's
+genes across the graph.
+
+- **The source:** HPRC annotated each release 2 assembly but HG002's with CAT
+  (the Comparative Annotation Toolkit), which projects GENCODE's GRCh38 genes
+  onto it, in the [CAT index](#the-data) above. HG002's two haplotypes are the
+  [Q100 assembly](https://github.com/marbl/HG002) hg002v1.1, whose project
+  annotated it with RefSeq's genes through JHU's Liftoff; we keep each gene's
+  MANE Select transcript there, so a few symbols and isoforms differ from the
+  CAT lanes. Liftoff leaves out the functional V, D and J segments of the
+  antibody and T-cell receptor loci, so HG002's lanes there show only their
+  pseudogene segments.
+- **What we host:** one gene model per named gene for each haplotype, as
+  `https://jbrowse.org/pangenome/hprc-grch38/genes/<sample>.<haplotype>.genes.bed.gz`.
+  A haplotype keeps about 43,500 of CAT's 83,000 genes:
+  - Each model is the gene's Ensembl canonical transcript as CAT projected it,
+    else its longest coding transcript.
+  - A gene with no symbol is dropped, and so is one spanning over 5 Mb.
+  - Where CAT projected two paralogs onto one locus, such as _GSTM1_ onto
+    _GSTM2_, we keep the gene whose GRCh38 span the haplotype's walk crosses
+    there, in the -f5s walk file the lanes read.
+  - CAT misses genes that only GRCh38's alternate contigs hold. We splice
+    GENCODE's models of _GSTT1_, _LILRA3_, _HLA-DRB3_, _HLA-DRB4_ and _HLA-DRB5_
+    onto each haplotype's assembly instead, where its walk crosses them.
+  - [README.txt](https://jbrowse.org/pangenome/hprc-grch38/genes/README.txt)
+    beside the files gives every rule and what CAT still misses.
+- **How a lane finds them:** each haplotype is an assembly, such as `HG00097.1`
+  aliased `HG00097#1`, holding one track, **CAT genes (HG00097 haplotype 1, HPRC
+  release 2)**, or for HG002 **RefSeq genes via JHU Liftoff v0.6**. JBrowse
+  draws that track in the haplotype's lane, and for each of the first 40
+  walk-row bars reads it over the bar's span on the haplotype's contig and boxes
+  each gene where it falls along the bar.
+- **Reading them:**
+  - A gene missing from a lane is missing from that haplotype's annotation,
+    through a deletion, a copy CAT did not project, or a gene the rules above
+    dropped.
+  - CAT names each copy of a duplicated gene after the GRCh38 copy it projected,
+    so HG00232.1, with seven _AMY1_ copies, reads _AMY1C_ five times. The number
+    of _AMY1_ boxes gives the copy number, unless CAT missed a copy.
+
 ## CFH: haplotypes missing two genes
 
 Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) and click the
 **CFH / CFHR** example, the complement factor H gene cluster. Under **More about
-this window**, click **Haplotypes**. A lane missing _CFHR3_ and _CFHR1_ (Hughes
-et al. 2006) opens a hole across both.
+this window**, click **Haplotypes**, which opens the lanes under the NCBI RefSeq
+genes (hg38) track. A lane missing _CFHR3_ and _CFHR1_ (Hughes et al. 2006)
+opens a hole across both.
 
 <Figure caption="The CFH cluster from the haplotypes launch. The HG00253 haplotype 2 lane opens a hole where its walk skips CFHR3 and CFHR1." src="/img/pangenome/hprc_cfhr_lanes.png" />
 
@@ -153,9 +197,24 @@ These cases mislead; [part 1](/docs/tutorials/pangenome_hprc#limits) lists the
 limits of the graph and the VCF behind them.
 
 - **A haplotype the graph does not align has no lane.**
-- **A lane can be empty and correct.** Where a haplotype's deletion is longer
-  than the window, the graph has no walk for it there and the launch opens no
-  row.
+- **A deletion across the window is a row with no ribbons.** A haplotype whose
+  deletion spans the whole window shows as a row at the foot of the lanes,
+  headed with the deletion's length, such as "inside a 150 kb deletion". The row
+  comes from the -f5s walk file's skip rows, so it appears only where the window
+  lies in a 64 kb chunk the deletion covers whole, for a deletion up to about 2
+  Mb. A window in the deletion's first or last chunk shows no row for that
+  haplotype. Walk rows, which
+  [part 3](/docs/tutorials/pangenome_hprc_repeats#amylase) opens, draw the same
+  haplotype as a deletion row. At IGH, IGK and IGL such a row is often the cell
+  line's deletion, as [part 1's limits](/docs/tutorials/pangenome_hprc#limits)
+  explain.
+
+At IGL, `chr22:22,800,001-22,850,000`, **Lanes → Choose lanes...** with
+`HG00099.1`, `HG002.1`, `HG00097.1`, `HG002.2` and `HG01074.1` puts two such
+rows at the foot.
+
+<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 sit inside their cell lines' V(D)J deletions, so their rows at the foot draw no ribbons. HG002 haplotype 1 walks the window but draws only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
+
 - **A lane can stop partway**, at the end of the graph's alignment of that
   haplotype; its sequence can run on past it.
 - **One lane stands for many haplotypes.** The page picks one haplotype per

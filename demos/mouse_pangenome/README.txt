@@ -91,22 +91,18 @@ Files
 
   mouse-mm39-minigraph.rgfa.gz              the graph itself (bgzipped rGFA)
 
-  mouse-mm39-minigraph.graph.bed.gz         nodes and links in one file,
-  mouse-mm39-minigraph.fold10000.graph.bed.gz  gfa-to-tabix's format 2, which
-    (+ .tbi)                                the configs read since 2026-10-28;
-                                            built with gfa-to-tabix 2.0.0 by
-                                            the same commands as the pairs below
+  mouse-mm39-minigraph.graph.bed.gz         nodes and links in one file
+    (+ .tbi)                                (gfa-to-tabix's format 2, built with
+                                            2.0.0), which the configs read since
+                                            2026-10-28. RgfaTabixAdapter takes
+                                            the prefix `mouse-mm39-minigraph`
+                                            with "format": 2 and appends
+                                            .graph.bed.gz itself
 
-  mouse-mm39-minigraph.segs.bed.gz          rGFA segments, one row per node
-  mouse-mm39-minigraph.links.bed.gz         rGFA links, one row per edge
-    (+ .tbi; these two are one track -- JBrowse's RgfaTabixAdapter is given the
-     shared prefix `mouse-mm39-minigraph` and appends both suffixes itself)
-
-  mouse-mm39-minigraph.fold10000.segs.bed.gz   coarse tier: the graph with
-  mouse-mm39-minigraph.fold10000.links.bed.gz  variants under 10 kb folded into
-    (+ .tbi)                                   the reference, 16,697 segments,
+  mouse-mm39-minigraph.fold10000.graph.bed.gz  coarse tier: the graph with
+    (+ .tbi)                                   variants under 10 kb folded into
+                                               the reference, 16,697 segments,
                                                so a whole chromosome draws
-    (the .tier10000 pair, one node per bubble, stays for sessions that name it)
 
   mouse-mm39-minigraph.bubbles.bed.gz       gfatools bubble output (+ .tbi),
                                             read both as a feature track and as
@@ -117,6 +113,20 @@ Files
                                             against the reference span it
                                             replaces, carrying a CIGAR so an
                                             insertion draws at its real size
+
+Retired files
+-------------
+
+  Nothing live read these, so on 2026-10-30 they moved to
+  s3://jbrowse.org/archive/demos/mouse_pangenome/ in the S3 Deep Archive storage class,
+  where a restore takes hours.
+
+  mouse-mm39-minigraph{,.fold10000}.{segs,links}.bed.gz{,.tbi}
+                                            the format 1 pairs the
+                                            .graph.bed.gz files replaced
+  mouse-mm39-minigraph.tier10000.{segs,links}.bed.gz{,.tbi}
+                                            one node per bubble, from the
+                                            retired build_bubble_tier.sh
 
 Licence and attribution
 -----------------------

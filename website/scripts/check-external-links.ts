@@ -63,18 +63,18 @@ const IS_TEST = /\.test\.[jt]sx?$|__mocks__|\/test\/data\//
 // child that must exist. Probing the child is the real check: it catches the
 // bucket key going away, which is the failure the bare prefix cannot see.
 const PREFIXES: [string, string][] = [
-  // rGFA stems — RgfaTabixAdapter appends .segs.bed.gz / .links.bed.gz
-  ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph', '.segs.bed.gz'],
-  ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus', '.segs.bed.gz'],
-  ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb', '.segs.bed.gz'],
+  // graph stems — RgfaTabixAdapter appends .graph.bed.gz under format 2,
+  // .segs.bed.gz / .links.bed.gz otherwise
   [
-    'https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.tier50',
-    '.segs.bed.gz',
+    'https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph',
+    '.graph.bed.gz',
   ],
-  ['https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38', '.segs.bed.gz'],
+  ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus', '.graph.bed.gz'],
+  ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb', '.graph.bed.gz'],
+  ['https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38', '.graph.bed.gz'],
   [
     'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.anchored',
-    '.segs.bed.gz',
+    '.graph.bed.gz',
   ],
   // walk-file stems, which walksUri extends with .walks.bed.gz
   [
@@ -104,8 +104,6 @@ const PREFIXES: [string, string][] = [
   ['https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr', '/zarr.json'],
   ['https://jbrowse.org/demos/1000g/qm2_cn_wg_10kb.zarr', '/zarr.json'],
   ['https://jbrowse.org/demos/scrna_pbmc5k/percell.zarr', '/zarr.json'],
-  ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_minigraph', '.segs.bed.gz'],
-  ['https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus', '.segs.bed.gz'],
   // a demo's asset directory, named as a base a spec or script appends to
   ['https://jbrowse.org/demos/cancer_sv', '/config.json'],
   ['https://jbrowse.org/demos/cancer_sv/', 'config.json'],
@@ -170,7 +168,6 @@ const EXPECTED_NON_2XX = new Set([
   'https://api.jbrowse.org/ucsc/v1/blat',
   'https://api.jbrowse.org/ucsc/v1/ispcr',
   'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi',
-  'https://rest.ensembl.org/lookup/symbol/homo_sapiens',
   'https://share.jbrowse.org/api/v1/',
   'https://www.ebi.ac.uk/rdf/services/sparql',
   'https://genenetwork.org/api/v_pre1/mapping?db=BXDPublish&method=gemma',

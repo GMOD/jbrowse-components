@@ -44,6 +44,10 @@ export const DESKTOP_VIEWPORT = { width: 1440, height: 900 }
 const MOUNT_TIMEOUT_MS = 15000
 const FRAME_TIMEOUT_MS = 60000
 
+// the readiness failure @jbrowse/capture's ready.ts reports for displays in
+// error
+const DISPLAY_ERROR = 'not ready for capture: display(s) showing an error:'
+
 /**
  * Wait until every demo on the page has filled and drawn. Mounting is not
  * drawing: a page whose engines publish `[data-app-phase]` is held to the
@@ -301,7 +305,8 @@ export async function smokeExamplesSite({
   // A data host that stops answering fails a page's own assertions as well as
   // its console, since a track that never loads has no canvas to click and no
   // key to read. One more visit tells that apart from a regression, which
-  // fails both times.
+  // fails both times. When the host stays down, the harness skips a page whose
+  // errors are all displays in error, since those say nothing about the bundle.
   let failures = 0
   for (const slug of slugs) {
     const name = slug || 'index'
@@ -312,7 +317,16 @@ export async function smokeExamplesSite({
       )
       ;({ errors, stalls } = await visit(slug))
     }
-    if (errors.length) {
+    if (
+      errors.length &&
+      stalls.length &&
+      errors.every(e => e.startsWith(DISPLAY_ERROR))
+    ) {
+      log(`skip ${name}: a data host failed on both visits: ${stalls[0]}`)
+      for (const e of errors) {
+        log(`     ${e}`)
+      }
+    } else if (errors.length) {
       failures++
       log(`FAIL ${name}`)
       for (const e of errors) {
