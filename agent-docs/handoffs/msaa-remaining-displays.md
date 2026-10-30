@@ -1,6 +1,6 @@
 ---
 name: msaa-remaining-displays
-description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28 and multi-sample variant tracks on 2026-10-30 (rows snapped to the device grid, awaiting Colin's review). Grammar points, rules and step lines on 2026-10-30. Open: alignments, wiggle, `spanMark` and `barMark`, each trading some edges and each Colin's call; `scripts/gpu-pixels/run.ts` scores a flip. Hi-C and LD stay at four."
+description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28, multi-sample variant tracks on 2026-10-30 (cells snapped to the device grid on both axes, awaiting Colin's review), and grammar points, rules and step lines the same day. Open: alignments, wiggle, `spanMark` and `barMark`, each trading some edges and each Colin's call; `scripts/gpu-pixels/run.ts` scores a flip. Hi-C and LD stay at four."
 ---
 
 # Displays still at four samples
@@ -19,20 +19,17 @@ A display draws at one sample when every pass it registers declares
 
 ## Next, in order
 
-1. **Variant tracks: look at it in the app.** Both passes snap rows to the
-   device grid and declare the directive (the idea doc's `variant.slang`
-   paragraph has the numbers). Not yet checked:
-   - A capture of a dense cohort (1000 Genomes, 2,504 rows) on the WebGL2 and
-     Canvas2D rungs, beside a 4x capture from before the change.
-   - x still snaps to whole CSS px, so at a fractional dpr a cell's sides sit
-     mid-device-pixel: hard on the GPU, a seam between abutting cells on
-     Canvas2D. Snapping x to the device grid needs `scissorX`'s device offset in
-     the shader. The pixel harness's `variant-cells` fixture prices it at dpr
-     1.5: one sample off the exact scene by 7.05% of the ink (569 pixels over
-     0.1), four samples by 0.03%. Its budget holds today's number, so tighten
-     it with the fix.
-   - The DOM overlays (hover box, row separators) still place rows at
-     fractional y, up to half a device pixel off the snapped row.
+1. **Variant tracks: DOM overlays inherit a fractional page offset.** Cells and
+   rows draw on the device grid at one sample on every rung, and the hover box
+   and row separators place themselves on the same snapped edges
+   (`probe-variant-device-grid.ts` captures both layouts, dense and sparse).
+   Left over:
+   - The track label above a display is 23.14 CSS px tall, so the display's
+     canvas starts at a fractional page y (197.14 at dpr 1.5 in the probe's
+     layout). The separators over the canvas land at that fraction and smear
+     across two or three device rows in Chrome, where the cells beside them
+     stay crisp. HTML boxes in place of SVG lines landed no closer. A whole-px
+     track label height would fix every overlay at once.
 2. **Alignments, Colin's call.** One tall track at dpr 2 holds about 316 MiB.
    - The read, mismatch, gap, insertion and connector passes can be made
      analytic as the feature passes were.

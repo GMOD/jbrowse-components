@@ -258,8 +258,16 @@ supersample of a 40x60 CSS px crop:
   `aaHalfPx` over the sine of the point's half-angle. Against an exact cover of
   the snapped shape its mean error is 0.03 to 0.12/255 and its ink 0.99 to
   1.01; the old glyph read half alpha along the quad's edges.
-- **x still snaps to whole CSS px**, so at a fractional dpr a cell's side lands
-  mid-device-pixel and draws hard.
+- **`cell` snaps x to the device grid too** (`snapCellEdgePx`, fed
+  `clip.scaleX`), placing the snapped edges through the HAL's device viewport
+  (`pxX`, `pxW`), and its 2px floor rounds up to whole device px. The pixel
+  harness's `variant-cells` fixture at dpr 1.5 went from 7.05% of the ink off
+  the exact scene at one sample (0.03% at four) to 0.00% at both, and 0.00% at
+  dpr 1 and 2.
+- **`matrixCell`'s x needed nothing on the GPU:** each device pixel takes the
+  column covering its centre. Its Canvas2D painter keeps float columns with a
+  0.3 px overdraw, which blends neighbouring columns at their shared pixel on
+  purpose.
 
 **Pixel-snapped — MSAA has nothing to smooth, at an integer dpr.** `rect.slang`
 snaps both x (`rectSpanPx` → `floor(x + 0.5)`) and y (`floor(inst.y - scrollY +
