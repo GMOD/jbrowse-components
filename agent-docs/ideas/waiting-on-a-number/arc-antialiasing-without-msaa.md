@@ -230,11 +230,13 @@ would cost:
 **`variant.slang` does not belong on any of those lists.** Its `SHAPE_RECT`
 branch, which is every ordinary genotype cell, returns the instance color flat;
 x is pixel-snapped (`snappedCellLeftPx`) but y is deliberately fractional, so
-both horizontal edges land mid-device-pixel. The inversion triangle is worse
-than unramped: `triSdfRight`'s `dLeft` is zero **on the quad's own right edge**,
-so the ramp reads 0.5 there and the rasterizer cuts the outer half — the
-half-alpha hard edge `capsule.slang`'s header warns about, arrived at from the
-other direction. Only its two diagonals substitute to 0.
+both horizontal edges land mid-device-pixel. Sample rows share those edges,
+so ramping them seams every boundary, and the display flips only to hard row
+edges ([handoffs/msaa-remaining-displays.md](../../handoffs/msaa-remaining-displays.md)).
+The inversion glyph is worse than unramped: `inversionSdf`'s bar term is zero **on the quad's own edges**, so the
+ramp reads 0.5 there and the rasterizer cuts the outer half — the half-alpha
+hard edge `capsule.slang`'s header warns about, arrived at from the other
+direction. Only its two diagonals substitute to 0.
 
 **Pixel-snapped — MSAA has nothing to smooth, at an integer dpr.** `rect.slang`
 snaps both x (`rectSpanPx` → `floor(x + 0.5)`) and y (`floor(inst.y - scrollY +
@@ -256,10 +258,12 @@ against its exactly-covered shape fell from 8.05 px² to 2.58. Multi-way
 synteny's lanes reuse these passes beside `barMark`, which keeps that display at
 four.
 
-**Deliberately MSAA-invariant.** `variantMatrix.slang` reconstructs the pixel
+**MSAA-invariant in x only.** `variantMatrix.slang` reconstructs the pixel
 centre (`floor(position.x) + 0.5`) and multiplies by its own sub-pixel coverage
 term, with a comment saying the reconstruction exists *so the test stays
-deterministic under the HAL's 4x MSAA*. At 1x it is unchanged.
+deterministic under the HAL's 4x MSAA*. Its rows tile at fractional y, as
+`variant.slang`'s do, so at one sample a boundary pixel takes the row over its
+centre where four samples blend the rows meeting there.
 
 **Leaning on the multisampled target, and saying so in the source:**
 

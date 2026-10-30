@@ -1,6 +1,6 @@
 ---
 name: msaa-remaining-displays
-description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28. Open: variant tracks (mechanical), alignments and wiggle (each trades some edges, Colin's call), the grammar marks, and a checked-in GPU pixel harness. Hi-C and LD stay at four."
+description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28. Open: variant tracks, alignments and wiggle (each trades some edges, Colin's call; variant rows tile, so they flip only to hard row edges), the grammar marks, and a checked-in GPU pixel harness. Hi-C and LD stay at four."
 ---
 
 # Displays still at four samples
@@ -19,19 +19,27 @@ A display draws at one sample when every pass it registers declares
 
 ## Next, in order
 
-1. **Variant tracks.**
-   - `variant.slang` snaps x and leaves y fractional, the shape `rect.slang`
-     had: ramp its edges in the fragment, and grow the quad only at a
-     fractional dpr (`snappedEdgePadPx` in the features plugin's
-     `featureGlyphUniforms.slang`).
-   - Its inversion triangle (`triSdfRight`) reads 0.5 on the quad's own edge,
-     per the idea doc.
+1. **Variant tracks, Colin's call.** Each layout is one pass, `cell`
+   (`variant.slang`) and `matrixCell` (`variantMatrix.slang`), so each flips
+   alone. Neither is mechanical: sample rows tile at fractional y, the shape
+   that keeps Hi-C at four.
+   - **Ramping rows seams them.** Two rows meeting mid-pixel each paint 0.5 and
+     composite to 0.75, so the background shows through every row boundary.
+   - **Draw order rules out the usual repair** (ramp the later cell's edge, run
+     the earlier one hard to the pixel): `computeVariantCells.ts` draws every
+     ref cell before any alt cell, so a cell cannot tell which neighbour drew
+     first.
+   - **So a flip means hard row edges**: each device pixel takes the row over
+     its centre, where four samples blend up to four rows. Rows at least a
+     device px tall change only along their boundaries. A cohort with more
+     rows than device px shows one row per pixel instead of up to four.
+   - `variantMatrix.slang` already paints one pure cell per pixel in x by
+     design, so hard rows would make y match it.
+   - The win is size: a tall cohort track is the canvas the target costs most
+     on.
    - A sharp corner's ramp reaches `aaHalfPx / sin(half its angle)` past the
-     corner, not `aaHalfPx`. The strand arrow's tip lost up to 0.43 alpha
-     until `arrowReachPx` padded for it, and `arrowCoverage.test.ts` sweeps
-     outside the quad for ink.
-   - `variantMatrix.slang` is already built to be MSAA-invariant and lacks only
-     the directive.
+     corner, not `aaHalfPx`; the inversion glyph's tip needs the
+     `arrowReachPx` treatment.
 2. **Alignments, Colin's call.** One tall track at dpr 2 holds about 316 MiB.
    - The read, mismatch, gap, insertion and connector passes can be made
      analytic as the feature passes were.
