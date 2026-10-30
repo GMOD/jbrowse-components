@@ -26,6 +26,10 @@ A display draws at one sample when every pass it registers declares
      `featureGlyphUniforms.slang`).
    - Its inversion triangle (`triSdfRight`) reads 0.5 on the quad's own edge,
      per the idea doc.
+   - A sharp corner's ramp reaches `aaHalfPx / sin(half its angle)` past the
+     corner, not `aaHalfPx`. The strand arrow's tip lost up to 0.43 alpha
+     until `arrowReachPx` padded for it, and `arrowCoverage.test.ts` sweeps
+     outside the quad for ink.
    - `variantMatrix.slang` is already built to be MSAA-invariant and lacks only
      the directive.
 2. **Alignments, Colin's call.** One tall track at dpr 2 holds about 316 MiB.

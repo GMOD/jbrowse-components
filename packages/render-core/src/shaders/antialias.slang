@@ -66,8 +66,10 @@ public float aaPx(float dpr) {
   return 1.0 / max(dpr, 1.0);
 }
 
-// Half of it: how far past the ink a ramp reaches, and so exactly how far a
-// vertex stage must pad its quad to hold one. A pad stated in CSS px instead
+// Half of it: how far past an edge a ramp reaches, and so exactly how far a
+// vertex stage must pad its quad to hold one. A sharp corner where two ramps
+// multiply reaches further, this over sin(half its angle) (`arrowReachPx`
+// in the features plugin's arrow.slang). A pad stated in CSS px instead
 // over-reaches by dpr — 2x on a plain monitor, 4x on a retina one — and every
 // fragment in the surplus shades to alpha 0.
 public float aaHalfPx(float dpr) {
