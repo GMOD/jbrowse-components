@@ -9,10 +9,10 @@ import { flipPinOf, placePinOf } from './lanePins.ts'
 import {
   frameOpenings,
   groupRunsOnRow,
-  laneBpOfOpened,
   laneOpeningsOf,
   lanePointOfOpened,
   openedBp,
+  openedAtX,
   openedOfLanePoint,
   rowFrameX,
 } from './layoutMultiWay.ts'
@@ -478,17 +478,6 @@ function weightInside(placements: LanePlacement[], frame: RowFrame) {
   return inside
 }
 
-function openedAt(frame: RowFrame, px: number, width: number) {
-  const bpPerPx = (frame.max - frame.min) / width
-  return frame.flipped
-    ? frame.min + (width - px) * bpPerPx
-    : frame.min + px * bpPerPx
-}
-
-export function laneBpAt(frame: RowFrame, px: number, width: number) {
-  return laneBpOfOpened(frameOpenings(frame), openedAt(frame, px, width))
-}
-
 /** `pivotPx` and `unitBp` are the view's live pivot px and visible span. */
 export function frameFromDecision(
   d: LaneDecision,
@@ -699,7 +688,7 @@ export function decideLaneFrames({
       if (group && pivotPx !== undefined) {
         const lanePivot = lanePointOfOpened(
           frameOpenings(aligned),
-          openedAt(aligned, pivotPx, width),
+          openedAtX(aligned, pivotPx, width),
         )
         decision = {
           refName: aligned.refName,

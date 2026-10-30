@@ -167,6 +167,7 @@ import { laneTrackIds } from './laneTrackPattern.ts'
 import {
   anchorlessGroupsOf,
   clipGroupToAnchor,
+  frameBpPerPx,
   groupFeatures,
   laneFetchRegion,
   laneFetchRegionMaxBp,
@@ -1022,6 +1023,14 @@ export function stateModelFactory(
       get anchorAssembly() {
         return getSession(self).assemblyManager.get(self.anchorAssemblyName)
       },
+      /**
+       * #getter
+       * the anchor assembly's canonical spelling of a refName
+       */
+      get anchorCanon(): (refName: string) => string {
+        const assembly = this.anchorAssembly
+        return refName => assembly?.getCanonicalRefName2(refName) ?? refName
+      },
       /** #getter */
       get anchorLocString() {
         const view = self.lgv
@@ -1125,16 +1134,24 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the drawn lanes chained by their deletions and insertions against the
-       * anchor, for "Order lanes by structure"; empty for a gene table
+       * every fetched lane's key, chained by its deletions and insertions
+       * against the anchor
+       */
+      get structureLaneKeys(): string[] {
+        const { features, featureOps } = self
+        return features
+          ? structureOrder(laneProfiles(features, featureOps)).map(self.laneKey)
+          : []
+      },
+      /**
+       * #getter
+       * the drawn lanes in `structureLaneKeys` order, for "Order lanes by
+       * structure"; empty for a gene table
        */
       get laneStructureOrder(): string[] {
-        const { features, featureOps } = self
         const row = this.rowOfLane
-        return features && !features.some(isNamedRecord)
-          ? structureOrder(laneProfiles(features, featureOps)).flatMap(
-              lane => row.get(self.laneKey(lane)) ?? [],
-            )
+        return self.features?.some(isNamedRecord) === false
+          ? this.structureLaneKeys.flatMap(lane => row.get(lane) ?? [])
           : []
       },
       /**
@@ -1193,9 +1210,8 @@ export function stateModelFactory(
        * lane selection changes, so panning never reshuffles the stack
        */
       holdLaneOrder(regions: FetchRegion[]) {
-        const { features, featureOps } = self
         if (
-          !features ||
+          !self.features ||
           !stacksByStructure(self.adapterCapabilities, self.laneFetchKinds)
         ) {
           self.heldLaneOrder = undefined
@@ -1220,9 +1236,7 @@ export function stateModelFactory(
           anchor,
           window: regions,
           drawn,
-          lanes: structureOrder(laneProfiles(features, featureOps)).map(
-            self.laneKey,
-          ),
+          lanes: self.structureLaneKeys,
         }
       },
       /** #action */
@@ -1322,11 +1336,11 @@ export function stateModelFactory(
        */
       get visibleGroups() {
         const view = self.lgv
-        const assembly = self.anchorAssembly
+        const canon = self.anchorCanon
         return self.visibleGroupWindows.map(({ group }) => {
           const { refName, start, end } = group.anchor
           const shown = clipToDisplayedRegions(view, {
-            refName: assembly?.getCanonicalRefName2(refName) ?? refName,
+            refName: canon(refName),
             start,
             end,
           })
@@ -1449,7 +1463,6 @@ export function stateModelFactory(
        * decide against it
        */
       anchorStageAt(originPx: number, bpPerPx: number): AnchorStage {
-        const assembly = self.anchorAssembly
         return {
           layout: {
             displayedRegions: self.lgv.displayedRegions,
@@ -1459,7 +1472,7 @@ export function stateModelFactory(
           originPx,
           width: self.canvasWidthPx,
           anchorReversed: self.anchorReversed,
-          canon: refName => assembly?.getCanonicalRefName2(refName) ?? refName,
+          canon: self.anchorCanon,
         }
       },
       /**
@@ -1468,13 +1481,12 @@ export function stateModelFactory(
        * against it
        */
       get anchorStage(): AnchorStage {
-        const assembly = self.anchorAssembly
         return {
           layout: self.lgv,
           originPx: self.renderOriginPx,
           width: self.canvasWidthPx,
           anchorReversed: self.anchorReversed,
-          canon: refName => assembly?.getCanonicalRefName2(refName) ?? refName,
+          canon: self.anchorCanon,
         }
       },
       /**
@@ -1844,7 +1856,7 @@ export function stateModelFactory(
             out.set(assemblyName, {
               regions: [{ assemblyName, ...laneFetchRegion(frame) }],
               templateRegions: template && [{ assemblyName, ...template }],
-              bpPerPx: (frame.max - frame.min) / self.canvasWidthPx,
+              bpPerPx: frameBpPerPx(frame, self.canvasWidthPx),
             })
           }
         }
@@ -3136,8 +3148,7 @@ export function stateModelFactory(
                 rowAssemblies: self.rowAssemblies,
                 laneDecisions: self.laneDecisions,
                 region,
-                anchorCanon: refName =>
-                  self.anchorAssembly?.getCanonicalRefName2(refName) ?? refName,
+                anchorCanon: self.anchorCanon,
                 trackAssemblyNames: getTrackAssemblyNames(self.parentTrack),
               }),
             starAnchor: self.starAnchor,

@@ -31,7 +31,6 @@ import {
   multiWayFeaturesOf,
 } from './MultiWaySyntenyDisplay/MultiWayGetFeatures.ts'
 import { configSchemaFactory } from './MultiWaySyntenyDisplay/configSchema.ts'
-import { laneBpAt } from './MultiWaySyntenyDisplay/laneDecision.ts'
 import {
   laneGroupsFetchSpecsOf,
   laneLinksFetchSpecsOf,
@@ -59,6 +58,7 @@ import {
   frameOpenings,
   frameSegments,
   groupFeatures,
+  laneBpAt,
   laneBpOfOpened,
   laneFetchRegion,
   laneOpeningsOf,

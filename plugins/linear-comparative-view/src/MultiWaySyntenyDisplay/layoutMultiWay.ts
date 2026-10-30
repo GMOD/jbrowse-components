@@ -737,11 +737,6 @@ export function frameReachPx(frame: RowFrame, width: number): Span {
   return a <= b ? [a, b] : [b, a]
 }
 
-export function frameMagnification(frame: RowFrame) {
-  const span = frame.max - frame.min
-  return Math.max(1, ...framesOf(frame).map(f => span / (f.max - f.min)))
-}
-
 export function frameTickXs(frame: RowFrame, interval: number, width: number) {
   const xs: number[] = []
   const span = Math.min(...framesOf(frame).map(f => f.max - f.min))
@@ -763,13 +758,30 @@ export function frameTickXs(frame: RowFrame, interval: number, width: number) {
   return xs
 }
 
+export function frameBpPerPx(frame: RowFrame, width: number) {
+  return (frame.max - frame.min) / width
+}
+
 function openedX(frame: RowFrame, opened: number, width: number) {
   const t = (opened - frame.min) / (frame.max - frame.min)
   return frame.flipped ? width * (1 - t) : width * t
 }
 
+/** the inverse of `openedX` */
+export function openedAtX(frame: RowFrame, px: number, width: number) {
+  const bpPerPx = frameBpPerPx(frame, width)
+  return frame.flipped
+    ? frame.min + (width - px) * bpPerPx
+    : frame.min + px * bpPerPx
+}
+
 export function rowFrameX(frame: RowFrame, bp: number, width: number) {
   return openedX(frame, openedBp(frameOpenings(frame), bp), width)
+}
+
+/** the inverse of `rowFrameX` */
+export function laneBpAt(frame: RowFrame, px: number, width: number) {
+  return laneBpOfOpened(frameOpenings(frame), openedAtX(frame, px, width))
 }
 
 /** A px pair in the interval's own order, clipped to `frameReach`. */
@@ -832,16 +844,6 @@ export function frameSegments(
       openedX(frame, openedBp(openings, to), width),
     ] as Span,
   }))
-}
-
-/** px spans of a stretch of the lane, cut at each hole the frame opens in it */
-export function frameSegmentsX(
-  frame: RowFrame,
-  start: number,
-  end: number,
-  width: number,
-): Span[] {
-  return frameSegments(frame, start, end, width).map(s => s.px)
 }
 
 interface PlacementRun {

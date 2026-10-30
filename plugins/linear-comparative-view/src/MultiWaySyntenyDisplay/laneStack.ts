@@ -5,7 +5,8 @@ import { GENE_LABEL_FONT_PX, GENE_LABEL_GAP_PX } from './laneLabels.ts'
 import { shownFrame } from './laneMotion.ts'
 import {
   frameReachPx,
-  frameSegmentsX,
+  frameBpPerPx,
+  frameSegments,
   frameSpan,
   frameSpans,
   groupRunSpansOnRow,
@@ -304,17 +305,17 @@ export function buildLanes({
         bpPerPx: isAnchor
           ? anchorBpPerPx
           : frame
-            ? (frame.max - frame.min) / width
+            ? frameBpPerPx(frame, width)
             : Infinity,
         baseline: isAnchor
           ? anchorRegionSpans.flatMap(span => clipSpan(span, reach))
           : frame
-            ? frameSegmentsX(
+            ? frameSegments(
                 frame,
                 contig?.start ?? Number.NEGATIVE_INFINITY,
                 contig?.end ?? Number.POSITIVE_INFINITY,
                 width,
-              ).flatMap(span => clipSpan(span, clip))
+              ).flatMap(({ px }) => clipSpan(px, clip))
             : [clip],
         strandRows: !strandRows
           ? undefined
