@@ -92,7 +92,7 @@ function mergedDefinition(existing: unknown, plugin: Schema): Schema {
     ? {
         ...plugin,
         ...(Array.isArray(existing.allOf) && Array.isArray(plugin.allOf)
-          ? { allOf: withoutRepeats([...existing.allOf, ...plugin.allOf]) }
+          ? { allOf: withoutRepeats(existing.allOf.concat(plugin.allOf)) }
           : {}),
         ...(isRecord(existing.properties) && isRecord(plugin.properties)
           ? { properties: { ...existing.properties, ...plugin.properties } }
