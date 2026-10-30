@@ -13,6 +13,7 @@ import {
   colorRangeSlot,
   colorScaleOptions,
   colorScaleTypeSlot,
+  colorDescendingSlot,
   colorTitleSlot,
   colorInvalidSlot,
   colorUnknownSlot,
@@ -88,7 +89,7 @@ export const geneColorConfigSchema = ConfigurationSchema(
      */
     legend: ConfigurationSchema(
       'MultiWayGeneColorLegend',
-      { ...colorTitleSlot },
+      { ...colorTitleSlot, ...colorDescendingSlot },
       colorLegendOptions,
     ),
   },

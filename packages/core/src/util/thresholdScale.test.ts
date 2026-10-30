@@ -97,6 +97,23 @@ describe('thresholdField', () => {
     ).toEqual(['< -0.3', '≥ 0.3', NOT_A_NUMBER_LABEL, ''])
   })
 
+  test('descending orders the bins from the highest, the gap rows still last', () => {
+    const descending = thresholdField('dif', {
+      domain: ['0', '-0.3', '0.3'],
+      range: ['blue', 'lightblue', 'pink', 'red'],
+      descending: true,
+    })
+    expect(
+      ['', NOT_A_NUMBER_LABEL, '-0.3 – 0', '≥ 0.3', '< -0.3'].toSorted(
+        descending.compare,
+      ),
+    ).toEqual(['≥ 0.3', '-0.3 – 0', '< -0.3', NOT_A_NUMBER_LABEL, ''])
+    expect(descending.domain).toEqual(field.domain.toReversed())
+    expect(descending.domain.map(descending.color)).toEqual(
+      field.domain.toReversed().map(field.color),
+    )
+  })
+
   test('its domain is closed, so a key lists every bin', () => {
     expect(field.closed).toBe(true)
   })

@@ -11,7 +11,7 @@ import type { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSc
  * draws the clustering tree and the row names. `rows` holds what the axis
  * draws (`rows.tree`, `rows.labels`), and `axis` whether and how it draws
  * them. A display's value axis, where it has one, is `encoding.y.axis`. The
- * wiggle, multi-sample variant and multi-row feature displays add `grid`
+ * wiggle, multi-sample variant and mark displays add `grid`
  * ([RowAxisWithGrid](../rowaxiswithgrid)).
  *
  * #example

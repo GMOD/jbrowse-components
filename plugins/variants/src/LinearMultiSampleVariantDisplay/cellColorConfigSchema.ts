@@ -13,6 +13,7 @@ import {
   colorRangeSlot,
   colorScaleOptions,
   colorScaleTypeSlot,
+  colorDescendingSlot,
   colorTitleSlot,
   colorInvalidSlot,
   colorUnknownSlot,
@@ -105,7 +106,7 @@ export const cellColorConfigSchema = ConfigurationSchema(
      */
     legend: ConfigurationSchema(
       'VariantCellColorLegend',
-      { ...colorTitleSlot },
+      { ...colorTitleSlot, ...colorDescendingSlot },
       colorLegendOptions,
     ),
   },

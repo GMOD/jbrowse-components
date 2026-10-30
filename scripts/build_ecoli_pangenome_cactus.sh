@@ -516,7 +516,7 @@ cat > segments_track.json <<'JSON'
     {
       "type": "LinearBasicDisplay",
       "displayId": "ecoli_cactus_segments-LinearBasicDisplay",
-      "showLabels": false
+      "labels": { "name": { "show": false } }
     }
   ]
 }

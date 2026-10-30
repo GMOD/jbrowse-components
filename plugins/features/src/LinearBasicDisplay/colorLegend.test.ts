@@ -338,6 +338,13 @@ describe('derived color key', () => {
       expect(display.categoricalColorField).toBeUndefined()
     })
 
+    it('legend.descending keys the highest bin first, the no-value row still last', () => {
+      const display = thresholdDisplay()
+      setConf(display, ['encoding', 'color', 'legend', 'descending'], true)
+      display.setRpcData(0, paintedData(['0.45', ''], noSection, 'dif'), ctgA)
+      expect(keyValues(display)).toEqual(['≥ 0.3', '-0.3 – 0.3', '< -0.3', ''])
+    })
+
     it('names each interval by its label, keyed by the interval still', () => {
       const display = thresholdDisplay()
       setConf(

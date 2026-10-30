@@ -524,8 +524,8 @@ for pop, (trackId, name) in karyo.items():
             'displayId': f'{trackId}-LinearMultiSampleVariantDisplay',
             # karyotype sorts standard, het, inverted on its own, so the three
             # classes come out as contiguous blocks in dosage order
-            'groupBy': 'karyotype',
-            'colorBy': 'karyotype',
+            'facet': {'field': 'karyotype'},
+            'rowColor': 'karyotype',
             # 'draw', not the default 'skip'. Skip mode fills the whole track
             # background with REFERENCE_COLOR and paints only ALT, so a
             # standard-arrangement mosquito is indistinguishable from empty

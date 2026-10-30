@@ -10,6 +10,7 @@ import {
   colorRangeSlot,
   colorScaleOptions,
   colorScaleTypeSlot,
+  colorDescendingSlot,
   colorTitleSlot,
   colorInvalidSlot,
   colorUnknownSlot,
@@ -83,7 +84,7 @@ export const chordColorConfigSchema = ConfigurationSchema(
      */
     legend: ConfigurationSchema(
       'ChordColorLegend',
-      { ...colorTitleSlot },
+      { ...colorTitleSlot, ...colorDescendingSlot },
       colorLegendOptions,
     ),
   },

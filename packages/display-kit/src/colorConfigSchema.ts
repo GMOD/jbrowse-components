@@ -959,6 +959,7 @@ export function colorFieldOf(
         domain: encoding.domain?.map(String),
         range: encoding.range,
         labels: encoding.names,
+        descending: encoding.descending,
       })
     : categoricalColorField(encoding, held)
 }
@@ -1094,7 +1095,7 @@ export const colorConfigSchema = ConfigurationSchema(
      */
     legend: ConfigurationSchema(
       'FeatureColorLegend',
-      { ...colorTitleSlot },
+      { ...colorTitleSlot, ...colorDescendingSlot },
       colorLegendOptions,
     ),
   },

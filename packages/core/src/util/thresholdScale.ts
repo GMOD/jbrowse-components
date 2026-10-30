@@ -158,7 +158,8 @@ export function rampGapScales(
  * under `''`, and text that is no number under {@link NOT_A_NUMBER_LABEL}.
  * The bins are the whole domain, so a key lists each one. `labels` names the
  * bins in a key, one each from the lowest, where a config spells them for a
- * reader; a bin's key stays its interval.
+ * reader; a bin's key stays its interval. `descending` orders the domain from
+ * the highest bin, the no-value and not-a-number rows staying last.
  */
 export function thresholdField(
   field: string,
@@ -166,10 +167,12 @@ export function thresholdField(
     domain = [],
     range = [],
     labels: names = [],
+    descending = false,
   }: {
     domain?: readonly string[]
     range?: readonly string[]
     labels?: readonly string[]
+    descending?: boolean
   } = {},
 ): CategoricalField {
   const cuts = thresholdCuts(domain)
@@ -177,9 +180,10 @@ export function thresholdField(
   const named = keyNames(labels, names)
   const palette = thresholdPalette(labels.length, range)
   const colorOf = new Map(labels.map((label, i) => [label, palette[i]!]))
+  const order = descending ? labels.toReversed() : labels
   return {
     field,
-    domain: labels,
+    domain: order,
     closed: true,
     key: value => {
       if (isMissing(value)) {
@@ -188,7 +192,7 @@ export function thresholdField(
       const bin = thresholdIndex(value, cuts)
       return bin < 0 ? NOT_A_NUMBER_LABEL : labels[bin]!
     },
-    compare: groupKeyComparator([...labels, NOT_A_NUMBER_LABEL]),
+    compare: groupKeyComparator([...order, NOT_A_NUMBER_LABEL]),
     label: key => (key === '' ? NO_VALUE_LABEL : (named.get(key) ?? key)),
     sectionLabel: key => `${field}: ${key === '' ? 'none' : key}`,
     color: key =>

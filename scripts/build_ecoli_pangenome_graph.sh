@@ -756,7 +756,7 @@ cat > pggb_carriage_track.json <<'JSON'
   },
   "displayDefaults": {
     "displayMode": "collapsed",
-    "showLabels": "none",
+    "labels": { "name": { "show": false }, "description": { "show": false } },
     "encoding": {
       "color": {
         "field": "sampleCount",
