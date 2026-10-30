@@ -16,7 +16,6 @@ tutorials/mappability_qc.md 6
 tutorials/pangenome_cactus.md 2
 tutorials/pangenome_cattle.md 7
 tutorials/pangenome_ecoli.md 1
-tutorials/pangenome_hprc_haplotypes.md 3
 tutorials/pangenome_hprc_repeats.md 6
 tutorials/pangenome_hprc.md 12
 tutorials/pangenome_mouse.md 4

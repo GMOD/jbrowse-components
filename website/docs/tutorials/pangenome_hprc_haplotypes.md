@@ -144,8 +144,9 @@ genes across the graph.
 
 Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) and click the
 **CFH / CFHR** example, the complement factor H gene cluster. Under **More about
-this window**, click **Haplotypes**. A lane missing _CFHR3_ and _CFHR1_ (Hughes
-et al. 2006) opens a hole across both.
+this window**, click **Haplotypes**, which opens the lanes under the NCBI RefSeq
+genes (hg38) track. A lane missing _CFHR3_ and _CFHR1_ (Hughes et al. 2006)
+opens a hole across both.
 
 <Figure caption="The CFH cluster from the haplotypes launch. The HG00253 haplotype 2 lane opens a hole where its walk skips CFHR3 and CFHR1." src="/img/pangenome/hprc_cfhr_lanes.png" />
 
@@ -205,6 +206,13 @@ limits of the graph and the VCF behind them.
   haplotype as a deletion row. At IGH, IGK and IGL such a row is often the cell
   line's deletion, as [part 1's limits](/docs/tutorials/pangenome_hprc#limits)
   explain.
+
+At IGL, `chr22:22,800,001-22,850,000`, **Lanes → Choose lanes...** with
+`HG00099.1`, `HG002.1`, `HG00097.1`, `HG002.2` and `HG01074.1` puts two such
+rows at the foot.
+
+<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 sit inside their cell lines' V(D)J deletions, so their rows at the foot draw no ribbons." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
+
 - **A lane can stop partway**, at the end of the graph's alignment of that
   haplotype; its sequence can run on past it.
 - **One lane stands for many haplotypes.** The page picks one haplotype per
