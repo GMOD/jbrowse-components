@@ -8,6 +8,11 @@ import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 
 // The lines between rows, drawn in the rows panel over the canvas. On-screen
 // counterpart of the separators `SvgVariantOverlay` draws in the export.
+//
+// Drawn once `cellData` lands, the payload the cells paint from: the sample
+// list arrives first, and a phased track's rows double only when the payload's
+// ploidy does, so a grid off `sources` alone showed over an empty canvas and
+// then jumped as the cells drew.
 const VariantRowSeparators = observer(function VariantRowSeparators({
   model,
 }: {
@@ -16,12 +21,13 @@ const VariantRowSeparators = observer(function VariantRowSeparators({
   const {
     availableHeight,
     showRowSeparators,
+    cellData,
     sources,
     effectiveRowHeight,
     scrollTop,
     canvasWidthPx,
   } = model
-  return showRowSeparators ? (
+  return showRowSeparators && cellData ? (
     <svg
       style={{
         position: 'absolute',
