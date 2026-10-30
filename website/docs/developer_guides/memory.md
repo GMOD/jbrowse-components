@@ -15,13 +15,13 @@ page describes what stays resident afterward.
 
 ## What retains
 
-| layer                        | unit                        | scope         | bounded by                 |
-| ---------------------------- | --------------------------- | ------------- | -------------------------- |
-| `RemoteFileWithRangeCache`   | compressed bytes            | module        | its size and idle timeout  |
-| the parser's own chunk cache | decompressed bytes          | JS context    | `decompressedBytesBudget`  |
-| the CRAM record cache        | decoded bytes               | JS context    | `decompressedBytesBudget`  |
-| `rpcDataMap`                 | one region's packed columns | display model | the regions the view shows |
-| GPU buffers                  | uploaded vertex data        | display       | per-object guards only     |
+| layer                        | unit                        | scope         | bounded by                    |
+| ---------------------------- | --------------------------- | ------------- | ----------------------------- |
+| `RemoteFileWithRangeCache`   | compressed bytes            | module        | its size and idle timeout     |
+| the parser's own chunk cache | decompressed bytes          | JS context    | `decompressedBytesBudget`     |
+| the CRAM record cache        | decoded bytes               | JS context    | `decompressedBytesBudget`     |
+| `rpcDataMap`                 | one region's packed columns | display model | `MAX_STORED_REGIONS`, a count |
+| GPU buffers                  | uploaded vertex data        | display       | per-object guards only        |
 
 The budget is defined in `packages/core/src/util/cacheBudgets.ts`.
 
