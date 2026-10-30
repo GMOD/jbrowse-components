@@ -287,6 +287,21 @@ describe('a relative plugin url', () => {
 
     expect(loaded[0]).toBe('https://hub.example.org/cfg/plugin.js')
   })
+
+  // a config Desktop opened from disk stamps a file: baseUri, and the loader
+  // takes http(s) only, so the hint above (use umdLoc) would be wrong here
+  test('a umdLoc beside a config on disk says plugins load over http(s)', async () => {
+    const { failures } = await new PluginLoader([
+      {
+        name: 'Local',
+        umdLoc: { uri: 'umd_plugin.js', baseUri: 'file:///data/volvox/' },
+      },
+    ]).loadSettled('file:///opt/JBrowse/resources/app/index.html')
+
+    expect(`${failures[0]!.error}`).toMatch(
+      /"umd_plugin\.js": it resolves to file:\/\/\/data\/volvox\/umd_plugin\.js.*http\(s\)/s,
+    )
+  })
 })
 
 describe('pluginUrl', () => {

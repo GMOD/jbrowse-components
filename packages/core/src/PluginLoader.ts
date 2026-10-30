@@ -186,7 +186,7 @@ async function loadScript(scriptUrl: string, integrity?: string) {
  * ("Cannot load plugins using protocol file:") named the symptom and nothing
  * else, and the reader is usually looking at a third-party hub config.
  */
-function resolvePluginUrl(spec: string, base?: string) {
+function resolvePluginUrl(spec: string, base?: string, againstConfig = false) {
   const url = new URL(spec, base)
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     throw new Error(
@@ -194,7 +194,9 @@ function resolvePluginUrl(spec: string, base?: string) {
       // so there is nothing to explain beyond refusing it
       /^[a-z][a-z0-9+.-]*:/i.test(spec)
         ? `Cannot load plugins using protocol "${url.protocol}"`
-        : `Cannot load plugin from relative url "${spec}": it resolves against this JBrowse instance (${base}), not against the config that named it. Give it an absolute http(s) url, or use the umdLoc/esmLoc form to resolve it against the config.`,
+        : againstConfig
+          ? `Cannot load plugin "${spec}": it resolves to ${url.href}, beside a config opened from disk, and plugins load only over http(s). Serve it over http(s) and name that url.`
+          : `Cannot load plugin from relative url "${spec}": it resolves against this JBrowse instance (${base}), not against the config that named it. Give it an absolute http(s) url, or use the umdLoc/esmLoc form to resolve it against the config.`,
     )
   }
   return url
@@ -248,7 +250,7 @@ function umdPluginUrl(
     ? resolvePluginUrl(def.url, baseUri)
     : 'umdUrl' in def
       ? resolvePluginUrl(def.umdUrl, baseUri)
-      : resolvePluginUrl(def.umdLoc.uri, def.umdLoc.baseUri)
+      : resolvePluginUrl(def.umdLoc.uri, def.umdLoc.baseUri, true)
 }
 
 /**
@@ -315,7 +317,7 @@ export default class PluginLoader {
     const parsedUrl =
       'esmUrl' in def
         ? resolvePluginUrl(def.esmUrl, baseUri)
-        : resolvePluginUrl(def.esmLoc.uri, def.esmLoc.baseUri)
+        : resolvePluginUrl(def.esmLoc.uri, def.esmLoc.baseUri, true)
     if (!this.fetchESM) {
       throw new Error('No ESM fetcher installed')
     }

@@ -8,14 +8,15 @@ import { pathToFileURL } from 'node:url'
 // sibling index from it. Same rule, and same reason, as localFiles.ts.
 const LOCATION_KEYS = new Set(['uri', 'baseUri', 'locationType'])
 
-// `sequence: { adapter: { uri } }` is the one shorthand that carries no second
-// key, so it is indistinguishable from a location node by shape alone. The key
-// it hangs off is what tells them apart, and it is the only such case: every
-// other adapter shorthand names its `type`, and a location always sits on a
-// `*Location` or `location` key.
+// Two nodes are shaped like a location node and are not one, so the key they
+// hang off tells them apart. `sequence: { adapter: { uri } }` is the one adapter
+// shorthand with no `type`. A plugin's `umdLoc`/`esmLoc` is a url the plugin
+// loader resolves against its `baseUri`, never a file openLocation reads.
+const URI_KEEPING_PARENTS = new Set(['adapter', 'umdLoc', 'esmLoc'])
+
 function isLocationNode(record: Record<string, unknown>, parentKey?: string) {
   return (
-    parentKey !== 'adapter' &&
+    !URI_KEEPING_PARENTS.has(parentKey ?? '') &&
     Object.keys(record).every(key => LOCATION_KEYS.has(key))
   )
 }

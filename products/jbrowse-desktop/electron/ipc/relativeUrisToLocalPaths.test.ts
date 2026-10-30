@@ -29,6 +29,27 @@ test('a bare relative uri on a location node becomes a localPath', () => {
   })
 })
 
+// The plugin loader resolves umdLoc/esmLoc as a url against its baseUri; turned
+// into a localPath it had no uri left, and test_data/volvox's UMD plugin failed
+// with a bare "Invalid URL"
+test('a plugin location keeps its uri and gains the config dir as baseUri', () => {
+  const cfg: { plugins: { name: string; umdLoc?: Loc; esmLoc?: Loc }[] } = {
+    plugins: [
+      { name: 'U', umdLoc: { uri: 'umd_plugin.js' } },
+      { name: 'E', esmLoc: { uri: 'esm_plugin.js' } },
+    ],
+  }
+  relativeUrisToLocalPaths(cfg, dir)
+  expect(cfg.plugins[0]!.umdLoc).toEqual({
+    uri: 'umd_plugin.js',
+    baseUri: base,
+  })
+  expect(cfg.plugins[1]!.esmLoc).toEqual({
+    uri: 'esm_plugin.js',
+    baseUri: base,
+  })
+})
+
 // regression: the rewrite used to fire on the adapter itself, deleting the `uri`
 // that normalizeSnapshot keys on. The adapter kept its type and lost its file —
 // bamLocation fell back to the schema default and the track drew nothing, with
