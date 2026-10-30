@@ -212,7 +212,7 @@ async function captureScene(page: Page, scene: (typeof SCENES)[number]) {
   }, selector)
   // A one-color capture is the screenshot racing the paint, not the render:
   // retake it rather than record a blank.
-  let shot = new Uint8Array()
+  let shot: Uint8Array = new Uint8Array()
   let s = { xBlend: 0, yBlend: 0, colors: 0, w: 0, h: 0 }
   for (let attempt = 0; attempt < 5 && s.colors <= 1; attempt++) {
     if (attempt > 0) {

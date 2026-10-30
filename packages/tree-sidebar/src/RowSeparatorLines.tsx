@@ -2,6 +2,7 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { getStrokeProps } from '@jbrowse/core/util'
 import { snappedRowTopPx } from '@jbrowse/render-core/shaders/rowSnap'
+import { observer } from 'mobx-react'
 
 // Hairlines on the boundaries between stacked rows, for the row displays that
 // draw a grid over their painting (multi-wiggle, the multi-row feature
@@ -121,7 +122,7 @@ export function RowSeparatorLines({
  * leaves SVG content where it falls: on a page that puts the display at a
  * fractional device offset, an SVG line lands part-way into a row.
  */
-export function RowSeparatorBoxes({
+export const RowSeparatorBoxes = observer(function RowSeparatorBoxes({
   width,
   opacity,
   ...geometry
@@ -148,4 +149,4 @@ export function RowSeparatorBoxes({
       ))}
     </>
   )
-}
+})
