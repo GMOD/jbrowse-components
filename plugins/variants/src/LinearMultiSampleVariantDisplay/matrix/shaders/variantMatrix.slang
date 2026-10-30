@@ -13,7 +13,7 @@
 //! targets: wgsl, glsl
 //! blend: premultiplied
 //! coverage: analytic
-//! js-export: drawnCellHeightPx, snappedRowTopPx, snappedRowBottomPx
+//! js-export: drawnCellHeightPx
 
 import colorPack;
 import hpmath;

@@ -17,6 +17,12 @@ export interface VariantRenderState {
   canvasHeight: number
   rowHeight: number
   scrollTop: number
+  /**
+   * The grid rows and cells snap to, in device px per CSS px; the canvas's
+   * `backingScale` when unset. The SVG export snaps to 1, so a raster of it at
+   * any whole scale lands every row on a pixel.
+   */
+  snapScale?: number
 }
 
 export type VariantRenderingBackend = PerRegionRenderingBackend<

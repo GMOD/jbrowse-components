@@ -1,13 +1,13 @@
 import { backingScale } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  snappedRowBottomPx,
+  snappedRowTopPx,
+} from '@jbrowse/render-core/shaders/rowSnap'
 
 import { matrixCellMark } from '../matrix/matrixCellMark.ts'
 import { matrixCellAt } from '../matrix/matrixHitTest.ts'
 import { cellMark } from './cellMark.ts'
-import {
-  drawnCellHeightPx,
-  snappedRowBottomPx,
-  snappedRowTopPx,
-} from './shaders/variant.js.generated.ts'
+import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
 import { computeVariantHitQuery } from './variantHitTest.ts'
 import { SHAPE_RECT } from './variantShape.ts'
 

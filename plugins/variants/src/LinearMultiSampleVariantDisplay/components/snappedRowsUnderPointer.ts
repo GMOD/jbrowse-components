@@ -1,7 +1,7 @@
 import {
   snappedRowBottomPx,
   snappedRowTopPx,
-} from './shaders/variant.js.generated.ts'
+} from '@jbrowse/render-core/shaders/rowSnap'
 
 /**
  * The rows whose drawn band covers the device pixel under `mouseY`, nearest

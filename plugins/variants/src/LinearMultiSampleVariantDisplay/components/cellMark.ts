@@ -5,6 +5,10 @@ import {
   projectBp,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
+import {
+  snappedRowBottomPx,
+  snappedRowTopPx,
+} from '@jbrowse/render-core/shaders/rowSnap'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as shader from './shaders/variant.generated.ts'
@@ -12,8 +16,6 @@ import {
   drawnCellHeightPx,
   snappedCellLeftPx,
   snappedCellWidthPx,
-  snappedRowBottomPx,
-  snappedRowTopPx,
 } from './shaders/variant.js.generated.ts'
 import { drawVariantShape } from './variantShape.ts'
 
@@ -38,6 +40,8 @@ export interface CellParams {
   rowHeight: number
   /** Rows-area scroll offset in CSS px. */
   scrollTop: number
+  /** The grid cells snap to; the canvas's `backingScale` when unset. */
+  snapScale?: number
 }
 
 interface CellFrame extends BpProjection {
@@ -68,8 +72,8 @@ function cellFrame(
     rowHeight: params.rowHeight,
     scrollTop: params.scrollTop,
     drawnHeight: drawnCellHeightPx(params.rowHeight),
-    dpr: backingScale(frame.canvasHeight),
-    dprX: backingScale(frame.canvasWidth),
+    dpr: params.snapScale ?? backingScale(frame.canvasHeight),
+    dprX: params.snapScale ?? backingScale(frame.canvasWidth),
     height: 0,
     left: 0,
     top: 0,
@@ -147,8 +151,8 @@ export const cellMark: MarkShape<CellChannels, CellParams> = {
       rowHeight: params.rowHeight,
       scrollTop: params.scrollTop,
       drawnHeight: drawnCellHeightPx(params.rowHeight),
-      dpr: backingScale(frame.canvasHeight),
-      dprX: backingScale(frame.canvasWidth),
+      dpr: params.snapScale ?? backingScale(frame.canvasHeight),
+      dprX: params.snapScale ?? backingScale(frame.canvasWidth),
       height: 0,
       left: 0,
       top: 0,

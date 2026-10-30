@@ -71,7 +71,7 @@ function VariantMatrixSvgBody({
           marks={VARIANT_MATRIX_MARKS}
           regions={model.paintedRegionRows}
           blocks={model.matrixBlocks}
-          state={renderState}
+          state={{ ...renderState, snapScale: 1 }}
           width={renderState.canvasWidth}
           height={renderState.canvasHeight}
           opts={opts}

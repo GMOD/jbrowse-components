@@ -1,11 +1,11 @@
 import { backingScale } from '@jbrowse/render-core/canvas2dUtils'
+import { snappedRowTopPx } from '@jbrowse/render-core/shaders/rowSnap'
 import { render } from '@testing-library/react'
 
 import { cellDataOf } from '../../shared/cellDataFixtures.ts'
 import { createTestEnvironment } from '../testEnv.ts'
 import SvgVariantOverlay from './SvgVariantOverlay.tsx'
 import VariantRowSeparators from './VariantRowSeparators.tsx'
-import { snappedRowTopPx } from './shaders/variant.js.generated.ts'
 
 type Display = ReturnType<
   ReturnType<typeof createTestEnvironment>['createDisplay']
@@ -50,8 +50,18 @@ test('the separators wait for the payload the cells draw', () => {
   expect(container.querySelectorAll('line').length).toBeGreaterThan(10)
 })
 
-const renderers: [string, (d: Display) => HTMLElement | SVGElement][] = [
-  ['on screen', d => render(<VariantRowSeparators model={d} />).container],
+// The grid each surface snaps its rows to: the screen's backing store, or the
+// export's whole CSS px.
+const renderers: [
+  string,
+  (d: Display) => HTMLElement | SVGElement,
+  (availableHeight: number) => number,
+][] = [
+  [
+    'on screen',
+    d => render(<VariantRowSeparators model={d} />).container,
+    backingScale,
+  ],
   [
     'in the SVG export',
     d =>
@@ -62,17 +72,18 @@ const renderers: [string, (d: Display) => HTMLElement | SVGElement][] = [
           </SvgVariantOverlay>
         </svg>,
       ).container,
+    () => 1,
   ],
 ]
 
 // Each line fills the device pixels just below a row's snapped top, the edge
 // the cell painters and the GPU passes put that row on.
-describe.each(renderers)('row separators %s', (_, renderLines) => {
+describe.each(renderers)('row separators %s', (_, renderLines, scaleOf) => {
   test.each([1, 1.25, 1.5, 2])('sit on the cells’ row edges at dpr %d', dpr => {
     withDpr(dpr, () => {
       const display = createDisplay()
       const { effectiveRowHeight, scrollTop, availableHeight } = display
-      const scale = backingScale(availableHeight)
+      const scale = scaleOf(availableHeight)
       const lines = [...renderLines(display).querySelectorAll('line')]
       expect(lines.length).toBeGreaterThan(10)
       const rowTops = new Set(

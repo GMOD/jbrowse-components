@@ -20,6 +20,7 @@ export const VARIANT_MARKS = [
     params: (s: VariantRenderState) => ({
       rowHeight: s.rowHeight,
       scrollTop: s.scrollTop,
+      snapScale: s.snapScale,
     }),
   }),
 ]

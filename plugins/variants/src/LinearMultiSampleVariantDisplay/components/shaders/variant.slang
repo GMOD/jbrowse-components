@@ -11,7 +11,7 @@
 //! blend: premultiplied
 //! coverage: analytic
 //! export-consts: SHAPE_RECT, SHAPE_TRI_LEFT, MIN_CELL_PX
-//! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx, inversionCoverage, snappedRowTopPx, snappedRowBottomPx
+//! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx, inversionCoverage
 //! js-skip: snapCellEdgePx — reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor
 
 import antialias;

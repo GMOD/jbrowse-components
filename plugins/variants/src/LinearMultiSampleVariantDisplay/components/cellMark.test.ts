@@ -212,3 +212,27 @@ describe.each(regions)('$name', ({ start, bp, px }) => {
     })
   })
 })
+
+// An SVG export has no screen of its own, so it snaps to whole CSS px, which
+// lands every cell on a pixel at any whole raster scale, whatever the
+// exporting screen's ratio.
+test('an export at snapScale 1 puts every cell on the CSS px grid at dpr 1.25', () => {
+  const block: RenderBlock = {
+    displayedRegionIndex: 0,
+    start: 52_000,
+    end: 52_400,
+    screenStartPx: 0,
+    screenEndPx: 800,
+    reversed: false,
+  }
+  const params = { rowHeight: 7.3, scrollTop: 0.37, snapScale: 1 }
+  const { calls } = withDpr(1.25, () =>
+    paintWith(cellMark, cells(52_000, 400), block, params),
+  )
+  expect(calls.length).toBeGreaterThan(0)
+  for (const c of calls) {
+    for (const v of [c.x, c.y, c.w, c.h]) {
+      expect(v).toBe(Math.round(v))
+    }
+  }
+})

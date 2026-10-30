@@ -1,4 +1,3 @@
-import { backingScale } from '@jbrowse/render-core/canvas2dUtils'
 import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { SEPARATOR_OPACITY } from '../../shared/constants.ts'
@@ -57,7 +56,7 @@ const SvgVariantOverlay = ({
             opacity={SEPARATOR_OPACITY}
             scrollTop={scrollTop}
             viewportHeight={availableHeight}
-            dpr={backingScale(availableHeight)}
+            dpr={1}
           />
         ) : null}
         {overlays ? (

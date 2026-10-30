@@ -1,10 +1,12 @@
+import {
+  snappedRowBottomPx,
+  snappedRowTopPx,
+} from '../../../packages/render-core/src/shaders/rowSnap.js.generated.ts'
 import * as variant from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/shaders/variant.generated.ts'
 import {
   drawnCellHeightPx,
   snappedCellLeftPx,
   snappedCellWidthPx,
-  snappedRowBottomPx,
-  snappedRowTopPx,
 } from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/shaders/variant.js.generated.ts'
 import { abgr, defineFixture, paintOver, rgba } from '../fixture.ts'
 

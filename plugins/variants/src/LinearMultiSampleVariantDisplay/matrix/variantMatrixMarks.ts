@@ -20,6 +20,7 @@ export const VARIANT_MATRIX_MARKS = [
       numFeatures: d.featureInfo.length,
       rowHeight: s.rowHeight,
       scrollTop: s.scrollTop,
+      snapScale: s.snapScale,
     }),
   }),
 ]

@@ -1,14 +1,14 @@
 import { backingScale } from '@jbrowse/render-core/canvas2dUtils'
 import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
+import {
+  snappedRowBottomPx,
+  snappedRowTopPx,
+} from '@jbrowse/render-core/shaders/rowSnap'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { f2 } from '../../shared/constants.ts'
 import * as shader from './shaders/variantMatrix.generated.ts'
-import {
-  drawnCellHeightPx,
-  snappedRowBottomPx,
-  snappedRowTopPx,
-} from './shaders/variantMatrix.js.generated.ts'
+import { drawnCellHeightPx } from './shaders/variantMatrix.js.generated.ts'
 
 import type { InkRect, MarkFrame, MarkShape } from '@jbrowse/render-core/marks'
 
@@ -30,6 +30,8 @@ interface MatrixCellParams {
   rowHeight: number
   /** Rows-area scroll offset in CSS px. */
   scrollTop: number
+  /** The grid rows snap to; the canvas's `backingScale` when unset. */
+  snapScale?: number
 }
 
 /**
@@ -68,7 +70,7 @@ export const matrixCellMark: MarkShape<MatrixCellChannels, MatrixCellParams> = {
     // variant keeps the whole pixel the GPU gives it over the reference cells
     // it shares that pixel with, and rows tile without a seam.
     const setFill = makeAbgrFill(ctx)
-    const dpr = backingScale(frame.canvasHeight)
+    const dpr = params.snapScale ?? backingScale(frame.canvasHeight)
     for (let i = 0; i < count; i++) {
       const r = cellRect(channels, frame, params, dpr, i)
       if (r) {
@@ -83,7 +85,7 @@ export const matrixCellMark: MarkShape<MatrixCellChannels, MatrixCellParams> = {
       channels,
       frame,
       params,
-      backingScale(frame.canvasHeight),
+      params.snapScale ?? backingScale(frame.canvasHeight),
       i,
     )
   },

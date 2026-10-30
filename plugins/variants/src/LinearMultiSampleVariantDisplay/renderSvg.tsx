@@ -59,7 +59,7 @@ function VariantSvgBody({
         marks={VARIANT_MARKS}
         regions={perRegionCellMap}
         blocks={renderBlocks}
-        state={renderState}
+        state={{ ...renderState, snapScale: 1 }}
         width={canvasWidth}
         height={canvasHeight}
         opts={opts}

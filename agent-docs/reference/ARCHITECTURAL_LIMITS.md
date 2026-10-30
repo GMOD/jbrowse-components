@@ -127,7 +127,8 @@ grows a track to its whole content.
   both variant passes' row edges (`rowSnap.slang`, fed `clip.scaleY`) and the
   cell pass's x (`clip.scaleX`, placed through `pxX`/`pxW`). Their Canvas2D
   painters and hit tests snap to `backingScale` of the canvas's height and
-  width, which matches except on a drawing buffer Chrome shrank.
+  width, which matches except on a drawing buffer Chrome shrank. Their SVG
+  export snaps to whole CSS px (`snapScale: 1`), whatever screen exports it.
 - **Uncapped, the reported scale is the dpr itself**, and the canvas's CSS box
   is the store over the dpr, so the browser draws the store 1:1
   (GPU_SHADERS.md §"Canvas scaling & hi-DPI").
