@@ -209,8 +209,10 @@ because MST attaches a display before its session. The checks with their own cos
 (the figure's `MutationObserver`, `installUpload`'s payload walk) ask
 `contractReportsOn()` and need the channel armed before mount.
 
-**A test fails on any report.** `config/jest/contractGate.js` fails the test that
-collected a `[jbrowse <family> contract]` message. A test provoking one on
+**A test fails on any report.** `@jbrowse/display-kit/conformance/contractGate`,
+installed by `config/jest/contractGate.js` here and by a plugin's own test
+setup out of tree, fails the test that collected a `[jbrowse <family> contract]`
+message. A test provoking one on
 purpose reads it with `takeContractReports()`; a test that mocks `console.error`
 leaves the gate entirely, which is why display harnesses silence only
 `console.warn`. A report from a debounced autorun lands after its test returns

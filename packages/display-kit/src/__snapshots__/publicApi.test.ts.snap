@@ -49,6 +49,8 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./colorByMenu",
   "./colorConfigSchema",
   "./configSchema",
+  "./conformance/contractGate",
+  "./conformance/lintRules",
   "./const",
   "./displayAutoruns",
   "./facetConfigSchema",

@@ -21,3 +21,56 @@ foundation or mixin, a chrome piece, a host contract, a config-schema fragment,
 or a module whose types an exported declaration names. A foundation's own
 machinery, such as the autoruns it installs, stays unexported, since the host
 serves every subpath to plugins (ADR-128).
+
+## Conformance
+
+The checks this tree runs on its own displays, for a plugin repo to run on its
+own. The host never serves `conformance/*`, so a plugin imports these from its
+installed copy, in lint and test setup only.
+
+`conformance/lintRules` holds the `no-restricted-syntax` selectors that catch a
+display breaking a contract no type states, such as a fetch hook declared in
+`.actions()` or a gate mixin composed before the foundation. Flat config
+replaces a rule rather than merging it, so spread them into your own entry:
+
+```js
+import {
+  displayRestrictedSyntax,
+  noUseEffectEvent,
+  unobservedComponents,
+} from '@jbrowse/display-kit/conformance/lintRules'
+
+export default [
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': ['error', ...displayRestrictedSyntax],
+      'no-restricted-imports': ['error', { paths: [noUseEffectEvent] }],
+    },
+  },
+  {
+    files: ['src/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...displayRestrictedSyntax,
+        ...unobservedComponents,
+      ],
+    },
+  },
+]
+```
+
+`conformance/contractGate` fails a test when a runtime contract check reports.
+Those checks report through `console.error` and never throw, so without it a
+violation prints and the suite stays green. In a vitest setup file:
+
+```js
+import { installContractGate } from '@jbrowse/display-kit/conformance/contractGate'
+import { afterAll, afterEach } from 'vitest'
+
+installContractGate({ afterEach, afterAll })
+```
+
+A test that provokes a violation on purpose takes it with
+`takeContractReports()` from the same module and asserts on it.

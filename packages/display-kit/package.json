@@ -115,7 +115,9 @@
     "./trackHeightConfigSchemaFields": "./src/trackHeightConfigSchemaFields.ts",
     "./triangleTransform": "./src/triangleTransform.ts",
     "./types": "./src/types.ts",
-    "./viewRegionTable": "./src/viewRegionTable.ts"
+    "./viewRegionTable": "./src/viewRegionTable.ts",
+    "./conformance/contractGate": "./src/conformance/contractGate.ts",
+    "./conformance/lintRules": "./src/conformance/lintRules.ts"
   },
   "scripts": {
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
@@ -234,7 +236,9 @@
       "./trackHeightConfigSchemaFields": "./esm/trackHeightConfigSchemaFields.js",
       "./triangleTransform": "./esm/triangleTransform.js",
       "./types": "./esm/types.js",
-      "./viewRegionTable": "./esm/viewRegionTable.js"
+      "./viewRegionTable": "./esm/viewRegionTable.js",
+      "./conformance/contractGate": "./esm/conformance/contractGate.js",
+      "./conformance/lintRules": "./esm/conformance/lintRules.js"
     }
   },
   "sideEffects": false

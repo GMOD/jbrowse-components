@@ -153,9 +153,14 @@ for (const pkg of SERVED) {
   if (manifest.exports) {
     for (const [sub, target] of Object.entries(manifest.exports)) {
       // the registry itself, which nothing outside the host has any business
-      // resolving at runtime, and the shader sources and their layout
-      // constants, which a plugin reaches through defineMark instead
-      if (sub.includes('/ReExports/') || sub.startsWith('./shaders/')) {
+      // resolving at runtime, the shader sources and their layout constants,
+      // which a plugin reaches through defineMark instead, and the conformance
+      // kit, which a plugin's lint and test setup import and its bundle never
+      if (
+        sub.includes('/ReExports/') ||
+        sub.startsWith('./shaders/') ||
+        sub.startsWith('./conformance/')
+      ) {
         continue
       }
       const key = sub === '.' ? pkg : pkg + sub.slice(1)
