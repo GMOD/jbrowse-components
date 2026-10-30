@@ -758,6 +758,17 @@ Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_kras/
 - https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb
 - https://jbrowse.org/ucsc/hg38/config.json
 
+## Variants on protein structures part 7: MET exon 14 skipping
+
+Find an exon skipped in RNA-seq reads, find the DNA change that causes it at the splice site, and follow the missing exon onto a crystal structure of the protein it would have bound, in MET from two lung cancer cell lines
+
+Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_met_exon14/
+
+- https://jbrowse.org/demos/metex14/EBC-1_RNA_5pct.bam
+- https://jbrowse.org/demos/metex14/NCI-H596_DNA.bam
+- https://jbrowse.org/demos/metex14/NCI-H596_RNA.bam
+- https://jbrowse.org/ucsc/hg38/config.json
+
 ## Variants on protein structures part 3: seedless grapes on an AlphaFold model
 
 Open the grapevine seedlessness gene VviAGL11 on codon 197 beside its AlphaFold model, and read the model's per-residue confidence before reading anything into the residue the seedless allele changes

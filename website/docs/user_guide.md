@@ -181,6 +181,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/protein_variants_kras)
 - [](/docs/tutorials/protein_variants_tp53)
 - [](/docs/tutorials/protein_variants_braf)
+- [](/docs/tutorials/protein_variants_met_exon14)
 
 ### Genes & annotation
 
