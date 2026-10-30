@@ -118,11 +118,8 @@ describe('the containing feature the panel is told about', () => {
   function setupOpening() {
     const { createDisplay } = createTestEnvironment()
     const { display, mockRpcCall, session } = createDisplay()
-    mockRpcCall.mockImplementation(
-      async (_sessionId: string, method: string) =>
-        method === 'GetBasicFeatureDetails'
-          ? { feature: edenRecord }
-          : undefined,
+    mockRpcCall.mockImplementation(async (_sessionId: string, method: string) =>
+      method === 'GetBasicFeatureDetails' ? { feature: edenRecord } : undefined,
     )
     display.setRpcData(0, makeFeatureData({ flatbushItems: [gene] }), ctgA)
     return { display, session }

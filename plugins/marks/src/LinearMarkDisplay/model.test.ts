@@ -533,8 +533,8 @@ test('the track menu offers the mark form and, under Advanced, the plot as text'
     'Edit marks...',
   )
   expect(
-    (advanced && 'subMenu' in advanced ? resolveSubMenu(advanced) : []).map(
-      i => ('label' in i ? i.label : ''),
+    (advanced && 'subMenu' in advanced ? resolveSubMenu(advanced) : []).map(i =>
+      'label' in i ? i.label : '',
     ),
   ).toEqual(['Edit plot...'])
 })
