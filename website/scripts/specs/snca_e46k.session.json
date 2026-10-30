@@ -6,22 +6,20 @@
       "type": "LinearGenomeView",
       "colorByCDS": false,
       "hideHeaderOverview": true,
-      "init": {
-        "assembly": "hg38",
-        "loc": "chr4:89828159-89828179[rev] chr4:89822303-89822323[rev]",
-        "tracks": [
-          {
-            "trackId": "snca-residues",
-            "type": "LinearBasicDisplay",
-            "height": 28,
-            "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
-          },
-          {
-            "trackId": "snca-mane",
-            "height": 34
-          }
-        ]
-      }
+      "assembly": "hg38",
+      "loc": "chr4:89828159-89828179[rev] chr4:89822303-89822323[rev]",
+      "tracks": [
+        {
+          "trackId": "snca-residues",
+          "type": "LinearBasicDisplay",
+          "height": 28,
+          "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
+        },
+        {
+          "trackId": "snca-mane",
+          "height": 34
+        }
+      ]
     },
     {
       "id": "protein-SNCA-6cu7",

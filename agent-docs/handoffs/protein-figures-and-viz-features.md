@@ -278,8 +278,6 @@ blinded ideator given only a capability sheet, a landscape survey):
   rejected a session current main accepts. The scratch `shoot.mjs` hid it by
   loading the hosted build. Capture without `--port` to build the worktree's
   own, or rebuild the primary's.
-- Every protein figure session but `hbb_e6v` still nests the genome view's
-  settings under `init`, which main now warns is deprecated.
 - A 3 Å distance line's label lands on the residue labels; the wild-type
   Glu46–Lys80 line was tried on SNCA and dropped.
 - `/tmp` is a 16 GB quota tmpfs, so run captures with `TMPDIR=/var/tmp/<dir>`.

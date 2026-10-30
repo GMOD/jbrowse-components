@@ -6,52 +6,50 @@
       "type": "LinearGenomeView",
       "colorByCDS": false,
       "hideHeaderOverview": true,
-      "init": {
-        "assembly": "hg38",
-        "loc": "chr3:46373391-46373606",
-        "tracks": [
-          {
-            "trackId": "ccr5-mane",
-            "height": 40
+      "assembly": "hg38",
+      "loc": "chr3:46373391-46373606",
+      "tracks": [
+        {
+          "trackId": "ccr5-mane",
+          "height": 40
+        },
+        {
+          "trackId": "ccr5-HG00137",
+          "height": 80,
+          "sort": {
+            "field": "base",
+            "pos": 46373468,
+            "refName": "chr3"
           },
-          {
-            "trackId": "ccr5-HG00137",
-            "height": 80,
-            "sort": {
-              "field": "base",
-              "pos": 46373468,
-              "refName": "chr3"
-            },
-            "pileup": {
-              "mark": { "height": 3 }
-            }
-          },
-          {
-            "trackId": "ccr5-HG00101",
-            "height": 80,
-            "sort": {
-              "field": "base",
-              "pos": 46373468,
-              "refName": "chr3"
-            },
-            "pileup": {
-              "mark": { "height": 3 }
-            }
-          },
-          {
-            "trackId": "ccr5-HG00096",
-            "height": 80,
-            "sort": {
-              "field": "base",
-              "pos": 46373468,
-              "refName": "chr3"
-            },
-            "pileup": {
-              "mark": { "height": 3 }
-            }
+          "pileup": {
+            "mark": { "height": 3 }
           }
-        ]
-      }
+        },
+        {
+          "trackId": "ccr5-HG00101",
+          "height": 80,
+          "sort": {
+            "field": "base",
+            "pos": 46373468,
+            "refName": "chr3"
+          },
+          "pileup": {
+            "mark": { "height": 3 }
+          }
+        },
+        {
+          "trackId": "ccr5-HG00096",
+          "height": 80,
+          "sort": {
+            "field": "base",
+            "pos": 46373468,
+            "refName": "chr3"
+          },
+          "pileup": {
+            "mark": { "height": 3 }
+          }
+        }
+      ]
     },
     {
       "id": "synteny-gene",

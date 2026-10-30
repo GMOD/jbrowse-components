@@ -9,20 +9,18 @@
       "axis": {
         "grid": true
       },
-      "init": {
-        "assembly": "hg38",
-        "loc": "chr17:7674850-7674940[rev]",
-        "tracks": [
-          {
-            "trackId": "tp53-sge",
-            "height": 190
-          },
-          {
-            "trackId": "tp53-mane",
-            "height": 50
-          }
-        ]
-      }
+      "assembly": "hg38",
+      "loc": "chr17:7674850-7674940[rev]",
+      "tracks": [
+        {
+          "trackId": "tp53-sge",
+          "height": 190
+        },
+        {
+          "trackId": "tp53-mane",
+          "height": 50
+        }
+      ]
     },
     {
       "id": "protein-TP53-2xwr",

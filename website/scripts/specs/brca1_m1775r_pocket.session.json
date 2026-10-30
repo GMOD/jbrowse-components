@@ -6,28 +6,26 @@
       "type": "LinearGenomeView",
       "colorByCDS": false,
       "hideHeaderOverview": true,
-      "init": {
-        "assembly": "hg38",
-        "loc": "chr17:43051047-43051094[rev]",
-        "tracks": [
-          {
-            "trackId": "brca1_sge_missense",
-            "height": 112
-          },
-          {
-            "trackId": "brca1-codon1775",
-            "type": "LinearBasicDisplay",
-            "height": 86,
-            "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
-          },
-          {
-            "trackId": "brca1-clinvar-1775",
-            "height": 60,
-            "type": "LinearBasicDisplay",
-            "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
-          }
-        ]
-      }
+      "assembly": "hg38",
+      "loc": "chr17:43051047-43051094[rev]",
+      "tracks": [
+        {
+          "trackId": "brca1_sge_missense",
+          "height": 112
+        },
+        {
+          "trackId": "brca1-codon1775",
+          "type": "LinearBasicDisplay",
+          "height": 86,
+          "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
+        },
+        {
+          "trackId": "brca1-clinvar-1775",
+          "height": 60,
+          "type": "LinearBasicDisplay",
+          "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
+        }
+      ]
     },
     {
       "id": "protein-BRCA1-1t15",

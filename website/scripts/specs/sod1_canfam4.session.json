@@ -7,11 +7,9 @@
       "colorByFrame": true,
       "hideHeaderOverview": true,
       "axis": { "grid": true },
-      "init": {
-        "assembly": "canFam4",
-        "loc": "chr31:27123013-27123103",
-        "tracks": ["canFam4-ncbiRefSeqCurated"]
-      }
+      "assembly": "canFam4",
+      "loc": "chr31:27123013-27123103",
+      "tracks": ["canFam4-ncbiRefSeqCurated"]
     },
     {
       "id": "msa-SOD1",

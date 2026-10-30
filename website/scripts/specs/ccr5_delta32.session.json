@@ -6,49 +6,47 @@
       "type": "LinearGenomeView",
       "colorByCDS": false,
       "hideHeaderOverview": true,
-      "init": {
-        "assembly": "hg38",
-        "loc": "chr3:46373391-46373606",
-        "tracks": [
-          {
-            "trackId": "ccr5-mane",
-            "height": 50
-          },
-          {
-            "trackId": "ccr5-HG00137",
-            "height": 160,
-            "sort": {
-              "field": "base",
-              "pos": 46373468,
-              "refName": "chr3"
-            }
-          },
-          {
-            "trackId": "ccr5-HG00101",
-            "height": 160,
-            "sort": {
-              "field": "base",
-              "pos": 46373468,
-              "refName": "chr3"
-            }
-          },
-          {
-            "trackId": "ccr5-HG00096",
-            "height": 160,
-            "sort": {
-              "field": "base",
-              "pos": 46373468,
-              "refName": "chr3"
-            }
-          },
-          {
-            "trackId": "ccr5-frameshift",
-            "type": "LinearBasicDisplay",
-            "height": 54,
-            "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
+      "assembly": "hg38",
+      "loc": "chr3:46373391-46373606",
+      "tracks": [
+        {
+          "trackId": "ccr5-mane",
+          "height": 50
+        },
+        {
+          "trackId": "ccr5-HG00137",
+          "height": 160,
+          "sort": {
+            "field": "base",
+            "pos": 46373468,
+            "refName": "chr3"
           }
-        ]
-      }
+        },
+        {
+          "trackId": "ccr5-HG00101",
+          "height": 160,
+          "sort": {
+            "field": "base",
+            "pos": 46373468,
+            "refName": "chr3"
+          }
+        },
+        {
+          "trackId": "ccr5-HG00096",
+          "height": 160,
+          "sort": {
+            "field": "base",
+            "pos": 46373468,
+            "refName": "chr3"
+          }
+        },
+        {
+          "trackId": "ccr5-frameshift",
+          "type": "LinearBasicDisplay",
+          "height": 54,
+          "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
+        }
+      ]
     },
     {
       "id": "protein-CCR5-6meo",

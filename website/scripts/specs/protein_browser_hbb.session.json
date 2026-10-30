@@ -7,15 +7,13 @@
       "colorByFrame": true,
       "hideHeaderOverview": true,
       "axis": { "grid": false },
-      "init": {
-        "assembly": "hg38",
-        "loc": "chr11:5226890-5227061[rev] chr11:5226537-5226839[rev] chr11:5225558-5225766[rev]",
-        "tracks": [
-          "hg38-ncbiRefSeqSelect",
-          "hg38-clinvarMain",
-          "hg38-alphaMissense"
-        ]
-      }
+      "assembly": "hg38",
+      "loc": "chr11:5226890-5227061[rev] chr11:5226537-5226839[rev] chr11:5225558-5225766[rev]",
+      "tracks": [
+        "hg38-ncbiRefSeqSelect",
+        "hg38-clinvarMain",
+        "hg38-alphaMissense"
+      ]
     },
     {
       "id": "msa-HBB",

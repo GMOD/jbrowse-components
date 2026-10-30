@@ -21,7 +21,6 @@ import type {
 //   AlphaFold pLDDT 57.6 there.
 
 export interface ViewJson {
-  init?: object
   [key: string]: unknown
 }
 
@@ -83,7 +82,8 @@ export function linkedSession(
 ) {
   const session = structuredClone(base)
   const [lgv, msa, protein] = session.views as [ViewJson, ViewJson, ViewJson]
-  lgv.init = { ...lgv.init, loc, tracks }
+  lgv.loc = loc
+  lgv.tracks = tracks
   lgv.axis = { grid: true }
   msa.height = msaHeight
   msa.displayName = msaName

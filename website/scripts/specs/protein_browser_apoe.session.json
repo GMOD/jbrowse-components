@@ -7,15 +7,13 @@
       "colorByCDS": true,
       "hideHeaderOverview": true,
       "showGridlines": false,
-      "init": {
-        "assembly": "hg38",
-        "loc": "chr19:44906585-44906707 chr19:44907720-44907992 chr19:44908493-44909290",
-        "tracks": [
-          "hg38-ncbiRefSeqSelect",
-          "hg38-clinvarMain",
-          "hg38-alphaMissense"
-        ]
-      }
+      "assembly": "hg38",
+      "loc": "chr19:44906585-44906707 chr19:44907720-44907992 chr19:44908493-44909290",
+      "tracks": [
+        "hg38-ncbiRefSeqSelect",
+        "hg38-clinvarMain",
+        "hg38-alphaMissense"
+      ]
     },
     {
       "id": "msa-APOE",

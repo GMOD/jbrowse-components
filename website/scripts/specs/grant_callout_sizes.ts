@@ -109,8 +109,7 @@ const sickleSpec = {
       t => (t as { trackId: string }).trackId !== KG,
     )
     const [lgv, msa, protein] = session.views as [ViewJson, ViewJson, ViewJson]
-    const init = lgv.init as { tracks: { trackId: string }[] }
-    init.tracks = init.tracks
+    lgv.tracks = (lgv.tracks as { trackId: string }[])
       .filter(t => t.trackId !== KG)
       .map(t => (t.trackId === GWAS_SUBSET ? { ...t, height: 240 } : t))
     msa.showDomains = true

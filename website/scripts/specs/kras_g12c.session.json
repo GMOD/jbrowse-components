@@ -9,22 +9,20 @@
       "axis": {
         "grid": true
       },
-      "init": {
-        "assembly": "hg38",
-        "loc": "chr12:25245330-25245370[rev]",
-        "tracks": [
-          {
-            "trackId": "kras-mane",
-            "height": 40
-          },
-          {
-            "trackId": "kras-codon12",
-            "type": "LinearBasicDisplay",
-            "height": 150,
-            "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
-          }
-        ]
-      }
+      "assembly": "hg38",
+      "loc": "chr12:25245330-25245370[rev]",
+      "tracks": [
+        {
+          "trackId": "kras-mane",
+          "height": 40
+        },
+        {
+          "trackId": "kras-codon12",
+          "type": "LinearBasicDisplay",
+          "height": 150,
+          "encoding": { "color": { "value": "jexl:get(feature,'color')" } }
+        }
+      ]
     },
     {
       "id": "protein-KRAS-4obe",

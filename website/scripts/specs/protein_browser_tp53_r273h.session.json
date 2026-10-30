@@ -7,15 +7,13 @@
       "colorByCDS": true,
       "hideHeaderOverview": true,
       "showGridlines": false,
-      "init": {
-        "assembly": "hg38",
-        "loc": "chr17:7676481-7676634[rev] chr17:7676342-7676443[rev] chr17:7675954-7676312[rev] chr17:7675013-7675276[rev] chr17:7674819-7675011[rev] chr17:7674141-7674330[rev] chr17:7673661-7673877[rev] chr17:7673495-7673648[rev] chr17:7670569-7670755[rev] chr17:7669569-7669730[rev]",
-        "tracks": [
-          "hg38-ncbiRefSeqSelect",
-          "hg38-clinvarMain",
-          "hg38-alphaMissense"
-        ]
-      }
+      "assembly": "hg38",
+      "loc": "chr17:7676481-7676634[rev] chr17:7676342-7676443[rev] chr17:7675954-7676312[rev] chr17:7675013-7675276[rev] chr17:7674819-7675011[rev] chr17:7674141-7674330[rev] chr17:7673661-7673877[rev] chr17:7673495-7673648[rev] chr17:7670569-7670755[rev] chr17:7669569-7669730[rev]",
+      "tracks": [
+        "hg38-ncbiRefSeqSelect",
+        "hg38-clinvarMain",
+        "hg38-alphaMissense"
+      ]
     },
     {
       "id": "msa-TP53",
