@@ -92,6 +92,7 @@ noticing in a diff.
 | type 'LinkInstance' is outside the supported scalar subset | 4 | `curveVertex`, `footBlockStart`, `footCorner`, `footVertex` |
 | type 'texture_2d' is outside the supported scalar subset | 4 | `markScaleColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
 | type 'VsOut' is outside the supported scalar subset | 4 | `culled`, `linkDash`, `linkDashAlong`, `linkDistance` |
+| type 'RowRectUniforms' is outside the supported scalar subset | 3 | `rowRectClipPos`, `rowRectClipPosOnDeviceRows`, `rowRectCorner` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
 | type 'RibbonInstance' is outside the supported scalar subset | 2 | `footAngles`, `ribbonAngles` |
@@ -104,7 +105,6 @@ noticing in a diff.
 | type 'ConnectorInstance' is outside the supported scalar subset | 1 | `placeCubic` |
 | type 'CoverageVsOut' is outside the supported scalar subset | 1 | `covDiscardVertex` |
 | type 'RowBand' is outside the supported scalar subset | 1 | `rowBandPx` |
-| type 'RowRectUniforms' is outside the supported scalar subset | 1 | `rowRectClipPos` |
 | type 'WiggleFillInstance' is outside the supported scalar subset | 1 | `clipStripVertex` |
 
 ## Exported, but nothing imports it

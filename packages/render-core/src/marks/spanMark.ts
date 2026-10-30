@@ -4,6 +4,10 @@ import {
   drawnRowHeightPx,
   rowBandOffsetPx,
 } from '../shaders/rowRect.js.generated.ts'
+import {
+  snappedRowBottomPx,
+  snappedRowTopPx,
+} from '../shaders/rowSnap.js.generated.ts'
 import * as shader from '../shaders/spanMark.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
@@ -93,12 +97,6 @@ function spanFrame(block: RenderBlock, params: SpanParams): SpanFrame {
   }
 }
 
-// A y on the device px `rowSnap.slang` puts a row edge on, so two rows meeting
-// on a fractional px share no blended seam on Canvas2D.
-function onDevicePx(y: number, dpr: number) {
-  return Math.round(y * dpr) / dpr
-}
-
 function placeSpan(c: SpanChannels, g: SpanFrame, i: number, seamPx = 0) {
   const slot = rowSlot(c.row, i, g.table)
   if (slot === undefined) {
@@ -107,13 +105,14 @@ function placeSpan(c: SpanChannels, g: SpanFrame, i: number, seamPx = 0) {
   const xa = projectBp(g, c.x[i]!)
   const xb = projectBp(g, c.x2[i]!)
   const width = Math.max(g.minWidthPx, Math.abs(xb - xa))
-  const top = g.bandOffsetPx + g.rowHeight * slot - g.scrollTop
+  // the shader's rows (`rowRectClipPosOnDeviceRows`), so two rows meeting on a
+  // fractional px share no blended seam on Canvas2D either
+  const row = slot + g.bandOffsetPx / g.rowHeight
   g.left = spanLeft(xa, xb, width + seamPx)
-  g.top = onDevicePx(top, g.dpr)
-  g.height = Math.max(
-    onDevicePx(top + g.bandHeightPx, g.dpr) - g.top,
-    1 / g.dpr,
-  )
+  g.top = snappedRowTopPx(row, g.rowHeight, g.scrollTop, g.dpr)
+  g.height =
+    snappedRowBottomPx(row, g.rowHeight, g.bandHeightPx, g.scrollTop, g.dpr) -
+    g.top
   g.width = width
   return true
 }

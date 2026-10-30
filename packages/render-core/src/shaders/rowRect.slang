@@ -23,6 +23,7 @@
 module rowRect;
 
 import hpmath;
+import rowSnap;
 
 public struct RowRectInstance {
   public uint x     : ATTR0;
@@ -125,17 +126,35 @@ public RowBand rowBandPx(float rowHeight, float rowProportion) {
 public float4 rowRectClipPos(
   uint startBp, uint endBp, float rowIndex, uint vid, RowRectUniforms u
 ) {
-  float2 local = quadLocal(vid);
-
   RowBand band = rowBandPx(u.rowHeight, u.rowProportion);
-  float rowY   = band.offset + u.rowHeight * rowIndex - u.scrollTop;
+  float rowY = band.offset + u.rowHeight * rowIndex - u.scrollTop;
+  return rowRectCorner(startBp, endBp, rowY, rowY + band.height, vid, u);
+}
 
+// `rowRectClipPos` with the band's edges on the device grid (`rowSnap`), so
+// rows that tile meet on a pixel boundary at one sample. `dpr` is the backing
+// store's y scale.
+public float4 rowRectClipPosOnDeviceRows(
+  uint startBp, uint endBp, float rowIndex, uint vid, RowRectUniforms u,
+  float dpr
+) {
+  RowBand band = rowBandPx(u.rowHeight, u.rowProportion);
+  float row = rowIndex + band.offset / u.rowHeight;
+  return rowRectCorner(startBp, endBp,
+    snappedRowTopPx(row, u.rowHeight, u.scrollTop, dpr),
+    snappedRowBottomPx(row, u.rowHeight, band.height, u.scrollTop, dpr),
+    vid, u);
+}
+
+float4 rowRectCorner(
+  uint startBp, uint endBp, float topPx, float bottomPx, uint vid,
+  RowRectUniforms u
+) {
+  float2 local = quadLocal(vid);
   float sx1 = hpToClipX(hpSplitUint(startBp), u.bpRangeX, u.zero);
   float sx2 = hpToClipX(hpSplitUint(endBp), u.bpRangeX, u.zero);
   sx2 = extendToMinWidthX(sx1, sx2, u.minCellPx, u.minCellDenomPx);
-
-  float yPx = lerp(rowY, rowY + band.height, local.y);
-
-  return float4(
-    lerp(sx1, sx2, local.x), yPxToClipY(yPx, u.canvasHeight), 0.0, 1.0);
+  return float4(lerp(sx1, sx2, local.x),
+                yPxToClipY(lerp(topPx, bottomPx, local.y), u.canvasHeight),
+                0.0, 1.0);
 }

@@ -253,9 +253,9 @@ const retiredSpan: Required<
       const top = offset + rowHeight * row[i]! - scrollTop
       ctx.fillRect(
         spanLeft(xa, xb, width + seamPx),
-        Math.round(top),
+        Math.floor(top + 0.5),
         width + seamPx,
-        Math.max(Math.round(top + h) - Math.round(top), 1),
+        Math.max(Math.floor(top + h + 0.5) - Math.floor(top + 0.5), 1),
       )
     }
   },
@@ -274,9 +274,9 @@ const retiredSpan: Required<
     const h = drawnRowHeightPx(rowHeight, rowProportion)
     return {
       left: spanLeft(xa, xb, width),
-      top: Math.round(top),
+      top: Math.floor(top + 0.5),
       width,
-      height: Math.max(Math.round(top + h) - Math.round(top), 1),
+      height: Math.max(Math.floor(top + h + 0.5) - Math.floor(top + 0.5), 1),
     }
   },
 }

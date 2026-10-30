@@ -1,8 +1,8 @@
 // The `span` mark shape: one instance is a colored rectangle spanning
 // [x, x2) in absolute genomic coords, on the row band given by the `row`
-// channel. The row band and min-width widening are `rowRect`'s; the band's
-// edges snap to the device grid (`rowSnap`), as the Canvas2D painter's do, so
-// stacked rows meet on a pixel boundary at any sample count.
+// channel. The geometry is `rowRect`'s, its band's edges on the device grid
+// (`rowRectClipPosOnDeviceRows`) as the Canvas2D painter's are, so stacked
+// rows meet on a pixel boundary at any sample count.
 //
 // `row` is read through the bound row table (`rowTable`): a key resolved to
 // its drawn slot and color, or collapsed to a zero-area quad off clip space
@@ -17,10 +17,8 @@
 //! instance-writer
 
 import colorPack;
-import hpmath;
 import markColor;
 import rowRect;
-import rowSnap;
 import rowTable;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
@@ -62,19 +60,17 @@ RowRectVsOut vs_main(RowRectInstance inst, uint vid : SV_VertexID) {
     o.color = float4(0.0);
     return o;
   }
-  float2 q = quadLocal(vid);
-  float sx1 = hpToClipX(hpSplitUint(inst.x), u.bpRangeX, u.zero);
-  float sx2 = hpToClipX(hpSplitUint(inst.x2), u.bpRangeX, u.zero);
-  sx2 = extendToMinWidthX(sx1, sx2, u.minCellPx, u.minCellDenomPx);
-
-  RowBand band = rowBandPx(u.rowHeight, u.rowProportion);
-  float slot = float(p.slot);
-  float offsetRows = band.offset / u.rowHeight;
-  float top = snappedRowTopPx(slot + offsetRows, u.rowHeight, u.scrollTop, u.devicePixelRatio);
-  float bottom = snappedRowBottomPx(slot + offsetRows, u.rowHeight, band.height, u.scrollTop, u.devicePixelRatio);
-
-  o.position = float4(lerp(sx1, sx2, q.x),
-                      yPxToClipY(lerp(top, bottom, q.y), u.canvasHeight), 0.0, 1.0);
+  RowRectUniforms r;
+  r.bpRangeX       = u.bpRangeX;
+  r.canvasHeight   = u.canvasHeight;
+  r.minCellDenomPx = u.minCellDenomPx;
+  r.minCellPx      = u.minCellPx;
+  r.zero           = u.zero;
+  r.rowHeight      = u.rowHeight;
+  r.rowProportion  = u.rowProportion;
+  r.scrollTop      = u.scrollTop;
+  o.position = rowRectClipPosOnDeviceRows(inst.x, inst.x2, float(p.slot), vid,
+                                          r, u.devicePixelRatio);
   o.color = p.color;
   return o;
 }
