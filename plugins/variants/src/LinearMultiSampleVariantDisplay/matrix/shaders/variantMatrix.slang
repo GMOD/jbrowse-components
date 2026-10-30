@@ -1,5 +1,6 @@
 // Multi-variant matrix renderer: one instance per cell (variant × sample).
-// Each cell is a column by subpixel-precise row strip. A column at least 1px
+// Each cell is a column by a row strip whose edges sit on device pixel
+// boundaries (`snappedRowTopPx`), so rows tile. A column at least 1px
 // wide paints its pixels fully opaque (crisp seams, one pure cell color per
 // pixel). A sub-pixel column (more variants than screen pixels) is still widened
 // to MIN_COL_PX so it covers a pixel center and paints, but its alpha is scaled
@@ -11,10 +12,12 @@
 // picks an RGBA value per cell based on genotype/quality.
 //! targets: wgsl, glsl
 //! blend: premultiplied
-//! js-export: drawnCellHeightPx
+//! coverage: analytic
+//! js-export: drawnCellHeightPx, snappedRowTopPx, snappedRowBottomPx
 
 import colorPack;
 import hpmath;
+import rowSnap;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
@@ -46,6 +49,8 @@ struct Uniforms {
   float rowHeight;
   float scrollTop;
   float backingWidthPx;
+  // The backing store's y scale (`clip.scaleY`), which rows snap to.
+  float devicePixelRatio;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -91,10 +96,11 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float ex2 = max(ceil(x2px), ex1 + 1.0);
   float clipX = pxToClipX(lerp(ex1, ex2, lx), widthPx);
 
-  // Fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
-  // during resize); the floor is drawnCellHeightPx, above.
-  float yTop = float(inst.row) * u.rowHeight - u.scrollTop;
-  float yBot = yTop + drawnCellHeightPx(u.rowHeight);
+  float row = float(inst.row);
+  float yTop = snappedRowTopPx(row, u.rowHeight, u.scrollTop, u.devicePixelRatio);
+  float yBot = snappedRowBottomPx(
+    row, u.rowHeight, drawnCellHeightPx(u.rowHeight), u.scrollTop,
+    u.devicePixelRatio);
   float clipY = lerp(yPxToClipY(yBot, u.canvasHeight),
                      yPxToClipY(yTop, u.canvasHeight), ly);
 
@@ -110,10 +116,7 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
 float4 fs_main(VsOut fragIn) : SV_Target {
   // Crisp opaque columns: this pixel is painted only if its center falls inside
   // the column's span, so each pixel is a single pure cell color (no neighbor
-  // blending). fragIn.position.x is the framebuffer pixel center (gl_FragCoord.x).
-  // The floor+0.5 reconstructs the pixel center explicitly so the test stays
-  // deterministic under the HAL's 4x MSAA (an edge-pixel fragment can otherwise
-  // sample position.x off-center) — do NOT "simplify" it to fragIn.position.x.
+  // blending). The floor+0.5 names the pixel centre whatever the sample count.
   float center = floor(fragIn.position.x) + 0.5;
   float inside = (center >= fragIn.xspan.x && center < fragIn.xspan.y) ? 1.0 : 0.0;
   // Sub-pixel columns contribute proportional coverage so dense regions blend

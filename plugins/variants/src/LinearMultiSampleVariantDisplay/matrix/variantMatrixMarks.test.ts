@@ -153,8 +153,9 @@ describe('painter', () => {
   })
 
   // featureIndex 2 of 4 across width 400 => cellWidth 100, x = 200; the 0.3px
-  // overdraw (f2) shifts each edge so sub-pixel columns antialias and blend.
-  test('places a cell at its column with the seam overdraw', () => {
+  // overdraw (f2) shifts each x edge so sub-pixel columns antialias and blend.
+  // The row needs none: it sits on whole pixels.
+  test('places a cell at its column, x with the seam overdraw', () => {
     const { fillRectCalls } = paint(
       makeData({
         cellFeatureIndices: new Uint32Array([2]),
@@ -165,14 +166,14 @@ describe('painter', () => {
     )
     const [x, y, w, h] = fillRectCalls[0]!
     expect(x).toBeCloseTo(199.7)
-    expect(y).toBeCloseTo(59.7)
+    expect(y).toBe(60)
     expect(w).toBeCloseTo(100.3)
-    expect(h).toBeCloseTo(20.3)
+    expect(h).toBe(20)
   })
 
-  // A sub-pixel row takes the shader's 1px floor and its exact anchor rather
-  // than the seam overdraw, so a variant row survives among reference rows.
-  test('a sub-pixel row paints the floored band without the overdraw', () => {
+  // A sub-pixel row takes the shader's 1px floor, so a variant row survives
+  // among reference rows.
+  test('a sub-pixel row paints the floored band', () => {
     const { fillRectCalls } = paint(makeData(), { ...STATE, rowHeight: 0.1 })
     const [, y, , h] = fillRectCalls[0]!
     expect(y).toBe(0)

@@ -1,3 +1,4 @@
+import { backingScale } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
@@ -67,6 +68,7 @@ function getHoveredMatrixCell(
       columnWidth: model.columnGeometry.columnWidth,
       effectiveRowHeight: model.effectiveRowHeight,
       scrollTop: model.scrollTop,
+      dpr: backingScale(model.renderState.canvasHeight),
     },
     mouseX,
     mouseY,

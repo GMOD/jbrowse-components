@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 48 shaders with entry points. 167 functions
-are inside the emitter's subset, of which **133 are exported**.
+Scanned 48 shaders with entry points. 171 functions
+are inside the emitter's subset, of which **137 are exported**.
 
 ## Candidates
 
@@ -81,7 +81,7 @@ noticing in a diff.
 
 | Refused because | Functions | For example |
 | --- | --- | --- |
-| type 'vec2' is outside the supported scalar subset | 27 | `buttSegmentCorner`, `capsuleCorner`, `capsuleFrame`, `covFlippedQuad`, `covSegQuad`, `crispSquareCornerClip`, … |
+| type 'vec2' is outside the supported scalar subset | 26 | `buttSegmentCorner`, `capsuleCorner`, `capsuleFrame`, `covFlippedQuad`, `covSegQuad`, `crispSquareCornerClip`, … |
 | type 'vec4' is outside the supported scalar subset | 21 | `bandColorAt`, `chevronCoverage`, `colorCutAt`, `colorCutYsPx`, `cutYsPx`, `edgeSpan`, … |
 | member access (vector swizzle or struct field) is outside the supported scalar subset | 19 | `bandCoverage`, `bpToClipX`, `capVertex`, `drawsBar`, `drawsDisc`, `flipX`, … |
 | type 'ptr' is outside the supported scalar subset | 18 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
@@ -135,6 +135,8 @@ is no longer shared with anything.
 | `farDomeHullPoint` | tests only — `arcHull.test.ts` |
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `glyphExpand` | tests only — `pointGlyphPad.test.ts` |
+| `inversionCoverage` | nothing |
+| `inversionReachPx` | nothing |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `lineValueAtColorYPx` | tests only — `lineRampAlongY.test.ts` |
 | `pinchedParam` | tests only — `ribbonBand.test.ts` |

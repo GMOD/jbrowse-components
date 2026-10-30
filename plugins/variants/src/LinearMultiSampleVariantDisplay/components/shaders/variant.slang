@@ -1,15 +1,21 @@
 // Multi-variant display — one instance per variant cell. Emits a
-// bounding-box quad; the fragment shader uses an SDF to carve the inversion
-// glyph, a bar pointed at its left end, out of the quad when shapeType != RECT.
+// bounding-box quad; the fragment shader carves the inversion glyph, a bar
+// pointed at its left end, out of the quad when shapeType != RECT.
+//
+// A cell's edges are hard and sit on pixel boundaries: x on whole CSS px, y on
+// the device grid (`snappedRowTopPx`), so rows tile with every pixel owned by
+// one row. Only the inversion's two slants ramp.
 //! targets: wgsl, glsl
 //! blend: premultiplied
+//! coverage: analytic
 //! export-consts: SHAPE_RECT, SHAPE_TRI_LEFT, MIN_CELL_PX
-//! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx, inversionTipPx
+//! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx, inversionTipPx, inversionReachPx, inversionCoverage, snappedRowTopPx, snappedRowBottomPx
 //! js-skip: snapCellEdgePx — reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor
 
 import antialias;
 import hpmath;
 import colorPack;
+import rowSnap;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
@@ -97,6 +103,26 @@ float inversionTipPx(float widthPx, float heightPx) {
   return min(widthPx, heightPx);
 }
 
+// Coverage of the inversion glyph at (`xPx`, `yPx`) from the cell's top-left:
+// the ramp of the nearer of its two slants, which run from the point
+// (0, h/2) to (tip, 0) and (tip, h). The bar's top, bottom and right edges are
+// the cell's own, already on pixel boundaries, so they cut hard.
+float inversionCoverage(float xPx, float yPx, float tipPx, float heightPx, float dpr) {
+  float halfH = 0.5 * heightPx;
+  float hyp = sqrt(halfH * halfH + tipPx * tipPx);
+  float fromTip = tipPx - xPx;
+  float dTop = (tipPx * yPx - halfH * fromTip) / hyp;
+  float dBot = (tipPx * (heightPx - yPx) - halfH * fromTip) / hyp;
+  return edgeCoverage(min(dTop, dBot), dpr);
+}
+
+// How far left of the cell the point's ramp reaches: `aaHalfPx` over the sine
+// of the point's half-angle, where the two slants' ramps meet.
+float inversionReachPx(float tipPx, float heightPx, float dpr) {
+  float halfH = 0.5 * heightPx;
+  return aaHalfPx(dpr) * sqrt(halfH * halfH + tipPx * tipPx) / halfH;
+}
+
 struct CellInstance {
   uint2 startEnd  : ATTR0;
   uint  row       : ATTR1;
@@ -113,6 +139,7 @@ struct Uniforms {
   float  rowHeight;
   float  scrollTop;
   float  zero;
+  // The backing store's y scale (`clip.scaleY`), which rows snap to.
   float  devicePixelRatio;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
@@ -125,12 +152,9 @@ struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
   float2 localPx  : COLOR1;
-  nointerpolation float2 sizePx    : COLOR2;
+  nointerpolation float  heightPx  : COLOR2;
   nointerpolation uint   shapeType : COLOR3;
-  // The tip's length and the hypotenuse term of its two sloped edges,
-  // precomputed so the fragment stage takes no sqrt.
   nointerpolation float  tipPx     : COLOR4;
-  nointerpolation float  hypTip    : COLOR5;
 };
 
 [shader("vertex")]
@@ -151,58 +175,45 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float rx2 = clipX2 / pxSize + halfW;
   float wPx = snappedCellWidthPx(rx1, rx2);
   float x1Px = snappedCellLeftPx(rx1, rx2, wPx);
-  float cx1 = (x1Px - halfW) * pxSize;
-  float cx2 = (x1Px + wPx - halfW) * pxSize;
 
-  // fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
-  // during resize); the floor is drawnCellHeightPx, below.
-  float yTop = float(inst.row) * u.rowHeight - u.scrollTop;
-  float yBot = yTop + drawnCellHeightPx(u.rowHeight);
-  float cyTop = yPxToClipY(yTop, u.canvasHeight);
-  float cyBot = yPxToClipY(yBot, u.canvasHeight);
+  float row = float(inst.row);
+  float dpr = u.devicePixelRatio;
+  float yTop = snappedRowTopPx(row, u.rowHeight, u.scrollTop, dpr);
+  float yBot = snappedRowBottomPx(
+    row, u.rowHeight, drawnCellHeightPx(u.rowHeight), u.scrollTop, dpr);
+  float hPx = yBot - yTop;
+  float tipPx = inversionTipPx(wPx, hPx);
+  float padPx = inst.shapeType != SHAPE_RECT ? inversionReachPx(tipPx, hPx, dpr) : 0.0;
 
   float2 q = quadLocal(vid);
-  float lx = q.x, ly = q.y;
-
-  float hPx = drawnCellHeightPx(u.rowHeight);
+  float localX = lerp(-padPx, wPx, q.x);
 
   VsOut o;
-  o.position = float4(lerp(cx1, cx2, lx), lerp(cyBot, cyTop, ly), 0.0, 1.0);
+  o.position = float4(
+    (x1Px + localX - halfW) * pxSize,
+    lerp(yPxToClipY(yBot, u.canvasHeight), yPxToClipY(yTop, u.canvasHeight), q.y),
+    0.0, 1.0);
   o.color = unpackRGBA(inst.color);
-  o.localPx = float2(lx * wPx, (1.0 - ly) * hPx);
-  o.sizePx = float2(wPx, hPx);
+  o.localPx = float2(localX, (1.0 - q.y) * hPx);
+  o.heightPx = hPx;
   o.shapeType = inst.shapeType;
-  o.tipPx = inversionTipPx(wPx, hPx);
-  o.hypTip = sqrt(hPx * hPx * 0.25 + o.tipPx * o.tipPx);
+  o.tipPx = tipPx;
   return o;
-}
-
-// Inside-positive distance to the inversion glyph: a bar whose left end comes
-// to a point at mid-height, the point `tip` px long. `p` is the fragment in
-// cell px from the cell's top-left. The two sloped edges run from the apex
-// (0, h/2) to (tip, 0) and (tip, h); past the tip the bar's top and bottom
-// edges take over.
-float inversionSdf(float2 p, float w, float h, float tip, float hyp) {
-  float fromTip = tip - p.x;
-  float dTop = (-0.5 * h * fromTip + tip * p.y) / hyp;
-  float dBot = (-0.5 * h * fromTip - tip * (p.y - h)) / hyp;
-  float dBar = min(min(w - p.x, p.y), h - p.y);
-  return min(min(dTop, dBot), dBar);
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float alpha = fragIn.color.a;
 
-  // Any non-rect cell is an inversion, drawn as a left-pointing bar via its
-  // SDF. Tested as "not RECT" rather than "== TRI_LEFT" so a third shape added
-  // to the vocabulary above draws SOMETHING here rather than silently falling
-  // back to a plain box.
+  // Any non-rect cell is an inversion. Tested as "not RECT" rather than
+  // "== TRI_LEFT" so a third shape added to the vocabulary above draws
+  // SOMETHING here rather than silently falling back to a plain box.
   if (fragIn.shapeType != SHAPE_RECT) {
-    float d = inversionSdf(fragIn.localPx, fragIn.sizePx.x, fragIn.sizePx.y, fragIn.tipPx, fragIn.hypTip);
     // No whole-mark size fade here: both cell sides floor at 2px, so one is a
     // constant dim on the inversion alone (inversionGlyphInk.test.ts).
-    alpha *= edgeCoverage(d, u.devicePixelRatio);
+    alpha *= inversionCoverage(
+      fragIn.localPx.x, fragIn.localPx.y, fragIn.tipPx, fragIn.heightPx,
+      u.devicePixelRatio);
   }
 
   return float4(fragIn.color.rgb * alpha, alpha);

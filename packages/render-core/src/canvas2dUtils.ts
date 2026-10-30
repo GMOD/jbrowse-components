@@ -90,6 +90,16 @@ function effectiveScale(cssPx: number, backing: number) {
   return cssPx > 0 ? backing / cssPx : getDpr()
 }
 
+/**
+ * The scale a canvas `cssPx` long gets on that axis: what `syncCanvasSize`
+ * reports and `prepareCanvas` transforms by. A painter snapping to device
+ * pixels asks this rather than `getDpr()`, which a rounded or capped backing
+ * store departs from.
+ */
+export function backingScale(cssPx: number) {
+  return effectiveScale(cssPx, backingSize(cssPx, cssPx, getDpr()).width)
+}
+
 // Apply CSS dimensions + dpr-scaled physical dimensions to `canvas`. Returns
 // whether the backing dimensions actually changed, and the scale each axis
 // ended up with — both HAL impls and any 2D-canvas backend use this so the dpr

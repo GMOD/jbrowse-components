@@ -82,9 +82,9 @@ test('the hovered cell lights the box its instance painted, in the chrome', () =
   expect(display.hoverInk).toHaveLength(1)
   const { left, top, width, height } = display.hoverInk[0]!
   expect(left).toBeCloseTo(400 - f2)
-  expect(top).toBeCloseTo(rowsTopOffset - f2)
+  expect(top).toBeCloseTo(rowsTopOffset)
   expect(width).toBeCloseTo(400 + f2)
-  expect(height).toBeCloseTo(20 + f2)
+  expect(height).toBeCloseTo(20)
   expect(display.highlightStyle).toBe('box')
 })
 
@@ -103,7 +103,7 @@ test('the hit names the drawn cell the tooltip reports, and the hover lights it'
 
   surface.onHover!(hit)
   expect(display.hoveredMatrixCell).toEqual({ cellIndex: 1 })
-  expect(display.hoverInk[0]!.top).toBeCloseTo(display.rowsTopOffset + 20 - f2)
+  expect(display.hoverInk[0]!.top).toBeCloseTo(display.rowsTopOffset + 20)
 
   display.clearHoveredFeature()
   expect(display.hoveredMatrixCell).toBeUndefined()

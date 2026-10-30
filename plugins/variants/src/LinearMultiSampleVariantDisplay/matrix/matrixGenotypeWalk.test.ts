@@ -1,3 +1,5 @@
+import { backingScale } from '@jbrowse/render-core/canvas2dUtils'
+
 import {
   cellDataOf,
   cellPayloadOf,
@@ -72,6 +74,7 @@ function rowsUnderCursor() {
       columnWidth: display.columnGeometry.columnWidth,
       effectiveRowHeight: display.effectiveRowHeight,
       scrollTop: display.scrollTop,
+      dpr: backingScale(display.renderState.canvasHeight),
     },
     0,
     MOUSE_Y,

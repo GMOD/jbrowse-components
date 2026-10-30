@@ -1,5 +1,4 @@
-import { rowsUnderPointer } from '@jbrowse/core/util/rowStackGeometry'
-
+import { snappedRowsUnderPointer } from '../components/snappedRowsUnderPointer.ts'
 import { drawnCellHeightPx } from './shaders/variantMatrix.js.generated.ts'
 
 /** What the cursor projection reads off the display under the columns layout. */
@@ -8,6 +7,8 @@ interface MatrixHitGeometry {
   columnWidth: number
   effectiveRowHeight: number
   scrollTop: number
+  /** the canvas backing store's y scale (`backingScale`) */
+  dpr: number
 }
 
 /**
@@ -26,13 +27,14 @@ export function matrixCellAt(
   mouseX: number,
   mouseY: number,
 ) {
-  const { columnWidth, effectiveRowHeight: rowHeight, scrollTop } = geom
+  const { columnWidth, effectiveRowHeight: rowHeight, scrollTop, dpr } = geom
   return {
     featureIdx: Math.floor(mouseX / columnWidth),
-    ...rowsUnderPointer(
+    ...snappedRowsUnderPointer(
       mouseY,
       { rowHeight, scrollTop },
       drawnCellHeightPx(rowHeight),
+      dpr,
     ),
   }
 }

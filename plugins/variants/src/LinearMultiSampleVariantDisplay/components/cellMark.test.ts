@@ -1,4 +1,4 @@
-import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
+import { getDpr, makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
 import { recordingContext } from '@jbrowse/render-core/marks/drawAgainstHit'
 
@@ -12,25 +12,36 @@ import type { CellChannels, CellParams } from './cellMark.ts'
 import type { MarkShape } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
+// Rows on the canvas's device pixel grid, a whole device px at least.
+function rowBand(row: number, canvasHeight: number, params: CellParams) {
+  const { rowHeight, scrollTop } = params
+  const dpr = Math.round(canvasHeight * getDpr()) / canvasHeight
+  const y = row * rowHeight - scrollTop
+  const top = Math.round(y * dpr) / dpr
+  const bottom = Math.max(
+    Math.round((y + drawnCellHeightPx(rowHeight)) * dpr) / dpr,
+    top + 1 / dpr,
+  )
+  return { top, height: bottom - top }
+}
+
 const retired: Required<
   Pick<MarkShape<CellChannels, CellParams>, 'paintBlock' | 'ink'>
 > = {
   paintBlock(ctx, channels, block, frame, params) {
     const { startEnd, row, shapeType, color, count } = channels
     const { canvasHeight } = frame
-    const { rowHeight, scrollTop } = params
-    const h = drawnCellHeightPx(rowHeight)
     const toX = makeBpMapper(block)
     const setFill = makeAbgrFill(ctx)
     for (let i = 0; i < count; i++) {
-      const y = row[i]! * rowHeight - scrollTop
-      if (y + h >= 0 && y <= canvasHeight) {
+      const { top, height } = rowBand(row[i]!, canvasHeight, params)
+      if (top + height >= 0 && top <= canvasHeight) {
         const { x, width } = snapVariantCellX(
           toX(startEnd[i * 2]!),
           toX(startEnd[i * 2 + 1]!),
         )
         setFill(color[i]!)
-        drawVariantShape(ctx, shapeType[i]!, x, y, width, h)
+        drawVariantShape(ctx, shapeType[i]!, x, top, width, height)
       }
     }
   },
@@ -38,9 +49,7 @@ const retired: Required<
   ink(channels, block, frame, params, i) {
     const { startEnd, row } = channels
     const { canvasHeight } = frame
-    const { rowHeight, scrollTop } = params
-    const height = drawnCellHeightPx(rowHeight)
-    const top = row[i]! * rowHeight - scrollTop
+    const { top, height } = rowBand(row[i]!, canvasHeight, params)
     if (top + height < 0 || top > canvasHeight) {
       return undefined
     }
@@ -135,11 +144,26 @@ const regions = [
   { name: 'clipped', start: 7_777, bp: 12_345, px: [-321.5, 1733.125] },
 ]
 
-const paramsCases: [string, CellParams][] = [
-  ['scrolled to rows exactly on both edges', { rowHeight: 7.5, scrollTop: 30 }],
-  ['scrolled between rows', { rowHeight: 7.5, scrollTop: 37.25 }],
-  ['sub-pixel rows', { rowHeight: 0.5, scrollTop: 0 }],
+const paramsCases: [string, CellParams, number][] = [
+  [
+    'scrolled to rows exactly on both edges',
+    { rowHeight: 7.5, scrollTop: 30 },
+    1,
+  ],
+  ['scrolled between rows', { rowHeight: 7.5, scrollTop: 37.25 }, 1],
+  ['sub-pixel rows', { rowHeight: 0.5, scrollTop: 0 }, 1],
+  ['fractional rows at dpr 1.5', { rowHeight: 7.3, scrollTop: 0.37 }, 1.5],
 ]
+
+function withDpr<T>(dpr: number, run: () => T) {
+  const before = window.devicePixelRatio
+  window.devicePixelRatio = dpr
+  try {
+    return run()
+  } finally {
+    window.devicePixelRatio = before
+  }
+}
 
 describe.each(regions)('$name', ({ start, bp, px }) => {
   const channels = cells(start, bp)
@@ -152,9 +176,13 @@ describe.each(regions)('$name', ({ start, bp, px }) => {
       screenEndPx: px[1]!,
       reversed,
     }
-    test.each(paramsCases)('%s', (_, params) => {
-      const painted = paintWith(cellMark, channels, block, params)
-      const expected = paintWith(retired, channels, block, params)
+    test.each(paramsCases)('%s', (_, params, dpr) => {
+      const painted = withDpr(dpr, () =>
+        paintWith(cellMark, channels, block, params),
+      )
+      const expected = withDpr(dpr, () =>
+        paintWith(retired, channels, block, params),
+      )
       expect(painted.calls.length).toBeGreaterThan(0)
       expect(painted.calls.length).toBeLessThan(channels.count)
       expect(new Set(expected.styles).size).toBeGreaterThan(1)
@@ -162,9 +190,13 @@ describe.each(regions)('$name', ({ start, bp, px }) => {
       expect(painted.styles).toEqual(expected.styles)
       const instances = Array.from({ length: channels.count }, (_, i) => i)
       expect(
-        instances.map(i => cellMark.ink!(channels, block, FRAME, params, i)),
+        withDpr(dpr, () =>
+          instances.map(i => cellMark.ink!(channels, block, FRAME, params, i)),
+        ),
       ).toEqual(
-        instances.map(i => retired.ink(channels, block, FRAME, params, i)),
+        withDpr(dpr, () =>
+          instances.map(i => retired.ink(channels, block, FRAME, params, i)),
+        ),
       )
     })
   })

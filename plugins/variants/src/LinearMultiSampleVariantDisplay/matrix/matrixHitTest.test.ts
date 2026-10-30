@@ -7,6 +7,7 @@ const KILOGENOMES = {
   columnWidth: 8,
   effectiveRowHeight: 230 / 2504,
   scrollTop: 0,
+  dpr: 1,
 }
 
 describe('matrixCellAt', () => {

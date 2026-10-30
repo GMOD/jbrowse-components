@@ -1,7 +1,7 @@
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import {
+  backingScale,
   bpProjection,
-  getDpr,
   projectBp,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
@@ -12,6 +12,8 @@ import {
   drawnCellHeightPx,
   snappedCellLeftPx,
   snappedCellWidthPx,
+  snappedRowBottomPx,
+  snappedRowTopPx,
 } from './shaders/variant.js.generated.ts'
 import { drawVariantShape } from './variantShape.ts'
 
@@ -42,6 +44,8 @@ interface CellFrame extends BpProjection {
   canvasHeight: number
   rowHeight: number
   scrollTop: number
+  drawnHeight: number
+  dpr: number
   height: number
   left: number
   top: number
@@ -62,7 +66,9 @@ function cellFrame(
     canvasHeight: frame.canvasHeight,
     rowHeight: params.rowHeight,
     scrollTop: params.scrollTop,
-    height: drawnCellHeightPx(params.rowHeight),
+    drawnHeight: drawnCellHeightPx(params.rowHeight),
+    dpr: backingScale(frame.canvasHeight),
+    height: 0,
     left: 0,
     top: 0,
     width: 0,
@@ -70,11 +76,20 @@ function cellFrame(
 }
 
 function placeCellY(c: CellChannels, g: CellFrame, i: number) {
-  const top = c.row[i]! * g.rowHeight - g.scrollTop
-  if (!(top + g.height >= 0 && top <= g.canvasHeight)) {
+  const row = c.row[i]!
+  const top = snappedRowTopPx(row, g.rowHeight, g.scrollTop, g.dpr)
+  const bottom = snappedRowBottomPx(
+    row,
+    g.rowHeight,
+    g.drawnHeight,
+    g.scrollTop,
+    g.dpr,
+  )
+  if (!(bottom >= 0 && top <= g.canvasHeight)) {
     return false
   }
   g.top = top
+  g.height = bottom - top
   return true
 }
 
@@ -87,8 +102,8 @@ function placeCellX(c: CellChannels, g: CellFrame, i: number) {
 }
 
 /**
- * A pixel-snapped matrix cell on the pixel grid `variant.slang`
- * owns, its x through the shader's generated twins. An inversion's triangle
+ * A pixel-snapped matrix cell on the pixel grid `variant.slang` owns, x and y
+ * through the shader's generated twins. An inversion's triangle
  * inks its bounding box. Not render-core's `spanMark`: teaching it the snapping
  * and the glyph shapes would add about 400 lines there to delete about 350
  * here.
@@ -108,7 +123,7 @@ export const cellMark: MarkShape<CellChannels, CellParams> = {
       rowHeight: params.rowHeight,
       scrollTop: params.scrollTop,
       zero: 0,
-      devicePixelRatio: getDpr(),
+      devicePixelRatio: clip.scaleY,
     })
   },
 
@@ -125,7 +140,9 @@ export const cellMark: MarkShape<CellChannels, CellParams> = {
       canvasHeight: frame.canvasHeight,
       rowHeight: params.rowHeight,
       scrollTop: params.scrollTop,
-      height: drawnCellHeightPx(params.rowHeight),
+      drawnHeight: drawnCellHeightPx(params.rowHeight),
+      dpr: backingScale(frame.canvasHeight),
+      height: 0,
       left: 0,
       top: 0,
       width: 0,

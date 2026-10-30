@@ -1,4 +1,4 @@
-import { regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
+import { backingScale, regionAtPixel } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
@@ -61,6 +61,7 @@ function getHoveredFeature(
       mouseY,
       model.scrollTop,
       model.effectiveRowHeight,
+      backingScale(model.renderState.canvasHeight),
     )
   // x only: the index holds one interval per feature ([start, 0, end, 1]), so
   // the row half of the query is resolved arithmetically instead.

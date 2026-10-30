@@ -1,9 +1,14 @@
+import { backingScale } from '@jbrowse/render-core/canvas2dUtils'
 import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { f2 } from '../../shared/constants.ts'
 import * as shader from './shaders/variantMatrix.generated.ts'
-import { drawnCellHeightPx } from './shaders/variantMatrix.js.generated.ts'
+import {
+  drawnCellHeightPx,
+  snappedRowBottomPx,
+  snappedRowTopPx,
+} from './shaders/variantMatrix.js.generated.ts'
 
 import type { InkRect, MarkFrame, MarkShape } from '@jbrowse/render-core/marks'
 
@@ -47,6 +52,7 @@ export const matrixCellMark: MarkShape<MatrixCellChannels, MatrixCellParams> = {
       rowHeight: params.rowHeight,
       scrollTop: params.scrollTop,
       backingWidthPx: frame.canvasWidth * clip.scaleX,
+      devicePixelRatio: clip.scaleY,
     })
   },
 
@@ -57,18 +63,14 @@ export const matrixCellMark: MarkShape<MatrixCellChannels, MatrixCellParams> = {
     // columns antialias and blend. No pixel-snap and no 1px minimum on X —
     // that decimates sub-pixel columns.
     //
-    // Y is the opposite, because rows carry the genotype and columns do not.
-    // Cells are ordered ref-then-nonref so alt paints over ref, and at 2,504
-    // samples a row is 0.09px: a variant drawn `rowHeight + f2` tall covers a
-    // third of the pixel it shares with ten reference cells and blends away,
-    // while the GPU paints the same variant across the whole
-    // `drawnCellHeightPx` band and it survives. Measured on the 1000 Genomes
-    // phase 3 matrix: the export kept 41% of the strongly-colored variant
-    // pixels the screen showed. So a sub-pixel row takes the shader's floor
-    // and its exact anchor, and a normal row keeps the seam overdraw.
+    // Y is the opposite, because rows carry the genotype and columns do not:
+    // each row paints the shader's snapped band, floor included, so a sub-pixel
+    // variant keeps the whole pixel the GPU gives it over the reference cells
+    // it shares that pixel with, and rows tile without a seam.
     const setFill = makeAbgrFill(ctx)
+    const dpr = backingScale(frame.canvasHeight)
     for (let i = 0; i < count; i++) {
-      const r = cellRect(channels, frame, params, i)
+      const r = cellRect(channels, frame, params, dpr, i)
       if (r) {
         setFill(color[i]!)
         ctx.fillRect(r.left, r.top, r.width, r.height)
@@ -77,7 +79,13 @@ export const matrixCellMark: MarkShape<MatrixCellChannels, MatrixCellParams> = {
   },
 
   ink(channels, _block, frame, params, i) {
-    return cellRect(channels, frame, params, i)
+    return cellRect(
+      channels,
+      frame,
+      params,
+      backingScale(frame.canvasHeight),
+      i,
+    )
   },
 }
 
@@ -85,6 +93,7 @@ function cellRect(
   channels: MatrixCellChannels,
   frame: MarkFrame,
   params: MatrixCellParams,
+  dpr: number,
   i: number,
 ): InkRect | undefined {
   const { featureIndex, row } = channels
@@ -94,16 +103,20 @@ function cellRect(
     return undefined
   }
   const cellWidth = canvasWidth / numFeatures
-  const drawnRowHeight = drawnCellHeightPx(rowHeight)
-  const floored = drawnRowHeight > rowHeight
-  const top = row[i]! * rowHeight - scrollTop - (floored ? 0 : f2)
-  const height = floored ? drawnRowHeight : rowHeight + f2
-  return top + height < 0 || top > canvasHeight
+  const top = snappedRowTopPx(row[i]!, rowHeight, scrollTop, dpr)
+  const bottom = snappedRowBottomPx(
+    row[i]!,
+    rowHeight,
+    drawnCellHeightPx(rowHeight),
+    scrollTop,
+    dpr,
+  )
+  return bottom < 0 || top > canvasHeight
     ? undefined
     : {
         left: featureIndex[i]! * cellWidth - f2,
         top,
         width: cellWidth + f2,
-        height,
+        height: bottom - top,
       }
 }
