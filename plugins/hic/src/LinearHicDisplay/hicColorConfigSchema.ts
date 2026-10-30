@@ -43,7 +43,9 @@ const RATIO_SCALE = {
  * Each field's ramp and key title while the config leaves them unwritten. A
  * ratio diverges around 1 on a log scale over a fixed quarter to fourfold, so
  * two tracks, and two conditions, read one color for one ratio; enrichment
- * paints red.
+ * paints red. No setting makes a ratio's domain follow the loaded values, as
+ * a per-track quantile recentres on each track's noise (declined 2026-10-30);
+ * a written `domainMin` or `domainMax` widens it.
  */
 export const HIC_FIELD_PRESETS = {
   observed: {
