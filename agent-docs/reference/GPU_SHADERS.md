@@ -93,6 +93,9 @@ device px of the extent asked for. A box spanning a fractional number of device 
 px at dpr 1.25 is 1582.5) made Chrome stretch the 1583 px store into it,
 resampling every column; Firefox snaps the box to the store. The box goes in
 `min-`/`max-` too, so a component's own React `width` cannot undo it.
+Renderers still lay out against the extent, so at the far edge Canvas2D
+half-paints the last device px and the GPU spreads the extent over the whole
+store, a drift under half a device px that we accept.
 
 ## Antialiasing ramps: how wide, and where the width comes from
 

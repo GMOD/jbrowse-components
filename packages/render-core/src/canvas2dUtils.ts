@@ -129,16 +129,13 @@ export function syncCanvasSize(
   }
   // Written whether or not the store changed: past the cap the store stops
   // tracking the extent, and gating on it froze the box at whatever size it had
-  // when it first capped. Assigning the same string is a no-op.
+  // when it first capped. Chrome and Firefox treat assigning the same string as
+  // a no-op, with no style recalc.
   const boxWidth = `${x.boxPx}px`
   const boxHeight = `${y.boxPx}px`
   const { style } = canvas
-  if (style.width !== boxWidth || style.minWidth !== boxWidth) {
-    style.width = style.minWidth = style.maxWidth = boxWidth
-  }
-  if (style.height !== boxHeight || style.minHeight !== boxHeight) {
-    style.height = style.minHeight = style.maxHeight = boxHeight
-  }
+  style.width = style.minWidth = style.maxWidth = boxWidth
+  style.height = style.minHeight = style.maxHeight = boxHeight
   return { changed, scale: { x: x.scale, y: y.scale } }
 }
 
