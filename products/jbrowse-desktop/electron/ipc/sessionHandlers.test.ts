@@ -610,6 +610,18 @@ test('a repeat autosave leaves recent_sessions.json alone, but a rename lands', 
   expect(rows[0]!.name).toBe('renamed')
 })
 
+test('a session reopened after its row was removed gets the row back', async () => {
+  const sessionPath = path.join(dir, 'removed.jbrowse')
+  const session = { assemblies: [], defaultSession: { name: 'removed' } }
+
+  await invoke('saveSession', sessionPath, session)
+  await invoke('removeRecentSession', sessionPath)
+  expect(await invoke('listSessions')).toHaveLength(0)
+
+  await invoke('saveSession', sessionPath, session)
+  expect(await invoke('listSessions')).toHaveLength(1)
+})
+
 test('a changed summary lands in the row without waiting out the touch interval', async () => {
   const sessionPath = path.join(dir, 'summarized.jbrowse')
   const snap = { assemblies: [], defaultSession: { name: 'summarized' } }

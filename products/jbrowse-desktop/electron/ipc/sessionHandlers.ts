@@ -311,6 +311,7 @@ export function registerSessionHandlers(
   })
 
   ipcHandle('removeRecentSession', async (_, sessionPath) => {
+    forgetSessionWrites([sessionPath])
     await updateRecentSessions(paths.recentSessionsPath, rows =>
       rows.filter(s => s.path !== sessionPath),
     )
