@@ -8,14 +8,9 @@ import { Button, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
+import { THUMBNAIL_WIDTH } from '../../sessionThumbnail.ts'
 import DeleteOldSessionsDialog from './DeleteOldSessionsDialog.tsx'
-import {
-  DeleteCell,
-  FavoriteCell,
-  NameCell,
-  THUMBNAIL_WIDTH,
-  ThumbnailCell,
-} from './cells.tsx'
+import { DeleteCell, FavoriteCell, NameCell, ThumbnailCell } from './cells.tsx'
 
 import type { Row } from './cells.tsx'
 import type { SessionModel } from './util.ts'

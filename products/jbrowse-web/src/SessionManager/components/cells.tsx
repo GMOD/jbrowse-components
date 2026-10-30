@@ -7,6 +7,8 @@ import StarBorderIcon from '@mui/icons-material/StarBorder'
 import { IconButton, Link, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { THUMBNAIL_HEIGHT, THUMBNAIL_WIDTH } from '../../sessionThumbnail.ts'
+
 import type { SessionModel } from './util.ts'
 
 /**
@@ -75,9 +77,6 @@ export const FavoriteCell = observer(function FavoriteCell({
     </IconCell>
   )
 })
-
-export const THUMBNAIL_WIDTH = 96
-const THUMBNAIL_HEIGHT = 60
 
 const useStyles = makeStyles()(theme => ({
   name: {
