@@ -1,3 +1,5 @@
+// for the module augmentation that types the extension points the panels and
+// menu below fire
 import './startScreenExtensionPoints.ts'
 
 import { useState } from 'react'
@@ -13,8 +15,6 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
 import MenuIcon from '@mui/icons-material/Menu'
 import { Alert, Button, Paper, Typography } from '@mui/material'
-// imported for the module augmentation that types the extension points the
-// panels and menu below fire
 import { observer } from 'mobx-react'
 
 import { useNotifyError } from '../NotifyContext.ts'

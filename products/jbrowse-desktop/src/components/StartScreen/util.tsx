@@ -12,7 +12,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 // re-exported so callers (e.g. LeftSidePanel) keep one import site
 export { fetchConfig } from './fetchConfig.ts'
-export type { StartScreenPluginManager } from './pluginManagers.tsx'
 
 /**
  * The ways a plugin manager gets built, each behind a dynamic import.
@@ -38,28 +37,26 @@ export async function createStartScreenPluginManager(): Promise<StartScreenPlugi
   return createStartScreenPluginManager()
 }
 
-export async function loadPluginManager(filePath: string) {
+// each of these opens a session, so the session UI starts loading beside it
+function sessionBuilders() {
   preloadComponent(LazyJBrowse)
-  const { loadPluginManager } = await import('./pluginManagers.tsx')
-  return loadPluginManager(filePath)
+  return import('./pluginManagers.tsx')
+}
+
+export async function loadPluginManager(filePath: string) {
+  return (await sessionBuilders()).loadPluginManager(filePath)
 }
 
 export async function launchSnapshot(snap: JBrowseConfigInput) {
-  preloadComponent(LazyJBrowse)
-  const { launchSnapshot } = await import('./pluginManagers.tsx')
-  return launchSnapshot(snap)
+  return (await sessionBuilders()).launchSnapshot(snap)
 }
 
 export async function openLaunchPlan(plan: LaunchPlanJson) {
-  preloadComponent(LazyJBrowse)
-  const { openLaunchPlan } = await import('./pluginManagers.tsx')
-  return openLaunchPlan(plan)
+  return (await sessionBuilders()).openLaunchPlan(plan)
 }
 
 export async function openSpecLink(link: string) {
-  preloadComponent(LazyJBrowse)
-  const { openSpecLink } = await import('./pluginManagers.tsx')
-  return openSpecLink(link)
+  return (await sessionBuilders()).openSpecLink(link)
 }
 
 /**

@@ -16,10 +16,10 @@ import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 
 const SETTLE_AFTER_CODE_MS = 5000
 
-// The raw primitive under all of the above: Claude-authored code against the
-// live model graph. The renderer already runs with nodeIntegration and the
-// bridge socket is user-only, so this grants what the surface as a whole
-// already grants — expressed directly instead of through a curated verb.
+// The raw primitive: Claude-authored code against the live model graph. The
+// renderer already runs with nodeIntegration and the bridge socket is
+// user-only, so this grants what the surface as a whole already grants —
+// expressed directly instead of through a curated verb.
 //
 // What the code is given — the `jb` standard library — lives in
 // @jbrowse/app-core, because jbrowse-web publishes the same object as

@@ -37,7 +37,7 @@ export const SESSION_GAP_MS = 15 * 60_000
 // run_javascript result would be a second copy of the same 1.8 KB. Claude Code
 // 2.1.272 sends clientInfo.name "claude-code"; an unknown or absent name keeps
 // the repeat, which is the safe default.
-export const CLIENTS_SHOWING_INSTRUCTIONS = new Set(['claude-code'])
+const CLIENTS_SHOWING_INSTRUCTIONS = new Set(['claude-code'])
 
 export function clientShowsInstructions(params: Record<string, unknown>) {
   const name = (params.clientInfo as { name?: unknown } | undefined)?.name

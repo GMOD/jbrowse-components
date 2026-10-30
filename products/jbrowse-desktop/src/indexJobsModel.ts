@@ -26,7 +26,6 @@ import type { DesktopRootModel } from './rootModel/rootModel.ts'
 import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { RpcStatus, SessionWithDrawerWidgets } from '@jbrowse/core/util'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { AssertExtends } from '@jbrowse/product-core'
 import type { Track } from '@jbrowse/text-indexing-core'
 
@@ -421,5 +420,3 @@ export default function jobsModelFactory() {
       },
     }))
 }
-
-export type JobsStateModel = Instance<ReturnType<typeof jobsModelFactory>>

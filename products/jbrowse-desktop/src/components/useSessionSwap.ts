@@ -17,8 +17,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *
  * **Load, then flush, then install.** Installing destroys the outgoing manager,
  * taking its MST tree with it, and the autosave that would have persisted the
- * last edits runs on a 1s debounce. Every route used to flush *before* starting
- * the load, which covers the debounce as of the click and nothing after it — so
+ * last edits runs on a 1s throttle. Every route used to flush *before* starting
+ * the load, which covers the throttle as of the click and nothing after it — so
  * everything the user did while a config was being fetched, which is not a fast
  * operation, was still lost. The session stays live and autosaving throughout
  * the load on its own, so the only moment that needs covering is the instant of
