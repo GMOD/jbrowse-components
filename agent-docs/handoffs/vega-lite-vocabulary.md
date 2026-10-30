@@ -1,6 +1,6 @@
 ---
 name: vega-lite-vocabulary
-description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A), the y channel (Pass B), wiggle and Hi-C `data`, the tree sidebar's axis, the pileup's `mark.height`, the comparative `indels` part, the band layers' filters, `pileup.bases.unmodified`, `coverage.alleles.show`, and the feature display's labels parts, `tooltip`, `mark.height` and `representative`. Open: hosted demos matching their committed copies, the multi-way mates' attribute filters, and the writers. Read before adding or renaming any display or view setting."
+description: "ADR-238's migration of every display's settings to Vega-Lite's words. Landed: the predicate compiler and every filter, the synteny views' mark, axis, coord and data words, the alignments and MAF parts, the color channel (Pass A), the y channel (Pass B), wiggle and Hi-C `data`, the tree sidebar's axis, the pileup's `mark.height`, the comparative `indels` part, the band layers' filters, `pileup.bases.unmodified`, `coverage.alleles.show`, and the feature display's labels parts, `tooltip`, `mark.height` and `representative`. Open: the multi-way mates' attribute filters, and the writers. Read before adding or renaming any display or view setting."
 ---
 
 # Vega-Lite vocabulary: what is left
@@ -27,13 +27,6 @@ wiggle display's `mark.extent` and `encoding.color.field` (ADR-251). Git
 history has each landing.
 
 ## Next
-
-1. **Pass B's leftovers.** Every value axis is `encoding.y` (ADR-238's "The y
-   channel"), and 825d53c1d7 deleted the beta `scales.y` and `y` lifts. `scales`
-   appears in none of the hosted UCSC configs regenerated 2026-10-28, and
-   every hosted `demos/` config matched its committed copy that day. What
-   stays open: the unlanded `chat-request-evals` branch writes 8 `scales.y`
-   lines in `scripts/agent-evals/tasks.ts`.
 
 ADR-238's 2026-10-27 amendment rules the layout words, the multi-way
 leftovers and the zoom and density gates. One multi-way gap stays open:

@@ -43,9 +43,9 @@ A display draws at one sample when every pass it registers declares
    `wiggleDensity.slang` and `wiggleLine.slang` keep it at four, and the idea
    doc lists density and the step line as refusals. The flip is one judgement
    about all three renderings.
-4. **The grammar marks.** `barMark`, `pointMark`, `spanMark` and `lineStepMark`
-   keep the mark display at four. `barMark` also keeps multi-way synteny there,
-   beside the feature passes it reuses.
+4. **The grammar marks.** `pointMark`, `spanMark` and `lineStepMark` keep the
+   mark display at four. `barMark`, which multi-way synteny also draws with,
+   already declares the directive.
 5. **A checked-in GPU pixel harness.**
    - Each flip so far was measured with a throwaway Deno WebGPU script. It
      renders a generated WGSL with `multisample: { count: 4 }` and a resolve

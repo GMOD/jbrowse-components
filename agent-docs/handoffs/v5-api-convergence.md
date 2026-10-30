@@ -98,5 +98,6 @@ once per display that embeds it, so read the trend, not the size.
   the gnomAD-SV bigBeds no longer warn.
 - The v5 release draft and the schema use the same spellings, including the
   word "experimental" for `LinearMarkDisplay`.
-- CHANGELOG has a v5 section. The migration table is generated
-  (`website/docs/config_guides/v4_config_migration.md`, 146 rows).
+- CHANGELOG has a v5 section; it still opens at v4.2.1. The migration table
+  it can point at is generated already
+  (`website/docs/config_guides/v4_config_migration.md`).
