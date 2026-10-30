@@ -1,6 +1,6 @@
 ---
 name: msaa-remaining-displays
-description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28, multi-sample variant tracks on 2026-10-30 (cells snapped to the device grid on both axes, awaiting Colin's review), grammar points and rules the same day, and wiggle's step line too (by max blend; the grammar step line went back to four). Open: alignments, wiggle's bars and density, `spanMark` and `barMark`, each trading some edges and each Colin's call; `scripts/gpu-pixels/run.ts` now has a fixture scoring each one. Hi-C and LD stay at four."
+description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28, multi-sample variant tracks on 2026-10-30 (cells snapped to the device grid on both axes, awaiting Colin's review), grammar points and rules the same day, and wiggle's step line too (by max blend; the grammar step line went back to four). Wiggle's bars and density stay at four by choice. Alignments stays at four: a whole-dpr flip was built and declined for its coverage band and browser zoom. Open: `spanMark` and `barMark`, each Colin's call. Hi-C and LD stay at four."
 ---
 
 # Displays still at four samples
@@ -15,21 +15,40 @@ A display draws at one sample when every pass it registers declares
   §"The MSAA target is the largest per-display allocation". Measured resident
   on 2026-10-30, Intel and AMD alike: the tall dpr-2 track's target holds
   340 MiB, so the descriptor's figures understate it.
-- **The ruling (2026-10-30):** none of the remaining flips is a correctness
-  question. One sample changes edge softness on bars, cells and coverage;
-  values and colors draw right. (A pass that measures its own coverage can
-  still compound where its pieces overlap, as the step lines did: give it a
-  dense fixture.) Since the memory is real, flip alignments, accepting hard
-  coverage-bar tops, and wiggle (bars and density), whose saving is smaller. Before alignments flips, snap reads and mismatches
-  to the device grid at a fractional dpr. Colin looks at the pixels per
-  display.
+- **The ruling (2026-10-30):** for bars, cells and step lines one sample
+  changes edge softness, not values. Two exceptions found by review: a pass
+  that measures its own coverage can compound where its pieces overlap (the
+  step lines; give it a dense fixture), and a stack of sub-pixel segments
+  turns from a tint into a full pixel or nothing (alignments' coverage band,
+  item 1). Wiggle keeps four by choice: ~8 MiB a track does not pay for its
+  bars' and density's edges.
 - **The pattern to copy:** the five feature passes under
   `plugins/features/src/LinearBasicDisplay/passes/shaders/`, and
   `featurePassCoverage.test.ts` beside them.
 
 ## Next, in order
 
-1. **Alignments, Colin's call.** One tall track at dpr 2 holds about 316 MiB.
+1. **Alignments stays at four; a whole-dpr flip was built, captured and
+   declined on 2026-10-30.** One tall track at dpr 2 holds 340 MiB of MSAA.
+   Drawing at one sample when dpr was 1 or 2 moved few pixels in the pileup
+   (`products/jbrowse-web/browser-tests/probe-alignments-sample-count.ts`,
+   Chrome WebGL2, dpr 1 / 2: base level 0.40 / 0.21%, long reads 0.38 /
+   0.15%, zoomed out 2.3 / 1.3%, fit squeeze 7.7 / 4.3%). Two things stopped
+   it:
+   - **The coverage band changes what it encodes.** `coverageSnp` and
+     `coverageMod` segments have no minimum height, so at one sample a
+     sliver under a device px is a full-color pixel or nothing, by where it
+     falls: sequencing noise in a deep pileup reads as a real ~3% allele and
+     flickers as the band rescales. Zoomed out, a pixel shows one allele's
+     color, not their mix, while Canvas2D and SVG still blend. A fix would
+     have to preserve each segment's area at one sample.
+   - **Browser zoom reaches a fractional dpr.** The count is read once, at
+     construction; `syncCanvasSize` follows a Ctrl+ to 125% while the
+     backend stays at one sample, where whole-CSS-px cells land on half
+     device px (16% of `alignments-mismatch`'s ink off). Switching counts
+     needs a rebuild on a fresh canvas, since WebGL2 fixes `antialias` for a
+     canvas's life; nothing in render-core does that today.
+
    Mean error over reference ink, one sample against four, at dpr 1 / 1.5 / 2
    (`scripts/gpu-pixels/fixtures/alignments.ts`):
    - `alignments-coverage-bar`: 5.5 / 4.8 / 2.7% against 1.5 / 1.0 / 0.7%.
@@ -38,17 +57,15 @@ A display draws at one sample when every pass it registers declares
      `coverageInterbase`, `coverageClip`) cannot ramp, as its bars share
      edges, so this is the cost of flipping, and it is permanent.
    - `alignments-read`: 1.3 / 5.9 / 0.7% against 0.5 / 1.0 / 0.3%. Close at a
-     whole dpr; the loss is at 1.5, where 7 px rows put y edges mid-pixel. Needs
-     `rect.slang`'s fractional-dpr ramp, or rows snapped, first.
+     whole dpr; the loss is at 1.5, where 7 px rows put y edges mid-pixel.
    - `alignments-mismatch` and `-subpixel`: byte-identical at dpr 1 and 2;
      16.2% and 36.5% at 1.5, where whole-CSS-px cells land on half device
-     pixels. Needs the variant cells' `snapCellEdgePx` first.
+     pixels.
    - Gap, insertion and connector have no fixture yet.
-2. **Wiggle's bars and density, Colin's call.** The step line (max blend,
+2. **Wiggle stays at four, by choice.** The step line (max blend,
    `wiggle-step-*` including `-dense-*`) and the scatter's square
-   (`wiggle-scatter-square`) draw at one already, so these two decide the
-   display. A single-row wiggle saves only ~8 MiB at dpr 2, so the memory case
-   is weaker than alignments':
+   (`wiggle-scatter-square`) are ready for one sample, but a single-row wiggle
+   saves only ~8 MiB at dpr 2, which does not pay for these two:
    - `wiggle-xyplot-bars`: 9.3 / 6.1 / 5.5% at one against 2.5 / 1.6 / 1.3%
      at four, all at the hard vertical cuts between bins of different heights.
    - `wiggle-density`: 5.9 / 4.1 / 3.1% against 1.7 / 1.2 / 0.9%, rows and bin
