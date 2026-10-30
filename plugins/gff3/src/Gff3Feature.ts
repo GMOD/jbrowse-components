@@ -13,10 +13,11 @@ import type {
  * text, resolving each one only when something asks for it.
  *
  * This exists because the two things that read a GFF3 feature want opposite
- * amounts of it. Rendering reads a fixed handful of keys — `start`, `end`,
- * `strand`, `type`, `phase`, `subfeatures`, plus `name`/`id` for labels and
- * `gbkey` for the stock NCBI filter — and then packs the result into typed
- * arrays, so the feature objects are dropped and never cross the RPC boundary.
+ * amounts of it. Rendering reads the fixed columns and a few attributes —
+ * `name`/`id` for labels, `gbkey` for the stock NCBI filter, and the BED color
+ * keys, which `inheritedBedColor` asks of every box and each of its ancestors —
+ * and then packs the result into typed arrays, so the feature objects are
+ * dropped and never cross the RPC boundary.
  * The feature details panel wants everything, and re-fetches the region from
  * scratch to get it (`GetBasicFeatureDetails`). Parsing every attribute during
  * a render therefore did work that rendering did not use and that the details
@@ -27,6 +28,10 @@ import type {
  */
 export class Gff3Feature implements Feature {
   private inflated?: Feature[]
+
+  // each attribute read scans column 9, and the color walk repeats the same
+  // reads on an ancestor once per descendant box
+  private attributes?: Map<string, unknown>
 
   public constructor(
     private data: LazyGffFeature,
@@ -86,9 +91,20 @@ export class Gff3Feature implements Feature {
         return this.parentFeature
       }
       default: {
-        return getAttribute(this.data, name)
+        return this.attribute(name)
       }
     }
+  }
+
+  private attribute(name: string) {
+    this.attributes ??= new Map()
+    const cached = this.attributes.get(name)
+    if (cached !== undefined || this.attributes.has(name)) {
+      return cached
+    }
+    const value = getAttribute(this.data, name)
+    this.attributes.set(name, value)
+    return value
   }
 
   public id() {

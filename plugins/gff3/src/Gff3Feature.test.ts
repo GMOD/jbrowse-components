@@ -52,6 +52,16 @@ describe('Gff3Feature', () => {
     },
   )
 
+  it('answers a repeated attribute read the same, hit or miss', () => {
+    const f = lazy([
+      'ctgA\texample\tgene\t1051\t9000\t.\t+\t.\tID=gene1;Alias=a,b',
+    ])
+    expect(f.get('alias')).toBe(f.get('alias'))
+    expect(f.get('alias')).toEqual(['a', 'b'])
+    expect(f.get('reserved')).toBeUndefined()
+    expect(f.get('reserved')).toBeUndefined()
+  })
+
   it('unescapes a deferred attribute only when asked for it', () => {
     expect(lazy(GENE).get('note')).toBe('protein kinase')
   })
