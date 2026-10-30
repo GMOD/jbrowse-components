@@ -12,7 +12,15 @@ A display draws at one sample when every pass it registers declares
 - **The survey:** why each display leans on MSAA, with captures, is in
   [ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md).
 - **The memory:** [ARCHITECTURAL_LIMITS.md](../reference/ARCHITECTURAL_LIMITS.md)
-  §"The MSAA target is the largest per-display allocation".
+  §"The MSAA target is the largest per-display allocation". Measured resident
+  on 2026-10-30, Intel and AMD alike: the tall dpr-2 track's target holds
+  340 MiB, so the descriptor's figures understate it.
+- **The ruling (2026-10-30):** none of these flips is a correctness question.
+  One sample changes edge softness; values and colors draw right. Since the
+  memory is real, flip wiggle (bars and density) and alignments, accepting
+  hard coverage-bar tops. Before alignments flips, snap reads and mismatches
+  to the device grid at a fractional dpr. Colin looks at the pixels per
+  display.
 - **The pattern to copy:** the five feature passes under
   `plugins/features/src/LinearBasicDisplay/passes/shaders/`, and
   `featurePassCoverage.test.ts` beside them.

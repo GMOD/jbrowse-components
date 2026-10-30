@@ -63,8 +63,13 @@ OOM report arrives that the per-object guards missed.
 what a full one does (79.2 MiB for one track dragged to 4100px).
 [GPU_PORTABILITY.md](GPU_PORTABILITY.md) §"The number that generalizes badly"
 holds the sizes; `probe-msaa-resize-cost.ts` takes the census.
-**The figures are what the descriptor asks for, not what is resident.** Profile
-residency before spending anything on size:
+**The drivers make it resident, and then some.** On this box's Mesa drivers
+a 2532x8180 device px target (a 1266x4090 CSS px track at dpr 2, priced at
+316 MiB) held 340 MiB once drawn: in system memory on the Intel UHD 630
+(i915) and in VRAM on the AMD discrete GPU (radv), against 80 MiB for the
+one-sample canvas texture alone. `scripts/gpu-pixels/probe-msaa-residency.ts`
+takes it from `/proc/self/fdinfo` through Dawn. Which displays can draw at one
+sample:
 [arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md).
 
 ### The uniform ring drops a write past 2048 slots
