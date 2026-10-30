@@ -127,9 +127,19 @@ condition lost. The adapter joins on bin pairs by row bucketing
 as 0. A sparse `.hic` omits a bin its normalization masks just as it omits an
 empty one, so the adapter reads both files' normalization vectors over the
 pair's window and drops a one-sided cell the other file masks; read as 0, a
-masked control bin paints a huge ratio. Both counts are scaled to the two libraries' geometric-mean depth (each file's
-`ALL`-map total, `getTotalContacts`) before a pseudocount of 1, so A over B is
-the inverse of B over A. Juicebox adds the 1 to each map's average contact
+masked control bin paints a huge ratio. Both counts are turned into contacts
+and scaled to the two libraries' geometric-mean depth before a pseudocount of
+1, so A over B is the inverse of B over A.
+
+- **Depth:** each file's `ALL`-map total (`getTotalContacts`), or the
+  chromosome pair's sums where a total is missing or below its own pair's sum.
+  hictk 2.1.4 writes the `ALL` map's `sumCounts` as 1.
+- **Contacts:** a normalized count times its two vectors' means
+  (`contactsPerCount`). Juicer's vectors average about 1; a cooler's ICE
+  weights, which hictk copies as `ICE`, balance rows to 1 and average far
+  above it, leaving counts the pseudocount would swamp.
+
+Juicebox adds the 1 to each map's average contact
 instead, `(obs + 1) / (avg + 1)`: at any binsize under one contact per bin
 pair the 1 swamps the average, the depth drops out, and K562 over the deeper
 GM12878 drew depleted everywhere but its amplicons. The two files must carry one normalization for
