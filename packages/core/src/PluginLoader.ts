@@ -180,22 +180,36 @@ async function loadScript(scriptUrl: string, integrity?: string) {
  * `umdLoc`/`esmLoc` forms instead, which carry their own `baseUri` — the one
  * `addRelativeUris` stamps from the config's url when it is fetched.
  *
- * The rule only bites on Desktop, whose instance is a `file://` page, so a
- * relative url resolves to a `file:` url that could never be fetched. Diagnose
- * that in terms its author can act on: the raw scheme of a url they never wrote
- * ("Cannot load plugins using protocol file:") named the symptom and nothing
- * else, and the reader is usually looking at a third-party hub config.
+ * The rule bites on Desktop, whose instance is a `file://` page, so a relative
+ * url resolves to a `file:` url nothing put there. Diagnose that in terms its
+ * author can act on: the raw scheme of a url they never wrote ("Cannot load
+ * plugins using protocol file:") named the symptom and nothing else, and the
+ * reader is usually looking at a third-party hub config.
+ *
+ * The one `file:` url that loads is a `umdLoc`/`esmLoc` beside a config opened
+ * from disk, in an instance that is itself a `file:` page (a packaged Desktop):
+ * the user chose that config, and a fetched config's `baseUri` is its own
+ * http(s) url, so a remote one cannot reach the disk. `instance` is the page's
+ * url in the worker too, so both realms decide alike; an http(s) page's worker
+ * cannot import a `file:` script, and loading it on the page alone left every
+ * RPC failing on a terminated worker.
  */
-function resolvePluginUrl(spec: string, base?: string, againstConfig = false) {
+function resolvePluginUrl(spec: string, base?: string, instance?: string) {
   const url = new URL(spec, base)
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+  const besideLocalConfig =
+    url.protocol === 'file:' && !!instance?.startsWith('file:')
+  if (
+    url.protocol !== 'http:' &&
+    url.protocol !== 'https:' &&
+    !besideLocalConfig
+  ) {
     throw new Error(
       // a spec with a scheme of its own resolved to exactly what it asked for,
       // so there is nothing to explain beyond refusing it
       /^[a-z][a-z0-9+.-]*:/i.test(spec)
         ? `Cannot load plugins using protocol "${url.protocol}"`
-        : againstConfig
-          ? `Cannot load plugin "${spec}": it resolves to ${url.href}, beside a config opened from disk, and plugins load only over http(s). Serve it over http(s) and name that url.`
+        : instance !== undefined
+          ? `Cannot load plugin "${spec}": it resolves to ${url.href}, and a plugin loads from a local file only in a packaged JBrowse Desktop.`
           : `Cannot load plugin from relative url "${spec}": it resolves against this JBrowse instance (${base}), not against the config that named it. Give it an absolute http(s) url, or use the umdLoc/esmLoc form to resolve it against the config.`,
     )
   }
@@ -250,7 +264,7 @@ function umdPluginUrl(
     ? resolvePluginUrl(def.url, baseUri)
     : 'umdUrl' in def
       ? resolvePluginUrl(def.umdUrl, baseUri)
-      : resolvePluginUrl(def.umdLoc.uri, def.umdLoc.baseUri, true)
+      : resolvePluginUrl(def.umdLoc.uri, def.umdLoc.baseUri, baseUri ?? '')
 }
 
 /**
@@ -317,7 +331,7 @@ export default class PluginLoader {
     const parsedUrl =
       'esmUrl' in def
         ? resolvePluginUrl(def.esmUrl, baseUri)
-        : resolvePluginUrl(def.esmLoc.uri, def.esmLoc.baseUri, true)
+        : resolvePluginUrl(def.esmLoc.uri, def.esmLoc.baseUri, baseUri ?? '')
     if (!this.fetchESM) {
       throw new Error('No ESM fetcher installed')
     }
