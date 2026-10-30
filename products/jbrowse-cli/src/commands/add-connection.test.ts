@@ -63,6 +63,14 @@ test('adds JBrowse1 connection from a url', async () => {
   })
 })
 
+test('adds a JB2TrackHubConnection from a config.json url', async () => {
+  await runInTmpDir(async ctx => {
+    await copyConf(ctx)
+    await runCommand(['add-connection', 'https://mysite.com/jb2/config.json'])
+    expect(readConf(ctx).connections).toMatchSnapshot()
+  })
+})
+
 test('adds a custom connection with user set fields', async () => {
   await runInTmpDir(async ctx => {
     await copyConf(ctx)

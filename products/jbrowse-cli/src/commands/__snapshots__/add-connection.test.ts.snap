@@ -17,6 +17,20 @@ exports[`adds JBrowse1 connection from a url 1`] = `
 ]
 `;
 
+exports[`adds a JB2TrackHubConnection from a config.json url 1`] = `
+[
+  {
+    "configJsonLocation": {
+      "locationType": "UriLocation",
+      "uri": "https://mysite.com/jb2/config.json",
+    },
+    "connectionId": "JB2TrackHubConnection-1",
+    "name": "JB2TrackHubConnection-1",
+    "type": "JB2TrackHubConnection",
+  },
+]
+`;
+
 exports[`adds a custom connection with user set fields 1`] = `
 [
   {

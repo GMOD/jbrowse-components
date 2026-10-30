@@ -37,6 +37,9 @@ function determineConnectionType(url: URL) {
   if (url.pathname.includes('jbrowse/data')) {
     return 'JBrowse1Connection'
   }
+  if (url.pathname.endsWith('/config.json')) {
+    return 'JB2TrackHubConnection'
+  }
   return 'custom'
 }
 
@@ -50,7 +53,7 @@ export async function run(args?: string[]) {
       type: 'string',
       short: 't',
       description:
-        'Type of connection (e.g. JBrowse1Connection, UCSCTrackHubConnection, custom)',
+        'Type of connection (e.g. JBrowse1Connection, UCSCTrackHubConnection, JB2TrackHubConnection, custom)',
     },
     assemblyNames: {
       type: 'string',
@@ -113,6 +116,9 @@ export async function run(args?: string[]) {
     '# force the UCSCTrackHubConnection type for a hub file not named hub.txt',
     '$ jbrowse add-connection https://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection',
     '',
+    '# subscribe to the tracks of another JBrowse 2 instance (type inferred from the config.json filename)',
+    '$ jbrowse add-connection https://mysite.com/jbrowse2/config.json -a hg38',
+    '',
     '# add a custom connection type with extra config',
     `$ jbrowse add-connection https://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' -a hg19`,
     '',
@@ -153,10 +159,13 @@ export async function run(args?: string[]) {
     connectionId ||
     [configType, assemblyNames, Date.now()].filter(Boolean).join('-')
 
-  // each known connection type stores the URL under its own location slot; a
+  // each known connection type stores the URL under its own location slot,
+  // written out rather than as the `uri` shorthand so the config also loads on
+  // a release whose type lacks the shorthand (v4's JBrowse1Connection); a
   // custom type carries no location, so its --config must supply one
   const locationField = {
     UCSCTrackHubConnection: 'hubTxtLocation',
+    JB2TrackHubConnection: 'configJsonLocation',
     JBrowse1Connection: 'dataDirLocation',
   }[configType]
 

@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models'
 
 /**
@@ -52,6 +52,30 @@ const JBrowse1Connection = ConfigurationSchema(
      * #baseConfiguration
      */
     baseConfiguration: baseConnectionConfig,
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, where `uri` points at the data
+     * directory:
+     *
+     * ```json
+     * {
+     *   "type": "JBrowse1Connection",
+     *   "uri": "https://mysite.com/jbrowse/data/"
+     * }
+     * ```
+     */
+    preProcessSnapshot: snap => {
+      return snap.uri
+        ? fillLocations(snap, {
+            dataDirLocation: {
+              uri: snap.uri,
+              baseUri: snap.baseUri,
+            },
+          })
+        : snap
+    },
   },
 )
 
