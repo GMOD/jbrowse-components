@@ -1,5 +1,9 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
+import { withAdapterSession } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
+import {
+  getConfAssemblyNamesOrNone,
+  getConfRpcSessionId,
+} from '@jbrowse/core/util/tracks'
 import {
   getCoarseBpPerPxThreshold,
   regionsInAssemblyNamespace,
@@ -8,12 +12,17 @@ import {
 
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { AdapterSessionFreer } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
 import type {
   AssemblyHost,
-  RpcHost,
   Region,
+  RpcCaller,
   StatusCallback,
 } from '@jbrowse/core/util'
+
+export interface MateDiscoveryHost extends AssemblyHost {
+  rpcManager: RpcCaller & AdapterSessionFreer
+}
 
 export type MateDiscovery = (
   signal: AbortSignal | undefined,
@@ -51,7 +60,7 @@ export function makeMateDiscovery({
   // passed rather than reached for with getSession: `track` is a track *config*,
   // and a config node is not under the session in the state tree (a connection's
   // configs are not even under the config root), so getSession throws there
-  session: AssemblyHost & RpcHost
+  session: MateDiscoveryHost
   track: AnyConfigurationModel
   region: Region
   // the width the panels open at, which with the region's span is the zoom the
@@ -60,7 +69,7 @@ export function makeMateDiscovery({
 }): MateDiscovery {
   return async (signal, statusCallback) => {
     const { rpcManager } = session
-    const trackId: string = track.trackId
+    const sessionId = getConfRpcSessionId(track)
     const trackAssemblyNames = getConfAssemblyNamesOrNone(track)
     // Spelled as the TRACK spells it, because that is the namespace the far
     // side runs in: the worker has no assembly manager, the adapter answers
@@ -73,24 +82,26 @@ export function makeMateDiscovery({
       trackAssemblyNames,
       session.assemblyManager,
     )
-    return rpcManager.call(trackId, 'SyntenyDiscoverMates', {
-      adapterConfig: readConfObject(track, 'adapter') as Record<
-        string,
-        unknown
-      >,
-      regions: [anchor!],
-      trackAssemblyNames,
-      anchorAssembly: anchor!.assemblyName,
-      lodTier: resolveLodTier({
-        bpPerPx: (region.end - region.start) / widthPx,
-        coarseBpPerPxThreshold: getCoarseBpPerPxThreshold({
-          configuration: track,
+    return withAdapterSession(rpcManager, sessionId, () =>
+      rpcManager.call(sessionId, 'SyntenyDiscoverMates', {
+        adapterConfig: readConfObject(track, 'adapter') as Record<
+          string,
+          unknown
+        >,
+        regions: [anchor!],
+        trackAssemblyNames,
+        anchorAssembly: anchor!.assemblyName,
+        lodTier: resolveLodTier({
+          bpPerPx: (region.end - region.start) / widthPx,
+          coarseBpPerPxThreshold: getCoarseBpPerPxThreshold({
+            configuration: track,
+          }),
+          lodMode: 'auto',
+          tierInfo: undefined,
         }),
-        lodMode: 'auto',
-        tierInfo: undefined,
+        signal,
+        statusCallback,
       }),
-      signal,
-      statusCallback,
-    })
+    )
   }
 }

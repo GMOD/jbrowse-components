@@ -11,10 +11,7 @@ import {
   readConfObject,
   shorthandTargets,
 } from '@jbrowse/core/configuration'
-import {
-  releaseAdapterSession,
-  retainAdapterSession,
-} from '@jbrowse/core/data_adapters/adapterSessionRefcount'
+import { withAdapterSession } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
 import { adapterByteLimit } from '@jbrowse/core/rpc/byteBudget'
 import {
   isElectron,
@@ -1245,31 +1242,32 @@ async function fetchFeatures(
   const stopTimer = setTimeout(() => {
     controller.abort()
   }, 120_000)
-  retainAdapterSession(rpcManager, sessionId)
   try {
-    // The agent's "region too large". A display refuses to fetch over its own
-    // gate and paints the reason; this path has no display, so without the
-    // same question asked here an agent that names a whole chromosome pulls it
-    // — over someone else's data host, into the page it is about to
-    // screenshot. Same index-only estimate the gated RPC takes first, and a
-    // refusal rather than a truncation: a short answer that looked like the
-    // whole answer is the failure this surface exists to prevent.
-    const bytes = await rpcManager.call(
-      sessionId,
-      'CoreGetRegionByteEstimate',
-      // eslint-disable-next-line no-restricted-syntax -- reports nothing: an agent awaits the returned features and no display or dialog exists to show a phase label or bar
-      { adapterConfig, regions, scope: 'largestRegion', signal },
-    )
-    if (bytes !== undefined && bytes > byteLimit) {
-      throw new Error(
-        `region too large for jb.getFeatures: the largest region is ~${bytes} bytes against a limit of ${byteLimit}. Narrow the region, or pass an explicit byteLimit if you mean to pull this much.`,
+    return await withAdapterSession(rpcManager, sessionId, async () => {
+      // The agent's "region too large". A display refuses to fetch over its own
+      // gate and paints the reason; this path has no display, so without the
+      // same question asked here an agent that names a whole chromosome pulls it
+      // — over someone else's data host, into the page it is about to
+      // screenshot. Same index-only estimate the gated RPC takes first, and a
+      // refusal rather than a truncation: a short answer that looked like the
+      // whole answer is the failure this surface exists to prevent.
+      const bytes = await rpcManager.call(
+        sessionId,
+        'CoreGetRegionByteEstimate',
+        // eslint-disable-next-line no-restricted-syntax -- reports nothing: an agent awaits the returned features and no display or dialog exists to show a phase label or bar
+        { adapterConfig, regions, scope: 'largestRegion', signal },
       )
-    }
-    // eslint-disable-next-line no-restricted-syntax -- reports nothing: see the estimate above
-    return await rpcManager.call(sessionId, 'CoreGetFeatures', {
-      adapterConfig,
-      regions,
-      signal,
+      if (bytes !== undefined && bytes > byteLimit) {
+        throw new Error(
+          `region too large for jb.getFeatures: the largest region is ~${bytes} bytes against a limit of ${byteLimit}. Narrow the region, or pass an explicit byteLimit if you mean to pull this much.`,
+        )
+      }
+      // eslint-disable-next-line no-restricted-syntax -- reports nothing: see the estimate above
+      return await rpcManager.call(sessionId, 'CoreGetFeatures', {
+        adapterConfig,
+        regions,
+        signal,
+      })
     })
   } catch (e) {
     throw signal.aborted
@@ -1280,7 +1278,6 @@ async function fetchFeatures(
       : e
   } finally {
     clearTimeout(stopTimer)
-    void releaseAdapterSession(rpcManager, sessionId)
   }
 }
 

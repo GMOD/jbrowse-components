@@ -31,11 +31,11 @@
  * so that the partial stubs the model tests build satisfy it, and so that
  * adapter-lifetime bookkeeping does not depend on the RPC transport.
  */
-interface RpcCaller {
+export interface AdapterSessionFreer {
   freeSession(sessionId: string): Promise<void>
 }
 
-const refcounts = new WeakMap<RpcCaller, Map<string, number>>()
+const refcounts = new WeakMap<AdapterSessionFreer, Map<string, number>>()
 
 /**
  * Whether there is an rpcManager to key counts on and to send a free to. A
@@ -44,11 +44,13 @@ const refcounts = new WeakMap<RpcCaller, Map<string, number>>()
  * entry points degrade to no-ops. It also has to be an object before it can be
  * a WeakMap key at all.
  */
-function isUsable(rpcManager: RpcCaller | undefined): rpcManager is RpcCaller {
+function isUsable(
+  rpcManager: AdapterSessionFreer | undefined,
+): rpcManager is AdapterSessionFreer {
   return typeof rpcManager?.freeSession === 'function'
 }
 
-function countsFor(rpcManager: RpcCaller) {
+function countsFor(rpcManager: AdapterSessionFreer) {
   let counts = refcounts.get(rpcManager)
   if (!counts) {
     counts = new Map()
@@ -59,7 +61,7 @@ function countsFor(rpcManager: RpcCaller) {
 
 /** Record that a track model is using `sessionId`. Pair with release. */
 export function retainAdapterSession(
-  rpcManager: RpcCaller | undefined,
+  rpcManager: AdapterSessionFreer | undefined,
   sessionId: string,
 ) {
   if (!isUsable(rpcManager)) {
@@ -92,7 +94,7 @@ export function retainAdapterSession(
  * which is a poor trade for a mis-click.
  */
 export async function releaseAdapterSession(
-  rpcManager: RpcCaller | undefined,
+  rpcManager: AdapterSessionFreer | undefined,
   sessionId: string,
 ) {
   if (!isUsable(rpcManager)) {
@@ -111,5 +113,25 @@ export async function releaseAdapterSession(
     await rpcManager.freeSession(sessionId)
   } catch {
     // teardown; see above
+  }
+}
+
+/**
+ * Run `fn` holding a claim on `sessionId`, for a one-off read of a track's
+ * adapter by something that is not a track model: a dialog, an agent API, a
+ * launch. Under a shown track's own id it reuses that track's adapter and frees
+ * nothing; for a track nobody shows, the worker's adapter is dropped once `fn`
+ * settles instead of staying cached for the life of the page.
+ */
+export async function withAdapterSession<T>(
+  rpcManager: AdapterSessionFreer | undefined,
+  sessionId: string,
+  fn: () => Promise<T>,
+) {
+  retainAdapterSession(rpcManager, sessionId)
+  try {
+    return await fn()
+  } finally {
+    void releaseAdapterSession(rpcManager, sessionId)
   }
 }

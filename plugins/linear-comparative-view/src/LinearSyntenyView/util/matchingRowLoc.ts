@@ -10,13 +10,9 @@ import {
   widestRegion,
 } from '../../LaunchSyntenyView/regionLaunchMenuItems.ts'
 
+import type { MateDiscoveryHost } from '../../LaunchSyntenyView/discoverMates.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AssemblyHost,
-  Region,
-  RpcHost,
-  TrackCatalog,
-} from '@jbrowse/core/util'
+import type { Region, TrackCatalog } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -45,7 +41,7 @@ export async function matchingRowLoc({
   signal,
 }: {
   pluginManager: PluginManager
-  session: AssemblyHost & RpcHost & TrackCatalog
+  session: MateDiscoveryHost & TrackCatalog
   trackId: string
   region: Region
   assembly: string

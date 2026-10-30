@@ -8,7 +8,7 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import { makeMateDiscovery } from './discoverMates.ts'
 
 import type { LaunchableTrack } from './LaunchSyntenyViewForRegionDialog.tsx'
-import type { MateDiscovery } from './discoverMates.ts'
+import type { MateDiscovery, MateDiscoveryHost } from './discoverMates.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
@@ -18,7 +18,6 @@ import type {
   DialogHost,
   NotificationSink,
   Region,
-  RpcHost,
   TrackCatalog,
 } from '@jbrowse/core/util'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
@@ -32,10 +31,9 @@ import type { TrackInit } from '@jbrowse/core/util/tracks'
 export interface SyntenyLaunchHost
   extends
     AbstractViewContainer,
-    AssemblyHost,
     DialogHost,
+    MateDiscoveryHost,
     NotificationSink,
-    RpcHost,
     TrackCatalog {}
 
 const LaunchSyntenyViewForRegionDialog = lazy(

@@ -1,4 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { retainAdapterSession } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
+import { getConfRpcSessionId } from '@jbrowse/core/util/tracks'
 
 import { makeMateDiscovery } from './discoverMates.ts'
 
@@ -35,17 +37,23 @@ function setup({
     method: string
     args: Record<string, unknown>
   }[] = []
-  const session = {
-    rpcManager: {
-      call: (
-        sessionId: string,
-        method: string,
-        args: Record<string, unknown>,
-      ) => {
-        calls.push({ sessionId, method, args })
-        return Promise.resolve({ mates: [], unconfigured: [] })
-      },
+  const freed: string[] = []
+  const rpcManager = {
+    call: (
+      sessionId: string,
+      method: string,
+      args: Record<string, unknown>,
+    ) => {
+      calls.push({ sessionId, method, args })
+      return Promise.resolve({ mates: [], unconfigured: [] })
     },
+    freeSession: (sessionId: string) => {
+      freed.push(sessionId)
+      return Promise.resolve()
+    },
+  }
+  const session = {
+    rpcManager,
     assemblyManager: {
       getCanonicalAssemblyName: (name: string) =>
         ({ vvx: 'volvox', volvox: 'volvox' })[name],
@@ -64,6 +72,9 @@ function setup({
       widthPx: 800,
     }),
     calls,
+    freed,
+    rpcManager,
+    track,
   }
 }
 
@@ -72,7 +83,7 @@ function setup({
 // download+parse checks the one and reports through the other.
 // `regions` is plural for refName renaming, which applies to that key alone.
 test('everything the worker-side reduction needs reaches the RPC', async () => {
-  const { discover, calls } = setup()
+  const { discover, calls, track } = setup()
   const signalController = new AbortController()
   const signal = signalController.signal
   const statusCallback = jest.fn()
@@ -80,7 +91,7 @@ test('everything the worker-side reduction needs reaches the RPC', async () => {
 
   expect(calls.length).toBe(1)
   const { sessionId, method, args } = calls[0]!
-  expect(sessionId).toBe('t1')
+  expect(sessionId).toBe(getConfRpcSessionId(track))
   expect(method).toBe('SyntenyDiscoverMates')
   expect(args.signal).toBe(signal)
   expect(args.statusCallback).toBe(statusCallback)
@@ -162,4 +173,19 @@ test('an adapter with no coarse tier is always asked for fine', async () => {
   })
   await discover(new AbortController().signal, jest.fn())
   expect(calls[0]!.args.lodTier).toBe('fine')
+})
+
+// Under the trackId, the worker cached an adapter nothing ever freed, often a
+// second copy on another worker beside the shown track's own.
+test('a track no view shows frees its adapter once discovery settles', async () => {
+  const { discover, freed, track } = setup()
+  await discover(undefined, () => {})
+  expect(freed).toEqual([getConfRpcSessionId(track)])
+})
+
+test("a shown track's adapter survives discovery", async () => {
+  const { discover, freed, rpcManager, track } = setup()
+  retainAdapterSession(rpcManager, getConfRpcSessionId(track))
+  await discover(undefined, () => {})
+  expect(freed).toEqual([])
 })

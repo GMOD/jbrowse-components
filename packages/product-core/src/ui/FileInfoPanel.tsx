@@ -1,6 +1,7 @@
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { withAdapterSession } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
 import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { statusProgressLabel } from '@jbrowse/core/util'
 import {
@@ -35,13 +36,18 @@ const FileInfoPanel = observer(function FileInfoPanel({
     // reading a header can mean walking a v8 .hic's norm-vector index or a
     // multi-megabyte VCF header, so it gets both handles: closing the About
     // dialog stops it, and the wait says what it is
-    async (_name, _sessionId, signal, statusCallback) =>
-      (await rpcManager.call(sessionId, 'CoreGetInfo', {
-        adapterConfig,
-        assemblyName,
-        signal,
-        statusCallback,
-      })) as FileInfo,
+    (_name, _sessionId, signal, statusCallback) =>
+      withAdapterSession(
+        rpcManager,
+        sessionId,
+        async () =>
+          (await rpcManager.call(sessionId, 'CoreGetInfo', {
+            adapterConfig,
+            assemblyName,
+            signal,
+            statusCallback,
+          })) as FileInfo,
+      ),
   )
 
   const details =

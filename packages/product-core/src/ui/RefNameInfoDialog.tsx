@@ -1,5 +1,6 @@
 import { assemblyContigLengths } from '@jbrowse/core/assemblyManager/assembly'
 import { readConfObject } from '@jbrowse/core/configuration'
+import { withAdapterSession } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
 import {
   CopyToClipboardButton,
   Dialog,
@@ -96,18 +97,20 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
       // assembly is the config node holding it, which `getConfAssemblyNames`
       // walks to. It throws when a config has neither, and inside the fetcher
       // that lands in the error banner rather than out of a render
-      return Promise.all(
-        [...new Set(getConfAssemblyNames(config))].map(
-          async assemblyName =>
-            [
-              assemblyName,
-              await rpcManager.call(sessionId, 'CoreGetContigs', {
-                adapterConfig,
+      return withAdapterSession(rpcManager, sessionId, () =>
+        Promise.all(
+          [...new Set(getConfAssemblyNames(config))].map(
+            async assemblyName =>
+              [
                 assemblyName,
-                signal,
-                statusCallback: slot(),
-              }),
-            ] as const,
+                await rpcManager.call(sessionId, 'CoreGetContigs', {
+                  adapterConfig,
+                  assemblyName,
+                  signal,
+                  statusCallback: slot(),
+                }),
+              ] as const,
+          ),
         ),
       )
     },
