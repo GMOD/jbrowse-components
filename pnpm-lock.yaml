@@ -432,8 +432,8 @@ importers:
         specifier: ^0.27.20
         version: 0.27.20(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@gmod/bgzf-filehandle':
-        specifier: ^6.8.2
-        version: 6.8.2
+        specifier: ^6.8.4
+        version: 6.8.4
       '@gmod/range-cache-filehandle':
         specifier: ^2.0.0
         version: 2.0.0
@@ -1753,8 +1753,8 @@ importers:
   plugins/maf:
     dependencies:
       '@gmod/bgzf-filehandle':
-        specifier: ^6.8.2
-        version: 6.8.2
+        specifier: ^6.8.4
+        version: 6.8.4
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -4694,8 +4694,8 @@ packages:
   '@gmod/bed@2.3.3':
     resolution: {integrity: sha512-sdk7JYx3fGlZ1Js1BWtRB4PPtDnJWkvYe2pQlOI8qVUFB99SHwwoLz8sKMzQk3RT88TIPmu2TMwx5DPKgHyVVA==}
 
-  '@gmod/bgzf-filehandle@6.8.2':
-    resolution: {integrity: sha512-idzdZgoGvgkCgshoibhmeH795wQAm7JXnEvETEMPPdrq4yBCDD6S+LkN1JC6V+wdaRc0LZSKP7A50LqNaJC6sg==}
+  '@gmod/bgzf-filehandle@6.8.4':
+    resolution: {integrity: sha512-eN3yOAfij5xTKARWFSAn61byFyRWjU5XQSvpm0+C7tptxHOGi/t0xMZt5V1/Lf4VxRT2By5yUu3RtBiG+oP0LA==}
 
   '@gmod/cram@14.3.2':
     resolution: {integrity: sha512-Lsqdoq2AiPskwJGdjZln2v65Wjc4rD9GkPxsVxERxjs2VXMkLETE2x8liOT5cScFKsDk5myktFiAeqxHnXFIww==}
@@ -12711,7 +12711,7 @@ snapshots:
 
   '@gmod/bam@10.1.0':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.8.2
+      '@gmod/bgzf-filehandle': 6.8.4
       '@gmod/shared-read-cache': 2.1.0
       '@jbrowse/quick-lru': 8.0.0
       generic-filehandle2: 2.5.1
@@ -12723,7 +12723,7 @@ snapshots:
 
   '@gmod/bed@2.3.3': {}
 
-  '@gmod/bgzf-filehandle@6.8.2':
+  '@gmod/bgzf-filehandle@6.8.4':
     dependencies:
       generic-filehandle2: 2.5.1
       pako-esm2: 2.0.2
@@ -12753,7 +12753,7 @@ snapshots:
 
   '@gmod/indexedfasta@5.0.14':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.8.2
+      '@gmod/bgzf-filehandle': 6.8.4
       '@gmod/shared-read-cache': 2.1.0
       generic-filehandle2: 2.5.1
 
@@ -12774,7 +12774,7 @@ snapshots:
 
   '@gmod/tabix@3.13.0':
     dependencies:
-      '@gmod/bgzf-filehandle': 6.8.2
+      '@gmod/bgzf-filehandle': 6.8.4
       '@gmod/shared-read-cache': 2.1.0
       '@jbrowse/quick-lru': 8.0.0
       generic-filehandle2: 2.5.1
