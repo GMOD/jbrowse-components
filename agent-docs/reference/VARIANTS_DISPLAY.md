@@ -290,7 +290,8 @@ records themselves, with nesting, labels and a layout of their own, are a
 ## How wide a cell draws
 
 A cell is its record's reference span floored at `MIN_CELL_PX`, insertions
-included, and its hover box and click target are the cell mark's own ink.
+included, with both sides on the backing store's device pixels
+(`snapCellEdgePx`). Its hover box and click target are the cell mark's own ink.
 
 **Edges go in in RECORD order, `toX(start)` then `toX(end)`** — never sorted,
 never pre-snapped. `snappedCellLeftPx` hangs the 2px floor off the record's
