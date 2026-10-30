@@ -1,0 +1,348 @@
+{
+  "name": "MET exon 14 skipping",
+  "views": [
+    {
+      "id": "lgv-MET",
+      "type": "LinearGenomeView",
+      "colorByCDS": true,
+      "hideHeaderOverview": true,
+      "showGridlines": false,
+      "assembly": "hg38",
+      "loc": "chr7:116771458-116771694 chr7:116771809-116772029 chr7:116774841-116775151",
+      "tracks": [
+        {
+          "trackId": "hg38-ncbiRefSeqSelect",
+          "height": 60
+        },
+        {
+          "trackId": "NCI-H596_DNA",
+          "height": 150
+        },
+        {
+          "trackId": "NCI-H596_RNA",
+          "height": 90,
+          "pileup": {
+            "show": false
+          },
+          "sashimi": {
+            "labels": {
+              "show": true
+            }
+          }
+        },
+        {
+          "trackId": "EBC-1_RNA_5pct",
+          "height": 90,
+          "pileup": {
+            "show": false
+          },
+          "sashimi": {
+            "labels": {
+              "show": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "lgv-MET-donor",
+      "type": "LinearGenomeView",
+      "colorByCDS": true,
+      "hideHeaderOverview": true,
+      "showGridlines": false,
+      "assembly": "hg38",
+      "loc": "chr7:116771975-116772005",
+      "tracks": [
+        {
+          "trackId": "hg38-ncbiRefSeqSelect",
+          "height": 60
+        },
+        {
+          "trackId": "NCI-H596_DNA",
+          "height": 150,
+          "sort": {
+            "field": "base",
+            "pos": 116771990,
+            "refName": "chr7"
+          }
+        }
+      ]
+    },
+    {
+      "id": "protein-MET-3bux",
+      "type": "ProteinView",
+      "height": 885,
+      "zoomToBaseLevel": false,
+      "structures": [
+        {
+          "pdbId": "3bux",
+          "feature": {
+            "uniqueId": "NM_000245.4",
+            "type": "mRNA",
+            "refName": "chr7",
+            "start": 116699084,
+            "end": 116796124,
+            "strand": 1,
+            "name": "NM_000245.4",
+            "subfeatures": [
+              {
+                "type": "CDS",
+                "start": 116699084,
+                "end": 116700284,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 116731667,
+                "end": 116731859,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 116739949,
+                "end": 116740084,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 116740851,
+                "end": 116741025,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 116755354,
+                "end": 116755515,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 116757436,
+                "end": 116757539,
+                "strand": 1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 116757637,
+                "end": 116757774,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 116758458,
+                "end": 116758620,
+                "strand": 1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 116759390,
+                "end": 116759490,
+                "strand": 1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 116763049,
+                "end": 116763268,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 116769644,
+                "end": 116769791,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 116771497,
+                "end": 116771654,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 116771848,
+                "end": 116771989,
+                "strand": 1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 116774880,
+                "end": 116775111,
+                "strand": 1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 116777388,
+                "end": 116777469,
+                "strand": 1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 116778775,
+                "end": 116778957,
+                "strand": 1,
+                "phase": 2
+              },
+              {
+                "type": "CDS",
+                "start": 116781987,
+                "end": 116782097,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 116783303,
+                "end": 116783469,
+                "strand": 1,
+                "phase": 1
+              },
+              {
+                "type": "CDS",
+                "start": 116795654,
+                "end": 116795791,
+                "strand": 1,
+                "phase": 0
+              },
+              {
+                "type": "CDS",
+                "start": 116795886,
+                "end": 116796124,
+                "strand": 1,
+                "phase": 1
+              }
+            ]
+          },
+          "userProvidedTranscriptSequence": "MKAPAVLAPGILVLLFTLVQRSNGECKEALAKSEMNVNMKYQLPNFTAETPIQNVILHEHHIFLGATNYIYVLNEEDLQKVAEYKTGPVLEHPDCFPCQDCSSKANLSGGVWKDNINMALVVDTYYDDQLISCGSVNRGTCQRHVFPHNHTADIQSEVHCIFSPQIEEPSQCPDCVVSALGAKVLSSVKDRFINFFVGNTINSSYFPDHPLHSISVRRLKETKDGFMFLTDQSYIDVLPEFRDSYPIKYVHAFESNNFIYFLTVQRETLDAQTFHTRIIRFCSINSGLHSYMEMPLECILTEKRKKRSTKKEVFNILQAAYVSKPGAQLARQIGASLNDDILFGVFAQSKPDSAEPMDRSAMCAFPIKYVNDFFNKIVNKNNVRCLQHFYGPNHEHCFNRTLLRNSSGCEARRDEYRTEFTTALQRVDLFMGQFSEVLLTSISTFIKGDLTIANLGTSEGRFMQVVVSRSGPSTPHVNFLLDSHPVSPEVIVEHTLNQNGYTLVITGKKITKIPLNGLGCRHFQSCSQCLSAPPFVQCGWCHDKCVRSEECLSGTWTQQICLPAIYKVFPNSAPLEGGTRLTICGWDFGFRRNNKFDLKKTRVLLGNESCTLTLSESTMNTLKCTVGPAMNKHFNMSIIISNGHGTTQYSTFSYVDPVITSISPKYGPMAGGTLLTLTGNYLNSGNSRHISIGGKTCTLKSVSNSILECYTPAQTISTEFAVKLKIDLANRETSIFSYREDPIVYEIHPTKSFISGGSTITGVGKNLNSVSVPRMVINVHEAGRNFTVACQHRSNSEIICCTTPSLQQLNLQLPLKTKAFFMLDGILSKYFDLIYVHNPVFKPFEKPVMISMGNENVLEIKGNDIDPEAVKGEVLKVGNKSCENIHLHSEAVLCTVPNDLLKLNSELNIEWKQAISSTVLGKVIVQPDQNFTGLIAGVVSISTALLLLLGFFLWLKKRKQIKDLGSELVRYDARVHTPHLDRLVSARSVSPTTEMVSNESVDYRATFPEDQFPNSSQNGSCRQVQYPLTDMSPILTSGDSDISSPLLQNTVHIDLSALNPELVQAVQHVVIGPSSLIVHFNEVIGRGHFGCVYHGTLLDNDGKKIHCAVKSLNRITDIGEVSQFLTEGIIMKDFSHPNVLSLLGICLRSEGSPLVVLPYMKHGDLRNFIRNETHNPTVKDLIGFGLQVAKGMKYLASKKFVHRDLAARNCMLDEKFTVKVADFGLARDMYDKEYYSVHNKTGAKLPVKWMALESLQTQKFTTKSDVWSFGVLLWELMTRGAPPYPDVNTFDITVYLLQGRRLLQPEYCPDPLYEVMLKCWHPKAEMRPSFSELVSRISAIFSTFIGEHYVHVNATYVNVKCVAPYPSLLSSEDNADDEVDTRPASFWETS",
+          "connectedViewId": "lgv-MET",
+          "assembly": "5"
+        }
+      ],
+      "camera": {
+        "position": [-49.541, 33.01, 73.75],
+        "target": [-5.334, 2.708, 21.285],
+        "up": [0.577, -0.3955, 0.7146],
+        "mode": "orthographic"
+      }
+    }
+  ],
+  "sessionTracks": [
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "NCI-H596_DNA",
+      "name": "NCI-H596_DNA",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://jbrowse.org/demos/metex14/NCI-H596_DNA.bam",
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/metex14/NCI-H596_DNA.bam.bai"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "NCI-H596_RNA",
+      "name": "NCI-H596_RNA",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://jbrowse.org/demos/metex14/NCI-H596_RNA.bam",
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/metex14/NCI-H596_RNA.bam.bai"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "EBC-1_RNA_5pct",
+      "name": "EBC-1_RNA_5pct",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://jbrowse.org/demos/metex14/EBC-1_RNA_5pct.bam",
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/metex14/EBC-1_RNA_5pct.bam.bai"
+          }
+        }
+      }
+    }
+  ],
+  "highlights": [
+    {
+      "assemblyName": "hg38",
+      "refName": "chr7",
+      "start": 116771848,
+      "end": 116771989,
+      "label": "exon 14"
+    }
+  ],
+  "useWorkspaces": true,
+  "activePanelId": "panel-exons",
+  "layout": {
+    "id": "branch-root",
+    "direction": "row",
+    "size": 1,
+    "children": [
+      {
+        "id": "branch-left",
+        "direction": "column",
+        "size": 60,
+        "children": [
+          {
+            "id": "panel-exons",
+            "size": 60,
+            "activeTabId": "tab-exons",
+            "tabs": [
+              {
+                "id": "tab-exons",
+                "viewIds": ["lgv-MET"]
+              }
+            ]
+          },
+          {
+            "id": "panel-donor",
+            "size": 40,
+            "activeTabId": "tab-donor",
+            "tabs": [
+              {
+                "id": "tab-donor",
+                "viewIds": ["lgv-MET-donor"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "panel-protein",
+        "size": 40,
+        "activeTabId": "tab-protein",
+        "tabs": [
+          {
+            "id": "tab-protein",
+            "viewIds": ["protein-MET-3bux"]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -117,6 +117,7 @@ the hovered residue as a vertical line.
 - [](/docs/tutorials/protein_variants_braf)
 - [](/docs/tutorials/genomes_proteins)
 - [](/docs/user_guides/highlights)
+- [](/docs/tutorials/protein_variants_met_exon14)
 
 ## External links
 

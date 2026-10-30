@@ -165,6 +165,7 @@ export const TUTORIAL_ORDER = [
   'protein_variants_kras',
   'protein_variants_tp53',
   'protein_variants_braf',
+  'protein_variants_met_exon14',
   'gene_prediction_review',
   'protein_domains',
   'gene_density',

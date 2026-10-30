@@ -74,6 +74,7 @@ import { proteinHbbE6vSpecs } from './specs/protein_figure_hbb_e6v.ts'
 import { proteinHbbE6vMsaSpecs } from './specs/protein_figure_hbb_e6v_msa.ts'
 import { proteinHbbE6vPocketSpecs } from './specs/protein_figure_hbb_e6v_pocket.ts'
 import { proteinKrasG12cSpecs } from './specs/protein_figure_kras_g12c.ts'
+import { proteinMetEx14Specs } from './specs/protein_figure_met_ex14.ts'
 import { proteinScanVsAlphaMissenseSpecs } from './specs/protein_figure_scan_vs_alphamissense.ts'
 import { proteinSncaE46kSpecs } from './specs/protein_figure_snca_e46k.ts'
 import { proteinTp53Y220cSpecs } from './specs/protein_figure_tp53_y220c.ts'
@@ -122,6 +123,7 @@ export const specs: ScreenshotSpec[] = [
   ...proteinHbbE6vPocketSpecs,
   ...proteinCcr5ComboSpecs,
   ...proteinCcr5Delta32Specs,
+  ...proteinMetEx14Specs,
   ...proteinCcr5GeneSpecs,
   ...proteinBrca1M1775rSpecs,
   ...proteinSncaE46kSpecs,

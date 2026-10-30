@@ -1,6 +1,6 @@
 ---
 name: protein-figures-and-viz-features
-description: "Hero figures for the protein browser (genome view linked to Mol* structures), each showing what a variant does. On main: the heroes TP53 Y220C and HBB E6V, then KRAS G12C, SNCA E46K, BRCA1 M1775R and the CCR5 Δ32 set. Open: more figures where genome evidence drives the structure, and the painted fold as a supporting layer."
+description: "Hero figures for the protein browser (genome view linked to Mol* structures), each showing what a variant does. On main: the heroes TP53 Y220C and HBB E6V, then KRAS G12C, SNCA E46K, BRCA1 M1775R, the CCR5 Δ32 set and MET exon 14 skipping with its tutorial. Open: more figures where genome evidence drives the structure, and the painted fold as a supporting layer."
 ---
 
 # Protein figures and 3D visualization features: what is left
@@ -153,7 +153,8 @@ together.
   `alphaMissense` and `clinvar`, and a capture showed Mol*'s chain colors under
   the right legend), and `occlusion: true` beside `silhouettes`. Plugin doc:
   `docs/figure-sessions.md`.
-- Hosted data: `jbrowse.org/demos/brca1/` (every missense SNV, residue mean
+- Hosted data: `jbrowse.org/demos/metex14/` (NCI-H596 DNA and RNA, EBC-1
+  RNA at 5%, MET exons 13-15), `jbrowse.org/demos/brca1/` (every missense SNV, residue mean
   bigWig) and `tp53_sge/` (every missense SNV, position mean bigWig).
 
 ## What the three reviews said
@@ -208,10 +209,28 @@ blinded ideator given only a capability sheet, a landscape survey):
    pinch between the PAF's two blocks, and the allele's own CDS ends at its
    premature stop. The design that generalises it is
    `ideas/waiting-on-a-call/a-variant-haplotype-is-a-lane.md`.
+   `protein/met_ex14` is the second, with the tutorial
+   `protein_variants_met_exon14` (part 7) that reaches it by clicks from the
+   Protein Browser's `gene=MET&structure=3bux` link, on CCLE reads Colin's
+   readers could swap for their own. NCI-H596 RNA joins exon 13 to 15, its DNA
+   has no reference reads at c.3028+1 (chr7:116,771,990 G>T), EBC-1 keeps the
+   exon, and 3BUX's assembly 5 shows CBL on MET 997-1009 (998-1005 resolved,
+   pY1003 among them). `scripts/build_metex14.sh` slices CCLE's GRCh37 reads
+   from SRA and realigns them to hg38 chr7 with HISAT2 (minimap2 2.27's
+   `splice:sr` lost most spliced reads); the BAMs are in `demos/metex14/`'s
+   bucket path, the README in the repo. The session is the landing session
+   plus the tutorial's clicks; its builder is machine-local,
+   `/var/tmp/metex14/bin/build_met_ex14_v2.py`. A review cut the first draft's
+   "empty pocket" panel (a chain filter no reader can set, and CBL still binds
+   other substrates) and its custom colors.
    Unbuilt ideas on the same footing: a population-constraint track whose
-   depleted stretch lands on an interface, RNA-seq junctions proving an exon
-   skip with the skipped residues on the fold, tumor reads at KRAS codon 12,
-   a long read phasing two variants in trans.
+   depleted stretch lands on an interface, tumor reads at KRAS codon 12, a long
+   read phasing two variants in trans, and a skip that removes a folded domain
+   from the gene's own structure, which would read stronger than MET's
+   8-residue peptide on another protein. For that, Protein3d would want "hide
+   the highlighted residues", a structure filter from the genome view's
+   highlight; `residueFilter.ts` ANDs its predicates, so a gap inside a chain
+   needs an exclude predicate first.
 3. **The painted fold as a supporting layer, not the subject**: a variant pair
    whose wild type is painted by the scan says both what the residue does and
    that the whole map agrees, if the key says what the color means.
@@ -255,6 +274,17 @@ blinded ideator given only a capability sheet, a landscape survey):
   haplotype block.
 
 ## Traps
+
+- A display setting written in a session spec, or by dragging a track's
+  height, lands on the track's shared display config, so one track open in
+  two views draws at one height and one sort in both. `met_ex14` gives its DNA
+  track one height for that reason.
+- The Protein Browser (`~/src/proteinbrowser`) still writes the genome view's
+  settings under the deprecated `init`.
+- A PDB entry's first assembly can be one chain: 3BUX's are the peptide alone
+  and CBL alone until assembly 5. Query every assembly
+  (`data.rcsb.org/rest/v1/core/assembly/<id>/<n>`) before saying a partner
+  needs "Deposited model".
 
 - A spec file that fails to parse breaks every capture, since the generator
   loads them all.

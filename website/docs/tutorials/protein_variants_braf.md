@@ -106,6 +106,7 @@ kinase domain. The ATP binding site ends upstream, at Asp594 of the DFG motif.
 - [](/docs/tutorials/protein_variants_tp53)
 - [](/docs/tutorials/genomes_proteins)
 - [](/docs/user_guides/highlights)
+- [](/docs/tutorials/protein_variants_met_exon14)
 
 ## External links
 

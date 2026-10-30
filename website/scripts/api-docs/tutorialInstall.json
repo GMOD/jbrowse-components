@@ -133,5 +133,13 @@
   "jbrowse-img": {
     "npm": "@jbrowse/img",
     "npmPrerelease": "next"
+  },
+  "hisat2": {
+    "apt": "hisat2",
+    "conda": "hisat2"
+  },
+  "sra-tools": {
+    "apt": "sra-toolkit",
+    "conda": "sra-tools"
   }
 }
