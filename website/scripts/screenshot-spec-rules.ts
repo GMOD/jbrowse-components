@@ -289,11 +289,12 @@ export function countRawCallouts(list: ScreenshotSpec[]) {
 // `waitForAppSettled` ends by asking the app instead of guessing. Converting
 // one needs `probe-app-settled.ts` first, so they go as figures are touched.
 // None ends an action list on an open menu or dialog: the frame gate's 1 s
-// settle hold outlasts any MUI transition (25 such went on 2026-10-30, every
-// figure byte-identical). Mol* camera resets and hover tooltips stay: the app
-// never sees them.
+// settle hold outlasts any MUI transition. None precedes a click or type: those
+// wait for their target to be visible and still. 38 such went on 2026-10-30,
+// every figure byte-identical. Mol* camera resets and hover tooltips stay: the
+// app never sees them.
 export const LONG_DELAY_MS = 1000
-export const LONG_DELAY_BASELINE = 66
+export const LONG_DELAY_BASELINE = 53
 
 export function countLongDelays(list: ScreenshotSpec[]) {
   const found = list.flatMap(spec =>

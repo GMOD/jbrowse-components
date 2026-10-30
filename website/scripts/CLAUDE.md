@@ -26,7 +26,8 @@ Capture races and callout anchoring: `agent-docs/reference/FIGURE_CAPTURE.md`.
   (`PROBE_SPEC=<name> node scripts/probe-app-settled.ts`):
   `search_feature_highlight`'s delay covers no app work, and shortening it moved
   every glyph's antialiasing past the diff gate. Tooltip delays stay `delay`s; a
-  menu or dialog ending an action list needs none.
+  menu or dialog ending an action list needs none, nor does a click or type,
+  which waits for its target.
 - **Every annotation `anchor`s** by locus, cell, graph node, element, chord
   label (`{ chord: 'SV_20' }`) or ideogram band, never by a measured pixel. A
   chord's feature id is parse order and drifts; its label does not. A pointing
