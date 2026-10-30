@@ -29,7 +29,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
 - htslib (`bgzip`, `tabix`) and `bcftools`
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.0.0 or later, for the
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.1.0 or later, for the
   graph's files in format 2, which the configs below read, and the walk index
   (walk format 5, the only one the plugin reads)
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
@@ -147,15 +147,15 @@ does not finish there.
 
 The command writes these files beside the prefix:
 
-| file                                          | what it holds                                                                                                       |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `.graph.bed.gz`                               | one row per segment and one per link, filed under reference coordinates; a link row states both ends in full        |
-| `.bubbles.bed.gz`                             | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele                                 |
-| `.fold10000.graph.bed.gz`                     | the graph with variants under 10 kb folded into the reference, so a whole chromosome draws                          |
-| `.contig.segs.bed.gz`, `.contig.links.bed.gz` | the segment and link rows under each segment's own coordinate, as a format 1 pair, which the allele inventory reads |
-| `.alleles.bed.gz`                             | one row per allele, with a CIGAR that states its size                                                               |
-| `.graph.json`                                 | a manifest naming the files above and the tier's fold size                                                          |
-| `.config.json`                                | the tracks below, with the plugin entry                                                                             |
+| file                      | what it holds                                                                                                |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `.graph.bed.gz`           | one row per segment and one per link, filed under reference coordinates; a link row states both ends in full |
+| `.bubbles.bed.gz`         | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele                          |
+| `.fold10000.graph.bed.gz` | the graph with variants under 10 kb folded into the reference, so a whole chromosome draws                   |
+| `.contig.graph.bed.gz`    | the segment and link rows under each segment's own coordinate, which the allele inventory reads              |
+| `.alleles.bed.gz`         | one row per allele, with a CIGAR that states its size                                                        |
+| `.graph.json`             | a manifest naming the files above and the tier's fold size                                                   |
+| `.config.json`            | the tracks below, with the plugin entry                                                                      |
 
 Each `.bed.gz` gets a tabix index beside it. `--format 1` writes the index and
 the tier as `.segs.bed.gz` and `.links.bed.gz` pairs, as gfa-to-tabix did before
