@@ -97,9 +97,9 @@ export function featureItemRgb(
 // write) keeps working, and can now just be deleted.
 export const BED_COLOR_FIELDS = ['itemRgb', 'reserved', 'field8'] as const
 
-// A feature that knows its format answers for itself: GFF3 has no BED color
-// column, and asking a GFF3 feature for three absent attributes scans its
-// column 9 three times, at every level of the glyph's color walk.
+// A feature that knows its format answers for itself. A GFF3 feature asked
+// for three absent attributes would scan its column 9 three times, at every
+// level of the glyph's color walk.
 function hasOwnBedColor(feature: Feature): feature is Feature & {
   bedColor: (itemRgbOn: boolean) => string | undefined
 } {

@@ -1,4 +1,5 @@
 import { getAttribute, getAttributes } from '@gmod/gff-nostream'
+import { featureItemRgb } from '@jbrowse/core/util/colorBits'
 
 import { fileAttributes } from './fileAttributes.ts'
 
@@ -26,6 +27,8 @@ import type {
  * `toJSON` still materializes the lot, which is what the details path
  * serializes, so nothing downstream sees a smaller feature than it used to.
  */
+const BED_COLOR_TAG = /itemrgb|reserved|field8/i
+
 export class Gff3Feature implements Feature {
   private inflated?: Feature[]
 
@@ -111,9 +114,22 @@ export class Gff3Feature implements Feature {
     return this.uniqueId
   }
 
-  /** None: GFF3 has no BED color column (`featureBedColor`). */
-  public bedColor() {
-    return undefined
+  /**
+   * The BED color that "Save track data" writes into a GFF3 as an `itemRgb`,
+   * `reserved` or `field8` attribute, read back for `featureBedColor`. The
+   * parser lowercases tags, so the names are looked up lowercased. Most GFF3
+   * has none of them, so this tests column 9 with one regex before scanning
+   * for any attribute.
+   */
+  public bedColor(itemRgbOn: boolean) {
+    if (!BED_COLOR_TAG.test(this.data.attributeString)) {
+      return undefined
+    }
+    let found: string | undefined
+    for (const key of ['itemrgb', 'reserved', 'field8']) {
+      found ??= featureItemRgb(this.attribute(key), itemRgbOn)
+    }
+    return found
   }
 
   /** The feature's column 9 keyed as the file writes it (`fileAttributes`). */

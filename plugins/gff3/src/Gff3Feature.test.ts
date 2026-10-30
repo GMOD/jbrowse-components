@@ -63,12 +63,28 @@ describe('Gff3Feature', () => {
     expect(f.get('reserved')).toBeUndefined()
   })
 
-  it('declares no BED color, even under a BED color column name', () => {
+  // what "Save track data" writes for a BED12, a bigBed and a BED9 feature
+  it.each(['itemRgb', 'reserved', 'field8'])(
+    'reads back a BED color exported as %s',
+    tag => {
+      const f = lazy([
+        `ctgA\texample\tmRNA\t1051\t9000\t.\t+\t.\tID=m1;${tag}=227%2C26%2C28`,
+      ])
+      expect(featureBedColor(f)).toBe('227,26,28')
+    },
+  )
+
+  it('has no BED color without one of those attributes', () => {
+    expect(featureBedColor(lazy(GENE))).toBeUndefined()
+    expect(featureBedColor(lazy(GENE), true)).toBeUndefined()
+  })
+
+  it('treats an exported black as unset unless itemRgbOn, as BED does', () => {
     const f = lazy([
-      'ctgA\texample\tgene\t1051\t9000\t.\t+\t.\tID=gene1;reserved=1,2,3',
+      'ctgA\texample\tmRNA\t1051\t9000\t.\t+\t.\tID=m1;itemRgb=0%2C0%2C0',
     ])
     expect(featureBedColor(f)).toBeUndefined()
-    expect(f.get('reserved')).toEqual(['1', '2', '3'])
+    expect(featureBedColor(f, true)).toBe('0,0,0')
   })
 
   it('unescapes a deferred attribute only when asked for it', () => {
