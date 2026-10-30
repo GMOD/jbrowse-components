@@ -717,35 +717,6 @@ export function parsePifHeader(header: string): PifMeta {
 }
 
 /**
- * Each fine-tier seqid's contig length from the header's `#sq` lines, keyed
- * with its `q`/`t` prefix as the index files it. Empty for a file make-pif
- * wrote before it added them, or a newer generation whose lines may mean
- * something else.
- */
-export function parsePifContigLengths(header: string) {
-  const lengths = new Map<string, number>()
-  if (pifVersionKnown(parsePifHeader(header))) {
-    for (const line of header.split('\n')) {
-      if (line.startsWith('#sq\t')) {
-        let name: string | undefined
-        let length = Number.NaN
-        for (const field of line.split('\t').slice(1)) {
-          if (field.startsWith('name:Z:')) {
-            name = field.slice(7)
-          } else if (field.startsWith('length:i:')) {
-            length = +field.slice(9)
-          }
-        }
-        if (name !== undefined && Number.isFinite(length)) {
-          lengths.set(name, length)
-        }
-      }
-    }
-  }
-  return lengths
-}
-
-/**
  * Whether a coarse row of this file that carries no `cr:Z:` fold is a single
  * run within the file's bound — true only when the file states a bound and
  * every input row had a CIGAR. A file without a header (the split format), or

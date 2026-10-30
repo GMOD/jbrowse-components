@@ -45,8 +45,7 @@ export function isRefNameSource(
 }
 
 // an adapter whose file states its contigs' lengths: a BAM/CRAM `@SQ`, a
-// bigWig/bigBed chrom table, a VCF `##contig`, a PAF's length columns, a PIF's
-// `#sq` lines
+// bigWig/bigBed chrom table, a VCF `##contig`, a PAF's length columns
 export interface ContigSource {
   getContigs(opts?: BaseOptions): Promise<Contig[]>
 }

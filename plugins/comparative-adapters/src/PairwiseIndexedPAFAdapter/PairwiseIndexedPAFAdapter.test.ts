@@ -45,36 +45,6 @@ const pifDelPath =
 // CIGAR (the default 10kb gap would have folded it).
 const pifInsCoarsePath =
   require.resolve('../../../../test_data/volvox/volvox_ins_coarse.pif.gz')
-// volvox_ins_sq.pif.gz is `jbrowse make-pif` on volvox_ins.paf from the
-// release that added `#sq` contig lengths to the header
-const pifInsSqPath =
-  require.resolve('../../../../test_data/volvox/volvox_ins_sq.pif.gz')
-
-describe('contigs', () => {
-  it("reads each side from the header's #sq lines", async () => {
-    const adapter = makeAdapter(pifInsSqPath, ['volvox_ins', 'volvox'])
-    await expect(
-      adapter.getContigs({ assemblyName: 'volvox_ins' }),
-    ).resolves.toEqual([{ refName: 'ctgA', length: 54801 }])
-    await expect(
-      adapter.getContigs({ assemblyName: 'volvox' }),
-    ).resolves.toEqual([{ refName: 'ctgA', length: 50001 }])
-    await expect(adapter.getContigLengths(1)).resolves.toEqual(
-      new Map([['ctgA', 50001]]),
-    )
-  })
-
-  it('states no length from a file without #sq lines, whose rows alone have them', async () => {
-    const adapter = makeAdapter(pifInsPath, ['volvox_ins', 'volvox'])
-    await expect(
-      adapter.getContigs({ assemblyName: 'volvox_ins' }),
-    ).resolves.toEqual([{ refName: 'ctgA', length: undefined }])
-    await expect(adapter.getContigLengths(0)).resolves.toEqual(
-      new Map([['ctgA', 54801]]),
-    )
-  })
-})
-
 describe('PairwiseIndexedPAFAdapter', () => {
   describe('coordinate extraction from PIF format', () => {
     it('fetches features from query assembly perspective (q-lines)', async () => {

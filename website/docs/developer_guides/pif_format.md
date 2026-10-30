@@ -92,13 +92,10 @@ counts and tags, so identity coloring does not jump at a tier switch.
 
 ## Header
 
-A `#pif` meta line, sorted first and kept by tabix (`tabix -H file.pif.gz`),
-then a `#sq` line per fine-tier seqid:
+One meta line, sorted first and kept by tabix (`tabix -H file.pif.gz`):
 
 ```tsv
 #pif	version:i:2	tiers:Z:fine,coarse	coarse:i:10000	cigars:Z:all
-#sq	name:Z:qchr1	length:i:248956422
-#sq	name:Z:tchr1	length:i:248387328
 ```
 
 | Field     | Meaning                                                      |
@@ -107,10 +104,6 @@ then a `#sq` line per fine-tier seqid:
 | `tiers`   | `fine` or `fine,coarse`                                      |
 | `coarse`  | the coarse tier's bound in bp, absent when there is no tier  |
 | `cigars`  | whether every input row had a CIGAR: `all`, `some` or `none` |
-
-Each `#sq` line names a seqid with its `q`/`t` prefix and gives the contig
-length the PAF's length column states. JBrowse compares these with the
-assembly's lengths to warn about a file made against another genome build.
 
 Every field is optional, and files built before the header have none. A reader
 skips a header key it does not know, such as the `writer:Z:` key that files from

@@ -6,7 +6,7 @@ import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 
-import { parsePifContigLengths, parsePifHeader, parsePifLine } from './util.ts'
+import { parsePifHeader, parsePifLine } from './util.ts'
 
 import type { PifLine, PifMeta } from './util.ts'
 import type {
@@ -79,24 +79,12 @@ export class PifFile {
     setup: opts => this.tabix.getReferenceSequenceNames(opts),
   })
 
-  private header = cachedSetup({
-    setup: opts => this.tabix.getHeader(opts),
-  })
-
   /**
    * The `#pif` header's facts, read once: empty for a file built before the
    * header existed.
    */
   meta = cachedSetup({
-    setup: async opts => parsePifHeader(await this.header(opts)),
-  })
-
-  /**
-   * Each fine-tier seqid's contig length from the header's `#sq` lines, keyed
-   * with its `q`/`t` prefix: empty for a file built before make-pif wrote them.
-   */
-  contigLengths = cachedSetup({
-    setup: async opts => parsePifContigLengths(await this.header(opts)),
+    setup: async opts => parsePifHeader(await this.tabix.getHeader(opts)),
   })
 
   /**

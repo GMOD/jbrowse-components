@@ -60,40 +60,20 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
     ]
   }
 
-  async getContigs(opts: ComparativeOptions = {}) {
-    return this.facingContigs(opts.assemblyName, async side => {
-      const [seqids, lengths] = await Promise.all([
-        this.fineSeqids(side, opts),
-        this.pif.contigLengths(opts),
-      ])
-      return new Map(seqids.map(seqid => [seqid.slice(1), lengths.get(seqid)]))
-    })
-  }
-
-  /** Header lengths where the file states them, else each contig's first row */
   async getContigLengths(side: 0 | 1, opts: ComparativeOptions = {}) {
-    const [seqids, lengths] = await Promise.all([
-      this.fineSeqids(side, opts),
-      this.pif.contigLengths(opts),
-    ])
-    return new Map(
-      await Promise.all(
-        seqids.map(
-          async seqid =>
-            [
-              seqid.slice(1),
-              lengths.get(seqid) ??
-                (await this.pif.firstLine(seqid, opts))?.indexedLength ??
-                Number.NaN,
-            ] as const,
-        ),
-      ),
-    )
-  }
-
-  private async fineSeqids(side: 0 | 1, opts: ComparativeOptions) {
     const letter = side === 0 ? 'q' : 't'
-    return (await this.pif.refSeqNames(opts)).filter(n => n.startsWith(letter))
+    const seqids = (await this.pif.refSeqNames(opts)).filter(n =>
+      n.startsWith(letter),
+    )
+    const rows = await Promise.all(
+      seqids.map(seqid => this.pif.firstLine(seqid, opts)),
+    )
+    return new Map(
+      seqids.map((seqid, i) => [
+        seqid.slice(1),
+        rows[i]?.indexedLength ?? Number.NaN,
+      ]),
+    )
   }
 
   getFeatures(query: Region, opts: ComparativeOptions = {}) {

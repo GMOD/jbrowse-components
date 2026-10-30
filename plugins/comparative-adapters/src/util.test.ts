@@ -3,7 +3,6 @@ import {
   makeIndexedSyntenyFeature,
   markReciprocalDuplicates,
   parseBed,
-  parsePifContigLengths,
   parsePifHeader,
   parsePifLine,
   resolveCoarseTier,
@@ -545,27 +544,6 @@ describe('the #pif header', () => {
         '#pif\tversion:i:3\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:all\n',
       ),
     ).toEqual({ version: 3 })
-  })
-
-  test('#sq lines state each fine-tier seqid length', () => {
-    const sq =
-      '#sq\tname:Z:qchr1\tlength:i:248956422\n' +
-      '#sq\tname:Z:tHLA-A*01:01:01:01\tlength:i:3503\n' +
-      '#sq\tname:Z:tbroken\tlength:i:*\n'
-    expect(parsePifContigLengths(`#pif\tversion:i:2\n${sq}`)).toEqual(
-      new Map([
-        ['qchr1', 248956422],
-        ['tHLA-A*01:01:01:01', 3503],
-      ]),
-    )
-    expect(parsePifContigLengths('#pif\tversion:i:2\n')).toEqual(new Map())
-    expect(parsePifContigLengths(sq)).toEqual(
-      new Map([
-        ['qchr1', 248956422],
-        ['tHLA-A*01:01:01:01', 3503],
-      ]),
-    )
-    expect(parsePifContigLengths(`#pif\tversion:i:3\n${sq}`)).toEqual(new Map())
   })
 
   test('coarse rows are bounded only with a bound and a CIGAR on every row', () => {
