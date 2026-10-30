@@ -18,6 +18,7 @@ export function featureInfoOf(
     length: 1,
     insertedBp: 0,
     type: 'SNV',
+    svType: '',
     genotypeCodes: new Uint32Array(0),
     ...overrides,
   }

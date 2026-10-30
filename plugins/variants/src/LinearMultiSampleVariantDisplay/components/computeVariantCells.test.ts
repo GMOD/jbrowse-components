@@ -741,6 +741,31 @@ test('a site with no ALT alleles reports an empty alt list', () => {
   expect(result.featureInfo[0]!.alt).toEqual([])
 })
 
+// The records band draws and colors a record by this class, the one
+// `svClassOf` gives the record's `svType` field, so it rides in the payload.
+test('each record carries its SV class, empty for an SNV', () => {
+  const samples = ['S1']
+  const features = [
+    vcfFeature(
+      'ctgA	100	sv1	N	<DEL>	.	PASS	SVTYPE=DEL;END=900	GT	0/1',
+      samples,
+      'sv1',
+    ),
+    vcfFeature('ctgA	200	rs1	A	G	.	PASS	.	GT	0/1', samples, 'rs1'),
+  ]
+  const result = computeVariantCells({
+    filteredVariants: features.map(feature => ({
+      feature,
+      mostFrequentAlt: '1',
+    })),
+    sources: [{ name: 'S1', sampleName: 'S1' }],
+    unit: 'sample',
+    referenceDrawingMode: 'draw',
+    ...genotypeArgs(features),
+  })
+  expect(result.featureInfo.map(i => i.svType)).toEqual(['DEL', ''])
+})
+
 // featureInfo is the genotype record the anchored sort reads (via the
 // interned genotypeCodes), not a log of what got painted. Under the default
 // `referenceDrawingMode: 'skip'` a hom-ref call paints nothing, and keying the

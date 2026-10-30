@@ -19,6 +19,7 @@ test('a site with no ALT alleles builds a tooltip instead of throwing', () => {
     length: 1,
     insertedBp: 0,
     type: 'remark',
+    svType: '',
     genotypeCodes: new Uint32Array(),
   }
   const fields = buildVariantHit({
@@ -43,6 +44,7 @@ describe('a genotype hit', () => {
     length: 1,
     insertedBp: 0,
     type: 'SNV',
+    svType: '',
     genotypeCodes: new Uint32Array(),
   }
   const hit = (over: Partial<VariantFeatureInfo>, insertedBp = 0) =>
@@ -82,6 +84,7 @@ describe('a records-band hit', () => {
     length: 1,
     insertedBp: 42,
     type: 'SNV',
+    svType: '',
     genotypeCodes: new Uint32Array(),
   }
 

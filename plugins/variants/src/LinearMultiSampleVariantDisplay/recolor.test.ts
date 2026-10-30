@@ -63,7 +63,7 @@ function cellData(colorRead: CellHueRead): CellDataResult {
         colorValues: ['0.5'],
         paintedColorValues: [0],
         featureColorValues: Uint32Array.of(1),
-        featureInfo: [featureInfoOf('v0', { length: 100 })],
+        featureInfo: [featureInfoOf('v0', { length: 100, svType: 'DEL' })],
         featurePositions: Uint32Array.from([100, 200]),
         featureIndexData: featureIndexData(),
         featureInsertedBp: Int32Array.from([0]),

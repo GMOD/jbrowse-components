@@ -12,6 +12,7 @@ export type BandRecord = [
   start: number,
   end: number,
   description: string,
+  svType?: string,
 ]
 
 // The bovine pangenome's records at KIT (chr6:70,080,000), rebased to 0: a long
@@ -48,8 +49,8 @@ export function recordsCellData(records: BandRecord[]): CellDataResult {
     })),
     perRegionCellData: {
       0: cellPayloadOf(
-        records.map(([id, start, end, description]) =>
-          featureInfoOf(id, { description, length: end - start }),
+        records.map(([id, start, end, description, svType = 'DEL']) =>
+          featureInfoOf(id, { description, length: end - start, svType }),
         ),
         {
           featurePositions: Uint32Array.from(

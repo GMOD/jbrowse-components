@@ -125,6 +125,7 @@ import {
   buildRecordsRenderData,
   recordsDisplayConfig,
 } from './recordsRenderData.ts'
+import { svClassColors, svClassScale } from './recordsSvColors.ts'
 import { getVariantColorScales } from './variantLegend.ts'
 import {
   recordsBandBounds,
@@ -260,12 +261,11 @@ function fetchRegionsForLayout(
 }
 
 /**
- * plugin-features's own `featureHeight` default and display mode, so a record
- * in the band and the same record in a `LinearVariantDisplay` start from one
- * size: the band's natural height is its stack at full feature size.
+ * plugin-features's own `featureHeight` default at its compact display mode,
+ * which keeps the band's stack, and so its natural height, tight.
  */
 const RECORDS_FEATURE_HEIGHT = 10
-const RECORDS_DISPLAY_MODE = 'normal' as const
+const RECORDS_DISPLAY_MODE = 'compact' as const
 
 const NO_FEATURE_IDS: ReadonlySet<string> = new Set()
 
@@ -1273,10 +1273,22 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Each fetched region's record colors, the alt cells' hue at full
-         * dose, which neither shading nor the phased mode moves.
+         * Whether the records band colors by SV class: while the cells paint
+         * the genotype colors, which name no record. A picked color follows
+         * the cells.
          */
-        get regionFeatureColors() {
+        get recordsColorBySvClass() {
+          return self.colorEncoding === undefined
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Each fetched region's record colors: the SV class, or the alt
+         * cells' hue at full dose, which neither shading nor the phased mode
+         * moves.
+         */
+        get regionRecordColors() {
           const { cellData, cellHue, cellHueValuesRead } = self
           const out = new Map<number, Uint32Array>()
           if (cellData) {
@@ -1284,7 +1296,9 @@ export function stateModelFactory(
               const data = cellData.perRegionCellData[k]!
               out.set(
                 Number(k),
-                paintFeatureColors(data, cellHue, cellHueValuesRead),
+                self.recordsColorBySvClass
+                  ? svClassColors(data.featureInfo)
+                  : paintFeatureColors(data, cellHue, cellHueValuesRead),
               )
             }
           }
@@ -1296,10 +1310,7 @@ export function stateModelFactory(
          * with (`recordsDisplayConfig`).
          */
         get recordsDisplayConfig() {
-          return recordsDisplayConfig({
-            labels: self.recordsLabels,
-            featureHeight: RECORDS_FEATURE_HEIGHT,
-          })
+          return recordsDisplayConfig(RECORDS_FEATURE_HEIGHT)
         },
         /**
          * #getter
@@ -1348,7 +1359,8 @@ export function stateModelFactory(
             const config = self.recordsDisplayConfig
             const { jexl } = getEnv(self).pluginManager
             const { displayedRegions } = self.view
-            const featureColors = self.regionFeatureColors
+            const featureColors = self.regionRecordColors
+            const labels = self.recordsLabels
             for (const k in cellData.perRegionCellData) {
               const displayedRegionIndex = Number(k)
               const data = cellData.perRegionCellData[k]!
@@ -1362,6 +1374,7 @@ export function stateModelFactory(
                       featureColors: featureColors.get(displayedRegionIndex)!,
                     },
                     region,
+                    labels,
                     config,
                     jexl,
                   }),
@@ -1389,11 +1402,10 @@ export function stateModelFactory(
             return self.recordsLayoutInputs
           },
           get showLabels() {
-            return self.recordsLabels.name !== ''
+            const { name, description } = self.recordsLabels
+            return name !== '' || description !== ''
           },
-          get effectiveShowDescriptions() {
-            return self.recordsLabels.description !== ''
-          },
+          effectiveShowDescriptions: false,
           facet: undefined,
           fitMeasureFeatureIds: undefined,
           fitHeightToDisplay: true,
@@ -2224,10 +2236,31 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * `LegendMixin`'s hook: the cell coloring and the row color key.
+         * The key to the records band's SV classes, the ones its records
+         * hold, while it colors by them.
+         */
+        get recordsColorScales(): ColorScale[] {
+          const { cellData } = self
+          return cellData && self.showRecords && self.recordsColorBySvClass
+            ? [
+                svClassScale(
+                  Object.values(cellData.perRegionCellData).flatMap(d =>
+                    d.featureInfo.map(info => info.svType),
+                  ),
+                ),
+              ].filter(scale => scale.entries.length > 0)
+            : []
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * `LegendMixin`'s hook: the records band's SV classes, the cell
+         * coloring and the row color key.
          */
         get colorScales(): ColorScale[] {
           return [
+            ...self.recordsColorScales,
             ...getVariantColorScales({
               unit: self.unit,
               hasSecondaryAlt: self.hasSecondaryAlt,

@@ -286,29 +286,37 @@ applies `rowsTopOffset` itself, goes on the display's own box, where
 `RowsPanel` mounts the scrollbar and the row labels.
 
 **The records band is plugin-features's pipeline, not a painter of ours**
-(ADR-254, amending ADR-250). `buildRecordsRenderData` rebuilds each record from
-the cell payload as a `SimpleFeature` (span, ID, description, SO type, and the
-alt cells' color as `recordColor`), and everything after is
-`@jbrowse/plugin-features/band`: the pack, LinearBasicDisplay's own fit ladder
-(`fitLadderViews` over a plain `FitLadderHost`, since this model's `facet` is
-the sample facet), `paintFeatureBand` on screen and in the export, and
+(ADR-254, amending ADR-250). `buildRecordsRenderData` rebuilds each
+structural-variant record from the cell payload as a `SimpleFeature`, and
+everything after is `@jbrowse/plugin-features/band`: the pack,
+LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
+`FitLadderHost`, since this model's `facet` is the sample facet),
+`paintFeatureBand` on screen and in the export, and
 `performMultiRegionHitDetection` for the pick. Nested records stack.
 
+- **Only SVs.** `VariantFeatureInfo.svType` is the record's `svClassOf`
+  class, set in the worker; a record with none is left out, so a region of
+  SNVs spends 0 px.
 - **Its height is its stack, capped.** The `full` rung's packed height at
-  normal feature size, up to `records.growMaxHeight` (170); past the cap the
-  ladder fits the stack in (descriptions, then body thinning, decimated names,
-  bodies, squeeze). The band takes that height from the rows. Whether it
-  should instead add to the display is open (Colin); the rule is
+  compact feature size, up to `records.growMaxHeight` (170); past the cap the
+  ladder fits the stack in. The band takes that height from the rows. Whether
+  it should instead add to the display is open (Colin); the rule is
   `variantTopBandsGeometry` plus `availableHeight`.
 - **No second fetch.** The payload already carries every record, so
   `records.show` and the cap are render-tier settings.
-- **The color is the cell hue at full dose** (`paintFeatureColors`), crossing
-  over as a per-feature jexl rather than the BED `itemRgb` path, which drops
-  alpha.
+- **A record takes its SV class's color** (`recordsSvColors.ts`, the
+  `svType` preset) under the genotype colors, keyed as "SV type" above the
+  genotypes, and the cell hue at full dose (`paintFeatureColors`) under a
+  picked `encoding.color`. It crosses over as a per-feature jexl rather than
+  the BED `itemRgb` path, which drops alpha.
+- **One label line**: ID then description, as `recordLabel`. The label
+  pipeline places a description under its name, so an inline description is
+  part of the name and the ladder drops it with the name.
 - **What is still ours**: the record tooltip (`buildRecordHit`, sample fields
   empty so one `hoveredFeature` slot serves both bands), the gestures
   (`RecordsBandOverlay`, a div over its `OverlayCanvas`) and the seam drag,
-  which writes `growMaxHeight` from the drawn height.
+  which writes `growMaxHeight` from the drawn height. The key sits under the
+  band (`legendTop`).
 
 ## How wide a cell draws
 

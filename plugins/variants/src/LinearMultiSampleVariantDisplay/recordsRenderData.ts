@@ -1,5 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
+import { valueText } from '@jbrowse/core/util/groupKeys'
 import {
   GENE_GLYPH_DEFAULTS,
   buildFeatureRenderData,
@@ -7,6 +9,7 @@ import {
 } from '@jbrowse/plugin-features/band'
 
 import type { VariantFeatureInfo } from '../shared/types.ts'
+import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type {
   DisplayConfig,
@@ -42,26 +45,18 @@ interface RecordsRegion {
 
 /**
  * The plugin-features display config the band lays its records out with. A
- * literal, because a band has no config node of its own: the slots that matter
- * are this display's (`records.labels`, the cell color). A record has no
+ * literal, because a band has no config node of its own. A record has no
  * subfeatures, so `findGlyph` lands on `layoutBox` and the gene half is inert.
  *
- * `color` reads the `recordColor` each rebuilt feature carries, the color the
- * display resolved for its alt cells, alpha included, which the BED `itemRgb`
- * path would drop. `filter` is empty because the worker's `configuredFilters()`
- * already admitted these records.
+ * Each record carries its `recordColor` and its one-line `recordLabel`, name
+ * then description, so a description costs no label row. `filter` is empty
+ * because the worker's `configuredFilters()` already admitted these records.
  */
-export function recordsDisplayConfig({
-  labels,
-  featureHeight,
-}: {
-  labels: RecordsLabels
-  featureHeight: number
-}): DisplayConfig {
+export function recordsDisplayConfig(featureHeight: number): DisplayConfig {
   return {
     color: { value: `jexl:get(feature,'recordColor')`, field: '' },
     featureHeight,
-    labels,
+    labels: { name: `jexl:get(feature,'recordLabel')`, description: '' },
     tooltip: '',
     filter: [],
     ...GENE_GLYPH_DEFAULTS,
@@ -69,36 +64,57 @@ export function recordsDisplayConfig({
   }
 }
 
+function labelOf(labels: RecordsLabels, jexl: JexlInstance) {
+  const readers = [labels.name, labels.description]
+    .filter(field => field !== '')
+    .map(field => fieldReader(field, jexl))
+  return (feature: Feature) =>
+    readers
+      .map(read => valueText(read(feature)))
+      .filter(text => text !== '')
+      .join(' ')
+}
+
 /**
  * The band's records as plugin-features render data, rebuilt from the cell
- * payload, which already holds each record's span, ID, description, SO type and
- * resolved color: the band costs no RPC, and `records.show` stays a
- * render-tier setting.
+ * payload, which already holds each record's span, ID, description, SV class
+ * and resolved color: the band costs no RPC, and `records.show` stays a
+ * render-tier setting. The band is the structural variants: a record with no
+ * SV class (an SNV, a small indel) is left out.
  */
 export function buildRecordsRenderData({
   data,
   region,
+  labels,
   config,
   jexl,
 }: {
   data: RecordsSourceData
   region: RecordsRegion
+  labels: RecordsLabels
   config: DisplayConfig
   jexl: JexlInstance
 }): LayoutRegionData {
   const { featureInfo, featurePositions, featureColors } = data
-  const features = featureInfo.map(
-    (info, f) =>
-      new SimpleFeature({
-        uniqueId: info.featureId,
-        refName: region.refName,
-        start: featurePositions[f * 2]!,
-        end: featurePositions[f * 2 + 1]!,
-        name: info.name,
-        description: info.description,
-        type: info.type,
-        recordColor: abgrToCssRgba(featureColors[f]!),
-      }),
+  const label = labelOf(labels, jexl)
+  const recordFeature = (info: VariantFeatureInfo, f: number) => {
+    const record = {
+      uniqueId: info.featureId,
+      refName: region.refName,
+      start: featurePositions[f * 2]!,
+      end: featurePositions[f * 2 + 1]!,
+      name: info.name,
+      description: info.description,
+      type: info.type,
+      recordColor: abgrToCssRgba(featureColors[f]!),
+    }
+    return new SimpleFeature({
+      ...record,
+      recordLabel: label(new SimpleFeature(record)),
+    })
+  }
+  const features = featureInfo.flatMap((info, f) =>
+    info.svType === '' ? [] : [recordFeature(info, f)],
   )
   return {
     ...buildFeatureRenderData({

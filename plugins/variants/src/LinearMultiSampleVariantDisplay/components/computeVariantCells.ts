@@ -1,3 +1,4 @@
+import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { getInsertedBp } from '../../shared/alleleLength.ts'
@@ -166,6 +167,7 @@ export function computeVariantCells({
     }
 
     const inserted = getInsertedBp(feature)
+    const svType = feature.get(SV_TYPE_FIELD)
     featureInfo.push({
       featureId,
       // a monomorphic record's ALT '.' parses to undefined, and consumers read
@@ -177,6 +179,7 @@ export function computeVariantCells({
       length: end - start,
       insertedBp: inserted,
       type: feature.get('type') ?? '',
+      svType: typeof svType === 'string' ? svType : '',
       genotypeCodes: codes,
     })
     insertedBp[featureIdx] = inserted

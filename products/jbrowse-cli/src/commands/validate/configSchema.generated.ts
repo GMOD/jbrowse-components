@@ -12763,7 +12763,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "draw the records themselves above the genotype rows, at their genomic positions.",
+          "description": "draw the structural variants themselves above the genotype rows, at their genomic positions.",
           "default": false,
           "if": {
             "type": "null"

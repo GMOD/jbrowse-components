@@ -2,11 +2,13 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { measureText } from '@jbrowse/core/util'
 import { paintFeatureBand } from '@jbrowse/plugin-features/band'
 
+import { getCachedABGR } from '../shared/variantWebglUtils.ts'
 import { recordsBandSurface } from './components/RecordsBandOverlay.tsx'
 import { getTooltipRows } from './components/getTooltipRows.ts'
 import { KIT, TAS2R46, recordsDisplayAt } from './recordsBand.fixture.ts'
 
 import type { LinearMultiSampleVariantDisplayModel } from './model.ts'
+import type { BandRecord } from './recordsBand.fixture.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 interface TextBox {
@@ -81,7 +83,7 @@ test.each([
   ['KIT', KIT, 51],
   ['TAS2R46', TAS2R46, 20],
 ])(
-  'the band names every record at %s without overprinting',
+  'the band letters every record at %s on one line, ID then description',
   (_, records, bpPerPx) => {
     const { display } = recordsDisplayAt(records, bpPerPx)
     const boxes = paintedText(display)
@@ -91,9 +93,75 @@ test.each([
         .map(b => b.text)
         .filter(t => t.startsWith('>'))
         .sort(),
-    ).toEqual(records.map(([id]) => id).sort())
+    ).toEqual(
+      records.map(([id, , , description]) => `${id} ${description}`).sort(),
+    )
   },
 )
+
+test('a description costs no label row', () => {
+  const one: BandRecord[] = [['sv1', 2000, 9000, '<DEL> 7Kbp']]
+  const both = recordsDisplayAt(one, 10).display
+  const names = recordsDisplayAt(one, 10, {
+    labels: { description: { show: false } },
+  }).display
+  expect(both.topBands.recordsHeight).toBe(names.topBands.recordsHeight)
+})
+
+// The band is the structural variants: an SNV or small indel files under no
+// SV class and takes no row.
+test('the band lays out only the SV records', () => {
+  const { display } = recordsDisplayAt(
+    [
+      ['rs1', 1000, 1001, 'A -> G', ''],
+      ['sv1', 2000, 9000, '<DEL> 7Kbp', 'DEL'],
+      ['rs2', 3000, 3002, 'AT -> A', ''],
+      ['sv2', 4000, 4001, '<INS> 300bp', 'INS'],
+    ],
+    10,
+  )
+  expect(
+    display.recordsLaidOutDataMap
+      .get(0)!
+      .flatbushItems.map(i => i.featureId)
+      .sort(),
+  ).toEqual(['sv1', 'sv2'])
+})
+
+test('an SNV-only region gives the band no height', () => {
+  const { display } = recordsDisplayAt(
+    [
+      ['rs1', 1000, 1001, 'A -> G', ''],
+      ['rs2', 3000, 3002, 'AT -> A', ''],
+    ],
+    10,
+  )
+  expect(display.topBands.recordsHeight).toBe(0)
+  expect(display.rowsTopOffset).toBe(0)
+})
+
+// The cells paint the genotype colors, which name no record, so the records
+// take their SV class's, and the key names the classes the band holds.
+test('under the genotype colors each record takes its SV class color, keyed', () => {
+  const { display } = recordsDisplayAt(
+    [
+      ['sv1', 2000, 9000, '<DEL> 7Kbp', 'DEL'],
+      ['sv2', 4000, 4001, '<INV> 300bp', 'INV'],
+      ['rs1', 5000, 5001, 'A -> G', ''],
+    ],
+    10,
+  )
+  const colors = [...display.recordsRenderDataMap.get(0)!.rectColors]
+  expect(colors).toEqual([getCachedABGR('#e41a1c'), getCachedABGR('#ff7f00')])
+  const [key] = display.colorScales
+  expect(key).toMatchObject({
+    title: 'SV type',
+    entries: [
+      { label: 'Deletion', color: '#e41a1c' },
+      { label: 'Inversion', color: '#ff7f00' },
+    ],
+  })
+})
 
 test('labels off letters nothing and reserves no label rows', () => {
   const labelled = recordsDisplayAt(KIT, 51).display

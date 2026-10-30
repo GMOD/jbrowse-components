@@ -45,6 +45,10 @@ interface VariantFeatureBase {
   // Carried through so a feature clicked from a multi-sample display opens the
   // widget with its SV / breakend navigation panels, which key off `type`.
   type: string
+  // The record's structural-variant class (`svClassOf`, read as the
+  // `svType` field), '' for an SNV or small indel: what the records band
+  // draws and colors by.
+  svType: string
 }
 
 // Genotype strings are interned into the shared `CellDataResult.genotypeDict`;

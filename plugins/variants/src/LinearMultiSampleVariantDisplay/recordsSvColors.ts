@@ -1,0 +1,43 @@
+import {
+  SV_TYPE_FIELD,
+  categoricalField,
+} from '@jbrowse/core/util/categoricalField'
+
+import { getCachedABGR } from '../shared/variantWebglUtils.ts'
+
+import type { VariantFeatureInfo } from '../shared/types.ts'
+import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'
+
+function svClassField() {
+  return categoricalField(SV_TYPE_FIELD)
+}
+
+/**
+ * Each record's color by its SV class, through the `svType` preset the cells'
+ * "Color by → SV type" paints with, for a band whose display paints the
+ * genotype colors: a record is not a genotype, so it takes none of theirs.
+ */
+export function svClassColors(featureInfo: readonly VariantFeatureInfo[]) {
+  const field = svClassField()
+  return Uint32Array.from(featureInfo, ({ svType }) =>
+    getCachedABGR(field.color(field.key(svType))),
+  )
+}
+
+/** The key for the SV classes the band's records hold, in the preset order. */
+export function svClassScale(svTypes: Iterable<string>): CategoricalScale {
+  const field = svClassField()
+  const keys = [...new Set([...svTypes].map(t => field.key(t)))]
+    .filter(key => key !== '')
+    .sort(field.compare)
+  return {
+    kind: 'categorical',
+    id: 'records',
+    title: 'SV type',
+    entries: keys.map(key => ({
+      value: key,
+      label: field.label(key),
+      color: field.color(key),
+    })),
+  }
+}
