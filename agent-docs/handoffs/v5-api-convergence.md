@@ -98,6 +98,11 @@ once per display that embeds it, so read the trend, not the size.
   the gnomAD-SV bigBeds no longer warn.
 - The v5 release draft and the schema use the same spellings, including the
   word "experimental" for `LinearMarkDisplay`.
-- CHANGELOG has a v5 section; it still opens at v4.2.1. The migration table
-  it can point at is generated already
+- The v5 changelog draft
+  (`website/release_announcement_drafts/v5.0.0.changelog.md`, which
+  `release.ts` prepends to `CHANGELOG.md`) reaches main. Sessions edit it as
+  features land, but its `changelog-through` marker, which
+  `check-release-drafts.ts` counts from, stayed at 2026-09-15, so the gate is
+  a sweep for what never got a line, then the marker moved. The migration
+  table it can point at is generated
   (`website/docs/config_guides/v4_config_migration.md`).
