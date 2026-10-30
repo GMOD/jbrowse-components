@@ -3366,6 +3366,28 @@ describe('declarative launch: highlight, nav, unknown keys', () => {
     expect(b.showCytobands).toBe(true)
   })
 
+  test('trackLabels takes only a label mode', () => {
+    localStorage.clear()
+    const { LinearGenomeModel } = initialize()
+    expect(() =>
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        // @ts-expect-error the typo the enumeration refuses
+        trackLabels: 'overlap',
+      }),
+    ).toThrow(/overlap/)
+  })
+
+  test('a stored label mode this build does not know reads as unset', () => {
+    localStorage.clear()
+    localStorage.setItem('lgv-trackLabels', 'overlap')
+    const { LinearGenomeModel } = initialize()
+    expect(
+      LinearGenomeModel.create({ type: 'LinearGenomeView' }).trackLabels,
+    ).toBe('')
+    localStorage.clear()
+  })
+
   test("a snapshot shows its reader the author's settings, defaults included", () => {
     localStorage.clear()
     const { Session, LinearGenomeModel } = initialize()

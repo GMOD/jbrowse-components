@@ -53,6 +53,7 @@ import {
 } from '@jbrowse/core/util/withLaunchInput'
 import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
+import { VIEW_TRACK_LABEL_MODES } from '@jbrowse/display-kit/types'
 import {
   cast,
   getParent,
@@ -254,6 +255,12 @@ function canonicalHighlight(self: IAnyStateTreeNode, region: HighlightRegion) {
 
 // bpPerPx deltas smaller than this are treated as no zoom change, avoiding
 // pointless offset re-anchoring on micro-steps
+// a stored mode this build does not know reads as unset, the plugin default
+function storedTrackLabels() {
+  const stored = localStorageGetItem('lgv-trackLabels')
+  return VIEW_TRACK_LABEL_MODES.find(mode => mode === stored) ?? ''
+}
+
 const BP_PER_PX_EPSILON = 0.000001
 
 // px of blank space a view may scroll past either end of its regions, enough to
@@ -555,8 +562,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * how the config is used
          */
         trackLabels: types.optional(
-          types.string,
-          () => localStorageGetItem('lgv-trackLabels') ?? '',
+          types.enumeration('ViewTrackLabels', ['', ...VIEW_TRACK_LABEL_MODES]),
+          () => storedTrackLabels(),
         ),
 
         /**
