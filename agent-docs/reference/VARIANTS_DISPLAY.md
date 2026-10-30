@@ -309,7 +309,9 @@ LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
   genotypes, and the cell hue at full dose (`paintFeatureColors`) under a
   picked `encoding.color`. It crosses over as a per-feature jexl rather than
   the BED `itemRgb` path, which drops alpha.
-- **One label line**: ID then description, as `recordLabel`. The label
+- **One label line**: ID, description, then the share of the shown samples
+  carrying it (`recordCarriers.ts`; the denominator is `recordCarrierSamples`,
+  one line to make it every sample in the payload), as `recordLabel`. The label
   pipeline places a description under its name, so an inline description is
   part of the name and the ladder drops it with the name.
 - **What is still ours**: the record tooltip (`buildRecordHit`, sample fields

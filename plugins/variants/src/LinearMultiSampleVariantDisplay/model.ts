@@ -121,6 +121,7 @@ import {
   paintedColorKeys,
 } from './paintCells.ts'
 import { placeVariantRows } from './placeVariantRows.ts'
+import { countRecordCarriers } from './recordCarriers.ts'
 import {
   buildRecordsRenderData,
   recordsDisplayConfig,
@@ -153,6 +154,7 @@ import type {
   VariantMatrixRenderingBackend,
 } from './matrix/variantMatrixRenderingBackendTypes.ts'
 import type { Placed } from './placeVariantRows.ts'
+import type { RecordCarriers } from './recordCarriers.ts'
 import type { RecordsLabels } from './recordsRenderData.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -1270,15 +1272,43 @@ export function stateModelFactory(
             : []
         },
       }))
+      .views(self => {
+        // sorted, and kept while the set holds, so a reorder recounts nothing
+        const carrierSamples = stableIdentityComputed(() =>
+          [...new Set(self.sources.map(resolveSampleName))].sort(),
+        )
+        return {
+          /**
+           * #getter
+           * Whether the records band colors by SV class: while the cells paint
+           * the genotype colors, which name no record. A picked color follows
+           * the cells.
+           */
+          get recordsColorBySvClass() {
+            return self.colorEncoding === undefined
+          },
+          /**
+           * #getter
+           * The samples a record's carrier share is out of: the ones shown as
+           * rows, so it matches the matrix under it. A haplotype row counts as
+           * its sample.
+           */
+          get recordCarrierSamples(): readonly string[] {
+            return carrierSamples.get()
+          },
+        }
+      })
       .views(self => ({
         /**
          * #getter
-         * Whether the records band colors by SV class: while the cells paint
-         * the genotype colors, which name no record. A picked color follows
-         * the cells.
+         * Each SV record's carriers among `recordCarrierSamples`, once per
+         * payload and row set.
          */
-        get recordsColorBySvClass() {
-          return self.colorEncoding === undefined
+        get recordCarriers(): ReadonlyMap<string, RecordCarriers> {
+          const { cellData } = self
+          return cellData && self.showRecords
+            ? countRecordCarriers(cellData, self.recordCarrierSamples)
+            : new Map<string, RecordCarriers>()
         },
       }))
       .views(self => ({
@@ -1361,6 +1391,7 @@ export function stateModelFactory(
             const { displayedRegions } = self.view
             const featureColors = self.regionRecordColors
             const labels = self.recordsLabels
+            const carriers = self.recordCarriers
             for (const k in cellData.perRegionCellData) {
               const displayedRegionIndex = Number(k)
               const data = cellData.perRegionCellData[k]!
@@ -1375,6 +1406,7 @@ export function stateModelFactory(
                     },
                     region,
                     labels,
+                    carriers,
                     config,
                     jexl,
                   }),

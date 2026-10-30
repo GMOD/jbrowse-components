@@ -1,8 +1,10 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
 
 import { makeSimpleAltString } from '../../VcfFeature/util.ts'
+import { carrierSummary } from '../recordCarriers.ts'
 
 import type { VariantFeatureInfo } from '../../shared/types.ts'
+import type { RecordCarriers } from '../recordCarriers.ts'
 
 // The tooltip fields both layouts' hit tests produce, each beside the record's
 // `featureInfo`. The index
@@ -22,6 +24,7 @@ export interface VariantTooltipFields {
   name: string
   featureId: string
   displayedRegionIndex?: number
+  carriers?: string
 }
 
 // Hover-dedup identity for a hovered cell — same feature+sample+genotype in the
@@ -90,10 +93,12 @@ export function buildRecordHit({
   info,
   featureId,
   displayedRegionIndex,
+  carriers,
 }: {
   info: VariantFeatureInfo
   featureId: string
   displayedRegionIndex?: number
+  carriers?: RecordCarriers
 }): VariantTooltipFields {
   return {
     genotype: '',
@@ -104,6 +109,7 @@ export function buildRecordHit({
     description: info.description,
     length: getBpDisplayStr(info.length),
     insertion: info.insertedBp > 0 ? `${info.insertedBp}bp` : '',
+    carriers: carriers ? carrierSummary(carriers) : '',
     featureId,
     displayedRegionIndex,
   }

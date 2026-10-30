@@ -42,6 +42,13 @@ alternative now.
   description costs no row; the band packs at the compact display mode. The
   label pipeline places a description under its name, so the ladder cannot
   drop the description part alone: past the cap, names thin and go whole.
+- **Each record says how many people carry it**: its label ends with the
+  share and the hover gives the count (`recordCarriers.ts`). A sample with any
+  called alt allele carries it, once in either row unit; a no-call leaves the
+  denominator. The denominator is the samples shown as rows
+  (`recordCarrierSamples`), so it matches the matrix under the band. Counted
+  on the main thread from each record's `genotypeCodes`, once per payload and
+  row set.
 - **`records: { show, growMaxHeight, labels }`** on
   `LinearMultiSampleVariantDisplay`. `growMaxHeight` and not `height`: under
   ADR-232 a fixed band's `height` is its reserved height, and this band's

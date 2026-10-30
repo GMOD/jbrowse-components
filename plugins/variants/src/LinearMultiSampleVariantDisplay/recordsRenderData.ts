@@ -8,7 +8,10 @@ import {
   layoutRegionKey,
 } from '@jbrowse/plugin-features/band'
 
+import { carrierPercent } from './recordCarriers.ts'
+
 import type { VariantFeatureInfo } from '../shared/types.ts'
+import type { RecordCarriers } from './recordCarriers.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 import type {
@@ -48,8 +51,8 @@ interface RecordsRegion {
  * literal, because a band has no config node of its own. A record has no
  * subfeatures, so `findGlyph` lands on `layoutBox` and the gene half is inert.
  *
- * Each record carries its `recordColor` and its one-line `recordLabel`, name
- * then description, so a description costs no label row. `filter` is empty
+ * Each record carries its `recordColor` and its one-line `recordLabel`, name,
+ * description and carrier percent, so neither costs a label row. `filter` is empty
  * because the worker's `configuredFilters()` already admitted these records.
  */
 export function recordsDisplayConfig(featureHeight: number): DisplayConfig {
@@ -86,12 +89,14 @@ export function buildRecordsRenderData({
   data,
   region,
   labels,
+  carriers,
   config,
   jexl,
 }: {
   data: RecordsSourceData
   region: RecordsRegion
   labels: RecordsLabels
+  carriers: ReadonlyMap<string, RecordCarriers>
   config: DisplayConfig
   jexl: JexlInstance
 }): LayoutRegionData {
@@ -108,9 +113,12 @@ export function buildRecordsRenderData({
       type: info.type,
       recordColor: abgrToCssRgba(featureColors[f]!),
     }
+    const text = label(new SimpleFeature(record))
+    const counted = carriers.get(info.featureId)
+    const percent = counted ? carrierPercent(counted) : ''
     return new SimpleFeature({
       ...record,
-      recordLabel: label(new SimpleFeature(record)),
+      recordLabel: text && percent ? `${text} ${percent}` : text,
     })
   }
   const features = featureInfo.flatMap((info, f) =>
