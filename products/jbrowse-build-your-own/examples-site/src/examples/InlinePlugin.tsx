@@ -37,7 +37,7 @@ async function getJson<T>(path: string, signal?: AbortSignal) {
   url.searchParams.set('content-type', 'application/json')
   const response = await fetch(url, { signal })
   if (!response.ok) {
-    throw new Error(`Ensembl answered ${response.status} for ${url}`)
+    throw new Error(`HTTP ${response.status} fetching ${url}`)
   }
   return (await response.json()) as T
 }
