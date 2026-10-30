@@ -275,12 +275,15 @@ export function registerSessionHandlers(
     }
 
     await Promise.all([
-      touchRecents
-        ? updateRecentSessions(paths.recentSessionsPath, rows =>
-            upsertRecentSession(rows, entry),
-          )
-        : undefined,
-      written,
+      // after the write: a save as to an unwritable folder must not list a
+      // file that never landed
+      written.then(() =>
+        touchRecents
+          ? updateRecentSessions(paths.recentSessionsPath, rows =>
+              upsertRecentSession(rows, entry),
+            )
+          : undefined,
+      ),
       // Thumbnail is cosmetic like the capturePage that produced it: a failed
       // write (e.g. an over-long path on Windows) must not reject the session
       // save. Still awaited as part of this handler, so a quit that waits for

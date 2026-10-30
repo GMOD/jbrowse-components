@@ -164,17 +164,7 @@ test('nothing is written for a session with no path to write to', async () => {
   expect(saveCount()).toBe(0)
 })
 
-test('a Save session as that fails keeps the path that works', async () => {
-  const root = createRootModel()
-  mockInvokeIpc.mockImplementation(async (channel, ...args) => {
-    if (channel === 'promptSessionSaveAs') {
-      return '/read-only/new.jbrowse'
-    }
-    if (channel === 'saveSession' && args[0] === '/read-only/new.jbrowse') {
-      throw new Error('EACCES')
-    }
-    return undefined
-  })
+function clickSaveSessionAs(root: ReturnType<typeof createRootModel>) {
   const item = root
     .menus()
     .find(m => m.label === 'File')!
@@ -186,12 +176,62 @@ test('a Save session as that fails keeps the path that works', async () => {
   if (!item || !('onClick' in item)) {
     throw new Error('no clickable Save session as item')
   }
-
   item.onClick()
+}
+
+test('a Save session as that fails keeps the path that works', async () => {
+  const root = createRootModel()
+  mockInvokeIpc.mockImplementation(async (channel, ...args) => {
+    if (channel === 'promptSessionSaveAs') {
+      return '/read-only/new.jbrowse'
+    }
+    if (channel === 'saveSession' && args[0] === '/read-only/new.jbrowse') {
+      throw new Error('EACCES')
+    }
+    return undefined
+  })
+
+  clickSaveSessionAs(root)
   await jest.advanceTimersByTimeAsync(0)
 
   expect(root.sessionPath).toBe(SESSION_PATH)
   expect(root.session!.snackbarMessages.length).toBe(1)
+})
+
+// those edits autosave to the old path, which the session has just left
+test('an edit made while Save session as writes reaches the new file', async () => {
+  const root = createRootModel()
+  let landWrite = () => {}
+  mockInvokeIpc.mockImplementation(async (channel, ...args) => {
+    if (channel === 'promptSessionSaveAs') {
+      return '/new.jbrowse'
+    }
+    if (
+      channel === 'saveSession' &&
+      args[0] === '/new.jbrowse' &&
+      !root.session!.name.startsWith('renamed')
+    ) {
+      await new Promise<void>(resolve => {
+        landWrite = resolve
+      })
+    }
+    return undefined
+  })
+
+  clickSaveSessionAs(root)
+  await jest.advanceTimersByTimeAsync(0)
+  root.session!.setName('renamed')
+  landWrite()
+  await jest.advanceTimersByTimeAsync(0)
+
+  const lastToNew = mockInvokeIpc.mock.calls
+    .filter(
+      ([channel, path]) => channel === 'saveSession' && path === '/new.jbrowse',
+    )
+    .at(-1)!
+  expect(lastToNew[2]).toMatchObject({
+    defaultSession: expect.objectContaining({ name: 'renamed' }),
+  })
 })
 
 function openGenomeDialog(root: ReturnType<typeof createRootModel>) {
@@ -223,6 +263,7 @@ test('Open genome refuses a name a session assembly already has', async () => {
   const root = createRootModel()
   root.session!.addSessionAssembly({
     name: 'volvox',
+    aliases: ['vvx'],
     sequence: {
       type: 'ReferenceSequenceTrack',
       trackId: 'volvox_refseq',
@@ -231,7 +272,8 @@ test('Open genome refuses a name a session assembly already has', async () => {
   })
   const { existingAssemblyNames, onClose } = openGenomeDialog(root)
 
-  expect(existingAssemblyNames).toContain('volvox')
+  // the alias too: the dialog checks before it indexes the whole FASTA
+  expect(existingAssemblyNames).toEqual(['volvox', 'vvx'])
   await expect(onClose([{ name: 'volvox' }])).rejects.toThrow(
     'already open under this name: volvox',
   )

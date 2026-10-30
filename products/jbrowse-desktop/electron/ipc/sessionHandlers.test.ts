@@ -549,7 +549,7 @@ test('a save of bytes still being written waits for that write', async () => {
   })
   const snap: SessionSnap = { assemblies: [], defaultSession: { name: 'x' } }
 
-  void invoke('saveSession', sessionPath, snap)
+  const first = invoke('saveSession', sessionPath, snap)
   let flushed = false
   const flush = invoke('saveSession', sessionPath, snap).then(() => {
     flushed = true
@@ -558,7 +558,7 @@ test('a save of bytes still being written waits for that write', async () => {
   expect(flushed).toBe(false)
 
   release()
-  await flush
+  await Promise.all([first, flush])
   expect(fs.existsSync(sessionPath)).toBe(true)
   jest.mocked(writeFileAtomic).mockImplementation(actual)
 })
@@ -608,6 +608,24 @@ test('a repeat autosave leaves recent_sessions.json alone, but a rename lands', 
   })
   const rows = (await invoke('listSessions')) as { name?: string }[]
   expect(rows[0]!.name).toBe('renamed')
+})
+
+// Save session as to a folder the user cannot write: the start screen must not
+// list a file that was never written
+test('a save that fails to write adds no row', async () => {
+  jest
+    .mocked(writeFileAtomic)
+    .mockRejectedValueOnce(
+      Object.assign(new Error('EACCES'), { code: 'EACCES' }),
+    )
+
+  await expect(
+    invoke('saveSession', path.join(dir, 'unwritable.jbrowse'), {
+      assemblies: [],
+      defaultSession: { name: 'unwritable' },
+    }),
+  ).rejects.toThrow('EACCES')
+  expect(await invoke('listSessions')).toHaveLength(0)
 })
 
 test('a session reopened after its row was removed gets the row back', async () => {

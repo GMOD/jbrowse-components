@@ -340,7 +340,15 @@ export default function rootModelFactory({
                       queueSessionDialog(session, (_session, done) => [
                         OpenSequenceDialog,
                         {
-                          existingAssemblyNames: session?.assemblyNames,
+                          // every name and alias addAssemblyConfs refuses, so
+                          // the dialog says so before it indexes the FASTA
+                          existingAssemblyNames: session
+                            ? [
+                                ...self.jbrowse.assemblies,
+                                ...session.sessionAssemblies,
+                                ...session.temporaryAssemblies,
+                              ].flatMap(a => [a.name, ...a.aliases])
+                            : [],
                           // deliberately unguarded: a throw here leaves the
                           // dialog open showing the reason, with the staged
                           // genomes still in it. Catching would report the
@@ -410,12 +418,15 @@ export default function rootModelFactory({
                             )
                             if (filePath) {
                               // switched only once the file exists, or every
-                              // later autosave fails against the new path
+                              // later autosave fails against the new path; then
+                              // saved again, since edits made while it was
+                              // written autosaved to the old one
                               await self.saveSession(
                                 getSaveSession(self),
                                 filePath,
                               )
                               self.setSessionPath(filePath)
+                              await self.saveSession(getSaveSession(self))
                             }
                           } catch (e) {
                             reportError(self.session, e)
