@@ -1160,9 +1160,7 @@ export default function stateModelFactory(
             conservationActive: self.conservationBandActive,
             scaleType: self.scaleType,
             symlogConstant: self.symlogConstant,
-            caption: self.scaleTitle,
-            rules: self.scoreRules,
-            grid: self.grid,
+            guide: self.axisGuide,
           })
         },
         /**

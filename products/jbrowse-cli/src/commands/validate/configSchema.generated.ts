@@ -6416,6 +6416,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "x-closed": true,
       "properties": {
+        "show": {
+          "description": "draw the axis, its caption and grid; the rules still draw.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "title": {
           "description": "axis caption; unset draws none.",
           "if": {

@@ -25,12 +25,22 @@ export function rulesABand(scale: Pick<ValueScale, 'bandTops'>) {
   return (scale.bandTops?.length ?? 1) > 0
 }
 
+/** Whether the config leaves a scale's guide on, axis or caption. */
+export function axisShown(scale: Pick<ValueScale, 'showAxis'>) {
+  return scale.showAxis !== false
+}
+
 /**
- * Whether a scale gets an axis at all: it rules at least one band, and the
- * band has room for tick labels. A scale that fails either is captioned.
+ * Whether a scale gets an axis at all: its guide is shown, it rules at least
+ * one band, and the band has room for tick labels. A shown scale that fails
+ * either of the last two is captioned.
  */
-export function axisDrawn(scale: Pick<ValueScale, 'height' | 'bandTops'>) {
-  return rulesABand(scale) && scale.height >= COMPACT_AXIS_HEIGHT
+export function axisDrawn(
+  scale: Pick<ValueScale, 'height' | 'bandTops' | 'showAxis'>,
+) {
+  return (
+    axisShown(scale) && rulesABand(scale) && scale.height >= COMPACT_AXIS_HEIGHT
+  )
 }
 
 /**
@@ -70,7 +80,7 @@ export function axisGutterWidth(axis: Pick<YAxis, 'ticks' | 'caption'>) {
  * of the figure sits past this strip.
  */
 export function leftAxisGutterWidth(
-  axes: readonly Pick<YAxis, 'side' | 'height' | 'bandTops'>[],
+  axes: readonly Pick<YAxis, 'side' | 'height' | 'bandTops' | 'showAxis'>[],
 ) {
   return axes.some(axis => axis.side !== 'right' && axisDrawn(axis))
     ? AXIS_GUTTER_WIDTH_PX

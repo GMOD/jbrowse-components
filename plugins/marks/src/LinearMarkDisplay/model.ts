@@ -1300,9 +1300,7 @@ export function stateModelFactory(
               left: self.sidebarPanel
                 ? sidebarPanelWidth(self.sidebarPanel)
                 : 0,
-              caption: self.scaleTitle,
-              rules: self.scoreRules,
-              grid: self.grid,
+              ...self.axisGuide,
             },
           ]
         },

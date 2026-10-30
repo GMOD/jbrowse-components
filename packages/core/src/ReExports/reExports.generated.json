@@ -5164,6 +5164,7 @@
         "axisDrawn",
         "axisGutterLeft",
         "axisGutterWidth",
+        "axisShown",
         "leftAxisGutterWidth",
         "numbersGrowRight",
         "rulesABand"

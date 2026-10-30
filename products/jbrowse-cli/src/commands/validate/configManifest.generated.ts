@@ -3970,6 +3970,10 @@ export const configManifest: ConfigManifest = {
                       "type": "YAxisConfigurationSchema",
                       "subSlots": [
                         {
+                          "name": "show",
+                          "type": "boolean"
+                        },
+                        {
                           "name": "title",
                           "type": "(string | undefined)"
                         },
@@ -5156,6 +5160,10 @@ export const configManifest: ConfigManifest = {
                       "name": "axis",
                       "type": "YAxisConfigurationSchema",
                       "subSlots": [
+                        {
+                          "name": "show",
+                          "type": "boolean"
+                        },
                         {
                           "name": "title",
                           "type": "(string | undefined)"
@@ -7862,6 +7870,10 @@ export const configManifest: ConfigManifest = {
                   "type": "YAxisConfigurationSchema",
                   "subSlots": [
                     {
+                      "name": "show",
+                      "type": "boolean"
+                    },
+                    {
                       "name": "title",
                       "type": "(string | undefined)"
                     },
@@ -8372,6 +8384,10 @@ export const configManifest: ConfigManifest = {
                       "name": "axis",
                       "type": "YAxisConfigurationSchema",
                       "subSlots": [
+                        {
+                          "name": "show",
+                          "type": "boolean"
+                        },
                         {
                           "name": "title",
                           "type": "(string | undefined)"
@@ -9500,6 +9516,10 @@ export const configManifest: ConfigManifest = {
                   "type": "YAxisConfigurationSchema",
                   "subSlots": [
                     {
+                      "name": "show",
+                      "type": "boolean"
+                    },
+                    {
                       "name": "title",
                       "type": "(string | undefined)"
                     },
@@ -10332,6 +10352,10 @@ export const configManifest: ConfigManifest = {
                   "name": "axis",
                   "type": "YAxisConfigurationSchema",
                   "subSlots": [
+                    {
+                      "name": "show",
+                      "type": "boolean"
+                    },
                     {
                       "name": "title",
                       "type": "(string | undefined)"
@@ -11172,6 +11196,10 @@ export const configManifest: ConfigManifest = {
                   "name": "axis",
                   "type": "YAxisConfigurationSchema",
                   "subSlots": [
+                    {
+                      "name": "show",
+                      "type": "boolean"
+                    },
                     {
                       "name": "title",
                       "type": "(string | undefined)"

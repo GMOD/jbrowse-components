@@ -549,9 +549,7 @@ export default function stateModelFactory(
                     getRowTop(row, self.effectiveRowHeight),
                 ),
             left: sidebarPanelWidth(self.sidebarPanel),
-            caption: self.scaleTitle,
-            rules: self.scoreRules,
-            grid: self.grid,
+            ...self.axisGuide,
           },
         ]
       },

@@ -48,8 +48,10 @@ Each section ends with the members a composed model contributes, linked to the p
 | <span id="getter-autoscalegroup">**autoscaleGroup**</span><br><code>string &#124; undefined</code> | The y scale's autoscale group, `undefined` while it names none. |
 | <span id="getter-scaletitle">**scaleTitle**</span><br><code>string</code> | The y axis title, `''` while unset |
 | <span id="getter-grid">**grid**</span><br><code>boolean</code> | The y axis grid |
+| <span id="getter-showaxis">**showAxis**</span><br><code>boolean</code> | Whether the y axis draws, `axis.show` |
 | <span id="getter-scorerulesdrawn">**scoreRulesDrawn**</span><br><code>boolean</code> | Whether this display draws the y scale's rules, which is whether the Y axis panel offers Include 0 and the reference lines: a scale it places y through rules a band for them to cross, which a density plot's color-mapped rows and a color ramp do not. |
 | <span id="getter-scorerules">**scoreRules**</span><br><code>ValueScaleRule[]</code> | The y scale's rules, read off the live nodes. |
+| <span id="getter-axisguide">**axisGuide**</span><br><code>Pick&lt;ValueScale, "caption" &#124; "grid" &#124; "rules" &#124; "showAxis"&gt;</code> | What the y channel's `axis` and `rules` say of a value scale, which each display spreads onto the scales it declares. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>9 inherited getters from one model</summary>

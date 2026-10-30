@@ -12,9 +12,7 @@ export interface MafValueScaleInputs {
   conservationActive: boolean
   scaleType: string
   symlogConstant: number
-  caption: ValueScale['caption']
-  rules: ValueScale['rules']
-  grid: ValueScale['grid']
+  guide: Pick<ValueScale, 'caption' | 'rules' | 'grid' | 'showAxis'>
 }
 
 export function mafValueScales({
@@ -24,9 +22,7 @@ export function mafValueScales({
   conservationActive,
   scaleType,
   symlogConstant,
-  caption,
-  rules,
-  grid,
+  guide,
 }: MafValueScaleInputs): ValueScale[] {
   const scales: ValueScale[] = []
   if (coverageActive && coverageDomain) {
@@ -42,9 +38,7 @@ export function mafValueScales({
         symlogConstant,
       ),
       symlogConstant,
-      caption,
-      rules,
-      grid,
+      ...guide,
       bandTops: [topBands.top.coverage],
     })
   }

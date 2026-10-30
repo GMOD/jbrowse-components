@@ -1,4 +1,8 @@
 import { setConf } from '@jbrowse/core/configuration'
+import {
+  axisDrawn,
+  leftAxisGutterWidth,
+} from '@jbrowse/display-ui/axisPlacement'
 
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -188,4 +192,18 @@ it('captions the axis with encoding.y.axis.title and grids it with encoding.y.ax
   setConf(display, ['encoding', 'y', 'axis', 'title'], 'log2 ratio')
   setConf(display, ['encoding', 'y', 'axis', 'grid'], true)
   expect(display.axes[0]).toMatchObject({ caption: 'log2 ratio', grid: true })
+})
+
+it('encoding.y.axis.show: false draws no axis or gutter, and keeps the rules', () => {
+  const display = makeDisplay()
+  const [shown] = display.axes
+  expect(axisDrawn(shown!)).toBe(true)
+  expect(leftAxisGutterWidth(display.axes)).toBeGreaterThan(0)
+
+  setConf(display, ['encoding', 'y', 'axis', 'show'], false)
+  const [hidden] = display.axes
+  expect(hidden).toMatchObject({ showAxis: false })
+  expect(axisDrawn(hidden!)).toBe(false)
+  expect(leftAxisGutterWidth(display.axes)).toBe(0)
+  expect(ruleMarksOf(display)).toHaveLength(2)
 })

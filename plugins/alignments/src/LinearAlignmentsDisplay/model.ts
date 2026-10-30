@@ -2764,9 +2764,7 @@ export default function stateModelFactory(
               ticks: self.coverageTicks,
               side: self.showsGroupLabels ? 'right' : 'left',
               symlogConstant: self.symlogConstant,
-              caption: self.scaleTitle,
-              rules: self.scoreRules,
-              grid: self.grid,
+              ...self.axisGuide,
               bandTops: renderSections.map(section =>
                 bandScreenTop(section.coverageTop, scroll),
               ),

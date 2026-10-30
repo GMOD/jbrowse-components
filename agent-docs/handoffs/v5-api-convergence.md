@@ -72,12 +72,11 @@ between displays.
    The graph plugin's `facet.domain` survived core's rename to `sort` that
    way. Every warning `demos/` raises is one of these: `GraphTrack`,
    `ArgTrack`, `ApolloPlugin`.
-4. **The value axis has no `show`.** `encoding.y.axis` on wiggle, the mark
-   displays and the coverage bands hides only by height, while ADR-238 turns
-   every guide off through `show`. Colin's call. CONFIG_SPELLINGS.md's first
-   table holds the other member differences, each ruled in ADR-238, ADR-240
-   or the schema's own comment, or left as taste (Colin, 2026-10-30: the
-   chord and matrix ramps and wiggle's key direction).
+4. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
+   holds them, each ruled in ADR-238, ADR-240 or the schema's own comment,
+   or left by Colin (2026-10-30: the chord and matrix ramps and wiggle's key
+   direction).
+
 ## Release candidate gates
 
 - The meter shows no shared-path change since the last respell landed.

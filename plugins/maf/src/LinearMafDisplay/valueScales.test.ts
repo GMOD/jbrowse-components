@@ -20,9 +20,7 @@ function inputs(
     conservationActive: active.conservation,
     scaleType: 'linear',
     symlogConstant: 1,
-    caption: 'Depth',
-    rules: undefined,
-    grid: false,
+    guide: { caption: 'Depth', grid: false, showAxis: true },
     ...overrides,
   }
 }

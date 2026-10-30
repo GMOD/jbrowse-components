@@ -13,7 +13,7 @@ import { confNodeAt, readYMember, yRuleNodes } from './yScaleRead.ts'
 
 import type { YMember, YScalePaths } from './yScalePaths.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { ValueScaleRule } from '@jbrowse/display-ui'
+import type { ValueScale, ValueScaleRule } from '@jbrowse/display-ui'
 
 // The mixin composes onto a display that declares the scale, not the other way
 // round, so its own `self` isn't typed with it.
@@ -161,6 +161,13 @@ export function ScoreScaleMixin(paths: YScalePaths) {
       },
       /**
        * #getter
+       * Whether the y axis draws, `axis.show`
+       */
+      get showAxis(): boolean {
+        return readY(self, paths, 'show')
+      },
+      /**
+       * #getter
        * Whether this display draws the y scale's rules, which is whether the
        * Y axis panel offers Include 0 and the reference lines: a scale it places y through
        * rules a band for them to cross, which a density plot's color-mapped
@@ -183,6 +190,22 @@ export function ScoreScaleMixin(paths: YScalePaths) {
             ...(label ? { label } : {}),
           }
         })
+      },
+      /**
+       * #getter
+       * What the y channel's `axis` and `rules` say of a value scale, which
+       * each display spreads onto the scales it declares.
+       */
+      get axisGuide(): Pick<
+        ValueScale,
+        'caption' | 'rules' | 'grid' | 'showAxis'
+      > {
+        return {
+          caption: this.scaleTitle,
+          rules: this.scoreRules,
+          grid: this.grid,
+          showAxis: this.showAxis,
+        }
       },
     }))
     .actions(self => ({

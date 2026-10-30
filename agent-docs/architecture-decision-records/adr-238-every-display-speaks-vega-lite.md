@@ -187,7 +187,9 @@ its only value scale is `coverage.encoding.y`.
     `rules` share it. Colin chose this shape (2026-10-22).
 - **`scale`** holds `type`, `domainMin`, `domainMax`, `zero`, `fenceQuantile`,
   `constant` (was `symlogConstant`) and `group` (was `autoscaleGroup`), as
-  ADR-240 spells them. **`axis`** holds `title` and `grid`. This removes
+  ADR-240 spells them. **`axis`** holds `title` and `grid`, and from
+  2026-10-30 `show`, as every other guide turns off: off, the value axis, its
+  short-band caption and its grid go and the `rules` stay. This removes
   `tickCount` and `tree` from the Axis bullet below and overrides ADR-240's
   `tickCount: 4` sample.
 - **The fence:** `scale.fenceQuantile` replaces `scales.y.domainQuantile`, so

@@ -1,4 +1,4 @@
-import { axisDrawn } from '@jbrowse/display-ui/axisPlacement'
+import { axisDrawn, axisShown } from '@jbrowse/display-ui/axisPlacement'
 import { SCORE_CAPTION_HEIGHT } from '@jbrowse/display-ui/yAxisConstants'
 
 import type { YAxis } from '@jbrowse/display-ui'
@@ -29,9 +29,11 @@ export function isAxisHost(model: object): model is AxisHost {
   return 'axes' in model && 'canvasWidthPx' in model
 }
 
-/** The scales whose bands are too short for an axis, captioned instead. */
+/**
+ * The shown scales whose bands are too short for an axis, captioned instead.
+ */
 export function captionedAxes(model: AxisHost) {
-  return model.axes.filter(axis => !axisDrawn(axis))
+  return model.axes.filter(axis => axisShown(axis) && !axisDrawn(axis))
 }
 
 /** Px those captions take at the top-right, which the legend starts below. */

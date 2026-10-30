@@ -102,6 +102,7 @@ export const COVERAGE_Y_PATHS = {
     constant: [...Y, 'scale', 'constant'],
     group: [...Y, 'scale', 'group'],
     title: [...Y, 'axis', 'title'],
+    show: [...Y, 'axis', 'show'],
     grid: [...Y, 'axis', 'grid'],
     rules: [...Y, 'rules'],
   },

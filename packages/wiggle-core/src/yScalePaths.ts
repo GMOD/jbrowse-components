@@ -7,6 +7,7 @@ export type YMember =
   | 'constant'
   | 'group'
   | 'title'
+  | 'show'
   | 'grid'
   | 'rules'
 

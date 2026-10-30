@@ -13,6 +13,7 @@ const PATHS = {
     constant: ['scale', 'constant'],
     group: ['scale', 'group'],
     title: ['axis', 'title'],
+    show: ['axis', 'show'],
     grid: ['axis', 'grid'],
     rules: ['rules'],
   },
