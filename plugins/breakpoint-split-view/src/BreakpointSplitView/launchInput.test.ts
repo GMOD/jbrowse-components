@@ -38,6 +38,18 @@ test('a launch key written on the view object opens the panels', async () => {
   expect(warnings()).toEqual([])
 })
 
+test("a panel's own LGV settings reach its view", async () => {
+  const view = await open({
+    views: [
+      { ...PANELS[0], trackLabels: 'hidden', showCenterLine: true },
+      PANELS[1],
+    ],
+  })
+  expect(view.views.map(v => v.showCenterLine)).toEqual([true, false])
+  expect(view.views[0]!.trackLabels).toBe('hidden')
+  expect(warnings()).toEqual([])
+})
+
 // Nothing in this view's launch path mentions any of these names: v4 resolved
 // the panel array and nothing else, so a declared property written beside it
 // reached nothing.

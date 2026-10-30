@@ -768,12 +768,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setViews(viewInits: BreakpointSplitViewInitView[]) {
         self.views = cast(
-          viewInits.map(({ loc, assembly, tracks }) => ({
+          viewInits.map(init => ({
             type: 'LinearGenomeView' as const,
             hideHeader: true,
-            assembly,
-            ...(loc ? { loc } : {}),
-            ...(tracks ? { tracks } : {}),
+            ...init,
           })),
         )
       },
