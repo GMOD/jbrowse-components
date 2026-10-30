@@ -121,7 +121,10 @@ grows a track to its whole content.
   cost WebGPU and Canvas2D resolution they never lacked, below 1 device px per
   CSS px on windows past ~4050 CSS px.
 - **Every device-px rect derives from the reported scale**: `clipBlock`,
-  alignments' `bufH`, `devicePxBand`, the variant matrix's `backingWidthPx`.
+  alignments' `bufH`, `devicePxBand`, the variant matrix's `backingWidthPx`,
+  and both variant passes' row edges (`rowSnap.slang`, fed `clip.scaleY`). Their
+  Canvas2D painters and hit tests snap to `backingScale(canvasHeight)`, which
+  matches except on a drawing buffer Chrome shrank.
 - **A shader that rebuilds device px from the dpr breaks this.** The variant
   matrix did, and painted 0.2% of its columns on a shrunk buffer. The `dpr`
   uniforms that remain size antialias ramps and minimum stroke widths

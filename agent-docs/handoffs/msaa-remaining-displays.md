@@ -1,6 +1,6 @@
 ---
 name: msaa-remaining-displays
-description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28. Open: variant tracks, alignments and wiggle (each trades some edges, Colin's call; variant rows tile, so they flip only to hard row edges), the grammar marks, and a checked-in GPU pixel harness. Hi-C and LD stay at four."
+description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28 and multi-sample variant tracks on 2026-10-30 (rows snapped to the device grid, awaiting Colin's review). Open: alignments and wiggle (each trades some edges, Colin's call), the grammar marks, and a checked-in GPU pixel harness. Hi-C and LD stay at four."
 ---
 
 # Displays still at four samples
@@ -19,27 +19,17 @@ A display draws at one sample when every pass it registers declares
 
 ## Next, in order
 
-1. **Variant tracks, Colin's call.** Each layout is one pass, `cell`
-   (`variant.slang`) and `matrixCell` (`variantMatrix.slang`), so each flips
-   alone. Neither is mechanical: sample rows tile at fractional y, the shape
-   that keeps Hi-C at four.
-   - **Ramping rows seams them.** Two rows meeting mid-pixel each paint 0.5 and
-     composite to 0.75, so the background shows through every row boundary.
-   - **Draw order rules out the usual repair** (ramp the later cell's edge, run
-     the earlier one hard to the pixel): `computeVariantCells.ts` draws every
-     ref cell before any alt cell, so a cell cannot tell which neighbour drew
-     first.
-   - **So a flip means hard row edges**: each device pixel takes the row over
-     its centre, where four samples blend up to four rows. Rows at least a
-     device px tall change only along their boundaries. A cohort with more
-     rows than device px shows one row per pixel instead of up to four.
-   - `variantMatrix.slang` already paints one pure cell per pixel in x by
-     design, so hard rows would make y match it.
-   - The win is size: a tall cohort track is the canvas the target costs most
-     on.
-   - A sharp corner's ramp reaches `aaHalfPx / sin(half its angle)` past the
-     corner, not `aaHalfPx`; the inversion glyph's tip needs the
-     `arrowReachPx` treatment.
+1. **Variant tracks: look at it in the app.** Both passes snap rows to the
+   device grid and declare the directive (the idea doc's `variant.slang`
+   paragraph has the numbers). Not yet checked:
+   - A capture of a dense cohort (1000 Genomes, 2,504 rows) on the WebGL2 and
+     Canvas2D rungs, beside a 4x capture from before the change.
+   - x still snaps to whole CSS px, so at a fractional dpr a cell's sides sit
+     mid-device-pixel: hard on the GPU, a seam between abutting cells on
+     Canvas2D. Snapping x to the device grid needs `scissorX`'s device offset in
+     the shader.
+   - The DOM overlays (hover box, row separators) still place rows at
+     fractional y, up to half a device pixel off the snapped row.
 2. **Alignments, Colin's call.** One tall track at dpr 2 holds about 316 MiB.
    - The read, mismatch, gap, insertion and connector passes can be made
      analytic as the feature passes were.
@@ -50,7 +40,8 @@ A display draws at one sample when every pass it registers declares
 3. **Wiggle, Colin's call.** `wiggle.slang` (its crisp point square),
    `wiggleDensity.slang` and `wiggleLine.slang` keep it at four, and the idea
    doc lists density and the step line as refusals. The flip is one judgement
-   about all three renderings.
+   about all three renderings. Density's rows tile, so they could snap through
+   `rowSnap.slang` as the variant passes do.
 4. **The grammar marks.** `pointMark`, `spanMark` and `lineStepMark` keep the
    mark display at four. `barMark`, which multi-way synteny also draws with,
    already declares the directive.

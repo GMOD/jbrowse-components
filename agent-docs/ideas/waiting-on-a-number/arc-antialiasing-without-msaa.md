@@ -227,16 +227,38 @@ would cost:
   display to 1 sample only when every pass declares it, and `line` and `arrow`
   do not.
 
-**`variant.slang` does not belong on any of those lists.** Its `SHAPE_RECT`
-branch, which is every ordinary genotype cell, returns the instance color flat;
-x is pixel-snapped (`snappedCellLeftPx`) but y is deliberately fractional, so
-both horizontal edges land mid-device-pixel. Sample rows share those edges,
-so ramping them seams every boundary, and the display flips only to hard row
-edges ([handoffs/msaa-remaining-displays.md](../../handoffs/msaa-remaining-displays.md)).
-The inversion glyph is worse than unramped: `inversionSdf`'s bar term is zero **on the quad's own edges**, so the
-ramp reads 0.5 there and the rasterizer cuts the outer half — the half-alpha
-hard edge `capsule.slang`'s header warns about, arrived at from the other
-direction. Only its two diagonals substitute to 0.
+**`variant.slang` and `variantMatrix.slang` snap their rows to the device
+grid, and draw at one sample.** Sample rows tile, so ramping their shared edges
+seams every boundary. Instead both passes put each row's edges on the backing
+store's pixel boundaries (`rowSnap.slang`, fed `clip.scaleY`), and the Canvas2D
+painters, SVG export and hit tests run the same generated functions with
+`backingScale(canvasHeight)`. Measured on the Intel UHD 630 against an exact
+supersample of a 40x60 CSS px crop:
+
+- **4x and 1x now render byte-identical pixels**, at rows 7.3, 2.6 and 0.32 CSS
+  px and dpr 1, 1.5 and 2, since no pixel holds two rows. 1x before the snap
+  scored the same as after, as pixel-centre rasterization already rounds.
+- **The cost is placement to the device pixel rather than the quarter.** Mean
+  error per pixel (of 255) against the old fractional rows, `cell` at dpr 1: 4x
+  0.28 / 2.0 / 4.1 at those three heights, 1x 1.7 / 8.0 / 20. The matrix and
+  dpr 1.5 and 2 run the same way, smaller at higher dpr.
+- **What it buys:** no pixel is a blend of two genotype colors (4x left 64 to
+  3,040 per crop), and Canvas2D stops seaming. Its `fillRect` at fractional y
+  left every row boundary at alpha 192 on both Skia and Cairo, 240 to 7,378
+  pixels per crop; snapped, none.
+- **Dense cohorts keep the floor's rule.** A cell paints at least 2 CSS px tall
+  (1 in the matrix) and alt cells draw after reference ones, so a pixel shows an
+  alt when any row whose floored band covers it carries one. 4x blended four
+  such picks, 1x shows one. An exact area average of the rows' own colors sits
+  ~65/255 from both, because rare alts fade to their frequency; the floor
+  exists to stop that.
+- **The inversion glyph ramps only its two slants** (`inversionCoverage`); its
+  other edges are the snapped cell's. The quad grows left by `inversionReachPx`,
+  `aaHalfPx` over the sine of the point's half-angle. Against an exact cover of
+  the snapped shape its mean error is 0.03 to 0.12/255 and its ink 0.99 to
+  1.01; the old glyph read half alpha along the quad's edges.
+- **x still snaps to whole CSS px**, so at a fractional dpr a cell's side lands
+  mid-device-pixel and draws hard.
 
 **Pixel-snapped — MSAA has nothing to smooth, at an integer dpr.** `rect.slang`
 snaps both x (`rectSpanPx` → `floor(x + 0.5)`) and y (`floor(inst.y - scrollY +
@@ -257,13 +279,6 @@ against 27.8 for `line` and 3.2 against 6.1 for `arrow`, and the arrow's error
 against its exactly-covered shape fell from 8.05 px² to 2.58. Multi-way
 synteny's lanes reuse these passes beside `barMark`, which keeps that display at
 four.
-
-**MSAA-invariant in x only.** `variantMatrix.slang` reconstructs the pixel
-centre (`floor(position.x) + 0.5`) and multiplies by its own sub-pixel coverage
-term, with a comment saying the reconstruction exists *so the test stays
-deterministic under the HAL's 4x MSAA*. Its rows tile at fractional y, as
-`variant.slang`'s do, so at one sample a boundary pixel takes the row over its
-centre where four samples blend the rows meeting there.
 
 **Leaning on the multisampled target, and saying so in the source:**
 
