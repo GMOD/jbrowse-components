@@ -191,9 +191,11 @@ limits of the graph and the VCF behind them.
 - **A haplotype the graph does not align has no lane.**
 - **A lane can be empty and correct.** Where a haplotype's deletion is longer
   than the window, the graph has no walk for it there and the launch opens no
-  lane. **Display types → Graph** with **Walk rows** draws such a haplotype as a
-  deletion row, from the -f5s walk file's skip rows, which gfa-to-tabix writes
-  where a deletion covers a whole 64 kb chunk of the file, up to 2 Mb.
+  lane. Walk rows, which
+  [part 3](/docs/tutorials/pangenome_hprc_repeats#amylase) opens, draw such a
+  haplotype as a deletion row, from the -f5s walk file's skip rows, which
+  gfa-to-tabix writes where a deletion covers a whole 64 kb chunk of the file,
+  up to 2 Mb.
 - **A lane can stop partway**, at the end of the graph's alignment of that
   haplotype; its sequence can run on past it.
 - **One lane stands for many haplotypes.** The page picks one haplotype per
