@@ -3,7 +3,7 @@
   "version": "5.0.0-beta.18",
   "private": true,
   "type": "module",
-  "description": "Internal jsdom harness pieces every display plugin's testEnv.ts builds on: the stub session, the stub assembly manager, and the ADR-069 teardown-noise watch and React render-logging gate the teardown suites hold",
+  "description": "Internal jest wrappers over display-kit's conformance harness (createDisplayTestEnvironment with a jest.fn RPC mock), plus the ADR-069 teardown-noise watch, the work census and the React render-logging gate the teardown suites hold",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "exports": {
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@jbrowse/core": "workspace:^",
+    "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.10.0",
     "@jbrowse/render-core": "workspace:^",
     "mobx": "^7.1.3"

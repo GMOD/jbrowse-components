@@ -107,6 +107,9 @@
 1 no-unsafe-assignment packages/display-kit/src/chromeTestModel.ts
 1 no-unsafe-return packages/display-kit/src/CoarseTierMixin.ts
 2 no-unsafe-assignment packages/display-kit/src/colorConfigSchema.ts
+5 no-unsafe-assignment packages/display-kit/src/conformance/displayTestEnvironment.ts
+2 no-unsafe-call packages/display-kit/src/conformance/displayTestEnvironment.ts
+4 no-unsafe-member-access packages/display-kit/src/conformance/displayTestEnvironment.ts
 1 no-unsafe-assignment packages/display-kit/src/fetchEachRegion.ts
 1 no-unsafe-assignment packages/display-kit/src/HiddenGroupsMixin.ts
 1 no-unsafe-argument packages/display-kit/src/MatrixRampMixin.ts
@@ -115,9 +118,6 @@
 1 no-unsafe-return packages/display-kit/src/MatrixRampMixin.ts
 1 no-unsafe-argument packages/display-kit/src/PlotDialog.tsx
 2 no-unsafe-return packages/display-kit/src/RegionTooLargeMixin.ts
-5 no-unsafe-assignment packages/display-test-utils/src/createDisplayTestEnvironment.ts
-2 no-unsafe-call packages/display-test-utils/src/createDisplayTestEnvironment.ts
-4 no-unsafe-member-access packages/display-test-utils/src/createDisplayTestEnvironment.ts
 1 no-unsafe-call packages/embedded-core/src/createEmbeddedRootModel.ts
 1 no-unsafe-assignment packages/embedded-core/src/EmbeddedSessionThemeMixin.ts
 2 no-unsafe-return packages/product-core/src/localFiles.ts

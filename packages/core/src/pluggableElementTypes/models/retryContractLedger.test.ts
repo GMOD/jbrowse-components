@@ -62,8 +62,8 @@ function makeHost(overrides: Partial<Record<string, boolean>> = {}) {
   return host
 }
 
-// Reports land on `console.error`, which `config/jest/console.js` buffers and
-// fails the test for if unclaimed — so a run that reports must be taken, and
+// Reports land on `console.error`, which the contract gate buffers and fails
+// the test for if unclaimed — so a run that reports must be taken, and
 // `true` here means exactly one report was on the channel.
 function drive(host: HostModel) {
   const check = makeRetryContractCheck(host)

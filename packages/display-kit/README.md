@@ -74,3 +74,33 @@ installContractGate({ afterEach, afterAll })
 
 A test that provokes a violation on purpose takes it with
 `takeContractReports()` from the same module and asserts on it.
+
+`conformance/displayTestEnvironment` mounts one display on one track inside a
+real `LinearGenomeView`, so `afterAttach` runs and the display's getters read
+the view they would read in the app. The caller supplies the view model and the
+RPC mock, since this package sits below the linear genome view plugin:
+
+```ts
+import { createDisplayTestEnvironment } from '@jbrowse/display-kit/conformance/displayTestEnvironment'
+import LinearGenomeViewPlugin, {
+  linearGenomeViewStateModelFactory,
+} from '@jbrowse/plugin-linear-genome-view'
+import { vi } from 'vitest'
+
+const rpcCall = vi.fn(() => new Promise(() => {}))
+const { createDisplay } = createDisplayTestEnvironment<MyDisplayModel>({
+  plugins: [new LinearGenomeViewPlugin()],
+  viewModel: linearGenomeViewStateModelFactory,
+  trackType: 'MyTrack',
+  displayName: 'LinearMyDisplay',
+  configSchema: configSchemaFactory,
+  stateModel: stateModelFactory,
+  rpcCall,
+})
+const { display, view, session } = createDisplay()
+```
+
+An unstubbed method should never settle, as above, rather than resolve
+`undefined`. `conformance/displayTestSessionModel` and
+`conformance/testAssembly` are the stub session and assembly it mounts the view
+in, for a harness that builds its own.

@@ -1,6 +1,6 @@
 ---
 name: display-kit-external-surface
-description: "What still fails silently for an external display built on @jbrowse/display-kit: a member-level contract no check outside the tree sees, a version pin that guards only types (a version gate at load is declined), chrome props with no check (the graph display now reads them), lint rules and a contract gate published as display-kit/conformance but not yet released or adopted, and host-compat tooling copied across eight plugin repos. Read before changing a mixin member a plugin display reads, adding a display-kit subpath, or touching a plugin template's build."
+description: "What still fails silently for an external display built on @jbrowse/display-kit: a member-level contract no check outside the tree sees, a version pin that guards only types (a version gate at load is declined), chrome props with no check (the graph display now reads them), lint rules, a contract gate and a display harness published as display-kit/conformance but not yet released or adopted, and host-compat tooling copied across eight plugin repos. Read before changing a mixin member a plugin display reads, adding a display-kit subpath, or touching a plugin template's build."
 ---
 
 # display-kit as an external-plugin surface
@@ -29,15 +29,19 @@ Claim a step here before starting it.
   the foundation, and no check records those reads. ARG is not a store
   plugin, so its foundation imports go unrecorded too.
 - **The tree's display checks are published, unreleased.** The display
-  `no-restricted-syntax` selectors and the contract gate moved into
-  `@jbrowse/display-kit/conformance/{lintRules,contractGate}`, which this
-  tree's `eslint.config.mjs` and `config/jest/contractGate.js` import, and the
-  ReExports generator skips `conformance/*` as it skips `shaders/*`. The gate
-  takes the runner's `afterEach`/`afterAll`, since both plugin repos use
-  vitest. Until a release publishes them, the graph plugin's
-  `config/vitest/console.js` passes a contract report through and its suite
-  stays green. `reloadReachesCounter.test.ts` still scans only this tree, and
-  `@jbrowse/display-test-utils` is private.
+  `no-restricted-syntax` selectors, the contract gate and the display
+  harness live in `@jbrowse/display-kit/conformance/*`: `lintRules`,
+  `contractGate`, and `displayTestEnvironment` with the stub session and
+  assembly it mounts a real `LinearGenomeView` in. This tree's
+  `eslint.config.mjs`, `config/jest/contractGate.js` and
+  `@jbrowse/display-test-utils` (now a jest wrapper supplying `jest.fn()` as
+  the RPC mock) consume them, and the ReExports generator skips
+  `conformance/*` as it skips `shaders/*`. The gate and the harness take
+  the runner's hooks and mock, since both plugin repos use vitest. Until a
+  release publishes them, the graph plugin's `config/vitest/console.js`
+  passes a contract report through, and its `LinearGraphDisplay.test.ts`
+  hand-builds its plugin manager, track and session.
+  `reloadReachesCounter.test.ts` still scans only this tree.
 - **A runtime plugin cannot pin display-kit, and a version gate is declined.**
   The host serves its own copy. ARG builds against `5.0.0-beta.4` and runs on
   beta.18 hosts, so a gate on version would warn on or refuse plugins that
@@ -57,12 +61,11 @@ Claim a step here before starting it.
 
 ## Next
 
-1. **A test helper that mounts a display in a real linear genome view**, the
-   rest of the conformance kit: publish the parts of `display-test-utils`
-   that do that, as a `conformance/*` subpath or a package of its own. Once a
-   release carries `conformance/*`, the graph plugin installs the gate in its
-   vitest setup and spreads `displayRestrictedSyntax` into its lint, and ARG
-   follows; the display-kit README has both recipes. A dry run of the lint
+1. **Adopt `conformance/*` in the plugin repos once a release carries it.**
+   The graph plugin installs the gate in its vitest setup, spreads
+   `displayRestrictedSyntax` into its lint, and can mount
+   `LinearGraphDisplay` through `createDisplayTestEnvironment`; ARG
+   follows; the display-kit README has the recipes. A dry run of the lint
    recipe on graphgenomeviewer `11a67c3` reports one `attachRenderingBackend`
    (`pane/renderingActions.ts`), four `rpcManager.call`s with no
    `statusCallback` (three in `pane/loadActions.ts`) and 26 non-observer

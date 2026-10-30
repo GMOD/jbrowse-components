@@ -344,8 +344,8 @@ async function settle() {
 }
 
 // The contract checks report through `console.error`, and this file's
-// fixture drives the violating shapes on purpose. `config/jest/console.js`
-// buffers those reports and the gate fails any test that leaves one unclaimed,
+// fixture drives the violating shapes on purpose. The contract gate buffers
+// those reports and fails any test that leaves one unclaimed,
 // so every test here takes them — which is both the opt-in and how they are
 // read. Replacing `console.error` locally, which this did before, hid the
 // reports from the gate rather than excusing them.
