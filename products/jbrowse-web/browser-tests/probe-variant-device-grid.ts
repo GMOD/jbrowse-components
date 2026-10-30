@@ -210,6 +210,9 @@ async function captureScene(page: Page, scene: (typeof SCENES)[number]) {
         .sources.length,
     }
   }, selector)
+  // A headed Firefox's real cursor can rest over the rows and raise a tooltip.
+  await page.mouse.move(1, 1)
+  await delay(500)
   // A one-color capture is the screenshot racing the paint, not the render:
   // retake it rather than record a blank.
   let shot: Uint8Array = new Uint8Array()
