@@ -88,9 +88,6 @@ between displays.
    table holds the other member differences, each ruled in ADR-238, ADR-240
    or the schema's own comment, or left as taste (Colin, 2026-10-30: the
    chord and matrix ramps and wiggle's key direction).
-5. **The ecoli graph build's `GraphTrack` `displayDefaults` writes
-   `showLabels`**, which waits on the graph plugin's own label slot.
-
 ## Release candidate gates
 
 - The meter shows no shared-path change since the last respell landed.
@@ -99,16 +96,19 @@ between displays.
   so `scripts/check-config-slot-paths.ts` has no v4 baseline. A `git grep -w <key>
   v4.3.0` over the legacy keys in `website/static/schema/v5/config.json` finds
   six missing from v4.3.0 on 2026-10-27, each from an earlier release, so
-  the check greps every v1–v4 tag. Only `LinearWiggleDisplay.extent`
+  the check greps every v1–v4 tag. Rechecked 2026-10-30 over every retired
+  top-level key: the same answer. Only `LinearWiggleDisplay.extent`
   is beta-only, waiting on the ggjbrowse push (step 1). v1.3.1–v1.3.5 declared
   `textSearchIndexingAttributes`, and desktop's open-sequence dialog wrote
   `cytobandsLocation` from v2.10.0 through v4.3.0, so both stay.
 - `jbrowse validate` reports no warning outside plugin-registered types on
   hosted configs, `demos/` and the tutorials (step 3). On an adapter that
   derives no `svType`, validate reads `svtype` as the file's own column, so
-  the gnomAD-SV bigBeds no longer warn.
+  the gnomAD-SV bigBeds no longer warn. `demos/` held on 2026-10-30.
 - The v5 release draft and the schema use the same spellings, including the
-  word "experimental" for `LinearMarkDisplay`.
+  word "experimental" for `LinearMarkDisplay`. Held on 2026-10-30: the draft
+  quotes no retired key, and the display's config page and guide say
+  experimental.
 - The v5 changelog draft
   (`website/release_announcement_drafts/v5.0.0.changelog.md`, which
   `release.ts` prepends to `CHANGELOG.md`) reaches main. Sessions edit it as

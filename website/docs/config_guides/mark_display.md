@@ -2,18 +2,19 @@
 title: Mark display
 description:
   A grammar of graphics over a feature, alignments, variant or quantitative
-  track, where LinearMarkDisplay draws the bars, points, rules, spans and labels
+  track, where LinearMarkDisplay draws the bars, points, rules, rects and labels
   its config declares
 guide_category: Track types
 ---
 
 `LinearMarkDisplay` is a grammar of graphics over a track, in the sense of
 Vega-Lite or ggplot: a picture is declared as marks, encodings and transforms
-rather than drawn by code. It goes on a `FeatureTrack`, an `AlignmentsTrack`, a
-`VariantTrack`, a `QuantitativeTrack` or a `MultiQuantitativeTrack`, and draws a
-`bar`, `point`, `rule`, `line`, `rect`, `text` or `link` per `marks` entry, each
-with an `encoding` naming the fields that feed it, a `transform` list that can
-bin, count, pack or measure coverage, and a zoom range it draws in.
+rather than drawn by code. It is experimental in v5, and its own settings may
+still grow. It goes on a `FeatureTrack`, an `AlignmentsTrack`, a `VariantTrack`,
+a `QuantitativeTrack` or a `MultiQuantitativeTrack`, and draws a `bar`, `point`,
+`rule`, `line`, `rect`, `text` or `link` per `marks` entry, each with an
+`encoding` naming the fields that feed it, a `transform` list that can bin,
+count, pack or measure coverage, and a zoom range it draws in.
 
 Reach for it when a field is the picture: a BED score, a segment's log ratio, a
 peak's signal and q-value, a read's MAPQ, a variant's `QUAL`. The format-typed

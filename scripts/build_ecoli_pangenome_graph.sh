@@ -717,7 +717,9 @@ cat > pggb_segments_track.json <<'JSON'
     "format": 2,
     "coarse": { "uri": "ecoli_pggb.fold50", "format": 2, "aboveBpPerPx": 5 }
   },
-  "displayDefaults": { "showLabels": "none" },
+  "displayDefaults": {
+    "labels": { "name": { "show": false }, "description": { "show": false } }
+  },
   "displays": [
     { "type": "LinearGraphDisplay" },
     { "type": "LinearBasicDisplay" }

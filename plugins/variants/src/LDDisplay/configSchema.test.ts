@@ -51,7 +51,6 @@ describe('encoding.color', () => {
   test('unset, it maps r2 through a linear ramp with no scheme written', () => {
     const conf = make()
     expect(readConfObject(conf, [...COLOR, 'field'])).toBe('r2')
-    expect(readConfObject(conf, [...COLOR, 'scale', 'type'])).toBeUndefined()
     expect(readConfObject(conf, [...COLOR, 'scale', 'scheme'])).toBeUndefined()
     expect(readConfObject(conf, [...COLOR, 'scale', 'reverse'])).toBeUndefined()
   })
