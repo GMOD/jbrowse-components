@@ -179,13 +179,16 @@ test('a Save session as that fails keeps the path that works', async () => {
     .menus()
     .find(m => m.label === 'File')!
     .menuItems()
-    .flatMap(m => ('subMenu' in m ? m.subMenu : [m]))
+    .flatMap(m =>
+      'subMenu' in m && Array.isArray(m.subMenu) ? m.subMenu : [m],
+    )
     .find(m => 'label' in m && m.label === 'Save session as...')
   if (!item || !('onClick' in item)) {
     throw new Error('no clickable Save session as item')
   }
 
-  await item.onClick()
+  item.onClick()
+  await jest.advanceTimersByTimeAsync(0)
 
   expect(root.sessionPath).toBe(SESSION_PATH)
   expect(root.session!.snackbarMessages.length).toBe(1)
