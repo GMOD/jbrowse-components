@@ -93,9 +93,12 @@ together.
   - Protein3d has no range site (`B:4-18`), so a sub-chain color goes through
     `color.values`, which paints every drawn copy of the mapped entity.
 - **HBB E6V, plug and pocket**, `protein_figure_hbb_e6v_pocket.ts`, published
-  and in no doc (a grant renewal figure, 1000 px wide for a 7 in print):
+  and in no doc (a grant renewal figure, 1523 px wide for a 7 in print):
   magenta codon 6 → column 6 → Val6, teal codons 85/88 → columns → Phe85/Leu88
-  on the neighbour. Panels: genome, alignment, the 2HBS zoom-out, the contact.
+  on the neighbour. The genome view (location bar hidden, the ruler carrying
+  the coordinates) and the alignment take the left column; the 2HBS zoom-out
+  and the contact stack on the right, cameras turned so the two molecules sit
+  side by side in the landscape panels.
   - The genome view shows two abutting regions (codons 1-13, 80-92). The
     alignment matches them by hiding columns: a full-length `HBB` query row
     sits outside the tree (so it is never drawn), the drawn rows are gapped
@@ -103,7 +106,7 @@ together.
   - HbS is a `columnTracks` text row over the tree, dots except a magenta V.
   - Session highlights band all three codons, with `highlightLabelsVisible`
     off: react-msaview writes a label over the top row's cell, which hid
-    Human's Glu6. Callouts name them at 11 pt.
+    Human's Glu6. Callouts name them at 8 pt, `FONT` scaled to the frame.
   - 2HBS `chains: ['H']` with `filter` residue ≤ 84, the rest as cartoon marks,
     so the teal highlights skip H's own Phe85/Leu88.
   - The gene track numbers codons counting Met, but at this zoom it prints
@@ -124,9 +127,10 @@ together.
     seam a leader gets no shaft past its 32px head.
   - Under the gene track, the tutorial's `gwasCatalog_sickle_cell_traits`
     narrowed to two rs334 records, hemolytic anemias and malaria, in magenta
-    inside the E6V band. The labels drop the PheCode and the author, which
-    crossed the seam and truncated. The kidney and HbA1c records cost two
-    more rows and are off the story. The viewport grew; the pills stayed put.
+    inside the E6V band. The track's own labels printed at about 4 pt, so
+    they are off in the figure and one magenta pill beside the band names both
+    records with their p-values; the live link keeps the labels. The kidney
+    and HbA1c records cost two more rows and are off the story.
 - **Variant pairs** `protein_figure_brca1_m1775r.ts` and
   `protein_figure_snca_e46k.ts`; the SNCA builder looks down each fibril's rung
   axis and turns the E46K layer to put Lys80 on the wild type's pixel.
