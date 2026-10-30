@@ -23,7 +23,7 @@ import {
   union,
 } from '../fixture.ts'
 
-import type { Shape } from '../fixture.ts'
+import type { Budget, Shape } from '../fixture.ts'
 
 const SHADERS = 'packages/render-core/src/shaders'
 const W = 200
@@ -139,6 +139,7 @@ function pointFixture(
   about: string,
   radiusPx: number,
   points: Point[],
+  budget?: Budget,
 ) {
   const color = (i: number) => PALETTE[i % PALETTE.length]!
   return defineFixture({
@@ -164,6 +165,7 @@ function pointFixture(
         color: rgba(color(i)),
       })),
     ),
+    budget,
   })
 }
 
@@ -220,6 +222,7 @@ const ruleFixture = defineFixture({
       }
     }),
   ),
+  budget: { meanErr: 0.05 },
 })
 
 // ---- span ----
@@ -238,9 +241,31 @@ function spanFixture(
   rowHeight: number,
   rowProportion: number,
   minCellPx: number,
+  rows: 'exact' | 'device' = 'exact',
 ) {
   const offset = rowBandOffsetPx(rowHeight, rowProportion)
   const band = drawnRowHeightPx(rowHeight, rowProportion)
+  const scene = (dpr: number) => {
+    const onDevicePx = (y: number) =>
+      rows === 'device' ? Math.round(y * dpr) / dpr : y
+    return paintOver(
+      spans.map(s => {
+        const a = px(bp(s.x))
+        const b = extendToMinWidthPx(a, px(bp(s.x2)), minCellPx)
+        const top = offset + rowHeight * s.row
+        const t = onDevicePx(top)
+        const bottom = Math.max(onDevicePx(top + band), t + 1 / dpr)
+        return boxShape(
+          Math.min(a, b),
+          t,
+          Math.max(a, b),
+          rows === 'device' ? bottom : top + band,
+          rgba(PALETTE[s.color]!),
+        )
+      }),
+    )
+  }
+  const scenes = new Map<number, ReturnType<typeof scene>>()
   return defineFixture({
     name,
     slang: `${SHADERS}/spanMark.slang`,
@@ -255,9 +280,10 @@ function spanFixture(
       row: spans.map(s => s.row),
       color: spans.map(s => abgr(PALETTE[s.color]!)),
     },
-    uniforms: () => ({
+    uniforms: dpr => ({
       bpRangeX: BP_RANGE,
       canvasHeight: H,
+      devicePixelRatio: dpr,
       minCellDenomPx: W,
       minCellPx,
       zero: 0,
@@ -267,20 +293,14 @@ function spanFixture(
       rowTableKeys: -1,
       ...NO_RAMP,
     }),
-    reference: paintOver(
-      spans.map(s => {
-        const a = px(bp(s.x))
-        const b = extendToMinWidthPx(a, px(bp(s.x2)), minCellPx)
-        const top = offset + rowHeight * s.row
-        return boxShape(
-          Math.min(a, b),
-          top,
-          Math.max(a, b),
-          top + band,
-          rgba(PALETTE[s.color]!),
-        )
-      }),
-    ),
+    reference: (x, y, dpr) => {
+      let f = scenes.get(dpr)
+      if (!f) {
+        f = scene(dpr)
+        scenes.set(dpr, f)
+      }
+      return f(x, y)
+    },
   })
 }
 
@@ -330,7 +350,7 @@ function abuts(
   return a !== undefined && b !== undefined && bp(a[1]!) === bp(b[0]!)
 }
 
-function stepFixture(lineWidth: number) {
+function stepFixture(lineWidth: number, budget: Budget) {
   const yOf = (v: number) => valueToYPxScaled(v, DOMAIN[0], DOMAIN[1], H, 0, 1)
   const prevY = STEPS.map((s, i) =>
     abuts(STEPS[i - 1], s) ? STEPS[i - 1]![2] : GAP_Y,
@@ -388,6 +408,7 @@ function stepFixture(lineWidth: number) {
     }),
     translucent: STEP_ALPHA,
     reference: paintOver([union(rgba(PALETTE[1], STEP_ALPHA), pieces)]),
+    budget,
   })
 }
 
@@ -403,6 +424,7 @@ export default [
     'the crisp square glyph, radius 4.2, its corner on the CSS px grid',
     4.2,
     scattered(15, 12.4, [GLYPH_SQUARE]),
+    { max: 0.1, meanErr: 0.01 },
   ),
   pointFixture(
     'mark-point-small',
@@ -427,6 +449,24 @@ export default [
     0.9,
     0,
   ),
-  stepFixture(1),
-  stepFixture(2),
+  spanFixture(
+    'mark-span-sparse-c2d',
+    'mark-span-sparse against rows on device px, as the Canvas2D painter draws them',
+    sparseSpans,
+    7.3,
+    0.8,
+    2,
+    'device',
+  ),
+  spanFixture(
+    'mark-span-tiling-c2d',
+    'mark-span-tiling against rows on device px, as the Canvas2D painter draws them',
+    tilingSpans,
+    6,
+    0.9,
+    0,
+    'device',
+  ),
+  stepFixture(1, { meanErr: 0.09 }),
+  stepFixture(2, { meanErr: 0.075 }),
 ]

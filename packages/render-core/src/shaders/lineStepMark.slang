@@ -7,16 +7,18 @@
 // again. A joined next collapses the third quad onto the corner the next
 // instance's first quad draws, so the seam is stroked once.
 //
-// The quads deliberately overlap and stay flat fills: per-fragment coverage on
-// an edge two quads both cover double-blends there, and the step line would
-// gain a lattice of darker joints. The variant that wants an antialiased stroke
-// is `lineCenterMark.slang`, whose capsules union under a max blend.
+// Each quad inks the area its box covers of the pixel (`slabCoverage` on both
+// axes), so the line draws at one sample. The quads still overlap at the
+// joints, and a translucent line blends a joint's corner twice there, as the
+// flat fills did at four samples. A max blend would union them, as
+// `lineCenterMark.slang`'s does, but max is only valid over an empty target.
 //
 // The band is the instance's `row`, read through the bound row table as
 // `barMark` reads it: a key resolved to its slot and color, or dropped off
 // clip space where the table hides it. A pass binding none (`rowTableKeys` −1)
 // draws `row` as the band.
 //! targets: wgsl, glsl
+//! coverage: analytic
 
 import antialias;
 import hpmath;
@@ -56,6 +58,8 @@ struct VsOut {
   float yPx : TEXCOORD3;
   nointerpolation float colorAlongY : TEXCOORD4;
   nointerpolation float bandTop : TEXCOORD5;
+  float xPx : TEXCOORD6;
+  nointerpolation float4 box : TEXCOORD7;
 };
 
 // A neighbour's y: its value's, or the origin's where it is a gap.
@@ -77,6 +81,8 @@ VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
     o.colorAlongY = 0.0;
     o.yPx = 0.0;
     o.bandTop = 0.0;
+    o.xPx = 0.0;
+    o.box = float4(0.0);
     return o;
   }
   float sx1 = lineBpToClipX(inst.x, u);
@@ -86,28 +92,30 @@ VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
   float prevPx = neighbourYPx(inst.prevY, bandTop);
   float nextPx = neighbourYPx(inst.nextY, bandTop);
   float hw = u.lineWidth * 0.5;
-  float hwx = pxToClipLen(hw, u.viewportWidth);
+  float px1 = clipXToPx(sx1, u.viewportWidth);
+  float px2 = clipXToPx(sx2, u.viewportWidth);
 
   uint seg = vid / STEP_LINE_QUAD_VERTS;
   float2 q = quadLocal(vid);
-  float sx;
-  float sy;
+  float4 box;
   float2 colorLine;
   if (seg == 0u) {
-    sx = lerp(sx1 - hwx, sx1 + hwx, q.x);
-    sy = lerp(max(prevPx, yPx) + hw, min(prevPx, yPx) - hw, q.y);
+    box = float4(px1 - hw, min(prevPx, yPx) - hw, px1 + hw, max(prevPx, yPx) + hw);
     colorLine = float2(min(prevPx, yPx), max(prevPx, yPx));
   } else if (seg == 1u) {
-    sx = lerp(min(sx1, sx2) - hwx, max(sx1, sx2) + hwx, q.x);
-    sy = lerp(yPx + hw, yPx - hw, q.y);
+    box = float4(min(px1, px2) - hw, yPx - hw, max(px1, px2) + hw, yPx + hw);
     float colorYPx = lineColorYPx(inst.y, bandTop, u);
     colorLine = float2(colorYPx, colorYPx);
   } else {
-    sx = lerp(sx2 - hwx, sx2 + hwx, q.x);
-    sy = lerp(max(yPx, nextPx) + hw, min(yPx, nextPx) - hw, q.y);
+    box = float4(px2 - hw, min(yPx, nextPx) - hw, px2 + hw, max(yPx, nextPx) + hw);
     colorLine = float2(min(yPx, nextPx), max(yPx, nextPx));
   }
-  o.position = float4(sx, yPxToClipY(sy, u.canvasHeight), 0.0, 1.0);
+  float pad = aaPx(u.devicePixelRatio);
+  float sxPx = lerp(box.x - pad, box.z + pad, q.x);
+  float sy = lerp(box.w + pad, box.y - pad, q.y);
+  o.position = float4(pxToClipX(sxPx, u.viewportWidth), yPxToClipY(sy, u.canvasHeight), 0.0, 1.0);
+  o.xPx = sxPx;
+  o.box = box;
   o.color = place.color;
   o.colorLine = colorLine;
   o.cutYsLo = lineCutYsPx(0, bandTop, u);
@@ -124,14 +132,18 @@ VsOut vs_main(LineStepInstance inst, uint vid : SV_VertexID) {
   return o;
 }
 
-// The quads stay flat fills: a feature's three quads overlap at the joints so
-// corners fill with no gaps, and per-fragment coverage on an edge two quads
-// both cover would double-blend there. Under a threshold the color is read at
-// the fragment's own y along a rise, so a step across a cut changes color at
-// the cut, and at the value's y along a level run so a thick line lying on a
-// cut stays one color.
+// Under a threshold the color is read at the fragment's own y along a rise, so
+// a step across a cut changes color at the cut, and at the value's y along a
+// level run so a thick line lying on a cut stays one color.
 [shader("fragment")]
 float4 fs_main(VsOut v) : SV_Target {
-  return lineFragmentColor(
+  float dpr = u.devicePixelRatio;
+  float coverage = slabCoverage(v.xPx - v.box.x, v.xPx - v.box.z, dpr)
+                 * slabCoverage(v.yPx - v.box.y, v.yPx - v.box.w, dpr);
+  if (coverage <= 0.0) {
+    discard;
+  }
+  float4 color = lineFragmentColor(
     clamp(v.yPx, v.colorLine.x, v.colorLine.y), v.cutYsLo, v.cutYsHi, v.color, v.colorAlongY, v.bandTop, u, colorRamp);
+  return float4(color.rgb, color.a * coverage);
 }

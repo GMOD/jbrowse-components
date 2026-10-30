@@ -10,6 +10,7 @@
 // resolved to its band and color, or dropped off clip space where the table
 // hides it. A pass binding no table (`rowTableKeys` −1) draws `row` as the band.
 //! targets: wgsl, glsl
+//! coverage: analytic
 //! export-consts: DIAMOND_GLYPH_SCALE, DIAMOND_MITER_REACHES, TRIANGLE_MITER_REACHES, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND, GLYPH_SQUARE
 //! js-export: valueToYPxScaled, pointYPx, pointRowYPx
 // `valueScale`'s twin is lifted here, once, for the bar shape too.
@@ -89,7 +90,20 @@ struct VsOut {
   // Shape discriminator passed to the fragment shader: 0 = disc, 1 = diamond,
   // 2 = inverted triangle, 3 = solid fill.
   nointerpolation float shape : TEXCOORD1;
+  // A flat shape's own box and the fragment's place, both CSS px, which its
+  // coverage is measured from.
+  float2 px : TEXCOORD2;
+  nointerpolation float4 box : TEXCOORD3;
+  // 1 where the box's x cuts stay hard: a rule's, so rules meeting end to end
+  // share no seam, and its ends round to the device grid as `barMark`'s sides do.
+  nointerpolation float hardX : TEXCOORD4;
 };
+
+// The share of the device pixel at `p` that `box` covers.
+float boxCoverage(float2 p, float4 box, float dpr, bool hardX) {
+  float cx = hardX ? 1.0 : slabCoverage(p.x - box.x, p.x - box.z, dpr);
+  return cx * slabCoverage(p.y - box.y, p.y - box.w, dpr);
+}
 
 // Shape discriminators for the fragment shader. SMALL_POINT_MAX_DIAMETER and
 // the disc SDF come from the shared pointGlyph module so they stay in lockstep
@@ -97,7 +111,7 @@ struct VsOut {
 static const float SHAPE_DISC = 0.0;
 static const float SHAPE_DIAMOND = 1.0;
 static const float SHAPE_TRI = 2.0;
-// >2.5 in the fragment shader = flat solid fill (a rule, or the tiny square).
+// >2.5 in the fragment shader = a box, inked by its area (a rule, or the square).
 static const float SHAPE_BAR = 3.0;
 // 1/sqrt(5): normalizes the two slanted edges of the inverted triangle so the
 // edge functions read as true perpendicular distances for antialiasing.
@@ -143,7 +157,6 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
   // Two-triangle quad corner (0/1 per axis); shared with the whole fleet.
   float2 q = quadLocal(v);
   float2 local = q * 2.0 - 1.0;
-  bool xZero = q.x < 0.5;
 
   VsOut o;
   RowPlacement place = rowTableLookup(rowTable, inst.row, u.rowTableKeys,
@@ -153,6 +166,9 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
     o.color = float4(0.0);
     o.localPos = float2(0.0);
     o.shape = SHAPE_BAR;
+    o.px = float2(0.0);
+    o.box = float4(0.0);
+    o.hardX = 0.0;
     return o;
   }
 
@@ -162,22 +178,36 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
   float centerClipY = yPxToClipY(yPx, u.canvasHeight);
 
   o.color = place.color;
+  o.px = float2(0.0);
+  o.box = float4(0.0);
+  o.hardX = 0.0;
   float centerClipX = (startClipX + endClipX) * 0.5;
+  float pad = aaPx(u.devicePixelRatio);
   if (u.rule != 0) {
     float farClipX = extendToMinWidthX(startClipX, endClipX, u.minWidthPx, u.viewportWidth);
-    float x = xZero ? min(startClipX, farClipX) : max(startClipX, farClipX);
-    float y = centerClipY + pxToClipLen(local.y * u.radiusPx, u.canvasHeight);
-    o.position = float4(x, y, 0.0, 1.0);
+    float a = clipXToPx(min(startClipX, farClipX), u.viewportWidth);
+    float b = clipXToPx(max(startClipX, farClipX), u.viewportWidth);
+    float4 box = float4(a, yPx - u.radiusPx, b, yPx + u.radiusPx);
+    float2 p = float2(lerp(box.x, box.z, q.x), lerp(box.w + pad, box.y - pad, q.y));
+    o.position = float4(pxToClipX(p.x, u.viewportWidth), yPxToClipY(p.y, u.canvasHeight), 0.0, 1.0);
     o.localPos = local;
     o.shape = SHAPE_BAR;
+    o.px = p;
+    o.box = box;
+    o.hardX = 1.0;
   } else if (inst.glyph == GLYPH_SQUARE || (inst.glyph == GLYPH_DISC && u.radiusPx * 2.0 <= SMALL_POINT_MAX_DIAMETER)) {
-    // tiny disc: pixel-snapped crisp filled square (no AA disc). The triangle
-    // and the diamond keep their distinct marker even when small.
+    // tiny disc: the crisp square, its corner on the CSS px grid as the
+    // painter's. The triangle and the diamond keep their marker when small.
     float diamPx = u.radiusPx * 2.0;
-    o.position = crispSquareCornerClip(centerClipX, yPx, diamPx, q,
-                                       u.viewportWidth, u.canvasHeight);
+    float left = crispSquareTopLeftPx(clipXToPx(centerClipX, u.viewportWidth), diamPx);
+    float top = crispSquareTopLeftPx(yPx, diamPx);
+    float4 box = float4(left, top, left + diamPx, top + diamPx);
+    float2 p = float2(lerp(box.x - pad, box.z + pad, q.x), lerp(box.w + pad, box.y - pad, q.y));
+    o.position = float4(pxToClipX(p.x, u.viewportWidth), yPxToClipY(p.y, u.canvasHeight), 0.0, 1.0);
     o.localPos = local;
     o.shape = SHAPE_BAR;
+    o.px = p;
+    o.box = box;
   } else {
     bool diamond = inst.glyph == GLYPH_DIAMOND;
     float unitPx = u.radiusPx * (diamond ? DIAMOND_GLYPH_SCALE : 1.0);
@@ -205,8 +235,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float2 p = fragIn.localPos;
   float coverage;
   if (fragIn.shape > 2.5) {
-    // Extent bar: solid fill, no marker AA. A constant SDF has zero gradient,
-    // so the ramp below saturates to alpha 1.
+    // A box: `boxCoverage` below, after the derivative this constant feeds.
     coverage = 1.0;
   } else if (fragIn.shape > 1.5) {
     // Inverted triangle: top edge (-1,1)-(1,1), apex (0,-1). Each edge's signed
@@ -226,6 +255,9 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // the four shapes above share a single line despite the diamond's L1 norm
   // carrying a sqrt(2) the others don't. See antialias.slang's glyphEdgeAlpha.
   float alpha = glyphEdgeAlpha(coverage);
+  if (fragIn.shape > 2.5) {
+    alpha = boxCoverage(fragIn.px, fragIn.box, u.devicePixelRatio, fragIn.hardX > 0.5);
+  }
   if (alpha <= 0.0) discard;
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

@@ -93,8 +93,8 @@ function spanFrame(block: RenderBlock, params: SpanParams): SpanFrame {
   }
 }
 
-// A y on the device px the GPU's pixel-center rule puts a row edge on, so two
-// rows meeting on a fractional px share no blended seam on Canvas2D.
+// A y on the device px `rowSnap.slang` puts a row edge on, so two rows meeting
+// on a fractional px share no blended seam on Canvas2D.
 function onDevicePx(y: number, dpr: number) {
   return Math.round(y * dpr) / dpr
 }
@@ -136,6 +136,7 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
       rowHeight: params.rowHeight,
       rowProportion: params.rowProportion,
       scrollTop: params.scrollTop,
+      devicePixelRatio: clip.scaleY,
       rowTableKeys: rowTableKeys(params),
       ...rampUniforms(params.colorScale),
     })
