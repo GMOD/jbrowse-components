@@ -36,8 +36,8 @@ import {
 } from './markRules/colorScale.ts'
 import { markProblems } from './markRules/markProblems.ts'
 import {
+  coreSchemaValidator,
   hasDeclaredShape,
-  rootConfigurationSlots,
   schemaProblems,
 } from './schemaValidate.ts'
 import { didYouMean, suggest } from './suggest.ts'
@@ -45,6 +45,7 @@ import { didYouMean, suggest } from './suggest.ts'
 import type { FieldPredicate } from './alignmentsFilterRules/filterRuleFacts.ts'
 import type { ScaleProblem } from './markRules/colorScale.ts'
 import type { MarkSnapshot, StepSnapshot } from './markRules/markProblems.ts'
+import type { SchemaValidator } from './schemaValidate.ts'
 import type {
   ConfigManifest,
   Problem,
@@ -1114,6 +1115,7 @@ function checkMarkDisplays(
 export function validateConfig(
   config: unknown,
   manifest: ConfigManifest = configManifest,
+  schema: SchemaValidator = coreSchemaValidator,
 ): ValidationResult {
   const report = new Report()
   if (!isRecord(config)) {
@@ -1124,23 +1126,25 @@ export function validateConfig(
     Array.isArray(config.plugins) && config.plugins.length > 0
   if (declaresPlugins) {
     report.note(
-      `config declares ${(config.plugins as unknown[]).length} plugin(s); the types and slots they register are not in the schema and cannot be checked`,
+      `config declares ${(config.plugins as unknown[]).length} plugin(s); the types they register are checked only where a plugin manifest (--plugin-manifest) lists them`,
     )
   }
 
   const { configuration } = config
   const pluginSlots =
     declaresPlugins && isRecord(configuration)
-      ? Object.keys(configuration).filter(k => !rootConfigurationSlots.has(k))
+      ? Object.keys(configuration).filter(
+          k => !schema.rootConfigurationSlots.has(k),
+        )
       : []
   for (const key of pluginSlots) {
     report.warn(
       `configuration.${key}`,
-      `core declares no "${key}" slot${didYouMean(key, [...rootConfigurationSlots])} — a plugin this config declares may`,
+      `core declares no "${key}" slot${didYouMean(key, [...schema.rootConfigurationSlots])} — a plugin this config declares may`,
     )
   }
   report.problems.push(
-    ...schemaProblems(
+    ...schema.schemaProblems(
       pluginSlots.length && isRecord(configuration)
         ? {
             ...config,

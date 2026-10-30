@@ -30,9 +30,11 @@ import {
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { parseArgs } from 'node:util'
 
 import esbuild from 'esbuild'
 
+import { configJsonSchema } from '../products/jbrowse-cli/src/commands/validate/configSchema.generated.ts'
 import {
   checkOrWriteAll,
   formatMarkdown,
@@ -44,6 +46,23 @@ import { migrationTableLines } from './configMigrationTable.ts'
 import type { Migration } from './configMigrationTable.ts'
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '..')
+
+// `--plugin <bundle> --out <file>` writes a plugin's manifest instead: the
+// types its built ESM bundle registers beside core's, which
+// `jbrowse validate --plugin-manifest` checks a config's slots against.
+const { values: args } = parseArgs({
+  options: {
+    plugin: { type: 'string', multiple: true, default: [] },
+    out: { type: 'string' },
+    check: { type: 'boolean' },
+  },
+})
+const pluginUrls = args.plugin.map(spec =>
+  spec.startsWith('file:') ? spec : pathToFileURL(path.resolve(spec)).href,
+)
+if (pluginUrls.length > 0 && args.out === undefined) {
+  throw new Error('--plugin needs --out, the plugin manifest to write')
+}
 // jbrowse-web's corePlugins is the widest core set that is also plain web —
 // desktop's adds Electron-only plugins that would drag the main process in.
 const RESOLVE_DIR = path.join(REPO_ROOT, 'products/jbrowse-web')
@@ -122,9 +141,30 @@ import {
 } from '../../scripts/configJsonSchema.ts'
 import { migrationRows } from '../../scripts/configMigrationTable.ts'
 
-const pm = new PluginManager(corePlugins.map(P => new P()))
+// A plugin bundle reads the host's modules off \`JBrowseExports\` at module
+// scope, as PluginLoader.installGlobalReExports publishes it in the browser.
+const PLUGIN_URLS = __PLUGIN_URLS__
+if (PLUGIN_URLS.length > 0) {
+  const { default: reExports } = await import('./src/reExports.generated.ts')
+  globalThis.JBrowseExports = { ...reExports }
+}
+const pluginClasses = await Promise.all(
+  PLUGIN_URLS.map(async url => (await import(url)).default),
+)
+const pm = new PluginManager(
+  [...corePlugins, ...pluginClasses].map(P => new P()),
+)
 pm.createPluggableElements()
 pm.configure()
+
+// The names core registers alone, so a plugin's manifest keeps only its own.
+const corePm = new PluginManager(corePlugins.map(P => new P()))
+corePm.createPluggableElements()
+const coreTypeNames = Object.fromEntries(
+  ['adapter', 'track', 'display', 'text search adapter', 'connection', 'internet account', 'view'].map(
+    group => [group, Object.keys(corePm.getElementTypeRecord(group).registeredTypes)],
+  ),
+)
 
 // Every view and display registers its state model as a LOADER — nothing has
 // built one yet — and \`stateModelProps\` below reads the built model's
@@ -419,7 +459,45 @@ function shorthandKeysOf(adapterType) {
   // fallback fired for nothing, and it is gone: a normalizer needing several keys
   // at once is a normalizer to narrow, not a case to accept broadly.
   checkShorthandConsumed(adapterType, normalize, snapOf(found))
-  return found
+  return coreTypeNames.adapter.includes(adapterType.name)
+    ? found
+    : [...new Set([...found, ...undeclaredKeysRead(adapterType, normalize)])]
+}
+
+// A plugin's normalizer is a minified bundle the source scan cannot read, and
+// a probe value can miss a branch (\`format === 2\`). What it reads off the
+// snapshot that no slot declares is the shorthand it takes.
+function undeclaredKeysRead(adapterType, normalize) {
+  const read = new Set()
+  const recording = snap =>
+    new Proxy(snap, {
+      get(target, key) {
+        if (typeof key === 'string') {
+          read.add(key)
+        }
+        return target[key]
+      },
+      has(target, key) {
+        if (typeof key === 'string') {
+          read.add(key)
+        }
+        return key in target
+      },
+    })
+  for (const snap of [
+    { type: adapterType.name },
+    { type: adapterType.name, uri: 'probe', baseUri: 'probe' },
+  ]) {
+    try {
+      normalize(recording(snap))
+    } catch {
+      // a normalizer that throws on a bare probe still read what it read
+    }
+  }
+  const declared = new Set(
+    (slotsOf(adapterType.configSchema) ?? []).map(slot => slot.name),
+  )
+  return [...read].filter(key => key !== 'type' && !declared.has(key))
 }
 
 // The retired spellings whose lift reads no value and answers no member: the
@@ -733,8 +811,10 @@ function collect(group, getType) {
     if (!slots) {
       continue
     }
+    // core's own rule; a plugin's adapter may leave its schema open
     if (
       group === 'adapter' &&
+      coreTypeNames.adapter.includes(name) &&
       !getConfigurationSchemaMetadata(entry.configSchema)?.options.closed
     ) {
       adapterProblems.push(\`\${name}'s config schema is not closed\`)
@@ -1046,7 +1126,14 @@ const migration = migrationRows({
 })
 
 console.log(
-  JSON.stringify({ manifest, schema, plotSettings, displayTable, migration }),
+  JSON.stringify({
+    manifest,
+    schema,
+    plotSettings,
+    displayTable,
+    migration,
+    coreTypeNames,
+  }),
 )
 `
 
@@ -1278,6 +1365,7 @@ const built = await esbuild.build({
       JSON.stringify(collectShorthandProbes()),
     )
       .replace('__LOCAL_CONFIGS__', () => JSON.stringify(localConfigs()))
+      .replace('__PLUGIN_URLS__', () => JSON.stringify(pluginUrls))
       .replace('__SCHEMA_ID__', JSON.stringify(SCHEMA_ID))
       .replace('__VERSION__', JSON.stringify(VERSION)),
     resolveDir: RESOLVE_DIR,
@@ -1327,128 +1415,191 @@ const {
   plotSettings,
   displayTable,
   migration,
+  coreTypeNames,
 } = JSON.parse(payload) as {
   manifest: Record<string, any>
   schema: Record<string, unknown>
   plotSettings: { name: string; displayName: string; keys: string[] }[]
   displayTable: Record<string, unknown>
   migration: Migration
+  coreTypeNames: Record<string, string[]>
 }
 
-const EDIT_PLOT_GUIDE = path.join(
-  REPO_ROOT,
-  'website/docs/user_guides/edit_plot.md',
-)
-const editPlotGuide = formatMarkdown(
-  spliceGeneratedBlock({
-    path: EDIT_PLOT_GUIDE,
-    marker: 'PLOT_SETTINGS',
-    body: markdownTableLines(
-      ['Display', 'Settings'],
-      plotSettings
-        .toSorted((a, b) => a.displayName.localeCompare(b.displayName, 'en'))
-        .map(({ name, displayName, keys }) => [
-          `${displayName} (\`${name}\`)`,
-          keys.map(key => `\`${key}\``).join(', '),
-        ]),
+// Each manifest group beside the element group its names come from.
+const PLUGIN_MANIFEST_GROUPS = {
+  adapters: 'adapter',
+  tracks: 'track',
+  displays: 'display',
+  textSearchAdapters: 'text search adapter',
+  connections: 'connection',
+  internetAccounts: 'internet account',
+  views: 'view',
+} as const
+
+function writePluginManifest(out: string) {
+  const groups = Object.entries(PLUGIN_MANIFEST_GROUPS).map(
+    ([group, elementGroup]) => {
+      const core = new Set(coreTypeNames[elementGroup])
+      return [
+        group,
+        Object.fromEntries(
+          Object.entries(schema[group] as Record<string, unknown>).filter(
+            ([name]) => !core.has(name),
+          ),
+        ),
+      ] as const
+    },
+  )
+  // The definitions the plugin adds, or changes by joining a union core
+  // declares: everything a validator needs beside core's own schema.
+  const coreDefs = configJsonSchema.$defs as Record<string, unknown>
+  const pluginDefs = Object.fromEntries(
+    Object.entries(jsonSchema.$defs as Record<string, unknown>).filter(
+      ([name, definition]) =>
+        JSON.stringify(definition) !== JSON.stringify(coreDefs[name]),
     ),
-  }),
-  EDIT_PLOT_GUIDE,
-)
-const MIGRATION_GUIDE = path.join(
-  REPO_ROOT,
-  'website/docs/config_guides/v4_config_migration.md',
-)
-const migrationGuide = formatMarkdown(
-  spliceGeneratedBlock({
-    path: MIGRATION_GUIDE,
-    marker: 'V4_CONFIG_MIGRATION',
-    body: [
-      '<!-- prettier-ignore -->',
-      ...markdownTableLines(
-        ['Type', 'v4.3.0 key', 'v5'],
-        migrationTableLines(migration),
-      ),
-    ],
-  }),
-  MIGRATION_GUIDE,
-)
-const manifest = [
-  '// Generated by scripts/generateConfigManifest.ts — do not edit by hand.',
-  '// Regenerate with `pnpm autogen` after changing any configSchema.ts.',
-  "import type { ConfigManifest } from './types.ts'",
-  '',
-  `export const configManifest: ConfigManifest = ${JSON.stringify(schema, null, 2)}`,
-  '',
-].join('\n')
+  )
+  writeFileSync(
+    out,
+    `${JSON.stringify(
+      {
+        plugins: args.plugin,
+        jbrowse: VERSION,
+        ...Object.fromEntries(groups),
+        schema: { $defs: pluginDefs },
+      },
+      null,
+      2,
+    )}\n`,
+  )
+  const counts = groups
+    .map(([group, types]) => `${Object.keys(types).length} ${group}`)
+    .join(', ')
+  console.log(`${out}: ${counts}`)
+}
 
-checkOrWriteAll(
-  [
-    { path: OUT, content: manifest, label: path.relative(REPO_ROOT, OUT) },
-    {
-      path: SCHEMA_OUT,
-      // A template literal rather than an object literal: the schema's `then`
-      // keys read as thenables to the linter, and V8 parses JSON faster than
-      // a literal of this size anyway.
-      content: [
-        '// Generated by scripts/generateConfigManifest.ts — do not edit by hand.',
-        '// Regenerate with `pnpm autogen` after changing any configSchema.ts.',
-        'export const configJsonSchema: Record<string, unknown> = JSON.parse(`',
-        JSON.stringify(jsonSchema, null, 2)
-          .replaceAll('\\', '\\\\')
-          .replaceAll('`', '\\`')
-          .replaceAll('${', '\\${'),
-        '`)',
-        '',
-      ].join('\n'),
-      label: path.relative(REPO_ROOT, SCHEMA_OUT),
-    },
-    {
-      path: DISPLAY_TABLE_OUT,
-      content: [
-        '// Generated by scripts/generateConfigManifest.ts — do not edit by hand.',
-        '// Regenerate with `pnpm autogen`.',
-        "import type { DisplayTable } from './displays.ts'",
-        '',
-        `export const displayTable: DisplayTable = ${JSON.stringify(displayTable, null, 2)}`,
-        '',
-      ].join('\n'),
-      label: path.relative(REPO_ROOT, DISPLAY_TABLE_OUT),
-    },
-    {
+function writeCoreArtifacts() {
+  const EDIT_PLOT_GUIDE = path.join(
+    REPO_ROOT,
+    'website/docs/user_guides/edit_plot.md',
+  )
+  const editPlotGuide = formatMarkdown(
+    spliceGeneratedBlock({
       path: EDIT_PLOT_GUIDE,
-      content: editPlotGuide,
-      label: path.relative(REPO_ROOT, EDIT_PLOT_GUIDE),
-    },
-    {
-      path: MIGRATION_GUIDE,
-      content: migrationGuide,
-      label: path.relative(REPO_ROOT, MIGRATION_GUIDE),
-    },
-    {
-      path: SCHEMA_SITE_OUT,
-      content: formatMarkdown(
-        JSON.stringify(jsonSchema, null, 2),
-        SCHEMA_SITE_OUT,
+      marker: 'PLOT_SETTINGS',
+      body: markdownTableLines(
+        ['Display', 'Settings'],
+        plotSettings
+          .toSorted((a, b) => a.displayName.localeCompare(b.displayName, 'en'))
+          .map(({ name, displayName, keys }) => [
+            `${displayName} (\`${name}\`)`,
+            keys.map(key => `\`${key}\``).join(', '),
+          ]),
       ),
-      label: path.relative(REPO_ROOT, SCHEMA_SITE_OUT),
-    },
-  ],
-  'run `pnpm autogen`',
-)
+    }),
+    EDIT_PLOT_GUIDE,
+  )
+  const MIGRATION_GUIDE = path.join(
+    REPO_ROOT,
+    'website/docs/config_guides/v4_config_migration.md',
+  )
+  const migrationGuide = formatMarkdown(
+    spliceGeneratedBlock({
+      path: MIGRATION_GUIDE,
+      marker: 'V4_CONFIG_MIGRATION',
+      body: [
+        '<!-- prettier-ignore -->',
+        ...markdownTableLines(
+          ['Type', 'v4.3.0 key', 'v5'],
+          migrationTableLines(migration),
+        ),
+      ],
+    }),
+    MIGRATION_GUIDE,
+  )
+  const manifest = [
+    '// Generated by scripts/generateConfigManifest.ts — do not edit by hand.',
+    '// Regenerate with `pnpm autogen` after changing any configSchema.ts.',
+    "import type { ConfigManifest } from './types.ts'",
+    '',
+    `export const configManifest: ConfigManifest = ${JSON.stringify(schema, null, 2)}`,
+    '',
+  ].join('\n')
 
-// Type groups only — `migratedDisplayKeys` is a lookup table, not a set of
-// registered types, and counting its keys reads as "2 migrated display keys".
-const TYPE_GROUPS = new Set([
-  'adapters',
-  'tracks',
-  'displays',
-  'textSearchAdapters',
-  'connections',
-  'views',
-])
-const counts = Object.entries(schema)
-  .filter(([group]) => TYPE_GROUPS.has(group))
-  .map(([group, types]) => `${Object.keys(types as object).length} ${group}`)
-  .join(', ')
-console.log(`${path.relative(REPO_ROOT, OUT)}: ${counts}`)
+  checkOrWriteAll(
+    [
+      { path: OUT, content: manifest, label: path.relative(REPO_ROOT, OUT) },
+      {
+        path: SCHEMA_OUT,
+        // A template literal rather than an object literal: the schema's `then`
+        // keys read as thenables to the linter, and V8 parses JSON faster than
+        // a literal of this size anyway.
+        content: [
+          '// Generated by scripts/generateConfigManifest.ts — do not edit by hand.',
+          '// Regenerate with `pnpm autogen` after changing any configSchema.ts.',
+          'export const configJsonSchema: Record<string, unknown> = JSON.parse(`',
+          JSON.stringify(jsonSchema, null, 2)
+            .replaceAll('\\', '\\\\')
+            .replaceAll('`', '\\`')
+            .replaceAll('${', '\\${'),
+          '`)',
+          '',
+        ].join('\n'),
+        label: path.relative(REPO_ROOT, SCHEMA_OUT),
+      },
+      {
+        path: DISPLAY_TABLE_OUT,
+        content: [
+          '// Generated by scripts/generateConfigManifest.ts — do not edit by hand.',
+          '// Regenerate with `pnpm autogen`.',
+          "import type { DisplayTable } from './displays.ts'",
+          '',
+          `export const displayTable: DisplayTable = ${JSON.stringify(displayTable, null, 2)}`,
+          '',
+        ].join('\n'),
+        label: path.relative(REPO_ROOT, DISPLAY_TABLE_OUT),
+      },
+      {
+        path: EDIT_PLOT_GUIDE,
+        content: editPlotGuide,
+        label: path.relative(REPO_ROOT, EDIT_PLOT_GUIDE),
+      },
+      {
+        path: MIGRATION_GUIDE,
+        content: migrationGuide,
+        label: path.relative(REPO_ROOT, MIGRATION_GUIDE),
+      },
+      {
+        path: SCHEMA_SITE_OUT,
+        content: formatMarkdown(
+          JSON.stringify(jsonSchema, null, 2),
+          SCHEMA_SITE_OUT,
+        ),
+        label: path.relative(REPO_ROOT, SCHEMA_SITE_OUT),
+      },
+    ],
+    'run `pnpm autogen`',
+  )
+
+  // Type groups only — `migratedDisplayKeys` is a lookup table, not a set of
+  // registered types, and counting its keys reads as "2 migrated display keys".
+  const TYPE_GROUPS = new Set([
+    'adapters',
+    'tracks',
+    'displays',
+    'textSearchAdapters',
+    'connections',
+    'views',
+  ])
+  const counts = Object.entries(schema)
+    .filter(([group]) => TYPE_GROUPS.has(group))
+    .map(([group, types]) => `${Object.keys(types as object).length} ${group}`)
+    .join(', ')
+  console.log(`${path.relative(REPO_ROOT, OUT)}: ${counts}`)
+}
+
+if (args.out === undefined) {
+  writeCoreArtifacts()
+} else {
+  writePluginManifest(args.out)
+}

@@ -66,12 +66,20 @@ between displays.
    betas included (Colin, 2026-10-27). Left: baseline
    `reExports.generated.json` and the exports map at the release candidate
    (`reference/PLUGIN_ABI_STABILITY.md`).
-3. **Plugin displays go unchecked.** `jbrowse validate` warns on each
-   plugin-registered type and checks none of its slots, so a plugin display
-   that respells a shared word (`facet`, `encoding`, `rows`) fails nowhere.
-   The graph plugin's `facet.domain` survived core's rename to `sort` that
-   way. Every warning `demos/` raises is one of these: `GraphTrack`,
-   `ArgTrack`, `ApolloPlugin`.
+3. **Plugin displays are checked only with a plugin manifest.**
+   `scripts/generateConfigManifest.ts --plugin <esm bundle> --out <file>`
+   loads a plugin's built bundle beside core, as the browser does, and
+   writes the types it adds with their slots and schema definitions;
+   `jbrowse validate --plugin-manifest <file>` then checks them as it checks
+   core's. On the graph plugin (2026-10-30) it found two things core's
+   warnings hid: `LinearGraphDisplay.facet` is `frozen`, so the old
+   `facet.domain` respelling passes unread, and `RgfaTabixAdapter`'s
+   `coarse.uri` and `coarse.format` are shorthand its normalizer applies to
+   the nested object, which no probe sees, so they report as unknown slots.
+   Left: UMD bundles and plugin urls (local ESM files only), a way for a
+   plugin's own CI to run the generator without a jbrowse-components
+   checkout, and the manifests themselves for the graph, ARG and Apollo
+   plugins.
 4. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
    holds them, each ruled in ADR-238, ADR-240 or the schema's own comment,
    or left by Colin (2026-10-30: the chord and matrix ramps and wiggle's key

@@ -1,8 +1,13 @@
 import { parseArgs } from 'node:util'
 
-import { printHelp, readConfigFile } from '../../utils.ts'
+import { printHelp, readConfigFile, readJsonFile } from '../../utils.ts'
+import { configManifest } from './configManifest.generated.ts'
+import { configJsonSchema } from './configSchema.generated.ts'
+import { withPluginManifests, withPluginSchemas } from './pluginManifest.ts'
+import { coreSchemaValidator, createSchemaValidator } from './schemaValidate.ts'
 import { validateConfig } from './validateConfig.ts'
 
+import type { PluginManifest } from './pluginManifest.ts'
 import type { Problem } from './types.ts'
 
 const description =
@@ -35,7 +40,13 @@ the author may not have meant. With --json each finding has the stable
 "rule" id of the rule that made it.
 
 Types registered by plugins are not known to this command, so they come through
-as warnings rather than errors.
+as warnings rather than errors. A plugin manifest (--plugin-manifest) lists the
+types one plugin registers and their slots, and a config's use of those is then
+checked as core's is. jbrowse-components' scripts/generateConfigManifest.ts
+writes one from the plugin's built ESM bundle:
+
+  node --experimental-strip-types scripts/generateConfigManifest.ts \\
+    --plugin dist/my-plugin.esm.js --out my-plugin.manifest.json
 
 The same checks are published as a JSON Schema at
 https://jbrowse.org/jb2/schema/v5/config.json: a "$schema" line naming it at
@@ -54,12 +65,21 @@ const examples = [
   '',
   '# machine-readable output',
   '$ jbrowse validate config.json --json',
+  '',
+  "# check a plugin's tracks and displays too",
+  '$ jbrowse validate config.json --plugin-manifest my-plugin.manifest.json',
 ]
 
 const options = {
   json: {
     type: 'boolean',
     description: 'Output the findings as JSON instead of text',
+  },
+  'plugin-manifest': {
+    type: 'string',
+    multiple: true,
+    description:
+      'A plugin manifest listing the types a plugin registers, whose slots are then checked (repeatable)',
   },
   quiet: {
     type: 'boolean',
@@ -94,7 +114,20 @@ export async function run(args?: string[]) {
   // readConfigFile, not readJsonFile: running from the wrong directory is the
   // most common way this fails, and it says which path it looked at.
   const config = await readConfigFile<unknown>(file)
-  const result = validateConfig(config)
+  const pluginManifests = await Promise.all(
+    (flags['plugin-manifest'] ?? []).map(manifest =>
+      readJsonFile<PluginManifest>(manifest),
+    ),
+  )
+  const result = validateConfig(
+    config,
+    withPluginManifests(configManifest, pluginManifests),
+    pluginManifests.length > 0
+      ? createSchemaValidator(
+          withPluginSchemas(configJsonSchema, pluginManifests),
+        )
+      : coreSchemaValidator,
+  )
 
   if (flags.json) {
     console.log(
