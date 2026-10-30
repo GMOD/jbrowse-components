@@ -8,6 +8,7 @@
 // `backingScale(canvasHeight)` on the CPU), so the edges land on its pixel
 // boundaries even where it departs from `getDpr()`.
 //! js-export: snappedRowTopPx, snappedRowBottomPx
+//! oracle-skip: snappedRowBottomPx — a floor step, so where the probe's arbitrary rows, heights and scales land the edge on a half device pixel float32 and float64 round to neighbouring pixels and part by exactly 1/dpr; snappedRows.test.ts referees the twin over real row heights and scales, that the rows tile on the grid and keep a device pixel
 module rowSnap;
 
 // The top of row `row` in a stack scrolled by `scrollTop`.
