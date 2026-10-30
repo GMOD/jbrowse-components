@@ -1,9 +1,14 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
-import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
+import {
+  dropVendoredPlugins,
+  pluginDescriptionString,
+  pluginUrl,
+} from '@jbrowse/core/pluginDefinitions'
 import { resolveStorePluginRefs } from '@jbrowse/core/util'
 
 import type {
   LoadedPlugin,
+  PluginLoadFailure,
   ReExportRegistryLoader,
 } from '@jbrowse/core/PluginLoader'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
@@ -77,4 +82,24 @@ export async function loadRuntimePlugins(
         .installGlobalReExports(window, reExports)
         .load(base ?? window.location.href)
     : []
+}
+
+/**
+ * Report each plugin a config named but that failed to load. The session opens
+ * without it, so anything the plugin provided is missing, and a track that
+ * needed it would otherwise fail later with a much less obvious message.
+ */
+export function notifyPluginLoadFailures(
+  session:
+    | { notifyError: (message: string, error: unknown) => void }
+    | undefined,
+  failures: readonly PluginLoadFailure[],
+) {
+  for (const { definition, error } of failures) {
+    console.error(error)
+    session?.notifyError(
+      `Failed to load ${pluginDescriptionString(definition)} from ${pluginUrl(definition)}. The session is open without it, so tracks or views that need it are unavailable.`,
+      error,
+    )
+  }
 }

@@ -5,12 +5,9 @@ import {
   preloadAppShell,
 } from '@jbrowse/app-core'
 import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
-import {
-  pluginDefinitionMetadata,
-  pluginDescriptionString,
-  pluginUrl,
-} from '@jbrowse/core/pluginDefinitions'
+import { pluginDefinitionMetadata } from '@jbrowse/core/pluginDefinitions'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
+import { notifyPluginLoadFailures } from '@jbrowse/product-core'
 
 import { applyDefaultSessionViewInit } from './applyDefaultSessionViewInit.ts'
 import corePlugins from './corePlugins.ts'
@@ -118,7 +115,8 @@ export async function createPluginManager(
   if (rootModel.session) {
     preloadAppShell(rootModel.session)
   }
-  notifyPluginLoadFailures(rootModel, model)
+  // after initSession: there is no session to notify on before it
+  notifyPluginLoadFailures(rootModel.session, model.pluginLoadFailures ?? [])
   notifyPermanentPluginSafeMode(rootModel)
   // Here rather than beside the PluginManager above, so the window the crash
   // marker covers includes `configure()` — where a plugin registers its menu
@@ -225,25 +223,6 @@ function notifyPermanentPluginSafeMode(rootModel: WebRootModel) {
       .join(' '),
     'warning',
   )
-}
-
-// A plugin a config named but that couldn't be loaded no longer fails the app
-// (PluginLoader.loadSettled), so it has to be said out loud here instead: the
-// session is open and usable, but anything that plugin provided — a view type, a
-// track type, an adapter — is missing, and a track that needed it will fail on
-// its own with a much less obvious message. Reported after initSession, since
-// there is no session to notify on before it.
-function notifyPluginLoadFailures(
-  rootModel: WebRootModel,
-  model: PluginManagerSource,
-) {
-  for (const { definition, error } of model.pluginLoadFailures ?? []) {
-    console.error(error)
-    rootModel.session?.notifyError(
-      `Failed to load ${pluginDescriptionString(definition)} from ${pluginUrl(definition)}. The session is open without it, so tracks or views that need it are unavailable.`,
-      error,
-    )
-  }
 }
 
 // Applies the single session the loader resolved. The loader already

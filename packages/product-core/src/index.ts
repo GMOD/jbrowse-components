@@ -112,7 +112,7 @@ export type {
 export { initializeWorker } from './rpcWorker.ts'
 export { toPluginLoadRecord } from './pluginInput.ts'
 export type { PluginInput } from './pluginInput.ts'
-export { loadRuntimePlugins } from './loadPlugins.ts'
+export { loadRuntimePlugins, notifyPluginLoadFailures } from './loadPlugins.ts'
 export type { LoadPluginsArgs } from './loadPlugins.ts'
 export { decodeSessionFromUrl, encodeSessionToUrl } from './sessionUrl.ts'
 export type { SessionSnapshot, SharedSessionSource } from './sessionUrl.ts'

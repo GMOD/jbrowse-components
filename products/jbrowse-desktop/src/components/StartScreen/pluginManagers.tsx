@@ -5,12 +5,11 @@ import {
   desktopVendoredPluginNames,
   dropVendoredPlugins,
   pluginDefinitionMetadata,
-  pluginDescriptionString,
-  pluginUrl,
   samePlugin,
 } from '@jbrowse/core/pluginDefinitions'
 import { resolveStorePluginRefs } from '@jbrowse/core/util'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
+import { notifyPluginLoadFailures } from '@jbrowse/product-core'
 
 import packageJSON from '../../../package.json' with { type: 'json' }
 import corePlugins from '../../corePlugins.ts'
@@ -328,13 +327,7 @@ async function buildSession(
     name: resolveSessionName(defaultSession),
   })
 
-  for (const { definition, error } of pluginLoadFailures) {
-    console.error(error)
-    rootModel.session?.notifyError(
-      `Failed to load ${pluginDescriptionString(definition)} from ${pluginUrl(definition)}. The session is open without it, so tracks or views that need it are unavailable.`,
-      error,
-    )
-  }
+  notifyPluginLoadFailures(rootModel.session, pluginLoadFailures)
   if (readError) {
     rootModel.session?.notifyError(globalPluginReadErrorMessage, readError)
   }
