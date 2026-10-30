@@ -96,6 +96,11 @@ resampling every column; Firefox snaps the box to the store. The box goes in
 Renderers still lay out against the extent, so at the far edge Canvas2D
 half-paints the last device px and the GPU spreads the extent over the whole
 store, a drift under half a device px that we accept.
+A box past its extent counts as scrollable overflow: a canvas ending at a scroll
+container's content edge needs an ancestor that clips. Track canvases have
+`contain: strict` and the view roots have `overflow: hidden`. The MAF sequence
+widget had neither, and below dpr 0.9 (browser zoom 80% and less) it gained 1 px
+of scroll, or a scrollbar on content that fits.
 
 ## Antialiasing ramps: how wide, and where the width comes from
 

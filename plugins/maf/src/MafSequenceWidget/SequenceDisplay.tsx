@@ -55,8 +55,12 @@ const useStyles = makeStyles()(theme => ({
     minWidth: 0,
     overflow: 'auto',
   },
+  // The canvas box can overshoot its CSS extent by up to half a device px
+  // (`syncCanvasSize`); at a dpr under 0.9 that grew the scroll range by 1 px,
+  // or showed a scrollbar on content that fits.
   sequenceInner: {
     position: 'relative',
+    overflow: 'clip',
   },
   hoverColumn: {
     position: 'absolute',
