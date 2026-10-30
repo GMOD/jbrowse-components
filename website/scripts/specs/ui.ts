@@ -1290,8 +1290,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
       { type: 'click', text: 'Highlights' },
       { type: 'click', text: 'Open highlight list' },
-      { type: 'waitForText', text: 'Add label...' },
-      { type: 'delay', ms: 1000 },
       { type: 'type', text: 'Add label...', value: 'my region' },
       { type: 'delay', ms: 1500 },
     ],
@@ -1357,7 +1355,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       // "click target not found".
       { type: 'waitForText', text: 'NCBI RefSeq w/ top-level feature details' },
       { type: 'click', text: 'NCBI RefSeq w/ top-level feature details' },
-      { type: 'delay', ms: 1500 },
+      { type: 'waitForAppSettled' },
       // target the input, not the floating label, so select-all + Backspace
       // empties it
       {
@@ -1443,8 +1441,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Plugin store' },
       { type: 'click', text: 'Plugin store' },
-      { type: 'waitForText', text: 'Installed plugins' },
-      { type: 'delay', ms: 1500 },
       { type: 'click', text: 'Tools' },
       { type: 'waitForText', text: 'Plugin store' },
     ],

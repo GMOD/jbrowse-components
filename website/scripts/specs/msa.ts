@@ -197,7 +197,6 @@ export const msaSpecs: ScreenshotSpec[] = [
           { type: 'click', selector: '[data-testid="view_menu"]' },
           { type: 'click', selector: '[role="menuitem"]::-p-text(Zoom)' },
           { type: 'click', text: 'Fit width' },
-          { type: 'delay', ms: 1000 },
           ...COLLAPSE_DOMAIN_KEY,
         ],
         // The domain key's last row is a scrollable list, not a clip.

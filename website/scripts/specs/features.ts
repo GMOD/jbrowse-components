@@ -14,15 +14,9 @@ import type {
   ScreenshotSpec,
 } from '../screenshot-spec-types.ts'
 
-// The delays cover the details pane's layout and the sequence fetch between the
-// click and the select mounting.
 const openFeatureSequence = (): ScreenshotAction[] => [
-  { type: 'waitForText', text: 'Show feature sequence' },
-  { type: 'delay', ms: 1000 },
   { type: 'click', text: 'Show feature sequence' },
-  { type: 'delay', ms: 2000 },
   { type: 'click', selector: '[aria-label="Sequence type"]' },
-  { type: 'delay', ms: 1000 },
 ]
 
 // A PTEN-only slice of the NA12878 direct-RNA BAM: the whole-genome BAM never
