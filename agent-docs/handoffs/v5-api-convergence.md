@@ -101,8 +101,8 @@ once per display that embeds it, so read the trend, not the size.
 - The v5 changelog draft
   (`website/release_announcement_drafts/v5.0.0.changelog.md`, which
   `release.ts` prepends to `CHANGELOG.md`) reaches main. Sessions edit it as
-  features land, but its `changelog-through` marker, which
-  `check-release-drafts.ts` counts from, stayed at 2026-09-15, so the gate is
-  a sweep for what never got a line, then the marker moved. The migration
+  features land; a sweep at the release candidate adds what never got a line
+  and moves its `changelog-through` marker, which `check-release-drafts.ts`
+  counts from (swept through c329ae816d on 2026-10-30). The migration
   table it can point at is generated
   (`website/docs/config_guides/v4_config_migration.md`).
