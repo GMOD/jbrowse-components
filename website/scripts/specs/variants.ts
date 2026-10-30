@@ -129,7 +129,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', text: 'C -> T' },
       { type: 'waitForText', text: 'HG00096' },
-      { type: 'delay', ms: 1500 },
     ],
     annotations: [
       { type: 'box', anchor: { text: 'SAMPLES' } },

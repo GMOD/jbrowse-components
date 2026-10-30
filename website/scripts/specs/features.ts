@@ -159,7 +159,6 @@ export const featuresSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 500 },
       { type: 'click', text: 'About track' },
       { type: 'waitForText', text: 'AlignmentsTrack' },
-      { type: 'delay', ms: 1500 },
     ],
   },
 

@@ -2400,7 +2400,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
         type: 'waitForSelector',
         selector: '[data-testid="quick-start-rows"]',
       },
-      { type: 'delay', ms: 1000 },
     ],
     // Pills and arrow tails stay raw together in the form's empty right half;
     // anchoring a tail alone pulls the arrow off its pill.
@@ -2634,8 +2633,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', selector: '[aria-label="Synteny display settings"]' },
       { type: 'waitForText', text: 'CIGAR indels' },
-      // swiftshader rasterizes the menu's layer a frame or two late
-      { type: 'delay', ms: 1000 },
     ],
     annotations: [
       {
@@ -3009,7 +3006,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', text: 'Manual' },
       { type: 'waitForText', text: 'Select assemblies for dotplot view' },
-      { type: 'delay', ms: 1000 },
     ],
   },
 
@@ -3142,7 +3138,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', selector: '[aria-label*="synteny warning"]' },
       { type: 'waitForText', text: 'Synteny warnings' },
-      { type: 'delay', ms: 1500 },
     ],
   },
 
@@ -3174,7 +3169,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Quick start' },
           { type: 'click', text: 'Manual' },
           { type: 'waitForText', text: 'Select assemblies for dotplot view' },
-          { type: 'delay', ms: 1500 },
         ],
       },
     ],
@@ -3203,7 +3197,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
       // one diagonal block, peach Pp01 vs grape chr1
       { type: 'drag', from: { x: 126, y: 259 }, to: { x: 224, y: 311 } },
       { type: 'waitForText', text: 'Linear synteny view' },
-      { type: 'delay', ms: 1000 },
     ],
     // PARK_CURSOR would drop the rubberband and its menu along with the readout
     tooltip: 'hide',

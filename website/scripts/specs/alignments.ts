@@ -475,7 +475,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       // the tag box, then Tab to its value box
       { type: 'type', selector: 'input[maxlength="2"]', value: 'HP' },
       { type: 'press', key: 'Tab' },
-      { type: 'delay', ms: 1000 },
     ],
   },
 

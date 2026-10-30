@@ -614,7 +614,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             selector: '[data-testid="feature-name-r_12_1"]',
           },
           { type: 'waitForText', text: SPLIT_VIEW_MENU_LABEL },
-          { type: 'delay', ms: 1000 },
         ],
         annotations: [
           FLOW_NUMBER(1),
@@ -625,7 +624,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: SPLIT_VIEW_MENU_LABEL },
           { type: 'waitForText', text: 'Window size (bp)' },
-          { type: 'delay', ms: 1000 },
         ],
         annotations: [
           FLOW_NUMBER(2),

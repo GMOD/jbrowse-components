@@ -151,7 +151,6 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
         selector: '#header-search-listbox a',
         timeout: 60000,
       },
-      { type: 'delay', ms: 1000 },
     ],
   },
 
@@ -188,7 +187,6 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
             clear: true,
           },
           { type: 'waitForText', text: 'TP53' },
-          { type: 'delay', ms: 1200 },
         ],
       },
       {
@@ -462,7 +460,6 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'About track' },
           { type: 'waitForText', text: 'bigWigLocation' },
-          { type: 'delay', ms: 1200 },
         ],
       },
     ],

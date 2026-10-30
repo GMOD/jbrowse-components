@@ -113,7 +113,6 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
           '[data-testid="structure-row"][data-label="1YCR"] [data-testid="protein-mapped-chain"] [role="combobox"]',
       },
       { type: 'waitForText', text: 'Chain A (109 aa)' },
-      { type: 'delay', ms: 1000 },
     ],
     tooltip: 'hide',
     annotations: [

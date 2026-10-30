@@ -405,7 +405,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         clear: true,
       },
       { type: 'waitForText', text: 'BRCA1' },
-      { type: 'delay', ms: 1500 },
     ],
   },
 
@@ -461,7 +460,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
       { type: 'waitForText', text: 'Zoom to region' },
-      { type: 'delay', ms: 1000 },
     ],
     annotations: [{ type: 'box', anchor: { text: 'Zoom to region' } }],
   },
@@ -817,7 +815,6 @@ export const uiSpecs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', selector: '[data-testid="feature-name-89844_3"]' },
       { type: 'waitForText', text: SPLIT_VIEW_LINK_LABEL },
-      { type: 'delay', ms: 1500 },
     ],
     annotations: [
       { type: 'box', anchor: { text: SPLIT_VIEW_LINK_LABEL } },
@@ -1171,7 +1168,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'Settings' },
           { type: 'waitForText', text: 'Edit as JSON...' },
-          { type: 'delay', ms: 1000 },
         ],
         annotations: [
           {
@@ -1221,10 +1217,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        actions: [
-          { type: 'click', text: 'left' },
-          { type: 'delay', ms: 1500 },
-        ],
+        actions: [{ type: 'click', text: 'left' }],
         annotations: [
           {
             type: 'box',
@@ -1273,10 +1266,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         annotations: [{ type: 'box', anchor: { text: 'Highlight region' } }],
       },
       {
-        actions: [
-          { type: 'click', text: 'Highlight region' },
-          { type: 'delay', ms: 1500 },
-        ],
+        actions: [{ type: 'click', text: 'Highlight region' }],
       },
     ],
   },
@@ -1527,7 +1517,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       // the ViewLauncher button; the menu group is `Launch`
       { type: 'click', text: 'Launch view' },
       { type: 'waitForText', text: 'Select assembly to view' },
-      { type: 'delay', ms: 1500 },
     ],
   },
 
@@ -1577,7 +1566,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
       ...menuCascade(['Collapse...', 'Collapse top-level categories']),
       { type: 'click', text: 'Collapse top-level categories' },
-      { type: 'delay', ms: 1000 },
     ],
   },
 
