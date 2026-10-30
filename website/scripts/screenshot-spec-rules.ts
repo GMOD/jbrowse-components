@@ -288,12 +288,12 @@ export function countRawCallouts(list: ScreenshotSpec[]) {
 // A `delay` of a second or more is nearly always a wait on app work, which
 // `waitForAppSettled` ends by asking the app instead of guessing. Converting
 // one needs `probe-app-settled.ts` first, so they go as figures are touched.
-// One ending an action list on an open menu or dialog is likely deletable, since
-// the frame gate's 1 s settle hold outlasts any MUI transition; shoot it against
-// a baseline first. Mol* camera resets and hover tooltips stay: the app never
-// sees them.
+// None ends an action list on an open menu or dialog: the frame gate's 1 s
+// settle hold outlasts any MUI transition (25 such went on 2026-10-30, every
+// figure byte-identical). Mol* camera resets and hover tooltips stay: the app
+// never sees them.
 export const LONG_DELAY_MS = 1000
-export const LONG_DELAY_BASELINE = 85
+export const LONG_DELAY_BASELINE = 66
 
 export function countLongDelays(list: ScreenshotSpec[]) {
   const found = list.flatMap(spec =>
