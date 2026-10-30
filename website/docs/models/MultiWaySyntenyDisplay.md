@@ -61,7 +61,9 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 | <span id="volatile-lanedragpx">**laneDragPx**</span><br><code>ReadonlyMap&lt;string, number&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>24 inherited volatiles from 7 models</summary>
+<summary>25 inherited volatiles from 8 models</summary>
+
+From [ContextMenuMixin](../contextmenumixin): <span id="volatile-contextmenuinfo">[`contextMenuInfo`](../contextmenumixin#volatile-contextmenuinfo)</span>
 
 From [LodTierInfoMixin](../lodtierinfomixin): <span id="volatile-adapterheaderread">[`adapterHeaderRead`](../lodtierinfomixin#volatile-adapterheaderread)</span>
 
@@ -144,13 +146,15 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-hiddenlanes">**hiddenLanes**</span><br><code>readonly string[]</code> |  |
 | <span id="getter-fetchlaneselection">**fetchLaneSelection**</span><br><code>string[] &#124; undefined</code> | undefined unless the adapter declares its lanes, and lists each held genome under every name the session knows it by |
 | <span id="getter-anchorassembly">**anchorAssembly**</span><br><code><a href="../assembly">Assembly</a> &#124; undefined</code> |  |
+| <span id="getter-anchorcanon">**anchorCanon**</span><br><code>(refName: string) =&gt; string</code> | the anchor assembly's canonical spelling of a refName |
 | <span id="getter-anchorlocstring">**anchorLocString**</span><br><code>string</code> |  |
 | <span id="getter-declaredlanelabels">**declaredLaneLabels**</span><br><code>Map&lt;string, string&gt;</code> | keyed by `laneKey` |
 | <span id="getter-rowlabels">**rowLabels**</span><br><code>Map&lt;string, string&gt;</code> | `rows.labels`, keyed by `laneKey` |
 | <span id="getter-laneuniverse">**laneUniverse**</span><br><code>LaneChoice[]</code> | the anchor is never a lane |
 | <span id="getter-rowassemblies">**rowAssemblies**</span><br><code>string[]</code> | a paralogy mate on the anchor assembly draws on its axis, not as a row |
 | <span id="getter-pinsinforce">**pinsInForce**</span><br><code>LanePin[]</code> | the pins that hold under the anchor, each naming its lane as `rowAssemblies` spells it |
-| <span id="getter-lanestructureorder">**laneStructureOrder**</span><br><code>string[]</code> | the drawn lanes chained by their deletions and insertions against the anchor, for "Order lanes by structure"; empty for a gene table |
+| <span id="getter-structurelanekeys">**structureLaneKeys**</span><br><code>string[]</code> | every fetched lane's key, chained by its deletions and insertions against the anchor |
+| <span id="getter-lanestructureorder">**laneStructureOrder**</span><br><code>string[]</code> | the drawn lanes in `structureLaneKeys` order, for "Order lanes by structure"; empty for a gene table |
 | <span id="getter-rowoflane">**rowOfLane**</span><br><code>ReadonlyMap&lt;string, string&gt;</code> | each drawn lane's row name by its canonical name, for data keyed by the records' spelling of a lane |
 | <span id="getter-lanestodescribe">**lanesToDescribe**</span><br><code>string[]</code> |  |
 | <span id="getter-laneassemblyconfs">**laneAssemblyConfs**</span><br><code>Map&lt;string, Record&lt;string, unknown&gt;&gt;</code> |  |
@@ -189,6 +193,8 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-laneheaderrows">**laneHeaderRows**</span><br><code>LaneHeaderRow[]</code> |  |
 | <span id="getter-pairlinks">**pairLinks**</span><br><code>ReadonlyMap&lt;string, LaneLinks&gt;</code> | the alignments the source answered for each adjacent mate-lane pair, keyed `upper\|lower`; a pair it has not answered draws nothing |
 | <span id="getter-loadinggutterys">**loadingGutterYs**</span><br><code>number[]</code> | the centre, in stack px, of each gutter whose lane pair was asked for and has not landed |
+| <span id="getter-lanefetcherrors">**laneFetchErrors**</span><br><code>ReadonlyMap&lt;string, unknown&gt;</code> | the error each lane's gene, group or layer fetch failed with, by lane |
+| <span id="getter-failedgutters">**failedGutters**</span><br><code>{ y: number; error: unknown; }[]</code> | the centre, in stack px, of each gutter whose lane pair failed to load, with the error |
 | <span id="getter-unheldgutters">**unheldGutters**</span><br><code>{ y: number; labels: string[]; }[]</code> | the centre, in stack px, of each gutter left empty because a lane's genome is not in the session and no plugin described it, with those lanes' labels |
 | <span id="getter-ribbongeometry">**ribbonGeometry**</span><br><code>RibbonGeometry</code> | in the stack's own px |
 | <span id="getter-tickgeometry">**tickGeometry**</span><br><code>TickGeometry</code> |  |
@@ -223,6 +229,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-rendercells">**renderCells**</span><br><code>ReadonlyMap&lt;number, MultiWayCell&gt;</code> | keyed by `sharedBackendKey` |
 | <span id="getter-renderlayers">**renderLayers**</span><br><code>ReadonlyMap&lt;number, MultiWayLayer&gt;</code> | back to front, each outline immediately over the gutter it traces |
 | <span id="getter-ribbonregions">**ribbonRegions**</span><br><code>ReadonlyMap&lt;number, SyntenyInstanceData&gt;</code> | in draw order |
+| <span id="getter-ribbonlayerrows">**ribbonLayerRows**</span><br><code>ReadonlyMap&lt;number, readonly [number, number]&gt;</code> | the upper and lower row of each ribbon layer, keyed by `sharedBackendKey` |
 | <span id="getter-ribbonrecords">**ribbonRecords**</span><br><code>ReadonlyMap&lt;number, ReadonlyMap&lt;number, Feature&gt;&gt;</code> | `ribbonGeometry.records` keyed by `sharedBackendKey` |
 | <span id="getter-renderstate">**renderState**</span><br><code>MultiWayRenderState</code> |  |
 | <span id="getter-renderblocks">**renderBlocks**</span><br><code>RenderBlock[]</code> |  |
@@ -276,12 +283,15 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-anchorabsxat">**anchorAbsXAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(bpPerPx: number) =&gt; Map&lt;string, { coord: AnchorCoord; x: numbe…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(bpPerPx: number) =&gt; Map&lt;string, { coord: AnchorCoord; x: number; }&gt;</code></pre></dialog></span> | each group's viewport-cut centre, in view px at `bpPerPx` before the scroll offset |
 | <span id="method-laneframeof">**laneFrameOf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(decision: LaneDecision, assemblyName: string) =&gt; RowFrame &#124; un…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(decision: LaneDecision, assemblyName: string) =&gt; RowFrame &#124; undefined</code></pre></dialog></span> | undefined once the pivot is off the displayed regions |
 | <span id="method-lanedecisionsat">**laneDecisionsAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>({ originPx, bpPerPx, previous, frozen, }: { originPx: number;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>({ originPx, bpPerPx, previous, frozen, }: { originPx: number; bpPerPx: number; previous: ReadonlyMap&lt;string, LaneDecision &#124; undefined&gt;; frozen: ReadonlyMap&lt;string, LaneDecision&gt;; }) =&gt; Map&lt;string, LaneDecision &#124; undefined&gt;</code></pre></dialog></span> | for the viewport at `originPx` and `bpPerPx`: which group is the pivot and what the hold test counts are judged in it. A lane in `frozen` keeps its frozen decision |
+| <span id="method-shownchangesof">**shownChangesOf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(lane: Pick&lt;Lane, "assemblyName" &#124; "canon" &#124; "frame"&gt;) =&gt; LaneC…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(lane: Pick&lt;Lane, "assemblyName" &#124; "canon" &#124; "frame"&gt;) =&gt; LaneChange[]</code></pre></dialog></span> | the changes a lane's header chip names, largest first |
+| <span id="method-guttery">**gutterY**</span><br><code>(index: number) =&gt; number &#124; undefined</code> | the centre, in stack px, of the gutter under the `index`th lane pair |
 | <span id="method-bandcellon">**bandCellOn**</span><br><code>(page: string) =&gt; MultiWayCell</code> |  |
 | <span id="method-lanegenelabels">**laneGeneLabels**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fontFamily: string &#124; undefined, pinnedGroups?: ReadonlySet&lt;str…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fontFamily: string &#124; undefined, pinnedGroups?: ReadonlySet&lt;string&gt;, width?: number) =&gt; PlacedLaneLabel[]</code></pre></dialog></span> | placed in the stack's px |
 | <span id="method-coloredlayersof">**coloredLayersOf**</span><br><code>(held: HeldLaneLayer) =&gt; EncodedChannels[]</code> | a held payload's layers, each colored as its mark declares |
 | <span id="method-pickribbonat">**pickRibbonAt**</span><br><code>(x: number, y: number) =&gt; SyntenyPickResult &#124; undefined</code> | `x` and `y` are container-relative; the topmost ribbon wins |
 | <span id="method-slidablelaneat">**slidableLaneAt**</span><br><code>(y: number) =&gt; string &#124; undefined</code> | `y` is container-relative; undefined unless the lanes are frozen |
 | <span id="method-hittest">**hitTest**</span><br><code>(x: number, y: number) =&gt; HoverTarget &#124; undefined</code> | `x` and `y` are container-relative |
+| <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
@@ -310,6 +320,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setlanelayerdata">**setLaneLayerData**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fetched: ReadonlyMap&lt;string, HeldLaneLayer&gt;, specs: LaneFetchS…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fetched: ReadonlyMap&lt;string, HeldLaneLayer&gt;, specs: LaneFetchSpec[], anchor: string) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-setlanelinks">**setLaneLinks**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fetched: ReadonlyMap&lt;string, HeldLaneLinks&gt;, specs: LaneFetchS…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fetched: ReadonlyMap&lt;string, HeldLaneLinks&gt;, specs: LaneFetchSpec[], anchor: string) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-setlanegroups">**setLaneGroups**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fetched: ReadonlyMap&lt;string, HeldLaneGroups&gt;, specs: LaneFetch…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fetched: ReadonlyMap&lt;string, HeldLaneGroups&gt;, specs: LaneFetchSpec[], anchor: string) =&gt; void</code></pre></dialog></span> |  |
+| <span id="action-retryfailedlanes">**retryFailedLanes**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setselectedlanes">**setSelectedLanes**</span><br><code>(names: readonly string[] &#124; undefined) =&gt; void</code> | writes `rows.kept`; undefined restores `configuredLanes`, or every lane |
 | <span id="action-setribboncolorfield">**setRibbonColorField**</span><br><code>(field: string &#124; undefined) =&gt; void</code> |  |
 | <span id="action-setdomain">**setDomain**</span><br><code>(domain: string[]) =&gt; void</code> | takes the whole pinned order, empty meaning densest-first; merge a partial one with `mergeDomain` first |
@@ -344,6 +355,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-opensolidcolordialog">**openSolidColorDialog**</span><br><code>() =&gt; void</code> | the picker the gene Color by's Solid color... opens |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> |  |
 | <span id="action-openinnewview">**openInNewView**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  |
+| <span id="action-zoomto">**zoomTo**</span><br><code>(loc: string) =&gt; void</code> |  |
 | <span id="action-reanchor">**reanchor**</span><br><code>(assemblyName: string, loc: string) =&gt; void</code> |  |
 | <span id="action-sethovertarget">**setHoverTarget**</span><br><code>(target: HoverTarget &#124; undefined) =&gt; void</code> |  |
 | <span id="action-startrenderingbackend">**startRenderingBackend**</span><br><code>(backend: MultiWayRenderingBackend) =&gt; void</code> |  |
@@ -353,7 +365,9 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactNo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactNode&gt;</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>39 inherited actions from 10 models</summary>
+<summary>41 inherited actions from 11 models</summary>
+
+From [ContextMenuMixin](../contextmenumixin): <span id="action-opencontextmenu">[`openContextMenu`](../contextmenumixin#action-opencontextmenu)</span>, <span id="action-closecontextmenu">[`closeContextMenu`](../contextmenumixin#action-closecontextmenu)</span>
 
 From [LodTierInfoMixin](../lodtierinfomixin): <span id="action-setadapterheader">[`setAdapterHeader`](../lodtierinfomixin#action-setadapterheader)</span>
 

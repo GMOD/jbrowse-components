@@ -196,7 +196,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-facet">**facet**</span><br><code>Facet &#124; undefined</code> | The `facet` object as written, undefined while ungrouped. The worker partitions one fetch into a section per value of its field. |
 | <span id="getter-rpcdatamap">**rpcDataMap**</span><br><code>ReadonlyMap&lt;number, GroupedAlignmentsResult&gt;</code> | Region index → grouped worker result. Ungrouped fetches store one group (key ''). |
 | <span id="getter-view">**view**</span><br><code><a href="../lineargenomeview">LinearGenomeView</a></code> |  |
-| <span id="getter-showlinkedreadlines">**showLinkedReadLines**</span><br><code>boolean</code> | Whether the straight-line pass connects normal read pairs. Chain layout has a separate pass for them. Neither pass reaches across regions; that is `bezierArcScope`'s `crossRegion`. |
+| <span id="getter-showlinkedreadlines">**showLinkedReadLines**</span><br><code>boolean</code> | Whether the straight-line pass connects normal read pairs, in the pair's color, over chain layout's connecting line too. Neither line reaches across regions; that is `bezierArcScope`'s `crossRegion`. |
 | <span id="getter-bezierarcscope">**bezierArcScope**</span><br><code>BezierArcScope</code> | What the SVG connection overlay draws — see `BezierArcScope`. Chain mode claims `crossRegion` even with the curved connectors off: only that pass joins a chain's ends across displayed regions. |
 | <span id="getter-featurewidgettype">**featureWidgetType**</span><br><code>{ type: string; id: string; }</code> |  |
 | <span id="getter-selectedfeatureid">**selectedFeatureId**</span><br><code>string &#124; undefined</code> |  |

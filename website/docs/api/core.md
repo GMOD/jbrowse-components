@@ -1666,13 +1666,14 @@ value files under the label of the bin it falls in, a feature with no value
 under `''`, and text that is no number under NOT_A_NUMBER_LABEL.
 The bins are the whole domain, so a key lists each one. `labels` names the
 bins in a key, one each from the lowest, where a config spells them for a
-reader; a bin's key stays its interval.
+reader; a bin's key stays its interval. `descending` orders the domain from
+the highest bin, the no-value and not-a-number rows staying last.
 
 ```js
 import { thresholdField } from '@jbrowse/core/util/thresholdScale'
 
 // type signature
-(field: string, { domain, range, labels: names }?: { domain?: readonly string[]; range?: readonly string[]; labels?: readonly string[]; }) => CategoricalField
+(field: string, { domain, range, labels: names, descending }?: { domain?: readonly string[]; range?: readonly string[]; labels?: readonly string[]; descending?: boolean; }) => CategoricalField
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/thresholdScale.ts)

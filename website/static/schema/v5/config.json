@@ -4920,6 +4920,15 @@
           "else": {
             "$ref": "#/$defs/PlainString"
           }
+        },
+        "descending": {
+          "description": "threshold key lists the highest interval first; unset follows the field's preset, else the lowest first.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       },
       "patternProperties": {
@@ -7676,6 +7685,15 @@
           "else": {
             "$ref": "#/$defs/PlainString"
           }
+        },
+        "descending": {
+          "description": "threshold key lists the highest interval first; unset follows the field's preset, else the lowest first.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       },
       "patternProperties": {
@@ -8805,6 +8823,15 @@
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "descending": {
+          "description": "threshold key lists the highest interval first; unset follows the field's preset, else the lowest first.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
           }
         }
       },
@@ -12050,6 +12077,15 @@
           "else": {
             "$ref": "#/$defs/PlainString"
           }
+        },
+        "descending": {
+          "description": "threshold key lists the highest interval first; unset follows the field's preset, else the lowest first.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       },
       "patternProperties": {
@@ -12566,15 +12602,6 @@
       "type": "object",
       "x-closed": true,
       "properties": {
-        "type": {
-          "description": "linear, the one scale; unset is linear.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "const": "linear"
-          }
-        },
         "scheme": {
           "description": "the named ramp the statistic runs across; unset is the field's own, reds for r2 and blues for dprime.",
           "if": {
@@ -13743,10 +13770,6 @@
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderers": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "extent": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -16653,9 +16676,6 @@
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
             },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
-            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -18400,9 +18420,6 @@
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
             },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
-            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -18756,9 +18773,6 @@
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
             },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
-            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -19027,9 +19041,6 @@
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
-            },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"

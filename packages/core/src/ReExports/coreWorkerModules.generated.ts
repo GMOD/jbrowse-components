@@ -310,7 +310,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/ui/AddCustomPluginDialog': uiStub,
   '@jbrowse/core/ui/AddGenomePane': uiStub,
   '@jbrowse/core/ui/AppLogo': m70.default,
-  '@jbrowse/core/ui/AppReadyMarker': m71.default,
+  '@jbrowse/core/ui/AppReadyMarker': { ...m71, __esModule: true },
   '@jbrowse/core/ui/BaseTooltip': uiStub,
   '@jbrowse/core/ui/buildExtraTrackMenuItems': m73,
   '@jbrowse/core/ui/CascadingMenuButton': uiStub,

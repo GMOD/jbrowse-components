@@ -5060,6 +5060,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/PlainString"
           }
+        },
+        "descending": {
+          "description": "threshold key lists the highest interval first; unset follows the field's preset, else the lowest first.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       },
       "patternProperties": {
@@ -7903,6 +7912,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/PlainString"
           }
+        },
+        "descending": {
+          "description": "threshold key lists the highest interval first; unset follows the field's preset, else the lowest first.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       },
       "patternProperties": {
@@ -9058,6 +9076,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/PlainString"
+          }
+        },
+        "descending": {
+          "description": "threshold key lists the highest interval first; unset follows the field's preset, else the lowest first.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
           }
         }
       },
@@ -12425,6 +12452,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "else": {
             "$ref": "#/$defs/PlainString"
           }
+        },
+        "descending": {
+          "description": "threshold key lists the highest interval first; unset follows the field's preset, else the lowest first.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
         }
       },
       "patternProperties": {
@@ -12956,15 +12992,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "x-closed": true,
       "properties": {
-        "type": {
-          "description": "linear, the one scale; unset is linear.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "const": "linear"
-          }
-        },
         "scheme": {
           "description": "the named ramp the statistic runs across; unset is the field's own, reds for r2 and blues for dprime.",
           "if": {
@@ -14194,10 +14221,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "renderers": {
-          "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
-        },
-        "extent": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -17175,9 +17198,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
             },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
-            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -18975,9 +18995,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
             },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
-            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -19342,9 +19359,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
             },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
-            },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"
             },
@@ -19623,9 +19637,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "renderers": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/renderers"
-            },
-            "extent": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/extent"
             },
             "defaultRendering": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/defaultRendering"

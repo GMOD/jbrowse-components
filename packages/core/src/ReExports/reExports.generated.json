@@ -1596,7 +1596,8 @@
     "@jbrowse/core/ui/AppReadyMarker": {
       "package": "@jbrowse/core",
       "names": [
-        "default"
+        "default",
+        "sessionLoading"
       ],
       "worker": "real"
     },
@@ -5238,6 +5239,7 @@
         "CappedPath",
         "MAX_CANVAS_DIM_PX",
         "MAX_DPR",
+        "backingScale",
         "bpAtPx",
         "bpAtPxExact",
         "bpProjection",

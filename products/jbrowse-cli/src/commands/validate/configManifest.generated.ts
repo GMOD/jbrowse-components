@@ -3315,6 +3315,10 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "title",
                       "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "descending",
+                      "type": "(boolean | undefined)"
                     }
                   ],
                   "schema": "FeatureColorLegend",
@@ -4624,6 +4628,10 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "title",
                       "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "descending",
+                      "type": "(boolean | undefined)"
                     }
                   ],
                   "schema": "ChordColorLegend",
@@ -5700,6 +5708,10 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "title",
                       "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "descending",
+                      "type": "(boolean | undefined)"
                     }
                   ],
                   "schema": "MultiWayGeneColorLegend",
@@ -6840,6 +6852,10 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "title",
                       "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "descending",
+                      "type": "(boolean | undefined)"
                     }
                   ],
                   "schema": "FeatureColorLegend",
@@ -7244,6 +7260,10 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "title",
                       "type": "(string | undefined)"
+                    },
+                    {
+                      "name": "descending",
+                      "type": "(boolean | undefined)"
                     }
                   ],
                   "schema": "VariantCellColorLegend",
@@ -7433,10 +7453,6 @@ export const configManifest: ConfigManifest = {
                   "name": "scale",
                   "type": "LDColorScaleConfigurationSchema",
                   "subSlots": [
-                    {
-                      "name": "type",
-                      "type": "(LDColorScaleType | undefined)"
-                    },
                     {
                       "name": "scheme",
                       "type": "(ColorScheme | undefined)"
@@ -7996,7 +8012,6 @@ export const configManifest: ConfigManifest = {
         "numStdDev",
         "inverted",
         "renderers",
-        "extent",
         "defaultRendering"
       ],
       "droppedKeys": [

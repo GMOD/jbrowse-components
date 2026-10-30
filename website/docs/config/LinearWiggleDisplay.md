@@ -127,5 +127,4 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `numStdDev` | ignored |
 | `inverted` | ignored |
 | `renderers` | moved into a current slot |
-| `extent` | moved into a current slot |
 | `defaultRendering` | moved into a current slot |

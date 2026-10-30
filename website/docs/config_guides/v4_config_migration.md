@@ -152,7 +152,6 @@ a file, and fails on a key it does not know.
 | `LinearWiggleDisplay` | `autoscale` | `encoding.y.scale.fenceQuantile` |
 |  | `defaultRendering` | `mark.interpolate`, `mark.type` |
 |  | `displayCrossHatches` | `encoding.y.axis.grid` |
-|  | `extent` | `mark.extent` |
 |  | `maxScore` | `encoding.y.scale.domainMax` |
 |  | `minScore` | `encoding.y.scale.domainMin` |
 |  | `renderers` | `encoding.color.value`, `encoding.y.field`, `mark.extent` |
