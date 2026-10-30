@@ -99,6 +99,42 @@ adds it, and the config below is the one to adapt for your own graph:
 }
 ```
 
+## Where each haplotype's genes come from {#haplotype-genes}
+
+JBrowse draws each lane, and each bar under **Walk rows**, with the genes of
+that haplotype's own assembly, at its own coordinates. It does not lift GRCh38's
+genes across the graph.
+
+- **The source:** HPRC annotated each release 2 assembly with CAT (the
+  Comparative Annotation Toolkit), which projects GENCODE's GRCh38 genes onto
+  it, in the [CAT index](#the-data) above.
+- **What we host:** one gene model per named gene for each haplotype, as
+  `https://jbrowse.org/pangenome/hprc-grch38/genes/<sample>.<haplotype>.genes.bed.gz`.
+  A haplotype keeps about 43,500 of CAT's 83,000 genes:
+  - Each model is the projection of the gene's Ensembl canonical transcript.
+  - A gene with no symbol is dropped, and so is one spanning over 5 Mb.
+  - Where CAT projected two paralogs onto one locus, such as _GSTM1_ onto
+    _GSTM2_, we keep the gene whose GRCh38 span the haplotype's walk crosses
+    there, in the -f5s walk file the lanes read.
+  - CAT misses genes that only GRCh38's alternate contigs hold. We splice
+    GENCODE's models of _GSTT1_, _LILRA3_ and the _HLA-DRB_ genes onto each
+    haplotype's assembly instead, where its walk crosses them.
+  - [README.txt](https://jbrowse.org/pangenome/hprc-grch38/genes/README.txt)
+    beside the files gives every rule and what CAT still misses.
+- **How a lane finds them:** each haplotype is an assembly, such as `HG00097.1`
+  aliased `HG00097#1`, holding one track, **CAT genes (HG00097 haplotype 1, HPRC
+  release 2)**. JBrowse draws that track in the haplotype's lane, and for a
+  walk-row bar reads it over the bar's span on the haplotype's contig and boxes
+  each gene where it falls along the bar.
+- **Reading them:**
+  - A gene missing from a lane is missing from that haplotype's annotation,
+    through a deletion or a copy CAT did not project.
+  - CAT names each copy of a duplicated gene after the GRCh38 copy it projected,
+    so HG00232.1, with seven _AMY1_ copies, reads _AMY1C_ five times. The number
+    of boxes gives the copy number.
+  - HG002's two haplotypes have no CAT annotation, so their lanes and bars draw
+    no genes.
+
 ## CFH: haplotypes missing two genes
 
 Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) and click the
@@ -155,7 +191,9 @@ limits of the graph and the VCF behind them.
 - **A haplotype the graph does not align has no lane.**
 - **A lane can be empty and correct.** Where a haplotype's deletion is longer
   than the window, the graph has no walk for it there and the launch opens no
-  row.
+  lane. **Display types → Graph** with **Walk rows** draws such a haplotype as a
+  deletion row, from the -f5s walk file's skip rows, which gfa-to-tabix writes
+  where a deletion covers a whole 64 kb chunk of the file, up to 2 Mb.
 - **A lane can stop partway**, at the end of the graph's alignment of that
   haplotype; its sequence can run on past it.
 - **One lane stands for many haplotypes.** The page picks one haplotype per

@@ -434,7 +434,10 @@ structure:
 HG00133.1 has GRCh38's three _AMY1_ copies and its length, and its bar still
 shows a long purple stretch, because the graph routes copies of a duplication
 through nodes off GRCh38's path. Count the _AMY1_ boxes on each bar to read copy
-number.
+number. Each bar's boxes are that haplotype's own CAT genes. CAT names each copy
+after the GRCh38 copy it projected, so one name can label several boxes.
+[Where each haplotype's genes come from](/docs/tutorials/pangenome_hprc_haplotypes#haplotype-genes)
+says how JBrowse reads a bar's genes.
 
 Yilmaz et al. (2024) name each structure by its _AMY1_ count:
 

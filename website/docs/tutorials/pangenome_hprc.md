@@ -202,8 +202,9 @@ under a display name, with the graph's name as an alias:
 
 Right-click the allele and take **Open in NA20809.2**. A second linear view
 opens below the first, on that haplotype's chromosome 6, framed on the allele
-with its CAT (Comparative Annotation Toolkit) gene annotation. Zoom out a few
-steps.
+with its CAT (Comparative Annotation Toolkit) gene annotation, which
+[part 2](/docs/tutorials/pangenome_hprc_haplotypes#haplotype-genes) describes.
+Zoom out a few steps.
 
 <Figure caption="MHC class II with an allele's right-click menu open, and the view Open in NA20809.2 opens." src="/img/pangenome/hprc_haplotype_launch.png" />
 
