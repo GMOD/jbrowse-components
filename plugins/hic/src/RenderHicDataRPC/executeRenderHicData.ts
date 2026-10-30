@@ -117,8 +117,9 @@ export async function executeRenderHicData({
         const firstDistance =
           expected?.kind === 'intra' ? expected.firstDistance : 0
         const average = expected?.kind === 'inter' ? expected.average : 1
-        // Both counts scaled to the two libraries' geometric-mean depth, then
-        // a pseudocount of 1 so a cell one condition lacks still divides.
+        // Both counts in contacts, scaled to the two libraries' geometric-mean
+        // depth, then a pseudocount of 1 so a cell one condition lacks still
+        // divides.
         // Juicebox adds the 1 to each map's average contact instead, which
         // at any binsize under one contact per bin pair swamps the depth and
         // paints the deeper library's partner depleted everywhere. Scaling
@@ -126,6 +127,10 @@ export async function executeRenderHicData({
         const ctrlCounts = control?.counts
         const toMean = control
           ? Math.sqrt(control.controlDepth / control.depth)
+          : 1
+        const gain = control ? control.contactsPerCount * toMean : 1
+        const controlGain = control
+          ? control.controlContactsPerCount / toMean
           : 1
         const r1 = resultRegions[region1Idx]!
         const r2 = resultRegions[region2Idx]!
@@ -163,7 +168,7 @@ export async function executeRenderHicData({
             if (ctrl < ctrlMin || (ctrlStrict && ctrl === ctrlMin)) {
               continue
             }
-            value = (count * toMean + 1) / (ctrl / toMean + 1)
+            value = (count * gain + 1) / (ctrl * controlGain + 1)
             observedOut![at] = count
             controlOut![at] = ctrl
           }

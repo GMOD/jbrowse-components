@@ -43,7 +43,14 @@ export interface RegionPairContacts extends ContactRecords {
    * each library's depth; where the call asked for them and the control has
    * the pair.
    */
-  control?: { counts: Float32Array; depth: number; controlDepth: number }
+  control?: {
+    counts: Float32Array
+    depth: number
+    controlDepth: number
+    /** the contacts one served count stands for, in this file and the control */
+    contactsPerCount: number
+    controlContactsPerCount: number
+  }
 }
 
 /**
@@ -116,6 +123,8 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     label: 'Downloading control header',
     setup: opts => this.openControl(opts),
   })
+
+  private vectorMeans = new Map<string, Promise<number | undefined>>()
 
   public constructor(
     config: AnyConfigurationModel,
@@ -431,6 +440,63 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       : undefined
   }
 
+  /**
+   * The contacts one count of the chromosome pair stands for under
+   * `normalization`: the product of its two vectors' means, since a count is
+   * the raw one over `v[i] * v[j]`. Juicer's vectors keep the matrix total, so
+   * this is near 1; a vector balancing each row to 1, as hictk copies from a
+   * cooler, puts it in the thousands, where a pseudocount of 1 would swamp
+   * every count.
+   */
+  public async contactsPerCount(
+    normalization: string,
+    chr1: string,
+    chr2: string,
+    resolution: number,
+  ) {
+    if (normalization === 'NONE') {
+      return 1
+    }
+    const [m1, m2] = await Promise.all([
+      this.vectorMean(normalization, chr1, resolution),
+      this.vectorMean(normalization, chr2, resolution),
+    ])
+    return (m1 ?? 1) * (m2 ?? 1)
+  }
+
+  // Not aborted with the fetch: a cached read cut short would answer every
+  // later fetch with its rejection.
+  private vectorMean(normalization: string, chr: string, resolution: number) {
+    const key = `${normalization}\t${chr}\t${resolution}`
+    let mean = this.vectorMeans.get(key)
+    if (!mean) {
+      mean = (async () => {
+        const { chromosomes } = await this.setup({})
+        const size = chromosomes.find(c => c.name === chr)?.size
+        const vector = await this.hic.getNormalizationVector(
+          normalization,
+          chr,
+          resolution,
+        )
+        const values =
+          size === undefined
+            ? undefined
+            : await vector?.getValues(0, Math.ceil(size / resolution))
+        let sum = 0
+        let n = 0
+        for (const v of values ?? []) {
+          if (v !== 0 && !Number.isNaN(v)) {
+            sum += v
+            n++
+          }
+        }
+        return n > 0 ? sum / n : undefined
+      })()
+      this.vectorMeans.set(key, mean)
+    }
+    return mean
+  }
+
   /** Which bins of `[start, end)` this file's `normalization` can report on. */
   public async binMask(
     normalization: string,
@@ -529,18 +595,33 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       ])
       return { x: xMask, y: yMask }
     }
-    const [myTotal, theirTotal, myMasks, theirMasks] = await Promise.all([
+    const [
+      myTotal,
+      theirTotal,
+      myMasks,
+      theirMasks,
+      contactsPerCount,
+      controlContactsPerCount,
+    ] = await Promise.all([
       this.totalContacts(),
       control.adapter.totalContacts(),
       masksOf(this, r1.chr, r2.chr),
       masksOf(control.adapter, name1, name2),
+      this.contactsPerCount(norm, r1.chr, r2.chr, resolution),
+      control.adapter.contactsPerCount(norm, name1, name2, resolution),
     ])
     // Library totals only where both files have one: one file's total over
     // the other's pair sum would scale every cell by orders of magnitude.
-    // The pair sums keep a gain that spans a whole chromosome pair, as a
-    // translocation's does, out of the depth.
+    // A total below its own pair's sum is no total either: hictk writes the
+    // `ALL` map's as 1. The pair sums keep a gain that spans a whole
+    // chromosome pair, as a translocation's does, out of the depth.
     const [depth, controlDepth] =
-      myTotal && theirTotal ? [myTotal, theirTotal] : [mySum, theirSum]
+      myTotal !== undefined &&
+      theirTotal !== undefined &&
+      myTotal >= mySum &&
+      theirTotal >= theirSum
+        ? [myTotal, theirTotal]
+        : [mySum, theirSum]
     const joined = joinControl(mine.records, theirs.records, {
       observed: myMasks,
       control: theirMasks,
@@ -554,7 +635,13 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         counts: joined.counts,
       },
       appliedNormalization: norm,
-      control: { counts: joined.control, depth, controlDepth },
+      control: {
+        counts: joined.control,
+        depth,
+        controlDepth,
+        contactsPerCount,
+        controlContactsPerCount,
+      },
     }
   }
 }

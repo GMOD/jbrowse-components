@@ -192,6 +192,34 @@ test('library totals scale the depth only where both files have one', async () =
   // one file's total over the other's pair sum would scale by orders of
   // magnitude; both fall back to their pair sums
   expect(await depthOf(files(1000, undefined))).toEqual([6, 3])
+  // hictk writes the `ALL` map's total as 1, below the pair it holds
+  expect(await depthOf(files(1, 1))).toEqual([6, 3])
+})
+
+// A count is the raw one over `v[i] * v[j]`, so a vector balancing rows to 1
+// leaves counts far below 1 until its means turn them back into contacts
+test("a count stands for its two vectors' means in contacts", async () => {
+  const chromosomes = { '1': 100, '2': 100 }
+  const cells = {
+    '1-1': [[1, 2, 6]],
+    '1-2': [],
+    '2-2': [],
+  } as FakeFile['cells']
+  const adapter = compare(
+    { chromosomes, cells, kr: { '1': ALL_VALID.map(() => 4), '2': ALL_VALID } },
+    {
+      chromosomes,
+      cells,
+      kr: { '1': masked(3).map(v => v * 2), '2': ALL_VALID },
+    },
+  )
+  const perCount = async (normalization: string) => {
+    const { control } = (await fetch(adapter, normalization)).pairs[0]!
+    return [control!.contactsPerCount, control!.controlContactsPerCount]
+  }
+  // the control's masked bin is no factor and leaves the mean
+  expect(await perCount('KR')).toEqual([16, 4])
+  expect(await perCount('NONE')).toEqual([1, 1])
 })
 
 // the parser answers a missing matrix with no records, which a join would

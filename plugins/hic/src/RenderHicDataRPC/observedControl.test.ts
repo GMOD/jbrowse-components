@@ -70,11 +70,15 @@ test('each count over its control, both scaled to their depth', async () => {
     counts: Float32Array.of(4, 1),
     depth: 1,
     controlDepth: 4,
+    contactsPerCount: 1,
+    controlContactsPerCount: 1,
   }
   contacts.pairs[1]!.control = {
     counts: Float32Array.of(3),
     depth: 2,
     controlDepth: 2,
+    contactsPerCount: 1,
+    controlContactsPerCount: 1,
   }
   const data = await render(contacts)
   expect(data.appliedField).toBe('observed/control')
@@ -91,6 +95,8 @@ test('a pair the control lacks is left out', async () => {
     counts: Float32Array.of(3),
     depth: 2,
     controlDepth: 2,
+    contactsPerCount: 1,
+    controlContactsPerCount: 1,
   }
   const data = await render(contacts)
   expect(values(data)).toEqual([1])
@@ -102,6 +108,25 @@ test('no control matrix at the binsize paints counts and says so', async () => {
   expect(data.appliedField).toBe('observed')
   expect(values(data)).toEqual([9, 0, 3])
   expect(data.operands).toBeUndefined()
+})
+
+// counts from a vector balancing rows to 1 sit far below the pseudocount;
+// in contacts, the map's doubled count reads as a doubling again
+test('each count turns into contacts before the pseudocount', async () => {
+  const contacts = toContacts(
+    [{ bin1: 0, bin2: 2, counts: 0.006, region1Idx: 0, region2Idx: 0 }],
+    10,
+  )
+  contacts.pairs[0]!.control = {
+    counts: Float32Array.of(0.003),
+    depth: 1,
+    controlDepth: 1,
+    contactsPerCount: 1000,
+    controlContactsPerCount: 1000,
+  }
+  const data = await render(contacts)
+  // (6 + 1) / (3 + 1)
+  expect(values(data)[0]).toBeCloseTo(7 / 4, 5)
 })
 
 // scaled both halves of the way to one depth, the comparison has no favored
@@ -121,6 +146,8 @@ test('a map over its control is the inverse of the control over the map', async 
       counts: Float32Array.of(control),
       depth,
       controlDepth,
+      contactsPerCount: 1,
+      controlContactsPerCount: 1,
     }
     return render(contacts).then(data => values(data)[0]!)
   }
@@ -135,11 +162,15 @@ function controlledPairs() {
     counts: Float32Array.of(4, 1),
     depth: 1,
     controlDepth: 1,
+    contactsPerCount: 1,
+    controlContactsPerCount: 1,
   }
   contacts.pairs[1]!.control = {
     counts: Float32Array.of(3),
     depth: 1,
     controlDepth: 1,
+    contactsPerCount: 1,
+    controlContactsPerCount: 1,
   }
   return contacts
 }
