@@ -218,8 +218,10 @@ would cost:
   it.** The disc, diamond and triangle pad by their own miter reaches
   (`glyphExpand`, `pointGlyphPad.test.ts`) and substitute to 0. Since
   2026-10-30 the square inks its box by area, and the rule ramps its y cuts
-  and keeps its ends hard, so the pass declares `//! coverage: analytic`;
-  `lineStepMark` does the same per quad.
+  and keeps its ends hard, so the pass declares `//! coverage: analytic`.
+  `lineStepMark` did the same per quad and was reverted: a joint is up to four
+  overlapping quads, so a dense line's edge pixels compound under src-over
+  (its header has the numbers), and max is not valid over other marks.
 - **`chevronStroke.slang` (the intron chevron and the continuation marker),
   except past Canvas2D's miter limit**, which only a marker on a box under
   1.3 px tall reaches. One triangle per ">" whose sides and base sit the ramp's
@@ -793,11 +795,13 @@ Concretely, in the order to take it:
   silhouette, not datum, and the thing to actually look at before flipping.
   Density loses its edges outright and shares the display, so the flip is a
   judgement about both. The step line is out of it: since 2026-10-30 each of
-  its quads inks its box by area, as `lineStepMark`'s do, and declares
-  `//! coverage: analytic`. Refusing it for double-blended joints was wrong
-  for an opaque line. Its `wiggle-step-1px` pixel fixture scores 6.9 / 4.2 /
-  3.8% at one sample, against 8.9 / 10.1 / 4.0% for the flat quads at four
-  and 43 / 33 / 33% at one.
+  its quads inks its box by area and the pass blends by max, as the center
+  line's capsules do, so the up-to-four quads at a joint union instead of
+  compounding. Max is valid because wiggle's lines draw first into an empty
+  target. Against a 32x32 reference, the dense flat fixture
+  (`wiggle-step-dense-flat`) scores 1.0 / 1.7 / 0.9% at one sample, against
+  8.1 / 11.4 / 6.6% for the flat quads at four. The src-over version first
+  committed scored 44% at dpr 1.
 - **Hi-C and LD stay at 4**, per option 5, and that is not a decision anyone
   needs to retake.
 - **The alignments display is the hard one.** Its coverage band cannot be given

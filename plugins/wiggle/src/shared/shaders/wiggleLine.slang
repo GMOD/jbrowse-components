@@ -9,10 +9,15 @@
 // record carried both pairs, 12 bytes a bin the step line never read.
 //
 // Each quad inks the area its box covers of the pixel (`slabCoverage` on both
-// axes), as `lineStepMark.slang`'s do, so the line draws at one sample. The
-// quads overlap at the joints, where an opaque line's partially covered edge
-// pixels composite 1-(1-a)(1-b) rather than the union's area.
+// axes), so the line draws at one sample. A joint is up to four overlapping
+// quads, so under src-over a partly covered edge pixel composited 1-(1-a)^4
+// and a dense line beaded (`wiggle-step-dense-flat` scored 44% of its ink off
+// at dpr 1). Premultiplied MAX blend unions them instead, as
+// `wiggleLineCenter.slang`'s capsules do, valid for the same reason: the lines
+// draw first into a target cleared to transparent black and the whiskers band
+// goes behind them afterwards.
 //! targets: wgsl, glsl
+//! blend: max
 //! coverage: analytic
 
 import antialias;
@@ -130,5 +135,6 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     fragIn.color,
     fragIn.negColor,
     colorRamp);
-  return float4(color.rgb, color.a * coverage);
+  float alpha = color.a * coverage;
+  return float4(color.rgb * alpha, alpha);
 }

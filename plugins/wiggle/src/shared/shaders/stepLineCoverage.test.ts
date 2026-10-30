@@ -8,6 +8,13 @@ test('the step line measures its own coverage', () => {
   expect(iface.COVERAGE).toBe('analytic')
 })
 
+// A joint is up to four overlapping quads; under src-over their edge pixels
+// compound and a dense line beads (the `wiggle-step-dense-flat` pixel
+// fixture). Max unions them.
+test('the step line unions its overlapping quads', () => {
+  expect(iface.BLEND_STATE).toEqual({ op: 'max' })
+})
+
 // The directive is a claim: a quad that stopped measuring its area would draw
 // hard edges at one sample with every numeric test still green.
 test.each([

@@ -97,7 +97,7 @@ function tilingBins(rows: number) {
     while (x < W - 8) {
       const width = 0.6 + ((i * 13 + r * 5) % 12) * 0.47
       startEnd.push(bp(x), bp(x + width))
-      score.push(4.2 + ((i * 29 + r * 11) % 91) + 0.17 * i)
+      score.push(Math.min(99, 4.2 + ((i * 29 + r * 11) % 91) + 0.17 * i))
       rowIndex.push(r)
       x += width
       i++
@@ -118,8 +118,8 @@ const bars = tilingBins(1)
 const DENSITY_ROWS = 7
 const density = tilingBins(DENSITY_ROWS)
 
-// The step line's bins: three runs, a gap to the origin, then two more.
-const STEPS = [
+// [x px, x2 px, score]: three runs, a gap to the origin, then two more
+const WIDE_STEPS: Step[] = [
   [5.4, 30.2, 20.3],
   [30.2, 61.7, 55.8],
   [61.7, 80.3, 37.15],
@@ -127,21 +127,44 @@ const STEPS = [
   [120.1, 150.9, 70.4],
   [150.9, 160.2, 12.6],
   [160.2, 194.7, 88.3],
-] as const
+]
 const ORIGIN = 0
-const abuts = (i: number, j: number) =>
-  STEPS[i] !== undefined &&
-  STEPS[j] !== undefined &&
-  bp(STEPS[i][1]) === bp(STEPS[j][0])
 
-function stepFixture(lineWidth: number, budget: Budget) {
-  const prev = STEPS.map((_, i) =>
-    abuts(i - 1, i) ? STEPS[i - 1]![2] : ORIGIN,
+type Step = [number, number, number]
+
+// Bins 0.7 to 2.1 px wide, a joint in nearly every pixel column, as a bigwig
+// zoomed out draws.
+function denseSteps(score: (i: number) => number) {
+  const steps: Step[] = []
+  let x = 4.2
+  let i = 0
+  while (x < W - 6) {
+    const width = 0.7 + ((i * 7) % 5) * 0.35
+    steps.push([x, x + width, score(i)])
+    x += width
+    i++
+  }
+  return steps
+}
+
+function stepFixture(
+  name: string,
+  about: string,
+  steps: Step[],
+  lineWidth: number,
+  budget: Budget,
+) {
+  const abuts = (i: number, j: number) =>
+    steps[i] !== undefined &&
+    steps[j] !== undefined &&
+    bp(steps[i][1]) === bp(steps[j][0])
+  const prev = steps.map((_, i) =>
+    abuts(i - 1, i) ? steps[i - 1]![2] : ORIGIN,
   )
-  const next = STEPS.map((s, i) => (abuts(i, i + 1) ? s[2] : ORIGIN))
+  const next = steps.map((s, i) => (abuts(i, i + 1) ? s[2] : ORIGIN))
   const hw = lineWidth / 2
   const pieces: Shape['inside'][] = []
-  STEPS.forEach(([x1v, x2v, v], i) => {
+  steps.forEach(([x1v, x2v, v], i) => {
     const x1 = px(bp(x1v))
     const x2 = px(bp(x2v))
     const y = scoreY(v, 0, H)
@@ -154,21 +177,21 @@ function stepFixture(lineWidth: number, budget: Budget) {
     )
   })
   return defineFixture({
-    name: `wiggle-step-${lineWidth}px`,
+    name,
     slang: `${SLANG}/wiggleLine.slang`,
-    about: `wiggle's ${lineWidth} px step line, opaque, its joints overlapping quads`,
+    about,
     mod: wiggleLine,
     width: W,
     height: H,
-    count: STEPS.length,
+    count: steps.length,
     instances: {
-      startEnd: STEPS.flatMap(s => [bp(s[0]), bp(s[1])]),
-      score: STEPS.map(s => s[2]),
+      startEnd: steps.flatMap(s => [bp(s[0]), bp(s[1])]),
+      score: steps.map(s => s[2]),
       prevScore: prev,
       nextScore: next,
-      color: STEPS.map(() => abgr(PALETTE[1])),
-      rowIndex: STEPS.map(() => 0),
-      negColor: STEPS.map(() => abgr(PALETTE[1])),
+      color: steps.map(() => abgr(PALETTE[1])),
+      rowIndex: steps.map(() => 0),
+      negColor: steps.map(() => abgr(PALETTE[1])),
     },
     uniforms: (dpr: number) =>
       uniforms(RENDERING_TYPE_LINE, dpr, { lineWidth }),
@@ -268,6 +291,34 @@ export default [
       }),
     ),
   }),
-  stepFixture(1, { meanErr: 0.075 }),
-  stepFixture(2, { meanErr: 0.05 }),
+  stepFixture(
+    'wiggle-step-1px',
+    "wiggle's 1 px step line over wide bins, opaque",
+    WIDE_STEPS,
+    1,
+    { meanErr: 0.075 },
+  ),
+  stepFixture(
+    'wiggle-step-2px',
+    "wiggle's 2 px step line over wide bins, opaque",
+    WIDE_STEPS,
+    2,
+    { meanErr: 0.05 },
+  ),
+  // Every joint is up to four overlapping quads; under src-over their edge
+  // pixels composite 1-(1-a)^4 and the line beads.
+  stepFixture(
+    'wiggle-step-dense-flat',
+    'a 1 px step line over 0.7 to 2.1 px bins at one score',
+    denseSteps(() => 40.37),
+    1,
+    {},
+  ),
+  stepFixture(
+    'wiggle-step-dense-varied',
+    'a 1 px step line over 0.7 to 2.1 px bins of varied scores',
+    denseSteps(i => 30 + ((i * 17) % 23) * 1.3),
+    1,
+    {},
+  ),
 ]

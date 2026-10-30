@@ -331,7 +331,7 @@ for (let row = 0; row < 10; row++) {
 // ---- step line ----
 
 // [x px, x2 px, value]; a gap after the third run drops to the origin
-const STEPS = [
+const WIDE_STEPS = [
   [5.4, 30.2, 20.3],
   [30.2, 61.7, 55.8],
   [61.7, 80.3, 37.15],
@@ -350,7 +350,26 @@ function abuts(
   return a !== undefined && b !== undefined && bp(a[1]!) === bp(b[0]!)
 }
 
-function stepFixture(lineWidth: number, budget: Budget) {
+// Bins 0.7 to 2.1 px wide, a joint in nearly every pixel column.
+function denseSteps(value: number) {
+  const steps: (readonly [number, number, number])[] = []
+  let x = 4.2
+  let i = 0
+  while (x < W - 6) {
+    const width = 0.7 + ((i * 7) % 5) * 0.35
+    steps.push([x, x + width, value])
+    x += width
+    i++
+  }
+  return steps
+}
+
+function stepFixture(
+  lineWidth: number,
+  budget: Budget,
+  STEPS: readonly (readonly [number, number, number])[] = WIDE_STEPS,
+  name = `mark-step-${lineWidth}px`,
+) {
   const yOf = (v: number) => valueToYPxScaled(v, DOMAIN[0], DOMAIN[1], H, 0, 1)
   const prevY = STEPS.map((s, i) =>
     abuts(STEPS[i - 1], s) ? STEPS[i - 1]![2] : GAP_Y,
@@ -371,7 +390,7 @@ function stepFixture(lineWidth: number, budget: Budget) {
     )
   })
   return defineFixture({
-    name: `mark-step-${lineWidth}px`,
+    name,
     slang: `${SHADERS}/lineStepMark.slang`,
     about: `a ${lineWidth} px step line, translucent, its joints overlapping quads`,
     mod: lineStep,
@@ -469,6 +488,9 @@ export default [
     0,
     'device',
   ),
-  stepFixture(1, { meanErr: 0.09, twice: 60, holes: 7 }),
-  stepFixture(2, { meanErr: 0.075, twice: 238, holes: 0 }),
+  // No budgets: the step line draws flat quads at four samples, and its
+  // translucent joints blend twice either way (lineStepMark.slang's header).
+  stepFixture(1, {}),
+  stepFixture(2, {}),
+  stepFixture(1, {}, denseSteps(40.37), 'mark-step-dense-flat'),
 ]

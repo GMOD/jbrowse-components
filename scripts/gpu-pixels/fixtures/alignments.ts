@@ -46,6 +46,7 @@ function pileupUniforms(
   bpPerPx: number,
   featHeight: number,
   featSpacing: number,
+  dpr: number,
 ) {
   const zero4: Vec4 = [0, 0, 0, 0]
   return {
@@ -90,7 +91,7 @@ function pileupUniforms(
           : zero4,
     ) as read.Uniforms['readCategoryColor'],
     pxPerBp: 1 / bpPerPx,
-    devicePixelRatio: 1,
+    devicePixelRatio: dpr,
   }
 }
 
@@ -279,8 +280,8 @@ const readFixture = defineFixture({
       r[3] > 0 ? read.RC_FWD_STRAND : read.RC_REV_STRAND,
     ),
   },
-  uniforms: () =>
-    pileupUniforms(READ_W, READ_H, READ_BP_PER_PX, FEAT_H, FEAT_SPACING),
+  uniforms: (dpr: number) =>
+    pileupUniforms(READ_W, READ_H, READ_BP_PER_PX, FEAT_H, FEAT_SPACING, dpr),
   reference: readColorAt,
 })
 
@@ -325,7 +326,8 @@ function mismatchFixture(name: string, bpPerPx: number, about: string) {
       frequency: cells.map(() => 1),
       qual: cells.map(() => mismatch.QUAL_UNAVAILABLE),
     },
-    uniforms: () => pileupUniforms(MM_W, MM_H, bpPerPx, FEAT_H, FEAT_SPACING),
+    uniforms: (dpr: number) =>
+      pileupUniforms(MM_W, MM_H, bpPerPx, FEAT_H, FEAT_SPACING, dpr),
     reference: paintOver(shapes),
   })
 }

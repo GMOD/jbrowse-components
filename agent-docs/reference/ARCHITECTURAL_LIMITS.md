@@ -63,11 +63,14 @@ OOM report arrives that the per-object guards missed.
 what a full one does (79.2 MiB for one track dragged to 4100px).
 [GPU_PORTABILITY.md](GPU_PORTABILITY.md) §"The number that generalizes badly"
 holds the sizes; `probe-msaa-resize-cost.ts` takes the census.
-**The drivers make it resident, and then some.** On this box's Mesa drivers
+**The drivers make it resident, and then some.** On Linux Mesa, through Dawn's
+Vulkan backend (not ANGLE's WebGL2, Metal or D3D12),
 a 2532x8180 device px target (a 1266x4090 CSS px track at dpr 2, priced at
 316 MiB) held 340 MiB once drawn: in system memory on the Intel UHD 630
-(i915) and in VRAM on the AMD discrete GPU (radv), against 80 MiB for the
-one-sample canvas texture alone. `scripts/gpu-pixels/probe-msaa-residency.ts`
+(i915, from the first draw) and in VRAM on the AMD discrete GPU (radv, from
+creation), against 80 MiB for the one-sample canvas texture alone. Neither
+returned the memory to the process's counters within the probe after
+`destroy()`. `scripts/gpu-pixels/probe-msaa-residency.ts`
 takes it from `/proc/self/fdinfo` through Dawn. Which displays can draw at one
 sample:
 [arc-antialiasing-without-msaa.md](../ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md).

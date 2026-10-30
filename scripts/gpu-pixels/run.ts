@@ -2,7 +2,14 @@
 // both against the fixture's ideal scene.
 //
 //   node scripts/gpu-pixels/run.ts [fixture…] [--adapter=llvmpipe]
-//     [--dpr=1,1.5] [--base=<git ref>] [--png=<dir>]
+//     [--dpr=1,1.5] [--base=<git ref>] [--png=<dir>] [--supersample=32]
+//
+// The reference is an NxN supersample, 8 by default. Every pixel along a long
+// axis-aligned edge sits at the same fraction of a pixel, so 8's rounding
+// does not average out: an edge 0.556 into a pixel reads as 4/8 covered
+// against 0.444 exact, and 4x MSAA's sample rows round the same way. At 8 a
+// pass that measures its own coverage scores up to ~5% worse than it is, and
+// MSAA flatters itself. Judge a coverage pass at 32, which takes ~16x longer.
 //
 // Exits 1 when a one-sample render breaks its fixture's budget.
 import { execFileSync } from 'node:child_process'
@@ -17,7 +24,6 @@ import { openGpu, render } from './gpu.ts'
 import type { Budget, PixelFixture } from './fixture.ts'
 
 const root = path.resolve(import.meta.dirname, '../..')
-const SUPERSAMPLE = 8
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
@@ -26,6 +32,7 @@ const { values, positionals } = parseArgs({
     dpr: { type: 'string' },
     base: { type: 'string' },
     png: { type: 'string' },
+    supersample: { type: 'string', default: '8' },
   },
 })
 
@@ -67,7 +74,7 @@ function wgslAt(ref: string, slang: string) {
 /** The ideal scene, area-averaged over each device pixel. */
 function referenceImage(f: PixelFixture, dpr: number, w: number, h: number) {
   const img = new Float64Array(w * h * 4)
-  const n = SUPERSAMPLE
+  const n = Number(values.supersample)
   for (let j = 0; j < h; j++) {
     for (let i = 0; i < w; i++) {
       const k = (j * w + i) * 4
