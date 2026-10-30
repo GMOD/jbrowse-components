@@ -1,3 +1,4 @@
+import { backingScale } from '@jbrowse/render-core/canvas2dUtils'
 import { RowSeparatorLines } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
@@ -39,6 +40,7 @@ const VariantRowSeparators = observer(function VariantRowSeparators({
         opacity={SEPARATOR_OPACITY}
         scrollTop={scrollTop}
         viewportHeight={availableHeight}
+        dpr={backingScale(availableHeight)}
       />
     </svg>
   ) : null

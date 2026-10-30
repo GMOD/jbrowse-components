@@ -7,6 +7,7 @@
 // `dpr` is the backing store's own y scale (`clip.scaleY` on the GPU,
 // `backingScale(canvasHeight)` on the CPU), so the edges land on its pixel
 // boundaries even where it departs from `getDpr()`.
+//! js-export: snappedRowTopPx, snappedRowBottomPx
 module rowSnap;
 
 // The top of row `row` in a stack scrolled by `scrollTop`.

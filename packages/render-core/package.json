@@ -19,7 +19,7 @@
     "directory": "packages/render-core"
   },
   "author": "JBrowse Team",
-  "//files": "src/shaders ships the shared .slang modules (hpmath, antialias, capsule, colorPack, coverageBand, diagonalGrid, markColor, pointGlyph, rowRect, scoreScale, valueScale) that any shader imports, plus the coverage-band entry-point passes drawn by two plugins. @jbrowse/shader-tools resolves its include path here, so an out-of-tree plugin can compile its own .slang against them.",
+  "//files": "src/shaders ships the shared .slang modules (hpmath, antialias, capsule, colorPack, coverageBand, diagonalGrid, markColor, pointGlyph, rowRect, rowSnap, scoreScale, valueScale) that any shader imports, plus the coverage-band entry-point passes drawn by two plugins. @jbrowse/shader-tools resolves its include path here, so an out-of-tree plugin can compile its own .slang against them.",
   "files": [
     "esm",
     "src/shaders"
@@ -89,6 +89,7 @@
     "./shaders/pointMarkConsts": "./src/shaders/pointMark.consts.generated.ts",
     "./shaders/rowRect": "./src/shaders/rowRect.js.generated.ts",
     "./shaders/rowRectConsts": "./src/shaders/rowRect.generated.ts",
+    "./shaders/rowSnap": "./src/shaders/rowSnap.js.generated.ts",
     "./shaders/scoreScale": "./src/shaders/scoreScale.js.generated.ts",
     "./shaders/spanMarkIface": "./src/shaders/spanMark.iface.generated.ts",
     "./shaders/valueScale": "./src/shaders/valueScale.js.generated.ts",
@@ -181,6 +182,7 @@
       "./shaders/pointMarkConsts": "./esm/shaders/pointMark.consts.generated.js",
       "./shaders/rowRect": "./esm/shaders/rowRect.js.generated.js",
       "./shaders/rowRectConsts": "./esm/shaders/rowRect.generated.js",
+      "./shaders/rowSnap": "./esm/shaders/rowSnap.js.generated.js",
       "./shaders/scoreScale": "./esm/shaders/scoreScale.js.generated.js",
       "./shaders/spanMarkIface": "./esm/shaders/spanMark.iface.generated.js",
       "./shaders/valueScale": "./esm/shaders/valueScale.js.generated.js",

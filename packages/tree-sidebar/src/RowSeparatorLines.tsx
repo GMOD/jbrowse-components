@@ -1,6 +1,7 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { getStrokeProps } from '@jbrowse/core/util'
+import { snappedRowTopPx } from '@jbrowse/render-core/shaders/rowSnap'
 
 // Hairlines on the boundaries between stacked rows, for the row displays that
 // draw a grid over their painting (multi-wiggle, the multi-row feature
@@ -42,6 +43,7 @@ export function RowSeparatorLines({
   opacity,
   scrollTop = 0,
   viewportHeight,
+  dpr,
 }: {
   numRows: number
   rowHeight: number
@@ -54,11 +56,16 @@ export function RowSeparatorLines({
   // otherwise, of which a screenful is visible.
   scrollTop?: number
   viewportHeight?: number
+  // For a display whose rows snap to the device grid (`rowSnap.slang`): the
+  // backing-store scale they snapped to. Each line then fills the whole device
+  // pixels just below its row's snapped top.
+  dpr?: number
 }) {
   const palette = usePalette()
   if (numRows < 2 || rowHeight < MIN_SEPARATOR_ROW_PX) {
     return null
   }
+  const strokeWidth = dpr === undefined ? 1 : Math.max(1, Math.round(dpr)) / dpr
   const lines = []
   for (let idx = 0; idx < numRows - 1; idx++) {
     // The line has to cover the pixel the boundary falls in, which is
@@ -70,7 +77,10 @@ export function RowSeparatorLines({
     // showing as a stripe of the neighbouring row's color and reads as the
     // grid being out of step with the painting. Half-pixel offset so the
     // 1px stroke fills that pixel rather than straddling two.
-    const y = Math.floor(rowHeight * (idx + 1)) + 0.5 - scrollTop
+    const y =
+      dpr === undefined
+        ? Math.floor(rowHeight * (idx + 1)) + 0.5 - scrollTop
+        : snappedRowTopPx(idx + 1, rowHeight, scrollTop, dpr) + strokeWidth / 2
     if (y < 0 || (viewportHeight !== undefined && y > viewportHeight)) {
       continue
     }
@@ -86,7 +96,7 @@ export function RowSeparatorLines({
         // attribute so it survives the SVG export, which strips rgba()
         // alpha. See CrossHatches.
         {...getStrokeProps(alpha(palette.divider, opacity))}
-        strokeWidth={1}
+        strokeWidth={strokeWidth}
       />,
     )
   }
