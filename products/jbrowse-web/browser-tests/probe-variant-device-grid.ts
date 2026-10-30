@@ -47,6 +47,9 @@ const arg = (name: string) => {
 const OUT = arg('out')
 const DPR = Number(arg('dpr') ?? 1)
 const BACKEND = (arg('backend') ?? 'webgl') as 'webgl' | 'webgpu' | 'canvas2d'
+// One scene per run: a headed Firefox reused across navigations stalled on
+// its second scene's waits here.
+const ONLY = arg('scene')
 
 const DENSE = {
   config: 'test_data/config_demo.json',
@@ -279,7 +282,7 @@ async function main() {
     consoleLines.push(m.text())
   })
   try {
-    for (const scene of SCENES) {
+    for (const scene of SCENES.filter(s => !ONLY || s.name === ONLY)) {
       await captureScene(page, scene)
     }
     if (
