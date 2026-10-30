@@ -29,6 +29,7 @@ import { laneResetLabel } from './laneSelection.ts'
 import type { LanePin, LanePlacePin } from './lanePins.ts'
 import type { LaneSelectionModel } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
+import type { LaneLocus } from './multiwayRenderTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { RadioOption } from '@jbrowse/core/ui/menuItems'
 import type {
@@ -168,6 +169,46 @@ export function laneHeaderMenuItems(
             onClick: () => {},
           },
         ]),
+  ]
+}
+
+/** a lane glyph's right-click menu: go to where it sits on its own genome */
+export function laneLocusMenuItems(
+  model: LaneHeaderModel & { zoomTo: (loc: string) => void },
+  lane: HeaderLane,
+  { refName, start, end, name }: LaneLocus,
+): MenuItem[] {
+  const loc = assembleLocStringRaw({ refName, start, end })
+  if (lane.isAnchor) {
+    return [
+      {
+        label: `Zoom to ${name}`,
+        onClick: () => {
+          model.zoomTo(loc)
+        },
+      },
+    ]
+  }
+  const held = model.holdsAssembly(lane.assemblyName)
+  return [
+    {
+      label: `Open ${lane.label} at ${name}`,
+      disabled: !held,
+      onClick: () => {
+        model.openInNewView(lane.assemblyName, loc)
+      },
+    },
+    ...(model.canReanchor
+      ? [
+          {
+            label: `Re-anchor on ${lane.label} at ${name}`,
+            disabled: !held,
+            onClick: () => {
+              model.reanchor(lane.assemblyName, loc)
+            },
+          },
+        ]
+      : []),
   ]
 }
 

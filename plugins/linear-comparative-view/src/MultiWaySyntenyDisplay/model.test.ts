@@ -1079,6 +1079,54 @@ describe('the lane stack scrolls once lanes would crush', () => {
     expect(display.hitTest(x, yContent - 100)?.groupKey).toBe('gene1')
     expect(display.hitTest(x, yContent)).toBeUndefined()
   })
+
+  test('a right-click on a lane glyph offers its place on the lane genome', () => {
+    const display = createDisplay()
+    stageManyMates(display)
+    display.setLaneFrames(
+      0,
+      new Map([
+        [
+          'mate0',
+          {
+            refName: 'ctgB',
+            flipped: false,
+            rung: 1,
+            pivotAnchor: { refName: 'ctgA', coord: 200 },
+            pivotLaneBp: 200,
+            pivotInHoleBp: 0,
+            fitMin: 100,
+            fitMax: 300,
+            alsoOn: [],
+            alsoOnMore: 0,
+            alsoAt: [],
+            pinned: false,
+            orientationPinned: false,
+          },
+        ],
+      ]),
+    )
+    const { lanes, glyphHeight } = display.laneStack
+    const lane = lanes.find(l => l.assemblyName === 'mate0')!
+    const [x1, x2] = lane.placements.get('gene1')!.spans[0]!
+    const target = display.hitTest(
+      (x1 + x2) / 2,
+      lane.glyphTop + glyphHeight / 2,
+    )
+    expect(target?.lane).toMatchObject({
+      assemblyName: 'mate0',
+      refName: 'ctgB',
+    })
+
+    display.openContextMenu({ clientX: 0, clientY: 0, target: target! })
+    expect(
+      display
+        .contextMenuItems()
+        .map(item => ('label' in item ? item.label : '')),
+    ).toEqual(
+      expect.arrayContaining([expect.stringMatching(/^Open .* at gene1$/)]),
+    )
+  })
 })
 
 test('a selection lights the chrome and leaves the lane glyph cells alone', () => {

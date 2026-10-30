@@ -5,6 +5,7 @@ import { laneRegion } from './laneHeader.ts'
 import {
   geneColorMenuItems,
   laneHeaderMenuItems,
+  laneLocusMenuItems,
   lanesMenuItem,
   multiWayTrackMenuItems,
   ribbonColorMenuItems,
@@ -575,4 +576,45 @@ test('the anchor lane header only opens the view region elsewhere', () => {
   expect(labelsOf(items)).toEqual(['Open grape in a new view'])
   click(items[0])
   expect(calls).toEqual(['open grape chr1:1-1,000'])
+})
+
+describe('a lane glyph menu', () => {
+  const locus = { refName: 'pp1', start: 99, end: 500, name: 'GENE1' }
+  const withZoom = (model: ReturnType<typeof headerModel>) => ({
+    ...model.model,
+    zoomTo: (loc: string) => {
+      model.calls.push(`zoom ${loc}`)
+    },
+  })
+
+  test('opens or re-anchors on the lane at the glyph', () => {
+    const model = headerModel()
+    const items = laneLocusMenuItems(withZoom(model), peach, locus)
+    expect(labelsOf(items)).toEqual([
+      'Open peach at GENE1',
+      'Re-anchor on peach at GENE1',
+    ])
+    items.forEach(click)
+    expect(model.calls).toEqual([
+      'open peach pp1:100..500',
+      'reanchor peach pp1:100..500',
+    ])
+  })
+
+  test('an unheld lane cannot be opened', () => {
+    const items = laneLocusMenuItems(
+      withZoom(headerModel({ held: false })),
+      peach,
+      locus,
+    )
+    expect(disabledOf(items)).toEqual([true, true])
+  })
+
+  test('an anchor glyph zooms the view to it', () => {
+    const model = headerModel()
+    const items = laneLocusMenuItems(withZoom(model), grape, locus)
+    expect(labelsOf(items)).toEqual(['Zoom to GENE1'])
+    items.forEach(click)
+    expect(model.calls).toEqual(['zoom pp1:100..500'])
+  })
 })

@@ -43,6 +43,7 @@ const hit = (
     end: 1,
   }),
   label: name ?? uniqueId,
+  locus: { refName: 'ctgA', start: 0, end: 1, name: name ?? uniqueId },
   fill: { css, packed: cssColorToABGR(css), key },
 })
 
@@ -381,6 +382,7 @@ test('a jexl color names a gene that carries only an ID by its ID', () => {
           feature: gene,
           label: 'GSTT2B',
           fill: { css: '#f00', packed: cssColorToABGR('#f00') },
+          locus: { refName: 'ctgA', start: 0, end: 1, name: 'GSTT2B' },
         },
         hit('b', 20, 30, '#0f0', 'GSTT4'),
       ],

@@ -93,6 +93,15 @@ const MultiWaySyntenyReactComponent = observer(
         onMouseDown={event => {
           pressX.current = event.clientX
         }}
+        onContextMenu={event => {
+          const { clientX, clientY } = event
+          model.setPointer({ ...eventPoint(event), clientX, clientY })
+          const target = model.hoverTarget
+          if (target?.lane) {
+            event.preventDefault()
+            model.openContextMenu({ clientX, clientY, target })
+          }
+        }}
         onClick={event => {
           const pressed = pressX.current
           pressX.current = undefined

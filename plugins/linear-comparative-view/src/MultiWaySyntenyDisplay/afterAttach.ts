@@ -120,13 +120,16 @@ async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
     const result = settled[i]!
     if (result.status === 'fulfilled') {
       byLane.set(spec.lane, result.value)
-    } else if (isAbortException(result.reason)) {
+      return
+    }
+    const error: unknown = result.reason
+    if (isAbortException(error)) {
       byLane.set(spec.lane, empty(spec))
     } else {
       if (!ctx.isStale()) {
-        console.error(`${label}: one lane failed`, result.reason)
+        console.error(`${label}: one lane failed`, error)
       }
-      byLane.set(spec.lane, { ...empty(spec), error: result.reason })
+      byLane.set(spec.lane, { ...empty(spec), error })
     }
   })
   return byLane

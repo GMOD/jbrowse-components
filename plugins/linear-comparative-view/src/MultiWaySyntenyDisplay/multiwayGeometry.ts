@@ -1047,6 +1047,12 @@ export function buildLaneCells({
       transcriptName === name ? undefined : transcriptName,
       locOn(lane, refName, feature.get('start'), feature.get('end')),
     )
+    const locus = {
+      refName,
+      start: feature.get('start'),
+      end: feature.get('end'),
+      name: name ?? transcriptName ?? refName,
+    }
     for (const [x1, x2] of pieces) {
       glyphs.hits.push({
         x1,
@@ -1057,6 +1063,7 @@ export function buildLaneCells({
         groupKey: cluster,
         label,
         fill,
+        locus,
       })
     }
   }
@@ -1094,6 +1101,12 @@ export function buildLaneCells({
         locOn(lane, interval.refName, interval.start, interval.end),
       ),
       fill,
+      locus: {
+        refName: interval.refName,
+        start: interval.start,
+        end: interval.end,
+        name: name ?? key,
+      },
     })
   }
   const geneGroups = new Map<string, string>()

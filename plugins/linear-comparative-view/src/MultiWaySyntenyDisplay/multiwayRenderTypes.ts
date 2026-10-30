@@ -19,6 +19,14 @@ import type { FrameDimensions } from '@jbrowse/render-core/renderingBackendBase'
  */
 export const PX_ORIGIN = 1 << 20
 
+/** where a glyph sits on its own lane's genome */
+export interface LaneLocus {
+  refName: string
+  start: number
+  end: number
+  name: string
+}
+
 export interface GlyphHit {
   x1: number
   x2: number
@@ -28,6 +36,7 @@ export interface GlyphHit {
   groupKey?: string
   label: string
   fill?: PaintedFill
+  locus: LaneLocus
 }
 
 export interface LaneGlyphData extends RegionRenderData {

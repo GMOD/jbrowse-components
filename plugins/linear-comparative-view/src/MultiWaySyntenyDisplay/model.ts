@@ -44,6 +44,7 @@ import {
 import ColorWritesMixin, {
   writtenColorOf,
 } from '@jbrowse/display-kit/ColorWritesMixin'
+import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
@@ -180,7 +181,7 @@ import {
   ribbonColorScales,
   stackGeneKey,
 } from './legend.ts'
-import { multiWayTrackMenuItems } from './menus.ts'
+import { laneLocusMenuItems, multiWayTrackMenuItems } from './menus.ts'
 import {
   BANDS_KEY,
   boxesKey,
@@ -260,6 +261,7 @@ import type {
   MultiWayLayer,
   MultiWayRenderState,
   MultiWayRenderingBackend,
+  LaneLocus,
   RibbonRef,
 } from './multiwayRenderTypes.ts'
 import type { AssemblyDescription } from '@jbrowse/core/PluginManager'
@@ -267,7 +269,7 @@ import type {
   AnyTrackConfig,
   TrackConfigEntry,
 } from '@jbrowse/core/configuration'
-import type { MenuItem, MouseState } from '@jbrowse/core/ui'
+import type { ContextMenuAnchor, MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
@@ -283,9 +285,15 @@ import type { MarkColorScale } from '@jbrowse/render-core/marks'
 import type { AttributeRange, DeclaredLane } from '@jbrowse/synteny-core'
 import type React from 'react'
 
+/** `lane` is the glyph's lane and where it sits there; ribbons have none */
 export interface HoverTarget extends RibbonRef {
   label: string
   feature: Feature
+  lane?: LaneLocus & { assemblyName: string }
+}
+
+export interface MultiWayContextMenu extends ContextMenuAnchor {
+  target: HoverTarget
 }
 
 interface MultiWayVolatiles {
@@ -376,6 +384,7 @@ export function stateModelFactory(
       LegendMixin(),
       ColorWritesMixin(),
       LodTierInfoMixin(),
+      ContextMenuMixin<MultiWayContextMenu>(),
       types.model({
         /** #property */
         type: types.literal('MultiWaySyntenyDisplay'),
@@ -2949,6 +2958,7 @@ export function stateModelFactory(
                 label: hit.label,
                 feature: hit.feature,
                 groupKey: hit.groupKey,
+                lane: { ...hit.locus, assemblyName: lanes[row]!.assemblyName },
               }
             }
           }
@@ -3046,6 +3056,12 @@ export function stateModelFactory(
         })
       },
       /** #action */
+      zoomTo(loc: string) {
+        self.lgv.navToLocString(loc).catch((e: unknown) => {
+          getSession(self).notifyError(`${e}`, e)
+        })
+      },
+      /** #action */
       reanchor(assemblyName: string, loc: string) {
         const session = getSession(self)
         const view = self.lgv
@@ -3090,6 +3106,14 @@ export function stateModelFactory(
     .views(self => {
       const superMenuItems = self.trackMenuItems
       return {
+        /** #method */
+        contextMenuItems(): MenuItem[] {
+          const locus = self.contextMenuInfo?.target.lane
+          const lane = self.laneStack.lanes.find(
+            l => l.assemblyName === locus?.assemblyName,
+          )
+          return lane && locus ? laneLocusMenuItems(self, lane, locus) : []
+        },
         /** #method */
         trackMenuItems(): MenuItem[] {
           const view = self.lgv
