@@ -52,44 +52,39 @@ public float discExpand(float radiusPx, float dpr) {
   return glyphExpand(radiusPx, 1.0, dpr);
 }
 
-// Pixel-grid-snapped top-left of the crisp small-point square, on one axis. The
-// snap (round-half-up) is what makes the square's fill land on whole pixels
-// instead of AA-blurring across columns/rows — it is SHAPE_SOLID with no
-// fragment-side AA, so an unsnapped center reads as a fuzzy blob.
-//
-// Per-axis and scalar so `//! js-export` can lift it: Canvas2D's
-// `appendPointMarker` calls this for x and y rather than re-deriving the snap
-// (adr-051). The float2 wrapper below keeps the shader's call site unchanged.
+// Top-left of the small-point square on one axis, on the CSS px grid. Per-axis
+// and scalar so `//! js-export` can lift it: Canvas2D's `appendPointMarker`
+// calls this for x and y rather than re-deriving the snap (adr-051).
 public float crispSquareTopLeftPx(float centerPx, float diameterPx) {
   return floor(centerPx - diameterPx * 0.5 + 0.5);
 }
 
-// Screen-px position of quad corner `q` (each component 0 or 1) for the crisp
-// small-point square, given the marker center and diameter in px.
-public float2 crispSquareCornerPx(float2 centerPx, float diameterPx, float2 q) {
-  float2 topLeft = float2(
-    crispSquareTopLeftPx(centerPx.x, diameterPx),
-    crispSquareTopLeftPx(centerPx.y, diameterPx)
-  );
-  return topLeft + q * diameterPx;
+// The share of the output pixel at `p` that `box` (left, top, right, bottom,
+// CSS px) covers.
+public float boxInkCoverage(float2 p, float4 box, float dpr) {
+  return slabCoverage(p.x - box.x, p.x - box.z, dpr)
+       * slabCoverage(p.y - box.y, p.y - box.w, dpr);
 }
 
-// The same corner in clip space, for a marker whose centre arrives as a clip x
-// and a screen y — which is how both callers hold it, since x comes off the hp
-// bp conversion and y off a score scale.
-//
-// The round trip is the point: the snap has to happen in px, so the caller
-// converts out and back, and doing that in each of the two shaders is two
-// chances to convert one of the four edges differently. `viewportWidth` and
-// `canvasHeight` are whatever spans clip [-1,1] covers for the caller.
-public float4 crispSquareCornerClip(
-  float centerClipX, float centerYPx, float diameterPx, float2 q,
-  float viewportWidth, float canvasHeight
+// Corner `q` of the small-point square's quad, grown an output pixel past the
+// box so `boxInkCoverage` ramps its fractional edges at any sample count, as
+// the Canvas2D painter's antialiased `rect` does. `centerX` is in the
+// viewport's px, both callers' x coming off the hp bp conversion.
+public struct CrispSquareCorner {
+  public float2 px;
+  public float4 box;
+};
+
+public CrispSquareCorner crispSquareCorner(
+  float2 centerPx, float diameterPx, float2 q, float dpr
 ) {
-  float2 centerPx = float2(clipXToPx(centerClipX, viewportWidth), centerYPx);
-  float2 vPx = crispSquareCornerPx(centerPx, diameterPx, q);
-  return float4(pxToClipX(vPx.x, viewportWidth),
-                yPxToClipY(vPx.y, canvasHeight), 0.0, 1.0);
+  float left = crispSquareTopLeftPx(centerPx.x, diameterPx);
+  float top = crispSquareTopLeftPx(centerPx.y, diameterPx);
+  float pad = aaPx(dpr);
+  CrispSquareCorner c;
+  c.box = float4(left, top, left + diameterPx, top + diameterPx);
+  c.px = lerp(float2(left, top) - pad, float2(left, top) + diameterPx + pad, q);
+  return c;
 }
 
 // Disc SDF, positive inside. localPos is the expanded quad-local coord

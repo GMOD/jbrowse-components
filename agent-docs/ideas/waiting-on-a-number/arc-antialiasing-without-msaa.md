@@ -271,9 +271,8 @@ supersample of a 40x60 CSS px crop:
 
 **Pixel-snapped — MSAA has nothing to smooth, at an integer dpr.** `rect.slang`
 snaps both x (`rectSpanPx` → `floor(x + 0.5)`) and y (`floor(inst.y - scrollY +
-0.5)`, `snapBoxHeightPx`) to whole CSS px, which at dpr 2 is an even device px;
-the crisp small-point square (`crispSquareTopLeftPx`, shared by manhattan and
-wiggle's scatter) is the same rule. Two qualifications the earlier draft of this
+0.5)`, `snapBoxHeightPx`) to whole CSS px, which at dpr 2 is an even device px.
+Two qualifications the earlier draft of this
 row did not carry. **A whole CSS px is a whole device px only when dpr is a
 whole number** — at the 1.25 / 1.5 / 1.75 a fractionally-scaled desktop hands
 `getDpr`, every snapped edge lands mid-device-pixel and MSAA resolved it.
@@ -294,9 +293,9 @@ four.
 - `wiggleDensity.slang` — a pass of its own, not a branch of `wiggle.slang` as
   this bullet used to say. Its cuts are row boundaries that tile and its datum
   is the color, so it is a refusal rather than a leftover.
-- `wiggle.slang` — the crisp small-point square only, since 2026-08-22, and it
-  is pixel-snapped so it has nothing to smooth at a whole dpr. The bar's
-  vertical cuts are the pass's real exposure and are in the list above.
+- `wiggle.slang` — the bar's vertical cuts, in the list above. Its
+  small-point square inks its box by area since 2026-10-30, through the
+  kernel `pointMark` uses.
 - `wiggleLine.slang` — the step-line's quads. Also now a refusal: a feature draws
   three square-capped quads that deliberately overlap at the joints, so
   per-fragment coverage would double-blend a lattice of darker joints.

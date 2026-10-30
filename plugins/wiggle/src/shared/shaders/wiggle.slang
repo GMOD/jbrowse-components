@@ -52,6 +52,9 @@ struct VsOut {
   nointerpolation float rampT : COLOR1;
   // 1 on the clip strip, whose color is its own rather than the ramp's.
   nointerpolation float strip : COLOR2;
+  // the small-point square: the fragment and its box, CSS px
+  float2 squarePx : TEXCOORD2;
+  nointerpolation float4 squareBox : TEXCOORD3;
 };
 
 // Which glyph the pass draws follows entirely from uniforms, so both stages
@@ -119,6 +122,8 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   float sy;
   float2 localPos = float2(0.0, 0.0);
   float2 barInkPx = float2(0.0, 0.0);
+  float2 squarePx = float2(0.0, 0.0);
+  float4 squareBox = float4(0.0);
 
   if (u.renderingType == RENDERING_TYPE_SCATTER) {
     // Point plot: every feature is a point marker centered on the bp midpoint,
@@ -137,11 +142,13 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
       sy = (1.0 - scoreYPx * pxToClip) + local.y * halfPx * pxToClip;
       localPos = local * expand;
     } else {
-      // tiny point: pixel-snapped crisp filled square, no AA disc
-      float4 p = crispSquareCornerClip(midX, scoreYPx, u.diameterPx, q,
-                                       u.viewportWidth, u.canvasHeight);
-      sx = p.x;
-      sy = p.y;
+      CrispSquareCorner c = crispSquareCorner(
+        float2(clipXToPx(midX, u.viewportWidth), scoreYPx), u.diameterPx, q,
+        u.devicePixelRatio);
+      sx = pxToClipX(c.px.x, u.viewportWidth);
+      sy = yPxToClipY(c.px.y, u.canvasHeight);
+      squarePx = c.px;
+      squareBox = c.box;
     }
   } else {
     // The min-width floor, anchored at the bin's start so it grows the way the
@@ -166,6 +173,8 @@ VsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   o.color = float4(unpackRGBA(inst.color).rgb, 1.0);
   o.localPos = localPos;
   o.barInkPx = barInkPx;
+  o.squarePx = squarePx;
+  o.squareBox = squareBox;
   o.strip = 0.0;
   o.rampT = u.rampLut == 1
     ? rampMidT(
@@ -215,9 +224,11 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     }
     outColor = float4(color.rgb, color.a * alpha);
   } else {
-    // The crisp small-point square is a flat fill whose edges are meant to be
-    // hard — pixel-snapped by the vertex stage.
-    outColor = color;
+    float alpha = boxInkCoverage(fragIn.squarePx, fragIn.squareBox, u.devicePixelRatio);
+    if (alpha <= 0.0) {
+      discard;
+    }
+    outColor = float4(color.rgb, color.a * alpha);
   }
   return outColor;
 }

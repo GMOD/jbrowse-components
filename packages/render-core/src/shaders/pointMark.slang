@@ -99,10 +99,10 @@ struct VsOut {
   nointerpolation float hardX : TEXCOORD4;
 };
 
-// The share of the device pixel at `p` that `box` covers.
+// `boxInkCoverage`, or for a rule its y cuts' alone.
 float boxCoverage(float2 p, float4 box, float dpr, bool hardX) {
-  float cx = hardX ? 1.0 : slabCoverage(p.x - box.x, p.x - box.z, dpr);
-  return cx * slabCoverage(p.y - box.y, p.y - box.w, dpr);
+  return hardX ? slabCoverage(p.y - box.y, p.y - box.w, dpr)
+               : boxInkCoverage(p, box, dpr);
 }
 
 // Shape discriminators for the fragment shader. SMALL_POINT_MAX_DIAMETER and
@@ -182,8 +182,8 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
   o.box = float4(0.0);
   o.hardX = 0.0;
   float centerClipX = (startClipX + endClipX) * 0.5;
-  float pad = aaPx(u.devicePixelRatio);
   if (u.rule != 0) {
+    float pad = aaPx(u.devicePixelRatio);
     float farClipX = extendToMinWidthX(startClipX, endClipX, u.minWidthPx, u.viewportWidth);
     float a = clipXToPx(min(startClipX, farClipX), u.viewportWidth);
     float b = clipXToPx(max(startClipX, farClipX), u.viewportWidth);
@@ -198,16 +198,14 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
   } else if (inst.glyph == GLYPH_SQUARE || (inst.glyph == GLYPH_DISC && u.radiusPx * 2.0 <= SMALL_POINT_MAX_DIAMETER)) {
     // tiny disc: the crisp square, its corner on the CSS px grid as the
     // painter's. The triangle and the diamond keep their marker when small.
-    float diamPx = u.radiusPx * 2.0;
-    float left = crispSquareTopLeftPx(clipXToPx(centerClipX, u.viewportWidth), diamPx);
-    float top = crispSquareTopLeftPx(yPx, diamPx);
-    float4 box = float4(left, top, left + diamPx, top + diamPx);
-    float2 p = float2(lerp(box.x - pad, box.z + pad, q.x), lerp(box.w + pad, box.y - pad, q.y));
-    o.position = float4(pxToClipX(p.x, u.viewportWidth), yPxToClipY(p.y, u.canvasHeight), 0.0, 1.0);
+    CrispSquareCorner c = crispSquareCorner(
+      float2(clipXToPx(centerClipX, u.viewportWidth), yPx), u.radiusPx * 2.0, q,
+      u.devicePixelRatio);
+    o.position = float4(pxToClipX(c.px.x, u.viewportWidth), yPxToClipY(c.px.y, u.canvasHeight), 0.0, 1.0);
     o.localPos = local;
     o.shape = SHAPE_BAR;
-    o.px = p;
-    o.box = box;
+    o.px = c.px;
+    o.box = c.box;
   } else {
     bool diamond = inst.glyph == GLYPH_DIAMOND;
     float unitPx = u.radiusPx * (diamond ? DIAMOND_GLYPH_SCALE : 1.0);

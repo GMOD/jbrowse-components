@@ -38,10 +38,12 @@ A display draws at one sample when every pass it registers declares
      `coverageInterbase`, `coverageClip`) cannot: its bars share edges, and
      ramping each bar seams them.
    - So flipping draws hard bar tops at one sample.
-3. **Wiggle, Colin's call.** `wiggle.slang` (its crisp point square),
+3. **Wiggle, Colin's call.** `wiggle.slang`'s bar verticals,
    `wiggleDensity.slang` and `wiggleLine.slang` keep it at four, and the idea
    doc lists density and the step line as refusals. The flip is one judgement
-   about all three renderings. Density's rows tile, so they could snap through
+   about all three renderings. The scatter's small-point square already inks
+   its box by area through `pointGlyph.slang`'s `crispSquareCorner`, as
+   `pointMark`'s does (`wiggle-scatter-square` fixture). Density's rows tile, so they could snap through
    `rowSnap.slang` as the variant passes do.
 4. **The grammar marks: only `spanMark` and `barMark` remain.** A mark
    display samples at four if any mark it lists does. Numbers are mean error
@@ -55,8 +57,7 @@ A display draws at one sample when every pass it registers declares
      line 8.2 / 5.6 / 5.2%, each at or under the old four-sample render except
      the square at dpr 2. A translucent step line still blends its joints
      twice, as it did at four; a max blend would union them but composites
-     wrong over other marks. `wiggle.slang`'s square is still hard, so it now
-     differs from the mark display's.
+     wrong over other marks.
    - **What moves:** the mark display and Manhattan when every listed mark is
      a point, rule, line or link. MAF also registers `barMark` and the
      coverage band, and alignments' arcs and indicators stay with alignments.
