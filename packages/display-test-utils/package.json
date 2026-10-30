@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/display-test-utils",
-  "version": "5.0.0-beta.18",
+  "version": "5.0.0-beta.19",
   "private": true,
   "type": "module",
   "description": "Internal jest wrappers over display-kit's conformance harness (createDisplayTestEnvironment with a jest.fn RPC mock), plus the ADR-069 teardown-noise watch, the work census and the React render-logging gate the teardown suites hold",
