@@ -252,7 +252,7 @@ model**, so `startRenderingBackend` tags which backend is attached
 draws; across a switch the old backend is sent an empty map until the other
 chrome's backend arrives.
 
-Columns are for genotype PATTERN, not spans: the reference toggle is a genomic-position feature and answers off in columns.
+Columns are for genotype PATTERN, not spans: the records band and the reference toggle are genomic-position features and answer off in columns.
 
 **Each display names the slot's checkbox for its own picture**, so the two check
 for opposite values: "Layout → Genotype matrix" here (columns), "Size cells by
@@ -261,9 +261,11 @@ and was reverted on 2026-09-30.
 
 ## Bands above the rows
 
-The columns layout reserves one band above the rows, the connector zone.
+`variantTopBands.ts` resolves both bands, the records band (genomic positions)
+over the connector zone (columns), and **the layout reserving a strip and the
+painter filling it read that one function**.
 
-- `rowsHeaderHeight` is `lineZoneHeight`; `rowsTopOffset` adds the focus
+- `rowsHeaderHeight` is `topBands.bottom`; `rowsTopOffset` adds the focus
   chip's line and is where rows begin.
 - **A band comes out of `availableHeight`, never `height`.**
 - **A band a layout cannot paint answers 0 there** (`lineZoneHeight` at genomic
@@ -283,9 +285,30 @@ gave the edge fade zero width. Anything anchored to the right edge, or that
 applies `rowsTopOffset` itself, goes on the display's own box, where
 `RowsPanel` mounts the scrollbar and the row labels.
 
-**The display draws no record strip.** A track shows one display, so the
-records themselves, with nesting, labels and a layout of their own, are a
-`LinearVariantDisplay` track over the same VCF above this one (ADR-250).
+**The records band is plugin-features's pipeline, not a painter of ours**
+(ADR-254, amending ADR-250). `buildRecordsRenderData` rebuilds each record from
+the cell payload as a `SimpleFeature` (span, ID, description, SO type, and the
+alt cells' color as `recordColor`), and everything after is
+`@jbrowse/plugin-features/band`: the pack, LinearBasicDisplay's own fit ladder
+(`fitLadderViews` over a plain `FitLadderHost`, since this model's `facet` is
+the sample facet), `paintFeatureBand` on screen and in the export, and
+`performMultiRegionHitDetection` for the pick. Nested records stack.
+
+- **Its height is its stack, capped.** The `full` rung's packed height at
+  normal feature size, up to `records.growMaxHeight` (170); past the cap the
+  ladder fits the stack in (descriptions, then body thinning, decimated names,
+  bodies, squeeze). The band takes that height from the rows. Whether it
+  should instead add to the display is open (Colin); the rule is
+  `variantTopBandsGeometry` plus `availableHeight`.
+- **No second fetch.** The payload already carries every record, so
+  `records.show` and the cap are render-tier settings.
+- **The color is the cell hue at full dose** (`paintFeatureColors`), crossing
+  over as a per-feature jexl rather than the BED `itemRgb` path, which drops
+  alpha.
+- **What is still ours**: the record tooltip (`buildRecordHit`, sample fields
+  empty so one `hoveredFeature` slot serves both bands), the gestures
+  (`RecordsBandOverlay`, a div over its `OverlayCanvas`) and the seam drag,
+  which writes `growMaxHeight` from the drawn height.
 
 ## How wide a cell draws
 

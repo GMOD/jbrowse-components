@@ -13,6 +13,10 @@ lane "is not helping much". Amends ADR-232, which renamed the band `variants`
 and froze its slot paths for 5.0.0, and ADR-037, whose `flattenRows` opt-out
 the lane was the only consumer of.
 
+Amended by ADR-254 (2026-10-30): Colin chose to converge the two variant
+displays, so the first rejected alternative below is taken, as a stacking
+`records` band.
+
 ## Context
 
 - **The lane is one row.** It packs every record onto row 0 with
