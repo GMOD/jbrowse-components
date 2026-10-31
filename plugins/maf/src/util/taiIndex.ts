@@ -73,7 +73,8 @@ export function makeRefNameFilter(refName: string) {
  * column marks a *relative* row whose start/virtualOffset are deltas added
  * to the running absolute values of the previous row (mirrors taffy's tai
  * writer). The absolute virtual offset is split into a bgzf (block, data)
- * coordinate.
+ * coordinate, and deltas carry into that pair, since a raw offset passes 2^53
+ * once the compressed file passes 128 GiB.
  */
 export function parseTaiIndex(text: string): IndexData {
   const lines = text
@@ -83,20 +84,25 @@ export function parseTaiIndex(text: string): IndexData {
   const entries: IndexData = new Map()
   let lastRefName = ''
   let lastStart = 0
-  let lastRawVirtualOffset = 0
+  let blockPosition = 0
+  let dataPosition = 0
 
   for (const line of lines) {
     const [sourceName, start, virtualOffset] = line.split('\t')
     const isRelative = sourceName === '*'
     const entryRefName = isRelative ? lastRefName : refNameOfSource(sourceName!)
-
-    const absVirtualOffset = isRelative
-      ? lastRawVirtualOffset + +virtualOffset!
-      : +virtualOffset!
     const absStart = isRelative ? lastStart + +start! : +start!
 
-    const blockPosition = Math.floor(absVirtualOffset / BGZF_BLOCK_SIZE)
-    const dataPosition = absVirtualOffset % BGZF_BLOCK_SIZE
+    if (isRelative) {
+      const data = dataPosition + +virtualOffset!
+      const carry = Math.floor(data / BGZF_BLOCK_SIZE)
+      blockPosition += carry
+      dataPosition = data - carry * BGZF_BLOCK_SIZE
+    } else {
+      const raw = BigInt(virtualOffset!)
+      blockPosition = Number(raw >> 16n)
+      dataPosition = Number(raw & 0xffffn)
+    }
 
     let refNameEntries = entries.get(entryRefName)
     if (refNameEntries === undefined) {
@@ -109,7 +115,6 @@ export function parseTaiIndex(text: string): IndexData {
     })
     lastRefName = entryRefName
     lastStart = absStart
-    lastRawVirtualOffset = absVirtualOffset
   }
   return entries
 }

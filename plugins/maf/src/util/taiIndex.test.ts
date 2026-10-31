@@ -73,6 +73,18 @@ describe('parseTaiIndex', () => {
     ])
   })
 
+  // A raw virtual offset passes 2^53 once the compressed file passes 128 GiB.
+  test('splits a virtual offset above 2^53 exactly', () => {
+    const block = 2 ** 38 + 7
+    const raw = BigInt(block) * 65536n + 1234n
+    const delta = 3 * 65536 + 65000
+    const index = parseTaiIndex(`a.chr1\t0\t${raw}\n*\t10\t${delta}\n`)
+    expect(index.get('chr1')!.map(r => r.virtualOffset)).toEqual([
+      { blockPosition: block, dataPosition: 1234 },
+      { blockPosition: block + 4, dataPosition: 1234 + 65000 - 65536 },
+    ])
+  })
+
   test('relative rows inherit the previous absolute chromosome', () => {
     const index = parseTaiIndex('a.chr1\t0\t0\n*\t10\t100\na.chr2\t0\t5000\n')
     expect([...index.keys()]).toEqual(['chr1', 'chr2'])
