@@ -72,12 +72,6 @@
         "uri": "names/",
         "locationType": "UriLocation"
       },
-      "tracks": [
-        "bedtabix_genes",
-        "volvox_test_vcf",
-        "gff3tabix_genes",
-        "volvox_filtered_vcf"
-      ],
       "assemblyNames": ["volvox"]
     }
   ],

@@ -1,6 +1,7 @@
 import path from 'node:path'
 
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { readConfObject } from '@jbrowse/core/configuration'
 
 import first from '../../test_data/names/0.json' with { type: 'json' }
 import last from '../../test_data/names/f.json' with { type: 'json' }
@@ -98,4 +99,17 @@ test('search lower case', async () => {
   expect(results2[0] instanceof BaseResult).toBeTruthy()
   expect(results2[0]!.getLabel()).toEqual('Apple3')
   expect(results2[0]!.getLocation()).toEqual('ctgA:17400-23000')
+})
+
+test("v4's tracks slot loads without a warning", () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const v4Slot = 'tracks'
+  const conf = configSchema.create({
+    namesIndexLocation: { uri: 'names/', locationType: 'UriLocation' },
+    [v4Slot]: ['volvox_test_vcf'],
+    assemblyNames: ['volvox'],
+  })
+  expect(readConfObject(conf, 'assemblyNames')).toEqual(['volvox'])
+  expect(warn).not.toHaveBeenCalled()
+  warn.mockRestore()
 })

@@ -5,8 +5,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #trackType TextSearchAdapter
  * #fileFormat textsearch | JBrowse 1 names index | From JBrowse 1 `generate-names.pl`
  * Searches a names index written by JBrowse 1's `generate-names.pl`. The
- * `tracks` and `assemblyNames` slots list the tracks and assemblies the index
- * covers.
+ * `assemblyNames` slot lists the assemblies the index covers; the index itself
+ * names the tracks each hit is in.
  *
  * #example
  * An entry in `aggregateTextSearchAdapters`, pointing at the `names/`
@@ -34,19 +34,19 @@ export default ConfigurationSchema(
     /**
      * #slot
      */
-    tracks: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'List of tracks covered by text search adapter',
-    },
-    /**
-     * #slot
-     */
     assemblyNames: {
       type: 'stringArray',
       defaultValue: [],
       description: 'List of assemblies covered by text search adapter',
     },
   },
-  { explicitlyTyped: true },
+  {
+    explicitlyTyped: true,
+    closed: true,
+    // v4 declared a `tracks` slot nothing read: the index's own track list
+    // names each hit's track
+    retired: {
+      tracks: () => ({}),
+    },
+  },
 )

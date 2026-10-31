@@ -1029,7 +1029,6 @@ exports[`every registered schema slot default 1`] = `
   "text search adapter: JBrowse1TextSearchAdapter": {
     "assemblyNames": "stringArray = []",
     "namesIndexLocation": "fileLocation = {"uri":"/volvox/names","locationType":"UriLocation"}",
-    "tracks": "stringArray = []",
   },
   "text search adapter: TrixTextSearchAdapter": {
     "assemblyNames": "stringArray = []",
