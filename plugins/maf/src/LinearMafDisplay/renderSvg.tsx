@@ -42,16 +42,9 @@ function MafSvgBody({
   opts,
 }: LgvSvgBodyProps<LinearMafDisplayModel>) {
   const palette = usePalette()
-  const {
-    effectiveRowHeight,
-    rowsHeight,
-    topBands,
-    rowsTopOffset,
-    coverageBandActive,
-    conservationBandActive,
-    conservationDisplayHeight,
-    scrollTop,
-  } = model
+  const { effectiveRowHeight, rowsHeight, topBands, rowsTopOffset, scrollTop } =
+    model
+  const { coverage, conservation } = topBands.rects
   const theme = getMafOverlayTheme(palette)
   const colorPalette = theme.colors
   // Each band paints into its own layer translated to its origin, so the rows
@@ -77,36 +70,38 @@ function MafSvgBody({
   )
   return (
     <>
-      {coverageBandActive ? (
-        <MarkSvgLayer
-          marks={MAF_COVERAGE_MARKS}
-          regions={model.rpcDataMap}
-          blocks={renderBlocks}
-          state={{
-            ...svgState,
-            coverage: {
-              ...model.coverageBandState,
-              height: topBands.reserved.coverage,
-              colors: mafCoverageBandColors(palette),
-            },
-          }}
-          width={width}
-          height={topBands.reserved.coverage}
-          opts={opts}
-        />
+      {coverage.height > 0 ? (
+        <g transform={`translate(0, ${coverage.top})`}>
+          <MarkSvgLayer
+            marks={MAF_COVERAGE_MARKS}
+            regions={model.rpcDataMap}
+            blocks={renderBlocks}
+            state={{
+              ...svgState,
+              coverage: {
+                ...model.coverageBandState,
+                top: 0,
+                colors: mafCoverageBandColors(palette),
+              },
+            }}
+            width={width}
+            height={coverage.height}
+            opts={opts}
+          />
+        </g>
       ) : null}
-      {conservationBandActive ? (
-        <g transform={`translate(0, ${topBands.top.conservation})`}>
+      {conservation.height > 0 ? (
+        <g transform={`translate(0, ${conservation.top})`}>
           <MarkSvgLayer
             marks={[MAF_CONSERVATION_MARK]}
             regions={svgRows}
             blocks={renderBlocks}
             state={{
               ...svgState,
-              conservation: { top: 0, height: conservationDisplayHeight },
+              conservation: { top: 0, height: conservation.height },
             }}
             width={width}
-            height={conservationDisplayHeight}
+            height={conservation.height}
             opts={opts}
           />
         </g>

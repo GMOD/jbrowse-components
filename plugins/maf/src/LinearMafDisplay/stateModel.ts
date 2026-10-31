@@ -27,7 +27,7 @@ import {
   getSession,
 } from '@jbrowse/core/util'
 import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
-import { stackBands } from '@jbrowse/core/util/bandLayout'
+import { bandDragBounds } from '@jbrowse/core/util/bandLayout'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
@@ -108,6 +108,7 @@ import {
   unionSources,
 } from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
+import { mafTopBands } from './mafTopBands.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 import { placeMafRegionData } from './placeMafRows.ts'
@@ -148,7 +149,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
-import type { BandBounds } from '@jbrowse/core/util/bandHeight'
+import type { BandPlot } from '@jbrowse/core/util/bandLayout'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type {
   CoarseTierRead,
@@ -312,21 +313,6 @@ export default function stateModelFactory(
          */
         get prefersOffset() {
           return true
-        },
-        /**
-         * #getter
-         * The legal range for a band height a config, session snapshot or menu
-         * states rather than drags: up to the track height less a band's
-         * floor.
-         */
-        get statedBandBounds(): BandBounds {
-          return {
-            min: 0,
-            max: Math.max(
-              MIN_BAND_HEIGHT,
-              self.allottedHeight - MIN_BAND_HEIGHT,
-            ),
-          }
         },
       }))
       .views(configSlotViews)
@@ -591,9 +577,11 @@ export default function stateModelFactory(
          * The coverage band is on and has data: `showCoverage` alone is not
          * enough, since the summary tier has no `coverage.coverageDepths`.
          *
-         * Layout, paint, hit tests and export read this; only the track menu
-         * reads `showCoverage`, so the tick keeps the user's choice across
-         * zoom. Same split as `rowPlan` vs the slots it resolves.
+         * `topBands` reads this as the band's `active` half, and the data
+         * questions (autoscaling, the depth rules) read it directly; whatever
+         * places something in the band reads `topBands.rects`. Only the track
+         * menu reads `showCoverage`, so the tick keeps the user's choice
+         * across zoom. Same split as `rowPlan` vs the slots it resolves.
          */
         get coverageBandActive() {
           return self.showCoverage && !self.coarseTierActive
@@ -604,8 +592,8 @@ export default function stateModelFactory(
          * `coverageBandActive`, since the identity scores are computed from
          * alignment blocks, which the summary tier lacks.
          *
-         * Layout, paint and export read this; the menu tick reads
-         * `showConservation`.
+         * `topBands` and the conservation encode read this; the menu tick
+         * reads `showConservation`.
          */
         get conservationBandActive() {
           return self.showConservation && !self.coarseTierActive
@@ -729,47 +717,54 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The band stack, coverage above conservation, where the order is
-         * stated once. Every top, height and offset reads this fold; an off
-         * band spends 0 px.
+         * The plot the bands share with the rows: the track height less the
+         * focus chip's line, keeping the rows a floor while they show.
          */
-        get topBands() {
-          const bounds = self.statedBandBounds
-          return stackBands(['coverage', 'conservation'], {
-            coverage: {
-              active: self.coverageBandActive,
-              height: self.coverageHeight,
-              bounds,
-            },
-            conservation: {
-              active: self.conservationBandActive,
-              height: self.conservationHeight,
-              bounds,
-            },
-          })
+        get bandPlot(): BandPlot {
+          return {
+            height: self.allottedHeight - self.rowFocusLineHeight,
+            floor: self.showAlignments ? MIN_BAND_HEIGHT : 0,
+          }
         },
       }))
       .views(self => ({
         /**
          * #getter
-         * Height of the coverage band above the rows (0 when hidden, and on the
-         * summary path, where it has nothing to draw).
+         * The band stack, coverage above conservation (`mafTopBands`): the
+         * stated heights bound against `bandPlot`, each band's tops and
+         * rect. Every top, height and offset reads this; a band that reserves
+         * 0 px does not draw.
+         */
+        get topBands() {
+          return mafTopBands(
+            {
+              coverage: {
+                active: self.coverageBandActive,
+                height: self.coverageHeight,
+              },
+              conservation: {
+                active: self.conservationBandActive,
+                height: self.conservationHeight,
+              },
+            },
+            self.bandPlot,
+          )
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * @deprecated read `topBands.rects.coverage.height`
          */
         get coverageDisplayHeight() {
-          return self.topBands.reserved.coverage
+          return self.topBands.rects.coverage.height
         },
         /**
          * #getter
-         * Height of the conservation (percent identity) band: 0 when hidden or
-         * on the summary path.
-         *
-         * Painters, axis, handles and export read this, not the
-         * `conservationHeight` slot, which `statedBandBounds` only bounds at
-         * read time. It is what the stack reserves, not a ceiling: in fit mode
-         * with no `height` the slot passes through verbatim.
+         * @deprecated read `topBands.rects.conservation.height`
          */
         get conservationDisplayHeight() {
-          return self.topBands.reserved.conservation
+          return self.topBands.rects.conservation.height
         },
         /**
          * #getter
@@ -839,15 +834,6 @@ export default function stateModelFactory(
                 self.maxRowsHeight,
               )
             : 0
-        },
-        /**
-         * #getter
-         * The legal range for a dragged band (coverage, conservation): the
-         * stated maximum, each band apart, so a drag cannot squash the rows to
-         * nothing or push the band's handle off the display, and the drag floor.
-         */
-        get resizableBandBounds(): BandBounds {
-          return { max: self.statedBandBounds.max }
         },
       }))
       .views(self => ({
@@ -945,8 +931,9 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * The coverage band's height, clamped against the height it has, as
-         * every band drag is (`clampBandHeight`).
+         * The coverage band's height, clamped as every band drag is
+         * (`clampBandHeight`) to the room the other band and the rows' floor
+         * leave (`bandDragBounds`).
          */
         setCoverageHeight(height: number) {
           setConf(
@@ -955,7 +942,7 @@ export default function stateModelFactory(
             clampBandHeight(
               self.coverageHeight,
               height,
-              self.resizableBandBounds,
+              bandDragBounds(self.topBands, 'coverage', self.bandPlot),
             ),
           )
         },
@@ -970,7 +957,7 @@ export default function stateModelFactory(
             clampBandHeight(
               self.conservationHeight,
               height,
-              self.resizableBandBounds,
+              bandDragBounds(self.topBands, 'conservation', self.bandPlot),
             ),
           )
         },
@@ -1196,8 +1183,7 @@ export default function stateModelFactory(
         get coverageBandState(): CoverageBandState {
           const [domainMin, domainMax] = self.coverageDepthDomain ?? [0, 0]
           return {
-            height: self.coverageDisplayHeight,
-            top: 0,
+            ...self.topBands.rects.coverage,
             domainMin,
             domainMax: self.coverageDepthDomain?.[1],
             scaleType: scaleTypeCode(self.scaleType),
@@ -1462,10 +1448,7 @@ export default function stateModelFactory(
             rowsTop: self.rowsTopOffset,
             rowsHeight: self.rowsHeight,
             coverage: self.coverageBandState,
-            conservation: {
-              top: self.topBands.top.conservation,
-              height: self.conservationDisplayHeight,
-            },
+            conservation: self.topBands.rects.conservation,
             rowHeight: self.effectiveRowHeight,
             rowProportion: self.rowProportion,
             scrollTop: self.scrollTop,
@@ -1652,21 +1635,22 @@ export default function stateModelFactory(
         /**
          * #getter
          * Titles for the stacked bands, with the y they sit at; empty unless
-         * both bands draw. The on-screen labels and the SVG export both read
+         * both bands reserve px. The on-screen labels and the SVG export both read
          * it.
          *
          * The conservation title names what the band draws
          * (`codonConservationActive`), not the mode asked for.
          */
         get bandLabels(): { text: string; top: number }[] {
-          return self.coverageBandActive && self.conservationBandActive
+          const { coverage, conservation } = self.topBands.rects
+          return coverage.height > 0 && conservation.height > 0
             ? [
-                { text: 'Coverage', top: self.topBands.top.coverage },
+                { text: 'Coverage', top: coverage.top },
                 {
                   text: self.codonConservationActive
                     ? 'Conservation (aa identity)'
                     : 'Conservation (% identity)',
-                  top: self.topBands.top.conservation,
+                  top: conservation.top,
                 },
               ]
             : []

@@ -283,7 +283,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     expect(display.coarseTierActive).toBe(true)
 
     expect(display.coverageBandActive).toBe(false)
-    expect(display.coverageDisplayHeight).toBe(0)
+    expect(display.topBands.rects.coverage.height).toBe(0)
     expect(display.rowsTopOffset).toBe(0)
     expect(display.coverageDepthDomain).toBeUndefined()
 
@@ -300,11 +300,11 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
       summaryAdapter: { type: 'BigBedAdapter' },
     }).createDisplay()
     zoomAndSettle(view, 100)
-    expect(display.coverageDisplayHeight).toBe(0)
+    expect(display.topBands.rects.coverage.height).toBe(0)
 
     zoomAndSettle(view, 0.5)
     expect(display.coverageBandActive).toBe(true)
-    expect(display.coverageDisplayHeight).toBe(display.coverageHeight)
+    expect(display.topBands.rects.coverage.height).toBe(display.coverageHeight)
     expect(display.rowsTopOffset).toBe(display.coverageHeight)
   })
 
@@ -322,7 +322,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     expect(display.coarseTierActive).toBe(true)
 
     expect(display.conservationBandActive).toBe(false)
-    expect(display.conservationDisplayHeight).toBe(0)
+    expect(display.topBands.rects.conservation.height).toBe(0)
     // both bands gone, so the rows own the whole track
     expect(display.rowsTopOffset).toBe(0)
     // and no titles: they exist to tell two stacked histograms apart
@@ -338,11 +338,13 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     }).createDisplay()
     display.setShowConservation(true)
     zoomAndSettle(view, 100)
-    expect(display.conservationDisplayHeight).toBe(0)
+    expect(display.topBands.rects.conservation.height).toBe(0)
 
     zoomAndSettle(view, 0.5)
     expect(display.conservationBandActive).toBe(true)
-    expect(display.conservationDisplayHeight).toBe(display.conservationHeight)
+    expect(display.topBands.rects.conservation.height).toBe(
+      display.conservationHeight,
+    )
     expect(display.rowsTopOffset).toBe(
       display.coverageHeight + display.conservationHeight,
     )
@@ -378,7 +380,7 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
 
     zoomAndSettle(view, 0.5)
     expect(display.coverageBandActive).toBe(false)
-    expect(display.coverageDisplayHeight).toBe(0)
+    expect(display.topBands.rects.coverage.height).toBe(0)
   })
 })
 

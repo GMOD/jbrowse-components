@@ -1,3 +1,5 @@
+import { setConf } from '@jbrowse/core/configuration'
+
 import { createMafTestEnvironment } from './testEnv.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
@@ -26,7 +28,10 @@ describe('band titles', () => {
     d.setShowConservation(true)
     expect(d.bandLabels).toEqual([
       { text: 'Coverage', top: 0 },
-      { text: 'Conservation (% identity)', top: d.coverageDisplayHeight },
+      {
+        text: 'Conservation (% identity)',
+        top: d.topBands.rects.coverage.height,
+      },
     ])
   })
 
@@ -36,6 +41,14 @@ describe('band titles', () => {
     expect(d.bandLabels).toEqual([])
     d.setShowConservation(true)
     d.setShowCoverage(false)
+    expect(d.bandLabels).toEqual([])
+  })
+
+  it('titles nothing when a band is on but reserves no px', () => {
+    const d = display()
+    d.setShowConservation(true)
+    setConf(d, ['coverage', 'height'], 5000)
+    expect(d.topBands.rects.conservation.height).toBe(0)
     expect(d.bandLabels).toEqual([])
   })
 

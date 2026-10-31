@@ -1,20 +1,20 @@
-import { stackBands } from '@jbrowse/core/util/bandLayout'
-
+import { mafTopBands } from './mafTopBands.ts'
 import { mafValueScales } from './valueScales.ts'
 
 import type { MafValueScaleInputs } from './valueScales.ts'
-
-const bounds = { min: 0, max: 200 }
 
 function inputs(
   active: { coverage: boolean; conservation: boolean },
   overrides: Partial<MafValueScaleInputs> = {},
 ): MafValueScaleInputs {
   return {
-    topBands: stackBands(['coverage', 'conservation'], {
-      coverage: { active: active.coverage, height: 60, bounds },
-      conservation: { active: active.conservation, height: 40, bounds },
-    }),
+    topBands: mafTopBands(
+      {
+        coverage: { active: active.coverage, height: 60 },
+        conservation: { active: active.conservation, height: 40 },
+      },
+      { height: 220, floor: 20 },
+    ),
     coverageDomain: [0, 30],
     scaleType: 'linear',
     symlogConstant: 1,

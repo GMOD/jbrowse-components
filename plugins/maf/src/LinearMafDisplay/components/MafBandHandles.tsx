@@ -5,35 +5,37 @@ import MafBandResizeHandle from './MafBandResizeHandle.tsx'
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
 /**
- * The resize handles straddling the bottom seam of each band over the rows.
- * The bands' bars are the rendering backend's, and their axes the chrome's.
+ * The resize handles straddling the bottom seam of each band over the rows,
+ * one per band that reserves px. A drag starts from the drawn height, so a
+ * band bound under its stated height moves with the pointer at once. The
+ * bands' bars are the rendering backend's, and their axes the chrome's.
  */
 const MafBandHandles = observer(function MafBandHandles({
   model,
 }: {
   model: LinearMafDisplayModel
 }) {
-  const { topBands, coverageBandActive, conservationBandActive } = model
+  const { coverage, conservation } = model.topBands.rects
   return (
     <>
-      {coverageBandActive ? (
+      {coverage.height > 0 ? (
         <MafBandResizeHandle
           model={model}
-          height={model.coverageHeight}
+          height={coverage.height}
           setHeight={h => {
             model.setCoverageHeight(h)
           }}
-          seam={topBands.top.coverage + topBands.reserved.coverage}
+          seam={coverage.top + coverage.height}
         />
       ) : null}
-      {conservationBandActive ? (
+      {conservation.height > 0 ? (
         <MafBandResizeHandle
           model={model}
-          height={model.conservationHeight}
+          height={conservation.height}
           setHeight={h => {
             model.setConservationHeight(h)
           }}
-          seam={topBands.top.conservation + topBands.reserved.conservation}
+          seam={conservation.top + conservation.height}
         />
       ) : null}
     </>

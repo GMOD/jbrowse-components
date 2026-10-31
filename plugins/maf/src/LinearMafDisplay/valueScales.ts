@@ -2,11 +2,11 @@ import { computeCoverageTicks } from '@jbrowse/alignments-core'
 
 import { conservationTicks } from './components/conservationBand.ts'
 
-import type { BandStack } from '@jbrowse/core/util/bandLayout'
+import type { MafTopBands } from './mafTopBands.ts'
 import type { ValueScale } from '@jbrowse/wiggle-core'
 
 export interface MafValueScaleInputs {
-  topBands: BandStack<'coverage' | 'conservation'>
+  topBands: Pick<MafTopBands, 'rects'>
   coverageDomain: [number, number] | undefined
   scaleType: string
   symlogConstant: number
@@ -21,9 +21,9 @@ export function mafValueScales({
   guide,
 }: MafValueScaleInputs): ValueScale[] {
   const scales: ValueScale[] = []
-  const { reserved, top } = topBands
-  if (reserved.coverage > 0 && coverageDomain) {
-    const height = reserved.coverage
+  const { coverage, conservation } = topBands.rects
+  if (coverage.height > 0 && coverageDomain) {
+    const { height } = coverage
     scales.push({
       domain: coverageDomain,
       scaleType,
@@ -36,17 +36,17 @@ export function mafValueScales({
       ),
       symlogConstant,
       ...guide,
-      bandTops: [top.coverage],
+      bandTops: [coverage.top],
     })
   }
-  if (reserved.conservation > 0) {
-    const height = reserved.conservation
+  if (conservation.height > 0) {
+    const { height } = conservation
     scales.push({
       domain: [0, 100],
       scaleType: 'linear',
       height,
       ticks: conservationTicks(height),
-      bandTops: [top.conservation],
+      bandTops: [conservation.top],
     })
   }
   return scales

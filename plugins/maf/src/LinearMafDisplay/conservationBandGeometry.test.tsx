@@ -52,7 +52,7 @@ describe('the conservation band paints the height it reserved', () => {
     const display = overStatedBand()
     expect(display.renderState.conservation).toEqual({
       top: display.topBands.top.conservation,
-      height: display.conservationDisplayHeight,
+      height: display.topBands.rects.conservation.height,
     })
   })
 
@@ -69,17 +69,19 @@ describe('the conservation band paints the height it reserved', () => {
   it('declares its axis at the reservation', () => {
     const display = overStatedBand()
     const axis = display.axes.find(a => a.domain[1] === 100)!
-    expect(axis.height).toBe(display.conservationDisplayHeight)
+    expect(axis.height).toBe(display.topBands.rects.conservation.height)
     expect(axis.bandTops).toEqual([display.topBands.top.conservation])
     expect(axis.ticks).toEqual(
-      conservationTicks(display.conservationDisplayHeight),
+      conservationTicks(display.topBands.rects.conservation.height),
     )
   })
 
   it('exports the axis it drew on screen', async () => {
     const display = overStatedBand()
     const svg = drawSvg(await renderSvg(display, {}))
-    expect(svg).toContain(midAxisTick(display.conservationDisplayHeight))
+    expect(svg).toContain(
+      midAxisTick(display.topBands.rects.conservation.height),
+    )
     expect(svg).not.toContain(midAxisTick(display.conservationHeight))
   })
 })

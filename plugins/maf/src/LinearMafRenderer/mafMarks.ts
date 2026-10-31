@@ -162,7 +162,7 @@ export const MAF_SUMMARY_MARK = defineMark({
 })
 
 /**
- * The coverage strip pinned at the canvas top: the shared band's four layers
+ * The coverage strip at its band's top: the shared band's four layers
  * (a MAF alignment carries no modification calls) over the worker's own
  * per-region coverage. Declared over `{ coverage }` rather than the upload
  * payload so the SVG export paints it straight off `rpcDataMap`.
@@ -170,7 +170,7 @@ export const MAF_SUMMARY_MARK = defineMark({
 export const MAF_COVERAGE_MARKS = coverageBandMarks({
   channels: (d: { coverage: MafCoverageRegion }) => d.coverage,
   state: (s: MafGPURenderState) => s.coverage,
-  band: s => ({ top: 0, height: s.coverage.height }),
+  band: s => ({ top: s.coverage.top, height: s.coverage.height }),
 })
 
 /**
