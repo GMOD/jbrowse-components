@@ -18,6 +18,10 @@ import { observer } from 'mobx-react'
 import { getTraMate, symbolicAlleleBp } from '../VcfFeature/util.ts'
 import AltFormatter from './AltFormatter.tsx'
 import { tandemRepeatOf } from './TandemRepeatPanel/tandemRepeat.ts'
+import {
+  consequenceFormats,
+  headerFields,
+} from './VariantConsequence/parseConsequences.ts'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { isSvLaunchType } from './svLaunchType.ts'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
@@ -35,38 +39,31 @@ const LaunchSvPanel = lazy(
 const TandemRepeatPanel = lazy(
   () => import('./TandemRepeatPanel/TandemRepeatPanel.tsx'),
 )
-const VariantConsequenceDataGrid = lazy(
-  () => import('./VariantConsequence/VariantConsequenceDataGrid.tsx'),
+const VariantConsequencePanel = lazy(
+  () => import('./VariantConsequence/VariantConsequencePanel.tsx'),
 )
 
 const AnnotationPanel = observer(function AnnotationPanel({
   descriptions,
   feature,
   fieldKey,
-  title,
-  regex,
 }: {
   descriptions?: Descriptions
   feature: VCFFeatureSerialized
-  fieldKey: 'ANN' | 'CSQ'
-  title: string
-  regex: RegExp
+  fieldKey: keyof typeof consequenceFormats
 }) {
+  const format = consequenceFormats[fieldKey]
   const desc = descriptions?.INFO?.[fieldKey]?.Description
-  // SnpEff/VEP write the field list with padding (e.g. "annotations: 'Allele |
-  // Annotation | ...'") while the per-variant data uses bare pipes, so trim
-  // each header field to line the DataGrid columns up with the values.
-  const fields =
-    desc
-      ?.match(regex)?.[1]
-      ?.split('|')
-      .map(f => f.trim()) ?? []
   const data = feature.INFO?.[fieldKey]
-  // gate here rather than inside the grid: most variants carry neither field,
-  // and mounting the lazy grid just to have it render null still fetches its
+  // gate here rather than inside the panel: most variants carry neither field,
+  // and mounting the lazy panel just to have it render null still fetches its
   // chunk on every feature click
   return data?.length ? (
-    <VariantConsequenceDataGrid fields={fields} data={data} title={title} />
+    <VariantConsequencePanel
+      fields={desc ? headerFields(desc, format) : []}
+      data={data}
+      format={format}
+    />
   ) : null
 })
 
@@ -187,15 +184,11 @@ const FeatDefined = observer(function FeatDefined({
           feature={rest}
           descriptions={descriptions}
           fieldKey="CSQ"
-          title="Variant CSQ field"
-          regex={/Format:\s*(.*)/}
         />
         <AnnotationPanel
           feature={rest}
           descriptions={descriptions}
           fieldKey="ANN"
-          title="Variant ANN field"
-          regex={/Functional annotations:\s*'(.*)'/}
         />
         <LaunchBreakendWidgetArea model={model} feat={feat} />
       </Suspense>
