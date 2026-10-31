@@ -478,7 +478,11 @@ export const svSpecs: ScreenshotSpec[] = [
             },
           ],
           tracks: [
-            { trackId: 'variants_hg002', height: 70 },
+            {
+              trackId: 'variants_hg002',
+              genotypes: { show: false },
+              height: 70,
+            },
             {
               trackId: 'hg002_nanopore_hp',
               height: 270,
@@ -811,10 +815,12 @@ export const svSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'hg008t_benchmark_sv',
+              genotypes: { show: false },
               height: 55,
             },
             {
               trackId: 'hg008t_severus_sv',
+              genotypes: { show: false },
               records: {
                 labels: { name: { show: false }, description: { show: false } },
               },
@@ -822,6 +828,7 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg008t_minda_sv',
+              genotypes: { show: false },
               records: {
                 labels: { name: { show: false }, description: { show: false } },
               },
@@ -829,6 +836,7 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg008t_dragen_sv',
+              genotypes: { show: false },
               records: {
                 labels: { name: { show: false }, description: { show: false } },
               },
@@ -1209,6 +1217,7 @@ export const svSpecs: ScreenshotSpec[] = [
             { trackId: 'hg008t_nygc_cnv', height: 70 },
             {
               trackId: 'hg008t_dragen_cnv',
+              genotypes: { show: false },
               records: { labels: { description: { show: false } } },
               height: 70,
             },

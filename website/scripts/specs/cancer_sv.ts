@@ -371,7 +371,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                   displayMode: 'compact',
                   height: 50,
                 },
-                { trackId: TRUTH_SET, displayMode: 'collapsed', height: 30 },
+                {
+                  trackId: TRUTH_SET,
+                  genotypes: { show: false },
+                  records: { displayMode: 'collapsed' },
+                  height: 30,
+                },
                 {
                   trackId: TUMOUR,
                   ...DEEP_ONT,
@@ -465,7 +470,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
               loc: 'chr3:25358500-25360100 chr10:58717200-58717920 chr12:72272880-72273520',
               tracks: [
                 { ...GENE_TRACK, displayMode: 'compact', height: 55 },
-                { trackId: TRUTH_SET, displayMode: 'collapsed', height: 30 },
+                {
+                  trackId: TRUTH_SET,
+                  genotypes: { show: false },
+                  records: { displayMode: 'collapsed' },
+                  height: 30,
+                },
                 // No soft clipping: clipped ONT tails fill the chr3 window with
                 // mismatch hash.
                 {

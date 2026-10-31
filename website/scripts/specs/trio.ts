@@ -175,7 +175,7 @@ export const trioSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'trio-basic',
-    viewportHeight: 347,
+    viewportHeight: 420,
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
       loc: 'chr1:1,000,000-1,001,000',
@@ -358,6 +358,6 @@ export const trioSpecs: ScreenshotSpec[] = [
     annotations: crossoverHighlights({ loc, crossover, ...highlights }),
     readyText: 'chr1',
     readyTimeout: 60000,
-    viewportHeight: 650,
+    viewportHeight: 810,
   })),
 ]

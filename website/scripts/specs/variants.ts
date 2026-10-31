@@ -61,6 +61,7 @@ export const variantsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'volvox_filtered_vcf',
+          genotypes: { show: false },
           height: 60,
         },
         'volvox_cram_alignments',
@@ -112,8 +113,7 @@ export const variantsSpecs: ScreenshotSpec[] = [
     viewportHeight: 705,
   },
 
-  // The variant has no ID, so its only floating label is the "C -> T"
-  // description.
+  // A click on a genotype cell opens the record with its samples.
   {
     mode: 'url',
     name: 'variant_panel',
@@ -127,7 +127,10 @@ export const variantsSpecs: ScreenshotSpec[] = [
     viewportWidth: 1150,
     viewportHeight: 1080,
     actions: [
-      { type: 'click', text: 'C -> T' },
+      {
+        type: 'click',
+        anchor: { trackId: 'volvox_test_vcf', loc: 'ctgA:6,286', fracY: 0.6 },
+      },
       { type: 'waitForText', text: 'HG00096' },
     ],
     annotations: [

@@ -787,13 +787,26 @@ export const uiSpecs: ScreenshotSpec[] = [
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
       loc: '14:84,871,462-84,871,480',
-      tracks: ['breast_cancer_sniffles_hg19_traonly_tabix'],
+      tracks: [
+        {
+          trackId: 'breast_cancer_sniffles_hg19_traonly_tabix',
+          genotypes: { show: false },
+        },
+      ],
     }),
     readyText: '84,871',
     // the LaunchBreakendPanel link sits below the long TRA INFO table
     viewportHeight: 1100,
     actions: [
-      { type: 'click', selector: '[data-testid="feature-name-89844_3"]' },
+      {
+        type: 'click',
+        anchor: {
+          trackId: 'breast_cancer_sniffles_hg19_traonly_tabix',
+          loc: '14:84,871,469',
+          fracY: 0,
+          dy: 8,
+        },
+      },
       { type: 'waitForText', text: SPLIT_VIEW_LINK_LABEL },
     ],
     annotations: [
@@ -832,6 +845,7 @@ export const uiSpecs: ScreenshotSpec[] = [
                 },
                 {
                   trackId: 'breast_cancer_sniffles_hg19',
+                  genotypes: { show: false },
                   // drop the megabase-scale inversion calls spanning the window
                   height: 90,
                   filter: [
@@ -846,6 +860,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'breast_cancer_sniffles_hg19',
+                  genotypes: { show: false },
                   height: 90,
                   filter: [
                     "jexl:get(feature,'end')-get(feature,'start') < 100000",

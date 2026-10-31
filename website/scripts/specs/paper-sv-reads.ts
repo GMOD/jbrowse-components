@@ -130,6 +130,7 @@ const readEvidence = ({
           },
           {
             trackId: CALLS,
+            genotypes: { show: false },
             height: 85,
           },
           {
