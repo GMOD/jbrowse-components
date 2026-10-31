@@ -14911,18 +14911,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "height": {
-          "description": "display height in pixels, the bands above the rows included; the rows divide what is left while row height fits, however many there are.",
+          "description": "display height in pixels, the bands above the rows included; the rows divide what is left between them, however many there are.",
           "default": 300,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
-        "rowHeight": {
-          "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
-          "default": 0,
           "if": {
             "type": "null"
           },
@@ -15007,6 +14997,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "jexlFilters": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "rowHeight": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         }
@@ -19792,16 +19786,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "rowHeight": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowHeight"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
-                }
-              ]
-            },
             "encoding": {
               "anyOf": [
                 {
@@ -19898,6 +19882,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/jexlFilters"
+                }
+              ]
+            },
+            "rowHeight": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowHeight"
+                },
+                {
+                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
                 }
               ]
             },

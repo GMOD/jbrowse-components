@@ -14,9 +14,9 @@ agent-docs/reference/ROW_HEIGHT_AND_FIT.md; this is the middle link of it.
 `rowHeightMenuItem` and `SetRowHeightDialog` in this directory are the one
 menu row and dialog for every row display, and `resolveRowHeight` in core is
 the one place the `0` sentinel resolves and a non-positive result is floored.
-This mixin sits between them, in place of three hand-written copies — maf, the
+This mixin sits between them, in place of hand-written copies — the
 multi-row feature painting and the multi-sample variant base — of the slot,
-the getter over it and the setter.
+the getter over it and the setter. MAF is always-fit and composes none of it.
 
 **The mixin declares the members this package depends on.**
 `rowHeightMenu` restates `rowHeight` / `setRowHeight` / `setFitToHeight` as
@@ -27,8 +27,7 @@ accessors move together, matching `rowAxisConfigSchema` + `TreeSidebarMixin`.
 
 **What stays per display is the value, not the declaration.** The per-display
 members are `autoRowHeight`, because the height available to rows is a different
-quantity in each (the mark display's plot, maf's `rowsHeight`, variants'
-`availableHeight`), and `setFitToHeight`, because seeding the `height` slot on
+quantity in each (the mark display's plot, variants' `availableHeight`), and `setFitToHeight`, because seeding the `height` slot on
 the way in is required exactly where the `height` getter is content-derived
 and wrong where it is the slot itself.
 

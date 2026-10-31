@@ -29,7 +29,7 @@ for every viewer.
     samples: ['hg38', 'panTro6', 'rheMac10', 'mm39'],
   },
   displayDefaults: {
-    rowHeight: 12,
+    height: 400,
     conservation: { show: true, height: 40 },
     axis: { labels: true },
   },
@@ -68,8 +68,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearMafDisplay",
 | <span id="slot-coverage">**coverage**</span><br>[CoverageBand](../coverageband) | The coverage band: `show`, `height`, `encoding.y`, `interbase` and `alleles`, as the alignments display spells it. |
 | <span id="slot-alignments">**alignments**</span><br>[MafAlignments](../mafalignments) | The per-species rows, which take the height the bands above them leave: `show`, `mark.height.band`, and the `inversions`, `frames` and `reference` parts. |
 | <span id="slot-conservation">**conservation**</span><br>[MafConservation](../mafconservation) | The band of identity to the reference: `show` (default off), `height` and `unit`, `base` or `codon`. |
-| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>300</code> | display height in pixels, the bands above the rows included; the rows divide what is left while row height fits, however many there are |
-| <span id="slot-rowheight">**rowHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them |
+| <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>300</code> | display height in pixels, the bands above the rows included; the rows divide what is left between them, however many there are |
 | <span class="slot-group">Inherited from [BaseLinearDisplay](../baselineardisplay)</span> | <span class="slot-group-count">1 slot</span> |
 | <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |
 
@@ -84,3 +83,4 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `maxDisplayedBpPerPx` | ignored |
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
+| `rowHeight` | ignored |

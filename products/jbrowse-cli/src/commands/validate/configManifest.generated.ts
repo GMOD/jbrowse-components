@@ -7846,10 +7846,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "rowHeight",
-          "type": "number"
-        },
-        {
           "name": "encoding",
           "type": "MafEncodingConfigurationSchema",
           "subSlots": [
@@ -8463,13 +8459,15 @@ export const configManifest: ConfigManifest = {
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "mouseover",
-        "jexlFilters"
+        "jexlFilters",
+        "rowHeight"
       ],
       "droppedKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
-        "mouseover"
+        "mouseover",
+        "rowHeight"
       ],
       "stateModelProps": [
         "id",

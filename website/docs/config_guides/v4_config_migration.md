@@ -124,6 +124,7 @@ a file, and fails on a key it does not know.
 |  | `useLogScale` (session) | `encoding.color.scale.type` |
 |  | `mode` (session) | dropped |
 | `LinearHicDisplay`, `LinearWiggleDisplay` | `resolution` (session) | `data.resolution` |
+| `LinearMafDisplay` | `rowHeight` | dropped |
 | `LinearMafDisplay`, `LinearVariantDisplay`, `LinearWiggleDisplay` | `subtreeFilter` (session) | `rows.kept` |
 |  | `treeAreaWidth` (session) | `axis.width` |
 | `LinearMarkDisplay` | type `LinearArcDisplay` | `LinearMarkDisplay` with `marks: [{"mark":"link"}]` |
