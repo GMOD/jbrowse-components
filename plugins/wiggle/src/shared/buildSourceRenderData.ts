@@ -59,7 +59,7 @@ export function buildSourceRenderData(
     effectiveExtent: extent,
     renderingType,
   } = gpuProps
-  const { pivot, cuts } = wiggleColor
+  const { cuts } = wiggleColor
   const innerColors = wiggleColor.innerColors.map(c =>
     cssColorToNormalizedRgb(c),
   )
@@ -106,7 +106,6 @@ export function buildSourceRenderData(
             extent,
             posColor,
             negColor,
-            pivot,
             origin,
             cuts,
             innerColors,

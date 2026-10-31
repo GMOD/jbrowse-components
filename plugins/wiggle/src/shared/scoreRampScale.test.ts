@@ -20,7 +20,6 @@ const HEATMAP_LUT = rampLutOf({ range: ['#2166ac', '#ffffff', '#b2182b'] })
 const RAMP = {
   posColor: '#b2182b',
   negColor: '#2166ac',
-  pivot: 0,
   cuts: [0],
   innerColors: [],
   rampMid: 0,

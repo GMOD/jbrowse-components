@@ -20,7 +20,6 @@ test('a row per source defaults to the pos/neg pair about the origin', () => {
   expect(display.wiggleColor).toEqual({
     posColor: WIGGLE_POS_COLOR_DEFAULT,
     negColor: WIGGLE_NEG_COLOR_DEFAULT,
-    pivot: 0,
     cuts: [0],
     innerColors: [],
     rampLut: null,
@@ -84,7 +83,7 @@ test('the circular key reads the color the plot paints', () => {
 test('the origin moves the cut a threshold with no domain reads', () => {
   const display = makeDisplay(['a'], true)
   display.setOrigin(4)
-  expect(display.wiggleColor.pivot).toBe(4)
+  expect(display.wiggleColor.cuts[0]).toBe(4)
 })
 
 test('a declared threshold draws a key, the layout default draws none', () => {

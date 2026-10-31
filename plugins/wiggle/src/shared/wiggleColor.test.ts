@@ -57,7 +57,6 @@ test('a bare value paints both sides', () => {
   expect(resolved(color({ value: 'green' }), 0)).toEqual({
     posColor: 'green',
     negColor: 'green',
-    pivot: 0,
     cuts: [0],
     innerColors: [],
     rampLut: null,
@@ -68,7 +67,6 @@ test('an empty threshold domain cuts at the origin, in the wiggle defaults', () 
   expect(resolved(color({ field: 'score' }), 3)).toEqual({
     posColor: WIGGLE_POS_COLOR_DEFAULT,
     negColor: WIGGLE_NEG_COLOR_DEFAULT,
-    pivot: 3,
     cuts: [3],
     innerColors: [],
     rampLut: null,
@@ -88,7 +86,6 @@ test('each cut after the first adds a band, painted by the next range color', ()
     0,
   )
   expect(out).toMatchObject({
-    pivot: -2,
     cuts: [-2, 2],
     negColor: 'blue',
     innerColors: ['grey'],
@@ -123,7 +120,7 @@ test('a threshold domain names the cut and the range the two sides', () => {
     }),
     0,
   )
-  expect(out.pivot).toBe(2)
+  expect(out.cuts[0]).toBe(2)
   expect(out.negColor).toBe('#2166ac')
   expect(out.posColor).toBe('#b2182b')
 })
@@ -199,7 +196,7 @@ test('CSS stops build one cached LUT, and domainMid moves the pivot', () => {
     scale: { type: 'linear', range: ['white', 'red'], domainMid: 2 },
   })
   const out = resolved(written, 0)
-  expect(out.pivot).toBe(2)
+  expect(out.cuts[0]).toBe(2)
   expect(out.rampLut).toBe(resolved(written, 0).rampLut)
   expect(out.rampLut).not.toBeNull()
 })

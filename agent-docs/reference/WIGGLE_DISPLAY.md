@@ -101,10 +101,10 @@ sharing one plot box (`sharesPanel`) are dealt a tableau10 color each by name
 under it. `colorEncoding` resolves the color through display-kit's
 `colorEncodingOf`, the one resolver every display's color object goes through,
 and `resolveWiggleColor` turns that into
-`{ posColor, negColor, pivot, rampLut, rampMid }`, which is the whole
-of what the layers and both backends read. `pivot` is where the color parts and
-never where bars grow from: bars read `origin`, and the layers part their
-colors at `pivot` and the cuts. A gradient (`rampLut`, from
+`{ posColor, negColor, cuts, innerColors, rampLut, rampMid }`, which is the
+whole of what the layers and both backends read. The cuts are where the color
+parts and never where bars grow from: bars read `origin`, and the layers part
+their colors at the cuts. A gradient (`rampLut`, from
 `linear`, through the y scale's type) colors each bar, point and density cell
 by its score's position, `rampMid`, the config's `scale.domainMid`, on its
 middle stop, and a line and its min-max band by the score at each fragment's

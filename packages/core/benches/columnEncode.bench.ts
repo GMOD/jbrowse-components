@@ -442,7 +442,6 @@ function runEncodeScenario(fixture: SourceColumns[]) {
     wiggleColor: {
       posColor: WIGGLE_POS_COLOR_DEFAULT,
       negColor: WIGGLE_NEG_COLOR_DEFAULT,
-      pivot: PIVOT,
       cuts: [PIVOT],
       innerColors: [],
       rampLut: null,

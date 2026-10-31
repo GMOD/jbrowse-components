@@ -219,7 +219,6 @@ export function makeSummaryLayers({
   extent,
   posColor,
   negColor,
-  pivot,
   origin,
   innerColors,
   cuts,
@@ -231,7 +230,6 @@ export function makeSummaryLayers({
   extent: string
   posColor: [number, number, number]
   negColor: [number, number, number]
-  pivot: number
   origin: number
   cuts: number[]
   innerColors: [number, number, number][]
@@ -289,7 +287,7 @@ export function makeSummaryLayers({
         b.negTint(negColor),
       )
       const colored = (layer: WiggleLayer | undefined, tint: Tint) => {
-        if (!layer || (origin === pivot && cuts.length === 1)) {
+        if (!layer || (cuts.length === 1 && cuts[0] === origin)) {
           return layer
         }
         const colorsAbgr = bandColorsAbgr(

@@ -72,7 +72,6 @@ const DEFAULT_STATE = {
   diameterPx: 2,
   lineWidth: 1,
   origin: 0,
-  pivot: 0,
   cuts: [0],
   innerColors: [],
 }

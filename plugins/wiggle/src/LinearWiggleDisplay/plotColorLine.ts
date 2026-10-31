@@ -40,7 +40,7 @@ export function plotColorLine(
   const line = {
     above: resolved.posColor,
     below: resolved.negColor,
-    cut: resolved.pivot,
+    cut: resolved.cuts[0]!,
   }
   if (subtrackColorsPaint) {
     return { ...line, mode: 'hide' }

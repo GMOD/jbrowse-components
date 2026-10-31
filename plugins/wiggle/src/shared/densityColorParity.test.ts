@@ -449,7 +449,6 @@ describe('bars and points under a gradient', () => {
         diameterPx: 4,
         lineWidth: 1,
         origin: domainY[1],
-        pivot: domainY[1],
         cuts: [domainY[1]],
         innerColors: [],
         rampLut,

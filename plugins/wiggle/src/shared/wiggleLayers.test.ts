@@ -38,7 +38,6 @@ describe('makeSummaryLayers', () => {
   const base = {
     posColor,
     negColor,
-    pivot: 0,
     cuts: [0],
     innerColors: [],
     origin: 0,
@@ -130,7 +129,6 @@ describe('makeSummaryLayers', () => {
     const result = makeSummaryLayers({
       data: summaryData,
       ...base,
-      pivot: 6,
       cuts: [6],
       innerColors: [],
       origin: 6,
@@ -154,7 +152,6 @@ describe('makeSummaryLayers', () => {
     const result = makeSummaryLayers({
       data: summaryData,
       ...base,
-      pivot: 6,
       cuts: [6],
       innerColors: [],
       origin: 0,
@@ -183,7 +180,6 @@ describe('makeSummaryLayers', () => {
       data: noSummaryData,
       ...base,
       extent: 'none',
-      pivot: 4,
       origin: 0,
       cuts: [4, 6],
       innerColors: [inner],
@@ -203,7 +199,7 @@ describe('makeSummaryLayers', () => {
       featureMinScores: atCut,
       featureMaxScores: atCut,
     }
-    const opts = { data, ...base, extent: 'none', pivot: 0.7, cuts: [0.7] }
+    const opts = { data, ...base, extent: 'none', cuts: [0.7] }
     const [bars] = makeSummaryLayers({
       ...opts,
       renderingType: RENDERING_TYPE_XYPLOT,
@@ -225,7 +221,6 @@ describe('makeSummaryLayers', () => {
       ...base,
       summaryField: 'minScore',
       extent: 'none',
-      pivot: 3,
       cuts: [3],
       innerColors: [],
       origin: 3,
@@ -255,7 +250,6 @@ describe('makeSummaryLayers', () => {
       ...base,
       summaryField,
       extent: 'none',
-      pivot: 6,
       cuts: [6],
       innerColors: [],
       origin: 6,
@@ -280,7 +274,6 @@ describe('makeSummaryLayers', () => {
     const mean = makeSummaryLayers({
       data: noSummaryData,
       ...base,
-      pivot: 6,
       cuts: [6],
       innerColors: [],
       origin: 6,
@@ -298,7 +291,6 @@ describe('makeSummaryLayers', () => {
     const [min, mean, max] = makeSummaryLayers({
       data: summaryData,
       ...base,
-      pivot: 6,
       cuts: [6],
       innerColors: [],
       origin: 6,
@@ -323,7 +315,6 @@ describe('makeSummaryLayers', () => {
     const [min, , max] = makeSummaryLayers({
       data: summaryData,
       ...base,
-      pivot: 100,
       cuts: [100],
       innerColors: [],
       origin: 100,
@@ -339,7 +330,6 @@ describe('makeSummaryLayers', () => {
     makeSummaryLayers({
       data: summaryData,
       ...base,
-      pivot: 6,
       cuts: [6],
       renderingType,
       gradient: true,

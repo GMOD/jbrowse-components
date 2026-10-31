@@ -156,7 +156,6 @@ function makeModel(
       wiggleColor: {
         posColor: '#0068d1',
         negColor: '#e01e26',
-        pivot: 0,
         cuts: [0],
         innerColors: [],
         rampLut: null,

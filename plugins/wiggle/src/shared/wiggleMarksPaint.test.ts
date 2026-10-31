@@ -142,7 +142,6 @@ describe('the wiggle painters', () => {
     diameterPx: 2,
     lineWidth: 1,
     origin: 0,
-    pivot: 0,
     cuts: [0],
     innerColors: [],
   }
@@ -522,7 +521,6 @@ const lineState = {
   diameterPx: 2,
   lineWidth: 1,
   origin: 0,
-  pivot: 0,
   cuts: [0],
   innerColors: [] as [number, number, number][],
 }
@@ -795,7 +793,6 @@ describe('a log domain entirely under 1', () => {
     diameterPx: 2,
     lineWidth: 1,
     origin: 0,
-    pivot: 0,
     cuts: [0],
     innerColors: [],
   }
@@ -905,7 +902,6 @@ describe('the whiskers band', () => {
     diameterPx: 2,
     lineWidth: 1,
     origin: 0,
-    pivot: 0,
     cuts: [0],
     innerColors: [] as [number, number, number][],
   }
@@ -1024,7 +1020,6 @@ describe('the whiskers band', () => {
       RENDERING_TYPE_LINE,
       {
         domainY: [-10, 10],
-        pivot: -2,
         cuts: [-2, 2],
         innerColors: [[0, 1, 0]],
       },
@@ -1056,7 +1051,6 @@ describe('the whiskers band', () => {
       RENDERING_TYPE_LINE_CENTER,
       {
         domainY: [-10, 10],
-        pivot: -2,
         cuts: [-2, 2],
         innerColors: [[0, 1, 0]],
       },
@@ -1264,7 +1258,7 @@ describe('a cut outside the domain parts nothing', () => {
   const scores = [10, 4]
   const starts = [0, 100]
   const ends = [100, 200]
-  const cutState = { ...lineState, pivot: 15, cuts: [15] }
+  const cutState = { ...lineState, cuts: [15] }
   const below = 'rgb(255,0,0)'
   const above = 'rgb(0,0,255)'
 
@@ -1295,7 +1289,6 @@ describe('a cut outside the domain parts nothing', () => {
       extent: 'none',
       posColor,
       negColor,
-      pivot: cutState.pivot,
       origin: 0,
       cuts: cutState.cuts,
       innerColors: [],
@@ -1392,7 +1385,7 @@ describe('a cut outside the domain parts nothing', () => {
   })
 
   test('a cut inside the domain still parts both renderings', () => {
-    const inside = { ...cutState, pivot: 6, cuts: [6] }
+    const inside = { ...cutState, cuts: [6] }
     const mock = createMockCanvas()
     paintWiggle(
       mock.ctx,

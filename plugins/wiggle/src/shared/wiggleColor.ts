@@ -43,11 +43,12 @@ function lutColor(lut: Uint8Array, entry: number) {
 export interface ResolvedWiggleColor {
   /** At or above the last cut, and the whole plot where nothing parts. */
   posColor: string
-  /** Below `pivot`. */
+  /** Below the first cut. */
   negColor: string
-  /** The lowest cut, or a gradient's middle stop. */
-  pivot: number
-  /** Where the color changes, ascending, `pivot` first; at most `MAX_WIGGLE_CUTS`. */
+  /**
+   * Where the color changes, ascending, at most `MAX_WIGGLE_CUTS`: the first
+   * is the lowest threshold cut, or a gradient's middle stop.
+   */
   cuts: number[]
   /** The colors between `negColor` and `posColor`, one per band between two cuts. */
   innerColors: string[]
@@ -273,12 +274,11 @@ export function declaredCuts(encoding: ReturnType<typeof wiggleColorEncoding>) {
   return thresholdCutsOf(encoding).slice(0, MAX_WIGGLE_CUTS)
 }
 
-function solid(color: string, pivot: number): ResolvedWiggleColor {
+function solid(color: string, cut: number): ResolvedWiggleColor {
   return {
     posColor: color,
     negColor: color,
-    pivot,
-    cuts: [pivot],
+    cuts: [cut],
     innerColors: [],
     rampLut: null,
     rampMid: undefined,
@@ -302,7 +302,6 @@ export function resolveWiggleColor(
       return {
         negColor: range[0] ?? WIGGLE_NEG_COLOR_DEFAULT,
         posColor: range[cuts.length] ?? WIGGLE_POS_COLOR_DEFAULT,
-        pivot: cuts[0]!,
         cuts,
         innerColors: cuts
           .slice(1)
@@ -324,7 +323,6 @@ export function resolveWiggleColor(
       return {
         negColor: ends[0]!,
         posColor: ends.at(-1)!,
-        pivot: domainMid ?? origin,
         cuts: [domainMid ?? origin],
         innerColors: [],
         rampLut,
