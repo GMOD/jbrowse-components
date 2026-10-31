@@ -115,20 +115,25 @@ function holds(r: DisplayedRegion | undefined, refName: string, bp: number) {
   )
 }
 
-// The displayed region an end places through: the one its read was fetched in
-// where that holds the bp, else the first that does. A long read fetched in one
-// region can end, and so join, in the next.
-function placingRegion(
+// Where an end places: through the region its read was fetched in where that
+// holds the bp, else the first that does, since a long read fetched in one
+// region can end, and so join, in the next. Where none does, the read overhangs
+// its region's edge and the end stops there, as the read's own body does.
+function placeEnd(
   displayedRegions: readonly DisplayedRegion[],
   fetchedIn: number,
-  refName: string,
+  r: DisplayedRegion,
   bp: number,
 ) {
-  if (holds(displayedRegions[fetchedIn], refName, bp)) {
-    return fetchedIn
-  }
-  const i = displayedRegions.findIndex(r => holds(r, refName, bp))
-  return i === -1 ? undefined : i
+  const holding = holds(r, r.refName, bp)
+    ? fetchedIn
+    : displayedRegions.findIndex(o => holds(o, r.refName, bp))
+  return holding === -1
+    ? {
+        region: fetchedIn,
+        bp: Math.min(Math.max(bp, r.start ?? -Infinity), r.end ?? Infinity),
+      }
+    : { region: holding, bp }
 }
 
 export interface ConnectorFeedInput {
@@ -177,25 +182,11 @@ export function buildConnectorFeeds({
     const { e1, e2, c, hiddenSegmentsBetween } = pair
     const r1 = displayedRegions[e1.displayedRegionIndex]
     const r2 = displayedRegions[e2.displayedRegionIndex]
-    const own =
-      r1 &&
-      placingRegion(
-        displayedRegions,
-        e1.displayedRegionIndex,
-        r1.refName,
-        c.bp1,
-      )
-    const far =
-      r2 &&
-      placingRegion(
-        displayedRegions,
-        e2.displayedRegionIndex,
-        r2.refName,
-        c.bp2,
-      )
-    if (!r1 || !r2 || own === undefined || far === undefined) {
+    if (!r1 || !r2) {
       continue
     }
+    const own = placeEnd(displayedRegions, e1.displayedRegionIndex, r1, c.bp1)
+    const far = placeEnd(displayedRegions, e2.displayedRegionIndex, r2, c.bp2)
     const { straight, hidden, loop, dipPx } = connectorShape(
       pair,
       r1,
@@ -203,16 +194,16 @@ export function buildConnectorFeeds({
       displayedRegions,
       pileupHeight,
     )
-    let lanes = byRegion.get(own)
+    let lanes = byRegion.get(own.region)
     if (!lanes) {
       lanes = new Lanes()
-      byRegion.set(own, lanes)
+      byRegion.set(own.region, lanes)
     }
     const slot = linkedReadColorSlot(c.colorType, shift)
     const rgb = palette[slot]!
-    lanes.x.push(c.bp1)
-    lanes.x2.push(c.bp2)
-    lanes.x2Region.push(far)
+    lanes.x.push(own.bp)
+    lanes.x2.push(far.bp)
+    lanes.x2Region.push(far.region)
     lanes.row.push(e1.data.readYs[e1.readIdx]!)
     lanes.row2.push(e2.data.readYs[e2.readIdx]!)
     lanes.bend.push(loop ? loopDipPx : (dipPx ?? CONNECTOR_BOW))

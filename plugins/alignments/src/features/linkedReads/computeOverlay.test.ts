@@ -756,6 +756,28 @@ describe('connectors — an end past the region its read was fetched in', () => 
     // bp 3200 is 200 bp into region 1, not 2200 bp past region 0's start
     expect(arcs[0]!.x1).toBe(2300)
   })
+
+  // the next window is another chromosome, so no region holds the overhang
+  it('ends at its own region edge where no region holds its bp', () => {
+    const otherChromosome = [
+      { refName: 'chr3', start: 1000, end: 3000 },
+      { refName: 'chr7', start: 3000, end: 5000 },
+    ]
+    const arcs = drawnConnectors({
+      colors: PALETTE,
+      ...baseOpts,
+      displayedRegions: otherChromosome,
+      regions,
+      pairs: enumerateBezierPairs(
+        new Map([
+          [0, primary],
+          [1, supplementary],
+        ]),
+      ),
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.x1).toBe(2000)
+  })
 })
 
 describe('connectors — exclusions', () => {
