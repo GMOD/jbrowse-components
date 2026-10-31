@@ -258,7 +258,6 @@ import type {
 } from './renderers/rendererTypes.ts'
 import type { SashimiLabel } from './renderers/sashimiMarks.ts'
 import type {
-  BelowCoverageBandsInput,
   BelowCoverageBandsSettings,
   SectionsLayout,
 } from './sectionLayout.ts'
@@ -1120,7 +1119,7 @@ export default function stateModelFactory(
            * and whether any lane has arcs or a sashimi junction bound for its
            * strip.
            */
-          get statedBelowCoverageBands(): BelowCoverageBandsInput {
+          get statedBelowCoverageBands() {
             return {
               showCoverage: self.showCoverage,
               coverageHeight: self.coverageHeight,
@@ -1166,7 +1165,7 @@ export default function stateModelFactory(
            * strip. Pooled over the lanes, so it is the ungrouped answer; the
            * grouped stack's total is `totalBandOverhead`.
            */
-          get belowCoverageBandsInput(): BelowCoverageBandsInput {
+          get belowCoverageBandsInput() {
             return { ...this.statedBelowCoverageBands, ...this.bandHeights }
           },
 
