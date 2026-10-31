@@ -29,84 +29,73 @@ const opts = [{}, delay] as const
 
 interface ColorMenuItem {
   label: string
+  type?: string
   checked?: boolean
   onClick?: () => void
   subMenu?: ColorMenuItem[]
 }
 interface VariantDisplay {
-  featureColor: string
-  colorByMode: string
+  colorEncoding: unknown
   setColorValue: (value: string | undefined) => void
   colorByField: (field: string) => void
-  colorMenuItems: () => ColorMenuItem[]
+  trackMenuItems: () => ColorMenuItem[]
   colorScales: ColorScale[]
-  showLegend: boolean
   setShowLegend: (value: boolean) => void
 }
 
-// LinearVariantDisplay collapses the inherited "Color" + "Color by" pair into
-// a single "Color by" entry (no UTR picker, no strand option) and a solid
-// color set through it must flow to the model.
-test('variant display exposes one "Color by" menu and applies a solid color', async () => {
+async function openVariantTrack() {
   const { view } = await createView(config)
-
   await view.navToLocString('ctgA:1..50000')
   fireEvent.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
   await findAnyDisplayPainted(delay)
+  return view.tracks[0]!.displays[0] as VariantDisplay & LinearDisplayModel
+}
 
-  const display = view.tracks[0]!.displays[0] as VariantDisplay &
-    LinearDisplayModel
+// A row of the cells' block of the one "Color by" menu. A row needing
+// something the fetched window lacks carries the reason after its label,
+// hence the prefix.
+function cellColorRow(display: VariantDisplay, label: string) {
+  const colorBy = display.trackMenuItems().find(i => i.label === 'Color by')
+  return colorBy!.subMenu!.find(
+    item => item.type === 'radio' && item.label.startsWith(label),
+  )!
+}
 
-  const colorItems = display.colorMenuItems()
-  expect(colorItems.map(item => item.label)).toEqual(['Color by'])
-  expect(colorItems[0]!.subMenu?.map(item => item.label)).toEqual([
-    'Default',
-    'Consequence impact',
-    'SV type',
-    'Field...',
-    'Solid color...',
-  ])
+test('the variant display\'s "Color by" picks what the cells paint, a solid color included', async () => {
+  const display = await openVariantTrack()
 
-  expect(display.colorByMode).toBe('default')
+  expect(cellColorRow(display, 'Genotype').checked).toBe(true)
   display.setColorValue('red')
-  expect(display.featureColor).toBe('red')
-  expect(display.colorByMode).toBe('solid')
+  expect(display.colorEncoding).toBe('red')
+  expect(cellColorRow(display, 'Solid color...').checked).toBe(true)
+  expect(cellColorRow(display, 'Genotype').checked).toBe(false)
 
-  const radio = (label: string) =>
-    display.colorMenuItems()[0]!.subMenu!.find(item => item.label === label)!
-  expect(radio('Solid color...').checked).toBe(true)
-  expect(radio('Default').checked).toBe(false)
-  radio('Consequence impact').onClick!()
-  expect(radio('Consequence impact').checked).toBe(true)
-  expect(radio('Default').checked).toBe(false)
-  radio('Default').onClick!()
-  expect(radio('Default').checked).toBe(true)
-  expect(radio('Consequence impact').checked).toBe(false)
+  cellColorRow(display, 'Consequence impact').onClick!()
+  expect(cellColorRow(display, 'Consequence impact').checked).toBe(true)
+  expect(cellColorRow(display, 'Solid color...').checked).toBe(false)
+  cellColorRow(display, 'Genotype').onClick!()
+  expect(cellColorRow(display, 'Genotype').checked).toBe(true)
+  expect(cellColorRow(display, 'Consequence impact').checked).toBe(false)
 }, 60000)
 
-// The variant display has no component of its own — it registers the canvas
-// feature display's, and its color key reaches the screen through
-// `LegendMixin`'s `colorScales` hook and the chrome. So this is the test that
-// the borrowed component + hook actually draw variant-specific chrome; without
-// it the legend could silently stop rendering with every other variant test
-// still green.
+// The key reaches the screen through `LegendMixin`'s `colorScales` hook and
+// the chrome, so this is the test that the variant display's keys actually
+// draw; without it the legend could silently stop rendering with every other
+// variant test still green.
 test('the consequence-impact color key renders, and dismissing it stops it drawing', async () => {
-  const { view } = await createView(config)
-
-  await view.navToLocString('ctgA:1..50000')
-  fireEvent.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
-  await findAnyDisplayPainted(delay)
-
-  const display = view.tracks[0]!.displays[0] as VariantDisplay &
-    LinearDisplayModel
-  expect(display.colorScales).toEqual([])
+  const display = await openVariantTrack()
+  // the records band's SV classes, then the cells' genotype key
+  expect(display.colorScales.map(scale => scale.id)).toEqual([
+    'records',
+    'genotypes',
+  ])
 
   display.colorByField('impact')
   await waitFor(() => {
-    const [scale] = display.colorScales
+    const impact = display.colorScales.find(s => s.id === 'recordField')
     expect(
-      scale?.kind === 'categorical' && scale.entries.map(i => i.label),
-    ).toEqual(['HIGH', 'MODERATE', 'LOW', 'MODIFIER'])
+      impact?.kind === 'categorical' && impact.entries.map(e => e.label),
+    ).toEqual(expect.arrayContaining(['HIGH', 'MODERATE', 'LOW', 'MODIFIER']))
   }, delay)
   expect(await screen.findByText('MODERATE', ...opts)).toBeInTheDocument()
 

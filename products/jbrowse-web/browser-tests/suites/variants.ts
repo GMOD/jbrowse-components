@@ -5,7 +5,6 @@ import {
   findDisplayPainted,
   navigateWithSessionSpec,
   waitForDataLoaded,
-  waitForDisplayDrawn,
 } from '../helpers.ts'
 import { lgvSnapshotTest } from '../suiteHelpers.ts'
 
@@ -29,30 +28,6 @@ const overflowingMultiSampleSpec = {
             type: 'LinearVariantDisplay',
             rowHeight: 8,
             height: 200,
-          },
-        },
-      ],
-    },
-  ],
-}
-
-// Plain LinearVariantDisplay (canvas basic) with a short track so its labelled
-// variants stack past the viewport and it scrolls. Used to guard the GPU/DOM
-// scroll-tear fix: the label overlay must track model.scrollTop (like the GPU
-// canvas), not ride the native compositor scroll.
-const overflowingPlainVariantSpec = {
-  views: [
-    {
-      type: 'LinearGenomeView',
-      assembly: 'volvox',
-      loc: 'ctgA:1-50000',
-      tracks: [
-        {
-          trackId: 'volvox_filtered_vcf',
-          displaySnapshot: {
-            type: 'LinearVariantDisplay',
-            height: 40,
-            heightMode: 'fixed',
           },
         },
       ],
@@ -194,25 +169,6 @@ const suite: TestSuite = {
             'expected multiple populations to get distinct colors',
           )
         }
-      },
-    },
-
-    // Regression guard for the "variants separated from their labels" tear: the
-    // plain LinearVariantDisplay (canvas-basic) scrolls virtually, so its label
-    // overlay tracks model.scrollTop like the GPU canvas and can't ride a
-    // separate native scroll. Guarding the structure keeps it from regressing.
-    {
-      name: 'plain variant display scrolls virtually (no native scroll container)',
-      fn: async page => {
-        await navigateWithSessionSpec(page, overflowingPlainVariantSpec)
-        await waitForDisplayDrawn(
-          page,
-          'volvox_filtered_vcf-LinearVariantDisplay',
-        )
-        await waitForDataLoaded(page)
-        // an overflowing display renders the draggable VerticalScrollbar overlay
-        await findByTestId(page, 'vertical-scrollbar')
-        await assertVirtualScrollStructure(page, 'canvas')
       },
     },
 

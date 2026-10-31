@@ -250,17 +250,25 @@ try {
     navigated,
   )
 
+  // a variant track's displayMode is its records band's (ADR-254)
   const updated = await run(`
     const results = session.views
       .flatMap(v => v.tracks ?? [])
-      .map(t => t.applyDisplaySettings({ displayMode: 'compact' }))
+      .map(t =>
+        t.applyDisplaySettings(
+          t.activeDisplay.type === 'LinearVariantDisplay'
+            ? { records: { displayMode: 'compact' } }
+            : { displayMode: 'compact' },
+        ),
+      )
     const settle = await jb.waitReady(30000)
     return { results, ...settle }`)
   check(
     'the track model action makes every shown track compact',
     updated.value?.results?.length === 2 &&
-      updated.value.results.every((r: { applied?: string[] }) =>
-        r.applied?.includes('displayMode'),
+      updated.value.results.every(
+        (r: { applied?: string[] }) =>
+          r.applied?.includes('displayMode') || r.applied?.includes('records'),
       ),
     updated,
   )

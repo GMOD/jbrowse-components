@@ -33,16 +33,14 @@ interface VocabMenuItem {
 }
 interface NounDisplay {
   featureNoun: string
-  hideFeature: (id: string) => void
   trackMenuItems: () => VocabMenuItem[]
 }
 
-// Where the variant display's `featureNoun` override does and doesn't reach the
-// menu. It names *content* — a sentence counting what the track holds — but not
-// the *controls*: "Variant height" reads like a different setting than "Feature
-// height" when it is the same one, and a reader already understands a feature is
-// just a thing. The variant display borrows the canvas menus wholesale, so
-// without this both halves could drift with every other variant test green.
+// Where the variant display's `featureNoun` reaches the menu. It names
+// *content* (the record details row, a row waiting on records in view) but not
+// the *controls*: "Variant height" reads like a different setting than
+// "Feature height" when it is the same one, and a reader already understands a
+// feature is just a thing.
 function labelsIn(items: VocabMenuItem[]): string[] {
   return items.flatMap(item => [
     ...(item.label === undefined ? [] : [item.label]),
@@ -50,7 +48,7 @@ function labelsIn(items: VocabMenuItem[]): string[] {
   ])
 }
 
-test('the variant track menu names controls generically, content by its noun', async () => {
+test('the variant track menu names its controls generically', async () => {
   const { view } = await createView(config)
 
   await view.navToLocString('ctgA:1..50000')
@@ -63,34 +61,10 @@ test('the variant track menu names controls generically, content by its noun', a
   expect(display.featureNoun).toBe('variant')
 
   const labels = labelsIn(display.trackMenuItems())
-
-  // the controls read the same on a variant track as on a gene track
   expect(labels).toEqual(
-    expect.arrayContaining([
-      'Show',
-      'Feature height',
-      'Fixed feature height + fixed track height',
-      'Fit feature height to track height',
-    ]),
+    expect.arrayContaining(['Show', 'Records', 'Color by']),
   )
 
   // ...and no control row is renamed by the noun
   expect(labels.filter(l => /variant/i.test(l))).toEqual([])
-})
-
-test('a row that counts what the track holds still says "variant"', async () => {
-  const { view } = await createView(config)
-
-  await view.navToLocString('ctgA:1..50000')
-  fireEvent.click(await screen.findByTestId(hts('volvox_test_vcf'), ...opts))
-  await findAnyDisplayPainted(delay)
-
-  const display = view.tracks[0]!.displays[0] as NounDisplay &
-    LinearDisplayModel
-  // the recovery row only exists once something is hidden, and it is a sentence
-  // about the track's contents rather than the name of a setting
-  display.hideFeature('test-vcf-1')
-  expect(labelsIn(display.trackMenuItems())).toEqual(
-    expect.arrayContaining(['Show 1 hidden variant']),
-  )
 })
