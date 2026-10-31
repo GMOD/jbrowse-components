@@ -1689,6 +1689,16 @@ export function stateModelFactory(
           },
           /**
            * #getter
+           * `HeightModeMixin`'s ceiling on `grow`: the slot's with no rows;
+           * over rows none, so `height` holds in every mode.
+           */
+          get growMaxHeight(): number {
+            return self.recordsOnly
+              ? getConf(self, 'growMaxHeight')
+              : Number.POSITIVE_INFINITY
+          },
+          /**
+           * #getter
            * `HeightModeMixin`'s hook: with no rows, the records' `full`
            * stack on screen, as LinearBasicDisplay grows to its features;
            * over rows the slot height, so `grow` keeps the rows' height.

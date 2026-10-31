@@ -122,9 +122,11 @@ function genotypeRowShowItems(
 export function variantShowSubmenuItems(
   self: LinearMultiSampleVariantDisplayModel,
 ): MenuItem[] {
-  const hasSamples = !!self.adapterSamples?.length
+  // genomic only: columns draw no records, so rows off would draw nothing
+  const offersGenotypeRows =
+    self.atGenomicPositions && !!self.adapterSamples?.length
   return [
-    ...(hasSamples
+    ...(offersGenotypeRows
       ? [
           {
             label: 'Genotype rows',
@@ -195,7 +197,7 @@ export function variantTrackMenuItems(
     // No presets: a cohort's useful row heights depend on how many samples it
     // has, so fit and a typed height are the two that mean anything here.
     // With no rows, the feature track's own track sizing.
-    self.recordsOnly
+    self.recordsOnly && self.atGenomicPositions
       ? {
           label: 'Track sizing',
           icon: HeightIcon,
@@ -376,46 +378,49 @@ export function variantTrackMenuItems(
           },
         ])
       },
-      subItems: [
-        // Both are bounded fractions tuned by feel, so they're inline sliders
-        // rather than a dialog round-trip. They're fetch inputs (rpcProps), so
-        // commitOnRelease keeps a drag from firing a worker refetch per step.
-        makeSizeMenu({
-          label: 'Minor allele frequency',
-          title: 'MAF',
-          min: 0,
-          max: 0.5,
-          step: 0.01,
-          format: n => (n === 0 ? 'off' : n.toFixed(2)),
-          commitOnRelease: true,
-          getValue: () => self.minMinorAlleleFrequency,
-          isDefault: self.minMinorAlleleFrequency === 0,
-          onChange: n => {
-            self.setMinMinorAlleleFrequency(n)
-          },
-          onReset: () => {
-            self.setMinMinorAlleleFrequency(0)
-          },
-        }),
-        makeSizeMenu({
-          label: 'Missingness',
-          title: 'Max missingness',
-          min: 0,
-          max: 1,
-          step: 0.01,
-          // 1 keeps every variant, i.e. the filter is off
-          format: n => (n === 1 ? 'off' : n.toFixed(2)),
-          commitOnRelease: true,
-          getValue: () => self.maxMissingness,
-          isDefault: self.maxMissingness === 1,
-          onChange: n => {
-            self.setMaxMissingness(n)
-          },
-          onReset: () => {
-            self.setMaxMissingness(1)
-          },
-        }),
-      ],
+      // Both are bounded fractions tuned by feel, so they're inline sliders
+      // rather than a dialog round-trip. They're fetch inputs (rpcProps), so
+      // commitOnRelease keeps a drag from firing a worker refetch per step.
+      // Both read called alleles, so with no rows, which reads none, they go.
+      subItems: self.recordsOnly
+        ? []
+        : [
+            makeSizeMenu({
+              label: 'Minor allele frequency',
+              title: 'MAF',
+              min: 0,
+              max: 0.5,
+              step: 0.01,
+              format: n => (n === 0 ? 'off' : n.toFixed(2)),
+              commitOnRelease: true,
+              getValue: () => self.minMinorAlleleFrequency,
+              isDefault: self.minMinorAlleleFrequency === 0,
+              onChange: n => {
+                self.setMinMinorAlleleFrequency(n)
+              },
+              onReset: () => {
+                self.setMinMinorAlleleFrequency(0)
+              },
+            }),
+            makeSizeMenu({
+              label: 'Missingness',
+              title: 'Max missingness',
+              min: 0,
+              max: 1,
+              step: 0.01,
+              // 1 keeps every variant, i.e. the filter is off
+              format: n => (n === 1 ? 'off' : n.toFixed(2)),
+              commitOnRelease: true,
+              getValue: () => self.maxMissingness,
+              isDefault: self.maxMissingness === 1,
+              onChange: n => {
+                self.setMaxMissingness(n)
+              },
+              onReset: () => {
+                self.setMaxMissingness(1)
+              },
+            }),
+          ],
     }),
     ...rowOrderMenuItems(self, {
       arrangement: {

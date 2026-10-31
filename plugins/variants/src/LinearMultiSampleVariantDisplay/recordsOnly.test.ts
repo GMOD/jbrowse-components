@@ -1,9 +1,12 @@
+import { resolveSubMenu } from '@jbrowse/core/ui'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 
 import { getCachedABGR } from '../shared/variantWebglUtils.ts'
 import { KIT, recordsDisplayAt } from './recordsBand.fixture.ts'
 
+import type { LinearMultiSampleVariantDisplayModel } from './model.ts'
 import type { BandRecord } from './recordsBand.fixture.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 // Records spread so the `full` stack is a few rows, well under 200px.
 const FEW: BandRecord[] = [
@@ -117,5 +120,66 @@ describe('heightMode with no rows', () => {
       heightMode: 'grow',
     })
     expect(display.height).toBe(200)
+  })
+})
+
+test('over genotype rows grow keeps a slot height past growMaxHeight', () => {
+  const { display } = recordsDisplayAt(PILE, 1, {}, true, {
+    heightMode: 'grow',
+    growMaxHeight: 120,
+  })
+  expect(display.growMaxHeight).toBe(Number.POSITIVE_INFINITY)
+  expect(display.height).toBe(200)
+})
+
+test('genotypes.show off asks the worker for no sample', () => {
+  const { display } = recordsDisplayAt(FEW, 10, {}, true, {
+    genotypes: { show: false },
+  })
+  expect(display.rpcProps().sampleFilter).toEqual([])
+  display.setShowGenotypes(true)
+  expect(display.rpcProps().sampleFilter).toEqual(['S0'])
+})
+
+function labelsOf(items: MenuItem[]) {
+  return items.flatMap(i => ('label' in i ? [i.label] : []))
+}
+
+function subMenuLabels(items: MenuItem[], label: string) {
+  const item = items.find(i => 'label' in i && i.label.startsWith(label))
+  return item && 'subMenu' in item ? labelsOf(resolveSubMenu(item)) : []
+}
+
+describe('the track menu', () => {
+  const menu = (display: LinearMultiSampleVariantDisplayModel) =>
+    display.trackMenuItems()
+
+  test('genotypes off drops the allele-count filters, which read no rows', () => {
+    const rows = recordsDisplayAt(FEW, 10).display
+    expect(subMenuLabels(menu(rows), 'Filter by')).toEqual(
+      expect.arrayContaining(['Minor allele frequency', 'Missingness']),
+    )
+    const off = recordsDisplayAt(FEW, 10, {}, true, {
+      genotypes: { show: false },
+    }).display
+    expect(labelsOf(menu(off))).not.toContain('Filter by')
+    expect(subMenuLabels(menu(off), 'Filter by')).not.toContain('Missingness')
+  })
+
+  test('genomic positions offer Genotype rows, and with none Track sizing', () => {
+    const off = recordsDisplayAt(FEW, 10, {}, true, {
+      genotypes: { show: false },
+    }).display
+    expect(subMenuLabels(menu(off), 'Show')).toContain('Genotype rows')
+    expect(labelsOf(menu(off))).toContain('Track sizing')
+  })
+
+  test('columns offer neither', () => {
+    const { display } = recordsDisplayAt(FEW, 10, {}, true, {
+      genotypes: { show: false },
+      variantLayout: 'columns',
+    })
+    expect(subMenuLabels(menu(display), 'Show')).not.toContain('Genotype rows')
+    expect(labelsOf(menu(display))).not.toContain('Track sizing')
   })
 })
