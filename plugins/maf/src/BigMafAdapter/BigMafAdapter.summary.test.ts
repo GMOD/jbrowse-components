@@ -89,3 +89,29 @@ test('getSummaryFeatures emits nothing when no summaryAdapter configured', async
 
   expect(records).toEqual([])
 })
+
+describe('a sub-adapter that serves no features is named', () => {
+  const noFeatures: getSubAdapterType = async () => ({
+    dataAdapter: {} as Awaited<ReturnType<getSubAdapterType>>['dataAdapter'],
+    sessionIds: new Set<string>(),
+  })
+  const adapter = new BigMafAdapter(
+    configSchema.create({
+      type: 'BigMafAdapter',
+      summaryAdapter: { type: 'BigBedAdapter' },
+    }),
+    noFeatures,
+  )
+
+  test('as the summary tier', async () => {
+    await expect(
+      firstValueFrom(adapter.getSummaryFeatures(query).pipe(toArray())),
+    ).rejects.toThrow(/summaryAdapter BigBedAdapter does not serve features/)
+  })
+
+  test('as the alignment file', async () => {
+    await expect(adapter.getRefNames()).rejects.toThrow(
+      /sub-adapter BigBedAdapter does not serve features/,
+    )
+  })
+})

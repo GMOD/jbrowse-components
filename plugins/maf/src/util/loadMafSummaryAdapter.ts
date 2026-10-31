@@ -1,3 +1,4 @@
+import { isFeatureAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   ObservableCreate,
   subscribeToObservable,
@@ -34,11 +35,17 @@ export type MafSummarySelf = BaseFeatureDataAdapter & {
  */
 export async function loadMafSummaryAdapter(self: BaseFeatureDataAdapter) {
   const config = self.getConf('summaryAdapter')
-  if (!config || !self.getSubAdapter) {
-    return undefined
+  let adapter: BaseFeatureDataAdapter | undefined
+  if (config && self.getSubAdapter) {
+    const { dataAdapter } = await self.getSubAdapter(config)
+    if (!isFeatureAdapter(dataAdapter)) {
+      throw new Error(
+        `MAF summaryAdapter ${String(config.type)} does not serve features`,
+      )
+    }
+    adapter = dataAdapter
   }
-  const { dataAdapter } = await self.getSubAdapter(config)
-  return dataAdapter as BaseFeatureDataAdapter
+  return adapter
 }
 
 /**

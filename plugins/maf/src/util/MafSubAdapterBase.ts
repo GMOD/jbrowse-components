@@ -1,4 +1,7 @@
-import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
+import {
+  cachedSetup,
+  isFeatureAdapter,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
 
 import { MafAdapterBase } from './MafAdapterBase.ts'
@@ -58,8 +61,14 @@ export abstract class MafSubAdapterBase<
       if (!this.getSubAdapter) {
         throw new Error('no getSubAdapter available')
       }
-      const { dataAdapter } = await this.getSubAdapter(this.subAdapterConfig())
-      return { adapter: dataAdapter as BaseFeatureDataAdapter }
+      const config = this.subAdapterConfig()
+      const { dataAdapter } = await this.getSubAdapter(config)
+      if (!isFeatureAdapter(dataAdapter)) {
+        throw new Error(
+          `MAF sub-adapter ${String(config.type)} does not serve features`,
+        )
+      }
+      return { adapter: dataAdapter }
     },
   })
 
