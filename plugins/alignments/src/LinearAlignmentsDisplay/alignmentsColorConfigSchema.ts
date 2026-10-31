@@ -79,8 +79,8 @@ import {
  *   type: 'LinearAlignmentsDisplay',
  *   encoding: {
  *     color: {
- *       field: 'pairOrientation',
- *       scale: { domain: ['RR'], range: ['#d95f02'] },
+ *       field: 'insertSizeAndOrientation',
+ *       scale: { type: 'ordinal', domain: ['RR'], range: ['#d95f02'] },
  *     },
  *   },
  * }
