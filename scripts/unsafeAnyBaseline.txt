@@ -314,7 +314,6 @@
 2 no-unsafe-assignment plugins/maf/src/LinearMafGetAlignmentDataRpc/collectTransferables.ts
 2 no-unsafe-return plugins/maf/src/MafAddTrackWorkflow/buildAdapterConfig.ts
 3 no-unsafe-argument plugins/maf/src/util/getSamples.ts
-1 no-unsafe-argument plugins/maf/src/util/loadMafSummaryAdapter.ts
 1 no-unsafe-assignment plugins/maf/src/util/loadMafSummaryAdapter.ts
 1 no-unsafe-call plugins/marks/src/LinearMarkDisplay/testEnv.ts
 1 no-unsafe-member-access plugins/marks/src/LinearMarkDisplay/testEnv.ts

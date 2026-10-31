@@ -34,7 +34,8 @@ export type MafSummarySelf = BaseFeatureDataAdapter & {
  * clears the memo on failure so a transient error retries.
  */
 export async function loadMafSummaryAdapter(self: BaseFeatureDataAdapter) {
-  const config = self.getConf('summaryAdapter')
+  const config: Record<string, unknown> | undefined =
+    self.getConf('summaryAdapter')
   let adapter: BaseFeatureDataAdapter | undefined
   if (config && self.getSubAdapter) {
     const { dataAdapter } = await self.getSubAdapter(config)
