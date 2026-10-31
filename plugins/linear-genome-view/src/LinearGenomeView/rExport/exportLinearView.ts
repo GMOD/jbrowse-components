@@ -48,10 +48,19 @@ function assemblyOf(view: LinearGenomeViewModel) {
     : undefined
 }
 
-// The variant display with no sample rows draws its records as a feature
-// track does, which is how R reads it.
-function drawsRecordsOnly(display: object) {
-  return 'recordsOnly' in display && display.recordsOnly === true
+// The variant display drawing no genotype rows (none in the file, or hidden)
+// draws its records as a feature track does, which is how R reads it, at the
+// height its records draw.
+export function recordsDrawnAlone(display: object) {
+  return 'drawsRows' in display &&
+    display.drawsRows === false &&
+    'topBands' in display &&
+    typeof display.topBands === 'object' &&
+    display.topBands !== null &&
+    'recordsHeight' in display.topBands &&
+    typeof display.topBands.recordsHeight === 'number'
+    ? display.topBands.recordsHeight
+    : undefined
 }
 
 // The tracks the screen draws, in the order it draws them, named as the SVG
@@ -66,6 +75,7 @@ function tracksOf(view: LinearGenomeViewModel) {
         display.configuration,
       ) as Record<string, unknown>
       const { heightMode, height } = fullConfSnapshot(display.configuration)
+      const recordsHeight = recordsDrawnAlone(display)
       tracks.push({
         trackId: track.configuration.trackId,
         trackName: svgTrackName(track, session),
@@ -76,8 +86,8 @@ function tracksOf(view: LinearGenomeViewModel) {
         >,
         display: written,
         heightMode,
-        height,
-        recordsOnly: drawsRecordsOnly(display),
+        height: recordsHeight ?? height,
+        recordsOnly: recordsHeight !== undefined,
       })
     }
   }

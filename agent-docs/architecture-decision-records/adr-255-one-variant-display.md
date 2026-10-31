@@ -144,4 +144,43 @@ its default, and sizes too.
 | --- | --- |
 | A default `height` of 100, as the feature display | Still fixed: a sparse window wastes it and a dense one squeezes |
 | `grow` by default with no rows | Moves the track box on every pan into a denser window |
-| Hold the opening height in a volatile, the slot untouched | A drag back to exactly 200 writes nothing the snapshot keeps, so the volatile would win over the user's drag |
+| Hold the opening height in a volatile, the slot untouched | A drag back to exactly 200 writes nothing the snapshot keeps, so the volatile would win over the user's drag. Reversed by the next amendment, which takes the default off the slot |
+
+## Amendment (2026-10-31): the opening heights live on the display
+
+Four reviews of the height model found that writing the opening heights
+edits the session on mere viewing. `setConf` on a config.json track becomes
+a `trackConfigDeltas` entry 400 ms later, so an untouched VCF showed as
+overridden, its share link carried a height nobody set, Reset was written
+back 600 ms later (or, records-only, jumped to 200 for good), undo replayed
+the write as a new step, and whichever view or ring laid out first sized the
+track for every other. A one-sample VCF that opened compact also gave its
+row that height once the row was asked for.
+
+- **The variant display's `height` slot has no default** (`maybeNumber`), as
+  `records.height` has none, so a written 200 reads as written. Unset, the
+  rows take `DEFAULT_VARIANT_DISPLAY_HEIGHT` (200). This answers the
+  volatile row above: a drag back to 200 now writes 200.
+- **The records-only opening height is a volatile** (`openingHeight`), set
+  once by the same first layout, read by `configuredHeight` only while
+  `recordsOnly`, so the rows' slot never sees it. `configuredHeight` is
+  `height` ?? that ?? 200, which a drag, `fit` and the grow-exit bake all
+  start from.
+- **The band's opening height is a volatile too** (`openingRecordsHeight`,
+  ADR-254's seventh amendment): `records.height` ?? that ?? its stack up to
+  170.
+- **A user's act writes; the volatile is never cleared.** A written slot
+  wins over it, so Reset and an undone first drag return to the height the
+  track opened at, not to a re-settle at the window now on screen.
+- **Cost:** a track nobody resized sizes itself again on each opening (a
+  session reload, a share link, an untick and retick, a duplicated view),
+  at the window then on screen. The same locus and width give the same
+  height; after a pan they need not. This is an opening, not a pan, so the
+  height policy holds, but `TrackHeightMixin`'s "survives a track being
+  unticked and reticked" does not hold for this display.
+
+| Alternative | Why not |
+| --- | --- |
+| Clear the volatile on every user height act | Six call sites, and Reset or an undone drag would re-settle at whatever window is on screen |
+| Persist the opening height without it counting as an edit | No mechanism: every config write is a delta |
+| Keep writing, and guard the ring's band settle with `hostHeight` | Leaves the overridden badge, Reset, undo and the second view |

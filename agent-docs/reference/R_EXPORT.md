@@ -36,10 +36,12 @@ from the view menu (`menuItems.ts`):
 | `LinearWiggleDisplay`     | `jbrowse_wiggle`     | BigWig, multi-BigWig                         |
 | `LinearAlignmentsDisplay` | `jbrowse_alignments` | BAM, CRAM                                    |
 
-A `LinearVariantDisplay` drawing no sample rows (`recordsOnly`: a VCF with no
-samples, or `genotypes.show` off) reads through `jbrowse_features` instead,
-its `records` settings handed over as the feature track's top-level ones
-(`recordsAsFeatureDisplay`).
+A `LinearVariantDisplay` drawing no genotype rows (`drawsRows` false: a VCF
+with no samples, a one-sample VCF with `genotypes.show` unset, or rows hidden)
+reads through `jbrowse_features` instead, its `records` settings handed over
+as the feature track's top-level ones (`recordsAsFeatureDisplay`), at the
+height its records draw (`topBands.recordsHeight`), so an unwritten opening
+height still reaches R.
 
 Any other display, a file opened from disk in jbrowse-web (a `blob:` URL R
 cannot reach), and a setting ggjbrowse draws otherwise (a `mateRefName`

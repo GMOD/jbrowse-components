@@ -835,8 +835,8 @@ export const svSpecs: ScreenshotSpec[] = [
               genotypes: { show: false },
               records: {
                 labels: { name: { show: false }, description: { show: false } },
+                height: 25,
               },
-              height: 45,
             },
             {
               trackId: 'hg008t_nygc_sv',

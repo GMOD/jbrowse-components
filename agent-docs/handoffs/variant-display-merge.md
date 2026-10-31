@@ -96,10 +96,10 @@ rule over rows are marked provisional there (the default is settled: on).
   names `LinearVariantDisplay`), JBrowseR, the hosted demo configs (the
   in-repo `demos/` and the `scripts/build_*.sh` outputs on S3 are swept but
   not redeployed); then drop the alias.
-- **E. Height.** Records-only height settled (ADR-255's amendment): the
-  first layout with a record on screen sets `height` once to the stack, up
-  to 200 (`settleRecordsOpeningHeight`, `recordsBandViews.ts`); a pan
-  never moves it. Over rows (ADR-254's fifth amendment): every record, the
+- **E. Height.** Records-only height settled (ADR-255's amendments): the
+  first layout with a record on screen holds `height` once at the stack, up
+  to 200 (`settleRecordsOpeningHeight`, `recordsBandViews.ts`), on the
+  display and never written; a pan never moves it. Over rows (ADR-254's fifth amendment): every record, the
   band added to the track above the rows, record rows past the cap hidden
   and counted by a chip, one row past the density budget. (Records showing
   by default is settled: on.) Left: refilm the figures whose VCF draws rows,
@@ -117,15 +117,9 @@ widget's samples). Still differing, besides C1's Show/hide rows:
   now the location alone.
 - No "Clear N highlights" track-menu row (LinearBasicDisplay's
   `baseModel.ts`); a highlight clears one record at a time.
-- The split view and the details widget share `fullRecordOf`'s
-  `clickInFlight`, so one aborts the other's fetch; a record the adapter
-  does not find launches from the click's record, INFO-less, and the
-  junction walk stops there.
+- A record the adapter does not find launches the split view from the
+  click's record, INFO-less, and the junction walk stops there.
 - None of the fixes above has been looked at in the running app.
-- The records-only opening settle writes `height` into the track's config
-  delta, so Settings shows a Reset on a height nobody set, on every
-  sites-only or one-sample VCF (`DrawerWidget.test.tsx` moved its reset test
-  to a GFF3 track rather than pin it).
 - A one-sample VCF opens as its records (ADR-254's eighth amendment); the
   figure specs still write `genotypes: { show: false }` on one-sample call
   sets, which keeps the over-rows look and its `Show genotypes` chip.

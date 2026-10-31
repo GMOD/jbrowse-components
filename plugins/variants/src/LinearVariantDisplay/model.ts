@@ -110,6 +110,7 @@ import {
 import { cellGlyphs } from './components/cellGlyphs.ts'
 import { withClickedSample } from './components/enrichFeatureFromClick.ts'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
+import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
 import {
   densityRung,
   fadeCellColors,
@@ -427,10 +428,17 @@ export function stateModelFactory(
         backendDrawsColumns: false,
         /**
          * #volatile
-         * Whether the first layout has decided the records-only height
-         * (`settleRecordsOpeningHeight`), which then holds.
+         * The records-only height this display opened at
+         * (`settleRecordsOpeningHeight`), held while no `height` is written.
          */
-        recordsOpeningHeightSettled: false,
+        openingHeight: undefined as number | undefined,
+        /**
+         * #volatile
+         * The records band's height over rows at its opening
+         * (`settleRecordsBandHeight`), held while no `records.height` is
+         * written.
+         */
+        openingRecordsHeight: undefined as number | undefined,
       }))
       .actions(self => {
         const { clearHoveredFeature: superClearHoveredFeature } = self
@@ -1518,26 +1526,44 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Whether the records band's height is the track's: genotype rows
-         * hidden on a VCF with samples, outside a ring, where the band and
-         * its chip strip are all the track draws and the slot waits for the
-         * rows' return.
+         * Whether a config, a session or a user's act wrote `height`.
          */
-        get bandSizesTrack() {
+        get heightWritten() {
+          return getConf(self, 'height') !== undefined
+        },
+        /**
+         * #getter
+         * `height` as written, else, with no rows, the height the track
+         * opened at, else the default. Overrides
+         * `TrackHeightMixin.configuredHeight`, so a drag, `fit` and the
+         * grow-exit bake start from the height on screen.
+         */
+        get configuredHeight(): number {
           return (
-            !self.drawsRows &&
-            !self.recordsOnly &&
-            self.hostHeight === undefined
+            getConf(self, 'height') ??
+            (self.recordsOnly ? self.openingHeight : undefined) ??
+            DEFAULT_VARIANT_DISPLAY_HEIGHT
           )
         },
         /**
          * #getter
+         * Genotype rows hidden on a VCF with samples: the band and its chip
+         * strip are all the track draws, and the slot waits for the rows'
+         * return.
+         */
+        get rowsHidden() {
+          return !self.drawsRows && !self.recordsOnly
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
          * Over genotype rows the records band and its chip strip add their
          * height to the track above them, so the rows keep the slot's height;
-         * with the rows hidden the track is the band and its chip strip
-         * (`bandSizesTrack`). With no samples the band is the display,
-         * sized by `heightMode`, and in a ring's band it is taken from the
-         * rows. Overrides `HeightModeMixin.height`.
+         * with the rows hidden the track is the band and its chip strip.
+         * With no samples the band is the display, sized by `heightMode`,
+         * and in a ring's band it is taken from the rows. Overrides
+         * `HeightModeMixin.height`.
          */
         get height(): number {
           const sized =
@@ -1546,7 +1572,7 @@ export function stateModelFactory(
               : self.fitTargetHeight
           return self.recordsOnly || self.hostHeight !== undefined
             ? sized
-            : (this.bandSizesTrack ? 0 : sized) +
+            : (self.rowsHidden ? 0 : sized) +
                 self.topBands.recordsHeight +
                 self.topBands.chipsHeight
         },
@@ -1554,17 +1580,29 @@ export function stateModelFactory(
       .actions(recordsLayoutActions)
       .actions(self => {
         const superResizeHeight = self.resizeHeight
+        const superExpandToContentHeight = self.expandToContentHeight
         return {
           /**
            * #action
-           * Where the records band sizes the track (`bandSizesTrack`) the
-           * track's edge resizes the band; otherwise `HeightModeMixin`'s, on
-           * the slot the rows draw at.
+           * With the rows hidden the track's edge resizes the records band;
+           * otherwise `HeightModeMixin`'s, on the slot the rows draw at.
            */
           resizeHeight(distance: number) {
-            return self.bandSizesTrack
+            return self.rowsHidden
               ? self.resizeRecordsBand(distance)
               : superResizeHeight(distance)
+          },
+          /**
+           * #action
+           * With the rows hidden the handle's double click opens the band
+           * to its whole stack, so no record hides.
+           */
+          expandToContentHeight() {
+            return self.rowsHidden
+              ? self.resizeRecordsBand(
+                  self.recordsStackHeight - self.topBands.recordsHeight,
+                )
+              : superExpandToContentHeight()
           },
         }
       })

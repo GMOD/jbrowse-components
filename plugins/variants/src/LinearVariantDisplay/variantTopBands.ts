@@ -20,7 +20,7 @@ import type { BandBounds } from '@jbrowse/core/util/bandHeight'
 /** Where a record stops reading as a mark: the drag floor. */
 export const MIN_RECORDS_HEIGHT = 8
 
-/** `records.height`'s default, the most the band opens at over rows. */
+/** The most the band opens at over rows while no `records.height` is written. */
 export const DEFAULT_RECORDS_HEIGHT = 170
 
 /**
@@ -51,24 +51,24 @@ export interface VariantTopBands {
 export const RECORDS_BAND_BOUNDS: BandBounds = { min: MIN_RECORDS_HEIGHT }
 
 /**
- * The records band over genotype rows: the height written to
- * `records.height` (by its seam drag, a config, or its opening settle),
+ * The records band over genotype rows: the height it holds (written to
+ * `records.height` by its seam drag or a config, or settled at its opening),
  * whatever the records in view need, so a pan never resizes the track. Until
- * one is written, its packed stack up to the default. Past its height the fit
+ * one holds, its packed stack up to the default. Past its height the fit
  * ladder drops labels and the rows that still do not fit hide.
  */
 export function recordsBandHeightOverRows({
   recordsHeight,
-  recordsHeightWritten,
+  recordsHeightHeld,
   recordsContentHeight,
 }: {
   recordsHeight: number
-  recordsHeightWritten: boolean
+  recordsHeightHeld: boolean
   /** The `full` rung's stack height, labels included. */
   recordsContentHeight: number
 }) {
   const height = boundBandHeight(recordsHeight, RECORDS_BAND_BOUNDS)
-  return recordsHeightWritten
+  return recordsHeightHeld
     ? height
     : Math.min(height, Math.ceil(recordsContentHeight))
 }

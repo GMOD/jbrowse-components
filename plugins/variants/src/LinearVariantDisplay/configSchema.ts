@@ -100,6 +100,9 @@ import { retiredConfigSpellings } from './retired.ts'
  * }
  * ```
  */
+/** The height the rows take, and records alone open up to, with `height` unset. */
+export const DEFAULT_VARIANT_DISPLAY_HEIGHT = 200
+
 export default function configSchemaFactory() {
   return ConfigurationSchema(
     VARIANT_DISPLAY,
@@ -108,10 +111,10 @@ export default function configSchemaFactory() {
        * #slot
        */
       height: {
-        type: 'number',
-        defaultValue: 200,
+        type: 'maybeNumber',
+        defaultValue: undefined,
         description:
-          "Starting height in pixels for the whole display, including any band above the rows; drag-resizable, and the rows divide what is left while row height is on auto-fit. Left unset with no rows, the track opens once at its records' stack, up to this",
+          "Height in pixels of the genotype rows, which the records band and its chips sit above; drag-resizable, and the rows divide it while row height is on auto-fit. With no rows, the height of the records. Unset, the rows take 200, and with no rows the track opens once at its records' stack, up to 200",
       },
       /**
        * #slot

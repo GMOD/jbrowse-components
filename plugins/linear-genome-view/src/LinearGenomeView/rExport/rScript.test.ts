@@ -236,8 +236,8 @@ test('a tabix GTF reads by its path, as ggjbrowse picks GtfTabixAdapter for .gtf
   expect(script).toContain('jbrowse_features("/data/genes.gtf.gz",\n  locus')
 })
 
-// A variant display draws sample rows unless the file has none or
-// `genotypes.show` is off, where its records alone read as a feature track.
+// A variant display draws sample rows unless the file has none or they are
+// hidden, where its records alone read as a feature track.
 test('variant tracks read as their displays draw them', () => {
   const script = scriptOf({
     ...AT_ONE,

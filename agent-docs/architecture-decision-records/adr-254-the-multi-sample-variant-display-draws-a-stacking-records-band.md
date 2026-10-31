@@ -305,10 +305,11 @@ its ladder, the hiding and the chip stay.
   room, where it used to keep the cap.
 - **The height settles once, as the records-only height does.** Unwritten,
   the band is its stack up to the default (170), and the first layout that
-  draws a record writes what it draws (`settleRecordsBandHeight`, the
-  `RecordsBandHeight` autorun), genotypes hidden or not. The written height
-  lands in the display's config, so a session keeps it, as a track's
-  `height` does. A VCF opening on a window with no record
+  draws a record holds what it draws (`settleRecordsBandHeight`, the
+  `RecordsBandHeight` autorun), genotypes hidden or not. It holds on the
+  display, never written, so viewing a track edits no session (ADR-255's
+  amendment "the opening heights live on the display"); a drag or
+  `+N hidden` writes `records.height`, which wins. A VCF opening on a window with no record
   spends nothing until one is in view; after that an empty window shows the
   band empty.
 - **`+N hidden` sets the height to the whole stack** (`showAllRecordRows`).

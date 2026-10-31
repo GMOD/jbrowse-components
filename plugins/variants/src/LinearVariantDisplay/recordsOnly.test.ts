@@ -367,6 +367,25 @@ describe('the track edge with genotypes hidden', () => {
     expect(display.availableHeight).toBe(200)
   })
 
+  test('pushed shut on an empty window writes nothing', () => {
+    const { display } = recordsDisplayAt([], 10, {}, true, {
+      genotypes: { show: false },
+    })
+    const start = display.height
+    dragTrackEdge(display, [-1, 0])
+    expect(display.height).toBe(start)
+    expect(display.recordsHeightWritten).toBe(false)
+  })
+
+  test('a double click opens the band to every record', () => {
+    const { display } = recordsDisplayAt(PILE, 1, { height: 20 }, true, {
+      genotypes: { show: false },
+    })
+    expect(display.recordsHiddenCount).toBeGreaterThan(0)
+    display.expandToContentHeight()
+    expect(display.recordsHiddenCount).toBe(0)
+  })
+
   test('over rows resizes the rows', () => {
     const { display } = recordsDisplayAt(FEW, 10)
     const band = display.topBands.recordsHeight

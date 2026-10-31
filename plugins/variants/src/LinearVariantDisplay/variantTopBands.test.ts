@@ -67,13 +67,13 @@ describe('the band over rows', () => {
   const unwritten = (recordsHeight: number, recordsContentHeight: number) =>
     recordsBandHeightOverRows({
       recordsHeight,
-      recordsHeightWritten: false,
+      recordsHeightHeld: false,
       recordsContentHeight,
     })
   const written = (recordsHeight: number, recordsContentHeight: number) =>
     recordsBandHeightOverRows({
       recordsHeight,
-      recordsHeightWritten: true,
+      recordsHeightHeld: true,
       recordsContentHeight,
     })
 
@@ -231,18 +231,19 @@ describe('the band on a display', () => {
   })
 })
 
-// the band's height over rows is the one written: a pan into more records or
+// the band's height over rows is the one it holds: a pan into more records or
 // fewer fits them inside it, and moves nothing below the band
 describe('a band keeps its height', () => {
-  test('its first layout with a record writes its stack', () => {
+  test('its first layout with a record holds its stack, writing nothing', () => {
     const { display } = recordsDisplayAt(KIT, 51)
-    expect(display.recordsHeightWritten).toBe(true)
+    expect(display.recordsHeightHeld).toBe(true)
+    expect(display.recordsHeightWritten).toBe(false)
     expect(display.recordsHeight).toBe(naturalHeight())
   })
 
-  test('a window with no record writes nothing, and spends nothing', () => {
+  test('a window with no record holds nothing, and spends nothing', () => {
     const { display } = recordsDisplayAt([], 51)
-    expect(display.recordsHeightWritten).toBe(false)
+    expect(display.recordsHeightHeld).toBe(false)
     expect(display.topBands.recordsHeight).toBe(0)
 
     display.setCellData(recordsCellData(KIT), [0])
@@ -263,12 +264,12 @@ describe('a band keeps its height', () => {
     expect(display.height).toBe(height)
   })
 
-  // a written height equal to the default is still written: a dense window
-  // opens at the default and keeps it on a pan to a sparse one
+  // a held height equal to the default still holds: a dense window opens at
+  // the default and keeps it on a pan to a sparse one
   test('a dense window opens at the default and keeps it', () => {
     const { display } = recordsDisplayAt(NESTED, 51, { mark: { height: 40 } })
     expect(display.recordsStackHeight).toBeGreaterThan(DEFAULT_RECORDS_HEIGHT)
-    expect(display.recordsHeightWritten).toBe(true)
+    expect(display.recordsHeightHeld).toBe(true)
     expect(display.topBands.recordsHeight).toBe(DEFAULT_RECORDS_HEIGHT)
 
     display.setCellData(recordsCellData(KIT), [0])
@@ -286,7 +287,7 @@ describe('a band keeps its height', () => {
       genotypes: { show: false },
     })
     const settled = display.topBands.recordsHeight
-    expect(display.recordsHeightWritten).toBe(true)
+    expect(display.recordsHeightHeld).toBe(true)
     display.setCellData(recordsCellData([]), [0])
     expect(display.topBands.recordsHeight).toBe(settled)
   })

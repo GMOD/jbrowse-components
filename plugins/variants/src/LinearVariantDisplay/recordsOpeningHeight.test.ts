@@ -1,3 +1,5 @@
+import { setConf } from '@jbrowse/core/configuration'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { MIN_GROW_HEIGHT } from '@jbrowse/plugin-features/band'
 
 import { recordsCellData, recordsDisplayAt } from './recordsBand.fixture.ts'
@@ -103,5 +105,60 @@ describe('the first layout keeps the height it has', () => {
     })
     expect(display.height).toBeLessThan(200)
     expect(display.configuredHeight).toBe(200)
+  })
+})
+
+// the opening heights live on the display: opening a track edits no session,
+// shows no track as overridden, and leaves Reset and undo nothing to fight
+describe('an opening height writes nothing', () => {
+  test('with no rows', () => {
+    const { display } = recordsDisplayAt(SPARSE, 10, {}, NO_ROWS)
+    expect(display.height).toBeLessThan(200)
+    expect(getSnapshot(display.configuration)).not.toHaveProperty('height')
+  })
+
+  test('over rows, for the band', () => {
+    const { display } = recordsDisplayAt(SPARSE, 10)
+    expect(display.topBands.recordsHeight).toBeGreaterThan(0)
+    expect(display.recordsHeightHeld).toBe(true)
+    expect(display.recordsHeightWritten).toBe(false)
+  })
+
+  test('a drag starts from the opening height and writes where it ends', () => {
+    const { display } = recordsDisplayAt(SPARSE, 10, {}, NO_ROWS)
+    const opened = display.height
+    display.resizeHeight(10)
+    expect(display.height).toBe(opened + 10)
+    expect(getSnapshot(display.configuration).height).toBe(opened + 10)
+  })
+
+  test('a reset returns to the opening height', () => {
+    const { display } = recordsDisplayAt(SPARSE, 10, {}, NO_ROWS)
+    const opened = display.height
+    display.resizeHeight(40)
+    display.view.setNewView(1, 0)
+    display.setCellData(recordsCellData(PILE), [0])
+    setConf(display, 'height', undefined)
+    expect(display.height).toBe(opened)
+  })
+
+  test('a written height of the default holds', () => {
+    const { display } = recordsDisplayAt(SPARSE, 10, {}, NO_ROWS, {
+      height: 200,
+    })
+    expect(display.height).toBe(200)
+  })
+})
+
+describe('a one-sample VCF opening as its records', () => {
+  test('gives its row the default height once the row is asked for', () => {
+    const { display } = recordsDisplayAt(SPARSE, 10, {}, true, {
+      genotypes: {},
+    })
+    expect(display.recordsOnly).toBe(true)
+    expect(display.height).toBeLessThan(200)
+    display.setShowGenotypes(true)
+    expect(display.recordsOnly).toBe(false)
+    expect(display.availableHeight).toBe(200)
   })
 })

@@ -376,10 +376,11 @@ a `recordsOnly` choice in the model belongs there.
   `height`, and `HeightModeMixin` sizes it as it sizes a feature track
   (`heightMode` fit/fixed/grow, `growMaxHeight`; `growTargetHeight` is the
   `full` stack on screen). It opens at that stack, once: the first layout
-  with a record on screen writes `height` as
-  `min(growTargetHeight, height)` (`settleRecordsOpeningHeight`, flagged by
-  `recordsOpeningHeightSettled`), unless a config, session or drag wrote
-  `height`, rows drew at that layout, or `grow` or a ring's host sizes it.
+  with a record on screen holds `min(growTargetHeight, 200)` in the
+  `openingHeight` volatile (`settleRecordsOpeningHeight`), which
+  `configuredHeight` reads while `recordsOnly` and no `height` is written,
+  unless `grow` or a ring's host sizes it. Nothing is written, so viewing a
+  track edits no session; `height` has no default, so a written 200 holds.
   After that a pan never moves it (ADR-255's amendment). Before the listing lands it is not records-only, so
   a sampled VCF never flashes the records-only height. The records
   take the one color rule below, and no genotype is keyed unless
@@ -431,13 +432,15 @@ a `recordsOnly` choice in the model belongs there.
   load are `RegionTooLargeMixin`'s. Unlike the feature RPC there is no
   pre-fetch sample: a refused window still reads its records once per
   settled viewport.
-- **Its height over rows is written, and added.** `records.height` (no
-  default, so a value equal to the default still reads as written), once a
-  drag, a config or the opening settle writes it, whatever the records in
-  view need, so a pan never resizes the track (`recordsBandHeightOverRows`).
-  Unwritten, the `full` rung's packed height at compact feature size up to
-  the default (170), until the first layout that draws a record writes that
-  (`settleRecordsBandHeight`). The model's `height` is the rows' slot
+- **Its height over rows holds, and is added.** `records.height` (no
+  default, so a value equal to the default still reads as written) once a
+  drag, `+N hidden` or a config writes it, else the `openingRecordsHeight`
+  volatile the first layout that draws a record holds
+  (`settleRecordsBandHeight`), whatever the records in view need, so a pan
+  never resizes the track (`recordsBandHeightOverRows`). Before that, the
+  `full` rung's packed height at compact feature size up to the default
+  (170). With the rows hidden (`rowsHidden`) the track's edge and its double
+  click resize the band. The model's `height` is the rows' slot
   plus the band, so the rows keep their slot `height` under every
   `heightMode` (`growMaxHeight` is Infinity over rows); in a ring's band the
   band is taken from the rows instead.

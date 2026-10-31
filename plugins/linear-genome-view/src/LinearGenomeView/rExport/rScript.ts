@@ -22,7 +22,7 @@ export interface RExportTrack {
   /** The display's resolved sizing, which a feature track exports so the figure drops what the view drops. */
   heightMode?: unknown
   height?: unknown
-  /** A variant display drawing its records alone, with no sample rows, which reads as a feature track. */
+  /** A variant display drawing its records alone, its genotype rows absent or hidden, which reads as a feature track. */
   recordsOnly?: boolean
 }
 

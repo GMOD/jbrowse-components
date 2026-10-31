@@ -93,6 +93,7 @@ export interface RecordsSettingsHost {
   colorEncoding: ReturnType<typeof cellColorEncodingOf>
   gateActive: boolean
   aboveForceLoadFloor: boolean
+  openingRecordsHeight: number | undefined
 }
 
 export function recordsSettingsViews(self: RecordsSettingsHost) {
@@ -111,21 +112,33 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     },
     /**
      * #getter
-     * Whether a drag, a config or the opening settle wrote
-     * `records.height`; until then the band over rows is its stack, up to
-     * the default.
+     * Whether a drag, `+N hidden` or a config wrote `records.height`.
      */
     get recordsHeightWritten() {
       return getConf(self, ['records', 'height']) !== undefined
     },
     /**
      * #getter
-     * `records.height`, or the default the band opens at up to its stack
-     * while none is written. Raw: what the band spends is
+     * Whether the band's height holds: written, or settled at its opening.
+     * Until then the band over rows is its stack, up to the default.
+     */
+    get recordsHeightHeld() {
+      return (
+        this.recordsHeightWritten || self.openingRecordsHeight !== undefined
+      )
+    },
+    /**
+     * #getter
+     * `records.height`, else the height the band opened at, else the
+     * default it opens at up to its stack. Raw: what the band spends is
      * `topBands.recordsHeight`.
      */
     get recordsHeight(): number {
-      return getConf(self, ['records', 'height']) ?? DEFAULT_RECORDS_HEIGHT
+      return (
+        getConf(self, ['records', 'height']) ??
+        self.openingRecordsHeight ??
+        DEFAULT_RECORDS_HEIGHT
+      )
     },
     /**
      * #getter
@@ -686,7 +699,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
         ? self.height
         : recordsBandHeightOverRows({
             recordsHeight: self.recordsHeight,
-            recordsHeightWritten: self.recordsHeightWritten,
+            recordsHeightHeld: self.recordsHeightHeld,
             recordsContentHeight: fullStackHeight.get(),
           }),
       showChips: self.atGenomicPositions && !self.recordsOnly,
@@ -894,6 +907,8 @@ export type RecordsLayout = ReturnType<typeof recordsLayoutViews>
 
 interface RecordsLayoutActionsHost extends RecordsLayout {
   setRecordsHeight: (arg: number) => void
+  configuration: RecordsSettingsHost['configuration']
+  openingRecordsHeight: number | undefined
 }
 
 export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
@@ -907,66 +922,70 @@ export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
     },
     /**
      * #action
-     * Resize the band by `distance`, answering how far it moved, as
-     * `resizeHeight` answers for the track.
+     * Resize the band by `distance` from what it draws, answering how far
+     * it moved, as `resizeHeight` answers for the track. A resize the
+     * clamp leaves where it is writes nothing, so an empty band pushed
+     * shut stays unwritten rather than opening at the floor.
      */
     resizeRecordsBand(distance: number) {
       const before = self.topBands.recordsHeight
-      self.setRecordsHeight(before + distance)
+      const after = clampBandHeight(
+        before,
+        before + distance,
+        RECORDS_BAND_BOUNDS,
+      )
+      if (after !== before) {
+        setConf(self, ['records', 'height'], after)
+      }
       return self.topBands.recordsHeight - before
     },
     /**
      * #action
-     * Write the band's height over rows once, at its first layout with a
-     * record on screen: what it draws then, its stack up to the default.
-     * From then on a pan fits the records inside the band rather than
-     * resizing it, and a region with no record before that spends nothing.
+     * Hold the band's height over rows from its first layout with a record
+     * on screen: what it draws then, its stack up to the default. From
+     * then on a pan fits the records inside the band rather than resizing
+     * it, and a region with no record before that spends nothing. Held on
+     * this display alone, never written, so viewing a track edits no
+     * session; a written `records.height` wins over it.
      */
     settleRecordsBandHeight() {
-      self.setRecordsHeight(self.topBands.recordsHeight)
+      self.openingRecordsHeight = self.topBands.recordsHeight
     },
   }
 }
 
 interface RecordsOpeningHeightHost
   extends RecordsLayoutHost, RecordsLayout, RecordsLayoutActionsHost {
-  configuration: RecordsSettingsHost['configuration']
-  recordsOpeningHeightSettled: boolean
+  openingHeight: number | undefined
+  heightWritten: boolean
   hostHeight: number | undefined
   configuredHeight: number
-  setHeight: (height: number) => number
 }
 
 export function recordsOpeningHeightActions(self: RecordsOpeningHeightHost) {
   return {
     /**
      * #action
-     * Size a records-only track once, at its first layout with a record
-     * on screen: its `full` stack up to the slot's `height`, so a sparse
-     * window opens compact. Over rows, under `grow`, inside a ring, or
-     * with a `height` a config, a session or a drag wrote, it keeps the
-     * height it has. Never again for this display, so a pan into a
-     * denser window fits the records inside the box rather than moving it.
+     * Hold a records-only track's height from its first layout with a
+     * record on screen: its `full` stack up to the default, so a sparse
+     * window opens compact. Once for this display, so a pan into a denser
+     * window fits the records inside the box rather than moving it. Held
+     * on this display alone, never written, so viewing a track edits no
+     * session; a written `height` wins over it.
      */
     settleRecordsOpeningHeight() {
-      self.recordsOpeningHeightSettled = true
-      const heightWritten = getSnapshot(self.configuration).height !== undefined
-      if (
-        self.recordsOnly &&
-        !self.autoHeight &&
-        self.hostHeight === undefined &&
-        !heightWritten
-      ) {
-        self.setHeight(Math.min(self.growTargetHeight, self.configuredHeight))
-      }
+      self.openingHeight = Math.min(
+        self.growTargetHeight,
+        self.configuredHeight,
+      )
     },
   }
 }
 
 /**
- * Settle the opening height at the first layout with data: a payload
- * laid out and, with no rows, a record on screen to measure. Over rows the
- * band settles its own height at the first layout that draws a record.
+ * Settle the opening heights at the first layout with a record on screen:
+ * with no rows the track's, unless `grow`, a ring or a written `height`
+ * sizes it; over rows the band's, unless `records.height` is written.
  */
 export function installRecordsOpeningHeight(
   self: RecordsOpeningHeightHost &
@@ -977,10 +996,14 @@ export function installRecordsOpeningHeight(
     self,
     () => {
       if (
-        !self.recordsOpeningHeightSettled &&
+        self.recordsOnly &&
+        self.openingHeight === undefined &&
+        !self.heightWritten &&
+        !self.autoHeight &&
+        self.hostHeight === undefined &&
         self.cellData !== undefined &&
         self.canRender &&
-        (!self.recordsOnly || self.recordsOnScreenIds.size > 0)
+        self.recordsOnScreenIds.size > 0
       ) {
         self.settleRecordsOpeningHeight()
       }
@@ -993,7 +1016,7 @@ export function installRecordsOpeningHeight(
       if (
         !self.recordsOnly &&
         self.showRecords &&
-        !self.recordsHeightWritten &&
+        !self.recordsHeightHeld &&
         self.cellData !== undefined &&
         self.canRender &&
         self.topBands.recordsHeight > 0
