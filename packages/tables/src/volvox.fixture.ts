@@ -56,7 +56,7 @@ export const SPLICED = {
 
 /**
  * The SAM spec's example reads, none with base qualities (QUAL `*`), as a
- * CRAM, which reads each missing score as 255 where a BAM reads none.
+ * CRAM.
  */
 export const NO_QUALITIES = {
   adapterConfig: {

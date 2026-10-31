@@ -283,3 +283,17 @@ describe('an abandoned setup', () => {
     expect(reads.every(signal => signal?.aborted)).toBe(true)
   })
 })
+
+test('a CRAM record stored with QUAL * reports no quality, as its BAM twin does', async () => {
+  const region = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 }
+  const features = await firstValueFrom(
+    makeAdapter('../../../../test_data/volvox/volvox-samspec.cram')
+      .getFeatures(region)
+      .pipe(toArray()),
+  )
+  expect(features.length).toBe(6)
+  for (const feature of features) {
+    expect(feature.get('qual')).toBeUndefined()
+    expect(feature.get('NUMERIC_QUAL')).toBeUndefined()
+  }
+})

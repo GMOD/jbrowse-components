@@ -75,11 +75,16 @@ export default class CramSlightlyLazyFeature
   }
 
   get qual() {
-    return this.qualityScores?.join(' ')
+    return this.qualRaw?.join(' ')
   }
 
+  // A SAM QUAL of '*' reaches a CRAM as preserved scores of 0xFF; @gmod/bam
+  // reports such a record as having none, and so does this.
   get qualRaw() {
-    return this.qualityScores
+    const scores = this.qualityScores
+    return scores && scores.length > 0 && scores[0] !== 0xff
+      ? scores
+      : undefined
   }
 
   get refName() {
