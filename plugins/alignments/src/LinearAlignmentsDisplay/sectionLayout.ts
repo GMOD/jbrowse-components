@@ -1,9 +1,15 @@
-import { reservedPx, stackBands } from '@jbrowse/core/util/bandLayout'
+import {
+  bandDragBounds,
+  boundStackedBands,
+  reservedPx,
+  stackBands,
+} from '@jbrowse/core/util/bandLayout'
 
 import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { ReadConnectionsMode } from './constants.ts'
 import type { ArcBand, SectionRender } from './renderers/rendererTypes.ts'
+import type { Band, BandPlot } from '@jbrowse/core/util/bandLayout'
 
 // This display's band order, stated once: what a section reserves above its
 // pileup, top to bottom. Both the pooled geometry and the per-section stacking
@@ -212,21 +218,67 @@ export function totalBelowCoverageOverhead(
   return total
 }
 
-export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
-  const hasArcsBand = reservesArcsBand(s) && s.hasArcs
-  const hasSashimiBand = reservesSashimiBand(s)
-  const { top, reserved, bottom } = stackBands(BAND_ORDER, {
+type BandKey = (typeof BAND_ORDER)[number]
+
+function belowCoverageBandStack(
+  s: BelowCoverageBandsInput,
+): Record<BandKey, Band> {
+  return {
     coverage: { active: s.showCoverage, height: s.coverageHeight },
-    arcs: { active: hasArcsBand, height: s.readConnectionsHeight },
-    sashimi: { active: hasSashimiBand, height: s.sashimiHeight },
-  })
+    arcs: {
+      active: reservesArcsBand(s) && s.hasArcs,
+      height: s.readConnectionsHeight,
+    },
+    sashimi: { active: reservesSashimiBand(s), height: s.sashimiHeight },
+  }
+}
+
+// The three stated heights bound against the plot they share, over the pooled
+// answer of which strips draw. Grouped lanes repeat the stack and reserve a
+// subset of it, so binding the pooled stack keeps every lane's stack inside
+// the plot too.
+export function boundBelowCoverageHeights(
+  s: BelowCoverageBandsInput,
+  plot: BandPlot,
+) {
+  const { coverage, arcs, sashimi } = boundStackedBands(
+    BAND_ORDER,
+    belowCoverageBandStack(s),
+    plot,
+  )
+  return {
+    coverageHeight: coverage.height,
+    readConnectionsHeight: arcs.height,
+    sashimiHeight: sashimi.height,
+  }
+}
+
+// The legal range for a drag of one band over the pooled stack, which every
+// lane's handle for that band resizes.
+export function belowCoverageDragBounds(
+  s: BelowCoverageBandsInput,
+  key: BandKey,
+  plot: BandPlot,
+) {
+  return bandDragBounds(
+    stackBands(BAND_ORDER, belowCoverageBandStack(s)),
+    key,
+    plot,
+  )
+}
+
+export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
+  const { top, reserved, bottom } = stackBands(
+    BAND_ORDER,
+    belowCoverageBandStack(s),
+  )
   return {
     // The coverage band's reserved height, 0 when off — what the render state
     // and the coverage painters/hit tests take, so none of them re-derives the
     // gate from `showCoverage` beside a raw height.
     coverageHeight: reserved.coverage,
-    hasArcsBand,
-    hasSashimiBand,
+    hasArcsBand: reserved.arcs > 0,
+    hasSashimiBand: reserved.sashimi > 0,
     arcsBandTop: top.arcs,
     sashimiBandTop: top.sashimi,
     bottom,

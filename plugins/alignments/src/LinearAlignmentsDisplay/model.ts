@@ -32,11 +32,7 @@ import {
   withFeatureDetails,
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
-import {
-  MIN_BAND_HEIGHT,
-  boundBandHeight,
-  clampBandHeight,
-} from '@jbrowse/core/util/bandHeight'
+import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import { sameStrings } from '@jbrowse/core/util/sameStrings'
@@ -210,6 +206,8 @@ import { sashimiBandState, sashimiLabels } from './renderers/sashimiMarks.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import {
   belowCoverageBandsGeometry,
+  belowCoverageDragBounds,
+  boundBelowCoverageHeights,
   buildSectionRenders,
   computeStackedSections,
   totalBelowCoverageOverhead,
@@ -260,6 +258,7 @@ import type {
 } from './renderers/rendererTypes.ts'
 import type { SashimiLabel } from './renderers/sashimiMarks.ts'
 import type {
+  BelowCoverageBandsInput,
   BelowCoverageBandsSettings,
   SectionsLayout,
 } from './sectionLayout.ts'
@@ -270,6 +269,7 @@ import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { BandPlot } from '@jbrowse/core/util/bandLayout'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
@@ -1102,37 +1102,49 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The ceiling of the three bands stacked over the pileup, which the
-           * resize handles drag against and `bandHeights` draws within. Leaves
-           * the pileup a row. Reads `fitTargetHeight`, not `height`, which
+           * The plot the three bands are taken from, which the resize handles
+           * drag against and `bandHeights` binds within. Leaves the pileup a
+           * row while it shows. Reads `fitTargetHeight`, not `height`, which
            * derives from the layout these heights feed in grow mode.
            */
-          get resizableBandBounds() {
-            const pileupReservePx = self.showPileup ? MIN_BAND_HEIGHT : 0
+          get bandPlot(): BandPlot {
             return {
-              max: Math.max(
-                MIN_BAND_HEIGHT,
-                self.fitTargetHeight - pileupReservePx,
-              ),
+              height: self.fitTargetHeight,
+              floor: self.showPileup ? MIN_BAND_HEIGHT : 0,
+            }
+          },
+
+          /**
+           * #getter
+           * The below-coverage bands as stated: the height slots, the settings
+           * and whether any lane has arcs or a sashimi junction bound for its
+           * strip.
+           */
+          get statedBelowCoverageBands(): BelowCoverageBandsInput {
+            return {
+              showCoverage: self.showCoverage,
+              coverageHeight: self.coverageHeight,
+              drawnReadConnections: self.drawnReadConnections,
+              readConnectionsDown: self.readConnectionsPlacement === 'down',
+              readConnectionsHeight: self.readConnectionsHeight,
+              showSashimi: self.showSashimi,
+              sashimiHeight: self.sashimiHeight,
+              hasArcs: this.arcsResult.inkGroupKeys.size > 0,
+              hasSashimiDownArcs: this.sashimiDownArcLanes.size > 0,
             }
           },
 
           /**
            * #getter
            * The three band heights as every consumer draws them: the slots
-           * bound to `resizableBandBounds`, since a config or a session
-           * snapshot states a height no drag clamped.
+           * bound against `bandPlot` top-down (`boundStackedBands`), since a
+           * config or a session snapshot states a height no drag clamped.
            */
           get bandHeights() {
-            const bounds = { min: 0, ...this.resizableBandBounds }
-            return {
-              coverageHeight: boundBandHeight(self.coverageHeight, bounds),
-              readConnectionsHeight: boundBandHeight(
-                self.readConnectionsHeight,
-                bounds,
-              ),
-              sashimiHeight: boundBandHeight(self.sashimiHeight, bounds),
-            }
+            return boundBelowCoverageHeights(
+              this.statedBelowCoverageBands,
+              this.bandPlot,
+            )
           },
 
           /**
@@ -1142,28 +1154,20 @@ export default function stateModelFactory(
            * answered.
            */
           get belowCoverageBandsSettings(): BelowCoverageBandsSettings {
-            return {
-              ...this.bandHeights,
-              showCoverage: self.showCoverage,
-              drawnReadConnections: self.drawnReadConnections,
-              readConnectionsDown: self.readConnectionsPlacement === 'down',
-              showSashimi: self.showSashimi,
-            }
+            const { hasArcs, hasSashimiDownArcs, ...settings } =
+              this.statedBelowCoverageBands
+            return { ...settings, ...this.bandHeights }
           },
 
           /**
            * #getter
-           * Inputs to `belowCoverageBandsGeometry`: the settings above plus
+           * Inputs to `belowCoverageBandsGeometry`: the bound heights plus
            * whether any lane has arcs or a sashimi junction bound for its
            * strip. Pooled over the lanes, so it is the ungrouped answer; the
            * grouped stack's total is `totalBandOverhead`.
            */
-          get belowCoverageBandsInput() {
-            return {
-              ...this.belowCoverageBandsSettings,
-              hasArcs: this.arcsResult.inkGroupKeys.size > 0,
-              hasSashimiDownArcs: this.sashimiDownArcLanes.size > 0,
-            }
+          get belowCoverageBandsInput(): BelowCoverageBandsInput {
+            return { ...this.statedBelowCoverageBands, ...this.bandHeights }
           },
 
           /**
@@ -3237,7 +3241,11 @@ export default function stateModelFactory(
               clampBandHeight(
                 self.coverageHeight,
                 height,
-                self.resizableBandBounds,
+                belowCoverageDragBounds(
+                  self.belowCoverageBandsInput,
+                  'coverage',
+                  self.bandPlot,
+                ),
               ),
             )
           },
@@ -3252,7 +3260,11 @@ export default function stateModelFactory(
               clampBandHeight(
                 self.readConnectionsHeight,
                 height,
-                self.resizableBandBounds,
+                belowCoverageDragBounds(
+                  self.belowCoverageBandsInput,
+                  'arcs',
+                  self.bandPlot,
+                ),
               ),
             )
           },
@@ -3267,7 +3279,11 @@ export default function stateModelFactory(
               clampBandHeight(
                 self.sashimiHeight,
                 height,
-                self.resizableBandBounds,
+                belowCoverageDragBounds(
+                  self.belowCoverageBandsInput,
+                  'sashimi',
+                  self.bandPlot,
+                ),
               ),
             )
           },

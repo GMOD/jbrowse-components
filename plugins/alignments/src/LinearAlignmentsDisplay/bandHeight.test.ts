@@ -1,7 +1,11 @@
 import { setConf } from '@jbrowse/core/configuration'
 
 import { requireReadsConf } from './configSlotViews.ts'
-import { bootAlignmentsDisplay } from './testUtils.ts'
+import {
+  bootAlignmentsDisplay,
+  makeEmptyAlignmentsResult,
+  oneReadWithMate,
+} from './testUtils.ts'
 
 // Builds a real LinearAlignmentsDisplay so the floor is exercised through the
 // actual setters the resize handles call, rather than a reimplementation.
@@ -101,5 +105,81 @@ describe('a stated band height past its ceiling', () => {
     })
     expect(display.sections.sections[0]!.coverageHeight).toBe(ceiling)
     expect(display.belowCoverageBands.coverageHeight).toBe(ceiling)
+  })
+})
+
+// The bands share one plot, so each one's ceiling counts the bands stacked
+// with it: two bands each at their own ceiling took the pileup to 0 px and
+// grew the stack past the track's slot.
+describe('two bands at their ceilings', () => {
+  function withArcBand() {
+    console.warn = jest.fn()
+    const { baseSession, mount } = bootAlignmentsDisplay()
+    const asm = {
+      initialized: true,
+      regions: [
+        { refName: 'ctgA', start: 0, end: 50_000, assemblyName: 'volvox' },
+      ],
+      getCanonicalRefName: (refName: string) => refName,
+      getCanonicalRefName2: (refName: string) => refName,
+    }
+    const { view, display } = mount(
+      baseSession.volatile(() => ({
+        rpcManager: {
+          call: jest.fn(() => Promise.resolve(makeEmptyAlignmentsResult())),
+        },
+        assemblyManager: {
+          get: (name: string) => (name === 'volvox' ? asm : undefined),
+          isValidRefName: () => true,
+        },
+      })),
+    )
+    view.setWidth(800)
+    const region = {
+      assemblyName: 'volvox',
+      start: 0,
+      end: 10_000,
+      refName: 'ctgA',
+    }
+    view.setDisplayedRegions([region])
+    display.setDrawnReadConnections('link')
+    display.setReadConnectionsPlacement('down')
+    display.setRpcData(
+      0,
+      { groups: [{ key: '', label: '', data: oneReadWithMate(2000) }] },
+      region,
+    )
+    expect(display.belowCoverageBands.hasArcsBand).toBe(true)
+    return display
+  }
+
+  it('leave the pileup its floor and the track its slot', () => {
+    const display = withArcBand()
+    const slot = display.height
+    display.setCoverageHeight(5000)
+    display.setReadConnectionsHeight(5000)
+    expect(display.height).toBe(slot)
+    expect(display.belowCoverageBands.bottom).toBe(slot - 20)
+    expect(display.scrollViewportHeight).toBe(20)
+  })
+
+  it('stop a drag on the lower band at the room the upper one left', () => {
+    const display = withArcBand()
+    const slot = display.height
+    display.setCoverageHeight(100)
+    display.setReadConnectionsHeight(5000)
+    expect(display.readConnectionsHeight).toBe(slot - 20 - 100)
+    expect(display.belowCoverageBands.bottom).toBe(slot - 20)
+  })
+
+  it('bind stated heights top-down, the upper band first', () => {
+    const display = withArcBand()
+    const slot = display.height
+    setConf(display, ['coverage', 'height'], 5000)
+    setConf(display, ['readConnections', 'height'], 5000)
+    expect(display.bandHeights.coverageHeight).toBe(slot - 20)
+    expect(display.bandHeights.readConnectionsHeight).toBe(0)
+    expect(display.belowCoverageBands.bottom).toBe(slot - 20)
+    expect(display.belowCoverageBands.hasArcsBand).toBe(false)
   })
 })

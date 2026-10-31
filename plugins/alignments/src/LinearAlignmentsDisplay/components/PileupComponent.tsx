@@ -179,7 +179,7 @@ const CoverageResizeHandle = observer(function CoverageResizeHandle({
             seam={bottom}
             canvasHeight={height}
             gain={i + 1}
-            value={model.coverageHeight}
+            value={model.bandHeights.coverageHeight}
             onChange={h => {
               model.setCoverageHeight(h)
             }}
@@ -226,7 +226,7 @@ const ConnectionBandResizeHandles = observer(
                   seam={bandScreenTop(section.sashimiBandTop, scroll)}
                   canvasHeight={height}
                   gain={stackedBandGain(renderSections, i, s => s.hasArcsBand)}
-                  value={model.readConnectionsHeight}
+                  value={model.bandHeights.readConnectionsHeight}
                   onChange={h => {
                     model.setReadConnectionsHeight(h)
                   }}
@@ -243,7 +243,7 @@ const ConnectionBandResizeHandles = observer(
                     i,
                     s => s.hasSashimiBand,
                   )}
-                  value={model.sashimiHeight}
+                  value={model.bandHeights.sashimiHeight}
                   onChange={h => {
                     model.setSashimiHeight(h)
                   }}
