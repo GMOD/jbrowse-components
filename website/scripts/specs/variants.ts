@@ -129,7 +129,7 @@ export const variantsSpecs: ScreenshotSpec[] = [
     actions: [
       {
         type: 'click',
-        anchor: { trackId: 'volvox_test_vcf', loc: 'ctgA:6,286', fracY: 0.6 },
+        anchor: { trackId: 'volvox_test_vcf', loc: 'ctgA:6,285', fracY: 0.6 },
       },
       { type: 'waitForText', text: 'HG00096' },
     ],
