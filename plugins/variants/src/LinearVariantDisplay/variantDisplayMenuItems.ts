@@ -50,6 +50,7 @@ import {
   JexlFilterDialog,
   RecordsFacetFieldDialog,
 } from '../shared/lazyDialogs.ts'
+import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
 import { IMPACT_FIELD } from '../shared/variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import { variantFilterFields } from '../shared/variantFilterFields.ts'
@@ -465,8 +466,15 @@ export function variantTrackMenuItems(
     ...filterMenuItems({
       // every field of the one `filter` list, each counted by whether it
       // differs from what the track's config declares (ADR-204), so an
-      // admin's cutoff is no narrowing of the user's
-      narrowings: { filter: filterFieldNarrowing(self, () => true) },
+      // admin's cutoff is no narrowing of the user's. With no rows the
+      // worker tests no site field, so none counts and none clears; each
+      // comes back with the rows.
+      narrowings: {
+        filter: filterFieldNarrowing(
+          self,
+          field => self.drawsRows || !isSiteField(field),
+        ),
+      },
       onEdit: () => {
         getDialogHost(self).queueDialog(handleClose => [
           JexlFilterDialog,

@@ -874,8 +874,6 @@ export function stateModelFactory(
         const fetchMetadata = createAdapterMetadataFetch(self)
         const openDetails = createFeatureDetailsOpener(self)
         const superSetRowColorChoice = self.setRowColorChoice
-        // the click in flight, aborted by the next: the last click wins
-        let clickInFlight: AbortController | undefined
         // Queried over the record's first base, which finds it as surely as
         // its span does without reading a 5 Mb SV's whole span.
         function adapterRecordOf(feature: Feature, signal?: AbortSignal) {
@@ -899,14 +897,22 @@ export function stateModelFactory(
               )
             : Promise.resolve(undefined)
         }
-        async function fullRecordOf(feature: Feature) {
-          clickInFlight?.abort()
-          const click = new AbortController()
-          clickInFlight = click
-          const full = await adapterRecordOf(feature, click.signal)
-          checkAbortSignal(click.signal)
-          return full ? withClickedSample(full, feature) : feature
+        // a click in flight is aborted by the next one for the same
+        // consumer, so the last click wins; each consumer holds its own, so
+        // the details widget and the split view never abort each other
+        function latestFullRecord() {
+          let clickInFlight: AbortController | undefined
+          return async (feature: Feature) => {
+            clickInFlight?.abort()
+            const click = new AbortController()
+            clickInFlight = click
+            const full = await adapterRecordOf(feature, click.signal)
+            checkAbortSignal(click.signal)
+            return full ? withClickedSample(full, feature) : feature
+          }
         }
+        const detailsRecordOf = latestFullRecord()
+        const fullRecordOf = latestFullRecord()
         return {
           /**
            * #action
@@ -936,7 +942,7 @@ export function stateModelFactory(
            * #action
            */
           selectFeature(feature: Feature) {
-            void openDetails(() => fullRecordOf(feature))
+            void openDetails(() => detailsRecordOf(feature))
           },
           /**
            * #action
@@ -1512,11 +1518,24 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * Whether the records band's height is the track's: genotype rows
+         * hidden on a VCF with samples, outside a ring, where the band and
+         * its chip strip are all the track draws and the slot waits for the
+         * rows' return.
+         */
+        get bandSizesTrack() {
+          return (
+            !self.drawsRows &&
+            !self.recordsOnly &&
+            self.hostHeight === undefined
+          )
+        },
+        /**
+         * #getter
          * Over genotype rows the records band and its chip strip add their
          * height to the track above them, so the rows keep the slot's height;
-         * with the rows hidden the track is the band and its chip strip, the
-         * slot kept
-         * for the rows' return. With no samples the band is the display,
+         * with the rows hidden the track is the band and its chip strip
+         * (`bandSizesTrack`). With no samples the band is the display,
          * sized by `heightMode`, and in a ring's band it is taken from the
          * rows. Overrides `HeightModeMixin.height`.
          */
@@ -1527,7 +1546,7 @@ export function stateModelFactory(
               : self.fitTargetHeight
           return self.recordsOnly || self.hostHeight !== undefined
             ? sized
-            : (self.drawsRows ? sized : 0) +
+            : (this.bandSizesTrack ? 0 : sized) +
                 self.topBands.recordsHeight +
                 self.topBands.chipsHeight
         },
@@ -1538,16 +1557,12 @@ export function stateModelFactory(
         return {
           /**
            * #action
-           * With the genotype rows hidden the track is the records band and
-           * its chips, so the track's edge resizes the band; otherwise
-           * `HeightModeMixin`'s, on the slot the rows draw at.
+           * Where the records band sizes the track (`bandSizesTrack`) the
+           * track's edge resizes the band; otherwise `HeightModeMixin`'s, on
+           * the slot the rows draw at.
            */
           resizeHeight(distance: number) {
-            const bandIsTrack =
-              !self.drawsRows &&
-              !self.recordsOnly &&
-              self.hostHeight === undefined
-            return bandIsTrack
+            return self.bandSizesTrack
               ? self.resizeRecordsBand(distance)
               : superResizeHeight(distance)
           },

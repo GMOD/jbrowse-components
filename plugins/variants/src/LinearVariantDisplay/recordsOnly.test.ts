@@ -223,6 +223,20 @@ describe('the track menu', () => {
     expect(subMenuLabels(menu(off), 'Filter by')).not.toContain('Missingness')
   })
 
+  // the worker tests no site field without genotypes, so a MAF floor narrows
+  // nothing there, and comes back with the rows
+  test('genotypes off counts no allele-count filter', () => {
+    const { display } = recordsDisplayAt(FEW, 10)
+    display.setMinMinorAlleleFrequency(0.05)
+    const filterLabel = () =>
+      labelsOf(menu(display)).find(label => label.startsWith('Filter by'))
+    expect(filterLabel()).toBe('Filter by (1)')
+    display.setShowGenotypes(false)
+    expect(filterLabel()).toBe('Filter by...')
+    display.setShowGenotypes(true)
+    expect(filterLabel()).toBe('Filter by (1)')
+  })
+
   test('genomic positions offer Genotype rows, and with none Feature height', () => {
     const off = recordsDisplayAt(FEW, 10, {}, true, {
       genotypes: { show: false },

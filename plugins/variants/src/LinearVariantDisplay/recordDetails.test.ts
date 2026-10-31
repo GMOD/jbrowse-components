@@ -107,3 +107,25 @@ test('the last click wins: an earlier answer landing later is dropped', async ()
   expect((await second).id()).toBe('>7495>7496')
   expect(isAbortException(await first)).toBe(true)
 })
+
+// the split view's record and the details widget's are separate clicks:
+// opening the widget mid-launch once aborted the launch
+test('opening the details leaves a split view launch in flight', async () => {
+  const { display, mockRpcCall } = recordsDisplayAt(KIT, 51)
+  const answers: ((v: unknown) => void)[] = []
+  mockRpcCall.mockImplementation((_sid: string, method: string) =>
+    method === 'GetBasicFeatureDetails'
+      ? new Promise(resolve => {
+          answers.push(resolve)
+        })
+      : new Promise(() => {}),
+  )
+  const launch = display
+    .fetchFullRecord(recordClick(display, '>7494>7499'))
+    .catch((e: unknown) => e)
+  display.selectFeature(recordClick(display, '>7495>7496'))
+  answers[0]!({ feature: adapterRecord('>7494>7499') })
+  const full = await launch
+  expect(isAbortException(full)).toBe(false)
+  expect(full).toMatchObject({ uniqueId: '>7494>7499' })
+})
