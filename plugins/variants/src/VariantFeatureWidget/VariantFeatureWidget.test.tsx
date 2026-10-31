@@ -8,9 +8,12 @@ import { act, fireEvent, render } from '@testing-library/react'
 import VariantFeatureDetails from './VariantFeatureWidget.tsx'
 import { stateModelFactory } from './stateModelFactory.ts'
 
-import type { VCFFeatureSerialized } from './types.ts'
+import type { Descriptions, VCFFeatureSerialized } from './types.ts'
 
-function renderWidget(featureData: VCFFeatureSerialized) {
+function renderWidget(
+  featureData: VCFFeatureSerialized,
+  descriptions?: Descriptions,
+) {
   const pluginManager = new PluginManager([])
   const Session = types.model({
     rpcManager: types.optional(types.frozen(), {}),
@@ -18,7 +21,7 @@ function renderWidget(featureData: VCFFeatureSerialized) {
     widget: stateModelFactory(pluginManager),
   })
   const model = Session.create(
-    { widget: { type: 'VariantFeatureWidget' } },
+    { widget: { type: 'VariantFeatureWidget', descriptions } },
     { pluginManager },
   )
   model.widget.setFeatureData(featureData)
@@ -381,4 +384,33 @@ test('a record with more units than colors notes the ones that share', async () 
     samples: { S1: { GT: ['1'] } },
   })
   await findByText('2 more units share these colors')
+})
+
+const annotated = {
+  uniqueId: 'annotated',
+  refName: 'ctgA',
+  start: 176,
+  end: 177,
+  REF: 'C',
+  ALT: ['T'],
+  INFO: { ANN: ['T|stop_gained|HIGH|G1|TX1'] },
+}
+
+test('the ANN panel replaces the raw pipe-delimited attribute', async () => {
+  const { findByText, queryByText } = renderWidget(annotated, {
+    INFO: {
+      ANN: {
+        Description:
+          "Functional annotations: 'Allele | Annotation | Annotation_Impact | Gene_Name | Feature_ID'",
+      },
+    },
+  })
+  await findByText('stop_gained · HIGH · G1 · TX1')
+  expect(queryByText('T|stop_gained|HIGH|G1|TX1')).toBeNull()
+})
+
+test('ANN without header column names stays in the raw attributes', () => {
+  const { getByText, queryByText } = renderWidget(annotated)
+  expect(getByText('T|stop_gained|HIGH|G1|TX1')).toBeTruthy()
+  expect(queryByText('Variant ANN field')).toBeNull()
 })

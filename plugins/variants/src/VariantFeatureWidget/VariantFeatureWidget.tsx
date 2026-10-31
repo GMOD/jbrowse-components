@@ -18,10 +18,7 @@ import { observer } from 'mobx-react'
 import { getTraMate, symbolicAlleleBp } from '../VcfFeature/util.ts'
 import AltFormatter from './AltFormatter.tsx'
 import { tandemRepeatOf } from './TandemRepeatPanel/tandemRepeat.ts'
-import {
-  consequenceFormats,
-  headerFields,
-} from './VariantConsequence/parseConsequences.ts'
+import { consequencePanels } from './VariantConsequence/parseConsequences.ts'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { isSvLaunchType } from './svLaunchType.ts'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
@@ -42,30 +39,6 @@ const TandemRepeatPanel = lazy(
 const VariantConsequencePanel = lazy(
   () => import('./VariantConsequence/VariantConsequencePanel.tsx'),
 )
-
-const AnnotationPanel = observer(function AnnotationPanel({
-  descriptions,
-  feature,
-  fieldKey,
-}: {
-  descriptions?: Descriptions
-  feature: VCFFeatureSerialized
-  fieldKey: keyof typeof consequenceFormats
-}) {
-  const format = consequenceFormats[fieldKey]
-  const desc = descriptions?.INFO?.[fieldKey]?.Description
-  const data = feature.INFO?.[fieldKey]
-  // gate here rather than inside the panel: most variants carry neither field,
-  // and mounting the lazy panel just to have it render null still fetches its
-  // chunk on every feature click
-  return data?.length ? (
-    <VariantConsequencePanel
-      fields={desc ? headerFields(desc, format) : []}
-      data={data}
-      format={format}
-    />
-  ) : null
-})
 
 const LaunchBreakendWidgetArea = observer(function LaunchBreakendWidgetArea({
   model,
@@ -138,6 +111,7 @@ const FeatDefined = observer(function FeatDefined({
     }
   }, [feat])
   const [selectedAlt, setSelectedAlt] = useState<number | null>(null)
+  const consequences = consequencePanels(INFO, descriptions)
   const display = jexlFilterDisplay(model.track)
   const fieldActions = display
     ? (path: string[], value: unknown) =>
@@ -178,18 +152,17 @@ const FeatDefined = observer(function FeatDefined({
           )
         }
         fieldActions={fieldActions}
+        omit={consequences.map(({ key }) => key)}
       />
       <Suspense fallback={null}>
-        <AnnotationPanel
-          feature={rest}
-          descriptions={descriptions}
-          fieldKey="CSQ"
-        />
-        <AnnotationPanel
-          feature={rest}
-          descriptions={descriptions}
-          fieldKey="ANN"
-        />
+        {consequences.map(({ key, format, data, fields }) => (
+          <VariantConsequencePanel
+            key={key}
+            fields={fields}
+            data={data}
+            format={format}
+          />
+        ))}
         <LaunchBreakendWidgetArea model={model} feat={feat} />
       </Suspense>
       {clickedSample ? (

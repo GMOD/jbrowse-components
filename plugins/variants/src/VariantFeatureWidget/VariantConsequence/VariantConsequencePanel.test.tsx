@@ -5,6 +5,7 @@ import { fireEvent, render } from '@testing-library/react'
 import VariantConsequencePanel from './VariantConsequencePanel.tsx'
 import {
   consequenceFormats,
+  consequencePanels,
   headerFields,
   parseConsequences,
 } from './parseConsequences.ts'
@@ -93,22 +94,53 @@ test('renders one collapsible record per annotation with its fields', () => {
   expect(getByText('c.1A>T')).toBeTruthy()
 })
 
-// Regression: a variant that carries ANN data but whose header column names
-// never reached the widget used to render a headerless empty "No columns"
-// grid. With no resolvable columns the card is suppressed entirely.
-test('renders nothing when data is present but column names are missing', () => {
-  const { container, queryByText } = renderPanel({
-    fields: [],
-    data: ['T|stop_gained|HIGH'],
+test('Copy raw copies the pipe-delimited annotations in file order, one per line', () => {
+  const data = [
+    'T|intron_variant|MODIFIER|G1|TX2||',
+    'T|stop_gained|HIGH|G1|TX1|c.1A>T|',
+  ]
+  const writeText = jest.fn(() => Promise.resolve())
+  Object.defineProperty(window, 'isSecureContext', {
+    value: true,
+    configurable: true,
   })
-  expect(container.firstChild).toBeNull()
-  expect(queryByText('Variant ANN field')).toBeNull()
+  Object.defineProperty(navigator, 'clipboard', {
+    value: { writeText },
+    configurable: true,
+  })
+  const { getByText } = renderPanel({ fields: annFields, data })
+  fireEvent.click(getByText('Copy raw'))
+  expect(writeText).toHaveBeenCalledWith(data.join('\n'))
 })
 
-test('renders nothing when there is no ANN data', () => {
-  const { container } = renderPanel({
-    fields: ['Allele', 'Annotation'],
-    data: [],
-  })
-  expect(container.firstChild).toBeNull()
+const annHeader = {
+  INFO: {
+    ANN: {
+      Description:
+        "Functional annotations: 'Allele | Annotation | Annotation_Impact'",
+    },
+  },
+}
+
+test('a field with header column names gets a panel and leaves the raw attributes', () => {
+  const panels = consequencePanels({ ANN: ['T|stop_gained|HIGH'] }, annHeader)
+  expect(panels.map(({ key }) => key)).toEqual(['ANN'])
+  expect(panels[0]!.fields).toEqual([
+    'Allele',
+    'Annotation',
+    'Annotation_Impact',
+  ])
+})
+
+// Regression: a variant that carries ANN data but whose header column names
+// never reached the widget used to render a headerless empty "No columns"
+// grid. With no resolvable columns the values stay in the raw attributes.
+test('no panel when data is present but column names are missing', () => {
+  expect(consequencePanels({ ANN: ['T|stop_gained|HIGH'] }, undefined)).toEqual(
+    [],
+  )
+})
+
+test('no panel when there is no ANN data', () => {
+  expect(consequencePanels({ ANN: [] }, annHeader)).toEqual([])
 })

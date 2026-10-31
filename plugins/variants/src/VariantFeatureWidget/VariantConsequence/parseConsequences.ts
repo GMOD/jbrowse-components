@@ -1,5 +1,7 @@
 import { IMPACT_TIERS } from '../../shared/variantConsequence.ts'
 
+import type { Descriptions, VCFFeatureSerialized } from '../types.ts'
+
 export interface ConsequenceFormat {
   title: string
   headerRegex: RegExp
@@ -38,6 +40,21 @@ export function headerFields(description: string, format: ConsequenceFormat) {
       ?.split('|')
       .map(f => f.trim()) ?? []
   )
+}
+
+// A field whose header names no columns stays in the raw attributes, the only
+// place its values can show
+export function consequencePanels(
+  info: VCFFeatureSerialized['INFO'],
+  descriptions?: Descriptions,
+) {
+  return (['CSQ', 'ANN'] as const).flatMap(key => {
+    const format = consequenceFormats[key]
+    const data = info?.[key] ?? []
+    const desc = descriptions?.INFO?.[key]?.Description
+    const fields = desc ? headerFields(desc, format) : []
+    return data.length && fields.length ? [{ key, format, data, fields }] : []
+  })
 }
 
 export function parseConsequences(

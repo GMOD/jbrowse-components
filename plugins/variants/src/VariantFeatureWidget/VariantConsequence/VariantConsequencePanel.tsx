@@ -2,6 +2,7 @@ import { Suspense, lazy, useState } from 'react'
 
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { CopyToClipboardButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import {
@@ -102,9 +103,7 @@ const VariantConsequencePanel = observer(function VariantConsequencePanel({
   const [tableOpen, setTableOpen] = useState(false)
   const { fields, records } = parseConsequences(data, headerFields, format)
 
-  // Without the header's field list each value has no name, so there is
-  // nothing to show beyond a bare pipe-joined string
-  return records.length && fields.length ? (
+  return (
     <BaseCard title={format.title}>
       <Button
         size="small"
@@ -114,6 +113,9 @@ const VariantConsequencePanel = observer(function VariantConsequencePanel({
       >
         View as table
       </Button>
+      <CopyToClipboardButton size="small" value={() => data.join('\n')}>
+        Copy raw
+      </CopyToClipboardButton>
       {records.map(({ record, headline, color }, idx) => (
         <ConsequenceRecord
           // eslint-disable-next-line @eslint-react/no-array-index-key -- a record has no unique field and the list is fixed per feature
@@ -137,7 +139,7 @@ const VariantConsequencePanel = observer(function VariantConsequencePanel({
         </Suspense>
       ) : null}
     </BaseCard>
-  ) : null
+  )
 })
 
 export default VariantConsequencePanel
