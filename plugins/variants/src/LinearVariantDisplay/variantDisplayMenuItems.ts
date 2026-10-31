@@ -338,36 +338,49 @@ export function variantTrackMenuItems(
         ]
       : []),
     // The cell fill and the sample metadata's row color are independent
-    // color objects, so each is a block of its own.
+    // color objects, so each is a block of its own. With no rows the fill
+    // paints the records, which a phase set, a dosage or a sample cannot.
     colorByMenuItem({
       blocks: [
         {
-          header: 'Cells',
+          header: self.drawsRows ? 'Cells' : 'Records',
           rows: [
             {
-              label: 'Genotype',
-              helpText:
-                'Default coloring: allele dosage with a row per sample, the allele each haplotype carries with a row per haplotype',
-              type: 'radio',
+              ...(self.drawsRows
+                ? {
+                    label: 'Genotype',
+                    helpText:
+                      'Default coloring: allele dosage with a row per sample, the allele each haplotype carries with a row per haplotype',
+                  }
+                : {
+                    label: 'Default',
+                    helpText:
+                      'Each structural variant in the color of its SV type, keyed, and every other record in the feature track default',
+                  }),
+              type: 'radio' as const,
               checked: self.colorEncoding === undefined,
               onClick: () => {
                 self.setColorValue(undefined)
               },
             },
-            {
-              ...phaseSet,
-              helpText:
-                'Color every alt-carrying cell by the phase set (FORMAT PS) its call belongs to, so one phasing block reads as a single hue along a haplotype row; ref and no-call cells keep their normal coloring',
-              type: 'radio',
-              checked: self.colorField === PHASE_SET_FIELD,
-              disabled: phaseSet.disabled || self.unit !== 'haplotype',
-              disabledHelpText: phaseSet.disabled
-                ? undefined
-                : 'Only applies with a row per haplotype — switch Rows to Per haplotype',
-              onClick: () => {
-                self.colorByField(PHASE_SET_FIELD)
-              },
-            },
+            ...(self.drawsRows
+              ? [
+                  {
+                    ...phaseSet,
+                    helpText:
+                      'Color every alt-carrying cell by the phase set (FORMAT PS) its call belongs to, so one phasing block reads as a single hue along a haplotype row; ref and no-call cells keep their normal coloring',
+                    type: 'radio' as const,
+                    checked: self.colorField === PHASE_SET_FIELD,
+                    disabled: phaseSet.disabled || self.unit !== 'haplotype',
+                    disabledHelpText: phaseSet.disabled
+                      ? undefined
+                      : 'Only applies with a row per haplotype — switch Rows to Per haplotype',
+                    onClick: () => {
+                      self.colorByField(PHASE_SET_FIELD)
+                    },
+                  },
+                ]
+              : []),
             {
               ...needs(
                 'Consequence impact',
@@ -424,7 +437,8 @@ export function variantTrackMenuItems(
         {
           header: 'Samples',
           rows:
-            self.rowColorFieldsOffered.length || self.rowColorChoice
+            self.drawsRows &&
+            (self.rowColorFieldsOffered.length || self.rowColorChoice)
               ? rowColorItems(self)
               : [],
         },
@@ -432,7 +446,7 @@ export function variantTrackMenuItems(
       additional: [
         // Only in allele-count mode: a phased row is one haplotype, which either
         // carries the allele or does not, so the ramp has nothing to express.
-        ...(self.unit === 'haplotype'
+        ...(self.unit === 'haplotype' || !self.drawsRows
           ? []
           : [
               {

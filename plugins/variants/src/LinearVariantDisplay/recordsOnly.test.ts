@@ -248,6 +248,33 @@ describe('the track menu', () => {
     }
   })
 
+  // a phase set, a dosage and a sample color a cell, never a record
+  test('with no rows Color by offers what paints a record', () => {
+    const rows = recordsDisplayAt(FEW, 10).display
+    const off = recordsDisplayAt(FEW, 10, {}, true, {
+      genotypes: { show: false },
+    }).display
+    const noSamples = recordsDisplayAt(FEW, 10, {}, false).display
+    expect(subMenuLabels(menu(rows), 'Color by')).toEqual(
+      expect.arrayContaining(['Genotype', 'Shade by dosage']),
+    )
+    expect(
+      subMenuLabels(menu(rows), 'Color by').some(l =>
+        l.startsWith('Phase set'),
+      ),
+    ).toBe(true)
+    for (const display of [off, noSamples]) {
+      const labels = subMenuLabels(menu(display), 'Color by')
+      expect(labels).toEqual(
+        expect.arrayContaining(['Records', 'Default', 'Solid color...']),
+      )
+      for (const gone of ['Cells', 'Genotype', 'Samples', 'Shade by dosage']) {
+        expect(labels).not.toContain(gone)
+      }
+      expect(labels.some(l => l.startsWith('Phase set'))).toBe(false)
+    }
+  })
+
   // columns lay out rows, so with none the configured columns would draw
   // nothing, and leave no way back to the rows but the Layout toggle
   test('columns configured with no rows draw the band at genomic positions', () => {
