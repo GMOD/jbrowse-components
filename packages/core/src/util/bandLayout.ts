@@ -144,7 +144,7 @@ export function bandDragBounds<K extends string>(
   stack: BandStack<K>,
   key: K,
   plot: BandPlot,
-): BandBounds {
+) {
   return {
     max: Math.max(0, stackRoom(plot) - (stack.bottom - stack.reserved[key])),
   }

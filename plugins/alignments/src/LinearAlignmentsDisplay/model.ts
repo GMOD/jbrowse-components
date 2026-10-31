@@ -268,7 +268,6 @@ import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { BandPlot } from '@jbrowse/core/util/bandLayout'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
@@ -1106,7 +1105,7 @@ export default function stateModelFactory(
            * row while it shows. Reads `fitTargetHeight`, not `height`, which
            * derives from the layout these heights feed in grow mode.
            */
-          get bandPlot(): BandPlot {
+          get bandPlot() {
             return {
               height: self.fitTargetHeight,
               floor: self.showPileup ? MIN_BAND_HEIGHT : 0,

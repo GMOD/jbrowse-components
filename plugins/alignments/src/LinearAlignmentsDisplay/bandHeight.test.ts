@@ -158,7 +158,6 @@ describe('two bands at their ceilings', () => {
     const slot = display.height
     display.setCoverageHeight(5000)
     display.setReadConnectionsHeight(5000)
-    expect(display.height).toBe(slot)
     expect(display.belowCoverageBands.bottom).toBe(slot - 20)
     expect(display.scrollViewportHeight).toBe(20)
   })

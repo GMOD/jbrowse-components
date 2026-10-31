@@ -173,6 +173,7 @@ describe('a drag in a bound stack', () => {
       5000,
       bandDragBounds(stackOf(coverage, 40), 'conservation', plot),
     )
+    expect([coverage, conservation]).toEqual([240, 40])
     expect(stackOf(coverage, conservation).bottom).toBe(280)
   })
 })

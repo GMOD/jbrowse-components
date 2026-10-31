@@ -98,7 +98,7 @@ describe('a kept subset puts the focus chip in a line above the rows', () => {
 
 // The bands share the track with the rows, so each band's ceiling counts the
 // band stacked with it: each bound on its own, two bands at their ceilings
-// took the rows to 0 px and grew the track past its slot.
+// took the rows to 0 px and started them past the track's bottom edge.
 describe('two bands at their ceilings', () => {
   const bothBands = () => {
     const { display } = createMafTestEnvironment().createDisplay()
@@ -111,10 +111,18 @@ describe('two bands at their ceilings', () => {
     const slot = display.height
     display.setCoverageHeight(5000)
     display.setConservationHeight(5000)
-    expect(display.height).toBe(slot)
+    expect(display.rowsTopOffset).toBe(slot - 20)
     expect(display.rowsHeight).toBe(20)
     const { top, reserved } = display.topBands
     expect(top.conservation + reserved.conservation).toBe(slot - 20)
+  })
+
+  it('stop a drag on the lower band at the room the upper one left', () => {
+    const display = bothBands()
+    const slot = display.height
+    display.setCoverageHeight(100)
+    display.setConservationHeight(5000)
+    expect(display.conservationHeight).toBe(slot - 20 - 100)
   })
 
   it('bind stated heights top-down, the upper band first', () => {
@@ -124,7 +132,8 @@ describe('two bands at their ceilings', () => {
     setConf(display, ['conservation', 'height'], 5000)
     expect(display.topBands.reserved.coverage).toBe(slot - 20)
     expect(display.topBands.reserved.conservation).toBe(0)
-    expect(display.height).toBe(slot)
+    expect(display.rowsTopOffset).toBe(slot - 20)
+    expect(display.rowsHeight).toBe(20)
   })
 
   it('give the bands the whole track while the rows are hidden', () => {

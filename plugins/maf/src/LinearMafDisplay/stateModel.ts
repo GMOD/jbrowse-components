@@ -149,7 +149,6 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
-import type { BandPlot } from '@jbrowse/core/util/bandLayout'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type {
   CoarseTierRead,
@@ -720,7 +719,7 @@ export default function stateModelFactory(
          * The plot the bands share with the rows: the track height less the
          * focus chip's line, keeping the rows a floor while they show.
          */
-        get bandPlot(): BandPlot {
+        get bandPlot() {
           return {
             height: self.allottedHeight - self.rowFocusLineHeight,
             floor: self.showAlignments ? MIN_BAND_HEIGHT : 0,

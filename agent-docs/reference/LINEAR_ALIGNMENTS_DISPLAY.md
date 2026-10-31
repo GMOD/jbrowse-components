@@ -256,8 +256,8 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
 - **The three band heights are bound as one stack** (`bandHeights`,
   `boundBelowCoverageHeights`): top-down against `fitTargetHeight` less the
   pileup's floor, over the pooled answer of which strips draw. A lane
-  reserves a subset of that stack, so grouped sections, which repeat it and
-  scroll, stay inside the plot too. A drag clamps to the room the other
+  reserves a subset of that stack, so each grouped lane's stack stays inside
+  the plot too; the fit budget still charges every lane's stack. A drag clamps to the room the other
   bands leave (`belowCoverageDragBounds`), and a strip bound to 0 px is not
   reserved (`hasArcsBand`/`hasSashimiBand` false), so it gets no handle on
   top of the one above it.

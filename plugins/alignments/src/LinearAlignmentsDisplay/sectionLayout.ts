@@ -9,7 +9,7 @@ import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { ReadConnectionsMode } from './constants.ts'
 import type { ArcBand, SectionRender } from './renderers/rendererTypes.ts'
-import type { Band, BandPlot } from '@jbrowse/core/util/bandLayout'
+import type { BandPlot } from '@jbrowse/core/util/bandLayout'
 
 // This display's band order, stated once: what a section reserves above its
 // pileup, top to bottom. Both the pooled geometry and the per-section stacking
@@ -220,9 +220,7 @@ export function totalBelowCoverageOverhead(
 
 type BandKey = (typeof BAND_ORDER)[number]
 
-function belowCoverageBandStack(
-  s: BelowCoverageBandsInput,
-): Record<BandKey, Band> {
+function belowCoverageBandStack(s: BelowCoverageBandsInput) {
   return {
     coverage: { active: s.showCoverage, height: s.coverageHeight },
     arcs: {

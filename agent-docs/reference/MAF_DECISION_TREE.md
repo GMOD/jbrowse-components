@@ -135,7 +135,8 @@ they want; whether the band has anything to put in it is a second question, and
 answering both with the setting reserved space and painted nothing into it.
 
 **The two bands are bound as one stack.** Each bound to the track on its own,
-both at their ceilings took the rows to 0 px and grew the track past its slot.
+both at their ceilings took the rows to 0 px and started them below the
+track's bottom edge, the lower band's handle with them.
 `mafTopBands` binds them top-down against the track less the rows' floor
 (none while the rows are hidden), and every reader — paint, marks, export,
 handles, titles, axes, tooltip — takes a band's rect from it and keys on its

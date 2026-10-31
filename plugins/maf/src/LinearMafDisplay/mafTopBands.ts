@@ -32,10 +32,7 @@ function rectOf(stack: BandStack<MafBandKey>, key: MafBandKey) {
  * (`boundStackedBands`), folded into tops and a bottom, with each band's
  * rect beside the fold.
  */
-export function mafTopBands(
-  bands: Record<MafBandKey, Band>,
-  plot: BandPlot,
-): MafTopBands {
+export function mafTopBands(bands: Record<MafBandKey, Band>, plot: BandPlot) {
   const stack = stackBands(
     MAF_BAND_ORDER,
     boundStackedBands(MAF_BAND_ORDER, bands, plot),
