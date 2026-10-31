@@ -13,6 +13,7 @@ import {
   getSession,
   SimpleFeature,
 } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import {
@@ -831,11 +832,19 @@ export function stateModelFactory(
         const fetchMetadata = createAdapterMetadataFetch(self)
         const openDetails = createFeatureDetailsOpener(self)
         const superSetRowColorChoice = self.setRowColorChoice
+        // the click in flight, aborted by the next: the last click wins
+        let clickInFlight: AbortController | undefined
+        // Queried over the record's first base, which finds it as surely as
+        // its span does without reading a 5 Mb SV's whole span.
         async function fullRecordOf(feature: Feature) {
+          clickInFlight?.abort()
+          const click = new AbortController()
+          clickInFlight = click
           const refName = canonicalizeViewRefName(self, feature.get('refName'))
           const region = self.view.displayedRegions.find(
             r => r.refName === refName,
           )
+          const start = feature.get('start')
           const full = region
             ? await fetchFeatureDetails(
                 getSession(self),
@@ -844,12 +853,16 @@ export function stateModelFactory(
                 feature.id(),
                 featureSpanRegion(
                   region,
-                  feature.get('start'),
-                  feature.get('end'),
+                  start,
+                  Math.min(feature.get('end'), start + 1),
                 ),
+                { signal: click.signal },
               )
             : undefined
-          return full ? withClickedSample(full, feature) : feature
+          checkAbortSignal(click.signal)
+          return full
+            ? withClickedSample(full, feature, self.recordsOnly)
+            : feature
         }
         return {
           /**

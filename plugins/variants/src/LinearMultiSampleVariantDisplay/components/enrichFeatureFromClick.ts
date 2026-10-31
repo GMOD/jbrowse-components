@@ -18,10 +18,8 @@ export function enrichFeatureFromClick(
     id: baseFeature.id(),
     data: {
       ...baseFeature.toJSON(),
-      // genotypes is intentionally omitted: the variant feature widget's
-      // sample grid reads `samples`, not `genotypes`, and the multi-sample
-      // displays don't supply `samples` here. Stamping the full per-feature
-      // genotype map only bloated the localStorage-persisted selected feature.
+      // no genotypes: this is the click's own record, off the cell payload;
+      // the record the widget opens is the adapter's (`withClickedSample`)
       ...(featureInfo
         ? {
             REF: featureInfo.ref,
@@ -43,15 +41,24 @@ export function enrichFeatureFromClick(
 }
 
 /**
- * The record as the adapter holds it, INFO and every sample included, with
- * the clicked cell's sample card kept from the click.
+ * The record as the adapter holds it, INFO included, with the clicked cell's
+ * sample card kept from the click. Its `samples`, every sample's FORMAT
+ * fields, go where genotype rows draw: the rows show them, and the widget's
+ * feature persists to localStorage. With no rows they stay, as
+ * `LinearVariantDisplay` shows them.
  */
-export function withClickedSample(full: Feature, clicked: Feature) {
+export function withClickedSample(
+  full: Feature,
+  clicked: Feature,
+  keepSamples: boolean,
+) {
   const sample = clicked.get('clickedSample')
+  const { samples, ...record } = full.toJSON()
   return new SimpleFeature({
     id: clicked.id(),
     data: {
-      ...full.toJSON(),
+      ...record,
+      ...(keepSamples ? { samples } : {}),
       ...(sample === undefined
         ? {}
         : {
