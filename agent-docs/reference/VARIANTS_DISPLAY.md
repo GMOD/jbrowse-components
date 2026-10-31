@@ -442,9 +442,9 @@ a `recordsOnly` choice in the model belongs there.
 - **Past its height the record rows decimate, then hide.** The ladder drops
   descriptions, thins bodies and decimates names, but over rows never scales
   the boxes: `recordsLaidOutDataMap` leaves a record that still ends below
-  `recordsPlacedHeight` unplaced (`unplaceBelow`), so no painter, pick,
-  highlight or `searchFeatureByID` sees it, and `HiddenRecordsChip` counts
-  the ones on screen (`recordsHiddenCount`; a click is
+  `topBands.recordsHeight` unplaced (`unplaceBelow`), so no painter, pick,
+  highlight or `searchFeatureByID` sees it, and `BandChips`' `+N hidden` chip
+  counts the ones on screen (`recordsHiddenCount`; a click is
   `showAllRecordRows`). Past `records.maxFeatureScreenDensity` on screen the
   records pack in one row (`recordsPackMode` `collapsed`), where a feature
   track refuses the window.

@@ -19,8 +19,8 @@ per-user state for little gain once tooltips are short and slow to open.
 - `MuiTooltip.defaultProps.enterDelay: 600` in `packages/core/src/ui/theme.ts`.
   MUI's own hysteresis still opens the next tooltip immediately once one has
   been shown, so scanning a toolbar stays fast.
-- `pnpm verify`'s reds were only in the untracked
-  `website/scripts/tmp-probe-tcga.ts`, not this change. The jest suites for
+- `pnpm verify`'s reds were only in an untracked probe another session had
+  left in `website/scripts/`, not this change. The jest suites for
   ScrollZoomToggle, CascadingMenuButton, PreferencesDialog, the LGV Header, the
   track selector and the marks tooltips pass. `jbrowse-web` was not run
   locally; a global tooltip delay can move a hover-then-find test there.

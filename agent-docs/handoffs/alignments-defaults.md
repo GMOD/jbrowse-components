@@ -26,8 +26,8 @@ read sort or per-read facet is set. The menu checkbox becomes a radio column
 Unsettled in it:
 
 - **Settings-only getters.** `prefersOffset`, `canSortReads` and `facetForUnit`
-  answer before data (`reference/LINEAR_ALIGNMENTS_DISPLAY.md`, "Answerable from
-  settings alone"). A data-resolved `auto` must not feed them, or the track label
+  answer before data (the settings-alone list in
+  `reference/LINEAR_ALIGNMENTS_DISPLAY.md`). A data-resolved `auto` must not feed them, or the track label
   jumps when an RNA-seq track loads; answer them as `chain`.
 - **It is library detection.** `clearsInterchromFloor`'s comment
   (`features/arcs/arcClustering.ts`) declined tying a rule to the dataset-wide
