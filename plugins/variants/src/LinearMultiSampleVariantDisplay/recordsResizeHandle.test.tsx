@@ -20,7 +20,7 @@ test('a drag up on the seam caps the band below its stack', () => {
 
   drag(screen.getByTestId('records_band_resize_handle'), -30)
 
-  expect(display.recordsGrowMaxHeight).toBe(natural - 30)
+  expect(display.recordsMaxHeight).toBe(natural - 30)
   expect(display.topBands.recordsHeight).toBe(natural - 30)
 })
 
@@ -29,23 +29,23 @@ test('a drag up on the seam caps the band below its stack', () => {
 test('a drag down on a band shorter than its cap keeps the cap', () => {
   const { display } = recordsDisplayAt(KIT, 51)
   const natural = display.topBands.recordsHeight
-  const cap = display.recordsGrowMaxHeight
+  const cap = display.recordsMaxHeight
   expect(natural).toBeLessThan(cap)
   render(<RecordsBandOverlay model={display} />)
 
   drag(screen.getByTestId('records_band_resize_handle'), 20)
 
-  expect(display.recordsGrowMaxHeight).toBe(cap)
+  expect(display.recordsMaxHeight).toBe(cap)
   expect(display.topBands.recordsHeight).toBe(natural)
 })
 
 test('a drag down on a band at its cap raises the cap', () => {
-  const { display } = recordsDisplayAt(KIT, 51, { growMaxHeight: 30 })
+  const { display } = recordsDisplayAt(KIT, 51, { maxHeight: 30 })
   render(<RecordsBandOverlay model={display} />)
 
   drag(screen.getByTestId('records_band_resize_handle'), 20)
 
-  expect(display.recordsGrowMaxHeight).toBe(50)
+  expect(display.recordsMaxHeight).toBe(50)
   expect(display.topBands.recordsHeight).toBe(50)
 })
 
@@ -55,7 +55,7 @@ test('a band dragged shut stops at the floor and stays grabbable', () => {
 
   drag(screen.getByTestId('records_band_resize_handle'), -500)
 
-  expect(display.recordsGrowMaxHeight).toBe(MIN_RECORDS_HEIGHT)
+  expect(display.recordsMaxHeight).toBe(MIN_RECORDS_HEIGHT)
   expect(screen.getByTestId('records_band_resize_handle')).toBeTruthy()
 })
 

@@ -275,7 +275,7 @@ export default function configSchemaFactory() {
        * #slot records
        * The structural variants above the genotype rows, stacked as a
        * `LinearVariantDisplay` stacks them and colored by SV type:
-       * `show` (default off), `growMaxHeight`, the most it takes from the
+       * `show` (default off), `maxHeight`, the most it takes from the
        * rows, and `labels`.
        */
       records: recordsBandConfigSchema,

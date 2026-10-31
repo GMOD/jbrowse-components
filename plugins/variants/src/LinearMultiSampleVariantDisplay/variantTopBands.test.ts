@@ -8,7 +8,7 @@ import {
 } from './recordsBand.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 import {
-  DEFAULT_RECORDS_GROW_MAX_HEIGHT,
+  DEFAULT_RECORDS_MAX_HEIGHT,
   MIN_RECORDS_HEIGHT,
   variantTopBandsGeometry,
 } from './variantTopBands.ts'
@@ -20,7 +20,7 @@ function geometry(
     showRecords: true,
     recordsOnly: false,
     displayHeight: 500,
-    recordsGrowMaxHeight: 120,
+    recordsMaxHeight: 120,
     recordsContentHeight: 40,
     recordsBounds: { min: MIN_RECORDS_HEIGHT, max: 500 },
     lineZoneHeight: 0,
@@ -57,11 +57,11 @@ describe('the band stack', () => {
 
   test('a stated cap out of range is bound at read time', () => {
     expect(
-      geometry({ recordsGrowMaxHeight: 0, recordsContentHeight: 400 })
+      geometry({ recordsMaxHeight: 0, recordsContentHeight: 400 })
         .recordsHeight,
     ).toBe(MIN_RECORDS_HEIGHT)
     expect(
-      geometry({ recordsGrowMaxHeight: 1e6, recordsContentHeight: 1e5 })
+      geometry({ recordsMaxHeight: 1e6, recordsContentHeight: 1e5 })
         .recordsHeight,
     ).toBe(500)
   })
@@ -85,13 +85,13 @@ describe('the band on a display', () => {
     expect(new Set(items.map(i => i.topPx)).size).toBeGreaterThan(1)
     expect(display.recordsFitStage).toMatchObject({ level: 'full', scale: 1 })
     const natural = naturalHeight()
-    expect(natural).toBeLessThan(DEFAULT_RECORDS_GROW_MAX_HEIGHT)
+    expect(natural).toBeLessThan(DEFAULT_RECORDS_MAX_HEIGHT)
     expect(display.topBands.recordsHeight).toBe(natural)
   })
 
   test('past the cap the fit ladder fits the stack into it', () => {
     const cap = Math.floor(naturalHeight() / 2)
-    const { display } = recordsDisplayAt(KIT, 51, { growMaxHeight: cap })
+    const { display } = recordsDisplayAt(KIT, 51, { maxHeight: cap })
     expect(display.topBands.recordsHeight).toBe(cap)
     expect(display.recordsFitStage.level).not.toBe('full')
     expect(maxBottom(display.recordsLaidOutDataMap)).toBeLessThanOrEqual(cap)
@@ -125,7 +125,7 @@ describe('the band on a display', () => {
     const { display } = recordsDisplayAt(KIT, 51, { show: false })
     const key = display.rpcProps()
     display.setShowRecords(true)
-    display.setRecordsGrowMaxHeight(40)
+    display.setRecordsMaxHeight(40)
     expect(display.rpcProps()).toEqual(key)
   })
 
@@ -152,20 +152,20 @@ describe('the band on a display', () => {
 describe('a resized band outlives the display instance', () => {
   test('a resize lands on the config', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setRecordsGrowMaxHeight(64)
+    display.setRecordsMaxHeight(64)
 
-    expect(display.recordsGrowMaxHeight).toBe(64)
-    expect(display.configuration.records.growMaxHeight).toBe(64)
+    expect(display.recordsMaxHeight).toBe(64)
+    expect(display.configuration.records.maxHeight).toBe(64)
     expect('records' in getSnapshot(display)).toBe(false)
   })
 
   test('a resize is clamped by the shared band rule', () => {
     const { display } = createTestEnvironment().createDisplay()
 
-    display.setRecordsGrowMaxHeight(0)
-    expect(display.recordsGrowMaxHeight).toBe(MIN_RECORDS_HEIGHT)
+    display.setRecordsMaxHeight(0)
+    expect(display.recordsMaxHeight).toBe(MIN_RECORDS_HEIGHT)
 
-    display.setRecordsGrowMaxHeight(1e6)
-    expect(display.recordsGrowMaxHeight).toBeLessThan(display.height)
+    display.setRecordsMaxHeight(1e6)
+    expect(display.recordsMaxHeight).toBeLessThan(display.height)
   })
 })

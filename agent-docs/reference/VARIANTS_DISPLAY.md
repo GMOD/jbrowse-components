@@ -334,7 +334,7 @@ LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
   pre-fetch sample: a refused window still reads its records once per
   settled viewport.
 - **Its height over rows is its stack, capped.** The `full` rung's packed
-  height at compact feature size, up to `records.growMaxHeight` (170); past
+  height at compact feature size, up to `records.maxHeight` (170); past
   the cap the ladder fits the stack in. The band takes that height from the
   rows, whose display keeps its slot `height` under every `heightMode`
   (`growMaxHeight` is Infinity over rows). The stack is every fetched record,
@@ -373,7 +373,7 @@ LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
 - **What is still ours**: the record tooltip (`buildRecordHit`, sample fields
   empty so one `hoveredFeature` slot serves both bands), the gestures
   (`RecordsBandOverlay`, a div over its `OverlayCanvas`) and the seam drag,
-  which writes `growMaxHeight` from the drawn height. The key sits under the
+  which writes `records.maxHeight` from the drawn height. The key sits under the
   band (`legendTop`).
 
 ## How wide a cell draws

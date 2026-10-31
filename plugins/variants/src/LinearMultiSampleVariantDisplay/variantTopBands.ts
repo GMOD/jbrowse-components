@@ -19,8 +19,8 @@ import type { BandBounds } from '@jbrowse/core/util/bandHeight'
 /** Where a record stops reading as a mark: the drag floor. */
 export const MIN_RECORDS_HEIGHT = 8
 
-/** `records.growMaxHeight`'s default, the cap on the packed stack. */
-export const DEFAULT_RECORDS_GROW_MAX_HEIGHT = 170
+/** `records.maxHeight`'s default, the cap on the packed stack. */
+export const DEFAULT_RECORDS_MAX_HEIGHT = 170
 
 export interface VariantTopBands {
   /** **0 when the band is off**, or holds no record. */
@@ -46,7 +46,7 @@ export function recordsBandBounds(displayHeight: number): BandBounds {
 
 /**
  * Over genotype rows the records band grows to its packed stack at full
- * feature size, up to `records.growMaxHeight`; past the cap the fit ladder
+ * feature size, up to `records.maxHeight`; past the cap the fit ladder
  * squeezes the stack into it. With no rows it is the whole display, whose
  * height `heightMode` decides.
  */
@@ -54,7 +54,7 @@ export function variantTopBandsGeometry({
   showRecords,
   recordsOnly,
   displayHeight,
-  recordsGrowMaxHeight,
+  recordsMaxHeight,
   recordsContentHeight,
   recordsBounds,
   lineZoneHeight,
@@ -63,7 +63,7 @@ export function variantTopBandsGeometry({
   /** No genotype rows draw. */
   recordsOnly: boolean
   displayHeight: number
-  recordsGrowMaxHeight: number
+  recordsMaxHeight: number
   /** The `full` rung's stack height, labels included. */
   recordsContentHeight: number
   recordsBounds: BandBounds
@@ -76,7 +76,7 @@ export function variantTopBandsGeometry({
       height: recordsOnly
         ? displayHeight
         : Math.min(
-            boundBandHeight(recordsGrowMaxHeight, recordsBounds),
+            boundBandHeight(recordsMaxHeight, recordsBounds),
             Math.ceil(recordsContentHeight),
           ),
     },

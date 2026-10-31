@@ -733,11 +733,11 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `records.growMaxHeight`, the cap on the band. Raw: what the band
+         * `records.maxHeight`, the cap on the band. Raw: what the band
          * spends is `topBands.recordsHeight`.
          */
-        get recordsGrowMaxHeight(): number {
-          return getConf(self, ['records', 'growMaxHeight'])
+        get recordsMaxHeight(): number {
+          return getConf(self, ['records', 'maxHeight'])
         },
         /**
          * #getter
@@ -1042,12 +1042,12 @@ export function stateModelFactory(
            * Set the records band's cap, clamped here because a drag can
            * deliver any number and a band dragged shut has to stay grabbable.
            */
-          setRecordsGrowMaxHeight(arg: number) {
+          setRecordsMaxHeight(arg: number) {
             setConf(
               self,
-              ['records', 'growMaxHeight'],
+              ['records', 'maxHeight'],
               clampBandHeight(
-                self.recordsGrowMaxHeight,
+                self.recordsMaxHeight,
                 arg,
                 recordsBandBounds(self.height),
               ),
@@ -1669,7 +1669,7 @@ export function stateModelFactory(
             showRecords: self.showRecords,
             recordsOnly: self.recordsOnly,
             displayHeight: self.height,
-            recordsGrowMaxHeight: self.recordsGrowMaxHeight,
+            recordsMaxHeight: self.recordsMaxHeight,
             recordsContentHeight: maxBottom(
               ladder.baseLaidOutDataMap,
               self.recordsMeasureIds,
@@ -1684,7 +1684,7 @@ export function stateModelFactory(
            * The bands stacked above the rows, resolved once: the layout below
            * and the painters read this instead of summing the bands
            * (`variantTopBands.ts`). The records band is its `full` rung's
-           * stack, up to `records.growMaxHeight`.
+           * stack, up to `records.maxHeight`.
            */
           get topBands() {
             return bands.get()

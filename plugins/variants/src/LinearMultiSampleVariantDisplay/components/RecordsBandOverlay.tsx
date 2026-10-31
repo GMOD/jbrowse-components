@@ -195,10 +195,10 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
           title="Drag to resize the records band"
           onDrag={d => {
             const { recordsHeight } = model.topBands
-            const cap = model.recordsGrowMaxHeight
+            const cap = model.recordsMaxHeight
             // a band already as tall as its stack cannot grow, so a drag down
             // leaves the cap where it is rather than lowering it to the stack
-            model.setRecordsGrowMaxHeight(
+            model.setRecordsMaxHeight(
               d > 0 && recordsHeight < cap ? cap : recordsHeight + d,
             )
           }}

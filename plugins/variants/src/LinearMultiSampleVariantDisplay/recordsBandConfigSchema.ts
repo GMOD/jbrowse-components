@@ -5,7 +5,7 @@ import {
   featureNameLabelConfigSchema,
 } from '@jbrowse/plugin-features'
 
-import { DEFAULT_RECORDS_GROW_MAX_HEIGHT } from './variantTopBands.ts'
+import { DEFAULT_RECORDS_MAX_HEIGHT } from './variantTopBands.ts'
 
 /**
  * #config RecordsBand
@@ -17,7 +17,7 @@ import { DEFAULT_RECORDS_GROW_MAX_HEIGHT } from './variantTopBands.ts'
  * record is colored by its SV type, keyed, or by `encoding.color` when that
  * is set, and lettered on one line with its ID, description and the share of
  * the samples shown as rows, no-calls included, that carry it. The band grows
- * to its stack, up to `growMaxHeight`; past that names thin and go, then boxes
+ * to its stack, up to `maxHeight`; past that names thin and go, then boxes
  * shrink. Past 0.2 records per pixel names go, past 0.1 descriptions, as on a
  * feature track. Hovering a record reports it and its carriers, and clicking
  * opens its details. At genomic positions only.
@@ -50,9 +50,9 @@ export const recordsBandConfigSchema = ConfigurationSchema(
     /**
      * #slot
      */
-    growMaxHeight: {
+    maxHeight: {
       type: 'number',
-      defaultValue: DEFAULT_RECORDS_GROW_MAX_HEIGHT,
+      defaultValue: DEFAULT_RECORDS_MAX_HEIGHT,
       description:
         'ceiling in pixels on the band, which grows to its stack of records and takes that height from the rows',
     },
