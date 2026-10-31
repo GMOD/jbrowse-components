@@ -170,19 +170,13 @@ describe('the record menus', () => {
     expect(display.recordsDisplayMode).toBe('collapsed')
   })
 
-  test('over rows, the band takes Feature height alone, while it draws', () => {
-    const off = recordsDisplayAt(KIT, 51, { show: false }).display
-    expect(labelsOf(off.trackMenuItems())).not.toContain('Feature height')
-    const on = recordsDisplayAt(KIT, 51).display
-    const menu = on.trackMenuItems()
-    expect(labelsOf(menu)).toContain('Row height')
-    expect(subMenuLabels(menu, 'Feature height')).toEqual([
-      'Normal',
-      'Compact',
-      'Super-compact',
-      'Collapsed',
-    ])
-    expect(subMenuLabels(menu, 'Show')).not.toContain('Names')
+  test('over rows, Row height is the one height menu, drawn band or not', () => {
+    for (const records of [{ show: false }, {}]) {
+      const menu = recordsDisplayAt(KIT, 51, records).display.trackMenuItems()
+      expect(labelsOf(menu)).toContain('Row height')
+      expect(labelsOf(menu)).not.toContain('Feature height')
+      expect(subMenuLabels(menu, 'Show')).not.toContain('Names')
+    }
   })
 
   test('records.facet hides from the sample Group by over rows', () => {

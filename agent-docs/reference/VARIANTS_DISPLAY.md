@@ -397,8 +397,9 @@ a `recordsOnly` choice in the model belongs there.
   then Track sizing), Names and Descriptions in Show, Group by → Field...
   (`RecordsFacetFieldDialog`), each built from plugin-features's own menu
   builders (`featureHeightMenuItem`, `labelCheckboxItems`). Over rows the
-  band adds Feature height (display mode alone) while it draws; Group by stays
-  the sample attributes.
+  band has no height menu: its seam handle sizes it and the fit ladder
+  shrinks what does not fit, so Row height is the one height row and
+  `records.displayMode` is config only. Group by stays the sample attributes.
 - **No rows gates on density, as a feature track does.** The display
   composes `FeatureGateMixin` (from `@jbrowse/plugin-features/band`) and
   overrides `densityGateActive` to act only while `recordsOnly` at genomic

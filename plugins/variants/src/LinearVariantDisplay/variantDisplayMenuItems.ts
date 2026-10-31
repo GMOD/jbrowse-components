@@ -161,10 +161,11 @@ function recordsShowItems(self: LinearVariantDisplayModel): MenuItem[] {
   ]
 }
 
-// The records' height preset: with no rows beside the track sizing, as on a
-// feature track; over rows alone, while the band draws.
+// The records' height preset, while no row draws. Over rows the band's seam
+// handle sizes it and its fit ladder shrinks what does not fit, so a preset
+// there would be a second "height" beside Row height.
 function recordsHeightMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
-  return self.showRecords
+  return self.showRecords && !self.drawsRows
     ? [
         featureHeightMenuItem({
           displayMode: self.recordsDisplayMode,
