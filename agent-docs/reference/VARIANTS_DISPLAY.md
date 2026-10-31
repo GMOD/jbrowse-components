@@ -296,17 +296,44 @@ LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
 
 - **Only SVs over rows.** `VariantFeatureInfo.svType` is the record's
   `svClassOf` class, set in the worker; while genotype rows draw, a record with
-  none is left out, so a region of SNVs spends 0 px. With no rows (a
-  sites-only VCF) the band draws every record (`recordsSvOnly`); the worker
-  keeps a sample-less VCF's sites at genomic positions only
-  (`keepSampleLessSites`), since a site test reads called alleles.
-- **Its height is its stack, capped.** The `full` rung's packed height at
-  compact feature size, up to `records.growMaxHeight` (170); past the cap the
-  ladder fits the stack in. The band takes that height from the rows. Whether
-  it should instead add to the display is open (Colin); the rule is
+  none is left out, so a region of SNVs spends 0 px. With no rows the band
+  draws every record (`recordsSvOnly`); the worker keeps a sample-less VCF's
+  sites at genomic positions only (`keepSampleLessSites`), since a site test
+  reads called alleles.
+- **No rows makes the band the display** (`recordsOnly`: a sample listing
+  that landed empty, or `genotypes.show` off). The rows take 0 px, the band is
+  `height`, and `HeightModeMixin` sizes it as it sizes a feature track
+  (`heightMode` fit/fixed/grow, `growMaxHeight`; `growTargetHeight` is the
+  `full` stack on screen). Before the listing lands it is not records-only, so
+  a sampled VCF never flashes the records-only height. `genotypes.show` off
+  asks for no sample (`sourcesBase` and `discoveredRows` are empty), and an
+  empty `sampleFilter` makes the worker read no genotype
+  (`readGenotypes`), so it draws what a sites-only VCF draws. The records
+  take `featureDefaultColor` and nothing is keyed unless `encoding.color` is
+  set; the key sits at the top; the seam handle goes, the track's own handle
+  resizing.
+- **Its height over rows is its stack, capped.** The `full` rung's packed
+  height at compact feature size, up to `records.growMaxHeight` (170); past
+  the cap the ladder fits the stack in. The band takes that height from the
+  rows, whose display keeps its slot `height` under every `heightMode`.
+  Whether it should instead add to the display is open (Colin); the rule is
   `variantTopBandsGeometry` plus `availableHeight`.
-- **No second fetch.** The payload already carries every record, so
-  `records.show` and the cap are render-tier settings.
+- **Labels and fit follow the records on screen**, as LinearBasicDisplay's
+  do: `recordsOnScreenIds` (`featureIdsTouchingBlocks` over the payload's
+  spans, `recordSpans`) is the fit's `fitMeasureFeatureIds` and the label
+  density `labelVisibility` gates on (names past 0.2 records/px, descriptions
+  past 0.1). Counted off the payload, not the render data, whose label text
+  depends on it. Labelling every record at a dense ClinVar window cost 260 ms
+  of fit per navigation; measuring the buffered records too cost 64 s on a pan
+  from 99k of them onto an empty stretch. Unlabelled, sub-pixel records past
+  25 deep collapse into one faded row (`planDensityCollapse`).
+- **No second fetch to draw.** The payload already carries every record, so
+  `records.show` and the cap are render-tier settings. **A click does fetch**:
+  the payload has no INFO, so `fetchFullRecord` reads the record over its own
+  span through `GetBasicFeatureDetails`, as LinearBasicDisplay's
+  `fetchFullFeature` does, keeping a genotype cell's sample card
+  (`withClickedSample`); the click's own record opens where the adapter finds
+  none.
 - **A record takes its SV class's color** (`recordsSvColors.ts`, the
   `svType` preset) under the genotype colors, keyed as "SV type" above the
   genotypes, and the cell hue at full dose (`paintFeatureColors`) under a

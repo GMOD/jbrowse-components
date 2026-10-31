@@ -1,6 +1,6 @@
 ---
 name: variant-display-merge
-description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A–E remain, A first: records as the whole display for a sample-less VCF, gated on a dense-gnomAD benchmark. Open: added vs taken band height, default-on, the multi-way key position."
+description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slice A built (records as the whole display with no rows) with its density gate left; B–E remain. Open: added vs taken band height, default-on, the multi-way key position."
 ---
 
 # One variant display
@@ -14,14 +14,19 @@ admission rule are marked provisional there.
 
 ## Sub-slices, smallest first
 
-- **A. Records as the whole display.** With no genotype rows (no samples, or a
-  `genotypes.show` off), the rows take 0 px and the records band becomes the
-  remainder under `heightMode`, not the 170 px band cap. Gate: benchmark a dense
-  gnomAD window, band (main-thread pack, Canvas2D `paintFeatureBand`) against
-  today's `LinearVariantDisplay` (worker pack, GPU); if clearly slower, route
-  records-only through `RenderFeatureData`. Seen 2026-10-30 on ClinVar
-  chr17:43,100,000-43,103,000: the band reserved 170 px for a ~50 px thinned
-  stack, over an empty grey rows area.
+- **A. Records as the whole display.** Built (ADR-254's amendment): with no
+  rows (no samples, or `genotypes.show` off) the band is the display under
+  `heightMode`, every record in `featureDefaultColor`, labels and fit by the
+  records on screen, a click reading the record's INFO. The benchmark is in
+  reference/MULTI_SAMPLE_VARIANTS.md. Left: **a density gate for records-only**
+  — `LinearVariantDisplay` refuses past `maxFeatureScreenDensity` (1/px) and
+  the band draws 99k records; reuse `FeatureGateMixin` (exported from
+  plugin-features, its host typed off `LinearFeatureBaseDisplayConfigModel`),
+  a `maxFeatureScreenDensity` slot, per-region admitted counts from
+  `MultiSampleVariantGetCellData` committed through `commitGateMeasurements`,
+  and `densityGateActive` only while `recordsOnly`. Also: the default `height`
+  is 200 against the feature track's 100, and the row-only menus (Rows,
+  clustering, row color) still show with no rows.
 - **B. Records settings move under `records`**: `displayMode`, `mark`,
   `facet` (sections), `maxFeatureScreenDensity`; `tooltip.field`; the color
   scale's `identity`. Amends ADR-231.

@@ -86,3 +86,38 @@ unparseable id is NaN and paints hue 0, matching `SAMPLES()`' `+` coercion.
 Uint16 capped the dictionary at 65535 distinct genotype strings, reachable on a decomposed
 pangenome callset. **0 means "no call"**, so a genotype interned past the cap to 0 would
 not paint.
+
+## The records band against `LinearVariantDisplay`
+
+Records-only (a sites-only VCF) against `LinearVariantDisplay`, 2026-10-30:
+headed Chrome on the dev server, both on WebGL2, 1600 px wide. Navigation from
+an empty locus to settled paint (the last flip to ready and drawn, or the end
+of the last long task), main-thread long tasks across it, and long tasks across
+a 1600 px pan in 40 frames. Medians of 3, ms. "Rows off" is the multi-sample
+display with the band off, the cell RPC alone.
+
+| Window | Arm | Navigation | Its long tasks | Pan long tasks |
+| --- | --- | --- | --- | --- |
+| ClinVar chr17:43.06–43.07 Mb, 1,263 records | `LinearVariantDisplay` | 303 | 162 | 0 |
+| | band | 251 | 117 | 53 |
+| | band, every record labelled (before) | 480 | 329 | 388 |
+| | rows off | 207 | 0 | 0 |
+| gnomAD v4.1 chr17:43.060–43.066 Mb, ~1,400 records | `LinearVariantDisplay` | 251 | 114 | 0 |
+| | band | 256 | 182 | 53 |
+| | band, every record labelled (before) | 540 | 429 | 343 |
+| ClinVar chr17:28–39 Mb, 39k records | `LinearVariantDisplay`, forced past its density gate | 2382 | 885 | 2066 |
+| | band | 3619 | 1102 | 1985 |
+| | rows off | 2836 | 335 | 540 |
+| ClinVar chr17:28–50 Mb, 99k records, 4.6 MB (near the 5 MB byte gate) | `LinearVariantDisplay`, forced | 3560 | 1158 | 6968 |
+| | band | 4587 | 1352 | 12846 |
+
+- **The band's cost was labels**: before it took `labelVisibility`, the fit
+  ladder solved label rungs over every record (260 ms of 550 at ClinVar);
+  paint was 8 ms, the RPC handler 11–14 ms in both displays.
+  `LinearVariantDisplay` packs on the main thread too (48–73 ms here).
+- **At 39k records the gap is the cell RPC** ("rows off" is 450 ms over the
+  feature track's whole navigation); pan long tasks match.
+- **The 99k pan** runs off the slice's end, so labels come back on an empty
+  screen over a payload still holding 99k buffered records; the band packs
+  them all with labels. `LinearVariantDisplay` refuses both wide windows at
+  its default `maxFeatureScreenDensity`; the band has no density gate yet.

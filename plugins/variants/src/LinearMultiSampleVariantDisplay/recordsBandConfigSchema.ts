@@ -17,8 +17,13 @@ import { DEFAULT_RECORDS_GROW_MAX_HEIGHT } from './variantTopBands.ts'
  * is set, and lettered on one line with its ID, description and the share of
  * the samples shown as rows, no-calls included, that carry it. The band grows
  * to its stack, up to `growMaxHeight`; past that names thin and go, then boxes
- * shrink. Hovering a record reports it and its carriers, and clicking opens
- * its details. At genomic positions only.
+ * shrink. Past 0.2 records per pixel names go, past 0.1 descriptions, as on a
+ * feature track. Hovering a record reports it and its carriers, and clicking
+ * opens its details. At genomic positions only.
+ *
+ * With no genotype rows (a VCF with no samples, or `genotypes.show` off) the
+ * band is the whole display whatever `show` says: every record, in the
+ * feature track's default color, sized by the display's `heightMode`.
  *
  * #example
  * ```js

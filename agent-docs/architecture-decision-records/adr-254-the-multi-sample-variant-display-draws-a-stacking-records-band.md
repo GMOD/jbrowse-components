@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-sample variant display draws the VCF's structural variants above its genotype rows, colored by SV type and keyed, each lettered ID and description on one line, as `records: { show, growMaxHeight, labels }`, stacked by plugin-features's own pipeline: the cell payload rebuilt as features, packed, fit by LinearBasicDisplay's fit ladder (hosted, not copied), painted by `paintFeatureBand` and picked by its hit test, through the new `@jbrowse/plugin-features/band` entry. The band grows to its stack at full feature size up to `growMaxHeight` (170) and takes that height from the rows; past the cap the ladder fits the stack in. Off by default. Slice one of merging `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay` into one display with `records` and `genotypes` bands. Amends ADR-250, whose first rejected alternative this takes"
+summary: "The multi-sample variant display draws the VCF's structural variants above its genotype rows, colored by SV type and keyed, each lettered ID and description on one line, as `records: { show, growMaxHeight, labels }`, stacked by plugin-features's own pipeline: the cell payload rebuilt as features, packed, fit by LinearBasicDisplay's fit ladder (hosted, not copied), painted by `paintFeatureBand` and picked by its hit test, through the new `@jbrowse/plugin-features/band` entry. The band grows to its stack at full feature size up to `growMaxHeight` (170) and takes that height from the rows; past the cap the ladder fits the stack in. Off by default. Slice one of merging `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay` into one display with `records` and `genotypes` bands. Amends ADR-250, whose first rejected alternative this takes. Amended: with no genotype rows (no samples, or `genotypes.show` off) the band is the whole display, every record the filter admits, sized by `heightMode`, labelled and fit by the records on screen"
 ---
 
 # ADR-254: The multi-sample variant display draws a stacking records band
@@ -86,6 +86,38 @@ admission rule below.
   click with no sample card, the hover box, the seam handle, the SVG band and
   the record color off the cell hue. `flattenRows` stays gone.
 
+## Amendment: records as the whole display (2026-10-30)
+
+Sub-slice A of the merge. Settles the admission rule and the height for the
+case with no rows; over rows both stay provisional.
+
+- **No rows, the band is the display** (`recordsOnly`): a sample listing that
+  landed empty, or the new `genotypes: { show }` off. The rows take 0 px and
+  `HeightModeMixin` sizes the display (`heightMode`, default `fit`, and
+  `growMaxHeight`), the rule LinearBasicDisplay uses, so a sites-only VCF
+  sizes as `LinearVariantDisplay` does rather than to the 170 px cap. Over
+  rows the display keeps its `height` under every mode.
+- **Admission without rows is settled**: every record the display's filter
+  admits, colored `featureDefaultColor` (`encoding.color` still paints them),
+  no carrier share, no key. `genotypes.show` off sends an empty
+  `sampleFilter`, and the worker reads no genotype for it, so a sampled VCF
+  with rows off draws exactly what a sites-only one draws.
+- **Labels and fit read the records on screen**, LinearBasicDisplay's
+  `labelVisibility` and `fitMeasureFeatureIds` over `recordsOnScreenIds`, with
+  or without rows. Labelling every record was the band's whole cost: at a
+  10 kb ClinVar window the fit ladder spent 260 ms; measuring buffered records
+  turned a pan off 99k of them into 64 s of main-thread work.
+- **A click reads the record off the adapter** (`GetBasicFeatureDetails`), so
+  the widget shows its INFO, for a record and for a genotype cell.
+
+Measured against `LinearVariantDisplay` in headed Chrome (WebGL2, dev
+server), medians of 3, ms; reference/MULTI_SAMPLE_VARIANTS.md has the
+table. At gene scale (ClinVar 10 kb, gnomAD 6 kb) navigation and pan long
+tasks match within noise. At an 11 Mb ClinVar window (39k records, which
+`LinearVariantDisplay` refuses at its density gate unless forced) navigation
+is 1.5x the forced feature track, most of it the cell RPC, pan long tasks
+equal.
+
 ## Rejected alternatives
 
 | Alternative | Why not |
@@ -94,6 +126,7 @@ admission rule below.
 | Spread the ladder into the display model's views | The model's `facet` is the sample facet, which the ladder would read as a feature facet |
 | Export the pipeline from plugin-features's barrel | Pulls layout and fit into every product's eager closure, the circular-view embed's included |
 | Extract the pipeline into a package now | The chain is already pure, so a package later is an import rename; this slice tests the height rule |
+| Draw records-only through `RenderFeatureData` and the GPU path | Paint was 8 ms of the band's 550 ms; the rest was labelling records the feature track's density rule leaves bare, and `LinearVariantDisplay` packs on the main thread too |
 
 ## Consequences
 
