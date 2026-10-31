@@ -52,7 +52,10 @@ import {
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
-import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
+import {
+  containingHost,
+  onTrackAssembly,
+} from '@jbrowse/display-kit/foundationView'
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
@@ -117,6 +120,7 @@ import { placeVariantRows } from './placeVariantRows.ts'
 import {
   installRecordsOpeningHeight,
   recordsBandActions,
+  recordsLayoutActions,
   recordsLayoutViews,
   recordsOpeningHeightActions,
   recordsRenderViews,
@@ -1440,6 +1444,25 @@ export function stateModelFactory(
         }
       })
       .views(recordsLayoutViews)
+      .views(self => ({
+        /**
+         * #getter
+         * Over genotype rows the records band adds its height to the track
+         * above them, so the rows keep the slot's height; with no rows the
+         * band is the display, sized by `heightMode`, and in a ring's band
+         * it is taken from the rows. Overrides `HeightModeMixin.height`.
+         */
+        get height(): number {
+          const sized =
+            self.autoHeight && containingHost(self).initialized
+              ? self.grownHeight
+              : self.fitTargetHeight
+          return self.recordsOnly || self.hostHeight !== undefined
+            ? sized
+            : sized + self.topBands.recordsHeight
+        },
+      }))
+      .actions(recordsLayoutActions)
       .actions(recordsOpeningHeightActions)
       .views(recordsHighlightViews)
       .actions(featureHighlightListActions)

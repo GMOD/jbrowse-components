@@ -67,8 +67,12 @@ test('only the structural alleles carry a multi-allelic SV record', () => {
   expect(counted).toEqual({ carriers: 1, nonCarriers: 2, noCall: 1 })
 })
 
-test('a record with no SV class is not counted', () => {
-  expect(countRecordCarriers(cellData([1, 1, 1, 1], ''), SAMPLES).size).toBe(0)
+test('any called ALT carries a record with no SV class', () => {
+  const counted = countRecordCarriers(
+    cellData([2, 5, 3, 4], '', ['T', 'G'], [false, false]),
+    SAMPLES,
+  ).get('sv1')
+  expect(counted).toEqual({ carriers: 2, nonCarriers: 1, noCall: 1 })
 })
 
 // HGSV_1823 at RHD: 538 carriers, 1 non-carrier and 2,663 no-calls of 3,202

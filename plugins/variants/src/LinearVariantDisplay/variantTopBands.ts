@@ -11,7 +11,7 @@
  * a strip and the painter filling it both read this, or the painter overdraws
  * the first row and nothing fails.
  */
-import { MIN_BAND_HEIGHT, boundBandHeight } from '@jbrowse/core/util/bandHeight'
+import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
 import { stackBands } from '@jbrowse/core/util/bandLayout'
 
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
@@ -34,52 +34,47 @@ export interface VariantTopBands {
 }
 
 /**
- * The records band's legal height: the drag floor, and a ceiling that leaves
- * the rows a band's floor of the display.
+ * The records band's legal height over rows: the drag floor and no ceiling,
+ * since the band is added to the track above the rows rather than taken from
+ * them.
  */
-export function recordsBandBounds(displayHeight: number): BandBounds {
-  return {
-    min: MIN_RECORDS_HEIGHT,
-    max: Math.max(MIN_RECORDS_HEIGHT, displayHeight - MIN_BAND_HEIGHT),
-  }
-}
+export const RECORDS_BAND_BOUNDS: BandBounds = { min: MIN_RECORDS_HEIGHT }
 
 /**
- * Over genotype rows the records band grows to its packed stack at full
- * feature size, up to `records.maxHeight`; past the cap the fit ladder
- * squeezes the stack into it. With no rows it is the whole display, whose
- * height `heightMode` decides.
+ * The records band over genotype rows: its packed stack at full feature
+ * size, up to `records.maxHeight`. Past the cap the fit ladder drops labels
+ * and the rows that still do not fit hide.
  */
-export function variantTopBandsGeometry({
-  showRecords,
-  recordsOnly,
-  displayHeight,
+export function recordsBandHeightOverRows({
   recordsMaxHeight,
   recordsContentHeight,
-  recordsBounds,
-  lineZoneHeight,
 }: {
-  showRecords: boolean
-  /** No genotype rows draw. */
-  recordsOnly: boolean
-  displayHeight: number
   recordsMaxHeight: number
   /** The `full` rung's stack height, labels included. */
   recordsContentHeight: number
-  recordsBounds: BandBounds
+}) {
+  return Math.min(
+    boundBandHeight(recordsMaxHeight, RECORDS_BAND_BOUNDS),
+    Math.ceil(recordsContentHeight),
+  )
+}
+
+/**
+ * The bands' offsets, the records band on top. With no rows the records band
+ * is the whole display, whose height `heightMode` decides.
+ */
+export function variantTopBandsGeometry({
+  showRecords,
+  recordsHeight,
+  lineZoneHeight,
+}: {
+  showRecords: boolean
+  recordsHeight: number
   /** 0 at genomic positions. */
   lineZoneHeight: number
 }): VariantTopBands {
   const { top, reserved, bottom } = stackBands(['records', 'lineZone'], {
-    records: {
-      active: showRecords,
-      height: recordsOnly
-        ? displayHeight
-        : Math.min(
-            boundBandHeight(recordsMaxHeight, recordsBounds),
-            Math.ceil(recordsContentHeight),
-          ),
-    },
+    records: { active: showRecords, height: recordsHeight },
     lineZone: { active: true, height: lineZoneHeight },
   })
   return {

@@ -1,6 +1,6 @@
 import { featureGroupSections, sectionIdsOf } from './facet.ts'
 import { bodyHeightPx } from './layoutInputs.ts'
-import { isPlacedRow } from './rowPlacement.ts'
+import { OFFSCREEN_Y, isPlacedRow } from './rowPlacement.ts'
 
 import type {
   FeatureDataResult,
@@ -164,6 +164,33 @@ export function scaleLaidOutData(
         )
         shiftFeatureYs(cloned, id => shiftById.get(id) ?? 0)
       }
+      out.set(n, cloned)
+    }
+  }
+  return out
+}
+
+/**
+ * The stack with every feature whose box ends below `heightPx` left unplaced,
+ * as the packer leaves one past its own ceiling: nothing paints, picks or
+ * measures it, and a feature that fits keeps its place.
+ */
+export function unplaceBelow(
+  map: ReadonlyMap<number, FeatureDataResult>,
+  heightPx: number,
+): Map<number, FeatureDataResult> {
+  const out = new Map<number, FeatureDataResult>()
+  for (const [n, data] of map) {
+    const below = new Set(
+      data.flatbushItems
+        .filter(item => isPlacedRow(item.topPx) && item.bottomPx > heightPx)
+        .map(item => item.featureId),
+    )
+    if (below.size === 0) {
+      out.set(n, data)
+    } else {
+      const cloned = cloneMutableFields(data)
+      shiftFeatureYs(cloned, id => (below.has(id) ? OFFSCREEN_Y : 0))
       out.set(n, cloned)
     }
   }

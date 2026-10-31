@@ -1,3 +1,4 @@
+import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { maxBottom } from '@jbrowse/plugin-features/band'
 
@@ -10,19 +11,18 @@ import { createTestEnvironment } from './testEnv.ts'
 import {
   DEFAULT_RECORDS_MAX_HEIGHT,
   MIN_RECORDS_HEIGHT,
+  recordsBandHeightOverRows,
   variantTopBandsGeometry,
 } from './variantTopBands.ts'
+
+import type { BandRecord } from './recordsBand.fixture.ts'
 
 function geometry(
   over: Partial<Parameters<typeof variantTopBandsGeometry>[0]>,
 ) {
   return variantTopBandsGeometry({
     showRecords: true,
-    recordsOnly: false,
-    displayHeight: 500,
-    recordsMaxHeight: 120,
-    recordsContentHeight: 40,
-    recordsBounds: { min: MIN_RECORDS_HEIGHT, max: 500 },
+    recordsHeight: 40,
     lineZoneHeight: 0,
     ...over,
   })
@@ -46,30 +46,38 @@ describe('the band stack', () => {
       bottom: 30,
     })
   })
+})
+
+describe('the band over rows', () => {
+  const height = (recordsMaxHeight: number, recordsContentHeight: number) =>
+    recordsBandHeightOverRows({ recordsMaxHeight, recordsContentHeight })
 
   test('a stack under the cap takes its own height', () => {
-    expect(geometry({ recordsContentHeight: 37.2 }).recordsHeight).toBe(38)
+    expect(height(120, 37.2)).toBe(38)
   })
 
   test('a stack over the cap takes the cap', () => {
-    expect(geometry({ recordsContentHeight: 400 }).recordsHeight).toBe(120)
+    expect(height(120, 400)).toBe(120)
   })
 
-  test('a stated cap out of range is bound at read time', () => {
-    expect(
-      geometry({ recordsMaxHeight: 0, recordsContentHeight: 400 })
-        .recordsHeight,
-    ).toBe(MIN_RECORDS_HEIGHT)
-    expect(
-      geometry({ recordsMaxHeight: 1e6, recordsContentHeight: 1e5 })
-        .recordsHeight,
-    ).toBe(500)
+  test('a stated cap is floored, and has no ceiling but its stack', () => {
+    expect(height(0, 400)).toBe(MIN_RECORDS_HEIGHT)
+    expect(height(1e6, 1e5)).toBe(1e5)
   })
 
   test('a band with no records takes nothing', () => {
-    expect(geometry({ recordsContentHeight: 0 }).recordsHeight).toBe(0)
+    expect(height(120, 0)).toBe(0)
   })
 })
+
+// records nested one inside the next, so no two share a row
+const NESTED: BandRecord[] = Array.from({ length: 20 }, (_, i) => [
+  `sv${i}`,
+  1000 + i * 100,
+  60000 - i * 100,
+  '<DEL>',
+  'DEL',
+])
 
 function naturalHeight(records = KIT) {
   const { display } = recordsDisplayAt(records, 51)
@@ -90,14 +98,66 @@ describe('the band on a display', () => {
   })
 
   test('past the cap the fit ladder fits the stack into it', () => {
-    const cap = Math.floor(naturalHeight() / 2)
-    const { display } = recordsDisplayAt(KIT, 51, { maxHeight: cap })
+    const cap = 3 * GROUP_LABEL_HEIGHT
+    const { display } = recordsDisplayAt(NESTED, 51, { maxHeight: cap })
     expect(display.topBands.recordsHeight).toBe(cap)
     expect(display.recordsFitStage.level).not.toBe('full')
     expect(maxBottom(display.recordsLaidOutDataMap)).toBeLessThanOrEqual(cap)
   })
 
-  test('turning the band on takes its height from the rows, not the track', () => {
+  // past the ladder's last rung over rows the band squeezes nothing: a
+  // record that does not fit hides whole, and a chip at the band's foot
+  // counts it
+  test('past every rung a record that does not fit hides, counted', () => {
+    const cap = 3 * GROUP_LABEL_HEIGHT
+    const { display } = recordsDisplayAt(NESTED, 51, { maxHeight: cap })
+    const placed = display.recordsPlacedHeight
+    expect(display.topBands.recordsHeight).toBe(cap)
+    expect(placed).toBe(cap - GROUP_LABEL_HEIGHT)
+    expect(display.recordsHiddenCount).toBeGreaterThan(0)
+    expect(maxBottom(display.recordsLaidOutDataMap)).toBeLessThanOrEqual(placed)
+    const hidden = display.recordsLaidOutDataMap
+      .get(0)!
+      .flatbushItems.filter(i => i.topPx < 0)
+    expect(hidden).toHaveLength(display.recordsHiddenCount)
+    expect(display.searchFeatureByID(hidden[0]!.featureId)).toBeUndefined()
+
+    display.showAllRecordRows()
+    expect(display.recordsHiddenCount).toBe(0)
+    expect(display.topBands.recordsHeight).toBe(display.recordsStackHeight)
+  })
+
+  // the density a feature track refuses its window at: over rows the band
+  // cannot refuse the matrix under it, so its records collapse into one row
+  test('past the density budget the records collapse into one row', () => {
+    const snvs: BandRecord[] = Array.from({ length: 4000 }, (_, i) => [
+      `rs${i}`,
+      i * 10,
+      i * 10 + 1,
+      'A -> G',
+      '',
+    ])
+    const sparse = recordsDisplayAt(snvs, 2).display
+    const dense = recordsDisplayAt(snvs, 40).display
+    expect(sparse.recordsPackMode).toBe('compact')
+    expect(dense.recordsLabelDensityPerPx).toBeGreaterThan(
+      dense.configuredMaxFeatureScreenDensity,
+    )
+    expect(dense.recordsPackMode).toBe('collapsed')
+    const tops = dense.recordsLaidOutDataMap
+      .get(0)!
+      .flatbushItems.map(i => i.topPx)
+    expect(new Set(tops).size).toBe(1)
+    expect(dense.recordsHiddenCount).toBe(0)
+  })
+
+  test('a band too short for the chip keeps its whole height for records', () => {
+    const { display } = recordsDisplayAt(NESTED, 51, { maxHeight: 12 })
+    expect(display.recordsHiddenCount).toBeGreaterThan(0)
+    expect(display.recordsPlacedHeight).toBe(12)
+  })
+
+  test('turning the band on adds its height to the track, not the rows', () => {
     const { display } = recordsDisplayAt(KIT, 51, { show: false })
     const height = display.height
     const before = {
@@ -109,11 +169,12 @@ describe('the band on a display', () => {
     display.setShowRecords(true)
     const band = display.topBands.recordsHeight
     expect(band).toBeGreaterThan(0)
-    expect(display.height).toBe(height)
+    expect(display.height).toBe(height + band)
     expect(display.rowsTopOffset).toBe(band)
-    expect(display.availableHeight).toBe(before.availableHeight - band)
+    expect(display.availableHeight).toBe(before.availableHeight)
 
     display.setShowRecords(false)
+    expect(display.height).toBe(height)
     expect({
       rowsTopOffset: display.rowsTopOffset,
       availableHeight: display.availableHeight,
@@ -159,13 +220,13 @@ describe('a resized band outlives the display instance', () => {
     expect('records' in getSnapshot(display)).toBe(false)
   })
 
-  test('a resize is clamped by the shared band rule', () => {
+  test('a resize is floored by the shared band rule, and has no ceiling', () => {
     const { display } = createTestEnvironment().createDisplay()
 
     display.setRecordsMaxHeight(0)
     expect(display.recordsMaxHeight).toBe(MIN_RECORDS_HEIGHT)
 
     display.setRecordsMaxHeight(1e6)
-    expect(display.recordsMaxHeight).toBeLessThan(display.height)
+    expect(display.recordsMaxHeight).toBe(1e6)
   })
 })

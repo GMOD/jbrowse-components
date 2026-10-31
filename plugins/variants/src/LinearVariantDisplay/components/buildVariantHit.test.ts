@@ -1,5 +1,3 @@
-import { getBpDisplayStr } from '@jbrowse/core/util'
-
 import { buildRecordHit, buildVariantHit } from './buildVariantHit.ts'
 import { getTooltipRows } from './getTooltipRows.ts'
 
@@ -99,11 +97,11 @@ describe('a records-band hit', () => {
     genotypeCodes: new Uint32Array(),
   }
 
-  test('reports the record and its every ALT, with no genotype or sample rows', () => {
+  // the description already spells REF and ALT, and a one-base span says
+  // nothing the insertion row does not
+  test('reports the record, with no genotype, sample, alleles or 1bp span', () => {
     expect(getTooltipRows(buildRecordHit({ info, featureId: 'v0' }))).toEqual([
       { key: 'featureName', label: 'Name', value: 'rs123' },
-      { key: 'alleles', label: 'Alleles', value: 'A > T,G,C' },
-      { key: 'length', label: 'Length', value: '1bp' },
       { key: 'insertion', label: 'Insertion', value: '42bp' },
       { key: 'description', label: 'Description', value: 'SNV' },
     ])
@@ -128,15 +126,5 @@ describe('a records-band hit', () => {
       'length',
       'description',
     ])
-  })
-
-  // A sequence-resolved SV writes every deleted base in REF, which the cell
-  // hover abbreviates to its length, and so does the record's.
-  test('a sequence-resolved REF reads as its length', () => {
-    const ref = 'A'.repeat(5000)
-    expect(
-      buildRecordHit({ info: { ...info, ref, alt: ['A'] }, featureId: 'v0' })
-        .alleles,
-    ).toBe(`${getBpDisplayStr(5000)} > A`)
   })
 })

@@ -1,6 +1,6 @@
 ---
 name: variant-display-merge
-description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D and E remain; E's records-only height is settled (opens at its stack up to 200, once). Open: added vs taken band height, the multi-way key position."
+description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D remains; E is settled: records-only opens at its stack up to 200, once, and over rows the band is every record, added to the track, its rows hiding past the cap (ADR-254's fifth amendment). Open: the multi-way key position."
 ---
 
 # One variant display
@@ -93,15 +93,14 @@ rule over rows are marked provisional there (the default is settled: on).
 - **E. Height.** Records-only height settled (ADR-255's amendment): the
   first layout with a record on screen sets `height` once to the stack, up
   to 200 (`settleRecordsOpeningHeight`, `recordsBandViews.ts`); a pan
-  never moves it. Added vs taken over rows stays open (below). (Records
-  showing by default is settled: on.)
+  never moves it. Over rows (ADR-254's fifth amendment): every record, the
+  band added to the track above the rows, record rows past the cap hidden
+  and counted by a chip, one row past the density budget. (Records showing
+  by default is settled: on.) Left: refilm the figures whose VCF draws rows,
+  since the band now draws its small records over them too.
 
 ## Open calls (Colin)
 
-- **Added vs taken.** Captures favor added: taking 170 px from a 40-sample
-  matrix drops rows to ~2.5 px and loses labels. Taken moves the rows on pan;
-  added moves the track's height on pan. Switch point: `availableHeight` in
-  the multi-sample `model.ts`.
 - **The multi-way synteny key** now sits under its anchor lane over the next
   lane (`FloatingLegend` `pushedDown`).
 

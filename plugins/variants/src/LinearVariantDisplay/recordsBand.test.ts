@@ -1,4 +1,4 @@
-import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { featureDefaultColor, resolvePalette } from '@jbrowse/core/ui/palette'
 import { measureText } from '@jbrowse/core/util'
 import { paintFeatureBand } from '@jbrowse/plugin-features/band'
 
@@ -111,9 +111,9 @@ test('a description costs no label row', () => {
   expect(both.topBands.recordsHeight).toBe(names.topBands.recordsHeight)
 })
 
-// The band is the structural variants: an SNV or small indel files under no
-// SV class and takes no row.
-test('the band lays out only the SV records', () => {
+// The band is the records, over rows as without: an SNV or small indel draws
+// beside the SVs, as on a feature track.
+test('over rows the band lays out every record, SNVs included', () => {
   const { display } = recordsDisplayAt(
     [
       ['rs1', 1000, 1001, 'A -> G', ''],
@@ -128,7 +128,7 @@ test('the band lays out only the SV records', () => {
       .get(0)!
       .flatbushItems.map(i => i.featureId)
       .sort(),
-  ).toEqual(['sv1', 'sv2'])
+  ).toEqual(['rs1', 'rs2', 'sv1', 'sv2'])
 })
 
 // With no genotype rows the band is the only drawing of the records, so it
@@ -160,28 +160,23 @@ const SNVS: BandRecord[] = [
   ['rs2', 3000, 3002, 'AT -> A', ''],
 ]
 
-test('an SNV-only region gives the band no height', () => {
+test('an SNV-only region draws its records above the rows', () => {
   const { display } = recordsDisplayAt(SNVS, 10)
-  expect(display.showRecords).toBe(true)
-  expect(display.topBands.recordsHeight).toBe(0)
-  expect(display.rowsTopOffset).toBe(0)
+  expect(display.topBands.recordsHeight).toBeGreaterThan(0)
+  expect(display.rowsTopOffset).toBe(display.topBands.recordsHeight)
 })
 
-// Records are on by default, so an SNV-only file must lay out exactly as it
-// did with the band off.
-test('with the band on by default, an SNV-only file moves nothing', () => {
+// The band adds its height to the track: the rows under it keep theirs.
+test('the band on leaves the rows where the band off has them', () => {
   const on = recordsDisplayAt(SNVS, 10).display
   const off = recordsDisplayAt(SNVS, 10, { show: false }).display
-  const layout = (d: typeof on) => ({
-    rowsTopOffset: d.rowsTopOffset,
+  const rows = (d: typeof on) => ({
     availableHeight: d.availableHeight,
     rowHeight: d.effectiveRowHeight,
-    legendTop: d.legendTop,
-    height: d.height,
-    colorScales: d.colorScales,
   })
   expect(off.showRecords).toBe(false)
-  expect(layout(on)).toEqual(layout(off))
+  expect(rows(on)).toEqual(rows(off))
+  expect(on.height).toBe(off.height + on.topBands.recordsHeight)
 })
 
 // The cells paint the genotype colors, which name no record, so the records
@@ -196,7 +191,12 @@ test('under the genotype colors each record takes its SV class color, keyed', ()
     10,
   )
   const colors = [...display.recordsRenderDataMap.get(0)!.rectColors]
-  expect(colors).toEqual([getCachedABGR('#e41a1c'), getCachedABGR('#ff7f00')])
+  // the SNV paints first, under the SVs
+  expect(colors).toEqual([
+    getCachedABGR(featureDefaultColor),
+    getCachedABGR('#e41a1c'),
+    getCachedABGR('#ff7f00'),
+  ])
   const [key] = display.colorScales
   expect(key).toMatchObject({
     title: 'SV type',

@@ -28,7 +28,6 @@ test('a record hover reports the record with no row merged in', () => {
   )
   expect(display.hoveredTooltipSource).toMatchObject({
     featureName: 'rs123',
-    alleles: 'A > T',
     genotype: '',
   })
   expect(display.hoveredTooltipSource).not.toHaveProperty('population')

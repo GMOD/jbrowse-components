@@ -25,10 +25,12 @@ import {
   featureIdsTouchingBlocks,
   fitLadderViews,
   fitLadderVolatiles,
+  isPlacedRow,
   labelFontSize,
   labelVisibility,
   maxBottom,
   scaleLaidOutData,
+  unplaceBelow,
 } from '@jbrowse/plugin-features/band'
 import { computed, observable } from 'mobx'
 
@@ -44,7 +46,8 @@ import {
 } from './recordsRenderData.ts'
 import { svClassColors, svClassScale, svClassesOf } from './recordsSvColors.ts'
 import {
-  recordsBandBounds,
+  RECORDS_BAND_BOUNDS,
+  recordsBandHeightOverRows,
   variantTopBandsGeometry,
 } from './variantTopBands.ts'
 
@@ -195,15 +198,6 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     },
     /**
      * #getter
-     * Whether the records band is the SV band: while genotype rows are
-     * drawn. With none it draws every record the filter admits, and
-     * states no carriers.
-     */
-    get recordsSvOnly() {
-      return !this.recordsOnly
-    },
-    /**
-     * #getter
      * `records.displayMode`, and unset the one rule its default
      * follows: `compact` over rows, tight with its one label line; with
      * no rows `normal`, a feature track's default.
@@ -259,16 +253,14 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
 
 export type RecordsSettings = ReturnType<typeof recordsSettingsViews>
 
-interface RecordsActionsHost extends RecordsSettingsHost, RecordsSettings {
-  height: number
-}
+type RecordsActionsHost = RecordsSettingsHost & RecordsSettings
 
 export function recordsBandActions(self: RecordsActionsHost) {
   return {
     /**
      * #action
-     * Switch the records band on or off; it takes its space from the
-     * rows.
+     * Switch the records band on or off; over rows it adds its height to
+     * the track above them.
      */
     setShowRecords(arg: boolean) {
       setConf(self, ['records', 'show'], arg)
@@ -334,11 +326,7 @@ export function recordsBandActions(self: RecordsActionsHost) {
       setConf(
         self,
         ['records', 'maxHeight'],
-        clampBandHeight(
-          self.recordsMaxHeight,
-          arg,
-          recordsBandBounds(self.height),
-        ),
+        clampBandHeight(self.recordsMaxHeight, arg, RECORDS_BAND_BOUNDS),
       )
     },
   }
@@ -372,12 +360,12 @@ export function recordsRenderViews(self: RecordsRenderHost) {
     },
     /**
      * #getter
-     * Each SV record's carriers among `recordCarrierSamples`, once per
-     * payload and row set.
+     * Each record's carriers among `recordCarrierSamples`, once per
+     * payload and row set; none with no rows to carry it.
      */
     get recordCarriers(): ReadonlyMap<string, RecordCarriers> {
       const { cellData } = self
-      return cellData && self.showRecords && self.recordsSvOnly
+      return cellData && self.showRecords && !self.recordsOnly
         ? countRecordCarriers(cellData, this.recordCarrierSamples)
         : new Map<string, RecordCarriers>()
     },
@@ -421,7 +409,7 @@ export function recordsRenderViews(self: RecordsRenderHost) {
       return {
         bpPerPx: self.view.coarseBpPerPx,
         reversedRegions,
-        displayMode: self.recordsDisplayMode,
+        displayMode: this.recordsPackMode,
         pinnedFeatureIds: NO_FEATURE_IDS,
         expandedGeneIds: NO_FEATURE_IDS,
         facet: self.recordsFacet,
@@ -436,11 +424,10 @@ export function recordsRenderViews(self: RecordsRenderHost) {
     get recordsSpans() {
       const { cellData } = self
       const { displayedRegions } = self.view
-      const svOnly = self.recordsSvOnly
       return cellData && self.showRecords
         ? Object.entries(cellData.perRegionCellData).flatMap(([k, data]) => {
             const region = displayedRegions[Number(k)]
-            return region ? [recordSpans({ data, region, svOnly })] : []
+            return region ? [recordSpans({ data, region })] : []
           })
         : []
     },
@@ -486,6 +473,19 @@ export function recordsRenderViews(self: RecordsRenderHost) {
     },
     /**
      * #getter
+     * The display mode the band packs at: `records.displayMode`, except
+     * over rows past `records.maxFeatureScreenDensity` on screen, where
+     * the records collapse into one row, the density at which a feature
+     * track refuses the window, as the records-only display does.
+     */
+    get recordsPackMode(): DisplayMode {
+      return !self.recordsOnly &&
+        this.recordsLabelDensityPerPx > self.configuredMaxFeatureScreenDensity
+        ? 'collapsed'
+        : self.recordsDisplayMode
+    },
+    /**
+     * #getter
      * `recordsLabels` past LinearBasicDisplay's label density rule
      * (`labelVisibility`): names go past 0.2 records per pixel on
      * screen and descriptions past 0.1, as on a feature track.
@@ -495,7 +495,7 @@ export function recordsRenderViews(self: RecordsRenderHost) {
       const { showLabels, showDescriptions } = labelVisibility({
         name: name !== '',
         description: description !== '',
-        collapsed: self.recordsDisplayMode === 'collapsed',
+        collapsed: this.recordsPackMode === 'collapsed',
         density: this.recordsLabelDensityPerPx,
         geneDensity: () => undefined,
       })
@@ -530,7 +530,6 @@ export function recordsRenderViews(self: RecordsRenderHost) {
         const { displayedRegions } = self.view
         const featureColors = this.regionRecordColors
         const carriers = this.recordCarriers
-        const svOnly = self.recordsSvOnly
         for (const k in cellData.perRegionCellData) {
           const displayedRegionIndex = Number(k)
           const data = cellData.perRegionCellData[k]!
@@ -546,7 +545,6 @@ export function recordsRenderViews(self: RecordsRenderHost) {
                 region,
                 labels,
                 carriers,
-                svOnly,
                 config,
                 jexl,
               }),
@@ -640,17 +638,20 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     solveLabelRoomFactors: false,
     bodyScaleHeightProbe: false,
   })
+  // over rows the band's height is added to the display's, so it reads
+  // nothing of the display's height
   const bands = computed(() =>
     variantTopBandsGeometry({
       showRecords: self.showRecords,
-      recordsOnly: self.recordsOnly,
-      displayHeight: self.height,
-      recordsMaxHeight: self.recordsMaxHeight,
-      recordsContentHeight: maxBottom(
-        ladder.baseLaidOutDataMap,
-        self.recordsMeasureIds,
-      ),
-      recordsBounds: recordsBandBounds(self.height),
+      recordsHeight: self.recordsOnly
+        ? self.height
+        : recordsBandHeightOverRows({
+            recordsMaxHeight: self.recordsMaxHeight,
+            recordsContentHeight: maxBottom(
+              ladder.baseLaidOutDataMap,
+              self.recordsMeasureIds,
+            ),
+          }),
       lineZoneHeight: self.lineZoneHeight,
     }),
   )
@@ -692,18 +693,70 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     /**
      * #getter
      * What the band's painter, labels and hit test all read: the kept
-     * stack, scaled only when the fit squeezed it.
+     * stack. With no rows it is scaled when the fit squeezed it, as a
+     * feature track's; over rows it never squeezes, and past the ladder's
+     * last rung a record that does not fit the band hides.
      */
     get recordsLaidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
       const { layout, scale } = this.recordsFitStage
       const facet = self.recordsFacet
-      return scale === 1
-        ? layout
-        : scaleLaidOutData(
-            layout,
-            scale,
-            facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
-          )
+      return !self.recordsOnly
+        ? unplaceBelow(layout, this.recordsPlacedHeight)
+        : scale === 1
+          ? layout
+          : scaleLaidOutData(
+              layout,
+              scale,
+              facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
+            )
+    },
+    /**
+     * #getter
+     * Over rows, the depth a record must end within to draw: the band's
+     * height, less the foot the hidden-records chip takes once a record on
+     * screen does not fit, where that leaves the records a chip's height.
+     */
+    get recordsPlacedHeight() {
+      const { recordsHeight } = this.topBands
+      const onScreen = self.recordsOnScreenIds
+      const overflows = [...this.recordsFitStage.layout.values()].some(data =>
+        data.flatbushItems.some(
+          ({ featureId, topPx, bottomPx }) =>
+            isPlacedRow(topPx) &&
+            bottomPx > recordsHeight &&
+            onScreen.has(featureId),
+        ),
+      )
+      return overflows && recordsHeight >= 2 * GROUP_LABEL_HEIGHT
+        ? recordsHeight - GROUP_LABEL_HEIGHT
+        : recordsHeight
+    },
+    /**
+     * #getter
+     * How many records on screen the band leaves unplaced, past its
+     * height over rows.
+     */
+    get recordsHiddenCount() {
+      const onScreen = self.recordsOnScreenIds
+      const hidden = new Set<string>()
+      for (const data of this.recordsLaidOutDataMap.values()) {
+        for (const { featureId, topPx } of data.flatbushItems) {
+          if (!isPlacedRow(topPx) && onScreen.has(featureId)) {
+            hidden.add(featureId)
+          }
+        }
+      }
+      return hidden.size
+    },
+    /**
+     * #getter
+     * The band's whole stack at full size, labels included: what it
+     * spends with no cap.
+     */
+    get recordsStackHeight() {
+      return Math.ceil(
+        maxBottom(ladder.baseLaidOutDataMap, self.recordsMeasureIds),
+      )
     },
     /**
      * #getter
@@ -829,12 +882,12 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * Where a record drew, `[startBp, top, endBp, bottom]`, as a feature
      * track answers it: the breakpoint split view's overlay subtracts the
      * display's `scrollTop`, so the top is the band's own, which over rows
-     * does not scroll.
+     * does not scroll. A record the band hides is not found.
      */
     searchFeatureByID(id: string) {
       const item = this.recordsItemById.get(id)
       const shift = self.scrollTop - this.recordsScrollTop
-      return item
+      return item && isPlacedRow(item.topPx)
         ? ([
             item.startBp,
             item.topPx + shift,
@@ -847,6 +900,22 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
 }
 
 export type RecordsLayout = ReturnType<typeof recordsLayoutViews>
+
+interface RecordsLayoutActionsHost extends RecordsLayout {
+  setRecordsMaxHeight: (arg: number) => void
+}
+
+export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
+  return {
+    /**
+     * #action
+     * Raise the band's cap to its whole stack, so no record row hides.
+     */
+    showAllRecordRows() {
+      self.setRecordsMaxHeight(self.recordsStackHeight)
+    },
+  }
+}
 
 interface RecordsOpeningHeightHost extends RecordsLayoutHost, RecordsLayout {
   configuration: RecordsSettingsHost['configuration']

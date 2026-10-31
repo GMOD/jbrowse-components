@@ -338,14 +338,13 @@ render data, the hosted ladder and the display hooks it decides
 scroll hooks, `densityGateActive`), composed in order as views factories, so
 a `recordsOnly` choice in the model belongs there.
 
-- **On by default, only SVs over rows.** `records.show` defaults to `true`
-  (ADR-254's third amendment). `VariantFeatureInfo.svType` is the record's
-  `svClassOf` class, set in the worker; while genotype rows draw, a record with
-  none is left out, so a region of SNVs, or a SNV-only file, spends 0 px and
-  the rows sit where they sit with the band off. With no rows the band
-  draws every record (`recordsSvOnly`); the worker keeps a sample-less VCF's
-  sites at genomic positions only (`keepSampleLessSites`), since a site test
-  reads called alleles.
+- **On by default, every record.** `records.show` defaults to `true`
+  (ADR-254's third amendment), and the band draws every record the filter
+  admits, over rows as without (its fifth). `VariantFeatureInfo.svType` is
+  the record's `svClassOf` class, set in the worker: it colors and keys the
+  record, and an SV paints after the small records so it lies over them. The
+  worker keeps a sample-less VCF's sites at genomic positions only
+  (`keepSampleLessSites`), since a site test reads called alleles.
 - **No rows makes the band the display** (`recordsOnly`: a sample listing
   that landed empty, or `genotypes.show` off). The rows take 0 px, the band is
   `height`, and `HeightModeMixin` sizes it as it sizes a feature track
@@ -405,14 +404,22 @@ a `recordsOnly` choice in the model belongs there.
   load are `RegionTooLargeMixin`'s. Unlike the feature RPC there is no
   pre-fetch sample: a refused window still reads its records once per
   settled viewport.
-- **Its height over rows is its stack, capped.** The `full` rung's packed
-  height at compact feature size, up to `records.maxHeight` (170); past
-  the cap the ladder fits the stack in. The band takes that height from the
-  rows, whose display keeps its slot `height` under every `heightMode`
-  (`growMaxHeight` is Infinity over rows). The stack is every fetched record,
-  not the ones on screen, so the rows hold still on a pan between fetches.
-  Whether it should instead add to the display is open (Colin); the rule is
-  `variantTopBandsGeometry` plus `availableHeight`.
+- **Its height over rows is its stack, capped, and added.** The `full`
+  rung's packed height at compact feature size, up to `records.maxHeight`
+  (170; `recordsBandHeightOverRows`). The model's `height` is the rows' slot
+  plus the band, so the rows keep their slot `height` under every
+  `heightMode` (`growMaxHeight` is Infinity over rows); in a ring's band the
+  band is taken from the rows instead. The stack is every fetched record,
+  not the ones on screen, so the track holds still on a pan between fetches.
+- **Past the cap the record rows decimate, then hide.** The ladder drops
+  descriptions, thins bodies and decimates names, but over rows never scales
+  the boxes: `recordsLaidOutDataMap` leaves a record that still ends below
+  `recordsPlacedHeight` unplaced (`unplaceBelow`), so no painter, pick,
+  highlight or `searchFeatureByID` sees it, and `HiddenRecordsChip` counts
+  the ones on screen (`recordsHiddenCount`; a click is
+  `showAllRecordRows`). Past `records.maxFeatureScreenDensity` on screen the
+  records pack in one row (`recordsPackMode` `collapsed`), where a feature
+  track refuses the window.
 - **Labels follow the records on screen**, as LinearBasicDisplay's do:
   `recordsOnScreenIds` (`featureIdsTouchingBlocks` over the payload's spans,
   `recordSpans`) is the density `labelVisibility` gates on (names past 0.2

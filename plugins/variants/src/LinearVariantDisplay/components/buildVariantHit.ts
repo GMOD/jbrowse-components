@@ -1,6 +1,6 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
 
-import { abbreviateAllele, makeSimpleAltString } from '../../VcfFeature/util.ts'
+import { makeSimpleAltString } from '../../VcfFeature/util.ts'
 import { carrierSummary } from '../recordCarriers.ts'
 
 import type { VariantFeatureInfo } from '../../shared/types.ts'
@@ -43,6 +43,12 @@ export function variantTooltipKey(f: {
   return `${f.name}:${f.genotype}:${f.featureId}:${f.displayedRegionIndex}`
 }
 
+// The reference span, past one base: a SNV's or an insertion's single base
+// says nothing an insertion's own row does not
+function spanText(length: number) {
+  return length > 1 ? getBpDisplayStr(length) : ''
+}
+
 export function buildVariantHit({
   info,
   genotype,
@@ -70,7 +76,7 @@ export function buildVariantHit({
     featureName: info.name,
     description:
       info.alt.length >= 3 ? 'multiple ALT alleles' : info.description,
-    length: getBpDisplayStr(info.length),
+    length: spanText(info.length),
     // The inserted bp, which `length` (the reference span, ~1 bp for any
     // insertion) cannot say. Empty for everything else, which getTooltipRows
     // drops.
@@ -87,7 +93,7 @@ export function buildVariantHit({
  * cell: the records band, which has no row to read a genotype off. The sample
  * fields are `''`, so one hover slot serves both bands: `getTooltipRows` drops
  * an empty value, and `hoveredTooltipSource` reads the empty `name` as no row
- * to merge. `alleles` is the record's own `REF > ALT`, every ALT spelled out.
+ * to merge.
  * `line` is the record's line, what `records.tooltip.field` reads, the
  * record's name by default.
  */
@@ -108,15 +114,12 @@ export function buildRecordHit({
     genotype: '',
     sampleName: '',
     name: '',
-    // an SV's description says its class and size, which its raw alleles
-    // only spell out
-    alleles:
-      info.svType === ''
-        ? `${abbreviateAllele(info.ref)} > ${info.alt.map(abbreviateAllele).join(',')}`
-        : '',
+    // the description spells the record's REF and ALTs, or an SV's class
+    // and size
+    alleles: '',
     featureName: line,
     description: info.description,
-    length: getBpDisplayStr(info.length),
+    length: spanText(info.length),
     insertion: info.insertedBp > 0 ? `${info.insertedBp}bp` : '',
     carriers: carriers ? carrierSummary(carriers) : '',
     featureId,

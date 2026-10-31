@@ -13,12 +13,16 @@ export {
   fitLadderVolatiles,
 } from './LinearBasicDisplay/fitLadderViews.ts'
 export { fittedHeight } from './LinearBasicDisplay/fitLadder.ts'
-export { scaleLaidOutData } from './LinearBasicDisplay/applyLayout.ts'
+export {
+  scaleLaidOutData,
+  unplaceBelow,
+} from './LinearBasicDisplay/applyLayout.ts'
 export {
   createMembershipMemo,
   featureIdsTouchingBlocks,
   maxBottom,
 } from './LinearBasicDisplay/layoutQueries.ts'
+export { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
 export { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
 export { DEFAULT_TOOLTIP } from './RenderFeatureDataRPC/featureTooltip.ts'
 export { featureGroupSections } from './LinearBasicDisplay/facet.ts'

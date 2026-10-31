@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-sample variant display draws the VCF's structural variants above its genotype rows, colored by SV type and keyed, each lettered ID and description on one line, as `records: { show, growMaxHeight, labels }`, stacked by plugin-features's own pipeline: the cell payload rebuilt as features, packed, fit by LinearBasicDisplay's fit ladder (hosted, not copied), painted by `paintFeatureBand` and picked by its hit test, through the new `@jbrowse/plugin-features/band` entry. The band grows to its stack at full feature size up to `growMaxHeight` (170) and takes that height from the rows; past the cap the ladder fits the stack in. Off by default (on since the third amendment). Slice one of merging `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay` into one display with `records` and `genotypes` bands. Amends ADR-250, whose first rejected alternative this takes. Amended: with no genotype rows (no samples, or `genotypes.show` off) the band is the whole display, every record the filter admits, sized by `heightMode`, labelled and fit by the records on screen, and refused past `records.maxFeatureScreenDensity` through plugin-features's `FeatureGateMixin`. Amended again (sub-slice B, amending ADR-231): the band's cap is `records.maxHeight`, and `records` takes LinearVariantDisplay's record settings, `displayMode` (unset compact over rows, normal without), `mark`, `facet` and `tooltip.field`, with `identity` on the display's one `encoding.color`. Amended a third time: one color rule in both modes, a record's SV class color otherwise `featureDefaultColor`, the SV type key wherever an SV draws, and `records.show` on by default, a SNV-only file spending 0 px. Amended by ADR-255: the display is `LinearVariantDisplay`, the feature-based one retired into it"
+summary: "The multi-sample variant display draws the VCF's structural variants above its genotype rows, colored by SV type and keyed, each lettered ID and description on one line, as `records: { show, growMaxHeight, labels }`, stacked by plugin-features's own pipeline: the cell payload rebuilt as features, packed, fit by LinearBasicDisplay's fit ladder (hosted, not copied), painted by `paintFeatureBand` and picked by its hit test, through the new `@jbrowse/plugin-features/band` entry. The band grows to its stack at full feature size up to `growMaxHeight` (170) and takes that height from the rows; past the cap the ladder fits the stack in. Off by default (on since the third amendment). Slice one of merging `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay` into one display with `records` and `genotypes` bands. Amends ADR-250, whose first rejected alternative this takes. Amended: with no genotype rows (no samples, or `genotypes.show` off) the band is the whole display, every record the filter admits, sized by `heightMode`, labelled and fit by the records on screen, and refused past `records.maxFeatureScreenDensity` through plugin-features's `FeatureGateMixin`. Amended again (sub-slice B, amending ADR-231): the band's cap is `records.maxHeight`, and `records` takes LinearVariantDisplay's record settings, `displayMode` (unset compact over rows, normal without), `mark`, `facet` and `tooltip.field`, with `identity` on the display's one `encoding.color`. Amended a third time: one color rule in both modes, a record's SV class color otherwise `featureDefaultColor`, the SV type key wherever an SV draws, and `records.show` on by default, a SNV-only file spending 0 px. Amended by ADR-255: the display is `LinearVariantDisplay`, the feature-based one retired into it. Amended a fifth time: over rows the band is every record too, its height added to the track above the rows rather than taken from them; past the fit ladder's last rung a record that does not fit hides (a `+N hidden` chip counts it), and past `records.maxFeatureScreenDensity` the records collapse into one row"
 ---
 
 # ADR-254: The multi-sample variant display draws a stacking records band
@@ -202,6 +202,52 @@ LinearBasicDisplay's behaviour. A v4 `LinearVariantDisplay` config's record
 settings lift onto `records`, and a right-clicked record offers the feature
 track's zoom to, get sequence and copy rows.
 
+## Amendment: every record over rows, the band added (2026-10-31)
+
+Colin, on the SV-only band: "it is currently 'just showing sv' but this is
+weird", and on what gives when the records do not fit, the record rows, which
+"need to clearly hide/get decimated and only show if there is room for them".
+Settles the two provisional rules over rows.
+
+- **Over rows the band is every record the filter admits**, as with none:
+  `svOnly` is gone. A 1-sample VCF draws labelled records over its one row,
+  where it drew a 280px row and nothing above it. An SV paints after the
+  small records, so it lies over them where they share a row; the packer
+  places by bp, so the order moves no row.
+- **The band adds its height to the track.** The display's `height` is the
+  rows' slot plus `topBands.recordsHeight` (the model's `height` override),
+  so the rows keep their height whatever the band holds; in a ring's band,
+  whose height the host fixes, the band is still taken from the rows. The
+  band's cap, `records.maxHeight`, has a floor and no ceiling
+  (`RECORDS_BAND_BOUNDS`), since it no longer squeezes the rows.
+- **Past the cap the record rows decimate, then hide.** The ladder drops
+  descriptions, thins bodies and decimates names as before, but over rows it
+  never scales the boxes: a record whose box still ends below the band is
+  left unplaced (plugin-features's `unplaceBelow`, the packer's own
+  `OFFSCREEN_Y` state), so nothing paints, picks, highlights or finds it. A
+  `+N hidden` chip at the band's foot counts the hidden records on screen,
+  and its click raises the cap to the whole stack (`showAllRecordRows`). The
+  chip takes a strip at the foot only while the band leaves the records a
+  chip's height above it.
+- **Past `records.maxFeatureScreenDensity` (1 record/px) the records collapse
+  into one row** (`recordsPackMode`). That is the density at which a feature
+  track, and the records-only display, refuse the window; over rows the
+  matrix under the band cannot be refused. 10,000 SNVs over 50 kb stacked
+  170px of ticks with 4,201 hidden before it, and draw one 15px row after.
+- **Every record states its carriers**: a sample calling any ALT carries a
+  small variant, one calling a structural ALT an SV
+  (`countRecordCarriers`).
+- **The record hover drops the Alleles row**, which its description already
+  spells, and either hover shows Length only past one base, where an
+  insertion's `Length 1bp` sat over its `Insertion 209bp`.
+
+| Alternative | Why not |
+| --- | --- |
+| Keep the band to SVs over rows | One table drew through two filters, and a 1-sample VCF showed no record at all |
+| Take the band's height from the rows | A 170px band over a 40-sample matrix left rows ~2.5px |
+| Squeeze the boxes to fit, as with no rows | Records under 2px read as nothing; a hidden row that a chip counts is visible state |
+| Let a dense window stack until the cap hides the rest | 170px of ticks the matrix columns already show, with SVs among the hidden |
+
 ## Rejected alternatives
 
 | Alternative | Why not |
@@ -218,8 +264,9 @@ track's zoom to, get sequence and copy rows.
 
 ## Consequences
 
-- **The height rule is the open question.** Taken from the rows, a 170px band
-  over a 290px, 40-sample matrix leaves rows ~2.5px. SNVs no longer cost any
+- **The height rule was the open question**, settled as added by the fifth
+  amendment. Taken from the rows, a 170px band over a 290px, 40-sample
+  matrix left rows ~2.5px. SNVs no longer cost any
   (they stacked ~12 nameless rows at 50 kb before the band dropped them). At
   RHD (1:25,200,000-25,400,000) the stack is 143px, down from 277px when it
   drew two label lines at normal size. Adding the band to the display instead

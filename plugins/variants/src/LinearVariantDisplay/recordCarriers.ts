@@ -30,7 +30,7 @@ function countRecord(
   codes: Uint32Array,
   columns: readonly number[],
   altIndices: readonly (number[] | undefined)[],
-  svAlleles: readonly boolean[],
+  carriedAlleles: readonly boolean[],
 ): RecordCarriers {
   let carriers = 0
   let nonCarriers = 0
@@ -40,7 +40,7 @@ function countRecord(
     const called = code === 0 ? undefined : altIndices[code - 1]
     if (called === undefined) {
       noCall++
-    } else if (called.some(alt => svAlleles[alt - 1])) {
+    } else if (called.some(alt => carriedAlleles[alt - 1])) {
       carriers++
     } else {
       nonCarriers++
@@ -50,10 +50,10 @@ function countRecord(
 }
 
 /**
- * Each SV record's carriers among `samples`: a sample calling one of its
- * structural ALT alleles carries it, so a small allele beside them at an
- * un-decomposed site does not. One with no called allele is a no-call, which
- * still counts toward the samples.
+ * Each record's carriers among `samples`. A sample calling any ALT carries a
+ * small variant; an SV only one calling a structural ALT, so a small allele
+ * beside it at an un-decomposed site does not. One with no called allele is a
+ * no-call, which still counts toward the samples.
  */
 export function countRecordCarriers(
   cellData: CellDataResult,
@@ -68,10 +68,15 @@ export function countRecordCarriers(
   const out = new Map<string, RecordCarriers>()
   for (const data of Object.values(cellData.perRegionCellData)) {
     for (const info of data.featureInfo) {
-      if (info.svType !== '' && !out.has(info.featureId)) {
+      if (!out.has(info.featureId)) {
         out.set(
           info.featureId,
-          countRecord(info.genotypeCodes, columns, altIndices, info.svAlleles),
+          countRecord(
+            info.genotypeCodes,
+            columns,
+            altIndices,
+            info.svType === '' ? info.alt.map(() => true) : info.svAlleles,
+          ),
         )
       }
     }

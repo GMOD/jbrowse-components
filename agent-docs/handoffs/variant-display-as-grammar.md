@@ -21,7 +21,8 @@ that kind of cost.
 - **Genotypes**: a tile per record × sample, x = span, y = sample row,
   color = genotype (dosage as lightness).
 - One data source, one `filter`, one shared x, stacked (Vega-Lite `vconcat`);
-  the records band's height a scale of its content, the rows the remainder.
+  each band its own height, the records band's its content up to a cap (ADR-254's
+  fifth amendment: both layers draw every record, the band added above the rows).
 
 ## What LinearMarkDisplay already has
 

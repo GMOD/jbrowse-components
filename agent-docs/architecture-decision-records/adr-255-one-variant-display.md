@@ -85,7 +85,8 @@ ADR-254.
   `resolveFeatureHighlights` and lit as `pinnedInk`; the breakpoint split
   view's overlay finds a record's box through `searchFeatureByID`, with
   `layoutReady` saying when the band is laid out. A record the band does not
-  draw (an SNV over rows) is neither boxed nor found.
+  draw (one hidden past the band's height, ADR-254's fifth amendment) is
+  neither boxed nor found.
 - **`LinearMultiSampleVariantDisplayModel`** stays exported from
   `@jbrowse/plugin-variants`, `@deprecated`, naming `LinearVariantDisplayModel`.
 

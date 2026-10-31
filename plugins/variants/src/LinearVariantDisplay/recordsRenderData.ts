@@ -115,26 +115,18 @@ function labelOf(labels: RecordsLabels, jexl: JexlInstance) {
 export function recordSpans({
   data,
   region,
-  svOnly,
 }: {
   data: Pick<RecordsSourceData, 'featurePositions' | 'featureInfo'>
   region: RecordsRegion
-  svOnly: boolean
 }) {
   const { featureInfo, featurePositions } = data
   return {
     regionKey: layoutRegionKey(region),
-    flatbushItems: featureInfo.flatMap((info, f) =>
-      svOnly && info.svType === ''
-        ? []
-        : [
-            {
-              featureId: info.featureId,
-              startBp: featurePositions[f * 2]!,
-              endBp: featurePositions[f * 2 + 1]!,
-            },
-          ],
-    ),
+    flatbushItems: featureInfo.map((info, f) => ({
+      featureId: info.featureId,
+      startBp: featurePositions[f * 2]!,
+      endBp: featurePositions[f * 2 + 1]!,
+    })),
   }
 }
 
@@ -142,16 +134,14 @@ export function recordSpans({
  * The band's records as plugin-features render data, rebuilt from the cell
  * payload, which already holds each record's span, ID, description, SV class
  * and resolved color: the band costs no RPC, and `records.show` stays a
- * render-tier setting. Over genotype rows (`svOnly`) the band is the
- * structural variants, a record with no SV class (an SNV, a small indel) left
- * out; with no rows drawn it is every record the display's filter admitted.
+ * render-tier setting. It is every record the display's filter admitted,
+ * with genotype rows under it or none.
  */
 export function buildRecordsRenderData({
   data,
   region,
   labels,
   carriers,
-  svOnly,
   config,
   jexl,
 }: {
@@ -159,7 +149,6 @@ export function buildRecordsRenderData({
   region: RecordsRegion
   labels: RecordsLabels
   carriers: ReadonlyMap<string, RecordCarriers>
-  svOnly: boolean
   config: DisplayConfig
   jexl: JexlInstance
 }): LayoutRegionData {
@@ -188,9 +177,14 @@ export function buildRecordsRenderData({
     record.recordLabel = text && percent ? `${text} ${percent}` : text
     return feature
   }
-  const features = featureInfo.flatMap((info, f) =>
-    svOnly && info.svType === '' ? [] : [recordFeature(info, f)],
-  )
+  // the packer places by bp, so this orders only the paint and the pick: an
+  // SV draws over the small records it shares a row with, as a collapsed
+  // band packs them all
+  const isSv = (f: number) => Number(featureInfo[f]!.svType !== '')
+  const features = featureInfo
+    .map((_, f) => f)
+    .sort((a, b) => isSv(a) - isSv(b))
+    .map(f => recordFeature(featureInfo[f]!, f))
   return {
     ...buildFeatureRenderData({
       features,

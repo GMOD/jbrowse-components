@@ -145,7 +145,7 @@ describe('heightMode with no rows', () => {
     const { display } = recordsDisplayAt(PILE, 1, {}, true, {
       heightMode: 'grow',
     })
-    expect(display.height).toBe(200)
+    expect(display.height - display.topBands.recordsHeight).toBe(200)
   })
 })
 
@@ -155,7 +155,7 @@ test('over genotype rows grow keeps a slot height past growMaxHeight', () => {
     growMaxHeight: 120,
   })
   expect(display.growMaxHeight).toBe(Number.POSITIVE_INFINITY)
-  expect(display.height).toBe(200)
+  expect(display.height - display.topBands.recordsHeight).toBe(200)
 })
 
 test('genotypes.show off asks the worker for no sample', () => {
