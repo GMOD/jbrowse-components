@@ -17,6 +17,8 @@ const ALLOWED: Record<string, string> = {
   minGcPercent: "an adapter's guide search parameter, not a display filter",
   maxGcPercent: "an adapter's guide search parameter, not a display filter",
   maxLayoutHeight: 'the pileup layout cap, unchanged by ADR-240',
+  maxHeight:
+    "the variant records band's height cap, a band ceiling (ADR-231, ADR-254)",
   maxFeatureScreenDensity:
     "v4.3.0's too-many-features gate, which skips the fetch rather than a part",
   minBpPerPx: ZOOM_INTERVAL,
