@@ -56,7 +56,7 @@ export class MafFeatureSink implements MafBlockSink {
     srcRefName: string,
     srcStart: number,
     strand: number,
-    srcSize: number | undefined,
+    srcSize: number,
     context: AlignmentContext | undefined,
   ) {
     const seq = text.slice(from, to)

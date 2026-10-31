@@ -222,7 +222,7 @@ export class MafStanzaReader implements MafLineTarget {
         this.srcRefName[slot]!,
         this.srcStart[slot]!,
         this.strand[slot]!,
-        this.srcSize[slot],
+        this.srcSize[slot]!,
         this.rowContext[slot],
       )
     }

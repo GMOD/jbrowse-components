@@ -44,7 +44,7 @@ export function packTestWire(blocks: TestWireBlock[]): MafWirePacked {
         row.srcRefName ?? '',
         row.srcStart ?? 0,
         row.strand ?? 1,
-        row.srcSize,
+        row.srcSize ?? 0,
         row.context,
       )
     }

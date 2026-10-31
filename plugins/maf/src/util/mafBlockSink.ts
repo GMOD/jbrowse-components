@@ -26,7 +26,7 @@ export interface MafBlockSink {
     srcRefName: string,
     srcStart: number,
     strand: number,
-    srcSize: number | undefined,
+    srcSize: number,
     context: AlignmentContext | undefined,
   ): void
   addEmpty(sampleId: string, empty: EmptyRecord): void

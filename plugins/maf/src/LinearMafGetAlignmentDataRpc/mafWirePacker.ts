@@ -256,7 +256,7 @@ export class MafWirePacker implements MafBlockSink {
     srcRefName: string,
     srcStart: number,
     strand: number,
-    srcSize: number | undefined,
+    srcSize: number,
     context: AlignmentContext | undefined,
   ) {
     const i = this.rowCount++
@@ -267,7 +267,7 @@ export class MafWirePacker implements MafBlockSink {
     this.rowRefName.set(i, this.chrs.indexOf(srcRefName))
     this.rowStart.set(i, srcStart)
     this.rowStrand.set(i, strand)
-    this.rowSrcSize.set(i, srcSize ?? 0)
+    this.rowSrcSize.set(i, srcSize)
     if (context) {
       this.context ??= {
         has: u8(),

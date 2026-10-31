@@ -89,10 +89,7 @@ function tableOfPacked(packed: MafWirePacked, blocks: Blocks) {
       ['srcRefName', category(packed.rowRefName)],
       ['srcStart', number(packed.rowStart)],
       ['strand', number(packed.rowStrand)],
-      [
-        'srcSize',
-        { kind: 'value', read: i => packed.rowSrcSize[i] || undefined },
-      ],
+      ['srcSize', number(packed.rowSrcSize)],
       [
         'seq',
         {

@@ -37,7 +37,7 @@ export function addFeatureBlock(sink: MafBlockSink, feature: Feature) {
       a.srcRefName,
       a.srcStart,
       a.strand ?? 1,
-      a.srcSize,
+      a.srcSize ?? 0,
       a.context,
     )
   }

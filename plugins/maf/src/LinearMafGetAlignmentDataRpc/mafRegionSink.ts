@@ -49,7 +49,7 @@ export class MafRegionSink extends MafWirePacker {
     srcRefName: string,
     srcStart: number,
     strand: number,
-    srcSize: number | undefined,
+    srcSize: number,
     context: AlignmentContext | undefined,
   ) {
     this.discovered.add(sampleId)

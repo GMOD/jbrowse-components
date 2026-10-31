@@ -34,7 +34,13 @@ const blocks = [
           rightCount: 12,
         },
       },
-      mm10: { srcRefName: 'chr9', srcStart: 7, strand: 1, seq: '--GTAAACGA' },
+      mm10: {
+        srcRefName: 'chr9',
+        srcStart: 7,
+        strand: 1,
+        srcSize: 60,
+        seq: '--GTAAACGA',
+      },
     },
     'ACGT--ACGT',
   ),
@@ -180,8 +186,20 @@ test('a species named like an array index lists first, as the record does', asyn
     2,
     'chr1',
     {
-      hg38: { srcRefName: 'chr1', srcStart: 0, strand: 1, seq: 'AC' },
-      '7': { srcRefName: 'chr2', srcStart: 5, strand: 1, seq: 'AG' },
+      hg38: {
+        srcRefName: 'chr1',
+        srcStart: 0,
+        strand: 1,
+        srcSize: 100,
+        seq: 'AC',
+      },
+      '7': {
+        srcRefName: 'chr2',
+        srcStart: 5,
+        strand: 1,
+        srcSize: 100,
+        seq: 'AG',
+      },
     },
     'AC',
   )
