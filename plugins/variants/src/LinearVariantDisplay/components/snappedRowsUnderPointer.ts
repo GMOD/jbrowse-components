@@ -6,8 +6,9 @@ import {
 /**
  * The rows whose drawn band covers the device pixel under `mouseY`, nearest
  * first — `rowsUnderPointer`'s answer for rows painted on the device grid
- * (`snappedRowTopPx`/`snappedRowBottomPx`, which both variant passes draw
- * with). `nearest` is the last row painted there and `lowest` the furthest one
+ * (`snappedRowTopPx`/`snappedRowBottomPx`, which the Canvas2D and SVG painters
+ * draw with; the GPU's fractional row tops sit within half a device px of theirs).
+ * `nearest` is the last row painted there and `lowest` the furthest one
  * whose floored band still reaches it.
  *
  * `dpr` is the scale the canvas backing store got (`backingScale`), the grid

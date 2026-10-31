@@ -108,8 +108,9 @@ function placeCellX(c: CellChannels, g: CellFrame, i: number) {
 }
 
 /**
- * A matrix cell on the device pixel grid `variant.slang` snaps to, x and y
- * through the shader's generated twins. An inversion's triangle
+ * A matrix cell on the device pixel grid: x through `variant.slang`'s generated
+ * twins, y through `rowSnap`, since Canvas2D and SVG have no four samples to
+ * blend the fractional rows the GPU draws. An inversion's triangle
  * inks its bounding box. Not render-core's `spanMark`: teaching it the snapping
  * and the glyph shapes would add about 400 lines there to delete about 350
  * here.

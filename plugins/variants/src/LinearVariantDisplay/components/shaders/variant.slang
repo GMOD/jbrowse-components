@@ -3,13 +3,14 @@
 // left-pointing triangle spanning the cell, out of the quad when
 // shapeType != RECT.
 //
-// A cell's edges are hard and sit on device pixel boundaries (`snapCellEdgePx`,
-// `snappedRowTopPx`), so cells and rows tile with every pixel owned by one
-// cell. Only the inversion's two slants ramp; its point sits on the cell's
-// left edge, so nothing draws before the breakpoint.
+// A cell's x edges sit on device pixel boundaries (`snapCellEdgePx`). Rows sit
+// at fractional y and the HAL's four samples blend the rows sharing a pixel:
+// snapped to the grid at one sample, a cohort with more rows than device px
+// showed one row per pixel, a different one after every resize. Only the
+// inversion's two slants ramp; its point sits on the cell's left edge, so
+// nothing draws before the breakpoint.
 //! targets: wgsl, glsl
 //! blend: premultiplied
-//! coverage: analytic
 //! export-consts: SHAPE_RECT, SHAPE_TRI_LEFT, MIN_CELL_PX
 //! js-export: drawnCellHeightPx, snappedCellWidthPx, snappedCellLeftPx, inversionCoverage
 //! js-skip: snapCellEdgePx — reached as a private helper inside the generated snappedCellWidthPx and snappedCellLeftPx, so the grid it snaps to is already shared without being public. The pair is what a consumer should ask: a snapped edge on its own has lost the record order those two read to place the 2px floor
@@ -17,7 +18,6 @@
 import antialias;
 import hpmath;
 import colorPack;
-import rowSnap;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
@@ -133,7 +133,8 @@ struct Uniforms {
   float  rowHeight;
   float  scrollTop;
   float  zero;
-  // The backing store's y scale (`clip.scaleY`), which rows snap to.
+  // The backing store's y scale (`clip.scaleY`), which sizes the inversion
+  // slants' ramp.
   float  devicePixelRatio;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
@@ -171,12 +172,9 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float wPx = snappedCellWidthPx(rx1, rx2, sx);
   float x1Px = snappedCellLeftPx(rx1, rx2, wPx, sx);
 
-  float row = float(inst.row);
-  float dpr = u.devicePixelRatio;
-  float yTop = snappedRowTopPx(row, u.rowHeight, u.scrollTop, dpr);
-  float yBot = snappedRowBottomPx(
-    row, u.rowHeight, drawnCellHeightPx(u.rowHeight), u.scrollTop, dpr);
-  float hPx = yBot - yTop;
+  float yTop = float(inst.row) * u.rowHeight - u.scrollTop;
+  float hPx = drawnCellHeightPx(u.rowHeight);
+  float yBot = yTop + hPx;
 
   float2 q = quadLocal(vid);
   float localX = q.x * wPx;

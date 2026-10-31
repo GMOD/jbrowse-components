@@ -230,33 +230,17 @@ would cost:
   display to 1 sample only when every pass declares it, and `line` and `arrow`
   do not.
 
-**`variant.slang` and `variantMatrix.slang` snap their rows to the device
-grid, and draw at one sample.** Sample rows tile, so ramping their shared edges
-seams every boundary. Instead both passes put each row's edges on the backing
-store's pixel boundaries (`rowSnap.slang`, fed `clip.scaleY`), and the Canvas2D
-painters, SVG export and hit tests run the same generated functions with
-`backingScale(canvasHeight)`. Measured on the Intel UHD 630 against an exact
-supersample of a 40x60 CSS px crop:
+**`variant.slang` and `variantMatrix.slang` draw at four samples, rows at
+fractional y** ([ADR-256](../../architecture-decision-records/adr-256-variant-rows-draw-at-fractional-y-on-four-samples.md)).
+Sample rows tile, so ramping their shared edges seams every boundary. Snapping
+rows to the device grid at one sample was built and reverted: where rows share
+a pixel the last one drawn takes it, a different one after every resize, and
+rows blinked. Canvas2D, the SVG export and the hit tests still snap rows
+(`rowSnap.slang`, `backingScale(canvasHeight)`), as Canvas2D's `fillRect` at
+fractional y left every row boundary at alpha 192 on Skia and Cairo.
 
-- **4x and 1x now render byte-identical pixels**, at rows 7.3, 2.6 and 0.32 CSS
-  px and dpr 1, 1.5 and 2, since no pixel holds two rows. 1x before the snap
-  scored the same as after, as pixel-centre rasterization already rounds.
-- **The cost is placement to the device pixel rather than the quarter.** Mean
-  error per pixel (of 255) against the old fractional rows, `cell` at dpr 1: 4x
-  0.28 / 2.0 / 4.1 at those three heights, 1x 1.7 / 8.0 / 20. The matrix and
-  dpr 1.5 and 2 run the same way, smaller at higher dpr.
-- **What it buys:** no pixel is a blend of two genotype colors (4x left 64 to
-  3,040 per crop), and Canvas2D stops seaming. Its `fillRect` at fractional y
-  left every row boundary at alpha 192 on both Skia and Cairo, 240 to 7,378
-  pixels per crop; snapped, none.
-- **Dense cohorts keep the floor's rule.** A cell paints at least 2 CSS px tall
-  (1 in the matrix) and alt cells draw after reference ones, so a pixel shows an
-  alt when any row whose floored band covers it carries one. 4x blended four
-  such picks, 1x shows one. An exact area average of the rows' own colors sits
-  ~65/255 from both, because rare alts fade to their frequency; the floor
-  exists to stop that.
 - **The inversion glyph ramps only its two slants** (`inversionCoverage`); its
-  other edges are the snapped cell's, the point's included: the quad stops at
+  other edges are the cell's, the point's included: the quad stops at
   the left breakpoint. Growing it by the point's ramp reach was sized for a
   point capped at the cell height; on the full-width triangle that reach is
   hundreds of px on a long inversion, and inked a faint line before the
@@ -264,9 +248,8 @@ supersample of a 40x60 CSS px crop:
 - **`cell` snaps x to the device grid too** (`snapCellEdgePx`, fed
   `clip.scaleX`), placing the snapped edges through the HAL's device viewport
   (`pxX`, `pxW`), and its 2px floor rounds up to whole device px. The pixel
-  harness's `variant-cells` fixture at dpr 1.5 went from 7.05% of the ink off
-  the exact scene at one sample (0.03% at four) to 0.00% at both, and 0.00% at
-  dpr 1 and 2.
+  harness's `variant-cells` fixture, rows then snapped, went from 7.05% of the
+  ink off the exact scene at one sample and dpr 1.5 to 0.00%.
 - **`matrixCell`'s x needed nothing on the GPU:** each device pixel takes the
   column covering its centre. Its Canvas2D painter keeps float columns with a
   0.3 px overdraw, which blends neighbouring columns at their shared pixel on

@@ -1,6 +1,6 @@
 // Multi-variant matrix renderer: one instance per cell (variant × sample).
-// Each cell is a column by a row strip whose edges sit on device pixel
-// boundaries (`snappedRowTopPx`), so rows tile. A column at least 1px
+// Each cell is a column by a row strip at fractional y, which the HAL's four
+// samples blend where rows share a pixel (see variant.slang). A column at least 1px
 // wide paints its pixels fully opaque (crisp seams, one pure cell color per
 // pixel). A sub-pixel column (more variants than screen pixels) is still widened
 // to MIN_COL_PX so it covers a pixel center and paints, but its alpha is scaled
@@ -12,12 +12,10 @@
 // picks an RGBA value per cell based on genotype/quality.
 //! targets: wgsl, glsl
 //! blend: premultiplied
-//! coverage: analytic
 //! js-export: drawnCellHeightPx
 
 import colorPack;
 import hpmath;
-import rowSnap;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
@@ -49,8 +47,6 @@ struct Uniforms {
   float rowHeight;
   float scrollTop;
   float backingWidthPx;
-  // The backing store's y scale (`clip.scaleY`), which rows snap to.
-  float devicePixelRatio;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -96,11 +92,8 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float ex2 = max(ceil(x2px), ex1 + 1.0);
   float clipX = pxToClipX(lerp(ex1, ex2, lx), widthPx);
 
-  float row = float(inst.row);
-  float yTop = snappedRowTopPx(row, u.rowHeight, u.scrollTop, u.devicePixelRatio);
-  float yBot = snappedRowBottomPx(
-    row, u.rowHeight, drawnCellHeightPx(u.rowHeight), u.scrollTop,
-    u.devicePixelRatio);
+  float yTop = float(inst.row) * u.rowHeight - u.scrollTop;
+  float yBot = yTop + drawnCellHeightPx(u.rowHeight);
   float clipY = lerp(yPxToClipY(yBot, u.canvasHeight),
                      yPxToClipY(yTop, u.canvasHeight), ly);
 

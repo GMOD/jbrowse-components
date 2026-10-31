@@ -133,8 +133,8 @@ grows a track to its whole content.
   alignments' `bufH`, `devicePxBand`, the variant matrix's `backingWidthPx`
   (`clip.pxW`, the store's own width: `canvasWidth * scaleX` is a half px
   short of it wherever the store rounds up),
-  both variant passes' row edges (`rowSnap.slang`, fed `clip.scaleY`) and the
-  cell pass's x (`clip.scaleX`, placed through `pxX`/`pxW`). Their Canvas2D
+  the variant cell pass's x (`clip.scaleX`, placed through `pxX`/`pxW`); its
+  rows sit at fractional y on four samples (ADR-256). Their Canvas2D
   painters and hit tests snap to `backingScale` of the canvas's height and
   width, which matches except on a drawing buffer Chrome shrank. Their SVG
   export snaps to whole CSS px (`snapScale: 1`), whatever screen exports it.

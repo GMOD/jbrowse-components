@@ -54,7 +54,6 @@ export const matrixCellMark: MarkShape<MatrixCellChannels, MatrixCellParams> = {
       rowHeight: params.rowHeight,
       scrollTop: params.scrollTop,
       backingWidthPx: clip.pxW,
-      devicePixelRatio: clip.scaleY,
     })
   },
 
@@ -66,9 +65,10 @@ export const matrixCellMark: MarkShape<MatrixCellChannels, MatrixCellParams> = {
     // that decimates sub-pixel columns.
     //
     // Y is the opposite, because rows carry the genotype and columns do not:
-    // each row paints the shader's snapped band, floor included, so a sub-pixel
-    // variant keeps the whole pixel the GPU gives it over the reference cells
-    // it shares that pixel with, and rows tile without a seam.
+    // each row paints a band snapped to the device grid, floor included, so a
+    // sub-pixel variant keeps a whole pixel over the reference cells it shares
+    // that pixel with, and rows tile without a seam. The GPU draws fractional
+    // rows instead and lets its four samples blend them.
     const setFill = makeAbgrFill(ctx)
     const dpr = params.snapScale ?? backingScale(frame.canvasHeight)
     for (let i = 0; i < count; i++) {

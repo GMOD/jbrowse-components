@@ -1,6 +1,6 @@
 ---
 name: msaa-remaining-displays
-description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28, multi-sample variant tracks on 2026-10-30 (cells snapped to the device grid on both axes, awaiting Colin's review), grammar points and rules the same day, and wiggle's step line too (by max blend; the grammar step line went back to four). Wiggle's bars and density stay at four by choice. Alignments draws at one sample since 2026-10-30, sub-pixel coverage segments drawing whole or not at all. Open: `spanMark` and `barMark`, each Colin's call. Hi-C and LD stay at four."
+description: "Which displays still allocate the 4x MSAA target, the largest per-display GPU allocation, and what each needs to draw at one sample. Feature tracks moved on 2026-10-28, grammar points and rules on 2026-10-30, and wiggle's step line too (by max blend; the grammar step line went back to four). Wiggle's bars and density stay at four by choice. Alignments draws at one sample since 2026-10-30, sub-pixel coverage segments drawing whole or not at all. Open: `spanMark` and `barMark`, each Colin's call. Hi-C, LD and the variant display stay at four (variant rows snapped at one sample blinked on resize, ADR-256)."
 ---
 
 # Displays still at four samples
@@ -68,9 +68,9 @@ A display draws at one sample when every pass it registers declares
    - `wiggle-xyplot-bars`: 9.3 / 6.1 / 5.5% at one against 2.5 / 1.6 / 1.3%
      at four, all at the hard vertical cuts between bins of different heights.
    - `wiggle-density`: 5.9 / 4.1 / 3.1% against 1.7 / 1.2 / 0.9%, rows and bin
-     edges both hard. Its rows tile, so they could snap through `rowSnap.slang`
-     as the variant passes do; its sub-pixel bins would still own or miss a
-     pixel, as `spanMark`'s cells do.
+     edges both hard. Its rows tile, so snapping them through `rowSnap.slang`
+     would blink on resize, as the variant rows did (ADR-256); its sub-pixel
+     bins would still own or miss a pixel, as `spanMark`'s cells do.
 3. **The grammar marks: only `spanMark` and `barMark` remain.** A mark
    display samples at four if any mark it lists does. Numbers are mean error
    over reference ink at dpr 1 / 1.5 / 2, from
