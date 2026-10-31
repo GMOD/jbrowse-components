@@ -130,7 +130,8 @@ A tenth, learned by one plugin so far and owed by any display that runs the
 fold per lane: **a display-global height with per-lane activation is summed per
 lane, never multiplied.** The fit budget once charged every lane one lane's arc
 strip (`64fd4d6ba1`) and left dead space at the bottom of the mode that promises
-to fill the display; `totalBelowCoverageOverhead` is the sum.
+to fill the display; `laneBandOverheads` is one entry per lane, and the fit
+solves over them lane by lane.
 
 The export and pick rules are why the composition, and not its pieces, is what gets shared:
 a band painter takes the kept label flags and the band's own cull band, so a

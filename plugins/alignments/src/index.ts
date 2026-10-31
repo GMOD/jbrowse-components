@@ -145,6 +145,7 @@ export type {
 } from './LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 export type {
   BelowCoverageBandsSettings,
+  Section,
   SectionsLayout,
 } from './LinearAlignmentsDisplay/sectionLayout.ts'
 export type { ColorPalette } from './shaders/colors.ts'
