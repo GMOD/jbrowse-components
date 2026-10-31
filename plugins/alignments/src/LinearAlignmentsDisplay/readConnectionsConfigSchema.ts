@@ -20,11 +20,7 @@ import { readConnectionsOrdinaryPairsConfigSchema } from './readConnectionsOrdin
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   readConnections: {
- *     show: true,
- *     mark: 'rule',
- *     encoding: { color: 'pairOrientation' },
- *   },
+ *   readConnections: { show: true, mark: 'rule' },
  * }
  * ```
  * ```js

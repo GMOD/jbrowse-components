@@ -17,7 +17,12 @@ value's color is `scale.invalid`, Vega-Lite's member for null and NaN inputs.
 Amended 2026-10-23: open calls 2 and 3 closed as written, their proposals
 moved to Rejected after five Opus reviews (two cold reads, one adversarial).
 Amended again the same day: open call 1, legend precedence, closed with the
-display-wide `legend.show` as the only switch.
+display-wide `legend.show` as the only switch. Amended 2026-10-31: the plain
+`insertSize` and `pairOrientation` color fields retire, `insertSizeAndOrientation`
+being the one paired-end coloring, so `readConnections.encoding.color` has no
+field to choose and retires with them; the connections paint that field's
+levels in the colors the reads' `encoding.color` declares for them.
+`pairOrientation` stays a facet dimension.
 
 Five reviews shaped it: an Opus design pass from ADR-238 and the schemas, two
 Opus arbiters on its calls (one on Vega-Lite fidelity, one on authors, writers
@@ -102,7 +107,6 @@ hand, and Colin's rulings on the calls they split.
     "show": false, "height": 35, "placement": "down",
     "mark": { "type": "link" },     // a dome; or { "type": "rule" }: the read cloud
     "encoding": {
-      "color": { "field": "insertSizeAndOrientation" },
       "strokeWidth": { "field": "reads", "scale": { "type": "log", "range": [1, 4] } }
     },
     "ordinaryPairs": { "show": null }   // unset follows the mark
@@ -217,7 +221,7 @@ them in its own stage:
 | `facet.hidden` as a predicate | A hidden section is main-thread, and coverage still counts its reads |
 | `hideSelfAlignments` as a view-assembly token in `facet.hidden` | A token in a value list is templating; `facetForField` wipes it on a field change. LGVSyntenyDisplay's own stage decides |
 | `unmodified` as a code (`code: oneOf ['m', 'h', 'unmodified']`) | `code: ['unmodified']` alone draws nothing on a 5mC-only read (`extract.test.ts`), the type checkboxes never offer it since no read declares it, and an empty `code` list, meaning every type, would turn the two-color view on. `?`-mode data needs no switch: `getMethBins` fills no site a `?` group leaves out |
-| Renaming `pileup.connectors` or `readConnections` | Both draw one molecule's connections, read one `connection.*` filter and one `readConnections.encoding.color`, and the path says where. `links` is a mark type, `mates` and `pairs` miss split segments, `curves` misses straight pairs, and nesting the connectors under `readConnections` breaks ADR-238's layer-under-its-part rule. The confusion a cold reader found came from the slot descriptions, which now name each other |
+| Renaming `pileup.connectors` or `readConnections` | Both draw one molecule's connections, read one `connection.*` filter and one palette, and the path says where. `links` is a mark type, `mates` and `pairs` miss split segments, `curves` misses straight pairs, and nesting the connectors under `readConnections` breaks ADR-238's layer-under-its-part rule. The confusion a cold reader found came from the slot descriptions, which now name each other |
 | `coverage.modifications.show` beside `coverage.alleles.show` | The bars stack the calls `pileup.bases` paints after its filter (`extract.ts`, `modCoverage/compute.ts`), where the alleles count every mismatch, so ADR-232 keeps one switch with the layer. A default-on band switch would keep the bars drawing after "Per-base coloring → None" or unticking the last code, which write `show: false` and keep the field. Nothing asks for cells without bars; a narrowing switch can come after 5.0.0 |
 | A top-level `bases` both bands read | `baseQuality` and `base` draw only in the pileup, and the common config, both bands, would write the layer in two places |
 | `bases.impute` for `unmodified: 'all'` | `'all'` runs another extraction path, and a probability default would break the two-color view, where no threshold applies |

@@ -129,7 +129,6 @@ export function makeTestRenderState(
   return {
     canvasWidth: 200,
     canvasHeight: 100,
-    readConnectionsColorField: 'insertSizeAndOrientation',
     scrollTop: 0,
     featureHeight: 10,
     featureSpacing: 1,

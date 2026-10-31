@@ -420,7 +420,7 @@ export interface PileupLayoutArrays {
   // ARCHITECTURE.md coordinate convention).
   linkedReadLinePositions: Uint32Array // [bp1, bp2] pairs
   linkedReadLineYs: Uint16Array // [y1, y2] paired per line
-  linkedReadLineColorTypes: Uint16Array // each line's arc slot under every color field (`connectorColorType`)
+  linkedReadLineColorTypes: Uint16Array // each line's arc palette slot
   numLinkedReadLines: number
 
   // Flatbush R-tree over chain bounding boxes for spatial hit testing. Stored as

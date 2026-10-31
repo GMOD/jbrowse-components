@@ -26,9 +26,7 @@ const colors = makeTestPalette({
   ),
 })
 const slotColor = (slot: number) => {
-  const [r, g, b] = buildArcColorPalette(colors, 'insertSizeAndOrientation')[
-    slot
-  ]!
+  const [r, g, b] = buildArcColorPalette(colors)[slot]!
   return normalizedRgbToABGR(r, g, b)
 }
 
@@ -63,7 +61,6 @@ function feeds(
   lines: Parameters<typeof arcsToRegionMap>[0]['lines'] = [],
 ) {
   return buildArcBandFeeds({
-    colorField: 'insertSizeAndOrientation',
     byRegion: arcsToRegionMap({ arcs, lines }, displayed.slice(0, 2)),
     crossRegion,
     displayed,

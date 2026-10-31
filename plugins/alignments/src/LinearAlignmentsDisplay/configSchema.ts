@@ -70,7 +70,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   displayDefaults: {
  *     height: 400,
  *     unit: 'chain',
- *     encoding: { color: 'pairOrientation' },
+ *     encoding: { color: 'insertSizeAndOrientation' },
  *     pileup: { softClips: { show: true } },
  *     readConnections: { show: true },
  *   },

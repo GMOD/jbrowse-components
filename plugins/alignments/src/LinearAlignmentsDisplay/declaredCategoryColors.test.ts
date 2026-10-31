@@ -75,41 +75,36 @@ function everyPathPaints(palette: ColorPalette, category: SwatchCategory) {
 
 describe('a declared range on a preset field', () => {
   const palette = paletteFor({
-    field: 'pairOrientation',
-    scale: { domain: ['RR'], range: ['#d95f02'] },
+    field: 'insertSizeAndOrientation',
+    scale: { type: 'ordinal', domain: ['RR'], range: ['#d95f02'] },
   })
 
-  test('paints RR its color and leaves LR at its default on every backend', () => {
+  test('paints RR its color and leaves the normal insert at its default on every backend', () => {
     expect(everyPathPaints(palette, 'pairRR')).toEqual(
       new Array(3).fill('rgb(217,95,2)'),
     )
-    expect(everyPathPaints(palette, 'pairLR')).toEqual(
-      new Array(3).fill(categorySwatchColor('pairLR', DEFAULT)),
+    expect(everyPathPaints(palette, 'normalInsert')).toEqual(
+      new Array(3).fill(categorySwatchColor('normalInsert', DEFAULT)),
     )
   })
 
-  test("an LR override reaches the arc band's baseline under pair orientation only", () => {
-    const lr = paletteFor({
-      field: 'pairOrientation',
-      scale: { domain: ['LR'], range: ['#1b9e77'] },
+  test("a normal override reaches the arc band's baseline", () => {
+    const normal = paletteFor({
+      field: 'insertSizeAndOrientation',
+      scale: { type: 'ordinal', domain: ['normal'], range: ['#1b9e77'] },
     })
-    const baseline = (field: 'pairOrientation' | 'insertSizeAndOrientation') =>
-      rgb255(buildArcColorPalette(lr, field)[0]!)
-    expect(baseline('pairOrientation')).toBe('rgb(27,158,119)')
-    expect(baseline('insertSizeAndOrientation')).toBe(
-      categorySwatchColor('pairLR', DEFAULT),
-    )
+    expect(rgb255(buildArcColorPalette(normal)[0]!)).toBe('rgb(27,158,119)')
   })
 
-  test('the key names RR in the declared color and LR in its default', () => {
+  test('the key names RR in the declared color and the normal insert in its default', () => {
     const items = getReadDisplayLegendItems({
-      colorField: 'pairOrientation',
+      colorField: 'insertSizeAndOrientation',
       palette,
-      presentCategories: new Set<ReadColorCategory>(['pairLR', 'pairRR']),
+      presentCategories: new Set<ReadColorCategory>(['normalInsert', 'pairRR']),
     })
     expect(items.map(i => i.color)).toEqual([
-      categorySwatchColor('pairLR', DEFAULT),
       'rgb(217,95,2)',
+      categorySwatchColor('normalInsert', DEFAULT),
     ])
   })
 })
@@ -118,8 +113,9 @@ describe('a declared range on a preset field', () => {
 // so a domain names them and a range recolors them like LR or RR.
 test('an orientation field names its mate and chain levels', () => {
   const palette = paletteFor({
-    field: 'pairOrientation',
+    field: 'insertSizeAndOrientation',
     scale: {
+      type: 'ordinal',
       domain: [
         'interchrom',
         'unmappedMate',
@@ -143,10 +139,8 @@ test('an orientation field names its mate and chain levels', () => {
   ).toEqual([])
 })
 
-describe('the five levels that share the neutral default', () => {
+describe('the three levels that share the neutral default', () => {
   const LEVELS: [ColorSlots, SwatchCategory][] = [
-    [{ field: 'pairOrientation', scale: { domain: ['LR'] } }, 'pairLR'],
-    [{ field: 'pairOrientation', scale: { domain: [''] } }, 'noOrientation'],
     [
       {
         field: 'insertSizeAndOrientation',
@@ -160,7 +154,7 @@ describe('the five levels that share the neutral default', () => {
       'mapqUnavailable',
     ],
   ]
-  const neutral = categorySwatchColor('pairLR', DEFAULT)
+  const neutral = categorySwatchColor('normalInsert', DEFAULT)
 
   test('share one default color', () => {
     for (const [, category] of LEVELS) {
@@ -234,7 +228,7 @@ describe('a domain that names no level says so', () => {
     expect(notices({ field: 'baseQuality' })).toHaveLength(1)
   })
 
-  test.each(['split', 'spliced', 'pairing', 'svSignal'])(
+  test.each(['split', 'spliced', 'pairing', 'svSignal', 'pairOrientation'])(
     '%s colors nothing and names the facet',
     field => {
       expect(notices({ field })).toEqual([
@@ -248,7 +242,10 @@ describe('a domain that names no level says so', () => {
 
   test('a level the field has, or a tag value, passes', () => {
     expect(
-      notices({ field: 'pairOrientation', scale: { domain: ['RR'] } }),
+      notices({
+        field: 'insertSizeAndOrientation',
+        scale: { type: 'ordinal', domain: ['RR'] },
+      }),
     ).toEqual([])
     expect(notices({ field: 'tags.HP', scale: { domain: ['x'] } })).toEqual([])
   })
@@ -270,8 +267,8 @@ describe('a domain that names no level says so', () => {
     ])
     expect(
       notices({
-        field: 'pairOrientation',
-        scale: { domain: ['RR'], names: ['a', 'b'] },
+        field: 'insertSizeAndOrientation',
+        scale: { type: 'ordinal', domain: ['RR'], names: ['a', 'b'] },
       }),
     ).toHaveLength(1)
   })
@@ -289,7 +286,7 @@ test('nothing declared, or a range over an open field, leaves the defaults', () 
 
 describe('value fills the reads no field colors, scale.invalid the reads with no value', () => {
   const STEEL = 'rgb(70,130,180)'
-  const neutral = categorySwatchColor('pairLR', DEFAULT)
+  const neutral = categorySwatchColor('normalInsert', DEFAULT)
 
   test('value paints the plain read and no read a field colors', () => {
     const palette = paletteFor({ value: 'steelblue', field: 'tags.HP' })
@@ -314,23 +311,13 @@ describe('value fills the reads no field colors, scale.invalid the reads with no
 
   test('the read connections and the other neutral buckets keep the theme', () => {
     const palette = paletteFor({ value: 'steelblue' })
-    for (const category of [
-      'pairLR',
-      'noOrientation',
-      'normalInsert',
-      'mapqUnavailable',
-    ] as const) {
+    for (const category of ['normalInsert', 'mapqUnavailable'] as const) {
       expect([category, everyPathPaints(palette, category)]).toEqual([
         category,
         new Array(3).fill(neutral),
       ])
     }
-    for (const field of [
-      'insertSizeAndOrientation',
-      'pairOrientation',
-    ] as const) {
-      expect(rgb255(buildArcColorPalette(palette, field)[0]!)).toBe(neutral)
-    }
+    expect(rgb255(buildArcColorPalette(palette)[0]!)).toBe(neutral)
   })
 
   test("a declared '' level colors the no-value read over scale.invalid", () => {

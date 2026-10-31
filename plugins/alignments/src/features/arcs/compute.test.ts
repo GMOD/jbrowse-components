@@ -82,9 +82,7 @@ function tick(
 
 describe('computeArcsFromPileupData', () => {
   test('returns empty result for empty data', () => {
-    const result = computeArcsFromPileupData(new Map(), [], {
-      colorField: 'insertSizeAndOrientation',
-    })
+    const result = computeArcsFromPileupData(new Map(), [], {})
     expect(result.arcs).toEqual([])
     expect(result.lines).toEqual([])
   })
@@ -106,7 +104,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
 
@@ -135,9 +132,7 @@ describe('computeArcsFromPileupData', () => {
     const regions = [
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
-    const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSizeAndOrientation',
-    })
+    const result = computeArcsFromPileupData(rpcDataMap, regions, {})
 
     expect(result.arcs).toEqual([])
     expect(result.lines.length).toBe(2)
@@ -148,9 +143,7 @@ describe('computeArcsFromPileupData', () => {
     // interchromosomal slot under the insert-size fields" is now structural
     // rather than a per-instance value to assert. What still needs pinning is
     // that the slot means the interchrom swatch; see the legend test below.
-    expect(
-      arcSlotCategory(ARC_COLOR_INTERCHROM, 'insertSizeAndOrientation'),
-    ).toBe('interchrom')
+    expect(arcSlotCategory(ARC_COLOR_INTERCHROM)).toBe('interchrom')
   })
 
   test('inter-chromosomal draws ticks, not an orientation-colored arc', () => {
@@ -173,9 +166,7 @@ describe('computeArcsFromPileupData', () => {
     const regions = [
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
-    const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSizeAndOrientation',
-    })
+    const result = computeArcsFromPileupData(rpcDataMap, regions, {})
 
     expect(result.arcs).toEqual([])
     expect(result.lines.length).toBe(2)
@@ -201,9 +192,7 @@ describe('computeArcsFromPileupData', () => {
     const result = computeArcsFromPileupData(
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
-      {
-        colorField: 'insertSizeAndOrientation',
-      },
+      {},
     )
 
     // One tick per breakpoint, each carrying the three reads and naming the
@@ -244,9 +233,7 @@ describe('computeArcsFromPileupData', () => {
     const result = computeArcsFromPileupData(
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
-      {
-        colorField: 'insertSizeAndOrientation',
-      },
+      {},
     )
 
     const donor = result.lines.find(l => l.x.refName === 'chr1')!
@@ -289,7 +276,6 @@ describe('computeArcsFromPileupData', () => {
     }
     const run = (data: PileupDataResult, minInterchromSupport: number) =>
       computeArcsFromPileupData(new Map([[0, data]]), regions, {
-        colorField: 'insertSizeAndOrientation',
         filter: { minInterchromReads: minInterchromSupport },
       })
 
@@ -345,7 +331,6 @@ describe('computeArcsFromPileupData', () => {
         ]),
         { loaded: regions, displayed: regions },
         {
-          colorField: 'insertSizeAndOrientation',
           filter: { minInterchromReads: 2 },
         },
       )
@@ -514,7 +499,7 @@ describe('computeArcsFromPileupData', () => {
             [1, chr2],
           ]),
           twoRegions,
-          { colorField: 'insertSizeAndOrientation', filter },
+          { filter },
         )
       const { crossRegion, lines } = bothContigs({ minInterchromReads: 2 })
       // One arc per junction, each spanning the two contigs, and no ticks: both
@@ -580,7 +565,7 @@ describe('computeArcsFromPileupData', () => {
           { refName: 'chr1', start: 1000, end: 9000, displayedRegionIndex: 0 },
           { refName: 'chr2', start: 4000, end: 9000, displayedRegionIndex: 1 },
         ],
-        { colorField: 'insertSizeAndOrientation' },
+        {},
       )
       // Four arcs, no two of them coalescing — and every one carrying the four
       // reads behind the event rather than the one at its own bp.
@@ -621,7 +606,6 @@ describe('computeArcsFromPileupData', () => {
       cloud = false,
     ) =>
       computeArcsFromPileupData(new Map([[0, data]]), regions, {
-        colorField: 'insertSizeAndOrientation',
         cloud,
       })
 
@@ -709,7 +693,6 @@ describe('computeArcsFromPileupData', () => {
     }
     const run = (data: PileupDataResult, showOrdinaryPairs: boolean) =>
       computeArcsFromPileupData(new Map([[0, data]]), regions, {
-        colorField: 'insertSizeAndOrientation',
         filter: { interchrom: 'exclude' },
         showOrdinaryPairs,
       })
@@ -806,7 +789,6 @@ describe('computeArcsFromPileupData', () => {
       computeArcsFromPileupData(new Map([[0, data]]), regions, {
         // under pairOrientation the short pair paints the baseline slot, which
         // the arcs' rule would hide; the cloud keeps it for its size
-        colorField: 'pairOrientation',
         cloud: true,
         filter: { interchrom: 'exclude' },
         showOrdinaryPairs,
@@ -844,7 +826,7 @@ describe('computeArcsFromPileupData', () => {
     const { lines } = computeArcsFromPileupData(
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
-      { colorField: 'insertSizeAndOrientation' },
+      {},
     )
 
     const atBreakpoint = lines.find(l => l.x.refName === 'chr1')
@@ -877,7 +859,7 @@ describe('computeArcsFromPileupData', () => {
     const { lines } = computeArcsFromPileupData(
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
-      { colorField: 'insertSizeAndOrientation' },
+      {},
     )
 
     expect(
@@ -902,7 +884,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
 
@@ -943,7 +924,6 @@ describe('computeArcsFromPileupData', () => {
     })
     const run = (filter: ArcSettings['filter']) =>
       computeArcsFromPileupData(new Map([[0, mixed]]), regions, {
-        colorField: 'insertSizeAndOrientation',
         filter,
       })
     const farMateArc = [2000, 10000]
@@ -1013,7 +993,6 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 }],
       {
-        colorField: 'insertSizeAndOrientation',
         filter: { offscreenMates: 'exclude' },
       },
     )
@@ -1045,7 +1024,7 @@ describe('computeArcsFromPileupData', () => {
     const { lines } = computeArcsFromPileupData(
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 }],
-      { colorField: 'insertSizeAndOrientation' },
+      {},
     )
 
     // each acceptor carries its own reads...
@@ -1083,7 +1062,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
     })
 
@@ -1105,9 +1083,7 @@ describe('computeArcsFromPileupData', () => {
     const regions = [
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
-    const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSizeAndOrientation',
-    })
+    const result = computeArcsFromPileupData(rpcDataMap, regions, {})
 
     expect(result.arcs).toEqual([])
     expect(result.lines).toEqual([])
@@ -1134,9 +1110,7 @@ describe('computeArcsFromPileupData', () => {
     const regions = [
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
-    const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSizeAndOrientation',
-    })
+    const result = computeArcsFromPileupData(rpcDataMap, regions, {})
 
     expect(result.arcs).toEqual([])
     expect(result.lines).toEqual([])
@@ -1158,7 +1132,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
 
@@ -1188,7 +1161,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
 
@@ -1221,7 +1193,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 6000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
 
@@ -1266,7 +1237,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 5000, end: 6000, displayedRegionIndex: 1 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
     })
 
@@ -1299,7 +1269,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'pairOrientation',
       filter: { interchrom: 'exclude' },
     })
 
@@ -1325,7 +1294,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
 
@@ -1355,7 +1323,6 @@ describe('computeArcsFromPileupData', () => {
     ]
     const colorOf = (rpcDataMap: Map<number, PileupDataResult>) =>
       computeArcsFromPileupData(rpcDataMap, regions, {
-        colorField: 'insertSizeAndOrientation',
         filter: { interchrom: 'exclude' },
       }).arcs.find(a => a.p1.bp >= 5000)!.colorType
     const wide = pairIn(0, 1500)
@@ -1401,7 +1368,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 600000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
 
@@ -1433,15 +1399,11 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 600000, displayedRegionIndex: 0 },
     ]
 
-    for (const colorField of [
-      'pairOrientation',
-      'insertSizeAndOrientation',
-    ] as const) {
+    {
       const result = computeArcsFromPileupData(
         new Map([[0, mkData()]]),
         regions,
         {
-          colorField,
           filter: { interchrom: 'exclude' },
         },
       )
@@ -1466,7 +1428,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
     ]
     const opts = {
-      colorField: 'insertSizeAndOrientation' as const,
       cloud: true,
       filter: { interchrom: 'exclude' },
     } satisfies ArcSettings
@@ -1508,7 +1469,6 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 0, end: 20000, displayedRegionIndex: 0 }],
       {
-        colorField: 'insertSizeAndOrientation',
         cloud: true,
         filter: { interchrom: 'exclude' },
       },
@@ -1544,7 +1504,6 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 0, end: 20000, displayedRegionIndex: 0 }],
       {
-        colorField: 'pairOrientation',
         cloud: true,
         filter: { interchrom: 'exclude' },
       },
@@ -1576,7 +1535,6 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 0, end: 20000, displayedRegionIndex: 0 }],
       {
-        colorField: 'pairOrientation',
         cloud: true,
         filter: { interchrom: 'exclude' },
       },
@@ -1601,7 +1559,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation' as const,
       cloud: true,
       filter: { interchrom: 'exclude' },
     })
@@ -1627,7 +1584,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
     ]
     const opts = {
-      colorField: 'insertSizeAndOrientation' as const,
       cloud: true,
       filter: { interchrom: 'exclude' },
     } satisfies ArcSettings
@@ -1663,7 +1619,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 10000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation',
       cloud: true,
       filter: { interchrom: 'exclude' },
     })
@@ -1696,7 +1651,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 10000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation',
       cloud: true,
       filter: { interchrom: 'exclude' },
     })
@@ -1723,9 +1677,7 @@ describe('computeArcsFromPileupData', () => {
     const regions = [
       { refName: 'chr1', start: 1000, end: 10000, displayedRegionIndex: 0 },
     ]
-    const result = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation',
-    })
+    const result = computeArcsFromPileupData(new Map([[0, data]]), regions, {})
     expect(result.arcs).toEqual([])
     expect(result.lines).toEqual([])
   })
@@ -1745,7 +1697,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const opts = {
-      colorField: 'insertSizeAndOrientation' as const,
       cloud: true,
       filter: { interchrom: 'exclude' },
     } satisfies ArcSettings
@@ -1780,7 +1731,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const opts = {
-      colorField: 'insertSizeAndOrientation' as const,
       cloud: true,
       filter: { interchrom: 'exclude' },
     } satisfies ArcSettings
@@ -1827,7 +1777,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
     expect(arcs).toHaveLength(1)
@@ -1849,7 +1798,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
     expect(arcs).toHaveLength(1)
@@ -1874,9 +1822,7 @@ describe('computeArcsFromPileupData', () => {
     const regions = [
       { refName: '1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
-    const base = {
-      colorField: 'insertSizeAndOrientation' as const,
-    }
+    const base = {}
 
     const raw = computeArcsFromPileupData(new Map([[0, data]]), regions, base)
     expect(raw.arcs).toHaveLength(0)
@@ -1912,7 +1858,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 4000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
     expect(arcs).toHaveLength(2)
@@ -1970,7 +1915,6 @@ describe('computeArcsFromPileupData', () => {
         new Map([[0, data]]),
         regions,
         {
-          colorField: 'insertSizeAndOrientation',
           filter: { interchrom: 'exclude' },
         },
       )
@@ -2009,7 +1953,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 900, end: 2300, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
     expect(arcs).toHaveLength(1)
@@ -2044,7 +1987,6 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       regions,
       {
-        colorField: 'insertSizeAndOrientation',
         filter: { interchrom: 'exclude' },
       },
     ).arcs
@@ -2063,7 +2005,6 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       regions,
       {
-        colorField: 'insertSizeAndOrientation',
         filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
       },
     ).arcs
@@ -2093,7 +2034,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 6000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
     expect(arcs).toHaveLength(2)
@@ -2133,7 +2073,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 6000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
     })
     // Just the fwd→rev split-inversion junction (a.end 1200 → b.end 3200),
@@ -2169,7 +2108,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 10000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
     // The within-read split junction (1500 → 3000) AND the mate link from the
@@ -2201,7 +2139,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 10000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
     })
     // Both split segments are on screen, so their junction always draws; the
@@ -2246,7 +2183,6 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       regions,
       {
-        colorField: 'insertSizeAndOrientation',
         filter: { interchrom: 'exclude' },
       },
     ).arcs
@@ -2267,7 +2203,6 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       regions,
       {
-        colorField: 'insertSizeAndOrientation',
         filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
       },
     ).arcs
@@ -2300,7 +2235,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 8000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
     // one mate-link arc for the pair + one SA split junction for the lone read
@@ -2334,7 +2268,6 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 1000, end: 40000, displayedRegionIndex: 0 },
     ]
     const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
-      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
     const loneArc = arcs.find(a => a.p1.bp === 1500)!
@@ -2350,7 +2283,6 @@ describe('computeArcsByGroup', () => {
     { refName: 'chr1', start: 0, end: 2_000_000, displayedRegionIndex: 0 },
   ]
   const settings = {
-    colorField: 'pairOrientation' as const,
     filter: { interchrom: 'exclude' },
   } satisfies ArcSettings
 
@@ -2579,7 +2511,6 @@ describe('computeArcsByGroup', () => {
 // the upload and the per-mousemove hit-test walk by the region count.
 describe('an arc is uploaded only to the regions it reaches', () => {
   const settings = {
-    colorField: 'insertSizeAndOrientation' as const,
     filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
   } satisfies ArcSettings
   // Two windows on chr1, 900kb apart, each holding a pair local to itself.
@@ -2787,9 +2718,7 @@ describe('groupArcsByRef', () => {
       { refName: 'chr1', start: 0, end: 2000, displayedRegionIndex: 0 },
       { refName: 'chr2', start: 4000, end: 6000, displayedRegionIndex: 1 },
     ]
-    const result = computeArcsFromPileupData(new Map([[0, data]]), both, {
-      colorField: 'insertSizeAndOrientation',
-    })
+    const result = computeArcsFromPileupData(new Map([[0, data]]), both, {})
     expect(result.arcs.filter(a => a.p1.refName !== a.p2.refName)).toHaveLength(
       0,
     )
@@ -2895,25 +2824,22 @@ describe('arcsToRegionResult', () => {
 // color (see ARC_SLOT_CATEGORY / swatchPaletteKeys).
 describe('arcSlotCategory', () => {
   test('split junctions map to the arc-only categories', () => {
-    const category = (slot: number) =>
-      arcSlotCategory(slot, 'insertSizeAndOrientation')
+    const category = (slot: number) => arcSlotCategory(slot)
     expect(category(ARC_COLOR_SPLIT_FORWARD)).toBe('splitForward')
     expect(category(ARC_COLOR_SPLIT_BACK)).toBe('splitBack')
     expect(category(ARC_COLOR_SPLIT_INV_LL)).toBe('splitInvLL')
     expect(category(ARC_COLOR_SPLIT_INV_RR)).toBe('splitInvRR')
   })
   test('insert-size + orientation slots map to their read-fill categories', () => {
-    expect(arcSlotCategory(1, 'insertSizeAndOrientation')).toBe('longInsert')
-    expect(arcSlotCategory(2, 'insertSizeAndOrientation')).toBe('shortInsert')
-    expect(arcSlotCategory(3, 'pairOrientation')).toBe('interchrom')
-    expect(arcSlotCategory(4, 'pairOrientation')).toBe('pairLL')
-    expect(arcSlotCategory(5, 'pairOrientation')).toBe('pairRR')
-    expect(arcSlotCategory(6, 'pairOrientation')).toBe('pairRL')
+    expect(arcSlotCategory(1)).toBe('longInsert')
+    expect(arcSlotCategory(2)).toBe('shortInsert')
+    expect(arcSlotCategory(3)).toBe('interchrom')
+    expect(arcSlotCategory(4)).toBe('pairLL')
+    expect(arcSlotCategory(5)).toBe('pairRR')
+    expect(arcSlotCategory(6)).toBe('pairRL')
   })
-  test('the default slot labels by coloring mode (both colorPairLR)', () => {
-    expect(arcSlotCategory(0, 'insertSizeAndOrientation')).toBe('normalInsert')
-    expect(arcSlotCategory(0, 'insertSizeAndOrientation')).toBe('normalInsert')
-    expect(arcSlotCategory(0, 'pairOrientation')).toBe('pairLR')
+  test('the default slot is the normal insert', () => {
+    expect(arcSlotCategory(0)).toBe('normalInsert')
   })
 })
 
@@ -2940,7 +2866,6 @@ describe('identical arcs coalesce and carry their support', () => {
     { refName: 'chr1', start: 1000, end: 3000, displayedRegionIndex: 0 },
   ]
   const settings = {
-    colorField: 'insertSizeAndOrientation' as const,
     filter: { interchrom: 'exclude' },
   } satisfies ArcSettings
 
@@ -3108,7 +3033,6 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
       new Map([[0, splitMateOffScreenPrimary]]),
       regions,
       {
-        colorField: 'pairOrientation',
         filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
       },
     )
@@ -3130,7 +3054,6 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
       new Map([[0, withStats]]),
       regions,
       {
-        colorField: 'insertSizeAndOrientation',
         filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
       },
     )
@@ -3161,7 +3084,6 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
       new Map([[0, bothPrimaries]]),
       regions,
       {
-        colorField: 'pairOrientation',
         filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
       },
     )
@@ -3191,7 +3113,6 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
       new Map([[0, translocatedMate]]),
       regions,
       {
-        colorField: 'pairOrientation',
         filter: { offscreenMates: 'exclude' },
       },
     )
@@ -3204,7 +3125,6 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
       new Map([[0, translocatedMate]]),
       regions,
       {
-        colorField: 'pairOrientation',
         filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
       },
     )

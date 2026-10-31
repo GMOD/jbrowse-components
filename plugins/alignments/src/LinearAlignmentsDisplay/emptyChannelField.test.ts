@@ -22,7 +22,6 @@ test("a written '' field loads as unset on the three maybe-field channels", () =
   for (const path of [
     ['pileup', 'bases', 'encoding', 'color', 'field'],
     ['pileup', 'mismatches', 'encoding', 'opacity', 'field'],
-    ['readConnections', 'encoding', 'color', 'field'],
   ] as const) {
     expect(readConfObject(conf, path)).toBeUndefined()
   }

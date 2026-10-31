@@ -283,9 +283,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           : formatArcTooltip(
               hit,
               refName,
-              model.arcCategoryLabel(
-                arcSlotCategory(hit.colorType, model.readConnectionsColorField),
-              ),
+              model.arcCategoryLabel(arcSlotCategory(hit.colorType)),
               hit.endRefName,
             ),
       highlight,

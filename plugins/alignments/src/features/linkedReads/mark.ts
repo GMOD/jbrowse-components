@@ -16,11 +16,9 @@ import {
   LINKED_READ_LINE_WIDTH_PX,
 } from '../../shaders/slang/linkedReadLine.consts.generated.ts'
 import * as linkedReadLineShader from '../../shaders/slang/linkedReadLine.generated.ts'
-import { connectorColorShift } from '../arcs/arcColors.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
-import type { ArcColorField } from '../../shared/types.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
 import type { MarkShape } from '@jbrowse/render-core/marks'
 
@@ -49,8 +47,8 @@ function packLinkedReadLines(data: LinkedReadLinesUploadData) {
 // Every stroke this pass can use, one per arc palette slot, built per painted
 // block from the themed palette rather than per line. `LINKED_READ_LINE_ALPHA`
 // is linkedReadLine.slang's, so this path cannot drift from the shader.
-function lineCss(colors: ColorPalette, field: ArcColorField) {
-  return buildArcColorPalette(colors, field).map(c =>
+function lineCss(colors: ColorPalette) {
+  return buildArcColorPalette(colors).map(c =>
     rgba255(c, LINKED_READ_LINE_ALPHA),
   )
 }
@@ -84,8 +82,7 @@ const linkedReadLineShape: MarkShape<LinkedReadLinesUploadData, RenderState> = {
     // One stroke per line. A path per color strokes 1.3-2.6x slower in Chrome
     // and Cairo over 8000 lines, and blends crossings once where the GPU
     // blends each line (ADR-225).
-    const css = lineCss(state.colors, state.readConnectionsColorField)
-    const shift = connectorColorShift(state.readConnectionsColorField)
+    const css = lineCss(state.colors)
     for (let i = 0; i < region.numLinkedReadLines; i++) {
       const y1 = pileupRowY(region.linkedReadLineYs[i * 2]!, state) + fH / 2
       const y2 = pileupRowY(region.linkedReadLineYs[i * 2 + 1]!, state) + fH / 2
@@ -97,7 +94,7 @@ const linkedReadLineShape: MarkShape<LinkedReadLinesUploadData, RenderState> = {
         const x1 = toX(startBp)
         const x2 = toX(endBp)
         ctx.strokeStyle =
-          css[linkedReadColorSlot(region.linkedReadLineColorTypes[i]!, shift)]!
+          css[linkedReadColorSlot(region.linkedReadLineColorTypes[i]!)]!
         ctx.beginPath()
         ctx.moveTo(x1, y1)
         ctx.lineTo(x2, y2)

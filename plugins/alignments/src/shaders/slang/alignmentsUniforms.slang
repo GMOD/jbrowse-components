@@ -23,14 +23,11 @@ import hpmath;
 // entry has one word offset per slot, so a palette of the wrong size is caught
 // there rather than by writing off the end.
 public static const uint LINKED_READ_COLOR_SLOTS = 11u;
-// Bits per color field in a connector's `colorType`, which holds its arc slot
-// under each of the three fields.
-public static const uint CONNECTOR_COLOR_BITS = 4u;
 // One slot per read color category (read.slang's RC_*, which are dense from 0).
 // It lives here rather than with the RC_* block because the uniform declaring it
 // does, and imports only resolve one way. read.slang re-exports it so
 // colorCategory.test.ts can pin the two counts equal.
-public static const uint READ_CATEGORY_SLOTS = 21u;
+public static const uint READ_CATEGORY_SLOTS = 19u;
 
 public struct Uniforms {
   // HP-split bp range: hi = base-pair offset (high 20 bits), lo = fractional
@@ -109,11 +106,7 @@ public struct Uniforms {
   // (`readOverlap`) where the hairline above, over the track background, takes
   // the foreground.
   public uint colorOverlap;
-  // Which field's slot a connector's `colorType` paints: the field's index
-  // times CONNECTOR_COLOR_BITS (`connectorColorShift` in TS).
-  public uint connectorColorShift;
-  // The connectors' palette, the arcs' under the same field, looked up by
-  // `linkedReadColorSlot`.
+  // The connectors' palette, the arcs', looked up by `linkedReadColorSlot`.
   public float4 linkedReadColor[LINKED_READ_COLOR_SLOTS];
   // Read fill color per RC_* category, baked on the CPU.
   //
@@ -193,12 +186,11 @@ public float2 pileupCenterlineY(float row, Uniforms u) {
   return float2(yPxToClipY(mid - 0.5, u.canvasH), yPxToClipY(mid + 0.5, u.canvasH));
 }
 
-// Which palette slot a connector's color type reads under the field `shift`
-// selects: a clamp, not a wrap, so an out-of-range slot resolves to the last
-// color on every backend rather than to a different real one.
-public uint linkedReadColorSlot(uint colorType, uint shift) {
-  uint slot = (colorType >> shift) & ((1u << CONNECTOR_COLOR_BITS) - 1u);
-  return min(slot, LINKED_READ_COLOR_SLOTS - 1u);
+// Which palette slot a connector's color type reads: a clamp, not a wrap, so
+// an out-of-range slot resolves to the last color on every backend rather than
+// to a different real one.
+public uint linkedReadColorSlot(uint colorType) {
+  return min(colorType, LINKED_READ_COLOR_SLOTS - 1u);
 }
 
 // Widen a [x1,x2] clip-space span to a minimum of 1 CSS pixel, centered, so

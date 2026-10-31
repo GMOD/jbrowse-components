@@ -4,7 +4,6 @@ import { READ_COLOR_CATEGORY_BY_INDEX } from '../LinearAlignmentsDisplay/colorUt
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { ARC_SPLIT_MERGED_LABELS } from '../features/arcs/arcSplitCategory.ts'
 import { ARC_SLOT_CATEGORY, arcSlotCategory } from '../shaders/palettes.ts'
-import { ARC_COLOR_FIELDS } from './arcColorOptions.ts'
 import { COLOR_FIELD_DEFS, isModificationField } from './colorFieldDefs.ts'
 import {
   LEGEND_MAX_WIDTH,
@@ -104,11 +103,7 @@ function everyLabel() {
   // The connections' own wording, which lands in the SAME box — merged into
   // the read section or under its own heading, either way against this width.
   for (const item of getArcLegendItems(
-    new Set(
-      ARC_COLOR_FIELDS.flatMap(field =>
-        ARC_SLOT_CATEGORY.map((_, slot) => arcSlotCategory(slot, field)),
-      ),
-    ),
+    new Set(ARC_SLOT_CATEGORY.map((_, slot) => arcSlotCategory(slot))),
     makeTestPalette(),
   )) {
     out.add(item.label)

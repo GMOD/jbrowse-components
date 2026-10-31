@@ -246,7 +246,7 @@ function resolveArcs(
   // How far past the fetched data a bar may still point — see `cloudReachBp`.
   // Resolved once for the feed: it describes the VIEW, not a connection.
   const reachBp = cloudReachBp(loadedRegions)
-  const { colorField, cloud = false, filter = {} } = settings
+  const { cloud = false, filter = {} } = settings
   const { minInterchromReads = 1 } = filter
   const showOrdinaryPairs = ordinaryPairsShown(
     settings.showOrdinaryPairs,
@@ -490,7 +490,7 @@ function resolveArcs(
     // color: insert size, long-range distance and pair orientation are all
     // meaningless across refs (a cross-chromosome "pair orientation" is
     // arbitrary), so coloring by them just produces visual noise — one uniform
-    // color regardless of colorField, and regardless of whether the evidence
+    // color, regardless of whether the evidence
     // is a split read or a mate pair. As a TICK that was because the mark
     // carries no color of its own. As an ARC the reason is stronger: "crosses
     // chromosomes" used to be readable from the mark itself, and it is not from
@@ -598,7 +598,7 @@ function resolveArcs(
     // endpoints (the link mark), and zooming out to show the whole span restores
     // the rounded arc. (`offscreenMates` only filters connections to mates that
     // aren't loaded in the current view; see `offScreenMateArcs`.)
-    const colorType = getArcColorType({ arc, colorField, hasPaired })
+    const colorType = getArcColorType({ arc, hasPaired })
     // The arcs' ordinary pair, which at depth stops being context and becomes
     // the picture — 9138 of 9204 arcs at 1:2,000,000 on HG002 300x, all
     // painting the baseline slot (agent-docs/reference/DEEP_COVERAGE.md).
@@ -616,9 +616,7 @@ function resolveArcs(
     // So it must ALSO be painting the baseline slot: nothing the display is
     // currently drawing as a category can be hidden as routine, whatever the
     // flags say. `arcPaintRank` is the same classifier the paint order uses, so
-    // "hidden" and "grey" are the same set by construction, and both follow
-    // `colorField` — under `pairOrientation` a short insert IS routine, and the
-    // setting agrees without being told.
+    // "hidden" and "grey" are the same set by construction.
     //
     // A split junction has no pair to call proper and is never suppressed: it is
     // evidence whatever the reads around it are flagged.

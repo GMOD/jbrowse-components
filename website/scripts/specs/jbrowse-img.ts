@@ -407,7 +407,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'arcs:down',
     'unit=chain',
     // the chain's segment colors live under the orientation fields
-    'encoding.color.field=pairOrientation',
+    'encoding.color.field=insertSizeAndOrientation',
     'facet=split',
     'coverage.height=80',
     'height:560',

@@ -332,7 +332,6 @@ describe('alignments settings a static export cannot reach any other way', () =>
       'legend.show=true',
       'pileup.maxLayoutHeight=4000',
       'sashimi.height=120',
-      'readConnections.encoding.color.field=insertSize',
     ])
     expect(snap).toEqual({ showOutline: false })
   })

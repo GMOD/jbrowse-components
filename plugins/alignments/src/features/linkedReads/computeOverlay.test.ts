@@ -39,7 +39,6 @@ import {
   ARC_COLOR_INTERCHROM,
   ARC_COLOR_DEFAULT,
   ARC_COLOR_SPLIT_INV_LL,
-  connectorColorType,
   pairColorType,
 } from '../arcs/arcColors.ts'
 import {
@@ -54,7 +53,7 @@ import { buildConnectorFeeds } from './connectorFeed.ts'
 import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
-import type { ArcColorField, ConnectionFilter } from '../../shared/types.ts'
+import type { ConnectionFilter } from '../../shared/types.ts'
 import type { LinkedPair } from './compute.ts'
 import type { LinkRegion } from '@jbrowse/render-core/marks'
 
@@ -76,7 +75,6 @@ function drawnConnectors(opts: {
   pileupHeight: number
   scrollTop: number
   colors: ColorPalette
-  colorField?: ArcColorField
   labels?: Partial<Record<SwatchCategory, string>>
   regions?: LinkRegion[]
 }) {
@@ -97,10 +95,7 @@ function drawnConnectors(opts: {
     arrowPx: 0,
   }
   const frame = { canvasWidth: 1e9, canvasHeight: 1e9 }
-  const feeds = buildConnectorFeeds({
-    colorField: 'insertSizeAndOrientation',
-    ...opts,
-  })
+  const feeds = buildConnectorFeeds(opts)
   return [...feeds].flatMap(([regionIdx, feed]) =>
     feed.hits.flatMap((hit, i) => {
       const block = canvasWideBlock(regionIdx, frame.canvasWidth)
@@ -1363,23 +1358,18 @@ describe('a same-strand junction across segments nothing fetched', () => {
 // The key is built from the palette and labels the overlay itself draws with,
 // so a color the reader met on screen is keyed by that same color.
 describe('connectorCategories', () => {
-  const field = 'insertSizeAndOrientation'
-  const every = (slot: number) => connectorColorType(() => slot)
-  const labels = (colorTypes: number[], f: ArcColorField = field) =>
-    getArcLegendItems(connectorCategories(colorTypes, f), PALETTE).map(
+  const labels = (colorTypes: number[]) =>
+    getArcLegendItems(connectorCategories(colorTypes), PALETTE).map(
       i => i.label,
     )
 
   it('names the inter-chromosomal slot as the arc key does', () => {
-    expect(labels([every(ARC_COLOR_INTERCHROM)])).toEqual(['Inter-chromosomal'])
+    expect(labels([ARC_COLOR_INTERCHROM])).toEqual(['Inter-chromosomal'])
   })
 
   it('keys the connection colors in view in the arc key own words', () => {
     expect(
-      labels([
-        every(ARC_COLOR_SPLIT_INV_LL),
-        connectorColorType(f => pairColorType(f, 3, 0, undefined)),
-      ]),
+      labels([ARC_COLOR_SPLIT_INV_LL, pairColorType(3, 0, undefined)]),
     ).toEqual([
       'RR - Both mates reverse strand',
       'Split read (inversion, LL-type)',
@@ -1387,14 +1377,11 @@ describe('connectorCategories', () => {
   })
 
   // An LR pair and one whose orientation the worker never computed share the
-  // arcs' baseline slot, so they key one row, named for the field.
+  // arcs' baseline slot, so they key one row.
   it('keys one row per category, not one per connector kind', () => {
-    const lr = connectorColorType(f => pairColorType(f, 1, 0, undefined))
-    const unknown = connectorColorType(f => pairColorType(f, 0, 0, undefined))
-    expect(labels([lr, unknown])).toHaveLength(1)
-    expect(
-      labels([lr, unknown, every(ARC_COLOR_DEFAULT)], 'pairOrientation'),
-    ).toEqual(['LR - Normal pair orientation'])
+    const lr = pairColorType(1, 0, undefined)
+    const unknown = pairColorType(0, 0, undefined)
+    expect(labels([lr, unknown, ARC_COLOR_DEFAULT])).toEqual(['Normal'])
   })
 })
 

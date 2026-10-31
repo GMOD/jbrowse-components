@@ -3,7 +3,7 @@
 // clipped to the segment's leading (fwd) or trailing (rev) edge.
 //! targets: wgsl, glsl
 //! js-export: showChevron
-//! export-consts: READ_CATEGORY_SLOTS, RC_SPLIT_INVERTED, RC_SPLIT_SAME_STRAND, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_NO_ORIENTATION, RC_PAIR_LR, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
+//! export-consts: READ_CATEGORY_SLOTS, RC_SPLIT_INVERTED, RC_SPLIT_SAME_STRAND, RC_UNMAPPED_MATE, RC_INTERCHROM, RC_FWD_STRAND, RC_REV_STRAND, RC_PAIR_RL, RC_PAIR_RR, RC_PAIR_LL, RC_LONG_INSERT, RC_SHORT_INSERT, RC_NORMAL_INSERT, RC_PLAIN, RC_MAPQ, RC_TAG, RC_NO_TAG_VALUE, RC_MOD_FWD, RC_MOD_REV, RC_MAPQ_UNAVAILABLE, CHEVRON_DIRLESS_MIN_WIDTH_PX, PAIR_MIN_SPAN_PX, READ_OUTLINE_PX, READ_OUTLINE_SHADE, READ_OUTLINE_MIN_WIDTH_PX, READ_OUTLINE_MIN_HEIGHT_PX
 
 import alignmentsUniforms;
 import colorPack;
@@ -36,23 +36,21 @@ static const uint RC_UNMAPPED_MATE   = 3u;
 static const uint RC_INTERCHROM      = 4u;
 static const uint RC_FWD_STRAND      = 5u;
 static const uint RC_REV_STRAND      = 6u;
-static const uint RC_NO_ORIENTATION  = 7u;
-static const uint RC_PAIR_LR         = 8u;
-static const uint RC_PAIR_RL         = 9u;
-static const uint RC_PAIR_RR         = 10u;
-static const uint RC_PAIR_LL         = 11u;
-static const uint RC_LONG_INSERT     = 12u;
-static const uint RC_SHORT_INSERT    = 13u;
-static const uint RC_NORMAL_INSERT   = 14u;
-static const uint RC_MAPQ            = 15u;
-static const uint RC_TAG             = 16u;
-static const uint RC_NO_TAG_VALUE    = 17u;
-static const uint RC_MOD_FWD         = 18u;
-static const uint RC_MOD_REV         = 19u;
+static const uint RC_PAIR_RL         = 7u;
+static const uint RC_PAIR_RR         = 8u;
+static const uint RC_PAIR_LL         = 9u;
+static const uint RC_LONG_INSERT     = 10u;
+static const uint RC_SHORT_INSERT    = 11u;
+static const uint RC_NORMAL_INSERT   = 12u;
+static const uint RC_MAPQ            = 13u;
+static const uint RC_TAG             = 14u;
+static const uint RC_NO_TAG_VALUE    = 15u;
+static const uint RC_MOD_FWD         = 16u;
+static const uint RC_MOD_REV         = 17u;
 // MAPQ 255 is the SAM spec's "mapping quality unavailable" sentinel, not a
 // score, so it is a flat category of its own: the neutral grey rather than the
 // ramp's top, keyed exactly when reads carry it.
-static const uint RC_MAPQ_UNAVAILABLE = 20u;
+static const uint RC_MAPQ_UNAVAILABLE = 18u;
 
 // When a read's direction is uninformative (no color field, mate unmapped,
 // or mate on another chromosome), only draw its strand arrow once the read is at

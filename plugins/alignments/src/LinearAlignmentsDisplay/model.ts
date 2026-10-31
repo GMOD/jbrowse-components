@@ -182,7 +182,6 @@ import {
   getJunctionFilterItems,
   getReadConnectionsBandItems,
   getReadConnectionsMenuItem,
-  getReadConnectionsColorItem,
   getReadsColorByMenuItem,
   getReadsMenuItems,
   getSashimiPlacementItems,
@@ -226,7 +225,6 @@ import type { ArcCategory } from '../shaders/palettes.ts'
 import type { DeclaredReadLabels } from '../shared/alignmentsColor.ts'
 import type { ReadSlot } from '../shared/readSlot.ts'
 import type {
-  ArcColorField,
   BasesPatch,
   ColumnSortField,
   SortColumn,
@@ -943,9 +941,8 @@ export default function stateModelFactory(
           /**
            * #getter
            * The arc color slots plotted, mapped to legend buckets, for curved
-           * arcs and the read cloud alike: both paint `readConnectionsColorField`, which
-           * follows the reads only where they paint a pair field. Empty unless
-           * an overlay is on with the legend shown.
+           * arcs and the read cloud alike. Empty unless an overlay is on with
+           * the legend shown.
            */
           get arcLegendCategories(): Set<ArcCategory> {
             const present = new Set<ArcCategory>()
@@ -953,9 +950,7 @@ export default function stateModelFactory(
               // `colorSlots`, not a walk of `arcsByGroup`, which holds only one
               // of the two halves arcs resolve into; see `ArcsByGroupResult`.
               for (const slot of this.arcsResult.colorSlots) {
-                present.add(
-                  arcSlotCategory(slot, self.readConnectionsColorField),
-                )
+                present.add(arcSlotCategory(slot))
               }
             }
             return present
@@ -1686,7 +1681,6 @@ export default function stateModelFactory(
                 displayed: this.displayedRegionInfos,
               },
               {
-                colorField: self.readConnectionsColorField,
                 cloud: self.drawnReadConnections === 'rule',
                 filter: self.connectionFilter,
                 showOrdinaryPairs: self.showOrdinaryPairs,
@@ -1870,7 +1864,7 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The color types (`connectorColorType`) drawn in view, by the
+         * The color types (arc palette slots) drawn in view, by the
          * overlay's curves and by the straight-line pass beside them, so the
          * key lists every connector color on screen. Empty while the legend is
          * hidden so the scan is skipped.
@@ -1904,10 +1898,7 @@ export default function stateModelFactory(
           return getArcLegendItems(
             new Set([
               ...self.arcLegendCategories,
-              ...connectorCategories(
-                this.connectionColorTypes,
-                self.readConnectionsColorField,
-              ),
+              ...connectorCategories(this.connectionColorTypes),
             ]),
             palette,
             self.declaredReadLabels.categories,
@@ -2288,7 +2279,6 @@ export default function stateModelFactory(
                   crossRegion: crossRegionByGroup.get(key) ?? [],
                   displayed,
                   colors: colors.get(),
-                  colorField: self.readConnectionsColorField,
                 }),
               ]),
             )
@@ -2322,7 +2312,6 @@ export default function stateModelFactory(
                   featureSpacing: self.featureSpacing,
                   pileupHeight: sec.pileupHeight,
                   colors: colors.get(),
-                  colorField: self.readConnectionsColorField,
                   labels: self.declaredReadLabels.categories,
                 }),
               ]),
@@ -2388,7 +2377,6 @@ export default function stateModelFactory(
           connectorStylerIn(theme: JBrowsePalette): ConnectorStyler {
             return connectorStyler({
               colors: colorsIn(theme),
-              colorField: self.readConnectionsColorField,
               labels: self.declaredReadLabels.categories,
             })
           },
@@ -2502,7 +2490,6 @@ export default function stateModelFactory(
             canvasWidth: self.canvasWidthPx,
             canvasHeight: self.height,
             colors: palette,
-            readConnectionsColorField: self.readConnectionsColorField,
             unit: self.unit,
             showConnectors: self.showConnectors,
             collapseSections: self.collapseSections,
@@ -2743,7 +2730,7 @@ export default function stateModelFactory(
         /**
          * #method
          * Fields that invalidate the fetched data, every one worker-bound.
-         * Arc-only fields (`readConnections.encoding.color` and `.filter`) are
+         * Arc-only fields (`readConnections` and the connection filter) are
          * not here: `arcsResult` reads them and they need no refetch. Non-tag
          * sort changes and tag coloring (`readFillColors`, baked in
          * `laidOutByGroup`) stay main-thread. It is defined in a separate views
@@ -3511,28 +3498,6 @@ export default function stateModelFactory(
             ...editPlotMenuItems(self, [
               ...getCoverageMenuItems(self),
               ...getTrackSizingItems(self, pileupGate),
-              // Wherever a connection paints this field: the arcs, the read
-              // cloud, the connectors over the pileup, and a chain's links
-              // between displayed regions. A chain's links inside one region
-              // paint a fixed color.
-              ...(self.drawnReadConnections === 'off' &&
-              !self.showConnectors &&
-              !(self.unit === 'chain' && self.view.displayedRegions.length > 1)
-                ? []
-                : [
-                    getReadConnectionsColorItem({
-                      own: getConf(self, [
-                        'readConnections',
-                        'encoding',
-                        'color',
-                        'field',
-                      ]),
-                      readField: self.colorField,
-                      setField: (field?: ArcColorField) => {
-                        self.setReadConnectionsColorField(field)
-                      },
-                    }),
-                  ]),
               ...getReadConnectionsBandItems(self),
               ...getSashimiPlacementItems(self),
             ]),

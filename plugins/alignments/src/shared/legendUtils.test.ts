@@ -103,21 +103,18 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('pair-orientation field: split-read strand framing + non-split bucket', () => {
-    // fwd/rev come only from split segments here, and po=0 non-split reads are
-    // their own grey bucket.
+  test('insert size and orientation: split-read strand framing + the normal bucket', () => {
+    // fwd/rev come only from split segments here
     expect(
-      labels('pairOrientation', [
+      labels('insertSizeAndOrientation', [
         'fwdStrand',
         'revStrand',
-        'noOrientation',
-        'pairLR',
+        'normalInsert',
       ]),
     ).toEqual([
       'Split segment (same strand)',
       'Split segment (inverted)',
-      'No orientation',
-      'LR - Normal pair orientation',
+      'Normal',
     ])
   })
 
@@ -131,11 +128,10 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('pair orientation lists only the orientations seen', () => {
-    expect(labels('pairOrientation', ['pairLR', 'pairRL'])).toEqual([
-      'LR - Normal pair orientation',
-      'RL - Mates point outward',
-    ])
+  test('insert size and orientation lists only the buckets seen', () => {
+    expect(
+      labels('insertSizeAndOrientation', ['normalInsert', 'pairRL']),
+    ).toEqual(['RL - Mates point outward', 'Normal'])
   })
 
   test('the plain fill shows a base-reads swatch plus any cross-cutting buckets', () => {
@@ -320,15 +316,6 @@ describe('getReadDisplayLegendItems', () => {
         sectionOrder('firstOfPairStrand', ['-1']),
       ),
     ).toEqual(['First-of-pair reverse', 'First-of-pair forward'])
-    const pairs: ReadColorCategory[] = ['pairLR', 'pairRL', 'pairLL']
-    const [lr, rl, ll] = labelsIn('pairOrientation', pairs)
-    expect(
-      labelsIn(
-        'pairOrientation',
-        pairs,
-        sectionOrder('pairOrientation', ['LL', 'RL']),
-      ),
-    ).toEqual([ll, rl, lr])
   })
 
   // The swatch resolves through the same `bakedValueColor` the paint path runs
@@ -1223,7 +1210,7 @@ describe('the overlap row', () => {
   const items = (overlaps?: 'chain' | 'collapsed') =>
     getReadDisplayLegendItems({
       colorField: undefined,
-      presentCategories: new Set<ReadColorCategory>(['pairLR']),
+      presentCategories: new Set<ReadColorCategory>(['normalInsert']),
       palette: makeTestPalette({
         colorPairLR: [1, 1, 1],
         colorOverlap: [0.2, 0.2, 0.2],
@@ -1372,7 +1359,7 @@ describe('sashimiLegendItems', () => {
 describe('the sashimi section', () => {
   const palette = makeTestPalette({
     readCategoryColors: {
-      pairLR: [0.6, 0.6, 0.6],
+      normalInsert: [0.6, 0.6, 0.6],
       pairRL: [0, 0.5, 0.5],
       splitSameStrand: [0.9, 0.7, 0],
     },
@@ -1438,7 +1425,7 @@ describe('the sashimi section', () => {
   })
 
   test('keeps a split class the read arcs paint in no color of theirs', () => {
-    const arcs = getArcLegendItems(new Set(['pairLR']), palette)
+    const arcs = getArcLegendItems(new Set(['normalInsert']), palette)
     expect(rows(scalesWith(arcs), 'sashimi').map(([label]) => label)).toEqual([
       'Reverse transcript strand',
       'Split junction (deletion-type)',

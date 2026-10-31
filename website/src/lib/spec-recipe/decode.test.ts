@@ -37,13 +37,13 @@ test('an encoding flattens channel by channel, under the display or a band', () 
   const channels = {
     encoding: { color: 'strand' },
     legend: { show: false },
-    readConnections: { encoding: { color: 'insertSize' } },
+    readConnections: { encoding: { strokeWidth: 2 } },
     pileup: { bases: { show: true, encoding: { color: 'modifications' } } },
   }
   expect(flatSettings(channels)).toEqual([
     ['encoding.color', 'strand'],
     ['legend.show', false],
-    ['readConnections.encoding.color', 'insertSize'],
+    ['readConnections.encoding.strokeWidth', 2],
     [
       'pileup.bases',
       { show: true, encoding: { color: 'modifications' } },

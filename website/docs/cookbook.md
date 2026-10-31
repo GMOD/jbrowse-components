@@ -366,10 +366,10 @@ every `jexl:` expression, on variant tracks too:
 }
 ```
 
-- `encoding.color`'s field also takes `strand`, `pairOrientation`, `insertSize`
-  and `tags.XX`; a `value` is one color for every read, and `scale.domain` with
+- `encoding.color`'s field also takes `strand`, `insertSizeAndOrientation` and
+  `tags.XX`; a `value` is one color for every read, and `scale.domain` with
   `scale.range` recolors one level:
-  `{ "field": "pairOrientation", "scale": { "domain": ["RR"], "range": ["#d95f02"] } }`
+  `{ "field": "insertSizeAndOrientation", "scale": { "type": "ordinal", "domain": ["RR"], "range": ["#d95f02"] } }`
 - `pileup.bases` draws a per-base layer over the reads, whatever
   `encoding.color` fills them with; its own `encoding.color` names
   `"modifications"`, `"bisulfite"`, `"baseQuality"` or `"base"`

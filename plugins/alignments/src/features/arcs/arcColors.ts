@@ -1,11 +1,9 @@
 import { PAIR_DIRECTION_NUM, splitJunctionKind } from '@jbrowse/alignments-core'
 
 import { ARC_SLOT_CATEGORY } from '../../shaders/palettes.ts'
-import { ARC_COLOR_FIELDS } from '../../shared/arcColorOptions.ts'
 import { pairCategory } from '../../shared/pairCategory.ts'
 
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
-import type { ArcColorField } from '../../shared/types.ts'
 import type { ComputedArc, PendingArc } from './arcTypes.ts'
 
 // Which color slot an arc paints in, and the paint order that follows from it.
@@ -146,23 +144,19 @@ export function splitJunctionSlot(inversion: boolean, lowerDir: number) {
       : ARC_COLOR_SPLIT_BACK
 }
 
-/** The slot a mate link paints under `colorField`. */
+/** The slot a mate link paints. */
 export function pairColorType(
-  colorField: ArcColorField,
   pairOrientationNum: number,
   tlen: number,
   stats: InsertSizeBand | undefined,
 ) {
   return (
-    ARC_SLOT_OF_CATEGORY.get(
-      pairCategory(colorField, pairOrientationNum, tlen, stats),
-    ) ?? ARC_COLOR_DEFAULT
+    ARC_SLOT_OF_CATEGORY.get(pairCategory(pairOrientationNum, tlen, stats)) ??
+    ARC_COLOR_DEFAULT
   )
 }
 
-// The palette slot a pair category paints in. `pairLR` and `noOrientation` have no
-// slot of their own and land on the baseline, which `arcSlotCategory` names
-// per coloring mode.
+// The palette slot a pair category paints in.
 const ARC_SLOT_OF_CATEGORY = new Map<string, number>(
   ARC_SLOT_CATEGORY.map((category, slot) => [category, slot]),
 )
@@ -173,18 +167,12 @@ const ARC_SLOT_OF_CATEGORY = new Map<string, number>(
 // orientation.
 // Exported for `arcReadColorParity.test.ts`, which holds this against
 // `readColorCategory`.
-export function getArcColorType(args: {
-  arc: PendingArc
-  colorField: ArcColorField
-  hasPaired: boolean
-}) {
-  const { arc, colorField, hasPaired } = args
+export function getArcColorType(args: { arc: PendingArc; hasPaired: boolean }) {
+  const { arc, hasPaired } = args
 
   // A split-read junction carries no pair semantics (no template length, no
-  // pair orientation), so it paints its own junction class under every color
-  // field — none of the three has a value for it, and the baseline slot would
-  // key it as a normal pair — regardless of whether OTHER reads in the view
-  // are paired. Keying on the per-connection `isSplit` instead of the dataset-
+  // pair orientation), so it paints its own junction class, regardless of
+  // whether OTHER reads in the view are paired. Keying on the per-connection `isSplit` instead of the dataset-
   // global `hasPaired` is what lets a paired read that is itself SA-split show
   // its inversion junctions correctly. Resolved before the insert class below
   // because that is a paired concept and a junction has no TLEN to classify.
@@ -200,32 +188,7 @@ export function getArcColorType(args: {
   // as you panned.
   return arc.interchrom
     ? ARC_COLOR_INTERCHROM
-    : pairColorType(colorField, arc.pairOrientationNum, arc.tlen, arc.stats)
-}
-
-// alignmentsUniforms.slang's CONNECTOR_COLOR_BITS: the bits each field's slot
-// takes in a connector's color type.
-const CONNECTOR_COLOR_BITS = 4
-
-/**
- * A connector's color type: its slot under each of `ARC_COLOR_FIELDS`, packed
- * CONNECTOR_COLOR_BITS apiece, so the connectors are classified once and the
- * field picks a slot at paint time (`linkedReadColorSlot`). A recolor then
- * reuses the classified connectors, as it reuses the layout.
- */
-export function connectorColorType(
-  slotUnder: (field: ArcColorField) => number,
-) {
-  let packed = 0
-  for (let i = 0; i < ARC_COLOR_FIELDS.length; i++) {
-    packed |= slotUnder(ARC_COLOR_FIELDS[i]!) << (i * CONNECTOR_COLOR_BITS)
-  }
-  return packed
-}
-
-/** The shift `linkedReadColorSlot` takes to read `colorField`'s slot out of a connector's color type. */
-export function connectorColorShift(colorField: ArcColorField) {
-  return ARC_COLOR_FIELDS.indexOf(colorField) * CONNECTOR_COLOR_BITS
+    : pairColorType(arc.pairOrientationNum, arc.tlen, arc.stats)
 }
 
 /** A color type's palette slot, the last slot for one past the palette. */

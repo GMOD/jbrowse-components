@@ -1,7 +1,6 @@
 import {
   categorySwatchColor,
   rgb255,
-  swatchPaletteKeys,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import {
@@ -52,10 +51,7 @@ describe('overlay palettes follow the theme', () => {
         .filter(c => Array.isArray(c))
         .map(c => c.join(',')),
     )
-    for (const slot of buildArcColorPalette(
-      OVERRIDDEN,
-      'insertSizeAndOrientation',
-    )) {
+    for (const slot of buildArcColorPalette(OVERRIDDEN)) {
       expect(carried).toContain(slot.join(','))
     }
   })
@@ -65,9 +61,9 @@ describe('overlay palettes follow the theme', () => {
   // dark-mode bug this file exists to stop coming back (`pairLR` is the entry
   // the stock dark palette dims).
   test('each arc slot equals the read swatch of the category it keys', () => {
-    const arc = buildArcColorPalette(OVERRIDDEN, 'insertSizeAndOrientation')
+    const arc = buildArcColorPalette(OVERRIDDEN)
     for (const [slot, rgb] of arc.entries()) {
-      const category = arcSlotCategory(slot, 'insertSizeAndOrientation')
+      const category = arcSlotCategory(slot)
       const swatch = isArcSplitCategory(category)
         ? ARC_SPLIT_SWATCH[category]
         : category
@@ -79,12 +75,10 @@ describe('overlay palettes follow the theme', () => {
   })
 })
 
-// A pair with no computed orientation (po 0) is 'noOrientation' to the read fills
-// and falls to the arc baseline, pairLR, on the arcs: one grey for both.
-describe('unknown pair orientation', () => {
-  test('the arc baseline and the read fill are the same grey', () => {
-    expect(swatchPaletteKeys.noOrientation).toBe(swatchPaletteKeys.pairLR)
+// The arc baseline is the normal insert, the read fill's neutral grey.
+describe('the arc baseline', () => {
+  test('is the normal insert', () => {
     expect(ARC_SLOT_CATEGORY[0]).toBe('normalInsert')
-    expect(arcSlotCategory(0, 'pairOrientation')).toBe('pairLR')
+    expect(arcSlotCategory(0)).toBe('normalInsert')
   })
 })

@@ -127,8 +127,7 @@ them, since plant genomes methylate in all three. The
 For paired-end data, **Color by → Insert size and orientation** highlights
 discordant pairs, the main way to scan short reads for structural variants:
 unexpectedly large inserts turn red, small ones pink, and abnormal orientations
-get separate colors, whichever cue is strongest. Orientation alone is a config
-setting, `encoding.color` set to `pairOrientation`. The
+get separate colors, whichever cue is strongest. The
 [SV visualization guide](/docs/user_guides/sv_visualization#pair-orientation)
 has the color tables, the expected-insert threshold, and what each pattern means
 at a breakpoint.
@@ -365,12 +364,8 @@ region either side of a breakpoint shows the connection as one curve.
 Interchromosomal arcs draw in one color, since insert size and orientation mean
 nothing across chromosomes.
 
-**Advanced → Read connections color** picks what colors the arcs and the read
-cloud: insert size, pair orientation, or both. **Same as reads**, the default,
-takes the read color when the read color is one of those three, and paints
-insert size and orientation under any other read color. The
-[`readConnections.encoding.color`](/docs/config/readconnectionsencoding/#slot-color)
-holds the choice, `""` meaning same as reads.
+The arcs and the read cloud paint insert size and orientation, in the colors
+**Color by → Insert size and orientation** gives the reads.
 
 Reads describing the same connection draw as **one arc, thickened by how many
 there are**, on a log scale, so the arcs rank the evidence. A single-read

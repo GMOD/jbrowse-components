@@ -103,25 +103,6 @@ test("a display's own v4 read size beats its renderer's", () => {
   expect(readConfObject(conf, ['pileup', 'maxLayoutHeight'])).toBe(900)
 })
 
-// A bare string inside `encoding` is the field, on the arcs as on the reads
-test('readConnections.encoding.color reads a bare string as its field', () => {
-  const path = ['readConnections', 'encoding', 'color', 'field'] as const
-  expect(
-    readConfObject(
-      create({ readConnections: { encoding: { color: 'pairOrientation' } } }),
-      path,
-    ),
-  ).toBe('pairOrientation')
-  expect(
-    readConfObject(
-      create({
-        readConnections: { encoding: { color: { field: 'pairOrientation' } } },
-      }),
-      path,
-    ),
-  ).toBe('pairOrientation')
-})
-
 test('readConnections.encoding.strokeWidth reads a bare number as its value', () => {
   expect(
     readConfObject(

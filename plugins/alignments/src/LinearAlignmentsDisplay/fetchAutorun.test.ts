@@ -755,7 +755,7 @@ describe('FetchVisibleRegions autorun', () => {
       'strand',
       'mapq',
       'insertSizeAndOrientation',
-      'pairOrientation',
+      'firstOfPairStrand',
       '',
     ]) {
       display.colorByField(field)

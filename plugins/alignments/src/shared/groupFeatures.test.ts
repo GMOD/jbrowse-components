@@ -377,11 +377,7 @@ test("a facet section's key is the value the color names that level by", () => {
     feat('ll', { pair_orientation: 'F1F2', strand: -1, flags: 0x91 }),
     feat('none', { strand: 1 }),
   ]
-  for (const field of [
-    'pairOrientation',
-    'strand',
-    'firstOfPairStrand',
-  ] as const) {
+  for (const field of ['strand', 'firstOfPairStrand'] as const) {
     expect(keys(partitionFeatures(features, { field })).toSorted()).toEqual(
       Object.values(levelKeysOf(field)!).toSorted(),
     )

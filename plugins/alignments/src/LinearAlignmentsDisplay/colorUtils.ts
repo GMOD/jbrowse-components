@@ -9,11 +9,9 @@ import {
   RC_MAPQ_UNAVAILABLE,
   RC_MOD_FWD,
   RC_MOD_REV,
-  RC_NO_ORIENTATION,
   RC_NORMAL_INSERT,
   RC_NO_TAG_VALUE,
   RC_PAIR_LL,
-  RC_PAIR_LR,
   RC_PAIR_RL,
   RC_PAIR_RR,
   RC_PLAIN,
@@ -73,8 +71,6 @@ export type ReadColorCategory =
   | 'interchrom'
   | 'fwdStrand'
   | 'revStrand'
-  | 'noOrientation'
-  | 'pairLR'
   | 'pairRL'
   | 'pairRR'
   | 'pairLL'
@@ -114,8 +110,6 @@ export const READ_COLOR_CATEGORY: Record<ReadColorCategory, number> = {
   interchrom: RC_INTERCHROM,
   fwdStrand: RC_FWD_STRAND,
   revStrand: RC_REV_STRAND,
-  noOrientation: RC_NO_ORIENTATION,
-  pairLR: RC_PAIR_LR,
   pairRL: RC_PAIR_RL,
   pairRR: RC_PAIR_RR,
   pairLL: RC_PAIR_LL,
@@ -259,13 +253,9 @@ function fillCategory(
     case 'firstOfPairStrand':
       return strandCategory(firstOfPairStrand(strand, flags))
 
-    // The pair fields classify through the one function the arcs read too. A
-    // read reaching here with no pair orientation is a non-split read or a
-    // split one whose framing is off, and grey is the right answer for both.
-    case 'pairOrientation':
+    // The pair field classifies through the one function the arcs read too.
     case 'insertSizeAndOrientation':
       return pairCategory(
-        bodyFill,
         data.readPairOrientations[i]!,
         data.readInsertSizes[i]!,
         data.insertSizeStats,
@@ -353,8 +343,6 @@ export const swatchPaletteKeys = {
   revStrand: 'colorRevStrand',
   modFwd: 'colorModificationFwd',
   modRev: 'colorModificationRev',
-  noOrientation: 'colorPairLR',
-  pairLR: 'colorPairLR',
   pairRL: 'colorPairRL',
   pairRR: 'colorPairRR',
   pairLL: 'colorPairLL',

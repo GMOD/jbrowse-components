@@ -6,7 +6,6 @@ import { arcSlotCategory } from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051).
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { passesCategory } from '../../shared/readCategoryFilters.ts'
-import { connectorColorShift } from '../arcs/arcColors.ts'
 import {
   crossesChromosomes,
   isGpuLinkedReadLine,
@@ -16,7 +15,7 @@ import {
 
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcCategory } from '../../shaders/palettes.ts'
-import type { ArcColorField, ConnectionFilter } from '../../shared/types.ts'
+import type { ConnectionFilter } from '../../shared/types.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { LinkedPair, RefNameAt } from './compute.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
@@ -54,17 +53,11 @@ function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
  */
 export type ConnectorScope = 'all' | 'crossRegion' | 'none'
 
-/** The connection colors the connectors' color types paint under `colorField`. */
-export function connectorCategories(
-  colorTypes: Iterable<number>,
-  colorField: ArcColorField,
-) {
-  const shift = connectorColorShift(colorField)
+/** The connection colors the connectors' color types paint. */
+export function connectorCategories(colorTypes: Iterable<number>) {
   const categories = new Set<ArcCategory>()
   for (const colorType of colorTypes) {
-    categories.add(
-      arcSlotCategory(linkedReadColorSlot(colorType, shift), colorField),
-    )
+    categories.add(arcSlotCategory(linkedReadColorSlot(colorType)))
   }
   return categories
 }

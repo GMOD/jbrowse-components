@@ -179,7 +179,6 @@ export type {
   DeclaredReadLabels,
 } from './shared/alignmentsColor.ts'
 export type {
-  ArcColorField,
   CategoryFilter,
   BaseLayer,
   ColorFieldKind,

@@ -92,6 +92,10 @@ test.each([
     { type: 'insertSize' },
     { encoding: { color: { field: 'insertSizeAndOrientation' } } },
   ],
+  [
+    { type: 'pairOrientation' },
+    { encoding: { color: { field: 'insertSizeAndOrientation' } } },
+  ],
   [{ type: 'tag', tag: 'HP' }, { encoding: { color: { field: 'tags.HP' } } }],
   [{ type: 'perBaseLettering' }, { pileup: bases('base') }],
   [
@@ -138,7 +142,9 @@ test('a v4 colorBy reaches the display through displayDefaults too', () => {
     (out.displays as Record<string, unknown>[]).find(
       d => d.type === 'LinearAlignmentsDisplay',
     ),
-  ).toMatchObject({ encoding: { color: { field: 'pairOrientation' } } })
+  ).toMatchObject({
+    encoding: { color: { field: 'insertSizeAndOrientation' } },
+  })
 })
 
 test('lifts the settings off the pre-4.x nested sub-nodes', () => {

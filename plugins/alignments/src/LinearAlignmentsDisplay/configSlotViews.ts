@@ -34,7 +34,6 @@ import {
   readPredicatesOf,
   withFields,
 } from '../shared/alignmentsFilter.ts'
-import { arcColorFieldOf } from '../shared/arcColorOptions.ts'
 import {
   basesFilterProblems,
   basesFilterOf,
@@ -54,7 +53,6 @@ import type {
   AlignmentsColorSetting,
 } from '../shared/alignmentsColor.ts'
 import type {
-  ArcColorField,
   BaseLayer,
   ColorFieldKind,
   ConnectionFilter,
@@ -479,18 +477,6 @@ export function configSlotViews(
     },
     /**
      * #getter
-     * The field the arcs, the read cloud and the pileup connectors paint:
-     * `readConnections.encoding.color`'s own, or the reads' where it names
-     * none.
-     */
-    get readConnectionsColorField(): ArcColorField {
-      return arcColorFieldOf(
-        getConf(self, ['readConnections', 'encoding', 'color', 'field']),
-        this.colorField,
-      )
-    },
-    /**
-     * #getter
      * The per-base layer `pileup.bases` draws; undefined while none is.
      */
     get baseLayer(): BaseLayer | undefined {
@@ -687,14 +673,6 @@ export function configSlotActions(self: ConfigSlotSelf) {
               width,
             ),
       )
-    },
-
-    /**
-     * #action
-     * Paint the connections by `field`; unset follows the reads.
-     */
-    setReadConnectionsColorField(field?: ArcColorField) {
-      setConf(self, ['readConnections', 'encoding', 'color', 'field'], field)
     },
 
     /**

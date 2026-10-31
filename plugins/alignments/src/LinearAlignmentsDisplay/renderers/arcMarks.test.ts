@@ -21,7 +21,6 @@ const block = {
 function clampedDomeInk(down: boolean, width: number) {
   const band = { top: 20, height: 50, down }
   const feed = buildArcBandFeeds({
-    colorField: 'insertSizeAndOrientation',
     byRegion: new Map([
       [
         0,
@@ -79,7 +78,6 @@ test.each([
 function crossChromosomeInk(gapPx: number) {
   const band = { top: 20, height: 50, down: false }
   const feed = buildArcBandFeeds({
-    colorField: 'insertSizeAndOrientation',
     byRegion: new Map(),
     crossRegion: [
       {

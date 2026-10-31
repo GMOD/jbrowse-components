@@ -15,8 +15,9 @@ export const ALIGNMENTS_PLOT_EXAMPLES: PlotExample[] = [
     description: 'one section per pair orientation',
   },
   {
-    plot: '{ "sort": "split", "encoding": { "color": "pairOrientation" } }',
-    description: 'split reads stacked first, colored by pair orientation',
+    plot: '{ "sort": "split", "encoding": { "color": "insertSizeAndOrientation" } }',
+    description:
+      'split reads stacked first, colored by insert size and orientation',
   },
   {
     plot: '{ "facet": null, "encoding": null }',

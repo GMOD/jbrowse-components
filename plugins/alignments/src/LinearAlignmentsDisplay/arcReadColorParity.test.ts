@@ -1,13 +1,10 @@
 import { getArcColorType } from '../features/arcs/arcColors.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
-import { ARC_COLOR_FIELDS } from '../shared/arcColorOptions.ts'
 import { readColorCategory, swatchPaletteKeys } from './colorUtils.ts'
-
-import type { ArcColorField } from '../shared/types.ts'
 
 // The arc overlay and the read fills classify a pair through one function
 // (`pairCategory`), and the model folds the arc key into the read key whenever
-// the two fields are twins, which renders an arc bucket as a plain read swatch
+// the two share a color, which renders an arc bucket as a plain read swatch
 // and drops the curve mark. This pins what the fold assumes: the arc side's
 // own gates (`hasPaired`, `isSplit`) and its category-to-slot fold leave a
 // paired arc keyed as the reads under it are. A figure once shipped with red
@@ -21,7 +18,6 @@ const ORIENTATIONS = [1, 2, 3, 4]
 const INSERT_SIZES = [50, 300, 5000]
 
 function arcCategory(
-  colorField: ArcColorField,
   pairOrientationNum: number,
   tlen: number,
   interchrom = false,
@@ -46,15 +42,12 @@ function arcCategory(
         flags: 0,
         stats,
       },
-      colorField,
       hasPaired: true,
     }),
-    colorField,
   )
 }
 
 function readCategory(
-  colorField: ArcColorField,
   pairOrientationNum: number,
   tlen: number,
   interchrom = false,
@@ -72,91 +65,57 @@ function readCategory(
       readInterchrom: Uint8Array.of(interchrom ? 1 : 0),
       insertSizeStats: stats,
     },
-    colorField,
+    'insertSizeAndOrientation',
   )
 }
 
 describe('arc and read color classifiers', () => {
-  test.each(ARC_COLOR_FIELDS)(
-    'agree on every orientation x insert-size pair in %s mode',
-    colorField => {
-      for (const po of ORIENTATIONS) {
-        for (const tlen of INSERT_SIZES) {
-          expect([
-            colorField,
-            po,
-            tlen,
-            arcCategory(colorField, po, tlen),
-          ]).toEqual([colorField, po, tlen, readCategory(colorField, po, tlen)])
-        }
+  test('agree on every orientation x insert-size pair', () => {
+    for (const po of ORIENTATIONS) {
+      for (const tlen of INSERT_SIZES) {
+        expect([po, tlen, arcCategory(po, tlen)]).toEqual([
+          po,
+          tlen,
+          readCategory(po, tlen),
+        ])
       }
-    },
-  )
+    }
+  })
 
   // The second mate of a pair carries the negative TLEN. The reads used to
   // hand it to the classifier unsigned-as-is, so one mate of a long-insert
   // pair painted normal while the arc over both painted long.
   test('agree on a negative TLEN', () => {
-    for (const colorField of ARC_COLOR_FIELDS) {
-      for (const tlen of INSERT_SIZES) {
-        expect(arcCategory(colorField, 1, -tlen)).toBe(
-          readCategory(colorField, 1, -tlen),
-        )
-      }
+    for (const tlen of INSERT_SIZES) {
+      expect(arcCategory(1, -tlen)).toBe(readCategory(1, -tlen))
     }
-    expect(readCategory('insertSizeAndOrientation', 1, -5000)).toBe(
-      'longInsert',
-    )
+    expect(readCategory(1, -5000)).toBe('longInsert')
   })
 
   // A translocated mate's supplementary can be drawn beside its partner, so
   // both ends of the arc share a chromosome while the pair's fields say the
   // mates do not.
   test('agree on a pair whose mates lie on two chromosomes', () => {
-    for (const colorField of ARC_COLOR_FIELDS) {
-      for (const po of ORIENTATIONS) {
-        expect(arcCategory(colorField, po, 0, true)).toBe(
-          readCategory(colorField, po, 0, true),
-        )
-      }
-      expect(arcCategory(colorField, 2, 0, true)).toBe('interchrom')
+    for (const po of ORIENTATIONS) {
+      expect(arcCategory(po, 0, true)).toBe(readCategory(po, 0, true))
     }
+    expect(arcCategory(2, 0, true)).toBe('interchrom')
   })
 
   // TLEN 0 is SAM's "information unavailable": `classifyInsertSize` sorts it
   // into `normal`, so an unavailable pair is `normal` on both sides rather
   // than red on one of them.
   test('agree on TLEN 0, however far apart the mates are drawn', () => {
-    for (const colorField of ARC_COLOR_FIELDS) {
-      expect(arcCategory(colorField, 1, 0)).toBe(readCategory(colorField, 1, 0))
-    }
+    expect(arcCategory(1, 0)).toBe(readCategory(1, 0))
   })
 
-  // The arc palette has no `noOrientation` slot, so a pair with no orientation
-  // folds onto the baseline, which the pairOrientation key names `pairLR`;
-  // the two categories share a swatch, so the picture agrees.
+  // A pair with no computed orientation takes its insert class on both sides.
   test('a pair with no orientation paints the same swatch on both sides', () => {
-    for (const colorField of ARC_COLOR_FIELDS) {
-      const arc = arcCategory(colorField, 0, 300)
-      const read = readCategory(colorField, 0, 300)
-      expect(swatchPaletteKeys[arc as keyof typeof swatchPaletteKeys]).toBe(
-        swatchPaletteKeys[read as keyof typeof swatchPaletteKeys],
-      )
-    }
-    expect(readCategory('pairOrientation', 0, 300)).toBe('noOrientation')
-    expect(arcCategory('pairOrientation', 0, 300)).toBe('pairLR')
-  })
-
-  // `pairOrientation` mode has no insert-size vocabulary at all on the read side,
-  // so an arc keying an insert bucket there is unfoldable into the read key —
-  // which is exactly what the long-insert LR fallback used to produce.
-  test('orientation mode never emits an insert-size bucket', () => {
-    for (const po of ORIENTATIONS) {
-      for (const tlen of [0, ...INSERT_SIZES]) {
-        expect(['longInsert', 'shortInsert', 'normalInsert']).not.toContain(
-          arcCategory('pairOrientation', po, tlen),
-        )
-      }
-    }
+    const arc = arcCategory(0, 300)
+    const read = readCategory(0, 300)
+    expect(swatchPaletteKeys[arc as keyof typeof swatchPaletteKeys]).toBe(
+      swatchPaletteKeys[read as keyof typeof swatchPaletteKeys],
+    )
+    expect(read).toBe('normalInsert')
   })
 })

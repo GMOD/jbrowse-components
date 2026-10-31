@@ -27,7 +27,6 @@ import { TAG_FIELD_PREFIX } from './facetLabels.ts'
 import {
   INSERT_SIZE_LEVELS,
   MAPQ_UNAVAILABLE_LEVEL,
-  PAIR_ORIENTATION_LEVELS,
 } from './readFieldLevels.ts'
 import {
   BASE_COLOR_FIELDS,
@@ -215,8 +214,13 @@ const INSERT_SIZE_CATEGORY = {
 const INSERT_SIZE_COLOR_LEVELS: readonly ReadColorLevel[] =
   INSERT_SIZE_LEVELS.map(value => [value, INSERT_SIZE_CATEGORY[value]])
 
-const PAIR_COLOR_LEVELS: readonly ReadColorLevel[] =
-  PAIR_ORIENTATION_LEVELS.map(dir => [dir, `pair${dir}`])
+// an LR pair takes its insert class, so only the abnormal orientations are
+// levels of their own
+const PAIR_COLOR_LEVELS: readonly ReadColorLevel[] = [
+  ['RL', 'pairRL'],
+  ['RR', 'pairRR'],
+  ['LL', 'pairLL'],
+]
 
 const STRAND_LEVELS: readonly ReadColorLevel[] = [
   ['1', 'fwdStrand'],
@@ -250,11 +254,9 @@ const READ_COLOR_LEVELS: Record<ReadColorFieldKind, readonly ReadColorLevel[]> =
     normal: [],
     strand: STRAND_LEVELS,
     firstOfPairStrand: STRAND_LEVELS,
-    pairOrientation: [...PAIR_COLOR_LEVELS, ['', 'noOrientation']],
-    // an LR pair of normal size is the normal insert
     insertSizeAndOrientation: [
       ...INSERT_SIZE_COLOR_LEVELS,
-      ...PAIR_COLOR_LEVELS.filter(([dir]) => dir !== 'LR'),
+      ...PAIR_COLOR_LEVELS,
     ],
     mapq: [[MAPQ_UNAVAILABLE_LEVEL, 'mapqUnavailable']],
     mateRefName: [NO_VALUE_LEVEL],
@@ -322,7 +324,6 @@ export const ALIGNMENTS_FIELD_PRESETS: FieldPresets = {
 const LEVEL_FIELDS = new Set<ReadColorFieldKind>([
   'strand',
   'firstOfPairStrand',
-  'pairOrientation',
   'insertSizeAndOrientation',
 ])
 

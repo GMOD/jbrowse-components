@@ -10,7 +10,6 @@ import { getOrCreate } from '../../shared/util.ts'
 import {
   ARC_COLOR_INTERCHROM,
   ARC_COLOR_DEFAULT,
-  connectorColorType,
   pairColorType,
   splitJunctionSlot,
 } from '../arcs/arcColors.ts'
@@ -73,7 +72,7 @@ export interface ClassifiedPair {
   // A same-strand split whose next segment starts back upstream of where the
   // last one ended, so the read covers the stretch between twice.
   mapsBack: boolean
-  // The connection's arc slot under each color field (`connectorColorType`).
+  // The connection's arc palette slot.
   colorType: number
   // Whether it paints inter-chromosomal: a mate on another chromosome, or a
   // connection whose two ends sit in regions of different chromosomes.
@@ -142,23 +141,18 @@ function connectionColorType(
   lowerDir: number,
 ) {
   if (kind === 'interchrom') {
-    return connectorColorType(() => ARC_COLOR_INTERCHROM)
+    return ARC_COLOR_INTERCHROM
   }
   if (isSplit) {
-    const junction =
-      kind === 'splitSameStrand' || kind === 'splitInverted'
-        ? splitJunctionSlot(kind === 'splitInverted', lowerDir)
-        : ARC_COLOR_DEFAULT
-    return connectorColorType(() => junction)
+    return kind === 'splitSameStrand' || kind === 'splitInverted'
+      ? splitJunctionSlot(kind === 'splitInverted', lowerDir)
+      : ARC_COLOR_DEFAULT
   }
   const { data, readIdx } = pairFieldEntry(e1, e2)
-  return connectorColorType(field =>
-    pairColorType(
-      field,
-      data.readPairOrientations[readIdx]!,
-      data.readInsertSizes[readIdx]!,
-      data.insertSizeStats,
-    ),
+  return pairColorType(
+    data.readPairOrientations[readIdx]!,
+    data.readInsertSizes[readIdx]!,
+    data.insertSizeStats,
   )
 }
 

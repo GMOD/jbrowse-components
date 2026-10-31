@@ -1,9 +1,5 @@
 export { basesFilterNarrowing } from './basesFilterMenu.ts'
-export {
-  getColorByMenuItem,
-  getReadConnectionsColorItem,
-  getReadsColorByMenuItem,
-} from './colorBy.ts'
+export { getColorByMenuItem, getReadsColorByMenuItem } from './colorBy.ts'
 export { getContextMenuItems, getHitMenuItems } from './contextMenu.ts'
 export {
   copyFeatureInfo,

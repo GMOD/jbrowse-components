@@ -18,22 +18,16 @@ import { buildColorPaletteFromPalette } from '../../LinearAlignmentsDisplay/comp
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { connectorColorShift } from '../arcs/arcColors.ts'
 import { classifyPair, groupReadsByName } from './compute.ts'
 import { resolveConnectors } from './computeOverlay.ts'
 import { connectorStyler } from './connectorStyle.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ArcColorField } from '../../shared/types.ts'
 import type { ReadEntry } from './compute.ts'
 
-// What a connector of `colorType` paints under `field`, in the arc band's
-// vocabulary.
-function paints(colorType: number, field: ArcColorField = 'pairOrientation') {
-  return arcSlotCategory(
-    linkedReadColorSlot(colorType, connectorColorShift(field)),
-    field,
-  )
+// What a connector of `colorType` paints, in the arc band's vocabulary.
+function paints(colorType: number) {
+  return arcSlotCategory(linkedReadColorSlot(colorType))
 }
 
 // The straight-line pass's records, as the display resolves them.
@@ -156,16 +150,14 @@ describe('classifyPair — paired reads', () => {
     }
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), false)
     expect(c.isNormal).toBe(true)
-    expect(paints(c.colorType, 'insertSizeAndOrientation')).toBe('longInsert')
-    expect(paints(c.colorType, 'insertSizeAndOrientation')).toBe('longInsert')
-    expect(paints(c.colorType, 'pairOrientation')).toBe('pairLR')
+    expect(paints(c.colorType)).toBe('longInsert')
   })
 
   it('LR → PAIR_LR color, normal, 3-prime endpoints, isSplit=false', () => {
     const data = makePairedData(1)
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), false)
     expect(c.isSplit).toBe(false)
-    expect(paints(c.colorType)).toBe('pairLR')
+    expect(paints(c.colorType)).toBe('normalInsert')
     expect(c.isNormal).toBe(true)
     expect(c.bp1).toBe(200) // fwd 3-prime = end
     expect(c.bp2).toBe(300) // rev 3-prime = start
@@ -342,7 +334,6 @@ describe('classifyPair — split long reads', () => {
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
     expect(c.isSplit).toBe(true)
     expect(paints(c.colorType)).toBe('splitForward')
-    expect(paints(c.colorType, 'insertSizeAndOrientation')).toBe('splitForward')
     expect(c.isNormal).toBe(true)
     expect(c.bp1).toBe(200) // e1 fwd: read-trailing (3') edge = end
     expect(c.bp2).toBe(300) // e2 fwd: read-leading (5') edge = start
@@ -660,7 +651,7 @@ describe('the straight-line records', () => {
     expect(result.size).toBe(1)
     const lines = result.get(0)!
     expect(lines.numLinkedReadLines).toBe(1)
-    expect(paints(lines.linkedReadLineColorTypes[0]!)).toBe('pairLR')
+    expect(paints(lines.linkedReadLineColorTypes[0]!)).toBe('normalInsert')
     expect(lines.linkedReadLinePositions[0]).toBe(200) // fwd 3-prime
     expect(lines.linkedReadLinePositions[1]).toBe(300) // rev 3-prime
   })
@@ -860,7 +851,7 @@ describe('the straight-line records', () => {
     const lines = result.get(0)!
     // Both pairs emit lines: the LR paired reads and the FR split reads
     expect(lines.numLinkedReadLines).toBe(2)
-    expect(paints(lines.linkedReadLineColorTypes[0]!)).toBe('pairLR')
+    expect(paints(lines.linkedReadLineColorTypes[0]!)).toBe('normalInsert')
     expect(paints(lines.linkedReadLineColorTypes[1]!)).toBe('splitForward')
   })
 })
@@ -904,7 +895,7 @@ describe('groupReadsByName', () => {
 // a junction there takes the color and key label its arc takes in the panel.
 describe('connectorStyler', () => {
   const colors = buildColorPaletteFromPalette(resolvePalette())
-  const styleOf = connectorStyler({ colors, colorField: 'pairOrientation' })
+  const styleOf = connectorStyler({ colors })
   const split = makeData({
     names: ['r', 'r'],
     flags: [0, SAM_FLAG_SUPPLEMENTARY],

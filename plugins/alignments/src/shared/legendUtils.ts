@@ -73,12 +73,12 @@ import type { AlignmentFill } from '@jbrowse/core/ui/palette'
 export type { LegendItem } from '@jbrowse/core/ui'
 
 // One row per meaning, and a row's label is its meaning. An arc row joins the
-// read row carrying its label — "LR - Normal pair orientation" is one bucket in
-// both vocabularies — and brings its swatch along where the arcs paint that
+// read row carrying its label — "Long insert" is one bucket in both
+// vocabularies — and brings its swatch along where the arcs paint that
 // bucket in another color, so the box still names every color drawn. A
 // same-colored arc row naming something else keeps a row of its own: the
-// palette paints `colorPairLR` for five buckets (`pairLR`, `normalInsert`,
-// `noTagValue`, `noOrientation`, `mapqUnavailable`), so folding by color keyed
+// palette paints `colorPairLR` for three buckets (`normalInsert`,
+// `noTagValue`, `mapqUnavailable`), so folding by color keyed
 // normal arcs as "No HP value" or "MAPQ unavailable (255)".
 //
 // TWO lists, not one concatenation: only the arcs are ever folded, since two
@@ -384,11 +384,9 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   // the modification field's read body, under the marks it paints on top
   modFwd: 'Read, forward strand',
   modRev: 'Read, reverse strand',
-  noOrientation: 'No orientation',
   // From the shared table, because the group-by section chips name the same four
   // buckets (`pairOrientationKey`) and a swatch row and the section it labels
   // reading differently is the drift PAIR_DIRECTION_LABELS exists to stop.
-  pairLR: PAIR_DIRECTION_LABELS.LR,
   pairRL: PAIR_DIRECTION_LABELS.RL,
   pairLL: PAIR_DIRECTION_LABELS.LL,
   pairRR: PAIR_DIRECTION_LABELS.RR,

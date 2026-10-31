@@ -20,7 +20,6 @@ import {
   baseWorkerPileupData,
   makePileupDataResult,
 } from '../RenderAlignmentDataRPC/testPileupData.ts'
-import { connectorColorShift } from '../features/arcs/arcColors.ts'
 import { arcSlotCategory } from '../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../shaders/slang/alignmentsUniforms.js.generated.ts'
 import {
@@ -82,7 +81,6 @@ function region(displayedRegionIndex: number) {
 // makes it name an assembly (`assemblyNames` derives from them) — needed by
 // anything resolving a refName against it. Off by default: most cases here
 // exercise menu/action coupling that never looks at a region.
-const ARC_COLOR = 'Read connections color'
 
 function createDisplay({ withRegions = false } = {}) {
   console.warn = jest.fn()
@@ -132,16 +130,9 @@ function createDisplay({ withRegions = false } = {}) {
 // What the connectors in view paint, in the arc band's vocabulary.
 function connectionCategories(display: {
   connectionColorTypes: Iterable<number>
-  readConnectionsColorField: Parameters<typeof connectorColorShift>[0]
 }) {
-  const field = display.readConnectionsColorField
   return [...display.connectionColorTypes]
-    .map(ct =>
-      arcSlotCategory(
-        linkedReadColorSlot(ct, connectorColorShift(field)),
-        field,
-      ),
-    )
+    .map(ct => arcSlotCategory(linkedReadColorSlot(ct)))
     .toSorted()
 }
 
@@ -403,96 +394,6 @@ describe('setUnit color field preservation', () => {
     display.setUnit('read')
     expect(display.unit).toBe('read')
     expect(display.colorField).toBe('tags.HP')
-  })
-})
-
-// The "Read connections color" row under "Advanced" is omitted (not greyed out)
-// while nothing paints its field.
-describe('Read connections color menu visibility', () => {
-  test('hidden when no read-connection overlay is active', () => {
-    const display = createDisplay()
-    display.setDrawnReadConnections('off')
-    expect(hasMenuItem(display.trackMenuItems(), ARC_COLOR)).toBe(false)
-  })
-
-  test('shown for read arcs', () => {
-    const display = createDisplay()
-    display.setDrawnReadConnections('link')
-    expect(hasMenuItem(display.trackMenuItems(), ARC_COLOR)).toBe(true)
-  })
-
-  test('shown for read cloud', () => {
-    const display = createDisplay()
-    display.setDrawnReadConnections('rule')
-    expect(hasMenuItem(display.trackMenuItems(), ARC_COLOR)).toBe(true)
-  })
-
-  // The connectors over the pileup paint the same field, so the row that
-  // changes it stays while they draw with the band off.
-  test('shown for the connectors with the band off', () => {
-    const display = createDisplay()
-    display.setDrawnReadConnections('off')
-    display.setShowConnectors(true)
-    expect(hasMenuItem(display.trackMenuItems(), ARC_COLOR)).toBe(true)
-    // a chain's links inside one region paint a fixed color, not this field
-    display.setShowConnectors(false)
-    display.setUnit('chain')
-    expect(display.view.displayedRegions.length).toBeLessThan(2)
-    expect(hasMenuItem(display.trackMenuItems(), ARC_COLOR)).toBe(false)
-  })
-})
-
-describe('arc color follows the reads unless it names its own field', () => {
-  test('an unset readConnections.color takes a pair field from the reads', () => {
-    const display = createDisplay()
-    display.setReadConnectionsColorField()
-    display.colorByField('pairOrientation')
-    expect(display.readConnectionsColorField).toBe('pairOrientation')
-    display.colorByField('strand')
-    expect(display.readConnectionsColorField).toBe('insertSizeAndOrientation')
-  })
-
-  test('a display naming no readConnections.color follows the reads', () => {
-    const display = createDisplay()
-    display.colorByField('insertSizeAndOrientation')
-    expect(display.readConnectionsColorField).toBe('insertSizeAndOrientation')
-  })
-
-  test('a readConnections.color field of its own ignores the reads', () => {
-    const display = createDisplay()
-    display.setReadConnectionsColorField('insertSizeAndOrientation')
-    display.colorByField('pairOrientation')
-    expect(display.readConnectionsColorField).toBe('insertSizeAndOrientation')
-  })
-
-  test('the color radios write the field, Same as reads the empty one', () => {
-    const display = createDisplay()
-    display.setDrawnReadConnections('link')
-    display.colorByField('insertSizeAndOrientation')
-    const arcMenu = () => menuSubItems(display.trackMenuItems(), ARC_COLOR)
-    clickMenuItem(arcMenu(), 'Pair orientation')
-    expect(display.readConnectionsColorField).toBe('pairOrientation')
-    expect(findMenuItem(arcMenu(), 'Same as reads')).toMatchObject({
-      checked: false,
-    })
-    clickMenuItem(arcMenu(), 'Same as reads')
-    expect(display.readConnectionsColorField).toBe('insertSizeAndOrientation')
-    expect(findMenuItem(arcMenu(), 'Same as reads')).toMatchObject({
-      checked: true,
-    })
-  })
-
-  // An arc cannot paint strand, so "Same as reads" ticked over arcs drawn by
-  // insert size and orientation named a picture that was not on screen
-  test('under a read field no arc paints, the drawn default is the ticked row', () => {
-    const display = createDisplay()
-    display.setDrawnReadConnections('link')
-    display.colorByField('strand')
-    const arcMenu = () => menuSubItems(display.trackMenuItems(), ARC_COLOR)
-    expect(findMenuItem(arcMenu(), 'Same as reads')).toBeUndefined()
-    expect(
-      findMenuItem(arcMenu(), 'Insert size and orientation'),
-    ).toMatchObject({ checked: true })
   })
 })
 
@@ -919,12 +820,6 @@ describe('curved connectors', () => {
 
     display.setCoverageHeight(display.coverageHeight + 20)
     display.colorByField('strand')
-    expect(display.connectorsByGroup).toBe(connectors)
-    // the field the connectors paint under, which their color type carries
-    // for every field
-    const field = display.readConnectionsColorField
-    display.colorByField('pairOrientation')
-    expect(display.readConnectionsColorField).not.toBe(field)
     expect(display.connectorsByGroup).toBe(connectors)
     dispose()
   })
@@ -2129,7 +2024,7 @@ describe('a selection is the chrome guide, not the canvas', () => {
 // A reverse segment under a reverse frame bakes `fwdStrand` only when the
 // framing runs, so it reads the bake's answer off the display's own context.
 describe('chain-strand framing: the gate, the bake and the key agree', () => {
-  const fills = ['', 'strand', 'mapq', 'pairOrientation', 'tags.HP']
+  const fills = ['', 'strand', 'mapq', 'insertSizeAndOrientation', 'tags.HP']
   const layers: (BaseLayer | undefined)[] = [
     undefined,
     { field: 'baseQuality' },
@@ -2161,7 +2056,7 @@ describe('chain-strand framing: the gate, the bake and the key agree', () => {
         baked.get('')!.get(0)!.readColorCategories[0]!
       ]
     expect(category === 'fwdStrand').toBe(display.framesChainStrand)
-    expect(display.framesChainStrand).toBe(fill === 'pairOrientation')
+    expect(display.framesChainStrand).toBe(fill === 'insertSizeAndOrientation')
   })
 })
 
@@ -2206,7 +2101,6 @@ describe('rows the layer menus hand to other menus', () => {
       'Max layout height...',
       'Coverage mismatch threshold',
       'Track height',
-      'Read connections color',
       'Read connections placement',
       'Read connections line width',
       'Sashimi placement',

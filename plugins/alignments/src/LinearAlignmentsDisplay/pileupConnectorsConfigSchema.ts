@@ -5,7 +5,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #category display
  * The pileup's `connectors` layer: lines over the pileup rows joining each
  * read to its mate or split segment, colored by
- * `readConnections.encoding.color`. The band of arcs or the read cloud is
+ * insert size and orientation, as the reads' color of that name paints them.
+ * The band of arcs or the read cloud is
  * `readConnections`.
  *
  * #example

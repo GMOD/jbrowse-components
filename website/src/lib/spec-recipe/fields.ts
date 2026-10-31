@@ -36,10 +36,6 @@ import {
   FACET_LABELS,
   fieldTag,
 } from '../../../../plugins/alignments/src/shared/facetLabels.ts'
-import {
-  ARC_COLOR_OPTIONS,
-  SAME_AS_READS_LABEL,
-} from '../../../../plugins/alignments/src/shared/arcColorOptions.ts'
 import { CIGAR_MODE_OPTIONS } from '../../../../plugins/linear-comparative-view/src/LinearSyntenyView/cigarModes.ts'
 import {
   COLOR_MODES,
@@ -839,13 +835,6 @@ const FILTER_MENU_DISPLAYS = new Set([
   'LinearMultiRowFeatureDisplay',
   'LinearAlignmentsDisplay',
   'LGVSyntenyDisplay',
-])
-
-// The radios inside the alignments display's 'Read connections color' submenu, imported so a
-// renamed radio changes this table with it.
-const ARC_COLORS: Record<string, string> = Object.fromEntries([
-  ['', SAME_AS_READS_LABEL],
-  ...ARC_COLOR_OPTIONS.map(o => [o.value, o.label]),
 ])
 
 // The alignments 'Sort by' radios, spelled as menus/sortGroup.ts builds
@@ -1714,13 +1703,6 @@ export const trackFields: Record<string, FieldRecipe> = {
           note: 'Its tooltip reads "Drag to resize arcs area"; there is no menu entry for the height.',
         }
       : undefined,
-  'readConnections.encoding.color': (value, { displayType }) => {
-    const field = channelOf(value)?.field
-    const label = typeof field === 'string' ? ARC_COLORS[field] : undefined
-    return label && displayType === 'LinearAlignmentsDisplay'
-      ? { path: `${TRACK_MENU} → Advanced → Read connections color → ${label}` }
-      : undefined
-  },
   sort: (value, { displayType, noun }) => {
     const field =
       typeof value === 'string' ? value : asString(asRecord(value)?.field)

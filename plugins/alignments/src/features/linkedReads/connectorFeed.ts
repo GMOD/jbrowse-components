@@ -23,7 +23,6 @@ import {
   LINKED_READ_LINE_WIDTH_PX,
 } from '../../shaders/slang/linkedReadLine.consts.generated.ts'
 import { arcColorCategoryLabel } from '../../shared/legendUtils.ts'
-import { connectorColorShift } from '../arcs/arcColors.ts'
 import {
   CURVE_STROKE_WIDTH_PX,
   LOOP_ARROW_MIN_FEATURE_HEIGHT_PX,
@@ -36,7 +35,6 @@ import {
 
 import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
-import type { ArcColorField } from '../../shared/types.ts'
 import type { LinkedPair } from './compute.ts'
 import type { ConnectorChannels } from '@jbrowse/render-core/marks'
 
@@ -135,8 +133,6 @@ export interface ConnectorFeedInput {
   /** The section's laid-out pileup band, which a discordant dip is sized to. */
   pileupHeight: number
   colors: ColorPalette
-  /** The field the read connections paint, which the connectors paint too. */
-  colorField: ArcColorField
   labels?: Partial<Record<SwatchCategory, string>>
 }
 
@@ -157,11 +153,9 @@ export function buildConnectorFeeds({
   featureSpacing,
   pileupHeight,
   colors,
-  colorField,
   labels,
 }: ConnectorFeedInput): Map<number, ConnectorFeed> {
-  const palette = buildArcColorPalette(colors, colorField)
-  const shift = connectorColorShift(colorField)
+  const palette = buildArcColorPalette(colors)
   const rowH = featureHeight + featureSpacing
   const loopDipPx = Math.min(
     LOOP_MAX_DIP_PX,
@@ -190,7 +184,7 @@ export function buildConnectorFeeds({
       lanes = new Lanes()
       byRegion.set(own.region, lanes)
     }
-    const slot = linkedReadColorSlot(c.colorType, shift)
+    const slot = linkedReadColorSlot(c.colorType)
     const rgb = palette[slot]!
     lanes.x.push(own.bp)
     lanes.x2.push(far.bp)
@@ -219,7 +213,7 @@ export function buildConnectorFeeds({
       id1: readIdAt(e1.data, e1.readIdx)!,
       id2: readIdAt(e2.data, e2.readIdx)!,
       readName: readNameAt(e1.data, e1.readIdx),
-      label: arcColorCategoryLabel(arcSlotCategory(slot, colorField), labels),
+      label: arcColorCategoryLabel(arcSlotCategory(slot), labels),
       hiddenSegmentsBetween,
     })
   }

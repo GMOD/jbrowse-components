@@ -165,7 +165,7 @@ const readEvidence = ({
             },
             unit: 'chain',
             // paints each split segment by its strand against its molecule
-            encoding: { color: 'pairOrientation' },
+            encoding: { color: 'insertSizeAndOrientation' },
             height: connectorCurves ? 345 : 195,
             facet: 'split',
             legend: { show: true },

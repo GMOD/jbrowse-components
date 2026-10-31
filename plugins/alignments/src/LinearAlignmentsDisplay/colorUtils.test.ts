@@ -120,34 +120,31 @@ describe('readColorCategory', () => {
     ).toBe('normalInsert')
   })
 
-  test('pairOrientation field buckets by orientation code', () => {
+  test('an abnormal orientation wins over a normal insert, an LR pair takes its insert class', () => {
     const cat = (po: number) =>
-      readColorCategory(0, makeData({ pairOrientation: po }), 'pairOrientation')
-    expect(cat(1)).toBe('pairLR')
+      readColorCategory(
+        0,
+        makeData({ pairOrientation: po, insertSize: 300 }, stats),
+        'insertSizeAndOrientation',
+      )
+    expect(cat(1)).toBe('normalInsert')
     expect(cat(2)).toBe('pairRL')
     expect(cat(3)).toBe('pairRR')
     expect(cat(4)).toBe('pairLL')
   })
 
-  test('pairOrientation with no orientation is the non-split bucket', () => {
-    // A read with no pair orientation (long single reads, po=0) that isn't a
-    // split segment gets the neutral non-split bucket. Only SPLIT alignments
-    // (chained supplementary) show strand coloring, covered by the chainHasSupp
-    // tests below.
-    expect(
-      readColorCategory(
-        0,
-        makeData({ pairOrientation: 0, strand: 1 }),
-        'pairOrientation',
-      ),
-    ).toBe('noOrientation')
-    expect(
-      readColorCategory(
-        0,
-        makeData({ pairOrientation: 0, strand: -1 }),
-        'pairOrientation',
-      ),
-    ).toBe('noOrientation')
+  test('a read with no pair orientation that is no split segment takes its insert class', () => {
+    // long single reads (po=0, TLEN 0); only split alignments (chained
+    // supplementary) show strand coloring, covered below
+    for (const strand of [1, -1]) {
+      expect(
+        readColorCategory(
+          0,
+          makeData({ pairOrientation: 0, strand }),
+          'insertSizeAndOrientation',
+        ),
+      ).toBe('normalInsert')
+    }
   })
 
   test('insertSizeAndOrientation: short insert wins, else orientation, else insert', () => {
@@ -192,7 +189,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SUPP_FWD, flags: 1, pairOrientation: 3 }),
-        'pairOrientation',
+        'insertSizeAndOrientation',
         chainOpts,
       ),
     ).toBe('pairRR')
@@ -214,7 +211,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SPLIT_INV, flags: 1, pairOrientation: 1 }),
-        'pairOrientation',
+        'insertSizeAndOrientation',
         chainOpts,
       ),
     ).toBe('splitInverted')
@@ -243,9 +240,9 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SPLIT_INV, flags: 1, pairOrientation: 1 }),
-        'pairOrientation',
+        'insertSizeAndOrientation',
       ),
-    ).toBe('pairLR')
+    ).toBe('normalInsert')
   })
 
   test('paired split-deletion chains get the deletion bucket', () => {
@@ -253,7 +250,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SPLIT_DEL, flags: 1, pairOrientation: 1 }),
-        'pairOrientation',
+        'insertSizeAndOrientation',
         chainOpts,
       ),
     ).toBe('splitSameStrand')
@@ -286,7 +283,7 @@ describe('readColorCategory', () => {
       readColorCategory(
         0,
         makeData({ chainHasSupp: SUPP_REV, flags: 0, strand: 1 }),
-        'pairOrientation',
+        'insertSizeAndOrientation',
         framedOpts,
       ),
     ).toBe('revStrand')
@@ -318,7 +315,7 @@ describe('readColorCategory', () => {
         readColorCategory(
           0,
           makeData({ chainHasSupp: SUPP_FWD | split, flags: 0, strand: 1 }),
-          'pairOrientation',
+          'insertSizeAndOrientation',
           framedOpts,
         ),
       ).toBe('fwdStrand')
@@ -328,7 +325,7 @@ describe('readColorCategory', () => {
         readColorCategory(
           0,
           makeData({ chainHasSupp: SUPP_REV | split, flags: 0, strand: 1 }),
-          'pairOrientation',
+          'insertSizeAndOrientation',
           framedOpts,
         ),
       ).toBe('revStrand')
@@ -344,9 +341,9 @@ describe('readColorCategory', () => {
     expect(
       readColorCategory(0, makeData({ flags: 9 }), 'normal', chainOpts),
     ).toBe('plain')
-    expect(readColorCategory(0, supp, 'pairOrientation', chainOpts)).toBe(
-      'noOrientation',
-    )
+    expect(
+      readColorCategory(0, supp, 'insertSizeAndOrientation', chainOpts),
+    ).toBe('normalInsert')
   })
 
   test('unmapped mate and inter-chromosomal apply to orientation fields', () => {
@@ -474,9 +471,8 @@ describe('firstOfPairStrand: color and grouping agree', () => {
 // read's own strand.
 describe('framesUnpairedChainStrand', () => {
   const cases: [ColorFieldKind, boolean, boolean][] = [
-    ['pairOrientation', true, true],
     ['insertSizeAndOrientation', true, true],
-    ['pairOrientation', false, false],
+    ['insertSizeAndOrientation', false, false],
     ['strand', true, false],
     ['normal', true, false],
     ['mapq', true, false],

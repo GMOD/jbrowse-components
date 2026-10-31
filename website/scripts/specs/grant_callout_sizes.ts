@@ -395,7 +395,7 @@ const readsPart = (suffix: string) => {
               ...chr3.tracks[1],
               unit: 'chain',
               facet: { field: 'split', hidden: ['unsplit'] },
-              encoding: { color: 'pairOrientation' },
+              encoding: { color: 'insertSizeAndOrientation' },
               readConnections: { show: true, height: 70 },
               sashimi: { show: false },
               legend: { show: true },

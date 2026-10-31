@@ -638,7 +638,6 @@ describe('renderBlocks canvasDrawn gating parity', () => {
     return {
       canvasWidth: 200,
       canvasHeight: 200,
-      readConnectionsColorField: 'insertSizeAndOrientation',
       scrollTop: 0,
       featureHeight: 10,
       featureSpacing: 1,

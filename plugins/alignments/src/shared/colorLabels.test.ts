@@ -2,10 +2,7 @@ import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 
 import { bakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
-import {
-  connectorColorType,
-  pairColorType,
-} from '../features/arcs/arcColors.ts'
+import { pairColorType } from '../features/arcs/arcColors.ts'
 import { connectorCategories } from '../features/linkedReads/computeOverlay.ts'
 import {
   alignmentsColorEncoding,
@@ -60,11 +57,18 @@ function keyOf(
 describe('scale.names names the key rows range colors', () => {
   test('a label names the preset level its domain entry names', () => {
     const { labels, hover } = keyOf(
-      { field: 'pairOrientation', scale: { domain: ['RR', 'LL'] } },
+      {
+        field: 'insertSizeAndOrientation',
+        scale: { type: 'ordinal', domain: ['RR', 'LL'] },
+      },
       ['Inverted'],
-      ['pairLR', 'pairRR', 'pairLL'],
+      ['normalInsert', 'pairRR', 'pairLL'],
     )
-    const own = keyOf({ field: 'pairOrientation' }, [], ['pairLR', 'pairLL'])
+    const own = keyOf(
+      { field: 'insertSizeAndOrientation' },
+      [],
+      ['normalInsert', 'pairLL'],
+    )
     expect(labels.toSorted()).toEqual([...own.labels, 'Inverted'].toSorted())
     expect(hover('pairRR')).toBe('Inverted')
   })
@@ -120,7 +124,10 @@ describe('scale.names names the key rows range colors', () => {
 
   test('the arc key, the arc hover and the connection curves name the bucket as the read key does', () => {
     const { declared } = keyOf(
-      { field: 'pairOrientation', scale: { domain: ['RR'] } },
+      {
+        field: 'insertSizeAndOrientation',
+        scale: { type: 'ordinal', domain: ['RR'] },
+      },
       ['Inverted'],
       [],
     )
@@ -134,10 +141,7 @@ describe('scale.names names the key rows range colors', () => {
     )
     expect(
       getArcLegendItems(
-        connectorCategories(
-          [connectorColorType(f => pairColorType(f, 3, 0, undefined))],
-          'pairOrientation',
-        ),
+        connectorCategories([pairColorType(3, 0, undefined)]),
         palette,
         declared.categories,
       )[0]!.label,

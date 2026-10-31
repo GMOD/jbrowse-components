@@ -563,7 +563,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // the discordant reads land at the bottom of the layout, where a
               // short track scrolls them away.
               heightMode: 'grow',
-              encoding: { color: 'pairOrientation' },
+              encoding: { color: 'insertSizeAndOrientation' },
               legend: { show: true },
             },
           ],
@@ -684,7 +684,7 @@ export const svSpecs: ScreenshotSpec[] = [
               // The "Not split" section runs out of rows before a taller box
               // does.
               height: 620,
-              encoding: { color: 'pairOrientation' },
+              encoding: { color: 'insertSizeAndOrientation' },
               legend: { show: true },
               // `facet: 'split'` works in chain mode because split defines a
               // chain key.

@@ -324,26 +324,6 @@ describe('color by menu curation', () => {
     expect(rows.some(i => 'subMenu' in i)).toBe(false)
   })
 
-  // the combined radio carries both cues; orientation alone is a config
-  // setting, offered only while it paints so a radio always names what paints
-  test('Pair orientation alone shows only while it paints', () => {
-    const model = makeModel()
-    const labels = () =>
-      subMenuOf(getReadsColorByMenuItem(model)).map(i =>
-        'label' in i ? i.label : '',
-      )
-    expect(labels()).toEqual(
-      expect.arrayContaining([
-        'Insert size and orientation',
-        'First-of-pair strand',
-        'Mate chromosome',
-      ]),
-    )
-    expect(labels()).not.toContain('Pair orientation')
-    model.colorByField('pairOrientation')
-    expect(labels()).toContain('Pair orientation')
-  })
-
   test('curated colorOptions replace the basic radios', () => {
     expect(
       labelsFor({ colorOptions: colorFieldOptions(undefined, 'mateRefName') }),

@@ -5,7 +5,6 @@ import {
 
 import type { SwatchCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
-import type { ArcColorField } from '../shared/types.ts'
 import type { ColorPalette } from './colors.ts'
 
 // The table saying what each slot of the read connections MEANS, for the arcs,
@@ -20,7 +19,7 @@ export type ArcCategory = SwatchCategory | ArcSplitCategory
 // Slot → meaning for the read-connection band's color types, which
 // `buildArcBandFeeds` bakes into each connection's color lane.
 //
-// Slot 0 is the baseline, which `arcSlotCategory` reads per coloring mode.
+// Slot 0 is the baseline, the normal insert.
 export const ARC_SLOT_CATEGORY = [
   'normalInsert',
   'longInsert',
@@ -36,22 +35,13 @@ export const ARC_SLOT_CATEGORY = [
 ] as const satisfies readonly (SwatchCategory | ArcSplitCategory)[]
 
 /**
- * What an arc or read-cloud color slot means. The baseline slot, and any slot
- * past the table, is the normal insert or, coloring by pair orientation, the
- * LR pair, so its label and its declared color follow the mode; every other
- * slot means the same thing whatever the mode. The band's palette, its key and
- * its tooltip all read this.
+ * What a connection color slot means, a slot past the table the normal
+ * insert. The band's palette, its key and its tooltip all read this.
  */
 export function arcSlotCategory(
   slot: number,
-  colorField: ArcColorField,
 ): SwatchCategory | ArcSplitCategory {
-  const category = ARC_SLOT_CATEGORY[slot]
-  return category === undefined || category === 'normalInsert'
-    ? colorField === 'pairOrientation'
-      ? 'pairLR'
-      : 'normalInsert'
-    : category
+  return ARC_SLOT_CATEGORY[slot] ?? 'normalInsert'
 }
 
 /**
@@ -68,11 +58,6 @@ export function arcCategoryColor(
   ]
 }
 
-export function buildArcColorPalette(
-  c: ColorPalette,
-  colorField: ArcColorField,
-) {
-  return ARC_SLOT_CATEGORY.map((_, slot) =>
-    arcCategoryColor(c, arcSlotCategory(slot, colorField)),
-  )
+export function buildArcColorPalette(c: ColorPalette) {
+  return ARC_SLOT_CATEGORY.map(category => arcCategoryColor(c, category))
 }

@@ -31,7 +31,7 @@ export default function AlignmentsDisplay() {
               type: 'LinearAlignmentsDisplay',
               height: 250,
               pileup: { softClips: { show: true } },
-              encoding: { color: 'pairOrientation' },
+              encoding: { color: 'insertSizeAndOrientation' },
             },
           },
         ],

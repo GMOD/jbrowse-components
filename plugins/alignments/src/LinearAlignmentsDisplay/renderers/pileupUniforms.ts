@@ -1,7 +1,6 @@
 import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 
-import { connectorColorShift } from '../../features/arcs/arcColors.ts'
 import { effectiveBaseColors } from '../../features/mismatch/baseColors.ts'
 import { buildArcColorPalette } from '../../shaders/palettes.ts'
 import * as readShader from '../../shaders/slang/read.generated.ts'
@@ -103,17 +102,11 @@ export function writePileupPalette(
   // slots it didn't reach. The generated setter writes every component of an
   // element, so the alpha lane cannot be left out: the shaders read `.xyz`,
   // and a slot left unwritten keeps whatever the last block render put there.
-  const connectorPalette = buildArcColorPalette(
-    c,
-    state.readConnectionsColorField,
-  )
+  const connectorPalette = buildArcColorPalette(c)
   for (let i = 0; i < USLOTS.linkedReadColor.length; i++) {
     const rgb = connectorPalette[i]!
     readShader.setUniformLinkedReadColor(f32, i, rgb[0], rgb[1], rgb[2], 1)
   }
-  u32[UU.connectorColorShift] = connectorColorShift(
-    state.readConnectionsColorField,
-  )
   for (const [slot, category] of READ_CATEGORY_UBO_SLOTS) {
     const rgb = c.readCategoryColors[category]
     readShader.setUniformReadCategoryColor(f32, slot, rgb[0], rgb[1], rgb[2], 1)

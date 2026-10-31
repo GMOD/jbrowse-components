@@ -12,7 +12,6 @@ import {
   getArcColorType,
 } from './arcColors.ts'
 
-import type { ArcColorField } from '../../shared/types.ts'
 import type { PendingArc } from './arcTypes.ts'
 
 type Segment = [start: number, end: number, strand: number]
@@ -49,11 +48,8 @@ function fromOtherEnd(a: Segment, b: Segment) {
   return junction(flip(b), flip(a))
 }
 
-function colorType(
-  arc: PendingArc,
-  colorField: ArcColorField = 'insertSizeAndOrientation',
-) {
-  return getArcColorType({ arc, colorField, hasPaired: false })
+function colorType(arc: PendingArc) {
+  return getArcColorType({ arc, hasPaired: false })
 }
 
 describe('split junction class', () => {
@@ -101,18 +97,6 @@ describe('split junction class', () => {
       ARC_COLOR_DEFAULT,
     )
   })
-
-  test('a junction keeps its class under every color field', () => {
-    const del = junction([100, 200, 1], [500, 600, 1])
-    const inv = junction([100, 200, 1], [500, 600, -1])
-    for (const field of [
-      'insertSizeAndOrientation',
-      'pairOrientation',
-    ] as const) {
-      expect(colorType(del, field)).toBe(ARC_COLOR_SPLIT_FORWARD)
-      expect(colorType(inv, field)).toBe(colorType(inv))
-    }
-  })
 })
 
 describe('split class color', () => {
@@ -120,7 +104,6 @@ describe('split class color', () => {
     readCategoryColors: {
       pairRL: [0.1, 0.2, 0.3],
       pairLL: [0.2, 0.3, 0.4],
-      pairLR: [0.3, 0.4, 0.5],
       longInsert: [0.4, 0.5, 0.6],
       splitSameStrand: [0.5, 0.6, 0.7],
     },

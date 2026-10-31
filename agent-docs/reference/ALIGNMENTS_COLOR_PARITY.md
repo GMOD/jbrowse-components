@@ -10,15 +10,15 @@ kind: spec
 A pileup draws one meaning through two vocabularies that share the screen and
 one legend box: read fills (`readColorCategory`, `colorUtils.ts`), and the read
 connections (`features/arcs/arcColors.ts`). The arcs and the read cloud take
-`getArcColorType`'s slot; a connector over the pileup carries its slot under
-each color field (`connectorColorType`), and `linkedReadColorSlot` picks the
-field's at paint time, so a recolor reclassifies nothing (ADR-232).
+`getArcColorType`'s slot, and a connector over the pileup carries the slot
+`classifyPair` gives it. Both paint `insertSizeAndOrientation`, the one
+paired-end color field; a connection has no color field of its own.
 
 ## The rule: derive, do not reconcile
 
 The read connections have **one table saying what a slot MEANS**, and the
 color follows: `ARC_SLOT_CATEGORY` (`shaders/palettes.ts`) →
-`arcSlotCategory(slot, colorField)` → `palette.readCategoryColors[category]`
+`arcSlotCategory(slot)` → `palette.readCategoryColors[category]`
 (`readCategoryColorsOf`, built once per palette over `declaredReadCategoryColors`)
 → the color `encoding.color` declares for the category.
 

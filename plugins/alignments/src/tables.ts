@@ -175,7 +175,6 @@ import {
   mergeFilter,
   readPredicatesOf,
 } from './shared/alignmentsFilter.ts'
-import { arcColorFieldOf } from './shared/arcColorOptions.ts'
 import { basesFilterOf } from './shared/basesFilter.ts'
 import { paintsModifications } from './shared/colorFieldDefs.ts'
 import { fieldTag } from './shared/facetLabels.ts'
@@ -232,7 +231,6 @@ import type {
 import type { ColorPalette } from './shaders/colors.ts'
 import type { AlignmentsColorEncoding } from './shared/alignmentsColor.ts'
 import type {
-  ArcColorField,
   BaseLayer,
   InterbaseTypeName,
   LayoutOrder,
@@ -766,14 +764,13 @@ const DPR_PAST_THE_ANTIALIASING_FLOOR = Number.POSITIVE_INFINITY
 
 interface ArcPaint {
   slotColor: string[]
-  colorField: ArcColorField
   widthOf: (support: number) => number
 }
 
 /** Arcs as the band paints them, each foot naming the region holding it. */
 function arcRows(
   a: ArcsUploadData,
-  { slotColor, colorField, widthOf }: ArcPaint,
+  { slotColor, widthOf }: ArcPaint,
   feet: (arc: number) => readonly [number, number],
 ) {
   const n = a.numArcs
@@ -787,7 +784,7 @@ function arcRows(
     start,
     end,
     shape: shape.map(s => ARC_SHAPE_NAMES[s] ?? 'arc'),
-    category: colorSlot.map(c => arcSlotCategory(c, colorField)),
+    category: colorSlot.map(c => arcSlotCategory(c)),
     color: colorSlot.map(c => slotColor[c]!),
     opacity: shape.map(arcOpacity),
     y: Array.from(a.arcYBp.subarray(0, n)),
@@ -877,10 +874,6 @@ function readConnectionTables(
     readConfObject(band, ['mark', 'type']),
   )
   const cloud = mode === 'rule'
-  const colorField = arcColorFieldOf(
-    readConfObject(band, ['encoding', 'color', 'field']),
-    colors.readField,
-  )
   const result =
     mode === 'off'
       ? undefined
@@ -888,7 +881,6 @@ function readConnectionTables(
           new Map([...dataByGroup].map(([key, map]) => [key, new Map(map)])),
           { loaded: regionInfos, displayed: regionInfos },
           {
-            colorField,
             cloud,
             filter: connectionFilter,
             showOrdinaryPairs: ordinaryPairsShown(
@@ -897,9 +889,7 @@ function readConnectionTables(
             ),
           },
         )
-  const slotColor = buildArcColorPalette(colors.palette, colorField).map(
-    normalizedRgbToHex,
-  )
+  const slotColor = buildArcColorPalette(colors.palette).map(normalizedRgbToHex)
   const stroke = strokeWidthScale(strokeWidthSettingOf(band))
   const widthOf = (support: number) =>
     linkStrokeWidthPx(
@@ -913,7 +903,7 @@ function readConnectionTables(
       stroke.range[1],
       DPR_PAST_THE_ANTIALIASING_FLOOR,
     )
-  const paint = { slotColor, colorField, widthOf }
+  const paint = { slotColor, widthOf }
   const bySection = new Map(
     [...dataByGroup.keys()].map(key => [
       key,
@@ -937,9 +927,7 @@ function readConnectionTables(
   )
   const legend = result
     ? getArcLegendItems(
-        new Set(
-          [...result.colorSlots].map(slot => arcSlotCategory(slot, colorField)),
-        ),
+        new Set([...result.colorSlots].map(slot => arcSlotCategory(slot))),
         colors.palette,
         colors.declared.categories,
       ).filter(item => item.color !== undefined)

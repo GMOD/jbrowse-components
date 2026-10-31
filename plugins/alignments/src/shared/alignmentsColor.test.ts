@@ -34,7 +34,7 @@ describe('readColorFieldOf', () => {
   })
 
   test('a read dimension the facet also offers is spelt the facet’s way', () => {
-    const shared = ['strand', 'firstOfPairStrand', 'pairOrientation', 'mapq']
+    const shared = ['strand', 'firstOfPairStrand', 'mapq']
     for (const field of shared) {
       expect(Object.hasOwn(FACET_LABELS, field)).toBe(true)
       expect(COLOR_FIELDS).toContain(field)

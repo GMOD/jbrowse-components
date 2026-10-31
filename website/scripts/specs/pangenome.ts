@@ -233,7 +233,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               trackId: 'ecoli_e146_ont',
               unit: 'chain',
               facet: 'split',
-              encoding: { color: 'pairOrientation' },
+              encoding: { color: 'insertSizeAndOrientation' },
               height: 210,
             },
             {

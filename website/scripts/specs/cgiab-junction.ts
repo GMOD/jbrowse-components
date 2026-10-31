@@ -165,7 +165,7 @@ export const junctionScaffold = (
                 ...reads,
                 unit: 'chain',
                 facet: 'split',
-                encoding: { color: 'pairOrientation' },
+                encoding: { color: 'insertSizeAndOrientation' },
                 legend: { show: true },
                 pileup: { mark: { height: 2 } },
                 readConnections: { show: true, height: 70 },

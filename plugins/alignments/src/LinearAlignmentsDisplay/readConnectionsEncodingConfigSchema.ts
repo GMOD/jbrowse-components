@@ -1,36 +1,26 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { encodingOptions } from '@jbrowse/display-kit/colorConfigSchema'
 
-import { alignmentsArcColorConfigSchema } from './alignmentsArcColorConfigSchema.ts'
 import { readConnectionsStrokeWidthConfigSchema } from './readConnectionsStrokeWidthConfigSchema.ts'
 
 /**
  * #config ReadConnectionsEncoding
  * #category display
- * The read connections' `encoding`: the color and width each connection
- * strokes at.
+ * The read connections' `encoding`: the width each connection strokes at.
+ * A connection's color is its insert size and orientation class, as the
+ * reads' `insertSizeAndOrientation` color names it, declared colors included.
  *
  * #example
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   readConnections: {
- *     show: true,
- *     encoding: { color: 'pairOrientation', strokeWidth: 2 },
- *   },
+ *   readConnections: { show: true, encoding: { strokeWidth: 2 } },
  * }
  * ```
  */
 export const readConnectionsEncodingConfigSchema = ConfigurationSchema(
   'ReadConnectionsEncoding',
   {
-    /**
-     * #slot color
-     * The field that colors every connection: this band, `pileup.connectors`
-     * and a chain's links between displayed regions; `""` uses the reads'
-     * `encoding.color` field where a connection paints it.
-     */
-    color: alignmentsArcColorConfigSchema,
     /**
      * #slot strokeWidth
      * The width each connection strokes at.

@@ -354,7 +354,7 @@ test('the sashimi count is the read arcs support for the same junction', () => {
         displayedRegionIndex: 0,
       },
     ],
-    { colorField: 'insertSizeAndOrientation' },
+    {},
   )
   expect(rest).toEqual([])
   expect(sashimi).toEqual(junction(33286412, 33287511, 'splitBack', 4))

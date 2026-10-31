@@ -13,7 +13,7 @@ import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
 import type { QualityOpacity } from '../../features/mismatch/qualityOpacity.ts'
 import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
-import type { ArcColorField, BaseLayerField } from '../../shared/types.ts'
+import type { BaseLayerField } from '../../shared/types.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type { CoverageBandState } from '@jbrowse/alignments-core'
 import type { LinkRegion, LinkSizeScale } from '@jbrowse/render-core/marks'
@@ -48,9 +48,6 @@ export interface DisplayRenderState {
   // repaints its divs and not the canvas.
   // Color palette from theme
   colors: ColorPalette
-  // The field the read connections paint, which picks the connectors' slot
-  // out of each one's color type.
-  readConnectionsColorField: ArcColorField
   // What one row draws. The pileup uniforms turn it into the shaders' 0/1
   // `chainMode` flag at the GPU boundary.
   unit: AlignmentsUnit

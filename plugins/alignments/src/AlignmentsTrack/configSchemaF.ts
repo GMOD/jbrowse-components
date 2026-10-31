@@ -40,7 +40,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *     type: 'BamAdapter',
  *     uri: 'https://example.com/sample.bam',
  *   },
- *   displayDefaults: { encoding: { color: 'pairOrientation' }, height: 250 },
+ *   displayDefaults: {
+ *     encoding: { color: 'insertSizeAndOrientation' },
+ *     height: 250,
+ *   },
  * }
  * ```
  */

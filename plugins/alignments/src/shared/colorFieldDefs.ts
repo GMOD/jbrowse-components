@@ -18,11 +18,8 @@ export type ColorGroup = 'basic' | 'pairedEnd'
 // Menu placement for a color field. Discriminated so a field is either a plain
 // radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu) or
 // 'special' — driven by its own dialog/submenu (tag, modifications, bisulfite).
-// `whileActive`: a config can paint by the field, but Color by offers its
-// radio only while it paints, since "Insert size and orientation" carries the
-// same cue.
 export type ColorFieldMenu =
-  | { kind: 'radio'; label: string; group: ColorGroup; whileActive?: true }
+  | { kind: 'radio'; label: string; group: ColorGroup }
   | { kind: 'special'; label: string }
 
 export interface ColorFieldDef {
@@ -114,18 +111,6 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
       label: FACET_LABELS.firstOfPairStrand,
       group: 'pairedEnd',
     },
-  },
-  pairOrientation: {
-    kind: 'pairOrientation',
-    bodyFill: 'pairOrientation',
-    menu: {
-      kind: 'radio',
-      label: FACET_LABELS.pairOrientation,
-      group: 'pairedEnd',
-      whileActive: true,
-    },
-    mateAware: true,
-    orientation: true,
   },
   tag: {
     kind: 'tag',

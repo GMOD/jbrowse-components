@@ -82,7 +82,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 // alignments, MAF and variant displays (`coverage`, `sashimi`,
 // `variants`, ...) and a row display's `axis`, to one entry per member under
 // its dotted path, `coverage.show`. An `encoding` object, the display's or a band's, gives one
-// entry per channel, `encoding.color` and `readConnections.encoding.color`. A
+// entry per channel, `encoding.color` and `readConnections.encoding.strokeWidth`. A
 // `filter` list stays one entry, which its recipe reads entry by entry.
 export function specTrackSettings(entry: SpecTrackEntry): [string, unknown][] {
   if (typeof entry === 'string') {

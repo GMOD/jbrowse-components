@@ -7,8 +7,6 @@ import type { ColorGroup } from './colorFieldDefs.ts'
 export interface ColorFieldOption {
   field: string | undefined
   label: string
-  /** offered only while it paints (`ColorFieldMenu`'s `whileActive`) */
-  whileActive?: true
 }
 
 const PAINTED_FIELDS = new Set<string>([...COLOR_FIELDS, ...BASE_COLOR_FIELDS])
@@ -20,7 +18,6 @@ const RADIOS = Object.values(COLOR_FIELD_DEFS).flatMap(({ kind, menu }) =>
           field: kind === 'normal' ? undefined : kind,
           label: menu.label,
           group: menu.group,
-          whileActive: menu.whileActive,
         },
       ]
     : [],
@@ -32,13 +29,10 @@ const LABELS = new Map<string | undefined, string>(
 
 /** The Color by radios of a menu group, in the registry's order. */
 export function radioColorFieldOptions(group: ColorGroup): ColorFieldOption[] {
-  return RADIOS.filter(r => r.group === group).map(
-    ({ field, label, whileActive }) => ({
-      field,
-      label,
-      ...(whileActive ? { whileActive } : {}),
-    }),
-  )
+  return RADIOS.filter(r => r.group === group).map(({ field, label }) => ({
+    field,
+    label,
+  }))
 }
 
 /**

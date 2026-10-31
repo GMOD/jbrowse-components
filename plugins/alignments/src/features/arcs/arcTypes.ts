@@ -1,6 +1,6 @@
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
-import type { ArcColorField, ConnectionFilter } from '../../shared/types.ts'
+import type { ConnectionFilter } from '../../shared/types.ts'
 
 // The shared vocabulary of the arc pass: the region lists it runs against, the
 // settings that gate it, the pending form a read pair or split junction takes
@@ -46,10 +46,8 @@ export function ordinaryPairsShown(
 }
 
 export interface ArcSettings {
-  colorField: ArcColorField
-  // read cloud mode: flat lines at Y=|tlen|, concordant FR pairs
-  // filtered out so only discordant pairs remain. Coloring follows colorField
-  // (same palette as arcs), not a separate DEL/DUP/INV field.
+  // read cloud mode: flat lines at Y=|tlen|, concordant FR pairs filtered out
+  // so only discordant pairs remain, colored as the arcs are.
   cloud?: boolean
   // `minInterchromReads` is tested on MATE-LINK EVIDENCE ONLY
   // (`clearsInterchromFloor`), against the number each mark actually draws

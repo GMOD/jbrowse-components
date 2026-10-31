@@ -12,8 +12,6 @@ import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 export type { CategoryFilter }
 
-export type { ArcColorField } from './arcColorOptions.ts'
-
 /**
  * `pileup.bases.filter` as the modification extract reads it, each field at
  * its default where the list names none.
@@ -48,7 +46,6 @@ export type BodyFill =
   | 'strand'
   | 'mapq'
   | 'firstOfPairStrand'
-  | 'pairOrientation'
   | 'insertSizeAndOrientation'
   | 'modifications'
   | 'tag'
@@ -63,7 +60,6 @@ export const COLOR_FIELDS = [
   'strand',
   'mapq',
   'firstOfPairStrand',
-  'pairOrientation',
   'insertSizeAndOrientation',
   'mateRefName',
 ] as const
@@ -219,6 +215,7 @@ export type ReadDimension = (typeof READ_DIMENSIONS)[number]
 // The read categories only a facet answers: reads keep the colors their arcs
 // paint (ADR-230), so `encoding.color` names none of them.
 export const FACET_ONLY_DIMENSIONS = [
+  'pairOrientation',
   'pairing',
   'split',
   'spliced',

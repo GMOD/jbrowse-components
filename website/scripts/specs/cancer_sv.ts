@@ -813,7 +813,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
             { field: 'connection.offscreen', equal: false },
           ],
           unit: 'chain',
-          encoding: { color: 'pairOrientation' },
+          encoding: { color: 'insertSizeAndOrientation' },
           legend: { show: true },
         },
       ],

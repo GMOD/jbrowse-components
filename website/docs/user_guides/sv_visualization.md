@@ -45,9 +45,9 @@ reads, then the views that show both sides of a breakpoint at once.
 
 ### Pair orientation
 
-Pair orientation colors each read by the strands its two mates aligned to. The
-menu offers it inside **Color by → Insert size and orientation**, below; alone
-it is `encoding.color` set to `pairOrientation`. The colors follow
+Pair orientation is the strands a read's two mates aligned to. **Color by →
+Insert size and orientation** paints an abnormal orientation in its own color,
+and a normal one by its insert size, below. The colors follow
 [IGV's](https://igv.org/doc/desktop/#UserGuide/tracks/alignments/paired_end_alignments/)
 and assume a standard `fr` (Illumina) library. SOLiD-style orientations are not
 supported.
@@ -333,8 +333,7 @@ on one breakpoint locus. Splines connect the reads that span the junction across
 the panels, and the variant call is drawn as a blue curve with feet over the
 side each end keeps. The header bar accepts location searches in either panel.
 
-A spline takes the color its arc takes in the alignments track, so the track's
-**Advanced → Read connections color** setting recolors both. The right end of
+A spline takes the color its arc takes in the alignments track. The right end of
 the header, and the top of an SVG export, list the colors the view is drawing.
 
 Inside one panel, a call whose glyph already spans both of its ends gets no

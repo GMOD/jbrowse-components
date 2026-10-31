@@ -16,7 +16,7 @@ index resolves automatically. Coloring, height, and filtering are slots on the
   "assemblyNames": ["hg19"],
   "adapter": { "type": "BamAdapter", "uri": "https://yourhost/file.bam" },
   "displayDefaults": {
-    "encoding": { "color": "pairOrientation" },
+    "encoding": { "color": "insertSizeAndOrientation" },
     "height": 250
   }
 }
@@ -43,9 +43,7 @@ index resolves automatically. Coloring, height, and filtering are slots on the
 - **[`unit`](/docs/config/linearalignmentsdisplay/#slot-unit) sets what one row
   is**, a read or a chain of a read with its mate and split segments;
   [`facet`](/docs/config/linearalignmentsdisplay/#slot-facet) stacks one
-  labelled section per value of a read field (`pairOrientation`, `tags.HP`); and
-  [`readConnections.encoding.color`](/docs/config/readconnectionsencoding/#slot-color)
-  picks the pair field the read-connection arcs paint when it is not the reads'
+  labelled section per value of a read field (`pairOrientation`, `tags.HP`)
 
 [Applying display settings](/docs/tutorials/display_settings) opens a track in a
 given state from a link or an embedded view.

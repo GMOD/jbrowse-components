@@ -144,7 +144,6 @@ export const ALIGNMENTS_COLOR_FIELDS = [
   'strand',
   'firstOfPairStrand',
   'mapq',
-  'pairOrientation',
   'insertSizeAndOrientation',
   'mateRefName',
   'mateAssembly',
@@ -154,6 +153,7 @@ const ALIGNMENTS_COLOR_FIELD_SET: ReadonlySet<string> = new Set(
 )
 
 export const FACET_ONLY_FIELDS = [
+  'pairOrientation',
   'pairing',
   'split',
   'spliced',
