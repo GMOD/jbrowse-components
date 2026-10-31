@@ -121,6 +121,20 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
   }, [store])
 
   const handleMouseMove = (event: React.MouseEvent) => {
+    // On a resize handle, which captures the pointer for the whole drag, the
+    // pointer is no longer over the data: a crosshair following it would ride
+    // the seam as the display resizes under it
+    if (
+      event.target instanceof Element &&
+      event.target.closest('[data-resize-handle]')
+    ) {
+      handleMouseLeave()
+    } else {
+      trackMove(event)
+    }
+  }
+
+  const trackMove = (event: React.MouseEvent) => {
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current)
     }

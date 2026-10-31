@@ -10,10 +10,8 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
  */
 const MafBandHandles = observer(function MafBandHandles({
   model,
-  onResizeActiveChange,
 }: {
   model: LinearMafDisplayModel
-  onResizeActiveChange: (active: boolean) => void
 }) {
   const { topBands, coverageBandActive, conservationBandActive } = model
   return (
@@ -26,7 +24,6 @@ const MafBandHandles = observer(function MafBandHandles({
             model.setCoverageHeight(h)
           }}
           seam={topBands.top.coverage + topBands.reserved.coverage}
-          onActiveChange={onResizeActiveChange}
         />
       ) : null}
       {conservationBandActive ? (
@@ -37,7 +34,6 @@ const MafBandHandles = observer(function MafBandHandles({
             model.setConservationHeight(h)
           }}
           seam={topBands.top.conservation + topBands.reserved.conservation}
-          onActiveChange={onResizeActiveChange}
         />
       ) : null}
     </>

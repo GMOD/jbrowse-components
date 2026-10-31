@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 import { useMouseState } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
@@ -124,7 +124,6 @@ const MafBody = observer(function MafBody({
   mouseTracker: MouseTracker
 }) {
   const { rowsHeight, rowsTopOffset } = model
-  const [resizeActive, setResizeActive] = useState(false)
   // The canvas box, not the viewport: must equal renderState.canvasWidth (see
   // canvasWidthPx).
   const width = model.canvasWidthPx
@@ -170,7 +169,7 @@ const MafBody = observer(function MafBody({
           height: rowsTopOffset + rowsHeight,
         }}
       />
-      <MafBandHandles model={model} onResizeActiveChange={setResizeActive} />
+      <MafBandHandles model={model} />
       <MafBandLabels model={model} />
       <RowsPanel
         model={model}
@@ -179,7 +178,7 @@ const MafBody = observer(function MafBody({
       >
         <MafRowOverlays model={model} width={width} height={rowsHeight} />
       </RowsPanel>
-      {pointer && !contextCoord && !resizeActive ? (
+      {pointer && !contextCoord ? (
         <div style={{ position: 'relative' }}>
           <DisplayCrosshairs
             model={model}

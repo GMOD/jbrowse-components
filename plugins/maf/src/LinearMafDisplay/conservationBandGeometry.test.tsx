@@ -58,9 +58,7 @@ describe('the conservation band paints the height it reserved', () => {
 
   it('leaves the resize handle inside the display', () => {
     const display = overStatedBand()
-    const { container } = render(
-      <MafBandHandles model={display} onResizeActiveChange={() => {}} />,
-    )
+    const { container } = render(<MafBandHandles model={display} />)
     const handle = [...container.querySelectorAll('div')].at(-1)
     expect(handle?.style.top).toBe(`${display.rowsTopOffset - 4}px`)
     expect(display.rowsTopOffset - 4).toBeLessThan(display.height)

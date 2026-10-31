@@ -188,5 +188,8 @@ export function useResizeDrag({
       handlers.onPointerDown(event)
     },
     'data-gesture-owner': 'true',
+    // the display's pointer tracking drops the pointer while it is on a resize
+    // handle, so no crosshair or tooltip follows a resize (`useMouseTracking`)
+    'data-resize-handle': 'true',
   }
 }
