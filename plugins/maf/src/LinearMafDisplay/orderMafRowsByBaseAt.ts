@@ -38,9 +38,10 @@ export function orderMafRowsByBaseAt<T extends { name: string }>(
   bp: number,
 ): T[] {
   const baseByName = new Map<string, string>()
-  const at = columnAtBp(region.blocks, bp, blockIdx =>
-    buildColumnForGenomicOffset(region.blocks[blockIdx]!.refSeqBytes),
-  )
+  const at = columnAtBp(region.blocks, bp, {
+    columnsAt: blockIdx =>
+      buildColumnForGenomicOffset(region.blocks[blockIdx]!.refSeqBytes),
+  })
   if (at) {
     for (const row of region.blocks[at.blockIdx]!.rows) {
       const name = drawnRows[row.rowIndex]?.name

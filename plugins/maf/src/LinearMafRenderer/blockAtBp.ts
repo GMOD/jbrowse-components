@@ -47,19 +47,19 @@ export function firstBlockEndingAfter(
 
 /**
  * The block covering `bp` and the alignment column of that base in it, or
- * undefined where no block covers it. `columnsAt` builds a block's columns
- * (`buildColumnForGenomicOffset`), which a caller resolving many positions
- * caches.
+ * undefined where no block covers it. `columns.columnsAt` builds a block's
+ * columns (`buildColumnForGenomicOffset`), which a caller resolving many
+ * positions caches.
  */
 export function columnAtBp(
   blocks: readonly { startBp: number; endBp: number }[],
   bp: number,
-  columnsAt: (blockIdx: number) => GenomicColumns,
+  columns: { columnsAt(blockIdx: number): GenomicColumns },
 ) {
   const blockIdx = blockIndexAtBp(blocks, bp)
   if (blockIdx !== -1) {
     const offset = bp - blocks[blockIdx]!.startBp
-    const { colForGpos, refLen } = columnsAt(blockIdx)
+    const { colForGpos, refLen } = columns.columnsAt(blockIdx)
     if (offset < refLen) {
       return { blockIdx, col: colForGpos[offset]! }
     }

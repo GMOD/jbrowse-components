@@ -76,7 +76,7 @@ export interface MafRowsEncodeProps {
   identityColors: Uint32Array
   gpu: MafGpuProps
   /** The rows' source-sequence ranks, read while `refNameRank` fills the rows. */
-  refNameRanks: ReadonlyMap<number, ReadonlyMap<string, number>> | undefined
+  refNameRanks: ReadonlyMap<number, ReadonlyMap<string, number>>
   /** each rank's packed color (`refNameRankColors`) */
   refNameRankPalette: readonly number[]
   rowIndexBySrc: ReadonlyMap<string, number>

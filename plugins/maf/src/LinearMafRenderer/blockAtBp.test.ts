@@ -42,9 +42,9 @@ test('agrees with a linear scan across the whole span', () => {
 test('columnAtBp skips the reference gap columns to the base', () => {
   const refSeq = new TextEncoder().encode('AC--GT')
   const at = (bp: number) =>
-    columnAtBp([{ startBp: 100, endBp: 104 }], bp, () =>
-      buildColumnForGenomicOffset(refSeq),
-    )
+    columnAtBp([{ startBp: 100, endBp: 104 }], bp, {
+      columnsAt: () => buildColumnForGenomicOffset(refSeq),
+    })
   expect(at(101)).toEqual({ blockIdx: 0, col: 1 })
   expect(at(102)).toEqual({ blockIdx: 0, col: 4 })
   expect(at(104)).toBeUndefined()

@@ -167,7 +167,7 @@ function encodePropsOf(
     value: undefined,
     identityColors: new Uint32Array(101).fill(0xff808080),
     gpu: { palette, binBp },
-    refNameRanks: undefined,
+    refNameRanks: new Map(),
     refNameRankPalette: [],
     rowIndexBySrc,
     codons: undefined,

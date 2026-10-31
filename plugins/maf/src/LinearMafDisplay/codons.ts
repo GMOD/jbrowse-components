@@ -226,10 +226,9 @@ function locateCodon(
   blocks: MafBlock[],
   indexes: BlockIndexes,
 ): CodonLocs | undefined {
-  const columnsAt = (blockIdx: number) => indexes.columnsAt(blockIdx)
-  const l0 = columnAtBp(blocks, positions[0], columnsAt)
-  const l1 = columnAtBp(blocks, positions[1], columnsAt)
-  const l2 = columnAtBp(blocks, positions[2], columnsAt)
+  const l0 = columnAtBp(blocks, positions[0], indexes)
+  const l1 = columnAtBp(blocks, positions[1], indexes)
+  const l2 = columnAtBp(blocks, positions[2], indexes)
   return l0 && l1 && l2 ? [l0, l1, l2] : undefined
 }
 
