@@ -81,7 +81,6 @@ function makeData(widthBp: number): SyntenyInstanceData {
     colors: new Uint32Array([0xff808080]),
     kinds: new Uint8Array([0]),
     instanceFeatureIdx: new Uint32Array([0]),
-    alignmentLengths: new Float32Array([10000]),
     instanceCount: 1,
   }
 }

@@ -79,8 +79,6 @@ function geometry(blocks: Block[], matchesOnly: boolean): SyntenyInstanceData {
     queryGridAnchors: Float64Array.from(blocks, b => b.queryStart),
     strands: Int8Array.from(blocks, () => 1),
     parsedCigars: blocks.map(b => b.cigar),
-    starts: Uint32Array.from(blocks, b => b.queryStart),
-    ends: Uint32Array.from(blocks, (b, i) => b.queryStart + spans[i]!.query),
     cigarMode: matchesOnly ? 'matches' : 'full',
     bpPerPx0: BP_PER_PX,
     bpPerPx1: BP_PER_PX,

@@ -22,8 +22,6 @@ function twoOverlappingFeatures() {
     queryGridAnchors: Float64Array.from([0, 0]),
     strands: Int8Array.from([1, 1]),
     parsedCigars: [[], []],
-    starts: Uint32Array.from([100_000, 150_000]),
-    ends: Uint32Array.from([400_000, 450_000]),
     cigarMode: 'full',
     bpPerPx0: BP_PER_PX,
     bpPerPx1: BP_PER_PX,

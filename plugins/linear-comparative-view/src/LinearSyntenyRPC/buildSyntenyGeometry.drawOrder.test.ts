@@ -21,8 +21,6 @@ function build() {
       [packed(200, CIGAR_M), packed(200, CIGAR_D), packed(200, CIGAR_M)],
       [],
     ],
-    starts: new Uint32Array([0, 60]),
-    ends: new Uint32Array([600, 90]),
     cigarMode: 'full',
     bpPerPx0: 1,
     bpPerPx1: 1,

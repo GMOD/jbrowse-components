@@ -724,8 +724,6 @@ export async function executeSyntenyFeaturesAndPositions({
         queryGridAnchors,
         strands: featureData.strands,
         parsedCigars,
-        starts: featureData.starts,
-        ends: featureData.ends,
         cigarMode,
         bpPerPx0: v1.bpPerPx,
         bpPerPx1: v2.bpPerPx,

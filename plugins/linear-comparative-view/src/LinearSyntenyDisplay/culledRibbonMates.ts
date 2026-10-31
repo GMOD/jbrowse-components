@@ -48,7 +48,14 @@ export function culledRibbonMateData(
   features: CulledMateFeatureLanes,
   colors?: Uint32Array,
 ): CulledRibbonMates {
-  const { refNameDict, refNameIds, mateRefNameDict, mateRefNameIds } = features
+  const {
+    refNameDict,
+    refNameIds,
+    starts,
+    ends,
+    mateRefNameDict,
+    mateRefNameIds,
+  } = features
   const n = mateRefNameIds.length
   const queryStarts = new Float64Array(n).fill(Infinity)
   const queryEnds = new Float64Array(n).fill(-Infinity)
@@ -64,7 +71,6 @@ export function culledRibbonMateData(
     base1,
     kinds,
     instanceFeatureIdx,
-    alignmentLengths,
     instanceCount,
   } = geometry
   const hidden = new Uint8Array(colors ? n : 0)
@@ -81,7 +87,7 @@ export function culledRibbonMateData(
     queryEnds[f] = Math.max(queryEnds[f]!, q1, q2)
     targetStarts[f] = Math.min(targetStarts[f]!, m1, m2)
     targetEnds[f] = Math.max(targetEnds[f]!, m1, m2)
-    lengths[f] = alignmentLengths[i]!
+    lengths[f] = Math.abs(ends[f]! - starts[f]!)
   }
   const queryCounts = new Uint32Array(refNameDict.length)
   const targetCounts = new Uint32Array(mateRefNameDict.length)

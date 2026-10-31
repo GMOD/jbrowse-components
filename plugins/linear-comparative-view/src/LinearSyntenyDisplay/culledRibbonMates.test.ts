@@ -12,7 +12,7 @@ function geometry(
     m1: number,
     m2: number,
   ][],
-  { base0 = 0, base1 = 0, lengths = instances.map(() => 1000) } = {},
+  { base0 = 0, base1 = 0 } = {},
 ): SyntenyGeometry {
   return {
     bp1: Float32Array.from(instances.map(i => i[1])),
@@ -23,21 +23,25 @@ function geometry(
     base1,
     kinds: new Uint8Array(instances.length),
     instanceFeatureIdx: Uint32Array.from(instances.map(i => i[0])),
-    alignmentLengths: Float32Array.from(lengths),
     instanceCount: instances.length,
   }
 }
 
 // Both sides of the fetch's per-feature lanes: `names` are the contigs on the
-// facing axis, `own` the ones this row is anchored on.
-function features(names: string[], own = names.map(() => 'ctgA')) {
+// facing axis, `own` the ones this row is anchored on, `lengths` each block's
+// own span.
+function features(
+  names: string[],
+  own = names.map(() => 'ctgA'),
+  lengths = names.map(() => 50),
+) {
   const dict = [...new Set(names)]
   const ownDict = [...new Set(own)]
   return {
     refNameDict: ownDict,
     refNameIds: Uint32Array.from(own, n => ownDict.indexOf(n)),
     starts: Uint32Array.from(names, (_, i) => i * 100),
-    ends: Uint32Array.from(names, (_, i) => i * 100 + 50),
+    ends: Uint32Array.from(names, (_, i) => i * 100 + lengths[i]!),
     mateRefNameDict: dict,
     mateRefNameIds: Uint32Array.from(names, n => dict.indexOf(n)),
     mateStarts: Uint32Array.from(names, (_, i) => i * 10),
@@ -107,15 +111,12 @@ test('the extent is the whole fetch, so a covering band can skip it', () => {
 // alignments.
 test('tallies are per contig over the whole fetch', () => {
   const { onQueryAxis: out } = culledRibbonMateData(
-    geometry(
-      [
-        [0, 100, 200, 7000, 7100],
-        [1, 300, 400, 8000, 8100],
-        [2, 500, 600, 9000, 9100],
-      ],
-      { lengths: [100, 250, 400] },
-    ),
-    features(['ctgB', 'ctgC', 'ctgB']),
+    geometry([
+      [0, 100, 200, 7000, 7100],
+      [1, 300, 400, 8000, 8100],
+      [2, 500, 600, 9000, 9100],
+    ]),
+    features(['ctgB', 'ctgC', 'ctgB'], undefined, [100, 250, 400]),
   )
   expect(out.mateRefNameDict).toEqual(['ctgB', 'ctgC'])
   expect([...out.counts]).toEqual([2, 1])
@@ -126,14 +127,11 @@ test('tallies are per contig over the whole fetch', () => {
 // lower edge is named from.
 test('...and on the facing axis, over the contigs this row is anchored on', () => {
   const { onTargetAxis: out } = culledRibbonMateData(
-    geometry(
-      [
-        [0, 100, 200, 7000, 7100],
-        [1, 300, 400, 8000, 8100],
-      ],
-      { lengths: [100, 250] },
-    ),
-    features(['ctgB', 'ctgC'], ['ctgA', 'ctgD']),
+    geometry([
+      [0, 100, 200, 7000, 7100],
+      [1, 300, 400, 8000, 8100],
+    ]),
+    features(['ctgB', 'ctgC'], ['ctgA', 'ctgD'], [100, 250]),
   )
   expect(out.mateRefNameDict).toEqual(['ctgA', 'ctgD'])
   expect([...out.counts]).toEqual([1, 1])
@@ -226,6 +224,6 @@ test('a feature whose ribbon is painted transparent is neither marked nor counte
   expect(onQueryAxis.starts[1]! > onQueryAxis.ends[1]!).toBe(true)
   expect(onTargetAxis.starts[1]! > onTargetAxis.ends[1]!).toBe(true)
   expect([...onQueryAxis.counts]).toEqual([1])
-  expect([...onQueryAxis.alignedBp]).toEqual([1000])
+  expect([...onQueryAxis.alignedBp]).toEqual([50])
   expect(onQueryAxis.starts[0]).toBe(100)
 })

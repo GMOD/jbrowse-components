@@ -30,7 +30,6 @@ function makeData(colors: Uint32Array): SyntenyInstanceData {
     colors,
     kinds: Uint8Array.from({ length: n }, (_, i) => i % 7),
     instanceFeatureIdx: Uint32Array.from({ length: n }, (_, i) => i),
-    alignmentLengths: seq(500),
     instanceCount: n,
   }
 }
@@ -91,7 +90,6 @@ describe('packClickedOutlineInstances', () => {
       colors: Uint32Array.from({ length: n }, (_, i) => 0x11111111 * (i + 1)),
       kinds,
       instanceFeatureIdx: featureIdx,
-      alignmentLengths: seq(500),
       instanceCount: n,
     }
   }

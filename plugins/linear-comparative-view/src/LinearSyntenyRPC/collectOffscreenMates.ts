@@ -25,7 +25,7 @@ export interface OffscreenMateData {
   ends: Float64Array
   mateRefNameIds: Uint32Array
   // the block's own bp length before the clamp, which is what the
-  // `minAlignmentLength` cull reads, as the ribbons' `alignmentLengths` does
+  // `minAlignmentLength` cull reads
   lengths: Float32Array
   // where it lands on the contig it names, in that contig's own bp: there is
   // no ruler on this side to make a cumBp against. ArrayLike because the

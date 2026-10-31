@@ -59,7 +59,6 @@ const GEOMETRY: SyntenyGeometry = {
   base1: 0,
   kinds: Uint8Array.from([KIND_BASE, KIND_BASE]),
   instanceFeatureIdx: Uint32Array.from([0, 1]),
-  alignmentLengths: Float32Array.from([100, 100]),
   instanceCount: 2,
 }
 

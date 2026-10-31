@@ -52,7 +52,6 @@ export interface SyntenyGeometry {
   // `instanceFeatureIdx[i] + 1` at interleave time (0 reserved for "no hit").
   kinds: Uint8Array
   instanceFeatureIdx: Uint32Array
-  alignmentLengths: Float32Array
   instanceCount: number
 }
 
@@ -242,8 +241,6 @@ export function buildSyntenyGeometry({
   queryGridAnchors,
   strands,
   parsedCigars,
-  starts,
-  ends,
   cigarMode,
   bpPerPx0,
   bpPerPx1,
@@ -265,8 +262,6 @@ export function buildSyntenyGeometry({
   queryGridAnchors: Float64Array
   strands: Int8Array
   parsedCigars: ArrayLike<number>[]
-  starts: Uint32Array
-  ends: Uint32Array
   cigarMode: CigarMode
   bpPerPx0: number
   bpPerPx1: number
@@ -318,7 +313,7 @@ export function buildSyntenyGeometry({
   // viewport quantity — a CIGAR-less block wider than the window keeps its full
   // corner span, because `clipLargeBlockToWindow` re-anchors only blocks that
   // carry a CIGAR. Measured: one 40Mb CIGAR-less block at 1bp/px reserved
-  // 1,000,003 slots (25MB across the seven lanes) to emit 85 ticks, and the
+  // 1,000,003 slots (25MB across the six lanes) to emit 85 ticks, and the
   // reservation scales with zoom — the same block at base-level zoom asks for
   // about a gigabyte, in a worker, and the lanes are handed out as `subarray`
   // views so the whole allocation crosses the RPC boundary.
@@ -350,7 +345,6 @@ export function buildSyntenyGeometry({
   const markerWindowHiBp = window0.hi + markerTravelBp
   const markerWindowPx = (markerWindowHiBp - markerWindowLoBp) * bpPerPxInv0
 
-  const alignmentLengths = new Float32Array(featureCount)
   // Per-feature: did we decide to draw CIGAR detail? When true, the emit loop
   // runs the visitor over the feature's CIGAR — laying its indel quads over a
   // full-span KIND_BASE ribbon in colored mode, or replacing that ribbon with
@@ -361,7 +355,7 @@ export function buildSyntenyGeometry({
   // emit sites cannot disagree about it — see MIN_MARKER_FEATURE_PX.
   const wantMarkersArr = new Uint8Array(featureCount)
 
-  // Single pre-pass: fill alignmentLengths, willDrawCigar, wantMarkers, and
+  // Single pre-pass: fill willDrawCigar and wantMarkers, and
   // accumulate the exact upper-bound capacity. visitCigarRenderedSegments emits
   // a segment only when bp1 OR bp2 has advanced > 1 px from the segment start,
   // so per-feature visitor emissions are bounded by widthPx0 + widthPx1
@@ -378,17 +372,6 @@ export function buildSyntenyGeometry({
   let ribbonCapacity = 0
   let markerCapacity = 0
   for (let i = 0; i < featureCount; i++) {
-    // Per-feature alignment length, used solely for the minAlignmentLength
-    // cull (shader isCulled + pick engine). Each block is filtered by its own
-    // span — what the "Min length" control means to users. This is enforced
-    // structurally: geometry never receives feature names, so it cannot sum
-    // spans across blocks that share one. That matters because names DO
-    // legitimately repeat (e.g. a BAM read's QNAME is shared across its split/
-    // supplementary alignments) — and summing those would keep a read whose
-    // pieces are each tiny, or hide a substantial single block, neither of
-    // which is what a per-length filter should do.
-    alignmentLengths[i] = Math.abs(ends[i]! - starts[i]!)
-
     const cigar = parsedCigars[i]!
     const widthPx0 = Math.abs(p12_cumBp[i]! - p11_cumBp[i]!) * bpPerPxInv0
     const widthPx1 = Math.abs(p22_cumBp[i]! - p21_cumBp[i]!) * bpPerPxInv1
@@ -444,18 +427,9 @@ export function buildSyntenyGeometry({
   const bp4Arr = new Float32Array(capacity)
   const kindsArr = new Uint8Array(capacity)
   const featIdxArr = new Uint32Array(capacity)
-  const instanceAlignmentLengths = new Float32Array(capacity)
   // Every lane, for the one operation that has to touch all of them uniformly —
   // closing the gap between the two regions once both are written.
-  const lanes = [
-    bp1Arr,
-    bp2Arr,
-    bp3Arr,
-    bp4Arr,
-    kindsArr,
-    featIdxArr,
-    instanceAlignmentLengths,
-  ]
+  const lanes = [bp1Arr, bp2Arr, bp3Arr, bp4Arr, kindsArr, featIdxArr]
 
   // Two cursors into one allocation. INSTANCE ORDER IS DRAW ORDER — the Canvas2D
   // loop walks it, and `interleaveInstances` packs the GPU buffer in it — so a
@@ -470,10 +444,6 @@ export function buildSyntenyGeometry({
 
   // All four corner values are cumBp (bpBefore + bpOffset). Stored window-
   // relative: corners 1/2 use base0 (top view), 3/4 use base1 (bottom view).
-  //
-  // The alignment length is the parent feature's, so it is read here rather than
-  // threaded through every caller: an instance's length lane is a copy of its
-  // feature's, and there is no instance whose length is anything else.
   function writeInstance(
     slot: number,
     cumBp1: number,
@@ -489,7 +459,6 @@ export function buildSyntenyGeometry({
     bp4Arr[slot] = cumBp4 - base1
     kindsArr[slot] = kind
     featIdxArr[slot] = featureIdx
-    instanceAlignmentLengths[slot] = alignmentLengths[featureIdx]!
   }
 
   // The two capacity bounds above are strict, so neither guard here ever trips.
@@ -735,7 +704,6 @@ export function buildSyntenyGeometry({
     base1,
     kinds: kindsArr.subarray(0, instanceCount),
     instanceFeatureIdx: featIdxArr.subarray(0, instanceCount),
-    alignmentLengths: instanceAlignmentLengths.subarray(0, instanceCount),
     instanceCount,
   }
 }

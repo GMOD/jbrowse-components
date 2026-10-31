@@ -212,7 +212,6 @@ class RibbonBuilder {
   bp4: number[] = []
   kinds: number[] = []
   featureIdx: number[] = []
-  lengths: number[] = []
   colors: number[] = []
   records = new Map<number, Feature>()
 
@@ -227,9 +226,6 @@ class RibbonBuilder {
     this.bp3.push(s2[1])
     this.kinds.push(kind)
     this.featureIdx.push(featureIdx)
-    this.lengths.push(
-      Math.max(Math.abs(s1[1] - s1[0]), Math.abs(s2[1] - s2[0]), 1),
-    )
     this.colors.push(color)
   }
 
@@ -243,7 +239,6 @@ class RibbonBuilder {
       base1: 0,
       kinds: Uint8Array.from(this.kinds),
       instanceFeatureIdx: Uint32Array.from(this.featureIdx),
-      alignmentLengths: Float32Array.from(this.lengths),
       instanceCount: this.bp1.length,
       colors: Uint32Array.from(this.colors),
     }

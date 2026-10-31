@@ -25,8 +25,6 @@ function build(matchesOnly: boolean) {
     parsedCigars: [
       [packed(50, CIGAR_M), packed(50, CIGAR_D), packed(50, CIGAR_M)],
     ],
-    starts: new Uint32Array([0]),
-    ends: new Uint32Array([150]),
     cigarMode: matchesOnly ? 'matches' : 'full',
     bpPerPx0: 1,
     bpPerPx1: 1,

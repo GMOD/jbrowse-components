@@ -48,7 +48,6 @@ function makeInstanceData(
     colors: new Uint32Array(count).fill(0x80808080),
     kinds: new Uint8Array(count),
     instanceFeatureIdx: new Uint32Array(count),
-    alignmentLengths: new Float32Array(count).fill(10000),
     instanceCount: count,
     ...overrides,
   }

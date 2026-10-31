@@ -38,7 +38,6 @@ function ribbon(
     colors: Uint32Array.from(colors),
     kinds: Uint8Array.from(kinds),
     instanceFeatureIdx: new Uint32Array(n),
-    alignmentLengths: new Float32Array(n).fill(10000),
     instanceCount: n,
   }
 }

@@ -34,7 +34,6 @@ function makeData(
     colors: new Uint32Array([0xff808080]),
     kinds: new Uint8Array([0]),
     instanceFeatureIdx: new Uint32Array([0]),
-    alignmentLengths: new Float32Array([10000]),
     instanceCount: 1,
     ...overrides,
   }
@@ -278,7 +277,6 @@ function makeMixedData(seed: number, n: number): SyntenyInstanceData {
   const bp4 = new Float32Array(n)
   const colors = new Uint32Array(n)
   const kinds = new Uint8Array(n)
-  const alignmentLengths = new Float32Array(n)
   for (let i = 0; i < n; i++) {
     const wTop = rnd() < 0.5 ? rnd() * 1.2 : rnd() * 40
     const wBot = rnd() < 0.5 ? rnd() * 1.2 : rnd() * 40
@@ -292,7 +290,6 @@ function makeMixedData(seed: number, n: number): SyntenyInstanceData {
     // a few genuinely invisible, so that predicate is exercised too
     colors[i] = rnd() < 0.1 ? 0x00808080 : 0xff808080
     kinds[i] = 0
-    alignmentLengths[i] = Math.floor(rnd() * 20000)
   }
   return {
     bp1,
@@ -304,7 +301,6 @@ function makeMixedData(seed: number, n: number): SyntenyInstanceData {
     colors,
     kinds,
     instanceFeatureIdx: Uint32Array.from({ length: n }, (_, i) => i),
-    alignmentLengths,
     instanceCount: n,
   }
 }

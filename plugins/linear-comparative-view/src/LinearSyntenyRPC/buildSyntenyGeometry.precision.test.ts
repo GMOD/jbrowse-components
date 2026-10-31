@@ -1,5 +1,4 @@
 import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
-import { KIND_BASE, KIND_MARKER } from './syntenyKinds.ts'
 import { viewportWindow } from './testUtils.ts'
 
 // Corners are stored WINDOW-RELATIVE (cumBp minus a per-axis fetch base) as a
@@ -30,8 +29,6 @@ function buildAt(locusCumBp: number, bpPerPx: number, viewWidth: number) {
     queryGridAnchors: new Float64Array([0]),
     strands: new Int8Array([1]),
     parsedCigars: [[]],
-    starts: new Uint32Array([0]),
-    ends: new Uint32Array([100]),
     cigarMode: 'off',
     bpPerPx0: bpPerPx,
     bpPerPx1: bpPerPx,
@@ -73,45 +70,4 @@ test('geometry fetched at one zoom projects correctly at another (no refetch)', 
   const curBpPerPx = 1
   const curOffsetPx = locus / curBpPerPx - W / 2 // view re-centered on locus
   expect(screenXTop(g, 0, curOffsetPx, curBpPerPx)).toBeCloseTo(W / 2, 1)
-})
-
-test('alignmentLength is each feature own block span, not aggregated', () => {
-  // Two features: spans 100 and 5000. The min-length cull must see each
-  // block's own length — it must NOT sum lengths across features (an earlier
-  // implementation aggregated by query name, which mis-filtered).
-  const g = buildSyntenyGeometry({
-    p11_cumBp: new Float64Array([0, 10_000]),
-    p12_cumBp: new Float64Array([100, 15_000]),
-    p21_cumBp: new Float64Array([0, 10_000]),
-    p22_cumBp: new Float64Array([100, 15_000]),
-    queryGridAnchors: new Float64Array([0, 0]),
-    strands: new Int8Array([1, 1]),
-    parsedCigars: [[], []],
-    starts: new Uint32Array([0, 10_000]),
-    ends: new Uint32Array([100, 15_000]),
-    cigarMode: 'off',
-    bpPerPx0: 1,
-    bpPerPx1: 1,
-    viewOff0: 0,
-    viewOff1: 0,
-    viewWidth: 20_000,
-    window0: viewportWindow({ viewOff: 0, viewWidth: 20_000, bpPerPx: 1 }),
-    window1: viewportWindow({ viewOff: 0, viewWidth: 20_000, bpPerPx: 1 }),
-  })
-  // The two base ribbons come first, one per feature — both features are wide
-  // enough to carry location markers, which the worker emits unconditionally
-  // (the toggle is a color-lane decision) into the tail of the arrays. Each tick
-  // copies its own feature's length, so reading the head is what isolates the
-  // per-feature answer this test is about.
-  expect([...g.alignmentLengths.subarray(0, 2)]).toEqual([100, 5000])
-  const kinds = [...g.kinds]
-  expect(kinds.slice(0, 2)).toEqual([KIND_BASE, KIND_BASE])
-  expect(kinds.slice(2).every(k => k === KIND_MARKER)).toBe(true)
-  // And every instance, tick or ribbon, carries its OWN feature's length.
-  const perFeature = [100, 5000]
-  expect(
-    [...g.alignmentLengths].every(
-      (len, i) => len === perFeature[g.instanceFeatureIdx[i]!],
-    ),
-  ).toBe(true)
 })

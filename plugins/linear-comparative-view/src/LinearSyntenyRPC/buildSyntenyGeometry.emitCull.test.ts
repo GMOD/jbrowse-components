@@ -32,8 +32,6 @@ function build({
     queryGridAnchors: new Float64Array([0]),
     strands: new Int8Array([1]),
     parsedCigars: [cigar],
-    starts: new Uint32Array([top]),
-    ends: new Uint32Array([top + 800]),
     cigarMode: cigar.length > 0 ? 'full' : 'off',
     bpPerPx0: 1,
     bpPerPx1: 1,

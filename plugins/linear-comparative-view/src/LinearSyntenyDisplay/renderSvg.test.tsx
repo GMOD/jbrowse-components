@@ -22,7 +22,6 @@ function makeData(
     colors: new Uint32Array([0xff0000ff]),
     kinds: new Uint8Array(1),
     instanceFeatureIdx: new Uint32Array(1),
-    alignmentLengths: Float32Array.from([10000]),
     instanceCount: 1,
   }
 }

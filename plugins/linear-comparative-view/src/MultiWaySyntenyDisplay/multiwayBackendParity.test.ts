@@ -43,7 +43,6 @@ const ribbon: SyntenyInstanceData = {
   base1: 0,
   kinds: Uint8Array.of(KIND_BASE),
   instanceFeatureIdx: Uint32Array.of(7),
-  alignmentLengths: Float32Array.of(100),
   instanceCount: 1,
   colors: Uint32Array.of(0xff808080),
 }

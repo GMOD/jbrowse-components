@@ -44,8 +44,6 @@ function buildWithMarkers(widthBp: number, cigar: number[] = []) {
     queryGridAnchors: new Float64Array([RULER_GRID_ORIGIN]),
     strands: new Int8Array([1]),
     parsedCigars: [cigar],
-    starts: new Uint32Array([0]),
-    ends: new Uint32Array([widthBp]),
     cigarMode: cigar.length > 0 ? 'full' : 'off',
     bpPerPx0: 1,
     bpPerPx1: 1,
@@ -93,8 +91,6 @@ test('the grid is absolute, so panning does not slide the markers', () => {
     queryGridAnchors: new Float64Array([RULER_GRID_ORIGIN]),
     strands: new Int8Array([1]),
     parsedCigars: [[]],
-    starts: new Uint32Array([30]),
-    ends: new Uint32Array([430]),
     cigarMode: 'off',
     bpPerPx0: 1,
     bpPerPx1: 1,
@@ -136,8 +132,6 @@ test('every marker sorts after every ribbon, whichever branch emitted it', () =>
     queryGridAnchors: new Float64Array([RULER_GRID_ORIGIN, RULER_GRID_ORIGIN]),
     strands: new Int8Array([1, 1]),
     parsedCigars: [[], cigar],
-    starts: new Uint32Array([0, 0]),
-    ends: new Uint32Array([400, 400]),
     // Transparent indels, so the CIGAR branch emits RIBBON quads too (one per
     // match segment) rather than only markers — the ordering claim is about
     // ribbons from both branches against ticks from both branches. It also
@@ -196,8 +190,6 @@ test('markers follow the CIGAR through a deletion', () => {
     queryGridAnchors: new Float64Array([RULER_GRID_ORIGIN]),
     strands: new Int8Array([1]),
     parsedCigars: [[op(200, CIGAR_M), op(40, CIGAR_D), op(160, CIGAR_M)]],
-    starts: new Uint32Array([0]),
-    ends: new Uint32Array([400]),
     cigarMode: 'full',
     bpPerPx0: 1,
     bpPerPx1: 1,
@@ -246,8 +238,6 @@ test('a block far wider than the view budgets for the window, not the block', ()
     strands: new Int8Array([1]),
     // no CIGAR, which is what leaves the corners at their full span
     parsedCigars: [[]],
-    starts: new Uint32Array([0]),
-    ends: new Uint32Array([span]),
     cigarMode: 'off',
     bpPerPx0: 1,
     bpPerPx1: 1,
@@ -289,8 +279,6 @@ test('an inverted alignment keeps the query grid and pairs backwards', () => {
     queryGridAnchors: new Float64Array([RULER_GRID_ORIGIN]),
     strands: new Int8Array([-1]),
     parsedCigars: [Array.from({ length: 20 }, () => op(20, CIGAR_M))],
-    starts: new Uint32Array([0]),
-    ends: new Uint32Array([400]),
     cigarMode: 'full',
     bpPerPx0: 1,
     bpPerPx1: 1,

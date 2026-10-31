@@ -32,8 +32,6 @@ function buildIndelGeometry() {
         packed(100, CIGAR_M),
       ],
     ],
-    starts: new Uint32Array([0]),
-    ends: new Uint32Array([refSpan]),
     cigarMode: 'full',
     bpPerPx0: 1,
     bpPerPx1: 1,

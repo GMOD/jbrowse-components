@@ -70,7 +70,7 @@ test('a block straddling a region edge is clamped, not dropped', () => {
 
 // ...and it keeps its OWN length through that clamp, because the length is what
 // `minAlignmentLength` culls on and the ribbons cull on the unclamped extent
-// (`alignmentLengths`, off `starts`/`ends` before `clipLargeBlockToWindow`).
+// (off `starts`/`ends` before `clipLargeBlockToWindow`).
 // Measured off the clamped span instead, raising Min length hid the mark for an
 // alignment whose ribbon the same setting kept.
 test('...and reports the block length, not the clamped one', () => {
