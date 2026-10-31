@@ -1,13 +1,12 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { CappedPath, getDpr, makeBpMapper } from '../canvas2dUtils.ts'
+import { makeUnclampedScoreNormalizer } from '../scoreScale.ts'
 import * as centerShader from '../shaders/lineCenterMark.generated.ts'
 import { GAP_Y, NO_PREV_X } from '../shaders/lineCommon.generated.ts'
 import { lineColorAlongY } from '../shaders/lineCommon.js.generated.ts'
 import * as stepShader from '../shaders/lineStepMark.generated.ts'
-import { valueToYPxScaled } from '../shaders/pointMark.js.generated.ts'
 import { rowBandTopPx } from '../shaders/rowTable.js.generated.ts'
 import { denormalizeScore } from '../shaders/scoreScale.js.generated.ts'
-import { valueToYPxUnclamped } from '../shaders/valueScale.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import {
@@ -30,6 +29,7 @@ import { valueScaleUniforms } from './valueScale.ts'
 
 import type { BlockClipResult } from '../blockClipUtils.ts'
 import type { RenderBlock } from '../renderBlock.ts'
+import type { ScaleTypeCode } from '../scoreScale.ts'
 import type { ColorChannel } from './markRamp.ts'
 import type { RowChannel, RowParams } from './rowLane.ts'
 import type { RowTable } from './rowTable.ts'
@@ -81,44 +81,97 @@ export interface LineParams extends RowParams, MarkValueScale {
 /** `step` holds each value across its span; `linear` joins the spans' midpoints. */
 export type LineInterpolate = 'step' | 'linear'
 
-const NO_GAP = Number.POSITIVE_INFINITY
+/**
+ * The instances a tracer walks: each one's span read at `i * stride`, so
+ * split lanes walk at stride 1 and interleaved `[start, end]` pairs, with
+ * `x2` the same array one on, at stride 2.
+ */
+export interface LineSpans {
+  x: Uint32Array
+  x2: Uint32Array
+  stride: number
+  y: Float32Array
+  row: Uint32Array | undefined
+  series: Uint32Array | undefined
+  gapBp: number | undefined
+  count: number
+}
+
+function spansOf(c: LineChannels): LineSpans {
+  return {
+    x: c.x,
+    x2: c.x2,
+    stride: 1,
+    y: c.y,
+    row: c.row,
+    series: c.series,
+    gapBp: c.gapBp,
+    count: c.count,
+  }
+}
+
+/** One row's spans held as interleaved `[start, end]` pairs. */
+export function interleavedSpans(
+  positions: Uint32Array,
+  y: Float32Array,
+  count: number,
+): LineSpans {
+  return {
+    x: positions,
+    x2: positions.subarray(1),
+    stride: 2,
+    y,
+    row: undefined,
+    series: undefined,
+    gapBp: undefined,
+    count,
+  }
+}
 
 // Whether instances `a` and `b` stand on one row and in one series.
-function sameRun(
-  c: LineChannels,
-  row: ArrayLike<number>,
-  a: number,
-  b: number,
-) {
-  return row[a] === row[b] && (!c.series || c.series[a] === c.series[b])
+function sameRun(s: LineSpans, a: number, b: number) {
+  const { row, series } = s
+  return (
+    (row === undefined || row[a] === row[b]) &&
+    (series === undefined || series[a] === series[b])
+  )
 }
 
 // Whether instance `i` abuts the one before it in its run, so the step joins
 // them at a shared corner.
-function abutsBefore(c: LineChannels, row: ArrayLike<number>, i: number) {
-  return i > 0 && sameRun(c, row, i - 1, i) && c.x2[i - 1] === c.x[i]
+function abutsBefore(s: LineSpans, i: number) {
+  return (
+    i > 0 &&
+    sameRun(s, i - 1, i) &&
+    s.x2[(i - 1) * s.stride] === s.x[i * s.stride]
+  )
 }
 
 // Whether the linear variant links instance `i` to the one before it: the same
 // row and series, within `gapBp` midpoint to midpoint.
-function linksBefore(c: LineChannels, row: ArrayLike<number>, i: number) {
-  if (i === 0 || !sameRun(c, row, i - 1, i)) {
-    return false
-  }
-  const gapBp = c.gapBp ?? NO_GAP
-  return (c.x[i]! + c.x2[i]!) / 2 - (c.x[i - 1]! + c.x2[i - 1]!) / 2 <= gapBp
+function linksBefore(s: LineSpans, i: number) {
+  const { x, x2, stride, gapBp } = s
+  return (
+    i > 0 &&
+    sameRun(s, i - 1, i) &&
+    (gapBp === undefined ||
+      (x[i * stride]! + x2[i * stride]!) / 2 -
+        (x[(i - 1) * stride]! + x2[(i - 1) * stride]!) / 2 <=
+        gapBp)
+  )
 }
 
 function packStep(c: LineChannels) {
   const { x, x2, y, count } = c
+  const s = spansOf(c)
   const row = rowLane(c.row, count)
   const prevY = new Float32Array(count)
   const nextY = new Float32Array(count)
   for (let i = 0; i < count; i++) {
-    prevY[i] = abutsBefore(c, row, i) ? y[i - 1]! : GAP_Y
+    prevY[i] = abutsBefore(s, i) ? y[i - 1]! : GAP_Y
     // a joined next collapses the third quad onto the corner the next
     // instance's first quad draws, so the seam is stroked once
-    nextY[i] = i < count - 1 && abutsBefore(c, row, i + 1) ? y[i]! : GAP_Y
+    nextY[i] = i < count - 1 && abutsBefore(s, i + 1) ? y[i]! : GAP_Y
   }
   return stepShader.packInstances(
     { x, x2, y, color: colorBits(c, count), row, prevY, nextY },
@@ -128,12 +181,13 @@ function packStep(c: LineChannels) {
 
 function packCenter(c: LineChannels) {
   const { x, x2, y, count } = c
+  const s = spansOf(c)
   const row = rowLane(c.row, count)
   const prevX = new Uint32Array(count)
   const prevX2 = new Uint32Array(count)
   const prevY = new Float32Array(count)
   for (let i = 0; i < count; i++) {
-    const linked = linksBefore(c, row, i)
+    const linked = linksBefore(s, i)
     prevX[i] = linked ? x[i - 1]! : NO_PREV_X
     prevX2[i] = linked ? x2[i - 1]! : 0
     prevY[i] = linked ? y[i - 1]! : 0
@@ -173,67 +227,112 @@ function writeLineUniforms(
   })
 }
 
-// The value scale hoisted per block, as the shader reads it per instance: the
-// band each slot stands in and where a value lands inside it.
-interface LineFrame {
+/**
+ * The value scale hoisted per block, as the shader reads it per instance: the
+ * band each slot stands in and where a value lands inside it.
+ */
+export interface LineFrame {
   bpToPx: (bp: number) => number
+  /** `normalizeScoreUnclamped` with the domain's transform hoisted out. */
+  normalize: (value: number) => number
   pitch: number
   band: number
   rowOffsetPx: number
   domainMin: number
   domainMax: number
-  scaleType: number
+  scaleType: ScaleTypeCode
   symlogConstant: number
   table: RowTable | undefined
 }
 
-function lineFrame(
+function makeLineFrame(
   block: RenderBlock,
-  frame: MarkFrame,
-  params: LineParams,
+  pitch: number,
+  band: number,
+  rowOffsetPx: number,
+  [domainMin, domainMax]: readonly [number, number],
+  scaleType: ScaleTypeCode,
+  symlogConstant: number,
+  table: RowTable | undefined,
 ): LineFrame {
-  const pitch = bandHeightPx(params, frame.canvasHeight)
-  const { valueScaleType, valueSymlogConstant } = valueScaleUniforms(params)
   return {
     bpToPx: makeBpMapper(block),
+    normalize: makeUnclampedScoreNormalizer(
+      domainMin,
+      domainMax,
+      scaleType,
+      symlogConstant,
+    ),
     pitch,
-    band: params.rowBandPx ?? pitch,
-    rowOffsetPx: params.rowOffsetPx ?? 0,
-    domainMin: params.domain[0],
-    domainMax: params.domain[1],
-    scaleType: valueScaleType,
-    symlogConstant: valueSymlogConstant,
-    table: params.rowTable,
+    band,
+    rowOffsetPx,
+    domainMin,
+    domainMax,
+    scaleType,
+    symlogConstant,
+    table,
   }
 }
 
-function valueYPx(g: LineFrame, value: number, slot: number) {
-  return (
-    rowBandTopPx(g.rowOffsetPx, g.pitch, slot) +
-    valueToYPxScaled(
-      value,
-      g.domainMin,
-      g.domainMax,
-      g.band,
-      g.scaleType,
-      g.symlogConstant,
-    )
+/** One row's frame: a band `rowHeight` tall from `rowTop`, with no row table. */
+export function rowLineFrame(
+  block: RenderBlock,
+  rowTop: number,
+  rowHeight: number,
+  domain: readonly [number, number],
+  scaleType: ScaleTypeCode,
+  symlogConstant: number,
+) {
+  return makeLineFrame(
+    block,
+    rowHeight,
+    rowHeight,
+    rowTop,
+    domain,
+    scaleType,
+    symlogConstant,
+    undefined,
   )
 }
 
-// A value's y in the band for the color test, as the shader's `lineColorYPx`.
-function colorYPx(g: LineFrame, value: number, slot: number) {
-  return (
-    rowBandTopPx(g.rowOffsetPx, g.pitch, slot) +
-    valueToYPxUnclamped(
-      value,
-      g.domainMin,
-      g.domainMax,
-      g.band,
-      g.scaleType,
-      g.symlogConstant,
-    )
+function lineFrame(block: RenderBlock, frame: MarkFrame, params: LineParams) {
+  const pitch = bandHeightPx(params, frame.canvasHeight)
+  const { valueScaleType, valueSymlogConstant } = valueScaleUniforms(params)
+  return makeLineFrame(
+    block,
+    pitch,
+    params.rowBandPx ?? pitch,
+    params.rowOffsetPx ?? 0,
+    params.domain,
+    valueScaleType,
+    valueSymlogConstant,
+    params.rowTable,
   )
+}
+
+function bandTopPx(g: LineFrame, slot: number) {
+  return rowBandTopPx(g.rowOffsetPx, g.pitch, slot)
+}
+
+function colorYInBand(g: LineFrame, bandTop: number, value: number) {
+  return bandTop + (1 - g.normalize(value)) * g.band
+}
+
+// The y a color y draws at, clamped into the band as the shader clamps the
+// normalized value: the band's edge past the domain, its bottom for NaN.
+function clampToBand(g: LineFrame, bandTop: number, colorY: number) {
+  const bottom = bandTop + g.band
+  return colorY < bandTop ? bandTop : colorY < bottom ? colorY : bottom
+}
+
+/** A value's y in the band for the color test, as the shader's `lineColorYPx`. */
+export function lineColorYPx(g: LineFrame, value: number, slot: number) {
+  return colorYInBand(g, bandTopPx(g, slot), value)
+}
+
+function valueYPx(g: LineFrame, value: number, slot: number) {
+  const bandTop = bandTopPx(g, slot)
+  return clampToBand(g, bandTop, colorYInBand(g, bandTop, value))
 }
 
 /**
@@ -387,81 +486,94 @@ export class BandPen implements LinePen {
   }
 }
 
-// The step polyline over `indices`, in order: a rise from the origin, the top
-// across the span, the step at each joint and a drop to the origin at a gap.
-// A rise is colored along the y it is drawn at, a level run by its value's
-// color y, as the shader reads them.
-function traceStep(
+/**
+ * The step polyline over `indices` in order, every instance where absent: a
+ * rise from the origin, the top across the span, the step at each joint and a
+ * drop to the origin at a gap. A rise is colored along the y it is drawn at, a
+ * level run by its value's color y, as the shader reads them.
+ */
+export function traceStep(
   pen: LinePen,
-  c: LineChannels,
+  s: LineSpans,
   g: LineFrame,
-  rows: ArrayLike<number>,
-  indices: Iterable<number>,
+  indices: ArrayLike<number> | undefined,
   origin: number,
 ) {
-  const { x, x2, y, row, count } = c
+  const { x, x2, stride, y, row, count } = s
+  const { bpToPx, table } = g
+  const n = indices ? indices.length : count
   let inRun = false
-  for (const i of indices) {
-    const slot = rowSlot(row, i, g.table)
+  let originY = 0
+  let bandTop = 0
+  for (let k = 0; k < n; k++) {
+    const i = indices ? indices[k]! : k
+    const slot = rowSlot(row, i, table)
     if (slot === undefined) {
       if (inRun) {
         pen.endRun()
         inRun = false
       }
-      continue
-    }
-    pen.instance(i)
-    const x1 = g.bpToPx(x[i]!)
-    const xb = g.bpToPx(x2[i]!)
-    const top = valueYPx(g, y[i]!, slot)
-    const originY = valueYPx(g, origin, slot)
-    const colorTop = colorYPx(g, y[i]!, slot)
-    if (!inRun) {
-      pen.moveTo(x1, originY)
-      inRun = true
-    }
-    pen.lineTo(x1, top)
-    pen.recolor(colorTop)
-    pen.lineTo(xb, top, colorTop)
-    pen.recolor(top)
-    if (!(i < count - 1 && abutsBefore(c, rows, i + 1))) {
-      pen.lineTo(xb, originY)
-      pen.endRun()
-      inRun = false
+    } else {
+      pen.instance(i)
+      const x1 = bpToPx(x[i * stride]!)
+      const xb = bpToPx(x2[i * stride]!)
+      if (!inRun) {
+        // a run stays on one row, so on one slot
+        bandTop = bandTopPx(g, slot)
+        originY = clampToBand(g, bandTop, colorYInBand(g, bandTop, origin))
+        pen.moveTo(x1, originY)
+        inRun = true
+      }
+      const colorTop = colorYInBand(g, bandTop, y[i]!)
+      const top = clampToBand(g, bandTop, colorTop)
+      pen.lineTo(x1, top)
+      pen.recolor(colorTop)
+      pen.lineTo(xb, top, colorTop)
+      pen.recolor(top)
+      if (!(i < count - 1 && abutsBefore(s, i + 1))) {
+        pen.lineTo(xb, originY)
+        pen.endRun()
+        inRun = false
+      }
     }
   }
 }
 
-// The linear polyline over `indices`: one run per stretch of linked midpoints
-// on a row, a break opening a new subpath with a zero-length segment, which
-// paints the dot the shader's collapsed capsule draws.
-function traceCenter(
+/**
+ * The linear polyline over `indices`, every instance where absent: one run
+ * per stretch of linked midpoints on a row, a break opening a new subpath
+ * with a zero-length segment, which paints the dot the shader's collapsed
+ * capsule draws.
+ */
+export function traceCenter(
   pen: LinePen,
-  c: LineChannels,
+  s: LineSpans,
   g: LineFrame,
-  rows: ArrayLike<number>,
-  indices: Iterable<number>,
+  indices: ArrayLike<number> | undefined,
 ) {
-  const { x, x2, y, row } = c
-  for (const i of indices) {
-    const slot = rowSlot(row, i, g.table)
-    if (slot === undefined) {
-      continue
+  const { x, x2, stride, y, row, count } = s
+  const { bpToPx, table } = g
+  const n = indices ? indices.length : count
+  for (let k = 0; k < n; k++) {
+    const i = indices ? indices[k]! : k
+    const slot = rowSlot(row, i, table)
+    if (slot !== undefined) {
+      pen.instance(i)
+      const cx = (bpToPx(x[i * stride]!) + bpToPx(x2[i * stride]!)) / 2
+      const bandTop = bandTopPx(g, slot)
+      const colorY = colorYInBand(g, bandTop, y[i]!)
+      const cy = clampToBand(g, bandTop, colorY)
+      const linked =
+        linksBefore(s, i) && rowSlot(row, i - 1, table) !== undefined
+      if (!linked) {
+        pen.moveTo(cx, cy, colorY)
+      }
+      pen.lineTo(cx, cy, colorY)
     }
-    pen.instance(i)
-    const cx = (g.bpToPx(x[i]!) + g.bpToPx(x2[i]!)) / 2
-    const cy = valueYPx(g, y[i]!, slot)
-    const colorY = colorYPx(g, y[i]!, slot)
-    const linked =
-      linksBefore(c, rows, i) && rowSlot(row, i - 1, g.table) !== undefined
-    if (!linked) {
-      pen.moveTo(cx, cy, colorY)
-    }
-    pen.lineTo(cx, cy, colorY)
   }
 }
 
-type Trace = (pen: LinePen, indices: Iterable<number>) => void
+type Trace = (pen: LinePen, indices: ArrayLike<number>) => void
 
 // The lowest and highest value a line along y draws through: its values, and
 // for a step the origin it drops to across a gap.
@@ -536,7 +648,7 @@ function paintLine(
       ? scale
       : rampAsThreshold(scale, ...valuesReached(c, bySlot, dropsTo))
     for (const [slot, indices] of bySlot) {
-      const cutYs = cuts.map(cut => colorYPx(g, Math.fround(cut), slot))
+      const cutYs = cuts.map(cut => lineColorYPx(g, Math.fround(cut), slot))
       for (let k = 0; k <= cuts.length; k++) {
         ctx.strokeStyle = abgrToCssRgba(colors[k] ?? 0)
         const pen = new BandPen(
@@ -568,7 +680,7 @@ function paintStep(
     return
   }
   const g = lineFrame(block, frame, params)
-  const rows = rowLane(c.row, c.count)
+  const s = spansOf(c)
   ctx.lineWidth = params.lineWidth
   paintLine(
     ctx,
@@ -576,7 +688,7 @@ function paintStep(
     g,
     params,
     (pen, indices) => {
-      traceStep(pen, c, g, rows, indices, params.origin)
+      traceStep(pen, s, g, indices, params.origin)
     },
     params.origin,
   )
@@ -593,13 +705,13 @@ function paintCenter(
     return
   }
   const g = lineFrame(block, frame, params)
-  const rows = rowLane(c.row, c.count)
+  const s = spansOf(c)
   ctx.lineWidth = params.lineWidth
   // Round joins and caps match the GPU capsule so sharp bends do not nick.
   ctx.lineJoin = 'round'
   ctx.lineCap = 'round'
   paintLine(ctx, c, g, params, (pen, indices) => {
-    traceCenter(pen, c, g, rows, indices)
+    traceCenter(pen, s, g, indices)
   })
 }
 
@@ -635,13 +747,11 @@ function stepInk(
     return undefined
   }
   const g = lineFrame(block, frame, params)
-  const rows = rowLane(row, count)
+  const s = spansOf(c)
   const top = valueYPx(g, y[i]!, slot)
   const originY = valueYPx(g, params.origin, slot)
-  const riseFrom = abutsBefore(c, rows, i)
-    ? valueYPx(g, y[i - 1]!, slot)
-    : originY
-  const dropTo = i < count - 1 && abutsBefore(c, rows, i + 1) ? top : originY
+  const riseFrom = abutsBefore(s, i) ? valueYPx(g, y[i - 1]!, slot) : originY
+  const dropTo = i < count - 1 && abutsBefore(s, i + 1) ? top : originY
   return box(
     g.bpToPx(x[i]!),
     g.bpToPx(x2[i]!),
@@ -660,18 +770,17 @@ function centerInk(
   params: LineParams,
   i: number,
 ): InkRect | undefined {
-  const { x, x2, y, row, count } = c
+  const { x, x2, y, row } = c
   const slot = rowSlot(row, i, params.rowTable)
   if (slot === undefined) {
     return undefined
   }
   const g = lineFrame(block, frame, params)
-  const rows = rowLane(row, count)
+  const s = spansOf(c)
   const cx = (g.bpToPx(x[i]!) + g.bpToPx(x2[i]!)) / 2
   const cy = valueYPx(g, y[i]!, slot)
   const linked =
-    linksBefore(c, rows, i) &&
-    rowSlot(row, i - 1, params.rowTable) !== undefined
+    linksBefore(s, i) && rowSlot(row, i - 1, params.rowTable) !== undefined
   const px = linked ? (g.bpToPx(x[i - 1]!) + g.bpToPx(x2[i - 1]!)) / 2 : cx
   const py = linked ? valueYPx(g, y[i - 1]!, slot) : cy
   return box(px, cx, py, cy, params.lineWidth / 2)

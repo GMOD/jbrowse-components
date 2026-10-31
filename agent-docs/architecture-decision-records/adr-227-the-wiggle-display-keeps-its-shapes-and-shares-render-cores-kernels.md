@@ -86,6 +86,11 @@ line painter as well as wiggle's, and the shared `thresholdBandOf` fixed both.
   and render-core's still convert y to clip space each their own way, and the
   two results differ by up to one float32 rounding step. The step line's quad
   is the copy left.
+- On 2026-10-31 wiggle's Canvas2D step and centre lines moved onto
+  render-core's `traceStep` and `traceCenter`, which read a layer's
+  interleaved positions at stride 2 rather than a split copy, through one
+  normalizer hoisted per block. The recorded paths stayed bit-identical, and
+  the paint measured 1.00-1.05x of the hand-written tracers.
 - Two pieces stand on their own and need no port: wiggle's shaders can read
   render-core's row table for the row's slot and visibility, so a sort, a
   cluster or a hidden row would upload a texture rather than re-encode every

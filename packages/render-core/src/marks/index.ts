@@ -9,9 +9,14 @@ export { ruleMark } from './ruleMark.ts'
 export { spanMark } from './spanMark.ts'
 export {
   BandPen,
+  interleavedSpans,
   lineCenterMark,
+  lineColorYPx,
   lineMarkOf,
   lineStepMark,
+  rowLineFrame,
+  traceCenter,
+  traceStep,
 } from './lineMark.ts'
 export {
   linkApex,
@@ -89,7 +94,13 @@ export type { BarChannels, BarParams } from './barMark.ts'
 export type { PointChannels, PointParams } from './pointMark.ts'
 export type { RuleChannels, RuleParams } from './ruleMark.ts'
 export type { SpanChannels, SpanParams } from './spanMark.ts'
-export type { LineChannels, LineInterpolate, LineParams } from './lineMark.ts'
+export type {
+  LineChannels,
+  LineFrame,
+  LineInterpolate,
+  LineParams,
+  LineSpans,
+} from './lineMark.ts'
 export type {
   LinkApex,
   LinkChannels,

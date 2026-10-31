@@ -16,8 +16,13 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import {
   BandPen,
+  interleavedSpans,
+  lineColorYPx,
   rampAsThreshold,
+  rowLineFrame,
   thresholdBandOf,
+  traceCenter,
+  traceStep,
 } from '@jbrowse/render-core/marks'
 import {
   SCALE_TYPE_LOG,
@@ -43,6 +48,7 @@ import { makeDensityLutFillFn } from './getDensityColor.ts'
 import { WHISKER_BAND_OPACITY } from './shaders/wiggleBand.consts.generated.ts'
 
 import type {
+  LineFrame,
   MarkContext2D,
   MarkValueScaleType,
 } from '@jbrowse/render-core/marks'
@@ -85,30 +91,10 @@ export interface RowDraw {
 const NO_COLOR = -1
 
 function makeScoreToY(
-  rowHeight: number,
-  domainY: [number, number],
-  scaleType: ScaleTypeCode,
-  symlogConstant: number,
+  makeNormalizer: typeof makeScoreNormalizer,
+  { rowHeight, domainY, scaleType, symlogConstant }: RowDraw,
 ) {
-  const normalize = makeScoreNormalizer(
-    domainY[0],
-    domainY[1],
-    scaleType,
-    symlogConstant,
-  )
-  return (score: number) => (1 - normalize(score)) * rowHeight
-}
-
-// `wiggleCommon.slang`'s `rowColorYPx`: a cut, and the line a line rendering
-// is colored along, placed unclamped, so a value the domain excludes keeps its
-// side of every cut rather than taking the row edge's.
-function makeColorToY(
-  rowHeight: number,
-  domainY: [number, number],
-  scaleType: ScaleTypeCode,
-  symlogConstant: number,
-) {
-  const normalize = makeUnclampedScoreNormalizer(
+  const normalize = makeNormalizer(
     domainY[0],
     domainY[1],
     scaleType,
@@ -145,11 +131,10 @@ export function drawXYPlot(row: RowDraw & { rgb: string }) {
     rowTop,
     domainY,
     scaleType,
-    symlogConstant,
     origin,
     rgb,
   } = row
-  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
+  const scoreToY = makeScoreToY(makeScoreNormalizer, row)
   const originY = scoreToY(origin) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
@@ -271,12 +256,23 @@ function bandStyles(
   return [negStyle, ...innerColors.map(style), posStyle]
 }
 
+type LineRowDraw = RowDraw & { rgb: string; negRgb: string; lineWidth: number }
+
 function strokeByBands(
-  ctx: MarkContext2D,
-  cutYs: number[],
-  styles: string[],
-  trace: (pen: BandPen) => void,
+  row: LineRowDraw,
+  trace: (pen: BandPen, frame: LineFrame) => void,
 ) {
+  const { ctx, cuts, innerColors, rgb, negRgb, lineWidth } = row
+  ctx.lineWidth = lineWidth
+  const frame = rowLineFrame(
+    row.block,
+    row.rowTop,
+    row.rowHeight,
+    row.domainY,
+    row.scaleType,
+    row.symlogConstant,
+  )
+  const styles = bandStyles(negRgb, innerColors, rgb, normalizedRgbToCss)
   const passes = styles.every(style => style === styles[0])
     ? [
         {
@@ -285,15 +281,23 @@ function strokeByBands(
           style: styles[0]!,
         },
       ]
-    : bandEdges(cutYs)
+    : bandEdges(cuts.map(cut => lineColorYPx(frame, Math.fround(cut), 0)))
         .map((edges, k) => ({ ...edges, style: styles[k]! }))
         .reverse()
   for (const { top, bottom, style } of passes) {
     ctx.strokeStyle = style
     const pen = new BandPen(ctx, top, bottom)
-    trace(pen)
+    trace(pen, frame)
     pen.end()
   }
+}
+
+function sourceSpans(source: SourceRenderData) {
+  return interleavedSpans(
+    source.featurePositions,
+    source.featureScores,
+    source.numFeatures,
+  )
 }
 
 function scaleNameOf(scaleType: ScaleTypeCode): MarkValueScaleType {
@@ -356,117 +360,33 @@ export function rampAsBands<R extends RowDraw>(row: R): R {
   }
 }
 
-export function drawLine({
-  ctx,
-  source,
-  block,
-  rowHeight,
-  rowTop,
-  domainY,
-  scaleType,
-  symlogConstant,
-  cuts,
-  innerColors,
-  rgb,
-  negRgb,
-  lineWidth,
-}: RowDraw & { rgb: string; negRgb: string; lineWidth: number }) {
-  const n = source.numFeatures
-  if (n === 0) {
-    return
+// A layer's spans are one row and one series, so render-core's step breaks
+// exactly where the bins stop abutting, dropping to the layer's gap score.
+export function drawLine(row: LineRowDraw) {
+  const { source } = row
+  if (source.numFeatures > 0) {
+    const spans = sourceSpans(source)
+    const gapScore = source.gapScore ?? 0
+    strokeByBands(row, (pen, frame) => {
+      traceStep(pen, spans, frame, undefined, gapScore)
+    })
   }
-  ctx.lineWidth = lineWidth
-  const colorToY = makeColorToY(rowHeight, domainY, scaleType, symlogConstant)
-  const rowBottom = rowTop + rowHeight
-  const gapY = Math.min(
-    Math.max(colorToY(source.gapScore ?? 0) + rowTop, rowTop),
-    rowBottom,
-  )
-  const positions = source.featurePositions
-  const scores = source.featureScores
-  const toX = makeBpMapper(block)
-  strokeByBands(
-    ctx,
-    cuts.map(cut => colorToY(Math.fround(cut)) + rowTop),
-    bandStyles(negRgb, innerColors, rgb, normalizedRgbToCss),
-    pen => {
-      let inRun = false
-      for (let i = 0; i < n; i++) {
-        const endBp = positions[i * 2 + 1]!
-        const x1 = toX(positions[i * 2]!)
-        const x2 = toX(endBp)
-        const scoreColorY = colorToY(scores[i]!) + rowTop
-        const scoreY = Math.min(Math.max(scoreColorY, rowTop), rowBottom)
-        if (!inRun) {
-          pen.moveTo(x1, gapY)
-          inRun = true
-        }
-        pen.lineTo(x1, scoreY)
-        pen.recolor(scoreColorY)
-        pen.lineTo(x2, scoreY, scoreColorY)
-        pen.recolor(scoreY)
-        if (i === n - 1 || positions[(i + 1) * 2] !== endBp) {
-          pen.lineTo(x2, gapY)
-          inRun = false
-        }
-      }
-    },
-  )
 }
 
-// Point-to-point line: connects the score at each feature's bp midpoint to its
-// neighbor's, instead of the stepped bar-tops drawLine traces. Connects
-// consecutive pairs regardless of bp-adjacency, so sporadic non-tiling bins in
-// reduced data don't dash the line.
-//
-// The first point opens its subpath with a zero-length segment rather than a
-// bare moveTo: under the round caps this mode sets, that paints a dot, which is
-// what the shader's collapsed capsule draws there, so a lone point shows on
-// both backends.
-export function drawLineCenter({
-  ctx,
-  source,
-  block,
-  rowHeight,
-  rowTop,
-  domainY,
-  scaleType,
-  symlogConstant,
-  cuts,
-  innerColors,
-  rgb,
-  negRgb,
-  lineWidth,
-}: RowDraw & { rgb: string; negRgb: string; lineWidth: number }) {
-  const n = source.numFeatures
-  if (n === 0) {
-    return
+// Point-to-point line through each bin's midpoint. A layer carries no `gapBp`,
+// so every consecutive pair is joined, a hole included: sporadic non-tiling
+// bins in reduced data don't dash the line.
+export function drawLineCenter(row: LineRowDraw) {
+  const { ctx, source } = row
+  if (source.numFeatures > 0) {
+    // Round joins/caps match the GPU capsule so sharp bends don't nick.
+    ctx.lineJoin = 'round'
+    ctx.lineCap = 'round'
+    const spans = sourceSpans(source)
+    strokeByBands(row, (pen, frame) => {
+      traceCenter(pen, spans, frame, undefined)
+    })
   }
-  ctx.lineWidth = lineWidth
-  // Round joins/caps match the GPU capsule so sharp bends don't nick.
-  ctx.lineJoin = 'round'
-  ctx.lineCap = 'round'
-  const positions = source.featurePositions
-  const scores = source.featureScores
-  const toX = makeBpMapper(block)
-  const colorToY = makeColorToY(rowHeight, domainY, scaleType, symlogConstant)
-  const rowBottom = rowTop + rowHeight
-  strokeByBands(
-    ctx,
-    cuts.map(cut => colorToY(Math.fround(cut)) + rowTop),
-    bandStyles(negRgb, innerColors, rgb, normalizedRgbToCss),
-    pen => {
-      for (let i = 0; i < n; i++) {
-        const cx = (toX(positions[i * 2]!) + toX(positions[i * 2 + 1]!)) / 2
-        const colorY = colorToY(scores[i]!) + rowTop
-        const cy = Math.min(Math.max(colorY, rowTop), rowBottom)
-        if (i === 0) {
-          pen.moveTo(cx, cy, colorY)
-        }
-        pen.lineTo(cx, cy, colorY)
-      }
-    },
-  )
 }
 
 // Keeps a long run inside CappedPath's per-path budget.
@@ -474,19 +394,17 @@ const BAND_BINS_PER_POLYGON = 1000
 
 // One polygon per run, broken where the line over it breaks. Each cut's clip
 // sits on a device pixel so neighbouring colors meet without a seam.
-export function drawMinMaxBand({
-  ctx,
-  source,
-  block,
-  rowHeight,
-  rowTop,
-  domainY,
-  scaleType,
-  symlogConstant,
-  cuts,
-  innerColors,
-  interpolated,
-}: RowDraw & { interpolated: boolean }) {
+export function drawMinMaxBand(row: RowDraw & { interpolated: boolean }) {
+  const {
+    ctx,
+    source,
+    block,
+    rowHeight,
+    rowTop,
+    cuts,
+    innerColors,
+    interpolated,
+  } = row
   const { band, numFeatures: n } = source
   if (!band || n === 0) {
     return
@@ -494,7 +412,7 @@ export function drawMinMaxBand({
   const positions = source.featurePositions
   const maxScores = source.featureScores
   const { minScores } = band
-  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
+  const scoreToY = makeScoreToY(makeScoreNormalizer, row)
   const toX = makeBpMapper(block)
   const linked = (i: number) =>
     interpolated || positions[i * 2 - 1] === positions[i * 2]
@@ -573,7 +491,10 @@ export function drawMinMaxBand({
   } else {
     const dpr = getDpr()
     const rowBottom = rowTop + rowHeight
-    const cutToY = makeColorToY(rowHeight, domainY, scaleType, symlogConstant)
+    // `wiggleCommon.slang`'s `rowColorYPx`: a cut placed unclamped, so a
+    // value the domain excludes keeps its side of every cut rather than
+    // taking the row edge's.
+    const cutToY = makeScoreToY(makeUnclampedScoreNormalizer, row)
     const snapped = cuts.map(
       cut => Math.round((cutToY(Math.fround(cut)) + rowTop) * dpr) / dpr,
     )
@@ -595,24 +516,13 @@ export function drawMinMaxBand({
 export function drawScatter(
   row: RowDraw & { rgb: string; diameterPx: number },
 ) {
-  const {
-    ctx,
-    source,
-    block,
-    rowHeight,
-    rowTop,
-    domainY,
-    scaleType,
-    symlogConstant,
-    rgb,
-    diameterPx,
-  } = row
+  const { ctx, source, block, rowTop, rgb, diameterPx } = row
   const rampFill = makeRampFill(row)
   const colorsAbgr = rampFill ? undefined : source.colorsAbgr
   if (!colorsAbgr && !rampFill) {
     ctx.fillStyle = rgb
   }
-  const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
+  const scoreToY = makeScoreToY(makeScoreNormalizer, row)
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)
