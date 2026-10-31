@@ -25,11 +25,15 @@ const PLOT_SCAN_STEP_BP = PLOT_SCAN_MAX_BP / 2
  */
 const PLOT_SCAN_SAMPLES = 10
 
-/** A displayed region, and the part of it the screen shows. */
+/**
+ * A displayed region, the part of it the screen shows, and how many bp of
+ * displayed regions come before it.
+ */
 interface ShownRegion {
   region: Region
   shownStart: number
   shownEnd: number
+  displayedOffset: number
 }
 
 function niceStepAtLeast(bp: number) {
@@ -65,14 +69,20 @@ function contiguousScan(shown: ShownRegion[]) {
 
 function sampledScan(shown: ShownRegion[], shownBp: number) {
   const step = niceStepAtLeast(shownBp / PLOT_SCAN_SAMPLES)
-  const gridPoints = shown.flatMap(({ region, shownStart, shownEnd }) => {
-    const firstIndex = Math.ceil(shownStart / step)
-    const count = Math.max(0, Math.ceil(shownEnd / step) - firstIndex)
-    return Array.from({ length: count }, (_, i) => ({
-      region,
-      at: (firstIndex + i) * step,
-    }))
-  })
+  const gridPoints = shown.flatMap(
+    ({ region, shownStart, shownEnd, displayedOffset }) => {
+      const toDisplayed = (bp: number) => displayedOffset + bp - region.start
+      const firstIndex = Math.ceil(toDisplayed(shownStart) / step)
+      const count = Math.max(
+        0,
+        Math.ceil(toDisplayed(shownEnd) / step) - firstIndex,
+      )
+      return Array.from({ length: count }, (_, i) => ({
+        region,
+        at: region.start + (firstIndex + i) * step - displayedOffset,
+      }))
+    },
+  )
   const width = Math.floor(PLOT_SCAN_MAX_BP / Math.max(1, gridPoints.length))
   return gridPoints.length === 0
     ? contiguousScan(shown)
@@ -84,22 +94,30 @@ function sampledScan(shown: ShownRegion[], shownBp: number) {
  * regions on screen on the track's genomes. A screen within the budget is
  * read whole from its lowest coordinate snapped down to a half-window grid. A
  * wider one is sampled at the points of a round grid of about a tenth of the
- * screen, so a sparse track's features are found wherever they sit on it.
- * Both grids are genome coordinates, so an empty scan reruns only as a pan
- * moves a grid line across the screen's edge.
+ * screen, laid along the displayed regions end to end, so a sparse track's
+ * features are found wherever they sit, and a whole genome is sampled inside
+ * its chromosomes rather than at each one's first base. Neither grid moves
+ * with the screen, so an empty scan reruns only as a pan moves a grid line
+ * across its edge.
  */
 export function plotScanRegions(
   host: RegionHost,
   onTrack: (assemblyName: string) => boolean,
 ): Region[] {
+  let displayedBp = 0
+  const placed = host.displayedRegions.map(region => {
+    const displayedOffset = displayedBp
+    displayedBp += region.end - region.start
+    return { region, displayedOffset }
+  })
   const shown: ShownRegion[] = host.visibleRegions.flatMap(visible => {
-    const region = host.displayedRegions[visible.displayedRegionIndex]
-    return region && onTrack(visible.assemblyName)
+    const entry = placed[visible.displayedRegionIndex]
+    return entry && onTrack(visible.assemblyName)
       ? [
           {
-            region,
-            shownStart: Math.max(region.start, visible.start),
-            shownEnd: Math.min(region.end, visible.end),
+            ...entry,
+            shownStart: Math.max(entry.region.start, visible.start),
+            shownEnd: Math.min(entry.region.end, visible.end),
           },
         ]
       : []

@@ -2004,12 +2004,14 @@ export function stateModelFactory(
           const scans = self.plotScanned
           const first = scans[0]
           const last = scans.at(-1)
+          const locus = (refName: string, start: number, end: number) =>
+            assembleLocString({ refName, start, end })
           return first && last
             ? scans.length === 1
-              ? assembleLocString(first)
+              ? locus(first.refName, first.start, first.end)
               : first.refName === last.refName
-                ? `${scans.length} windows across ${assembleLocString({ refName: first.refName, start: first.start, end: last.end })}`
-                : `${scans.length} windows from ${assembleLocString(first)} to ${assembleLocString(last)}`
+                ? `${scans.length} windows across ${locus(first.refName, first.start, last.end)}`
+                : `${scans.length} windows from ${locus(first.refName, first.start, first.end)} to ${locus(last.refName, last.start, last.end)}`
             : undefined
         },
       }))

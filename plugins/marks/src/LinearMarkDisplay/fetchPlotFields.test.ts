@@ -3,13 +3,21 @@ import { PLOT_SCAN_MAX_BP, plotScanRegions } from './fetchPlotFields.ts'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 
 function hostOf(
-  displayedRegions: { start: number; end: number }[],
+  displayedRegions: { start: number; end: number; refName?: string }[],
   visible: { start: number; end: number; displayedRegionIndex: number }[],
 ) {
-  const named = { refName: 'chr1', assemblyName: 'hg38' }
+  const named = displayedRegions.map(r => ({
+    ...r,
+    refName: r.refName ?? 'chr1',
+    assemblyName: 'hg38',
+  }))
   return {
-    displayedRegions: displayedRegions.map(r => ({ ...r, ...named })),
-    visibleRegions: visible.map(r => ({ ...r, ...named })),
+    displayedRegions: named,
+    visibleRegions: visible.map(r => ({
+      ...r,
+      refName: named[r.displayedRegionIndex]!.refName,
+      assemblyName: 'hg38',
+    })),
   } as unknown as RegionHost
 }
 
@@ -58,7 +66,7 @@ test('a screen wider than the budget is sampled across every region', () => {
   )
   const scans = plotScanRegions(host, onTrack)
   expect(scans.map(({ start }) => start)).toEqual([
-    10_000, 0, 10_000, 20_000, 30_000, 40_000, 0,
+    3_000, 13_000, 8_000, 18_000, 28_000, 38_000, 48_000,
   ])
   expect(
     scans.reduce((sum, r) => sum + r.end - r.start, 0),
@@ -81,6 +89,36 @@ test('a whole chromosome is read across its length, not at its left edge', () =>
   expect(
     scans.reduce((sum, r) => sum + r.end - r.start, 0),
   ).toBeLessThanOrEqual(PLOT_SCAN_MAX_BP)
+})
+
+// A grid in each chromosome's own coordinates put every window of a
+// whole-genome view on a first base: TCGA's segments start past the
+// telomeres, the scan came back empty and the cohort drew nothing
+test('a whole genome is sampled inside its chromosomes', () => {
+  const lengths = [
+    248_956_422, 242_193_529, 198_295_559, 190_214_555, 181_538_259,
+  ]
+  const regions = lengths.map((end, i) => ({
+    start: 0,
+    end,
+    refName: `${i + 1}`,
+  }))
+  const scans = plotScanRegions(
+    hostOf(
+      regions,
+      regions.map((r, displayedRegionIndex) => ({
+        ...r,
+        displayedRegionIndex,
+      })),
+    ),
+    onTrack,
+  )
+  expect(
+    new Set(scans.map(({ refName }) => refName)).size,
+  ).toBeGreaterThanOrEqual(4)
+  expect(scans.filter(({ start }) => start > 0).length).toBeGreaterThan(
+    scans.length / 2,
+  )
 })
 
 test('a pan that moves no grid point past the edge reads the same windows', () => {
