@@ -672,10 +672,16 @@ export function stateModelFactory(
         /**
          * #getter
          * Whether each variant draws at its genomic span, or as one of a row
-         * of equal-width columns tied to its position by a connector line.
+         * of equal-width columns tied to its position by a connector line:
+         * the `variantLayout` slot while genotype rows draw. Columns lay out
+         * rows, so with none (no samples, or `genotypes.show` off) the
+         * records band draws at genomic positions, and the slot's columns
+         * come back with the rows.
          */
         get variantLayout(): 'genomic' | 'columns' {
-          return getConf(self, 'variantLayout')
+          return this.showGenotypes && self.adapterSamples?.length !== 0
+            ? getConf(self, 'variantLayout')
+            : 'genomic'
         },
         /**
          * #getter

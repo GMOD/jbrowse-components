@@ -122,15 +122,17 @@ export default function configSchemaFactory() {
        * `'genomic'` draws each variant across the bases it covers;
        * `'columns'` draws one equal-width column per variant in view, with a
        * line tying each column to its position. Columns keep variants a few
-       * bases apart readable at any zoom, at the cost of their lengths. The LD
-       * display takes the same slot for the same choice.
+       * bases apart readable at any zoom, at the cost of their lengths.
+       * Columns lay out genotype rows: with none drawing (a VCF with no
+       * samples, or `genotypes.show` off) the records draw at their genomic
+       * positions. The LD display takes the same slot for the same choice.
        */
       variantLayout: {
         type: 'stringEnum',
         model: types.enumeration('VariantLayout', ['genomic', 'columns']),
         defaultValue: 'genomic',
         description:
-          "'genomic' draws each variant at its span; 'columns' draws one equal-width column per variant, tied to its position by a connector line",
+          "'genomic' draws each variant at its span; 'columns' draws one equal-width column per variant, tied to its position by a connector line, while genotype rows draw",
       },
       /**
        * #slot

@@ -248,12 +248,36 @@ describe('the track menu', () => {
     }
   })
 
-  test('columns offer neither', () => {
-    const { display } = recordsDisplayAt(FEW, 10, {}, true, {
+  // columns lay out rows, so with none the configured columns would draw
+  // nothing, and leave no way back to the rows but the Layout toggle
+  test('columns configured with no rows draw the band at genomic positions', () => {
+    const off = recordsDisplayAt(FEW, 10, {}, true, {
       genotypes: { show: false },
       variantLayout: 'columns',
+    }).display
+    const noSamples = recordsDisplayAt(FEW, 10, {}, false, {
+      variantLayout: 'columns',
+    }).display
+    for (const display of [off, noSamples]) {
+      expect(display.variantLayout).toBe('genomic')
+      expect(display.topBands.recordsHeight).toBeGreaterThan(0)
+      expect(display.rpcProps().layout).toBe('genomic')
+      expect(labelsOf(menu(display))).not.toContain('Layout')
+      expect(labelsOf(menu(display))).not.toContain('Row height')
+    }
+    expect(subMenuLabels(menu(off), 'Show')).toContain('Genotype rows')
+    off.setShowGenotypes(true)
+    expect(off.variantLayout).toBe('columns')
+    expect(labelsOf(menu(off))).toContain('Layout')
+  })
+
+  test('columns offer Genotype rows, whose hiding falls back to the band', () => {
+    const { display } = recordsDisplayAt(FEW, 10, {}, true, {
+      variantLayout: 'columns',
     })
-    expect(subMenuLabels(menu(display), 'Show')).not.toContain('Genotype rows')
-    expect(labelsOf(menu(display))).not.toContain('Feature height')
+    expect(subMenuLabels(menu(display), 'Show')).toContain('Genotype rows')
+    display.setShowGenotypes(false)
+    expect(display.atGenomicPositions).toBe(true)
+    expect(display.showRecords).toBe(true)
   })
 })

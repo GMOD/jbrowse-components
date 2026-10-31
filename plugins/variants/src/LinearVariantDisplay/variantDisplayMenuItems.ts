@@ -231,11 +231,8 @@ function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
 export function variantShowSubmenuItems(
   self: LinearVariantDisplayModel,
 ): MenuItem[] {
-  // genomic only: columns draw no records, so rows off would draw nothing
-  const offersGenotypeRows =
-    self.atGenomicPositions && !!self.adapterSamples?.length
   return [
-    ...(offersGenotypeRows
+    ...(self.adapterSamples?.length
       ? [
           {
             label: 'Genotype rows',
@@ -302,12 +299,9 @@ export function variantTrackMenuItems(
   )
   return [
     ...makeShowSubMenu(variantShowSubmenuItems(self)),
-    layoutMenuItem(self),
     // No presets: a cohort's useful row heights depend on how many samples it
     // has, so fit and a typed height are the two that mean anything here.
-    ...(!self.drawsRows && self.atGenomicPositions
-      ? []
-      : [rowHeightMenuItem(self)]),
+    ...(self.drawsRows ? [layoutMenuItem(self), rowHeightMenuItem(self)] : []),
     ...recordsHeightMenuItems(self),
     // the rows' own items, absent while no row draws
     ...(self.drawsRows
