@@ -32,20 +32,25 @@ Claim a step here before starting it.
   off a plugin's model. A sabotage of each turned typecheck red. A read added
   in a plugin later is not covered; deriving the list from the store bundles
   would need each minified `.name` access tied to the object it reads.
-- **The tree's display checks are published, unreleased.** The display
-  `no-restricted-syntax` selectors, the contract gate and the display
-  harness live in `@jbrowse/display-kit/conformance/*`: `lintRules`,
-  `contractGate`, and `displayTestEnvironment` with the stub session and
-  assembly it mounts a real `LinearGenomeView` in. This tree's
-  `eslint.config.mjs`, `config/jest/contractGate.js` and
-  `@jbrowse/display-test-utils` (now a jest wrapper supplying `jest.fn()` as
-  the RPC mock) consume them, and the ReExports generator skips
-  `conformance/*` as it skips `shaders/*`. The gate and the harness take
-  the runner's hooks and mock, since both plugin repos use vitest. Until a
-  release publishes them, the graph plugin's `config/vitest/console.js`
-  passes a contract report through, and its `LinearGraphDisplay.test.ts`
-  hand-builds its plugin manager, track and session.
-  `reloadReachesCounter.test.ts` still scans only this tree.
+- **The tree's display checks ship in beta.19, and two plugins run them.**
+  The display `no-restricted-syntax` selectors, the contract gate and the
+  display harness live in `@jbrowse/display-kit/conformance/*`, which this
+  tree's `eslint.config.mjs`, `config/jest/contractGate.js` and
+  `@jbrowse/display-test-utils` consume and the ReExports generator does not
+  serve. Graphgenomeviewer (`a53a684`..`2b30988`) and jbrowse-plugin-arg
+  (`1541f21`..`3344290`) build against beta.19, install the gate in vitest
+  and lint with the rules; both are committed, unpushed and unreleased. The
+  gate found no violations in either. The graph plugin had nine
+  `console.error` mocks that took the rest of its display suite out of the
+  gate, and they went. ARG has no test that mounts its display, so the gate
+  has nothing there to watch yet. `reloadReachesCounter.test.ts` still scans
+  only this tree.
+- **The harness models one display on one stub track.**
+  Graphgenomeviewer's `LinearGraphDisplay.test.ts` stays hand-built. It needs
+  the plugin's own track and real adapter types, several track configs
+  across four track types, assembly aliases, a second view, a session that
+  records `addView`/`notifyError` and exposes `views`, `tracks` and
+  `hovered`, and tracks shown through `view.showTrack`.
 - **A runtime plugin cannot pin display-kit, and a version gate is declined.**
   The host serves its own copy. ARG builds against `5.0.0-beta.4` and runs on
   beta.18 hosts, so a gate on version would warn on or refuse plugins that
@@ -58,36 +63,32 @@ Claim a step here before starting it.
   `reload`, `statusMessage` and `notices`. That makes it a second external
   consumer of the member-level contract above.
 - **The host-compat tooling lives in the plugins.** Eight jb2plugins repos
-  carry `host-compat-probe.mjs`, in five versions. The graph plugin's
-  `hostShim.mjs`, which fails the build on a name the host doesn't serve and
-  stubs a runtime miss with a throw naming it, is now
-  `@jbrowse/core/ReExports/hostShim`. The plugin templates carry neither.
+  carry `host-compat-probe.mjs`, in five versions. Graphgenomeviewer and ARG
+  now build through `@jbrowse/core/ReExports/hostShim`, floored at beta.18
+  by a check against `fetchHostNames('v5.0.0-beta.18')` (graph:
+  `host-names-check.mjs` over its `hostReleases.mjs` list; ARG:
+  `check-umd-floor.mjs`). Ten of the remaining 16 plugins, and both
+  templates, build against v4 core for v4.3.0 hosts, and `hostShim` needs a
+  v5 core installed, so they wait for 5.0.0 stable. The other six (msaview,
+  tandem-repeat, protein3d and its three variants) are on beta.9 with
+  `globalExternals`.
+- **BLAT's hosted `v1` bundle held at its beta.18 build on the beta.19 tag.**
+  `check-umd-floor.ts` refused it because `useUcscQuery.ts` imports
+  `@jbrowse/core/util/electron` (`dd04d93054`), which beta.18 does not serve.
+  Nothing a web user sees changed in BLAT since then, and at the next tag the
+  floor is beta.19, so `v1` updates then, without a `v2`.
 
 ## Next
 
-1. **Adopt `conformance/*` in the plugin repos once a release carries it.**
-   The graph plugin installs the gate in its vitest setup, spreads
-   `displayRestrictedSyntax` into its lint, and can mount
-   `LinearGraphDisplay` through `createDisplayTestEnvironment`; ARG
-   follows; the display-kit README has the recipes. A dry run of the lint
-   recipe on graphgenomeviewer `11a67c3` reports one `attachRenderingBackend`
-   (`pane/renderingActions.ts`), four `rpcManager.call`s with no
-   `statusCallback` (three in `pane/loadActions.ts`) and 26 non-observer
-   components, most of them dialogs and the pieces in `PaneSvg.tsx`. None is a
-   live bug. The attach is the pane's single-batch upload, which
-   `installUpload` has no form for, so it takes a disable with the reason. The
-   `statusCallback`s would only replace the pane's own status line with
-   worker phases, which `GetSubgraph` would have to forward to the adapters'
-   cuts. The components are mostly pure-prop, so wrapping them is the tree's
-   convention, not a stale read.
-2. **Point the jb2plugins builds at `@jbrowse/core/ReExports/hostShim`** once
-   a release publishes it (beta.18 does not). Core's copy reads the installed
-   core's names, so the graph plugin drops `hostShim.mjs`,
-   `fetch-host-names.mjs` and its saved host names, and its
-   `host-names-check.mjs` calls `fetchHostNames`. Seventeen others still
-   externalize through `globalExternals` and read undefined for a missing
-   name. `plugins/blat`'s UMD build is the in-tree consumer.
-3. **Update the plugin templates**, which still build against core 4.x with
-   `globalExternals`, onto `hostShim`. A generic `host-compat-probe.mjs`
-   (boot hosted releases, fail on a plugin load failure) can go in with them;
-   each jb2plugins probe also draws its own tracks, which stays per plugin.
+1. **Push and release graphgenomeviewer and ARG** with their beta.19
+   adoption commits, after a look at graph's `fcd0a3d`. That commit feeds
+   `GetSubgraph`'s refName-index download to the pane's status line, and
+   nobody has watched it in the app.
+2. **Move the six beta.9 plugins onto beta.19 and `hostShim`** (msaview,
+   tandem-repeat, protein3d ×4), the way ARG went: bump, swap
+   `globalExternals` for `hostShim`, floor-check against beta.18, install the
+   gate and lint. Mind protein3d's and msaview's figure release gates.
+3. **At 5.0.0 stable,** move the v4 plugins and both templates onto
+   `hostShim`, with a generic `host-compat-probe.mjs` in the templates.
+4. **Grow the harness** toward graph's needs (above) only if a second plugin
+   suite wants the same shape.
