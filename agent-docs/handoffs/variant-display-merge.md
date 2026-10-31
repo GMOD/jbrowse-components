@@ -21,9 +21,10 @@ rule over rows are marked provisional there (the default is settled: on).
   records on screen, a click reading the record's INFO. The benchmark is in
   reference/MULTI_SAMPLE_VARIANTS.md. The density gate is done (ADR-254's
   amendment): `records.maxFeatureScreenDensity` through `FeatureGateMixin`,
-  records-only alone. Left: the row-only menus (Rows,
-  clustering, row color) still show with no rows, and the rows panel's
-  scrollbar stays mounted (invisible, under the band) with no rows. Over rows the band's height
+  records-only alone. The Rows, Clustering and arrangement menus go while
+  no row draws (`drawsRows`). Left: "Color by" still offers the row colors,
+  and the rows panel's scrollbar stays mounted (invisible, under the band)
+  with no rows. Over rows the band's height
   measures the whole payload, so it steps only on a refetch; whether it
   should instead follow the screen (rows moving on pan) belongs to the added
   vs taken call below.
