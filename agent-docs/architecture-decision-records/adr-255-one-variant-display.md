@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "One variant display: the multi-sample display, its records band included, is registered as `LinearVariantDisplay` and the plugin-features-based `LinearVariantDisplay` is retired. `retiredTypes` holds `LinearMultiSampleVariantDisplay` (beta-only, a deprecated alias while hosted configs write it), v4's `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay` (in columns). A v4 `LinearVariantDisplay` config's record settings re-root under `records` through LinearBasicDisplay's own lifts (`renderer.displayMode`, `renderer.height`/`featureHeight`, `showLabels`/`showDescriptions`, `mouseover`, `maxFeatureScreenDensity`; `color1` to `encoding.color.value`; `maxHeight` drops); the betas' top-level `displayMode`, `mark`, `labels`, `facet` and `tooltip.field` do not lift. The display registers with no `FeaturesPlugin` gate, and a right-clicked record offers the feature track's zoom to, get sequence and copy rows and the read sort. Supersedes ADR-250; amends ADR-168, ADR-232 and ADR-254"
+summary: "One variant display: the multi-sample display, its records band included, is registered as `LinearVariantDisplay` and the plugin-features-based `LinearVariantDisplay` is retired. `retiredTypes` holds `LinearMultiSampleVariantDisplay` (beta-only, a deprecated alias while hosted configs write it), v4's `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay` (in columns). A v4 `LinearVariantDisplay` config's record settings re-root under `records` through LinearBasicDisplay's own lifts (`renderer.displayMode`, `renderer.height`/`featureHeight`, `showLabels`/`showDescriptions`, `mouseover`, `maxFeatureScreenDensity`; `color1` to `encoding.color.value`; `maxHeight` drops); the betas' top-level `displayMode`, `mark`, `labels`, `facet` and `tooltip.field` do not lift. The display registers with no `FeaturesPlugin` gate, a right-clicked record offers the feature track's zoom to, get sequence, highlight and copy rows and the read sort, and the band answers search-hit highlights and the breakpoint split view's searchFeatureByID. Supersedes ADR-250; amends ADR-168, ADR-232 and ADR-254"
 ---
 
 # ADR-255: One variant display
@@ -72,13 +72,20 @@ ADR-254.
   product; its model, and with it `@jbrowse/plugin-features/band`, loads
   lazily, so the circular embed's eager bundle gains nothing but the
   retired-spelling table.
-- **A sites-only reader loses no record row.** A right-click on a record (or
-  a genotype cell) builds plugin-features's own rows off the record the click
-  resolved (`featureRecordMenuItems`): zoom to, get sequence, and copy
-  location and attributes, beside the display's own open-details row (which
-  keeps a cell's sample card), the breakend row and, beside a pileup, "Sort
-  reads at this variant", which needs no fetch since the record carries REF
-  and ALT.
+- **A sites-only reader keeps the record rows.** A right-click on a record
+  (or a genotype cell) builds plugin-features's own rows off the record the
+  click resolved (`featureRecordMenuItems`, `featureHighlightMenuItems`):
+  zoom to, get sequence, highlight, and copy location and attributes, beside
+  the display's own open-details row (which keeps a cell's sample card), the
+  breakend row and, beside a pileup, "Sort reads at this variant", which
+  needs no fetch since the record carries REF and ALT.
+- **The band answers what other views ask a feature track.** A search hit's
+  `setSearchHighlight` and the Highlight row store `featureHighlights`,
+  resolved over the band's records by plugin-features's
+  `resolveFeatureHighlights` and lit as `pinnedInk`; the breakpoint split
+  view's overlay finds a record's box through `searchFeatureByID`, with
+  `layoutReady` saying when the band is laid out. A record the band does not
+  draw (an SNV over rows) is neither boxed nor found.
 - **`LinearMultiSampleVariantDisplayModel`** stays exported from
   `@jbrowse/plugin-variants`, `@deprecated`, naming `LinearVariantDisplayModel`.
 
@@ -93,10 +100,19 @@ ADR-254.
 
 ## Consequences
 
-- Not carried to the band yet: LinearBasicDisplay's Highlight and Show/hide
-  (pin, show only, hide) rows. Hiding a record would take it out of the cells
-  too, a worker-side filter (ideas/ready/give-the-multi-sample-variant-display-a-hide-this-feature-item.md),
-  and highlight needs ink on the band.
+- Not carried to the band: LinearBasicDisplay's Show/hide rows (pin, show
+  only, hide). Hiding a record would take it out of the cells too, a
+  worker-side filter (ideas/ready/give-the-multi-sample-variant-display-a-hide-this-feature-item.md).
+- A v4 `color1` lands as `encoding.color.value`, the display's one color
+  channel, so on a sampled VCF it paints the alt genotype cells that color
+  too, where v4's feature display had no cells to paint.
+- A sampled VCF's default display now fetches genotypes, where the feature
+  display read sites alone: a cohort VCF opened with no display chosen costs
+  the genotype payload. `genotypes: { show: false }` reads none.
+- Plugins reading the old display's members get `undefined`, and one
+  extending `LinearMultiSampleVariantDisplay` by name through
+  `Core-extendPluggableElement` extends nothing (PLUGIN_ABI_STABILITY.md's
+  ledger).
 - The writers still spell `LinearMultiSampleVariantDisplay` and the launch
   args, jbrowse-img and R export still pick between two types; they load
   through the alias until C2 sweeps them.

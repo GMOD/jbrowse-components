@@ -40,6 +40,14 @@ own open-details row stays first, since a cell's opens on its sample card.
 `sortReadsMenu.ts` sorts the view's pileups off the clicked record's REF and
 ALT, with no fetch.
 
+**Highlights and overlays read the band.** `featureHighlights` (a search
+hit's `setSearchHighlight`, the Highlight row) resolve over the band's
+records and light as `pinnedInk` (`recordsHighlightViews.ts`), the box
+`recordInk` gives the hover too. `searchFeatureByID` answers the
+breakpoint split view's overlay off the laid-out band, its top shifted by
+`scrollTop - recordsScrollTop` since the overlay subtracts the display's
+`scrollTop` and the band scrolls only with no rows.
+
 ## Genotypes
 
 - **Codes, never strings**, and Uint32 — Uint16 capped the dictionary at 65535,

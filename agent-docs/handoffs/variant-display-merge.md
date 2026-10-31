@@ -60,11 +60,13 @@ rule over rows are marked provisional there (the default is settled: on).
   `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay`, and re-roots
   v4's feature-display keys under `records`; no plugin gate; a right-clicked
   record gets plugin-features's zoom to, get sequence and copy rows and the
-  read sort. Left from C1: LinearBasicDisplay's Highlight and Show/hide (pin,
-  show only, hide) rows on a record. Hiding wants the record out of the
-  cells as well, a worker-side id filter (the parked
-  `ideas/ready/give-the-multi-sample-variant-display-a-hide-this-feature-item.md`),
-  and highlight wants ink on the band.
+  read sort and Highlight; search hits box records on the band and the
+  breakpoint split view finds them (`searchFeatureByID`); the R export,
+  launch args and jbrowse-img read the one type. Left from C1:
+  LinearBasicDisplay's Show/hide rows (pin, show only, hide) on a record.
+  Hiding wants the record out of the cells as well, a worker-side id filter
+  (the parked
+  `ideas/ready/give-the-multi-sample-variant-display-a-hide-this-feature-item.md`).
 - **C2. The sweep.** Writers that still spell
   `LinearMultiSampleVariantDisplay` or write the betas' top-level
   `displayMode`/`mark`/`labels`/`facet`/`tooltip.field` on a
@@ -72,16 +74,20 @@ rule over rows are marked provisional there (the default is settled: on).
   (`config_demo.json`, volvox, breakpoint, dog10k, protein3d), figure specs,
   docs and tutorials (39 `website/docs` mentions), the examples-site
   nextstrain configs, `tables.ts`, the jbrowse-web tests and browser-test
-  suites; R export `READERS` (`rScript.ts`) picks `jbrowse_features` for a
-  sample-less track; launch-args aliases `multivariant`/`multivariantmatrix`
-  and `displaySettings.ts`; jbrowse-img `applyTrackOpts.ts`; product-core's
+  suites; product-core's
   `pruneUnbuildableNodes.ts` comment; the jbrowse-authoring skill. File
   names inside `LinearVariantDisplay/` still say MultiSample
   (`multiSampleVariantMenuItems.ts`, `setupMultiSampleVariantAutoruns.ts`);
   the RPC names are wire names and stay.
 - **D. Outside writers**: jb2hubs (`pangenomeLinks.ts`, `config/jbrowse.ts`,
-  pangenome-config JSONs), ggjbrowse (`R/variants.R`), redeployed demo
-  configs; then drop the alias.
+  pangenome-config JSONs), ggjbrowse (`R/variants.R`; `jbrowse_features`
+  reads a records-only track's settings as the R export hands them over),
+  jb2plugins/jbrowse-plugin-graphgenomeviewer
+  (`src/WalkFormsAdapter/formsMenu.ts` `FORMS_DISPLAYS`, matched by
+  `Core-extendPluggableElement` at :196, names only
+  `LinearMultiSampleVariantDisplay`, so its forms menu is gone until it
+  names `LinearVariantDisplay`), redeployed demo configs; then drop the
+  alias.
 - **E. Height.** Added vs taken. (Records showing by default is settled: on.)
 
 ## Open calls (Colin)
