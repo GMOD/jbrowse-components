@@ -123,16 +123,29 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
     }))
     .views(self => ({
       /**
+       * #method
+       * whether `visibleFeatureIds` leaves a record drawn
+       */
+      isVisible(feature: Feature) {
+        const visible = this.visibleIdSet
+        return !visible || visible.has(feature.id())
+      },
+      /**
+       * #getter
+       */
+      get visibleIdSet() {
+        return self.visibleFeatureIds
+          ? new Set(self.visibleFeatureIds)
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
        * #getter
        * the held records `visibleFeatureIds` leaves
        */
       get drawnFeatures(): Feature[] | undefined {
-        const visible = self.visibleFeatureIds
-          ? new Set(self.visibleFeatureIds)
-          : undefined
-        return visible
-          ? self.features?.filter(f => visible.has(f.id()))
-          : self.features
+        return self.features?.filter(f => self.isVisible(f))
       },
     }))
     .views(self => ({
@@ -160,10 +173,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           x2Gaps: new Uint32Array(n),
           placed: new Uint8Array(n),
           junction: new Array<string>(n),
-          index: new Map<Feature, number>(),
         }
         features.forEach((feature, i) => {
-          feet.index.set(feature, i)
           const end = getEndpoint(feature)
           const ownEnd = self.placeEnd(undefined, feature.get('refName'))
           const farEnd = self.placeEnd(undefined, end.refName)
@@ -200,11 +211,11 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
-       * each drawn record's color: its field's value through the scale, or
+       * each chord's record's color: its field's value through the scale, or
        * the `value` the color channel answers for it
        */
       get chordStrokes(): Map<Feature, string> {
-        const features = self.drawnFeatures ?? []
+        const { features } = this.chordPicks
         const field = this.paintedColorField
         if (field) {
           const read = fieldReader(field.field, getEnv(self).pluginManager.jexl)
@@ -232,20 +243,18 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         const features: Feature[] = []
         const laneOfId = new Map<string, number>()
         const laneOfJunction = new Map<string, number>()
-        for (const feature of self.drawnFeatures ?? []) {
-          const i = feet.index.get(feature)
-          if (i === undefined || !feet.placed[i]) {
-            continue
-          }
-          const junction = feet.junction[i]!
-          const lane = laneOfJunction.get(junction)
-          if (lane === undefined) {
-            laneOfJunction.set(junction, picked.length)
-            laneOfId.set(feature.id(), picked.length)
-            picked.push(i)
-            features.push(feature)
-          } else {
-            laneOfId.set(feature.id(), lane)
+        for (const [i, feature] of (self.features ?? []).entries()) {
+          if (feet.placed[i] && self.isVisible(feature)) {
+            const junction = feet.junction[i]!
+            const lane = laneOfJunction.get(junction)
+            if (lane === undefined) {
+              laneOfJunction.set(junction, picked.length)
+              laneOfId.set(feature.id(), picked.length)
+              picked.push(i)
+              features.push(feature)
+            } else {
+              laneOfId.set(feature.id(), lane)
+            }
           }
         }
         return { picked, features, laneOfId }

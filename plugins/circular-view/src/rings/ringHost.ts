@@ -687,23 +687,17 @@ export const RingHost = types
   .actions(self => ({
     setView(view: RingHostView) {
       self.view = view
-      let timer: ReturnType<typeof setTimeout> | undefined
       addDisposer(
         self,
-        autorun(() => {
-          if (!view.initialized) {
-            return
-          }
-          const { dynamicBlocks, bpPerPx } = self
-          clearTimeout(timer)
-          timer = setTimeout(() => {
-            self.setCoarseDynamicBlocks(dynamicBlocks, bpPerPx)
-          }, 500)
-        }),
+        autorun(
+          () => {
+            if (view.initialized) {
+              self.setCoarseDynamicBlocks(self.dynamicBlocks, self.bpPerPx)
+            }
+          },
+          { delay: 500, name: 'CircularRingHostCoarseBlocks' },
+        ),
       )
-      addDisposer(self, () => {
-        clearTimeout(timer)
-      })
       addDisposer(
         self,
         autorun(() => {
