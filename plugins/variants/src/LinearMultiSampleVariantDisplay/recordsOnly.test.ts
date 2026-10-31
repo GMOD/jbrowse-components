@@ -142,11 +142,16 @@ test('genotypes.show off asks the worker for no sample', () => {
 })
 
 function labelsOf(items: MenuItem[]) {
-  return items.flatMap(i => ('label' in i ? [i.label] : []))
+  return items.flatMap(i =>
+    'label' in i && typeof i.label === 'string' ? [i.label] : [],
+  )
 }
 
 function subMenuLabels(items: MenuItem[], label: string) {
-  const item = items.find(i => 'label' in i && i.label.startsWith(label))
+  const item = items.find(
+    i =>
+      'label' in i && typeof i.label === 'string' && i.label.startsWith(label),
+  )
   return item && 'subMenu' in item ? labelsOf(resolveSubMenu(item)) : []
 }
 
