@@ -2049,7 +2049,7 @@
         },
         {
           "type": "LinearVariantDisplay",
-          "maxFeatureScreenDensity": 0.0006,
+          "records": { "maxFeatureScreenDensity": 0.0006 },
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
           "encoding": {
             "color": { "value": "jexl:feature.type=='SNV'?'green':'purple'" }

@@ -2603,7 +2603,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
               "value": "jexl:feature.type=='SNV'?'green':'purple'",
             },
           },
-          "maxFeatureScreenDensity": 0.0006,
+          "records": {
+            "maxFeatureScreenDensity": 0.0006,
+          },
           "type": "LinearVariantDisplay",
         },
       ],
