@@ -315,9 +315,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
-       * The row names a focus narrows the display to, `rows.kept` — a clade
-       * picked off the tree or a key row's rows — or undefined while every
-       * row shows.
+       * Overridable hook: the row names a focus narrows the display to,
+       * `rows.kept` — a clade picked off the tree or a key row's rows — or
+       * undefined while every row shows. A display that can hide its rows
+       * answers undefined while they are hidden.
        */
       get rowFocus(): readonly string[] | undefined {
         const kept: string[] = getConf(host(self), ['rows', 'kept'])
