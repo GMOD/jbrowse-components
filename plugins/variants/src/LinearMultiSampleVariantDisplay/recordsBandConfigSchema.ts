@@ -23,7 +23,9 @@ import { DEFAULT_RECORDS_GROW_MAX_HEIGHT } from './variantTopBands.ts'
  *
  * With no genotype rows (a VCF with no samples, or `genotypes.show` off) the
  * band is the whole display whatever `show` says: every record, in the
- * feature track's default color, sized by the display's `heightMode`.
+ * feature track's default color, lettered as a `LinearVariantDisplay` letters
+ * it (the description under the name, no carrier share) and sized by the
+ * display's `heightMode`.
  *
  * #example
  * ```js

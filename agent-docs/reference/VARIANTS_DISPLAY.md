@@ -311,35 +311,46 @@ LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
   (`readGenotypes`), so it draws what a sites-only VCF draws. The records
   take `featureDefaultColor` and nothing is keyed unless `encoding.color` is
   set; the key sits at the top; the seam handle goes, the track's own handle
-  resizing.
+  resizing. They letter as `LinearVariantDisplay` does: `normal` size, the
+  display's `records.labels` fields, the description on its own line under
+  the name. What `fixed` or a capped `grow` cannot show scrolls: the scroll
+  hooks point at the band's drawn stack, the band paints and picks offset by
+  `recordsScrollTop`, its div takes `usePanelVirtualScroll` and the
+  scrollbar. The allele-count filters (MAF, missingness) leave the menu, and
+  Genotype rows and Track sizing show at genomic positions only.
 - **Its height over rows is its stack, capped.** The `full` rung's packed
   height at compact feature size, up to `records.growMaxHeight` (170); past
   the cap the ladder fits the stack in. The band takes that height from the
-  rows, whose display keeps its slot `height` under every `heightMode`.
+  rows, whose display keeps its slot `height` under every `heightMode`
+  (`growMaxHeight` is Infinity over rows). The stack is every fetched record,
+  not the ones on screen, so the rows hold still on a pan between fetches.
   Whether it should instead add to the display is open (Colin); the rule is
   `variantTopBandsGeometry` plus `availableHeight`.
-- **Labels and fit follow the records on screen**, as LinearBasicDisplay's
-  do: `recordsOnScreenIds` (`featureIdsTouchingBlocks` over the payload's
-  spans, `recordSpans`) is the fit's `fitMeasureFeatureIds` and the label
-  density `labelVisibility` gates on (names past 0.2 records/px, descriptions
-  past 0.1). Counted off the payload, not the render data, whose label text
-  depends on it. Labelling every record at a dense ClinVar window cost 260 ms
-  of fit per navigation; measuring the buffered records too cost 64 s on a pan
-  from 99k of them onto an empty stretch. Unlabelled, sub-pixel records past
-  25 deep collapse into one faded row (`planDensityCollapse`).
+- **Labels follow the records on screen**, as LinearBasicDisplay's do:
+  `recordsOnScreenIds` (`featureIdsTouchingBlocks` over the payload's spans,
+  `recordSpans`) is the density `labelVisibility` gates on (names past 0.2
+  records/px, descriptions past 0.1), counted off the payload, not the render
+  data, whose label text depends on it. **The fit and height measure them only
+  with no rows** (`recordsMeasureIds`); over rows they measure the payload.
+  Labelling every record at a dense ClinVar window cost 260 ms of fit per
+  navigation; measuring 99k buffered records with no rows cost 64 s on a pan
+  onto an empty stretch. Unlabelled, sub-pixel records past 25 deep collapse
+  into one faded row (`planDensityCollapse`).
 - **No second fetch to draw.** The payload already carries every record, so
   `records.show` and the cap are render-tier settings. **A click does fetch**:
-  the payload has no INFO, so `fetchFullRecord` reads the record over its own
-  span through `GetBasicFeatureDetails`, as LinearBasicDisplay's
-  `fetchFullFeature` does, keeping a genotype cell's sample card
-  (`withClickedSample`); the click's own record opens where the adapter finds
-  none.
+  the payload has no INFO, so `fetchFullRecord` reads the record through
+  `GetBasicFeatureDetails`, as LinearBasicDisplay's `fetchFullFeature` does,
+  over its first base (a 5 Mb SV's span would be a 5 Mb read), the next click
+  aborting one in flight. It keeps a genotype cell's sample card and drops the
+  record's `samples` where rows draw them, the widget's feature persisting to
+  localStorage (`withClickedSample`); the click's own record opens where the
+  adapter finds none.
 - **A record takes its SV class's color** (`recordsSvColors.ts`, the
   `svType` preset) under the genotype colors, keyed as "SV type" above the
   genotypes, and the cell hue at full dose (`paintFeatureColors`) under a
   picked `encoding.color`. It crosses over as a per-feature jexl rather than
   the BED `itemRgb` path, which drops alpha.
-- **One label line**: ID, description, then the share of the shown samples
+- **One label line over rows**: ID, description, then the share of the shown samples
   carrying it (`recordCarriers.ts`; the denominator is `recordCarrierSamples`,
   one line to make it every sample in the payload), as `recordLabel`. The label
   pipeline places a description under its name, so an inline description is

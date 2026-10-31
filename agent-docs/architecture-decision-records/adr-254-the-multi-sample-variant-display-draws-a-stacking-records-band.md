@@ -95,20 +95,27 @@ case with no rows; over rows both stay provisional.
   landed empty, or the new `genotypes: { show }` off. The rows take 0 px and
   `HeightModeMixin` sizes the display (`heightMode`, default `fit`, and
   `growMaxHeight`), the rule LinearBasicDisplay uses, so a sites-only VCF
-  sizes as `LinearVariantDisplay` does rather than to the 170 px cap. Over
-  rows the display keeps its `height` under every mode.
+  sizes as `LinearVariantDisplay` does rather than to the 170 px cap, and
+  what `fixed` or a capped `grow` cannot show scrolls. Over rows the display
+  keeps its `height` under every mode (`growMaxHeight` is Infinity there).
 - **Admission without rows is settled**: every record the display's filter
   admits, colored `featureDefaultColor` (`encoding.color` still paints them),
-  no carrier share, no key. `genotypes.show` off sends an empty
+  no carrier share, no key, lettered as `LinearVariantDisplay` letters them
+  (normal size, the description under the name; Colin delegated the call).
+  The one-line ID, description and carrier share stays for the band over
+  rows. `genotypes.show` off sends an empty
   `sampleFilter`, and the worker reads no genotype for it, so a sampled VCF
   with rows off draws exactly what a sites-only one draws.
-- **Labels and fit read the records on screen**, LinearBasicDisplay's
-  `labelVisibility` and `fitMeasureFeatureIds` over `recordsOnScreenIds`, with
-  or without rows. Labelling every record was the band's whole cost: at a
-  10 kb ClinVar window the fit ladder spent 260 ms; measuring buffered records
-  turned a pan off 99k of them into 64 s of main-thread work.
-- **A click reads the record off the adapter** (`GetBasicFeatureDetails`), so
-  the widget shows its INFO, for a record and for a genotype cell.
+- **Labels read the records on screen** (`labelVisibility` over
+  `recordsOnScreenIds`), with or without rows; **the fit and height read them
+  only with no rows**, as a feature track measures. Over rows they measure
+  every fetched record, so the band, and the rows under it, hold still on a
+  pan between fetches. Labelling every record was the band's whole cost: at
+  a 10 kb ClinVar window the fit ladder spent 260 ms; measuring buffered
+  records with no rows turned a pan off 99k of them into 64 s.
+- **A click reads the record off the adapter** (`GetBasicFeatureDetails`),
+  over its first base, last click winning, so the widget shows its INFO, for
+  a record and for a genotype cell; its `samples` only with no rows.
 
 Measured against `LinearVariantDisplay` in headed Chrome (WebGL2, dev
 server), medians of 3, ms; reference/MULTI_SAMPLE_VARIANTS.md has the

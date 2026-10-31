@@ -26,10 +26,16 @@ admission rule are marked provisional there.
   `MultiSampleVariantGetCellData` committed through `commitGateMeasurements`,
   and `densityGateActive` only while `recordsOnly`. Also: the default `height`
   is 200 against the feature track's 100, and the row-only menus (Rows,
-  clustering, row color) still show with no rows.
+  clustering, row color) still show with no rows. Over rows the band's height
+  measures the whole payload, so it steps only on a refetch; whether it
+  should instead follow the screen (rows moving on pan) belongs to the added
+  vs taken call below.
 - **B. Records settings move under `records`**: `displayMode`, `mark`,
   `facet` (sections), `maxFeatureScreenDensity`; `tooltip.field`; the color
-  scale's `identity`. Amends ADR-231.
+  scale's `identity`. Amends ADR-231. **Rename before C**: the display now
+  has a top-level `growMaxHeight` (the track's grow ceiling, records-only)
+  and `records.growMaxHeight` (the band's cap over rows), one word with two
+  meanings on the merged display.
 - **C. The merge.** One type; `LinearMultiSampleVariantDisplay` is beta-only
   (no v4.3.0 hit), so only a `@deprecated` `retiredTypes` alias while hosted
   writers carry it; `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay`
