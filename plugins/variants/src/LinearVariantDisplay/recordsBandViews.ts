@@ -18,6 +18,8 @@ import {
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import {
   DEFAULT_TOOLTIP,
+  FEATURE_DESCRIPTION_FIELD,
+  FEATURE_NAME_FIELD,
   MIN_GROW_HEIGHT,
   buildFeatureFlatbushIndex,
   createMembershipMemo,
@@ -40,6 +42,7 @@ import { paintFeatureColors } from './paintCells.ts'
 import { countRecordCarriers } from './recordCarriers.ts'
 import {
   RECORD_LABEL_LINE,
+  labelsReadByWorker,
   buildRecordsRenderData,
   recordSpans,
   recordsDisplayConfig,
@@ -186,14 +189,26 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     /**
      * #getter
      * What the worker reads off each record for the band beyond the
-     * payload: a tooltip field other than the default, which the band
-     * reads off the payload's own name, and the records' facet field.
+     * payload: a tooltip or label field other than its default, which the
+     * band reads off the payload's own name and description, and the
+     * records' facet field. A label is read shown or hidden, so its
+     * checkbox redraws rather than refetches.
      */
     get recordFieldReads(): RecordFieldReads {
       const tooltip = this.recordsTooltipField
+      const name = getConf(self, ['records', 'labels', 'name', 'field'])
+      const description = getConf(self, [
+        'records',
+        'labels',
+        'description',
+        'field',
+      ])
       return {
         tooltip: tooltip === DEFAULT_TOOLTIP ? '' : tooltip,
         facet: this.recordsFacet?.field ?? '',
+        labelName: name === FEATURE_NAME_FIELD ? '' : name,
+        labelDescription:
+          description === FEATURE_DESCRIPTION_FIELD ? '' : description,
       }
     },
     /**
@@ -537,7 +552,10 @@ export function recordsRenderViews(self: RecordsRenderHost) {
       if (cellData) {
         // with no rows the display's own label fields, as a feature
         // track letters them; over rows the one-line `recordLabel`
-        const visible = this.recordsVisibleLabels
+        const visible = labelsReadByWorker(
+          this.recordsVisibleLabels,
+          self.recordFieldReads,
+        )
         const config = recordsDisplayConfig({
           featureHeight: self.recordsFeatureHeight,
           labels: self.recordsOnly ? visible : RECORD_LABEL_LINE,

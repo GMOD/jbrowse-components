@@ -155,6 +155,65 @@ test('a sites-only display lays out every record, SNVs included', () => {
   expect(labels?.descriptionLabel?.text).toBe('<DEL> 7Kbp')
 })
 
+// A label field other than the name or description reads what the worker
+// read off the whole record: the band's own records hold neither INFO nor
+// REF.
+describe('a records.labels field off the whole record', () => {
+  const GENES: BandRecord[] = [
+    ['sv1', 2000, 9000, '<DEL> 7Kbp', 'DEL', { labelName: 'BRCA1' }],
+  ]
+  const labels = { labels: { name: { field: 'INFO.GENE' } } }
+
+  test('asks the worker for the field, and none for a default', () => {
+    const custom = recordsDisplayAt(GENES, 10, labels, false).display
+    expect(custom.recordFieldReads).toMatchObject({
+      labelName: 'INFO.GENE',
+      labelDescription: '',
+    })
+    const defaults = recordsDisplayAt(GENES, 10, {}, false).display
+    expect(defaults.recordFieldReads).toMatchObject({
+      labelName: '',
+      labelDescription: '',
+    })
+  })
+
+  test('letters the sites-only band with the text the worker read', () => {
+    const { display } = recordsDisplayAt(GENES, 10, labels, false)
+    const label = display.recordsLaidOutDataMap
+      .get(0)!
+      .floatingLabelsData.get('sv1')
+    expect(label?.nameLabel?.text).toBe('BRCA1')
+  })
+
+  test('reads the field hidden too, so its checkbox only redraws', () => {
+    const { display } = recordsDisplayAt(GENES, 10, {
+      labels: { name: { field: 'INFO.GENE', show: false } },
+    })
+    expect(display.recordFieldReads.labelName).toBe('INFO.GENE')
+  })
+
+  test('letters a description off the whole record too', () => {
+    const { display } = recordsDisplayAt(
+      [['sv1', 2000, 9000, '<DEL> 7Kbp', 'DEL', { labelDescription: 'ACGT' }]],
+      10,
+      { labels: { description: { field: `jexl:get(feature,'REF')` } } },
+      false,
+    )
+    const label = display.recordsLaidOutDataMap
+      .get(0)!
+      .floatingLabelsData.get('sv1')
+    expect(label?.descriptionLabel?.text).toBe('ACGT')
+  })
+
+  test('letters the line over genotype rows with it', () => {
+    const { display } = recordsDisplayAt(GENES, 10, labels)
+    const label = display.recordsLaidOutDataMap
+      .get(0)!
+      .floatingLabelsData.get('sv1')
+    expect(label?.nameLabel?.text).toMatch(/^BRCA1/)
+  })
+})
+
 const SNVS: BandRecord[] = [
   ['rs1', 1000, 1001, 'A -> G', ''],
   ['rs2', 3000, 3002, 'AT -> A', ''],

@@ -22,6 +22,8 @@ export function featureInfoOf(
     svAlleles: [],
     tooltip: '',
     groupKey: '',
+    labelName: '',
+    labelDescription: '',
     genotypeCodes: new Uint32Array(0),
     ...overrides,
   }

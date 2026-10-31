@@ -11,6 +11,7 @@ import {
 
 import { carrierPercent } from './recordCarriers.ts'
 
+import type { RecordFieldReads } from '../shared/recordFields.ts'
 import type { VariantFeatureInfo } from '../shared/types.ts'
 import type { RecordCarriers } from './recordCarriers.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -59,6 +60,29 @@ export const RECORD_LABEL_LINE: RecordsLabels = {
 // The fields a record carries from the worker's reads (`RecordFieldReads`)
 const RECORD_TOOLTIP_FIELD = 'recordTooltip'
 const RECORD_GROUP_FIELD = 'recordGroup'
+const RECORD_LABEL_NAME_FIELD = 'recordLabelName'
+const RECORD_LABEL_DESCRIPTION_FIELD = 'recordLabelDescription'
+
+/**
+ * The label fields the band reads off its stand-in records: a field the
+ * worker read off the whole record reads the text it sent, since the
+ * stand-in holds only the payload's name, description and type.
+ */
+export function labelsReadByWorker(
+  labels: RecordsLabels,
+  reads: Pick<RecordFieldReads, 'labelName' | 'labelDescription'>,
+): RecordsLabels {
+  const sent = (shown: string, read: string, field: string) =>
+    shown !== '' && read !== '' ? `jexl:get(feature,'${field}')` : shown
+  return {
+    name: sent(labels.name, reads.labelName, RECORD_LABEL_NAME_FIELD),
+    description: sent(
+      labels.description,
+      reads.labelDescription,
+      RECORD_LABEL_DESCRIPTION_FIELD,
+    ),
+  }
+}
 
 /**
  * The plugin-features display config the band lays its records out with. A
@@ -166,6 +190,8 @@ export function buildRecordsRenderData({
       recordColor: abgrToCssRgba(featureColors[f]!),
       [RECORD_TOOLTIP_FIELD]: info.tooltip,
       [RECORD_GROUP_FIELD]: info.groupKey,
+      [RECORD_LABEL_NAME_FIELD]: info.labelName,
+      [RECORD_LABEL_DESCRIPTION_FIELD]: info.labelDescription,
       recordLabel: '',
     }
     // one feature per record, holding `record` itself: the label is read off

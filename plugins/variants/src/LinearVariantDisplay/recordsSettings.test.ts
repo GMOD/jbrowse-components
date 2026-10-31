@@ -1,6 +1,7 @@
 import { resolveSubMenu } from '@jbrowse/core/ui'
 import { maxBottom } from '@jbrowse/plugin-features/band'
 
+import { NO_RECORD_FIELD_READS } from '../shared/recordFields.ts'
 import { recordsBandSurface } from './components/RecordsBandOverlay.tsx'
 import { KIT, recordsDisplayAt } from './recordsBand.fixture.ts'
 
@@ -137,7 +138,7 @@ describe('records.tooltip.field', () => {
 
   test('left at the default, the worker reads nothing and the line is the name', () => {
     const { display } = recordsDisplayAt(SECTIONED, 10, {}, false)
-    expect(display.rpcProps().recordFields).toEqual({ tooltip: '', facet: '' })
+    expect(display.rpcProps().recordFields).toEqual(NO_RECORD_FIELD_READS)
     expect(hoverLine(display)).toBe('a')
   })
 

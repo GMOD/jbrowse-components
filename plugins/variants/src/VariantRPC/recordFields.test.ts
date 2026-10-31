@@ -3,15 +3,20 @@ import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { computeVariantCells } from '../LinearVariantDisplay/components/computeVariantCells.ts'
 import VcfFeature from '../VcfFeature/index.ts'
-import { recordFieldReaders } from '../shared/recordFields.ts'
+import {
+  NO_RECORD_FIELD_READS,
+  recordFieldReaders,
+} from '../shared/recordFields.ts'
 import { analyzeVariants } from './analyzeVariants.ts'
+
+import type { RecordFieldReads } from '../shared/recordFields.ts'
 
 const LINES = [
   'ctgA\t100\trs1\tA\tG\t.\t.\tCLNSIG=Benign;GENEINFO=BRCA1',
   'ctgA\t200\trs2\tC\tT\t.\t.\tCLNSIG=Pathogenic',
 ]
 
-function cellsReading(reads: { tooltip: string; facet: string }) {
+function cellsReading(reads: Partial<RecordFieldReads>) {
   const parser = new VcfParser({
     header: '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
   })
@@ -24,7 +29,10 @@ function cellsReading(reads: { tooltip: string; facet: string }) {
     sources: [],
     unit: 'sample',
     referenceDrawingMode: 'skip',
-    recordFields: recordFieldReaders(reads, createJexlInstance()),
+    recordFields: recordFieldReaders(
+      { ...NO_RECORD_FIELD_READS, ...reads },
+      createJexlInstance(),
+    ),
   })
 }
 
@@ -45,4 +53,17 @@ test('an unread field costs the record an empty string', () => {
     ['', ''],
     ['', ''],
   ])
+})
+
+test('the worker reads a label field off the whole record', () => {
+  const cells = cellsReading({
+    labelName: 'INFO.GENEINFO',
+    labelDescription: `jexl:get(feature,'REF')`,
+  })
+  expect(cells.featureInfo.map(i => [i.labelName, i.labelDescription])).toEqual(
+    [
+      ['BRCA1', 'A'],
+      ['', 'C'],
+    ],
+  )
 })

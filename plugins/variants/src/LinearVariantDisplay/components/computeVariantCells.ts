@@ -198,6 +198,8 @@ export function computeVariantCells({
       svAlleles: svType ? svAlleles(alt, ref, feature) : [],
       tooltip: recordFields.tooltip(feature),
       groupKey: recordFields.groupKey(feature),
+      labelName: recordFields.labelName(feature),
+      labelDescription: recordFields.labelDescription(feature),
       genotypeCodes: codes,
     })
     insertedBp[featureIdx] = inserted

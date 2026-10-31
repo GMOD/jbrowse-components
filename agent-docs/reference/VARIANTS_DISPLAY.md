@@ -387,12 +387,15 @@ a `recordsOnly` choice in the model belongs there.
   the hosted ladder's `facet` and `layoutInputs.hiddenGroupKeys`, with
   `RecordsSectionChips` over the band and `GroupLabelBoxes` in the export;
   the display's top-level `facet` stays the sample facet. A facet field and
-  a non-default tooltip field are read in the worker (`recordFields` in
-  `rpcProps`, `shared/recordFields.ts`) onto `VariantFeatureInfo.groupKey`
-  and `.tooltip`, since the payload carries no INFO; the band's synthetic
-  record carries them as `recordGroup` and `recordTooltip`. A default tooltip
-  reads nothing extra: `DEFAULT_TOOLTIP` over the synthetic record is its
-  name. `tooltip.show` stays the display's one toggle for both bands.
+  a non-default tooltip or label field are read in the worker
+  (`recordFields` in `rpcProps`, `shared/recordFields.ts`) onto
+  `VariantFeatureInfo.groupKey`, `.tooltip`, `.labelName` and
+  `.labelDescription`, since the payload carries no INFO; the band's
+  synthetic record carries them as `recordGroup`, `recordTooltip` and
+  `recordLabelName`/`recordLabelDescription` (`labelsReadByWorker`). A
+  default tooltip or label reads nothing extra: over the synthetic record it
+  reads the name or description. A label field is read whether it shows or
+  not, so its checkbox redraws rather than refetches. `tooltip.show` stays the display's one toggle for both bands.
 - **Menus follow the band.** With no rows: Feature height (display mode,
   then Track sizing), Names and Descriptions in Show, Group by → Field...
   (`RecordsFacetFieldDialog`), each built from plugin-features's own menu

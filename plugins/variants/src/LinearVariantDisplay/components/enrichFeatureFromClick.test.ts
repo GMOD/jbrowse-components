@@ -26,6 +26,8 @@ const featureInfo: VariantFeatureInfo = {
   svAlleles: [],
   tooltip: '',
   groupKey: '',
+  labelName: '',
+  labelDescription: '',
   genotypeCodes: new Uint32Array(),
 }
 

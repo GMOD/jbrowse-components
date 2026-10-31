@@ -25,6 +25,10 @@ export {
 export { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
 export { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
 export { DEFAULT_TOOLTIP } from './RenderFeatureDataRPC/featureTooltip.ts'
+export {
+  FEATURE_DESCRIPTION_FIELD,
+  FEATURE_NAME_FIELD,
+} from './RenderFeatureDataRPC/featureNameField.ts'
 export { featureGroupSections } from './LinearBasicDisplay/facet.ts'
 export {
   featureHeightMenuItem,

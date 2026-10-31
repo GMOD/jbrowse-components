@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { FEATURE_DESCRIPTION_FIELD } from '../RenderFeatureDataRPC/featureNameField.ts'
+
 /**
  * #config FeatureDescriptionLabel
  * #category display
@@ -29,10 +31,7 @@ export const featureDescriptionLabelConfigSchema = ConfigurationSchema(
      */
     field: {
       type: 'featureField',
-      // `function` is the only human-readable text on structural features
-      // that carry no note; read via get() since it is a reserved word in the
-      // grammar.
-      defaultValue: `jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')`,
+      defaultValue: FEATURE_DESCRIPTION_FIELD,
       description:
         'the field the description reads, such as `note`, or a `jexl:` expression over `feature`; the default reads `note`, else `description`, else `function`, and an empty value draws no description',
     },
