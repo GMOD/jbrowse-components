@@ -371,4 +371,27 @@ describe('buildSourceRenderData gapScore', () => {
     })
     expect(layer!.gapScore).toBeUndefined()
   })
+
+  // The band never falls to the origin, so counting it among the scores the
+  // band reaches spread its gradient bands down to a value it never draws
+  test("a step line's min-max band never falls to the origin", () => {
+    const arrays = processFeaturesFromArrays({
+      starts: new Int32Array([0, 100, 200]),
+      ends: new Int32Array([10, 110, 210]),
+      scores: new Float32Array([105, 105, 105]),
+      minScores: new Float32Array([100, 100, 100]),
+      maxScores: new Float32Array([110, 110, 110]),
+      count: 3,
+    })
+    const data = { sources: [{ name: 'default', ...arrays }] }
+    const [band, line] = buildSourceRenderData(data, {
+      ...baseGpuProps,
+      renderingType: 'line',
+      effectiveExtent: 'min-max',
+      origin: 0,
+    })
+    expect(band!.band).toBeDefined()
+    expect(band!.gapScore).toBeUndefined()
+    expect(line!.gapScore).toBe(0)
+  })
 })

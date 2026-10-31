@@ -22,7 +22,7 @@ already refetches (ADR-125), so a worker-side pack rides along free there;
 `pack` takes `SourceRenderData[]`, which is what `buildSourceRenderData` returns
 — so the worker would have to run that too, or receive the expanded form over
 the wire, which is the thing being avoided. And `buildSourceRenderData` is where
-the pivot lives: `sourceLayers` colors every band around it, which is why
+the pivot lives: `makeSummaryLayers` colors every band around it, which is why
 the resolved color and its `origin` sit in **`gpuProps`** and, since the
 worker-side split was deleted (ADR-016, superseded), nowhere else. The ENCODER is what needs the
 value — the SVG export calls `buildSourceRenderData(data, gpuProps)` directly

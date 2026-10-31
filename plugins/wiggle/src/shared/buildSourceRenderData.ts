@@ -8,71 +8,7 @@ import { renderingTypeToInt } from './wiggleComponentUtils.ts'
 import { lineLayers, makeSummaryLayers } from './wiggleLayers.ts'
 
 import type { ResolvedWiggleColor } from './wiggleColor.ts'
-import type { WiggleLayer } from './wiggleLayers.ts'
-import type {
-  SourceRenderData,
-  WiggleDataResult,
-  WiggleRenderingType,
-  WiggleSourceData,
-} from '@jbrowse/wiggle-core'
-
-// The render layers one source contributes, chosen by summary field and extent but
-// independent of where the source sits on screen. buildSourceRenderData stamps
-// each with a rowIndex afterward, keeping row-placement in one place.
-function sourceLayers({
-  source,
-  summaryField,
-  extent,
-  renderingType,
-  posColor,
-  negColor,
-  pivot,
-  origin,
-  cuts,
-  innerColors,
-  gradient,
-}: {
-  source: WiggleSourceData
-  summaryField: string
-  extent: string
-  renderingType: WiggleRenderingType
-  posColor: [number, number, number]
-  negColor: [number, number, number]
-  pivot: number
-  origin: number
-  cuts: number[]
-  innerColors: [number, number, number][]
-  gradient: boolean
-}): WiggleLayer[] {
-  if (
-    renderingType === RENDERING_TYPE_LINE ||
-    renderingType === RENDERING_TYPE_LINE_CENTER
-  ) {
-    return lineLayers(source, summaryField, extent, posColor, negColor)
-  }
-  // A min-max extent draws min, the plotted summary and max; without one the
-  // summary draws its one band. Every value is colored by its own sign
-  // against the pivot, so signed data reads as pos/neg on the main thread.
-  //
-  // Density drops the extent without the user asking, and the model resolves
-  // that (`effectiveExtent`, which is what gpuProps carries) rather than this
-  // re-deciding it. The autoscale domain, the track menu and the tooltip all
-  // read that same resolved extent, so a copy of the rule here could only
-  // drift from them.
-  return makeSummaryLayers({
-    data: source,
-    summaryField,
-    extent,
-    posColor,
-    negColor,
-    pivot,
-    origin,
-    cuts,
-    innerColors,
-    renderingType,
-    gradient,
-  })
-}
+import type { SourceRenderData, WiggleDataResult } from '@jbrowse/wiggle-core'
 
 // The shape of `model.gpuProps` — single source of truth for "settings that
 // affect the per-instance GPU buffer encoding". buildSourceRenderData
@@ -128,6 +64,10 @@ export function buildSourceRenderData(
     cssColorToNormalizedRgb(c),
   )
   const renderingTypeInt = renderingTypeToInt(renderingType)
+  const isLine =
+    renderingTypeInt === RENDERING_TYPE_LINE ||
+    renderingTypeInt === RENDERING_TYPE_LINE_CENTER
+  const gradient = wiggleColor.rampLut !== null
   const defaultPosColor = cssColorToNormalizedRgb(wiggleColor.posColor)
   const defaultNegColor = cssColorToNormalizedRgb(wiggleColor.negColor)
   const sourcesByName = new Map(data.sources.map(s => [s.name, s]))
@@ -155,19 +95,24 @@ export function buildSourceRenderData(
       // A source's own color is the subtrack's, so it paints both sides of
       // the cut, where the y position already shows the sign; a source with
       // none paints the plot's pair (ADR-251).
-      const layers = sourceLayers({
-        source,
-        summaryField,
-        extent,
-        renderingType: renderingTypeInt,
-        posColor,
-        negColor: orderedSource.color ? posColor : defaultNegColor,
-        pivot,
-        origin,
-        cuts,
-        innerColors,
-        gradient: wiggleColor.rampLut !== null,
-      })
+      const negColor = orderedSource.color ? posColor : defaultNegColor
+      // `extent` is the model's `effectiveExtent`, which already drops the
+      // band density cannot draw, so it is not re-decided here
+      const layers = isLine
+        ? lineLayers(source, summaryField, extent, posColor, negColor)
+        : makeSummaryLayers({
+            data: source,
+            summaryField,
+            extent,
+            posColor,
+            negColor,
+            pivot,
+            origin,
+            cuts,
+            innerColors,
+            renderingType: renderingTypeInt,
+            gradient,
+          })
       for (const layer of layers) {
         const into = layer.band ? bands : result
         into.push({
@@ -175,7 +120,9 @@ export function buildSourceRenderData(
           rowIndex: row,
           renderingType: renderingTypeInt,
           gapScore:
-            renderingTypeInt === RENDERING_TYPE_LINE ? origin : undefined,
+            !layer.band && renderingTypeInt === RENDERING_TYPE_LINE
+              ? origin
+              : undefined,
         })
       }
     }
