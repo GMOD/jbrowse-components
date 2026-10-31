@@ -117,8 +117,6 @@ widget's samples). Still differing, besides C1's Show/hide rows:
   now the location alone.
 - No "Clear N highlights" track-menu row (LinearBasicDisplay's
   `baseModel.ts`); a highlight clears one record at a time.
-- `heightMode`'s slot description (`configSchema.ts`) says it applies with
-  genotypes hidden; `recordsBandViews.ts` applies it with no samples only.
 - The split view and the details widget share `fullRecordOf`'s
   `clickInFlight`, so one aborts the other's fetch; a record the adapter
   does not find launches from the click's record, INFO-less, and the

@@ -53,9 +53,11 @@ export interface VariantLegendInputs {
   hasAltWithoutPhaseSet?: boolean
   hasUnphased: boolean
   hasNoCall: boolean
-  // The cell scale's domain values an alt cell was painted for — impact tiers
-  // or SV classes.
+  // The cell scale's domain values painted — impact tiers or SV classes.
   paintedDomain: readonly string[]
+  // No genotype row draws, so the records are all the key describes: no
+  // reference, no-call or dosage rows.
+  recordsAlone?: boolean
   // `encoding.color.legend.title` as written: unset keeps the key's own
   // heading, `''` draws none.
   colorTitle?: string
@@ -86,6 +88,17 @@ function absentDataEntries({
     ...(hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
     ...(hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
   ]
+}
+
+// The absent-data rows beside a field's key, none while no cell draws.
+function fieldAbsentDataEntries(inputs: VariantLegendInputs) {
+  return inputs.recordsAlone ? [] : absentDataEntries(inputs)
+}
+
+// Whether lightness carries dosage: a cell per sample, not per haplotype or
+// per record.
+function dosageShaded(inputs: VariantLegendInputs) {
+  return !inputs.recordsAlone && inputs.unit !== 'haplotype'
 }
 
 // What a one-member alt domain spends its entries on. In allele-count mode
@@ -136,8 +149,8 @@ function recordFieldScale(
   inputs: VariantLegendInputs,
 ): CategoricalScale {
   const color = (key: string) => recordKeyColor(field, key)
-  const shaded = inputs.unit !== 'haplotype'
-  const absent = absentDataEntries(inputs)
+  const shaded = dosageShaded(inputs)
+  const absent = fieldAbsentDataEntries(inputs)
   const [derived] = derivedColorScale(
     [inputs.paintedDomain],
     painted =>
@@ -216,7 +229,7 @@ function getCellColorScale(
           kind: 'categorical',
           id: 'identity',
           title: keyTitle(inputs, 'Color'),
-          entries: [...named, ...absentDataEntries(inputs)],
+          entries: [...named, ...fieldAbsentDataEntries(inputs)],
         }
       : undefined
   }
@@ -252,17 +265,17 @@ export function getVariantColorScales({
 }): ColorScale[] {
   const field = cellHueField(color)
   if (ramp && field !== undefined) {
-    const shaded = inputs.unit !== 'haplotype'
+    const absent = [
+      ...(dosageShaded(inputs) ? [entry(DOSAGE_NOTE)] : []),
+      ...fieldAbsentDataEntries(inputs),
+    ]
+    const absentScale: ColorScale[] =
+      absent.length > 0
+        ? [{ kind: 'categorical', id: 'recordFieldAbsent', entries: absent }]
+        : []
     return [
       ...ramp.keyScales('recordField', keyTitle(inputs, field)),
-      {
-        kind: 'categorical',
-        id: 'recordFieldAbsent',
-        entries: [
-          ...(shaded ? [entry(DOSAGE_NOTE)] : []),
-          ...absentDataEntries(inputs),
-        ],
-      },
+      ...absentScale,
     ]
   }
   // Phase-set coloring exists only on the phased path — the allele-count cell

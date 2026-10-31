@@ -116,7 +116,11 @@ import {
   recordDensityAlpha,
 } from './densityFade.ts'
 import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
-import { paintCellColors, paintedColorKeys } from './paintCells.ts'
+import {
+  paintCellColors,
+  paintedColorKeys,
+  recordColorKeys,
+} from './paintCells.ts'
 import { placeVariantRows } from './placeVariantRows.ts'
 import {
   installRecordsOpeningHeight,
@@ -671,39 +675,6 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Whether each variant draws at its genomic span, or as one of a row
-         * of equal-width columns tied to its position by a connector line:
-         * the `variantLayout` slot while genotype rows draw. Columns lay out
-         * rows, so with none (no samples, or `genotypes.show` off) the
-         * records band draws at genomic positions, and the slot's columns
-         * come back with the rows.
-         */
-        get variantLayout(): 'genomic' | 'columns' {
-          return this.showGenotypes && self.adapterSamples?.length !== 0
-            ? getConf(self, 'variantLayout')
-            : 'genomic'
-        },
-        /**
-         * #getter
-         */
-        get atGenomicPositions(): boolean {
-          return this.variantLayout === 'genomic'
-        },
-        /**
-         * #getter
-         * The `connectors` band's height above the columns, taken from the
-         * rows' slot height so they keep their floor; 0 at genomic
-         * positions, where nothing needs connecting.
-         */
-        get connectorsHeight(): number {
-          return connectorsBandStack(self.fitTargetHeight, {
-            active:
-              !this.atGenomicPositions && getConf(self, ['connectors', 'show']),
-            height: getConf(self, ['connectors', 'height']),
-          }).reserved.connectors
-        },
-        /**
-         * #getter
          * Whether `genotypes.show` is written, by config or by the menu.
          */
         get genotypesShowWritten(): boolean {
@@ -829,6 +800,73 @@ export function stateModelFactory(
                 },
                 displayedRegionIndex,
               }
+        },
+      }))
+      .views(self => ({
+        // #region sameBlockThis
+        /**
+         * #getter
+         * Whether the records band is the display, every record the filter
+         * admits, sized by `heightMode` and lettered as a feature track: a VCF
+         * with no samples, or a one-sample call set whose row nobody asked for.
+         */
+        get recordsOnly(): boolean {
+          const sampleCount = self.adapterSamples?.length
+          return (
+            sampleCount === 0 ||
+            (sampleCount === 1 && !self.genotypesShowWritten)
+          )
+        },
+        /**
+         * #getter
+         * Whether genotype rows draw: `genotypes.show`, on a VCF with samples.
+         * Hidden, the rows take no height and the records band is the track.
+         */
+        get drawsRows(): boolean {
+          return self.showGenotypes && !this.recordsOnly
+        },
+        // #endregion
+        /**
+         * #getter
+         * Whether each variant draws at its genomic span, or as one of a row
+         * of equal-width columns tied to its position by a connector line:
+         * the `variantLayout` slot while genotype rows draw. Columns lay out
+         * rows, so with none (no samples, or `genotypes.show` off) the
+         * records band draws at genomic positions, and the slot's columns
+         * come back with the rows.
+         */
+        get variantLayout(): 'genomic' | 'columns' {
+          return this.drawsRows ? getConf(self, 'variantLayout') : 'genomic'
+        },
+        /**
+         * #getter
+         */
+        get atGenomicPositions(): boolean {
+          return this.variantLayout === 'genomic'
+        },
+        /**
+         * #getter
+         * The `connectors` band's height above the columns, taken from the
+         * rows' slot height so they keep their floor; 0 at genomic
+         * positions, where nothing needs connecting.
+         */
+        get connectorsHeight(): number {
+          return connectorsBandStack(self.fitTargetHeight, {
+            active:
+              !this.atGenomicPositions && getConf(self, ['connectors', 'show']),
+            height: getConf(self, ['connectors', 'height']),
+          }).reserved.connectors
+        },
+        /**
+         * #getter
+         * `rows.kept` while genotype rows draw; with none no focus applies,
+         * so no "Showing N rows" chip takes a line over the records band.
+         * The focus comes back with the rows. Overrides
+         * `TreeSidebarMixin.rowFocus`.
+         */
+        get rowFocus(): readonly string[] | undefined {
+          const kept: string[] = getConf(self, ['rows', 'kept'])
+          return this.drawsRows && kept.length ? kept : undefined
         },
       }))
       .views(recordsSettingsViews)
@@ -1050,10 +1088,13 @@ export function stateModelFactory(
           },
           /**
            * #action
-           * Draw the genotype rows, or the records alone.
+           * Draw the genotype rows, or the records alone. In columns this
+           * swaps the backend as `setVariantLayout` does, so it clears the
+           * render error the same way.
            */
           setShowGenotypes(arg: boolean) {
             setConf(self, ['genotypes', 'show'], arg)
+            self.setRenderError(undefined)
           },
           /**
            * #action
@@ -1348,16 +1389,20 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The cell scale's domain values an alt cell was painted for in the
-         * fetched cell data — the impact tiers or SV classes the legend lists.
+         * The cell scale's domain values painted in the fetched cell data —
+         * the impact tiers or SV classes the legend lists: every record's
+         * while the records band paints them, which covers each alt cell's,
+         * else those an alt cell was painted for.
          */
         get paintedDomain(): string[] {
           const { cellData } = self
-          return cellData && self.cellHueValuesRead
-            ? paintedColorKeys(
-                Object.values(cellData.perRegionCellData),
-                self.cellHue,
-              )
+          const payloads = cellData
+            ? Object.values(cellData.perRegionCellData)
+            : []
+          return self.cellHueValuesRead
+            ? self.showRecords && !self.recordsColorBySvClass
+              ? recordColorKeys(payloads, self.cellHue)
+              : paintedColorKeys(payloads, self.cellHue)
             : []
         },
       }))
@@ -1488,6 +1533,26 @@ export function stateModelFactory(
         },
       }))
       .actions(recordsLayoutActions)
+      .actions(self => {
+        const superResizeHeight = self.resizeHeight
+        return {
+          /**
+           * #action
+           * With the genotype rows hidden the track is the records band and
+           * its chips, so the track's edge resizes the band; otherwise
+           * `HeightModeMixin`'s, on the slot the rows draw at.
+           */
+          resizeHeight(distance: number) {
+            const bandIsTrack =
+              !self.drawsRows &&
+              !self.recordsOnly &&
+              self.hostHeight === undefined
+            return bandIsTrack
+              ? self.resizeRecordsBand(distance)
+              : superResizeHeight(distance)
+          },
+        }
+      })
       .actions(recordsOpeningHeightActions)
       .views(recordsHighlightViews)
       .actions(featureHighlightListActions)
@@ -1717,11 +1782,13 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Both layouts fill the track with rows, so an overlapping track label
-         * would sit on top of a sample's genotypes.
+         * Genotype rows fill the track, so an overlapping track label would
+         * sit on top of a sample's genotypes. With none the records band is
+         * the track and takes the offset as a feature track does, while its
+         * sections' chips sit where the label would.
          */
         get prefersOffset() {
-          return true
+          return self.drawsRows || self.recordsFacet !== undefined
         },
         /**
          * #getter
@@ -2109,6 +2176,7 @@ export function stateModelFactory(
                   hasUnphased: self.hasUnphased,
                   hasNoCall: self.hasNoCall,
                   paintedDomain: self.paintedDomain,
+                  recordsAlone: !self.drawsRows,
                   color: self.colorEncoding,
                   colorSlots: heldColorSlots(self, self.colorEncoding),
                   ramp: self.cellHue.ramp,

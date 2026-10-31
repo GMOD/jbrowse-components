@@ -124,3 +124,22 @@ export function paintedColorKeys(
   }
   return [...keys]
 }
+
+/** The key rows every record's value files under, what the records band paints. */
+export function recordColorKeys(
+  payloads: Iterable<Pick<CellHueValues, 'colorValues' | 'featureColorValues'>>,
+  hue: CellHue,
+) {
+  const keys = new Set<string>()
+  const { keyOf } = hue
+  if (keyOf) {
+    for (const { colorValues, featureColorValues } of payloads) {
+      for (const v of featureColorValues) {
+        if (v > 0) {
+          keys.add(keyOf(colorValues[v - 1]!))
+        }
+      }
+    }
+  }
+  return [...keys]
+}

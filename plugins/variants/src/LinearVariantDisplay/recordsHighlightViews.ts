@@ -120,7 +120,7 @@ export function recordsHighlightViews(self: RecordsHighlightHost) {
     /**
      * #getter
      * Which band records each stored highlight boxes. A record the band
-     * does not draw (an SNV over rows) boxes nothing.
+     * holds no data for (outside the fetched regions) boxes nothing.
      */
     get resolvedHighlights(): ResolvedHighlights {
       const { displayedRegions } = self.view

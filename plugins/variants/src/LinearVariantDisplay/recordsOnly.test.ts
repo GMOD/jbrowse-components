@@ -1,8 +1,13 @@
 import { resolveSubMenu } from '@jbrowse/core/ui'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 
+import { IMPACT_FIELD } from '../shared/variantConsequence.ts'
 import { getCachedABGR } from '../shared/variantWebglUtils.ts'
-import { KIT, recordsDisplayAt } from './recordsBand.fixture.ts'
+import {
+  KIT,
+  recordsCellData,
+  recordsDisplayAt,
+} from './recordsBand.fixture.ts'
 import { BAND_CHIPS_HEIGHT } from './variantTopBands.ts'
 
 import type { LinearVariantDisplayModel } from './model.ts'
@@ -306,5 +311,134 @@ describe('the track menu', () => {
     display.setShowGenotypes(false)
     expect(display.atGenomicPositions).toBe(true)
     expect(display.showRecords).toBe(true)
+  })
+
+  test('hiding genotypes clears the backend it swaps out of', () => {
+    const { display } = recordsDisplayAt(FEW, 10, {}, true, {
+      variantLayout: 'columns',
+    })
+    display.setRenderError(new Error('columns backend failed'))
+    display.setShowGenotypes(false)
+    expect(display.renderError).toBeUndefined()
+  })
+})
+
+// The track's handle aims at the height at the press plus the pointer's
+// travel, each frame resizing by that target less the height drawn
+function dragTrackEdge(display: LinearVariantDisplayModel, travel: number[]) {
+  const start = display.height
+  for (const px of travel) {
+    display.resizeHeight(start + px - display.height)
+  }
+}
+
+describe('the track edge with genotypes hidden', () => {
+  test('resizes the band, its edge under the pointer', () => {
+    const { display } = recordsDisplayAt(FEW, 10, {}, true, {
+      genotypes: { show: false },
+    })
+    const start = display.height
+    dragTrackEdge(display, [10, 20, 30])
+    expect(display.height).toBe(start + 30)
+    expect(display.recordsHeight).toBe(display.topBands.recordsHeight)
+  })
+
+  test('leaves the rows the height they come back at', () => {
+    const { display } = recordsDisplayAt(FEW, 10, {}, true, {
+      genotypes: { show: false },
+    })
+    dragTrackEdge(display, [10, 20, 30])
+    expect(display.configuredHeight).toBe(200)
+    display.setShowGenotypes(true)
+    expect(display.availableHeight).toBe(200)
+  })
+
+  test('over rows resizes the rows', () => {
+    const { display } = recordsDisplayAt(FEW, 10)
+    const band = display.topBands.recordsHeight
+    dragTrackEdge(display, [10, 20, 30])
+    expect(display.configuredHeight).toBe(230)
+    expect(display.topBands.recordsHeight).toBe(band)
+  })
+})
+
+describe('the track label', () => {
+  test('genotype rows take it off the plot', () => {
+    expect(recordsDisplayAt(FEW, 10).display.prefersOffset).toBe(true)
+  })
+
+  test('with no samples it overlaps the records, as on a feature track', () => {
+    const { display } = recordsDisplayAt(FEW, 10, {}, false)
+    expect(display.prefersOffset).toBe(false)
+  })
+
+  test('record sections take it off their chips', () => {
+    const { display } = recordsDisplayAt(
+      FEW,
+      10,
+      { facet: { field: 'svType' } },
+      false,
+    )
+    expect(display.prefersOffset).toBe(true)
+  })
+})
+
+// a focus outlives hidden rows in config; with no rows its "Showing N rows"
+// chip would sit over the band's own chips
+test('with genotypes hidden a row focus reserves no line', () => {
+  const { display } = recordsDisplayAt(FEW, 10, {}, true, {
+    rows: { kept: ['S0'] },
+  })
+  expect(display.rowFocus).toEqual(['S0'])
+  display.setShowGenotypes(false)
+  expect(display.rowFocus).toBeUndefined()
+  expect(display.rowsTopOffset).toBe(display.topBands.bottom)
+  display.setShowGenotypes(true)
+  expect(display.rowFocus).toEqual(['S0'])
+})
+
+describe('a picked color field', () => {
+  // what the worker reads for the impact tiers: rs1 and rs2 HIGH, sv1
+  // MODIFIER, and no alt cell painted for either
+  function impactDisplayAt(rows: boolean) {
+    const { display } = recordsDisplayAt(FEW, 10, {}, rows)
+    display.colorByField(IMPACT_FIELD)
+    const data = recordsCellData(FEW)
+    display.setCellData(
+      {
+        ...data,
+        colorRead: display.cellHueRead,
+        perRegionCellData: {
+          0: {
+            ...data.perRegionCellData[0]!,
+            colorValues: ['HIGH', 'MODIFIER'],
+            featureColorValues: Uint32Array.of(1, 2, 1),
+            paintedColorValues: [],
+          },
+        },
+      },
+      [0],
+    )
+    return display
+  }
+
+  test('with no rows keys the values the records paint', () => {
+    const display = impactDisplayAt(false)
+    expect(display.paintedDomain).toEqual(['HIGH', 'MODIFIER'])
+    expect(
+      display.colorScales.flatMap(s =>
+        s.kind === 'categorical' ? s.entries.map(e => e.label) : [],
+      ),
+    ).toEqual(['HIGH', 'MODIFIER'])
+  })
+
+  test('over rows keys a value the band paints and no cell carries', () => {
+    expect(impactDisplayAt(true).paintedDomain).toEqual(['HIGH', 'MODIFIER'])
+  })
+
+  test('with the band off keys what the cells paint', () => {
+    const display = impactDisplayAt(true)
+    display.setShowRecords(false)
+    expect(display.paintedDomain).toEqual([])
   })
 })

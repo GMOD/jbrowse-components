@@ -141,6 +141,34 @@ describe('getVariantColorScales', () => {
     ])
   })
 
+  // with no rows the band paints each record at full dose and no cell draws,
+  // so neither a dosage note nor a reference fill is on screen to name
+  it('with no rows keys the records alone', () => {
+    const sections = getVariantColorScales({
+      ...inputs({ paintedDomain: ['MODIFIER', 'HIGH'], recordsAlone: true }),
+      color: IMPACT,
+    })
+    expect(entriesOf(sections[0])!.map(i => i.label)).toEqual([
+      'HIGH',
+      'MODIFIER',
+    ])
+  })
+
+  it('with no rows a ramp keys its bar alone', () => {
+    const color = {
+      field: 'INFO.AF',
+      scale: 'linear' as const,
+      range: [],
+      reverse: false,
+    }
+    const sections = getVariantColorScales({
+      ...inputs({ recordsAlone: true }),
+      color,
+      ramp: cellHueOf(color, undefined, undefined, ['0', '1']).ramp,
+    })
+    expect(sections.map(s => [s.kind, s.id])).toEqual([['ramp', 'recordField']])
+  })
+
   it('titles and names the impact key where color says so', () => {
     const sections = getVariantColorScales({
       ...inputs({

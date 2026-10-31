@@ -69,6 +69,14 @@ function needs(label: string, what: string, present: boolean, loaded: boolean) {
       }
 }
 
+// A Color by field row's help: over rows it paints the alt cells, with none
+// the records.
+function fieldColorHelp(self: LinearVariantDisplayModel, by: string) {
+  return self.drawsRows
+    ? `Color every alt-carrying cell by ${by}; ref and no-call cells keep their normal coloring`
+    : `Color every record by ${by}`
+}
+
 // The rows' color, as the arrangement dialog offers it: None and the
 // attributes, and Each row while it is the choice, since its colors are
 // picked in the dialog.
@@ -356,7 +364,11 @@ export function variantTrackMenuItems(
                       'Each structural variant in the color of its SV type, keyed, and every other record in the feature track default',
                   }),
               type: 'radio' as const,
-              checked: self.colorEncoding === undefined,
+              // with no rows a phase set, which no record holds, paints the
+              // records as the default does
+              checked: self.drawsRows
+                ? self.colorEncoding === undefined
+                : self.recordsColorBySvClass,
               onClick: () => {
                 self.setColorValue(undefined)
               },
@@ -386,8 +398,10 @@ export function variantTrackMenuItems(
                 self.hasConsequence,
                 loaded,
               ),
-              helpText:
-                'Color every alt-carrying cell by the variant’s most severe SnpEff (ANN) / VEP (CSQ) consequence impact tier; ref and no-call cells keep their normal coloring',
+              helpText: fieldColorHelp(
+                self,
+                'the variant’s most severe SnpEff (ANN) / VEP (CSQ) consequence impact tier',
+              ),
               type: 'radio',
               checked: self.colorField === IMPACT_FIELD,
               onClick: () => {
@@ -401,8 +415,10 @@ export function variantTrackMenuItems(
                 self.hasSvType,
                 loaded,
               ),
-              helpText:
-                'Color every alt-carrying cell by the variant’s structural-variant class (deletion, duplication, insertion, inversion, ...); ref and no-call cells keep their normal coloring',
+              helpText: fieldColorHelp(
+                self,
+                'the variant’s structural-variant class (deletion, duplication, insertion, inversion, ...)',
+              ),
               type: 'radio',
               checked: self.colorField === SV_TYPE_FIELD,
               onClick: () => {
@@ -411,8 +427,10 @@ export function variantTrackMenuItems(
             },
             {
               label: recordField ? `Field (${recordField})...` : 'Field...',
-              helpText:
-                'Color every alt-carrying cell by a field of its record — an INFO field such as CLNSIG, QUAL, FILTER, or a computed value such as maf — one color per value, or per range between cut points for a number',
+              helpText: fieldColorHelp(
+                self,
+                'a field of its record — an INFO field such as CLNSIG, QUAL, FILTER, or a computed value such as maf — one color per value, or per range between cut points for a number',
+              ),
               type: 'radio',
               checked: !!recordField,
               keepMenuOpen: false,

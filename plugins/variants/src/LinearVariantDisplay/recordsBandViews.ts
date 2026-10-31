@@ -62,7 +62,7 @@ import {
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { CellHue, cellColorEncodingOf } from '../shared/cellHue.ts'
 import type { RecordFieldReads } from '../shared/recordFields.ts'
-import type { ProcessedSource, Source } from '../shared/types.ts'
+import type { ProcessedSource } from '../shared/types.ts'
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
 import type { RecordCarriers } from './recordCarriers.ts'
 import type { RecordsLabels } from './recordsRenderData.ts'
@@ -87,9 +87,8 @@ const NO_FEATURE_IDS: ReadonlySet<string> = new Set()
 
 export interface RecordsSettingsHost {
   configuration: Instance<LinearVariantDisplayConfigModel>
-  adapterSamples: Source[] | undefined
-  showGenotypes: boolean
-  genotypesShowWritten: boolean
+  recordsOnly: boolean
+  drawsRows: boolean
   atGenomicPositions: boolean
   colorEncoding: ReturnType<typeof cellColorEncodingOf>
   gateActive: boolean
@@ -98,27 +97,6 @@ export interface RecordsSettingsHost {
 
 export function recordsSettingsViews(self: RecordsSettingsHost) {
   return {
-    // #region sameBlockThis
-    /**
-     * #getter
-     * Whether the records band is the display, every record the filter
-     * admits, sized by `heightMode` and lettered as a feature track: a VCF
-     * with no samples, or a one-sample call set whose row nobody asked for.
-     */
-    get recordsOnly(): boolean {
-      const sampleCount = self.adapterSamples?.length
-      return (
-        sampleCount === 0 || (sampleCount === 1 && !self.genotypesShowWritten)
-      )
-    },
-    /**
-     * #getter
-     * Whether genotype rows draw: `genotypes.show`, on a VCF with samples.
-     * Hidden, the rows take no height and the records band is the track.
-     */
-    get drawsRows(): boolean {
-      return self.showGenotypes && !this.recordsOnly
-    },
     /**
      * #getter
      * Whether the records band is drawn: at genomic positions only, where
@@ -128,10 +106,9 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     get showRecords(): boolean {
       return (
         self.atGenomicPositions &&
-        (!this.drawsRows || getConf(self, ['records', 'show']))
+        (!self.drawsRows || getConf(self, ['records', 'show']))
       )
     },
-    // #endregion
     /**
      * #getter
      * Whether a drag, a config or the opening settle wrote
@@ -240,7 +217,7 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
      * records paint. A constant paints every record alike, so keys nothing.
      */
     get cellColorKeyed() {
-      return this.drawsRows || cellHueField(self.colorEncoding) !== undefined
+      return self.drawsRows || cellHueField(self.colorEncoding) !== undefined
     },
     /**
      * #getter
@@ -253,7 +230,7 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
         'records',
         'displayMode',
       ])
-      return written ?? (this.recordsOnly ? 'normal' : 'compact')
+      return written ?? (self.recordsOnly ? 'normal' : 'compact')
     },
     /**
      * #getter
@@ -269,21 +246,21 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
      * over rows none, so `height` holds in every mode.
      */
     get growMaxHeight(): number {
-      return this.recordsOnly
+      return self.recordsOnly
         ? getConf(self, 'growMaxHeight')
         : Number.POSITIVE_INFINITY
     },
     /**
      * #getter
-     * The density axis acts only with no genotype rows, where the records
-     * are the display, as on `LinearVariantDisplay`. Over rows the byte
-     * gate alone guards the fetch.
+     * The density axis acts only on a VCF with no samples, where the
+     * records are the display, as on a feature track. Over rows, shown or
+     * hidden, the byte gate alone guards the fetch.
      */
     get densityGateActive() {
       return (
         self.gateActive &&
         self.aboveForceLoadFloor &&
-        this.recordsOnly &&
+        self.recordsOnly &&
         self.atGenomicPositions
       )
     },
@@ -378,7 +355,10 @@ export function recordsBandActions(self: RecordsActionsHost) {
   }
 }
 
-interface RecordsRenderHost extends RecordsSettings {
+interface RecordsRenderHost
+  extends
+    RecordsSettings,
+    Pick<RecordsSettingsHost, 'recordsOnly' | 'drawsRows'> {
   cellData: CellDataResult | undefined
   cellHue: CellHue
   cellHueValuesRead: boolean
@@ -694,6 +674,9 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     solveLabelRoomFactors: false,
     bodyScaleHeightProbe: false,
   })
+  const fullStackHeight = computed(() =>
+    maxBottom(ladder.baseLaidOutDataMap, self.recordsMeasureIds),
+  )
   // over rows the band's height is added to the display's, so it reads
   // nothing of the display's height
   const bands = computed(() =>
@@ -704,10 +687,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
         : recordsBandHeightOverRows({
             recordsHeight: self.recordsHeight,
             recordsHeightWritten: self.recordsHeightWritten,
-            recordsContentHeight: maxBottom(
-              ladder.baseLaidOutDataMap,
-              self.recordsMeasureIds,
-            ),
+            recordsContentHeight: fullStackHeight.get(),
           }),
       showChips: self.atGenomicPositions && !self.recordsOnly,
       connectorsHeight: self.connectorsHeight,
@@ -732,10 +712,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      */
     get growTargetHeight() {
       return self.recordsOnly && self.cellData !== undefined && self.canRender
-        ? Math.max(
-            MIN_GROW_HEIGHT,
-            maxBottom(ladder.baseLaidOutDataMap, self.recordsMeasureIds),
-          )
+        ? Math.max(MIN_GROW_HEIGHT, fullStackHeight.get())
         : self.fitTargetHeight
     },
     /**
@@ -785,9 +762,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * at which no record hides.
      */
     get recordsStackHeight() {
-      return Math.ceil(
-        maxBottom(ladder.baseLaidOutDataMap, self.recordsMeasureIds),
-      )
+      return Math.ceil(fullStackHeight.get())
     },
     /**
      * #getter
@@ -929,6 +904,16 @@ export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
      */
     showAllRecordRows() {
       self.setRecordsHeight(self.recordsStackHeight)
+    },
+    /**
+     * #action
+     * Resize the band by `distance`, answering how far it moved, as
+     * `resizeHeight` answers for the track.
+     */
+    resizeRecordsBand(distance: number) {
+      const before = self.topBands.recordsHeight
+      self.setRecordsHeight(before + distance)
+      return self.topBands.recordsHeight - before
     },
     /**
      * #action
