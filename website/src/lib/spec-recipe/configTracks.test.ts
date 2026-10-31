@@ -49,15 +49,15 @@ test('a display the track would not open as by default is declared', () => {
   const [track] = tracksOf(
     lgv([
       {
-        trackId: 'volvox_test_vcf',
-        type: 'LinearMultiSampleVariantDisplay',
+        trackId: 'gff3tabix_genes',
+        type: 'LinearMultiRowFeatureDisplay',
         height: 250,
       },
     ]),
   )
   expect(track?.displayDefaults).toBeUndefined()
   expect(track?.displays).toEqual([
-    { type: 'LinearMultiSampleVariantDisplay', height: 250 },
+    { type: 'LinearMultiRowFeatureDisplay', height: 250 },
   ])
 })
 

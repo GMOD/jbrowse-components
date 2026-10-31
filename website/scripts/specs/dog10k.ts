@@ -371,7 +371,7 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
               // draws a bare swatch with no name (MIN_TEXT_ROW_HEIGHT).
               {
                 trackId: 'dog10k_fgf4_svs',
-                type: 'LinearMultiSampleVariantDisplay',
+                type: 'LinearVariantDisplay',
                 height: 330,
                 rowColor: 'group',
               },
@@ -476,7 +476,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'dog10k_nhej1_svs',
-          type: 'LinearMultiSampleVariantDisplay',
+          type: 'LinearVariantDisplay',
           height: 560,
           ...CEA_ROWS,
           facet: {
@@ -880,7 +880,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: 'dog10k_cyp1a2_snvs',
-          type: 'LinearMultiSampleVariantDisplay',
+          type: 'LinearVariantDisplay',
           height: 500,
           ...CYP_ROWS,
           // Only the stop-gained site: every wolf here carries 38,261,650, and

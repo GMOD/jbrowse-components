@@ -376,40 +376,17 @@ function syntenyColorMode(value: unknown) {
 // sample-metadata attribute the track carries, offered under a 'Samples'
 // subheader, so the recipe names the figure's attribute rather than looking it
 // up. capitalizeFirst is the menu's own label transform, imported.
-const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set([
-  'LinearMultiSampleVariantDisplay',
-])
+const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set(['LinearVariantDisplay'])
 
 // Mirrors the feature display's own `colorByMode` getter (colorViews.ts), which
 // is what decides which of the "Color by" radios reads as checked: an
 // `encoding.color.field` of `strand` is 'strand', any other field is
 // 'attribute', and with no field painting it is 'default', whatever
 // `encoding.color.value` holds.
-//
-// Three displays take an `encoding.color`, and the submenu is the same one on
-// two of them: LinearVariantDisplay is built on the same canvas base model, so
-// its 'Solid color...' and 'Attribute...' rows open the identical dialogs and
-// write the identical strings. It only swaps the radio list — no Strand row (variants
-// have no strand) and two one-click presets in its place, from its own
-// colorBySubMenuItems.
-//
-// The two preset expressions are written out rather than imported, unlike every
-// other value in this file. variantSvType.ts reaches the core util barrel
-// through VcfFeature/util.ts, and this module is bundled into the site, so the
-// import would pull the barrel onto the page to compare two short strings. The
-// specs that set these presets (scripts/specs/ui.ts) hardcode them for the same
-// reason. Drift degrades to the Settings fallback below rather than to a wrong
-// path.
-const VARIANT_COLOR_PRESETS: Record<string, string> = {
-  // SV_TYPE_COLOR_JEXL, plugins/variants/src/shared/variantSvType.ts
-  'jexl:svTypeColor(feature)': 'SV type',
-  // CONSEQUENCE_IMPACT_JEXL, plugins/variants/src/shared/variantConsequence.ts
-  'jexl:impactColor(feature)': 'Consequence impact',
-}
 
-// The same two presets as the fields both variant displays' `encoding.color`
-// names them by (IMPACT_FIELD, SV_TYPE_FIELD), and the phase set the
-// multi-sample displays add (PHASE_SET_FIELD).
+
+// The two presets the variant display's `encoding.color` names by
+// (IMPACT_FIELD, SV_TYPE_FIELD), and the phase set (PHASE_SET_FIELD).
 const VARIANT_PRESET_FIELDS: Record<string, string> = {
   svType: 'SV type',
   impact: 'Consequence impact',
@@ -423,19 +400,13 @@ const VARIANT_CELL_PRESET_FIELDS: Record<string, string> = {
  * The displays composing the canvas base display, which is where the two
  * channel objects and the dialogs that write them live: `encoding.color` under
  * Color by and `facet` under Group by, with Sections for the drawn order.
- * `LinearVariantDisplay` is on the same base as `LinearBasicDisplay` and
- * renames its vocabulary, so every channel step below is a step in one of
- * those menus and one list gates them all.
  *
  * Spelled out rather than read off the config manifest, which is 190 kB of
  * JSON that would then be in every page's build graph; the list is derived and
  * compared in `channelMenuDisplays.test.ts` instead, so a third display on that
  * base fails a check rather than silently losing its steps.
  */
-export const CHANNEL_MENU_DISPLAYS = new Set([
-  'LinearBasicDisplay',
-  'LinearVariantDisplay',
-])
+export const CHANNEL_MENU_DISPLAYS = new Set(['LinearBasicDisplay'])
 
 function hasChannelMenus(displayType: string | undefined) {
   return displayType !== undefined && CHANNEL_MENU_DISPLAYS.has(displayType)
@@ -510,13 +481,6 @@ function colorStep(
       return undefined
     }
     const colorBy = `${TRACK_MENU} → Color by`
-    const preset =
-      displayType === 'LinearVariantDisplay'
-        ? VARIANT_PRESET_FIELDS[field]
-        : undefined
-    if (preset) {
-      return { path: `${colorBy} → ${preset}` }
-    }
     if (asList(scale.domain) || asList(scale.range)) {
       return { path: `${TRACK_MENU} → Advanced → Edit plot...` }
     }
@@ -592,21 +556,11 @@ function constantColorStep(
     return undefined
   }
   const colorBy = `${TRACK_MENU} → Color by`
-  const preset =
-    displayType === 'LinearVariantDisplay'
-      ? VARIANT_COLOR_PRESETS[value]
-      : undefined
-  return preset
-    ? { path: `${colorBy} → ${preset}` }
-    : !isJexl(value)
+  return !isJexl(value)
       ? { path: `${colorBy} → Solid color... → ${value}` }
       : {
           path: `${TRACK_MENU} → Settings → color`,
-          note: `A per-feature expression. The Color by radios write a solid color, a field's palette, and ${
-            displayType === 'LinearVariantDisplay'
-              ? 'the SV-type and consequence-impact presets'
-              : 'the strand colors'
-          } only, so an expression is authored on the track config.`,
+          note: 'A per-feature expression. The Color by radios write a solid color, a field\'s palette, and the strand colors only, so an expression is authored on the track config.',
         }
 }
 
@@ -727,7 +681,7 @@ const TREE_SIDEBAR_TOGGLE = 'Tree'
 const TREE_SIDEBAR_DISPLAYS = new Set([
   'LinearMafDisplay',
   'LinearMultiRowFeatureDisplay',
-  'LinearMultiSampleVariantDisplay',
+  'LinearVariantDisplay',
   'LinearWiggleDisplay',
 ])
 
@@ -747,7 +701,7 @@ const MAF_COLOR_BY = `${TRACK_MENU} → Color by`
 // none.
 const ROW_HEIGHT_MENUS: Record<string, readonly RowHeightPreset[]> = {
   LinearMafDisplay: MAF_HEIGHT_PRESETS,
-  LinearMultiSampleVariantDisplay: [],
+  LinearVariantDisplay: [],
 }
 
 interface RowHeightPreset {
@@ -770,7 +724,7 @@ function rowHeightPath(rowHeight: number, presets: readonly RowHeightPreset[]) {
 const ROW_ARRANGEMENT_EDITORS: Record<string, string> = {
   LinearMafDisplay: 'Edit colors/arrangement...',
   LinearMultiRowFeatureDisplay: 'Edit colors/arrangement...',
-  LinearMultiSampleVariantDisplay: 'Edit colors/arrangement...',
+  LinearVariantDisplay: 'Edit colors/arrangement...',
   // On the quantitative display this is the only color row there is: the
   // plot's own two colors ride above the rows, and the channel-spec box is a
   // button inside rather than a row of its own.
@@ -895,7 +849,6 @@ const FILTER_MENU_DISPLAYS = new Set([
   'LinearMultiRowFeatureDisplay',
   'LinearAlignmentsDisplay',
   'LGVSyntenyDisplay',
-  'LinearMultiSampleVariantDisplay',
 ])
 
 // The radios inside the alignments display's 'Read connections color' submenu, imported so a
@@ -956,7 +909,6 @@ const SHOW_LEGEND_DISPLAYS = new Set([
   'LinearBasicDisplay',
   'LinearVariantDisplay',
   'LinearMultiRowFeatureDisplay',
-  'LinearMultiSampleVariantDisplay',
   'LinearMafDisplay',
   'LinearWiggleDisplay',
   'LinearMarkDisplay',
@@ -2157,7 +2109,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           path: `Right-click the track at the column to sort on → Sort rows by score here`,
           note: `Ranks the subtracks by the score each one carries at a single base (${where} in this figure), highest at the top, which is how a cohort is read at a candidate locus. "Reset row order" in the same menu undoes it.`,
         }
-      : displayType === 'LinearMultiSampleVariantDisplay'
+      : displayType === 'LinearVariantDisplay'
         ? {
             path: `Right-click the track at the column to sort on → Sort rows by genotype here`,
             note: `Groups the samples by their genotype at the record under ${where}, the shortest one there when records overlap. "Reset row order" in the same menu undoes it.`,

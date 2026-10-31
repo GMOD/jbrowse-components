@@ -133,7 +133,7 @@ heterozygosity), so the label takes the class from the second field:
     "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/DRAGEN-v4.2.4_ILMN-WGS_20240312/standard/dragen_4.2.4_HG008-mosaic_tumor.cnv.vcf.gz"
   },
   "displayDefaults": {
-    "labels": { "name": "jexl:split(feature.name,':')[1]" }
+    "records": { "labels": { "name": "jexl:split(feature.name,':')[1]" } }
   }
 }
 ```

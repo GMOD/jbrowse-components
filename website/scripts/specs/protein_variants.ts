@@ -217,7 +217,7 @@ const RS334 = 'chr11:5,227,002'
 const RS713040 = 'chr11:5,227,013'
 const KG_SORTED = {
   trackId: KG,
-  type: 'LinearMultiSampleVariantDisplay',
+  type: 'LinearVariantDisplay',
   height: 330,
   sortRowsBy: { refName: 'chr11', pos: 5_227_001 },
 }
@@ -761,7 +761,7 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
         SOD1_GENE_TRACK,
         {
           trackId: DOG10K,
-          type: 'LinearMultiSampleVariantDisplay',
+          type: 'LinearVariantDisplay',
           height: 640,
         },
       ],

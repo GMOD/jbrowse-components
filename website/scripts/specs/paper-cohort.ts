@@ -82,7 +82,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: SV_TRACK.trackId,
-              type: 'LinearMultiSampleVariantDisplay',
+              type: 'LinearVariantDisplay',
               forceLoad: true,
               sortRowsBy: OUTER_DELETION_SORT,
               // Deletions only: a 35 Mb duplication at the window's edge and
@@ -100,7 +100,7 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
             {
               trackId: HGSVC3_SV_TRACK.trackId,
               filter: ['jexl:alleleLength(feature)>=5000'],
-              displayMode: 'compact',
+              records: { displayMode: 'compact' },
               height: 70,
             },
             {

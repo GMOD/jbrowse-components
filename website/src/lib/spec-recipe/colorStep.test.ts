@@ -22,7 +22,7 @@ test('a constant is the value member, and a bare string names the field', () => 
     'Track menu → Color by → Attribute... → biotype',
   )
   expect(colorStep('impact', 'LinearVariantDisplay')?.path).toBe(
-    'Track menu → Color by → Consequence impact',
+    'Track menu → Color by → Cells → Consequence impact',
   )
 })
 

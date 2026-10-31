@@ -784,7 +784,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
           trackId: 'K562_star_fusion',
           // Collapsed drops labels: both records read `NUP214--XKR3` and
           // overprint at this zoom.
-          displayMode: 'collapsed',
+          records: { displayMode: 'collapsed' },
           height: 30,
         },
         {

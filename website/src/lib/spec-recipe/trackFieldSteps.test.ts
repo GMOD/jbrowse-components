@@ -7,10 +7,10 @@ test('a row height is the shared Row height menu, with each display its presets'
     return Array.isArray(step) ? undefined : step?.path
   }
   expect(path(8, 'LinearMafDisplay')).toBe('Track menu → Row height → Compact')
-  expect(path(2, 'LinearMultiSampleVariantDisplay')).toBe(
+  expect(path(2, 'LinearVariantDisplay')).toBe(
     'Track menu → Row height → Custom... → 2px',
   )
-  expect(path(0, 'LinearMultiSampleVariantDisplay')).toBe(
+  expect(path(0, 'LinearVariantDisplay')).toBe(
     'Track menu → Row height → Squeeze to fit view',
   )
 })
@@ -114,7 +114,7 @@ function stepPaths(
 test('a legend toggle is the same Show row on every display that has a legend', () => {
   for (const displayType of [
     'LinearBasicDisplay',
-    'LinearMultiSampleVariantDisplay',
+    'LinearVariantDisplay',
     'LinearMarkDisplay',
   ]) {
     expect(stepPaths('legend.show', false, displayType)).toEqual([
@@ -147,7 +147,7 @@ test('a row color table is the arrangement dialog, and a column name stays a Sam
     'Track menu → Edit colors/arrangement...',
   ])
   expect(
-    stepPaths('rowColor', 'group', 'LinearMultiSampleVariantDisplay'),
+    stepPaths('rowColor', 'group', 'LinearVariantDisplay'),
   ).toEqual(['Track menu → Color by → Samples → Group'])
   expect(stepPaths('rowColor', table, 'LinearBasicDisplay')).toEqual([])
 })
@@ -255,7 +255,7 @@ test("a filter list's entries are the rows that write them", () => {
     stepPaths(
       'filter',
       [{ field: 'missingness', lte: 0.1 }],
-      'LinearMultiSampleVariantDisplay',
+      'LinearVariantDisplay',
     ),
   ).toEqual(['Track menu → Filter by → Missingness → 0.10'])
   expect(

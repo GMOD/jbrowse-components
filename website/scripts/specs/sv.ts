@@ -815,17 +815,23 @@ export const svSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg008t_severus_sv',
-              labels: { name: { show: false }, description: { show: false } },
+              records: {
+                labels: { name: { show: false }, description: { show: false } },
+              },
               height: 45,
             },
             {
               trackId: 'hg008t_minda_sv',
-              labels: { name: { show: false }, description: { show: false } },
+              records: {
+                labels: { name: { show: false }, description: { show: false } },
+              },
               height: 45,
             },
             {
               trackId: 'hg008t_dragen_sv',
-              labels: { name: { show: false }, description: { show: false } },
+              records: {
+                labels: { name: { show: false }, description: { show: false } },
+              },
               height: 45,
             },
             {
@@ -875,6 +881,10 @@ export const svSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr10:122,823,828-122,852,611',
+          // SV_85's span, until the variant display boxes a record of its own
+          highlight: [
+            { refName: 'chr10', start: 122_835_343, end: 122_837_142 },
+          ],
           tracks: [
             'hg38_ncbiRefSeq_ucsc',
             // `_varLen < 50000` drops the chromosome-scale ClinVar losses that
@@ -884,13 +894,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: CLINVAR_CNV_TRACK.trackId,
               heightMode: 'grow',
             },
-            {
-              trackId: 'hg008t_benchmark_sv',
-              // featureHighlights boxes the glyph wherever the display laid it
-              // out. It matches by name because SV_85_DEL is 1-based display
-              // text, and a span must agree with the record to within a base.
-              featureHighlights: [{ refName: 'chr10', name: 'SV_85' }],
-            },
+            'hg008t_benchmark_sv',
           ],
         },
       ],
@@ -1205,7 +1209,7 @@ export const svSpecs: ScreenshotSpec[] = [
             { trackId: 'hg008t_nygc_cnv', height: 70 },
             {
               trackId: 'hg008t_dragen_cnv',
-              labels: { description: { show: false } },
+              records: { labels: { description: { show: false } } },
               height: 70,
             },
             {
