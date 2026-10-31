@@ -26,7 +26,8 @@ admission rule are marked provisional there.
   `MultiSampleVariantGetCellData` committed through `commitGateMeasurements`,
   and `densityGateActive` only while `recordsOnly`. Also: the default `height`
   is 200 against the feature track's 100, and the row-only menus (Rows,
-  clustering, row color) still show with no rows. Over rows the band's height
+  clustering, row color) still show with no rows, and the rows panel's
+  scrollbar stays mounted (invisible, under the band) with no rows. Over rows the band's height
   measures the whole payload, so it steps only on a refetch; whether it
   should instead follow the screen (rows moving on pan) belongs to the added
   vs taken call below.
