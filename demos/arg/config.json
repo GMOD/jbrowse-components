@@ -2,7 +2,7 @@
   "plugins": [
     {
       "name": "Arg",
-      "umdUrl": "https://jbrowse.org/demos/arg/367573d768a1/jbrowse-plugin-arg.umd.js"
+      "umdUrl": "https://jbrowse.org/demos/arg/ab941addb70c/jbrowse-plugin-arg.umd.js"
     }
   ],
   "assemblies": [
