@@ -1,8 +1,3 @@
-import {
-  alleleFloorOf,
-  interbaseIndicatorRuleOf,
-  withAlleleFloor,
-} from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import {
@@ -19,7 +14,6 @@ import { MAF_FIELD_PRESETS } from './mafColorConfigSchema.ts'
 import type { LinearMafDisplayConfigModel } from './configSchema.ts'
 import type { ConservationUnit } from './conservationUnits.ts'
 import type { MafBasesField, MafColorField, MafYField } from './rowPlan.ts'
-import type { InterbaseIndicatorRule } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type {
@@ -43,48 +37,8 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /**
      * #getter
      */
-    get showCoverage(): boolean {
-      return getConf(self, ['coverage', 'show'])
-    },
-    /**
-     * #getter
-     */
     get showAlignments(): boolean {
       return getConf(self, ['alignments', 'show'])
-    },
-    /**
-     * #getter
-     */
-    get coverageHeight(): number {
-      return getConf(self, ['coverage', 'height'])
-    },
-    /**
-     * #getter
-     * Whether the coverage band colors its allele segments, `coverage.alleles.show`
-     */
-    get showCoverageAlleles(): boolean {
-      return getConf(self, ['coverage', 'alleles', 'show'])
-    },
-    /**
-     * #getter
-     */
-    get coverageMinAlleleFraction(): number {
-      return alleleFloorOf(self.configuration.coverage.alleles.filter)
-    },
-    /**
-     * #getter
-     * `coverage.interbase.filter` as the worker's triangle rule.
-     */
-    get interbaseIndicatorRule(): InterbaseIndicatorRule {
-      return interbaseIndicatorRuleOf(
-        self.configuration.coverage.interbase.filter,
-      )
-    },
-    /**
-     * #getter
-     */
-    get showInterbase(): boolean {
-      return getConf(self, ['coverage', 'interbase', 'show'])
     },
     /**
      * #getter
@@ -264,35 +218,6 @@ export function configSlotActions(self: ConfigSlotSelf) {
           MAF_FIELD_PRESETS.identity.scale.scheme,
         ),
       )
-    },
-    /**
-     * #action
-     */
-    setShowCoverage(arg: boolean) {
-      setConf(self, ['coverage', 'show'], arg)
-    },
-    /**
-     * #action
-     * Turns the coverage band's allele colors on or off, `coverage.alleles.show`
-     */
-    setShowCoverageAlleles(show: boolean) {
-      setConf(self, ['coverage', 'alleles', 'show'], show)
-    },
-    /**
-     * #action
-     */
-    setCoverageMinAlleleFraction(fraction: number) {
-      setConf(
-        self,
-        ['coverage', 'alleles', 'filter'],
-        withAlleleFloor(self.configuration.coverage.alleles.filter, fraction),
-      )
-    },
-    /**
-     * #action
-     */
-    setShowInterbase(arg: boolean) {
-      setConf(self, ['coverage', 'interbase', 'show'], arg)
     },
     /**
      * #action

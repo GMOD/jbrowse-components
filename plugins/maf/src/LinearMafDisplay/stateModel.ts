@@ -7,6 +7,8 @@ import {
 } from '@jbrowse/alignments-core'
 import {
   COVERAGE_Y_PATHS,
+  coverageBandSlotActions,
+  coverageBandSlotViews,
   coverageLayerProblems,
 } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import {
@@ -329,6 +331,8 @@ export default function stateModelFactory(
       }))
       .views(configSlotViews)
       .actions(configSlotActions)
+      .views(coverageBandSlotViews)
+      .actions(coverageBandSlotActions)
       .actions(self => ({
         /**
          * #action

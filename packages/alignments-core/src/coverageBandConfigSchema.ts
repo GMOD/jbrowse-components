@@ -1,15 +1,23 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  readConfObject,
+  setConf,
+} from '@jbrowse/core/configuration'
 
 import {
   alleleFilterProblems,
+  alleleFloorOf,
   coverageAllelesConfigSchema,
+  withAlleleFloor,
 } from './coverageAllelesConfigSchema.ts'
 import { coverageEncodingConfigSchema } from './coverageEncodingConfigSchema.ts'
 import {
   coverageInterbaseConfigSchema,
   interbaseFilterProblems,
+  interbaseIndicatorRuleOf,
 } from './coverageInterbaseConfigSchema.ts'
 
+import type { InterbaseIndicatorRule } from './coverageInterbaseConfigSchema.ts'
 import type { YScalePaths } from '@jbrowse/wiggle-core'
 
 export {
@@ -118,4 +126,96 @@ export function coverageLayerProblems(coverage: {
     ...interbaseFilterProblems(coverage.interbase.filter),
     ...alleleFilterProblems(coverage.alleles.filter),
   ]
+}
+
+export type CoverageBandConfigModel = (typeof coverageBandConfigSchema)['Type']
+
+/** A display mounting the band at `coverage`. */
+export interface CoverageBandSlotSelf {
+  configuration: { coverage: CoverageBandConfigModel }
+}
+
+/**
+ * The band's slot reads, shared by every display mounting it at `coverage`.
+ */
+export function coverageBandSlotViews(self: CoverageBandSlotSelf) {
+  return {
+    /**
+     * #getter
+     */
+    get showCoverage(): boolean {
+      return readConfObject(self.configuration.coverage, 'show')
+    },
+    /**
+     * #getter
+     */
+    get coverageHeight(): number {
+      return readConfObject(self.configuration.coverage, 'height')
+    },
+    /**
+     * #getter
+     * Whether the coverage band colors its allele segments, `coverage.alleles.show`
+     */
+    get showCoverageAlleles(): boolean {
+      return readConfObject(self.configuration.coverage, ['alleles', 'show'])
+    },
+    /**
+     * #getter
+     */
+    get coverageMinAlleleFraction(): number {
+      return alleleFloorOf(self.configuration.coverage.alleles.filter)
+    },
+    /**
+     * #getter
+     * `coverage.interbase.filter` as the worker's triangle rule.
+     */
+    get interbaseIndicatorRule(): InterbaseIndicatorRule {
+      return interbaseIndicatorRuleOf(
+        self.configuration.coverage.interbase.filter,
+      )
+    },
+    /**
+     * #getter
+     */
+    get showInterbase(): boolean {
+      return readConfObject(self.configuration.coverage, ['interbase', 'show'])
+    },
+  }
+}
+
+/**
+ * The band's plain slot writes, the setters of `coverageBandSlotViews`' reads.
+ */
+export function coverageBandSlotActions(self: CoverageBandSlotSelf) {
+  return {
+    /**
+     * #action
+     */
+    setShowCoverage(show: boolean) {
+      setConf(self.configuration.coverage, 'show', show)
+    },
+    /**
+     * #action
+     * Turns the coverage band's allele colors on or off, `coverage.alleles.show`
+     */
+    setShowCoverageAlleles(show: boolean) {
+      setConf(self.configuration.coverage, ['alleles', 'show'], show)
+    },
+    /**
+     * #action
+     */
+    setCoverageMinAlleleFraction(fraction: number) {
+      setConf(
+        self.configuration.coverage,
+        ['alleles', 'filter'],
+        withAlleleFloor(self.configuration.coverage.alleles.filter, fraction),
+      )
+    },
+    /**
+     * #action
+     */
+    setShowInterbase(show: boolean) {
+      setConf(self.configuration.coverage, ['interbase', 'show'], show)
+    },
+  }
 }

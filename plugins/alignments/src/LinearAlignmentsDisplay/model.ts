@@ -6,7 +6,11 @@ import {
   computeVisibleCoverageDomain,
   computeVisibleCoverageStats,
 } from '@jbrowse/alignments-core'
-import { COVERAGE_Y_PATHS } from '@jbrowse/alignments-core/coverageBandConfigSchema'
+import {
+  COVERAGE_Y_PATHS,
+  coverageBandSlotActions,
+  coverageBandSlotViews,
+} from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { getCoverageMenuItems } from '@jbrowse/alignments-core/coverageMenuItems'
 import {
   ConfigurationReference,
@@ -424,6 +428,8 @@ export default function stateModelFactory(
         }),
       )
       // Config-slot reads and plain writes live in `configSlotViews`.
+      .views(coverageBandSlotViews)
+      .actions(coverageBandSlotActions)
       .views(configSlotViews)
       .actions(configSlotActions)
       .volatile(() => {

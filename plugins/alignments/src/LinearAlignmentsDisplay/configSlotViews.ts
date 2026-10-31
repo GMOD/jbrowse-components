@@ -1,9 +1,4 @@
-import {
-  alleleFloorOf,
-  coverageLayerProblems,
-  interbaseIndicatorRuleOf,
-  withAlleleFloor,
-} from '@jbrowse/alignments-core/coverageBandConfigSchema'
+import { coverageLayerProblems } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import { getConf, readConfObject, setConf } from '@jbrowse/core/configuration'
 import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { withPreset } from '@jbrowse/core/util/colorScale'
@@ -79,7 +74,6 @@ import type {
   SashimiPlacement,
 } from './constants.ts'
 import type { DeclaredFilters } from './dialogs/layerFilters.ts'
-import type { InterbaseIndicatorRule } from '@jbrowse/alignments-core/coverageBandConfigSchema'
 import type { Reversible } from '@jbrowse/core/ui/filterMenuItems'
 import type {
   FieldPredicate,
@@ -177,7 +171,9 @@ const MISMATCH_OPACITY = [
   'opacity',
 ] as const
 
-export function configSlotViews(self: ConfigSlotSelf) {
+export function configSlotViews(
+  self: ConfigSlotSelf & { showCoverage: boolean },
+) {
   const insertSizeBand = stableIdentityComputed(() =>
     pinnedInsertSizeBand(
       alignmentsColorEncoding(
@@ -189,38 +185,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
     /** #getter */
     get unit(): AlignmentsUnit {
       return getConf(self, 'unit')
-    },
-    /** #getter */
-    get showCoverage(): boolean {
-      return getConf(self, ['coverage', 'show'])
-    },
-    /** #getter */
-    get coverageHeight(): number {
-      return getConf(self, ['coverage', 'height'])
-    },
-    /** #getter */
-    get showInterbase(): boolean {
-      return getConf(self, ['coverage', 'interbase', 'show'])
-    },
-    /**
-     * #getter
-     * Whether the coverage band colors its allele segments, `coverage.alleles.show`
-     */
-    get showCoverageAlleles(): boolean {
-      return getConf(self, ['coverage', 'alleles', 'show'])
-    },
-    /** #getter */
-    get coverageMinAlleleFraction(): number {
-      return alleleFloorOf(self.configuration.coverage.alleles.filter)
-    },
-    /**
-     * #getter
-     * `coverage.interbase.filter` as the worker's triangle rule.
-     */
-    get interbaseIndicatorRule(): InterbaseIndicatorRule {
-      return interbaseIndicatorRuleOf(
-        self.configuration.coverage.interbase.filter,
-      )
     },
     /** #getter */
     get showPileup(): boolean {
@@ -309,7 +273,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * `down`, in a separate strip, while the band is hidden.
      */
     get effectiveSashimiPlacement(): SashimiPlacement {
-      return this.showCoverage ? this.sashimiPlacement : 'down'
+      return self.showCoverage ? this.sashimiPlacement : 'down'
     },
     /** #getter */
     get showSashimiLabels(): boolean {
@@ -608,39 +572,6 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * written.
      */
     setFilterFields,
-
-    /**
-     * #action
-     */
-    setShowCoverage(show: boolean) {
-      setConf(self, ['coverage', 'show'], show)
-    },
-
-    /**
-     * #action
-     */
-    setShowInterbase(show: boolean) {
-      setConf(self, ['coverage', 'interbase', 'show'], show)
-    },
-
-    /**
-     * #action
-     * Turns the coverage band's allele colors on or off, `coverage.alleles.show`
-     */
-    setShowCoverageAlleles(show: boolean) {
-      setConf(self, ['coverage', 'alleles', 'show'], show)
-    },
-
-    /**
-     * #action
-     */
-    setCoverageMinAlleleFraction(fraction: number) {
-      setConf(
-        self,
-        ['coverage', 'alleles', 'filter'],
-        withAlleleFloor(self.configuration.coverage.alleles.filter, fraction),
-      )
-    },
 
     /**
      * #action
