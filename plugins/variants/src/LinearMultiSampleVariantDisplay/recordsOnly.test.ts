@@ -34,7 +34,7 @@ describe.each([
     expect(d.legendTop).toBe(0)
   })
 
-  test('the band draws every record, in the feature track default color, keyed by no SV class', () => {
+  test('the band draws every record, in the feature track default color, with no key', () => {
     const { display: d } = recordsDisplayAt(FEW, 10, {}, rows, display)
     const data = d.recordsRenderDataMap.get(0)!
     expect(data.flatbushItems.map(i => i.featureId).sort()).toEqual([
@@ -45,7 +45,7 @@ describe.each([
     expect(new Set(data.rectColors)).toEqual(
       new Set([getCachedABGR(featureDefaultColor)]),
     )
-    expect(d.colorScales.map(s => s.title)).not.toContain('SV type')
+    expect(d.colorScales).toEqual([])
   })
 })
 

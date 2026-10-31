@@ -2483,25 +2483,33 @@ export function stateModelFactory(
         /**
          * #getter
          * `LegendMixin`'s hook: the records band's SV classes, the cell
-         * coloring and the row color key.
+         * coloring and the row color key. With no rows and no
+         * `encoding.color` the records paint one color and nothing is keyed,
+         * as on a feature track.
          */
         get colorScales(): ColorScale[] {
+          const recordsUncolored =
+            self.recordsOnly && self.colorEncoding === undefined
           return [
             ...self.recordsColorScales,
-            ...getVariantColorScales({
-              unit: self.unit,
-              hasSecondaryAlt: self.hasSecondaryAlt,
-              hasAltWithoutPhaseSet: self.hasAltWithoutPhaseSet,
-              hasUnphased: self.hasUnphased,
-              hasNoCall: self.hasNoCall,
-              paintedDomain: self.paintedDomain,
-              shadeByDosage: self.shadeByDosage,
-              color: self.colorEncoding,
-              colorSlots: heldColorSlots(self, self.colorEncoding),
-              ramp: self.cellHue.ramp,
-              colorTitle: withPreset(self.colorSetting, FEATURE_FIELD_PRESETS)
-                .legend.title,
-            }),
+            ...(recordsUncolored
+              ? []
+              : getVariantColorScales({
+                  unit: self.unit,
+                  hasSecondaryAlt: self.hasSecondaryAlt,
+                  hasAltWithoutPhaseSet: self.hasAltWithoutPhaseSet,
+                  hasUnphased: self.hasUnphased,
+                  hasNoCall: self.hasNoCall,
+                  paintedDomain: self.paintedDomain,
+                  shadeByDosage: self.shadeByDosage,
+                  color: self.colorEncoding,
+                  colorSlots: heldColorSlots(self, self.colorEncoding),
+                  ramp: self.cellHue.ramp,
+                  colorTitle: withPreset(
+                    self.colorSetting,
+                    FEATURE_FIELD_PRESETS,
+                  ).legend.title,
+                })),
             ...self.rowColorScales,
           ]
         },
