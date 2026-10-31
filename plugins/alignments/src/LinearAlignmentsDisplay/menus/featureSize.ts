@@ -136,17 +136,18 @@ export function getTrackSizingItems(
   model: FeatureHeightModel & MaxHeightModel,
   gate: ContentGate = {},
 ): MenuItem[] {
+  const current = model.heightMode === 'grow' ? 'grow' : 'fixed'
   return [
     {
       label: TRACK_HEIGHT_LABEL,
       type: 'subMenu' as const,
-      subMenu: radioItems(
-        TRACK_HEIGHT_OPTIONS,
-        model.heightMode === 'grow' ? 'grow' : 'fixed',
-        mode => {
+      // the ticked row writes nothing: under fit it is Fixed, and writing that
+      // would end the fit
+      subMenu: radioItems(TRACK_HEIGHT_OPTIONS, current, mode => {
+        if (mode !== current) {
           model.setHeightMode(mode)
-        },
-      ),
+        }
+      }),
     },
     ...(gate.disabled ? [] : [getMaxHeightMenuItem(model)]),
   ]

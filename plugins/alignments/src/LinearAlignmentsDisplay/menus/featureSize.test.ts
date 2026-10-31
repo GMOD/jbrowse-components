@@ -95,6 +95,9 @@ test('Track height is fixed or autogrow, a fit ticks Fixed, and the row cap need
   expect(checkedLabels(modes())).toEqual(['Autogrow'])
   display.setHeightMode('fit')
   expect(checkedLabels(modes())).toEqual(['Fixed'])
+  // the ticked row is a no-op, not a way out of the fit
+  clickMenuItem(modes(), 'Fixed')
+  expect(display.heightMode).toBe('fit')
   clickMenuItem(modes(), 'Autogrow')
   expect(display.heightMode).toBe('grow')
   clickMenuItem(modes(), 'Fixed')

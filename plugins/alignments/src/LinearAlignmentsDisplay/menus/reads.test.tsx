@@ -18,6 +18,8 @@ function makeModel(
   overrides?: Partial<{
     canCollapseSections: boolean
     showCoverage: boolean
+    showPileup: boolean
+    showMismatches: boolean
     unit: AlignmentsUnit
   }>,
 ) {
@@ -175,4 +177,35 @@ test('the soft clipping toggle greys out in chain mode', () => {
     disabledHelpText: expect.stringContaining('Chain layout'),
   })
   expect(softClipRow('read')).not.toHaveProperty('disabled')
+})
+
+function rowOf(model: ReturnType<typeof makeModel>, label: string) {
+  return subMenuOf(model).find(r => 'label' in r && r.label === label)
+}
+
+// Mismatches, their fade and soft clips draw in the pileup alone, so with it
+// hidden they grey out as Read height does; the fade also needs mismatches.
+test('the pileup-only layers grey out with the pileup hidden', () => {
+  const pileupOff = makeModel({ showPileup: false })
+  for (const label of [
+    'Mismatches',
+    'Fade low-quality mismatches',
+    'Soft clipping',
+  ]) {
+    expect(rowOf(pileupOff, label)).toMatchObject({
+      disabled: true,
+      disabledHelpText: expect.stringContaining('Pileup'),
+    })
+  }
+  expect(
+    rowOf(makeModel({ showMismatches: false }), 'Fade low-quality mismatches'),
+  ).toMatchObject({
+    disabled: true,
+    disabledHelpText: expect.stringContaining('Mismatches'),
+  })
+  const on = makeModel()
+  expect(rowOf(on, 'Mismatches')).not.toHaveProperty('disabled')
+  expect(rowOf(on, 'Fade low-quality mismatches')).not.toHaveProperty(
+    'disabled',
+  )
 })

@@ -56,6 +56,15 @@ interface ReadsModel
 // Advanced for the same reason — it was the one action among the
 // checkboxes. Anything new here should be a checkbox, or it belongs in another
 // menu.
+function disabledUnless(enabled: boolean, disabledHelpText: string) {
+  return enabled ? undefined : { disabled: true, disabledHelpText }
+}
+
+// A pileup-only layer greys out with the pileup hidden, as Read height does.
+function pileupLayerGate(model: ReadsModel, what: string) {
+  return disabledUnless(model.showPileup, `Turn on Show → Pileup to ${what}`)
+}
+
 function softClippingItem(model: ReadsModel) {
   return toggleItem(
     'Soft clipping',
@@ -69,7 +78,22 @@ function softClippingItem(model: ReadsModel) {
           disabledHelpText:
             'Chain layout does not expand soft clips — uncheck "Read connections → Link mates and supplementary alignments" first',
         }
-      : undefined,
+      : pileupLayerGate(model, 'show soft clipping'),
+  )
+}
+
+function fadeMismatchesItem(model: ReadsModel) {
+  return toggleItem(
+    'Fade low-quality mismatches',
+    model.mismatchOpacityField === 'baseQuality',
+    fade => {
+      model.setMismatchOpacityField(fade ? 'baseQuality' : undefined)
+    },
+    pileupLayerGate(model, 'fade mismatches') ??
+      disabledUnless(
+        model.showMismatches,
+        'Turn on Show → Mismatches to fade them',
+      ),
   )
 }
 
@@ -86,16 +110,15 @@ export function getReadsMenuItems(model: ReadsModel) {
     ...collapseSectionsItems(model),
     ...hiddenGroupsItems(model),
     ...sectionOrderResetItems(model),
-    toggleItem('Mismatches', model.showMismatches, show => {
-      model.setShowMismatches(show)
-    }),
     toggleItem(
-      'Fade low-quality mismatches',
-      model.mismatchOpacityField === 'baseQuality',
-      fade => {
-        model.setMismatchOpacityField(fade ? 'baseQuality' : undefined)
+      'Mismatches',
+      model.showMismatches,
+      show => {
+        model.setShowMismatches(show)
       },
+      pileupLayerGate(model, 'show mismatches'),
     ),
+    fadeMismatchesItem(model),
     // `rpcProps` sends soft clipping off in chain mode, so the row greys out
     // there rather than taking a click that draws nothing.
     softClippingItem(model),

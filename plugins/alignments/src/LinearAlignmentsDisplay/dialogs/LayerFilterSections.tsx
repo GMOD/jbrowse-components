@@ -86,7 +86,8 @@ const LayerFilterSections = observer(function LayerFilterSections({
           />
         </>
       ) : null}
-      {bases ? (
+      {bases &&
+      (bases.types.length > 0 || bases.probabilityPercent !== undefined) ? (
         <>
           <FormHeading>Modifications</FormHeading>
           {bases.types.length > 0 ? (
