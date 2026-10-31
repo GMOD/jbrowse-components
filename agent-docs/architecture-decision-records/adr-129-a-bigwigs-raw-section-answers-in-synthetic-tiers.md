@@ -147,9 +147,11 @@ fetched over `binAlignedExtent`, so an edge bin sees every record it covers:
 The format forbids both, so this is a safety net and the only region-level
 fallback left.
 
-**The fetch asks bbi for the raw section explicitly** (`basesPerSpan` of a
-quarter of the first level), not with the view's span, which rounds through
-`1 / (1 / span)` in bbi.
+**The fetch hands bbi a span from the middle of the picked tier**, never the
+view's, which rounds through `1 / (1 / span)` in bbi and can land one ulp under
+a file level's boundary (at 792 bp/px, `posneg_rw1.bw` read raw under the 1584
+tier's declared range). A synthetic tier's middle sits under the first level,
+so it reads the raw section.
 
 **A file with no zoom levels gets none.** The ladder has no first level to
 anchor to. UCSC's writers always write at least one level, so such a file comes
@@ -157,8 +159,8 @@ from another writer, and its raw section is the only resolution it has.
 
 ## Consequences
 
-- Every read path goes through one `readRegions`: `getFeatureArrays`, and
-  `getFeatures` with its `getRegionQuantitativeStats`.
+- Every read path goes through `getFeatureArrays`, `getFeatures` and its
+  `getRegionQuantitativeStats` included.
   A synthetic region's features report `summary: true` with `minScore` and
   `maxScore`, so `featuresToRaw` keeps them for a BigWig under a
   MultiQuantitativeTrack. The mark display reads the same bins the wiggle

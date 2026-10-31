@@ -285,3 +285,24 @@ describe('a BigWig with no zoom levels', () => {
     expect(sampleMeanRecordSpan).not.toHaveBeenCalled()
   })
 })
+
+// 1584 / 2 round-trips through bbi's `1 / (1 / span)` to just under 792, which
+// read the raw section while the adapter declared the 1584 tier's range
+it('reads the tier it declares at a bpPerPx on the tier boundary', async () => {
+  const adapter = adapterAt(
+    require.resolve('../../../../test_data/volvox/posneg_rw1.bw'),
+  )
+  const region = { refName: 'ctgA', start: 0, end: 50000, assemblyName: 'v' }
+  for (const bpPerPx of [791, 792, 793]) {
+    const { minBpPerPx } = await adapter.getZoomRange({ bpPerPx })
+    const [rows] = await adapter.getFeatureArrays([region], { bpPerPx })
+    expect({ bpPerPx, summary: rows!.minScores !== undefined }).toEqual({
+      bpPerPx,
+      summary: minBpPerPx > 0,
+    })
+  }
+  expect(await adapter.getZoomRange({ bpPerPx: 792 })).toEqual({
+    minBpPerPx: 792,
+    maxBpPerPx: 3168,
+  })
+})

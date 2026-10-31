@@ -20,7 +20,6 @@ import {
 } from './syntheticTiers.ts'
 import { tierSpanRange } from './tierSpanRange.ts'
 
-import type { RawFeatureArrays } from '../util.ts'
 import type { WiggleAdapterOptions as WiggleOptions } from '../wiggleAdapterOptions.ts'
 import type { BigWigAdapterConfig } from './configSchema.ts'
 import type {
@@ -162,7 +161,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     region: Region,
     opts: WiggleOptions = {},
   ): Promise<ArrayFeatureView> {
-    const [arrays] = await this.readRegions([region], opts)
+    const [arrays] = await this.getFeatureArrays([region], opts)
     const { starts, ends, scores, minScores, maxScores } = arrays!
     return new ArrayFeatureView(
       minScores && maxScores
@@ -174,19 +173,22 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
   }
 
   // One bbi pass over all regions, coalescing adjacent on-disk blocks across
-  // region boundaries. All regions share the tier picked from the view's
-  // bpPerPx. A synthetic tier reads the raw section over bin-aligned extents
-  // and bins each region; a file tier's rows are bbi's own.
-  private async readRegions(regions: Region[], opts: WiggleOptions) {
+  // region boundaries — fewer range requests than one read each, the win for
+  // collapsed-intron and whole-genome overviews. All regions share the tier
+  // picked from the view's bpPerPx. A synthetic tier reads the raw section
+  // over bin-aligned extents and bins each region; a file tier's rows are
+  // bbi's own, sliced out of its packed arrays copy-free.
+  public async getFeatureArrays(regions: Region[], opts: WiggleOptions = {}) {
     const { statusCallback } = opts
     const { bigwig, firstLevel } = await this.setup(opts)
     const levels = await this.tierLevels(opts)
-    const basesPerSpan = this.basesPerSpan(opts)
-    const binBp = syntheticBinBp(
-      tierSpanRange(levels, basesPerSpan)[0],
-      firstLevel,
-    )
-    const rawSectionSpan = firstLevel / 4
+    const [tierLo, tierHi] = tierSpanRange(levels, this.basesPerSpan(opts))
+    const binBp = syntheticBinBp(tierLo, firstLevel)
+    // bbi re-derives the tier through `1 / (1 / span)`, which can land one ulp
+    // under a level's boundary and read the raw section at a summary zoom, so
+    // it is handed a span from the middle of the tier rather than the view's.
+    // A synthetic tier sits under the first level, so its middle reads raw.
+    const spanInTier = tierHi === Infinity ? 2 * tierLo : (tierLo + tierHi) / 2
 
     const res = await downloadStatus(
       'Downloading wiggle data',
@@ -201,27 +203,18 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
           })),
           {
             ...opts,
-            basesPerSpan: binBp === undefined ? basesPerSpan : rawSectionSpan,
+            basesPerSpan: spanInTier,
             onProgress,
           },
         ),
     )
 
     const { starts, ends, scores, regionOffsets } = res
-    const rows = res.isSummary
-      ? {
-          starts,
-          ends,
-          scores,
-          minScores: res.minScores,
-          maxScores: res.maxScores,
-        }
-      : { starts, ends, scores }
     return regions.map((region, i) => {
       const lo = regionOffsets[i]!
       const hi = regionOffsets[i + 1]!
       return binBp === undefined
-        ? sliceRows(rows, lo, hi)
+        ? sliceRows(res, lo, hi)
         : binRawRegion(
             starts,
             ends,
@@ -233,15 +226,5 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
             binBp,
           )
     })
-  }
-
-  // Every region in one bbi pass, fewer range requests than one read each —
-  // the win for collapsed-intron and whole-genome overviews. regionOffsets
-  // slices each region out of bbi's packed arrays copy-free.
-  public async getFeatureArrays(
-    regions: Region[],
-    opts: WiggleOptions = {},
-  ): Promise<RawFeatureArrays[]> {
-    return this.readRegions(regions, opts)
   }
 }
