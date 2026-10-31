@@ -46,7 +46,7 @@ test('the export letters the records above rows moved down by the band', async (
   const rowShifts = [...container.querySelectorAll('g[transform]')].map(g =>
     g.getAttribute('transform'),
   )
-  expect(rowShifts).toContain(`translate(0 ${display.topBands.recordsHeight})`)
+  expect(rowShifts).toContain(`translate(0 ${display.rowsTopOffset})`)
 })
 
 function labelY(container: HTMLElement, id: string) {

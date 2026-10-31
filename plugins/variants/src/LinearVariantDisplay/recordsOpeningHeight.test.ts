@@ -91,7 +91,7 @@ describe('the first layout keeps the height it has', () => {
   test('over genotype rows, and after genotypes go off', () => {
     const { display } = recordsDisplayAt(SPARSE, 10)
     expect(display.recordsOnly).toBe(false)
-    expect(display.height - display.topBands.recordsHeight).toBe(200)
+    expect(display.availableHeight).toBe(200)
     display.setShowGenotypes(false)
     expect(display.recordsOnly).toBe(false)
     expect(display.configuredHeight).toBe(200)

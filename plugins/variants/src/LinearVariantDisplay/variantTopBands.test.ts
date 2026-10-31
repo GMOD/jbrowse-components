@@ -9,6 +9,7 @@ import {
 } from './recordsBand.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 import {
+  BAND_CHIPS_HEIGHT,
   DEFAULT_RECORDS_HEIGHT,
   MIN_RECORDS_HEIGHT,
   recordsBandHeightOverRows,
@@ -23,6 +24,7 @@ function geometry(
   return variantTopBandsGeometry({
     showRecords: true,
     recordsHeight: 40,
+    showChips: false,
     lineZoneHeight: 0,
     ...over,
   })
@@ -34,14 +36,27 @@ describe('the band stack', () => {
   test('stacks the records above the connector zone', () => {
     expect(geometry({ lineZoneHeight: 30 })).toEqual({
       recordsHeight: 40,
+      chipsHeight: 0,
       lineZoneTop: 40,
       bottom: 70,
+    })
+  })
+
+  // the rows' tree, facet strip and labels draw over their left edge, so the
+  // chips take a strip of their own between the band and the rows
+  test('the chips take a strip under the records', () => {
+    expect(geometry({ showChips: true })).toEqual({
+      recordsHeight: 40,
+      chipsHeight: BAND_CHIPS_HEIGHT,
+      lineZoneTop: 40 + BAND_CHIPS_HEIGHT,
+      bottom: 40 + BAND_CHIPS_HEIGHT,
     })
   })
 
   test('a band that is off costs zero px, not its floor', () => {
     expect(geometry({ showRecords: false, lineZoneHeight: 30 })).toEqual({
       recordsHeight: 0,
+      chipsHeight: 0,
       lineZoneTop: 0,
       bottom: 30,
     })
@@ -178,7 +193,7 @@ describe('the band on a display', () => {
     const band = display.topBands.recordsHeight
     expect(band).toBeGreaterThan(0)
     expect(display.height).toBe(height + band)
-    expect(display.rowsTopOffset).toBe(band)
+    expect(display.rowsTopOffset).toBe(band + BAND_CHIPS_HEIGHT)
     expect(display.availableHeight).toBe(before.availableHeight)
 
     display.setShowRecords(false)

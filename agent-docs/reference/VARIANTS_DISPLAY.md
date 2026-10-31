@@ -357,7 +357,9 @@ a `recordsOnly` choice in the model belongs there.
   record, and an SV paints after the small records so it lies over them. The
   worker keeps a sample-less VCF's sites at genomic positions only
   (`keepSampleLessSites`), since a site test reads called alleles.
-- **Hiding either band is a chip** (`BandChips`, one row under the band):
+- **Hiding either band is a chip** (`BandChips`, a strip of its own under
+  the band, `BAND_CHIPS_HEIGHT` in `variantTopBands.ts`, since the rows' tree,
+  facet strip and labels draw over the rows' left edge):
   `Records ×` and `Genotypes ×` while both draw, `Show records` or `Show
   genotypes` for the one hidden, beside the hidden-records count. With
   `genotypes.show` off on a VCF with samples (`drawsRows` false) the rows

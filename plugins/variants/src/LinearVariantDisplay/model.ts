@@ -133,7 +133,6 @@ import {
   variantTrackMenuItems,
 } from './variantDisplayMenuItems.ts'
 import { getVariantColorScales } from './variantLegend.ts'
-import { BAND_CHIPS_HEIGHT } from './variantTopBands.ts'
 
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -1458,9 +1457,10 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Over genotype rows the records band adds its height to the track
-         * above them, so the rows keep the slot's height; with the rows
-         * hidden the track is the band and its chip strip, the slot kept
+         * Over genotype rows the records band and its chip strip add their
+         * height to the track above them, so the rows keep the slot's height;
+         * with the rows hidden the track is the band and its chip strip, the
+         * slot kept
          * for the rows' return. With no samples the band is the display,
          * sized by `heightMode`, and in a ring's band it is taken from the
          * rows. Overrides `HeightModeMixin.height`.
@@ -1472,8 +1472,9 @@ export function stateModelFactory(
               : self.fitTargetHeight
           return self.recordsOnly || self.hostHeight !== undefined
             ? sized
-            : (self.drawsRows ? sized : BAND_CHIPS_HEIGHT) +
-                self.topBands.recordsHeight
+            : (self.drawsRows ? sized : 0) +
+                self.topBands.recordsHeight +
+                self.topBands.chipsHeight
         },
       }))
       .actions(recordsLayoutActions)

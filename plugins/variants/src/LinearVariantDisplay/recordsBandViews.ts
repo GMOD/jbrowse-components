@@ -624,6 +624,7 @@ export type RecordsRender = ReturnType<typeof recordsRenderViews>
 
 interface RecordsLayoutHost extends RecordsRenderHost, RecordsRender {
   height: number
+  atGenomicPositions: boolean
   lineZoneHeight: number
   fitHeightToDisplay: boolean
   autoHeight: boolean
@@ -699,6 +700,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
               self.recordsMeasureIds,
             ),
           }),
+      showChips: self.atGenomicPositions && !self.recordsOnly,
       lineZoneHeight: self.lineZoneHeight,
     }),
   )

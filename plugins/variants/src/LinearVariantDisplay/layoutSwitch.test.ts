@@ -3,12 +3,13 @@ import { SIDEBAR_HINT_LINE_PX } from '@jbrowse/tree-sidebar'
 
 import { createTestEnvironment } from './testEnv.ts'
 import { variantTrackMenuItems } from './variantDisplayMenuItems.ts'
+import { BAND_CHIPS_HEIGHT } from './variantTopBands.ts'
 
 test('the layout is a fetch input, and only columns reserve a connector zone', () => {
   const { display } = createTestEnvironment().createDisplay()
   expect(display.rpcProps().layout).toBe('genomic')
   expect(display.lineZoneHeight).toBe(0)
-  expect(display.rowsTopOffset).toBe(0)
+  expect(display.rowsTopOffset).toBe(BAND_CHIPS_HEIGHT)
 
   display.setVariantLayout('columns')
 
@@ -51,6 +52,6 @@ test('a kept subset puts the focus chip in a line above the rows', () => {
 
   display.setRowFocus(['a'])
 
-  expect(display.rowsTopOffset).toBe(SIDEBAR_HINT_LINE_PX)
+  expect(display.rowsTopOffset).toBe(BAND_CHIPS_HEIGHT + SIDEBAR_HINT_LINE_PX)
   expect(display.availableHeight).toBe(height - SIDEBAR_HINT_LINE_PX)
 })

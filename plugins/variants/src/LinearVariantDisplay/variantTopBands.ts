@@ -24,14 +24,17 @@ export const MIN_RECORDS_HEIGHT = 8
 export const DEFAULT_RECORDS_HEIGHT = 170
 
 /**
- * The strip under the records band holding its chips while no genotype row
- * draws: the way back to the rows, and the count of hidden records.
+ * The strip under the records band holding its chips: each band's hide and
+ * show, and the count of hidden records. Reserved rather than laid over the
+ * rows, whose tree, facet strip and labels draw over their left edge.
  */
 export const BAND_CHIPS_HEIGHT = GROUP_LABEL_HEIGHT + 4
 
 export interface VariantTopBands {
   /** **0 when the band is off**, or holds no record. */
   recordsHeight: number
+  /** The chip strip under the records band; 0 where no chip draws. */
+  chipsHeight: number
   lineZoneTop: number
   /**
    * Where the genotype rows begin: the sum of every band above, which
@@ -77,19 +80,26 @@ export function recordsBandHeightOverRows({
 export function variantTopBandsGeometry({
   showRecords,
   recordsHeight,
+  showChips,
   lineZoneHeight,
 }: {
   showRecords: boolean
   recordsHeight: number
+  showChips: boolean
   /** 0 at genomic positions. */
   lineZoneHeight: number
 }): VariantTopBands {
-  const { top, reserved, bottom } = stackBands(['records', 'lineZone'], {
-    records: { active: showRecords, height: recordsHeight },
-    lineZone: { active: true, height: lineZoneHeight },
-  })
+  const { top, reserved, bottom } = stackBands(
+    ['records', 'chips', 'lineZone'],
+    {
+      records: { active: showRecords, height: recordsHeight },
+      chips: { active: showChips, height: BAND_CHIPS_HEIGHT },
+      lineZone: { active: true, height: lineZoneHeight },
+    },
+  )
   return {
     recordsHeight: reserved.records,
+    chipsHeight: reserved.chips,
     lineZoneTop: top.lineZone,
     bottom,
   }

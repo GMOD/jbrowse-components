@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom'
 
+import { getConf } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
@@ -45,7 +46,7 @@ test('jb.setSession rewrites the live session as a document', async () => {
     ])
     expect(view.coarseVisibleLocStrings).toBe('ctgA:19,999..24,999')
   }, delay)
-  expect(view.tracks[0]!.activeDisplay.height).toBe(77)
+  expect(getConf(view.tracks[0]!.activeDisplay, 'height')).toBe(77)
   await findAnyDisplayPainted(delay)
 
   // an entry for a track already shown restyles it rather than doing nothing
@@ -55,7 +56,7 @@ test('jb.setSession rewrites the live session as a document', async () => {
   restyle.views[0]!.tracks.push({ trackId: 'volvox_test_vcf', height: 55 })
   await jb.setSession(restyle, 5000)
   await waitFor(() => {
-    expect(view.tracks[0]!.activeDisplay.height).toBe(55)
+    expect(getConf(view.tracks[0]!.activeDisplay, 'height')).toBe(55)
   }, delay)
   expect(view.tracks).toHaveLength(1)
 

@@ -222,7 +222,9 @@ const SNVS: BandRecord[] = [
 test('an SNV-only region draws its records above the rows', () => {
   const { display } = recordsDisplayAt(SNVS, 10)
   expect(display.topBands.recordsHeight).toBeGreaterThan(0)
-  expect(display.rowsTopOffset).toBe(display.topBands.recordsHeight)
+  expect(display.rowsTopOffset).toBe(
+    display.topBands.recordsHeight + display.topBands.chipsHeight,
+  )
 })
 
 // The band adds its height to the track: the rows under it keep theirs.
