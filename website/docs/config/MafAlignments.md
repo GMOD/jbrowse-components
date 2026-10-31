@@ -26,7 +26,7 @@ A setting written to it names members one by one: a member left out stays as it 
 | Slot | Description |
 | --- | --- |
 | <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | When off, only the bands above the rows render. |
-| <span id="slot-rowproportion">**rowProportion**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.8</code> | fraction of the row height each glyph fills |
+| <span id="slot-mark">**mark**</span><br>[MafAlignmentsMark](../mafalignmentsmark) | The glyph each base draws as: `height.band`, the fraction of its row it fills. |
 | <span id="slot-mismatches">**mismatches**</span><br>[MafMismatches](../mafmismatches) | `show` draws each base differing from the reference, with insertion markers and deletion counts; on by default. |
 | <span id="slot-bases">**bases**</span><br>[MafBases](../mafbases) | The per-position layer: every base, or each codon's amino-acid change. |
 | <span id="slot-inversions">**inversions**</span><br>[MafPart](../mafpart) | `show` hatches each block a species aligns on the other strand from the rest of its blocks on that source chromosome. |

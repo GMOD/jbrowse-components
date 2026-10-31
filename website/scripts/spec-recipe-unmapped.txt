@@ -18,6 +18,7 @@ loadedRegion
 loadedTrackId
 maxRegionBp
 paneHeight
+records
 render
 repeatKey
 repeatTrackId

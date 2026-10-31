@@ -3,7 +3,7 @@ name: variant-display-links-band
 description: The merged variant display gets a `links` band drawing SVs as arcs through the shared `link` mark, as alignments' `readConnections` band does. A breakend's mate becomes an arc instead of a point and a label, and overlapping SVs could read as nested arcs instead of stacked bars. After the merge (handoffs/variant-display-merge.md).
 metadata:
   area: variants
-  category: feature
+  category: visual-call
   order: 2
   first_move: "draw the cancer SV tutorial's K562 StarFusion and 10x callsets as one VariantTrack with a `links` band beside today's `LinearMarkDisplay` link-mark tracks (specs/cancer_sv.ts ~944), and an overlapping-SV locus (1000 Genomes RHD) as arcs vs the records band's stacked bars"
 ---

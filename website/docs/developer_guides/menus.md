@@ -79,6 +79,7 @@ where the display is defined; to add to one belonging to another plugin, use
           session: getSession(self),
           model: self,
           view: containingLgv(self),
+          pluginManager: getEnv(self).pluginManager,
         }),
       ]
     },

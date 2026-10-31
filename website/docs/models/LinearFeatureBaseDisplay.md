@@ -214,11 +214,11 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | `LegendMixin`'s hook: the key the color channel's scale derives. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>89 inherited getters from 13 models</summary>
+<summary>90 inherited getters from 13 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-owngroupstate">[`ownGroupState`](../hiddengroupsmixin#getter-owngroupstate)</span>, <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span>
 
-From [FeatureGateMixin](../featuregatemixin): <span id="getter-gateenabled">[`gateEnabled`](../featuregatemixin#getter-gateenabled)</span>, <span id="getter-visiblefeaturedensityperpx">[`visibleFeatureDensityPerPx`](../featuregatemixin#getter-visiblefeaturedensityperpx)</span>, <span id="getter-maxfeaturedensity">[`maxFeatureDensity`](../featuregatemixin#getter-maxfeaturedensity)</span>, <span id="getter-densitytoolarge">[`densityTooLarge`](../featuregatemixin#getter-densitytoolarge)</span>
+From [FeatureGateMixin](../featuregatemixin): <span id="getter-gateenabled">[`gateEnabled`](../featuregatemixin#getter-gateenabled)</span>, <span id="getter-visiblefeaturedensityperpx">[`visibleFeatureDensityPerPx`](../featuregatemixin#getter-visiblefeaturedensityperpx)</span>, <span id="getter-configuredmaxfeaturescreendensity">[`configuredMaxFeatureScreenDensity`](../featuregatemixin#getter-configuredmaxfeaturescreendensity)</span>, <span id="getter-maxfeaturedensity">[`maxFeatureDensity`](../featuregatemixin#getter-maxfeaturedensity)</span>, <span id="getter-densitytoolarge">[`densityTooLarge`](../featuregatemixin#getter-densitytoolarge)</span>
 
 From [FacetWritesMixin](../facetwritesmixin): <span id="getter-writtenfacet">[`writtenFacet`](../facetwritesmixin#getter-writtenfacet)</span>
 
@@ -317,11 +317,6 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-showallhidden">**showAllHidden**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-sethover">**setHover**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(featureId: string &#124; undefined, subfeatureId: string &#124; undefine…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(featureId: string &#124; undefined, subfeatureId: string &#124; undefined, tooltip: string[] &#124; undefined) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-clearhover">**clearHover**</span><br><code>() =&gt; void</code> |  |
-| <span id="action-setfeaturehighlights">**setFeatureHighlights**</span><br><code>(highlights: FeatureHighlight[]) =&gt; void</code> |  |
-| <span id="action-setsearchhighlight">**setSearchHighlight**</span><br><code>(highlight: FeatureHighlight) =&gt; void</code> | A text search's highlight replaces the previous search's and leaves the right-click ones, which have a `featureId`, alone. |
-| <span id="action-addfeaturehighlightforitem">**addFeatureHighlightForItem**</span><br><code>(target: HighlightTarget, refName: string) =&gt; void</code> |  |
-| <span id="action-removefeaturehighlightsforid">**removeFeatureHighlightsForId**</span><br><code>(featureId: string) =&gt; void</code> |  |
-| <span id="action-clearfeaturehighlights">**clearFeatureHighlights**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-opencontextmenu">**openContextMenu**</span><br><code>(info: FeatureContextMenuInfo) =&gt; void</code> | Drops the hover first, so its tooltip does not sit under the menu; the highlight box stays on the target through `hoverBoxFeature`. |
 | <span id="action-openfeaturedetails">**openFeatureDetails**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(fetch: () =&gt; Promise&lt;Feature &#124; undefined&gt;, parentFeature?: Par…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(fetch: () =&gt; Promise&lt;Feature &#124; undefined&gt;, parentFeature?: ParentFeatureSummary &#124; undefined) =&gt; void</code></pre></dialog></span> | Open the feature-details widget on what `fetch` resolves to, with the adapter's header metadata beside it; a lookup that resolves to nothing is reported as a miss. |
 | <span id="action-selectfeature">**selectFeature**</span><br><code>(feature: Feature) =&gt; void</code> | Open the feature-details widget on a feature already in hand. |

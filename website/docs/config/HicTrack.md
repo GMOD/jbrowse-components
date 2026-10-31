@@ -71,5 +71,5 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | Key | On load |
 | --- | --- |
 | `rpcDriverName` | ignored |
-| `textSearchAdapter` | ignored |
-| `textSearchIndexingAttributes` | ignored |
+| `textSearchAdapter` | moved into a current slot |
+| `textSearchIndexingAttributes` | moved into a current slot |

@@ -134,7 +134,7 @@ added:
 
 ```ts
 import { getConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import { openLocation } from '@jbrowse/core/util/io'
 
@@ -146,10 +146,11 @@ import type { UriLocation } from '@jbrowse/core/util'
 // lazyConnect wraps this in the shared connect-failure handler
 export async function doConnect(self: ConnectionDoConnectArg) {
   const session = getSession(self)
+  const { pluginManager } = getEnv(self)
   const configJsonLocation = getConf(self, 'configJsonLocation') as UriLocation
 
   const configJson = JSON.parse(
-    await openLocation(configJsonLocation).readFile('utf8'),
+    await openLocation(configJsonLocation, pluginManager).readFile('utf8'),
   )
   const configUri = resolve(configJsonLocation.uri, configJsonLocation.baseUri)
   addRelativeUris(configJson, new URL(configUri))
