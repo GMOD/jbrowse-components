@@ -38,8 +38,6 @@ export function arcBandState(
 export const ARC_MARKER_PX = 5
 /** How far inside the band the y scale ends, so a square at either end draws whole. */
 export const ARC_BAND_INSET_PX = ARC_MARKER_PX / 2
-/** A split-read connector's dash and gap, in CSS px. */
-export const ARC_DASH: readonly [number, number] = [3, 3]
 
 /**
  * The band's y scale. The read cloud plots |TLEN| on a log axis; arc mode
@@ -76,7 +74,7 @@ export function arcBandYScale(state: ArcBandState) {
   }
 }
 
-function linkParams(state: ArcBandState, dashed: boolean): LinkParams {
+function linkParams(state: ArcBandState): LinkParams {
   const cloud = state.arcsYDomainBp !== undefined
   const sizeScale = state.readConnectionsStrokeScale
   return {
@@ -87,7 +85,6 @@ function linkParams(state: ArcBandState, dashed: boolean): LinkParams {
     sizePx: sizeScale.range[0],
     sizeScale,
     stemPx: state.arcBand.height,
-    strokeDash: dashed ? ARC_DASH : undefined,
   }
 }
 
@@ -99,21 +96,20 @@ const bandOpen = (state: ArcBandState) => state.arcBand.height > 0
 
 /**
  * The band's connections, in paint order: the interchromosomal ticks under
- * everything, the arcs or bars, then the read cloud's dashed split-read
- * connectors. Each spans the view, so a connection crosses a region seam
- * whole.
+ * everything, the arcs or bars, then the interchromosomal arcs. Each spans the
+ * view, so a connection crosses a region seam whole.
  */
 export const ARC_LINK_MARKS: Mark<ArcBandFeed, ArcBandState>[] = [
   defineMark({
     shape: withPassId(linkMark, 'arcTick'),
     channels: (f: ArcBandFeed) => f.ticks,
-    params: (s: ArcBandState) => linkParams(s, false),
+    params: (s: ArcBandState) => linkParams(s),
     enabled: bandOpen,
   }),
   defineMark({
     shape: withPassId(linkMark, 'arcLink'),
     channels: (f: ArcBandFeed) => f.links,
-    params: (s: ArcBandState) => linkParams(s, false),
+    params: (s: ArcBandState) => linkParams(s),
     enabled: bandOpen,
   }),
   // An interchromosomal arc has no genomic radius, so its dome is half as tall
@@ -121,37 +117,22 @@ export const ARC_LINK_MARKS: Mark<ArcBandFeed, ArcBandState>[] = [
   defineMark({
     shape: withPassId(linkMark, 'arcCrossLink'),
     channels: (f: ArcBandFeed) => f.crossLinks,
-    params: (s: ArcBandState) => ({ ...linkParams(s, false), valued: false }),
-    enabled: bandOpen,
-  }),
-  defineMark({
-    shape: withPassId(linkMark, 'arcLinkDashed'),
-    channels: (f: ArcBandFeed) => f.dashed,
-    params: (s: ArcBandState) => linkParams(s, true),
+    params: (s: ArcBandState) => ({ ...linkParams(s), valued: false }),
     enabled: bandOpen,
   }),
 ]
 
 /**
  * The connections reaching past every displayed region on their chromosome,
- * solid then dashed. Each is placed along its own region's axis and drawn
- * block by block under the block's clip, so the far end runs off the block's
- * edge rather than onto a region that does not hold it.
+ * each placed along its own region's axis and drawn block by block under the
+ * block's clip, so the far end runs off the block's edge rather than onto a
+ * region that does not hold it.
  */
 export const ARC_CLIPPED_MARKS: Mark<ArcBandFeed, ArcBandState>[] = [
   defineMark({
     shape: { ...withPassId(linkMark, 'arcLinkClipped'), spansView: false },
     channels: (f: ArcBandFeed) => f.clippedLinks,
-    params: (s: ArcBandState) => linkParams(s, false),
-    enabled: bandOpen,
-  }),
-  defineMark({
-    shape: {
-      ...withPassId(linkMark, 'arcLinkDashedClipped'),
-      spansView: false,
-    },
-    channels: (f: ArcBandFeed) => f.clippedDashed,
-    params: (s: ArcBandState) => linkParams(s, true),
+    params: (s: ArcBandState) => linkParams(s),
     enabled: bandOpen,
   }),
 ]

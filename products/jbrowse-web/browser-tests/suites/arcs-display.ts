@@ -108,12 +108,10 @@ async function arcCounts(page: Page) {
     let drawnAcross = 0
     for (const byRegion of display.themed.arcFeedsByGroup.values()) {
       for (const [region, feed] of byRegion) {
-        for (const lane of [feed.links, feed.dashed]) {
-          for (let i = 0; i < lane.count; i++) {
-            const far = lane.x2Region[i]!
-            if (far !== region && far < 0xfffffffe) {
-              drawnAcross++
-            }
+        for (let i = 0; i < feed.links.count; i++) {
+          const far = feed.links.x2Region[i]!
+          if (far !== region && far < 0xfffffffe) {
+            drawnAcross++
           }
         }
       }

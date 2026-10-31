@@ -11,8 +11,8 @@
 // gets so big the band clips its apex). The endpoints always sit at the true
 // genomic coordinates. See `linkRadiiPx` in render-core's linkMark.slang.
 export const ARC_SHAPE_ARC = 0
-// read-cloud flat line at Y=|tlen|; the split variant is drawn dashed
-// (matching samplot.py's plot_split_plan dotted-line style).
+// read-cloud flat line at Y=|tlen|; the split variant, which has no TLEN,
+// plots at its breakpoint gap and draws the same.
 export const ARC_SHAPE_FLAT = 1
 export const ARC_SHAPE_FLAT_SPLIT = 2
 // A connection the view can place only ONE end of: the partner read — a mate,

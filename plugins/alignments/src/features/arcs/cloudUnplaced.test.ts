@@ -246,8 +246,8 @@ describe('a connection the view can place only one end of', () => {
     expect(runCloud(data, [region(0, 20_000)]).arcs[0]!.shapeType).toBe(
       ARC_SHAPE_FLAT_UNPLACED,
     )
-    // Loaded wide enough to hold both segments, and it is an ordinary dashed
-    // split junction again.
+    // Loaded wide enough to hold both segments, and it is an ordinary split
+    // junction again.
     expect(runCloud(data, [region(0, 6_000_000)]).arcs[0]!.shapeType).toBe(
       ARC_SHAPE_FLAT_SPLIT,
     )

@@ -86,9 +86,7 @@ const ARC_BAND_FIELDS = [
   { channels: 'ticks', hits: 'tickHits' },
   { channels: 'links', hits: 'linkHits' },
   { channels: 'crossLinks', hits: 'crossLinkHits' },
-  { channels: 'dashed', hits: 'dashedHits' },
   { channels: 'clippedLinks', hits: 'clippedLinkHits' },
-  { channels: 'clippedDashed', hits: 'clippedDashedHits' },
   { channels: 'markers', hits: 'markerHits' },
 ] as const
 

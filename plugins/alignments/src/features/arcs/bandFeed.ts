@@ -43,25 +43,20 @@ export type ArcBandHit = ArcHit | TickHit
 /**
  * One region's read connections as the band's marks read them, in paint
  * order: the interchromosomal ticks, the arcs or bars, the interchromosomal
- * arcs between two displayed regions, the read cloud's dashed split-read
- * connectors, the same two again for connections reaching past every displayed
- * region on their chromosome, and the endpoint squares, each with the hover
- * record of every instance.
+ * arcs between two displayed regions, the connections reaching past every
+ * displayed region on their chromosome, and the endpoint squares, each with the
+ * hover record of every instance.
  */
 export interface ArcBandFeed {
   ticks: LinkChannels
   links: LinkChannels
   crossLinks: LinkChannels
-  dashed: LinkChannels
   clippedLinks: LinkChannels
-  clippedDashed: LinkChannels
   markers: PointChannels
   tickHits: ArcBandHit[]
   linkHits: ArcBandHit[]
   crossLinkHits: ArcBandHit[]
-  dashedHits: ArcBandHit[]
   clippedLinkHits: ArcBandHit[]
-  clippedDashedHits: ArcBandHit[]
   markerHits: ArcBandHit[]
 }
 
@@ -147,9 +142,7 @@ class RegionLanes {
   ticks = new LinkLanes()
   links = new LinkLanes()
   crossLinks = new LinkLanes()
-  dashed = new LinkLanes()
   clippedLinks = new LinkLanes()
-  clippedDashed = new LinkLanes()
   markers = new MarkerLanes()
 
   feed(): ArcBandFeed {
@@ -157,16 +150,12 @@ class RegionLanes {
       ticks: this.ticks.channels(),
       links: this.links.channels(),
       crossLinks: this.crossLinks.channels(),
-      dashed: this.dashed.channels(),
       clippedLinks: this.clippedLinks.channels(),
-      clippedDashed: this.clippedDashed.channels(),
       markers: this.markers.channels(),
       tickHits: this.ticks.hits,
       linkHits: this.links.hits,
       crossLinkHits: this.crossLinks.hits,
-      dashedHits: this.dashed.hits,
       clippedLinkHits: this.clippedLinks.hits,
-      clippedDashedHits: this.clippedDashed.hits,
       markerHits: this.markers.hits,
     }
   }

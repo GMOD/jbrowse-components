@@ -100,7 +100,7 @@ test('group draws per-section paired-end arcs', async () => {
       let totalArcs = 0
       for (const section of display.themed.sourceSections) {
         for (const feed of section.arcFeeds.values()) {
-          totalArcs += feed.links.count + feed.dashed.count
+          totalArcs += feed.links.count
         }
       }
       expect(totalArcs).toBeGreaterThan(0)
@@ -135,7 +135,7 @@ test('group draws per-section read-cloud lines', async () => {
       let totalArcs = 0
       for (const section of display.themed.sourceSections) {
         for (const feed of section.arcFeeds.values()) {
-          totalArcs += feed.links.count + feed.dashed.count
+          totalArcs += feed.links.count
         }
       }
       expect(totalArcs).toBeGreaterThan(0)

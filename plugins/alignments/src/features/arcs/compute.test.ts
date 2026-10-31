@@ -1763,11 +1763,11 @@ describe('computeArcsFromPileupData', () => {
     ).toBe(COLOR_SPLIT_INV_LL)
   })
 
-  test('read cloud in-view split read (primary + supplementary entries) is dashed at the gap span', () => {
+  test('read cloud in-view split read (primary + supplementary entries) is a split bar at the gap span', () => {
     // The default flag filter does not exclude SUPPLEMENTARY (2048), so an
     // in-view split read arrives as two entries sharing a name — the
     // multi-entry path, not the single-entry SA-tag path. It must render
-    // identically: dashed, at the gap span, never collapsed to the baseline
+    // identically: a split bar at the gap span, never collapsed to the baseline
     // by the supplementary's tlen=0.
     const mkInViewSplit = (s1: number, s2: number) =>
       makePileupData({
@@ -1793,7 +1793,7 @@ describe('computeArcsFromPileupData', () => {
       opts,
     ).arcs
     expect(inv).toHaveLength(1)
-    // dashed split shape, not solid ARC_SHAPE_FLAT
+    // the split shape, not ARC_SHAPE_FLAT
     expect(inv[0]!.shapeType).toBe(ARC_SHAPE_FLAT_SPLIT)
     // Y is the full breakpoint gap span (~1700, ±8% jitter), so a split SV sits
     // at the same ruler height as an equivalent-span discordant pair — not half
@@ -1803,7 +1803,7 @@ describe('computeArcsFromPileupData', () => {
     // opposite strands, the read extending left from both feet
     expect(inv[0]!.colorType).toBe(COLOR_SPLIT_INV_LL)
 
-    // same strands, the second segment downstream: still dashed split
+    // same strands, the second segment downstream: still the split shape
     const del = computeArcsFromPileupData(
       new Map([[0, mkInViewSplit(1, 1)]]),
       regions,

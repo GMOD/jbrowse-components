@@ -116,9 +116,8 @@ test('a clipped read cloud bar keeps squares at both mates, a split one drawn so
     arc(500, 8000, ARC_SHAPE_FLAT),
     arc(600, 9000, ARC_SHAPE_FLAT_SPLIT),
   ])
-  const { clippedLinks, clippedDashed, markers } = f.get(0)!
+  const { clippedLinks, markers } = f.get(0)!
   expect([...clippedLinks.x]).toEqual([500, 600])
-  expect([...clippedDashed.x]).toEqual([])
   expect([...markers.x]).toEqual([500, 8000, 600, 9000])
 })
 
@@ -127,9 +126,8 @@ test('a read cloud bar takes its category color at the cloud alpha, squares at e
     arc(100, 400, ARC_SHAPE_FLAT),
     arc(200, 300, ARC_SHAPE_FLAT_SPLIT),
   ])
-  const { links, dashed, markers, markerHits } = f.get(0)!
+  const { links, markers, markerHits } = f.get(0)!
   expect([...links.x]).toEqual([100, 200])
-  expect([...dashed.x]).toEqual([])
   expect((links.color as Uint32Array)[0]).toBe(
     withAbgrAlpha(
       slotColor(COLOR_LONG_INSERT),

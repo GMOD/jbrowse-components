@@ -9,9 +9,8 @@ kind: spec
 
 The band is a marks list (ADR-170), `ARC_BAND_MARKS` in
 `LinearAlignmentsDisplay/renderers/arcMarks.ts`: interchromosomal ticks as link
-stems, the arcs (a `dome` link) or the read cloud's bars (a `line` link), the
-cloud's split-read connectors as a second, dashed link, and the cloud's endpoint
-squares as a point mark. They share one rect, one y scale and one palette and
+stems, the arcs (a `dome` link) or the read cloud's bars (a `line` link), and
+the cloud's endpoint squares as a point mark. They share one rect, one y scale and one palette and
 overlap freely, so which mark a hover resolves to, which one a setting hides and
 which one paints on top are one question asked in three places. The answers have
 to agree.
@@ -76,8 +75,9 @@ two land on the same x when a breakpoint has one acceptor the view shows and
 another it does not, and both draw `ARC_COLOR_INTERCHROM` at band height, so a
 junction with six times the arc's support hid behind the arc's apparent leg. The
 tick was dashed to solve this and is solid again by Colin's call (2026-09-02).
-**Do not re-dash it without asking.** The read cloud's `[3, 3]` split connector is
-the only dashed mark in the band.
+**Do not re-dash it without asking.** No mark in the band is dashed: the read
+cloud's split bars draw solid like its pairs, color carrying the split class,
+and a dashed lane for them was cut (2026-10-31).
 
 ## The read cloud draws a bar only between two places on screen
 
