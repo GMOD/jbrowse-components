@@ -54,13 +54,41 @@ export interface FeatureContextMenuInfo {
   clientY: number
 }
 
+/**
+ * The hit a feature menu acts on, as much of it as its rows read, so a
+ * display drawing these records in a band of its own builds one from its hit.
+ */
+export interface FeatureMenuHit {
+  item: Pick<FlatbushItem, 'featureId' | 'startBp' | 'endBp' | 'name' | 'type'>
+  subfeature?: SubfeatureInfo
+  hgvsLabel?: string
+  tooltipText?: string
+  displayedRegionIndex: number
+}
+
 // Structural rather than the factory's instance type: the factory calls these
 // builders, so importing its type back here is a circular reference.
-export interface FeatureMenuSelf
+/**
+ * What the record rows read: zoom to, get sequence and copy.
+ */
+export interface FeatureRecordMenuSelf
   extends IStateTreeNode, CanonicalTranscriptsHost {
-  contextMenuInfo: FeatureContextMenuInfo | undefined
   featureNoun: string
   loadedRegions: { get: (displayedRegionIndex: number) => Region | undefined }
+  fetchFullFeature: (
+    featureId: string,
+    displayedRegionIndex: number,
+  ) => Promise<Feature | undefined>
+  setSequenceHoverPosition: (pos: SequenceHoverPosition | undefined) => void
+}
+
+export interface FeatureMenuSelf extends FeatureRecordMenuSelf {
+  contextMenuInfo: FeatureContextMenuInfo | undefined
+  selectFeatureById: (
+    featureId: string,
+    subfeatureInfo: SubfeatureInfo | undefined,
+    displayedRegionIndex: number,
+  ) => void
   rpcDataMap: ReadonlyMap<number, { flatbushItems: readonly FlatbushItem[] }>
   pinnedFeatureIdSet: ReadonlySet<string>
   highlightedFeatureIdSet: ReadonlySet<string>
@@ -68,16 +96,6 @@ export interface FeatureMenuSelf
   soloFeatureCount: number
   soloApplied: boolean
   featureNarrowings: () => Reversibles
-  selectFeatureById: (
-    featureId: string,
-    subfeatureInfo: SubfeatureInfo | undefined,
-    displayedRegionIndex: number,
-  ) => void
-  fetchFullFeature: (
-    featureId: string,
-    displayedRegionIndex: number,
-  ) => Promise<Feature | undefined>
-  setSequenceHoverPosition: (pos: SequenceHoverPosition | undefined) => void
   addFeatureHighlightForItem: (target: HighlightTarget, refName: string) => void
   removeFeatureHighlightsForId: (featureId: string) => void
   togglePinnedFeature: (featureId: string) => void
@@ -103,9 +121,9 @@ function groupOrSingleRow(
   return rows.length === 1 ? rows : [{ ...group, subMenu: rows }]
 }
 
-interface MenuContext {
-  self: FeatureMenuSelf
-  info: FeatureContextMenuInfo
+interface MenuContext<Self = FeatureMenuSelf> {
+  self: Self
+  info: FeatureMenuHit
   // Named by the annotation's own type: subfeatureInfos carries more than
   // transcripts, so fixed 'transcript'/'gene' wording would mislabel an LTR
   // part.
@@ -124,15 +142,25 @@ function wholeFeatureItem(self: FeatureMenuSelf, info: FeatureContextMenuInfo) {
   return sent ? { ...item, startBp: sent.startBp, endBp: sent.endBp } : item
 }
 
+function menuContext<Self extends { featureNoun: string }>(
+  self: Self,
+  info: FeatureMenuHit,
+): MenuContext<Self> {
+  return {
+    self,
+    info,
+    hitNoun: info.item.type ?? self.featureNoun,
+    subfeatureNoun: info.subfeature?.type ?? 'subfeature',
+  }
+}
+
 export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
   const info = self.contextMenuInfo
   if (info) {
-    const ctx: MenuContext = {
-      self,
-      info: { ...info, item: wholeFeatureItem(self, info) },
-      hitNoun: info.item.type ?? self.featureNoun,
-      subfeatureNoun: info.subfeature?.type ?? 'subfeature',
-    }
+    const ctx = menuContext(self, {
+      ...info,
+      item: wholeFeatureItem(self, info),
+    })
     return [
       ...inspectItems(ctx),
       ...highlightItems(ctx),
@@ -143,13 +171,27 @@ export function featureContextMenuItems(self: FeatureMenuSelf): MenuItem[] {
   return []
 }
 
+/**
+ * The rows taking one record somewhere (zoom to, get sequence) and the ones
+ * copying it, for a display drawing these records in a band of its own (the
+ * variant display's `records`), which places them among its own rows and
+ * opens its own details.
+ */
+export function featureRecordMenuItems(
+  self: FeatureRecordMenuSelf,
+  hit: FeatureMenuHit,
+) {
+  const ctx = menuContext(self, hit)
+  return { navigate: navigateItems(ctx), copy: copyItems(ctx) }
+}
+
 // Open details and Zoom to stay whole-feature even when the click resolved to
 // a subfeature: on a gene glyph the transcripts' hit boxes cover the whole
 // span, so these two are the only way to reach the containing gene.
-function inspectItems({ self, info }: MenuContext): MenuItem[] {
+function inspectItems(ctx: MenuContext): MenuItem[] {
+  const { self, info } = ctx
   const {
-    item: { featureId, startBp, endBp },
-    subfeature,
+    item: { featureId },
     displayedRegionIndex,
   } = info
   return [
@@ -160,6 +202,20 @@ function inspectItems({ self, info }: MenuContext): MenuItem[] {
         self.selectFeatureById(featureId, undefined, displayedRegionIndex)
       },
     },
+    ...navigateItems(ctx),
+  ]
+}
+
+function navigateItems({
+  self,
+  info,
+}: MenuContext<FeatureRecordMenuSelf>): MenuItem[] {
+  const {
+    item: { featureId, startBp, endBp },
+    subfeature,
+    displayedRegionIndex,
+  } = info
+  return [
     {
       label: `Zoom to ${self.featureNoun}`,
       icon: CenterFocusStrongIcon,
@@ -353,7 +409,7 @@ function soloItems(self: FeatureMenuSelf, featureId: string): MenuItem[] {
 }
 
 function copyJsonItem(
-  { self, info, hitNoun, subfeatureNoun }: MenuContext,
+  { self, info, hitNoun, subfeatureNoun }: MenuContext<FeatureRecordMenuSelf>,
   subfeature: SubfeatureInfo | undefined,
 ): MenuItem {
   const {
@@ -393,7 +449,7 @@ function copyJsonItem(
   }
 }
 
-function copyItems(ctx: MenuContext): MenuItem[] {
+function copyItems(ctx: MenuContext<FeatureRecordMenuSelf>): MenuItem[] {
   const { self, info } = ctx
   const { subfeature, hgvsLabel, tooltipText, displayedRegionIndex } = info
   const { startBp, endBp } = info.item

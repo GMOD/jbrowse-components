@@ -44,6 +44,8 @@ export { featureGateConfigSchemaFields } from './shared/featureGateConfigSchemaF
 export { featureMarkConfigSchema } from './LinearBasicDisplay/featureMarkConfigSchema.ts'
 export { featureTooltipFieldSlot } from './LinearBasicDisplay/featureTooltipConfigSchema.ts'
 export { DISPLAY_MODES } from './RenderFeatureDataRPC/displayModes.ts'
+// v4's feature-display spellings, for a display re-rooting them
+export { basicRetired } from './LinearBasicDisplay/migrateBasicSnapshot.ts'
 // Deprecated: the five-value label mode `labels.*.show` replaced.
 export {
   SHOW_LABELS_MODES,
