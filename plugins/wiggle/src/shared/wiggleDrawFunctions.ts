@@ -17,7 +17,6 @@ import {
 import {
   BandPen,
   interleavedSpans,
-  lineColorYPx,
   rampAsThreshold,
   rowLineFrame,
   thresholdBandOf,
@@ -90,16 +89,15 @@ export interface RowDraw {
 // `-1` can't collide with a u32 ABGR value.
 const NO_COLOR = -1
 
+// A score's y in its row, clamped to the row unless `unclamped`, which places
+// a cut the domain excludes off the row rather than on its edge
 function makeScoreToY(
-  makeNormalizer: typeof makeScoreNormalizer,
   { rowHeight, domainY, scaleType, symlogConstant }: RowDraw,
+  { unclamped = false } = {},
 ) {
-  const normalize = makeNormalizer(
-    domainY[0],
-    domainY[1],
-    scaleType,
-    symlogConstant,
-  )
+  const normalize = (
+    unclamped ? makeUnclampedScoreNormalizer : makeScoreNormalizer
+  )(domainY[0], domainY[1], scaleType, symlogConstant)
   return (score: number) => (1 - normalize(score)) * rowHeight
 }
 
@@ -134,7 +132,7 @@ export function drawXYPlot(row: RowDraw & { rgb: string }) {
     origin,
     rgb,
   } = row
-  const scoreToY = makeScoreToY(makeScoreNormalizer, row)
+  const scoreToY = makeScoreToY(row)
   const originY = scoreToY(origin) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
@@ -264,14 +262,15 @@ function strokeByBands(
 ) {
   const { ctx, cuts, innerColors, rgb, negRgb, lineWidth } = row
   ctx.lineWidth = lineWidth
-  const frame = rowLineFrame(
-    row.block,
-    row.rowTop,
-    row.rowHeight,
-    row.domainY,
-    row.scaleType,
-    row.symlogConstant,
-  )
+  const frame = rowLineFrame({
+    block: row.block,
+    rowTop: row.rowTop,
+    rowHeight: row.rowHeight,
+    domain: row.domainY,
+    scaleType: row.scaleType,
+    symlogConstant: row.symlogConstant,
+  })
+  const cutToY = makeScoreToY(row, { unclamped: true })
   const styles = bandStyles(negRgb, innerColors, rgb, normalizedRgbToCss)
   const passes = styles.every(style => style === styles[0])
     ? [
@@ -281,7 +280,7 @@ function strokeByBands(
           style: styles[0]!,
         },
       ]
-    : bandEdges(cuts.map(cut => lineColorYPx(frame, Math.fround(cut), 0)))
+    : bandEdges(cuts.map(cut => cutToY(Math.fround(cut)) + row.rowTop))
         .map((edges, k) => ({ ...edges, style: styles[k]! }))
         .reverse()
   for (const { top, bottom, style } of passes) {
@@ -412,7 +411,7 @@ export function drawMinMaxBand(row: RowDraw & { interpolated: boolean }) {
   const positions = source.featurePositions
   const maxScores = source.featureScores
   const { minScores } = band
-  const scoreToY = makeScoreToY(makeScoreNormalizer, row)
+  const scoreToY = makeScoreToY(row)
   const toX = makeBpMapper(block)
   const linked = (i: number) =>
     interpolated || positions[i * 2 - 1] === positions[i * 2]
@@ -494,7 +493,7 @@ export function drawMinMaxBand(row: RowDraw & { interpolated: boolean }) {
     // `wiggleCommon.slang`'s `rowColorYPx`: a cut placed unclamped, so a
     // value the domain excludes keeps its side of every cut rather than
     // taking the row edge's.
-    const cutToY = makeScoreToY(makeUnclampedScoreNormalizer, row)
+    const cutToY = makeScoreToY(row, { unclamped: true })
     const snapped = cuts.map(
       cut => Math.round((cutToY(Math.fround(cut)) + rowTop) * dpr) / dpr,
     )
@@ -522,7 +521,7 @@ export function drawScatter(
   if (!colorsAbgr && !rampFill) {
     ctx.fillStyle = rgb
   }
-  const scoreToY = makeScoreToY(makeScoreNormalizer, row)
+  const scoreToY = makeScoreToY(row)
   const positions = source.featurePositions
   const scores = source.featureScores
   const toX = makeBpMapper(block)

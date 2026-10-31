@@ -11,7 +11,6 @@ export {
   BandPen,
   interleavedSpans,
   lineCenterMark,
-  lineColorYPx,
   lineMarkOf,
   lineStepMark,
   rowLineFrame,

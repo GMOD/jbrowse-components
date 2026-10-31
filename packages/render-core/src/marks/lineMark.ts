@@ -245,16 +245,26 @@ export interface LineFrame {
   table: RowTable | undefined
 }
 
-function makeLineFrame(
-  block: RenderBlock,
-  pitch: number,
-  band: number,
-  rowOffsetPx: number,
-  [domainMin, domainMax]: readonly [number, number],
-  scaleType: ScaleTypeCode,
-  symlogConstant: number,
-  table: RowTable | undefined,
-): LineFrame {
+function makeLineFrame({
+  block,
+  pitch,
+  band,
+  rowOffsetPx,
+  domain,
+  scaleType,
+  symlogConstant,
+  table,
+}: {
+  block: RenderBlock
+  pitch: number
+  band: number
+  rowOffsetPx: number
+  domain: readonly [number, number]
+  scaleType: ScaleTypeCode
+  symlogConstant: number
+  table: RowTable | undefined
+}): LineFrame {
+  const [domainMin, domainMax] = domain
   return {
     bpToPx: makeBpMapper(block),
     normalize: makeUnclampedScoreNormalizer(
@@ -275,39 +285,46 @@ function makeLineFrame(
 }
 
 /** One row's frame: a band `rowHeight` tall from `rowTop`, with no row table. */
-export function rowLineFrame(
-  block: RenderBlock,
-  rowTop: number,
-  rowHeight: number,
-  domain: readonly [number, number],
-  scaleType: ScaleTypeCode,
-  symlogConstant: number,
-) {
-  return makeLineFrame(
+export function rowLineFrame({
+  block,
+  rowTop,
+  rowHeight,
+  domain,
+  scaleType,
+  symlogConstant,
+}: {
+  block: RenderBlock
+  rowTop: number
+  rowHeight: number
+  domain: readonly [number, number]
+  scaleType: ScaleTypeCode
+  symlogConstant: number
+}) {
+  return makeLineFrame({
     block,
-    rowHeight,
-    rowHeight,
-    rowTop,
+    pitch: rowHeight,
+    band: rowHeight,
+    rowOffsetPx: rowTop,
     domain,
     scaleType,
     symlogConstant,
-    undefined,
-  )
+    table: undefined,
+  })
 }
 
 function lineFrame(block: RenderBlock, frame: MarkFrame, params: LineParams) {
   const pitch = bandHeightPx(params, frame.canvasHeight)
   const { valueScaleType, valueSymlogConstant } = valueScaleUniforms(params)
-  return makeLineFrame(
+  return makeLineFrame({
     block,
     pitch,
-    params.rowBandPx ?? pitch,
-    params.rowOffsetPx ?? 0,
-    params.domain,
-    valueScaleType,
-    valueSymlogConstant,
-    params.rowTable,
-  )
+    band: params.rowBandPx ?? pitch,
+    rowOffsetPx: params.rowOffsetPx ?? 0,
+    domain: params.domain,
+    scaleType: valueScaleType,
+    symlogConstant: valueSymlogConstant,
+    table: params.rowTable,
+  })
 }
 
 function bandTopPx(g: LineFrame, slot: number) {
@@ -326,7 +343,7 @@ function clampToBand(g: LineFrame, bandTop: number, colorY: number) {
 }
 
 /** A value's y in the band for the color test, as the shader's `lineColorYPx`. */
-export function lineColorYPx(g: LineFrame, value: number, slot: number) {
+function lineColorYPx(g: LineFrame, value: number, slot: number) {
   return colorYInBand(g, bandTopPx(g, slot), value)
 }
 
