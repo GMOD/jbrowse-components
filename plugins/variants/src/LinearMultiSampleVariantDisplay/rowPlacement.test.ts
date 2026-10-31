@@ -42,6 +42,7 @@ function regularCellData(rowNames: string[]): CellDataResult {
     ],
     genotypeDict: ['0|1'],
     sampleNames: SAMPLES,
+    recordCounts: [],
     perRegionCellData: {
       0: {
         // worker row r gets a cell whose color encodes r, so a mis-placement

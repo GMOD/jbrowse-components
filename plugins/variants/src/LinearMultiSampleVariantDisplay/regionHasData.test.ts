@@ -80,6 +80,7 @@ test('a fetch at genomic positions stays current across a zoom', async () => {
             simplifiedFeatures: [],
             genotypeDict: [],
             sampleNames: ['HG001'],
+            recordCounts: [],
           })
         : Promise.resolve([]),
   )

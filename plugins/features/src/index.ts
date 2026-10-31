@@ -38,6 +38,7 @@ export {
 // records: `labels.name` and `labels.description`.
 export { featureNameLabelConfigSchema } from './LinearBasicDisplay/featureNameLabelConfigSchema.ts'
 export { featureDescriptionLabelConfigSchema } from './LinearBasicDisplay/featureDescriptionLabelConfigSchema.ts'
+export { featureGateConfigSchemaFields } from './shared/featureGateConfigSchemaFields.ts'
 // Deprecated: the five-value label mode `labels.*.show` replaced.
 export {
   SHOW_LABELS_MODES,
@@ -96,6 +97,7 @@ export type {
   SubfeatureInfo,
 } from './RenderFeatureDataRPC/rpcTypes.ts'
 export type { RegionGateMeasurement } from './shared/FeatureGateMixin.ts'
+export type { FeatureGateConfigModel } from './shared/featureGateConfigSchemaFields.ts'
 export type { GroupByCandidate } from './RenderFeatureDataRPC/groupByCandidates.ts'
 export type { GroupByScanOptions } from './LinearBasicDisplay/scanGroupByCandidates.ts'
 

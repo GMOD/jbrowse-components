@@ -9,9 +9,8 @@ import {
   overDensityBudget,
 } from '../RenderFeatureDataRPC/densityGate.ts'
 
-import type { LinearFeatureBaseDisplayConfigModel } from '../LinearBasicDisplay/baseConfigSchema.ts'
+import type { FeatureGateConfigModel } from './featureGateConfigSchemaFields.ts'
 import type { GateFetchState } from '@jbrowse/display-kit/regionTooLargeUtils'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface RegionDensityStats {
   featureCount: number
@@ -19,7 +18,7 @@ export interface RegionDensityStats {
 }
 
 export interface GateHost {
-  configuration: Instance<LinearFeatureBaseDisplayConfigModel>
+  configuration: FeatureGateConfigModel
   densityGateActive: boolean
   byteGateAdapterConfig: Record<string, unknown>
 }
@@ -36,7 +35,8 @@ export interface RegionGateMeasurement {
 
 /**
  * The density axis of the region-too-large gate, composed after
- * `MultiRegionDisplayMixin`. A display opts in by composing this and calling
+ * `MultiRegionDisplayMixin`. A display opts in by composing this, spreading
+ * `featureGateConfigSchemaFields` into its config, and calling
  * `commitGateMeasurements` from its fetch's `onComplete`.
  *
  * #stateModel FeatureGateMixin
@@ -96,11 +96,22 @@ export default function FeatureGateMixin() {
     .views(self => ({
       /**
        * #getter
+       * The `maxFeatureScreenDensity` slot. Overridable for a display that
+       * holds it under a sub-schema (the multi-sample variant display's
+       * `records`).
+       */
+      get configuredMaxFeatureScreenDensity(): number {
+        return getConf(host(self), 'maxFeatureScreenDensity')
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Undefined when the axis may not act.
        */
       get maxFeatureDensity(): number | undefined {
         return host(self).densityGateActive
-          ? getConf(host(self), 'maxFeatureScreenDensity')
+          ? self.configuredMaxFeatureScreenDensity
           : undefined
       },
     }))

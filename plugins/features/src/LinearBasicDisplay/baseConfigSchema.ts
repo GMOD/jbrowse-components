@@ -8,6 +8,7 @@ import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfi
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { DISPLAY_MODES } from '../RenderFeatureDataRPC/renderConfig.ts'
+import { featureGateConfigSchemaFields } from '../shared/featureGateConfigSchemaFields.ts'
 import { featureDescriptionLabelConfigSchema } from './featureDescriptionLabelConfigSchema.ts'
 import { featureMarkConfigSchema } from './featureMarkConfigSchema.ts'
 import { featureNameLabelConfigSchema } from './featureNameLabelConfigSchema.ts'
@@ -57,16 +58,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * object.
        */
       tooltip: featureTooltipConfigSchema,
-      /**
-       * #slot
-       */
-      maxFeatureScreenDensity: {
-        type: 'number',
-        description:
-          'maximum features per pixel before showing a "too many features" message',
-        defaultValue: 1,
-        advanced: true,
-      },
+      ...featureGateConfigSchemaFields,
       /**
        * #slot legend
        * The display's color key, when it has one: the key an

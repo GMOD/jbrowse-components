@@ -3,6 +3,10 @@ import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { withProgress } from '@jbrowse/core/util'
 import { unreadRecordFields } from '@jbrowse/core/util/fieldPredicate'
 import { rpcResult } from '@jbrowse/core/util/librpc'
+import {
+  featuresPerPx,
+  overDensityBudget,
+} from '@jbrowse/plugin-features/densityGate'
 
 import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import { cellHueReaderOf } from '../shared/cellHue.ts'
@@ -22,10 +26,11 @@ import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/compone
 import type { CellHueRead } from '../shared/cellHue.ts'
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
 import type { SimplifiedVariantFeature } from './analyzeVariants.ts'
+import type { LookupRegion } from './groupFeaturesByRegion.ts'
 import type { GetCellDataArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
-import type { Region } from '@jbrowse/core/util'
+import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 
 // What the paint loops reported, as the three legend booleans, merged over
 // every payload of the fetch.
@@ -51,13 +56,11 @@ function paintedLegendFlags(passes: { paintedCategories: number }[]) {
 // window with no records at all would otherwise read as loading for good.
 function recordsByBlock({
   layout,
-  regions,
-  displayedRegionIndices,
+  lookupRegions,
   filteredVariants,
 }: {
   layout: GetCellDataArgs['layout']
-  regions: Region[]
-  displayedRegionIndices?: number[]
+  lookupRegions: LookupRegion[]
   // in screen order
   filteredVariants: FilteredVariant[]
 }): Map<number, FilteredVariant[]> {
@@ -68,14 +71,18 @@ function recordsByBlock({
     [...filteredVariants].sort(
       (a, b) => a.feature.get('start') - b.feature.get('start'),
     ),
-    regions.map((r, i) => ({
-      refName: r.refName,
-      start: r.start,
-      end: r.end,
-      displayedRegionIndex: displayedRegionIndices?.[i] ?? i,
-    })),
+    lookupRegions,
     v => v.feature,
   )
+}
+
+/**
+ * A refusal on the density axis, with every requested region's admitted
+ * record count in `regions` order, so the display's gate holds a count for
+ * each region and not only the one over budget.
+ */
+export interface RecordsTooDenseResult extends RegionTooLargeResult {
+  recordCounts: number[]
 }
 
 interface CellDataBase {
@@ -133,6 +140,11 @@ interface CellDataBase {
    * filter left none.
    */
   unreadFilterFields?: string[]
+  /**
+   * Each requested region's admitted records, in `regions` order, the
+   * density gate's measurement; empty in columns, which draw one block.
+   */
+  recordCounts: number[]
 }
 
 export type CellDataResult = CellDataBase & {
@@ -167,6 +179,8 @@ export async function variantCellData({
     signal,
     displayedRegionIndices,
     byteLimit,
+    bpPerPx,
+    maxFeatureDensity,
   } = args
 
   const adapter = await getFeatureAdapterOrThrow({ ...args, pluginManager })
@@ -254,12 +268,38 @@ export async function variantCellData({
   })
   const rowNames = effectiveSources.map(s => s.name)
 
-  const blocks = recordsByBlock({
-    layout,
-    regions,
-    displayedRegionIndices,
-    filteredVariants,
-  })
+  const lookupRegions = regions.map((r, i) => ({
+    refName: r.refName,
+    start: r.start,
+    end: r.end,
+    displayedRegionIndex: displayedRegionIndices?.[i] ?? i,
+  }))
+  const blocks = recordsByBlock({ layout, lookupRegions, filteredVariants })
+  const regionRecords =
+    layout === 'genomic'
+      ? lookupRegions.map(r => ({
+          count: blocks.get(r.displayedRegionIndex)!.length,
+          widthBp: r.end - r.start,
+        }))
+      : []
+  const recordCounts = regionRecords.map(r => r.count)
+  if (
+    bpPerPx !== undefined &&
+    regionRecords.some(r =>
+      overDensityBudget(
+        featuresPerPx(r.count, r.widthBp, bpPerPx),
+        maxFeatureDensity,
+      ),
+    )
+  ) {
+    const tooDense: RecordsTooDenseResult = {
+      regionTooLarge: true,
+      featureCount: Math.max(...recordCounts),
+      bytes,
+      recordCounts,
+    }
+    return tooDense
+  }
   let total = 0
   for (const list of blocks.values()) {
     total += list.length
@@ -304,6 +344,7 @@ export async function variantCellData({
     sampleNames,
     bytes,
     perRegionCellData,
+    recordCounts,
     ...(unreadFilterFields.length > 0 ? { unreadFilterFields } : {}),
   }
   return { value, records: filteredVariants.map(v => v.feature) }

@@ -62,6 +62,7 @@ import {
   buildFeatureFlatbushIndex,
   createFeatureDetailsOpener,
   createMembershipMemo,
+  FeatureGateMixin,
   featureSpanRegion,
   fetchFeatureDetails,
   featureIdsTouchingBlocks,
@@ -133,6 +134,7 @@ import {
 } from './paintCells.ts'
 import { placeVariantRows } from './placeVariantRows.ts'
 import { countRecordCarriers } from './recordCarriers.ts'
+import { recordCountMeasurements } from './recordsDensityGate.ts'
 import {
   RECORD_LABEL_LINE,
   buildRecordsRenderData,
@@ -372,7 +374,7 @@ export function stateModelFactory(
         MULTI_SAMPLE_VARIANT_DISPLAY,
         BaseDisplay,
         HeightModeMixin(),
-        MultiRegionDisplayMixin(),
+        types.compose(MultiRegionDisplayMixin(), FeatureGateMixin()),
         LegendMixin(),
         types.compose(ColorWritesMixin(), FacetWritesMixin()),
         RowHeightMixin(),
@@ -2148,6 +2150,27 @@ export function stateModelFactory(
         get gateEnabled() {
           return true
         },
+        /**
+         * #getter
+         * The density axis acts only with no genotype rows, where the records
+         * are the display, as on `LinearVariantDisplay`. Over rows the byte
+         * gate alone guards the fetch.
+         */
+        get densityGateActive() {
+          return (
+            self.gateActive &&
+            self.aboveForceLoadFloor &&
+            self.recordsOnly &&
+            self.atGenomicPositions
+          )
+        },
+        /**
+         * #getter
+         * `records.maxFeatureScreenDensity`, the density budget.
+         */
+        get configuredMaxFeatureScreenDensity(): number {
+          return getConf(self, ['records', 'maxFeatureScreenDensity'])
+        },
 
         /**
          * #getter
@@ -2198,13 +2221,23 @@ export function stateModelFactory(
           const args = rpcArgs(self)
           const fetchedAt =
             variantLayout === 'columns' ? view.bpPerPx : undefined
+          const { bpPerPx } = view
+          const { maxFeatureDensity } = self
           await fetchRegionsBatched(self, regions, {
             call: (batch, ctx) =>
               ctx.callRpc('MultiSampleVariantGetCellData', {
                 ...args,
                 regions: batch.map(r => r.region),
                 displayedRegionIndices: batch.map(r => r.displayedRegionIndex),
+                bpPerPx,
+                maxFeatureDensity,
               }),
+            onComplete: (issued, result) => {
+              self.commitGateMeasurements(
+                recordCountMeasurements(regions, result),
+                issued,
+              )
+            },
             commit: result => {
               self.setCellData(
                 result,

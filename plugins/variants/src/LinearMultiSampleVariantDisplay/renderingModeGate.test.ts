@@ -35,6 +35,7 @@ function cellData({
     simplifiedFeatures: [],
     genotypeDict: [],
     sampleNames: ['S0'],
+    recordCounts: [],
     perRegionCellData: {},
     ...flags,
   }

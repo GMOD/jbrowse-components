@@ -295,6 +295,10 @@ export async function fetchAllRegions<R>(
  * the batch itself: variants reads its own per-batch holder and answers
  * `regionHasData` itself, while MAF's batch is one result per region and the
  * store holds each region's own.
+ *
+ * `onComplete` gets the result, refusal included, under the same guard and in
+ * the same transaction as the byte commit: a display measuring density off the
+ * payload commits it there, as `fetchEachRegion`'s caller does.
  */
 export async function fetchRegionsBatched<R extends RegionPayload>(
   self: FetchEachRegionModel,
@@ -306,6 +310,10 @@ export async function fetchRegionsBatched<R extends RegionPayload>(
     ) => Promise<R | RegionTooLargeResult>
     commit: (result: R) => void
     payloadFor?: (displayedRegionIndex: number, result: R) => RegionPayload
+    onComplete?: (
+      issued: GateFetchState,
+      result: R | RegionTooLargeResult,
+    ) => void
   },
 ) {
   const gate = openGateCommit(self)
@@ -318,6 +326,7 @@ export async function fetchRegionsBatched<R extends RegionPayload>(
       // pan left the view inside the old span and off the new one.
       runInAction(() => {
         gate.commit(measurementOf(result))
+        opts.onComplete?.(gate.issued, result)
         // One payload covers the whole set, so a refusal refuses the set:
         // nothing is committed and nothing is marked loaded, for the reason
         // spelled out in `RegionFetchContext`.

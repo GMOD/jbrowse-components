@@ -53,6 +53,9 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   // genomic positions, one for the whole window in columns.
   layout: 'genomic' | 'columns'
   displayedRegionIndices?: number[]
+  // The density budget at `bpPerPx`, sent only while the display's density
+  // gate may act (no genotype rows). Not in `rpcProps()`, so no cache key.
+  maxFeatureDensity?: number
 }
 
 export interface MultiSampleVariantGetSourcesArgs {

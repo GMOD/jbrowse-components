@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
   featureDescriptionLabelConfigSchema,
+  featureGateConfigSchemaFields,
   featureNameLabelConfigSchema,
 } from '@jbrowse/plugin-features'
 
@@ -25,7 +26,9 @@ import { DEFAULT_RECORDS_GROW_MAX_HEIGHT } from './variantTopBands.ts'
  * band is the whole display whatever `show` says: every record, in the
  * feature track's default color, lettered as a `LinearVariantDisplay` letters
  * it (the description under the name, no carrier share) and sized by the
- * display's `heightMode`.
+ * display's `heightMode`. Past `maxFeatureScreenDensity` records per pixel it
+ * refuses the window with the region-too-large banner and its Force load, as
+ * `LinearVariantDisplay` does; over genotype rows that budget is not read.
  *
  * #example
  * ```js
@@ -53,6 +56,7 @@ export const recordsBandConfigSchema = ConfigurationSchema(
       description:
         'ceiling in pixels on the band, which grows to its stack of records and takes that height from the rows',
     },
+    ...featureGateConfigSchemaFields,
     /**
      * #slot labels
      * `labels.name`, each record's ID, and `labels.description`, drawn after

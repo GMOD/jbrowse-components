@@ -83,6 +83,7 @@ export function cellDataOf(
     genotypeDict: [],
     sampleNames: [],
     perRegionCellData: {},
+    recordCounts: [],
     ...overrides,
   }
 }

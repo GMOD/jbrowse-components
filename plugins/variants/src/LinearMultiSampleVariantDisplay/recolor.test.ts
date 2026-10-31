@@ -51,6 +51,7 @@ function cellData(colorRead: CellHueRead): CellDataResult {
     ],
     genotypeDict: ['0/1'],
     sampleNames: SAMPLES,
+    recordCounts: [],
     perRegionCellData: {
       0: {
         cellRowIndices: Uint32Array.from([0, 1, 2]),
