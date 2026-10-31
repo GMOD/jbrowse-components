@@ -275,19 +275,26 @@ describe('feature modifiers', () => {
     ).toThrow(/Invalid heightMode/)
   })
 
-  // feature and variant displays extend the same LinearFeatureBaseDisplay, so
-  // every modifier that reads one of its slots must accept both
-  test('the canvas-base modifiers apply to feature and variant alike', () => {
+  // the variant display holds its record settings under `records`, where a
+  // feature display holds them at the top
+  test('heightMode and featureHeight apply to feature and variant alike', () => {
     for (const category of ['feature', 'variant'] as const) {
       expect(
         buildDisplaySnapshot(DISPLAY[category], ['heightMode:grow']).snap
           .heightMode,
       ).toBe('grow')
-      expect(
-        buildDisplaySnapshot(DISPLAY[category], ['featureHeight:compact']).snap
-          .displayMode,
-      ).toBe('compact')
     }
+    expect(
+      buildDisplaySnapshot('LinearBasicDisplay', ['featureHeight:compact'])
+        .snap,
+    ).toEqual({ displayMode: 'compact' })
+    expect(
+      buildDisplaySnapshot('LinearVariantDisplay', ['featureHeight:compact'])
+        .snap,
+    ).toEqual({ records: { displayMode: 'compact' } })
+    expect(
+      buildDisplaySnapshot('LinearVariantDisplay', ['featureHeight:3']).snap,
+    ).toEqual({ records: { mark: { height: 3 } } })
   })
 
   test('alignments heightMode shares the full fixed/grow/fit vocabulary', () => {
@@ -808,18 +815,18 @@ describe('modifier values are validated the same way everywhere', () => {
 })
 
 describe('display type selection', () => {
-  test('display:multivariant aliases to the multi-sample display', () => {
+  test('display:multivariant is the variant display', () => {
     expect(
       buildDisplaySnapshot('LinearVariantDisplay', ['display:multivariant'])
         .displayType,
-    ).toBe('LinearMultiSampleVariantDisplay')
+    ).toBe('LinearVariantDisplay')
   })
 
-  test('display:multivariantmatrix is the multi-sample display in columns', () => {
+  test('display:multivariantmatrix is the variant display in columns', () => {
     const { displayType, snap } = buildDisplaySnapshot('LinearVariantDisplay', [
       'display:multivariantmatrix',
     ])
-    expect(displayType).toBe('LinearMultiSampleVariantDisplay')
+    expect(displayType).toBe('LinearVariantDisplay')
     expect(snap.variantLayout).toBe('columns')
   })
 

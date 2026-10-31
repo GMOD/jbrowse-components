@@ -56,7 +56,6 @@ const categoryByDisplayType: Record<string, Category> = {
   LinearBasicDisplay: 'feature',
   LinearMultiRowFeatureDisplay: 'feature',
   LinearVariantDisplay: 'variant',
-  LinearMultiSampleVariantDisplay: 'variant',
   LinearMarkDisplay: 'other',
   LinearManhattanDisplay: 'other',
   LinearMafDisplay: 'other',
@@ -431,9 +430,10 @@ const displayTypeAliases: Record<
   { type: string; settings?: DisplaySnapshot }
 > = {
   marks: { type: 'LinearMarkDisplay' },
-  multivariant: { type: 'LinearMultiSampleVariantDisplay' },
+  // the betas' two spellings for the one variant display
+  multivariant: { type: 'LinearVariantDisplay' },
   multivariantmatrix: {
-    type: 'LinearMultiSampleVariantDisplay',
+    type: 'LinearVariantDisplay',
     settings: { variantLayout: 'columns' },
   },
 }
@@ -475,8 +475,8 @@ function parseFlagMask(prefix: string, val: string) {
         .reduce((a, b) => a | b, 0)
 }
 
-// The feature display and the variant display share LinearFeatureBaseDisplay's
-// schema, so a modifier reading one of its slots takes both.
+// The feature and variant displays both take `heightMode` and a record height,
+// the variant display's under `records`.
 const CANVAS = ['feature', 'variant'] as const satisfies readonly Category[]
 
 /**
@@ -584,8 +584,8 @@ const modifiers: Record<string, Modifier> = {
     },
   },
 
-  // alignments write `pileup.mark.height`, the feature displays `displayMode`
-  // or `mark.height`
+  // alignments write `pileup.mark.height`, the feature display `displayMode`
+  // or `mark.height`, the variant display the same under `records`
   featureHeight: {
     on: ['alignments', ...CANVAS],
     byCategory: true,
@@ -609,11 +609,17 @@ const modifiers: Record<string, Modifier> = {
             },
           },
         })
-      } else if (preset) {
-        r.snap.displayMode =
-          preset === 'super-compact' ? 'superCompact' : preset
       } else {
-        r.snap.mark = { height }
+        const record = preset
+          ? {
+              displayMode: preset === 'super-compact' ? 'superCompact' : preset,
+            }
+          : { mark: { height } }
+        if (category === 'variant') {
+          mergeSettings(settingsOf(r), { records: record })
+        } else {
+          Object.assign(r.snap, record)
+        }
       }
     },
   },

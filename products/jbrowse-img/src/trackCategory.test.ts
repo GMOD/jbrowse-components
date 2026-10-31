@@ -193,7 +193,7 @@ describe('a modifier lands only where the display declares its slot', () => {
 
   test.each([
     ['heightMode:fit', 'LinearMultiRowFeatureDisplay', 'heightMode'],
-    ['featureHeight:3', 'LinearMultiSampleVariantDisplay', 'mark.height'],
+    ['featureHeight:3', 'LinearMultiRowFeatureDisplay', 'mark.height'],
   ])('%s on %s warns, naming %s', (opt, displayType, slot) => {
     expect(buildDisplaySnapshot(displayType, [opt], warn).snap).toEqual({})
     expect(warn).toHaveBeenCalledWith(

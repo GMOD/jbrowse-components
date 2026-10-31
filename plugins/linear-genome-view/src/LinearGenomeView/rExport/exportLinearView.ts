@@ -47,6 +47,12 @@ function assemblyOf(view: LinearGenomeViewModel) {
     : undefined
 }
 
+// The variant display with no sample rows draws its records as a feature
+// track does, which is how R reads it.
+function drawsRecordsOnly(display: object) {
+  return 'recordsOnly' in display && display.recordsOnly === true
+}
+
 function tracksOf(view: LinearGenomeViewModel) {
   const tracks: RExportTrack[] = []
   for (const track of view.tracks) {
@@ -69,6 +75,7 @@ function tracksOf(view: LinearGenomeViewModel) {
         display: written,
         heightMode,
         height,
+        recordsOnly: drawsRecordsOnly(display),
       })
     }
   }

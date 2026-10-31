@@ -65,8 +65,11 @@ const stack = register(
     track('volvox_microarray', 'LinearWiggleDisplay'),
     track('volvox_alignments', 'LinearAlignmentsDisplay'),
     track('volvox_cram_alignments_ctga', 'LinearAlignmentsDisplay'),
-    track('volvox_filtered_vcf', 'LinearVariantDisplay'),
-    track('volvox_test_vcf', 'LinearMultiSampleVariantDisplay'),
+    {
+      ...track('volvox_filtered_vcf', 'LinearVariantDisplay'),
+      recordsOnly: true,
+    },
+    track('volvox_test_vcf', 'LinearVariantDisplay'),
   ],
   `nrow(gff3tabix_genes$features) > 0, nrow(volvox_microarray$bins) > 0,
   nrow(volvox_alignments$reads) > 0, nrow(volvox_cram_alignments_ctga$reads) > 0,
@@ -112,7 +115,7 @@ const twoRegions = register(
 
 const aliased = register(
   'aliased',
-  [track('volvox_test_vcf', 'LinearMultiSampleVariantDisplay')],
+  [track('volvox_test_vcf', 'LinearVariantDisplay')],
   `nrow(volvox_test_vcf$cells) > 0,
   identical(unique(volvox_test_vcf$variants$chrom), "ctgA")`,
 )

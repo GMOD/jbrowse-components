@@ -22,6 +22,8 @@ export interface RExportTrack {
   /** The display's resolved sizing, which a feature track exports so the figure drops what the view drops. */
   heightMode?: unknown
   height?: unknown
+  /** A variant display drawing its records alone, with no sample rows, which reads as a feature track. */
+  recordsOnly?: boolean
 }
 
 interface ReaderAdapter {
@@ -42,7 +44,12 @@ const VCF_ADAPTERS: Record<string, ReaderAdapter> = {
  */
 export const READERS: Record<
   string,
-  { call: string; adapters: Record<string, ReaderAdapter> }
+  {
+    call: string
+    /** The reader for the display drawing no sample rows, its records alone. */
+    recordsOnlyCall?: string
+    adapters: Record<string, ReaderAdapter>
+  }
 > = {
   LinearBasicDisplay: {
     call: 'jbrowse_features',
@@ -69,11 +76,8 @@ export const READERS: Record<
     },
   },
   LinearVariantDisplay: {
-    call: 'jbrowse_features',
-    adapters: VCF_ADAPTERS,
-  },
-  LinearMultiSampleVariantDisplay: {
     call: 'jbrowse_variants',
+    recordsOnlyCall: 'jbrowse_features',
     adapters: VCF_ADAPTERS,
   },
   LinearWiggleDisplay: {
@@ -444,6 +448,45 @@ function stackArgument(title: string, name: string) {
 }
 
 /** What the figure cannot show of a track whose settings ggjbrowse reads. */
+// The variant display's record settings, under `records`, as the feature
+// track's top-level spelling `jbrowse_features` reads; the genotype rows'
+// settings stay behind.
+const RECORD_SETTINGS = [
+  'displayMode',
+  'mark',
+  'labels',
+  'facet',
+  'maxFeatureScreenDensity',
+] as const
+const SHARED_SETTINGS = [
+  'filter',
+  'encoding',
+  'legend',
+  'heightMode',
+  'growMaxHeight',
+] as const
+
+function isRecord(x: unknown): x is Record<string, unknown> {
+  return typeof x === 'object' && x !== null && !Array.isArray(x)
+}
+
+function recordsAsFeatureDisplay(display: Record<string, unknown>) {
+  const records = isRecord(display.records) ? display.records : {}
+  const tooltip = {
+    ...(isRecord(display.tooltip) ? display.tooltip : {}),
+    ...(isRecord(records.tooltip) ? records.tooltip : {}),
+  }
+  return Object.fromEntries([
+    ...SHARED_SETTINGS.flatMap(k =>
+      display[k] === undefined ? [] : [[k, display[k]]],
+    ),
+    ...RECORD_SETTINGS.flatMap(k =>
+      records[k] === undefined ? [] : [[k, records[k]]],
+    ),
+    ...(Object.keys(tooltip).length > 0 ? [['tooltip', tooltip]] : []),
+  ])
+}
+
 function settingNotes(track: RExportTrack) {
   const { color } =
     (track.display.encoding as { color?: { field?: string } } | undefined) ?? {}
@@ -503,12 +546,18 @@ export function exportTracksToR({
   const bands: string[] = []
   let alignments: string | undefined
   tracks.forEach((track, i) => {
-    const reader = READERS[track.displayType]
-    if (!reader) {
+    const known = READERS[track.displayType]
+    if (!known) {
       notes.push(
         `${track.trackName}: ${track.displayType} has no R reader in ggjbrowse yet`,
       )
       return
+    }
+    const recordsCall = track.recordsOnly ? known.recordsOnlyCall : undefined
+    const asRecords = recordsCall !== undefined
+    const reader = {
+      adapters: known.adapters,
+      call: recordsCall ?? known.call,
     }
     const source = fileArgument(reader.adapters, track.adapter)
     if ('skipped' in source) {
@@ -516,14 +565,17 @@ export function exportTracksToR({
       return
     }
     const { heightMode, height } = track
+    const written = asRecords
+      ? recordsAsFeatureDisplay(track.display)
+      : track.display
     const display =
       reader.call === 'jbrowse_features'
         ? {
-            ...track.display,
+            ...written,
             ...(heightMode === undefined ? {} : { heightMode }),
             ...(height === undefined ? {} : { height }),
           }
-        : track.display
+        : written
     const geneTrack = track.displayType === 'LinearBasicDisplay'
     const args = [
       ...(Object.keys(display).length ? [`display = ${rValue(display)}`] : []),

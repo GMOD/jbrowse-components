@@ -29,13 +29,17 @@ from the view menu (`menuItems.ts`):
   first display, adapter, and the view's assembly config as written) and
   downloads the script.
 
-| Display                           | Reader               | Adapters                                         |
-| --------------------------------- | -------------------- | ------------------------------------------------ |
-| `LinearBasicDisplay`              | `jbrowse_features`   | GFF3, GTF, BED (each plain or tabix), BigBed     |
-| `LinearVariantDisplay`            | `jbrowse_features`   | VCF (plain or tabix)                             |
-| `LinearMultiSampleVariantDisplay` | `jbrowse_variants`   | VCF (plain or tabix)                             |
-| `LinearWiggleDisplay`             | `jbrowse_wiggle`     | BigWig, multi-BigWig                             |
-| `LinearAlignmentsDisplay`         | `jbrowse_alignments` | BAM, CRAM                                        |
+| Display                   | Reader               | Adapters                                     |
+| ------------------------- | -------------------- | -------------------------------------------- |
+| `LinearBasicDisplay`      | `jbrowse_features`   | GFF3, GTF, BED (each plain or tabix), BigBed |
+| `LinearVariantDisplay`    | `jbrowse_variants`   | VCF (plain or tabix)                         |
+| `LinearWiggleDisplay`     | `jbrowse_wiggle`     | BigWig, multi-BigWig                         |
+| `LinearAlignmentsDisplay` | `jbrowse_alignments` | BAM, CRAM                                    |
+
+A `LinearVariantDisplay` drawing no sample rows (`recordsOnly`: a VCF with no
+samples, or `genotypes.show` off) reads through `jbrowse_features` instead,
+its `records` settings handed over as the feature track's top-level ones
+(`recordsAsFeatureDisplay`).
 
 Any other display, a file opened from disk in jbrowse-web (a `blob:` URL R
 cannot reach), and a setting ggjbrowse draws otherwise (a `mateRefName`

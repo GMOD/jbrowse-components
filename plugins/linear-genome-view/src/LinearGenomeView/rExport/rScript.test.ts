@@ -129,7 +129,7 @@ test('a feature track takes the view’s CDS frame colors and amino acids', () =
 test('every reader lays its track out at the view’s width', () => {
   const tracks = [
     track('volvox_alignments', 'LinearAlignmentsDisplay'),
-    track('volvox_test_vcf', 'LinearMultiSampleVariantDisplay'),
+    track('volvox_test_vcf', 'LinearVariantDisplay'),
   ]
   const script = scriptOf({ ...AT_ONE, tracks })
   expect(script).toContain('\nwidth <- 1500\n')
@@ -151,7 +151,7 @@ test('every reader takes the view’s assembly, which names each contig as each 
     assembly: volvoxAssembly(),
     tracks: [
       track('volvox_alignments', 'LinearAlignmentsDisplay'),
-      track('volvox_test_vcf', 'LinearMultiSampleVariantDisplay'),
+      track('volvox_test_vcf', 'LinearVariantDisplay'),
     ],
   })
   expect(script).toContain('locus <- "ctgA:1,001-9,000"')
@@ -236,16 +236,47 @@ test('a tabix GTF reads by its path, as ggjbrowse picks GtfTabixAdapter for .gtf
   expect(script).toContain('jbrowse_features("/data/genes.gtf.gz",\n  locus')
 })
 
+// A variant display draws sample rows unless the file has none or
+// `genotypes.show` is off, where its records alone read as a feature track.
 test('variant tracks read as their displays draw them', () => {
   const script = scriptOf({
     ...AT_ONE,
     tracks: [
-      track('volvox_filtered_vcf', 'LinearVariantDisplay'),
-      track('volvox_test_vcf', 'LinearMultiSampleVariantDisplay'),
+      {
+        ...track('volvox_filtered_vcf', 'LinearVariantDisplay'),
+        recordsOnly: true,
+      },
+      track('volvox_test_vcf', 'LinearVariantDisplay'),
     ],
   })
   expect(script).toMatch(/volvox_filtered_vcf <- jbrowse_features\(/)
   expect(script).toMatch(/volvox_test_vcf <- jbrowse_variants\(/)
+})
+
+test("records alone hand R the record settings as a feature track's", () => {
+  const script = scriptOf({
+    ...AT_ONE,
+    tracks: [
+      {
+        ...track('volvox_filtered_vcf', 'LinearVariantDisplay', {
+          records: {
+            displayMode: 'compact',
+            mark: { height: 6 },
+            tooltip: { field: 'INFO.CLNSIG' },
+          },
+          tooltip: { show: false },
+          rowColor: 'population',
+        }),
+        recordsOnly: true,
+      },
+    ],
+  })
+  expect(script).toContain('displayMode = "compact"')
+  expect(script).toContain('mark = list(height = 6)')
+  expect(script).toContain(
+    'tooltip = list(show = FALSE, field = "INFO.CLNSIG")',
+  )
+  expect(script).not.toMatch(/records|rowColor/)
 })
 
 test('the header names what the figure leaves out, and an unreadable track does not stop it', () => {
