@@ -2,7 +2,8 @@
 // sashimi band, a MAF coverage / conservation band), in px. It exists so the
 // drag handle stays grabbable, which is a constraint on dragging, not on what
 // config may declare. Bands with their own vocabulary of "too small" pass their
-// own.
+// own. It is also the floor a plot keeps under the bands stacked over it
+// (`BandPlot.floor`) while it draws.
 export const MIN_BAND_HEIGHT = 20
 
 /** The legal range for one band. Both ends are optional and both are px. */
@@ -24,7 +25,9 @@ export interface BandBounds {
  * height below which its content stops reading. The **ceiling** stops a band
  * from swallowing the plot it sits over — every display floors its plot area at
  * 0, so an unbounded band takes the rows to zero height rather than to a
- * scrollbar, and takes the band's own handle off-screen with them.
+ * scrollbar, and takes the band's own handle off-screen with them. Bands that
+ * share a plot take their ceilings from the stack (`boundStackedBands` in
+ * `bandLayout`), since one band's ceiling depends on the others.
  *
  * The bounds differ per band and the rule does not, which is why this takes them
  * rather than each band re-deriving the reasoning — that is how the two
@@ -59,8 +62,8 @@ export function boundBandHeight(
  *
  * @param current - the band's height right now, in px
  * @param target - the height this resize is asking for, in px
- * @param bounds - the band's legal range; `max` should be derived from the
- *   display height so the plot below cannot be squashed to nothing
+ * @param bounds - the band's legal range; for a band in a stack, `max` is
+ *   `bandDragBounds` (`bandLayout`), so the plot below keeps its floor
  */
 export function clampBandHeight(
   current: number,
