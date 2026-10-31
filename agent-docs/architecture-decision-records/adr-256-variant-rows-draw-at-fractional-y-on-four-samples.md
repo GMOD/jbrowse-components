@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The variant display's `cell` and `matrixCell` passes go back to the 4x MSAA target and draw rows at fractional y. Snapped to the device grid at one sample, a cohort with more rows than device px, or rows under the cell pass's 2 CSS px floor, showed one row per pixel, the last one drawn, and a different one after every resize, so rows blinked as the track height changed. x stays snapped. Canvas2D, the SVG export and the hit tests keep `rowSnap`, having no samples to blend. The cost is the MSAA target, about 16 bytes per device px of canvas"
+summary: "The variant display's `cell` and `matrixCell` passes go back to the 4x MSAA target and draw rows at fractional y. Snapped to the device grid at one sample, a cohort with more rows than device px, or rows under the cell pass's 2 CSS px floor, showed one row per pixel, the last one drawn, and a different one after every resize, so rows blinked as the track height changed. x stays snapped. Canvas2D, the SVG export and the hit tests keep `rowSnap`, having no samples to blend. The cost is the MSAA target, about 16 bytes per device px of canvas. Amended the same day: `spanMark` (MAF, the multi-row mark display) drew at four samples with snapped rows, which blinked the same way under a fit-to-height MAF, and now places its rows at fractional y too"
 ---
 
 # ADR-256: Variant rows draw at fractional y on four samples
@@ -68,6 +68,18 @@ one-sample build.
 - A row boundary pixel blends two genotype colors again, as before 2026-10-30.
 - The `variant-*` pixel fixtures score against fractional rows and carry no
   one-sample budget.
+
+## Amendment (2026-10-31): span rows
+
+- `spanMark` already drew at four samples but placed its rows through
+  `rowRectClipPosOnDeviceRows`, on the device grid, so all four samples agreed
+  and blended nothing. A MAF fitted to height keeps sub-pixel rows by design
+  (`autoRowHeight`: more species than pixels), and the same resize slit-scan
+  showed its colored rows dashing on and off.
+- It now places rows through `rowRectClipPos`, at fractional y, and drops its
+  `devicePixelRatio` uniform; `rowRectClipPosOnDeviceRows` had no other caller
+  and is gone. Its Canvas2D painter keeps `rowSnap`, as the variant painters do.
+  `markPassCoverage.test.ts` pins the vertex stage free of `snappedRowTopPx`.
 
 ## Revisit if
 

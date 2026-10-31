@@ -105,8 +105,8 @@ function placeSpan(c: SpanChannels, g: SpanFrame, i: number, seamPx = 0) {
   const xa = projectBp(g, c.x[i]!)
   const xb = projectBp(g, c.x2[i]!)
   const width = Math.max(g.minWidthPx, Math.abs(xb - xa))
-  // the shader's rows (`rowRectClipPosOnDeviceRows`), so two rows meeting on a
-  // fractional px share no blended seam on Canvas2D either
+  // rows on the device grid: Canvas2D has no samples to blend two rows meeting
+  // on a fractional px, and would seam them
   const row = slot + g.bandOffsetPx / g.rowHeight
   g.left = spanLeft(xa, xb, width + seamPx)
   g.top = snappedRowTopPx(row, g.rowHeight, g.scrollTop, g.dpr)
@@ -135,7 +135,6 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
       rowHeight: params.rowHeight,
       rowProportion: params.rowProportion,
       scrollTop: params.scrollTop,
-      devicePixelRatio: clip.scaleY,
       rowTableKeys: rowTableKeys(params),
       ...rampUniforms(params.colorScale),
     })

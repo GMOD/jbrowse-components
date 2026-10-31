@@ -14,7 +14,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 48 shaders with entry points. 169 functions
+Scanned 48 shaders with entry points. 167 functions
 are inside the emitter's subset, of which **135 are exported**.
 
 ## Candidates
@@ -92,10 +92,10 @@ noticing in a diff.
 | type 'LinkInstance' is outside the supported scalar subset | 4 | `curveVertex`, `footBlockStart`, `footCorner`, `footVertex` |
 | type 'texture_2d' is outside the supported scalar subset | 4 | `markScaleColor`, `rampColor`, `rampColorPremultiplied`, `rowTableLookup` |
 | type 'VsOut' is outside the supported scalar subset | 4 | `culled`, `linkDash`, `linkDashAlong`, `linkDistance` |
-| type 'RowRectUniforms' is outside the supported scalar subset | 3 | `rowRectClipPos`, `rowRectClipPosOnDeviceRows`, `rowRectCorner` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
 | type 'RibbonInstance' is outside the supported scalar subset | 2 | `footAngles`, `ribbonAngles` |
+| type 'RowRectUniforms' is outside the supported scalar subset | 2 | `rowRectClipPos`, `rowRectCorner` |
 | vec2 element type 'u32' is outside the supported scalar subset | 2 | `decodeBanded`, `decodeTriangular` |
 | //! js-export: 'bpToClipX' reaches hpClipX(), which is outside the supported scalar subset | 1 | `bpToClipX` |
 | type 'ChevronCorner' is outside the supported scalar subset | 1 | `chevronCorner` |

@@ -71,7 +71,6 @@ function uniformsFor(rowTableKeys: number) {
     rowHeight: CANVAS_H / rows,
     rowProportion: 1,
     scrollTop: 0,
-    devicePixelRatio: 1,
     rowTableKeys,
   })
   return [...new Uint8Array(buf)]

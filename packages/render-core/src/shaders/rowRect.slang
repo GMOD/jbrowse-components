@@ -23,7 +23,6 @@
 module rowRect;
 
 import hpmath;
-import rowSnap;
 
 public struct RowRectInstance {
   public uint x     : ATTR0;
@@ -129,21 +128,6 @@ public float4 rowRectClipPos(
   RowBand band = rowBandPx(u.rowHeight, u.rowProportion);
   float rowY = band.offset + u.rowHeight * rowIndex - u.scrollTop;
   return rowRectCorner(startBp, endBp, rowY, rowY + band.height, vid, u);
-}
-
-// `rowRectClipPos` with the band's edges on the device grid (`rowSnap`), so
-// rows that tile meet on a pixel boundary at one sample. `dpr` is the backing
-// store's y scale.
-public float4 rowRectClipPosOnDeviceRows(
-  uint startBp, uint endBp, float rowIndex, uint vid, RowRectUniforms u,
-  float dpr
-) {
-  RowBand band = rowBandPx(u.rowHeight, u.rowProportion);
-  float row = rowIndex + band.offset / u.rowHeight;
-  return rowRectCorner(startBp, endBp,
-    snappedRowTopPx(row, u.rowHeight, u.scrollTop, dpr),
-    snappedRowBottomPx(row, u.rowHeight, band.height, u.scrollTop, dpr),
-    vid, u);
 }
 
 float4 rowRectCorner(

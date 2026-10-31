@@ -1,8 +1,8 @@
 // The `span` mark shape: one instance is a colored rectangle spanning
 // [x, x2) in absolute genomic coords, on the row band given by the `row`
-// channel. The geometry is `rowRect`'s, its band's edges on the device grid
-// (`rowRectClipPosOnDeviceRows`) as the Canvas2D painter's are, so stacked
-// rows meet on a pixel boundary at any sample count.
+// channel. The geometry is `rowRect`'s, at fractional y: the four samples
+// blend the rows sharing a pixel, where rows snapped to the device grid gave
+// the pixel to one row, a different one after every resize (ADR-256).
 //
 // `row` is read through the bound row table (`rowTable`): a key resolved to
 // its drawn slot and color, or collapsed to a zero-area quad off clip space
@@ -42,8 +42,6 @@ struct SpanMarkUniforms {
   int    colorCutCount;
   float4 colorCuts[2];
   float4 colorBands[MAX_COLOR_BANDS];
-  // The backing store's y scale (`clip.scaleY`), which rows snap to.
-  float  devicePixelRatio;
 };
 
 [[vk::binding(1, 0)]] ConstantBuffer<SpanMarkUniforms> u;
@@ -69,8 +67,7 @@ RowRectVsOut vs_main(RowRectInstance inst, uint vid : SV_VertexID) {
   r.rowHeight      = u.rowHeight;
   r.rowProportion  = u.rowProportion;
   r.scrollTop      = u.scrollTop;
-  o.position = rowRectClipPosOnDeviceRows(inst.x, inst.x2, float(p.slot), vid,
-                                          r, u.devicePixelRatio);
+  o.position = rowRectClipPos(inst.x, inst.x2, float(p.slot), vid, r);
   o.color = p.color;
   return o;
 }

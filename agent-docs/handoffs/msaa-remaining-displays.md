@@ -95,8 +95,9 @@ A display draws at one sample when every pass it registers declares
      8.5 / 6.2% at one sample against rows on the device grid, 2.7 / 2.1 /
      1.5% at four. Widening it with alpha by true width, as
      `variantMatrix.slang` does, scores worse (12.8%): the next opaque cell
-     overwrites the pixel. Its rows now snap through `rowSnap.slang`, as the
-     Canvas2D painter's do.
+     overwrites the pixel. Its rows sit at fractional y so the four samples
+     blend them; snapped, they blinked on resize (ADR-256's amendment). Only
+     its Canvas2D painter snaps rows.
    - **`barMark` stays at four:** its vertical cuts stay hard and lean on MSAA
      (its header says why).
 4. **The GPU pixel harness exists:** `node scripts/gpu-pixels/run.ts`, written
