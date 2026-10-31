@@ -324,8 +324,8 @@ Curated VNTRs
   haplotypes of hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa, as one VCF 4.5
   <CNV:TR> record: each allele's runs of one unit in RN/RUS/RUC/RB, each copy's
   length in RUB, and a phased GT per sample, GRCh38 a sample of its own.
-  jbrowse-plugin-tandem-repeat's scripts/tandem-repeat-vcf.mjs wrote it from
-  that GFA and the KIV-2 row above:
+  jbrowse-components' scripts/tandem-repeat-vcf.mjs wrote it from that GFA and
+  the KIV-2 row above:
 
     node scripts/tandem-repeat-vcf.mjs \
       hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa \
@@ -335,9 +335,9 @@ Curated VNTRs
   At its 1% divergence the 138 copies form two units about 2.3% apart. They
   are KIV-2A and KIV-2B: given one copy's exons, --sites finds them differing
   only at exon 1's positions 14, 41 and 86, the sites that define KIV-2B, and
-  --unit-names writes those names into RUNAME, a non-spec field beside RUS. The
-  config loads jbrowse-plugin-tandem-repeat, whose Show repeat copies item on
-  the record draws each copy in its unit's color.
+  --unit-names writes those names into RUNAME, a non-spec field beside RUS.
+  Clicking the record opens its Tandem repeat card in the feature details,
+  which draws each copy in its unit's color.
 
   hprc_samples.tsv is the samplesTsvLocation of both KIV-2 tracks and of the
   walk-lane graph track, whose walk rows Group by… splits: one row per

@@ -26,7 +26,7 @@ const GRAPH_PLUGIN = 'GraphGenomeView'
 // entries for it have to agree. They diverge for a real reason — one demo pinned
 // to a build hash while the other tracks the rolling URL — and that is the case
 // where a single fence stops being true for one of the pages using it. Other
-// plugins a demo loads beside it (HPRC's TandemRepeat) are not the fence's.
+// plugins a demo loads beside it are not the fence's.
 export function collectGraphPlugin(): PluginEntry[] {
   const seen = CONFIGS.map(file => {
     const { plugins } = JSON.parse(fs.readFileSync(file, 'utf8')) as {

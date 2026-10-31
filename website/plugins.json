@@ -291,25 +291,6 @@
         }
       ],
       "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js"
-    },
-    {
-      "name": "TandemRepeat",
-      "packageName": "jbrowse-plugin-tandem-repeat",
-      "authors": ["Colin Diesh"],
-      "description": "A tandem repeat's alleles, one bar per haplotype with each copy coloured by its repeat unit, from VCF 4.5 <CNV:TR> records",
-      "location": "https://github.com/GMOD/jbrowse-plugin-tandem-repeat",
-      "tags": ["bring-your-own-data", "variants", "view"],
-      "license": "MIT",
-      "image": "https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/tandemrepeat-fs8.png",
-      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-tandem-repeat/0.1.4/dist/jbrowse-plugin-tandem-repeat.esm.js",
-      "versions": [
-        {
-          "pluginVersion": "0.1.4",
-          "jbrowseRange": ">=5.0.0",
-          "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-tandem-repeat/0.1.4/dist/jbrowse-plugin-tandem-repeat.esm.js"
-        }
-      ],
-      "latestUrl": "https://jbrowse.org/plugins/jbrowse-plugin-tandem-repeat/latest/dist/jbrowse-plugin-tandem-repeat.esm.js"
     }
   ]
 }

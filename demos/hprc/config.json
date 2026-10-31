@@ -4,11 +4,6 @@
       "name": "GraphGenomeView",
       "storePlugin": "GraphGenomeView",
       "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-graphgenomeviewer/latest/dist/jbrowse-plugin-graphgenomeviewer.esm.js"
-    },
-    {
-      "name": "TandemRepeat",
-      "storePlugin": "TandemRepeat",
-      "esmUrl": "https://jbrowse.org/plugins/jbrowse-plugin-tandem-repeat/latest/dist/jbrowse-plugin-tandem-repeat.esm.js"
     }
   ],
   "assemblies": [

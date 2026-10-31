@@ -39,15 +39,11 @@ The graph view is a beta plugin, and walk rows is its newest layout. The
   [install it from the plugin store](/docs/user_guides/plugin_store); the HPRC
   page's launches and the hosted HPRC config the sessions below open already
   load it
-- the TandemRepeat plugin, for [Which copy is which](#which-copy-is-which). In
-  your own JBrowse,
-  [install it from the plugin store](/docs/user_guides/plugin_store); the hosted
-  HPRC config already loads it
 - for your own samples: [TRGT](https://github.com/PacificBiosciences/trgt) and
   `bcftools`
 - for [Which copy is which](#which-copy-is-which) and
   [The ABCA7 alleles across the samples](#the-abca7-alleles-across-the-samples):
-  Node, to run the plugin's scripts
+  Node, to run our scripts
 - for [Reproduce it end to end](#reproduce-it-end-to-end):
   [DuckDB](https://duckdb.org), and for its amylase build `samtools` built with
   libcurl, [`minimap2`](https://github.com/lh3/minimap2), `python3` and Node.js
@@ -191,12 +187,14 @@ its haplotype:
 }
 ```
 
-Turn the track on, right-click the record and choose **Show repeat copies**. The
-TandemRepeat plugin, which the hosted config loads beside the graph plugin,
-opens a view with one bar per haplotype, each with a bp axis and each copy
-colored by its type. Hover a copy for its haplotype.
+Turn the track on and click the record. A **Tandem repeat** card opens above the
+details, each copy colored by its type. With this many haplotypes it starts on
+**By allele**: one bar per allele, longest first, and hovering a copy gives that
+allele's share of the haplotypes. **By haplotype** draws one bar per haplotype,
+and hovering a copy names its haplotype. Click a bar: the other bars fade and
+the **Samples** card narrows to the samples carrying that allele.
 
-<Figure caption="The KIV-2 record's repeat copies, one bar per haplotype, each copy colored by its type." src="/img/pangenome/hprc_kiv2_copies.png" />
+<Figure caption="The KIV-2 record's Tandem repeat card, by haplotype. Each bar is one haplotype's array, each copy colored by its type." src="/img/pangenome/hprc_kiv2_copies.png" />
 
 The track selector also holds `LPA KIV-2 copies by unit, eight HPRC haplotypes`,
 few enough bars to label each by name.
@@ -210,14 +208,14 @@ the eight haplotypes:[^kiv2-cut]
 curl -fO https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
 ```
 
-[`tandem-repeat-vcf.mjs`](https://github.com/GMOD/jbrowse-plugin-tandem-repeat/blob/main/scripts/tandem-repeat-vcf.mjs)
+[`tandem-repeat-vcf.mjs`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/tandem-repeat-vcf.mjs)
 splits each walk into copies wherever the reference array's first 24 bases
 recur, and groups copies within 1% of each other into a unit. It takes the cut
 and a BED row naming the array on the reference (chrom, start, end, name), and
 `--unit-names` names the units, the one with the most copies first:
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-plugin-tandem-repeat/main/scripts/tandem-repeat-vcf.mjs
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/tandem-repeat-vcf.mjs
 ```
 
 ```bash
@@ -375,11 +373,11 @@ one of HG02559's alleles has an `SD` of 0.
 ## The ABCA7 alleles across the samples
 
 TRGT writes each allele as its full sequence, so the details are a wall of
-`CCCCGTGAGC`. The TandemRepeat plugin's script rewrites the record as `<CNV:TR>`
-alleles, each a run of the locus's 51 bp motif:
+`CCCCGTGAGC`. Our script rewrites the record as `<CNV:TR>` alleles, each a run
+of the locus's 51 bp motif:
 
 ```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-plugin-tandem-repeat/main/scripts/trgt-to-cnv-tr.mjs
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/trgt-to-cnv-tr.mjs
 ```
 
 ```bash
@@ -400,16 +398,11 @@ track:
 }
 ```
 
-Open `chr19:1,049,000-1,050,500` and click the record. A **Tandem repeat** card
-opens above the details. With this many samples the card starts on **By
-allele**: one bar per allele, longest first. Hover a copy for its allele, that
+Open `chr19:1,049,000-1,050,500` and click the record. The **Tandem repeat**
+card starts on **By allele** here too. Hover a copy for its allele, that
 allele's share and its length.
 
 <Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. The dotted line is GRCh38's allele." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
-
-Click a bar: the other bars fade and the **Samples** card narrows to the samples
-with that allele. **By haplotype** swaps in one bar per called allele, and
-hovering a copy names its sample.
 
 HG00099's genotype in the sample table is `1/2` with `AL` `387,3161`. In the
 card, hovering ALT 1's bar gives 387 bp and ALT 2's 3.2 kb, matching what TRGT

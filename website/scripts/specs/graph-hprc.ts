@@ -734,12 +734,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           loc: 'chr6:160,596,000-160,666,000',
           tracks: [
             {
-              trackId: 'hg38_ncbiRefSeq_ucsc',
-              filter: ['geneLike'],
-              displayMode: 'compact',
-              height: 40,
-            },
-            {
               trackId: 'hprc_kiv2_copies_all',
               height: 40,
             },
@@ -748,30 +742,30 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       ],
     }),
     viewportWidth: 1400,
-    viewportHeight: 1300,
+    viewportHeight: 1010,
+    // the card alone, as hprc_abca7_tandem_repeat_alleles crops it
+    crop: { x: 1016, y: 48, width: 384, height: 900 },
     tooltip: 'hide',
-    clicksChange: "open the record's repeat copies view",
+    clicksChange: "open the record's Tandem repeat card, by haplotype",
     actions: [
       { type: 'waitForAppSettled', timeout: 120000 },
       {
-        type: 'rightclick',
+        type: 'click',
         anchor: {
           loc: 'chr6:160,631,000',
           trackId: 'hprc_kiv2_copies_all',
           fracY: 0.2,
         },
       },
-      { type: 'waitForText', text: 'Show repeat copies' },
-      { type: 'click', text: 'Show repeat copies' },
       {
         type: 'waitForSelector',
         selector: '[data-testid="tandem-repeat-view"]',
       },
+      { type: 'click', text: 'By haplotype' },
       { type: 'delay', ms: 500 },
     ],
   },
-  // TRGT's ABCA7 alleles as <CNV:TR> records, from the TandemRepeat plugin's
-  // trgt-to-cnv-tr.mjs
+  // TRGT's ABCA7 alleles as <CNV:TR> records, from scripts/trgt-to-cnv-tr.mjs
   {
     mode: 'url',
     name: 'pangenome/hprc_abca7_tandem_repeat_alleles',
@@ -807,7 +801,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // the card alone: the record's view was one 40px row over a blank frame
     crop: { x: 1016, y: 48, width: 384, height: 862 },
     tooltip: 'hide',
-    clicksChange: "open the record's repeat copies view",
+    clicksChange: "open the record's Tandem repeat card",
     actions: [
       { type: 'waitForAppSettled', timeout: 120000 },
       {
