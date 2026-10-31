@@ -92,8 +92,8 @@ const ResizeAllTracksHandle = observer(function ResizeAllTracksHandle({
             track.setResizing(true)
           }
         }}
-        // the distance from the press, every track scaled from where it was
-        value={0}
+        // no value, so the distance from the press, every track scaled from
+        // where it was
         onChange={distance => {
           model.resizeTracks(distance, drag.current.from)
         }}

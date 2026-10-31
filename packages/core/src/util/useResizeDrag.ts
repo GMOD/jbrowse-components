@@ -70,8 +70,12 @@ import type React from 'react'
  */
 export type ResizeDragCallback =
   | {
-      /** The value the drag sizes, read at the press */
-      value: number
+      /**
+       * The value the drag sizes, read at the press. Left out, `onChange` gets
+       * the pointer's travel since the press, for a caller scaling several
+       * values from a snapshot it took then.
+       */
+      value?: number
       /**
        * The value the drag aims at: `value` at the press plus the pointer's
        * travel since, divided by `gain`, and whole. The setter clamps it.
@@ -128,43 +132,32 @@ export function useResizeDrag({
    */
   gain?: number
 }) {
-  const prevPosRef = useRef(0)
   const startRef = useRef({ pos: 0, value: 0, travel: 0 })
 
   const getPos = (event: React.PointerEvent) =>
     vertical ? event.clientX : event.clientY
 
   // The scheduled value is the absolute pointer position, last-write-wins, and
-  // the delta against the previous commit is derived here.
-  //
-  // Whole px, and the remainder stays in the baseline rather than in a second
-  // ref: a divided delta has a sub-pixel tail, and every consumer rounds (a band
-  // height is whole px), so rounding it away each frame instead made a gain-2
-  // drag travel 4/3 of the pointer. Leaving the unspent fraction ahead of
-  // `prevPos` is the same mechanism that keeps a drag into a clamp from banking
-  // debt — the distance is always measured from what was last committed.
+  // the travel since the press is derived here. Whole px, truncated from the
+  // press rather than per frame: a divided delta has a sub-pixel tail, and
+  // rounding it away each frame made a gain-2 drag travel 4/3 of the pointer.
   const { schedule, flush } = useRafCommit(pos => {
-    if (onChange) {
-      const start = startRef.current
-      const travel = Math.trunc((pos - start.pos) / gain)
-      if (travel !== start.travel) {
-        start.travel = travel
+    const start = startRef.current
+    const travel = Math.trunc((pos - start.pos) / gain)
+    if (travel !== start.travel) {
+      const step = travel - start.travel
+      start.travel = travel
+      if (onChange) {
         onChange(start.value + (reverse ? -travel : travel))
-      }
-    } else {
-      const distance = Math.trunc((pos - prevPosRef.current) / gain)
-      if (distance !== 0) {
-        prevPosRef.current += distance * gain
-        onDrag(distance)
+      } else {
+        onDrag(step)
       }
     }
   })
 
   const handlers = usePointerDrag({
     onDragStart: event => {
-      const pos = getPos(event)
-      prevPosRef.current = pos
-      startRef.current = { pos, value: value ?? 0, travel: 0 }
+      startRef.current = { pos: getPos(event), value: value ?? 0, travel: 0 }
       onDragStart?.()
     },
     onDrag: event => {

@@ -130,13 +130,17 @@ const LevelSection = observer(function LevelSection({
       <ResizeHandle
         bar
         onPointerDown={event => {
-          drag.current = {
-            alone: event.altKey,
-            from: model.levels.map(l => l.height),
+          // the press that starts the drag, not a right-click or a second
+          // finger during it, which would re-snapshot and jump the bands
+          if (event.button === 0 && event.isPrimary) {
+            drag.current = {
+              alone: event.altKey,
+              from: model.levels.map(l => l.height),
+            }
           }
         }}
-        // the distance from the press, the bands scaled from where they were
-        value={0}
+        // no value, so the distance from the press, the bands scaled from
+        // where they were
         onChange={distance => {
           const { alone, from } = drag.current
           if (alone) {

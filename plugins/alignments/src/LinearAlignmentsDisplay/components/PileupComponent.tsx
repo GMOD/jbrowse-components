@@ -110,7 +110,7 @@ const PileupBody = observer(function PileupBody({
 // ABOVE it too, so the second group's handle used to travel at twice the
 // pointer's speed and slide out from under the cursor mid-drag. Every caller
 // below states how many copies of its band sit at or above the handle.
-const PileupResizeHandle = observer(function PileupResizeHandle({
+export const PileupResizeHandle = observer(function PileupResizeHandle({
   seam,
   canvasHeight,
   value,
@@ -125,16 +125,23 @@ const PileupResizeHandle = observer(function PileupResizeHandle({
   title: string
   gain?: number
 }) {
-  if (seam < 0 || seam - BAND_SEAM_HIT_PX > canvasHeight) {
-    return null
-  }
-  return (
+  // the handle being dragged stays mounted when its seam leaves the canvas:
+  // unmounting it releases the pointer and ends the drag with no pointerup
+  const [dragging, setDragging] = useState(false)
+  const offCanvas = seam < 0 || seam - BAND_SEAM_HIT_PX > canvasHeight
+  return offCanvas && !dragging ? null : (
     <BandSeamHandle
       seam={seam}
       gain={gain}
       value={value}
       onChange={height => {
         onChange(height)
+      }}
+      onDragStart={() => {
+        setDragging(true)
+      }}
+      onDragEnd={() => {
+        setDragging(false)
       }}
       title={title}
     />

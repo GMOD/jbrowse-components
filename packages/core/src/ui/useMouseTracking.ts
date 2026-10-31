@@ -121,14 +121,19 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
   }, [store])
 
   const handleMouseMove = (event: React.MouseEvent) => {
-    // On a resize handle, which captures the pointer for the whole drag, the
-    // pointer is no longer over the data: a crosshair following it would ride
-    // the seam as the display resizes under it
+    // On a resize handle the pointer is no longer over the data: a crosshair
+    // following it would ride the seam as the display resizes under it. Clearing
+    // on the hover is enough for the drag too, because the handle's pointerdown
+    // `preventDefault` suppresses every compatibility mouse event until the
+    // pointerup (Pointer Events, "Mapping for devices that support hover"), so
+    // nothing publishes the pointer again mid-drag.
     if (
       event.target instanceof Element &&
       event.target.closest('[data-resize-handle]')
     ) {
-      handleMouseLeave()
+      if (store.getSnapshot() !== undefined) {
+        handleMouseLeave()
+      }
     } else {
       trackMove(event)
     }

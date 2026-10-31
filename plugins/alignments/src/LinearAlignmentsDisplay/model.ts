@@ -3162,10 +3162,12 @@ export default function stateModelFactory(
            * both directions, past its content too.
            */
           setGroupHeight(key: string, height: number) {
-            self.groupSizes.set(
-              key,
-              Math.max(self.rowHeight, Math.round(height)),
-            )
+            if (self.renderSections.some(s => s.groupKey === key)) {
+              self.groupSizes.set(
+                key,
+                Math.max(self.rowHeight, Math.round(height)),
+              )
+            }
           },
 
           /**
