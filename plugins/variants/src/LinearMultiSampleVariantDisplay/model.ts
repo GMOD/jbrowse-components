@@ -5,7 +5,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import {
   canonicalizeViewRefName,
   getDialogHost,
@@ -115,7 +114,6 @@ import {
 } from '../shared/getSources.ts'
 import { CellSolidColorDialog } from '../shared/lazyDialogs.ts'
 import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
-import { getCachedABGR } from '../shared/variantWebglUtils.ts'
 import {
   sitesBySpan,
   sortSourcesAroundVariant,
@@ -1465,12 +1463,13 @@ export function stateModelFactory(
         return {
           /**
            * #getter
-           * Whether the records band colors by SV class: while the cells paint
-           * the genotype colors, which name no record. A picked color follows
+           * Whether the records band colors by SV class, the rest
+           * `featureDefaultColor`: while no `encoding.color` is picked, with
+           * rows or without. A picked color paints the records as it paints
            * the cells.
            */
           get recordsColorBySvClass() {
-            return self.colorEncoding === undefined && !self.recordsOnly
+            return self.colorEncoding === undefined
           },
           /**
            * #getter
@@ -1508,14 +1507,13 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Each fetched region's record colors: the SV class, the alt
-         * cells' hue at full dose, which neither shading nor the phased mode
-         * moves, or with no rows and no `encoding.color` the feature track's
-         * own default, `featureDefaultColor`.
+         * Each fetched region's record colors: the SV class or
+         * `featureDefaultColor` (`svClassColors`), or under a picked
+         * `encoding.color` the alt cells' hue at full dose, which neither
+         * shading nor the phased mode moves.
          */
         get regionRecordColors() {
           const { cellData, cellHue, cellHueValuesRead } = self
-          const featureDefault = getCachedABGR(featureDefaultColor)
           const out = new Map<number, Uint32Array>()
           if (cellData) {
             for (const k in cellData.perRegionCellData) {
@@ -1524,11 +1522,7 @@ export function stateModelFactory(
                 Number(k),
                 self.recordsColorBySvClass
                   ? svClassColors(data.featureInfo)
-                  : self.recordsOnly && self.colorEncoding === undefined
-                    ? new Uint32Array(data.featureInfo.length).fill(
-                        featureDefault,
-                      )
-                    : paintFeatureColors(data, cellHue, cellHueValuesRead),
+                  : paintFeatureColors(data, cellHue, cellHueValuesRead),
               )
             }
           }
@@ -2715,15 +2709,15 @@ export function stateModelFactory(
          * #getter
          * `LegendMixin`'s hook: the records band's SV classes, the cell
          * coloring and the row color key. With no rows and no
-         * `encoding.color` the records paint one color and nothing is keyed,
-         * as on a feature track.
+         * `encoding.color` no genotype is drawn, so only the SV classes are
+         * keyed.
          */
         get colorScales(): ColorScale[] {
-          const recordsUncolored =
+          const noGenotypeKey =
             self.recordsOnly && self.colorEncoding === undefined
           return [
             ...self.recordsColorScales,
-            ...(recordsUncolored
+            ...(noGenotypeKey
               ? []
               : getVariantColorScales({
                   unit: self.unit,

@@ -37,16 +37,28 @@ describe.each([
     expect(d.legendTop).toBe(0)
   })
 
-  test('the band draws every record, in the feature track default color, with no key', () => {
+  test('the band draws every record, an SV in its class color and the rest in the feature track default, keying the SV classes alone', () => {
     const { display: d } = recordsDisplayAt(FEW, 10, {}, rows, display)
     const data = d.recordsRenderDataMap.get(0)!
-    expect(data.flatbushItems.map(i => i.featureId).sort()).toEqual([
-      'rs1',
-      'rs2',
-      'sv1',
+    const colorOf = new Map(
+      data.flatbushItems.map((item, i) => [item.featureId, data.rectColors[i]]),
+    )
+    expect([...colorOf.keys()].sort()).toEqual(['rs1', 'rs2', 'sv1'])
+    expect(colorOf.get('rs1')).toBe(getCachedABGR(featureDefaultColor))
+    expect(colorOf.get('rs2')).toBe(getCachedABGR(featureDefaultColor))
+    expect(colorOf.get('sv1')).toBe(getCachedABGR('#e41a1c'))
+    expect(d.colorScales).toMatchObject([
+      { title: 'SV type', entries: [{ label: 'Deletion' }] },
     ])
-    expect(new Set(data.rectColors)).toEqual(
-      new Set([getCachedABGR(featureDefaultColor)]),
+  })
+
+  test('with no SV among the records, nothing is keyed', () => {
+    const { display: d } = recordsDisplayAt(
+      FEW.filter(([id]) => id !== 'sv1'),
+      10,
+      {},
+      rows,
+      display,
     )
     expect(d.colorScales).toEqual([])
   })

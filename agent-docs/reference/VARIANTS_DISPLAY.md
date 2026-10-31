@@ -309,8 +309,8 @@ LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
   asks for no sample (`sourcesBase` and `discoveredRows` are empty), and an
   empty `sampleFilter` makes the worker read no genotype
   (`readGenotypes`), so it draws what a sites-only VCF draws. The records
-  take `featureDefaultColor` and nothing is keyed unless `encoding.color` is
-  set; the key sits at the top; the seam handle goes, the track's own handle
+  take the one color rule below, and no genotype is keyed unless
+  `encoding.color` is set; the key sits at the top; the seam handle goes, the track's own handle
   resizing. They letter as `LinearVariantDisplay` does: `normal` size, the
   display's `records.labels` fields, the description on its own line under
   the name. What `fixed` or a capped `grow` cannot show scrolls: the scroll
@@ -381,10 +381,11 @@ LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
   record's `samples` where rows draw them, the widget's feature persisting to
   localStorage (`withClickedSample`); the click's own record opens where the
   adapter finds none.
-- **A record takes its SV class's color** (`recordsSvColors.ts`, the
-  `svType` preset) under the genotype colors, keyed as "SV type" above the
-  genotypes, and the cell hue at full dose (`paintFeatureColors`) under a
-  picked `encoding.color`. It crosses over as a per-feature jexl rather than
+- **A record takes its SV class's color, otherwise `featureDefaultColor`**
+  (`svClassColors`, the `svType` preset), with rows or without, while no
+  `encoding.color` is picked, the SV classes drawn keyed as "SV type" above
+  the genotypes; under a picked `encoding.color`, the cell hue at full dose
+  (`paintFeatureColors`). It crosses over as a per-feature jexl rather than
   the BED `itemRgb` path, which drops alpha.
 - **One label line over rows**: ID, description, then the share of the shown samples
   carrying it (`recordCarriers.ts`; the denominator is `recordCarrierSamples`,

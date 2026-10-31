@@ -1,3 +1,4 @@
+import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import {
   SV_TYPE_FIELD,
   categoricalField,
@@ -13,13 +14,16 @@ function svClassField() {
 }
 
 /**
- * Each record's color by its SV class, through the `svType` preset the cells'
- * "Color by → SV type" paints with, for a band whose display paints the
- * genotype colors: a record is not a genotype, so it takes none of theirs.
+ * Each record's color while no `encoding.color` is picked: its SV class's,
+ * through the `svType` preset the cells' "Color by → SV type" paints with,
+ * and a record with no SV class the feature track's `featureDefaultColor`. A
+ * record is not a genotype, so it takes none of the genotype colors.
  */
 export function svClassColors(featureInfo: readonly VariantFeatureInfo[]) {
   const field = svClassField()
-  const colorOf = new Map<string, number>()
+  const colorOf = new Map<string, number>([
+    ['', getCachedABGR(featureDefaultColor)],
+  ])
   return Uint32Array.from(featureInfo, ({ svType }) => {
     const known = colorOf.get(svType)
     const color = known ?? getCachedABGR(field.color(field.key(svType)))

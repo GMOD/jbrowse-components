@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-sample variant display draws the VCF's structural variants above its genotype rows, colored by SV type and keyed, each lettered ID and description on one line, as `records: { show, growMaxHeight, labels }`, stacked by plugin-features's own pipeline: the cell payload rebuilt as features, packed, fit by LinearBasicDisplay's fit ladder (hosted, not copied), painted by `paintFeatureBand` and picked by its hit test, through the new `@jbrowse/plugin-features/band` entry. The band grows to its stack at full feature size up to `growMaxHeight` (170) and takes that height from the rows; past the cap the ladder fits the stack in. Off by default. Slice one of merging `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay` into one display with `records` and `genotypes` bands. Amends ADR-250, whose first rejected alternative this takes. Amended: with no genotype rows (no samples, or `genotypes.show` off) the band is the whole display, every record the filter admits, sized by `heightMode`, labelled and fit by the records on screen, and refused past `records.maxFeatureScreenDensity` through plugin-features's `FeatureGateMixin`. Amended again (sub-slice B, amending ADR-231): the band's cap is `records.maxHeight`, and `records` takes LinearVariantDisplay's record settings, `displayMode` (unset compact over rows, normal without), `mark`, `facet` and `tooltip.field`, with `identity` on the display's one `encoding.color`"
+summary: "The multi-sample variant display draws the VCF's structural variants above its genotype rows, colored by SV type and keyed, each lettered ID and description on one line, as `records: { show, growMaxHeight, labels }`, stacked by plugin-features's own pipeline: the cell payload rebuilt as features, packed, fit by LinearBasicDisplay's fit ladder (hosted, not copied), painted by `paintFeatureBand` and picked by its hit test, through the new `@jbrowse/plugin-features/band` entry. The band grows to its stack at full feature size up to `growMaxHeight` (170) and takes that height from the rows; past the cap the ladder fits the stack in. Off by default. Slice one of merging `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay` into one display with `records` and `genotypes` bands. Amends ADR-250, whose first rejected alternative this takes. Amended: with no genotype rows (no samples, or `genotypes.show` off) the band is the whole display, every record the filter admits, sized by `heightMode`, labelled and fit by the records on screen, and refused past `records.maxFeatureScreenDensity` through plugin-features's `FeatureGateMixin`. Amended again (sub-slice B, amending ADR-231): the band's cap is `records.maxHeight`, and `records` takes LinearVariantDisplay's record settings, `displayMode` (unset compact over rows, normal without), `mark`, `facet` and `tooltip.field`, with `identity` on the display's one `encoding.color`. Amended a third time: one color rule in both modes, a record's SV class color otherwise `featureDefaultColor`, the SV type key wherever an SV draws"
 ---
 
 # ADR-254: The multi-sample variant display draws a stacking records band
@@ -99,8 +99,8 @@ case with no rows; over rows both stay provisional.
   what `fixed` or a capped `grow` cannot show scrolls. Over rows the display
   keeps its `height` under every mode (`growMaxHeight` is Infinity there).
 - **Admission without rows is settled**: every record the display's filter
-  admits, colored `featureDefaultColor` (`encoding.color` still paints them),
-  no carrier share, no key, lettered as `LinearVariantDisplay` letters them
+  admits, colored by the one rule the amendment below sets (at first
+  `featureDefaultColor` alone, with no key), no carrier share, lettered as `LinearVariantDisplay` letters them
   (normal size, the description under the name; Colin delegated the call).
   The one-line ID, description and carrier share stays for the band over
   rows. `genotypes.show` off sends an empty
@@ -171,6 +171,20 @@ move those configs onto it without dropping a setting.
   painting the cells' hue at full dose under a picked color, so a per-record
   color is the one channel's. As on a feature track it keys a `value`
   callback's colors, the ones `scale.domain` names.
+
+## Amendment: one color rule for records (2026-10-30)
+
+Before the merge (sub-slice C), from a cold review that found the band
+accreting a mode switch: a record's color no longer depends on whether rows
+draw.
+
+- **A record takes its SV class's color, otherwise `featureDefaultColor`**,
+  with rows and without, while no `encoding.color` is picked
+  (`svClassColors`). A picked `encoding.color` paints the records as it
+  paints the cells, in both modes.
+- **The "SV type" key shows whenever records with an SV class are drawn**
+  under that rule, in both modes. With no rows and no `encoding.color` the
+  genotype key alone stays off, since no genotype draws.
 
 ## Rejected alternatives
 
