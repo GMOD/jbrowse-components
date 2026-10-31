@@ -128,7 +128,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
     'pangenome/bovine_polled',
     'chr1:2,428,800-2,429,800',
     [bovineOmia, bovineVariants(260)],
-    580,
+    600,
     {
       highlight: [
         {
@@ -174,7 +174,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           maxRegionBp: cutNear(40_000),
         }),
       ],
-      920,
+      940,
     ),
     readySelector: GRAPH_DRAWN,
     annotations: [
@@ -186,7 +186,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         anchor: {
           trackId: 'bovine_pangenome_vcf',
           loc: 'chr5:98,600,000',
-          fracY: 0.78,
+          fracY: 0.84,
         },
         dx: 60,
         dy: -120,

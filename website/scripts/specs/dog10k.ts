@@ -490,7 +490,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr37',
     readyTimeout: 90000,
-    viewportHeight: 1024,
+    viewportHeight: 1044,
     // The pill sits left of the column over lane that paints nothing.
     annotations: [
       {
@@ -889,7 +889,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'chr30',
     readyTimeout: 90000,
-    viewportHeight: 951,
+    viewportHeight: 971,
     annotations: [
       {
         type: 'text',
