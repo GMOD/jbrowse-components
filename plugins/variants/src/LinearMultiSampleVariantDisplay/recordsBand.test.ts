@@ -228,6 +228,25 @@ test.each([
   },
 )
 
+// Past the label density the records are unlabelled, so LinearBasicDisplay's
+// density collapse piles sub-pixel ones stacked past its depth (25) into one
+// faded row, as it draws a dense variant track: 1000 SNVs a base apart at
+// 20bp/px pile 40 deep.
+test('dense sub-pixel records with no labels collapse into one faded row', () => {
+  const records: BandRecord[] = Array.from({ length: 1000 }, (_, i) => [
+    `r${i}`,
+    i,
+    i + 1,
+    'A -> G',
+    '',
+  ])
+  const { display } = recordsDisplayAt(records, 20, {}, false)
+  expect(display.recordsVisibleLabels).toEqual({ name: '', description: '' })
+  const data = display.recordsLaidOutDataMap.get(0)!
+  expect(new Set(data.flatbushItems.map(i => i.topPx)).size).toBe(1)
+  expect(new Set(data.rectDensityFade)).toEqual(new Set([1]))
+})
+
 // The fit measures the records on screen, as LinearBasicDisplay's does: a
 // dense stretch buffered past the edge neither labels nor sizes the band.
 test('records buffered off screen leave the band its on-screen height', () => {
