@@ -126,7 +126,7 @@ export const variantsSpecs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     // Tall enough to show the whole SAMPLES table the callouts anchor to.
     viewportWidth: 1150,
-    viewportHeight: 1080,
+    viewportHeight: 1400,
     actions: [
       {
         type: 'click',
