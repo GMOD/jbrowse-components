@@ -105,7 +105,9 @@ sabotage tests keep the enforcement honest.
   and leaves it blank.
 - **A resize and a stated height are different reads.** `clampBandHeight` for a
   drag (a band dragged shut has to stay grabbable), `boundBandHeight` for a
-  config, menu or slider value.
+  config, menu or slider value. Bands sharing a plot bind as a stack
+  (`boundStackedBands`, `bandDragBounds`): a ceiling per band lets two bands
+  at their ceilings take the plot to nothing.
 - **The probe and the commit pack through one builder.** A fit that measures one
   stack and commits another overflows the height it just fit, descends to the
   last rung, and every label vanishes — on the tallest bands only.

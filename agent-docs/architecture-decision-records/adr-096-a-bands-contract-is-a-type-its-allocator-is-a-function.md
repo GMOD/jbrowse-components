@@ -107,6 +107,11 @@ Each of these was declined before, on grounds this ADR does not disturb:
   (`reference/PLUGIN_ABI_STABILITY.md`), kept deliberately minimal: one
   interface, two functions. A mode flag or a scheme registry growing on it is
   the failure to refuse.
+- **Amended**: a per-band `bounds` could not see the bands beside it, so MAF's
+  two bands at their ceilings took the rows to 0 px. Stated heights are now
+  bound before the fold, as a stack (`boundStackedBands`, with
+  `bandDragBounds` for a drag); `Band.bounds` is deprecated and still
+  honored by `reservedPx`.
 - Alignments' `coverageDisplayHeight` keeps its historical meaning (the stack
   bottom) and its cross-plugin name collision with MAF's; renaming it is a
   separate decision this ADR only flags.

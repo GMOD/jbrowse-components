@@ -253,6 +253,14 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   reaches only the arc band's anchor; give the band a different value and the
   bars move while `interbaseBarHeightPx` and the ticks beside them do not,
   splitting the band against itself inside one frame.
+- **The three band heights are bound as one stack** (`bandHeights`,
+  `boundBelowCoverageHeights`): top-down against `fitTargetHeight` less the
+  pileup's floor, over the pooled answer of which strips draw. A lane
+  reserves a subset of that stack, so grouped sections, which repeat it and
+  scroll, stay inside the plot too. A drag clamps to the room the other
+  bands leave (`belowCoverageDragBounds`), and a strip bound to 0 px is not
+  reserved (`hasArcsBand`/`hasSashimiBand` false), so it gets no handle on
+  top of the one above it.
 - `computeArcBand` is the single source of truth, decoupled from `showCoverage`.
   Arc and sashimi strips are reserved **per section**; `coverageDisplayHeight`
   and the fit-height row budget stay global, since re-deriving them from

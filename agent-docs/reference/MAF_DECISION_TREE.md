@@ -134,6 +134,13 @@ everything downstream keys on the row index and would collide on a shared one.
 they want; whether the band has anything to put in it is a second question, and
 answering both with the setting reserved space and painted nothing into it.
 
+**The two bands are bound as one stack.** Each bound to the track on its own,
+both at their ceilings took the rows to 0 px and grew the track past its slot.
+`mafTopBands` binds them top-down against the track less the rows' floor
+(none while the rows are hidden), and every reader — paint, marks, export,
+handles, titles, axes, tooltip — takes a band's rect from it and keys on its
+reserved px, so a band bound to 0 px gets no handle and no title.
+
 **Fit mode is not floored at one pixel.** A sub-pixel row is the legitimate
 answer for more species than the track has pixels, and flooring it made the rows
 area taller than the height it was asked to fit inside.

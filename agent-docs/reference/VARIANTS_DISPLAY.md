@@ -320,6 +320,12 @@ painter filling it read that one function**.
   `boundBandHeight` is its read-time twin: a _stated_ height — config, menu,
   slider — takes the bounds alone, while a resize additionally leaves a band a
   config declared below the floor where it is.
+- **A stated height is bound before the fold, never inside it.** The records
+  band is added above the rows, so it takes a floor and no ceiling
+  (`recordsBandHeightOverRows`). Bands taken from a plot they share — the MAF
+  and alignments stacks — bind as one stack (`boundStackedBands`, top-down)
+  and drag to the room the others leave (`bandDragBounds`), so two bands at
+  their ceilings still leave the plot its floor.
 
 **The container the rows are offset into is 0x0**, everything in it being
 absolutely positioned. So it is the right parent for a child placed by
