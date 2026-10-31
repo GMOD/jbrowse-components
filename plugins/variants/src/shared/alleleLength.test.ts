@@ -149,3 +149,33 @@ describe('symbolic insertions read their SVLEN', () => {
     ).toBe(0)
   })
 })
+
+test('a tandem repeat expansion measures its runs, not the reference span', () => {
+  const kiv2 = feature({
+    start: 1000,
+    end: 1060,
+    ALT: ['<CNV:TR>', '<CNV:TR>'],
+    INFO: {
+      SVLEN: [60, 60],
+      RN: [1, 1],
+      RUL: [10, 10],
+      RUC: [4, 27],
+      RB: [40, 270],
+    },
+  })
+  expect(getAlleleLength(kiv2)).toBe(270)
+  expect(getInsertedBp(kiv2)).toBe(210)
+})
+
+test('a tandem repeat allele stating no runs falls back to the span', () => {
+  expect(
+    getAlleleLength(
+      feature({
+        start: 1000,
+        end: 1060,
+        ALT: ['<CNV:TR>'],
+        INFO: { SVLEN: [60] },
+      }),
+    ),
+  ).toBe(60)
+})

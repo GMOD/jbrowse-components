@@ -1,6 +1,7 @@
 import { isBreakend } from '@jbrowse/core/util/svAlt'
 
 import { parseFiniteNumber } from '../VcfFeature/util.ts'
+import { TANDEM_REPEAT, runsBp, tandemAlleles } from './tandemRepeatRuns.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -27,21 +28,28 @@ function statedInsertionBp(
 // through to it. `<INS>` consumes no reference, so `getEnd` pins it at 1 bp and
 // only SVLEN says how long it is. Breakend ALTs are mate notation rather than
 // sequence (`G]chr17:198982]` is not 15 bp), and `isBreakend` is the predicate
-// `svClassOfAlt` and `getSOTerm` use.
+// `svClassOfAlt` and `getSOTerm` use. A `<CNV:TR>` allele is its runs summed,
+// since VCF 4.5 makes its SVLEN the reference allele's length.
 export function getAlleleLength(feature: Feature) {
   const span = feature.get('end') - feature.get('start')
   const alt = feature.get('ALT') as string[] | undefined
   const info = feature.get('INFO') as Record<string, unknown> | undefined
+  const tandem = alt?.includes(TANDEM_REPEAT)
+    ? tandemAlleles(alt, info)
+    : undefined
   let longest = span
   let i = 0
   for (const a of alt ?? []) {
-    const len = a.startsWith('<INS')
-      ? span + (statedInsertionBp(info, i) ?? 0)
-      : a.startsWith('<') || isBreakend(a)
-        ? 0
-        : a.length > span
-          ? span + (statedInsertionBp(info, i) ?? a.length - span)
-          : a.length
+    const runs = tandem?.[i]
+    const len = runs
+      ? runsBp(runs)
+      : a.startsWith('<INS')
+        ? span + (statedInsertionBp(info, i) ?? 0)
+        : a.startsWith('<') || isBreakend(a)
+          ? 0
+          : a.length > span
+            ? span + (statedInsertionBp(info, i) ?? a.length - span)
+            : a.length
     if (len > longest) {
       longest = len
     }
