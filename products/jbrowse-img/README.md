@@ -526,7 +526,7 @@ jb2export data/volvox/volvox.fa data/volvox/volvox.filtered.vcf.gz \
   --loc ctgA:1-20000 --width 1200 --out variants.png
 ```
 
-![A variant track drawing each SNV with its reference-to-alternate change](https://jbrowse.org/jb2-figures/jbrowse-img/variants.c7d9a5843edd.png)
+![A variant track drawing each SNV with its reference-to-alternate change](https://jbrowse.org/jb2-figures/jbrowse-img/variants.5b7a945c79f0.png)
 
 ### Multi-sample variant matrix
 
@@ -547,7 +547,7 @@ jb2export --genome hg19 \
   --loc chr11:5,246,000-5,251,000 --width 1200 --out multisample_variants.png
 ```
 
-![The 1000 Genomes phase 3 chr11 callset (2,504 samples) as a multi-sample genotype matrix over the HBB locus, with the NCBI RefSeq gene track above](https://jbrowse.org/jb2-figures/jbrowse-img/multisample_variants.c3e7272b191d.png)
+![The 1000 Genomes phase 3 chr11 callset (2,504 samples) as a multi-sample genotype matrix over the HBB locus, with the NCBI RefSeq gene track above](https://jbrowse.org/jb2-figures/jbrowse-img/multisample_variants.818071f85a6e.png)
 
 ### Hi-C tracks
 
