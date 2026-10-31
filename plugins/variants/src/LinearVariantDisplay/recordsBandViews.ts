@@ -801,5 +801,46 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     get recordsScrollTop() {
       return self.recordsOnly ? self.scrollTop : 0
     },
+    /**
+     * #getter
+     * `MultiRegionDisplayMixin`'s hook: whether `searchFeatureByID` has a
+     * laid-out band to search, so an overlay can tell a record off the band
+     * from a band not laid out yet.
+     */
+    get layoutReady() {
+      return self.showRecords && self.canRender && self.cellData !== undefined
+    },
+    /**
+     * #getter
+     * The band's laid-out records by id, what `searchFeatureByID` reads.
+     */
+    get recordsItemById() {
+      const out = new Map<string, FeatureDataResult['flatbushItems'][number]>()
+      for (const data of this.recordsLaidOutDataMap.values()) {
+        for (const item of data.flatbushItems) {
+          out.set(item.featureId, item)
+        }
+      }
+      return out
+    },
+    /**
+     * #method
+     * Where a record drew, `[startBp, top, endBp, bottom]`, as a feature
+     * track answers it: the breakpoint split view's overlay subtracts the
+     * display's `scrollTop`, so the top is the band's own, which over rows
+     * does not scroll.
+     */
+    searchFeatureByID(id: string) {
+      const item = this.recordsItemById.get(id)
+      const shift = self.scrollTop - this.recordsScrollTop
+      return item
+        ? ([
+            item.startBp,
+            item.topPx + shift,
+            item.endBp,
+            item.bottomPx + shift,
+          ] as const)
+        : undefined
+    },
   }
 }
