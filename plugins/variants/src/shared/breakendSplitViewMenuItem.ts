@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { getSession, withFeatureDetails } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
@@ -21,13 +21,14 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 interface BreakendLaunchSelf extends IStateTreeNode {
   // what `makeFindJunctionsNear` queries to continue a chain past this record
   adapterConfig: Record<string, unknown>
+  // the record as the adapter holds it: the click's own carries no INFO, and
+  // the junction walk reads its MATEID, EVENT and FILTER
+  fetchFullRecord(feature: Feature): Promise<Feature>
 }
 
 /**
- * The "open breakpoint split view" row, for a display that already holds the
- * resolved record: the variant display's context menu is built from a
- * `contextMenuInfo` whose feature is already a `Feature`, a record in the band
- * or a genotype cell's.
+ * The "open breakpoint split view" row, launched from the full record the
+ * clicked one names.
  *
  * Gated on the feature's own type rather than on parsing its ALT: `VcfFeature`
  * already resolves `<...>` / bracket ALTs to SO terms, so a BND record arrives
@@ -37,15 +38,21 @@ interface BreakendLaunchSelf extends IStateTreeNode {
  */
 export function breakendSplitViewMenuItem(
   self: BreakendLaunchSelf,
-  feature: Feature | undefined,
+  feature: Feature,
 ): MenuItem[] {
-  return feature?.get('type') === 'breakend' && hasBreakpointSplitView(self)
+  return feature.get('type') === 'breakend' && hasBreakpointSplitView(self)
     ? [
         {
           label: SPLIT_VIEW_MENU_LABEL,
           icon: CompareArrowsIcon,
           onClick: () => {
-            launchFromFeature(self, feature)
+            void withFeatureDetails(
+              self,
+              () => self.fetchFullRecord(feature),
+              full => {
+                launchFromFeature(self, full)
+              },
+            )
           },
         },
       ]
