@@ -49,6 +49,32 @@ test('the export letters the records above rows moved down by the band', async (
   expect(rowShifts).toContain(`translate(0 ${display.topBands.recordsHeight})`)
 })
 
+function labelY(container: HTMLElement, id: string) {
+  const text = [...container.querySelectorAll('text')].find(
+    t => t.textContent === id,
+  )
+  return text ? Number(text.getAttribute('y')) : undefined
+}
+
+test('a scrolled sites-only export draws the stack as scrolled', async () => {
+  const pile = Array.from({ length: 40 }, (_, i) => [
+    `p${i}`,
+    100,
+    1500 + i,
+    '<DEL>',
+    'DEL',
+  ]) satisfies Parameters<typeof recordsDisplayAt>[0]
+  const { display } = recordsDisplayAt(pile, 1, {}, false, {
+    heightMode: 'fixed',
+  })
+  const atTop = render(<svg>{await renderSvg(display, {})}</svg>)
+  const before = labelY(atTop.container, 'p5')
+  display.setScrollTop(50)
+  const scrolled = render(<svg>{await renderSvg(display, {})}</svg>)
+  expect(before).toBeDefined()
+  expect(labelY(scrolled.container, 'p5')).toBe(before! - 50)
+})
+
 test('the export names the record sections', async () => {
   const { display } = recordsDisplayAt(
     [

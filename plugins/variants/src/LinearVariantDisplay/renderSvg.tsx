@@ -33,6 +33,7 @@ interface RenderSvgModel extends RenderSvgBaseModel {
   recordsRenderedLabels: { showLabels: boolean; showDescriptions: boolean }
   recordsFontSize: number
   recordsGroupSections: FeatureGroupSection[]
+  recordsScrollTop: number
 }
 
 export async function renderSvg(
@@ -60,6 +61,7 @@ function VariantSvgBody({
     recordsRenderedLabels,
     recordsFontSize,
     recordsGroupSections,
+    recordsScrollTop,
     topBands,
   } = model
   const { canvasHeight } = renderState
@@ -90,7 +92,7 @@ function VariantSvgBody({
                     bandHeight: topBands.recordsHeight,
                     ...recordsRenderedLabels,
                     fontSize: recordsFontSize,
-                    scrollY: 0,
+                    scrollY: recordsScrollTop,
                     palette,
                   },
                 )
@@ -99,7 +101,10 @@ function VariantSvgBody({
             {/* the record sections' names, the twin of the band's chips */}
             {recordsGroupSections.length > 0 ? (
               <GroupLabelBoxes
-                sections={recordsGroupSections}
+                sections={recordsGroupSections.map(section => ({
+                  ...section,
+                  top: section.top - recordsScrollTop,
+                }))}
                 left={0}
                 width={canvasWidth}
                 canvasHeight={topBands.recordsHeight}
