@@ -8,11 +8,11 @@ import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 /**
  * The residues behind a sequence adapter, the shape `@gmod/indexedfasta` and
- * `@gmod/twobit` already have. `undefined` means the file lacks the refName,
- * which is not an error: the adapter answers with no feature.
+ * `@gmod/twobit` already have: `end` is clamped to the contig, and `undefined`
+ * means the file lacks the refName, which is not an error: the adapter answers
+ * with no feature.
  */
 export interface SequenceSource {
-  getSequenceSize: (refName: string) => Promise<number | undefined>
   getSequence: (
     refName: string,
     start: number,
@@ -21,9 +21,9 @@ export interface SequenceSource {
 }
 
 /**
- * The one feature a sequence adapter emits for a region, its `end` clamped to
- * the contig: consumers anchor the residues at `start` and take the extent
- * from `end`, so an unclamped `end` would count bases `seq` lacks.
+ * The one feature a sequence adapter emits for a region, its `end` taken from
+ * the residues that arrived: consumers anchor them at `start` and take the
+ * extent from `end`, so the asked-for `end` would count bases past the contig.
  */
 export function sequenceFeatures(
   { refName, start, end }: NoAssemblyRegion,
@@ -38,11 +38,10 @@ export function sequenceFeatures(
       'Downloading sequence',
       statusCallback,
       async () => {
-        const size = await source.getSequenceSize(refName)
-        const regionEnd = size === undefined ? end : Math.min(size, end)
-        const seq = await source.getSequence(refName, start, regionEnd)
+        const seq = await source.getSequence(refName, start, end)
         checkAbortSignal(signal)
         if (seq) {
+          const regionEnd = start + seq.length
           observer.next(
             new SimpleFeature({
               id: `${refName}-${start}-${regionEnd}`,

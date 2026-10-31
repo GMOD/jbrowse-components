@@ -62,7 +62,6 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter<Unindexed
     return sequenceFeatures(region, opts, async () => {
       const { fasta } = await this.setup(opts)
       return {
-        getSequenceSize: async refName => fasta.get(refName)?.sequence.length,
         getSequence: async (refName, start, end) =>
           fasta.get(refName)?.sequence.slice(start, end),
       }
