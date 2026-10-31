@@ -50,6 +50,7 @@ function paintedText(display: LinearMultiSampleVariantDisplayModel) {
     {
       canvasWidth: display.canvasWidthPx,
       bandHeight: display.topBands.recordsHeight,
+      scrollY: display.recordsScrollTop,
       ...display.recordsRenderedLabels,
       fontSize,
       palette: resolvePalette(),

@@ -83,6 +83,7 @@ function VariantSvgBody({
                   bandHeight: topBands.recordsHeight,
                   ...recordsRenderedLabels,
                   fontSize: recordsFontSize,
+                  scrollY: 0,
                   palette,
                 },
               )

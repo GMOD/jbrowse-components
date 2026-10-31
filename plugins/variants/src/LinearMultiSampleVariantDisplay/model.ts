@@ -2092,15 +2092,29 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * The rows; with no rows the records' drawn stack on screen, as a
+         * feature track scrolls what `fixed` or a capped `grow` cannot show.
          */
         get scrollContentHeight() {
-          return self.rowsContentHeight
+          return self.recordsOnly
+            ? maxBottom(self.recordsLaidOutDataMap, self.recordsOnScreenIds)
+            : self.rowsContentHeight
         },
         /**
          * #getter
          */
         get scrollViewportHeight() {
-          return self.availableHeight
+          return self.recordsOnly
+            ? self.topBands.recordsHeight
+            : self.availableHeight
+        },
+        /**
+         * #getter
+         * How far the records band is scrolled: the display's `scrollTop`
+         * with no rows, where the band is what scrolls, else 0.
+         */
+        get recordsScrollTop() {
+          return self.recordsOnly ? self.scrollTop : 0
         },
       }))
       .views(self => ({
@@ -2419,7 +2433,7 @@ export function stateModelFactory(
                       record.feature.endBp,
                       1,
                     ),
-                    top: record.feature.topPx,
+                    top: record.feature.topPx - self.recordsScrollTop,
                     height: record.feature.bottomPx - record.feature.topPx,
                   },
                 ]

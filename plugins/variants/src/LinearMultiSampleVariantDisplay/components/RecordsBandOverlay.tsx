@@ -1,8 +1,13 @@
+import { useId, useState } from 'react'
+
+import { ScrollChrome } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import {
   paintFeatureBand,
   performMultiRegionHitDetection,
 } from '@jbrowse/plugin-features/band'
+import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
 
@@ -37,7 +42,7 @@ function getHoveredRecord(
     model.recordsFlatbushIndexes,
     model.host.visibleRegions,
     mouseX,
-    mouseY,
+    mouseY + model.recordsScrollTop,
   )
   const info = result && model.featureInfoById(result.feature.featureId)
   return result && info
@@ -81,16 +86,28 @@ export function recordsBandSurface(
 /**
  * The band's click targets, on a transparent layer over its canvas, since
  * `OverlayCanvas` is `pointerEvents: 'none'`. Its own observer reading the
- * hover, so a hover tick re-renders it and not the painted band.
+ * hover, so a hover tick re-renders it and not the painted band. With no rows
+ * the band is the display, and the wheel scrolls it as a feature track's
+ * panel scrolls (`usePanelVirtualScroll`); over rows it scrolls nothing.
  */
 const RecordsBandInteraction = observer(function RecordsBandInteraction({
   model,
+  id,
 }: {
   model: LinearMultiSampleVariantDisplayModel
+  id: string
 }) {
-  const { canvasWidthPx, topBands } = model
+  const [panel, setPanel] = useState<HTMLDivElement | null>(null)
+  const { canvasWidthPx, topBands, recordsOnly } = model
+  usePanelVirtualScroll(
+    recordsOnly ? panel : null,
+    model,
+    containingLgv(model).scrollZoom,
+  )
   return (
     <div
+      ref={setPanel}
+      id={id}
       data-testid="records_band"
       style={{
         position: 'absolute',
@@ -119,6 +136,7 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
   model: LinearMultiSampleVariantDisplayModel
 }) {
   const palette = usePalette()
+  const id = useId()
   const {
     recordsLaidOutDataMap,
     recordsRenderedLabels,
@@ -126,6 +144,7 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
     renderBlocks,
     topBands,
     canvasWidthPx,
+    recordsScrollTop,
   } = model
   const { visibleRegions } = model.host
   const { recordsHeight } = topBands
@@ -154,6 +173,7 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
             {
               canvasWidth: canvasWidthPx,
               bandHeight: recordsHeight,
+              scrollY: recordsScrollTop,
               ...recordsRenderedLabels,
               fontSize: recordsFontSize,
               palette,
@@ -161,7 +181,10 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
           )
         }}
       />
-      <RecordsBandInteraction model={model} />
+      <RecordsBandInteraction model={model} id={id} />
+      {model.recordsOnly ? (
+        <ScrollChrome model={model} controlsId={id} />
+      ) : null}
       {/* the target is the reserved height plus the delta, read in the
           callback, so a cap above the stack drags from what is drawn; with
           no rows the band is the display, resized by the track's own handle */}

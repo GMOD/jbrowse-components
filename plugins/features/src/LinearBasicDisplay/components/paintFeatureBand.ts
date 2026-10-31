@@ -2,7 +2,11 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import { BASIC_FEATURE_MARKS } from '../marks/basicFeatureMarks.ts'
 import { labelColors } from './labelColors.ts'
-import { forEachDisplayLabel, labelCullBand } from './labelPositioning.ts'
+import {
+  forEachDisplayLabel,
+  labelCullBand,
+  labelScrollBucket,
+} from './labelPositioning.ts'
 import { paintLabels } from './paintLabels.ts'
 import { resolveMapColors } from './resolveRegionColors.ts'
 
@@ -16,6 +20,8 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 export interface FeatureBandPaint {
   canvasWidth: number
   bandHeight: number
+  // How far the stack is scrolled up the band, 0 where it does not scroll.
+  scrollY: number
   // The label kinds the fit ladder kept, never the ones the mode asked for.
   showLabels: boolean
   showDescriptions: boolean
@@ -39,6 +45,7 @@ export function paintFeatureBand(
   {
     canvasWidth,
     bandHeight,
+    scrollY,
     showLabels,
     showDescriptions,
     fontSize,
@@ -51,8 +58,10 @@ export function paintFeatureBand(
     BASIC_FEATURE_MARKS,
     resolveMapColors(dataMap, palette, fieldPalette),
     blocks,
-    { scrollY: 0, canvasWidth, canvasHeight: bandHeight, outlineColor: 0 },
+    { scrollY, canvasWidth, canvasHeight: bandHeight, outlineColor: 0 },
   )
+  ctx.save()
+  ctx.translate(0, -scrollY)
   forEachDisplayLabel(
     regions,
     dataMap,
@@ -66,6 +75,7 @@ export function paintFeatureBand(
     (_, labels) => {
       paintLabels(ctx, labels, fontSize)
     },
-    labelCullBand(0, bandHeight),
+    labelCullBand(labelScrollBucket(scrollY), bandHeight),
   )
+  ctx.restore()
 }

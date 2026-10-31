@@ -91,6 +91,27 @@ describe('heightMode with no rows', () => {
     expect(display.recordsFitStage).toMatchObject({ level: 'full', scale: 1 })
   })
 
+  // What fixed or a capped grow cannot show scrolls, as on a feature track,
+  // and the resize handle's double click grows the track to the stack.
+  test('fixed scrolls the stack, and expands to it', () => {
+    const { display } = recordsDisplayAt(PILE, 1, {}, false, {
+      heightMode: 'fixed',
+    })
+    const stack = display.scrollContentHeight
+    expect(stack).toBeGreaterThan(200)
+    expect(display.scrollableHeight).toBe(stack - 200)
+    display.setScrollTop(50)
+    expect(display.recordsScrollTop).toBe(50)
+    display.expandToContentHeight()
+    expect(display.height).toBe(stack)
+    expect(display.scrollableHeight).toBe(0)
+  })
+
+  test('fit squeezes the stack in and scrolls nothing', () => {
+    const { display } = recordsDisplayAt(PILE, 1, {}, false)
+    expect(display.scrollableHeight).toBe(0)
+  })
+
   test('over genotype rows grow keeps the slot height', () => {
     const { display } = recordsDisplayAt(PILE, 1, {}, true, {
       heightMode: 'grow',
