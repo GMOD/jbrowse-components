@@ -292,7 +292,12 @@ everything after is `@jbrowse/plugin-features/band`: the pack,
 LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
 `FitLadderHost`, since this model's `facet` is the sample facet),
 `paintFeatureBand` on screen and in the export, and
-`performMultiRegionHitDetection` for the pick. Nested records stack.
+`performMultiRegionHitDetection` for the pick. Nested records stack. The
+band is one seam on the model, `recordsBandViews.ts`: its settings, actions,
+render data, the hosted ladder and the display hooks it decides
+(`rowsHeaderHeight`, `legendTop`, `growMaxHeight`, `growTargetHeight`, the
+scroll hooks, `densityGateActive`), composed in order as views factories, so
+a `recordsOnly` choice in the model belongs there.
 
 - **On by default, only SVs over rows.** `records.show` defaults to `true`
   (ADR-254's third amendment). `VariantFeatureInfo.svType` is the record's
