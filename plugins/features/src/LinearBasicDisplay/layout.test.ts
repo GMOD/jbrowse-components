@@ -2016,7 +2016,7 @@ test('incremental memo busts when the pinned set reference changes', () => {
   expect(topOf(after, 'B')).toBe(0)
 })
 
-test('a collapsed pile does not outrank an arriving gene for the top row', () => {
+test('a pile that stops collapsing on zoom-in does not outrank the gene it pushed down', () => {
   const marks = Array.from({ length: 25 }, (_, i) => ({
     featureId: `snp${i}`,
     startBp: 5000 + i,
@@ -2031,20 +2031,16 @@ test('a collapsed pile does not outrank an arriving gene for the top row', () =>
     height: 10,
     densityFade: false,
   }
+  const data = new Map([[0, makeFeatureData({ features: [gene, ...marks] })]])
   const memo = createIncrementalLayout()
   const topOf = (r: Map<number, FeatureDataResult>, id: string) =>
     r.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
 
-  const before = memo(
-    new Map([[0, makeFeatureData({ features: marks })]]),
-    incInputs(20),
-  )
+  const before = memo(data, incInputs(20))
   expect(topOf(before, 'snp0')).toBe(0)
+  expect(topOf(before, 'gene')).toBeGreaterThan(0)
 
-  const after = memo(
-    new Map([[0, makeFeatureData({ features: [gene, ...marks] })]]),
-    incInputs(20),
-  )
+  const after = memo(data, incInputs(0.25))
   expect(topOf(after, 'gene')).toBe(0)
   expect(topOf(after, 'snp0')).toBeGreaterThan(0)
 })
@@ -2122,6 +2118,69 @@ test('a pile books row 0, so a neighbour stacks above it instead of into it', ()
     r.flatbushItems.find(it => it.featureId === id)!.topPx
   expect(top('f0')).toBe(0)
   expect(top('edge')).toBeGreaterThan(0)
+})
+
+const bottomOfPile = (items: FeatureDataResult['flatbushItems']) =>
+  Math.max(
+    ...items
+      .filter(it => it.featureId.startsWith('snv'))
+      .map(it => it.bottomPx),
+  )
+
+test('a wide feature over a pile stacks below it, never into it', () => {
+  const data = makeFeatureData({
+    features: [
+      ...Array.from({ length: 25 }, (_, i) => ({
+        featureId: `snv${i}`,
+        startBp: 2000 + i,
+        endBp: 2001 + i,
+        densityFade: true,
+      })),
+      { featureId: 'wideGene', startBp: 100, endBp: 5000, densityFade: false },
+    ].map(f => ({ ...f, height: 10 })),
+  })
+  const items = layout(new Map([[0, data]]), 26, false).get(0)!.flatbushItems
+  const top = (id: string) => items.find(it => it.featureId === id)!.topPx
+  expect(
+    items
+      .filter(it => it.featureId.startsWith('snv'))
+      .every(it => it.topPx === 0),
+  ).toBe(true)
+  expect(top('wideGene')).toBeGreaterThanOrEqual(bottomOfPile(items))
+})
+
+test('ClinVar-shaped: SNV hotspots under multi-kb deletions collapse, the deletions stack below', () => {
+  const hotspots = [1000, 2500, 4000, 5500, 7000, 8500]
+  const snvs = hotspots.flatMap(hotspot =>
+    Array.from({ length: 40 }, (_, i) => ({
+      featureId: `snv${hotspot}-${i}`,
+      startBp: hotspot + (i % 8),
+      endBp: hotspot + (i % 8) + 1,
+      densityFade: true,
+    })),
+  )
+  const deletions = [
+    { startBp: 0, endBp: 6000 },
+    { startBp: 3000, endBp: 10_000 },
+    { startBp: 500, endBp: 9500 },
+  ].map((d, i) => ({ ...d, featureId: `del${i}`, densityFade: true }))
+  const data = makeFeatureData({
+    features: [...deletions, ...snvs].map(f => ({ ...f, height: 10 })),
+  })
+  const out = layout(new Map([[0, data]]), 11, false).get(0)!
+  const items = out.flatbushItems
+  const snvItems = items.filter(it => it.featureId.startsWith('snv'))
+  expect(snvItems.every(it => it.topPx === 0)).toBe(true)
+  const pileBottom = bottomOfPile(items)
+  const delTops = items
+    .filter(it => it.featureId.startsWith('del'))
+    .map(it => it.topPx)
+  expect(delTops.every(t => t >= pileBottom)).toBe(true)
+  expect(new Set(delTops).size).toBe(3)
+  const fadeOf = (id: string) =>
+    out.rectDensityFade[items.findIndex(it => it.featureId === id)]
+  expect(fadeOf('snv1000-0')).toBe(1)
+  expect(fadeOf('del0')).toBe(0)
 })
 
 test('a hotspot does not drag the marks chained to it onto row 0', () => {
@@ -2549,40 +2608,39 @@ test('a dense pileup of thousands of collapsed marks fades', () => {
   expect([...fade].every(v => v === 1)).toBe(true)
 })
 
-test('a collapsed mark clears a solid neighbour at exactly the min-width clamp', () => {
-  const N = 1200
-  const marks = Array.from({ length: N }, (_, i) => ({
-    featureId: `snp${i}`,
-    startBp: 100 + i * 10,
-    endBp: 101 + i * 10,
-    height: 10,
-    densityFade: true,
-  }))
-  const data = makeFeatureData({
-    features: [
-      ...marks,
-      {
-        featureId: 'probe',
-        startBp: 19_997,
-        endBp: 19_998,
-        height: 10,
-        densityFade: true,
-      },
-      {
-        featureId: 'wideGene',
-        startBp: 20_000,
-        endBp: 21_000,
-        height: 10,
-        densityFade: false,
-      },
-    ],
-  })
-  const out = layout(new Map([[0, data]]), 1, false)
-  const items = out.get(0)!.flatbushItems
-  expect(items.slice(0, N).every(it => it.topPx === 0)).toBe(true)
-  expect(items[N]!.topPx).toBe(0)
-  expect(items[N + 1]!.topPx).toBe(0)
-  expect([...out.get(0)!.rectDensityFade].every(v => v === 0)).toBe(true)
+test('a pile books its painted min-width span, so a wide neighbour clear of it shares row 0', () => {
+  const rowsWithGeneAt = (geneStartBp: number) => {
+    const data = makeFeatureData({
+      features: [
+        ...Array.from({ length: 25 }, (_, i) => ({
+          featureId: `snv${i}`,
+          startBp: 19_997,
+          endBp: 19_998,
+          densityFade: true,
+        })),
+        {
+          featureId: 'wideGene',
+          startBp: geneStartBp,
+          endBp: 21_000,
+          densityFade: false,
+        },
+      ].map(f => ({ ...f, height: 10 })),
+    })
+    const items = layout(new Map([[0, data]]), 1, false).get(0)!.flatbushItems
+    return {
+      pile: items
+        .filter(it => it.featureId.startsWith('snv'))
+        .map(it => it.topPx),
+      gene: items.find(it => it.featureId === 'wideGene')!.topPx,
+    }
+  }
+  const clear = rowsWithGeneAt(20_000)
+  expect(clear.pile.every(t => t === 0)).toBe(true)
+  expect(clear.gene).toBe(0)
+
+  const touching = rowsWithGeneAt(19_998)
+  expect(touching.pile.every(t => t === 0)).toBe(true)
+  expect(touching.gene).toBeGreaterThan(0)
 })
 
 test('thousands of sub-pixel variants collapse onto one row, not thousands', () => {

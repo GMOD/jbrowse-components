@@ -39,11 +39,18 @@ not any display-mode setting. The chain:
   able to reason about.
 - **Candidacy** (`prepareRefPack`): a feature can be collapsed when
   `isSubPixelFade(ext, bpPerPx)` (i.e. `densityFade && renderedWidthPx <
-  MIN_RECT_WIDTH_PX`) **and** it has no rendered label **and** it doesn't overlap
-  a visible ("solid") feature (`!intersectsMerged(…, solidSpansPx)`). A labeled
-  sub-pixel feature (e.g. a miRNA gene at whole-arm zoom) still stacks so its name
-  doesn't overprint, and a mark abutting a wide gene box stacks rather than
-  drawing on top of it.
+  MIN_RECT_WIDTH_PX`) **and** it has no rendered label. A labeled sub-pixel
+  feature (e.g. a miRNA gene at whole-arm zoom) still stacks so its name doesn't
+  overprint. A wide feature overlapping the mark does not disqualify it:
+  `collapsedSpansPx` books the pile on row 0 before anything is placed, so the
+  wide feature stacks on a row below the pile instead of under its paint.
+
+  Candidacy once also excluded any mark overlapping a wide or labeled ("solid")
+  feature. That guard predates the pile booking, from when a collapsed mark took
+  row 0 with nothing reserved and a wide feature could land under it. With the
+  booking it only blocked the collapse: on ClinVar at 17:43,060,000-43,070,000
+  (hg38), 28 multi-kb deletions cover the whole window, so 0 of 1,235 eligible
+  SNVs collapsed, against 1,092 without it. It was removed.
 - **The depth gate** (`deeplyPiledIds`): candidacy is not enough. A candidate
   shares row 0 only where it covers a point `DENSITY_COLLAPSE_DEPTH` (25) marks
   deep. Since rows are pile depth, that bar is a track height — ~500px in normal

@@ -42,28 +42,6 @@ export function renderedSpanPx(
   return [startPx, Math.max(ext.endBp / bpPerPx, startPx + MIN_RECT_WIDTH_PX)]
 }
 
-// The intervals are disjoint, so if the rightmost one starting before
-// queryEnd misses queryStart no earlier one can reach it.
-function intersectsMerged(
-  queryStart: number,
-  queryEnd: number,
-  merged: readonly Span[],
-) {
-  let lo = 0
-  let hi = merged.length - 1
-  let idx = -1
-  while (lo <= hi) {
-    const mid = (lo + hi) >> 1
-    if (merged[mid]![0] < queryEnd) {
-      idx = mid
-      lo = mid + 1
-    } else {
-      hi = mid - 1
-    }
-  }
-  return idx >= 0 && merged[idx]![1] > queryStart
-}
-
 // Prefixed with a character no feature id can contain, and never written to
 // `layoutMap`.
 export const PILE_RESERVATION_ID = '\u0000pile@'
@@ -173,37 +151,23 @@ function addDeeplyPiledIds(
   }
 }
 
-// Labeled sub-pixel features count as solid, so an unlabeled neighbour cannot
-// pin to row 0 on top of one.
+// A labeled sub-pixel feature stacks so its name doesn't overprint. A wide
+// feature overlapping a pile needs no guard here: `bookPileReservations`
+// books the pile's span on row 0 first, so the packer stacks it on a row
+// below the pile.
 export function planDensityCollapse(
   features: ReadonlyMap<string, DensityBox>,
   labeledFeatureIds: ReadonlySet<string>,
   bpPerPx: number,
   singleRow: boolean,
 ) {
-  const eligible: [string, DensityBox][] = []
+  const candidates: PaintedMark[] = []
   if (!singleRow) {
     for (const [id, geom] of features) {
       if (isSubPixelFade(geom, bpPerPx) && !labeledFeatureIds.has(id)) {
-        eligible.push([id, geom])
+        const [startPx, endPx] = renderedSpanPx(geom, bpPerPx)
+        candidates.push({ id, startPx, endPx })
       }
-    }
-  }
-
-  const solidSpansPx: Span[] = []
-  if (eligible.length > 0) {
-    for (const [id, geom] of features) {
-      if (!isSubPixelFade(geom, bpPerPx) || labeledFeatureIds.has(id)) {
-        solidSpansPx.push(renderedSpanPx(geom, bpPerPx))
-      }
-    }
-  }
-  const solid = mergeSpans(solidSpansPx)
-  const candidates: PaintedMark[] = []
-  for (const [id, geom] of eligible) {
-    const [startPx, endPx] = renderedSpanPx(geom, bpPerPx)
-    if (!intersectsMerged(startPx, endPx, solid)) {
-      candidates.push({ id, startPx, endPx })
     }
   }
 
