@@ -714,20 +714,19 @@ Layout & sizing:
 
 Settings written as slots, spelled as the display spells them:
 
-| Write                                             | Description                                                                                                                                                |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `facet=strand`                                    | Group reads into in-track stacked sections: `strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `svSignal`, `mapq`, `tags.HP` |
-| `unit=chain`                                      | What one row stands for: a `read`, or its mate and split segments chained                                                                                  |
-| `legend.show=true`                                | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                                            |
-| `pileup.softClips.show=true`                      | Show soft-clipped bases                                                                                                                                    |
-| `coverage.show=false`                             | Hide the coverage subtrack                                                                                                                                 |
-| `pileup.show=false`                               | Hide the pileup; with `coverage.height`, a coverage-only view                                                                                              |
-| `coverage.height=200`                             | Height of the coverage subtrack, and of `arcs:up` arcs drawn over it                                                                                       |
-| `readConnections.height=120`                      | Height of the arcs' or read cloud's band, under `arcs:down` and `arcs:cloud`, or `arcs:up` with `coverage.show=false`                                      |
-| `readConnections.encoding.strokeWidth.value=2`    | Stroke width for read-connection arcs and lines                                                                                                            |
-| `sashimi.height=120`                              | Height of the sashimi arc band                                                                                                                             |
-| `readConnections.encoding.color.field=insertSize` | Read-connection arc coloring (`insertSizeAndOrientation`, `insertSize`, `pairOrientation`)                                                                 |
-| `pileup.maxLayoutHeight=4000`                     | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                          |
+| Write                                          | Description                                                                                                                                                |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `facet=strand`                                 | Group reads into in-track stacked sections: `strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `svSignal`, `mapq`, `tags.HP` |
+| `unit=chain`                                   | What one row stands for: a `read`, or its mate and split segments chained                                                                                  |
+| `legend.show=true`                             | Draw the color key. Off by default in the app, where the reader can open the track menu instead                                                            |
+| `pileup.softClips.show=true`                   | Show soft-clipped bases                                                                                                                                    |
+| `coverage.show=false`                          | Hide the coverage subtrack                                                                                                                                 |
+| `pileup.show=false`                            | Hide the pileup; with `coverage.height`, a coverage-only view                                                                                              |
+| `coverage.height=200`                          | Height of the coverage subtrack, and of `arcs:up` arcs drawn over it                                                                                       |
+| `readConnections.height=120`                   | Height of the arcs' or read cloud's band, under `arcs:down` and `arcs:cloud`, or `arcs:up` with `coverage.show=false`                                      |
+| `readConnections.encoding.strokeWidth.value=2` | Stroke width for read-connection arcs and lines                                                                                                            |
+| `sashimi.height=120`                           | Height of the sashimi arc band                                                                                                                             |
+| `pileup.maxLayoutHeight=4000`                  | Row cap for the pileup, in pixels. Raise it when the export shows the "Max height reached" notice                                                          |
 
 A filter field takes no `key=value` write, since `filter` is one list: write the
 list in a raw-JSON settings bag, as
