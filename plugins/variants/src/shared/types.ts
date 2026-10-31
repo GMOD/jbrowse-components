@@ -53,6 +53,11 @@ interface VariantFeatureBase {
   // an SV record carries one of these, not a small allele beside them at an
   // un-decomposed site. Empty for a record with no SV class.
   svAlleles: boolean[]
+  // The records band's reads off the whole record (`RecordFieldReads`), ''
+  // where it reads none: the tooltip's record line, and the value its
+  // sections split by.
+  tooltip: string
+  groupKey: string
 }
 
 // Genotype strings are interned into the shared `CellDataResult.genotypeDict`;

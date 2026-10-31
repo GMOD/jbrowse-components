@@ -3,6 +3,7 @@ import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 import {
+  DEFAULT_TOOLTIP,
   GENE_GLYPH_DEFAULTS,
   buildFeatureRenderData,
   layoutRegionKey,
@@ -55,6 +56,10 @@ export const RECORD_LABEL_LINE: RecordsLabels = {
   description: '',
 }
 
+// The fields a record carries from the worker's reads (`RecordFieldReads`)
+const RECORD_TOOLTIP_FIELD = 'recordTooltip'
+const RECORD_GROUP_FIELD = 'recordGroup'
+
 /**
  * The plugin-features display config the band lays its records out with. A
  * literal, because a band has no config node of its own. A record has no
@@ -63,17 +68,28 @@ export const RECORD_LABEL_LINE: RecordsLabels = {
  * Each record carries its `recordColor`; `labels` is `RECORD_LABEL_LINE` over
  * rows, and with no rows the display's own label fields, laid out as a
  * feature track lays them. `filter` is empty because the worker's
- * `configuredFilters()` already admitted these records.
+ * `configuredFilters()` already admitted these records. `tooltip` is the
+ * field the worker read for the tooltip line, `''` for the default, which
+ * reads the record's name as a feature track's does; a faceted band stamps
+ * each record's section off the value the worker read for it.
  */
-export function recordsDisplayConfig(
-  featureHeight: number,
-  labels: RecordsLabels,
-): DisplayConfig {
+export function recordsDisplayConfig({
+  featureHeight,
+  labels,
+  tooltip,
+  faceted,
+}: {
+  featureHeight: number
+  labels: RecordsLabels
+  tooltip: string
+  faceted: boolean
+}): DisplayConfig {
   return {
     color: { value: `jexl:get(feature,'recordColor')`, field: '' },
     featureHeight,
     labels,
-    tooltip: '',
+    tooltip: tooltip === '' ? DEFAULT_TOOLTIP : RECORD_TOOLTIP_FIELD,
+    ...(faceted ? { facetField: RECORD_GROUP_FIELD } : {}),
     filter: [],
     ...GENE_GLYPH_DEFAULTS,
     geneGlyphMode: 'all',
@@ -159,6 +175,8 @@ export function buildRecordsRenderData({
       description: info.description,
       type: info.type,
       recordColor: abgrToCssRgba(featureColors[f]!),
+      [RECORD_TOOLTIP_FIELD]: info.tooltip,
+      [RECORD_GROUP_FIELD]: info.groupKey,
       recordLabel: '',
     }
     // one feature per record, holding `record` itself: the label is read off

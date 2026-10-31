@@ -88,14 +88,18 @@ export function buildVariantHit({
  * fields are `''`, so one hover slot serves both bands: `getTooltipRows` drops
  * an empty value, and `hoveredTooltipSource` reads the empty `name` as no row
  * to merge. `alleles` is the record's own `REF > ALT`, every ALT spelled out.
+ * `line` is the record's line, what `records.tooltip.field` reads, the
+ * record's name by default.
  */
 export function buildRecordHit({
   info,
+  line = info.name,
   featureId,
   displayedRegionIndex,
   carriers,
 }: {
   info: VariantFeatureInfo
+  line?: string
   featureId: string
   displayedRegionIndex?: number
   carriers?: RecordCarriers
@@ -110,7 +114,7 @@ export function buildRecordHit({
       info.svType === ''
         ? `${abbreviateAllele(info.ref)} > ${info.alt.map(abbreviateAllele).join(',')}`
         : '',
-    featureName: info.name,
+    featureName: line,
     description: info.description,
     length: getBpDisplayStr(info.length),
     insertion: info.insertedBp > 0 ? `${info.insertedBp}bp` : '',

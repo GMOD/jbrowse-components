@@ -12,6 +12,10 @@ import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/componen
 import { cellHueReaderOf } from '../shared/cellHue.ts'
 import { buildCanonicalRows } from '../shared/getSources.ts'
 import {
+  NO_RECORD_FIELD_READS,
+  recordFieldReaders,
+} from '../shared/recordFields.ts'
+import {
   CELL_ALT_NO_PHASE_SET,
   CELL_ALT_SECONDARY,
   CELL_NO_CALL,
@@ -172,6 +176,7 @@ export async function variantCellData({
     unit,
     referenceDrawingMode = 'skip',
     color,
+    recordFields = NO_RECORD_FIELD_READS,
     siteFilter,
     filters,
     regions,
@@ -255,6 +260,7 @@ export async function variantCellData({
     unit,
   })
   const colorByPhaseSet = hue.byPhaseSet ?? false
+  const readers = recordFieldReaders(recordFields, pluginManager.jexl)
 
   // The worker's own row list, in its own arbitrary order — see
   // buildCanonicalRows. Phased mode expands to per-haplotype rows here, using
@@ -319,6 +325,7 @@ export async function variantCellData({
           unit,
           referenceDrawingMode,
           hueValue: hue.value,
+          recordFields: readers,
           colorByPhaseSet,
           featureGenotypeCodes,
           genotypeDict,

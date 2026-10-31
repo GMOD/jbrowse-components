@@ -1,5 +1,6 @@
 import type { CellHueRead } from '../shared/cellHue.ts'
 import type { VariantUnit } from '../shared/constants.ts'
+import type { RecordFieldReads } from '../shared/recordFields.ts'
 import type { Source } from '../shared/types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { GatedFetchArgs } from '@jbrowse/core/rpc/byteBudget'
@@ -49,6 +50,8 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   referenceDrawingMode?: string
   // What the alt cells' hue reads off each variant (`CellHue.read`).
   color?: CellHueRead
+  // What the records band reads off each record beyond the payload's fields.
+  recordFields?: RecordFieldReads
   // Which blocks the payloads are drawn by: one per displayed region at
   // genomic positions, one for the whole window in columns.
   layout: 'genomic' | 'columns'

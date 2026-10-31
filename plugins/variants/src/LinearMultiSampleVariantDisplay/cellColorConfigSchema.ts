@@ -1,7 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import {
+  FEATURE_COLOR_SCALES,
   FEATURE_FIELD_PRESETS,
-  FIELD_COLOR_SCALES,
   colorChannelOptions,
   colorDomainEndsSlots,
   colorDomainQuantileSlot,
@@ -32,10 +32,29 @@ import {
  * Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
  * `jexl:` expression — and a numeric one cut into intervals by a `threshold`
  * scale or run along a `linear` or `log` ramp. A string is the field.
+ * `scale.type: "identity"` keys a `value` callback's colors: each variant
+ * paints the color it returns, and the key names the colors `scale.domain`
+ * lists, as on a feature track. The records band paints what the cells
+ * paint, so one channel colors both.
  *
  * #example
  * ```js
  * { type: 'LinearMultiSampleVariantDisplay', encoding: { color: 'impact' } }
+ * ```
+ * ```js
+ * {
+ *   type: 'LinearMultiSampleVariantDisplay',
+ *   encoding: {
+ *     color: {
+ *       value: "jexl:get(feature,'INFO').COLOR",
+ *       scale: {
+ *         type: 'identity',
+ *         domain: ['#d73027', '#4575b4'],
+ *         names: ['Pathogenic', 'Benign'],
+ *       },
+ *     },
+ *   },
+ * }
  * ```
  * ```js
  * {
@@ -79,9 +98,9 @@ export const cellColorConfigSchema = ConfigurationSchema(
       'VariantCellColorScale',
       {
         ...colorScaleTypeSlot({
-          scales: FIELD_COLOR_SCALES,
+          scales: FEATURE_COLOR_SCALES,
           scaleName: 'VariantCellColorScaleType',
-          type: 'ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; unset is linear for score and ordinal for any other field',
+          type: 'ordinal a range color per value of field; threshold a range color per interval between the cut points in domain; linear or log a color along a ramp from domainMin to domainMax; identity paints each variant the color its value callback returns, as a callback with no scale does, and the key names the colors in domain; unset is linear for score and ordinal for any other field',
         }),
         ...colorDomainSlot({
           domain:

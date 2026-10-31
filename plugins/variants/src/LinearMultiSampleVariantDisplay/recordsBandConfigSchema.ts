@@ -1,8 +1,13 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { sectionFacetConfigSchema } from '@jbrowse/display-kit/sectionFacetConfigSchema'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
+  DISPLAY_MODES,
   featureDescriptionLabelConfigSchema,
   featureGateConfigSchemaFields,
+  featureMarkConfigSchema,
   featureNameLabelConfigSchema,
+  featureTooltipFieldSlot,
 } from '@jbrowse/plugin-features'
 
 import { DEFAULT_RECORDS_MAX_HEIGHT } from './variantTopBands.ts'
@@ -30,9 +35,20 @@ import { DEFAULT_RECORDS_MAX_HEIGHT } from './variantTopBands.ts'
  * refuses the window with the region-too-large banner and its Force load, as
  * `LinearVariantDisplay` does; over genotype rows that budget is not read.
  *
+ * The record settings are a feature track's, spelt as `LinearVariantDisplay`
+ * spells them: `displayMode` and `mark.height` size each record, `facet`
+ * stacks the records in labelled sections, one per value of a record field,
+ * and `tooltip.field` names the record's line in the hover tooltip.
+ *
  * #example
  * ```js
  * { type: 'LinearMultiSampleVariantDisplay', records: { show: true } }
+ * ```
+ * ```js
+ * {
+ *   type: 'LinearMultiSampleVariantDisplay',
+ *   records: { displayMode: 'collapsed', facet: 'INFO.CLNSIG' },
+ * }
  * ```
  */
 export const recordsBandConfigSchema = ConfigurationSchema(
@@ -57,6 +73,46 @@ export const recordsBandConfigSchema = ConfigurationSchema(
         'ceiling in pixels on the band, which grows to its stack of records and takes that height from the rows',
     },
     ...featureGateConfigSchemaFields,
+    /**
+     * #slot
+     * Unset, `compact` over genotype rows, keeping the band over them tight,
+     * and `normal` with no rows, as on a feature track.
+     */
+    displayMode: {
+      type: 'maybeStringEnum',
+      model: types.enumeration('RecordsDisplayMode', [...DISPLAY_MODES]),
+      description:
+        'Record height preset: `normal`, `compact` and `superCompact` shrink the rows, and `collapsed` packs every record onto one row with its labels hidden. Unset, `compact` over genotype rows and `normal` with none',
+    },
+    /**
+     * #slot
+     * The box each record draws as, a [](/docs/config/featuremark) object:
+     * `{ height: 6 }`.
+     */
+    mark: featureMarkConfigSchema,
+    /**
+     * #slot facet
+     * One labelled section of the band per value of a record field:
+     * `"INFO.CLNSIG"`, or `{ field, sort }` with the order its sections stack
+     * in. Not the display's own `facet`, which bands the sample rows.
+     */
+    facet: sectionFacetConfigSchema,
+    /**
+     * #slot tooltip
+     * The record's line in the hover tooltip, a
+     * [](/docs/config/featuretooltip) `field`; whether the tooltip shows is
+     * the display's `tooltip.show`. A bare string is the field.
+     */
+    tooltip: ConfigurationSchema(
+      'RecordsTooltip',
+      {
+        /**
+         * #slot tooltip.field
+         */
+        field: featureTooltipFieldSlot,
+      },
+      { shorthand: 'field', writes: 'members', closed: true },
+    ),
     /**
      * #slot labels
      * `labels.name`, each record's ID, and `labels.description`, drawn after

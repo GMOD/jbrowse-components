@@ -171,12 +171,22 @@ describe('the track menu', () => {
     expect(subMenuLabels(menu(off), 'Filter by')).not.toContain('Missingness')
   })
 
-  test('genomic positions offer Genotype rows, and with none Track sizing', () => {
+  test('genomic positions offer Genotype rows, and with none Feature height', () => {
     const off = recordsDisplayAt(FEW, 10, {}, true, {
       genotypes: { show: false },
     }).display
     expect(subMenuLabels(menu(off), 'Show')).toContain('Genotype rows')
-    expect(labelsOf(menu(off))).toContain('Track sizing')
+    expect(labelsOf(menu(off))).not.toContain('Row height')
+    expect(subMenuLabels(menu(off), 'Feature height')).toEqual([
+      'Normal',
+      'Compact',
+      'Super-compact',
+      'Collapsed',
+      'Track sizing',
+      'Fixed feature height + fixed track height',
+      'Fixed feature height + autogrow track height',
+      'Fit feature height to track height',
+    ])
   })
 
   test('columns offer neither', () => {
@@ -185,6 +195,6 @@ describe('the track menu', () => {
       variantLayout: 'columns',
     })
     expect(subMenuLabels(menu(display), 'Show')).not.toContain('Genotype rows')
-    expect(labelsOf(menu(display))).not.toContain('Track sizing')
+    expect(labelsOf(menu(display))).not.toContain('Feature height')
   })
 })

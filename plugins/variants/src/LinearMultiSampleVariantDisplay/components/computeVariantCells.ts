@@ -4,11 +4,13 @@ import { svClassOfAlt } from '@jbrowse/core/util/svAlt'
 
 import { getInsertedBp } from '../../shared/alleleLength.ts'
 import { makeHueValueTable } from '../../shared/cellHue.ts'
+import { NO_RECORD_FIELD_READERS } from '../../shared/recordFields.ts'
 import { makeSiteStyler } from '../../shared/variantCellStyles.ts'
 
 import type { CellHueValues } from '../../shared/cellHue.ts'
 import type { VariantUnit } from '../../shared/constants.ts'
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
+import type { RecordFieldReaders } from '../../shared/recordFields.ts'
 import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
@@ -65,6 +67,7 @@ export function computeVariantCells({
   unit,
   referenceDrawingMode,
   hueValue,
+  recordFields = NO_RECORD_FIELD_READERS,
   colorByPhaseSet,
   featureGenotypeCodes,
   genotypeDict,
@@ -77,6 +80,7 @@ export function computeVariantCells({
   referenceDrawingMode: string
   // what the alt cells' hue reads off a variant, once per feature
   hueValue?: (feature: Feature) => string | undefined
+  recordFields?: RecordFieldReaders
   // Explicit, never inferred from the presence of PS: an implicit trigger
   // swaps the alt-allele colors the legend describes
   colorByPhaseSet?: boolean
@@ -192,6 +196,8 @@ export function computeVariantCells({
       type: feature.get('type') ?? '',
       svType: typeof svType === 'string' ? svType : '',
       svAlleles: svType ? svAlleles(alt, ref, feature) : [],
+      tooltip: recordFields.tooltip(feature),
+      groupKey: recordFields.groupKey(feature),
       genotypeCodes: codes,
     })
     insertedBp[featureIdx] = inserted

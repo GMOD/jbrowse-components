@@ -60,6 +60,9 @@ export interface VariantLegendInputs {
   // `encoding.color.legend.title` as written: unset keeps the key's own
   // heading, `''` draws none.
   colorTitle?: string
+  // The colors an identity scale names (`identityKeyEntries`), what a jexl
+  // callback's key lists.
+  identityEntries?: readonly CategoricalEntry[]
 }
 
 function keyTitle({ colorTitle }: VariantLegendInputs, own: string) {
@@ -172,8 +175,8 @@ function recordFieldScale(
 // for the phase-set preset, a record field's values (the SV classes and the
 // impact tiers among them), or the genotype key — which is also where a plain
 // CSS color lands, since "every alt cell is that color" is a genotype key with
-// one alt hue. Undefined only for a
-// jexl callback, whose output can't be enumerated into swatches.
+// one alt hue. A jexl callback's output can't be enumerated into swatches, so
+// it keys only the colors an identity scale names, else nothing.
 function getCellColorScale(
   encoding: ColorEncoding | undefined,
   inputs: VariantLegendInputs,
@@ -209,7 +212,15 @@ function getCellColorScale(
     return recordFieldScale(recordField, inputs)
   }
   if (typeof encoding === 'string' && isJexl(encoding)) {
-    return undefined
+    const named = inputs.identityEntries ?? []
+    return named.length > 0
+      ? {
+          kind: 'categorical',
+          id: 'identity',
+          title: keyTitle(inputs, 'Color'),
+          entries: [...named, ...absentDataEntries(inputs)],
+        }
+      : undefined
   }
   return {
     kind: 'categorical',

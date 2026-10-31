@@ -3,6 +3,17 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { DEFAULT_TOOLTIP } from '../RenderFeatureDataRPC/featureTooltip.ts'
 
 /**
+ * `tooltip.field`, for a band elsewhere naming its records' tooltip line the
+ * way a feature track does.
+ */
+export const featureTooltipFieldSlot = {
+  type: 'featureField',
+  defaultValue: DEFAULT_TOOLTIP,
+  description:
+    'the field the tooltip reads, such as `product`, or a `jexl:` expression over `feature`; the default reads `_mouseOver`, else the name, else `function`, else the ID',
+} as const
+
+/**
  * #config FeatureTooltip
  * #category display
  * The feature displays' `tooltip`, the box hovering a feature opens:
@@ -35,12 +46,7 @@ export const featureTooltipConfigSchema = ConfigurationSchema(
      * Left at the default, the tooltip adds the description line
      * (`labels.description`) as a second row.
      */
-    field: {
-      type: 'featureField',
-      defaultValue: DEFAULT_TOOLTIP,
-      description:
-        'the field the tooltip reads, such as `product`, or a `jexl:` expression over `feature`; the default reads `_mouseOver`, else the name, else `function`, else the ID',
-    },
+    field: featureTooltipFieldSlot,
   },
   { shorthand: 'field', writes: 'members', closed: true },
 )

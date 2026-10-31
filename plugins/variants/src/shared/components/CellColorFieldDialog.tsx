@@ -2,44 +2,18 @@ import { useState } from 'react'
 
 import { SubmitDialog } from '@jbrowse/core/ui'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
-import { useFetch } from '@jbrowse/core/util/useFetch'
-import { Autocomplete, TextField, Typography } from '@mui/material'
+import { TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { IMPACT_FIELD } from '../variantConsequence.ts'
-import { variantFilterFields } from '../variantFilterFields.ts'
 import {
-  cellColorOfField,
-  fieldRefOf,
-  parseCuts,
-} from './cellColorFieldDialogUtil.ts'
+  RecordFieldAutocomplete,
+  useRecordFieldChoices,
+} from './RecordFieldAutocomplete.tsx'
+import { cellColorOfField, parseCuts } from './cellColorFieldDialogUtil.ts'
 
 import type { Plot } from '@jbrowse/core/configuration'
-import type { JexlFilterField } from '@jbrowse/core/ui/JexlFilterDialog'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
-
-interface FieldChoice {
-  ref: string
-  label: string
-  group?: string
-  description?: string
-  numeric: boolean
-}
-
-function choicesOf(fields: JexlFilterField[]): FieldChoice[] {
-  return fields
-    .filter(
-      f =>
-        !('call' in f) || (f.call !== IMPACT_FIELD && f.call !== SV_TYPE_FIELD),
-    )
-    .map(f => ({
-      ref: fieldRefOf(f),
-      label: f.label,
-      group: f.group,
-      description: f.description,
-      numeric: f.type === 'number',
-    }))
-}
 
 const CellColorFieldDialog = observer(function CellColorFieldDialog({
   model,
@@ -59,12 +33,10 @@ const CellColorFieldDialog = observer(function CellColorFieldDialog({
   }
   handleClose: () => void
 }) {
-  const { data } = useFetch(
-    ['variantCellColorFields', model.id] as const,
-    async () =>
-      choicesOf(await variantFilterFields(model.fetchAdapterMetadata())),
+  // impact and SV type are the Color by menu's own rows
+  const choices = useRecordFieldChoices(model).filter(
+    c => c.call !== IMPACT_FIELD && c.call !== SV_TYPE_FIELD,
   )
-  const choices = data ?? []
   const current = model.colorSetting
   const [ref, setRef] = useState(model.colorField)
   const [cuts, setCuts] = useState(
@@ -99,44 +71,14 @@ const CellColorFieldDialog = observer(function CellColorFieldDialog({
         Each value of the field gives the variant&apos;s alt cells one palette
         color, with a key. Cut points turn a number into ranges instead.
       </Typography>
-      <Autocomplete
-        freeSolo
-        options={choices}
-        groupBy={c => c.group ?? ''}
-        getOptionLabel={c => (typeof c === 'string' ? c : c.ref)}
-        renderOption={({ key, ...props }, c) => (
-          <li key={key} {...props}>
-            <div>
-              <Typography variant="body2">{c.label}</Typography>
-              {c.description ? (
-                <Typography variant="caption" color="textSecondary">
-                  {c.description}
-                </Typography>
-              ) : null}
-            </div>
-          </li>
-        )}
-        inputValue={ref}
-        onInputChange={(_event, value) => {
+      <RecordFieldAutocomplete
+        choices={choices}
+        value={ref}
+        onChange={value => {
           setRef(value)
         }}
-        renderInput={({ slotProps, ...params }) => (
-          <TextField
-            {...params}
-            label="Field"
-            placeholder="e.g. INFO.CLNSIG"
-            helperText={chosen?.description}
-            autoFocus
-            fullWidth
-            slotProps={{
-              ...slotProps,
-              htmlInput: {
-                ...slotProps.htmlInput,
-                'data-testid': 'cell-color-field',
-              },
-            }}
-          />
-        )}
+        helperText={chosen?.description}
+        testId="cell-color-field"
       />
       <TextField
         fullWidth

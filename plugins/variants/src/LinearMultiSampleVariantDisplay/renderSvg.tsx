@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintFeatureBand } from '@jbrowse/plugin-features/band'
@@ -17,7 +18,10 @@ import type {
 import type { RenderSvgBaseModel } from './renderSvgUtils.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { FeatureDataResult } from '@jbrowse/plugin-features/band'
+import type {
+  FeatureDataResult,
+  FeatureGroupSection,
+} from '@jbrowse/plugin-features/band'
 
 interface RenderSvgModel extends RenderSvgBaseModel {
   referenceDrawingMode: string
@@ -28,6 +32,7 @@ interface RenderSvgModel extends RenderSvgBaseModel {
   recordsLaidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   recordsRenderedLabels: { showLabels: boolean; showDescriptions: boolean }
   recordsFontSize: number
+  recordsGroupSections: FeatureGroupSection[]
 }
 
 export async function renderSvg(
@@ -54,6 +59,7 @@ function VariantSvgBody({
     recordsLaidOutDataMap,
     recordsRenderedLabels,
     recordsFontSize,
+    recordsGroupSections,
     topBands,
   } = model
   const { canvasHeight } = renderState
@@ -68,27 +74,38 @@ function VariantSvgBody({
       // its own untranslated layer as the screen gives it its own canvas
       records={
         topBands.recordsHeight > 0 ? (
-          <PaintLayer
-            width={canvasWidth}
-            height={topBands.recordsHeight}
-            opts={opts}
-            paint={ctx => {
-              paintFeatureBand(
-                ctx,
-                recordsLaidOutDataMap,
-                renderBlocks,
-                view.visibleRegions,
-                {
-                  canvasWidth,
-                  bandHeight: topBands.recordsHeight,
-                  ...recordsRenderedLabels,
-                  fontSize: recordsFontSize,
-                  scrollY: 0,
-                  palette,
-                },
-              )
-            }}
-          />
+          <>
+            <PaintLayer
+              width={canvasWidth}
+              height={topBands.recordsHeight}
+              opts={opts}
+              paint={ctx => {
+                paintFeatureBand(
+                  ctx,
+                  recordsLaidOutDataMap,
+                  renderBlocks,
+                  view.visibleRegions,
+                  {
+                    canvasWidth,
+                    bandHeight: topBands.recordsHeight,
+                    ...recordsRenderedLabels,
+                    fontSize: recordsFontSize,
+                    scrollY: 0,
+                    palette,
+                  },
+                )
+              }}
+            />
+            {/* the record sections' names, the twin of the band's chips */}
+            {recordsGroupSections.length > 0 ? (
+              <GroupLabelBoxes
+                sections={recordsGroupSections}
+                left={0}
+                width={canvasWidth}
+                canvasHeight={topBands.recordsHeight}
+              />
+            ) : null}
+          </>
         ) : null
       }
     >

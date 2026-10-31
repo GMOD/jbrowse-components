@@ -6,6 +6,7 @@ import {
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
+import type { VariantFeatureInfo } from '../shared/types.ts'
 
 export type BandRecord = [
   id: string,
@@ -13,6 +14,8 @@ export type BandRecord = [
   end: number,
   description: string,
   svType?: string,
+  // what the worker read off the record beyond these
+  info?: Partial<VariantFeatureInfo>,
 ]
 
 // The bovine pangenome's records at KIT (chr6:70,080,000), rebased to 0: a long
@@ -49,13 +52,14 @@ export function recordsCellData(records: BandRecord[]): CellDataResult {
     })),
     perRegionCellData: {
       0: cellPayloadOf(
-        records.map(([id, start, end, description, svType = 'DEL']) =>
+        records.map(([id, start, end, description, svType = 'DEL', info]) =>
           featureInfoOf(id, {
             description,
             length: end - start,
             svType,
             svAlleles: [svType !== ''],
             genotypeCodes: Uint32Array.of(1),
+            ...info,
           }),
         ),
         {

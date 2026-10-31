@@ -39,6 +39,11 @@ export {
 export { featureNameLabelConfigSchema } from './LinearBasicDisplay/featureNameLabelConfigSchema.ts'
 export { featureDescriptionLabelConfigSchema } from './LinearBasicDisplay/featureDescriptionLabelConfigSchema.ts'
 export { featureGateConfigSchemaFields } from './shared/featureGateConfigSchemaFields.ts'
+// The record parts a band elsewhere draws its records with: `mark`, the
+// display modes, and `tooltip.field`.
+export { featureMarkConfigSchema } from './LinearBasicDisplay/featureMarkConfigSchema.ts'
+export { featureTooltipFieldSlot } from './LinearBasicDisplay/featureTooltipConfigSchema.ts'
+export { DISPLAY_MODES } from './RenderFeatureDataRPC/displayModes.ts'
 // Deprecated: the five-value label mode `labels.*.show` replaced.
 export {
   SHOW_LABELS_MODES,

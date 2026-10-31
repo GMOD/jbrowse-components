@@ -20,6 +20,13 @@ export {
   maxBottom,
 } from './LinearBasicDisplay/layoutQueries.ts'
 export { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
+export { DEFAULT_TOOLTIP } from './RenderFeatureDataRPC/featureTooltip.ts'
+export { featureGroupSections } from './LinearBasicDisplay/facet.ts'
+export {
+  featureHeightMenuItem,
+  labelCheckboxItems,
+  trackSizingItems,
+} from './LinearBasicDisplay/trackMenus.ts'
 export { MIN_GROW_HEIGHT } from './LinearBasicDisplay/heightViews.ts'
 export {
   featureSpanRegion,
@@ -39,6 +46,10 @@ export type {
   RegionGateMeasurement,
 } from './shared/FeatureGateMixin.ts'
 export type { FitStage } from './LinearBasicDisplay/fitLadder.ts'
+export type {
+  FeatureFacet,
+  FeatureGroupSection,
+} from './LinearBasicDisplay/facet.ts'
 export type { FeatureBandPaint } from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export type {
   FlatbushRegionIndexes,
@@ -49,5 +60,8 @@ export type {
   LayoutInputs,
   LayoutRegionData,
 } from './LinearBasicDisplay/layoutInputs.ts'
-export type { DisplayConfig } from './RenderFeatureDataRPC/renderConfig.ts'
+export type {
+  DisplayConfig,
+  DisplayMode,
+} from './RenderFeatureDataRPC/renderConfig.ts'
 export type { FeatureDataResult } from './RenderFeatureDataRPC/rpcTypes.ts'

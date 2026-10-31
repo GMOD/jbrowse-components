@@ -20,6 +20,8 @@ export function featureInfoOf(
     type: 'SNV',
     svType: '',
     svAlleles: [],
+    tooltip: '',
+    groupKey: '',
     genotypeCodes: new Uint32Array(0),
     ...overrides,
   }

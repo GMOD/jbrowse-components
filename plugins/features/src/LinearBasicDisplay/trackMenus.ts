@@ -51,19 +51,23 @@ export function inlineRadioGroup<T extends string>(
   ]
 }
 
-// Structural for the same reason as `FeatureMenuSelf`;
-interface ShowSubmenuSelf extends HiddenGroupsModel, FacetSelf {
+interface LabelToggleSelf {
   showNames: boolean
   showDescriptions: boolean
   showLabels: boolean
   effectiveShowDescriptions: boolean
   displayMode: DisplayMode
   labelFitHints: { names?: string; descriptions?: string }
+  setShowNames: (show: boolean) => void
+  setShowDescriptions: (show: boolean) => void
+}
+
+// Structural for the same reason as `FeatureMenuSelf`;
+interface ShowSubmenuSelf
+  extends HiddenGroupsModel, FacetSelf, LabelToggleSelf {
   hasLegendKey: boolean
   showLegend: boolean
   setShowLegend: (value: boolean) => void
-  setShowNames: (show: boolean) => void
-  setShowDescriptions: (show: boolean) => void
 }
 
 interface FeatureHeightSelf extends HeightModeMenuModel {
@@ -149,7 +153,7 @@ export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
 // A ticked label the track is not drawing says why: collapsed mode strips
 // labels before the fit ladder sees them, and the ladder before the density
 // gate.
-function labelCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
+export function labelCheckboxItems(self: LabelToggleSelf): MenuItem[] {
   const hint = (shown: boolean, drawn: boolean, fitHint?: string) =>
     !shown
       ? undefined
@@ -223,17 +227,42 @@ export function colorBySubMenuItems(
 // same one.
 export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
   return [
-    {
-      label: 'Feature height',
-      icon: HeightIcon,
-      subMenu: [
-        ...radioItems(DISPLAY_MODE_OPTIONS, self.displayMode, mode => {
-          self.setDisplayMode(mode)
-        }),
-        { type: 'subHeader' as const, label: 'Track sizing' },
-        ...heightModeMenuItems(self, 'feature'),
-      ],
-    },
+    featureHeightMenuItem({
+      displayMode: self.displayMode,
+      setDisplayMode: mode => {
+        self.setDisplayMode(mode)
+      },
+      trackSizing: trackSizingItems(self),
+    }),
+  ]
+}
+
+// The display mode radios, then whatever sizes the track holding them.
+export function featureHeightMenuItem({
+  displayMode,
+  setDisplayMode,
+  trackSizing,
+}: {
+  displayMode: DisplayMode
+  setDisplayMode: (mode: DisplayMode) => void
+  trackSizing: MenuItem[]
+}): MenuItem {
+  return {
+    label: 'Feature height',
+    icon: HeightIcon,
+    subMenu: [
+      ...radioItems(DISPLAY_MODE_OPTIONS, displayMode, mode => {
+        setDisplayMode(mode)
+      }),
+      ...trackSizing,
+    ],
+  }
+}
+
+export function trackSizingItems(self: HeightModeMenuModel): MenuItem[] {
+  return [
+    { type: 'subHeader' as const, label: 'Track sizing' },
+    ...heightModeMenuItems(self, 'feature'),
   ]
 }
 

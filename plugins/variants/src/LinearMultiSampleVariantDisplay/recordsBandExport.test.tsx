@@ -48,3 +48,18 @@ test('the export letters the records above rows moved down by the band', async (
   )
   expect(rowShifts).toContain(`translate(0 ${display.topBands.recordsHeight})`)
 })
+
+test('the export names the record sections', async () => {
+  const { display } = recordsDisplayAt(
+    [
+      ['a', 1000, 5000, 'DEL', 'DEL', { groupKey: 'Benign' }],
+      ['b', 2000, 6000, 'DEL', 'DEL', { groupKey: 'Pathogenic' }],
+    ],
+    10,
+    { facet: 'INFO.CLNSIG' },
+    false,
+  )
+  const { container } = render(<svg>{await renderSvg(display, {})}</svg>)
+  expect(container.textContent).toContain('Benign')
+  expect(container.textContent).toContain('Pathogenic')
+})

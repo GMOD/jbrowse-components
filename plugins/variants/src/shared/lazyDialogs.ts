@@ -28,6 +28,9 @@ export const CellSolidColorDialog = lazy(
 export const CellColorFieldDialog = lazy(
   () => import('./components/CellColorFieldDialog.tsx'),
 )
+export const RecordsFacetFieldDialog = lazy(
+  () => import('./components/RecordsFacetFieldDialog.tsx'),
+)
 export const MultiSampleVariantClusterDialog = lazy(
   () => import('./components/MultiSampleVariantClusterDialog.tsx'),
 )

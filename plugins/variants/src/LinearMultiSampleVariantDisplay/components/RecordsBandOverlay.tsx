@@ -3,6 +3,8 @@ import { useId, useState } from 'react'
 import { ScrollChrome } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
+import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
+import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
 import {
   paintFeatureBand,
   performMultiRegionHitDetection,
@@ -49,6 +51,7 @@ function getHoveredRecord(
     ? {
         fields: buildRecordHit({
           info,
+          line: result.feature.tooltip,
           featureId: result.feature.featureId,
           displayedRegionIndex: result.displayedRegionIndex,
           carriers: model.recordCarriers.get(result.feature.featureId),
@@ -123,6 +126,51 @@ const RecordsBandInteraction = observer(function RecordsBandInteraction({
 })
 
 /**
+ * The record sections' chips (`records.facet`), as a feature track draws its
+ * own: each pins to the band's top while its section scrolls past, and hides
+ * its section or drags it onto another.
+ */
+const RecordsSectionChips = observer(function RecordsSectionChips({
+  model,
+}: {
+  model: LinearMultiSampleVariantDisplayModel
+}) {
+  const { recordsGroupSections, recordsFacet, recordsScrollTop } = model
+  const canHide = recordsGroupSections.length > 1
+  return recordsFacet && recordsGroupSections.length > 0 ? (
+    <GroupLabelChips
+      canvasHeight={model.topBands.recordsHeight}
+      hiddenCount={model.recordsHiddenGroups.size}
+      onShowHidden={() => {
+        model.showAllRecordsGroups()
+      }}
+      onMove={(key, ontoKey) => {
+        moveSectionOnto(
+          {
+            sections: recordsGroupSections,
+            domain: recordsFacet.sort,
+            setDomain: domain => {
+              model.setRecordsFacetSort(domain)
+            },
+          },
+          key,
+          ontoKey,
+        )
+      }}
+      sections={recordsGroupSections.map(section => ({
+        ...section,
+        top: section.top - recordsScrollTop,
+        onHide: canHide
+          ? () => {
+              model.hideRecordsGroup(section.key)
+            }
+          : undefined,
+      }))}
+    />
+  ) : null
+})
+
+/**
  * The records band above the genotype rows, painted by plugin-features's
  * `paintFeatureBand` over the stack its packer laid out and its fit ladder
  * kept (`recordsFitStage`). Its own canvas, outside the rows' offset
@@ -182,6 +230,7 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
         }}
       />
       <RecordsBandInteraction model={model} id={id} />
+      <RecordsSectionChips model={model} />
       {model.recordsOnly ? (
         <ScrollChrome model={model} controlsId={id} />
       ) : null}

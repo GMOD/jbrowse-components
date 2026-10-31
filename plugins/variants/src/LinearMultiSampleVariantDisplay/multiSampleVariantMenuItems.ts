@@ -12,9 +12,17 @@ import {
   colorByMenuItem,
   solidColorItem,
 } from '@jbrowse/display-kit/colorByMenu'
-import { groupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
-import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
+import {
+  groupByRadioMenuItem,
+  hiddenGroupsItems,
+  resetSectionOrderItems,
+} from '@jbrowse/display-kit/groupByMenu'
 import { rampEncodingOf } from '@jbrowse/display-kit/valueRamp'
+import {
+  featureHeightMenuItem,
+  labelCheckboxItems,
+  trackSizingItems,
+} from '@jbrowse/plugin-features/band'
 import {
   resetRowOrderMenuItems,
   rowOrderMenuItems,
@@ -26,7 +34,6 @@ import {
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-import HeightIcon from '@mui/icons-material/Height'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
@@ -41,6 +48,7 @@ import {
   CellColorFieldDialog,
   MultiSampleVariantClusterDialog as ClusterDialog,
   JexlFilterDialog,
+  RecordsFacetFieldDialog,
 } from '../shared/lazyDialogs.ts'
 import { IMPACT_FIELD } from '../shared/variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
@@ -117,6 +125,113 @@ function genotypeRowShowItems(
   ]
 }
 
+// With no rows the records are the display, and show what a feature track's
+// "Show" menu does: the way back from hidden sections, and the label parts.
+function recordsShowItems(
+  self: LinearMultiSampleVariantDisplayModel,
+): MenuItem[] {
+  const facet = self.recordsFacet
+  const drawn = self.recordsRenderedLabels
+  return [
+    ...hiddenGroupsItems({
+      hiddenGroups: self.recordsHiddenGroups,
+      showAllGroups: () => {
+        self.showAllRecordsGroups()
+      },
+    }),
+    ...resetSectionOrderItems(
+      facet && {
+        domain: facet.sort,
+        setDomain: domain => {
+          self.setRecordsFacetSort(domain)
+        },
+      },
+    ),
+    ...labelCheckboxItems({
+      showNames: self.recordsLabels.name !== '',
+      showDescriptions: self.recordsLabels.description !== '',
+      showLabels: drawn.showLabels,
+      effectiveShowDescriptions: drawn.showDescriptions,
+      displayMode: self.recordsDisplayMode,
+      labelFitHints: {},
+      setShowNames: show => {
+        self.setRecordsLabelShow('name', show)
+      },
+      setShowDescriptions: show => {
+        self.setRecordsLabelShow('description', show)
+      },
+    }),
+  ]
+}
+
+// The records' height preset: with no rows beside the track sizing, as on a
+// feature track; over rows alone, while the band draws.
+function recordsHeightMenuItems(
+  self: LinearMultiSampleVariantDisplayModel,
+): MenuItem[] {
+  return self.showRecords
+    ? [
+        featureHeightMenuItem({
+          displayMode: self.recordsDisplayMode,
+          setDisplayMode: mode => {
+            self.setRecordsDisplayMode(mode)
+          },
+          trackSizing: self.recordsOnly ? trackSizingItems(self) : [],
+        }),
+      ]
+    : []
+}
+
+const RECORD_FIELD = 'field' as const
+
+// With no rows the records group into sections by a record field, as on a
+// feature track; over rows the sample attributes band the rows.
+function groupByMenuItems(
+  self: LinearMultiSampleVariantDisplayModel,
+): MenuItem[] {
+  const recordsField = self.recordsFacet?.field
+  return self.recordsOnly
+    ? [
+        groupByRadioMenuItem<never, typeof RECORD_FIELD>({
+          current: recordsField ? RECORD_FIELD : undefined,
+          options: [],
+          onSelect: () => {},
+          onNone: () => {
+            self.recordsFacetByField('')
+          },
+          extra: [
+            {
+              type: RECORD_FIELD,
+              label: recordsField ? `Field (${recordsField})...` : 'Field...',
+              onClick: () => {
+                getDialogHost(self).queueDialog(handleClose => [
+                  RecordsFacetFieldDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+          ],
+        }),
+      ]
+    : self.rowColorFields.length
+      ? [
+          groupByRadioMenuItem({
+            current: self.facet?.field,
+            options: self.rowColorFields.map(attr => ({
+              type: attr,
+              label: capitalizeFirst(attr),
+            })),
+            onSelect: attr => {
+              self.facetByField(attr)
+            },
+            onNone: () => {
+              self.facetByField('')
+            },
+          }),
+        ]
+      : []
+}
+
 // Items for the "Show" submenu; the subtree filter has its own entry via
 // `clusteringMenuItem`.
 export function variantShowSubmenuItems(
@@ -140,7 +255,7 @@ export function variantShowSubmenuItems(
           },
         ]
       : []),
-    ...(self.recordsOnly ? [] : genotypeRowShowItems(self)),
+    ...(self.recordsOnly ? recordsShowItems(self) : genotypeRowShowItems(self)),
     {
       label: 'Tooltips',
       helpText:
@@ -196,14 +311,10 @@ export function variantTrackMenuItems(
     layoutMenuItem(self),
     // No presets: a cohort's useful row heights depend on how many samples it
     // has, so fit and a typed height are the two that mean anything here.
-    // With no rows, the feature track's own track sizing.
-    self.recordsOnly && self.atGenomicPositions
-      ? {
-          label: 'Track sizing',
-          icon: HeightIcon,
-          subMenu: heightModeMenuItems(self, 'feature'),
-        }
-      : rowHeightMenuItem(self),
+    ...(self.recordsOnly && self.atGenomicPositions
+      ? []
+      : [rowHeightMenuItem(self)]),
+    ...recordsHeightMenuItems(self),
     makeRadioSubMenu({
       label: 'Rows',
       icon: SplitscreenIcon,
@@ -345,23 +456,7 @@ export function variantTrackMenuItems(
       ],
     }),
     // The banding half of the sample metadata, beside the coloring half.
-    ...(self.rowColorFields.length
-      ? [
-          groupByRadioMenuItem({
-            current: self.facet?.field,
-            options: self.rowColorFields.map(attr => ({
-              type: attr,
-              label: capitalizeFirst(attr),
-            })),
-            onSelect: attr => {
-              self.facetByField(attr)
-            },
-            onNone: () => {
-              self.facetByField('')
-            },
-          }),
-        ]
-      : []),
+    ...groupByMenuItems(self),
     ...filterMenuItems({
       // every field of the one `filter` list, each counted by whether it
       // differs from what the track's config declares (ADR-204), so an

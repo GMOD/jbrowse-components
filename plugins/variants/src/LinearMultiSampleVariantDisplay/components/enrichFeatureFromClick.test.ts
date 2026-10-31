@@ -24,6 +24,8 @@ const featureInfo: VariantFeatureInfo = {
   type: 'breakend',
   svType: '',
   svAlleles: [],
+  tooltip: '',
+  groupKey: '',
   genotypeCodes: new Uint32Array(),
 }
 

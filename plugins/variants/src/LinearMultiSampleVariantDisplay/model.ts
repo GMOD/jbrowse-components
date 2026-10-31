@@ -40,29 +40,35 @@ import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
-import FacetWritesMixin from '@jbrowse/display-kit/FacetWritesMixin'
+import FacetWritesMixin, {
+  facetForField,
+} from '@jbrowse/display-kit/FacetWritesMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import {
   colorSnapshotOf,
+  identityKeyEntries,
   paintedColorEncoding,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
+import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import {
+  DEFAULT_TOOLTIP,
   buildFeatureFlatbushIndex,
   createFeatureDetailsOpener,
   createMembershipMemo,
   FeatureGateMixin,
+  featureGroupSections,
   featureSpanRegion,
   fetchFeatureDetails,
   featureIdsTouchingBlocks,
@@ -152,6 +158,7 @@ import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type { VariantUnit } from '../shared/constants.ts'
+import type { RecordFieldReads } from '../shared/recordFields.ts'
 import type {
   ProcessedSource,
   Source,
@@ -176,6 +183,7 @@ import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
+import type { WrittenFacet } from '@jbrowse/display-kit/FacetWritesMixin'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { FacetSetting } from '@jbrowse/display-kit/facetConfigSchema'
 import type {
@@ -187,7 +195,10 @@ import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
+  DisplayMode,
   FeatureDataResult,
+  FeatureFacet,
+  FeatureGroupSection,
   FitLadderHost,
   FitStage,
   FlatbushRegionIndexes,
@@ -276,12 +287,6 @@ function fetchRegionsForLayout(
   }
   return view.bufferedVisibleRegions.filter(b => onTrack(b.region.assemblyName))
 }
-
-/**
- * plugin-features's own `featureHeight` default at its compact display mode,
- * which keeps the band's stack, and so its natural height, tight.
- */
-const RECORDS_FEATURE_HEIGHT = 10
 
 const NO_RECORD_LABELS: RecordsLabels = { name: '', description: '' }
 
@@ -751,6 +756,51 @@ export function stateModelFactory(
               : ''
           return { name: field('name'), description: field('description') }
         },
+        /**
+         * #getter
+         * `records.facet` as written, or undefined while the records stack
+         * in one section. The display's own `facet` bands the sample rows.
+         */
+        get recordsFacet(): FeatureFacet | undefined {
+          return facetSettingOf({
+            field: getConf(self, ['records', 'facet', 'field']),
+            sort: getConf(self, ['records', 'facet', 'sort']),
+          })
+        },
+        /**
+         * #getter
+         * The record sections the user hid, `records.facet.hidden`.
+         */
+        get recordsHiddenGroups(): ReadonlySet<string> {
+          return new Set<string>(getConf(self, ['records', 'facet', 'hidden']))
+        },
+        /**
+         * #getter
+         * `records.mark.height`, each record's body at `normal`.
+         */
+        get recordsFeatureHeight(): number {
+          return getConf(self, ['records', 'mark', 'height'])
+        },
+        /**
+         * #getter
+         * `records.tooltip.field`, the record's line in the hover tooltip.
+         */
+        get recordsTooltipField(): string {
+          return getConf(self, ['records', 'tooltip', 'field'])
+        },
+        /**
+         * #getter
+         * What the worker reads off each record for the band beyond the
+         * payload: a tooltip field other than the default, which the band
+         * reads off the payload's own name, and the records' facet field.
+         */
+        get recordFieldReads(): RecordFieldReads {
+          const tooltip = this.recordsTooltipField
+          return {
+            tooltip: tooltip === DEFAULT_TOOLTIP ? '' : tooltip,
+            facet: this.recordsFacet?.field ?? '',
+          }
+        },
 
         /**
          * #getter
@@ -1032,6 +1082,58 @@ export function stateModelFactory(
           },
           /**
            * #action
+           * `records.displayMode`, each record's height preset.
+           */
+          setRecordsDisplayMode(mode: DisplayMode) {
+            setConf(self, ['records', 'displayMode'], mode)
+          },
+          /**
+           * #action
+           * Show or hide one label kind of the records.
+           */
+          setRecordsLabelShow(kind: 'name' | 'description', show: boolean) {
+            setConf(self, ['records', 'labels', kind, 'show'], show)
+          },
+          /**
+           * #action
+           * Split the records into sections by `field`, `''` for none,
+           * keeping the order and hidden sections while it is the field
+           * already grouping.
+           */
+          recordsFacetByField(field: string) {
+            const written =
+              getSnapshot<WrittenFacet | undefined>(
+                self.configuration.records.facet,
+              ) ?? {}
+            setConf(self, ['records', 'facet'], facetForField(written, field))
+          },
+          /**
+           * #action
+           * The order the record sections take, the ones it names first.
+           */
+          setRecordsFacetSort(sort: readonly string[]) {
+            setConf(self, ['records', 'facet', 'sort'], [...sort])
+          },
+          /**
+           * #action
+           * Drop a record section from the band; `showAllRecordsGroups`
+           * brings it back.
+           */
+          hideRecordsGroup(key: string) {
+            setConf(
+              self,
+              ['records', 'facet', 'hidden'],
+              [...new Set([...self.recordsHiddenGroups, key])],
+            )
+          },
+          /**
+           * #action
+           */
+          showAllRecordsGroups() {
+            setConf(self, ['records', 'facet', 'hidden'], [])
+          },
+          /**
+           * #action
            * Draw the genotype rows, or the records alone.
            */
           setShowGenotypes(arg: boolean) {
@@ -1303,6 +1405,7 @@ export function stateModelFactory(
             filters: self.filters,
             unit: self.unit,
             color: self.cellHueRead,
+            recordFields: self.recordFieldReads,
             referenceDrawingMode: self.atGenomicPositions
               ? self.referenceDrawingMode
               : 'draw',
@@ -1433,11 +1536,16 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The band's display mode: `compact` over rows, tight with its one
-         * label line; with no rows `normal`, a feature track's default.
+         * `records.displayMode`, and unset the one rule its default
+         * follows: `compact` over rows, tight with its one label line; with
+         * no rows `normal`, a feature track's default.
          */
-        get recordsDisplayMode() {
-          return self.recordsOnly ? ('normal' as const) : ('compact' as const)
+        get recordsDisplayMode(): DisplayMode {
+          const written: DisplayMode | undefined = getConf(self, [
+            'records',
+            'displayMode',
+          ])
+          return written ?? (self.recordsOnly ? 'normal' : 'compact')
         },
       }))
       .views(self => ({
@@ -1469,6 +1577,8 @@ export function stateModelFactory(
             displayMode: self.recordsDisplayMode,
             pinnedFeatureIds: NO_FEATURE_IDS,
             expandedGeneIds: NO_FEATURE_IDS,
+            facet: self.recordsFacet,
+            hiddenGroupKeys: self.recordsHiddenGroups,
           }
         },
       }))
@@ -1540,7 +1650,7 @@ export function stateModelFactory(
           const { showLabels, showDescriptions } = labelVisibility({
             name: name !== '',
             description: description !== '',
-            collapsed: false,
+            collapsed: self.recordsDisplayMode === 'collapsed',
             density: self.recordsLabelDensityPerPx,
             geneDensity: () => undefined,
           })
@@ -1577,10 +1687,12 @@ export function stateModelFactory(
             // with no rows the display's own label fields, as a feature
             // track letters them; over rows the one-line `recordLabel`
             const visible = self.recordsVisibleLabels
-            const config = recordsDisplayConfig(
-              RECORDS_FEATURE_HEIGHT,
-              self.recordsOnly ? visible : RECORD_LABEL_LINE,
-            )
+            const config = recordsDisplayConfig({
+              featureHeight: self.recordsFeatureHeight,
+              labels: self.recordsOnly ? visible : RECORD_LABEL_LINE,
+              tooltip: self.recordFieldReads.tooltip,
+              faceted: self.recordsFacet !== undefined,
+            })
             const labels = self.recordsOnly ? NO_RECORD_LABELS : visible
             const { jexl } = getEnv(self).pluginManager
             const { displayedRegions } = self.view
@@ -1639,7 +1751,9 @@ export function stateModelFactory(
               self.recordsOnly && self.recordsVisibleLabels.description !== ''
             )
           },
-          facet: undefined,
+          get facet() {
+            return self.recordsFacet
+          },
           get fitMeasureFeatureIds() {
             return self.recordsMeasureIds
           },
@@ -1735,7 +1849,29 @@ export function stateModelFactory(
          */
         get recordsLaidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
           const { layout, scale } = self.recordsFitStage
-          return scale === 1 ? layout : scaleLaidOutData(layout, scale)
+          const facet = self.recordsFacet
+          return scale === 1
+            ? layout
+            : scaleLaidOutData(
+                layout,
+                scale,
+                facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
+              )
+        },
+        /**
+         * #getter
+         * The record sections in stacking order, each with the chip row the
+         * packer reserved above it; empty while the records are one section.
+         */
+        get recordsGroupSections(): FeatureGroupSection[] {
+          const facet = self.recordsFacet
+          return facet
+            ? featureGroupSections(
+                this.recordsLaidOutDataMap,
+                facet,
+                GROUP_LABEL_HEIGHT,
+              )
+            : []
         },
         /**
          * #getter
@@ -2604,6 +2740,7 @@ export function stateModelFactory(
                     self.colorSetting,
                     FEATURE_FIELD_PRESETS,
                   ).legend.title,
+                  identityEntries: identityKeyEntries(self.colorSetting),
                 })),
             ...self.rowColorScales,
           ]
