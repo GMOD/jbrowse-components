@@ -19,8 +19,6 @@ export function pairCategory(
   stats: InsertSizeBand | undefined,
 ): ReadColorCategory {
   switch (field) {
-    case 'insertSize':
-      return insertSizeCategory(tlen, stats)
     case 'pairOrientation':
       return pairOrientationCategory(pairOrientationNum)
     // a short insert paints pink whatever the orientation; otherwise an

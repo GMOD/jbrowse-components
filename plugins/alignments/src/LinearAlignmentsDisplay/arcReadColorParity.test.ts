@@ -104,7 +104,9 @@ describe('arc and read color classifiers', () => {
         )
       }
     }
-    expect(readCategory('insertSize', 1, -5000)).toBe('longInsert')
+    expect(readCategory('insertSizeAndOrientation', 1, -5000)).toBe(
+      'longInsert',
+    )
   })
 
   // A translocated mate's supplementary can be drawn beside its partner, so

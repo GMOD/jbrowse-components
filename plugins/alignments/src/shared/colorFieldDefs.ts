@@ -1,4 +1,7 @@
-import { FACET_LABELS, INSERT_SIZE_LABELS } from './facetLabels.ts'
+import {
+  FACET_LABELS,
+  INSERT_SIZE_AND_ORIENTATION_LABEL,
+} from './facetLabels.ts'
 import { COLOR_FIELDS } from './types.ts'
 
 import type {
@@ -97,7 +100,7 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
     bodyFill: 'insertSizeAndOrientation',
     menu: {
       kind: 'radio',
-      label: INSERT_SIZE_LABELS.insertSizeAndOrientation,
+      label: INSERT_SIZE_AND_ORIENTATION_LABEL,
       group: 'pairedEnd',
     },
     mateAware: true,
@@ -111,17 +114,6 @@ export const COLOR_FIELD_DEFS: Record<ColorFieldKind, ColorFieldDef> = {
       label: FACET_LABELS.firstOfPairStrand,
       group: 'pairedEnd',
     },
-  },
-  insertSize: {
-    kind: 'insertSize',
-    bodyFill: 'insertSize',
-    menu: {
-      kind: 'radio',
-      label: INSERT_SIZE_LABELS.insertSize,
-      group: 'pairedEnd',
-      whileActive: true,
-    },
-    mateAware: true,
   },
   pairOrientation: {
     kind: 'pairOrientation',

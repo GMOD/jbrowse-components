@@ -92,7 +92,8 @@ export const retiredTypes: RetiredDisplayType[] = [
 const V4_COLOR_FIELDS: Record<string, string> = {
   strand: 'strand',
   mappingQuality: 'mapq',
-  insertSize: 'insertSize',
+  // v5 paints insert size only beside orientation
+  insertSize: 'insertSizeAndOrientation',
   stranded: 'firstOfPairStrand',
   pairOrientation: 'pairOrientation',
   insertSizeAndOrientation: 'insertSizeAndOrientation',

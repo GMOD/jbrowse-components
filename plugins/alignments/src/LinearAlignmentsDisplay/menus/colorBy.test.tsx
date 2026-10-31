@@ -294,7 +294,7 @@ describe('color by menu curation', () => {
 
   test('a tag or preset a config names gets a checked row of its own where no row offers it', () => {
     const model = makeModel()
-    for (const field of ['tags.de', 'insertSize']) {
+    for (const field of ['tags.de', 'insertSizeAndOrientation']) {
       model.colorField = field
       const rows = flatten(subMenuOf(getColorByMenuItem(model)))
       expect(rows.find(i => 'label' in i && i.label === field)).toMatchObject({
@@ -324,9 +324,9 @@ describe('color by menu curation', () => {
     expect(rows.some(i => 'subMenu' in i)).toBe(false)
   })
 
-  // the combined radio carries both cues; either alone is a config setting,
-  // offered only while it paints so a radio always names what paints
-  test('Insert size and Pair orientation alone show only while they paint', () => {
+  // the combined radio carries both cues; orientation alone is a config
+  // setting, offered only while it paints so a radio always names what paints
+  test('Pair orientation alone shows only while it paints', () => {
     const model = makeModel()
     const labels = () =>
       subMenuOf(getReadsColorByMenuItem(model)).map(i =>
@@ -339,11 +339,9 @@ describe('color by menu curation', () => {
         'Mate chromosome',
       ]),
     )
-    expect(labels()).not.toContain('Insert size')
     expect(labels()).not.toContain('Pair orientation')
     model.colorByField('pairOrientation')
     expect(labels()).toContain('Pair orientation')
-    expect(labels()).not.toContain('Insert size')
   })
 
   test('curated colorOptions replace the basic radios', () => {

@@ -137,7 +137,10 @@ describe('pinnedInsertSizeBand', () => {
 
   test('two cuts under an insert-size field pin the band', () => {
     expect(
-      band({ field: 'insertSize', scale: { domain: ['150', '600'] } }),
+      band({
+        field: 'insertSizeAndOrientation',
+        scale: { domain: ['150', '600'] },
+      }),
     ).toEqual({
       lower: 150,
       upper: 600,
@@ -146,7 +149,10 @@ describe('pinnedInsertSizeBand', () => {
       band({ field: 'strand', scale: { domain: ['150', '600'] } }),
     ).toBeUndefined()
     expect(
-      band({ field: 'insertSize', scale: { domain: ['150', '150'] } }),
+      band({
+        field: 'insertSizeAndOrientation',
+        scale: { domain: ['150', '150'] },
+      }),
     ).toBeUndefined()
   })
 })

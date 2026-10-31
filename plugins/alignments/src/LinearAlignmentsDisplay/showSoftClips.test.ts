@@ -591,7 +591,10 @@ describe('alignments colorField', () => {
   it('pins the insert-size cut points from the domain', () => {
     const { display } = createDisplay({
       encoding: {
-        color: { field: 'insertSize', scale: { domain: ['150', '600'] } },
+        color: {
+          field: 'insertSizeAndOrientation',
+          scale: { domain: ['150', '600'] },
+        },
       },
     })
     expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
@@ -600,7 +603,10 @@ describe('alignments colorField', () => {
   it('an insert-size domain is the cuts of the threshold its field defaults to', () => {
     const { display } = createDisplay({
       encoding: {
-        color: { field: 'insertSize', scale: { domain: ['600', '150'] } },
+        color: {
+          field: 'insertSizeAndOrientation',
+          scale: { domain: ['600', '150'] },
+        },
       },
     })
     expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
@@ -610,7 +616,7 @@ describe('alignments colorField', () => {
     const { display } = createDisplay({
       encoding: {
         color: {
-          field: 'insertSize',
+          field: 'insertSizeAndOrientation',
           scale: { type: 'ordinal', domain: ['150', '600'] },
         },
       },

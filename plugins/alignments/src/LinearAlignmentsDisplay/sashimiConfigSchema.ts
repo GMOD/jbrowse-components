@@ -14,8 +14,7 @@ import { sashimiLabelsConfigSchema } from './sashimiLabelsConfigSchema.ts'
  * (`junction.class`: `deletion`, `duplication`, which a circRNA back-splice
  * is, or `inversion`), once per pair of read-adjacent segments as the read
  * arcs count support. A split junction always takes its class's read-arc
- * color, though `readConnections` paints its own split arcs grey under the
- * `insertSize` color field. Which junctions draw is the display's `filter`,
+ * color. Which junctions draw is the display's `filter`,
  * by its `junction` fields.
  *
  * #example

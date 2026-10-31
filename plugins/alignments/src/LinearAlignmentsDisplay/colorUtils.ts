@@ -262,7 +262,6 @@ function fillCategory(
     // The pair fields classify through the one function the arcs read too. A
     // read reaching here with no pair orientation is a non-split read or a
     // split one whose framing is off, and grey is the right answer for both.
-    case 'insertSize':
     case 'pairOrientation':
     case 'insertSizeAndOrientation':
       return pairCategory(

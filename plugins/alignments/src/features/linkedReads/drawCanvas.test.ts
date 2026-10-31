@@ -122,8 +122,8 @@ describe('linked-read connector strokes follow the generated slot rule', () => {
     expect(strokeFor(colorType, 'pairOrientation')).toBe(
       expectedStroke('pairOrientation', 6),
     )
-    expect(strokeFor(colorType, 'insertSize')).toBe(
-      expectedStroke('insertSize', 1),
+    expect(strokeFor(colorType, 'insertSizeAndOrientation')).toBe(
+      expectedStroke('insertSizeAndOrientation', 1),
     )
   })
 

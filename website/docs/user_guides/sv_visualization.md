@@ -136,8 +136,8 @@ the pileup states it.
 
 Insert size colors a read by how far apart its mates aligned: red for larger
 than expected, pink for smaller, light grey for normal. Expected is a band
-around the median insert.[^mad] Alone it is `encoding.color` set to
-`insertSize`.
+around the median insert.[^mad] Under **Insert size and orientation** a pair of
+abnormal orientation takes its orientation's color instead.
 
 <!-- COLOR_TABLE alignments-insert-size START -->
 
@@ -437,19 +437,18 @@ this through with the HG008 phased tumor assembly.
 
 ## Summary
 
-| Display / setting         | How to enable                   | Best for                                           |
-| ------------------------- | ------------------------------- | -------------------------------------------------- |
-| Pileup (default)          | Default lower panel             | Base-level detail, individual reads                |
-| Color by pair orientation | Color by in track menu          | Abnormal orientation patterns (RL/LL/RR)           |
-| Color by insert size      | Color by in track menu          | Insert size anomalies (pileup)                     |
-| Read arcs                 | Read connections in track menu  | Overview of long-range connections                 |
-| SV channels               | Read connections in track menu  | One band per orientation class, with arcs          |
-| Read cloud                | Read connections in track menu  | Counting discordant pairs, orientation per read    |
-| Linear read vs ref        | Right-click on any read         | Complex alignment of a single long read            |
-| Breakpoint split view     | Feature details or SV inspector | Side-by-side inspection of both breakpoint loci    |
-| Group by HP tag           | Group by in track menu          | Confirming heterozygous SVs on one haplotype       |
-| Dotplot view              | Launch from the Add menu        | Chromosome-scale rearrangements (de novo assembly) |
-| Linear synteny view       | Add menu or dotplot selection   | Base-level alignment between two genomes           |
+| Display / setting                    | How to enable                   | Best for                                           |
+| ------------------------------------ | ------------------------------- | -------------------------------------------------- |
+| Pileup (default)                     | Default lower panel             | Base-level detail, individual reads                |
+| Color by insert size and orientation | Color by in track menu          | Long, short and abnormally oriented pairs          |
+| Read arcs                            | Read connections in track menu  | Overview of long-range connections                 |
+| SV channels                          | Read connections in track menu  | One band per orientation class, with arcs          |
+| Read cloud                           | Read connections in track menu  | Counting discordant pairs, orientation per read    |
+| Linear read vs ref                   | Right-click on any read         | Complex alignment of a single long read            |
+| Breakpoint split view                | Feature details or SV inspector | Side-by-side inspection of both breakpoint loci    |
+| Group by HP tag                      | Group by in track menu          | Confirming heterozygous SVs on one haplotype       |
+| Dotplot view                         | Launch from the Add menu        | Chromosome-scale rearrangements (de novo assembly) |
+| Linear synteny view                  | Add menu or dotplot selection   | Base-level alignment between two genomes           |
 
 ## See also
 

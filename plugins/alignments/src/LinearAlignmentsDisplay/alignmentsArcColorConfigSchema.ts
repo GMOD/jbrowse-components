@@ -10,7 +10,7 @@ import { dropEmptyField } from '../shared/dropEmptyField.ts'
  * The alignments displays' `readConnections.encoding.color` colors the
  * read-connection arcs and the read cloud. Empty, the default, the arcs take
  * the reads' `encoding.color` field where it is one an arc paints
- * (`insertSize`, `pairOrientation`, `insertSizeAndOrientation`), and paint
+ * (`insertSizeAndOrientation` or `pairOrientation`), and paint
  * `insertSizeAndOrientation` under any other. A field set here colors the
  * arcs whatever the reads show. A string is the field.
  *
@@ -25,7 +25,7 @@ import { dropEmptyField } from '../shared/dropEmptyField.ts'
  * {
  *   type: 'LinearAlignmentsDisplay',
  *   readConnections: { show: true, mark: 'rule' },
- *   encoding: { color: 'insertSize' },
+ *   encoding: { color: 'pairOrientation' },
  * }
  * ```
  */
@@ -41,7 +41,7 @@ export const alignmentsArcColorConfigSchema = ConfigurationSchema(
         ...ARC_COLOR_FIELDS,
       ]),
       description:
-        "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; unset takes the reads' color field where an arc paints it",
+        "the pair field the arcs paint: insertSizeAndOrientation or pairOrientation; unset takes the reads' color field where an arc paints it",
     },
   },
   {

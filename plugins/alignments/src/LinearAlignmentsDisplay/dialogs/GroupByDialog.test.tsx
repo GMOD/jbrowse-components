@@ -110,7 +110,7 @@ test('a different tag coloring leaves the box unticked and untouched', async () 
 // Submit.
 test('a non-tag color field is not replaced by default', async () => {
   const { colorByField } = renderDialog({
-    colorField: 'insertSize',
+    colorField: 'insertSizeAndOrientation',
   })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)

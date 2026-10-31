@@ -105,7 +105,10 @@ describe('split junction class', () => {
   test('a junction keeps its class under every color field', () => {
     const del = junction([100, 200, 1], [500, 600, 1])
     const inv = junction([100, 200, 1], [500, 600, -1])
-    for (const field of ['insertSize', 'pairOrientation'] as const) {
+    for (const field of [
+      'insertSizeAndOrientation',
+      'pairOrientation',
+    ] as const) {
       expect(colorType(del, field)).toBe(ARC_COLOR_SPLIT_FORWARD)
       expect(colorType(inv, field)).toBe(colorType(inv))
     }

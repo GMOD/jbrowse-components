@@ -776,7 +776,10 @@ describe('validateConfig', () => {
       const cuts = { scale: { domain: ['2', '1'] } }
       expect(
         found(
-          display('LinearAlignmentsDisplay', { field: 'insertSize', ...cuts }),
+          display('LinearAlignmentsDisplay', {
+            field: 'insertSizeAndOrientation',
+            ...cuts,
+          }),
         ),
       ).toEqual([`threshold-cuts ${where}.scale.domain`])
       expect(
@@ -785,7 +788,12 @@ describe('validateConfig', () => {
         ),
       ).toEqual([])
       expect(
-        found(display('LGVSyntenyDisplay', { field: 'insertSize', ...cuts })),
+        found(
+          display('LGVSyntenyDisplay', {
+            field: 'insertSizeAndOrientation',
+            ...cuts,
+          }),
+        ),
       ).toEqual([`threshold-cuts ${where}.scale.domain`])
       expect(
         found({
@@ -908,7 +916,10 @@ describe('validateConfig', () => {
         found({
           displayDefaults: {
             encoding: {
-              color: { field: 'insertSize', scale: { domain: ['2', '1'] } },
+              color: {
+                field: 'insertSizeAndOrientation',
+                scale: { domain: ['2', '1'] },
+              },
             },
           },
         }),
@@ -950,7 +961,10 @@ describe('validateConfig', () => {
               assemblyNames,
               displayDefaults: {
                 encoding: {
-                  color: { field: 'insertSize', scale: { domain: ['2', '1'] } },
+                  color: {
+                    field: 'insertSizeAndOrientation',
+                    scale: { domain: ['2', '1'] },
+                  },
                 },
               },
             },
@@ -1044,7 +1058,7 @@ describe('validateConfig', () => {
       expect(
         found(
           display('LinearAlignmentsDisplay', {
-            field: 'insertSize',
+            field: 'insertSizeAndOrientation',
             scale: { names: ['Short', 'Ok', 'Long'] },
           }),
         ),

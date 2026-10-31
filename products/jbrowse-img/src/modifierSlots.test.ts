@@ -64,7 +64,6 @@ const READ_FIELDS = [
   'strand',
   'firstOfPairStrand',
   'mapq',
-  'insertSize',
   'pairOrientation',
   'insertSizeAndOrientation',
   'mateRefName',

@@ -87,20 +87,36 @@ describe('readColorCategory', () => {
     )
   })
 
-  test('insertSize field buckets against thresholds', () => {
+  test('the insert class buckets against thresholds', () => {
     expect(
-      readColorCategory(0, makeData({ insertSize: 700 }, stats), 'insertSize'),
+      readColorCategory(
+        0,
+        makeData({ insertSize: 700 }, stats),
+        'insertSizeAndOrientation',
+      ),
     ).toBe('longInsert')
     expect(
-      readColorCategory(0, makeData({ insertSize: 50 }, stats), 'insertSize'),
+      readColorCategory(
+        0,
+        makeData({ insertSize: 50 }, stats),
+        'insertSizeAndOrientation',
+      ),
     ).toBe('shortInsert')
     expect(
-      readColorCategory(0, makeData({ insertSize: 300 }, stats), 'insertSize'),
+      readColorCategory(
+        0,
+        makeData({ insertSize: 300 }, stats),
+        'insertSizeAndOrientation',
+      ),
     ).toBe('normalInsert')
     // TLEN 0 = unset (single-end / unpaired read). Even in a mixed dataset where
     // stats is defined, it must not read as "short insert" (would paint pink).
     expect(
-      readColorCategory(0, makeData({ insertSize: 0 }, stats), 'insertSize'),
+      readColorCategory(
+        0,
+        makeData({ insertSize: 0 }, stats),
+        'insertSizeAndOrientation',
+      ),
     ).toBe('normalInsert')
   })
 
@@ -335,10 +351,18 @@ describe('readColorCategory', () => {
 
   test('unmapped mate and inter-chromosomal apply to orientation fields', () => {
     expect(
-      readColorCategory(0, makeData({ flags: 8 }, stats), 'insertSize'),
+      readColorCategory(
+        0,
+        makeData({ flags: 8 }, stats),
+        'insertSizeAndOrientation',
+      ),
     ).toBe('unmappedMate')
     expect(
-      readColorCategory(0, makeData({ interchrom: 1 }, stats), 'insertSize'),
+      readColorCategory(
+        0,
+        makeData({ interchrom: 1 }, stats),
+        'insertSizeAndOrientation',
+      ),
     ).toBe('interchrom')
     // ...but not to the plain strand field
     expect(readColorCategory(0, makeData({ interchrom: 1 }), 'strand')).toBe(
@@ -386,7 +410,7 @@ describe('getReadColor maps each category to its palette color', () => {
       getReadColor(
         0,
         makeData({ insertSize: 700 }, stats),
-        'insertSize',
+        'insertSizeAndOrientation',
         palette,
       ),
     ).toBe(rgb255(palette.colorLongInsert))
@@ -453,7 +477,6 @@ describe('framesUnpairedChainStrand', () => {
     ['pairOrientation', true, true],
     ['insertSizeAndOrientation', true, true],
     ['pairOrientation', false, false],
-    ['insertSize', true, false],
     ['strand', true, false],
     ['normal', true, false],
     ['mapq', true, false],

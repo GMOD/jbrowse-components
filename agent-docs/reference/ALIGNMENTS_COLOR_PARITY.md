@@ -26,9 +26,8 @@ A split-read arc's four slots (`features/arcs/arcSplitCategory.ts`) are not read
 categories. `ARC_SPLIT_SWATCH` names the read swatch each paints, so a color
 declared for `pairRL` also moves the duplication-type split arc, and the
 deletion-type split takes the `splitSameStrand` gold of the read fills.
-A split takes its class under every color field, `insertSize` included: none of
-the three has a value for a junction, and the baseline slot would key it as a
-normal pair.
+A split takes its class under both color fields: neither has a value for a
+junction, and the baseline slot would key it as a normal pair.
 
 An override reaches the GPU uniforms, the Canvas2D fill, the key and the band
 together. **When adding a slot**, add it to the meaning table. Do not add a color,
@@ -86,8 +85,8 @@ color of its own.
 (`pairFieldEntry`), because in chain mode @gmod/bam derives `pair_orientation`
 from the record's own reverse bit and a strand-flipped supplementary computes a
 different one (`attachChainFields`). `readInsertSizes` is deliberately **not**
-corrected that way: an unset TLEN is unknown, a supplementary paints neutral under
-`insertSize`, and the orientation schemes mark the split with `CHAIN_SPLIT_*` hues.
+corrected that way: an unset TLEN is unknown, and the orientation fields mark the
+split with `CHAIN_SPLIT_*` hues.
 
 ## Insert size is TLEN, on both sides
 

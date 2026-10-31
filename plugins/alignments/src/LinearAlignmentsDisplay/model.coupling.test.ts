@@ -454,21 +454,21 @@ describe('arc color follows the reads unless it names its own field', () => {
 
   test('a display naming no readConnections.color follows the reads', () => {
     const display = createDisplay()
-    display.colorByField('insertSize')
-    expect(display.readConnectionsColorField).toBe('insertSize')
+    display.colorByField('insertSizeAndOrientation')
+    expect(display.readConnectionsColorField).toBe('insertSizeAndOrientation')
   })
 
   test('a readConnections.color field of its own ignores the reads', () => {
     const display = createDisplay()
-    display.setReadConnectionsColorField('insertSize')
+    display.setReadConnectionsColorField('insertSizeAndOrientation')
     display.colorByField('pairOrientation')
-    expect(display.readConnectionsColorField).toBe('insertSize')
+    expect(display.readConnectionsColorField).toBe('insertSizeAndOrientation')
   })
 
   test('the color radios write the field, Same as reads the empty one', () => {
     const display = createDisplay()
     display.setDrawnReadConnections('link')
-    display.colorByField('insertSize')
+    display.colorByField('insertSizeAndOrientation')
     const arcMenu = () => menuSubItems(display.trackMenuItems(), ARC_COLOR)
     clickMenuItem(arcMenu(), 'Pair orientation')
     expect(display.readConnectionsColorField).toBe('pairOrientation')
@@ -476,7 +476,7 @@ describe('arc color follows the reads unless it names its own field', () => {
       checked: false,
     })
     clickMenuItem(arcMenu(), 'Same as reads')
-    expect(display.readConnectionsColorField).toBe('insertSize')
+    expect(display.readConnectionsColorField).toBe('insertSizeAndOrientation')
     expect(findMenuItem(arcMenu(), 'Same as reads')).toMatchObject({
       checked: true,
     })
@@ -1763,7 +1763,10 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
   })
 
   test('a color write that leaves a pinned insert-size band alone keeps the layout', () => {
-    const pinned = { field: 'insertSize', scale: { domain: ['150', '600'] } }
+    const pinned = {
+      field: 'insertSizeAndOrientation',
+      scale: { domain: ['150', '600'] },
+    }
     const display = displayWithOneRead(pinned)
     const beforeLayout = display.laidOutByGroupUncolored
     const before = region0(display)
@@ -2126,7 +2129,7 @@ describe('a selection is the chrome guide, not the canvas', () => {
 // A reverse segment under a reverse frame bakes `fwdStrand` only when the
 // framing runs, so it reads the bake's answer off the display's own context.
 describe('chain-strand framing: the gate, the bake and the key agree', () => {
-  const fills = ['', 'strand', 'insertSize', 'pairOrientation', 'tags.HP']
+  const fills = ['', 'strand', 'mapq', 'pairOrientation', 'tags.HP']
   const layers: (BaseLayer | undefined)[] = [
     undefined,
     { field: 'baseQuality' },

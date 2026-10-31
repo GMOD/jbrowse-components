@@ -47,7 +47,6 @@ export type BodyFill =
   | 'normal'
   | 'strand'
   | 'mapq'
-  | 'insertSize'
   | 'firstOfPairStrand'
   | 'pairOrientation'
   | 'insertSizeAndOrientation'
@@ -63,7 +62,6 @@ export type BodyFill =
 export const COLOR_FIELDS = [
   'strand',
   'mapq',
-  'insertSize',
   'firstOfPairStrand',
   'pairOrientation',
   'insertSizeAndOrientation',

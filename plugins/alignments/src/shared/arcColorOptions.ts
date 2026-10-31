@@ -1,4 +1,7 @@
-import { FACET_LABELS, INSERT_SIZE_LABELS } from './facetLabels.ts'
+import {
+  FACET_LABELS,
+  INSERT_SIZE_AND_ORIENTATION_LABEL,
+} from './facetLabels.ts'
 
 /**
  * The read fields a paired-end arc and the read cloud can paint, and the
@@ -13,11 +16,7 @@ import { FACET_LABELS, INSERT_SIZE_LABELS } from './facetLabels.ts'
 export const ARC_COLOR_OPTIONS = [
   {
     value: 'insertSizeAndOrientation',
-    label: INSERT_SIZE_LABELS.insertSizeAndOrientation,
-  },
-  {
-    value: 'insertSize',
-    label: INSERT_SIZE_LABELS.insertSize,
+    label: INSERT_SIZE_AND_ORIENTATION_LABEL,
   },
   {
     value: 'pairOrientation',

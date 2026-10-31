@@ -148,9 +148,9 @@ describe('computeArcsFromPileupData', () => {
     // interchromosomal slot under the insert-size fields" is now structural
     // rather than a per-instance value to assert. What still needs pinning is
     // that the slot means the interchrom swatch; see the legend test below.
-    expect(arcSlotCategory(ARC_COLOR_INTERCHROM, 'insertSize')).toBe(
-      'interchrom',
-    )
+    expect(
+      arcSlotCategory(ARC_COLOR_INTERCHROM, 'insertSizeAndOrientation'),
+    ).toBe('interchrom')
   })
 
   test('inter-chromosomal draws ticks, not an orientation-colored arc', () => {
@@ -202,7 +202,7 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
       {
-        colorField: 'insertSize',
+        colorField: 'insertSizeAndOrientation',
       },
     )
 
@@ -245,7 +245,7 @@ describe('computeArcsFromPileupData', () => {
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
       {
-        colorField: 'insertSize',
+        colorField: 'insertSizeAndOrientation',
       },
     )
 
@@ -289,7 +289,7 @@ describe('computeArcsFromPileupData', () => {
     }
     const run = (data: PileupDataResult, minInterchromSupport: number) =>
       computeArcsFromPileupData(new Map([[0, data]]), regions, {
-        colorField: 'insertSize',
+        colorField: 'insertSizeAndOrientation',
         filter: { minInterchromReads: minInterchromSupport },
       })
 
@@ -514,7 +514,7 @@ describe('computeArcsFromPileupData', () => {
             [1, chr2],
           ]),
           twoRegions,
-          { colorField: 'insertSize', filter },
+          { colorField: 'insertSizeAndOrientation', filter },
         )
       const { crossRegion, lines } = bothContigs({ minInterchromReads: 2 })
       // One arc per junction, each spanning the two contigs, and no ticks: both
@@ -580,7 +580,7 @@ describe('computeArcsFromPileupData', () => {
           { refName: 'chr1', start: 1000, end: 9000, displayedRegionIndex: 0 },
           { refName: 'chr2', start: 4000, end: 9000, displayedRegionIndex: 1 },
         ],
-        { colorField: 'insertSize' },
+        { colorField: 'insertSizeAndOrientation' },
       )
       // Four arcs, no two of them coalescing — and every one carrying the four
       // reads behind the event rather than the one at its own bp.
@@ -621,7 +621,7 @@ describe('computeArcsFromPileupData', () => {
       cloud = false,
     ) =>
       computeArcsFromPileupData(new Map([[0, data]]), regions, {
-        colorField: 'insertSize',
+        colorField: 'insertSizeAndOrientation',
         cloud,
       })
 
@@ -844,7 +844,7 @@ describe('computeArcsFromPileupData', () => {
     const { lines } = computeArcsFromPileupData(
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
-      { colorField: 'insertSize' },
+      { colorField: 'insertSizeAndOrientation' },
     )
 
     const atBreakpoint = lines.find(l => l.x.refName === 'chr1')
@@ -877,7 +877,7 @@ describe('computeArcsFromPileupData', () => {
     const { lines } = computeArcsFromPileupData(
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 2000, displayedRegionIndex: 0 }],
-      { colorField: 'insertSize' },
+      { colorField: 'insertSizeAndOrientation' },
     )
 
     expect(
@@ -1045,7 +1045,7 @@ describe('computeArcsFromPileupData', () => {
     const { lines } = computeArcsFromPileupData(
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 }],
-      { colorField: 'insertSize' },
+      { colorField: 'insertSizeAndOrientation' },
     )
 
     // each acceptor carries its own reads...
@@ -1325,7 +1325,7 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 1000, displayedRegionIndex: 0 },
     ]
     const result = computeArcsFromPileupData(rpcDataMap, regions, {
-      colorField: 'insertSize',
+      colorField: 'insertSizeAndOrientation',
       filter: { interchrom: 'exclude' },
     })
 
@@ -1355,7 +1355,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const colorOf = (rpcDataMap: Map<number, PileupDataResult>) =>
       computeArcsFromPileupData(rpcDataMap, regions, {
-        colorField: 'insertSize',
+        colorField: 'insertSizeAndOrientation',
         filter: { interchrom: 'exclude' },
       }).arcs.find(a => a.p1.bp >= 5000)!.colorType
     const wide = pairIn(0, 1500)
@@ -2579,7 +2579,7 @@ describe('computeArcsByGroup', () => {
 // the upload and the per-mousemove hit-test walk by the region count.
 describe('an arc is uploaded only to the regions it reaches', () => {
   const settings = {
-    colorField: 'insertSize' as const,
+    colorField: 'insertSizeAndOrientation' as const,
     filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
   } satisfies ArcSettings
   // Two windows on chr1, 900kb apart, each holding a pair local to itself.
@@ -2788,7 +2788,7 @@ describe('groupArcsByRef', () => {
       { refName: 'chr2', start: 4000, end: 6000, displayedRegionIndex: 1 },
     ]
     const result = computeArcsFromPileupData(new Map([[0, data]]), both, {
-      colorField: 'insertSize',
+      colorField: 'insertSizeAndOrientation',
     })
     expect(result.arcs.filter(a => a.p1.refName !== a.p2.refName)).toHaveLength(
       0,
@@ -2903,15 +2903,15 @@ describe('arcSlotCategory', () => {
     expect(category(ARC_COLOR_SPLIT_INV_RR)).toBe('splitInvRR')
   })
   test('insert-size + orientation slots map to their read-fill categories', () => {
-    expect(arcSlotCategory(1, 'insertSize')).toBe('longInsert')
-    expect(arcSlotCategory(2, 'insertSize')).toBe('shortInsert')
+    expect(arcSlotCategory(1, 'insertSizeAndOrientation')).toBe('longInsert')
+    expect(arcSlotCategory(2, 'insertSizeAndOrientation')).toBe('shortInsert')
     expect(arcSlotCategory(3, 'pairOrientation')).toBe('interchrom')
     expect(arcSlotCategory(4, 'pairOrientation')).toBe('pairLL')
     expect(arcSlotCategory(5, 'pairOrientation')).toBe('pairRR')
     expect(arcSlotCategory(6, 'pairOrientation')).toBe('pairRL')
   })
   test('the default slot labels by coloring mode (both colorPairLR)', () => {
-    expect(arcSlotCategory(0, 'insertSize')).toBe('normalInsert')
+    expect(arcSlotCategory(0, 'insertSizeAndOrientation')).toBe('normalInsert')
     expect(arcSlotCategory(0, 'insertSizeAndOrientation')).toBe('normalInsert')
     expect(arcSlotCategory(0, 'pairOrientation')).toBe('pairLR')
   })
@@ -3120,15 +3120,17 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
   })
 
   test('template length comes from the primary mate, so insert-size color is not lost', () => {
+    // an LR pair, so the insert class shows through the orientation
     const withStats = {
       ...splitMateOffScreenPrimary,
+      readPairOrientations: new Uint8Array([1, 1]),
       insertSizeStats: { upper: 500, lower: 100 },
     }
     const { arcs } = computeArcsFromPileupData(
       new Map([[0, withStats]]),
       regions,
       {
-        colorField: 'insertSize',
+        colorField: 'insertSizeAndOrientation',
         filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
       },
     )

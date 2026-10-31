@@ -1,7 +1,6 @@
 import { ARC_COLOR_FIELDS, arcColorFieldOf } from './arcColorOptions.ts'
 
 const INHERITED: [string, string][] = [
-  ['insertSize', 'insertSize'],
   ['pairOrientation', 'pairOrientation'],
   ['insertSizeAndOrientation', 'insertSizeAndOrientation'],
   ['', 'insertSizeAndOrientation'],

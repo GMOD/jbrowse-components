@@ -127,8 +127,8 @@ them, since plant genomes methylate in all three. The
 For paired-end data, **Color by → Insert size and orientation** highlights
 discordant pairs, the main way to scan short reads for structural variants:
 unexpectedly large inserts turn red, small ones pink, and abnormal orientations
-get separate colors, whichever cue is strongest. Either cue alone is a config
-setting, `encoding.color` set to `pairOrientation` or `insertSize`. The
+get separate colors, whichever cue is strongest. Orientation alone is a config
+setting, `encoding.color` set to `pairOrientation`. The
 [SV visualization guide](/docs/user_guides/sv_visualization#pair-orientation)
 has the color tables, the expected-insert threshold, and what each pattern means
 at a breakpoint.

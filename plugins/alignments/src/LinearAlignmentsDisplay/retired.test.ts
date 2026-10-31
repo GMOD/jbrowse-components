@@ -88,6 +88,10 @@ function bases(field: string, rest: Record<string, unknown> = {}) {
 test.each([
   [{ type: 'strand' }, { encoding: { color: { field: 'strand' } } }],
   [{ type: 'mappingQuality' }, { encoding: { color: { field: 'mapq' } } }],
+  [
+    { type: 'insertSize' },
+    { encoding: { color: { field: 'insertSizeAndOrientation' } } },
+  ],
   [{ type: 'tag', tag: 'HP' }, { encoding: { color: { field: 'tags.HP' } } }],
   [{ type: 'perBaseLettering' }, { pileup: bases('base') }],
   [

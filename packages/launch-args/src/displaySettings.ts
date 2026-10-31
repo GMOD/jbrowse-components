@@ -144,7 +144,6 @@ export const ALIGNMENTS_COLOR_FIELDS = [
   'strand',
   'firstOfPairStrand',
   'mapq',
-  'insertSize',
   'pairOrientation',
   'insertSizeAndOrientation',
   'mateRefName',

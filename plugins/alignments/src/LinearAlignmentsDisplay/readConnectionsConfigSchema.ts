@@ -23,7 +23,7 @@ import { readConnectionsOrdinaryPairsConfigSchema } from './readConnectionsOrdin
  *   readConnections: {
  *     show: true,
  *     mark: 'rule',
- *     encoding: { color: 'insertSize' },
+ *     encoding: { color: 'pairOrientation' },
  *   },
  * }
  * ```

@@ -36,7 +36,7 @@ index resolves automatically. Coloring, height, and filtering are slots on the
   of field tests on the reads, the junctions and the connections. Reads draw
   gray with mismatches marked until
   [`encoding.color`](/docs/config/alignmentsencoding/#slot-color) names a field
-  — `strand`, `pairOrientation`, `insertSize` or `tags.XX` — and
+  — `strand`, `insertSizeAndOrientation` or `tags.XX` — and
   [`pileup.bases`](/docs/config/pileupbases/) draws modifications or base
   quality over them; the [cookbook](/docs/cookbook#alignments-tracks) has the
   coloring, grouping and flag-filter recipe

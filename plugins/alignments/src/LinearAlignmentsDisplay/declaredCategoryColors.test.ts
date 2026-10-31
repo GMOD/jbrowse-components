@@ -93,10 +93,12 @@ describe('a declared range on a preset field', () => {
       field: 'pairOrientation',
       scale: { domain: ['LR'], range: ['#1b9e77'] },
     })
-    const baseline = (field: 'pairOrientation' | 'insertSize') =>
+    const baseline = (field: 'pairOrientation' | 'insertSizeAndOrientation') =>
       rgb255(buildArcColorPalette(lr, field)[0]!)
     expect(baseline('pairOrientation')).toBe('rgb(27,158,119)')
-    expect(baseline('insertSize')).toBe(categorySwatchColor('pairLR', DEFAULT))
+    expect(baseline('insertSizeAndOrientation')).toBe(
+      categorySwatchColor('pairLR', DEFAULT),
+    )
   })
 
   test('the key names RR in the declared color and LR in its default', () => {
@@ -146,7 +148,10 @@ describe('the five levels that share the neutral default', () => {
     [{ field: 'pairOrientation', scale: { domain: ['LR'] } }, 'pairLR'],
     [{ field: 'pairOrientation', scale: { domain: [''] } }, 'noOrientation'],
     [
-      { field: 'insertSize', scale: { type: 'ordinal', domain: ['normal'] } },
+      {
+        field: 'insertSizeAndOrientation',
+        scale: { type: 'ordinal', domain: ['normal'] },
+      },
       'normalInsert',
     ],
     [{ field: 'tags.HP', scale: { domain: [''] } }, 'noTagValue'],
@@ -178,7 +183,7 @@ describe('the five levels that share the neutral default', () => {
 
   test('a threshold range over insert size colors the three bins', () => {
     const palette = paletteFor({
-      field: 'insertSize',
+      field: 'insertSizeAndOrientation',
       scale: { range: ['#000000', '#888888', '#ffffff'] },
     })
     expect(
@@ -214,11 +219,11 @@ describe('a domain that names no level says so', () => {
   test('a level under the threshold insert size reads as a cut point', () => {
     expect(
       notices({
-        field: 'insertSize',
+        field: 'insertSizeAndOrientation',
         scale: { domain: ['normal'], range: ['#1b9e77'] },
       }),
     ).toContain(
-      'encoding.color.scale.domain: names a level of insertSize (short, normal, long, unmappedMate, interchrom), which a threshold scale reads as a cut point; scale.type: "ordinal" colors the levels',
+      'encoding.color.scale.domain: names a level of insertSizeAndOrientation (short, normal, long, RL, RR, LL, unmappedMate, interchrom, splitInverted, splitSameStrand, segmentInverted, segmentSameStrand), which a threshold scale reads as a cut point; scale.type: "ordinal" colors the levels',
     )
   })
 
@@ -254,7 +259,7 @@ describe('a domain that names no level says so', () => {
     ).toEqual([])
     expect(
       notices({
-        field: 'insertSize',
+        field: 'insertSizeAndOrientation',
         scale: { names: ['Short', 'Ok', 'Long'] },
       }),
     ).toEqual([])
@@ -320,7 +325,10 @@ describe('value fills the reads no field colors, scale.invalid the reads with no
         new Array(3).fill(neutral),
       ])
     }
-    for (const field of ['insertSize', 'pairOrientation'] as const) {
+    for (const field of [
+      'insertSizeAndOrientation',
+      'pairOrientation',
+    ] as const) {
       expect(rgb255(buildArcColorPalette(palette, field)[0]!)).toBe(neutral)
     }
   })

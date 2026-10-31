@@ -74,8 +74,11 @@ describe('scale.names names the key rows range colors', () => {
       keyOf({ field: 'strand' }, ['Plus', 'Minus'], []).declared.categories,
     ).toEqual({ fwdStrand: 'Plus', revStrand: 'Minus' })
     expect(
-      keyOf({ field: 'insertSize' }, ['Too close', 'Expected', 'Too far'], [])
-        .declared.categories,
+      keyOf(
+        { field: 'insertSizeAndOrientation' },
+        ['Too close', 'Expected', 'Too far'],
+        [],
+      ).declared.categories,
     ).toEqual({
       shortInsert: 'Too close',
       normalInsert: 'Expected',

@@ -104,10 +104,7 @@ export function baseLayerOfField(field: string | undefined) {
 
 const FACET_ONLY_FIELDS = new Set<string>(FACET_ONLY_DIMENSIONS)
 
-const INSERT_SIZE_FIELDS = new Set<string>([
-  'insertSize',
-  'insertSizeAndOrientation',
-])
+const INSERT_SIZE_FIELD = 'insertSizeAndOrientation'
 
 /**
  * The `encoding.color` channel as it paints. While `scale.type` is unset the
@@ -254,7 +251,6 @@ const READ_COLOR_LEVELS: Record<ReadColorFieldKind, readonly ReadColorLevel[]> =
     strand: STRAND_LEVELS,
     firstOfPairStrand: STRAND_LEVELS,
     pairOrientation: [...PAIR_COLOR_LEVELS, ['', 'noOrientation']],
-    insertSize: INSERT_SIZE_COLOR_LEVELS,
     // an LR pair of normal size is the normal insert
     insertSizeAndOrientation: [
       ...INSERT_SIZE_COLOR_LEVELS,
@@ -306,7 +302,7 @@ export const ALIGNMENTS_FIELD_PRESETS: FieldPresets = {
   ...Object.fromEntries(
     COLOR_FIELDS.map((field): [string, FieldPreset] => [
       field,
-      INSERT_SIZE_FIELDS.has(field)
+      field === INSERT_SIZE_FIELD
         ? { scale: { type: 'threshold' } }
         : isBakedField(field)
           ? { scale: { type: 'ordinal' } }
@@ -327,7 +323,6 @@ const LEVEL_FIELDS = new Set<ReadColorFieldKind>([
   'strand',
   'firstOfPairStrand',
   'pairOrientation',
-  'insertSize',
   'insertSizeAndOrientation',
 ])
 
@@ -343,7 +338,7 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
   const named = levels.filter(level => level !== '').join(', ')
   const mapsLevels =
     encoding.scale === 'ordinal' ||
-    (encoding.scale === 'threshold' && INSERT_SIZE_FIELDS.has(encoding.field))
+    (encoding.scale === 'threshold' && encoding.field === INSERT_SIZE_FIELD)
   if (!mapsLevels) {
     return [
       `encoding.color.scale.type: ${encoding.field} paints its own levels (${named}), which a ${encoding.scale} scale does not map; an unset or "ordinal" scale.type recolors them through scale.range`,
@@ -379,7 +374,7 @@ function declaredOrder(
   bakesValues: boolean,
 ) {
   if (encoding.scale === 'threshold') {
-    return INSERT_SIZE_FIELDS.has(encoding.field) ? INSERT_SIZE_LEVELS : []
+    return encoding.field === INSERT_SIZE_FIELD ? INSERT_SIZE_LEVELS : []
   }
   if (encoding.scale !== 'ordinal') {
     return []
@@ -539,7 +534,7 @@ export function pinnedInsertSizeBand(encoding: AlignmentsColorEncoding) {
   if (
     typeof encoding !== 'object' ||
     encoding.scale !== 'threshold' ||
-    !INSERT_SIZE_FIELDS.has(encoding.field)
+    encoding.field !== INSERT_SIZE_FIELD
   ) {
     return undefined
   }

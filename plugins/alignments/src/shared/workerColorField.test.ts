@@ -80,7 +80,6 @@ const sample: Record<ColorFieldKind, string | undefined> = {
   mapq: 'mapq',
   baseQuality: 'baseQuality',
   base: 'base',
-  insertSize: 'insertSize',
   firstOfPairStrand: 'firstOfPairStrand',
   pairOrientation: 'pairOrientation',
   insertSizeAndOrientation: 'insertSizeAndOrientation',

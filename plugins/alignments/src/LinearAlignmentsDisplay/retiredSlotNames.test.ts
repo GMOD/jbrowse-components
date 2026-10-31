@@ -108,18 +108,18 @@ test('readConnections.encoding.color reads a bare string as its field', () => {
   const path = ['readConnections', 'encoding', 'color', 'field'] as const
   expect(
     readConfObject(
-      create({ readConnections: { encoding: { color: 'insertSize' } } }),
+      create({ readConnections: { encoding: { color: 'pairOrientation' } } }),
       path,
     ),
-  ).toBe('insertSize')
+  ).toBe('pairOrientation')
   expect(
     readConfObject(
       create({
-        readConnections: { encoding: { color: { field: 'insertSize' } } },
+        readConnections: { encoding: { color: { field: 'pairOrientation' } } },
       }),
       path,
     ),
-  ).toBe('insertSize')
+  ).toBe('pairOrientation')
 })
 
 test('readConnections.encoding.strokeWidth reads a bare number as its value', () => {

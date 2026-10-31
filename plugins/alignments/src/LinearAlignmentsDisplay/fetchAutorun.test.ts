@@ -754,7 +754,7 @@ describe('FetchVisibleRegions autorun', () => {
     for (const field of [
       'strand',
       'mapq',
-      'insertSize',
+      'insertSizeAndOrientation',
       'pairOrientation',
       '',
     ]) {

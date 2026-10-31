@@ -81,15 +81,16 @@ function tagLabels(
 
 describe('getReadDisplayLegendItems', () => {
   test('lists only the buckets present in the reads', () => {
-    expect(labels('insertSize', ['normalInsert'])).toEqual(['Normal'])
-    expect(labels('insertSize', ['normalInsert', 'longInsert'])).toEqual([
+    expect(labels('insertSizeAndOrientation', ['normalInsert'])).toEqual([
       'Normal',
-      'Long insert',
     ])
+    expect(
+      labels('insertSizeAndOrientation', ['normalInsert', 'longInsert']),
+    ).toEqual(['Normal', 'Long insert'])
   })
 
   test('omits "Unmapped mate" when no such reads are present', () => {
-    expect(labels('insertSize', ['normalInsert'])).not.toContain(
+    expect(labels('insertSizeAndOrientation', ['normalInsert'])).not.toContain(
       'Unmapped mate',
     )
     expect(labels('strand', ['fwdStrand'])).toEqual(['Forward strand'])
@@ -121,9 +122,9 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('includes "Unmapped mate" only when that bucket occurs', () => {
-    expect(labels('insertSize', ['normalInsert', 'unmappedMate'])).toContain(
-      'Unmapped mate',
-    )
+    expect(
+      labels('insertSizeAndOrientation', ['normalInsert', 'unmappedMate']),
+    ).toContain('Unmapped mate')
     expect(labels('strand', ['fwdStrand', 'unmappedMate'])).toEqual([
       'Forward strand',
       'Unmapped mate',
@@ -158,10 +159,9 @@ describe('getReadDisplayLegendItems', () => {
       'Split segment (inverted)',
     ])
     // swatches follow CATEGORY_LEGEND order (strand buckets precede insert ones)
-    expect(labels('insertSize', ['normalInsert', 'fwdStrand'])).toEqual([
-      'Split segment (same strand)',
-      'Normal',
-    ])
+    expect(
+      labels('insertSizeAndOrientation', ['normalInsert', 'fwdStrand']),
+    ).toEqual(['Split segment (same strand)', 'Normal'])
   })
 
   // The two per-base fields must never reach that reframing: a fwd/rev bucket

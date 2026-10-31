@@ -276,21 +276,26 @@ test('pair-orientation grouping keys the IGV category, not the raw string', () =
   expect(groups[0]!.features.map(f => f.id())).toEqual(['a', 'b'])
 })
 
-// `insertSize` is a color field, not a facet dimension, and a BAM feature
-// answers no `get('insertSize')`, so every read keys `''`.
+// `insertSizeAndOrientation` is a color field, not a facet dimension, and a
+// BAM feature answers no `get` of it, so every read keys `''`.
 test('a facet field no read answers raises a notice, a tag and a dimension do not', () => {
   const features = [feat('a', { template_length: 300 })]
   const keysOf = (field: string) => keys(partitionFeatures(features, { field }))
   expect(
-    facetValueNotices({ field: 'insertSize' }, keysOf('insertSize')),
+    facetValueNotices(
+      { field: 'insertSizeAndOrientation' },
+      keysOf('insertSizeAndOrientation'),
+    ),
   ).toEqual([
-    'facet: no read here carries a value for insertSize, so every read is in one section',
+    'facet: no read here carries a value for insertSizeAndOrientation, so every read is in one section',
   ])
   expect(facetValueNotices({ field: 'tags.HP' }, keysOf('tags.HP'))).toEqual([])
   expect(
     facetValueNotices({ field: 'mateRefName' }, keysOf('mateRefName')),
   ).toEqual([])
-  expect(facetValueNotices({ field: 'insertSize' }, [])).toEqual([])
+  expect(facetValueNotices({ field: 'insertSizeAndOrientation' }, [])).toEqual(
+    [],
+  )
 })
 
 test('pairing files each record by where it stands in its pair', () => {

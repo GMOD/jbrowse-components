@@ -26,11 +26,8 @@ export const FACET_LABELS: Record<ReadDimension, string> = {
   mateAssembly: 'Mate assembly',
 }
 
-/** The insert-size fields' names in the Color by and Arc color menus alike. */
-export const INSERT_SIZE_LABELS = {
-  insertSize: 'Insert size',
-  insertSizeAndOrientation: 'Insert size and orientation',
-} as const
+/** The insert-size field's name in the Color by and connection color menus alike. */
+export const INSERT_SIZE_AND_ORIENTATION_LABEL = 'Insert size and orientation'
 
 /**
  * The fragment strand the first mate implies, as a section chip and a color
