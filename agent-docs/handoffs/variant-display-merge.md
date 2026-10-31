@@ -35,6 +35,15 @@ admission rule are marked provisional there.
   `multivariant`/`multivariantmatrix`, jbrowse-img `applyTrackOpts.ts`, tables
   engine, figure specs, config docs, tutorials, test_data. New ADR superseding
   ADR-250, amending ADR-168, ADR-232 and VARIANTS_DISPLAY.md.
+  Blocked until: B lands (today's `facet` is section facets and top-level
+  `growMaxHeight` a track grow cap, both meaning something else on the
+  matrix, so `retiredTypes` must move them under `records`, not pass them
+  through); a record click shows full INFO (`enrichFeatureFromClick.ts`
+  builds a slim feature; `LinearVariantDisplay` re-fetches); R export picks
+  `jbrowse_features` for a sample-less track in the rename's commit. Band gaps
+  that are additive, not blocking: `featureContextMenu.ts`'s rows (zoom to,
+  sequence, highlight, hide/show only, copy), search-hit highlight,
+  `sortReadsMenu.ts`, `tooltip.field`.
 - **D. Outside writers**: jb2hubs (`pangenomeLinks.ts`, `config/jbrowse.ts`,
   pangenome-config JSONs), ggjbrowse (`R/variants.R`), redeployed demo
   configs; then drop the alias.
