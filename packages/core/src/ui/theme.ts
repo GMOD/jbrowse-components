@@ -223,6 +223,9 @@ const baseThemeOptions: ThemeOptions = {
       defaultProps: { enableColorOnDark: true },
     },
     MuiTooltip: {
+      // a pointer crossing the header on its way to a track shouldn't open
+      // every tooltip it passes; once one is open, its neighbours open at once
+      defaultProps: { enterDelay: 600 },
       styleOverrides: {
         tooltip: {
           fontSize: 12,

@@ -11,7 +11,7 @@ import { observer } from 'mobx-react'
 
 import { keyframes, makeStyles } from '../util/tss-react/index.ts'
 import { alpha } from './palette.ts'
-import { SCROLL_ZOOM_HELP, SCROLL_ZOOM_LABEL } from './scrollZoomLabels.ts'
+import { SCROLL_ZOOM_LABEL, SCROLL_ZOOM_TIP } from './scrollZoomLabels.ts'
 
 const PULSE_MS = 550
 const PULSE_COUNT = 2
@@ -98,7 +98,7 @@ const ScrollZoomToggle = observer(function ScrollZoomToggle({
     model.setScrollZoom(!scrollZoom)
   }
   return iconOnly ? (
-    <Tooltip title={SCROLL_ZOOM_HELP}>
+    <Tooltip title={SCROLL_ZOOM_TIP}>
       <ToggleButton
         data-testid="scroll-zoom-toggle"
         value="scrollZoom"
@@ -112,7 +112,7 @@ const ScrollZoomToggle = observer(function ScrollZoomToggle({
       </ToggleButton>
     </Tooltip>
   ) : (
-    <Tooltip title={SCROLL_ZOOM_HELP} describeChild>
+    <Tooltip title={SCROLL_ZOOM_TIP} describeChild>
       <FormControlLabel
         data-testid="scroll-zoom-toggle"
         className={classes.label}
