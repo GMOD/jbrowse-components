@@ -113,7 +113,8 @@ export const variantsSpecs: ScreenshotSpec[] = [
     viewportHeight: 705,
   },
 
-  // A click on a genotype cell opens the record with its samples.
+  // The variant's record, in the records band above the rows: a hom-ref cell
+  // opens nothing.
   {
     mode: 'url',
     name: 'variant_panel',
@@ -129,7 +130,12 @@ export const variantsSpecs: ScreenshotSpec[] = [
     actions: [
       {
         type: 'click',
-        anchor: { trackId: 'volvox_test_vcf', loc: 'ctgA:6,285', fracY: 0.6 },
+        anchor: {
+          trackId: 'volvox_test_vcf',
+          loc: 'ctgA:6,285',
+          band: '[data-testid="records_band"]',
+          fracY: 0.2,
+        },
       },
       { type: 'waitForText', text: 'HG00096' },
     ],

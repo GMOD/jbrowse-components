@@ -352,12 +352,14 @@ export const trioSpecs: ScreenshotSpec[] = [
           unit: 'haplotype',
           height: TRIO_VCF_DISPLAY_H,
           rows: trioVcfRows,
+          // trioRowFrac places the frames on rows that fill the track.
+          records: { show: false },
         },
       ],
     }),
     annotations: crossoverHighlights({ loc, crossover, ...highlights }),
     readyText: 'chr1',
     readyTimeout: 60000,
-    viewportHeight: 810,
+    viewportHeight: 650,
   })),
 ]
