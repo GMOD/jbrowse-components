@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense, useCallback } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
@@ -55,6 +55,40 @@ export const RingCanvases = observer(function RingCanvases({
   )
 })
 
+// The ref registers the strip once per mount: a ref callback that changed
+// with every render would unregister it and register it again, and each
+// time the ring would drop its cell and upload its strip anew.
+const RingStrip = observer(function RingStrip({
+  host,
+  display,
+}: {
+  host: RingHostModel
+  display: RingDisplay
+}) {
+  const { classes } = useStyles()
+  const { id } = display
+  const registerStrip = useCallback(
+    (el: HTMLDivElement | null) => {
+      host.setStripElement(id, el)
+    },
+    [host, id],
+  )
+  const Strip = display.RenderingComponent as ComponentType<{
+    model: RingDisplay
+  }>
+  return (
+    <div
+      className={classes.strip}
+      style={{ width: host.width, height: display.height }}
+      ref={registerStrip}
+    >
+      <Suspense fallback={null}>
+        <Strip model={display} />
+      </Suspense>
+    </div>
+  )
+})
+
 /**
  * Every ring display's own component, rendered as the linear strip it draws
  * for the ring, hidden. A display renders into its strip exactly as it does
@@ -68,28 +102,11 @@ export const RingStrips = observer(function RingStrips({
   host: RingHostModel
 }) {
   const { classes } = useStyles()
-  const { width } = host
   return (
     <div className={classes.strips} data-testid="circular-ring-strips">
-      {host.rings.map(({ display }) => {
-        const Strip = display.RenderingComponent as ComponentType<{
-          model: RingDisplay
-        }>
-        return (
-          <div
-            key={display.id}
-            className={classes.strip}
-            style={{ width, height: display.height }}
-            ref={el => {
-              host.setStripElement(display.id, el)
-            }}
-          >
-            <Suspense fallback={null}>
-              <Strip model={display} />
-            </Suspense>
-          </div>
-        )
-      })}
+      {host.rings.map(({ display }) => (
+        <RingStrip key={display.id} host={host} display={display} />
+      ))}
     </div>
   )
 })
