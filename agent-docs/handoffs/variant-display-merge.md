@@ -74,8 +74,7 @@ rule over rows are marked provisional there (the default is settled: on).
   **Display types** to reach the rows. File names inside
   `LinearVariantDisplay/` are neutral; the RPC names (and
   `shared/components/MultiSampleVariantClusterDialog.tsx`, beside them) stay.
-  Left from C2, for CI or a reshoot: the BreakpointSplitView `pacbio_vcf-loaded`
-  snapshot (the band's record boxes sit at new y, `-u`); the
+  Left from C2, for a reshoot: the
   `variants/trio_phased_matrix` tour, whose Display types steps are gone and
   whose first caption changed (refilm); figures whose default display is now
   the rows (`trio-basic`, `volvox_variants`, `variant_with_pileup`,
