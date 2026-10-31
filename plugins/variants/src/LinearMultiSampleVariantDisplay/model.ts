@@ -10,8 +10,7 @@ import {
   canonicalizeViewRefName,
   getDialogHost,
   getEnv,
-  getNotificationSink,
-  openFeatureWidget,
+  getSession,
   SimpleFeature,
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
@@ -37,6 +36,7 @@ import {
   writeJexlFilters,
 } from '@jbrowse/core/util/jexlFilters'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import FacetWritesMixin from '@jbrowse/display-kit/FacetWritesMixin'
@@ -56,10 +56,13 @@ import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   buildFeatureFlatbushIndex,
+  createFeatureDetailsOpener,
   createMembershipMemo,
+  featureSpanRegion,
+  fetchFeatureDetails,
   featureIdsTouchingBlocks,
   fitLadderViews,
   fitLadderVolatiles,
@@ -110,6 +113,7 @@ import {
   sortSourcesAroundVariant,
 } from './anchoredHaplotypeSort.ts'
 import { cellGlyphs } from './components/cellGlyphs.ts'
+import { withClickedSample } from './components/enrichFeatureFromClick.ts'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
 import {
   densityRung,
@@ -823,7 +827,28 @@ export function stateModelFactory(
       }))
       .actions(self => {
         const fetchMetadata = createAdapterMetadataFetch(self)
+        const openDetails = createFeatureDetailsOpener(self)
         const superSetRowColorChoice = self.setRowColorChoice
+        async function fullRecordOf(feature: Feature) {
+          const refName = canonicalizeViewRefName(self, feature.get('refName'))
+          const region = self.view.displayedRegions.find(
+            r => r.refName === refName,
+          )
+          const full = region
+            ? await fetchFeatureDetails(
+                getSession(self),
+                getRpcSessionId(self),
+                self.adapterConfig,
+                feature.id(),
+                featureSpanRegion(
+                  region,
+                  feature.get('start'),
+                  feature.get('end'),
+                ),
+              )
+            : undefined
+          return full ? withClickedSample(full, feature) : feature
+        }
         return {
           /**
            * #action
@@ -840,21 +865,20 @@ export function stateModelFactory(
           },
           /**
            * #action
+           * The clicked record as the adapter holds it, INFO and every sample
+           * included, as LinearBasicDisplay's `fetchFullFeature` reads it: the
+           * cell payload carries positions and genotype codes, no INFO. The
+           * clicked cell's sample card rides along; the click's own record
+           * where the adapter finds none.
+           */
+          fetchFullRecord(feature: Feature) {
+            return fullRecordOf(feature)
+          },
+          /**
+           * #action
            */
           selectFeature(feature: Feature) {
-            fetchMetadata()
-              .then(descriptions => {
-                if (isAlive(self)) {
-                  openFeatureWidget(self, feature.toJSON(), {
-                    widget: self.featureWidgetType,
-                    extra: { descriptions },
-                  })
-                }
-              })
-              .catch((e: unknown) => {
-                console.error(e)
-                getNotificationSink(self).notifyError(`${e}`, e)
-              })
+            void openDetails(() => fullRecordOf(feature))
           },
           /**
            * #action

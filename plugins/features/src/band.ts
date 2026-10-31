@@ -20,6 +20,11 @@ export {
 } from './LinearBasicDisplay/layoutQueries.ts'
 export { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
 export { MIN_GROW_HEIGHT } from './LinearBasicDisplay/heightViews.ts'
+export {
+  featureSpanRegion,
+  fetchFeatureDetails,
+} from './shared/fetchFeatureDetails.ts'
+export { createFeatureDetailsOpener } from './shared/openFeatureDetails.ts'
 export { paintFeatureBand } from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export {
   buildFeatureFlatbushIndex,

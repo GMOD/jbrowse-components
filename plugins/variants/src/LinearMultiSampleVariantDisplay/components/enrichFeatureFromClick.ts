@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import type { VariantFeatureInfo } from '../../shared/types.ts'
+import type { Feature } from '@jbrowse/core/util'
 
 export function enrichFeatureFromClick(
   baseFeature: { id(): string; toJSON(): Record<string, unknown> },
@@ -37,6 +38,27 @@ export function enrichFeatureFromClick(
             clickedAlleles: clickResult.alleles,
           }
         : {}),
+    },
+  })
+}
+
+/**
+ * The record as the adapter holds it, INFO and every sample included, with
+ * the clicked cell's sample card kept from the click.
+ */
+export function withClickedSample(full: Feature, clicked: Feature) {
+  const sample = clicked.get('clickedSample')
+  return new SimpleFeature({
+    id: clicked.id(),
+    data: {
+      ...full.toJSON(),
+      ...(sample === undefined
+        ? {}
+        : {
+            clickedSample: sample,
+            clickedGenotype: clicked.get('clickedGenotype'),
+            clickedAlleles: clicked.get('clickedAlleles'),
+          }),
     },
   })
 }
