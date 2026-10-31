@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-sample variant display draws the VCF's structural variants above its genotype rows, colored by SV type and keyed, each lettered ID and description on one line, as `records: { show, growMaxHeight, labels }`, stacked by plugin-features's own pipeline: the cell payload rebuilt as features, packed, fit by LinearBasicDisplay's fit ladder (hosted, not copied), painted by `paintFeatureBand` and picked by its hit test, through the new `@jbrowse/plugin-features/band` entry. The band grows to its stack at full feature size up to `growMaxHeight` (170) and takes that height from the rows; past the cap the ladder fits the stack in. Off by default. Slice one of merging `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay` into one display with `records` and `genotypes` bands. Amends ADR-250, whose first rejected alternative this takes. Amended: with no genotype rows (no samples, or `genotypes.show` off) the band is the whole display, every record the filter admits, sized by `heightMode`, labelled and fit by the records on screen"
+summary: "The multi-sample variant display draws the VCF's structural variants above its genotype rows, colored by SV type and keyed, each lettered ID and description on one line, as `records: { show, growMaxHeight, labels }`, stacked by plugin-features's own pipeline: the cell payload rebuilt as features, packed, fit by LinearBasicDisplay's fit ladder (hosted, not copied), painted by `paintFeatureBand` and picked by its hit test, through the new `@jbrowse/plugin-features/band` entry. The band grows to its stack at full feature size up to `growMaxHeight` (170) and takes that height from the rows; past the cap the ladder fits the stack in. Off by default. Slice one of merging `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay` into one display with `records` and `genotypes` bands. Amends ADR-250, whose first rejected alternative this takes. Amended: with no genotype rows (no samples, or `genotypes.show` off) the band is the whole display, every record the filter admits, sized by `heightMode`, labelled and fit by the records on screen, and refused past `records.maxFeatureScreenDensity` through plugin-features's `FeatureGateMixin`"
 ---
 
 # ADR-254: The multi-sample variant display draws a stacking records band
@@ -116,6 +116,19 @@ case with no rows; over rows both stay provisional.
 - **A click reads the record off the adapter** (`GetBasicFeatureDetails`),
   over its first base, last click winning, so the widget shows its INFO, for
   a record and for a genotype cell; its `samples` only with no rows.
+- **No rows gates on density as `LinearVariantDisplay` does**: past
+  `records.maxFeatureScreenDensity` (1 record/px) the window is refused with
+  the same "Too many features" banner and Force load. The display composes
+  plugin-features's `FeatureGateMixin` (exported from
+  `@jbrowse/plugin-features/band`, its host typed off the mixin's own
+  `featureGateConfigSchemaFields` rather than the feature display's config)
+  and acts only while `recordsOnly`; over rows the byte gate alone stays. The
+  worker counts each region's admitted records and refuses past the budget
+  before building cells, carrying the counts either way. The slot sits under
+  `records` because sub-slice B moves `maxFeatureScreenDensity` there. There
+  is no pre-fetch sample as the feature RPC has, so a refused window reads its
+  records once per settled viewport; at ClinVar 17:40–46 Mb both displays
+  refuse and Force load draws both.
 
 Measured against `LinearVariantDisplay` in headed Chrome (WebGL2, dev
 server), medians of 3, ms; reference/MULTI_SAMPLE_VARIANTS.md has the

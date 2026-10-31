@@ -1,6 +1,6 @@
 ---
 name: variant-display-merge
-description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slice A built (records as the whole display with no rows) with its density gate left; B–E remain. Open: added vs taken band height, default-on, the multi-way key position."
+description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slice A built (records as the whole display with no rows, density gate included); B–E remain. Open: added vs taken band height, default-on, the multi-way key position."
 ---
 
 # One variant display
@@ -18,13 +18,9 @@ admission rule are marked provisional there.
   rows (no samples, or `genotypes.show` off) the band is the display under
   `heightMode`, every record in `featureDefaultColor`, labels and fit by the
   records on screen, a click reading the record's INFO. The benchmark is in
-  reference/MULTI_SAMPLE_VARIANTS.md. Left: **a density gate for records-only**
-  — `LinearVariantDisplay` refuses past `maxFeatureScreenDensity` (1/px) and
-  the band draws 99k records; reuse `FeatureGateMixin` (exported from
-  plugin-features, its host typed off `LinearFeatureBaseDisplayConfigModel`),
-  a `maxFeatureScreenDensity` slot, per-region admitted counts from
-  `MultiSampleVariantGetCellData` committed through `commitGateMeasurements`,
-  and `densityGateActive` only while `recordsOnly`. Also: the default `height`
+  reference/MULTI_SAMPLE_VARIANTS.md. The density gate is done (ADR-254's
+  amendment): `records.maxFeatureScreenDensity` through `FeatureGateMixin`,
+  records-only alone. Left: the default `height`
   is 200 against the feature track's 100, and the row-only menus (Rows,
   clustering, row color) still show with no rows, and the rows panel's
   scrollbar stays mounted (invisible, under the band) with no rows. Over rows the band's height
@@ -32,7 +28,9 @@ admission rule are marked provisional there.
   should instead follow the screen (rows moving on pan) belongs to the added
   vs taken call below.
 - **B. Records settings move under `records`**: `displayMode`, `mark`,
-  `facet` (sections), `maxFeatureScreenDensity`; `tooltip.field`; the color
+  `facet` (sections), `maxFeatureScreenDensity` (already
+  `records.maxFeatureScreenDensity` on the multi-sample display, A's density
+  gate); `tooltip.field`; the color
   scale's `identity`. Amends ADR-231. **Rename before C**: the display now
   has a top-level `growMaxHeight` (the track's grow ceiling, records-only)
   and `records.growMaxHeight` (the band's cap over rows), one word with two

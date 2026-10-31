@@ -318,6 +318,21 @@ LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
   `recordsScrollTop`, its div takes `usePanelVirtualScroll` and the
   scrollbar. The allele-count filters (MAF, missingness) leave the menu, and
   Genotype rows and Track sizing show at genomic positions only.
+- **No rows gates on density, as a feature track does.** The display
+  composes `FeatureGateMixin` (from `@jbrowse/plugin-features/band`) and
+  overrides `densityGateActive` to act only while `recordsOnly` at genomic
+  positions, so over rows the byte gate alone guards the fetch. The budget is
+  `records.maxFeatureScreenDensity` (1 record/px, the mixin's
+  `featureGateConfigSchemaFields`, read through the overridable
+  `configuredMaxFeatureScreenDensity`). The worker counts each region's
+  admitted records after the filter (`CellDataResult.recordCounts`, in
+  `regions` order) and, sent a budget, refuses past it before building cells
+  (`RecordsTooDenseResult`, the counts still on it);
+  `fetchRegionsBatched`'s `onComplete` commits them through
+  `commitGateMeasurements` (`recordCountMeasurements`). The banner and Force
+  load are `RegionTooLargeMixin`'s. Unlike the feature RPC there is no
+  pre-fetch sample: a refused window still reads its records once per
+  settled viewport.
 - **Its height over rows is its stack, capped.** The `full` rung's packed
   height at compact feature size, up to `records.growMaxHeight` (170); past
   the cap the ladder fits the stack in. The band takes that height from the
