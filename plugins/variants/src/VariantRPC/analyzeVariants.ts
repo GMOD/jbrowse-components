@@ -11,12 +11,15 @@ import { featureHasPhaseSet } from '../shared/getPhasedColor.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
 import {
   compileSiteFilter,
-  getFilteredVariants,
+  filterVariant,
   summarizeAlleleCounts,
 } from '../shared/minorAlleleFrequencyUtils.ts'
 import { featureHasConsequence } from '../shared/variantConsequence.ts'
 
-import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
+import type {
+  AlleleSummary,
+  FilteredVariant,
+} from '../shared/minorAlleleFrequencyUtils.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -182,8 +185,10 @@ export function makeHeaderRemapper(columnByName: Map<string, number>) {
  * materializing a substring. The memo also counts samples per entry, so the
  * MAF and missingness filters weigh each distinct genotype once.
  *
- * With a site field in the filter, `getFilteredVariants`' cheaper count drops
- * rejected sites before the analysis walks the rest.
+ * With a site field in the filter, `filterVariant`'s cheaper count drops
+ * rejected sites before the analysis walks the rest. The site fields are
+ * genotype statistics, so they test only genotypes that are read: a sites-only
+ * VCF, or `genotypes.show` off, keeps every site the other filters admit.
  */
 export function analyzeVariants({
   features,
@@ -212,14 +217,18 @@ export function analyzeVariants({
   let hasPhaseSet = false
   let hasSvType = false
 
-  const passesSite = compileSiteFilter(siteFilter)
+  const testedSiteFilter = readGenotypes ? siteFilter : undefined
+  const passesSite = compileSiteFilter(testedSiteFilter)
+  // a site no sample calls goes on to the walk, which tells a sites-only VCF's
+  // record from a sampled one's no-call
+  const passesFirstCount = (summary: AlleleSummary) =>
+    passesSite(summary) ||
+    (keepSampleLessSites && summary.calledAlleleCount === 0)
   const passing =
-    siteFilter && siteFilter.length > 0
-      ? getFilteredVariants({
-          features,
-          siteFilter,
-          filterChain,
-        }).map(v => v.feature)
+    testedSiteFilter && testedSiteFilter.length > 0
+      ? features.filter(
+          f => filterVariant(f, passesFirstCount, filterChain) !== undefined,
+        )
       : filterChain
         ? features.filter(f => filterChain.passes(f))
         : features

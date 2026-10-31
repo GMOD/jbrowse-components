@@ -73,3 +73,41 @@ test('reading no genotypes keeps a sampled VCF site no sample calls', () => {
   ])
   expect(unread.sampleNames).toEqual([])
 })
+
+const MAF_FLOOR = [{ field: 'minorAlleleFrequency', gte: 0.05 }]
+
+// The site fields are genotype statistics, which a sites-only VCF has none of:
+// a MAF floor once dropped every site before the walk could keep it.
+test('a site filter keeps a sample-less VCF site', () => {
+  const analyzed = analyzeVariants({
+    features: sitesOnly(),
+    siteFilter: MAF_FLOOR,
+    keepSampleLessSites: true,
+  })
+  expect(analyzed.filteredVariants.map(v => v.feature.get('name'))).toEqual([
+    'rs1',
+    'sv1',
+  ])
+})
+
+test('reading no genotypes tests no site filter', () => {
+  const parser = new VcfParser({
+    header: '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tS1\tS2',
+  })
+  const features = [
+    'ctgA\t100\trs1\tA\tG\t.\t.\t.\tGT\t0/1\t0/0',
+    'ctgA\t200\trs2\tC\tT\t.\t.\t.\tGT\t0/0\t0/0',
+  ].map(
+    (line, i) =>
+      new VcfFeature({ parser, variant: parser.parseLine(line), id: `f${i}` }),
+  )
+  const names = (readGenotypes: boolean) =>
+    analyzeVariants({
+      features,
+      siteFilter: MAF_FLOOR,
+      keepSampleLessSites: true,
+      readGenotypes,
+    }).filteredVariants.map(v => v.feature.get('name'))
+  expect(names(true)).toEqual(['rs1'])
+  expect(names(false)).toEqual(['rs1', 'rs2'])
+})
