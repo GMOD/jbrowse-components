@@ -194,7 +194,6 @@ export const trioSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-          type: 'LinearVariantDisplay',
           variantLayout: 'columns',
           height: 250,
         },
@@ -224,7 +223,6 @@ export const trioSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-          type: 'LinearVariantDisplay',
           variantLayout: 'columns',
           height: 250,
           unit: 'haplotype',
@@ -251,7 +249,6 @@ export const trioSpecs: ScreenshotSpec[] = [
         TRIO_GENE_LANE,
         {
           trackId: TRIO_VCF_TRACK,
-          type: 'LinearVariantDisplay',
           variantLayout: 'columns',
           height: 250,
           unit: 'haplotype',
@@ -352,7 +349,6 @@ export const trioSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: TRIO_VCF_TRACK,
-          type: 'LinearVariantDisplay',
           unit: 'haplotype',
           height: TRIO_VCF_DISPLAY_H,
           rows: trioVcfRows,

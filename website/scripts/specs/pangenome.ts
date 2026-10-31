@@ -73,7 +73,6 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               // `pggb -V` already flattens the snarl tree, so a length filter
               // here drops real indels.
               trackId: 'ecoli_pggb_variants',
-              type: 'LinearVariantDisplay',
               // Below 170 the track clips its key's Insertions section.
               unit: 'haplotype',
               height: 170,

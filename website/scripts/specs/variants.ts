@@ -160,7 +160,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'volvox_test_vcf',
-          type: 'LinearVariantDisplay',
           variantLayout: 'columns',
           height: 400,
         },
@@ -202,13 +201,11 @@ export const variantsSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'potato_missingness_1',
-              type: 'LinearVariantDisplay',
               variantLayout: 'columns',
               height: 300,
             },
             {
               trackId: 'potato_missingness_01',
-              type: 'LinearVariantDisplay',
               variantLayout: 'columns',
               height: 300,
               filter: [{ field: 'missingness', lte: 0.1 }],

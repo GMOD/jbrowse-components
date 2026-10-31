@@ -82,7 +82,6 @@ export const paperCohortSpecs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: SV_TRACK.trackId,
-              type: 'LinearVariantDisplay',
               forceLoad: true,
               sortRowsBy: OUTER_DELETION_SORT,
               // Deletions only: a 35 Mb duplication at the window's edge and
