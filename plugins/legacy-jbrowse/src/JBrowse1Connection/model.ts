@@ -31,7 +31,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           const dataDirLocation = getConf(self, 'dataDirLocation')
           const { fetchJb1 } = await import('./jb1ConfigLoad.ts')
           const { convertTrackConfig } = await import('./jb1ToJb2.ts')
-          const config = await fetchJb1(dataDirLocation)
+          const config = await fetchJb1(dataDirLocation, pluginManager)
           const assemblyName = getConf(self, 'assemblyNames')[0]
           if (!assemblyName) {
             throw new Error('assembly name required for JBrowse 1 connection')

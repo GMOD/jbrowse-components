@@ -7,6 +7,7 @@ import { ensureAssembly } from './openSampleInNewView.ts'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { SampleNavigationTarget } from './openSampleInNewView.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AbstractViewContainer,
   AssemblyHost,
@@ -48,6 +49,7 @@ export async function launchMafRowSynteny({
   refName,
   startBp,
   endBp,
+  pluginManager,
 }: {
   host: MafSyntenyHost
   model: MafSyntenyLaunchModel
@@ -56,6 +58,7 @@ export async function launchMafRowSynteny({
   refName: string
   startBp: number
   endBp: number
+  pluginManager: PluginManager
 }) {
   const refAssembly = model.view.assemblyNames[0]
   const region = model.detailOnScreen.get(regionIndex)
@@ -75,7 +78,7 @@ export async function launchMafRowSynteny({
   if (!synteny) {
     throw new Error(`${sampleLabel} has no aligned base in the selection`)
   }
-  await ensureAssembly(host, target)
+  await ensureAssembly(host, target, pluginManager)
   const refLoc = assembleLocString({ refName, start: startBp, end: endBp })
   const refTracks: TrackInit[] = model.view.tracks.map(track => {
     const type = track.displays[0]?.type

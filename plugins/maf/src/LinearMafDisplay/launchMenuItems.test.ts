@@ -1,3 +1,4 @@
+import PluginManager from '@jbrowse/core/PluginManager'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
@@ -7,6 +8,8 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // 1px = 1bp starting at bp 100, one region, three rows, an 80px window
+const pluginManager = new PluginManager()
+
 const WIDTH = 80
 
 const widgets: Record<string, unknown>[] = []
@@ -93,6 +96,7 @@ function launchEntry(m: MafLaunchModel) {
     session: session as never,
     model: m,
     view: m.view as unknown as LinearGenomeViewModel,
+    pluginManager,
   })
   expect(entry && 'label' in entry ? entry.label : undefined).toBe('Launch')
   return entry

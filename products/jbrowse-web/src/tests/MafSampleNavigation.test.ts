@@ -46,7 +46,12 @@ test('a sample whose assembly is absent loads it from its own config', async () 
   const simvolvox = samples.find(s => s.id === 'simvolvox')!
   expect(session.assemblyManager.has('simvolvox')).toBe(false)
 
-  await openSampleInNewView(session, 'display1', targetFor(simvolvox))
+  await openSampleInNewView(
+    session,
+    'display1',
+    targetFor(simvolvox),
+    getEnv(session).pluginManager,
+  )
 
   // fetched out of the sibling config_maf_nav_targets.json and added, not
   // resolved by asking a plugin where 'simvolvox' might live
@@ -64,7 +69,12 @@ test('a sample whose assembly is already in the config is not refetched', async 
   const volvox = samples.find(s => s.id === 'volvox')!
   expect(volvox.assemblyConfigLocation).toBeUndefined()
 
-  await openSampleInNewView(session, 'display1', targetFor(volvox))
+  await openSampleInNewView(
+    session,
+    'display1',
+    targetFor(volvox),
+    getEnv(session).pluginManager,
+  )
 
   expect(reported).toEqual([])
   expect(session.views.map((v: { id: string }) => v.id)).toEqual([

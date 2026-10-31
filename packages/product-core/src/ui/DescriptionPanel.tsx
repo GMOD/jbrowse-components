@@ -1,6 +1,7 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { ErrorBanner, LoadingEllipses, SanitizedHTML } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useFetch } from '@jbrowse/core/util/useFetch'
@@ -13,6 +14,7 @@ import {
 } from './descriptionHtml.ts'
 
 import type { AboutPanelProps } from './util.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ReactNode } from 'react'
 
 const useStyles = makeStyles()(theme => ({
@@ -90,8 +92,10 @@ const DescriptionCard = observer(function DescriptionCard({
 
 const FetchedDescription = observer(function FetchedDescription({
   url,
+  pluginManager,
 }: {
   url: string
+  pluginManager: PluginManager
 }) {
   const {
     data: html,
@@ -99,9 +103,10 @@ const FetchedDescription = observer(function FetchedDescription({
     isLoading,
   } = useFetch(['trackDescriptionHtml', url] as const, async (_name, url) =>
     rebaseDescriptionHtml(
-      await openLocation({ uri: url, locationType: 'UriLocation' }).readFile(
-        'utf8',
-      ),
+      await openLocation(
+        { uri: url, locationType: 'UriLocation' },
+        pluginManager,
+      ).readFile('utf8'),
       url,
     ),
   )
@@ -125,7 +130,10 @@ const DescriptionPanel = observer(function DescriptionPanel({
   const description = getTrackDescription(readConfObject(config, 'metadata'))
 
   return !description ? null : 'url' in description ? (
-    <FetchedDescription url={description.url} />
+    <FetchedDescription
+      url={description.url}
+      pluginManager={getEnv(config).pluginManager}
+    />
   ) : (
     <DescriptionCard>
       <Prose html={description.html} />

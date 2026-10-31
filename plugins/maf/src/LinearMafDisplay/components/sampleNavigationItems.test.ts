@@ -1,3 +1,4 @@
+import PluginManager from '@jbrowse/core/PluginManager'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import {
@@ -50,6 +51,8 @@ function model(
   }
 }
 
+const pluginManager = new PluginManager()
+
 const views: { id: string; init?: unknown }[] = []
 // `GRCh38` is an alias of the view's `hg38`.
 const session = {
@@ -89,7 +92,12 @@ function itemsFor(
   m: SampleNavigationModel,
   c: typeof coord = coord,
 ): ReturnType<typeof sampleNavigationItems> {
-  return sampleNavigationItems(session, m, selectedRowTargets(session, m, c))
+  return sampleNavigationItems(
+    session,
+    m,
+    selectedRowTargets(session, m, c),
+    pluginManager,
+  )
 }
 
 function subMenuLabels(items: ReturnType<typeof sampleNavigationItems>) {
@@ -187,7 +195,12 @@ test('a span crossing a region boundary clips to the region it began in', () => 
 
 test('launching opens a view keyed on display + assembly', async () => {
   views.length = 0
-  await openSampleInNewView(session, 'display1', target('SPRET_EiJ', 1000))
+  await openSampleInNewView(
+    session,
+    'display1',
+    target('SPRET_EiJ', 1000),
+    pluginManager,
+  )
   expect(views).toEqual([
     {
       id: 'display1_mm10',
@@ -222,13 +235,18 @@ test('the have-we-got-it probe does not go through get()', async () => {
       },
     },
   } as unknown as AbstractSessionModel
-  await openSampleInNewView(loadedSession, 'display1', {
-    ...target('SPRET_EiJ', 1000),
-    assemblyConfigLocation: {
-      uri: 'https://example.com/mm10/config.json',
-      locationType: 'UriLocation' as const,
+  await openSampleInNewView(
+    loadedSession,
+    'display1',
+    {
+      ...target('SPRET_EiJ', 1000),
+      assemblyConfigLocation: {
+        uri: 'https://example.com/mm10/config.json',
+        locationType: 'UriLocation' as const,
+      },
     },
-  })
+    pluginManager,
+  )
   expect(calls).toEqual(['has:mm10'])
   expect(views).toHaveLength(1)
 })

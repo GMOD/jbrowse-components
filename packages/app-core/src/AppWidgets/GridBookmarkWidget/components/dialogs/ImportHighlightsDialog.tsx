@@ -6,7 +6,7 @@ import {
   FileSelector,
   SubmitDialog,
 } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import ImportIcon from '@mui/icons-material/Publish'
 import { observer } from 'mobx-react'
@@ -41,7 +41,10 @@ const ImportHighlightsDialog = observer(function ImportHighlightsDialog({
       onSubmit={async () => {
         try {
           if (location) {
-            const data = await openLocation(location).readFile('utf8')
+            const data = await openLocation(
+              location,
+              getEnv(model).pluginManager,
+            ).readFile('utf8')
             model.importHighlights(parseHighlights(data, selectedAsm))
           }
           onClose()

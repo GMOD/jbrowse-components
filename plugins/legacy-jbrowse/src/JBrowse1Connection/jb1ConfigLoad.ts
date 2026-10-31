@@ -4,6 +4,7 @@ import { parseJb1 } from './jb1ConfigParse.ts'
 import { fillTemplate, isTrack } from './util.ts'
 
 import type { Config, ProtoTrack, Track } from './types.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 // JBrowse 1 kept a data directory's track list in either or both of these, so
@@ -16,7 +17,10 @@ const TRACK_LISTS = ['trackList.json', 'tracks.conf']
  * `refSeqs`, `nameUrl`, the synthesized `stores` — describes the JBrowse 1
  * browser, which is not the thing being configured here.
  */
-export async function fetchJb1(dataDir: FileLocation): Promise<Config> {
+export async function fetchJb1(
+  dataDir: FileLocation,
+  pluginManager: PluginManager,
+): Promise<Config> {
   const dataRoot = locationPath(dataDir).replace(/\/$/, '')
   const tracks: Track[] = []
   const seen = new Set<string>()
@@ -26,7 +30,7 @@ export async function fetchJb1(dataDir: FileLocation): Promise<Config> {
       return
     }
     seen.add(path)
-    const config = await readConfig(dataDir, path)
+    const config = await readConfig(dataDir, path, pluginManager)
     if (!config) {
       return
     }
@@ -52,14 +56,18 @@ function locationPath(location: FileLocation) {
       : ''
 }
 
-async function readConfig(dataDir: FileLocation, path: string) {
+async function readConfig(
+  dataDir: FileLocation,
+  path: string,
+  pluginManager: PluginManager,
+) {
   const location: FileLocation =
     'localPath' in dataDir
       ? { localPath: path, locationType: 'LocalPathLocation' }
       : { uri: path, locationType: 'UriLocation' }
   let text: string
   try {
-    text = await openLocation(location).readFile('utf8')
+    text = await openLocation(location, pluginManager).readFile('utf8')
   } catch {
     return undefined
   }

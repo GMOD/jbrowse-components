@@ -16,6 +16,7 @@ import type {
   MafSyntenyLaunchModel,
 } from './launchMafRowSynteny.ts'
 import type { SubsequenceHost } from './openSubsequenceWidget.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { NotificationSink } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -42,10 +43,12 @@ export function mafLaunchMenuItems({
   session,
   model,
   view,
+  pluginManager,
 }: {
   session: MafSyntenyHost & NotificationSink
   model: MafLaunchModel
   view: LinearGenomeViewModel
+  pluginManager: PluginManager
 }): MenuItem[] {
   const subMenu = (): MenuItem[] => {
     const targets = visibleRowTargets(session, model)
@@ -73,8 +76,8 @@ export function mafLaunchMenuItems({
         },
         zoomHint,
       ),
-      ...sampleNavigationItems(session, model, targets),
-      ...mafSyntenyLaunchItems(session, model, targets),
+      ...sampleNavigationItems(session, model, targets, pluginManager),
+      ...mafSyntenyLaunchItems(session, model, targets, pluginManager),
     ]
   }
   return [{ label: LAUNCH_LABEL, type: 'subMenu', subMenu }]

@@ -6,6 +6,7 @@ import {
   openAssemblyInLinearView,
 } from '@jbrowse/core/util/tracks'
 
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AbstractViewContainer,
   AssemblyHost,
@@ -56,6 +57,7 @@ export function findAssemblyConf(configJson: unknown, assemblyName: string) {
 export async function ensureAssembly(
   session: AbstractViewContainer & AssemblyHost,
   target: SampleNavigationTarget,
+  pluginManager: PluginManager,
 ) {
   const { assemblyConfigLocation, assemblyName } = target
   if (assemblyConfigLocation && !session.assemblyManager.has(assemblyName)) {
@@ -65,7 +67,9 @@ export async function ensureAssembly(
     const { uri } = resolveUriLocation(assemblyConfigLocation)
     const configUrl = new URL(uri, globalThis.location.href)
     const configJson: unknown = JSON.parse(
-      await openLocation(assemblyConfigLocation).readFile('utf8'),
+      await openLocation(assemblyConfigLocation, pluginManager).readFile(
+        'utf8',
+      ),
     )
     const assemblyConf = findAssemblyConf(configJson, assemblyName)
     if (!assemblyConf) {
@@ -90,8 +94,9 @@ export async function openSampleInNewView(
   session: AbstractViewContainer & AssemblyHost & TrackCatalog,
   displayId: string,
   target: SampleNavigationTarget,
+  pluginManager: PluginManager,
 ) {
-  await ensureAssembly(session, target)
+  await ensureAssembly(session, target, pluginManager)
   const { assemblyName } = target
   await openAssemblyInLinearView({
     session,

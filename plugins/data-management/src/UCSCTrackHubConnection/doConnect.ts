@@ -20,6 +20,7 @@ import {
 
 import type { ConnectionDoConnectArg } from '../lazyConnect.ts'
 import type { RaStanza } from '@gmod/ucsc-hub'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 // fetch a single genome's trackDb (resolved against the genomes.txt location)
 // and convert it into jbrowse track configs
@@ -27,17 +28,19 @@ async function loadGenomeTracks({
   genome,
   genomeName,
   genomesBaseUri,
+  pluginManager,
 }: {
   genome: RaStanza
   genomeName: string
   genomesBaseUri: string
+  pluginManager: PluginManager
 }) {
   const db = genome.data.trackDb
   if (!db) {
     throw new Error(`trackDb not found for ${genomeName}`)
   }
   const loc = makeLocFromUri(db, genomesBaseUri)
-  const trackDb = await fetchTrackDbFile(loc)
+  const trackDb = await fetchTrackDbFile(loc, pluginManager)
   return generateTracks({
     trackDb,
     trackDbLoc: loc,
@@ -75,7 +78,10 @@ export async function doConnect(self: ConnectionDoConnectArg) {
   ) {
     throw new Error('UCSC track hubs must be loaded from a URL or local file')
   }
-  const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
+  const hubFileText = await openLocation(
+    hubFileLocation,
+    pluginManager,
+  ).readFile('utf8')
   const hubUri = hubBaseUrl(hubFileLocation)
 
   if (hubFileText.includes('useOneFile on')) {
@@ -119,7 +125,7 @@ export async function doConnect(self: ConnectionDoConnectArg) {
       throw new Error('genomesFile not found on hub')
     }
     const genomesLoc = makeLocFromUri(genomeFile, hubUri)
-    const genomesFile = await fetchGenomesFile(genomesLoc)
+    const genomesFile = await fetchGenomesFile(genomesLoc, pluginManager)
     const assemblyNames = getConf(self, 'assemblyNames')
     const genomesBaseUri = hubBaseUrl(genomesLoc)
     const trackCounts: Record<string, number> = {}
@@ -139,6 +145,7 @@ export async function doConnect(self: ConnectionDoConnectArg) {
         genome,
         genomeName,
         genomesBaseUri,
+        pluginManager,
       })
       self.addTrackConfs(tracks)
       trackCounts[genomeName] = tracks.length

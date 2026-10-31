@@ -3,6 +3,7 @@ import { isUriLocation } from '@jbrowse/core/util'
 import { escapeHTML } from '@jbrowse/core/util/htmlText'
 import { openLocation } from '@jbrowse/core/util/io'
 
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   FileLocation,
   LocalPathLocation,
@@ -12,13 +13,22 @@ import type {
 // the location kinds a hub file can be loaded from and resolve children against
 export type HubLocation = UriLocation | LocalPathLocation
 
-export async function fetchGenomesFile(genomesLoc: FileLocation) {
-  const genomesFileText = await openLocation(genomesLoc).readFile('utf8')
+export async function fetchGenomesFile(
+  genomesLoc: FileLocation,
+  pluginManager: PluginManager,
+) {
+  const genomesFileText = await openLocation(
+    genomesLoc,
+    pluginManager,
+  ).readFile('utf8')
   return new GenomesFile(genomesFileText)
 }
 
-export async function fetchTrackDbFile(trackDbLoc: FileLocation) {
-  const text = await openLocation(trackDbLoc).readFile('utf8')
+export async function fetchTrackDbFile(
+  trackDbLoc: FileLocation,
+  pluginManager: PluginManager,
+) {
+  const text = await openLocation(trackDbLoc, pluginManager).readFile('utf8')
   return new TrackDbFile(text)
 }
 

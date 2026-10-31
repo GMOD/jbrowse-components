@@ -15,6 +15,7 @@ import type {
 import type { SampleNavigationTarget } from '../openSampleInNewView.ts'
 import type { MafHitTestModel } from './mafHitTest.ts'
 import type { ContextCoord } from './useDragSelection.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
   AbstractViewContainer,
@@ -157,14 +158,17 @@ export function sampleNavigationItems(
     NotificationSink,
   model: Pick<SampleNavigationModel, 'id'>,
   { targets }: RowTargets,
+  pluginManager: PluginManager,
 ): MenuItem[] {
   function menuItem(target: SampleNavigationTarget, label: string) {
     return {
       label,
       onClick: () => {
-        openSampleInNewView(session, model.id, target).catch((e: unknown) => {
-          session.notifyError(`${e}`, e)
-        })
+        openSampleInNewView(session, model.id, target, pluginManager).catch(
+          (e: unknown) => {
+            session.notifyError(`${e}`, e)
+          },
+        )
       },
     }
   }
@@ -190,6 +194,7 @@ export function mafSyntenyLaunchItems(
   session: MafSyntenyHost & NotificationSink,
   model: MafSyntenyLaunchModel,
   { targets, regionIndex, refName, startBp, endBp }: RowTargets,
+  pluginManager: PluginManager,
 ): MenuItem[] {
   const refAssembly = model.view.assemblyNames[0]
   return targets.length === 0 || refAssembly === undefined
@@ -208,6 +213,7 @@ export function mafSyntenyLaunchItems(
                 refName,
                 startBp,
                 endBp,
+                pluginManager,
               }).catch((e: unknown) => {
                 session.notifyError(`${e}`, e)
               })

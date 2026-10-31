@@ -1,5 +1,5 @@
 import { ContextMenu } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import { openSubsequenceWidget } from '../openSubsequenceWidget.ts'
@@ -19,10 +19,11 @@ function rowTargetItems(
   contextCoord: ContextCoord,
 ) {
   const session = getSession(model)
+  const { pluginManager } = getEnv(model)
   const targets = selectedRowTargets(session, model, contextCoord)
   return [
-    ...sampleNavigationItems(session, model, targets),
-    ...mafSyntenyLaunchItems(session, model, targets),
+    ...sampleNavigationItems(session, model, targets, pluginManager),
+    ...mafSyntenyLaunchItems(session, model, targets, pluginManager),
   ]
 }
 

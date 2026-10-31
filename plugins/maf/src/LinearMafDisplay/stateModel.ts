@@ -20,6 +20,7 @@ import { withHint } from '@jbrowse/core/ui/menuItems'
 import {
   assembleLocString,
   getDialogHost,
+  getEnv,
   getPaletteHost,
   getSession,
 } from '@jbrowse/core/util'
@@ -1737,6 +1738,7 @@ export default function stateModelFactory(
                 session: getSession(self),
                 model: self,
                 view: containingLgv(self),
+                pluginManager: getEnv(self).pluginManager,
               }),
             ]
           },
