@@ -252,7 +252,7 @@ test('columns and arena grow and right-size', () => {
   const n = 500
   for (let b = 0; b < n; b++) {
     packer.startBlock(`b${b}`, b * 10, b * 10 + 4, 'ACGT', 0, 4)
-    packer.addRow(`sp${b % 7}`, 'ACGT', 0, 4, '', b, 1, undefined, undefined)
+    packer.addRow(`sp${b % 7}`, 'ACGT', 0, 4, '', b, 1, 1000, undefined)
   }
   const packed = packer.finishBlocks()
   expect(packed.blockStartBp).toHaveLength(n)

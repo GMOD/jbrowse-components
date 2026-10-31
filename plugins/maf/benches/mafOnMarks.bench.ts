@@ -312,7 +312,7 @@ function pack(features: readonly Feature[]): MafWireRegionData {
         a.srcRefName,
         a.srcStart,
         a.strand ?? 1,
-        a.srcSize,
+        a.srcSize ?? 0,
         a.context,
       )
     }
