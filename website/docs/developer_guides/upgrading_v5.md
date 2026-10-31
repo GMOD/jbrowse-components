@@ -30,9 +30,9 @@ rewrites and the slot each becomes. Among them:
   take the theme's stroke color
 - a v4 session's `heightPreConfig` migrates onto the `height` slot
 - the LD display's `ldMetric` becomes `encoding.color.field`
-- the multi-sample variant display's `renderingMode: 'phased' | 'alleleCount'`
-  becomes `unit: 'haplotype' | 'sample'`, from the config slot and from a
-  session's `renderingModeSetting` alike
+- the variant display's `renderingMode: 'phased' | 'alleleCount'` becomes
+  `unit: 'haplotype' | 'sample'`, from the config slot and from a session's
+  `renderingModeSetting` alike
 
 The `heightOverride` shadow-prop that existed during development is gone, and
 there is no `<name>Override` shadow-property system.
@@ -342,7 +342,7 @@ and otherwise stops applying with no error.
 | --- | --- |
 | `LinearPileupDisplay`, `LinearSNPCoverageDisplay`, `LinearReadArcsDisplay`, `LinearReadCloudDisplay` | `LinearAlignmentsDisplay` |
 | `LinearFeatureDisplay` | `LinearBasicDisplay` |
-| `MultiLinearVariantDisplay`, `LinearVariantMatrixDisplay` | `LinearMultiSampleVariantDisplay` |
+| `MultiLinearVariantDisplay`, `LinearVariantMatrixDisplay` | `LinearVariantDisplay` |
 | `LinearGCContentDisplay`, `LinearGCContentTrackDisplay` | `LinearWiggleDisplay` |
 | `LinearArcDisplay`, `LinearPairedArcDisplay` | `LinearMarkDisplay`, with `link` marks |
 
@@ -393,12 +393,12 @@ A session with those props opens with them moved into `rows` and `rowColor`, and
 a v4 session's plot, scale, autoscale, domain and colors move to the config
 slots that hold them now.
 
-## The multi-sample variant rows are config too
+## The variant rows are config too
 
-The multi-sample variant displays keep their arrangement in `rows` as well, with
-no `field`, since their rows are the samples: `rows.sort` is the row order,
-`rows.labels` the relabels, `rows.tree` and `rows.treeProvenance` a clustering
-run's tree, and `rows.kept` the focus. In phased mode the names are haplotypes,
+The variant display keeps its arrangement in `rows` as well, with no `field`,
+since its rows are the samples: `rows.sort` is the row order, `rows.labels` the
+relabels, `rows.tree` and `rows.treeProvenance` a clustering run's tree, and
+`rows.kept` the focus. In phased mode the names are haplotypes,
 `"<sample> HP<n>"`, and a sample's name stands for all of its haplotypes.
 `rowColor` is `field | { field, scale: { domain, range } }`: the string is still
 the sample-metadata attribute that tints every row, and
@@ -428,11 +428,11 @@ sets in **Edit colors/arrangement...**.
 ## The MAF rows are config too
 
 The MAF display keeps its arrangement in `rows` with no `field`, since its rows
-are the species, as on the multi-sample variant displays. The adapter's guide
-tree stays the adapter's: it draws while some rotation of it lists the species
-in `rows.sort`'s order, so a reorder that splits a clade hides it and **Reset
-row order** brings it back, and a clustering run's tree in `rows.tree` replaces
-it. `rowColor: { scale: { domain, range } }` pairs species with the label tint a
+are the species, as on the variant display. The adapter's guide tree stays the
+adapter's: it draws while some rotation of it lists the species in `rows.sort`'s
+order, so a reorder that splits a clade hides it and **Reset row order** brings
+it back, and a clustering run's tree in `rows.tree` replaces it.
+`rowColor: { scale: { domain, range } }` pairs species with the label tint a
 reader set, over the adapter's `samples[].color`. A session saved with
 jbrowse-plugin-mafviewer opens with its `subtreeFilter` in `rows.kept` and its
 `treeAreaWidth` in `axis.width`.

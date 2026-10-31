@@ -271,7 +271,7 @@ matrix display, one column per variant and one row per sample:
   "assemblyNames": ["K12"],
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "variantLayout": "columns",
       "unit": "haplotype"
     }

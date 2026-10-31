@@ -1,6 +1,6 @@
 ---
 name: variant-display-merge
-description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias); C2, D and E remain. Open: added vs taken band height, the default `height`, the multi-way key position."
+description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D and E remain. Open: added vs taken band height, the default `height`, the multi-way key position."
 ---
 
 # One variant display
@@ -44,7 +44,7 @@ rule over rows are marked provisional there (the default is settled: on).
   `records.show` on by default (a SNV-only file spends 0 px); the band's
   members lifted into `recordsBandViews.ts`, which the model composes in
   order, so the model holds one `recordsOnly` site (`withClickedSample`).
-  Still branching outside it: `multiSampleVariantMenuItems.ts` (5),
+  Still branching outside it: `variantDisplayMenuItems.ts` (5),
   `RecordsBandOverlay.tsx` (4), `variantTopBands.ts` (3, its input).
   Figure specs that now draw the band over SV rows, unreshot: `ui.ts`
   (`multisv_rhd`, which also shows `kgp_sv_records` beside it, `multisv`,
@@ -67,18 +67,21 @@ rule over rows are marked provisional there (the default is settled: on).
   Hiding wants the record out of the cells as well, a worker-side id filter
   (the parked
   `ideas/ready/give-the-multi-sample-variant-display-a-hide-this-feature-item.md`).
-- **C2. The sweep.** Writers that still spell
-  `LinearMultiSampleVariantDisplay` or write the betas' top-level
-  `displayMode`/`mark`/`labels`/`facet`/`tooltip.field` on a
-  `LinearVariantDisplay` (which no longer lift, ADR-255): test_data
-  (`config_demo.json`, volvox, breakpoint, dog10k, protein3d), figure specs,
-  docs and tutorials (39 `website/docs` mentions), the examples-site
-  nextstrain configs, `tables.ts`, the jbrowse-web tests and browser-test
-  suites; product-core's
-  `pruneUnbuildableNodes.ts` comment; the jbrowse-authoring skill. File
-  names inside `LinearVariantDisplay/` still say MultiSample
-  (`multiSampleVariantMenuItems.ts`, `setupMultiSampleVariantAutoruns.ts`);
-  the RPC names are wire names and stay.
+- **C2. The sweep.** Built: nothing in-repo writes
+  `LinearMultiSampleVariantDisplay` but the alias declaration, its
+  back-compat tests and the generated schema and migration tables; the one
+  beta top-level record key (`tcga.ts`'s unused ClinVar track) sits under
+  `records`. The tutorials and user guides no longer route through
+  **Display types** to reach the rows. File names inside
+  `LinearVariantDisplay/` are neutral; the RPC names (and
+  `shared/components/MultiSampleVariantClusterDialog.tsx`, beside them) stay.
+  Left from C2, for CI or a reshoot: the BreakpointSplitView `pacbio_vcf-loaded`
+  snapshot (the band's record boxes sit at new y, `-u`); the
+  `variants/trio_phased_matrix` tour, whose Display types steps are gone and
+  whose first caption changed (refilm); figures whose default display is now
+  the rows (`trio-basic`, `volvox_variants`, `variant_with_pileup`,
+  `variant_panel`); `figure-manifest.json`, `liveLinks.generated.ts` and the
+  config docs regenerate on push.
 - **D. Outside writers**: jb2hubs (`pangenomeLinks.ts`, `config/jbrowse.ts`,
   pangenome-config JSONs), ggjbrowse (`R/variants.R`; `jbrowse_features`
   reads a records-only track's settings as the R export hands them over),
@@ -86,9 +89,11 @@ rule over rows are marked provisional there (the default is settled: on).
   (`src/WalkFormsAdapter/formsMenu.ts` `FORMS_DISPLAYS`, matched by
   `Core-extendPluggableElement` at :196, names only
   `LinearMultiSampleVariantDisplay`, so its forms menu is gone until it
-  names `LinearVariantDisplay`), redeployed demo configs; then drop the
-  alias.
-- **E. Height.** Added vs taken. (Records showing by default is settled: on.)
+  names `LinearVariantDisplay`), JBrowseR, the hosted demo configs (the
+  in-repo `demos/` and the `scripts/build_*.sh` outputs on S3 are swept but
+  not redeployed); then drop the alias.
+- **E. Height.** The default `height` and added vs taken (open calls
+  below). (Records showing by default is settled: on.)
 
 ## Open calls (Colin)
 

@@ -484,7 +484,7 @@ fills its defaults from the track type's: a `MultiQuantitativeTrack`
 source and no min-max extent.
 
 `@jbrowse/plugin-variants/tables` (`variantTables`) does the same for a
-multi-sample VCF. It takes the `LinearMultiSampleVariantDisplay`'s config,
+multi-sample VCF. It takes the `LinearVariantDisplay`'s config,
 runs the display's worker (`executeVariantCellData`) at genomic positions,
 and paints the cells as the display does (`paintCellColors`,
 `paintFeatureColors`):

@@ -186,9 +186,9 @@
       },
       "displays": [
         {
-          "type": "LinearMultiSampleVariantDisplay",
+          "type": "LinearVariantDisplay",
           "variantLayout": "columns",
-          "displayId": "SARS-CoV-2-genotypes-LinearMultiSampleVariantDisplay",
+          "displayId": "SARS-CoV-2-genotypes-LinearVariantDisplay",
           "height": 400,
           "rowColor": "region"
         }
@@ -227,8 +227,8 @@
           "configuration": "SARS-CoV-2-genotypes",
           "displays": [
             {
-              "type": "LinearMultiSampleVariantDisplay",
-              "configuration": "SARS-CoV-2-genotypes-LinearMultiSampleVariantDisplay"
+              "type": "LinearVariantDisplay",
+              "configuration": "SARS-CoV-2-genotypes-LinearVariantDisplay"
             }
           ]
         },

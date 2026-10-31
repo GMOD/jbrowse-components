@@ -168,9 +168,9 @@
       },
       "displays": [
         {
-          "type": "LinearMultiSampleVariantDisplay",
+          "type": "LinearVariantDisplay",
           "variantLayout": "columns",
-          "displayId": "Measles-genotypes-LinearMultiSampleVariantDisplay",
+          "displayId": "Measles-genotypes-LinearVariantDisplay",
           "height": 400,
           "rowColor": "region"
         }
@@ -231,8 +231,8 @@
           "configuration": "Measles-genotypes",
           "displays": [
             {
-              "type": "LinearMultiSampleVariantDisplay",
-              "configuration": "Measles-genotypes-LinearMultiSampleVariantDisplay"
+              "type": "LinearVariantDisplay",
+              "configuration": "Measles-genotypes-LinearVariantDisplay"
             }
           ]
         },

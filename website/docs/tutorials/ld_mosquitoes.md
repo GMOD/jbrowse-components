@@ -165,7 +165,7 @@ the two metric columns, as its input:
 
 The 2La inversion also loads as one `<INV>` record, genotyped across every
 mosquito, that spans the breakpoints. The
-[regular multi-sample variant display](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail)
+[variant display at genomic positions](/docs/user_guides/multivariant_track#regular-best-for-full-sv-detail)
 draws each genotype at the call's true span. `END` is the far breakpoint and
 each sample column holds one `GT`:
 
@@ -179,7 +179,7 @@ The samples TSV has a `name` column matching the VCF sample ids and a
 `2La/2L+a`, `2La/2La`, the `+` marking the non-inverted arrangement.
 
 Load each population as a `VariantTrack` whose adapter includes the samples TSV,
-with a `LinearMultiSampleVariantDisplay`:
+with a `LinearVariantDisplay`:
 
 ```json addtrack
 {
@@ -196,7 +196,7 @@ with a `LinearMultiSampleVariantDisplay`:
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "facet": {
         "field": "karyotype",
         "sort": ["2L+a/2L+a", "2La/2L+a", "2La/2La"]

@@ -11,7 +11,7 @@ import these from a plugin.
 ## variantDensityAlpha
 
 Each record's alpha factor where records too short to see share pixels at
-`bpPerPx`, as the multi-sample variant display fades a zoomed-out row
+`bpPerPx`, as the variant display fades a zoomed-out row
 (`recordDensityAlpha`) at the power of two `bpPerPx` rounds to: 1 where a
 record covers its pixels alone. For a host that draws the cells at its own
 scale.
@@ -46,7 +46,7 @@ every record, a record calling no genotype included:
 
 ## variantTables
 
-A region of a multi-sample VCF as the multi-sample variant display fetches,
+A region of a multi-sample VCF as the variant display fetches,
 filters and paints it, as tables: `variants`, each record the display
 keeps, with its color and its `filter`; `info`, each INFO key's
 values aligned to `variants`, and `infoFields`, the header's declaration

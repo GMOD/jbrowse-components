@@ -1864,7 +1864,7 @@ TASKS.push(
       'In hg38, make one view of the lactase-persistence enhancer, rs4988235 with about 1 kb either side, styled as a figure: the HPRC pangenome genotypes as a matrix with one row per haplotype, phyloP 100-way conservation as a line plot fixed from -4 to 8, RefSeq curated genes squeezed into compact rows, and ClinVar showing only variants classified Pathogenic. Every track must actually draw.',
     solution: `
       await jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly: 'hg38', loc: 'chr2:135,850,076-135,852,076', tracks: ['hg38-phyloP100way', 'hg38-ncbiRefSeqCurated', 'hg38-clinvarMain'] }] }, 90000)
-      await jb.view().launchTrack('hg38-hprc-v2.0-pangenome-vcf', {}, { type: 'LinearMultiSampleVariantDisplay', unit: 'haplotype' })
+      await jb.view().launchTrack('hg38-hprc-v2.0-pangenome-vcf', {}, { type: 'LinearVariantDisplay', unit: 'haplotype' })
       const phylo = jb.trackModel('hg38-phyloP100way')
       const r = await phylo.applyDisplaySettings({ mark: 'line', encoding: { y: { scale: { domainMin: -4, domainMax: 8 } } } })
       if (!r.applied.includes('encoding')) { await phylo.applyDisplaySettings({ scales: { y: { domainMin: -4, domainMax: 8 } } }) }
@@ -1884,7 +1884,7 @@ TASKS.push(
         const filters = JSON.stringify(d('hg38-clinvarMain')?.plot?.filter ?? '')
         const checks = {
           at,
-          haplotypes: hprc?.type === 'LinearMultiSampleVariantDisplay' && hprc.unit === 'haplotype' && (hprc.sources ?? []).some(s => s.HP === 1),
+          haplotypes: hprc?.type === 'LinearVariantDisplay' && hprc.unit === 'haplotype' && (hprc.sources ?? []).some(s => s.HP === 1),
           line: (typeof mark === 'string' ? mark : mark?.type) === 'line' && phylo?.domain?.[0] === -4 && phylo?.domain?.[1] === 8,
           compact: genes?.displayMode === 'compact',
           pathogenic: /clinSign|_clinSignCode|aggrGermClass/.test(filters) && /Pathogenic|PATH|\\bP\\b|'PG'|"PG"/.test(filters),

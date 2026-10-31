@@ -85,7 +85,7 @@ by the forms the structural-state sidecar groups haplotypes into
    VCF (462 haplotypes of `GT`, 1.7 s for a 70 kb window remotely,
    [PANGENOME_GRAPHS.md](../../reference/PANGENOME_GRAPHS.md) "Release 2 files
    nothing here reads yet") or the wave VCF through
-   `LinearMultiSampleVariantDisplay`, with `TreeSidebarMixin`'s
+   `LinearVariantDisplay`, with `TreeSidebarMixin`'s
    cluster-by-identity ordering; rows at 1-2 px each, 464 or 4,000 of them; a
    click or a lasso yields a haplotype set.
 2. **This display as the locus reading** for that set: the set becomes

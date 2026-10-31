@@ -11,9 +11,9 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 ### variantDensityAlpha
 
 Each record's alpha factor where records too short to see share pixels at
-`bpPerPx`, as the multi-sample variant display fades a zoomed-out row
-(`recordDensityAlpha`) at the power of two `bpPerPx` rounds to: 1 where a record
-covers its pixels alone. For a host that draws the cells at its own scale.
+`bpPerPx`, as the variant display fades a zoomed-out row (`recordDensityAlpha`)
+at the power of two `bpPerPx` rounds to: 1 where a record covers its pixels
+alone. For a host that draws the cells at its own scale.
 
 ```js
 // type signature
@@ -46,20 +46,20 @@ record, a record calling no genotype included:
 
 ### variantTables
 
-A region of a multi-sample VCF as the multi-sample variant display fetches,
-filters and paints it, as tables: `variants`, each record the display keeps,
-with its color and its `filter`; `info`, each INFO key's values aligned to
-`variants`, and `infoFields`, the header's declaration of each key;
-`annotations`, each record's SnpEff `ANN` or VEP `CSQ` consequences, a row per
-record and consequence, which then leave `info` (`consequenceTables`); `cells`,
-each sample's (or under `unit: 'haplotype'` each haplotype's) cell at each
-record, with its genotype, its `dosage` and the fill the display paints it;
-`rows`, the rows the cells name, top to bottom as the display arranges them by
-`rows` and stacks them in `facet`'s bands, each with its label and band;
-`bands`, each band's value and label, in stacking order; `legend`, `legendTitle`
-and `ramps`, the key the display shows; and `warnings`, the samples file's.
-Under `referenceDrawingMode: 'skip'`, the default, a reference call draws no
-cell. Several regions share the rows and the key, as the display's regions do: a
+A region of a multi-sample VCF as the variant display fetches, filters and
+paints it, as tables: `variants`, each record the display keeps, with its color
+and its `filter`; `info`, each INFO key's values aligned to `variants`, and
+`infoFields`, the header's declaration of each key; `annotations`, each record's
+SnpEff `ANN` or VEP `CSQ` consequences, a row per record and consequence, which
+then leave `info` (`consequenceTables`); `cells`, each sample's (or under
+`unit: 'haplotype'` each haplotype's) cell at each record, with its genotype,
+its `dosage` and the fill the display paints it; `rows`, the rows the cells
+name, top to bottom as the display arranges them by `rows` and stacks them in
+`facet`'s bands, each with its label and band; `bands`, each band's value and
+label, in stacking order; `legend`, `legendTitle` and `ramps`, the key the
+display shows; and `warnings`, the samples file's. Under
+`referenceDrawingMode: 'skip'`, the default, a reference call draws no cell.
+Several regions share the rows and the key, as the display's regions do: a
 record crossing regions is listed in each, under one `key`, every `variants` and
 `cells` row names its `region`'s index, and `cells.variant` indexes the joined
 `variants`. For a host that draws them itself, such as R through V8. The

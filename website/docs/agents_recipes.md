@@ -609,7 +609,7 @@ return {
 ```
 
 Against volvox this answers with the linear displays a `VariantTrack` has —
-`LinearVariantDisplay` and `LinearMultiSampleVariantDisplay`, among them.
+`LinearVariantDisplay` and `LinearMarkDisplay`, among them.
 `configuration.displays` also holds the types other views draw, such as a
 circular view's `ChordVariantDisplay`.
 

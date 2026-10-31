@@ -263,7 +263,7 @@ const KGP_ENSEMBLE_SV_VCF =
 // Shared by `multisv_rhd` and the `sv/multisample_sort` tour in videos/sv.ts.
 // Loads unsorted: the figure sorts by clicking, so the film opens on the
 // figure's pre-click state. Uses the CNV tutorial's config because only a
-// config can declare the Zarr plugin. Keep one multi-sample display: a second
+// config can declare the Zarr plugin. Keep one variant display: a second
 // one stops the first answering `onContextMenu`, and the sort row vanishes.
 const rhdPanel = (sortRowsBy?: RowSortSpec) =>
   sessionSpec('test_data/1000g_cnv/config.json', {
@@ -334,7 +334,7 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
     ],
   })
 
-// From `sortRowsHereMenuItem` in multiSampleVariantMenuItems.ts.
+// From `sortRowsHereMenuItem` in variantDisplayMenuItems.ts.
 export const SORT_BY_GENOTYPE = 'Sort rows by genotype here'
 
 // `pos` is 0-based. INVERSION_SORT sits in a gap where only the inversion

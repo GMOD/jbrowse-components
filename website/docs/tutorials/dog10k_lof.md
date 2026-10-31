@@ -247,7 +247,7 @@ wolf has it.
   "assemblyNames": ["UU_Cfam_GSD_1.0"],
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "filter": ["jexl:feature.start == 38261634"]
     }
   ]

@@ -5,18 +5,18 @@ digraph variant_displays {
 
   vcf [label="VCF", shape=oval]
   vcf -> genotypes
-  genotypes [label="show genotypes"]
+  genotypes [label="sample rows\n(samples and\ngenotypes.show)"]
   genotypes -> single  [label=" no"]
   genotypes -> pattern [label=" yes"]
 
-  single [label="LinearVariantDisplay\nrow = record\ncolor = the `color` jexl slot"]
+  single [label="LinearVariantDisplay, records only\nrow = record\ncolor = SV class or featureDefaultColor"]
 
   pattern [label="lay columns out by\nfeature index"]
   pattern -> matrix  [label=" yes"]
   pattern -> regular [label=" no"]
 
-  regular [label="LinearMultiSampleVariantDisplay\nvariantLayout: 'genomic'\nrow = sample or haplotype\ncolumn = the record's genomic span\ninsertion glyphs"]
-  matrix  [label="LinearMultiSampleVariantDisplay\nvariantLayout: 'columns'\nrow = sample or haplotype\ncolumn = one variant, equal width\nconnector lines to the genome"]
+  regular [label="LinearVariantDisplay\nvariantLayout: 'genomic'\nrecords band over the rows\nrow = sample or haplotype\ncolumn = the record's genomic span\ninsertion glyphs"]
+  matrix  [label="LinearVariantDisplay\nvariantLayout: 'columns'\nrow = sample or haplotype\ncolumn = one variant, equal width\nconnector lines to the genome"]
 
   ld [label="LDDisplay\ncell = a site PAIR\nr² or D' through a 256-entry ramp"]
   vcf -> ld [label=" pairwise LD"]

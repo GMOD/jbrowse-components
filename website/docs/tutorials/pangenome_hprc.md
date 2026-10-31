@@ -241,7 +241,7 @@ that allele. We'll add it to the graph launch's session:
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "unit": "haplotype",
       "filter": ["jexl:alleleLength(feature)>=50"]
     }

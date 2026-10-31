@@ -1,14 +1,14 @@
 ---
 id: samplerows
 title: SampleRows
-description: "The rows of a display whose rows are the file's samples, one each, with nothing else a row could be: the multi-sample variant display and the multiple alignment display. sample is the one field, so…"
+description: "The rows of a display whose rows are the file's samples, one each, with nothing else a row could be: the variant display and the multiple alignment display. sample is the one field, so…"
 sidebar_label: Display setting -> SampleRows
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/sampleRowsConfigSchema.ts).
 
 The `rows` of a display whose rows are the file's samples, one each, with
-nothing else a row could be: the multi-sample variant display and the
+nothing else a row could be: the variant display and the
 multiple alignment display. `sample` is the one field, so the object is
 the arrangement a reader gives the rows, written whole as every display's
 `rows` is. Nothing needs `rows: "sample"`, and writing it clears the
@@ -17,7 +17,7 @@ arrangement.
 ## Example usage
 
 ```js
-{ type: 'LinearMultiSampleVariantDisplay', rows: { sort: ['HG002', 'HG003'] } }
+{ type: 'LinearVariantDisplay', rows: { sort: ['HG002', 'HG003'] } }
 ```
 
 ```js

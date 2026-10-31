@@ -186,7 +186,7 @@ table's `lineage` column through `domain` to `range`. The config also sets:
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "unit": "haplotype",
       "rows": {
         "sort": [

@@ -111,7 +111,7 @@
       },
       "displays": [
         {
-          "type": "LinearMultiSampleVariantDisplay",
+          "type": "LinearVariantDisplay",
           "variantLayout": "columns",
           "displayId": "prnp_variants-matrix",
           "height": 200

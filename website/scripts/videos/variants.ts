@@ -12,7 +12,7 @@ const PER_HAPLOTYPE = cascade('menuitem', 'Per haplotype')
 
 export const variantVideos: VideoSpec[] = [
   // analyze_trio.md spends three sections and four figures on one route: the
-  // display type and then the rows, on one track and one window.
+  // layout and then the rows, on one track and one window.
   // What the stills cannot carry is that the six rows ARE the three, each
   // sample split into its two haplotypes in place.
   //
@@ -22,7 +22,7 @@ export const variantVideos: VideoSpec[] = [
   {
     name: 'variants/trio_phased_matrix',
     description:
-      "A trio VCF becomes six haplotype rows: the track menu's Display types, the multi-sample matrix, then Rows Per haplotype splitting each of the three samples into its two haplotypes, zoomed out to the figures' window",
+      "A trio VCF becomes six haplotype rows: the track menu's Layout Genotype matrix, then Rows Per haplotype splitting each of the three samples into its two haplotypes, zoomed out to the figures' window",
     goal: 'Turn a trio VCF into six haplotype rows: child, mother, father',
     url: defaultDisplay,
     // the matrix is the tall state, which trio-matrix-phased-clean is captured
@@ -35,20 +35,14 @@ export const variantVideos: VideoSpec[] = [
       {
         type: 'delay',
         ms: 2500,
-        say: 'One lane, one box per variant: nothing yet about who carries what',
+        say: 'One row per sample, each genotype at its variant',
       },
       {
         type: 'click',
         selector: trackMenu(vcfTrackId),
-        say: 'Redraw the lane as a genotype matrix, one row per sample',
+        say: 'Redraw the rows as a genotype matrix, one column per variant',
         hold: 1200,
       },
-      { type: 'waitForText', text: 'Display types' },
-      { type: 'click', text: 'Display types', hold: 1200 },
-      { type: 'waitForText', text: 'Multi-sample variant display' },
-      { type: 'click', text: 'Multi-sample variant display' },
-      { type: 'waitForAppSettled', timeout: 180000, cut: true },
-      { type: 'click', selector: trackMenu(vcfTrackId), hold: 1200 },
       { type: 'waitForText', text: 'Layout' },
       { type: 'click', text: 'Layout', hold: 1200 },
       { type: 'waitForText', text: 'Genotype matrix' },

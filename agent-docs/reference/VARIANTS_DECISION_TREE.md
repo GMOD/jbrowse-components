@@ -20,10 +20,11 @@ that bite while editing are `plugins/variants/src/CLAUDE.md`.
 
 ![Which variant display a VCF lands in](diagrams/variants-displays.svg)
 
-- **`LinearVariantDisplay`** draws the records themselves, one layout row each,
-  colored through the standard `encoding.color` jexl slot.
-- **`LinearMultiSampleVariantDisplay`** draws one row per sample — or per
-  haplotype in phased mode. Under `variantLayout: 'genomic'` each record's cells
+- **`LinearVariantDisplay`** with no sample rows (no samples, or
+  `genotypes.show` off) is its records band alone, one layout row per record,
+  colored by SV class or `featureDefaultColor`.
+- **`LinearVariantDisplay`** with samples draws one row per sample — or per
+  haplotype in phased mode — under the records band. Under `variantLayout: 'genomic'` each record's cells
   sit at its genomic span, with the insertion glyphs; under
   `'columns'` the records are laid out by feature *index* at equal widths, each
   column tied back to its locus with a connector line.

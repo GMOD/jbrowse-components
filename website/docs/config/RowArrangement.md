@@ -17,7 +17,7 @@ name. The field-keyed displays' `Rows` object is this plus `field`.
 
 ```js
 {
-  type: 'LinearMultiSampleVariantDisplay',
+  type: 'LinearVariantDisplay',
   rows: { sort: ['NA12878', 'NA12891'], labels: { NA12878: 'Proband' } },
 }
 ```

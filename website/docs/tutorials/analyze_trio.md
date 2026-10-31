@@ -112,15 +112,15 @@ naming as the assembly. In JBrowse Web you can instead paste the URL into **File
 }
 ```
 
-<Figure caption="The VCF on initial load, in the default display: one orange box per variant." src="/img/trio-basic.png"/>
+<Figure caption="The VCF on initial load: one row per sample, each genotype at its variant's position." src="/img/trio-basic.png"/>
 
 ## Showing the trio VCF as a genotype matrix
 
-In the track menu, choose **Display types → Multi-sample variant display** (the
-[multi-sample variant display](/docs/user_guides/multivariant_track)), then
-check **Layout → Genotype matrix**.
+In the track menu, check **Layout → Genotype matrix** (the
+[variant sample rows guide](/docs/user_guides/multivariant_track) has the other
+settings).
 
-<Figure caption="The multi-sample variant display as a genotype matrix. One row per sample, one column per variant, black lines connecting columns to their genome positions." src="/img/trio-matrix.png"/>
+<Figure caption="The variant display as a genotype matrix. One row per sample, one column per variant, black lines connecting columns to their genome positions." src="/img/trio-matrix.png"/>
 
 ## Splitting each sample into two haplotype rows
 
@@ -130,7 +130,7 @@ into its two haplotypes. Per-haplotype rows need phased genotypes, written
 
 <Figure caption="One row per haplotype: the two haplotypes (HP0, HP1) of child HG02024, mother HG02025 and father HG02026, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
 
-<Video src="/media/variants/trio_phased_matrix.mp4" caption="The multi-sample matrix display switched on, then Rows → Per haplotype splitting each trio member into its two haplotype rows." />
+<Video src="/media/variants/trio_phased_matrix.mp4" caption="Layout → Genotype matrix switched on, then Rows → Per haplotype splitting each trio member into its two haplotype rows." />
 
 ## Running hap-ibd to find segments shared with each parent
 
@@ -251,8 +251,8 @@ through the centromere, because hap-ibd joins the markers on either side of it.
 To line the painted blocks up with the genotypes underneath:
 
 - Drag the painting's track label above the VCF's.
-- Uncheck **Layout → Genotype matrix** on the VCF track, so the **phased
-  multi-sample variant display** draws each genotype at its genomic position.
+- Uncheck **Layout → Genotype matrix** on the VCF track, so the **phased variant
+  display** draws each genotype at its genomic position.
 - To show one parent's two rows only, as the figures below do, set the
   painting's `rows.kept` to those names, for example
   `["Father hap1", "Father hap2"]`.

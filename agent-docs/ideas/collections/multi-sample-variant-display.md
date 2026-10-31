@@ -5,7 +5,7 @@ description: Genotype-quality masking, pedigree awareness, and haplotype-block c
 
 # Multi-sample variant display
 
-Ideas from an analysis of `LinearMultiSampleVariantDisplay` in both its
+Ideas from an analysis of `LinearVariantDisplay`'s genotype rows in both their
 layouts (`plugins/variants/src/LinearVariantDisplay/model.ts`). Read
 `plugins/variants/src/CLAUDE.md` first — hot-loop rules and the fetch/layout/render
 invalidation tiers constrain all of these.

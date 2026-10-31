@@ -391,9 +391,9 @@ cfg['tracks'] += [
             },
         },
         'displays': [{
-            'type': 'LinearMultiSampleVariantDisplay',
+            'type': 'LinearVariantDisplay',
             'variantLayout': 'columns',
-            'displayId': 'kgp_lct_haplotypes-LinearMultiSampleVariantDisplay',
+            'displayId': 'kgp_lct_haplotypes-LinearVariantDisplay',
             'unit': 'haplotype',
             'rowColor': 'population',
             # This lane still reads genotypes, so unlike the LD tracks above

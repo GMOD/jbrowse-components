@@ -1,11 +1,11 @@
 ---
-title: Multi-sample variant display
+title: Variant sample rows
 description: Population-level variant views
 guide_category: Track types
 ---
 
-A VCF can hold genotypes for many samples. The multi-sample variant display
-draws one row per sample, and **Layout → Genotype matrix** in the track menu
+A VCF can hold genotypes for many samples. The variant display draws one row per
+sample under its records, and **Layout → Genotype matrix** in the track menu
 chooses how the variants run across it:
 
 - **At genomic positions**, the default: each variant drawn across the bases it

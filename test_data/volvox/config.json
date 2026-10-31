@@ -3024,8 +3024,8 @@
       "assemblyNames": ["volvox"],
       "displays": [
         {
-          "type": "LinearMultiSampleVariantDisplay",
-          "displayId": "volvox multi-sample sv-LinearMultiSampleVariantDisplay",
+          "type": "LinearVariantDisplay",
+          "displayId": "volvox multi-sample sv-LinearVariantDisplay",
           "referenceDrawingMode": "draw",
           "rowColor": "population"
         }

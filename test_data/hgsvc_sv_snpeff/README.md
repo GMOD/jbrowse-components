@@ -67,5 +67,5 @@ expected to flag.
 ## Demo track
 
 `test_data/config_demo.json` → `hgsvc_sv_chr1_snpeff_consequence` (hg38,
-`LinearMultiSampleVariantDisplay`, `encoding: { color: impact }`). Screenshot
-spec: `variants/consequence_impact_sv` in `website/scripts/screenshot-specs.ts`.
+`LinearVariantDisplay`, `encoding: { color: impact }`). Screenshot spec:
+`variants/consequence_impact_sv` in `website/scripts/screenshot-specs.ts`.

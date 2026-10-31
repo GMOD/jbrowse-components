@@ -74,10 +74,10 @@ worked `LinearAlignmentsDisplay` config; the reordering rule is the same `sort`.
 
 ## Variant tracks
 
-`LinearMultiSampleVariantDisplay` takes the same `facet` object to band rows by
-a metadata column instead of VCF file order. Bands are what makes two
-biologically meaningful examples readable rather than a wall of samples in
-whatever order the VCF lists them:
+`LinearVariantDisplay` takes the same `facet` object to band rows by a metadata
+column instead of VCF file order. Bands are what makes two biologically
+meaningful examples readable rather than a wall of samples in whatever order the
+VCF lists them:
 
 ```json
 "facet": { "field": "karyotype", "sort": ["Standard", "In(2L)t"] }

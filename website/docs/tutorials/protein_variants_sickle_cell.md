@@ -156,8 +156,8 @@ as one row per genome:
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
-      "displayId": "kgp3202_chr11_snv-LinearMultiSampleVariantDisplay"
+      "type": "LinearVariantDisplay",
+      "displayId": "kgp3202_chr11_snv-LinearVariantDisplay"
     }
   ]
 }

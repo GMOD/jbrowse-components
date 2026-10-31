@@ -466,7 +466,7 @@ class a separate color under a key:
 ```
 
 For a multi-sample VCF as a genotype grid, see
-[variant tracks](/docs/config_guides/variant_track#multivariant-display-configuration).
+[variant tracks](/docs/config_guides/variant_track#variant-display-configuration).
 
 ## Synteny and dotplot tracks
 

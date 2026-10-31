@@ -389,7 +389,7 @@ async function writeGenomesCram(outDir, slug, refFasta, seqsUrl) {
 }
 
 // emit the reconstructed per-tip genotypes as a bgzipped+tabixed VCF plus a
-// samplesTsv of each tip's metadata, so JBrowse's multi-sample variant matrix
+// samplesTsv of each tip's metadata, so JBrowse's variant display
 // renders samples x sites colored/grouped by region — the genotype table behind
 // the Nextstrain tree, in genome coordinates.
 function writeGenotypeVcf(outDir, slug, refName, len, { rootBase, tips }) {
@@ -644,9 +644,9 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
         },
         displays: [
           {
-            type: 'LinearMultiSampleVariantDisplay',
+            type: 'LinearVariantDisplay',
             variantLayout: 'columns',
-            displayId: `${assembly}-genotypes-LinearMultiSampleVariantDisplay`,
+            displayId: `${assembly}-genotypes-LinearVariantDisplay`,
             height: 400,
             rowColor: 'region',
           },
@@ -690,8 +690,8 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
             configuration: `${assembly}-genotypes`,
             displays: [
               {
-                type: 'LinearMultiSampleVariantDisplay',
-                configuration: `${assembly}-genotypes-LinearMultiSampleVariantDisplay`,
+                type: 'LinearVariantDisplay',
+                configuration: `${assembly}-genotypes-LinearVariantDisplay`,
               },
             ],
           },

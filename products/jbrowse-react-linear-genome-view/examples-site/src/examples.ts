@@ -148,7 +148,7 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'multi-sample-variants',
-    title: 'Multi-sample variant display',
+    title: 'Variant sample rows',
     description: 'One row per sample, colored by a samples TSV column.',
     group: 'Tracks',
   },

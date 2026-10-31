@@ -177,7 +177,7 @@ Coverage and other numeric signals are a `QuantitativeTrack`, or a
 
 VCF and other variant-like data is a `VariantTrack`
 ([variant track config](/docs/config_guides/variant_track) for SVTYPE coloring
-and the multi-sample displays).
+and sample rows).
 
 <!-- FILE_TYPES variants START -->
 

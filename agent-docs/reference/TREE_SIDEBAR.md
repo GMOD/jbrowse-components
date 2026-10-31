@@ -110,7 +110,7 @@ also the signal it was supplied rather than computed.
 
 `TreeSidebarMixin` keeps a display's arrangement in its `rows` config object and
 its row colors in the `rowColor` object — the quantitative display's,
-the multi-sample variant display's, the multi-row feature display's, MAF's and the
+the variant display's, the multi-row feature display's, MAF's and the
 mark display's (ADR-157) — and derives the rows from them.
 
 **`rows` is one `Rows` object on every display, and the mixin reads its

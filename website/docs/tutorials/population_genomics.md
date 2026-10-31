@@ -402,7 +402,7 @@ bar:
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "facet": { "field": "karyotype", "sort": ["Standard", "In(2L)t"] },
       "rowColor": "karyotype"
     }

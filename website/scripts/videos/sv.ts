@@ -128,7 +128,7 @@ export const svVideos: VideoSpec[] = [
   // just reached, and five other tours film that menu.
   //
   // `Sort rows by genotype here` is a plain action row
-  // (multiSampleVariantMenuItems.ts, `variantContextMenuItems`), so it leaves
+  // (variantDisplayMenuItems.ts, `variantContextMenuItems`), so it leaves
   // no menu standing.
   {
     name: 'sv/multisample_sort',

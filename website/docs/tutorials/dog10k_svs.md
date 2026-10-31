@@ -156,9 +156,9 @@ tabix -p vcf dog10k_nhej1_svs.vcf.gz
 
 ## Loading the NHEJ1 slice with breed labels
 
-An SV VCF loads as an ordinary `VariantTrack`. The multi-sample variant display
-draws one row per sample across the variant's genomic span, so a 7.8 kb deletion
-is a 7.8 kb block. The track below also:
+An SV VCF loads as an ordinary `VariantTrack`. The variant display draws one row
+per sample across the variant's genomic span, so a 7.8 kb deletion is a 7.8 kb
+block. The track below also:
 
 - reads the build script's `dog10k_nhej1_samples.tsv`, whose `clade` column
   `facet` splits the rows on, one section per clade
@@ -206,7 +206,7 @@ you rename and recolor rows by hand.
         "tracks": [
           {
             "trackId": "dog10k_nhej1_svs",
-            "type": "LinearMultiSampleVariantDisplay",
+            "type": "LinearVariantDisplay",
             "rows": {
               "sort": ["COLL000001", "CLUPGR000001"],
               "labels": { "COLL000001": "Collie 1", "CLUPGR000001": "Wolf 1" }
@@ -300,7 +300,7 @@ so the two tracks line up row for row:
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "rowColor": "group",
       "height": 900
     }
@@ -383,7 +383,7 @@ the Greek gray wolves. A samples TSV labels the rows, and `rowColor` paints its
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "rowColor": "group",
       "height": 690
     }

@@ -287,7 +287,7 @@ gzip -dc ld_cmgam.vcor.gz | awk 'NR>1{d=($5>$2?$5-$2:$2-$5); if(d<5e6) next;
 # Everything above measures a CONSEQUENCE of the inversion: heterozygotes cannot
 # recombine across it, so the span travels as one block. This section genotypes
 # the arrangement itself, as one <INV> call per mosquito, which is what a
-# multi-sample variant display can show per row.
+# variant display can show per row.
 #
 # The inversion is not something this script discovers. 2La is a cytologically
 # defined arrangement, both of its breakpoints were cloned and sequenced
@@ -504,7 +504,7 @@ for trackId, name in names.items():
         }],
     })
 
-# The arrangement itself, one row per mosquito. The regular multi-sample display
+# The arrangement itself, one row per mosquito. The regular variant display
 # rather than its matrix mode: matrix spaces one evenly sized column per variant,
 # which throws away the one thing this call has, its genomic extent. Here the
 # genotype cells start and end at the breakpoints, directly under the LD block.
@@ -520,8 +520,8 @@ for pop, (trackId, name) in karyo.items():
             'samplesTsvLocation': {'uri': f'ag1000g_2La_{pop}_samples.tsv'},
         },
         'displays': [{
-            'type': 'LinearMultiSampleVariantDisplay',
-            'displayId': f'{trackId}-LinearMultiSampleVariantDisplay',
+            'type': 'LinearVariantDisplay',
+            'displayId': f'{trackId}-LinearVariantDisplay',
             # karyotype sorts standard, het, inverted on its own, so the three
             # classes come out as contiguous blocks in dosage order
             'facet': {'field': 'karyotype'},

@@ -5020,8 +5020,8 @@
       },
       "displays": [
         {
-          "type": "LinearMultiSampleVariantDisplay",
-          "displayId": "1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf-LinearMultiSampleVariantDisplay",
+          "type": "LinearVariantDisplay",
+          "displayId": "1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf-LinearVariantDisplay",
           "rowColor": "population"
         }
       ],
@@ -5049,8 +5049,8 @@
       },
       "displays": [
         {
-          "type": "LinearMultiSampleVariantDisplay",
-          "displayId": "1000g_chr1_snpeff_consequence-LinearMultiSampleVariantDisplay",
+          "type": "LinearVariantDisplay",
+          "displayId": "1000g_chr1_snpeff_consequence-LinearVariantDisplay",
           "encoding": { "color": "impact" }
         }
       ],
@@ -5448,8 +5448,8 @@
       },
       "displays": [
         {
-          "type": "LinearMultiSampleVariantDisplay",
-          "displayId": "hgsvc_sv_chr1_snpeff_consequence-LinearMultiSampleVariantDisplay",
+          "type": "LinearVariantDisplay",
+          "displayId": "hgsvc_sv_chr1_snpeff_consequence-LinearVariantDisplay",
           "encoding": { "color": "impact" }
         }
       ],

@@ -26,7 +26,7 @@ presets. Fit is the default everywhere.
 
 **No multi-row display sizes its height from its row count.** The track keeps
 its `height` slot, and more rows shrink the rows. A pinned `rowHeight` (MAF,
-the multi-sample variant display) scrolls the rows that do not fit inside that
+the variant display) scrolls the rows that do not fit inside that
 height rather than growing it.
 
 `rowHeightConfigSchemaFields()` and `RowHeightMixin()`, both in

@@ -4,12 +4,12 @@ description: VCF variant display
 guide_category: Track types
 ---
 
-A variant track displays VCF records, one glyph per call, and a click opens a
-per-sample genotype table. The track menu's **Display types** switches to a
-multi-sample view (one row per sample), an LD heatmap, or a paired-arc view for
-breakends. **Color by** buckets variants by SnpEff/VEP consequence severity or
-SV type with one click, or colors by any INFO field via a jexl expression (e.g.
-minor allele frequency).
+A variant track displays VCF records, one glyph per call, with one row per
+sample under them when the VCF has genotypes, and a click opens a per-sample
+genotype table. The track menu's **Display types** switches to marks, which join
+each breakend to its mate. **Color by** buckets variants by SnpEff/VEP
+consequence severity or SV type with one click, or colors by any INFO field via
+a jexl expression (e.g. minor allele frequency).
 
 <Figure caption="Variant track marking an SNV beside the alignment track evidence." src="/img/variant_with_pileup.png" />
 
@@ -17,12 +17,11 @@ minor allele frequency).
 
 In a linear genome view, the track menu's **Display types** switches between:
 
-- **Variant display**, the default, covered on this page
-- **Multi-sample variant display** draws one row per sample, each variant at its
-  genomic position, or, with **Layout → Genotype matrix**, in equal-width
-  columns so shared haplotypes and runs of homozygosity show whatever the
-  spacing. See the
-  [multi-sample variant guide](/docs/user_guides/multivariant_track)
+- **Variant display**, the default: the records, and under them one row per
+  sample, each variant at its genomic position, or, with **Layout → Genotype
+  matrix**, in equal-width columns so shared haplotypes and runs of homozygosity
+  show whatever the spacing. See the
+  [sample rows guide](/docs/user_guides/multivariant_track)
 - **Marks** draws the variants as the marks you configure, and over an SV VCF
   joins each breakend to its mate with nothing configured. See
   [links](/docs/config_guides/mark_display#links)
@@ -59,8 +58,8 @@ trio's genotypes this way to check whether a call is inherited.
   value, with a key: a record field such as `type` or `FILTER`, or a path into
   INFO such as `INFO.SVCLASS`
 
-The presets draw a dismissable color key naming the classes present, and work on
-the multi-sample displays too, where
+The presets draw a dismissable color key naming the classes present, and color
+the genotype cells too, where
 [consequence impact](/docs/user_guides/multivariant_track#coloring-by-consequence-impact-snpeffvep-annotations)
 and [SV type](/docs/user_guides/multivariant_track#coloring-by-sv-type) list the
 terms in each tier and the color per class.

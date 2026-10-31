@@ -145,7 +145,7 @@ bedGraphToBigWig tajimad_all.bedgraph dm6.chrom.sizes tajimad_all.bw
 # The scans summarize the inversion into a number per window; this is the
 # per-line view of who carries it. One <INV> record over the published dm6
 # breakpoints, genotyped 1/1 for inverted lines and 0/0 for standard ones, plus
-# the samples TSV the multi-sample display groups and colors rows by.
+# the samples TSV the variant display groups and colors rows by.
 { printf 'name\tkaryotype\n'
   awk '{print $1"\tIn(2L)t"}' In2Lt_INV.txt
   awk '{print $1"\tStandard"}' In2Lt_STD.txt; } > dgrp_In2Lt_samples.tsv
@@ -296,7 +296,7 @@ cat > "$APP"/config.json <<'JSON'
       },
       "displays": [
         {
-          "type": "LinearMultiSampleVariantDisplay",
+          "type": "LinearVariantDisplay",
           "facet": { "field": "karyotype", "sort": ["Standard", "In(2L)t"] },
           "rowColor": "karyotype",
           "height": 300

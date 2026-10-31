@@ -10,7 +10,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 The `facet` setting of the feature, multi-sample variant, mark and
 alignments displays: one labelled section of the track per value of a field. A string
 is the field; the object adds the order. The mark display's `MarkFacet`
-adds the steps each section runs. On the multi-sample variant displays the
+adds the steps each section runs. On the variant display the
 field is a sample attribute from the samples file, such as `population`,
 and it bands the sample rows by its value, with no chip.
 
@@ -45,5 +45,5 @@ A setting written to it replaces it whole: a member left out returns to its defa
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field whose values each get a labelled section of the track: a field name, a dotted path into a structured field (`INFO.SVTYPE`, a read's `tags.HP`), a `jexl:` expression, or `strand`. A feature with no value stacks last, under `field: none` (`(no value)` for a `jexl:` field, whose sections show the value alone). The multi-sample variant displays read a sample attribute instead, and the mark displays `group`, their `rowGroups`. The alignments displays also take a read dimension here: `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `mapq`, `mateRefName` or `mateAssembly`. Writing `facet: "strand"` sets this slot. |
+| <span id="slot-field">**field**</span><br>[`featureField`](/docs/config_guides/slot_types#featurefield) = <code>''</code> | The feature field whose values each get a labelled section of the track: a field name, a dotted path into a structured field (`INFO.SVTYPE`, a read's `tags.HP`), a `jexl:` expression, or `strand`. A feature with no value stacks last, under `field: none` (`(no value)` for a `jexl:` field, whose sections show the value alone). The variant display reads a sample attribute instead, and the mark displays `group`, their `rowGroups`. The alignments displays also take a read dimension here: `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`, `mapq`, `mateRefName` or `mateAssembly`. Writing `facet: "strand"` sets this slot. |
 | <span id="slot-sort">**sort**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | The values whose sections stack first, in order, as Vega-Lite's `sort` lists them: the rest follow sorted, and none is dropped. Empty stacks every section sorted, and a `strand` facet forward, reverse, then unstranded (`1`, `-1`, `0`). |

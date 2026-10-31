@@ -150,9 +150,9 @@
       },
       "displays": [
         {
-          "type": "LinearMultiSampleVariantDisplay",
+          "type": "LinearVariantDisplay",
           "variantLayout": "columns",
-          "displayId": "Ebola-genotypes-LinearMultiSampleVariantDisplay",
+          "displayId": "Ebola-genotypes-LinearVariantDisplay",
           "height": 400,
           "rowColor": "region"
         }
@@ -191,8 +191,8 @@
           "configuration": "Ebola-genotypes",
           "displays": [
             {
-              "type": "LinearMultiSampleVariantDisplay",
-              "configuration": "Ebola-genotypes-LinearMultiSampleVariantDisplay"
+              "type": "LinearVariantDisplay",
+              "configuration": "Ebola-genotypes-LinearVariantDisplay"
             }
           ]
         },

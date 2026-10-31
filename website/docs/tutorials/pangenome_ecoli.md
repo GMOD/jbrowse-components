@@ -292,9 +292,7 @@ colored by that strain's allele:
     "type": "VcfTabixAdapter",
     "uri": "ecoli_pggb.vcf.gz"
   },
-  "displays": [
-    { "type": "LinearMultiSampleVariantDisplay", "unit": "haplotype" }
-  ]
+  "displays": [{ "type": "LinearVariantDisplay", "unit": "haplotype" }]
 }
 ```
 

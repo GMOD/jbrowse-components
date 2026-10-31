@@ -177,7 +177,7 @@ const MANE_TRACK = {
 const CLINVAR_TRACK = {
   trackId: 'clinvar_ncbi_hg38',
   type: 'LinearVariantDisplay',
-  displayMode: 'collapsed',
+  records: { displayMode: 'collapsed' },
   height: 40,
 }
 

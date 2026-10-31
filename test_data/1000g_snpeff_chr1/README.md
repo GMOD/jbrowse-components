@@ -54,6 +54,5 @@ transcript-level ANN entries): 44 HIGH, 744 MODERATE, 532 LOW, 22,738 MODIFIER.
 ## Demo track
 
 `test_data/config_demo.json` → `1000g_chr1_snpeff_consequence` (hg19,
-`LinearMultiSampleVariantDisplay`, `encoding: { color: impact }`). Screenshot
-spec: `variants/consequence_impact_1000g` in
-`website/scripts/screenshot-specs.ts`.
+`LinearVariantDisplay`, `encoding: { color: impact }`). Screenshot spec:
+`variants/consequence_impact_1000g` in `website/scripts/screenshot-specs.ts`.

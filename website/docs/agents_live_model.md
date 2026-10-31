@@ -177,11 +177,7 @@ const display = jb.trackModel('mytrack').activeDisplay
 display.selectFeature(feature)
 // the same track drawn by another of its display types, shown or not; a type
 // this view cannot draw is refused, naming `compatibleDisplays`, the ones it can
-await view.launchTrack(
-  'mytrack',
-  {},
-  { type: 'LinearMultiSampleVariantDisplay' },
-)
+await view.launchTrack('mytrack', {}, { type: 'LinearVariantDisplay' })
 ```
 
 A variation the display owns is a setting on it: an alignments track has one

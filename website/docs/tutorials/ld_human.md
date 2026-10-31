@@ -329,7 +329,7 @@ columns, one row per chromosome:
   "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz",
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "variantLayout": "columns",
       "unit": "haplotype",
       "filter": [{ "field": "minorAlleleFrequency", "gte": 0.35 }],

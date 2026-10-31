@@ -431,7 +431,7 @@ cat > variants_track.json <<'JSON'
     "vcfGzLocation": { "uri": "ecoli_cactus.vcf.gz" },
     "index": { "location": { "uri": "ecoli_cactus.vcf.gz.tbi" } }
   },
-  "displays": [{ "type": "LinearMultiSampleVariantDisplay", "variantLayout": "columns", "displayId": "ecoli_cactus_variants-matrix", "height": 250 }]
+  "displays": [{ "type": "LinearVariantDisplay", "variantLayout": "columns", "displayId": "ecoli_cactus_variants-matrix", "height": 250 }]
 }
 JSON
 jb add-track-json variants_track.json --update --out "$APP"

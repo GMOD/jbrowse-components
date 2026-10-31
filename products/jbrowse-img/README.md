@@ -532,7 +532,7 @@ jb2export data/volvox/volvox.fa data/volvox/volvox.filtered.vcf.gz \
 
 A VCF with many samples renders as a genotype matrix (one row per sample, each
 alt genotype painted over the reference background) with the
-`display:multivariant` modifier (the `LinearMultiSampleVariantDisplay`);
+`display:multivariant` modifier (the `LinearVariantDisplay`);
 `display:multivariantmatrix` draws the same display in equal-width columns. This
 example draws the 1000 Genomes phase 3 chr11 callset (2,504 samples) over the
 HBB β-globin locus, with the NCBI RefSeq gene track (via `--genome`/`--track`)
@@ -662,11 +662,11 @@ By default each track uses its primary display. `display:value` selects an
 alternate one. These friendly aliases are recognized (any other value is passed
 through verbatim as a display state-model name):
 
-| `display:` value     | Selected display                                              | Use                                             |
-| -------------------- | ------------------------------------------------------------- | ----------------------------------------------- |
-| `marks`              | `LinearMarkDisplay`                                           | bars, points, spans, text and links you declare |
-| `multivariant`       | `LinearMultiSampleVariantDisplay`                             | multi-sample VCF genotype matrix (rows)         |
-| `multivariantmatrix` | `LinearMultiSampleVariantDisplay`, `variantLayout: 'columns'` | the same, one equal-width column per variant    |
+| `display:` value     | Selected display                                   | Use                                             |
+| -------------------- | -------------------------------------------------- | ----------------------------------------------- |
+| `marks`              | `LinearMarkDisplay`                                | bars, points, spans, text and links you declare |
+| `multivariant`       | `LinearVariantDisplay`                             | multi-sample VCF genotype matrix (rows)         |
+| `multivariantmatrix` | `LinearVariantDisplay`, `variantLayout: 'columns'` | the same, one equal-width column per variant    |
 
 **Alignment tracks (BAM/CRAM)**
 

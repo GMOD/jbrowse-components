@@ -244,7 +244,7 @@ column that paints the swatch:
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "rowColor": "size",
       "height": 760
     }
@@ -292,8 +292,8 @@ with `clusterRegion` beside `runClustering`, as the figure below does:
             "configuration": "dog10k_igf1_haplotype",
             "displays": [
               {
-                "type": "LinearMultiSampleVariantDisplay",
-                "configuration": "dog10k_igf1_haplotype-LinearMultiSampleVariantDisplay",
+                "type": "LinearVariantDisplay",
+                "configuration": "dog10k_igf1_haplotype-LinearVariantDisplay",
                 "runClustering": true,
                 "clusterRegion": "chr15:41,440,000-41,580,000"
               }

@@ -1,13 +1,13 @@
 ---
 title: Variant track
-description:
-  VCF variant track config, SVTYPE coloring, and multi-sample displays
+description: VCF variant track config, SVTYPE coloring, and sample rows
 guide_category: Track types
 ---
 
 A `VariantTrack` with a `VcfTabixAdapter` handles single- and multi-sample VCFs.
-Color variants with a `jexl:` expression on the display's `encoding.color`, and
-reach for the multi-sample or LD displays for cohort data.
+Color variants with a `jexl:` expression on the display's `encoding.color`; a
+multi-sample VCF draws its genotypes as rows under the records, and an LD track
+draws a cohort's linkage.
 
 ```json addtrack
 {
@@ -79,12 +79,12 @@ computes the value, and a `threshold` scale bins it, with a key naming each bin:
 }
 ```
 
-## MultiVariant display configuration
+## Variant display configuration
 
-`LinearMultiSampleVariantDisplay` draws a multi-sample VCF as a genotype
-heatmap, one row per sample, each variant at its genomic position or, with
-`variantLayout: 'columns'`, in equal-width columns. It is not the track's
-default display, so preset its slots in a `displays` array; they are listed on
+`LinearVariantDisplay` draws the records as a feature track does and, under
+them, a multi-sample VCF's genotypes, one row per sample, each variant at its
+genomic position or, with `variantLayout: 'columns'`, in equal-width columns.
+Preset its slots in a `displays` array; they are listed on
 [](/docs/config/linearvariantdisplay).
 
 ### Configuring default display settings
@@ -98,7 +98,7 @@ default display, so preset its slots in a `displays` array; they are listed on
   "assemblyNames": ["hg38"],
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "referenceDrawingMode": "draw",
       "filter": [{ "field": "minorAlleleFrequency", "gte": 0.05 }],
       "axis": { "labels": true },
@@ -140,7 +140,7 @@ default alt color.
   "assemblyNames": ["hg38"],
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "encoding": { "color": "impact" }
     }
   ]
@@ -154,7 +154,7 @@ frequency split into ultra-rare, rare, low-frequency and common:
 ```json
 "displays": [
   {
-    "type": "LinearMultiSampleVariantDisplay",
+    "type": "LinearVariantDisplay",
     "encoding": {
       "color": {
         "field": "INFO.AF",
@@ -200,7 +200,7 @@ gets a different palette color:
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "rowColor": "population"
     }
   ]

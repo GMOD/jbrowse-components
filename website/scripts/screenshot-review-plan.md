@@ -169,15 +169,15 @@ their owner's to commit).
 **Discriminate a sweep on pixels, not on the file list.** `--affected` selected
 89 specs for one variants change and rewrote 15, of which 3 had anything to do
 with it; narrowing to "every spec whose session carries a
-`LinearMultiSampleVariantDisplay`" still rewrote 14, the same 3 real. Get that
-list by importing the specs rather than grepping, then count pixels near the
-color the change introduces, current file vs `git show HEAD:<path>`:
+`LinearVariantDisplay`" still rewrote 14, the same 3 real. Get that list by
+importing the specs rather than grepping, then count pixels near the color the
+change introduces, current file vs `git show HEAD:<path>`:
 
 ```bash
 node --input-type=module -e "
 const { specs } = await import('./scripts/screenshot-specs.ts')
 for (const s of specs) {
-  if (JSON.stringify(s).includes('LinearMultiSampleVariantDisplay')) console.log(s.name)
+  if (JSON.stringify(s).includes('LinearVariantDisplay')) console.log(s.name)
 }"
 ```
 
@@ -467,13 +467,12 @@ tolerance ball for "did this figure move".
   context menu — a few px off (a band vs. the pileup row) returns nothing, which
   looks like "the feature is missing" rather than "wrong coordinate". Aim clicks
   at the widest/longest feature in view.
-- **Two `LinearMultiSampleVariantDisplay`s in one view kill the right-click
-  context menu on both.** Same callset, distinct trackIds (the
-  `variants/potato_missingness` pattern): the right-click reaches the canvas
-  (the hover crosshair draws) but nothing opens, so a spec gated on
-  `waitForText: 'Sort by genotype'` times out against a fully-rendered matrix.
-  One lane alone works every time. Not fixed — the workaround is a capture per
-  coloring plus `mode: 'compose'`.
+- **Two `LinearVariantDisplay`s in one view kill the right-click context menu on
+  both.** Same callset, distinct trackIds (the `variants/potato_missingness`
+  pattern): the right-click reaches the canvas (the hover crosshair draws) but
+  nothing opens, so a spec gated on `waitForText: 'Sort by genotype'` times out
+  against a fully-rendered matrix. One lane alone works every time. Not fixed —
+  the workaround is a capture per coloring plus `mode: 'compose'`.
 - **That sort right-click is flaky even with one lane.** The same spec succeeded
   at `height: 400` / `y: 450` and failed at `height: 340` / `y: 400`. Re-run
   before re-designing a sort spec.

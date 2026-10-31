@@ -153,8 +153,8 @@ Add the slice as a track, with hosted copies of the two files:
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
-      "displayId": "dog10k_sod1-LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
+      "displayId": "dog10k_sod1-LinearVariantDisplay",
       "rowColor": "category"
     }
   ]

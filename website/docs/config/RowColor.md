@@ -14,7 +14,7 @@ colors, `name` (the row itself) by default, and `scale.domain` and
 arrangement dialog is an entry under `name`. Each display paints it on the
 element that identifies a row: the quantitative display's plot, or
 the tint beside its label while a score gradient paints; the multi-row
-feature display's blocks; the multi-sample variant displays' label tint; the
+feature display's blocks; the variant display's label tint; the
 MAF display's label tint, over the adapter's `samples[].color`; the mark
 display's label tint, over a listed source's color. Where the rows have
 attributes (a samplesTsv column or a subtrack's group), `field` may name one,
@@ -42,7 +42,7 @@ mark display paints by value.
 ```
 
 ```js
-{ type: 'LinearMultiSampleVariantDisplay', rowColor: 'population' }
+{ type: 'LinearVariantDisplay', rowColor: 'population' }
 ```
 
 ```js

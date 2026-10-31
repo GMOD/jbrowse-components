@@ -131,7 +131,7 @@ the multi-sample matrix display:
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "variantLayout": "columns",
       "height": 1010,
       "encoding": { "color": "impact" }
@@ -182,7 +182,7 @@ on each row's label bar, so it puts the matching color strip in the gutter.
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "variantLayout": "columns",
       "height": 450,
       "lineZoneHeight": 130,
@@ -232,7 +232,7 @@ band first in `sort`:
   },
   "displays": [
     {
-      "type": "LinearMultiSampleVariantDisplay",
+      "type": "LinearVariantDisplay",
       "variantLayout": "columns",
       "height": 450,
       "lineZoneHeight": 130,

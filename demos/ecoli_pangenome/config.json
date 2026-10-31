@@ -639,7 +639,7 @@
       },
       "displays": [
         {
-          "type": "LinearMultiSampleVariantDisplay",
+          "type": "LinearVariantDisplay",
           "variantLayout": "columns",
           "displayId": "ecoli_cactus_variants-matrix",
           "height": 250
