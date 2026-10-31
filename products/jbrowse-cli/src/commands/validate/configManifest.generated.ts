@@ -7115,7 +7115,7 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "show",
-              "type": "boolean"
+              "type": "(boolean | undefined)"
             },
             {
               "name": "reference",

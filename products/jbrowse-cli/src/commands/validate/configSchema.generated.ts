@@ -12633,8 +12633,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "draw a row per sample; off, the display draws the records alone, as for a VCF with no samples.",
-          "default": true,
+          "description": "draw a row per sample. Unset, a VCF with two or more samples draws its rows and a one-sample VCF draws its records alone, as one with no samples does.",
           "if": {
             "type": "null"
           },
@@ -12818,7 +12817,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "heightMode": {
-          "description": "Track-sizing strategy while no genotype rows draw (no samples, or \`genotypes.show\` off), as on a feature track: \`fit\` keeps the track height and gives up labels, then squeezes the records; \`fixed\` keeps the track height at full record size; \`grow\` sizes the track to its records up to \`growMaxHeight\`. With genotype rows the track keeps its \`height\`.",
+          "description": "Track-sizing strategy while the records are the display (no samples, or one with \`genotypes.show\` unset), as on a feature track: \`fit\` keeps the track height and gives up labels, then squeezes the records; \`fixed\` keeps the track height at full record size; \`grow\` sizes the track to its records up to \`growMaxHeight\`. With genotype rows the track keeps its \`height\`.",
           "default": "fit",
           "if": {
             "type": "null"

@@ -283,12 +283,15 @@ block. `LinearVariantDisplay`'s records band reads both in one expression:
 ```ts
 /**
  * #getter
- * Whether the VCF's sample listing landed empty: the records band is
- * then the display, every record the filter admits, sized by
- * `heightMode` and lettered as a feature track.
+ * Whether the records band is the display, every record the filter
+ * admits, sized by `heightMode` and lettered as a feature track: a VCF
+ * with no samples, or a one-sample call set whose row nobody asked for.
  */
 get recordsOnly(): boolean {
-  return self.adapterSamples?.length === 0
+  const sampleCount = self.adapterSamples?.length
+  return (
+    sampleCount === 0 || (sampleCount === 1 && !self.genotypesShowWritten)
+  )
 },
 /**
  * #getter

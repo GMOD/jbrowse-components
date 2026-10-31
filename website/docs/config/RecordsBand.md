@@ -23,8 +23,8 @@ Hovering a record reports it and its carriers, and clicking opens its
 details. At genomic positions only. On by default: a file with no record
 in view when it opens spends 0 px on it.
 
-With no genotype rows (a VCF with no samples, or `genotypes.show` off) the
-band is the whole display whatever `show` says: every record, an SV in its
+With no genotype rows by default (a VCF with no samples, or one sample and
+`genotypes.show` unset) the band is the whole display whatever `show` says: every record, an SV in its
 SV type's color and the rest in the feature track's default, lettered as a
 feature track letters it (the description under the name, no carrier
 share) and sized by the display's `heightMode`. Past
