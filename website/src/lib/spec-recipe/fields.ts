@@ -378,13 +378,6 @@ function syntenyColorMode(value: unknown) {
 // up. capitalizeFirst is the menu's own label transform, imported.
 const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set(['LinearVariantDisplay'])
 
-// Mirrors the feature display's own `colorByMode` getter (colorViews.ts), which
-// is what decides which of the "Color by" radios reads as checked: an
-// `encoding.color.field` of `strand` is 'strand', any other field is
-// 'attribute', and with no field painting it is 'default', whatever
-// `encoding.color.value` holds.
-
-
 // The two presets the variant display's `encoding.color` names by
 // (IMPACT_FIELD, SV_TYPE_FIELD), and the phase set (PHASE_SET_FIELD).
 const VARIANT_PRESET_FIELDS: Record<string, string> = {
