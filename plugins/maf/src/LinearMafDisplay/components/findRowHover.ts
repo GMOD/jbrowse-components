@@ -9,6 +9,7 @@ import {
   rowContinues,
 } from '../../LinearMafRenderer/rendering/insertions.ts'
 import { rowFlankOf } from '../../LinearMafRenderer/rendering/rowFlank.ts'
+import { otherStrandStart } from '../../util/parseStrand.ts'
 
 import type {
   MafAlignedRow,
@@ -274,7 +275,10 @@ function emptyHit(e: MafEmptyRow): EmptyHit {
     kind: 'empty',
     status: e.status,
     srcRefName: e.srcRefName,
-    srcStart: e.strand === -1 ? e.srcSize - e.srcStart - e.size : e.srcStart,
+    srcStart:
+      e.strand === -1
+        ? otherStrandStart(e.srcSize, e.srcStart, e.size)
+        : e.srcStart,
     size: e.size,
     strand: e.strand,
   }

@@ -2,6 +2,7 @@ import { revcom } from '@jbrowse/core/util'
 import { DASH } from '@jbrowse/core/util/alignedBytes'
 
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
+import { otherStrandStart } from '../util/parseStrand.ts'
 import { RecordSlots } from '../util/recordSlots.ts'
 
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
@@ -228,7 +229,7 @@ export class MafTabixBlockReader {
         0,
         seq.length,
         this.srcRefName[slot]!,
-        srcSize - this.srcStart[slot]! - this.size[slot]!,
+        otherStrandStart(srcSize, this.srcStart[slot]!, this.size[slot]!),
         -this.strand[slot]!,
         srcSize,
         undefined,

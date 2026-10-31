@@ -1,6 +1,7 @@
 import { revcom } from '@jbrowse/core/util'
 
 import { applyMafLine } from './mafLines.ts'
+import { otherStrandStart } from './parseStrand.ts'
 import { RecordSlots } from './recordSlots.ts'
 
 import type { AlignmentContext, EmptyRecord } from '../types.ts'
@@ -176,8 +177,11 @@ export class MafStanzaReader implements MafLineTarget {
   private flip() {
     const { rows, empties } = this
     for (let slot = 0; slot < rows.count; slot++) {
-      this.srcStart[slot] =
-        this.srcSize[slot]! - this.srcStart[slot]! - this.size[slot]!
+      this.srcStart[slot] = otherStrandStart(
+        this.srcSize[slot]!,
+        this.srcStart[slot]!,
+        this.size[slot]!,
+      )
       this.seq[slot] = revcom(this.seq[slot]!)
       this.strand[slot] = -this.strand[slot]!
       const context = this.rowContext[slot]
@@ -194,11 +198,15 @@ export class MafStanzaReader implements MafLineTarget {
       const e = this.emptyRecord[slot]!
       this.emptyRecord[slot] = {
         ...e,
-        srcStart: e.srcSize - e.srcStart - e.size,
+        srcStart: otherStrandStart(e.srcSize, e.srcStart, e.size),
         strand: -e.strand,
       }
     }
-    this.refStart = this.refSrcSize - this.refStart - this.refSize
+    this.refStart = otherStrandStart(
+      this.refSrcSize,
+      this.refStart,
+      this.refSize,
+    )
     this.refSeq = revcom(this.refSeq)
     this.refStrand = 1
   }
