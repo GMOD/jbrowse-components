@@ -23,6 +23,7 @@ const featureInfo: VariantFeatureInfo = {
   insertedBp: 0,
   type: 'breakend',
   svType: '',
+  svAlleles: [],
   genotypeCodes: new Uint32Array(),
 }
 

@@ -49,6 +49,10 @@ interface VariantFeatureBase {
   // `svType` field), '' for an SNV or small indel: what the records band
   // draws and colors by.
   svType: string
+  // Per ALT allele, whether it is structural (`svClassOfAlt`): a carrier of
+  // an SV record carries one of these, not a small allele beside them at an
+  // un-decomposed site. Empty for a record with no SV class.
+  svAlleles: boolean[]
 }
 
 // Genotype strings are interned into the shared `CellDataResult.genotypeDict`;

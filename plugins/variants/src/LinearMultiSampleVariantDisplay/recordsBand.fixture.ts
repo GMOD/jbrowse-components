@@ -50,7 +50,13 @@ export function recordsCellData(records: BandRecord[]): CellDataResult {
     perRegionCellData: {
       0: cellPayloadOf(
         records.map(([id, start, end, description, svType = 'DEL']) =>
-          featureInfoOf(id, { description, length: end - start, svType }),
+          featureInfoOf(id, {
+            description,
+            length: end - start,
+            svType,
+            svAlleles: [svType !== ''],
+            genotypeCodes: Uint32Array.of(1),
+          }),
         ),
         {
           featurePositions: Uint32Array.from(
@@ -67,12 +73,15 @@ export function recordsDisplayAt(
   records: BandRecord[],
   bpPerPx: number,
   band: Record<string, unknown> = {},
+  // the one sample, S0, drawn as a row; false for a sites-only display
+  rows = true,
 ) {
   const env = createTestEnvironment({
     displayConfig: { records: { show: true, ...band } },
   }).createDisplay()
   env.display.view.setWidth(1960)
   env.display.view.setNewView(bpPerPx, 0)
+  env.display.setSources(rows ? [{ name: 'S0' }] : [])
   env.display.setCellData(recordsCellData(records), [0])
   return env
 }

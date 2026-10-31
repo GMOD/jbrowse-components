@@ -1,3 +1,5 @@
+import { getBpDisplayStr } from '@jbrowse/core/util'
+
 import { buildRecordHit, buildVariantHit } from './buildVariantHit.ts'
 import { getTooltipRows } from './getTooltipRows.ts'
 
@@ -20,6 +22,7 @@ test('a site with no ALT alleles builds a tooltip instead of throwing', () => {
     insertedBp: 0,
     type: 'remark',
     svType: '',
+    svAlleles: [],
     genotypeCodes: new Uint32Array(),
   }
   const fields = buildVariantHit({
@@ -45,6 +48,7 @@ describe('a genotype hit', () => {
     insertedBp: 0,
     type: 'SNV',
     svType: '',
+    svAlleles: [],
     genotypeCodes: new Uint32Array(),
   }
   const hit = (over: Partial<VariantFeatureInfo>, insertedBp = 0) =>
@@ -85,6 +89,7 @@ describe('a records-band hit', () => {
     insertedBp: 42,
     type: 'SNV',
     svType: '',
+    svAlleles: [],
     genotypeCodes: new Uint32Array(),
   }
 
@@ -96,5 +101,14 @@ describe('a records-band hit', () => {
       { key: 'insertion', label: 'Insertion', value: '42bp' },
       { key: 'description', label: 'Description', value: 'SNV' },
     ])
+  })
+  // A sequence-resolved SV writes every deleted base in REF, which the cell
+  // hover abbreviates to its length, and so does the record's.
+  test('a sequence-resolved REF reads as its length', () => {
+    const ref = 'A'.repeat(5000)
+    expect(
+      buildRecordHit({ info: { ...info, ref, alt: ['A'] }, featureId: 'v0' })
+        .alleles,
+    ).toBe(`${getBpDisplayStr(5000)} > A`)
   })
 })

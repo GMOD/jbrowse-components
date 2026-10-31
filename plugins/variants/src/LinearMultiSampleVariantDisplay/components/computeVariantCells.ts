@@ -1,5 +1,6 @@
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { svClassOfAlt } from '@jbrowse/core/util/svAlt'
 
 import { getInsertedBp } from '../../shared/alleleLength.ts'
 import { makeHueValueTable } from '../../shared/cellHue.ts'
@@ -48,6 +49,14 @@ export interface VariantCellData extends CellHueValues {
   // `1 << CELL_*` for every cell-color category this pass painted; the legend
   // lists exactly these
   paintedCategories: number
+}
+
+// the per-allele half of `svClassOf`, which named the record's class
+function svAlleles(alts: string[], ref: string, feature: Feature) {
+  const info = feature.get('INFO') as Record<string, unknown> | undefined
+  return alts.map(
+    (alt, alleleIndex) => !!svClassOfAlt(alt, { ref, info, alleleIndex }),
+  )
 }
 
 export function computeVariantCells({
@@ -168,18 +177,21 @@ export function computeVariantCells({
 
     const inserted = getInsertedBp(feature)
     const svType = feature.get(SV_TYPE_FIELD)
+    const alt = (feature.get('ALT') as string[] | undefined) ?? []
+    const ref = feature.get('REF') as string
     featureInfo.push({
       featureId,
       // a monomorphic record's ALT '.' parses to undefined, and consumers read
       // `alt` unguarded
-      alt: (feature.get('ALT') as string[] | undefined) ?? [],
-      ref: feature.get('REF') as string,
+      alt,
+      ref,
       name: feature.get('name') ?? '',
       description: (feature.get('description') as string | undefined) ?? '',
       length: end - start,
       insertedBp: inserted,
       type: feature.get('type') ?? '',
       svType: typeof svType === 'string' ? svType : '',
+      svAlleles: svType ? svAlleles(alt, ref, feature) : [],
       genotypeCodes: codes,
     })
     insertedBp[featureIdx] = inserted

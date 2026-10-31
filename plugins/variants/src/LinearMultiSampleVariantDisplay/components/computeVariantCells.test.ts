@@ -743,15 +743,20 @@ test('a site with no ALT alleles reports an empty alt list', () => {
 
 // The records band draws and colors a record by this class, the one
 // `svClassOf` gives the record's `svType` field, so it rides in the payload.
-test('each record carries its SV class, empty for an SNV', () => {
+test('each record carries its SV class and which alleles are structural', () => {
   const samples = ['S1']
   const features = [
     vcfFeature(
-      'ctgA	100	sv1	N	<DEL>	.	PASS	SVTYPE=DEL;END=900	GT	0/1',
+      'ctgA\t100\tsv1\tN\t<DEL>\t.\tPASS\tSVTYPE=DEL;END=900\tGT\t0/1',
       samples,
       'sv1',
     ),
-    vcfFeature('ctgA	200	rs1	A	G	.	PASS	.	GT	0/1', samples, 'rs1'),
+    vcfFeature('ctgA\t200\trs1\tA\tG\t.\tPASS\t.\tGT\t0/1', samples, 'rs1'),
+    vcfFeature(
+      'ctgA\t300\tma1\tA\tAT,<DEL>\t.\tPASS\tEND=900\tGT\t1/2',
+      samples,
+      'ma1',
+    ),
   ]
   const result = computeVariantCells({
     filteredVariants: features.map(feature => ({
@@ -763,7 +768,11 @@ test('each record carries its SV class, empty for an SNV', () => {
     referenceDrawingMode: 'draw',
     ...genotypeArgs(features),
   })
-  expect(result.featureInfo.map(i => i.svType)).toEqual(['DEL', ''])
+  expect(result.featureInfo.map(i => [i.svType, i.svAlleles])).toEqual([
+    ['DEL', [true]],
+    ['', []],
+    ['DEL', [false, true]],
+  ])
 })
 
 // featureInfo is the genotype record the anchored sort reads (via the

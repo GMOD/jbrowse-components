@@ -294,9 +294,10 @@ LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
 `paintFeatureBand` on screen and in the export, and
 `performMultiRegionHitDetection` for the pick. Nested records stack.
 
-- **Only SVs.** `VariantFeatureInfo.svType` is the record's `svClassOf`
-  class, set in the worker; a record with none is left out, so a region of
-  SNVs spends 0 px.
+- **Only SVs over rows.** `VariantFeatureInfo.svType` is the record's
+  `svClassOf` class, set in the worker; while genotype rows draw, a record with
+  none is left out, so a region of SNVs spends 0 px. With no rows (a
+  sites-only VCF) the band draws every record (`recordsSvOnly`).
 - **Its height is its stack, capped.** The `full` rung's packed height at
   compact feature size, up to `records.growMaxHeight` (170); past the cap the
   ladder fits the stack in. The band takes that height from the rows. Whether

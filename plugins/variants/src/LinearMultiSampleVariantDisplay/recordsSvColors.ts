@@ -19,9 +19,24 @@ function svClassField() {
  */
 export function svClassColors(featureInfo: readonly VariantFeatureInfo[]) {
   const field = svClassField()
-  return Uint32Array.from(featureInfo, ({ svType }) =>
-    getCachedABGR(field.color(field.key(svType))),
-  )
+  const colorOf = new Map<string, number>()
+  return Uint32Array.from(featureInfo, ({ svType }) => {
+    const known = colorOf.get(svType)
+    const color = known ?? getCachedABGR(field.color(field.key(svType)))
+    colorOf.set(svType, color)
+    return color
+  })
+}
+
+/** The SV classes `featureInfo` holds, one each, skipping its other records. */
+export function svClassesOf(featureInfo: readonly VariantFeatureInfo[]) {
+  const classes = new Set<string>()
+  for (const { svType } of featureInfo) {
+    if (svType !== '') {
+      classes.add(svType)
+    }
+  }
+  return classes
 }
 
 /** The key for the SV classes the band's records hold, in the preset order. */

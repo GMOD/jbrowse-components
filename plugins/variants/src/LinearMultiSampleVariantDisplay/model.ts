@@ -126,7 +126,7 @@ import {
   buildRecordsRenderData,
   recordsDisplayConfig,
 } from './recordsRenderData.ts'
-import { svClassColors, svClassScale } from './recordsSvColors.ts'
+import { svClassColors, svClassScale, svClassesOf } from './recordsSvColors.ts'
 import { getVariantColorScales } from './variantLegend.ts'
 import {
   recordsBandBounds,
@@ -1296,6 +1296,15 @@ export function stateModelFactory(
           get recordCarrierSamples(): readonly string[] {
             return carrierSamples.get()
           },
+          /**
+           * #getter
+           * Whether the records band is the SV band: while genotype rows are
+           * drawn. With none (a sites-only VCF) it draws every record the
+           * filter admits, and states no carriers.
+           */
+          get recordsSvOnly() {
+            return self.sources.length > 0
+          },
         }
       })
       .views(self => ({
@@ -1306,7 +1315,7 @@ export function stateModelFactory(
          */
         get recordCarriers(): ReadonlyMap<string, RecordCarriers> {
           const { cellData } = self
-          return cellData && self.showRecords
+          return cellData && self.showRecords && self.recordsSvOnly
             ? countRecordCarriers(cellData, self.recordCarrierSamples)
             : new Map<string, RecordCarriers>()
         },
@@ -1392,6 +1401,7 @@ export function stateModelFactory(
             const featureColors = self.regionRecordColors
             const labels = self.recordsLabels
             const carriers = self.recordCarriers
+            const svOnly = self.recordsSvOnly
             for (const k in cellData.perRegionCellData) {
               const displayedRegionIndex = Number(k)
               const data = cellData.perRegionCellData[k]!
@@ -1407,6 +1417,7 @@ export function stateModelFactory(
                     region,
                     labels,
                     carriers,
+                    svOnly,
                     config,
                     jexl,
                   }),
@@ -2183,36 +2194,40 @@ export function stateModelFactory(
         /**
          * #getter
          * The box of the hovered genotype cell or record, for the chrome's
-         * highlight. A cell is its instance through the cell mark's ink, moved
-         * down by the bands above the rows; a record is the box plugin-features
-         * laid out and the band painted, at the top.
+         * highlight: a record is the box plugin-features laid out and the band
+         * painted, at the top.
          */
         get hoverInk(): HighlightRect[] {
-          const {
-            hoveredCell: cell,
-            hoveredRecord: record,
-            hoveredMatrixCell: matrixCell,
-          } = self
-          if (record) {
-            const region = self.host.visibleRegions.find(
+          const record = self.hoveredRecord
+          const region =
+            record &&
+            self.host.visibleRegions.find(
               r => r.displayedRegionIndex === record.displayedRegionIndex,
             )
-            const { feature } = record
-            return region
+          return record
+            ? region
               ? [
                   {
                     ...spanRect(
                       makeBpMapper(region),
-                      feature.startBp,
-                      feature.endBp,
+                      record.feature.startBp,
+                      record.feature.endBp,
                       1,
                     ),
-                    top: feature.topPx,
-                    height: feature.bottomPx - feature.topPx,
+                    top: record.feature.topPx,
+                    height: record.feature.bottomPx - record.feature.topPx,
                   },
                 ]
               : []
-          }
+            : this.genotypeHoverInk
+        },
+        /**
+         * #getter
+         * The box of the hovered genotype cell: its instance through the cell
+         * mark's ink, moved down by the bands above the rows.
+         */
+        get genotypeHoverInk(): HighlightRect[] {
+          const { hoveredCell: cell, hoveredMatrixCell: matrixCell } = self
           if (matrixCell) {
             const { left } = self.columnGeometry
             const top = self.rowsTopOffset
@@ -2276,9 +2291,9 @@ export function stateModelFactory(
           return cellData && self.showRecords && self.recordsColorBySvClass
             ? [
                 svClassScale(
-                  Object.values(cellData.perRegionCellData).flatMap(d =>
-                    d.featureInfo.map(info => info.svType),
-                  ),
+                  Object.values(cellData.perRegionCellData).flatMap(d => [
+                    ...svClassesOf(d.featureInfo),
+                  ]),
                 ),
               ].filter(scale => scale.entries.length > 0)
             : []

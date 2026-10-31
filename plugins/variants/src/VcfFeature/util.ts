@@ -79,7 +79,7 @@ export function getEnd(variant: Variant, start: number) {
 // compact base-pair count. Single source of the abbreviation threshold so ref
 // and alt never disagree within one rendered string.
 const ABBREVIATE_ALLELE_THRESHOLD = 10
-function abbreviateAllele(seq: string) {
+export function abbreviateAllele(seq: string) {
   return seq.length >= ABBREVIATE_ALLELE_THRESHOLD
     ? getBpDisplayStr(seq.length)
     : seq

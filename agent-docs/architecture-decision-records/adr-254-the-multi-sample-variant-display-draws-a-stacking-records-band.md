@@ -27,12 +27,20 @@ alternative now.
 
 ## Decision
 
-- **The band is the structural variants.** A record with an SV class
-  (`svClassOf`: a symbolic allele, a breakend, or a sequence-resolved
-  allele of `SV_MIN_LENGTH` or more) is drawn; an SNV or small indel is not,
-  so a region without SVs spends 0 px. The worker carries each record's class
-  in the payload (`VariantFeatureInfo.svType`, the `svType` field
-  `hasSvType` reads), the one source for both the filter and the color.
+Three parts are slice one's and provisional, to be settled when the two
+displays merge, which amends them rather than contradicting them: the height
+rule (taken from the rows), `records.show` defaulting to `false`, and the
+admission rule below.
+
+- **Over genotype rows the band is the structural variants** (provisional).
+  A record with an SV class (`svClassOf`: a symbolic allele, a breakend, or a
+  sequence-resolved allele of `SV_MIN_LENGTH` or more) is drawn; an SNV or
+  small indel is not, so a region without SVs spends 0 px. With no genotype
+  rows drawn (a sites-only VCF), the band is the only drawing of the records
+  and draws every one the display's filter admits, stating no carriers. One
+  predicate, `svOnly` in `buildRecordsRenderData`. The worker carries each
+  record's class in the payload (`VariantFeatureInfo.svType`, the `svType`
+  field `hasSvType` reads), the one source for both the filter and the color.
 - **A record is not a genotype.** Under the genotype colors (no
   `encoding.color`) a record takes its SV class's color from the `svType`
   preset and the key lists the classes present as an "SV type" section above
@@ -44,8 +52,10 @@ alternative now.
   drop the description part alone: past the cap, names thin and go whole.
 - **Each record says how many people carry it**: its label ends with the
   share and the hover breaks it down into carriers, non-carriers and no-calls
-  (`recordCarriers.ts`). A sample with any called alt allele carries it, once
-  in either row unit. The share is of every sample shown as a row
+  (`recordCarriers.ts`). A sample calling one of the record's structural ALT
+  alleles carries it, once in either row unit; at an un-decomposed site a
+  small allele beside the SV carries nothing (`VariantFeatureInfo.svAlleles`,
+  the per-allele half of `svClassOf`, set in the worker). The share is of every sample shown as a row
   (`recordCarrierSamples`), no-calls included (Colin, 2026-10-30), so it
   matches the matrix under the band. Counted
   on the main thread from each record's `genotypeCodes`, once per payload and
@@ -54,12 +64,15 @@ alternative now.
   `LinearMultiSampleVariantDisplay`. `growMaxHeight` and not `height`: under
   ADR-232 a fixed band's `height` is its reserved height, and this band's
   height is its content up to a cap, the word LinearBasicDisplay and
-  LinearVariantDisplay already use for that. `show` defaults to `false`;
-  default-on is Colin's open call.
-- **Height**: the `full` rung's packed height at compact feature size, capped
-  at `growMaxHeight`, taken from `availableHeight` like the connector zone
-  (`variantTopBandsGeometry`). Past the cap, LinearBasicDisplay's ladder fits
-  the stack in. The seam drag writes `growMaxHeight` from the drawn height.
+  LinearVariantDisplay already use for that. `show` defaults to `false`
+  (provisional); default-on is Colin's open call.
+- **Height** (provisional): the `full` rung's packed height at compact feature
+  size, capped at `growMaxHeight`, taken from `availableHeight` like the
+  connector zone (`variantTopBandsGeometry`). Past the cap, LinearBasicDisplay's
+  ladder fits the stack in. The seam drag writes `growMaxHeight` from the drawn
+  height, except that a drag down on a band shorter than its cap keeps the
+  cap: such a band cannot grow, and lowering the cap to it would squeeze the
+  next, taller stack.
 - **One ladder.** The band hosts `fitLadderViews` over a plain `FitLadderHost`
   rather than restoring the lane's four-rung copy. The host is not the display
   model: its `facet` is the sample facet.

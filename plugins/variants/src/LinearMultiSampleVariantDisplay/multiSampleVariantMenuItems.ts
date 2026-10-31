@@ -104,7 +104,7 @@ export function variantShowSubmenuItems(
           {
             label: 'Records',
             helpText:
-              'Draw the records themselves above the genotype rows, at their genomic positions and in the color their cells take, stacked as a variant track stacks them. The band is as tall as its records need, up to its height setting, and takes that height from the rows',
+              'Draw the structural variants above the genotype rows at their genomic positions, stacked as a variant track stacks them, colored by SV type and labelled with the share of samples carrying each. With no genotype rows drawn, every record shows. The band is as tall as its records need, up to its maximum height, and takes that height from the rows',
             type: 'checkbox' as const,
             checked: self.showRecords,
             onClick: () => {

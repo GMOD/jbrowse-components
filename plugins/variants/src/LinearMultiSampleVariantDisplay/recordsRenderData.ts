@@ -82,14 +82,16 @@ function labelOf(labels: RecordsLabels, jexl: JexlInstance) {
  * The band's records as plugin-features render data, rebuilt from the cell
  * payload, which already holds each record's span, ID, description, SV class
  * and resolved color: the band costs no RPC, and `records.show` stays a
- * render-tier setting. The band is the structural variants: a record with no
- * SV class (an SNV, a small indel) is left out.
+ * render-tier setting. Over genotype rows (`svOnly`) the band is the
+ * structural variants, a record with no SV class (an SNV, a small indel) left
+ * out; with no rows drawn it is every record the display's filter admitted.
  */
 export function buildRecordsRenderData({
   data,
   region,
   labels,
   carriers,
+  svOnly,
   config,
   jexl,
 }: {
@@ -97,6 +99,7 @@ export function buildRecordsRenderData({
   region: RecordsRegion
   labels: RecordsLabels
   carriers: ReadonlyMap<string, RecordCarriers>
+  svOnly: boolean
   config: DisplayConfig
   jexl: JexlInstance
 }): LayoutRegionData {
@@ -122,7 +125,7 @@ export function buildRecordsRenderData({
     })
   }
   const features = featureInfo.flatMap((info, f) =>
-    info.svType === '' ? [] : [recordFeature(info, f)],
+    svOnly && info.svType === '' ? [] : [recordFeature(info, f)],
   )
   return {
     ...buildFeatureRenderData({

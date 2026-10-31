@@ -83,7 +83,7 @@ test.each([
   ['KIT', KIT, 51],
   ['TAS2R46', TAS2R46, 20],
 ])(
-  'the band letters every record at %s on one line, ID then description',
+  'the band letters every record at %s on one line: ID, description, carriers',
   (_, records, bpPerPx) => {
     const { display } = recordsDisplayAt(records, bpPerPx)
     const boxes = paintedText(display)
@@ -94,7 +94,9 @@ test.each([
         .filter(t => t.startsWith('>'))
         .sort(),
     ).toEqual(
-      records.map(([id, , , description]) => `${id} ${description}`).sort(),
+      records
+        .map(([id, , , description]) => `${id} ${description} 100%`)
+        .sort(),
     )
   },
 )
@@ -126,6 +128,28 @@ test('the band lays out only the SV records', () => {
       .flatbushItems.map(i => i.featureId)
       .sort(),
   ).toEqual(['sv1', 'sv2'])
+})
+
+// With no genotype rows the band is the only drawing of the records, so it
+// draws every one the filter admitted, and names no carriers.
+test('a sites-only display lays out every record, SNVs included', () => {
+  const { display } = recordsDisplayAt(
+    [
+      ['rs1', 1000, 1001, 'A -> G', ''],
+      ['sv1', 2000, 9000, '<DEL> 7Kbp', 'DEL'],
+    ],
+    10,
+    {},
+    false,
+  )
+  const data = display.recordsLaidOutDataMap.get(0)!
+  expect(data.flatbushItems.map(i => i.featureId).sort()).toEqual([
+    'rs1',
+    'sv1',
+  ])
+  expect(data.floatingLabelsData.get('sv1')?.nameLabel?.text).toBe(
+    'sv1 <DEL> 7Kbp',
+  )
 })
 
 test('an SNV-only region gives the band no height', () => {

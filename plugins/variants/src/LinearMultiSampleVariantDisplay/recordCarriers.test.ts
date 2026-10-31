@@ -16,7 +16,12 @@ const SAMPLES = ['S0', 'S1', 'S2', 'S3']
 // S0 carries on both haplotypes, S1 on one, S2 is reference, S3 a no-call
 const DICT = ['1|1', '0|1', '0|0', '.|.', '0/2']
 
-function cellData(codes: number[], svType = 'DEL') {
+function cellData(
+  codes: number[],
+  svType = 'DEL',
+  alt = ['<DEL>'],
+  svAlleles = [true],
+) {
   return cellDataOf({
     samplePloidy: Object.fromEntries(SAMPLES.map(s => [s, 2])),
     rowNames: SAMPLES,
@@ -33,6 +38,8 @@ function cellData(codes: number[], svType = 'DEL') {
         [
           featureInfoOf('sv1', {
             svType,
+            alt,
+            svAlleles,
             description: '<DEL> 7Kbp',
             length: 7000,
             genotypeCodes: Uint32Array.from(codes),
@@ -50,10 +57,14 @@ test('a sample counts once, whatever it carries, and a no-call still counts', ()
   ).toEqual({ carriers: 2, nonCarriers: 1, noCall: 1 })
 })
 
-test('a sample carrying another alt allele carries the record', () => {
-  expect(
-    countRecordCarriers(cellData([5, 3, 3, 3]), SAMPLES).get('sv1')?.carriers,
-  ).toBe(1)
+// An un-decomposed site: ALT1 a 2 bp change, ALT2 the deletion that makes
+// the record an SV. Calling ALT1 alone does not carry the deletion.
+test('only the structural alleles carry a multi-allelic SV record', () => {
+  const counted = countRecordCarriers(
+    cellData([2, 5, 3, 4], 'DEL', ['TT', '<DEL>'], [false, true]),
+    SAMPLES,
+  ).get('sv1')
+  expect(counted).toEqual({ carriers: 1, nonCarriers: 2, noCall: 1 })
 })
 
 test('a record with no SV class is not counted', () => {

@@ -1,6 +1,6 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
 
-import { makeSimpleAltString } from '../../VcfFeature/util.ts'
+import { abbreviateAllele, makeSimpleAltString } from '../../VcfFeature/util.ts'
 import { carrierSummary } from '../recordCarriers.ts'
 
 import type { VariantFeatureInfo } from '../../shared/types.ts'
@@ -104,7 +104,7 @@ export function buildRecordHit({
     genotype: '',
     sampleName: '',
     name: '',
-    alleles: `${info.ref} > ${info.alt.join(',')}`,
+    alleles: `${abbreviateAllele(info.ref)} > ${info.alt.map(abbreviateAllele).join(',')}`,
     featureName: info.name,
     description: info.description,
     length: getBpDisplayStr(info.length),
