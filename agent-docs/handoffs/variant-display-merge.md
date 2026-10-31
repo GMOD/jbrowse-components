@@ -102,6 +102,26 @@ rule over rows are marked provisional there (the default is settled: on).
   by default is settled: on.) Left: refilm the figures whose VCF draws rows,
   since the band now draws its small records over them too.
 
+## Left from the audit against the retired displays
+
+Compared with `643ea4fe89^`'s two displays; the plain regressions are fixed
+(labels, HTML tooltips, the scrolled export, the split view's record, the
+widget's samples). Still differing, besides C1's Show/hide rows:
+
+- No "Copy tooltip text" on a record (the feature track's
+  `featureContextMenu.ts`); `recordContextMenu.test.ts` pins the shorter
+  list with `toEqual`. The old multi-sample "Copy location" copied `ID loc`,
+  now the location alone.
+- No "Clear N highlights" track-menu row (LinearBasicDisplay's
+  `baseModel.ts`); a highlight clears one record at a time.
+- `heightMode`'s slot description (`configSchema.ts`) says it applies with
+  genotypes hidden; `recordsBandViews.ts` applies it with no samples only.
+- The split view and the details widget share `fullRecordOf`'s
+  `clickInFlight`, so one aborts the other's fetch; a record the adapter
+  does not find launches from the click's record, INFO-less, and the
+  junction walk stops there.
+- None of the fixes above has been looked at in the running app.
+
 ## Open calls (Colin)
 
 - **The multi-way synteny key** now sits under its anchor lane over the next
