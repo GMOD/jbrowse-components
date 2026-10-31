@@ -80,15 +80,16 @@ Claim a step here before starting it.
 
 ## Next
 
-1. **Push and release graphgenomeviewer and ARG** with their beta.19
-   adoption commits, after a look at graph's `fcd0a3d`. That commit feeds
-   `GetSubgraph`'s refName-index download to the pane's status line, and
-   nobody has watched it in the app.
-2. **Move the six beta.9 plugins onto beta.19 and `hostShim`** (msaview,
-   tandem-repeat, protein3d ×4), the way ARG went: bump, swap
-   `globalExternals` for `hostShim`, floor-check against beta.18, install the
-   gate and lint. Mind protein3d's and msaview's figure release gates.
-3. **At 5.0.0 stable,** move the v4 plugins and both templates onto
+Done 2026-10-30, released on npm: graphgenomeviewer 8.5.0, msaview 5.15.0,
+protein3d 1.28.0 and tandem-repeat 0.2.0 build against beta.19 through
+`hostShim`, each with a floor check (protein3d's at its documented beta.12,
+the rest at beta.18), the contract gate and the display lint rules. ARG,
+which is not on npm, went out through `pnpm betabuild` to
+`demos/arg/ab941addb70c/`. The store's hosted `latest/` bundles move only
+when jbrowse-plugin-list runs `pnpm dep`, and that has not run.
+
+1. **At 5.0.0 stable,** move the ten v4 plugins and both templates onto
    `hostShim`, with a generic `host-compat-probe.mjs` in the templates.
-4. **Grow the harness** toward graph's needs (above) only if a second plugin
-   suite wants the same shape.
+2. **Grow the harness** toward graph's needs (above) only if a second plugin
+   suite wants the same shape. ARG has no test that mounts its display, so
+   the gate there watches nothing yet.
