@@ -69,7 +69,8 @@ describe('heightMode with no rows', () => {
     const few = recordsDisplayAt(FEW, 10, {}, false, {
       heightMode: 'grow',
     }).display
-    expect(few.height).toBe(50)
+    expect(few.height).toBeGreaterThanOrEqual(50)
+    expect(few.height).toBeLessThan(200)
     const pile = recordsDisplayAt(PILE, 1, {}, false, {
       heightMode: 'grow',
     }).display

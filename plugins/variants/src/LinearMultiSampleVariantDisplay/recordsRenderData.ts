@@ -47,19 +47,32 @@ interface RecordsRegion {
 }
 
 /**
+ * The one-line label a record carries over genotype rows: name, description
+ * and carrier percent as `recordLabel`, so neither costs a label row.
+ */
+export const RECORD_LABEL_LINE: RecordsLabels = {
+  name: `jexl:get(feature,'recordLabel')`,
+  description: '',
+}
+
+/**
  * The plugin-features display config the band lays its records out with. A
  * literal, because a band has no config node of its own. A record has no
  * subfeatures, so `findGlyph` lands on `layoutBox` and the gene half is inert.
  *
- * Each record carries its `recordColor` and its one-line `recordLabel`, name,
- * description and carrier percent, so neither costs a label row. `filter` is empty
- * because the worker's `configuredFilters()` already admitted these records.
+ * Each record carries its `recordColor`; `labels` is `RECORD_LABEL_LINE` over
+ * rows, and with no rows the display's own label fields, laid out as a
+ * feature track lays them. `filter` is empty because the worker's
+ * `configuredFilters()` already admitted these records.
  */
-export function recordsDisplayConfig(featureHeight: number): DisplayConfig {
+export function recordsDisplayConfig(
+  featureHeight: number,
+  labels: RecordsLabels,
+): DisplayConfig {
   return {
     color: { value: `jexl:get(feature,'recordColor')`, field: '' },
     featureHeight,
-    labels: { name: `jexl:get(feature,'recordLabel')`, description: '' },
+    labels,
     tooltip: '',
     filter: [],
     ...GENE_GLYPH_DEFAULTS,

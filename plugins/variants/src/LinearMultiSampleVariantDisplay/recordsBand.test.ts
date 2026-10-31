@@ -147,9 +147,11 @@ test('a sites-only display lays out every record, SNVs included', () => {
     'rs1',
     'sv1',
   ])
-  expect(data.floatingLabelsData.get('sv1')?.nameLabel?.text).toBe(
-    'sv1 <DEL> 7Kbp',
-  )
+  // with no rows, labelled as a feature track letters them: the name, and
+  // the description under it
+  const labels = data.floatingLabelsData.get('sv1')
+  expect(labels?.nameLabel?.text).toBe('sv1')
+  expect(labels?.descriptionLabel?.text).toBe('<DEL> 7Kbp')
 })
 
 test('an SNV-only region gives the band no height', () => {
@@ -202,12 +204,12 @@ test('labels off letters nothing and reserves no label rows', () => {
 // on-screen pixel and descriptions past 0.1, so a dense window packs boxes
 // alone instead of fitting a label for each record.
 test.each([
-  [1000, 2, 'nothing', false, false, undefined],
-  [300, 6, 'names', true, false, 'r0'],
-  [100, 6, 'names and descriptions', true, true, 'r0 A -> G'],
+  [1000, 2, 'nothing', false, false, [undefined, undefined]],
+  [300, 6, 'names', true, false, ['r0', undefined]],
+  [100, 6, 'names and descriptions', true, true, ['r0', 'A -> G']],
 ])(
   '%i records %ibp apart over 1960px letter %s',
-  (count, spacing, _, names, descriptions, firstLabel) => {
+  (count, spacing, _, names, descriptions, firstLabels) => {
     const records: BandRecord[] = Array.from({ length: count }, (_, i) => [
       `r${i}`,
       i * spacing,
@@ -221,10 +223,12 @@ test.each([
       name: names ? name : '',
       description: descriptions ? description : '',
     })
-    expect(
-      display.recordsLaidOutDataMap.get(0)!.floatingLabelsData.get('r0')
-        ?.nameLabel?.text,
-    ).toBe(firstLabel)
+    const labels = display.recordsLaidOutDataMap
+      .get(0)!
+      .floatingLabelsData.get('r0')
+    expect([labels?.nameLabel?.text, labels?.descriptionLabel?.text]).toEqual(
+      firstLabels,
+    )
   },
 )
 
@@ -247,9 +251,10 @@ test('dense sub-pixel records with no labels collapse into one faded row', () =>
   expect(new Set(data.rectDensityFade)).toEqual(new Set([1]))
 })
 
-// The fit measures the records on screen, as LinearBasicDisplay's does: a
-// dense stretch buffered past the edge neither labels nor sizes the band.
-test('records buffered off screen leave the band its on-screen height', () => {
+// With no rows the fit and height measure the records on screen, as
+// LinearBasicDisplay's do; over rows every fetched record, so the rows under
+// the band hold still as a pan brings records on and off screen.
+describe('records buffered off screen', () => {
   const sparse: BandRecord[] = [['sv1', 100, 900, '<DEL>', 'DEL']]
   const offScreenPile: BandRecord[] = Array.from({ length: 200 }, (_, i) => [
     `far${i}`,
@@ -258,10 +263,24 @@ test('records buffered off screen leave the band its on-screen height', () => {
     '<DEL>',
     'DEL',
   ])
-  const alone = recordsDisplayAt(sparse, 1).display
-  const { display } = recordsDisplayAt([...sparse, ...offScreenPile], 1)
-  expect([...display.recordsOnScreenIds]).toEqual(['sv1'])
-  expect(display.topBands.recordsHeight).toBe(alone.topBands.recordsHeight)
+  const both = [...sparse, ...offScreenPile]
+
+  test('with no rows, size nothing', () => {
+    const grow = { heightMode: 'grow' }
+    const alone = recordsDisplayAt(sparse, 1, {}, false, grow).display
+    const { display } = recordsDisplayAt(both, 1, {}, false, grow)
+    expect([...display.recordsOnScreenIds]).toEqual(['sv1'])
+    expect(display.height).toBe(alone.height)
+  })
+
+  test('over rows, size the band', () => {
+    const alone = recordsDisplayAt(sparse, 1).display
+    const { display } = recordsDisplayAt(both, 1)
+    expect(display.recordsMeasureIds).toBeUndefined()
+    expect(display.topBands.recordsHeight).toBeGreaterThan(
+      alone.topBands.recordsHeight,
+    )
+  })
 })
 
 describe('the pointer over the band', () => {

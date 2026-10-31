@@ -133,6 +133,7 @@ import {
 import { placeVariantRows } from './placeVariantRows.ts'
 import { countRecordCarriers } from './recordCarriers.ts'
 import {
+  RECORD_LABEL_LINE,
   buildRecordsRenderData,
   recordSpans,
   recordsDisplayConfig,
@@ -278,7 +279,8 @@ function fetchRegionsForLayout(
  * which keeps the band's stack, and so its natural height, tight.
  */
 const RECORDS_FEATURE_HEIGHT = 10
-const RECORDS_DISPLAY_MODE = 'compact' as const
+
+const NO_RECORD_LABELS: RecordsLabels = { name: '', description: '' }
 
 const NO_FEATURE_IDS: ReadonlySet<string> = new Set()
 
@@ -1416,19 +1418,21 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The plugin-features display config the records band is laid out
-         * with (`recordsDisplayConfig`).
+         * The band's display mode: `compact` over rows, tight with its one
+         * label line; with no rows `normal`, a feature track's default.
          */
-        get recordsDisplayConfig() {
-          return recordsDisplayConfig(RECORDS_FEATURE_HEIGHT)
+        get recordsDisplayMode() {
+          return self.recordsOnly ? ('normal' as const) : ('compact' as const)
         },
+      }))
+      .views(self => ({
         /**
          * #getter
          * The size the band letters at, plugin-features's for its display
          * mode, so the width its packer reserved is the width the text draws.
          */
         get recordsFontSize() {
-          return labelFontSize(RECORDS_DISPLAY_MODE)
+          return labelFontSize(self.recordsDisplayMode)
         },
         /**
          * #getter
@@ -1447,7 +1451,7 @@ export function stateModelFactory(
           return {
             bpPerPx: self.view.coarseBpPerPx,
             reversedRegions,
-            displayMode: RECORDS_DISPLAY_MODE,
+            displayMode: self.recordsDisplayMode,
             pinnedFeatureIds: NO_FEATURE_IDS,
             expandedGeneIds: NO_FEATURE_IDS,
           }
@@ -1480,8 +1484,7 @@ export function stateModelFactory(
            * #getter
            * The records the band draws whose span touches the screen, as
            * LinearBasicDisplay's `onScreenFeatureIds`: what its labels gate
-           * on and its fit measures, so records buffered off screen cost
-           * neither.
+           * on, so records buffered off screen cost no label.
            */
           get recordsOnScreenIds(): ReadonlySet<string> {
             return onScreenIdsMemo(
@@ -1490,6 +1493,15 @@ export function stateModelFactory(
                 self.view.settledDynamicBlocks,
               ),
             )
+          },
+          /**
+           * #getter
+           * The records the band's fit and height measure: with no rows those
+           * on screen, as a feature track measures; over rows every fetched
+           * one, so the rows under the band hold still between fetches.
+           */
+          get recordsMeasureIds(): ReadonlySet<string> | undefined {
+            return self.recordsOnly ? this.recordsOnScreenIds : undefined
           },
         }
       })
@@ -1547,11 +1559,17 @@ export function stateModelFactory(
           const cellData =
             self.canRender && self.showRecords ? self.cellData : undefined
           if (cellData) {
-            const config = self.recordsDisplayConfig
+            // with no rows the display's own label fields, as a feature
+            // track letters them; over rows the one-line `recordLabel`
+            const visible = self.recordsVisibleLabels
+            const config = recordsDisplayConfig(
+              RECORDS_FEATURE_HEIGHT,
+              self.recordsOnly ? visible : RECORD_LABEL_LINE,
+            )
+            const labels = self.recordsOnly ? NO_RECORD_LABELS : visible
             const { jexl } = getEnv(self).pluginManager
             const { displayedRegions } = self.view
             const featureColors = self.regionRecordColors
-            const labels = self.recordsVisibleLabels
             const carriers = self.recordCarriers
             const svOnly = self.recordsSvOnly
             for (const k in cellData.perRegionCellData) {
@@ -1596,14 +1614,19 @@ export function stateModelFactory(
           get layoutInputs() {
             return self.recordsLayoutInputs
           },
+          // over rows the description rides the name's one line
           get showLabels() {
             const { name, description } = self.recordsVisibleLabels
-            return name !== '' || description !== ''
+            return name !== '' || (!self.recordsOnly && description !== '')
           },
-          effectiveShowDescriptions: false,
+          get effectiveShowDescriptions() {
+            return (
+              self.recordsOnly && self.recordsVisibleLabels.description !== ''
+            )
+          },
           facet: undefined,
           get fitMeasureFeatureIds() {
-            return self.recordsOnScreenIds
+            return self.recordsMeasureIds
           },
           get fitHeightToDisplay() {
             return !self.recordsOnly || self.fitHeightToDisplay
@@ -1616,7 +1639,9 @@ export function stateModelFactory(
           get fitTargetHeight() {
             return bands.get().recordsHeight
           },
-          labelFontSize: labelFontSize(RECORDS_DISPLAY_MODE),
+          get labelFontSize() {
+            return self.recordsFontSize
+          },
         }
         const ladder = observable(fitLadderViews(host), {
           fitLayoutAt: false,
@@ -1632,7 +1657,7 @@ export function stateModelFactory(
             recordsGrowMaxHeight: self.recordsGrowMaxHeight,
             recordsContentHeight: maxBottom(
               ladder.baseLaidOutDataMap,
-              self.recordsOnScreenIds,
+              self.recordsMeasureIds,
             ),
             recordsBounds: recordsBandBounds(self.height),
             lineZoneHeight: self.lineZoneHeight,
@@ -1661,7 +1686,7 @@ export function stateModelFactory(
               self.canRender
               ? Math.max(
                   MIN_GROW_HEIGHT,
-                  maxBottom(ladder.baseLaidOutDataMap, self.recordsOnScreenIds),
+                  maxBottom(ladder.baseLaidOutDataMap, self.recordsMeasureIds),
                 )
               : self.fitTargetHeight
           },
