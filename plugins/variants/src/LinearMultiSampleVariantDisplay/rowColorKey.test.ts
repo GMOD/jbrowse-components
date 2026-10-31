@@ -1,7 +1,9 @@
-import { createTestEnvironment } from './testEnv.ts'
+import { RECORDS_BAND_OFF, createTestEnvironment } from './testEnv.ts'
 
 function display() {
-  const { display } = createTestEnvironment().createDisplay()
+  const { display } = createTestEnvironment({
+    displayConfig: RECORDS_BAND_OFF,
+  }).createDisplay()
   display.setRowColorChoice('population')
   display.setSources([
     { name: 'S0', population: 'AFR' },

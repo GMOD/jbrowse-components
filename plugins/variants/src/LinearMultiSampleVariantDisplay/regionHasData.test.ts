@@ -1,6 +1,6 @@
 import { waitFor } from '@testing-library/react'
 
-import { createTestEnvironment } from './testEnv.ts'
+import { RECORDS_BAND_OFF, createTestEnvironment } from './testEnv.ts'
 
 // One RPC serves every region of a fetch and its payload replaces the last one
 // whole, while `fetchRegionsBatched` marks loaded only the regions it issued.
@@ -14,7 +14,9 @@ const REGIONS = [
 ]
 
 function twoRegionsLoaded() {
-  const { display, view } = createTestEnvironment().createDisplay()
+  const { display, view } = createTestEnvironment({
+    displayConfig: RECORDS_BAND_OFF,
+  }).createDisplay()
   view.setDisplayedRegions(REGIONS)
   display.setLoadedRegion(0, REGIONS[0]!, undefined)
   display.setLoadedRegion(1, REGIONS[1]!, undefined)
@@ -59,7 +61,9 @@ test('clearing the payload clears every region', () => {
 // answers at every zoom; only the matrix records the zoom it fetched at.
 test('a fetch at genomic positions stays current across a zoom', async () => {
   jest.useFakeTimers()
-  const { display, view, mockRpcCall } = createTestEnvironment().createDisplay()
+  const { display, view, mockRpcCall } = createTestEnvironment({
+    displayConfig: RECORDS_BAND_OFF,
+  }).createDisplay()
   mockRpcCall.mockImplementation((_sid: string, method: string) =>
     method === 'MultiSampleVariantGetSources'
       ? Promise.resolve({ sources: [{ name: 'HG001' }], warnings: [] })

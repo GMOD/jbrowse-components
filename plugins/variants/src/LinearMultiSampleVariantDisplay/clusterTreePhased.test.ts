@@ -1,5 +1,5 @@
 import { runGenotypeClustering } from '../shared/runGenotypeClustering.ts'
-import { createTestEnvironment } from './testEnv.ts'
+import { RECORDS_BAND_OFF, createTestEnvironment } from './testEnv.ts'
 
 // The phased counterpart to clusterTreeLands.test.ts. There the rows the tree
 // names are samples; here they are haplotypes, and the display only knows how
@@ -22,7 +22,9 @@ const regions = [
 ]
 
 async function clusterPhased() {
-  const { display } = createTestEnvironment().createDisplay()
+  const { display } = createTestEnvironment({
+    displayConfig: RECORDS_BAND_OFF,
+  }).createDisplay()
   display.setSources(SOURCES)
   display.setUnit('haplotype')
   // samplePloidy reaches the model only through cellData, which is what
@@ -46,7 +48,9 @@ async function clusterPhased() {
 }
 
 test('phased mode reports itself ready to cluster once samplePloidy lands', () => {
-  const { display } = createTestEnvironment().createDisplay()
+  const { display } = createTestEnvironment({
+    displayConfig: RECORDS_BAND_OFF,
+  }).createDisplay()
   display.setSources(SOURCES)
   display.setUnit('haplotype')
   expect(display.clusteringReady).toBe(false)

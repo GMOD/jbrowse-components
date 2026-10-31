@@ -1,5 +1,5 @@
 import { runGenotypeClustering } from '../shared/runGenotypeClustering.ts'
-import { createTestEnvironment } from './testEnv.ts'
+import { RECORDS_BAND_OFF, createTestEnvironment } from './testEnv.ts'
 
 import type { ProcessedSource } from '../shared/types.ts'
 import type { LinearMultiSampleVariantDisplayModel } from './model.ts'
@@ -55,6 +55,7 @@ function loaded({
 }: Arrangement & { phased?: boolean } = {}) {
   const { display } = createTestEnvironment({
     displayConfig: {
+      ...RECORDS_BAND_OFF,
       ...arrangementConfig(arrangement),
       ...(phased ? { unit: 'haplotype' } : {}),
     },

@@ -25,11 +25,12 @@ import { DEFAULT_RECORDS_MAX_HEIGHT } from './variantTopBands.ts'
  * to its stack, up to `maxHeight`; past that names thin and go, then boxes
  * shrink. Past 0.2 records per pixel names go, past 0.1 descriptions, as on a
  * feature track. Hovering a record reports it and its carriers, and clicking
- * opens its details. At genomic positions only.
+ * opens its details. At genomic positions only. On by default: a file or a
+ * region with no SV spends 0 px on it.
  *
  * With no genotype rows (a VCF with no samples, or `genotypes.show` off) the
- * band is the whole display whatever `show` says: every record, in the
- * feature track's default color, lettered as a `LinearVariantDisplay` letters
+ * band is the whole display whatever `show` says: every record, an SV in its
+ * SV type's color and the rest in the feature track's default, lettered as a `LinearVariantDisplay` letters
  * it (the description under the name, no carrier share) and sized by the
  * display's `heightMode`. Past `maxFeatureScreenDensity` records per pixel it
  * refuses the window with the region-too-large banner and its Force load, as
@@ -42,7 +43,7 @@ import { DEFAULT_RECORDS_MAX_HEIGHT } from './variantTopBands.ts'
  *
  * #example
  * ```js
- * { type: 'LinearMultiSampleVariantDisplay', records: { show: true } }
+ * { type: 'LinearMultiSampleVariantDisplay', records: { show: false } }
  * ```
  * ```js
  * {
@@ -59,9 +60,9 @@ export const recordsBandConfigSchema = ConfigurationSchema(
      */
     show: {
       type: 'boolean',
-      defaultValue: false,
+      defaultValue: true,
       description:
-        'draw the structural variants themselves above the genotype rows, at their genomic positions',
+        'draw the structural variants themselves above the genotype rows, at their genomic positions; a region with none spends no height',
     },
     /**
      * #slot

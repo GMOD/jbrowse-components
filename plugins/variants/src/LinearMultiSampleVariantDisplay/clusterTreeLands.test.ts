@@ -1,5 +1,5 @@
 import { runGenotypeClustering } from '../shared/runGenotypeClustering.ts'
-import { createTestEnvironment } from './testEnv.ts'
+import { RECORDS_BAND_OFF, createTestEnvironment } from './testEnv.ts'
 
 const SOURCES = [{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }]
 
@@ -16,7 +16,9 @@ const regions = [
 // the "Run clustering" button and the declarative `runClustering: true` autorun
 // both call.
 async function cluster() {
-  const { display } = createTestEnvironment().createDisplay()
+  const { display } = createTestEnvironment({
+    displayConfig: RECORDS_BAND_OFF,
+  }).createDisplay()
   display.setSources(SOURCES)
   await runGenotypeClustering({
     model: display,

@@ -2,7 +2,7 @@ import { setConf } from '@jbrowse/core/configuration'
 import { getLeafNames } from '@jbrowse/tree-sidebar'
 
 import { runGenotypeClustering } from '../shared/runGenotypeClustering.ts'
-import { createTestEnvironment } from './testEnv.ts'
+import { RECORDS_BAND_OFF, createTestEnvironment } from './testEnv.ts'
 
 // Sample metadata as samplesTsv supplies it: `population` is what "Color by…"
 // and "Group by…" key on.
@@ -22,7 +22,9 @@ const RUN = {
 }
 
 function clusteredDisplay() {
-  const { display } = createTestEnvironment().createDisplay()
+  const { display } = createTestEnvironment({
+    displayConfig: RECORDS_BAND_OFF,
+  }).createDisplay()
   display.setSources(SOURCES)
   display.setRowOrder(CLUSTERED, { tree: CLUSTERED_TREE, ...RUN })
   return display
@@ -57,7 +59,9 @@ describe('recoloring does not disturb the arrangement', () => {
   // Rows are haplotypes after a phased clustering run, while `adapterSamples`
   // is still sample-level — re-deriving from it halved the row count.
   it('keeps the haplotype rows in phased mode', () => {
-    const { display } = createTestEnvironment().createDisplay()
+    const { display } = createTestEnvironment({
+      displayConfig: RECORDS_BAND_OFF,
+    }).createDisplay()
     display.setUnit('haplotype')
     display.setSources(SOURCES)
     const haplotypes = ['S2', 'S0', 'S1'].flatMap(sampleName => [
@@ -77,7 +81,9 @@ describe('recoloring does not disturb the arrangement', () => {
 
 describe('the facet bands over the arranged order', () => {
   it('bands the rows a drag left behind', () => {
-    const { display } = createTestEnvironment().createDisplay()
+    const { display } = createTestEnvironment({
+      displayConfig: RECORDS_BAND_OFF,
+    }).createDisplay()
     display.setSources(SOURCES)
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
     display.facetByField('population')
@@ -89,7 +95,9 @@ describe('the facet bands over the arranged order', () => {
   // The band is resolved on the read, over whatever `rows.sort` holds, so a drag
   // that moves a sample into another band has nowhere to land.
   it('snaps a cross-band drag back', () => {
-    const { display } = createTestEnvironment().createDisplay()
+    const { display } = createTestEnvironment({
+      displayConfig: RECORDS_BAND_OFF,
+    }).createDisplay()
     display.setSources(SOURCES)
     display.facetByField('population')
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
@@ -104,7 +112,9 @@ describe('the facet bands over the arranged order', () => {
   // The bands win over a whole-cohort tree: a band draws only a clade of
   // exactly its rows, and AFR (S0, S2) is none in this one.
   it('wins over a cluster tree that holds no clade of a band', () => {
-    const { display } = createTestEnvironment().createDisplay()
+    const { display } = createTestEnvironment({
+      displayConfig: RECORDS_BAND_OFF,
+    }).createDisplay()
     display.setSources(SOURCES)
     display.setRowOrder([{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }], {
       tree: '((S0,S1),S2);',
@@ -119,7 +129,9 @@ describe('the facet bands over the arranged order', () => {
   })
 
   it('keeps the bands when a reorder drops the tree', () => {
-    const { display } = createTestEnvironment().createDisplay()
+    const { display } = createTestEnvironment({
+      displayConfig: RECORDS_BAND_OFF,
+    }).createDisplay()
     display.setSources(SOURCES)
     display.setRowOrder([{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }], {
       tree: '((S0,S1),S2);',
@@ -136,7 +148,9 @@ describe('the facet bands over the arranged order', () => {
   // A phased run's order names haplotype rows, and expansion spreads every source
   // field onto each one — so the attribute the band reads is there.
   it('bands the haplotype rows a phased run produced', () => {
-    const { display } = createTestEnvironment().createDisplay()
+    const { display } = createTestEnvironment({
+      displayConfig: RECORDS_BAND_OFF,
+    }).createDisplay()
     display.setUnit('haplotype')
     display.setSources(SOURCES)
     display.setCellData({
@@ -171,7 +185,9 @@ describe('a tree per band', () => {
   ]
 
   async function bandedRun() {
-    const { display } = createTestEnvironment().createDisplay()
+    const { display } = createTestEnvironment({
+      displayConfig: RECORDS_BAND_OFF,
+    }).createDisplay()
     display.setSources(COHORT)
     display.facetByField('population')
     const partitions: unknown[] = []
@@ -390,7 +406,9 @@ describe('a rendering-mode switch renames the rows', () => {
   // The coloring is resolved on the read, so the renamed rows arrive already
   // tinted.
   it('keeps the configured coloring on the renamed rows', () => {
-    const { display } = createTestEnvironment().createDisplay()
+    const { display } = createTestEnvironment({
+      displayConfig: RECORDS_BAND_OFF,
+    }).createDisplay()
     display.setSources(SOURCES)
     display.setRowColorChoice('population')
 
@@ -480,7 +498,9 @@ const ONE_VARIANT = {
 
 describe('sorting by genotype keeps what the arrangement put on the rows', () => {
   function sortableDisplay() {
-    const { display } = createTestEnvironment().createDisplay()
+    const { display } = createTestEnvironment({
+      displayConfig: RECORDS_BAND_OFF,
+    }).createDisplay()
     display.setSources(SOURCES)
     display.setCellData(
       ONE_VARIANT as unknown as Parameters<typeof display.setCellData>[0],
@@ -511,7 +531,9 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
   // In phased mode the sorted rows are haplotypes — the same failure as above,
   // in the mode neither test above runs in.
   it('keeps the colorBy palette through a sort in phased mode', () => {
-    const { display } = createTestEnvironment().createDisplay()
+    const { display } = createTestEnvironment({
+      displayConfig: RECORDS_BAND_OFF,
+    }).createDisplay()
     display.setUnit('haplotype')
     display.setSources(SOURCES)
     display.setCellData({

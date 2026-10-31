@@ -155,16 +155,33 @@ test('a sites-only display lays out every record, SNVs included', () => {
   expect(labels?.descriptionLabel?.text).toBe('<DEL> 7Kbp')
 })
 
+const SNVS: BandRecord[] = [
+  ['rs1', 1000, 1001, 'A -> G', ''],
+  ['rs2', 3000, 3002, 'AT -> A', ''],
+]
+
 test('an SNV-only region gives the band no height', () => {
-  const { display } = recordsDisplayAt(
-    [
-      ['rs1', 1000, 1001, 'A -> G', ''],
-      ['rs2', 3000, 3002, 'AT -> A', ''],
-    ],
-    10,
-  )
+  const { display } = recordsDisplayAt(SNVS, 10)
+  expect(display.showRecords).toBe(true)
   expect(display.topBands.recordsHeight).toBe(0)
   expect(display.rowsTopOffset).toBe(0)
+})
+
+// Records are on by default, so an SNV-only file must lay out exactly as it
+// did with the band off.
+test('with the band on by default, an SNV-only file moves nothing', () => {
+  const on = recordsDisplayAt(SNVS, 10).display
+  const off = recordsDisplayAt(SNVS, 10, { show: false }).display
+  const layout = (d: typeof on) => ({
+    rowsTopOffset: d.rowsTopOffset,
+    availableHeight: d.availableHeight,
+    rowHeight: d.effectiveRowHeight,
+    legendTop: d.legendTop,
+    height: d.height,
+    colorScales: d.colorScales,
+  })
+  expect(off.showRecords).toBe(false)
+  expect(layout(on)).toEqual(layout(off))
 })
 
 // The cells paint the genotype colors, which name no record, so the records

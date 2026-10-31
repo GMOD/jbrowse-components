@@ -294,9 +294,11 @@ LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
 `paintFeatureBand` on screen and in the export, and
 `performMultiRegionHitDetection` for the pick. Nested records stack.
 
-- **Only SVs over rows.** `VariantFeatureInfo.svType` is the record's
+- **On by default, only SVs over rows.** `records.show` defaults to `true`
+  (ADR-254's third amendment). `VariantFeatureInfo.svType` is the record's
   `svClassOf` class, set in the worker; while genotype rows draw, a record with
-  none is left out, so a region of SNVs spends 0 px. With no rows the band
+  none is left out, so a region of SNVs, or a SNV-only file, spends 0 px and
+  the rows sit where they sit with the band off. With no rows the band
   draws every record (`recordsSvOnly`); the worker keeps a sample-less VCF's
   sites at genomic positions only (`keepSampleLessSites`), since a site test
   reads called alleles.

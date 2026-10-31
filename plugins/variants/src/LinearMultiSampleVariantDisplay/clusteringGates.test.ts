@@ -1,6 +1,6 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
-import { createTestEnvironment } from './testEnv.ts'
+import { RECORDS_BAND_OFF, createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -18,7 +18,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // `adapterSamples`, `layout` and `subtreeFilter` that a stub would have to
 // restate.
 function display(sources?: { name: string }[]) {
-  const { display } = createTestEnvironment().createDisplay()
+  const { display } = createTestEnvironment({
+    displayConfig: RECORDS_BAND_OFF,
+  }).createDisplay()
   if (sources) {
     display.setSources(sources)
   }

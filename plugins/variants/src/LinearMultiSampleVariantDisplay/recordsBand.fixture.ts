@@ -82,7 +82,7 @@ export function recordsDisplayAt(
   display: Record<string, unknown> = {},
 ) {
   const env = createTestEnvironment({
-    displayConfig: { records: { show: true, ...band }, ...display },
+    displayConfig: { records: band, ...display },
   }).createDisplay()
   env.display.view.setWidth(1960)
   env.display.view.setNewView(bpPerPx, 0)

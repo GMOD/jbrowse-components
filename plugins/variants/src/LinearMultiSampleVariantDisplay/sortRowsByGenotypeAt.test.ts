@@ -1,13 +1,15 @@
 import { waitFor } from '@testing-library/react'
 
-import { createTestEnvironment } from './testEnv.ts'
+import { RECORDS_BAND_OFF, createTestEnvironment } from './testEnv.ts'
 
 const SOURCES = [{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }]
 
 // The record at 500 and the record at 700 each split the cohort differently,
 // so which one the sort anchors on is visible in the order it writes.
 function displayWithCells() {
-  const { display } = createTestEnvironment().createDisplay()
+  const { display } = createTestEnvironment({
+    displayConfig: RECORDS_BAND_OFF,
+  }).createDisplay()
   display.setSources(SOURCES)
   display.setLoadedRegion(
     0,
@@ -60,7 +62,9 @@ test('anchors the genotype sort on the record covering the column', () => {
 // A click inside a large deletion picks the shortest record under it, so a
 // sort written as a column has to anchor there too, not on the deletion.
 test('anchors on the shortest record covering the column', () => {
-  const { display } = createTestEnvironment().createDisplay()
+  const { display } = createTestEnvironment({
+    displayConfig: RECORDS_BAND_OFF,
+  }).createDisplay()
   display.setSources(SOURCES)
   display.setLoadedRegion(
     0,
