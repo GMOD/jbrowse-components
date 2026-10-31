@@ -273,7 +273,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/animationAllowed': ['MORPH_DURATION_MS', 'animationAllowed', 'easeInOutCubic', 'morphClockMs'],
   '@jbrowse/core/util/assemblyConfigUtils': ['adapterHasSequence', 'adapterLabels', 'adapterTypes', 'applyClassifiedFiles', 'applyPrimaryFile', 'applyTwoBitFile', 'buildAssemblyConf', 'classifyAssemblyFiles', 'classifyFilename', 'classifyLocations', 'clearFormFields', 'clearSequenceFiles', 'detectAdapterType', 'formHasSequence', 'getAdapterConfig', 'getAssemblyName', 'getAssemblyNameFromFilename', 'getBaseAssemblyConfig', 'getMissingSidecars', 'initialFormState', 'isBlank', 'isFormDirty', 'isFormReady', 'isSequenceRole', 'makeSetField', 'partitionExtraLocations', 'sidecarRoles', 'sidecars', 'urlTextToLocations'],
   '@jbrowse/core/util/bandHeight': ['MIN_BAND_HEIGHT', 'boundBandHeight', 'clampBandHeight', 'scaleBandHeights'],
-  '@jbrowse/core/util/bandLayout': ['bandAt', 'reservedPx', 'stackBands'],
+  '@jbrowse/core/util/bandLayout': ['bandAt', 'bandDragBounds', 'boundStackedBands', 'reservedPx', 'stackBands'],
   '@jbrowse/core/util/Base1DUtils': ['basePaintedAt', 'bpOffsetInRegion', 'bpToLinearBp', 'bpToOffset', 'bpToPx', 'clipToDisplayedRegions', 'compareBpOffsets', 'computeMoveToLayout', 'createOverviewLayout', 'getLayoutHighlightCoords', 'getOverviewRegionPxSpan', 'layoutBpToPx', 'moveTo', 'offsetBpToPx', 'pxToBp', 'regionBlocksPxExtent', 'transformPxSpan'],
   '@jbrowse/core/util/Base1DViewModel': ['default'],
   '@jbrowse/core/util/baseDisplayConfig': ['baseDisplayConfig'],

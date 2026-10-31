@@ -2723,6 +2723,8 @@
       "package": "@jbrowse/core",
       "names": [
         "bandAt",
+        "bandDragBounds",
+        "boundStackedBands",
         "reservedPx",
         "stackBands"
       ],
