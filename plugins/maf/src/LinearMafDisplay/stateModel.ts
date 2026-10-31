@@ -28,6 +28,7 @@ import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { stackBands } from '@jbrowse/core/util/bandLayout'
 import { copyText } from '@jbrowse/core/util/copyText'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
+import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import CoarseTierMixin from '@jbrowse/display-kit/CoarseTierMixin'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -181,7 +182,7 @@ function unionSources(
   for (const source of incoming) {
     byName.set(source.name, source)
   }
-  return placeCopyRows([...byName.values()])
+  return [...byName.values()]
 }
 
 /**
@@ -197,7 +198,7 @@ function withKnownCopies(
     const parent = copyParent(s.name)
     return parent !== undefined && names.has(parent) && !names.has(s.name)
   })
-  return kept.length ? placeCopyRows([...incoming, ...kept]) : [...incoming]
+  return [...incoming, ...kept]
 }
 
 const NO_DETAIL: ReadonlyMap<number, MafRegionData> = new Map()
@@ -361,9 +362,11 @@ export default function stateModelFactory(
           treeNewick: string | undefined
           samplesCanonical: boolean
         }) {
-          const next = samplesCanonical
-            ? withKnownCopies(self.sourcesVolatile, samples)
-            : unionSources(self.sourcesVolatile, samples)
+          const next = placeCopyRows(
+            samplesCanonical
+              ? withKnownCopies(self.sourcesVolatile, samples)
+              : unionSources(self.sourcesVolatile, samples),
+          )
           if (!deepEqual(next, self.sourcesVolatile)) {
             self.sourcesVolatile = next
           }
@@ -377,14 +380,22 @@ export default function stateModelFactory(
         /**
          * #getter
          * The reference sample row as the worker resolved it (`MafRegionSink`),
-         * falling back to the view's assembly name until a detail region loads.
-         * `refSampleIdVolatile` holds the resolved value.
+         * and until a detail region loads, the row naming the view's assembly
+         * or one of its aliases: the HPRC summary tier names hg38's row
+         * `GRCh38`.
          *
          * Every consumer reads this getter, so the codon conservation band and
          * the per-base band exclude the same row.
          */
         get referenceSampleId(): string | undefined {
-          return self.refSampleIdVolatile ?? self.view.assemblyNames[0]
+          const { assemblyManager } = getSession(self)
+          const viewAssembly = self.view.assemblyNames[0]
+          return (
+            self.refSampleIdVolatile ??
+            self.sourcesVolatile.find(s =>
+              isSameAssemblyName(s.name, viewAssembly, assemblyManager),
+            )?.name
+          )
         },
       }))
       .views(self => ({
@@ -1156,9 +1167,7 @@ export default function stateModelFactory(
         get valueScales(): ValueScale[] {
           return mafValueScales({
             topBands: self.topBands,
-            coverageActive: self.coverageBandActive,
             coverageDomain: self.coverageDepthDomain,
-            conservationActive: self.conservationBandActive,
             scaleType: self.scaleType,
             symlogConstant: self.symlogConstant,
             guide: self.axisGuide,
@@ -1184,7 +1193,7 @@ export default function stateModelFactory(
         get coverageBandState(): CoverageBandState {
           const [domainMin, domainMax] = self.coverageDepthDomain ?? [0, 0]
           return {
-            height: self.coverageBandActive ? self.coverageDisplayHeight : 0,
+            height: self.coverageDisplayHeight,
             top: 0,
             domainMin,
             domainMax: self.coverageDepthDomain?.[1],
@@ -1463,9 +1472,7 @@ export default function stateModelFactory(
             coverage: self.coverageBandState,
             conservation: {
               top: self.topBands.top.conservation,
-              height: self.conservationBandActive
-                ? self.conservationDisplayHeight
-                : 0,
+              height: self.conservationDisplayHeight,
             },
             rowHeight: self.effectiveRowHeight,
             rowProportion: self.rowProportion,

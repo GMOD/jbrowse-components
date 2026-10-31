@@ -75,13 +75,19 @@ export function testAssembly({
 export function testAssemblyManager(
   assembly: TestAssembly,
   assemblyNames: readonly string[] = ['volvox'],
+  aliases: Record<string, string> = {},
 ) {
+  const getCanonicalAssemblyName = (name: string) =>
+    assemblyNames.includes(name)
+      ? name
+      : Object.hasOwn(aliases, name)
+        ? aliases[name]
+        : undefined
   const get = (name: string) =>
-    assemblyNames.includes(name) ? assembly : undefined
+    getCanonicalAssemblyName(name) === undefined ? undefined : assembly
   return {
     get,
-    getCanonicalAssemblyName: (name: string) =>
-      assemblyNames.includes(name) ? name : undefined,
+    getCanonicalAssemblyName,
     waitForAssembly: () => Promise.resolve(assembly),
     isValidRefName: () => true,
     getRefNameMapForAdapter: (

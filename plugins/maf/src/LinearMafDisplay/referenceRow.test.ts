@@ -61,6 +61,22 @@ function leafNames(node: {
     : [node.data?.name ?? '']
 }
 
+// The summary tier carries no reference: until a detail region names it, the
+// row is the one naming the view's assembly, here by an alias (the HPRC
+// summary file's `GRCh38` under an `hg38` view).
+test('a hidden reference drops its row before any detail region lands', () => {
+  const { display } = createMafTestEnvironment({
+    assemblyAliases: { GRCh38: 'volvox' },
+  }).createDisplay()
+  display.setShowReferenceRow(false)
+  display.setSamples({
+    samples: ['GRCh38', 'HG002.1', 'HG002.2'].map(sample),
+    treeNewick: undefined,
+    samplesCanonical: false,
+  })
+  expect(display.sources.map(s => s.name)).toEqual(['HG002.1', 'HG002.2'])
+})
+
 // Under the default mismatch coloring the reference's own row matches at every
 // column, so it draws as a solid match-colored bar carrying no information.
 // UCSC omits it. The FASTA export keeps it.

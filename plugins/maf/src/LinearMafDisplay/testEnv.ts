@@ -23,6 +23,7 @@ export function createMafTestEnvironment({
   assemblyEnd = 10_000_000,
   viewRegionEnd = assemblyEnd,
   displayConfig,
+  assemblyAliases,
 }: {
   // Adapter-level `summaryAdapter` snapshot; the zoom-out summary path is off
   // when it is null.
@@ -37,6 +38,7 @@ export function createMafTestEnvironment({
   viewRegionEnd?: number
   // Display config slots, for the ones with no setter (`rows`, `rowColor`).
   displayConfig?: Record<string, unknown>
+  assemblyAliases?: Record<string, string>
 } = {}) {
   const env = createDisplayTestEnvironment<LinearMafDisplayModel>({
     plugins: [new LinearGenomeViewPlugin()],
@@ -57,6 +59,7 @@ export function createMafTestEnvironment({
     assemblyEnd,
     viewRegionEnd,
     displayConfig,
+    assemblyAliases,
   })
 
   return {

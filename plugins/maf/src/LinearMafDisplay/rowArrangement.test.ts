@@ -79,6 +79,21 @@ describe('a discovered row set widens under a custom arrangement', () => {
   })
 })
 
+describe('a copy row sits under its sample however the regions reported it', () => {
+  // A batch unions its regions' samples in first-seen order, so a copy found
+  // only in a later region arrives after every sample.
+  it.each([true, false])('samplesCanonical %s', samplesCanonical => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    display.setSamples({
+      samples: ['A', 'B', 'C', 'A~2'].map(sample),
+      treeNewick: undefined,
+      samplesCanonical,
+    })
+
+    expect(rowNames(display)).toEqual(['A', 'A~2', 'B', 'C'])
+  })
+})
+
 // `((hg38,panTro4),mm10)` has four of the six orders of its leaves as
 // rotations; hg38, mm10, panTro4 parts the sister pair, so no rotation lists
 // it.

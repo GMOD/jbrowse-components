@@ -7,9 +7,7 @@ import type { ValueScale } from '@jbrowse/wiggle-core'
 
 export interface MafValueScaleInputs {
   topBands: BandStack<'coverage' | 'conservation'>
-  coverageActive: boolean
   coverageDomain: [number, number] | undefined
-  conservationActive: boolean
   scaleType: string
   symlogConstant: number
   guide: Pick<ValueScale, 'caption' | 'rules' | 'grid' | 'showAxis'>
@@ -17,16 +15,15 @@ export interface MafValueScaleInputs {
 
 export function mafValueScales({
   topBands,
-  coverageActive,
   coverageDomain,
-  conservationActive,
   scaleType,
   symlogConstant,
   guide,
 }: MafValueScaleInputs): ValueScale[] {
   const scales: ValueScale[] = []
-  if (coverageActive && coverageDomain) {
-    const height = topBands.reserved.coverage
+  const { reserved, top } = topBands
+  if (reserved.coverage > 0 && coverageDomain) {
+    const height = reserved.coverage
     scales.push({
       domain: coverageDomain,
       scaleType,
@@ -39,17 +36,17 @@ export function mafValueScales({
       ),
       symlogConstant,
       ...guide,
-      bandTops: [topBands.top.coverage],
+      bandTops: [top.coverage],
     })
   }
-  if (conservationActive) {
-    const height = topBands.reserved.conservation
+  if (reserved.conservation > 0) {
+    const height = reserved.conservation
     scales.push({
       domain: [0, 100],
       scaleType: 'linear',
       height,
       ticks: conservationTicks(height),
-      bandTops: [topBands.top.conservation],
+      bandTops: [top.conservation],
     })
   }
   return scales

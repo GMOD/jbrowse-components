@@ -39,6 +39,8 @@ export function reservedPx(band: Band): number {
 
 /** What {@link stackBands} derives: one top per band, and where the stack ends. */
 export interface BandStack<K extends string> {
+  /** The bands, top to bottom. */
+  order: readonly K[]
   /** Content-space y where each band begins, in stack order. */
   top: Record<K, number>
   /** Each band's {@link reservedPx}. */
@@ -71,5 +73,17 @@ export function stackBands<K extends string>(
     reserved[key] = reservedPx(bands[key])
     y += reserved[key]
   }
-  return { top, reserved, bottom: y }
+  return { order, top, reserved, bottom: y }
+}
+
+/**
+ * #api core/util
+ * The band under content-space `y`, or undefined below the stack or over a
+ * band that reserves nothing. The pointer's half of the fold: a band's hover
+ * reads the same tops and heights its painter drew at.
+ */
+export function bandAt<K extends string>(stack: BandStack<K>, y: number) {
+  return stack.order.find(
+    key => y >= stack.top[key] && y < stack.top[key] + stack.reserved[key],
+  )
 }
