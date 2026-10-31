@@ -237,6 +237,17 @@ describe('the track menu', () => {
     )
   })
 
+  test('rows hidden drop the rows, clustering and arrangement items', () => {
+    const rows = recordsDisplayAt(FEW, 10).display
+    const off = recordsDisplayAt(FEW, 10, {}, true, {
+      genotypes: { show: false },
+    }).display
+    for (const label of ['Rows', 'Clustering', 'Edit colors/arrangement...']) {
+      expect(labelsOf(menu(rows))).toContain(label)
+      expect(labelsOf(menu(off))).not.toContain(label)
+    }
+  })
+
   test('columns offer neither', () => {
     const { display } = recordsDisplayAt(FEW, 10, {}, true, {
       genotypes: { show: false },

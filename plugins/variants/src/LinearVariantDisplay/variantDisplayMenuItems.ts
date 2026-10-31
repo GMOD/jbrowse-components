@@ -309,35 +309,40 @@ export function variantTrackMenuItems(
       ? []
       : [rowHeightMenuItem(self)]),
     ...recordsHeightMenuItems(self),
-    makeRadioSubMenu({
-      label: 'Rows',
-      icon: SplitscreenIcon,
-      value: self.unit,
-      onChange: unit => {
-        self.setUnit(unit)
-      },
-      options: [
-        {
-          value: 'sample',
-          label: 'Per sample',
-          helpText:
-            'One row per sample. The color darkens with each copy of the allele the sample carries, so a homozygous call reads darker than a heterozygous one, at any ploidy',
-        },
-        {
-          value: 'haplotype',
-          // `hasPhasedOrHaploid`, the painter's own predicate: a pangenome
-          // callset is haploid, with no `|` anywhere, and draws per haplotype
-          ...needs(
-            'Per haplotype',
-            'phased genotypes',
-            self.hasPhasedOrHaploid,
-            loaded,
-          ),
-          helpText:
-            'One row per haplotype, which needs phased genotypes: a diploid SAMPLE1 becomes rows SAMPLE1 HP0 and SAMPLE1 HP1, and a 1|0 call draws in the first row only. A row holds one allele, so there is no dosage shading. A haploid sample keeps one row, under its own name',
-        },
-      ],
-    }),
+    // the rows' own items, absent while no row draws
+    ...(self.drawsRows
+      ? [
+          makeRadioSubMenu({
+            label: 'Rows',
+            icon: SplitscreenIcon,
+            value: self.unit,
+            onChange: unit => {
+              self.setUnit(unit)
+            },
+            options: [
+              {
+                value: 'sample',
+                label: 'Per sample',
+                helpText:
+                  'One row per sample. The color darkens with each copy of the allele the sample carries, so a homozygous call reads darker than a heterozygous one, at any ploidy',
+              },
+              {
+                value: 'haplotype',
+                // `hasPhasedOrHaploid`, the painter's own predicate: a pangenome
+                // callset is haploid, with no `|` anywhere, and draws per haplotype
+                ...needs(
+                  'Per haplotype',
+                  'phased genotypes',
+                  self.hasPhasedOrHaploid,
+                  loaded,
+                ),
+                helpText:
+                  'One row per haplotype, which needs phased genotypes: a diploid SAMPLE1 becomes rows SAMPLE1 HP0 and SAMPLE1 HP1, and a 1|0 call draws in the first row only. A row holds one allele, so there is no dosage shading. A haploid sample keeps one row, under its own name',
+              },
+            ],
+          }),
+        ]
+      : []),
     // The cell fill and the sample metadata's row color are independent
     // color objects, so each is a block of its own.
     colorByMenuItem({
@@ -511,29 +516,31 @@ export function variantTrackMenuItems(
             }),
           ],
     }),
-    ...rowOrderMenuItems(self, {
-      arrangement: {
-        ready: self.clusteringReady && !!self.adapterSamples?.length,
-      },
-      cluster: {
-        runItem: {
-          label: 'Cluster rows by genotype...',
-          // Off the sample list, not `loaded`: the samples arrive on their own
-          // RPC (`MultiSampleVariantGetSources`), which neither waits for the
-          // cell data nor is waited on by it. Below that, the row count is
-          // `clusteringMenuItem`'s gate.
-          disabled: !self.adapterSamples,
-          disabledHelpText: 'Loading samples...',
-          onClick: () => {
-            getDialogHost(self).queueDialog(handleClose => [
-              ClusterDialog,
-              { model: self, handleClose },
-            ])
+    ...(self.drawsRows
+      ? rowOrderMenuItems(self, {
+          arrangement: {
+            ready: self.clusteringReady && !!self.adapterSamples?.length,
           },
-        },
-        rowCount: self.sources.length,
-      },
-    }),
+          cluster: {
+            runItem: {
+              label: 'Cluster rows by genotype...',
+              // Off the sample list, not `loaded`: the samples arrive on their own
+              // RPC (`MultiSampleVariantGetSources`), which neither waits for the
+              // cell data nor is waited on by it. Below that, the row count is
+              // `clusteringMenuItem`'s gate.
+              disabled: !self.adapterSamples,
+              disabledHelpText: 'Loading samples...',
+              onClick: () => {
+                getDialogHost(self).queueDialog(handleClose => [
+                  ClusterDialog,
+                  { model: self, handleClose },
+                ])
+              },
+            },
+            rowCount: self.sources.length,
+          },
+        })
+      : []),
   ]
 }
 
