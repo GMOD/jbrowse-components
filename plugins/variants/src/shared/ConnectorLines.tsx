@@ -4,12 +4,12 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import { BandSeamHandle } from '@jbrowse/display-kit/BandSeamHandle'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
 
 import { pointToSegmentDist, svgMousePoint } from '../util.ts'
-import { BandSeamHandle } from './BandSeamHandle.tsx'
 import {
   connectorFieldAlpha,
   drawConnectorField,
@@ -223,7 +223,7 @@ export const ConnectorZoneResizeHandle = observer(
   }) {
     return (
       <BandSeamHandle
-        top={top}
+        seam={top}
         // from where the handle is drawn, not from the slot: in LD's genomic
         // mode the zone is only as tall as what is switched on, and dragging
         // the slot up from under it would eat the first N pixels doing nothing

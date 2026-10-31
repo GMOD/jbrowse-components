@@ -5,6 +5,7 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
+import { BandSeamHandle } from '@jbrowse/display-kit/BandSeamHandle'
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
 import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
 import {
@@ -24,7 +25,6 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
 
-import { BandSeamHandle } from '../../shared/BandSeamHandle.tsx'
 import { buildRecordHit } from './buildVariantHit.ts'
 import { enrichFeatureFromClick } from './enrichFeatureFromClick.ts'
 import { variantSurfaceHandlers } from './variantSurface.ts'
@@ -312,7 +312,7 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
       {model.recordsOnly ? null : (
         <BandSeamHandle
           data-testid="records_band_resize_handle"
-          top={recordsHeight}
+          seam={recordsHeight}
           title="Drag to resize the records band"
           onDrag={d => {
             const { recordsHeight } = model.topBands

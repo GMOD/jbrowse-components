@@ -1,22 +1,10 @@
 import { useEffect, useState } from 'react'
 
-import { ResizeHandle } from '@jbrowse/core/ui'
 import { getContainingTrack } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { BandSeamHandle } from '@jbrowse/display-kit/BandSeamHandle'
 import { observer } from 'mobx-react'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
-
-const useStyles = makeStyles()({
-  handle: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    height: 5,
-    cursor: 'row-resize',
-    zIndex: 10,
-  },
-})
 
 /**
  * Thin row-resize strip at the bottom of a MAF band (coverage or conservation).
@@ -33,16 +21,15 @@ const useStyles = makeStyles()({
 const MafBandResizeHandle = observer(function MafBandResizeHandle({
   model,
   resize,
-  top,
+  seam,
   onActiveChange,
 }: {
   model: LinearMafDisplayModel
   /** one drag delta; the model action reads the band's height itself */
   resize: (distance: number) => void
-  top: number
+  seam: number
   onActiveChange: (active: boolean) => void
 }) {
-  const { classes } = useStyles()
   const [hovered, setHovered] = useState(false)
   const [dragging, setDragging] = useState(false)
   // Clear `resizing` only if this handle set it, or a drag here cancels the
@@ -59,7 +46,8 @@ const MafBandResizeHandle = observer(function MafBandResizeHandle({
   )
 
   return (
-    <ResizeHandle
+    <BandSeamHandle
+      seam={seam}
       onDrag={n => {
         resize(n)
       }}
@@ -85,8 +73,6 @@ const MafBandResizeHandle = observer(function MafBandResizeHandle({
         setHovered(false)
         onActiveChange(dragging)
       }}
-      style={{ top }} // straddles the band/rows seam
-      className={classes.handle}
     />
   )
 })

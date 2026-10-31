@@ -1,10 +1,12 @@
 import { Fragment, useId, useState } from 'react'
 
-import { ResizeHandle, ScrollChrome } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { ScrollChrome } from '@jbrowse/core/ui'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
+import {
+  BAND_SEAM_HIT_PX,
+  BandSeamHandle,
+} from '@jbrowse/display-kit/BandSeamHandle'
 import { groupSectionLabel } from '@jbrowse/display-kit/groupLabelStyle'
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { observer } from 'mobx-react'
 
 import { stackedBandGain } from '../sectionLayout.ts'
@@ -18,16 +20,6 @@ import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type React from 'react'
-
-const useStyles = makeStyles()({
-  resizeHandle: {
-    position: 'absolute' as const,
-    left: 0,
-    right: 0,
-    height: YSCALEBAR_LABEL_OFFSET,
-    zIndex: 10,
-  },
-})
 
 // The pileup canvas + all its positioned overlays. DisplayChrome owns the GPU
 // backend and the three terminal states (render error, region-too-large, fetch
@@ -109,9 +101,9 @@ const PileupBody = observer(function PileupBody({
 })
 
 // Shared horizontal drag handle for the pileup's resizable bands. Callers pass
-// the final screen-space `top` and the canvas height; styling, the off-screen
-// cull (every handle is YSCALEBAR_LABEL_OFFSET tall), and the void-returning
-// `onDrag` contract are uniform across coverage, arc/sashimi, and group handles.
+// the screen-space `seam` and the canvas height; the strip is the shared
+// `BandSeamHandle`, and the off-screen cull and the void-returning `onDrag`
+// contract are uniform across coverage, arc/sashimi, and group handles.
 //
 // `gain` (see `useResizeDrag`) is what keeps a handle on a DISPLAY-GLOBAL band
 // under the pointer: growing the coverage height grows the bands of the groups
@@ -119,28 +111,28 @@ const PileupBody = observer(function PileupBody({
 // pointer's speed and slide out from under the cursor mid-drag. Every caller
 // below states how many copies of its band sit at or above the handle.
 const PileupResizeHandle = observer(function PileupResizeHandle({
-  top,
+  seam,
   canvasHeight,
   onDrag,
   title,
   gain,
 }: {
-  top: number
+  seam: number
   canvasHeight: number
   onDrag: (dy: number) => void
   title: string
   gain?: number
 }) {
-  const { classes } = useStyles()
-  if (top + YSCALEBAR_LABEL_OFFSET < 0 || top > canvasHeight) {
+  if (seam < 0 || seam - BAND_SEAM_HIT_PX > canvasHeight) {
     return null
   }
   return (
-    <ResizeHandle
-      className={classes.resizeHandle}
-      style={{ top }}
+    <BandSeamHandle
+      seam={seam}
       gain={gain}
-      onDrag={onDrag}
+      onDrag={dy => {
+        onDrag(dy)
+      }}
       title={title}
     />
   )
@@ -174,7 +166,7 @@ const CoverageResizeHandle = observer(function CoverageResizeHandle({
         return (
           <PileupResizeHandle
             key={sectionKey(section.groupKey)}
-            top={bottom - YSCALEBAR_LABEL_OFFSET}
+            seam={bottom}
             canvasHeight={height}
             gain={i + 1}
             onDrag={dy => {
@@ -220,10 +212,7 @@ const ConnectionBandResizeHandles = observer(
             <Fragment key={sectionKey(section.groupKey)}>
               {section.hasArcsBand ? (
                 <PileupResizeHandle
-                  top={bandScreenTop(
-                    section.sashimiBandTop - YSCALEBAR_LABEL_OFFSET,
-                    scroll,
-                  )}
+                  seam={bandScreenTop(section.sashimiBandTop, scroll)}
                   canvasHeight={height}
                   gain={stackedBandGain(renderSections, i, s => s.hasArcsBand)}
                   onDrag={dy => {
@@ -237,10 +226,7 @@ const ConnectionBandResizeHandles = observer(
 
               {section.hasSashimiBand ? (
                 <PileupResizeHandle
-                  top={bandScreenTop(
-                    section.topOffset - YSCALEBAR_LABEL_OFFSET,
-                    scroll,
-                  )}
+                  seam={bandScreenTop(section.topOffset, scroll)}
                   canvasHeight={height}
                   gain={stackedBandGain(
                     renderSections,
@@ -291,13 +277,11 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
         return (
           <PileupResizeHandle
             key={sectionKey(section.groupKey)}
-            // Straddling the boundary, where every other handle sits in the last
-            // px of the band it sizes: this is the one boundary that DRAWS a line
-            // (`GroupLabelsOverlay`'s divider, at the next section's top), and
-            // ending above it made the visible line the one place the pointer got
-            // no answer — hover the divider, nothing lights up; a px higher, a
-            // full-width bar appears. So the drawn line is inside the target now.
-            top={bottom - Math.ceil(YSCALEBAR_LABEL_OFFSET / 2)}
+            // The strip overhangs the seam, which here DRAWS a line
+            // (`GroupLabelsOverlay`'s divider, at the next section's top): a
+            // strip ending above it left the visible line the one place the
+            // pointer got no answer.
+            seam={bottom}
             canvasHeight={height}
             onDrag={dy => {
               model.resizeGroupHeight(section.groupKey, dy)
