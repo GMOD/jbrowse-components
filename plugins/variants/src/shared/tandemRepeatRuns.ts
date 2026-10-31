@@ -39,7 +39,8 @@ export interface ParsedRun {
 }
 
 // Each ALT allele's runs; undefined for an allele that is not <CNV:TR> or has a
-// run stating no unit
+// run stating no unit or a negative count. A run of zero copies is the allele
+// carrying none of that unit, so it is left out and the allele kept.
 export function tandemAlleles(
   alt: unknown,
   info: Record<string, unknown> | undefined,
@@ -58,6 +59,7 @@ export function tandemAlleles(
   return alts.map((alt, i) => {
     const n = rn[i] ?? (alt === TANDEM_REPEAT ? 1 : 0)
     const runs: ParsedRun[] = []
+    let wellFormed = true
     for (let j = 0; j < n; j++, k++) {
       const stated = rus[k]
       const sequence = stated && IUPAC.test(stated) ? stated : undefined
@@ -66,7 +68,9 @@ export function tandemAlleles(
       const bp = rb[k]
       const count =
         ruc[k] ?? (length && bp !== undefined ? bp / length : undefined)
-      if (length && count !== undefined && count > 0) {
+      if (!length || count === undefined || count < 0) {
+        wellFormed = false
+      } else if (count > 0) {
         const copyBp =
           counted && rub.length > 0 ? rub.slice(copy, copy + count) : undefined
         runs.push({
@@ -81,7 +85,7 @@ export function tandemAlleles(
       }
       copy += count ?? 0
     }
-    return alt === TANDEM_REPEAT && runs.length === n ? runs : undefined
+    return alt === TANDEM_REPEAT && wellFormed ? runs : undefined
   })
 }
 

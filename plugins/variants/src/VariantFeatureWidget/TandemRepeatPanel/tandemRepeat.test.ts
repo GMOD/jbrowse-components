@@ -161,6 +161,17 @@ test('a run that states a non-positive or non-numeric count is not drawn', () =>
   ).toBeUndefined()
 })
 
+test('a run of zero copies leaves its allele drawn with the runs it does carry', () => {
+  const repeat = tandemRepeatOf({
+    ...base,
+    ALT: ['<CNV:TR>'],
+    INFO: { SVLEN: [30], RN: [2], RUS: [B, A], RUC: [0, 3], RB: [0, 30] },
+  })!
+  expect(repeat.alleles.map(a => a.runs)).toEqual([
+    [{ unit: 0, count: 3, bp: 30 }],
+  ])
+})
+
 test('RUNAME names each unit, from whichever run of it states one', () => {
   const repeat = tandemRepeatOf({
     ...tandem,
