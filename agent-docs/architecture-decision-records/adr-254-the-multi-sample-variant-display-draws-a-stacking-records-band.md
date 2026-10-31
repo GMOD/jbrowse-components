@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-sample variant display draws the VCF's structural variants above its genotype rows, colored by SV type and keyed, each lettered ID and description on one line, as `records: { show, growMaxHeight, labels }`, stacked by plugin-features's own pipeline: the cell payload rebuilt as features, packed, fit by LinearBasicDisplay's fit ladder (hosted, not copied), painted by `paintFeatureBand` and picked by its hit test, through the new `@jbrowse/plugin-features/band` entry. The band grows to its stack at full feature size up to `growMaxHeight` (170) and takes that height from the rows; past the cap the ladder fits the stack in. Off by default. Slice one of merging `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay` into one display with `records` and `genotypes` bands. Amends ADR-250, whose first rejected alternative this takes. Amended: with no genotype rows (no samples, or `genotypes.show` off) the band is the whole display, every record the filter admits, sized by `heightMode`, labelled and fit by the records on screen, and refused past `records.maxFeatureScreenDensity` through plugin-features's `FeatureGateMixin`"
+summary: "The multi-sample variant display draws the VCF's structural variants above its genotype rows, colored by SV type and keyed, each lettered ID and description on one line, as `records: { show, growMaxHeight, labels }`, stacked by plugin-features's own pipeline: the cell payload rebuilt as features, packed, fit by LinearBasicDisplay's fit ladder (hosted, not copied), painted by `paintFeatureBand` and picked by its hit test, through the new `@jbrowse/plugin-features/band` entry. The band grows to its stack at full feature size up to `growMaxHeight` (170) and takes that height from the rows; past the cap the ladder fits the stack in. Off by default. Slice one of merging `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay` into one display with `records` and `genotypes` bands. Amends ADR-250, whose first rejected alternative this takes. Amended: with no genotype rows (no samples, or `genotypes.show` off) the band is the whole display, every record the filter admits, sized by `heightMode`, labelled and fit by the records on screen, and refused past `records.maxFeatureScreenDensity` through plugin-features's `FeatureGateMixin`. Amended again (sub-slice B, amending ADR-231): the band's cap is `records.maxHeight`, and `records` takes LinearVariantDisplay's record settings, `displayMode` (unset compact over rows, normal without), `mark`, `facet` and `tooltip.field`, with `identity` on the display's one `encoding.color`"
 ---
 
 # ADR-254: The multi-sample variant display draws a stacking records band
@@ -138,6 +138,40 @@ tasks match within noise. At an 11 Mb ClinVar window (39k records, which
 is 1.5x the forced feature track, most of it the cell RPC, pan long tasks
 equal.
 
+## Amendment: the record settings move under `records` (2026-10-30)
+
+Sub-slice B of the merge, amending ADR-231: `records` is a band object, and
+holds what LinearVariantDisplay holds about its records, so the merge can
+move those configs onto it without dropping a setting.
+
+- **`records.growMaxHeight` is `records.maxHeight`.** The top-level
+  `growMaxHeight` keeps its meaning, the track's grow ceiling as on
+  alignments and LinearBasicDisplay; the band's cap over rows is
+  `records.maxHeight`, a band's ceiling as ADR-231 left the word free for
+  (`pileup.maxLayoutHeight` took the layout cap). `maxHeight`'s retired
+  meanings are top-level only: v4's second grow ceiling on the feature
+  displays, dropped (`migrateBasicConfigSnapshot`), and the alignments layout
+  cap. Beta-only, so no lift.
+- **`displayMode`, `mark`, `facet` and `tooltip.field`**, each the
+  plugin-features or display-kit sub-schema the feature displays use
+  (`featureMarkConfigSchema`, `sectionFacetConfigSchema`,
+  `featureTooltipFieldSlot`). The one default that differs by mode is
+  `displayMode`: unset, and resolved in `recordsDisplayMode`, `compact` over
+  rows (the SV band as slice one drew it) and `normal` with none (as
+  LinearVariantDisplay). Pixel-identical at ClinVar 17:43.06 Mb and RHD.
+- **`records.tooltip` holds `field` alone.** The record tooltip already
+  shows under the display's `tooltip.show`; a second `show` would make two
+  toggles for one hover.
+- **The worker reads what the band needs off the whole record**: the facet
+  field and a non-default tooltip field (`recordFields` in `rpcProps`), since
+  the cell payload carries no INFO. Changing either refetches, as a feature
+  track's tooltip and facet do.
+- **`identity` joins the display's own `encoding.color`**, not a
+  `records.encoding`: the band has no color channel of its own, a record
+  painting the cells' hue at full dose under a picked color, so a per-record
+  color is the one channel's. As on a feature track it keys a `value`
+  callback's colors, the ones `scale.domain` names.
+
 ## Rejected alternatives
 
 | Alternative | Why not |
@@ -147,6 +181,10 @@ equal.
 | Export the pipeline from plugin-features's barrel | Pulls layout and fit into every product's eager closure, the circular-view embed's included |
 | Extract the pipeline into a package now | The chain is already pure, so a package later is an import rename; this slice tests the height rule |
 | Draw records-only through `RenderFeatureData` and the GPU path | Paint was 8 ms of the band's 550 ms; the rest was labelling records the feature track's density rule leaves bare, and `LinearVariantDisplay` packs on the main thread too |
+| Keep `growMaxHeight` for the band and rename the top-level one | The top-level word is the grow ceiling on every feature and alignments display |
+| `records.displayMode` defaulting to one value, the other mode overriding it | A written `normal` over rows could not be told from the default; unset is the one state that resolves by mode |
+| `records.tooltip` as the whole `FeatureTooltip` (`show` and `field`) | Two toggles for one hover tooltip |
+| `records.encoding.color` beside the cells' | The records paint the cells' hue; two channels would color one record twice |
 
 ## Consequences
 

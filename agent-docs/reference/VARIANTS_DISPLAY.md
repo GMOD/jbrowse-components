@@ -317,7 +317,28 @@ LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
   hooks point at the band's drawn stack, the band paints and picks offset by
   `recordsScrollTop`, its div takes `usePanelVirtualScroll` and the
   scrollbar. The allele-count filters (MAF, missingness) leave the menu, and
-  Genotype rows and Track sizing show at genomic positions only.
+  Genotype rows and Feature height (with Track sizing) show at genomic
+  positions only.
+- **The record settings are a feature track's, under `records`** (ADR-254's
+  sub-slice B amendment): `displayMode`, `mark`, `facet` (plugin-features's
+  and display-kit's own sub-schemas) and `tooltip.field`. An unset
+  `displayMode` resolves in one place, `recordsDisplayMode`: `compact` over
+  rows, `normal` with none. `records.facet` is the record sections, through
+  the hosted ladder's `facet` and `layoutInputs.hiddenGroupKeys`, with
+  `RecordsSectionChips` over the band and `GroupLabelBoxes` in the export;
+  the display's top-level `facet` stays the sample facet. A facet field and
+  a non-default tooltip field are read in the worker (`recordFields` in
+  `rpcProps`, `shared/recordFields.ts`) onto `VariantFeatureInfo.groupKey`
+  and `.tooltip`, since the payload carries no INFO; the band's synthetic
+  record carries them as `recordGroup` and `recordTooltip`. A default tooltip
+  reads nothing extra: `DEFAULT_TOOLTIP` over the synthetic record is its
+  name. `tooltip.show` stays the display's one toggle for both bands.
+- **Menus follow the band.** With no rows: Feature height (display mode,
+  then Track sizing), Names and Descriptions in Show, Group by → Field...
+  (`RecordsFacetFieldDialog`), each built from plugin-features's own menu
+  builders (`featureHeightMenuItem`, `labelCheckboxItems`). Over rows the
+  band adds Feature height (display mode alone) while it draws; Group by stays
+  the sample attributes.
 - **No rows gates on density, as a feature track does.** The display
   composes `FeatureGateMixin` (from `@jbrowse/plugin-features/band`) and
   overrides `densityGateActive` to act only while `recordsOnly` at genomic

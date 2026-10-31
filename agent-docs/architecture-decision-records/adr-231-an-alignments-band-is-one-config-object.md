@@ -21,6 +21,12 @@ junctions or connections, `coverage.filter` becomes
 for connections, which two parts draw. With coverage hidden, the display draws
 the sashimi arcs in a strip of their own.
 
+Amended 2026-10-30 by
+[ADR-254](adr-254-the-multi-sample-variant-display-draws-a-stacking-records-band.md)'s
+sub-slice B: the multi-sample variant display's `records` is a band object
+too, holding `show`, its cap `maxHeight`, and the record settings a feature
+track holds (`displayMode`, `mark`, `facet`, `labels`, `tooltip.field`).
+
 ## Context
 
 - **`show` meant two things.** On `showCoverage`, `showPileup` and

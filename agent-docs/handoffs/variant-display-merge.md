@@ -1,6 +1,6 @@
 ---
 name: variant-display-merge
-description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slice A built (records as the whole display with no rows, density gate included); B–E remain. Open: added vs taken band height, default-on, the multi-way key position."
+description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built; C–E remain. Open: added vs taken band height, default-on, the multi-way key position."
 ---
 
 # One variant display
@@ -27,14 +27,16 @@ admission rule are marked provisional there.
   measures the whole payload, so it steps only on a refetch; whether it
   should instead follow the screen (rows moving on pan) belongs to the added
   vs taken call below.
-- **B. Records settings move under `records`**: `displayMode`, `mark`,
-  `facet` (sections), `maxFeatureScreenDensity` (already
-  `records.maxFeatureScreenDensity` on the multi-sample display, A's density
-  gate); `tooltip.field`; the color
-  scale's `identity`. Amends ADR-231. **Rename before C**: the display now
-  has a top-level `growMaxHeight` (the track's grow ceiling, records-only)
-  and `records.growMaxHeight` (the band's cap over rows), one word with two
-  meanings on the merged display.
+- **B. Records settings under `records`.** Built (ADR-254's second
+  amendment): `records.maxHeight` (was `records.growMaxHeight`; top-level
+  `growMaxHeight` is the track's grow ceiling), `records.displayMode` (unset:
+  compact over rows, normal without, in `recordsDisplayMode`),
+  `records.mark`, `records.facet` (record sections, chips, export),
+  `records.tooltip.field`, and `identity` on the display's one
+  `encoding.color`. Records-only menus: Feature height, Names/Descriptions,
+  Group by → Field.... Left: over rows `records.facet` has no menu row (config
+  only), and the sample "Group by" hides with no rows while Rows, clustering
+  and row color still show.
 - **C. The merge.** One type; `LinearMultiSampleVariantDisplay` is beta-only
   (no v4.3.0 hit), so only a `@deprecated` `retiredTypes` alias while hosted
   writers carry it; `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay`
@@ -45,15 +47,21 @@ admission rule are marked provisional there.
   `multivariant`/`multivariantmatrix`, jbrowse-img `applyTrackOpts.ts`, tables
   engine, figure specs, config docs, tutorials, test_data. New ADR superseding
   ADR-250, amending ADR-168, ADR-232 and VARIANTS_DISPLAY.md.
-  Blocked until: B lands (today's `facet` is section facets and top-level
-  `growMaxHeight` a track grow cap, both meaning something else on the
-  matrix, so `retiredTypes` must move them under `records`, not pass them
-  through); a record click shows full INFO (`enrichFeatureFromClick.ts`
+  The move from a `LinearVariantDisplay` config, B having built every target:
+  `displayMode`, `mark`, `labels`, `facet`, `maxFeatureScreenDensity` and
+  `tooltip.field` go under `records`; `tooltip.show`, `heightMode`,
+  `growMaxHeight`, `height`, `filter`, `encoding` and `legend` stay top-level.
+  v4's `renderer.displayMode`, `featureHeight` and `mouseover` re-root to
+  `records.displayMode`, `records.mark.height` and `records.tooltip.field`;
+  v4's `maxHeight` still drops rather than becoming `records.maxHeight`. A
+  `LinearVariantDisplay` config that never wrote `displayMode` lands unset,
+  so over a sampled VCF's rows it draws compact, the SV band's look.
+  Blocked until: a record click shows full INFO (`enrichFeatureFromClick.ts`
   builds a slim feature; `LinearVariantDisplay` re-fetches); R export picks
   `jbrowse_features` for a sample-less track in the rename's commit. Band gaps
   that are additive, not blocking: `featureContextMenu.ts`'s rows (zoom to,
   sequence, highlight, hide/show only, copy), search-hit highlight,
-  `sortReadsMenu.ts`, `tooltip.field`.
+  `sortReadsMenu.ts`.
 - **D. Outside writers**: jb2hubs (`pangenomeLinks.ts`, `config/jbrowse.ts`,
   pangenome-config JSONs), ggjbrowse (`R/variants.R`), redeployed demo
   configs; then drop the alias.
