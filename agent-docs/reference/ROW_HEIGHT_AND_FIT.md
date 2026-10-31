@@ -58,9 +58,18 @@ pattern the app is moving off. A reader wanting taller rows drags the track
 taller or focuses a clade. The retired key loads and is dropped (`retired` on
 the config schema), so an old config or share link still opens, fitted. The
 glyph proportion the presets paired with it stays the
-`alignments.mark.height.band` slot. The variant and mark displays keep the
-pinned mode for now; if always-fit holds up on MAF they are the next to go,
-so the three stay one shape.
+`alignments.mark.height.band` slot.
+
+The cost is the rows canvas cap (`MAX_CANVAS_DIM_PX`, 8192 device px, so
+4096 CSS px at dpr 2). Bases draw from a 5 px glyph (`MIN_HEIGHT_FOR_TEXT`), a
+~6.3 px row at MAF's 0.8 proportion, so a fitted track can show bases on about
+650 rows at dpr 2 and 1300 at dpr 1. Every common MAF (the 100-, 241-, 447- and
+470-ways, Cactus's 600-way) is under that; a larger one reads its bases through
+a clade focus. **The variant display keeps its pinned mode for that reason:** a
+cohort of thousands of samples (1000 Genomes is 2504) is common there, and fit
+would cap its rows near a pixel, so pinned rows behind the track's scroll are
+the only way to read single genotypes. Whether the mark display follows MAF is
+open.
 
 ### Against `heightMode`
 
