@@ -49,6 +49,11 @@ export { featureHighlightListActions } from './LinearBasicDisplay/featureHighlig
 export { default as FeatureGateMixin } from './shared/FeatureGateMixin.ts'
 export { paintFeatureBand } from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export {
+  buildRegionInstanceIndex,
+  drawnLabelTexts,
+  featureHighlightInk,
+} from './LinearBasicDisplay/featureHighlightInk.ts'
+export {
   buildFeatureFlatbushIndex,
   performMultiRegionHitDetection,
 } from './LinearBasicDisplay/components/hitTesting.ts'
@@ -73,6 +78,10 @@ export type {
   FeatureGroupSection,
 } from './LinearBasicDisplay/facet.ts'
 export type { FeatureBandPaint } from './LinearBasicDisplay/components/paintFeatureBand.ts'
+export type {
+  FeatureInkHost,
+  RegionInstanceIndex,
+} from './LinearBasicDisplay/featureHighlightInk.ts'
 export type {
   FlatbushRegionIndexes,
   HitFeatureResult,

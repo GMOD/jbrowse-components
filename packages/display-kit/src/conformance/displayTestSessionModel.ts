@@ -122,6 +122,9 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
       setSelection(thing: unknown) {
         self.selection = thing
       },
+      clearSelection() {
+        self.selection = undefined
+      },
       addWidget(
         type: string,
         id: string,

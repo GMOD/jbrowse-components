@@ -51,8 +51,11 @@ const VariantTooltip = observer(function VariantTooltip({
   // Prefer the friendly display override, matching the sidebar legend
   // (label ?? name); `name` is the stable hit-test identity.
   const heading = source.label ?? source.name
+  const rows = getTooltipRows(source)
 
-  return (
+  // a record whose band labels say everything has nothing left to show, as a
+  // feature track's tooltip drops what its labels say
+  return heading || rows.length > 0 ? (
     <BaseTooltip clientPoint={{ x, y }}>
       {heading ? (
         <div className={classes.header}>
@@ -67,7 +70,7 @@ const VariantTooltip = observer(function VariantTooltip({
       ) : null}
       <table className={classes.table}>
         <tbody>
-          {getTooltipRows(source).map(({ key, label, value }) => (
+          {rows.map(({ key, label, value }) => (
             <tr key={key}>
               <td className={classes.keyCell}>{label}</td>
               <td className={classes.valueCell}>{value}</td>
@@ -76,7 +79,7 @@ const VariantTooltip = observer(function VariantTooltip({
         </tbody>
       </table>
     </BaseTooltip>
-  )
+  ) : null
 })
 
 export default VariantTooltip

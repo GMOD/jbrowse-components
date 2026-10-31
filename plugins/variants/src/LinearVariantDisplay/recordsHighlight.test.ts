@@ -42,7 +42,8 @@ function sitesOnly() {
 }
 
 // A search hit names a record by its span and name, as the text index
-// records it; the band boxes the record it resolves to, where it drew it.
+// records it; the band boxes the record it resolves to, over its glyph and
+// its labels, the box a hover lights.
 test('a search hit boxes the record on the band', () => {
   const display = sitesOnly()
   const item = bandItem(display, '>7496>7497')
@@ -53,9 +54,17 @@ test('a search hit boxes the record on the band', () => {
     name: '>7496>7497',
   })
   expect([...display.highlightedFeatureIdSet]).toEqual(['>7496>7497'])
-  expect(display.pinnedInk).toMatchObject([
-    { top: item.topPx, height: item.bottomPx - item.topPx },
-  ])
+  const surface = recordsBandSurface(display)
+  surface.onHover?.(
+    surface.getHit(
+      (item.startBp + item.endBp) / 2 / display.view.bpPerPx -
+        display.view.offsetPx,
+      (item.topPx + item.bottomPx) / 2,
+    ),
+  )
+  expect(display.pinnedInk).toEqual(display.hoverInk)
+  expect(display.pinnedInk).toMatchObject([{ top: item.topPx }])
+  expect(display.pinnedInk[0]!.width).toBeGreaterThan(60)
   display.clearFeatureHighlights()
   expect(display.pinnedInk).toEqual([])
 })

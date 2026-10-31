@@ -20,11 +20,14 @@ export interface Source {
 export type ProcessedSource = Source & { sampleName: string }
 
 /**
- * What a right-click on a genotype cell resolved to: the record
- * under it, already a `Feature`, plus where the menu opens.
+ * What a right-click on a genotype cell or a band record resolved to: the
+ * record under it, already a `Feature`, plus where the menu opens.
+ * `bandRecordId` names the band record the menu opened on, which stays lit
+ * while it is open, as a feature track's right-clicked feature does.
  */
 export interface VariantContextMenuInfo extends ContextMenuAnchor {
   feature: Feature
+  bandRecordId?: string
 }
 
 // Per-feature info for hover tooltips and the feature widget: one per record

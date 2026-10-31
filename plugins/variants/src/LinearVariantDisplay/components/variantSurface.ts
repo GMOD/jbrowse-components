@@ -12,6 +12,7 @@ interface SurfaceModel {
   setHoveredFeature: (g?: VariantTooltipFields) => void
   clearHoveredFeature: () => void
   selectFeature: (f: Feature) => void
+  clearSelection: () => void
   openContextMenu: (info: VariantContextMenuInfo) => void
 }
 
@@ -21,13 +22,15 @@ interface SurfaceModel {
  * `getHit` takes a point relative to the surface's element; `enrich` turns a
  * hit into the `SimpleFeature` a click or a right-click acts on; `onHover`
  * writes whatever display-specific highlight state the surface keeps beside
- * the shared tooltip slot.
+ * the shared tooltip slot; `bandRecordId` names the record a right-click
+ * keeps lit while its menu is open.
  */
 export interface VariantSurface<H> {
   getHit: (x: number, y: number) => H | undefined
   getTooltip: (hit: H) => VariantTooltipFields
   enrich: (hit: H) => Feature | undefined
   onHover?: (hit: H | undefined) => void
+  bandRecordId?: (hit: H) => string
 }
 
 /**
@@ -40,7 +43,7 @@ export interface VariantSurface<H> {
  * that clears the hover leaves nothing stale to compare against.
  */
 export function hoverVariantSurface<H>(
-  model: SurfaceModel,
+  model: Pick<SurfaceModel, 'hoveredFeature' | 'setHoveredFeature'>,
   surface: VariantSurface<H>,
   x: number,
   y: number,
@@ -62,7 +65,8 @@ export function hoverVariantSurface<H>(
  * from their own event rather than the stored hover: the hover is a frame
  * behind by construction (`useMouseTracking` coalesces), and a gesture that
  * read it would act on the wrong cell. Both drop the hover first so the
- * tooltip does not linger behind the widget or the menu.
+ * tooltip does not linger behind the widget or the menu; a click on nothing
+ * clears the selection, as a feature track's does.
  *
  * Typed to `HTMLElement`, not the canvas, so a surface can bind them on a
  * transparent div over an `OverlayCanvas` (`pointerEvents: none`).
@@ -74,25 +78,29 @@ export function variantSurfaceHandlers<H>(
   function featureAt(e: MouseEvent<HTMLElement>) {
     const { x, y } = eventPoint(e)
     const hit = surface.getHit(x, y)
-    return hit ? surface.enrich(hit) : undefined
+    const feature = hit ? surface.enrich(hit) : undefined
+    return hit && feature ? { hit, feature } : undefined
   }
   return {
     onClick(e: MouseEvent<HTMLElement>) {
-      const feature = featureAt(e)
-      if (feature) {
+      const found = featureAt(e)
+      if (found) {
         model.clearHoveredFeature()
-        model.selectFeature(feature)
+        model.selectFeature(found.feature)
+      } else {
+        model.clearSelection()
       }
     },
     onContextMenu(e: MouseEvent<HTMLElement>) {
-      const feature = featureAt(e)
-      if (feature) {
+      const found = featureAt(e)
+      if (found) {
         e.preventDefault()
         model.clearHoveredFeature()
         model.openContextMenu({
           clientX: e.clientX,
           clientY: e.clientY,
-          feature,
+          feature: found.feature,
+          bandRecordId: surface.bandRecordId?.(found.hit),
         })
       }
     },

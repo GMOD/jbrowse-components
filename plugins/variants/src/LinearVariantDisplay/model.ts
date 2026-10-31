@@ -127,7 +127,7 @@ import {
   recordsSettingsViews,
 } from './recordsBandViews.ts'
 import { recordCountMeasurements } from './recordsDensityGate.ts'
-import { recordInk, recordsHighlightViews } from './recordsHighlightViews.ts'
+import { recordsHighlightViews } from './recordsHighlightViews.ts'
 import {
   variantContextMenuItems,
   variantTrackMenuItems,
@@ -887,6 +887,12 @@ export function stateModelFactory(
            */
           selectFeature(feature: Feature) {
             void openDetails(() => fullRecordOf(feature))
+          },
+          /**
+           * #action
+           */
+          clearSelection() {
+            getSession(self).clearSelection()
           },
           /**
            * #action
@@ -1986,15 +1992,27 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The box of the hovered genotype cell or record, for the chrome's
-         * highlight: a record is the box plugin-features laid out and the band
-         * painted, at the top.
+         * The band record the hover box lights: the one a menu opened on
+         * while it is open, else the one under the pointer, as
+         * LinearBasicDisplay's `hoverBoxFeature` picks.
+         */
+        get litRecordId() {
+          return (
+            self.contextMenuInfo?.bandRecordId ??
+            self.hoveredRecord?.feature.featureId
+          )
+        },
+        /**
+         * #getter
+         * The box of the lit record, over its glyph and its labels as
+         * LinearBasicDisplay boxes a feature, else of the hovered genotype
+         * cell.
          */
         get hoverInk(): HighlightRect[] {
-          const record = self.hoveredRecord
-          return record
-            ? recordInk(self, record.displayedRegionIndex, record.feature)
-            : this.genotypeHoverInk
+          const id = this.litRecordId
+          return id === undefined
+            ? this.genotypeHoverInk
+            : self.recordsInk([id])
         },
         /**
          * #getter
@@ -2037,10 +2055,11 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * A wash and a border: the cell colors are the data.
+         * A record shades as a feature track's feature does; a cell takes a
+         * wash and a border, since the cell colors are the data.
          */
         get highlightStyle(): HighlightStyle {
-          return 'box'
+          return this.litRecordId === undefined ? 'box' : 'shade'
         },
         /**
          * #getter

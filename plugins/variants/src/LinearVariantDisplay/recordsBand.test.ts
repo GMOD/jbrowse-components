@@ -332,18 +332,23 @@ describe('the pointer over the band', () => {
     expect(feature.get('clickedSample')).toBeUndefined()
   })
 
-  test('a hovered record lights the box the band painted', () => {
+  // the record is a 1px breakpoint; its label runs ~200px past it
+  test('a hovered record lights its glyph and its label, shaded as a feature is', () => {
     const { display } = recordsDisplayAt(KIT, 51)
     const { x, y } = recordAt(display, '>7495>7496')
     const surface = recordsBandSurface(display)
     surface.onHover?.(surface.getHit(x, y))
-    const [ink] = display.hoverInk
     const item = display.recordsLaidOutDataMap
       .get(0)!
       .flatbushItems.find(i => i.featureId === '>7495>7496')!
-    expect(ink).toMatchObject({
-      top: item.topPx,
-      height: item.bottomPx - item.topPx,
-    })
+    expect(display.hoverInk).toEqual([
+      expect.objectContaining({
+        left: expect.closeTo(x, 0),
+        top: item.topPx,
+        height: item.bottomPx - item.topPx,
+      }),
+    ])
+    expect(display.hoverInk[0]!.width).toBeGreaterThan(100)
+    expect(display.highlightStyle).toBe('shade')
   })
 })

@@ -94,16 +94,28 @@ function getHoveredRecord(
 }
 
 /**
- * The records band as a pointer surface: hover, click to the feature widget
- * and right-click to the record menu, as a genotype cell responds. A click
- * names a record and no sample, so the widget opens without a "Sample:" card.
+ * The records band as a pointer surface, responding as a feature track's
+ * features do: hover, click to the feature widget and right-click to the
+ * record menu, the record lit while its menu is open, and a tooltip that
+ * leaves out what the band's labels already say. A click names a record and
+ * no sample, so the widget opens without a "Sample:" card.
  */
 export function recordsBandSurface(
   model: LinearVariantDisplayModel,
 ): VariantSurface<RecordHit> {
   return {
     getHit: (x, y) => getHoveredRecord(model, x, y),
-    getTooltip: hit => hit.fields,
+    getTooltip: hit => {
+      const { fields } = hit
+      const drawn = model.recordsDrawnLabelTexts(fields.featureId)
+      const unlessDrawn = (text: string) => (drawn.has(text) ? '' : text)
+      return {
+        ...fields,
+        featureName: unlessDrawn(fields.featureName),
+        description: unlessDrawn(fields.description),
+      }
+    },
+    bandRecordId: hit => hit.hit.feature.featureId,
     enrich: hit => {
       const { featureId } = hit.fields
       const baseFeature = model.featureById(featureId)

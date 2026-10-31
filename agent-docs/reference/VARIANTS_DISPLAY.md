@@ -42,9 +42,13 @@ ALT, with no fetch.
 
 **Highlights and overlays read the band.** `featureHighlights` (a search
 hit's `setSearchHighlight`, the Highlight row) resolve over the band's
-records and light as `pinnedInk` (`recordsHighlightViews.ts`), the box
-`recordInk` gives the hover too. `searchFeatureByID` answers the
-breakpoint split view's overlay off the laid-out band, its top shifted by
+records and light as `pinnedInk` (`recordsHighlightViews.ts`). Every record
+box (hover, the record a menu is open on, the session's selection, a pin) is
+plugin-features's `featureHighlightInk` over the band (`recordsInkHost`), so
+a record lights over its glyph and labels exactly as a feature track's
+feature does, and its tooltip drops what the labels say (`drawnLabelTexts`).
+`searchFeatureByID` answers the breakpoint split view's overlay off the
+laid-out band, its top shifted by
 `scrollTop - recordsScrollTop` since the overlay subtracts the display's
 `scrollTop` and the band scrolls only with no rows.
 
