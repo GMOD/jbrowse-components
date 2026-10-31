@@ -29,6 +29,7 @@ import {
   notifyFeatureDetailsMiss,
   openFeatureWidget,
   SimpleFeature,
+  sum,
   withFeatureDetails,
 } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
@@ -153,14 +154,14 @@ import {
   applyReadColorsByGroup,
   attachLinkedReadLinesByGroup,
   collectAcrossGroups,
-  fitRowCount,
+  fitLaneRows,
   fittedReadPitch,
   groupRowCaps,
   layoutGroupsToViewport,
   maxRowsFor,
   resolveFitDefaultCap,
   someAcrossGroups,
-  stacksRows,
+  laneLayoutOf,
 } from './groupLayout.ts'
 import {
   buildRawDataByGroup,
@@ -203,7 +204,7 @@ import {
   boundBelowCoverageHeights,
   buildSectionRenders,
   computeStackedSections,
-  totalBelowCoverageOverhead,
+  laneBandOverheads,
 } from './sectionLayout.ts'
 
 import type {
@@ -726,7 +727,7 @@ export default function stateModelFactory(
           /**
            * #getter
            * Whether collapsing can take effect, so whether the "Show" menu
-           * offers the toggle. Chain mode never collapses (`collapsesRows`).
+           * offers the toggle. Chain mode never collapses (`laneLayoutOf`).
            * The menu omits the row rather than disabling it: a click would
            * write a slot no getter reads.
            */
@@ -1159,18 +1160,25 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The height the below-coverage strips take from the fit-to-viewport
-           * row budget: the bands reserved in every lane, summed as
-           * `computeStackedSections` reserves them. Fetch-tier inputs only, so
+           * Each lane's band stack in px, in stacking order, as
+           * `computeStackedSections` reserves it. Fetch-tier inputs only, so
            * the layout reads it without a cycle.
            */
-          get totalBandOverhead() {
-            return totalBelowCoverageOverhead(
+          get laneBandOverheads(): number[] {
+            return laneBandOverheads(
               this.belowCoverageBandsSettings,
               this.groupOrder.map(g => g.key),
               this.arcsResult.inkGroupKeys,
               this.sashimiDownArcLanes,
             )
+          },
+
+          /**
+           * #getter
+           * The height every lane's band stack takes from the row budget.
+           */
+          get totalBandOverhead() {
+            return sum(this.laneBandOverheads)
           },
 
           /**
@@ -1235,15 +1243,24 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * How many rows the uncollapsed groups need, laid out uncapped. Reads
-           * the overlaps and the ceiling only, so a fit drag leaves it alone.
+           * How many rows each lane needs, in stacking order, laid out
+           * uncapped; 0 for a coverage-only lane. Reads the overlaps and the
+           * ceiling only, so a fit drag leaves it alone.
            */
-          get fitRows(): number {
-            return fitRowCount(
+          get fitLaneRows(): number[] {
+            return fitLaneRows(
               this.groupLayoutContext,
               self.pileupMaxLayoutHeight,
               self.collapsedGroups,
             )
+          },
+
+          /**
+           * #getter
+           * `fitLaneRows` summed.
+           */
+          get fitRows(): number {
+            return sum(this.fitLaneRows)
           },
 
           /**
@@ -1349,12 +1366,12 @@ export default function stateModelFactory(
                 admits: self.showConnectors ? this.connectorFilter : undefined,
               },
               key =>
-                stacksRows(
+                laneLayoutOf(
                   this.groupLayoutContext,
                   key,
                   this.groupRowCaps,
                   self.collapsedGroups,
-                ),
+                ) === 'stacked',
             )
           },
 
@@ -2441,18 +2458,23 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The read height that makes every uncollapsed group's reads fill the
-         * display without scrolling (`fittedReadPitch`). The uncapped row count
-         * uses a fixed `pileup.maxLayoutHeight`-row cap, independent of `featureHeight`, so
+         * The read height that makes every lane's reads fill the display
+         * without scrolling (`fittedReadPitch`), each lane's section kept at
+         * least as tall as its label chip. The uncapped row count uses a fixed
+         * `pileup.maxLayoutHeight`-row cap, independent of `featureHeight`, so
          * the fit autorun that writes `featureHeight` cannot feed back into it.
          * Reads `fitTargetHeight`, not the reactive `height` getter — the
          * anti-cycle rule `laidOutByGroup` follows.
          */
         get fittedFeatureHeight() {
+          const overheads = self.laneBandOverheads
           return fittedReadPitch({
-            rows: self.fitRows,
+            lanes: self.fitLaneRows.map((rows, i) => ({
+              rows,
+              overhead: overheads[i]!,
+            })),
             fitTargetHeight: self.fitTargetHeight,
-            totalOverhead: self.totalBandOverhead,
+            minLaneHeight: self.showsGroupLabels ? GROUP_LABEL_HEIGHT : 0,
           })
         },
 

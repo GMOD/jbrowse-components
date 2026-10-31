@@ -222,22 +222,21 @@ export function belowCoverageDragBounds(
   return bandDragBounds(stackBands(BAND_ORDER, bandStackOf(s, s)), key, plot)
 }
 
-// What the band stacks cost the fit-to-viewport row budget: each lane's own,
-// SUMMED, since a lane with nothing bound for a strip reserves none.
-export function totalBelowCoverageOverhead(
+// What each lane's band stack costs the fit-to-viewport row budget, in
+// stacking order: a lane with nothing bound for a strip reserves none.
+export function laneBandOverheads(
   settings: BelowCoverageBandsSettings,
   keys: readonly string[],
   arcLanes: ReadonlySet<string>,
   sashimiDownLanes: ReadonlySet<string>,
 ) {
-  let total = 0
-  for (const key of keys) {
-    total += laneBands(settings, {
-      hasArcs: arcLanes.has(key),
-      hasSashimiDownArcs: sashimiDownLanes.has(key),
-    }).bottom
-  }
-  return total
+  return keys.map(
+    key =>
+      laneBands(settings, {
+        hasArcs: arcLanes.has(key),
+        hasSashimiDownArcs: sashimiDownLanes.has(key),
+      }).bottom,
+  )
 }
 
 export interface SectionStackOpts<L> {

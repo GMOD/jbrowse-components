@@ -168,38 +168,32 @@ function regionsOf(ctx: GroupLayoutContext, key: string) {
 // cap. Extracted so the fit reclaim pass can re-lay-out just the groups whose
 // cap changed instead of rebuilding every group.
 //
-// `coverageOnly` is the label chip's chevron: that lane draws its coverage band
-// and no pileup at all, so there is no placement to do and every row is 0 —
-// its lane's maxY is 0 (`buildLanes`) whatever this returns. The
-// zero-row layout is what skips the dominant cost, `cloneWithLayout`'s per-feature
-// `remapYs` gather and modification Flatbush (the same cost
-// `layoutGroupRowCounts` exists to avoid); every other consumer of a group's map
-// reads fields layout doesn't touch (`readPositions`, the color arrays) or asks
-// for `maxY`.
+// A `coverageOnly` lane (the label chip's chevron) draws its coverage band and
+// no pileup, so every row is 0. The zero-row layout is what skips the dominant
+// cost, `cloneWithLayout`'s per-feature `remapYs` gather and modification
+// Flatbush; every other consumer of a group's map reads fields layout doesn't
+// touch (`readPositions`, the color arrays) or asks for `maxY`.
 function layoutOneGroup(
   ctx: GroupLayoutContext,
   key: string,
   cap: RowCap,
-  collapse = false,
-  coverageOnly = false,
+  layout: LaneLayout,
 ): Map<number, LaidOutPileupData> {
   const dataMap = regionsOf(ctx, key)
-  if (coverageOnly) {
-    return new Map([...dataMap].map(([idx, d]) => [idx, withoutLayout(d)]))
-  }
-  if (collapse) {
-    return buildCollapsedPileupMap(dataMap)
-  }
-  return ctx.unit === 'chain'
-    ? buildLaidOutChainMap({ dataMap, regions: ctx.regions, rowCap: cap })
-    : buildLaidOutPileupMap({
-        dataMap,
-        sortColumn: ctx.sortColumn,
-        showSoftClips: ctx.showSoftClips,
-        regions: ctx.regions,
-        rowCap: cap,
-        layoutOrder: ctx.layoutOrder,
-      })
+  return layout === 'coverageOnly'
+    ? new Map([...dataMap].map(([idx, d]) => [idx, withoutLayout(d)]))
+    : layout === 'oneRow'
+      ? buildCollapsedPileupMap(dataMap)
+      : ctx.unit === 'chain'
+        ? buildLaidOutChainMap({ dataMap, regions: ctx.regions, rowCap: cap })
+        : buildLaidOutPileupMap({
+            dataMap,
+            sortColumn: ctx.sortColumn,
+            showSoftClips: ctx.showSoftClips,
+            regions: ctx.regions,
+            rowCap: cap,
+            layoutOrder: ctx.layoutOrder,
+          })
 }
 
 // Per-read color inputs. A separate bundle from `GroupLayoutContext` because
@@ -349,7 +343,7 @@ export function buildLaidOutByGroup(
   ctx: GroupLayoutContext,
   cap: RowCap,
   capOverrides: ReadonlyMap<string, RowCap> = NO_OVERRIDES,
-  coverageOnlyKeys: ReadonlySet<string> = NOTHING_COLLAPSED,
+  coverageOnlyKeys: ReadonlySet<string> = NO_KEYS,
 ): LaidOutByGroup {
   const byGroup: LaidOutByGroup = new Map()
   for (const { key } of ctx.order) {
@@ -359,143 +353,148 @@ export function buildLaidOutByGroup(
         ctx,
         key,
         capOverrides.get(key) ?? cap,
-        collapsesRows(ctx, key, capOverrides),
-        coverageOnlyKeys.has(key),
+        laneLayoutOf(ctx, key, capOverrides, coverageOnlyKeys),
       ),
     )
   }
   return byGroup
 }
 
-const NOTHING_COLLAPSED: ReadonlySet<string> = new Set()
-
-// Every caller passing no per-group sizes shares this, so `collapsesRows` can
-// take a required map and never has to treat "no overrides" as a missing
-// argument.
+const NO_KEYS: ReadonlySet<string> = new Set()
 const NO_OVERRIDES: ReadonlyMap<string, RowCap> = new Map()
 
-// Whether a group draws as one row. An explicitly-sized group (the label chip's
-// expand, or a height drag) opts out, so that affordance reads as "expand this
-// lane into a true stack". Chain mode opts out wholesale: its rows are chains,
-// and collapsing them would drop the connecting lines that are the point of the
-// mode.
-function collapsesRows(
-  ctx: GroupLayoutContext,
-  key: string,
-  capOverrides: ReadonlyMap<string, RowCap>,
-) {
-  return ctx.collapseSections && ctx.unit !== 'chain' && !capOverrides.has(key)
-}
+/**
+ * How one lane lays its reads out: stacked in rows, all on one row (the
+ * `collapseSections` setting), or not at all (the chip's coverage-only
+ * chevron).
+ */
+export type LaneLayout = 'stacked' | 'oneRow' | 'coverageOnly'
 
-// Whether a group's reads are stacked in rows: not drawn as its coverage band
-// alone, and not collapsed onto one row.
-export function stacksRows(
+// An explicitly-sized lane (the chip's expand, or a height drag) opts out of
+// one row, so that affordance reads as "expand this lane into a true stack".
+// Chain mode opts out wholesale: its rows are chains, and one row would drop
+// the connecting lines that are the point of the mode.
+export function laneLayoutOf(
   ctx: GroupLayoutContext,
   key: string,
   capOverrides: ReadonlyMap<string, RowCap>,
   coverageOnlyKeys: ReadonlySet<string>,
-) {
-  return !coverageOnlyKeys.has(key) && !collapsesRows(ctx, key, capOverrides)
+): LaneLayout {
+  return coverageOnlyKeys.has(key)
+    ? 'coverageOnly'
+    : ctx.collapseSections && ctx.unit !== 'chain' && !capOverrides.has(key)
+      ? 'oneRow'
+      : 'stacked'
 }
 
-// Per-group row counts (maxY) only — no laid-out clones. The fit-height pass
-// needs just each group's stack depth to size reads, so it skips the dominant
+// One lane's row count (maxY) only — no laid-out clone. The fit pass needs
+// just each lane's stack depth to size reads, so it skips the dominant
 // `cloneWithLayout` cost (per-base *Ys arrays) that `buildLaidOutByGroup` pays.
-// Row counts match `groupMaxY(buildLaidOutByGroup(...).get(key))` exactly:
-// `attachLinkedReadLinesByGroup`/`overlayReadFillColors` never change `maxY`.
-// A plain row count in, because no entry comes out: `rowCap`'s source labels a
-// clip on a laid-out region and there are none here. The caller's cap is the
-// display ceiling.
-export function layoutGroupRowCounts(
-  ctx: GroupLayoutContext,
-  maxRows: number,
-): Map<string, number> {
-  const counts = new Map<string, number>()
-  for (const { key } of ctx.order) {
-    const dataMap = regionsOf(ctx, key)
-    counts.set(
-      key,
-      // No per-group sizes here: this pass answers "how many rows would each
-      // group take", which the caller (fit-height) asks before any override
-      // exists.
-      collapsesRows(ctx, key, NO_OVERRIDES)
-        ? collapsedLayoutMaxY(dataMap)
-        : ctx.unit === 'chain'
-          ? chainLayoutMaxY({ dataMap, regions: ctx.regions, maxRows })
-          : pileupLayoutMaxY({
-              dataMap,
-              sortColumn: ctx.sortColumn,
-              showSoftClips: ctx.showSoftClips,
-              regions: ctx.regions,
-              rowCap: ceilingCap(maxRows),
-              layoutOrder: ctx.layoutOrder,
-            }),
-    )
-  }
-  return counts
+// It matches `groupMaxY(buildLaidOutByGroup(...).get(key))` exactly. No
+// per-lane sizes here: the caller (fit) asks before any override is in effect.
+function laneRowCount(ctx: GroupLayoutContext, key: string, maxRows: number) {
+  const dataMap = regionsOf(ctx, key)
+  return laneLayoutOf(ctx, key, NO_OVERRIDES, NO_KEYS) === 'oneRow'
+    ? collapsedLayoutMaxY(dataMap)
+    : ctx.unit === 'chain'
+      ? chainLayoutMaxY({ dataMap, regions: ctx.regions, maxRows })
+      : pileupLayoutMaxY({
+          dataMap,
+          sortColumn: ctx.sortColumn,
+          showSoftClips: ctx.showSoftClips,
+          regions: ctx.regions,
+          rowCap: ceilingCap(maxRows),
+          layoutOrder: ctx.layoutOrder,
+        })
 }
 
-// How many rows the uncollapsed groups need, laid out uncapped. `pileup.maxLayoutHeight`
-// bounds the counting pass only — NOT the current read height, so the fit
-// autorun that writes `featureHeight` can't feed back into the count it is
-// derived from. Its own computed on the model because a drag frame moves the
-// pitch and the target while the overlaps, and so this count, stay put.
-export function fitRowCount(
+// How many rows each lane needs, in stacking order, laid out uncapped; 0 for a
+// coverage-only lane. `pileup.maxLayoutHeight` bounds the counting pass only —
+// NOT the current read height, so the fit autorun that writes `featureHeight`
+// can't feed back into the count it is derived from.
+export function fitLaneRows(
   ctx: GroupLayoutContext,
   maxHeight: number,
-  collapsedKeys: ReadonlySet<string>,
-): number {
-  const counts = layoutGroupRowCounts(
-    { ...ctx, order: ctx.order.filter(g => !collapsedKeys.has(g.key)) },
-    maxRowsFor(maxHeight, 1),
+  coverageOnlyKeys: ReadonlySet<string>,
+) {
+  const maxRows = maxRowsFor(maxHeight, 1)
+  return ctx.order.map(({ key }) =>
+    coverageOnlyKeys.has(key) ? 0 : laneRowCount(ctx, key, maxRows),
   )
-  let rows = 0
-  for (const count of counts.values()) {
-    rows += count
-  }
-  return rows
+}
+
+// One lane as the fit sees it: the rows it stacks and the band stack above
+// them (`laneBandOverheads`).
+export interface FitLane {
+  rows: number
+  overhead: number
 }
 
 export interface FittedReadPitchInput {
-  // `fitRowCount`
-  rows: number
+  lanes: readonly FitLane[]
   // The fit slot, never the reactive `height` getter: the same anti-cycle rule
   // `layoutGroupsToViewport`'s caller follows.
   fitTargetHeight: number
-  // The reserved coverage + band stack over EVERY section, already summed
-  // (`totalBelowCoverageOverhead`) — so the space left for reads is the target
-  // minus this. A sum rather than one section's cost times the count, because
-  // the strips below coverage are reserved per lane and a lane with nothing
-  // bound for one reserves none.
-  totalOverhead: number
+  // The least a lane's section may take, so its label chip has room
+  // (`GROUP_LABEL_HEIGHT` while chips draw). A lane shorter than this at the
+  // solved pitch is padded to it, so it costs this and its rows nothing.
+  minLaneHeight: number
 }
 
 /**
- * The row pitch that makes every uncollapsed group's reads fill the display
- * without scrolling: the pileup space divided by the row count.
+ * The row pitch that makes every lane's reads fill the display without
+ * scrolling: the space left after every lane's band stack, divided by the row
+ * count.
  *
- * Fractional (not floored): the pileup then fills the display exactly rather
- * than leaving up to a row of slack at the bottom. Clamped up to a 1px floor —
- * below 1px the reads can't all fit, so the stack scrolls instead. 0 when
- * there's nothing to fit (no data / no room), signalling "leave the configured
- * height as-is".
+ * A lane padded to `minLaneHeight` takes that height whatever the pitch, so it
+ * leaves the solve: its rows stop sharing the space and its pad is charged
+ * instead. Padding a lane only lowers the pitch, so a lane once padded stays
+ * padded and the loop settles within one pass per lane.
  *
- * Also clamped down to the NORMAL read pitch — not the currently configured
- * height — because fit OVERRIDES the compactness preset: a handful of reads in a
- * tall display would otherwise stretch to fill it, e.g. one read blown up to
- * 100px. Capping at the configured height would instead let a Compact /
- * Super-compact selection clamp the fit expansion (compact overriding fit), so a
- * fit under Compact could never grow past 3px. Fit should only ever squeeze
- * reads smaller than normal, never grow them past it; once there's more room
- * than reads need, the extra space is left blank (the layout already
- * scrolls/pads for the shortfall).
+ * Fractional (not floored): the pileup then fills the display exactly. Clamped
+ * up to a 1px floor — below 1px the reads can't all fit, so the stack scrolls
+ * instead. 0 when there's nothing to fit (no data / no room), signalling
+ * "leave the configured height as-is".
+ *
+ * Also clamped down to the NORMAL read pitch — not the configured height —
+ * because fit OVERRIDES the compactness preset: a handful of reads in a tall
+ * display would otherwise stretch to fill it, and capping at the configured
+ * height would let a Compact selection clamp the fit expansion instead.
  */
-export function fittedReadPitch(input: FittedReadPitchInput) {
-  const { rows, fitTargetHeight } = input
-  const pileupSpace = fitTargetHeight - input.totalOverhead
-  return rows > 0 && pileupSpace > 0
-    ? Math.min(NORMAL_PITCH, Math.max(1, pileupSpace / rows))
-    : 0
+export function fittedReadPitch({
+  lanes,
+  fitTargetHeight,
+  minLaneHeight,
+}: FittedReadPitchInput) {
+  const padded = new Set<FitLane>()
+  let pitch = 0
+  let settled = false
+  while (!settled) {
+    let fixed = 0
+    let rows = 0
+    for (const lane of lanes) {
+      if (padded.has(lane)) {
+        fixed += minLaneHeight
+      } else {
+        fixed += lane.overhead
+        rows += lane.rows
+      }
+    }
+    const space = fitTargetHeight - fixed
+    pitch =
+      rows > 0 && space > 0
+        ? Math.min(NORMAL_PITCH, Math.max(1, space / rows))
+        : 0
+    const short = lanes.filter(
+      lane =>
+        !padded.has(lane) && lane.overhead + lane.rows * pitch < minLaneHeight,
+    )
+    for (const lane of short) {
+      padded.add(lane)
+    }
+    settled = short.length === 0
+  }
+  return pitch
 }
 
 // Fit-to-viewport policy inputs, in px, plus the per-group user overrides. Kept
@@ -554,7 +553,7 @@ export function layoutGroupsToViewport(
   for (const [key, map] of pass) {
     if (
       overrideCaps.has(key) ||
-      !stacksRows(ctx, key, overrideCaps, collapsedKeys)
+      laneLayoutOf(ctx, key, overrideCaps, collapsedKeys) !== 'stacked'
     ) {
       continue
     }
@@ -575,7 +574,7 @@ export function layoutGroupsToViewport(
   if (bonusCaps) {
     result = new Map(pass)
     for (const [key, cap] of bonusCaps) {
-      result.set(key, layoutOneGroup(ctx, key, cap))
+      result.set(key, layoutOneGroup(ctx, key, cap, 'stacked'))
     }
   }
   return result
@@ -594,7 +593,7 @@ export function layoutGroupsToViewport(
 // `totalOverhead` is already summed over every group, collapsed ones included
 // (they still show coverage). It arrives summed rather than as one group's cost
 // times the count because the two strips below coverage are reserved per lane —
-// see `totalBelowCoverageOverhead`, which is the only place that sum is spelled.
+// see `laneBandOverheads`.
 export const MIN_FIT_ROWS = 3
 export function fitGroupMaxRows({
   height,

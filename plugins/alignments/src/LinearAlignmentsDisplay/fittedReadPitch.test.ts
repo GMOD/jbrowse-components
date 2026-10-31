@@ -1,5 +1,5 @@
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
-import { fitRowCount, fittedReadPitch } from './groupLayout.ts'
+import { fitLaneRows, fittedReadPitch } from './groupLayout.ts'
 import { NORMAL_PITCH } from './menus/compactnessPresets.ts'
 
 import type { GroupLayoutContext } from './groupLayout.ts'
@@ -33,17 +33,24 @@ function pitch(
   groups: { key: string; rows: number }[],
   opts: {
     fitTargetHeight: number
-    // Summed over every group by the caller in production
-    // (`totalBelowCoverageOverhead`), so a per-group figure is spelled here as
-    // the product it used to be computed as.
-    totalOverhead?: number
+    // Each lane's band stack, in order (`laneBandOverheads`); none by default.
+    overheads?: number[]
     collapsedKeys?: Set<string>
+    minLaneHeight?: number
   },
 ) {
+  const rows = fitLaneRows(
+    context(groups),
+    10000,
+    opts.collapsedKeys ?? new Set(),
+  )
   return fittedReadPitch({
-    rows: fitRowCount(context(groups), 10000, opts.collapsedKeys ?? new Set()),
+    lanes: rows.map((r, i) => ({
+      rows: r,
+      overhead: opts.overheads?.[i] ?? 0,
+    })),
     fitTargetHeight: opts.fitTargetHeight,
-    totalOverhead: opts.totalOverhead ?? 0,
+    minLaneHeight: opts.minLaneHeight ?? 0,
   })
 }
 
@@ -62,22 +69,21 @@ test('one section of overhead is charged per group, not once for the display', (
         { key: 'a', rows: 5 },
         { key: 'b', rows: 5 },
       ],
-      { fitTargetHeight: 90, totalOverhead: 30 },
+      { fitTargetHeight: 90, overheads: [15, 15] },
     ),
   ).toBe(6)
   // Charging 15px once for the display instead would leave 75px and fit 7.5.
 })
 
-// The sum is the caller's, and it is a sum rather than a product because the
-// strips below coverage are reserved per lane: the lane with no arc of its own
-// reserves none, and the budget has to hand that height back to the rows.
+// The strips below coverage are reserved per lane: the lane with no arc of its
+// own reserves none, and the budget has to hand that height back to the rows.
 test('an overhead only some lanes pay leaves the rest of them more room', () => {
   const groups = [
     { key: 'a', rows: 5 },
     { key: 'b', rows: 5 },
   ]
   // 15px of coverage each, plus a 20px arc strip on one lane only.
-  expect(pitch(groups, { fitTargetHeight: 90, totalOverhead: 50 })).toBe(4)
+  expect(pitch(groups, { fitTargetHeight: 90, overheads: [35, 15] })).toBe(4)
   // Charging both lanes for the strip is 70px of overhead, leaving 20px — half
   // the room, for a strip only one of them draws.
 })
@@ -105,7 +111,7 @@ test('0 when there are no rows, and when the overhead eats the whole target', ()
   expect(
     pitch([{ key: 'a', rows: 4 }], {
       fitTargetHeight: 30,
-      totalOverhead: 30,
+      overheads: [30],
     }),
   ).toBe(0)
 })
@@ -122,4 +128,23 @@ test('a collapsed lane contributes no rows', () => {
   expect(pitch(groups, { ...target, collapsedKeys: new Set(['b']) })).toBe(
     NORMAL_PITCH,
   )
+})
+
+// A lane shorter than its label chip is padded to the chip, so the pad is what
+// it costs. Solving without it handed the short lane's rows a share of the
+// space, and the padded stack overran the display fit promised to fill.
+test('a short lane costs its label chip, and the rest share what is left', () => {
+  // lane b: 20px of coverage and one row, always under the 30px floor
+  const groups = [
+    { key: 'a', rows: 10 },
+    { key: 'b', rows: 1 },
+  ]
+  // 30px floor for b leaves 70 of 100 for a's 10 rows
+  expect(
+    pitch(groups, {
+      fitTargetHeight: 100,
+      overheads: [0, 20],
+      minLaneHeight: 30,
+    }),
+  ).toBe(7)
 })

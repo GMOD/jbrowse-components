@@ -148,7 +148,7 @@ describe('two bands at their ceilings', () => {
       { groups: [{ key: '', label: '', data: oneReadWithMate(2000) }] },
       region,
     )
-    expect(display.belowCoverageBands.hasArcsBand).toBe(true)
+    expect(display.sections.sections[0]!.hasArcsBand).toBe(true)
     return display
   }
 
@@ -157,7 +157,7 @@ describe('two bands at their ceilings', () => {
     const slot = display.height
     display.setCoverageHeight(5000)
     display.setReadConnectionsHeight(5000)
-    expect(display.belowCoverageBands.bottom).toBe(slot - 20)
+    expect(display.sections.sections[0]!.pileupTop).toBe(slot - 20)
     expect(display.scrollViewportHeight).toBe(20)
   })
 
@@ -167,7 +167,7 @@ describe('two bands at their ceilings', () => {
     display.setCoverageHeight(100)
     display.setReadConnectionsHeight(5000)
     expect(display.readConnectionsHeight).toBe(slot - 20 - 100)
-    expect(display.belowCoverageBands.bottom).toBe(slot - 20)
+    expect(display.sections.sections[0]!.pileupTop).toBe(slot - 20)
   })
 
   it('bind stated heights top-down, the upper band first', () => {
@@ -177,7 +177,7 @@ describe('two bands at their ceilings', () => {
     setConf(display, ['readConnections', 'height'], 5000)
     expect(display.bandHeights.coverageHeight).toBe(slot - 20)
     expect(display.bandHeights.readConnectionsHeight).toBe(0)
-    expect(display.belowCoverageBands.bottom).toBe(slot - 20)
-    expect(display.belowCoverageBands.hasArcsBand).toBe(false)
+    expect(display.sections.sections[0]!.pileupTop).toBe(slot - 20)
+    expect(display.sections.sections[0]!.hasArcsBand).toBe(false)
   })
 })
