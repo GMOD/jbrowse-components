@@ -36,6 +36,14 @@ on screen. Three things ride on that, each a silently wrong picture if missed:
   coordinate from the other. `endRefName` switches it to two positions and no
   distance.
 
+**Where it draws is the feet; what it is, the pair.** A translocated mate's
+supplementary can sit beside its partner, so both drawn ends share a chromosome
+while the pair's RNEXT names another. That mate link draws as an ordinary arc
+but paints `ARC_COLOR_INTERCHROM` and answers `connection.interchrom`
+(`PairedPendingArc.interchrom`), as the read fill and the pileup connector over
+the same two reads do. Its pair orientation was computed across references and
+means nothing.
+
 ## Paint order is an interest ranking, not a data order
 
 - Between marks, in `ARC_BAND_MARKS`: ticks paint under everything, and both

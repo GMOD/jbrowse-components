@@ -151,7 +151,7 @@ export function connectorFilterOf(
   return ({ e1, e2, c }: LinkedPair) => {
     const crosses = crossesChromosomes(e1, e2, refNameAt)
     return (
-      passesCategory(crosses, interchrom) &&
+      passesCategory(crosses || c.interchrom, interchrom) &&
       passesCategory(false, offscreenMates) &&
       !(
         crosses &&

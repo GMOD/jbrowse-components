@@ -198,7 +198,9 @@ export function getArcColorType(args: {
   // into `normal`, so those arcs went red over reads that stayed grey, and the
   // span's outlier cut ran over the arcs IN VIEW, so an arc's color changed
   // as you panned.
-  return pairColorType(colorField, arc.pairOrientationNum, arc.tlen, arc.stats)
+  return arc.interchrom
+    ? ARC_COLOR_INTERCHROM
+    : pairColorType(colorField, arc.pairOrientationNum, arc.tlen, arc.stats)
 }
 
 // alignmentsUniforms.slang's CONNECTOR_COLOR_BITS: the bits each field's slot

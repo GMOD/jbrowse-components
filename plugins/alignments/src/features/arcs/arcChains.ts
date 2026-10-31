@@ -1,6 +1,7 @@
 import {
   clipAt,
   flagsOf,
+  interchromOf,
   pairFieldEntry,
   primaryOf,
   resolveReadGroup,
@@ -361,6 +362,7 @@ export function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
     isSplit: false,
     pairOrientationNum: src.data.readPairOrientations[src.readIdx]!,
     tlen: src.data.readInsertSizes[src.readIdx]!,
+    interchrom: interchromOf(src),
     // Off the SAME entry the orientation and tlen come from — `pairFieldEntry`
     // picks a primary, and the proper-pair flag is a pair field like the other
     // two. Taking it off `e1` instead would read a supplementary's flags where
@@ -442,6 +444,7 @@ export function offScreenMateArcs(
       p2Dir: readTrailingBodyDir(mateStrand),
       pairOrientationNum: data.readPairOrientations[readIdx]!,
       tlen: data.readInsertSizes[readIdx]!,
+      interchrom: interchromOf(entry),
       flags: flagsOf(entry),
       stats: data.insertSizeStats,
       isSplit: false,

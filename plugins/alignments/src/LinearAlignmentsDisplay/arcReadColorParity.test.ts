@@ -24,6 +24,7 @@ function arcCategory(
   colorField: ArcColorField,
   pairOrientationNum: number,
   tlen: number,
+  interchrom = false,
 ) {
   return arcSlotCategory(
     getArcColorType({
@@ -40,6 +41,7 @@ function arcCategory(
         p2Dir: -1,
         pairOrientationNum,
         tlen,
+        interchrom,
         // carried for the concordant-arc filter, which coloring never consults
         flags: 0,
         stats,
@@ -55,6 +57,7 @@ function readCategory(
   colorField: ArcColorField,
   pairOrientationNum: number,
   tlen: number,
+  interchrom = false,
 ) {
   return readColorCategory(
     0,
@@ -66,7 +69,7 @@ function readCategory(
       readPairOrientations: Uint8Array.of(pairOrientationNum),
       readFillColors: Uint32Array.of(0),
       readChainHasSupp: Uint8Array.of(0),
-      readInterchrom: Uint8Array.of(0),
+      readInterchrom: Uint8Array.of(interchrom ? 1 : 0),
       insertSizeStats: stats,
     },
     colorField,
@@ -102,6 +105,20 @@ describe('arc and read color classifiers', () => {
       }
     }
     expect(readCategory('insertSize', 1, -5000)).toBe('longInsert')
+  })
+
+  // A translocated mate's supplementary can be drawn beside its partner, so
+  // both ends of the arc share a chromosome while the pair's fields say the
+  // mates do not.
+  test('agree on a pair whose mates lie on two chromosomes', () => {
+    for (const colorField of ARC_COLOR_FIELDS) {
+      for (const po of ORIENTATIONS) {
+        expect(arcCategory(colorField, po, 0, true)).toBe(
+          readCategory(colorField, po, 0, true),
+        )
+      }
+      expect(arcCategory(colorField, 2, 0, true)).toBe('interchrom')
+    }
   })
 
   // TLEN 0 is SAM's "information unavailable": `classifyInsertSize` sorts it

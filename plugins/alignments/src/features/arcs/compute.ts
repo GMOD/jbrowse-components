@@ -468,7 +468,10 @@ function resolveArcs(
     // so neither category can be bypassed by a branch added below.
     const interchromosomal = p1Ref !== p2Ref
     if (
-      !passesCategory(interchromosomal, filter.interchrom) ||
+      !passesCategory(
+        interchromosomal || (!arc.isSplit && arc.interchrom),
+        filter.interchrom,
+      ) ||
       !passesCategory(
         !interchromosomal && arc.offScreen === true,
         filter.offscreenMates,
@@ -601,6 +604,7 @@ function resolveArcs(
     // the rounded arc. (`offscreenMates` only filters connections to mates that
     // aren't loaded in the current view; see `offScreenMateArcs`.)
     const colorType = getArcColorType({ arc, colorField, hasPaired })
+    interchromFromMatePair ||= colorType === ARC_COLOR_INTERCHROM
     // The arcs' ordinary pair, which at depth stops being context and becomes
     // the picture — 9138 of 9204 arcs at 1:2,000,000 on HG002 300x, all
     // painting the baseline slot (agent-docs/reference/DEEP_COVERAGE.md).

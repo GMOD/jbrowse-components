@@ -266,6 +266,11 @@ export interface PairedPendingArc extends PendingArcEndpoints {
   isSplit: false
   pairOrientationNum: number
   tlen: number
+  // The pair's mates lie on two chromosomes by the record's RNEXT
+  // (`readInterchrom`), as the read fill and the pileup connector read it,
+  // whether or not the two ends drawn are: a translocated mate's supplementary
+  // can sit beside its partner.
+  interchrom: boolean
   // SAM flags of the record the pair fields were sourced from, carried for
   // `isConcordantPairRead` alone — the aligner's own verdict on the pair, which
   // is what "Ordinary pairs" hides. On the split arm there is nothing

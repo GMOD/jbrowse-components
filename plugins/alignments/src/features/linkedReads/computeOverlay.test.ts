@@ -1392,54 +1392,59 @@ describe('connectorFilterOf', () => {
   const first = SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR
   const second = SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR
   // region 0 holds an ordinary pair `w`, one mate of `m` and the primary of
-  // the split read `r`; region 1 the other mate and the supplementary
-  const twoRegions = new Map([
-    [
-      0,
-      makeData({
-        names: ['w', 'w', 'm', 'r'],
-        ids: ['w1', 'w2', 'm1', 'r-primary'],
-        flags: [first, second, first, 0],
-        strands: [1, -1, 1, 1],
-        orientations: [PAIR_DIRECTION_NUM.LR, PAIR_DIRECTION_NUM.LR, 0, 0],
-        positions: [
-          [100, 200],
-          [300, 400],
-          [500, 600],
-          [2400, 2500],
-        ],
-        ys: [0, 1, 2, 3],
-        interchrom: [0, 0, 1, 0],
-      }),
-    ],
-    [
-      1,
-      makeData({
-        names: ['m', 'r'],
-        ids: ['m2', 'r-supplementary'],
-        flags: [second, SAM_FLAG_SUPPLEMENTARY],
-        strands: [-1, 1],
-        positions: [
-          [9500, 9600],
-          [9000, 9100],
-        ],
-        ys: [0, 1],
-        interchrom: [1, 0],
-      }),
-    ],
-  ])
+  // the split read `r`; region 1 the other mate and the supplementary. `m`'s
+  // records name their mates on another chromosome where the regions' refNames
+  // differ, as a real BAM's RNEXT does.
+  const twoRegions = (mInterchrom: number) =>
+    new Map([
+      [
+        0,
+        makeData({
+          names: ['w', 'w', 'm', 'r'],
+          ids: ['w1', 'w2', 'm1', 'r-primary'],
+          flags: [first, second, first, 0],
+          strands: [1, -1, 1, 1],
+          orientations: [PAIR_DIRECTION_NUM.LR, PAIR_DIRECTION_NUM.LR, 0, 0],
+          positions: [
+            [100, 200],
+            [300, 400],
+            [500, 600],
+            [2400, 2500],
+          ],
+          ys: [0, 1, 2, 3],
+          interchrom: [0, 0, mInterchrom, 0],
+        }),
+      ],
+      [
+        1,
+        makeData({
+          names: ['m', 'r'],
+          ids: ['m2', 'r-supplementary'],
+          flags: [second, SAM_FLAG_SUPPLEMENTARY],
+          strands: [-1, 1],
+          positions: [
+            [9500, 9600],
+            [9000, 9100],
+          ],
+          ys: [0, 1],
+          interchrom: [mInterchrom, 0],
+        }),
+      ],
+    ])
 
   function drawn(
     filter: Partial<ConnectionFilter>,
     {
       refNames = ['chr1', 'chr2'],
       belowFloor = () => new Set<string>(),
+      mInterchrom = refNames[0] === refNames[1] ? 0 : 1,
     }: {
       refNames?: string[]
       belowFloor?: () => ReadonlySet<string>
+      mInterchrom?: number
     } = {},
   ) {
-    const { lines, overlayPairs } = resolveConnectors(twoRegions, {
+    const { lines, overlayPairs } = resolveConnectors(twoRegions(mInterchrom), {
       lines: true,
       scope: 'all',
       admits: connectorFilterOf(
@@ -1474,6 +1479,18 @@ describe('connectorFilterOf', () => {
     ).toEqual(['m', 'r'])
   })
 
+  // a translocated mate's supplementary beside its partner: the records name
+  // the mate on another chromosome, the connector paints inter-chromosomal,
+  // and the filter takes it with the rest
+  test('a mate link whose records name a mate elsewhere is inter-chromosomal on one contig', () => {
+    expect(
+      drawn(
+        { interchrom: 'exclude' },
+        { refNames: ['chr1', 'chr1'], mInterchrom: 1 },
+      ).curves,
+    ).toEqual(['r'])
+  })
+
   test('a connector is never an off-screen mate', () => {
     expect(drawn({ offscreenMates: 'only' })).toEqual({ lines: 0, curves: [] })
     expect(drawn({ offscreenMates: 'exclude' })).toEqual(drawn({}))
@@ -1489,7 +1506,7 @@ describe('connectorFilterOf', () => {
   // chain layout runs no straight-line pass, and its overlay takes the filter
   test('the filter reaches the overlay with the straight-line pass off', () => {
     const curves = (filter: Partial<ConnectionFilter>) =>
-      resolveConnectors(twoRegions, {
+      resolveConnectors(twoRegions(1), {
         lines: false,
         scope: 'all',
         admits: connectorFilterOf(

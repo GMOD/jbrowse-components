@@ -22,6 +22,7 @@ function link(p1Ref: string, p1Bp: number, p2Ref: string, p2Bp: number) {
     isSplit: false,
     pairOrientationNum: 1,
     tlen: 0,
+    interchrom: p1Ref !== p2Ref,
     flags: 1,
     stats: undefined,
   } satisfies PendingArc

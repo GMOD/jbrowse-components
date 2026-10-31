@@ -3166,4 +3166,47 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.colorType).toBe(6)
   })
+
+  // A translocation's split mate: read1's primary sits on chr2, off screen,
+  // its supplementary beside read2 on chr1. Both drawn ends are on chr1, but
+  // the pair's fields describe mates on two chromosomes, as the read fill and
+  // the pileup connector read them.
+  const translocatedMate = makePileupData({
+    readPositions: new Uint32Array([1000, 1100, 1400, 1500]),
+    readFlags: new Uint16Array([
+      SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_SUPPLEMENTARY,
+      SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+    ]),
+    readStrands: new Int8Array([1, -1]),
+    readInsertSizes: new Float32Array([0, 0]),
+    readPairOrientations: new Uint8Array([1, 2]),
+    readInterchrom: new Uint8Array([0, 1]),
+    ...namesToBlock(['readA', 'readA']),
+  })
+
+  test('a mate link whose pair crosses chromosomes paints inter-chromosomal, whatever its drawn ends', () => {
+    const { arcs, interchromFromMatePair } = computeArcsFromPileupData(
+      new Map([[0, translocatedMate]]),
+      regions,
+      {
+        colorField: 'pairOrientation',
+        filter: { offscreenMates: 'exclude' },
+      },
+    )
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.colorType).toBe(ARC_COLOR_INTERCHROM)
+    expect(interchromFromMatePair).toBe(true)
+  })
+
+  test('the interchrom filter takes that mate link with the rest', () => {
+    const { arcs } = computeArcsFromPileupData(
+      new Map([[0, translocatedMate]]),
+      regions,
+      {
+        colorField: 'pairOrientation',
+        filter: { interchrom: 'exclude', offscreenMates: 'exclude' },
+      },
+    )
+    expect(arcs).toHaveLength(0)
+  })
 })

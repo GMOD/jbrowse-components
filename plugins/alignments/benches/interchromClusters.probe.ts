@@ -203,6 +203,7 @@ async function main() {
       isSplit: false,
       pairOrientationNum: 0,
       tlen: r.template_length,
+      interchrom: true,
       flags: r.flags,
       stats: undefined,
     })
