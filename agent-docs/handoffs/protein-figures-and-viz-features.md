@@ -279,9 +279,6 @@ blinded ideator given only a capability sheet, a landscape survey):
   height, lands on the track's shared display config, so one track open in
   two views draws at one height and one sort in both. `met_ex14` gives its DNA
   track one height for that reason.
-- The Protein Browser (`~/src/proteinbrowser`) still writes the genome view's
-  settings under the deprecated `init`, and its alignment view opens titled
-  "Untitled view".
 - `/var/tmp/metex14/bin/walk.mjs` walks the MET tutorial's clicks in headless
   Chrome against the hosted app and screenshots each step; rerun it after
   changing a step. Copy view sits under the view menu's View options, and a

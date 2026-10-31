@@ -92,8 +92,8 @@ species and a structure, linked:
 - pick **Assembly** in the protein view's menu, then the entry for assembly 5,
   marked dimeric. 3BUX opens on its first assembly, the MET stretch alone;
   assembly 5 adds CBL
-- close the alignment view under the genome view with the × on its title bar,
-  and the ClinVar and AlphaMissense tracks with the × on each track's label
+- close the MET orthologs view with the × on its title bar, and the ClinVar and
+  AlphaMissense tracks with the × on each track's label
 - type
   `chr7:116771458-116771694 chr7:116771809-116772029 chr7:116774841-116775151`
   into the location box, which keeps exons 13, 14 and 15 with a little intron on
