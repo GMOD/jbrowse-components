@@ -180,7 +180,7 @@ test('on screen the renderer group counts every chord and draws the hovered one'
   expect(paths[0]!.getAttribute('stroke-width')).toBe('3')
 })
 
-test('the export dims chords outside the highlighted set, and with no set none', () => {
+test('the export dims the chords in the dimmed set, and with no set none', () => {
   const opacities = (overrides: Partial<ShapeDisplayModel>) => {
     const { container } = render(
       <svg>
@@ -199,7 +199,7 @@ test('the export dims chords outside the highlighted set, and with no set none',
     )
   }
   expect(opacities({})).toEqual([null, null])
-  expect(opacities({ highlightedFeatureIdSet: new Set(['b']) })).toEqual([
+  expect(opacities({ dimmedFeatureIds: new Set(['a']) })).toEqual([
     '0.15',
     null,
   ])
@@ -212,7 +212,7 @@ test("the export draws each chord at the display's opacity, over its color's alp
         display={chordModel('ready', {
           shapes: shapesOf(bnd('a', 100, 900), bnd('b', 200, 800)),
           shapeAlpha: 0.45,
-          highlightedFeatureIdSet: new Set(['b']),
+          dimmedFeatureIds: new Set(['a']),
         })}
         testid="structuralVariantChordRenderer"
         only="all"

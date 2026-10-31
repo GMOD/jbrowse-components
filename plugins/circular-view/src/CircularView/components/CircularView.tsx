@@ -86,23 +86,18 @@ const Slices = observer(function Slices({
       <RingAxes model={model} />
       <RingOverlay model={model} />
       <RingStatus model={model} />
-      {model.tracks.map(track => {
-        const display = track.displays[0]
-        if (
-          !display ||
-          model.ringHost.ringDisplays.some(ring => ring.id === display.id)
-        ) {
-          return null
-        }
-        // a chord display's component takes its model as `display`, not as
-        // the `model` BaseDisplay's RenderingComponent names
-        const { ReactComponent } = getEnv(model).pluginManager.getDisplayType(
-          display.type,
-        )
-        return (
-          <ReactComponent key={display.id} display={display} view={model} />
-        )
-      })}
+      {model.trackDisplays
+        .filter(display => !model.isRingDisplay(display))
+        .map(display => {
+          // a chord display's component takes its model as `display`, not as
+          // the `model` BaseDisplay's RenderingComponent names
+          const { ReactComponent } = getEnv(model).pluginManager.getDisplayType(
+            display.type,
+          )
+          return (
+            <ReactComponent key={display.id} display={display} view={model} />
+          )
+        })}
     </>
   )
 })

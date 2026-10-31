@@ -79,7 +79,7 @@ const ShapePaths = observer(function ShapePaths({
   testid: string
   only: 'highlighted' | 'all'
 }) {
-  const { radiusPx, bezierRadius, highlightedFeatureIdSet } = display
+  const { radiusPx, bezierRadius, dimmedFeatureIds } = display
   const palette = usePalette()
   // a hover and a selection say where the reader's pointer was, so the export
   // draws every shape resting
@@ -101,8 +101,7 @@ const ShapePaths = observer(function ShapePaths({
       ) : null}
       {drawn.map(({ shape, state }) => {
         const dimmed =
-          state !== 'hovered' &&
-          highlightedFeatureIdSet?.has(shape.feature.id()) === false
+          state !== 'hovered' && !!dimmedFeatureIds?.has(shape.feature.id())
         const opacity =
           alpha *
           (dimmed ? DIMMED_OPACITY : 1) *

@@ -8,6 +8,7 @@ import {
   getDialogHost,
   getSession,
   isFeature,
+  openFeatureWidget,
 } from '@jbrowse/core/util'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { getRpcSessionId, isSameAssemblyName } from '@jbrowse/core/util/tracks'
@@ -35,6 +36,12 @@ const ErrorMessageStackTraceDialog = lazy(
 )
 
 const NO_LANES = { count: 0, features: [] as readonly Feature[] }
+
+/** One end of a feature on the circle, as `placeEnd` resolves it. */
+export interface PlacedEnd {
+  assemblyName: string | undefined
+  refName: string
+}
 
 export interface ChordFetchArgs {
   sessionId: string
@@ -319,18 +326,28 @@ export function BaseChordDisplay() {
     .views(self => ({
       /**
        * #method
-       * the slice of the unrolled axis that one end of a feature falls in
+       * one end of a feature, as the adapter wrote it, on the circle: the
+       * assembly it names (`assemblyOf`) and its refName in that assembly's
+       * spelling, the assembly undefined where it names none on the circle
        */
-      axisSlice(
-        assemblyName: string | undefined,
-        refName: string,
-      ): AxisSlice | undefined {
+      placeEnd(assemblyName: string | undefined, refName: string): PlacedEnd {
         const assembly = self.assemblyOf(assemblyName)
-        return assembly === undefined
+        return {
+          assemblyName: assembly,
+          refName:
+            assembly === undefined
+              ? refName
+              : self.canonicalRefName(assembly, refName),
+        }
+      },
+      /**
+       * #method
+       * the slice of the unrolled axis a placed end falls in
+       */
+      axisSlice({ assemblyName, refName }: PlacedEnd): AxisSlice | undefined {
+        return assemblyName === undefined
           ? undefined
-          : self.view.chordAxis.byKey.get(
-              sliceKey(assembly, self.canonicalRefName(assembly, refName)),
-            )
+          : self.view.chordAxis.byKey.get(sliceKey(assemblyName, refName))
       },
     }))
     .actions(self => ({
@@ -342,6 +359,16 @@ export function BaseChordDisplay() {
           ErrorMessageStackTraceDialog,
           { onClose, error: self.displayError },
         ])
+      },
+      /**
+       * #action
+       * what a click on the canvas reaches: the record's details
+       */
+      clickFeature(feature: Feature) {
+        openFeatureWidget(self, feature.toJSON(), {
+          widget: self.featureWidgetType,
+          feature,
+        })
       },
       /**
        * #action

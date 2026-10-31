@@ -100,6 +100,7 @@ import type {
   ChordLayerDisplay,
   PointerTarget,
 } from '../chords/shapes.ts'
+import type { RingDisplay } from '../rings/ringHost.ts'
 import type { FitInput, FitLayout } from './fitLayout.ts'
 import type { ChordAxis, PolarScale } from './slices.ts'
 import type { CircularViewCommands } from './types.ts'
@@ -771,13 +772,51 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * each track's display, the one the circle draws
+       */
+      get trackDisplays() {
+        return self.tracks.flatMap(({ displays }) => {
+          const display = displays[0]
+          return display ? [display] : []
+        })
+      },
+      /**
+       * #method
+       * whether a display draws as a ring: one registered for another view,
+       * laid out along the ring host's strip, where one registered for this
+       * view draws across the circle
+       */
+      isRingDisplay(display: { type: string }) {
+        return (
+          pluginManager.getDisplayType(display.type).viewType !== 'CircularView'
+        )
+      },
+      /**
+       * #getter
+       * the displays drawn as rings, in track order
+       */
+      get ringDisplays(): RingDisplay[] {
+        return this.trackDisplays.filter((d): d is DisplayModel & RingDisplay =>
+          this.isRingDisplay(d),
+        )
+      },
+      /**
+       * #getter
+       * the displays drawing across the circle, in track order
+       */
+      get chordDisplays(): ChordLayerDisplay[] {
+        return this.trackDisplays.filter(
+          (d): d is DisplayModel & ChordLayerDisplay =>
+            !this.isRingDisplay(d) && 'chordCell' in d,
+        )
+      },
+      /**
+       * #getter
        * the ribbon displays of `syntenyTracks()`; a chromosome reorder reads
        * its alignments from these
        */
       get chordSyntenyDisplays(): ChordSyntenyDisplaySelf[] {
-        return self.tracks.flatMap(track =>
-          track.displays.filter(isRibbonDisplay),
-        )
+        return this.trackDisplays.filter(isRibbonDisplay)
       },
       /**
        * #getter
@@ -958,27 +997,12 @@ function stateModelFactory(pluginManager: PluginManager) {
         return self.ringHost.chordRadiusPx
       },
       /**
-       * #getter
-       * the displays drawing across the circle, in track order: every first
-       * display registered for this view rather than laid out as a ring
-       */
-      get chordDisplays(): ChordLayerDisplay[] {
-        return self.tracks
-          .map(t => t.displays[0])
-          .filter(
-            (d): d is DisplayModel & ChordLayerDisplay =>
-              d !== undefined &&
-              'chordCell' in d &&
-              pluginManager.getDisplayType(d.type).viewType === 'CircularView',
-          )
-      },
-      /**
        * #method
        * the chord or ribbon under a point `dx`,`dy` CSS px from the circle's
        * centre in the screen frame
        */
       chordAt(dx: number, dy: number): ChordHit | undefined {
-        const displays = this.chordDisplays
+        const displays = self.chordDisplays
         for (let i = displays.length - 1; i >= 0; i--) {
           const display = displays[i]!
           const feature = display.hitAt(dx, dy)
@@ -1137,7 +1161,6 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       linearTracksFor(assemblyName: string): TrackInit[] {
         const { assemblyManager } = getSession(self)
-        const { ringDisplays } = self.ringHost
         return self.tracks.flatMap(({ configuration, displays }) => {
           const onGenome = getConfAssemblyNamesOrNone(configuration).some(
             name => isSameAssemblyName(name, assemblyName, assemblyManager),
@@ -1148,7 +1171,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           const trackId = readConfObject(configuration, 'trackId')
           const display = displays[0]
           return [
-            display && ringDisplays.some(ring => ring.id === display.id)
+            display && self.isRingDisplay(display)
               ? { trackId, type: display.type }
               : { trackId },
           ]

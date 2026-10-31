@@ -4,7 +4,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
-import { getEnv, getSession, openFeatureWidget } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import {
   abgrToCssRgba,
@@ -36,7 +36,7 @@ import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { axisX, sliceKey } from '../../CircularView/slices.ts'
+import { axisX } from '../../CircularView/slices.ts'
 import {
   BaseChordDisplay,
   installChordFetch,
@@ -134,14 +134,6 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           ? self.features?.filter(f => visible.has(f.id()))
           : self.features
       },
-      /**
-       * #getter
-       */
-      get highlightedFeatureIdSet() {
-        return self.highlightedFeatureIds
-          ? new Set(self.highlightedFeatureIds)
-          : undefined
-      },
     }))
     .views(self => ({
       /**
@@ -170,21 +162,13 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           junction: new Array<string>(n),
           index: new Map<Feature, number>(),
         }
-        const assemblyName = self.assemblyOf(undefined)
-        if (assemblyName === undefined) {
-          return feet
-        }
-        const assembly = getSession(self).assemblyManager.get(assemblyName)
-        const { byKey } = self.view.chordAxis
-        const canonical = (refName: string) =>
-          assembly?.getCanonicalRefName2(refName) ?? refName
         features.forEach((feature, i) => {
           feet.index.set(feature, i)
-          const ownRef = canonical(feature.get('refName'))
           const end = getEndpoint(feature)
-          const farRef = canonical(end.refName)
-          const start = byKey.get(sliceKey(assemblyName, ownRef))
-          const endBlock = byKey.get(sliceKey(assemblyName, farRef))
+          const ownEnd = self.placeEnd(undefined, feature.get('refName'))
+          const farEnd = self.placeEnd(undefined, end.refName)
+          const start = self.axisSlice(ownEnd)
+          const endBlock = self.axisSlice(farEnd)
           if (start && endBlock) {
             feet.placed[i] = 1
             feet.x[i] = axisX(start, feature.get('start'))
@@ -192,8 +176,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
             feet.xGaps[i] = start.gaps
             feet.x2Gaps[i] = endBlock.gaps
             // by refName, not slice: an elided slice holds many contigs
-            const own = `${ownRef}:${feature.get('start')}`
-            const far = `${farRef}:${end.position}`
+            const own = `${ownEnd.refName}:${feature.get('start')}`
+            const far = `${farEnd.refName}:${end.position}`
             feet.junction[i] = own < far ? `${own}|${far}` : `${far}|${own}`
           }
         })
@@ -268,13 +252,29 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       },
       /**
        * #getter
+       * the drawn records whose chords dim while the SV inspector highlights
+       * some: every lane but those a highlighted record, or its breakend
+       * twin, draws
+       */
+      get dimmedFeatureIds(): ReadonlySet<string> | undefined {
+        const highlighted = self.highlightedFeatureIds
+        const { features, laneOfId } = this.chordPicks
+        const lit = new Set(highlighted?.map(id => laneOfId.get(id)))
+        return highlighted
+          ? new Set(
+              features.flatMap((f, lane) => (lit.has(lane) ? [] : [f.id()])),
+            )
+          : undefined
+      },
+      /**
+       * #getter
        * the drawn records as the chord mark's lanes, each in its color with
        * the alpha the SV inspector's dimming leaves it
        */
       get chordLanes(): ChordLanes {
         const feet = this.chordFeet
         const strokes = this.chordStrokes
-        const highlighted = self.highlightedFeatureIdSet
+        const dimmed = this.dimmedFeatureIds
         const packed = new Map<string, number>()
         const { picked, features } = this.chordPicks
         const n = picked.length
@@ -299,10 +299,9 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           lanes.x2[k] = feet.x2[i]!
           lanes.xGaps[k] = feet.xGaps[i]!
           lanes.x2Gaps[k] = feet.x2Gaps[i]!
-          lanes.color[k] =
-            highlighted?.has(feature.id()) === false
-              ? scaleAbgrAlpha(abgr, DIMMED_OPACITY)
-              : abgr
+          lanes.color[k] = dimmed?.has(feature.id())
+            ? scaleAbgrAlpha(abgr, DIMMED_OPACITY)
+            : abgr
         })
         return lanes
       },
@@ -374,23 +373,23 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
           : undefined
       },
     }))
-    .actions(self => ({
-      /**
-       * #action
-       * the `onChordClick` callback when the config sets one, else the
-       * record's details
-       */
-      onChordClick(feature: Feature) {
-        if (isJexl(self.configuration.onChordClick)) {
-          getConf(self, 'onChordClick', { feature, track: self })
-        } else {
-          openFeatureWidget(self, feature.toJSON(), {
-            widget: self.featureWidgetType,
-            feature,
-          })
-        }
-      },
-    }))
+    .actions(self => {
+      const openDetails = self.clickFeature
+      return {
+        /**
+         * #action
+         * the `onChordClick` callback when the config sets one, else the
+         * record's details
+         */
+        onChordClick(feature: Feature) {
+          if (isJexl(self.configuration.onChordClick)) {
+            getConf(self, 'onChordClick', { feature, track: self })
+          } else {
+            openDetails(feature)
+          }
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action
@@ -554,7 +553,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
                   {
                     label: 'Default',
                     type: 'radio',
-                    checked: !field && self.solidColor === undefined,
+                    checked: !field && self.writtenColor.value === undefined,
                     onClick: () => {
                       self.pickDefaultColor()
                     },

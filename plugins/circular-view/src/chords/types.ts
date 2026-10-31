@@ -35,7 +35,8 @@ export interface ShapeDisplayModel
   drawnCount: number
   selectedFeatureId: string | undefined
   hoveredFeatureId: string | undefined
-  highlightedFeatureIdSet?: Set<string>
+  /** the drawn records whose shapes dim, undefined while none do */
+  dimmedFeatureIds?: ReadonlySet<string>
   bezierRadius: number
   shapeAlpha: number
   shapes: readonly Shape[]

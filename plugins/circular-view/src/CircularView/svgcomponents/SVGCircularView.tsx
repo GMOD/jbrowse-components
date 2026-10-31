@@ -78,9 +78,10 @@ export async function renderToSvg(
   // a display with no renderSvg is skipped and named; a ring's export is
   // warped by paintRingsSvg instead
   const { ringHost } = model
-  const { ringDisplays } = ringHost
-  const isRing = (t: Track) =>
-    ringDisplays.some(ring => ring.id === t.displays[0]?.id)
+  const isRing = (t: Track) => {
+    const display = t.displays[0]
+    return !!display && model.isRingDisplay(display)
+  }
   const exportable = model.tracks.flatMap(t => {
     const display = svgDisplayOf(t)
     return display && !isRing(t) ? [{ id: t.id, display }] : []
@@ -108,7 +109,7 @@ export async function renderToSvg(
         result: await display.renderSvg({ ...opts, theme }),
       })),
     ),
-    ringsDrawable ? renderRingBodies(ringHost, opts, theme) : [],
+    ringsDrawable ? renderRingBodies(model.ringDisplays, opts, theme) : [],
   ])
 
   // read after the waits, since a zoom or rotation may land during them

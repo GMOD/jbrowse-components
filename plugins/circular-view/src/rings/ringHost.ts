@@ -1,4 +1,4 @@
-import { getEnv, scheduleDetachedDestroy } from '@jbrowse/core/util'
+import { scheduleDetachedDestroy } from '@jbrowse/core/util'
 import { BlockSet, wholeBaseRegions } from '@jbrowse/core/util/blockTypes'
 import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
@@ -68,6 +68,7 @@ export interface RingHostView {
   staticSlices: Slice[]
   assemblyNames: string[]
   tracks: { displays: { id: string; type: string }[] }[]
+  ringDisplays: RingDisplay[]
 }
 
 /** One ring: a display and the annulus it is drawn on, in CSS px. */
@@ -548,23 +549,8 @@ export const RingHost = types
         coord0: base0,
       }
     },
-    /**
-     * The view's tracks whose display draws on the strip: every display a
-     * display type registered for another view lays out this way, where one
-     * registered for the circular view draws chords.
-     */
-    get ringDisplays(): RingDisplay[] {
-      const { pluginManager } = getEnv(self.view)
-      return self.view.tracks
-        .map(t => t.displays[0])
-        .filter(
-          (d): d is RingDisplay =>
-            d !== undefined &&
-            pluginManager.getDisplayType(d.type).viewType !== 'CircularView',
-        )
-    },
     get rings(): Ring[] {
-      return layoutRings(this.ringDisplays, self.view.radiusPx)
+      return layoutRings(self.view.ringDisplays, self.view.radiusPx)
     },
     /**
      * Where the chords start: inside the innermost ring, or at the ruler when

@@ -74,11 +74,11 @@ async function rasterize(
  * its chord renders and reads the figure geometry after both.
  */
 export function renderRingBodies(
-  host: RingHostModel,
+  ringDisplays: readonly RingDisplay[],
   opts: ExportSvgOptions,
   theme: ThemeOptions | undefined,
 ) {
-  const displays = host.ringDisplays as RingSvgDisplay[]
+  const displays = ringDisplays as RingSvgDisplay[]
   return awaitSvgRenders(
     displays
       .filter(display => display.renderSvg)

@@ -20,21 +20,17 @@ const DisplayError = observer(function DisplayError({
     view: { offsetRadians: number }
   }
   line: number
-  onClick?: () => void
-  onRetry?: () => void
+  onClick: () => void
+  onRetry: () => void
 }) {
   const palette = usePalette()
   const text = truncate(String(model.displayError), 80)
   return (
     <g
-      style={onClick ? { cursor: 'pointer' } : undefined}
-      onClick={
-        onClick
-          ? () => {
-              onClick()
-            }
-          : undefined
-      }
+      style={{ cursor: 'pointer' }}
+      onClick={() => {
+        onClick()
+      }}
     >
       <HatchCircle
         radius={model.radiusPx}
@@ -45,23 +41,19 @@ const DisplayError = observer(function DisplayError({
         textRotationDeg={-radToDeg(model.view.offsetRadians)}
         text={
           <>
-            <tspan x="0">
-              {onClick ? `${text} (click for details)` : text}
+            <tspan x="0">{`${text} (click for details)`}</tspan>
+            <tspan
+              x="0"
+              dy="1.5em"
+              data-testid="chord_retry"
+              style={{ textDecoration: 'underline' }}
+              onClick={event => {
+                event.stopPropagation()
+                onRetry()
+              }}
+            >
+              Retry
             </tspan>
-            {onRetry ? (
-              <tspan
-                x="0"
-                dy="1.5em"
-                data-testid="chord_retry"
-                style={{ textDecoration: 'underline' }}
-                onClick={event => {
-                  event.stopPropagation()
-                  onRetry()
-                }}
-              >
-                Retry
-              </tspan>
-            ) : null}
           </>
         }
       />

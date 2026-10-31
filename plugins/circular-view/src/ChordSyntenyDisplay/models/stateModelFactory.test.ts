@@ -18,17 +18,11 @@ function ribbonFor(display: ChordSyntenyDisplayModel, featureId: string) {
 }
 
 function sliceFor(
-  display: {
-    axisSlice: (
-      a: string | undefined,
-      r: string,
-    ) => { index: number } | undefined
-    view: { staticSlices: Slice[] }
-  },
+  display: ChordSyntenyDisplayModel,
   assemblyName: string | undefined,
   refName: string,
 ) {
-  const axis = display.axisSlice(assemblyName, refName)
+  const axis = display.axisSlice(display.placeEnd(assemblyName, refName))
   return axis && display.view.staticSlices[axis.index]
 }
 

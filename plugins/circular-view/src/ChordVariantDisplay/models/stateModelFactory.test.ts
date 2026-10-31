@@ -18,7 +18,7 @@ function regionFor(
   assemblyName: string | undefined,
   refName: string,
 ) {
-  const axis = display.axisSlice(assemblyName, refName)
+  const axis = display.axisSlice(display.placeEnd(assemblyName, refName))
   const region = axis && display.view.staticSlices[axis.index]?.region
   return region && !region.elided ? region : undefined
 }
@@ -394,6 +394,14 @@ test('the track menu picks the chord color through Color by', async () => {
   expect(display.parkedColor).toEqual({ field: 'svType' })
   expect(display.legendColor).toBe(DEFAULT_SWATCH)
   expect(ticked(colorByRows(display))).toEqual(['Default'])
+}, 20000)
+
+test('a jexl chord color ticks no Color by row, since none of them wrote it', async () => {
+  const { display } = await setup()
+  setConf(display, ['encoding', 'color'], {
+    value: "jexl:get(feature,'refName') == 'ctgA' ? 'red' : 'blue'",
+  })
+  expect(ticked(colorByRows(display))).toEqual([])
 }, 20000)
 
 test("the view's Tracks menu carries the display's Color by and Edit plot", async () => {

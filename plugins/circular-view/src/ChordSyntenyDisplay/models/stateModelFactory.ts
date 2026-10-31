@@ -1,9 +1,5 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
-import {
-  getContainingTrack,
-  getSession,
-  openFeatureWidget,
-} from '@jbrowse/core/util'
+import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import {
   abgrAlpha,
   abgrToCssRgba,
@@ -24,7 +20,7 @@ import {
   renameRegionsForAdapter,
 } from '@jbrowse/synteny-core'
 
-import { axisX, sliceKey } from '../../CircularView/slices.ts'
+import { axisX } from '../../CircularView/slices.ts'
 import {
   BaseChordDisplay,
   installChordFetch,
@@ -35,6 +31,7 @@ import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
 import { paintRuns } from '../../chords/ideogramPaint.ts'
 import { ribbonLabel } from '../../chords/ribbonLabel.ts'
 
+import type { PlacedEnd } from '../../chords/BaseChordDisplay.ts'
 import type { ChordCell } from '../../chords/chordMarks.ts'
 import type { RibbonLanes } from '../../chords/chordStage.ts'
 import type { PaintRun } from '../../chords/ideogramPaint.ts'
@@ -65,11 +62,8 @@ function anchorRegions(regions: Region[]) {
   return regions.filter(r => r.assemblyName !== last)
 }
 
-// one end of an alignment, on the circle's assembly it names (undefined when
-// it names none there) and in that assembly's canonical refName
-interface AlignmentEnd {
-  assemblyName: string | undefined
-  refName: string
+// one end of an alignment, placed on the circle by `placeEnd`
+interface AlignmentEnd extends PlacedEnd {
   start: number
   end: number
 }
@@ -188,18 +182,11 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           refName: string,
           start: number,
           end: number,
-        ): AlignmentEnd => {
-          const assembly = self.assemblyOf(assemblyName)
-          return {
-            assemblyName: assembly,
-            refName:
-              assembly === undefined
-                ? refName
-                : self.canonicalRefName(assembly, refName),
-            start,
-            end,
-          }
-        }
+        ): AlignmentEnd => ({
+          ...self.placeEnd(assemblyName, refName),
+          start,
+          end,
+        })
         return (self.features ?? []).map(feature => {
           const own = resolve(
             feature.get('assemblyName') as string | undefined,
@@ -284,7 +271,6 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       get ribbonFeet() {
         const ends = this.alignmentEnds
         const n = ends.length
-        const { byKey } = self.view.chordAxis
         const feet = {
           x1: new Float32Array(n),
           x2: new Float32Array(n),
@@ -296,14 +282,10 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
           ySlice: new Int32Array(n).fill(-1),
           strand: new Float32Array(n),
         }
-        const sliceOf = (end: AlignmentEnd) =>
-          end.assemblyName === undefined
-            ? undefined
-            : byKey.get(sliceKey(end.assemblyName, end.refName))
         const features = self.features ?? []
         ends.forEach(({ own, mate }, i) => {
-          const x = sliceOf(own)
-          const y = mate && sliceOf(mate)
+          const x = self.axisSlice(own)
+          const y = mate && self.axisSlice(mate)
           if (mate && x && y) {
             feet.x1[i] = axisX(x, own.start)
             feet.x2[i] = axisX(x, own.end)
@@ -601,16 +583,6 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
     .actions(self => {
       const superReload = self.reload
       return {
-        /**
-         * #action
-         * what a click on the canvas reaches: the alignment's details
-         */
-        clickFeature(feature: Feature) {
-          openFeatureWidget(self, feature.toJSON(), {
-            widget: self.featureWidgetType,
-            feature,
-          })
-        },
         /**
          * #action
          * refetch, and run a reorder this launch still owes, which is how the

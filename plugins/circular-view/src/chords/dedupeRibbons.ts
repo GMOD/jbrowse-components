@@ -5,8 +5,9 @@ import type { Feature } from '@jbrowse/core/util'
 
 /**
  * One ribbon per alignment, not one per perspective. A pairwise file indexes
- * every row from both ends and a two-assembly circle asks for the regions of
- * both, so each alignment arrives twice and paints its ribbon on top of itself.
+ * every row from both ends, so a self-alignment, whose regions are both ends',
+ * hands each alignment back twice, and it would paint its ribbon on top of
+ * itself.
  *
  * The key is the UNORDERED pair of loci, since a ribbon joins two loci with no
  * direction. The adapter's `createSideDedupe` differs only in that: that keys on the

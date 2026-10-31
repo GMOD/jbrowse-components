@@ -100,3 +100,16 @@ test('every SV kind draws its chord between the loci it names, a breakend pair o
     display.laneIndexById.get(idOf('bnd_a')),
   )
 }, 30000)
+
+// The SV inspector highlights a record by id, and a breakend pair's two
+// records draw one chord: highlighting either record keeps that chord lit.
+test("highlighting a breakend pair's twin keeps their one chord lit", async () => {
+  const display = await svKindsDisplay()
+  const idOf = (name: string) =>
+    display.features!.find(f => f.get('name') === name)!.id()
+  display.setHighlightedFeatureIds([idOf('bnd_b')])
+  const dimmed = display.dimmedFeatureIds!
+  expect(dimmed.has(idOf('bnd_a'))).toBe(false)
+  expect(dimmed.has(idOf('del'))).toBe(true)
+  expect(dimmed.size).toBe(display.chordLanes.count - 1)
+}, 30000)
