@@ -2904,7 +2904,7 @@ test('a scan finding no numeric field answers only for the window it read', asyn
     numeric: [],
     categorical: [],
   })
-  expect(display.plotScanLocus).toBe('ctgA:1..20,000')
+  expect(display.plotScanLocus).toBe('8 windows across ctgA:1..7,002,500')
   await display.ensurePlotFields()
   expect(scanned).toHaveLength(1)
   view.setNewView(1, 1_000_000)

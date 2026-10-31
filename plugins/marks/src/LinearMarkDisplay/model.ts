@@ -1997,15 +1997,19 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The windows the held field scan read, for the dialog to name.
+         * The windows the held field scan read, for the dialog to name: one
+         * window's locus, or how many sampled the span they lie across.
          */
         get plotScanLocus(): string | undefined {
-          return self.plotScanned.length > 0
-            ? self.plotScanned
-                .map(({ refName, start, end }) =>
-                  assembleLocString({ refName, start, end }),
-                )
-                .join(', ')
+          const scans = self.plotScanned
+          const first = scans[0]
+          const last = scans.at(-1)
+          return first && last
+            ? scans.length === 1
+              ? assembleLocString(first)
+              : first.refName === last.refName
+                ? `${scans.length} windows across ${assembleLocString({ refName: first.refName, start: first.start, end: last.end })}`
+                : `${scans.length} windows from ${assembleLocString(first)} to ${assembleLocString(last)}`
             : undefined
         },
       }))
