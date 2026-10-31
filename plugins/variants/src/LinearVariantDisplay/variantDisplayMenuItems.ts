@@ -1,8 +1,12 @@
 import { makeSizeMenu } from '@jbrowse/core/ui'
-import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
-import { makeRadioSubMenu } from '@jbrowse/core/ui/menuItems'
+import { Highlighter } from '@jbrowse/core/ui/Icons'
+import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
+import {
+  TRACK_MENU_PRIORITY,
+  makeRadioSubMenu,
+} from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
-import { getDialogHost } from '@jbrowse/core/util'
+import { getDialogHost, pluralize } from '@jbrowse/core/util'
 import { SV_TYPE_FIELD } from '@jbrowse/core/util/categoricalField'
 import { filterFieldNarrowing } from '@jbrowse/core/util/jexlFilters'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
@@ -555,6 +559,19 @@ export function variantTrackMenuItems(
           },
         })
       : []),
+    ...undoItems(
+      {
+        highlights: {
+          count: self.featureHighlights.length,
+          label: n => `Clear ${n} ${pluralize(n, 'highlight')}`,
+          icon: Highlighter,
+          clear: () => {
+            self.clearFeatureHighlights()
+          },
+        },
+      },
+      TRACK_MENU_PRIORITY.recovery,
+    ),
   ]
 }
 
@@ -566,7 +583,12 @@ export function variantContextMenuItems(
 ): MenuItem[] {
   const feat = self.contextMenuInfo?.feature
   const hit = feat && self.recordMenuHit(feat)
-  const recordRows = hit && featureRecordMenuItems(self, hit)
+  const recordRows =
+    hit &&
+    featureRecordMenuItems(self, {
+      ...hit,
+      tooltipText: self.contextMenuInfo?.tooltipText,
+    })
   return feat
     ? [
         // its own rather than the feature track's: a cell's details open on

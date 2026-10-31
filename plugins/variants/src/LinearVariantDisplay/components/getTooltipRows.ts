@@ -1,3 +1,5 @@
+import { htmlToPlainText } from '@jbrowse/plugin-features/band'
+
 import {
   INTERNAL_SOURCE_KEYS,
   capitalizeFirst,
@@ -54,4 +56,19 @@ export function getTooltipRows(source: Record<string, unknown>): TooltipRow[] {
     }
   }
   return rows
+}
+
+// The tooltip as plain text, heading first, for "Copy tooltip text"
+export function tooltipPlainText(source: {
+  name?: string
+  label?: string
+  [key: string]: unknown
+}) {
+  const heading = source.label ?? source.name
+  return [
+    ...(heading ? [heading] : []),
+    ...getTooltipRows(source).map(
+      row => `${row.label}: ${htmlToPlainText(row.value)}`,
+    ),
+  ].join('\n')
 }

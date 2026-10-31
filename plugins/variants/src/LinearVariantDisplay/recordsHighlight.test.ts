@@ -77,3 +77,16 @@ test("a record's Highlight row boxes it, and the same row takes it off", () => {
   clickRow(rightClick(display, '>7494>7499'), 'Remove highlight')
   expect(display.featureHighlights.length).toBe(0)
 })
+
+test('the track menu clears every highlight at once', () => {
+  const display = sitesOnly()
+  clickRow(rightClick(display, '>7494>7499'), 'Highlight variant')
+  clickRow(rightClick(display, '>7496>7497'), 'Highlight variant')
+  clickRow(display.trackMenuItems(), 'Clear 2 highlights')
+  expect(display.featureHighlights.length).toBe(0)
+  expect(
+    display
+      .trackMenuItems()
+      .some(i => 'label' in i && String(i.label).startsWith('Clear')),
+  ).toBe(false)
+})

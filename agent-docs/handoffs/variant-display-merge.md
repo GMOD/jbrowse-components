@@ -111,12 +111,8 @@ Compared with `643ea4fe89^`'s two displays; the plain regressions are fixed
 (labels, HTML tooltips, the scrolled export, the split view's record, the
 widget's samples). Still differing, besides C1's Show/hide rows:
 
-- No "Copy tooltip text" on a record (the feature track's
-  `featureContextMenu.ts`); `recordContextMenu.test.ts` pins the shorter
-  list with `toEqual`. The old multi-sample "Copy location" copied `ID loc`,
-  now the location alone.
-- No "Clear N highlights" track-menu row (LinearBasicDisplay's
-  `baseModel.ts`); a highlight clears one record at a time.
+- The old multi-sample "Copy location" copied `ID loc`, now the location
+  alone.
 - A record the adapter does not find launches the split view from the
   click's record, INFO-less, and the junction walk stops there.
 - None of the fixes above has been looked at in the running app.

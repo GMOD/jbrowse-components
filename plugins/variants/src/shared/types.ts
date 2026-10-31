@@ -28,6 +28,8 @@ export type ProcessedSource = Source & { sampleName: string }
 export interface VariantContextMenuInfo extends ContextMenuAnchor {
   feature: Feature
   bandRecordId?: string
+  /** The tooltip at the click, resolved there as the feature track does. */
+  tooltipText?: string
 }
 
 // Per-feature info for hover tooltips and the feature widget: one per record

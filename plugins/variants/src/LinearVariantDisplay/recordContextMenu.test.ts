@@ -1,6 +1,7 @@
 import { resolveSubMenu } from '@jbrowse/core/ui'
 
 import { recordsBandSurface } from './components/RecordsBandOverlay.tsx'
+import { variantSurfaceHandlers } from './components/variantSurface.ts'
 import { KIT, recordsDisplayAt } from './recordsBand.fixture.ts'
 
 import type { LinearVariantDisplayModel } from './model.ts'
@@ -29,6 +30,25 @@ function rightClickRecord(display: LinearVariantDisplayModel, id: string) {
     clientX: 0,
     clientY: 0,
   })
+  return display.contextMenuItems()
+}
+
+// through the surface's own right-click handler, which reads the tooltip
+function rightClickThroughSurface(
+  display: LinearVariantDisplayModel,
+  id: string,
+) {
+  const item = display.recordsLaidOutDataMap
+    .get(0)!
+    .flatbushItems.find(i => i.featureId === id)!
+  const { bpPerPx, offsetPx } = display.view
+  const surface = recordsBandSurface(display)
+  variantSurfaceHandlers(display, surface).onContextMenu({
+    clientX: ((item.startBp + item.endBp) / 2 - offsetPx * bpPerPx) / bpPerPx,
+    clientY: (item.topPx + item.bottomPx) / 2,
+    currentTarget: { getBoundingClientRect: () => ({ left: 0, top: 0 }) },
+    preventDefault: () => {},
+  } as never)
   return display.contextMenuItems()
 }
 
@@ -63,6 +83,32 @@ describe('right-clicking a record, with no sample rows', () => {
       'Copy location',
       'Copy >7494>7499 attributes (JSON)',
     ])
+  })
+
+  test('copies the tooltip the record shows', () => {
+    const display = sitesOnlyDisplay()
+    const copy = row(
+      rightClickThroughSurface(display, '>7494>7499'),
+      'Copy to clipboard',
+    )
+    expect('subMenu' in copy && labels(resolveSubMenu(copy))).toContain(
+      'Copy tooltip text',
+    )
+  })
+
+  test('offers no tooltip to copy with the tooltip off', () => {
+    const { display } = recordsDisplayAt(KIT, 51, {}, false, {
+      tooltip: { show: false },
+    })
+    const region = display.view.displayedRegions[0]!
+    display.setLoadedRegion(0, { ...region, start: 0, end: 100_000 }, undefined)
+    const copy = row(
+      rightClickThroughSurface(display, '>7494>7499'),
+      'Copy to clipboard',
+    )
+    expect('subMenu' in copy && labels(resolveSubMenu(copy))).not.toContain(
+      'Copy tooltip text',
+    )
   })
 
   test('zoom to goes to the record', () => {

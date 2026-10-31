@@ -109,6 +109,7 @@ import {
 } from './anchoredHaplotypeSort.ts'
 import { cellGlyphs } from './components/cellGlyphs.ts'
 import { withClickedSample } from './components/enrichFeatureFromClick.ts'
+import { tooltipPlainText } from './components/getTooltipRows.ts'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
 import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
 import {
@@ -1634,18 +1635,34 @@ export function stateModelFactory(
           return out
         },
         /**
+         * #method
+         * A hit as the tooltip table reads it: the record's fields over the
+         * hit row's sample metadata.
+         */
+        tooltipSourceOf(hit: VariantHoverFields) {
+          const source = self.sourceMap.get(hit.name)
+          return source ? { ...source, ...hit } : hit
+        },
+        /**
+         * #method
+         * The tooltip a hit shows, as plain text, for "Copy tooltip text";
+         * undefined with `tooltip.show` off.
+         */
+        tooltipTextOf(hit: VariantHoverFields) {
+          return self.showTooltips
+            ? tooltipPlainText(this.tooltipSourceOf(hit))
+            : undefined
+        },
+        /**
          * #getter
-         * The hovered thing as the tooltip table reads it: the record's fields
-         * over the hovered row's sample metadata. Undefined with `tooltip.show`
-         * off.
+         * The hovered thing as the tooltip table reads it. Undefined with
+         * `tooltip.show` off.
          */
         get hoveredTooltipSource() {
-          const { hoveredFeature, sourceMap } = self
-          if (!hoveredFeature || !self.showTooltips) {
-            return undefined
-          }
-          const source = sourceMap.get(hoveredFeature.name)
-          return source ? { ...source, ...hoveredFeature } : hoveredFeature
+          const { hoveredFeature } = self
+          return hoveredFeature && self.showTooltips
+            ? this.tooltipSourceOf(hoveredFeature)
+            : undefined
         },
       }))
       .actions(self => ({

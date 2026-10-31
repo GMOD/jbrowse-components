@@ -14,6 +14,7 @@ interface SurfaceModel {
   selectFeature: (f: Feature) => void
   clearSelection: () => void
   openContextMenu: (info: VariantContextMenuInfo) => void
+  tooltipTextOf: (hit: VariantTooltipFields) => string | undefined
 }
 
 /**
@@ -101,6 +102,7 @@ export function variantSurfaceHandlers<H>(
           clientY: e.clientY,
           feature: found.feature,
           bandRecordId: surface.bandRecordId?.(found.hit),
+          tooltipText: model.tooltipTextOf(surface.getTooltip(found.hit)),
         })
       }
     },
