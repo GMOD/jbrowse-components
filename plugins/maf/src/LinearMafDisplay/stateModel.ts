@@ -753,14 +753,16 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * @deprecated read `topBands.rects.coverage.height`
+         * Read `topBands.rects.coverage.height`.
+         * @deprecated
          */
         get coverageDisplayHeight() {
           return self.topBands.rects.coverage.height
         },
         /**
          * #getter
-         * @deprecated read `topBands.rects.conservation.height`
+         * Read `topBands.rects.conservation.height`.
+         * @deprecated
          */
         get conservationDisplayHeight() {
           return self.topBands.rects.conservation.height

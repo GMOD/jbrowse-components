@@ -2009,8 +2009,9 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * @deprecated the pooled band stack had no meaning once lanes stack;
-         * read `stickyBandHeight`
+         * Read `stickyBandHeight`: the pooled band stack this named had no
+         * meaning once lanes stack.
+         * @deprecated
          */
         get coverageDisplayHeight() {
           return this.stickyBandHeight
