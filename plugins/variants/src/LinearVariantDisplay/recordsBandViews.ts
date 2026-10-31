@@ -31,6 +31,7 @@ import {
 } from '@jbrowse/plugin-features/band'
 import { computed, observable } from 'mobx'
 
+import { cellHueField } from '../shared/cellHue.ts'
 import { resolveSampleName } from '../shared/getSources.ts'
 import { paintFeatureColors } from './paintCells.ts'
 import { countRecordCarriers } from './recordCarriers.ts'
@@ -185,10 +186,11 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     /**
      * #getter
      * Whether the cells' coloring is keyed: always over rows; with no rows
-     * only under a picked `encoding.color`, which the records paint.
+     * only under a picked `encoding.color` field, whose values the records
+     * paint. A constant paints every record alike, so keys nothing.
      */
     get cellColorKeyed() {
-      return !this.recordsOnly || self.colorEncoding !== undefined
+      return !this.recordsOnly || cellHueField(self.colorEncoding) !== undefined
     },
     /**
      * #getter

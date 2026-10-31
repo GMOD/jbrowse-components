@@ -64,6 +64,20 @@ describe.each([
   })
 })
 
+// v4's `color1` lands as a constant `encoding.color.value`: every record
+// paints it, and with no genotype drawn there is nothing for a key to name.
+test('with no rows a constant color keys no genotype', () => {
+  const { display } = recordsDisplayAt(
+    FEW.filter(([id]) => id !== 'sv1'),
+    10,
+    {},
+    false,
+    { encoding: { color: { value: '#2c7bb6' } } },
+  )
+  expect(display.cellColorKeyed).toBe(false)
+  expect(display.colorScales).toEqual([])
+})
+
 test('genotype rows on keep the band over the rows, capped', () => {
   const { display } = recordsDisplayAt(KIT, 51)
   expect(display.recordsOnly).toBe(false)
