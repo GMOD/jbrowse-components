@@ -7,7 +7,7 @@ import * as matrixWgsl from './matrix/shaders/variantMatrix.wgsl.generated.ts'
 
 // Each layout registers one pass, so either dropping the directive puts that
 // layout back on the 4x MSAA target.
-test('both multi-sample variant passes measure their own coverage', () => {
+test('both variant display passes measure their own coverage', () => {
   expect([cellShader.COVERAGE, matrixShader.COVERAGE]).toEqual([
     'analytic',
     'analytic',

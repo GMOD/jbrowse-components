@@ -5,7 +5,7 @@ import { snappedRowTopPx } from '@jbrowse/render-core/shaders/rowSnap'
 
 // Hairlines on the boundaries between stacked rows, for the row displays that
 // draw a grid over their painting (multi-wiggle, the multi-row feature
-// display, the multi-sample variant displays). Lives here beside `SvgRowLabels`
+// display, the variant display). Lives here beside `SvgRowLabels`
 // and `RowLabelsOverlay` because it is the same row geometry, and because the
 // pixel rule below is the kind of thing that silently drifts when it is written
 // down twice.

@@ -131,8 +131,8 @@ export default function ldTrackDisplayConfigSchema() {
       /**
        * #slot
        * `'columns'` draws every SNP one uniform square wide; `'genomic'` sizes
-       * the cells by the genomic distance between SNPs. The multi-sample
-       * variant display takes the same slot for the same choice.
+       * the cells by the genomic distance between SNPs. `LinearVariantDisplay`
+       * takes the same slot for the same choice.
        */
       variantLayout: {
         type: 'stringEnum',

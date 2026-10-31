@@ -101,7 +101,7 @@ const suite: TestSuite = {
       tracks: [
         {
           trackId: 'volvox_test_vcf',
-          displaySnapshot: { type: 'LinearMultiSampleVariantDisplay' },
+          displaySnapshot: { type: 'LinearVariantDisplay' },
         },
       ],
     }),

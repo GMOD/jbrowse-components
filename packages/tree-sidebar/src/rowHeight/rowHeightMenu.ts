@@ -41,8 +41,8 @@ export interface RowHeightPreset {
 
 /**
  * The "Row height" submenu: "Squeeze to fit view", the display's presets, and
- * "Custom...". One builder for maf, the multi-row feature painting and both
- * multi-sample variant displays, which had three copies of it and three copies
+ * "Custom...". One builder for maf, the multi-row feature painting and the
+ * variant display's two layouts, which had three copies of it and three copies
  * of its dialog.
  *
  * The copies had already drifted in the way a shared builder exists to stop:

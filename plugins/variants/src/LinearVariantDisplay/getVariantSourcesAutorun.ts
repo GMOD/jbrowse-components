@@ -6,7 +6,7 @@ import type { Source } from '../shared/types.ts'
 import type { PrerequisiteFetchHost } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type { StatusWindow } from '@jbrowse/core/util/progress'
 
-export function getMultiSampleVariantSourcesAutorun(
+export function getVariantSourcesAutorun(
   self: PrerequisiteFetchHost & {
     statusWindow: StatusWindow
     setError: (error?: unknown) => void
@@ -56,6 +56,6 @@ export function getMultiSampleVariantSourcesAutorun(
       }
     },
     delay: 1000,
-    name: 'GetMultiSampleVariantSources',
+    name: 'GetVariantSources',
   })
 }

@@ -1,6 +1,6 @@
 import { fireEvent, waitFor } from '@testing-library/react'
 
-import { openMultiSampleVariantDisplay } from './testLinearMultiSampleVariantDisplay.tsx'
+import { openVariantDisplay } from './testLinearVariantDisplay.tsx'
 import {
   createView,
   doBeforeEach,
@@ -85,10 +85,10 @@ test('a row reorder lands in the session at once and stays undone across the def
   expect(undone.sources.map(s => s.name)).toEqual(['k1', 'k2'])
 }, 60000)
 
-// The same on the multi-sample variant display, whose rows are its samples and
+// The same on the variant display, whose rows are its samples and
 // whose `rows` object has no field.
 test('a variant row reorder lands in the session at once and undoes', async () => {
-  const { view, session, rootModel } = await openMultiSampleVariantDisplay({
+  const { view, session, rootModel } = await openVariantDisplay({
     displayType: 'regular',
   })
   const { history } = rootModel as WebRootModel

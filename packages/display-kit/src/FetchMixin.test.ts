@@ -542,7 +542,7 @@ describe('FetchMixin: status callback throttle', () => {
 // label the others were still producing, and the loading overlay renders a
 // missing label as its 'Loading' fallback.
 describe('FetchMixin: two operations on one field', () => {
-  // The shape `getMultiSampleVariantSourcesAutorun` and
+  // The shape `getVariantSourcesAutorun` and
   // `setupRunClusteringAutorun` both have: a second operation on a display that
   // is also fetching its viewport.
   function fetchAndSideOperation() {

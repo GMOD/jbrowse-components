@@ -16,7 +16,7 @@ test('a linear view is flags, with each track setting in one JSON argument', () 
             'genes',
             {
               trackId: 'mine',
-              type: 'LinearMultiSampleVariantDisplay',
+              type: 'LinearVariantDisplay',
               clusterRegion: 'chr2:1-100',
               height: 520,
             },
@@ -29,7 +29,7 @@ test('a linear view is flags, with each track setting in one JSON argument', () 
   )!
   expect(recipe.command).toContain("cat > tracks.json <<'JSON'")
   expect(recipe.command).toContain(
-    `--track mine display:LinearMultiSampleVariantDisplay '{"clusterRegion":"chr2:1-100","height":520}'`,
+    `--track mine display:LinearVariantDisplay '{"clusterRegion":"chr2:1-100","height":520}'`,
   )
   expect(recipe.command).toContain('--assembly GRCh38 --loc chr2:135,787,850-135,876,467')
   expect(recipe.command).toContain('--width 1500 --out figure.svg')

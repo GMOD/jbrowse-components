@@ -6,7 +6,7 @@ import type { RowResizeTarget } from './applyRowResizeWheel.ts'
 export type { RowResizeTarget } from './applyRowResizeWheel.ts'
 
 /**
- * Wheel gestures over a **row-stack** panel — the multi-sample variant displays
+ * Wheel gestures over a **row-stack** panel — the variant display
  * and MAF: `shift`+wheel resizes the rows, keeping the row under the cursor
  * put, and a plain wheel scrolls them unless `scrollZoom` gave it to the view.
  * ctrl/meta is the browser's zoom whatever else is held. The canvas-panel rule,

@@ -26,7 +26,7 @@ const overflowingMultiSampleSpec = {
         {
           trackId: 'volvox_test_vcf',
           displaySnapshot: {
-            type: 'LinearMultiSampleVariantDisplay',
+            type: 'LinearVariantDisplay',
             rowHeight: 8,
             height: 200,
           },
@@ -60,14 +60,13 @@ const overflowingPlainVariantSpec = {
   ],
 }
 
-// Back-compat: the multi-sample display was renamed
-// MultiLinearVariantDisplay -> LinearMultiSampleVariantDisplay. An old saved
-// session stores the pre-rename type on the active display instance; the model's
-// preProcessSnapshot must remap it so the dispatcher-less `displays` union still
-// resolves and the display renders. The demo track carries samplesTsvLocation +
+// Back-compat: v4's multi-sample display, MultiLinearVariantDisplay, is a
+// retired type of LinearVariantDisplay. An old saved session stores the
+// pre-rename type on the active display instance; the alias must remap it so
+// the dispatcher-less `displays` union still resolves and the display renders. The demo track carries samplesTsvLocation +
 // rowColor:'population' + referenceDrawingMode, so this also exercises the
 // metadata-preloading path end to end. `volvox_test_vcf` has genotypes and
-// resolves through the same shared multi-sample model.
+// resolves through the same model.
 const oldTypeNameSpec = {
   views: [
     {
@@ -224,7 +223,7 @@ const suite: TestSuite = {
       tracks: ['volvox_filtered_vcf_assembly_alias'],
     }),
 
-    // The multi-sample display uses VIRTUAL scroll (fixed absolute canvas +
+    // The variant display uses VIRTUAL scroll (fixed absolute canvas +
     // VerticalScrollbar overlay, everything positioned from model.scrollTop), so
     // the GPU cells and DOM hover highlight share one scroll source and can't
     // tear apart. Guarding the structure keeps it from regressing to a native

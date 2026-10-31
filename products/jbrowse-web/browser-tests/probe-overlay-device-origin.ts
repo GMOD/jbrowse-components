@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 // Where a display's canvas and the DOM overlays over it land on the device
-// grid at a fractional dpr: the multi-sample variant display's row separators
+// grid at a fractional dpr: the variant display's row separators
 // as HTML boxes, the same bands as SVG lines, and the cell edges beside them.
 //
 //     pnpm --filter @jbrowse/web build
@@ -328,7 +328,7 @@ async function main() {
               {
                 trackId: TRACK,
                 displaySnapshot: {
-                  type: 'LinearMultiSampleVariantDisplay',
+                  type: 'LinearVariantDisplay',
                   height: 360,
                 },
               },

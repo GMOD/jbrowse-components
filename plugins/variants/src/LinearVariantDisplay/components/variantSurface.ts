@@ -16,7 +16,7 @@ interface SurfaceModel {
 }
 
 /**
- * One pointer-responsive surface of a multi-sample variant display — the
+ * One pointer-responsive surface of a variant display — the
  * genotype rows or the matrix — in its own coordinate frame.
  * `getHit` takes a point relative to the surface's element; `enrich` turns a
  * hit into the `SimpleFeature` a click or a right-click acts on; `onHover`

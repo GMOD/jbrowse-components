@@ -626,7 +626,7 @@ describe('fresh canvas element per re-init', () => {
 // is up, which is what hides the leak: the body remounts the instant the phase
 // clears (Force load, Retry) and reads the stale snapshot on its first render.
 // The pointer layers with no other gate (multi-row features, maf, both
-// multi-sample variant displays) draw a crosshair there straight away.
+// variant layouts) draw a crosshair there straight away.
 describe('the pointer measurement drops when the container is replaced', () => {
   beforeEach(() => {
     jest.useFakeTimers()

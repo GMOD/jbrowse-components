@@ -37,7 +37,7 @@ test('opens a vcf track and clusters genotypes', async () => {
   fireEvent.click(await findByTestId(hts('volvox_test_vcf'), ...opts))
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Display types', ...opts))
-  fireEvent.click(await findByText('Multi-sample variant display', ...opts))
+  fireEvent.click(await findByText('Variant display', ...opts))
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Layout', ...opts))
   fireEvent.click(await findByText('Genotype matrix', ...opts))

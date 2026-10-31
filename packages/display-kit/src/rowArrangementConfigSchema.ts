@@ -32,7 +32,7 @@ function stringList(snap: Record<string, unknown>, key: string) {
  * #example
  * ```js
  * {
- *   type: 'LinearMultiSampleVariantDisplay',
+ *   type: 'LinearVariantDisplay',
  *   rows: { sort: ['NA12878', 'NA12891'], labels: { NA12878: 'Proband' } },
  * }
  * ```

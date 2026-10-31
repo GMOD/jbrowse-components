@@ -237,7 +237,7 @@ export const ConnectorZoneResizeHandle = observer(
 
 /**
  * The lines tying each matrix column to its genomic position, shared by the LD
- * display and the multi-sample display's columns layout: the faint field, the hovered line and its
+ * display and the variant display's columns layout: the faint field, the hovered line and its
  * tooltip, an optional externally driven `highlight` (the matrix crosshair
  * column), and the drag handle that resizes the zone.
  */

@@ -67,10 +67,10 @@ import type { IAnyModelType, IAnyType } from '@jbrowse/mobx-state-tree'
  * **A node is held only when all three tests fail**: its `type` names no
  * registered element, no element declares it as an `alias`, and
  * the real MST union refuses the snapshot. The last two are what keep a renamed
- * type alive — an element can declare `aliases`, and a model's own
- * `preProcessSnapshot` can rewrite the type literal
- * (`LinearMultiSampleVariantDisplay` does both for the old
- * `MultiLinearVariantDisplay`), neither of which the registry's names show. The
+ * type alive — an element can declare `aliases` (`LinearVariantDisplay`
+ * declares v4's `MultiLinearVariantDisplay`), and a model's own
+ * `preProcessSnapshot` can rewrite the type literal, neither of which the
+ * registry's names show. The
  * first is what keeps this from quietly swallowing a *malformed* snapshot of a
  * type this build does have: that still throws, exactly as before, because
  * holding it would hide a real bug behind a message about plugins.

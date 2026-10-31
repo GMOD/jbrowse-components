@@ -79,7 +79,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 //
 // A graph track's `pane` is flattened the same way: its keys are the graph's
 // settings, each one a control of its own. So is each band object of the
-// alignments, MAF and multi-sample variant displays (`coverage`, `sashimi`,
+// alignments, MAF and variant displays (`coverage`, `sashimi`,
 // `variants`, ...) and a row display's `axis`, to one entry per member under
 // its dotted path, `coverage.show`. An `encoding` object, the display's or a band's, gives one
 // entry per channel, `encoding.color` and `readConnections.encoding.color`. A

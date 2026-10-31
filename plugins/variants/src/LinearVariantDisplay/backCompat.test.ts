@@ -1,5 +1,5 @@
-import multiSampleConfigFactory from './configSchema.ts'
-import multiSampleStateModelFactory from './model.ts'
+import configSchemaFactory from './configSchema.ts'
+import stateModelFactory from './model.ts'
 
 describe('variant display old snapshots', () => {
   // `showTooltips` was a display-instance prop before the rewrite and is a
@@ -7,8 +7,8 @@ describe('variant display old snapshots', () => {
   // declares it. MST drops the key; the session has to load anyway, at the
   // slot's default.
   it('loads an old snapshot carrying the pre-rewrite showTooltips prop', () => {
-    const configSchema = multiSampleConfigFactory()
-    const model = multiSampleStateModelFactory(configSchema)
+    const configSchema = configSchemaFactory()
+    const model = stateModelFactory(configSchema)
     // Spread rather than written inline: the key names no prop, so the object
     // literal's excess-property check would reject the very thing under test.
     const preRewriteProps = { showTooltips: false }

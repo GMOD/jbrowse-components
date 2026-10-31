@@ -1,6 +1,6 @@
 import './svgExportMocks.ts'
 
-import { openMultiSampleVariantDisplay } from './testLinearMultiSampleVariantDisplay.tsx'
+import { openVariantDisplay } from './testLinearVariantDisplay.tsx'
 import {
   doBeforeEach,
   findDisplayPainted,
@@ -39,7 +39,7 @@ function cellRowYs(svg: string) {
 // property instead, so in fit mode every cell drew at y=0 with a 1px height —
 // the whole matrix collapsed into a strip at the top (distinctY 1, yMax 0). The
 // fix reads effectiveRowHeight, so the 1094 sample rows spread down the full
-// display height. Asserted on both multi-sample variant display types since
+// display height. Asserted on both variant layouts since
 // each has its own renderSvg.
 function expectFitModeSpread(svg: string) {
   const { rectCount, distinctY, yMin, yMax } = cellRowYs(svg)
@@ -59,7 +59,7 @@ function expectFitModeSpread(svg: string) {
 // sidebar put them, leaving the bottom 20px blank) and the connector lines were
 // missing entirely.
 test('the matrix export spreads rows in fit mode, below the connector lines', async () => {
-  const { view, info } = await openMultiSampleVariantDisplay({
+  const { view, info } = await openVariantDisplay({
     displayType: 'matrix',
   })
   await findDisplayPainted(info.displayTestId, { timeout: 40000 })
@@ -86,7 +86,7 @@ test('the matrix export spreads rows in fit mode, below the connector lines', as
 }, 45000)
 
 test('the regular export spreads rows in fit mode', async () => {
-  const { view, info } = await openMultiSampleVariantDisplay({
+  const { view, info } = await openVariantDisplay({
     displayType: 'regular',
   })
   await findDisplayPainted(info.displayTestId, { timeout: 40000 })

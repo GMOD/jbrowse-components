@@ -20,7 +20,7 @@ import type { IAnyType } from '@jbrowse/mobx-state-tree'
 // lists under `levels[].tracks` and concrete child panels under `views`.
 //
 // `renames` gives one model the `preProcessSnapshot` type rewrite that
-// LinearMultiSampleVariantDisplay uses for its old name: a type the registry
+// a renamed display can use for its old name: a type the registry
 // cannot name and the union still accepts.
 //
 // `aliases` gives an element the declared-rename route instead: a legacy name
@@ -362,7 +362,7 @@ test('drops a display it cannot build, and the track when that empties it', () =
 // and a model's own preProcessSnapshot can rewrite the type literal, so a
 // renamed type appears unregistered while the union accepts it happily. Asking
 // only the registry dropped the old name and left the track with no display —
-// which is how the LinearMultiSampleVariantDisplay rename first showed up.
+// which is how the multi-sample variant display's rename first showed up.
 test('keeps a renamed type the union still accepts', () => {
   const { snapshot, dropped } = prune(
     {

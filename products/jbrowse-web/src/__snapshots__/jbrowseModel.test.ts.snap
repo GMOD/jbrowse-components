@@ -3849,10 +3849,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "displayId": "volvox multi-sample sv-LinearMultiSampleVariantDisplay",
+          "displayId": "volvox multi-sample sv-LinearVariantDisplay",
           "referenceDrawingMode": "draw",
           "rowColor": "population",
-          "type": "LinearMultiSampleVariantDisplay",
+          "type": "LinearVariantDisplay",
         },
       ],
       "name": "volvox multi-sample sv",

@@ -87,7 +87,7 @@ export default class VCFFeature implements Feature {
 
   /**
    * The site's allele summary over every sample, counted once on first read:
-   * what the multi-sample display's filter and colors read, and what
+   * what the variant display's filter and colors read, and what
    * `minorAlleleFrequency` and `missingness` answer on any display.
    */
   alleleSummary() {

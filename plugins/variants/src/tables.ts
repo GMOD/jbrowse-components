@@ -89,7 +89,7 @@ export interface VariantTablesArgs {
   regions: TablesRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
-   * `LinearVariantDisplay`: `encoding`, `unit` (`'allele'` or
+   * `LinearVariantDisplay`: `encoding`, `unit` (`'sample'` or
    * `'haplotype'`), `filter` (a predicate list, `minorAlleleFrequency` and
    * `missingness` among its fields), `referenceDrawingMode`, `shadeByDosage`, the
    * arrangement `rows` and `facet` and the rest of its slots. Unset reads the
@@ -105,7 +105,7 @@ export interface VariantTablesArgs {
 
 /**
  * #api
- * A region of a multi-sample VCF as the multi-sample variant display fetches,
+ * A region of a multi-sample VCF as the variant display fetches,
  * filters and paints it, as tables: `variants`, each record the display
  * keeps, with its color and its `filter`; `info`, each INFO key's
  * values aligned to `variants`, and `infoFields`, the header's declaration
@@ -718,7 +718,7 @@ function rowColorsOf(
 /**
  * #api
  * Each record's alpha factor where records too short to see share pixels at
- * `bpPerPx`, as the multi-sample variant display fades a zoomed-out row
+ * `bpPerPx`, as the variant display fades a zoomed-out row
  * (`recordDensityAlpha`) at the power of two `bpPerPx` rounds to: 1 where a
  * record covers its pixels alone. For a host that draws the cells at its own
  * scale.

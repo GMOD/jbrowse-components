@@ -18,11 +18,11 @@ function twoDisplayTrackConf(trackId: string) {
     displays: [
       {
         type: 'LinearVariantDisplay',
-        displayId: `${trackId}_single`,
+        displayId: `${trackId}_variants`,
       },
       {
-        type: 'LinearMultiSampleVariantDisplay',
-        displayId: `${trackId}_multi`,
+        type: 'LinearMarkDisplay',
+        displayId: `${trackId}_marks`,
       },
     ],
   }
@@ -39,16 +39,14 @@ test('showTrack with an explicit display type attaches that display’s config',
     added.trackId,
     {},
     {
-      type: 'LinearMultiSampleVariantDisplay',
+      type: 'LinearMarkDisplay',
     },
   )
   const display = view.tracks.find(t => t.trackId === added.trackId)!
     .displays[0]!
-  // the betas' name is retired into LinearVariantDisplay (ADR-255), so the
-  // two entries are one display, under the first one's id
-  expect(display.type).toBe('LinearVariantDisplay')
-  expect(display.configuration.type).toBe('LinearVariantDisplay')
-  expect(display.configuration.displayId).toBe('two_displays_single')
+  expect(display.type).toBe('LinearMarkDisplay')
+  expect(display.configuration.type).toBe('LinearMarkDisplay')
+  expect(display.configuration.displayId).toBe('two_displays_marks')
 })
 
 test('showTrack with no display type takes the track’s first declared display', async () => {
@@ -62,5 +60,5 @@ test('showTrack with no display type takes the track’s first declared display'
   const display = view.tracks.find(t => t.trackId === added.trackId)!
     .displays[0]!
   expect(display.type).toBe('LinearVariantDisplay')
-  expect(display.configuration.displayId).toBe('two_displays2_single')
+  expect(display.configuration.displayId).toBe('two_displays2_variants')
 })

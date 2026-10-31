@@ -42,7 +42,7 @@ interface VariantFeatureBase {
   // inserted bp.
   insertedBp: number
   // SO term(s) for the variant (e.g. 'breakend', 'deletion', 'inversion').
-  // Carried through so a feature clicked from a multi-sample display opens the
+  // Carried through so a feature clicked from the variant display opens the
   // widget with its SV / breakend navigation panels, which key off `type`.
   type: string
   // The record's structural-variant class (`svClassOf`, read as the

@@ -1,4 +1,4 @@
-import { testLinearMultiSampleVariantDisplay } from './testLinearMultiSampleVariantDisplay.tsx'
+import { testLinearVariantDisplay } from './testLinearVariantDisplay.tsx'
 import { doBeforeEach, setup } from './util.tsx'
 
 setup()
@@ -16,7 +16,7 @@ const timeout = 90_000
 test(
   'matrix',
   async () => {
-    await testLinearMultiSampleVariantDisplay({
+    await testLinearVariantDisplay({
       displayType: 'matrix',
       timeout,
     })
@@ -27,7 +27,7 @@ test(
 test(
   'mphased',
   async () => {
-    await testLinearMultiSampleVariantDisplay({
+    await testLinearVariantDisplay({
       displayType: 'matrix',
       phasedMode: 'phased',
       timeout,
@@ -39,7 +39,7 @@ test(
 test(
   'regular',
   async () => {
-    await testLinearMultiSampleVariantDisplay({
+    await testLinearVariantDisplay({
       displayType: 'regular',
       timeout,
     })
@@ -50,7 +50,7 @@ test(
 test(
   'rphased',
   async () => {
-    await testLinearMultiSampleVariantDisplay({
+    await testLinearVariantDisplay({
       displayType: 'regular',
       phasedMode: 'phased',
       timeout,

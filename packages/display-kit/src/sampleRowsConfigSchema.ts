@@ -7,7 +7,7 @@ import { rowsConfigSchema } from './rowsConfigSchema.ts'
  * #config SampleRows
  * #category display
  * The `rows` of a display whose rows are the file's samples, one each, with
- * nothing else a row could be: the multi-sample variant display and the
+ * nothing else a row could be: the variant display and the
  * multiple alignment display. `sample` is the one field, so the object is
  * the arrangement a reader gives the rows, written whole as every display's
  * `rows` is. Nothing needs `rows: "sample"`, and writing it clears the
@@ -15,7 +15,7 @@ import { rowsConfigSchema } from './rowsConfigSchema.ts'
  *
  * #example
  * ```js
- * { type: 'LinearMultiSampleVariantDisplay', rows: { sort: ['HG002', 'HG003'] } }
+ * { type: 'LinearVariantDisplay', rows: { sort: ['HG002', 'HG003'] } }
  * ```
  * ```js
  * {

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-// Capture the multi-sample variant display, both layouts, a dense and a sparse
+// Capture the variant display, both layouts, a dense and a sparse
 // cohort, on one rendering rung at one dpr: the instrument for "did the cells
 // land on the device grid" after the display dropped to one sample.
 //
@@ -197,7 +197,7 @@ async function captureScene(page: Page, scene: (typeof SCENES)[number]) {
             {
               trackId: scene.trackId,
               displaySnapshot: {
-                type: 'LinearMultiSampleVariantDisplay',
+                type: 'LinearVariantDisplay',
                 height: 360,
               },
             },

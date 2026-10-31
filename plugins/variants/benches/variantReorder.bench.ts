@@ -1,4 +1,4 @@
-// What does a row reorder cost the multi-sample variant display on the main
+// What does a row reorder cost the variant display on the main
 // thread, per block, as it runs today — every cell re-placed and the instance
 // buffer re-packed — against the same gesture through render-core's
 // `buildRowTable`, where the instances stand and a rows-sized table moves?

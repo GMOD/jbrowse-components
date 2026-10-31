@@ -1,4 +1,4 @@
-// What the multi-sample variant display's site test costs as a compiled
+// What the variant display's site test costs as a compiled
 // `filter` list (`compileSiteFilter`) against the two hand-written thresholds
 // it replaced, a MAF floor of 0.01 and a missingness ceiling of 0.1. Two
 // loops, arms interleaved, min over rounds:

@@ -11,7 +11,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // so a real drag only refetches on release; jsdom can't express a mid-drag —
 // MUI fires onChangeCommitted straight away for a hidden-input change — so the
 // deferral itself is makeSizeMenu's concern, not asserted here.)
-describe('multi-sample variant filter sliders', () => {
+describe('variant display filter sliders', () => {
   // The shared harness rather than a bare `stateModel.create()`: `sliderRow`
   // builds the WHOLE track menu to find one row, and a parentless display
   // throws "no session model found!" there.

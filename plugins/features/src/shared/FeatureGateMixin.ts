@@ -97,7 +97,7 @@ export default function FeatureGateMixin() {
       /**
        * #getter
        * The `maxFeatureScreenDensity` slot. Overridable for a display that
-       * holds it under a sub-schema (the multi-sample variant display's
+       * holds it under a sub-schema (the variant display's
        * `records`).
        */
       get configuredMaxFeatureScreenDensity(): number {

@@ -9,11 +9,11 @@ import VariantMatrixBody, {
   variantMatrixSurface,
 } from '../matrix/VariantMatrixComponent.tsx'
 import { VARIANT_MATRIX_MARKS } from '../matrix/variantMatrixMarks.ts'
-import Crosshair from './MultiSampleVariantCrosshairs.tsx'
 import RecordsBandOverlay, {
   recordsBandSurface,
 } from './RecordsBandOverlay.tsx'
 import VariantBody, { variantRowsSurface } from './VariantComponent.tsx'
+import Crosshair from './VariantCrosshairs.tsx'
 import VariantRowSeparators from './VariantRowSeparators.tsx'
 import { VARIANT_MARKS } from './variantMarks.ts'
 import { hoverVariantSurface } from './variantSurface.ts'

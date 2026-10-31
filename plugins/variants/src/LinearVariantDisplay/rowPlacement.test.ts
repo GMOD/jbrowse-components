@@ -91,7 +91,7 @@ function setup() {
   return display
 }
 
-describe('multi-sample variant row placement', () => {
+describe('variant display row placement', () => {
   test('places worker rows by name, not by position', () => {
     const display = setup()
     // no layout: rows draw in adapter order S0,S1,S2, so the worker's row 0

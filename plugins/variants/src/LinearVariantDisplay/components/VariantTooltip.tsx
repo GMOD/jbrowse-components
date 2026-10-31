@@ -33,7 +33,7 @@ const useStyles = makeStyles()({
   },
 })
 
-const MultiSampleVariantTooltip = observer(function MultiSampleVariantTooltip({
+const VariantTooltip = observer(function VariantTooltip({
   source,
   x,
   y,
@@ -79,4 +79,4 @@ const MultiSampleVariantTooltip = observer(function MultiSampleVariantTooltip({
   )
 })
 
-export default MultiSampleVariantTooltip
+export default VariantTooltip

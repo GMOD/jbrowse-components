@@ -546,7 +546,7 @@ function useEntriesBelow(scroller: HTMLDivElement | null) {
 }
 
 // Floating color-key overlay: one panel per section (e.g. genotype colors vs.
-// sample-grouping colors on the multi-sample variant display). Section titles
+// sample-grouping colors on the variant display). Section titles
 // and per-section close buttons only appear when there is more than one
 // section, so a single-scheme legend is just its rows. `title` is a heading
 // for the whole box, shown regardless of section count. A section with a

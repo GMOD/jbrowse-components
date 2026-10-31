@@ -112,10 +112,6 @@ import {
   recordDensityAlpha,
 } from './densityFade.ts'
 import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
-import {
-  variantContextMenuItems,
-  variantTrackMenuItems,
-} from './multiSampleVariantMenuItems.ts'
 import { paintCellColors, paintedColorKeys } from './paintCells.ts'
 import { placeVariantRows } from './placeVariantRows.ts'
 import {
@@ -126,6 +122,10 @@ import {
 } from './recordsBandViews.ts'
 import { recordCountMeasurements } from './recordsDensityGate.ts'
 import { recordInk, recordsHighlightViews } from './recordsHighlightViews.ts'
+import {
+  variantContextMenuItems,
+  variantTrackMenuItems,
+} from './variantDisplayMenuItems.ts'
 import { getVariantColorScales } from './variantLegend.ts'
 
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
@@ -2103,8 +2103,8 @@ export function stateModelFactory(
           runLazyAfterAttach(
             self,
             async () =>
-              (await import('./setupMultiSampleVariantAutoruns.ts'))
-                .setupMultiSampleVariantAutoruns,
+              (await import('./setupVariantDisplayAutoruns.ts'))
+                .setupVariantDisplayAutoruns,
           )
           // read only from untracked pointer handlers, so held alive here
           autorunOnReadyView(

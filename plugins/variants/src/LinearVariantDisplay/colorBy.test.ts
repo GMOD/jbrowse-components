@@ -7,7 +7,7 @@ import { createTestEnvironment } from './testEnv.ts'
 // display's config and nothing else — the tint resolves on every read of
 // `sources`. colorByAttributes lists the samplesTsv metadata keys the user can
 // band by.
-describe('multi-sample variant colorBy', () => {
+describe('variant display colorBy', () => {
   const sources = [
     { name: 'HG001', population: 'EUR', sex: 'M' },
     { name: 'HG002', population: 'AFR', sex: 'F' },

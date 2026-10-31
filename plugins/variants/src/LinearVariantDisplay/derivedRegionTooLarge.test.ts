@@ -6,7 +6,7 @@ import { createTestEnvironment } from './testEnv.ts'
 // the current viewport — self-releases on zoom-in, no flicker on pan, force-load
 // stays cleared after a zoom-out, estimate cleared on chromosome nav. Same suite
 // LD/maf use, driving the shared RegionTooLargeMixin derived gate.
-describe('MultiSampleVariant derived regionTooLarge', () => {
+describe('LinearVariantDisplay derived regionTooLarge', () => {
   it('is false with no estimate yet', () => {
     const { display } = createTestEnvironment().createDisplay()
     expect(display.regionTooLarge).toBe(false)

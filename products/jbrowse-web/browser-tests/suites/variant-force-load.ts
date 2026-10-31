@@ -151,13 +151,13 @@ const suite: TestSuite = {
   tests: [
     forceLoadTest({
       name: 'multi-sample variant force-load re-renders canvas',
-      displayType: 'LinearMultiSampleVariantDisplay',
+      displayType: 'LinearVariantDisplay',
       displayTestId: 'variant-display',
       canvasTestId: 'variant_canvas',
     }),
     forceLoadTest({
       name: 'variant columns force-load re-renders canvas',
-      displayType: 'LinearMultiSampleVariantDisplay',
+      displayType: 'LinearVariantDisplay',
       displayConfig: { variantLayout: 'columns' },
       displayTestId: 'variant-matrix-display',
       canvasTestId: 'variant_matrix_canvas',

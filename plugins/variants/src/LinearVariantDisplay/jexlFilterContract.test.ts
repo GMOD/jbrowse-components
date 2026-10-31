@@ -14,7 +14,7 @@ import variantStateModelFactory from './model.ts'
 import type { LinearVariantDisplayModel } from './model.ts'
 
 // The jexl-filter contract (`JexlFilterModel`), asserted on the
-// multi-sample variant display. It used to implement one half of it, and the
+// variant display. It used to implement one half of it, and the
 // failures were silent:
 //
 // - the display declared an MST property literally named

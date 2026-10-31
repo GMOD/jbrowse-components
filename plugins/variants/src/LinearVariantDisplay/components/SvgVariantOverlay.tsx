@@ -6,7 +6,7 @@ import type { RenderSvgBaseModel } from '../renderSvgUtils.ts'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 import type React from 'react'
 
-// The frame both multi-sample variant layouts' SVG exports end in: the row content and
+// The frame both variant layouts' SVG exports end in: the row content and
 // the tree/label sidebar, inside the export shell's clip. Row content and sidebar are
 // translated below `rowsTopOffset` together — the same offset the on-screen
 // canvas and `TreeSidebar` take — so a display with bands above its rows can't

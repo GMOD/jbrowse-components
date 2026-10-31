@@ -6,7 +6,7 @@ import { runGenotypeClustering } from '../runGenotypeClustering.ts'
 
 import type { ReducedModel } from '../clusterModelTypes.ts'
 
-// What "cluster rows by genotype" means for a multi-sample variant display: the
+// What "cluster rows by genotype" means for the variant display: the
 // genotype matrix over the rows on screen. The dialog itself is shared, and
 // `run` is the same function the declarative `runClustering` autorun calls.
 const MultiSampleVariantClusterDialog = observer(

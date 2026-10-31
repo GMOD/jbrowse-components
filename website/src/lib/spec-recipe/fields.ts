@@ -376,7 +376,7 @@ function syntenyColorMode(value: unknown) {
 // sample-metadata attribute the track carries, offered under a 'Samples'
 // subheader, so the recipe names the figure's attribute rather than looking it
 // up. capitalizeFirst is the menu's own label transform, imported.
-const MULTI_SAMPLE_VARIANT_DISPLAYS = new Set(['LinearVariantDisplay'])
+const VARIANT_DISPLAYS = new Set(['LinearVariantDisplay'])
 
 // The two presets the variant display's `encoding.color` names by
 // (IMPACT_FIELD, SV_TYPE_FIELD), and the phase set (PHASE_SET_FIELD).
@@ -443,7 +443,7 @@ function colorStep(
   }
   const color = channelOf(value)
   const scale = scaleOf(color)
-  if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
+  if (displayType && VARIANT_DISPLAYS.has(displayType)) {
     return color ? variantCellColorStep(color) : undefined
   }
   if (color && displayType === 'LinearHicDisplay') {
@@ -497,7 +497,7 @@ function mafColorStep(value: unknown): FieldStep | undefined {
   return label ? { path: `${MAF_COLOR_BY} → ${label}` } : undefined
 }
 
-// The multi-sample variant displays' cell `encoding.color`: a preset field has
+// The variant display's cell `encoding.color`: a preset field has
 // its own row under Cells, and any other field is typed into Field..., its cut
 // points beside it.
 function variantCellColorStep(
@@ -557,7 +557,7 @@ function constantColorStep(
         }
 }
 
-// The multi-sample variant displays' row tint: a sample attribute, named from
+// The variant display's row tint: a sample attribute, named from
 // one menu row over whichever metadata columns the track carries. A row-keyed
 // `scale.domain` and `scale.range` is each row's own swatch in the arrangement
 // dialog.
@@ -569,7 +569,7 @@ function rowColorStep(
   if (
     attribute &&
     displayType &&
-    MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+    VARIANT_DISPLAYS.has(displayType)
   ) {
     return {
       path: `${TRACK_MENU} → Color by → Samples → ${capitalizeFirst(attribute)}`,
@@ -588,9 +588,9 @@ function rowColorStep(
 // The `facet` object: a string is the field. The feature displays' Group by
 // dialog has a radio for strand and a text field under Attribute for any other
 // field, and a `domain` is the Sections submenu's moves, which write the drawn
-// order. The multi-sample variant displays band their rows from one menu row
-// over whichever metadata columns the track carries, so the recipe names the
-// figure's field, and their band order has no menu row.
+// order. The variant display bands its rows from one menu row over whichever
+// metadata columns the track carries, so the recipe names the figure's field,
+// and its band order has no menu row.
 function facetStep(
   value: unknown,
   { displayType }: FieldContext,
@@ -627,7 +627,7 @@ function facetStep(
       }`,
     }
   }
-  if (displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)) {
+  if (displayType && VARIANT_DISPLAYS.has(displayType)) {
     return {
       path: `${TRACK_MENU} → Group by → ${capitalizeFirst(field)}`,
       note: `The submenu lists whichever metadata columns your samples carry, so "${field}" appears only if yours have it.${
@@ -690,8 +690,7 @@ const CIGAR_MODES: Record<string, string> = Object.fromEntries(
 const MAF_COLOR_BY = `${TRACK_MENU} → Color by`
 
 // The displays whose menu carries tree-sidebar's shared "Row height" submenu,
-// with the presets each passes it; the multi-sample variant display passes
-// none.
+// with the presets each passes it; the variant display passes none.
 const ROW_HEIGHT_MENUS: Record<string, readonly RowHeightPreset[]> = {
   LinearMafDisplay: MAF_HEIGHT_PRESETS,
   LinearVariantDisplay: [],
@@ -834,7 +833,7 @@ function yStep(
 
 // Every display that filters names the item 'Filter by' — the canvas base
 // (trackMenus.ts), the alignments/LGVSynteny one (menus/filters.ts, which adds
-// a count when filters are active), and the multi-sample variant one. So unlike
+// a count when filters are active), and the variant display's. So unlike
 // most of this table the label does not vary; only which displays have it does.
 const FILTER_MENU_DISPLAYS = new Set([
   'LinearBasicDisplay',
@@ -1228,8 +1227,8 @@ function filterFieldStep(
       'Genes counts every gene, transcript and RNA type, the configured transcript and container types, and a top-level CDS; the rest of a GFF, such as NCBI region and match rows, is not a gene.',
     )
   }
-  // the two inline sliders under the multi-sample variant "Filter by"
-  // submenu (multiSampleVariantMenuItems.ts); both refetch on release
+  // the two inline sliders under the variant display's "Filter by"
+  // submenu (variantDisplayMenuItems.ts); both refetch on release
   const maf = fixed(gte)
   if (field === 'minorAlleleFrequency' && maf !== undefined) {
     return {
@@ -1549,7 +1548,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       : undefined,
   variantLayout: (value, { displayType }) =>
     (value === 'genomic' || value === 'columns') && displayType
-      ? MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+      ? VARIANT_DISPLAYS.has(displayType)
         ? {
             path: `${TRACK_MENU} → Layout → Genotype matrix`,
             note:
@@ -1571,7 +1570,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   clusterRegion: (value, { displayType }) =>
     typeof value !== 'string'
       ? undefined
-      : displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+      : displayType && VARIANT_DISPLAYS.has(displayType)
         ? {
             path: `Navigate to the region you want to cluster on, then ${TRACK_MENU} → Cluster rows by genotype...`,
             note: `Clustering is scoped to the region it was run over — this figure clustered on ${value}, which is what the row order reflects even after navigating elsewhere.`,
@@ -1701,7 +1700,7 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : (value === 'sample' || value === 'haplotype') &&
           displayType &&
-          MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+          VARIANT_DISPLAYS.has(displayType)
         ? {
             path: `${TRACK_MENU} → Rows → ${value === 'haplotype' ? 'Per haplotype' : 'Per sample'}`,
             note:
@@ -2004,8 +2003,8 @@ export const trackFields: Record<string, FieldRecipe> = {
   ),
   'pileup.mismatches': mismatchesStep,
   // A 'draw'/'skip' enum behind a checkbox, so it can't use `checkbox()` (which
-  // only takes booleans). Label and polarity from the multi-sample variant
-  // displays' own menu item: checked means 'draw'.
+  // only takes booleans). Label and polarity from the variant
+  // display's own menu item: checked means 'draw'.
   referenceDrawingMode: value =>
     typeof value === 'string'
       ? {
@@ -2073,7 +2072,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   // region in view, the sort uses a single column.
   runClustering: (value, { displayType, settings }) => {
     const region =
-      displayType && MULTI_SAMPLE_VARIANT_DISPLAYS.has(displayType)
+      displayType && VARIANT_DISPLAYS.has(displayType)
         ? undefined
         : asString(settings?.clusterRegion)
     return value === true

@@ -3,7 +3,7 @@ import { lazy } from 'react'
 /**
  * Every dialog this plugin's state models name, behind its own chunk.
  *
- * `LDDisplay/model.ts` and `multiSampleVariantMenuItems.ts` are both reached
+ * `LDDisplay/model.ts` and `variantDisplayMenuItems.ts` are both reached
  * from state models: they are evaluated when the plugin installs, before any
  * session is read, so importing a dialog there put the dialog — and MUI's
  * `TextField` → `Select` → `Modal` → `Popover` cluster behind it — into every
@@ -15,7 +15,7 @@ import { lazy } from 'react'
  * boundary. Same arrangement as `plugin-linear-genome-view`'s `lazyDialogs.ts`.
  *
  * One module rather than a `lazy()` beside each menu, because the jexl filter
- * dialog is opened from both the LD menu and the multi-sample one: wrapping the
+ * dialog is opened from both the LD menu and the variant display's: wrapping the
  * same import twice mints two distinct lazy component types for one chunk, so
  * the two menus suspend against separate boundaries and neither warms the other.
  */

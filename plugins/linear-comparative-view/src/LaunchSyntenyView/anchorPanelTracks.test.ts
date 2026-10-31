@@ -22,11 +22,11 @@ test('carries the open tracks over, keeping the display each is shown as', () =>
   expect(
     anchorPanelTracks([
       track('genes', 'FeatureTrack', 'LinearBasicDisplay'),
-      track('variants', 'VariantTrack', 'LinearMultiSampleVariantDisplay'),
+      track('variants', 'VariantTrack', 'LinearVariantDisplay'),
     ]),
   ).toEqual([
     { trackId: 'genes', type: 'LinearBasicDisplay' },
-    { trackId: 'variants', type: 'LinearMultiSampleVariantDisplay' },
+    { trackId: 'variants', type: 'LinearVariantDisplay' },
   ])
 })
 

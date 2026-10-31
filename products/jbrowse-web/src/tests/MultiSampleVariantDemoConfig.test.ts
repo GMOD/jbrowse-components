@@ -116,8 +116,8 @@ test('old MultiLinearVariantDisplay instance resolves on session restore', async
           },
           displays: [
             {
-              type: 'LinearMultiSampleVariantDisplay',
-              displayId: 'cohort-LinearMultiSampleVariantDisplay',
+              type: 'LinearVariantDisplay',
+              displayId: 'cohort-LinearVariantDisplay',
               rowColor: 'population',
             },
           ],

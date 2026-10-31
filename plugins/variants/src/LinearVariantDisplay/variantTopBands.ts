@@ -1,5 +1,5 @@
 /**
- * The bands a multi-sample variant display stacks above its genotype rows, as
+ * The bands a variant display stacks above its genotype rows, as
  * one pure function:
  *
  * - the **records band**, the VCF's records laid out and stacked as a

@@ -12,9 +12,7 @@ export const f2 = 0.3
 export const VARIANT_UNITS = ['sample', 'haplotype'] as const
 export type VariantUnit = (typeof VARIANT_UNITS)[number]
 
-// Feature-detail widget opened when a variant is clicked. Shared by the
-// single-track and multi-sample variant displays so the registered widget
-// name/id can't drift between them.
+// Feature-detail widget opened when a variant is clicked
 export const VARIANT_FEATURE_WIDGET = {
   type: 'VariantFeatureWidget',
   id: 'variantFeature',

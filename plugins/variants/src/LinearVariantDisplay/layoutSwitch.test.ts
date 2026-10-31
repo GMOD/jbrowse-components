@@ -1,8 +1,8 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { SIDEBAR_HINT_LINE_PX } from '@jbrowse/tree-sidebar'
 
-import { variantTrackMenuItems } from './multiSampleVariantMenuItems.ts'
 import { createTestEnvironment } from './testEnv.ts'
+import { variantTrackMenuItems } from './variantDisplayMenuItems.ts'
 
 test('the layout is a fetch input, and only columns reserve a connector zone', () => {
   const { display } = createTestEnvironment().createDisplay()

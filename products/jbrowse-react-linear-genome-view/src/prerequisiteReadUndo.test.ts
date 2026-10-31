@@ -28,8 +28,8 @@ const track = {
   adapter: { type: 'VcfTabixAdapter', uri: 'cohort.vcf.gz' },
   displays: [
     {
-      type: 'LinearMultiSampleVariantDisplay',
-      displayId: `${ID}-LinearMultiSampleVariantDisplay`,
+      type: 'LinearVariantDisplay',
+      displayId: `${ID}-LinearVariantDisplay`,
     },
   ],
 }
