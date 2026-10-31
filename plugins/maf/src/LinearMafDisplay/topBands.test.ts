@@ -57,7 +57,7 @@ describe('a band stated taller than the track it sits on', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     display.setShowConservation(true)
     display.setHeight(1000)
-    display.resizeConservationHeight(+260)
+    display.setConservationHeight(display.conservationHeight + 260)
     expect(display.conservationHeight).toBe(300)
     display.setHeight(200)
     return display

@@ -422,7 +422,8 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       {hideVerticalResizeHandle ? null : (
         <ResizeHandle
           grip
-          onDrag={distance => model.resizeHeight(distance)}
+          value={model.height}
+          onChange={height => model.setHeight(height)}
           className={classes.resizeHandle}
         />
       )}

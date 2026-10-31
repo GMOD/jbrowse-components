@@ -46,8 +46,11 @@ const SvInspectorView = observer(function SvInspectorView({
             <ResizeHandle
               bar
               vertical
-              onDrag={distance => {
-                model.resizeSpreadsheetWidth(distance)
+              value={model.subviewWidths.spreadsheet}
+              onChange={width => {
+                model.resizeSpreadsheetWidth(
+                  width - model.subviewWidths.spreadsheet,
+                )
               }}
             />
             <div style={{ width: model.circularView.width }}>
@@ -61,9 +64,8 @@ const SvInspectorView = observer(function SvInspectorView({
       </div>
       <ResizeHandle
         grip
-        onDrag={distance => {
-          model.resizeHeight(distance)
-        }}
+        value={model.height}
+        onChange={height => model.setHeight(height)}
       />
     </div>
   )

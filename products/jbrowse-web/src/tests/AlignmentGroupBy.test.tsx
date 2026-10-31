@@ -389,7 +389,7 @@ test('resizing a group caps its rows independently of the others', async () => {
   expect(before).toBeGreaterThan(display.featureHeight + display.featureSpacing)
 
   // Drag the first section's bottom up by most of its height → fewer rows.
-  display.resizeGroupHeight(firstKey, -before)
+  display.setGroupHeight(firstKey, 0)
 
   await waitFor(() => {
     const sec = display.sections.sections[0]!

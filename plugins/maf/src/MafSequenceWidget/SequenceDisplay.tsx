@@ -153,9 +153,10 @@ const SequenceDisplay = observer(function SequenceDisplay({
             bar
             vertical
             className={classes.resizeHandle}
-            onDrag={d => {
-              setLabelWidth(w =>
-                Math.min(MAX_LABEL_WIDTH, Math.max(MIN_LABEL_WIDTH, w + d)),
+            value={labelWidth}
+            onChange={width => {
+              setLabelWidth(
+                Math.min(MAX_LABEL_WIDTH, Math.max(MIN_LABEL_WIDTH, width)),
               )
             }}
           />

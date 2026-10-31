@@ -159,7 +159,6 @@ import {
   groupRowCaps,
   layoutGroupsToViewport,
   maxRowsFor,
-  nextGroupHeightOverride,
   resolveFitDefaultCap,
   someAcrossGroups,
   stacksRows,
@@ -3157,25 +3156,15 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Drag a stacked group's pileup band taller/shorter by `dy` px. The
-           * override caps the group's rows and pads the band where the rows
-           * fall short, so the drag runs in both directions. The accumulation
-           * policy is in the pure `nextGroupHeightOverride`.
+           * A stacked group's pileup band height, floored at one row and whole.
+           * It caps the group's rows (`maxRowsFor`) and pads the band where the
+           * rows fall short (`minPileupHeight`), so the band follows a drag in
+           * both directions, past its content too.
            */
-          resizeGroupHeight(key: string, dy: number) {
-            const section = self.renderSections.find(s => s.groupKey === key)
-            if (!section) {
-              return
-            }
-            const size = self.groupSizes.get(key)
+          setGroupHeight(key: string, height: number) {
             self.groupSizes.set(
               key,
-              nextGroupHeightOverride({
-                dy,
-                rowHeight: self.rowHeight,
-                displayedPx: section.pileupHeight,
-                existingPx: typeof size === 'number' ? size : undefined,
-              }),
+              Math.max(self.rowHeight, Math.round(height)),
             )
           },
 

@@ -20,13 +20,14 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
  */
 const MafBandResizeHandle = observer(function MafBandResizeHandle({
   model,
-  resize,
+  height,
+  setHeight,
   seam,
   onActiveChange,
 }: {
   model: LinearMafDisplayModel
-  /** one drag delta; the model action reads the band's height itself */
-  resize: (distance: number) => void
+  height: number
+  setHeight: (height: number) => void
   seam: number
   onActiveChange: (active: boolean) => void
 }) {
@@ -48,8 +49,9 @@ const MafBandResizeHandle = observer(function MafBandResizeHandle({
   return (
     <BandSeamHandle
       seam={seam}
-      onDrag={n => {
-        resize(n)
+      value={height}
+      onChange={h => {
+        setHeight(h)
       }}
       onDragStart={() => {
         setDragging(true)

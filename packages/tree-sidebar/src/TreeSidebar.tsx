@@ -340,10 +340,9 @@ const TreeSidebar = observer(function TreeSidebar({
           }}
         />
         <ResizeHandle
-          onDrag={distance => {
-            model.setTreeAreaWidth(
-              clampTreeAreaWidth(treeAreaWidth + distance, viewWidth),
-            )
+          value={treeAreaWidth}
+          onChange={width => {
+            model.setTreeAreaWidth(clampTreeAreaWidth(width, viewWidth))
           }}
           className={classes.resizeHandle}
           style={{

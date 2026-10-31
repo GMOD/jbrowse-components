@@ -17,8 +17,9 @@ import type React from 'react'
  *
  * ```tsx
  * const handleProps = useResizeDrag({
- *   onDrag: distance => {
- *     display.resizeHeight(distance)
+ *   value: display.height,
+ *   onChange: height => {
+ *     display.setHeight(height)
  *   },
  *   onDragStart: () => {
  *     track.setResizing(true)
@@ -48,10 +49,12 @@ import type React from 'react'
  *   coalesced batches) outruns the frame rate, and each commit reruns whatever
  *   the resize drives. Committing per event relayouts a pileup several times a
  *   frame and throws all but the last away.
- * - **The distance is measured from the last commit**, not from where the press
- *   started, so a dropped intermediate position costs nothing and a drag that
- *   runs into a clamp (`resizeHeight` stops at the display's minimum) does not
- *   bank a debt the pointer has to pay back on the way out.
+ * - **The target is the value at the press plus the pointer's travel since**,
+ *   so a dropped intermediate position costs nothing, and a drag that runs into
+ *   the setter's clamp leaves the edge where it stopped until the pointer comes
+ *   back to it, as a window edge does. The deprecated `onDrag` reports the
+ *   travel since the last commit instead, so past a clamp its edge grows back
+ *   from wherever the pointer turns, far from it; it is kept for plugins.
  * - **`data-gesture-owner` rides in the props.** It is the marker ancestor
  *   gestures test for (`closest('[data-gesture-owner]')`, in the LGV's own pan
  *   and in `usePanZoom`) before starting a drag of their own, so without it
@@ -61,18 +64,48 @@ import type React from 'react'
  *   mousedown would also cost focus-on-click, whose document-level listener
  *   (`useFocusOnInteraction`) React's stopPropagation does block.
  */
+/**
+ * What a drag sets: a `value` and its setter, or the deprecated `onDrag`, the
+ * pointer's travel since the last commit.
+ */
+export type ResizeDragCallback =
+  | {
+      /** The value the drag sizes, read at the press */
+      value: number
+      /**
+       * The value the drag aims at: `value` at the press plus the pointer's
+       * travel since, divided by `gain`, and whole. The setter clamps it.
+       */
+      onChange: (value: number) => void
+      /**
+       * A drag right or down lowers the value: a panel on the right of, or
+       * below, the divider that sizes it.
+       */
+      reverse?: boolean
+      onDrag?: undefined
+    }
+  | {
+      /**
+       * @deprecated pass `value` and `onChange`, which keep the edge under the
+       * pointer past a clamp. How far the pointer has travelled since the last
+       * committed frame, in px — divided by `gain`, and whole.
+       */
+      onDrag: (distance: number) => void
+      value?: undefined
+      onChange?: undefined
+      reverse?: undefined
+    }
+
 export function useResizeDrag({
   onDrag,
+  value,
+  onChange,
+  reverse = false,
   onDragStart,
   onDragEnd,
   vertical = false,
   gain = 1,
-}: {
-  /**
-   * How far the pointer has travelled since the last committed frame, in px —
-   * divided by `gain`, and whole.
-   */
-  onDrag: (distance: number) => void
+}: ResizeDragCallback & {
   onDragStart?: () => void
   onDragEnd?: () => void
   /**
@@ -96,6 +129,7 @@ export function useResizeDrag({
   gain?: number
 }) {
   const prevPosRef = useRef(0)
+  const startRef = useRef({ pos: 0, value: 0, travel: 0 })
 
   const getPos = (event: React.PointerEvent) =>
     vertical ? event.clientX : event.clientY
@@ -110,16 +144,27 @@ export function useResizeDrag({
   // `prevPos` is the same mechanism that keeps a drag into a clamp from banking
   // debt — the distance is always measured from what was last committed.
   const { schedule, flush } = useRafCommit(pos => {
-    const distance = Math.trunc((pos - prevPosRef.current) / gain)
-    if (distance !== 0) {
-      prevPosRef.current += distance * gain
-      onDrag(distance)
+    if (onChange) {
+      const start = startRef.current
+      const travel = Math.trunc((pos - start.pos) / gain)
+      if (travel !== start.travel) {
+        start.travel = travel
+        onChange(start.value + (reverse ? -travel : travel))
+      }
+    } else {
+      const distance = Math.trunc((pos - prevPosRef.current) / gain)
+      if (distance !== 0) {
+        prevPosRef.current += distance * gain
+        onDrag(distance)
+      }
     }
   })
 
   const handlers = usePointerDrag({
     onDragStart: event => {
-      prevPosRef.current = getPos(event)
+      const pos = getPos(event)
+      prevPosRef.current = pos
+      startRef.current = { pos, value: value ?? 0, travel: 0 }
       onDragStart?.()
     },
     onDrag: event => {

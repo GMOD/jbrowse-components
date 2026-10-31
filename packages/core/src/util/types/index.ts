@@ -615,6 +615,12 @@ export interface SessionWithDrawerWidgets extends SessionWithWidgets {
    * full-window app
    */
   resizeDrawer(distance: number, availableWidth?: number): number
+  /**
+   * @param availableWidth - the width the drawer and the main area share,
+   * defaulting to the window's
+   * @returns the width set, clamped
+   */
+  updateDrawerWidth(drawerWidth: number, availableWidth?: number): number
   minimizeWidgetDrawer(): void
   showWidgetDrawer: () => void
   /** whether the drawer column is on screen at all */

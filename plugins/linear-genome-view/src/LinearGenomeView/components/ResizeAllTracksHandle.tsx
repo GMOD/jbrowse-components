@@ -56,7 +56,7 @@ const ResizeAllTracksHandle = observer(function ResizeAllTracksHandle({
   model: LinearGenomeViewModel
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const drag = useRef({ from: new Map<string, number>(), moved: 0 })
+  const drag = useRef({ from: new Map<string, number>() })
   const { isTopLevelView } = model
   useScrollPortExcess(ref, model, isTopLevelView)
 
@@ -87,16 +87,15 @@ const ResizeAllTracksHandle = observer(function ResizeAllTracksHandle({
               }
         }
         onDragStart={() => {
-          drag.current = { from: model.resizableTrackHeights, moved: 0 }
+          drag.current = { from: model.resizableTrackHeights }
           for (const track of model.tracks) {
             track.setResizing(true)
           }
         }}
-        onDrag={distance => {
-          drag.current.moved = model.resizeTracks(
-            drag.current.moved + distance,
-            drag.current.from,
-          )
+        // the distance from the press, every track scaled from where it was
+        value={0}
+        onChange={distance => {
+          model.resizeTracks(distance, drag.current.from)
         }}
         onDragEnd={() => {
           for (const track of model.tracks) {

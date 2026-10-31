@@ -115,7 +115,7 @@ const LevelSection = observer(function LevelSection({
   model: LinearSyntenyViewModel
   levelIdx: number
 }) {
-  const drag = useRef({ alone: false, from: [] as number[], moved: 0 })
+  const drag = useRef({ alone: false, from: [] as number[] })
   const level = model.levels[levelIdx]!
 
   return (
@@ -133,15 +133,16 @@ const LevelSection = observer(function LevelSection({
           drag.current = {
             alone: event.altKey,
             from: model.levels.map(l => l.height),
-            moved: 0,
           }
         }}
-        onDrag={n => {
-          const d = drag.current
-          if (d.alone) {
-            level.resizeHeight(n)
+        // the distance from the press, the bands scaled from where they were
+        value={0}
+        onChange={distance => {
+          const { alone, from } = drag.current
+          if (alone) {
+            level.resizeHeight(from[levelIdx]! + distance - level.height)
           } else {
-            d.moved = model.resizeAllLevelHeights(d.moved + n, levelIdx, d.from)
+            model.resizeAllLevelHeights(distance, levelIdx, from)
           }
         }}
         title={

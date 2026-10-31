@@ -53,10 +53,9 @@ export function boundBandHeight(
  * The ceiling is not relaxed the same way — a band already over its ceiling is
  * the state the user is trying to escape, so a resize brings it back inside.
  *
- * `ResizeHandle` emits one delta per animation frame, so callers driving a drag
- * pass `current + distance` as the target and read `current` inside the action —
- * a component computing the target from a rendered height drops every tick that
- * lands before React re-renders.
+ * A drag passes `ResizeHandle` the band's height as `value` and this setter as
+ * `onChange`: the handle aims at the height at the press plus the pointer's
+ * travel, so the seam waits at a clamp until the pointer comes back to it.
  *
  * @param current - the band's height right now, in px
  * @param target - the height this resize is asking for, in px

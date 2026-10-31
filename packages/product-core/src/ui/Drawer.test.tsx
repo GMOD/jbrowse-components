@@ -11,7 +11,8 @@ function stubSession(
 ): DrawerChromeSession {
   return {
     drawerPosition: 'right',
-    resizeDrawer: jest.fn(() => 0),
+    drawerWidth: 300,
+    updateDrawerWidth: jest.fn(() => 0),
     ...overrides,
   }
 }
@@ -68,11 +69,23 @@ test('the drawer takes the last row, so a left drawer does not drop below the ma
 })
 
 // `window.innerWidth` is the drawer's container only in a full-window app.
+// The handle is a right drawer's left edge, so a drag left widens it.
 test('a drag clamps against the grid the drawer is an item of', () => {
-  const resizeDrawer = jest.fn(() => 0)
-  const { handle } = renderDrawer(stubSession({ resizeDrawer }))
+  const updateDrawerWidth = jest.fn(() => 0)
+  const { handle } = renderDrawer(stubSession({ updateDrawerWidth }))
   fireEvent.pointerDown(handle!, { clientX: 100, pointerId: 1 })
   fireEvent.pointerMove(handle!, { clientX: 80, pointerId: 1 })
   fireEvent.pointerUp(handle!, { clientX: 80, pointerId: 1 })
-  expect(resizeDrawer).toHaveBeenCalledWith(-20, expect.any(Number))
+  expect(updateDrawerWidth).toHaveBeenCalledWith(320, expect.any(Number))
+})
+
+test('a left drawer widens on a drag right', () => {
+  const updateDrawerWidth = jest.fn(() => 0)
+  const { handle } = renderDrawer(
+    stubSession({ drawerPosition: 'left', updateDrawerWidth }),
+  )
+  fireEvent.pointerDown(handle!, { clientX: 100, pointerId: 1 })
+  fireEvent.pointerMove(handle!, { clientX: 120, pointerId: 1 })
+  fireEvent.pointerUp(handle!, { clientX: 120, pointerId: 1 })
+  expect(updateDrawerWidth).toHaveBeenCalledWith(320, expect.any(Number))
 })

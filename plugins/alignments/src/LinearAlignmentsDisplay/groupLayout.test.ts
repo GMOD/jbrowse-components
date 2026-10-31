@@ -7,7 +7,6 @@ import {
   fitGroupMaxRows,
   groupMaxY,
   groupRowCaps,
-  nextGroupHeightOverride,
   reclaimFitRows,
   someAcrossGroups,
 } from './groupLayout.ts'
@@ -231,33 +230,6 @@ test('reclaimFitRows: no second pass when nothing can move', () => {
   ).toBeUndefined()
 })
 
-// rowHeight 20, displayed 100px (5 rows) throughout unless noted.
-const drag = (o: Partial<Parameters<typeof nextGroupHeightOverride>[0]>) =>
-  nextGroupHeightOverride({
-    dy: 0,
-    rowHeight: 20,
-    displayedPx: 100,
-    existingPx: undefined,
-    ...o,
-  })
-
-test('nextGroupHeightOverride: a fresh drag seeds from the displayed height', () => {
-  expect(drag({ dy: -5 })).toBe(95)
-  expect(drag({ dy: 5 })).toBe(105)
-})
-
-test('nextGroupHeightOverride: accumulates from the stored override', () => {
-  expect(drag({ dy: 5, existingPx: 110 })).toBe(115)
-  expect(drag({ dy: -5, existingPx: 110 })).toBe(105)
-})
-
-test('nextGroupHeightOverride: grows past the content, which pads the band', () => {
-  // 500px of override over 100px of rows is 400px of blank band, and a shrink
-  // drag walks back from the 500 the handle is drawn at rather than the content.
-  expect(drag({ dy: 5, existingPx: 500 })).toBe(505)
-  expect(drag({ dy: -5, existingPx: 500 })).toBe(495)
-})
-
 test('groupRowCaps: px inside one row, or past the content, name one cap', () => {
   const caps = (px: number) =>
     groupRowCaps({
@@ -289,10 +261,6 @@ test('groupRowCaps: a "show all" lane takes the ceiling cap, a px lane its own',
   })
   expect(caps.get('HP: 1')).toEqual({ rows: 300, source: 'ceiling' })
   expect(caps.get('HP: 2')).toEqual({ rows: 5, source: 'override' })
-})
-
-test('nextGroupHeightOverride: floors at one row', () => {
-  expect(drag({ dy: -500 })).toBe(20)
 })
 
 // The two-deep walk the legend's four presence scans share. Every one of them

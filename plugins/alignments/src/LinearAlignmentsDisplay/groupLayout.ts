@@ -736,37 +736,6 @@ function anyRegionTruncated(map: ReadonlyMap<number, PileupLayoutArrays>) {
   return groupClipSource(map) !== undefined
 }
 
-// The per-group pileup-height override (px) after one drag frame. The override
-// caps how many rows the group lays out (`maxRowsFor`) and, where the rows fall
-// short of it, pads the band out to it (`minPileupHeight`) — so the handle
-// tracks the pointer in both directions, the way the track's own height bar
-// does. It used to pin an upward drag at the content height, which read as the
-// bar going dead: in grow mode every lane shows all its reads, so every lane's
-// bar was dead in the grow direction.
-//
-// `dy` is the per-frame pointer delta (positive = taller). Pure so the drag
-// policy is unit-tested here rather than inferred from the MST action.
-// Accumulate from the stored px, not the row-snapped displayed height —
-// re-seeding from `displayed` every frame stutters, since a sub-row `dy` rounds
-// away against the snap. Floor at one row, and keep the result whole: a pointer
-// delta is fractional, and the padded band is now a layout offset every section
-// below it stacks on.
-export function nextGroupHeightOverride({
-  dy,
-  rowHeight,
-  displayedPx,
-  existingPx,
-}: {
-  dy: number
-  // Height the group's pileup band currently occupies (rows, or the pad).
-  displayedPx: number
-  rowHeight: number
-  // Current override px, or undefined when the group is still on the fit budget.
-  existingPx: number | undefined
-}) {
-  return Math.max(rowHeight, Math.round((existingPx ?? displayedPx) + dy))
-}
-
 /**
  * A size a user set on one lane: a px band height a drag set, or 'all', the
  * chip's "show all", which lifts the lane's cap to `pileup.maxLayoutHeight`

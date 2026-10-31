@@ -940,33 +940,31 @@ export default function stateModelFactory(
         },
         /**
          * #action
-         * Apply one drag delta to the coverage band. Reads the current height
-         * inside the action because `ResizeHandle` emits one delta per
-         * animation frame. Mirrors `resizeHeight`.
+         * The coverage band's height, clamped against the height it has, as
+         * every band drag is (`clampBandHeight`).
          */
-        resizeCoverageHeight(distance: number) {
+        setCoverageHeight(height: number) {
           setConf(
             self,
             ['coverage', 'height'],
             clampBandHeight(
               self.coverageHeight,
-              self.coverageHeight + distance,
+              height,
               self.resizableBandBounds,
             ),
           )
         },
         /**
          * #action
-         * Per-frame drag delta for the conservation band — see
-         * `resizeCoverageHeight` for why this reads the height itself.
+         * The conservation band's height, clamped as `setCoverageHeight` is.
          */
-        resizeConservationHeight(distance: number) {
+        setConservationHeight(height: number) {
           setConf(
             self,
             ['conservation', 'height'],
             clampBandHeight(
               self.conservationHeight,
-              self.conservationHeight + distance,
+              height,
               self.resizableBandBounds,
             ),
           )

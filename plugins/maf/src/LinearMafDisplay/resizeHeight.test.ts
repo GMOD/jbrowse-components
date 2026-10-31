@@ -133,7 +133,7 @@ describe('fit-to-display-height keeps the track height', () => {
   })
 })
 
-// The bands drag by delta, so the floor has to be expressed in terms of the
+// A band's floor has to be expressed in terms of the
 // current height rather than the bare 20px constant — same rule (and same
 // regression) as the alignments coverage/arc/sashimi bands, now shared via
 // clampBandHeight. See LinearAlignmentsDisplay/bandHeight.test.ts.
@@ -141,7 +141,7 @@ describe('resizable band height floor', () => {
   it('stops a drag from shrinking a default band below 20', () => {
     const display = setup(10, 15)
     expect(display.coverageHeight).toBe(45)
-    display.resizeCoverageHeight(-100)
+    display.setCoverageHeight(display.coverageHeight - 100)
     expect(display.coverageHeight).toBe(20)
   })
 
@@ -150,34 +150,34 @@ describe('resizable band height floor', () => {
     setConf(display, ['coverage', 'height'], 5)
     // the regression: flooring at a bare 20 made this first +1 drag jump the
     // band up to 20 before it honored the delta
-    display.resizeCoverageHeight(+1)
+    display.setCoverageHeight(display.coverageHeight + 1)
     expect(display.coverageHeight).toBe(6)
   })
 
   it('still refuses to shrink a below-floor band further', () => {
     const display = setup(10, 15)
     setConf(display, ['coverage', 'height'], 5)
-    display.resizeCoverageHeight(-1)
+    display.setCoverageHeight(display.coverageHeight - 1)
     expect(display.coverageHeight).toBe(5)
   })
 
   it('restores the 20 floor once a below-floor band is dragged past it', () => {
     const display = setup(10, 15)
     setConf(display, ['coverage', 'height'], 5)
-    display.resizeCoverageHeight(+20)
+    display.setCoverageHeight(display.coverageHeight + 20)
     expect(display.coverageHeight).toBe(25)
-    display.resizeCoverageHeight(-100)
+    display.setCoverageHeight(display.coverageHeight - 100)
     expect(display.coverageHeight).toBe(20)
   })
 
   it('applies the same rule to the conservation band', () => {
     const display = setup(10, 15)
     expect(display.conservationHeight).toBe(40)
-    display.resizeConservationHeight(-100)
+    display.setConservationHeight(display.conservationHeight - 100)
     expect(display.conservationHeight).toBe(20)
 
     setConf(display, ['conservation', 'height'], 8)
-    display.resizeConservationHeight(+1)
+    display.setConservationHeight(display.conservationHeight + 1)
     expect(display.conservationHeight).toBe(9)
   })
 })

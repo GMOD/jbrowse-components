@@ -105,8 +105,11 @@ export const ResizeHandle = observer(function ResizeHandle({
     onDragStart: () => {
       track?.setResizing(true)
     },
-    onDrag: distance => {
-      display?.resizeHeight(distance)
+    value: display ? display.height : 0,
+    onChange: height => {
+      if (display) {
+        display.resizeHeight(height - display.height)
+      }
     },
     onDragEnd: () => {
       track?.setResizing(false)

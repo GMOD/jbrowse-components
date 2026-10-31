@@ -80,8 +80,10 @@ const FacetedSelector = observer(function FacetedSelector({
           <>
             <ResizeHandle
               vertical
-              onDrag={dist => {
-                faceted.setPanelWidth(panelWidth - dist)
+              value={panelWidth}
+              reverse
+              onChange={width => {
+                faceted.setPanelWidth(width)
               }}
               className={classes.resizeHandle}
             />

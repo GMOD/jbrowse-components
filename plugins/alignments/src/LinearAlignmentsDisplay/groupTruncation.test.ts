@@ -281,7 +281,7 @@ test('a lane clipped by its own override raises nothing', () => {
   display.setPileupMaxLayoutHeight(40)
   expect(clippedBy(display, '1')).toBe('ceiling')
 
-  display.resizeGroupHeight('1', -8)
+  display.setGroupHeight('1', display.sections.sections[0]!.pileupHeight - 8)
   expect(clippedBy(display, '1')).toBe('override')
   expect(expandable(display, '1')).toBe(false)
   expect(ceilingClipped(display, '1')).toBe(false)
@@ -318,7 +318,7 @@ test("a drag past a fully-shown lane's content pads its band", () => {
   expect(clippedBy(display, '1')).toBeUndefined()
   const [content, top] = [band(), below()]
 
-  display.resizeGroupHeight('1', 100)
+  display.setGroupHeight('1', content + 100)
   expect(band()).toBe(content + 100)
   // the lane below stacks under the padded band, so the whole stack grew with it
   expect(below()).toBe(top + 100)
@@ -343,7 +343,7 @@ test('fit ignores a banked height override rather than clipping under it', () =>
     { key: '2', label: 'HP: 2', n: 400 },
   ])
   display.setPileupMaxLayoutHeight(4000)
-  display.resizeGroupHeight('1', -100)
+  display.setGroupHeight('1', display.sections.sections[0]!.pileupHeight - 100)
   expect(clippedBy(display, '1')).toBe('override')
 
   // the mode arriving without setHeightMode, which is what leaves the override
@@ -395,17 +395,25 @@ test('a height drag inside one row keeps the layout', () => {
   display.setPileupMaxLayoutHeight(4000)
   display.toggleGroupExpanded('1')
   const { rowHeight } = display
-  const px = display.sections.sections[0]!.pileupHeight
-  display.resizeGroupHeight('1', 100 * rowHeight - px)
+  display.setGroupHeight('1', 100 * rowHeight)
   // a drag over an expanded lane takes over its cap
   expect(display.laneFor('1')!.expanded).toBe(false)
   expect(rowsIn(display, 0)).toBe(100)
   const before = display.laidOutByGroupUncolored
 
-  display.resizeGroupHeight('1', 1)
+  display.setGroupHeight('1', 100 * rowHeight + 1)
   expect(display.laidOutByGroupUncolored).toBe(before)
 
-  display.resizeGroupHeight('1', -rowHeight)
+  display.setGroupHeight('1', 99 * rowHeight + 1)
   expect(rowsIn(display, 0)).toBe(99)
   expect(display.laidOutByGroupUncolored).not.toBe(before)
+})
+
+test('a lane height floors at one row', () => {
+  const display = seed([
+    { key: '1', label: 'HP: 1', n: 400 },
+    { key: '2', label: 'HP: 2', n: 400 },
+  ])
+  display.setGroupHeight('1', -500)
+  expect(display.groupSizes.get('1')).toBe(display.rowHeight)
 })

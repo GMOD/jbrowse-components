@@ -15,7 +15,8 @@ import type { DrawerPosition } from '@jbrowse/core/util'
  */
 export interface DrawerChromeSession {
   drawerPosition: DrawerPosition
-  resizeDrawer: (distance: number, availableWidth?: number) => number
+  drawerWidth: number
+  updateDrawerWidth: (drawerWidth: number, availableWidth?: number) => number
 }
 
 const useStyles = makeStyles()(theme => ({
@@ -79,12 +80,16 @@ const Drawer = observer(function Drawer({
         {children}
       </Paper>
       <ResizeHandle
-        onDrag={distance => {
+        value={session.drawerWidth}
+        // the handle is on the drawer's inner edge, so toward a right drawer
+        // narrows it
+        reverse={drawerPosition === 'right'}
+        onChange={width => {
           // the width the drawer and the main area share: both are columns of
           // the grid this is an item of, and the clamp needs the container
           // rather than the window
-          session.resizeDrawer(
-            distance,
+          session.updateDrawerWidth(
+            width,
             rootRef.current?.parentElement?.clientWidth,
           )
         }}

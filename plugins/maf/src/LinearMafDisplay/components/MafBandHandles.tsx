@@ -21,8 +21,9 @@ const MafBandHandles = observer(function MafBandHandles({
       {coverageBandActive ? (
         <MafBandResizeHandle
           model={model}
-          resize={n => {
-            model.resizeCoverageHeight(n)
+          height={model.coverageHeight}
+          setHeight={h => {
+            model.setCoverageHeight(h)
           }}
           seam={topBands.top.coverage + topBands.reserved.coverage}
           onActiveChange={onResizeActiveChange}
@@ -31,8 +32,9 @@ const MafBandHandles = observer(function MafBandHandles({
       {conservationBandActive ? (
         <MafBandResizeHandle
           model={model}
-          resize={n => {
-            model.resizeConservationHeight(n)
+          height={model.conservationHeight}
+          setHeight={h => {
+            model.setConservationHeight(h)
           }}
           seam={topBands.top.conservation + topBands.reserved.conservation}
           onActiveChange={onResizeActiveChange}

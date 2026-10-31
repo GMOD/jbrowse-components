@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 import { cx, makeStyles } from '../util/tss-react/index.ts'
 import { useResizeDrag } from '../util/useResizeDrag.ts'
 
+import type { ResizeDragCallback } from '../util/useResizeDrag.ts'
 import type React from 'react'
 
 const layer = (color: string) => `linear-gradient(${color}, ${color})`
@@ -65,6 +66,9 @@ const useStyles = makeStyles()(theme => ({
 
 const ResizeHandle = observer(function ResizeHandle({
   onDrag,
+  value,
+  onChange,
+  reverse,
   onDragStart,
   onDragEnd,
   vertical = false,
@@ -74,8 +78,7 @@ const ResizeHandle = observer(function ResizeHandle({
   className: originalClassName,
   onPointerDown,
   ...props
-}: {
-  onDrag: (distance: number) => void
+}: ResizeDragCallback & {
   onDragStart?: () => void
   onDragEnd?: () => void
   vertical?: boolean
@@ -89,9 +92,9 @@ const ResizeHandle = observer(function ResizeHandle({
    */
   gain?: number
 } & Omit<
-  React.ComponentPropsWithoutRef<'div'>,
-  'onDrag' | 'onDragStart' | 'onDragEnd'
->) {
+    React.ComponentPropsWithoutRef<'div'>,
+    'onDrag' | 'onDragStart' | 'onDragEnd' | 'onChange'
+  >) {
   const { classes } = useStyles()
   // The gesture, including the per-frame coalescing, the delta measurement and
   // the `data-gesture-owner` marker that keeps ancestor drags (the LGV
@@ -99,7 +102,7 @@ const ResizeHandle = observer(function ResizeHandle({
   // as a hook rather than living here, because an embedder drawing their own
   // track divider needs exactly this and none of the styling below.
   const handleProps = useResizeDrag({
-    onDrag,
+    ...(onChange ? { value, onChange, reverse } : { onDrag }),
     onDragStart,
     onDragEnd,
     vertical,

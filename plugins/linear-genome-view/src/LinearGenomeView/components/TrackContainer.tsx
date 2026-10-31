@@ -223,7 +223,8 @@ const TrackContainer = observer(function TrackContainer({
       <PaddingBlocks model={model} offset={outlineOffset} />
       <ResizeHandle
         style={{ height: RESIZE_HANDLE_HEIGHT }}
-        onDrag={distance => display.resizeHeight(distance)}
+        value={display.height}
+        onChange={height => display.resizeHeight(height - display.height)}
         // the drag's shortcut: grow the track by whatever it is scrolled over,
         // so a pileup showing three rows of forty opens to all forty
         // Optional: only a display that scrolls its own content has anything

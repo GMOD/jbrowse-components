@@ -102,8 +102,8 @@ const PileupBody = observer(function PileupBody({
 
 // Shared horizontal drag handle for the pileup's resizable bands. Callers pass
 // the screen-space `seam` and the canvas height; the strip is the shared
-// `BandSeamHandle`, and the off-screen cull and the void-returning `onDrag`
-// contract are uniform across coverage, arc/sashimi, and group handles.
+// `BandSeamHandle`, and the off-screen cull and the `value`/`onChange` contract
+// are uniform across coverage, arc/sashimi, and group handles.
 //
 // `gain` (see `useResizeDrag`) is what keeps a handle on a DISPLAY-GLOBAL band
 // under the pointer: growing the coverage height grows the bands of the groups
@@ -113,13 +113,15 @@ const PileupBody = observer(function PileupBody({
 const PileupResizeHandle = observer(function PileupResizeHandle({
   seam,
   canvasHeight,
-  onDrag,
+  value,
+  onChange,
   title,
   gain,
 }: {
   seam: number
   canvasHeight: number
-  onDrag: (dy: number) => void
+  value: number
+  onChange: (height: number) => void
   title: string
   gain?: number
 }) {
@@ -130,8 +132,9 @@ const PileupResizeHandle = observer(function PileupResizeHandle({
     <BandSeamHandle
       seam={seam}
       gain={gain}
-      onDrag={dy => {
-        onDrag(dy)
+      value={value}
+      onChange={height => {
+        onChange(height)
       }}
       title={title}
     />
@@ -169,8 +172,9 @@ const CoverageResizeHandle = observer(function CoverageResizeHandle({
             seam={bottom}
             canvasHeight={height}
             gain={i + 1}
-            onDrag={dy => {
-              model.setCoverageHeight(model.coverageHeight + dy)
+            value={model.coverageHeight}
+            onChange={h => {
+              model.setCoverageHeight(h)
             }}
             title={
               isGrouped
@@ -215,10 +219,9 @@ const ConnectionBandResizeHandles = observer(
                   seam={bandScreenTop(section.sashimiBandTop, scroll)}
                   canvasHeight={height}
                   gain={stackedBandGain(renderSections, i, s => s.hasArcsBand)}
-                  onDrag={dy => {
-                    model.setReadConnectionsHeight(
-                      model.readConnectionsHeight + dy,
-                    )
+                  value={model.readConnectionsHeight}
+                  onChange={h => {
+                    model.setReadConnectionsHeight(h)
                   }}
                   title={`Drag to resize the read connections area${scope}`}
                 />
@@ -233,8 +236,9 @@ const ConnectionBandResizeHandles = observer(
                     i,
                     s => s.hasSashimiBand,
                   )}
-                  onDrag={dy => {
-                    model.setSashimiHeight(model.sashimiHeight + dy)
+                  value={model.sashimiHeight}
+                  onChange={h => {
+                    model.setSashimiHeight(h)
                   }}
                   title={`Drag to resize the sashimi arcs area${scope}`}
                 />
@@ -274,6 +278,10 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
           section.topOffset + section.pileupHeight + section.dipReserve,
           scroll,
         )
+        // from the height the lane was given, which can sit between two row
+        // boundaries or past its rows, rather than the row-snapped band it
+        // shows, so a drag inside one row does not snap back to it
+        const given = model.groupSizes.get(section.groupKey)
         return (
           <PileupResizeHandle
             key={sectionKey(section.groupKey)}
@@ -283,8 +291,9 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
             // pointer got no answer.
             seam={bottom}
             canvasHeight={height}
-            onDrag={dy => {
-              model.resizeGroupHeight(section.groupKey, dy)
+            value={typeof given === 'number' ? given : section.pileupHeight}
+            onChange={h => {
+              model.setGroupHeight(section.groupKey, h)
             }}
             title={`Drag to resize "${groupSectionLabel(section.label)}"`}
           />

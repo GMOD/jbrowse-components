@@ -16,7 +16,7 @@ jest.mock('@jbrowse/core/svg/svgReady', () => ({
 }))
 
 // The band is dragged tall while the track is tall, then the track is dragged
-// short — two ordinary drags, and `resizeConservationHeight` clamps against the
+// short — two ordinary drags, and `setConservationHeight` clamps against the
 // height of the moment, so nothing re-clamps the slot afterwards. `topBands`
 // binds it at read time instead, which is what every painter, axis and handle
 // has to agree with: at a 300px slot bound to a 180px reservation the band
@@ -26,7 +26,7 @@ function overStatedBand() {
   const { display } = createMafTestEnvironment().createDisplay()
   display.setShowConservation(true)
   display.setHeight(1000)
-  display.resizeConservationHeight(+260)
+  display.setConservationHeight(display.conservationHeight + 260)
   display.setHeight(200)
   return display
 }
