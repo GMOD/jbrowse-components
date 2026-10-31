@@ -470,20 +470,31 @@ function isRecord(x: unknown): x is Record<string, unknown> {
   return typeof x === 'object' && x !== null && !Array.isArray(x)
 }
 
-function recordsAsFeatureDisplay(display: Record<string, unknown>) {
+function setEntries(
+  source: Record<string, unknown>,
+  keys: readonly string[],
+): [string, unknown][] {
+  return keys.flatMap(k => {
+    const entry: [string, unknown] = [k, source[k]]
+    return entry[1] === undefined ? [] : [entry]
+  })
+}
+
+function recordsAsFeatureDisplay(
+  display: Record<string, unknown>,
+): Record<string, unknown> {
   const records = isRecord(display.records) ? display.records : {}
   const tooltip = {
     ...(isRecord(display.tooltip) ? display.tooltip : {}),
     ...(isRecord(records.tooltip) ? records.tooltip : {}),
   }
   return Object.fromEntries([
-    ...SHARED_SETTINGS.flatMap(k =>
-      display[k] === undefined ? [] : [[k, display[k]]],
+    ...setEntries(display, SHARED_SETTINGS),
+    ...setEntries(records, RECORD_SETTINGS),
+    ...setEntries(
+      { tooltip },
+      Object.keys(tooltip).length > 0 ? ['tooltip'] : [],
     ),
-    ...RECORD_SETTINGS.flatMap(k =>
-      records[k] === undefined ? [] : [[k, records[k]]],
-    ),
-    ...(Object.keys(tooltip).length > 0 ? [['tooltip', tooltip]] : []),
   ])
 }
 

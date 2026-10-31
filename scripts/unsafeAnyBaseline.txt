@@ -286,7 +286,6 @@
 5 no-unsafe-assignment plugins/legacy-jbrowse/src/NCListAdapter/NCListAdapter.ts
 4 no-unsafe-member-access plugins/legacy-jbrowse/src/NCListAdapter/NCListAdapter.ts
 1 no-unsafe-assignment plugins/linear-comparative-view/src/LaunchSyntenyView/anchorPanelTracks.ts
-1 no-unsafe-assignment plugins/linear-comparative-view/src/LaunchSyntenyView/discoverMates.ts
 1 no-unsafe-assignment plugins/linear-comparative-view/src/LaunchSyntenyView/regionLaunchMenuItems.ts
 2 no-unsafe-argument plugins/linear-comparative-view/src/LinearSyntenyView/components/AddRowDialog.tsx
 1 no-unsafe-argument plugins/linear-comparative-view/src/LinearSyntenyView/components/ImportForm/LinearSyntenyImportForm.tsx
