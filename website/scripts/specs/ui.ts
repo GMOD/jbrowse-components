@@ -254,17 +254,15 @@ export const chromhmmVideoFixtures = {
   }),
 }
 
-// A byte-identical copy of EBI's file, which stalls connections. Declared as
-// two session tracks below: `showTrack` resolves by trackId, so one track
-// cannot show two displays.
+// A byte-identical copy of EBI's file, which stalls connections.
 const KGP_ENSEMBLE_SV_VCF =
   'https://jbrowse.org/demos/1000g/1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf.gz'
 
 // Shared by `multisv_rhd` and the `sv/multisample_sort` tour in videos/sv.ts.
 // Loads unsorted: the figure sorts by clicking, so the film opens on the
 // figure's pre-click state. Uses the CNV tutorial's config because only a
-// config can declare the Zarr plugin. Keep one variant display: a second
-// one stops the first answering `onContextMenu`, and the sort row vanishes.
+// config can declare the Zarr plugin. The variant display's records band
+// labels the calls above the genotype rows.
 const rhdPanel = (sortRowsBy?: RowSortSpec) =>
   sessionSpec('test_data/1000g_cnv/config.json', {
     sessionTracks: [
@@ -272,13 +270,6 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
         type: 'VariantTrack',
         trackId: 'kgp_sv_matrix',
         name: '1KGP ensemble SV calls, 3202 samples',
-        assemblyNames: ['hg38'],
-        adapter: { type: 'VcfTabixAdapter', uri: KGP_ENSEMBLE_SV_VCF },
-      },
-      {
-        type: 'VariantTrack',
-        trackId: 'kgp_sv_records',
-        name: '1KGP ensemble SV calls',
         assemblyNames: ['hg38'],
         adapter: { type: 'VcfTabixAdapter', uri: KGP_ENSEMBLE_SV_VCF },
       },
@@ -314,14 +305,6 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
             height: 330,
             runClustering: true,
             axis: { tree: false },
-          },
-          {
-            trackId: 'kgp_sv_records',
-            forceLoad: true,
-            // below 170 the last row of records clips
-            height: 170,
-            // One color: each label already names its SV type.
-            encoding: { color: { value: '#4a5568' } },
           },
           {
             trackId: 'ncbi_refseq_hg38',
@@ -590,7 +573,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: '1KGP',
     readyTimeout: 90000,
-    viewportHeight: 800,
+    viewportHeight: 920,
     tooltip: 'hide',
   },
 
@@ -624,8 +607,8 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: '1KGP',
     readyTimeout: 90000,
-    // below 800 the RefSeq lane clips
-    viewportHeight: 800,
+    // below 920 the RefSeq lane clips
+    viewportHeight: 920,
     tooltip: 'hide',
   },
 

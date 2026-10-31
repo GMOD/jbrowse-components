@@ -102,7 +102,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
           filter: [{ field: 'type', equal: 'gene' }],
           height: 80,
         },
-        { trackId: SV_MAP_TRACK, height: 90 },
+        { trackId: SV_MAP_TRACK, genotypes: { show: false }, height: 90 },
         {
           ...CN_HEATMAP,
           height: 420,
