@@ -21,3 +21,20 @@ test('a long value wraps inside the tooltip box', () => {
     'nowrap',
   )
 })
+
+// a v4 `mouseover` or a `records.tooltip.field` jexl may return markup, which
+// a feature track's tooltip renders
+test('an HTML tooltip line renders as markup, not as its tags', async () => {
+  render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <VariantTooltip
+        source={{ featureName: '<b>rs123</b><br/>Pathogenic' }}
+        x={0}
+        y={0}
+      />
+    </ThemeProvider>,
+  )
+  const bold = await screen.findByText('rs123')
+  expect(bold.tagName).toBe('B')
+  expect(screen.queryByText(/<b>/)).toBeNull()
+})

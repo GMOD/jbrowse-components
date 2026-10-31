@@ -1,4 +1,5 @@
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -73,7 +74,9 @@ const VariantTooltip = observer(function VariantTooltip({
           {rows.map(({ key, label, value }) => (
             <tr key={key}>
               <td className={classes.keyCell}>{label}</td>
-              <td className={classes.valueCell}>{value}</td>
+              <td className={classes.valueCell}>
+                <SanitizedHTML html={value} />
+              </td>
             </tr>
           ))}
         </tbody>
