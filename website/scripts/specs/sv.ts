@@ -835,7 +835,6 @@ export const svSpecs: ScreenshotSpec[] = [
               genotypes: { show: false },
               records: {
                 labels: { name: { show: false }, description: { show: false } },
-                height: 25,
               },
             },
             {
