@@ -7187,7 +7187,8 @@ export const configManifest: ConfigManifest = {
         "runClustering",
         "clusterRegion",
         "sortRowsBy",
-        "configuration"
+        "configuration",
+        "featureHighlights"
       ]
     },
     "LDTrackDisplay": {

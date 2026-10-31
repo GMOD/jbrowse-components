@@ -89,6 +89,7 @@ export function recordsHighlightViews(self: RecordsHighlightHost) {
     },
     /**
      * #getter
+     * The band records any highlight boxes, what the Highlight row reads.
      */
     get highlightedFeatureIdSet(): ReadonlySet<string> {
       return sameBoxed(this.resolvedHighlights.box)

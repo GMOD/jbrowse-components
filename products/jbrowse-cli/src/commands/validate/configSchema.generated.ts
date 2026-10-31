@@ -24559,6 +24559,33 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         "sortRowsBy": {},
+        "featureHighlights": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "refName": {
+                "type": "string"
+              },
+              "start": {
+                "type": "number"
+              },
+              "end": {
+                "type": "number"
+              },
+              "name": {
+                "type": "string"
+              },
+              "featureId": {
+                "type": "string"
+              }
+            },
+            "patternProperties": {
+              "^_+comment": {}
+            },
+            "additionalProperties": false
+          }
+        },
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
