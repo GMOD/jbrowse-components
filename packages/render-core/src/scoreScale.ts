@@ -99,10 +99,11 @@ export function makeUnclampedScoreNormalizer(
     const floor = min > 0 ? min : 1
     const logMin = Math.log2(floor)
     const logRange = Math.log2(Math.max(max, floor)) - logMin
+    const under = floor * LOG_UNDER_FLOOR
+    // the shader's `max`, which answers `under` for a NaN score
     return logRange > 0
       ? (score: number) =>
-          (Math.log2(Math.max(score, floor * LOG_UNDER_FLOOR)) - logMin) /
-          logRange
+          (Math.log2(score > under ? score : under) - logMin) / logRange
       : (score: number) => (score > floor ? 1 : 0)
   }
   const range = max - min

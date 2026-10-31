@@ -105,7 +105,6 @@ function wiggleRow(ctx: MarkContext2D, n: number) {
     scaleType: 0 as const,
     symlogConstant: 1,
     origin: 0,
-    pivot: 0,
     cuts: [0],
     innerColors: [],
     rampLut: null,

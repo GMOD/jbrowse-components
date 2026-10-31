@@ -133,6 +133,14 @@ test('a log score under the floor sits just under it, below a cut at the floor',
   }
 })
 
+test('a NaN log score sits under the floor in both twins, as the shader max puts it', () => {
+  const hoisted = makeUnclampedScoreNormalizer(1, 1000, SCALE_TYPE_LOG, 1)
+  expect(hoisted(Number.NaN)).toBe(
+    normalizeScoreUnclamped(Number.NaN, 1, 1000, SCALE_TYPE_LOG, 1),
+  )
+  expect(hoisted(Number.NaN)).toBeLessThan(0)
+})
+
 test('an infinite symlog score normalizes to the top, not NaN', () => {
   expect(normalizeScore(Infinity, 0, 1000, SCALE_TYPE_SYMLOG, 1)).toBe(1)
   expect(normalizeScoreUnclamped(Infinity, 0, 1000, SCALE_TYPE_SYMLOG, 1)).toBe(

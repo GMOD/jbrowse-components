@@ -2,7 +2,7 @@ import type { RawFeatureArrays } from '../util.ts'
 import type { BigWig, BigWigHeaderWithRefNames } from '@gmod/bbi'
 import type { openLocation } from '@jbrowse/core/util/io'
 
-interface BigWigRegionArrays extends RawFeatureArrays {
+export interface BigWigRegionArrays extends RawFeatureArrays {
   starts: Int32Array
   ends: Int32Array
 }
