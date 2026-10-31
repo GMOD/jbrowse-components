@@ -12,7 +12,7 @@ import {
   RESOLUTION_MAX,
   RESOLUTION_MIN,
   RESOLUTION_STEP,
-} from './WiggleCommonMixin.ts'
+} from './resolution.ts'
 import { isLineMode, isScatterMode } from './wiggleComponentUtils.ts'
 
 import type {

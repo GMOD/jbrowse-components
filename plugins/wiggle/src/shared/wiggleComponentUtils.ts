@@ -33,14 +33,13 @@ export function getRowTop(rowIndex: number, rowHeight: number) {
 }
 
 export function isScatterMode(renderingType: string) {
-  return renderingTypeToInt(renderingType) === RENDERING_TYPE_SCATTER
+  return renderingType === 'scatter'
 }
 
 // Both line renderings — the stepped bar-tops and the interpolated
 // point-to-point one — the ones `encoding.strokeWidth` applies to.
 export function isLineMode(renderingType: string) {
-  const type = renderingTypeToInt(renderingType)
-  return type === RENDERING_TYPE_LINE || type === RENDERING_TYPE_LINE_CENTER
+  return renderingType === 'line' || renderingType === 'linecenter'
 }
 
 const renderingTypeMap: Record<string, WiggleRenderingType> = {

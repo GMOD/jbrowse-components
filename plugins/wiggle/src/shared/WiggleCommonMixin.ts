@@ -13,6 +13,7 @@ import {
   DEFAULT_POINT_SIZE_PX,
   renderingOf,
 } from '../renderingTypes.ts'
+import { clampResolution } from './resolution.ts'
 import { wiggleFeatureWidgetData } from './wiggleHitTest.ts'
 import { WIGGLE_Y_PATHS } from './wiggleYPaths.ts'
 
@@ -56,14 +57,6 @@ const ownAdapterConfig = (self: object) =>
 // mixin bring and this one only reads through.
 const regionStore = (self: object) => self as RegionStoreSelf
 
-// Resolution multiplies the bins fetched, stepped by `RESOLUTION_STEP`. Only
-// the coarse side needs a floor; past raw per-base data a finer request returns
-// the same bins, so the ceiling is only high. The track-menu stepper disables
-// at the edges `setResolution` clamps to.
-export const RESOLUTION_MIN = 1 / 16
-export const RESOLUTION_MAX = 1024
-export const RESOLUTION_STEP = 2
-
 /**
  * #stateModel WiggleCommonMixin
  * #category display
@@ -86,13 +79,7 @@ export function WiggleCommonMixin() {
        * setter, and `0` there divides by zero inside the adapter.
        */
       get resolution(): number {
-        return Math.min(
-          RESOLUTION_MAX,
-          Math.max(
-            RESOLUTION_MIN,
-            getConf(confNode(self), ['data', 'resolution']),
-          ),
-        )
+        return clampResolution(getConf(confNode(self), ['data', 'resolution']))
       },
       /**
        * #getter
@@ -293,11 +280,7 @@ export function WiggleCommonMixin() {
        * #action
        */
       setResolution(res: number) {
-        setConf(
-          confNode(self),
-          ['data', 'resolution'],
-          Math.min(RESOLUTION_MAX, Math.max(RESOLUTION_MIN, res)),
-        )
+        setConf(confNode(self), ['data', 'resolution'], clampResolution(res))
       },
       /**
        * #action

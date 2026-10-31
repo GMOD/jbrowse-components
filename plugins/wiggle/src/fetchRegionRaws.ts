@@ -72,7 +72,7 @@ export async function fetchSourceRaws(
     return adapter.getMultiSourceFeatureArraysMulti(regions, opts)
   }
   if (servesArrays(adapter)) {
-    return [{ source: '', raws: await fetchRegionRaws(adapter, regions, opts) }]
+    return [{ source: '', raws: await adapter.getFeatureArrays(regions, opts) }]
   }
   const perRegion = await featuresPerRegion(adapter, regions, opts)
   const groupsPerRegion = perRegion.map(f => groupFeaturesBySource(f))

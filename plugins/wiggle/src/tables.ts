@@ -31,8 +31,8 @@ import { multiQuantitativeWiggleConfigSchema } from './MultiQuantitativeTrack/di
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import { executeRenderMultiWiggleData } from './RenderMultiWiggleDataRPC/executeRenderMultiWiggleData.ts'
 import { renderingOf } from './renderingTypes.ts'
-import { RESOLUTION_MAX, RESOLUTION_MIN } from './shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from './shared/buildSourceRenderData.ts'
+import { clampResolution } from './shared/resolution.ts'
 import { scoreRampFill, scoreRampScale } from './shared/scoreRampScale.ts'
 import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generated.ts'
 import {
@@ -128,10 +128,7 @@ export async function wiggleTables(
     adapterConfig,
     regions: regions.map(r => ({ assemblyName: '', ...r })),
     bpPerPx,
-    resolution: Math.min(
-      RESOLUTION_MAX,
-      Math.max(RESOLUTION_MIN, readConfObject(conf, ['data', 'resolution'])),
-    ),
+    resolution: clampResolution(readConfObject(conf, ['data', 'resolution'])),
     yField: readConfObject(conf, ['encoding', 'y', 'field']),
     statusCallback: () => {},
   }
