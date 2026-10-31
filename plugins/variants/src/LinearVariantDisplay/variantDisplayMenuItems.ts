@@ -112,7 +112,7 @@ function genotypeRowShowItems(self: LinearVariantDisplayModel): MenuItem[] {
           {
             label: 'Records',
             helpText:
-              'Draw the structural variants above the genotype rows at their genomic positions, stacked as a variant track stacks them, colored by SV type and labelled with the share of samples carrying each. The band is as tall as its records need, up to its maximum height, and takes that height from the rows',
+              'Draw every record above the genotype rows at its genomic position, stacked as a variant track stacks them, colored by SV type and labelled with the share of samples carrying it. The band is as tall as its records need, up to its maximum height, and adds that height to the track; records that do not fit hide, counted beside the band',
             type: 'checkbox' as const,
             checked: self.showRecords,
             onClick: () => {
@@ -183,7 +183,7 @@ const RECORD_FIELD = 'field' as const
 // feature track; over rows the sample attributes band the rows.
 function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
   const recordsField = self.recordsFacet?.field
-  return self.recordsOnly
+  return !self.drawsRows
     ? [
         groupByRadioMenuItem<never, typeof RECORD_FIELD>({
           current: recordsField ? RECORD_FIELD : undefined,
@@ -239,7 +239,7 @@ export function variantShowSubmenuItems(
           {
             label: 'Genotype rows',
             helpText:
-              'Draw a row per sample. Off, the display reads no genotypes and draws the records alone, as for a VCF with no samples',
+              'Draw a row per sample. Off, the display reads no genotypes and the track is the records band alone; the rows come back at the height they had',
             type: 'checkbox' as const,
             checked: self.showGenotypes,
             onClick: () => {
@@ -248,7 +248,7 @@ export function variantShowSubmenuItems(
           },
         ]
       : []),
-    ...(self.recordsOnly ? recordsShowItems(self) : genotypeRowShowItems(self)),
+    ...(self.drawsRows ? genotypeRowShowItems(self) : recordsShowItems(self)),
     {
       label: 'Tooltips',
       helpText:
@@ -304,7 +304,7 @@ export function variantTrackMenuItems(
     layoutMenuItem(self),
     // No presets: a cohort's useful row heights depend on how many samples it
     // has, so fit and a typed height are the two that mean anything here.
-    ...(self.recordsOnly && self.atGenomicPositions
+    ...(!self.drawsRows && self.atGenomicPositions
       ? []
       : [rowHeightMenuItem(self)]),
     ...recordsHeightMenuItems(self),
@@ -470,7 +470,7 @@ export function variantTrackMenuItems(
       // rather than a dialog round-trip. They're fetch inputs (rpcProps), so
       // commitOnRelease keeps a drag from firing a worker refetch per step.
       // Both read called alleles, so with no rows, which reads none, they go.
-      subItems: self.recordsOnly
+      subItems: !self.drawsRows
         ? []
         : [
             makeSizeMenu({

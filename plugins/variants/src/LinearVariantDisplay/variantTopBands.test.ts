@@ -106,16 +106,14 @@ describe('the band on a display', () => {
   })
 
   // past the ladder's last rung over rows the band squeezes nothing: a
-  // record that does not fit hides whole, and a chip at the band's foot
-  // counts it
+  // record that does not fit hides whole, counted for the chip beside the
+  // band
   test('past every rung a record that does not fit hides, counted', () => {
     const cap = 3 * GROUP_LABEL_HEIGHT
     const { display } = recordsDisplayAt(NESTED, 51, { maxHeight: cap })
-    const placed = display.recordsPlacedHeight
     expect(display.topBands.recordsHeight).toBe(cap)
-    expect(placed).toBe(cap - GROUP_LABEL_HEIGHT)
     expect(display.recordsHiddenCount).toBeGreaterThan(0)
-    expect(maxBottom(display.recordsLaidOutDataMap)).toBeLessThanOrEqual(placed)
+    expect(maxBottom(display.recordsLaidOutDataMap)).toBeLessThanOrEqual(cap)
     const hidden = display.recordsLaidOutDataMap
       .get(0)!
       .flatbushItems.filter(i => i.topPx < 0)
@@ -151,12 +149,6 @@ describe('the band on a display', () => {
     expect(dense.recordsHiddenCount).toBe(0)
   })
 
-  test('a band too short for the chip keeps its whole height for records', () => {
-    const { display } = recordsDisplayAt(NESTED, 51, { maxHeight: 12 })
-    expect(display.recordsHiddenCount).toBeGreaterThan(0)
-    expect(display.recordsPlacedHeight).toBe(12)
-  })
-
   test('turning the band on adds its height to the track, not the rows', () => {
     const { display } = recordsDisplayAt(KIT, 51, { show: false })
     const height = display.height
@@ -190,11 +182,9 @@ describe('the band on a display', () => {
     expect(display.rpcProps()).toEqual(key)
   })
 
-  test('the key sits under the band, over the rows', () => {
+  test('the key sits at the top of the band, not pushed under it', () => {
     const { display } = recordsDisplayAt(KIT, 51)
-    expect(display.legendTop).toBe(display.topBands.recordsHeight)
-    expect(display.legendTop).toBeGreaterThan(0)
-    display.setShowRecords(false)
+    expect(display.topBands.recordsHeight).toBeGreaterThan(0)
     expect(display.legendTop).toBe(0)
   })
 

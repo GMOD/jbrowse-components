@@ -13,6 +13,7 @@
  */
 import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
 import { stackBands } from '@jbrowse/core/util/bandLayout'
+import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
 
@@ -21,6 +22,12 @@ export const MIN_RECORDS_HEIGHT = 8
 
 /** `records.maxHeight`'s default, the cap on the packed stack. */
 export const DEFAULT_RECORDS_MAX_HEIGHT = 170
+
+/**
+ * The strip under the records band holding its chips while no genotype row
+ * draws: the way back to the rows, and the count of hidden records.
+ */
+export const BAND_CHIPS_HEIGHT = GROUP_LABEL_HEIGHT + 4
 
 export interface VariantTopBands {
   /** **0 when the band is off**, or holds no record. */

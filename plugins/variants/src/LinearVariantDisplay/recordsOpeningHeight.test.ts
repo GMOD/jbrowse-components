@@ -93,8 +93,8 @@ describe('the first layout keeps the height it has', () => {
     expect(display.recordsOnly).toBe(false)
     expect(display.height - display.topBands.recordsHeight).toBe(200)
     display.setShowGenotypes(false)
-    expect(display.recordsOnly).toBe(true)
-    expect(display.height).toBe(200)
+    expect(display.recordsOnly).toBe(false)
+    expect(display.configuredHeight).toBe(200)
   })
 
   test('under grow, which follows its records itself', () => {

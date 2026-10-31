@@ -2,21 +2,10 @@ import { useId, useState } from 'react'
 
 import { ScrollChrome } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { alpha } from '@jbrowse/core/ui/palette'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import { BandSeamHandle } from '@jbrowse/display-kit/BandSeamHandle'
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
 import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
-import {
-  GROUP_LABEL_FONT_SIZE,
-  GROUP_LABEL_FONT_WEIGHT,
-  GROUP_LABEL_HEIGHT,
-  GROUP_LABEL_INSET_X,
-  GROUP_LABEL_PADDING_X,
-  GROUP_LABEL_RADIUS,
-  GROUP_LABEL_TINT,
-} from '@jbrowse/display-kit/groupLabelStyle'
 import {
   paintFeatureBand,
   performMultiRegionHitDetection,
@@ -33,27 +22,6 @@ import type { LinearVariantDisplayModel } from '../model.ts'
 import type { VariantTooltipFields } from './buildVariantHit.ts'
 import type { VariantSurface } from './variantSurface.ts'
 import type { HitFeatureResult } from '@jbrowse/plugin-features/band'
-
-const useStyles = makeStyles()(theme => {
-  const tint = alpha(theme.palette.text.primary, GROUP_LABEL_TINT)
-  return {
-    hiddenChip: {
-      position: 'absolute',
-      left: GROUP_LABEL_INSET_X,
-      height: GROUP_LABEL_HEIGHT,
-      padding: `0 ${GROUP_LABEL_PADDING_X}px`,
-      border: 'none',
-      borderRadius: GROUP_LABEL_RADIUS,
-      fontSize: GROUP_LABEL_FONT_SIZE,
-      fontWeight: GROUP_LABEL_FONT_WEIGHT,
-      color: theme.palette.text.primary,
-      backgroundColor: theme.palette.background.paper,
-      backgroundImage: `linear-gradient(${tint}, ${tint})`,
-      whiteSpace: 'nowrap',
-      cursor: 'pointer',
-    },
-  }
-})
 
 interface RecordHit {
   fields: VariantTooltipFields
@@ -170,33 +138,6 @@ const RecordsBandInteraction = observer(function RecordsBandInteraction({
 })
 
 /**
- * Over rows, the count of records on screen that do not fit the band, at its
- * foot; a click raises the band to its whole stack.
- */
-const HiddenRecordsChip = observer(function HiddenRecordsChip({
-  model,
-}: {
-  model: LinearVariantDisplayModel
-}) {
-  const { classes } = useStyles()
-  const count = model.recordsHiddenCount
-  return count > 0 ? (
-    <button
-      type="button"
-      data-testid="records_hidden_chip"
-      className={classes.hiddenChip}
-      style={{ top: model.topBands.recordsHeight - GROUP_LABEL_HEIGHT - 1 }}
-      title="Records that do not fit the band. Click to show every row."
-      onClick={() => {
-        model.showAllRecordRows()
-      }}
-    >
-      {`+${count.toLocaleString('en-US')} hidden`}
-    </button>
-  ) : null
-})
-
-/**
  * The record sections' chips (`records.facet`), as a feature track draws its
  * own: each pins to the band's top while its section scrolls past, and hides
  * its section or drags it onto another.
@@ -302,7 +243,6 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
       />
       <RecordsBandInteraction model={model} id={id} />
       <RecordsSectionChips model={model} />
-      <HiddenRecordsChip model={model} />
       {model.recordsOnly ? (
         <ScrollChrome model={model} controlsId={id} />
       ) : null}

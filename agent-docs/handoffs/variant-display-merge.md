@@ -15,7 +15,8 @@ rule over rows are marked provisional there (the default is settled: on).
 ## Sub-slices, smallest first
 
 - **A. Records as the whole display.** Built (ADR-254's amendment): with no
-  rows (no samples, or `genotypes.show` off) the band is the display under
+  rows (no samples; since ADR-254's sixth amendment not `genotypes.show` off,
+  which keeps the band's look over rows) the band is the display under
   `heightMode`, every record in its SV class color or `featureDefaultColor`, labels and fit by the
   records on screen, a click reading the record's INFO. The benchmark is in
   reference/MULTI_SAMPLE_VARIANTS.md. The density gate is done (ADR-254's

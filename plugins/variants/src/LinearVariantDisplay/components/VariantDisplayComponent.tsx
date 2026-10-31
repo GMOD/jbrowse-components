@@ -9,6 +9,7 @@ import VariantMatrixBody, {
   variantMatrixSurface,
 } from '../matrix/VariantMatrixComponent.tsx'
 import { VARIANT_MATRIX_MARKS } from '../matrix/variantMatrixMarks.ts'
+import BandChips from './BandChips.tsx'
 import RecordsBandOverlay, {
   recordsBandSurface,
 } from './RecordsBandOverlay.tsx'
@@ -159,6 +160,7 @@ const VariantDisplayComponent = observer(function VariantDisplayComponent({
               ) : null
             }
           </PointerLayer>
+          <BandChips model={model} />
         </>
       )}
     </DisplayChrome>

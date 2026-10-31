@@ -133,6 +133,7 @@ import {
   variantTrackMenuItems,
 } from './variantDisplayMenuItems.ts'
 import { getVariantColorScales } from './variantLegend.ts'
+import { BAND_CHIPS_HEIGHT } from './variantTopBands.ts'
 
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -854,7 +855,7 @@ export function stateModelFactory(
           const full = await adapterRecordOf(feature, click.signal)
           checkAbortSignal(click.signal)
           return full
-            ? withClickedSample(full, feature, self.recordsOnly)
+            ? withClickedSample(full, feature, !self.drawsRows)
             : feature
         }
         return {
@@ -1414,10 +1415,13 @@ export function stateModelFactory(
           /**
            * #getter
            * Height left for the rows under the bands above them, floored at 0:
-           * every consumer treats it as a pixel dimension.
+           * every consumer treats it as a pixel dimension. None while no row
+           * draws.
            */
           get availableHeight() {
-            return Math.max(0, self.height - self.rowsTopOffset)
+            return self.drawsRows
+              ? Math.max(0, self.height - self.rowsTopOffset)
+              : 0
           },
           /**
            * #getter
@@ -1454,9 +1458,11 @@ export function stateModelFactory(
         /**
          * #getter
          * Over genotype rows the records band adds its height to the track
-         * above them, so the rows keep the slot's height; with no rows the
-         * band is the display, sized by `heightMode`, and in a ring's band
-         * it is taken from the rows. Overrides `HeightModeMixin.height`.
+         * above them, so the rows keep the slot's height; with the rows
+         * hidden the track is the band and its chip strip, the slot kept
+         * for the rows' return. With no samples the band is the display,
+         * sized by `heightMode`, and in a ring's band it is taken from the
+         * rows. Overrides `HeightModeMixin.height`.
          */
         get height(): number {
           const sized =
@@ -1465,7 +1471,8 @@ export function stateModelFactory(
               : self.fitTargetHeight
           return self.recordsOnly || self.hostHeight !== undefined
             ? sized
-            : sized + self.topBands.recordsHeight
+            : (self.drawsRows ? sized : BAND_CHIPS_HEIGHT) +
+                self.topBands.recordsHeight
         },
       }))
       .actions(recordsLayoutActions)

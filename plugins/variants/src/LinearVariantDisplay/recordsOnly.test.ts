@@ -3,6 +3,7 @@ import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 
 import { getCachedABGR } from '../shared/variantWebglUtils.ts'
 import { KIT, recordsDisplayAt } from './recordsBand.fixture.ts'
+import { BAND_CHIPS_HEIGHT } from './variantTopBands.ts'
 
 import type { LinearVariantDisplayModel } from './model.ts'
 import type { BandRecord } from './recordsBand.fixture.ts'
@@ -29,12 +30,11 @@ describe.each([
   ['a VCF with no samples', false, {}],
   ['genotypes.show off', true, { genotypes: { show: false } }],
 ])('%s', (_, rows, display) => {
-  test('the rows take no height and the band is the display', () => {
+  test('the rows take no height', () => {
     const { display: d } = recordsDisplayAt(FEW, 10, {}, rows, display)
-    expect(d.recordsOnly).toBe(true)
-    expect(d.topBands.recordsHeight).toBe(d.height)
+    expect(d.drawsRows).toBe(false)
     expect(d.availableHeight).toBe(0)
-    expect(d.legendTop).toBe(0)
+    expect(d.topBands.recordsHeight).toBeGreaterThan(0)
   })
 
   test('the band draws every record, an SV in its class color and the rest in the feature track default, keying the SV classes alone', () => {
@@ -62,6 +62,28 @@ describe.each([
     )
     expect(d.colorScales).toEqual([])
   })
+})
+
+test('with no samples the band is the display', () => {
+  const { display } = recordsDisplayAt(FEW, 10, {}, false)
+  expect(display.recordsOnly).toBe(true)
+  expect(display.topBands.recordsHeight).toBe(display.height)
+})
+
+// hidden rows leave the track the band, as it draws over them, and the strip
+// holding the chip that brings them back; the slot keeps the rows' height
+test('with genotypes hidden the track is the band and its chip strip', () => {
+  const { display } = recordsDisplayAt(FEW, 10, {}, true, {
+    genotypes: { show: false },
+  })
+  expect(display.recordsOnly).toBe(false)
+  expect(display.recordsDisplayMode).toBe('compact')
+  expect(display.height).toBe(
+    display.topBands.recordsHeight + BAND_CHIPS_HEIGHT,
+  )
+  expect(display.configuredHeight).toBe(200)
+  display.setShowGenotypes(true)
+  expect(display.availableHeight).toBe(200)
 })
 
 // v4's `color1` lands as a constant `encoding.color.value`: every record
@@ -202,16 +224,17 @@ describe('the track menu', () => {
     }).display
     expect(subMenuLabels(menu(off), 'Show')).toContain('Genotype rows')
     expect(labelsOf(menu(off))).not.toContain('Row height')
+    // the band sizes a track whose rows are hidden, so no track sizing
     expect(subMenuLabels(menu(off), 'Feature height')).toEqual([
       'Normal',
       'Compact',
       'Super-compact',
       'Collapsed',
-      'Track sizing',
-      'Fixed feature height + fixed track height',
-      'Fixed feature height + autogrow track height',
-      'Fit feature height to track height',
     ])
+    const noSamples = recordsDisplayAt(FEW, 10, {}, false).display
+    expect(subMenuLabels(menu(noSamples), 'Feature height')).toContain(
+      'Track sizing',
+    )
   })
 
   test('columns offer neither', () => {

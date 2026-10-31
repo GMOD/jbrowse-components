@@ -1,5 +1,5 @@
 import ChromeLegend from '@jbrowse/display-kit/ChromeLegend'
-import { FLOATING_LEGEND_TOP_PX, TrackOverlaySlot } from '@jbrowse/display-ui'
+import { TrackOverlaySlot } from '@jbrowse/display-ui'
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import RecordsBandOverlay from './components/RecordsBandOverlay.tsx'
@@ -70,21 +70,22 @@ test('the seam spans the band', () => {
   )
 })
 
-// The key and the band share the display box's origin, and the key sits one
-// inset under the band's bottom edge even beside an in-flow track label, which
-// it would otherwise climb into and back over the band.
-test('the key sits an inset under the band, beside a track label', () => {
-  const { display } = recordsDisplayAt(KIT, 51)
-  render(
-    <TrackOverlaySlot zIndex={1} labelBand={31}>
-      <RecordsBandOverlay model={display} />
-      <ChromeLegend model={display} />
-    </TrackOverlaySlot>,
-  )
-  const band = screen.getByTestId('records_band_box').style
-  expect(screen.getByTestId('floating-legend').style.top).toBe(
-    `${Number.parseFloat(band.top) + Number.parseFloat(band.height) + FLOATING_LEGEND_TOP_PX}px`,
-  )
+// The key floats at the top of the records band, where a feature track's
+// sits, whatever the band holds, rather than under it over the rows.
+test('the key sits at the top of the band, beside a track label', () => {
+  const keyTop = (show: boolean) => {
+    const { display } = recordsDisplayAt(KIT, 51, { show })
+    const { unmount } = render(
+      <TrackOverlaySlot zIndex={1} labelBand={31}>
+        <RecordsBandOverlay model={display} />
+        <ChromeLegend model={display} />
+      </TrackOverlaySlot>,
+    )
+    const top = screen.getByTestId('floating-legend').style.top
+    unmount()
+    return top
+  }
+  expect(keyTop(true)).toBe(keyTop(false))
 })
 
 test('a band that is off has no handle', () => {

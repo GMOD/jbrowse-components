@@ -338,7 +338,7 @@ LinearBasicDisplay's own fit ladder (`fitLadderViews` over a plain
 `performMultiRegionHitDetection` for the pick. Nested records stack. The
 band is one seam on the model, `recordsBandViews.ts`: its settings, actions,
 render data, the hosted ladder and the display hooks it decides
-(`rowsHeaderHeight`, `legendTop`, `growMaxHeight`, `growTargetHeight`, the
+(`rowsHeaderHeight`, `growMaxHeight`, `growTargetHeight`, the
 scroll hooks, `densityGateActive`), composed in order as views factories, so
 a `recordsOnly` choice in the model belongs there.
 
@@ -349,8 +349,17 @@ a `recordsOnly` choice in the model belongs there.
   record, and an SV paints after the small records so it lies over them. The
   worker keeps a sample-less VCF's sites at genomic positions only
   (`keepSampleLessSites`), since a site test reads called alleles.
-- **No rows makes the band the display** (`recordsOnly`: a sample listing
-  that landed empty, or `genotypes.show` off). The rows take 0 px, the band is
+- **Hiding either band is a chip** (`BandChips`, one row under the band):
+  `Records ×` and `Genotypes ×` while both draw, `Show records` or `Show
+  genotypes` for the one hidden, beside the hidden-records count. With
+  `genotypes.show` off on a VCF with samples (`drawsRows` false) the rows
+  take 0 px and the track is the band as it draws over rows plus the chips'
+  strip (`BAND_CHIPS_HEIGHT`), the slot `height` kept for the rows' return;
+  the band can't hide then (`showRecords`). The worker reads no genotype
+  (an empty `sampleFilter`), so no record states carriers. The key sits at
+  the top of the display, beside a track label, over the band.
+- **No samples makes the band the display** (`recordsOnly`: a sample listing
+  that landed empty). The rows take 0 px, the band is
   `height`, and `HeightModeMixin` sizes it as it sizes a feature track
   (`heightMode` fit/fixed/grow, `growMaxHeight`; `growTargetHeight` is the
   `full` stack on screen). It opens at that stack, once: the first layout
@@ -359,10 +368,7 @@ a `recordsOnly` choice in the model belongs there.
   `recordsOpeningHeightSettled`), unless a config, session or drag wrote
   `height`, rows drew at that layout, or `grow` or a ring's host sizes it.
   After that a pan never moves it (ADR-255's amendment). Before the listing lands it is not records-only, so
-  a sampled VCF never flashes the records-only height. `genotypes.show` off
-  asks for no sample (`sourcesBase` and `discoveredRows` are empty), and an
-  empty `sampleFilter` makes the worker read no genotype
-  (`readGenotypes`), so it draws what a sites-only VCF draws. The records
+  a sampled VCF never flashes the records-only height. The records
   take the one color rule below, and no genotype is keyed unless
   `encoding.color` is set; the key sits at the top; the seam handle goes, the track's own handle
   resizing. They letter as a feature track does: `normal` size, the
@@ -457,8 +463,9 @@ a `recordsOnly` choice in the model belongs there.
 - **What is still ours**: the record tooltip (`buildRecordHit`, sample fields
   empty so one `hoveredFeature` slot serves both bands), the gestures
   (`RecordsBandOverlay`, a div over its `OverlayCanvas`) and the seam drag,
-  which writes `records.maxHeight` from the drawn height. The key sits under the
-  band (`legendTop`).
+  which writes `records.maxHeight` from the drawn height. A drag down on a
+  band already showing its whole stack keeps the cap, since nothing is left
+  to show; there is no ceiling past the stack.
 
 ## How wide a cell draws
 

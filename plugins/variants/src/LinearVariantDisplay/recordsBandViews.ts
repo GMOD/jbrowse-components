@@ -92,23 +92,31 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     // #region sameBlockThis
     /**
      * #getter
-     * Whether no genotype row draws: `genotypes.show` off, or a VCF
-     * whose sample listing landed empty. The records band is then the
-     * display, every record the filter admits, sized by `heightMode`.
+     * Whether the VCF's sample listing landed empty: the records band is
+     * then the display, every record the filter admits, sized by
+     * `heightMode` and lettered as a feature track.
      */
     get recordsOnly(): boolean {
-      return !self.showGenotypes || self.adapterSamples?.length === 0
+      return self.adapterSamples?.length === 0
+    },
+    /**
+     * #getter
+     * Whether genotype rows draw: `genotypes.show`, on a VCF with samples.
+     * Hidden, the rows take no height and the records band is the track.
+     */
+    get drawsRows(): boolean {
+      return self.showGenotypes && !this.recordsOnly
     },
     /**
      * #getter
      * Whether the records band is drawn: at genomic positions only, where
-     * a record lines up with the cells under it, and always while it is
-     * the whole display.
+     * a record lines up with the cells under it, and always while no row
+     * draws.
      */
     get showRecords(): boolean {
       return (
         self.atGenomicPositions &&
-        (this.recordsOnly || getConf(self, ['records', 'show']))
+        (!this.drawsRows || getConf(self, ['records', 'show']))
       )
     },
     // #endregion
@@ -189,12 +197,12 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     },
     /**
      * #getter
-     * Whether the cells' coloring is keyed: always over rows; with no rows
-     * only under a picked `encoding.color` field, whose values the records
-     * paint. A constant paints every record alike, so keys nothing.
+     * Whether the cells' coloring is keyed: always while rows draw; with
+     * none only under a picked `encoding.color` field, whose values the
+     * records paint. A constant paints every record alike, so keys nothing.
      */
     get cellColorKeyed() {
-      return !this.recordsOnly || cellHueField(self.colorEncoding) !== undefined
+      return this.drawsRows || cellHueField(self.colorEncoding) !== undefined
     },
     /**
      * #getter
@@ -365,7 +373,7 @@ export function recordsRenderViews(self: RecordsRenderHost) {
      */
     get recordCarriers(): ReadonlyMap<string, RecordCarriers> {
       const { cellData } = self
-      return cellData && self.showRecords && !self.recordsOnly
+      return cellData && self.showRecords && self.drawsRows
         ? countRecordCarriers(cellData, this.recordCarrierSamples)
         : new Map<string, RecordCarriers>()
     },
@@ -701,7 +709,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
       const { layout, scale } = this.recordsFitStage
       const facet = self.recordsFacet
       return !self.recordsOnly
-        ? unplaceBelow(layout, this.recordsPlacedHeight)
+        ? unplaceBelow(layout, this.topBands.recordsHeight)
         : scale === 1
           ? layout
           : scaleLaidOutData(
@@ -709,27 +717,6 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
               scale,
               facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
             )
-    },
-    /**
-     * #getter
-     * Over rows, the depth a record must end within to draw: the band's
-     * height, less the foot the hidden-records chip takes once a record on
-     * screen does not fit, where that leaves the records a chip's height.
-     */
-    get recordsPlacedHeight() {
-      const { recordsHeight } = this.topBands
-      const onScreen = self.recordsOnScreenIds
-      const overflows = [...this.recordsFitStage.layout.values()].some(data =>
-        data.flatbushItems.some(
-          ({ featureId, topPx, bottomPx }) =>
-            isPlacedRow(topPx) &&
-            bottomPx > recordsHeight &&
-            onScreen.has(featureId),
-        ),
-      )
-      return overflows && recordsHeight >= 2 * GROUP_LABEL_HEIGHT
-        ? recordsHeight - GROUP_LABEL_HEIGHT
-        : recordsHeight
     },
     /**
      * #getter
@@ -819,15 +806,6 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      */
     get rowsHeaderHeight() {
       return this.topBands.bottom
-    },
-    /**
-     * #getter
-     * `LegendMixin`'s hook: the key sits under the records band, over
-     * the rows, so it hides no record; with no rows, at the top, as on
-     * a feature track.
-     */
-    get legendTop() {
-      return self.recordsOnly ? 0 : this.topBands.recordsHeight
     },
     /**
      * #getter
