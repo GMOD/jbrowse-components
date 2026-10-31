@@ -1,6 +1,6 @@
 ---
 name: variant-display-merge
-description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D and E remain. Open: added vs taken band height, the default `height`, the multi-way key position."
+description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D and E remain; E's records-only height is settled (opens at its stack up to 200, once). Open: added vs taken band height, the multi-way key position."
 ---
 
 # One variant display
@@ -20,8 +20,7 @@ rule over rows are marked provisional there (the default is settled: on).
   records on screen, a click reading the record's INFO. The benchmark is in
   reference/MULTI_SAMPLE_VARIANTS.md. The density gate is done (ADR-254's
   amendment): `records.maxFeatureScreenDensity` through `FeatureGateMixin`,
-  records-only alone. Left: the default `height`
-  (open calls below), and the row-only menus (Rows,
+  records-only alone. Left: the row-only menus (Rows,
   clustering, row color) still show with no rows, and the rows panel's
   scrollbar stays mounted (invisible, under the band) with no rows. Over rows the band's height
   measures the whole payload, so it steps only on a refetch; whether it
@@ -92,14 +91,13 @@ rule over rows are marked provisional there (the default is settled: on).
   names `LinearVariantDisplay`), JBrowseR, the hosted demo configs (the
   in-repo `demos/` and the `scripts/build_*.sh` outputs on S3 are swept but
   not redeployed); then drop the alias.
-- **E. Height.** The default `height` and added vs taken (open calls
-  below). (Records showing by default is settled: on.)
+- **E. Height.** Records-only height settled (ADR-255's amendment): the
+  first layout with a record on screen sets `height` once to the stack, up
+  to 200 (`settleRecordsOpeningHeight`, `recordsBandViews.ts`); a pan
+  never moves it. Added vs taken over rows stays open (below). (Records
+  showing by default is settled: on.)
 
 ## Open calls (Colin)
-
-- **The default `height`** is 200, against the feature track's 100. A
-  sites-only VCF, records-only under C1, then opens twice a
-  `LinearVariantDisplay`'s height; over rows 200 is the matrix's.
 
 - **Added vs taken.** Captures favor added: taking 170 px from a 40-sample
   matrix drops rows to ~2.5 px and loses labels. Taken moves the rows on pan;

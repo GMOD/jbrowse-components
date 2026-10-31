@@ -115,8 +115,10 @@ import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
 import { paintCellColors, paintedColorKeys } from './paintCells.ts'
 import { placeVariantRows } from './placeVariantRows.ts'
 import {
+  installRecordsOpeningHeight,
   recordsBandActions,
   recordsLayoutViews,
+  recordsOpeningHeightActions,
   recordsRenderViews,
   recordsSettingsViews,
 } from './recordsBandViews.ts'
@@ -414,6 +416,12 @@ export function stateModelFactory(
          * the payload it can draw across the swap a layout change makes.
          */
         backendDrawsColumns: false,
+        /**
+         * #volatile
+         * Whether the first layout has decided the records-only height
+         * (`settleRecordsOpeningHeight`), which then holds.
+         */
+        recordsOpeningHeightSettled: false,
       }))
       .actions(self => {
         const { clearHoveredFeature: superClearHoveredFeature } = self
@@ -1432,6 +1440,7 @@ export function stateModelFactory(
         }
       })
       .views(recordsLayoutViews)
+      .actions(recordsOpeningHeightActions)
       .views(recordsHighlightViews)
       .actions(featureHighlightListActions)
       .views(self => ({
@@ -2114,6 +2123,7 @@ export function stateModelFactory(
             },
             { name: 'RecordsHitIndexes' },
           )
+          installRecordsOpeningHeight(self)
         },
       }))
   )

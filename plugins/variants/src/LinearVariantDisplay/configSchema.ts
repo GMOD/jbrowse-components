@@ -115,7 +115,7 @@ export default function configSchemaFactory() {
         type: 'number',
         defaultValue: 200,
         description:
-          'Starting height in pixels for the whole display, including any band above the rows; drag-resizable, and the rows divide what is left while row height is on auto-fit',
+          "Starting height in pixels for the whole display, including any band above the rows; drag-resizable, and the rows divide what is left while row height is on auto-fit. Left unset with no rows, the track opens once at its records' stack, up to this",
       },
       /**
        * #slot

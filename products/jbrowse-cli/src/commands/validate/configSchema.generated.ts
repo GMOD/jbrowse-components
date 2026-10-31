@@ -12652,7 +12652,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "height": {
-          "description": "Starting height in pixels for the whole display, including any band above the rows; drag-resizable, and the rows divide what is left while row height is on auto-fit.",
+          "description": "Starting height in pixels for the whole display, including any band above the rows; drag-resizable, and the rows divide what is left while row height is on auto-fit. Left unset with no rows, the track opens once at its records' stack, up to this.",
           "default": 200,
           "if": {
             "type": "null"

@@ -8,6 +8,7 @@ import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
+import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import {
@@ -843,4 +844,64 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
         : undefined
     },
   }
+}
+
+export type RecordsLayout = ReturnType<typeof recordsLayoutViews>
+
+interface RecordsOpeningHeightHost extends RecordsLayoutHost, RecordsLayout {
+  configuration: RecordsSettingsHost['configuration']
+  recordsOpeningHeightSettled: boolean
+  hostHeight: number | undefined
+  configuredHeight: number
+  setHeight: (height: number) => number
+}
+
+export function recordsOpeningHeightActions(self: RecordsOpeningHeightHost) {
+  return {
+    /**
+     * #action
+     * Size a records-only track once, at its first layout with a record
+     * on screen: its `full` stack up to the slot's `height`, so a sparse
+     * window opens compact. Over rows, under `grow`, inside a ring, or
+     * with a `height` a config, a session or a drag wrote, it keeps the
+     * height it has. Never again for this display, so a pan into a
+     * denser window fits the records inside the box rather than moving it.
+     */
+    settleRecordsOpeningHeight() {
+      self.recordsOpeningHeightSettled = true
+      const heightWritten = getSnapshot(self.configuration).height !== undefined
+      if (
+        self.recordsOnly &&
+        !self.autoHeight &&
+        self.hostHeight === undefined &&
+        !heightWritten
+      ) {
+        self.setHeight(Math.min(self.growTargetHeight, self.configuredHeight))
+      }
+    },
+  }
+}
+
+/**
+ * Settle the opening height at the first layout with data: a payload
+ * laid out and, with no rows, a record on screen to measure.
+ */
+export function installRecordsOpeningHeight(
+  self: RecordsOpeningHeightHost &
+    ReturnType<typeof recordsOpeningHeightActions>,
+) {
+  autorunOnReadyView(
+    self,
+    () => {
+      if (
+        !self.recordsOpeningHeightSettled &&
+        self.cellData !== undefined &&
+        self.canRender &&
+        (!self.recordsOnly || self.recordsOnScreenIds.size > 0)
+      ) {
+        self.settleRecordsOpeningHeight()
+      }
+    },
+    { name: 'RecordsOpeningHeight' },
+  )
 }

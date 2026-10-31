@@ -350,7 +350,12 @@ a `recordsOnly` choice in the model belongs there.
   that landed empty, or `genotypes.show` off). The rows take 0 px, the band is
   `height`, and `HeightModeMixin` sizes it as it sizes a feature track
   (`heightMode` fit/fixed/grow, `growMaxHeight`; `growTargetHeight` is the
-  `full` stack on screen). Before the listing lands it is not records-only, so
+  `full` stack on screen). It opens at that stack, once: the first layout
+  with a record on screen writes `height` as
+  `min(growTargetHeight, height)` (`settleRecordsOpeningHeight`, flagged by
+  `recordsOpeningHeightSettled`), unless a config, session or drag wrote
+  `height`, rows drew at that layout, or `grow` or a ring's host sizes it.
+  After that a pan never moves it (ADR-255's amendment). Before the listing lands it is not records-only, so
   a sampled VCF never flashes the records-only height. `genotypes.show` off
   asks for no sample (`sourcesBase` and `discoveredRows` are empty), and an
   empty `sampleFilter` makes the worker read no genotype

@@ -114,6 +114,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 | <span id="volatile-hoveredrecord">**hoveredRecord**</span><br><code>HitFeatureResult &#124; undefined</code> | The record under the pointer in the records band, plugin-features's hit result, so `hoverInk` lights the box the band painted. |
 | <span id="volatile-hoveredmatrixcell">**hoveredMatrixCell**</span><br><code>MatrixHoveredCell &#124; undefined</code> | The matrix cell under the pointer, in the equal-width column layout. |
 | <span id="volatile-backenddrawscolumns">**backendDrawsColumns**</span><br><code>boolean</code> | Whether the attached backend draws columns, so the upload sends it the payload it can draw across the swap a layout change makes. |
+| <span id="volatile-recordsopeningheightsettled">**recordsOpeningHeightSettled**</span><br><code>boolean</code> | Whether the first layout has decided the records-only height (`settleRecordsOpeningHeight`), which then holds. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>29 inherited volatiles from 10 models</summary>
@@ -382,6 +383,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-hiderecordsgroup">**hideRecordsGroup**</span><br><code>(key: string) =&gt; void</code> | Drop a record section from the band; `showAllRecordsGroups` brings it back. |
 | <span id="action-showallrecordsgroups">**showAllRecordsGroups**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setrecordsmaxheight">**setRecordsMaxHeight**</span><br><code>(arg: number) =&gt; void</code> | Set the records band's cap, clamped here because a drag can deliver any number and a band dragged shut has to stay grabbable. |
+| <span id="action-settlerecordsopeningheight">**settleRecordsOpeningHeight**</span><br><code>() =&gt; void</code> | Size a records-only track once, at its first layout with a record on screen: its `full` stack up to the slot's `height`, so a sparse window opens compact. Over rows, under `grow`, inside a ring, or with a `height` a config, a session or a drag wrote, it keeps the height it has. Never again for this display, so a pan into a denser window fits the records inside the box rather than moving it. |
 | <span id="action-setfeaturehighlights">**setFeatureHighlights**</span><br><code>(highlights: FeatureHighlight[]) =&gt; void</code> |  |
 | <span id="action-setsearchhighlight">**setSearchHighlight**</span><br><code>(highlight: FeatureHighlight) =&gt; void</code> | A text search's highlight replaces the previous search's and leaves the right-click ones, which have a `featureId`, alone. |
 | <span id="action-addfeaturehighlightforitem">**addFeatureHighlightForItem**</span><br><code>(target: HighlightTarget, refName: string) =&gt; void</code> |  |

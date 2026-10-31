@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "One variant display: the multi-sample display, its records band included, is registered as `LinearVariantDisplay` and the plugin-features-based `LinearVariantDisplay` is retired. `retiredTypes` holds `LinearMultiSampleVariantDisplay` (beta-only, a deprecated alias while hosted configs write it), v4's `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay` (in columns). A v4 `LinearVariantDisplay` config's record settings re-root under `records` through LinearBasicDisplay's own lifts (`renderer.displayMode`, `renderer.height`/`featureHeight`, `showLabels`/`showDescriptions`, `mouseover`, `maxFeatureScreenDensity`; `color1` to `encoding.color.value`; `maxHeight` drops); the betas' top-level `displayMode`, `mark`, `labels`, `facet` and `tooltip.field` do not lift. The display registers with no `FeaturesPlugin` gate, a right-clicked record offers the feature track's zoom to, get sequence, highlight and copy rows and the read sort, and the band answers search-hit highlights and the breakpoint split view's searchFeatureByID. Supersedes ADR-250; amends ADR-168, ADR-232 and ADR-254"
+summary: "One variant display: the multi-sample display, its records band included, is registered as `LinearVariantDisplay` and the plugin-features-based `LinearVariantDisplay` is retired. `retiredTypes` holds `LinearMultiSampleVariantDisplay` (beta-only, a deprecated alias while hosted configs write it), v4's `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay` (in columns). A v4 `LinearVariantDisplay` config's record settings re-root under `records` through LinearBasicDisplay's own lifts (`renderer.displayMode`, `renderer.height`/`featureHeight`, `showLabels`/`showDescriptions`, `mouseover`, `maxFeatureScreenDensity`; `color1` to `encoding.color.value`; `maxHeight` drops); the betas' top-level `displayMode`, `mark`, `labels`, `facet` and `tooltip.field` do not lift. The display registers with no `FeaturesPlugin` gate, a right-clicked record offers the feature track's zoom to, get sequence, highlight and copy rows and the read sort, and the band answers search-hit highlights and the breakpoint split view's searchFeatureByID. With no rows the first layout sets the height once to the records' stack, up to 200 (amendment). Supersedes ADR-250; amends ADR-168, ADR-232 and ADR-254"
 ---
 
 # ADR-255: One variant display
@@ -116,5 +116,31 @@ ADR-254.
 - The writers still spell `LinearMultiSampleVariantDisplay` and the launch
   args, jbrowse-img and R export still pick between two types; they load
   through the alias until C2 sweeps them.
-- A sites-only VCF opens at the display's `height` (200) where the feature
-  display opened at 100, an open call in the handoff.
+- A sites-only VCF opens at its records' stack, up to the display's
+  `height` (200), where the feature display opened at 100 (amendment
+  below).
+
+## Amendment (2026-10-31): records-only opens at its stack, once
+
+Colin: "keeping records only compact as possible, not fixed height, e.g.
+up-to-200 but less if possible, with resize bar to shorten the height".
+With no rows, the first layout with a record on screen sets `height` once
+to the records' `full` stack (`growTargetHeight`, floored at
+`MIN_GROW_HEIGHT`, 50), capped at the slot's 200
+(`settleRecordsOpeningHeight` in `recordsBandViews.ts`). The height then
+holds for the display's life: a pan into a denser window fits the records
+inside it, never moves it, since a track box that resizes while one reads
+is the shift `grow` already costs. The write goes on the `height` slot, as a
+drag does, so a session reopens at it. A `height` a config, session or drag
+wrote keeps the display out of it, as do rows at the first layout (a later
+`genotypes.show` off keeps the matrix's height), `grow`, and a ring's host
+height. An empty first window waits at 200 for its first record. The
+resize handle shortens it, and its double click sizes to the whole stack.
+A config writing `height: 200` reads as unset, since a slot snapshot omits
+its default, and sizes too.
+
+| Alternative | Why not |
+| --- | --- |
+| A default `height` of 100, as the feature display | Still fixed: a sparse window wastes it and a dense one squeezes |
+| `grow` by default with no rows | Moves the track box on every pan into a denser window |
+| Hold the opening height in a volatile, the slot untouched | A drag back to exactly 200 writes nothing the snapshot keeps, so the volatile would win over the user's drag |
