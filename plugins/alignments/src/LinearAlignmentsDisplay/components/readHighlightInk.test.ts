@@ -76,7 +76,8 @@ function run(
 const open: HighlightSection = {
   groupKey: 'g',
   laidOutPileupMap: { get: () => rpcData },
-  topOffset: 100,
+  coverageTop: 0,
+  pileupTop: 100,
   pileupHeight: 500,
 }
 
@@ -130,11 +131,12 @@ test('a grouped section near the top of its band stays lit after scrolling', () 
   // Group 2's band starts at content-space 400; scrolling down by 200 brings
   // its row 0 to screen 200, which must clear the band's scrolled top (200),
   // not its unscrolled one (400).
-  const section = { ...open, topOffset: 400, pileupHeight: 1000 }
+  const section = { ...open, pileupTop: 400, pileupHeight: 1000 }
   const empty: HighlightSection = {
     groupKey: 'empty',
     laidOutPileupMap: { get: () => undefined },
-    topOffset: 0,
+    coverageTop: 0,
+    pileupTop: 0,
     pileupHeight: 0,
   }
   expect(

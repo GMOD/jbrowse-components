@@ -54,7 +54,6 @@ function stackedLane(
   }
 }
 
-import type { SectionsLayout } from './sectionLayout.ts'
 import type { ValueScale } from '@jbrowse/wiggle-core'
 
 // Boots a real LinearAlignmentsDisplay in a measured view, so the per-lane band
@@ -117,7 +116,7 @@ function twoLanes() {
 
 test('only the lane with arcs reserves the arc band', () => {
   const { display } = twoLanes()
-  const layout: SectionsLayout = display.sections
+  const layout = display.sections
   const sections = layout.sections
   expect(sections.map(s => [s.groupKey, s.hasArcsBand])).toEqual([
     ['notsplit', false],
@@ -149,7 +148,7 @@ test('the reserved band tracks the arc feed, not just the setting', () => {
     },
     display.view.displayedRegions[0]!,
   )
-  const layout: SectionsLayout = display.sections
+  const layout = display.sections
   expect(layout.sections.every(s => !s.hasArcsBand)).toBe(true)
   expect(display.sections.contentHeight).toBe(
     withArcs - display.readConnectionsHeight,
@@ -174,7 +173,7 @@ test('turning read connections off drops the band from the lane that had one', (
     },
     display.view.displayedRegions[0]!,
   )
-  const layout: SectionsLayout = display.sections
+  const layout = display.sections
   expect(layout.sections.every(s => !s.hasArcsBand)).toBe(true)
   expect(display.sections.contentHeight).toBe(
     withArcs - display.readConnectionsHeight,
@@ -184,7 +183,7 @@ test('turning read connections off drops the band from the lane that had one', (
 // Arc strips are reserved PER SECTION, so a grouped read cloud has one band per
 // lane — and the ruler that labels the |TLEN| axis has to have one per lane too.
 // It did not: `insertSizeTicks` built a single bar from
-// `computeArcBand(self.arcBandInput)`, a section-RELATIVE band, and both hosts
+// the display-wide arc band input, a section-RELATIVE band, and both hosts
 // placed it at content y 0. The values were right for every lane (the domain is
 // pooled across groups by `arcsYDomainBp`) but only the first lane's band had
 // anything beside it. The insert-size scale now lists a band per lane.
@@ -220,7 +219,7 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
 
   test('one band per banded lane, in lane order', () => {
     const { display } = twoCloudLanes()
-    const layout: SectionsLayout = display.sections
+    const layout = display.sections
     expect(layout.sections.every(s => s.hasArcsBand)).toBe(true)
     expect(tlen(display)?.bandTops).toHaveLength(2)
   })
@@ -277,14 +276,10 @@ describe('the read cloud rules every lane that reserves an arc band', () => {
   })
 })
 
-// `belowCoverageBands` is the pooled twin of the per-section stacking: one
-// answer for a display, where `computeStackedSections` gives one per lane. It
-// resolved the arc strip from the SETTINGS alone while the sections resolved it
-// from the settings AND the lane's arcs, so with connections on and nothing
-// paired the two disagreed by `readConnectionsHeight`. Its `bottom` is the
-// ungrouped scrollbar's top offset and the fit-to-viewport row budget's
-// per-group overhead, so both spent a strip no lane drew in.
-describe('the pooled below-coverage bands agree with the sections', () => {
+// The ungrouped sticky band and the fit row budget both read the lanes' own
+// band stacks, so with connections on and nothing paired neither spends a
+// strip no lane draws in.
+describe('the sticky band and the fit budget follow the lanes', () => {
   function ungrouped(mateBp?: number) {
     const { display } = createEnv()
     display.setDrawnReadConnections('link')
@@ -304,27 +299,21 @@ describe('the pooled below-coverage bands agree with the sections', () => {
     return display
   }
 
-  test('an unpaired ungrouped pileup reserves no arc strip either way', () => {
+  test('an unpaired ungrouped pileup reserves no arc strip', () => {
     const display = ungrouped()
-    const layout: SectionsLayout = display.sections
-    expect(layout.sections[0]!.hasArcsBand).toBe(false)
-    expect(display.belowCoverageBands.hasArcsBand).toBe(false)
-    expect(display.coverageDisplayHeight).toBe(display.coverageHeight)
-    expect(layout.sections[0]!.pileupTop).toBe(display.coverageDisplayHeight)
+    expect(display.sections.sections[0]!.hasArcsBand).toBe(false)
+    expect(display.stickyBandHeight).toBe(display.coverageHeight)
   })
 
-  test('a paired ungrouped pileup reserves it in both', () => {
+  test('a paired ungrouped pileup reserves it', () => {
     const display = ungrouped(2000)
-    const layout: SectionsLayout = display.sections
-    expect(layout.sections[0]!.hasArcsBand).toBe(true)
-    expect(display.belowCoverageBands.hasArcsBand).toBe(true)
-    expect(display.coverageDisplayHeight).toBe(
+    expect(display.sections.sections[0]!.hasArcsBand).toBe(true)
+    expect(display.stickyBandHeight).toBe(
       display.coverageHeight + display.readConnectionsHeight,
     )
-    expect(layout.sections[0]!.pileupTop).toBe(display.coverageDisplayHeight)
   })
 
-  // The other consumer: `fitGroupMaxRows` subtracts this bottom once per group
+  // `fitGroupMaxRows` subtracts each lane's band stack
   // before dividing the viewport into rows. With no lane paired, connections on
   // has exactly as much room for rows as connections off.
   test('the fit row budget spends nothing on a strip no lane has', () => {
@@ -357,7 +346,7 @@ describe('the pooled below-coverage bands agree with the sections', () => {
     }
     const on = seedTwoUnpairedLanes('link')
     const off = seedTwoUnpairedLanes('off')
-    expect(on.coverageDisplayHeight).toBe(off.coverageDisplayHeight)
+    expect(on.stickyBandHeight).toBe(off.stickyBandHeight)
     expect(on.fittedFeatureHeight).toBe(off.fittedFeatureHeight)
     expect(on.sections.contentHeight).toBe(off.sections.contentHeight)
   })

@@ -472,7 +472,7 @@ function downKeys(
 }
 
 // The lanes the strip is reserved for: the keys whose set is non-empty, which is
-// how `model.sashimiDownArcLanes` reads this for `belowCoverageBandsInput`.
+// how `model.sashimiDownArcLanes` reads this for `totalBandOverhead`.
 function lanes(...args: Parameters<typeof downKeys>) {
   return [...downKeys(...args)]
     .filter(([, down]) => down.size > 0)

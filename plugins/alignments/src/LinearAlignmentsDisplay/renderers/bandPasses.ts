@@ -8,7 +8,7 @@ import {
 import { CONNECTOR_MARK, connectorBandState } from './connectorMarks.ts'
 import { SASHIMI_MARK, sashimiBandState } from './sashimiMarks.ts'
 
-import type { RenderState, SectionSource } from './rendererTypes.ts'
+import type { DisplayRenderState, SectionSource } from './rendererTypes.ts'
 import type { Mark, MarkFrame } from '@jbrowse/render-core/marks'
 
 /**
@@ -39,7 +39,7 @@ export interface BandPassVisitor {
  */
 export function forEachBandPass(
   sections: readonly SectionSource[],
-  state: RenderState,
+  state: DisplayRenderState,
   visitor: BandPassVisitor,
 ) {
   state.sections.forEach((sec, section) => {

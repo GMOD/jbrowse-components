@@ -64,7 +64,6 @@ import {
   visibleStatsRange,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { autorun, computed, observable } from 'mobx'
 
 import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
@@ -171,12 +170,7 @@ import {
   orderedGroups,
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
-import {
-  buildLanes,
-  drawnLanesOf,
-  toSectionGroupInputs,
-  zipLaneSections,
-} from './lanes.ts'
+import { buildLanes, drawnLanesOf } from './lanes.ts'
 import {
   featureSpacingForHeight,
   basesFilterNarrowing,
@@ -205,7 +199,6 @@ import { shouldDrawOverlaps } from './renderers/rendererTypes.ts'
 import { sashimiBandState, sashimiLabels } from './renderers/sashimiMarks.ts'
 import { fetchFeatureDetails, fetchFeaturesForRegion } from './rpcCalls.ts'
 import {
-  belowCoverageBandsGeometry,
   belowCoverageDragBounds,
   boundBelowCoverageHeights,
   buildSectionRenders,
@@ -257,10 +250,7 @@ import type {
   SectionSource,
 } from './renderers/rendererTypes.ts'
 import type { SashimiLabel } from './renderers/sashimiMarks.ts'
-import type {
-  BelowCoverageBandsSettings,
-  SectionsLayout,
-} from './sectionLayout.ts'
+import type { BelowCoverageBandsSettings } from './sectionLayout.ts'
 import type { VariantAllele, VariantSortColumn } from '@jbrowse/alignments-core'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -1159,10 +1149,9 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Inputs to `belowCoverageBandsGeometry`: the bound heights plus
-           * whether any lane has arcs or a sashimi junction bound for its
-           * strip. Pooled over the lanes, so it is the ungrouped answer; the
-           * grouped stack's total is `totalBandOverhead`.
+           * The pooled stack the drag bounds read: the bound heights, the
+           * settings, and whether any lane has arcs or a sashimi junction
+           * bound for its strip. Every lane's handle for a band resizes it.
            */
           get belowCoverageBandsInput() {
             return { ...this.statedBelowCoverageBands, ...this.bandHeights }
@@ -1785,25 +1774,6 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Geometry of the bands stacked below coverage in arcs-down mode:
-         * coverage → paired-end arcs → sashimi. `arcsBandTop`/`sashimiBandTop`
-         * are each band's top edge; `bottom` is where the pileup begins (==
-         * coverageDisplayHeight).
-         */
-        get belowCoverageBands() {
-          return belowCoverageBandsGeometry(self.belowCoverageBandsInput)
-        },
-
-        /**
-         * #getter
-         */
-        get coverageDisplayHeight() {
-          return this.belowCoverageBands.bottom
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
          * The stacked lanes in stacking order, one `AlignmentLane` per drawn
          * group; ungrouped is the one-lane case. The one place a lane's key
          * resolves to its data.
@@ -1849,39 +1819,38 @@ export default function stateModelFactory(
          * has a section. The sticky-coverage-vs-scroll distinction lives
          * downstream in `buildSectionRenders`.
          */
-        get sections(): SectionsLayout {
-          return computeStackedSections(toSectionGroupInputs(this.drawnLanes), {
-            ...self.belowCoverageBandsSettings,
-            coverageYOffset: YSCALEBAR_LABEL_OFFSET,
-            rowHeight: self.rowHeight,
-            minSectionHeight: self.showsGroupLabels ? GROUP_LABEL_HEIGHT : 0,
-            dipReservePx: self.fitHeightToDisplay
-              ? undefined
-              : (groupKey, pileupHeight) => {
-                  const pairs =
-                    self.connectorsByGroup.get(groupKey)?.overlayPairs
-                  return pairs?.length
-                    ? bezierDipReservePx({
-                        pairs,
-                        displayedRegions: self.host.displayedRegions,
-                        featureHeight: self.featureHeight,
-                        featureSpacing: self.featureSpacing,
-                        pileupHeight,
-                      })
-                    : 0
-                },
-          })
+        get sections() {
+          return computeStackedSections(
+            this.drawnLanes,
+            self.belowCoverageBandsSettings,
+            {
+              rowHeight: self.rowHeight,
+              minSectionHeight: self.showsGroupLabels ? GROUP_LABEL_HEIGHT : 0,
+              dipReservePx: (lane, pileupHeight) => {
+                const pairs = self.fitHeightToDisplay
+                  ? undefined
+                  : self.connectorsByGroup.get(lane.groupKey)?.overlayPairs
+                return pairs?.length
+                  ? bezierDipReservePx({
+                      pairs,
+                      displayedRegions: self.host.displayedRegions,
+                      featureHeight: self.featureHeight,
+                      featureSpacing: self.featureSpacing,
+                      pileupHeight,
+                    })
+                  : 0
+              },
+            },
+          )
         },
 
         /**
          * #getter
-         * Every lane paired with its band geometry in stacking order: the list
-         * the overlays, the hit-test pipeline and both renderers walk. The
-         * pairing is by INDEX, structural since `computeStackedSections` emits
-         * one section per lane in order from `drawnLanes`.
+         * Every lane with its band geometry in stacking order: the list the
+         * overlays, the hit-test pipeline and both renderers walk.
          */
         get renderSections() {
-          return zipLaneSections(this.drawnLanes, this.sections.sections)
+          return this.sections.sections
         },
 
         /**
@@ -1896,7 +1865,7 @@ export default function stateModelFactory(
               ? [
                   {
                     groupKey: sec.groupKey,
-                    topOffset: sec.topOffset,
+                    pileupTop: sec.pileupTop,
                     pileupHeight: sec.pileupHeight,
                     dipReserve: sec.dipReserve,
                     pairs,
@@ -2012,12 +1981,22 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The coverage band held out of the scroll: ungrouped keeps it sticky
-         * above the pileup, grouped scrolls the whole stack. Subtracted from
-         * both the viewport and the content.
+         * The band stack held out of the scroll: ungrouped keeps its one
+         * lane's bands sticky above the pileup, grouped scrolls the whole
+         * stack. Subtracted from both the viewport and the content, and the
+         * screen-y a view overlaying this display's reads stops at.
          */
         get stickyBandHeight() {
-          return this.isGrouped ? 0 : self.coverageDisplayHeight
+          return this.isGrouped ? 0 : this.sections.sections[0]!.pileupTop
+        },
+
+        /**
+         * #getter
+         * @deprecated the pooled band stack had no meaning once lanes stack;
+         * read `stickyBandHeight`
+         */
+        get coverageDisplayHeight() {
+          return this.stickyBandHeight
         },
 
         /**
@@ -2076,21 +2055,6 @@ export default function stateModelFactory(
             qualityOpacity: self.mismatchQualityOpacity,
             scrollTop: self.scrollTop,
           })
-        },
-
-        /**
-         * #method
-         * Content-space Y of a group's pileup relative to the reserved
-         * below-coverage height: how far a read's row shifts because its group
-         * is stacked below the others. Callers add `coverageDisplayHeight`
-         * back. Slightly negative for a lane that drops its arc band (`hasArcs`
-         * false).
-         */
-        groupPileupOffset(groupKey: string) {
-          const section = this.renderSections.find(s => s.groupKey === groupKey)
-          return section === undefined
-            ? 0
-            : section.topOffset - self.coverageDisplayHeight
         },
 
         /**
@@ -2182,10 +2146,9 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * Layout rect of one read of `readArraysByGroup`. Y is relative to the
-         * pileup's own top (callers add `coverageDisplayHeight`), so a grouped
-         * read needs only its section's stacking offset on top of its row. A
-         * read past the row cap sits on the cap's overflow row.
+         * Layout rect of one read of `readArraysByGroup`, Y in content space:
+         * subtract `scrollTop` for the screen. A read past the row cap sits on
+         * the cap's overflow row.
          */
         readLayoutRecord(
           groupKey: string,
@@ -2198,11 +2161,14 @@ export default function stateModelFactory(
           const yRow = data?.readYs[idx]
           const start = data?.readPositions[idx * 2]
           const end = data?.readPositions[idx * 2 + 1]
-          if (yRow === undefined || start === undefined || end === undefined) {
-            return undefined
-          }
-          const top = self.groupPileupOffset(groupKey) + yRow * self.rowHeight
-          return [start, top, end, top + self.featureHeight]
+          const section = self.renderSections.find(s => s.groupKey === groupKey)
+          const top =
+            section && yRow !== undefined
+              ? section.pileupTop + yRow * self.rowHeight
+              : undefined
+          return top !== undefined && start !== undefined && end !== undefined
+            ? [start, top, end, top + self.featureHeight]
+            : undefined
         },
       }))
       .views(self => {
@@ -2509,7 +2475,7 @@ export default function stateModelFactory(
             featureHeight: self.featureHeight,
             featureSpacing: self.featureSpacing,
             coverage: {
-              height: self.belowCoverageBands.coverageHeight,
+              height: self.sections.sections[0]!.coverageHeight,
               domainMin: self.coverageDepthDomain?.[0] ?? 0,
               domainMax: self.coverageDepthDomain?.[1],
               scaleType: self.coverageScaleType,
@@ -2531,12 +2497,7 @@ export default function stateModelFactory(
             qualityOpacity: self.mismatchQualityOpacity,
             showSoftClips: self.showSoftClips,
             basesField: self.baseLayer?.field,
-            pileupTopOffset: self.coverageDisplayHeight,
-            coverageTopOffset: 0,
-            sections: buildSectionRenders(self.sections, {
-              scrollTop: self.scrollTop,
-              canvasHeight: self.height,
-            }),
+            sections: buildSectionRenders(self.sections, self.scrollModel),
             // The mixin's resolved canvas box, not `view.width` — see
             // `canvasWidthPx`.
             canvasWidth: self.canvasWidthPx,

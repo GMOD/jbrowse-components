@@ -249,22 +249,32 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
 - **The scalebar inset is `YSCALEBAR_LABEL_OFFSET` on both backends and must
   stay a constant.** The band marks write it into the `covYOffset` uniform
   themselves, and `coverageLayout` supplies it to the same generated twin for
-  every painter and the y-axis ticks. The section layout's `coverageYOffset`
-  reaches only the arc band's anchor; give the band a different value and the
-  bars move while `interbaseBarHeightPx` and the ticks beside them do not,
-  splitting the band against itself inside one frame.
+  every painter and the y-axis ticks, and `laneBands` anchors up-mode arcs on
+  the same constant; a different value there moves the bars while
+  `interbaseBarHeightPx` and the ticks beside them do not, splitting the band
+  against itself inside one frame.
 - **The three band heights are bound as one stack** (`bandHeights`,
   `boundBelowCoverageHeights`): top-down against `fitTargetHeight` less the
   pileup's floor, over the pooled answer of which strips draw. A lane
   reserves a subset of that stack, so each grouped lane's stack stays inside
-  the plot too; the fit budget still charges every lane's stack. A drag clamps to the room the other
-  bands leave (`belowCoverageDragBounds`), and a strip bound to 0 px is not
-  reserved (`hasArcsBand`/`hasSashimiBand` false), so it gets no handle on
-  top of the one above it.
-- `computeArcBand` is the single source of truth, decoupled from `showCoverage`.
-  Arc and sashimi strips are reserved **per section**; `coverageDisplayHeight`
-  and the fit-height row budget stay global, since re-deriving them from
+  the plot too; the fit budget still charges every lane's stack. A drag
+  clamps to the room the other bands leave (`belowCoverageDragBounds`), and a
+  strip bound to 0 px is not reserved (`hasArcsBand`/`hasSashimiBand` false),
+  so it gets no handle on top of the one above it.
+- **`laneBands` is the one statement of a lane's band stack**: which strips it
+  reserves, their tops, and where its arcs draw — their own strip, or over the
+  coverage histogram in up mode. `computeStackedSections`, the fit budget
+  (`laneBandOverheads`) and the binders all read the same band description.
+  The fit budget reads fetch-tier inputs only, since re-deriving it from
   `sections` routes the fit volatile back through the layout it feeds.
+- **A display-wide render state carries no section offsets.** The model builds
+  a `DisplayRenderState`; `sectionRenderState` adds a section's
+  `pileupTopOffset` and `coverageTopOffset`, and marks draw and hit-test by
+  that `RenderState` only. `buildSectionRenders` projects each section through
+  `sectionScreen.ts`' two scroll tiers, the same ones the overlays use.
+- **`readLayoutRecord` answers in content space**, and a view overlaying the
+  reads stops at `stickyBandHeight`, which is 0 when grouped — nothing scrolls
+  under a sticky band there.
 - Screen-x is not start/end-ordered — keep new sashimi geometry on the
   normalized fields. In shaders use `bpToClipX`, never
   `hpClipX(hpSplitUint(…))`.

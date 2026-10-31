@@ -521,7 +521,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               yOffsetsOverride?.[level] ??
               viewTop + view.getTrackYOffset(trackId)!,
             height: d.height,
-            coverageOffset: d.coverageDisplayHeight ?? 0,
+            stickyTop: d.stickyBandHeight ?? 0,
             scrollTop: d.scrollTop ?? 0,
             offsetPx: view.offsetPx,
           })

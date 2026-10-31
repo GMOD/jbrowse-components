@@ -37,8 +37,8 @@ interface OverlayDisplayBase extends Partial<ReadSource> {
   height: number
   scrollTop?: number
   regionTooLarge?: boolean
-  /** height of the coverage subtrack, on displays that have one */
-  coverageDisplayHeight?: number
+  /** the bands held out of the scroll, on displays that have any */
+  stickyBandHeight?: number
   /**
    * What the display's own connector overlay draws, LinearAlignmentsDisplay's
    * `bezierArcScope`: `'all'` under curved connectors, `'crossRegion'` in
@@ -154,22 +154,22 @@ export function placeOnRow(layout: ViewLayout, refName: string, coord: number) {
 // for a feature laid out at `layout` in a track of the given `height`.
 //   - Off-display features (see makeOffscreenLayout) snap to the bottom edge.
 //   - Otherwise it's the point `at` of the way down the layout rectangle (its
-//     midpoint by default), shifted by the track's vertical scroll and its
-//     coverage-subtrack offset.
-// The result is always clamped into [yOffset + coverageOffset, yOffset + height]
-// so the endpoint lands inside the visible pileup. AlignmentConnections relies
+//     midpoint by default; content space), shifted by the track's vertical
+//     scroll.
+// The result is always clamped into [yOffset + stickyTop, yOffset + height]
+// so the endpoint lands inside the visible scrolling content. AlignmentConnections relies
 // on the `<= yOffset + height` half of that invariant.
 export function computeOverlayY({
   yOffset,
   height,
-  coverageOffset,
+  stickyTop,
   scrollTop,
   layout,
   at = 0.5,
 }: {
   yOffset: number
   height: number
-  coverageOffset: number
+  stickyTop: number
   scrollTop: number
   layout: LayoutRecord
   at?: number
@@ -179,8 +179,8 @@ export function computeOverlayY({
   }
   const top = layout[1]
   const bot = layout[3]
-  const y = top - scrollTop + (bot - top) * at + coverageOffset
-  return yOffset + (y < coverageOffset ? coverageOffset : Math.min(y, height))
+  const y = top - scrollTop + (bot - top) * at
+  return yOffset + (y < stickyTop ? stickyTop : Math.min(y, height))
 }
 
 // Horizontal screen position of an overlay endpoint, the sibling of
@@ -240,11 +240,11 @@ export function computeOverlayRect({
         end: endBp,
       })
   if (coords) {
-    const { yOffset, height, coverageOffset, scrollTop } = level
+    const { yOffset, height, stickyTop, scrollTop } = level
     const left = Math.max(coords.left, 0)
     const right = Math.min(coords.left + coords.width, viewLayout.width)
-    const top = Math.max(layoutTop - scrollTop + coverageOffset, coverageOffset)
-    const bottom = Math.min(layoutBottom - scrollTop + coverageOffset, height)
+    const top = Math.max(layoutTop - scrollTop, stickyTop)
+    const bottom = Math.min(layoutBottom - scrollTop, height)
     if (right > left && bottom > top) {
       return {
         x: left,

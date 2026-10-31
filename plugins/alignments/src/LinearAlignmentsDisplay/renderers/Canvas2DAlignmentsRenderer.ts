@@ -21,9 +21,8 @@ import type { AlignmentsCoverageRegion } from './coverageMarks.ts'
 import type {
   AlignmentsRenderingBackend,
   AlignmentsSources,
+  DisplayRenderState,
   RenderBlock,
-  RenderState,
-  SectionRender,
   SectionSource,
 } from './rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -85,7 +84,7 @@ export function drawAlignmentsToCtx(
   ctx: Ctx2D,
   sources: AlignmentsSources,
   blocks: RenderBlock[],
-  state: RenderState,
+  state: DisplayRenderState,
 ) {
   return drawAlignmentBlocks(
     ctx,
@@ -119,7 +118,7 @@ export class Canvas2DAlignmentsRenderer
     this.regions = buildAlignmentsRegionMap(sources)
   }
 
-  renderBlocks(blocks: RenderBlock[], state: RenderState) {
+  renderBlocks(blocks: RenderBlock[], state: DisplayRenderState) {
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
     return drawAlignmentBlocks(this.ctx, this.regions, blocks, state)
   }
@@ -144,7 +143,7 @@ export function drawAlignmentBlocks(
   ctx: Ctx2D,
   { regions, sections }: Canvas2DRegionMap,
   blocks: RenderBlock[],
-  state: RenderState,
+  state: DisplayRenderState,
 ) {
   const { canvasWidth, canvasHeight } = state
 
@@ -159,14 +158,12 @@ export function drawAlignmentBlocks(
   // frame it should paint, blank included, and `drawSection` carries why.
   let painted = false
 
-  // Which marks draw this frame, resolved once. The gates read the
-  // display-wide `state` (the show flags are the same in every section), so
-  // asking them per section per block re-answered one question up to 120 times
-  // a frame at MAX_GROUPS.
-  const pileup = planMarks(PILEUP_MARKS, state)
-  const sectionStates = state.sections.map(sec =>
-    sectionRenderState(state, sec),
-  )
+  // Each section's state and the pileup marks it draws, resolved once per
+  // frame rather than per section per block.
+  const sectionFrames = state.sections.map(sec => {
+    const sectionState = sectionRenderState(state, sec)
+    return { sectionState, pileup: planMarks(PILEUP_MARKS, sectionState) }
+  })
 
   forEachClippedBlock(
     ctx,
@@ -179,21 +176,12 @@ export function drawAlignmentBlocks(
     // also gives the gate something real to answer: a block no section has
     // data for now costs neither the clip nor the SvgCanvas group.
     block => {
-      const found = state.sections
-        .map((sec, s) => ({
-          sec,
-          sectionState: sectionStates[s]!,
-          region: regions.get(sectionRegionKey(s, block.displayedRegionIndex)),
-        }))
-        .filter(
-          (
-            e,
-          ): e is {
-            sec: SectionRender
-            sectionState: RenderState
-            region: Canvas2DRegion
-          } => Boolean(e.region),
+      const found = state.sections.flatMap((sec, s) => {
+        const region = regions.get(
+          sectionRegionKey(s, block.displayedRegionIndex),
         )
+        return region ? [{ sec, ...sectionFrames[s]!, region }] : []
+      })
       return found.length > 0 ? found : undefined
     },
     (sections, block, { scissorX, scissorW }) => {
@@ -204,7 +192,7 @@ export function drawAlignmentBlocks(
       // Each stacked section sets its own vertical offsets and clip bands.
       // Section 0's region key equals the raw region index, so the ungrouped
       // (single-section) path reproduces the prior draw exactly.
-      for (const { sec, sectionState, region } of sections) {
+      for (const { sec, sectionState, pileup, region } of sections) {
         if (state.coverage.height > 0) {
           withClip(
             ctx,
@@ -250,7 +238,7 @@ function paintBands(
   ctx: Ctx2D,
   sections: readonly SectionSource[],
   blocks: RenderBlock[],
-  state: RenderState,
+  state: DisplayRenderState,
 ) {
   const { canvasWidth, canvasHeight } = state
   forEachBandPass(sections, state, {

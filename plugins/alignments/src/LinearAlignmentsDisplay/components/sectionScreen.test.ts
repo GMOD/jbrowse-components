@@ -37,7 +37,7 @@ describe('sectionBandBottom', () => {
 })
 
 describe('onPileupBand', () => {
-  const section = { topOffset: 90, pileupHeight: 400 }
+  const section = { pileupTop: 90, pileupHeight: 400 }
   it('excludes the sticky strips an ungrouped pileup scrolls under', () => {
     const scrolled = { isGrouped: false, scrollTop: 120, canvasHeight: 600 }
     expect(onPileupBand(section, 70, scrolled)).toBe(false)
@@ -48,7 +48,7 @@ describe('onPileupBand', () => {
     expect(onPileupBand(section, 450, ungrouped)).toBe(false)
   })
   it('is empty for a collapsed band', () => {
-    expect(onPileupBand({ topOffset: 90, pileupHeight: 0 }, 90, grouped)).toBe(
+    expect(onPileupBand({ pileupTop: 90, pileupHeight: 0 }, 90, grouped)).toBe(
       false,
     )
   })

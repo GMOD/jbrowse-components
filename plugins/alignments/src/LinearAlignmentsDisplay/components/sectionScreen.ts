@@ -14,8 +14,8 @@ import { bpOffsetInRegion } from '@jbrowse/core/util/Base1DUtils'
 // `bandScreenTop` projects the sticky-capable tier (coverage/arc/sashimi band
 // tops, and a section's pileup-clip ceiling, which clips identically).
 // `contentScreenY` projects the always-scrolling tier (pileup rows, pileup band
-// bottom). The renderer's device-clip equivalent is `buildSectionRenders` in
-// sectionLayout.ts — keep the two in step.
+// bottom). The renderers' clips (`buildSectionRenders`) project through these
+// two as well.
 export interface ScrollModel {
   isGrouped: boolean
   scrollTop: number
@@ -83,12 +83,12 @@ export function sectionBandBottom(
 // below the clip ceiling, where ungrouped rows scroll under the sticky bands,
 // and above the band bottom.
 export function onPileupBand(
-  section: { topOffset: number; pileupHeight: number },
+  section: { pileupTop: number; pileupHeight: number },
   y: number,
   m: ScrollModel,
 ) {
   return (
-    y >= bandScreenTop(section.topOffset, m) &&
-    y < sectionBandBottom(section.topOffset, section.pileupHeight, m)
+    y >= bandScreenTop(section.pileupTop, m) &&
+    y < sectionBandBottom(section.pileupTop, section.pileupHeight, m)
   )
 }

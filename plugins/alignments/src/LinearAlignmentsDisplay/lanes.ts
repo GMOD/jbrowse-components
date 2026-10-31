@@ -7,7 +7,7 @@ import type {
 } from '../RenderAlignmentDataRPC/types.ts'
 import type { GroupSize } from './groupLayout.ts'
 import type { GroupId } from './groupedDataMaps.ts'
-import type { Section, SectionGroupInput } from './sectionLayout.ts'
+import type { Section } from './sectionLayout.ts'
 
 /**
  * One stacked lane: its identity, every per-lane collection the section pipeline
@@ -159,80 +159,6 @@ export function drawnLanesOf(lanes: AlignmentLane[]) {
   return lanes.length > 0 ? lanes : [SYNTHETIC_LANE]
 }
 
-// The lane fields `computeStackedSections` reads. Paired with `zipLaneSections`
-// below, which puts the answer back on the lane it came from: both live here so
-// the by-index correspondence between the two lists is one file's statement.
-export function toSectionGroupInputs(
-  lanes: readonly AlignmentLane[],
-): SectionGroupInput[] {
-  return lanes.map(lane => ({
-    key: lane.groupKey,
-    label: lane.label,
-    maxY: lane.maxY,
-    hasArcs: lane.hasArcs,
-    hasSashimiDownArcs: lane.hasSashimiDownArcs,
-    minPileupHeight: lane.heightOverridePx,
-  }))
-}
-
-export interface LaneSection extends AlignmentLane {
-  topOffset: number
-  coverageTop: number
-  coverageHeight: number
-  // Bottom of this section's arc band (== top of its sashimi band), so the
-  // arc-resize handle can anchor per group like coverage/pileup — and whether
-  // this lane reserved that band at all, since a lane with no arcs has none to
-  // resize.
-  sashimiBandTop: number
-  hasArcsBand: boolean
-  // The arcs' DRAW band, which is not the same question as `hasArcsBand`
-  // (whether a strip was reserved): up-mode arcs reserve nothing and draw over
-  // the coverage histogram. This is the rect `buildSectionRenders` hands the
-  // renderers, in content space, so the hover hit test measures against the band
-  // the arcs were actually plotted into.
-  arcBandTop: number
-  arcBandHeight: number
-  arcDown: boolean
-  hasSashimiBand: boolean
-  pileupHeight: number
-  // Room under the pileup band for a dipping connector — see
-  // `Section.dipReserve`.
-  dipReserve: number
-  // The strip down to the next section, which is what the label chip heads —
-  // see `Section.height`.
-  height: number
-}
-
-/**
- * Every lane paired with its band geometry, in stacking order: the list the
- * overlays, the hit-test pipeline and both renderers all walk.
- *
- * The pairing is by INDEX and that is structural, not a coincidence —
- * `computeStackedSections` emits one section per lane in order, and both lists
- * come from `drawnLanesOf`. Deriving the two from different sources is what used
- * to let them disagree whenever a section was synthesized.
- *
- * Carrying the lane's own collections here is what retires the by-key lookup
- * every downstream pass used to do (`?? new Map()` for a key that structurally
- * cannot be missing, spelled once per consumer).
- */
-export function zipLaneSections(
-  lanes: readonly AlignmentLane[],
-  sections: readonly Section[],
-): LaneSection[] {
-  return sections.map((sec, i) => ({
-    ...lanes[i]!,
-    topOffset: sec.pileupTop,
-    coverageTop: sec.coverageTop,
-    coverageHeight: sec.coverageHeight,
-    sashimiBandTop: sec.sashimiBandTop,
-    hasArcsBand: sec.hasArcsBand,
-    arcBandTop: sec.arcBandTop,
-    arcBandHeight: sec.arcBandHeight,
-    arcDown: sec.arcDown,
-    hasSashimiBand: sec.hasSashimiBand,
-    pileupHeight: sec.pileupHeight,
-    dipReserve: sec.dipReserve,
-    height: sec.height,
-  }))
-}
+// A lane with its band geometry: the list the overlays, the hit-test pipeline
+// and both renderers all walk.
+export type LaneSection = AlignmentLane & Section

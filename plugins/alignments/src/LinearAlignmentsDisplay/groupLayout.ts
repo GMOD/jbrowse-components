@@ -170,7 +170,7 @@ function regionsOf(ctx: GroupLayoutContext, key: string) {
 //
 // `coverageOnly` is the label chip's chevron: that lane draws its coverage band
 // and no pileup at all, so there is no placement to do and every row is 0 —
-// `sections` reads its maxY as 0 (`groupMaxYFor`) whatever this returns. The
+// its lane's maxY is 0 (`buildLanes`) whatever this returns. The
 // zero-row layout is what skips the dominant cost, `cloneWithLayout`'s per-feature
 // `remapYs` gather and modification Flatbush (the same cost
 // `layoutGroupRowCounts` exists to avoid); every other consumer of a group's map

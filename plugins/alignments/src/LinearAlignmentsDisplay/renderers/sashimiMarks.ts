@@ -21,7 +21,11 @@ import type {
   SashimiBandFeed,
   SashimiSide,
 } from '../../features/sashimi/bandFeed.ts'
-import type { RenderState, SectionRender } from './rendererTypes.ts'
+import type {
+  DisplayRenderState,
+  RenderState,
+  SectionRender,
+} from './rendererTypes.ts'
 import type { LinkParams, Mark } from '@jbrowse/render-core/marks'
 
 /** One side's band in screen px: where its arcs stand and the box that clips them. */
@@ -39,7 +43,7 @@ export interface SashimiBandState extends RenderState {
 
 /** The state the sashimi marks draw and hit-test a section's bands by. */
 export function sashimiBandState(
-  state: RenderState,
+  state: DisplayRenderState,
   sec: SectionRender,
 ): SashimiBandState {
   return {
@@ -55,7 +59,7 @@ export function sashimiBandState(
  * reserved, short of its bottom by the room a count label needs past an apex.
  */
 export function sashimiBandsOf(
-  state: RenderState,
+  state: DisplayRenderState,
   sec: SectionRender,
 ): SashimiBandState['sashimi'] {
   const upHeight = state.coverage.height - 2 * YSCALEBAR_LABEL_OFFSET
@@ -144,7 +148,7 @@ export const SASHIMI_HITS = { up: 'upHits', down: 'downHits' } as const
  * gets none, nor does one with nothing on the canvas.
  */
 export function sashimiLabels(
-  state: RenderState,
+  state: DisplayRenderState,
   sectionFeeds: readonly (ReadonlyMap<number, SashimiBandFeed> | undefined)[],
 ): SashimiLabel[] {
   const labels: SashimiLabel[] = []
@@ -153,17 +157,23 @@ export function sashimiLabels(
     if (!feeds || feeds.size === 0) {
       return
     }
-    const bands = sashimiBandsOf(state, sec)
+    const bandState = sashimiBandState(state, sec)
     for (const side of SASHIMI_SIDES) {
-      const band = bands[side]
+      const band = bandState.sashimi[side]
       if (band) {
-        const params = sideParams(band, state, side === 'down')
+        const params = sideParams(band, bandState, side === 'down')
         for (const [regionIdx, feed] of feeds) {
           const block = canvasWideBlock(regionIdx, state.canvasWidth)
           const hits = feed[SASHIMI_HITS[side]]
           for (let i = 0; i < hits.length; i++) {
             const { key, count } = hits[i]!
-            const apex = linkLabelAnchor(feed[side], block, state, params, i)
+            const apex = linkLabelAnchor(
+              feed[side],
+              block,
+              bandState,
+              params,
+              i,
+            )
             if (
               apex &&
               2 * apex.halfWidth >= sashimiLabelSpanPx(count) &&

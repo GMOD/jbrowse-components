@@ -2,7 +2,7 @@ import { recordPath } from '@jbrowse/render-core/marks'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 
 import { drawAlignmentsToCtx } from '../renderers/Canvas2DAlignmentsRenderer.ts'
-import { ARC_LINK_MARKS } from '../renderers/arcMarks.ts'
+import { ARC_LINK_MARKS, arcBandState } from '../renderers/arcMarks.ts'
 import {
   applyView,
   createTestAlignmentsDisplay,
@@ -101,7 +101,7 @@ test('and it draws, with both feet on their own region', () => {
     recorder.ctx,
     display.themed.sourceSections[0]!.arcFeeds.get(0)!,
     canvasWideBlock(0, renderState.canvasWidth),
-    { ...renderState, arcBand: renderState.sections[0]!.arcBand! },
+    arcBandState(renderState, renderState.sections[0]!)!,
   )
   // The two feet straddle the seam, which is the claim the picture makes and
   // the one a per-block pass could not: at bpPerPx 10 with the first region

@@ -100,12 +100,12 @@ const PileupTruncationRule = observer(function PileupTruncationRule({
         if (!section.ceilingClipped) {
           return null
         }
-        // The always-scrolling tier: `topOffset` is the section's `pileupTop`
-        // and the rows below it scroll in both grouped and ungrouped modes, so
+        // The always-scrolling tier: the rows below `pileupTop` scroll in both
+        // grouped and ungrouped modes, so
         // this is `contentScreenY` rather than `bandScreenTop` — a sticky
         // projection would park the line over reads it is not the end of.
         const top = contentScreenY(
-          section.topOffset + section.pileupHeight,
+          section.pileupTop + section.pileupHeight,
           scroll,
         )
         // Culled on the pair's extent, not the line's alone. The caption hangs

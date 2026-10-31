@@ -10,7 +10,7 @@ import { shouldOutlineReads } from './rendererTypes.ts'
 
 import type { PaletteColorKey, RGBColor } from '../../shaders/colors.ts'
 import type { ReadColorCategory } from '../colorUtils.ts'
-import type { RenderState } from './rendererTypes.ts'
+import type { DisplayRenderState, RenderState } from './rendererTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -90,7 +90,7 @@ const READ_CATEGORY_UBO_SLOTS: readonly (readonly [
  */
 export function writePileupPalette(
   { f32, u32 }: PileupUniformViews,
-  state: RenderState,
+  state: DisplayRenderState,
 ) {
   const c = state.colors
   for (const [slot, key] of PALETTE_UBO_SLOTS) {

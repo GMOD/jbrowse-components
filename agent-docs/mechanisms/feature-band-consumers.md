@@ -49,7 +49,7 @@ choice between them is not a matter of taste:
 
 | The band is | Answer | In tree |
 | --- | --- | --- |
-| another view of a payload the host already has | own bands, pure section math | `belowCoverageBandsGeometry`, `computeStackedSections` |
+| another view of a payload the host already has | own bands, pure section math | `laneBands`, `computeStackedSections` |
 | the same band two hosts draw | package it — buffers, passes, layer order | `coverageBandBuffers` in `packages/render-core/src/coverageBand.ts` |
 | another display's whole record rendering | consume that pipeline as functions | the variant display's `records` band (ADR-254), over `@jbrowse/plugin-features/band` and LinearBasicDisplay's own fit ladder |
 | the same display with different data | inherit the model | `LGVSyntenyDisplay` |
@@ -149,7 +149,7 @@ answer to both.
 - **Don't generalize the band allocators.** Sticky coverage, scrolling sections
   and a fixed top band differ where they should. What they share is the
   ten-line fold and the `Band` contract (ADR-096) — the allocators around it
-  (`belowCoverageBandsGeometry`, `computeStackedSections`, MAF's `topBands`)
+  (`laneBands`, `computeStackedSections`, MAF's `topBands`)
   stay per-display functions.
 - **Don't package a consumer's fit chain until a second consumer exists.** The
   producing display's own chain is welded to its incremental layout memos and

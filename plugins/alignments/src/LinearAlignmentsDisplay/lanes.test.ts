@@ -1,11 +1,5 @@
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
-import {
-  buildLanes,
-  drawnLanesOf,
-  laneExpandable,
-  toSectionGroupInputs,
-  zipLaneSections,
-} from './lanes.ts'
+import { buildLanes, drawnLanesOf, laneExpandable } from './lanes.ts'
 import { computeStackedSections } from './sectionLayout.ts'
 
 import type { RowCapSource } from '../RenderAlignmentDataRPC/types.ts'
@@ -94,10 +88,8 @@ test('drawnLanesOf substitutes the synthetic lane for an empty list', () => {
   expect(drawnLanesOf([])[0]!.maxY).toBe(0)
 })
 
-// The pairing that `zipLaneSections` relies on: one section per lane, in order.
-// Deriving the two lists from different sources is what used to let them
-// disagree whenever a section was synthesized.
-test('a section is emitted per lane, and the zip puts each one back on its own lane', () => {
+// One section per lane, in order, each carrying its own lane.
+test('a section is emitted per lane, carrying that lane', () => {
   const lanes = buildLanes(
     input({
       order: [
@@ -110,25 +102,22 @@ test('a section is emitted per lane, and the zip puts each one back on its own l
       ]),
     }),
   )
-  const { sections } = computeStackedSections(toSectionGroupInputs(lanes), {
-    showCoverage: false,
-    coverageHeight: 0,
-    coverageYOffset: 0,
-    drawnReadConnections: 'off',
-    readConnectionsDown: false,
-    readConnectionsHeight: 0,
-    rowHeight: 10,
-    showSashimi: false,
-    sashimiHeight: 0,
-    minSectionHeight: 0,
-  })
-  expect(sections).toHaveLength(2)
-
-  const zipped = zipLaneSections(lanes, sections)
-  expect(zipped.map(s => s.groupKey)).toEqual(['a', 'b'])
+  const { sections } = computeStackedSections(
+    lanes,
+    {
+      showCoverage: false,
+      coverageHeight: 0,
+      drawnReadConnections: 'off',
+      readConnectionsDown: false,
+      readConnectionsHeight: 0,
+      showSashimi: false,
+      sashimiHeight: 0,
+    },
+    { rowHeight: 10, minSectionHeight: 0, dipReservePx: () => 0 },
+  )
+  expect(sections.map(s => s.groupKey)).toEqual(['a', 'b'])
   // Each entry carries its lane's own collections alongside its own geometry,
   // which is what retires the by-key lookup downstream.
-  expect(zipped[1]!.maxY).toBe(9)
-  expect(zipped[1]!.topOffset).toBe(sections[1]!.pileupTop)
-  expect(zipped[0]!.topOffset).toBeLessThan(zipped[1]!.topOffset)
+  expect(sections[1]!.maxY).toBe(9)
+  expect(sections[0]!.pileupTop).toBeLessThan(sections[1]!.pileupTop)
 })

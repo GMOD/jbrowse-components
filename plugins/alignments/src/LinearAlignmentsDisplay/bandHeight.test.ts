@@ -104,7 +104,6 @@ describe('a stated band height past its ceiling', () => {
       readConnectionsHeight: ceiling,
     })
     expect(display.sections.sections[0]!.coverageHeight).toBe(ceiling)
-    expect(display.belowCoverageBands.coverageHeight).toBe(ceiling)
   })
 })
 

@@ -1,10 +1,5 @@
-import { arcStrokeScale } from '../../features/arcs/arcLineWidth.ts'
-import { OPAQUE_MISMATCHES } from '../../features/mismatch/qualityOpacity.ts'
 import { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
-import { TEST_COVERAGE } from '../testUtils.ts'
-import { computeArcBand, pileupCellWidth } from './rendererTypes.ts'
-
-import type { ArcBandInput, RenderState } from './rendererTypes.ts'
+import { pileupCellWidth } from './rendererTypes.ts'
 
 // Contiguous base walls take a half-pixel overdraw to close Canvas2D
 // anti-aliasing seams; sparse marks don't.
@@ -28,54 +23,6 @@ describe('pileup cell width', () => {
   })
 })
 
-// Both take the coverage band as its RESERVED height now, so the one helper
-// serves the render state and `computeArcBand` with a single field.
-function makeState(
-  overrides: Partial<RenderState & ArcBandInput> = {},
-): RenderState & ArcBandInput {
-  return {
-    scrollTop: 0,
-    readConnectionsColorField: 'insertSizeAndOrientation',
-    readConnectionsStrokeScale: arcStrokeScale(1),
-    linkRegions: [],
-    readConnectionsDown: false,
-    readConnectionsHeight: 100,
-    featureHeight: 10,
-    featureSpacing: 2,
-    coverageReservedPx: 0,
-    coverage: { ...TEST_COVERAGE, height: 50 },
-    coverageYOffset: 0,
-    sashimiHeight: 0,
-    showMismatches: true,
-    fadeLowFrequency: true,
-    qualityOpacity: OPAQUE_MISMATCHES,
-    showSoftClips: false,
-    basesField: undefined,
-    canvasWidth: 800,
-    canvasHeight: 600,
-    colors: {} as RenderState['colors'],
-    unit: 'read',
-    drawnReadConnections: 'off',
-    showLinkedReadLines: false,
-    collapseSections: false,
-    pileupTopOffset: 50,
-    coverageTopOffset: 0,
-    sections: [
-      {
-        pileupTopOffset: 50,
-        coverageTopOffset: 0,
-        covClipTop: 0,
-        covClipHeight: 600,
-        pileupClipTop: 50,
-        pileupClipHeight: 550,
-        connectorClipTop: 0,
-        connectorClipHeight: 0,
-      },
-    ],
-    ...overrides,
-  }
-}
-
 describe('interbaseRangeEnds', () => {
   it('computes cumulative ends', () => {
     const { insEnd, scEnd, hcEnd } = interbaseRangeEnds({
@@ -97,102 +44,5 @@ describe('interbaseRangeEnds', () => {
     expect(insEnd).toBe(0)
     expect(scEnd).toBe(0)
     expect(hcEnd).toBe(0)
-  })
-})
-
-describe('computeArcBand', () => {
-  it('is undefined when readConnections is off', () => {
-    expect(computeArcBand(makeState())).toBeUndefined()
-  })
-
-  it('is undefined when readConnectionsHeight is 0', () => {
-    expect(
-      computeArcBand(
-        makeState({ drawnReadConnections: 'link', readConnectionsHeight: 0 }),
-      ),
-    ).toBeUndefined()
-  })
-
-  it('up mode overlays the coverage band when coverage is shown', () => {
-    expect(
-      computeArcBand(
-        makeState({
-          drawnReadConnections: 'link',
-          readConnectionsHeight: 60,
-          coverageReservedPx: 80,
-        }),
-      ),
-    ).toEqual({ top: 0, height: 80, down: false })
-  })
-
-  it('up mode takes its own band when coverage is hidden (decoupled)', () => {
-    expect(
-      computeArcBand(
-        makeState({
-          drawnReadConnections: 'link',
-          readConnectionsHeight: 60,
-          coverageReservedPx: 0,
-        }),
-      ),
-    ).toEqual({ top: 0, height: 60, down: false })
-  })
-
-  // The scalebar-label inset belongs to the coverage histogram: overlaying it
-  // means anchoring on its baseline, which is coverageYOffset up from the
-  // bottom. Every case above passes coverageYOffset: 0, so neither side of that
-  // rule was pinned.
-  it('up mode anchors on the coverage baseline, inset and all', () => {
-    expect(
-      computeArcBand(
-        makeState({
-          drawnReadConnections: 'link',
-          readConnectionsHeight: 60,
-          coverageReservedPx: 80,
-          coverageYOffset: 5,
-        }),
-      ),
-    ).toEqual({ top: 0, height: 75, down: false })
-  })
-
-  it('up mode keeps its whole band when there is no coverage to inset from', () => {
-    // `reservesArcsBand` reserves the full readConnectionsHeight here, so a
-    // band shorter than that floats the arcs above the bottom of their own
-    // strip and shortens availH — for a baseline that isn't on screen.
-    expect(
-      computeArcBand(
-        makeState({
-          drawnReadConnections: 'link',
-          readConnectionsHeight: 60,
-          coverageReservedPx: 0,
-          coverageYOffset: 5,
-        }),
-      ),
-    ).toEqual({ top: 0, height: 60, down: false })
-  })
-
-  it('down mode sits below the coverage band', () => {
-    expect(
-      computeArcBand(
-        makeState({
-          drawnReadConnections: 'link',
-          readConnectionsHeight: 60,
-          readConnectionsDown: true,
-          coverageReservedPx: 80,
-        }),
-      ),
-    ).toEqual({ top: 80, height: 60, down: true })
-  })
-
-  it('down mode renders at the top when coverage is hidden (decoupled)', () => {
-    expect(
-      computeArcBand(
-        makeState({
-          drawnReadConnections: 'link',
-          readConnectionsHeight: 60,
-          readConnectionsDown: true,
-          coverageReservedPx: 0,
-        }),
-      ),
-    ).toEqual({ top: 0, height: 60, down: true })
   })
 })

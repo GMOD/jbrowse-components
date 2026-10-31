@@ -14,7 +14,7 @@ import type { QualityOpacity } from '../../features/mismatch/qualityOpacity.ts'
 import type { SashimiBandFeed } from '../../features/sashimi/bandFeed.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ArcColorField, BaseLayerField } from '../../shared/types.ts'
-import type { AlignmentsUnit, ReadConnectionsMode } from '../constants.ts'
+import type { AlignmentsUnit } from '../constants.ts'
 import type { CoverageBandState } from '@jbrowse/alignments-core'
 import type { LinkRegion, LinkSizeScale } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -22,7 +22,10 @@ import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase
 
 export type CoverageBandSettings = Omit<CoverageBandState, 'top' | 'colors'>
 
-export interface RenderState {
+// The display-wide render state the model builds. A section's two Y offsets
+// are not on it: `sectionRenderState` adds them, so nothing can read a
+// pileup top off a state that never had one.
+export interface DisplayRenderState {
   scrollTop: number
   featureHeight: number
   featureSpacing: number
@@ -65,19 +68,20 @@ export interface RenderState {
   arcsYDomainBp?: number
   // The view's displayed regions as the band's connections place their feet.
   linkRegions: readonly LinkRegion[]
-  // Pileup row 0 top, screen px before scrollTop subtraction (GPU `covOffset`
-  // uniform, Canvas2D `pileupRowY` base). For ungrouped this is the sticky
-  // coverage height; the renderers override it per section while looping.
-  pileupTopOffset: number
-  // Screen px of the coverage area's top edge (GPU `covTop` uniform; added to
-  // Canvas2D coverage draws). 0 = sticky-at-top (ungrouped). Grouped sections
-  // pass their scrolled coverage top so the band scrolls with its section.
-  coverageTopOffset: number
   // Per-section vertical geometry, in stacking order matching
   // `AlignmentsSources.sections`. Always length >= 1; ungrouped is one section.
   // The renderers loop these, cloning the per-section offsets into the state
   // they hand the draw helpers and clipping to each band.
   sections: SectionRender[]
+}
+
+// The state one section draws and hit-tests by.
+export interface RenderState extends DisplayRenderState {
+  // Pileup row 0 top, content px (GPU `covOffset` uniform, Canvas2D
+  // `pileupRowY` base); the painters subtract scrollTop.
+  pileupTopOffset: number
+  // Screen px of the coverage band's top edge (GPU `covTop` uniform).
+  coverageTopOffset: number
 }
 
 // One stacked section's resolved screen-space draw geometry. All values are
@@ -114,10 +118,10 @@ export function sectionRegionKey(sectionIdx: number, regionIdx: number) {
   return sectionIdx * SECTION_KEY_STRIDE + regionIdx
 }
 
-// Each stacked section draws with its own vertical offsets. Shared by both
-// renderers so the per-section override list can't drift between backends.
+// The state a section draws by. Shared by both renderers and the hit tests so
+// the per-section list can't drift between them.
 export function sectionRenderState(
-  state: RenderState,
+  state: DisplayRenderState,
   sec: SectionRender,
 ): RenderState {
   return {
@@ -150,7 +154,7 @@ export interface AlignmentsSources {
 export interface AlignmentsRenderingBackend extends RenderingBackend {
   upload(key: 'sources', sources: AlignmentsSources): void
   release(key: 'sources'): void
-  renderBlocks(blocks: RenderBlock[], state: RenderState): boolean
+  renderBlocks(blocks: RenderBlock[], state: DisplayRenderState): boolean
 }
 
 export type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -164,64 +168,9 @@ export interface ArcBand {
   down: boolean
 }
 
-// The fields `computeArcBand` reads. Narrower than `RenderState` so the LAYOUT
-// can place the band without depending on the full render state, which also
-// needs the color palette to exist — and the layout runs before there is one.
-//
-// It was narrowed for the insert-size ruler, which used to assemble a band of
-// its own from these. It no longer does: a ruler per section has to read the
-// band the layout placed, since only that one knows where each section's is.
-export interface ArcBandInput {
-  /**
-   * The coverage band's `reservedPx` — 0 when it is off. A resolved number
-   * rather than the `(showCoverage, stated height)` pair, because re-combining
-   * that pair here is the one spelling of "off spends 0 px" that `bandLayout`
-   * does not own, and it stopped agreeing with the fold once the band gained
-   * `bounds` a stated height is clamped to.
-   */
-  coverageReservedPx: number
-  coverageYOffset: number
-  drawnReadConnections: ReadConnectionsMode
-  readConnectionsDown?: boolean
-  readConnectionsHeight?: number
-}
-
-// Decoupled from `showCoverage`: up-mode arcs overlay the coverage band when
-// it's shown, otherwise they take their own `readConnectionsHeight` band.
-// Down-mode arcs always sit in their own band below coverage. Returns undefined
-// when there are no arcs to draw.
-export function computeArcBand(state: ArcBandInput): ArcBand | undefined {
-  const covH = state.coverageReservedPx
-  const h = state.readConnectionsHeight ?? 0
-  if (state.drawnReadConnections === 'off' || h === 0) {
-    return undefined
-  }
-  if (state.readConnectionsDown) {
-    return { top: covH, height: h, down: true }
-  }
-  // Up mode overlays the coverage histogram when there is one, so the arcs'
-  // zero anchor has to be the coverage BASELINE — which sits coverageYOffset
-  // above the band bottom, that being the inset the scalebar labels reserve.
-  //
-  // With coverage hidden the band is the arcs' own and there is no baseline to
-  // meet, so the inset is a constant borrowed from an absent band: it left the
-  // arcs floating coverageYOffset px above the bottom of the strip
-  // `reservesArcsBand` had already reserved for them, and took the same px off
-  // `availH`. Down mode never subtracted it, which is the tell.
-  //
-  // This picks where the band's height comes from; it is not a `covH > 0` gate
-  // on whether arcs draw — that decoupling is the point of this function.
-  // Floored here, per the band rule: a config-declared coverageHeight below the
-  // 5px inset is an honored state (bandHeight.test.ts), and a negative height
-  // slips the band marks' `height > 0` gate.
-  const bandH = covH > 0 ? Math.max(0, covH - state.coverageYOffset) : h
-  return { top: 0, height: bandH, down: false }
-}
-
-// The fields `shouldDrawOverlaps` reads. Narrower than `RenderState` for the
-// same reason `ArcBandInput` is — so the state model can ask the question
-// without assembling a render state, which it does to decide whether the legend
-// names the tint. A legend row explaining a darkness the pass isn't drawing is
+// The fields `shouldDrawOverlaps` reads. Narrower than `RenderState` so the
+// state model can ask the question without assembling a render state, which it
+// does to decide whether the legend names the tint. A legend row explaining a darkness the pass isn't drawing is
 // the failure this shares rather than restates.
 export interface OverlapDrawInput {
   unit: AlignmentsUnit

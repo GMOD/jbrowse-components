@@ -236,7 +236,7 @@ const ConnectionBandResizeHandles = observer(
 
               {section.hasSashimiBand ? (
                 <PileupResizeHandle
-                  seam={bandScreenTop(section.topOffset, scroll)}
+                  seam={bandScreenTop(section.pileupTop, scroll)}
                   canvasHeight={height}
                   gain={stackedBandGain(
                     renderSections,
@@ -282,7 +282,7 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
           return null
         }
         const bottom = contentScreenY(
-          section.topOffset + section.pileupHeight + section.dipReserve,
+          section.pileupTop + section.pileupHeight + section.dipReserve,
           scroll,
         )
         // from the height the lane was given, which can sit between two row

@@ -43,7 +43,7 @@ function renderOverlay(overrides: Partial<LinearAlignmentsDisplayModel> = {}) {
       label: `HP: ${i + 1}`,
       coverageTop: i * SECTION_HEIGHT,
       coverageHeight: 40,
-      topOffset: i * SECTION_HEIGHT + 40,
+      pileupTop: i * SECTION_HEIGHT + 40,
       pileupHeight: 80,
       height: SECTION_HEIGHT,
       collapsed: false,

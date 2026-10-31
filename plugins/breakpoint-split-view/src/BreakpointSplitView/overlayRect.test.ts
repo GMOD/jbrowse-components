@@ -18,7 +18,7 @@ const viewLayout: ViewLayout = {
 const level: OverlayLevel = {
   yOffset: 100,
   height: 200,
-  coverageOffset: 40,
+  stickyTop: 40,
   scrollTop: 0,
   offsetPx: 0,
 }
@@ -31,8 +31,8 @@ const rect = (layout: LayoutRecord, overrides?: Partial<OverlayLevel>) =>
     viewLayout,
   })
 
-test('boxes a laid-out read at its own span, below the coverage subtrack', () => {
-  expect(rect([100, 10, 200, 20])).toEqual({
+test('boxes a laid-out read at its own span', () => {
+  expect(rect([100, 50, 200, 60])).toEqual({
     x: 100,
     y: 150,
     width: 100,
@@ -41,7 +41,7 @@ test('boxes a laid-out read at its own span, below the coverage subtrack', () =>
 })
 
 test('the vertical scroll moves the box with the read', () => {
-  expect(rect([100, 60, 200, 70], { scrollTop: 30 })).toEqual({
+  expect(rect([100, 100, 200, 110], { scrollTop: 30 })).toEqual({
     x: 100,
     y: 170,
     width: 100,
@@ -49,8 +49,8 @@ test('the vertical scroll moves the box with the read', () => {
   })
 })
 
-test('a read scrolled above the pileup has no box', () => {
-  expect(rect([100, 10, 200, 20], { scrollTop: 100 })).toBeUndefined()
+test('a read scrolled under the sticky bands has no box', () => {
+  expect(rect([100, 50, 200, 60], { scrollTop: 100 })).toBeUndefined()
 })
 
 test('a read scrolled below the pileup has no box', () => {
@@ -62,12 +62,12 @@ test('an off-display segment has no box — its connector is the only mark', () 
 })
 
 test('a read running past the panel edges is clamped to the panel', () => {
-  const layout: LayoutRecord = [-200, 10, 900, 20]
+  const layout: LayoutRecord = [-200, 50, 900, 60]
   expect(rect(layout)).toEqual({ x: 0, y: 150, width: 500, height: 10 })
 })
 
 test('a read entirely off the panel has no box', () => {
-  expect(rect([700, 10, 800, 20])).toBeUndefined()
+  expect(rect([700, 50, 800, 60])).toBeUndefined()
 })
 
 // The reason this goes through getLayoutHighlightCoords rather than a bpToPx per
@@ -83,7 +83,7 @@ test('a read hanging past the displayed region keeps the half that is inside', (
   expect(
     computeOverlayRect({
       level,
-      layout: [50, 10, 250, 20],
+      layout: [50, 50, 250, 60],
       refName: 'chr1',
       viewLayout: clipped,
     }),
@@ -95,7 +95,7 @@ test('a sub-pixel read keeps a visible box', () => {
   expect(
     computeOverlayRect({
       level,
-      layout: [100, 10, 200, 20],
+      layout: [100, 50, 200, 60],
       refName: 'chr1',
       viewLayout: zoomedOut,
     })?.width,

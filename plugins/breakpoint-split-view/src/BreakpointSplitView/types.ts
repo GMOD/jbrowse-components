@@ -52,8 +52,11 @@ export interface OverlayLevel {
   yOffset: number
   /** rendered height of the track body */
   height: number
-  /** height of the coverage subtrack sitting above the pileup */
-  coverageOffset: number
+  /**
+   * how far down the track body the scrolling content starts on screen: the
+   * bands a display keeps sticky above it, 0 where nothing is sticky
+   */
+  stickyTop: number
   /** the track body's vertical scroll */
   scrollTop: number
   /** the view's horizontal scroll, to turn absolute bp px into screen px */

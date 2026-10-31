@@ -29,7 +29,7 @@ describe('chainHighlightRects', () => {
   const level = (yOffset: number): OverlayLevel => ({
     yOffset,
     height: 100,
-    coverageOffset: 0,
+    stickyTop: 0,
     scrollTop: 0,
     offsetPx: 0,
   })

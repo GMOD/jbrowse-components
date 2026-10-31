@@ -95,7 +95,7 @@ describe('makeOffscreenLayout / isOffscreenLayout', () => {
 })
 
 describe('computeOverlayY', () => {
-  const base = { yOffset: 1000, height: 200, coverageOffset: 40, scrollTop: 0 }
+  const base = { yOffset: 1000, height: 200, stickyTop: 40, scrollTop: 0 }
 
   test('off-display features snap to the track bottom edge', () => {
     expect(
@@ -103,33 +103,44 @@ describe('computeOverlayY', () => {
     ).toBe(base.yOffset + base.height)
   })
 
-  test('uses the layout rectangle vertical midpoint plus coverage offset', () => {
-    // midpoint of [50,90] is 70, +40 coverage offset = 110
-    expect(computeOverlayY({ ...base, layout: [0, 50, 0, 90] })).toBe(
+  test('uses the layout rectangle vertical midpoint', () => {
+    expect(computeOverlayY({ ...base, layout: [0, 90, 0, 130] })).toBe(
       1000 + 110,
     )
   })
 
   test('`at` picks a point down the rectangle, 0 its top and 1 its bottom', () => {
-    expect(computeOverlayY({ ...base, layout: [0, 50, 0, 90], at: 0 })).toBe(
+    expect(computeOverlayY({ ...base, layout: [0, 90, 0, 130], at: 0 })).toBe(
       1000 + 90,
     )
-    expect(computeOverlayY({ ...base, layout: [0, 50, 0, 90], at: 1 })).toBe(
+    expect(computeOverlayY({ ...base, layout: [0, 90, 0, 130], at: 1 })).toBe(
       1000 + 130,
     )
   })
 
   test('vertical scroll shifts the endpoint up', () => {
     expect(
-      computeOverlayY({ ...base, scrollTop: 30, layout: [0, 50, 0, 90] }),
+      computeOverlayY({ ...base, scrollTop: 30, layout: [0, 90, 0, 130] }),
     ).toBe(1000 + 80)
   })
 
-  test('clamps up to the coverage offset when the midpoint is above it', () => {
-    // scrolled so far that mid < coverageOffset -> pinned to coverageOffset
+  test('clamps up to the sticky bands when the midpoint scrolled under them', () => {
     expect(
-      computeOverlayY({ ...base, scrollTop: 1000, layout: [0, 50, 0, 90] }),
-    ).toBe(1000 + base.coverageOffset)
+      computeOverlayY({ ...base, scrollTop: 1000, layout: [0, 90, 0, 130] }),
+    ).toBe(1000 + base.stickyTop)
+  })
+
+  // A grouped display scrolls its whole stack, so nothing is sticky and a
+  // read near the top of a scrolled lane sits at its own y.
+  test('nothing sticky, nothing clamps a read near the top', () => {
+    expect(
+      computeOverlayY({
+        ...base,
+        stickyTop: 0,
+        scrollTop: 500,
+        layout: [0, 505, 0, 515],
+      }),
+    ).toBe(1000 + 10)
   })
 
   test('clamps down to the track height when the midpoint is below it', () => {
@@ -138,7 +149,7 @@ describe('computeOverlayY', () => {
     )
   })
 
-  test('result always lands within [yOffset+coverageOffset, yOffset+height]', () => {
+  test('result always lands within [yOffset+stickyTop, yOffset+height]', () => {
     for (const scrollTop of [-500, 0, 75, 5000]) {
       for (const top of [0, 60, 1000]) {
         const y = computeOverlayY({
@@ -146,7 +157,7 @@ describe('computeOverlayY', () => {
           scrollTop,
           layout: [0, top, 0, top + 20],
         })
-        expect(y).toBeGreaterThanOrEqual(base.yOffset + base.coverageOffset)
+        expect(y).toBeGreaterThanOrEqual(base.yOffset + base.stickyTop)
         expect(y).toBeLessThanOrEqual(base.yOffset + base.height)
       }
     }

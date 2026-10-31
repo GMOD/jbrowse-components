@@ -9,7 +9,10 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ReadSlot } from '../../shared/readSlot.ts'
 import type { AlignmentsUnit } from '../constants.ts'
 import type { ReadIdIndex } from '../groupedDataMaps.ts'
-import type { RenderState } from '../renderers/rendererTypes.ts'
+import type {
+  DisplayRenderState,
+  RenderState,
+} from '../renderers/rendererTypes.ts'
 import type { ScrollModel } from './sectionScreen.ts'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { MarkInstance } from '@jbrowse/render-core/marks'
@@ -23,7 +26,8 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 export interface HighlightSection {
   groupKey: string
   laidOutPileupMap: { get(idx: number): PileupDataResult | undefined }
-  topOffset: number
+  coverageTop: number
+  pileupTop: number
   pileupHeight: number
 }
 
@@ -111,7 +115,7 @@ export function readHighlightInk({
   blocks: readonly RenderBlock[]
   sections: readonly HighlightSection[]
   slots: Iterable<ReadSlot>
-  state: RenderState
+  state: DisplayRenderState
   scroll: ScrollModel
   strong: boolean
 }): HighlightRect[] {
@@ -120,9 +124,13 @@ export function readHighlightInk({
       s.groupKey,
       {
         section: s,
-        frame: { ...state, pileupTopOffset: s.topOffset },
-        bandTop: bandScreenTop(s.topOffset, scroll),
-        bandBottom: sectionBandBottom(s.topOffset, s.pileupHeight, scroll),
+        frame: {
+          ...state,
+          pileupTopOffset: s.pileupTop,
+          coverageTopOffset: bandScreenTop(s.coverageTop, scroll),
+        },
+        bandTop: bandScreenTop(s.pileupTop, scroll),
+        bandBottom: sectionBandBottom(s.pileupTop, s.pileupHeight, scroll),
       },
     ]),
   )

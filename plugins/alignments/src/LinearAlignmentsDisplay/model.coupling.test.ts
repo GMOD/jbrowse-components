@@ -1487,7 +1487,7 @@ describe('the feature-details lookup', () => {
 // and 'auto' only pushes an arc down to resolve a crossing. So filtering out the
 // junctions that did the crossing has to hand that space back to the pileup —
 // driven here through the real model (config slot -> getter -> band geometry)
-// rather than the pure `belowCoverageBandsGeometry`, so the wiring is covered too.
+// rather than the pure `laneBands`, so the wiring is covered too.
 describe('sashimi score filter releases the reserved band', () => {
   // Two interleaving junctions, the second supported by only 2 reads.
   function seedCrossingJunctions(display: ReturnType<typeof createDisplay>) {
@@ -1523,15 +1523,15 @@ describe('sashimi score filter releases the reserved band', () => {
     display.setJunctionFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
-    expect(display.belowCoverageBands.hasSashimiBand).toBe(true)
-    expect(display.coverageDisplayHeight).toBe(
+    expect(display.sections.sections[0]!.hasSashimiBand).toBe(true)
+    expect(display.stickyBandHeight).toBe(
       display.coverageHeight + display.sashimiHeight,
     )
 
     // drops the 2-read junction => nothing left to cross => nothing goes down
     display.setJunctionFilter({ minReads: 5 })
-    expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
-    expect(display.coverageDisplayHeight).toBe(display.coverageHeight)
+    expect(display.sections.sections[0]!.hasSashimiBand).toBe(false)
+    expect(display.stickyBandHeight).toBe(display.coverageHeight)
   })
 
   test('down: the strip stays reserved for any surviving junction', () => {
@@ -1542,10 +1542,10 @@ describe('sashimi score filter releases the reserved band', () => {
     seedCrossingJunctions(display)
 
     // the 20-read junction survives and still draws below coverage
-    expect(display.belowCoverageBands.hasSashimiBand).toBe(true)
+    expect(display.sections.sections[0]!.hasSashimiBand).toBe(true)
 
     display.setJunctionFilter({ minReads: 50 })
-    expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
+    expect(display.sections.sections[0]!.hasSashimiBand).toBe(false)
   })
 
   test('up: arcs overlay coverage, so the strip is never reserved', () => {
@@ -1555,8 +1555,8 @@ describe('sashimi score filter releases the reserved band', () => {
     display.setJunctionFilter({ minReads: 0 })
     seedCrossingJunctions(display)
 
-    expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
-    expect(display.coverageDisplayHeight).toBe(display.coverageHeight)
+    expect(display.sections.sections[0]!.hasSashimiBand).toBe(false)
+    expect(display.stickyBandHeight).toBe(display.coverageHeight)
   })
 
   // The reserved strip and the arcs drawn into it come off one set of junction
@@ -1623,7 +1623,7 @@ describe('sashimi score filter releases the reserved band', () => {
       },
     )
 
-    expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
+    expect(display.sections.sections[0]!.hasSashimiBand).toBe(false)
 
     // the same two spans on ONE chromosome do interleave and claim the strip
     display.setRpcData(
@@ -1631,7 +1631,7 @@ describe('sashimi score filter releases the reserved band', () => {
       { groups: [{ key: '', label: '', data: junction(30_000, 70_000) }] },
       { refName: 'ctgA', start: 0, end: 100_000, assemblyName: 'volvox' },
     )
-    expect(display.belowCoverageBands.hasSashimiBand).toBe(true)
+    expect(display.sections.sections[0]!.hasSashimiBand).toBe(true)
   })
 })
 

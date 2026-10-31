@@ -106,7 +106,7 @@ inversion.
 
 **An arc outranks the band it is painted over, and it says so as a result
 variant.** `runHitTest` returns `arc ?? performHitTest(...)`, so `ArcMarkHit` is a
-member of `MarkHitResult` beside the pileup's five. In up mode `computeArcBand`
+member of `MarkHitResult` beside the pileup's five. In up mode `laneBands`
 gives the band `top: 0`, which is the coverage band, and `hitTestInterbase`
 answers over it, so a per-gesture `if` guard let a right-click on an arc open the
 interbase menu while the tooltip said "Read connection".

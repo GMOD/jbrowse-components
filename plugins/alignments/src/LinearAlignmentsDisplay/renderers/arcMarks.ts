@@ -8,7 +8,12 @@ import {
 import { sectionRenderState } from './rendererTypes.ts'
 
 import type { ArcBandFeed } from '../../features/arcs/bandFeed.ts'
-import type { ArcBand, RenderState, SectionRender } from './rendererTypes.ts'
+import type {
+  ArcBand,
+  DisplayRenderState,
+  RenderState,
+  SectionRender,
+} from './rendererTypes.ts'
 import type { LinkParams, Mark, PointParams } from '@jbrowse/render-core/marks'
 
 /** A section's render state with the band its marks draw in. */
@@ -21,7 +26,7 @@ export interface ArcBandState extends RenderState {
  * `undefined` for a section that reserves no band.
  */
 export function arcBandState(
-  state: RenderState,
+  state: DisplayRenderState,
   sec: SectionRender,
 ): ArcBandState | undefined {
   return sec.arcBand

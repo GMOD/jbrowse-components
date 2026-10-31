@@ -54,13 +54,12 @@ interface LabelView {
   bpPerPx: number
 }
 
-// One stacked group's data + its pileup-row top offset (screen px, pre-scroll).
-// Ungrouped is a single section whose topOffset is coverageDisplayHeight.
+// One stacked group's data + its content-space pileup top.
 // `pileupHeight` is the section's pileup band height: collapsed groups have 0,
 // so their labels clip away instead of overflowing into the next section.
 export interface LabelSection {
   laidOutPileupMap: { get(idx: number): PileupDataResult | undefined }
-  topOffset: number
+  pileupTop: number
   pileupHeight: number
 }
 
@@ -200,7 +199,7 @@ export function computeVisibleLabels(
   )
 
   const scroll = makeScroll(sections.length, scrollTop, height)
-  for (const { laidOutPileupMap, topOffset, pileupHeight } of sections) {
+  for (const { laidOutPileupMap, pileupTop, pileupHeight } of sections) {
     // Each stacked section places its labels at its own pileup top; ungrouped is
     // one section, so this reduces to the prior single-offset loop. See
     // sectionScreen.ts for the band-top-vs-content scroll tiers used here.
@@ -210,12 +209,12 @@ export function computeVisibleLabels(
     // order, so it stays bit-identical. It runs per candidate label (tens of
     // thousands on a deep pileup), where the call overhead alone was a top
     // frame in a pan/zoom profile.
-    const rowNudge = featureHeight / 2 + topOffset
+    const rowNudge = featureHeight / 2 + pileupTop
     // Clip to this section's pileup band bottom, not the whole canvas, so a
     // collapsed group (pileupHeight 0) draws nothing and a group's labels never
     // bleed into the section below it.
-    const bottom = sectionBandBottom(topOffset, pileupHeight, scroll)
-    const sectionTop = bandScreenTop(topOffset, scroll)
+    const bottom = sectionBandBottom(pileupTop, pileupHeight, scroll)
+    const sectionTop = bandScreenTop(pileupTop, scroll)
     for (const vr of view.visibleRegions) {
       const rpcData = laidOutPileupMap.get(vr.displayedRegionIndex)
       if (!rpcData) {

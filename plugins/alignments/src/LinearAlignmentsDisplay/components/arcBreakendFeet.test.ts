@@ -1,7 +1,7 @@
 import { recordPath } from '@jbrowse/render-core/marks'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 
-import { ARC_LINK_MARKS } from '../renderers/arcMarks.ts'
+import { ARC_LINK_MARKS, arcBandState } from '../renderers/arcMarks.ts'
 import { pileupDataFromSamRecords } from '../samRecordFixture.ts'
 import {
   applyView,
@@ -136,13 +136,12 @@ function paintedArc(display: ReturnType<typeof interchromDisplay>) {
   expect(arcCount(feed)).toBe(1)
   const mark = ARC_LINK_MARKS[feed.crossLinks.count > 0 ? 2 : 1]!
   const { renderState } = display
-  const arcBand = renderState.sections[0]!.arcBand!
   const recorder = recordPath()
   mark.paintBlock(
     recorder.ctx,
     feed,
     canvasWideBlock(regionIdx, renderState.canvasWidth),
-    { ...renderState, arcBand },
+    arcBandState(renderState, renderState.sections[0]!)!,
   )
   return recorder.d
 }
@@ -307,7 +306,7 @@ test('the hover highlight traces the feet too', () => {
     feetStarts(display)[0]! - 8,
     footY,
     display.themed.sourceSections[0]!.arcFeeds,
-    { ...renderState, arcBand },
+    arcBandState(renderState, renderState.sections[0]!)!,
     display.renderBlocks,
   )
   expect(hover?.hit.kind).toBe('arc')

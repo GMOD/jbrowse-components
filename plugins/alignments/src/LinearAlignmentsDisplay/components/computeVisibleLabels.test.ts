@@ -57,7 +57,7 @@ function run(
     sections: [
       {
         laidOutPileupMap: { get: () => rpcData },
-        topOffset: 0,
+        pileupTop: 0,
         pileupHeight: 1000,
       },
     ],
@@ -114,7 +114,7 @@ test('a collapsed section (pileupHeight 0) draws no labels', () => {
     sections: [
       {
         laidOutPileupMap: { get: () => makeRpcData(threeMismatches) },
-        topOffset: 0,
+        pileupTop: 0,
         pileupHeight: 0,
       },
     ],
@@ -166,7 +166,7 @@ describe('SNP letters carry the per-base quality fade', () => {
                 ]),
               }),
           },
-          topOffset: 0,
+          pileupTop: 0,
           pileupHeight: 1000,
         },
       ],
@@ -284,7 +284,7 @@ describe('a deletion wider than the view labels its visible part', () => {
                 gapTypes: new Uint8Array([0]),
               }),
           },
-          topOffset: 0,
+          pileupTop: 0,
           pileupHeight: 1000,
         },
       ],
@@ -483,7 +483,7 @@ describe('the zoom gate agrees with the per-feature fade', () => {
       sections: [
         {
           laidOutPileupMap: { get: () => rpcData },
-          topOffset: 0,
+          pileupTop: 0,
           pileupHeight: 1000,
         },
       ],
@@ -573,10 +573,10 @@ describe('the zoom gate agrees with the per-feature fade', () => {
 })
 
 test('a grouped section near the top of its band stays visible after scrolling', () => {
-  // Group 2's pileup band starts at content-space topOffset 400; scrolling
+  // Group 2's pileup band starts at content-space pileupTop 400; scrolling
   // down by 200px brings its row 0 (screen yPx ~205) into view at screen y
-  // ~205, which must satisfy the lower bound topOffset - scrollTop (200), not
-  // the unscrolled topOffset (400).
+  // ~205, which must satisfy the lower bound pileupTop - scrollTop (200), not
+  // the unscrolled pileupTop (400).
   const labels = computeVisibleLabels({
     view: {
       visibleRegions: [
@@ -587,12 +587,12 @@ test('a grouped section near the top of its band stays visible after scrolling',
     sections: [
       {
         laidOutPileupMap: { get: () => undefined },
-        topOffset: 0,
+        pileupTop: 0,
         pileupHeight: 0,
       },
       {
         laidOutPileupMap: { get: () => makeRpcData(threeMismatches) },
-        topOffset: 400,
+        pileupTop: 400,
         pileupHeight: 1000,
       },
     ],

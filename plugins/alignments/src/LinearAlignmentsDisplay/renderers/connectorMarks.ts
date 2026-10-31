@@ -5,7 +5,11 @@ import { connectorArrowPx } from '../../features/linkedReads/connectorFeed.ts'
 import { sectionRenderState } from './rendererTypes.ts'
 
 import type { ConnectorFeed } from '../../features/linkedReads/connectorFeed.ts'
-import type { RenderState, SectionRender } from './rendererTypes.ts'
+import type {
+  DisplayRenderState,
+  RenderState,
+  SectionRender,
+} from './rendererTypes.ts'
 import type { ConnectorParams, Mark } from '@jbrowse/render-core/marks'
 
 const DASH = HIDDEN_SEGMENT_DASH.split(' ').map(Number) as [number, number]
@@ -17,7 +21,7 @@ export interface ConnectorBandState extends RenderState {
 
 /** The section's connector placement: row centres on its pileup band, scrolled. */
 export function connectorParamsOf(
-  state: RenderState,
+  state: DisplayRenderState,
   sec: SectionRender,
 ): ConnectorParams {
   return {
@@ -32,7 +36,7 @@ export function connectorParamsOf(
 
 /** The state the connector mark draws and hit-tests a section's band by. */
 export function connectorBandState(
-  state: RenderState,
+  state: DisplayRenderState,
   sec: SectionRender,
 ): ConnectorBandState {
   return {

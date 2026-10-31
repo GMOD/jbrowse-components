@@ -37,7 +37,7 @@ function renderRule(
       label: `HP: ${i + 1}`,
       coverageTop: i * SECTION_HEIGHT,
       coverageHeight: 40,
-      topOffset: i * SECTION_HEIGHT + 40,
+      pileupTop: i * SECTION_HEIGHT + 40,
       pileupHeight: 80,
       height: SECTION_HEIGHT,
       ceilingClipped: clipped(`g${i}`),
@@ -79,7 +79,7 @@ test('a boundary below the viewport is not drawn until scrolled to', () => {
     renderSections: [
       {
         groupKey: 'g0',
-        topOffset: 40,
+        pileupTop: 40,
         pileupHeight: 400,
         coverageTop: 0,
         coverageHeight: 40,

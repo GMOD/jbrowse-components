@@ -42,8 +42,10 @@ import type { PileupUniformViews } from './pileupUniforms.ts'
 import type {
   AlignmentsRenderingBackend,
   AlignmentsSources,
+  DisplayRenderState,
   RenderBlock,
   RenderState,
+  SectionRender,
   SectionSource,
 } from './rendererTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
@@ -286,7 +288,7 @@ export class GpuAlignmentsRenderer
     this.hal.writeUniforms(this.uData)
   }
 
-  renderBlocks(blocks: RenderBlock[], state: RenderState) {
+  renderBlocks(blocks: RenderBlock[], state: DisplayRenderState) {
     const { canvasWidth, canvasHeight } = state
     // Every rect below is device px, so it derives from the scale the canvas
     // actually got, never from `getDpr()`: a capped backing store or a
@@ -299,10 +301,17 @@ export class GpuAlignmentsRenderer
 
     // Once, ahead of the loop. Nothing below rewrites these slots.
     writePileupPalette(this.uViews, state)
-    // Which pileup marks draw this frame, asked once: the gates read the
-    // display-wide state, and per section block the walk is the plan's
-    // `drawPass` list against the section's own write.
-    const pileup = planMarks(PILEUP_MARKS, state)
+    // Each section's state and the pileup marks it draws, resolved once per
+    // frame; per section block the walk is the plan's `drawPass` list against
+    // the section's own write.
+    const sectionFrames = state.sections.map(sec => {
+      const sectionState = sectionRenderState(state, sec)
+      return {
+        sec,
+        sectionState,
+        pileup: planMarks(PILEUP_MARKS, sectionState),
+      }
+    })
 
     let hasDrawn = false
     for (const block of blocks) {
@@ -311,11 +320,11 @@ export class GpuAlignmentsRenderer
         // Each stacked section sets its own vertical offsets and clip bands.
         // Section 0's region key equals the raw region index, so the ungrouped
         // (single-section) case reproduces the prior draw exactly.
-        for (let s = 0; s < state.sections.length; s++) {
-          if (this.drawSection(block, clip, state, pileup, s, scale.y, bufH)) {
+        sectionFrames.forEach((frame, s) => {
+          if (this.drawSection(block, clip, frame, s, scale.y, bufH)) {
             hasDrawn = true
           }
-        }
+        })
       }
     }
 
@@ -345,22 +354,27 @@ export class GpuAlignmentsRenderer
   private drawSection(
     block: RenderBlock,
     clip: BlockClipResult,
-    state: RenderState,
-    pileup: MarkPlan<PileupDataResult, RenderState>,
+    {
+      sec,
+      sectionState,
+      pileup,
+    }: {
+      sec: SectionRender
+      sectionState: RenderState
+      pileup: MarkPlan<PileupDataResult, RenderState>
+    },
     sectionIdx: number,
     // The canvas's ACTUAL vertical scale, not `getDpr()`: every band offset
     // below is a device-px rect inside `bufH`.
     scaleY: number,
     bufH: number,
   ) {
-    const sec = state.sections[sectionIdx]!
     const regionKey = sectionRegionKey(sectionIdx, block.displayedRegionIndex)
     const region = this.regions.get(regionKey)
     if (!region) {
       return false
     }
 
-    const sectionState = sectionRenderState(state, sec)
     this.hal.setViewport(clip.pxX, 0, clip.pxW, bufH)
 
     // The coverage band goes FIRST, and that ordering is load-bearing: the band
@@ -370,7 +384,7 @@ export class GpuAlignmentsRenderer
     // relies on as well — and, within the band, what lets its five marks share
     // one write per section (`StagedUniforms`).
     const cov = devicePxBand(sec.covClipTop, sec.covClipHeight, scaleY, bufH)
-    if (state.coverage.height > 0 && cov.height > 0) {
+    if (sectionState.coverage.height > 0 && cov.height > 0) {
       this.hal.setScissor(clip.pxX, cov.top, clip.pxW, cov.height)
       drawMarks(
         this.hal,
@@ -408,7 +422,7 @@ export class GpuAlignmentsRenderer
   // painter draws too, each scissored to its strip.
   private drawBands(
     blocks: RenderBlock[],
-    state: RenderState,
+    state: DisplayRenderState,
     scale: CanvasScale,
     bufH: number,
   ) {

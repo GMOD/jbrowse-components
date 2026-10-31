@@ -328,7 +328,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
     // to offer should do. Before that was true, right-clicking an arc that
     // crossed an indicator column opened the interbase menu for that column
     // while the tooltip said "Read connection": in up mode the arc band IS the
-    // coverage band (`computeArcBand` gives it top 0), and `hitTestInterbase`
+    // coverage band (`laneBands` gives it top 0), and `hitTestInterbase`
     // answers over the indicator strip and the bar stack inside it.
     const target = contextMenuTargetForHit(result, e.nativeEvent.offsetX)
     if (target) {
@@ -547,7 +547,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       // to overlay. In down mode that is nothing, and `case 'none'` CLEARS THE
       // SELECTION, so clicking the arc you were hovering threw away the read
       // you had selected. In up mode the arc band IS the coverage band
-      // (`computeArcBand` gives it top 0), so the click opened the coverage bin
+      // (`laneBands` gives it top 0), so the click opened the coverage bin
       // widget for the column while the tooltip said "Read connection".
       case 'arc':
         return
