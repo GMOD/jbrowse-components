@@ -45,7 +45,8 @@ import { SharedBudget } from '@gmod/shared-read-cache'
  *
  * `SharedBudget.total` is a sum over its members, so they must all weigh in the
  * same unit, and `sizeOf` is opaque, so nothing could catch a mismatch at
- * runtime. `@gmod/bam` and `@gmod/tabix` weigh decompressed bytes, and since 14
+ * runtime. `@gmod/bam`, `@gmod/tabix` and `@gmod/hic`'s blocks weigh
+ * decompressed bytes, `@gmod/bbi`'s R-tree nodes their raw bytes, and since 14
  * `@gmod/cram` weighs a decoded slice by `DecodedSlice.byteLength` — its typed
  * columns exactly and its strings by estimate, within 1–8% of the measured heap
  * (its ADR 0013). Before that a CRAM slice weighed its record count, which is

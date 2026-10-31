@@ -1,6 +1,6 @@
 import { RESOLVED_ASSEMBLIES } from './assembly.ts'
 import { DEFAULT_CACHE_LIMIT, createTablesEngine } from './index.ts'
-import { BAM, DOG_VCF } from './volvox.fixture.ts'
+import { BAM, COVERAGE_BIGWIG, DOG_VCF } from './volvox.fixture.ts'
 
 const engine = createTablesEngine()
 
@@ -24,6 +24,7 @@ beforeEach(async () => {
 test('a read leaves what it decoded in the cache, and clearing empties it', async () => {
   await engine.alignments(BAM)
   await engine.variants(DOG_VCF)
+  await engine.wiggle(COVERAGE_BIGWIG)
   const held = await engine.cache()
   expect(held.decoded).toBeGreaterThan(0)
   expect(held.adapters).toBeGreaterThan(1)

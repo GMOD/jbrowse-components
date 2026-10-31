@@ -3,6 +3,7 @@ import Trix from '@gmod/trix'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
+import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import type { BigBedTextSearchAdapterConfig } from './configSchema.ts'
@@ -100,6 +101,7 @@ export default class BigBedTextSearchAdapter
     super(config, getSubAdapter, pluginManager)
     this.bigbed = new BigBed({
       filehandle: openLocation(this.getConf('bigBedLocation'), pluginManager),
+      cacheBudget: decompressedBytesBudget,
     })
     const ix = this.getConf('ixFilePath')
     const ixx = this.getConf('ixxFilePath')
@@ -110,6 +112,10 @@ export default class BigBedTextSearchAdapter
         MAX_TRIX_HITS,
       )
     }
+  }
+
+  freeResources() {
+    this.bigbed.clearCache()
   }
 
   // The names to look up: the query as spelled, which the extra index answers

@@ -43,8 +43,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.13.0(supports-color@8.1.1))
       '@gmod/bbi':
-        specifier: ^12.0.0
-        version: 12.0.0
+        specifier: ^12.2.0
+        version: 12.2.0
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
         version: 6.10.0(mobx@7.1.3)
@@ -1058,8 +1058,8 @@ importers:
   plugins/bed:
     dependencies:
       '@gmod/bbi':
-        specifier: ^12.0.0
-        version: 12.0.0
+        specifier: ^12.2.0
+        version: 12.2.0
       '@gmod/bed':
         specifier: ^2.3.3
         version: 2.3.3
@@ -1564,8 +1564,8 @@ importers:
   plugins/hic:
     dependencies:
       '@gmod/hic':
-        specifier: ^2.2.0
-        version: 2.2.0
+        specifier: ^2.4.0
+        version: 2.4.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2108,8 +2108,8 @@ importers:
   plugins/wiggle:
     dependencies:
       '@gmod/bbi':
-        specifier: ^12.0.0
-        version: 12.0.0
+        specifier: ^12.2.0
+        version: 12.2.0
       '@jbrowse/add-track-core':
         specifier: workspace:^
         version: link:../../packages/add-track-core
@@ -4691,8 +4691,8 @@ packages:
   '@gmod/bam@10.1.0':
     resolution: {integrity: sha512-z2zsWiTBuqQBWrhe8TpCkl8FI/gj2QnFVahN4fsdNoER8M9tuHva0BhhVs5izf3yQF9JODp+jR8WOgoFMNSmsw==}
 
-  '@gmod/bbi@12.0.0':
-    resolution: {integrity: sha512-2MogiH2Ic1nY8Ndam2NBYOnguGzs5XObQxGcunCxratvl5nkZj3L3Vwfm20rnVOUI63q0IIAZVOTbQu3N7p37w==}
+  '@gmod/bbi@12.2.0':
+    resolution: {integrity: sha512-eRgchEqwcalcXOg0u6BOtNV6HgL5KcxsjimY7xTsE6Rkxk929tw9m9Rb6IJ6XQYRCExGAlywWXp8nQ3K3lV6yQ==}
 
   '@gmod/bed@2.3.3':
     resolution: {integrity: sha512-sdk7JYx3fGlZ1Js1BWtRB4PPtDnJWkvYe2pQlOI8qVUFB99SHwwoLz8sKMzQk3RT88TIPmu2TMwx5DPKgHyVVA==}
@@ -4712,8 +4712,8 @@ packages:
   '@gmod/hclust@6.0.0':
     resolution: {integrity: sha512-/vCkUXOhCcNmLp13Alw8Vyf+48tYg8La4SfziOJkpgX0HrHCHa6xJZQSenpYuhYCc++kK0X+mQCbSTESKGanIg==}
 
-  '@gmod/hic@2.2.0':
-    resolution: {integrity: sha512-IpH8XuPvKMH/pOtj6b5F3VbGGCfKQAzrBt/J2aBSWnODHGSNUmIJ2RATt4DUaMWFnFIuNWe5K//XuEaODU6FEA==}
+  '@gmod/hic@2.4.0':
+    resolution: {integrity: sha512-IT0zRjGe7MpjfMmLOYAHEiub4zKfRYk0ZB7LXis4Lnj0pJHCnTLu/t4bEduQeKqSZhiimS3SWtbI3xfKPyLpBA==}
 
   '@gmod/indexedfasta@5.0.14':
     resolution: {integrity: sha512-EvLxxcrl+sj7d0S4Rb+QRVDHMegv6HAmI+mqrNLSs9UGAvXObwc/hc8Ke+vs+eJsVRdwovFZA2cFlh1RTPcHdg==}
@@ -12719,7 +12719,7 @@ snapshots:
       '@jbrowse/quick-lru': 8.0.0
       generic-filehandle2: 2.5.1
 
-  '@gmod/bbi@12.0.0':
+  '@gmod/bbi@12.2.0':
     dependencies:
       '@gmod/shared-read-cache': 2.1.0
       generic-filehandle2: 2.5.1
@@ -12748,7 +12748,7 @@ snapshots:
     dependencies:
       '@gmod/newick': 1.0.3
 
-  '@gmod/hic@2.2.0':
+  '@gmod/hic@2.4.0':
     dependencies:
       '@gmod/inflate': 1.0.0
       '@gmod/shared-read-cache': 2.1.0

@@ -17,7 +17,8 @@ import type { UriLocation } from '@jbrowse/core/util/types'
 
 /**
  * What the engine keeps between calls, three bounds of this many bytes each:
- * the decoded records (BAM and CRAM records, tabix lines), the raw file chunks
+ * the decoded records (BAM and CRAM records, tabix lines, bigWig and bigBed
+ * index nodes, Hi-C blocks), the raw file chunks
  * beneath them, and what the adapters it keeps parsed from the files they read
  * whole. A browser worker keeps 1 GiB of records, sized for panning; a host
  * such as R holds its own copy of each table and rarely reads a region twice.
@@ -42,7 +43,7 @@ const INDEX = /\.(bai|csi|crai|tbi)$/i
 export interface CacheUse {
   /** the bound, in bytes, on each of `decoded`, `chunks` and `parsed` */
   limit: number
-  /** bytes of decoded records held */
+  /** bytes of decoded records and index nodes held */
   decoded: number
   /** file bytes the chunk cache holds */
   chunks: number

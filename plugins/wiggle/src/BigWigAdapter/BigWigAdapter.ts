@@ -4,6 +4,7 @@ import {
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus } from '@jbrowse/core/util'
+import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -41,12 +42,22 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
 
   public static capabilities = ['hasResolution']
 
+  private filehandle = openLocation(
+    this.getConf('bigWigLocation'),
+    this.pluginManager,
+  )
+
+  private bigwig = new BigWig({
+    filehandle: this.filehandle,
+    cacheBudget: decompressedBytesBudget,
+  })
+
+  freeResources() {
+    this.bigwig.clearCache()
+  }
+
   private async setupPre(opts?: BaseOptions) {
-    const filehandle = openLocation(
-      this.getConf('bigWigLocation'),
-      this.pluginManager,
-    )
-    const bigwig = new BigWig({ filehandle })
+    const { bigwig, filehandle } = this
     const header = await bigwig.getHeader(opts)
     const fileLevels = header.zoomLevels.map(z => z.reductionLevel)
     const candidates = syntheticCandidateLevels(fileLevels)

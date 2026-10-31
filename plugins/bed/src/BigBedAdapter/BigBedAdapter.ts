@@ -12,6 +12,7 @@ import {
   min,
   updateStatus,
 } from '@jbrowse/core/util'
+import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { firstValueFrom, toArray } from 'rxjs'
@@ -44,11 +45,20 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
     setup: opts => this.configurePre(opts),
   })
 
+  private bigbed = new BigBed({
+    filehandle: openLocation(
+      this.getConf('bigBedLocation'),
+      this.pluginManager,
+    ),
+    cacheBudget: decompressedBytesBudget,
+  })
+
+  freeResources() {
+    this.bigbed.clearCache()
+  }
+
   public async configurePre(opts?: BaseOptions) {
-    const pm = this.pluginManager
-    const bigbed = new BigBed({
-      filehandle: openLocation(this.getConf('bigBedLocation'), pm),
-    })
+    const { bigbed } = this
     const header = await bigbed.getHeader(opts)
     const parser = new BED({
       autoSql: header.autoSql,

@@ -9,6 +9,7 @@ import {
   updateStatus,
 } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
+import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
@@ -134,7 +135,12 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     super(config, getSubAdapter, pluginManager)
     this.hic = new HicFile({
       filehandle: openLocation(this.getConf('hicLocation'), this.pluginManager),
+      blockCacheBudget: decompressedBytesBudget,
     })
+  }
+
+  freeResources() {
+    this.hic.clearCache()
   }
 
   public async getHeader(opts?: BaseOptions): Promise<HicHeader> {

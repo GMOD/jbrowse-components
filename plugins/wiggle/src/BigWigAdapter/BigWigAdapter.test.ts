@@ -2,6 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -31,6 +32,27 @@ it('reads a resolutionMultiplier of 0 or less as 1', async () => {
   const expected = await zoomRange(1)
   expect(await zoomRange(0)).toEqual(expected)
   expect(await zoomRange(-2)).toEqual(expected)
+})
+
+// Under the shared budget, a MultiWiggle of many large files is bounded with
+// every other parser cache rather than per zoom level per file.
+it("holds the file's index under the shared parser budget", async () => {
+  const adapter = new BigWigAdapter(
+    configSchema.create({
+      bigWigLocation: {
+        localPath: require.resolve('./test_data/volvox.bw'),
+        locationType: 'LocalPathLocation',
+      },
+    }),
+  )
+  const before = decompressedBytesBudget.total
+  await adapter.getFeaturesArray({
+    refName: 'ctgA',
+    start: 0,
+    end: 20000,
+    assemblyName: 'volvox',
+  })
+  expect(decompressedBytesBudget.total).toBeGreaterThan(before)
 })
 
 describe('adapter can fetch features from volvox.bw', () => {
