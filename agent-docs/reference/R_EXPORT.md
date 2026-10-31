@@ -92,17 +92,21 @@ color) land in the script header.
   height per track kind in the exporter. `jbrowse_width(fig)` gives the width
   at the same 150 px an inch: a 2,500 px view saved 10 inches wide drew its
   feature labels at 3 pt, since a label takes the panel's smaller scale.
-- **The script checks its ggjbrowse.** `GGJBROWSE_VERSION` is the release
-  whose readers and `jbrowse_stack` it calls; an older install stops with the
-  install line rather than an "unused argument" error.
+- **The script pins its ggjbrowse.** `GGJBROWSE_VERSION` is the release the
+  script is tested against: an older install stops with an install line pinned
+  to that tag rather than an "unused argument" error. It is a floor, not an
+  exact match, since an exact one would stop every exported script the day
+  ggjbrowse ships its next release. Bump it to a release whose engine fixes
+  reach a figure, even with no reader argument changed (0.11.0's CRAM fixes).
 
 ## Verify a change
 
 - `npx jest plugins/linear-genome-view/src/LinearGenomeView/rExport`.
   `rScriptRun.test.ts` runs each emitted script under Rscript, figure and
   all, and asserts on what its tracks read; it skips without R and
-  ggjbrowse, except under `REQUIRE_R=1` (the `R export` workflow, on a push
-  touching `rExport/` and nightly against ggjbrowse's main).
+  ggjbrowse, except under `REQUIRE_R=1` (the `R export` workflow: a push
+  touching `rExport/` installs the `GGJBROWSE_VERSION` tag, the nightly
+  ggjbrowse's main).
 - `readerSlots.test.ts` checks `READERS`, `SEQUENCE_ADAPTERS` and the table
   above against the committed schema, and the fixture's `track()` throws on a
   display config the schema refuses, so a respelled slot fails here.

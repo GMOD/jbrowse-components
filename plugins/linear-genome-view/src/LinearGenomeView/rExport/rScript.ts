@@ -24,43 +24,57 @@ export interface RExportTrack {
   height?: unknown
 }
 
+interface ReaderAdapter {
+  slot?: string
+  ext?: RegExp
+  index?: string
+}
+
+const VCF_ADAPTERS: Record<string, ReaderAdapter> = {
+  VcfTabixAdapter: { slot: 'vcfGzLocation', ext: /\.vcf\.gz$/, index: '.tbi' },
+  VcfAdapter: { slot: 'vcfLocation', ext: /\.vcf$/ },
+}
+
 /**
  * Each display ggjbrowse reads, by the reader that reads it, and the adapters
- * it opens (the slot holding the file and the extension the reader knows it
- * by).
+ * it opens: the slot holding the file, the extension the reader knows it by,
+ * and the suffix of the index the reader looks for beside it.
  */
 export const READERS: Record<
   string,
-  {
-    call: string
-    adapters: Record<string, { slot?: string; ext?: RegExp }>
-  }
+  { call: string; adapters: Record<string, ReaderAdapter> }
 > = {
   LinearBasicDisplay: {
     call: 'jbrowse_features',
     adapters: {
-      Gff3TabixAdapter: { slot: 'gffGzLocation', ext: /\.gff3?\.gz$/ },
+      Gff3TabixAdapter: {
+        slot: 'gffGzLocation',
+        ext: /\.gff3?\.gz$/,
+        index: '.tbi',
+      },
       Gff3Adapter: { slot: 'gffLocation', ext: /\.gff3?$/ },
-      GtfTabixAdapter: { slot: 'gtfGzLocation', ext: /\.gtf\.gz$/ },
+      GtfTabixAdapter: {
+        slot: 'gtfGzLocation',
+        ext: /\.gtf\.gz$/,
+        index: '.tbi',
+      },
       GtfAdapter: { slot: 'gtfLocation', ext: /\.gtf$/ },
-      BedTabixAdapter: { slot: 'bedGzLocation', ext: /\.bed\.gz$/ },
+      BedTabixAdapter: {
+        slot: 'bedGzLocation',
+        ext: /\.bed\.gz$/,
+        index: '.tbi',
+      },
       BedAdapter: { slot: 'bedLocation', ext: /\.bed$/ },
       BigBedAdapter: { slot: 'bigBedLocation', ext: /\.(bb|bigbed)$/ },
     },
   },
   LinearVariantDisplay: {
     call: 'jbrowse_features',
-    adapters: {
-      VcfTabixAdapter: { slot: 'vcfGzLocation', ext: /\.vcf\.gz$/ },
-      VcfAdapter: { slot: 'vcfLocation', ext: /\.vcf$/ },
-    },
+    adapters: VCF_ADAPTERS,
   },
   LinearMultiSampleVariantDisplay: {
     call: 'jbrowse_variants',
-    adapters: {
-      VcfTabixAdapter: { slot: 'vcfGzLocation', ext: /\.vcf\.gz$/ },
-      VcfAdapter: { slot: 'vcfLocation', ext: /\.vcf$/ },
-    },
+    adapters: VCF_ADAPTERS,
   },
   LinearWiggleDisplay: {
     call: 'jbrowse_wiggle',
@@ -72,16 +86,19 @@ export const READERS: Record<
   LinearAlignmentsDisplay: {
     call: 'jbrowse_alignments',
     adapters: {
-      BamAdapter: { slot: 'bamLocation', ext: /(?<!\.cram)$/ },
-      CramAdapter: { slot: 'cramLocation', ext: /\.cram$/ },
+      BamAdapter: { slot: 'bamLocation', ext: /(?<!\.cram)$/, index: '.bai' },
+      CramAdapter: { slot: 'cramLocation', ext: /\.cram$/, index: '.crai' },
     },
   },
 }
 
-/** The ggjbrowse release whose readers and `jbrowse_stack` the script calls. */
-export const GGJBROWSE_VERSION = '0.10.0'
+/**
+ * The ggjbrowse release the script is tested against: its floor, and the tag
+ * its install line pins. The R export workflow installs this tag on a push.
+ */
+export const GGJBROWSE_VERSION = '0.11.0'
 
-const INSTALL = 'remotes::install_github("GMOD/ggjbrowse")'
+const INSTALL = `remotes::install_github("GMOD/ggjbrowse@v${GGJBROWSE_VERSION}")`
 
 function isSet(value: unknown) {
   return !(
@@ -228,7 +245,7 @@ function openable(value: unknown, uris: string[]): unknown {
  * setting reaches the engine as the browser has it.
  */
 function fileArgument(
-  adapters: Record<string, { slot?: string; ext?: RegExp }>,
+  adapters: Record<string, ReaderAdapter>,
   adapter: Record<string, unknown>,
 ): { file: string; index?: string; uris: string[] } | { skipped: string } {
   const type = String(adapter.type)
@@ -249,24 +266,13 @@ function fileArgument(
       skipped: 'it reads a file opened in the browser, which R cannot reach',
     }
   }
-  const file = known.slot
-    ? (locationPath(adapter[known.slot]) ??
-      (typeof adapter.uri === 'string' ? adapter.uri : undefined))
-    : undefined
+  const file = known.slot ? locationPath(adapter[known.slot]) : undefined
   const index = adapter.index as
     | { location?: unknown; indexType?: string }
     | undefined
   const indexPath =
     locationPath(index?.location) ?? locationPath(adapter.craiLocation)
-  const besideSuffix =
-    type === 'CramAdapter' ? '.crai' : type === 'BamAdapter' ? '.bai' : '.tbi'
-  const plainSlots = new Set([
-    'type',
-    'uri',
-    'index',
-    'craiLocation',
-    known.slot,
-  ])
+  const plainSlots = new Set(['type', 'index', 'craiLocation', known.slot])
   const plain =
     file !== undefined &&
     known.ext?.test(file.replace(/\?.*$/, '').toLowerCase()) &&
@@ -279,7 +285,7 @@ function fileArgument(
     ? {
         file: rStr(file),
         index:
-          indexPath && indexPath !== `${file}${besideSuffix}`
+          indexPath && indexPath !== `${file}${known.index}`
             ? indexPath
             : undefined,
         uris,
@@ -472,7 +478,7 @@ export function exportTracksToR({
   /** The view's assembly config as written, which names its sequence and its contigs' aliases. */
   assembly?: Record<string, unknown>
   /** The view's zoom, which decides what a feature or quantitative display shows. */
-  bpPerPx?: number
+  bpPerPx: number
   /** The view's "CDS reading frame colors", which a feature track takes. */
   colorByFrame?: boolean
   /** The view's "Amino acids when zoomed in", which a feature track takes. */
@@ -490,8 +496,7 @@ export function exportTracksToR({
     assembly && 'value' in assembly ? assembly.value : undefined
   const loci = regions.map(r => locusOf(r.refName, r.start, r.end))
   const totalBp = regions.reduce((sum, r) => sum + r.end - r.start, 0)
-  const viewPx = bpPerPx ? Math.round(totalBp / bpPerPx) : undefined
-  const widthReaders: string[] = []
+  const viewPx = Math.round(totalBp / bpPerPx)
   const names = trackNames(tracks)
   const reads: string[] = []
   const drawn: string[] = []
@@ -519,20 +524,16 @@ export function exportTracksToR({
             ...(height === undefined ? {} : { height }),
           }
         : track.display
-    const width = viewPx !== undefined
     const geneTrack = track.displayType === 'LinearBasicDisplay'
     const args = [
       ...(Object.keys(display).length ? [`display = ${rValue(display)}`] : []),
-      ...(width ? ['width = width'] : []),
+      'width = width',
       ...(assemblyValue ? ['assembly = assembly'] : []),
       ...(geneTrack && colorByFrame ? ['color_by_cds = TRUE'] : []),
       ...(geneTrack && !showAminoAcids ? ['amino_acids = FALSE'] : []),
       ...(source.index ? [`index = ${rStr(source.index)}`] : []),
     ]
     const name = names[i]!
-    if (width) {
-      widthReaders.push(name)
-    }
     reads.push(
       [
         `# ${track.trackName}`,
@@ -592,14 +593,10 @@ export function exportTracksToR({
           `assembly <- ${assemblyValue}`,
         ]
       : []),
-    ...(widthReaders.length
-      ? [
-          "# The view's pixels across its regions. A smaller number lays the tracks",
-          '# out as a narrower browser window would, for a narrower figure with',
-          '# fewer labels at the same size.',
-          `width <- ${viewPx}`,
-        ]
-      : []),
+    "# The view's pixels across its regions. A smaller number lays the tracks",
+    '# out as a narrower browser window would, for a narrower figure with',
+    '# fewer labels at the same size.',
+    `width <- ${viewPx}`,
     '',
     reads.join('\n\n'),
     '',

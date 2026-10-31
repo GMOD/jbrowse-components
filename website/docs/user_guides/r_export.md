@@ -74,10 +74,11 @@ session can open.
 
 ## Requirements
 
-R with [ggjbrowse](https://github.com/GMOD/ggjbrowse):
-`remotes::install_github("GMOD/ggjbrowse")`. It brings `ggplot2`, `patchwork`
-and `V8`; no Bioconductor packages are needed. The script stops with the install
-line if the installed ggjbrowse is older than it needs.
+R with [ggjbrowse](https://github.com/GMOD/ggjbrowse) 0.11.0 or later:
+`remotes::install_github("GMOD/ggjbrowse@v0.11.0")` installs the release the
+script is tested against. It brings `ggplot2`, `patchwork` and `V8`; no
+Bioconductor packages are needed. The script stops with that install line if the
+installed ggjbrowse is older.
 
 ## How close to the view it is
 

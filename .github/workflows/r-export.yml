@@ -4,9 +4,11 @@ name: R export
 # R is absent, which is every other job. Here REQUIRE_R=1 makes a missing R or
 # ggjbrowse a failure, so a broken install cannot pass as a skip.
 #
-# The scripts call ggjbrowse's readers and jbrowse_stack(), so a change to
-# ggjbrowse can break them without touching these paths; the nightly run, which
-# installs ggjbrowse from its main, is what catches that.
+# A push installs the ggjbrowse release the script pins (GGJBROWSE_VERSION in
+# rScript.ts), the one its users install. The scripts call ggjbrowse's readers
+# and jbrowse_stack(), so a change to ggjbrowse can break them without touching
+# these paths; the nightly run installs ggjbrowse's main, so a break shows up
+# before that change is released.
 on:
   push:
     branches:
@@ -48,11 +50,17 @@ jobs:
       - run:
           Rscript -e 'install.packages(c("ggplot2", "patchwork", "scales",
           "jsonlite", "curl", "V8"))'
-      # ggjbrowse from its main: the engine it bundles is a @jbrowse/tables
-      # release, which the downstream canary keeps current with this repo.
       - run: |
-          curl -sL https://github.com/GMOD/ggjbrowse/archive/refs/heads/main.tar.gz | tar xz -C "$RUNNER_TEMP"
-          R CMD INSTALL "$RUNNER_TEMP/ggjbrowse-main"
+          if [ "$GITHUB_EVENT_NAME" = schedule ]; then
+            ref=refs/heads/main
+          else
+            version=$(sed -n "s/^export const GGJBROWSE_VERSION = '\(.*\)'$/\1/p" plugins/linear-genome-view/src/LinearGenomeView/rExport/rScript.ts)
+            test -n "$version"
+            ref=refs/tags/v$version
+          fi
+          mkdir "$RUNNER_TEMP/ggjbrowse"
+          curl -fsSL "https://github.com/GMOD/ggjbrowse/archive/$ref.tar.gz" | tar xz --strip-components=1 -C "$RUNNER_TEMP/ggjbrowse"
+          R CMD INSTALL "$RUNNER_TEMP/ggjbrowse"
       - run:
           pnpm exec jest plugins/linear-genome-view/src/LinearGenomeView/rExport
           --reporters=default

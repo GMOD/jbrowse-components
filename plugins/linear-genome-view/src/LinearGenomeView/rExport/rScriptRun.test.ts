@@ -80,7 +80,11 @@ const restyleExamples = (script: string) =>
     .map(line => `print(${line.slice(4)})`)
 
 const restyled = (name: string, tracks: RExportTrack[]) => {
-  const { script } = exportTracksToR({ tracks, regions: ONE })
+  const { script } = exportTracksToR({
+    tracks,
+    regions: ONE,
+    bpPerPx: bpPerPxOf(ONE),
+  })
   return register(
     name,
     tracks,

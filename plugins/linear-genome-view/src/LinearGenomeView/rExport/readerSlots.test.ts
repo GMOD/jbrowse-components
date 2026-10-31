@@ -4,7 +4,7 @@ import path from 'node:path'
 import { configManifest } from '../../../../../products/jbrowse-cli/src/commands/validate/configManifest.generated.ts'
 import { configJsonSchema } from '../../../../../products/jbrowse-cli/src/commands/validate/configSchema.generated.ts'
 import { slotPathsByType } from '../../../../../scripts/configSlotPaths.ts'
-import { READERS, SEQUENCE_ADAPTERS } from './rScript.ts'
+import { GGJBROWSE_VERSION, READERS, SEQUENCE_ADAPTERS } from './rScript.ts'
 
 const pathsByType = slotPathsByType(configJsonSchema)
 const declares = (type: string, slot: string) =>
@@ -66,4 +66,13 @@ test('R_EXPORT.md tables the displays the export reads', () => {
       .map(([display, { call }]) => `${display} ${call}`)
       .sort(),
   )
+})
+
+test('the user guide pins the ggjbrowse release the script pins', () => {
+  const guide = fs.readFileSync(
+    path.join(__dirname, '../../../../../website/docs/user_guides/r_export.md'),
+    'utf8',
+  )
+  expect(guide).toContain(`GMOD/ggjbrowse@v${GGJBROWSE_VERSION}`)
+  expect(guide).toContain(`ggjbrowse) ${GGJBROWSE_VERSION} or later`)
 })

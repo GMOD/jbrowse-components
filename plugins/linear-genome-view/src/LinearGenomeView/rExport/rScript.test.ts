@@ -11,6 +11,7 @@ const TWO = [
   { refName: 'ctgA', start: 1000, end: 4000 },
   { refName: 'ctgA', start: 6000, end: 9000 },
 ]
+const AT_ONE = { regions: ONE, bpPerPx: 8000 / 1500 }
 
 function scriptOf(...args: Parameters<typeof exportTracksToR>) {
   return exportTracksToR(...args).script!
@@ -23,8 +24,7 @@ test('a locus reads as JBrowse’s location box writes it', () => {
 
 test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call', () => {
   const script = scriptOf({
-    regions: ONE,
-    bpPerPx: 8000 / 1500,
+    ...AT_ONE,
     tracks: [
       track('gff3tabix_genes', 'LinearBasicDisplay', {
         heightMode: 'fit',
@@ -41,6 +41,9 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
     /gff3tabix_genes <- jbrowse_features\(".*volvox\.sort\.gff3\.gz",\n {2}locus,\n {2}display = list\(heightMode = "fit", height = 100\),\n {2}width = width\)/,
   )
   expect(script).toContain('\nwidth <- 1500\n')
+  expect(script).toMatch(
+    /volvox_alignments <- jbrowse_alignments\(".*volvox-sorted\.bam",\n/,
+  )
   expect(script).toContain(
     'display = list(encoding = list(color = list(field = "mapq"))),\n  width = width)',
   )
@@ -50,8 +53,10 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
   expect(script).toContain(
     'ggplot2::ggsave("figure.png", fig, width = jbrowse_width(fig), height = jbrowse_height(fig))',
   )
-  expect(script).toContain('packageVersion("ggjbrowse") < "0.10.0"')
-  expect(script).toContain('remotes::install_github(\\"GMOD/ggjbrowse\\")')
+  expect(script).toContain('packageVersion("ggjbrowse") < "0.11.0"')
+  expect(script).toContain(
+    'remotes::install_github(\\"GMOD/ggjbrowse@v0.11.0\\")',
+  )
   const code = script
     .split('\n')
     .filter(line => !line.startsWith('#'))
@@ -64,8 +69,7 @@ test('each track is a ggjbrowse reader, and the figure is one jbrowse_stack call
 
 test("a track named width keeps the script's width", () => {
   const script = scriptOf({
-    regions: ONE,
-    bpPerPx: 8000 / 1500,
+    ...AT_ONE,
     tracks: [
       {
         ...track('volvox_microarray', 'LinearWiggleDisplay'),
@@ -83,7 +87,7 @@ test('each band takes its track’s name as R writes it, and a name width stays 
     trackName,
   })
   const script = scriptOf({
-    regions: ONE,
+    ...AT_ONE,
     tracks: [
       named('signal'),
       named('say "hi"'),
@@ -108,10 +112,10 @@ test('a feature track takes the view’s CDS frame colors and amino acids', () =
     track('gff3tabix_genes', 'LinearBasicDisplay'),
     track('volvox_filtered_vcf', 'LinearVariantDisplay'),
   ]
-  const defaults = scriptOf({ regions: ONE, tracks })
+  const defaults = scriptOf({ ...AT_ONE, tracks })
   expect(defaults).not.toMatch(/color_by_cds|amino_acids/)
   const set = scriptOf({
-    regions: ONE,
+    ...AT_ONE,
     tracks,
     colorByFrame: true,
     showAminoAcids: false,
@@ -122,22 +126,20 @@ test('a feature track takes the view’s CDS frame colors and amino acids', () =
   expect(set.match(/color_by_cds|amino_acids/g)).toHaveLength(2)
 })
 
-test('every reader lays its track out at the view’s width, and none without a zoom', () => {
+test('every reader lays its track out at the view’s width', () => {
   const tracks = [
     track('volvox_alignments', 'LinearAlignmentsDisplay'),
     track('volvox_test_vcf', 'LinearMultiSampleVariantDisplay'),
   ]
-  const script = scriptOf({ regions: ONE, bpPerPx: 8000 / 1500, tracks })
+  const script = scriptOf({ ...AT_ONE, tracks })
   expect(script).toContain('\nwidth <- 1500\n')
   expect(script.match(/\n {2}width = width/g)).toHaveLength(2)
-  expect(scriptOf({ regions: ONE, tracks })).not.toMatch(
-    /width <-|width = width/,
-  )
 })
 
 test('several regions are one vector of loci, which the readers draw end to end', () => {
   const script = scriptOf({
     regions: TWO,
+    bpPerPx: 6000 / 1500,
     tracks: [track('volvox_alignments', 'LinearAlignmentsDisplay')],
   })
   expect(script).toContain('locus <- c("ctgA:1,001-4,000", "ctgA:6,001-9,000")')
@@ -145,7 +147,7 @@ test('several regions are one vector of loci, which the readers draw end to end'
 
 test('every reader takes the view’s assembly, which names each contig as each file spells it', () => {
   const script = scriptOf({
-    regions: ONE,
+    ...AT_ONE,
     assembly: volvoxAssembly(),
     tracks: [
       track('volvox_alignments', 'LinearAlignmentsDisplay'),
@@ -200,7 +202,7 @@ test('an assembly ggjbrowse builds from its files’ paths reads as jbrowse_asse
 
 test('an adapter with a setting of its own crosses as its config', () => {
   const script = scriptOf({
-    regions: ONE,
+    ...AT_ONE,
     tracks: [
       {
         ...track('bigbed_genes', 'LinearBasicDisplay'),
@@ -219,7 +221,7 @@ test('an adapter with a setting of its own crosses as its config', () => {
 
 test('a tabix GTF reads by its path, as ggjbrowse picks GtfTabixAdapter for .gtf.gz', () => {
   const script = scriptOf({
-    regions: ONE,
+    ...AT_ONE,
     tracks: [
       {
         ...track('bigbed_genes', 'LinearBasicDisplay'),
@@ -236,7 +238,7 @@ test('a tabix GTF reads by its path, as ggjbrowse picks GtfTabixAdapter for .gtf
 
 test('variant tracks read as their displays draw them', () => {
   const script = scriptOf({
-    regions: ONE,
+    ...AT_ONE,
     tracks: [
       track('volvox_filtered_vcf', 'LinearVariantDisplay'),
       track('volvox_test_vcf', 'LinearMultiSampleVariantDisplay'),
@@ -248,7 +250,7 @@ test('variant tracks read as their displays draw them', () => {
 
 test('the header names what the figure leaves out, and an unreadable track does not stop it', () => {
   const { script, notes, drawn } = exportTracksToR({
-    regions: ONE,
+    ...AT_ONE,
     tracks: [
       track('volvox_microarray', 'LinearWiggleDisplay'),
       track('volvox_microarray', 'LinearManhattanDisplay'),
@@ -270,7 +272,7 @@ test('the header names what the figure leaves out, and an unreadable track does 
 
 test('a read colored by its mate’s contig says the figure hashes the contigs', () => {
   const { notes } = exportTracksToR({
-    regions: ONE,
+    ...AT_ONE,
     tracks: [
       track('volvox_alignments', 'LinearAlignmentsDisplay', {
         encoding: { color: { field: 'mateRefName' } },

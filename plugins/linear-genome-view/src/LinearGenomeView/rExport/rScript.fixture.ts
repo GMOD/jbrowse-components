@@ -4,12 +4,20 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
+import { getEnv } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { createTestSession } from '@jbrowse/web/testUtils'
+
 import { schemaProblems } from '../../../../../products/jbrowse-cli/src/commands/validate/schemaValidate.ts'
 
 import type { RExportTrack } from './rScript.ts'
 
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
 export const VOLVOX = path.resolve(__dirname, '../../../../../test_data/volvox')
 const BASE_URI = `${pathToFileURL(VOLVOX).href}/`
+const adapterSchema =
+  getEnv(createTestSession()).pluginManager.pluggableConfigSchemaType('adapter')
 
 type Conf = Record<string, unknown> & { adapter: Record<string, unknown> }
 
@@ -41,6 +49,15 @@ function located(adapter: Record<string, unknown>): Record<string, unknown> {
 }
 
 /**
+ * An adapter config as the live view reads it off its track: through the
+ * adapter's schema, which expands a `uri` shorthand into its file and index
+ * slots and leaves out what matches a default.
+ */
+function asLoaded(adapter: Record<string, unknown>) {
+  return getSnapshot(adapterSchema.create(adapter)) as Record<string, unknown>
+}
+
+/**
  * A volvox track as the live view hands it over, `display` standing for both
  * the written and the resolved config. Throws on a display config the
  * committed schema refuses, which the browser could not have written.
@@ -65,7 +82,7 @@ export function track(
     trackId,
     trackName: t.name ?? trackId,
     displayType,
-    adapter: located(t.adapter),
+    adapter: asLoaded(located(t.adapter)),
     display,
   }
 }
