@@ -19,11 +19,7 @@ connections both draw, by its `connection` and `breakpoint` fields.
 ```js
 {
   type: 'LinearAlignmentsDisplay',
-  readConnections: {
-    show: true,
-    mark: 'rule',
-    encoding: { color: 'pairOrientation' },
-  },
+  readConnections: { show: true, mark: 'rule' },
 }
 ```
 

@@ -69,8 +69,8 @@ The per-base layer over the reads is `pileup.bases`.
   type: 'LinearAlignmentsDisplay',
   encoding: {
     color: {
-      field: 'pairOrientation',
-      scale: { domain: ['RR'], range: ['#d95f02'] },
+      field: 'insertSizeAndOrientation',
+      scale: { type: 'ordinal', domain: ['RR'], range: ['#d95f02'] },
     },
   },
 }
@@ -90,7 +90,6 @@ A `field` named here paints through its own scale while `scale.type` is unset, a
 | `strand` | ordinal | `1`, `-1` |  |  |
 | `mapq` | threshold | `1`, `10`, `30` | MAPQ 0 (multi-mapping), MAPQ 1-9 (low), MAPQ 10-29, MAPQ 30+ (high confidence) | `scheme: cividis`; key "Mapping quality" |
 | `firstOfPairStrand` | ordinal | `1`, `-1` |  |  |
-| `pairOrientation` | ordinal | `LR`, `RL`, `RR`, `LL`, `''`, `unmappedMate`, `interchrom`, `splitInverted`, `splitSameStrand`, `segmentInverted`, `segmentSameStrand` |  |  |
 | `insertSizeAndOrientation` | threshold |  |  |  |
 | `mateRefName` | ordinal |  |  |  |
 

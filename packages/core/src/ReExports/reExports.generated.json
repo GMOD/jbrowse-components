@@ -2105,7 +2105,8 @@
       "package": "@jbrowse/core",
       "names": [
         "SCROLL_ZOOM_HELP",
-        "SCROLL_ZOOM_LABEL"
+        "SCROLL_ZOOM_LABEL",
+        "SCROLL_ZOOM_TIP"
       ],
       "worker": "real"
     },

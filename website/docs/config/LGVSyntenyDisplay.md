@@ -62,7 +62,7 @@ display type:
 <!-- prettier-ignore -->
 | Setting | Page | `scale.type` | Preset fields |
 | --- | --- | --- | --- |
-| `encoding.color` | [](/docs/config/lgvsyntenycolor#preset-fields) | ordinal, linear, threshold | `strand`, `mapq`, `firstOfPairStrand`, `pairOrientation`, `insertSizeAndOrientation`, `mateRefName` |
+| `encoding.color` | [](/docs/config/lgvsyntenycolor#preset-fields) | ordinal, linear, threshold | `strand`, `mapq`, `firstOfPairStrand`, `insertSizeAndOrientation`, `mateRefName` |
 
 ## Config slots
 

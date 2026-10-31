@@ -6204,7 +6204,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "strand",
             "mapq",
             "firstOfPairStrand",
-            "pairOrientation",
             "insertSizeAndOrientation",
             "mateRefName"
           ],
@@ -6258,7 +6257,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "strand",
                 "mapq",
                 "firstOfPairStrand",
-                "pairOrientation",
                 "insertSizeAndOrientation",
                 "mateRefName"
               ]
@@ -7139,42 +7137,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "AlignmentsArcColor": {
-      "title": "AlignmentsArcColor",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "enum": [
-            "insertSizeAndOrientation",
-            "pairOrientation"
-          ],
-          "type": "string"
-        },
-        {
-          "title": "AlignmentsArcColor",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "field": {
-              "description": "the pair field the arcs paint: insertSizeAndOrientation or pairOrientation; unset takes the reads' color field where an arc paints it.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "enum": [
-                  "insertSizeAndOrientation",
-                  "pairOrientation"
-                ]
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
     "ReadConnectionsStrokeWidthScale": {
       "title": "ReadConnectionsStrokeWidthScale",
       "type": "object",
@@ -7278,14 +7240,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "x-closed": true,
       "properties": {
-        "color": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/AlignmentsArcColor"
-          }
-        },
         "strokeWidth": {
           "if": {
             "type": "null"
@@ -8358,7 +8312,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "strand",
             "mapq",
             "firstOfPairStrand",
-            "pairOrientation",
             "insertSizeAndOrientation",
             "mateRefName"
           ],
@@ -8412,7 +8365,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "strand",
                 "mapq",
                 "firstOfPairStrand",
-                "pairOrientation",
                 "insertSizeAndOrientation",
                 "mateRefName"
               ]

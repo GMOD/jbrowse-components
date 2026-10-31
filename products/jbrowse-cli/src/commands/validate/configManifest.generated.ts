@@ -3829,24 +3829,6 @@ export const configManifest: ConfigManifest = {
                     ]
                   }
                 },
-                "pairOrientation": {
-                  "scale": {
-                    "type": "ordinal",
-                    "domain": [
-                      "LR",
-                      "RL",
-                      "RR",
-                      "LL",
-                      "",
-                      "unmappedMate",
-                      "interchrom",
-                      "splitInverted",
-                      "splitSameStrand",
-                      "segmentInverted",
-                      "segmentSameStrand"
-                    ]
-                  }
-                },
                 "insertSizeAndOrientation": {
                   "scale": {
                     "type": "threshold"
@@ -4351,21 +4333,6 @@ export const configManifest: ConfigManifest = {
               "name": "encoding",
               "type": "ReadConnectionsEncodingConfigurationSchema",
               "subSlots": [
-                {
-                  "name": "color",
-                  "type": "AlignmentsArcColorConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "field",
-                      "type": "(AlignmentsArcColorField | undefined)"
-                    }
-                  ],
-                  "schema": "AlignmentsArcColor",
-                  "writes": "whole",
-                  "shorthand": {
-                    "string": "field"
-                  }
-                },
                 {
                   "name": "strokeWidth",
                   "type": "ReadConnectionsStrokeWidthConfigurationSchema",
@@ -5014,24 +4981,6 @@ export const configManifest: ConfigManifest = {
                     ]
                   }
                 },
-                "pairOrientation": {
-                  "scale": {
-                    "type": "ordinal",
-                    "domain": [
-                      "LR",
-                      "RL",
-                      "RR",
-                      "LL",
-                      "",
-                      "unmappedMate",
-                      "interchrom",
-                      "splitInverted",
-                      "splitSameStrand",
-                      "segmentInverted",
-                      "segmentSameStrand"
-                    ]
-                  }
-                },
                 "insertSizeAndOrientation": {
                   "scale": {
                     "type": "threshold"
@@ -5444,21 +5393,6 @@ export const configManifest: ConfigManifest = {
               "name": "encoding",
               "type": "ReadConnectionsEncodingConfigurationSchema",
               "subSlots": [
-                {
-                  "name": "color",
-                  "type": "AlignmentsArcColorConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "field",
-                      "type": "(AlignmentsArcColorField | undefined)"
-                    }
-                  ],
-                  "schema": "AlignmentsArcColor",
-                  "writes": "whole",
-                  "shorthand": {
-                    "string": "field"
-                  }
-                },
                 {
                   "name": "strokeWidth",
                   "type": "ReadConnectionsStrokeWidthConfigurationSchema",

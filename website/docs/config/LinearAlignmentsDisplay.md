@@ -69,7 +69,7 @@ molecule's:
   displayDefaults: {
     height: 400,
     unit: 'chain',
-    encoding: { color: 'pairOrientation' },
+    encoding: { color: 'insertSizeAndOrientation' },
     pileup: { softClips: { show: true } },
     readConnections: { show: true },
   },
@@ -113,7 +113,7 @@ split-read joins:
 <!-- prettier-ignore -->
 | Setting | Page | `scale.type` | Preset fields |
 | --- | --- | --- | --- |
-| `encoding.color` | [](/docs/config/alignmentscolor#preset-fields) | ordinal, linear, threshold | `strand`, `mapq`, `firstOfPairStrand`, `pairOrientation`, `insertSizeAndOrientation`, `mateRefName` |
+| `encoding.color` | [](/docs/config/alignmentscolor#preset-fields) | ordinal, linear, threshold | `strand`, `mapq`, `firstOfPairStrand`, `insertSizeAndOrientation`, `mateRefName` |
 
 ## Config slots
 

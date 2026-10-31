@@ -1,24 +1,22 @@
 ---
 id: readconnectionsencoding
 title: ReadConnectionsEncoding
-description: "The read connections' encoding: the color and width each connection strokes at."
+description: "The read connections' encoding: the width each connection strokes at."
 sidebar_label: Display setting -> ReadConnectionsEncoding
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `alignments` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/LinearAlignmentsDisplay/readConnectionsEncodingConfigSchema.ts).
 
-The read connections' `encoding`: the color and width each connection
-strokes at.
+The read connections' `encoding`: the width each connection strokes at.
+A connection's color is its insert size and orientation class, as the
+reads' `insertSizeAndOrientation` color names it, declared colors included.
 
 ## Example usage
 
 ```js
 {
   type: 'LinearAlignmentsDisplay',
-  readConnections: {
-    show: true,
-    encoding: { color: 'pairOrientation', strokeWidth: 2 },
-  },
+  readConnections: { show: true, encoding: { strokeWidth: 2 } },
 }
 ```
 
@@ -29,5 +27,4 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-color">**color**</span><br>[AlignmentsArcColor](../alignmentsarccolor) | The field that colors every connection: this band, `pileup.connectors` and a chain's links between displayed regions; `""` uses the reads' `encoding.color` field where a connection paints it. |
 | <span id="slot-strokewidth">**strokeWidth**</span><br>[ReadConnectionsStrokeWidth](../readconnectionsstrokewidth) | The width each connection strokes at. |

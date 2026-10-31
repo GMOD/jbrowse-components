@@ -247,7 +247,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/ui/ResizeHandle': ['default'],
   '@jbrowse/core/ui/ReturnToImportFormDialog': ['default'],
   '@jbrowse/core/ui/SanitizedHTML': ['default'],
-  '@jbrowse/core/ui/scrollZoomLabels': ['SCROLL_ZOOM_HELP', 'SCROLL_ZOOM_LABEL'],
+  '@jbrowse/core/ui/scrollZoomLabels': ['SCROLL_ZOOM_HELP', 'SCROLL_ZOOM_LABEL', 'SCROLL_ZOOM_TIP'],
   '@jbrowse/core/ui/ScrollZoomToggle': ['default'],
   '@jbrowse/core/ui/SessionJsonPanel': ['default'],
   '@jbrowse/core/ui/ShareLinkField': ['default'],
