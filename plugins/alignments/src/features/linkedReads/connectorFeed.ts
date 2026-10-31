@@ -102,13 +102,8 @@ interface DisplayedRegion {
   end?: number
 }
 
-function holds(r: DisplayedRegion | undefined, refName: string, bp: number) {
-  return (
-    r !== undefined &&
-    r.refName === refName &&
-    bp >= (r.start ?? -Infinity) &&
-    bp <= (r.end ?? Infinity)
-  )
+function within(r: DisplayedRegion, bp: number) {
+  return bp >= (r.start ?? -Infinity) && bp <= (r.end ?? Infinity)
 }
 
 // Where an end places: through the region its read was fetched in where that
@@ -121,9 +116,9 @@ function placeEnd(
   r: DisplayedRegion,
   bp: number,
 ) {
-  const holding = holds(r, r.refName, bp)
+  const holding = within(r, bp)
     ? fetchedIn
-    : displayedRegions.findIndex(o => holds(o, r.refName, bp))
+    : displayedRegions.findIndex(o => o.refName === r.refName && within(o, bp))
   return holding === -1
     ? {
         region: fetchedIn,

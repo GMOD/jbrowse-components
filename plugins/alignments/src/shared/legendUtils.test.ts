@@ -16,6 +16,7 @@ import { colorSettingOf } from './colorSettingFixture.ts'
 import { sectionOrder } from './groupFeatures.ts'
 import {
   arcColorCategoryLabel,
+  arcLegendTitle,
   bakedRampScale,
   colorRampScales,
   getAlignmentsColorScales,
@@ -1021,6 +1022,36 @@ describe('getAlignmentsColorScales', () => {
         ['RL - Mates point outward', 'Split read (duplication-type)'],
       ],
     ])
+  })
+
+  // A chain under an orientation field paints a same-strand split mate gold,
+  // and a deletion-type junction over it is the same gold.
+  test('the deletion-type split row joins the same-strand split read row', () => {
+    expect(
+      shown(
+        getAlignmentsColorScales(
+          model(
+            [{ color: 'gold', label: 'Split paired-end read (same strand)' }],
+            [{ color: 'gold', label: 'Split read (deletion-type)' }],
+          ),
+        ),
+      ),
+    ).toEqual([['Read and arc colors', ['Same-strand or deletion-type split']]])
+  })
+
+  test('with the band off, the connection colors head as the connectors', () => {
+    const scales = getAlignmentsColorScales({
+      ...model(
+        [{ color: 'teal', label: 'RL - Mates point outward' }],
+        [{ color: 'teal', label: 'RL - Mates point outward' }],
+      ),
+      arcLegendTitle: arcLegendTitle('off'),
+    })
+    expect(shown(scales)).toEqual([
+      ['Read and connector colors', ['RL - Mates point outward']],
+    ])
+    expect(arcLegendTitle('link')).toBe('Arc colors')
+    expect(arcLegendTitle('rule')).toBe('Read cloud colors')
   })
 
   test('merges reads and arcs into one list when they share a color', () => {

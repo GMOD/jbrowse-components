@@ -30,10 +30,8 @@ export const ARC_SPLIT_LABELS: Record<ArcSplitCategory, string> = {
 
 // The one row a split class and its pair twin share when a key holds both: they
 // paint one color, and two rows of one color read as two meanings.
-export const ARC_SPLIT_MERGED_LABELS: Record<
-  Exclude<ArcSplitCategory, 'splitForward'>,
-  string
-> = {
+export const ARC_SPLIT_MERGED_LABELS: Record<ArcSplitCategory, string> = {
+  splitForward: 'Same-strand or deletion-type split',
   splitBack: 'RL pair or duplication-type split',
   splitInvLL: 'LL pair or inversion split',
   splitInvRR: 'RR pair or inversion split',
