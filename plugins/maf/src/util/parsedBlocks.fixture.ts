@@ -78,7 +78,10 @@ export function tafSliceBlocksOf(
   const reader = readerOf(resolve)
   return collectBlocks((sink, keep) => {
     adapter.readTafSlice(
-      { bytes, blockIdAt: offset => `${offset}` },
+      {
+        text: new TextDecoder().decode(bytes),
+        blockIdAt: offset => `${offset}`,
+      },
       runLengthEncodeBases,
       reader,
       sink,

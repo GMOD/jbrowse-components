@@ -2,6 +2,7 @@ import { scanBgzfBlocks, unzip } from '@gmod/bgzf-filehandle'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
+import { byteOffsetsOf } from './taiBlocks.ts'
 import { lowerBound, parseTaiIndex, queryBlockSpan } from './taiIndex.ts'
 
 import type { IndexData } from './taiIndex.ts'
@@ -14,13 +15,9 @@ export interface TaiIndex {
   index: IndexData
 }
 
-/**
- * The decompressed bytes a region read, and the id of the block whose text
- * starts at an offset into them.
- */
 export interface TaiSlice {
-  bytes: Uint8Array
-  blockIdAt: (offset: number) => string
+  text: string
+  blockIdAt: (textOffset: number) => string
 }
 
 export async function readTaiIndex(
@@ -136,17 +133,18 @@ export async function readTaiSlice({
   const slice = buffer.subarray(startOffset, endOffset)
   const atFileEnd =
     endOffset === buffer.length && (toEnd || compressed.length < readLength)
+  const bytes = atFileEnd ? endingInNewline(slice) : slice
+  const text = new TextDecoder().decode(bytes)
+  const virtualOffsetAt = virtualOffsetIds(blocks, startBlock, startOffset)
+  const byteOffsetAt = byteOffsetsOf(text, bytes)
   return {
-    bytes: atFileEnd ? endingInNewline(slice) : slice,
-    blockIdAt: virtualOffsetIds(blocks, startBlock, startOffset),
+    text,
+    blockIdAt: (textOffset: number) =>
+      virtualOffsetAt(byteOffsetAt(textOffset)),
   }
 }
 
-/**
- * Each slice offset as the bgzf virtual offset it decompressed from, which
- * names one place in the file whichever `.tai` entry the read started at, as a
- * tabix line's file offset does.
- */
+/** A tabix line's file offset is its id; this is the bgzf equivalent. */
 function virtualOffsetIds(
   blocks: BgzfBlockInfo[],
   startBlock: number,

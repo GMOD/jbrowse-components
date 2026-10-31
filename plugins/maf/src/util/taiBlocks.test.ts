@@ -8,6 +8,7 @@ import bgzipTaffyConfigSchema from '../BgzipTaffyAdapter/configSchema.ts'
 import { MafRegionSink } from '../LinearMafGetAlignmentDataRpc/mafRegionSink.ts'
 import MafFeature from '../MafFeature.ts'
 import { featureBlocks, mafFeatureTable } from './mafFeatureBlocks.fixture.ts'
+import { byteOffsetsOf } from './taiBlocks.ts'
 
 import type { MafAdapterBase } from './MafAdapterBase.ts'
 import type { FeatureTable } from '@jbrowse/core/util/featureTable'
@@ -180,4 +181,40 @@ test('a MAF stanza keeps its record order, copy rows and bridges', async () => {
   expect([flipped.get('start'), flipped.get('end')]).toEqual([112, 116])
   expect(flipped.get('seq')).toBe('GGTT')
   expect(flipped.get('refSampleId')).toBe('hg38')
+})
+
+// The comment between the first two blocks holds two 2-byte characters and an
+// invalid byte, so its decoded text is two characters shorter than its bytes.
+// bgzip writes the header line as its own bgzf block, at 0; the rest is at 47.
+test('a block id is the virtual offset of its `a` line past non-ASCII bytes', async () => {
+  const ids = async (start: number) => {
+    const features = await firstValueFrom(
+      maf([], 'nonAscii')
+        .getFeatures(region('chr1', start, 112))
+        .pipe(toArray()),
+    )
+    return features.map(f => `${f.get('start')} ${f.id()}`)
+  }
+  expect(await ids(100)).toEqual(['100 47-1', '104 47-88', '108 47-158'])
+  expect(await ids(105)).toEqual(['104 47-88', '108 47-158'])
+})
+
+describe('byteOffsetsOf', () => {
+  const offsets = (bytes: number[], lineStarts: number[]) => {
+    const at = byteOffsetsOf(
+      new TextDecoder().decode(Uint8Array.from(bytes)),
+      Uint8Array.from(bytes),
+    )
+    return lineStarts.map(c => at(c))
+  }
+  const BOM = [0xef, 0xbb, 0xbf]
+
+  test('steps past a BOM, a 2-byte character and an invalid byte', () => {
+    const bytes = [...BOM, 0x61, 10, 0xc3, 0xa9, 10, 0xff, 10, 0x62, 10]
+    expect(offsets(bytes, [0, 2, 4, 6])).toEqual([3, 5, 8, 10])
+  })
+
+  test('offsets ASCII after a BOM by the BOM alone', () => {
+    expect(offsets([...BOM, 0x61, 10, 0x62, 10], [0, 2])).toEqual([3, 5])
+  })
 })

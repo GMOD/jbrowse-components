@@ -15,7 +15,7 @@ import type { KeepBlock, MafStanzaReader } from '../util/mafStanzaReader.ts'
  */
 export function readMafBlocks(
   text: string,
-  blockIdAt: (offset: number) => string,
+  blockIdAt: (textOffset: number) => string,
   reader: MafStanzaReader,
   sink: MafBlockSink,
   keep: KeepBlock,

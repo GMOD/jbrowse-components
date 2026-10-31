@@ -60,7 +60,7 @@ export default class BgzipTaffyAdapter extends MafTaiAdapterBase<
   }
 
   readTafSlice(
-    { bytes, blockIdAt }: TaiSlice,
+    { text, blockIdAt }: TaiSlice,
     runLengthEncodeBases: boolean,
     reader: MafStanzaReader,
     sink: MafBlockSink,
@@ -80,7 +80,7 @@ export default class BgzipTaffyAdapter extends MafTaiAdapterBase<
     // A cut coordinate line is the one `wholeLines` has to drop here: cut
     // before its ` ; ` it looks like a plain bases line and reaches
     // `parseBasesColumn` as one.
-    const { lines, endsClean } = wholeLines(this.decoder.decode(bytes))
+    const { lines, endsClean } = wholeLines(text)
 
     for (const line of lines) {
       const lineStart = lineOffset

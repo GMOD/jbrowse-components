@@ -42,12 +42,12 @@ export default class BgzipMafAdapter extends MafTaiAdapterBase<BgzipMafAdapterCo
   }
 
   protected readSlice(
-    { bytes, blockIdAt }: TaiSlice,
+    { text, blockIdAt }: TaiSlice,
     _setup: unknown,
     reader: MafStanzaReader,
     sink: MafBlockSink,
     keep: KeepBlock,
   ) {
-    readMafBlocks(this.decoder.decode(bytes), blockIdAt, reader, sink, keep)
+    readMafBlocks(text, blockIdAt, reader, sink, keep)
   }
 }

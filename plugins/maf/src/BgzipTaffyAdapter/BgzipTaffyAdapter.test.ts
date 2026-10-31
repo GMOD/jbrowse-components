@@ -4,6 +4,7 @@ import { toArray } from 'rxjs/operators'
 
 import { makeSourceResolver } from '../util/parseAssemblyName.ts'
 import { tafBlockOf, tafSliceBlocksOf } from '../util/parsedBlocks.fixture.ts'
+import { queryBlockSpan } from '../util/taiIndex.ts'
 import { readTaiSlice } from '../util/taiSlice.ts'
 import BgzipTaffyAdapter from './BgzipTaffyAdapter.ts'
 import configSchema from './configSchema.ts'
@@ -1285,7 +1286,7 @@ describe('a query near a short contig end does not take the next contig', () => 
     }))!
     const decoded = tafSliceBlocksOf(
       adapter,
-      slice.bytes,
+      new TextEncoder().encode(slice.text),
       false,
       makeSourceResolver().resolve,
     )
@@ -1352,11 +1353,15 @@ describe('block ids', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
-  // The two reads start at different `.tai` entries, so a block they share sits
-  // at a different offset into each slice.
-  test('a block keeps its id across reads from different index entries', async () => {
-    const wide = await idsOver(10_000, 30_000)
-    const narrow = await idsOver(20_000, 30_000)
+  test('a block keeps its id across reads from different bgzf blocks', async () => {
+    const { index } = await celegans.configure()
+    expect(
+      [20_000, 45_000].map(
+        start => queryBlockSpan(index, 'chrI', start, 60_000)?.startBlock,
+      ),
+    ).toEqual([62, 15333])
+    const wide = await idsOver(20_000, 60_000)
+    const narrow = await idsOver(45_000, 60_000)
     expect(narrow.length).toBeGreaterThan(0)
     expect(wide).toEqual(expect.arrayContaining(narrow))
     const ids = wide.map(spanAndId => spanAndId.split(' ')[1])
