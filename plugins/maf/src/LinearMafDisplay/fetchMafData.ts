@@ -26,6 +26,10 @@ import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 interface MafFetchSelf extends FetchEachRegionModel {
   adapterConfig: Record<string, unknown>
   rpcProps: () => { rowFocus: string[] | undefined }
+  summaryReadArgs: {
+    adapterConfig: Record<string, unknown>
+    rowFocus: string[] | undefined
+  }
   // what the summary tier reads the frames for; the detail tier always does
   framesActive: boolean
   framesAdapterConfig: Record<string, unknown> | undefined
@@ -332,7 +336,8 @@ export async function fetchMafSummaryData(
     self.framesActive,
     (region, regionCtx) =>
       regionCtx.callRpc('LinearMafGetSummaryData', {
-        ...rpcArgs(self),
+        ...self.summaryReadArgs,
+        byteLimit: self.resolvedByteLimit(),
         regions: [region],
       }),
   )

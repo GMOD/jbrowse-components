@@ -39,8 +39,10 @@ tripped it; the only guard was a rule in ARCHITECTURE.md.
   `snapshotInputs({ rpcProps, adapterConfig })` in a `stableIdentityComputed`.
   `MultiRegionDisplayMixin` stamps it inside `fetchInputs`,
   `KeyedFetchMixin.currentFetchKey` is `{ view, settings }` in a structural
-  computed, the byte gate's `gateViewport.key` is `{ regions, settings }`, and
-  MAF's `coarseReadKey` is the axis itself.
+  computed, and the byte gate's `gateViewport.key` is `{ regions, settings }`.
+  MAF's `coarseReadKey` is not the axis: the summary RPC reads only the adapter
+  and the focus (`summaryReadArgs`), so a detail-only setting such as the
+  interbase indicator rule re-reads nothing zoomed out.
 - **`isDataCurrent` is the one compare**: `loaded !== undefined &&
   compareStructural(loaded, current)`. `installFetch`'s freshness gate,
   `dataCurrent`, `isCacheValid`, `staleSettingsDrawn`, `gateMeasurementStale`,

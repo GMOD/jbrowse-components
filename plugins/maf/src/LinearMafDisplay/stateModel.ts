@@ -569,13 +569,25 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The detail fetch's settings, and whether the strip wants frames read
-         * beside the summary: the detail tier always reads them, the summary
-         * tier only for the strip.
+         * What the summary RPC reads beyond its regions and byte budget: the
+         * adapter and the focus it filters records by. The detail fetch's
+         * other settings never reach it.
+         */
+        get summaryReadArgs() {
+          return {
+            adapterConfig: self.adapterConfig,
+            rowFocus: self.rowFocusKey,
+          }
+        },
+        /**
+         * #getter
+         * `summaryReadArgs`, and whether the strip wants frames read beside
+         * the summary: the detail tier always reads them, the summary tier
+         * only for the strip.
          */
         get coarseReadKey() {
           return {
-            settings: self.settingsFetchInputs,
+            args: this.summaryReadArgs,
             frames: self.framesActive,
           }
         },

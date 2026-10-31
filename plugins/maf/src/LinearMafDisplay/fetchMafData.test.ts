@@ -126,6 +126,10 @@ function makeSelf() {
       framesAdapterConfig: undefined as Record<string, unknown> | undefined,
       resolvedByteLimit: () => 1_000_000 as number | undefined,
       rpcProps: () => ({ rowFocus: undefined as string[] | undefined }),
+      summaryReadArgs: {
+        adapterConfig: {},
+        rowFocus: undefined as string[] | undefined,
+      },
       fetchRegions: (
         _needed: unknown,
         work: (ctx: RegionFetchContext) => unknown,

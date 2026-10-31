@@ -1,3 +1,6 @@
+import { setConf } from '@jbrowse/core/configuration'
+import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
+
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
@@ -348,5 +351,39 @@ describe('the frames overlay across the swap', () => {
     display.clearAllRpcData()
     expect(display.coarseTierActive).toBe(false)
     expect(names(display)).toEqual(['wide'])
+  })
+})
+
+// The summary RPC reads the adapter, the focus and whether the strip wants
+// frames, and nothing else the detail fetch is keyed on.
+describe('the summary read is keyed on what it reads', () => {
+  function heldReadCurrent(display: LinearMafDisplayModel) {
+    return isDataCurrent(
+      display.coarseTierRead?.key,
+      display.coarseTierIssueKey,
+    )
+  }
+
+  it('keeps its read through an interbase indicator edit', () => {
+    const { display, view } = env().createDisplay()
+    seedSources(display)
+    view.zoomTo(100)
+    seedSummary(display, view.displayedRegions)
+    setConf(
+      display,
+      ['coverage', 'interbase', 'filter'],
+      [{ field: 'fraction', gt: 0.1 }],
+    )
+    expect(display.interbaseIndicatorRule.fraction.min).toBe(0.1)
+    expect(heldReadCurrent(display)).toBe(true)
+  })
+
+  it('re-reads on a focus change, which the worker filters by', () => {
+    const { display, view } = env().createDisplay()
+    seedSources(display)
+    view.zoomTo(100)
+    seedSummary(display, view.displayedRegions)
+    display.setRowFocus(['hg38'])
+    expect(heldReadCurrent(display)).toBe(false)
   })
 })
