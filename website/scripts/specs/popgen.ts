@@ -276,27 +276,16 @@ export const popgenSpecs: ScreenshotSpec[] = [
       {
         type: 'text',
         text: '19 In(2L)t carriers',
+        leader: true,
+        // the inversion cell fades toward its left end; point at the solid one
         anchor: {
           view: 1,
           trackId: 'dgrp_In2Lt_sv',
-          loc: 'chr2L:7,000,000',
-          fracY: 0.7,
-        },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: {
-          view: 1,
-          trackId: 'dgrp_In2Lt_sv',
-          loc: 'chr2L:7,000,000',
-          fracY: 0.78,
-        },
-        anchor: {
-          view: 1,
-          trackId: 'dgrp_In2Lt_sv',
-          loc: 'chr2L:7,000,000',
+          loc: 'chr2L:11,500,000',
           fracY: 0.947,
         },
+        dx: -260,
+        dy: -110,
       },
     ],
     readySelector: displayPainted('variant-display'),

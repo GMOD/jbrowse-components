@@ -790,7 +790,6 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'breast_cancer_sniffles_hg19_traonly_tabix',
-          genotypes: { show: false },
         },
       ],
     }),
@@ -845,7 +844,6 @@ export const uiSpecs: ScreenshotSpec[] = [
                 },
                 {
                   trackId: 'breast_cancer_sniffles_hg19',
-                  genotypes: { show: false },
                   // drop the megabase-scale inversion calls spanning the window
                   height: 90,
                   filter: [
@@ -860,7 +858,6 @@ export const uiSpecs: ScreenshotSpec[] = [
               tracks: [
                 {
                   trackId: 'breast_cancer_sniffles_hg19',
-                  genotypes: { show: false },
                   height: 90,
                   filter: [
                     "jexl:get(feature,'end')-get(feature,'start') < 100000",

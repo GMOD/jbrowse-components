@@ -61,7 +61,6 @@ export const variantsSpecs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'volvox_filtered_vcf',
-          genotypes: { show: false },
           height: 60,
         },
         'volvox_cram_alignments',

@@ -373,7 +373,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 },
                 {
                   trackId: TRUTH_SET,
-                  genotypes: { show: false },
                   records: { displayMode: 'collapsed' },
                   height: 30,
                 },
@@ -472,7 +471,6 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
                 { ...GENE_TRACK, displayMode: 'compact', height: 55 },
                 {
                   trackId: TRUTH_SET,
-                  genotypes: { show: false },
                   records: { displayMode: 'collapsed' },
                   height: 30,
                 },
