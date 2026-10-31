@@ -41,20 +41,20 @@ export function isConcordantFRPair(
   return abs > 0 && abs >= stats.lower && abs <= stats.upper
 }
 
-// Color-slot indices into the arc palette (`ARC_SLOT_CATEGORY`).
-export const COLOR_DEFAULT = 0
-export const COLOR_LONG_INSERT = ARC_SLOT_CATEGORY.indexOf('longInsert')
+// Color-slot indices into the arc palette (`ARC_SLOT_CATEGORY`), by the
+// meaning each slot holds there.
+export const ARC_COLOR_DEFAULT = ARC_SLOT_CATEGORY.indexOf('normalInsert')
+export const ARC_COLOR_LONG_INSERT = ARC_SLOT_CATEGORY.indexOf('longInsert')
 export const ARC_COLOR_SHORT_INSERT = ARC_SLOT_CATEGORY.indexOf('shortInsert')
 // The only color an interchromosomal arc or tick takes: insert size and
 // pair orientation mean nothing across two references.
-export const ARC_COLOR_INTERCHROM = 3
+export const ARC_COLOR_INTERCHROM = ARC_SLOT_CATEGORY.indexOf('interchrom')
 // A split-read junction, by which way the read extends from its two feet —
-// see `arcSplitCategory.ts`. Each takes the color of the pair class that spans
-// the same junction.
-export const COLOR_SPLIT_FORWARD = 7
-export const COLOR_SPLIT_BACK = 8
-export const COLOR_SPLIT_INV_LL = 9
-export const COLOR_SPLIT_INV_RR = 10
+// see `arcSplitCategory.ts`.
+export const ARC_COLOR_SPLIT_FORWARD = ARC_SLOT_CATEGORY.indexOf('splitForward')
+export const ARC_COLOR_SPLIT_BACK = ARC_SLOT_CATEGORY.indexOf('splitBack')
+export const ARC_COLOR_SPLIT_INV_LL = ARC_SLOT_CATEGORY.indexOf('splitInvLL')
+export const ARC_COLOR_SPLIT_INV_RR = ARC_SLOT_CATEGORY.indexOf('splitInvRR')
 
 // Paint rank of an arc color slot: 0 for the baseline "nothing to see here"
 // slot, 1 for every slot that says something. Array order is paint order and
@@ -62,7 +62,7 @@ export const COLOR_SPLIT_INV_RR = 10
 // every categorized arc lands over every uncategorized one.
 //
 // A deep short-read pileup is overwhelmingly concordant pairs, and they all
-// paint COLOR_DEFAULT. On HG002 300x the ratio is about 50:1 even after the
+// paint ARC_COLOR_DEFAULT. On HG002 300x the ratio is about 50:1 even after the
 // insert-size band was floored to the event scale, so the handful of arcs
 // carrying a category were being punched through by grey arcs fetched later —
 // support-ascending order is arbitrary with respect to whether an arc means
@@ -74,7 +74,7 @@ export const COLOR_SPLIT_INV_RR = 10
 // other would be asserting that a short insert outranks an inversion, which
 // nothing here knows. Within a rank, `support` still orders them.
 export function arcPaintRank(colorType: number) {
-  return colorType === COLOR_DEFAULT ? 0 : 1
+  return colorType === ARC_COLOR_DEFAULT ? 0 : 1
 }
 
 // CATEGORY FIRST, then ASCENDING SUPPORT, because array order is paint order and
@@ -125,7 +125,7 @@ export function arcPaintOrder(a: ComputedArc, b: ComputedArc) {
 function splitJunctionColor(arc: PendingArc) {
   const kind = splitJunctionKind(arc.p1Strand, arc.p2Strand)
   if (kind === undefined) {
-    return COLOR_DEFAULT
+    return ARC_COLOR_DEFAULT
   }
   const p1IsLower =
     arc.p1Bp === arc.p2Bp ? arc.p1Dir === -1 : arc.p1Bp < arc.p2Bp
@@ -139,11 +139,11 @@ function splitJunctionColor(arc: PendingArc) {
 export function splitJunctionSlot(inversion: boolean, lowerDir: number) {
   return inversion
     ? lowerDir === -1
-      ? COLOR_SPLIT_INV_LL
-      : COLOR_SPLIT_INV_RR
+      ? ARC_COLOR_SPLIT_INV_LL
+      : ARC_COLOR_SPLIT_INV_RR
     : lowerDir === -1
-      ? COLOR_SPLIT_FORWARD
-      : COLOR_SPLIT_BACK
+      ? ARC_COLOR_SPLIT_FORWARD
+      : ARC_COLOR_SPLIT_BACK
 }
 
 /** The slot a mate link paints under `colorField`. */
@@ -156,7 +156,7 @@ export function pairColorType(
   return (
     ARC_SLOT_OF_CATEGORY.get(
       pairCategory(colorField, pairOrientationNum, tlen, stats),
-    ) ?? COLOR_DEFAULT
+    ) ?? ARC_COLOR_DEFAULT
   )
 }
 

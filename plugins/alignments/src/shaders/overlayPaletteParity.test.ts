@@ -5,7 +5,7 @@ import {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import {
-  ARC_SPLIT_PAIR_TWIN,
+  ARC_SPLIT_SWATCH,
   isArcSplitCategory,
 } from '../features/arcs/arcSplitCategory.ts'
 import {
@@ -68,12 +68,8 @@ describe('overlay palettes follow the theme', () => {
     const arc = buildArcColorPalette(OVERRIDDEN, 'insertSizeAndOrientation')
     for (const [slot, rgb] of arc.entries()) {
       const category = arcSlotCategory(slot, 'insertSizeAndOrientation')
-      // a split class keys its pair twin's swatch, the deletion-type one the
-      // split-read fill's
       const swatch = isArcSplitCategory(category)
-        ? category === 'splitForward'
-          ? 'splitDeletion'
-          : ARC_SPLIT_PAIR_TWIN[category]
+        ? ARC_SPLIT_SWATCH[category]
         : category
       expect([slot, rgb255(rgb)]).toEqual([
         slot,

@@ -1,5 +1,5 @@
 import {
-  ARC_SPLIT_PAIR_TWIN,
+  ARC_SPLIT_SWATCH,
   isArcSplitCategory,
 } from '../features/arcs/arcSplitCategory.ts'
 
@@ -55,22 +55,16 @@ export function arcSlotCategory(
 }
 
 /**
- * The color an arc category paints. A deletion-type split keeps the split-read
- * gold of the read fills, so gold over the red of long-insert pairs shows both
- * kinds of evidence at a deletion. The other three take their pair twin's
- * color, declared colors included: nothing else tells a duplication-type
- * junction from a deletion-type one, or the two ends of an inversion apart.
+ * The color an arc category paints: a split class its swatch's
+ * (`ARC_SPLIT_SWATCH`), declared colors included, and any other category its
+ * own.
  */
 export function arcCategoryColor(
   c: Pick<ColorPalette, 'readCategoryColors'>,
   category: ArcCategory,
 ) {
   return c.readCategoryColors[
-    isArcSplitCategory(category)
-      ? category === 'splitForward'
-        ? 'splitDeletion'
-        : ARC_SPLIT_PAIR_TWIN[category]
-      : category
+    isArcSplitCategory(category) ? ARC_SPLIT_SWATCH[category] : category
   ]
 }
 

@@ -15,10 +15,10 @@ import { nextRefsToTable } from '../../shared/readNextRefs.ts'
 import {
   ARC_COLOR_INTERCHROM,
   ARC_COLOR_SHORT_INSERT,
-  COLOR_SPLIT_BACK,
-  COLOR_SPLIT_FORWARD,
-  COLOR_SPLIT_INV_LL,
-  COLOR_SPLIT_INV_RR,
+  ARC_COLOR_SPLIT_BACK,
+  ARC_COLOR_SPLIT_FORWARD,
+  ARC_COLOR_SPLIT_INV_LL,
+  ARC_COLOR_SPLIT_INV_RR,
   arcPaintRank,
 } from './arcColors.ts'
 import { arcsToRegionResult, groupArcsByRef } from './arcRegions.ts'
@@ -1753,12 +1753,12 @@ describe('computeArcsFromPileupData', () => {
     expect(
       computeArcsFromPileupData(new Map([[0, mkSplit(1, '+')]]), regions, opts)
         .arcs[0]!.colorType,
-    ).toBe(COLOR_SPLIT_FORWARD)
+    ).toBe(ARC_COLOR_SPLIT_FORWARD)
     // Opposite strand, the read extending left from both feet
     expect(
       computeArcsFromPileupData(new Map([[0, mkSplit(1, '-')]]), regions, opts)
         .arcs[0]!.colorType,
-    ).toBe(COLOR_SPLIT_INV_LL)
+    ).toBe(ARC_COLOR_SPLIT_INV_LL)
   })
 
   test('read cloud in-view split read (primary + supplementary entries) is a split bar at the gap span', () => {
@@ -1799,7 +1799,7 @@ describe('computeArcsFromPileupData', () => {
     expect(inv[0]!.yBp).toBeGreaterThan(1400)
     expect(inv[0]!.yBp).toBeLessThan(1850)
     // opposite strands, the read extending left from both feet
-    expect(inv[0]!.colorType).toBe(COLOR_SPLIT_INV_LL)
+    expect(inv[0]!.colorType).toBe(ARC_COLOR_SPLIT_INV_LL)
 
     // same strands, the second segment downstream: still the split shape
     const del = computeArcsFromPileupData(
@@ -1808,7 +1808,7 @@ describe('computeArcsFromPileupData', () => {
       opts,
     ).arcs
     expect(del[0]!.shapeType).toBe(ARC_SHAPE_FLAT_SPLIT)
-    expect(del[0]!.colorType).toBe(COLOR_SPLIT_FORWARD)
+    expect(del[0]!.colorType).toBe(ARC_COLOR_SPLIT_FORWARD)
   })
 
   test('in-view split inversion connects a2↔b2, not a2↔b1', () => {
@@ -1975,10 +1975,12 @@ describe('computeArcsFromPileupData', () => {
         },
       )
       // no spurious same-strand self-arc
-      expect(arcs.every(a => a.colorType !== COLOR_SPLIT_FORWARD)).toBe(true)
+      expect(arcs.every(a => a.colorType !== ARC_COLOR_SPLIT_FORWARD)).toBe(
+        true,
+      )
       // just the one fwd→rev inversion junction, on the breakpoint
       expect(arcs).toHaveLength(1)
-      expect(arcs[0]!.colorType).toBe(COLOR_SPLIT_INV_LL)
+      expect(arcs[0]!.colorType).toBe(ARC_COLOR_SPLIT_INV_LL)
       expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([2000, 2200])
     },
   )
@@ -2011,7 +2013,7 @@ describe('computeArcsFromPileupData', () => {
       filter: { interchrom: 'exclude' },
     })
     expect(arcs).toHaveLength(1)
-    expect(arcs[0]!.colorType).toBe(COLOR_SPLIT_INV_RR)
+    expect(arcs[0]!.colorType).toBe(ARC_COLOR_SPLIT_INV_RR)
     expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([2001, 100])
   })
 
@@ -2098,7 +2100,7 @@ describe('computeArcsFromPileupData', () => {
     // read1's fwd→rev split junction (a.end 1200 → b.end 3200), colored as
     // an inversion junction by its own strands — NOT the paired insert-size
     // default (0) the global hasPaired branch would have produced.
-    expect(arcAt(arcs, 1200, 3200).colorType).toBe(COLOR_SPLIT_INV_LL)
+    expect(arcAt(arcs, 1200, 3200).colorType).toBe(ARC_COLOR_SPLIT_INV_LL)
     // and the read1↔read2 mate link, still colored by pair semantics. Each
     // mate's own outer edge: fwd read1's start (1000), rev read2's end (5200).
     arcAt(arcs, 1000, 5200)
@@ -2138,7 +2140,7 @@ describe('computeArcsFromPileupData', () => {
     // no mate link.
     expect(arcs).toHaveLength(1)
     expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([1200, 3200])
-    expect(arcs[0]!.colorType).toBe(COLOR_SPLIT_INV_LL)
+    expect(arcs[0]!.colorType).toBe(ARC_COLOR_SPLIT_INV_LL)
   })
 
   test('split read whose mate is off screen still draws the off-screen mate link', () => {
@@ -2339,7 +2341,7 @@ describe('computeArcsFromPileupData', () => {
     // |30200 - 1500| / 2 ≈ 14350 > 10000 large-insert threshold
     expect(Math.abs((loneArc.p2.bp - loneArc.p1.bp) / 2)).toBeGreaterThan(10000)
     // fwd→rev split junction → an inversion class, not long-insert 1
-    expect(loneArc.colorType).toBe(COLOR_SPLIT_INV_LL)
+    expect(loneArc.colorType).toBe(ARC_COLOR_SPLIT_INV_LL)
   })
 })
 
@@ -2895,10 +2897,10 @@ describe('arcSlotCategory', () => {
   test('split junctions map to the arc-only categories', () => {
     const category = (slot: number) =>
       arcSlotCategory(slot, 'insertSizeAndOrientation')
-    expect(category(COLOR_SPLIT_FORWARD)).toBe('splitForward')
-    expect(category(COLOR_SPLIT_BACK)).toBe('splitBack')
-    expect(category(COLOR_SPLIT_INV_LL)).toBe('splitInvLL')
-    expect(category(COLOR_SPLIT_INV_RR)).toBe('splitInvRR')
+    expect(category(ARC_COLOR_SPLIT_FORWARD)).toBe('splitForward')
+    expect(category(ARC_COLOR_SPLIT_BACK)).toBe('splitBack')
+    expect(category(ARC_COLOR_SPLIT_INV_LL)).toBe('splitInvLL')
+    expect(category(ARC_COLOR_SPLIT_INV_RR)).toBe('splitInvRR')
   })
   test('insert-size + orientation slots map to their read-fill categories', () => {
     expect(arcSlotCategory(1, 'insertSize')).toBe('longInsert')
@@ -3112,7 +3114,7 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
     )
     expect(arcs).toHaveLength(1)
     // COLOR_PAIR_RL. The supplementary's own orientation (1/LR) has no slot and
-    // would have fallen through to COLOR_DEFAULT (0) — the neutral grey that
+    // would have fallen through to ARC_COLOR_DEFAULT (0) — the neutral grey that
     // says "ordinary pair" over exactly the discordant pair the arc exists for.
     expect(arcs[0]!.colorType).toBe(6)
   })
@@ -3131,7 +3133,7 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
       },
     )
     expect(arcs).toHaveLength(1)
-    // tlen 4100 > upper 500 → COLOR_LONG_INSERT. The supplementary carries
+    // tlen 4100 > upper 500 → ARC_COLOR_LONG_INSERT. The supplementary carries
     // tlen 0, which `classifyInsertSize` sorts into `normal` (0 is neither above
     // upper nor inside the open short interval) — so the arc painted the default
     // over a pair 8x the modal insert.

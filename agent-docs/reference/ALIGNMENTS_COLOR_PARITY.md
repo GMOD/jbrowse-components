@@ -23,9 +23,9 @@ color follows: `ARC_SLOT_CATEGORY` (`shaders/palettes.ts`) →
 → the color `encoding.color` declares for the category.
 
 A split-read arc's four slots (`features/arcs/arcSplitCategory.ts`) are not read
-categories. `arcCategoryColor` resolves three of them through their pair twin's
-entry, so a color declared for `pairRL` also moves the duplication-type split
-arc. The deletion-type split takes the `splitDeletion` gold of the read fills.
+categories. `ARC_SPLIT_SWATCH` names the read swatch each paints, so a color
+declared for `pairRL` also moves the duplication-type split arc, and the
+deletion-type split takes the `splitDeletion` gold of the read fills.
 A split takes its class under every color field, `insertSize` included: none of
 the three has a value for a junction, and the baseline slot would key it as a
 normal pair.
@@ -78,9 +78,9 @@ reference arrives in the file's spelling ([REFNAME_NAMESPACES.md](REFNAME_NAMESP
 
 `linkedReadColorSlot` replaced a hand-spelled `colorType % palette.length` at three
 sites, and the linked-reads Canvas2D/SVG painter kept the old spelling while the
-rule's unit test passed. **Test the caller when the rule is shared.** Slots 0, 1,
-7 and 9 share LR's swatch, so the first index that wraps onto a different color
-is 10.
+rule's unit test passed. **Test the caller when the rule is shared**, with a
+palette whose slots are all distinct colors, so an index that wraps lands on a
+color of its own.
 
 `mateLinkArc` sources orientation and TLEN from a primary endpoint
 (`pairFieldEntry`), because in chain mode @gmod/bam derives `pair_orientation`

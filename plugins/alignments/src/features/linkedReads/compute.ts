@@ -9,7 +9,7 @@ import {
 import { getOrCreate } from '../../shared/util.ts'
 import {
   ARC_COLOR_INTERCHROM,
-  COLOR_DEFAULT,
+  ARC_COLOR_DEFAULT,
   connectorColorType,
   pairColorType,
   splitJunctionSlot,
@@ -148,7 +148,7 @@ function connectionColorType(
     const junction =
       kind === 'splitDeletion' || kind === 'splitInversion'
         ? splitJunctionSlot(kind === 'splitInversion', lowerDir)
-        : COLOR_DEFAULT
+        : ARC_COLOR_DEFAULT
     return connectorColorType(() => junction)
   }
   const { data, readIdx } = pairFieldEntry(e1, e2)

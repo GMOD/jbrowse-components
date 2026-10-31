@@ -24,7 +24,7 @@ import {
 import {
   ARC_SPLIT_LABELS,
   ARC_SPLIT_MERGED_LABELS,
-  ARC_SPLIT_PAIR_TWIN,
+  ARC_SPLIT_SWATCH,
   isArcSplitCategory,
 } from '../features/arcs/arcSplitCategory.ts'
 import { sashimiArcColor } from '../features/sashimi/computeOverlay.ts'
@@ -155,7 +155,7 @@ function oneRowPerSplitTwin(items: LegendItem[]) {
   ) as (keyof typeof ARC_SPLIT_MERGED_LABELS)[]) {
     const splitRow = rows.find(r => r.label === ARC_SPLIT_LABELS[split])
     const pairRow = rows.find(
-      r => r.label === CATEGORY_LEGEND[ARC_SPLIT_PAIR_TWIN[split]],
+      r => r.label === CATEGORY_LEGEND[ARC_SPLIT_SWATCH[split]],
     )
     if (
       splitRow?.color !== undefined &&

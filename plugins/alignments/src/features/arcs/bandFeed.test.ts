@@ -9,7 +9,7 @@ import {
   ARC_SLOT_CATEGORY,
   buildArcColorPalette,
 } from '../../shaders/palettes.ts'
-import { ARC_COLOR_INTERCHROM, COLOR_LONG_INSERT } from './arcColors.ts'
+import { ARC_COLOR_INTERCHROM, ARC_COLOR_LONG_INSERT } from './arcColors.ts'
 import { arcsToRegionMap } from './arcRegions.ts'
 import { CLOUD_LINE_ALPHA, buildArcBandFeeds } from './bandFeed.ts'
 import {
@@ -47,7 +47,7 @@ function arc(
   return {
     p1: { refName: 'chr1', bp: p1 },
     p2: { refName: 'chr1', bp: p2 },
-    colorType: COLOR_LONG_INSERT,
+    colorType: ARC_COLOR_LONG_INSERT,
     shapeType,
     yBp: 300,
     spanBp: 310,
@@ -78,7 +78,7 @@ test('an arc inside one region draws once, its far foot through that region', ()
   expect([...links.x]).toEqual([100, 900])
   expect([...links.x2Region]).toEqual([0, 0])
   expect([...links.size!]).toEqual([4, 4])
-  expect((links.color as Uint32Array)[0]).toBe(slotColor(COLOR_LONG_INSERT))
+  expect((links.color as Uint32Array)[0]).toBe(slotColor(ARC_COLOR_LONG_INSERT))
   expect(markers.count).toBe(0)
   expect(linkHits[0]).toMatchObject({ kind: 'arc', spanBp: 310, support: 4 })
   expect(f.get(1)!.links.count).toBe(0)
@@ -130,14 +130,16 @@ test('a read cloud bar takes its category color at the cloud alpha, squares at e
   expect([...links.x]).toEqual([100, 200])
   expect((links.color as Uint32Array)[0]).toBe(
     withAbgrAlpha(
-      slotColor(COLOR_LONG_INSERT),
+      slotColor(ARC_COLOR_LONG_INSERT),
       Math.round(CLOUD_LINE_ALPHA * 255),
     ),
   )
   expect([...links.y!]).toEqual([300, 300])
   expect([...markers.x]).toEqual([100, 400, 200, 300])
   expect([...markers.x2]).toEqual([...markers.x])
-  expect((markers.color as Uint32Array)[0]).toBe(slotColor(COLOR_LONG_INSERT))
+  expect((markers.color as Uint32Array)[0]).toBe(
+    slotColor(ARC_COLOR_LONG_INSERT),
+  )
   expect(markerHits[0]).toBe(f.get(0)!.linkHits[0])
 })
 

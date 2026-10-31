@@ -4,11 +4,11 @@ import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { arcCategoryColor } from '../../shaders/palettes.ts'
 import { arcColorCategoryLabel } from '../../shared/legendUtils.ts'
 import {
-  COLOR_DEFAULT,
-  COLOR_SPLIT_BACK,
-  COLOR_SPLIT_FORWARD,
-  COLOR_SPLIT_INV_LL,
-  COLOR_SPLIT_INV_RR,
+  ARC_COLOR_DEFAULT,
+  ARC_COLOR_SPLIT_BACK,
+  ARC_COLOR_SPLIT_FORWARD,
+  ARC_COLOR_SPLIT_INV_LL,
+  ARC_COLOR_SPLIT_INV_RR,
   getArcColorType,
 } from './arcColors.ts'
 
@@ -62,25 +62,25 @@ describe('split junction class', () => {
       'a deletion is deletion-type',
       [100, 200, 1],
       [500, 600, 1],
-      COLOR_SPLIT_FORWARD,
+      ARC_COLOR_SPLIT_FORWARD,
     ],
     [
       'a tandem duplication is duplication-type',
       [400, 600, 1],
       [100, 300, 1],
-      COLOR_SPLIT_BACK,
+      ARC_COLOR_SPLIT_BACK,
     ],
     [
       'an inversion entered from the left is LL-type',
       [100, 200, 1],
       [300, 500, -1],
-      COLOR_SPLIT_INV_LL,
+      ARC_COLOR_SPLIT_INV_LL,
     ],
     [
       'an inversion left to the right is RR-type',
       [300, 500, -1],
       [600, 800, 1],
-      COLOR_SPLIT_INV_RR,
+      ARC_COLOR_SPLIT_INV_RR,
     ],
   ]
   test.each(cases)('%s, read from either end', (_name, a, b, expected) => {
@@ -92,13 +92,13 @@ describe('split junction class', () => {
     const a: Segment = [100, 200, 1]
     const b: Segment = [200, 300, 1]
     expect(junction(a, b).p1Bp).toBe(junction(a, b).p2Bp)
-    expect(colorType(junction(a, b))).toBe(COLOR_SPLIT_FORWARD)
-    expect(colorType(fromOtherEnd(a, b))).toBe(COLOR_SPLIT_FORWARD)
+    expect(colorType(junction(a, b))).toBe(ARC_COLOR_SPLIT_FORWARD)
+    expect(colorType(fromOtherEnd(a, b))).toBe(ARC_COLOR_SPLIT_FORWARD)
   })
 
   test('an unknown strand keeps the default slot', () => {
     expect(colorType(junction([100, 200, 0], [500, 600, 1]))).toBe(
-      COLOR_DEFAULT,
+      ARC_COLOR_DEFAULT,
     )
   })
 
@@ -106,7 +106,7 @@ describe('split junction class', () => {
     const del = junction([100, 200, 1], [500, 600, 1])
     const inv = junction([100, 200, 1], [500, 600, -1])
     for (const field of ['insertSize', 'pairOrientation'] as const) {
-      expect(colorType(del, field)).toBe(COLOR_SPLIT_FORWARD)
+      expect(colorType(del, field)).toBe(ARC_COLOR_SPLIT_FORWARD)
       expect(colorType(inv, field)).toBe(colorType(inv))
     }
   })

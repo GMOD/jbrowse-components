@@ -37,8 +37,8 @@ import { arcCategoryColor } from '../../shaders/palettes.ts'
 import { getArcLegendItems } from '../../shared/legendUtils.ts'
 import {
   ARC_COLOR_INTERCHROM,
-  COLOR_DEFAULT,
-  COLOR_SPLIT_INV_LL,
+  ARC_COLOR_DEFAULT,
+  ARC_COLOR_SPLIT_INV_LL,
   connectorColorType,
   pairColorType,
 } from '../arcs/arcColors.ts'
@@ -1375,7 +1375,7 @@ describe('connectorCategories', () => {
   it('keys the connection colors in view in the arc key own words', () => {
     expect(
       labels([
-        every(COLOR_SPLIT_INV_LL),
+        every(ARC_COLOR_SPLIT_INV_LL),
         connectorColorType(f => pairColorType(f, 3, 0, undefined)),
       ]),
     ).toEqual([
@@ -1391,7 +1391,7 @@ describe('connectorCategories', () => {
     const unknown = connectorColorType(f => pairColorType(f, 0, 0, undefined))
     expect(labels([lr, unknown])).toHaveLength(1)
     expect(
-      labels([lr, unknown, every(COLOR_DEFAULT)], 'pairOrientation'),
+      labels([lr, unknown, every(ARC_COLOR_DEFAULT)], 'pairOrientation'),
     ).toEqual(['LR - Normal pair orientation'])
   })
 })
