@@ -1710,19 +1710,20 @@ export default function stateModelFactory(
          * #getter
          * Whether this display has a color key, as opposed to whether one is
          * drawn now: the question "Legend" is offered on. A constant fill
-         * and the bases key nothing; a field, the bars' height and the codon
-         * layer key what they paint.
+         * and the bases key nothing; a field, the bars' height, the codon
+         * layer and the frame strip key what they paint. Read off the
+         * settings rather than `rowPlan` or the frames on screen, so the row
+         * stays put through zoom and pan.
          *
          * Overrides `LegendMixin`'s, whose scale reads decline on an
          * uninitialized view and would drop the row while a track loads.
          */
         get hasLegendKey(): boolean {
-          const { color, mark, bases } = self.rowPlan
           return (
-            color !== undefined ||
-            mark === 'bar' ||
-            bases === 'codon' ||
-            self.visibleFrames.length > 0 ||
+            self.colorField !== undefined ||
+            self.yField !== undefined ||
+            (self.basesField === 'codon' && !!self.framesAdapterConfig) ||
+            self.framesActive ||
             self.rowColorScales.length > 0
           )
         },

@@ -145,6 +145,32 @@ describe('the color key is dismissible, like every other row display', () => {
     expect(rows(display.trackMenuItems())).not.toContain('Legend')
   })
 
+  it('keeps the row at base level, where identity yields to the bases', () => {
+    const display = heatmapDisplay()
+    display.view.zoomTo(0.5)
+    display.view.setCoarseDynamicBlocks(
+      display.view.dynamicBlocks,
+      display.view.bpPerPx,
+    )
+    expect(display.rowPlan.color).toBeUndefined()
+    expect(rows(display.trackMenuItems())).toContain('Legend')
+  })
+
+  it('keeps the row for the frames key off any CDS', () => {
+    const { display } = createMafTestEnvironment({
+      framesAdapter: {},
+    }).createDisplay()
+    display.setShowFrames(true)
+    expect(display.visibleFrames).toEqual([])
+    expect(rows(display.trackMenuItems())).toContain('Legend')
+  })
+
+  it('offers no frames key without a frames adapter', () => {
+    const { display } = createMafTestEnvironment().createDisplay()
+    display.setShowFrames(true)
+    expect(rows(display.trackMenuItems())).not.toContain('Legend')
+  })
+
   it('the heatmap key is one scale named for the rendering', () => {
     const display = heatmapDisplay()
     expect(display.colorScales).toMatchObject([
