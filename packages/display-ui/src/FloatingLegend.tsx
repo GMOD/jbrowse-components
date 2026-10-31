@@ -571,7 +571,7 @@ const FloatingLegend = observer(function FloatingLegend({
   maxWidth = DEFAULT_MAX_WIDTH,
   top = FLOATING_LEGEND_TOP_PX,
   right = FLOATING_LEGEND_RIGHT_PX,
-  climbsLabelBand = true,
+  pushedDown = 0,
 }: {
   sections: readonly LegendSection[]
   title?: string
@@ -591,16 +591,16 @@ const FloatingLegend = observer(function FloatingLegend({
   // right, for a display that already draws something in that corner.
   top?: number
   right?: number
-  // Whether the key rises into an in-flow track label's band. Only from the
-  // display's top edge: a key a display pushed down under content of its own
-  // would climb back over that content.
-  climbsLabelBand?: boolean
+  // How far the display pushed the key down under content of its own, which
+  // the climb into an in-flow track label's band never takes it back over:
+  // a key pushed down less than the band rises by the difference.
+  pushedDown?: number
 }) {
   const { classes } = useStyles()
   const [scroller, setScroller] = useState<HTMLDivElement | null>(null)
   const below = useEntriesBelow(scroller)
   const labelBand = use(TrackLabelBandContext)
-  const raisedTop = climbsLabelBand ? top - labelBand : top
+  const raisedTop = top - Math.max(0, labelBand - pushedDown)
 
   const nonEmpty = nonEmptyLegendSections(sections)
   if (nonEmpty.length === 0) {

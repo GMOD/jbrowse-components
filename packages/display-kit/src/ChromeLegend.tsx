@@ -31,7 +31,7 @@ const ChromeLegend = observer(function ChromeLegend({
       sections={legendSpec.sections}
       title={legendSpec.title}
       top={FLOATING_LEGEND_TOP_PX + captions + (legendTop ?? 0)}
-      climbsLabelBand={!legendTop}
+      pushedDown={legendTop}
       right={FLOATING_LEGEND_RIGHT_PX + (legendRight ?? 0)}
       maxWidth={legendMaxWidth}
       onDismiss={() => {

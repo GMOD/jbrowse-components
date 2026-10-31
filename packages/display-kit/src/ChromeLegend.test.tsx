@@ -35,9 +35,10 @@ test('a display clears its top rows by pushing the key down', () => {
   expect([style.top, style.right]).toEqual(['70px', '10px'])
 })
 
-// The key climbs beside an in-flow track label only from the display's top
-// edge; one a display pushed down under its own content stays under it.
-test('a key pushed down does not climb into the track label band', () => {
+// The key climbs beside an in-flow track label, but never back over content
+// the display pushed it under: it rises by what the push leaves of the band,
+// so a key pushed down by a scrolling lane moves smoothly rather than jumping.
+test('a key pushed down climbs only by what the push leaves of the label band', () => {
   const inSlot = (legendTop?: number) => {
     const { getByTestId, unmount } = render(
       <TrackOverlaySlot zIndex={1} labelBand={30}>
@@ -49,6 +50,8 @@ test('a key pushed down does not climb into the track label band', () => {
     return top
   }
   expect(inSlot(60)).toBe('70px')
+  expect(inSlot(30)).toBe('40px')
+  expect(inSlot(10)).toBe('0px')
   expect(inSlot()).toBe('-20px')
 })
 
