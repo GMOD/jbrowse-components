@@ -209,5 +209,5 @@ test('a pan leaves the legend the same object', () => {
   stop()
 
   expect(scales.count).toBe(1)
-  expect(display.sashimiLegendStrands).toEqual(new Set([1, -1]))
+  expect(display.sashimiLegendKeys.strands).toEqual(new Set([1, -1]))
 })

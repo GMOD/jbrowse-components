@@ -131,7 +131,8 @@ with the coverage band off — on every window its file has no records in.
 
 **A layout pass is handed its cap WITH the policy that set it** (`RowCap`), and
 records that label when the cap actually clips. So a lane's `clippedBy` is a
-field read: `'budget'` (the lane's slice of the viewport), `'ceiling'`
+field read: `'budget'` (the lane's slice of the viewport, in fixed and grow;
+fit's pitch already holds every lane whole), `'ceiling'`
 (`pileup.maxLayoutHeight`), `'override'` (a cap the user set) or `'collapse'`
 (`collapseSections`).
 

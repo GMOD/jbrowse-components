@@ -253,6 +253,21 @@ test('sorting is blocked while every section is collapsed', () => {
   expect(display.canSortReads).toBe(false)
 })
 
+// Fit refuses lane sizing, so the label's expand is no way out there.
+test("fit's collapsed-sort reason names only the collapse switch", () => {
+  const display = seed(
+    [
+      { key: '1', label: 'HP: 1', n: 40 },
+      { key: '2', label: 'HP: 2', n: 40 },
+    ],
+    { collapseRows: true },
+  )
+  expect(display.sortReadsBlockedReason).toMatch(/expand a group/)
+  display.setHeightMode('fit')
+  expect(display.sortReadsBlockedReason).toMatch(/Collapse groups to one row/)
+  expect(display.sortReadsBlockedReason).not.toMatch(/expand/)
+})
+
 // A lane the user sized themselves still clips, and neither signal fires: what
 // their own cap hides is their own doing. That used to be a second read of
 // the lane sizes beside the classification; now the layout records
@@ -336,16 +351,38 @@ test('fit ignores a banked height override rather than clipping under it', () =>
   expect(display.fitHeightToDisplay).toBe(true)
   expect(display.canSizeGroupHeights).toBe(false)
 
-  expect(clippedBy(display, '1')).toBe('budget')
+  expect(clippedBy(display, '1')).toBeUndefined()
   expect(display.groupSizesInEffect.has('1')).toBe(false)
-  // both lanes take the same slice, and the stack fills the display
-  expect(rowsIn(display, 0)).toBe(rowsIn(display, 1))
-  expect(display.sections.contentHeight).toBe(display.height)
+  // 800 rows at the 1px floor overrun the display, so the stack scrolls
+  // rather than clipping either lane
+  expect(rowsIn(display, 0)).toBe(400)
+  expect(rowsIn(display, 1)).toBe(400)
+  expect(display.sections.contentHeight).toBeGreaterThan(display.height)
 
   // inert, not dropped — leaving fit hands the lane back its own cap
   display.configuration.setSlot('heightMode', 'fixed')
   expect(clippedBy(display, '1')).toBe('override')
   expect(display.groupSizesInEffect.has('1')).toBe(true)
+})
+
+// Fit's pitch is solved from the lanes' summed rows, so an equal slice per lane
+// clipped a deep lane while a shallow one left its slice blank.
+test('fit lays every lane out whole, however unevenly the reads split', () => {
+  const display = seed([
+    { key: '1', label: 'HP: 1', n: 5 },
+    { key: '2', label: 'HP: 2', n: 30 },
+    { key: '3', label: 'HP: 3', n: 60 },
+  ])
+  display.setHeightMode('fit')
+  expect(display.isFitting).toBe(true)
+
+  expect([0, 1, 2].map(i => rowsIn(display, i))).toEqual([5, 30, 60])
+  expect(display.lanes.map(l => l.clippedBy)).toEqual([
+    undefined,
+    undefined,
+    undefined,
+  ])
+  expect(display.sections.contentHeight).toBeCloseTo(display.height)
 })
 
 // A height drag writes a px per frame, and a lane's layout only changes at a

@@ -11,6 +11,7 @@ import { ARC_BAND_MARKS } from '../renderers/arcMarks.ts'
 
 import type { ArcBandFeed, ArcBandHit } from '../../features/arcs/bandFeed.ts'
 import type { ArcBandState } from '../renderers/arcMarks.ts'
+import type { SectionRender } from '../renderers/rendererTypes.ts'
 import type { TooltipPayload } from './tooltipUtils.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -28,6 +29,37 @@ export interface ArcHighlight {
   clip: ArcBandClip
   lineWidth: number
   dash?: string
+}
+
+/**
+ * The first drawn section whose group has feeds and whose `pick` finds a
+ * highlight in them. `groupKeys` runs parallel to `state.sections`.
+ */
+export function firstSectionHighlight<
+  S extends { sections: readonly SectionRender[] },
+  F,
+>(
+  state: S,
+  groupKeys: readonly { groupKey?: string }[],
+  feedsByGroup: ReadonlyMap<string, F>,
+  pick: (
+    feeds: F,
+    groupKey: string,
+    sec: SectionRender,
+    state: S,
+  ) => ArcHighlight | undefined,
+) {
+  const { sections } = state
+  let found: ArcHighlight | undefined
+  for (let s = 0; s < sections.length && !found; s++) {
+    const groupKey = groupKeys[s]?.groupKey
+    const feeds =
+      groupKey === undefined ? undefined : feedsByGroup.get(groupKey)
+    if (feeds && groupKey !== undefined) {
+      found = pick(feeds, groupKey, sections[s]!, state)
+    }
+  }
+  return found
 }
 
 /**

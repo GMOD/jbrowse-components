@@ -35,7 +35,7 @@ import type { Region, StatusCallback } from '@jbrowse/core/util'
 /**
  * Runs the full coverage-area computation pipeline as a single named operation.
  * Both pileup and chain executors call this so that the coverage step order
- * (compute → freqs → SNP → interbase → mod → mod-tooltip → sashimi → pack) cannot
+ * (compute → freqs → SNP → interbase → mod → mod-tooltip → pack → sashimi) cannot
  * drift between them.
  *
  * Mod coverage runs under a `modCoverage` kind (the modification color modes);
@@ -86,7 +86,7 @@ export async function runCoveragePipeline({
   showCoverage: boolean
   interbaseIndicators?: InterbaseIndicatorRule
   // The sashimi junctions, which draw over the band or in a strip of their
-  // own without it; true wherever coverage is shown
+  // own without it; see `RenderAlignmentDataArgs.junctions`
   junctions?: boolean
   modCoverage?: ModCoverageKind
   // Reference bases for the junctions' splice motifs; fetched by the executor
@@ -127,8 +127,8 @@ export async function runCoveragePipeline({
   // bytes and overflows the GPU device limit at whole-chromosome scale, so when
   // the band is off we skip every band computation and return an empty coverage
   // depth array; the coverage uploads / packCoverageAreaForGpu / coverageStats all
-  // no-op on a zero-length depth array. The junctions still run while the
-  // sashimi arcs draw in their own strip.
+  // no-op on a zero-length depth array. The junctions are not part of the
+  // band: they still run while the sashimi arcs draw in their own strip.
   const band = showCoverage
     ? computeCoverageBand({
         coverage,
@@ -136,24 +136,19 @@ export async function runCoveragePipeline({
         insertions,
         softclips,
         hardclips,
-        gaps,
         modifications,
         modBaseCounts,
         bisulfiteCallCounts,
         simplexModifications,
         modCoverage,
         interbaseIndicators,
-        junctionReference,
-        splitJunctions,
       })
-    : {
-        ...emptyCoverageBand(),
-        sashimi: computeSashimiJunctions(
-          junctions ? gaps : [],
-          junctionReference,
-          splitJunctions,
-        ),
-      }
+    : emptyCoverageBand()
+  const sashimi = computeSashimiJunctions(
+    junctions ? gaps : [],
+    junctionReference,
+    splitJunctions,
+  )
 
   return {
     coverage: showCoverage
@@ -167,6 +162,7 @@ export async function runCoveragePipeline({
           startPos: coverage.startPos,
         },
     ...band,
+    sashimi,
     mismatchFrequencies,
     interbaseFrequencies,
     gapFrequencies,
@@ -174,7 +170,7 @@ export async function runCoveragePipeline({
 }
 
 // The position-aggregate coverage-band passes: SNP/interbase/mod segments,
-// sashimi arcs, the mod tooltip, and the packed GPU buffers. Split out so the
+// the mod tooltip, and the packed GPU buffers. Split out so the
 // showCoverage gate in runCoveragePipeline reads as one branch rather than
 // interleaving with the always-run frequency computation.
 function computeCoverageBand({
@@ -183,30 +179,24 @@ function computeCoverageBand({
   insertions,
   softclips,
   hardclips,
-  gaps,
   modifications,
   modBaseCounts,
   bisulfiteCallCounts,
   simplexModifications,
   modCoverage,
   interbaseIndicators,
-  junctionReference,
-  splitJunctions,
 }: {
   coverage: ReturnType<typeof computeCoverage>
   mismatchArrays: Parameters<typeof computeFrequenciesAndThresholds>[0]
   insertions: InsertionData[]
   softclips: SoftclipData[]
   hardclips: HardclipData[]
-  gaps: GapData[]
   modifications: ModificationEntry[]
   modBaseCounts: ReadonlyMap<number, StrandBaseCounts>
   bisulfiteCallCounts: ReadonlyMap<number, number>
   simplexModifications: ReadonlySet<string>
   modCoverage?: ModCoverageKind
   interbaseIndicators?: InterbaseIndicatorRule
-  junctionReference?: JunctionReference
-  splitJunctions?: readonly SplitJunction[]
 }) {
   const snpCoverage = computeSNPCoverage(
     mismatchArrays.mismatchPositions,
@@ -235,11 +225,6 @@ function computeCoverageBand({
 
   const modTooltip =
     buildModTooltipIndex(modifications) ?? emptyModTooltipIndex()
-  const sashimi = computeSashimiJunctions(
-    gaps,
-    junctionReference,
-    splitJunctions,
-  )
 
   const coverageAreaPacked = packCoverageAreaForGpu(
     coverage,
@@ -248,15 +233,14 @@ function computeCoverageBand({
     modCoverageResult,
   )
 
-  // Only the packed buffers, the interbase denominator, the tooltip index and
-  // the arcs leave here. The three compute results themselves were also
+  // Only the packed buffers, the interbase denominator and the tooltip index
+  // leave here. The three compute results themselves were also
   // returned and nothing downstream read them — `buildCoverageResultFields`
   // ships `coverageAreaPacked` — so returning them kept a second, unpacked
   // spelling of every segment alive across the RPC reply's transferable walk.
   return {
     interbaseMaxCount: interbaseCoverage.maxCount,
     modTooltip,
-    sashimi,
     coverageAreaPacked,
   }
 }
@@ -269,7 +253,6 @@ function emptyCoverageBand(): ReturnType<typeof computeCoverageBand> {
   return {
     interbaseMaxCount: 0,
     modTooltip: emptyModTooltipIndex(),
-    sashimi: computeSashimiJunctions([]),
     coverageAreaPacked: {
       coverageBinSize: 1,
       coverageGpuBinCount: 0,

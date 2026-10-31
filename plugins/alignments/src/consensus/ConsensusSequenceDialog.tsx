@@ -31,7 +31,6 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 import { Button, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { mergeFilter, readPredicatesOf } from '../shared/alignmentsFilter.ts'
 import ConsensusSettingsPanel from './ConsensusSettingsPanel.tsx'
 import { useConsensusSettings } from './useConsensusSettings.ts'
 
@@ -55,7 +54,7 @@ function download(content: string, filename: string, type: string) {
 
 export interface ConsensusDisplay extends IStateTreeNode {
   adapterConfig: Record<string, unknown>
-  readPredicates?: FieldPredicate[]
+  readPredicates: FieldPredicate[]
 }
 
 interface ConsensusData {
@@ -115,9 +114,8 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
   // secondary alignments, unlike samtools. The SECONDARY field is set or
   // dropped rather than left alone, so unchecking includes secondary even when
   // the track itself excluded them.
-  const base = display.readPredicates ?? readPredicatesOf(mergeFilter([]))
   const filter: FieldPredicate[] = [
-    ...base.filter(p => p.field !== 'flags.SECONDARY'),
+    ...display.readPredicates.filter(p => p.field !== 'flags.SECONDARY'),
     ...(excludeSecondary ? [{ field: 'flags.SECONDARY', equal: false }] : []),
   ]
 

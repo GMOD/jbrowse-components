@@ -41,8 +41,8 @@ import type { PanelStop } from '@jbrowse/sv-core'
  * source that keeps the value as a plain field (the flagless PAF/synteny blocks
  * this pipeline also serves) answers the same way as a BAM.
  *
- * It skips the tag lookup on a record with no end clip, as the extraction does
- * when it fills `readCategoryBits`, so the two agree read for read: the SAM
+ * `saTagOf` skips the tag lookup on a record with no end clip, and the
+ * extraction reads SA through it too, so the two agree read for read: the SAM
  * spec clips every record of a chimeric alignment, so such a record carries no
  * SA on conforming input.
  */
@@ -54,29 +54,46 @@ export function isSplitAlignment(feature: Feature) {
   )
 }
 
-function saTagOf(feature: Feature) {
+export function saTagOf(feature: Feature) {
   return (feature as Partial<MismatchFeature>).hasEndClip === false
     ? ''
     : extractFeatureTagValue(feature, 'SA')
 }
 
 /**
- * The record's `readCategoryBits`, as the extract stores them, for a reader
- * holding the feature: the read filter, which judges a chain by them.
+ * The record's `readCategoryBits` from the flags, SA tag and pair orientation
+ * a caller already holds; the extract stores exactly this per read.
  */
-export function readCategoryBitsOf(feature: Feature) {
-  const sa = saTagOf(feature)
+export function categoryBitsOf(
+  feature: Feature,
+  flags: number,
+  sa: string,
+  pairOrientation: number,
+) {
   const bits = readCategoryBits(
-    getFlags(feature),
+    flags,
     sa,
     cigarCategoryBitsOf(feature),
-    pairOrientationToNum(feature.get('pair_orientation') as string | undefined),
+    pairOrientation,
   )
   return withSvTier(
     bits,
     getMappingQuality(feature),
     sa,
     bits & READ_DISCORDANT ? mateMapqOf(feature) : undefined,
+  )
+}
+
+/**
+ * `categoryBitsOf` for a reader holding only the feature: the read filter,
+ * which judges a chain by them.
+ */
+export function readCategoryBitsOf(feature: Feature) {
+  return categoryBitsOf(
+    feature,
+    getFlags(feature),
+    saTagOf(feature),
+    pairOrientationToNum(feature.get('pair_orientation') as string | undefined),
   )
 }
 

@@ -93,11 +93,6 @@ export interface CoverageUploadData {
   indicatorTypes: Float32Array
 }
 
-export interface ModCoverageUploadData {
-  // see CoverageUploadData.snpPackedBuffer for the fraction contract
-  modCovPackedBuffer: ArrayBuffer
-}
-
 // Worker lays out interbases as (insertions, softclips, hardclips); the three
 // counts let consumers slice their own subrange via `subarray`.
 export function interbaseRangeEnds(data: {

@@ -61,8 +61,7 @@ function buildReadKeys(
  * the details tooltip reported a false start that moved as you scrolled).
  *
  * Clipping to the region belongs to the drawn geometry alone, and lives there:
- * buildSegments clips the rectangle and records the clipped edge in
- * segmentEdgeFlags so no chevron is drawn at a false read end.
+ * buildSegments keeps true positions too, and the renderers clip to the block.
  */
 export function buildBaseReadArrays(
   features: FeatureData[],

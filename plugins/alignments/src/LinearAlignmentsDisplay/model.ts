@@ -130,6 +130,7 @@ import {
   rgb255,
 } from './colorUtils.ts'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
+import { firstSectionHighlight } from './components/arcHitTest.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { selectedConnectorHighlight } from './components/connectorHitTest.ts'
 import { nonReferenceAt } from './components/positionStats.ts'
@@ -769,7 +770,7 @@ export default function stateModelFactory(
                   this.groupRowCaps.has(g.key) &&
                   !self.collapsedGroups.has(g.key),
               )
-              ? 'Every group is drawn on one row — turn off Show → "Collapse groups to one row", or expand a group from its label, to sort'
+              ? `Every group is drawn on one row — turn off Show → "Collapse groups to one row"${self.fitHeightToDisplay ? '' : ', or expand a group from its label,'} to sort`
               : undefined
           },
 
@@ -1197,8 +1198,9 @@ export default function stateModelFactory(
           /**
            * #getter
            * The cap a lane on the shared fit budget lays out to: its slice of
-           * the viewport when grouped, the display-wide ceiling when not, with
-           * the policy that set it (a clipped lane reports it as `clippedBy`).
+           * the viewport when grouped outside fit, the display-wide ceiling
+           * otherwise, with the policy that set it (a clipped lane reports it
+           * as `clippedBy`).
            * Keeps its identity like `groupRowCaps`: its inputs move a px at a
            * time, it moves a row at a time. Grow mode fits to the grow ceiling,
            * fixed/fit to the drag-resizable slot; both read config slots, never
@@ -1215,9 +1217,14 @@ export default function stateModelFactory(
            */
           get resolvedFitDefaultCap(): RowCap {
             // A collapsed lane costs band overhead but claims no pileup rows.
+            // A fitted pitch splits nothing: it was solved from every lane's
+            // full row count, so each lane already has room for all its rows,
+            // and an equal slice would hide a deep lane's reads beside a
+            // shallow lane's blank ones. Fit with no room for reads has no
+            // pitch, and splits like fixed.
             const { order } = this.groupLayoutContext
             return resolveFitDefaultCap({
-              grouped: order.length > 1,
+              splitsViewport: order.length > 1 && !this.isFitting,
               height: self.autoHeight
                 ? self.growMaxHeight
                 : self.fitTargetHeight,
@@ -2247,40 +2254,26 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The splice junction strands drawn, one key row each. Read off the
-           * merged junctions rather than the projected arcs, so a pan does not
-           * rebuild the legend. A split junction has no transcript strand.
+           * The splice junction strands and split junction classes drawn, one
+           * key row each. Read off the merged junctions rather than the
+           * projected arcs, so a pan does not rebuild the legend. A split
+           * junction has no transcript strand.
            */
-          get sashimiLegendStrands(): ReadonlySet<number> {
+          get sashimiLegendKeys() {
             const strands = new Set<number>()
+            const splitClasses = new Set<ArcSplitCategory>()
             if (self.showLegend) {
               for (const sec of this.sashimiJunctionSections) {
                 for (const j of sec.junctions) {
-                  if (!j.split) {
+                  if (j.split) {
+                    splitClasses.add(j.split)
+                  } else {
                     strands.add(j.strand)
                   }
                 }
               }
             }
-            return strands
-          },
-
-          /**
-           * #getter
-           * The split junction classes drawn, one key row each.
-           */
-          get sashimiLegendSplitClasses(): ReadonlySet<ArcSplitCategory> {
-            const classes = new Set<ArcSplitCategory>()
-            if (self.showLegend) {
-              for (const sec of this.sashimiJunctionSections) {
-                for (const j of sec.junctions) {
-                  if (j.split) {
-                    classes.add(j.split)
-                  }
-                }
-              }
-            }
-            return classes
+            return { strands, splitClasses }
           },
 
           /**
@@ -2464,9 +2457,9 @@ export default function stateModelFactory(
               arcLegendItems: () => self.arcLegendItems(palette),
               connectionLegendItems: () => self.connectionLegendItems(palette),
               sashimiLegend: sashimiLegend(
-                self.sashimiLegendStrands,
+                self.sashimiLegendKeys.strands,
                 theme.alignmentFill,
-                { classes: self.sashimiLegendSplitClasses, palette },
+                { classes: self.sashimiLegendKeys.splitClasses, palette },
               ),
             })
           },
@@ -2591,30 +2584,20 @@ export default function stateModelFactory(
          */
         get selectedSashimiHighlight(): ArcHighlight | undefined {
           const id = self.selectedFeatureId
-          if (!id?.startsWith(SASHIMI_FEATURE_ID_PREFIX)) {
-            return undefined
-          }
-          const state = this.renderState
-          for (const [s, sec] of state.sections.entries()) {
-            const groupKey = self.renderSections[s]?.groupKey
-            const feeds =
-              groupKey === undefined
-                ? undefined
-                : self.themed.sashimiFeedsByGroup.get(groupKey)
-            const highlight =
-              feeds && groupKey !== undefined
-                ? selectedSashimiHighlight(
+          return id?.startsWith(SASHIMI_FEATURE_ID_PREFIX)
+            ? firstSectionHighlight(
+                this.renderState,
+                self.renderSections,
+                self.themed.sashimiFeedsByGroup,
+                (feeds, groupKey, sec, state) =>
+                  selectedSashimiHighlight(
                     id,
                     groupKey,
                     feeds,
                     sashimiBandState(state, sec),
-                  )
-                : undefined
-            if (highlight) {
-              return highlight
-            }
-          }
-          return undefined
+                  ),
+              )
+            : undefined
         },
 
         /**
@@ -2624,30 +2607,23 @@ export default function stateModelFactory(
          */
         get selectedConnectorHighlight(): ArcHighlight | undefined {
           const id = self.selectedFeatureId
-          if (id === undefined || self.bezierPairSections.length === 0) {
-            return undefined
-          }
-          const selected = new Set([id, ...self.selectedChainReadIds])
-          const state = this.renderState
-          for (const [s, sec] of state.sections.entries()) {
-            const groupKey = self.renderSections[s]?.groupKey
-            const feeds =
-              groupKey === undefined
-                ? undefined
-                : self.themed.connectorFeedsByGroup.get(groupKey)
-            const highlight = feeds
-              ? selectedConnectorHighlight(
+          let highlight: ArcHighlight | undefined
+          if (id !== undefined && self.bezierPairSections.length > 0) {
+            const selected = new Set([id, ...self.selectedChainReadIds])
+            highlight = firstSectionHighlight(
+              this.renderState,
+              self.renderSections,
+              self.themed.connectorFeedsByGroup,
+              (feeds, _groupKey, sec, state) =>
+                selectedConnectorHighlight(
                   selected,
                   feeds,
                   sec,
                   connectorBandState(state, sec),
-                )
-              : undefined
-            if (highlight) {
-              return highlight
-            }
+                ),
+            )
           }
-          return undefined
+          return highlight
         },
 
         /**

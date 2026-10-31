@@ -126,9 +126,8 @@ const ReadVsRefDialog = observer(function ReadVsRefDialog({
         <div className={classes.root}>
           {(primaryFeature.get('flags') as number) & SAM_FLAG_SECONDARY ? (
             <Typography color="warning">
-              Note: You selected a secondary alignment (which generally does not
-              have SA tags or SEQ fields) so do a full reconstruction of the
-              alignment
+              Note: you selected a secondary alignment, which generally has no
+              SA tag or SEQ field, so the read may not be fully reconstructed
             </Typography>
           ) : null}
           <Typography>

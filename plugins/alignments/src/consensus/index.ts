@@ -14,6 +14,8 @@ import {
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import NotesIcon from '@mui/icons-material/Notes'
 
+import { isLinearAlignmentsDisplay } from '../LinearAlignmentsDisplay/isLinearAlignmentsDisplay.ts'
+
 import type { ConsensusDisplay } from './ConsensusSequenceDialog.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -34,25 +36,19 @@ const CONSENSUS_LABEL = 'Consensus sequence'
 // `check-menu-labels` reads the docs' menu paths back off the source.
 const VISIBLE_LABEL = 'Consensus sequence (visible region)...'
 
-// The dialog's own prop type plus the discriminator picking it out of a track's
-// displays, so what the dialog reads off a display is checked here rather than
-// re-declared and free to drift.
-interface DisplayLike extends ConsensusDisplay {
-  type: string
-}
 interface TrackLike {
   configuration: AnyConfigurationModel
-  displays: DisplayLike[]
+  displays: readonly unknown[]
 }
 
 // Which track a consensus is called from changes the answer, so it is always
 // named: launchTargetsMenuItem makes these the submenu under the entry, one
 // open alignments track included.
-function alignmentsDisplays(tracks: TrackLike[]) {
-  const out: { name: string; display: DisplayLike }[] = []
+function alignmentsDisplays(tracks: readonly TrackLike[]) {
+  const out: { name: string; display: ConsensusDisplay }[] = []
   for (const track of tracks) {
     for (const display of track.displays) {
-      if (display.type === 'LinearAlignmentsDisplay') {
+      if (isLinearAlignmentsDisplay(display)) {
         out.push({
           name: coarseStripHTML(`${getConf(track, 'name')}`),
           display,

@@ -507,8 +507,8 @@ export interface FitViewportInput {
   // of a px per frame (`fitCeilingRows`).
   maxRows: number
   // The cap a lane on the shared fit budget lays out under, already resolved:
-  // the viewport slice when grouped (`fitGroupMaxRows`), the display-wide
-  // ceiling when not.
+  // the viewport slice when the lanes split it (`fitGroupMaxRows`), the
+  // display-wide ceiling when not.
   //
   // Resolved by the CALLER, and that is the whole point. It is derived from the
   // track height and the summed band overhead, both of which move a px at a time
@@ -537,9 +537,10 @@ export function layoutGroupsToViewport(
   fit: FitViewportInput,
 ): LaidOutByGroup {
   const { maxRows, collapsedKeys, overrideCaps, defaultCap } = fit
-  const grouped = ctx.order.length > 1
+  // A lane under the ceiling has no slice another could give back to.
+  const sharesBudget = ctx.order.length > 1 && defaultCap.source === 'budget'
   const pass = buildLaidOutByGroup(ctx, defaultCap, overrideCaps, collapsedKeys)
-  if (!grouped) {
+  if (!sharesBudget) {
     return pass
   }
   // Only fit-budget groups take part in reclaim — collapsed groups draw no
@@ -616,30 +617,31 @@ export function fitGroupMaxRows({
   return tighterCap(rows, maxRows)
 }
 
-// The cap every lane on the shared fit budget lays out under. Grouped, that is
-// its slice of the viewport; ungrouped there is nothing to split the viewport
-// with, so it is the display-wide ceiling — which is why an ungrouped clip is
-// always the one the truncation banner speaks for.
+// The cap every lane on the shared fit budget lays out under. When the lanes
+// split the viewport, that is its slice of it; ungrouped there is nothing to
+// split, and a fitted pitch already holds every lane whole, so it is the
+// display-wide ceiling — which is why such a clip is always the one the
+// truncation banner speaks for.
 //
 // Lifted out of `layoutGroupsToViewport` so the model can resolve it one step
 // earlier and gate the layout on the ROW COUNT it settles at rather than on the
 // px it was derived from.
 export function resolveFitDefaultCap({
-  grouped,
+  splitsViewport,
   height,
   visibleGroupCount,
   rowHeight,
   totalOverhead,
   maxRows,
 }: {
-  grouped: boolean
+  splitsViewport: boolean
   height: number
   visibleGroupCount: number
   rowHeight: number
   totalOverhead: number
   maxRows: number
 }) {
-  return grouped
+  return splitsViewport
     ? fitGroupMaxRows({
         height,
         visibleGroupCount,

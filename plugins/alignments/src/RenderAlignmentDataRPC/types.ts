@@ -44,9 +44,10 @@ export interface RenderAlignmentDataArgs extends GatedFetchArgs {
   showCoverage?: boolean
   interbaseIndicators?: InterbaseIndicatorRule
   // Whether the reply carries the splice junctions and fetches their motifs:
-  // `coverage.show || sashimi.show`, so with coverage shown a sashimi toggle
-  // refetches nothing, and with both off no RNA-seq fetch reads sequence for
-  // arcs nothing draws. Defaults true.
+  // `hasSashimi && (coverage.show || sashimi.show)`, so with coverage shown a
+  // sashimi toggle refetches nothing, and with both off, or on a display with
+  // no sashimi band, no fetch reads sequence for arcs nothing draws. Defaults
+  // true.
   junctions?: boolean
   // In-track stacked grouping: the worker partitions the fetch into N ordered
   // groups and returns one WorkerPileupData per group, keeping each `unit`

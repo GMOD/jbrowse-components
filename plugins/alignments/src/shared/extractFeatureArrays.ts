@@ -1,10 +1,4 @@
-import {
-  READ_DISCORDANT,
-  readCategoryBits,
-  withSvTier,
-} from '@jbrowse/alignments-core'
 import { getClip } from '@jbrowse/cigar-utils'
-import { getTag } from '@jbrowse/modifications-utils'
 
 import { PerBaseColumns } from '../features/alignedBaseWalk.ts'
 import {
@@ -16,7 +10,6 @@ import { extractPerBaseLetter } from '../features/perBaseLetter/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
 import { colorFieldKindOf } from './colorFieldDefs.ts'
 import {
-  cigarCategoryBitsOf,
   extractCigarFeatures,
   extractCigarFeaturesFromString,
   isMismatchFeature,
@@ -24,9 +17,9 @@ import {
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import { fieldTag } from './facetLabels.ts'
 import { fieldValueReader } from './groupFeatures.ts'
-import { mateMapqOf } from './splitAlignment.ts'
+import { categoryBitsOf, saTagOf } from './splitAlignment.ts'
 import { isMethylationView } from './types.ts'
-import { getMappingQuality, getMateRefName, getStrand } from './util.ts'
+import { getMateRefName, getStrand } from './util.ts'
 
 import type { BaseLayer } from './types.ts'
 import type {
@@ -107,7 +100,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   // Walked whatever the settings, and shipped only when some read actually had
   // one.
   //
-  // The walk is not free — `getTag(feature, 'SA')` scans the read's whole tag
+  // The walk is not free — `saTagOf` scans the read's whole tag
   // block, 18.1ms over 153,677 reads on the deepest short-read fixture — and it
   // was briefly gated on `readConnections !== 'off'` on the grounds that the arc
   // computation is the only consumer. It is not: linked reads, the curved
@@ -172,23 +165,14 @@ export function extractFeatureArrays<T extends FeatureData>(
 
     nextPositions.push((feature.get('next_pos') as number | undefined) ?? 0)
     const isMismatch = isMismatchFeature(feature)
-    const sa =
-      isMismatch && feature.hasEndClip === false
-        ? ''
-        : ((getTag(feature, 'SA') as string | undefined) ?? '')
+    const sa = saTagOf(feature)
     hasSuppAlignment ||= sa !== ''
     suppAlignments.push(sa)
-    const bits = readCategoryBits(
+    categoryBits[readIndex] = categoryBitsOf(
+      feature,
       featureData.flags,
       sa,
-      cigarCategoryBitsOf(feature),
       featureData.pairOrientation,
-    )
-    categoryBits[readIndex] = withSvTier(
-      bits,
-      getMappingQuality(feature),
-      sa,
-      bits & READ_DISCORDANT ? mateMapqOf(feature) : undefined,
     )
     // Read once: it drives both the start clip and the indel walk below.
     const cigarString = isMismatch
