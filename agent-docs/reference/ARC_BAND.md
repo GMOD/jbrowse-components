@@ -105,7 +105,8 @@ real pair into the top third of the axis.
 
 ## Breakend feet
 
-**An interchromosomal arc draws breakend feet, and no other arc does.** A short
+**An arc between two chromosomes draws breakend feet, and no other arc does**,
+a same-chromosome link painted inter-chromosomal included. A short
 horizontal tick at each foot lies over the arm that foot's junction keeps:
 outward feet are a deletion-type junction, inward a duplication-type, parallel an
 inversion.

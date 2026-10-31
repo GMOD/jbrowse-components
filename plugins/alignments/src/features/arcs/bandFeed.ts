@@ -237,9 +237,9 @@ export function buildArcBandFeeds({
     const color = colorOf(colorType, shapeType)
     const target = clipped
       ? l.clippedLinks
-      : colorType === ARC_COLOR_INTERCHROM
-        ? l.crossLinks
-        : l.links
+      : hit.endRefName === undefined
+        ? l.links
+        : l.crossLinks
     target.push(x, x2, x2Region, yBp, support, color, feet, hit)
     if (isFlatArcShape(shapeType)) {
       const square = palette[arcColorSlot(colorType)]!
@@ -301,6 +301,7 @@ export function buildArcBandFeeds({
   }
 
   for (const arc of crossRegion) {
+    const crossesChromosomes = arc.p2.refName !== arc.p1.refName
     pushArc(
       arc.p1RegionIndex,
       arc.p1.bp,
@@ -311,9 +312,7 @@ export function buildArcBandFeeds({
       arc.shapeType,
       arc.colorType,
       arc.support,
-      arc.colorType === ARC_COLOR_INTERCHROM
-        ? linkFeet(arc.p1Dir, arc.p2Dir)
-        : 0,
+      crossesChromosomes ? linkFeet(arc.p1Dir, arc.p2Dir) : 0,
       {
         kind: 'arc',
         x1: arc.p1.bp,
@@ -322,9 +321,7 @@ export function buildArcBandFeeds({
         colorType: arc.colorType,
         shapeType: arc.shapeType,
         spanBp: arc.spanBp,
-        ...(arc.p2.refName !== arc.p1.refName
-          ? { endRefName: arc.p2.refName }
-          : {}),
+        ...(crossesChromosomes ? { endRefName: arc.p2.refName } : {}),
       },
     )
   }

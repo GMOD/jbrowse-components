@@ -189,6 +189,27 @@ test('an interchromosomal cross-region arc draws from its first foot in its own 
   })
 })
 
+// A translocated mate's supplementary beside its partner paints
+// inter-chromosomal, but both feet share a chromosome, so it plots on the
+// band's axis like any pair: a read cloud bar at its span, not on the floor.
+test('a same-chromosome link in the inter-chromosomal color keeps the valued lane and no feet', () => {
+  const within = arc(100, 400, ARC_SHAPE_FLAT, {
+    colorType: ARC_COLOR_INTERCHROM,
+  })
+  const across: CrossRegionArc = {
+    ...arc(900, 5100, ARC_SHAPE_ARC, { colorType: ARC_COLOR_INTERCHROM }),
+    p1RegionIndex: 0,
+    p2RegionIndex: 1,
+    p1Dir: 1,
+    p2Dir: -1,
+  }
+  const { links, crossLinks } = feeds([within], [across]).get(0)!
+  expect(crossLinks.count).toBe(0)
+  expect([...links.x]).toEqual([100, 900])
+  expect([...links.y!]).toEqual([300, 300])
+  expect([...links.feet!]).toEqual([0, 0])
+})
+
 test('a cross-region bar puts its far square in the far region', () => {
   const cross: CrossRegionArc = {
     ...arc(900, 5100, ARC_SHAPE_FLAT),
