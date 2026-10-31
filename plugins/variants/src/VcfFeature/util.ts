@@ -1,5 +1,5 @@
 import { getBpDisplayStr, max, toLocale } from '@jbrowse/core/util'
-import { isBreakend } from '@jbrowse/core/util/svAlt'
+import { isBreakend, svClassOfAlt } from '@jbrowse/core/util/svAlt'
 
 import { GENOTYPE_SPLITTER as genotypeDelimRegex } from '../shared/constants.ts'
 import {
@@ -170,26 +170,53 @@ export function symbolicAlleleBp(
   })
 }
 
+// A symbolic allele, or a sequence-resolved one `svClassOfAlt` calls
+// structural, in the symbolic style: "<DEL> 1.93Kbp", sized by the bases it
+// adds or removes, or by REF where it changes none (an inversion). Undefined
+// for a small variant.
+function svAlleleDescription(
+  alt: string,
+  alleleIndex: number,
+  ref: string,
+  symbolicBp: (number | undefined)[],
+  info?: Record<string, unknown>,
+) {
+  if (alt === '<TRA>') {
+    const mate = getTraMate(info)
+    return mate === undefined ? alt : `<TRA> ${mate}`
+  }
+  if (isSymbolic(alt)) {
+    const bp = symbolicBp[alleleIndex]
+    return bp === undefined ? alt : `${alt} ${getBpDisplayStr(bp)}`
+  }
+  const svClass = svClassOfAlt(alt, { ref, info, alleleIndex })
+  const changed = Math.abs(alt.length - ref.length)
+  return svClass
+    ? `<${svClass}> ${getBpDisplayStr(changed || ref.length)}`
+    : undefined
+}
+
+// The small alleles share one "REF ->", the SV alleles beside them read as
+// symbolic ones: "G -> A,T,<DEL> 1.93Kbp".
 function formatGroupDescription(
   ref: string,
   alts: string[],
   info?: Record<string, unknown>,
 ): string {
-  if (alts.every(isSymbolic)) {
-    const bps = symbolicAlleleBp(alts, info)
-    return alts
-      .map((a, i) => {
-        if (a === '<TRA>') {
-          const mate = getTraMate(info)
-          return mate === undefined ? a : `<TRA> ${mate}`
-        }
-        const bp = bps[i]
-        return bp === undefined ? a : `${a} ${getBpDisplayStr(bp)}`
-      })
-      .join(',')
-  }
-
-  return `${abbreviateAllele(ref)} -> ${alts.map(abbreviateAllele).join(',')}`
+  const symbolicBp = symbolicAlleleBp(alts, info)
+  const svs = alts.map((alt, i) =>
+    svAlleleDescription(alt, i, ref, symbolicBp, info),
+  )
+  const firstSmall = svs.indexOf(undefined)
+  return alts
+    .map(
+      (alt, i) =>
+        svs[i] ??
+        (i === firstSmall
+          ? `${abbreviateAllele(ref)} -> ${abbreviateAllele(alt)}`
+          : abbreviateAllele(alt)),
+    )
+    .join(',')
 }
 
 // Walk the term and its parents, most specific first, e.g. '<INS:ME:ALU>' ->

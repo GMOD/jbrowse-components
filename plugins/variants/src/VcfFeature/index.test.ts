@@ -220,6 +220,34 @@ test('mixed deletion and insertion', () => {
   expect(f.get('description')).toEqual('ATC -> T,ATCGGGG')
 })
 
+// A sequence-resolved SV reads as a symbolic one, its class and size, rather
+// than as an abbreviated REF -> ALT ("1.93Kbp -> T").
+describe('a sequence-resolved structural allele', () => {
+  const del = 'A'.repeat(1926)
+  test('a deletion reads as its class and the bases it removes', () => {
+    const f = createFeature(`chr1\t100\tdel1\t${del}\tA\t29\tPASS\t.`)
+    expect(f.get('description')).toEqual('<DEL> 1.93Kbp')
+  })
+  test('an insertion reads as the bases it adds', () => {
+    const f = createFeature(
+      `chr1\t100\tins1\tA\tA${'C'.repeat(312)}\t29\tPASS\t.`,
+    )
+    expect(f.get('description')).toEqual('<INS> 312bp')
+  })
+  test('an inversion, which changes no length, reads as REF', () => {
+    const inv = 'ACGT'.repeat(100)
+    const rev = 'TGCA'.repeat(100)
+    const f = createFeature(
+      `chr1\t100\tinv1\t${inv}\t${rev}\t29\tPASS\tSVTYPE=INV`,
+    )
+    expect(f.get('description')).toEqual('<INV> 400bp')
+  })
+  test('a small allele beside one keeps its REF -> ALT', () => {
+    const f = createFeature(`chr1\t100\tma1\t${del}\tA,${del}T\t29\tPASS\t.`)
+    expect(f.get('description')).toEqual('<DEL> 1.93Kbp,1.93Kbp -> 1.93Kbp')
+  })
+})
+
 test('mixed symbolic and SNV', () => {
   const f = createFeature('chr1\t100\trs123\tG\tA,T,<DEL>\t29\tPASS\t.')
 

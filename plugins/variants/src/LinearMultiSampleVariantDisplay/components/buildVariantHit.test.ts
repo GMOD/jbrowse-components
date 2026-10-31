@@ -102,6 +102,28 @@ describe('a records-band hit', () => {
       { key: 'description', label: 'Description', value: 'SNV' },
     ])
   })
+  test('an SV record names its class and size, not its alleles', () => {
+    const rows = getTooltipRows(
+      buildRecordHit({
+        info: {
+          ...info,
+          ref: 'A'.repeat(1926),
+          alt: ['A'],
+          svType: 'DEL',
+          description: '<DEL> 1.93Kbp',
+          length: 1926,
+          insertedBp: 0,
+        },
+        featureId: 'v0',
+      }),
+    )
+    expect(rows.map(r => r.key)).toEqual([
+      'featureName',
+      'length',
+      'description',
+    ])
+  })
+
   // A sequence-resolved SV writes every deleted base in REF, which the cell
   // hover abbreviates to its length, and so does the record's.
   test('a sequence-resolved REF reads as its length', () => {

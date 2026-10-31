@@ -104,7 +104,12 @@ export function buildRecordHit({
     genotype: '',
     sampleName: '',
     name: '',
-    alleles: `${abbreviateAllele(info.ref)} > ${info.alt.map(abbreviateAllele).join(',')}`,
+    // an SV's description says its class and size, which its raw alleles
+    // only spell out
+    alleles:
+      info.svType === ''
+        ? `${abbreviateAllele(info.ref)} > ${info.alt.map(abbreviateAllele).join(',')}`
+        : '',
     featureName: info.name,
     description: info.description,
     length: getBpDisplayStr(info.length),
