@@ -208,10 +208,10 @@ with a `LinearMultiSampleVariantDisplay`:
 }
 ```
 
-[`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) splits the
-display into one section per `karyotype` value, `facet.sort` orders them by
-dosage, and `rowColor` is a color scale on each row's label bar.
-[`referenceDrawingMode`](/docs/config/linearmultisamplevariantdisplay/#slot-referencedrawingmode)
+[`facet`](/docs/config/linearvariantdisplay/#slot-facet) splits the display into
+one section per `karyotype` value, `facet.sort` orders them by dosage, and
+`rowColor` is a color scale on each row's label bar.
+[`referenceDrawingMode`](/docs/config/linearvariantdisplay/#slot-referencedrawingmode)
 `skip` fills the track with the reference color and paints alt cells on top.
 
 The display draws a row for every sample in the file and divides the track

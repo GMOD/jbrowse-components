@@ -1,6 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
+import type { VariantCellData } from '../LinearVariantDisplay/components/computeVariantCells.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { VariantFeatureInfo } from './types.ts'
 

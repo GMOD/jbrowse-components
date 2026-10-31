@@ -6,7 +6,7 @@ description: Genotype-quality masking, pedigree awareness, and haplotype-block c
 # Multi-sample variant display
 
 Ideas from an analysis of `LinearMultiSampleVariantDisplay` in both its
-layouts (`plugins/variants/src/LinearMultiSampleVariantDisplay/model.ts`). Read
+layouts (`plugins/variants/src/LinearVariantDisplay/model.ts`). Read
 `plugins/variants/src/CLAUDE.md` first — hot-loop rules and the fetch/layout/render
 invalidation tiers constrain all of these.
 
@@ -32,7 +32,7 @@ past the independent MVP. Same plumbing then unlocks **VAF coloring from AD**
 
 **Pedigree / inheritance awareness (biggest biological ceiling).** There is no
 pedigree, affected-status, or trio model today — "grouping" is a flat `colorBy` on
-arbitrary `samplesTsv` columns (`LinearMultiSampleVariantDisplay/variantLegend.ts::getSampleGroupLegendItems`).
+arbitrary `samplesTsv` columns (`LinearVariantDisplay/variantLegend.ts::getSampleGroupLegendItems`).
 If the sample metadata carried `father`/`mother`/`affected`, the per-sample genotypes
 (already fetched) are enough to compute and highlight **de novo mutations**, **compound
 hets**, and **Mendelian-error sites**. Aligns with the existing trio-crossover work.
@@ -51,7 +51,7 @@ dialog and why it wants a slot of its own rather than the name set.
 **Local haplotype-block coloring (the mosaic a dendrogram cannot show).** Clustering
 asks for one distance over the whole window, but a haplotype is a mosaic of segments
 with different histories, so past the first recombination breakpoint that distance
-describes no position in particular. `LinearMultiSampleVariantDisplay/anchoredHaplotypeSort.ts` addresses the
+describes no position in particular. `LinearVariantDisplay/anchoredHaplotypeSort.ts` addresses the
 *ordering* half of this; the other half is expressing local structure in the cells
 rather than the row order. Per (row, column), compute the id of the set of rows
 identical over a window around that column and paint it with a stable hash color, rows

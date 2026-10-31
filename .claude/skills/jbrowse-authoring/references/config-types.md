@@ -24,8 +24,7 @@ inference.
 - [ReferenceSequenceTrack](https://jbrowse.org/jb2/docs/config/referencesequencetrack.md)
   — displays: LinearReferenceSequenceDisplay
 - [VariantTrack](https://jbrowse.org/jb2/docs/config/varianttrack.md) —
-  displays: ChordVariantDisplay, LinearVariantDisplay,
-  LinearMultiSampleVariantDisplay, LinearMarkDisplay
+  displays: ChordVariantDisplay, LinearVariantDisplay, LinearMarkDisplay
 - [LDTrack](https://jbrowse.org/jb2/docs/config/ldtrack.md) — displays:
   LDTrackDisplay
 - [QuantitativeTrack](https://jbrowse.org/jb2/docs/config/quantitativetrack.md)
@@ -56,7 +55,6 @@ inference.
 - [MultiWaySyntenyDisplay](https://jbrowse.org/jb2/docs/config/multiwaysyntenydisplay.md)
 - [LinearReferenceSequenceDisplay](https://jbrowse.org/jb2/docs/config/linearreferencesequencedisplay.md)
 - [LinearVariantDisplay](https://jbrowse.org/jb2/docs/config/linearvariantdisplay.md)
-- [LinearMultiSampleVariantDisplay](https://jbrowse.org/jb2/docs/config/linearmultisamplevariantdisplay.md)
 - [LDTrackDisplay](https://jbrowse.org/jb2/docs/config/ldtrackdisplay.md)
 - [LinearWiggleDisplay](https://jbrowse.org/jb2/docs/config/linearwiggledisplay.md)
 - [LinearMafDisplay](https://jbrowse.org/jb2/docs/config/linearmafdisplay.md)

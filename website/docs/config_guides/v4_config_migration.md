@@ -38,9 +38,11 @@ a file, and fails on a key it does not know.
 | `HicAdapter` | `resolutionMultiplier` | dropped |
 | `MCScanAnchorsAdapter` | `subadapters` | dropped |
 | `NcbiSequenceReportAliasAdapter` | `useUcscNameOverride` | `useNameOverride` |
-| `TrixTextSearchAdapter` | `metaFilePath`, `textSearchAdapterId`, `tracks` | dropped |
+| `JBrowse1TextSearchAdapter`, `TrixTextSearchAdapter` | `tracks` | dropped |
+| `TrixTextSearchAdapter` | `metaFilePath`, `textSearchAdapterId` | dropped |
 | Every track | `rpcDriverName` | dropped |
-| Every track but `ReferenceSequenceTrack` | `textSearchAdapter`, `textSearchIndexingAttributes` | dropped |
+| Every track but `ReferenceSequenceTrack` | `textSearchAdapter` | `textSearching.textSearchAdapter` |
+|  | `textSearchIndexingAttributes` | `textSearching.indexingAttributes` |
 | `ReferenceSequenceTrack` | `rendering` | dropped |
 |  | type `LinearGCContentDisplay`, type `LinearGCContentTrackDisplay`, type `MultiLinearWiggleDisplay` | dropped |
 | `SyntenyTrack` | `trackIds` | dropped |
@@ -63,8 +65,8 @@ a file, and fails on a key it does not know.
 |  | `callRateFilter`, `hweFilterThreshold`, `lengthCutoffFilter`, `minorAlleleFrequencyFilter`, `recombinationZoneHeight`, `showLDTriangle`, `showRecombination`, `signedLD` | dropped |
 | `LDTrackDisplay`, `LGVSyntenyDisplay`, `LinearAlignmentsDisplay` | `colorScheme` | dropped |
 | `LDTrackDisplay`, `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearMafDisplay`, `LinearWiggleDisplay`, `MultiWaySyntenyDisplay` | `jexlFilters` | dropped |
-| `LDTrackDisplay`, `LinearBasicDisplay`, `LinearVariantDisplay` | `showLabels` | `labels.name.show` |
-|  | `maxHeight` | dropped |
+| `LDTrackDisplay`, `LinearBasicDisplay` | `showLabels` | `labels.name.show` |
+| `LDTrackDisplay`, `LinearBasicDisplay`, `LinearVariantDisplay` | `maxHeight` | dropped |
 | `LDTrackDisplay`, `LinearHicDisplay`, `LinearWiggleDisplay` | `fetchSizeLimit` | dropped |
 | `LGVSyntenyDisplay` | `colorBy` | `encoding.color.field` |
 | `LGVSyntenyDisplay`, `LinearAlignmentsDisplay` | `autoscale` | `coverage.encoding.y.scale.fenceQuantile` |
@@ -80,7 +82,7 @@ a file, and fails on a key it does not know.
 |  | `scaleType` | `coverage.encoding.y.scale.type` |
 |  | `snpCoverageDisplay` | `coverage.encoding.y.scale.domainMin`, `coverage.height` |
 |  | `defaultRendering`, `hideLargeIndels`, `hideSmallIndels`, `jitter`, `minSubfeatureWidth`, `multiTicks` | dropped |
-| `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearMultiSampleVariantDisplay`, `LinearWiggleDisplay` | `inverted`, `numStdDev` | dropped |
+| `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearVariantDisplay`, `LinearWiggleDisplay` | `inverted`, `numStdDev` | dropped |
 | `LinearAlignmentsDisplay` | `colorBy` | `encoding.color.field`, `pileup.bases.encoding.color.field`, `pileup.bases.show` |
 |  | type `LinearPileupDisplay` | `LinearAlignmentsDisplay` with `coverage.show: false`, `sashimi.show: false` |
 |  | type `LinearReadArcsDisplay` | `LinearAlignmentsDisplay` with `pileup.show: false`, `coverage.show: false`, `sashimi.show: false`, `readConnections.show: true` |
@@ -104,51 +106,54 @@ a file, and fails on a key it does not know.
 | `LinearBasicDisplay` | `color3` | `utrs.encoding.color.value` |
 |  | `containerTypes` | `containers.types` |
 |  | `displayMode: "collapse"`, `displayMode: "reducedRepresentation"` | `displayMode: "normal"` |
+|  | `featureHeight` | `mark.height` |
 |  | `geneGlyphMode: "longest"`, `geneGlyphMode: "longestCoding"` | `geneGlyphMode: "representative"` |
+|  | `mouseover` | `tooltip.field` |
 |  | `renderer` | `encoding.color.value`, `utrs.encoding.color.value` |
+|  | `showDescriptions` | `labels.description.show` |
 |  | `subfeatureLabels` | `labels.subfeatures.placement`, `labels.subfeatures.show` |
 |  | `transcriptTypes` | `transcripts.types` |
 |  | type `LinearFeatureDisplay` | `LinearBasicDisplay` |
-|  | `trackDisplayMode` (session) | `displayMode` |
-| `LinearBasicDisplay`, `LinearHicDisplay`, `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearMultiSampleVariantDisplay`, `LinearVariantDisplay` | `jexlFilters` | `filter` |
-| `LinearBasicDisplay`, `LinearVariantDisplay` | `color1` | `encoding.color.value` |
-|  | `featureHeight` | `mark.height` |
-|  | `mouseover` | `tooltip.field` |
-|  | `showDescriptions` | `labels.description.show` |
 |  | `color2`, `impliedUTRs`, `outline` | dropped |
+|  | `trackDisplayMode` (session) | `displayMode` |
+| `LinearBasicDisplay`, `LinearHicDisplay`, `LinearManhattanDisplay`, `LinearMarkDisplay`, `LinearMultiRowFeatureDisplay`, `LinearVariantDisplay` | `jexlFilters` | `filter` |
+| `LinearBasicDisplay`, `LinearVariantDisplay` | `color1` | `encoding.color.value` |
 |  | `jexlFiltersSetting` (session) | `filter` |
 | `LinearHicDisplay` | `activeNormalization` (session) | `data.normalization` |
 |  | `colorScheme` (session) | `encoding.color.scale.reverse`, `encoding.color.scale.scheme` |
 |  | `useLogScale` (session) | `encoding.color.scale.type` |
 |  | `mode` (session) | dropped |
 | `LinearHicDisplay`, `LinearWiggleDisplay` | `resolution` (session) | `data.resolution` |
-| `LinearMafDisplay`, `LinearMultiSampleVariantDisplay`, `LinearWiggleDisplay` | `subtreeFilter` (session) | `rows.kept` |
+| `LinearMafDisplay`, `LinearVariantDisplay`, `LinearWiggleDisplay` | `subtreeFilter` (session) | `rows.kept` |
 |  | `treeAreaWidth` (session) | `axis.width` |
 | `LinearMarkDisplay` | type `LinearArcDisplay` | `LinearMarkDisplay` with `marks: [{"mark":"link"}]` |
 |  | type `LinearPairedArcDisplay` | `LinearMarkDisplay` with `marks: [{"mark":"link","transform":[{"type":"mate"}],"encoding":{"x2":{"refName":"mate.refName","pos":"mate.start"}}}]` |
-| `LinearMultiSampleVariantDisplay` | `colorBy` | `rowColor` |
-|  | `minorAlleleFrequencyFilter` | `filter` |
-|  | `renderingMode` | `unit` |
-|  | `showReferenceAlleles` | `referenceDrawingMode` |
-|  | `showSidebarLabels` | `axis.labels` |
-|  | `showTree` | `axis.tree` |
-|  | type `LinearVariantMatrixDisplay` | `LinearMultiSampleVariantDisplay` with `variantLayout: "columns"` |
-|  | type `MultiLinearVariantDisplay` | `LinearMultiSampleVariantDisplay` |
-|  | `autoscale`, `maxScore`, `minScore`, `scaleType` | dropped |
-|  | `jexlFilters` (session) | `filter` |
-|  | `layout` (session) | `rows.sort` |
-|  | `renderingModeSetting` (session) | `unit` |
-| `LinearMultiSampleVariantDisplay`, `LinearWiggleDisplay` | `minimalTicks` | dropped |
-|  | `clusterTree` (session) | `rows.tree` |
-|  | `showSidebarLabelsSetting` (session) | `axis.labels` |
-|  | `showTreeSetting` (session) | `axis.tree` |
 | `LinearPairedArcDisplay` | `color`, `renderer` | dropped |
 | `LinearSyntenyDisplay` | `middle` | dropped |
 |  | `alpha` (session) | `encoding.opacity` on `LinearSyntenyView` |
 |  | `colorBy` (session) | `encoding.color.field` on `LinearSyntenyView` |
 |  | `minAlignmentLength` (session) | `filter` on `LinearSyntenyView` |
-| `LinearVariantDisplay` | `displayMode: "collapse"`, `displayMode: "reducedRepresentation"` | `displayMode: "normal"` |
-|  | `color3`, `containerTypes`, `subfeatureLabels`, `transcriptTypes` | dropped |
+| `LinearVariantDisplay` | `colorBy` | `rowColor` |
+|  | `featureHeight` | `records.mark.height` |
+|  | `maxFeatureScreenDensity` | `records.maxFeatureScreenDensity` |
+|  | `minorAlleleFrequencyFilter` | `filter` |
+|  | `mouseover` | `records.tooltip.field` |
+|  | `renderingMode` | `unit` |
+|  | `showDescriptions` | `records.labels.description.show` |
+|  | `showLabels` | `records.labels.name.show` |
+|  | `showReferenceAlleles` | `referenceDrawingMode` |
+|  | `showSidebarLabels` | `axis.labels` |
+|  | `showTree` | `axis.tree` |
+|  | type `LinearMultiSampleVariantDisplay`, type `MultiLinearVariantDisplay` | `LinearVariantDisplay` |
+|  | type `LinearVariantMatrixDisplay` | `LinearVariantDisplay` with `variantLayout: "columns"` |
+|  | `autoscale`, `maxScore`, `minScore`, `scaleType` | dropped |
+|  | `jexlFilters` (session) | `filter` |
+|  | `layout` (session) | `rows.sort` |
+|  | `renderingModeSetting` (session) | `unit` |
+| `LinearVariantDisplay`, `LinearWiggleDisplay` | `minimalTicks` | dropped |
+|  | `clusterTree` (session) | `rows.tree` |
+|  | `showSidebarLabelsSetting` (session) | `axis.labels` |
+|  | `showTreeSetting` (session) | `axis.tree` |
 | `LinearWiggleDisplay` | `autoscale` | `encoding.y.scale.fenceQuantile` |
 |  | `defaultRendering` | `mark.interpolate`, `mark.type` |
 |  | `displayCrossHatches` | `encoding.y.axis.grid` |

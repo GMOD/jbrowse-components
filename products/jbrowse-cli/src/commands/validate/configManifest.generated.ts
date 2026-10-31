@@ -1807,7 +1807,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -1856,9 +1856,7 @@ export const configManifest: ConfigManifest = {
         "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName",
-        "textSearchAdapter",
-        "textSearchIndexingAttributes"
+        "rpcDriverName"
       ],
       "displayTypes": [
         "LinearBasicDisplay",
@@ -1928,7 +1926,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -1977,9 +1975,7 @@ export const configManifest: ConfigManifest = {
         "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName",
-        "textSearchAdapter",
-        "textSearchIndexingAttributes"
+        "rpcDriverName"
       ],
       "displayTypes": [
         "LinearAlignmentsDisplay",
@@ -2002,7 +1998,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "name",
@@ -2115,7 +2111,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2164,14 +2160,11 @@ export const configManifest: ConfigManifest = {
         "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName",
-        "textSearchAdapter",
-        "textSearchIndexingAttributes"
+        "rpcDriverName"
       ],
       "displayTypes": [
         "ChordVariantDisplay",
         "LinearVariantDisplay",
-        "LinearMultiSampleVariantDisplay",
         "LinearMarkDisplay"
       ]
     },
@@ -2235,7 +2228,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2284,9 +2277,7 @@ export const configManifest: ConfigManifest = {
         "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName",
-        "textSearchAdapter",
-        "textSearchIndexingAttributes"
+        "rpcDriverName"
       ],
       "displayTypes": [
         "LDTrackDisplay"
@@ -2352,7 +2343,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2401,9 +2392,7 @@ export const configManifest: ConfigManifest = {
         "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName",
-        "textSearchAdapter",
-        "textSearchIndexingAttributes"
+        "rpcDriverName"
       ],
       "displayTypes": [
         "LinearWiggleDisplay",
@@ -2470,7 +2459,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2519,9 +2508,7 @@ export const configManifest: ConfigManifest = {
         "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName",
-        "textSearchAdapter",
-        "textSearchIndexingAttributes"
+        "rpcDriverName"
       ],
       "displayTypes": [
         "LinearWiggleDisplay",
@@ -2588,7 +2575,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2637,9 +2624,7 @@ export const configManifest: ConfigManifest = {
         "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName",
-        "textSearchAdapter",
-        "textSearchIndexingAttributes"
+        "rpcDriverName"
       ],
       "displayTypes": [
         "LinearWiggleDisplay"
@@ -2705,7 +2690,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2754,9 +2739,7 @@ export const configManifest: ConfigManifest = {
         "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName",
-        "textSearchAdapter",
-        "textSearchIndexingAttributes"
+        "rpcDriverName"
       ],
       "displayTypes": [
         "LinearMafDisplay",
@@ -2823,7 +2806,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2872,9 +2855,7 @@ export const configManifest: ConfigManifest = {
         "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName",
-        "textSearchAdapter",
-        "textSearchIndexingAttributes"
+        "rpcDriverName"
       ],
       "displayTypes": [
         "LinearHicDisplay"
@@ -2940,7 +2921,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -2991,8 +2972,6 @@ export const configManifest: ConfigManifest = {
       ],
       "droppedKeys": [
         "rpcDriverName",
-        "textSearchAdapter",
-        "textSearchIndexingAttributes",
         "trackIds"
       ],
       "displayTypes": [
@@ -3064,7 +3043,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displays",
-          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LinearMultiSampleVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
+          "type": "(LinearBasicDisplayConfigurationSchema | LinearAlignmentsDisplayConfigurationSchema | ChordVariantDisplayConfigurationSchema | ChordSyntenyDisplayConfigurationSchema | DotplotDisplayConfigurationSchema | LinearSyntenyDisplayConfigurationSchema | LGVSyntenyDisplayConfigurationSchema | MultiWaySyntenyDisplayConfigurationSchema | LinearReferenceSequenceDisplayConfigurationSchema | LinearVariantDisplayConfigurationSchema | LDTrackDisplayConfigurationSchema | LinearWiggleDisplayConfigurationSchema | LinearMafDisplayConfigurationSchema | LinearHicDisplayConfigurationSchema | LinearManhattanDisplayConfigurationSchema | LinearMarkDisplayConfigurationSchema | LinearMultiRowFeatureDisplayConfigurationSchema)[]"
         },
         {
           "name": "formatDetails",
@@ -3113,9 +3092,7 @@ export const configManifest: ConfigManifest = {
         "textSearchIndexingAttributes"
       ],
       "droppedKeys": [
-        "rpcDriverName",
-        "textSearchAdapter",
-        "textSearchIndexingAttributes"
+        "rpcDriverName"
       ],
       "displayTypes": [
         "LinearManhattanDisplay"
@@ -6691,364 +6668,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "heightMode",
-          "type": "heightMode"
-        },
-        {
-          "name": "growMaxHeight",
-          "type": "number"
-        },
-        {
-          "name": "filter",
-          "type": "FieldPredicateConfigurationSchema[]",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "PredicateField"
-            },
-            {
-              "name": "equal",
-              "type": "((string | number | boolean) | undefined)"
-            },
-            {
-              "name": "lt",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "lte",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "gt",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "gte",
-              "type": "(number | undefined)"
-            },
-            {
-              "name": "oneOf",
-              "type": "((string | number | boolean)[] | undefined)"
-            },
-            {
-              "name": "range",
-              "type": "((number | null)[] | undefined)"
-            },
-            {
-              "name": "valid",
-              "type": "(boolean | undefined)"
-            }
-          ],
-          "schema": "FieldPredicate",
-          "shorthand": {
-            "string": "field"
-          }
-        },
-        {
-          "name": "tooltip",
-          "type": "FeatureTooltipConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "show",
-              "type": "boolean"
-            },
-            {
-              "name": "field",
-              "type": "string"
-            }
-          ],
-          "schema": "FeatureTooltip",
-          "writes": "members",
-          "shorthand": {
-            "string": "field"
-          }
-        },
-        {
-          "name": "maxFeatureScreenDensity",
-          "type": "number"
-        },
-        {
-          "name": "legend",
-          "type": "LegendConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "show",
-              "type": "boolean"
-            }
-          ],
-          "schema": "Legend",
-          "writes": "members"
-        },
-        {
-          "name": "encoding",
-          "type": "FeatureEncodingConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "color",
-              "type": "FeatureColorConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "value",
-                  "type": "(JexlString | (CssColor | undefined))"
-                },
-                {
-                  "name": "field",
-                  "type": "string"
-                },
-                {
-                  "name": "scale",
-                  "type": "FeatureColorScaleConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "type",
-                      "type": "(FeatureColorScaleType | undefined)"
-                    },
-                    {
-                      "name": "domain",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "range",
-                      "type": "CssColorEntry[]"
-                    },
-                    {
-                      "name": "unknown",
-                      "type": "(CssColor | undefined)"
-                    },
-                    {
-                      "name": "invalid",
-                      "type": "(CssColor | undefined)"
-                    },
-                    {
-                      "name": "names",
-                      "type": "string[]",
-                      "liftsNumbers": true
-                    },
-                    {
-                      "name": "scheme",
-                      "type": "(ColorScheme | undefined)"
-                    },
-                    {
-                      "name": "reverse",
-                      "type": "(boolean | undefined)"
-                    },
-                    {
-                      "name": "domainMid",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "domainMin",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "domainMax",
-                      "type": "(number | undefined)"
-                    },
-                    {
-                      "name": "domainQuantile",
-                      "type": "number"
-                    }
-                  ],
-                  "schema": "FeatureColorScale",
-                  "writes": "members"
-                },
-                {
-                  "name": "legend",
-                  "type": "FeatureColorLegendConfigurationSchema",
-                  "subSlots": [
-                    {
-                      "name": "title",
-                      "type": "(string | undefined)"
-                    },
-                    {
-                      "name": "descending",
-                      "type": "(boolean | undefined)"
-                    }
-                  ],
-                  "schema": "FeatureColorLegend",
-                  "writes": "members"
-                }
-              ],
-              "schema": "FeatureColor",
-              "writes": "whole",
-              "shorthand": {
-                "string": "field"
-              },
-              "fieldPresets": {
-                "score": {
-                  "scale": {
-                    "type": "linear"
-                  }
-                },
-                "*": {
-                  "scale": {
-                    "type": "ordinal"
-                  }
-                }
-              }
-            }
-          ],
-          "schema": "FeatureEncoding",
-          "writes": "members"
-        },
-        {
-          "name": "mark",
-          "type": "FeatureMarkConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "height",
-              "type": "number"
-            }
-          ],
-          "schema": "FeatureMark",
-          "writes": "members"
-        },
-        {
-          "name": "displayMode",
-          "type": "displayMode"
-        },
-        {
-          "name": "facet",
-          "type": "SectionFacetConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "sort",
-              "type": "string[]",
-              "liftsNumbers": true
-            },
-            {
-              "name": "hidden",
-              "type": "string[]",
-              "liftsNumbers": true
-            }
-          ],
-          "schema": "SectionFacet",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
-          }
-        },
-        {
-          "name": "labels",
-          "type": "CanvasFeatureLabelsConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "name",
-              "type": "FeatureNameLabelConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "show",
-                  "type": "boolean"
-                },
-                {
-                  "name": "field",
-                  "type": "string"
-                }
-              ],
-              "schema": "FeatureNameLabel",
-              "writes": "members",
-              "shorthand": {
-                "string": "field"
-              }
-            },
-            {
-              "name": "description",
-              "type": "FeatureDescriptionLabelConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "show",
-                  "type": "boolean"
-                },
-                {
-                  "name": "field",
-                  "type": "string"
-                }
-              ],
-              "schema": "FeatureDescriptionLabel",
-              "writes": "members",
-              "shorthand": {
-                "string": "field"
-              }
-            }
-          ],
-          "schema": "CanvasFeatureLabels",
-          "writes": "members"
-        }
-      ],
-      "legacyKeys": [
-        "maxDisplayedBpPerPx",
-        "mouseover",
-        "jexlFilters",
-        "color1",
-        "color2",
-        "color3",
-        "featureHeight",
-        "transcriptTypes",
-        "containerTypes",
-        "showLabels",
-        "showDescriptions",
-        "subfeatureLabels",
-        "outline",
-        "maxHeight",
-        "impliedUTRs",
-        "renderer"
-      ],
-      "droppedKeys": [
-        "maxFeatureScreenDensity",
-        "maxDisplayedBpPerPx",
-        "fetchSizeLimit",
-        "color2",
-        "outline",
-        "maxHeight",
-        "impliedUTRs"
-      ],
-      "legacyValues": {
-        "displayMode": [
-          "reducedRepresentation",
-          "collapse"
-        ]
-      },
-      "stateModelProps": [
-        "id",
-        "type",
-        "parkedColors",
-        "configuration",
-        "pinnedFeatureIds",
-        "soloFeatureIds",
-        "soloApplied",
-        "hiddenFeatureIds",
-        "expandedGeneIds",
-        "featureHighlights"
-      ]
-    },
-    "LinearMultiSampleVariantDisplay": {
-      "slots": [
-        {
-          "name": "type",
-          "type": "\"LinearMultiSampleVariantDisplay\""
-        },
-        {
-          "name": "displayId",
-          "type": "identifier"
-        },
-        {
-          "name": "fetchSizeLimit",
-          "type": "number"
-        },
-        {
-          "name": "forceLoad",
-          "type": "boolean"
-        },
-        {
-          "name": "height",
-          "type": "number"
-        },
-        {
           "name": "variantLayout",
           "type": "VariantLayout"
         },
@@ -7385,8 +7004,68 @@ export const configManifest: ConfigManifest = {
               "type": "boolean"
             },
             {
-              "name": "growMaxHeight",
+              "name": "maxHeight",
               "type": "number"
+            },
+            {
+              "name": "maxFeatureScreenDensity",
+              "type": "number"
+            },
+            {
+              "name": "displayMode",
+              "type": "(RecordsDisplayMode | undefined)"
+            },
+            {
+              "name": "mark",
+              "type": "FeatureMarkConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "height",
+                  "type": "number"
+                }
+              ],
+              "schema": "FeatureMark",
+              "writes": "members"
+            },
+            {
+              "name": "facet",
+              "type": "SectionFacetConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "sort",
+                  "type": "string[]",
+                  "liftsNumbers": true
+                },
+                {
+                  "name": "hidden",
+                  "type": "string[]",
+                  "liftsNumbers": true
+                }
+              ],
+              "schema": "SectionFacet",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
+              "name": "tooltip",
+              "type": "RecordsTooltipConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                }
+              ],
+              "schema": "RecordsTooltip",
+              "writes": "members",
+              "shorthand": {
+                "string": "field"
+              }
             },
             {
               "name": "labels",
@@ -7437,6 +7116,26 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "RecordsBand",
           "writes": "members"
+        },
+        {
+          "name": "genotypes",
+          "type": "GenotypeRowsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            }
+          ],
+          "schema": "GenotypeRows",
+          "writes": "members"
+        },
+        {
+          "name": "heightMode",
+          "type": "heightMode"
+        },
+        {
+          "name": "growMaxHeight",
+          "type": "number"
         }
       ],
       "legacyKeys": [
@@ -7444,6 +7143,12 @@ export const configManifest: ConfigManifest = {
         "maxDisplayedBpPerPx",
         "mouseover",
         "jexlFilters",
+        "renderer",
+        "featureHeight",
+        "showLabels",
+        "showDescriptions",
+        "color1",
+        "maxHeight",
         "renderingMode",
         "showSidebarLabels",
         "showTree",
@@ -7459,10 +7164,9 @@ export const configManifest: ConfigManifest = {
         "minorAlleleFrequencyFilter"
       ],
       "droppedKeys": [
-        "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
         "fetchSizeLimit",
-        "mouseover",
+        "maxHeight",
         "autoscale",
         "minScore",
         "maxScore",
@@ -7472,6 +7176,7 @@ export const configManifest: ConfigManifest = {
         "minimalTicks"
       ],
       "aliases": [
+        "LinearMultiSampleVariantDisplay",
         "MultiLinearVariantDisplay",
         "LinearVariantMatrixDisplay"
       ],
@@ -8621,8 +8326,24 @@ export const configManifest: ConfigManifest = {
               "type": "boolean"
             },
             {
-              "name": "rowProportion",
-              "type": "number"
+              "name": "mark",
+              "type": "MafAlignmentsMarkConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "height",
+                  "type": "MafAlignmentsMarkHeightConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "band",
+                      "type": "number"
+                    }
+                  ],
+                  "schema": "MafAlignmentsMarkHeight",
+                  "writes": "members"
+                }
+              ],
+              "schema": "MafAlignmentsMark",
+              "writes": "members"
             },
             {
               "name": "mismatches",
@@ -11542,13 +11263,15 @@ export const configManifest: ConfigManifest = {
           "type": "(LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation)"
         },
         {
-          "name": "tracks",
-          "type": "string[]"
-        },
-        {
           "name": "assemblyNames",
           "type": "string[]"
         }
+      ],
+      "legacyKeys": [
+        "tracks"
+      ],
+      "droppedKeys": [
+        "tracks"
       ],
       "shorthandKeys": []
     },
@@ -12153,11 +11876,9 @@ export const configManifest: ConfigManifest = {
       "trackMaxHeight"
     ],
     "LinearVariantDisplay": [
-      "jexlFiltersSetting"
-    ],
-    "LinearMultiSampleVariantDisplay": [
       "clusterTree",
       "jexlFilters",
+      "jexlFiltersSetting",
       "layout",
       "renderingModeSetting",
       "showSidebarLabelsSetting",

@@ -105,6 +105,19 @@ const tracks: Record<string, unknown>[] = [
       mouseover: 'jexl:get(feature,"name")',
     },
   ),
+  // v4's feature display: the record settings in a `renderer` block
+  track('VariantTrack', vcf, {
+    type: 'LinearVariantDisplay',
+    ...baseKeys,
+    renderer: {
+      type: 'SvgFeatureRenderer',
+      displayMode: 'compact',
+      height: 7,
+      maxHeight: 900,
+      color1: 'green',
+      showLabels: false,
+    },
+  }),
   track('VariantTrack', vcf, {
     type: 'MultiLinearVariantDisplay',
     maxFeatureScreenDensity: 5,
@@ -320,7 +333,18 @@ test.each([
     1,
   ],
   ['LinearReadCloudDisplay', ['pileup', 'mismatches', 'show'], false],
+  ['LinearVariantDisplay', ['records', 'displayMode'], 'compact'],
+  ['LinearVariantDisplay', ['records', 'mark', 'height'], 7],
+  ['LinearVariantDisplay', ['records', 'maxFeatureScreenDensity'], 5],
+  ['LinearVariantDisplay', ['records', 'labels', 'name', 'show'], false],
+  [
+    'LinearVariantDisplay',
+    ['records', 'tooltip', 'field'],
+    'jexl:get(feature,"name")',
+  ],
+  ['LinearVariantDisplay', ['encoding', 'color', 'value'], 'green'],
   ['MultiLinearVariantDisplay', ['axis', 'labels'], true],
+  ['MultiLinearVariantDisplay', ['records', 'maxFeatureScreenDensity'], 5],
   ['MultiLinearVariantDisplay', 'referenceDrawingMode', 'draw'],
   ['LinearVariantMatrixDisplay', ['axis', 'labels'], false],
   ['LDTrackDisplay', 'heightMode', 'fit'],

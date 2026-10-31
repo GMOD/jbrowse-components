@@ -8,7 +8,7 @@ import {
   setup,
 } from './util.tsx'
 
-import type { LinearMultiSampleVariantDisplayModel } from '@jbrowse/plugin-variants'
+import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
@@ -64,7 +64,7 @@ test('the matrix export spreads rows in fit mode, below the connector lines', as
   })
   await findDisplayPainted(info.displayTestId, { timeout: 40000 })
   const { lineZoneHeight } = view.tracks[0]!
-    .displays[0] as LinearMultiSampleVariantDisplayModel
+    .displays[0] as LinearVariantDisplayModel
 
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()

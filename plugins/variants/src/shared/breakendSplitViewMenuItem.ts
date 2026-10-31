@@ -25,15 +25,9 @@ interface BreakendLaunchSelf extends IStateTreeNode {
 
 /**
  * The "open breakpoint split view" row, for a display that already holds the
- * resolved record.
- *
- * Every variant display in this plugin wants this row on a breakend and they
- * differ only in how they get hold of the feature: `LinearVariantDisplay` ships
- * slim render arrays and has to re-fetch it (`breakendMenuItems` wraps this with
- * that fetch), while the multi-sample displays' context menu is built from a
- * `contextMenuInfo` whose feature is already a `Feature`. Taking the resolved
- * record as input lets the multi-sample displays reuse this without a
- * `fetchFullFeature` they have no use for.
+ * resolved record: the variant display's context menu is built from a
+ * `contextMenuInfo` whose feature is already a `Feature`, a record in the band
+ * or a genotype cell's.
  *
  * Gated on the feature's own type rather than on parsing its ALT: `VcfFeature`
  * already resolves `<...>` / bracket ALTs to SO terms, so a BND record arrives
@@ -59,13 +53,11 @@ export function breakendSplitViewMenuItem(
 }
 
 /**
- * Open the dialog on a resolved record. Separate from the row above so
- * `breakendMenuItems`' fetch-then-launch path lands in exactly the same call —
- * the `findJunctionsNear` argument in particular, which makes the dialog offer
- * the whole chain of junctions rather than this one record's two ends, and which
- * is easy to forget in a second copy.
+ * Open the dialog on a resolved record, with the `findJunctionsNear` argument
+ * that makes the dialog offer the whole chain of junctions rather than this one
+ * record's two ends.
  */
-export function launchFromFeature(self: BreakendLaunchSelf, feature: Feature) {
+function launchFromFeature(self: BreakendLaunchSelf, feature: Feature) {
   const view = containingLgv(self)
   const assemblyName = getAssemblyName(view)
   if (assemblyName && isAlive(self)) {

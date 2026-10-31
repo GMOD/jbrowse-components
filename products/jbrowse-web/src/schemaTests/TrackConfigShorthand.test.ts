@@ -53,13 +53,9 @@ test('displayDefaults shorthand color lands on the LinearBasicDisplay', () => {
 
 test('one track-wide color reaches every variant display', () => {
   const conf = hydrateTrack('volvox_filtered_vcf_shorthand')
-  // the multi-sample displays' cell color is a color object too, so a
-  // track-wide color paints their alt cells
-  for (const type of [
-    'LinearVariantDisplay',
-    'ChordVariantDisplay',
-    'LinearMultiSampleVariantDisplay',
-  ]) {
+  // the variant display's cell color is a color object too, so a
+  // track-wide color paints its alt cells
+  for (const type of ['LinearVariantDisplay', 'ChordVariantDisplay']) {
     expect(readConfObject(display(conf, type), VALUE)).toBe('#1f78b4')
   }
 })
@@ -86,16 +82,12 @@ function colorOf(conf: { displays: AnyConfigurationModel[] }, type: string) {
 }
 
 // Every variant display reads a field of its color, so one track-wide setting
-// colors the single-variant marks, the genotype cells and the chords alike.
+// colors the records, the genotype cells and the chords alike.
 test('a variant color field reaches every variant display', () => {
   const conf = hydrate('VariantTrack', {
     encoding: { color: { field: 'svType' } },
   })
-  for (const type of [
-    'LinearVariantDisplay',
-    'LinearMultiSampleVariantDisplay',
-    'ChordVariantDisplay',
-  ]) {
+  for (const type of ['LinearVariantDisplay', 'ChordVariantDisplay']) {
     expect(colorOf(conf, type)).toEqual({ field: 'svType' })
   }
 })

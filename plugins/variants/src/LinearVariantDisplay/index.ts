@@ -1,49 +1,35 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { retiredFilterState } from '@jbrowse/core/util/jexlFilters'
+import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
-import configSchemaF from './configSchema.ts'
+import configSchemaFactory from './configSchema.ts'
 import { VARIANT_PLOT_EXAMPLES } from './plotExamples.ts'
+import { retiredState, retiredTypes } from './retired.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+const VariantDisplayComponent = lazyWithPreload(
+  () => import('./components/VariantDisplayComponent.tsx'),
+)
+
 export default function LinearVariantDisplayF(pluginManager: PluginManager) {
-  // Registered only when plugin-features is installed: this display's model
-  // extends the canvas base and borrows `LinearBasicDisplay`'s registered
-  // component below, so without that plugin there is nothing to render through
-  // and `getDisplayType` would throw out of `createPluggableElements`. Embedded
-  // products legitimately ship variants without the linear stack —
-  // jbrowse-react-circular-genome-view installs it for the chord display alone —
-  // so skipping is the answer, not pulling canvas into their bundle.
-  if (pluginManager.hasPlugin('FeaturesPlugin')) {
-    pluginManager.addDisplayType(() => {
-      const configSchema = configSchemaF(pluginManager)
-      // Borrow the registered component rather than import one across the plugin
-      // boundary (the same move LGVSyntenyDisplay makes with
-      // LinearAlignmentsDisplay). The variant-specific chrome rides along on the
-      // base's model hooks: its color key comes from `colorScales`, and it simply
-      // doesn't answer the gene-glyph hook. Resolved inside this factory
-      // callback, which runs after every plugin is installed.
-      const { ReactComponent } =
-        pluginManager.getDisplayType('LinearBasicDisplay')
-      return new DisplayType({
-        name: 'LinearVariantDisplay',
-        displayName: 'Variant display',
-        helpText:
-          'GPU-accelerated variant display with smooth zoom/pan. Data is uploaded once to GPU, enabling instant navigation.',
-        configSchema,
-        // lazily loaded: the model composes the canvas base display model, so a
-        // static edge here would pull that whole subgraph into the eager bundle
-        stateModel: () =>
-          import('./model.ts').then(f => f.default(configSchema)),
-        trackType: 'VariantTrack',
-        rpcMethods: ['RenderFeatureData'],
-        viewType: 'LinearGenomeView',
-        plotExamples: VARIANT_PLOT_EXAMPLES,
-        ReactComponent,
-        // #region migration
-        retiredState: retiredFilterState,
-        // #endregion
-      })
+  pluginManager.addDisplayType(() => {
+    const configSchema = configSchemaFactory()
+    return new DisplayType({
+      name: 'LinearVariantDisplay',
+      displayName: 'Variant display',
+      helpText:
+        'The records stacked as on a feature track, over one row per sample (or haplotype) with each variant drawn at its genomic position or as one of a row of equal-width columns',
+      configSchema,
+      // lazily loaded: the model, its genotype machinery and the records
+      // band's feature pipeline are fetched when a variant track opens
+      stateModel: () => import('./model.ts').then(f => f.default(configSchema)),
+      trackType: 'VariantTrack',
+      rpcMethods: ['MultiSampleVariantGetCellData'],
+      viewType: 'LinearGenomeView',
+      plotExamples: VARIANT_PLOT_EXAMPLES,
+      ReactComponent: VariantDisplayComponent,
+      retiredState,
+      retiredTypes,
     })
-  }
+  })
 }

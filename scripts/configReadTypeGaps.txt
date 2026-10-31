@@ -240,7 +240,7 @@ plugins/sequence/src/index.test.ts  (1)  [test]
 plugins/trix/src/TrixTextSearchAdapter/TrixTextSearchAdapter.ts  (2)
   70	readConfObject('ixFilePath')
   71	readConfObject('ixxFilePath')
-plugins/variants/src/LinearMultiSampleVariantDisplay/configSchema.test.ts  (1)  [test]
+plugins/variants/src/LinearVariantDisplay/configSchema.test.ts  (1)  [test]
   144	readConfObject('unit')
 plugins/wiggle/src/rowsShorthand.test.ts  (1)  [test]
   69	readConfObject('height')

@@ -47,8 +47,8 @@ release the slider:
   common, population-informative variants remain.
 - **Missingness** hides variants whose fraction of uncalled alleles rises above
   the threshold. With no `missingness` entry in the display's
-  [`filter`](/docs/config/linearmultisamplevariantdisplay/#slot-filter) it keeps
-  every variant; lowering it drops the poorly-genotyped columns that are mostly
+  [`filter`](/docs/config/linearvariantdisplay/#slot-filter) it keeps every
+  variant; lowering it drops the poorly-genotyped columns that are mostly
   missing data.
 
 Missingness is especially useful in equal-width columns, where each variant
@@ -64,9 +64,9 @@ The two filters can be preset so the track loads already filtered, with
 
 ## Rows: per sample or per haplotype
 
-The [`unit`](/docs/config/linearmultisamplevariantdisplay/#slot-unit) display
-option, which the track menu's **Rows** item sets, decides what one row stands
-for and how each genotype cell is colored.
+The [`unit`](/docs/config/linearvariantdisplay/#slot-unit) display option, which
+the track menu's **Rows** item sets, decides what one row stands for and how
+each genotype cell is colored.
 
 With **Rows → Per sample** (`unit: 'sample'`), one cell is drawn per sample and
 shaded by how many alternate alleles the call has:

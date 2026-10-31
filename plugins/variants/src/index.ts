@@ -3,7 +3,6 @@ import { svClassOf } from '@jbrowse/core/util/svAlt'
 
 import LDDisplayF from './LDDisplay/index.ts'
 import LDTrackF from './LDTrack/index.ts'
-import LinearMultiSampleVariantDisplayF from './LinearMultiSampleVariantDisplay/index.ts'
 import LinearVariantDisplayF from './LinearVariantDisplay/index.ts'
 import PlinkLDAdapterF from './PlinkLDAdapter/index.ts'
 import LDDataRPCMethodsF from './RenderLDDataRPC/index.ts'
@@ -48,7 +47,6 @@ export default class VariantsPlugin extends Plugin {
     VariantTrackF(pluginManager)
     LDTrackF(pluginManager)
     LinearVariantDisplayF(pluginManager)
-    LinearMultiSampleVariantDisplayF(pluginManager)
     LDDisplayF(pluginManager)
     LDDataRPCMethodsF(pluginManager)
 
@@ -112,4 +110,7 @@ export {
 export type { FusionBreakpoint } from './StarFusionAdapter/starFusion.ts'
 
 export type { LinearVariantDisplayModel } from './LinearVariantDisplay/model.ts'
-export type { LinearMultiSampleVariantDisplayModel } from './LinearMultiSampleVariantDisplay/model.ts'
+/**
+ * @deprecated the v5 betas' name for `LinearVariantDisplayModel`
+ */
+export type { LinearVariantDisplayModel as LinearMultiSampleVariantDisplayModel } from './LinearVariantDisplay/model.ts'

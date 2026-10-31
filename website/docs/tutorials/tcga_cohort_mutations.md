@@ -151,20 +151,18 @@ The track config sets three things:
 - [`samplesTsvLocation`](/docs/config/vcftabixadapter/#slot-samplestsvlocation)
   makes the clinical columns available to facet and color rows by
 
-The display divides
-[`height`](/docs/config/linearmultisamplevariantdisplay/#slot-height) among the
-rows, so each row is about a pixel tall and a band's mutation density shows as
-its darkness.
+The display divides [`height`](/docs/config/linearvariantdisplay/#slot-height)
+among the rows, so each row is about a pixel tall and a band's mutation density
+shows as its darkness.
 
 ## Facet the rows by clinical annotation
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
-[`facet`](/docs/config/linearmultisamplevariantdisplay/#slot-facet) splits the
-display into stacked sections, one per value of a samples TSV column, sorted,
-and `facet.sort` pins the sections you want first.
-[`rowColor`](/docs/config/linearmultisamplevariantdisplay/#slot-rowcolor) is a
-color scale on each row's label bar, so it puts the matching color strip in the
-gutter.
+[`facet`](/docs/config/linearvariantdisplay/#slot-facet) splits the display into
+stacked sections, one per value of a samples TSV column, sorted, and
+`facet.sort` pins the sections you want first.
+[`rowColor`](/docs/config/linearvariantdisplay/#slot-rowcolor) is a color scale
+on each row's label bar, so it puts the matching color strip in the gutter.
 
 **Group by** and **Color by → Samples** in the track menu set the same two keys.
 

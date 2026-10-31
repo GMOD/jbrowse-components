@@ -8,7 +8,7 @@ import {
   overDensityBudget,
 } from '@jbrowse/plugin-features/densityGate'
 
-import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
+import { computeVariantCells } from '../LinearVariantDisplay/components/computeVariantCells.ts'
 import { cellHueReaderOf } from '../shared/cellHue.ts'
 import { buildCanonicalRows } from '../shared/getSources.ts'
 import {
@@ -26,7 +26,7 @@ import { fetchVariantFeatures } from './fetchVariantFeatures.ts'
 import { groupFeaturesByRegion } from './groupFeaturesByRegion.ts'
 import { orderByScreenPosition } from './orderByScreenPosition.ts'
 
-import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
+import type { VariantCellData } from '../LinearVariantDisplay/components/computeVariantCells.ts'
 import type { CellHueRead } from '../shared/cellHue.ts'
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
 import type { SimplifiedVariantFeature } from './analyzeVariants.ts'

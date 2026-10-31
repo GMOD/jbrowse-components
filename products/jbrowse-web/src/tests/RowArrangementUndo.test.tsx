@@ -13,7 +13,7 @@ import {
 import type { WebRootModel } from '../rootModel/rootModel.ts'
 import type { LinearDisplayModel } from '@jbrowse/display-kit/types'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { LinearMultiSampleVariantDisplayModel } from '@jbrowse/plugin-variants'
+import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
 import type { LinearWiggleDisplayModel } from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
 
 setup()
@@ -93,8 +93,7 @@ test('a variant row reorder lands in the session at once and undoes', async () =
   })
   const { history } = rootModel as WebRootModel
   await findDisplayPainted('variant-display', delay)
-  const display = view.tracks[0]!
-    .displays[0] as LinearMultiSampleVariantDisplayModel
+  const display = view.tracks[0]!.displays[0] as LinearVariantDisplayModel
   await waitFor(() => {
     expect(display.sources.length).toBeGreaterThan(2)
   }, delay)
@@ -120,8 +119,7 @@ test('a variant row reorder lands in the session at once and undoes', async () =
   expect(
     rowsDomainInDelta(session.trackConfigDeltas.volvox_test_vcf, displayId),
   ).toBeUndefined()
-  const undone = view.tracks[0]!
-    .displays[0] as LinearMultiSampleVariantDisplayModel
+  const undone = view.tracks[0]!.displays[0] as LinearVariantDisplayModel
   expect(undone.rowSort).toEqual([])
   expect(undone.sources.map(s => s.name)).toEqual(before)
 }, 60000)

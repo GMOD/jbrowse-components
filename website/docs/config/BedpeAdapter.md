@@ -40,7 +40,6 @@ JBrowse infers `BedpeAdapter` and `VariantTrack` from `sv.bedpe`, and `name` def
 - **Track:** [VariantTrack](../varianttrack)
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)
-- **Display:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
 ## Config slots

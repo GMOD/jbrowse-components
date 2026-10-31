@@ -1,6 +1,6 @@
 import VcfParser from '@gmod/vcf'
 
-import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
+import { computeVariantCells } from '../LinearVariantDisplay/components/computeVariantCells.ts'
 import VcfFeature from '../VcfFeature/index.ts'
 import { analyzeVariants } from './analyzeVariants.ts'
 

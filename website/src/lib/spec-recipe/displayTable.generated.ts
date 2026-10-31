@@ -52,10 +52,6 @@ export const displayTable: DisplayTable = {
         "adapterCapabilities": []
       },
       {
-        "name": "LinearMultiSampleVariantDisplay",
-        "adapterCapabilities": []
-      },
-      {
         "name": "LinearMarkDisplay",
         "adapterCapabilities": []
       }
@@ -234,8 +230,9 @@ export const displayTable: DisplayTable = {
     "LinearSNPCoverageDisplay": "LinearAlignmentsDisplay",
     "LinearReadArcsDisplay": "LinearAlignmentsDisplay",
     "LinearReadCloudDisplay": "LinearAlignmentsDisplay",
-    "MultiLinearVariantDisplay": "LinearMultiSampleVariantDisplay",
-    "LinearVariantMatrixDisplay": "LinearMultiSampleVariantDisplay",
+    "LinearMultiSampleVariantDisplay": "LinearVariantDisplay",
+    "MultiLinearVariantDisplay": "LinearVariantDisplay",
+    "LinearVariantMatrixDisplay": "LinearVariantDisplay",
     "MultiLinearWiggleDisplay": "LinearWiggleDisplay",
     "LinearGCContentDisplay": "LinearWiggleDisplay",
     "LinearGCContentTrackDisplay": "LinearWiggleDisplay",
@@ -267,10 +264,6 @@ export const displayTable: DisplayTable = {
         },
         {
           "name": "LinearVariantDisplay",
-          "viewType": "LinearGenomeView"
-        },
-        {
-          "name": "LinearMultiSampleVariantDisplay",
           "viewType": "LinearGenomeView"
         },
         {
@@ -335,10 +328,6 @@ export const displayTable: DisplayTable = {
         },
         {
           "name": "LinearVariantDisplay",
-          "viewType": "LinearGenomeView"
-        },
-        {
-          "name": "LinearMultiSampleVariantDisplay",
           "viewType": "LinearGenomeView"
         },
         {

@@ -1,19 +1,19 @@
 ---
 id: variantcellencoding
 title: VariantCellEncoding
-description: "The multi-sample variant display's encoding, the channels its genotype cells paint through."
+description: "The variant display's encoding, the channels its genotype cells paint through."
 sidebar_label: Display setting -> VariantCellEncoding
 ---
 
-Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearMultiSampleVariantDisplay/cellEncodingConfigSchema.ts).
+Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/cellEncodingConfigSchema.ts).
 
-The multi-sample variant display's `encoding`, the channels its genotype
+The variant display's `encoding`, the channels its genotype
 cells paint through.
 
 ## Example usage
 
 ```js
-{ type: 'LinearMultiSampleVariantDisplay', encoding: { color: 'svType' } }
+{ type: 'LinearVariantDisplay', encoding: { color: 'svType' } }
 ```
 
 ## Config slots

@@ -276,38 +276,37 @@ block's override; what differs is what TypeScript can see:
   reaches same-block siblings and nothing else.
 
 Prefer `self.X`, and reach for `this.X` only for a sibling defined in the same
-block. `LinearVariantDisplay`'s color getters use both in one expression:
+block. `LinearVariantDisplay`'s records band reads both in one expression:
 
-<!-- include: plugins/variants/src/LinearVariantDisplay/model.ts#sameBlockThis -->
+<!-- include: plugins/variants/src/LinearVariantDisplay/recordsBandViews.ts#sameBlockThis -->
 
 ```ts
 /**
  * #getter
+ * Whether no genotype row draws: `genotypes.show` off, or a VCF
+ * whose sample listing landed empty. The records band is then the
+ * display, every record the filter admits, sized by `heightMode`.
  */
-get colorsByConsequenceImpact() {
-  return self.colorSetting.field === IMPACT_FIELD
+get recordsOnly(): boolean {
+  return !self.showGenotypes || self.adapterSamples?.length === 0
 },
 /**
  * #getter
+ * Whether the records band is drawn: at genomic positions only, where
+ * a record lines up with the cells under it, and always while it is
+ * the whole display.
  */
-get colorsBySvType() {
-  return self.colorSetting.field === SV_TYPE_FIELD
-},
-/**
- * #getter
- * The attribute the Attribute dialog opens on, '' under the impact or
- * SV type preset, each of which has a separate row.
- */
-get colorByAttribute(): string {
-  return this.colorsByConsequenceImpact || this.colorsBySvType
-    ? ''
-    : self.colorSetting.field
+get showRecords(): boolean {
+  return (
+    self.atGenomicPositions &&
+    (this.recordsOnly || getConf(self, ['records', 'show']))
+  )
 },
 ```
 
-Note `colorLegend`'s explicit `: LegendItem[]` return type. A getter read
-through `this` has to be annotated — without it TypeScript has to infer the
-literal's type from a member that refers to the literal, and gives up with a
+Note `recordsOnly`'s explicit `: boolean` return type. A getter read through
+`this` has to be annotated — without it TypeScript has to infer the literal's
+type from a member that refers to the literal, and gives up with a
 circular-reference error. That annotation is the cost of a same-block `this`
 read, and the reason splitting into another block is usually tidier.
 
@@ -334,6 +333,7 @@ the inherited track menu:
           session: getSession(self),
           model: self,
           view: containingLgv(self),
+          pluginManager: getEnv(self).pluginManager,
         }),
       ]
     },

@@ -53,7 +53,7 @@ below are relative to `plugins/variants/src/`.
   the span channel and repeated it down every carrier row as a wall over
   reference the haplotypes keep; the hosted HPRC launch had turned it off.
 - **A cell's alpha does depend on zoom, where records share pixels**
-  (`LinearMultiSampleVariantDisplay/densityFade.ts`). At genomic positions each
+  (`LinearVariantDisplay/densityFade.ts`). At genomic positions each
   record shorter than the 2 px a cell draws is drawn at `1 - 0.1 ** (1 / n)`,
   `n` the most such records over any pixel it covers, so a row's pixel reaches
   90% opacity when every record under it is alt and less when a share are. A
@@ -86,7 +86,7 @@ Each channel carries one variable through one scale.
 - **The main thread paints the hue and the shade (ADR-203).** The worker reads
   what the hue needs off each variant (`cellHueOf`'s `read`: a field's value as
   text, or a `jexl:` callback's color) and ships it beside each cell's
-  `altDosageByte`; `LinearMultiSampleVariantDisplay/paintCells.ts` repaints the alt cells
+  `altDosageByte`; `LinearVariantDisplay/paintCells.ts` repaints the alt cells
   from them, each color map a computed apart from row placement. So the dosage
   is the byte, in the cells and the key's het swatch (`HET_DOSAGE`) alike. A
   phase-set hue is per cell and stays the worker's.
@@ -103,7 +103,7 @@ Each channel carries one variable through one scale.
 
 ## The legend lists what was painted
 
-`LinearMultiSampleVariantDisplay/variantLegend.ts` builds from the scale in use plus the absent-data
+`LinearVariantDisplay/variantLegend.ts` builds from the scale in use plus the absent-data
 categories present, and its swatches come from the same functions the cells do.
 `hasSecondaryAlt`, `hasAltWithoutPhaseSet`, `hasUnphased` and `hasNoCall` are the cell loops' own record
 of what they emitted (`paintedCategories`, one bit per `CELL_*`), merged across

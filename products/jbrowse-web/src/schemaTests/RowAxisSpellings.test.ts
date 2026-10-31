@@ -55,8 +55,8 @@ test("a variant track's axis labels reach its mark display", () => {
     { type: 'VcfAdapter', uri: 'a.vcf' },
     { axis: { labels: false, grid: true } },
   )
-  expect(axisOf(track, 'LinearMultiSampleVariantDisplay', 'labels')).toBe(false)
-  expect(axisOf(track, 'LinearMultiSampleVariantDisplay', 'grid')).toBe(true)
+  expect(axisOf(track, 'LinearVariantDisplay', 'labels')).toBe(false)
+  expect(axisOf(track, 'LinearVariantDisplay', 'grid')).toBe(true)
   expect(axisOf(track, 'LinearMarkDisplay', 'labels')).toBe(false)
 })
 

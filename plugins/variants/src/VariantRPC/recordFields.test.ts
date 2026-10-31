@@ -1,7 +1,7 @@
 import VcfParser from '@gmod/vcf'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
+import { computeVariantCells } from '../LinearVariantDisplay/components/computeVariantCells.ts'
 import VcfFeature from '../VcfFeature/index.ts'
 import { recordFieldReaders } from '../shared/recordFields.ts'
 import { analyzeVariants } from './analyzeVariants.ts'

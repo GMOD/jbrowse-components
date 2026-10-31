@@ -48,7 +48,7 @@ import {
   withMarkColor,
 } from '../../../../plugins/marks/src/LinearMarkDisplay/markColor.ts'
 import { markColorSchema } from '../../../../plugins/marks/src/LinearMarkDisplay/markColorConfigSchema.ts'
-import { cellColorConfigSchema } from '../../../../plugins/variants/src/LinearMultiSampleVariantDisplay/cellColorConfigSchema.ts'
+import { cellColorConfigSchema } from '../../../../plugins/variants/src/LinearVariantDisplay/cellColorConfigSchema.ts'
 import {
   cellColorEncodingOf,
   cellHueOf,

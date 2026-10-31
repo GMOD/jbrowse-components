@@ -85,7 +85,7 @@ computes the value, and a `threshold` scale bins it, with a key naming each bin:
 heatmap, one row per sample, each variant at its genomic position or, with
 `variantLayout: 'columns'`, in equal-width columns. It is not the track's
 default display, so preset its slots in a `displays` array; they are listed on
-[](/docs/config/linearmultisamplevariantdisplay).
+[](/docs/config/linearvariantdisplay).
 
 ### Configuring default display settings
 

@@ -76,14 +76,14 @@ import {
   rectDrawsOutline,
   rectSpanPx,
 } from '../../../plugins/features/src/LinearBasicDisplay/passes/shaders/rect.js.generated.ts'
-import { cellMark } from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/cellMark.ts'
-import { drawnCellHeightPx } from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/shaders/variant.js.generated.ts'
-import { snapVariantCellX } from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/snapVariantCellX.ts'
+import { cellMark } from '../../../plugins/variants/src/LinearVariantDisplay/components/cellMark.ts'
+import { drawnCellHeightPx } from '../../../plugins/variants/src/LinearVariantDisplay/components/shaders/variant.js.generated.ts'
+import { snapVariantCellX } from '../../../plugins/variants/src/LinearVariantDisplay/components/snapVariantCellX.ts'
 import {
   SHAPE_RECT,
   SHAPE_TRI_LEFT,
   drawVariantShape,
-} from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/variantShape.ts'
+} from '../../../plugins/variants/src/LinearVariantDisplay/components/variantShape.ts'
 import {
   abgrAlpha,
   abgrBlue,
@@ -114,7 +114,7 @@ import type {
 import type {
   CellChannels,
   CellParams,
-} from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/cellMark.ts'
+} from '../../../plugins/variants/src/LinearVariantDisplay/components/cellMark.ts'
 import type { SpanChannels, SpanParams } from '../src/marks/spanMark.ts'
 import type { MarkContext2D, MarkFrame, MarkShape } from '../src/marks/types.ts'
 import type { RenderBlock } from '../src/renderBlock.ts'

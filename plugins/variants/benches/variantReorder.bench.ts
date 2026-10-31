@@ -30,9 +30,9 @@ import { performance } from 'node:perf_hooks'
 
 import { buildRowTable } from '@jbrowse/render-core/marks'
 
-import * as cellShader from '../src/LinearMultiSampleVariantDisplay/components/shaders/variant.iface.generated.ts'
-import * as matrixShader from '../src/LinearMultiSampleVariantDisplay/matrix/shaders/variantMatrix.iface.generated.ts'
-import { placeVariantRows } from '../src/LinearMultiSampleVariantDisplay/placeVariantRows.ts'
+import * as cellShader from '../src/LinearVariantDisplay/components/shaders/variant.iface.generated.ts'
+import * as matrixShader from '../src/LinearVariantDisplay/matrix/shaders/variantMatrix.iface.generated.ts'
+import { placeVariantRows } from '../src/LinearVariantDisplay/placeVariantRows.ts'
 
 const arg = (name: string, fallback: number) =>
   Number(

@@ -9,7 +9,7 @@ import {
 } from './util.tsx'
 
 import type { Results } from './util.tsx'
-import type { LinearMultiSampleVariantDisplayModel } from '@jbrowse/plugin-variants'
+import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
 
 type DisplayType = 'matrix' | 'regular'
 
@@ -81,8 +81,7 @@ export async function testLinearMultiSampleVariantDisplay({
     // silently captured per-sample rows. The bare label only exists once the
     // row is enabled, so matching it exactly waits for the scan.
     fireEvent.click(await findByText('Per haplotype', ...opts))
-    const display = view.tracks[0]!
-      .displays[0] as LinearMultiSampleVariantDisplayModel
+    const display = view.tracks[0]!.displays[0] as LinearVariantDisplayModel
     expect(display.unit).toBe('haplotype')
   }
 

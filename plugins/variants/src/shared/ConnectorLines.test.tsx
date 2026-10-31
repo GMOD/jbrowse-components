@@ -2,7 +2,7 @@ import { act } from 'react'
 
 import { fireEvent, render } from '@testing-library/react'
 
-import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/matrix/testEnv.ts'
+import { createTestEnvironment } from '../LinearVariantDisplay/matrix/testEnv.ts'
 import { ConnectorLineOverlay, SvgConnectorField } from './ConnectorLines.tsx'
 import { cellDataOf, cellPayloadOf, featureInfoOf } from './cellDataFixtures.ts'
 

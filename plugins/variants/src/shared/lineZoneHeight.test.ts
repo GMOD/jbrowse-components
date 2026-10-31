@@ -1,8 +1,8 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment } from '../LDDisplay/testEnv.ts'
-import regularConfigFactory from '../LinearMultiSampleVariantDisplay/configSchema.ts'
-import regularStateModelFactory from '../LinearMultiSampleVariantDisplay/model.ts'
+import regularConfigFactory from '../LinearVariantDisplay/configSchema.ts'
+import regularStateModelFactory from '../LinearVariantDisplay/model.ts'
 
 // The connector-line zone is one contract across every display that draws it: a
 // `lineZoneHeight` **config slot** (so a drag survives the track being unticked
@@ -11,7 +11,7 @@ import regularStateModelFactory from '../LinearMultiSampleVariantDisplay/model.t
 // families used to disagree — LD on a slot, the matrix on a bespoke instance
 // property with its own clamp — which is how their setters drifted.
 function matrixDisplay() {
-  const type = 'LinearMultiSampleVariantDisplay'
+  const type = 'LinearVariantDisplay'
   const configSchema = regularConfigFactory()
   return regularStateModelFactory(configSchema).create({
     type,
@@ -24,7 +24,7 @@ function matrixDisplay() {
 }
 
 function regularDisplay() {
-  const type = 'LinearMultiSampleVariantDisplay'
+  const type = 'LinearVariantDisplay'
   const configSchema = regularConfigFactory()
   return regularStateModelFactory(configSchema).create({
     type,

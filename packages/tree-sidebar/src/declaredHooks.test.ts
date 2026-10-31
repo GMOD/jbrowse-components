@@ -4,7 +4,7 @@ import path from 'node:path'
 const root = path.resolve(__dirname, '../../..')
 
 const DISPLAY_MODELS = [
-  'plugins/variants/src/LinearMultiSampleVariantDisplay/model.ts',
+  'plugins/variants/src/LinearVariantDisplay/model.ts',
   'plugins/wiggle/src/LinearWiggleDisplay/model.ts',
   'plugins/maf/src/LinearMafDisplay/stateModel.ts',
   'plugins/marks/src/LinearMarkDisplay/model.ts',

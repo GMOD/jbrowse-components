@@ -7,7 +7,7 @@ import sessionModelFactory from '../sessionModel/index.ts'
 import rootModelFactory from './rootModel.ts'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { LinearMultiSampleVariantDisplayModel } from '@jbrowse/plugin-variants'
+import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
 import type { LinearWiggleDisplayModel } from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -438,8 +438,8 @@ test('a v4 clustered multi-sample variant display loads with its order, tree and
         jexlFilters: ["get(feature,'QUAL')>30"],
       }),
     )
-  ).display as LinearMultiSampleVariantDisplayModel
-  expect(display.type).toBe('LinearMultiSampleVariantDisplay')
+  ).display as LinearVariantDisplayModel
+  expect(display.type).toBe('LinearVariantDisplay')
   expect(display.configuredFilters()).toEqual(["jexl:get(feature,'QUAL')>30"])
   expect(display.rowSort).toEqual(['HG00097', 'HG00096'])
   expect(getConf(display, ['rows', 'tree'])).toBe('(HG00097:1,HG00096:1);')

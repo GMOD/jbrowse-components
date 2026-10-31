@@ -25,7 +25,7 @@ Every BaseLinearDisplay has a unique `displayId`, a required top-level field tha
 - **Extended by:** [BaseLinearAlignmentsDisplay](../baselinearalignmentsdisplay)
 - **Extended by:** [LinearFeatureBaseDisplay](../linearfeaturebasedisplay)
 - **Extended by:** [LinearMafDisplay](../linearmafdisplay)
-- **Extended by:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Extended by:** [LinearVariantDisplay](../linearvariantdisplay)
 - **Extended by:** [MultiWaySyntenyDisplay](../multiwaysyntenydisplay)
 
 ## Config slots

@@ -1,14 +1,15 @@
 ---
 id: featuregatemixin
 title: FeatureGateMixin
-description: "The density axis of the region-too-large gate, composed after MultiRegionDisplayMixin. A display opts in by composing this and calling commitGateMeasurements from its fetch's onComplete."
+description: "The density axis of the region-too-large gate, composed after MultiRegionDisplayMixin."
 sidebar_label: Mixin -> FeatureGateMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Provided by the `features` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/features/src/shared/FeatureGateMixin.ts).
 
 The density axis of the region-too-large gate, composed after
-`MultiRegionDisplayMixin`. A display opts in by composing this and calling
+`MultiRegionDisplayMixin`. A display opts in by composing this, spreading
+`featureGateConfigSchemaFields` into its config, and calling
 `commitGateMeasurements` from its fetch's `onComplete`.
 
 ## Volatiles
@@ -25,6 +26,7 @@ The density axis of the region-too-large gate, composed after
 | --- | --- |
 | <span id="getter-gateenabled">**gateEnabled**</span><br><code>boolean</code> | `types.compose` resolves a collision to the later argument, so this mixin must follow the one declaring the byte-gate opt-in. |
 | <span id="getter-visiblefeaturedensityperpx">**visibleFeatureDensityPerPx**</span><br><code>number</code> | Density at the debounced `coarseBpPerPx`, so the verdict shares the layout cadence. |
+| <span id="getter-configuredmaxfeaturescreendensity">**configuredMaxFeatureScreenDensity**</span><br><code>number</code> | The `maxFeatureScreenDensity` slot. Overridable for a display that holds it under a sub-schema (the multi-sample variant display's `records`). |
 | <span id="getter-maxfeaturedensity">**maxFeatureDensity**</span><br><code>number &#124; undefined</code> | Undefined when the axis may not act. |
 | <span id="getter-densitytoolarge">**densityTooLarge**</span><br><code>boolean</code> |  |
 

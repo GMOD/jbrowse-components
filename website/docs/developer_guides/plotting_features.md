@@ -768,8 +768,8 @@ other by a sweep test. See [](/docs/developer_guides/creating_gpu_display).
   display: its model composes `LinearMarkDisplay`'s, its schema takes that
   display's as its base with a default plot, and what it adds is the LD join
   each region's fetch hands the adapter
-- `plugins/variants/src/LinearMultiSampleVariantDisplay/` - a display that
-  defines a custom shape (`cellMark.ts`) beside its shader
+- `plugins/variants/src/LinearVariantDisplay/` - a display that defines a custom
+  shape (`cellMark.ts`) beside its shader
 - `plugins/features/src/LinearBasicDisplay/` - the fullest reference: the
   generic feature display, five marks over one payload
 - `plugins/sequence/src/LinearReferenceSequenceDisplay/` - a plugin-local shape

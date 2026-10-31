@@ -29,10 +29,7 @@ import type {
 } from '@jbrowse/plugin-alignments'
 import type { LinearBasicDisplayModel } from '@jbrowse/plugin-features'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type {
-  LinearMultiSampleVariantDisplayModel,
-  LinearVariantDisplayModel,
-} from '@jbrowse/plugin-variants'
+import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
 
 // launch-args copies these lists from the plugins so it imports none of them;
 // each assertion fails the build when its copy drifts from the plugin's.
@@ -79,7 +76,6 @@ type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
   | keyof LinearVariantDisplayModel
-  | keyof LinearMultiSampleVariantDisplayModel
   | ConfigSlotKey
 
 export type AssertSnapshotKeysExist = AssertNever<

@@ -13,7 +13,7 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
-import type { LinearMultiSampleVariantDisplayModel } from '@jbrowse/plugin-variants'
+import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
 
 setup()
 
@@ -59,8 +59,7 @@ test('opens a vcf track and clusters genotypes', async () => {
   fireEvent.click(elt)
 
   await waitFor(() => {
-    const display = view.tracks[0]!
-      .displays[0] as LinearMultiSampleVariantDisplayModel
+    const display = view.tracks[0]!.displays[0] as LinearVariantDisplayModel
     expect(display.hierarchy).toBeTruthy()
   }, delay)
 

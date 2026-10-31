@@ -265,7 +265,7 @@ export const GATE_OPT_IN_SITES: Record<string, string> = {
     'baseLinearDisplayConfigSchema: the mark display spreads regionTooLargeConfigSchemaFields and declares no limit of its own, so a tabix feature adapter is read at the base 1 Mb and BAM/CRAM/VCF at the 5 Mb they declare',
   'plugins/features/src/shared/FeatureGateMixin.ts': 'LinearBasicDisplay',
   'plugins/maf/src/LinearMafDisplay/stateModel.ts': 'LinearMafDisplay',
-  'plugins/variants/src/LinearMultiSampleVariantDisplay/model.ts':
+  'plugins/variants/src/LinearVariantDisplay/model.ts':
     'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb',
 }
 

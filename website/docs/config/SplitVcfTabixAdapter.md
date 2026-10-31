@@ -37,7 +37,6 @@ refName, for a large call set split by chromosome.
 - **Track:** [VariantTrack](../varianttrack)
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)
-- **Display:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
 ## Config slots

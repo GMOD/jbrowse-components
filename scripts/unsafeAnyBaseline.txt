@@ -330,9 +330,9 @@
 1 no-unsafe-return plugins/spreadsheet-view/src/SpreadsheetView/SpreadsheetViewModel.ts
 2 no-unsafe-argument plugins/trix/src/TrixTextSearchAdapter/TrixTextSearchAdapter.ts
 2 no-unsafe-assignment plugins/trix/src/TrixTextSearchAdapter/TrixTextSearchAdapter.ts
-1 no-unsafe-assignment plugins/variants/src/LinearMultiSampleVariantDisplay/anchoredHaplotypeSort.ts
-1 no-unsafe-assignment plugins/variants/src/LinearMultiSampleVariantDisplay/configSchema.ts
-2 no-unsafe-assignment plugins/variants/src/LinearMultiSampleVariantDisplay/model.ts
+1 no-unsafe-assignment plugins/variants/src/LinearVariantDisplay/anchoredHaplotypeSort.ts
+1 no-unsafe-assignment plugins/variants/src/LinearVariantDisplay/configSchema.ts
+2 no-unsafe-assignment plugins/variants/src/LinearVariantDisplay/model.ts
 1 no-unsafe-argument plugins/variants/src/PlinkLDAdapter/PlinkLDAdapter.ts
 1 no-unsafe-assignment plugins/variants/src/PlinkLDAdapter/PlinkLDAdapter.ts
 3 no-unsafe-argument plugins/variants/src/PlinkLDAdapter/PlinkLDTabixAdapter.ts

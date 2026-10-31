@@ -2,12 +2,12 @@ import {
   snappedRowBottomPx,
   snappedRowTopPx,
 } from '../../../packages/render-core/src/shaders/rowSnap.js.generated.ts'
-import * as variant from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/shaders/variant.generated.ts'
+import * as variant from '../../../plugins/variants/src/LinearVariantDisplay/components/shaders/variant.generated.ts'
 import {
   drawnCellHeightPx,
   snappedCellLeftPx,
   snappedCellWidthPx,
-} from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/shaders/variant.js.generated.ts'
+} from '../../../plugins/variants/src/LinearVariantDisplay/components/shaders/variant.js.generated.ts'
 import { abgr, defineFixture, paintOver, rgba } from '../fixture.ts'
 
 import type { Budget, Shape } from '../fixture.ts'
@@ -97,7 +97,7 @@ function fixture(
   return defineFixture({
     name,
     slang:
-      'plugins/variants/src/LinearMultiSampleVariantDisplay/components/shaders/variant.slang',
+      'plugins/variants/src/LinearVariantDisplay/components/shaders/variant.slang',
     about,
     mod: variant,
     width: W,

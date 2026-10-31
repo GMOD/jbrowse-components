@@ -47,7 +47,6 @@ test('the displays with a plot are the ones the grammar reaches', () => {
     'LinearManhattanDisplay',
     'LinearMarkDisplay',
     'LinearMultiRowFeatureDisplay',
-    'LinearMultiSampleVariantDisplay',
     'LinearVariantDisplay',
     'LinearWiggleDisplay',
     'MultiWaySyntenyDisplay',
@@ -165,7 +164,7 @@ test("each display's plot settings", () => {
       'rows',
       'transform',
     ],
-    LinearMultiSampleVariantDisplay: [
+    LinearVariantDisplay: [
       'encoding',
       'facet',
       'filter',
@@ -174,14 +173,6 @@ test("each display's plot settings", () => {
       'rowColor',
       'rows',
       'unit',
-    ],
-    LinearVariantDisplay: [
-      'encoding',
-      'facet',
-      'filter',
-      'labels',
-      'legend',
-      'mark',
     ],
     LinearWiggleDisplay: [
       'encoding',

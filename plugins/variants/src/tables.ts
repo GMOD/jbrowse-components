@@ -30,17 +30,17 @@ import {
   rowFieldValue,
 } from '@jbrowse/tree-sidebar/rowColorScale'
 
-import configSchemaFactory from './LinearMultiSampleVariantDisplay/configSchema.ts'
+import configSchemaFactory from './LinearVariantDisplay/configSchema.ts'
 import {
   densityRung,
   recordDensityAlpha,
-} from './LinearMultiSampleVariantDisplay/densityFade.ts'
+} from './LinearVariantDisplay/densityFade.ts'
 import {
   paintCellColors,
   paintFeatureColors,
   paintedColorKeys,
-} from './LinearMultiSampleVariantDisplay/paintCells.ts'
-import { getVariantColorScales } from './LinearMultiSampleVariantDisplay/variantLegend.ts'
+} from './LinearVariantDisplay/paintCells.ts'
+import { getVariantColorScales } from './LinearVariantDisplay/variantLegend.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
 import { sourcesAndWarnings } from './VariantRPC/MultiSampleVariantGetSources.ts'
 import { variantCellData } from './VariantRPC/executeVariantCellData.ts'
@@ -89,7 +89,7 @@ export interface VariantTablesArgs {
   regions: TablesRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
-   * `LinearMultiSampleVariantDisplay`: `encoding`, `unit` (`'allele'` or
+   * `LinearVariantDisplay`: `encoding`, `unit` (`'allele'` or
    * `'haplotype'`), `filter` (a predicate list, `minorAlleleFrequency` and
    * `missingness` among its fields), `referenceDrawingMode`, `shadeByDosage`, the
    * arrangement `rows` and `facet` and the rest of its slots. Unset reads the
@@ -141,7 +141,7 @@ export async function variantTables(
   }
   const conf = configSchemaFactory().create({
     ...display,
-    type: 'LinearMultiSampleVariantDisplay',
+    type: 'LinearVariantDisplay',
     displayId: 'tables',
   })
   const colorSetting = colorSnapshotOf(conf.encoding.color)

@@ -48,7 +48,6 @@ TBI cannot index a chromosome longer than 512 Mb, which some plant and animal ge
 - **Track:** [VariantTrack](../varianttrack)
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)
-- **Display:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
 ## Config slots

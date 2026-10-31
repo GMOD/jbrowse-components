@@ -4,7 +4,7 @@ export const GENOTYPE_SPLITTER = /[/|]/
 
 // A track's `displays` union probes every member's preprocessor with every
 // entry, so a refusal checks the snapshot is this display's before it fires.
-export const MULTI_SAMPLE_VARIANT_DISPLAY = 'LinearMultiSampleVariantDisplay'
+export const VARIANT_DISPLAY = 'LinearVariantDisplay'
 
 export const f2 = 0.3
 

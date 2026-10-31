@@ -1,11 +1,14 @@
 import type { PlotExample } from '@jbrowse/core/configuration'
 
-// The VCF vocabulary for "Edit plot...": a field is a record field, a path
-// into INFO, or one of the `impact` and `svType` presets.
+/** What "Edit plot..." offers as buttons on a variant track. */
 export const VARIANT_PLOT_EXAMPLES: PlotExample[] = [
   {
-    plot: '{ "encoding": { "color": "type" } }',
-    description: 'one color per variant class: SNV, deletion, insertion',
+    plot: '{ "encoding": { "color": "impact" } }',
+    description: 'records and alt cells colored by consequence impact',
+  },
+  {
+    plot: '{ "encoding": { "color": { "field": "INFO.AF", "scale": { "type": "threshold", "domain": [0.01, 0.05] } } } }',
+    description: 'rare, low-frequency and common variants in three colors',
   },
   {
     plot: '{ "encoding": { "color": "INFO.CLNSIG" } }',
@@ -13,10 +16,10 @@ export const VARIANT_PLOT_EXAMPLES: PlotExample[] = [
   },
   {
     plot: '{ "filter": ["jexl:feature.QUAL > 30"] }',
-    description: 'site quality above 30',
+    description: 'variants with QUAL above 30',
   },
   {
-    plot: '{ "facet": null, "encoding": { "color": null } }',
-    description: 'ungrouped, default color',
+    plot: '{ "encoding": { "color": null } }',
+    description: 'the SV type and genotype colors',
   },
 ]

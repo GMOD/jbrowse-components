@@ -1,4 +1,4 @@
-import { createTestEnvironment } from '../LinearMultiSampleVariantDisplay/testEnv.ts'
+import { createTestEnvironment } from '../LinearVariantDisplay/testEnv.ts'
 import { genotypeMatrixKey } from './genotypeMatrixKey.ts'
 
 // The key `useFetch` serializes on every render of the cluster dialog. It was

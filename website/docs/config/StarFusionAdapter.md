@@ -40,7 +40,6 @@ JBrowse infers `StarFusionAdapter` and `VariantTrack` from `star-fusion.fusion_p
 - **Track:** [VariantTrack](../varianttrack)
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)
-- **Display:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
 ## Config slots

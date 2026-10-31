@@ -131,8 +131,7 @@ members, `{ "field": "sample", "sort": [...], "tree": "..." }`. A MAF track's
 rows are its species, so its `rows` takes the variant display's members, and a
 `tree` there replaces the adapter's guide tree.
 
-The per-display field references are
-[](/docs/models/linearmultisamplevariantdisplay) and
+The per-display field references are [](/docs/models/linearvariantdisplay) and
 [](/docs/config/linearwiggledisplay).
 
 ## See also

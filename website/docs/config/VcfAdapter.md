@@ -40,7 +40,6 @@ JBrowse infers `VcfAdapter` and `VariantTrack` from `variants.vcf`, and `name` d
 - **Track:** [VariantTrack](../varianttrack)
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
 - **Display:** [LinearMarkDisplay](../linearmarkdisplay)
-- **Display:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
 - **Display:** [LinearVariantDisplay](../linearvariantdisplay)
 
 ## Config slots

@@ -241,7 +241,7 @@ order in `config.json` terms, not as separate runtime-only state.
 - [](/docs/config_guides/mark_display)
 - [](/docs/config_guides/alignments_track)
 - [](/docs/config_guides/synteny_track)
-- [](/docs/config/linearmultisamplevariantdisplay)
+- [](/docs/config/linearvariantdisplay)
 - [](/docs/config/linearmultirowfeaturedisplay)
 - [](/docs/config/multiwaysyntenydisplay)
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
