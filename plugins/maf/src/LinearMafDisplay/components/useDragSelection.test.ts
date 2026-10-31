@@ -8,8 +8,8 @@ import type React from 'react'
 
 const DATA_LEFT = 80
 
-// `relativeXY` falls back to the raw client coords when the ref has no element,
-// so an unattached ref lets these drive display-relative x/y directly.
+// The events' container sits at the client origin, so these drive
+// display-relative x/y directly.
 function setup() {
   const onClick = jest.fn()
   const ref = createRef<HTMLDivElement>()
@@ -29,6 +29,7 @@ function mouseEvent(
     clientY: y,
     shiftKey: extra?.shiftKey ?? false,
     target: { closest: () => null },
+    currentTarget: { getBoundingClientRect: () => ({ left: 0, top: 0 }) },
     stopPropagation: extra?.stopPropagation ?? (() => {}),
   } as unknown as React.MouseEvent
 }

@@ -83,22 +83,34 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
       factory={createMafBackend}
       testid="maf-display"
       ref={ref}
-      onPointerDown={drag.handlePointerDown}
-      onMouseDown={drag.handleMouseDown}
+      onPointerDown={e => {
+        drag.handlePointerDown(e)
+      }}
+      onMouseDown={e => {
+        drag.handleMouseDown(e)
+      }}
       onPointerPosition={state => {
         model.setHoveredFeature(
           state ? rowUnder(model, state.x, state.y) : undefined,
         )
       }}
-      onMouseMove={drag.handleMouseMove}
-      onMouseUp={drag.handleMouseUp}
-      onContextMenu={onContextMenu}
+      onMouseMove={e => {
+        drag.handleMouseMove(e)
+      }}
+      onMouseUp={e => {
+        drag.handleMouseUp(e)
+      }}
+      onContextMenu={e => {
+        onContextMenu(e)
+      }}
       onDoubleClick={() => {
         if (drag.showSelectionBox) {
           drag.clearSelectionBox()
         }
       }}
-      onMouseLeave={drag.handleMouseLeave}
+      onMouseLeave={() => {
+        drag.handleMouseLeave()
+      }}
     >
       {({ canvasRef, mouseTracker }) => (
         <MafBody

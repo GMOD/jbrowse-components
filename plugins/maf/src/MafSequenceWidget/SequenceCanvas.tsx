@@ -129,8 +129,12 @@ const SequenceCanvas = observer(function SequenceCanvas({
         width: canvasWidth,
         height: canvasHeight,
       }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={onLeave}
+      onMouseMove={e => {
+        handleMouseMove(e)
+      }}
+      onMouseLeave={() => {
+        onLeave()
+      }}
     />
   )
 })

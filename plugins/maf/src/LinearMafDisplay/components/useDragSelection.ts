@@ -28,12 +28,9 @@ interface DragState {
   showSelectionBox: boolean
 }
 
-function relativeXY(
-  ref: React.RefObject<HTMLDivElement | null>,
-  e: MouseEvent | React.MouseEvent,
-) {
-  const rect = ref.current?.getBoundingClientRect()
-  return { x: e.clientX - (rect?.left ?? 0), y: e.clientY - (rect?.top ?? 0) }
+function relativeXY(e: React.MouseEvent) {
+  const rect = e.currentTarget.getBoundingClientRect()
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top }
 }
 
 export function useDragSelection(
@@ -69,7 +66,8 @@ export function useDragSelection(
       e.button > 0 ||
       e.shiftKey ||
       isFromPortal(e) ||
-      !!(e.target as Element).closest('[data-gesture-owner]')
+      (e.target instanceof Element &&
+        e.target.closest('[data-gesture-owner]') !== null)
     )
   }
 
@@ -83,18 +81,17 @@ export function useDragSelection(
   }
 
   function handleMouseDown(e: React.MouseEvent) {
-    if (leavesPressToView(e)) {
-      return
-    }
-    const { x, y } = relativeXY(ref, e)
-    // the view's range select listens for mousedown on the same container
-    e.stopPropagation()
-    if (x >= dataLeft) {
-      setState({
-        isDragging: true,
-        showSelectionBox: false,
-        drag: { startX: x, startY: y, endX: x, endY: y },
-      })
+    if (!leavesPressToView(e)) {
+      const { x, y } = relativeXY(e)
+      // the view's range select listens for mousedown on the same container
+      e.stopPropagation()
+      if (x >= dataLeft) {
+        setState({
+          isDragging: true,
+          showSelectionBox: false,
+          drag: { startX: x, startY: y, endX: x, endY: y },
+        })
+      }
     }
   }
 
@@ -102,18 +99,17 @@ export function useDragSelection(
   // chrome's `mouseTracker` (see `useMouseTracking`), so a plain move does not
   // re-render the component that renders `DisplayChrome`.
   function handleMouseMove(e: React.MouseEvent) {
-    // The early return keeps a plain hover free of `setState` and
+    // The gate keeps a plain hover free of `setState` and
     // `getBoundingClientRect`. The updater re-tests its own state and returns
     // `s` unchanged without a drag, which React bails out of.
-    if (!state.isDragging) {
-      return
+    if (state.isDragging) {
+      const { x, y } = relativeXY(e)
+      setState(s =>
+        s.isDragging && s.drag
+          ? { ...s, drag: { ...s.drag, endX: x, endY: y } }
+          : s,
+      )
     }
-    const { x, y } = relativeXY(ref, e)
-    setState(s =>
-      s.isDragging && s.drag
-        ? { ...s, drag: { ...s.drag, endX: x, endY: y } }
-        : s,
-    )
   }
 
   function handleMouseUp(e: React.MouseEvent) {
@@ -122,7 +118,7 @@ export function useDragSelection(
     const { drag, isDragging } = state
     const draggedFar = isDragging && drag !== undefined && movedFarEnough(drag)
     if (draggedFar) {
-      const { x, y } = relativeXY(ref, e)
+      const { x, y } = relativeXY(e)
       setContextCoord({
         anchor: { clientX: e.clientX, clientY: e.clientY },
         startX: drag.startX,
@@ -134,7 +130,7 @@ export function useDragSelection(
     } else if (isDragging) {
       // Only a release that this display saw the press for is a click:
       // `handleMouseDown` bails on resize handles and the tree sidebar.
-      const { x, y } = relativeXY(ref, e)
+      const { x, y } = relativeXY(e)
       onClick(x, y)
       setState(s => ({
         ...s,
