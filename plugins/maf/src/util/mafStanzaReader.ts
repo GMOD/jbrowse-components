@@ -2,7 +2,6 @@ import { revcom } from '@jbrowse/core/util'
 
 import { applyMafLine } from './mafLines.ts'
 import { RecordSlots } from './recordSlots.ts'
-import { freeRowId } from './sampleCopies.ts'
 
 import type { AlignmentContext, EmptyRecord } from '../types.ts'
 import type { MafBlockSink } from './mafBlockSink.ts'
@@ -104,9 +103,8 @@ export class MafStanzaReader implements MafLineTarget {
     seq: string,
   ) {
     const { rows } = this
-    let key = rows.key(sampleId)
-    if (rows.holds(key)) {
-      key = rows.key(freeRowId(sampleId, id => rows.slotOf(id) !== -1))
+    const key = rows.freeKey(rows.key(sampleId))
+    if (key.name !== sampleId) {
       this.lastRowId.set(sampleId, key.name)
     }
     const slot = rows.slot(key)
@@ -128,8 +126,8 @@ export class MafStanzaReader implements MafLineTarget {
 
   empty(sampleId: string, empty: EmptyRecord) {
     const { empties } = this
-    const rowId = freeRowId(sampleId, id => empties.slotOf(id) !== -1)
-    this.emptyRecord[empties.slot(empties.key(rowId))] = empty
+    this.emptyRecord[empties.slot(empties.freeKey(empties.key(sampleId)))] =
+      empty
   }
 
   /** A bigMaf stanza, `;`-joined, at the extent its bigBed feature states. */

@@ -1,3 +1,5 @@
+import { freeRowId } from './sampleCopies.ts'
+
 export interface RecordKey {
   readonly name: string
   readonly arrayIndex: boolean
@@ -59,6 +61,16 @@ export class RecordSlots {
   /** Whether `key` already has a slot this block. */
   holds(key: RecordKey) {
     return key.block === this.block
+  }
+
+  /**
+   * `key`, or where this block already holds it, the key of its first copy
+   * row the block does not (`sample~2`, `sample~3`).
+   */
+  freeKey(key: RecordKey) {
+    return this.holds(key)
+      ? this.key(freeRowId(key.name, id => this.slotOf(id) !== -1))
+      : key
   }
 
   /** The slot `name` holds this block, or -1. */
