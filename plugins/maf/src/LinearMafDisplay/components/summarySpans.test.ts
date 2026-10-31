@@ -224,6 +224,15 @@ describe('summaryAt', () => {
     expect(at(records, block(1000), 1, 1.5)).toBe(records[0])
   })
 
+  it('names the bar painted on top where two widened bars overlap', () => {
+    const records = [
+      rec({ start: 1100, end: 1101 }),
+      rec({ start: 1500, end: 1501 }),
+    ]
+    expect(at(records, block(1000), 1, 1.5)).toBe(records[1])
+    expect(at(records, block(1000), 1, 1.2)).toBe(records[0])
+  })
+
   it('returns undefined off any bar, and on a row with none', () => {
     const records = [rec({})]
     expect(at(records, block(1), 1, 50)).toBeUndefined()

@@ -74,7 +74,8 @@ export function encodeSummarySpans(
  * The summary record drawn under canvas x `x` on display row `rowIndex`, or
  * undefined: the zoom-out tier's only hover. Hit-tested against the mark's own
  * ink, since a block narrower than a pixel is widened to one. Half-open at the
- * right edge, so adjacent bars do not both match.
+ * right edge, so adjacent bars do not both match; where widened bars overlap,
+ * the one painted last, on top.
  */
 export function summaryAt(
   payloads: ReadonlyMap<number, MafRowsPayload>,
@@ -83,6 +84,7 @@ export function summaryAt(
   rowIndex: number,
   x: number,
 ): MafSummaryRecord | undefined {
+  let hit: MafSummaryRecord | undefined
   for (const block of blocks) {
     const payload = payloads.get(block.displayedRegionIndex)
     const spans = payload?.summary
@@ -91,11 +93,11 @@ export function summaryAt(
         if (spans.row[i] === rowIndex) {
           const ink = MAF_SUMMARY_MARK.ink!(payload, block, state, i)
           if (ink && x >= ink.left && x < ink.left + ink.width) {
-            return spans.records[i]
+            hit = spans.records[i]
           }
         }
       }
     }
   }
-  return undefined
+  return hit
 }
