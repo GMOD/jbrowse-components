@@ -654,7 +654,6 @@ exports[`every registered schema slot default 1`] = `
     "rowColor.scale.domain": "stringArray = []",
     "rowColor.scale.range": "colorArray = []",
     "rowColor.scale.unknown": "maybeColor = undefined",
-    "rowHeight": "number = 0",
     "rows.field": "stringEnum = "sample" of ["sample"]",
     "rows.kept": "stringArray = []",
     "rows.labels": "stringMap = {}",
