@@ -6920,10 +6920,6 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "shadeByDosage",
-          "type": "boolean"
-        },
-        {
           "name": "legend",
           "type": "LegendConfigurationSchema",
           "subSlots": [
@@ -6990,10 +6986,6 @@ export const configManifest: ConfigManifest = {
           "shorthand": {
             "string": "field"
           }
-        },
-        {
-          "name": "referenceDrawingMode",
-          "type": "ReferenceDrawingMode"
         },
         {
           "name": "records",
@@ -7124,6 +7116,18 @@ export const configManifest: ConfigManifest = {
             {
               "name": "show",
               "type": "boolean"
+            },
+            {
+              "name": "reference",
+              "type": "GenotypeReferenceConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "show",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "GenotypeReference",
+              "writes": "members"
             }
           ],
           "schema": "GenotypeRows",
@@ -7153,6 +7157,7 @@ export const configManifest: ConfigManifest = {
         "showSidebarLabels",
         "showTree",
         "showReferenceAlleles",
+        "referenceDrawingMode",
         "colorBy",
         "autoscale",
         "minScore",

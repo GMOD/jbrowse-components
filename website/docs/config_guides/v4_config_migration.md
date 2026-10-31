@@ -141,7 +141,7 @@ a file, and fails on a key it does not know.
 |  | `renderingMode` | `unit` |
 |  | `showDescriptions` | `records.labels.description.show` |
 |  | `showLabels` | `records.labels.name.show` |
-|  | `showReferenceAlleles` | `referenceDrawingMode` |
+|  | `referenceDrawingMode`, `showReferenceAlleles` | `genotypes.reference.show` |
 |  | `showSidebarLabels` | `axis.labels` |
 |  | `showTree` | `axis.tree` |
 |  | type `LinearMultiSampleVariantDisplay`, type `MultiLinearVariantDisplay` | `LinearVariantDisplay` |

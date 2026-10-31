@@ -1,13 +1,13 @@
 ---
 id: variantcellencoding
 title: VariantCellEncoding
-description: "The variant display's encoding, the channels its genotype cells paint through."
+description: "The variant display's encoding, the channels its records and genotype cells paint through."
 sidebar_label: Display setting -> VariantCellEncoding
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/cellEncodingConfigSchema.ts).
 
-The variant display's `encoding`, the channels its genotype
+The variant display's `encoding`, the channels its records and genotype
 cells paint through.
 
 ## Example usage
@@ -23,4 +23,4 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-color">**color**</span><br>[VariantCellColor](../variantcellcolor) | The hue of every genotype cell with an alt allele: unset, the genotype colors; `{ value }`, a CSS color or `jexl:` callback; or a field, one of the `impact`, `svType` and `phaseSet` presets or any record field, whose values each take a color with a key. |
+| <span id="slot-color">**color**</span><br>[VariantCellColor](../variantcellcolor) | The hue of every record and every genotype cell with an alt allele: unset, the SV type and genotype colors; `{ value }`, a CSS color or `jexl:` callback; or a field, one of the `impact`, `svType` and `phaseSet` presets or any record field, whose values each take a color with a key. |

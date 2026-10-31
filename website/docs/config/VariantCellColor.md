@@ -1,15 +1,16 @@
 ---
 id: variantcellcolor
 title: VariantCellColor
-description: "The variant display's encoding.color: the hue of every genotype cell with an alt allele, which shadeByDosage then lightens for a heterozygote. Unset, the cells paint the genotype colors."
+description: "The variant display's encoding.color: the hue of every record and of every genotype cell with an alt allele, which a heterozygote paints lighter."
 sidebar_label: Display setting -> VariantCellColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/cellColorConfigSchema.ts).
 
-The variant display's `encoding.color`: the hue of every
-genotype cell with an alt allele, which `shadeByDosage` then lightens for a
-heterozygote. Unset, the cells paint the genotype colors. A CSS color or
+The variant display's `encoding.color`: the hue of every record and of
+every genotype cell with an alt allele, which a heterozygote paints
+lighter. Unset, the records paint their SV type and the
+cells the genotype colors. A CSS color or
 `jexl:` callback in `value` paints every alt cell of a variant; a `field`
 gives each of its values a color with a key. Three fields are presets:
 `impact`, the most severe SnpEff/VEP consequence tier; `svType`, the
@@ -19,8 +20,9 @@ Any other field is read off the record — `INFO.CLNSIG`, `QUAL`, or a
 scale or run along a `linear` or `log` ramp. A string is the field.
 `scale.type: "identity"` keys a `value` callback's colors: each variant
 paints the color it returns, and the key names the colors `scale.domain`
-lists, as on a feature track. The records band paints what the cells
-paint, so one channel colors both.
+lists, as on a feature track. The records paint what the cells paint, so
+one channel colors both, except under `phaseSet`, a genotype's value no
+record holds, where the records keep their SV type.
 
 ## Example usage
 

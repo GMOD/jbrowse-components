@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1290)
+# model members with no description (1289)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -956,7 +956,6 @@ LinearVariantDisplay.clearSettingsBakedData
 LinearVariantDisplay.featureWidgetType
 LinearVariantDisplay.fetchNeeded
 LinearVariantDisplay.nrow
-LinearVariantDisplay.referenceDrawingMode
 LinearVariantDisplay.removeFeatureHighlightsForId
 LinearVariantDisplay.renderState
 LinearVariantDisplay.renderSvg
@@ -972,7 +971,7 @@ LinearVariantDisplay.setHoveredRecord
 LinearVariantDisplay.setLineZoneHeight
 LinearVariantDisplay.setMaxMissingness
 LinearVariantDisplay.setMinMinorAlleleFrequency
-LinearVariantDisplay.setReferenceDrawingMode
+LinearVariantDisplay.setShowReference
 LinearVariantDisplay.setShowRowSeparators
 LinearVariantDisplay.setShowTooltips
 LinearVariantDisplay.setSources

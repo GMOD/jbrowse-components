@@ -57,7 +57,7 @@ its `dosage` and the fill the display paints it; `rows`, the rows the cells
 name, top to bottom as the display arranges them by `rows` and stacks them in
 `facet`'s bands, each with its label and band; `bands`, each band's value and
 label, in stacking order; `legend`, `legendTitle` and `ramps`, the key the
-display shows; and `warnings`, the samples file's. Under
+display shows; and `warnings`, the samples file's. With
 `genotypes.reference.show` off, the default, a reference call draws no cell.
 Several regions share the rows and the key, as the display's regions do: a
 record crossing regions is listed in each, under one `key`, every `variants` and

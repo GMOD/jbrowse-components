@@ -33,11 +33,8 @@ Minimal `VariantTrack` config. See the
 Preloading sample metadata: point the adapter's `samplesTsvLocation` at a TSV
 whose first column is the sample name and whose other columns are per-sample
 attributes (e.g. `population`), then `rowColor` one of those attributes to
-color the sidebar rows on load. `referenceDrawingMode: 'skip'` (the default)
-paints the background solid grey and draws only ALT alleles on top, which
-makes overlapping structural variants easier to see; `'draw'` paints the
-reference alleles too. This is the 1000 Genomes "colored by population" demo
-config:
+color the sidebar rows on load. This is the 1000 Genomes "colored by
+population" demo config:
 
 ```js
 {
@@ -55,7 +52,6 @@ config:
       type: 'LinearVariantDisplay',
       height: 800,
       rowColor: 'population',
-      referenceDrawingMode: 'skip',
     },
   ],
 }
@@ -126,18 +122,18 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearVariantDispl
 | <span id="slot-filter">**filter**</span><br><code>fieldPredicateList()</code> | The variants the display draws, a list of [](/docs/config/fieldpredicate) entries a site must all pass: a field of the record's own, a `jexl:` expression that must hold, `minorAlleleFrequency`, the share of its called alleles the second most frequent one makes up, and `missingness`, the share of its alleles uncalled. `[{ field: "minorAlleleFrequency", gte: 0.05 }]` drops the rare variants; a site with no called allele draws nothing whatever the list says. |
 | <span id="slot-axis">**axis**</span><br>[RowAxisWithGrid](../rowaxiswithgrid) | The guide down the left of the sample rows: the clustering tree, each sample's name and the lines between rows. |
 | <span id="slot-rows">**rows**</span><br>[SampleRows](../samplerows) | The rows are the file's samples, and the object is the arrangement a reader gives them, each member by row name: a sample in allele-count mode, a haplotype (`"<sample> HP<n>"`) in phased mode, where a sample name stands for all of its haplotypes. The samples `sort` lists come first and the rest keep the file's order; a facet groups within it. Written whole, as every display's `rows` is. |
-| <span id="slot-tooltip">**tooltip**</span><br>[SampleTooltip sub-schema](#slot-tooltipshow) | The hover tooltip naming the genotype, the sample and the record under the pointer. Off, the crosshairs, the highlighted cell and the cross-display `session.hovered` channel stay. |
-| <span id="slot-tooltipshow">**tooltip.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way |
+| <span id="slot-tooltip">**tooltip**</span><br>[SampleTooltip sub-schema](#slot-tooltipshow) | The hover tooltip naming the record under the pointer, and over a genotype cell its genotype and sample too. Off, the crosshairs, the highlighted cell or record and the cross-display `session.hovered` channel stay. The record's line in it is `records.tooltip.field`. |
+| <span id="slot-tooltipshow">**tooltip.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the hover tooltip over the records and the genotype rows; the crosshairs and the hover highlight stay either way |
 | <span id="slot-unit">**unit**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (sample, haplotype) = <code>'sample'</code> | The unit one row draws: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype |
-| <span id="slot-encoding">**encoding**</span><br>[VariantCellEncoding](../variantcellencoding) | The genotype cells' channels: `encoding.color`, the hue of every cell with an alt allele. |
-| <span id="slot-shadebydosage">**shadeByDosage**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | Compose the cell hue with the genotype's alt dosage — the fraction of its called alleles that are non-reference — so a homozygote paints the hue itself and a heterozygote a lighter version of it. Off paints each alt cell its flat hue. |
+| <span id="slot-encoding">**encoding**</span><br>[VariantCellEncoding](../variantcellencoding) | The channels the records and the genotype cells share: `encoding.color`, the hue of every record and of every cell with an alt allele. |
 | <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The floating key over the display. It is clipped to the display's own bounds, so turn it off to size a short display to its rows rather than to its key. |
 | <span id="slot-rowcolor">**rowColor**</span><br>[RowColor](../rowcolor) | The bar beside each row's label: a sample-metadata attribute whose palette colors every row, or under `name` the colors a reader set row by row. |
 | <span id="slot-facet">**facet**</span><br>[Facet](../facet) | A sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. `"population"`) whose values each take a band of rows; or `{ field, sort }`, the listed values banding first and the rest sorted. Unset, the rows keep their existing order.<br><br>The band is applied when the rows are read, over whatever order the reader has arranged, so a drag that moves a sample into another band snaps back while this is set. Each band is labelled beside the tree and draws the clade of the cluster tree whose leaves are exactly its rows; a clustering run under bands clusters each band apart. |
-| <span id="slot-referencedrawingmode">**referenceDrawingMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (draw, skip) = <code>'skip'</code> | Whether to paint reference alleles: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype. |
 | <span id="slot-records">**records**</span><br>[RecordsBand](../recordsband) | The records, stacked as a feature track stacks them, an SV colored by its type. `show` (default on), `height`, the band's height over the rows, `labels`, and a feature track's record settings: `displayMode`, `mark`, `facet`, `maxFeatureScreenDensity` and `tooltip.field`. |
-| <span id="slot-genotypes">**genotypes**</span><br>[GenotypeRows sub-schema](#slot-genotypesshow) | The genotype rows. Off, the display reads no genotypes and draws as it does for a VCF with no samples: the records alone, every one the filter admits, sized by `heightMode`. |
+| <span id="slot-genotypes">**genotypes**</span><br>[GenotypeRows sub-schema](#slot-genotypesshow) | The genotype rows: `show` and `reference.show`. A cell with an alt allele paints its hue lightened by its dosage, the share of its called alleles that are non-reference, so a homozygote paints the hue itself and a heterozygote a lighter version of it. Off, the display reads no genotypes and draws as it does for a VCF with no samples: the records alone, every one the filter admits, sized by `heightMode`.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{&#10;&#160;&#160;type: 'LinearVariantDisplay',&#10;&#160;&#160;genotypes: { reference: { show: true } },&#10;}</code></pre></dialog></span> |
 | <span id="slot-genotypesshow">**genotypes.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw a row per sample; off, the display draws the records alone, as for a VCF with no samples |
+| <span id="slot-genotypesreference">**genotypes.reference**</span><br>[GenotypeReference sub-schema](#slot-genotypesreferenceshow) | The cells of reference calls. Off, the default, the rows are filled grey and only alt and no-call cells draw over them, so an alt allele under a long reference call stays visible; on, each reference call draws as a cell of its own. At genomic positions only: columns draw every reference cell. |
+| <span id="slot-genotypesreferenceshow">**genotypes.reference.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | draw each reference call as a cell; off, the rows are filled grey and only alt and no-call cells draw over them |
 | <span id="slot-rowheight">**rowHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them |
 | <span id="slot-heightmode">**heightMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (fixed, grow, fit) = <code>'fit'</code> | Track-sizing strategy while no genotype rows draw (no samples, or `genotypes.show` off), as on a feature track: `fit` keeps the track height and gives up labels, then squeezes the records; `fixed` keeps the track height at full record size; `grow` sizes the track to its records up to `growMaxHeight`. With genotype rows the track keeps its `height` |
 | <span id="slot-growmaxheight">**growMaxHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>800</code> | Ceiling in pixels for `heightMode: 'grow'`<br>_advanced_ |
@@ -166,6 +162,7 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `showSidebarLabels` | moved into a current slot |
 | `showTree` | moved into a current slot |
 | `showReferenceAlleles` | moved into a current slot |
+| `referenceDrawingMode` | moved into a current slot |
 | `colorBy` | moved into a current slot |
 | `autoscale` | ignored |
 | `minScore` | ignored |

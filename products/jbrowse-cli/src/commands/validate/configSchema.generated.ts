@@ -11995,7 +11995,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way.",
+          "description": "show the hover tooltip over the records and the genotype rows; the crosshairs and the hover highlight stay either way.",
           "default": true,
           "if": {
             "type": "null"
@@ -12606,6 +12606,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "GenotypeReference": {
+      "title": "GenotypeReference",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw each reference call as a cell; off, the rows are filled grey and only alt and no-call cells draw over them.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "GenotypeRows": {
       "title": "GenotypeRows",
       "type": "object",
@@ -12619,6 +12640,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "boolean"
+          }
+        },
+        "reference": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/GenotypeReference"
           }
         }
       },
@@ -12748,16 +12777,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/VariantCellEncoding"
           }
         },
-        "shadeByDosage": {
-          "description": "shade each alt cell by the fraction of its called alleles that are non-reference, so a homozygote is darker than a heterozygote; off paints every alt cell the mode's flat hue.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "legend": {
           "if": {
             "type": "null"
@@ -12780,19 +12799,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/Facet"
-          }
-        },
-        "referenceDrawingMode": {
-          "description": "reference-allele drawing: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype.",
-          "default": "skip",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "draw",
-              "skip"
-            ]
           }
         },
         "records": {
@@ -12888,6 +12894,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "showReferenceAlleles": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "referenceDrawingMode": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -18168,9 +18178,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "unit": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/unit"
             },
-            "shadeByDosage": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/shadeByDosage"
-            },
             "legend": {
               "anyOf": [
                 {
@@ -18200,9 +18207,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
                 }
               ]
-            },
-            "referenceDrawingMode": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/referenceDrawingMode"
             },
             "records": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/records"
@@ -18282,6 +18286,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showReferenceAlleles": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/showReferenceAlleles"
+            },
+            "referenceDrawingMode": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/referenceDrawingMode"
             },
             "colorBy": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/colorBy"
