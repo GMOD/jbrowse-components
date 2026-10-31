@@ -102,10 +102,13 @@ describe('split junction class', () => {
     )
   })
 
-  test('coloring by insert size leaves a junction uncolored', () => {
-    expect(
-      colorType(junction([100, 200, 1], [500, 600, 1]), 'insertSize'),
-    ).toBe(COLOR_DEFAULT)
+  test('a junction keeps its class under every color field', () => {
+    const del = junction([100, 200, 1], [500, 600, 1])
+    const inv = junction([100, 200, 1], [500, 600, -1])
+    for (const field of ['insertSize', 'pairOrientation'] as const) {
+      expect(colorType(del, field)).toBe(COLOR_SPLIT_FORWARD)
+      expect(colorType(inv, field)).toBe(colorType(inv))
+    }
   })
 })
 

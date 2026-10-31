@@ -146,14 +146,6 @@ export function splitJunctionSlot(inversion: boolean, lowerDir: number) {
       : COLOR_SPLIT_BACK
 }
 
-/** The slot a split junction of class `junctionSlot` paints under `colorField`, which has none for it under `insertSize`. */
-export function splitColorType(
-  colorField: ArcColorField,
-  junctionSlot: number,
-) {
-  return colorField === 'insertSize' ? COLOR_DEFAULT : junctionSlot
-}
-
 /** The slot a mate link paints under `colorField`. */
 export function pairColorType(
   colorField: ArcColorField,
@@ -189,14 +181,15 @@ export function getArcColorType(args: {
   const { arc, colorField, hasPaired } = args
 
   // A split-read junction carries no pair semantics (no template length, no
-  // pair orientation), so it colors by its own segment strands — opposite
-  // strands flag the inversion — regardless of whether OTHER reads in the view
+  // pair orientation), so it paints its own junction class under every color
+  // field — none of the three has a value for it, and the baseline slot would
+  // key it as a normal pair — regardless of whether OTHER reads in the view
   // are paired. Keying on the per-connection `isSplit` instead of the dataset-
   // global `hasPaired` is what lets a paired read that is itself SA-split show
   // its inversion junctions correctly. Resolved before the insert class below
   // because that is a paired concept and a junction has no TLEN to classify.
   if (!hasPaired || arc.isSplit) {
-    return splitColorType(colorField, splitJunctionColor(arc))
+    return splitJunctionColor(arc)
   }
   // TLEN, and only TLEN, through the function `readColorCategory` classifies
   // with, so an arc and the reads under it cannot key the same pair two

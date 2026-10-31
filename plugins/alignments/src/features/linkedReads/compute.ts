@@ -12,7 +12,6 @@ import {
   COLOR_DEFAULT,
   connectorColorType,
   pairColorType,
-  splitColorType,
   splitJunctionSlot,
 } from '../arcs/arcColors.ts'
 
@@ -150,7 +149,7 @@ function connectionColorType(
       kind === 'splitDeletion' || kind === 'splitInversion'
         ? splitJunctionSlot(kind === 'splitInversion', lowerDir)
         : COLOR_DEFAULT
-    return connectorColorType(field => splitColorType(field, junction))
+    return connectorColorType(() => junction)
   }
   const { data, readIdx } = pairFieldEntry(e1, e2)
   return connectorColorType(field =>

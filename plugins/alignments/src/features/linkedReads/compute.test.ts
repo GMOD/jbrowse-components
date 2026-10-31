@@ -342,6 +342,7 @@ describe('classifyPair — split long reads', () => {
     const c = classifyPair(makeEntry(data, 0), makeEntry(data, 1), true)
     expect(c.isSplit).toBe(true)
     expect(paints(c.colorType)).toBe('splitForward')
+    expect(paints(c.colorType, 'insertSize')).toBe('splitForward')
     expect(c.isNormal).toBe(true)
     expect(c.bp1).toBe(200) // e1 fwd: read-trailing (3') edge = end
     expect(c.bp2).toBe(300) // e2 fwd: read-leading (5') edge = start
