@@ -13,6 +13,9 @@ chooses how the variants run across it:
 - **Equal-width columns** with it checked, one column per variant in view, like
   a heatmap
 
+A VCF with one sample, such as a call set, opens as its records alone; **Show →
+Genotype rows** in the track menu draws its row.
+
 ## At genomic positions: structural variants at their real span {#regular-best-for-full-sv-detail}
 
 Each variant is drawn at its real genomic position. This is the layout that
