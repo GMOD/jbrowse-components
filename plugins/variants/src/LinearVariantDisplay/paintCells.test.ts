@@ -44,14 +44,14 @@ const byValue: CellHue = {
   hueOf: v => (v === 'a' ? '#aa0000' : '#0000aa'),
   keyOf: v => v.toUpperCase(),
 }
-const alleleCount = { phased: false, shade: true, valuesRead: true }
-const phased = { phased: true, shade: true, valuesRead: true }
-const het = (hue: string) => getCachedABGR(cellFill(hue, 128, true))
+const alleleCount = { phased: false, valuesRead: true }
+const phased = { phased: true, valuesRead: true }
+const het = (hue: string) => getCachedABGR(cellFill(hue, 128))
 
 function paintCells(
   data: PaintableCells,
   hue: CellHue,
-  options: { phased: boolean; shade: boolean; valuesRead: boolean },
+  options: { phased: boolean; valuesRead: boolean },
 ) {
   return {
     cellColors: paintCellColors(data, hue, options),
@@ -78,18 +78,6 @@ test('allele-count alt cells take their value hue, shaded by dosage', () => {
     het(ALT_HUE),
     NO_CALL,
   ])
-})
-
-test('shading off paints the bare hue, the default one included', () => {
-  const { cellColors } = paintCells(cells(), byValue, {
-    ...alleleCount,
-    shade: false,
-  })
-  expect(cellColors[3]).toBe(getCachedABGR('#aa0000'))
-  expect(cellColors[7]).toBe(getCachedABGR(ALT_HUE))
-  expect(
-    paintCells(cells(), none, { ...alleleCount, shade: false }).cellColors[3],
-  ).toBe(getCachedABGR(ALT_HUE))
 })
 
 test('phased alt cells a hue paints take it; the rest keep their allele color', () => {

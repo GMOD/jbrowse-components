@@ -182,8 +182,7 @@ const VariantBody = observer(function VariantBody({
         position: 'absolute',
         left: 0,
         top: 0,
-        backgroundColor:
-          model.referenceDrawingMode === 'skip' ? REFERENCE_COLOR : undefined,
+        backgroundColor: model.showReference ? undefined : REFERENCE_COLOR,
       }}
       {...variantSurfaceHandlers(model, variantRowsSurface(model))}
     />

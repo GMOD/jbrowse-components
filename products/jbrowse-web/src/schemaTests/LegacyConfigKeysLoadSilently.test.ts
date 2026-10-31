@@ -345,7 +345,7 @@ test.each([
   ['LinearVariantDisplay', ['encoding', 'color', 'value'], 'green'],
   ['MultiLinearVariantDisplay', ['axis', 'labels'], true],
   ['MultiLinearVariantDisplay', ['records', 'maxFeatureScreenDensity'], 5],
-  ['MultiLinearVariantDisplay', 'referenceDrawingMode', 'draw'],
+  ['MultiLinearVariantDisplay', ['genotypes', 'reference', 'show'], true],
   ['LinearVariantMatrixDisplay', ['axis', 'labels'], false],
   ['LDTrackDisplay', 'heightMode', 'fit'],
   ['LDTrackDisplay', 'variantLayout', 'columns'],

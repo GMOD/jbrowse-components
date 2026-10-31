@@ -179,6 +179,7 @@ const BAND_OBJECTS = new Set([
   'ribbons',
   'data',
   'axis',
+  'genotypes',
 ])
 
 // A band's `show` and `mark` are the "Read arcs" and "Read cloud" checkboxes,

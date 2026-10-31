@@ -51,5 +51,5 @@ digraph variant_cell_color {
   allref [label="every called allele\nis reference"]
   allref -> refcol [label=" yes"]
   allref -> dosage [label=" no"]
-  dosage [label="shade(override or alt hue,\nalt / called alleles),\nflat with shadeByDosage off"]
+  dosage [label="shade(override or alt hue,\nalt / called alleles)"]
 }

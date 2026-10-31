@@ -35,7 +35,6 @@ const inputs = (over: Partial<VariantLegendInputs> = {}): VariantLegendInputs =>
     hasUnphased: false,
     hasNoCall: false,
     paintedDomain: [],
-    shadeByDosage: true,
     ...over,
   }) satisfies VariantLegendInputs
 
@@ -66,15 +65,6 @@ describe('getGenotypeEntries', () => {
     const items = getGenotypeEntries(inputs())
     expect(items[1]!.color).toBe(shadeByDosage(ALT_HUE, HET_DOSAGE))
     expect(items[2]!.color).toBe(ALT_HUE)
-  })
-
-  it('shading off collapses the ramp to one flat alt swatch', () => {
-    const items = getGenotypeEntries(inputs({ shadeByDosage: false }))
-    expect(items.map(i => i.label)).toEqual([
-      'Homozygous reference',
-      'Alt allele',
-    ])
-    expect(items[1]!.color).toBe(ALT_HUE)
   })
 
   it('phased mode: ref + alt, plus unphased when present', () => {
@@ -119,7 +109,7 @@ describe('getVariantColorScales', () => {
       reverse: false,
     }
     const sections = getVariantColorScales({
-      ...inputs({ shadeByDosage: true }),
+      ...inputs(),
       color,
       ramp: cellHueOf(color, undefined, undefined, ['0', '1']).ramp,
     })
@@ -136,7 +126,7 @@ describe('getVariantColorScales', () => {
 
   it('lists only the impact tiers a cell was painted for', () => {
     const sections = getVariantColorScales({
-      ...inputs({ paintedDomain: ['MODIFIER', 'HIGH'], shadeByDosage: false }),
+      ...inputs({ paintedDomain: ['MODIFIER', 'HIGH'] }),
       color: IMPACT,
     })
     expect(sections.map(s => s.id)).toEqual(['recordField'])
@@ -144,6 +134,7 @@ describe('getVariantColorScales', () => {
       // severity order, not the order they were met
       'HIGH',
       'MODIFIER',
+      DOSAGE_NOTE,
       // the hue only reaches alt-carrying cells, so the ref fill is still on
       // screen and still has to be named
       'Homozygous reference',
@@ -154,7 +145,6 @@ describe('getVariantColorScales', () => {
     const sections = getVariantColorScales({
       ...inputs({
         paintedDomain: ['MODIFIER', 'HIGH'],
-        shadeByDosage: false,
         colorTitle: 'Effect',
       }),
       color: { ...IMPACT, domain: ['HIGH'], names: ['Loss of function'] },
@@ -163,6 +153,7 @@ describe('getVariantColorScales', () => {
     expect(entriesOf(sections[0])!.map(i => i.label)).toEqual([
       'Loss of function',
       'MODIFIER',
+      DOSAGE_NOTE,
       'Homozygous reference',
     ])
   })
@@ -182,7 +173,6 @@ describe('getVariantColorScales', () => {
     const [section] = getVariantColorScales({
       ...inputs({
         paintedDomain: ['Pathogenic', '', 'Benign'],
-        shadeByDosage: false,
       }),
       color: { field: 'INFO.CLNSIG', scale: 'ordinal' },
     })
@@ -192,6 +182,7 @@ describe('getVariantColorScales', () => {
       'Benign',
       'Pathogenic',
       '(no value)',
+      DOSAGE_NOTE,
       'Homozygous reference',
     ])
     expect(
@@ -208,18 +199,22 @@ describe('getVariantColorScales', () => {
 
   it('lists every bin of a threshold once one painted', () => {
     const [section] = getVariantColorScales({
-      ...inputs({ paintedDomain: ['< 0.01'], shadeByDosage: false }),
+      ...inputs({ paintedDomain: ['< 0.01'] }),
       color: AF,
     })
     expect(
-      entriesOf(section)!.map(i => [i.label, cssColorToABGR(i.color!)]),
+      entriesOf(section)!.map(i => [
+        i.label,
+        i.color && cssColorToABGR(i.color),
+      ]),
     ).toEqual(
       [
         ['< 0.01', '#a00'],
         ['0.01 – 0.05', '#0a0'],
         ['≥ 0.05', '#00a'],
+        [DOSAGE_NOTE, undefined],
         ['Homozygous reference', REFERENCE_COLOR],
-      ].map(([label, color]) => [label, cssColorToABGR(color!)]),
+      ].map(([label, color]) => [label, color && cssColorToABGR(color)]),
     )
   })
 
@@ -261,7 +256,7 @@ describe('getVariantColorScales', () => {
   it('lists no lone field row painted in the reference grey itself', () => {
     expect(
       labelsOf(
-        { paintedDomain: ['Pathogenic'], shadeByDosage: false },
+        { paintedDomain: ['Pathogenic'] },
         {
           field: 'INFO.CLNSIG',
           scale: 'ordinal',
@@ -277,7 +272,6 @@ describe('getVariantColorScales', () => {
     const labels = labelsOf(
       {
         paintedDomain: values,
-        shadeByDosage: false,
         hasUnphased: true,
         hasNoCall: true,
       },
@@ -288,7 +282,7 @@ describe('getVariantColorScales', () => {
         range: values.map((_, i) => `rgb(${i * 10},0,0)`),
       },
     )
-    expect(labels).toHaveLength(23)
+    expect(labels).toHaveLength(24)
   })
 
   it('names two values sharing a color on one row, drawn at het and hom dosage', () => {
@@ -317,7 +311,6 @@ describe('getVariantColorScales', () => {
     const [section] = getVariantColorScales({
       ...inputs({
         paintedDomain: ['MODIFIER', UNANNOTATED_IMPACT],
-        shadeByDosage: false,
       }),
       color: IMPACT,
     })
@@ -337,11 +330,10 @@ describe('getVariantColorScales', () => {
     )!.map(i => [i.label, i.color && cssColorToABGR(i.color)])
 
   it('keys the painted SV classes in class order, in their class colors', () => {
-    expect(
-      svKey({ paintedDomain: ['OTHER', 'DEL'], shadeByDosage: false }),
-    ).toEqual([
+    expect(svKey({ paintedDomain: ['OTHER', 'DEL'] })).toEqual([
       ['Deletion', cssColorToABGR('#e41a1c')],
       ['Other / mixed', cssColorToABGR('#000000')],
+      [DOSAGE_NOTE, undefined],
       ['Homozygous reference', cssColorToABGR(REFERENCE_COLOR)],
     ])
   })
@@ -351,11 +343,11 @@ describe('getVariantColorScales', () => {
       svKey({
         paintedDomain: ['DEL', ''],
         hasNoCall: true,
-        shadeByDosage: false,
       }),
     ).toEqual([
       ['Deletion', cssColorToABGR('#e41a1c')],
       ['(no value)', cssColorToABGR(ALT_HUE)],
+      [DOSAGE_NOTE, undefined],
       ['Homozygous reference', cssColorToABGR(REFERENCE_COLOR)],
       ['No call', cssColorToABGR(NO_CALL_COLOR)],
     ])

@@ -23,7 +23,7 @@ function afIn(range: string[]) {
     scale: { ...AF.scale, domain: ['0.5'], range },
   })
 }
-const het = (css: string) => getCachedABGR(cellFill(css, 128, true))
+const het = (css: string) => getCachedABGR(cellFill(css, 128))
 
 function featureIndexData() {
   const index = new Flatbush(1, 16, Uint32Array)
@@ -99,9 +99,6 @@ test('a recolor repaints the loaded cells and the key', () => {
   display.applyPlot(afIn(['#00aa00']))
   expect(display.rpcProps()).toEqual(key)
   expect(cells(display)).toEqual(new Array(3).fill(het('#00aa00')))
-
-  display.setShadeByDosage(false)
-  expect(cells(display)).toEqual(new Array(3).fill(getCachedABGR('#00aa00')))
   dispose()
 })
 
@@ -126,7 +123,7 @@ test('values read for another field paint as though none were read', () => {
   dispose()
 })
 
-test('a key label repaints nothing, and a reorder or shading moves only what it reads', () => {
+test('a key label repaints nothing, and a reorder moves only what it reads', () => {
   const { display, dispose } = setup()
   const colors = display.regionCellColors
   const rows = display.placedRegionRows
@@ -148,11 +145,6 @@ test('a key label repaints nothing, and a reorder or shading moves only what it 
   display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])
   expect(display.regionCellColors).toBe(colors)
   expect(display.placedRegionRows).not.toBe(rows)
-
-  const placed = display.placedRegionRows
-  display.setShadeByDosage(false)
-  expect(display.placedRegionRows).toBe(placed)
-  expect(display.regionCellColors).not.toBe(colors)
   dispose()
 })
 
@@ -170,8 +162,6 @@ test('a recolor of one field keeps the fetch key', () => {
       scale: { type: 'threshold', domain: ['0.01'] },
     }),
   )
-  expect(display.rpcProps()).toEqual(key)
-  display.setShadeByDosage(false)
   expect(display.rpcProps()).toEqual(key)
   display.applyPlot(
     recolor({ field: 'INFO.DP', scale: { type: 'threshold', domain: ['10'] } }),

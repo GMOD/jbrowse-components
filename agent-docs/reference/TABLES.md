@@ -500,7 +500,7 @@ and paints the cells as the display does (`paintCellColors`,
 - `cells`: each row's cell at a record, with its genotype, its alt dosage over
   the called alleles (null where none is called, a site with no ALT
   included), and the fill `shade(hue, dosage)` paints. Under
-  `referenceDrawingMode: 'skip'`, the default, a reference call has no cell.
+  `genotypes.reference.show` off, the default, a reference call has no cell.
 - `rows`: one per sample, or under `unit: 'haplotype'` one per haplotype,
   named as the display names them, in file order.
 - `legend`, `legendTitle` and `ramps`: the display's key, from

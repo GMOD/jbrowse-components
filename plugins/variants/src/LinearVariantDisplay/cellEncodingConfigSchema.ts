@@ -6,7 +6,7 @@ import { cellColorConfigSchema } from './cellColorConfigSchema.ts'
 /**
  * #config VariantCellEncoding
  * #category display
- * The variant display's `encoding`, the channels its genotype
+ * The variant display's `encoding`, the channels its records and genotype
  * cells paint through.
  *
  * #example
@@ -19,8 +19,8 @@ export const cellEncodingConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot color
-     * The hue of every genotype cell with an alt allele: unset, the genotype
-     * colors; `{ value }`, a CSS color or `jexl:` callback; or a field, one
+     * The hue of every record and every genotype cell with an alt allele:
+     * unset, the SV type and genotype colors; `{ value }`, a CSS color or `jexl:` callback; or a field, one
      * of the `impact`, `svType` and `phaseSet` presets or any record field,
      * whose values each take a color with a key.
      */

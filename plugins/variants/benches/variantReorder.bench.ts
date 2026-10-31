@@ -11,7 +11,7 @@
 // agent-docs/reference/BENCHMARKING.md. One process per fixture.
 //
 // One block of `features` records over `rows` rows, every cell present as the
-// columns layout fetches it (`referenceDrawingMode: 'draw'`), in the worker's
+// columns layout fetches it (`showReference: true`), in the worker's
 // `(feature, row)` order. The place arms are the whole main-thread cost of a
 // reorder for that block today: `placeVariantRows` over the payload, the
 // painted spread, and the pack the re-upload then runs, `matrixCell`'s 12

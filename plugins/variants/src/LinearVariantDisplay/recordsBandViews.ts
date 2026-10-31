@@ -37,6 +37,7 @@ import {
 import { computed, observable } from 'mobx'
 
 import { cellHueField } from '../shared/cellHue.ts'
+import { PHASE_SET_FIELD } from '../shared/getPhasedColor.ts'
 import { resolveSampleName } from '../shared/getSources.ts'
 import { paintFeatureColors } from './paintCells.ts'
 import { countRecordCarriers } from './recordCarriers.ts'
@@ -215,11 +216,15 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
      * #getter
      * Whether the records band colors by SV class, the rest
      * `featureDefaultColor`: while no `encoding.color` is picked, with
-     * rows or without. A picked color paints the records as it paints
-     * the cells.
+     * rows or without, and under `phaseSet`, a genotype's value that no
+     * record holds. Any other picked color paints the records as it
+     * paints the cells.
      */
     get recordsColorBySvClass() {
-      return self.colorEncoding === undefined
+      const encoding = self.colorEncoding
+      return (
+        encoding === undefined || cellHueField(encoding) === PHASE_SET_FIELD
+      )
     },
     /**
      * #getter

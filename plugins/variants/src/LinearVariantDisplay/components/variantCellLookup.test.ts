@@ -56,7 +56,7 @@ describe('findCellIndex', () => {
     expect(findCellIndex(data, 2, 0)).toBe(-1)
   })
 
-  test('handles an empty reference bucket (referenceDrawingMode skip)', () => {
+  test('handles an empty reference bucket (reference cells off)', () => {
     const skipRef = cells(
       [],
       [

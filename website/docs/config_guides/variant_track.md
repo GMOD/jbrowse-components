@@ -99,7 +99,7 @@ Preset its slots in a `displays` array; they are listed on
   "displays": [
     {
       "type": "LinearVariantDisplay",
-      "referenceDrawingMode": "draw",
+      "genotypes": { "reference": { "show": true } },
       "filter": [{ "field": "minorAlleleFrequency", "gte": 0.05 }],
       "axis": { "labels": true },
       "unit": "sample"
@@ -108,9 +108,9 @@ Preset its slots in a `displays` array; they are listed on
 }
 ```
 
-- **`referenceDrawingMode`** is `draw` to paint reference alleles too, or `skip`
-  (the default) to leave the row solid gray with only ALT alleles on top, which
-  keeps overlapping variants readable
+- **`genotypes.reference.show`** on paints reference alleles too; off (the
+  default) leaves the row solid gray with only ALT alleles on top, which keeps
+  overlapping variants readable
 - **`unit`** is `sample` (one row per sample, darker for homozygous) or
   `haplotype` (one row per haplotype)
 - **`filter`** is a list of [field tests](/docs/config/fieldpredicate):

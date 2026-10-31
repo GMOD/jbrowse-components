@@ -31,7 +31,7 @@ test('a sample-less VCF keeps its sites, with no cells', () => {
     ...analyzed,
     sources: [],
     unit: 'sample',
-    referenceDrawingMode: 'skip',
+    showReference: false,
   })
   expect(cells.featureInfo.map(i => [i.name, i.svType])).toEqual([
     ['rs1', ''],

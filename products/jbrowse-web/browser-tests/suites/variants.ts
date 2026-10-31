@@ -39,7 +39,7 @@ const overflowingMultiSampleSpec = {
 // retired type of LinearVariantDisplay. An old saved session stores the
 // pre-rename type on the active display instance; the alias must remap it so
 // the dispatcher-less `displays` union still resolves and the display renders. The demo track carries samplesTsvLocation +
-// rowColor:'population' + referenceDrawingMode, so this also exercises the
+// rowColor:'population' + genotypes.reference.show, so this also exercises the
 // metadata-preloading path end to end. `volvox_test_vcf` has genotypes and
 // resolves through the same model.
 const oldTypeNameSpec = {

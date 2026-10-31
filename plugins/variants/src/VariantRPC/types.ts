@@ -47,7 +47,7 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   // `rowFocus`, which is the raw focus the worker resolves.
   sampleFilter?: string[]
   unit: VariantUnit
-  referenceDrawingMode?: string
+  showReference?: boolean
   // What the alt cells' hue reads off each variant (`CellHue.read`).
   color?: CellHueRead
   // What the records band reads off each record beyond the payload's fields.

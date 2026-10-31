@@ -132,7 +132,7 @@ describe('computeVariantCells phased genotypes', () => {
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       unit: 'haplotype',
-      referenceDrawingMode: 'skip',
+      showReference: false,
       ...args,
     })
 
@@ -175,14 +175,14 @@ describe('computeVariantCells phased no-call vs unphased', () => {
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       unit: 'haplotype',
-      referenceDrawingMode: 'skip',
+      showReference: false,
       ...genotypeArgs([feature]),
     })
     const colors = [...result.cellColors]
     const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
     expect(noCallAbgr).not.toBe(BLACK_ABGR)
     // S1 (./.) and S3 (.|.) → 4 no-call cells; S2 (0/1) → 2 black cells; S4
-    // (0|1) → 1 alt cell (ref haplotype skipped since referenceDrawingMode).
+    // (0|1) → 1 alt cell (ref haplotype skipped, reference cells off).
     expect(colors.filter(c => c === noCallAbgr)).toHaveLength(4)
     expect(colors.filter(c => c === BLACK_ABGR)).toHaveLength(2)
     expect(result.numCells).toBe(7)
@@ -224,7 +224,7 @@ describe('computeVariantCells haploid genotypes in phased mode', () => {
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       unit: 'haplotype',
-      referenceDrawingMode: 'draw',
+      showReference: true,
       ...genotypeArgs([feature]),
     })
     const byRow = new Map<number, number>()
@@ -267,7 +267,7 @@ describe('computeVariantCells mixed ploidy in phased mode', () => {
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       unit: 'haplotype',
-      referenceDrawingMode: 'draw',
+      showReference: true,
       ...genotypeArgs([feature]),
     })
     const rows = [...result.cellRowIndices.slice(0, result.numCells)].sort()
@@ -297,7 +297,7 @@ describe('computeVariantCells insertion bounds', () => {
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       unit: 'sample',
-      referenceDrawingMode: 'skip',
+      showReference: false,
       ...genotypeArgs([feature]),
     })
     expect(result.featurePositions[0]).toBe(100)
@@ -320,7 +320,7 @@ describe('computeVariantCells insertion bounds', () => {
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       unit: 'sample',
-      referenceDrawingMode: 'skip',
+      showReference: false,
       ...genotypeArgs([feature]),
     })
     expect(result.featurePositions[0]).toBe(100)
@@ -352,17 +352,16 @@ describe('computeVariantCells per-variant hue', () => {
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       unit: 'sample',
-      referenceDrawingMode: 'draw',
+      showReference: true,
       hueValue: () => override,
       ...genotypeArgs([feature]),
     })
-  const painted = (shade: boolean) => {
+  const painted = () => {
     const data = cells()
     const hue = cellHueOf(`jexl:'${override}'`)
     return {
       cellColors: paintCellColors(data, hue, {
         phased: false,
-        shade,
         valuesRead: true,
       }),
       featureColors: paintFeatureColors(data, hue, true),
@@ -385,7 +384,7 @@ describe('computeVariantCells per-variant hue', () => {
     const { REFERENCE_COLOR } = await import('../../shared/constants.ts')
     const { HET_DOSAGE, shadeByDosage } =
       await import('../../shared/cellFill.ts')
-    const { cellColors, featureColors } = painted(true)
+    const { cellColors, featureColors } = painted()
     const colors = [...cellColors]
     // the hom-alt cell is the hue itself and the het a lighter version of it;
     // ref keeps its color, no-call is neither
@@ -394,12 +393,6 @@ describe('computeVariantCells per-variant hue', () => {
     expect(colors).toContain(getCachedABGR(REFERENCE_COLOR))
     expect(colors).toHaveLength(4)
     expect([...featureColors]).toEqual([getCachedABGR(override)])
-  })
-
-  test('shading off paints every alt cell the flat class color', async () => {
-    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
-    const colors = [...painted(false).cellColors]
-    expect(colors.filter(c => c === getCachedABGR(override))).toHaveLength(2)
   })
 })
 
@@ -427,7 +420,7 @@ describe('insertion glyph inputs', () => {
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       unit: 'haplotype',
-      referenceDrawingMode: 'draw',
+      showReference: true,
       ...genotypeArgs([feature]),
     })
   }
@@ -493,7 +486,7 @@ describe('spatial index', () => {
     ],
     sources,
     unit: 'sample',
-    referenceDrawingMode: 'draw',
+    showReference: true,
     ...genotypeArgs([near, far]),
   })
 
@@ -577,7 +570,7 @@ describe('cell bucket ordering', () => {
       ],
       sources,
       unit: 'sample',
-      referenceDrawingMode: 'draw',
+      showReference: true,
       ...genotypeArgs([a, b]),
     })
     // one hom-ref cell per site
@@ -597,7 +590,7 @@ describe('cell bucket ordering', () => {
       ],
       sources,
       unit: 'sample',
-      referenceDrawingMode: 'skip',
+      showReference: false,
       ...genotypeArgs([a, b]),
     })
     expect(result.refCellCount).toBe(0)
@@ -631,7 +624,7 @@ describe('cell bucket ordering', () => {
       ],
       sources,
       unit: 'sample',
-      referenceDrawingMode: 'draw',
+      showReference: true,
       ...genotypeArgs([a, sparse]),
     })
     // 6 slots, 5 cells: S2 has no call at the second site.
@@ -669,7 +662,7 @@ describe('phase-set coloring is opt-in', () => {
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       unit: 'haplotype',
-      referenceDrawingMode: 'skip',
+      showReference: false,
       colorByPhaseSet,
       ...genotypeArgs([feature]),
     })
@@ -701,7 +694,7 @@ describe('phase-set coloring is opt-in', () => {
         ],
         sources,
         unit: 'haplotype',
-        referenceDrawingMode: 'skip',
+        showReference: false,
         colorByPhaseSet,
         ...genotypeArgs([feature, other]),
       })
@@ -734,7 +727,7 @@ test('a site with no ALT alleles reports an empty alt list', () => {
     filteredVariants: [{ feature, mostFrequentAlt: '1' }],
     sources: [{ name: 'S1', sampleName: 'S1' }],
     unit: 'sample',
-    referenceDrawingMode: 'draw',
+    showReference: true,
     ...genotypeArgs([feature]),
   })
   expect(result.numCells).toBe(1)
@@ -765,7 +758,7 @@ test('each record carries its SV class and which alleles are structural', () => 
     })),
     sources: [{ name: 'S1', sampleName: 'S1' }],
     unit: 'sample',
-    referenceDrawingMode: 'draw',
+    showReference: true,
     ...genotypeArgs(features),
   })
   expect(result.featureInfo.map(i => [i.svType, i.svAlleles])).toEqual([
@@ -777,7 +770,7 @@ test('each record carries its SV class and which alleles are structural', () => 
 
 // featureInfo is the genotype record the anchored sort reads (via the
 // interned genotypeCodes), not a log of what got painted. Under the default
-// `referenceDrawingMode: 'skip'` a hom-ref call paints nothing, and keying the
+// `showReference: false` a hom-ref call paints nothing, and keying the
 // map off the painted cells made every hom-ref row indistinguishable from a
 // no-call to `sortSourcesAroundVariant` — while the columns layout, which
 // always paints ref, sorted the same data differently.
@@ -794,17 +787,17 @@ describe('featureInfo records every genotype, not only painted ones', () => {
     end: 11,
   })
   const args = genotypeArgs([feature])
-  const run = (referenceDrawingMode: string) =>
+  const run = (showReference: boolean) =>
     computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       unit: 'sample',
-      referenceDrawingMode,
+      showReference,
       ...args,
     })
 
-  test('skip mode keeps the hom-ref genotype while drawing no cell for it', () => {
-    const result = run('skip')
+  test('with reference cells off the hom-ref genotype stays while drawing no cell', () => {
+    const result = run(false)
     expect(result.numCells).toBe(1)
     expect(decodeAll(result.featureInfo[0]!, args)).toEqual({
       S1: '0/0',
@@ -812,9 +805,9 @@ describe('featureInfo records every genotype, not only painted ones', () => {
     })
   })
 
-  test('the genotype map is identical in draw mode', () => {
-    expect(decodeAll(run('draw').featureInfo[0]!, args)).toEqual(
-      decodeAll(run('skip').featureInfo[0]!, args),
+  test('the genotype map is identical with reference cells on', () => {
+    expect(decodeAll(run(true).featureInfo[0]!, args)).toEqual(
+      decodeAll(run(false).featureInfo[0]!, args),
     )
   })
 
@@ -828,7 +821,7 @@ describe('featureInfo records every genotype, not only painted ones', () => {
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources: [{ name: 'S2', sampleName: 'S2' }],
       unit: 'sample',
-      referenceDrawingMode: 'skip',
+      showReference: false,
       ...args,
     })
     expect(result.numCells).toBe(1)
@@ -856,7 +849,7 @@ describe('featureInfo records every genotype, not only painted ones', () => {
         { name: 'S2 HP1', sampleName: 'S2', HP: 1 },
       ],
       unit: 'haplotype',
-      referenceDrawingMode: 'skip',
+      showReference: false,
       ...phasedArgs,
     })
     expect(result.numCells).toBe(1)
@@ -905,7 +898,7 @@ describe('computeVariantCells cellAltDosage', () => {
       filteredVariants: [{ feature: f, mostFrequentAlt: '1' }],
       sources: srcs,
       unit,
-      referenceDrawingMode: 'draw',
+      showReference: true,
       ...genotypeArgs([f]),
     })
     const byRow = new Map<number, number>()
@@ -1008,7 +1001,7 @@ describe('phase-set coloring classifies from the allele, not the color', () => {
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       unit: 'haplotype',
-      referenceDrawingMode: 'draw',
+      showReference: true,
       colorByPhaseSet: true,
       ...genotypeArgs([feature]),
     })
@@ -1052,7 +1045,7 @@ test('phase-set coloring still files reference cells in the reference bucket', (
     filteredVariants: [{ feature, mostFrequentAlt: '1' }],
     sources,
     unit: 'haplotype',
-    referenceDrawingMode: 'draw',
+    showReference: true,
     colorByPhaseSet: true,
     ...genotypeArgs([feature]),
   })
@@ -1079,7 +1072,7 @@ test('phase-set coloring files a secondary alt with no phase set as one', () => 
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       unit: 'haplotype',
-      referenceDrawingMode: 'draw',
+      showReference: true,
       colorByPhaseSet: true,
       ...genotypeArgs([feature]),
     }).paintedCategories
@@ -1090,10 +1083,10 @@ test('phase-set coloring files a secondary alt with no phase set as one', () => 
   expect(run('1|0:77') & (1 << CELL_ALT_NO_PHASE_SET)).toBe(0)
 })
 
-// `referenceDrawingMode: 'skip'` has to reach the phase-set path too, or the
+// `showReference: false` has to reach the phase-set path too, or the
 // mode's whole point — grey background, only alt cells drawn — is lost the
 // moment a user colors by phase set.
-test('phase-set coloring honors referenceDrawingMode: skip', () => {
+test('phase-set coloring honors reference cells off', () => {
   const sources: ProcessedSource[] = [
     { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
     { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
@@ -1105,7 +1098,7 @@ test('phase-set coloring honors referenceDrawingMode: skip', () => {
     filteredVariants: [{ feature, mostFrequentAlt: '1' }],
     sources,
     unit: 'haplotype',
-    referenceDrawingMode: 'skip',
+    showReference: false,
     colorByPhaseSet: true,
     ...genotypeArgs([feature]),
   })
@@ -1138,7 +1131,7 @@ describe('the painted record reports what this pass emitted', () => {
       filteredVariants: [{ feature, mostFrequentAlt }],
       sources,
       unit: 'haplotype',
-      referenceDrawingMode: 'skip',
+      showReference: false,
       ...genotypeArgs([feature]),
     })
   }
@@ -1192,7 +1185,7 @@ describe('the painted record reports what this pass emitted', () => {
       ],
       sources: [{ name: 'S1', sampleName: 'S1' }],
       unit: 'sample',
-      referenceDrawingMode: 'draw',
+      showReference: true,
       hueValue: f => (f.id() === 'carried' ? 'HIGH' : 'MODERATE'),
       ...genotypeArgs([carried, homRef]),
     })

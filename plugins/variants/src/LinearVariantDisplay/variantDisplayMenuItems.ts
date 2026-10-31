@@ -102,11 +102,9 @@ function genotypeRowShowItems(self: LinearVariantDisplayModel): MenuItem[] {
             helpText:
               'When this setting is off, the background is colored solid grey and only ALT alleles are colored on top of it. This makes it easier to see potentially overlapping structural variants',
             type: 'checkbox' as const,
-            checked: self.referenceDrawingMode !== 'skip',
+            checked: self.showReference,
             onClick: () => {
-              self.setReferenceDrawingMode(
-                self.referenceDrawingMode === 'skip' ? 'draw' : 'skip',
-              )
+              self.setShowReference(!self.showReference)
             },
           },
           {
@@ -442,24 +440,6 @@ export function variantTrackMenuItems(
               ? rowColorItems(self)
               : [],
         },
-      ],
-      additional: [
-        // Only in allele-count mode: a phased row is one haplotype, which either
-        // carries the allele or does not, so the ramp has nothing to express.
-        ...(self.unit === 'haplotype' || !self.drawsRows
-          ? []
-          : [
-              {
-                label: 'Shade by dosage',
-                helpText:
-                  "Compose the cell color with the genotype's alt dosage — the fraction of its called alleles that are non-reference — so a homozygote paints the hue itself and a heterozygote a lighter version of it. Off paints every alt-carrying cell the flat hue its color mode chose",
-                type: 'checkbox' as const,
-                checked: self.shadeByDosage,
-                onClick: () => {
-                  self.setShadeByDosage(!self.shadeByDosage)
-                },
-              },
-            ]),
       ],
     }),
     // The banding half of the sample metadata, beside the coloring half.

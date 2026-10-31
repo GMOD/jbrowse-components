@@ -56,7 +56,6 @@ export interface VariantLegendInputs {
   // The cell scale's domain values an alt cell was painted for — impact tiers
   // or SV classes.
   paintedDomain: readonly string[]
-  shadeByDosage: boolean
   // `encoding.color.legend.title` as written: unset keeps the key's own
   // heading, `''` draws none.
   colorTitle?: string
@@ -72,9 +71,8 @@ function keyTitle({ colorTitle }: VariantLegendInputs, own: string) {
 // The absent-data categories, which every cell scale paints and none of them
 // names: an alt hue applies only to alt-carrying cells, so a reference call
 // keeps the grey fill and a no-call keeps the no-call yellow. Ref is
-// unconditional because grey is the row background even under
-// `referenceDrawingMode: 'skip'`; the other two are gated on having been
-// painted.
+// unconditional because grey is the row background whether or not reference
+// cells draw; the other two are gated on having been painted.
 function absentDataEntries({
   unit,
   hasUnphased,
@@ -97,7 +95,7 @@ function absentDataEntries({
 // dosage, not the zygosity: the ramp is continuous, and a triploid `0/0/1`
 // paints at a third, which "Heterozygous alt" did not list.
 function altEntries(hue: string, inputs: VariantLegendInputs) {
-  if (inputs.unit === 'haplotype' || !inputs.shadeByDosage) {
+  if (inputs.unit === 'haplotype') {
     return [entry('Alt allele', hue)]
   }
   return [
@@ -138,7 +136,7 @@ function recordFieldScale(
   inputs: VariantLegendInputs,
 ): CategoricalScale {
   const color = (key: string) => recordKeyColor(field, key)
-  const shaded = inputs.unit !== 'haplotype' && inputs.shadeByDosage
+  const shaded = inputs.unit !== 'haplotype'
   const absent = absentDataEntries(inputs)
   const [derived] = derivedColorScale(
     [inputs.paintedDomain],
@@ -254,7 +252,7 @@ export function getVariantColorScales({
 }): ColorScale[] {
   const field = cellHueField(color)
   if (ramp && field !== undefined) {
-    const shaded = inputs.unit !== 'haplotype' && inputs.shadeByDosage
+    const shaded = inputs.unit !== 'haplotype'
     return [
       ...ramp.keyScales('recordField', keyTitle(inputs, field)),
       {

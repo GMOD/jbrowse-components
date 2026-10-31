@@ -65,7 +65,7 @@ export function computeVariantCells({
   filteredVariants,
   sources,
   unit,
-  referenceDrawingMode,
+  showReference,
   hueValue,
   recordFields = NO_RECORD_FIELD_READERS,
   colorByPhaseSet,
@@ -77,7 +77,7 @@ export function computeVariantCells({
   filteredVariants: FilteredVariant[]
   sources: ProcessedSource[]
   unit: VariantUnit
-  referenceDrawingMode: string
+  showReference: boolean
   // what the alt cells' hue reads off a variant, once per feature
   hueValue?: (feature: Feature) => string | undefined
   recordFields?: RecordFieldReaders
@@ -98,7 +98,7 @@ export function computeVariantCells({
     sampleNames,
     genotypeDict,
     unit,
-    drawRef: referenceDrawingMode === 'draw',
+    drawRef: showReference,
     colorByPhaseSet,
   })
   const numSources = sources.length

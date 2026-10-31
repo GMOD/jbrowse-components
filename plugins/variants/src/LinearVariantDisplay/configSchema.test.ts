@@ -20,24 +20,26 @@ describe('the display config schema', () => {
     expect(readConfObject(config, ['rowColor', 'field'])).toBe('population')
   })
 
-  // `showReferenceAlleles` was a second boolean whose only job was seeding this
-  // one; it is gone, and this slot is the whole setting.
-  describe('referenceDrawingMode config slot', () => {
-    it("defaults to 'skip'", () => {
+  describe('genotypes.reference.show', () => {
+    it('defaults to off', () => {
       const config = configSchema.create({
         type: 'LinearVariantDisplay',
         displayId: 'test-1',
       })
-      expect(readConfObject(config, 'referenceDrawingMode')).toBe('skip')
+      expect(readConfObject(config, ['genotypes', 'reference', 'show'])).toBe(
+        false,
+      )
     })
 
-    it("can be set to 'draw'", () => {
+    it('can be turned on', () => {
       const config = configSchema.create({
         type: 'LinearVariantDisplay',
         displayId: 'test-2',
-        referenceDrawingMode: 'draw',
+        genotypes: { reference: { show: true } },
       })
-      expect(readConfObject(config, 'referenceDrawingMode')).toBe('draw')
+      expect(readConfObject(config, ['genotypes', 'reference', 'show'])).toBe(
+        true,
+      )
     })
 
     it("lifts v4's showReferenceAlleles without a console line", () => {
@@ -47,9 +49,44 @@ describe('the display config schema', () => {
         displayId: 'test-2b',
         showReferenceAlleles: true,
       })
-      expect(readConfObject(config, 'referenceDrawingMode')).toBe('draw')
+      expect(readConfObject(config, ['genotypes', 'reference', 'show'])).toBe(
+        true,
+      )
       expect(warn).not.toHaveBeenCalled()
       warn.mockRestore()
+    })
+
+    it.each([
+      ['draw', true],
+      ['skip', false],
+    ])(
+      "lifts v4's referenceDrawingMode %s without a console line",
+      (mode, show) => {
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+        const config = configSchema.create({
+          type: 'LinearVariantDisplay',
+          displayId: 'test-2c',
+          referenceDrawingMode: mode,
+        })
+        expect(readConfObject(config, ['genotypes', 'reference', 'show'])).toBe(
+          show,
+        )
+        expect(warn).not.toHaveBeenCalled()
+        warn.mockRestore()
+      },
+    )
+
+    it('a lifted referenceDrawingMode keeps a written genotypes.show', () => {
+      const config = configSchema.create({
+        type: 'LinearVariantDisplay',
+        displayId: 'test-2d',
+        referenceDrawingMode: 'draw',
+        genotypes: { show: false },
+      })
+      expect(readConfObject(config, ['genotypes', 'show'])).toBe(false)
+      expect(readConfObject(config, ['genotypes', 'reference', 'show'])).toBe(
+        true,
+      )
     })
   })
 

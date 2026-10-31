@@ -91,7 +91,7 @@ export interface VariantTablesArgs {
    * The display's config as a track's `displays` entry writes it for a
    * `LinearVariantDisplay`: `encoding`, `unit` (`'sample'` or
    * `'haplotype'`), `filter` (a predicate list, `minorAlleleFrequency` and
-   * `missingness` among its fields), `referenceDrawingMode`, `shadeByDosage`, the
+   * `missingness` among its fields), `genotypes.reference.show`, the
    * arrangement `rows` and `facet` and the rest of its slots. Unset reads the
    * default display.
    */
@@ -118,7 +118,7 @@ export interface VariantTablesArgs {
  * and stacks them in `facet`'s bands, each with its label and band; `bands`,
  * each band's value and label, in stacking order; `legend`, `legendTitle`
  * and `ramps`, the key the display shows; and `warnings`, the samples file's.
- * Under `referenceDrawingMode: 'skip'`, the default, a reference call draws
+ * With `genotypes.reference.show` off, the default, a reference call draws
  * no cell. Several regions share the rows and the key,
  * as the display's regions do: a record crossing regions is listed in each,
  * under one `key`, every `variants` and `cells` row names its `region`'s
@@ -156,7 +156,6 @@ export async function variantTables(
     slots,
   )
   const unit: VariantUnit = readConfObject(conf, 'unit')
-  const shade: boolean = readConfObject(conf, 'shadeByDosage')
   const predicates = predicatesOf(conf.filter)
   const filters = predicates.filter(p => !isSiteField(p.field))
   const arrangement = {
@@ -194,7 +193,7 @@ export async function variantTables(
           .map(resolveSampleName)
           .sort()
       : undefined,
-    referenceDrawingMode: readConfObject(conf, 'referenceDrawingMode'),
+    showReference: readConfObject(conf, ['genotypes', 'reference', 'show']),
     siteFilter: predicates.filter(p => isSiteField(p.field)),
     filters: filters.length
       ? new SerializableFilterChain({ filters, jexl: pluginManager.jexl })
@@ -301,7 +300,6 @@ export async function variantTables(
     })
     const colors = paintCellColors(data, paintHue, {
       phased: unit === 'haplotype',
-      shade,
       valuesRead: true,
     })
     for (let i = 0; i < data.numCells; i++) {
@@ -344,7 +342,6 @@ export async function variantTables(
       perRegion.map(({ data }) => data),
       paintHue,
     ),
-    shadeByDosage: shade,
     color: encoding,
     colorSlots: slots,
     ramp: paintHue.ramp,

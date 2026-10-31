@@ -25,5 +25,5 @@ export function getAlleleColor(genotype: string, drawRef = true) {
   if (altDosage === 0) {
     return drawRef ? REFERENCE_COLOR : ''
   }
-  return cellFill(ALT_HUE, altDosage, true)
+  return cellFill(ALT_HUE, altDosage)
 }

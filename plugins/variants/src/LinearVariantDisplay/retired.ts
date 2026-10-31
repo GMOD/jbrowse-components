@@ -79,7 +79,8 @@ const reRootedFeatureSpellings: Record<string, RetiredSpelling> =
  * LinearBasicDisplay's own lifts (`basicRetired`), and its `maxHeight`, a
  * second grow ceiling, drops rather than becoming `records.height`. v4's
  * two multi-sample displays spelt the sidebar's tree and labels and the
- * reference-allele paint as booleans, named the row color's attribute
+ * reference-allele paint as booleans, the latter later a `'draw' | 'skip'`
+ * `referenceDrawingMode`, named the row color's attribute
  * `colorBy`, and carried the wiggle scale slots the matrix never read.
  */
 export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
@@ -93,8 +94,11 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   }),
   showSidebarLabels: (labels: unknown) => ({ axis: { labels } }),
   showTree: (tree: unknown) => ({ axis: { tree } }),
-  showReferenceAlleles: (draw: unknown) => ({
-    referenceDrawingMode: draw ? 'draw' : 'skip',
+  showReferenceAlleles: (show: unknown) => ({
+    genotypes: { reference: { show: !!show } },
+  }),
+  referenceDrawingMode: (mode: unknown) => ({
+    genotypes: { reference: { show: mode === 'draw' } },
   }),
   colorBy: (field: unknown) =>
     typeof field === 'string' && field ? { rowColor: field } : {},

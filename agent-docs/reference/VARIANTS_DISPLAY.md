@@ -66,8 +66,8 @@ laid-out band, its top shifted by
 - **PS reads through `processFormatFields`, not `samples`.**
 - Maps crossing RPC key by `sampleName`, never `name` (HP-suffixed when phased).
 - **`featureInfo` records every genotype, not what got painted** — the cell
-  loop ships the interned per-feature array by reference. Under the default
-  `referenceDrawingMode: 'skip'` a painted-cells copy makes every hom-ref row
+  loop ships the interned per-feature array by reference. With reference
+  cells off, the default, a painted-cells copy makes every hom-ref row
   decode as MISSING to the anchored sort.
 - **`NaN` is the only missing marker.** A value-scale sentinel made samples
   cluster by missingness.
@@ -121,7 +121,9 @@ Each channel carries one variable through one scale.
 - **One ramp for every mode**, in OKLCH: a lower dosage lifts the hue's
   lightness by a fixed step, holding hue and chroma, below a pale ceiling.
   Full dosage is the hue itself, which is also what makes a legend swatch and
-  a hom cell the same color. The `shadeByDosage` slot turns it off.
+  a hom cell the same color. No setting turns it off: a flat hue would
+  need a lightness channel, which Vega-Lite lacks, and `opacity` would blend
+  a het into the reference grey.
 - **The step is the same for every hue.** An HSL lift
   toward a ceiling moved the SV classes' hets by OKLab ΔE 0.08 (inversion
   orange) to 0.31 (insertion purple), and raised the purple's chroma until
@@ -209,7 +211,7 @@ ALT, all spanning one reference interval.
   track's config declares. A runtime override once shadowed the slot, so a
   filter written through `applyDisplaySettings` reported success and did
   nothing.
-- **The tier is per layout, not per setting**: `referenceDrawingMode` is a fetch
+- **The tier is per layout, not per setting**: `genotypes.reference.show` is a fetch
   input at genomic positions and inert in columns, which draw every reference
   cell, so `rpcProps` sends it only in the first.
 - A drag-resized dimension goes on a config slot; the node outlives the display.

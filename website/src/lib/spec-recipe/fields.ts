@@ -2002,18 +2002,10 @@ export const trackFields: Record<string, FieldRecipe> = {
     'Hides the splice-junction arcs and keeps the coverage band underneath them.',
   ),
   'pileup.mismatches': mismatchesStep,
-  // A 'draw'/'skip' enum behind a checkbox, so it can't use `checkbox()` (which
-  // only takes booleans). Label and polarity from the variant
-  // display's own menu item: checked means 'draw'.
-  referenceDrawingMode: value =>
-    typeof value === 'string'
-      ? {
-          path: `${TRACK_MENU} → Show → Reference alleles (${
-            value === 'skip' ? 'unchecked' : 'checked'
-          })`,
-          note: 'Off fills the lane solid grey and paints only ALT alleles, which reads better when a cell means "carries the variant". Turn it on where homozygous reference is itself the state of interest.',
-        }
-      : undefined,
+  'genotypes.reference': layerCheckbox(
+    'Show → Reference alleles',
+    'Off fills the lane solid grey and paints only ALT alleles, which reads better when a cell means "carries the variant". Turn it on where homozygous reference is itself the state of interest.',
+  ),
   // Three sibling checkboxes in the reference-sequence track's Show submenu
   // (LinearReferenceSequenceDisplay.trackMenuItems)
   forward: layerCheckbox('Show → Forward'),

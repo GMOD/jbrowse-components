@@ -13,7 +13,8 @@ jest.mock('../makeWorkerInstance', () => () => {})
 // so it keeps hydrating on this branch: the old `MultiLinearVariantDisplay` type
 // string (renamed to LinearVariantDisplay), the adapter's
 // `samplesTsvLocation` metadata slot, and the display's `rowColor` (`colorBy`
-// until ADR-131) / `referenceDrawingMode` / `height` slots must all survive.
+// until ADR-131) / `referenceDrawingMode` (now `genotypes.reference.show`) /
+// `height` slots must all survive.
 function makePluginManager() {
   return new PluginManager(corePlugins.map(P => new P()))
     .createPluggableElements()
@@ -71,7 +72,7 @@ test('v4.1.1 multi-sample variant demo config still hydrates', async () => {
 
   expect(readConfObject(display, ['rowColor', 'field'])).toBe('population')
   expect(readConfObject(display, 'height')).toBe(800)
-  expect(readConfObject(display, 'referenceDrawingMode')).toBe('draw')
+  expect(readConfObject(display, ['genotypes', 'reference', 'show'])).toBe(true)
 })
 
 // The track config path (above) resolves the old type via the DisplayType alias

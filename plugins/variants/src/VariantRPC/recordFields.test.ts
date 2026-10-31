@@ -28,7 +28,7 @@ function cellsReading(reads: Partial<RecordFieldReads>) {
     ...analyzeVariants({ features, keepSampleLessSites: true }),
     sources: [],
     unit: 'sample',
-    referenceDrawingMode: 'skip',
+    showReference: false,
     recordFields: recordFieldReaders(
       { ...NO_RECORD_FIELD_READS, ...reads },
       createJexlInstance(),

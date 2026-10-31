@@ -68,8 +68,8 @@ packed colors it produces.
   the no-call fill and an all-reference call the reference fill; anything else
   is `shade(hue, dosage)`, the hue being the override or the alt hue and the
   dosage the alt fraction of the called alleles.
-- **Reference cells** are drawn or skipped by `referenceDrawingMode`. Skipped,
-  the row background stands in for them.
+- **Reference cells** draw under `genotypes.reference.show`. Off, the row
+  background stands in for them.
 - **Every branch classifies from the allele**, and carries `isRef` / `isAlt` /
   dosage beside the color rather than recovering them from it.
 

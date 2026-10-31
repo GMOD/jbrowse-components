@@ -70,7 +70,7 @@ test('the key takes the title encoding.color.legend gives it', async () => {
 test('drawing reference calls fills the grid, one cell a sample a site', async () => {
   const t = await engine.variants({
     ...DOG_VCF,
-    display: { referenceDrawingMode: 'draw' },
+    display: { genotypes: { reference: { show: true } } },
   })
   expect(t.cells.variant.length).toBe(490 * 39)
   const ref = t.cells.color.filter((_, i) => t.cells.dosage[i] === 0)
@@ -357,7 +357,7 @@ test('a no-call at a site with no ALT has no dosage, and an all-missing FORMAT k
   const t = await engine.variants({
     adapterConfig,
     region,
-    display: { referenceDrawingMode: 'draw' },
+    display: { genotypes: { reference: { show: true } } },
   })
   const noAlt = t.variants.start.indexOf(99)
   const cell = (genotype: string) =>

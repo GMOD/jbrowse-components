@@ -14,7 +14,7 @@ test('the layout is a fetch input, and only columns reserve a connector zone', (
 
   expect(display.rpcProps().layout).toBe('columns')
   // columns draw reference cells whatever the setting says
-  expect(display.rpcProps()).toHaveProperty('referenceDrawingMode', 'draw')
+  expect(display.rpcProps()).toHaveProperty('showReference', true)
   expect(display.lineZoneHeight).toBe(20)
   expect(display.rowsTopOffset).toBe(20)
 })

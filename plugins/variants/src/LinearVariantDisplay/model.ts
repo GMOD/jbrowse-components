@@ -770,14 +770,6 @@ export function stateModelFactory(
         get colorField(): string {
           return cellHueField(this.colorEncoding) ?? ''
         },
-        /**
-         * #getter
-         * Whether an alt cell's hue is composed with the genotype's alt dosage.
-         * The main thread paints it, so a toggle refetches nothing.
-         */
-        get shadeByDosage(): boolean {
-          return getConf(self, 'shadeByDosage')
-        },
 
         get featureWidgetType() {
           return VARIANT_FEATURE_WIDGET
@@ -993,8 +985,8 @@ export function stateModelFactory(
           /**
            * #action
            */
-          setReferenceDrawingMode(arg: string) {
-            setConf(self, 'referenceDrawingMode', arg)
+          setShowReference(arg: boolean) {
+            setConf(self, ['genotypes', 'reference', 'show'], arg)
           },
           /**
            * #action
@@ -1007,14 +999,6 @@ export function stateModelFactory(
            */
           setShowTooltips(arg: boolean) {
             setConf(self, ['tooltip', 'show'], arg)
-          },
-          /**
-           * #action
-           * Turn dosage shading on or off; the main thread repaints the loaded
-           * cells.
-           */
-          setShadeByDosage(arg: boolean) {
-            setConf(self, 'shadeByDosage', arg)
           },
           /**
            * #action
@@ -1107,8 +1091,13 @@ export function stateModelFactory(
             : undefined
         },
 
-        get referenceDrawingMode(): string {
-          return getConf(self, 'referenceDrawingMode')
+        /**
+         * #getter
+         * `genotypes.reference.show`: each reference call draws as a cell,
+         * rather than the rows' grey fill standing in for it.
+         */
+        get showReference(): boolean {
+          return getConf(self, ['genotypes', 'reference', 'show'])
         },
 
         /**
@@ -1293,7 +1282,7 @@ export function stateModelFactory(
       .views(self => ({
         // Payload for MultiSampleVariantGetCellData; a change refetches. Only
         // what the worker reads, and nothing fetch-derived.
-        // `referenceDrawingMode` is one at genomic positions only: columns draw
+        // `showReference` is one at genomic positions only: columns draw
         // every reference cell.
         rpcProps() {
           return {
@@ -1304,9 +1293,7 @@ export function stateModelFactory(
             unit: self.unit,
             color: self.cellHueRead,
             recordFields: self.recordFieldReads,
-            referenceDrawingMode: self.atGenomicPositions
-              ? self.referenceDrawingMode
-              : 'draw',
+            showReference: !self.atGenomicPositions || self.showReference,
           }
         },
         /**
@@ -1791,7 +1778,6 @@ export function stateModelFactory(
         get cellPaintOptions() {
           return {
             phased: self.unit === 'haplotype',
-            shade: self.shadeByDosage,
             valuesRead: self.cellHueValuesRead,
           }
         },
@@ -2102,7 +2088,6 @@ export function stateModelFactory(
                   hasUnphased: self.hasUnphased,
                   hasNoCall: self.hasNoCall,
                   paintedDomain: self.paintedDomain,
-                  shadeByDosage: self.shadeByDosage,
                   color: self.colorEncoding,
                   colorSlots: heldColorSlots(self, self.colorEncoding),
                   ramp: self.cellHue.ramp,

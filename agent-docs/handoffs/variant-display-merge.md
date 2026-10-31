@@ -85,7 +85,10 @@ rule over rows are marked provisional there (the default is settled: on).
   config docs regenerate on push.
 - **D. Outside writers**: jb2hubs (`pangenomeLinks.ts`, `config/jbrowse.ts`,
   pangenome-config JSONs), ggjbrowse (`R/variants.R`; `jbrowse_features`
-  reads a records-only track's settings as the R export hands them over),
+  reads a records-only track's settings as the R export hands them over;
+  `R/variants.R` and `tutorials/population_genomics.Rmd` write
+  `referenceDrawingMode`, now `genotypes.reference.show`, and document
+  `shadeByDosage`, now gone),
   jb2plugins/jbrowse-plugin-graphgenomeviewer
   (`src/WalkFormsAdapter/formsMenu.ts` `FORMS_DISPLAYS`, matched by
   `Core-extendPluggableElement` at :196, names only

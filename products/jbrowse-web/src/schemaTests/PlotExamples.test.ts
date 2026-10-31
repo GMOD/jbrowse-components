@@ -168,6 +168,7 @@ test("each display's plot settings", () => {
       'encoding',
       'facet',
       'filter',
+      'genotypes',
       'legend',
       'records',
       'rowColor',

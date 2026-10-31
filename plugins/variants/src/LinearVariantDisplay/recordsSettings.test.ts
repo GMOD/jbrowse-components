@@ -4,6 +4,7 @@ import { maxBottom } from '@jbrowse/plugin-features/band'
 import { NO_RECORD_FIELD_READS } from '../shared/recordFields.ts'
 import { recordsBandSurface } from './components/RecordsBandOverlay.tsx'
 import { KIT, recordsDisplayAt } from './recordsBand.fixture.ts'
+import { svClassColors } from './recordsSvColors.ts'
 
 import type { LinearVariantDisplayModel } from './model.ts'
 import type { BandRecord } from './recordsBand.fixture.ts'
@@ -191,6 +192,34 @@ describe('the record menus', () => {
 test('maxBottom of a collapsed band is one row', () => {
   const { display } = recordsDisplayAt(KIT, 51, { displayMode: 'collapsed' })
   expect(maxBottom(display.recordsLaidOutDataMap)).toBe(boxHeight(display))
+})
+
+describe('encoding.color phaseSet', () => {
+  const svTypes: BandRecord[] = [
+    ['del', 100, 5000, '', 'DEL'],
+    ['ins', 9000, 9001, '', 'INS'],
+  ]
+
+  test('a record holds no phase set, so it keeps its SV type color and key', () => {
+    const { display } = recordsDisplayAt(svTypes, 51, {}, true, {
+      unit: 'haplotype',
+      encoding: { color: 'phaseSet' },
+    })
+    const featureInfo = display.cellData!.perRegionCellData[0]!.featureInfo
+    expect([...display.regionRecordColors.get(0)!]).toEqual([
+      ...svClassColors(featureInfo),
+    ])
+    const key = display.colorScales.find(s => s.id === 'records')
+    expect(key?.kind === 'categorical' && key.entries.length).toBe(2)
+  })
+
+  test('a record field paints the records as it paints the cells', () => {
+    const { display } = recordsDisplayAt(svTypes, 51, {}, true, {
+      encoding: { color: 'INFO.CLNSIG' },
+    })
+    expect(display.recordsColorBySvClass).toBe(false)
+    expect(display.colorScales.find(s => s.id === 'records')).toBeUndefined()
+  })
 })
 
 describe('encoding.color identity', () => {

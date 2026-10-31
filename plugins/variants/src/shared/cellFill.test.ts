@@ -101,16 +101,9 @@ describe('shadeByDosage', () => {
 })
 
 describe('cellFill', () => {
-  it('shading off is the bare hue at any dosage', () => {
-    expect(cellFill('#d32f2f', 128, false)).toBe('#d32f2f')
-    expect(cellFill('#d32f2f', 128, true)).not.toBe('#d32f2f')
-  })
-
   it('reads the dosage as the byte a cell carries', () => {
-    expect(cellFill('#d32f2f', 128, true)).toBe(
-      shadeByDosage('#d32f2f', HET_DOSAGE),
-    )
-    expect(cellFill('#d32f2f', 255, true)).toBe('#d32f2f')
+    expect(cellFill('#d32f2f', 128)).toBe(shadeByDosage('#d32f2f', HET_DOSAGE))
+    expect(cellFill('#d32f2f', 255)).toBe('#d32f2f')
   })
 })
 

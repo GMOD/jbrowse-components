@@ -55,19 +55,15 @@ export function paintFeatureColors(
  * refetches nothing. Only alt cells change, through
  * `fill = shade(hue, dosage)`: in allele-count mode every one, in phased mode
  * those a hue paints, the rest keeping the worker's allele colors. With no
- * hue and shading on, the default, the worker's array comes back as it is.
+ * hue, the default, the worker's array comes back as it is.
  */
 export function paintCellColors(
   data: PaintableCells,
   hue: CellHue,
-  {
-    phased,
-    shade,
-    valuesRead,
-  }: { phased: boolean; shade: boolean; valuesRead: boolean },
+  { phased, valuesRead }: { phased: boolean; valuesRead: boolean },
 ) {
   const { hues, valueHue } = hueTable(data, hue, valuesRead)
-  if (hues.length === 1 && hues[0] === undefined && (phased || shade)) {
+  if (hues.length === 1 && hues[0] === undefined) {
     return data.cellColors
   }
   const { featureColorValues, cellAltDosage, cellFeatureIndices } = data
@@ -103,9 +99,7 @@ export function paintCellColors(
       const slot = featureHue[cellFeatureIndices[i]!]! + dosage
       let abgr = fills[slot]!
       if (abgr === 0) {
-        abgr = getCachedABGR(
-          cellFill(hues[slot >> 8] ?? ALT_HUE, dosage, shade),
-        )
+        abgr = getCachedABGR(cellFill(hues[slot >> 8] ?? ALT_HUE, dosage))
         fills[slot] = abgr
       }
       cellColors[i] = abgr

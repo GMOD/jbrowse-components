@@ -3026,7 +3026,7 @@
         {
           "type": "LinearVariantDisplay",
           "displayId": "volvox multi-sample sv-LinearVariantDisplay",
-          "referenceDrawingMode": "draw",
+          "genotypes": { "reference": { "show": true } },
           "rowColor": "population"
         }
       ]

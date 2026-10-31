@@ -24,7 +24,7 @@ import type {
 } from '@jbrowse/plugin-features/band'
 
 interface RenderSvgModel extends RenderSvgBaseModel {
-  referenceDrawingMode: string
+  showReference: boolean
   renderBlocks: VariantRenderBlock[]
   perRegionCellMap: ReadonlyMap<number, VariantUploadData>
   renderState: VariantRenderState
@@ -53,7 +53,7 @@ function VariantSvgBody({
   // the model's own block set and region map, so the export draws what the
   // live canvas does
   const {
-    referenceDrawingMode,
+    showReference,
     renderBlocks,
     perRegionCellMap,
     renderState,
@@ -115,13 +115,13 @@ function VariantSvgBody({
       }
     >
       {/* the screen's canvas background, under the cells */}
-      {referenceDrawingMode === 'skip' ? (
+      {showReference ? null : (
         <rect
           width={canvasWidth}
           height={canvasHeight}
           fill={REFERENCE_COLOR}
         />
-      ) : null}
+      )}
       <MarkSvgLayer
         marks={VARIANT_MARKS}
         regions={perRegionCellMap}

@@ -5,11 +5,11 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The genomic layout lays variants out at their genomic positions, so `skip`
-// drops the reference cells in the worker and the whole row reads as one solid
-// grey band that overlapping SVs stand out against. The matrix packs every
-// column with a variant and paints reference cells in REFERENCE_COLOR, which is
-// the same grey `skip` fills its background with — so the toggle moves no pixel
+// The genomic layout lays variants out at their genomic positions, so with
+// `genotypes.reference.show` off the worker drops the reference cells and the
+// whole row reads as one solid grey band that overlapping SVs stand out
+// against. The matrix packs every column with a variant and paints reference
+// cells in REFERENCE_COLOR, which is the same grey that fills the background — so the toggle moves no pixel
 // there, and the row it used to carry described a setting it did not have.
 function referenceItem(items: MenuItem[]) {
   const show = items.find(i => 'label' in i && i.label === 'Show')
@@ -23,19 +23,19 @@ test('the genomic layout offers the reference-alleles checkbox', () => {
   if (!item || !('type' in item) || item.type !== 'checkbox') {
     throw new Error('no "Reference alleles" checkbox in "Show"')
   }
-  // 'skip' is the slot default, so it starts unchecked
+  // off is the slot default, so it starts unchecked
   expect(item.checked).toBe(false)
   expect(staysOpenOnClick(item)).toBe(true)
 
   item.onClick()
-  expect(display.referenceDrawingMode).toBe('draw')
+  expect(display.showReference).toBe(true)
   const after = referenceItem(display.trackMenuItems())
   expect(after && 'checked' in after && after.checked).toBe(true)
 })
 
-// `referenceDrawingMode` still travels between the two in PORTABLE_CONFIG_KEYS,
-// so a mode set here and carried to the matrix is inert there and comes back
-// intact — nothing gets stuck without the row.
+// Columns read `genotypes.reference.show` as on whatever it says, so a
+// setting written in the genomic layout is inert there and back intact on
+// the switch home: nothing gets stuck without the row.
 test('the columns layout does not', () => {
   const { display } = createMatrixTestEnvironment().createDisplay()
   expect(referenceItem(display.trackMenuItems())).toBeUndefined()

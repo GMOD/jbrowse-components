@@ -15,7 +15,7 @@ export const VARIANT_PLOT_EXAMPLES: PlotExample[] = [
     description: 'one color per ClinVar significance',
   },
   {
-    plot: '{ "filter": ["jexl:feature.QUAL > 30"] }',
+    plot: '{ "filter": [{ "field": "QUAL", "gt": 30 }] }',
     description: 'variants with QUAL above 30',
   },
   {

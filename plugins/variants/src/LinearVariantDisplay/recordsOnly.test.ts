@@ -256,7 +256,7 @@ describe('the track menu', () => {
     }).display
     const noSamples = recordsDisplayAt(FEW, 10, {}, false).display
     expect(subMenuLabels(menu(rows), 'Color by')).toEqual(
-      expect.arrayContaining(['Genotype', 'Shade by dosage']),
+      expect.arrayContaining(['Genotype']),
     )
     expect(
       subMenuLabels(menu(rows), 'Color by').some(l =>
@@ -268,7 +268,7 @@ describe('the track menu', () => {
       expect(labels).toEqual(
         expect.arrayContaining(['Records', 'Default', 'Solid color...']),
       )
-      for (const gone of ['Cells', 'Genotype', 'Samples', 'Shade by dosage']) {
+      for (const gone of ['Cells', 'Genotype', 'Samples']) {
         expect(labels).not.toContain(gone)
       }
       expect(labels.some(l => l.startsWith('Phase set'))).toBe(false)

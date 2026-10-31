@@ -42,11 +42,8 @@ import { retiredConfigSpellings } from './retired.ts'
  * Preloading sample metadata: point the adapter's `samplesTsvLocation` at a TSV
  * whose first column is the sample name and whose other columns are per-sample
  * attributes (e.g. `population`), then `rowColor` one of those attributes to
- * color the sidebar rows on load. `referenceDrawingMode: 'skip'` (the default)
- * paints the background solid grey and draws only ALT alleles on top, which
- * makes overlapping structural variants easier to see; `'draw'` paints the
- * reference alleles too. This is the 1000 Genomes "colored by population" demo
- * config:
+ * color the sidebar rows on load. This is the 1000 Genomes "colored by
+ * population" demo config:
  * ```js
  * {
  *   type: 'VariantTrack',
@@ -63,7 +60,6 @@ import { retiredConfigSpellings } from './retired.ts'
  *       type: 'LinearVariantDisplay',
  *       height: 800,
  *       rowColor: 'population',
- *       referenceDrawingMode: 'skip',
  *     },
  *   ],
  * }
@@ -175,9 +171,10 @@ export default function configSchemaFactory() {
       rows: sampleRowsConfigSchema,
       /**
        * #slot tooltip
-       * The hover tooltip naming the genotype, the sample and the record
-       * under the pointer. Off, the crosshairs, the highlighted cell and the
-       * cross-display `session.hovered` channel stay.
+       * The hover tooltip naming the record under the pointer, and over a
+       * genotype cell its genotype and sample too. Off, the crosshairs, the
+       * highlighted cell or record and the cross-display `session.hovered`
+       * channel stay. The record's line in it is `records.tooltip.field`.
        */
       tooltip: ConfigurationSchema(
         'SampleTooltip',
@@ -189,7 +186,7 @@ export default function configSchemaFactory() {
             type: 'boolean',
             defaultValue: true,
             description:
-              'show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way',
+              'show the hover tooltip over the records and the genotype rows; the crosshairs and the hover highlight stay either way',
           },
         },
         { closed: true },
@@ -207,23 +204,11 @@ export default function configSchemaFactory() {
       },
       /**
        * #slot encoding
-       * The genotype cells' channels: `encoding.color`, the hue of every cell
-       * with an alt allele.
+       * The channels the records and the genotype cells share:
+       * `encoding.color`, the hue of every record and of every cell with an
+       * alt allele.
        */
       encoding: cellEncodingConfigSchema,
-      /**
-       * #slot
-       * Compose the cell hue with the genotype's alt dosage — the fraction of
-       * its called alleles that are non-reference — so a homozygote paints the
-       * hue itself and a heterozygote a lighter version of it. Off paints each
-       * alt cell its flat hue.
-       */
-      shadeByDosage: {
-        type: 'boolean',
-        defaultValue: true,
-        description:
-          "shade each alt cell by the fraction of its called alleles that are non-reference, so a homozygote is darker than a heterozygote; off paints every alt cell the mode's flat hue",
-      },
       /**
        * #slot legend
        * The floating key over the display. It is clipped to the display's own
@@ -253,20 +238,6 @@ export default function configSchemaFactory() {
        */
       facet: facetConfigSchema,
       /**
-       * #slot
-       * Whether to paint reference alleles: 'skip' (the default) fills the row
-       * background solid grey and paints only ALT alleles, which makes
-       * overlapping variants easier to pick out; 'draw' paints reference
-       * alleles like any other genotype.
-       */
-      referenceDrawingMode: {
-        type: 'stringEnum',
-        model: types.enumeration('ReferenceDrawingMode', ['draw', 'skip']),
-        defaultValue: 'skip',
-        description:
-          "reference-allele drawing: 'skip' (the default) fills the row background solid grey and paints only ALT alleles, which makes overlapping variants easier to pick out; 'draw' paints reference alleles like any other genotype",
-      },
-      /**
        * #slot records
        * The records, stacked as a feature track stacks them, an SV colored by
        * its type. `show` (default on), `height`, the band's height over the
@@ -277,9 +248,21 @@ export default function configSchemaFactory() {
       records: recordsBandConfigSchema,
       /**
        * #slot genotypes
-       * The genotype rows. Off, the display reads no genotypes and draws as
-       * it does for a VCF with no samples: the records alone, every one the
-       * filter admits, sized by `heightMode`.
+       * The genotype rows: `show` and `reference.show`. A cell with an alt
+       * allele paints its hue lightened by its dosage, the share of its
+       * called alleles that are non-reference, so a homozygote paints the hue
+       * itself and a heterozygote a lighter version of it.
+       * Off, the display reads no genotypes and draws as it does for a VCF
+       * with no samples: the records alone, every one the filter admits,
+       * sized by `heightMode`.
+       *
+       * #example
+       * ```js
+       * {
+       *   type: 'LinearVariantDisplay',
+       *   genotypes: { reference: { show: true } },
+       * }
+       * ```
        */
       genotypes: ConfigurationSchema(
         'GenotypeRows',
@@ -293,8 +276,31 @@ export default function configSchemaFactory() {
             description:
               'draw a row per sample; off, the display draws the records alone, as for a VCF with no samples',
           },
+          /**
+           * #slot genotypes.reference
+           * The cells of reference calls. Off, the default, the rows are
+           * filled grey and only alt and no-call cells draw over them, so an
+           * alt allele under a long reference call stays visible; on, each
+           * reference call draws as a cell of its own. At genomic positions
+           * only: columns draw every reference cell.
+           */
+          reference: ConfigurationSchema(
+            'GenotypeReference',
+            {
+              /**
+               * #slot genotypes.reference.show
+               */
+              show: {
+                type: 'boolean',
+                defaultValue: false,
+                description:
+                  'draw each reference call as a cell; off, the rows are filled grey and only alt and no-call cells draw over them',
+              },
+            },
+            { closed: true },
+          ),
         },
-        { closed: true },
+        { closed: true, plot: true },
       ),
       ...heightModeConfigSchemaFields({
         defaultHeightMode: 'fit',
