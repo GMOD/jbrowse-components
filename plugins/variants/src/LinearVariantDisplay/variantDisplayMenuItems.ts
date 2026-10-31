@@ -112,7 +112,7 @@ function genotypeRowShowItems(self: LinearVariantDisplayModel): MenuItem[] {
           {
             label: 'Records',
             helpText:
-              'Draw every record above the genotype rows at its genomic position, stacked as a variant track stacks them, colored by SV type and labelled with the share of samples carrying it. The band is as tall as its records need, up to its maximum height, and adds that height to the track; records that do not fit hide, counted beside the band',
+              'Draw every record above the genotype rows at its genomic position, stacked as a variant track stacks them, colored by SV type and labelled with the share of samples carrying it. The band adds its height to the track: it opens as tall as its records need and keeps that height as you pan, and dragging its lower edge resizes it. Records that do not fit hide, counted beside the band',
             type: 'checkbox' as const,
             checked: self.showRecords,
             onClick: () => {

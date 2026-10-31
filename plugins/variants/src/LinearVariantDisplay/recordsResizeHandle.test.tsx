@@ -1,6 +1,6 @@
 import ChromeLegend from '@jbrowse/display-kit/ChromeLegend'
 import { TrackOverlaySlot } from '@jbrowse/display-ui'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import RecordsBandOverlay from './components/RecordsBandOverlay.tsx'
 import { KIT, recordsDisplayAt } from './recordsBand.fixture.ts'
@@ -13,40 +13,26 @@ function drag(handle: HTMLElement, dy: number) {
   fireEvent.pointerUp(handle, { clientY: dy, pointerId: 1 })
 }
 
-test('a drag up on the seam caps the band below its stack', () => {
+test('a drag up on the seam sets the band below its stack', () => {
   const { display } = recordsDisplayAt(KIT, 51)
   const natural = display.topBands.recordsHeight
   render(<RecordsBandOverlay model={display} />)
 
   drag(screen.getByTestId('records_band_resize_handle'), -30)
 
-  expect(display.recordsMaxHeight).toBe(natural - 30)
+  expect(display.recordsHeight).toBe(natural - 30)
   expect(display.topBands.recordsHeight).toBe(natural - 30)
 })
 
-// A band as tall as its stack cannot grow, and a drag down must not lower the
-// cap to the stack, which a later, taller stack would then be squeezed under.
-test('a drag down on a band shorter than its cap keeps the cap', () => {
+test('a drag down on the seam sets the band past its stack', () => {
   const { display } = recordsDisplayAt(KIT, 51)
   const natural = display.topBands.recordsHeight
-  const cap = display.recordsMaxHeight
-  expect(natural).toBeLessThan(cap)
   render(<RecordsBandOverlay model={display} />)
 
   drag(screen.getByTestId('records_band_resize_handle'), 20)
 
-  expect(display.recordsMaxHeight).toBe(cap)
-  expect(display.topBands.recordsHeight).toBe(natural)
-})
-
-test('a drag down on a band at its cap raises the cap', () => {
-  const { display } = recordsDisplayAt(KIT, 51, { maxHeight: 30 })
-  render(<RecordsBandOverlay model={display} />)
-
-  drag(screen.getByTestId('records_band_resize_handle'), 20)
-
-  expect(display.recordsMaxHeight).toBe(50)
-  expect(display.topBands.recordsHeight).toBe(50)
+  expect(display.recordsHeight).toBe(natural + 20)
+  expect(display.topBands.recordsHeight).toBe(natural + 20)
 })
 
 test('a band dragged shut stops at the floor and stays grabbable', () => {
@@ -55,8 +41,49 @@ test('a band dragged shut stops at the floor and stays grabbable', () => {
 
   drag(screen.getByTestId('records_band_resize_handle'), -500)
 
-  expect(display.recordsMaxHeight).toBe(MIN_RECORDS_HEIGHT)
+  expect(display.recordsHeight).toBe(MIN_RECORDS_HEIGHT)
   expect(screen.getByTestId('records_band_resize_handle')).toBeTruthy()
+})
+
+// a drag past the floor banks the pointer's travel, so the seam stays at the
+// floor until the pointer comes back to it rather than growing the band from
+// wherever the pointer turned
+describe('a drag past the floor and back', () => {
+  let frames: FrameRequestCallback[] = []
+  const realRaf = window.requestAnimationFrame
+  beforeEach(() => {
+    frames = []
+    window.requestAnimationFrame = cb => frames.push(cb)
+  })
+  afterEach(() => {
+    window.requestAnimationFrame = realRaf
+  })
+  function moveTo(handle: HTMLElement, clientY: number) {
+    fireEvent.pointerMove(handle, { clientY, pointerId: 1 })
+    const pending = frames
+    frames = []
+    act(() => {
+      for (const cb of pending) {
+        cb(0)
+      }
+    })
+  }
+
+  test('keeps the seam under the pointer', () => {
+    const { display } = recordsDisplayAt(KIT, 51)
+    const natural = display.topBands.recordsHeight
+    render(<RecordsBandOverlay model={display} />)
+    const handle = screen.getByTestId('records_band_resize_handle')
+
+    fireEvent.pointerDown(handle, { clientY: 0, pointerId: 1 })
+    moveTo(handle, -500)
+    expect(display.topBands.recordsHeight).toBe(MIN_RECORDS_HEIGHT)
+    moveTo(handle, -400)
+    expect(display.topBands.recordsHeight).toBe(MIN_RECORDS_HEIGHT)
+    moveTo(handle, 10 - natural)
+    expect(display.topBands.recordsHeight).toBe(10)
+    fireEvent.pointerUp(handle, { clientY: 10 - natural, pointerId: 1 })
+  })
 })
 
 // The handle is `width: 100%` of a box whose children are all absolute, so

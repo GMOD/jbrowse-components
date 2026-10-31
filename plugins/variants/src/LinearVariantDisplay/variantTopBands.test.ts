@@ -9,7 +9,7 @@ import {
 } from './recordsBand.fixture.ts'
 import { createTestEnvironment } from './testEnv.ts'
 import {
-  DEFAULT_RECORDS_MAX_HEIGHT,
+  DEFAULT_RECORDS_HEIGHT,
   MIN_RECORDS_HEIGHT,
   recordsBandHeightOverRows,
   variantTopBandsGeometry,
@@ -49,24 +49,40 @@ describe('the band stack', () => {
 })
 
 describe('the band over rows', () => {
-  const height = (recordsMaxHeight: number, recordsContentHeight: number) =>
-    recordsBandHeightOverRows({ recordsMaxHeight, recordsContentHeight })
+  const unwritten = (recordsHeight: number, recordsContentHeight: number) =>
+    recordsBandHeightOverRows({
+      recordsHeight,
+      recordsHeightWritten: false,
+      recordsContentHeight,
+    })
+  const written = (recordsHeight: number, recordsContentHeight: number) =>
+    recordsBandHeightOverRows({
+      recordsHeight,
+      recordsHeightWritten: true,
+      recordsContentHeight,
+    })
 
-  test('a stack under the cap takes its own height', () => {
-    expect(height(120, 37.2)).toBe(38)
+  test('unwritten, a stack under the default takes its own height', () => {
+    expect(unwritten(120, 37.2)).toBe(38)
   })
 
-  test('a stack over the cap takes the cap', () => {
-    expect(height(120, 400)).toBe(120)
+  test('unwritten, a stack over the default takes the default', () => {
+    expect(unwritten(120, 400)).toBe(120)
   })
 
-  test('a stated cap is floored, and has no ceiling but its stack', () => {
-    expect(height(0, 400)).toBe(MIN_RECORDS_HEIGHT)
-    expect(height(1e6, 1e5)).toBe(1e5)
+  test('unwritten, a band with no records takes nothing', () => {
+    expect(unwritten(120, 0)).toBe(0)
   })
 
-  test('a band with no records takes nothing', () => {
-    expect(height(120, 0)).toBe(0)
+  test('a written height holds whatever the records in view need', () => {
+    expect(written(120, 37.2)).toBe(120)
+    expect(written(120, 400)).toBe(120)
+    expect(written(120, 0)).toBe(120)
+  })
+
+  test('a written height is floored, and has no ceiling', () => {
+    expect(written(0, 400)).toBe(MIN_RECORDS_HEIGHT)
+    expect(written(1e6, 10)).toBe(1e6)
   })
 })
 
@@ -93,13 +109,13 @@ describe('the band on a display', () => {
     expect(new Set(items.map(i => i.topPx)).size).toBeGreaterThan(1)
     expect(display.recordsFitStage).toMatchObject({ level: 'full', scale: 1 })
     const natural = naturalHeight()
-    expect(natural).toBeLessThan(DEFAULT_RECORDS_MAX_HEIGHT)
+    expect(natural).toBeLessThan(DEFAULT_RECORDS_HEIGHT)
     expect(display.topBands.recordsHeight).toBe(natural)
   })
 
-  test('past the cap the fit ladder fits the stack into it', () => {
+  test('past its height the fit ladder fits the stack into it', () => {
     const cap = 3 * GROUP_LABEL_HEIGHT
-    const { display } = recordsDisplayAt(NESTED, 51, { maxHeight: cap })
+    const { display } = recordsDisplayAt(NESTED, 51, { height: cap })
     expect(display.topBands.recordsHeight).toBe(cap)
     expect(display.recordsFitStage.level).not.toBe('full')
     expect(maxBottom(display.recordsLaidOutDataMap)).toBeLessThanOrEqual(cap)
@@ -110,7 +126,7 @@ describe('the band on a display', () => {
   // band
   test('past every rung a record that does not fit hides, counted', () => {
     const cap = 3 * GROUP_LABEL_HEIGHT
-    const { display } = recordsDisplayAt(NESTED, 51, { maxHeight: cap })
+    const { display } = recordsDisplayAt(NESTED, 51, { height: cap })
     expect(display.topBands.recordsHeight).toBe(cap)
     expect(display.recordsHiddenCount).toBeGreaterThan(0)
     expect(maxBottom(display.recordsLaidOutDataMap)).toBeLessThanOrEqual(cap)
@@ -178,7 +194,7 @@ describe('the band on a display', () => {
     const { display } = recordsDisplayAt(KIT, 51, { show: false })
     const key = display.rpcProps()
     display.setShowRecords(true)
-    display.setRecordsMaxHeight(40)
+    display.setRecordsHeight(40)
     expect(display.rpcProps()).toEqual(key)
   })
 
@@ -200,23 +216,90 @@ describe('the band on a display', () => {
   })
 })
 
+// the band's height over rows is the one written: a pan into more records or
+// fewer fits them inside it, and moves nothing below the band
+describe('a band keeps its height', () => {
+  test('its first layout with a record writes its stack', () => {
+    const { display } = recordsDisplayAt(KIT, 51)
+    expect(display.recordsHeightWritten).toBe(true)
+    expect(display.recordsHeight).toBe(naturalHeight())
+  })
+
+  test('a window with no record writes nothing, and spends nothing', () => {
+    const { display } = recordsDisplayAt([], 51)
+    expect(display.recordsHeightWritten).toBe(false)
+    expect(display.topBands.recordsHeight).toBe(0)
+
+    display.setCellData(recordsCellData(KIT), [0])
+    expect(display.recordsHeight).toBe(naturalHeight())
+  })
+
+  test('a pan into a denser or an empty window keeps it', () => {
+    const { display } = recordsDisplayAt(KIT, 51)
+    const settled = display.topBands.recordsHeight
+    const height = display.height
+
+    display.setCellData(recordsCellData(NESTED), [0])
+    expect(display.topBands.recordsHeight).toBe(settled)
+    expect(display.recordsHiddenCount).toBeGreaterThan(0)
+
+    display.setCellData(recordsCellData([]), [0])
+    expect(display.topBands.recordsHeight).toBe(settled)
+    expect(display.height).toBe(height)
+  })
+
+  // a written height equal to the default is still written: a dense window
+  // opens at the default and keeps it on a pan to a sparse one
+  test('a dense window opens at the default and keeps it', () => {
+    const { display } = recordsDisplayAt(NESTED, 51, { mark: { height: 40 } })
+    expect(display.recordsStackHeight).toBeGreaterThan(DEFAULT_RECORDS_HEIGHT)
+    expect(display.recordsHeightWritten).toBe(true)
+    expect(display.topBands.recordsHeight).toBe(DEFAULT_RECORDS_HEIGHT)
+
+    display.setCellData(recordsCellData(KIT), [0])
+    expect(display.topBands.recordsHeight).toBe(DEFAULT_RECORDS_HEIGHT)
+  })
+
+  test('a height set to the default holds', () => {
+    const { display } = recordsDisplayAt(KIT, 51)
+    display.setRecordsHeight(DEFAULT_RECORDS_HEIGHT)
+    expect(display.topBands.recordsHeight).toBe(DEFAULT_RECORDS_HEIGHT)
+  })
+
+  test('with genotypes hidden a pan keeps it too', () => {
+    const { display } = recordsDisplayAt(KIT, 51, {}, true, {
+      genotypes: { show: false },
+    })
+    const settled = display.topBands.recordsHeight
+    expect(display.recordsHeightWritten).toBe(true)
+    display.setCellData(recordsCellData([]), [0])
+    expect(display.topBands.recordsHeight).toBe(settled)
+  })
+
+  test('a written height holds over fewer records than fill it', () => {
+    const { display } = recordsDisplayAt(KIT, 51, { height: 150 })
+    expect(naturalHeight()).toBeLessThan(150)
+    expect(display.topBands.recordsHeight).toBe(150)
+  })
+})
+
 describe('a resized band outlives the display instance', () => {
   test('a resize lands on the config', () => {
     const { display } = createTestEnvironment().createDisplay()
-    display.setRecordsMaxHeight(64)
+    display.setRecordsHeight(64)
 
-    expect(display.recordsMaxHeight).toBe(64)
-    expect(display.configuration.records.maxHeight).toBe(64)
+    expect(display.recordsHeight).toBe(64)
+    expect(display.configuration.records.height).toBe(64)
     expect('records' in getSnapshot(display)).toBe(false)
   })
 
   test('a resize is floored by the shared band rule, and has no ceiling', () => {
     const { display } = createTestEnvironment().createDisplay()
 
-    display.setRecordsMaxHeight(0)
-    expect(display.recordsMaxHeight).toBe(MIN_RECORDS_HEIGHT)
+    display.setRecordsHeight(0)
+    expect(display.recordsHeight).toBe(MIN_RECORDS_HEIGHT)
 
-    display.setRecordsMaxHeight(1e6)
-    expect(display.recordsMaxHeight).toBe(1e6)
+    display.setRecordsHeight(1e6)
+    expect(display.recordsHeight).toBe(1e6)
   })
 })

@@ -266,10 +266,9 @@ export default function configSchemaFactory() {
       },
       /**
        * #slot records
-       * The records, stacked as a feature track stacks them: over genotype
-       * rows their structural variants, colored by SV type; with no rows
-       * every record. `show` (default on), `maxHeight`, the most it takes
-       * from the rows, `labels`, and a feature track's record settings:
+       * The records, stacked as a feature track stacks them, an SV colored by
+       * its type. `show` (default on), `height`, the band's height over the
+       * rows, `labels`, and a feature track's record settings:
        * `displayMode`, `mark`, `facet`, `maxFeatureScreenDensity` and
        * `tooltip.field`.
        */

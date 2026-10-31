@@ -29,8 +29,9 @@ rule over rows are marked provisional there (the default is settled: on).
   should instead follow the screen (rows moving on pan) belongs to the added
   vs taken call below.
 - **B. Records settings under `records`.** Built (ADR-254's second
-  amendment): `records.maxHeight` (was `records.growMaxHeight`; top-level
-  `growMaxHeight` is the track's grow ceiling), `records.displayMode` (unset:
+  amendment): `records.height` (was `records.growMaxHeight`, then
+  `records.maxHeight` until the seventh amendment made it the band's height
+  rather than a cap; top-level `growMaxHeight` is the track's grow ceiling), `records.displayMode` (unset:
   compact over rows, normal without, in `recordsDisplayMode`),
   `records.mark`, `records.facet` (record sections, chips, export),
   `records.tooltip.field`, and `identity` on the display's one

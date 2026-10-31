@@ -77,7 +77,7 @@ const reRootedFeatureSpellings: Record<string, RetiredSpelling> =
  * block (`displayMode`, `height`, `color1`, `showLabels`, ...), `mouseover`
  * and `maxFeatureScreenDensity` are the records band's now, through
  * LinearBasicDisplay's own lifts (`basicRetired`), and its `maxHeight`, a
- * second grow ceiling, drops rather than becoming `records.maxHeight`. v4's
+ * second grow ceiling, drops rather than becoming `records.height`. v4's
  * two multi-sample displays spelt the sidebar's tree and labels and the
  * reference-allele paint as booleans, named the row color's attribute
  * `colorBy`, and carried the wiggle scale slots the matrix never read.

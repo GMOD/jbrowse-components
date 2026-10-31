@@ -147,8 +147,8 @@ test('a v4 LinearVariantDisplay config lifts its record settings to records', ()
     records: { tooltip: { field: 'jexl:get(feature,"INFO").CLNSIG' } },
     encoding: { color: { value: 'green' } },
   })
-  // the second grow ceiling drops rather than capping the band
-  expect(getSnapshot(conf).records).not.toHaveProperty('maxHeight')
+  // neither the second grow ceiling nor the renderer's height sets the band
+  expect(getSnapshot(conf).records).not.toHaveProperty('height')
 })
 
 test("v4's top-level feature spellings land under records too", () => {

@@ -46,6 +46,7 @@ import {
 } from './recordsRenderData.ts'
 import { svClassColors, svClassScale, svClassesOf } from './recordsSvColors.ts'
 import {
+  DEFAULT_RECORDS_HEIGHT,
   RECORDS_BAND_BOUNDS,
   recordsBandHeightOverRows,
   variantTopBandsGeometry,
@@ -122,11 +123,21 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     // #endregion
     /**
      * #getter
-     * `records.maxHeight`, the cap on the band. Raw: what the band
-     * spends is `topBands.recordsHeight`.
+     * Whether a drag, a config or the opening settle wrote
+     * `records.height`; until then the band over rows is its stack, up to
+     * the default.
      */
-    get recordsMaxHeight(): number {
-      return getConf(self, ['records', 'maxHeight'])
+    get recordsHeightWritten() {
+      return getConf(self, ['records', 'height']) !== undefined
+    },
+    /**
+     * #getter
+     * `records.height`, or the default the band opens at up to its stack
+     * while none is written. Raw: what the band spends is
+     * `topBands.recordsHeight`.
+     */
+    get recordsHeight(): number {
+      return getConf(self, ['records', 'height']) ?? DEFAULT_RECORDS_HEIGHT
     },
     /**
      * #getter
@@ -327,14 +338,14 @@ export function recordsBandActions(self: RecordsActionsHost) {
     },
     /**
      * #action
-     * Set the records band's cap, clamped here because a drag can
+     * Set the records band's height, clamped here because a drag can
      * deliver any number and a band dragged shut has to stay grabbable.
      */
-    setRecordsMaxHeight(arg: number) {
+    setRecordsHeight(arg: number) {
       setConf(
         self,
-        ['records', 'maxHeight'],
-        clampBandHeight(self.recordsMaxHeight, arg, RECORDS_BAND_BOUNDS),
+        ['records', 'height'],
+        clampBandHeight(self.recordsHeight, arg, RECORDS_BAND_BOUNDS),
       )
     },
   }
@@ -654,7 +665,8 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
       recordsHeight: self.recordsOnly
         ? self.height
         : recordsBandHeightOverRows({
-            recordsMaxHeight: self.recordsMaxHeight,
+            recordsHeight: self.recordsHeight,
+            recordsHeightWritten: self.recordsHeightWritten,
             recordsContentHeight: maxBottom(
               ladder.baseLaidOutDataMap,
               self.recordsMeasureIds,
@@ -668,8 +680,8 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * #getter
      * The bands stacked above the rows, resolved once: the layout below
      * and the painters read this instead of summing the bands
-     * (`variantTopBands.ts`). The records band is its `full` rung's
-     * stack, up to `records.maxHeight`.
+     * (`variantTopBands.ts`). The records band is `records.height` once
+     * written, its `full` rung's stack up to the default before.
      */
     get topBands() {
       return bands.get()
@@ -737,8 +749,8 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     },
     /**
      * #getter
-     * The band's whole stack at full size, labels included: what it
-     * spends with no cap.
+     * The band's whole stack at full size, labels included: the height
+     * at which no record hides.
      */
     get recordsStackHeight() {
       return Math.ceil(
@@ -880,22 +892,33 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
 export type RecordsLayout = ReturnType<typeof recordsLayoutViews>
 
 interface RecordsLayoutActionsHost extends RecordsLayout {
-  setRecordsMaxHeight: (arg: number) => void
+  setRecordsHeight: (arg: number) => void
 }
 
 export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
   return {
     /**
      * #action
-     * Raise the band's cap to its whole stack, so no record row hides.
+     * Raise the band to its whole stack, so no record row hides.
      */
     showAllRecordRows() {
-      self.setRecordsMaxHeight(self.recordsStackHeight)
+      self.setRecordsHeight(self.recordsStackHeight)
+    },
+    /**
+     * #action
+     * Write the band's height over rows once, at its first layout with a
+     * record on screen: what it draws then, its stack up to the default.
+     * From then on a pan fits the records inside the band rather than
+     * resizing it, and a region with no record before that spends nothing.
+     */
+    settleRecordsBandHeight() {
+      self.setRecordsHeight(self.topBands.recordsHeight)
     },
   }
 }
 
-interface RecordsOpeningHeightHost extends RecordsLayoutHost, RecordsLayout {
+interface RecordsOpeningHeightHost
+  extends RecordsLayoutHost, RecordsLayout, RecordsLayoutActionsHost {
   configuration: RecordsSettingsHost['configuration']
   recordsOpeningHeightSettled: boolean
   hostHeight: number | undefined
@@ -931,11 +954,13 @@ export function recordsOpeningHeightActions(self: RecordsOpeningHeightHost) {
 
 /**
  * Settle the opening height at the first layout with data: a payload
- * laid out and, with no rows, a record on screen to measure.
+ * laid out and, with no rows, a record on screen to measure. Over rows the
+ * band settles its own height at the first layout that draws a record.
  */
 export function installRecordsOpeningHeight(
   self: RecordsOpeningHeightHost &
-    ReturnType<typeof recordsOpeningHeightActions>,
+    ReturnType<typeof recordsOpeningHeightActions> &
+    ReturnType<typeof recordsLayoutActions>,
 ) {
   autorunOnReadyView(
     self,
@@ -950,5 +975,21 @@ export function installRecordsOpeningHeight(
       }
     },
     { name: 'RecordsOpeningHeight' },
+  )
+  autorunOnReadyView(
+    self,
+    () => {
+      if (
+        !self.recordsOnly &&
+        self.showRecords &&
+        !self.recordsHeightWritten &&
+        self.cellData !== undefined &&
+        self.canRender &&
+        self.topBands.recordsHeight > 0
+      ) {
+        self.settleRecordsBandHeight()
+      }
+    },
+    { name: 'RecordsBandHeight' },
   )
 }

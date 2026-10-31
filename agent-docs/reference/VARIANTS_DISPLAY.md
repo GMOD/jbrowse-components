@@ -415,14 +415,17 @@ a `recordsOnly` choice in the model belongs there.
   load are `RegionTooLargeMixin`'s. Unlike the feature RPC there is no
   pre-fetch sample: a refused window still reads its records once per
   settled viewport.
-- **Its height over rows is its stack, capped, and added.** The `full`
-  rung's packed height at compact feature size, up to `records.maxHeight`
-  (170; `recordsBandHeightOverRows`). The model's `height` is the rows' slot
+- **Its height over rows is written, and added.** `records.height` (no
+  default, so a value equal to the default still reads as written), once a
+  drag, a config or the opening settle writes it, whatever the records in
+  view need, so a pan never resizes the track (`recordsBandHeightOverRows`).
+  Unwritten, the `full` rung's packed height at compact feature size up to
+  the default (170), until the first layout that draws a record writes that
+  (`settleRecordsBandHeight`). The model's `height` is the rows' slot
   plus the band, so the rows keep their slot `height` under every
   `heightMode` (`growMaxHeight` is Infinity over rows); in a ring's band the
-  band is taken from the rows instead. The stack is every fetched record,
-  not the ones on screen, so the track holds still on a pan between fetches.
-- **Past the cap the record rows decimate, then hide.** The ladder drops
+  band is taken from the rows instead.
+- **Past its height the record rows decimate, then hide.** The ladder drops
   descriptions, thins bodies and decimates names, but over rows never scales
   the boxes: `recordsLaidOutDataMap` leaves a record that still ends below
   `recordsPlacedHeight` unplaced (`unplaceBelow`), so no painter, pick,
@@ -442,7 +445,7 @@ a `recordsOnly` choice in the model belongs there.
   onto an empty stretch. Unlabelled, sub-pixel records past 25 deep collapse
   into one faded row (`planDensityCollapse`).
 - **No second fetch to draw.** The payload already carries every record, so
-  `records.show` and the cap are render-tier settings. **A click does fetch**:
+  `records.show` and `records.height` are render-tier settings. **A click does fetch**:
   the payload has no INFO, so `fetchFullRecord` reads the record through
   `GetBasicFeatureDetails`, as LinearBasicDisplay's `fetchFullFeature` does,
   over its first base (a 5 Mb SV's span would be a 5 Mb read), the next click
@@ -464,9 +467,9 @@ a `recordsOnly` choice in the model belongs there.
 - **What is still ours**: the record tooltip (`buildRecordHit`, sample fields
   empty so one `hoveredFeature` slot serves both bands), the gestures
   (`RecordsBandOverlay`, a div over its `OverlayCanvas`) and the seam drag,
-  which writes `records.maxHeight` from the drawn height. A drag down on a
-  band already showing its whole stack keeps the cap, since nothing is left
-  to show; there is no ceiling past the stack.
+  which writes `records.height` as the drawn height at the press plus the
+  pointer's whole travel (`RecordsSeamHandle`), past the stack included, so
+  the seam waits at the floor until the pointer comes back to it.
 
 ## How wide a cell draws
 

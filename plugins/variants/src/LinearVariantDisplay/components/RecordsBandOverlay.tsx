@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 
 import { ScrollChrome } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
@@ -190,6 +190,33 @@ const RecordsSectionChips = observer(function RecordsSectionChips({
  * the draw needs is read in the render body: `OverlayCanvas` calls `draw` from
  * an effect, where nothing is tracked.
  */
+// The height the drag aims at is the drawn height at the press plus the
+// pointer's whole travel, so a drag past the floor banks the travel and the
+// seam waits at the floor until the pointer comes back to it
+const RecordsSeamHandle = observer(function RecordsSeamHandle({
+  model,
+  seam,
+}: {
+  model: LinearVariantDisplayModel
+  seam: number
+}) {
+  const targetRef = useRef(0)
+  return (
+    <BandSeamHandle
+      data-testid="records_band_resize_handle"
+      seam={seam}
+      title="Drag to resize the records band"
+      onDragStart={() => {
+        targetRef.current = model.topBands.recordsHeight
+      }}
+      onDrag={d => {
+        targetRef.current += d
+        model.setRecordsHeight(targetRef.current)
+      }}
+    />
+  )
+})
+
 const RecordsBandOverlay = observer(function RecordsBandOverlay({
   model,
 }: {
@@ -246,24 +273,10 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
       {model.recordsOnly ? (
         <ScrollChrome model={model} controlsId={id} />
       ) : null}
-      {/* the target is the reserved height plus the delta, read in the
-          callback, so a cap above the stack drags from what is drawn; with
-          no rows the band is the display, resized by the track's own handle */}
+      {/* with no rows the band is the display, resized by the track's own
+          handle */}
       {model.recordsOnly ? null : (
-        <BandSeamHandle
-          data-testid="records_band_resize_handle"
-          seam={recordsHeight}
-          title="Drag to resize the records band"
-          onDrag={d => {
-            const { recordsHeight } = model.topBands
-            const cap = model.recordsMaxHeight
-            // a band already as tall as its stack cannot grow, so a drag down
-            // leaves the cap where it is rather than lowering it to the stack
-            model.setRecordsMaxHeight(
-              d > 0 && recordsHeight < cap ? cap : recordsHeight + d,
-            )
-          }}
-        />
+        <RecordsSeamHandle model={model} seam={recordsHeight} />
       )}
     </div>
   ) : null
