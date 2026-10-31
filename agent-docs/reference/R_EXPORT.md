@@ -41,7 +41,8 @@ with no samples, a one-sample VCF with `genotypes.show` unset, or rows hidden)
 reads through `jbrowse_features` instead, its `records` settings handed over
 as the feature track's top-level ones (`recordsAsFeatureDisplay`), at the
 height its records draw (`topBands.recordsHeight`), so an unwritten opening
-height still reaches R.
+height still reaches R. With the rows hidden it goes as `heightMode: 'fit'`,
+since the band over hidden rows always fits its records into its height.
 
 Any other display, a file opened from disk in jbrowse-web (a `blob:` URL R
 cannot reach), and a setting ggjbrowse draws otherwise (a `mateRefName`

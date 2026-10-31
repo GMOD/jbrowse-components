@@ -6,7 +6,7 @@
  */
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getEnv } from '@jbrowse/core/util'
-import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import { boundBandHeight, clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
@@ -925,7 +925,8 @@ export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
      * Resize the band by `distance` from what it draws, answering how far
      * it moved, as `resizeHeight` answers for the track. A resize the
      * clamp leaves where it is writes nothing, so an empty band pushed
-     * shut stays unwritten rather than opening at the floor.
+     * shut stays unwritten; one pulled open opens at least at the floor,
+     * since it is empty for want of records, not set below the floor.
      */
     resizeRecordsBand(distance: number) {
       const before = self.topBands.recordsHeight
@@ -935,7 +936,11 @@ export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
         RECORDS_BAND_BOUNDS,
       )
       if (after !== before) {
-        setConf(self, ['records', 'height'], after)
+        setConf(
+          self,
+          ['records', 'height'],
+          before === 0 ? boundBandHeight(after, RECORDS_BAND_BOUNDS) : after,
+        )
       }
       return self.topBands.recordsHeight - before
     },

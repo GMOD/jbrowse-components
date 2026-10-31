@@ -8,7 +8,7 @@ import {
   recordsCellData,
   recordsDisplayAt,
 } from './recordsBand.fixture.ts'
-import { BAND_CHIPS_HEIGHT } from './variantTopBands.ts'
+import { BAND_CHIPS_HEIGHT, MIN_RECORDS_HEIGHT } from './variantTopBands.ts'
 
 import type { LinearVariantDisplayModel } from './model.ts'
 import type { BandRecord } from './recordsBand.fixture.ts'
@@ -375,6 +375,27 @@ describe('the track edge with genotypes hidden', () => {
     dragTrackEdge(display, [-1, 0])
     expect(display.height).toBe(start)
     expect(display.recordsHeightWritten).toBe(false)
+  })
+
+  test('pulled open on an empty window opens at the floor', () => {
+    const { display } = recordsDisplayAt([], 10, {}, true, {
+      genotypes: { show: false },
+    })
+    const start = display.height
+    dragTrackEdge(display, [3])
+    expect(display.recordsHeight).toBe(MIN_RECORDS_HEIGHT)
+    expect(display.height).toBe(start + MIN_RECORDS_HEIGHT)
+  })
+
+  test('a double click never shrinks the band', () => {
+    const { display } = recordsDisplayAt(PILE, 1, {}, true, {
+      genotypes: { show: false },
+    })
+    const held = display.topBands.recordsHeight
+    display.setCellData(recordsCellData(FEW), [0])
+    expect(display.recordsStackHeight).toBeLessThan(held)
+    expect(display.expandToContentHeight()).toBe(0)
+    expect(display.topBands.recordsHeight).toBe(held)
   })
 
   test('a double click opens the band to every record', () => {

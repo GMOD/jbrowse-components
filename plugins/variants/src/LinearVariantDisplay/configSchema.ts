@@ -15,6 +15,9 @@ import { cellEncodingConfigSchema } from './cellEncodingConfigSchema.ts'
 import { recordsBandConfigSchema } from './recordsBandConfigSchema.ts'
 import { retiredConfigSpellings } from './retired.ts'
 
+/** The height the rows take, and records alone open up to, with `height` unset. */
+export const DEFAULT_VARIANT_DISPLAY_HEIGHT = 200
+
 /**
  * #config LinearVariantDisplay
  * Draws a `VariantTrack`: its records, stacked as a feature track stacks
@@ -100,9 +103,6 @@ import { retiredConfigSpellings } from './retired.ts'
  * }
  * ```
  */
-/** The height the rows take, and records alone open up to, with `height` unset. */
-export const DEFAULT_VARIANT_DISPLAY_HEIGHT = 200
-
 export default function configSchemaFactory() {
   return ConfigurationSchema(
     VARIANT_DISPLAY,

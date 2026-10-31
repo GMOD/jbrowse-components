@@ -1594,13 +1594,16 @@ export function stateModelFactory(
           },
           /**
            * #action
-           * With the rows hidden the handle's double click opens the band
-           * to its whole stack, so no record hides.
+           * With the rows hidden the handle's double click grows the band
+           * to its whole stack, so no record hides; it never shrinks it.
            */
           expandToContentHeight() {
             return self.rowsHidden
               ? self.resizeRecordsBand(
-                  self.recordsStackHeight - self.topBands.recordsHeight,
+                  Math.max(
+                    0,
+                    self.recordsStackHeight - self.topBands.recordsHeight,
+                  ),
                 )
               : superExpandToContentHeight()
           },

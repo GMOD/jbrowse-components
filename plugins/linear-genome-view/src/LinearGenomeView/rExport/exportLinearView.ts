@@ -50,7 +50,8 @@ function assemblyOf(view: LinearGenomeViewModel) {
 
 // The variant display drawing no genotype rows (none in the file, or hidden)
 // draws its records as a feature track does, which is how R reads it, at the
-// height its records draw.
+// height its records draw. With its rows hidden the band fits its records
+// into that height whatever the track's `heightMode`.
 export function recordsDrawnAlone(display: object) {
   return 'drawsRows' in display &&
     display.drawsRows === false &&
@@ -59,7 +60,10 @@ export function recordsDrawnAlone(display: object) {
     display.topBands !== null &&
     'recordsHeight' in display.topBands &&
     typeof display.topBands.recordsHeight === 'number'
-    ? display.topBands.recordsHeight
+    ? {
+        height: display.topBands.recordsHeight,
+        fits: 'rowsHidden' in display && display.rowsHidden === true,
+      }
     : undefined
 }
 
@@ -75,7 +79,7 @@ function tracksOf(view: LinearGenomeViewModel) {
         display.configuration,
       ) as Record<string, unknown>
       const { heightMode, height } = fullConfSnapshot(display.configuration)
-      const recordsHeight = recordsDrawnAlone(display)
+      const records = recordsDrawnAlone(display)
       tracks.push({
         trackId: track.configuration.trackId,
         trackName: svgTrackName(track, session),
@@ -85,9 +89,9 @@ function tracksOf(view: LinearGenomeViewModel) {
           unknown
         >,
         display: written,
-        heightMode,
-        height: recordsHeight ?? height,
-        recordsOnly: recordsHeight !== undefined,
+        heightMode: records?.fits ? 'fit' : heightMode,
+        height: records ? records.height : height,
+        recordsOnly: records !== undefined,
       })
     }
   }

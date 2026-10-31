@@ -4,7 +4,17 @@ describe('a variant display reads as its records', () => {
   test('at their drawn height when no genotype row draws', () => {
     expect(
       recordsDrawnAlone({ drawsRows: false, topBands: { recordsHeight: 57 } }),
-    ).toBe(57)
+    ).toEqual({ height: 57, fits: false })
+  })
+
+  test('fitted into that height with its rows hidden', () => {
+    expect(
+      recordsDrawnAlone({
+        drawsRows: false,
+        rowsHidden: true,
+        topBands: { recordsHeight: 57 },
+      }),
+    ).toEqual({ height: 57, fits: true })
   })
 
   test('not while its rows draw', () => {
