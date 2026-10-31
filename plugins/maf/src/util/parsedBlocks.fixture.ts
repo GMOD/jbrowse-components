@@ -56,7 +56,7 @@ export function collectBlocks(
 export function mafBlocksOf(text: string, resolve: SourceResolver) {
   const reader = readerOf(resolve)
   return collectBlocks((sink, keep) => {
-    readMafBlocks(text, reader, sink, keep)
+    readMafBlocks(text, offset => `${offset}`, reader, sink, keep)
   })
 }
 
@@ -64,19 +64,25 @@ export function mafBlocksOf(text: string, resolve: SourceResolver) {
 export function tafBlockOf(block: AlignmentBlock, resolve: SourceResolver) {
   const reader = readerOf(resolve)
   return collectBlocks((sink, keep) => {
-    readTafBlock(block, reader, sink, keep)
+    readTafBlock(block, reader, sink, keep, 'block')
   })[0]
 }
 
 /** The blocks of a decoded TAF slice, every one kept. */
 export function tafSliceBlocksOf(
   adapter: BgzipTaffyAdapter,
-  slice: Uint8Array,
+  bytes: Uint8Array,
   runLengthEncodeBases: boolean,
   resolve: SourceResolver,
 ) {
   const reader = readerOf(resolve)
   return collectBlocks((sink, keep) => {
-    adapter.readTafSlice(slice, runLengthEncodeBases, reader, sink, keep)
+    adapter.readTafSlice(
+      { bytes, blockIdAt: offset => `${offset}` },
+      runLengthEncodeBases,
+      reader,
+      sink,
+      keep,
+    )
   })
 }

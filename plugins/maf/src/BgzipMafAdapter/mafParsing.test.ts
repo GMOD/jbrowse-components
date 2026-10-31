@@ -290,3 +290,16 @@ test('the adapter filter keeps only the queried chromosome', () => {
   )
   expect(kept.map(f => f.refSrc)).toEqual(['hg38.chr1'])
 })
+
+test('two blocks at the same reference span get distinct ids', () => {
+  const block = [
+    'a',
+    's hg38.chr1 100 2 + 1000 AC',
+    's mm10.chr2 50 2 + 900 AC',
+  ]
+  const ids = collect([...block, '', ...block, ''].join('\n')).map(
+    f => f.uniqueId,
+  )
+  expect(ids).toHaveLength(2)
+  expect(new Set(ids).size).toBe(2)
+})

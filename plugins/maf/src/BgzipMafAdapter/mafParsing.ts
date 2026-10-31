@@ -15,15 +15,18 @@ import type { KeepBlock, MafStanzaReader } from '../util/mafStanzaReader.ts'
  */
 export function readMafBlocks(
   text: string,
+  blockIdAt: (offset: number) => string,
   reader: MafStanzaReader,
   sink: MafBlockSink,
   keep: KeepBlock,
 ) {
   const { lines, endsClean } = wholeLines(text)
   let open = false
+  let blockOffset = 0
+  let lineOffset = 0
   const flush = () => {
     if (open) {
-      reader.emitPlaced(sink, keep)
+      reader.emitPlaced(sink, keep, blockIdAt(blockOffset))
     }
     open = false
   }
@@ -35,9 +38,11 @@ export function readMafBlocks(
       flush()
       reader.begin()
       open = true
+      blockOffset = lineOffset
     } else if (open) {
       reader.line(line)
     }
+    lineOffset += raw.length + 1
   }
   if (endsClean) {
     flush()

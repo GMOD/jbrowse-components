@@ -1285,7 +1285,7 @@ describe('a query near a short contig end does not take the next contig', () => 
     }))!
     const decoded = tafSliceBlocksOf(
       adapter,
-      slice,
+      slice.bytes,
       false,
       makeSourceResolver().resolve,
     )
@@ -1305,5 +1305,61 @@ describe('a query near a short contig end does not take the next contig', () => 
         f => `${f.get('refName')}:${f.get('start')}-${f.get('end')}`,
       ),
     ).toEqual(['ctgA:0-4'])
+  })
+})
+
+describe('block ids', () => {
+  const celegans = new BgzipTaffyAdapter(
+    configSchema.create({
+      tafGzLocation: {
+        localPath: require.resolve('../../test_data/celegans/chrI.taf.gz'),
+        locationType: 'LocalPathLocation',
+      },
+      taiLocation: {
+        localPath: require.resolve('../../test_data/celegans/chrI.taf.gz.tai'),
+        locationType: 'LocalPathLocation',
+      },
+    }),
+  )
+  const idsOver = async (start: number, end: number) => {
+    const features = await firstValueFrom(
+      celegans
+        .getFeatures({ assemblyName: 'ce10', refName: 'chrI', start, end })
+        .pipe(toArray()),
+    )
+    return features.map(f => `${f.get('start')}-${f.get('end')} ${f.id()}`)
+  }
+
+  // TAF starts a block on every row change, so a run of insertion columns
+  // split by one is two blocks at one reference position spanning no base.
+  test('adjacent insertion-only blocks get distinct ids', () => {
+    const taf = [
+      'AA ; i 0 hg38.chr1 100 + 1000 i 1 mm10.chr2 50 + 900',
+      'AC',
+      '-G ; i 2 rn6.chr3 10 + 500',
+      '-T',
+      '-T ; d 2',
+      'GG ; ',
+      '',
+    ].join('\n')
+    const ids = tafSliceBlocksOf(
+      new BgzipTaffyAdapter(configSchema.create({})),
+      new TextEncoder().encode(taf),
+      false,
+      makeSourceResolver().resolve,
+    ).map(f => f.uniqueId)
+    expect(ids).toHaveLength(4)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  // The two reads start at different `.tai` entries, so a block they share sits
+  // at a different offset into each slice.
+  test('a block keeps its id across reads from different index entries', async () => {
+    const wide = await idsOver(10_000, 30_000)
+    const narrow = await idsOver(20_000, 30_000)
+    expect(narrow.length).toBeGreaterThan(0)
+    expect(wide).toEqual(expect.arrayContaining(narrow))
+    const ids = wide.map(spanAndId => spanAndId.split(' ')[1])
+    expect(new Set(ids).size).toBe(ids.length)
   })
 })

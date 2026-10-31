@@ -1,16 +1,26 @@
-import { unzip } from '@gmod/bgzf-filehandle'
+import { scanBgzfBlocks, unzip } from '@gmod/bgzf-filehandle'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import { parseTaiIndex, queryBlockSpan } from './taiIndex.ts'
+import { lowerBound, parseTaiIndex, queryBlockSpan } from './taiIndex.ts'
 
 import type { IndexData } from './taiIndex.ts'
+import type { BgzfBlockInfo } from '@gmod/bgzf-filehandle'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation, Region, StatusCallback } from '@jbrowse/core/util'
 
 /** A parsed `.tai` */
 export interface TaiIndex {
   index: IndexData
+}
+
+/**
+ * The decompressed bytes a region read, and the id of the block whose text
+ * starts at an offset into them.
+ */
+export interface TaiSlice {
+  bytes: Uint8Array
+  blockIdAt: (offset: number) => string
 }
 
 export async function readTaiIndex(
@@ -110,6 +120,7 @@ export async function readTaiSlice({
     signal,
   )
   const buffer = await unzip(compressed)
+  const blocks = scanBgzfBlocks(compressed, startBlock, Infinity)
 
   const startOffset = firstEntry.virtualOffset.dataPosition
   const nextOffset = nextEntry?.virtualOffset.dataPosition ?? 0
@@ -125,7 +136,36 @@ export async function readTaiSlice({
   const slice = buffer.subarray(startOffset, endOffset)
   const atFileEnd =
     endOffset === buffer.length && (toEnd || compressed.length < readLength)
-  return atFileEnd ? endingInNewline(slice) : slice
+  return {
+    bytes: atFileEnd ? endingInNewline(slice) : slice,
+    blockIdAt: virtualOffsetIds(blocks, startBlock, startOffset),
+  }
+}
+
+/**
+ * Each slice offset as the bgzf virtual offset it decompressed from, which
+ * names one place in the file whichever `.tai` entry the read started at, as a
+ * tabix line's file offset does.
+ */
+function virtualOffsetIds(
+  blocks: BgzfBlockInfo[],
+  startBlock: number,
+  sliceStart: number,
+) {
+  const starts: number[] = []
+  let decompressed = 0
+  for (const block of blocks) {
+    starts.push(decompressed)
+    decompressed += block.decompressedSize
+  }
+  return (offset: number) => {
+    const at = sliceStart + offset
+    const i = lowerBound(starts, at + 1, start => start) - 1
+    const block = blocks[i]
+    return block
+      ? `${block.filePosition}-${at - starts[i]!}`
+      : `${startBlock}-${at}`
+  }
 }
 
 const NEWLINE = 10

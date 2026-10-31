@@ -6,6 +6,7 @@ import { readMafBlocks } from './mafParsing.ts'
 
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { KeepBlock, MafStanzaReader } from '../util/mafStanzaReader.ts'
+import type { TaiSlice } from '../util/taiSlice.ts'
 import type { BgzipMafAdapterConfig } from './configSchema.ts'
 
 /**
@@ -41,12 +42,12 @@ export default class BgzipMafAdapter extends MafTaiAdapterBase<BgzipMafAdapterCo
   }
 
   protected readSlice(
-    slice: Uint8Array,
+    { bytes, blockIdAt }: TaiSlice,
     _setup: unknown,
     reader: MafStanzaReader,
     sink: MafBlockSink,
     keep: KeepBlock,
   ) {
-    readMafBlocks(this.decoder.decode(slice), reader, sink, keep)
+    readMafBlocks(this.decoder.decode(bytes), blockIdAt, reader, sink, keep)
   }
 }

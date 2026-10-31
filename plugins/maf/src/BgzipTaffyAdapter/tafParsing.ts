@@ -209,6 +209,7 @@ export function readTafBlock(
   reader: MafStanzaReader,
   sink: MafBlockSink,
   keep: KeepBlock,
+  id: string,
 ) {
   if (block.rows.length === 0) {
     return false
@@ -237,5 +238,5 @@ export function readTafBlock(
       )
     }
   }
-  return reader.emitPlaced(sink, keep)
+  return reader.emitPlaced(sink, keep, id)
 }

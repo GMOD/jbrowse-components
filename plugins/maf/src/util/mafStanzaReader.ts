@@ -152,7 +152,7 @@ export class MafStanzaReader implements MafLineTarget {
    * The block at its reference row's forward extent, where `keep` wants it.
    * Nothing without a reference row.
    */
-  emitPlaced(sink: MafBlockSink, keep: KeepBlock) {
+  emitPlaced(sink: MafBlockSink, keep: KeepBlock, id: string) {
     const { refSrc } = this
     if (refSrc === undefined) {
       return false
@@ -165,7 +165,7 @@ export class MafStanzaReader implements MafLineTarget {
     if (!keep(refSrc, start, end)) {
       return false
     }
-    this.emit(sink, `${refSrc}-${start}-${this.refSize}`, start, end)
+    this.emit(sink, id, start, end)
     return true
   }
 

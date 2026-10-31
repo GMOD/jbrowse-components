@@ -20,7 +20,7 @@ import {
 
 import type { MafBlockSink } from '../util/mafBlockSink.ts'
 import type { KeepBlock, MafStanzaReader } from '../util/mafStanzaReader.ts'
-import type { TaiIndex } from '../util/taiSlice.ts'
+import type { TaiIndex, TaiSlice } from '../util/taiSlice.ts'
 import type { BgzipTaffyAdapterConfig } from './configSchema.ts'
 import type { AlignmentBlock } from './tafParsing.ts'
 
@@ -50,7 +50,7 @@ export default class BgzipTaffyAdapter extends MafTaiAdapterBase<
   }
 
   protected readSlice(
-    slice: Uint8Array,
+    slice: TaiSlice,
     { runLengthEncodeBases }: SetupData,
     reader: MafStanzaReader,
     sink: MafBlockSink,
@@ -60,27 +60,31 @@ export default class BgzipTaffyAdapter extends MafTaiAdapterBase<
   }
 
   readTafSlice(
-    buffer: Uint8Array,
+    { bytes, blockIdAt }: TaiSlice,
     runLengthEncodeBases: boolean,
     reader: MafStanzaReader,
     sink: MafBlockSink,
     keep: KeepBlock,
   ) {
-    const emit = (block: AlignmentBlock, cols: string[]) => {
-      finalizeBlock(block, cols, this.decoder)
-      readTafBlock(block, reader, sink, keep)
-    }
     let pBlock: AlignmentBlock | undefined
     let currentBlock: AlignmentBlock | undefined
     let columns: string[] = []
     let isFirstCoordLine = true
+    let blockOffset = 0
+    let lineOffset = 0
+    const emit = (block: AlignmentBlock, cols: string[]) => {
+      finalizeBlock(block, cols, this.decoder)
+      readTafBlock(block, reader, sink, keep, blockIdAt(blockOffset))
+    }
 
     // A cut coordinate line is the one `wholeLines` has to drop here: cut
     // before its ` ; ` it looks like a plain bases line and reaches
     // `parseBasesColumn` as one.
-    const { lines, endsClean } = wholeLines(this.decoder.decode(buffer))
+    const { lines, endsClean } = wholeLines(this.decoder.decode(bytes))
 
     for (const line of lines) {
+      const lineStart = lineOffset
+      lineOffset += line.length + 1
       const trimmedLine = line.trim()
       if (!trimmedLine || trimmedLine.startsWith('#')) {
         continue
@@ -116,6 +120,7 @@ export default class BgzipTaffyAdapter extends MafTaiAdapterBase<
         }
 
         currentBlock = parseCoordinatesAndEstablishBlock(pBlock, instructions)
+        blockOffset = lineStart
         columns = []
 
         const bases = parseBasesColumn(basesAndTags, runLengthEncodeBases)

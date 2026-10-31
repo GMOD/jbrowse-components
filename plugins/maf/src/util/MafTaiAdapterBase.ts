@@ -6,7 +6,7 @@ import { readTaiSlice, taiRegionByteSize } from './taiSlice.ts'
 
 import type { MafBlockSink } from './mafBlockSink.ts'
 import type { KeepBlock } from './mafStanzaReader.ts'
-import type { TaiIndex } from './taiSlice.ts'
+import type { TaiIndex, TaiSlice } from './taiSlice.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FileLocation, Region } from '@jbrowse/core/util'
@@ -28,7 +28,7 @@ export abstract class MafTaiAdapterBase<
 
   /** The slice's blocks through `reader` into `sink`, those `keep` wants. */
   protected abstract readSlice(
-    slice: Uint8Array,
+    slice: TaiSlice,
     setup: SETUP,
     reader: MafStanzaReader,
     sink: MafBlockSink,
