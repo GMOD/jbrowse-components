@@ -420,7 +420,7 @@ npx --yes serve ecoli_pangenome_build/jbrowse2 # then open the printed URL
     [PanSN depth](/docs/config_guides/synteny_track#pansn-depth-sample-or-haplotype).
 
 [^coarse]:
-    `--coarse` sets how many bp a coarse row may stray from the real alignment;
-    with a larger value, raise
+    `--coarse` sets how many bp a coarse row may stray from the real alignment,
+    and the file's header raises the adapter's
     [`coarseBpPerPxThreshold`](/docs/config/multigenomeindexedpafadapter#slot-coarsebpperpxthreshold)
-    on the adapter too. `--csi` swaps the TBI index for sequences over ~512 Mb.
+    to match. `--csi` swaps the TBI index for sequences over ~512 Mb.
