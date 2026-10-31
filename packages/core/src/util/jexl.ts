@@ -145,9 +145,11 @@ export default function JexlF(/* config?: any*/) {
   j.addFunction('split', (s: unknown, char: string) =>
     String(s ?? '').split(char),
   )
-  /** #jexlFunction String functions | join('-', 'a', 'b', '', 'c') | a-b-c, joins truthy args with the separator */
-  j.addFunction('join', (k: string, ...args: string[]) =>
-    [...args].filter(f => !!f).join(k),
+  /** #jexlFunction String functions | join(' - ', feature.notThere, 'a', '', 0) | a - 0, joins the args with the separator, skipping absent and empty ones */
+  j.addFunction('join', (separator: string, ...args: unknown[]) =>
+    args
+      .filter(arg => arg !== undefined && arg !== null && arg !== '')
+      .join(separator),
   )
   /** #jexlFunction String functions | includes('kittycat', 'cat') | true */
   j.addFunction('includes', (s: string, search: string) => s.includes(search))

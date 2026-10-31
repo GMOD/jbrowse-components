@@ -278,8 +278,11 @@ off the file and moving an outgrown callback into a plugin.
 
 `labels.name` and `labels.description` each name the feature field a label line
 reads, such as `"note"`, or take a `jexl:` expression where the label wants a
-fallback; `{ "show": false }` turns a line off
-([](/docs/config/featurenamelabel)). The
+fallback or combines fields; `{ "show": false }` turns a line off
+([](/docs/config/featurenamelabel)). `join` skips a field the feature lacks,
+along with its separator, and `&&` adds an optional part only when it is
+present: below, the name reads `Protein:HGA (hga)` or plain `EDEN`, and the
+description `gene · protein kinase` or plain `match_part`. The
 [`tooltip`](/docs/config/featuretooltip) is rendered as HTML:
 
 ```json addtrack
@@ -291,8 +294,8 @@ fallback; `{ "show": false }` turns a line off
   "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
   "displayDefaults": {
     "labels": {
-      "name": "jexl:feature.name || feature.id",
-      "description": "note"
+      "name": "jexl:join(' ', feature.name || feature.id, feature.alias && `(${feature.alias})`)",
+      "description": "jexl:join(' · ', feature.type, feature.note)"
     },
     "tooltip": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"
   }

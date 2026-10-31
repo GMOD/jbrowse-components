@@ -77,6 +77,38 @@ describe('function string parsing', () => {
     })
   })
 
+  describe('join skips absent parts', () => {
+    const evalJoin = (expr: string, feature: Record<string, unknown>) =>
+      stringToJexlExpression(`jexl:${expr}`, jexl).eval({ feature })
+
+    it('drops undefined, null and empty parts with their separator', () => {
+      expect(
+        evalJoin("join(' - ', feature.a, feature.b, feature.c, feature.d)", {
+          a: 'BRCA1',
+          c: null,
+          d: '',
+        }),
+      ).toBe('BRCA1')
+    })
+
+    it('keeps a zero and a false', () => {
+      expect(
+        evalJoin("join(' ', feature.name, feature.score, feature.ok)", {
+          name: 'BRCA1',
+          score: 0,
+          ok: false,
+        }),
+      ).toBe('BRCA1 0 false')
+    })
+
+    it('wraps an optional part only when it is present', () => {
+      const label =
+        "join(' ', feature.name, feature.alias && `(${feature.alias})`)"
+      expect(evalJoin(label, { name: 'HGA', alias: 'hga' })).toBe('HGA (hga)')
+      expect(evalJoin(label, { name: 'EDEN' })).toBe('EDEN')
+    })
+  })
+
   it('can use the loaded core helper functions to access feature info', () => {
     const feature = new SimpleFeature({
       uniqueId: 'jexlFeature',
