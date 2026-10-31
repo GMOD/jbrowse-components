@@ -67,6 +67,7 @@ export const variantsSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
+    viewportHeight: 600,
   },
 
   // 1000 Genomes chr1 run through SnpEff
