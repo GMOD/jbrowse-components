@@ -100,7 +100,11 @@ import {
   createRowsSourceJoin,
   encodeMafRows,
 } from './encodeMafRows.ts'
-import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
+import {
+  fetchMafAlignmentData,
+  fetchMafSummaryData,
+  unionSources,
+} from './fetchMafData.ts'
 import { mafLaunchMenuItems } from './launchMenuItems.ts'
 import { openInsertionWidget } from './openInsertionWidget.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
@@ -168,21 +172,6 @@ export interface MafContextMenuInfo extends ContextMenuAnchor {
   refName: string
   pos: number
   hover?: MafHover
-}
-
-/**
- * Merge a discovered row set into the known one, keeping first-seen order; the
- * newer entry supplies label and color. See `setSamples`.
- */
-function unionSources(
-  known: readonly MafSource[],
-  incoming: readonly MafSource[],
-): MafSource[] {
-  const byName = new Map(known.map(s => [s.name, s]))
-  for (const source of incoming) {
-    byName.set(source.name, source)
-  }
-  return [...byName.values()]
 }
 
 /**
@@ -365,7 +354,7 @@ export default function stateModelFactory(
           const next = placeCopyRows(
             samplesCanonical
               ? withKnownCopies(self.sourcesVolatile, samples)
-              : unionSources(self.sourcesVolatile, samples),
+              : unionSources([self.sourcesVolatile, samples]),
           )
           if (!deepEqual(next, self.sourcesVolatile)) {
             self.sourcesVolatile = next
@@ -1453,16 +1442,6 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The bases that paint their own color over the fill, which the
-         * cells walk and the letters both read.
-         */
-        get basePaints() {
-          return basePaintsOf(self.rowPlan)
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
          * Render state passed to the GPU/Canvas2D backend each frame.
          *
          * `canvasHeight` is the whole canvas, stacked bands plus rows viewport,
@@ -1543,7 +1522,7 @@ export default function stateModelFactory(
           const { color, mark } = self.rowPlan
           const region =
             color === 'identity' || mark === 'bar'
-              ? self.rpcDataMap.get(displayedRegionIndex)
+              ? self.detailOnScreen.get(displayedRegionIndex)
               : undefined
           const binBp = self.encodeBinBp
           const start = Math.floor(bp / binBp) * binBp
@@ -1563,7 +1542,7 @@ export default function stateModelFactory(
                 view: self.host,
                 rpcDataMap: self.detailOnScreen,
                 ...self.rowGeometry(),
-                paints: self.basePaints,
+                paints: basePaintsOf(self.rowPlan),
               })
             : []
         },
@@ -1779,10 +1758,7 @@ export default function stateModelFactory(
               palette: colorPalette,
               binBp: self.encodeBinBp,
             },
-            refNameRanks:
-              self.rowPlan.color === 'refNameRank'
-                ? self.refNameRanks.ranks
-                : undefined,
+            refNameRanks: self.refNameRanks.ranks,
             refNameRankPalette: self.refNameRankPalette,
             rowIndexBySrc: self.rowIndexBySrc,
             codons:

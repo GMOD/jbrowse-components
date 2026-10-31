@@ -75,7 +75,7 @@ export interface MafRowsEncodeProps {
   /** the identity ramp's packed color at each hundredth (`identityLut`) */
   identityColors: Uint32Array
   gpu: MafGpuProps
-  /** The rows' source-sequence ranks, while `refNameRank` fills the rows. */
+  /** The rows' source-sequence ranks, read while `refNameRank` fills the rows. */
   refNameRanks: ReadonlyMap<number, ReadonlyMap<string, number>> | undefined
   /** each rank's packed color (`refNameRankColors`) */
   refNameRankPalette: readonly number[]
@@ -217,13 +217,17 @@ export function encodeMafRows(
   }
 }
 
+function pick(a: Uint32Array, kept: readonly number[]) {
+  return Uint32Array.from(kept, i => a[i]!)
+}
+
 function pickSpans(spans: SpanChannels, kept: readonly number[]) {
-  const pick = (a: Uint32Array) => Uint32Array.from(kept, i => a[i]!)
   return {
-    x: pick(spans.x),
-    x2: pick(spans.x2),
-    row: pick(spans.row),
-    color: typeof spans.color === 'object' ? pick(spans.color) : spans.color,
+    x: pick(spans.x, kept),
+    x2: pick(spans.x2, kept),
+    row: pick(spans.row, kept),
+    color:
+      typeof spans.color === 'object' ? pick(spans.color, kept) : spans.color,
     count: kept.length,
   }
 }
@@ -232,14 +236,13 @@ function pickInsertions(
   c: InsertionChannels,
   kept: readonly number[],
 ): InsertionChannels {
-  const pick = (a: Uint32Array) => Uint32Array.from(kept, i => a[i]!)
   return {
-    x: pick(c.x),
-    x2: pick(c.x2),
-    row: pick(c.row),
-    length: pick(c.length),
-    color: pick(c.color),
-    under: c.under && pick(c.under),
+    x: pick(c.x, kept),
+    x2: pick(c.x2, kept),
+    row: pick(c.row, kept),
+    length: pick(c.length, kept),
+    color: pick(c.color, kept),
+    under: c.under && pick(c.under, kept),
     count: kept.length,
   }
 }

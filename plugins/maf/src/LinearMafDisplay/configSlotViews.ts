@@ -108,7 +108,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get colorField(): MafColorField | undefined {
-      return getConf(self, ['encoding', 'color', 'field']) || undefined
+      return getConf(self, ['encoding', 'color', 'field'])
     },
     /**
      * #getter
@@ -149,19 +149,25 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
+     * `encoding.color` while it paints identity along a ramp, else
+     * undefined.
+     */
+    get identityRamp() {
+      const color = this.colorEncoding
+      return typeof color === 'object' &&
+        color.field === 'identity' &&
+        color.scale === 'linear'
+        ? color
+        : undefined
+    },
+    /**
+     * #getter
      * The identity ramp's packed color at each hundredth, the default
      * ramp unless `encoding.color` is identity. One array per ramp, so a
      * color edit that leaves the ramp alone re-encodes nothing.
      */
     get identityColors(): Uint32Array {
-      const color = this.colorEncoding
-      return identityLut(
-        typeof color === 'object' &&
-          color.field === 'identity' &&
-          color.scale === 'linear'
-          ? color
-          : undefined,
-      )
+      return identityLut(this.identityRamp)
     },
     /**
      * #getter
@@ -170,14 +176,12 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * written `scale.range` paints instead.
      */
     get colorScheme(): ColorSchemeName | undefined {
-      const color = this.colorEncoding
-      return typeof color !== 'object' ||
-        color.field !== 'identity' ||
-        color.scale !== 'linear'
+      const ramp = this.identityRamp
+      return ramp === undefined
         ? MAF_FIELD_PRESETS.identity.scale.scheme
-        : color.range?.length
+        : ramp.range?.length
           ? undefined
-          : (color.scheme ?? MAF_FIELD_PRESETS.identity.scale.scheme)
+          : (ramp.scheme ?? MAF_FIELD_PRESETS.identity.scale.scheme)
     },
     /**
      * #getter

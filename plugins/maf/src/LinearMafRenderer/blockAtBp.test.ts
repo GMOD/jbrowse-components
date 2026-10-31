@@ -1,4 +1,5 @@
-import { blockIndexAtBp } from './blockAtBp.ts'
+import { buildColumnForGenomicOffset } from './binning.ts'
+import { blockIndexAtBp, columnAtBp } from './blockAtBp.ts'
 
 // Disjoint, ascending, with a reference gap between the 2nd and 3rd — the
 // shape a real fetched region has (blocks are one MAF stanza each, separated
@@ -36,4 +37,15 @@ test('agrees with a linear scan across the whole span', () => {
     const scanned = blocks.findIndex(b => bp >= b.startBp && bp < b.endBp)
     expect(blockIndexAtBp(blocks, bp)).toBe(scanned)
   }
+})
+
+test('columnAtBp skips the reference gap columns to the base', () => {
+  const refSeq = new TextEncoder().encode('AC--GT')
+  const at = (bp: number) =>
+    columnAtBp([{ startBp: 100, endBp: 104 }], bp, () =>
+      buildColumnForGenomicOffset(refSeq),
+    )
+  expect(at(101)).toEqual({ blockIdx: 0, col: 1 })
+  expect(at(102)).toEqual({ blockIdx: 0, col: 4 })
+  expect(at(104)).toBeUndefined()
 })

@@ -3,7 +3,7 @@ import { LOWER_BIT, isGapByte } from '@jbrowse/core/util/alignedBytes'
 import { orderRowsByValueAt } from '@jbrowse/tree-sidebar'
 
 import { buildColumnForGenomicOffset } from '../LinearMafRenderer/binning.ts'
-import { blockIndexAtBp } from '../LinearMafRenderer/blockAtBp.ts'
+import { columnAtBp } from '../LinearMafRenderer/blockAtBp.ts'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
@@ -38,26 +38,20 @@ export function orderMafRowsByBaseAt<T extends { name: string }>(
   bp: number,
 ): T[] {
   const baseByName = new Map<string, string>()
-  const blockIdx = blockIndexAtBp(region.blocks, bp)
-  if (blockIdx !== -1) {
-    const block = region.blocks[blockIdx]!
-    const { colForGpos, refLen } = buildColumnForGenomicOffset(
-      block.refSeqBytes,
-    )
-    const offset = bp - block.startBp
-    if (offset < refLen) {
-      const column = colForGpos[offset]!
-      for (const row of block.rows) {
-        const name = drawnRows[row.rowIndex]?.name
-        // A malformed file can ship a row shorter than the reference, which has
-        // no byte at the column and so no base to group on.
-        const code = row.alignmentBytes[column]
-        if (name !== undefined && code !== undefined) {
-          baseByName.set(
-            name,
-            isGapByte(code) ? GAP : String.fromCharCode(code & ~LOWER_BIT),
-          )
-        }
+  const at = columnAtBp(region.blocks, bp, blockIdx =>
+    buildColumnForGenomicOffset(region.blocks[blockIdx]!.refSeqBytes),
+  )
+  if (at) {
+    for (const row of region.blocks[at.blockIdx]!.rows) {
+      const name = drawnRows[row.rowIndex]?.name
+      // A malformed file can ship a row shorter than the reference, which has
+      // no byte at the column and so no base to group on.
+      const code = row.alignmentBytes[at.col]
+      if (name !== undefined && code !== undefined) {
+        baseByName.set(
+          name,
+          isGapByte(code) ? GAP : String.fromCharCode(code & ~LOWER_BIT),
+        )
       }
     }
   }

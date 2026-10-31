@@ -4,7 +4,7 @@ import { LOWER_BIT, isGapByte } from '@jbrowse/core/util/alignedBytes'
 import { spanRect } from '@jbrowse/render-core/canvas2dUtils'
 
 import { buildColumnForGenomicOffset } from '../LinearMafRenderer/binning.ts'
-import { blockIndexAtBp } from '../LinearMafRenderer/blockAtBp.ts'
+import { columnAtBp } from '../LinearMafRenderer/blockAtBp.ts'
 import { CHAR_SIZE_WIDTH } from '../LinearMafRenderer/rendering/types.ts'
 import {
   eachVisibleRegion,
@@ -211,29 +211,6 @@ class BlockIndexes {
   }
 }
 
-/**
- * Resolve an absolute reference position to the block containing it and the
- * alignment column of that base within the block. Blocks are disjoint reference
- * ranges (`refLen` reference bases starting at `startBp`, which is what `endBp`
- * records), so at most one contains `p` and `blockIndexAtBp` binary-searches it;
- * returns undefined when no fetched block covers it. The scan this replaced ran
- * three times per codon over the whole buffered region, so it was quadratic in
- * the block count on a fine-grained multiz.
- */
-function locateRefPos(
-  blocks: MafBlock[],
-  indexes: BlockIndexes,
-  p: number,
-): RefColLoc | undefined {
-  const bi = blockIndexAtBp(blocks, p)
-  if (bi === -1) {
-    return undefined
-  }
-  const g = p - blocks[bi]!.startBp
-  const { colForGpos, refLen } = indexes.columnsAt(bi)
-  return g < refLen ? { blockIdx: bi, col: colForGpos[g]! } : undefined
-}
-
 /** Codon type resolved to per-block columns. */
 type CodonLocs = [RefColLoc, RefColLoc, RefColLoc]
 
@@ -249,9 +226,10 @@ function locateCodon(
   blocks: MafBlock[],
   indexes: BlockIndexes,
 ): CodonLocs | undefined {
-  const l0 = locateRefPos(blocks, indexes, positions[0])
-  const l1 = locateRefPos(blocks, indexes, positions[1])
-  const l2 = locateRefPos(blocks, indexes, positions[2])
+  const columnsAt = (blockIdx: number) => indexes.columnsAt(blockIdx)
+  const l0 = columnAtBp(blocks, positions[0], columnsAt)
+  const l1 = columnAtBp(blocks, positions[1], columnsAt)
+  const l2 = columnAtBp(blocks, positions[2], columnsAt)
   return l0 && l1 && l2 ? [l0, l1, l2] : undefined
 }
 

@@ -81,7 +81,6 @@ interface MafMenuSelf
   treeHasBranchLengths: boolean
   showInterbase: boolean
   setShowInterbase: (f: boolean) => void
-  setShowCoverageAlleles: (f: boolean) => void
   showAlignments: boolean
   showConservation: boolean
   showReferenceRow: boolean
@@ -150,7 +149,9 @@ function frameMenuItems(self: MafMenuSelf): MenuItem[] {
               : undefined,
           ),
           self.showFrames,
-          self.setShowFrames,
+          f => {
+            self.setShowFrames(f)
+          },
         ),
       ]
     : []
@@ -296,27 +297,33 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
         self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
       ),
       self.showCoverage,
-      self.setShowCoverage,
+      f => {
+        self.setShowCoverage(f)
+      },
     ),
     interbaseIndicatorsMenuItem(self),
-    toggleItem('Alignments', self.showAlignments, self.setShowAlignments),
+    toggleItem('Alignments', self.showAlignments, f => {
+      self.setShowAlignments(f)
+    }),
     toggleItem(
       withHint('Mismatches', mismatchesHint(self)),
       self.showMismatches,
-      self.setShowMismatches,
+      f => {
+        self.setShowMismatches(f)
+      },
     ),
-    toggleItem(
-      'Reference row',
-      self.showReferenceRow,
-      self.setShowReferenceRow,
-    ),
+    toggleItem('Reference row', self.showReferenceRow, f => {
+      self.setShowReferenceRow(f)
+    }),
     toggleItem(
       withHint(
         'Conservation',
         self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
       ),
       self.showConservation,
-      self.setShowConservation,
+      f => {
+        self.setShowConservation(f)
+      },
     ),
     toggleItem(
       withHint(
@@ -324,7 +331,9 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
         self.coarseTierActive ? ZOOM_IN_FOR_BAND : undefined,
       ),
       self.showInversions,
-      self.setShowInversions,
+      f => {
+        self.setShowInversions(f)
+      },
     ),
     ...frameMenuItems(self),
     // Only where a key exists: a constant fill and the bases key nothing.

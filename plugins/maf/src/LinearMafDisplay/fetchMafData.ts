@@ -46,8 +46,22 @@ interface SampleSet {
 }
 
 /**
+ * Row sets merged by name in first-seen order, a later entry supplying the
+ * label and color.
+ */
+export function unionSources(lists: readonly (readonly MafSource[])[]) {
+  const byName = new Map<string, MafSource>()
+  for (const list of lists) {
+    for (const source of list) {
+      byName.set(source.name, source)
+    }
+  }
+  return [...byName.values()]
+}
+
+/**
  * Resolve the sample set a batch of per-region results reports: the union of
- * their samples in first-seen order. A discovery track derives rows per region,
+ * their samples (`unionSources`). A discovery track derives rows per region,
  * so regions can name different sets; the union keeps every row and settles in
  * one round.
  *
@@ -58,15 +72,9 @@ export function unionSampleSets(
   results: readonly { result: SampleSet }[],
 ): SampleSet | undefined {
   const first = results[0]?.result
-  const byName = new Map<string, MafSource>()
-  for (const { result } of results) {
-    for (const sample of result.samples) {
-      byName.set(sample.name, sample)
-    }
-  }
   return first
     ? {
-        samples: [...byName.values()],
+        samples: unionSources(results.map(({ result }) => result.samples)),
         treeNewick: first.treeNewick,
         samplesCanonical: first.samplesCanonical,
       }
