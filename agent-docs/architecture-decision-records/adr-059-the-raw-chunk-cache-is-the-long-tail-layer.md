@@ -125,9 +125,9 @@ outside jbrowse, and this module is not BAM-specific — CRAM, tabix, bigwig, 2b
 and every plain fetch sit on it.
 
 **Broadcasting a sweep to every worker on `visibilitychange`.** A worker has no
-`document`, so a tab-hidden sweep has to be pushed; the seam exists
-(`RpcServer.handler` already picks an out-of-band `stopToken` frame out of the
-message stream, and `registerStopTokenBroadcaster` is the main-thread half). It
+`document`, so a tab-hidden sweep has to be pushed; the nearest seam is the
+out-of-band `abort` frame `RpcServer.handler` picks out of the message stream
+(ADR-122 retired the `stopToken` broadcaster this once named). It
 was worth building when this cache held 256 MB per worker *permanently*. Against a
 working idle sweep it buys releasing that memory somewhat earlier, for a second
 reclamation path to keep correct. Reconsider only if the idle sweep proves
