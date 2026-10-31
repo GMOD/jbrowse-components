@@ -326,7 +326,6 @@ describe('computeArcsFromPileupData', () => {
       expect(run(data, 2).lines.map(l => l.support)).toEqual([
         5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
       ])
-      expect(run(data, 2).interchromFromMatePair).toBe(true)
     })
 
     // Grouping by strand or mapq puts a breakpoint's pairs in whichever lane
@@ -1010,7 +1009,7 @@ describe('computeArcsFromPileupData', () => {
       readClipAtStart: new Uint32Array([0]),
       readSuppAlignments: ['chr2,9000,+,500S500M,60,0;'],
     })
-    const { arcs, lines, interchromFromMatePair } = computeArcsFromPileupData(
+    const { arcs, lines } = computeArcsFromPileupData(
       new Map([[0, data]]),
       [{ refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 }],
       {
@@ -1021,7 +1020,6 @@ describe('computeArcsFromPileupData', () => {
 
     expect(arcs).toEqual([])
     expect(lines.map(l => l.x.refName)).toEqual(['chr1', 'chr2'])
-    expect(interchromFromMatePair).toBe(false)
   })
 
   // ONE DONOR, TWO ACCEPTORS — K562's BCR-ABL1 in miniature, which is one donor
@@ -3185,7 +3183,7 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
   })
 
   test('a mate link whose pair crosses chromosomes paints inter-chromosomal, whatever its drawn ends', () => {
-    const { arcs, interchromFromMatePair } = computeArcsFromPileupData(
+    const { arcs } = computeArcsFromPileupData(
       new Map([[0, translocatedMate]]),
       regions,
       {
@@ -3195,7 +3193,6 @@ describe('a mate link reads its pair fields off a primary, not a supplementary',
     )
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.colorType).toBe(ARC_COLOR_INTERCHROM)
-    expect(interchromFromMatePair).toBe(true)
   })
 
   test('the interchrom filter takes that mate link with the rest', () => {

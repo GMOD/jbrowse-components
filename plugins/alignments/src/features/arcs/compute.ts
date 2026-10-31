@@ -269,10 +269,8 @@ function resolveArcs(
       line: ComputedLine
       clusters: Set<number>
       exempt: boolean
-      fromMatePair: boolean
     }
   >()
-  let interchromFromMatePair = false
 
   // One tick per breakpoint, COUNTING the reads that agree on it — the same
   // move `arcKey` makes for arcs, and for the same two reasons.
@@ -351,7 +349,6 @@ function resolveArcs(
         seen.line.support += clusterSupport
         seen.line.partnerLoci.push(locus)
         seen.exempt ||= exempt
-        seen.fromMatePair ||= !exempt
       }
       if (!seen.line.partnerRefNames.includes(partnerRef)) {
         seen.line.partnerRefNames.push(partnerRef)
@@ -367,7 +364,6 @@ function resolveArcs(
       },
       clusters: new Set([cluster]),
       exempt,
-      fromMatePair: !exempt,
     })
   }
 
@@ -546,7 +542,6 @@ function resolveArcs(
         // cannot say that — its number is a sum — so its gate is applied after
         // the summing instead.
         if (clearsInterchromFloor(exempt, support, minInterchromReads)) {
-          interchromFromMatePair ||= !exempt
           pushArc(
             {
               p1: { refName: p1Ref, bp: p1Bp },
@@ -604,7 +599,6 @@ function resolveArcs(
     // the rounded arc. (`offscreenMates` only filters connections to mates that
     // aren't loaded in the current view; see `offScreenMateArcs`.)
     const colorType = getArcColorType({ arc, colorField, hasPaired })
-    interchromFromMatePair ||= colorType === ARC_COLOR_INTERCHROM
     // The arcs' ordinary pair, which at depth stops being context and becomes
     // the picture — 9138 of 9204 arcs at 1:2,000,000 on HG002 300x, all
     // painting the baseline slot (agent-docs/reference/DEEP_COVERAGE.md).
@@ -730,7 +724,6 @@ function resolveArcs(
     clearsInterchromFloor(e.exempt, e.line.support, minInterchromReads),
   )
   const lines = kept.map(e => e.line)
-  interchromFromMatePair ||= kept.some(e => e.fromMatePair)
 
   // The same ordering, for the same reason, over the ticks. They are opaque
   // full-band verticals, so two within a stroke width of each other resolve by
@@ -753,7 +746,7 @@ function resolveArcs(
     )
   }
 
-  return { arcs, crossRegion, lines, interchromFromMatePair }
+  return { arcs, crossRegion, lines }
 }
 
 /**
@@ -846,9 +839,6 @@ export interface ArcsByGroupResult {
   // through `arcSlotCategory`, which needs a setting this pass doesn't
   // have, so the slots stay raw here.
   colorSlots: Set<number>
-  // Whether any interchromosomal mark stands on a mate pair rather than only
-  // on split reads — what the legend's interchromosomal row may claim.
-  interchromFromMatePair: boolean
   // The largest reported flat-arc span, which is the read cloud's Y domain: its
   // axis autoscales to this and the insert-size axis labels its top tick
   // with it. 0 when nothing flat is drawn.
@@ -958,11 +948,10 @@ export function resolveArcsByGroup(
   const crossRegionByGroup = new Map<string, CrossRegionArc[]>()
   const inkGroupKeys = new Set<string>()
   const colorSlots = new Set<number>()
-  let interchromFromMatePair = false
   let maxFlatArcSpanBp = 0
   let offset = 0
   for (const { key, pending } of lanes) {
-    const { arcs, crossRegion, lines, ...resolved } = resolveArcs(
+    const { arcs, crossRegion, lines } = resolveArcs(
       pending,
       scale,
       settings,
@@ -972,7 +961,6 @@ export function resolveArcsByGroup(
         sizeOf: clusters.sizeOf,
       },
     )
-    interchromFromMatePair ||= resolved.interchromFromMatePair
     offset += pending.length
     // The per-region feed is keyed on the LOADED list, unchanged: it is what a
     // block draws from, and a displayed region whose fetch has not landed has
@@ -1025,7 +1013,6 @@ export function resolveArcsByGroup(
     crossRegionByGroup,
     inkGroupKeys,
     colorSlots,
-    interchromFromMatePair,
     maxFlatArcSpanBp,
   }
 }

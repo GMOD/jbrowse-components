@@ -1,5 +1,3 @@
-import { CONNECTION_LABELS } from '@jbrowse/alignments-core'
-
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   arcSlotCategory,
@@ -51,12 +49,7 @@ export function connectorStyler({
     const slot = linkedReadColorSlot(colorType, shift)
     return {
       color: palette[slot]!,
-      label:
-        arcColorCategoryLabel(
-          arcSlotCategory(slot, colorField),
-          !isSplit,
-          labels,
-        ) ?? CONNECTION_LABELS.readPair,
+      label: arcColorCategoryLabel(arcSlotCategory(slot, colorField), labels),
     }
   }
 }

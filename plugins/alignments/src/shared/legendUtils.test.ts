@@ -30,6 +30,7 @@ import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
 import type { BakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale.ts'
 import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { ArcCategory } from '../shaders/palettes.ts'
 import type { LayerSpec } from './splitFieldForTest.ts'
 import type { BaseLayer } from './types.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
@@ -777,47 +778,41 @@ describe('getArcLegendItems', () => {
   test('keys only the arc color slots plotted, in table order', () => {
     expect(
       getArcLegendItems(
-        new Set<ReadColorCategory>(['splitInversion', 'longInsert']),
+        new Set<ArcCategory>(['splitInvLL', 'longInsert']),
         makeTestPalette(),
-        false,
       ).map(i => i.label),
-      // …and in the overlay's own words, not the read fills': a curve is drawn
-      // for a split junction whether or not the read is paired, so it must not
-      // inherit "paired-end read" from CATEGORY_LEGEND.
-    ).toEqual(['Long insert', 'Split alignment (inverted)'])
-    expect(getArcLegendItems(new Set(), makeTestPalette(), false)).toEqual([])
+      // …and in the connections' own words, not the read fills': a split
+      // connection names its junction class, paired or not.
+    ).toEqual(['Long insert', 'Split read (inversion, LL-type)'])
+    expect(getArcLegendItems(new Set(), makeTestPalette())).toEqual([])
   })
 
-  test('names interchromosomal marks a split alignment only when every one is', () => {
-    const labels = (fromMatePair: boolean) =>
+  // The color says only that a connection crosses chromosomes, so its row
+  // names that whether a split read or a mate pair stands behind it.
+  test('names interchromosomal marks one way, whatever evidence draws them', () => {
+    expect(
       getArcLegendItems(
-        new Set<ReadColorCategory>(['interchrom']),
+        new Set<ArcCategory>(['interchrom']),
         makeTestPalette(),
-        fromMatePair,
-      ).map(i => i.label)
-    expect(labels(false)).toEqual(['Split alignment (interchromosomal)'])
-    expect(labels(true)).toEqual(['Inter-chromosomal'])
+      ).map(i => i.label),
+    ).toEqual(['Inter-chromosomal'])
   })
 
   // The arc hover names the bucket under the cursor; it has to say what the
   // swatch the reader looks up says, which the read table's wording did not.
   test('an arc hover names each bucket as the arc key does', () => {
-    const buckets: ReadColorCategory[] = [
-      'splitInversion',
-      'splitDeletion',
+    const buckets: ArcCategory[] = [
+      'splitInvLL',
+      'splitForward',
       'interchrom',
       'longInsert',
       'pairRL',
     ]
-    for (const fromMatePair of [false, true]) {
-      expect(buckets.map(c => arcColorCategoryLabel(c, fromMatePair))).toEqual(
-        buckets.map(
-          c =>
-            getArcLegendItems(new Set([c]), makeTestPalette(), fromMatePair)[0]!
-              .label,
-        ),
-      )
-    }
+    expect(buckets.map(c => arcColorCategoryLabel(c))).toEqual(
+      buckets.map(
+        c => getArcLegendItems(new Set([c]), makeTestPalette())[0]!.label,
+      ),
+    )
   })
 
   // Short insert used to be the one bucket the reads and the arcs painted in
@@ -828,9 +823,8 @@ describe('getArcLegendItems', () => {
   test('short insert keys one color', () => {
     expect(
       getArcLegendItems(
-        new Set<ReadColorCategory>(['shortInsert']),
+        new Set<ArcCategory>(['shortInsert']),
         makeTestPalette({ colorShortInsert: [1, 0, 0.5] }),
-        false,
       ).map(i => i.color),
     ).toEqual(['rgb(255,0,128)'])
   })
@@ -839,9 +833,8 @@ describe('getArcLegendItems', () => {
   test('keys arc colors as plain swatches', () => {
     expect(
       getArcLegendItems(
-        new Set<ReadColorCategory>(['longInsert']),
+        new Set<ArcCategory>(['longInsert']),
         makeTestPalette(),
-        false,
       ),
     ).toEqual([{ color: expect.any(String), label: 'Long insert' }])
   })
@@ -850,9 +843,8 @@ describe('getArcLegendItems', () => {
     // under a read field these two would read as "Split read (forward/reverse)"
     expect(
       getArcLegendItems(
-        new Set<ReadColorCategory>(['fwdStrand', 'revStrand']),
+        new Set<ArcCategory>(['fwdStrand', 'revStrand']),
         makeTestPalette(),
-        false,
       ).map(i => i.label),
     ).toEqual(['Forward strand', 'Reverse strand'])
   })
@@ -967,7 +959,6 @@ describe('getAlignmentsColorScales', () => {
     legendItems: () => reads,
     arcLegendTitle: 'Arc colors',
     arcLegendItems: () => arcs,
-    connectionLegendItems: () => [],
     sashimiLegend: { strands: [], splits: [] },
   })
   const entries = (scale: ColorScale | undefined) =>
@@ -1159,37 +1150,6 @@ describe('getAlignmentsColorScales', () => {
     ])
   })
 
-  // A merged row SHOWS two colors, and only one of them is its `color`. Keying
-  // the de-dup off that field alone let a connection row repeat the arc's half
-  // verbatim — same color, same words, one section down.
-  test('a connection row repeating either half of a merged row is dropped', () => {
-    const sections = getAlignmentsColorScales({
-      legendItems: () => [
-        { color: '#aaa', label: 'LR - Normal pair orientation' },
-        { color: '#ffc0cb', label: 'Short insert' },
-      ],
-      arcLegendTitle: 'Arc colors',
-      arcLegendItems: () => [
-        { color: '#aaa', label: 'Normal' },
-        { color: '#ff3a8c', label: 'Short insert' },
-      ],
-      sashimiLegend: { strands: [], splits: [] },
-      connectionLegendItems: () => [
-        // the arc's half of the merged short-insert row, verbatim
-        { color: '#ff3a8c', label: 'Short insert' },
-        // same label, a color neither half carries — still its own row
-        { color: '#123456', label: 'Short insert' },
-      ],
-    })
-    expect(shown(sections).at(-1)).toEqual([
-      'Read connections',
-      ['Short insert'],
-    ])
-    expect(entries(sections.find(s => s.id === 'connections'))[0]!.color).toBe(
-      '#123456',
-    )
-  })
-
   // The mirror case stays one swatch: same color AND same meaning is one row,
   // and a column of doubled greys is noise, not information.
   test('a shared color stays a single swatch', () => {
@@ -1200,35 +1160,6 @@ describe('getAlignmentsColorScales', () => {
       ),
     )
     expect(entries(reads)[0]!.swatches).toBeUndefined()
-  })
-
-  // Seen on a paired track in chain mode: the pair colors are drawn as fills and
-  // as connector curves, and both vocabularies use CATEGORY_LEGEND's wording, so
-  // three of the four connection rows were the row above them in a different
-  // section — same color, same words.
-  test('a connection row that repeats a keyed row verbatim is dropped', () => {
-    const sections = getAlignmentsColorScales({
-      legendItems: () => [
-        { color: '#5555bb', label: 'RR - Both mates reverse strand' },
-        { color: '#aaa', label: 'LR - Normal pair orientation' },
-      ],
-      arcLegendTitle: 'Arc colors',
-      arcLegendItems: () => [],
-      sashimiLegend: { strands: [], splits: [] },
-      connectionLegendItems: () => [
-        // the verbatim repeat
-        { color: '#5555bb', label: 'RR - Both mates reverse strand' },
-        // same color, but the curves call it something the fills don't
-        { color: '#9b30b0', label: 'Split alignment (inverted)' },
-      ],
-    })
-    expect(shown(sections)).toEqual([
-      [
-        'Read colors',
-        ['RR - Both mates reverse strand', 'LR - Normal pair orientation'],
-      ],
-      ['Read connections', ['Split alignment (inverted)']],
-    ])
   })
 
   test('keeps them apart when the two vocabularies share nothing', () => {
@@ -1394,7 +1325,6 @@ describe('sashimiLegendItems', () => {
     const arcRows = getArcLegendItems(
       new Set(['splitForward', 'splitBack']),
       palette,
-      false,
     )
     expect(items.map(i => i.label)).toEqual([
       'Forward transcript strand',
@@ -1423,7 +1353,6 @@ describe('the sashimi section', () => {
       legendItems: () => [],
       arcLegendTitle: 'Arc colors',
       arcLegendItems: () => arcs,
-      connectionLegendItems: () => [],
       sashimiLegend: junctions,
     })
   const rows = (scales: ColorScale[], id: string) => {
@@ -1439,7 +1368,6 @@ describe('the sashimi section', () => {
       legendItems: () => [],
       arcLegendTitle: 'Arc colors',
       arcLegendItems: () => [],
-      connectionLegendItems: () => [],
       sashimiLegend: sashimiLegend(new Set([-1]), { pairLR: '#d3d3d3' }),
     })
     expect(strandsOnly.at(-1)).toMatchObject({
@@ -1458,11 +1386,7 @@ describe('the sashimi section', () => {
   })
 
   test('adds no row of a color the read arcs key already', () => {
-    const arcs = getArcLegendItems(
-      new Set(['pairRL', 'splitForward']),
-      palette,
-      false,
-    )
+    const arcs = getArcLegendItems(new Set(['pairRL', 'splitForward']), palette)
     const scales = scalesWith(arcs)
     const back = junctions.splits.find(s => s.split === 'splitBack')!.color
     const forward = junctions.splits.find(
@@ -1480,7 +1404,7 @@ describe('the sashimi section', () => {
   })
 
   test('keeps a split class the read arcs paint in no color of theirs', () => {
-    const arcs = getArcLegendItems(new Set(['pairLR']), palette, false)
+    const arcs = getArcLegendItems(new Set(['pairLR']), palette)
     expect(rows(scalesWith(arcs), 'sashimi').map(([label]) => label)).toEqual([
       'Reverse transcript strand',
       'Split junction (deletion-type)',

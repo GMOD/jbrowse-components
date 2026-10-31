@@ -125,7 +125,7 @@ matters.
   `connection.interchrom` fields, combined by `emitsOffScreenPartner` — which exists
   because layering them as an AND once made unticking off-screen mates silently
   untick inter-chromosomal pairs.
-- **Legend.** `bezierConnectionLegendItems` builds one row per *color*, and each
+- **Legend.** The connection key (`getArcLegendItems`) builds one row per *color*, and each
   row is a plain color box. A foot is a new shape rather than a new color, so
   the key has nowhere to put it without reviving a per-row glyph.
 - **`LinkedPair` has no shape for this.** It is `{e1: ReadEntry, e2: ReadEntry,

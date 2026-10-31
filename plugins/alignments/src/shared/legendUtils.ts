@@ -5,7 +5,6 @@
 import {
   CONNECTION_LABELS,
   PAIR_DIRECTION_LABELS,
-  SPLIT_JUNCTION_LABELS,
 } from '@jbrowse/alignments-core'
 import { legendSwatches } from '@jbrowse/core/ui/legendSpec'
 import {
@@ -146,11 +145,6 @@ function legendKey(i: Pick<LegendItem, 'color' | 'label'>) {
   return `${i.color}${KEY_SEP}${i.label}`
 }
 
-// Every (color, label) a row actually SHOWS, which for a merged row is two —
-// and the second one is a color `item.color` does not carry, so keying off that
-// field alone let a connection row repeat a swatch verbatim as long as it
-// matched the arc's half of the merge rather than the reads'. A color-less row
-// keys as itself, since nothing it could collide with has a color either.
 // A split-read arc row joins its pair twin's row where both are keyed in one
 // color, under a label naming both. Matched on the default labels, so a pair
 // row the user renamed or recolored keeps the split row beside it.
@@ -178,13 +172,6 @@ function oneRowPerSplitTwin(items: LegendItem[]) {
   return rows
 }
 
-function rowKeys(item: LegendItem) {
-  const swatches = legendSwatches(item)
-  return swatches.length === 0
-    ? [legendKey(item)]
-    : swatches.map(s => legendKey({ color: s.color, label: item.label }))
-}
-
 // A section's rows as a categorical scale's entries. `value` is what the
 // row classifies; a note row has none and takes its label.
 function scaleOf(
@@ -202,8 +189,7 @@ function scaleOf(
 
 /**
  * The display's color vocabularies as its color scales: the color bars, the
- * read fills, the paired-end arc / read-cloud colors, and the linked-read
- * connection curves.
+ * read fills, the connection colors and the sashimi arcs.
  * `LegendMixin`'s `colorScales` lists them, so the on-screen key and the SVG
  * export derive from this one list and a heading can't appear in one and not
  * the other. Empty scales drop out of the key, and a lone survivor's title
@@ -222,16 +208,8 @@ function scaleOf(
  * modification, arcs by insert size): no color is then shared, so neither
  * failure is available and the headings say something real.
  *
- * Connections keep their own section — they are a separate overlay with its own
- * dismiss — but not their own copy of a row already keyed above. A paired track
- * in chain mode draws the pair colors as fills AND as connector curves, and the
- * two vocabularies agree word for word, so the box listed "RL - Mates point
- * outward" twice in the same teal, once per section, and likewise RR and LL:
- * three verbatim repeats out of four rows, which reads as a bug rather than as a
- * key. Only an exact color-and-label match is dropped, so a connection color the
- * fills never paint, or one the curves call something else ("Split alignment
- * (inverted)" against the fill's "Split paired-end read (inverted)"), still
- * earns its row.
+ * The connection colors are one list for the band and the pileup connectors,
+ * which paint one field through one palette and one label table.
  *
  * `colorTitle` is the color's heading, `encoding.color.legend.title` or its field preset's
  * (`colorKeyTitle`), unset keeping the display's own and `''` drawing none. It heads the read fill's color bar when the
@@ -245,7 +223,6 @@ export function getAlignmentsColorScales(model: {
   legendItems: () => LegendItem[]
   arcLegendTitle: string
   arcLegendItems: () => LegendItem[]
-  connectionLegendItems: () => LegendItem[]
   sashimiLegend: SashimiLegend
 }): ColorScale[] {
   const reads = model.legendItems()
@@ -269,31 +246,17 @@ export function getAlignmentsColorScales(model: {
   )
   const readSection = merge
     ? {
-        id: 'reads',
         title: mergedTitle(model.arcLegendTitle, readTitle),
         items: oneRowPerMeaning(reads, arcs),
       }
-    : { id: 'reads', title: readTitle ?? 'Read colors', items: reads }
-  const arcSection = {
-    id: 'arcs',
-    title: model.arcLegendTitle,
-    items: merge ? [] : arcs,
-  }
-  // Keyed before the fold below, so a connection row of a folded pair row's own
-  // wording stays dropped.
-  const keyed = new Set(
-    [...readSection.items, ...arcSection.items].flatMap(rowKeys),
-  )
-  readSection.items = oneRowPerSplitTwin(readSection.items)
-  arcSection.items = oneRowPerSplitTwin(arcSection.items)
+    : { title: readTitle ?? 'Read colors', items: reads }
   return [
     ...ramps,
-    scaleOf(readSection.id, readSection.title, readSection.items),
-    scaleOf(arcSection.id, arcSection.title, arcSection.items),
+    scaleOf('reads', readSection.title, oneRowPerSplitTwin(readSection.items)),
     scaleOf(
-      'connections',
-      'Read connections',
-      model.connectionLegendItems().filter(i => !keyed.has(legendKey(i))),
+      'arcs',
+      model.arcLegendTitle,
+      merge ? [] : oneRowPerSplitTwin(arcs),
     ),
     scaleOf('sashimi', SASHIMI_LEGEND_TITLE, sashimi),
   ]
@@ -447,9 +410,8 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   // saying "(same strand)" in different colors is then not a collision but the
   // fact — one finding, two kinds of evidence.
   //
-  // The connector curves get `SPLIT_JUNCTION_LABELS` instead: a curve is drawn
-  // for split reads of either kind, so it cannot claim pairedness. A read arc
-  // knows more than strand and names its class from `ARC_SPLIT_LABELS`.
+  // A connection never paints these two: it knows more than strand and names
+  // its junction class from `ARC_SPLIT_LABELS`.
   splitInversion: 'Split paired-end read (inverted)',
   splitDeletion: 'Split paired-end read (same strand)',
   interchrom: CONNECTION_LABELS.interchrom,
@@ -799,62 +761,51 @@ function getOverlapLegendItem(
   }
 }
 
-// The arcs' wording of the shared table: a curve is drawn for split reads of
-// either kind, so it names the junction, not a paired-end read.
-function arcLabelOverrides(
-  interchromFromMatePair: boolean,
-  declared: Partial<Record<ReadColorCategory, string>> = {},
-): Partial<Record<ReadColorCategory, string>> {
-  return {
-    ...SPLIT_JUNCTION_LABELS,
-    ...(interchromFromMatePair ? { interchrom: undefined } : {}),
-    ...declared,
-  }
-}
-
 /**
- * The name one arc color bucket goes by, in the arc key's wording, so an arc
- * hover and the swatch it sends the reader to say the same thing.
+ * The name one connection color goes by, so a hover and the key row it sends
+ * the reader to say the same thing. The inter-chromosomal color is one name
+ * for a split read and a mate pair alike, since the color says only that the
+ * connection crosses chromosomes.
  */
 export function arcColorCategoryLabel(
   category: ArcCategory,
-  interchromFromMatePair: boolean,
-  declared?: Partial<Record<ReadColorCategory, string>>,
+  declared: Partial<Record<ReadColorCategory, string>> = {},
 ) {
   return isArcSplitCategory(category)
     ? ARC_SPLIT_LABELS[category]
-    : readColorCategoryLabel(
-        category,
-        arcLabelOverrides(interchromFromMatePair, declared),
-      )
+    : (declared[category] ?? CATEGORY_LEGEND[category])
 }
 
 /**
- * The complete key for the paired-end arc / read-cloud colors.
- * `getAlignmentsColorScales` merges it with the read key where they share a
- * color, rather than subtracting here: a section listing three of the seven
- * colors its heading names is worse than the repetition it avoids.
- */
-/**
- * The read-connection band's key heading, named after the overlay drawn:
- * flat read-cloud lines are not arcs.
+ * The connections' key heading, named after what is drawn: the band's arcs,
+ * the read cloud's flat lines, or with the band off the pileup connectors.
  */
 export function arcLegendTitle(readConnections: ReadConnectionsMode) {
-  return readConnections === 'rule' ? 'Read cloud colors' : 'Arc colors'
+  return readConnections === 'rule'
+    ? 'Read cloud colors'
+    : readConnections === 'link'
+      ? 'Arc colors'
+      : 'Connector colors'
 }
 
+/**
+ * The complete key for the connection colors, the band's and the pileup
+ * connectors' together. `getAlignmentsColorScales` merges it with the read key
+ * where they share a color, rather than subtracting here: a section listing
+ * three of the seven colors its heading names is worse than the repetition it
+ * avoids.
+ */
 export function getArcLegendItems(
   presentCategories: ReadonlySet<ArcCategory>,
   palette: ColorPalette,
-  interchromFromMatePair: boolean,
-  declared?: Partial<Record<ReadColorCategory, string>>,
+  declared: Partial<Record<ReadColorCategory, string>> = {},
 ): LegendItem[] {
   const present = [...presentCategories]
   return [
     ...bucketItems(
       new Set(present.filter(c => !isArcSplitCategory(c))),
       palette,
-      arcLabelOverrides(interchromFromMatePair, declared),
+      declared,
     ),
     // Its own row beside the pair twin it shares a swatch with: the pair row's
     // words describe mates, which a split read has none of.

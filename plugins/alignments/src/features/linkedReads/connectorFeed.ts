@@ -1,8 +1,4 @@
-import {
-  CONNECTION_LABELS,
-  readIdAt,
-  readNameAt,
-} from '@jbrowse/alignments-core'
+import { readIdAt, readNameAt } from '@jbrowse/alignments-core'
 import {
   normalizedRgbToABGR,
   withAbgrAlpha,
@@ -228,12 +224,7 @@ export function buildConnectorFeeds({
       id1: readIdAt(e1.data, e1.readIdx)!,
       id2: readIdAt(e2.data, e2.readIdx)!,
       readName: readNameAt(e1.data, e1.readIdx),
-      label:
-        arcColorCategoryLabel(
-          arcSlotCategory(slot, colorField),
-          !c.isSplit,
-          labels,
-        ) ?? CONNECTION_LABELS.readPair,
+      label: arcColorCategoryLabel(arcSlotCategory(slot, colorField), labels),
       hiddenSegmentsBetween,
     })
   }

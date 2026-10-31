@@ -3,6 +3,8 @@ import { measureText } from '@jbrowse/core/util'
 import { READ_COLOR_CATEGORY_BY_INDEX } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { ARC_SPLIT_MERGED_LABELS } from '../features/arcs/arcSplitCategory.ts'
+import { ARC_SLOT_CATEGORY, arcSlotCategory } from '../shaders/palettes.ts'
+import { ARC_COLOR_FIELDS } from './arcColorOptions.ts'
 import { COLOR_FIELD_DEFS, isModificationField } from './colorFieldDefs.ts'
 import {
   LEGEND_MAX_WIDTH,
@@ -99,15 +101,16 @@ function everyLabel() {
       }
     }
   }
-  // The overlay's own wording, which lands in the SAME box — merged into the
-  // read section or under its own heading, either way against this width.
-  // Sweeping only the read builder left the second-widest label in the
-  // vocabulary ("Split alignment (interchromosomal)") unmeasured, which is not
-  // a width `LEGEND_MAX_WIDTH` can claim to be derived from.
-  for (const item of [
-    ...getArcLegendItems(ALL, makeTestPalette(), false),
-    ...getArcLegendItems(ALL, makeTestPalette(), true),
-  ]) {
+  // The connections' own wording, which lands in the SAME box — merged into
+  // the read section or under its own heading, either way against this width.
+  for (const item of getArcLegendItems(
+    new Set(
+      ARC_COLOR_FIELDS.flatMap(field =>
+        ARC_SLOT_CATEGORY.map((_, slot) => arcSlotCategory(slot, field)),
+      ),
+    ),
+    makeTestPalette(),
+  )) {
     out.add(item.label)
   }
   for (const label of Object.values(ARC_SPLIT_MERGED_LABELS)) {

@@ -6,7 +6,7 @@ import {
   connectorColorType,
   pairColorType,
 } from '../features/arcs/arcColors.ts'
-import { bezierConnectionLegendItems } from '../features/linkedReads/computeOverlay.ts'
+import { connectorCategories } from '../features/linkedReads/computeOverlay.ts'
 import {
   alignmentsColorEncoding,
   readColorFieldOf,
@@ -123,22 +123,19 @@ describe('scale.names names the key rows range colors', () => {
     )
     const palette = makeTestPalette()
     expect(
-      getArcLegendItems(
-        new Set(['pairRR']),
-        palette,
-        false,
-        declared.categories,
-      )[0]!.label,
+      getArcLegendItems(new Set(['pairRR']), palette, declared.categories)[0]!
+        .label,
     ).toBe('Inverted')
-    expect(arcColorCategoryLabel('pairRR', false, declared.categories)).toBe(
+    expect(arcColorCategoryLabel('pairRR', declared.categories)).toBe(
       'Inverted',
     )
     expect(
-      bezierConnectionLegendItems(
-        [connectorColorType(f => pairColorType(f, 3, 0, undefined))],
+      getArcLegendItems(
+        connectorCategories(
+          [connectorColorType(f => pairColorType(f, 3, 0, undefined))],
+          'pairOrientation',
+        ),
         palette,
-        'pairOrientation',
-        false,
         declared.categories,
       )[0]!.label,
     ).toBe('Inverted')
@@ -150,7 +147,6 @@ describe('legend.title heads the key the color channel draws', () => {
     legendItems: () => reads,
     arcLegendTitle: 'Arc colors',
     arcLegendItems: () => arcs,
-    connectionLegendItems: () => [],
     sashimiLegend: { strands: [], splits: [] },
   })
   const titles = (scales: ReturnType<typeof getAlignmentsColorScales>) =>

@@ -941,7 +941,6 @@ function readConnectionTables(
           [...result.colorSlots].map(slot => arcSlotCategory(slot, colorField)),
         ),
         colors.palette,
-        result.interchromFromMatePair,
         colors.declared.categories,
       ).filter(item => item.color !== undefined)
     : []

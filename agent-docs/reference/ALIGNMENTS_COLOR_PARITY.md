@@ -35,9 +35,11 @@ together. **When adding a slot**, add it to the meaning table. Do not add a colo
 and do not add a `case` to a classifier that already has a table.
 
 Labels derive the same way: `arcColorCategoryLabel` reads wording through the
-read key, with `ARC_SPLIT_LABELS` naming the four junction rows. `getAlignmentsColorScales` de-dupes connections
-against keyed rows on `` `${color} ${label}` ``, so a drifted string silently keys
-one connection twice.
+read key, with `ARC_SPLIT_LABELS` naming the four junction rows. The band's
+colors and the pileup connectors' are one key list (the model's
+`connectionLegendItems`), since they paint one field through one palette, and
+the interchromosomal row reads "Inter-chromosomal" whether a split read or a
+mate pair draws it, as the color says only that the connection crosses.
 
 ## What the tests are for
 

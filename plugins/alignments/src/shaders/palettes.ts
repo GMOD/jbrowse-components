@@ -3,10 +3,7 @@ import {
   isArcSplitCategory,
 } from '../features/arcs/arcSplitCategory.ts'
 
-import type {
-  ReadColorCategory,
-  SwatchCategory,
-} from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { SwatchCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ArcColorField } from '../shared/types.ts'
 import type { ColorPalette } from './colors.ts'
@@ -16,9 +13,9 @@ import type { ColorPalette } from './colors.ts'
 // from the palette's `readCategoryColors`, the read fills' own table, so a
 // connection slot and the read swatch of the same meaning cannot be two colors.
 
-// What an arc slot can mean: a read category, or a split-junction class that
-// only an arc carries.
-export type ArcCategory = ReadColorCategory | ArcSplitCategory
+// What an arc slot can mean: a read category with a swatch, or a
+// split-junction class that only a connection carries.
+export type ArcCategory = SwatchCategory | ArcSplitCategory
 
 // Slot → meaning for the read-connection band's color types, which
 // `buildArcBandFeeds` bakes into each connection's color lane.

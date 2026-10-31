@@ -70,7 +70,7 @@ import { autorun, computed, observable } from 'mobx'
 import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
 import { collectArcs, resolveArcsByGroup } from '../features/arcs/compute.ts'
 import {
-  bezierConnectionLegendItems,
+  connectorCategories,
   bezierDipReservePx,
   connectorFilterOf,
   resolveConnectorsByGroup,
@@ -1033,23 +1033,10 @@ export default function stateModelFactory(
           },
 
           /**
-           * #method
-           * Key for the paired-end arc / read-cloud colors, empty when no
-           * overlay is drawn.
-           */
-          arcLegendItems(palette: ColorPalette) {
-            return getArcLegendItems(
-              this.arcLegendCategories,
-              palette,
-              this.arcsResult.interchromFromMatePair,
-              this.declaredReadLabels.categories,
-            )
-          },
-
-          /**
            * #getter
-           * Heading for the overlay's own color key, named after the overlay
-           * the reader is looking at: flat read-cloud lines are not arcs.
+           * Heading for the connection colors, named after what the reader is
+           * looking at: flat read-cloud lines are not arcs, and with the band
+           * off the colors are the pileup connectors'.
            */
           get arcLegendTitle() {
             return arcLegendTitle(self.drawnReadConnections)
@@ -1699,7 +1686,6 @@ export default function stateModelFactory(
                 crossRegionByGroup: new Map(),
                 inkGroupKeys: new Set(),
                 colorSlots: new Set(),
-                interchromFromMatePair: false,
                 maxFlatArcSpanBp: 0,
               }
             }
@@ -1921,16 +1907,19 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * Legend swatches for the read connectors.
+         * Key for the connection colors drawn: the band's and the pileup
+         * connectors', which paint one field through one palette.
          */
         connectionLegendItems(palette: ColorPalette) {
-          return bezierConnectionLegendItems(
-            this.connectionColorTypes,
+          return getArcLegendItems(
+            new Set([
+              ...self.arcLegendCategories,
+              ...connectorCategories(
+                this.connectionColorTypes,
+                self.readConnectionsColorField,
+              ),
+            ]),
             palette,
-            self.readConnectionsColorField,
-            [...self.connectorsByGroup.values()].some(c =>
-              c.overlayPairs.some(p => p.c.interchrom && !p.c.isSplit),
-            ),
             self.declaredReadLabels.categories,
           )
         },
@@ -2141,10 +2130,8 @@ export default function stateModelFactory(
          * so the tooltip and the swatch it sends the reader to agree.
          */
         get arcCategoryLabel() {
-          const { interchromFromMatePair } = self.arcsResult
           const { categories } = self.declaredReadLabels
-          return (c: ArcCategory) =>
-            arcColorCategoryLabel(c, interchromFromMatePair, categories)
+          return (c: ArcCategory) => arcColorCategoryLabel(c, categories)
         },
       }))
       .views(self => ({
@@ -2445,8 +2432,7 @@ export default function stateModelFactory(
               colorTitle: self.colorKeyTitle,
               legendItems: () => self.legendItems(palette),
               arcLegendTitle: self.arcLegendTitle,
-              arcLegendItems: () => self.arcLegendItems(palette),
-              connectionLegendItems: () => self.connectionLegendItems(palette),
+              arcLegendItems: () => self.connectionLegendItems(palette),
               sashimiLegend: sashimiLegend(
                 self.sashimiLegendKeys.strands,
                 theme.alignmentFill,

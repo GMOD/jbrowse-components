@@ -34,6 +34,7 @@ const PALETTE = makeTestPalette({
 })
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { arcCategoryColor } from '../../shaders/palettes.ts'
+import { getArcLegendItems } from '../../shared/legendUtils.ts'
 import {
   ARC_COLOR_INTERCHROM,
   COLOR_DEFAULT,
@@ -42,7 +43,7 @@ import {
   pairColorType,
 } from '../arcs/arcColors.ts'
 import {
-  bezierConnectionLegendItems,
+  connectorCategories,
   bezierDipReservePx,
   connectorFilterOf,
   enumerateBezierPairs,
@@ -1070,7 +1071,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
     })
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.d).toBe('M 2500 5 L 9000 5')
-    expect(arcs[0]!.label).toBe('Split alignment (interchromosomal)')
+    expect(arcs[0]!.label).toBe('Inter-chromosomal')
   })
 
   it('dips an inverted split between two chromosomes', () => {
@@ -1097,7 +1098,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       ),
     })
     expect(arcs).toHaveLength(1)
-    expect(arcs[0]!.label).toBe('Split alignment (interchromosomal)')
+    expect(arcs[0]!.label).toBe('Inter-chromosomal')
     const { sy1, cp1y, cp2y } = controlPoints(arcs[0]!.d)
     expect(cp1y).toBeGreaterThan(sy1)
     expect(cp2y).toBeGreaterThan(sy1)
@@ -1134,7 +1135,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
     })
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.d).toMatch(/^M [\d.]+ 5 L [\d.]+ 5$/)
-    expect(arcs[0]!.label).toBe('Split alignment (interchromosomal)')
+    expect(arcs[0]!.label).toBe('Inter-chromosomal')
   })
 
   const dips = (d: string) => {
@@ -1359,29 +1360,16 @@ describe('a same-strand junction across segments nothing fetched', () => {
 
 // The key is built from the palette and labels the overlay itself draws with,
 // so a color the reader met on screen is keyed by that same color.
-describe('bezierConnectionLegendItems', () => {
+describe('connectorCategories', () => {
   const field = 'insertSizeAndOrientation'
   const every = (slot: number) => connectorColorType(() => slot)
-  const labels = (
-    colorTypes: number[],
-    f: ArcColorField = field,
-    interchromFromMatePair = false,
-  ) =>
-    bezierConnectionLegendItems(
-      colorTypes,
-      PALETTE,
-      f,
-      interchromFromMatePair,
-    ).map(i => i.label)
+  const labels = (colorTypes: number[], f: ArcColorField = field) =>
+    getArcLegendItems(connectorCategories(colorTypes, f), PALETTE).map(
+      i => i.label,
+    )
 
-  // As the arc key does: the split reads' wording, unless a mate link crosses.
-  it('names the inter-chromosomal slot for what crosses', () => {
-    expect(labels([every(ARC_COLOR_INTERCHROM)])).toEqual([
-      'Split alignment (interchromosomal)',
-    ])
-    expect(labels([every(ARC_COLOR_INTERCHROM)], field, true)).toEqual([
-      'Inter-chromosomal',
-    ])
+  it('names the inter-chromosomal slot as the arc key does', () => {
+    expect(labels([every(ARC_COLOR_INTERCHROM)])).toEqual(['Inter-chromosomal'])
   })
 
   it('keys the connection colors in view in the arc key own words', () => {

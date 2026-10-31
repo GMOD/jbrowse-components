@@ -5,7 +5,6 @@ import { discordantDipPx } from '@jbrowse/sv-core'
 import { arcSlotCategory } from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051).
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
-import { getArcLegendItems } from '../../shared/legendUtils.ts'
 import { passesCategory } from '../../shared/readCategoryFilters.ts'
 import { connectorColorShift } from '../arcs/arcColors.ts'
 import {
@@ -15,15 +14,12 @@ import {
   linkedReadLinesByRegion,
 } from './compute.ts'
 
-import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
-import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ArcCategory } from '../../shaders/palettes.ts'
 import type { ArcColorField, ConnectionFilter } from '../../shared/types.ts'
 import type { CanonicalRefName } from '../arcs/arcTypes.ts'
 import type { LinkedPair, RefNameAt } from './compute.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // The split view's alignment connector width, which draws the same curve.
 export const CURVE_STROKE_WIDTH_PX = 1
@@ -58,16 +54,11 @@ function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
  */
 export type BezierArcScope = 'all' | 'crossRegion' | 'none'
 
-// Legend swatches for the connector colors in view, in the arc key's rows and
-// wording, since the connectors paint as the arcs do: its inter-chromosomal row
-// names split reads unless a mate link crosses too, as the arc key's does.
-export function bezierConnectionLegendItems(
+/** The connection colors the connectors' color types paint under `colorField`. */
+export function connectorCategories(
   colorTypes: Iterable<number>,
-  colors: ColorPalette,
   colorField: ArcColorField,
-  interchromFromMatePair: boolean,
-  declared?: Partial<Record<SwatchCategory, string>>,
-): LegendItem[] {
+) {
   const shift = connectorColorShift(colorField)
   const categories = new Set<ArcCategory>()
   for (const colorType of colorTypes) {
@@ -75,7 +66,7 @@ export function bezierConnectionLegendItems(
       arcSlotCategory(linkedReadColorSlot(colorType, shift), colorField),
     )
   }
-  return getArcLegendItems(categories, colors, interchromFromMatePair, declared)
+  return categories
 }
 
 // Enumerate the linked pairs of a laid-out region map, which the connector

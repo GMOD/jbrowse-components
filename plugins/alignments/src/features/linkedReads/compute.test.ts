@@ -931,7 +931,7 @@ describe('connectorStyler', () => {
       styleOf(makeEntry(split, 0), makeEntry(split, 1), true, true),
     ).toEqual({
       color: rgb255(colors.readCategoryColors.interchrom),
-      label: 'Split alignment (interchromosomal)',
+      label: 'Inter-chromosomal',
     })
   })
 

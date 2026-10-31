@@ -139,7 +139,7 @@ describe('split class color', () => {
   })
 
   test('the hover names the split class, not its pair twin', () => {
-    expect(arcColorCategoryLabel('splitBack', false)).toBe(
+    expect(arcColorCategoryLabel('splitBack')).toBe(
       'Split read (duplication-type)',
     )
   })
