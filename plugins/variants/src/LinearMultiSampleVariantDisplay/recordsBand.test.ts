@@ -198,6 +198,36 @@ test('labels off letters nothing and reserves no label rows', () => {
   )
 })
 
+// LinearBasicDisplay's label density rule: names go past 0.2 records per
+// on-screen pixel and descriptions past 0.1, so a dense window packs boxes
+// alone instead of fitting a label for each record.
+test.each([
+  [1000, 2, 'nothing', false, false, undefined],
+  [300, 6, 'names', true, false, 'r0'],
+  [100, 6, 'names and descriptions', true, true, 'r0 A -> G'],
+])(
+  '%i records %ibp apart over 1960px letter %s',
+  (count, spacing, _, names, descriptions, firstLabel) => {
+    const records: BandRecord[] = Array.from({ length: count }, (_, i) => [
+      `r${i}`,
+      i * spacing,
+      i * spacing + 1,
+      'A -> G',
+      '',
+    ])
+    const { display } = recordsDisplayAt(records, 1, {}, false)
+    const { name, description } = display.recordsLabels
+    expect(display.recordsVisibleLabels).toEqual({
+      name: names ? name : '',
+      description: descriptions ? description : '',
+    })
+    expect(
+      display.recordsLaidOutDataMap.get(0)!.floatingLabelsData.get('r0')
+        ?.nameLabel?.text,
+    ).toBe(firstLabel)
+  },
+)
+
 describe('the pointer over the band', () => {
   function recordAt(display: LinearMultiSampleVariantDisplayModel, id: string) {
     const item = display.recordsLaidOutDataMap

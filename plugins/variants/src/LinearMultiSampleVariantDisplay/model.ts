@@ -58,9 +58,11 @@ import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityCompu
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   buildFeatureFlatbushIndex,
+  featureIdsTouchingBlocks,
   fitLadderViews,
   fitLadderVolatiles,
   labelFontSize,
+  labelVisibility,
   maxBottom,
   scaleLaidOutData,
 } from '@jbrowse/plugin-features/band'
@@ -124,6 +126,7 @@ import { placeVariantRows } from './placeVariantRows.ts'
 import { countRecordCarriers } from './recordCarriers.ts'
 import {
   buildRecordsRenderData,
+  recordSpans,
   recordsDisplayConfig,
 } from './recordsRenderData.ts'
 import { svClassColors, svClassScale, svClassesOf } from './recordsSvColors.ts'
@@ -1385,6 +1388,67 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * The spans of the records the band draws, per fetched region, once
+         * per payload.
+         */
+        get recordsSpans() {
+          const { cellData } = self
+          const { displayedRegions } = self.view
+          const svOnly = self.recordsSvOnly
+          return cellData && self.showRecords
+            ? Object.entries(cellData.perRegionCellData).flatMap(
+                ([k, data]) => {
+                  const region = displayedRegions[Number(k)]
+                  return region ? [recordSpans({ data, region, svOnly })] : []
+                },
+              )
+            : []
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Records drawn on screen per pixel of the blocks on screen, counted
+         * as LinearBasicDisplay's `labelDensityPerPx` counts its features.
+         */
+        get recordsLabelDensityPerPx() {
+          const blocks = self.view.settledDynamicBlocks
+          const widthPx = blocks.reduce((sum, block) => sum + block.widthPx, 0)
+          return widthPx > 0
+            ? featureIdsTouchingBlocks(self.recordsSpans, blocks).size / widthPx
+            : 0
+        },
+      }))
+      .views(self => {
+        const visibleLabels = stableIdentityComputed(() => {
+          const { name, description } = self.recordsLabels
+          const { showLabels, showDescriptions } = labelVisibility({
+            name: name !== '',
+            description: description !== '',
+            collapsed: false,
+            density: self.recordsLabelDensityPerPx,
+            geneDensity: () => undefined,
+          })
+          return {
+            name: showLabels ? name : '',
+            description: showDescriptions ? description : '',
+          }
+        })
+        return {
+          /**
+           * #getter
+           * `recordsLabels` past LinearBasicDisplay's label density rule
+           * (`labelVisibility`): names go past 0.2 records per pixel on
+           * screen and descriptions past 0.1, as on a feature track.
+           */
+          get recordsVisibleLabels(): RecordsLabels {
+            return visibleLabels.get()
+          },
+        }
+      })
+      .views(self => ({
+        /**
+         * #getter
          * The band's records as plugin-features render data, one entry per
          * fetched region, empty while the band is off. Keyed off the payload
          * and the displayed regions' bounds, never the row-placed map or
@@ -1399,7 +1463,7 @@ export function stateModelFactory(
             const { jexl } = getEnv(self).pluginManager
             const { displayedRegions } = self.view
             const featureColors = self.regionRecordColors
-            const labels = self.recordsLabels
+            const labels = self.recordsVisibleLabels
             const carriers = self.recordCarriers
             const svOnly = self.recordsSvOnly
             for (const k in cellData.perRegionCellData) {
@@ -1445,7 +1509,7 @@ export function stateModelFactory(
             return self.recordsLayoutInputs
           },
           get showLabels() {
-            const { name, description } = self.recordsLabels
+            const { name, description } = self.recordsVisibleLabels
             return name !== '' || description !== ''
           },
           effectiveShowDescriptions: false,

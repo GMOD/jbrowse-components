@@ -79,6 +79,37 @@ function labelOf(labels: RecordsLabels, jexl: JexlInstance) {
 }
 
 /**
+ * Each drawn record's span under its region's layout key, the shape
+ * `featureIdsTouchingBlocks` counts on-screen records from. Read off the
+ * payload, not the render data, whose labels depend on that count.
+ */
+export function recordSpans({
+  data,
+  region,
+  svOnly,
+}: {
+  data: Pick<RecordsSourceData, 'featurePositions' | 'featureInfo'>
+  region: RecordsRegion
+  svOnly: boolean
+}) {
+  const { featureInfo, featurePositions } = data
+  return {
+    regionKey: layoutRegionKey(region),
+    flatbushItems: featureInfo.flatMap((info, f) =>
+      svOnly && info.svType === ''
+        ? []
+        : [
+            {
+              featureId: info.featureId,
+              startBp: featurePositions[f * 2]!,
+              endBp: featurePositions[f * 2 + 1]!,
+            },
+          ],
+    ),
+  }
+}
+
+/**
  * The band's records as plugin-features render data, rebuilt from the cell
  * payload, which already holds each record's span, ID, description, SV class
  * and resolved color: the band costs no RPC, and `records.show` stays a
@@ -115,14 +146,16 @@ export function buildRecordsRenderData({
       description: info.description,
       type: info.type,
       recordColor: abgrToCssRgba(featureColors[f]!),
+      recordLabel: '',
     }
-    const text = label(new SimpleFeature(record))
+    // one feature per record, holding `record` itself: the label is read off
+    // it and written back before anything else sees it
+    const feature = new SimpleFeature(record)
+    const text = label(feature)
     const counted = carriers.get(info.featureId)
     const percent = counted ? carrierPercent(counted) : ''
-    return new SimpleFeature({
-      ...record,
-      recordLabel: text && percent ? `${text} ${percent}` : text,
-    })
+    record.recordLabel = text && percent ? `${text} ${percent}` : text
+    return feature
   }
   const features = featureInfo.flatMap((info, f) =>
     svOnly && info.svType === '' ? [] : [recordFeature(info, f)],

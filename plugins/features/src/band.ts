@@ -13,7 +13,11 @@ export {
 } from './LinearBasicDisplay/fitLadderViews.ts'
 export { fittedHeight } from './LinearBasicDisplay/fitLadder.ts'
 export { scaleLaidOutData } from './LinearBasicDisplay/applyLayout.ts'
-export { maxBottom } from './LinearBasicDisplay/layoutQueries.ts'
+export {
+  featureIdsTouchingBlocks,
+  maxBottom,
+} from './LinearBasicDisplay/layoutQueries.ts'
+export { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
 export { paintFeatureBand } from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export {
   buildFeatureFlatbushIndex,
