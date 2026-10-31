@@ -1025,6 +1025,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * coarsest row's fit, so the largest genome fills its pane and the others
        * draw shorter in proportion — or each fit to its pane. `coord.ratio`
        * latches, so the shared scale holds across later zooms.
+       * Resetting each row's regions undoes a Re-order chromosomes, but it is
+       * also the way back from a search box that narrowed a row to one contig;
+       * kept that way on purpose (2026-10-31).
        */
       showAllRegionsAcrossRows(sameScale: boolean) {
         this.setRatio(sameScale ? 1 : undefined)
