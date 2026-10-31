@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { readConnectionsConfigSchema } from '../../LinearAlignmentsDisplay/readConnectionsConfigSchema.ts'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinkSizeScale } from '@jbrowse/render-core/marks'
 
 // How thick a connection is drawn for the number of reads that support it.
@@ -57,7 +58,7 @@ export interface StrokeWidthSetting {
 
 /** `readConnections.encoding.strokeWidth` off the read connections' config. */
 export function strokeWidthSettingOf(
-  readConnections: AnyConfigurationModel,
+  readConnections: Instance<typeof readConnectionsConfigSchema>,
 ): StrokeWidthSetting {
   const path = ['encoding', 'strokeWidth'] as const
   return {

@@ -2,6 +2,7 @@
 
 exports[`display-kit public surface pins the subpath exports 1`] = `
 [
+  "./BandSeamHandle",
   "./BlockMsg",
   "./BottomRightIndicators",
   "./ChromeHighlight",
