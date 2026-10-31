@@ -1010,8 +1010,9 @@ export function colorRampScales({
   baseQualityExtent: Extent
 }): RampScale[] {
   const readRamp = bakedRampScale(colorField, bakedScale, linearFieldExtent)
+  // No extent is no scored base in view, which the ramp would key for nothing.
   return [
-    ...(baseLayer?.field === 'baseQuality'
+    ...(baseLayer?.field === 'baseQuality' && baseQualityExtent
       ? [
           qualityRampScale(
             'base-quality-ramp',
@@ -1125,6 +1126,26 @@ function baseLayerLegend({
     : []
 }
 
+// The strand rows the reads' XS/TS/ts values paint. XS and TS name the
+// strand; ts is relative to the read's own, so either value can paint both.
+function strandTagLegend(
+  tag: string | undefined,
+  present: ReadonlySet<string> | undefined,
+  palette: ColorPalette,
+): LegendItem[] {
+  const plus = present?.has('+') === true
+  const minus = present?.has('-') === true
+  const relative = tag === 'ts'
+  return [
+    ...(plus || (relative && minus)
+      ? [{ color: rgb255(palette.colorFwdStrand), label: 'Forward strand' }]
+      : []),
+    ...(minus || (relative && plus)
+      ? [{ color: rgb255(palette.colorRevStrand), label: 'Reverse strand' }]
+      : []),
+  ]
+}
+
 function readFillLegend({
   colorField,
   palette,
@@ -1152,10 +1173,7 @@ function readFillLegend({
         ]
   }
   if (isStrandTag(colorField) && !bakedScale?.declared) {
-    return [
-      { color: rgb255(palette.colorFwdStrand), label: 'Forward strand' },
-      { color: rgb255(palette.colorRevStrand), label: 'Reverse strand' },
-    ]
+    return strandTagLegend(fieldTag(colorField), presentTagValues, palette)
   }
   // The strand, insert-size and orientation fields add only the buckets that
   // occurred.

@@ -776,6 +776,35 @@ test('a faceted region with no reads is one empty section, not every section hid
   expect(t.coverage.depth.every(d => d === 0)).toBe(true)
 })
 
+// An allele segment under the band's floor is not drawn, so it keys no base.
+test('the base key names only the allele segments the band draws', async () => {
+  const t = await engine.alignments({
+    ...BAM,
+    display: {
+      pileup: { show: false },
+      coverage: { alleles: { filter: [{ field: 'fraction', gte: 0.3 }] } },
+    },
+  })
+  const drawn = new Set(
+    t.alleleCoverage.base.filter((_, i) => t.alleleCoverage.shown[i]),
+  )
+  expect(t.alleleCoverage.shown).toContain(false)
+  expect(new Set(t.baseLegend.label)).toEqual(drawn)
+})
+
+// The display's `effectiveFacet`: a chain's reads can differ in strand, so a
+// strand facet under chain draws one section and says why.
+test('a per-read facet under unit chain is one section, with a warning', async () => {
+  const t = await engine.alignments({
+    ...BAM,
+    display: { unit: 'chain', facet: { field: 'strand' } },
+  })
+  expect(t.sections.label).toEqual([''])
+  expect(t.warnings).toContainEqual(
+    expect.stringContaining('unit: "chain" draws one ungrouped section'),
+  )
+})
+
 test('a chain puts a read, its mate and its split segments on one row, joined by a line', async () => {
   const plain = await engine.alignments(PAIRED_INVERSION)
   const chained = await engine.alignments({
@@ -1049,7 +1078,11 @@ test('every mark carries the color the display paints it, keyed beside the reads
   expect(t.baseLegendTitle).toBe('Base')
   expect(t.baseLegend.label).toEqual(
     ['A', 'C', 'G', 'T', 'N'].filter(
-      b => t.mismatches.base.includes(b) || t.alleleCoverage.base.includes(b),
+      b =>
+        t.mismatches.base.includes(b) ||
+        t.alleleCoverage.base.some(
+          (a, i) => a === b && t.alleleCoverage.shown[i],
+        ),
     ),
   )
   t.baseLegend.label.forEach((b, i) => {

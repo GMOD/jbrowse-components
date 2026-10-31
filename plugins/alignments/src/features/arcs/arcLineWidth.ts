@@ -1,3 +1,6 @@
+import { readConfObject } from '@jbrowse/core/configuration'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinkSizeScale } from '@jbrowse/render-core/marks'
 
 // How thick a connection is drawn for the number of reads that support it.
@@ -50,6 +53,21 @@ export interface StrokeWidthSetting {
   value: number | undefined
   field: string | undefined
   scale: { type: 'log' | 'linear'; range: readonly string[] }
+}
+
+/** `readConnections.encoding.strokeWidth` off the read connections' config. */
+export function strokeWidthSettingOf(
+  readConnections: AnyConfigurationModel,
+): StrokeWidthSetting {
+  const path = ['encoding', 'strokeWidth'] as const
+  return {
+    value: readConfObject(readConnections, [...path, 'value']),
+    field: readConfObject(readConnections, [...path, 'field']),
+    scale: {
+      type: readConfObject(readConnections, [...path, 'scale', 'type']),
+      range: readConfObject(readConnections, [...path, 'scale', 'range']),
+    },
+  }
 }
 
 function pxRange(range: readonly string[]): [number, number] | undefined {

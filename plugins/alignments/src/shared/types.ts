@@ -247,7 +247,11 @@ export interface WorkerFacet {
 // Names in code order (index = code - 1). Single source for turning the numeric
 // interbase code back into a name — used by the indicator hit-test and the
 // coverage/indicator tooltip so the two can't drift.
-const INTERBASE_TYPE_NAMES = ['insertion', 'softclip', 'hardclip'] as const
+export const INTERBASE_TYPE_NAMES = [
+  'insertion',
+  'softclip',
+  'hardclip',
+] as const
 
 // The pileup's row orders over the whole window: by start, widest first,
 // spliced reads first, split reads first, or the structural-variant evidence

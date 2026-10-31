@@ -114,7 +114,10 @@ import {
   ARC_COLOR_INTERCHROM,
   arcColorSlot,
 } from './features/arcs/arcColors.ts'
-import { strokeWidthScale } from './features/arcs/arcLineWidth.ts'
+import {
+  strokeWidthScale,
+  strokeWidthSettingOf,
+} from './features/arcs/arcLineWidth.ts'
 import {
   arcsToRegionResult,
   regionIndexOf,
@@ -176,7 +179,12 @@ import { arcColorFieldOf } from './shared/arcColorOptions.ts'
 import { basesFilterOf } from './shared/basesFilter.ts'
 import { paintsModifications } from './shared/colorFieldDefs.ts'
 import { fieldTag } from './shared/facetLabels.ts'
-import { sectionOrder, workerFacet } from './shared/groupFeatures.ts'
+import {
+  facetForUnit,
+  facetUnitNotices,
+  sectionOrder,
+  workerFacet,
+} from './shared/groupFeatures.ts'
 import { joinSections } from './shared/joinSections.ts'
 import { keySectionOrder } from './shared/keySectionOrder.ts'
 import {
@@ -193,6 +201,8 @@ import { getModificationName } from './shared/modificationData.ts'
 import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
+  INTERBASE_TYPE_NAMES,
+  getCigarTypeLabel,
   interbaseTypeName,
   isLayoutOrder,
 } from './shared/types.ts'
@@ -350,12 +360,6 @@ function alleleFrequencies(d: WorkerPileupData) {
 }
 
 const BASES = ['A', 'C', 'G', 'T', 'N'] as const
-
-const INTERBASE_LABELS: Record<InterbaseTypeName, string> = {
-  insertion: 'Insertion',
-  softclip: 'Soft clip',
-  hardclip: 'Hard clip',
-}
 
 /**
  * The colors the display paints its per-base and coverage marks in, off its
@@ -896,19 +900,7 @@ function readConnectionTables(
   const slotColor = buildArcColorPalette(colors.palette, colorField).map(
     normalizedRgbToHex,
   )
-  const stroke = strokeWidthScale({
-    value: readConfObject(band, ['encoding', 'strokeWidth', 'value']),
-    field: readConfObject(band, ['encoding', 'strokeWidth', 'field']),
-    scale: {
-      type: readConfObject(band, ['encoding', 'strokeWidth', 'scale', 'type']),
-      range: readConfObject(band, [
-        'encoding',
-        'strokeWidth',
-        'scale',
-        'range',
-      ]),
-    },
-  })
+  const stroke = strokeWidthScale(strokeWidthSettingOf(band))
   const widthOf = (support: number) =>
     linkStrokeWidthPx(
       support,
@@ -1306,10 +1298,13 @@ export async function alignmentTables(
   ])
   const showSoftClips = !chain && softClippingAsked
   const facetNode = conf.facet
-  const facetSetting = facetSettingOf({
+  const askedFacet = facetSettingOf({
     field: readConfObject(facetNode, 'field'),
     sort: readConfObject(facetNode, 'sort'),
   })
+  // as the display's `effectiveFacet`: a per-read field under chain groups
+  // nothing
+  const facetSetting = facetForUnit(askedFacet, unit)
   const filter = filterOf(conf)
   const args: RpcExecuteArgs<'RenderAlignmentData'> = {
     sessionId: 'tables',
@@ -1551,19 +1546,22 @@ export async function alignmentTables(
       featureSpacing: featureSpacingForHeight(featureHeight),
     },
     config: resolvedConfig(conf, filter),
-    warnings: layoutWarnings({
-      sortField: readConfObject(conf.sort, 'field'),
-      sortColumn,
-      layoutOrder,
-      chain,
-      softClippingAsked,
-      collapseAsked:
-        !chain &&
-        facetSetting !== undefined &&
-        readConfObject(conf, 'collapseSections'),
-      sections: order.map(({ key }) => sectionData.get(key)!),
-      regions: regionBounds,
-    }),
+    warnings: [
+      ...facetUnitNotices(askedFacet, unit),
+      ...layoutWarnings({
+        sortField: readConfObject(conf.sort, 'field'),
+        sortColumn,
+        layoutOrder,
+        chain,
+        softClippingAsked,
+        collapseAsked:
+          !chain &&
+          facetSetting !== undefined &&
+          readConfObject(conf, 'collapseSections'),
+        sections: order.map(({ key }) => sectionData.get(key)!),
+        regions: regionBounds,
+      }),
+    ],
   }
 }
 
@@ -1638,14 +1636,15 @@ function layoutWarnings({
 
 /**
  * The keys of the marks the reads' own `legend` leaves out, each over what the
- * tables paint: the bases (none while a modifications layer mutes them), the
+ * tables paint: the bases (none while a modifications layer mutes them, and
+ * no allele segment under the band's floor), the
  * splice junction strands and split junction classes shown, as the sashimi
  * band keys them, and the interbase histogram's events.
  */
 function markLegends(
   tables: {
     mismatches: { base: string[] }
-    alleleCoverage: { base: string[] }
+    alleleCoverage: { base: string[]; shown: boolean[] }
     junctions: {
       strand: number[]
       source: string[]
@@ -1660,7 +1659,9 @@ function markLegends(
   const shownJunction = (i: number) => tables.junctions.shown[i] === true
   const bases = new Set([
     ...tables.mismatches.base,
-    ...tables.alleleCoverage.base,
+    ...tables.alleleCoverage.base.filter(
+      (_, i) => tables.alleleCoverage.shown[i] === true,
+    ),
   ])
   const keyedBases = paint.muted ? [] : BASES.filter(b => bases.has(b))
   const junctionKey = sashimiLegendItems(
@@ -1686,9 +1687,7 @@ function markLegends(
     ...tables.interbaseCoverage.type,
     ...tables.indicators.type,
   ])
-  const keyedEvents = (
-    Object.keys(INTERBASE_LABELS) as InterbaseTypeName[]
-  ).filter(t => events.has(t))
+  const keyedEvents = INTERBASE_TYPE_NAMES.filter(t => events.has(t))
   return {
     baseLegend: {
       label: keyedBases.map(b => b as string),
@@ -1701,7 +1700,7 @@ function markLegends(
     },
     junctionLegendTitle: SASHIMI_LEGEND_TITLE,
     interbaseLegend: {
-      label: keyedEvents.map(t => INTERBASE_LABELS[t]),
+      label: keyedEvents.map(t => getCigarTypeLabel(t)),
       color: keyedEvents.map(t => paint.interbase[t]),
     },
     interbaseLegendTitle: 'Insertions and clips',

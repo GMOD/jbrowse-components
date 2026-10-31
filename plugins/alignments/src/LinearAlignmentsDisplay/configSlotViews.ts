@@ -14,6 +14,7 @@ import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityCompu
 
 import {
   strokeWidthScale,
+  strokeWidthSettingOf,
   strokeWidthWithBase,
 } from '../features/arcs/arcLineWidth.ts'
 import { ordinaryPairsShown } from '../features/arcs/arcTypes.ts'
@@ -49,7 +50,6 @@ import { sortOf, sortProblems } from './alignmentsSortConfigSchema.ts'
 import { drawnReadConnectionsOf } from './constants.ts'
 import { declaredFiltersOf } from './dialogs/layerFilters.ts'
 
-import type { StrokeWidthSetting } from '../features/arcs/arcLineWidth.ts'
 import type {
   MismatchOpacityField,
   QualityOpacity,
@@ -176,18 +176,6 @@ const MISMATCH_OPACITY = [
   'encoding',
   'opacity',
 ] as const
-
-function strokeWidthSettingOf(self: ConfigSlotSelf): StrokeWidthSetting {
-  const path = ['readConnections', 'encoding', 'strokeWidth'] as const
-  return {
-    value: getConf(self, [...path, 'value']),
-    field: getConf(self, [...path, 'field']),
-    scale: {
-      type: getConf(self, [...path, 'scale', 'type']),
-      range: getConf(self, [...path, 'scale', 'range']),
-    },
-  }
-}
 
 export function configSlotViews(self: ConfigSlotSelf) {
   const insertSizeBand = stableIdentityComputed(() =>
@@ -395,7 +383,9 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * draws.
      */
     get readConnectionsStrokeScale(): LinkSizeScale {
-      return strokeWidthScale(strokeWidthSettingOf(self))
+      return strokeWidthScale(
+        strokeWidthSettingOf(self.configuration.readConnections),
+      )
     },
     /**
      * #getter
@@ -761,7 +751,10 @@ export function configSlotActions(self: ConfigSlotSelf) {
         ['readConnections', 'encoding', 'strokeWidth'],
         width === undefined
           ? {}
-          : strokeWidthWithBase(strokeWidthSettingOf(self), width),
+          : strokeWidthWithBase(
+              strokeWidthSettingOf(self.configuration.readConnections),
+              width,
+            ),
       )
     },
 

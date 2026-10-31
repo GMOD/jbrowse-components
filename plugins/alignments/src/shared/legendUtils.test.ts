@@ -501,10 +501,26 @@ describe('getReadDisplayLegendItems', () => {
     // The strand pair is the tag's own key, so it must not be repeated as a
     // split-read swatch — but an unmapped mate still gets its own.
     expect(
-      legendFor('tags.XS', ['fwdStrand', 'revStrand', 'unmappedMate']).map(
-        i => i.label,
-      ),
+      legendFor('tags.XS', ['fwdStrand', 'revStrand', 'unmappedMate'], {
+        presentTagValues: new Set(['+', '-']),
+      }).map(i => i.label),
     ).toEqual(['Forward strand', 'Reverse strand', 'Unmapped mate'])
+  })
+
+  // DNA reads carry no XS, so no read paints a strand color to key.
+  test('a strand tag keys only the strands its values paint', () => {
+    const labels = (field: string, values: string[]) =>
+      legendFor(field, ['noTagValue'], {
+        presentTagValues: new Set(values),
+      }).map(i => i.label)
+    expect(labels('tags.XS', [])).toEqual(['No XS value'])
+    expect(labels('tags.XS', ['-'])).toEqual(['Reverse strand', 'No XS value'])
+    // ts is relative to the read's strand, so one value paints both
+    expect(labels('tags.ts', ['+'])).toEqual([
+      'Forward strand',
+      'Reverse strand',
+      'No ts value',
+    ])
   })
 
   // Reads the tag is absent from paint the neutral fallback, which used to be
@@ -920,6 +936,16 @@ describe('colorRampScales', () => {
       minLabel: '0',
       maxLabel: '40',
     })
+  })
+
+  test('base quality keys no color bar while no base in view has a score', () => {
+    expect(
+      colorRampScales({
+        ...noExtents,
+        colorField: undefined,
+        baseLayer: { field: 'baseQuality' },
+      }),
+    ).toEqual([])
   })
 
   test('the plain fill and a letter layer key no color bar', () => {
