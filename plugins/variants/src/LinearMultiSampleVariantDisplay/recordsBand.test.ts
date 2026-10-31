@@ -228,6 +228,23 @@ test.each([
   },
 )
 
+// The fit measures the records on screen, as LinearBasicDisplay's does: a
+// dense stretch buffered past the edge neither labels nor sizes the band.
+test('records buffered off screen leave the band its on-screen height', () => {
+  const sparse: BandRecord[] = [['sv1', 100, 900, '<DEL>', 'DEL']]
+  const offScreenPile: BandRecord[] = Array.from({ length: 200 }, (_, i) => [
+    `far${i}`,
+    5000,
+    5000 + 10 * (i + 1),
+    '<DEL>',
+    'DEL',
+  ])
+  const alone = recordsDisplayAt(sparse, 1).display
+  const { display } = recordsDisplayAt([...sparse, ...offScreenPile], 1)
+  expect([...display.recordsOnScreenIds]).toEqual(['sv1'])
+  expect(display.topBands.recordsHeight).toBe(alone.topBands.recordsHeight)
+})
+
 describe('the pointer over the band', () => {
   function recordAt(display: LinearMultiSampleVariantDisplayModel, id: string) {
     const item = display.recordsLaidOutDataMap

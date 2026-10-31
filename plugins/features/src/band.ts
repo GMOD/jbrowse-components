@@ -14,6 +14,7 @@ export {
 export { fittedHeight } from './LinearBasicDisplay/fitLadder.ts'
 export { scaleLaidOutData } from './LinearBasicDisplay/applyLayout.ts'
 export {
+  createMembershipMemo,
   featureIdsTouchingBlocks,
   maxBottom,
 } from './LinearBasicDisplay/layoutQueries.ts'

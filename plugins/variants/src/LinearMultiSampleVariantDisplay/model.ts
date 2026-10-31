@@ -58,6 +58,7 @@ import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityCompu
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   buildFeatureFlatbushIndex,
+  createMembershipMemo,
   featureIdsTouchingBlocks,
   fitLadderViews,
   fitLadderVolatiles,
@@ -1405,18 +1406,38 @@ export function stateModelFactory(
             : []
         },
       }))
+      .views(self => {
+        const onScreenIdsMemo = createMembershipMemo()
+        return {
+          /**
+           * #getter
+           * The records the band draws whose span touches the screen, as
+           * LinearBasicDisplay's `onScreenFeatureIds`: what its labels gate
+           * on and its fit measures, so records buffered off screen cost
+           * neither.
+           */
+          get recordsOnScreenIds(): ReadonlySet<string> {
+            return onScreenIdsMemo(
+              featureIdsTouchingBlocks(
+                self.recordsSpans,
+                self.view.settledDynamicBlocks,
+              ),
+            )
+          },
+        }
+      })
       .views(self => ({
         /**
          * #getter
-         * Records drawn on screen per pixel of the blocks on screen, counted
-         * as LinearBasicDisplay's `labelDensityPerPx` counts its features.
+         * Records on screen per pixel of the blocks on screen, as
+         * LinearBasicDisplay's `labelDensityPerPx`.
          */
         get recordsLabelDensityPerPx() {
-          const blocks = self.view.settledDynamicBlocks
-          const widthPx = blocks.reduce((sum, block) => sum + block.widthPx, 0)
-          return widthPx > 0
-            ? featureIdsTouchingBlocks(self.recordsSpans, blocks).size / widthPx
-            : 0
+          const widthPx = self.view.settledDynamicBlocks.reduce(
+            (sum, block) => sum + block.widthPx,
+            0,
+          )
+          return widthPx > 0 ? self.recordsOnScreenIds.size / widthPx : 0
         },
       }))
       .views(self => {
@@ -1514,7 +1535,9 @@ export function stateModelFactory(
           },
           effectiveShowDescriptions: false,
           facet: undefined,
-          fitMeasureFeatureIds: undefined,
+          get fitMeasureFeatureIds() {
+            return self.recordsOnScreenIds
+          },
           fitHeightToDisplay: true,
           autoHeight: false,
           showsEveryIsoform: true,
@@ -1534,7 +1557,10 @@ export function stateModelFactory(
           variantTopBandsGeometry({
             showRecords: self.showRecords,
             recordsGrowMaxHeight: self.recordsGrowMaxHeight,
-            recordsContentHeight: maxBottom(ladder.baseLaidOutDataMap),
+            recordsContentHeight: maxBottom(
+              ladder.baseLaidOutDataMap,
+              self.recordsOnScreenIds,
+            ),
             recordsBounds: recordsBandBounds(self.height),
             lineZoneHeight: self.lineZoneHeight,
           }),
