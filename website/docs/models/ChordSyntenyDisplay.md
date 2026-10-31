@@ -122,9 +122,9 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>11 inherited methods from 2 models</summary>
+<summary>12 inherited methods from 2 models</summary>
 
-From [BaseChordDisplay](../basechorddisplay): <span id="method-shapefor">[`shapeFor`](../basechorddisplay#method-shapefor)</span>, <span id="method-shapepathfor">[`shapePathFor`](../basechorddisplay#method-shapepathfor)</span>, <span id="method-hitat">[`hitAt`](../basechorddisplay#method-hitat)</span>, <span id="method-assemblyof">[`assemblyOf`](../basechorddisplay#method-assemblyof)</span>, <span id="method-canonicalrefname">[`canonicalRefName`](../basechorddisplay#method-canonicalrefname)</span>, <span id="method-axisslice">[`axisSlice`](../basechorddisplay#method-axisslice)</span>
+From [BaseChordDisplay](../basechorddisplay): <span id="method-shapefor">[`shapeFor`](../basechorddisplay#method-shapefor)</span>, <span id="method-shapepathfor">[`shapePathFor`](../basechorddisplay#method-shapepathfor)</span>, <span id="method-hitat">[`hitAt`](../basechorddisplay#method-hitat)</span>, <span id="method-assemblyof">[`assemblyOf`](../basechorddisplay#method-assemblyof)</span>, <span id="method-canonicalrefname">[`canonicalRefName`](../basechorddisplay#method-canonicalrefname)</span>, <span id="method-placeend">[`placeEnd`](../basechorddisplay#method-placeend)</span>, <span id="method-axisslice">[`axisSlice`](../basechorddisplay#method-axisslice)</span>
 
 From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-configproblemsof">[`configProblemsOf`](../basedisplay#method-configproblemsof)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
 
@@ -135,13 +135,12 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-clickfeature">**clickFeature**</span><br><code>(feature: Feature) =&gt; void</code> | what a click on the canvas reaches: the alignment's details |
 | <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> | refetch, and run a reorder this launch still owes, which is how the error ring's Retry reaches a reorder that failed |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>7 inherited actions from 2 models</summary>
+<summary>8 inherited actions from 2 models</summary>
 
-From [BaseChordDisplay](../basechorddisplay): <span id="action-openerrordialog">[`openErrorDialog`](../basechorddisplay#action-openerrordialog)</span>, <span id="action-setfeatures">[`setFeatures`](../basechorddisplay#action-setfeatures)</span>
+From [BaseChordDisplay](../basechorddisplay): <span id="action-openerrordialog">[`openErrorDialog`](../basechorddisplay#action-openerrordialog)</span>, <span id="action-clickfeature">[`clickFeature`](../basechorddisplay#action-clickfeature)</span>, <span id="action-setfeatures">[`setFeatures`](../basechorddisplay#action-setfeatures)</span>
 
 From [BaseDisplay](../basedisplay): <span id="action-setstatusmessage">[`setStatusMessage`](../basedisplay#action-setstatusmessage)</span>, <span id="action-seterror">[`setError`](../basedisplay#action-seterror)</span>, <span id="action-clearhoveredfeature">[`clearHoveredFeature`](../basedisplay#action-clearhoveredfeature)</span>, <span id="action-applydisplaysettings">[`applyDisplaySettings`](../basedisplay#action-applydisplaysettings)</span>, <span id="action-applyplot">[`applyPlot`](../basedisplay#action-applyplot)</span>
 

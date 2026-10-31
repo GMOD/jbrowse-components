@@ -79,14 +79,15 @@ From [BaseDisplay](../basedisplay): <span id="volatile-error">[`error`](../based
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="getter-visibleidset">**visibleIdSet**</span><br><code>Set&lt;string&gt; &#124; undefined</code> |  |
 | <span id="getter-drawnfeatures">**drawnFeatures**</span><br><code>Feature[] &#124; undefined</code> | the held records `visibleFeatureIds` leaves |
-| <span id="getter-highlightedfeatureidset">**highlightedFeatureIdSet**</span><br><code>Set&lt;string&gt; &#124; undefined</code> |  |
 | <span id="getter-featurewidgettype">**featureWidgetType**</span><br><code>{ type: string; id: string; }</code> | the panel the linear variant displays open for the same record |
-| <span id="getter-chordfeet">**chordFeet**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ x: Float32Array&lt;ArrayBuffer&gt;; x2: Float32Array&lt;ArrayBuffer&gt;;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ x: Float32Array&lt;ArrayBuffer&gt;; x2: Float32Array&lt;ArrayBuffer&gt;; xGaps: Uint32Array&lt;ArrayBuffer&gt;; x2Gaps: Uint32Array&lt;ArrayBuffer&gt;; placed: Uint8Array&lt;ArrayBuffer&gt;; junction: string[]; index: Map&lt;Feature, number&gt;; }</code></pre></dialog></span> | every held record's two ends on the circle's unrolled axis, by the record's place in `features`: its start, and its mate's position where it has one, else its end. `junction` is the two ends unordered, which a breakend pair's two records share. |
+| <span id="getter-chordfeet">**chordFeet**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ x: Float32Array&lt;ArrayBuffer&gt;; x2: Float32Array&lt;ArrayBuffer&gt;;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ x: Float32Array&lt;ArrayBuffer&gt;; x2: Float32Array&lt;ArrayBuffer&gt;; xGaps: Uint32Array&lt;ArrayBuffer&gt;; x2Gaps: Uint32Array&lt;ArrayBuffer&gt;; placed: Uint8Array&lt;ArrayBuffer&gt;; junction: string[]; }</code></pre></dialog></span> | every held record's two ends on the circle's unrolled axis, by the record's place in `features`: its start, and its mate's position where it has one, else its end. `junction` is the two ends unordered, which a breakend pair's two records share. |
 | <span id="getter-colorsetting">**colorSetting**</span><br><code>ColorSetting</code> | `encoding.color` as written |
 | <span id="getter-paintedcolorfield">**paintedColorField**</span><br><code>CategoricalField &#124; undefined</code> | the field the chords paint by, undefined for a constant or callback |
-| <span id="getter-chordstrokes">**chordStrokes**</span><br><code>Map&lt;Feature, string&gt;</code> | each drawn record's color: its field's value through the scale, or the `value` the color channel answers for it |
+| <span id="getter-chordstrokes">**chordStrokes**</span><br><code>Map&lt;Feature, string&gt;</code> | each chord's record's color: its field's value through the scale, or the `value` the color channel answers for it |
 | <span id="getter-chordpicks">**chordPicks**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ picked: number[]; features: Feature[]; laneOfId: Map&lt;string,…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ picked: number[]; features: Feature[]; laneOfId: Map&lt;string, number&gt;; }</code></pre></dialog></span> | the drawn records a chord stands for, one per junction: the first record of a breakend pair draws it, and `laneOfId` sends both records' ids to that lane |
+| <span id="getter-dimmedfeatureids">**dimmedFeatureIds**</span><br><code>ReadonlySet&lt;string&gt; &#124; undefined</code> | the drawn records whose chords dim while the SV inspector highlights some: every lane but those a highlighted record, or its breakend twin, draws |
 | <span id="getter-chordlanes">**chordLanes**</span><br><code>ChordLanes</code> | the drawn records as the chord mark's lanes, each in its color with the alpha the SV inspector's dimming leaves it |
 | <span id="getter-drawnlanes">**drawnLanes**</span><br><code>ChordLanes</code> | the chord lanes, the ones whose ends are under a pixel apart included |
 | <span id="getter-laneindexbyid">**laneIndexById**</span><br><code>ReadonlyMap&lt;string, number&gt;</code> | each drawn record's lane by id, a breakend pair's twin included |
@@ -116,6 +117,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="method-isvisible">**isVisible**</span><br><code>(feature: Feature) =&gt; boolean</code> | whether `visibleFeatureIds` leaves a record drawn |
 | <span id="method-shapeat">**shapeAt**</span><br><code>(i: number) =&gt; ChordShape &#124; undefined</code> | lane `i` as the SVG side draws it, on the unrotated figure; undefined for a chord whose ends are under a pixel apart |
 | <span id="method-laneat">**laneAt**</span><br><code>(x: number, y: number) =&gt; number &#124; undefined</code> | the chord passing nearest a figure point, within `CHORD_HIT_PX` |
 | <span id="method-shapelabel">**shapeLabel**</span><br><code>(feature: Feature) =&gt; string</code> |  |
@@ -124,11 +126,11 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Color by and Advanced → Edit plot..., which the circular view shows under its Tracks menu |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>12 inherited methods from 3 models</summary>
+<summary>13 inherited methods from 3 models</summary>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
-From [BaseChordDisplay](../basechorddisplay): <span id="method-shapefor">[`shapeFor`](../basechorddisplay#method-shapefor)</span>, <span id="method-shapepathfor">[`shapePathFor`](../basechorddisplay#method-shapepathfor)</span>, <span id="method-hitat">[`hitAt`](../basechorddisplay#method-hitat)</span>, <span id="method-assemblyof">[`assemblyOf`](../basechorddisplay#method-assemblyof)</span>, <span id="method-canonicalrefname">[`canonicalRefName`](../basechorddisplay#method-canonicalrefname)</span>, <span id="method-axisslice">[`axisSlice`](../basechorddisplay#method-axisslice)</span>
+From [BaseChordDisplay](../basechorddisplay): <span id="method-shapefor">[`shapeFor`](../basechorddisplay#method-shapefor)</span>, <span id="method-shapepathfor">[`shapePathFor`](../basechorddisplay#method-shapepathfor)</span>, <span id="method-hitat">[`hitAt`](../basechorddisplay#method-hitat)</span>, <span id="method-assemblyof">[`assemblyOf`](../basechorddisplay#method-assemblyof)</span>, <span id="method-canonicalrefname">[`canonicalRefName`](../basechorddisplay#method-canonicalrefname)</span>, <span id="method-placeend">[`placeEnd`](../basechorddisplay#method-placeend)</span>, <span id="method-axisslice">[`axisSlice`](../basechorddisplay#method-axisslice)</span>
 
 From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-configproblemsof">[`configProblemsOf`](../basedisplay#method-configproblemsof)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
 

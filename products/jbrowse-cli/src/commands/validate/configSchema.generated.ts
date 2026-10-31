@@ -12526,7 +12526,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "show": {
-          "description": "draw the structural variants themselves above the genotype rows, at their genomic positions; a region with none spends no height.",
+          "description": "draw the records themselves above the genotype rows, at their genomic positions.",
           "default": true,
           "if": {
             "type": "null"
@@ -12535,9 +12535,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
-        "maxHeight": {
-          "description": "ceiling in pixels on the band, which grows to its stack of records and takes that height from the rows.",
-          "default": 170,
+        "height": {
+          "description": "height in pixels of the band over genotype rows, added to the track above them; the band's seam drag writes it. Unset, the band opens at its stack of records, up to 170 px, and keeps that height from then on.",
           "if": {
             "type": "null"
           },
@@ -12662,7 +12661,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "variantLayout": {
-          "description": "'genomic' draws each variant at its span; 'columns' draws one equal-width column per variant, tied to its position by a connector line.",
+          "description": "'genomic' draws each variant at its span; 'columns' draws one equal-width column per variant, tied to its position by a connector line, while genotype rows draw.",
           "default": "genomic",
           "if": {
             "type": "null"

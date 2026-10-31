@@ -146,6 +146,9 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../b
 | <span id="getter-elidedregions">**elidedRegions**</span><br><code>SliceRegion[]</code> | `displayedRegions` with each run of too-narrow regions in one assembly folded into one elided slice |
 | <span id="getter-pendinglaunch">**pendingLaunch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>LaunchInput&lt;CircularViewCommands &amp; { unknown?: Record&lt;string, u…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>LaunchInput&lt;CircularViewCommands &amp; { unknown?: Record&lt;string, unknown&gt; &#124; undefined; malformed?: Record&lt;string, unknown&gt; &#124; undefined; legacyInit?: boolean &#124; undefined; }&gt; &#124; undefined</code></pre></dialog></span> | the launch state still to apply |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  |
+| <span id="getter-trackdisplays">**trackDisplays**</span><br><code>DisplayModel[]</code> | each track's display, the one the circle draws |
+| <span id="getter-ringdisplays">**ringDisplays**</span><br><code>RingDisplay[]</code> | the displays drawn as rings, in track order |
+| <span id="getter-chorddisplays">**chordDisplays**</span><br><code>ChordLayerDisplay[]</code> | the displays drawing across the circle, in track order |
 | <span id="getter-chordsyntenydisplays">**chordSyntenyDisplays**</span><br><code>ChordSyntenyDisplaySelf[]</code> | the ribbon displays of `syntenyTracks()`; a chromosome reorder reads its alignments from these |
 | <span id="getter-candiagonalize">**canDiagonalize**</span><br><code>boolean</code> | whether a reorder applies: a ribbon track, and exactly two genomes (ADR-121) |
 | <span id="getter-paintedassemblyname">**paintedAssemblyName**</span><br><code>string &#124; undefined</code> | the genome whose ideogram a ribbon track paints by what aligns to it from the first, rather than in the colors of its chromosomes |
@@ -163,7 +166,6 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../b
 | <span id="getter-status">**status**</span><br><code>ViewStatus</code> | the lifecycle as one value, as the linear view answers it |
 | <span id="getter-regionhost">**regionHost**</span><br><code>RingHost</code> | the strip a linear display lays out along and draws its ring from (ADR-119) |
 | <span id="getter-chordradiuspx">**chordRadiusPx**</span><br><code>number</code> | Where the chord displays start: inside the innermost ring, or at the ruler when the view holds none. |
-| <span id="getter-chorddisplays">**chordDisplays**</span><br><code>ChordLayerDisplay[]</code> | the displays drawing across the circle, in track order: every first display registered for this view rather than laid out as a ring |
 | <span id="getter-hoveredchord">**hoveredChord**</span><br><code>ChordHit &#124; undefined</code> | the chord or ribbon under the pointer |
 | <span id="getter-hoveredband">**hoveredBand**</span><br><code>AxisSlice</code> | the chromosome whose band is under the pointer, on the chord axis |
 | <span id="getter-chordfocusgaps">**chordFocusGaps**</span><br><code>number</code> | that chromosome as the chord stage's focus: its slice's gap count, the name a foot gives it, or -1 for none |
@@ -201,6 +203,7 @@ From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rend
 | <span id="method-syntenytracks">**syntenyTracks**</span><br><code>() =&gt; ComparativeTrackModel[]</code> | the tracks drawing ribbons, which the view's color settings paint |
 | <span id="method-loadedattributeranges">**loadedAttributeRanges**</span><br><code>() =&gt; Record&lt;string, AttributeRange&gt;[]</code> | each ribbon display's attribute spans, over the alignments it holds |
 | <span id="method-legendcigarops">**legendCigarOps**</span><br><code>() =&gt; number</code> | a ribbon draws no indel blocks, so the key lists none |
+| <span id="method-isringdisplay">**isRingDisplay**</span><br><code>(display: { type: string; }) =&gt; boolean</code> | whether a display draws as a ring: one registered for another view, laid out along the ring host's strip, where one registered for this view draws across the circle |
 | <span id="method-chordat">**chordAt**</span><br><code>(dx: number, dy: number) =&gt; ChordHit &#124; undefined</code> | the chord or ribbon under a point `dx`,`dy` CSS px from the circle's centre in the screen frame |
 | <span id="method-bandat">**bandAt**</span><br><code>(dx: number, dy: number) =&gt; string &#124; undefined</code> | the place of the chromosome whose ideogram band holds a point `dx`,`dy` CSS px from the circle's centre in the screen frame |
 | <span id="method-bandcenter">**bandCenter**</span><br><code>(key: string) =&gt; [number, number] &#124; undefined</code> | the middle of the ideogram band `key` names, CSS px from the circle's centre in the screen frame: the point `bandAt` answers `key` for |

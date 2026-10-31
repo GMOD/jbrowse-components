@@ -283,23 +283,31 @@ block. `LinearVariantDisplay`'s records band reads both in one expression:
 ```ts
 /**
  * #getter
- * Whether no genotype row draws: `genotypes.show` off, or a VCF
- * whose sample listing landed empty. The records band is then the
- * display, every record the filter admits, sized by `heightMode`.
+ * Whether the VCF's sample listing landed empty: the records band is
+ * then the display, every record the filter admits, sized by
+ * `heightMode` and lettered as a feature track.
  */
 get recordsOnly(): boolean {
-  return !self.showGenotypes || self.adapterSamples?.length === 0
+  return self.adapterSamples?.length === 0
+},
+/**
+ * #getter
+ * Whether genotype rows draw: `genotypes.show`, on a VCF with samples.
+ * Hidden, the rows take no height and the records band is the track.
+ */
+get drawsRows(): boolean {
+  return self.showGenotypes && !this.recordsOnly
 },
 /**
  * #getter
  * Whether the records band is drawn: at genomic positions only, where
- * a record lines up with the cells under it, and always while it is
- * the whole display.
+ * a record lines up with the cells under it, and always while no row
+ * draws.
  */
 get showRecords(): boolean {
   return (
     self.atGenomicPositions &&
-    (this.recordsOnly || getConf(self, ['records', 'show']))
+    (!this.drawsRows || getConf(self, ['records', 'show']))
   )
 },
 ```

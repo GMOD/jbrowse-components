@@ -7004,8 +7004,8 @@ export const configManifest: ConfigManifest = {
               "type": "boolean"
             },
             {
-              "name": "maxHeight",
-              "type": "number"
+              "name": "height",
+              "type": "(number | undefined)"
             },
             {
               "name": "maxFeatureScreenDensity",

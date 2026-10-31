@@ -82,7 +82,8 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-hitat">**hitAt**</span><br><code>(dx: number, dy: number) =&gt; Feature &#124; undefined</code> | the record drawn under a point CSS px from the circle's centre in the screen frame |
 | <span id="method-assemblyof">**assemblyOf**</span><br><code>(assemblyName: string &#124; undefined) =&gt; string &#124; undefined</code> | the assembly on the circle a feature names, in whatever spelling the adapter wrote. A feature that names none, as a VCF record does not, is on the track's first assembly. |
 | <span id="method-canonicalrefname">**canonicalRefName**</span><br><code>(assemblyName: string, refName: string) =&gt; string</code> | a refName as the adapter wrote it, in the assembly's canonical spelling |
-| <span id="method-axisslice">**axisSlice**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(assemblyName: string &#124; undefined, refName: string) =&gt; AxisSlic…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(assemblyName: string &#124; undefined, refName: string) =&gt; AxisSlice &#124; undefined</code></pre></dialog></span> | the slice of the unrolled axis that one end of a feature falls in |
+| <span id="method-placeend">**placeEnd**</span><br><code>(assemblyName: string &#124; undefined, refName: string) =&gt; PlacedEnd</code> | one end of a feature, as the adapter wrote it, on the circle: the assembly it names (`assemblyOf`) and its refName in that assembly's spelling, the assembly undefined where it names none on the circle |
+| <span id="method-axisslice">**axisSlice**</span><br><code>({ assemblyName, refName }: PlacedEnd) =&gt; AxisSlice &#124; undefined</code> | the slice of the unrolled axis a placed end falls in |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>6 inherited methods from one model</summary>
@@ -97,6 +98,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | Member | Description |
 | --- | --- |
 | <span id="action-openerrordialog">**openErrorDialog**</span><br><code>() =&gt; void</code> |  |
+| <span id="action-clickfeature">**clickFeature**</span><br><code>(feature: Feature) =&gt; void</code> | what a click on the canvas reaches: the record's details |
 | <span id="action-setfeatures">**setFeatures**</span><br><code>(features: Feature[] &#124; undefined) =&gt; void</code> |  |
 | <span id="action-reload">**reload**</span><br><code>() =&gt; void</code> |  |
 

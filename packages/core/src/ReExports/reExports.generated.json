@@ -2722,6 +2722,7 @@
     "@jbrowse/core/util/bandLayout": {
       "package": "@jbrowse/core",
       "names": [
+        "bandAt",
         "reservedPx",
         "stackBands"
       ],
@@ -4216,6 +4217,14 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/BandSeamHandle": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "BAND_SEAM_HIT_PX",
+        "BandSeamHandle"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/BlockMsg": {
       "package": "@jbrowse/display-kit",
       "names": [
@@ -5453,6 +5462,7 @@
         "ellipseNearest",
         "inkOfInstances",
         "instanceColor",
+        "interleavedSpans",
         "isThreshold",
         "keepRampValues",
         "keySlot",
@@ -5477,6 +5487,7 @@
         "rampValueBits",
         "recordPath",
         "rowColor",
+        "rowLineFrame",
         "rowSlot",
         "rowSpanIndex",
         "rowTableKeys",
@@ -5486,6 +5497,8 @@
         "spanMark",
         "spansInRow",
         "thresholdBandOf",
+        "traceCenter",
+        "traceStep",
         "valueWindow",
         "withPassId"
       ],

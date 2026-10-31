@@ -20,6 +20,21 @@ where the reserver and the painter historically drifted.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
+## bandAt
+
+The band under content-space `y`, or undefined below the stack or over a
+band that reserves nothing. The pointer's half of the fold: a band's hover
+reads the same tops and heights its painter drew at.
+
+```js
+import { bandAt } from '@jbrowse/core/util/bandLayout'
+
+// type signature
+<K extends string>(stack: BandStack<K>, y: number) => K | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
+
 ## baseDisplayConfig
 
 The base's entry for this display, hydrated, which a reset returns to and
@@ -115,10 +130,9 @@ one dragged back past the floor regains it.
 The ceiling is not relaxed the same way — a band already over its ceiling is
 the state the user is trying to escape, so a resize brings it back inside.
 
-`ResizeHandle` emits one delta per animation frame, so callers driving a drag
-pass `current + distance` as the target and read `current` inside the action —
-a component computing the target from a rendered height drops every tick that
-lands before React re-renders.
+A drag passes `ResizeHandle` the band's height as `value` and this setter as
+`onChange`: the handle aims at the height at the press plus the pointer's
+travel, so the seam waits at a clamp until the pointer comes back to it.
 
 ```js
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'

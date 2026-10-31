@@ -408,6 +408,7 @@ export default [
   '@jbrowse/core/util/wheelZoom',
   '@jbrowse/core/util/whenViewSettled',
   '@jbrowse/core/util/withLaunchInput',
+  '@jbrowse/display-kit/BandSeamHandle',
   '@jbrowse/display-kit/BlockMsg',
   '@jbrowse/display-kit/BottomRightIndicators',
   '@jbrowse/display-kit/categoryFilter',

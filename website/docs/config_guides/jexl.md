@@ -105,7 +105,7 @@ jexl: toUpperCase('kitty') // KITTY
 jexl: toLowerCase('KITTY') // kitty
 jexl: split('KITTY KITTY', ' ') // ['KITTY', 'KITTY']
 jexl: split(feature.notThere, ' ') // [''], an absent value is read as the empty string rather than throwing
-jexl: join('-', 'a', 'b', '', 'c') // a-b-c, joins truthy args with the separator
+jexl: join(' - ', feature.notThere, 'a', '', 0) // a - 0, joins the args with the separator, skipping absent and empty ones
 jexl: includes('kittycat', 'cat') // true
 jexl: repeat('ab', 3) // ababab
 jexl: jsonParse('{"a":1}') // parses a JSON string

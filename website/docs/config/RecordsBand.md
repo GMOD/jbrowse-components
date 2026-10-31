@@ -10,16 +10,18 @@ Auto-generated from the config schema in the source — see the [config guide](/
 The variant display's `records` band: the VCF's records, stacked as a
 feature track stacks them, so a nested SV sits under the one holding it.
 
-Over genotype rows the band holds the structural variants alone, so a
-region without SVs spends no height on it. A record is colored by its SV
-type, keyed, or by `encoding.color` when that is set, and lettered on one
-line with its ID, description and the share of the samples shown as rows,
-no-calls included, that carry it. The band grows to its stack, up to
-`maxHeight`; past that names thin and go, then boxes shrink. Past 0.2
+Over genotype rows the band holds every record the filter admits, added
+to the track above the rows. A record is colored by its SV type, keyed, or
+by `encoding.color` when that is set, and lettered on one line with its ID,
+description and the share of the samples shown as rows, no-calls included,
+that carry it. The band is `height` tall, which its seam drag writes; unset,
+it opens at its stack up to that default and keeps the height it opened
+at, so a pan never resizes the track. Records that do not fit thin their
+names, then shrink, then hide behind a count beside the band. Past 0.2
 records per pixel names go, past 0.1 descriptions, as on a feature track.
 Hovering a record reports it and its carriers, and clicking opens its
-details. At genomic positions only. On by default: a file or a region with
-no SV spends 0 px on it.
+details. At genomic positions only. On by default: a file with no record
+in view when it opens spends 0 px on it.
 
 With no genotype rows (a VCF with no samples, or `genotypes.show` off) the
 band is the whole display whatever `show` says: every record, an SV in its
@@ -56,8 +58,8 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the structural variants themselves above the genotype rows, at their genomic positions; a region with none spends no height |
-| <span id="slot-maxheight">**maxHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>170</code> | ceiling in pixels on the band, which grows to its stack of records and takes that height from the rows |
+| <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the records themselves above the genotype rows, at their genomic positions |
+| <span id="slot-height">**height**</span><br>[`maybeNumber`](/docs/config_guides/slot_types#the-maybe-types) = <code>undefined</code> | height in pixels of the band over genotype rows, added to the track above them; the band's seam drag writes it. Unset, the band opens at its stack of records, up to 170 px, and keeps that height from then on |
 | <span id="slot-displaymode">**displayMode**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (normal, compact, superCompact, collapsed) | Unset, `compact` over genotype rows, keeping the band over them tight, and `normal` with no rows, as on a feature track. |
 | <span id="slot-mark">**mark**</span><br>[FeatureMark](../featuremark) | The box each record draws as, a [](/docs/config/featuremark) object: `{ height: 6 }`. |
 | <span id="slot-facet">**facet**</span><br>[SectionFacet](../sectionfacet) | One labelled section of the band per value of a record field: `"INFO.CLNSIG"`, or `{ field, sort }` with the order its sections stack in. Not the display's own `facet`, which bands the sample rows. |

@@ -11,6 +11,7 @@ connectedView
 encoding.color
 encoding.opacity
 geneTrackId
+genotypes
 height
 labels
 layers
