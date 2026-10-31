@@ -148,3 +148,26 @@ test('a short lane costs its label chip, and the rest share what is left', () =>
     }),
   ).toBe(7)
 })
+
+// Every lane is under its chip at the first pitch, so every lane is padded and
+// no rows are left to share the space. The stack is then the chips whatever
+// the pitch, so the reads take the largest pitch that keeps each lane inside
+// its chip, and fit stays on rather than handing back to the configured size.
+test('when every lane is padded, reads fill their chips', () => {
+  const groups = Array.from({ length: 10 }, (_, i) => ({
+    key: `${i}`,
+    rows: 3,
+  }))
+  expect(
+    pitch(groups, { fitTargetHeight: 150, minLaneHeight: 16 }),
+  ).toBeCloseTo(16 / 3)
+})
+
+// One-row lanes with coverage off: every lane sits under the chip even at the
+// Normal pitch, which is still the answer — 0 would let a Compact preset win.
+test('one-row lanes padded to their chips keep the Normal pitch', () => {
+  const groups = Array.from({ length: 5 }, (_, i) => ({ key: `${i}`, rows: 1 }))
+  expect(pitch(groups, { fitTargetHeight: 400, minLaneHeight: 16 })).toBe(
+    NORMAL_PITCH,
+  )
+})

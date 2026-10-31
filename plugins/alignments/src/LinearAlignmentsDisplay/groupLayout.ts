@@ -441,6 +441,23 @@ export interface FittedReadPitchInput {
   minLaneHeight: number
 }
 
+function clampPitch(pitch: number) {
+  return Math.min(NORMAL_PITCH, Math.max(1, pitch))
+}
+
+// Once every lane with rows is padded to its chip, the stack is the chips
+// whatever the pitch, up to the pitch where the first of them outgrows its
+// chip — the largest read that changes nothing.
+function chipBoundPitch(padded: ReadonlySet<FitLane>, minLaneHeight: number) {
+  let pitch = Number.POSITIVE_INFINITY
+  for (const lane of padded) {
+    if (lane.rows > 0) {
+      pitch = Math.min(pitch, (minLaneHeight - lane.overhead) / lane.rows)
+    }
+  }
+  return Number.isFinite(pitch) ? clampPitch(pitch) : 0
+}
+
 /**
  * The row pitch that makes every lane's reads fill the display without
  * scrolling: the space left after every lane's band stack, divided by the row
@@ -449,11 +466,13 @@ export interface FittedReadPitchInput {
  * A lane padded to `minLaneHeight` takes that height whatever the pitch, so it
  * leaves the solve: its rows stop sharing the space and its pad is charged
  * instead. Padding a lane only lowers the pitch, so a lane once padded stays
- * padded and the loop settles within one pass per lane.
+ * padded and the loop settles within one pass per lane. When every lane with
+ * rows ends up padded, the pitch is the largest that keeps each inside its
+ * chip (`chipBoundPitch`), never the 0 that would switch fit off.
  *
  * Fractional (not floored): the pileup then fills the display exactly. Clamped
  * up to a 1px floor — below 1px the reads can't all fit, so the stack scrolls
- * instead. 0 when there's nothing to fit (no data / no room), signalling
+ * instead. 0 when there's nothing to fit (no rows, or no room), signalling
  * "leave the configured height as-is".
  *
  * Also clamped down to the NORMAL read pitch — not the configured height —
@@ -467,9 +486,8 @@ export function fittedReadPitch({
   minLaneHeight,
 }: FittedReadPitchInput) {
   const padded = new Set<FitLane>()
-  let pitch = 0
-  let settled = false
-  while (!settled) {
+  let result: number | undefined
+  while (result === undefined) {
     let fixed = 0
     let rows = 0
     for (const lane of lanes) {
@@ -481,20 +499,24 @@ export function fittedReadPitch({
       }
     }
     const space = fitTargetHeight - fixed
-    pitch =
-      rows > 0 && space > 0
-        ? Math.min(NORMAL_PITCH, Math.max(1, space / rows))
-        : 0
-    const short = lanes.filter(
-      lane =>
-        !padded.has(lane) && lane.overhead + lane.rows * pitch < minLaneHeight,
-    )
-    for (const lane of short) {
-      padded.add(lane)
+    if (rows === 0) {
+      result = chipBoundPitch(padded, minLaneHeight)
+    } else if (space <= 0) {
+      result = 0
+    } else {
+      const pitch = clampPitch(space / rows)
+      const short = lanes.filter(
+        lane =>
+          !padded.has(lane) &&
+          lane.overhead + lane.rows * pitch < minLaneHeight,
+      )
+      for (const lane of short) {
+        padded.add(lane)
+      }
+      result = short.length === 0 ? pitch : undefined
     }
-    settled = short.length === 0
   }
-  return pitch
+  return result
 }
 
 // Fit-to-viewport policy inputs, in px, plus the per-group user overrides. Kept
