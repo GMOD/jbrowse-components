@@ -26,8 +26,8 @@ each takes, and the fields with presets of their own.
 | --- | --- | --- | --- | --- |
 | [](/docs/config/chordvariantdisplay) | `encoding.color` | [](/docs/config/chordcolor#preset-fields) | ordinal, threshold | `strand`, `svType`, `impact` |
 | [](/docs/config/ldtrackdisplay) | `encoding.color` | [](/docs/config/ldcolor#preset-fields) | fixed by the field | `r2`, `dprime` |
-| [](/docs/config/lgvsyntenydisplay) | `encoding.color` | [](/docs/config/lgvsyntenycolor#preset-fields) | ordinal, linear, threshold | `strand`, `mapq`, `insertSize`, `firstOfPairStrand`, `pairOrientation`, `insertSizeAndOrientation`, `mateRefName` |
-| [](/docs/config/linearalignmentsdisplay) | `encoding.color` | [](/docs/config/alignmentscolor#preset-fields) | ordinal, linear, threshold | `strand`, `mapq`, `insertSize`, `firstOfPairStrand`, `pairOrientation`, `insertSizeAndOrientation`, `mateRefName` |
+| [](/docs/config/lgvsyntenydisplay) | `encoding.color` | [](/docs/config/lgvsyntenycolor#preset-fields) | ordinal, linear, threshold | `strand`, `mapq`, `firstOfPairStrand`, `pairOrientation`, `insertSizeAndOrientation`, `mateRefName` |
+| [](/docs/config/linearalignmentsdisplay) | `encoding.color` | [](/docs/config/alignmentscolor#preset-fields) | ordinal, linear, threshold | `strand`, `mapq`, `firstOfPairStrand`, `pairOrientation`, `insertSizeAndOrientation`, `mateRefName` |
 | [](/docs/config/linearbasicdisplay) | `encoding.color` | [](/docs/config/featurecolor#preset-fields) | ordinal, threshold, linear, log, identity | `strand`, `svType`, `impact`, `score` |
 | [](/docs/config/linearhicdisplay) | `encoding.color` | [](/docs/config/hiccolor#preset-fields) | linear, symlog, log | `observed`, `observed/expected`, `observed/control` |
 | [](/docs/config/linearmafdisplay) | `encoding.color` | [](/docs/config/mafcolor#preset-fields) | fixed by the field | `identity`, `refNameRank` |

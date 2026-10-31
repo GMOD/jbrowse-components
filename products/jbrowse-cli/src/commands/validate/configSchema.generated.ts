@@ -6003,7 +6003,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "ordinal a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSize, insertSizeAndOrientation and mapq, and ordinal over any other field.",
+          "description": "ordinal a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSizeAndOrientation and mapq, and ordinal over any other field.",
           "if": {
             "type": "null"
           },
@@ -6016,7 +6016,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "domain": {
-          "description": "for an ordinal scale, the values that take the range first, in order: a preset field's levels, insertSize's short, normal and long, with unmappedMate and interchrom under both insert-size fields, '' a read with no value, a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSize are the two between short, normal and long, where the sampled distribution otherwise sets them.",
+          "description": "for an ordinal scale, the values that take the range first, in order: a preset field's levels, insertSizeAndOrientation's short, normal and long among them, '' a read with no value, a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSizeAndOrientation are the two between short, normal and long, where the sampled distribution otherwise sets them.",
           "if": {
             "type": "null"
           },
@@ -6203,7 +6203,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "examples": [
             "strand",
             "mapq",
-            "insertSize",
             "firstOfPairStrand",
             "pairOrientation",
             "insertSizeAndOrientation",
@@ -6258,7 +6257,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "examples": [
                 "strand",
                 "mapq",
-                "insertSize",
                 "firstOfPairStrand",
                 "pairOrientation",
                 "insertSizeAndOrientation",
@@ -7148,7 +7146,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "enum": [
             "insertSizeAndOrientation",
-            "insertSize",
             "pairOrientation"
           ],
           "type": "string"
@@ -7159,14 +7156,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "field": {
-              "description": "the pair field the arcs paint: insertSizeAndOrientation, insertSize or pairOrientation; unset takes the reads' color field where an arc paints it.",
+              "description": "the pair field the arcs paint: insertSizeAndOrientation or pairOrientation; unset takes the reads' color field where an arc paints it.",
               "if": {
                 "type": "null"
               },
               "else": {
                 "enum": [
                   "insertSizeAndOrientation",
-                  "insertSize",
                   "pairOrientation"
                 ]
               }
@@ -8361,7 +8357,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "examples": [
             "strand",
             "mapq",
-            "insertSize",
             "firstOfPairStrand",
             "pairOrientation",
             "insertSizeAndOrientation",
@@ -8416,7 +8411,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "examples": [
                 "strand",
                 "mapq",
-                "insertSize",
                 "firstOfPairStrand",
                 "pairOrientation",
                 "insertSizeAndOrientation",

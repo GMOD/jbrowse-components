@@ -3820,11 +3820,6 @@ export const configManifest: ConfigManifest = {
                     "descending": true
                   }
                 },
-                "insertSize": {
-                  "scale": {
-                    "type": "threshold"
-                  }
-                },
                 "firstOfPairStrand": {
                   "scale": {
                     "type": "ordinal",
@@ -5008,11 +5003,6 @@ export const configManifest: ConfigManifest = {
                   "legend": {
                     "title": "Mapping quality",
                     "descending": true
-                  }
-                },
-                "insertSize": {
-                  "scale": {
-                    "type": "threshold"
                   }
                 },
                 "firstOfPairStrand": {

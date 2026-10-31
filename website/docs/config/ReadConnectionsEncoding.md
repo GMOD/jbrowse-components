@@ -17,7 +17,7 @@ strokes at.
   type: 'LinearAlignmentsDisplay',
   readConnections: {
     show: true,
-    encoding: { color: 'insertSize', strokeWidth: 2 },
+    encoding: { color: 'pairOrientation', strokeWidth: 2 },
   },
 }
 ```

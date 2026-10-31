@@ -22,7 +22,7 @@ connections both draw, by its `connection` and `breakpoint` fields.
   readConnections: {
     show: true,
     mark: 'rule',
-    encoding: { color: 'insertSize' },
+    encoding: { color: 'pairOrientation' },
   },
 }
 ```
