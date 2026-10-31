@@ -129,7 +129,7 @@ test('an orientation field names its mate and chain levels', () => {
   })
   expect(everyPathPaints(palette, 'interchrom')[0]).toBe('rgb(255,0,0)')
   expect(everyPathPaints(palette, 'unmappedMate')[0]).toBe('rgb(0,255,0)')
-  expect(everyPathPaints(palette, 'splitInversion')[0]).toBe('rgb(0,0,255)')
+  expect(everyPathPaints(palette, 'splitInverted')[0]).toBe('rgb(0,0,255)')
   expect(everyPathPaints(palette, 'revStrand')[0]).toBe('rgb(255,255,0)')
   expect(
     alignmentsColorProblems(

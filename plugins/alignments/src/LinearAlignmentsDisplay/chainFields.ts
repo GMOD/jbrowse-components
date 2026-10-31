@@ -12,8 +12,8 @@ import {
 import { chainGroupingKey } from '../shared/chainGroupingKey.ts'
 import {
   CHAIN_FRAME_REV,
-  CHAIN_SPLIT_DELETION,
-  CHAIN_SPLIT_INVERSION,
+  CHAIN_SPLIT_SAME_STRAND,
+  CHAIN_SPLIT_INVERTED,
   CHAIN_SUPP_NONE,
   CHAIN_SUPP_PRESENT,
 } from '../shared/types.ts'
@@ -294,8 +294,8 @@ function chainSuppFill(hasSupp: boolean, primaryStrand: number) {
 }
 
 const SPLIT_KIND_BIT = {
-  inversion: CHAIN_SPLIT_INVERSION,
-  deletion: CHAIN_SPLIT_DELETION,
+  inversion: CHAIN_SPLIT_INVERTED,
+  deletion: CHAIN_SPLIT_SAME_STRAND,
 }
 
 function splitKindBit(primaryStrand: number, suppStrand: number) {

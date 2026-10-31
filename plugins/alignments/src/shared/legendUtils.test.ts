@@ -213,8 +213,8 @@ describe('getReadDisplayLegendItems', () => {
     expect(
       labels('pairOrientation', [
         'fwdStrand',
-        'splitInversion',
-        'splitDeletion',
+        'splitInverted',
+        'splitSameStrand',
       ]),
     ).toEqual([
       'Split segment (same strand)',
@@ -228,7 +228,10 @@ describe('getReadDisplayLegendItems', () => {
   // deletion, a tandem duplication, a templated insertion or a same-strand
   // translocation alike, and the swatch must not pick one.
   test('no split label names a variant class', () => {
-    const named = labels('pairOrientation', ['splitInversion', 'splitDeletion'])
+    const named = labels('pairOrientation', [
+      'splitInverted',
+      'splitSameStrand',
+    ])
     expect(named.join(' ')).not.toMatch(/deletion|duplication|insertion/i)
   })
 
@@ -1340,7 +1343,7 @@ describe('the sashimi section', () => {
     readCategoryColors: {
       pairLR: [0.6, 0.6, 0.6],
       pairRL: [0, 0.5, 0.5],
-      splitDeletion: [0.9, 0.7, 0],
+      splitSameStrand: [0.9, 0.7, 0],
     },
   })
   const junctions = sashimiLegend(

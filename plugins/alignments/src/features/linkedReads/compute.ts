@@ -101,7 +101,7 @@ export function classifyPair(
   // extends against s1 from the first and along s2 from the second. Two feet
   // on one base are a forward jump.
   const mapsBack =
-    kind === 'splitDeletion' &&
+    kind === 'splitSameStrand' &&
     e1.displayedRegionIndex === e2.displayedRegionIndex &&
     bp1 !== bp2 &&
     (bp1 < bp2 ? s1 === -1 : s1 === 1)
@@ -146,8 +146,8 @@ function connectionColorType(
   }
   if (isSplit) {
     const junction =
-      kind === 'splitDeletion' || kind === 'splitInversion'
-        ? splitJunctionSlot(kind === 'splitInversion', lowerDir)
+      kind === 'splitSameStrand' || kind === 'splitInverted'
+        ? splitJunctionSlot(kind === 'splitInverted', lowerDir)
         : ARC_COLOR_DEFAULT
     return connectorColorType(() => junction)
   }

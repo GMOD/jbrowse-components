@@ -237,8 +237,8 @@ const MATE_LEVELS: readonly ReadColorLevel[] = [
 ]
 
 const CHAIN_LEVELS: readonly ReadColorLevel[] = [
-  ['splitInverted', 'splitInversion'],
-  ['splitSameStrand', 'splitDeletion'],
+  ['splitInverted', 'splitInverted'],
+  ['splitSameStrand', 'splitSameStrand'],
   ['segmentInverted', 'revStrand'],
   ['segmentSameStrand', 'fwdStrand'],
 ]

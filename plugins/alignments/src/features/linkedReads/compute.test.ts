@@ -921,7 +921,7 @@ describe('connectorStyler', () => {
     expect(
       styleOf(makeEntry(split, 0), makeEntry(split, 1), true, false),
     ).toEqual({
-      color: rgb255(colors.readCategoryColors.splitDeletion),
+      color: rgb255(colors.readCategoryColors.splitSameStrand),
       label: 'Split read (deletion-type)',
     })
   })

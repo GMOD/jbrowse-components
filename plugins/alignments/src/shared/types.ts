@@ -331,9 +331,9 @@ export const CHAIN_FRAME_REV = 1 << 1
 // chain's several supplementary segments disagree; `chainSplitKind` resolves the
 // precedence in the one place that reads it, so the accumulation stays a plain
 // OR.
-export const CHAIN_SPLIT_INVERSION = 1 << 2
-export const CHAIN_SPLIT_DELETION = 1 << 3
-export const CHAIN_SPLIT_MASK = CHAIN_SPLIT_INVERSION | CHAIN_SPLIT_DELETION
+export const CHAIN_SPLIT_INVERTED = 1 << 2
+export const CHAIN_SPLIT_SAME_STRAND = 1 << 3
+export const CHAIN_SPLIT_MASK = CHAIN_SPLIT_INVERTED | CHAIN_SPLIT_SAME_STRAND
 
 export function chainHasSupp(bits: number) {
   return (bits & CHAIN_SUPP_PRESENT) !== 0
@@ -358,10 +358,10 @@ export function withChainFrame(bits: number, frame: number) {
 // over none. Returns the bit, so callers compare against CHAIN_SPLIT_* rather
 // than against a third vocabulary.
 export function chainSplitKind(bits: number) {
-  return bits & CHAIN_SPLIT_INVERSION
-    ? CHAIN_SPLIT_INVERSION
-    : bits & CHAIN_SPLIT_DELETION
-      ? CHAIN_SPLIT_DELETION
+  return bits & CHAIN_SPLIT_INVERTED
+    ? CHAIN_SPLIT_INVERTED
+    : bits & CHAIN_SPLIT_SAME_STRAND
+      ? CHAIN_SPLIT_SAME_STRAND
       : 0
 }
 

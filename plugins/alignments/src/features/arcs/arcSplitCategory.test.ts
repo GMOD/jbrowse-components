@@ -119,7 +119,7 @@ describe('split class color', () => {
       pairLL: [0.2, 0.3, 0.4],
       pairLR: [0.3, 0.4, 0.5],
       longInsert: [0.4, 0.5, 0.6],
-      splitDeletion: [0.5, 0.6, 0.7],
+      splitSameStrand: [0.5, 0.6, 0.7],
     },
   })
 
@@ -134,7 +134,7 @@ describe('split class color', () => {
 
   test('a deletion-type split keeps the split-read color', () => {
     expect(arcCategoryColor(declared, 'splitForward')).toEqual(
-      declared.readCategoryColors.splitDeletion,
+      declared.readCategoryColors.splitSameStrand,
     )
   })
 

@@ -7,9 +7,9 @@ import type { SwatchCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts
 // falls in the same class, so a duplication-type junction and the two ends of
 // an inversion read the same in both kinds of evidence. These key connections
 // only: a read fill belongs to a segment, which can sit between two junctions
-// of different classes, and stays strand-only (`splitDeletion`/`splitInversion`).
+// of different classes, and stays strand-only (`splitSameStrand`/`splitInverted`).
 export const ARC_SPLIT_SWATCH = {
-  splitForward: 'splitDeletion',
+  splitForward: 'splitSameStrand',
   splitBack: 'pairRL',
   splitInvLL: 'pairLL',
   splitInvRR: 'pairRR',

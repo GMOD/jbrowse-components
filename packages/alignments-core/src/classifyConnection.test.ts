@@ -37,13 +37,13 @@ const kindOf = (
 ) => classifyConnection({ e1, e2, isSplit }).kind
 
 test('a split junction takes its strands, on any pair of chromosomes', () => {
-  expect(kindOf(entry(), entry(), true)).toBe('splitDeletion')
+  expect(kindOf(entry(), entry(), true)).toBe('splitSameStrand')
   expect(kindOf(entry({ strand: -1 }), entry({ strand: -1 }), true)).toBe(
-    'splitDeletion',
+    'splitSameStrand',
   )
-  expect(kindOf(entry(), entry({ strand: -1 }), true)).toBe('splitInversion')
+  expect(kindOf(entry(), entry({ strand: -1 }), true)).toBe('splitInverted')
   expect(kindOf(entry({ interchrom: 1 }), entry({ interchrom: 1 }), true)).toBe(
-    'splitDeletion',
+    'splitSameStrand',
   )
   expect(kindOf(entry({ strand: 0 }), entry(), true)).toBe('readPair')
 })
@@ -68,9 +68,9 @@ test('a mate link reads its pair fields off a primary', () => {
 test('only an aberrant pair, a strand flip or a translocation dips', () => {
   expect(isAbnormalConnection('readPair')).toBe(false)
   expect(isAbnormalConnection('pairLR')).toBe(false)
-  expect(isAbnormalConnection('splitDeletion')).toBe(false)
+  expect(isAbnormalConnection('splitSameStrand')).toBe(false)
   expect(isAbnormalConnection('pairRL')).toBe(true)
   expect(isAbnormalConnection('pairLL')).toBe(true)
-  expect(isAbnormalConnection('splitInversion')).toBe(true)
+  expect(isAbnormalConnection('splitInverted')).toBe(true)
   expect(isAbnormalConnection('interchrom')).toBe(true)
 })

@@ -19,16 +19,16 @@ import {
   RC_PLAIN,
   RC_REV_STRAND,
   RC_SHORT_INSERT,
-  RC_SPLIT_DELETION,
-  RC_SPLIT_INVERSION,
+  RC_SPLIT_SAME_STRAND,
+  RC_SPLIT_INVERTED,
   RC_TAG,
   RC_UNMAPPED_MATE,
 } from '../shaders/slang/read.consts.generated.ts'
 import { COLOR_FIELD_DEFS } from '../shared/colorFieldDefs.ts'
 import { pairCategory } from '../shared/pairCategory.ts'
 import {
-  CHAIN_SPLIT_DELETION,
-  CHAIN_SPLIT_INVERSION,
+  CHAIN_SPLIT_SAME_STRAND,
+  CHAIN_SPLIT_INVERTED,
   CHAIN_SUPP_NONE,
   chainFrame,
   chainHasSupp,
@@ -67,8 +67,8 @@ interface ReadColorData {
 // paint (or omit one it did): they are correct by construction, not by a
 // mirrored test.
 export type ReadColorCategory =
-  | 'splitInversion'
-  | 'splitDeletion'
+  | 'splitInverted'
+  | 'splitSameStrand'
   | 'unmappedMate'
   | 'interchrom'
   | 'fwdStrand'
@@ -108,8 +108,8 @@ export function framesUnpairedChainStrand(
 // the GPU and this file cannot disagree on what an index means. Exhaustive by
 // type: adding a ReadColorCategory member without an index fails to compile.
 export const READ_COLOR_CATEGORY: Record<ReadColorCategory, number> = {
-  splitInversion: RC_SPLIT_INVERSION,
-  splitDeletion: RC_SPLIT_DELETION,
+  splitInverted: RC_SPLIT_INVERTED,
+  splitSameStrand: RC_SPLIT_SAME_STRAND,
   unmappedMate: RC_UNMAPPED_MATE,
   interchrom: RC_INTERCHROM,
   fwdStrand: RC_FWD_STRAND,
@@ -211,11 +211,11 @@ function overrideCategory(
   }
   if (opts.unit === 'chain' && isPaired && orientation) {
     const splitKind = chainSplitKind(chainSupp)
-    if (splitKind === CHAIN_SPLIT_INVERSION) {
-      return 'splitInversion'
+    if (splitKind === CHAIN_SPLIT_INVERTED) {
+      return 'splitInverted'
     }
-    if (splitKind === CHAIN_SPLIT_DELETION) {
-      return 'splitDeletion'
+    if (splitKind === CHAIN_SPLIT_SAME_STRAND) {
+      return 'splitSameStrand'
     }
   }
   // tlen=0 would read as a short insert, and across chromosomes neither
@@ -364,8 +364,8 @@ export const swatchPaletteKeys = {
   shortInsert: 'colorShortInsert',
   interchrom: 'colorInterchrom',
   unmappedMate: 'colorUnmappedMate',
-  splitInversion: 'colorSplitInversion',
-  splitDeletion: 'colorSupplementary',
+  splitInverted: 'colorSplitInversion',
+  splitSameStrand: 'colorSupplementary',
   noTagValue: 'colorPairLR',
   mapqUnavailable: 'colorPairLR',
 } satisfies Partial<Record<ReadColorCategory, PaletteColorKey>>

@@ -144,13 +144,13 @@ describe('drawnConnections', () => {
         [entry('chr1', 1, 0), entry('chr1', -1, 1)],
         [entry('chr1', 1, 0), entry('chr2', 1, 1)],
       ]),
-    ).toEqual(['splitInversion', 'splitDeletion'])
+    ).toEqual(['splitInverted', 'splitSameStrand'])
   })
 
   test('drops an intra-view link only where the pileup links its own reads', () => {
     expect(kinds([[entry('chr1', 1, 0), entry('chr1', 1, 0)]])).toEqual([])
     expect(kinds([[entry('chr1', 1, 1), entry('chr1', 1, 1)]])).toEqual([
-      'splitDeletion',
+      'splitSameStrand',
     ])
   })
 

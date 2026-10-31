@@ -24,7 +24,7 @@ const ARC_COLORED = [
   'pairLL',
   'pairRR',
   'pairRL',
-  'splitDeletion',
+  'splitSameStrand',
 ] as const
 const STOCK = makeTestPalette({
   readCategoryColors: Object.fromEntries(

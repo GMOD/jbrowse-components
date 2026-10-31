@@ -344,9 +344,9 @@ export function classifyConnection<E extends MinEntry>(
       ...ends,
       kind:
         kind === 'inversion'
-          ? 'splitInversion'
+          ? 'splitInverted'
           : kind === 'deletion'
-            ? 'splitDeletion'
+            ? 'splitSameStrand'
             : 'readPair',
     }
   }
@@ -367,7 +367,7 @@ export function isAbnormalConnection(kind: ConnectionKind) {
     kind === 'pairRL' ||
     kind === 'pairRR' ||
     kind === 'pairLL' ||
-    kind === 'splitInversion' ||
+    kind === 'splitInverted' ||
     kind === 'interchrom'
   )
 }

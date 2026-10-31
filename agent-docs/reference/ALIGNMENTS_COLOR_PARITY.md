@@ -25,7 +25,7 @@ color follows: `ARC_SLOT_CATEGORY` (`shaders/palettes.ts`) →
 A split-read arc's four slots (`features/arcs/arcSplitCategory.ts`) are not read
 categories. `ARC_SPLIT_SWATCH` names the read swatch each paints, so a color
 declared for `pairRL` also moves the duplication-type split arc, and the
-deletion-type split takes the `splitDeletion` gold of the read fills.
+deletion-type split takes the `splitSameStrand` gold of the read fills.
 A split takes its class under every color field, `insertSize` included: none of
 the three has a value for a junction, and the baseline slot would key it as a
 normal pair.

@@ -3,7 +3,7 @@ import { SAM_FLAG_PAIRED, SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import {
   CHAIN_FRAME_REV,
-  CHAIN_SPLIT_INVERSION,
+  CHAIN_SPLIT_INVERTED,
   CHAIN_SUPP_NONE,
   CHAIN_SUPP_PRESENT,
 } from '../shared/types.ts'
@@ -152,7 +152,7 @@ it('leaves paired chains and their split markers alone', () => {
           end: 900,
           strand: -1,
           paired: true,
-          fill: CHAIN_SUPP_PRESENT | CHAIN_SPLIT_INVERSION,
+          fill: CHAIN_SUPP_PRESENT | CHAIN_SPLIT_INVERTED,
         },
         {
           chain: 'c',

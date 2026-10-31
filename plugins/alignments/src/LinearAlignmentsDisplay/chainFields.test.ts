@@ -11,8 +11,8 @@ import {
 import { baseWorkerPileupData } from '../RenderAlignmentDataRPC/testPileupData.ts'
 import {
   CHAIN_FRAME_REV,
-  CHAIN_SPLIT_DELETION,
-  CHAIN_SPLIT_INVERSION,
+  CHAIN_SPLIT_SAME_STRAND,
+  CHAIN_SPLIT_INVERTED,
   CHAIN_SUPP_NONE,
   CHAIN_SUPP_PRESENT,
 } from '../shared/types.ts'
@@ -165,7 +165,7 @@ describe('one region', () => {
         { id: 'p2', name: 'r1', flags: READ2 | SAM_FLAG_REVERSE, strand: -1 },
       ]),
     )
-    const split = CHAIN_SUPP_PRESENT | CHAIN_SPLIT_INVERSION
+    const split = CHAIN_SUPP_PRESENT | CHAIN_SPLIT_INVERTED
     expect(fills(r!)).toEqual([split, split, CHAIN_SUPP_PRESENT])
   })
 
@@ -183,7 +183,7 @@ describe('one region', () => {
         },
       ]),
     )
-    const split = CHAIN_SUPP_PRESENT | CHAIN_SPLIT_DELETION
+    const split = CHAIN_SUPP_PRESENT | CHAIN_SPLIT_SAME_STRAND
     expect(fills(r!)).toEqual([split, split])
   })
 
@@ -202,7 +202,7 @@ describe('one region', () => {
         },
       ]),
     )
-    const split = CHAIN_SUPP_PRESENT | CHAIN_SPLIT_INVERSION
+    const split = CHAIN_SUPP_PRESENT | CHAIN_SPLIT_INVERTED
     expect(fills(r!)).toEqual([CHAIN_SUPP_PRESENT, split, split])
   })
 
@@ -297,7 +297,7 @@ describe('a chain split across two displayed regions', () => {
       { id: 'p', name: 'pair', flags: READ1 | SAM_FLAG_REVERSE, strand: -1 },
     ])
     const [a, b] = attached(suppSide, primarySide)
-    const split = CHAIN_SUPP_PRESENT | CHAIN_FRAME_REV | CHAIN_SPLIT_INVERSION
+    const split = CHAIN_SUPP_PRESENT | CHAIN_FRAME_REV | CHAIN_SPLIT_INVERTED
     expect(fills(a!)).toEqual([split])
     expect(fills(b!)).toEqual([split])
   })
@@ -373,8 +373,8 @@ test('the union reaches a primary filed in another lane', () => {
   const out = attachChainFields(byGroup)
   const primary = out.get('4')!.get(0)!
   const supp = out.get('1')!.get(1)!
-  expect(fills(primary)).toEqual([CHAIN_SUPP_PRESENT | CHAIN_SPLIT_DELETION])
-  expect(fills(supp)).toEqual([CHAIN_SUPP_PRESENT | CHAIN_SPLIT_DELETION])
+  expect(fills(primary)).toEqual([CHAIN_SUPP_PRESENT | CHAIN_SPLIT_SAME_STRAND])
+  expect(fills(supp)).toEqual([CHAIN_SUPP_PRESENT | CHAIN_SPLIT_SAME_STRAND])
   expect([...supp.readPairOrientations]).toEqual([4])
 })
 

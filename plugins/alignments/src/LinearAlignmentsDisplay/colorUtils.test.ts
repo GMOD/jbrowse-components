@@ -3,8 +3,8 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
   CHAIN_FRAME_REV,
-  CHAIN_SPLIT_DELETION,
-  CHAIN_SPLIT_INVERSION,
+  CHAIN_SPLIT_SAME_STRAND,
+  CHAIN_SPLIT_INVERTED,
   CHAIN_SUPP_PRESENT,
 } from '../shared/types.ts'
 import {
@@ -29,8 +29,8 @@ import type { ReadColorOpts } from './colorUtils.ts'
 // what happened instead.
 const SUPP_FWD = CHAIN_SUPP_PRESENT
 const SUPP_REV = CHAIN_SUPP_PRESENT | CHAIN_FRAME_REV
-const SPLIT_INV = CHAIN_SUPP_PRESENT | CHAIN_SPLIT_INVERSION
-const SPLIT_DEL = CHAIN_SUPP_PRESENT | CHAIN_SPLIT_DELETION
+const SPLIT_INV = CHAIN_SUPP_PRESENT | CHAIN_SPLIT_INVERTED
+const SPLIT_DEL = CHAIN_SUPP_PRESENT | CHAIN_SPLIT_SAME_STRAND
 
 // Distinct colors only for the roles these cases assert on, so a mis-mapped
 // category resolves to a different (zeroed) color and the test catches it.
@@ -201,7 +201,7 @@ describe('readColorCategory', () => {
         'pairOrientation',
         chainOpts,
       ),
-    ).toBe('splitInversion')
+    ).toBe('splitInverted')
     expect(
       readColorCategory(
         0,
@@ -212,7 +212,7 @@ describe('readColorCategory', () => {
         'insertSizeAndOrientation',
         chainOpts,
       ),
-    ).toBe('splitInversion')
+    ).toBe('splitInverted')
     // non-orientation fields keep their own coloring (strand here)
     expect(
       readColorCategory(
@@ -240,7 +240,7 @@ describe('readColorCategory', () => {
         'pairOrientation',
         chainOpts,
       ),
-    ).toBe('splitDeletion')
+    ).toBe('splitSameStrand')
     expect(
       readColorCategory(
         0,
@@ -251,7 +251,7 @@ describe('readColorCategory', () => {
         'insertSizeAndOrientation',
         chainOpts,
       ),
-    ).toBe('splitDeletion')
+    ).toBe('splitSameStrand')
     // non-orientation field (strand) keeps its own coloring
     expect(
       readColorCategory(
@@ -297,7 +297,7 @@ describe('readColorCategory', () => {
   // one fell to the unframed +1. With independent bits there is nothing to fail:
   // both halves of the byte are still true and each is read on its own terms.
   test('a split bit does not disturb the frame it now sits beside', () => {
-    for (const split of [CHAIN_SPLIT_INVERSION, CHAIN_SPLIT_DELETION]) {
+    for (const split of [CHAIN_SPLIT_INVERTED, CHAIN_SPLIT_SAME_STRAND]) {
       expect(
         readColorCategory(
           0,

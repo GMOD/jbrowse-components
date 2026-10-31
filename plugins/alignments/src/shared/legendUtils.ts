@@ -412,8 +412,8 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   //
   // A connection never paints these two: it knows more than strand and names
   // its junction class from `ARC_SPLIT_LABELS`.
-  splitInversion: 'Split paired-end read (inverted)',
-  splitDeletion: 'Split paired-end read (same strand)',
+  splitInverted: 'Split paired-end read (inverted)',
+  splitSameStrand: 'Split paired-end read (same strand)',
   interchrom: CONNECTION_LABELS.interchrom,
   unmappedMate: 'Unmapped mate',
   // the two leftover buckets, last: a read whose field resolved no value for
@@ -493,7 +493,7 @@ export function readColorCategoryLabel(
 // gets either color depending on which arm the aligner flagged — so a label
 // naming it would have been wrong on exactly the data this branch exists for.
 //
-// That makes this the same measurement as `splitInversion`/`splitDeletion`
+// That makes this the same measurement as `splitInverted`/`splitSameStrand`
 // above, run on disjoint data (that branch is unpaired-only, those are
 // paired-only) and painted in a different pair of colors — so both wordings land
 // in one list on a mixed BAM. They share the parenthetical on purpose, because
