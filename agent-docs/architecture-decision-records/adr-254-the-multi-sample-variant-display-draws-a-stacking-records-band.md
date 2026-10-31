@@ -38,7 +38,9 @@ admission rule below.
   small indel is not, so a region without SVs spends 0 px. With no genotype
   rows drawn (a sites-only VCF), the band is the only drawing of the records
   and draws every one the display's filter admits, stating no carriers. One
-  predicate, `svOnly` in `buildRecordsRenderData`. The worker carries each
+  predicate, `svOnly` in `buildRecordsRenderData`. The worker keeps a
+  sample-less VCF's sites at genomic positions (`keepSampleLessSites` in
+  `analyzeVariants`), which every site test, reading called alleles, dropped. The worker carries each
   record's class in the payload (`VariantFeatureInfo.svType`, the `svType`
   field `hasSvType` reads), the one source for both the filter and the color.
 - **A record is not a genotype.** Under the genotype colors (no

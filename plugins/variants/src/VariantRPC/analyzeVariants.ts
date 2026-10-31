@@ -189,11 +189,15 @@ export function analyzeVariants({
   features,
   siteFilter,
   filterChain,
+  keepSampleLessSites = false,
   report,
 }: {
   features: Feature[]
   siteFilter?: readonly FieldPredicate[]
   filterChain?: SerializableFilterChain
+  // Keep a site of a VCF with no samples, which calls no allele and so fails
+  // every site test: at genomic positions the records band draws it.
+  keepSampleLessSites?: boolean
   report?: ProgressReporter
 }): AnalyzedVariants {
   const samplePloidy: Record<string, number> = {}
@@ -387,7 +391,12 @@ export function analyzeVariants({
 
     const summary = summarizeAlleleCounts(alleleCounts)
     const { mostFrequentAlt } = summary
-    if (passesSite(summary)) {
+    const sampleLess =
+      keepSampleLessSites &&
+      numSamples === 0 &&
+      record !== undefined &&
+      Object.keys(record).length === 0
+    if (sampleLess || passesSite(summary)) {
       const featureId = feature.id()
       filteredVariants.push({ feature, mostFrequentAlt })
       if (codes) {

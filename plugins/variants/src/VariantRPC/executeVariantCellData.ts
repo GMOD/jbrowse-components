@@ -211,6 +211,7 @@ export async function variantCellData({
         features,
         siteFilter,
         filterChain: filters,
+        keepSampleLessSites: layout === 'genomic',
         report,
       }),
   )
