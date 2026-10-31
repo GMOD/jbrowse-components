@@ -504,10 +504,10 @@ restores natively:
 
 #### Live example: alignments display settings
 
-An alignments track colored by pair orientation, with soft-clipped bases shown
-and an enlarged height. Swapping `pileup.softClips` for `pileup.connectors`
-draws a connector between the mates of each aberrant pair and across split-read
-junctions:
+An alignments track colored by insert size and pair orientation, with
+soft-clipped bases shown and an enlarged height. Swapping `pileup.softClips` for
+`pileup.connectors` draws a connector between the mates of each aberrant pair
+and across split-read junctions:
 
 ```json live config=test_data/volvox/config.json
 {

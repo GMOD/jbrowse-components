@@ -318,11 +318,11 @@ HG00151 (long reads streamed from the 1000G-ONT S3):
 
 - **`arcs:up` / `arcs:down`** draws a read-connection arc for every split
   (supplementary) read, linking its two alignment segments and colored by the
-  junction's orientation. Here **purple inversion-junction arcs** join the two
+  junction's orientation. Here **green inversion-junction arcs** join the two
   breakpoints, where a read's two halves map in opposite orientations.
 - **`unit=chain`** chains each read's split segments, so the inversion shows in
-  the pileup itself as a **blue reverse-strand core between red forward-strand
-  flanks**, spanning breakpoint to breakpoint.
+  the pileup itself as a **blue inverted middle between red flanks**, spanning
+  breakpoint to breakpoint.
 - **`facet=split`** puts those reads in a separate labelled section above the
   background pileup.
 
@@ -330,11 +330,11 @@ HG00151 (long reads streamed from the 1000G-ONT S3):
 
 ```bash
 jb2export --genome hg38 \
-  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down unit=chain encoding.color.field=pairOrientation facet=split coverage.height=80 height:560 \
+  --bam https://jbrowse.org/demos/ont/HG00151-ONT-hg38.chr1_inversion.bam arcs:down unit=chain encoding.color.field=insertSizeAndOrientation facet=split coverage.height=80 height:560 \
   --loc chr1:197,786,900-197,789,700 --width 1400 --out sv_read_arcs.png
 ```
 
-![ONT reads over a chr1 inversion grouped on SA-tag presence, the split reads in their own section under the junction arcs](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.74712a4cbf99.png)
+![ONT reads over a chr1 inversion grouped on SA-tag presence, the split reads in their own section under the junction arcs](https://jbrowse.org/jb2-figures/jbrowse-img/sv_read_arcs.1fa07b90ef13.png)
 
 ### Breakpoint split views
 
@@ -547,7 +547,7 @@ jb2export --genome hg19 \
   --loc chr11:5,246,000-5,251,000 --width 1200 --out multisample_variants.png
 ```
 
-![The 1000 Genomes phase 3 chr11 callset (2,504 samples) as a multi-sample genotype matrix over the HBB locus, with the NCBI RefSeq gene track above](https://jbrowse.org/jb2-figures/jbrowse-img/multisample_variants.818071f85a6e.png)
+![The 1000 Genomes phase 3 chr11 callset (2,504 samples) as a multi-sample genotype matrix over the HBB locus, with the NCBI RefSeq gene track above](https://jbrowse.org/jb2-figures/jbrowse-img/multisample_variants.7dd341369ff4.png)
 
 ### Hi-C tracks
 
