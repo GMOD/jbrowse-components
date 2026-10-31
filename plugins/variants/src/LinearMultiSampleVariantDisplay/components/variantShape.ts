@@ -14,6 +14,13 @@ export { SHAPE_RECT, SHAPE_TRI_LEFT }
 // inverted or not, and VCF never sets a strand on a variant record — so one
 // triangle covers it. Everything else, insertions included, is the plain
 // full-height cell every other genotype draws.
+//
+// Geometry encodes orientation only, so this stays a fixed rule rather than an
+// `encoding.shape` channel. A row-height insertion caret was prototyped and
+// declined (2026-10-30): any glyph wider than its record's reference span reads
+// as genomic size on x, and common insertions walled every carrier row, as
+// 5c22930ba6's marker had. Type, size and carrier share are the records band's
+// (ADR-254).
 export function shapeTypeOf(featureType: string) {
   return featureType === 'inversion' ? SHAPE_TRI_LEFT : SHAPE_RECT
 }
