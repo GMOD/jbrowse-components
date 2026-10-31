@@ -716,6 +716,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
           <div
             class="css-HASH css-HASH css-HASH css-HASH"
             data-gesture-owner="true"
+            data-resize-handle="true"
           />
         </div>
       </div>
