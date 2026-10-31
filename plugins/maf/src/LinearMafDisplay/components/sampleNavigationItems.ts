@@ -6,7 +6,7 @@ import {
   openSampleInNewView,
 } from '../openSampleInNewView.ts'
 import { selectionRegion } from '../openSubsequenceWidget.ts'
-import { mafPointerAt, rowSpanAtY } from './mafHitTest.ts'
+import { rowSpanAtY } from './mafHitTest.ts'
 
 import type {
   MafSyntenyHost,
@@ -66,8 +66,6 @@ export function selectedRowTargets(
   return rowTargetsBetween(session, model, {
     leftPx: Math.min(startX, endX),
     rightPx: Math.max(startX, endX),
-    leftY: startY,
-    rightY: endY,
     ...rowSpanAtY(model, startY, endY),
   })
 }
@@ -101,34 +99,26 @@ function rowTargetsBetween(
   {
     leftPx,
     rightPx,
-    leftY = 0,
-    rightY = 0,
     startRow,
     endRow,
   }: {
     leftPx: number
     rightPx: number
-    leftY?: number
-    rightY?: number
     startRow: number
     endRow: number
   },
 ) {
-  const left = mafPointerAt(model, leftPx, leftY)
-  const right = mafPointerAt(model, rightPx, rightY)
+  const left = model.view.pxToBp(leftPx)
+  const right = model.view.pxToBp(rightPx)
   // Literally `selectionRegion`, not a second span computed alike: it orders
   // the two edges on a reversed region and clips the right one into the left's
   // region. `visibleRowTargets` takes px 0 and width-1.
-  const {
-    refName,
-    start: startBp,
-    end: endBp,
-  } = selectionRegion(left.pos, right.pos)
+  const { refName, start: startBp, end: endBp } = selectionRegion(left, right)
   // The reference's own row leads nowhere new: a pangenome MAF carries the
   // reference as a sample. Compared through the assembly manager, since the
   // view and the sample can spell one assembly two ways.
   const targets = model
-    .rowNavigationTargets(left.pos.index, startBp, endBp, startRow, endRow)
+    .rowNavigationTargets(left.index, startBp, endBp, startRow, endRow)
     .filter(
       t =>
         !model.view.assemblyNames.some(a =>
@@ -136,7 +126,7 @@ function rowTargetsBetween(
         ),
     )
   return {
-    regionIndex: left.pos.index,
+    regionIndex: left.index,
     refName,
     startBp,
     endBp,
