@@ -119,6 +119,32 @@ import { bandAt } from '@jbrowse/core/util/bandLayout'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
+### bandDragBounds
+
+The legal range for a drag of band `key` in a stack folded from
+boundStackedBands: up to the room the plot leaves less every other band's
+reserved px, so a drag stops where the stack meets the plot's floor and never
+writes a height the read-time bound would cut. Pass it to clampBandHeight, whose
+floor it leaves at the default.
+
+```js
+import { bandDragBounds } from '@jbrowse/core/util/bandLayout'
+
+// type signature
+<K extends string>(stack: BandStack<K>, key: K, plot: BandPlot) => { max: number; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
+
+### BandPlot
+
+The plot a stack of bands is taken from: the px the bands and the plot share,
+and the px the plot keeps under any stack — `MIN_BAND_HEIGHT` while it draws, so
+its rows stay visible and the lowest band's handle stays on the display, and 0
+while it draws nothing.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
+
 ### baseDisplayConfig
 
 The base's entry for this display, hydrated, which a reset returns to and "is
@@ -161,7 +187,9 @@ that means keeping the handle grabbable, for a menu-sized one it is the height
 below which its content stops reading. The **ceiling** stops a band from
 swallowing the plot it sits over — every display floors its plot area at 0, so
 an unbounded band takes the rows to zero height rather than to a scrollbar, and
-takes the band's own handle off-screen with them.
+takes the band's own handle off-screen with them. Bands that share a plot take
+their ceilings from the stack (`boundStackedBands` in `bandLayout`), since one
+band's ceiling depends on the others.
 
 The bounds differ per band and the rule does not, which is why this takes them
 rather than each band re-deriving the reasoning — that is how the two
@@ -176,6 +204,24 @@ import { boundBandHeight } from '@jbrowse/core/util/bandHeight'
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
+
+### boundStackedBands
+
+A stack's stated heights — a config value, a session snapshot, a drag made on a
+taller track — bound against the plot the bands share, top-down: each active
+band takes at most the room the active bands above it left, from 0 px up, so the
+stack never takes the plot below its floor. An inactive band reserves nothing,
+so it is bound to the whole room and comes back at a legal height. Bind here,
+then fold with stackBands.
+
+```js
+import { boundStackedBands } from '@jbrowse/core/util/bandLayout'
+
+// type signature
+<K extends string>(order: readonly K[], bands: Record<K, Band>, plot: BandPlot) => Record<K, Band>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
 ### breakendKeepsDirections
 
@@ -2026,8 +2072,8 @@ import { requirementProblems } from '@jbrowse/core/configuration'
 
 ### reservedPx
 
-The pixels a band takes from the plot below it: 0 when off, the (optionally
-bound) stated height when on. This is the single spelling of "off spends 0 px".
+The pixels a band takes from the plot below it: 0 when off, the stated height
+when on. This is the single spelling of "off spends 0 px".
 
 ```js
 import { reservedPx } from '@jbrowse/core/util/bandLayout'
