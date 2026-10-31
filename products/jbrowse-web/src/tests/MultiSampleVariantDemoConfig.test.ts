@@ -11,7 +11,7 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 // Locks in the v4.1.1 "multi-sample variants colored by population" demo config
 // so it keeps hydrating on this branch: the old `MultiLinearVariantDisplay` type
-// string (renamed to LinearMultiSampleVariantDisplay), the adapter's
+// string (renamed to LinearVariantDisplay), the adapter's
 // `samplesTsvLocation` metadata slot, and the display's `rowColor` (`colorBy`
 // until ADR-131) / `referenceDrawingMode` / `height` slots must all survive.
 function makePluginManager() {
@@ -63,10 +63,10 @@ test('v4.1.1 multi-sample variant demo config still hydrates', async () => {
 
   // old display type was remapped to the canonical name
   const display = conf.displays.find(
-    d => readConfObject(d, 'type') === 'LinearMultiSampleVariantDisplay',
+    d => readConfObject(d, 'type') === 'LinearVariantDisplay',
   )
   if (!display) {
-    throw new Error('LinearMultiSampleVariantDisplay not found after remap')
+    throw new Error('LinearVariantDisplay not found after remap')
   }
 
   expect(readConfObject(display, ['rowColor', 'field'])).toBe('population')
@@ -146,5 +146,5 @@ test('old MultiLinearVariantDisplay instance resolves on session restore', async
   const view = session.views[0] as LinearGenomeViewModel
   const displays = view.tracks[0]!.displays
   expect(displays.length).toBe(1)
-  expect(displays[0]!.type).toBe('LinearMultiSampleVariantDisplay')
+  expect(displays[0]!.type).toBe('LinearVariantDisplay')
 })

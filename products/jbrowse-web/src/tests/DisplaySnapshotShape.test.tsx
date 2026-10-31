@@ -74,7 +74,7 @@ test('a pre-rename session resolves its display config by type', async () => {
   }
 
   const display = view.tracks[0]!.displays[0]!
-  expect(display.type).toBe('LinearMultiSampleVariantDisplay')
+  expect(display.type).toBe('LinearVariantDisplay')
   expect(display.configuration.type).toBe(display.type)
 })
 

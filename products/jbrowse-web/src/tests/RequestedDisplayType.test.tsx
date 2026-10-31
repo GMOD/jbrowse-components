@@ -44,9 +44,11 @@ test('showTrack with an explicit display type attaches that display’s config',
   )
   const display = view.tracks.find(t => t.trackId === added.trackId)!
     .displays[0]!
-  expect(display.type).toBe('LinearMultiSampleVariantDisplay')
-  expect(display.configuration.type).toBe('LinearMultiSampleVariantDisplay')
-  expect(display.configuration.displayId).toBe('two_displays_multi')
+  // the betas' name is retired into LinearVariantDisplay (ADR-255), so the
+  // two entries are one display, under the first one's id
+  expect(display.type).toBe('LinearVariantDisplay')
+  expect(display.configuration.type).toBe('LinearVariantDisplay')
+  expect(display.configuration.displayId).toBe('two_displays_single')
 })
 
 test('showTrack with no display type takes the track’s first declared display', async () => {
