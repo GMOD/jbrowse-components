@@ -4,11 +4,7 @@ export function parseStrand(token: string | undefined): 1 | -1 {
   return token === '-' ? -1 : 1
 }
 
-/**
- * A row's start on the other strand. MAF states a `-` row's start against the
- * reverse complement of its source, so turning a block over re-expresses each
- * row through its own source size and aligned base count.
- */
+/** MAF states a `-` row's start against its source's reverse complement. */
 export function otherStrandStart(
   srcSize: number,
   srcStart: number,
