@@ -1,4 +1,4 @@
-import { isAlive } from '@jbrowse/mobx-state-tree'
+import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { installFetch } from './installFetch.ts'
 import { isDataCurrent } from './isDataCurrent.ts'
@@ -36,14 +36,18 @@ export interface AdapterRead<T> {
 /**
  * Whether `read` answers the adapter config `host` holds. Equal by value, as
  * the fetch key is: an undo rebuilds the track's config, handing back an equal
- * adapter config the fetch declines to read again.
+ * adapter config the fetch declines to read again. A host destroyed in place
+ * (an undo dropping its track) holds none, and asking would walk to a track
+ * it no longer has, under chrome still mounted over it (ADR-069).
  */
 export function isCurrentRead<T>(
   host: { adapterConfig: Record<string, unknown> },
   read: AdapterRead<T> | undefined,
 ): read is AdapterRead<T> {
   return (
-    read !== undefined && isDataCurrent(read.adapterConfig, host.adapterConfig)
+    read !== undefined &&
+    (!isStateTreeNode(host) || isAlive(host)) &&
+    isDataCurrent(read.adapterConfig, host.adapterConfig)
   )
 }
 
