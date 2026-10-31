@@ -699,11 +699,21 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * Whether `genotypes.show` is written, by config or by the menu.
+         */
+        get genotypesShowWritten(): boolean {
+          return getConf(self, ['genotypes', 'show']) !== undefined
+        },
+        /**
+         * #getter
          * `genotypes.show`: whether the display reads genotypes and draws a
-         * row per sample.
+         * row per sample. Unset, every VCF but a one-sample one does.
          */
         get showGenotypes(): boolean {
-          return getConf(self, ['genotypes', 'show'])
+          return (
+            getConf(self, ['genotypes', 'show']) ??
+            self.adapterSamples?.length !== 1
+          )
         },
         /**
          * #getter

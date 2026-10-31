@@ -19,7 +19,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // restate.
 function display(sources?: { name: string }[]) {
   const { display } = createTestEnvironment({
-    displayConfig: RECORDS_BAND_OFF,
+    displayConfig: { ...RECORDS_BAND_OFF, genotypes: { show: true } },
   }).createDisplay()
   if (sources) {
     display.setSources(sources)

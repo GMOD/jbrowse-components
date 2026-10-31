@@ -15,7 +15,9 @@ import type { Source } from '../../shared/types.ts'
 // own question about the visible blocks, so the model needs the view its
 // components always have in the app.
 function createDisplay(sources: Source[]) {
-  const { display } = createTestEnvironment().createDisplay()
+  const { display } = createTestEnvironment({
+    displayConfig: { genotypes: { show: true } },
+  }).createDisplay()
   display.setSources(sources)
   return display
 }

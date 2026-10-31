@@ -252,9 +252,11 @@ export default function configSchemaFactory() {
        * allele paints its hue lightened by its dosage, the share of its
        * called alleles that are non-reference, so a homozygote paints the hue
        * itself and a heterozygote a lighter version of it.
-       * Off, the display reads no genotypes and draws as it does for a VCF
-       * with no samples: the records alone, every one the filter admits,
-       * sized by `heightMode`.
+       * Unset, a VCF with two or more samples draws its rows, and a
+       * one-sample VCF, a call set, draws as one with no samples does: the
+       * records alone, every one the filter admits, sized by `heightMode`.
+       * Off, the display reads no genotypes and the band keeps the look it
+       * has over rows.
        *
        * #example
        * ```js
@@ -271,10 +273,10 @@ export default function configSchemaFactory() {
            * #slot genotypes.show
            */
           show: {
-            type: 'boolean',
-            defaultValue: true,
+            type: 'maybeBoolean',
+            defaultValue: undefined,
             description:
-              'draw a row per sample; off, the display draws the records alone, as for a VCF with no samples',
+              'draw a row per sample. Unset, a VCF with two or more samples draws its rows and a one-sample VCF draws its records alone, as one with no samples does',
           },
           /**
            * #slot genotypes.reference
@@ -305,7 +307,7 @@ export default function configSchemaFactory() {
       ...heightModeConfigSchemaFields({
         defaultHeightMode: 'fit',
         heightMode:
-          'Track-sizing strategy while no genotype rows draw (no samples, or `genotypes.show` off), as on a feature track: `fit` keeps the track height and gives up labels, then squeezes the records; `fixed` keeps the track height at full record size; `grow` sizes the track to its records up to `growMaxHeight`. With genotype rows the track keeps its `height`',
+          'Track-sizing strategy while the records are the display (no samples, or one with `genotypes.show` unset), as on a feature track: `fit` keeps the track height and gives up labels, then squeezes the records; `fixed` keeps the track height at full record size; `grow` sizes the track to its records up to `growMaxHeight`. With genotype rows the track keeps its `height`',
         growMaxHeight: "Ceiling in pixels for `heightMode: 'grow'`",
       }),
     },

@@ -3,7 +3,9 @@ import { buildRecordHit } from './components/buildVariantHit.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 function displayWithSamples() {
-  const { display } = createTestEnvironment().createDisplay()
+  const { display } = createTestEnvironment({
+    displayConfig: { genotypes: { show: true } },
+  }).createDisplay()
   display.setSources([{ name: 'HG002', population: 'EUR' }])
   return display
 }

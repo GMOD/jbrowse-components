@@ -19,24 +19,8 @@ beforeEach(() => {
 })
 
 // the two tracks this file gates - see volvoxConfigWithTracks. The variant
-// track's one sample would draw a genotype row, and over rows the records band
-// has no density gate (ADR-254), so it opens as its records alone.
-const volvox = volvoxConfigWithTracks(['volvox_cram_pileup', 'variant_colors'])
-const config = {
-  ...volvox,
-  tracks: volvox.tracks.map(track =>
-    track.trackId === 'variant_colors' && track.displays
-      ? {
-          ...track,
-          displays: track.displays.map(display =>
-            display.type === 'LinearVariantDisplay'
-              ? { ...display, genotypes: { show: false } }
-              : display,
-          ),
-        }
-      : track,
-  ),
-}
+// track's one sample opens as its records alone, where the density gate lives.
+const config = volvoxConfigWithTracks(['volvox_cram_pileup', 'variant_colors'])
 
 const delay = { timeout: 20000 }
 const o = [{}, delay]

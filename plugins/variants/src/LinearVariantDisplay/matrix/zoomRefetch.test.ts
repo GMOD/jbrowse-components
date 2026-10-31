@@ -20,7 +20,9 @@ afterEach(() => {
 const EMPTY_MATRIX = cellDataOf({ sampleNames: ['HG001'] })
 
 test('a zoom inside the fetched span refetches the matrix', async () => {
-  const { createDisplay } = createTestEnvironment()
+  const { createDisplay } = createTestEnvironment({
+    displayConfig: { genotypes: { show: true } },
+  })
   const { display, view, mockRpcCall } = createDisplay()
   mockRpcCall.mockImplementation((_sid: string, method: string) =>
     method === 'MultiSampleVariantGetSources'
@@ -65,7 +67,9 @@ test('a zoom inside the fetched span refetches the matrix', async () => {
 // wider span but off the one the refetch asked for, so the payload alone reads
 // as current there until the span lands beside it.
 test('the export gate never opens between a payload and its span', async () => {
-  const { createDisplay } = createTestEnvironment()
+  const { createDisplay } = createTestEnvironment({
+    displayConfig: { genotypes: { show: true } },
+  })
   const { display, view, mockRpcCall } = createDisplay()
   const pending: ((result: unknown) => void)[] = []
   let deferCellData = false

@@ -143,7 +143,7 @@ describe('variant display colorBy', () => {
 // menu does too, rather than ticking nothing.
 test('the Samples menu ticks a configured attribute the samples lack', () => {
   const { display } = createTestEnvironment({
-    displayConfig: { rowColor: 'tissue' },
+    displayConfig: { rowColor: 'tissue', genotypes: { show: true } },
   }).createDisplay()
   display.setSources([{ name: 'HG001', population: 'EUR' }])
   const colorBy = display
@@ -158,6 +158,7 @@ test('the Samples menu ticks Each row where the dialog picked sample colors', ()
   const { display } = createTestEnvironment({
     displayConfig: {
       rowColor: { scale: { domain: ['HG001'], range: ['#f00'] } },
+      genotypes: { show: true },
     },
   }).createDisplay()
   display.setSources([{ name: 'HG001', population: 'EUR' }])

@@ -12,7 +12,9 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // slot instead of `rowColor`. The user guide has always described the banding as
 // interactive; only the config slot was.
 function display(sources?: Source[]) {
-  const { display } = createTestEnvironment().createDisplay()
+  const { display } = createTestEnvironment({
+    displayConfig: { genotypes: { show: true } },
+  }).createDisplay()
   if (sources) {
     display.setSources(sources)
   }

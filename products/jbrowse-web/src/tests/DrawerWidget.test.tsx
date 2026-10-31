@@ -19,7 +19,10 @@ const delay = { timeout: 15000 }
 
 // only the track this suite opens, so createView doesn't mount a selector row
 // for the other ~120 - see volvoxConfigWithTracks
-const config = volvoxConfigWithTracks(['volvox_filtered_vcf'])
+const config = volvoxConfigWithTracks([
+  'volvox_filtered_vcf',
+  'gff3tabix_genes',
+])
 
 beforeEach(() => {
   doBeforeEach()
@@ -72,13 +75,9 @@ test('widget drawer navigation', async () => {
 test("a field's reset returns it to the track's config.json entry", async () => {
   const { view, session, findByTestId, findByText } = await createView(config)
   view.setNewView(0.05, 5000)
-  fireEvent.click(await findByTestId(hts('volvox_filtered_vcf'), {}, delay))
+  fireEvent.click(await findByTestId(hts('gff3tabix_genes'), {}, delay))
   fireEvent.click(
-    await findByTestId(
-      'htsTrackEntryMenu-Tracks,volvox_filtered_vcf',
-      {},
-      delay,
-    ),
+    await findByTestId('htsTrackEntryMenu-Tracks,gff3tabix_genes', {}, delay),
   )
   fireEvent.click(await findByText('Settings'))
   const editor = await findByTestId('configEditor', {}, delay)
@@ -89,16 +88,14 @@ test("a field's reset returns it to the track's config.json entry", async () => 
     target: { value: 'Edited name' },
   })
   await waitFor(() => {
-    expect(session.trackConfigDeltas.volvox_filtered_vcf?.name).toBe(
-      'Edited name',
-    )
+    expect(session.trackConfigDeltas.gff3tabix_genes?.name).toBe('Edited name')
   }, delay)
 
   fireEvent.click(getByLabelText(editor, reset))
-  expect(getByLabelText(editor, 'name')).toHaveValue('volvox filtered vcf')
+  expect(getByLabelText(editor, 'name')).toHaveValue('GFF3Tabix genes')
   expect(queryAllByLabelText(editor, reset)).toHaveLength(0)
   await waitFor(() => {
-    expect(session.trackConfigDeltas.volvox_filtered_vcf?.name).toBeUndefined()
+    expect(session.trackConfigDeltas.gff3tabix_genes?.name).toBeUndefined()
   }, delay)
 }, 40000)
 

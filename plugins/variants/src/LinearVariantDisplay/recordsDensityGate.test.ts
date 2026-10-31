@@ -67,42 +67,42 @@ afterEach(() => {
   jest.useRealTimers()
 })
 
-describe.each([['a VCF with no samples', {}, []]])(
-  'records only, %s',
-  (_, displayConfig, samples) => {
-    test('a dense window is refused with the too-many-features banner', async () => {
-      const { display, cellCalls } = await displayOverDenseWindow(
-        displayConfig,
-        samples,
-      )
-      await waitFor(() => {
-        expect(display.regionTooLarge).toBe(true)
-      })
-      expect(display.recordsOnly).toBe(true)
-      expect(display.regionTooLargeReason).toBe(TOO_MANY_FEATURES_REASON)
-      expect(display.zoomCanReleaseGate).toBe(true)
-      expect(cellCalls.at(-1)).toMatchObject({ maxFeatureDensity: 1 })
-      expect(display.cellData).toBeUndefined()
+describe.each([
+  ['a VCF with no samples', {}, []],
+  ['a one-sample VCF', {}, [{ name: 'HG001' }]],
+])('records only, %s', (_, displayConfig, samples) => {
+  test('a dense window is refused with the too-many-features banner', async () => {
+    const { display, cellCalls } = await displayOverDenseWindow(
+      displayConfig,
+      samples,
+    )
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
     })
+    expect(display.recordsOnly).toBe(true)
+    expect(display.regionTooLargeReason).toBe(TOO_MANY_FEATURES_REASON)
+    expect(display.zoomCanReleaseGate).toBe(true)
+    expect(cellCalls.at(-1)).toMatchObject({ maxFeatureDensity: 1 })
+    expect(display.cellData).toBeUndefined()
+  })
 
-    test('Force load fetches without a budget and draws', async () => {
-      const { display, cellCalls } = await displayOverDenseWindow(
-        displayConfig,
-        samples,
-      )
-      await waitFor(() => {
-        expect(display.regionTooLarge).toBe(true)
-      })
-      display.forceLoad()
-      await settle()
-      await waitFor(() => {
-        expect(display.cellData).toBeDefined()
-      })
-      expect(display.regionTooLarge).toBe(false)
-      expect(cellCalls.at(-1)!.maxFeatureDensity).toBeUndefined()
+  test('Force load fetches without a budget and draws', async () => {
+    const { display, cellCalls } = await displayOverDenseWindow(
+      displayConfig,
+      samples,
+    )
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
     })
-  },
-)
+    display.forceLoad()
+    await settle()
+    await waitFor(() => {
+      expect(display.cellData).toBeDefined()
+    })
+    expect(display.regionTooLarge).toBe(false)
+    expect(cellCalls.at(-1)!.maxFeatureDensity).toBeUndefined()
+  })
+})
 
 test('records.maxFeatureScreenDensity is the budget', async () => {
   const { display, cellCalls } = await displayOverDenseWindow(
@@ -122,7 +122,7 @@ test('records.maxFeatureScreenDensity is the budget', async () => {
 // hidden rows leave the band as it draws over them, which collapses a dense
 // window into one row rather than refusing it
 test.each([
-  ['over genotype rows', {}],
+  ['over genotype rows', { genotypes: { show: true } }],
   ['with genotypes hidden', { genotypes: { show: false } }],
 ])('%s the density gate never applies', async (_, displayConfig) => {
   const { display, cellCalls } = await displayOverDenseWindow(displayConfig, [

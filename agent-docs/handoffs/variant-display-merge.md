@@ -124,6 +124,13 @@ widget's samples). Still differing, besides C1's Show/hide rows:
   does not find launches from the click's record, INFO-less, and the
   junction walk stops there.
 - None of the fixes above has been looked at in the running app.
+- The records-only opening settle writes `height` into the track's config
+  delta, so Settings shows a Reset on a height nobody set, on every
+  sites-only or one-sample VCF (`DrawerWidget.test.tsx` moved its reset test
+  to a GFF3 track rather than pin it).
+- A one-sample VCF opens as its records (ADR-254's eighth amendment); the
+  figure specs still write `genotypes: { show: false }` on one-sample call
+  sets, which keeps the over-rows look and its `Show genotypes` chip.
 
 ## Open calls (Colin)
 

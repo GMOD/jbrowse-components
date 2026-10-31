@@ -360,8 +360,9 @@ a `recordsOnly` choice in the model belongs there.
   the band can't hide then (`showRecords`). The worker reads no genotype
   (an empty `sampleFilter`), so no record states carriers. The key sits at
   the top of the display, beside a track label, over the band.
-- **No samples makes the band the display** (`recordsOnly`: a sample listing
-  that landed empty). The rows take 0 px, the band is
+- **No samples, or one, makes the band the display** (`recordsOnly`: a
+  sample listing that landed empty, or one sample with `genotypes.show`
+  unset; ADR-254's eighth amendment). The rows take 0 px, the band is
   `height`, and `HeightModeMixin` sizes it as it sizes a feature track
   (`heightMode` fit/fixed/grow, `growMaxHeight`; `growTargetHeight` is the
   `full` stack on screen). It opens at that stack, once: the first layout
