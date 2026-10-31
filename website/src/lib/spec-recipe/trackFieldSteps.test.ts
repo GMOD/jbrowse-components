@@ -15,6 +15,22 @@ test('a row height is the shared Row height menu, with each display its presets'
   )
 })
 
+test("a MAF glyph's share of its row follows the Row height preset", () => {
+  expect(
+    stepPaths(
+      'alignments.mark',
+      { height: { band: 0.9 } },
+      'LinearMafDisplay',
+    ),
+  ).toEqual(['Track menu → Row height'])
+  expect(
+    specTrackSettings({
+      trackId: 'maf',
+      alignments: { mark: { height: { band: 0.9 } } },
+    }).map(([key]) => key),
+  ).toEqual(['alignments.mark'])
+})
+
 test('an autoscale group is the axis widget of the display it is on', () => {
   expect(
     stepPaths(

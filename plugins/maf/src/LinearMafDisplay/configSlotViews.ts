@@ -38,7 +38,7 @@ export function configSlotViews(self: ConfigSlotSelf) {
      * #getter
      */
     get rowProportion(): number {
-      return getConf(self, ['alignments', 'rowProportion'])
+      return getConf(self, ['alignments', 'mark', 'height', 'band'])
     },
     /**
      * #getter
@@ -243,7 +243,7 @@ export function configSlotActions(self: ConfigSlotSelf) {
      * #action
      */
     setRowProportion(n: number) {
-      setConf(self, ['alignments', 'rowProportion'], n)
+      setConf(self, ['alignments', 'mark', 'height', 'band'], n)
     },
     /**
      * #action

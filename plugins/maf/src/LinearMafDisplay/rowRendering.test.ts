@@ -381,3 +381,14 @@ describe('what paints is the selection, overridden only by zoom and summary', ()
     expect(display.coverageDisplayHeight).toBe(0)
   })
 })
+
+describe("a glyph's share of its row is alignments.mark.height.band", () => {
+  it('reads the config and writes it back', () => {
+    const { display } = createMafTestEnvironment({
+      displayConfig: { alignments: { mark: { height: { band: 0.9 } } } },
+    }).createDisplay()
+    expect(display.rowProportion).toBe(0.9)
+    display.setRowProportion(0.5)
+    expect(display.rowProportion).toBe(0.5)
+  })
+})

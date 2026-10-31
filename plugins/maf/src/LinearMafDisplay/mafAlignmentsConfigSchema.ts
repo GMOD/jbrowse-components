@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { DEFAULTS } from './displayDefaults.ts'
+import { mafAlignmentsMarkConfigSchema } from './mafAlignmentsMarkConfigSchema.ts'
 import { mafBasesConfigSchema } from './mafBasesConfigSchema.ts'
 import { mafMismatchesConfigSchema } from './mafMismatchesConfigSchema.ts'
 import { mafPartConfigSchema } from './mafPartConfigSchema.ts'
@@ -33,12 +34,10 @@ export const mafAlignmentsConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot
+     * The glyph each base draws as: `height.band`, the fraction of its row it
+     * fills.
      */
-    rowProportion: {
-      type: 'number',
-      defaultValue: DEFAULTS.rowProportion,
-      description: 'fraction of the row height each glyph fills',
-    },
+    mark: mafAlignmentsMarkConfigSchema,
     /**
      * #slot mismatches
      * `show` draws each base differing from the reference, with insertion

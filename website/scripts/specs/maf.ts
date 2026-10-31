@@ -186,7 +186,10 @@ export const mafSpecs: ScreenshotSpec[] = [
               trackId: 'ce11.26way',
               rowHeight: 8,
               // The reference row draws one constant color under this color.
-              alignments: { rowProportion: 0.9, reference: { show: false } },
+              alignments: {
+                mark: { height: { band: 0.9 } },
+                reference: { show: false },
+              },
             },
           ],
         },
@@ -272,7 +275,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               // The reference row draws one constant color under this color,
               // and the mismatches would bury the fill at this zoom.
               alignments: {
-                rowProportion: 0.9,
+                mark: { height: { band: 0.9 } },
                 reference: { show: false },
                 mismatches: { show: false },
               },
@@ -487,7 +490,7 @@ export const mafSpecs: ScreenshotSpec[] = [
               // Most distances here are zero, so a phylogram collapses the
               // branches against the rows.
               axis: { branchLength: false },
-              alignments: { rowProportion: 1 },
+              alignments: { mark: { height: { band: 1 } } },
             },
             graphTrack('hprc_minigraph_segments', {
               layoutMode: 'force',

@@ -133,7 +133,7 @@ export default function configSchemaF() {
       /**
        * #slot alignments
        * The per-species rows, which take the height the bands above them
-       * leave: `show`, `rowProportion`, and the `inversions`, `frames` and
+       * leave: `show`, `mark.height.band`, and the `inversions`, `frames` and
        * `reference` parts.
        */
       alignments: mafAlignmentsConfigSchema,

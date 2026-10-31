@@ -10,7 +10,10 @@ summary: "On the mark display, `rowProportion` moves from a display slot onto th
 Accepted (2026-09-28). Amended 2026-10-22: the slot moved inside the mark
 object as `marks[].mark.height.band`, Vega-Lite's own spelling, beside the
 link's and the line's `interpolate` and the line's `gapBp`, and the
-`unread-*` rules for the three became one, `unread-mark-member`.
+`unread-*` rules for the three became one, `unread-mark-member`. Amended
+2026-10-30: the multi-row feature display became a mark display (ADR-249),
+and MAF's `alignments.rowProportion` became `alignments.mark.height.band`, the
+same spelling; it was beta-only, so it has no retired lift.
 
 Follows `9b74cc729e`, which gave the mark display
 `RowHeightMixin`'s `rowHeight` and a display-level `rowProportion`. Colin asked

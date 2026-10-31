@@ -1898,13 +1898,15 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? { path: `${MAF_COLOR_BY} → Per-base coloring → ${label}` }
       : undefined
   },
-  'alignments.rowProportion': (value, { displayType }) =>
-    typeof value === 'number' && displayType === 'LinearMafDisplay'
+  'alignments.mark': (value, { displayType }) => {
+    const band = asRecord(asRecord(value)?.height)?.band
+    return typeof band === 'number' && displayType === 'LinearMafDisplay'
       ? {
           path: `${TRACK_MENU} → Row height`,
-          note: `Each preset there sets the row height and the glyph's share of it (${value} here) together, so this follows from the same click as the height above.`,
+          note: `Each preset there sets the row height and the glyph's share of it (${band} here) together, so this follows from the same click as the height above.`,
         }
-      : undefined,
+      : undefined
+  },
   origin: (value, { displayType }) =>
     typeof value === 'number' && displayType === 'LinearWiggleDisplay'
       ? {
