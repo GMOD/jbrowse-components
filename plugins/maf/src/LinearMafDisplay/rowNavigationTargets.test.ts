@@ -1,5 +1,7 @@
+import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
 import { emptyMafCoverage } from './components/coverageTestFixture.ts'
 import { rowNavigationTargetsOf } from './rowNavigationTargets.ts'
+import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafSource } from '../types.ts'
@@ -44,7 +46,10 @@ function targets(
 ) {
   return rowNavigationTargetsOf({
     sources,
-    hasAssembly: name => name === 'hg38',
+    assemblies: {
+      has: name => name === 'hg38',
+      getCanonicalAssemblyName: name => (name === 'hg38' ? name : undefined),
+    },
     detail: new Map([[0, region]]),
     displayedRegionIndex: 0,
     startBp: 101,
@@ -84,7 +89,7 @@ test('an assemblyName the session lacks, with no config to load it from, is no t
   expect(
     targets({
       sources: [sources[0]!, unloadable],
-      hasAssembly: () => true,
+      assemblies: { has: () => true, getCanonicalAssemblyName: name => name },
     }).map(t => t.assemblyName),
   ).toEqual(['hg38', 'mouse'])
 })
@@ -98,7 +103,43 @@ test('no fetched region for the display means no targets', () => {
 })
 
 test('no row naming a loaded assembly means no targets', () => {
-  expect(targets({ hasAssembly: () => false, sources: [sources[2]!] })).toEqual(
-    [],
+  expect(
+    targets({
+      assemblies: {
+        has: () => false,
+        getCanonicalAssemblyName: () => undefined,
+      },
+      sources: [sources[2]!],
+    }),
+  ).toEqual([])
+})
+
+// A row named by an assembly alias (the HPRC summary's `GRCh38` under hg38)
+// opens its view and keys its synteny track under the canonical name.
+test('a row named by an alias targets the canonical assembly', () => {
+  const { display } = createMafTestEnvironment({
+    assemblyAliases: { vvx: 'volvox' },
+  }).createDisplay()
+  display.setSamples({
+    samples: [{ name: 'vvx', label: 'Volvox' }],
+    treeNewick: undefined,
+    samplesCanonical: true,
+  })
+  stageDetailRegion(
+    display,
+    0,
+    testWireRegionData(
+      [
+        {
+          startBp: 100,
+          refSeq: 'ACGTA',
+          rows: [{ sampleId: 'vvx', seq: 'ACGTA', srcRefName: 'ctgA' }],
+        },
+      ],
+      { coverage: emptyMafCoverage(100) },
+    ),
   )
+  expect(
+    display.rowNavigationTargets(0, 101, 104, 0, 1).map(t => t.assemblyName),
+  ).toEqual(['volvox'])
 })

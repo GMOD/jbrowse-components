@@ -1239,10 +1239,9 @@ export default function stateModelFactory(
           startRow: number,
           endRow: number,
         ) {
-          const { assemblyManager } = getSession(self)
           return rowNavigationTargetsOf({
             sources: self.sources,
-            hasAssembly: name => assemblyManager.has(name),
+            assemblies: getSession(self).assemblyManager,
             detail: self.detailOnScreen,
             displayedRegionIndex,
             startBp,

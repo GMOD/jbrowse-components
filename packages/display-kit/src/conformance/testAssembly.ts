@@ -87,6 +87,7 @@ export function testAssemblyManager(
     getCanonicalAssemblyName(name) === undefined ? undefined : assembly
   return {
     get,
+    has: (name: string) => getCanonicalAssemblyName(name) !== undefined,
     getCanonicalAssemblyName,
     waitForAssembly: () => Promise.resolve(assembly),
     isValidRefName: () => true,

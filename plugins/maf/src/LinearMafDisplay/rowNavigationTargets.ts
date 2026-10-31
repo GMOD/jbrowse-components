@@ -4,6 +4,7 @@ import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendType
 import type { MafSource } from '../types.ts'
 import type { RowSpan } from './components/findRowSpan.ts'
 import type { UriLocation } from '@jbrowse/core/util'
+import type { SessionAssemblies } from '@jbrowse/core/util/tracks'
 
 export interface RowNavigationTarget extends RowSpan {
   assemblyName: string
@@ -14,7 +15,7 @@ export interface RowNavigationTarget extends RowSpan {
 
 export interface RowNavigationInputs {
   sources: readonly MafSource[]
-  hasAssembly: (name: string) => boolean
+  assemblies: SessionAssemblies
   detail: ReadonlyMap<number, MafRegionData>
   displayedRegionIndex: number
   startBp: number
@@ -29,11 +30,13 @@ export interface RowNavigationInputs {
  * range or no fetched block covering it contributes nothing, and so does one
  * whose genome the session has no assembly for and no `assemblyConfigLocation`
  * to load it from. A sample id that names a loaded assembly stands in for a
- * missing `assemblyName`.
+ * missing `assemblyName`. A target names its assembly canonically, the one
+ * spelling its view and synteny track can key on; a name still to be loaded
+ * from its `assemblyConfigLocation` keeps the spelling that config uses.
  */
 export function rowNavigationTargetsOf({
   sources,
-  hasAssembly,
+  assemblies,
   detail,
   displayedRegionIndex,
   startBp,
@@ -50,10 +53,13 @@ export function rowNavigationTargetsOf({
     const { name, assemblyName: named, assemblyConfigLocation } = sources[row]!
     const assemblyName = named ?? name
     if (
-      hasAssembly(assemblyName) ||
+      assemblies.has(assemblyName) ||
       (named !== undefined && assemblyConfigLocation !== undefined)
     ) {
-      assemblyNames.set(row, assemblyName)
+      assemblyNames.set(
+        row,
+        assemblies.getCanonicalAssemblyName(assemblyName) ?? assemblyName,
+      )
     }
   }
   const region = assemblyNames.size
