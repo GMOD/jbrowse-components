@@ -21,14 +21,18 @@ export interface MapUploadTarget<K, T, B> {
  * built inside the `attachRenderingBackend` setup thunk so the memo lives
  * exactly as long as the callbacks that read it.
  */
-export function createMapUploadSync<K, T, B>(target: MapUploadTarget<K, T, B>) {
+export function createMapUploadSync<K, T, B extends object>(
+  target: MapUploadTarget<K, T, B>,
+) {
   const uploaded = new Map<K, T>()
-  let lastRenderingBackend: B | undefined
+  // weak: this outlives an unmounted backend, whose canvas and GL context a
+  // strong ref would pin until the display remounts
+  let lastRenderingBackend: WeakRef<B> | undefined
 
   return function sync(backend: B, entries: ReadonlyMap<K, T>) {
-    if (backend !== lastRenderingBackend) {
+    if (backend !== lastRenderingBackend?.deref()) {
       uploaded.clear()
-      lastRenderingBackend = backend
+      lastRenderingBackend = new WeakRef(backend)
     }
     let changed = false
     for (const [key, data] of entries) {
