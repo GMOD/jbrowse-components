@@ -324,8 +324,12 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       // before `textSearching`
       retired: {
         rpcDriverName: () => ({}),
-        textSearchAdapter: () => ({}),
-        textSearchIndexingAttributes: () => ({}),
+        textSearchAdapter: textSearchAdapter => ({
+          textSearching: { textSearchAdapter },
+        }),
+        textSearchIndexingAttributes: indexingAttributes => ({
+          textSearching: { indexingAttributes },
+        }),
       },
     },
   )

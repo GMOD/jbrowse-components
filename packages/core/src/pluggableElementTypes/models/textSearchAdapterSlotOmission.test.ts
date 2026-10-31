@@ -77,3 +77,20 @@ test('a track with a declared textSearchAdapter keeps it intact', () => {
     uri: 'genes.ix',
   })
 })
+
+test("v1.3's track-level text search keys move into textSearching", () => {
+  const v13Adapter = 'textSearchAdapter'
+  const v13Attributes = 'textSearchIndexingAttributes'
+  const conf = trackConfigSchema().create({
+    trackId: 'v13',
+    type: 'FeatureTrack',
+    [v13Adapter]: { type: 'TrixTextSearchAdapter', uri: 'genes.ix' },
+    [v13Attributes]: ['Name', 'ID'],
+  })
+  expect(
+    readConfObject(conf, ['textSearching', 'textSearchAdapter']),
+  ).toMatchObject({ type: 'TrixTextSearchAdapter', uri: 'genes.ix' })
+  expect(readConfObject(conf, ['textSearching', 'indexingAttributes'])).toEqual(
+    ['Name', 'ID'],
+  )
+})
