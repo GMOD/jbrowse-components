@@ -109,7 +109,11 @@ export type {
 } from './features/linkedReads/connectorStyle.ts'
 export type { SashimiLabel } from './LinearAlignmentsDisplay/renderers/sashimiMarks.ts'
 export type { LinkedPair } from './features/linkedReads/compute.ts'
-export type { BezierArcScope } from './features/linkedReads/computeOverlay.ts'
+export type {
+  ConnectorScope,
+  /** @deprecated renamed `ConnectorScope` */
+  ConnectorScope as BezierArcScope,
+} from './features/linkedReads/computeOverlay.ts'
 export type { MergedJunction } from './features/sashimi/junctions.ts'
 export type { LaneJunction } from './features/sashimi/supportingReads.ts'
 export type { ReadSlot } from './shared/readSlot.ts'

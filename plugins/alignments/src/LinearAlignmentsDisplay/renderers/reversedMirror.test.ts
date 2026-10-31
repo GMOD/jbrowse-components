@@ -265,7 +265,7 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     // turns on which.
     colors: makeTestPalette(),
     unit: 'read',
-    showLinkedReadLines: false,
+    showConnectors: false,
     readConnectionsStrokeScale: arcStrokeScale(1),
     drawnReadConnections: 'off',
     readConnectionsDown: false,
@@ -332,7 +332,7 @@ const LINKED: { name: string; overrides: Partial<RenderState> } = {
   name: 'linked reads (adds overlaps + connecting/linked-read lines)',
   overrides: {
     unit: 'chain',
-    showLinkedReadLines: true,
+    showConnectors: true,
     basesField: 'modifications',
   },
 }

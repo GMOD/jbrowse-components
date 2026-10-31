@@ -44,9 +44,9 @@ import {
 } from '../arcs/arcColors.ts'
 import {
   connectorCategories,
-  bezierDipReservePx,
+  connectorDipReservePx,
   connectorFilterOf,
-  enumerateBezierPairs,
+  enumerateConnectorPairs,
   resolveConnectors,
 } from './computeOverlay.ts'
 import { buildConnectorFeeds } from './connectorFeed.ts'
@@ -239,7 +239,7 @@ describe('connectors — split-read tangent direction', () => {
     const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
-      pairs: enumerateBezierPairs(new Map([[0, data]])),
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
     const { sx1, cp1x, cp2x, sx2 } = controlPoints(arcs[0]!.d)
@@ -261,7 +261,7 @@ describe('connectors — split-read tangent direction', () => {
     const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
-      pairs: enumerateBezierPairs(new Map([[0, data]])),
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
     const { sx1, cp1x, cp2x, sx2 } = controlPoints(arcs[0]!.d)
@@ -287,7 +287,7 @@ describe('connectors — split-read tangent direction', () => {
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1', reversed: true }],
       bpToScreenX: (_refName: string, bp: number) => 1000 - bp,
-      pairs: enumerateBezierPairs(new Map([[0, data]])),
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
     const { sx1, cp1x, cp2x, sx2 } = controlPoints(arcs[0]!.d)
@@ -309,7 +309,7 @@ describe('connectors — split-read tangent direction', () => {
     const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
-      pairs: enumerateBezierPairs(new Map([[0, data]])),
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
     })
     expect(arcs[0]!.d).not.toMatch(/NaN/)
   })
@@ -336,7 +336,7 @@ describe('connectors — the arc band colors and labels', () => {
     const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
-      pairs: enumerateBezierPairs(new Map([[0, data]])),
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
     expect(invLL).toBe(rgb255(arcCategoryColor(PALETTE, 'pairLL')))
@@ -362,7 +362,7 @@ describe('connectors — the arc band colors and labels', () => {
     const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
-      pairs: enumerateBezierPairs(new Map([[0, data]])),
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.stroke).toBe(rr)
@@ -393,7 +393,7 @@ describe('connectors — paired tangent direction', () => {
     const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
-      pairs: enumerateBezierPairs(new Map([[0, data]])),
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
     const { sx1, cp1x, cp2x, sx2 } = controlPoints(arcs[0]!.d)
@@ -421,7 +421,7 @@ describe('connectors — discordant curves dip', () => {
     const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
-      pairs: enumerateBezierPairs(new Map([[0, data]])),
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
     const { sy1, cp1y, cp2y, sy2 } = controlPoints(arcs[0]!.d)
@@ -447,7 +447,7 @@ describe('connectors — discordant curves dip', () => {
     const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
-      pairs: enumerateBezierPairs(new Map([[0, data]])),
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
     const { sy1, cp1y, cp2y, sy2 } = controlPoints(arcs[0]!.d)
@@ -479,7 +479,7 @@ describe('connectors — discordant curves dip', () => {
         colors: PALETTE,
         ...baseOpts,
         bpToScreenX: (_refName: string, bp: number) => bp / bpPerPx,
-        pairs: enumerateBezierPairs(new Map([[0, data]])),
+        pairs: enumerateConnectorPairs(new Map([[0, data]])),
       })
       const { sy1, cp1y } = controlPoints(arcs[0]!.d)
       return cp1y - sy1
@@ -494,7 +494,7 @@ describe('connectors — discordant curves dip', () => {
         colors: PALETTE,
         ...baseOpts,
         pileupHeight,
-        pairs: enumerateBezierPairs(
+        pairs: enumerateConnectorPairs(
           new Map([
             [
               0,
@@ -539,7 +539,7 @@ describe('connectors — discordant curves dip', () => {
   })
 })
 
-describe('bezierDipReservePx', () => {
+describe('connectorDipReservePx', () => {
   // Three rows of 12 px: the band ends at the last read, which is where the
   // section's clip used to cut the bottom rows' curves.
   const pileupHeight = 36
@@ -559,10 +559,10 @@ describe('bezierDipReservePx', () => {
       ys,
     })
   const reserveFor = (data: PileupDataResult) =>
-    bezierDipReservePx({
+    connectorDipReservePx({
       ...baseOpts,
       pileupHeight,
-      pairs: enumerateBezierPairs(new Map([[0, data]])),
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
     })
 
   it('holds the apex of a curve on the last row', () => {
@@ -572,7 +572,7 @@ describe('bezierDipReservePx', () => {
       colors: PALETTE,
       ...baseOpts,
       pileupHeight,
-      pairs: enumerateBezierPairs(new Map([[0, data]])),
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
     })
     const { sy1, cp1y } = controlPoints(arcs[0]!.d)
     const apex = sy1 + (cp1y - sy1) * CUBIC_APEX_RATIO
@@ -598,29 +598,31 @@ describe('bezierDipReservePx', () => {
         positions: [[1000, 1100]],
         ys,
       })
-    const pairs = enumerateBezierPairs(
+    const pairs = enumerateConnectorPairs(
       new Map([
         [0, lr([2])],
         [1, lr([2])],
       ]),
     )
     expect(
-      bezierDipReservePx({
+      connectorDipReservePx({
         ...baseOpts,
         displayedRegions: [{ refName: 'chr1' }, { refName: 'chr1' }],
         pileupHeight,
         pairs,
       }),
     ).toBe(0)
-    expect(bezierDipReservePx({ ...baseOpts, pileupHeight, pairs: [] })).toBe(0)
+    expect(
+      connectorDipReservePx({ ...baseOpts, pileupHeight, pairs: [] }),
+    ).toBe(0)
   })
 
   it('reserves nothing when the dip ends inside a band dragged taller', () => {
     expect(
-      bezierDipReservePx({
+      connectorDipReservePx({
         ...baseOpts,
         pileupHeight: 400,
-        pairs: enumerateBezierPairs(new Map([[0, rrPair([2, 2])]])),
+        pairs: enumerateConnectorPairs(new Map([[0, rrPair([2, 2])]])),
       }),
     ).toBe(0)
   })
@@ -679,7 +681,7 @@ describe('connectors — one refName displayed twice', () => {
     positions: [[2600, 2700]],
     ys: [0],
   })
-  const pairs = enumerateBezierPairs(
+  const pairs = enumerateConnectorPairs(
     new Map([
       [0, primary],
       [1, supplementary],
@@ -746,7 +748,7 @@ describe('connectors — an end past the region its read was fetched in', () => 
       ...baseOpts,
       displayedRegions,
       regions,
-      pairs: enumerateBezierPairs(
+      pairs: enumerateConnectorPairs(
         new Map([
           [0, primary],
           [1, supplementary],
@@ -769,7 +771,7 @@ describe('connectors — an end past the region its read was fetched in', () => 
       ...baseOpts,
       displayedRegions: otherChromosome,
       regions,
-      pairs: enumerateBezierPairs(
+      pairs: enumerateConnectorPairs(
         new Map([
           [0, primary],
           [1, supplementary],
@@ -801,7 +803,7 @@ describe('connectors — exclusions', () => {
     const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
-      pairs: enumerateBezierPairs(new Map([[0, data]])),
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(0)
   })
@@ -820,18 +822,18 @@ describe('connectors — exclusions', () => {
     const arcs = drawnConnectors({
       colors: PALETTE,
       ...baseOpts,
-      pairs: enumerateBezierPairs(new Map([[0, data]])),
+      pairs: enumerateConnectorPairs(new Map([[0, data]])),
       regions: [],
     })
     expect(arcs).toHaveLength(0)
   })
 })
 
-// What `enumerateBezierPairs` returns IS what the overlay draws, so the two
+// What `enumerateConnectorPairs` returns IS what the overlay draws, so the two
 // consumers (the arc emitter and the legend) never re-derive the skip rule — and
 // the memoized list doesn't carry every ordinary pair at depth for both of them
 // to throw away.
-describe('enumerateBezierPairs — the list is what gets drawn', () => {
+describe('enumerateConnectorPairs — the list is what gets drawn', () => {
   it('drops normal-orientation pairs wholly inside one region', () => {
     // An ordinary LR pair: the GPU / Canvas2D line pass owns it.
     const normalPair = makeData({
@@ -849,7 +851,7 @@ describe('enumerateBezierPairs — the list is what gets drawn', () => {
       orientations: [PAIR_DIRECTION_NUM.LR, PAIR_DIRECTION_NUM.LR],
       ys: [0, 0],
     })
-    expect(enumerateBezierPairs(new Map([[0, normalPair]]))).toHaveLength(0)
+    expect(enumerateConnectorPairs(new Map([[0, normalPair]]))).toHaveLength(0)
   })
 
   // A PAF/synteny block has no QNAME, and LGVSyntenyDisplay runs this same
@@ -868,7 +870,7 @@ describe('enumerateBezierPairs — the list is what gets drawn', () => {
       ],
       ys: [0, 1, 2],
     })
-    expect(enumerateBezierPairs(new Map([[0, blocks]]))).toHaveLength(0)
+    expect(enumerateConnectorPairs(new Map([[0, blocks]]))).toHaveLength(0)
   })
 })
 
@@ -878,7 +880,7 @@ describe('enumerateBezierPairs — the list is what gets drawn', () => {
 // both and neither of the two middle segments — leaving the arms read-adjacent on
 // screen and 382bp apart on the molecule. Joining them solid is a false
 // inversion, indistinguishable from a real one.
-describe('enumerateBezierPairs — a junction across segments nothing fetched', () => {
+describe('enumerateConnectorPairs — a junction across segments nothing fetched', () => {
   // `refName,pos(1-based),strand,CIGAR,mapQ,NM` — the read's four segments as its
   // own SA tags state them. Each fetched segment's tag lists the other three.
   const CHR3_FWD = 'chr3,25359069,+,500M882S,60,0'
@@ -909,7 +911,7 @@ describe('enumerateBezierPairs — a junction across segments nothing fetched', 
   const identity = (refName: string) => refName
 
   it('names the hidden loci in read order, once per hop', () => {
-    const pairs = enumerateBezierPairs(sections, 'all', identity)
+    const pairs = enumerateConnectorPairs(sections, 'all', identity)
     expect(pairs).toHaveLength(1)
     expect(pairs[0]!.hiddenSegmentsBetween).toEqual([
       'chr10:600,001-600,199',
@@ -922,7 +924,7 @@ describe('enumerateBezierPairs — a junction across segments nothing fetched', 
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr3' }],
-      pairs: enumerateBezierPairs(sections, 'all', identity),
+      pairs: enumerateConnectorPairs(sections, 'all', identity),
     })
     expect(arcs).toHaveLength(1)
     // The same arc as before the dash existed: the connector is real, only its
@@ -938,7 +940,7 @@ describe('enumerateBezierPairs — a junction across segments nothing fetched', 
   // The SA tag names chromosomes in the BAM's own spelling. Reported raw, a
   // tooltip sends the reader to a refName the view does not have.
   it('reports the loci in the assembly-canonical spelling', () => {
-    const pairs = enumerateBezierPairs(sections, 'all', refName =>
+    const pairs = enumerateConnectorPairs(sections, 'all', refName =>
       refName.replace('chr', ''),
     )
     expect(pairs[0]!.hiddenSegmentsBetween).toEqual([
@@ -966,7 +968,7 @@ describe('enumerateBezierPairs — a junction across segments nothing fetched', 
       ],
       ys: [0, 1],
     })
-    const pairs = enumerateBezierPairs(
+    const pairs = enumerateConnectorPairs(
       new Map([[0, twoSegments]]),
       'all',
       identity,
@@ -986,7 +988,7 @@ describe('enumerateBezierPairs — a junction across segments nothing fetched', 
   // Without a normalizer no junction reports hidden segments.
   it('skips the walk when no normalizer is passed', () => {
     expect(
-      enumerateBezierPairs(sections)[0]!.hiddenSegmentsBetween,
+      enumerateConnectorPairs(sections)[0]!.hiddenSegmentsBetween,
     ).toBeUndefined()
   })
 })
@@ -997,7 +999,7 @@ describe('enumerateBezierPairs — a junction across segments nothing fetched', 
 // that job and nothing the per-region pass already covers.
 const chr1chr2 = (i: number) => ['chr1', 'chr2'][i]
 
-describe('enumerateBezierPairs — crossRegion scope', () => {
+describe('enumerateConnectorPairs — crossRegion scope', () => {
   // A split read whose supplementary was fetched in region 1, plus a second read
   // wholly inside region 0 whose junction the per-region line already draws.
   const inRegion0 = makeData({
@@ -1026,8 +1028,8 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
   ])
 
   it('keeps only the pairs that straddle a region boundary', () => {
-    expect(enumerateBezierPairs(twoRegions, 'all')).toHaveLength(2)
-    const cross = enumerateBezierPairs(twoRegions, 'crossRegion')
+    expect(enumerateConnectorPairs(twoRegions, 'all')).toHaveLength(2)
+    const cross = enumerateConnectorPairs(twoRegions, 'crossRegion')
     expect(cross).toHaveLength(1)
     expect(cross[0]!.e1.displayedRegionIndex).toBe(0)
     expect(cross[0]!.e2.displayedRegionIndex).toBe(1)
@@ -1037,13 +1039,13 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
   // one region can hold no straddling pair, so the O(reads) grouping is skipped.
   it('answers a single-region section without enumerating', () => {
     expect(
-      enumerateBezierPairs(new Map([[0, inRegion0]]), 'crossRegion'),
+      enumerateConnectorPairs(new Map([[0, inRegion0]]), 'crossRegion'),
     ).toHaveLength(0)
-    expect(enumerateBezierPairs(new Map([[0, inRegion0]]))).toHaveLength(1)
+    expect(enumerateConnectorPairs(new Map([[0, inRegion0]]))).toHaveLength(1)
   })
 
   it('none yields nothing at all', () => {
-    expect(enumerateBezierPairs(twoRegions, 'none')).toHaveLength(0)
+    expect(enumerateConnectorPairs(twoRegions, 'none')).toHaveLength(0)
   })
 
   it('draws the straddling co-linear split as a straight line', () => {
@@ -1051,7 +1053,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr1' }],
-      pairs: enumerateBezierPairs(twoRegions, 'crossRegion'),
+      pairs: enumerateConnectorPairs(twoRegions, 'crossRegion'),
     })
     expect(arcs).toHaveLength(1)
     expect(arcs[0]!.d).toMatch(/^M [\d.]+ [\d.]+ L /)
@@ -1062,7 +1064,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr2' }],
-      pairs: enumerateBezierPairs(
+      pairs: enumerateConnectorPairs(
         twoRegions,
         'crossRegion',
         undefined,
@@ -1087,7 +1089,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr2' }],
-      pairs: enumerateBezierPairs(
+      pairs: enumerateConnectorPairs(
         new Map([
           [0, inRegion0],
           [1, inverted],
@@ -1123,7 +1125,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
         { refName: 'chr1' },
         { refName: 'chr2', reversed: true },
       ],
-      pairs: enumerateBezierPairs(
+      pairs: enumerateConnectorPairs(
         new Map([
           [0, inRegion0],
           [1, inverted],
@@ -1171,7 +1173,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr2' }],
-      pairs: enumerateBezierPairs(
+      pairs: enumerateConnectorPairs(
         new Map([
           [0, chr1],
           [1, chr2],
@@ -1215,7 +1217,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
         { refName: 'chr1', reversed: true },
         { refName: 'chr2', reversed: true },
       ],
-      pairs: enumerateBezierPairs(
+      pairs: enumerateConnectorPairs(
         new Map([
           [0, chr1],
           [1, chr2],
@@ -1256,7 +1258,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
         colors: PALETTE,
         ...baseOpts,
         displayedRegions,
-        pairs: enumerateBezierPairs(map, 'crossRegion'),
+        pairs: enumerateConnectorPairs(map, 'crossRegion'),
       })[0]!
     const chr2Reversed = arcFor(
       new Map([
@@ -1284,7 +1286,7 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1' }, { refName: 'chr1' }],
-      pairs: enumerateBezierPairs(twoRegions, 'crossRegion'),
+      pairs: enumerateConnectorPairs(twoRegions, 'crossRegion'),
     })
     expect(arcs[0]).toMatchObject({
       readName: 'r',
@@ -1328,7 +1330,7 @@ describe('a same-strand junction across segments nothing fetched', () => {
       colors: PALETTE,
       ...baseOpts,
       displayedRegions: [{ refName: 'chr3' }],
-      pairs: enumerateBezierPairs(sameStrand(ys), 'all', identity),
+      pairs: enumerateConnectorPairs(sameStrand(ys), 'all', identity),
     })
 
   it('leaves the straight-line pass for the overlay', () => {

@@ -246,7 +246,7 @@ export interface SectionStackOpts<L> {
   // padded; `pileupHeight` stays the drawn row extent.
   minSectionHeight: number
   // How far below a lane's pileup band its deepest dipping connector reaches,
-  // given that band's height (`bezierDipReservePx`). Pads only the advance.
+  // given that band's height (`connectorDipReservePx`). Pads only the advance.
   dipReservePx: (lane: L, pileupHeight: number) => number
 }
 

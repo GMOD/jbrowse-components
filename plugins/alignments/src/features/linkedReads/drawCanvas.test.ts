@@ -69,7 +69,7 @@ function state(): RenderState {
     featureSpacing: 0,
     canvasHeight: 1000,
     pileupTopOffset: 0,
-    showLinkedReadLines: true,
+    showConnectors: true,
     colors: STOCK,
   } as RenderState
 }

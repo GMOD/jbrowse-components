@@ -178,7 +178,7 @@ interface HiddenSegment {
 // can be hidden BETWEEN two of them — and phase two resolves loci for those
 // alone.
 //
-// Measured over `enumerateBezierPairs`, 20k reads where half are 2-segment split
+// Measured over `enumerateConnectorPairs`, 20k reads where half are 2-segment split
 // reads with 900-op SA CIGARs: parsing every record cost +619ms per relayout,
 // this costs +372ms, and where the tag names only segments already on screen it
 // costs +27ms because phase two parses nothing. A 200k short-read fetch is

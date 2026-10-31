@@ -251,7 +251,7 @@ describe('classifyPair — paired reads', () => {
 // reports LR for a pair its primaries both call RL.
 //
 // This costs the overlay more than a color: `isNormal` also decides
-// curve-vs-straight, and `isBezierArcPair` drops a within-region normal pair
+// curve-vs-straight, and `isConnectorMarkPair` drops a within-region normal pair
 // entirely — so the discordant connection was handed to the plain-line pass and
 // never drawn as a curve at all.
 describe('classifyPair sources pair fields from a primary, not a supplementary', () => {

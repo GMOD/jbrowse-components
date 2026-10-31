@@ -26,7 +26,7 @@ export const CURVE_STROKE_WIDTH_PX = 1
 
 // Every pair the line pass leaves: it cannot dash a line or name the loci a
 // junction skips.
-function isBezierArcPair(pair: LinkedPair) {
+function isConnectorMarkPair(pair: LinkedPair) {
   return !isGpuLinkedReadLine(pair)
 }
 
@@ -42,7 +42,7 @@ function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
  * Which connections this overlay is responsible for.
  *
  * - `all` — the user ticked "Pileup connectors", so it draws every
- *   connection the GPU line pass doesn't own (`isBezierArcPair`).
+ *   connection the GPU line pass doesn't own (`isConnectorMarkPair`).
  * - `crossRegion` — chain mode with that box unticked. Chain layout puts a
  *   chain's alignments on ONE row across displayed regions (`mergeChains`) but
  *   its connecting-line pass is per region and counts a chain's reads in that
@@ -52,7 +52,7 @@ function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
  *   this scope adds only the pairs that straddle a boundary.
  * - `none` — no overlay.
  */
-export type BezierArcScope = 'all' | 'crossRegion' | 'none'
+export type ConnectorScope = 'all' | 'crossRegion' | 'none'
 
 /** The connection colors the connectors' color types paint under `colorField`. */
 export function connectorCategories(
@@ -91,9 +91,9 @@ export function connectorCategories(
 // relayout instead of once per frame. Only a group with two segments on one mate
 // reaches it at all — a plain pair partitions to one segment per side and
 // allocates nothing — which is what keeps it off the deep short-read path.
-export function enumerateBezierPairs(
+export function enumerateConnectorPairs(
   laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
-  scope: BezierArcScope = 'all',
+  scope: ConnectorScope = 'all',
   canonicalRefName?: CanonicalRefName,
   refNameAt?: RefNameAt,
 ): LinkedPair[] {
@@ -105,14 +105,14 @@ export function enumerateBezierPairs(
   }
   // The scope's own predicate, applied HERE rather than at each consumer, so
   // what this returns is exactly what the overlay draws. Both consumers (the arc
-  // emitter and the legend) used to re-apply `isBezierArcPair` themselves, which
-  // left the memoized `bezierPairSections` holding every ordinary within-region
+  // emitter and the legend) used to re-apply `isConnectorMarkPair` themselves, which
+  // left the memoized `connectorPairSections` holding every ordinary within-region
   // pair — the overwhelming majority at depth under the `all` scope — for both
   // of them to skip. `crossRegion` needs no second gate: two ends in different
-  // regions can never be the within-region normal pair `isBezierArcPair` drops,
+  // regions can never be the within-region normal pair `isConnectorMarkPair` drops,
   // so it is the narrower of the two.
   const predicate =
-    scope === 'crossRegion' ? isCrossRegionPair : isBezierArcPair
+    scope === 'crossRegion' ? isCrossRegionPair : isConnectorMarkPair
   const out: LinkedPair[] = []
   for (const pair of iterLinkedPairs(
     laidOutPileupMap,
@@ -181,7 +181,7 @@ export function resolveConnectors(
     admits,
   }: {
     lines: boolean
-    scope: BezierArcScope
+    scope: ConnectorScope
     canonicalRefName?: CanonicalRefName
     // what tells a connection crossing chromosomes, which paints
     // inter-chromosomal as its arc does
@@ -190,7 +190,12 @@ export function resolveConnectors(
   },
 ): GroupConnectors {
   if (!lines) {
-    const pairs = enumerateBezierPairs(map, scope, canonicalRefName, refNameAt)
+    const pairs = enumerateConnectorPairs(
+      map,
+      scope,
+      canonicalRefName,
+      refNameAt,
+    )
     return {
       lines: NO_LINES,
       overlayPairs: admits ? pairs.filter(admits) : pairs,
@@ -289,7 +294,7 @@ function crossesOwnAlignment(
 
 // How one pair is drawn, from the layout alone: nothing here reads a screen
 // position, so the section layout can ask it before any curve is projected
-// (`bezierDipReservePx`) and get the answer the overlay draws.
+// (`connectorDipReservePx`) and get the answer the overlay draws.
 //
 // A normal connection is a plain line and everything else dips below the
 // reads. A same-strand split junction is normal on any pair of chromosomes,
@@ -359,7 +364,7 @@ const DIP_RESERVE_PAD_PX = 2
 // hands the dip law, so reserving room changes no curve's depth. A cubic's
 // extreme is at most its apex depth below the lower endpoint, and exactly that
 // when the two ends share a row.
-export function bezierDipReservePx({
+export function connectorDipReservePx({
   pairs,
   displayedRegions,
   featureHeight,

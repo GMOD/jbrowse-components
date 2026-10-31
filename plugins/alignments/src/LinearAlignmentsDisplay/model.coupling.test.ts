@@ -854,20 +854,20 @@ describe('chain mode is a main-thread tier', () => {
 describe('cross-region chain connectors', () => {
   test('chain mode claims the overlay for straddling pairs alone', () => {
     const display = createDisplay()
-    expect(display.bezierArcScope).toBe('none')
+    expect(display.connectorScope).toBe('none')
 
     display.setUnit('chain')
-    expect(display.bezierArcScope).toBe('crossRegion')
+    expect(display.connectorScope).toBe('crossRegion')
   })
 
   test('ticking curved connectors widens it back to every connection', () => {
     const display = createDisplay()
     display.setShowConnectors(true)
-    expect(display.bezierArcScope).toBe('all')
+    expect(display.connectorScope).toBe('all')
 
     // and chain mode doesn't narrow an explicit choice
     display.setUnit('chain')
-    expect(display.bezierArcScope).toBe('all')
+    expect(display.connectorScope).toBe('all')
   })
 })
 
@@ -912,7 +912,7 @@ describe('curved connectors', () => {
 
   test('one walk answers both passes, and a band resize or a recolor reuses it', () => {
     const display = connectorDisplay()
-    const dispose = autorun(() => display.bezierPairSections)
+    const dispose = autorun(() => display.connectorPairSections)
     const connectors = display.connectorsByGroup
     expect(connectors.get('')?.overlayPairs).toHaveLength(1)
     expect(connectors.get('')?.lines.get(0)?.numLinkedReadLines).toBe(1)

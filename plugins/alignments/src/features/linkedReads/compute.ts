@@ -239,7 +239,7 @@ export function* iterLinkedPairs(
 
 // The pairs the GPU / Canvas2D straight-line pass draws: normal orientation,
 // both ends in one displayed region, and no unfetched segment between them.
-// The overlay takes every other pair (`isBezierArcPair`), since only it can
+// The overlay takes every other pair (`isConnectorMarkPair`), since only it can
 // dash a hidden-segment junction and name the loci in a hover.
 export function isGpuLinkedReadLine({
   e1,

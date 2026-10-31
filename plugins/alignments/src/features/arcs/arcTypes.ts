@@ -148,7 +148,7 @@ export interface ComputedArc {
  * dangling halves. The same view as one region, and the same two regions 2 Mb
  * apart, have none — a fragment can only straddle a seam, so this set is
  * inherently small and an overlay drawn once across the whole view can afford
- * to be SVG. That overlay is the same answer `bezierArcScope`'s `crossRegion`
+ * to be SVG. That overlay is the same answer `connectorScope`'s `crossRegion`
  * already gives for the per-read connectors, and for the same reason.
  *
  * An interchromosomal arc is necessarily one of these — two refNames cannot

@@ -141,7 +141,7 @@ export function makeTestRenderState(
     basesField: undefined,
     colors: makeTestPalette(),
     unit: 'read',
-    showLinkedReadLines: false,
+    showConnectors: false,
     collapseSections: false,
     readConnectionsStrokeScale: arcStrokeScale(1),
     linkRegions: [],

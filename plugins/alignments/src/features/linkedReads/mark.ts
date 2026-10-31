@@ -46,26 +46,13 @@ function packLinkedReadLines(data: LinkedReadLinesUploadData) {
   return buf
 }
 
-// Every stroke this pass can use is known up front — the arc palette's CSS
-// strings are built once per palette and field rather than per line. Not at
-// module scope, because the palette is THEMED: baking it at import time is what
-// left dark mode drawing connectors in the light palette's colors while the
-// reads under them were dimmed. `LINKED_READ_LINE_ALPHA` is
-// linkedReadLine.slang's, so this path cannot drift from the shader.
-let lineCssMemo:
-  | { colors: ColorPalette; field: ArcColorField; css: string[] }
-  | undefined
+// Every stroke this pass can use, one per arc palette slot, built per painted
+// block from the themed palette rather than per line. `LINKED_READ_LINE_ALPHA`
+// is linkedReadLine.slang's, so this path cannot drift from the shader.
 function lineCss(colors: ColorPalette, field: ArcColorField) {
-  if (lineCssMemo?.colors !== colors || lineCssMemo.field !== field) {
-    lineCssMemo = {
-      colors,
-      field,
-      css: buildArcColorPalette(colors, field).map(c =>
-        rgba255(c, LINKED_READ_LINE_ALPHA),
-      ),
-    }
-  }
-  return lineCssMemo.css
+  return buildArcColorPalette(colors, field).map(c =>
+    rgba255(c, LINKED_READ_LINE_ALPHA),
+  )
 }
 
 /**
@@ -126,5 +113,5 @@ export const LINKED_READ_LINE_MARK = defineMark({
   shape: linkedReadLineShape,
   channels: (data: LinkedReadLinesUploadData) => data,
   params: (state: RenderState) => state,
-  enabled: s => s.showLinkedReadLines,
+  enabled: s => s.showConnectors,
 })

@@ -50,7 +50,7 @@ from the GPU, so it is not pursued.
   BreakpointSplitView's `AlignmentConnections` still draws as SVG, computes
   through the twin.
 - **The feed is layout, never screen.** `buildConnectorFeeds` reads the pairs
-  `bezierPairSections` places and classifies each with the overlay's own
+  `connectorPairSections` places and classifies each with the overlay's own
   `connectorShape` (straight, dip, maps-back loop, dashed hidden-segment
   junction), so a pan or zoom rebuilds nothing; a height drag rebuilds it, as
   it moved the dips before.

@@ -2,7 +2,7 @@ import { namesToBlock } from '@jbrowse/alignments-core'
 import { SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/cigar-utils'
 
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { enumerateBezierPairs } from '../../features/linkedReads/computeOverlay.ts'
+import { enumerateConnectorPairs } from '../../features/linkedReads/computeOverlay.ts'
 import { buildConnectorFeeds } from '../../features/linkedReads/connectorFeed.ts'
 import { connectorParamsOf } from '../renderers/connectorMarks.ts'
 import { makeTestPalette, makeTestRenderState } from '../testUtils.ts'
@@ -37,7 +37,7 @@ function splitRead(
   })
 }
 
-const pairsA = enumerateBezierPairs(
+const pairsA = enumerateConnectorPairs(
   new Map([
     [
       0,
@@ -51,7 +51,7 @@ const pairsA = enumerateBezierPairs(
     ],
   ]),
 )
-const pairsB = enumerateBezierPairs(
+const pairsB = enumerateConnectorPairs(
   new Map([
     [0, splitRead('b', ['b1'], [150], [3], [1])],
     [1, splitRead('b', ['b2'], [5300], [3], [1])],

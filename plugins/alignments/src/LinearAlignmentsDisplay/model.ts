@@ -71,7 +71,7 @@ import { buildArcBandFeeds } from '../features/arcs/bandFeed.ts'
 import { collectArcs, resolveArcsByGroup } from '../features/arcs/compute.ts'
 import {
   connectorCategories,
-  bezierDipReservePx,
+  connectorDipReservePx,
   connectorFilterOf,
   resolveConnectorsByGroup,
 } from '../features/linkedReads/computeOverlay.ts'
@@ -216,7 +216,7 @@ import type {
 import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { ArcBandFeed } from '../features/arcs/bandFeed.ts'
 import type { ArcsByGroupResult } from '../features/arcs/compute.ts'
-import type { BezierArcScope } from '../features/linkedReads/computeOverlay.ts'
+import type { ConnectorScope } from '../features/linkedReads/computeOverlay.ts'
 import type { ConnectorFeed } from '../features/linkedReads/connectorFeed.ts'
 import type { ConnectorStyler } from '../features/linkedReads/connectorStyle.ts'
 import type { SashimiBandFeed } from '../features/sashimi/bandFeed.ts'
@@ -512,21 +512,11 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Whether the straight-line pass connects normal read pairs, in the
-         * pair's color, over chain layout's connecting line too. Neither line
-         * reaches across regions; that is `bezierArcScope`'s `crossRegion`.
+         * Which pairs the connector mark draws — see `ConnectorScope`. Chain
+         * mode claims `crossRegion` even with `pileup.connectors` off: only
+         * that mark joins a chain's ends across displayed regions.
          */
-        get showLinkedReadLines() {
-          return self.showConnectors
-        },
-
-        /**
-         * #getter
-         * What the SVG connection overlay draws — see `BezierArcScope`. Chain
-         * mode claims `crossRegion` even with the curved connectors off: only
-         * that pass joins a chain's ends across displayed regions.
-         */
-        get bezierArcScope(): BezierArcScope {
+        get connectorScope(): ConnectorScope {
           return self.showConnectors
             ? 'all'
             : self.unit === 'chain'
@@ -1346,8 +1336,8 @@ export default function stateModelFactory(
             return resolveConnectorsByGroup(
               this.laidOutByGroupFramed,
               {
-                lines: self.showLinkedReadLines,
-                scope: self.bezierArcScope,
+                lines: self.showConnectors,
+                scope: self.connectorScope,
                 canonicalRefName: this.canonicalRefName,
                 refNameAt: i => self.loadedRegions.get(i)?.refName,
                 admits: self.showConnectors ? this.connectorFilter : undefined,
@@ -1834,7 +1824,7 @@ export default function stateModelFactory(
                   ? undefined
                   : self.connectorsByGroup.get(lane.groupKey)?.overlayPairs
                 return pairs?.length
-                  ? bezierDipReservePx({
+                  ? connectorDipReservePx({
                       pairs,
                       displayedRegions: self.host.displayedRegions,
                       featureHeight: self.featureHeight,
@@ -1861,7 +1851,7 @@ export default function stateModelFactory(
          * The pairs the connector mark draws, placed on each drawn section's
          * pileup band.
          */
-        get bezierPairSections() {
+        get connectorPairSections() {
           return this.renderSections.flatMap(sec => {
             const pairs = self.connectorsByGroup.get(sec.groupKey)?.overlayPairs
             return pairs?.length
@@ -2323,7 +2313,7 @@ export default function stateModelFactory(
           const connectorFeedsByGroup = computed(() => {
             const { displayedRegions } = self.view
             return new Map(
-              self.bezierPairSections.map(sec => [
+              self.connectorPairSections.map(sec => [
                 sec.groupKey,
                 buildConnectorFeeds({
                   pairs: sec.pairs,
@@ -2514,7 +2504,7 @@ export default function stateModelFactory(
             colors: palette,
             readConnectionsColorField: self.readConnectionsColorField,
             unit: self.unit,
-            showLinkedReadLines: self.showLinkedReadLines,
+            showConnectors: self.showConnectors,
             collapseSections: self.collapseSections,
             readConnectionsStrokeScale: self.readConnectionsStrokeScale,
             arcsYDomainBp: this.arcsYDomainBp,
@@ -2532,7 +2522,7 @@ export default function stateModelFactory(
         get linkRegions(): readonly LinkRegion[] {
           return (self.drawnReadConnections === 'off' &&
             !self.drawsSashimi &&
-            self.bezierPairSections.length === 0) ||
+            self.connectorPairSections.length === 0) ||
             !self.view.initialized
             ? NO_LINK_REGIONS
             : viewRegionTable(self.view)
@@ -2585,7 +2575,7 @@ export default function stateModelFactory(
         get selectedConnectorHighlight(): ArcHighlight | undefined {
           const id = self.selectedFeatureId
           let highlight: ArcHighlight | undefined
-          if (id !== undefined && self.bezierPairSections.length > 0) {
+          if (id !== undefined && self.connectorPairSections.length > 0) {
             const selected = new Set([id, ...self.selectedChainReadIds])
             highlight = firstSectionHighlight(
               this.renderState,

@@ -651,7 +651,7 @@ describe('renderBlocks canvasDrawn gating parity', () => {
       basesField: undefined,
       colors: fullColors,
       unit: 'read',
-      showLinkedReadLines: false,
+      showConnectors: false,
       collapseSections: false,
       readConnectionsStrokeScale: arcStrokeScale(1),
       linkRegions: [],

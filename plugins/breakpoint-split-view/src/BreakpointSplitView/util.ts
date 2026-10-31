@@ -41,12 +41,12 @@ interface OverlayDisplayBase extends Partial<ReadSource> {
   stickyBandHeight?: number
   /**
    * What the display's own connector overlay draws, LinearAlignmentsDisplay's
-   * `bezierArcScope`: `'all'` under curved connectors, `'crossRegion'` in
+   * `connectorScope`: `'all'` under curved connectors, `'crossRegion'` in
    * chain layout, where the per-region line covers the rest. Structural, since
    * this plugin has no dependency on plugin-alignments, so a rename there
    * surfaces as `undefined` here, not as a type error.
    */
-  bezierArcScope?: 'all' | 'crossRegion' | 'none'
+  connectorScope?: 'all' | 'crossRegion' | 'none'
   /** the "Filter by" contract, `JexlFilterSource`, on displays that have one */
   configuredFilters?: () => string[]
   withFeatureById?: (
@@ -301,7 +301,7 @@ export function featureLayoutIn(track: OverlayTrack, f: Feature) {
 // itself, whether chained onto rows or curved over the pileup: the one scope
 // that draws nothing is the one that leaves the row to this overlay.
 export function linksOwnReads(d: OverlayDisplay) {
-  return (d.bezierArcScope ?? 'none') !== 'none'
+  return (d.connectorScope ?? 'none') !== 'none'
 }
 
 // A failed `featureLayoutIn` is ambiguous. With a layout, the feature really is off-display

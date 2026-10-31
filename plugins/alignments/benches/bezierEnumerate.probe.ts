@@ -5,7 +5,7 @@
 // Flags: --reads=<n> (default 200000), --paired=<fraction> (default 0.1),
 //        --rounds=<n> (default 15)
 //
-// `enumerateBezierPairs` short-circuits `crossRegion` on `map.size < 2`, and the
+// `enumerateConnectorPairs` short-circuits `crossRegion` on `map.size < 2`, and the
 // dashed hidden-hop mark exists only in the overlay, so a same-region junction
 // that skips an unfetched segment stays solid under that scope. Lifting the
 // short-circuit is what would fix it; this prices the grouping that lift would
@@ -13,7 +13,7 @@
 // PROCESS — agent-docs/reference/BENCHMARKING.md.
 //
 // ARMS, interleaved:
-//   all          — `enumerateBezierPairs(map, 'all')`, the grouping the lift
+//   all          — `enumerateConnectorPairs(map, 'all')`, the grouping the lift
 //                  would pay (every within-region normal pair is then dropped,
 //                  so the result is empty and the cost is all enumeration)
 //   crossRegion  — today's short-circuit
@@ -85,7 +85,7 @@ function makeFixture(n: number, pairedFraction: number) {
 const data = makeFixture(READS, PAIRED)
 const map = new Map([[0, data]])
 
-// `enumerateBezierPairs` itself is not imported: `computeOverlay.ts` reaches the
+// `enumerateConnectorPairs` itself is not imported: `computeOverlay.ts` reaches the
 // sv-core barrel, which node's type stripper refuses at its first .tsx. This is
 // the same walk with the `all` predicate written out.
 function enumerateAll() {

@@ -99,7 +99,7 @@ matters.
   one on-screen segment and an SA tag is exactly the group this skips — which is
   why this half is harder than the TODO half, where both flanking segments are
   fetched and the group clears the gate.
-- **`enumerateBezierPairs`' `crossRegion` scope short-circuits on
+- **`enumerateConnectorPairs`' `crossRegion` scope short-circuits on
   `laidOutPileupMap.size < 2`**, and that scope is *not* opt-in — it is what
   chain mode gets with curved connectors unticked. A one-ended hop in a
   single-region view is precisely `size < 2` with something to draw. Decide
@@ -132,7 +132,7 @@ matters.
   c: ClassifiedPair}` and `readScreenY` reads `e.data.readYs[e.readIdx]`, so the
   far end becomes an anchor-plus-target: one real entry supplying the row, plus
   `{refName, bp, strand}` for the segment that is not there. A discriminated pair
-  type keeps `isBezierArcPair` / `isCrossRegionPair` honest, since neither
+  type keeps `isConnectorMarkPair` / `isCrossRegionPair` honest, since neither
   predicate has an answer for a one-ended connection.
 
 ---

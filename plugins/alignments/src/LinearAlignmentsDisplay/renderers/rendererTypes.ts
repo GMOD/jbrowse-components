@@ -57,7 +57,7 @@ export interface DisplayRenderState {
   // Straight-line pass connecting normal read-pairs in pileup layout.
   // True when bezier connections are on AND chain mode is off (pileup).
   // Chain layout has its own connecting-line pass, so this is never needed there.
-  showLinkedReadLines: boolean
+  showConnectors: boolean
   // Each group drawn as one row, so features that would have stacked share it.
   // The overlap tint is what makes that depth readable, hence a second reason
   // (besides chain mode) for that layer to draw.

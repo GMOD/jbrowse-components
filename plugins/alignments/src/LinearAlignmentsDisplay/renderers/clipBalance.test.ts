@@ -173,7 +173,7 @@ function state(): RenderState {
     basesField: undefined,
     colors: makeTestPalette(),
     unit: 'read',
-    showLinkedReadLines: false,
+    showConnectors: false,
     collapseSections: false,
     readConnectionsStrokeScale: arcStrokeScale(1),
     linkRegions: [{ anchorPx: 0, anchorBp: REGION_START, signedPxPerBp: 2 }],

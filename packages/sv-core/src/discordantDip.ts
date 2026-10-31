@@ -21,7 +21,7 @@ import { BEZIER_CONNECTOR_MAX_REACH_PX } from '@jbrowse/core/util'
 // The dip starts at the read's row while the band is measured from the band's
 // top, so any read below that top passes the band bottom by its own offset — a
 // 900 kb event in a 60 px band asks for 56 px from every row. The pileup
-// reserves that overshoot under the section's last row (`bezierDipReservePx`
+// reserves that overshoot under the section's last row (`connectorDipReservePx`
 // in plugins/alignments) and still passes the band WITHOUT the reserve here, so
 // the room changes no depth. In fit-to-height mode it reserves nothing and the
 // clip cuts the lowest rows' curves, as the split view's panel edge does.

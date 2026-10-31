@@ -105,10 +105,9 @@ function baseTables(state: BaseColorState) {
 // Whether de-duplicating the *assignment* on top of that pays (as `walkReads`
 // does with its `lastFill`) is unmeasured here.
 //
-// Memoized for the reason `lineCss` in linkedReads/drawCanvas.ts is: three
-// passes call this and each calls it per section per block, so a grouped display
-// rebuilt a 256-entry array up to 360 times a frame to hold the same six
-// strings. Not at module scope — the palette is THEMED, and baking it at import
+// Memoized because three passes call this and each calls it per section per
+// block, so a grouped display rebuilt a 256-entry array up to 360 times a frame
+// to hold the same six strings. Not at module scope — the palette is THEMED, and baking it at import
 // time is how a dark-mode pileup came to draw connectors in the light palette's
 // colors.
 //
