@@ -319,7 +319,9 @@ describe('findWiggleHit', () => {
         ],
       ]),
       tooltipShowsMinMax: false,
+      renderingType: 'xyplot',
       size: 2,
+      lineWidth: 1,
       isOverlay: false,
       isDensityMode: false,
       showTree: false,
@@ -442,8 +444,19 @@ describe('findWiggleHit', () => {
     })
 
     test('a point reaches its radius', () => {
-      expect(scoreAt(sparse([1000], { size: 10 }), 24)).toBe(1000)
-      expect(scoreAt(sparse([1000], { size: 10 }), 26)).toBeUndefined()
+      const points = { renderingType: 'scatter', size: 10 }
+      expect(scoreAt(sparse([1000], points), 24)).toBe(1000)
+      expect(scoreAt(sparse([1000], points), 26)).toBeUndefined()
+    })
+
+    test('a bar reaches no further for a point size it does not draw', () => {
+      expect(scoreAt(sparse([1000], { size: 10 }), 23)).toBeUndefined()
+    })
+
+    test('a line reaches half its stroke', () => {
+      const line = { renderingType: 'line', lineWidth: 10 }
+      expect(scoreAt(sparse([1000], line), 24)).toBe(1000)
+      expect(scoreAt(sparse([1000], line), 26)).toBeUndefined()
     })
 
     test('the nearest of two marks in reach wins', () => {

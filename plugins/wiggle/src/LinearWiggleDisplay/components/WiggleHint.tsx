@@ -27,7 +27,7 @@ function hint({
     !isDensityMode &&
     numSources > 0 &&
     effectiveRowHeight < 1
-    ? `${numSources} subtracks in ${Math.round(height)}px leaves rows below 1px. Pick Plot type → Overlapping, or a Density plot, or make the track taller.`
+    ? `${numSources} subtracks in ${Math.round(height)}px leaves rows below 1px. Pick Plot type → Overlapping or Multi-row → Heatmap, or make the track taller.`
     : undefined
 }
 

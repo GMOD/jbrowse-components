@@ -9,6 +9,7 @@ import {
 } from '@jbrowse/render-core/shaders/rowRect'
 import { treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 
+import { isLineMode, isScatterMode } from '../../shared/wiggleComponentUtils.ts'
 import {
   findFeatureAtBp,
   findSourceHit,
@@ -135,12 +136,28 @@ export interface WiggleHitModel {
   markSources: VisibleSource[]
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   tooltipShowsMinMax: boolean
+  renderingType: string
   size: number
+  lineWidth: number
   isOverlay: boolean
   isDensityMode: boolean
   showTree: boolean
   hierarchy?: unknown
   treeAreaWidth: number
+}
+
+// How far past its bases a mark draws: a point its radius, a line half its
+// stroke, a bar or heatmap cell nothing beyond the minimum width
+function markRadiusPx({
+  renderingType,
+  size,
+  lineWidth,
+}: Pick<WiggleHitModel, 'renderingType' | 'size' | 'lineWidth'>) {
+  return isScatterMode(renderingType)
+    ? size / 2
+    : isLineMode(renderingType)
+      ? lineWidth / 2
+      : 0
 }
 
 // The feature under the cursor, or undefined when the cursor isn't over plotted
@@ -165,7 +182,6 @@ export function findWiggleHit(
     markSources: sources,
     rpcDataMap,
     tooltipShowsMinMax,
-    size,
     isOverlay,
     isDensityMode,
   } = model
@@ -177,7 +193,8 @@ export function findWiggleHit(
     return undefined
   }
   const { data, bp, region } = hit
-  const reachBp = Math.max(WIGGLE_MIN_PX, size / 2) / pxPerBpOf(region)
+  const reachBp =
+    Math.max(WIGGLE_MIN_PX, markRadiusPx(model)) / pxPerBpOf(region)
   // A lone source names its bin, as a row does; only several sources sharing
   // a box fall back to the cursor base
   return !isOverlay
