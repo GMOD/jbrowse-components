@@ -281,10 +281,10 @@ export const popgenSpecs: ScreenshotSpec[] = [
         anchor: {
           view: 1,
           trackId: 'dgrp_In2Lt_sv',
-          loc: 'chr2L:11,500,000',
+          loc: 'chr2L:12,700,000',
           fracY: 0.88,
         },
-        dx: -260,
+        dx: -360,
         dy: -110,
       },
     ],

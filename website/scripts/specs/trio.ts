@@ -35,8 +35,15 @@ export const trioVcfRows = {
 // round 44 drifts the bottom-row frames ~3px low.
 export const TRIO_VCF_DISPLAY_H = 260
 export const TRIO_VCF_ROW_PITCH = TRIO_VCF_DISPLAY_H / TRIO_HAPLOTYPES.length
-export const trioRowFrac = (label: string) =>
-  TRIO_HAPLOTYPES.findIndex(h => h.label === label) / TRIO_HAPLOTYPES.length
+// The rows end at the track's bottom edge whatever draws above them (the
+// records band, its chip strip), so a row's top is measured up from there.
+export const trioRowTop = (label: string) => ({
+  fracY: 1,
+  dy:
+    -(
+      TRIO_HAPLOTYPES.length - TRIO_HAPLOTYPES.findIndex(h => h.label === label)
+    ) * TRIO_VCF_ROW_PITCH,
+})
 
 export const TRIO_HL_FILL = 0.16
 export const TRIO_MATERNAL_COLORS = { left: '#15a01a', right: '#ff6f00' }
@@ -106,7 +113,7 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
       anchor: {
         trackId: TRIO_VCF_TRACK,
         loc: locus,
-        fracY: trioRowFrac(row),
+        ...trioRowTop(row),
       },
       pad: 0,
       height: TRIO_VCF_ROW_PITCH,
@@ -133,7 +140,7 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
       anchor: {
         trackId: TRIO_VCF_TRACK,
         loc: crossover,
-        fracY: trioRowFrac(child),
+        ...trioRowTop(child),
       },
     },
     frame(palette.left, half.left, leftSource),
@@ -352,7 +359,6 @@ export const trioSpecs: ScreenshotSpec[] = [
           unit: 'haplotype',
           height: TRIO_VCF_DISPLAY_H,
           rows: trioVcfRows,
-          // trioRowFrac places the frames on rows that fill the track.
           records: { show: false },
         },
       ],
