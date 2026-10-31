@@ -744,7 +744,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     viewportWidth: 1400,
     viewportHeight: 1010,
     // the card alone, as hprc_abca7_tandem_repeat_alleles crops it
-    crop: { x: 1016, y: 48, width: 384, height: 900 },
+    crop: { x: 1016, y: 48, width: 384, height: 884 },
     tooltip: 'hide',
     clicksChange: "open the record's Tandem repeat card, by haplotype",
     actions: [
