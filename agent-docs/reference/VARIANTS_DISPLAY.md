@@ -452,8 +452,9 @@ a `recordsOnly` choice in the model belongs there.
   aborting one in flight. It keeps the record's `samples`, which the widget's
   sample grid shows, and a genotype cell's sample card (`withClickedSample`);
   the click's own record opens where the adapter finds none. Dropping the
-  samples where rows draw them, to keep the persisted widget small, left the
-  grid empty and was reverted.
+  samples where rows draw them left the grid empty and was reverted (c24ee869f4);
+  persistence needs no trim, since the feature widget leaves out a feature over
+  2 MB of JSON.
 - **A record takes its SV class's color, otherwise `featureDefaultColor`**
   (`svClassColors`, the `svType` preset), with rows or without, while no
   `encoding.color` is picked, the SV classes drawn keyed as "SV type" above
