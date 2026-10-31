@@ -140,7 +140,7 @@ const MafBody = observer(function MafBody({
   // the tooltip. Row resolution is off mid-drag so the tooltip keeps the
   // selection's range readout.
   const pointer =
-    mouse && mouse.x > dataLeft
+    mouse && mouse.x >= dataLeft
       ? {
           mouse,
           hit: resolveMafPointerHit({

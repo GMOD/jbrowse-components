@@ -117,13 +117,26 @@ test('a press over the sidebar is still swallowed', () => {
   expect(stopPropagation).toHaveBeenCalled()
 })
 
-test('a press exactly on the sidebar edge is still the sidebar', () => {
+// The resize handle covers [treeAreaWidth, dataLeft), so `dataLeft` is the
+// first data pixel, as the crosshair, row hover and context menu all take it.
+test('a press exactly on the sidebar edge is the first data pixel', () => {
   const { onClick, result } = setup()
   act(() => {
     result.current.handleMouseDown(mouseEvent(DATA_LEFT, 50))
   })
   act(() => {
     result.current.handleMouseUp(mouseEvent(DATA_LEFT, 50))
+  })
+  expect(onClick).toHaveBeenCalledWith(DATA_LEFT, 50)
+})
+
+test('a press short of the edge is the resize handle', () => {
+  const { onClick, result } = setup()
+  act(() => {
+    result.current.handleMouseDown(mouseEvent(DATA_LEFT - 0.5, 50))
+  })
+  act(() => {
+    result.current.handleMouseUp(mouseEvent(DATA_LEFT - 0.5, 50))
   })
   expect(onClick).not.toHaveBeenCalled()
 })

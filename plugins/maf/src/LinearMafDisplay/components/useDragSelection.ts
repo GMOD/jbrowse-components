@@ -43,8 +43,8 @@ export function useDragSelection(
     onClick,
   }: {
     /**
-     * Left edge of the data area: a press at or left of this (the tree sidebar
-     * and its resize handle) neither clicks nor starts a selection, since the
+     * Left edge of the data area: a press left of this (the tree sidebar and
+     * its resize handle) neither clicks nor starts a selection, since the
      * sidebar covers the coordinate under it.
      */
     dataLeft: number
@@ -89,7 +89,7 @@ export function useDragSelection(
     const { x, y } = relativeXY(ref, e)
     // the view's range select listens for mousedown on the same container
     e.stopPropagation()
-    if (x > dataLeft) {
+    if (x >= dataLeft) {
       setState({
         isDragging: true,
         showSelectionBox: false,
