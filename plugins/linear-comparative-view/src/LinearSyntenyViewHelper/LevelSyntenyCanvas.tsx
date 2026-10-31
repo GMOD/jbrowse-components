@@ -29,6 +29,8 @@ const useStyles = makeStyles()({
     position: 'absolute',
     inset: 0,
     background: 'transparent',
+    // a horizontal touch drag pans the stack rather than scrolling the page
+    touchAction: 'pan-y',
   },
   // between the ribbons and the mate marks in DOM order, so it shades the
   // ribbons and not the strip of marks along the same edge
@@ -283,6 +285,9 @@ const LevelSyntenyCanvas = observer(function LevelSyntenyCanvas({
   }
 
   function handleContextMenu(event: React.MouseEvent<HTMLCanvasElement>) {
+    // macOS ctrl-click and a touch long-press are primary-button presses that
+    // also open this menu, so their release must not read as a click
+    dragRef.current = undefined
     const coords = canvasCoords(event)
     if (!coords) {
       return
