@@ -17,7 +17,9 @@ import type { Region } from '@jbrowse/core/util'
  * already resolved and memoized into a `cachedSetup` field.
  */
 export type MafSummarySelf = BaseFeatureDataAdapter & {
-  summaryAdapter: () => Promise<BaseFeatureDataAdapter | undefined>
+  summaryAdapter: (
+    opts?: BaseOptions,
+  ) => Promise<BaseFeatureDataAdapter | undefined>
 }
 
 /**
@@ -62,7 +64,7 @@ export function mafSummaryFeatures(
   opts?: BaseOptions,
 ) {
   return ObservableCreate<MafSummaryRecord>(async observer => {
-    const adapter = await self.summaryAdapter()
+    const adapter = await self.summaryAdapter(opts)
     if (adapter) {
       await subscribeToObservable(adapter.getFeatures(query, opts), f => {
         const src = f.get('src')

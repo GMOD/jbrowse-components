@@ -14,8 +14,11 @@ jest.mock('@jbrowse/core/data_adapters/dataAdapterCache', () => ({
 test('a non-MAF adapter is named, not called', async () => {
   mockGetAdapter.mockResolvedValue({ dataAdapter: { getFeatures: () => {} } })
   await expect(
-    loadMafSamplesAdapter({} as PluginManager, 'session-1', {
-      type: 'BigBedAdapter',
-    }),
+    loadMafSamplesAdapter(
+      {} as PluginManager,
+      'session-1',
+      { type: 'BigBedAdapter' },
+      {},
+    ),
   ).rejects.toThrow(/BigBedAdapter is not a MAF adapter/)
 })

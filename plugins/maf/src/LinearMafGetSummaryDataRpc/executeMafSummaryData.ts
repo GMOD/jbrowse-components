@@ -70,7 +70,10 @@ export async function executeMafSummaryData({
     adapter,
     samples: configSamples,
     treeNewick,
-  } = await loadMafSamplesAdapter(pluginManager, sessionId, adapterConfig)
+  } = await loadMafSamplesAdapter(pluginManager, sessionId, adapterConfig, {
+    signal,
+    statusCallback,
+  })
   const hasConfiguredSamples = configSamples.length > 0
 
   // The gate, on the file THIS tier reads — the `summaryAdapter` sub-adapter,
@@ -79,7 +82,9 @@ export async function executeMafSummaryData({
   // expensive one's cost. It is the same file `byteGateAdapterPath` names while
   // `coarseTierActive` holds, so the banner and the worker agree by construction.
   const summaryAdapter =
-    byteLimit === undefined ? undefined : await adapter.summaryAdapter()
+    byteLimit === undefined
+      ? undefined
+      : await adapter.summaryAdapter({ signal })
   const { bytes, tooLarge } = summaryAdapter
     ? await measureRegionBytes({
         dataAdapter: summaryAdapter,

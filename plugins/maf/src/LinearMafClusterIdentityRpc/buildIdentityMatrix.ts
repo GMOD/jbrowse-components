@@ -149,6 +149,7 @@ export async function buildIdentityMatrix({
     pluginManager,
     sessionId,
     adapterConfig,
+    { signal, statusCallback },
   )
   // The same per-base read the detail tier gates, over the whole clustered
   // span; a refusal is an error here because a clustering run has no banner to

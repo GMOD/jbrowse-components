@@ -3,6 +3,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { MafAdapterBase } from './MafAdapterBase.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 /**
  * Shared prologue for the alignment + summary RPCs: resolve the MAF adapter and
@@ -21,6 +22,7 @@ export async function loadMafSamplesAdapter(
   pluginManager: PluginManager,
   sessionId: string,
   adapterConfig: Record<string, unknown>,
+  opts: BaseOptions,
 ) {
   const { dataAdapter } = await getAdapter(
     pluginManager,
@@ -32,6 +34,6 @@ export async function loadMafSamplesAdapter(
       `${adapterConfig.type} is not a MAF adapter — a MafTrack needs one of BigMafAdapter, MafTabixAdapter, BgzipTaffyAdapter or BgzipMafAdapter`,
     )
   }
-  const { samples, treeNewick } = await dataAdapter.getSamples()
+  const { samples, treeNewick } = await dataAdapter.getSamples(opts)
   return { adapter: dataAdapter, samples, treeNewick }
 }

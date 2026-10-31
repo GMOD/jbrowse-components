@@ -65,12 +65,12 @@ export abstract class MafSubAdapterBase<
 
   async getRefNames(opts?: BaseOptions) {
     const { adapter } = await this.configure(opts)
-    return adapter.getRefNames()
+    return adapter.getRefNames(opts)
   }
 
   async getHeader(opts?: BaseOptions) {
     const { adapter } = await this.configure(opts)
-    return adapter.getHeader()
+    return adapter.getHeader(opts)
   }
 
   async getRegionByteSize(regions: Region[], opts?: BaseOptions) {

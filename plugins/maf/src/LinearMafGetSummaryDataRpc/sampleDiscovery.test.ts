@@ -137,3 +137,31 @@ describe('the summary RPC filters rows as the detail tier does', () => {
     expect(out.records.map(r => r.src)).toEqual(['simvolvox~2'])
   })
 })
+
+// `cachedSetup` aborts a shared setup only once every live waiter has, and a
+// waiter that joined without a signal never does.
+test('the summary RPC hands its signal to every shared setup it awaits', async () => {
+  const summaryAdapter = jest.fn(async () => undefined)
+  mockLoadMafSamplesAdapter.mockResolvedValue({
+    adapter: { summaryAdapter, getSummaryFeatures: () => of() },
+    samples: [],
+    treeNewick: undefined,
+  })
+  const { signal } = new AbortController()
+  await executeMafSummaryData({
+    pluginManager: {} as PluginManager,
+    args: {
+      adapterConfig: {},
+      sessionId: 'test',
+      regions: [{ refName: 'ctgA', start: 0, end: 1000, assemblyName: 'v' }],
+      byteLimit: 1000,
+      signal,
+    },
+  })
+  expect(mockLoadMafSamplesAdapter.mock.lastCall?.[3]).toMatchObject({
+    signal,
+  })
+  expect(summaryAdapter).toHaveBeenCalledWith(
+    expect.objectContaining({ signal }),
+  )
+})

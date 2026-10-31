@@ -81,7 +81,10 @@ export async function executeMafAlignmentData({
     adapter,
     samples: configSamples,
     treeNewick,
-  } = await loadMafSamplesAdapter(pluginManager, sessionId, adapterConfig)
+  } = await loadMafSamplesAdapter(pluginManager, sessionId, adapterConfig, {
+    signal,
+    statusCallback,
+  })
   const hasConfiguredSamples = configSamples.length > 0
 
   // The gate, on the file this tier reads: the MAF adapter's own index, which
