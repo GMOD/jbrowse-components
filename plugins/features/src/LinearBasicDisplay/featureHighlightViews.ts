@@ -26,12 +26,10 @@ export interface FeatureHighlightHost extends IStateTreeNode {
   pinnedFeatureIdSet: ReadonlySet<string>
 }
 
-export interface FeatureHoverHost {
+export interface FeatureHoverHost extends FeatureHighlightListHost {
   featureIdUnderMouse: string | undefined
   subfeatureIdUnderMouse: string | undefined
   mouseoverExtraInformation: string[] | undefined
-  resolvedHighlights: ResolvedHighlights
-  featureHighlights: IMSTArray<typeof FeatureHighlightModel>
 }
 
 export function featureHighlightViews(self: FeatureHighlightHost) {
@@ -103,44 +101,28 @@ export function featureHighlightViews(self: FeatureHighlightHost) {
   }
 }
 
-export function featureHighlightActions(self: FeatureHoverHost) {
+/**
+ * What the highlight list's actions read: the stored highlights and how they
+ * resolved, on any display whose records the feature pipeline laid out.
+ */
+export interface FeatureHighlightListHost {
+  resolvedHighlights: ResolvedHighlights
+  featureHighlights: IMSTArray<typeof FeatureHighlightModel>
+}
+
+export function featureHighlightListActions(self: FeatureHighlightListHost) {
+  function setFeatureHighlights(highlights: FeatureHighlight[]) {
+    // clear + push rather than assignment: through a structural host `cast`
+    // has no model property to infer from, and `push` carries MST's
+    // creation-type overload.
+    self.featureHighlights.clear()
+    self.featureHighlights.push(...highlights)
+  }
   return {
     /**
      * #action
      */
-    setHover(
-      featureId: string | undefined,
-      subfeatureId: string | undefined,
-      tooltip: string[] | undefined,
-    ) {
-      self.featureIdUnderMouse = featureId
-      self.subfeatureIdUnderMouse = subfeatureId
-      // The tooltip is a fresh array on every hit, and without the comparison
-      // a resting cursor re-rendered `FeatureTooltip` on every mousemove.
-      if (!sameOptionalStrings(self.mouseoverExtraInformation, tooltip)) {
-        self.mouseoverExtraInformation = tooltip
-      }
-    },
-
-    /**
-     * #action
-     */
-    clearHover() {
-      self.featureIdUnderMouse = undefined
-      self.subfeatureIdUnderMouse = undefined
-      self.mouseoverExtraInformation = undefined
-    },
-
-    /**
-     * #action
-     */
-    setFeatureHighlights(highlights: FeatureHighlight[]) {
-      // clear + push rather than assignment: through a structural host `cast`
-      // has no model property to infer from, and `push` carries MST's
-      // creation-type overload.
-      self.featureHighlights.clear()
-      self.featureHighlights.push(...highlights)
-    },
+    setFeatureHighlights,
 
     /**
      * #action
@@ -148,7 +130,7 @@ export function featureHighlightActions(self: FeatureHoverHost) {
      * right-click ones, which have a `featureId`, alone.
      */
     setSearchHighlight(highlight: FeatureHighlight) {
-      this.setFeatureHighlights([
+      setFeatureHighlights([
         ...self.featureHighlights
           .filter(h => h.featureId !== undefined)
           .map(h => getSnapshot(h)),
@@ -186,7 +168,7 @@ export function featureHighlightActions(self: FeatureHoverHost) {
     // the isoform's.
     removeFeatureHighlightsForId(featureId: string) {
       const { boxedBy } = self.resolvedHighlights
-      this.setFeatureHighlights(
+      setFeatureHighlights(
         self.featureHighlights
           .filter((_h, i) => !boxedBy[i]?.has(featureId))
           .map(h => getSnapshot(h)),
@@ -199,5 +181,37 @@ export function featureHighlightActions(self: FeatureHoverHost) {
     clearFeatureHighlights() {
       self.featureHighlights.clear()
     },
+  }
+}
+
+export function featureHighlightActions(self: FeatureHoverHost) {
+  return {
+    /**
+     * #action
+     */
+    setHover(
+      featureId: string | undefined,
+      subfeatureId: string | undefined,
+      tooltip: string[] | undefined,
+    ) {
+      self.featureIdUnderMouse = featureId
+      self.subfeatureIdUnderMouse = subfeatureId
+      // The tooltip is a fresh array on every hit, and without the comparison
+      // a resting cursor re-rendered `FeatureTooltip` on every mousemove.
+      if (!sameOptionalStrings(self.mouseoverExtraInformation, tooltip)) {
+        self.mouseoverExtraInformation = tooltip
+      }
+    },
+
+    /**
+     * #action
+     */
+    clearHover() {
+      self.featureIdUnderMouse = undefined
+      self.subfeatureIdUnderMouse = undefined
+      self.mouseoverExtraInformation = undefined
+    },
+
+    ...featureHighlightListActions(self),
   }
 }

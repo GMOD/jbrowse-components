@@ -19,6 +19,7 @@ import {
 import { rampEncodingOf } from '@jbrowse/display-kit/valueRamp'
 import {
   featureHeightMenuItem,
+  featureHighlightMenuItems,
   featureRecordMenuItems,
   labelCheckboxItems,
   trackSizingItems,
@@ -556,6 +557,7 @@ export function variantContextMenuItems(
           },
         },
         ...(recordRows ? recordRows.navigate : []),
+        ...(hit ? featureHighlightMenuItems(self, hit) : []),
         // Placed above "Sort by genotype" because they are about the record,
         // as the rows above are, where that sort is about the rows.
         ...breakendSplitViewMenuItem(self, feat),

@@ -61,11 +61,12 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   createFeatureDetailsOpener,
   FeatureGateMixin,
+  FeatureHighlightModel,
+  featureHighlightListActions,
   featureSpanRegion,
   fetchFeatureDetails,
 } from '@jbrowse/plugin-features/band'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
-import { makeBpMapper, spanRect } from '@jbrowse/render-core/canvas2dUtils'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, shiftInk } from '@jbrowse/render-core/marks'
 import {
@@ -124,6 +125,7 @@ import {
   recordsSettingsViews,
 } from './recordsBandViews.ts'
 import { recordCountMeasurements } from './recordsDensityGate.ts'
+import { recordInk, recordsHighlightViews } from './recordsHighlightViews.ts'
 import { getVariantColorScales } from './variantLegend.ts'
 
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
@@ -349,6 +351,15 @@ export function stateModelFactory(
         types.model({
           type: types.literal(VARIANT_DISPLAY),
           configuration: ConfigurationReference(configSchema),
+          /**
+           * #property
+           * The records a search hit, a right-click or the `highlight=`
+           * param boxes on the records band, as on a feature track.
+           */
+          featureHighlights: types.stripDefault(
+            types.array(FeatureHighlightModel),
+            [],
+          ),
         }),
       )
       .volatile(() => ({
@@ -1421,6 +1432,8 @@ export function stateModelFactory(
         }
       })
       .views(recordsLayoutViews)
+      .views(recordsHighlightViews)
+      .actions(featureHighlightListActions)
       .views(self => ({
         /**
          * #getter
@@ -1947,26 +1960,8 @@ export function stateModelFactory(
          */
         get hoverInk(): HighlightRect[] {
           const record = self.hoveredRecord
-          const region =
-            record &&
-            self.host.visibleRegions.find(
-              r => r.displayedRegionIndex === record.displayedRegionIndex,
-            )
           return record
-            ? region
-              ? [
-                  {
-                    ...spanRect(
-                      makeBpMapper(region),
-                      record.feature.startBp,
-                      record.feature.endBp,
-                      1,
-                    ),
-                    top: record.feature.topPx - self.recordsScrollTop,
-                    height: record.feature.bottomPx - record.feature.topPx,
-                  },
-                ]
-              : []
+            ? recordInk(self, record.displayedRegionIndex, record.feature)
             : this.genotypeHoverInk
         },
         /**

@@ -33,7 +33,15 @@ export {
   fetchFeatureDetails,
 } from './shared/fetchFeatureDetails.ts'
 export { createFeatureDetailsOpener } from './shared/openFeatureDetails.ts'
-export { featureRecordMenuItems } from './LinearBasicDisplay/featureContextMenu.ts'
+export {
+  featureHighlightMenuItems,
+  featureRecordMenuItems,
+} from './LinearBasicDisplay/featureContextMenu.ts'
+export {
+  FeatureHighlightModel,
+  resolveFeatureHighlights,
+} from './LinearBasicDisplay/featureHighlight.ts'
+export { featureHighlightListActions } from './LinearBasicDisplay/featureHighlightViews.ts'
 export { default as FeatureGateMixin } from './shared/FeatureGateMixin.ts'
 export { paintFeatureBand } from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export {
@@ -43,9 +51,14 @@ export {
 
 export type { FitLadderHost } from './LinearBasicDisplay/fitLadderViews.ts'
 export type {
+  FeatureHighlightMenuSelf,
   FeatureMenuHit,
   FeatureRecordMenuSelf,
 } from './LinearBasicDisplay/featureContextMenu.ts'
+export type {
+  FeatureHighlight,
+  ResolvedHighlights,
+} from './LinearBasicDisplay/featureHighlight.ts'
 export type {
   GateHost,
   RegionGateMeasurement,

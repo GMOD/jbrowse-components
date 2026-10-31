@@ -82,7 +82,19 @@ export interface FeatureRecordMenuSelf
   setSequenceHoverPosition: (pos: SequenceHoverPosition | undefined) => void
 }
 
-export interface FeatureMenuSelf extends FeatureRecordMenuSelf {
+/**
+ * What the Highlight rows read: which records are lit, and the two writes.
+ */
+export interface FeatureHighlightMenuSelf extends IStateTreeNode {
+  featureNoun: string
+  loadedRegions: { get: (displayedRegionIndex: number) => Region | undefined }
+  highlightedFeatureIdSet: ReadonlySet<string>
+  addFeatureHighlightForItem: (target: HighlightTarget, refName: string) => void
+  removeFeatureHighlightsForId: (featureId: string) => void
+}
+
+export interface FeatureMenuSelf
+  extends FeatureRecordMenuSelf, FeatureHighlightMenuSelf {
   contextMenuInfo: FeatureContextMenuInfo | undefined
   selectFeatureById: (
     featureId: string,
@@ -91,13 +103,10 @@ export interface FeatureMenuSelf extends FeatureRecordMenuSelf {
   ) => void
   rpcDataMap: ReadonlyMap<number, { flatbushItems: readonly FlatbushItem[] }>
   pinnedFeatureIdSet: ReadonlySet<string>
-  highlightedFeatureIdSet: ReadonlySet<string>
   soloFeatureIdSet: ReadonlySet<string>
   soloFeatureCount: number
   soloApplied: boolean
   featureNarrowings: () => Reversibles
-  addFeatureHighlightForItem: (target: HighlightTarget, refName: string) => void
-  removeFeatureHighlightsForId: (featureId: string) => void
   togglePinnedFeature: (featureId: string) => void
   toggleSoloFeature: (featureId: string) => void
   soloFeature: (featureId: string) => void
@@ -185,6 +194,17 @@ export function featureRecordMenuItems(
   return { navigate: navigateItems(ctx), copy: copyItems(ctx) }
 }
 
+/**
+ * The Highlight row on one record, for a band display that boxes records it
+ * is told to.
+ */
+export function featureHighlightMenuItems(
+  self: FeatureHighlightMenuSelf,
+  hit: FeatureMenuHit,
+) {
+  return highlightItems(menuContext(self, hit))
+}
+
 // Open details and Zoom to stay whole-feature even when the click resolved to
 // a subfeature: on a gene glyph the transcripts' hit boxes cover the whole
 // span, so these two are the only way to reach the containing gene.
@@ -266,7 +286,7 @@ function navigateItems({
 }
 
 function highlightItem(
-  { self, info }: MenuContext,
+  { self, info }: MenuContext<FeatureHighlightMenuSelf>,
   addLabel: string,
   removeLabel: string,
   target: HighlightTarget,
@@ -291,7 +311,9 @@ function highlightItem(
 // The lone row names the track's noun while the grouped pair names the
 // annotation types, since telling gene from isoform is the only reason there
 // are two rows.
-function highlightItems(ctx: MenuContext): MenuItem[] {
+function highlightItems(
+  ctx: MenuContext<FeatureHighlightMenuSelf>,
+): MenuItem[] {
   const { self, info, hitNoun, subfeatureNoun } = ctx
   const {
     item: { featureId, startBp, endBp, name },
