@@ -14,6 +14,11 @@ Amended by [ADR-250](adr-250-the-multi-sample-variant-display-draws-no-variant-l
 (2026-10-26): the `variants` band this ADR named and kept is removed, so the
 variant-lane parts below no longer apply.
 
+Amended by [ADR-255](adr-255-one-variant-display.md) (2026-10-30): the
+`LinearVariantDisplay` and `LinearMultiSampleVariantDisplay` rows below are
+one display, `LinearVariantDisplay`, whose `filter` is the multi-sample one's;
+the feature display's record settings sit under its `records`.
+
 Colin's steer: the alignments display's settings are linked, a filter applies
 across its parts, and a value that menu actions keep in step is "just
 duplicated in config"; he wants config to be elegant, with a "shared source of

@@ -1,6 +1,6 @@
 ---
 name: variant-display-merge
-description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam); C1, C2, D and E remain. Open: added vs taken band height, the default `height`, the multi-way key position."
+description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias); C2, D and E remain. Open: added vs taken band height, the default `height`, the multi-way key position."
 ---
 
 # One variant display
@@ -53,33 +53,32 @@ rule over rows are marked provisional there (the default is settled: on).
   SNV callsets (`trio.ts`, `protein_variants.ts`, `variants.ts`, the dog10k
   SNVs) only if an allele reaches `SV_MIN_LENGTH` in frame. None wrote
   `records: { show: true }`.
-- **C1. The rename.** One type, `LinearVariantDisplay`;
-  `LinearMultiSampleVariantDisplay` is beta-only (no v4.3.0 hit), so only a
-  `@deprecated` `retiredTypes` alias while hosted writers carry it;
-  `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay` (real v4) move
-  over. Re-root `basicRetired`/`migrateBasicConfigSnapshot` under `records`,
-  including v4's `renderer.displayMode`. The `hasPlugin('FeaturesPlugin')`
-  gate (`LinearVariantDisplay/index.ts`) goes. LinearBasicDisplay's feature
-  context menu rows (`featureContextMenu.ts`: zoom to, sequence, highlight,
-  hide/show only, copy) and `sortReadsMenu.ts` land on the band, so a
-  sites-only user loses nothing in the rename.
-- **C2. The sweep.** Writers, docs, figure specs and test_data; R export
-  `READERS` (`rScript.ts`) picks `jbrowse_features` for a sample-less track;
-  launch-args aliases `multivariant`/`multivariantmatrix` and jbrowse-img
-  `applyTrackOpts.ts`; tables engine, config docs, tutorials. New ADR
-  superseding ADR-250, amending ADR-168, ADR-232 and VARIANTS_DISPLAY.md.
-- **C1's config move** from a `LinearVariantDisplay` config, B having built
-  every target:
-  `displayMode`, `mark`, `labels`, `facet`, `maxFeatureScreenDensity` and
-  `tooltip.field` go under `records`; `tooltip.show`, `heightMode`,
-  `growMaxHeight`, `height`, `filter`, `encoding` and `legend` stay top-level.
-  v4's `renderer.displayMode`, `featureHeight` and `mouseover` re-root to
-  `records.displayMode`, `records.mark.height` and `records.tooltip.field`;
-  v4's `maxHeight` still drops rather than becoming `records.maxHeight`. A
-  `LinearVariantDisplay` config that never wrote `displayMode` lands unset,
-  so over a sampled VCF's rows it draws compact, the SV band's look. A
-  record click already reads full INFO (`fetchFullRecord`). Additive, not
-  blocking: search-hit highlight on the band.
+- **C1. The rename.** Built (ADR-255): the multi-sample model is
+  `LinearVariantDisplay` in `plugins/variants/src/LinearVariantDisplay/`,
+  the feature-based one deleted; `retired.ts` declares
+  `LinearMultiSampleVariantDisplay` (deprecated alias),
+  `MultiLinearVariantDisplay` and `LinearVariantMatrixDisplay`, and re-roots
+  v4's feature-display keys under `records`; no plugin gate; a right-clicked
+  record gets plugin-features's zoom to, get sequence and copy rows and the
+  read sort. Left from C1: LinearBasicDisplay's Highlight and Show/hide (pin,
+  show only, hide) rows on a record. Hiding wants the record out of the
+  cells as well, a worker-side id filter (the parked
+  `ideas/ready/give-the-multi-sample-variant-display-a-hide-this-feature-item.md`),
+  and highlight wants ink on the band.
+- **C2. The sweep.** Writers that still spell
+  `LinearMultiSampleVariantDisplay` or write the betas' top-level
+  `displayMode`/`mark`/`labels`/`facet`/`tooltip.field` on a
+  `LinearVariantDisplay` (which no longer lift, ADR-255): test_data
+  (`config_demo.json`, volvox, breakpoint, dog10k, protein3d), figure specs,
+  docs and tutorials (39 `website/docs` mentions), the examples-site
+  nextstrain configs, `tables.ts`, the jbrowse-web tests and browser-test
+  suites; R export `READERS` (`rScript.ts`) picks `jbrowse_features` for a
+  sample-less track; launch-args aliases `multivariant`/`multivariantmatrix`
+  and `displaySettings.ts`; jbrowse-img `applyTrackOpts.ts`; product-core's
+  `pruneUnbuildableNodes.ts` comment; the jbrowse-authoring skill. File
+  names inside `LinearVariantDisplay/` still say MultiSample
+  (`multiSampleVariantMenuItems.ts`, `setupMultiSampleVariantAutoruns.ts`);
+  the RPC names are wire names and stay.
 - **D. Outside writers**: jb2hubs (`pangenomeLinks.ts`, `config/jbrowse.ts`,
   pangenome-config JSONs), ggjbrowse (`R/variants.R`), redeployed demo
   configs; then drop the alias.

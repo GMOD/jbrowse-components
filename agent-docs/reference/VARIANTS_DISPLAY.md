@@ -1,13 +1,44 @@
 ---
 name: variants-display
-description: How the multi-sample variant display draws genotypes: cells, the one composition rule, the legend, mixed ploidy, layouts, bands and connectors. Read before touching plugins/variants rendering.
+description: How the variant display (LinearVariantDisplay) draws records and genotypes: what it retired, cells, the one composition rule, the legend, mixed ploidy, layouts, bands and connectors. Read before touching plugins/variants rendering.
 kind: spec
 ---
 
-# Multi-sample variants
+# The variant display
 
 `plugins/variants/src/CLAUDE.md` points here. Bare paths
 below are relative to `plugins/variants/src/`.
+
+## One display
+
+`LinearVariantDisplay` (`LinearVariantDisplay/`) is a VariantTrack's one
+linear display: its records band over one genotype row per sample (ADR-255).
+What it replaced is declared in `LinearVariantDisplay/retired.ts` (ADR-168):
+
+- **`retiredTypes`**: `LinearMultiSampleVariantDisplay`, the betas' name, a
+  `@deprecated` alias while hosted configs write it; v4's
+  `MultiLinearVariantDisplay`; v4's `LinearVariantMatrixDisplay` in
+  `variantLayout: 'columns'`.
+- **`retiredConfigSpellings`**: the v4 multi-sample spellings, and v4's
+  feature-display `LinearVariantDisplay` keys run through LinearBasicDisplay's
+  own lifts (`basicRetired`) and re-rooted under `records` (`underRecords`):
+  `renderer.*`, `featureHeight`, `showLabels`, `showDescriptions`,
+  `mouseover`, `maxFeatureScreenDensity`, `color1`. v4's `maxHeight`
+  drops. The betas' top-level `displayMode`, `mark`, `labels`, `facet` and
+  `tooltip.field` are not lifted; `facet` and `tooltip` are this display's
+  own names for the sample facet and the hover toggle.
+- **`retiredState`**: the v4 row arrangement, `jexlFilters`,
+  `renderingModeSetting`, and v4 `LinearVariantDisplay`'s
+  `jexlFiltersSetting`.
+
+**The record menu is plugin-features's.** A right-click resolves a record
+(off the band or a cell) and `recordMenuHit` places it in the displayed
+region holding its first base; `featureRecordMenuItems` builds the feature
+track's zoom to, get sequence and copy rows from it, which read
+`fetchFullFeature` (the adapter's record) and `loadedRegions`. The display's
+own open-details row stays first, since a cell's opens on its sample card.
+`sortReadsMenu.ts` sorts the view's pileups off the clicked record's REF and
+ALT, with no fetch.
 
 ## Genotypes
 
@@ -318,7 +349,7 @@ a `recordsOnly` choice in the model belongs there.
   (`readGenotypes`), so it draws what a sites-only VCF draws. The records
   take the one color rule below, and no genotype is keyed unless
   `encoding.color` is set; the key sits at the top; the seam handle goes, the track's own handle
-  resizing. They letter as `LinearVariantDisplay` does: `normal` size, the
+  resizing. They letter as a feature track does: `normal` size, the
   display's `records.labels` fields, the description on its own line under
   the name. What `fixed` or a capped `grow` cannot show scrolls: the scroll
   hooks point at the band's drawn stack, the band paints and picks offset by

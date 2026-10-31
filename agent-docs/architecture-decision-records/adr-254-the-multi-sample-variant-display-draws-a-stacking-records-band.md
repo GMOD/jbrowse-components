@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The multi-sample variant display draws the VCF's structural variants above its genotype rows, colored by SV type and keyed, each lettered ID and description on one line, as `records: { show, growMaxHeight, labels }`, stacked by plugin-features's own pipeline: the cell payload rebuilt as features, packed, fit by LinearBasicDisplay's fit ladder (hosted, not copied), painted by `paintFeatureBand` and picked by its hit test, through the new `@jbrowse/plugin-features/band` entry. The band grows to its stack at full feature size up to `growMaxHeight` (170) and takes that height from the rows; past the cap the ladder fits the stack in. Off by default (on since the third amendment). Slice one of merging `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay` into one display with `records` and `genotypes` bands. Amends ADR-250, whose first rejected alternative this takes. Amended: with no genotype rows (no samples, or `genotypes.show` off) the band is the whole display, every record the filter admits, sized by `heightMode`, labelled and fit by the records on screen, and refused past `records.maxFeatureScreenDensity` through plugin-features's `FeatureGateMixin`. Amended again (sub-slice B, amending ADR-231): the band's cap is `records.maxHeight`, and `records` takes LinearVariantDisplay's record settings, `displayMode` (unset compact over rows, normal without), `mark`, `facet` and `tooltip.field`, with `identity` on the display's one `encoding.color`. Amended a third time: one color rule in both modes, a record's SV class color otherwise `featureDefaultColor`, the SV type key wherever an SV draws, and `records.show` on by default, a SNV-only file spending 0 px"
+summary: "The multi-sample variant display draws the VCF's structural variants above its genotype rows, colored by SV type and keyed, each lettered ID and description on one line, as `records: { show, growMaxHeight, labels }`, stacked by plugin-features's own pipeline: the cell payload rebuilt as features, packed, fit by LinearBasicDisplay's fit ladder (hosted, not copied), painted by `paintFeatureBand` and picked by its hit test, through the new `@jbrowse/plugin-features/band` entry. The band grows to its stack at full feature size up to `growMaxHeight` (170) and takes that height from the rows; past the cap the ladder fits the stack in. Off by default (on since the third amendment). Slice one of merging `LinearVariantDisplay` and `LinearMultiSampleVariantDisplay` into one display with `records` and `genotypes` bands. Amends ADR-250, whose first rejected alternative this takes. Amended: with no genotype rows (no samples, or `genotypes.show` off) the band is the whole display, every record the filter admits, sized by `heightMode`, labelled and fit by the records on screen, and refused past `records.maxFeatureScreenDensity` through plugin-features's `FeatureGateMixin`. Amended again (sub-slice B, amending ADR-231): the band's cap is `records.maxHeight`, and `records` takes LinearVariantDisplay's record settings, `displayMode` (unset compact over rows, normal without), `mark`, `facet` and `tooltip.field`, with `identity` on the display's one `encoding.color`. Amended a third time: one color rule in both modes, a record's SV class color otherwise `featureDefaultColor`, the SV type key wherever an SV draws, and `records.show` on by default, a SNV-only file spending 0 px. Amended by ADR-255: the display is `LinearVariantDisplay`, the feature-based one retired into it"
 ---
 
 # ADR-254: The multi-sample variant display draws a stacking records band
@@ -190,6 +190,17 @@ draw, and the band no longer waits to be switched on.
   genotype rows the band admits SVs only, so a SNV-only file, or a region
   with no SV, gets a 0 px band and the rows sit where they sat with it off.
   `records: { show: false }` still turns it off.
+
+## Amendment: one display (ADR-255, 2026-10-30)
+
+Sub-slice C1. The display this ADR draws the band on is now
+`LinearVariantDisplay`, and the feature-based `LinearVariantDisplay` it
+was measured against is retired into it
+([ADR-255](adr-255-one-variant-display.md)). Where the amendments above say
+"as `LinearVariantDisplay` does", they mean that retired display, which is
+LinearBasicDisplay's behaviour. A v4 `LinearVariantDisplay` config's record
+settings lift onto `records`, and a right-clicked record offers the feature
+track's zoom to, get sequence and copy rows.
 
 ## Rejected alternatives
 

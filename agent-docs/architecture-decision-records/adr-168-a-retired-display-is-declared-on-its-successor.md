@@ -14,6 +14,12 @@ sessions, share links and the multi-wiggle config spelling, under the rule
 [ADR-070](adr-070-viewport-is-a-stored-window.md) records for `bpPerPx`: v5
 breaks configs and plugin APIs freely, but not state in URLs other people hold.
 
+Amended by [ADR-255](adr-255-one-variant-display.md) (2026-10-30): the
+multi-sample variant display's declarations below are `LinearVariantDisplay`'s,
+in its `retired.ts`, with `LinearMultiSampleVariantDisplay` (the betas' name)
+retired into it and v4 `LinearVariantDisplay`'s feature-display spellings
+re-rooted under `records`.
+
 ## Context
 
 ADR-143 deleted `MultiLinearWiggleDisplay` and ADR-157 moved the row displays'
@@ -84,9 +90,9 @@ an explicit id.
 - `LinearBasicDisplay`: `LinearFeatureDisplay`, and its legacy slot values.
 - `LinearGCContentDisplay`: `LinearGCContentTrackDisplay`, a byte-identical
   schema registered against `GCContentTrack`, with nothing to migrate.
-- `LinearMultiSampleVariantDisplay`: `MultiLinearVariantDisplay`, and
-  `LinearVariantMatrixDisplay` in columns; the arrangement, the sidebar and
-  `jexlFilters`. A v4
+- `LinearVariantDisplay` (`LinearMultiSampleVariantDisplay` until ADR-255):
+  `MultiLinearVariantDisplay`, and `LinearVariantMatrixDisplay` in columns;
+  the arrangement, the sidebar and `jexlFilters`. A v4
   layout's colors stay behind, since the colorBy palette wrote them.
 - `LinearWiggleDisplay`: `MultiLinearWiggleDisplay`, v4.3.0's rendering names
   and the `multixyplot` hosted jb2hubs configs carry folded into a plot and

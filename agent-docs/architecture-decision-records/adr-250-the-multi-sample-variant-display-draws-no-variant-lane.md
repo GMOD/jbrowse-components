@@ -1,11 +1,15 @@
 ---
-status: Accepted
-summary: "The multi-sample variant display draws no variant lane: the `variants` band (`show`, `height`, `labels`), its overlay, hit test, menu entries, SVG export band and `variantTopBands.ts` are deleted, and `rowsHeaderHeight` is the connector zone alone. The records themselves, with nesting, labels and a layout of their own, are a `LinearVariantDisplay` track over the same VCF above the genotype display, as `multisv_rhd` already composes it. The lane was one 40px row (`flattenRows`, ADR-037) taken out of the genotype rows, so a nested SV could not stack under the one holding it. Amends ADR-232, which named and kept the band, and ADR-037, whose `flattenRows` opt-out leaves plugin-features with it"
+status: Superseded
+summary: "Superseded by ADR-255, one variant display whose records band (ADR-254) draws the records this ADR sent to a second track. The multi-sample variant display draws no variant lane: the `variants` band (`show`, `height`, `labels`), its overlay, hit test, menu entries, SVG export band and `variantTopBands.ts` are deleted, and `rowsHeaderHeight` is the connector zone alone. The records themselves, with nesting, labels and a layout of their own, are a `LinearVariantDisplay` track over the same VCF above the genotype display, as `multisv_rhd` already composes it. The lane was one 40px row (`flattenRows`, ADR-037) taken out of the genotype rows, so a nested SV could not stack under the one holding it. Amends ADR-232, which named and kept the band, and ADR-037, whose `flattenRows` opt-out leaves plugin-features with it"
 ---
 
 # ADR-250: The multi-sample variant display draws no variant lane
 
 ## Status
+
+**Superseded by [ADR-255](adr-255-one-variant-display.md)** (2026-10-30): the
+two displays are one `LinearVariantDisplay`, and the records this ADR left
+to a second `LinearVariantDisplay` track are its records band (ADR-254).
 
 Accepted (2026-10-26), Colin: the lane is "completely unadequate at showing
 nested SV", the display needs "true plugins/features layouts for these", and the
