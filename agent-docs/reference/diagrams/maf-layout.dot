@@ -1,7 +1,7 @@
 digraph maf_layout {
   rankdir=TB
   node [shape=box fontname=monospace fontsize=10]
-  { node [shape=diamond] drawn; dragged; fits }
+  { node [shape=diamond] drawn }
 
   wire [label="the wire names rows by species"]
   place [label="rowIndexBySrc:\nspecies -> screen row"]
@@ -19,23 +19,9 @@ digraph maf_layout {
   bands [label="rowsTopOffset:\neach band zeroed by its DATA,\nnot by its setting"]
   reorder -> bands
 
-  dragged [label="the user has dragged a height"]
-  bands -> dragged
-  dragged -> fixedH [label=" yes"]
-  dragged -> autoH  [label=" no"]
-  fixedH [label="the height slot wins"]
-  autoH [label="fit the species,\nup to a ceiling"]
+  viewport [label="rowsHeight: the height slot\nless the bands", style=bold]
+  bands -> viewport
 
-  viewport [label="rowsHeight: the VIEWPORT,\nnot the content", style=bold]
-  fixedH -> viewport  autoH -> viewport
-
-  fits [label="rowHeight is 0 (fit)"]
-  viewport -> fits
-  fits -> split [label=" yes"]
-  fits -> stack [label=" no"]
-  split [label="viewport / nrow,\nnot floored at 1px"]
-  stack [label="the configured px height"]
-
-  scroll [label="the overflow scrolls;\nfit mode never does"]
-  split -> scroll  stack -> scroll
+  split [label="rowsHeight / nrow, not floored\nat 1px: the rows never scroll"]
+  viewport -> split
 }

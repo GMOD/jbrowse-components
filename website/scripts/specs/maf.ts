@@ -184,7 +184,6 @@ export const mafSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'ce11.26way',
-              rowHeight: 8,
               // The reference row draws one constant color under this color.
               alignments: {
                 mark: { height: { band: 0.9 } },
@@ -271,7 +270,6 @@ export const mafSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'ce11.26way',
-              rowHeight: 8,
               // The reference row draws one constant color under this color,
               // and the mismatches would bury the fill at this zoom.
               alignments: {
@@ -314,8 +312,7 @@ export const mafSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'hg38.multiz470way',
-              // rowHeight stays at its default 0, which fits every row into
-              // this height.
+              // every row fits into this height
               height: 600,
               encoding: { color: 'identity' },
             },

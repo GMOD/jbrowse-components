@@ -2,19 +2,23 @@ import { applyRowResizeWheel } from './applyRowResizeWheel.ts'
 import { useVirtualScrollWheel } from './useVirtualScrollWheel.ts'
 
 import type { RowResizeTarget } from './applyRowResizeWheel.ts'
+import type { VirtualScrollModel } from './useVirtualScrollWheel.ts'
 
 export type { RowResizeTarget } from './applyRowResizeWheel.ts'
+export type { VirtualScrollModel } from './useVirtualScrollWheel.ts'
 
 /**
  * Wheel gestures over a **row-stack** panel — the variant display
- * and MAF: `shift`+wheel resizes the rows, keeping the row under the cursor
- * put, and a plain wheel scrolls them unless `scrollZoom` gave it to the view.
- * ctrl/meta is the browser's zoom whatever else is held. The canvas-panel rule,
- * where `shift` scrolls, is `usePanelVirtualScroll` (ADR-027).
+ * and MAF: `shift`+wheel resizes the rows of a display that can pin a row
+ * height, keeping the row under the cursor put, and a plain wheel scrolls them
+ * unless `scrollZoom` gave it to the view. An always-fit display (MAF) has no
+ * row height to set, so `shift` leaves the wheel to the view. ctrl/meta is the
+ * browser's zoom whatever else is held. The canvas-panel rule, where `shift`
+ * scrolls, is `usePanelVirtualScroll` (ADR-027).
  */
 export function useRowVirtualScroll(
   el: HTMLElement | null,
-  model: RowResizeTarget,
+  model: VirtualScrollModel | RowResizeTarget,
   scrollZoom: boolean,
 ) {
   useVirtualScrollWheel(el, model, (e, scroll, rowsEl) => {
@@ -22,7 +26,9 @@ export function useRowVirtualScroll(
       return
     }
     if (e.shiftKey) {
-      applyRowResizeWheel(e, rowsEl, model)
+      if ('setRowHeight' in model) {
+        applyRowResizeWheel(e, rowsEl, model)
+      }
     } else if (!scrollZoom) {
       scroll()
     }

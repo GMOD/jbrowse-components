@@ -41,8 +41,8 @@ const DISPLAY_ID = 'volvox_maf-LinearMafDisplay'
 const DISPLAY = `[data-display-id^="${DISPLAY_ID}"]`
 const TRUTH_DPR = 4
 
-// The MAF suite's own locus and track, pinned tall enough that all ten species
-// are on screen. ~3.25 bp/px, where subPixelBinBp is 1, so both backends walk
+// The MAF suite's own locus and track, 195px so the ten species fit at 15px
+// rows under the 45px coverage band. ~3.25 bp/px, where subPixelBinBp is 1, so both backends walk
 // every base and a 1-bp cell is 0.31 CSS px.
 const spec = {
   views: [
@@ -55,8 +55,7 @@ const spec = {
           trackId: 'volvox_maf',
           displaySnapshot: {
             type: 'LinearMafDisplay',
-            rowHeight: 15,
-            height: 200,
+            height: 195,
           },
         },
       ],

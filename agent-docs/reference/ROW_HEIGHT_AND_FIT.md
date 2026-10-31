@@ -25,9 +25,9 @@ menu row is `'Squeeze to fit view'`, a radio mutually exclusive with the fixed
 presets. Fit is the default everywhere.
 
 **No multi-row display sizes its height from its row count.** The track keeps
-its `height` slot, and more rows shrink the rows. A pinned `rowHeight` (MAF,
-the variant display) scrolls the rows that do not fit inside that
-height rather than growing it.
+its `height` slot, and more rows shrink the rows. A pinned `rowHeight` (the
+variant display, the mark display under `rows`) scrolls the rows that do not
+fit inside that height rather than growing it.
 
 `rowHeightConfigSchemaFields()` and `RowHeightMixin()`, both in
 `packages/tree-sidebar/src/rowHeight/`, are the shared spelling. A display
@@ -40,11 +40,27 @@ second dialog field.
 `effectiveRowHeight` is the cross-plugin ABI. `applyRowResizeWheel.ts` (core)
 and `TreeDrawingModel` (tree-sidebar `types.ts`) read it by that name off a model
 they were handed, so the duck types stay even though the mixin declares the
-getter. `wiggle/LinearWiggleDisplay` is always-fit and exposes
-`effectiveRowHeight` with no `rowHeight`. `marks/LinearMultiRowFeatureDisplay`
+getter. `wiggle/LinearWiggleDisplay` and `maf/LinearMafDisplay` are always-fit
+and expose `effectiveRowHeight` with no `rowHeight`, so neither composes the
+mixin or offers the Row height menu. `RowsPanel` gives `shift`+wheel row
+resizing only to a model with `setRowHeight`; over MAF the wheel stays the
+view's. `marks/LinearMultiRowFeatureDisplay`
 is a mark display subtype and takes the mark display's `rowHeight`, pinned only
 under `rows`. `alignments/LinearAlignmentsDisplay`'s `rowHeight` is a per-read
 pitch, an unrelated concept.
+
+### Always-fit MAF
+
+MAF dropped its pinned `rowHeight` (and the Row height menu, its Normal and
+Compact presets, `setFitToHeight` and `shift`+wheel resizing) because a pinned
+height was the only way its rows scrolled, and per-track scrolling is the
+pattern the app is moving off. A reader wanting taller rows drags the track
+taller or focuses a clade. The retired key loads and is dropped (`retired` on
+the config schema), so an old config or share link still opens, fitted. The
+glyph proportion the presets paired with it stays the
+`alignments.mark.height.band` slot. The variant and mark displays keep the
+pinned mode for now; if always-fit holds up on MAF they are the next to go,
+so the three stay one shape.
 
 ### Against `heightMode`
 

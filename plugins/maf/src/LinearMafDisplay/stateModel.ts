@@ -38,7 +38,6 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { MIN_DISPLAY_HEIGHT } from '@jbrowse/display-kit/const'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -51,7 +50,6 @@ import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { drawnRowHeightPx } from '@jbrowse/render-core/shaders/rowRect'
 import {
   ContextMenuMixin,
-  RowHeightMixin,
   TreeSidebarMixin,
   treeOfLeaves,
   getLeafNames,
@@ -202,8 +200,8 @@ const NO_DETAIL: ReadonlyMap<number, MafRegionData> = new Map()
  *
  * #example
  * A complete `MafTrack` config to paste into `tracks`. `samples` lists the
- * aligned species in track order; `rowHeight` sets the per-sample band
- * height in px (or `0` to stretch rows to fill the track height):
+ * aligned species in track order; the rows divide the track `height` the
+ * bands leave between them:
  * ```js
  * {
  *   type: 'MafTrack',
@@ -219,7 +217,7 @@ const NO_DETAIL: ReadonlyMap<number, MafRegionData> = new Map()
  *     {
  *       type: 'LinearMafDisplay',
  *       displayId: 'multiz-LinearMafDisplay',
- *       rowHeight: 16,
+ *       height: 400,
  *       coverage: { show: true },
  *     },
  *   ],
@@ -243,7 +241,6 @@ export default function stateModelFactory(
         CoarseTierMixin<MafRegionPayload<MafSummaryRecord[]>>(),
         LegendMixin(),
         ColorWritesMixin(),
-        RowHeightMixin(),
         TreeSidebarMixin<MafSource>(),
         ContextMenuMixin<MafContextMenuInfo>(),
         ScoreScaleMixin(COVERAGE_Y_PATHS),
@@ -799,8 +796,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * Max CSS-px height the rows canvas may take before its backing store
-         * (`× dpr`) hits the browser/GPU canvas limit. The single ceiling both the
-         * fit-target sizing and the `rowHeight` cap respect.
+         * (`× dpr`) hits the browser/GPU canvas limit.
          */
         get maxRowsHeight() {
           return maxCanvasCssPx()
@@ -820,13 +816,10 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Height of the per-sample rows viewport: the track height minus the
+         * Height of the per-sample rows area: the track height minus the
          * stacked bands, which is the rows canvas. Zero when alignments are
-         * hidden.
-         *
-         * This is the viewport height, not the content height: the user scrolls to
-         * extra rows (`scrollContentHeight`, `scrollableHeight`). Capped at
-         * `maxRowsHeight` to stay under the canvas backing-store limit.
+         * hidden. Capped at `maxRowsHeight` to stay under the canvas
+         * backing-store limit.
          */
         get rowsHeight() {
           return self.showAlignments
@@ -840,30 +833,17 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Per-row height in fit-to-height mode: the rows viewport split evenly
-         * across rows, so the display never scrolls.
+         * Per-row height: the rows area split evenly across the rows, so the
+         * rows always fit the track and never scroll. A taller track or a
+         * narrower row focus is how a reader gets taller rows.
          *
-         * Not floored at 1px: a sub-pixel row is the right answer for more
-         * species than pixels, and flooring would regrow the track past
-         * `fitTargetHeight`. `effectiveRowHeight` holds the
-         * non-positive guard.
-         *
-         * A fixed height is used as-is; `rowsHeight` holds the canvas-size
-         * ceiling.
+         * Sub-pixel is legitimate for more species than pixels; only a
+         * non-positive height, which every consumer divides by, is floored
+         * (agent-docs/reference/ROW_HEIGHT_AND_FIT.md).
          */
-        get autoRowHeight() {
-          return self.rowsHeight / self.nrow
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The rows' scrolled content behind the `rowsHeight` viewport,
-         * `rowsContentHeight` while the alignments show. Equal to the viewport
-         * in fit-to-height mode, so that mode never scrolls.
-         */
-        get scrollContentHeight() {
-          return self.showAlignments ? self.rowsContentHeight : 0
+        get effectiveRowHeight() {
+          const fit = self.rowsHeight / self.nrow
+          return fit > 0 ? fit : 1
         },
         /**
          * #getter
@@ -919,17 +899,6 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => ({
-        /**
-         * #action
-         * Switch to fit-to-height mode: rows stretch to fill the track height.
-         * Seeds the `height` slot from the current content height so toggling
-         * on does not jump.
-         */
-        setFitToHeight() {
-          setConf(self, 'height', Math.max(self.height, MIN_DISPLAY_HEIGHT))
-          setConf(self, 'rowHeight', 0)
-          self.scrollTop = 0
-        },
         /**
          * #action
          * The coverage band's height, clamped as every band drag is
@@ -1068,10 +1037,8 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #method
-         * Where the rows sit on screen: the resolved row height plus the scroll
-         * offset and viewport. Every rows layer reads this one method, so no
-         * layer draws from the raw `rowHeight` sentinel or omits the scroll
-         * offset.
+         * Where the rows sit on screen: the row height plus the scroll offset
+         * and viewport. Every rows layer reads this one method.
          */
         rowGeometry(): MafRowGeometryParams {
           return {

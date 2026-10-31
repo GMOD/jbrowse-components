@@ -9,7 +9,6 @@ import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { rowAxisConfigSchema } from '@jbrowse/tree-sidebar/rowAxisConfigSchema'
-import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 
 import { DEFAULTS } from './displayDefaults.ts'
 import { mafAlignmentsConfigSchema } from './mafAlignmentsConfigSchema.ts'
@@ -42,7 +41,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     samples: ['hg38', 'panTro6', 'rheMac10', 'mm39'],
  *   },
  *   displayDefaults: {
- *     rowHeight: 12,
+ *     height: 400,
  *     conservation: { show: true, height: 40 },
  *     axis: { labels: true },
  *   },
@@ -67,9 +66,8 @@ export default function configSchemaF() {
       ...trackHeightConfigSchemaFields({
         defaultHeight: DEFAULTS.height,
         height:
-          'display height in pixels, the bands above the rows included; the rows divide what is left while row height fits, however many there are',
+          'display height in pixels, the bands above the rows included; the rows divide what is left between them, however many there are',
       }),
-      ...rowHeightConfigSchemaFields(),
       /**
        * #slot encoding
        * The channels the aligned cells paint through: `encoding.color`, the
@@ -151,6 +149,9 @@ export default function configSchemaF() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      // The rows always fit the display `height`, so a pinned row height
+      // from an older config has nothing to set.
+      retired: { rowHeight: () => ({}) },
     },
     // #endregion
   )

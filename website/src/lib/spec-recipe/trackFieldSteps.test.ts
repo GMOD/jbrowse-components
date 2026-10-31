@@ -6,7 +6,8 @@ test('a row height is the shared Row height menu, with each display its presets'
     const step = trackFields.rowHeight!(value, { noun: 'row', displayType })
     return Array.isArray(step) ? undefined : step?.path
   }
-  expect(path(8, 'LinearMafDisplay')).toBe('Track menu → Row height → Compact')
+  // MAF is always-fit, so a retired `rowHeight` on it is no click at all
+  expect(path(8, 'LinearMafDisplay')).toBeUndefined()
   expect(path(2, 'LinearVariantDisplay')).toBe(
     'Track menu → Row height → Custom... → 2px',
   )
@@ -15,14 +16,14 @@ test('a row height is the shared Row height menu, with each display its presets'
   )
 })
 
-test("a MAF glyph's share of its row follows the Row height preset", () => {
+test("a MAF glyph's share of its row is an Edit plot setting", () => {
   expect(
     stepPaths(
       'alignments.mark',
       { height: { band: 0.9 } },
       'LinearMafDisplay',
     ),
-  ).toEqual(['Track menu → Row height'])
+  ).toEqual(['Track menu → Advanced → Edit plot...'])
   expect(
     specTrackSettings({
       trackId: 'maf',

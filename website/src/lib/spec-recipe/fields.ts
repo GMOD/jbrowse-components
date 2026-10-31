@@ -28,7 +28,6 @@ import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
 // died on ERR_UNKNOWN_FILE_EXTENSION before running a single check.
 import { capitalizeFirst } from '../../../../packages/core/src/util/stringUtils.ts'
 import { CONSERVATION_UNIT_OPTIONS } from '../../../../plugins/maf/src/LinearMafDisplay/conservationUnits.ts'
-import { HEIGHT_PRESETS as MAF_HEIGHT_PRESETS } from '../../../../plugins/maf/src/LinearMafDisplay/displayDefaults.ts'
 import {
   MAF_BASES_FIELD_LABELS,
   MAF_COLOR_FIELD_LABELS,
@@ -692,7 +691,6 @@ const MAF_COLOR_BY = `${TRACK_MENU} → Color by`
 // The displays whose menu carries tree-sidebar's shared "Row height" submenu,
 // with the presets each passes it; the variant display passes none.
 const ROW_HEIGHT_MENUS: Record<string, readonly RowHeightPreset[]> = {
-  LinearMafDisplay: MAF_HEIGHT_PRESETS,
   LinearVariantDisplay: [],
 }
 
@@ -1846,8 +1844,8 @@ export const trackFields: Record<string, FieldRecipe> = {
     const band = asRecord(asRecord(value)?.height)?.band
     return typeof band === 'number' && displayType === 'LinearMafDisplay'
       ? {
-          path: `${TRACK_MENU} → Row height`,
-          note: `Each preset there sets the row height and the glyph's share of it (${band} here) together, so this follows from the same click as the height above.`,
+          path: `${TRACK_MENU} → Advanced → Edit plot...`,
+          note: `The glyph's share of its row (${band} here) is \`alignments.mark.height.band\`; no menu row sets it.`,
         }
       : undefined
   },

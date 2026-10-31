@@ -142,9 +142,11 @@ track's bottom edge, the lower band's handle with them.
 handles, titles, axes, tooltip — takes a band's rect from it and keys on its
 reserved px, so a band bound to 0 px gets no handle and no title.
 
-**Fit mode is not floored at one pixel.** A sub-pixel row is the legitimate
-answer for more species than the track has pixels, and flooring it made the rows
-area taller than the height it was asked to fit inside.
+**The rows always fit the track, and are not floored at one pixel.** There is
+no pinned row height to scroll behind: more species shrink the rows, and a taller
+track or a focused clade grows them (ROW_HEIGHT_AND_FIT). A sub-pixel row is the
+legitimate answer for more species than the track has pixels, and flooring it
+made the rows area taller than the height it was asked to fit inside.
 
 ## What transfers
 

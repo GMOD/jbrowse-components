@@ -19,13 +19,11 @@ import {
 } from '@jbrowse/display-kit/colorByMenu'
 import {
   rowOrderMenuItems,
-  rowHeightMenuItem,
   showRowLabelsMenuItem,
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 
 import { CONSERVATION_UNIT_OPTIONS } from './conservationUnits.ts'
-import { HEIGHT_PRESETS } from './displayDefaults.ts'
 import {
   MAF_BASES_FIELDS,
   MAF_BASES_FIELD_LABELS,
@@ -108,16 +106,9 @@ interface MafMenuSelf
   setYField: (field: MafYField | undefined) => void
   colorScheme: ColorSchemeName | undefined
   setColorScheme: (scheme: ColorSchemeName) => void
-  // Declared so the shared `rowHeightMenuItem` contract is checked here; maf is
-  // the one display with a proportion.
-  rowHeight: number
-  rowProportion: number
   editableSources: MafSource[]
   sources: MafSource[]
   sourcesKnown: boolean
-  setRowHeight: (n: number) => void
-  setFitToHeight: () => void
-  setRowProportion: (n: number) => void
   setShowTree: (f: boolean) => void
   setShowBranchLength: (f: boolean) => void
   setShowCoverage: (f: boolean) => void
@@ -343,7 +334,6 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
 
 export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
   return [
-    rowHeightMenuItem(self, HEIGHT_PRESETS),
     colorMenuItem(self),
     plotTypeMenuItem(self),
     ...conservationResolutionMenuItems(self),

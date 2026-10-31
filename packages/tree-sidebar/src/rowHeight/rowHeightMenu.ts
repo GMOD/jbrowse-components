@@ -28,8 +28,8 @@ export interface RowHeightModel extends IStateTreeNode {
 
 /**
  * A named px height, optionally with the glyph proportion that reads best at
- * it. Presets are a display's own vocabulary (maf's Normal is 15px, the
- * multi-row painting's is 14) so the table is passed in; what is shared is that
+ * it. Presets are a display's own vocabulary (the multi-row painting's Normal
+ * is 14px) so the table is passed in; what is shared is that
  * they are radios in one group with fit and custom, because `rowHeight` is a
  * single coupled axis rather than two independent settings.
  */
@@ -41,9 +41,9 @@ export interface RowHeightPreset {
 
 /**
  * The "Row height" submenu: "Squeeze to fit view", the display's presets, and
- * "Custom...". One builder for maf, the multi-row feature painting and the
- * variant display's two layouts, which had three copies of it and three copies
- * of its dialog.
+ * "Custom...". One builder for the multi-row feature painting and the
+ * variant display's two layouts, which with MAF's (since removed) had three
+ * copies of it and three copies of its dialog.
  *
  * The copies had already drifted in the way a shared builder exists to stop:
  * variants offered no presets at all, and its dialog seeded from

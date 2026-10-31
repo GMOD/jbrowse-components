@@ -9,9 +9,9 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
  * The display's pointer tracking drops the pointer while it is on the strip, so
  * no crosshair or tooltip follows a resize.
  *
- * In fit mode (`rowHeight === 0`) the band eats into the rows area, so a drag
- * restretches every row each frame; the drag suppresses the dense letter
- * overlay, as the track-height handle does.
+ * The band eats into the rows area, so a drag restretches every row each
+ * frame; the drag suppresses the dense letter overlay, as the track-height
+ * handle does.
  */
 const MafBandResizeHandle = observer(function MafBandResizeHandle({
   model,
@@ -24,9 +24,6 @@ const MafBandResizeHandle = observer(function MafBandResizeHandle({
   setHeight: (height: number) => void
   seam: number
 }) {
-  // Clear `resizing` only if this handle set it, or a drag here cancels the
-  // suppression a concurrent track-height drag owns.
-  const suppressesLetters = model.rowHeight === 0
   // Same flag as the track's resize handle; it lives on the track so two
   // handles share one gesture state.
   const track = getContainingTrack(model)
@@ -39,14 +36,10 @@ const MafBandResizeHandle = observer(function MafBandResizeHandle({
         setHeight(h)
       }}
       onDragStart={() => {
-        if (suppressesLetters) {
-          track.setResizing(true)
-        }
+        track.setResizing(true)
       }}
       onDragEnd={() => {
-        if (suppressesLetters) {
-          track.setResizing(false)
-        }
+        track.setResizing(false)
       }}
     />
   )

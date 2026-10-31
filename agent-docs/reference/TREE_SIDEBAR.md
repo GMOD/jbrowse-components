@@ -374,8 +374,9 @@ toggles beside it — all three under "Show..." on every display, with
 
 `rowHeightConfigSchemaFields` + `RowHeightMixin` (in `src/rowHeight/`, beside
 the menu and dialog) are the slot and the three members over it: the raw
-`rowHeight` getter, `setRowHeight`, and the resolved `effectiveRowHeight`. Three
-displays hand-wrote all four. What a display still owes is a **value** for
+`rowHeight` getter, `setRowHeight`, and the resolved `effectiveRowHeight`. The
+variant and mark displays compose them; MAF is always-fit and supplies only
+`effectiveRowHeight` (ROW_HEIGHT_AND_FIT). What a display still owes is a **value** for
 `autoRowHeight` — the rows viewport is a different quantity in each — and
 `setFitToHeight`, which is required to seed the `height` slot exactly where the
 `height` getter is content-derived. Canvas overrides `effectiveRowHeight` to cap
@@ -394,7 +395,7 @@ against the host type rather than against a test display — a test display's ow
 schema is concrete and checks the name itself, so asking it passes either way.
 
 `TreeDrawingModel` takes **`effectiveRowHeight`**, never a raw `rowHeight` —
-variants and MAF keep `rowHeight` raw, where `0` means fit-to-height, so reading
+variants and marks keep `rowHeight` raw, where `0` means fit-to-height, so reading
 it painted zero-height rects. Structural typing let that through, so keep the
 contract field named for the resolved value.
 

@@ -10,11 +10,17 @@ import TreeSidebar from './TreeSidebar.tsx'
 import { treeSidebarOffset } from './treeSidebarGeometry.ts'
 
 import type { RowLabelSource, TreeSidebarModel } from './types.ts'
-import type { RowResizeTarget } from '@jbrowse/core/util/useRowVirtualScroll'
+import type { VirtualScrollModel } from '@jbrowse/core/util/useRowVirtualScroll'
 import type { ReactNode } from 'react'
 
-export interface RowsPanelModel extends TreeSidebarModel, RowResizeTarget {
+/**
+ * A display that can also pin a row height (`RowResizeTarget`) gets
+ * `shift`+wheel row resizing. An always-fit display's rows never overflow,
+ * so the wheel over them is the view's.
+ */
+export interface RowsPanelModel extends TreeSidebarModel, VirtualScrollModel {
   scrollTop: number
+  effectiveRowHeight: number
   sources: RowLabelSource[]
   showRowLabels: boolean
   canvasWidthPx: number

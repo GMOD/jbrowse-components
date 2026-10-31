@@ -251,7 +251,9 @@ track is configured with a Newick guide tree.
   draws while some rotation of it lists the species in `sort`'s order, so a
   reorder that splits a clade hides it until **Reset row order** brings it back,
   and one that only turns a clade keeps it.
-- **Row height** offers squeeze-to-fit, normal, compact, and custom row heights.
+- The species rows always share the track's height between them, so more species
+  make thinner rows. Drag the track taller, or select a subtree, to read the
+  bases on fewer, taller rows.
 
 ### Selecting a subtree
 

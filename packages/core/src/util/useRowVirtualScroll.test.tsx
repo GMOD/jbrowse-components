@@ -142,3 +142,27 @@ test.each([
   expect(onScrollTop).not.toHaveBeenCalled()
   expect(onRowHeight).not.toHaveBeenCalled()
 })
+
+function FitHarness() {
+  const [el, setEl] = useState<HTMLDivElement | null>(null)
+  useRowVirtualScroll(
+    el,
+    {
+      scrollTop: 0,
+      scrollViewportHeight: VIEWPORT,
+      scrollableHeight: 0,
+      setScrollTop: () => {},
+    },
+    false,
+  )
+  return <div ref={setEl} />
+}
+
+// An always-fit display (MAF) has no row height to pin, so shift+wheel is not
+// claimed and the view may pan with it.
+test('shift+wheel over an always-fit panel falls through to the view', () => {
+  const { container } = render(<FitHarness />)
+  const el = container.querySelector('div')!
+  expect(wheel(el, -240, { shiftKey: true }).defaultPrevented).toBe(false)
+  expect(wheel(el, 50).defaultPrevented).toBe(false)
+})
