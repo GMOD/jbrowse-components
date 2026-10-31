@@ -85,6 +85,13 @@ describe('parseTaiIndex', () => {
     ])
   })
 
+  test('names the line of a row missing a column', () => {
+    expect(() => parseTaiIndex('a.chr1\t0\t0\n\na.chr2\t5\n')).toThrow(
+      /\.tai line 3 is not chr<TAB>start<TAB>virtualOffset: "a\.chr2\t5"/,
+    )
+    expect(() => parseTaiIndex('a.chr1\t0\t0\n*\t10\n')).toThrow(/line 2/)
+  })
+
   test('relative rows inherit the previous absolute chromosome', () => {
     const index = parseTaiIndex('a.chr1\t0\t0\n*\t10\t100\na.chr2\t0\t5000\n')
     expect([...index.keys()]).toEqual(['chr1', 'chr2'])

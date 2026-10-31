@@ -72,49 +72,55 @@ export function makeRefNameFilter(refName: string) {
  * Each row is tab-separated `chr  start  virtualOffset`. A `*` in the chr
  * column marks a *relative* row whose start/virtualOffset are deltas added
  * to the running absolute values of the previous row (mirrors taffy's tai
- * writer). The absolute virtual offset is split into a bgzf (block, data)
- * coordinate, and deltas carry into that pair, since a raw offset passes 2^53
- * once the compressed file passes 128 GiB.
+ * writer). Offsets split into a bgzf (block, data) pair, deltas carrying into
+ * it, since a raw offset passes 2^53 once the file passes 128 GiB.
  */
 export function parseTaiIndex(text: string): IndexData {
-  const lines = text
-    .split('\n')
-    .map(f => f.trim())
-    .filter(line => line !== '')
+  const lines = text.split('\n')
   const entries: IndexData = new Map()
   let lastRefName = ''
   let lastStart = 0
   let blockPosition = 0
   let dataPosition = 0
 
-  for (const line of lines) {
-    const [sourceName, start, virtualOffset] = line.split('\t')
-    const isRelative = sourceName === '*'
-    const entryRefName = isRelative ? lastRefName : refNameOfSource(sourceName!)
-    const absStart = isRelative ? lastStart + +start! : +start!
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+    const line = lines[lineIndex]!.trim()
+    if (line !== '') {
+      const [sourceName = '', start, virtualOffset] = line.split('\t')
+      if (start === undefined || virtualOffset === undefined) {
+        throw new Error(
+          `.tai line ${lineIndex + 1} is not chr<TAB>start<TAB>virtualOffset: "${line}"`,
+        )
+      }
+      const isRelative = sourceName === '*'
+      const entryRefName = isRelative
+        ? lastRefName
+        : refNameOfSource(sourceName)
+      const absStart = isRelative ? lastStart + +start : +start
 
-    if (isRelative) {
-      const data = dataPosition + +virtualOffset!
-      const carry = Math.floor(data / BGZF_BLOCK_SIZE)
-      blockPosition += carry
-      dataPosition = data - carry * BGZF_BLOCK_SIZE
-    } else {
-      const raw = BigInt(virtualOffset!)
-      blockPosition = Number(raw >> 16n)
-      dataPosition = Number(raw & 0xffffn)
-    }
+      if (isRelative) {
+        const data = dataPosition + +virtualOffset
+        const carry = Math.floor(data / BGZF_BLOCK_SIZE)
+        blockPosition += carry
+        dataPosition = data - carry * BGZF_BLOCK_SIZE
+      } else {
+        const raw = BigInt(virtualOffset)
+        blockPosition = Number(raw >> 16n)
+        dataPosition = Number(raw & 0xffffn)
+      }
 
-    let refNameEntries = entries.get(entryRefName)
-    if (refNameEntries === undefined) {
-      refNameEntries = []
-      entries.set(entryRefName, refNameEntries)
+      let refNameEntries = entries.get(entryRefName)
+      if (refNameEntries === undefined) {
+        refNameEntries = []
+        entries.set(entryRefName, refNameEntries)
+      }
+      refNameEntries.push({
+        start: absStart,
+        virtualOffset: { blockPosition, dataPosition },
+      })
+      lastRefName = entryRefName
+      lastStart = absStart
     }
-    refNameEntries.push({
-      start: absStart,
-      virtualOffset: { blockPosition, dataPosition },
-    })
-    lastRefName = entryRefName
-    lastStart = absStart
   }
   return entries
 }
