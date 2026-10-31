@@ -9,11 +9,13 @@ export function drawMafCodons(
   glyphs: CodonGlyph[],
   textColor: string,
 ) {
-  ctx.font = LABEL_FONT.css
-  ctx.textBaseline = 'middle'
-  ctx.textAlign = 'center'
-  ctx.fillStyle = textColor
-  for (const g of glyphs) {
-    ctx.fillText(g.aa, g.x, g.y)
+  if (glyphs.length > 0) {
+    ctx.font = LABEL_FONT.css
+    ctx.textBaseline = 'middle'
+    ctx.textAlign = 'center'
+    ctx.fillStyle = textColor
+    for (const g of glyphs) {
+      ctx.fillText(g.aa, g.x, g.y)
+    }
   }
 }

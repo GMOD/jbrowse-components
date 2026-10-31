@@ -1,6 +1,7 @@
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 
 import { getMafColorPalette, getMafLabelColors } from '../util.ts'
+import { drawMafCodons } from './codons.ts'
 import { drawMafLabels } from './labels.ts'
 
 import type { VisibleLabel } from '../../LinearMafDisplay/components/computeVisibleLabels.ts'
@@ -32,3 +33,24 @@ test.each(['light', 'dark'] as const)(
     expect(fill).not.toBe(getMafColorPalette(palette).unknownBaseColor)
   },
 )
+
+// Setting `ctx.font` flushes the document's pending style recalc, so a draw
+// with no letter must not pay it; `drawMafDeletionLabels` keeps the same gate.
+test('a letter pass with nothing to draw leaves the font alone', () => {
+  const fontSets: string[] = []
+  const ctx = {
+    fillStyle: '',
+    textAlign: '',
+    textBaseline: '',
+    set font(font: string) {
+      fontSets.push(font)
+    },
+    fillText() {},
+  } as unknown as Ctx2D
+  const palette = resolvePalette({
+    configTheme: { palette: { mode: 'light' } },
+  })
+  drawMafLabels(ctx, [], getMafLabelColors(palette))
+  drawMafCodons(ctx, [], '#000')
+  expect(fontSets).toEqual([])
+})

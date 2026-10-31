@@ -10,11 +10,13 @@ export function drawMafLabels(
   labels: VisibleLabel[],
   { forBase, unknownBase }: MafLabelColors,
 ) {
-  ctx.font = LABEL_FONT.css
-  ctx.textBaseline = 'middle'
-  ctx.textAlign = 'center'
-  for (const label of labels) {
-    ctx.fillStyle = forBase[label.lowerBase] ?? unknownBase
-    ctx.fillText(label.text, label.x, label.y)
+  if (labels.length > 0) {
+    ctx.font = LABEL_FONT.css
+    ctx.textBaseline = 'middle'
+    ctx.textAlign = 'center'
+    for (const label of labels) {
+      ctx.fillStyle = forBase[label.lowerBase] ?? unknownBase
+      ctx.fillText(label.text, label.x, label.y)
+    }
   }
 }
