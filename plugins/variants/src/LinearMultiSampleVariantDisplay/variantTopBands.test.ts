@@ -18,6 +18,8 @@ function geometry(
 ) {
   return variantTopBandsGeometry({
     showRecords: true,
+    recordsOnly: false,
+    displayHeight: 500,
     recordsGrowMaxHeight: 120,
     recordsContentHeight: 40,
     recordsBounds: { min: MIN_RECORDS_HEIGHT, max: 500 },

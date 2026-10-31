@@ -75,9 +75,10 @@ export function recordsDisplayAt(
   band: Record<string, unknown> = {},
   // the one sample, S0, drawn as a row; false for a sites-only display
   rows = true,
+  display: Record<string, unknown> = {},
 ) {
   const env = createTestEnvironment({
-    displayConfig: { records: { show: true, ...band } },
+    displayConfig: { records: { show: true, ...band }, ...display },
   }).createDisplay()
   env.display.view.setWidth(1960)
   env.display.view.setNewView(bpPerPx, 0)

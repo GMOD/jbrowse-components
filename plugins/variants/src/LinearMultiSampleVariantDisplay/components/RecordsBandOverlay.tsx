@@ -163,21 +163,24 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
       />
       <RecordsBandInteraction model={model} />
       {/* the target is the reserved height plus the delta, read in the
-          callback, so a cap above the stack drags from what is drawn */}
-      <BandSeamHandle
-        data-testid="records_band_resize_handle"
-        top={recordsHeight}
-        title="Drag to resize the records band"
-        onDrag={d => {
-          const { recordsHeight } = model.topBands
-          const cap = model.recordsGrowMaxHeight
-          // a band already as tall as its stack cannot grow, so a drag down
-          // leaves the cap where it is rather than lowering it to the stack
-          model.setRecordsGrowMaxHeight(
-            d > 0 && recordsHeight < cap ? cap : recordsHeight + d,
-          )
-        }}
-      />
+          callback, so a cap above the stack drags from what is drawn; with
+          no rows the band is the display, resized by the track's own handle */}
+      {model.recordsOnly ? null : (
+        <BandSeamHandle
+          data-testid="records_band_resize_handle"
+          top={recordsHeight}
+          title="Drag to resize the records band"
+          onDrag={d => {
+            const { recordsHeight } = model.topBands
+            const cap = model.recordsGrowMaxHeight
+            // a band already as tall as its stack cannot grow, so a drag down
+            // leaves the cap where it is rather than lowering it to the stack
+            model.setRecordsGrowMaxHeight(
+              d > 0 && recordsHeight < cap ? cap : recordsHeight + d,
+            )
+          }}
+        />
+      )}
     </div>
   ) : null
 })

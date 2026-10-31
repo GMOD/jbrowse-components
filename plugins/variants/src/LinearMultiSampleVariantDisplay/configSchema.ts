@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
+import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
@@ -278,6 +279,33 @@ export default function configSchemaFactory() {
        * rows, and `labels`.
        */
       records: recordsBandConfigSchema,
+      /**
+       * #slot genotypes
+       * The genotype rows. Off, the display reads no genotypes and draws as
+       * it does for a VCF with no samples: the records alone, every one the
+       * filter admits, sized by `heightMode`.
+       */
+      genotypes: ConfigurationSchema(
+        'GenotypeRows',
+        {
+          /**
+           * #slot genotypes.show
+           */
+          show: {
+            type: 'boolean',
+            defaultValue: true,
+            description:
+              'draw a row per sample; off, the display draws the records alone, as for a VCF with no samples',
+          },
+        },
+        { closed: true },
+      ),
+      ...heightModeConfigSchemaFields({
+        defaultHeightMode: 'fit',
+        heightMode:
+          'Track-sizing strategy while no genotype rows draw (no samples, or `genotypes.show` off), as on a feature track: `fit` keeps the track height and gives up labels, then squeezes the records; `fixed` keeps the track height at full record size; `grow` sizes the track to its records up to `growMaxHeight`. With genotype rows the track keeps its `height`',
+        growMaxHeight: "Ceiling in pixels for `heightMode: 'grow'`",
+      }),
     },
     {
       /**

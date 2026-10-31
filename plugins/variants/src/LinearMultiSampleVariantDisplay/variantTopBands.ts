@@ -45,18 +45,24 @@ export function recordsBandBounds(displayHeight: number): BandBounds {
 }
 
 /**
- * The records band grows to its packed stack at full feature size, up to
- * `records.growMaxHeight`; past the cap the fit ladder squeezes the stack into
- * it.
+ * Over genotype rows the records band grows to its packed stack at full
+ * feature size, up to `records.growMaxHeight`; past the cap the fit ladder
+ * squeezes the stack into it. With no rows it is the whole display, whose
+ * height `heightMode` decides.
  */
 export function variantTopBandsGeometry({
   showRecords,
+  recordsOnly,
+  displayHeight,
   recordsGrowMaxHeight,
   recordsContentHeight,
   recordsBounds,
   lineZoneHeight,
 }: {
   showRecords: boolean
+  /** No genotype rows draw. */
+  recordsOnly: boolean
+  displayHeight: number
   recordsGrowMaxHeight: number
   /** The `full` rung's stack height, labels included. */
   recordsContentHeight: number
@@ -67,10 +73,12 @@ export function variantTopBandsGeometry({
   const { top, reserved, bottom } = stackBands(['records', 'lineZone'], {
     records: {
       active: showRecords,
-      height: Math.min(
-        boundBandHeight(recordsGrowMaxHeight, recordsBounds),
-        Math.ceil(recordsContentHeight),
-      ),
+      height: recordsOnly
+        ? displayHeight
+        : Math.min(
+            boundBandHeight(recordsGrowMaxHeight, recordsBounds),
+            Math.ceil(recordsContentHeight),
+          ),
     },
     lineZone: { active: true, height: lineZoneHeight },
   })

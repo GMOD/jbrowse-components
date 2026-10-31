@@ -13,6 +13,7 @@ import {
   solidColorItem,
 } from '@jbrowse/display-kit/colorByMenu'
 import { groupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
+import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import { rampEncodingOf } from '@jbrowse/display-kit/valueRamp'
 import {
   resetRowOrderMenuItems,
@@ -25,6 +26,7 @@ import {
   treeSidebarShowMenuItems,
 } from '@jbrowse/tree-sidebar'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import HeightIcon from '@mui/icons-material/Height'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import ViewQuiltIcon from '@mui/icons-material/ViewQuilt'
@@ -77,9 +79,8 @@ function rowColorItems(self: LinearMultiSampleVariantDisplayModel): MenuItem[] {
   }))
 }
 
-// Items for the "Show" submenu; the subtree filter has its own entry via
-// `clusteringMenuItem`.
-export function variantShowSubmenuItems(
+// The row-only "Show" items, absent while the records are the display.
+function genotypeRowShowItems(
   self: LinearMultiSampleVariantDisplayModel,
 ): MenuItem[] {
   return [
@@ -104,7 +105,7 @@ export function variantShowSubmenuItems(
           {
             label: 'Records',
             helpText:
-              'Draw the structural variants above the genotype rows at their genomic positions, stacked as a variant track stacks them, colored by SV type and labelled with the share of samples carrying each. With no genotype rows drawn, every record shows. The band is as tall as its records need, up to its maximum height, and takes that height from the rows',
+              'Draw the structural variants above the genotype rows at their genomic positions, stacked as a variant track stacks them, colored by SV type and labelled with the share of samples carrying each. The band is as tall as its records need, up to its maximum height, and takes that height from the rows',
             type: 'checkbox' as const,
             checked: self.showRecords,
             onClick: () => {
@@ -113,6 +114,31 @@ export function variantShowSubmenuItems(
           },
         ]
       : []),
+  ]
+}
+
+// Items for the "Show" submenu; the subtree filter has its own entry via
+// `clusteringMenuItem`.
+export function variantShowSubmenuItems(
+  self: LinearMultiSampleVariantDisplayModel,
+): MenuItem[] {
+  const hasSamples = !!self.adapterSamples?.length
+  return [
+    ...(hasSamples
+      ? [
+          {
+            label: 'Genotype rows',
+            helpText:
+              'Draw a row per sample. Off, the display reads no genotypes and draws the records alone, as for a VCF with no samples',
+            type: 'checkbox' as const,
+            checked: self.showGenotypes,
+            onClick: () => {
+              self.setShowGenotypes(!self.showGenotypes)
+            },
+          },
+        ]
+      : []),
+    ...(self.recordsOnly ? [] : genotypeRowShowItems(self)),
     {
       label: 'Tooltips',
       helpText:
@@ -168,7 +194,14 @@ export function variantTrackMenuItems(
     layoutMenuItem(self),
     // No presets: a cohort's useful row heights depend on how many samples it
     // has, so fit and a typed height are the two that mean anything here.
-    rowHeightMenuItem(self),
+    // With no rows, the feature track's own track sizing.
+    self.recordsOnly
+      ? {
+          label: 'Track sizing',
+          icon: HeightIcon,
+          subMenu: heightModeMenuItems(self, 'feature'),
+        }
+      : rowHeightMenuItem(self),
     makeRadioSubMenu({
       label: 'Rows',
       icon: SplitscreenIcon,

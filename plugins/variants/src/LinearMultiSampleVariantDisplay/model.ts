@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import {
   canonicalizeViewRefName,
   getDialogHost,
@@ -39,10 +40,10 @@ import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import FacetWritesMixin from '@jbrowse/display-kit/FacetWritesMixin'
+import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
-import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
   colorSnapshotOf,
   paintedColorEncoding,
@@ -64,6 +65,7 @@ import {
   fitLadderVolatiles,
   labelFontSize,
   labelVisibility,
+  MIN_GROW_HEIGHT,
   maxBottom,
   scaleLaidOutData,
 } from '@jbrowse/plugin-features/band'
@@ -102,6 +104,7 @@ import {
 } from '../shared/getSources.ts'
 import { CellSolidColorDialog } from '../shared/lazyDialogs.ts'
 import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
+import { getCachedABGR } from '../shared/variantWebglUtils.ts'
 import {
   sitesBySpan,
   sortSourcesAroundVariant,
@@ -361,7 +364,7 @@ export function stateModelFactory(
       .compose(
         MULTI_SAMPLE_VARIANT_DISPLAY,
         BaseDisplay,
-        TrackHeightMixin(),
+        HeightModeMixin(),
         MultiRegionDisplayMixin(),
         LegendMixin(),
         types.compose(ColorWritesMixin(), FacetWritesMixin()),
@@ -692,11 +695,32 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * `genotypes.show`: whether the display reads genotypes and draws a
+         * row per sample.
+         */
+        get showGenotypes(): boolean {
+          return getConf(self, ['genotypes', 'show'])
+        },
+        /**
+         * #getter
+         * Whether no genotype row draws: `genotypes.show` off, or a VCF
+         * whose sample listing landed empty. The records band is then the
+         * display, every record the filter admits, sized by `heightMode`.
+         */
+        get recordsOnly(): boolean {
+          return !this.showGenotypes || self.adapterSamples?.length === 0
+        },
+        /**
+         * #getter
          * Whether the records band is drawn: at genomic positions only, where
-         * a record lines up with the cells under it.
+         * a record lines up with the cells under it, and always while it is
+         * the whole display.
          */
         get showRecords(): boolean {
-          return this.atGenomicPositions && getConf(self, ['records', 'show'])
+          return (
+            this.atGenomicPositions &&
+            (this.recordsOnly || getConf(self, ['records', 'show']))
+          )
         },
         /**
          * #getter
@@ -967,6 +991,13 @@ export function stateModelFactory(
           },
           /**
            * #action
+           * Draw the genotype rows, or the records alone.
+           */
+          setShowGenotypes(arg: boolean) {
+            setConf(self, ['genotypes', 'show'], arg)
+          },
+          /**
+           * #action
            * Set the records band's cap, clamped here because a drag can
            * deliver any number and a band dragged shut has to stay grabbable.
            */
@@ -1088,10 +1119,11 @@ export function stateModelFactory(
          * #getter
          * `TreeSidebarMixin`'s hook: the adapter's samples as rows, each
          * answering to its sample name, a samplesTsv `color` column the row's
-         * own color.
+         * own color. None while `genotypes.show` is off.
          */
         get discoveredRows(): ProcessedSource[] {
-          return (self.adapterSamples ?? []).map(source => ({
+          const samples = self.showGenotypes ? self.adapterSamples : undefined
+          return (samples ?? []).map(source => ({
             ...source,
             sampleName: resolveSampleName(source),
           }))
@@ -1138,7 +1170,12 @@ export function stateModelFactory(
          */
         get sourcesBase(): Source[] | undefined {
           const sources = self.adapterSamples
-          return sources && keptRows(sources, self.rowFocus, self.rowAlias)
+          return (
+            sources &&
+            (self.showGenotypes
+              ? keptRows(sources, self.rowFocus, self.rowAlias)
+              : [])
+          )
         },
       }))
       .views(self => ({
@@ -1289,7 +1326,7 @@ export function stateModelFactory(
            * the cells.
            */
           get recordsColorBySvClass() {
-            return self.colorEncoding === undefined
+            return self.colorEncoding === undefined && !self.recordsOnly
           },
           /**
            * #getter
@@ -1303,11 +1340,11 @@ export function stateModelFactory(
           /**
            * #getter
            * Whether the records band is the SV band: while genotype rows are
-           * drawn. With none (a sites-only VCF) it draws every record the
-           * filter admits, and states no carriers.
+           * drawn. With none it draws every record the filter admits, and
+           * states no carriers.
            */
           get recordsSvOnly() {
-            return self.sources.length > 0
+            return !self.recordsOnly
           },
         }
       })
@@ -1327,12 +1364,14 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Each fetched region's record colors: the SV class, or the alt
+         * Each fetched region's record colors: the SV class, the alt
          * cells' hue at full dose, which neither shading nor the phased mode
-         * moves.
+         * moves, or with no rows and no `encoding.color` the feature track's
+         * own default, `featureDefaultColor`.
          */
         get regionRecordColors() {
           const { cellData, cellHue, cellHueValuesRead } = self
+          const featureDefault = getCachedABGR(featureDefaultColor)
           const out = new Map<number, Uint32Array>()
           if (cellData) {
             for (const k in cellData.perRegionCellData) {
@@ -1341,7 +1380,11 @@ export function stateModelFactory(
                 Number(k),
                 self.recordsColorBySvClass
                   ? svClassColors(data.featureInfo)
-                  : paintFeatureColors(data, cellHue, cellHueValuesRead),
+                  : self.recordsOnly && self.colorEncoding === undefined
+                    ? new Uint32Array(data.featureInfo.length).fill(
+                        featureDefault,
+                      )
+                    : paintFeatureColors(data, cellHue, cellHueValuesRead),
               )
             }
           }
@@ -1538,8 +1581,12 @@ export function stateModelFactory(
           get fitMeasureFeatureIds() {
             return self.recordsOnScreenIds
           },
-          fitHeightToDisplay: true,
-          autoHeight: false,
+          get fitHeightToDisplay() {
+            return !self.recordsOnly || self.fitHeightToDisplay
+          },
+          get autoHeight() {
+            return self.recordsOnly && self.autoHeight
+          },
           showsEveryIsoform: true,
           reservesBelowLabelRows: false,
           get fitTargetHeight() {
@@ -1556,6 +1603,8 @@ export function stateModelFactory(
         const bands = computed(() =>
           variantTopBandsGeometry({
             showRecords: self.showRecords,
+            recordsOnly: self.recordsOnly,
+            displayHeight: self.height,
             recordsGrowMaxHeight: self.recordsGrowMaxHeight,
             recordsContentHeight: maxBottom(
               ladder.baseLaidOutDataMap,
@@ -1575,6 +1624,22 @@ export function stateModelFactory(
            */
           get topBands() {
             return bands.get()
+          },
+          /**
+           * #getter
+           * `HeightModeMixin`'s hook: with no rows, the records' `full`
+           * stack on screen, as LinearBasicDisplay grows to its features;
+           * over rows the slot height, so `grow` keeps the rows' height.
+           */
+          get growTargetHeight() {
+            return self.recordsOnly &&
+              self.cellData !== undefined &&
+              self.canRender
+              ? Math.max(
+                  MIN_GROW_HEIGHT,
+                  maxBottom(ladder.baseLaidOutDataMap, self.recordsOnScreenIds),
+                )
+              : self.fitTargetHeight
           },
           /**
            * #getter
@@ -1711,10 +1776,11 @@ export function stateModelFactory(
           /**
            * #getter
            * `LegendMixin`'s hook: the key sits under the records band, over
-           * the rows, so it hides no record.
+           * the rows, so it hides no record; with no rows, at the top, as on
+           * a feature track.
            */
           get legendTop() {
-            return self.topBands.recordsHeight
+            return self.recordsOnly ? 0 : self.topBands.recordsHeight
           },
           /**
            * #getter

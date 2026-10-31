@@ -4,7 +4,7 @@ import { countTruncatedFeatures, maxBottom } from './layoutQueries.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FitStage } from './fitLadder.ts'
 
-const MIN_GROW_HEIGHT = 50
+export const MIN_GROW_HEIGHT = 50
 
 export interface HeightHost {
   height: number

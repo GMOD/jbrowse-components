@@ -190,6 +190,7 @@ export function analyzeVariants({
   siteFilter,
   filterChain,
   keepSampleLessSites = false,
+  readGenotypes = true,
   report,
 }: {
   features: Feature[]
@@ -198,6 +199,11 @@ export function analyzeVariants({
   // Keep a site of a VCF with no samples, which calls no allele and so fails
   // every site test: at genomic positions the records band draws it.
   keepSampleLessSites?: boolean
+  // False reads every site as a VCF with no samples reads it: no genotype is
+  // parsed and, with `keepSampleLessSites`, every site the filters admit
+  // stays. Off when no sample is asked for, so `genotypes.show` off draws
+  // what a sites-only VCF draws.
+  readGenotypes?: boolean
   report?: ProgressReporter
 }): AnalyzedVariants {
   const samplePloidy: Record<string, number> = {}
@@ -221,7 +227,7 @@ export function analyzeVariants({
   const genotypeDict: string[] = []
   const genotypeDictIndex = new Map<string, number>()
   const featureGenotypeCodes = new Map<string, Uint32Array>()
-  const sampleNames = collectSampleNames(passing)
+  const sampleNames = readGenotypes ? collectSampleNames(passing) : []
   const numSamples = sampleNames.length
   const sampleIndexByName = buildSampleIndex(sampleNames)
   const headerRemapOf = makeHeaderRemapper(sampleIndexByName)
@@ -365,8 +371,10 @@ export function analyzeVariants({
       alleleCounts = alleleBucketCounts(overflow)
     } else {
       // A sites-only VCF has no genotypes field at all
-      record =
-        (feature.get('genotypes') as Record<string, string> | undefined) ?? {}
+      record = readGenotypes
+        ? ((feature.get('genotypes') as Record<string, string> | undefined) ??
+          {})
+        : {}
       for (const key in record) {
         const val = record[key]!
         let ploidy = 1

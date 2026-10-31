@@ -19,6 +19,7 @@ export {
   maxBottom,
 } from './LinearBasicDisplay/layoutQueries.ts'
 export { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
+export { MIN_GROW_HEIGHT } from './LinearBasicDisplay/heightViews.ts'
 export { paintFeatureBand } from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export {
   buildFeatureFlatbushIndex,
