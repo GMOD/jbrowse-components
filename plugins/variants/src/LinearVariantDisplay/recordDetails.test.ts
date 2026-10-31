@@ -51,15 +51,13 @@ test('a record click reads its INFO over its first base, not its span', async ()
   })
 })
 
-// The rows show each sample's genotype, and the widget's feature persists to
-// localStorage; with no rows the samples are the only place they show.
-test('over genotype rows the record drops its samples; with none it keeps them', async () => {
+test('the record keeps every sample, over genotype rows and without', async () => {
   const rows = recordsDisplayAt(KIT, 51)
   stubDetails(rows.mockRpcCall, adapterRecord)
   const overRows = await rows.display.fetchFullRecord(
     recordClick(rows.display, '>7494>7499'),
   )
-  expect(overRows.get('samples')).toBeUndefined()
+  expect(overRows.get('samples')).toEqual({ S0: { GT: ['0|1'] } })
 
   const sitesOnly = recordsDisplayAt(KIT, 51, {}, false)
   stubDetails(sitesOnly.mockRpcCall, adapterRecord)

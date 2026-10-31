@@ -41,24 +41,15 @@ export function enrichFeatureFromClick(
 }
 
 /**
- * The record as the adapter holds it, INFO included, with the clicked cell's
- * sample card kept from the click. Its `samples`, every sample's FORMAT
- * fields, go where genotype rows draw: the rows show them, and the widget's
- * feature persists to localStorage. With no rows they stay, as
- * `LinearVariantDisplay` shows them.
+ * The record as the adapter holds it, INFO and every sample's FORMAT fields
+ * included, with the clicked cell's sample card kept from the click.
  */
-export function withClickedSample(
-  full: Feature,
-  clicked: Feature,
-  keepSamples: boolean,
-) {
+export function withClickedSample(full: Feature, clicked: Feature) {
   const sample = clicked.get('clickedSample')
-  const { samples, ...record } = full.toJSON()
   return new SimpleFeature({
     id: clicked.id(),
     data: {
-      ...record,
-      ...(keepSamples ? { samples } : {}),
+      ...full.toJSON(),
       ...(sample === undefined
         ? {}
         : {

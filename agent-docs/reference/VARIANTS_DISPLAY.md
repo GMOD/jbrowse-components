@@ -449,10 +449,11 @@ a `recordsOnly` choice in the model belongs there.
   the payload has no INFO, so `fetchFullRecord` reads the record through
   `GetBasicFeatureDetails`, as LinearBasicDisplay's `fetchFullFeature` does,
   over its first base (a 5 Mb SV's span would be a 5 Mb read), the next click
-  aborting one in flight. It keeps a genotype cell's sample card and drops the
-  record's `samples` where rows draw them, the widget's feature persisting to
-  localStorage (`withClickedSample`); the click's own record opens where the
-  adapter finds none.
+  aborting one in flight. It keeps the record's `samples`, which the widget's
+  sample grid shows, and a genotype cell's sample card (`withClickedSample`);
+  the click's own record opens where the adapter finds none. Dropping the
+  samples where rows draw them, to keep the persisted widget small, left the
+  grid empty and was reverted.
 - **A record takes its SV class's color, otherwise `featureDefaultColor`**
   (`svClassColors`, the `svType` preset), with rows or without, while no
   `encoding.color` is picked, the SV classes drawn keyed as "SV type" above

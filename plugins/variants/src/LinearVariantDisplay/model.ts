@@ -860,9 +860,7 @@ export function stateModelFactory(
           clickInFlight = click
           const full = await adapterRecordOf(feature, click.signal)
           checkAbortSignal(click.signal)
-          return full
-            ? withClickedSample(full, feature, !self.drawsRows)
-            : feature
+          return full ? withClickedSample(full, feature) : feature
         }
         return {
           /**
