@@ -150,6 +150,8 @@ export function recordSpans({
       featureId: info.featureId,
       startBp: featurePositions[f * 2]!,
       endBp: featurePositions[f * 2 + 1]!,
+      groupKey: info.groupKey,
+      strand: 0,
     })),
   }
 }

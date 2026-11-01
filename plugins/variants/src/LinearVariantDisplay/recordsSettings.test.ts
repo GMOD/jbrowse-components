@@ -117,6 +117,20 @@ describe('records.facet', () => {
     expect(display.recordsGroupSections).toHaveLength(2)
   })
 
+  // a record of a section the user hid sits unplaced by choice: the chip
+  // counted it as "+N hidden", and its click raised the height to no effect
+  test("a hidden section's records are not on screen or counted hidden", () => {
+    const { display } = recordsDisplayAt(
+      SECTIONED,
+      10,
+      { facet: 'INFO.CLNSIG' },
+      false,
+    )
+    display.hideRecordsGroup('Pathogenic')
+    expect([...display.recordsOnScreenIds].sort()).toEqual(['a', 'c'])
+    expect(display.recordsHiddenCount).toBe(0)
+  })
+
   test('is not the sample facet', () => {
     const { display } = recordsDisplayAt(SECTIONED, 10, {}, false)
     display.recordsFacetByField('INFO.CLNSIG')

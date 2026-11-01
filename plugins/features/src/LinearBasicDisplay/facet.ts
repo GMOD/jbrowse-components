@@ -36,6 +36,28 @@ export function sectionIdsOf(facet: FeatureFacet) {
   }
 }
 
+// The features of the sections the user hid, which sit unplaced by choice
+// and so count as nothing the track failed to show, nor as on screen.
+export function hiddenSectionFeatureIds(
+  regions: Iterable<{
+    flatbushItems: readonly (SectionStamp & { featureId: string })[]
+  }>,
+  facet: FeatureFacet | undefined,
+  hiddenKeys: ReadonlySet<string>,
+): ReadonlySet<string> | undefined {
+  const sectionOf =
+    facet && hiddenKeys.size > 0 ? sectionIdsOf(facet) : undefined
+  return sectionOf
+    ? new Set(
+        [...regions].flatMap(data =>
+          data.flatbushItems
+            .filter(item => hiddenKeys.has(sectionOf(item).key))
+            .map(item => item.featureId),
+        ),
+      )
+    : undefined
+}
+
 export interface FeatureGroupSection extends GroupId {
   top: number
   height: number

@@ -82,7 +82,12 @@ import {
 } from './components/labelPositioning.ts'
 import { resolveRegionColors } from './components/resolveRegionColors.ts'
 import { featureColorKey, onScreenColorValues } from './derivedColorKey.ts'
-import { facetField, featureGroupSections, sectionIdsOf } from './facet.ts'
+import {
+  facetField,
+  featureGroupSections,
+  hiddenSectionFeatureIds,
+  sectionIdsOf,
+} from './facet.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
@@ -398,21 +403,12 @@ export default function baseStateModelFactory(
        * The features of the sections the user hid, which sit unplaced by
        * choice and so count as nothing the track failed to show.
        */
-      get hiddenGroupFeatureIds(): ReadonlySet<string> | undefined {
-        const { facet, hiddenGroupKeys } = self
-        if (!facet || hiddenGroupKeys.size === 0) {
-          return undefined
-        }
-        const sectionOf = sectionIdsOf(facet)
-        const ids = new Set<string>()
-        for (const data of self.rpcDataMap.values()) {
-          for (const item of data.flatbushItems) {
-            if (hiddenGroupKeys.has(sectionOf(item).key)) {
-              ids.add(item.featureId)
-            }
-          }
-        }
-        return ids
+      get hiddenGroupFeatureIds() {
+        return hiddenSectionFeatureIds(
+          self.rpcDataMap.values(),
+          self.facet,
+          self.hiddenGroupKeys,
+        )
       },
     }))
     .views(self => ({

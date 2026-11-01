@@ -25,6 +25,7 @@ import {
   createMembershipMemo,
   featureGroupSections,
   featureIdsTouchingBlocks,
+  hiddenSectionFeatureIds,
   fitLadderViews,
   fitLadderVolatiles,
   isPlacedRow,
@@ -482,11 +483,17 @@ export function recordsRenderViews(self: RecordsRenderHost) {
      * view has a width to lay its blocks out across.
      */
     get recordsOnScreenIds(): ReadonlySet<string> {
+      const spans = this.recordsSpans
       return self.canRender
         ? onScreenIdsMemo(
             featureIdsTouchingBlocks(
-              this.recordsSpans,
+              spans,
               self.view.settledDynamicBlocks,
+              hiddenSectionFeatureIds(
+                spans,
+                self.recordsFacet,
+                self.recordsHiddenGroups,
+              ),
             ),
           )
         : NO_FEATURE_IDS
