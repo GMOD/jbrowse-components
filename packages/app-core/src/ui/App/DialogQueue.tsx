@@ -7,12 +7,10 @@ import { observer } from 'mobx-react'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-// `removeActiveDialog` is BaseSession's, and every product session composes it,
-// but `AbstractSessionModel` does not declare it — so it is asked for rather
-// than assumed. A session without it leaves the fallback's close button doing
-// nothing, which is still better than the page it replaces.
-function dismissActiveDialog(session: AbstractSessionModel) {
-  ;(session as { removeActiveDialog?: () => void }).removeActiveDialog?.()
+// `removeActiveDialog` is BaseSession's, which every product session composes,
+// though `AbstractSessionModel` does not declare it
+type DialogQueueSession = AbstractSessionModel & {
+  removeActiveDialog: () => void
 }
 
 /**
@@ -34,7 +32,7 @@ function dismissActiveDialog(session: AbstractSessionModel) {
 const DialogQueue = observer(function DialogQueue({
   session,
 }: {
-  session: AbstractSessionModel
+  session: DialogQueueSession
 }) {
   const { DialogComponent, DialogProps } = session
   return DialogComponent ? (
@@ -45,7 +43,7 @@ const DialogQueue = observer(function DialogQueue({
           open
           title="Error"
           onClose={() => {
-            dismissActiveDialog(session)
+            session.removeActiveDialog()
           }}
         >
           <DialogContent>

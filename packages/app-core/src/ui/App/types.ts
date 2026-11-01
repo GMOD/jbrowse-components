@@ -34,4 +34,5 @@ export type AppSession = WorkspaceSessionType &
     renameCurrentSession: (arg: string) => void
     snackbarMessages: SnackbarMessage[]
     popSnackbarMessage: () => unknown
+    removeActiveDialog: () => void
   }

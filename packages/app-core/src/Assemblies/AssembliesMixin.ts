@@ -38,7 +38,20 @@ export function AssembliesMixin(
     })
     .views(s => {
       const self = asSession(s)
+      const assemblyConfsInScope = () => [
+        ...self.jbrowse.assemblies,
+        ...self.sessionAssemblies,
+        ...self.temporaryAssemblies,
+      ]
       return {
+        /**
+         * #getter
+         * Every name and alias `findAssemblyConf` answers for, so a form can
+         * refuse one before doing work under it.
+         */
+        get takenAssemblyNames(): string[] {
+          return assemblyConfsInScope().flatMap(a => [a.name, ...a.aliases])
+        },
         /**
          * #method
          * The assembly config whose name or one of whose aliases is `name`,
@@ -56,11 +69,7 @@ export function AssembliesMixin(
          * aliased `GRCh38` would leave `get('GRCh38')` to array order.
          */
         findAssemblyConf(name: string): BaseAssemblyConfigModel | undefined {
-          const confs = [
-            ...self.jbrowse.assemblies,
-            ...self.sessionAssemblies,
-            ...self.temporaryAssemblies,
-          ]
+          const confs = assemblyConfsInScope()
           return (
             confs.find(f => f.name === name) ??
             confs.find(f => f.aliases.includes(name))

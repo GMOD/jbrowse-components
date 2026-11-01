@@ -115,13 +115,12 @@ function reportError(
 
 // a root can be between sessions, so every dialog opener guards for one
 function queueSessionDialog<T extends DialogComponentType>(
-  maybeSession: unknown,
+  session: AbstractSessionModel | undefined,
   build: (
     session: AbstractSessionModel,
     doneCallback: () => void,
   ) => [T, React.ComponentProps<T>],
 ) {
-  const session = maybeSession as AbstractSessionModel | undefined
   if (session) {
     session.queueDialog(doneCallback => build(session, doneCallback))
   }
@@ -351,13 +350,8 @@ export default function rootModelFactory({
                         {
                           // every name and alias addAssemblyConfs refuses, so
                           // the dialog says so before it indexes the FASTA
-                          existingAssemblyNames: session
-                            ? [
-                                ...self.jbrowse.assemblies,
-                                ...session.sessionAssemblies,
-                                ...session.temporaryAssemblies,
-                              ].flatMap(a => [a.name, ...a.aliases])
-                            : [],
+                          existingAssemblyNames:
+                            session?.takenAssemblyNames ?? [],
                           // deliberately unguarded: a throw here leaves the
                           // dialog open showing the reason, with the staged
                           // genomes still in it. Catching would report the
