@@ -1,8 +1,10 @@
 import {
   JBrowseModelF,
+  PluginsUpdatedMixin,
   RootAppMenuMixin,
   aboutMenuItem,
   helpMenuItem,
+  onPluginsUpdated,
   processMutableMenuActions,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
@@ -19,7 +21,6 @@ import {
   openTrackMenuItem,
   preferencesMenuItem,
 } from '@jbrowse/product-core'
-import { autorun } from 'mobx'
 
 import { version } from '../version.ts'
 
@@ -84,6 +85,7 @@ export default function RootModel({
       }),
       InternetAccountsRootModelMixin(pluginManager),
       RootAppMenuMixin(),
+      PluginsUpdatedMixin(),
     )
 
     .volatile(() => ({
@@ -93,10 +95,6 @@ export default function RootModel({
       version,
       /**
        * #volatile
-       */
-      pluginsUpdated: false,
-      /**
-       * #volatile
        * host hook for {@link PluginsUpdated}, set from createViewState's
        * `onPluginsUpdated`. Undefined means the host didn't ask to handle it.
        */
@@ -104,73 +102,51 @@ export default function RootModel({
         | ((args: PluginsUpdate) => void)
         | undefined,
     }))
-    .actions(self => {
-      // pluginsUpdated latches true and this root lives on, so without this any
-      // later session edit would re-notify (or re-invoke the host) forever
-      let handled = false
-      return {
-        afterCreate() {
-          addDisposer(
-            self,
-            autorun(
-              function pluginsUpdatedAutorun() {
-                if (self.pluginsUpdated && !handled) {
-                  handled = true
-                  // A plugin set can only change by rebuilding the plugin
-                  // manager, and this app cannot do that for itself: it never
-                  // fetches plugins (loadPlugins is the host's call, since
-                  // createViewState is synchronous), and it does not own the
-                  // React tree it is mounted into. jbrowse-web rebuilds its own
-                  // loader here; an embedded component doing the equivalent —
-                  // window.location.reload() — would reload the *host's* page
-                  // and, with no autosave behind it, lose the whole session.
-                  //
-                  // So hand the host what a rebuild needs (the plugins to load,
-                  // the session to restore) and let it remount. With no host
-                  // hook, say so rather than doing something destructive.
-                  if (self.pluginsUpdatedCallback) {
-                    const { session } = self
-                    self.pluginsUpdatedCallback({
-                      plugins: dedupePlugins([
-                        ...self.jbrowse.plugins,
-                        ...(session?.sessionPlugins ?? []),
-                      ]),
-                      // `name` is restated so this satisfies SessionSnapshot:
-                      // the bake returns an open record, but the model
-                      // guarantees the session has one
-                      session: session
-                        ? {
-                            ...getShareableSessionSnapshot(session),
-                            name: session.name,
-                          }
-                        : undefined,
-                    })
-                  } else {
-                    self.session?.notify(
-                      'Plugin changes take effect the next time this page loads',
-                      'info',
-                    )
-                  }
-                }
-              },
-              { name: 'PluginsUpdated' },
-            ),
-          )
-        },
-        /**
-         * #action
-         */
-        setPluginsUpdated() {
-          self.pluginsUpdated = true
-        },
-        /**
-         * #action
-         */
-        setPluginsUpdatedCallback(callback: (args: PluginsUpdate) => void) {
-          self.pluginsUpdatedCallback = callback
-        },
-      }
-    })
+    .actions(self => ({
+      afterCreate() {
+        // A plugin set can only change by rebuilding the plugin manager, and
+        // this app cannot do that for itself: it never fetches plugins
+        // (loadPlugins is the host's call, since createViewState is
+        // synchronous), and it does not own the React tree it is mounted into.
+        // window.location.reload() would reload the *host's* page and, with no
+        // autosave behind it, lose the whole session. So hand the host what a
+        // rebuild needs and let it remount; with no host hook, say so.
+        addDisposer(
+          self,
+          onPluginsUpdated(self, () => {
+            const { session } = self
+            if (self.pluginsUpdatedCallback) {
+              self.pluginsUpdatedCallback({
+                plugins: dedupePlugins([
+                  ...self.jbrowse.plugins,
+                  ...(session?.sessionPlugins ?? []),
+                ]),
+                // `name` is restated so this satisfies SessionSnapshot: the
+                // bake returns an open record, but the model guarantees the
+                // session has one
+                session: session
+                  ? {
+                      ...getShareableSessionSnapshot(session),
+                      name: session.name,
+                    }
+                  : undefined,
+              })
+            } else {
+              session?.notify(
+                'Plugin changes take effect the next time this page loads',
+                'info',
+              )
+            }
+          }),
+        )
+      },
+      /**
+       * #action
+       */
+      setPluginsUpdatedCallback(callback: (args: PluginsUpdate) => void) {
+        self.pluginsUpdatedCallback = callback
+      },
+    }))
     .views(self => ({
       /**
        * #method

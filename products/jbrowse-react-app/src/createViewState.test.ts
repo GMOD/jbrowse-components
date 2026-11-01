@@ -51,7 +51,7 @@ test('the plugins the host loaded become the app plugin set', () => {
   expect([...state.jbrowse.plugins]).toEqual([definition])
 })
 
-test('onPluginsUpdated hands back the launch plugins, not just the session ones', () => {
+test('onPluginsUpdated hands back the launch plugins, not just the session ones', async () => {
   const onPluginsUpdated = jest.fn()
   const state = createViewState({
     config: { assemblies },
@@ -60,6 +60,7 @@ test('onPluginsUpdated hands back the launch plugins, not just the session ones'
   })
 
   state.setPluginsUpdated()
+  await Promise.resolve()
 
   expect(onPluginsUpdated).toHaveBeenCalledTimes(1)
   expect(onPluginsUpdated.mock.calls[0]![0].plugins).toEqual([definition])

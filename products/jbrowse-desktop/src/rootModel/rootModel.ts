@@ -3,9 +3,11 @@ import { lazy } from 'react'
 import {
   AssemblyManager,
   HistoryManagementMixin,
+  PluginsUpdatedMixin,
   RootAppMenuMixin,
   aboutMenuItem,
   helpMenuItem,
+  onPluginsUpdated,
   processMutableMenuActions,
   summarizeSession,
 } from '@jbrowse/app-core'
@@ -167,6 +169,7 @@ export default function rootModelFactory({
         InternetAccountsRootModelMixin(pluginManager),
         HistoryManagementMixin(),
         RootAppMenuMixin(),
+        PluginsUpdatedMixin(),
       )
       .props({
         /**
@@ -248,80 +251,86 @@ export default function rootModelFactory({
       }))
       // separate actions block so saveSession (defined above) is visible on
       // `self` with its real type, rather than casting self to the composed model
-      .actions(self => ({
-        /**
-         * #action
-         * Persist the session, then rebuild the plugin manager from disk so the
-         * changed plugin set takes effect (Loader wires openNewSessionCallback to
-         * reload from the session path).
-         */
-        async setPluginsUpdated() {
-          // openNewSessionCallback reloads from sessionPath; with no path there
-          // is nothing to reload from (loadSession('') would throw)
+      .actions(self => {
+        // openNewSessionCallback reloads from sessionPath; with no path there
+        // is nothing to reload from (loadSession('') would throw)
+        async function reloadPlugins() {
           const { session, sessionPath } = self
-          if (!sessionPath) {
-            return
-          }
-          // reported here: the plugin store's add and remove drop this promise,
-          // and a reload that fails leaves this session open to report it
-          try {
-            if (session) {
-              await self.saveSession(getSaveSession(self))
-            }
-            await self.openNewSessionCallback(sessionPath)
-          } catch (e) {
-            reportError(session, e)
-          }
-        },
-        /**
-         * #action
-         * Save now rather than waiting out the autosave's 1s throttle. Every
-         * path that tears the session down has to call this first.
-         */
-        async flushSession() {
-          // capture the session up front so a save failure reports to the same
-          // session even if it changed during the awaited save
-          const { session } = self
-          if (session) {
+          if (sessionPath) {
             try {
-              await self.saveSession(getSaveSession(self))
+              if (session) {
+                await self.saveSession(getSaveSession(self))
+              }
+              await self.openNewSessionCallback(sessionPath)
             } catch (e) {
               reportError(session, e)
             }
           }
-        },
-        afterCreate() {
-          // on detach AND on destroy: detach is what the Loader performs, and
-          // the destroy that follows it a task later is what a test that builds
-          // a root directly does instead. Running a disposer twice is harmless.
-          const registerTeardown = (disposer: () => void) => {
-            self.addDetachDisposer(disposer)
-            addDisposer(self, disposer)
-          }
-          registerTeardown(
-            autorun(
-              async () => {
-                // NOT `await this.flushSession()`, tempting as the reuse is: an
-                // MST action runs untracked, so the snapshot reads would happen
-                // where this autorun cannot see them and it would fire exactly
-                // once, silently ending autosave. The reads have to stay here,
-                // and getSaveSession has to be evaluated before saveSession (an
-                // action) is entered.
-                const { session } = self
-                if (session) {
-                  const snap = getSaveSession(self)
-                  try {
-                    await self.saveSession(snap)
-                  } catch (e) {
-                    reportError(session, e)
+        }
+        return {
+          /**
+           * #action
+           * Persist the session, then rebuild the plugin manager from disk so the
+           * changed plugin set takes effect. Run by `onPluginsUpdated`, which
+           * reports a failure on the session it leaves open
+           */
+          reloadPlugins,
+          /**
+           * #action
+           * Save now rather than waiting out the autosave's 1s throttle. Every
+           * path that tears the session down has to call this first.
+           */
+          async flushSession() {
+            // capture the session up front so a save failure reports to the same
+            // session even if it changed during the awaited save
+            const { session } = self
+            if (session) {
+              try {
+                await self.saveSession(getSaveSession(self))
+              } catch (e) {
+                reportError(session, e)
+              }
+            }
+          },
+          afterCreate() {
+            // on detach AND on destroy: detach is what the Loader performs, and
+            // the destroy that follows it a task later is what a test that builds
+            // a root directly does instead. Running a disposer twice is harmless.
+            const registerTeardown = (disposer: () => void) => {
+              self.addDetachDisposer(disposer)
+              addDisposer(self, disposer)
+            }
+            registerTeardown(
+              autorun(
+                async () => {
+                  // NOT `await this.flushSession()`, tempting as the reuse is: an
+                  // MST action runs untracked, so the snapshot reads would happen
+                  // where this autorun cannot see them and it would fire exactly
+                  // once, silently ending autosave. The reads have to stay here,
+                  // and getSaveSession has to be evaluated before saveSession (an
+                  // action) is entered.
+                  const { session } = self
+                  if (session) {
+                    const snap = getSaveSession(self)
+                    try {
+                      await self.saveSession(snap)
+                    } catch (e) {
+                      reportError(session, e)
+                    }
                   }
-                }
-              },
-              { delay: 1000 },
-            ),
-          )
-        },
-      }))
+                },
+                { delay: 1000 },
+              ),
+            )
+            addDisposer(
+              self,
+              onPluginsUpdated(self, () => {
+                void reloadPlugins()
+              }),
+            )
+          },
+        }
+      })
       .views(self => ({
         /**
          * #method

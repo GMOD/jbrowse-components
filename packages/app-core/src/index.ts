@@ -16,6 +16,10 @@ export { AppSessionMixin } from './AppSession/index.ts'
 export type { AppRootModel } from './AppSession/index.ts'
 export { RootAppMenuMixin } from './RootMenu/index.ts'
 export {
+  PluginsUpdatedMixin,
+  onPluginsUpdated,
+} from './PluginsUpdated/index.ts'
+export {
   WorkspaceLayoutMixin,
   isSessionWithWorkspaceLayout,
 } from './WorkspaceLayout/index.ts'

@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import {
   AssemblyManager,
   HistoryManagementMixin,
+  PluginsUpdatedMixin,
   RootAppMenuMixin,
   aboutMenuItem,
   helpMenuItem,
@@ -181,6 +182,7 @@ export default function RootModel({
       InternetAccountsRootModelMixin(pluginManager),
       HistoryManagementMixin(),
       RootAppMenuMixin(),
+      PluginsUpdatedMixin(),
     )
     .props({
       /**
@@ -205,10 +207,6 @@ export default function RootModel({
        * #volatile
        */
       gitCommit,
-      /**
-       * #volatile
-       */
-      pluginsUpdated: false,
       /**
        * #volatile
        */
@@ -308,12 +306,6 @@ export default function RootModel({
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           setupSessionDB(model)
         }
-      },
-      /**
-       * #action
-       */
-      setPluginsUpdated() {
-        self.pluginsUpdated = true
       },
       /**
        * #action

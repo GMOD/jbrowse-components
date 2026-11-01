@@ -180,7 +180,7 @@ test('adds menus', () => {
 describe('a plugin-set change', () => {
   const pluginDef = { name: 'Some', url: 'https://example.com/some.umd.js' }
 
-  test('hands the host what it needs to rebuild, exactly once', () => {
+  test('hands the host what it needs to rebuild, exactly once', async () => {
     const root = getRootModel().create({
       jbrowse: { ...mainThreadConfig.jbrowse, plugins: [pluginDef] },
       session: { name: 'my session' },
@@ -189,6 +189,7 @@ describe('a plugin-set change', () => {
     root.setPluginsUpdatedCallback(onPluginsUpdated)
 
     root.setPluginsUpdated()
+    await Promise.resolve()
 
     expect(onPluginsUpdated).toHaveBeenCalledTimes(1)
     const [update] = onPluginsUpdated.mock.calls[0]!
@@ -203,7 +204,25 @@ describe('a plugin-set change', () => {
     expect(onPluginsUpdated).toHaveBeenCalledTimes(1)
   })
 
-  test('tells the user when the host has no hook, instead of reloading', () => {
+  test('an update is one change: the host gets the new version, not the half-removed list', async () => {
+    const oldDef = { name: 'Some', url: 'https://example.com/some-1.0.umd.js' }
+    const newDef = { name: 'Some', url: 'https://example.com/some-2.0.umd.js' }
+    const root = getRootModel().create({
+      ...mainThreadConfig,
+      session: { name: 'my session', sessionPlugins: [oldDef] },
+    })
+    const onPluginsUpdated = jest.fn()
+    root.setPluginsUpdatedCallback(onPluginsUpdated)
+
+    root.session!.removeSessionPlugin(oldDef)
+    root.session!.addSessionPlugin(newDef)
+    await Promise.resolve()
+
+    expect(onPluginsUpdated).toHaveBeenCalledTimes(1)
+    expect(onPluginsUpdated.mock.calls[0]![0].plugins).toEqual([newDef])
+  })
+
+  test('tells the user when the host has no hook, instead of reloading', async () => {
     const root = getRootModel().create({
       ...mainThreadConfig,
       session: { name: 'my session' },
@@ -211,6 +230,7 @@ describe('a plugin-set change', () => {
     const notify = jest.spyOn(root.session!, 'notify')
 
     root.setPluginsUpdated()
+    await Promise.resolve()
 
     expect(notify).toHaveBeenCalledWith(
       expect.stringContaining('take effect'),

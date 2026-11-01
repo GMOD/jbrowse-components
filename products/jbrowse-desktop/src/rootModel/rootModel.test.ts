@@ -280,17 +280,32 @@ test('Open genome refuses a name a session assembly already has', async () => {
   expect(root.jbrowse.assemblies.length).toBe(0)
 })
 
-// the plugin store's add and remove drop setPluginsUpdated's promise, so a
-// reload that fails has to say so itself
 test('a plugin reload that fails is reported on the session it left open', async () => {
   const root = createRootModel()
   root.setOpenNewSessionCallback(async () => {
     throw new Error('plugin reload failed')
   })
 
-  await root.setPluginsUpdated()
+  await root.reloadPlugins()
 
   expect(
     root.session!.snackbarMessages.map((m: { message: string }) => m.message),
   ).toEqual(['Error: plugin reload failed'])
+})
+
+// the plugin store's update is a remove and an add in two actions; reloading
+// on the first would save, and reopen, a session holding neither version
+test('a plugin-set change reloads once, after both halves of an update', async () => {
+  const root = createRootModel()
+  const pluginsAtReload: (string | undefined)[][] = []
+  root.setOpenNewSessionCallback(async () => {
+    pluginsAtReload.push(root.jbrowse.plugins.map(p => p.name))
+  })
+
+  root.jbrowse.addPlugin({ name: 'Some', url: 'https://example.com/a.js' })
+  root.jbrowse.addPlugin({ name: 'Other', url: 'https://example.com/b.js' })
+  expect(pluginsAtReload).toEqual([])
+  await jest.runAllTimersAsync()
+
+  expect(pluginsAtReload).toEqual([['Some', 'Other']])
 })
