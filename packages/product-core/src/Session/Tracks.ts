@@ -1,12 +1,10 @@
 import { editableConfig } from '@jbrowse/core/util'
-import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, computed } from 'mobx'
 
 import { BaseSessionModel } from './BaseSession.ts'
 import { isSessionWithConnections } from './Connections.ts'
 import { ReferenceManagementSessionMixin } from './ReferenceManagement.ts'
-import { assertNotReaddedDifferently } from './readdedTrackConf.ts'
 import { assertTrackConfOutlivesItsAssemblies } from './temporaryAssemblyTracks.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -186,120 +184,62 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
         },
       }
     })
-    .actions(self => {
-      function addToSession(trackConf: AnyConfiguration) {
+    .actions(self => ({
+      /**
+       * #action
+       * Add a track config wherever *this user's* catalog edits belong — the
+       * "Add track" workflows, where an admin adding a track means to add it
+       * for the whole site. `SessionTracksManagerSessionMixin` overrides it to
+       * send a non-admin's to the session instead; here there is only the one
+       * destination.
+       *
+       * Anything that is not an Add-track workflow wants
+       * `addSessionTrackConf`: a track a feature stands up on the user's behalf
+       * — a search result, a computed consensus, a reconstruction's labels — is
+       * not a catalog entry, and publishing one writes it into the config.json
+       * every visitor is served, once per click.
+       */
+      publishTrackConf(trackConf: AnyConfiguration) {
         assertTrackConfOutlivesItsAssemblies(self, trackConf, 'jbrowse.tracks')
-        const expanded = expandLooseTrackConfig(trackConf, pluginManager)
-        const { trackId, type } = expanded as { trackId: string; type: string }
-        const existing = self.getTrackById(trackId)
-        if (existing) {
-          assertNotReaddedDifferently(pluginManager, existing, {
-            ...expanded,
-            trackId,
-            type,
-          })
-          return existing
-        }
         return editableConfig(self).addTrackConf(trackConf)
-      }
-      return {
-        /**
-         * #action
-         * Add a track config to *this session*.
-         *
-         * This mixin's session has no separate session-track store, so the
-         * destination is the jbrowse config — which in the products that compose
-         * it (desktop) is the single user's own file rather than something a
-         * server hands other visitors, so the two scopes are the same place.
-         * Defined here anyway so that every session has it: a feature that adds a
-         * track on the user's behalf can then call one action everywhere
-         * instead of asking which mixin the session composes.
-         * `SessionTracksManagerSessionMixin` overrides it with the real
-         * session-scoped store.
-         */
-        addSessionTrackConf(trackConf: AnyConfiguration) {
-          return addToSession(trackConf)
-        },
+      },
 
-        /**
-         * #action
-         * Add a track config wherever *this user's* catalog edits belong — the
-         * "Add track" workflows, where an admin adding a track means to add it
-         * for the whole site. `SessionTracksManagerSessionMixin` overrides it to
-         * send a non-admin's to the session instead; here there is only the one
-         * destination.
-         *
-         * Anything that is not an Add-track workflow wants
-         * `addSessionTrackConf`: a track a feature stands up on the user's behalf
-         * — a search result, a computed consensus, a reconstruction's labels — is
-         * not a catalog entry, and publishing one writes it into the config.json
-         * every visitor is served, once per click.
-         */
-        publishTrackConf(trackConf: AnyConfiguration) {
-          assertTrackConfOutlivesItsAssemblies(
-            self,
-            trackConf,
-            'jbrowse.tracks',
-          )
-          return editableConfig(self).addTrackConf(trackConf)
-        },
+      /**
+       * #action
+       * Persist edited track config back to the in-memory jbrowse config. The
+       * session-tracks mixin overrides this so a non-admin's edits become a
+       * shareable session-track override instead.
+       */
+      updateTrackConfiguration(trackConf: {
+        trackId: string
+        [key: string]: unknown
+      }) {
+        // an opened connection track lives in connectionTrackConfigs, not
+        // jbrowse.tracks; persist its edit there (jbrowse.updateTrackConf would
+        // no-op, since the track isn't in the config). SessionTracks defers a
+        // connection track's edit here, so without this branch it is lost on
+        // reload.
+        if (
+          isSessionWithConnections(self) &&
+          trackConf.trackId in self.connectionTrackConfigs
+        ) {
+          self.updateConnectionTrackConfig(trackConf)
+        } else {
+          editableConfig(self).updateTrackConf(trackConf)
+        }
+      },
 
-        /**
-         * #action
-         * Deprecated alias of `addSessionTrackConf`. Call that, or
-         * `publishTrackConf`, which say which destination they mean.
-         *
-         * @deprecated
-         *
-         * Kept because a prebuilt plugin bundle reaches this by name at runtime
-         * and cannot be recompiled — `jbrowse-plugin-civic` adds its track
-         * with it, and a member lookup that stops resolving throws nothing at all
-         * (`pluginFacingSessionApi.test.ts` is the guard). It now means the
-         * session, which is the destination every such caller wanted: a track a
-         * plugin stands up for one user is not a catalog entry. Nothing in tree
-         * may call it — `no-restricted-syntax` says so.
-         */
-        addTrackConf(trackConf: AnyConfiguration) {
-          return addToSession(trackConf)
-        },
-
-        /**
-         * #action
-         * Persist edited track config back to the in-memory jbrowse config. The
-         * session-tracks mixin overrides this so a non-admin's edits become a
-         * shareable session-track override instead.
-         */
-        updateTrackConfiguration(trackConf: {
-          trackId: string
-          [key: string]: unknown
-        }) {
-          // an opened connection track lives in connectionTrackConfigs, not
-          // jbrowse.tracks; persist its edit there (jbrowse.updateTrackConf would
-          // no-op, since the track isn't in the config). SessionTracks defers a
-          // connection track's edit here, so without this branch it is lost on
-          // reload.
-          if (
-            isSessionWithConnections(self) &&
-            trackConf.trackId in self.connectionTrackConfigs
-          ) {
-            self.updateConnectionTrackConfig(trackConf)
-          } else {
-            editableConfig(self).updateTrackConf(trackConf)
-          }
-        },
-
-        /**
-         * #action
-         */
-        deleteTrackConf(trackConf: AnyTrackConfig) {
-          const { trackId } = trackConf
-          self.dereferenceTrack(trackId, self.getReferring(trackId))
-          if (self.adminMode) {
-            editableConfig(self).deleteTrackConf(trackConf)
-          }
-        },
-      }
-    })
+      /**
+       * #action
+       */
+      deleteTrackConf(trackConf: AnyTrackConfig) {
+        const { trackId } = trackConf
+        self.dereferenceTrack(trackId, self.getReferring(trackId))
+        if (self.adminMode) {
+          editableConfig(self).deleteTrackConf(trackConf)
+        }
+      },
+    }))
 }
 
 /** Session mixin MST type for a session that has tracks */

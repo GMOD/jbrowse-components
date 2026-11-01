@@ -614,10 +614,13 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          *
          * @deprecated
          *
-         * The session-scoped add under its old name, for the prebuilt plugin
-         * bundles that reach it by name at runtime. See the base mixin's copy
-         * for why it survives and why it now means the session; nothing in tree
-         * may call it.
+         * Kept because a prebuilt plugin bundle reaches this by name at runtime
+         * and cannot be recompiled — `jbrowse-plugin-civic` adds its track
+         * with it, and a member lookup that stops resolving throws nothing at all
+         * (`pluginFacingSessionApi.test.ts` is the guard). It means the session,
+         * which is the destination every such caller wanted: a track a plugin
+         * stands up for one user is not a catalog entry. Nothing in tree may
+         * call it — `no-restricted-syntax` says so.
          */
         addTrackConf(trackConf: AnyConfiguration) {
           return addToSession(trackConf)
