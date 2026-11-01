@@ -3,7 +3,10 @@ import {
   PluginsUpdatedMixin,
   RootAppMenuMixin,
   aboutMenuItem,
+  exportSessionMenuItem,
   helpMenuItem,
+  importSessionMenuItem,
+  newSessionMenuItem,
   onPluginsUpdated,
   processMutableMenuActions,
 } from '@jbrowse/app-core'
@@ -13,10 +16,7 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
-  exportSessionMenuItem,
   getShareableSessionSnapshot,
-  importSessionMenuItem,
-  newSessionMenuItem,
   openConnectionMenuItem,
   openTrackMenuItem,
   preferencesMenuItem,

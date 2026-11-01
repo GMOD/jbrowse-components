@@ -7,14 +7,14 @@ import AssemblyAddForm from './AssemblyAddForm.tsx'
 import AssemblyEditor from './AssemblyEditor.tsx'
 import AssemblyTable from './AssemblyTable.tsx'
 
+import type { AssemblyManagerSession } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const AssemblyManager = observer(function AssemblyManager({
   session,
   onClose,
 }: {
-  session: AbstractSessionModel
+  session: AssemblyManagerSession
   onClose: () => void
 }) {
   const [isFormOpen, setIsFormOpen] = useState(false)

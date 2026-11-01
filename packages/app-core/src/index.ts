@@ -85,8 +85,17 @@ export {
 } from './JbApi/index.ts'
 export type { JbApi } from './JbApi/index.ts'
 export { default as AppWidgetsPlugin } from './AppWidgets/index.ts'
-export { AssemblyManager } from './AssemblyManager/index.ts'
-export { aboutMenuItem, helpMenuItem } from './AppWidgets/menuItems.ts'
+export {
+  aboutMenuItem,
+  assemblyManagerMenuItem,
+  exportSessionMenuItem,
+  helpMenuItem,
+  importSessionMenuItem,
+  newSessionMenuItem,
+  pluginStoreMenuItem,
+  redoMenuItem,
+  undoMenuItem,
+} from './AppWidgets/menuItems.ts'
 export { getOrCreateJobsListWidget } from './AppWidgets/JobsListWidget/getOrCreateJobsListWidget.ts'
 export type { JobsListModel } from './AppWidgets/JobsListWidget/model.ts'
 export {

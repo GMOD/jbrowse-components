@@ -7,8 +7,8 @@ import { Button, DialogActions, DialogContent, IconButton } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
+import type { AssemblyManagerSession } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 const AssemblyTable = observer(function AssemblyTable({
   onEditAssembly,
@@ -19,7 +19,7 @@ const AssemblyTable = observer(function AssemblyTable({
   onEditAssembly: (arg: AnyConfigurationModel) => void
   onAddAssembly: () => void
   onClose: () => void
-  session: AbstractSessionModel
+  session: AssemblyManagerSession
 }) {
   return (
     <>
@@ -45,7 +45,7 @@ const AssemblyTable = observer(function AssemblyTable({
                 renderCell: ({ row }) => {
                   const { assembly, name } = row
                   const editable =
-                    session.sessionAssemblies?.includes(assembly) ||
+                    session.sessionAssemblies.includes(assembly) ||
                     session.adminMode
                   return (
                     <>
@@ -62,13 +62,7 @@ const AssemblyTable = observer(function AssemblyTable({
                         data-testid={`${name}-delete`}
                         disabled={!editable}
                         onClick={() => {
-                          if (!session.removeAssembly) {
-                            session.notify(
-                              'Unable to find removeAssembly function',
-                            )
-                          } else {
-                            session.removeAssembly(name)
-                          }
+                          session.removeAssembly(name)
                         }}
                       >
                         <DeleteIcon />

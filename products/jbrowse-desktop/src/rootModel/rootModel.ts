@@ -1,15 +1,18 @@
 import { lazy } from 'react'
 
 import {
-  AssemblyManager,
   HistoryManagementMixin,
   PluginsUpdatedMixin,
   RootAppMenuMixin,
   aboutMenuItem,
+  assemblyManagerMenuItem,
   helpMenuItem,
   onPluginsUpdated,
+  pluginStoreMenuItem,
   processMutableMenuActions,
+  redoMenuItem,
   summarizeSession,
+  undoMenuItem,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { DNA, Indexing } from '@jbrowse/core/ui/Icons'
@@ -25,10 +28,7 @@ import {
   hydratedForms,
   openConnectionMenuItem,
   openTrackMenuItem,
-  pluginStoreMenuItem,
   preferencesMenuItem,
-  redoMenuItem,
-  undoMenuItem,
 } from '@jbrowse/product-core'
 import AppsIcon from '@mui/icons-material/Apps'
 import DescriptionIcon from '@mui/icons-material/Description'
@@ -500,22 +500,7 @@ export default function rootModelFactory({
                   { type: 'divider' },
                   pluginStoreMenuItem(),
                   preferencesMenuItem(pluginManager),
-                  {
-                    label: 'Open assembly manager',
-                    icon: DNA,
-                    onClick: () => {
-                      queueSessionDialog(
-                        self.session,
-                        (session, handleClose) => [
-                          AssemblyManager,
-                          {
-                            session,
-                            onClose: handleClose,
-                          },
-                        ],
-                      )
-                    },
-                  },
+                  assemblyManagerMenuItem(),
                   {
                     label: 'Jobs list',
                     icon: Indexing,

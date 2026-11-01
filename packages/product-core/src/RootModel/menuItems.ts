@@ -1,16 +1,8 @@
 import { lazy } from 'react'
 
 import { Cable } from '@jbrowse/core/ui/Icons'
-import AddIcon from '@mui/icons-material/Add'
-import ExtensionIcon from '@mui/icons-material/Extension'
-import GetAppIcon from '@mui/icons-material/GetApp'
-import PublishIcon from '@mui/icons-material/Publish'
-import RedoIcon from '@mui/icons-material/Redo'
 import SettingsIcon from '@mui/icons-material/Settings'
 import StorageIcon from '@mui/icons-material/Storage'
-import UndoIcon from '@mui/icons-material/Undo'
-
-import { getShareableSessionSnapshot } from '../Session/index.ts'
 
 import type { PreferencesDialogSession } from '../ui/PreferencesDialog.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -27,60 +19,6 @@ const PreferencesDialog = lazy(() => import('../ui/PreferencesDialog.tsx'))
 
 const MULTI_VIEW_WARNING =
   'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right'
-
-// the "new session" action lives on the root, not the session, so these two take
-// it rather than reading it off the bound argument like the rest
-interface RootWithDefaultSession {
-  setDefaultSession: () => void
-}
-
-export function newSessionMenuItem(root: RootWithDefaultSession): MenuItem {
-  return {
-    label: 'New session',
-    icon: AddIcon,
-    onClick: () => {
-      root.setDefaultSession()
-    },
-  }
-}
-
-export function importSessionMenuItem(): MenuItem {
-  return {
-    label: 'Import session...',
-    icon: PublishIcon,
-    onClick: (session: SessionWithWidgets) => {
-      session.openWidget('ImportSessionWidget', 'importSessionWidget')
-    },
-  }
-}
-
-export function exportSessionMenuItem(): MenuItem {
-  return {
-    label: 'Export session',
-    icon: GetAppIcon,
-    onClick: async (session: AbstractSessionModel) => {
-      const { saveAs } = await import('@jbrowse/core/util/FileSaver')
-      saveAs(
-        new Blob(
-          [
-            JSON.stringify(
-              {
-                // an exported file is read by someone whose own preferences
-                // differ, so stamp what the live session resolves at read
-                // time (same rule as ShareDialog)
-                session: getShareableSessionSnapshot(session),
-              },
-              null,
-              2,
-            ),
-          ],
-          { type: 'text/plain;charset=utf-8' },
-        ),
-        'session.json',
-      )
-    },
-  }
-}
 
 export function openTrackMenuItem(): MenuItem {
   return {
@@ -112,16 +50,6 @@ export function openConnectionMenuItem(): MenuItem {
   }
 }
 
-export function pluginStoreMenuItem(): MenuItem {
-  return {
-    label: 'Plugin store',
-    icon: ExtensionIcon,
-    onClick: (session: SessionWithWidgets) => {
-      session.openWidget('PluginStoreWidget', 'pluginStoreWidget')
-    },
-  }
-}
-
 export function preferencesMenuItem(pluginManager: PluginManager): MenuItem {
   return {
     label: 'Preferences',
@@ -131,40 +59,6 @@ export function preferencesMenuItem(pluginManager: PluginManager): MenuItem {
         PreferencesDialog,
         { session, pluginManager, handleClose },
       ])
-    },
-  }
-}
-
-// undo/redo read the root's HistoryManagementMixin TimeTraveller; only the full
-// app shells (jbrowse-web, desktop) compose it, so the node is passed in rather
-// than reached for here
-interface HistoryManager {
-  canUndo: boolean
-  canRedo: boolean
-  undo(): void
-  redo(): void
-}
-
-export function undoMenuItem(history: HistoryManager): MenuItem {
-  return {
-    label: 'Undo',
-    icon: UndoIcon,
-    onClick: () => {
-      if (history.canUndo) {
-        history.undo()
-      }
-    },
-  }
-}
-
-export function redoMenuItem(history: HistoryManager): MenuItem {
-  return {
-    label: 'Redo',
-    icon: RedoIcon,
-    onClick: () => {
-      if (history.canRedo) {
-        history.redo()
-      }
     },
   }
 }

@@ -26,13 +26,7 @@ export { PreferencesConfigSchemaFactory } from './PreferencesConfig.ts'
 export { createConfigModel } from './createConfigModel.ts'
 export type { RootConfigurationSnapshot } from './createConfigModel.ts'
 export {
-  exportSessionMenuItem,
-  importSessionMenuItem,
-  newSessionMenuItem,
   openConnectionMenuItem,
   openTrackMenuItem,
-  pluginStoreMenuItem,
   preferencesMenuItem,
-  redoMenuItem,
-  undoMenuItem,
 } from './menuItems.ts'

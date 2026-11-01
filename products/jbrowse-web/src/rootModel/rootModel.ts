@@ -1,32 +1,31 @@
 import { lazy } from 'react'
 
 import {
-  AssemblyManager,
   HistoryManagementMixin,
   PluginsUpdatedMixin,
   RootAppMenuMixin,
   aboutMenuItem,
-  helpMenuItem,
-  processMutableMenuActions,
+  assemblyManagerMenuItem,
   byLastUsedDesc,
+  exportSessionMenuItem,
+  helpMenuItem,
+  importSessionMenuItem,
+  newSessionMenuItem,
+  pluginStoreMenuItem,
+  processMutableMenuActions,
+  redoMenuItem,
+  undoMenuItem,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { sessionLoading } from '@jbrowse/core/ui/AppReadyMarker'
-import { DNA } from '@jbrowse/core/ui/Icons'
 import { indexedDBAvailable } from '@jbrowse/core/util'
 import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
-  exportSessionMenuItem,
-  importSessionMenuItem,
-  newSessionMenuItem,
   openConnectionMenuItem,
   openTrackMenuItem,
-  pluginStoreMenuItem,
   preferencesMenuItem,
-  redoMenuItem,
-  undoMenuItem,
 } from '@jbrowse/product-core'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
@@ -589,18 +588,7 @@ export default function RootModel({
               redoMenuItem(self.history),
               { type: 'divider' },
               pluginStoreMenuItem(),
-              {
-                label: 'Assembly manager',
-                icon: DNA,
-                onClick: () => {
-                  const { session } = self
-                  session?.queueDialog((onClose: () => void) => [
-                    AssemblyManager,
-                    { onClose, session, rootModel: self },
-                  ])
-                },
-              },
-
+              assemblyManagerMenuItem(),
               preferencesMenuItem(pluginManager),
             ],
           },

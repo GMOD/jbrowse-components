@@ -10,16 +10,10 @@ export {
   InternetAccountsRootModelMixin,
   PreferencesConfigSchemaFactory,
   createConfigModel,
-  exportSessionMenuItem,
-  importSessionMenuItem,
   isRootModel,
-  newSessionMenuItem,
   openConnectionMenuItem,
   openTrackMenuItem,
-  pluginStoreMenuItem,
   preferencesMenuItem,
-  redoMenuItem,
-  undoMenuItem,
 } from './RootModel/index.ts'
 export type {
   BaseRootModel,

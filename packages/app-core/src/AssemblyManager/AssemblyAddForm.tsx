@@ -9,16 +9,14 @@ import {
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type {
-  AbstractSessionModel,
-  FileLocation,
-} from '@jbrowse/core/util/types'
+import type { AssemblyManagerSession } from './types.ts'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
 const AssemblyAddForm = observer(function AssemblyAddForm({
   session,
   onClose,
 }: {
-  session: AbstractSessionModel
+  session: AssemblyManagerSession
   onClose: () => void
 }) {
   const [form, setForm] = useState(initialFormState)
@@ -34,7 +32,7 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
           fastaLocation,
         }),
       )
-      session.addAssembly?.(conf)
+      session.addAssembly(conf)
       session.notify(`Added "${conf.name}"`, 'success')
       onClose()
     } catch (e) {
