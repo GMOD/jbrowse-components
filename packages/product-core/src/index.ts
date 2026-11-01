@@ -132,6 +132,8 @@ export {
   migrateSessionSnapshot,
   migratedDisplayInstanceKeys,
 } from './sessionMigrations/index.ts'
+// named by the emitted session model declarations (heldForMissingPlugins)
+export type { HeldNode } from './pruneUnbuildableNodes.ts'
 export { dropUnloadableTracks } from './sessionUtils.ts'
 export type { DroppedSessionNode } from './sessionUtils.ts'
 export { default as EmbeddedViewContainer } from './embedded/EmbeddedViewContainer.tsx'
