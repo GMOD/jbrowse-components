@@ -95,6 +95,7 @@ export type LinearGenomeViewLaunchProps = Partial<
     keyof InitState | 'id' | 'type' | 'launch'
   >
 >
+// #endregion
 
 /**
  * One LinearGenomeView panel inside another view (a breakpoint split view's
@@ -103,4 +104,3 @@ export type LinearGenomeViewLaunchProps = Partial<
  */
 export type LinearGenomeViewPanelInit = Omit<InitState, 'nav' | 'tracklist'> &
   LinearGenomeViewLaunchProps
-// #endregion

@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1288)
+# model members with no description (1287)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -700,7 +700,6 @@ LinearFeatureBaseDisplay.rpcProps
 LinearFeatureBaseDisplay.scrollContentHeight
 LinearFeatureBaseDisplay.scrollExtentMaxY
 LinearFeatureBaseDisplay.scrollViewportHeight
-LinearFeatureBaseDisplay.searchFeatureByID
 LinearFeatureBaseDisplay.selectFeatureById
 LinearFeatureBaseDisplay.selectedFeatureId
 LinearFeatureBaseDisplay.setDisplayMode

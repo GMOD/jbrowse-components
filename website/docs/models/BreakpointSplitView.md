@@ -135,7 +135,7 @@ From [BaseViewModel](../baseviewmodel): <span id="getter-rendersdisplays">[`rend
 | <span id="action-reversevieworder">**reverseViewOrder**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-squareview">**squareView**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setlaunch">**setLaunch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(launch?: LaunchInput&lt;BreakpointSplitViewCommands&gt; &#124; undefined)…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(launch?: LaunchInput&lt;BreakpointSplitViewCommands&gt; &#124; undefined) =&gt; void</code></pre></dialog></span> |  |
-| <span id="action-setviews">**setViews**</span><br><code>(viewInits: BreakpointSplitViewInitView[]) =&gt; void</code> |  |
+| <span id="action-setviews">**setViews**</span><br><code>(viewInits: LinearGenomeViewPanelInit[]) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>3 inherited actions from one model</summary>
