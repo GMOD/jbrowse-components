@@ -14,20 +14,13 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
-  MultipleViewsSessionMixin,
-  PreferencesSessionMixin,
-  ReferenceManagementSessionMixin,
-  SessionTracksManagerSessionMixin,
-  ThemeManagerSessionMixin,
   TrackMenuItemsSessionMixin,
   copyTrackSnapshot,
   finalizeSession,
   trackActionItems,
 } from '@jbrowse/product-core'
 
-import { AppSessionMixin } from '../AppSession/index.ts'
-import { AssembliesMixin } from '../Assemblies/index.ts'
-import { WorkspaceLayoutMixin } from '../WorkspaceLayout/index.ts'
+import { AppSessionModel } from '../AppSession/index.ts'
 import { WebSessionConnectionsMixin } from './SessionConnections.ts'
 
 import type { AbstractWebRootModel } from './WebRootModel.ts'
@@ -60,19 +53,9 @@ export function BaseWebSessionModel({
   return types
     .compose(
       'WebCoreSessionModel',
-      ReferenceManagementSessionMixin(pluginManager),
-      ThemeManagerSessionMixin(pluginManager),
-      MultipleViewsSessionMixin(pluginManager),
-      PreferencesSessionMixin(pluginManager),
-      SessionTracksManagerSessionMixin(pluginManager),
-      AssembliesMixin(pluginManager, assemblyConfigSchema),
-      AppSessionMixin(pluginManager),
+      AppSessionModel({ pluginManager, assemblyConfigSchema }),
       WebSessionConnectionsMixin(pluginManager),
-      // nested to stay within types.compose's 10-argument limit
-      types.compose(
-        WorkspaceLayoutMixin(),
-        TrackMenuItemsSessionMixin(pluginManager),
-      ),
+      TrackMenuItemsSessionMixin(pluginManager),
     )
     .props({
       /**

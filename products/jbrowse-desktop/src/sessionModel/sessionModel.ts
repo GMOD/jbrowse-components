@@ -1,16 +1,7 @@
-import {
-  AppSessionMixin,
-  AssembliesMixin,
-  WorkspaceLayoutMixin,
-} from '@jbrowse/app-core'
+import { AppSessionModel } from '@jbrowse/app-core'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   ConnectionManagementSessionMixin,
-  MultipleViewsSessionMixin,
-  PreferencesSessionMixin,
-  ReferenceManagementSessionMixin,
-  SessionTracksManagerSessionMixin,
-  ThemeManagerSessionMixin,
   finalizeSession,
 } from '@jbrowse/product-core'
 
@@ -40,19 +31,9 @@ export default function sessionModelFactory({
 }) {
   const sessionModel = types.compose(
     'JBrowseDesktopSessionModel',
-    ReferenceManagementSessionMixin(pluginManager),
+    AppSessionModel({ pluginManager, assemblyConfigSchema }),
     ConnectionManagementSessionMixin(pluginManager),
-    ThemeManagerSessionMixin(pluginManager),
-    SessionTracksManagerSessionMixin(pluginManager),
-    // nested to stay within types.compose's 10-argument limit
-    types.compose(
-      MultipleViewsSessionMixin(pluginManager),
-      PreferencesSessionMixin(pluginManager),
-    ),
-    AssembliesMixin(pluginManager, assemblyConfigSchema),
-    AppSessionMixin(pluginManager),
     DesktopSessionTrackMenuMixin(pluginManager),
-    WorkspaceLayoutMixin(),
   )
 
   return finalizeSession(pluginManager, sessionModel)

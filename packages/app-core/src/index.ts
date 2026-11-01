@@ -12,7 +12,7 @@ export {
 } from './JBrowseConfig/index.ts'
 export { JBrowseModelF } from './JBrowseModel/index.ts'
 export { AssembliesMixin } from './Assemblies/index.ts'
-export { AppSessionMixin } from './AppSession/index.ts'
+export { AppSessionMixin, AppSessionModel } from './AppSession/index.ts'
 export type { AppRootModel } from './AppSession/index.ts'
 export { RootAppMenuMixin } from './RootMenu/index.ts'
 export {
