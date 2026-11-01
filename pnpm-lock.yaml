@@ -796,23 +796,11 @@ importers:
         specifier: ^0.28.2
         version: 0.28.2
 
-  packages/text-indexing:
-    dependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../core
-      '@jbrowse/text-indexing-core':
-        specifier: workspace:^
-        version: link:../text-indexing-core
-      react:
-        specifier: '>=19.0.0'
-        version: 19.3.1
-      react-dom:
-        specifier: '>=19.0.0'
-        version: 19.3.1(react@19.3.1)
-
   packages/text-indexing-core:
     dependencies:
+      '@jbrowse/add-track-core':
+        specifier: workspace:^
+        version: link:../add-track-core
       ixixx:
         specifier: ^3.1.0
         version: 3.1.0
@@ -2337,9 +2325,6 @@ importers:
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
-      '@jbrowse/text-indexing':
-        specifier: workspace:^
-        version: link:../../packages/text-indexing
       '@jbrowse/text-indexing-core':
         specifier: workspace:^
         version: link:../../packages/text-indexing-core

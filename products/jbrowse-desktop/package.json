@@ -91,7 +91,6 @@
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/product-core": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
-    "@jbrowse/text-indexing": "workspace:^",
     "@jbrowse/text-indexing-core": "workspace:^",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",

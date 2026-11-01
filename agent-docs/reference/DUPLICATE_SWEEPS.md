@@ -33,9 +33,9 @@ Name collisions across files are almost all one of these:
 
 ## What holds a legitimate copy in step
 
-- **A test that imports both**, in a package depending on both:
-  `packages/text-indexing/src/util.test.ts` pins core's `indexableAdapters`
-  mirror (core cannot import the indexer: `node:fs`).
+- **A test that imports both**, in a package depending on both. Prefer
+  moving the shared value to a package both sides can import, as the indexable
+  adapter table moved to `@jbrowse/add-track-core`.
 - **A typed wrapper that is itself the check**: jbrowse-web's `buildLgvInit`
   annotates its return with the real `InitState`.
 - **A comment naming the twin**, where the copy is trivial and frozen.

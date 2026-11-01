@@ -5,9 +5,6 @@ import {
 
 import type { Track } from '@jbrowse/text-indexing-core'
 
-/** @deprecated desktop indexes per track only; nothing reads this */
-export type indexType = 'aggregate' | 'perTrack'
-
 export function createTextSearchConf(
   name: string,
   assemblyNames: string[],

@@ -36,6 +36,7 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
+    "@jbrowse/add-track-core": "workspace:^",
     "ixixx": "^3.1.0"
   },
   "publishConfig": {

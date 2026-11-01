@@ -1,6 +1,7 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
-import { indexTracks } from '@jbrowse/text-indexing'
+
+import { indexTracks } from '../indexTracks.ts'
 
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { IndexingPolicy, Track } from '@jbrowse/text-indexing-core'

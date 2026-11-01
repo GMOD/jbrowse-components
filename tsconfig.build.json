@@ -18,7 +18,6 @@
     { "path": "packages/sv-core/tsconfig.build.esm.json" },
     { "path": "packages/synteny-core/tsconfig.build.esm.json" },
     { "path": "packages/tables/tsconfig.build.esm.json" },
-    { "path": "packages/text-indexing/tsconfig.build.esm.json" },
     { "path": "packages/text-indexing-core/tsconfig.build.esm.json" },
     { "path": "packages/tree-sidebar/tsconfig.build.esm.json" },
     { "path": "packages/wiggle-core/tsconfig.build.esm.json" },

@@ -16,3 +16,8 @@ export {
 } from './indexCandidates.ts'
 export { type LooseTrackInput, isLooseTrackConfig } from './looseTrackConfig.ts'
 export { adapterTypesToTrackTypeMap } from './trackTypes.generated.ts'
+export {
+  type IndexableFormat,
+  indexableAdapters,
+  isSupportedIndexingAdapter,
+} from './indexableAdapters.ts'

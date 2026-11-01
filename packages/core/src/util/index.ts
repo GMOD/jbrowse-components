@@ -426,22 +426,7 @@ export {
   parseMotifList,
 } from './parseMotifList.ts'
 
-// Browser-safe mirror of `indexableAdapters` in @jbrowse/text-indexing-core,
-// which cannot be imported here (it pulls in node:fs). Pinned by the parity
-// test in packages/text-indexing/src/util.test.ts — the one place that depends
-// on both packages. NOT text-indexing-core's own common.test.ts, which this
-// used to name: that one calls text-indexing-core's `isSupportedIndexingAdapter`
-// rather than this mirror, so it passes however far the two drift apart.
-export function isSupportedIndexingAdapter(type = '') {
-  return [
-    'Gff3Adapter',
-    'Gff3TabixAdapter',
-    'GtfAdapter',
-    'GtfTabixAdapter',
-    'VcfAdapter',
-    'VcfTabixAdapter',
-  ].includes(type)
-}
+export { isSupportedIndexingAdapter } from '@jbrowse/add-track-core'
 
 // Null prototype, not `{}`: keys are data (a BAM QNAME, a track category), and
 // on a plain object `result['constructor'] ??= []` finds Object and never

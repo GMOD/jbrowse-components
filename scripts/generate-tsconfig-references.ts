@@ -27,7 +27,6 @@ const nodePackages = new Set([
   '@jbrowse/launch-args',
   '@jbrowse/shader-tools',
   '@jbrowse/text-indexing-core',
-  '@jbrowse/text-indexing',
 ])
 
 interface PackageJson {

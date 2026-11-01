@@ -361,7 +361,7 @@ test('indexes entire volvox config', async () => {
 })
 
 // Integration test with real HTTP server - tests fix for remote gz file streaming
-// This tests the ReadableStream.from() fix in @jbrowse/text-indexing
+// This tests the ReadableStream.from() fix in @jbrowse/text-indexing-core
 describe('real HTTP server integration', () => {
   let server: http.Server
   let serverPort: number

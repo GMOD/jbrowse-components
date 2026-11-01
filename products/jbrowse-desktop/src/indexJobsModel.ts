@@ -13,13 +13,13 @@ import {
   isAlive,
   types,
 } from '@jbrowse/mobx-state-tree'
-import {
-  createTextSearchConf,
-  findTrackConfigsToIndex,
-} from '@jbrowse/text-indexing/util'
 import { autorun, observable, toJS } from 'mobx'
 
 import { NAME_INDICES_DIR } from '../electron/ipc/channelTypes.ts'
+import {
+  createTextSearchConf,
+  findTrackConfigsToIndex,
+} from './TextIndexing/textSearchConf.ts'
 import { invokeIpc } from './ipc.ts'
 
 import type { DesktopRootModel } from './rootModel/rootModel.ts'
