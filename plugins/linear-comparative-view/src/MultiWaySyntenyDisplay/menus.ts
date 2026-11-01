@@ -124,7 +124,6 @@ export function laneHeaderMenuItems(
   const region = laneRegion(lane)
   const loc =
     region && assembleLocStringRaw({ ...region, reversed: lane.frame?.flipped })
-  const held = model.holdsAssembly(name)
   return [
     ...sectionRowMenuItems(
       {
@@ -136,24 +135,10 @@ export function laneHeaderMenuItems(
       name,
       'lane',
     ),
-    {
-      label: openMateLabel(lane.label),
-      disabled: loc === undefined || !held,
-      onClick: () => {
-        model.openInNewView(name, loc!)
-      },
-    },
-    ...(model.canReanchor
-      ? [
-          {
-            label: `Re-anchor on ${lane.label}`,
-            disabled: loc === undefined || !held,
-            onClick: () => {
-              model.reanchor(name, loc!)
-            },
-          },
-        ]
-      : []),
+    ...mateLaneGoItems(model, lane, loc, {
+      open: openMateLabel(lane.label),
+      reanchor: `Re-anchor on ${lane.label}`,
+    }),
     ...laneChangeMenuItems(model, lane),
     ...laneContigMenuItems(model, lane),
     ...laneFlipMenuItems(model, lane),
@@ -224,23 +209,45 @@ export function laneLocusMenuItems(
       },
     ]
   }
-  const held = model.holdsAssembly(lane.assemblyName)
+  return mateLaneGoItems(model, lane, loc, {
+    open: `Open ${lane.label} at ${name}`,
+    reanchor: `Re-anchor on ${lane.label} at ${name}`,
+  })
+}
+
+/**
+ * A mate lane's Open in a new view and Re-anchor rows at `loc`, disabled with
+ * no locus to go to or no assembly in the session to open
+ */
+function mateLaneGoItems(
+  model: LaneHeaderModel,
+  lane: HeaderLane,
+  loc: string | undefined,
+  labels: { open: string; reanchor: string },
+): MenuItem[] {
+  const name = lane.assemblyName
+  const go = (action: (assemblyName: string, loc: string) => void) =>
+    loc !== undefined && model.holdsAssembly(name)
+      ? {
+          onClick: () => {
+            action(name, loc)
+          },
+        }
+      : { disabled: true, onClick: () => {} }
   return [
     {
-      label: `Open ${lane.label} at ${name}`,
-      disabled: !held,
-      onClick: () => {
-        model.openInNewView(lane.assemblyName, loc)
-      },
+      label: labels.open,
+      ...go((assemblyName, at) => {
+        model.openInNewView(assemblyName, at)
+      }),
     },
     ...(model.canReanchor
       ? [
           {
-            label: `Re-anchor on ${lane.label} at ${name}`,
-            disabled: !held,
-            onClick: () => {
-              model.reanchor(lane.assemblyName, loc)
-            },
+            label: labels.reanchor,
+            ...go((assemblyName, at) => {
+              model.reanchor(assemblyName, at)
+            }),
           },
         ]
       : []),

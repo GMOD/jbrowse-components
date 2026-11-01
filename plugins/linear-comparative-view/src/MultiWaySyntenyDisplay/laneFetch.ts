@@ -77,12 +77,20 @@ export interface HeldLaneGenes extends HeldLane {
 export interface HeldLaneLinks extends HeldLane, LaneLinks {}
 
 /**
- * `landedFor` stamps the specs' own anchor, so a run landing after a
- * re-anchor cannot mark the new anchor covered.
+ * `landed` once any run has committed; `landedFor` stamps the specs' own
+ * anchor, so a run landing after a re-anchor cannot mark the new anchor
+ * covered.
  */
 export interface LaneFetchState<Held extends HeldLane> {
-  held?: Map<string, Held>
+  held: ReadonlyMap<string, Held>
+  landed: boolean
   landedFor?: string
+}
+
+export function unlandedLaneFetch<
+  Held extends HeldLane,
+>(): LaneFetchState<Held> {
+  return { held: new Map(), landed: false }
 }
 
 /** Not `length > 1`: an anchor without a gene track has no spec. */
@@ -94,7 +102,7 @@ export function staleLaneSpecs<Spec extends LaneFetchSpec>(
   specs: Spec[],
   state: LaneFetchState<HeldLane>,
 ) {
-  return specs.filter(spec => state.held?.get(spec.lane)?.key !== spec.key)
+  return specs.filter(spec => state.held.get(spec.lane)?.key !== spec.key)
 }
 
 /**
@@ -111,7 +119,7 @@ export function landLaneFetch<Held extends HeldLane>(
   const current = new Set(specs.map(spec => spec.lane))
   const keys = new Set(keepCurrentKeys ? specs.map(spec => spec.key) : [])
   const held = new Map(
-    [...(state.held ?? [])].filter(
+    [...state.held].filter(
       ([lane, result]) => current.has(lane) || keys.has(result.key),
     ),
   )
@@ -120,6 +128,7 @@ export function landLaneFetch<Held extends HeldLane>(
   }
   return {
     held,
+    landed: true,
     landedFor: specsCoverMate(specs, anchor) ? anchor : state.landedFor,
   }
 }
@@ -130,7 +139,7 @@ export function failedLanesOf<Held extends HeldLane>(
   specs: readonly LaneFetchSpec[],
 ) {
   return specs.flatMap(spec => {
-    const held = state.held?.get(spec.lane)
+    const held = state.held.get(spec.lane)
     return held?.key === spec.key && held.error !== undefined
       ? [[spec, held] as const]
       : []
@@ -141,14 +150,12 @@ export function failedLanesOf<Held extends HeldLane>(
 export function forgetFailedLanes<Held extends HeldLane>(
   state: LaneFetchState<Held>,
 ): LaneFetchState<Held> {
-  return state.held
-    ? {
-        ...state,
-        held: new Map(
-          [...state.held].filter(([, held]) => held.error === undefined),
-        ),
-      }
-    : state
+  return {
+    ...state,
+    held: new Map(
+      [...state.held].filter(([, held]) => held.error === undefined),
+    ),
+  }
 }
 
 export function laneFetchAwaits(
@@ -158,7 +165,7 @@ export function laneFetchAwaits(
   describing: boolean,
 ) {
   return (
-    (state.held === undefined && specs.length > 0) ||
+    (!state.landed && specs.length > 0) ||
     (state.landedFor !== anchor &&
       (describing || specsCoverMate(specs, anchor)))
   )

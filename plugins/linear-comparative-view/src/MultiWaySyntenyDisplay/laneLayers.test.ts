@@ -328,8 +328,8 @@ test('a commit drops held payloads its specs no longer name, so a region the vie
     anchor,
   )
   display.setLaneLayerData(new Map(), [spec('a\u00000\u00000')], anchor)
-  expect([...display.laneLayerData.held!.keys()]).toEqual(['a\u00000\u00000'])
-  expect(display.laneLayerData.held!.get('a\u00000\u00000')).toBe(kept)
+  expect([...display.laneLayerData.held.keys()]).toEqual(['a\u00000\u00000'])
+  expect(display.laneLayerData.held.get('a\u00000\u00000')).toBe(kept)
 })
 
 describe('a template layer', () => {

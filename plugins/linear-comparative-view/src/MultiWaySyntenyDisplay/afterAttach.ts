@@ -1,11 +1,6 @@
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
-import {
-  dedupe,
-  getEnv,
-  getSession,
-  isAbortException,
-} from '@jbrowse/core/util'
+import { dedupe, getEnv, getSession } from '@jbrowse/core/util'
 import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { installAnimationDeadline } from '@jbrowse/display-kit/displayAutoruns'
@@ -103,7 +98,11 @@ async function laneRegions(
   return regions.map(r => ({ ...r, refName: canonical(r.refName) }))
 }
 
-/** A lane that fails commits `empty` and its error under its key. */
+/**
+ * A lane that fails commits `empty` and its error under its key, an abort
+ * included: every lane shares the run's signal, which aborts only as the run
+ * stops being current, and a stale run commits nothing.
+ */
 async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
   label: string,
   specs: Spec[],
@@ -115,24 +114,23 @@ async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
   const settled = await Promise.allSettled(
     specs.map((spec, i) => fetchOne(spec, perLane[i]!)),
   )
-  const byLane = new Map<string, Result>()
-  specs.forEach((spec, i) => {
-    const result = settled[i]!
-    if (result.status === 'fulfilled') {
-      byLane.set(spec.lane, result.value)
-      return
+  const failed = (spec: Spec, error: unknown) => {
+    if (!ctx.isStale()) {
+      console.error(`${label}: one lane failed`, error)
     }
-    const error: unknown = result.reason
-    if (isAbortException(error)) {
-      byLane.set(spec.lane, empty(spec))
-    } else {
-      if (!ctx.isStale()) {
-        console.error(`${label}: one lane failed`, error)
-      }
-      byLane.set(spec.lane, { ...empty(spec), error })
-    }
-  })
-  return byLane
+    return { ...empty(spec), error }
+  }
+  return new Map(
+    specs.map((spec, i) => {
+      const result = settled[i]!
+      return [
+        spec.lane,
+        result.status === 'fulfilled'
+          ? result.value
+          : failed(spec, result.reason),
+      ] as const
+    }),
+  )
 }
 
 /**
@@ -192,12 +190,10 @@ async function fetchLanePairBatch(
           }
         }
       } catch (error) {
-        if (!isAbortException(error)) {
-          if (!ctx.isStale()) {
-            console.error('MultiWayLaneLinks: the pair batch failed', error)
-          }
-          failure = error
+        if (!ctx.isStale()) {
+          console.error('MultiWayLaneLinks: the pair batch failed', error)
         }
+        failure = error
       }
       for (const [lane, result] of held) {
         byLane.set(

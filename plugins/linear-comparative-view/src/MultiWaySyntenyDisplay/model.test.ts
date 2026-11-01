@@ -192,12 +192,12 @@ test('a run landing after a re-anchor covers the anchor it was asked under', () 
 
 test('a commit keeps only the lanes its specs still name', () => {
   const state = landLaneFetch(
-    { held: new Map([['gone', { key: 'old' }]]) },
+    { held: new Map([['gone', { key: 'old' }]]), landed: true },
     new Map([['peach', { key: 'k' }]]),
     [{ lane: 'peach', key: 'k', assemblyName: 'peach' }],
     'grape',
   )
-  expect([...state.held!.keys()]).toEqual(['peach'])
+  expect([...state.held.keys()]).toEqual(['peach'])
 })
 
 test('a lane run landing after a re-anchor leaves the new anchor uncovered', async () => {
@@ -267,6 +267,45 @@ test('a lane run landing after a re-anchor leaves the new anchor uncovered', asy
   expect(display.awaitingDependentData).toBe(true)
 })
 
+// A current run's lane that rejects with "aborted" in its message (a dropped
+// connection) is a failure: held as an empty success it was never refetched
+// and showed no Retry.
+test('a lane whose fetch rejects as aborted while current shows its failure', async () => {
+  const { display } = createDisplayWithSession({
+    trackAssemblyNames: ['volvox', 'volvox_random'],
+    geneTracks: [{ trackId: 'volvox_genes', assemblyNames: ['volvox'] }],
+    rpc: async name => {
+      if (name === 'MultiWayGetFeatures') {
+        return [
+          new SimpleFeature({
+            uniqueId: 'pair',
+            refName: 'ctgA',
+            start: 100,
+            end: 700,
+            strand: 1,
+            assemblyName: 'volvox',
+            mate: {
+              assemblyName: 'volvox_random',
+              refName: 'ctgA',
+              start: 100,
+              end: 700,
+            },
+          }),
+        ]
+      }
+      if (name === 'CoreGetFeatures') {
+        throw new Error('Connection aborted')
+      }
+      return []
+    },
+  })
+  const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+  await until(() => display.laneGenes.held.has('volvox'))
+  expect(display.laneGenes.held.get('volvox')!.error).toBeInstanceOf(Error)
+  expect(display.laneFetchErrors.size).toBeGreaterThan(0)
+  consoleError.mockRestore()
+})
+
 test("a lane drops the genes its gene track's filter drops", async () => {
   const gene = (name: string, biotype: string, start: number) =>
     new SimpleFeature({
@@ -316,11 +355,9 @@ test("a lane drops the genes its gene track's filter drops", async () => {
           ? [gene('GSTM1', 'protein_coding', 100), gene('lnc', 'lncRNA', 300)]
           : [],
   })
-  await until(() => display.laneGenes.held?.get('volvox') !== undefined)
+  await until(() => display.laneGenes.held.get('volvox') !== undefined)
   expect(
-    display.laneGenes.held
-      ?.get('volvox')
-      ?.genes.map(g => g.feature.get('name')),
+    display.laneGenes.held.get('volvox')?.genes.map(g => g.feature.get('name')),
   ).toEqual(['GSTM1'])
 })
 
@@ -1416,12 +1453,12 @@ test('one lane’s window change refetches that lane alone', async () => {
     'volvox',
     'volvox_random',
   ])
-  await when(() => display.laneGenes.held?.has('volvox_random') ?? false, {
+  await when(() => display.laneGenes.held.has('volvox_random'), {
     timeout: 5000,
   })
   expect(display.dataSuperseded).toBe(false)
-  const anchorGenes = display.laneGenes.held!.get('volvox')
-  const mateGenes = display.laneGenes.held!.get('volvox_random')
+  const anchorGenes = display.laneGenes.held.get('volvox')
+  const mateGenes = display.laneGenes.held.get('volvox_random')
   const issued = geneCalls().length
 
   display.setLaneFrames(
@@ -1432,9 +1469,9 @@ test('one lane’s window change refetches that lane alone', async () => {
   await when(() => !display.dataSuperseded, { timeout: 5000 })
   const since = geneCalls().slice(issued)
   expect(since.map(laneOf)).toEqual(['volvox_random'])
-  expect(display.laneGenes.held!.get('volvox')).toBe(anchorGenes)
-  expect(display.laneGenes.held!.get('volvox_random')).not.toBe(mateGenes)
-  expect(display.laneGenes.held!.get('volvox_random')!.key).toBe(
+  expect(display.laneGenes.held.get('volvox')).toBe(anchorGenes)
+  expect(display.laneGenes.held.get('volvox_random')).not.toBe(mateGenes)
+  expect(display.laneGenes.held.get('volvox_random')!.key).toBe(
     display.laneGenesFetchSpecs[1]!.key,
   )
 })
@@ -1836,7 +1873,7 @@ describe('the gutter between two mate lanes', () => {
     )
     expect(display.rowsVsAnchor).toBe(false)
     expect(display.pairLinks.has(pair)).toBe(false)
-    await until(() => display.laneLinks.held?.has(pair) === true)
+    await until(() => display.laneLinks.held.has(pair))
     expect(display.pairLinks.get(pair)!.links).toEqual([direct])
     expect(display.laneHeaderRows.every(row => row.against === undefined)).toBe(
       true,
@@ -1849,8 +1886,8 @@ describe('the gutter between two mate lanes', () => {
 
   test('an anchor-window pair the adapter answers with nothing draws nothing', async () => {
     const { display } = await readOnAnchor([])
-    await until(() => display.laneLinks.held?.has(pair) === true)
-    expect(display.laneLinks.held!.get(pair)!.links).toEqual([])
+    await until(() => display.laneLinks.held.has(pair))
+    expect(display.laneLinks.held.get(pair)!.links).toEqual([])
     expect(display.pairLinks.has(pair)).toBe(false)
     expect(ribbonsBetweenMates(display).instanceCount).toBe(0)
   })
@@ -1928,14 +1965,14 @@ describe('lane pairs on a graph source', () => {
     )
     display.setScrollTop(1e9)
     display.setLaneLinks(new Map(), display.laneLinksFetchSpecs, 'volvox')
-    expect(display.laneLinks.held?.has(spec!.lane)).toBe(true)
+    expect(display.laneLinks.held.has(spec!.lane)).toBe(true)
 
     display.setLaneLinks(
       new Map(),
       display.laneLinksFetchSpecs.map(s => ({ ...s, key: 'panned' })),
       'volvox',
     )
-    expect(display.laneLinks.held?.has(spec!.lane)).toBe(false)
+    expect(display.laneLinks.held.has(spec!.lane)).toBe(false)
   })
 
   test('a batching adapter answers every pair in one call, each record on its own pair', async () => {
@@ -1963,9 +2000,7 @@ describe('lane pairs on a graph source', () => {
     )
     const specs = display.laneLinksFetchSpecs
     expect(specs.length).toBeGreaterThan(1)
-    await until(() =>
-      specs.every(s => display.laneLinks.held?.has(s.lane) === true),
-    )
+    await until(() => specs.every(s => display.laneLinks.held.has(s.lane)))
     const pairCalls = calls.filter(
       c => c.lanePairs !== undefined || c.queryAssemblyName !== undefined,
     )
@@ -1973,7 +2008,7 @@ describe('lane pairs on a graph source', () => {
     expect(pairCalls[0]!.lanePairs).toHaveLength(specs.length)
     for (const spec of specs) {
       expect(
-        display.laneLinks.held!.get(spec.lane)!.links.map(l => l.id()),
+        display.laneLinks.held.get(spec.lane)!.links.map(l => l.id()),
       ).toEqual([spec.lane])
     }
   })

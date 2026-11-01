@@ -308,7 +308,7 @@ export interface LaneLayerPlacement {
 export interface LaneLayerPlacementInputs {
   lanes: readonly Lane[]
   heights: readonly number[]
-  held: ReadonlyMap<string, HeldLaneLayer> | undefined
+  held: ReadonlyMap<string, HeldLaneLayer>
   axisSpanOf: (refName: string, start: number, end: number) => Span | undefined
   canvasWidth: number
 }
@@ -326,7 +326,7 @@ export function laneLayerPlacementsOf({
 }: LaneLayerPlacementInputs) {
   const rowOf = new Map(lanes.map((lane, row) => [lane.assemblyName, row]))
   const out: LaneLayerPlacement[] = []
-  for (const [specLane, held] of heldByLane ?? []) {
+  for (const [specLane, held] of heldByLane) {
     const row = rowOf.get(held.assemblyName)
     const lane = row === undefined ? undefined : lanes[row]
     const height = heights[held.layer]

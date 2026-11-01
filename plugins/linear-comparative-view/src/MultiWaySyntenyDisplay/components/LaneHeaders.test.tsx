@@ -91,7 +91,7 @@ test('a lane whose fetch failed says so, and Retry asks for it again', () => {
 
   fireEvent.click(screen.getByTestId(`${testId}-retry`))
   expect(display.laneFetchErrors.size).toBe(0)
-  expect(display.laneGenes.held?.has(spec!.lane)).toBe(false)
+  expect(display.laneGenes.held.has(spec!.lane)).toBe(false)
   expect(screen.queryByTestId(testId)).not.toBeInTheDocument()
 })
 

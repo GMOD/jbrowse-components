@@ -117,6 +117,7 @@ import {
   starAnchorOf,
   staleLaneSpecs,
   unheldLanePairsOf,
+  unlandedLaneFetch,
 } from './laneFetch.ts'
 import {
   LABEL_FONT_SIZE,
@@ -418,7 +419,7 @@ export function stateModelFactory(
       /** #volatile */
       seenAttributeRanges: {},
       /** #volatile */
-      laneGenes: {},
+      laneGenes: unlandedLaneFetch(),
       /** #volatile */
       laneDescriptions: new Map(),
       /** #volatile */
@@ -431,14 +432,14 @@ export function stateModelFactory(
        * #volatile
        * per adjacent mate-lane pair, at the lanes' own coordinates
        */
-      laneLinks: {},
+      laneLinks: unlandedLaneFetch(),
       /**
        * #volatile
        * per mate lane, a gene table's rows on the lane's own window
        */
-      laneGroups: {},
+      laneGroups: unlandedLaneFetch(),
       /** #volatile */
-      laneLayerData: {},
+      laneLayerData: unlandedLaneFetch(),
       /** #volatile */
       hoverTarget: undefined,
       /** #volatile */
@@ -610,10 +611,10 @@ export function stateModelFactory(
           releaseHideUnlabelled(self, painted)
           self.seenAttributeRanges = {}
           observeRibbonFeatures(self.fetchedFeatures?.features ?? [])
-          for (const { links } of self.laneLinks.held?.values() ?? []) {
+          for (const { links } of self.laneLinks.held.values()) {
             observeRibbonFeatures(links)
           }
-          for (const { features } of self.laneGroups.held?.values() ?? []) {
+          for (const { features } of self.laneGroups.held.values()) {
             observeRibbonFeatures(features)
           }
         },
@@ -749,7 +750,7 @@ export function stateModelFactory(
       get geneColorFeatures(): Feature[] {
         return [
           ...(self.features ?? []),
-          ...[...(self.laneGenes.held?.values() ?? [])].flatMap(({ genes }) =>
+          ...[...self.laneGenes.held.values()].flatMap(({ genes }) =>
             genes.map(gene => gene.feature),
           ),
         ]
@@ -826,7 +827,7 @@ export function stateModelFactory(
         /** #getter */
         get laneGeneColors(): ReadonlyMap<string, GeneColors> {
           lanes = new Map(
-            [...(self.laneGenes.held ?? [])].map(([lane, held]) => [
+            [...self.laneGenes.held].map(([lane, held]) => [
               lane,
               colorsFor(lanes.get(lane), held),
             ]),
@@ -1875,7 +1876,7 @@ export function stateModelFactory(
       get anchorlessGroups(): PlacedGroup[] {
         const anchor = self.laneKey(self.anchorAssemblyName)
         return anchorlessGroupsOf(
-          [...(self.laneGroups.held ?? [])].map(
+          [...self.laneGroups.held].map(
             ([lane, { features }]) => [lane, features] as const,
           ),
           assemblyName => self.laneKey(assemblyName) === anchor,
@@ -2086,7 +2087,7 @@ export function stateModelFactory(
       get pairLinks(): ReadonlyMap<string, LaneLinks> {
         const out = new Map<string, LaneLinks>()
         for (const { key } of self.lanePairs) {
-          const fetched = self.laneLinks.held?.get(key)
+          const fetched = self.laneLinks.held.get(key)
           if (fetched !== undefined && fetched.links.length > 0) {
             out.set(key, fetched)
           }
@@ -2283,7 +2284,7 @@ export function stateModelFactory(
               stroke: ink.text,
               divider: ink.divider,
             }
-            const genes = laneGenes?.get(lane.assemblyName)?.genes ?? NO_GENES
+            const genes = laneGenes.get(lane.assemblyName)?.genes ?? NO_GENES
             const prev = held[row]
             if (
               prev?.lane === lane &&
@@ -2420,7 +2421,7 @@ export function stateModelFactory(
           const boxNames = self.laneBoxNames
           return placeLaneLabels({
             lanes,
-            genesOf: assemblyName => genes?.get(assemblyName)?.genes ?? [],
+            genesOf: assemblyName => genes.get(assemblyName)?.genes ?? [],
             boxesOf: assemblyName => boxNames.get(assemblyName) ?? [],
             labelOf: feature => {
               const id = feature.id()
