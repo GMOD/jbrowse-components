@@ -26,16 +26,49 @@ const onTrack = () => true
 test('the scan covers the screen, not the padding left of it', () => {
   const host = hostOf(
     [{ start: 0, end: 10_000_000 }],
-    [{ start: 1_134_567, end: 1_154_567, displayedRegionIndex: 0 }],
+    [{ start: 1_134_567, end: 1_144_567, displayedRegionIndex: 0 }],
   )
   expect(plotScanRegions(host, onTrack)).toEqual([
     {
       refName: 'chr1',
       start: 1_130_000,
-      end: 1_130_000 + PLOT_SCAN_MAX_BP,
+      end: 1_150_000,
       assemblyName: 'hg38',
     },
   ])
+})
+
+// A 20 kb read from the grid line below a 15 kb screen at 19,000 stopped at
+// 30,000, and a sparse track with its features past that drew blank
+test('a screen within the budget is read to its right edge', () => {
+  const scans = plotScanRegions(
+    hostOf(
+      [{ start: 0, end: 10_000_000 }],
+      [{ start: 19_000, end: 34_000, displayedRegionIndex: 0 }],
+    ),
+    onTrack,
+  )
+  expect(Math.max(...scans.map(({ end }) => end))).toBeGreaterThanOrEqual(
+    34_000,
+  )
+  expect(
+    scans.reduce((sum, r) => sum + r.end - r.start, 0),
+  ).toBeLessThanOrEqual(PLOT_SCAN_MAX_BP)
+})
+
+test('a screen within half the budget is read whole wherever it sits', () => {
+  for (let start = 0; start < 30_000; start += 1_234) {
+    const [scan, ...rest] = plotScanRegions(
+      hostOf(
+        [{ start: 0, end: 10_000_000 }],
+        [{ start, end: start + PLOT_SCAN_MAX_BP / 2, displayedRegionIndex: 0 }],
+      ),
+      onTrack,
+    )
+    expect(rest).toEqual([])
+    expect(scan!.start).toBeLessThanOrEqual(start)
+    expect(scan!.end).toBeGreaterThanOrEqual(start + PLOT_SCAN_MAX_BP / 2)
+  }
 })
 
 test('a pan within the grid step reads the same window', () => {

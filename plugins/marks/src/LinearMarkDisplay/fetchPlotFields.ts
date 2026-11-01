@@ -19,7 +19,7 @@ export const PLOT_SCAN_MAX_BP = 20_000
 const PLOT_SCAN_STEP_BP = PLOT_SCAN_MAX_BP / 2
 
 /**
- * How many windows a screen wider than the budget is sampled at, so a sparse
+ * How many windows a screen wider than half the budget is sampled at, so a sparse
  * track at chromosome scale is read where its features are and not only at
  * the screen's left edge.
  */
@@ -53,13 +53,17 @@ function windowIn(region: Region, windowStart: number, windowEnd: number) {
 function contiguousScan(shown: ShownRegion[]) {
   const scans: Region[] = []
   let budget = PLOT_SCAN_MAX_BP
-  for (const { region, shownStart } of shown) {
+  for (const { region, shownStart, shownEnd } of shown) {
     if (budget > 0) {
       const windowStart = Math.max(
         region.start,
         Math.floor(shownStart / PLOT_SCAN_STEP_BP) * PLOT_SCAN_STEP_BP,
       )
-      const scan = windowIn(region, windowStart, windowStart + budget)
+      const windowEnd = Math.min(
+        windowStart + budget,
+        Math.ceil(shownEnd / PLOT_SCAN_STEP_BP) * PLOT_SCAN_STEP_BP,
+      )
+      const scan = windowIn(region, windowStart, windowEnd)
       scans.push(scan)
       budget -= scan.end - scan.start
     }
@@ -91,9 +95,9 @@ function sampledScan(shown: ShownRegion[], shownBp: number) {
 
 /**
  * The windows the field scan reads, `PLOT_SCAN_MAX_BP` in all, over the
- * regions on screen on the track's genomes. A screen within the budget is
- * read whole from its lowest coordinate snapped down to a half-window grid. A
- * wider one is sampled at the points of a round grid of about a tenth of the
+ * regions on screen on the track's genomes. A screen within half the budget
+ * is read whole, between the lines of a half-budget grid either side of it,
+ * which the budget always spans. A wider one is sampled at the points of a round grid of about a tenth of the
  * screen, laid along the displayed regions end to end, so a sparse track's
  * features are found wherever they sit, and a whole genome is sampled inside
  * its chromosomes rather than at each one's first base. Neither grid moves
@@ -126,7 +130,7 @@ export function plotScanRegions(
     (sum, { shownStart, shownEnd }) => sum + shownEnd - shownStart,
     0,
   )
-  return shownBp > PLOT_SCAN_MAX_BP
+  return shownBp > PLOT_SCAN_STEP_BP
     ? sampledScan(shown, shownBp)
     : contiguousScan(shown)
 }
