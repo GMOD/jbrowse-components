@@ -163,7 +163,7 @@ function canvasRow(b: Bins, floorPx?: number) {
       symlogConstant: 1,
       origin: 0,
       cuts: [],
-      innerColors: [],
+      bandColors: [],
       rampLut: LUT,
       rampMid: undefined,
       rgb: '#0000ff',

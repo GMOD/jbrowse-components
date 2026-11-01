@@ -45,7 +45,10 @@ function row(
     rampLut: lut,
     rampMid,
     cuts: [0],
-    innerColors: [],
+    bandColors: [
+      [0, 0, 1],
+      [1, 0, 0],
+    ],
     source: {
       color: [1, 0, 0],
       negColor: [0, 0, 1],
@@ -57,9 +60,7 @@ function row(
 
 function bandColorOf(banded: RowDraw, score: number) {
   const k = banded.cuts.filter(cut => cut <= score).length
-  return [banded.source.negColor!, ...banded.innerColors, banded.source.color][
-    k
-  ]!.map(c => Math.round(c * 255))
+  return banded.bandColors[k]!.map(c => Math.round(c * 255))
 }
 
 function sweep([min, max]: [number, number], scaleType: ScaleTypeCode) {

@@ -180,13 +180,6 @@ function cssRgb(source: SourceRenderData) {
   return normalizedRgbToCss(source.color)
 }
 
-function lineColors(source: SourceRenderData) {
-  return {
-    rgb: cssRgb(source),
-    negRgb: normalizedRgbToCss(source.negColor ?? source.color),
-  }
-}
-
 /**
  * One rendering family: its pass, the shared uniform write, and the painter
  * run once per source row.
@@ -219,6 +212,11 @@ function wiggleShape(
           rowHeight,
           rowTop: getRowTop(source.rowIndex, rowHeight),
           dpr: backingScale(frame.canvasHeight),
+          bandColors: [
+            source.negColor ?? source.color,
+            ...p.innerColors,
+            source.color,
+          ],
         })
       }
     },
@@ -282,7 +280,7 @@ const lineShape = wiggleShape(
     if (banded.source.band) {
       drawMinMaxBand({ ...banded, interpolated: false })
     } else {
-      drawLine({ ...banded, ...lineColors(banded.source) })
+      drawLine(banded)
     }
   },
 )
@@ -298,7 +296,7 @@ const lineCenterShape = wiggleShape(
     if (banded.source.band) {
       drawMinMaxBand({ ...banded, interpolated: true })
     } else {
-      drawLineCenter({ ...banded, ...lineColors(banded.source) })
+      drawLineCenter(banded)
     }
   },
 )

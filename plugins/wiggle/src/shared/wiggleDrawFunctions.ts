@@ -81,7 +81,9 @@ export interface RowDraw {
   // Where a line's and band's color changes, ascending, and
   // the color of each band between two of them.
   cuts: number[]
-  innerColors: [number, number, number][]
+  // Each band's color, lowest first, one more than `cuts`: the row's own
+  // color past the outer cuts, the plot's inner colors between them.
+  bandColors: [number, number, number][]
   // A gradient's table: bars, points and density color through it, matching
   // the LUT texture the GPU samples, and the row's own color goes unused.
   rampLut: Uint8Array | null
@@ -262,22 +264,13 @@ function bandEdges(cutYs: number[]) {
   }))
 }
 
-function bandStyles(
-  negStyle: string,
-  innerColors: [number, number, number][],
-  posStyle: string,
-  style: (rgb: [number, number, number]) => string,
-) {
-  return [negStyle, ...innerColors.map(style), posStyle]
-}
-
-type LineRowDraw = RowDraw & { rgb: string; negRgb: string; lineWidth: number }
+type LineRowDraw = RowDraw & { lineWidth: number }
 
 function strokeByBands(
   row: LineRowDraw,
   trace: (pen: BandPen, frame: LineFrame) => void,
 ) {
-  const { ctx, cuts, innerColors, rgb, negRgb, lineWidth } = row
+  const { ctx, cuts, bandColors, lineWidth } = row
   ctx.lineWidth = lineWidth
   const frame = rowLineFrame({
     block: row.block,
@@ -288,7 +281,7 @@ function strokeByBands(
     symlogConstant: row.symlogConstant,
   })
   const cutToY = makeScoreToY(row, { unclamped: true })
-  const styles = bandStyles(negRgb, innerColors, rgb, normalizedRgbToCss)
+  const styles = bandColors.map(rgb => normalizedRgbToCss(rgb))
   const passes = styles.every(style => style === styles[0])
     ? [
         {
@@ -367,12 +360,10 @@ export function rampAsBands<R extends RowDraw>(row: R): R {
     high,
     symlogConstant,
   )
-  const rgbs = Array.from(colors, normalizedRgbOf)
   return {
     ...row,
     cuts: [...cuts],
-    innerColors: rgbs.slice(1, -1),
-    source: { ...source, negColor: rgbs[0]!, color: rgbs.at(-1)! },
+    bandColors: Array.from(colors, normalizedRgbOf),
   }
 }
 
@@ -418,7 +409,7 @@ export function drawMinMaxBand(row: RowDraw & { interpolated: boolean }) {
     rowHeight,
     rowTop,
     cuts,
-    innerColors,
+    bandColors,
     interpolated,
   } = row
   const { band, numFeatures: n } = source
@@ -491,14 +482,8 @@ export function drawMinMaxBand(row: RowDraw & { interpolated: boolean }) {
   }
   const lowest = thresholdBandOf(low, cuts)
   const highest = thresholdBandOf(high, cuts)
-  const fills = bandStyles(
-    normalizedRgbToCssRgba(
-      source.negColor ?? source.color,
-      WHISKER_BAND_OPACITY,
-    ),
-    innerColors,
-    normalizedRgbToCssRgba(source.color, WHISKER_BAND_OPACITY),
-    rgb => normalizedRgbToCssRgba(rgb, WHISKER_BAND_OPACITY),
+  const fills = bandColors.map(rgb =>
+    normalizedRgbToCssRgba(rgb, WHISKER_BAND_OPACITY),
   )
   const drawn = fills.slice(lowest, highest + 1)
   if (drawn.every(fill => fill === drawn[0])) {

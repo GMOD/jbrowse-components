@@ -39,7 +39,7 @@ function rowEdges(numRows: number, canvasHeight: number, dpr: number) {
       symlogConstant: 1,
       origin: 0,
       cuts: [],
-      innerColors: [],
+      bandColors: [],
       rampLut: null,
       rampMid: undefined,
       rgb: '#00008b',
