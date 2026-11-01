@@ -74,3 +74,33 @@ test.each(['session', 'defaultSession'] as const)(
     warn.mockRestore()
   },
 )
+
+// a display type no plugin in this build registers, as a session saved with a
+// store plugin carries; the app root prunes it, and so must this one
+test('a session naming a display type this build lacks loads without it', async () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const { session } = await createViewStateAsync({
+    assembly,
+    tracks: [track('good')],
+    location: 'ctgA:1-10',
+    session: {
+      name: 's',
+      view: {
+        id: 'v',
+        type: 'LinearGenomeView',
+        tracks: [
+          {
+            type: 'FeatureTrack',
+            configuration: 'good',
+            displays: [{ type: 'NoSuchPluginDisplay', configuration: 'x' }],
+          },
+        ],
+      },
+    },
+  })
+  expect(session.name).toBe('s')
+  expect(
+    session.snackbarMessages.map((m: { message: string }) => m.message),
+  ).toContainEqual(expect.stringContaining('NoSuchPluginDisplay'))
+  warn.mockRestore()
+})

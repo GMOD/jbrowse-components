@@ -5,6 +5,11 @@ export type {
   RootSession,
 } from './BaseRootModel.ts'
 export { InternetAccountsRootModelMixin } from './InternetAccounts.ts'
+export {
+  prepareSessionSnapshot,
+  replaceSession,
+  reportDroppedNodes,
+} from './replaceSession.ts'
 export type {
   RootModelWithInternetAccounts,
   RootModelWithInternetAccountsType,

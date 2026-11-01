@@ -1,23 +1,15 @@
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { scheduleDetachedDestroy } from '@jbrowse/core/util'
 import {
   cast,
-  detach,
   isStateTreeNode,
   setTypeChecking,
   types,
 } from '@jbrowse/mobx-state-tree'
 
-import {
-  describeUnbuildableNodes,
-  pruneUnbuildableNodes,
-} from '../pruneUnbuildableNodes.ts'
-import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
-import { dropUnloadableTracks } from '../sessionUtils.ts'
+import { replaceSession } from './replaceSession.ts'
 
-import type { UnbuildableNode } from '../pruneUnbuildableNodes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { RpcManagerOptions } from '@jbrowse/core/rpc/RpcManager'
@@ -183,57 +175,16 @@ export function BaseRootModelFactory<
        * restored.
        */
       setSession(sessionSnapshot?: SnapshotIn<IAnyType>) {
-        const oldSession = self.session
-        const unbuildable: UnbuildableNode[] = []
-        let migrated = sessionSnapshot
-        if (sessionSnapshot && typeof sessionSnapshot === 'object') {
-          pluginManager.assertSessionTypesLoaded(sessionSnapshot)
-          // before the cast, because a type this build has no plugin for is a
-          // union failure the try below never gets to see
-          const pruned = pruneUnbuildableNodes(
-            migrateSessionSnapshot(
-              sessionSnapshot as Record<string, unknown>,
-              pluginManager,
-            ),
-            pluginManager,
-            sessionModelType,
-          )
-          migrated = pruned.snapshot
-          unbuildable.push(...pruned.dropped)
-        }
-        // Detach first: assigning over it would destroy it inside this action,
-        // and MobX runs the action's pending reactions afterwards, against the
-        // nodes it just killed. ADR-069.
-        if (oldSession) {
-          detach(oldSession)
-        }
-        // The assignment is inside the try because it typechecks: a registered
-        // type carrying a malformed prop is a throw `pruneUnbuildableNodes`
-        // does not and cannot pre-empt, and the detach above has already
-        // emptied `self.session`. MST does not roll an action back, so without
-        // this the root would be left with no session at all and the old tree
-        // detached-and-alive forever.
-        try {
-          self.session = cast(migrated)
-          if (self.session) {
-            const unbuildableMessage = describeUnbuildableNodes(unbuildable)
-            if (unbuildableMessage) {
-              self.session.notify(unbuildableMessage, 'warning')
-            }
-            dropUnloadableTracks(self.session)
-          }
-        } catch (error) {
-          // put it back, and do not schedule the destroy below — this is the
-          // one path where the old session goes on being the live one
-          self.session = oldSession
-          throw error
-        }
-        // and it does still get destroyed, once the reaction flush has
-        // unwound. `beforeDestroy` is a plugin-facing contract and leaving a
-        // detached session alive forever would skip it. ADR-069.
-        if (oldSession) {
-          scheduleDetachedDestroy(oldSession)
-        }
+        replaceSession({
+          pluginManager,
+          sessionModelType,
+          oldSession: self.session,
+          snapshot: sessionSnapshot,
+          assign: value => {
+            self.session = cast(value)
+            return self.session
+          },
+        })
       },
       /**
        * #action
