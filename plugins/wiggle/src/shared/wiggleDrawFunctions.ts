@@ -40,6 +40,10 @@ import {
   drawnRowHeightPx,
   rowBandOffsetPx,
 } from '@jbrowse/render-core/shaders/rowRect'
+import {
+  snappedRowBottomPx,
+  snappedRowTopPx,
+} from '@jbrowse/render-core/shaders/rowSnap'
 import { appendPointMarker, makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_MIN_PX } from '../util.ts'
@@ -64,6 +68,8 @@ export interface RowDraw {
   block: RenderBlock
   rowHeight: number
   rowTop: number
+  // device px per CSS px of the canvas, the grid row edges snap to
+  dpr: number
   domainY: [number, number]
   scaleType: ScaleTypeCode
   // symlog's linear-region width, already resolved from the domain. Unread by
@@ -199,7 +205,7 @@ export function drawXYPlot(row: RowDraw & { rgb: string }) {
 }
 
 export function drawDensity(row: RowDraw & { rgb: string }) {
-  const { ctx, source, block, rowHeight, rowTop, rgb } = row
+  const { ctx, source, block, rowHeight, dpr, rgb } = row
   const rampFill = makeRampFill(row)
   const colorsAbgr = rampFill ? undefined : source.colorsAbgr
   let lastAbgr = NO_COLOR
@@ -211,9 +217,20 @@ export function drawDensity(row: RowDraw & { rgb: string }) {
   const scores = source.featureScores
   const toX = makeBpMapper(block)
   const n = source.numFeatures
-  // Density tiles its rows edge to edge, so rowProportion is 1.
-  const bandHeight = drawnRowHeightPx(rowHeight, 1)
-  const bandTop = rowTop + rowBandOffsetPx(rowHeight, 1)
+  // Density tiles its rows edge to edge (rowProportion 1), placed as
+  // spanMark places a row: rowRect's band, floored below a pixel, on the
+  // device grid, since Canvas2D has no samples to blend two rows meeting on a
+  // fractional px and would seam them
+  const bandRow = source.rowIndex + rowBandOffsetPx(rowHeight, 1) / rowHeight
+  const bandTop = snappedRowTopPx(bandRow, rowHeight, 0, dpr)
+  const bandHeight =
+    snappedRowBottomPx(
+      bandRow,
+      rowHeight,
+      drawnRowHeightPx(rowHeight, 1),
+      0,
+      dpr,
+    ) - bandTop
   for (let i = 0; i < n; i++) {
     if (rampFill) {
       const fill = rampFill(scores[i]!)

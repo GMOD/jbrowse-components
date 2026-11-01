@@ -10,6 +10,10 @@ import {
   rowBandOffsetPx,
 } from '@jbrowse/render-core/shaders/rowRect'
 import {
+  snappedRowBottomPx,
+  snappedRowTopPx,
+} from '@jbrowse/render-core/shaders/rowSnap'
+import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
   RENDERING_TYPE_LINE_CENTER,
@@ -255,6 +259,8 @@ describe('the wiggle painters', () => {
   // pixel and drops out between sample points. The shader has always floored
   // it; the painter drew the raw row height, so the two backends disagreed by
   // 2x on exactly the deep stacks density is for.
+  // On the device grid, as spanMark places its rows: Canvas2D would seam two
+  // rows meeting on a fractional px.
   test('a sub-pixel density row paints the shader band, floored and centered', () => {
     const { ctx, fillRectCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
@@ -277,8 +283,13 @@ describe('the wiggle painters', () => {
 
     expect(rowHeight).toBeLessThan(1)
     const [, y, , h] = fillRectCalls[0]!
-    expect(h).toBe(drawnRowHeightPx(rowHeight, 1))
-    expect(y).toBe(rowHeight * 10 + rowBandOffsetPx(rowHeight, 1))
+    const row = 10 + rowBandOffsetPx(rowHeight, 1) / rowHeight
+    expect(y).toBe(snappedRowTopPx(row, rowHeight, 0, 1))
+    expect(h).toBe(
+      snappedRowBottomPx(row, rowHeight, drawnRowHeightPx(rowHeight, 1), 0, 1) -
+        y,
+    )
+    expect(h).toBeGreaterThanOrEqual(1)
   })
 
   test('handles line rendering type', () => {

@@ -56,6 +56,7 @@ function fixture(
     },
     rowHeight: 40,
     rowTop: 50,
+    dpr: 1,
     domainY: [-5, 10],
     scaleType,
     symlogConstant: 1,

@@ -1,6 +1,6 @@
 import { normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
-import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
+import { backingScale, getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { defineMark } from '@jbrowse/render-core/marks'
 import { rampMidNorm } from '@jbrowse/render-core/scoreScale'
 import { slangPass } from '@jbrowse/render-core/slangPass'
@@ -218,6 +218,7 @@ function wiggleShape(
           block,
           rowHeight,
           rowTop: getRowTop(source.rowIndex, rowHeight),
+          dpr: backingScale(frame.canvasHeight),
         })
       }
     },
