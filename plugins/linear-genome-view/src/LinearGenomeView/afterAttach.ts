@@ -116,52 +116,91 @@ function showNamedRegions(
   }
 }
 
+function reportInitNavError(session: NotificationSink, e: unknown) {
+  console.error(e)
+  if (e instanceof SearchResultsNotFoundError) {
+    // a gene name that matched nothing is a soft miss, not an app error
+    session.notify(e.message, 'warning')
+  } else {
+    session.notifyError(`${e}`, e)
+  }
+}
+
+/**
+ * Navigate a view to an init blob's `loc`, reporting a bad one as a warning
+ * (a gene that matched nothing) or an error rather than throwing. Exported
+ * because a LinearSyntenyView row is a LinearGenomeView that does not go
+ * through this file's init autorun, so it navigates each row itself.
+ */
+export async function navToInitLoc(
+  view: Pick<LinearGenomeViewModel, 'navToLocString'>,
+  session: NotificationSink,
+  init: Pick<InitState, 'assembly' | 'grow' | 'showHitTrack' | 'tracks'> & {
+    loc: string
+  },
+) {
+  try {
+    // navToLocString waits for the assembly itself. A spec that listed its
+    // tracks gets those tracks; one that only named a gene gets the track the
+    // gene was found in, as the search box would
+    await view.navToLocString(init.loc, init.assembly, init.grow, {
+      showHitTrack: init.showHitTrack ?? asArray(init.tracks).length === 0,
+    })
+  } catch (e) {
+    reportInitNavError(session, e)
+  }
+}
+
 async function navigateInit(
   self: LinearGenomeViewModel,
   session: AssemblyHost & NotificationSink,
   init: InitState,
 ) {
-  try {
-    if (init.loc) {
-      // navToLocString waits for the assembly itself, and this autorun only
-      // runs once `initialized` confirms init.assembly has loaded regions, so
-      // no explicit waitForAssembly is needed here
-      // a spec that listed its tracks gets those tracks; one that only named
-      // a gene gets the track the gene was found in, as the search box would
-      await self.navToLocString(init.loc, init.assembly, init.grow, {
-        showHitTrack: init.showHitTrack ?? asArray(init.tracks).length === 0,
-      })
-    } else if (init.displayedRegionNames?.length) {
-      // an explicit region list is a navigation request just like `loc`, so it
-      // applies even when regions already exist (URL params layered onto a
-      // defaultSession that already navigated)
-      //
-      // `?.length`, not the bare key: an empty array is truthy, so a spec
-      // writing `displayedRegionNames: []` took this path with nothing to name
-      // and got told its list of no names had matched no regions. That is why
-      // LinearSyntenyView's doSubmit omits the key rather than passing [].
-      showNamedRegions(self, session, init.assembly, init.displayedRegionNames)
-    } else if (!self.hasDisplayedRegions) {
-      // a highlight-only init (nothing to navigate to) must not clobber a
-      // defaultSession's existing navigation, so only auto-navigate when
-      // nothing is shown yet
-      self.showAllRegionsInAssembly(init.assembly)
-    }
-  } catch (e) {
-    console.error(init, e)
-    if (e instanceof SearchResultsNotFoundError) {
-      // a &loc= gene name that matched nothing is a soft miss, not an app error
-      session.notify(e.message, 'warning')
-    } else {
-      session.notifyError(`${e}`, e)
+  if (init.loc) {
+    await navToInitLoc(self, session, { ...init, loc: init.loc })
+  } else {
+    try {
+      navigateWithoutLoc(self, session, init)
+    } catch (e) {
+      reportInitNavError(session, e)
     }
   }
 }
 
-// launchTrack funnels through showTrackGeneric, which surfaces any failure
-// (unresolved id, bad config, etc) as its own snackbar, and loads the picked
-// display's state model first when it is registered lazily
-async function showInitTracks(self: LinearGenomeViewModel, init: InitState) {
+function navigateWithoutLoc(
+  self: LinearGenomeViewModel,
+  session: AssemblyHost & NotificationSink,
+  init: InitState,
+) {
+  if (init.displayedRegionNames?.length) {
+    // an explicit region list is a navigation request just like `loc`, so it
+    // applies even when regions already exist (URL params layered onto a
+    // defaultSession that already navigated)
+    //
+    // `?.length`, not the bare key: an empty array is truthy, so a spec
+    // writing `displayedRegionNames: []` took this path with nothing to name
+    // and got told its list of no names had matched no regions. That is why
+    // LinearSyntenyView's doSubmit omits the key rather than passing [].
+    showNamedRegions(self, session, init.assembly, init.displayedRegionNames)
+  } else if (!self.hasDisplayedRegions) {
+    // a highlight-only init (nothing to navigate to) must not clobber a
+    // defaultSession's existing navigation, so only auto-navigate when
+    // nothing is shown yet
+    self.showAllRegionsInAssembly(init.assembly)
+  }
+}
+
+/**
+ * Open an init blob's `tracks`, one at a time, a bare string taken as a list
+ * of one. launchTrack funnels through showTrackGeneric, which surfaces any
+ * failure (unresolved id, bad config) as its own snackbar, and loads the
+ * picked display's state model first when it is registered lazily. Exported
+ * for the LinearSyntenyView rows, as `navToInitLoc` is.
+ */
+export async function showInitTracks(
+  self: LinearGenomeViewModel,
+  init: Pick<InitState, 'tracks'>,
+) {
   for (const t of asArray(init.tracks)) {
     await launchTrackInit(self, t)
   }

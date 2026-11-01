@@ -95,4 +95,12 @@ export type LinearGenomeViewLaunchProps = Partial<
     keyof InitState | 'id' | 'type' | 'launch'
   >
 >
+
+/**
+ * One LinearGenomeView panel inside another view (a breakpoint split view's
+ * stack, a synteny view's rows): the LGV's launch keys and props, less `nav`
+ * and `tracklist`, the header and the track selector a panel does not show.
+ */
+export type LinearGenomeViewPanelInit = Omit<InitState, 'nav' | 'tracklist'> &
+  LinearGenomeViewLaunchProps
 // #endregion

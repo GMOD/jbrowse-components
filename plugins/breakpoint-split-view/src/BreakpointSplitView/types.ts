@@ -1,9 +1,8 @@
 import type { ReadChain, ReadEntry } from './readChains.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type {
-  InitState,
   ExportSvgOptions as LgvExportSvgOptions,
-  LinearGenomeViewLaunchProps,
+  LinearGenomeViewPanelInit,
 } from '@jbrowse/plugin-linear-genome-view'
 
 // The LGV export's options plus the one this view adds, rather than a parallel
@@ -18,10 +17,8 @@ export interface ExportSvgOptions extends LgvExportSvgOptions {
 
 // A panel is an LGV, so it takes the LGV's own launch keys and props
 // (highlight, displayedRegionNames, trackLabels, …); the LGV's partition sorts
-// them and reports a typo. `nav` and `tracklist` are the header and the track
-// selector, which a stacked panel does not show.
-export type BreakpointSplitViewInitView = Omit<InitState, 'nav' | 'tracklist'> &
-  LinearGenomeViewLaunchProps
+// them and reports a typo.
+export type BreakpointSplitViewInitView = LinearGenomeViewPanelInit
 
 /**
  * The launch keys `BreakpointSplitView` writes code for, which is one: the

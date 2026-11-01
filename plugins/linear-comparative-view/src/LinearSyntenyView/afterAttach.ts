@@ -11,8 +11,8 @@ import { snapshotSettings } from '@jbrowse/core/util/withLaunchInput'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   applyInitHighlights,
-  launchTrackInit,
-  SearchResultsNotFoundError,
+  navToInitLoc,
+  showInitTracks,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   installAutoFadeLatch,
@@ -135,35 +135,10 @@ async function buildViews(
   await whenViewsSettled(self.views, superseded)
 }
 
-// Navigate one genome row, reporting a bad `loc` as that row's problem. Without
-// this catch a single typo'd locstring rejects the whole Promise.all below, and
-// the outer catch drops every row that loaded fine back to the import form —
-// navToLocString throws both UnknownRefNameError (bad refName) and
-// SearchResultsNotFoundError (a gene name that matched nothing).
-async function navRowToLoc(
-  self: LinearSyntenyViewModel,
-  view: LinearGenomeViewModel,
-  loc: string,
-  viewInit: SyntenyLaunch['views'][number],
-) {
-  try {
-    await view.navToLocString(loc, viewInit.assembly, viewInit.grow, {
-      showHitTrack: viewInit.showHitTrack ?? !viewInit.tracks?.length,
-    })
-  } catch (e) {
-    console.error(e)
-    const session = getSession(self)
-    if (e instanceof SearchResultsNotFoundError) {
-      // a gene name that matched nothing is a soft miss, not an app error
-      session.notify(e.message, 'warning')
-    } else {
-      session.notifyError(`${e}`, e)
-    }
-  }
-}
-
 // Where one row opens: its `loc`, or a fit to the regions it displays, or the
-// whole assembly. Fit rather than showAllRegionsInAssembly for a named subset:
+// whole assembly. A bad `loc` is that row's problem (`navToInitLoc` reports
+// rather than throws), so one typo'd locstring does not reject the whole
+// Promise.all below and drop every row that loaded back to the import form. Fit rather than showAllRegionsInAssembly for a named subset:
 // that re-reads the assembly's whole region list over the subset buildViews
 // just installed, and `showAllRegions` targets maxBpPerPx, which drew a
 // restricted row at 1/SHOW_ALL_REGIONS_FILL of its width beside a row that
@@ -174,7 +149,10 @@ function placeRow(
   viewInit: SyntenyLaunch['views'][number],
 ) {
   if (viewInit.loc) {
-    return navRowToLoc(self, view, viewInit.loc, viewInit)
+    return navToInitLoc(view, getSession(self), {
+      ...viewInit,
+      loc: viewInit.loc,
+    })
   }
   if (viewInit.displayedRegionNames?.length) {
     view.fitAllRegions()
@@ -197,11 +175,7 @@ async function applyInitViewLocsAndTracks(
       const view = self.views[idx]
       if (view) {
         await self.holdFollowAnchor(() => placeRow(self, view, viewInit))
-        if (viewInit.tracks) {
-          for (const track of viewInit.tracks) {
-            await launchTrackInit(view, track)
-          }
-        }
+        await showInitTracks(view, viewInit)
         // AFTER navigation, and applied here rather than by the row's own LGV
         // init: a row is built from a snapshot and navigated by this file, so
         // nothing on the row ever runs `applyInit` and every init key that is

@@ -110,7 +110,11 @@ export {
 } from './LinearGenomeView/components/useSearchBoxPrefs.ts'
 export type { SearchBoxPrefs } from './LinearGenomeView/components/useSearchBoxPrefs.ts'
 export { normalizeTrackInit } from '@jbrowse/core/util/tracks'
-export { applyInitHighlights } from './LinearGenomeView/afterAttach.ts'
+export {
+  applyInitHighlights,
+  navToInitLoc,
+  showInitTracks,
+} from './LinearGenomeView/afterAttach.ts'
 export {
   launchTrackInit,
   launchTrackWithModifiers,
@@ -135,6 +139,7 @@ export type {
   HighlightType,
   InitState,
   LinearGenomeViewLaunchProps,
+  LinearGenomeViewPanelInit,
   NavLocation,
   TrackLabelMode,
   ViewTrackLabelMode,

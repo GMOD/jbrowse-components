@@ -1,8 +1,6 @@
 import type { LinearSyntenyViewStateModel } from './model.ts'
-import type { HighlightInput } from '@jbrowse/core/util/highlights'
-import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { ViewInit } from '@jbrowse/core/util/withLaunchInput'
-import type { LinearGenomeViewLaunchProps } from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewPanelInit } from '@jbrowse/plugin-linear-genome-view'
 import type { SyntenyViewSharedCommands } from '@jbrowse/synteny-core'
 
 export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
@@ -32,37 +30,15 @@ export type SyntenyTrackInit =
  * one fails the docs build rather than rendering a blank cell.
  */
 export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
-  // The genome rows, top to bottom; a row is an LGV, so it takes the LGV's own
-  // launch props (trackLabels, showAminoAcids, colorByFrame, …) alongside what to
-  // show. Optional because hand-authored JSON is what fills this and a spec
-  // naming only a setting partitions into a launch blob with no rows at all;
-  // `applyInit` reads that as the import form.
-  views?: ({
-    loc?: string
-    // fractional zoom-out around `loc`, e.g. 0.2 pads 20% on each side
-    grow?: number
-    // also open the track a searched `loc` was found in; default: no `tracks`
-    showHitTrack?: boolean
-    assembly: string
-    // a bare trackId string, or { trackId, ...displayOptions } to configure the
-    // per-panel track (e.g. a compact LGVSyntenyDisplay height) — display props
-    // sit inline, no displaySnapshot nesting needed
-    tracks?: TrackInit[]
-    // Subset of the assembly this row shows, in the given order, instead of the
-    // whole genome. Entries may be globs (`*_MATERNAL`); same field, same
-    // matching (selectNamedRegions) as the LGV's own init and the dotplot's
-    // per-axis one. `loc` navigates WITHIN what a row displays, this decides
-    // what it displays at all — which is what a self-alignment needs, since one
-    // haplotype per row is the only way two rows of ONE haplotype-resolved
-    // assembly are a comparison rather than two copies of the same picture.
-    displayedRegionNames?: string[]
-    // Shaded spans on this row: a locstring, or an object. Same
-    // field and same coercion as the LGV's own init — re-listed here for the
-    // same reason `loc` and `displayedRegionNames` are, since a row is built
-    // from a snapshot and never runs the LGV's init autorun. Naming the same
-    // span on two rows is how a synteny figure says "this object, seen twice".
-    highlight?: (string | HighlightInput)[]
-  } & LinearGenomeViewLaunchProps)[]
+  // The genome rows, top to bottom; a row is an LGV panel, so it takes the
+  // LGV's own launch keys and props (loc, tracks, highlight, trackLabels, …).
+  // `displayedRegionNames` decides what a row displays and `loc` navigates
+  // within it, which is what a self-alignment needs: two rows of one
+  // haplotype-resolved assembly, a haplotype each. Optional because
+  // hand-authored JSON is what fills this and a spec naming only a setting
+  // partitions into a launch blob with no rows at all; `applyInit` reads that
+  // as the import form.
+  views?: LinearGenomeViewPanelInit[]
   // The synteny tracks. A flat list puts each track on every band whose two
   // rows its assemblyNames cover; a list of lists names each band's tracks,
   // tracks[i] between views[i] and views[i+1]. An entry is a trackId, or an
