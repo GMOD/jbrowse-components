@@ -31,16 +31,20 @@ function resolveURL(location: string) {
 // query string can't fake one and a host that happens to be named hub.txt can't
 // be mistaken for a hub file.
 function determineConnectionType(url: URL) {
-  if (url.pathname.endsWith('/hub.txt')) {
-    return 'UCSCTrackHubConnection'
+  const { pathname } = url
+  const inferred = pathname.endsWith('/hub.txt')
+    ? 'UCSCTrackHubConnection'
+    : pathname.includes('jbrowse/data')
+      ? 'JBrowse1Connection'
+      : pathname.endsWith('/config.json')
+        ? 'JB2TrackHubConnection'
+        : undefined
+  if (!inferred) {
+    throw new Error(
+      `Cannot infer the connection type of ${url.href}: pass --type, and for a type a plugin registers, its location in --config`,
+    )
   }
-  if (url.pathname.includes('jbrowse/data')) {
-    return 'JBrowse1Connection'
-  }
-  if (url.pathname.endsWith('/config.json')) {
-    return 'JB2TrackHubConnection'
-  }
-  return 'custom'
+  return inferred
 }
 
 export async function run(args?: string[]) {
@@ -53,7 +57,7 @@ export async function run(args?: string[]) {
       type: 'string',
       short: 't',
       description:
-        'Type of connection (e.g. JBrowse1Connection, UCSCTrackHubConnection, JB2TrackHubConnection, custom)',
+        'Type of connection (e.g. JBrowse1Connection, UCSCTrackHubConnection, JB2TrackHubConnection, or one a plugin registers)',
     },
     assemblyNames: {
       type: 'string',
@@ -119,8 +123,8 @@ export async function run(args?: string[]) {
     '# subscribe to the tracks of another JBrowse 2 instance (type inferred from the config.json filename)',
     '$ jbrowse add-connection https://mysite.com/jbrowse2/config.json -a hg38',
     '',
-    '# add a custom connection type with extra config',
-    `$ jbrowse add-connection https://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' -a hg19`,
+    "# add a connection type a plugin registers, its location in the plugin's own slot",
+    `$ jbrowse add-connection https://mysite.com/path/to/source --type MyPluginConnection --config '{"sourceLocation":{"uri":"https://mysite.com/path/to/source","locationType":"UriLocation"}}' -a hg19`,
     '',
     '# set an explicit id/name and write to a specific config file',
     '$ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json',
@@ -162,7 +166,7 @@ export async function run(args?: string[]) {
   // each known connection type stores the URL under its own location slot,
   // written out rather than as the `uri` shorthand so the config also loads on
   // a release whose type lacks the shorthand (v4's JBrowse1Connection); a
-  // custom type carries no location, so its --config must supply one
+  // plugin's type has no entry here, so its --config supplies the location
   const locationField = {
     UCSCTrackHubConnection: 'hubTxtLocation',
     JB2TrackHubConnection: 'configJsonLocation',
