@@ -18,14 +18,22 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+/**
+ * The drawer's header bar: the widget picker, then `children` (a host's own
+ * buttons), then the drawer controls. `className` restyles the bar.
+ */
 const DrawerHeader = observer(function DrawerHeader({
   session,
   setToolbarHeight,
+  className,
+  children,
 }: {
   session: SessionWithDrawerWidgets
   setToolbarHeight: (arg: number) => void
+  className?: string
+  children?: React.ReactNode
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   // Measured, and re-measured: the toolbar's height is the room a virtualized
   // widget subtracts from the box it is given, and it changes without this
   // component re-rendering -- MUI's Toolbar is 56px under the `sm` breakpoint
@@ -47,9 +55,14 @@ const DrawerHeader = observer(function DrawerHeader({
   )
 
   return (
-    <AppBar position="sticky" className={classes.appBar} ref={appBarRef}>
+    <AppBar
+      position="sticky"
+      className={cx(classes.appBar, className)}
+      ref={appBarRef}
+    >
       <Toolbar disableGutters>
         <DrawerWidgetSelector session={session} />
+        {children}
         <div className={classes.spacer} />
         <DrawerControls session={session} />
       </Toolbar>

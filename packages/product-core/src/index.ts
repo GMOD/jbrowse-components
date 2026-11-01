@@ -77,6 +77,7 @@ export {
   AppReadyMarker,
   Drawer,
   DrawerControls,
+  DrawerHeader,
   DrawerWidget,
   DrawerWidgetSelector,
   ModalWidget,
