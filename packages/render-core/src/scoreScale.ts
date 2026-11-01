@@ -30,53 +30,6 @@ function symlog(x: number, c: number) {
 }
 
 /**
- * `normalizeScore` with the per-domain arithmetic hoisted out of a per-feature
- * loop: the clamped `[0, 1]` fraction a score sits at, and on a domain with no
- * range 1 above its min and 0 elsewhere. `symlogConstant` is the resolved one
- * the shader gets as a uniform.
- */
-export function makeScoreNormalizer(
-  min: number,
-  max: number,
-  scaleType: ScaleTypeCode,
-  symlogConstant: number,
-): (score: number) => number {
-  if (scaleType === SCALE_TYPE_SYMLOG) {
-    const c = symlogConstant
-    const tMin = symlog(min, c)
-    const tMax = symlog(max, c)
-    const tRange = tMax - tMin
-    if (tRange <= 0) {
-      return (score: number) => (symlog(score, c) > tMin ? 1 : 0)
-    }
-    const invRange = 1 / tRange
-    return (score: number) =>
-      Math.max(0, Math.min(1, (symlog(score, c) - tMin) * invRange))
-  }
-  if (scaleType === SCALE_TYPE_LOG) {
-    const floor = min > 0 ? min : 1
-    const logMin = Math.log2(floor)
-    const logMax = Math.log2(Math.max(max, floor))
-    const logRange = logMax - logMin
-    if (logRange <= 0) {
-      return (score: number) =>
-        Math.log2(Math.max(score, floor)) > logMin ? 1 : 0
-    }
-    const invLogRange = 1 / logRange
-    return (score: number) => {
-      const logScore = Math.log2(Math.max(score, floor))
-      return Math.max(0, Math.min(1, (logScore - logMin) * invLogRange))
-    }
-  }
-  const range = max - min
-  if (range <= 0) {
-    return (score: number) => (score > min ? 1 : 0)
-  }
-  const invRange = 1 / range
-  return (score: number) => Math.max(0, Math.min(1, (score - min) * invRange))
-}
-
-/**
  * `normalizeScoreUnclamped` hoisted as {@link makeScoreNormalizer} is. It
  * divides by the range, as the shader does, rather than multiplying by the
  * reciprocal, so a linear or log score lands where the shader puts it.
@@ -110,6 +63,33 @@ export function makeUnclampedScoreNormalizer(
   return range > 0
     ? (score: number) => (score - min) / range
     : (score: number) => (score > min ? 1 : 0)
+}
+
+/**
+ * `normalizeScore`, composed as the shader composes it: the unclamped
+ * fraction clamped to `[0, 1]`, so one hoisted copy of the per-domain
+ * arithmetic serves both. On a domain with no range, 1 above its min and 0
+ * elsewhere. `symlogConstant` is the resolved one the shader gets as a
+ * uniform.
+ */
+export function makeScoreNormalizer(
+  min: number,
+  max: number,
+  scaleType: ScaleTypeCode,
+  symlogConstant: number,
+): (score: number) => number {
+  const unclamped = makeUnclampedScoreNormalizer(
+    min,
+    max,
+    scaleType,
+    symlogConstant,
+  )
+  // comparisons rather than Math.min/max, which pass a NaN through: the
+  // shader's clamp answers 0 for one
+  return (score: number) => {
+    const t = unclamped(score)
+    return t > 1 ? 1 : t > 0 ? t : 0
+  }
 }
 
 function symlogInverse(y: number, c: number) {

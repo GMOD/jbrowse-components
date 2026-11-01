@@ -1,4 +1,8 @@
-import { denormalizeScore, makeUnclampedScoreNormalizer } from './scoreScale.ts'
+import {
+  denormalizeScore,
+  makeScoreNormalizer,
+  makeUnclampedScoreNormalizer,
+} from './scoreScale.ts'
 import {
   SCALE_TYPE_LOG,
   SCALE_TYPE_SYMLOG,
@@ -155,4 +159,31 @@ test('a domain with no range answers where the forward step sits', () => {
     }
   }
   expect(denormalizeScore(0.5, 0, 0, SCALE_TYPE_LOG, 1)).toBe(1)
+})
+
+// The two hoisted normalizers were written separately and drifted: on a log
+// scale a NaN score came back NaN clamped and 0 unclamped, as the shader has it
+test('the clamped normalizer is the shader clamp of the unclamped one', () => {
+  const scores = [
+    Number.NaN,
+    -Infinity,
+    -3,
+    0,
+    -0,
+    0.0005,
+    0.999,
+    1,
+    7,
+    999,
+    1000,
+    5000,
+    Infinity,
+  ]
+  for (const scaleType of [0, SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG] as const) {
+    const clamped = makeScoreNormalizer(1, 1000, scaleType, 1)
+    for (const score of scores) {
+      const want = normalizeScore(score, 1, 1000, scaleType, 1)
+      expect(clamped(score)).toBeCloseTo(want, 12)
+    }
+  }
 })

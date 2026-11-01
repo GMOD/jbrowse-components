@@ -4,7 +4,6 @@ import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
   SCALE_TYPE_SYMLOG,
-  makeScoreNormalizer,
 } from '@jbrowse/wiggle-core'
 
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
@@ -21,7 +20,7 @@ import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 // ships one pre-normalized uniform, `rampMidNorm`, to generalize from. But
 // `rampMidNorm` only positions a ramp; nothing is ever compared to it. A cut is
 // compared, and moving one side of that comparison to the JS side breaks it two
-// ways: `makeScoreNormalizer` hoists a reciprocal the shader divides by
+// ways: a JS normalizer hoisting the reciprocal the shader divides by
 // (adr-051, "hoisting a reciprocal is a numeric choice, not just a speed one"),
 // and a GPU's log2/log carry an error budget JS does not. The second is not
 // reproducible here; the first is, and it is enough — see the sabotage below.
@@ -137,16 +136,16 @@ describe.each(DOMAINS)(
 )
 
 // The sabotage the comment above owes: a `cuts` uniform arriving already
-// normalized, through the factory that hoists the log domain and the reciprocal
-// out of a per-feature loop. That factory is the natural JS side of the change
-// — it is what `rampMidNorm` is written through — and it costs the tie on the
+// normalized, through a normalizer that hoists the reciprocal out of a
+// per-feature loop, the natural JS side of the change. It costs the tie on the
 // DEFAULT scale, on a round domain, at a round cut.
 test('a pre-normalized cut loses the tie', () => {
   const min = 0
   const max = 20
   const cut = 7
   const y = rowScoreToYPx(cut, min, max, SCALE_TYPE_LINEAR, 1)
-  const hoisted = makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR, 1)
+  const invRange = 1 / (max - min)
+  const hoisted = (score: number) => (score - min) * invRange
 
   expect(bandAt(y, [rowColorYPx(cut, min, max, SCALE_TYPE_LINEAR, 1)])).toBe(1)
   expect(bandAt(y, [(1 - hoisted(cut)) * ROW_HEIGHT + ROW_TOP])).toBe(0)
