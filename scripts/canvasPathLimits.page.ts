@@ -101,16 +101,19 @@ function wiggleRow(ctx: MarkContext2D, n: number) {
     block: block(n),
     rowHeight: H,
     rowTop: 0,
+    dpr: 1,
     domainY: [-1.2, 1.2] as [number, number],
     scaleType: 0 as const,
     symlogConstant: 1,
     origin: 0,
     cuts: [0],
-    innerColors: [],
+    bandColors: [
+      [0, 0, 1],
+      [1, 0, 0],
+    ] as [number, number, number][],
     rampLut: null,
     rampMid: undefined,
     rgb: 'red',
-    negRgb: 'blue',
   }
 }
 

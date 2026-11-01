@@ -419,21 +419,26 @@ const noopCtx = {
   stroke() {},
   fill() {},
 } as never
-const POS = 'rgb(0,104,209)'
-const NEG = 'rgb(224,30,38)'
-function rowArgs(c: never, layer: SourceRenderData) {
+const POS: [number, number, number] = [0, 104 / 255, 209 / 255]
+const NEG: [number, number, number] = [224 / 255, 30 / 255, 38 / 255]
+function rowArgs(
+  c: never,
+  layer: SourceRenderData,
+  bandColors: [number, number, number][],
+) {
   return {
     ctx: c,
     source: layer,
     block,
     rowHeight,
     rowTop: layer.rowIndex * rowHeight,
+    dpr: 1,
     domainY: [Math.min(0, domainMin), domainMax] as [number, number],
     scaleType: SCALE_TYPE_LINEAR,
     symlogConstant: 1,
     origin: pivot,
     cuts: [pivot],
-    innerColors: [],
+    bandColors,
     rampLut: null,
     rampMid: undefined,
     lineWidth: 1,
@@ -500,32 +505,32 @@ const arms: Record<string, () => void> = {
     : {}),
   'paint-step-bicolor': () => {
     for (const l of paintLayers) {
-      drawLine({ ...rowArgs(ctx, l), rgb: POS, negRgb: NEG })
+      drawLine(rowArgs(ctx, l, [NEG, POS]))
     }
   },
   'paint-step-mono': () => {
     for (const l of paintLayers) {
-      drawLine({ ...rowArgs(ctx, l), rgb: POS, negRgb: POS })
+      drawLine(rowArgs(ctx, l, [POS, POS]))
     }
   },
   'paint-center-bicolor': () => {
     for (const l of paintCenterLayers) {
-      drawLineCenter({ ...rowArgs(ctx, l), rgb: POS, negRgb: NEG })
+      drawLineCenter(rowArgs(ctx, l, [NEG, POS]))
     }
   },
   'paint-center-mono': () => {
     for (const l of paintCenterLayers) {
-      drawLineCenter({ ...rowArgs(ctx, l), rgb: POS, negRgb: POS })
+      drawLineCenter(rowArgs(ctx, l, [POS, POS]))
     }
   },
   'walk-step-bicolor': () => {
     for (const l of paintLayers) {
-      drawLine({ ...rowArgs(noopCtx, l), rgb: POS, negRgb: NEG })
+      drawLine(rowArgs(noopCtx, l, [NEG, POS]))
     }
   },
   'walk-step-mono': () => {
     for (const l of paintLayers) {
-      drawLine({ ...rowArgs(noopCtx, l), rgb: POS, negRgb: POS })
+      drawLine(rowArgs(noopCtx, l, [POS, POS]))
     }
   },
 }

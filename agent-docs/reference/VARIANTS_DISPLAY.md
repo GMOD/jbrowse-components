@@ -486,8 +486,9 @@ a `recordsOnly` choice in the model belongs there.
   empty so one `hoveredFeature` slot serves both bands), the gestures
   (`RecordsBandOverlay`, a div over its `OverlayCanvas`) and the seam drag,
   which writes `records.height` as the drawn height at the press plus the
-  pointer's whole travel (`RecordsSeamHandle`), past the stack included, so
-  the seam waits at the floor until the pointer comes back to it.
+  pointer's whole travel (`RecordsBandOverlay`'s `BandSeamHandle`), past the
+  stack included, so the seam waits at the floor until the pointer comes back
+  to it.
 
 ## How wide a cell draws
 
