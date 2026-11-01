@@ -5,7 +5,7 @@ import { fireEvent, render } from '@testing-library/react'
 import DeleteOldSessionsDialog from './DeleteOldSessionsDialog.tsx'
 
 import type { SessionModel } from './util.ts'
-import type { SessionMetadata } from '@jbrowse/web-core'
+import type { SessionMetadata } from '@jbrowse/app-core'
 
 const theme = createJBrowseTheme()
 

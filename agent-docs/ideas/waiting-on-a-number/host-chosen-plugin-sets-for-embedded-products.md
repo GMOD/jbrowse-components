@@ -38,7 +38,7 @@ package entry but hardcodes `corePlugins` internally, and the two pieces you
 would need to assemble the model yourself — `createSessionModel`,
 `createConfigModel` — exist on `createModel/index.ts` and are *not* re-exported
 from the package's `index.ts`. One layer down, `createEmbeddedRootModel`
-(`@jbrowse/embedded-core`) already takes a `pluginManager`, so the seam is
+(`@jbrowse/product-core`) already takes a `pluginManager`, so the seam is
 there; it just is not published through.
 
 **The minimal change is therefore a parameter, not an architecture.** Give

@@ -5,8 +5,11 @@ import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
 import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { EmbeddedViewContainer } from '@jbrowse/embedded-core'
-import { AppReadyMarker, ModalWidget } from '@jbrowse/product-core'
+import {
+  EmbeddedViewContainer,
+  AppReadyMarker,
+  ModalWidget,
+} from '@jbrowse/product-core'
 import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 

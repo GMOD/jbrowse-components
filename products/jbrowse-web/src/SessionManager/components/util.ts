@@ -1,10 +1,10 @@
-import { sessionLastUsed } from '@jbrowse/web-core'
+import { sessionLastUsed } from '@jbrowse/app-core'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type {
   AbstractWebSessionDbRootModel,
   SessionMetadata,
-} from '@jbrowse/web-core'
+} from '@jbrowse/app-core'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
 
 export interface SessionModel
   extends AbstractSessionModel, AbstractWebSessionDbRootModel {}

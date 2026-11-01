@@ -1,8 +1,3 @@
-import {
-  AppSessionMixin,
-  AssembliesMixin,
-  WorkspaceLayoutMixin,
-} from '@jbrowse/app-core'
 import { getConf } from '@jbrowse/core/configuration'
 import { samePlugin } from '@jbrowse/core/pluginDefinitions'
 import { editableConfig } from '@jbrowse/core/util'
@@ -30,9 +25,12 @@ import {
   trackActionItems,
 } from '@jbrowse/product-core'
 
-import { WebSessionConnectionsMixin } from '../SessionConnections.ts'
+import { AppSessionMixin } from '../AppSession/index.ts'
+import { AssembliesMixin } from '../Assemblies/index.ts'
+import { WorkspaceLayoutMixin } from '../WorkspaceLayout/index.ts'
+import { WebSessionConnectionsMixin } from './SessionConnections.ts'
 
-import type { AbstractWebRootModel } from '../WebRootModel.ts'
+import type { AbstractWebRootModel } from './WebRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'

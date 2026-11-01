@@ -9,9 +9,6 @@ export {
   HierarchicalConfigSchemaFactory,
   InternetAccountsRootModelMixin,
   PreferencesConfigSchemaFactory,
-  prepareSessionSnapshot,
-  replaceSession,
-  reportDroppedNodes,
   createConfigModel,
   exportSessionMenuItem,
   importSessionMenuItem,
@@ -180,3 +177,8 @@ export {
   pruneUnbuildableNodes,
 } from './pruneUnbuildableNodes.ts'
 export type { HeldNode, UnbuildableNode } from './pruneUnbuildableNodes.ts'
+export { default as EmbeddedViewContainer } from './embedded/EmbeddedViewContainer.tsx'
+export { createEmbeddedRootModel } from './embedded/createEmbeddedRootModel.ts'
+export { EmbeddedSessionMixin } from './embedded/EmbeddedSessionMixin.ts'
+export type { EmbeddedSessionParent } from './embedded/EmbeddedSessionMixin.ts'
+export { EmbeddedSessionThemeMixin } from './embedded/EmbeddedSessionThemeMixin.ts'

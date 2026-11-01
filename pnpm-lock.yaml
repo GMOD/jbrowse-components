@@ -588,36 +588,6 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
 
-  packages/embedded-core:
-    dependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../core
-      '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
-      '@jbrowse/product-core':
-        specifier: workspace:^
-        version: link:../product-core
-      '@mui/icons-material':
-        specifier: ^9.5.0
-        version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
-      '@mui/material':
-        specifier: ^9.5.0
-        version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
-      mobx-react:
-        specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
-      react:
-        specifier: '>=19.0.0'
-        version: 19.3.1
-      react-dom:
-        specifier: '>=19.0.0'
-        version: 19.3.1(react@19.3.1)
-
   packages/launch-args:
     dependencies:
       '@jbrowse/add-track-core':
@@ -891,30 +861,6 @@ importers:
       mobx-react:
         specifier: ^10.0.3
         version: 10.0.3(mobx@7.1.3)(react@19.3.1)
-      react:
-        specifier: '>=19.0.0'
-        version: 19.3.1
-      react-dom:
-        specifier: '>=19.0.0'
-        version: 19.3.1(react@19.3.1)
-
-  packages/web-core:
-    dependencies:
-      '@jbrowse/app-core':
-        specifier: workspace:^
-        version: link:../app-core
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../core
-      '@jbrowse/mobx-state-tree':
-        specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
-      '@jbrowse/product-core':
-        specifier: workspace:^
-        version: link:../product-core
-      mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -2651,9 +2597,6 @@ importers:
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
-      '@jbrowse/web-core':
-        specifier: workspace:^
-        version: link:../../packages/web-core
       '@mui/material':
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -2731,9 +2674,6 @@ importers:
       '@jbrowse/display-ui':
         specifier: workspace:^
         version: link:../../packages/display-ui
-      '@jbrowse/embedded-core':
-        specifier: workspace:^
-        version: link:../../packages/embedded-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
         version: 6.10.0(mobx@7.1.3)
@@ -2850,9 +2790,6 @@ importers:
       '@jbrowse/display-ui':
         specifier: workspace:^
         version: link:../../packages/display-ui
-      '@jbrowse/embedded-core':
-        specifier: workspace:^
-        version: link:../../packages/embedded-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
         version: 6.10.0(mobx@7.1.3)
@@ -3098,9 +3035,6 @@ importers:
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
-      '@jbrowse/web-core':
-        specifier: workspace:^
-        version: link:../../packages/web-core
       '@mui/icons-material':
         specifier: ^9.5.0
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)

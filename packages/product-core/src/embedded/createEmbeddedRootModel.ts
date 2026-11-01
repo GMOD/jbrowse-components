@@ -4,20 +4,22 @@ import assemblyManagerFactory, {
 } from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { cast, setTypeChecking, types } from '@jbrowse/mobx-state-tree'
+
 import {
   InternetAccountsRootModelMixin,
   createConfigModel,
-  dropUnloadableTracks,
-  migrateSessionSnapshot,
   prepareSessionSnapshot,
   reportDroppedNodes,
-} from '@jbrowse/product-core'
+} from '../RootModel/index.ts'
+import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
+import { dropUnloadableTracks } from '../sessionUtils.ts'
 
+import type { RootSession } from '../RootModel/index.ts'
+import type { SessionSnapshot } from '../sessionUrl.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TrackConfigEntry } from '@jbrowse/core/configuration'
 import type { JBrowseConfigModel } from '@jbrowse/core/util'
 import type { IAnyModelType, SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type { RootSession, SessionSnapshot } from '@jbrowse/product-core'
 
 /**
  * A session an embedder hands over may be a v4 one: a share link, a stored

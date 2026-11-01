@@ -1,9 +1,9 @@
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { finalizeSession } from '@jbrowse/product-core'
 import {
   BaseWebSessionModel,
   WebSessionManagementMixin,
-} from '@jbrowse/web-core'
+} from '@jbrowse/app-core'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { finalizeSession } from '@jbrowse/product-core'
 
 import {
   addPermanentPlugin,

@@ -89,3 +89,20 @@ export { AssemblyManager } from './AssemblyManager/index.ts'
 export { aboutMenuItem, helpMenuItem } from './AppWidgets/menuItems.ts'
 export { getOrCreateJobsListWidget } from './AppWidgets/JobsListWidget/getOrCreateJobsListWidget.ts'
 export type { JobsListModel } from './AppWidgets/JobsListWidget/model.ts'
+export {
+  WebSessionConnectionsMixin,
+  isWebSessionWithConnections,
+} from './WebSession/SessionConnections.ts'
+export type { WebSessionWithConnections } from './WebSession/SessionConnections.ts'
+export {
+  BaseWebSession,
+  BaseWebSessionModel,
+} from './WebSession/BaseWebSession.ts'
+export { byLastUsedDesc, sessionLastUsed } from './WebSession/WebRootModel.ts'
+export type {
+  AbstractJBrowseModel,
+  AbstractWebRootModel,
+  AbstractWebSessionDbRootModel,
+  SessionMetadata,
+} from './WebSession/WebRootModel.ts'
+export { WebSessionManagementMixin } from './WebSession/WebSessionManagement.ts'

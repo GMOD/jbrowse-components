@@ -6,8 +6,8 @@ import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { getEnv } from '@jbrowse/core/util'
 import { useScrollPortHeightVar } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { EmbeddedViewContainer } from '@jbrowse/embedded-core'
 import {
+  EmbeddedViewContainer,
   AppReadyMarker,
   DrawerWidget,
   drawerGridTemplateColumns,

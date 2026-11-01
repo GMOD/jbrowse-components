@@ -8,6 +8,7 @@ import {
   aboutMenuItem,
   helpMenuItem,
   processMutableMenuActions,
+  byLastUsedDesc,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { sessionLoading } from '@jbrowse/core/ui/AppReadyMarker'
@@ -27,7 +28,6 @@ import {
   redoMenuItem,
   undoMenuItem,
 } from '@jbrowse/product-core'
-import { byLastUsedDesc } from '@jbrowse/web-core'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
@@ -53,13 +53,13 @@ import {
 import type { SessionDBHandle } from '../sessionDbOps.ts'
 import type productSessionModelFactory from '../sessionModel/index.ts'
 import type { Session, SessionMetadata } from '../types.ts'
-import type { Menu } from '@jbrowse/app-core'
-import type PluginManager from '@jbrowse/core/PluginManager'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
+  Menu,
   AbstractWebRootModel,
   AbstractWebSessionDbRootModel,
-} from '@jbrowse/web-core'
+} from '@jbrowse/app-core'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // lazies
 const SetDefaultSession = lazy(

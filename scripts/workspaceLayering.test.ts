@@ -26,9 +26,9 @@ type Root = (typeof ROOTS)[number]
 
 // `example-plugins/*` are demo plugins and sit in the plugin tier with the real
 // ones. Everything in `packages/` is a library tier below plugins — including
-// `product-core` / `app-core` / `web-core` / `embedded-core`, which are the
-// libraries the products are assembled from rather than products themselves,
-// and which depend on no plugin.
+// `product-core` and `app-core`, which are the libraries the products are
+// assembled from rather than products themselves, and which depend on no
+// plugin.
 const TIER: Record<Root, 'lib' | 'plugin' | 'product'> = {
   packages: 'lib',
   plugins: 'plugin',

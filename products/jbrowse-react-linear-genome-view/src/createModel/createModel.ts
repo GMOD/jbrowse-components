@@ -1,7 +1,7 @@
 import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
-import { createEmbeddedRootModel } from '@jbrowse/embedded-core'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
+  createEmbeddedRootModel,
   openConnectionMenuItem,
   openTrackMenuItem,
   toPluginLoadRecord,

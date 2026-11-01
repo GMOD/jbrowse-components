@@ -1,5 +1,5 @@
+import { byLastUsedDesc, sessionLastUsed } from '@jbrowse/app-core'
 import { addDisposer, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
-import { byLastUsedDesc, sessionLastUsed } from '@jbrowse/web-core'
 import { autorun } from 'mobx'
 
 import { openSessionDB } from '../openSessionDB.ts'

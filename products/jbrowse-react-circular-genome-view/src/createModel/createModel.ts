@@ -1,6 +1,8 @@
 import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
-import { createEmbeddedRootModel } from '@jbrowse/embedded-core'
-import { toPluginLoadRecord } from '@jbrowse/product-core'
+import {
+  createEmbeddedRootModel,
+  toPluginLoadRecord,
+} from '@jbrowse/product-core'
 
 import corePlugins from '../corePlugins.ts'
 import { version } from '../version.ts'

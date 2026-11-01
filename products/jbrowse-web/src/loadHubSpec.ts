@@ -1,9 +1,12 @@
-import { addSessionTracks, hubConnectionSpec } from '@jbrowse/app-core'
+import {
+  addSessionTracks,
+  hubConnectionSpec,
+  isWebSessionWithConnections,
+} from '@jbrowse/app-core'
 import { setConf } from '@jbrowse/core/configuration'
 import { isSessionModelWithConnections } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { isBaseSession } from '@jbrowse/product-core'
-import { isWebSessionWithConnections } from '@jbrowse/web-core'
 import { when } from 'mobx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'

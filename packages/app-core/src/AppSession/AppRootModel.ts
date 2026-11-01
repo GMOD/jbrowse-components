@@ -7,7 +7,7 @@ import type { AssemblyManager } from '@jbrowse/core/util/types'
  * — built from `BaseRootModelFactory` + `HistoryManagementMixin` +
  * `RootAppMenuMixin` — satisfies this structurally.
  *
- * Product-specific root contracts (e.g. web-core's `AbstractWebRootModel`)
+ * Product-specific root contracts (e.g. `AbstractWebRootModel`)
  * extend this with their extra surface rather than re-declaring these members.
  */
 export interface AppRootModel {

@@ -25,11 +25,11 @@ import {
 import { version } from '../version.ts'
 
 import type productSessionModelFactory from '../sessionModel/index.ts'
+import type { AbstractWebRootModel } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { SessionSnapshot } from '@jbrowse/product-core'
-import type { AbstractWebRootModel } from '@jbrowse/web-core'
 
 /**
  * What a host needs to rebuild the app after its plugin set changed: the

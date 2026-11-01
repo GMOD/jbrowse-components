@@ -13,6 +13,9 @@
 4 no-unsafe-assignment packages/app-core/src/JBrowseModel/index.ts
 1 no-unsafe-member-access packages/app-core/src/JBrowseModel/index.ts
 1 no-unsafe-return packages/app-core/src/JBrowseModel/index.ts
+2 no-unsafe-argument packages/app-core/src/WebSession/BaseWebSession.ts
+1 no-unsafe-assignment packages/app-core/src/WebSession/BaseWebSession.ts
+1 no-unsafe-return packages/app-core/src/WebSession/BaseWebSession.ts
 1 no-unsafe-argument packages/app-core/src/WorkspaceLayout/model.ts
 1 no-unsafe-assignment packages/browser-test-utils/src/blobStore.ts
 1 no-unsafe-assignment packages/browser-test-utils/src/examplesSiteCli.ts
@@ -118,13 +121,13 @@
 1 no-unsafe-return packages/display-kit/src/MatrixRampMixin.ts
 1 no-unsafe-argument packages/display-kit/src/PlotDialog.tsx
 2 no-unsafe-return packages/display-kit/src/RegionTooLargeMixin.ts
-1 no-unsafe-call packages/embedded-core/src/createEmbeddedRootModel.ts
-1 no-unsafe-assignment packages/embedded-core/src/EmbeddedSessionThemeMixin.ts
+1 no-unsafe-call packages/product-core/src/embedded/createEmbeddedRootModel.ts
+1 no-unsafe-assignment packages/product-core/src/embedded/EmbeddedSessionThemeMixin.ts
 2 no-unsafe-return packages/product-core/src/localFiles.ts
 1 no-unsafe-assignment packages/product-core/src/pruneUnbuildableNodes.ts
 1 no-unsafe-return packages/product-core/src/pruneUnbuildableNodes.ts
 1 no-unsafe-argument packages/product-core/src/RootModel/BaseRootModel.ts
-2 no-unsafe-assignment packages/product-core/src/RootModel/BaseRootModel.ts
+1 no-unsafe-assignment packages/product-core/src/RootModel/BaseRootModel.ts
 1 no-unsafe-argument packages/product-core/src/RootModel/createConfigModel.ts
 1 no-unsafe-assignment packages/product-core/src/RootModel/createConfigModel.ts
 3 no-unsafe-return packages/product-core/src/RootModel/createConfigModel.ts
@@ -183,9 +186,6 @@
 1 no-unsafe-member-access packages/text-indexing-core/src/types/common.ts
 4 no-unsafe-assignment packages/tree-sidebar/src/rowColorChoice.ts
 1 no-unsafe-return packages/tree-sidebar/src/TreeSidebarMixin.ts
-2 no-unsafe-argument packages/web-core/src/BaseWebSession/index.ts
-1 no-unsafe-assignment packages/web-core/src/BaseWebSession/index.ts
-1 no-unsafe-return packages/web-core/src/BaseWebSession/index.ts
 1 no-unsafe-assignment plugins/alignments/src/ReadVsRefDialog/fetchPrimaryAlignment.ts
 1 no-unsafe-assignment plugins/alignments/src/shared/alignmentsFilter.ts
 1 no-unsafe-member-access plugins/alignments/src/shared/alignmentsFilter.ts

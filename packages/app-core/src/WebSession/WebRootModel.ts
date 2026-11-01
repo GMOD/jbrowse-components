@@ -1,4 +1,5 @@
-import type { AppRootModel, SessionSummary } from '@jbrowse/app-core'
+import type { AppRootModel } from '../AppSession/index.ts'
+import type { SessionSummary } from '../sessionSummary.ts'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
 import type {

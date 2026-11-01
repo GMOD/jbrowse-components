@@ -1,6 +1,6 @@
+import type { SessionMetadata } from '@jbrowse/app-core'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { InitState } from '@jbrowse/plugin-linear-genome-view'
-import type { SessionMetadata } from '@jbrowse/web-core'
 import type { DBSchema } from 'idb'
 
 // JSON-shaped snapshot used for configs and session payloads as they cross the
@@ -70,4 +70,4 @@ export type SessionSource =
   | { type: 'default' }
   | { type: 'error'; error: unknown }
 
-export { type SessionMetadata } from '@jbrowse/web-core'
+export { type SessionMetadata } from '@jbrowse/app-core'

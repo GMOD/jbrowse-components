@@ -1,12 +1,12 @@
 import { getParent, types } from '@jbrowse/mobx-state-tree'
+
 import {
   BaseSessionModel,
   ConnectionManagementSessionMixin,
   DrawerWidgetSessionMixin,
   ReferenceManagementSessionMixin,
   TrackMenuSessionMixin,
-} from '@jbrowse/product-core'
-
+} from '../Session/index.ts'
 import { EmbeddedSessionThemeMixin } from './EmbeddedSessionThemeMixin.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -14,7 +14,7 @@ import type { AssemblyManager } from '@jbrowse/core/util/types'
 
 // This session lives at rootModel.session, so its MST parent is the root model;
 // this is the slice it reaches for. A typed contract in place of getParent<any>,
-// mirroring product-core's ConfigModelParent and web-core's AbstractWebRootModel.
+// mirroring ConfigModelParent and app-core's AbstractWebRootModel.
 // Each product pins its own root against this — getParent<T> is an unchecked
 // assertion, so only that pin catches the shape drifting from the real root.
 export interface EmbeddedSessionParent {

@@ -17,7 +17,7 @@ names its own ids), or an older link's `password=`.
 
 One thing is still out.
 
-**`sessionConnections`** (web-core's `SessionConnections`) has no slot in
+**`sessionConnections`** (app-core's `SessionConnections`) has no slot in
 Desktop's session, so a link whose session carries any stops with an error
 naming the count. They need a home in Desktop's session or a translation.
 

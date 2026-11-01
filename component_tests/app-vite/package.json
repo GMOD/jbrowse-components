@@ -63,7 +63,6 @@
     "@jbrowse/sv-core": "file:./packed/jbrowse-sv-core.tgz",
     "@jbrowse/synteny-core": "file:./packed/jbrowse-synteny-core.tgz",
     "@jbrowse/tree-sidebar": "file:./packed/jbrowse-tree-sidebar.tgz",
-    "@jbrowse/web-core": "file:./packed/jbrowse-web-core.tgz",
     "@jbrowse/wiggle-core": "file:./packed/jbrowse-wiggle-core.tgz"
   },
   "devDependencies": {

@@ -93,10 +93,8 @@ const FOUNDATIONAL_PLUGINS = new Set(['canvas'])
 // every figure's chrome, so they mean "everything".
 const APP_SHELL_PACKAGES = new Set([
   '@jbrowse/web',
-  '@jbrowse/web-core',
   '@jbrowse/app-core',
   '@jbrowse/product-core',
-  '@jbrowse/embedded-core',
 ])
 
 export type Selection =

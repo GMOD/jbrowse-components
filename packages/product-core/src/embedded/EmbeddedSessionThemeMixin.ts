@@ -2,7 +2,8 @@ import { getConf } from '@jbrowse/core/configuration'
 import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
-import { BaseSessionModel } from '@jbrowse/product-core'
+
+import { BaseSessionModel } from '../Session/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SerializableThemeArgs } from '@jbrowse/core/ui'

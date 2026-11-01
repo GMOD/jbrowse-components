@@ -63,7 +63,6 @@
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/product-core": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
-    "@jbrowse/web-core": "workspace:^",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
     "@mui/system": "^9.5.0",

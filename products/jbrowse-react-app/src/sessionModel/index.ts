@@ -1,4 +1,4 @@
-import { BaseWebSession } from '@jbrowse/web-core'
+import { BaseWebSession } from '@jbrowse/app-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'

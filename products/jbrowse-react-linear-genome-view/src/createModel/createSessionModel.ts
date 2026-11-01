@@ -1,6 +1,8 @@
-import { EmbeddedSessionMixin } from '@jbrowse/embedded-core'
 import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
-import { SessionTracksManagerSessionMixin } from '@jbrowse/product-core'
+import {
+  EmbeddedSessionMixin,
+  SessionTracksManagerSessionMixin,
+} from '@jbrowse/product-core'
 
 import type { ViewModel } from './createModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -12,9 +14,12 @@ import type {
   SessionWithConnections,
   SessionWithDrawerWidgets,
 } from '@jbrowse/core/util/types'
-import type { EmbeddedSessionParent } from '@jbrowse/embedded-core'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
-import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
+import type {
+  EmbeddedSessionParent,
+  AssertExtends,
+  AssertSessionModel,
+} from '@jbrowse/product-core'
 
 interface SessionModelParent extends EmbeddedSessionParent {
   disableAddTracks: boolean

@@ -19,7 +19,6 @@ Measured after `pnpm build:esm` on 2026-10-22 (count of `import("…")` sites):
 | `plugins/maf` | `@jbrowse/display-ui` (4) |
 | `plugins/sv-inspector` | `@mui/x-data-grid` (10), `@jbrowse/render-core` (20) |
 | `packages/tables` | `@jbrowse/alignments-core` (1) |
-| `packages/web-core` | `@mui/material` (4) |
 | `plugins/hic` | `rxjs` (1) |
 | `plugins/authentication` | `@gmod/range-cache-filehandle` (6) |
 | `plugins/wiggle` | `generic-filehandle2` (1) |

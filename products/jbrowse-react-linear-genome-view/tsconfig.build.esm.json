@@ -4,7 +4,6 @@
     { "path": "../../packages/core/tsconfig.build.esm.json" },
     { "path": "../../packages/display-kit/tsconfig.build.esm.json" },
     { "path": "../../packages/display-ui/tsconfig.build.esm.json" },
-    { "path": "../../packages/embedded-core/tsconfig.build.esm.json" },
     { "path": "../../packages/product-core/tsconfig.build.esm.json" },
     { "path": "../../packages/render-core/tsconfig.build.esm.json" },
     { "path": "../../plugins/alignments/tsconfig.build.esm.json" },

@@ -1,9 +1,8 @@
 import { useState } from 'react'
 
-import { formatSessionSummary } from '@jbrowse/app-core'
+import { formatSessionSummary, sessionLastUsed } from '@jbrowse/app-core'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { sessionLastUsed } from '@jbrowse/web-core'
 import { Button, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
