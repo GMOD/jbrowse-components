@@ -1,4 +1,4 @@
-import type { AppRootModel } from '../AppSession/index.ts'
+import type { AppSessionRoot } from '../AppSession/index.ts'
 import type { SessionSummary } from '../sessionSummary.ts'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
@@ -63,13 +63,13 @@ export interface AbstractJBrowseModel {
 
 /**
  * What BaseWebSession requires from its parent root model: the shared
- * {@link AppRootModel} surface plus the web-only members both web roots provide.
+ * {@link AppSessionRoot} surface plus the web-only members both web roots provide.
  * Both jbrowse-web's and react-app's roots satisfy this. The saved-session DB
  * surface (see {@link AbstractWebSessionDbRootModel}) is intentionally NOT here
  * — only the full-app jbrowse-web root provides it, via the separate
  * `WebSessionManagementMixin`.
  */
-export interface AbstractWebRootModel extends AppRootModel {
+export interface AbstractWebRootModel extends AppSessionRoot {
   readonly jbrowse: AbstractJBrowseModel
   readonly rpcManager: RpcManager
   readonly adminMode: boolean

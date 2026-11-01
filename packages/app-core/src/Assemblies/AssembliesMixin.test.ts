@@ -1,4 +1,3 @@
-import PluginManager from '@jbrowse/core/PluginManager'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { AssembliesMixin } from './AssembliesMixin.ts'
@@ -11,7 +10,6 @@ const assemblySchema = types.model('Assembly', {
 }) as unknown as BaseAssemblyConfigSchema
 
 function makeSession(adminMode: boolean) {
-  const pluginManager = new PluginManager()
   const removeAssemblyConf = jest.fn()
   const jbrowse = {
     assemblies: [],
@@ -29,7 +27,7 @@ function makeSession(adminMode: boolean) {
           return jbrowse
         },
       })),
-      AssembliesMixin(pluginManager, assemblySchema),
+      AssembliesMixin(assemblySchema),
     )
     .create()
   session.addSessionAssembly({ name: 'fromSpec' })

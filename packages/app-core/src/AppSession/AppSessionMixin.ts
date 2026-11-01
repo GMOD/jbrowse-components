@@ -1,7 +1,6 @@
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 
-import type { AppRootModel } from './AppRootModel.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AppSessionRoot } from './AppSessionRoot.ts'
 
 /**
  * #stateModel AppSessionMixin
@@ -10,17 +9,17 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * delegate to the root model — `version`, `history`, `menus`,
  * `assemblyManager` — plus `renameCurrentSession`. Centralized here so the
  * products compose one mixin instead of re-declaring (and diverging on) the
- * same root delegations. The root must satisfy {@link AppRootModel}.
+ * same root delegations. The root must satisfy {@link AppSessionRoot}.
  */
-export function AppSessionMixin(_pluginManager: PluginManager) {
+export function AppSessionMixin() {
   return types
     .model({})
     .views(self => ({
       /**
        * #getter
        */
-      get root(): AppRootModel {
-        return getParent<AppRootModel>(self)
+      get root(): AppSessionRoot {
+        return getParent<AppSessionRoot>(self)
       },
     }))
     .views(self => ({

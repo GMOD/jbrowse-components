@@ -49,7 +49,7 @@ import makeWorkerInstance from '../makeWorkerInstance.ts'
 
 import type { SessionSnap } from '../../electron/ipc/channelTypes.ts'
 import type productSessionModelFactory from '../sessionModel/sessionModel.ts'
-import type { AppRootModel } from '@jbrowse/app-core'
+import type { AppSessionRoot } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfiguration } from '@jbrowse/core/configuration'
 import type { AssemblyConf } from '@jbrowse/core/util/assemblyConfigUtils'
@@ -553,10 +553,10 @@ export default function rootModelFactory({
 export type DesktopRootModelType = ReturnType<typeof rootModelFactory>
 export type DesktopRootModel = Instance<DesktopRootModelType>
 
-// Verify DesktopRootModel satisfies AppRootModel at compile time. If this
+// Verify DesktopRootModel satisfies AppSessionRoot at compile time. If this
 // errors, the root model is missing something the app session layer
 // (AppSessionMixin) delegates to via self.root.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function _checkDesktopRootModel(m: DesktopRootModel): AppRootModel {
+function _checkDesktopRootModel(m: DesktopRootModel): AppSessionRoot {
   return m
 }

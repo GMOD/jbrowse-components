@@ -35,8 +35,8 @@ export function AppSessionModel({
     MultipleViewsSessionMixin(pluginManager),
     PreferencesSessionMixin(pluginManager),
     SessionTracksManagerSessionMixin(pluginManager),
-    AssembliesMixin(pluginManager, assemblyConfigSchema),
-    AppSessionMixin(pluginManager),
+    AssembliesMixin(assemblyConfigSchema),
+    AppSessionMixin(),
     WorkspaceLayoutMixin(),
   )
 }

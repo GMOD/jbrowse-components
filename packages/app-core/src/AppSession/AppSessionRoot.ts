@@ -10,7 +10,7 @@ import type { AssemblyManager } from '@jbrowse/core/util/types'
  * Product-specific root contracts (e.g. `AbstractWebRootModel`)
  * extend this with their extra surface rather than re-declaring these members.
  */
-export interface AppRootModel {
+export interface AppSessionRoot {
   readonly version: string
   readonly gitCommit?: string
   readonly assemblyManager: AssemblyManager

@@ -3,7 +3,6 @@ import { editableConfig } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { asSession } from '@jbrowse/product-core'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   BaseAssemblyConfigModel,
   BaseAssemblyConfigSchema,
@@ -18,7 +17,6 @@ import type { AnyConfiguration } from '@jbrowse/core/configuration'
  * `temporaryAssemblies` (used for ad-hoc read-vs-ref style assemblies).
  */
 export function AssembliesMixin(
-  _pluginManager: PluginManager,
   assemblyConfigSchemasType: BaseAssemblyConfigSchema,
 ) {
   return types
