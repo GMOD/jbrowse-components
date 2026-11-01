@@ -38,11 +38,7 @@ import type {
   TabHome,
   TabNode,
 } from './tree.ts'
-import type {
-  IAnyStateTreeNode,
-  IStateTreeNode,
-  Instance,
-} from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * Duck-typed because `views` comes from MultipleViewsSessionMixin, which only
@@ -543,9 +539,3 @@ export function WorkspaceLayoutMixin() {
 
 export type WorkspaceLayoutMixinType = ReturnType<typeof WorkspaceLayoutMixin>
 export interface WorkspaceLayout extends Instance<WorkspaceLayoutMixinType> {}
-
-export function isSessionWithWorkspaceLayout(
-  session: IAnyStateTreeNode,
-): session is WorkspaceLayout {
-  return 'layout' in session && 'splitPanel' in session
-}

@@ -5,12 +5,7 @@ import { freezeDeep } from '@jbrowse/core/util/freezeDeep'
 import { isSameHighlight } from '@jbrowse/core/util/highlights'
 import { isFeature, unwrapFeature } from '@jbrowse/core/util/simpleFeature'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import {
-  cast,
-  getParent,
-  isStateTreeNode,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
 import { applyDeveloperMode } from './developerMode.ts'
@@ -479,9 +474,4 @@ export type BaseSession = Instance<BaseSessionType>
 /** Type guard for BaseSession */
 export function isBaseSession(thing: IAnyStateTreeNode): thing is BaseSession {
   return 'id' in thing && 'name' in thing && 'root' in thing
-}
-
-/** Type guard for whether a thing is JBrowse session */
-export function isSession(thing: unknown): thing is BaseSession {
-  return isStateTreeNode(thing) && isBaseSession(thing)
 }

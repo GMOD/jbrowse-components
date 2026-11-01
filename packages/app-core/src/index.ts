@@ -19,10 +19,7 @@ export {
   PluginsUpdatedMixin,
   onPluginsUpdated,
 } from './PluginsUpdated/index.ts'
-export {
-  WorkspaceLayoutMixin,
-  isSessionWithWorkspaceLayout,
-} from './WorkspaceLayout/index.ts'
+export { WorkspaceLayoutMixin } from './WorkspaceLayout/index.ts'
 export type {
   WorkspaceLayoutMixinType,
   WorkspaceLayout,
@@ -40,7 +37,6 @@ export type {
 export {
   addSessionTracks,
   buildLgvInit,
-  buildLgvInitFromParams,
   hubConnectionSpec,
   loadSessionSpec,
   parseSessionSnapshotUrl,
@@ -48,17 +44,13 @@ export {
   readHubUrlParam,
   readNavParam,
   readTracklistParam,
-  shortHubLabel,
-  splitHighlights,
 } from './SessionSpec/index.ts'
 export type {
   LayoutNode,
-  LgvUrlInit,
   ParsedSessionSnapshotUrl,
   ParsedSessionSpec,
   ViewSpec,
 } from './SessionSpec/index.ts'
-export type { SessionModelFactory } from './sessionModelFactory.ts'
 // URL params, for the two products that own their page (web, desktop). An
 // embedded product must not rewrite its host's URL — see queryParams.ts
 export {

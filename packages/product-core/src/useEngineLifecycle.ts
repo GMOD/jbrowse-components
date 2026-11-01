@@ -13,9 +13,11 @@ import type { EmbeddedRoot } from './destroyViewState.ts'
 export { useCreateOnce, useCreateOnceAsync } from '@jbrowse/core/util/hooks'
 
 /**
- * Async `useCreateOnce` + `useDestroyOnUnmount`: undefined until the engine is
- * ready. An engine resolving after the final unmount is destroyed on arrival
- * instead of orphaning its worker pool and autoruns.
+ * Builds an engine once per mount and destroys it on the final unmount
+ * (`useFinalUnmount`, which says why a bare effect cleanup is wrong under
+ * StrictMode). Undefined until the engine is ready; one resolving after the
+ * final unmount is destroyed on arrival instead of orphaning its worker pool
+ * and autoruns.
  */
 export function useAsyncEngineLifecycle<T extends EmbeddedRoot>(
   create: () => Promise<T>,
@@ -36,20 +38,4 @@ export function useAsyncEngineLifecycle<T extends EmbeddedRoot>(
     }
   })
   return engine
-}
-
-/**
- * Destroy an engine when its component really unmounts — terminating its RPC
- * worker threads and stopping its autoruns.
- *
- * The lifecycle rule is {@link useFinalUnmount}'s, including why the obvious
- * `useEffect(() => () => destroyViewState(state), [state])` is wrong under
- * StrictMode; this only names what gets torn down. Pair it with
- * `useCreateOnce`, since the engine has to be the same one for the component's
- * whole life.
- */
-export function useDestroyOnUnmount(viewState: EmbeddedRoot) {
-  useFinalUnmount(() => {
-    destroyViewState(viewState)
-  })
 }

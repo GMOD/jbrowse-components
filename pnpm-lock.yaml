@@ -2395,9 +2395,6 @@ importers:
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
-      '@jbrowse/app-core':
-        specifier: workspace:^
-        version: link:../../packages/app-core
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core

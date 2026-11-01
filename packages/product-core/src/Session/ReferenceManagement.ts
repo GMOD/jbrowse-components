@@ -15,8 +15,6 @@ import {
   walk,
 } from '@jbrowse/mobx-state-tree'
 
-import { isBaseSession } from './BaseSession.ts'
-
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TrackViewModel } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
@@ -117,16 +115,3 @@ export type SessionWithReferenceManagementType = ReturnType<
 /** Instance of a session with MST reference management (`getReferring()`, `dereferenceTrack()`)  */
 export type SessionWithReferenceManagement =
   Instance<SessionWithReferenceManagementType>
-
-/** Type guard for SessionWithReferenceManagement */
-export function isSessionWithReferenceManagement(
-  thing: IAnyStateTreeNode,
-): thing is SessionWithReferenceManagement {
-  return (
-    isBaseSession(thing) &&
-    'getReferring' in thing &&
-    typeof thing.getReferring === 'function' &&
-    'dereferenceTrack' in thing &&
-    typeof thing.dereferenceTrack === 'function'
-  )
-}

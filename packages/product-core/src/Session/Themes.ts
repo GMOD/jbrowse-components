@@ -16,12 +16,11 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { asSession } from '../siblingCast.ts'
-import { isBaseSession } from './BaseSession.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PaletteMode } from '@jbrowse/core/ui/palette'
 import type { SerializableThemeArgs, ThemeMap } from '@jbrowse/core/ui/theme'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
 
 /**
@@ -359,10 +358,3 @@ export type SessionWithThemesType = ReturnType<typeof ThemeManagerSessionMixin>
 
 /** Instance of a session that has theming support */
 export type SessionWithThemes = Instance<SessionWithThemesType>
-
-/** Type guard for SessionWithThemes */
-export function isSessionWithThemes(
-  session: IAnyStateTreeNode,
-): session is SessionWithThemes {
-  return isBaseSession(session) && 'theme' in session
-}

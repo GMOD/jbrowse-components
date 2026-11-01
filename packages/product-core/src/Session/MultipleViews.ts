@@ -19,7 +19,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
+import { BaseSessionModel } from './BaseSession.ts'
 import { DrawerWidgetSessionMixin } from './DrawerWidgets.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -462,10 +462,3 @@ export type SessionWithMultipleViewsType = ReturnType<
 
 /** Instance of a session with multiple views */
 export type SessionWithMultipleViews = Instance<SessionWithMultipleViewsType>
-
-/** Type guard for SessionWithMultipleViews */
-export function isSessionWithMultipleViews(
-  session: IAnyStateTreeNode,
-): session is SessionWithMultipleViews {
-  return isBaseSession(session) && 'views' in session
-}

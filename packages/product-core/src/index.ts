@@ -10,7 +10,6 @@ export {
   InternetAccountsRootModelMixin,
   PreferencesConfigSchemaFactory,
   createConfigModel,
-  isRootModel,
   openConnectionMenuItem,
   openTrackMenuItem,
   preferencesMenuItem,
@@ -35,26 +34,15 @@ export {
   ThemeManagerSessionMixin,
   TrackMenuItemsSessionMixin,
   TrackMenuSessionMixin,
-  TracksManagerSessionMixin,
-  aboutTrackMenuItem,
   getShareableSessionSnapshot,
   copyTrackSnapshot,
   finalizeSession,
   displayForms,
   hydratedForms,
   isBaseSession,
-  isSession,
   isSessionWithConnections,
-  isSessionWithDrawerWidgets,
-  isSessionWithMultipleViews,
-  isSessionWithReferenceManagement,
-  isSessionWithThemes,
-  isSessionWithTracks,
-  pluginExtraTrackItems,
   storedThemeArgs,
   trackActionItems,
-  trackActionMenuItems,
-  trackListMenuItems,
 } from './Session/index.ts'
 export type {
   AssertSessionModel,
@@ -87,14 +75,11 @@ export {
   AppReadyMarker,
   Drawer,
   DrawerControls,
-  DrawerHeader,
   DrawerWidget,
   DrawerWidgetSelector,
   ModalWidget,
-  ModalWidgetAppBar,
   PreferencesDialog,
   WidgetBody,
-  WidgetHeading,
   drawerGridTemplateColumns,
 } from './ui/index.ts'
 export type {
@@ -136,7 +121,6 @@ export {
   useAsyncEngineLifecycle,
   useCreateOnce,
   useCreateOnceAsync,
-  useDestroyOnUnmount,
 } from './useEngineLifecycle.ts'
 // the JS -> host direction of an embedded controller: where each view is
 // looking, what got selected, and the layout as plain JSON
@@ -148,10 +132,8 @@ export {
 } from './sessionMigrations/index.ts'
 export {
   DEFAULT_WEB_BASE_URL,
-  analyzeWebPortability,
   buildWebExportUrl,
   dropUnloadableTracks,
-  filterSessionInPlace,
   planWebExport,
 } from './sessionUtils.ts'
 export type {
@@ -166,11 +148,6 @@ export type {
   WebExportPlan,
   WebPortabilityReport,
 } from './sessionUtils.ts'
-export {
-  describeUnbuildableNodes,
-  pruneUnbuildableNodes,
-} from './pruneUnbuildableNodes.ts'
-export type { HeldNode, UnbuildableNode } from './pruneUnbuildableNodes.ts'
 export { default as EmbeddedViewContainer } from './embedded/EmbeddedViewContainer.tsx'
 export { createEmbeddedRootModel } from './embedded/createEmbeddedRootModel.ts'
 export { EmbeddedSessionMixin } from './embedded/EmbeddedSessionMixin.ts'

@@ -3,7 +3,7 @@ import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, computed } from 'mobx'
 
-import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
+import { BaseSessionModel } from './BaseSession.ts'
 import { isSessionWithConnections } from './Connections.ts'
 import { ReferenceManagementSessionMixin } from './ReferenceManagement.ts'
 import { assertNotReaddedDifferently } from './readdedTrackConf.ts'
@@ -16,7 +16,7 @@ import type {
   TrackConfigEntry,
 } from '@jbrowse/core/configuration'
 import type { ConnectionInstance } from '@jbrowse/core/util'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { IComputedValue } from 'mobx'
 
 /**
@@ -307,10 +307,3 @@ export type SessionWithTracksType = ReturnType<typeof TracksManagerSessionMixin>
 
 /** Instance of a session that has tracks */
 export type SessionWithTracks = Instance<SessionWithTracksType>
-
-/** Type guard for SessionWithTracks */
-export function isSessionWithTracks(
-  thing: IAnyStateTreeNode,
-): thing is SessionWithTracks {
-  return isBaseSession(thing) && 'tracks' in thing
-}

@@ -1,12 +1,7 @@
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import {
-  cast,
-  isStateTreeNode,
-  setTypeChecking,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { cast, setTypeChecking, types } from '@jbrowse/mobx-state-tree'
 
 import { replaceSession } from './replaceSession.ts'
 
@@ -220,13 +215,3 @@ export function BaseRootModelFactory<
 
 export type BaseRootModelType = ReturnType<typeof BaseRootModelFactory>
 export type BaseRootModel = Instance<BaseRootModelType>
-
-/** Type guard for checking if something is a JB root model */
-export function isRootModel(thing: unknown): thing is BaseRootModel {
-  return (
-    isStateTreeNode(thing) &&
-    'session' in thing &&
-    'jbrowse' in thing &&
-    'assemblyManager' in thing
-  )
-}

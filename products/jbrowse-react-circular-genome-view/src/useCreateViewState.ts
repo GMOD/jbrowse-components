@@ -29,7 +29,7 @@ import type { AsyncViewStateOptions } from './createViewState.ts'
  *
  * Do NOT reach for `useState(() => createViewState(opts))` plus a
  * `destroyViewState` cleanup by hand: both halves are StrictMode traps, and
- * `useCreateOnce` / `useDestroyOnUnmount` in product-core spell out why.
+ * `useAsyncEngineLifecycle` in product-core spells out why.
  */
 export function useCreateViewState(
   opts: AsyncViewStateOptions | (() => Promise<ViewModel>),

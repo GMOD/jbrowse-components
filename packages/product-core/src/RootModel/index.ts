@@ -1,4 +1,4 @@
-export { BaseRootModelFactory, isRootModel } from './BaseRootModel.ts'
+export { BaseRootModelFactory } from './BaseRootModel.ts'
 export type {
   BaseRootModel,
   BaseRootModelType,

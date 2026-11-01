@@ -1,4 +1,4 @@
-export { WorkspaceLayoutMixin, isSessionWithWorkspaceLayout } from './model.ts'
+export { WorkspaceLayoutMixin } from './model.ts'
 export { WorkspaceContainer } from './WorkspaceContainer.tsx'
 export { LayoutRenderer } from './LayoutRenderer.tsx'
 export { useLayoutDrag } from './useLayoutDrag.ts'

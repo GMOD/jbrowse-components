@@ -1,7 +1,4 @@
-export {
-  ReferenceManagementSessionMixin,
-  isSessionWithReferenceManagement,
-} from './ReferenceManagement.ts'
+export { ReferenceManagementSessionMixin } from './ReferenceManagement.ts'
 export type {
   ReferringNode,
   SessionWithReferenceManagement,
@@ -16,33 +13,23 @@ export type {
   SessionWithConnections,
   SessionWithConnectionsType,
 } from './Connections.ts'
-export {
-  DrawerWidgetSessionMixin,
-  isSessionWithDrawerWidgets,
-} from './DrawerWidgets.ts'
+export { DrawerWidgetSessionMixin } from './DrawerWidgets.ts'
 export type {
   SessionWithDrawerWidgets,
   SessionWithDrawerWidgetsType,
 } from './DrawerWidgets.ts'
-export {
-  ThemeManagerSessionMixin,
-  isSessionWithThemes,
-  storedThemeArgs,
-} from './Themes.ts'
+export { ThemeManagerSessionMixin, storedThemeArgs } from './Themes.ts'
 export type { ThemeModeSelection } from './Themes.ts'
 export type { SessionWithThemes, SessionWithThemesType } from './Themes.ts'
-export { TracksManagerSessionMixin, isSessionWithTracks } from './Tracks.ts'
+export { TracksManagerSessionMixin } from './Tracks.ts'
 export type { SessionWithTracks, SessionWithTracksType } from './Tracks.ts'
-export {
-  MultipleViewsSessionMixin,
-  isSessionWithMultipleViews,
-} from './MultipleViews.ts'
+export { MultipleViewsSessionMixin } from './MultipleViews.ts'
 export type {
   SessionWithMultipleViews,
   SessionWithMultipleViewsType,
 } from './MultipleViews.ts'
 export { PreferencesSessionMixin } from './Preferences.ts'
-export { BaseSessionModel, isBaseSession, isSession } from './BaseSession.ts'
+export { BaseSessionModel, isBaseSession } from './BaseSession.ts'
 export type { BaseSession, BaseSessionType } from './BaseSession.ts'
 export { SessionTracksManagerSessionMixin } from './SessionTracks.ts'
 export type {

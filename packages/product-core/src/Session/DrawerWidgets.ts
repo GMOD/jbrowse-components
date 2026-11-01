@@ -9,12 +9,10 @@ import { getEditableTrackConfigById } from '@jbrowse/core/util/types'
 import { addDisposer, detach, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { isBaseSession } from './BaseSession.ts'
-
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { DrawerPosition, Widget } from '@jbrowse/core/util/types'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const minDrawerWidth = 128
 const minMainWidth = 150
@@ -410,14 +408,3 @@ export type SessionWithDrawerWidgetsType = ReturnType<
 
 /** Instance of a session that manages drawer widgets */
 export type SessionWithDrawerWidgets = Instance<SessionWithDrawerWidgetsType>
-
-/** Type guard for SessionWithDrawerWidgets */
-export function isSessionWithDrawerWidgets(
-  session: IAnyStateTreeNode,
-): session is SessionWithDrawerWidgets {
-  return (
-    isBaseSession(session) &&
-    'widgets' in session &&
-    'drawerPosition' in session
-  )
-}
