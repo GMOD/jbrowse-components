@@ -52,9 +52,9 @@ public static const uint NO_PREV_START = 0xffffffffu;
 // naming its TS twin — which is the arrangement adr-051 exists to retire.
 public static const float MIN_FILL_WIDTH_PX = 1.5;
 
-// The most cuts a threshold color parts a plot at; the uniform block holds
-// this many.
-public static const int MAX_WIGGLE_CUTS = 8;
+// The most cuts a threshold color parts a plot at, markColor's: the plot finds
+// a band through its `colorCutYsPx`, and the uniform block holds this many.
+public static const int MAX_WIGGLE_CUTS = MAX_COLOR_CUTS;
 
 // The fill renderings' per-instance record, declared here because two entry
 // shaders draw off ONE buffer packed in this layout: `wiggle.slang` (xyplot,
