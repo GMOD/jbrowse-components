@@ -11764,6 +11764,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "VariantConnectors": {
+      "title": "VariantConnectors",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the connector lines above the columns.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "height": {
+          "description": "height of the connector band in pixels, taken from the genotype rows'; its seam drag writes it.",
+          "default": 20,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "RowAxisWithGrid": {
       "title": "RowAxisWithGrid",
       "type": "object",
@@ -12647,13 +12678,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
-        "lineZoneHeight": {
-          "default": 20,
+        "connectors": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
+            "$ref": "#/$defs/VariantConnectors"
           }
         },
         "filter": {
@@ -12913,6 +12943,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "unevaluatedProperties": false
+    },
+    "LDConnectors": {
+      "title": "LDConnectors",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "show": {
+          "description": "draw the connector lines and the names above the triangle.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "height": {
+          "description": "height of the connector band in pixels, taken from the triangle's; its seam drag writes it.",
+          "default": 100,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
     },
     "LDColorScale": {
       "title": "LDColorScale",
@@ -13191,14 +13252,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
-        "lineZoneHeight": {
-          "description": "height of the band above the triangle holding the connector lines and labels.",
-          "default": 100,
+        "connectors": {
           "if": {
             "type": "null"
           },
           "else": {
-            "type": "number"
+            "$ref": "#/$defs/LDConnectors"
           }
         },
         "encoding": {
@@ -13284,6 +13343,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
         "showVerticalGuides": {
+          "deprecated": true,
+          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+        },
+        "lineZoneHeight": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
         },
@@ -18068,8 +18131,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "variantLayout": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/variantLayout"
             },
-            "lineZoneHeight": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/lineZoneHeight"
+            "connectors": {
+              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/connectors"
             },
             "filter": {
               "anyOf": [
@@ -18457,8 +18520,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "heightMode": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/heightMode"
             },
-            "lineZoneHeight": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/lineZoneHeight"
+            "connectors": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/connectors"
             },
             "encoding": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/encoding"
@@ -18501,6 +18564,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "showVerticalGuides": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/showVerticalGuides"
+            },
+            "lineZoneHeight": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/lineZoneHeight"
             },
             "fitToHeight": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/fitToHeight"
@@ -24548,6 +24614,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },
         "layout": {
+          "deprecated": true,
+          "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
+        },
+        "lineZoneHeight": {
           "deprecated": true,
           "description": "Legacy display-instance key: a migration lifts it onto the setting that replaced it."
         },

@@ -23,5 +23,5 @@ A setting written to it names members one by one: a member left out stays as it 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-heightband">**height.band**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.8</code> | The fraction of its row a species' glyphs fill, centred in the row, so below 1 the rows stand apart. The track menu's Row height presets write it. |
+| <span id="slot-heightband">**height.band**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0.8</code> | The fraction of its row a species' glyphs fill, centred in the row, so below 1 the rows stand apart. |
 | <span id="slot-height">**height**</span><br>[MafAlignmentsMarkHeight sub-schema](#slot-heightband) | The height a glyph draws at, as a fraction of its row: `{ band: 0.8 }`, Vega-Lite's spelling. |

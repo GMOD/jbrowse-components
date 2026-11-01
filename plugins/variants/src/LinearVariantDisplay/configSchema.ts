@@ -139,11 +139,17 @@ export default function configSchemaFactory() {
       connectors: ConfigurationSchema(
         'VariantConnectors',
         {
+          /**
+           * #slot connectors.show
+           */
           show: {
             type: 'boolean',
             defaultValue: true,
             description: 'draw the connector lines above the columns',
           },
+          /**
+           * #slot connectors.height
+           */
           height: {
             type: 'number',
             defaultValue: 20,

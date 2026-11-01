@@ -60,7 +60,9 @@ Display slots go on a display entry: `"displays": [{ "type": "LDTrackDisplay", .
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-linezoneheight">**lineZoneHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | height of the band above the triangle holding the connector lines and labels<br>_advanced_ |
+| <span id="slot-connectors">**connectors**</span><br>[LDConnectors sub-schema](#slot-connectorsshow) | The band above the triangle holding the connector lines that tie each of its columns to a genomic position, and the variant names when they show: `show` and `height`, taken from the display's height. Off, neither the lines nor the names draw. |
+| <span id="slot-connectorsshow">**connectors.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the connector lines and the names above the triangle |
+| <span id="slot-connectorsheight">**connectors.height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | height of the connector band in pixels, taken from the triangle's; its seam drag writes it |
 | <span id="slot-encoding">**encoding**</span><br>[LDEncoding](../ldencoding) | The cells' channels: `encoding.color`, the statistic the cells show, `field` `r2` or `dprime`, and the linear ramp it paints through over the statistic's 0 to 1. |
 | <span id="slot-legend">**legend**</span><br>[HiddenLegend](../hiddenlegend) | The color ramp's key, off until asked for. |
 | <span id="slot-guides">**guides**</span><br>[LDGuides sub-schema](#slot-guidesshow) | The guides a hovered cell draws across the view at its pair's genomic positions. |
@@ -88,6 +90,7 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | `ldMetric` | moved into a current slot |
 | `showLegend` | moved into a current slot |
 | `showVerticalGuides` | moved into a current slot |
+| `lineZoneHeight` | moved into a current slot |
 | `fitToHeight` | moved into a current slot |
 | `useGenomicPositions` | moved into a current slot |
 | `maxHeight` | ignored |

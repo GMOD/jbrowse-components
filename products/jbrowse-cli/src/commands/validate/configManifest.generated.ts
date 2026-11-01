@@ -6596,8 +6596,20 @@ export const configManifest: ConfigManifest = {
           "type": "VariantLayout"
         },
         {
-          "name": "lineZoneHeight",
-          "type": "number"
+          "name": "connectors",
+          "type": "VariantConnectorsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "height",
+              "type": "number"
+            }
+          ],
+          "schema": "VariantConnectors",
+          "writes": "members"
         },
         {
           "name": "filter",
@@ -7139,8 +7151,20 @@ export const configManifest: ConfigManifest = {
           "type": "TriangleHeightMode"
         },
         {
-          "name": "lineZoneHeight",
-          "type": "number"
+          "name": "connectors",
+          "type": "LDConnectorsConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "height",
+              "type": "number"
+            }
+          ],
+          "schema": "LDConnectors",
+          "writes": "members"
         },
         {
           "name": "encoding",
@@ -7288,6 +7312,7 @@ export const configManifest: ConfigManifest = {
         "ldMetric",
         "showLegend",
         "showVerticalGuides",
+        "lineZoneHeight",
         "fitToHeight",
         "useGenomicPositions",
         "maxHeight",
@@ -11808,6 +11833,7 @@ export const configManifest: ConfigManifest = {
       "jexlFilters",
       "jexlFiltersSetting",
       "layout",
+      "lineZoneHeight",
       "renderingModeSetting",
       "showSidebarLabelsSetting",
       "showTreeSetting",

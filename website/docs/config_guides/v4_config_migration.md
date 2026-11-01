@@ -59,6 +59,7 @@ a file, and fails on a key it does not know.
 | `DotplotDisplay`, `LinearHicDisplay`, `LinearReferenceSequenceDisplay`, `LinearSyntenyDisplay` | `renderer` | dropped |
 | `LDTrackDisplay` | `fitToHeight` | `heightMode` |
 |  | `ldMetric` | `encoding.color.field` |
+|  | `lineZoneHeight` | `connectors.height` |
 |  | `showLegend` | `legend.show` |
 |  | `showVerticalGuides` | `guides.show` |
 |  | `useGenomicPositions` | `variantLayout` |
@@ -150,6 +151,7 @@ a file, and fails on a key it does not know.
 |  | `autoscale`, `maxScore`, `minScore`, `scaleType` | dropped |
 |  | `jexlFilters` (session) | `filter` |
 |  | `layout` (session) | `rows.sort` |
+|  | `lineZoneHeight` (session) | `connectors.height` |
 |  | `renderingModeSetting` (session) | `unit` |
 | `LinearVariantDisplay`, `LinearWiggleDisplay` | `minimalTicks` | dropped |
 |  | `clusterTree` (session) | `rows.tree` |

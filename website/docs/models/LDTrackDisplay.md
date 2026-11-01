@@ -64,7 +64,6 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | --- | --- |
 | <span id="getter-view">**view**</span><br><code><a href="../lineargenomeview">LinearGenomeView</a></code> |  |
 | <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> |  |
-| <span id="getter-linezoneheight">**lineZoneHeight**</span><br><code>number</code> |  |
 | <span id="getter-colorfield">**colorField**</span><br><code>LDMetric</code> | `encoding.color.field`, the statistic the fetch asks the file for. |
 | <span id="getter-showguides">**showGuides**</span><br><code>boolean</code> |  |
 | <span id="getter-shownames">**showNames**</span><br><code>boolean</code> |  |
@@ -81,7 +80,9 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-colorextent">**colorExtent**</span><br><code>readonly [number, number]</code> | What an open end of the color domain follows: the statistic's own 0 to 1, not the loaded values, so one r² paints one color on every track. |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The ramp the cells paint through, titled by the loaded metric. An end pinned inside the statistic's 0 to 1 reads `≤` or `≥`. |
 | <span id="getter-renderstate">**renderState**</span><br><code>LDRenderState</code> |  |
-| <span id="getter-matrixtop">**matrixTop**</span><br><code>number</code> | The band above the matrix: the connector lines in columns, the labels at genomic positions when they are on, else nothing. |
+| <span id="getter-connectorsstack">**connectorsStack**</span><br><code>BandStack&lt;"connectors"&gt;</code> | The `connectors` band above the matrix: the connector lines in columns, the labels at genomic positions when they are on, else nothing; taken from the display's height so the triangle keeps its floor. |
+| <span id="getter-connectorsheight">**connectorsHeight**</span><br><code>number</code> |  |
+| <span id="getter-matrixtop">**matrixTop**</span><br><code>number</code> | Where the triangle begins, under the `connectors` band. |
 | <span id="getter-connectorlinecoords">**connectorLineCoords**</span><br><code>ConnectorCoord[]</code> | Each column tied to its SNP's genomic x, for the connector lines. |
 
 <details class="inherited-members" data-pagefind-ignore>
@@ -148,7 +149,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | Member | Description |
 | --- | --- |
 | <span id="action-setfocalsnp">**setFocalSnp**</span><br><code>(snp: LDSnp &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setlinezoneheight">**setLineZoneHeight**</span><br><code>(n: number) =&gt; void</code> |  |
+| <span id="action-setconnectorsheight">**setConnectorsHeight**</span><br><code>(n: number) =&gt; void</code> |  |
 | <span id="action-setshowguides">**setShowGuides**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setshownames">**setShowNames**</span><br><code>(show: boolean) =&gt; void</code> |  |
 | <span id="action-setvariantlayout">**setVariantLayout**</span><br><code>(value: "columns" &#124; "genomic") =&gt; void</code> |  |

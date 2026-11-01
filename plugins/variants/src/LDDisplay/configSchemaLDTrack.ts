@@ -57,12 +57,18 @@ export default function ldTrackDisplayConfigSchema() {
       connectors: ConfigurationSchema(
         'LDConnectors',
         {
+          /**
+           * #slot connectors.show
+           */
           show: {
             type: 'boolean',
             defaultValue: true,
             description:
               'draw the connector lines and the names above the triangle',
           },
+          /**
+           * #slot connectors.height
+           */
           height: {
             type: 'number',
             defaultValue: 100,

@@ -10,9 +10,10 @@ Auto-generated from the config schema in the source — see the [config guide](/
 The alignments display's `readConnections` setting: the band of
 connections between mates and split segments, drawn as arcs or as the read
 cloud, which plots each pair at its insert size. The connectors drawn over
-the pileup's own rows are `pileup.connectors`. Both read one
-`encoding.color`, set here, and the display's `filter` picks the
-connections both draw, by its `connection` and `breakpoint` fields.
+the pileup's own rows are `pileup.connectors`. Both paint a connection
+its insert size and orientation class, in the colors the reads'
+`encoding.color` declares for that field, and the display's `filter` picks
+the connections both draw, by its `connection` and `breakpoint` fields.
 
 ## Example usage
 
@@ -50,5 +51,5 @@ A setting written to it names members one by one: a member left out stays as it 
 | <span id="slot-mark">**mark**</span><br>[ReadConnectionsMark](../readconnectionsmark) | The shape each connection draws as: `type` `link`, the arcs, or `rule`, the read cloud. |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>35</code> | height in pixels of the connections' own band, drawn under placement: 'down', or under 'up' while the coverage band is hidden; with coverage shown, up arcs draw in its height |
 | <span id="slot-placement">**placement**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (up, down) = <code>'down'</code> | where the connections draw: up over the coverage band, or down in a separate band below it |
-| <span id="slot-encoding">**encoding**</span><br>[ReadConnectionsEncoding](../readconnectionsencoding) | The color and width each connection strokes at: `color`, a pair field, `""` following the reads' `encoding.color` field where a connection paints it, and `strokeWidth`. |
+| <span id="slot-encoding">**encoding**</span><br>[ReadConnectionsEncoding](../readconnectionsencoding) | The width each connection strokes at, `strokeWidth`. |
 | <span id="slot-ordinarypairs">**ordinaryPairs**</span><br>[ReadConnectionsOrdinaryPairs](../readconnectionsordinarypairs) | The pairs that carry no category, drawn as context: `show`. |

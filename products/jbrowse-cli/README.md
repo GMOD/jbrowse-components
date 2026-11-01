@@ -820,7 +820,7 @@ Options:
   -h, --help                 Show help
 
   -t, --type                 Type of connection (e.g. JBrowse1Connection,
-                             UCSCTrackHubConnection, custom)
+                             UCSCTrackHubConnection, or one a plugin registers)
 
   -a, --assemblyNames        For UCSC: optional comma separated list of assembly
                              names to filter. For JBrowse1: a single assembly
@@ -857,8 +857,8 @@ $ jbrowse add-connection https://mysite.com/path/to/hub.txt
 # force the UCSCTrackHubConnection type for a hub file not named hub.txt
 $ jbrowse add-connection https://mysite.com/path/to/custom_hub_name.txt --type UCSCTrackHubConnection
 
-# add a custom connection type with extra config
-$ jbrowse add-connection https://mysite.com/path/to/custom --type custom --config '{"uri":{"url":"https://mysite.com/path/to/custom"}, "locationType": "UriLocation"}' -a hg19
+# add a connection type a plugin registers, its location in the plugin's own slot
+$ jbrowse add-connection https://mysite.com/path/to/source --type MyPluginConnection --config '{"sourceLocation":{"uri":"https://mysite.com/path/to/source","locationType":"UriLocation"}}' -a hg19
 
 # set an explicit id/name and write to a specific config file
 $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json

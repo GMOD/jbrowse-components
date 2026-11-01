@@ -2016,7 +2016,7 @@ export const trackFields: Record<string, FieldRecipe> = {
   // (LinesConnectingMatrixToGenomicPosition, in both the matrix and LD
   // displays), and no menu item — so a drag is the verified path rather than a
   // guessed label.
-  lineZoneHeight: numberField(() => ({
+  'connectors.height': numberField(() => ({
     path: 'Drag the bottom edge of the band of connecting lines above the rows to resize it.',
   })),
   forceLoad: value =>
