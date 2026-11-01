@@ -49,7 +49,7 @@ function fromOtherEnd(a: Segment, b: Segment) {
 }
 
 function colorType(arc: PendingArc) {
-  return getArcColorType({ arc, hasPaired: false })
+  return getArcColorType(arc)
 }
 
 describe('split junction class', () => {

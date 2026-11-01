@@ -6,7 +6,7 @@ import { readColorCategory, swatchPaletteKeys } from './colorUtils.ts'
 // (`pairCategory`), and the model folds the arc key into the read key whenever
 // the two share a color, which renders an arc bucket as a plain read swatch
 // and drops the curve mark. This pins what the fold assumes: the arc side's
-// own gates (`hasPaired`, `isSplit`) and its category-to-slot fold leave a
+// own gate (`isSplit`) and its category-to-slot fold leave a
 // paired arc keyed as the reads under it are. A figure once shipped with red
 // arcs over grey reads when the two sides classified separately.
 
@@ -24,25 +24,22 @@ function arcCategory(
 ) {
   return arcSlotCategory(
     getArcColorType({
-      arc: {
-        isSplit: false,
-        p1Ref: 'chr1',
-        p1Bp: 0,
-        p1Strand: 1,
-        p2Ref: 'chr1',
-        p2Bp: 1000,
-        p2Strand: -1,
-        // an FR pair's feet, which coloring never consults either
-        p1Dir: 1,
-        p2Dir: -1,
-        pairOrientationNum,
-        tlen,
-        interchrom,
-        // carried for the concordant-arc filter, which coloring never consults
-        flags: 0,
-        stats,
-      },
-      hasPaired: true,
+      isSplit: false,
+      p1Ref: 'chr1',
+      p1Bp: 0,
+      p1Strand: 1,
+      p2Ref: 'chr1',
+      p2Bp: 1000,
+      p2Strand: -1,
+      // an FR pair's feet, which coloring never consults either
+      p1Dir: 1,
+      p2Dir: -1,
+      pairOrientationNum,
+      tlen,
+      interchrom,
+      // carried for the concordant-arc filter, which coloring never consults
+      flags: 0,
+      stats,
     }),
   )
 }

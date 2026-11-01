@@ -17,7 +17,6 @@ import {
   readTrailingBodyDir,
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
-  SAM_FLAG_PAIRED,
 } from '@jbrowse/cigar-utils'
 
 import { nextRefAt } from '../../shared/readNextRefs.ts'
@@ -93,25 +92,11 @@ export function groupLaneReadsByName(
   return readsByName
 }
 
-export function computePairingInfo(
+export function insertSizeStatsOf(
   rpcDataMap: ReadonlyMap<number, WorkerPileupData>,
-) {
-  let hasPaired = false
-  let stats: InsertSizeBand | undefined
-  for (const data of rpcDataMap.values()) {
-    if (!hasPaired) {
-      for (let i = 0; i < data.readKeys.length; i++) {
-        if (data.readFlags[i]! & SAM_FLAG_PAIRED) {
-          hasPaired = true
-          break
-        }
-      }
-    }
-    if (!stats && data.insertSizeStats) {
-      stats = data.insertSizeStats
-    }
-  }
-  return { hasPaired, stats }
+): InsertSizeBand | undefined {
+  return [...rpcDataMap.values()].find(data => data.insertSizeStats)
+    ?.insertSizeStats
 }
 
 // Whether a connection whose far end is NOT loaded in this view is emitted.

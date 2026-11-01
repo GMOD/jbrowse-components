@@ -2013,8 +2013,8 @@ describe('computeArcsFromPileupData', () => {
 
   test('paired + SA-split: split junction colored by its own strands, not pair', () => {
     // read1 (first-in-pair) is SA-split fwd→rev — an inversion junction — and
-    // read2 (second-in-pair) is its mate. The dataset is paired (global
-    // hasPaired=true), but the split junction must still color by its segment
+    // read2 (second-in-pair) is its mate. The read is paired, but the split
+    // junction must still color by its segment
     // strands (split-inversion slot 7), not fall into the paired insert-size
     // branch.
     const data = makePileupData({
@@ -2039,7 +2039,7 @@ describe('computeArcsFromPileupData', () => {
     expect(arcs).toHaveLength(2)
     // read1's fwd→rev split junction (a.end 1200 → b.end 3200), colored as
     // an inversion junction by its own strands — NOT the paired insert-size
-    // default (0) the global hasPaired branch would have produced.
+    // default (0).
     expect(arcAt(arcs, 1200, 3200).colorType).toBe(ARC_COLOR_SPLIT_INV_LL)
     // and the read1↔read2 mate link, still colored by pair semantics. Each
     // mate's own outer edge: fwd read1's start (1000), rev read2's end (5200).

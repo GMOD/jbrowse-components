@@ -167,16 +167,13 @@ const ARC_SLOT_OF_CATEGORY = new Map<string, number>(
 // orientation.
 // Exported for `arcReadColorParity.test.ts`, which holds this against
 // `readColorCategory`.
-export function getArcColorType(args: { arc: PendingArc; hasPaired: boolean }) {
-  const { arc, hasPaired } = args
-
+export function getArcColorType(arc: PendingArc) {
   // A split-read junction carries no pair semantics (no template length, no
-  // pair orientation), so it paints its own junction class, regardless of
-  // whether OTHER reads in the view are paired. Keying on the per-connection `isSplit` instead of the dataset-
-  // global `hasPaired` is what lets a paired read that is itself SA-split show
-  // its inversion junctions correctly. Resolved before the insert class below
-  // because that is a paired concept and a junction has no TLEN to classify.
-  if (!hasPaired || arc.isSplit) {
+  // pair orientation), so it paints its own junction class, whether or not
+  // its read is paired: a paired read that is itself SA-split shows its
+  // inversion junctions. Only a paired read group links mates, so every arc
+  // past this is a pair's.
+  if (arc.isSplit) {
     return splitJunctionColor(arc)
   }
   // TLEN, and only TLEN, through the function `readColorCategory` classifies

@@ -4,7 +4,7 @@ import { passesCategory } from '../../shared/readCategoryFilters.ts'
 import {
   collectPendingArcs,
   collectPendingArcsByLane,
-  computePairingInfo,
+  insertSizeStatsOf,
   groupLaneReadsByName,
   groupReadsByName,
 } from './arcChains.ts'
@@ -166,7 +166,6 @@ function computeArcShape({
 // so every group's arcs exist before any of them is colored.
 interface ArcInputs {
   pendingArcs: PendingArc[]
-  hasPaired: boolean
   stats: InsertSizeBand | undefined
 }
 
@@ -186,27 +185,21 @@ function collectArcInputs(
   settings: ArcSettings,
 ): ArcInputs {
   const readsByName = groupReadsByName(rpcDataMap, regions, '')
-  const { hasPaired, stats } = computePairingInfo(rpcDataMap)
   const pendingArcs = collectPendingArcs(readsByName, arcChainContext(settings))
-  return { pendingArcs, hasPaired, stats }
+  return { pendingArcs, stats: insertSizeStatsOf(rpcDataMap) }
 }
 
-// What belongs to the whole fetched read set rather than to one group, pooled
-// for the reason the model maxes `arcsYDomainBp` across groups: `hasPaired`
-// switches whole lanes between the pair-orientation and split-junction branches
-// of `getArcColorType`. `stats` sizes only the interchromosomal clustering
-// window; an arc's insert class reads its own region's band (`arc.stats`),
-// since each region's fetch samples one and the reads are filled by it.
+// What belongs to the whole fetched read set rather than to one group,
+// pooled for the reason the model maxes `arcsYDomainBp` across groups.
+// `stats` sizes only the interchromosomal clustering window; an arc's insert
+// class reads its own region's band (`arc.stats`), since each region's fetch
+// samples one and the reads are filled by it.
 export interface ArcScale {
-  hasPaired: boolean
   stats: InsertSizeBand | undefined
 }
 
 function poolArcScale(inputs: ArcScale[]): ArcScale {
-  return {
-    hasPaired: inputs.some(i => i.hasPaired),
-    stats: inputs.find(i => i.stats !== undefined)?.stats,
-  }
+  return { stats: inputs.find(i => i.stats !== undefined)?.stats }
 }
 
 // Color + shape one group's resolved connections against the pooled scale,
@@ -237,7 +230,6 @@ function poolArcScale(inputs: ArcScale[]): ArcScale {
 // which is what `groupArcsByRef` and `arcTouchesRegion` both rely on.
 function resolveArcs(
   pendingArcs: PendingArc[],
-  { hasPaired }: ArcScale,
   settings: ArcSettings,
   regions: ArcRegions,
   { clusterOf, sizeOf }: InterchromClusters,
@@ -598,7 +590,7 @@ function resolveArcs(
     // endpoints (the link mark), and zooming out to show the whole span restores
     // the rounded arc. (`offscreenMates` only filters connections to mates that
     // aren't loaded in the current view; see `offScreenMateArcs`.)
-    const colorType = getArcColorType({ arc, hasPaired })
+    const colorType = getArcColorType(arc)
     // The arcs' ordinary pair, which at depth stops being context and becomes
     // the picture — 9138 of 9204 arcs at 1:2,000,000 on HG002 300x, all
     // painting the baseline slot (agent-docs/reference/DEEP_COVERAGE.md).
@@ -797,7 +789,6 @@ export function computeArcsFromPileupData(
   const scale = poolArcScale([inputs])
   return resolveArcs(
     inputs.pendingArcs,
-    scale,
     settings,
     { loaded: regions, displayed: displayedRegions },
     interchromClusters(inputs.pendingArcs, scale, settings),
@@ -908,7 +899,9 @@ export function collectArcs(
     arcChainContext(settings),
   )
   const scale = poolArcScale(
-    [...rawDataByGroup.values()].map(rawMap => computePairingInfo(rawMap)),
+    [...rawDataByGroup.values()].map(rawMap => ({
+      stats: insertSizeStatsOf(rawMap),
+    })),
   )
   const keys = [...rawDataByGroup.keys()]
   const lanes = keys.map(key => ({
@@ -938,7 +931,7 @@ export function collectArcs(
 
 /** `computeArcsByGroup`'s second half: the band's feeds from a collection. */
 export function resolveArcsByGroup(
-  { lanes, scale, clusters }: ArcCollection,
+  { lanes, clusters }: ArcCollection,
   regions: ArcRegions,
   settings: ArcSettings,
 ): ArcsByGroupResult {
@@ -951,7 +944,6 @@ export function resolveArcsByGroup(
   for (const { key, pending } of lanes) {
     const { arcs, crossRegion, lines } = resolveArcs(
       pending,
-      scale,
       settings,
       regions,
       {
