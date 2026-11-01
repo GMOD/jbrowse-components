@@ -24,12 +24,12 @@ import { observer } from 'mobx-react'
 import ExportToWebInfoDialog from './ExportToWebInfoDialog.tsx'
 import { buildLink, prepareExport } from './buildWebExport.ts'
 
-import type { AbstractSessionModel, SessionShareMode } from '@jbrowse/core/util'
 import type {
-  HydratedForms,
   WebExportInput,
   WebExportPlan,
-} from '@jbrowse/product-core'
+} from '../webExport/planWebExport.ts'
+import type { AbstractSessionModel, SessionShareMode } from '@jbrowse/core/util'
+import type { HydratedForms } from '@jbrowse/product-core'
 
 const SHARE_MODES = [
   // the default first, and in the order ExportToWebInfoDialog explains them

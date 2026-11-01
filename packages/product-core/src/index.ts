@@ -45,6 +45,7 @@ export {
   trackActionItems,
 } from './Session/index.ts'
 export type {
+  AssemblySnapshot,
   AssertSessionModel,
   BaseSession,
   BaseSessionType,
@@ -68,6 +69,7 @@ export type {
   SessionWithTracks,
   SessionWithTracksType,
   ThemeModeSelection,
+  TrackSnapshot,
 } from './Session/index.ts'
 
 export {
@@ -130,24 +132,8 @@ export {
   migrateSessionSnapshot,
   migratedDisplayInstanceKeys,
 } from './sessionMigrations/index.ts'
-export {
-  DEFAULT_WEB_BASE_URL,
-  buildWebExportUrl,
-  dropUnloadableTracks,
-  planWebExport,
-} from './sessionUtils.ts'
-export type {
-  AssemblySnapshot,
-  DroppedSessionNode,
-  HostedBase,
-  HostedBaseConfig,
-  NonPortableLocation,
-  SelfContainedReason,
-  TrackSnapshot,
-  WebExportInput,
-  WebExportPlan,
-  WebPortabilityReport,
-} from './sessionUtils.ts'
+export { dropUnloadableTracks } from './sessionUtils.ts'
+export type { DroppedSessionNode } from './sessionUtils.ts'
 export { default as EmbeddedViewContainer } from './embedded/EmbeddedViewContainer.tsx'
 export { createEmbeddedRootModel } from './embedded/createEmbeddedRootModel.ts'
 export { EmbeddedSessionMixin } from './embedded/EmbeddedSessionMixin.ts'

@@ -2,8 +2,9 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react'
 
 import ExportToWebDialog from './ExportToWebDialog.tsx'
 
+import type { WebExportInput } from '../webExport/planWebExport.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-import type { HydratedForms, WebExportInput } from '@jbrowse/product-core'
+import type { HydratedForms } from '@jbrowse/product-core'
 
 // the configs below are written the way a schema writes them back already
 const asWritten: HydratedForms = {

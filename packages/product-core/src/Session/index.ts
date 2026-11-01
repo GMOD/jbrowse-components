@@ -39,7 +39,11 @@ export type {
   SessionWithSessionTracksType,
 } from './SessionTracks.ts'
 export { displayForms, hydratedForms } from './hydratedForms.ts'
-export type { HydratedForms } from './hydratedForms.ts'
+export type {
+  AssemblySnapshot,
+  HydratedForms,
+  TrackSnapshot,
+} from './hydratedForms.ts'
 export { getShareableSessionSnapshot } from './shareableSnapshot.ts'
 export {
   TrackMenuItemsSessionMixin,

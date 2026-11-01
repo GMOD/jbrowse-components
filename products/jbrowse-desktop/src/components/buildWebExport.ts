@@ -1,21 +1,21 @@
 import { resolveShareUrl } from '@jbrowse/app-core'
 import { encodeSessionParam, fetchJson } from '@jbrowse/core/util'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
+
+import packageJSON from '../../package.json' with { type: 'json' }
 import {
   DEFAULT_WEB_BASE_URL,
   buildWebExportUrl,
   planWebExport,
-} from '@jbrowse/product-core'
+} from '../webExport/planWebExport.ts'
 
-import packageJSON from '../../package.json' with { type: 'json' }
-
-import type { SessionShareMode } from '@jbrowse/core/util'
 import type {
   HostedBaseConfig,
-  HydratedForms,
   WebExportInput,
   WebExportPlan,
-} from '@jbrowse/product-core'
+} from '../webExport/planWebExport.ts'
+import type { SessionShareMode } from '@jbrowse/core/util'
+import type { HydratedForms } from '@jbrowse/product-core'
 
 // The desktop counterpart of jbrowse-web's buildShareUrl: everything between a
 // saved desktop snapshot and a jbrowse-web URL, kept out of ExportToWebDialog so

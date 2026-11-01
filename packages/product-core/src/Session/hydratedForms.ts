@@ -6,10 +6,23 @@ import {
 } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import type { AssemblySnapshot, TrackSnapshot } from '../sessionUtils.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { DisplayForms } from '@jbrowse/core/util'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
+
+// A track config snapshot, loosely typed. planWebExport reads `trackId` and, in
+// the hosted-base strategy, diffs the whole object against its base track.
+export interface TrackSnapshot {
+  trackId: string
+  [key: string]: unknown
+}
+
+// An assembly config snapshot, loosely typed the same way TrackSnapshot is: the
+// hosted-base strategy diffs the whole object against its base assembly.
+export interface AssemblySnapshot {
+  name: string
+  [key: string]: unknown
+}
 
 /**
  * A config as its own schema writes it back: shorthand expanded, a stub per
