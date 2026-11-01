@@ -110,6 +110,10 @@ test('hiding a section is per key and drops with the grouping', () => {
   display.hideGroup('1')
   expect(display.groupSections.map(s => s.key)).toEqual(['-1'])
   expect(display.truncatedFeatureCount).toBe(0)
+  // the breakpoint split view draws a connection to what this returns, so a
+  // feature sitting unplaced off the display answers nothing
+  expect(display.searchFeatureByID('fwd')).toBeUndefined()
+  expect(display.searchFeatureByID('rev')).toBeDefined()
   const show = display
     .trackMenuItems()
     .find(i => 'label' in i && i.label === 'Show')!

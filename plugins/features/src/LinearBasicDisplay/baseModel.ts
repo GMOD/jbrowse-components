@@ -111,6 +111,7 @@ import {
   featureIdsTouchingBlocks,
 } from './layoutQueries.ts'
 import { facetOf, plotJexlProblems } from './plotProblems.ts'
+import { isPlacedRow } from './rowPlacement.ts'
 import { scanGroupByCandidates } from './scanGroupByCandidates.ts'
 import {
   labelVisibility,
@@ -1114,13 +1115,14 @@ export default function baseStateModelFactory(
     .views(self => ({
       /**
        * #method
+       * Where a feature drew, `[startBp, top, endBp, bottom]`. A feature the
+       * layout left unplaced, truncated or in a hidden section, is not found.
        */
       searchFeatureByID(id: string) {
         const item = self.featureIdIndex.get(id)
-        if (!item) {
-          return undefined
-        }
-        return [item.startBp, item.topPx, item.endBp, item.bottomPx] as const
+        return item && isPlacedRow(item.topPx)
+          ? ([item.startBp, item.topPx, item.endBp, item.bottomPx] as const)
+          : undefined
       },
     }))
     .views(self => {
