@@ -8,7 +8,7 @@ import { BAND_CHIPS_HEIGHT } from './variantTopBands.ts'
 test('the layout is a fetch input, and only columns reserve a connector zone', () => {
   const { display } = createTestEnvironment().createDisplay()
   expect(display.rpcProps().layout).toBe('genomic')
-  expect(display.lineZoneHeight).toBe(0)
+  expect(display.connectorsHeight).toBe(0)
   expect(display.rowsTopOffset).toBe(BAND_CHIPS_HEIGHT)
 
   display.setVariantLayout('columns')
@@ -16,7 +16,7 @@ test('the layout is a fetch input, and only columns reserve a connector zone', (
   expect(display.rpcProps().layout).toBe('columns')
   // columns draw reference cells whatever the setting says
   expect(display.rpcProps()).toHaveProperty('showReference', true)
-  expect(display.lineZoneHeight).toBe(20)
+  expect(display.connectorsHeight).toBe(20)
   expect(display.rowsTopOffset).toBe(20)
 })
 

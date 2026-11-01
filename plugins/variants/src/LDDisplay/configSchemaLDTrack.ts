@@ -48,15 +48,30 @@ export default function ldTrackDisplayConfigSchema() {
       }),
       ...triangleMatrixConfigSchemaFields,
       /**
-       * #slot
+       * #slot connectors
+       * The band above the triangle holding the connector lines that tie
+       * each of its columns to a genomic position, and the variant names
+       * when they show: `show` and `height`, taken from the display's
+       * height. Off, neither the lines nor the names draw.
        */
-      lineZoneHeight: {
-        type: 'number',
-        defaultValue: 100,
-        description:
-          'height of the band above the triangle holding the connector lines and labels',
-        advanced: true,
-      },
+      connectors: ConfigurationSchema(
+        'LDConnectors',
+        {
+          show: {
+            type: 'boolean',
+            defaultValue: true,
+            description:
+              'draw the connector lines and the names above the triangle',
+          },
+          height: {
+            type: 'number',
+            defaultValue: 100,
+            description:
+              "height of the connector band in pixels, taken from the triangle's; its seam drag writes it",
+          },
+        },
+        { closed: true },
+      ),
       /**
        * #slot encoding
        * The cells' channels: `encoding.color`, the statistic the cells show,
@@ -154,6 +169,10 @@ export default function ldTrackDisplayConfigSchema() {
         ldMetric: field => ({ encoding: { color: { field } } }),
         showLegend: show => ({ legend: { show } }),
         showVerticalGuides: show => ({ guides: { show } }),
+        lineZoneHeight: height =>
+          height === 0
+            ? { connectors: { show: false } }
+            : { connectors: { height } },
         fitToHeight: fit => ({ heightMode: fit ? 'fit' : 'fixed' }),
         // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- the retired slot's own name
         useGenomicPositions: genomic => ({

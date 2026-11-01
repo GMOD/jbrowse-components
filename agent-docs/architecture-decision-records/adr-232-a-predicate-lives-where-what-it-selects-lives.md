@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A predicate lives where what it selects lives: a display's `filter` holds its tests on the records it fetched and on the data derived from them, so the alignments display's `filter.junctions` and `filter.connections` replace `sashimi.filter` and `readConnections.filter`, and every part that draws junctions or connections reads them, the curved connectors over the pileup included; and the coverage allele floor becomes the color rule `coverage.minAlleleFraction`. The canvas, mark and multi-sample variant displays' `filter` becomes an object whose `expressions` member takes the jexl list, also its shorthand. A schema with a `shorthand` declares `writes: 'whole' | 'members'`; a band is fixed `{ show, height }` or the remainder `{ show }`; a guide is a top-level `show<Guide>`; a schema declares its plot words, and `PLOT_VOCABULARY` goes. The variant lane becomes `variants`, MAF's row band `alignments`. Amends ADR-204, 215, 218 and 231; decided, built before the 5.0.0 slot-path freeze"
+summary: "A predicate lives where what it selects lives: a display's `filter` holds its tests on the records it fetched and on the data derived from them, so the alignments display's `filter.junctions` and `filter.connections` replace `sashimi.filter` and `readConnections.filter`, and every part that draws junctions or connections reads them, the curved connectors over the pileup included; and the coverage allele floor becomes the color rule `coverage.minAlleleFraction`. The canvas, mark and multi-sample variant displays' `filter` becomes an object whose `expressions` member takes the jexl list, also its shorthand. A schema with a `shorthand` declares `writes: 'whole' | 'members'`; a band is fixed `{ show, height }` or the remainder `{ show }`; a guide is a top-level `show<Guide>`; a schema declares its plot words, and `PLOT_VOCABULARY` goes. The variant lane becomes `variants`, MAF's row band `alignments`. Amends ADR-204, 215, 218 and 231; decided, built before the 5.0.0 slot-path freeze. Amended: the connector-line zone over the variant display's columns and the LD triangle is a `connectors: { show, height }` band on each, bound against the plot it is taken from, replacing `lineZoneHeight`"
 ---
 
 # ADR-232: A predicate lives where what it selects lives
@@ -214,7 +214,7 @@ costs a `retired` entry kept for good, so the trivial ones go now.
 | `readConnections.placement: 'pileup'` for the connectors | `mark` would mean nothing under it, and arcs with connectors could not draw together |
 | `readConnections.showOrdinaryPairs` into `filter.connections` | Its unset would mean the mark's default where every other category's unset means unfiltered (ADR-231's reason; proposed a third time) |
 | A `sidebar` object | Row labels draw over the plot, and a boolean `sidebar.showLabels` would sit beside the enum `showLabels` |
-| One connector-zone object for LD and the variant display | Two members the variant display never reads; the zone is the `columns` layout's guide, and `lineZoneHeight` already means one thing on both |
+| One connector-zone object for LD and the variant display | Two members the variant display never reads. Superseded in part by the 2026-11-01 amendment: each display declares its own `connectors: { show, height }`, whose two members both read |
 | `hideSelfAlignments` into the read filter | A section hide applied on the main thread (`displayHiddenGroupKeys`); as a read member it would refetch |
 | MultiWay `hideUnlabelled` into a filter | Superseded: declined while the box was a paint rule shared with the synteny views' state; those views' box became a `filter` entry (ADR-238), and the ribbons' box became a `ribbons.filter` one beside it |
 | A `preProcessSnapshot` turning a `filter` list into `{ expressions }` | Leaves the inferred write mode wrong for the one schema that broke it |
@@ -304,3 +304,31 @@ costs a `retired` entry kept for good, so the trivial ones go now.
 - `hideSelfAlignments` and `hideUnlabelled` keep their names, and MAF's
   `showReferenceRow` stays a top-level toggle of the row the worker named as
   the reference; `rows.kept` is the reader's own selection.
+
+## Amendment: the connector zone is a `connectors` band (2026-11-01)
+
+Colin, on a review that found the zone's drag could take the genotype rows
+to 0 px: "you can completely reconsider the name 'lineZone' if needed. it
+could be considered just another 'band'."
+
+- **`lineZoneHeight` becomes `connectors: { show, height }`** on the variant
+  display (default 20) and on LD (default 100), the fixed-band shape this
+  ADR gives every band. `show` replaces writing 0 to turn the zone off, so a
+  dragged height survives it. On LD the band also holds the variant names,
+  as an axis holds its tick labels; off, neither draws.
+- **It is bound against the plot it is taken from** (`connectorsBandStack`):
+  the rows' slot height on the variant display, the display's height on LD,
+  each keeping `MIN_BAND_HEIGHT`, and a drag stops there
+  (`bandDragBounds`). The fixed 1000 px ceiling let a drag past the track's
+  bottom, or a config taller than the track, take the rows to 0 px with the
+  handle out of reach.
+- `lineZoneHeight` shipped as an LD config slot and as v4's matrix session
+  state, so both lift: 0 to `{ show: false }`, any other height to `height`.
+  The variant display's config slot was beta-only and does not.
+
+| Alternative | Why not |
+| --- | --- |
+| Keep the flat `lineZoneHeight` | The one flat height left among the bands, turned off by a special 0 |
+| `links` | Named for the variant display's planned SV links band (`todo/variant-display-links-band.md`) |
+| `guides` | LD's hover guides already take it |
+| `leaders` | Exact (cartography's leader lines) but unfamiliar to a genomics reader |

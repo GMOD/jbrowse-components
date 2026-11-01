@@ -30,8 +30,8 @@ function matrixCellData(starts: number[]): CellDataResult {
 }
 
 // Four variants over an 8kb window at bpPerPx 10: four 200px columns in the
-// 800px viewport, so the first column runs from its center (100, lineZoneHeight)
-// up to bp 0 at (0, 0) and its midpoint is (50, lineZoneHeight/2).
+// 800px viewport, so the first column runs from its center (100, connectorsHeight)
+// up to bp 0 at (0, 0) and its midpoint is (50, connectorsHeight/2).
 function loadedDisplay() {
   const { createDisplay } = createTestEnvironment()
   const { display, view } = createDisplay()
@@ -57,7 +57,7 @@ test('hovering a connector emphasizes it', () => {
 
   fireEvent.mouseMove(container.querySelector('rect')!, {
     clientX: 50,
-    clientY: display.lineZoneHeight / 2,
+    clientY: display.connectorsHeight / 2,
   })
 
   expect(emphasizedLine(container)?.getAttribute('x1')).toBe('100')
@@ -74,7 +74,7 @@ test('a zoom drops a hover it cannot fire a mousemove for', () => {
   )
   fireEvent.mouseMove(container.querySelector('rect')!, {
     clientX: 50,
-    clientY: display.lineZoneHeight / 2,
+    clientY: display.connectorsHeight / 2,
   })
   expect(emphasizedLine(container)).not.toBeNull()
 
@@ -119,7 +119,7 @@ test('the export emits one path per connector', () => {
     <svg>
       <SvgConnectorField
         coords={display.connectorLineCoords}
-        lineZoneHeight={display.lineZoneHeight}
+        connectorsHeight={display.connectorsHeight}
         width={800}
         strokeWidth={0.5}
       />

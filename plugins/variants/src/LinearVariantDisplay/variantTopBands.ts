@@ -4,8 +4,8 @@
  *
  * - the **records band**, the VCF's records laid out and stacked as a
  *   `LinearVariantDisplay` lays them out (`records.show`);
- * - the **connector-line zone**, which ties a matrix column to its genomic
- *   position (`lineZoneHeight`, non-zero only in columns).
+ * - the **connectors band**, which ties a matrix column to its genomic
+ *   position (`connectorsHeight`, non-zero only in columns).
  *
  * The records sit on top, where the connector lines end. The layout reserving
  * a strip and the painter filling it both read this, or the painter overdraws
@@ -35,7 +35,7 @@ export interface VariantTopBands {
   recordsHeight: number
   /** The chip strip under the records band; 0 where no chip draws. */
   chipsHeight: number
-  lineZoneTop: number
+  connectorsTop: number
   /**
    * Where the genotype rows begin: the sum of every band above, which
    * `availableHeight` subtracts from the display height.
@@ -81,26 +81,26 @@ export function variantTopBandsGeometry({
   showRecords,
   recordsHeight,
   showChips,
-  lineZoneHeight,
+  connectorsHeight,
 }: {
   showRecords: boolean
   recordsHeight: number
   showChips: boolean
   /** 0 at genomic positions. */
-  lineZoneHeight: number
+  connectorsHeight: number
 }): VariantTopBands {
   const { top, reserved, bottom } = stackBands(
-    ['records', 'chips', 'lineZone'],
+    ['records', 'chips', 'connectors'],
     {
       records: { active: showRecords, height: recordsHeight },
       chips: { active: showChips, height: BAND_CHIPS_HEIGHT },
-      lineZone: { active: true, height: lineZoneHeight },
+      connectors: { active: true, height: connectorsHeight },
     },
   )
   return {
     recordsHeight: reserved.records,
     chipsHeight: reserved.chips,
-    lineZoneTop: top.lineZone,
+    connectorsTop: top.connectors,
     bottom,
   }
 }

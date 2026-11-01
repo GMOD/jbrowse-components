@@ -1,4 +1,11 @@
-import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import { MIN_BAND_HEIGHT, clampBandHeight } from '@jbrowse/core/util/bandHeight'
+import {
+  bandDragBounds,
+  boundStackedBands,
+  stackBands,
+} from '@jbrowse/core/util/bandLayout'
+
+import type { Band, BandPlot } from '@jbrowse/core/util/bandLayout'
 
 export const GENOTYPE_SPLITTER = /[/|]/
 
@@ -18,16 +25,44 @@ export const VARIANT_FEATURE_WIDGET = {
   id: 'variantFeature',
 }
 
-// The connector-line zone is drag-resizable, clamped through the shared band
-// rule (`clampBandHeight`) — the floor keeps the resize
-// handle, drawn at lineZoneHeight - 4, reachable. A config or snapshot may still
-// declare 0 to turn the zone off entirely; only a *drag* comes through here,
-// which is also why this is the resize form and takes the current height: a zone
-// a config declared below the floor is not snapped up by its first drag.
-const LINE_ZONE_BOUNDS = { min: 10, max: 1000 }
+// A drag's floor, which keeps the seam handle on the band grabbable
+const MIN_CONNECTORS_HEIGHT = 10
 
-export function clampLineZoneHeight(current: number, target: number) {
-  return clampBandHeight(current, target, LINE_ZONE_BOUNDS)
+/**
+ * The `connectors` band, the connector lines over the plot they tie to the
+ * genome (the genotype rows' columns, the LD triangle), taking its height
+ * from that plot: the stated height bound so the plot keeps
+ * `MIN_BAND_HEIGHT`, and folded.
+ */
+export function connectorsBandStack(plotHeight: number, band: Band) {
+  const plot = connectorsPlot(plotHeight)
+  return stackBands(
+    ['connectors'],
+    boundStackedBands(['connectors'], { connectors: band }, plot),
+  )
+}
+
+function connectorsPlot(plotHeight: number): BandPlot {
+  return { height: plotHeight, floor: MIN_BAND_HEIGHT }
+}
+
+/**
+ * A drag of the `connectors` band, from `current` px: down to the handle's
+ * floor and up to where the plot under it keeps its own.
+ */
+export function clampConnectorsHeight(
+  plotHeight: number,
+  current: number,
+  target: number,
+) {
+  const stack = connectorsBandStack(plotHeight, {
+    active: true,
+    height: current,
+  })
+  return clampBandHeight(current, target, {
+    min: MIN_CONNECTORS_HEIGHT,
+    ...bandDragBounds(stack, 'connectors', connectorsPlot(plotHeight)),
+  })
 }
 
 // Screen row a worker row maps to when the display isn't drawing it (see

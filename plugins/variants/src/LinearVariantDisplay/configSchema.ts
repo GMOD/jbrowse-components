@@ -131,15 +131,28 @@ export default function configSchemaFactory() {
           "'genomic' draws each variant at its span; 'columns' draws one equal-width column per variant, tied to its position by a connector line, while genotype rows draw",
       },
       /**
-       * #slot
-       * Height of the band of connector lines above the columns, spent only
-       * in the `'columns'` layout.
+       * #slot connectors
+       * The band of connector lines tying each column to its genomic
+       * position, above the columns: `show` and `height`, taken from the
+       * genotype rows' height. Drawn in the `'columns'` layout only.
        */
-      lineZoneHeight: {
-        type: 'number',
-        defaultValue: 20,
-        advanced: true,
-      },
+      connectors: ConfigurationSchema(
+        'VariantConnectors',
+        {
+          show: {
+            type: 'boolean',
+            defaultValue: true,
+            description: 'draw the connector lines above the columns',
+          },
+          height: {
+            type: 'number',
+            defaultValue: 20,
+            description:
+              "height of the connector band in pixels, taken from the genotype rows'; its seam drag writes it",
+          },
+        },
+        { closed: true },
+      ),
       /**
        * #slot filter
        * The variants the display draws, a list of

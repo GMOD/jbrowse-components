@@ -426,7 +426,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               trackId: 'kgp_lct_haplotypes',
               // 300 rows at 1.73 px; the swept cluster draws as a ~215 px slab.
               height: 520,
-              lineZoneHeight: 34,
+              connectors: { height: 34 },
               runClustering: true,
               // Clustering over the whole window mixes in unlinked flanks.
               clusterRegion: 'chr2:135,787,850-135,876,467',

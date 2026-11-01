@@ -4,7 +4,6 @@ import {
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { reservedPx } from '@jbrowse/core/util/bandLayout'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
@@ -21,7 +20,10 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import { bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
-import { clampLineZoneHeight } from '../shared/constants.ts'
+import {
+  clampConnectorsHeight,
+  connectorsBandStack,
+} from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { ldMetricLabel } from './components/ldValueLabel.ts'
 import { LD_FIELD_PRESETS, LD_VALUE_EXTENT } from './ldColorConfigSchema.ts'
@@ -112,11 +114,15 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       /**
        * #action
        */
-      setLineZoneHeight(n: number) {
+      setConnectorsHeight(n: number) {
         setConf(
           self,
-          'lineZoneHeight',
-          clampLineZoneHeight(getConf(self, 'lineZoneHeight'), n),
+          ['connectors', 'height'],
+          clampConnectorsHeight(
+            self.height,
+            getConf(self, ['connectors', 'height']),
+            n,
+          ),
         )
       },
       /**
@@ -147,12 +153,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        */
       get prefersOffset() {
         return true
-      },
-      /**
-       * #getter
-       */
-      get lineZoneHeight(): number {
-        return getConf(self, 'lineZoneHeight')
       },
       /**
        * #getter
@@ -279,14 +279,31 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The band above the matrix: the connector lines in columns, the labels
-       * at genomic positions when they are on, else nothing.
+       * The `connectors` band above the matrix: the connector lines in
+       * columns, the labels at genomic positions when they are on, else
+       * nothing; taken from the display's height so the triangle keeps its
+       * floor.
+       */
+      get connectorsStack() {
+        return connectorsBandStack(self.height, {
+          active:
+            getConf(self, ['connectors', 'show']) &&
+            (!self.atGenomicPositions || self.showNames),
+          height: getConf(self, ['connectors', 'height']),
+        })
+      },
+      /**
+       * #getter
+       */
+      get connectorsHeight(): number {
+        return this.connectorsStack.reserved.connectors
+      },
+      /**
+       * #getter
+       * Where the triangle begins, under the `connectors` band.
        */
       get matrixTop(): number {
-        return reservedPx({
-          active: !self.atGenomicPositions || self.showNames,
-          height: self.lineZoneHeight,
-        })
+        return this.connectorsStack.bottom
       },
       /**
        * #method

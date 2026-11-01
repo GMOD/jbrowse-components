@@ -185,7 +185,7 @@ on each row's label bar, so it puts the matching color strip in the gutter.
       "type": "LinearVariantDisplay",
       "variantLayout": "columns",
       "height": 450,
-      "lineZoneHeight": 130,
+      "connectors": { "height": 130 },
       "encoding": { "color": "impact" },
       "facet": { "field": "histology", "sort": ["ductal", "lobular"] },
       "rowColor": "histology"
@@ -235,7 +235,7 @@ band first in `sort`:
       "type": "LinearVariantDisplay",
       "variantLayout": "columns",
       "height": 450,
-      "lineZoneHeight": 130,
+      "connectors": { "height": 130 },
       "encoding": { "color": "impact" },
       "facet": {
         "field": "subtype",

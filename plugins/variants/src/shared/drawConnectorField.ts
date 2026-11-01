@@ -9,7 +9,7 @@ function round(px: number) {
 
 /**
  * The faint field of connector lines, from each column center at
- * `lineZoneHeight` up to its genomic position at y=0.
+ * `connectorsHeight` up to its genomic position at y=0.
  *
  * **One `stroke()` per line.** A rasterizer composites a stroked path ONCE, so
  * every line put into a single path (or a single SVG `<path>` with 13,000
@@ -25,7 +25,7 @@ function round(px: number) {
 export function drawConnectorField(
   ctx: Ctx2D,
   coords: ConnectorCoord[],
-  lineZoneHeight: number,
+  connectorsHeight: number,
   strokeWidth: number,
   rgbaColor: string,
 ) {
@@ -36,7 +36,7 @@ export function drawConnectorField(
     // 2dp, not the raw float: a column center is (i + 0.5) * pitch, so most of
     // these serialize as 17 digits, and at 10^4 lines that is megabytes of a
     // vector SVG export spent below a hundredth of a pixel
-    ctx.moveTo(round(mx), lineZoneHeight)
+    ctx.moveTo(round(mx), connectorsHeight)
     ctx.lineTo(round(gx), 0)
     ctx.stroke()
   }

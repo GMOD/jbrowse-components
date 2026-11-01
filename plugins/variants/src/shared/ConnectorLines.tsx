@@ -35,9 +35,9 @@ export interface ConnectorCoord {
 // declare it too rather than restating the fields.
 export interface ConnectorLinesModel extends IStateTreeNode {
   height: number
-  lineZoneHeight: number
+  connectorsHeight: number
   connectorLineCoords: ConnectorCoord[]
-  setLineZoneHeight: (arg: number) => void
+  setConnectorsHeight: (arg: number) => void
 }
 
 // The red connector line drawn for the hovered (or crosshair) column. Stays in
@@ -46,8 +46,8 @@ export interface ConnectorLinesModel extends IStateTreeNode {
 const ConnectorLine = observer(function ConnectorLine({
   mx,
   gx,
-  lineZoneHeight,
-}: ConnectorCoord & { lineZoneHeight: number }) {
+  connectorsHeight,
+}: ConnectorCoord & { connectorsHeight: number }) {
   return (
     <line
       stroke="#f00c"
@@ -55,7 +55,7 @@ const ConnectorLine = observer(function ConnectorLine({
       style={{ pointerEvents: 'none' }}
       x1={mx}
       x2={gx}
-      y1={lineZoneHeight}
+      y1={connectorsHeight}
       y2={0}
     />
   )
@@ -63,7 +63,7 @@ const ConnectorLine = observer(function ConnectorLine({
 
 function useConnectorFieldPaint(
   coords: ConnectorCoord[],
-  lineZoneHeight: number,
+  connectorsHeight: number,
   strokeWidth: number,
 ) {
   const color = alpha(
@@ -71,7 +71,7 @@ function useConnectorFieldPaint(
     connectorFieldAlpha(coords, strokeWidth),
   )
   return (ctx: Ctx2D) => {
-    drawConnectorField(ctx, coords, lineZoneHeight, strokeWidth, color)
+    drawConnectorField(ctx, coords, connectorsHeight, strokeWidth, color)
   }
 }
 
@@ -86,18 +86,22 @@ function useConnectorFieldPaint(
  */
 const ConnectorLineField = observer(function ConnectorLineField({
   lineCoords,
-  lineZoneHeight,
+  connectorsHeight,
   width,
   strokeWidth,
 }: {
   lineCoords: ConnectorCoord[]
-  lineZoneHeight: number
+  connectorsHeight: number
   width: number
   strokeWidth: number
 }) {
-  const paint = useConnectorFieldPaint(lineCoords, lineZoneHeight, strokeWidth)
-  return lineZoneHeight <= 0 ? null : (
-    <OverlayCanvas width={width} height={lineZoneHeight} draw={paint} />
+  const paint = useConnectorFieldPaint(
+    lineCoords,
+    connectorsHeight,
+    strokeWidth,
+  )
+  return connectorsHeight <= 0 ? null : (
+    <OverlayCanvas width={width} height={connectorsHeight} draw={paint} />
   )
 })
 
@@ -108,22 +112,22 @@ const ConnectorLineField = observer(function ConnectorLineField({
  */
 export function SvgConnectorField({
   coords,
-  lineZoneHeight,
+  connectorsHeight,
   width,
   strokeWidth,
   opts,
 }: {
   coords: ConnectorCoord[]
-  lineZoneHeight: number
+  connectorsHeight: number
   width: number
   strokeWidth: number
   opts?: PaintLayerOpts
 }) {
-  const paint = useConnectorFieldPaint(coords, lineZoneHeight, strokeWidth)
-  return coords.length === 0 || lineZoneHeight <= 0 ? null : (
+  const paint = useConnectorFieldPaint(coords, connectorsHeight, strokeWidth)
+  return coords.length === 0 || connectorsHeight <= 0 ? null : (
     <PaintLayer
       width={width}
-      height={lineZoneHeight}
+      height={connectorsHeight}
       opts={opts}
       paint={paint}
     />
@@ -135,11 +139,11 @@ export function SvgConnectorField({
 // that — a 0.5px line is not something a pointer can be asked to hit.
 const ConnectorHitTestRect = observer(function ConnectorHitTestRect({
   lineCoords,
-  lineZoneHeight,
+  connectorsHeight,
   onHover,
 }: {
   lineCoords: ConnectorCoord[]
-  lineZoneHeight: number
+  connectorsHeight: number
   onHover: (coord: ConnectorCoord | undefined) => void
 }) {
   return (
@@ -147,7 +151,7 @@ const ConnectorHitTestRect = observer(function ConnectorHitTestRect({
       x={0}
       y={0}
       width="100%"
-      height={lineZoneHeight}
+      height={connectorsHeight}
       fill="transparent"
       onMouseMove={event => {
         const pt = svgMousePoint(event)
@@ -161,7 +165,7 @@ const ConnectorHitTestRect = observer(function ConnectorHitTestRect({
               pt.x,
               pt.y,
               coord.mx,
-              lineZoneHeight,
+              connectorsHeight,
               coord.gx,
               0,
             )
@@ -208,10 +212,10 @@ export const ConnectorZone = observer(function ConnectorZone({
 })
 
 /**
- * The drag handle along the bottom of the zone, sitting `top` pixels down. Every
- * zone in both displays resizes through this one `lineZoneHeight` slot (the
- * clamp lives in the setter), so a zone dragged shut can always be dragged back
- * open.
+ * The drag handle along the bottom of the `connectors` band, sitting `top`
+ * pixels down. Both displays resize it through `connectors.height`, clamped
+ * in the setter, so a band dragged shut can always be dragged back open and
+ * one dragged down stops where the plot under it keeps its floor.
  */
 export const ConnectorZoneResizeHandle = observer(
   function ConnectorZoneResizeHandle({
@@ -229,7 +233,7 @@ export const ConnectorZoneResizeHandle = observer(
         // the slot up from under it would eat the first N pixels doing nothing
         value={top}
         onChange={height => {
-          model.setLineZoneHeight(height)
+          model.setConnectorsHeight(height)
         }}
       />
     )
@@ -253,7 +257,7 @@ export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
   highlight?: ConnectorCoord
   children?: React.ReactNode
 }) {
-  const { height, lineZoneHeight, connectorLineCoords: lineCoords } = model
+  const { height, connectorsHeight, connectorLineCoords: lineCoords } = model
   const { width } = containingLgv(model)
   const [hovered, setHovered] = useState<ConnectorCoord>()
   // The coords are rebuilt whenever the view moves, so a hovered entry missing
@@ -270,7 +274,7 @@ export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
         <>
           <ConnectorLineField
             lineCoords={lineCoords}
-            lineZoneHeight={lineZoneHeight}
+            connectorsHeight={connectorsHeight}
             width={width}
             strokeWidth={strokeWidth}
           />
@@ -279,7 +283,7 @@ export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
           <ConnectorZone width={width} height={height}>
             <ConnectorHitTestRect
               lineCoords={lineCoords}
-              lineZoneHeight={lineZoneHeight}
+              connectorsHeight={connectorsHeight}
               onHover={coord => {
                 setHovered(coord)
               }}
@@ -289,7 +293,7 @@ export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
               <ConnectorLine
                 mx={emphasized.mx}
                 gx={emphasized.gx}
-                lineZoneHeight={lineZoneHeight}
+                connectorsHeight={connectorsHeight}
               />
             ) : null}
           </ConnectorZone>
@@ -297,10 +301,10 @@ export const ConnectorLineOverlay = observer(function ConnectorLineOverlay({
         </>
       )}
       {/* Not gated on there being lines: the zone still takes up
-      `lineZoneHeight`, and a viewport with no variants in it is exactly when a
+      `connectorsHeight`, and a viewport with no variants in it is exactly when a
       user wants to drag that space back. */}
-      {lineZoneHeight === 0 ? null : (
-        <ConnectorZoneResizeHandle model={model} top={lineZoneHeight} />
+      {connectorsHeight === 0 ? null : (
+        <ConnectorZoneResizeHandle model={model} top={connectorsHeight} />
       )}
     </>
   )

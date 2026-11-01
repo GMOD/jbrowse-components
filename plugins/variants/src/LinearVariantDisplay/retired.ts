@@ -134,7 +134,8 @@ export const retiredTypes: RetiredDisplayType[] = [
  * palette into its rows, so its colors stay behind and the palette keeps
  * painting them; its `jexlFilters` and `renderingModeSetting` land as the
  * config's own retired spellings, which `retiredConfigSpellings` then lifts.
- * A v4 `LinearVariantDisplay` held its filters as `jexlFiltersSetting`.
+ * A v4 `LinearVariantDisplay` held its filters as `jexlFiltersSetting`, and a
+ * v4 matrix its dragged connector band as `lineZoneHeight`.
  */
 export const retiredState: RetiredDisplayState = {
   keys: [
@@ -142,6 +143,7 @@ export const retiredState: RetiredDisplayState = {
     ...retiredFilterState.keys,
     'jexlFilters',
     'renderingModeSetting',
+    'lineZoneHeight',
   ],
   lift: instance => ({
     ...liftRetiredRowState(instance, { colors: false }),
@@ -151,6 +153,9 @@ export const retiredState: RetiredDisplayState = {
       : {}),
     ...(typeof instance.renderingModeSetting === 'string'
       ? { renderingMode: instance.renderingModeSetting }
+      : {}),
+    ...(typeof instance.lineZoneHeight === 'number'
+      ? { connectors: { height: instance.lineZoneHeight } }
       : {}),
   }),
 }

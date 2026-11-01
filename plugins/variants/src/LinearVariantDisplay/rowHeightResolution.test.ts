@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { MIN_BAND_HEIGHT } from '@jbrowse/core/util/bandHeight'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment } from './testEnv.ts'
@@ -82,19 +83,19 @@ describe('row height resolution', () => {
     expect(m.scrollableHeight).toBe(0)
   })
 
-  // lineZoneHeight (matrix only) is user-draggable independently of height --
+  // connectorsHeight (matrix only) is user-draggable independently of height --
   // e.g. dragging the connector-line zone taller, then shrinking the display
   // -- so it can swallow the whole display. availableHeight floors at 0
   // rather than going negative (every consumer treats it as a real pixel
   // dimension: canvas height, CSS height, scroll viewport height), and
   // effectiveRowHeight floors the resulting 0-height row to 1 rather than
   // propagating a NaN/Infinity divide-by-zero downstream.
-  it('floors availableHeight/effectiveRowHeight when lineZoneHeight swallows the display', () => {
+  it('leaves the rows their floor when the connectors band is dragged past the display', () => {
     const m = createColumnsDisplay()
-    m.setHeight(20)
-    m.setLineZoneHeight(1000)
-    expect(m.availableHeight).toBe(0)
-    expect(m.effectiveRowHeight).toBe(1)
+    m.setHeight(100)
+    m.setConnectorsHeight(1000)
+    expect(m.connectorsHeight).toBe(100 - MIN_BAND_HEIGHT)
+    expect(m.availableHeight).toBe(MIN_BAND_HEIGHT)
   })
 
   it('setFitToHeight returns to fit mode', () => {
@@ -131,15 +132,15 @@ describe('row height resolution', () => {
     expect(m.effectiveRowHeight).toBe(m.availableHeight / m.nrow)
   })
 
-  // The columns layout reserves a `lineZoneHeight` (20px) for the connector
-  // zone, so rows live in `availableHeight = height - lineZoneHeight`. A pinned
+  // The columns layout reserves a `connectorsHeight` (20px) for the connector
+  // zone, so rows live in `availableHeight = height - connectorsHeight`. A pinned
   // height is unaffected by either; only the row count that fits changes.
   it('resizeHeight leaves a pinned rowHeight alone (matrix)', () => {
     const m = createColumnsDisplay()
     m.setRowHeight(10)
     const oldHeight = m.height
-    m.resizeHeight(oldHeight - m.lineZoneHeight)
-    expect(m.height).toBe(2 * oldHeight - m.lineZoneHeight)
+    m.resizeHeight(oldHeight - m.connectorsHeight)
+    expect(m.height).toBe(2 * oldHeight - m.connectorsHeight)
     expect(m.rowHeight).toBe(10)
   })
 
@@ -151,9 +152,10 @@ describe('row height resolution', () => {
     const m = createColumnsDisplay()
     m.setRowHeight(10)
     const oldHeight = m.height
-    m.resizeHeight(-oldHeight) // clamps to the 20px floor == lineZoneHeight
+    m.resizeHeight(-oldHeight) // clamps to the 20px floor, the rows' own
     expect(m.height).toBe(20)
-    expect(m.availableHeight).toBe(0)
+    expect(m.connectorsHeight).toBe(0)
+    expect(m.availableHeight).toBe(MIN_BAND_HEIGHT)
     expect(m.rowHeight).toBe(10)
     m.resizeHeight(oldHeight - 20)
     expect(m.rowHeight).toBe(10)

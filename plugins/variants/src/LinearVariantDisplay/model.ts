@@ -90,7 +90,8 @@ import {
   INTERNAL_SOURCE_KEYS,
   VARIANT_DISPLAY,
   VARIANT_FEATURE_WIDGET,
-  clampLineZoneHeight,
+  clampConnectorsHeight,
+  connectorsBandStack,
 } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { buildSampleIndex } from '../shared/genotypeCodec.ts'
@@ -690,11 +691,16 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Height of the connector-line zone above the columns; 0 at genomic
+         * The `connectors` band's height above the columns, taken from the
+         * rows' slot height so they keep their floor; 0 at genomic
          * positions, where nothing needs connecting.
          */
-        get lineZoneHeight(): number {
-          return this.atGenomicPositions ? 0 : getConf(self, 'lineZoneHeight')
+        get connectorsHeight(): number {
+          return connectorsBandStack(self.fitTargetHeight, {
+            active:
+              !this.atGenomicPositions && getConf(self, ['connectors', 'show']),
+            height: getConf(self, ['connectors', 'height']),
+          }).reserved.connectors
         },
         /**
          * #getter
@@ -1031,11 +1037,15 @@ export function stateModelFactory(
           /**
            * #action
            */
-          setLineZoneHeight(n: number) {
+          setConnectorsHeight(n: number) {
             setConf(
               self,
-              'lineZoneHeight',
-              clampLineZoneHeight(self.lineZoneHeight, n),
+              ['connectors', 'height'],
+              clampConnectorsHeight(
+                self.fitTargetHeight,
+                self.connectorsHeight,
+                n,
+              ),
             )
           },
           /**

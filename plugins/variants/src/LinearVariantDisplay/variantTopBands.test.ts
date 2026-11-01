@@ -25,7 +25,7 @@ function geometry(
     showRecords: true,
     recordsHeight: 40,
     showChips: false,
-    lineZoneHeight: 0,
+    connectorsHeight: 0,
     ...over,
   })
 }
@@ -34,10 +34,10 @@ describe('the band stack', () => {
   // the connector lines end at genomic positions, which is where the records
   // draw, so the records sit above the zone
   test('stacks the records above the connector zone', () => {
-    expect(geometry({ lineZoneHeight: 30 })).toEqual({
+    expect(geometry({ connectorsHeight: 30 })).toEqual({
       recordsHeight: 40,
       chipsHeight: 0,
-      lineZoneTop: 40,
+      connectorsTop: 40,
       bottom: 70,
     })
   })
@@ -48,16 +48,16 @@ describe('the band stack', () => {
     expect(geometry({ showChips: true })).toEqual({
       recordsHeight: 40,
       chipsHeight: BAND_CHIPS_HEIGHT,
-      lineZoneTop: 40 + BAND_CHIPS_HEIGHT,
+      connectorsTop: 40 + BAND_CHIPS_HEIGHT,
       bottom: 40 + BAND_CHIPS_HEIGHT,
     })
   })
 
   test('a band that is off costs zero px, not its floor', () => {
-    expect(geometry({ showRecords: false, lineZoneHeight: 30 })).toEqual({
+    expect(geometry({ showRecords: false, connectorsHeight: 30 })).toEqual({
       recordsHeight: 0,
       chipsHeight: 0,
-      lineZoneTop: 0,
+      connectorsTop: 0,
       bottom: 30,
     })
   })
@@ -227,7 +227,7 @@ describe('the band on a display', () => {
 
     expect(display.showRecords).toBe(false)
     expect(display.topBands.recordsHeight).toBe(0)
-    expect(display.rowsTopOffset).toBe(display.lineZoneHeight)
+    expect(display.rowsTopOffset).toBe(display.connectorsHeight)
   })
 })
 

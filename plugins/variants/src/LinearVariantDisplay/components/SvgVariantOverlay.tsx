@@ -11,7 +11,7 @@ import type React from 'react'
 // translated below `rowsTopOffset` together — the same offset the on-screen
 // canvas and `TreeSidebar` take — so a display with bands above its rows can't
 // export its rows 20px high while its labels stay put. `records` and
-// `lineZone` draw in those bands, in that stacking order (variantTopBands.ts).
+// `connectors` draw in those bands, in that stacking order (variantTopBands.ts).
 // The color key is the export shell's, off the same `colorScales` the screen
 // keys by.
 //
@@ -24,7 +24,7 @@ const SvgVariantOverlay = ({
   overlays,
   text,
   records,
-  lineZone,
+  connectors,
   children,
 }: {
   model: RenderSvgBaseModel
@@ -33,9 +33,9 @@ const SvgVariantOverlay = ({
   // band, the connector zone, the separators and the sidebar are drawn over it
   overlays: boolean
   text?: ExportTextStyle
-  // untranslated: it sits at the top of the display, above `lineZone`
+  // untranslated: it sits at the top of the display, above `connectors`
   records?: React.ReactNode
-  lineZone?: React.ReactNode
+  connectors?: React.ReactNode
   children: React.ReactNode
 }) => {
   const {
@@ -49,7 +49,7 @@ const SvgVariantOverlay = ({
   return (
     <>
       {overlays ? records : null}
-      {overlays ? lineZone : null}
+      {overlays ? connectors : null}
       <g transform={`translate(0 ${rowsTopOffset})`}>
         {children}
         {overlays && showRowSeparators ? (

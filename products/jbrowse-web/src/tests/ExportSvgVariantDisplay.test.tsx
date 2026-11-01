@@ -53,7 +53,7 @@ function expectFitModeSpread(svg: string) {
 // Both matrix claims off ONE export. Opening this display and painting it is
 // ~8s, and the two ran the same setup and then asserted on the same SVG string.
 //
-// The second half: the matrix display reserves `lineZoneHeight` at the top for
+// The second half: the matrix display reserves its `connectors` band at the top for
 // the lines tying each column to its genomic position. The export used to draw
 // neither: rows started at y=0 (20px above where the live canvas and tree
 // sidebar put them, leaving the bottom 20px blank) and the connector lines were
@@ -63,7 +63,7 @@ test('the matrix export spreads rows in fit mode, below the connector lines', as
     displayType: 'matrix',
   })
   await findDisplayPainted(info.displayTestId, { timeout: 40000 })
-  const { lineZoneHeight } = view.tracks[0]!
+  const { connectorsHeight } = view.tracks[0]!
     .displays[0] as LinearVariantDisplayModel
 
   await view.exportSvg({ rasterizeLayers: false })
@@ -71,16 +71,16 @@ test('the matrix export spreads rows in fit mode, below the connector lines', as
 
   expectFitModeSpread(svg)
 
-  expect(lineZoneHeight).toBeGreaterThan(0)
+  expect(connectorsHeight).toBeGreaterThan(0)
   // cells, labels, and dendrogram all live in one row-space group below the
   // line zone
-  expect(svg).toContain(`transform="translate(0 ${lineZoneHeight})"`)
+  expect(svg).toContain(`transform="translate(0 ${connectorsHeight})"`)
   // each connector runs from its column center at the bottom of the zone up
   // to the genomic position on the ruler, and each is its OWN stroked path —
   // one path holding every line unions instead of accumulating, which is what
   // flattened the dense field (see shared/drawConnectorField.ts)
   const connectors = svg.match(
-    new RegExp(`<path d="M[\\d.]+,${lineZoneHeight}L[\\d.]+,0"`, 'g'),
+    new RegExp(`<path d="M[\\d.]+,${connectorsHeight}L[\\d.]+,0"`, 'g'),
   )
   expect(connectors?.length).toBeGreaterThan(10)
 }, 45000)

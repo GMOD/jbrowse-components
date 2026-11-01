@@ -76,7 +76,7 @@ describe('atGenomicPositions follows the loaded matrix', () => {
     expect(display.rpcProps().layout).toBe('genomic')
     // but the matrix in hand is uniform, so the zone still holds connectors
     expect(display.atGenomicPositions).toBe(false)
-    expect(display.matrixTop).toBe(display.lineZoneHeight)
+    expect(display.matrixTop).toBe(display.connectorsHeight)
   })
 })
 

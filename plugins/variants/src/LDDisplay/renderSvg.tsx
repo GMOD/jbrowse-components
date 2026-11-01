@@ -27,7 +27,7 @@ function LdSvgBody({
   overlays,
   opts,
 }: LgvSvgBodyProps<LDDisplayModel>) {
-  const { connectorLineCoords: coords, lineZoneHeight, showNames } = model
+  const { connectorLineCoords: coords, connectorsHeight, showNames } = model
   return (
     <>
       <TriangleMatrixSvgLayer
@@ -42,7 +42,7 @@ function LdSvgBody({
       {overlays && !model.atGenomicPositions ? (
         <SvgConnectorField
           coords={coords}
-          lineZoneHeight={lineZoneHeight}
+          connectorsHeight={connectorsHeight}
           width={canvasWidth}
           strokeWidth={LD_CONNECTOR_STROKE_PX}
           opts={opts}

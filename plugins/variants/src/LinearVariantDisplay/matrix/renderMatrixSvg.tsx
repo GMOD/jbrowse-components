@@ -20,7 +20,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 interface MatrixRenderSvgModel
   extends
     RenderSvgBaseModel,
-    Pick<ConnectorLinesModel, 'connectorLineCoords' | 'lineZoneHeight'> {
+    Pick<ConnectorLinesModel, 'connectorLineCoords' | 'connectorsHeight'> {
   renderState: MatrixRenderState
   paintedRegionRows: ReadonlyMap<number, VariantMatrixUploadData>
   matrixBlocks: VariantMatrixRenderBlock[]
@@ -56,10 +56,10 @@ function VariantMatrixSvgBody({
       width={canvasWidth}
       overlays={overlays}
       text={opts}
-      lineZone={
+      connectors={
         <SvgConnectorField
           coords={model.connectorLineCoords}
-          lineZoneHeight={model.lineZoneHeight}
+          connectorsHeight={model.connectorsHeight}
           width={canvasWidth}
           strokeWidth={MATRIX_CONNECTOR_STROKE_PX}
           opts={opts}

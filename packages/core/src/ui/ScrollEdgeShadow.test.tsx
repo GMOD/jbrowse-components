@@ -93,10 +93,9 @@ test('both edges are placed inside the viewport, not the display', () => {
   })
 })
 
-// A viewport shorter than the shadow is reachable both ways — the variants
-// displays floor availableHeight at 0 because lineZoneHeight alone can exceed
-// the display height, and the pileup's coverage band drags up to the same
-// place. Unclamped, the bottom edge is placed above the viewport's own top and
+// A viewport shorter than the shadow is reachable both ways — a band stack
+// leaves the rows under it only their floor, and the pileup's coverage band
+// drags up to the same place. Unclamped, the bottom edge is placed above the viewport's own top and
 // inks the pinned band instead.
 test('a viewport shorter than the shadow does not ink the band above it', () => {
   expect(
