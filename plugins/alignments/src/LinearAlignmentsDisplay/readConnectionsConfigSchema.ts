@@ -12,9 +12,10 @@ import { readConnectionsOrdinaryPairsConfigSchema } from './readConnectionsOrdin
  * The alignments display's `readConnections` setting: the band of
  * connections between mates and split segments, drawn as arcs or as the read
  * cloud, which plots each pair at its insert size. The connectors drawn over
- * the pileup's own rows are `pileup.connectors`. Both read one
- * `encoding.color`, set here, and the display's `filter` picks the
- * connections both draw, by its `connection` and `breakpoint` fields.
+ * the pileup's own rows are `pileup.connectors`. Both paint a connection
+ * its insert size and orientation class, in the colors the reads'
+ * `encoding.color` declares for that field, and the display's `filter` picks
+ * the connections both draw, by its `connection` and `breakpoint` fields.
  *
  * #example
  * ```js
@@ -82,9 +83,7 @@ export const readConnectionsConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot encoding
-     * The color and width each connection strokes at: `color`, a pair
-     * field, `""` following the reads' `encoding.color` field where a
-     * connection paints it, and `strokeWidth`.
+     * The width each connection strokes at, `strokeWidth`.
      */
     encoding: readConnectionsEncodingConfigSchema,
     /**
