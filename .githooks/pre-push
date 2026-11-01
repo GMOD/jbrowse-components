@@ -263,6 +263,12 @@ tree_state >"$tmp/before" 2>/dev/null || true
 git status --porcelain -uall 2>/dev/null | sed 's/^...//; s/.* -> //' \
   >"$tmp/dirty-before" || : >"$tmp/dirty-before"
 
+# Tracked paths carrying an uncommitted edit. A generator reads the live tree,
+# so what it writes while one is open may describe that edit rather than the
+# commit being pushed; the autogen step below refuses to commit such output.
+git status --porcelain -uno 2>/dev/null | sed 's/^...//; s/.* -> //' \
+  >"$tmp/tracked-dirty" || : >"$tmp/tracked-dirty"
+
 # And their contents, so a generator that overwrites one can be undone. Only
 # autogen can reach them — the linters and the formatter never see a dirty
 # path — and only a file can be copied.
@@ -446,6 +452,31 @@ if [ -n "$stale_in_head" ] && [ -n "$to_main" ]; then
   printf '%s' "$stale_in_head" | sed 's/^/  /' >&2
   echo "CI would fail on them. Push once their edit is committed or put aside." >&2
   status=1
+fi
+
+# AUTOGEN WROTE FROM A TREE THAT IS NOT THE COMMIT. With a tracked file edited
+# and uncommitted, a rewritten artifact can list names that exist only in that
+# edit (d53200253a committed SCROLL_ZOOM_TIP a commit before it existed, and CI
+# failed on a clean checkout). The clean paths it rewrote go back to HEAD and a
+# push to main stops, rather than committing output the pushed tree cannot
+# reproduce.
+if [ -s "$tmp/tracked-dirty" ] &&
+  grep -q '^Checked in [0-9]*ms\. Rewriting ' "$tmp/autogen.log"; then
+  contaminated=$(changed_since "$tmp/before" |
+    grep -Fxv -f "$tmp/dirty-before" || true)
+  if [ -n "$contaminated" ]; then
+    printf '%s\n' "$contaminated" | tr '\n' '\0' |
+      xargs -0 git checkout HEAD -- 2>/dev/null || true
+    echo >&2
+    echo "pre-push: autogen rewrote these while tracked files had uncommitted edits, so the output may not match the commit; put back to HEAD:" >&2
+    printf '%s\n' "$contaminated" | sed 's/^/  /' >&2
+    echo "Edited and uncommitted:" >&2
+    sed 's/^/  /' "$tmp/tracked-dirty" >&2
+    if [ -n "$to_main" ]; then
+      echo "Commit or put those edits aside, then push again." >&2
+      status=1
+    fi
+  fi
 fi
 
 # The two ratcheted lists inside check-docs that DO have a write mode, run as

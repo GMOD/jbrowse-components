@@ -160,6 +160,18 @@ const GATES: Gate[] = [
     }),
   },
   { name: 'typecheck', argv: nodeScript('typecheck.ts') },
+  // The website reads plugin and core types (spec-recipe reads the alignments
+  // color-menu type) but `typecheck` does not include it, so a type change
+  // that breaks it went red only on CI.
+  {
+    name: 'website typecheck',
+    argv: files =>
+      files.some(f =>
+        /^(website|packages\/[^/]+\/src|plugins\/[^/]+\/src)\//.test(f),
+      )
+        ? ['pnpm', '--dir', join(root, 'website'), 'typecheck']
+        : undefined,
+  },
   // Whole-tree, a type-aware oxlint run of its own, so it waits for --full.
   { name: 'unsafe any', argv: pnpm('check-unsafe-any'), slow: true },
   { name: 'docs', argv: pnpm('check-docs'), slow: true },
