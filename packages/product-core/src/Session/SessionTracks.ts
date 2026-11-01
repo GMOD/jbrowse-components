@@ -87,15 +87,13 @@ function deltaHasChanges(
 // declares, and the manager also answers for sessionAssemblies, which is the
 // case this exists to catch.
 function assembliesNotInTheCatalog(
-  self: { jbrowse: { assemblies: unknown[] } },
+  self: { jbrowse: { assemblies: AnyConfigurationModel[] } },
   trackConf: AnyConfiguration,
 ) {
   const catalog = new Set(
     self.jbrowse.assemblies.flatMap(a => [
-      readConfObject(a as AnyConfigurationModel, 'name') as string,
-      ...((readConfObject(a as AnyConfigurationModel, 'aliases') as
-        | string[]
-        | undefined) ?? []),
+      readConfObject(a, 'name') as string,
+      ...((readConfObject(a, 'aliases') as string[] | undefined) ?? []),
     ]),
   )
   return getConfAssemblyNamesOrNone(trackConf).filter(

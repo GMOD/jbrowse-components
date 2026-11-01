@@ -4,6 +4,8 @@ import {
   mergeConfSettings,
 } from '@jbrowse/core/configuration'
 
+import { isRecord } from '../snapshotUtils.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   DisplayEntry,
@@ -69,10 +71,6 @@ interface ExtractedDisplaySettings {
   settings: DisplayEntry
 }
 
-function isObject(v: unknown): v is Record<string, unknown> {
-  return !!v && typeof v === 'object' && !Array.isArray(v)
-}
-
 function migrateDisplay(
   display: Record<string, unknown>,
   trackConfigId: string | undefined,
@@ -128,14 +126,14 @@ function migrateTrack(
   resolve: Resolve,
   collected: ExtractedDisplaySettings[],
 ): unknown {
-  if (!isObject(track) || !Array.isArray(track.displays)) {
+  if (!isRecord(track) || !Array.isArray(track.displays)) {
     return track
   }
   const trackConfigId =
     typeof track.configuration === 'string' ? track.configuration : undefined
   const displays = track.displays as unknown[]
   const next = displays.map(d =>
-    isObject(d) ? migrateDisplay(d, trackConfigId, resolve, collected) : d,
+    isRecord(d) ? migrateDisplay(d, trackConfigId, resolve, collected) : d,
   )
   return next.some((d, i) => d !== displays[i])
     ? { ...track, displays: next }
@@ -158,7 +156,7 @@ function migrateView(
   // a synteny view's panels are views of their own
   if (Array.isArray(views)) {
     const next = views.map(v =>
-      isObject(v) ? migrateView(v, resolve, collected) : v,
+      isRecord(v) ? migrateView(v, resolve, collected) : v,
     )
     if (next.some((v, i) => v !== views[i])) {
       result = { ...result, views: next }
@@ -179,9 +177,9 @@ function mergeSettingsIntoTrackConfig(
     ? (track.displays as unknown[])
     : []
   const index = [
-    (d: unknown) => isObject(d) && d.displayId === displayId,
+    (d: unknown) => isRecord(d) && d.displayId === displayId,
     (d: unknown) =>
-      isObject(d) && resolve(d.type)?.display.name === displayType,
+      isRecord(d) && resolve(d.type)?.display.name === displayType,
   ]
     .map(matches => list.findIndex(matches))
     .find(i => i !== -1)
@@ -189,7 +187,7 @@ function mergeSettingsIntoTrackConfig(
     index === undefined
       ? [...list, { type: displayType, displayId, ...settings }]
       : list.map((d, i) =>
-          i === index && isObject(d)
+          i === index && isRecord(d)
             ? mergeConfSettings(
                 resolve(displayType)?.display.configSchema,
                 d,
@@ -212,9 +210,9 @@ function applyExtractedSettings(
     ? [...(snapshot.sessionTracks as unknown[])]
     : []
   const sessionTrackIndex = new Map(
-    sessionTracks.map((t, i) => [isObject(t) ? t.trackId : undefined, i]),
+    sessionTracks.map((t, i) => [isRecord(t) ? t.trackId : undefined, i]),
   )
-  const deltas: Record<string, unknown> = isObject(snapshot.trackConfigDeltas)
+  const deltas: Record<string, unknown> = isRecord(snapshot.trackConfigDeltas)
     ? { ...snapshot.trackConfigDeltas }
     : {}
   let sessionTracksChanged = false
@@ -223,7 +221,7 @@ function applyExtractedSettings(
     const { trackConfigId } = extracted
     const index = sessionTrackIndex.get(trackConfigId)
     const sessionTrack = index === undefined ? undefined : sessionTracks[index]
-    if (index !== undefined && isObject(sessionTrack)) {
+    if (index !== undefined && isRecord(sessionTrack)) {
       sessionTracks[index] = mergeSettingsIntoTrackConfig(
         sessionTrack,
         extracted,
@@ -233,7 +231,7 @@ function applyExtractedSettings(
     } else {
       const existing = deltas[trackConfigId]
       deltas[trackConfigId] = mergeSettingsIntoTrackConfig(
-        isObject(existing) ? existing : { trackId: trackConfigId },
+        isRecord(existing) ? existing : { trackId: trackConfigId },
         extracted,
         resolve,
       )
@@ -260,7 +258,7 @@ export function migrateSessionSnapshot(
 ): Record<string, unknown> {
   const { views, view } = snapshot
   const many = Array.isArray(views)
-  if (!many && !isObject(view)) {
+  if (!many && !isRecord(view)) {
     return snapshot
   }
   const resolve = resolverFor(pluginManager)
@@ -268,13 +266,13 @@ export function migrateSessionSnapshot(
   let result = snapshot
   if (many) {
     const next = views.map(v =>
-      isObject(v) ? migrateView(v, resolve, collected) : v,
+      isRecord(v) ? migrateView(v, resolve, collected) : v,
     )
     if (next.some((v, i) => v !== views[i])) {
       result = { ...result, views: next }
     }
   }
-  if (isObject(view)) {
+  if (isRecord(view)) {
     const next = migrateView(view, resolve, collected)
     if (next !== view) {
       result = { ...result, view: next }
