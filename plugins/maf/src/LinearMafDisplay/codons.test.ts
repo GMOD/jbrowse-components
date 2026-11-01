@@ -419,7 +419,6 @@ describe('the letters', () => {
   const geometry = {
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
   }
 

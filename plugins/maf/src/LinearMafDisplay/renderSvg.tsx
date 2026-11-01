@@ -42,8 +42,7 @@ function MafSvgBody({
   opts,
 }: LgvSvgBodyProps<LinearMafDisplayModel>) {
   const palette = usePalette()
-  const { effectiveRowHeight, rowsHeight, topBands, rowsTopOffset, scrollTop } =
-    model
+  const { effectiveRowHeight, rowsHeight, topBands, rowsTopOffset } = model
   const { coverage, conservation } = topBands.rects
   const theme = getMafOverlayTheme(palette)
   const colorPalette = theme.colors
@@ -56,7 +55,7 @@ function MafSvgBody({
     palette: colorPalette,
   }
   const encodeProps = model.rowsEncodePropsIn(colorPalette)
-  const shownRows = visibleRowRange(effectiveRowHeight, scrollTop, rowsHeight)
+  const shownRows = visibleRowRange(effectiveRowHeight, rowsHeight)
   const svgRows = new Map(
     [...model.rowsSources].map(([idx, source]) => [
       idx,
@@ -107,8 +106,8 @@ function MafSvgBody({
         </g>
       ) : null}
       <g transform={`translate(0, ${rowsTopOffset})`}>
-        {/* The row painters cull by row, not by pixel, so the partly scrolled
-            top row starts above the box; on screen its canvas clips it, and a
+        {/* The row painters cull by row, not by pixel, so a band floored past
+            its row overhangs the box; on screen its canvas clips it, and a
             vector layer has no canvas edge to do that. */}
         <SvgClipRect
           id={`maf-rows-${svgNodeId(model)}`}
@@ -154,7 +153,6 @@ function MafSvgBody({
           <SvgTreeSidebar
             sidebar={model.svgSidebar}
             text={opts}
-            scrollTop={scrollTop}
             availableHeight={rowsHeight}
           />
         ) : null}

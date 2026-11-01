@@ -777,7 +777,8 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Number of displayed rows (at least 1, so the fit-mode division is safe).
+         * Number of displayed rows (at least 1, so dividing the rows' height
+         * by it is safe).
          */
         get nrow() {
           return Math.max(1, self.sources.length)
@@ -805,26 +806,16 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The track height fit mode divides among the rows: the `height` slot,
-         * never the row count, so more species shrink the rows rather than
-         * grow the track.
-         */
-        get fitTargetHeight(): number {
-          return self.allottedHeight
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Height of the per-sample rows area: the track height minus the
-         * stacked bands, which is the rows canvas. Zero when alignments are
-         * hidden. Capped at `maxRowsHeight` to stay under the canvas
-         * backing-store limit.
+         * Height of the per-sample rows area, which the rows fit: the
+         * track's `height` slot minus the stacked bands, never grown by the
+         * row count, so more species shrink the rows rather than grow the
+         * track. Zero when alignments are hidden. Capped at `maxRowsHeight`
+         * to stay under the canvas backing-store limit.
          */
         get rowsHeight() {
           return self.showAlignments
             ? Math.min(
-                Math.max(0, self.fitTargetHeight - self.rowsTopOffset),
+                Math.max(0, self.allottedHeight - self.rowsTopOffset),
                 self.maxRowsHeight,
               )
             : 0
@@ -1037,14 +1028,13 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #method
-         * Where the rows sit on screen: the row height plus the scroll offset
-         * and viewport. Every rows layer reads this one method.
+         * Where the rows sit on screen: the row height and the rows' area.
+         * Every rows layer reads this one method.
          */
         rowGeometry(): MafRowGeometryParams {
           return {
             rowHeight: self.effectiveRowHeight,
             rowProportion: self.rowProportion,
-            scrollTop: self.scrollTop,
             viewportHeight: self.rowsHeight,
           }
         },
@@ -1419,7 +1409,6 @@ export default function stateModelFactory(
             conservation: self.topBands.rects.conservation,
             rowHeight: self.effectiveRowHeight,
             rowProportion: self.rowProportion,
-            scrollTop: self.scrollTop,
             cellsFill: self.rowPlan.color === undefined,
             palette: self.colorPalette,
           }

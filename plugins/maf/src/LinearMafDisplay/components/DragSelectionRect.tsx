@@ -5,10 +5,9 @@ import { observer } from 'mobx-react'
 import type { DragRect } from './useDragSelection.ts'
 
 /**
- * The rubberband rectangle for a subsequence selection. Coordinates are raw
- * display-relative mouse positions with no scroll correction: the rows are
- * drawn translated by `-scrollTop`, so a container-relative px is already where
- * the cursor is.
+ * The rubberband rectangle for a subsequence selection, in raw
+ * display-relative mouse positions: the rows fit the track and never scroll,
+ * so a container-relative px is already where the cursor is.
  */
 const DragSelectionRect = observer(function DragSelectionRect({
   rect,

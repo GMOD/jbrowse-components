@@ -248,8 +248,8 @@ function pickInsertions(
 }
 
 /**
- * `payload` less the instances no block of its region can show: rows scrolled
- * out of `rows` and spans outside every block's painted bp range. The
+ * `payload` less the instances no block of its region can show: rows outside
+ * `rows` and spans outside every block's painted bp range. The
  * conservation band sits above the rows, so only the bp range culls it. The SVG
  * export paints this.
  */

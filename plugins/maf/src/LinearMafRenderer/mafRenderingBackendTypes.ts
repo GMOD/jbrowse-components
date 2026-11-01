@@ -23,7 +23,7 @@ export interface MafGPURenderState {
   canvasHeight: number
   /** Where the rows viewport starts inside the canvas (= `rowsTopOffset`). */
   rowsTop: number
-  /** The rows *viewport*: rows past it are scrolled to, not grown into. */
+  /** The rows' height, which they fit. */
   rowsHeight: number
   /**
    * The coverage strip at the canvas top. Height 0 draws no band: the setting
@@ -34,8 +34,6 @@ export interface MafGPURenderState {
   conservation: { top: number; height: number }
   rowHeight: number
   rowProportion: number
-  /** rows-area scroll offset; every layer paints row i at `rowHeight*i - this` */
-  scrollTop: number
   /**
    * The cells carry the row's fill, a constant, so they tile it; under a
    * field's fill they are only the bases painting over it.

@@ -110,7 +110,6 @@ function state(binBp: number) {
     conservation: { top: 0, height: 0 },
     rowHeight: 10,
     rowProportion: 1,
-    scrollTop: 0,
     cellsFill: true,
     palette,
   }

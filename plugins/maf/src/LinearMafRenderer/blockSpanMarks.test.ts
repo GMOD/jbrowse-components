@@ -54,7 +54,6 @@ function recordingCtx() {
 const ROW_HEIGHT = 10
 const ROW_PROPORTION = 0.8
 const ROWS_TOP = 30
-const SCROLL_TOP = 4
 
 const STATE = {
   canvasWidth: 200,
@@ -63,7 +62,6 @@ const STATE = {
   rowsHeight: 100,
   rowHeight: ROW_HEIGHT,
   rowProportion: ROW_PROPORTION,
-  scrollTop: SCROLL_TOP,
 } as MafGPURenderState
 
 function block(reversed: boolean): RenderBlock {
@@ -124,10 +122,7 @@ function paint(blocks: MafBlock[], reversed = false) {
 }
 
 const bandTop = (row: number) =>
-  ROWS_TOP +
-  rowBandOffsetPx(ROW_HEIGHT, ROW_PROPORTION) +
-  ROW_HEIGHT * row -
-  SCROLL_TOP
+  ROWS_TOP + rowBandOffsetPx(ROW_HEIGHT, ROW_PROPORTION) + ROW_HEIGHT * row
 
 const BAND_HEIGHT = drawnRowHeightPx(ROW_HEIGHT, ROW_PROPORTION)
 

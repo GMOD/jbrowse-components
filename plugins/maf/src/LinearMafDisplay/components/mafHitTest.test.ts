@@ -38,7 +38,6 @@ const CELL_HOVER: MafHover = {
 function makeModel(overrides?: Partial<MafHitTestModel>): MafHitTestModel {
   return {
     view: { pxToBp: pxToBp(false), bpPerPx: 1 },
-    scrollTop: 0,
     rowsTopOffset: 45,
     rowsHeight: 100,
     effectiveRowHeight: 10,
@@ -145,11 +144,6 @@ describe('mafPointerAt', () => {
     expect(mafPointerAt(model, 0, 3).rowIndex).toBe(2)
   })
 
-  test('scrollTop shifts the rows under the cursor', () => {
-    const model = makeModel({ scrollTop: 20 })
-    expect(mafPointerAt(model, 0, 45).rowIndex).toBe(2)
-  })
-
   test('inBands is set over the stacked bands and clear over the rows', () => {
     const model = makeModel()
     expect(mafPointerAt(model, 0, 44).inBands).toBe(true)
@@ -162,14 +156,10 @@ describe('resolveMafRowHover', () => {
     expect(resolveMafRowHover(makeModel(), 25, 100)).toBe(CELL_HOVER)
   })
 
+  // Guards the pointer-cursor feedback and the insertion click, which have
+  // no band gate of their own
   test('reports nothing over the bands', () => {
-    // Guards the pointer-cursor feedback and the insertion click, which have no
-    // band gate of their own: with the rows scrolled, the band area maps to a
-    // non-negative row index, so without `inBands` a coverage-band hover would
-    // resolve to a row and show a clickable cursor over the wrong band.
-    const model = makeModel({ scrollTop: 50 })
-    expect(mafPointerAt(model, 25, 10).rowIndex).toBe(1)
-    expect(resolveMafRowHover(model, 25, 10)).toBeUndefined()
+    expect(resolveMafRowHover(makeModel(), 25, 10)).toBeUndefined()
   })
 
   test('reports nothing out of bounds', () => {
@@ -206,20 +196,15 @@ describe('rowSpanAtY', () => {
     expect(rowSpanAtY(makeModel(), 0, 58)).toEqual({ startRow: 0, endRow: 2 })
   })
 
-  const span = (scrollTop: number, y0: number, y1: number) =>
-    rowSpanAtY(makeModel({ scrollTop }), y0, y1)
-
-  test('a drag inside the bands covers no row, scrolled or not', () => {
-    expect(span(0, 5, 30)).toEqual({ startRow: 0, endRow: 0 })
-    expect(span(200, 5, 30)).toEqual({ startRow: 0, endRow: 0 })
-  })
-
-  test('a drag from the bands into scrolled rows starts at the first visible row', () => {
-    expect(span(200, 5, 58)).toEqual({ startRow: 20, endRow: 22 })
+  test('a drag inside the bands covers no row', () => {
+    expect(rowSpanAtY(makeModel(), 5, 30)).toEqual({ startRow: 0, endRow: 0 })
   })
 
   test('a release below the display stops at the last visible row', () => {
-    expect(span(0, 130, 400)).toEqual({ startRow: 8, endRow: 10 })
+    expect(rowSpanAtY(makeModel(), 130, 400)).toEqual({
+      startRow: 8,
+      endRow: 10,
+    })
   })
 
   test('includes the row the cursor released on at an exact boundary', () => {

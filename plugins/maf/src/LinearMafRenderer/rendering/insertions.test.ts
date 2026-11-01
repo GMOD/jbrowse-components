@@ -49,7 +49,6 @@ function state(rowHeight: number) {
     rowsHeight: 200,
     rowHeight,
     rowProportion: 1,
-    scrollTop: 0,
   } as MafGPURenderState
 }
 

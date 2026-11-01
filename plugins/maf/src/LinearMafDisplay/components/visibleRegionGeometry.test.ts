@@ -29,31 +29,27 @@ describe('bpCull', () => {
 describe('rowBandGeometry matches the generated rowRect twins', () => {
   const heights = [0.1, 0.25, 0.5, 0.9, 1, 1.5, 2, 7, 12, 40]
   const proportions = [0.3, 0.8, 1]
-  const scrollTops = [0, 3.5, 120]
-
   it.each(
     heights.flatMap(rowHeight =>
-      proportions.flatMap(rowProportion =>
-        scrollTops.map(scrollTop => ({ rowHeight, rowProportion, scrollTop })),
-      ),
+      proportions.map(rowProportion => ({ rowHeight, rowProportion })),
     ),
   )(
-    'rowHeight=$rowHeight proportion=$rowProportion scrollTop=$scrollTop',
-    ({ rowHeight, rowProportion, scrollTop }) => {
-      const { h, offset } = rowBandGeometry(rowHeight, rowProportion, scrollTop)
+    'rowHeight=$rowHeight proportion=$rowProportion',
+    ({ rowHeight, rowProportion }) => {
+      const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
       expect(h).toBe(drawnRowHeightPx(rowHeight, rowProportion))
-      expect(offset).toBe(rowBandOffsetPx(rowHeight, rowProportion) - scrollTop)
+      expect(offset).toBe(rowBandOffsetPx(rowHeight, rowProportion))
     },
   )
 
   it('floors a sub-pixel band at 1px, centered so it overhangs evenly', () => {
-    const { h, offset } = rowBandGeometry(0.4, 1, 0)
+    const { h, offset } = rowBandGeometry(0.4, 1)
     expect(h).toBe(1)
     expect(offset).toBeCloseTo(-0.3)
   })
 
   it('leaves a normal band at its natural height and inset', () => {
-    const { h, offset } = rowBandGeometry(10, 0.8, 0)
+    const { h, offset } = rowBandGeometry(10, 0.8)
     expect(h).toBe(8)
     expect(offset).toBe(1)
   })

@@ -21,7 +21,6 @@ export interface MafHitTestModel {
     pxToBp: (px: number) => PxToBpResult
     bpPerPx: number
   }
-  scrollTop: number
   rowsTopOffset: number
   rowsHeight: number
   effectiveRowHeight: number
@@ -79,13 +78,13 @@ export function pointerLocation({
 
 type RowGeometry = Pick<
   MafHitTestModel,
-  'scrollTop' | 'rowsTopOffset' | 'effectiveRowHeight' | 'rowProportion'
+  'rowsTopOffset' | 'effectiveRowHeight' | 'rowProportion'
 >
 
 function rowStackOf(model: RowGeometry) {
   return {
     rowHeight: model.effectiveRowHeight,
-    scrollTop: model.scrollTop,
+    scrollTop: 0,
     topOffset: model.rowsTopOffset,
   }
 }
@@ -103,7 +102,7 @@ function rowIndexUnder(model: RowGeometry, mouseY: number) {
     mouseY,
     {
       rowHeight,
-      scrollTop: model.scrollTop,
+      scrollTop: 0,
       topOffset:
         model.rowsTopOffset + rowBandOffsetPx(rowHeight, rowProportion),
     },

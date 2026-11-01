@@ -43,7 +43,6 @@ test('mismatched bases produce labels', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
     paints: { mismatches: true, everyBase: false },
   })
@@ -65,7 +64,6 @@ test('reversed region mirrors label x positions through the region end', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
     paints: { mismatches: true, everyBase: false },
   })
@@ -87,7 +85,6 @@ test('space chars in alignment are treated as gaps, not labeled', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
     paints: { mismatches: true, everyBase: true },
   })
@@ -109,7 +106,6 @@ test('columns outside the visible span emit no label', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
     paints: { mismatches: true, everyBase: true },
   })
@@ -127,7 +123,6 @@ test('dashes in alignment are treated as gaps', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
     paints: { mismatches: true, everyBase: true },
   })
@@ -140,7 +135,6 @@ test('letters keep the case the file gives them', () => {
     rpcDataMap: new Map([[0, regionData('AAAAA', 'AcGtA')]]),
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
     paints: { mismatches: true, everyBase: false },
   })

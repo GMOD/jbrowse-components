@@ -24,10 +24,9 @@ const rowsBand = (s: MafGPURenderState) => ({
 /**
  * The params of a `span` mark tiling each row base by base, as the cells do.
  *
- * `scrollTop` is the shape's scroll offset less `rowsTop`, which places the
- * band inside a canvas that also carries the coverage strip above it: the shape
- * paints row i at `rowHeight*i - scrollTop`, so offsetting the scroll is
- * offsetting the band.
+ * `scrollTop` is `-rowsTop`, which places the band inside a canvas that
+ * also carries the coverage strip above it: the shape paints row i at
+ * `rowHeight*i - scrollTop`, so offsetting the scroll is offsetting the band.
  *
  * MAF does not floor. Its cells tile the row, so a sub-pixel cell is read as
  * part of the run around it, and widening one to a whole pixel paints ink the
@@ -40,7 +39,7 @@ const cellSpanParams = (s: MafGPURenderState) => ({
   rowProportion: s.rowProportion,
   minWidthPx: 0,
   seamPx: GAP_STROKE_OFFSET,
-  scrollTop: s.scrollTop - s.rowsTop,
+  scrollTop: -s.rowsTop,
 })
 
 /**
@@ -57,8 +56,7 @@ const blockSpanParams = (s: MafGPURenderState) => ({
 /** Where a row's drawn band starts within its slot, on the canvas, and its height. */
 function rowBandPx(s: MafGPURenderState) {
   return {
-    offsetPx:
-      s.rowsTop + rowBandOffsetPx(s.rowHeight, s.rowProportion) - s.scrollTop,
+    offsetPx: s.rowsTop + rowBandOffsetPx(s.rowHeight, s.rowProportion),
     heightPx: drawnRowHeightPx(s.rowHeight, s.rowProportion),
   }
 }

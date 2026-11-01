@@ -49,7 +49,6 @@ function run(
     ]),
     rowHeight,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
   })
 }
@@ -81,7 +80,6 @@ test('a run wider than the viewport marks the part on screen', () => {
     rpcDataMap: new Map([[0, data]]),
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
   })
   expect(markers).toMatchObject([{ xLeft: 0, width: 80, length: 20 }])
@@ -153,7 +151,6 @@ test('multiple rows each contribute their own markers', () => {
     rpcDataMap,
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
   })
   // row 1 is ungapped, so only rows 0 and 2 mark
@@ -183,21 +180,21 @@ function rowsRegion(refSeq: string, alignments: string[]): MafRegionData {
 
 function frame(
   data: MafRegionData,
-  { bpPerPx = 1, scrollTop = 0, viewportHeight = 1000 } = {},
+  { bpPerPx = 1, viewportHeight = 1000 } = {},
 ) {
   return computeVisibleDeletions({
     view: view(bpPerPx),
     rpcDataMap: new Map([[0, data]]),
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop,
     viewportHeight,
   })
 }
 
 // Taken over every row, not the ones on screen when it was filled — otherwise
-// scrolling to a deep row with longer runs finds the block already culled.
-test('a bound filled while a row was scrolled off still admits that row', () => {
+// a taller track showing a deep row with longer runs finds the block already
+// culled.
+test('a bound filled while a row was off the rows area still admits that row', () => {
   const short = `AAAAA${'-'.repeat(3)}AAAAAAAAAAAAAAAAAAAAAA`
   const long = `AAAAA${'-'.repeat(20)}AAAAA`
   const rows = [short, short, short, short, short, long]
@@ -205,8 +202,8 @@ test('a bound filled while a row was scrolled off still admits that row', () => 
 
   // one row tall, so the first call sees row 0 only and never touches row 5
   expect(frame(data, { viewportHeight: 15 })).toEqual([])
-  const scrolled = frame(data, { scrollTop: 75, viewportHeight: 15 })
-  expect(scrolled.map(m => m.length)).toEqual([20])
+  const taller = frame(data, { viewportHeight: 90 })
+  expect(taller.map(m => m.length)).toEqual([20])
 })
 
 // ...and a length, not a verdict about the zoom it was filled at.

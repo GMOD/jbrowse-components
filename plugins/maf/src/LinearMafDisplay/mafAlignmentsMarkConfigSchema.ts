@@ -8,8 +8,7 @@ const mafMarkHeightSchema = ConfigurationSchema(
     /**
      * #slot height.band
      * The fraction of its row a species' glyphs fill, centred in the row, so
-     * below 1 the rows stand apart. The track menu's Row height presets write
-     * it.
+     * below 1 the rows stand apart.
      */
     band: {
       type: 'number',

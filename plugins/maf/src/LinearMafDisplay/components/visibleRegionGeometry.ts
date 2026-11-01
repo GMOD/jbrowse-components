@@ -37,21 +37,13 @@ export interface RegionDataMap<T> {
 
 /**
  * Where the rows sit on screen, shared by every overlay helper (some take a
- * bespoke data map, so they cannot extend `MafOverlayParams`) so none is handed
- * the raw `rowHeight` sentinel or no scroll offset.
+ * bespoke data map, so they cannot extend `MafOverlayParams`).
  */
 export interface MafRowGeometryParams {
-  /** always the *resolved* per-row height, never the `rowHeight` sentinel */
+  /** the fitted per-row height */
   rowHeight: number
   rowProportion: number
-  /**
-   * Rows-area scroll offset. Markers come back in screen coordinates, so a
-   * helper ignoring it would misplace every marker by the scroll distance.
-   */
-  scrollTop: number
-  /**
-   * Height of the rows viewport, for culling rows scrolled off it.
-   */
+  /** Height of the rows area, for culling rows past it. */
   viewportHeight: number
 }
 
@@ -67,40 +59,29 @@ export interface MafOverlayParams extends MafRowGeometryParams {
 /**
  * Per-row vertical band geometry: `h` is the drawn band height (rowHeight x
  * proportion, floored at the shader's `MIN_DRAWN_ROW_PX`); `offset` places row
- * 0's band, centered in its row and shifted up by the scroll offset. Callers
- * spell a row top `offset + rowHeight * rowIndex`.
+ * 0's band, centered in its row. Callers spell a row top
+ * `offset + rowHeight * rowIndex`.
  *
  * Delegates to `rowRect.slang`'s generated twins so the floor and centering
  * match the GPU pass by construction.
  */
-export function rowBandGeometry(
-  rowHeight: number,
-  rowProportion: number,
-  scrollTop: number,
-) {
+export function rowBandGeometry(rowHeight: number, rowProportion: number) {
   return {
     h: drawnRowHeightPx(rowHeight, rowProportion),
-    offset: rowBandOffsetPx(rowHeight, rowProportion) - scrollTop,
+    offset: rowBandOffsetPx(rowHeight, rowProportion),
   }
 }
 
 /**
- * Half-open `[firstRow, endRow)` range of row indices the viewport shows,
- * widened by one row at each edge so a partially scrolled row still draws.
+ * Half-open `[firstRow, endRow)` range of row indices the rows area shows,
+ * the last one partly.
  *
  * A filter bound, not an array bound: `endRow` can be past the last row that
  * exists. A caller sizing a buffer or indexing rows needs its own
  * `Math.min(endRow, nRows)`. `@jbrowse/core/util/virtualRange` clamps instead.
  */
-export function visibleRowRange(
-  rowHeight: number,
-  scrollTop: number,
-  viewportHeight: number,
-) {
-  return {
-    firstRow: Math.max(0, Math.floor(scrollTop / rowHeight)),
-    endRow: Math.ceil((scrollTop + viewportHeight) / rowHeight),
-  }
+export function visibleRowRange(rowHeight: number, viewportHeight: number) {
+  return { firstRow: 0, endRow: Math.ceil(viewportHeight / rowHeight) }
 }
 
 /**
@@ -110,10 +91,10 @@ export function visibleRowRange(
  * is a different question.
  */
 export function rowViewport(params: MafRowGeometryParams) {
-  const { rowHeight, rowProportion, scrollTop, viewportHeight } = params
+  const { rowHeight, rowProportion, viewportHeight } = params
   return {
-    ...rowBandGeometry(rowHeight, rowProportion, scrollTop),
-    ...visibleRowRange(rowHeight, scrollTop, viewportHeight),
+    ...rowBandGeometry(rowHeight, rowProportion),
+    ...visibleRowRange(rowHeight, viewportHeight),
   }
 }
 

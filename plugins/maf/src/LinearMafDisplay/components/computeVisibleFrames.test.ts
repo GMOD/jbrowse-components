@@ -41,7 +41,6 @@ test('positions a CDS frame strip at the bottom of its species row', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
   })
   // h=12, offset=1.5, stripH=3, stripOffset=1.5+12-3=10.5
@@ -72,7 +71,6 @@ test.each([15, 4, 2.5, 1.24, 1, 0.5, 0.06])(
       rowIndexBySrc,
       rowHeight,
       rowProportion: 0.8,
-      scrollTop: 0,
       viewportHeight: 1000,
     })
     const drawnBand = Math.max(rowHeight * 0.8, 1)
@@ -92,7 +90,6 @@ test('mirrors the palette slot for minus-strand CDS', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
   })
   // frame 2 → slot 3 on `+`, mirrored to 6-2=4 on `−`, which the palette gives
@@ -107,7 +104,6 @@ test('drops rows whose src is not in the current source set', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
   })
   expect(markers).toHaveLength(0)
@@ -131,7 +127,6 @@ test('mirrors x for reversed regions', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
   })
   // reversed: bp100..110 → px100..90, left=90 width=10
@@ -160,7 +155,6 @@ test('widens a sub-pixel strip away from its start edge on a reversed region', (
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
   })
   expect(markers[0]).toMatchObject({ xLeft: 9, width: 1 })
@@ -173,7 +167,6 @@ test('emits nothing when a region has no fetched frames', () => {
     rowIndexBySrc,
     rowHeight: 15,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
   })
   expect(markers).toHaveLength(0)
@@ -220,7 +213,6 @@ test('skips frame records outside the visible span', () => {
     rowIndexBySrc,
     rowHeight: 20,
     rowProportion: 0.8,
-    scrollTop: 0,
     viewportHeight: 1000,
   })
   expect(markers).toHaveLength(1)

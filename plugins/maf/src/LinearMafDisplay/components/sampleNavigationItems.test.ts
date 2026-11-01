@@ -38,7 +38,6 @@ function model(
         refIndex: 0,
       }),
     },
-    scrollTop: 0,
     rowsHeight: 1000,
     rowsTopOffset: 0,
     effectiveRowHeight: 10,

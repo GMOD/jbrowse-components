@@ -47,7 +47,6 @@ const view = {
 const opts = {
   rowHeight: 10,
   rowProportion: 1,
-  scrollTop: 0,
   viewportHeight: 1000,
 }
 

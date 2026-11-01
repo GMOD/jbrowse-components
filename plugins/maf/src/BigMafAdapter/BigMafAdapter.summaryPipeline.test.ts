@@ -120,7 +120,6 @@ test('real bigMafSummary records render to positioned bars on their species rows
       rowsHeight: 1000,
       rowHeight,
       rowProportion: 0.8,
-      scrollTop: 0,
     } as MafGPURenderState,
   )
 

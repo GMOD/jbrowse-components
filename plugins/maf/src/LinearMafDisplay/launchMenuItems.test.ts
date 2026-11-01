@@ -50,7 +50,6 @@ function model(
     adapterConfig: { type: 'MafTabixAdapter' },
     coarseTierActive,
     resolvedByteLimit: () => 1_000_000,
-    scrollTop: 0,
     rowsTopOffset: 0,
     effectiveRowHeight: 10,
     rowProportion: 1,

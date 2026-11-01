@@ -38,7 +38,6 @@ const STATE = {
   rowsHeight: 1000,
   rowHeight: 15,
   rowProportion: 0.8,
-  scrollTop: 0,
 } as MafGPURenderState
 
 // `bpPerPx` bp to the pixel across a 100px block starting at bp 100.
