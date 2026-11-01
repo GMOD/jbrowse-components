@@ -36,7 +36,8 @@ import {
  * share) and sized by the display's `heightMode`. Past
  * `maxFeatureScreenDensity` records per pixel it refuses the window with the
  * region-too-large banner and its Force load, as a feature track does; over
- * genotype rows that budget is not read. Right-clicking a record offers the
+ * genotype rows, which cannot be refused, the records past it collapse into
+ * one row. Right-clicking a record offers the
  * feature track's rows on it: zoom to, get sequence, copy.
  *
  * The record settings are a feature track's, spelt as `LinearBasicDisplay`

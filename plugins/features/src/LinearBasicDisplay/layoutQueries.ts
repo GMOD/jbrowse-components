@@ -91,13 +91,14 @@ export function keepsAnyName(
 
 // Counted over `measureIds` like `maxBottom`, so the "N not shown" sentence
 // never counts features a pan would reveal, and never the features of a
-// section the user hid, which sit unplaced by their own choice.
+// section the user hid, which sit unplaced by their own choice. Each feature
+// once: one spanning two displayed regions has an item in each.
 export function countTruncatedFeatures(
   map: ReadonlyMap<number, FeatureDataResult>,
   measureIds?: ReadonlySet<string>,
   excludeIds?: ReadonlySet<string>,
 ) {
-  let n = 0
+  const truncated = new Set<string>()
   for (const data of map.values()) {
     for (const item of data.flatbushItems) {
       if (
@@ -105,11 +106,11 @@ export function countTruncatedFeatures(
         (!measureIds || measureIds.has(item.featureId)) &&
         !excludeIds?.has(item.featureId)
       ) {
-        n++
+        truncated.add(item.featureId)
       }
     }
   }
-  return n
+  return truncated.size
 }
 
 // Strictly before, so a feature that merely abuts a block edge does not count

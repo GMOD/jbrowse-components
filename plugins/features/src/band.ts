@@ -18,10 +18,12 @@ export {
   unplaceBelow,
 } from './LinearBasicDisplay/applyLayout.ts'
 export {
+  countTruncatedFeatures,
   createMembershipMemo,
   featureIdsTouchingBlocks,
   maxBottom,
 } from './LinearBasicDisplay/layoutQueries.ts'
+export { indexById } from './LinearBasicDisplay/baseModelHelpers.ts'
 export { isPlacedRow } from './LinearBasicDisplay/rowPlacement.ts'
 export { labelVisibility } from './LinearBasicDisplay/showLabelsMode.ts'
 export { DEFAULT_TOOLTIP } from './RenderFeatureDataRPC/featureTooltip.ts'

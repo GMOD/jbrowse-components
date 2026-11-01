@@ -22,10 +22,12 @@ import {
   FEATURE_NAME_FIELD,
   MIN_GROW_HEIGHT,
   buildFeatureFlatbushIndex,
+  countTruncatedFeatures,
   createMembershipMemo,
   featureGroupSections,
   featureIdsTouchingBlocks,
   hiddenSectionFeatureIds,
+  indexById,
   fitLadderViews,
   fitLadderVolatiles,
   isPlacedRow,
@@ -772,16 +774,10 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * height over rows.
      */
     get recordsHiddenCount() {
-      const onScreen = self.recordsOnScreenIds
-      const hidden = new Set<string>()
-      for (const data of this.recordsLaidOutDataMap.values()) {
-        for (const { featureId, topPx } of data.flatbushItems) {
-          if (!isPlacedRow(topPx) && onScreen.has(featureId)) {
-            hidden.add(featureId)
-          }
-        }
-      }
-      return hidden.size
+      return countTruncatedFeatures(
+        this.recordsLaidOutDataMap,
+        self.recordsOnScreenIds,
+      )
     },
     /**
      * #getter
@@ -895,13 +891,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * The band's laid-out records by id, what `searchFeatureByID` reads.
      */
     get recordsItemById() {
-      const out = new Map<string, FeatureDataResult['flatbushItems'][number]>()
-      for (const data of this.recordsLaidOutDataMap.values()) {
-        for (const item of data.flatbushItems) {
-          out.set(item.featureId, item)
-        }
-      }
-      return out
+      return indexById(this.recordsLaidOutDataMap, data => data.flatbushItems)
     },
     /**
      * #method
