@@ -429,12 +429,6 @@ const displayTypeAliases: Record<
   { type: string; settings?: DisplaySnapshot }
 > = {
   marks: { type: 'LinearMarkDisplay' },
-  // the betas' two spellings for the one variant display
-  multivariant: { type: 'LinearVariantDisplay' },
-  multivariantmatrix: {
-    type: 'LinearVariantDisplay',
-    settings: { variantLayout: 'columns' },
-  },
 }
 
 function displayAlias(name: string) {

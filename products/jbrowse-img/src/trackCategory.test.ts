@@ -142,9 +142,9 @@ test('display: moves a track to the category of the display it asks for', async 
   expect(trackCategory(session, 'input.bigwig', ['display:marks'])).toBe(
     'other',
   )
-  expect(trackCategory(session, 'input.vcf', ['display:multivariant'])).toBe(
-    'variant',
-  )
+  expect(
+    trackCategory(session, 'input.vcf', ['display:LinearVariantDisplay']),
+  ).toBe('variant')
   expect(trackCategory(session, 'input.bam', ['display:Nonexistent'])).toBe(
     'other',
   )

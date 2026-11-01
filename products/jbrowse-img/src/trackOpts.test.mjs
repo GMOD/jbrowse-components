@@ -83,16 +83,13 @@ test('pileup.connectors.show=true enables the curved-connector overlay', async (
   assert.ok(svg.includes('<svg'), 'output should be SVG')
 })
 
-// display:multivariant selects the variant display for a VCF track and renders
-// its genotype cells.
-test('display:multivariant exports the variant display', async () => {
+// A multi-sample VCF exports the variant display's genotype cells.
+test('a multi-sample VCF exports the variant display', async () => {
   const svg = await renderRegion({
     argv: [['fasta', [fasta, `aliases:${aliases}`]]],
     loc: 'ctgA:2900-3300',
     noRasterize: true,
-    trackList: [
-      ['vcf', [multiVcf, 'display:multivariant', 'height:500', 'force:true']],
-    ],
+    trackList: [['vcf', [multiVcf, 'height:500', 'force:true']]],
   })
   assert.ok(svg.includes('<svg'), 'output should be SVG')
   // the genotype matrix paints a reference-color background rect plus alt cells

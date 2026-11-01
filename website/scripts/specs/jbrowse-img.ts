@@ -369,7 +369,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--track',
     'hg19-ncbiRefSeqCurated',
     'https://jbrowse.org/genomes/hg19/1000genomes/ALL.chr11.phase3_v5b.HBB_5.2-5.3Mb.vcf.gz',
-    'display:multivariant',
     'height:450',
     'force:true',
     '--loc',

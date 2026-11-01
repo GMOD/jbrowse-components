@@ -814,18 +814,10 @@ describe('modifier values are validated the same way everywhere', () => {
 })
 
 describe('display type selection', () => {
-  test('display:multivariant is the variant display', () => {
-    expect(
-      buildDisplaySnapshot('LinearVariantDisplay', ['display:multivariant'])
-        .displayType,
-    ).toBe('LinearVariantDisplay')
-  })
-
-  test('display:multivariantmatrix is the variant display in columns', () => {
-    const { displayType, snap } = buildDisplaySnapshot('LinearVariantDisplay', [
-      'display:multivariantmatrix',
+  test('a VCF draws its genotype rows in columns through the slot', () => {
+    const { snap } = buildDisplaySnapshot('LinearVariantDisplay', [
+      'variantLayout=columns',
     ])
-    expect(displayType).toBe('LinearVariantDisplay')
     expect(snap.variantLayout).toBe('columns')
   })
 

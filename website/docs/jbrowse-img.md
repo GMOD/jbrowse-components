@@ -539,19 +539,17 @@ jb2export data/volvox/volvox.fa data/volvox/volvox.filtered.vcf.gz \
 ### Multi-sample variant matrix
 
 A VCF with many samples renders as a genotype matrix (one row per sample, each
-alt genotype painted over the reference background) with the
-`display:multivariant` modifier (the `LinearVariantDisplay`);
-`display:multivariantmatrix` draws the same display in equal-width columns. This
-example draws the 1000 Genomes phase 3 chr11 callset (2,504 samples) over the
-HBB β-globin locus, with the NCBI RefSeq gene track (via `--genome`/`--track`)
-for context. Common variants read as solid vertical bands, rarer ones as sparse
-speckle:
+alt genotype painted over the reference background); `variantLayout=columns`
+draws it in equal-width columns. This example draws the 1000 Genomes phase 3
+chr11 callset (2,504 samples) over the HBB β-globin locus, with the NCBI RefSeq
+gene track (via `--genome`/`--track`) for context. Common variants read as solid
+vertical bands, rarer ones as sparse speckle:
 
 <!-- jb2export: multisample_variants -->
 
 ```bash
 jb2export --genome hg19 \
-  --track hg19-ncbiRefSeqCurated https://jbrowse.org/genomes/hg19/1000genomes/ALL.chr11.phase3_v5b.HBB_5.2-5.3Mb.vcf.gz display:multivariant height:450 force:true \
+  --track hg19-ncbiRefSeqCurated https://jbrowse.org/genomes/hg19/1000genomes/ALL.chr11.phase3_v5b.HBB_5.2-5.3Mb.vcf.gz height:450 force:true \
   --loc chr11:5,246,000-5,251,000 --width 1200 --out multisample_variants.png
 ```
 
@@ -638,13 +636,13 @@ would scroll past and leave you with a wrong image. The bare form `force` means
 
 **All tracks**
 
-| Modifier        | Example                | Description                                          |
-| --------------- | ---------------------- | ---------------------------------------------------- |
-| `height:N`      | `height:400`           | Track height in pixels                               |
-| `force:true`    | `force:true`           | Render even if region is too large                   |
-| `display:value` | `display:multivariant` | Pick a non-default display for the track (see below) |
-| `name:label`    | `name:"Tumor"`         | Track label (defaults to the filename)               |
-| `index:path`    | `index:reads.bam.csi`  | Index file, when it isn't a sibling of the data file |
+| Modifier        | Example               | Description                                          |
+| --------------- | --------------------- | ---------------------------------------------------- |
+| `height:N`      | `height:400`          | Track height in pixels                               |
+| `force:true`    | `force:true`          | Render even if region is too large                   |
+| `display:value` | `display:marks`       | Pick a non-default display for the track (see below) |
+| `name:label`    | `name:"Tumor"`        | Track label (defaults to the filename)               |
+| `index:path`    | `index:reads.bam.csi` | Index file, when it isn't a sibling of the data file |
 
 A track is identified by its filename, so two inputs with the same filename
 (`--bam tumor/sample.bam --bam normal/sample.bam`) would both be labelled
@@ -667,14 +665,12 @@ The tool does not probe a remote file, because checking costs a request. A
 hosted `.csi` therefore needs an explicit `index:`.
 
 By default each track uses its primary display. `display:value` selects an
-alternate one. These friendly aliases are recognized (any other value is passed
-through verbatim as a display state-model name):
+alternate one. This alias is recognized (any other value is passed through
+verbatim as a display state-model name):
 
-| `display:` value     | Selected display                                   | Use                                             |
-| -------------------- | -------------------------------------------------- | ----------------------------------------------- |
-| `marks`              | `LinearMarkDisplay`                                | bars, points, spans, text and links you declare |
-| `multivariant`       | `LinearVariantDisplay`                             | multi-sample VCF genotype matrix (rows)         |
-| `multivariantmatrix` | `LinearVariantDisplay`, `variantLayout: 'columns'` | the same, one equal-width column per variant    |
+| `display:` value | Selected display    | Use                                             |
+| ---------------- | ------------------- | ----------------------------------------------- |
+| `marks`          | `LinearMarkDisplay` | bars, points, spans, text and links you declare |
 
 **Alignment tracks (BAM/CRAM)**
 

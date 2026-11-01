@@ -73,7 +73,7 @@ const SAMPLES: Record<string, string[] | Partial<Record<Category, string[]>>> =
   {
     height: ['80'],
     force: ['true', 'false'],
-    display: ['marks', 'multivariant', 'multivariantmatrix'],
+    display: ['marks'],
     index: ['reads.bam.csi'],
     name: ['Tumor'],
     heightMode: ['fixed', 'grow', 'fit:200'],
