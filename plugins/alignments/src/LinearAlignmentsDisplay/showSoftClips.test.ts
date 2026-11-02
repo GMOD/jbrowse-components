@@ -560,19 +560,14 @@ describe('alignments colorField', () => {
     expect(display.colorSetting.scale.type).toBeUndefined()
   })
 
-  it('leaving pairs and coming back keeps a pinned insert-size band', () => {
+  it('a pinned insert-size band holds whatever field colors the reads', () => {
     const { display } = createDisplay({
-      encoding: {
-        color: {
-          field: 'insertSizeAndOrientation',
-          scale: { domain: ['150', '600'] },
-        },
-      },
+      normalInsertSize: { min: 150, max: 600 },
+      encoding: { color: 'strand' },
     })
+    expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
     display.setUnit('chain')
     display.setUnit('read')
-    expect(display.colorField).toBeUndefined()
-    display.setUnit('chain')
     expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
   })
 
@@ -588,36 +583,29 @@ describe('alignments colorField', () => {
     }).toThrow('not type')
   })
 
-  it('pins the insert-size cut points from the domain', () => {
+  it('pins the insert-size band and recolors an orientation at once', () => {
+    const { display } = createDisplay({
+      normalInsertSize: { min: 150, max: 600 },
+      encoding: {
+        color: {
+          field: 'insertSizeAndOrientation',
+          scale: { domain: ['RL'], range: ['#008080'] },
+        },
+      },
+    })
+    expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
+    expect(display.colorEncoding).toMatchObject({
+      scale: 'ordinal',
+      domain: ['RL'],
+    })
+  })
+
+  it('an insert-size color domain names levels and pins nothing', () => {
     const { display } = createDisplay({
       encoding: {
         color: {
           field: 'insertSizeAndOrientation',
           scale: { domain: ['150', '600'] },
-        },
-      },
-    })
-    expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
-  })
-
-  it('an insert-size domain is the cuts of the threshold its field defaults to', () => {
-    const { display } = createDisplay({
-      encoding: {
-        color: {
-          field: 'insertSizeAndOrientation',
-          scale: { domain: ['600', '150'] },
-        },
-      },
-    })
-    expect(display.pinnedInsertSizeBand).toEqual({ lower: 150, upper: 600 })
-  })
-
-  it('under an ordinal scale an insert-size domain orders and pins nothing', () => {
-    const { display } = createDisplay({
-      encoding: {
-        color: {
-          field: 'insertSizeAndOrientation',
-          scale: { type: 'ordinal', domain: ['150', '600'] },
         },
       },
     })

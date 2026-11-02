@@ -10,7 +10,6 @@ import {
   alignmentsColorEncoding,
   baseLayerOf,
   bodyColorKind,
-  pinnedInsertSizeBand,
   readColorFieldOf,
 } from './alignmentsColor.ts'
 import { basesFilterOf } from './basesFilter.ts'
@@ -128,31 +127,5 @@ describe('a Color by pick over the written color', () => {
       value: 'grey',
       field: 'strand',
     })
-  })
-})
-
-describe('pinnedInsertSizeBand', () => {
-  const band = (over: ColorSlots) =>
-    pinnedInsertSizeBand(alignmentsColorEncoding(colorSettingOf(over)))
-
-  test('two cuts under an insert-size field pin the band', () => {
-    expect(
-      band({
-        field: 'insertSizeAndOrientation',
-        scale: { domain: ['150', '600'] },
-      }),
-    ).toEqual({
-      lower: 150,
-      upper: 600,
-    })
-    expect(
-      band({ field: 'strand', scale: { domain: ['150', '600'] } }),
-    ).toBeUndefined()
-    expect(
-      band({
-        field: 'insertSizeAndOrientation',
-        scale: { domain: ['150', '150'] },
-      }),
-    ).toBeUndefined()
   })
 })

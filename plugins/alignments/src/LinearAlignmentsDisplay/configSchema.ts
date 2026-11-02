@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { baseLinearAlignmentsDisplayConfigSchema } from './baseConfigSchema.ts'
+import { normalInsertSizeConfigSchema } from './normalInsertSizeConfigSchema.ts'
 import { readsPileupConfigSchema } from './readsPileupConfigSchema.ts'
 import { sashimiConfigSchema } from './sashimiConfigSchema.ts'
 
@@ -118,6 +119,14 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * filter the junctions drawn.
        */
       sashimi: sashimiConfigSchema,
+      /**
+       * #slot normalInsertSize
+       * The insert sizes a proper pair counts as `normal`, from `min` to
+       * `max` bp: shorter is `short`, longer `long`, under
+       * `insertSizeAndOrientation`, on the reads, the connections and the
+       * hover alike. Unset, each region's band is sampled from its pairs.
+       */
+      normalInsertSize: normalInsertSizeConfigSchema,
     },
     {
       /**

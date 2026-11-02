@@ -76,7 +76,7 @@ function everyPathPaints(palette: ColorPalette, category: SwatchCategory) {
 describe('a declared range on a preset field', () => {
   const palette = paletteFor({
     field: 'insertSizeAndOrientation',
-    scale: { type: 'ordinal', domain: ['RR'], range: ['#d95f02'] },
+    scale: { domain: ['RR'], range: ['#d95f02'] },
   })
 
   test('paints RR its color and leaves the normal insert at its default on every backend', () => {
@@ -175,7 +175,7 @@ describe('the three levels that share the neutral default', () => {
     }
   })
 
-  test('a threshold range over insert size colors the three bins', () => {
+  test('a range over insert size colors short, normal and long first', () => {
     const palette = paletteFor({
       field: 'insertSizeAndOrientation',
       scale: { range: ['#000000', '#888888', '#ffffff'] },
@@ -210,15 +210,21 @@ describe('a domain that names no level says so', () => {
     ])
   })
 
-  test('a level under the threshold insert size reads as a cut point', () => {
+  test('insert size names its levels under the unset scale, and a cut point names none', () => {
     expect(
       notices({
         field: 'insertSizeAndOrientation',
-        scale: { domain: ['normal'], range: ['#1b9e77'] },
+        scale: { domain: ['normal', 'RL'], range: ['#1b9e77', '#008080'] },
       }),
-    ).toContain(
-      'encoding.color.scale.domain: names a level of insertSizeAndOrientation (short, normal, long, RL, RR, LL, unmappedMate, interchrom, splitInverted, splitSameStrand, segmentInverted, segmentSameStrand), which a threshold scale reads as a cut point; scale.type: "ordinal" colors the levels',
-    )
+    ).toEqual([])
+    expect(
+      notices({
+        field: 'insertSizeAndOrientation',
+        scale: { domain: ['150'] },
+      }),
+    ).toEqual([
+      'encoding.color.scale.domain: "150" names no level of insertSizeAndOrientation, whose levels are short, normal, long, RL, RR, LL, unmappedMate, interchrom, splitInverted, splitSameStrand, segmentInverted, segmentSameStrand',
+    ])
   })
 
   test('a per-base field names the layer that draws it', () => {

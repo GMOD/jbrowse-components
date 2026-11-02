@@ -242,15 +242,37 @@ test('a read’s level is its value as the color’s scale.domain names it', asy
       encoding: {
         color: {
           field: 'insertSizeAndOrientation',
-          scale: { type: 'ordinal', domain: ['RR'], range: ['#ff0000'] },
+          scale: { type: 'ordinal', domain: ['RR'], range: ['#123456'] },
         },
       },
     },
   })
   expect(new Set(pairs.reads.level)).toEqual(new Set(['normal', 'LL', 'RR']))
   pairs.reads.level.forEach((level, i) => {
-    expect(pairs.reads.color[i] === '#ff0000').toBe(level === 'RR')
+    expect(pairs.reads.color[i] === '#123456').toBe(level === 'RR')
   })
+})
+
+test('normalInsertSize pins the band for the reads and the connections, beside a recolored orientation', async () => {
+  const pinned = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: {
+      normalInsertSize: { min: 1, max: 2 },
+      readConnections: { show: true },
+      encoding: {
+        color: {
+          field: 'insertSizeAndOrientation',
+          scale: { domain: ['RR'], range: ['#123456'] },
+        },
+      },
+    },
+  })
+  expect(new Set(pinned.reads.level)).toEqual(new Set(['long', 'LL', 'RR']))
+  pinned.reads.level.forEach((level, i) => {
+    expect(pinned.reads.color[i] === '#123456').toBe(level === 'RR')
+  })
+  expect(pinned.arcs.category).toContain('longInsert')
+  expect(pinned.arcs.category).not.toContain('normalInsert')
 })
 
 test('a ramp keys a color bar: a linear MAPQ, under the color title, and base quality', async () => {

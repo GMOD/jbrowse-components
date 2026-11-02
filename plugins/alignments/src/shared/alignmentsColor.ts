@@ -103,12 +103,10 @@ export function baseLayerOfField(field: string | undefined) {
 
 const FACET_ONLY_FIELDS = new Set<string>(FACET_ONLY_DIMENSIONS)
 
-const INSERT_SIZE_FIELD = 'insertSizeAndOrientation'
-
 /**
  * The `encoding.color` channel as it paints. While `scale.type` is unset the
- * field picks it: an insert-size field is a threshold, whose `scale.domain` is
- * the cuts between short, normal and long, and any other field is ordinal.
+ * field picks it: `mapq` a threshold over its bins, and any other field
+ * ordinal.
  */
 export function alignmentsColorEncoding(setting: AlignmentsColorSetting) {
   return colorEncodingOf(setting, ALIGNMENTS_FIELD_PRESETS)
@@ -306,25 +304,22 @@ export function paintedLevelOf(type: ReadColorFieldKind) {
 }
 
 /**
- * What each field paints through while `scale.type` is unset: an insert-size
- * field a threshold, and any other field ordinal, a preset field over
- * its own levels, which `scale.range` and `scale.names` then index while
- * `scale.domain` is unwritten.
+ * What each field paints through while `scale.type` is unset: ordinal, a
+ * preset field over its own levels, which `scale.range` and `scale.names`
+ * then index while `scale.domain` is unwritten, and `mapq` a threshold.
  */
 export const ALIGNMENTS_FIELD_PRESETS: FieldPresets = {
   ...Object.fromEntries(
     COLOR_FIELDS.map((field): [string, FieldPreset] => [
       field,
-      field === INSERT_SIZE_FIELD
-        ? { scale: { type: 'threshold' } }
-        : isBakedField(field)
-          ? { scale: { type: 'ordinal' } }
-          : {
-              scale: {
-                type: 'ordinal',
-                domain: paintedLevels(field).map(([value]) => value),
-              },
+      isBakedField(field)
+        ? { scale: { type: 'ordinal' } }
+        : {
+            scale: {
+              type: 'ordinal',
+              domain: paintedLevels(field).map(([value]) => value),
             },
+          },
     ]),
   ),
   mapq: MEASURE_FIELD_PRESETS.mapq,
@@ -348,22 +343,10 @@ function levelNotices(encoding: AlignmentsColorEncoding): string[] {
   }
   const levels = paintedLevels(type).map(([value]) => value)
   const named = levels.filter(level => level !== '').join(', ')
-  const mapsLevels =
-    encoding.scale === 'ordinal' ||
-    (encoding.scale === 'threshold' && encoding.field === INSERT_SIZE_FIELD)
-  if (!mapsLevels) {
+  if (encoding.scale !== 'ordinal') {
     return [
       `encoding.color.scale.type: ${encoding.field} paints its own levels (${named}), which a ${encoding.scale} scale does not map; an unset or "ordinal" scale.type recolors them through scale.range`,
     ]
-  }
-  if (encoding.scale === 'threshold') {
-    return Array.from(encoding.domain ?? [], String).some(value =>
-      levels.includes(value),
-    )
-      ? [
-          `encoding.color.scale.domain: names a level of ${encoding.field} (${named}), which a threshold scale reads as a cut point; scale.type: "ordinal" colors the levels`,
-        ]
-      : []
   }
   return [
     ...Array.from(encoding.domain ?? [], String)
@@ -385,9 +368,6 @@ function declaredOrder(
   levels: readonly ReadColorLevel[],
   bakesValues: boolean,
 ) {
-  if (encoding.scale === 'threshold') {
-    return encoding.field === INSERT_SIZE_FIELD ? INSERT_SIZE_LEVELS : []
-  }
   if (encoding.scale !== 'ordinal') {
     return []
   }
@@ -399,8 +379,7 @@ function declaredOrder(
 
 // The levels `scale.range` and `scale.names` index, in their order, and the
 // read bucket each one is: the levels `scale.domain` names, or with none the
-// field's own,
-// and a threshold over an insert-size field its short, normal and long bins.
+// field's own.
 function declaredLevels(
   encoding: Exclude<AlignmentsColorEncoding, string | undefined>,
 ) {
@@ -529,33 +508,4 @@ export function tagColorFor(
     ...picked,
     scale: { ...picked.scale, type: scale === 'linear' ? 'linear' : undefined },
   })
-}
-
-/**
- * The short/long cut points an insert-size field's threshold pins, in place of
- * the band sampled from the reads. Undefined unless its `scale.domain` names
- * two distinct numbers.
- *
- * Insert size stays a threshold scale. A gradient from the neutral toward each
- * endpoint by severity was tried in the v5 betas (`insertSizeGradient`):
- * two half-ramped reads on opposite sides of the band both came out faintly
- * tinted grey, closest exactly where a deletion signature has to be told from
- * an insertion one.
- */
-export function pinnedInsertSizeBand(encoding: AlignmentsColorEncoding) {
-  if (
-    typeof encoding !== 'object' ||
-    encoding.scale !== 'threshold' ||
-    encoding.field !== INSERT_SIZE_FIELD
-  ) {
-    return undefined
-  }
-  const cuts = thresholdCuts(encoding.domain ?? [])
-  const [lower, upper] = cuts
-  return cuts.length === 2 &&
-    lower !== undefined &&
-    upper !== undefined &&
-    lower < upper
-    ? { lower, upper }
-    : undefined
 }

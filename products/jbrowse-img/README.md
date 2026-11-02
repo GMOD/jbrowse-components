@@ -739,8 +739,6 @@ with it:
 | `strand`                   | Forward/reverse strand                                  |
 | `firstOfPairStrand`        | Strand of the first read in the pair                    |
 | `mapq`                     | MAPQ                                                    |
-| `insertSize`               | Paired-end insert size                                  |
-| `pairOrientation`          | Paired-end orientation                                  |
 | `insertSizeAndOrientation` | Combined insert size + orientation                      |
 | `mateRefName`              | Reference the mate maps to                              |
 | `mateAssembly`             | Assembly the mate maps to, for synteny reads            |

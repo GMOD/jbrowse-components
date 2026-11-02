@@ -66,21 +66,11 @@ import {
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
+ *   normalInsertSize: { min: 150, max: 600 },
  *   encoding: {
  *     color: {
  *       field: 'insertSizeAndOrientation',
- *       scale: { domain: [150, 600] },
- *     },
- *   },
- * }
- * ```
- * ```js
- * {
- *   type: 'LinearAlignmentsDisplay',
- *   encoding: {
- *     color: {
- *       field: 'insertSizeAndOrientation',
- *       scale: { type: 'ordinal', domain: ['RR'], range: ['#d95f02'] },
+ *       scale: { domain: ['RR'], range: ['#d95f02'] },
  *     },
  *   },
  * }
@@ -113,11 +103,11 @@ export const alignmentsColorConfigSchema = ConfigurationSchema(
         ...colorScaleTypeSlot({
           scales: ALIGNMENTS_COLOR_SCALES,
           scaleName: 'AlignmentsColorScaleType',
-          type: 'ordinal a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSizeAndOrientation and mapq, and ordinal over any other field',
+          type: 'ordinal a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over mapq and ordinal over any other field',
         }),
         ...colorDomainSlot({
           domain:
-            "for an ordinal scale, the values that take the range first, in order: a preset field's levels, insertSizeAndOrientation's short, normal and long among them, '' a read with no value, a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSizeAndOrientation are the two between short, normal and long, where the sampled distribution otherwise sets them",
+            "for an ordinal scale, the values that take the range first, in order: a preset field's levels, insertSizeAndOrientation's short, normal, long and RL among them, '' a read with no value, a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points; the display's normalInsertSize sets the insert sizes between short and long",
         }),
         ...colorRangeSlot({
           range:

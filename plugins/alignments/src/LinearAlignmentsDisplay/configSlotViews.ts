@@ -21,7 +21,6 @@ import {
   alignmentsColorProblems,
   baseLayerOf,
   bodyColorKind,
-  pinnedInsertSizeBand,
   readColorFieldOf,
 } from '../shared/alignmentsColor.ts'
 import {
@@ -43,6 +42,10 @@ import { facetUnitNotices } from '../shared/groupFeatures.ts'
 import { sortOf, sortProblems } from './alignmentsSortConfigSchema.ts'
 import { drawnReadConnectionsOf } from './constants.ts'
 import { declaredFiltersOf } from './dialogs/layerFilters.ts'
+import {
+  normalInsertSizeProblems,
+  pinnedInsertSizeBandOf,
+} from './normalInsertSizeConfigSchema.ts'
 
 import type {
   MismatchOpacityField,
@@ -109,6 +112,7 @@ export function alignmentsConfigProblems(
     ...filterProblems(writtenFilterOf(conf)).map(line => `filter: ${line}`),
     ...coverageLayerProblems(conf.coverage),
     ...basesFilterProblems(readsConfOf(conf)?.pileup.bases.filter),
+    ...normalInsertSizeProblemsOf(conf),
     ...(readsConfOf(conf)
       ? []
       : writtenFilterOf(conf)
@@ -118,6 +122,24 @@ export function alignmentsConfigProblems(
               `filter: ${p.field} tests splice junctions, which this display does not draw`,
           )),
   ]
+}
+
+function normalInsertSizeProblemsOf(
+  conf: BaseLinearAlignmentsDisplayConfigModel,
+) {
+  const reads = readsConfOf(conf)
+  return reads ? normalInsertSizeProblems(reads.normalInsertSize) : []
+}
+
+/**
+ * The band `normalInsertSize` pins, undefined while the sampled band decides
+ * and on a display without the slot.
+ */
+export function pinnedInsertSizeBandOfConf(
+  conf: BaseLinearAlignmentsDisplayConfigModel,
+) {
+  const reads = readsConfOf(conf)
+  return reads ? pinnedInsertSizeBandOf(reads.normalInsertSize) : undefined
 }
 
 export interface ConfigSlotSelf extends IStateTreeNode {
@@ -173,11 +195,7 @@ export function configSlotViews(
   self: ConfigSlotSelf & { showCoverage: boolean },
 ) {
   const insertSizeBand = stableIdentityComputed(() =>
-    pinnedInsertSizeBand(
-      alignmentsColorEncoding(
-        alignmentsColorSettingOf(self.configuration.encoding.color),
-      ),
-    ),
+    pinnedInsertSizeBandOfConf(self.configuration),
   )
   return {
     /** #getter */
@@ -450,9 +468,9 @@ export function configSlotViews(
     },
     /**
      * #getter
-     * The short/long cut points `encoding.color.scale.domain` pins under an insert-size
-     * field, undefined while the sampled band decides. Compared by value, so
-     * a color write that leaves the cut points alone relayouts nothing.
+     * The band `normalInsertSize` pins, undefined while the sampled band
+     * decides. Compared by value, so a write that leaves its ends alone
+     * relayouts nothing.
      */
     get pinnedInsertSizeBand() {
       return insertSizeBand.get()

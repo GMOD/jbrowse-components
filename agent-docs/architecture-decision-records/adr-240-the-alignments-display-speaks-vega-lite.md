@@ -22,7 +22,10 @@ display-wide `legend.show` as the only switch. Amended 2026-10-31: the plain
 being the one paired-end coloring, so `readConnections.encoding.color` has no
 field to choose and retires with them; the connections paint that field's
 levels in the colors the reads' `encoding.color` declares for them.
-`pairOrientation` stays a facet dimension.
+`pairOrientation` stays a facet dimension. Amended 2026-11-01:
+`insertSizeAndOrientation` is ordinal over its levels, and the band between
+`short` and `long` is the display's `normalInsertSize: { min, max }`
+([ADR-153](adr-153-every-display-resolves-its-color-through-one-function.md)).
 
 Five reviews shaped it: an Opus design pass from ADR-238 and the schemas, two
 Opus arbiters on its calls (one on Vega-Lite fidelity, one on authors, writers

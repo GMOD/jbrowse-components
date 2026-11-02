@@ -94,6 +94,7 @@ import {
   orderedGroups,
 } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
+import { pinnedInsertSizeBandOf } from './LinearAlignmentsDisplay/normalInsertSizeConfigSchema.ts'
 import { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
 import { pileupMismatchesOpacityConfigSchema } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import {
@@ -166,7 +167,6 @@ import {
   declaredReadLabels,
   isBakedField,
   paintedLevelOf,
-  pinnedInsertSizeBand,
   readColorFieldOf,
   writtenReadCategoryColors,
 } from './shared/alignmentsColor.ts'
@@ -1368,7 +1368,7 @@ export async function alignmentTables(
   const rawByGroup = buildRawDataByGroup(
     fetched,
     hidden,
-    pinnedInsertSizeBand(color.encoding),
+    pinnedInsertSizeBandOf(conf.normalInsertSize),
   )
   const sectionData = new Map(
     order.map(({ key }) => [key, rawByGroup.get(key)!]),

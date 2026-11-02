@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Every display turns its color object into what it paints through display-kit's `colorEncodingOf`, the bridge ADR-151 gave the mark and Manhattan displays: the quantitative, alignments, canvas feature and multi-way gene colors and synteny's `paintedField` read the `ColorEncoding` it answers, a display's `colorEncoding` getter, and keep only their own painting. Each display names a default scale per field and nothing else. The quantitative display's `field` is `score | source`, a pairing its two-sided layers cannot paint draws the misconfiguration grey, a threshold paints every cut up to eight, and a color per source hands out its `range`, then the default palette, to the subtrack groups first and then to the ungrouped subtracks, those its `domain` lists ahead (ADR-159's row dealer). The alignments displays' insert-size fields default to `threshold`, so their `domain` is that scale's cuts"
+summary: "Every display turns its color object into what it paints through display-kit's `colorEncodingOf`, the bridge ADR-151 gave the mark and Manhattan displays: the quantitative, alignments, canvas feature and multi-way gene colors and synteny's `paintedField` read the `ColorEncoding` it answers, a display's `colorEncoding` getter, and keep only their own painting. Each display names a default scale per field and nothing else. The quantitative display's `field` is `score | source`, a pairing its two-sided layers cannot paint draws the misconfiguration grey, a threshold paints every cut up to eight, and a color per source hands out its `range`, then the default palette, to the subtrack groups first and then to the ungrouped subtracks, those its `domain` lists ahead (ADR-159's row dealer). The alignments displays' `insertSizeAndOrientation` is ordinal over its levels like every other level field, and the insert sizes it calls normal are the display's `normalInsertSize` (amended 2026-11-01)"
 ---
 
 # ADR-153: Every display resolves its color through one function
@@ -28,6 +28,16 @@ quantitative display's `field` from
 [ADR-144](adr-144-one-color-object-on-the-quantitative-display.md) and the
 alignments insert-size `domain` from
 [ADR-148](adr-148-the-alignments-read-fill-is-the-color-object.md).
+
+Amended 2026-11-01: `insertSizeAndOrientation` paints through `ordinal`
+over its levels, and the band between `short` and `long` moved off the color
+scale to the display's `normalInsertSize: { min, max }`. A `domain` holding
+both the cut points and the level names meant a config could not pin the band
+and recolor `RL` at once, and the band is a fact about the reads, which the
+connections and the hover classify by whatever field colors the reads. A cold
+Fable design read chose the spelling over `insertSize: { breaks }`, since
+`insertSize` is already the read field `filter` tests, and over a
+`transform`, which the alignments display has no `marks` config to want.
 
 ## Context
 
@@ -67,8 +77,9 @@ What stays in a display is how it paints, never which scale it reads.
 display and the canvas feature, multi-way and synteny colors answer
 `categorical`; Manhattan `threshold` over `ld`; the quantitative display
 `categorical` over `source` and `threshold` over `score`; the alignments
-displays `threshold` over `insertSize` and `insertSizeAndOrientation`, and
-`categorical` over any other field.
+displays `threshold` over `mapq` and `categorical` over any other field
+(~~`threshold` over `insertSize` and `insertSizeAndOrientation`~~, amended
+2026-11-01).
 
 **The quantitative display's `field` is an enumeration of `score` and
 `source`.** A type may be refused where a combination may not
@@ -96,10 +107,11 @@ subtracks, those its `domain` lists ahead of the rest (`sourcePalette`,
 ~~`buildSources`~~ `sourceColorDeal`, dealt by `dealRowColors` since
 [ADR-160](adr-160-a-rows-color-is-one-categorical-channel-on-the-row-axis.md)).
 
-**An insert-size `domain` is a threshold's cuts.** The field's default scale
+~~**An insert-size `domain` is a threshold's cuts.** The field's default scale
 is `threshold`, so `{ field: 'insertSize', domain: ['150', '600'] }` pins as it
 did, cuts written high to low pin too, and a `domain` under an explicit
-`categorical` scale is an order and pins nothing.
+`categorical` scale is an order and pins nothing.~~ Since 2026-11-01 an
+insert-size `domain` names levels, and `normalInsertSize` pins the band.
 
 ## Consequences
 

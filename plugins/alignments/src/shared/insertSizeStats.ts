@@ -79,6 +79,12 @@ export type InsertSizeClass = 'long' | 'short' | 'normal'
 // read in a mixed dataset (stats defined) would paint as a short insert. There
 // is no GPU twin: read.slang consumes the resulting category and no longer
 // applies thresholds of its own.
+//
+// Three classes, not a ramp. A gradient from the neutral toward each endpoint
+// by severity was tried in the v5 betas (`insertSizeGradient`): two
+// half-ramped reads on opposite sides of the band both came out faintly
+// tinted grey, closest exactly where a deletion signature has to be told from
+// an insertion one.
 export function classifyInsertSize(
   absInsert: number,
   band: InsertSizeBand | undefined,
