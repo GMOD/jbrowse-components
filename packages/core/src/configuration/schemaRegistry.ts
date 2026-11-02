@@ -4,6 +4,7 @@ import type {
   ConfigurationSchemaDefinition,
   MergedConfigurationSchemaOptions,
 } from './configurationSchema.ts'
+import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
@@ -24,6 +25,8 @@ export interface ConfigurationSchemaMetadata {
   featureFields: ReadonlySet<string>
   /** the slots that refuse a `jexl:` string: every one but a callback and a featureField */
   takesNoCallback: ReadonlyMap<string, string>
+  /** the slots declaring an `exclusiveMinimum`, by name */
+  bounded: ReadonlyMap<string, ConfigSlotDefinition>
 }
 
 // Per-schema metadata keyed by the model type `ConfigurationSchema` builds. A

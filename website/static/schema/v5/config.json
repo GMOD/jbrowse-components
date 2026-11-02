@@ -11659,7 +11659,8 @@
               "else": {
                 "anyOf": [
                   {
-                    "type": "number"
+                    "type": "number",
+                    "exclusiveMinimum": 0
                   },
                   {
                     "const": "fit"
@@ -15274,7 +15275,8 @@
               "else": {
                 "anyOf": [
                   {
-                    "type": "number"
+                    "type": "number",
+                    "exclusiveMinimum": 0
                   },
                   {
                     "const": "fit"

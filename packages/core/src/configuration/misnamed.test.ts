@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from './configurationSchema.ts'
+import { setConf } from './getConf.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import { refusingUndeclaredKeys } from './snapshotPreprocess.ts'
 
@@ -34,11 +35,11 @@ test('a typed entry names the path its file writes on load', () => {
   ])
 })
 
-test('a sub-schema says the path is its own on load', () => {
+test('a sub-schema names its own member on load', () => {
   expect(
     warningsOf(() => display.create({ displayId: 'd2', rows: { height: 4 } })),
   ).toEqual([
-    "MisnamedRows does not declare height: loading without it — did you mean MisnamedRows's step?",
+    'MisnamedRows does not declare height: loading without it — did you mean step?',
   ])
 })
 
@@ -50,8 +51,29 @@ test('a write refuses the misnamed key with the pointer', () => {
   )
   expect(() =>
     refusingUndeclaredKeys(() => rows.create({ height: 4 })),
-  ).toThrow(
-    "MisnamedRows takes step, not height — did you mean MisnamedRows's step?",
+  ).toThrow('MisnamedRows takes step, not height — did you mean step?')
+})
+
+test('a sub-schema written whole names the path from its typed entry', () => {
+  const conf = display.create({ displayId: 'd4' })
+  expect(() => {
+    setConf(conf, 'rows', { height: 4 })
+  }).toThrow('MisnamedRows takes step, not height — did you mean rows.step?')
+})
+
+test('a single-slot write of a misnamed word names the path', () => {
+  const conf = display.create({ displayId: 'd5' })
+  expect(() => {
+    // @ts-expect-error a misnamed word is no slot
+    setConf(conf, 'rowHeight', 1)
+  }).toThrow(
+    'MisnamedDisplay has no config slot "rowHeight". Valid slots: color — did you mean rows.step?',
+  )
+  expect(() => {
+    // @ts-expect-error a misnamed word is no slot
+    setConf(conf, ['rows', 'height'], 1)
+  }).toThrow(
+    'MisnamedRows has no config slot "height". Valid slots: step — did you mean rows.step?',
   )
 })
 
@@ -111,5 +133,20 @@ test('a misnamed target whose first member is undeclared is refused', () => {
     ),
   ).toThrow(
     "MisnamedNowhere's misnamed points rowHeight at rows.step, but it declares no rows",
+  )
+})
+
+test('a misnamed key a retired spelling also lifts is refused', () => {
+  expect(() =>
+    ConfigurationSchema(
+      'MisnamedRetired',
+      { step: { type: 'number', defaultValue: 1 } },
+      {
+        retired: { height: value => ({ step: value }) },
+        misnamed: { height: 'step' },
+      },
+    ),
+  ).toThrow(
+    "MisnamedRetired's misnamed names height, which its retired lifts: a key is a spelling that moved, which a load rewrites, or a word that never was a key, not both",
   )
 })

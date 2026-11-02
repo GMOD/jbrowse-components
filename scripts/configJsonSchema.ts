@@ -30,6 +30,7 @@ export interface SlotDefinition {
   model?: MstType
   contextVariable?: string[]
   holds?: 'adapter'
+  exclusiveMinimum?: number
 }
 
 export interface SchemaMetadata {
@@ -571,6 +572,21 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     }
   }
 
+  // A slot's `exclusiveMinimum` on its number form, the number member of a
+  // union taking a word beside it
+  function boundedAbove(schema: JsonSchema, min: number): JsonSchema {
+    return schema.type === 'number' || schema.type === 'integer'
+      ? { ...schema, exclusiveMinimum: min }
+      : Array.isArray(schema.anyOf)
+        ? {
+            ...schema,
+            anyOf: (schema.anyOf as JsonSchema[]).map(b =>
+              boundedAbove(b, min),
+            ),
+          }
+        : schema
+  }
+
   function slotSchema(
     def: SlotDefinition,
     depth: number,
@@ -596,8 +612,11 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         ]
       : []
     const lifted = lifts.string || lifts.numbers || lifts.uri
-    const shared = lifted ? undefined : SHARED_SLOT_DEFS[def.type]
-    const value = def.model
+    const shared =
+      lifted || def.exclusiveMinimum !== undefined
+        ? undefined
+        : SHARED_SLOT_DEFS[def.type]
+    const unbounded = def.model
       ? def.type === 'stringEnumArray'
         ? { type: 'array', items: mstSchema(def.model, depth) }
         : mstSchema(def.model, depth)
@@ -618,6 +637,10 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
                 ],
               }
             : builtinSlot(def.type)
+    const value =
+      def.exclusiveMinimum === undefined
+        ? unbounded
+        : boundedAbove(unbounded, def.exclusiveMinimum)
     const form = def.contextVariable?.length
       ? frozen
         ? {}

@@ -1,5 +1,8 @@
 import { getType } from '@jbrowse/mobx-state-tree'
 
+import { getConfigurationSchemaMetadata } from '../configuration/schemaRegistry.ts'
+import { isConfigurationModel } from '../configuration/schemaTypes.ts'
+import { misnamedPointer } from '../configuration/snapshotPreprocess.ts'
 import { getNotificationSink } from './sessionServices.ts'
 
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -48,6 +51,45 @@ export function setterOnlyMessage(label: string, keys: string[]) {
   return `${label} did not apply ${keys.join(', ')}: no config slot takes ${
     keys.length > 1 ? 'them' : 'it'
   }. Call ${keys.map(displaySetterName).join(', ')} on the display instead.`
+}
+
+/** The `misnamed` words of a display's config schema. */
+export function displayMisnamed(display: unknown) {
+  return typeof display === 'object' &&
+    display !== null &&
+    'configuration' in display &&
+    isConfigurationModel(display.configuration)
+    ? (getConfigurationSchemaMetadata(display.configuration)?.options
+        .misnamed ?? {})
+    : {}
+}
+
+/**
+ * What a surface says of the settings a display did not apply: a word its
+ * schema calls `misnamed` points at the path to write, ahead of a setter the
+ * display also has, then the setter-only keys, then the rest.
+ */
+export function unappliedSettingsMessages(
+  label: string,
+  unapplied: UnappliedSetting[],
+  misnamed: Readonly<Record<string, string>>,
+) {
+  const keys = (of: UnappliedSetting[]) => of.map(entry => entry.key)
+  const pointed = unapplied.filter(e => Object.hasOwn(misnamed, e.key))
+  const rest = unapplied.filter(e => !Object.hasOwn(misnamed, e.key))
+  const setterOnly = rest.filter(e => e.reason === 'setter-only')
+  const unknown = rest.filter(e => e.reason !== 'setter-only')
+  return [
+    ...(pointed.length
+      ? [
+          `${label} did not apply ${keys(pointed).join(', ')}: no config slot takes ${
+            pointed.length > 1 ? 'them' : 'it'
+          }${misnamedPointer(misnamed, keys(pointed))}`,
+        ]
+      : []),
+    ...(unknown.length ? [unknownKeysMessage(label, keys(unknown))] : []),
+    ...(setterOnly.length ? [setterOnlyMessage(label, keys(setterOnly))] : []),
+  ]
 }
 
 /**

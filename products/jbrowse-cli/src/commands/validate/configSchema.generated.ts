@@ -12011,7 +12011,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "else": {
                 "anyOf": [
                   {
-                    "type": "number"
+                    "type": "number",
+                    "exclusiveMinimum": 0
                   },
                   {
                     "const": "fit"
@@ -15760,7 +15761,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "else": {
                 "anyOf": [
                   {
-                    "type": "number"
+                    "type": "number",
+                    "exclusiveMinimum": 0
                   },
                   {
                     "const": "fit"

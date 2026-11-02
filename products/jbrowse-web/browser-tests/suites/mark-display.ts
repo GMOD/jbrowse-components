@@ -204,7 +204,7 @@ const suite: TestSuite = {
       snapshotSelector: withChrome,
       readySelector: '[data-testid="mark-row-labels"]',
     }),
-    // A pinned 20 px `rowHeight` over a 120 px track: the ten species rows
+    // A pinned 20 px `rows.step` over a 120 px track: the ten species rows
     // run past the plot's foot and the scrollbar reaches them.
     lgvSnapshotTest({
       name: 'MAF species rows pinned at 20 px overflow the plot and scroll',

@@ -202,6 +202,43 @@ export function collectDisplayOverrides(
   return { overrides, reached, unknownKeys, refused }
 }
 
+// The path the `misnamed` of the sub-schema holding a dotted key's last member
+// names for it, from the display: `rowHeight` to `rows.step`, and
+// `rows.height` too.
+function misnamedTargetOf(schema: AnyConfigurationSchemaType, key: string) {
+  const members = key.split('.')
+  const last = members.pop() ?? ''
+  let meta = getConfigurationSchemaMetadata(schema)
+  for (const member of members) {
+    const entry = meta?.definition[member]
+    meta =
+      entry !== undefined && isBareConfigurationSchemaType(entry)
+        ? getConfigurationSchemaMetadata(entry)
+        : undefined
+  }
+  const target = meta?.options.misnamed?.[last]
+  return target === undefined ? undefined : [...members, target].join('.')
+}
+
+/**
+ * What a `displayDefaults` key no display takes points at, where a candidate
+ * display's `misnamed` names it: ` — did you mean rows.step?`.
+ */
+export function misnamedPointerOf(
+  key: string,
+  displaySchemas: ReadonlyMap<string, AnyConfigurationSchemaType>,
+) {
+  const targets = [
+    ...new Set(
+      [...displaySchemas.values()].flatMap(schema => {
+        const target = misnamedTargetOf(schema, key)
+        return target === undefined ? [] : [target]
+      }),
+    ),
+  ]
+  return targets.length > 0 ? ` — did you mean ${targets.join(' or ')}?` : ''
+}
+
 /**
  * Fold per-display override props into the entries a `displays` array already
  * has; explicit props win, member by member inside a namespace such as an
@@ -293,7 +330,7 @@ export function expandTrackConfigShorthand(
   )
   for (const key of unknownKeys) {
     console.warn(
-      `Track "${trackId}": display setting "${key}" is not a slot on any display of a ${type}`,
+      `Track "${trackId}": display setting "${key}" is not a slot on any display of a ${type}${misnamedPointerOf(key, displaySchemas)}`,
     )
   }
   if (refused.length > 0) {

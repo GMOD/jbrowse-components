@@ -1,6 +1,19 @@
+import {
+  getParent,
+  getPathParts,
+  getType,
+  hasParent,
+  isStateTreeNode,
+} from '@jbrowse/mobx-state-tree'
+
 import { isJexl } from '../util/jexlStrings.ts'
 import { isPlainObject } from '../util/objectUtils.ts'
-import { slotWriteRefusal } from './configurationSlot.ts'
+import {
+  belowMinimumNotice,
+  isBelowMinimum,
+  minimumRefusal,
+  slotWriteRefusal,
+} from './configurationSlot.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import {
   bareFormOf,
@@ -53,16 +66,58 @@ export function refusingUndeclaredKeys<T>(write: () => T) {
   }
 }
 
-// A typed entry's path is the one its file writes; a sub-schema knows only
-// the path from itself, so the pointer says whose it is.
-function misnamedPointer(
-  { name, options }: ConfigurationSchemaMetadata,
-  unknown: string[],
+function joinPath(at: string, key: string) {
+  return at ? `${at}.${key}` : key
+}
+
+/**
+ * The dotted path from the typed entry holding a live config node (its
+ * display or track) to the node: `rows` for a display's rows, `""` for the
+ * entry itself, and undefined for a node with no typed entry above it.
+ */
+export function configPathOf(node: unknown): string | undefined {
+  const meta = isStateTreeNode(node)
+    ? getConfigurationSchemaMetadata(getType(node))
+    : undefined
+  const parentPath =
+    meta && !meta.options.explicitlyTyped && hasParent(node)
+      ? configPathOf(getParent(node))
+      : undefined
+  return meta?.options.explicitlyTyped
+    ? ''
+    : parentPath === undefined
+      ? undefined
+      : joinPath(parentPath, getPathParts(node).at(-1) ?? '')
+}
+
+/** The dotted path from a live node's typed entry to its member `key`. */
+export function memberPathOf(node: unknown, key: string) {
+  const at = configPathOf(node)
+  return at === undefined ? undefined : joinPath(at, key)
+}
+
+/**
+ * What a notice calls the slot `key` of the schema `name` at `at`: its path
+ * inside a typed entry, as `rows.step`, else `Schema.key`.
+ */
+export function slotLabel(name: string, key: string, at: string | undefined) {
+  return at ? joinPath(at, key) : `${name}.${key}`
+}
+
+/**
+ * What a notice calls the `misnamed` targets of `unknown`, from a schema at
+ * `at`: the dotted path to write, from the typed entry where the path is
+ * known, else from the schema itself. Empty where none is misnamed.
+ */
+export function misnamedPointer(
+  misnamed: Readonly<Record<string, string>> = {},
+  unknown: readonly string[],
+  at = '',
 ) {
-  const pointed = Object.entries(options.misnamed ?? {})
+  const pointed = Object.entries(misnamed)
     .filter(([key]) => unknown.includes(key))
     .map(([key, target]) => {
-      const path = options.explicitlyTyped ? target : `${name}'s ${target}`
+      const path = joinPath(at, target)
       return unknown.length > 1 ? `${path} for ${key}` : path
     })
   return pointed.length > 0 ? ` — did you mean ${listed(pointed)}?` : ''
@@ -71,6 +126,7 @@ function misnamedPointer(
 function checkUndeclaredKeys(
   schema: ConfigurationSchemaMetadata,
   snapshot: unknown,
+  at: string | undefined,
 ) {
   const { name, options } = schema
   const declared = declaredKeys(schema)
@@ -85,7 +141,7 @@ function checkUndeclaredKeys(
   if (unknown.length > 0) {
     if (bare || writes > 0) {
       throw new Error(
-        `${name} takes ${listed(declared)}, not ${unknown.join(', ')}${misnamedPointer(schema, unknown)}`,
+        `${name} takes ${listed(declared)}, not ${unknown.join(', ')}${misnamedPointer(options.misnamed, unknown, at)}`,
       )
     }
     const key = `${name} ${unknown.toSorted().join(' ')}`
@@ -95,7 +151,7 @@ function checkUndeclaredKeys(
         options.explicitIdentifier ?? ''
       ]
       console.warn(
-        `${name}${typeof id === 'string' ? ` "${id}"` : ''} does not declare ${listed(unknown)}: loading without it${misnamedPointer(schema, unknown)}`,
+        `${name}${typeof id === 'string' ? ` "${id}"` : ''} does not declare ${listed(unknown)}: loading without it${misnamedPointer(options.misnamed, unknown, at)}`,
       )
     }
   }
@@ -116,6 +172,35 @@ function refuseCallbacks(
       }
     }
   }
+}
+
+// A config loading a number at or below a slot's `exclusiveMinimum` names it
+// once and loads the default; a write refuses it.
+function boundedMembers(
+  { name, bounded }: ConfigurationSchemaMetadata,
+  snapshot: Record<string, unknown>,
+  at: string | undefined,
+) {
+  let out = snapshot
+  for (const [key, definition] of bounded) {
+    const value = snapshot[key]
+    if (isBelowMinimum(definition, value)) {
+      const slot = slotLabel(name, key, at)
+      if (writes > 0) {
+        throw new Error(minimumRefusal(slot, definition, value))
+      }
+      const notice = belowMinimumNotice(slot, definition, value)
+      if (!warned.has(notice)) {
+        warned.add(notice)
+        console.warn(
+          `${notice}: loading the default, ${JSON.stringify(definition.defaultValue)}`,
+        )
+      }
+      out = out === snapshot ? { ...snapshot } : out
+      out[key] = undefined
+    }
+  }
+  return out
 }
 
 // ADR-146's reset, on the snapshot path: the member keeps its key, so a
@@ -318,14 +403,20 @@ export function liftShorthand(
  * `refusingUndeclaredKeys`, unless the caller is a settings bag that routes
  * an undeclared key itself (`routesUndeclared`); it refuses a bare value no
  * shorthand lifted on every door, and so is a `jexl:` callback in a slot
- * declaring no `contextVariable`.
+ * declaring no `contextVariable`. A number at or below a slot's
+ * `exclusiveMinimum` is named and loads the default, or is refused on a
+ * write; a settings bag leaves it to the member write that refuses it.
  */
 export function preProcessSnapshotWith(
   schema: ConfigurationSchemaMetadata,
   snapshot: unknown,
-  { routesUndeclared = false }: { routesUndeclared?: boolean } = {},
+  {
+    routesUndeclared = false,
+    at: givenAt,
+  }: { routesUndeclared?: boolean; at?: string } = {},
 ): Record<string, unknown> {
-  const { closed, preProcessSnapshot } = schema.options
+  const { closed, preProcessSnapshot, explicitlyTyped } = schema.options
+  const at = givenAt ?? (explicitlyTyped ? '' : undefined)
   const bare = liftShorthand(schema, snapshot)
   const lifted =
     snapshot === null
@@ -334,12 +425,32 @@ export function preProcessSnapshotWith(
         ? (bare as Record<string, unknown>)
         : (snapshot as Record<string, unknown>)
   const named = nullMembersAsUnset(liftRetiredSpellings(schema, lifted))
-  const processed = preProcessSnapshot ? preProcessSnapshot(named) : named
-  if (closed && !routesUndeclared && isOwnSnapshot(schema, processed)) {
-    checkUndeclaredKeys(schema, processed)
+  const custom = preProcessSnapshot ? preProcessSnapshot(named) : named
+  const own = isOwnSnapshot(schema, custom)
+  if (closed && !routesUndeclared && own) {
+    checkUndeclaredKeys(schema, custom, at)
   }
-  refuseCallbacks(schema, processed)
+  refuseCallbacks(schema, custom)
+  const processed =
+    routesUndeclared || !own ? custom : boundedMembers(schema, custom, at)
   return processed
+}
+
+/**
+ * `type.create(snapshot)` with the schema's own lift and checks run first at
+ * `at`, the path a write knows from the live tree and the snapshot does not,
+ * so a refusal names `rows.step` rather than `RowsWithStep.step`.
+ */
+export function createAtPath(
+  type: IAnyType,
+  snapshot: unknown,
+  at: string | undefined,
+) {
+  const schema = getConfigurationSchemaMetadata(type)
+  if (schema) {
+    preProcessSnapshotWith(schema, snapshot, { at })
+  }
+  return type.create(snapshot)
 }
 
 /**

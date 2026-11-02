@@ -538,7 +538,7 @@ for pop, (trackId, name) in karyo.items():
             # a heterozygote paints lighter than a homozygote and the three
             # classes read apart; an override flattens het and hom-alt to one flat
             # color and throws that away.
-            'rowHeight': 3,
+            'rows': {'step': 3},
         }],
     })
 cfg['defaultSession'] = {

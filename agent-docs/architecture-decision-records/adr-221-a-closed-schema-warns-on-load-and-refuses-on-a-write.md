@@ -15,6 +15,14 @@ the load-time refusal
 channel objects. ADR-133's rule that a channel object refuses no combination of
 its slots stands.
 
+Amended 2026-11-02 (ADR-257): the same two doors take two more checks. A
+schema's `misnamed` names the words a reader reaches for in place of a
+member (`rowHeight` for `rows.step`), and the load notice and the write
+refusal both add the pointer; it never applies a value, so a key `retired`
+lifts cannot also be misnamed. A numeric slot's `exclusiveMinimum` meets a
+value at or below it as a key: a load names it once and takes the default, a
+write refuses it.
+
 ## Context
 
 ADR-217 left three answers to one question. A channel object refused an

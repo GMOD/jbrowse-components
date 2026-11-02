@@ -53,7 +53,10 @@ import {
   objectHash,
 } from './mstUtils.ts'
 import { isViewModel } from './types/index.ts'
-import { setterOnlyMessage, unknownKeysMessage } from './unknownSnapshotKeys.ts'
+import {
+  displayMisnamed,
+  unappliedSettingsMessages,
+} from './unknownSnapshotKeys.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type {
@@ -798,19 +801,17 @@ function didNotLand(unapplied: UnappliedSetting[], display: unknown) {
 function notifySettingsReport(
   session: { notifyError: (message: string) => void },
   trackId: string,
+  display: unknown,
   displayType: string,
   unapplied: UnappliedSetting[],
   failed: SettingsReport['failed'],
 ) {
-  const label = `${displayType} for track "${trackId}"`
-  const keys = (of: UnappliedSetting[]) => of.map(entry => entry.key)
-  const setterOnly = unapplied.filter(e => e.reason === 'setter-only')
-  const unknown = unapplied.filter(e => e.reason !== 'setter-only')
-  if (unknown.length) {
-    session.notifyError(unknownKeysMessage(label, keys(unknown)))
-  }
-  if (setterOnly.length) {
-    session.notifyError(setterOnlyMessage(label, keys(setterOnly)))
+  for (const message of unappliedSettingsMessages(
+    `${displayType} for track "${trackId}"`,
+    unapplied,
+    displayMisnamed(display),
+  )) {
+    session.notifyError(message)
   }
   if (failed.length) {
     session.notifyError(
@@ -895,6 +896,7 @@ function restyleShown<T>(
       notifySettingsReport(
         session,
         trackId,
+        track.activeDisplay,
         track.activeDisplay.type,
         target
           ? didNotLand(report.unapplied, track.displays[0])
@@ -1376,6 +1378,7 @@ export function showTrackGeneric(
     notifySettingsReport(
       session,
       trackId,
+      drawn,
       displayType,
       didNotLand(report.unapplied, drawn),
       report.failed,

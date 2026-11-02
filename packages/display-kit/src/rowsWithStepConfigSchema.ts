@@ -11,16 +11,6 @@ export function rowHeightOfStep(step: number | typeof FIT_ROWS) {
   return step === FIT_ROWS ? 0 : step
 }
 
-function refuseNonPositiveStep(snap: Record<string, unknown>) {
-  const { step } = snap
-  if (typeof step === 'number' && !(step > 0)) {
-    throw new Error(
-      `rows.step is the row height in px, above 0, or "${FIT_ROWS}" to fit the rows to the track's height, not ${step}`,
-    )
-  }
-  return snap
-}
-
 /**
  * #config RowsWithStep
  * #category display
@@ -49,6 +39,7 @@ export const rowsWithStepConfigSchema = ConfigurationSchema(
       type: 'number',
       model: types.union(types.number, types.literal(FIT_ROWS)),
       defaultValue: FIT_ROWS,
+      exclusiveMinimum: 0,
       description:
         'row height in px, the rows that do not fit scrolling; or "fit" (the default) to divide the track height between the rows, as heightMode "fit" does on a feature track',
     },
@@ -59,6 +50,5 @@ export const rowsWithStepConfigSchema = ConfigurationSchema(
      */
     baseConfiguration: rowsConfigSchema,
     misnamed: { height: 'step' },
-    preProcessSnapshot: refuseNonPositiveStep,
   },
 )

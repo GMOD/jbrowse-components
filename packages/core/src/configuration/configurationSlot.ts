@@ -1,5 +1,10 @@
 import { printValue } from '@jbrowse/jexl'
-import { types } from '@jbrowse/mobx-state-tree'
+import {
+  getUnionSubtypes,
+  isLiteralType,
+  isUnionType,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 import { isCssColor } from '../util/cssColorParse.ts'
 import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
@@ -7,7 +12,11 @@ import { FileLocation, JexlExpressionString } from '../util/types/mst.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
 
 import type { JexlInstance } from '../util/jexlStrings.ts'
-import type { IAnyType, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyType,
+  ILiteralType,
+  SnapshotIn,
+} from '@jbrowse/mobx-state-tree'
 
 interface SlotTypeSpec {
   /** MST type of the slot's value */
@@ -96,6 +105,8 @@ const slotTypes = {
 /** the types whose model this module supplies; `SlotValueByType` names the same set */
 export type BuiltinSlotTypeName = keyof typeof slotTypes
 
+const NUMBER_SLOT_TYPES = new Set<string>(['number', 'integer', 'maybeNumber'])
+
 // the author supplies the `types.enumeration` as `model`, and `ConfigSlot`
 // wraps it in `types.maybe` or `types.array`
 const ENUM_SLOT_TYPES = [
@@ -161,6 +172,70 @@ export function slotWriteRefusal(name: string, type: string, value: unknown) {
       : `${name} is a ${type} slot and cannot take ${JSON.stringify(value)}`
 }
 
+function isLiteral(type: IAnyType): type is ILiteralType<string> {
+  return isLiteralType(type) && !isUnionType(type)
+}
+
+// the words a number slot's union model takes beside a number, as `rows.step`
+// takes "fit"
+function wordsBesideNumber(model: IAnyType | undefined) {
+  return model && isUnionType(model)
+    ? getUnionSubtypes(model)
+        .filter(isLiteral)
+        .map(type => JSON.stringify(type.value))
+    : []
+}
+
+/** Whether `value` is a number at or below the slot's `exclusiveMinimum`. */
+export function isBelowMinimum(
+  definition: ConfigSlotDefinition,
+  value: unknown,
+) {
+  const { exclusiveMinimum } = definition
+  return (
+    exclusiveMinimum !== undefined &&
+    typeof value === 'number' &&
+    !(value > exclusiveMinimum)
+  )
+}
+
+/**
+ * What the slot `name` takes where `value` is a number at or below its
+ * `exclusiveMinimum`: the bound and the words it takes beside a number.
+ */
+export function belowMinimumNotice(
+  name: string,
+  definition: ConfigSlotDefinition,
+  value: unknown,
+) {
+  const takes = [
+    `a number above ${definition.exclusiveMinimum}`,
+    ...wordsBesideNumber(definition.model),
+  ].join(' or ')
+  return `${name} takes ${takes}, not ${JSON.stringify(value)}`
+}
+
+/** `belowMinimumNotice` with the slot's description, for a refused write. */
+export function minimumRefusal(
+  name: string,
+  definition: ConfigSlotDefinition,
+  value: unknown,
+) {
+  const { description } = definition
+  return `${belowMinimumNotice(name, definition, value)}${description ? ` — ${description}` : ''}`
+}
+
+/** Why the slot `name` refuses `value` on a write, its bound included. */
+export function slotDefinitionRefusal(
+  name: string,
+  definition: ConfigSlotDefinition,
+  value: unknown,
+) {
+  return isBelowMinimum(definition, value)
+    ? minimumRefusal(name, definition, value)
+    : slotWriteRefusal(name, definition.type, value)
+}
+
 function refusingCallbacks(model: IAnyType) {
   return types.refinement(model, value => !isJexl(value), notACallbackSlot)
 }
@@ -194,6 +269,14 @@ interface ConfigSlotDefinitionCommon {
    * published JSON schema check each entry as one.
    */
   holds?: 'adapter'
+  /**
+   * The bound a numeric slot's number stays above, JSON Schema's word: a
+   * config loading a number at or below it names it on the console and loads
+   * the default, a write refuses it, and `jbrowse validate` reports it. A word
+   * the slot's `model` takes beside a number, as `rows.step` takes `"fit"`, is
+   * not bounded.
+   */
+  exclusiveMinimum?: number
 }
 
 /**
@@ -264,7 +347,23 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
     )
   }
 
-  const value = enumShaped(type, valueModel)
+  const { exclusiveMinimum } = definition
+  if (exclusiveMinimum !== undefined && !NUMBER_SLOT_TYPES.has(type)) {
+    throw new Error(
+      `exclusiveMinimum bounds a number, and a "${type}" slot takes none`,
+    )
+  }
+  if (isBelowMinimum(definition, defaultValue)) {
+    throw new Error(
+      `the defaultValue ${defaultValue} is not above the slot's exclusiveMinimum, ${exclusiveMinimum}`,
+    )
+  }
+
+  const shaped = enumShaped(type, valueModel)
+  const value =
+    exclusiveMinimum === undefined
+      ? shaped
+      : types.refinement(shaped, v => !isBelowMinimum(definition, v))
   return types.stripDefault(
     callback
       ? types.union(JexlStringType, value)

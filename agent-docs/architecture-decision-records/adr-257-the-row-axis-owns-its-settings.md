@@ -75,8 +75,11 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   them apart: Row height shows while rows draw, the records' sizing while
   none do.
 - `rows.step` takes `bin.step`'s number-or-word slot type, so the CLI
-  manifest, the JSON schema and launch args read one form; `0` is refused
-  with a pointer to `'fit'`, and the R export writes `"fit"`.
+  manifest, the JSON schema and launch args read one form. A step at or
+  below 0 meets ADR-221's doors through the slot's `exclusiveMinimum`: a
+  config loading names it once and loads as `'fit'` (what `rowHeight: 0`
+  meant), a write refuses it pointing at `'fit'`, and `jbrowse validate`
+  reports it. The R export writes `"fit"`.
 - The Row height menu's first radio is "Fit to track height", alignments'
   words for the same choice; the submenu keeps "Row height".
 - `step` sits where rows scroll, the mark family's and the variant display's

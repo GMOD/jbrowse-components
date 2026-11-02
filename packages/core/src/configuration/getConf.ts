@@ -22,6 +22,7 @@ import {
   isConstantEntry,
 } from './schemaTypes.ts'
 import {
+  configPathOf,
   liftRetiredSpellings,
   liftShorthand,
   preProcessSnapshotWith,
@@ -292,8 +293,9 @@ function writeConfMember(
   if (namespace && isPlainObject(written)) {
     // refused as a whole before any member lands, so a bad member leaves the
     // namespace as it was rather than half written and reported as rejected
+    const at = configPathOf(member)
     const members = refusingUndeclaredKeys(() => {
-      const lifted = preProcessSnapshotWith(namespace, written)
+      const lifted = preProcessSnapshotWith(namespace, written, { at })
       getType(member).create({ ...getSnapshot(member), ...lifted })
       return lifted
     })

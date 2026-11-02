@@ -70,7 +70,7 @@ test('a feature track groups and colors through the two settings jb.help names, 
     }),
   ).toMatchObject({ applied: ['facet', 'encoding'], failed: [] })
   expect(display.plot).toMatchObject({
-    facet: 'strand',
+    facet: { field: 'strand' },
     encoding: {
       color: { field: 'gene_biotype', scale: { domain: ['protein_coding'] } },
     },

@@ -82,6 +82,31 @@ export function createSchemaValidator(
     return name ? (defs[name] ?? schema) : schema
   }
 
+  // The schema at a `$ref` pointer into a def, as a track's `displayDefaults`
+  // names each display's slot
+  function atPointer(ref: string): Schema | undefined {
+    let node: unknown = root
+    for (const segment of ref.replace(/^#\//, '').split('/')) {
+      node = isRecord(node)
+        ? node[segment.replaceAll('~1', '/').replaceAll('~0', '~')]
+        : undefined
+    }
+    return isRecord(node) ? node : undefined
+  }
+
+  // What a union branch stands for: the def it names, and through a member's
+  // reset (`if: null, else: …`) the schema it takes otherwise, so a union
+  // nested beneath a reset is still known as this one's branch
+  function branchTargets(branch: Schema): Schema[] {
+    const named =
+      typeof branch.$ref === 'string' ? atPointer(branch.$ref) : undefined
+    const target = named ?? branch
+    return [
+      target,
+      ...(isRecord(target.else) ? branchTargets(target.else) : []),
+    ]
+  }
+
   function currentKeys(properties: unknown) {
     return Object.entries(
       (properties as Record<string, Schema> | undefined) ?? {},
@@ -133,7 +158,9 @@ export function createSchemaValidator(
         return 'a string'
       case 'number':
       case 'integer':
-        return 'a number'
+        return typeof schema.exclusiveMinimum === 'number'
+          ? `a number above ${schema.exclusiveMinimum}`
+          : 'a number'
       case 'boolean':
         return 'a boolean'
       default:
@@ -413,7 +440,10 @@ export function createSchemaValidator(
     // the other way round, or neither is reported.
     const unions = errors.filter(e => e.keyword === 'anyOf')
     const isBranchOf = (u: ErrorObject, e: ErrorObject) =>
-      branchesOf(u).some(b => resolve(b) === e.parentSchema)
+      branchesOf(u).some(b => {
+        const targets: unknown[] = branchTargets(b)
+        return targets.includes(e.parentSchema)
+      })
     const shadowed = (e: ErrorObject) =>
       unions.some(
         u =>
@@ -521,6 +551,7 @@ export function createSchemaValidator(
         case 'type':
         case 'enum':
         case 'const':
+        case 'exclusiveMinimum':
           emit(
             where,
             `expected ${describe(parent)}, got ${JSON.stringify(error.data)}`,

@@ -4081,12 +4081,14 @@
     "@jbrowse/core/util/unknownSnapshotKeys": {
       "package": "@jbrowse/core",
       "names": [
+        "displayMisnamed",
         "displaySetterName",
         "legacyInitMessage",
         "reportLegacyInit",
         "reportMalformedRows",
         "reportUnknownKeys",
         "setterOnlyMessage",
+        "unappliedSettingsMessages",
         "unknownKeysMessage",
         "viewLabel"
       ],

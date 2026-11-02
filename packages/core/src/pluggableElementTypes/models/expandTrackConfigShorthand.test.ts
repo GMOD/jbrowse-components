@@ -4,6 +4,7 @@ import { ConfigurationSchema } from '../../configuration/index.ts'
 import {
   collectDisplayOverrides,
   mergeOverridesIntoDisplays,
+  misnamedPointerOf,
 } from './expandTrackConfigShorthand.ts'
 
 import type { AnyConfigurationSchemaType } from '../../configuration/index.ts'
@@ -324,5 +325,51 @@ describe('mergeOverridesIntoDisplays', () => {
       },
       { type: 'LinearManhattanDisplay', color: { value: 'red' } },
     ])
+  })
+})
+
+describe('a displayDefaults key a display calls misnamed', () => {
+  const Rows = ConfigurationSchema(
+    'PointerRows',
+    {
+      field: { type: 'string', defaultValue: '' },
+      step: { type: 'number', defaultValue: 10 },
+    },
+    { writes: 'members', closed: true, misnamed: { height: 'step' } },
+  )
+  const schemas = new Map<string, AnyConfigurationSchemaType>([
+    [
+      'PointerDisplay',
+      ConfigurationSchema(
+        'PointerDisplay',
+        { rows: Rows },
+        { misnamed: { rowHeight: 'rows.step' } },
+      ),
+    ],
+    [
+      'PlainDisplay',
+      ConfigurationSchema('PlainDisplay', {
+        color: { type: 'color', defaultValue: 'red' },
+      }),
+    ],
+  ])
+
+  test('is unknown, and points at the path its display names', () => {
+    const { unknownKeys } = collectDisplayOverrides(
+      { rowHeight: 10, rows: { height: 4 } },
+      schemas,
+    )
+    expect(unknownKeys).toEqual(['rowHeight', 'rows.height'])
+    expect(misnamedPointerOf('rowHeight', schemas)).toBe(
+      ' — did you mean rows.step?',
+    )
+    expect(misnamedPointerOf('rows.height', schemas)).toBe(
+      ' — did you mean rows.step?',
+    )
+  })
+
+  test('a key no display calls misnamed points nowhere', () => {
+    expect(misnamedPointerOf('colour', schemas)).toBe('')
+    expect(misnamedPointerOf('rows.colour', schemas)).toBe('')
   })
 })

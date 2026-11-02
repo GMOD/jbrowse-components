@@ -3,7 +3,7 @@ import { asModelType, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { deepEqual } from '../util/deepEqual.ts'
 import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getEnv } from '../util/mstUtils.ts'
-import { slotWriteRefusal } from './configurationSlot.ts'
+import { slotDefinitionRefusal } from './configurationSlot.ts'
 import { setConf } from './getConf.ts'
 import {
   getConfigurationSchemaDefinition,
@@ -14,6 +14,7 @@ import {
   isSlotDefinitionEntry,
 } from './schemaTypes.ts'
 import {
+  createAtPath,
   preProcessSnapshotWith,
   refusingUndeclaredKeys,
 } from './snapshotPreprocess.ts'
@@ -72,11 +73,13 @@ export function slotValueRefusal(
   // checks a write against
   const slotType = asModelType(schema)?.properties[key]
   try {
-    const lifted = preProcessSnapshotWith(meta, { [key]: value })[key]
+    const lifted = refusingUndeclaredKeys(
+      () => preProcessSnapshotWith(meta, { [key]: value })[key],
+    )
     if (subSchema) {
-      refusingUndeclaredKeys(() => subSchema.create(lifted))
+      refusingUndeclaredKeys(() => createAtPath(subSchema, lifted, key))
     } else if (isSlotDefinitionEntry(entry) && !slotType?.is(lifted)) {
-      return slotWriteRefusal(`${meta.name}.${key}`, entry.type, value)
+      return slotDefinitionRefusal(`${meta.name}.${key}`, entry, value)
     }
     return undefined
   } catch (e) {

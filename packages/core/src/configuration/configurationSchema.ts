@@ -11,7 +11,7 @@ import { isObservableArray } from 'mobx'
 
 import { getContainingTrack, getSession } from '../util/mstUtils.ts'
 import { isSessionWithEditableTrackConfig } from '../util/types/index.ts'
-import ConfigSlot, { slotWriteRefusal } from './configurationSlot.ts'
+import ConfigSlot, { slotDefinitionRefusal } from './configurationSlot.ts'
 import { checkRequirements } from './requirements.ts'
 import {
   getConfigurationSchemaMetadata,
@@ -24,8 +24,13 @@ import {
   shorthandTargetsOf,
 } from './schemaTypes.ts'
 import {
+  configPathOf,
+  createAtPath,
+  memberPathOf,
+  misnamedPointer,
   preProcessSnapshotWith,
   refusingUndeclaredKeys,
+  slotLabel,
 } from './snapshotPreprocess.ts'
 
 import type PluginManager from '../PluginManager.ts'
@@ -271,13 +276,18 @@ function checkShorthand(
 function checkMisnamed(
   modelName: string,
   definition: ConfigurationSchemaDefinition,
-  { misnamed = {} }: MergedConfigurationSchemaOptions<any, any>,
+  { misnamed = {}, retired = {} }: MergedConfigurationSchemaOptions<any, any>,
 ) {
   for (const [word, path] of Object.entries(misnamed)) {
     const [member = ''] = path.split('.')
     if (Object.hasOwn(definition, word)) {
       throw new Error(
         `${modelName}'s misnamed names ${word}, which it declares, so a snapshot writing ${word} means that member`,
+      )
+    }
+    if (Object.hasOwn(retired, word)) {
+      throw new Error(
+        `${modelName}'s misnamed names ${word}, which its retired lifts: a key is a spelling that moved, which a load rewrites, or a word that never was a key, not both`,
       )
     }
     if (!Object.hasOwn(definition, member)) {
@@ -373,6 +383,7 @@ function makeConfigurationSchemaModel<
   const slotKeys = new Set<string>()
   const featureFields = new Set<string>()
   const takesNoCallback = new Map<string, string>()
+  const bounded = new Map<string, ConfigSlotDefinition>()
   for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
     if (isConfigurationSchemaType(slotDefinition)) {
       // an empty collection strips from the snapshot as an all-default
@@ -395,6 +406,9 @@ function makeConfigurationSchemaModel<
       slotKeys.add(slotName)
       try {
         modelDefinition[slotName] = ConfigSlot(slotDefinition)
+        if (slotDefinition.exclusiveMinimum !== undefined) {
+          bounded.set(slotName, slotDefinition)
+        }
         if (slotDefinition.type === 'featureField') {
           featureFields.add(slotName)
         } else if (!slotDefinition.contextVariable?.length) {
@@ -426,10 +440,13 @@ function makeConfigurationSchemaModel<
       // `data` is whatever the sub-schema's preProcessSnapshot takes; a
       // collection takes the whole list or map, and `null` resets it
       setSubschema(slotName: string, data: unknown) {
+        const at = memberPathOf(self, slotName)
         if (collectionKeys.has(slotName)) {
           // checked on a copy, since the assignment runs patch listeners
           if (data != null && !isStateTreeNode(data)) {
-            refusingUndeclaredKeys(() => modelDefinition[slotName].create(data))
+            refusingUndeclaredKeys(() =>
+              createAtPath(modelDefinition[slotName], data, at),
+            )
           }
           self[slotName] = data ?? undefined
           return self[slotName]
@@ -439,7 +456,9 @@ function makeConfigurationSchemaModel<
         }
         const newSchema = isStateTreeNode(data)
           ? data
-          : refusingUndeclaredKeys(() => modelDefinition[slotName].create(data))
+          : refusingUndeclaredKeys(() =>
+              createAtPath(modelDefinition[slotName], data, at),
+            )
         self[slotName] = newSchema
         return newSchema
       },
@@ -456,17 +475,22 @@ function makeConfigurationSchemaModel<
                   ...slotKeys,
                 ]
                   .sort()
-                  .join(', ')}`,
+                  .join(
+                    ', ',
+                  )}${misnamedPointer(options.misnamed, [slotName], configPathOf(self))}`,
           )
         }
         // MST skips its own type check in a production build; `is` does not
         if (!modelDefinition[slotName].is(value)) {
           const declared = schemaDefinition[slotName]
-          const slotType = isSlotDefinitionEntry(declared)
-            ? declared.type
-            : 'value'
           throw new Error(
-            slotWriteRefusal(`${modelName}.${slotName}`, slotType, value),
+            isSlotDefinitionEntry(declared)
+              ? slotDefinitionRefusal(
+                  slotLabel(modelName, slotName, configPathOf(self)),
+                  declared,
+                  value,
+                )
+              : `${modelName}.${slotName} cannot take ${JSON.stringify(value)}`,
           )
         }
         const held: unknown = self[slotName]
@@ -496,6 +520,7 @@ function makeConfigurationSchemaModel<
     options,
     featureFields,
     takesNoCallback,
+    bounded,
   }
   completeModel = completeModel.preProcessSnapshot(snapshot =>
     preProcessSnapshotWith(metadata, snapshot),
