@@ -172,7 +172,9 @@ describe('expandPhasedRows', () => {
       HP: 1,
       rowColor: 'red',
     })
-    expect(out[2]).toMatchObject({ label: 'Two' })
+    expect(out[2]).toMatchObject({ label: 'Two HP1' })
+    expect(out[3]).toMatchObject({ label: 'Two HP2' })
+    expect(out[4]).toMatchObject({ sole: true })
   })
 
   // Until the ploidy lands the names stand for it, so an arranged track keeps
