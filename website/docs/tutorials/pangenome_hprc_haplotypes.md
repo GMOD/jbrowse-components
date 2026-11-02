@@ -224,7 +224,7 @@ Five cases mislead in the lanes:
   copies, as at SMN1 / SMN2, a lane cannot show how many copies a haplotype has.
 
 At IGL, `chr22:22,800,001-22,850,000`, **Lanes → Choose lanes...** with
-`HG00099.1`, `HG002.1`, `HG00097.1`, `HG002.2` and `HG01074.1` puts two deletion
+`HG00099.1`, `HG002.1`, `HG00097.1`, `HG002.2` and `HG01074.1` puts two skip
 rows at the foot.
 
 <Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 sit inside their cell lines' V(D)J deletions, so their rows at the foot draw no ribbons. HG002 haplotype 1 walks the window but draws only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />

@@ -211,7 +211,7 @@ cost is linear in lanes.
   whole window with that gap alone, marked `spansWindow`, and
   `multiWayFeaturesOf` lifts it off into `deletions` before anything groups,
   frames or draws it. A lane the window shows nothing else of becomes a row
-  at the foot of the stack, and its header reads "inside a 1.2 Mb deletion".
+  at the foot of the stack, and its header reads "no step on the reference across 1.2 Mb".
   A deletion two records state is out of reach, since neither record meets
   the window.
 - **A chosen lane the window places nothing in** (`unalignedChosenLanes`): a

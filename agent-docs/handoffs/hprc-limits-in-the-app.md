@@ -60,8 +60,8 @@ differences under 50 bp inside a structural form.
 - **Format 6 departures**, which lift the 64 kb chunk and the 2 Mb cap behind
   part 2's deletion-row limit: gfa-to-tabix ADR 0009 and its
   `docs/handoff/2026-10-31-departures.md`. Step 1 of that handoff, dropping the
-  word "deletion" from jumps (`laneHeader.ts` "inside a … deletion",
-  graph-walks `walkLanes.ts` `type: 'deletion'`), needs no format change.
+  word "deletion" from jumps, needs no format change; the lane header
+  (`laneHeader.ts`) and the plugin's `walkLanes.ts` record type are done.
 - **jb2hubs still writes `LinearMultiSampleVariantDisplay`**, so
   `checkPangenomeLaunches.mjs` fails every Graph and Variants launch on main
   while the launches work through the alias: item D of
