@@ -1,5 +1,5 @@
 import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
-import { getSession } from '@jbrowse/core/util'
+import { assembleLocString, getSession } from '@jbrowse/core/util'
 
 import type { StatusCallback } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
@@ -39,10 +39,26 @@ export async function fetchSequence(
     )
   }
 
-  const sessionId = 'getSequence'
-  return rpcManager.call(sessionId, 'CoreGetFeatures', {
-    adapterConfig,
-    regions,
-    ...opts,
-  })
+  // one call per region: a multi-region fetch merges its regions' streams in
+  // the order they finish, and a region the sequence lacks yields nothing,
+  // where the reader wants one entry per selected region, in selection order
+  return Promise.all(
+    regions.map(async region => {
+      const [feature] = await rpcManager.call(
+        'getSequence',
+        'CoreGetFeatures',
+        {
+          adapterConfig,
+          regions: [region],
+          ...opts,
+        },
+      )
+      if (!feature) {
+        throw new Error(
+          `no sequence found for ${assembleLocString(region)} in assembly ${assemblyName}`,
+        )
+      }
+      return feature
+    }),
+  )
 }
