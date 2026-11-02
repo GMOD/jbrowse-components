@@ -9313,7 +9313,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rows",
-          "type": "RowsWithStepConfigurationSchema",
+          "type": "MarkRowsConfigurationSchema",
           "subSlots": [
             {
               "name": "sort",
@@ -9429,9 +9429,24 @@ export const configManifest: ConfigManifest = {
             {
               "name": "step",
               "type": "(number | \"fit\")"
+            },
+            {
+              "name": "groups",
+              "type": "RowGroupConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "match",
+                  "type": "string"
+                },
+                {
+                  "name": "group",
+                  "type": "string"
+                }
+              ],
+              "schema": "RowGroup"
             }
           ],
-          "schema": "RowsWithStep",
+          "schema": "MarkRows",
           "writes": {
             "keyedBy": "field",
             "keyed": [
@@ -9449,21 +9464,6 @@ export const configManifest: ConfigManifest = {
             "treeProvenance": "tree.provenance",
             "height": "step"
           }
-        },
-        {
-          "name": "rowGroups",
-          "type": "RowGroupConfigurationSchema[]",
-          "subSlots": [
-            {
-              "name": "match",
-              "type": "string"
-            },
-            {
-              "name": "group",
-              "type": "string"
-            }
-          ],
-          "schema": "RowGroup"
         },
         {
           "name": "encoding",
@@ -9755,7 +9755,8 @@ export const configManifest: ConfigManifest = {
           "rows.colors",
           "rows.color"
         ],
-        "axis": "rows.axis"
+        "axis": "rows.axis",
+        "rowGroups": "rows.groups"
       },
       "stateModelProps": [
         "id",
@@ -10198,7 +10199,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rows",
-          "type": "RowsWithStepConfigurationSchema",
+          "type": "MarkRowsConfigurationSchema",
           "subSlots": [
             {
               "name": "sort",
@@ -10314,9 +10315,24 @@ export const configManifest: ConfigManifest = {
             {
               "name": "step",
               "type": "(number | \"fit\")"
+            },
+            {
+              "name": "groups",
+              "type": "RowGroupConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "match",
+                  "type": "string"
+                },
+                {
+                  "name": "group",
+                  "type": "string"
+                }
+              ],
+              "schema": "RowGroup"
             }
           ],
-          "schema": "RowsWithStep",
+          "schema": "MarkRows",
           "writes": {
             "keyedBy": "field",
             "keyed": [
@@ -10334,21 +10350,6 @@ export const configManifest: ConfigManifest = {
             "treeProvenance": "tree.provenance",
             "height": "step"
           }
-        },
-        {
-          "name": "rowGroups",
-          "type": "RowGroupConfigurationSchema[]",
-          "subSlots": [
-            {
-              "name": "match",
-              "type": "string"
-            },
-            {
-              "name": "group",
-              "type": "string"
-            }
-          ],
-          "schema": "RowGroup"
         },
         {
           "name": "encoding",
@@ -10644,7 +10645,8 @@ export const configManifest: ConfigManifest = {
           "rows.colors",
           "rows.color"
         ],
-        "axis": "rows.axis"
+        "axis": "rows.axis",
+        "rowGroups": "rows.groups"
       },
       "aliases": [
         "LinearArcDisplay",
@@ -11090,7 +11092,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rows",
-          "type": "RowsWithStepConfigurationSchema",
+          "type": "MarkRowsConfigurationSchema",
           "subSlots": [
             {
               "name": "sort",
@@ -11206,9 +11208,24 @@ export const configManifest: ConfigManifest = {
             {
               "name": "step",
               "type": "(number | \"fit\")"
+            },
+            {
+              "name": "groups",
+              "type": "RowGroupConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "match",
+                  "type": "string"
+                },
+                {
+                  "name": "group",
+                  "type": "string"
+                }
+              ],
+              "schema": "RowGroup"
             }
           ],
-          "schema": "RowsWithStep",
+          "schema": "MarkRows",
           "writes": {
             "keyedBy": "field",
             "keyed": [
@@ -11226,21 +11243,6 @@ export const configManifest: ConfigManifest = {
             "treeProvenance": "tree.provenance",
             "height": "step"
           }
-        },
-        {
-          "name": "rowGroups",
-          "type": "RowGroupConfigurationSchema[]",
-          "subSlots": [
-            {
-              "name": "match",
-              "type": "string"
-            },
-            {
-              "name": "group",
-              "type": "string"
-            }
-          ],
-          "schema": "RowGroup"
         },
         {
           "name": "encoding",
@@ -11532,7 +11534,8 @@ export const configManifest: ConfigManifest = {
           "rows.colors",
           "rows.color"
         ],
-        "axis": "rows.axis"
+        "axis": "rows.axis",
+        "rowGroups": "rows.groups"
       },
       "stateModelProps": [
         "id",
