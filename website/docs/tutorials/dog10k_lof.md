@@ -11,14 +11,18 @@ tutorial_subcategory: Dog10K
 
 Some dogs are poor metabolizers of the drugs the liver enzyme CYP1A2 clears,
 because they have a premature stop codon in _CYP1A2_. The literature names the
-variant only by its protein change. We:
+variant only by its protein change, so its coordinate on the dog reference has
+to be derived first. The Dog10K collection then shows which breeds have the
+allele, whether wolves do, and how many copies of the gene each animal has. At
+_CYP1A2_ on chr30, we:
 
-- derive its genome coordinate by translating the reference coding sequence
-- slice the gene out of the Dog10K SNV callset over HTTP and load the slice as a
-  multi-sample variant track
-- cluster the samples to read genotypes across breeds, with wild canids as the
-  control
-- load a copy-number BED as a multi-row feature track across every canid
+- load the gene's slice of the Dog10K SNV callset as a variant track and zoom to
+  the stop codon, under the reference sequence and its translation
+- name and color the rows with **Edit colors/arrangement...**, and filter the
+  track to the stop site
+- load per-animal copy number across every canid as a multi-row feature track
+- cluster the copy-number rows with **Clustering → Cluster rows by
+  similarity...**
 
 ## Prerequisites
 
@@ -219,24 +223,13 @@ row's label bar, tints them.
 recolor rows, and **Advanced → Edit plot...** shows them as text. For a larger
 panel, a `samplesTsvLocation` on the adapter supplies the names instead.
 
-A whole-gene view of the slice is a field of one-pixel ticks, so zoom to the
-codon. At base level each sample's call is a block, and the gene track shows
-which exon it sits in.
+A whole-gene view of the slice is a field of one-pixel ticks. At base level each
+sample's call is a block, and the gene track shows which exon it sits in.
 
 ## CYP1A2 stop-gained genotypes across breeds and wolves
 
-<Figure caption="The CYP1A2 stop-gained variant at base level: the sequence and its translation, the site as a variant track, then one row per dog." src="/img/dog10k-cyp1a2-nonsense.png" />
-
-The build script genotypes the stop site over every canid in the callset. Dozens
-of breeds have the allele and it reaches homozygosity in several: every German
-Hound and every Shetland Sheepdog sampled here has at least one copy, while
-every wolf and every coyote in the collection is homozygous reference.
-
-Three other variants lie within about a hundred bases of the stop site, and the
-config below filters them out. Dropping the filter shows them: two are reference
-in every animal of this sample set, including the one at the codon's second
-base, so each draws an empty column, and the third sits 15 bp along, and every
-wolf has it.
+Other variants lie near the stop site, and the config below filters them out so
+the stop site is the one column drawn. Dropping the filter shows them.
 
 ```json addtrack
 {
@@ -253,6 +246,15 @@ wolf has it.
   ]
 }
 ```
+
+Open `chr30:38,261,590-38,261,690` with the reference sequence, the genes and
+the filtered track:
+
+<Figure caption="The CYP1A2 stop-gained variant at base level: the sequence and its translation, the site as a variant track, then one row per dog." src="/img/dog10k-cyp1a2-nonsense.png" />
+
+Every wolf and every coyote in the collection is homozygous reference at the
+site. The build script genotypes the stop site over every canid in the callset
+and prints the breeds that have the allele.
 
 ## Copy number at CYP1A2
 
@@ -285,8 +287,7 @@ Each window is 5 kb of depth stepped by 1 kb, so a call rests on 5 kb of
 evidence and is painted at 1 kb resolution.
 
 The callset records depth only where a variant was called, so the build script
-checks it against the 15 CRAMs the Dog10K share publishes. Over the shared
-windows the two depth sources agree closely, with no bias. The CRAM-based
+checks it against the 15 CRAMs the Dog10K share publishes. The CRAM-based
 painting is in the config as `dog10k_cyp1a2_cn`.
 
 The output is a BED with the color in `itemRgb` and the rounded call in
@@ -354,6 +355,12 @@ with. The figure's upper track is a second BED the script writes,
 names; its track takes `rows: { "field": "sample", "sort": [...] }` with those
 names in drawing order.
 
+Cluster the lower track's rows with **Clustering → Cluster rows by
+similarity...** in its track menu, or `runClustering` in a session's display
+entry, which orders them by each animal's profile across the window. Then open
+`chr30:38,210,000-38,395,000` with the genes, the CpG islands and both
+copy-number tracks:
+
 <Figure caption="Copy number over CYP1A2, named animals above and the whole collection below." src="/img/dog10k-cyp1a2-cohort-copy-number.png" />
 
 The upper track holds every Golden Retriever, Labrador Retriever and Boxer in
@@ -370,13 +377,9 @@ The white stripes through both tracks are windows with no call. A window whose
 median across the whole collection is not two copies measures a quirk of the
 reference, so the build script drops it from every row.[^cpg]
 
-The lower track repeats the estimate for every canid.
-
-**Clustering → Cluster rows by similarity...** in its track menu, or
-`runClustering` in a session's display entry, orders the rows by each animal's
-profile across the window. Clustering groups animals whose expansion starts and
-ends in the same place, and the blocks on either side of the gene are deletion
-polymorphisms.
+The lower track repeats the estimate for every canid. Clustering groups animals
+whose expansion starts and ends in the same place, and the blocks on either side
+of the gene are deletion polymorphisms.
 
 The depth-based estimate puts far more of the collection at three or more copies
 than the paper reports. The two counts cover different intervals: the paper ran
@@ -391,9 +394,9 @@ builds the genotype track. It:
 1. derives the stop codon's position from the reference
 2. builds the sample list from the Dog10K sample table and slices the gene out
    of the callset
-3. prints the genotypes at the stop so you can check the figure against the data
-4. genotypes that one site over every canid for the breed and wild-canid counts
-   quoted above
+3. prints the genotypes at the stop
+4. genotypes that one site over every canid and prints the breeds and wild
+   canids that have the allele
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_dog10k_cyp1a2.sh
