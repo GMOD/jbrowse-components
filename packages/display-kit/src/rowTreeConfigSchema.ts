@@ -44,5 +44,7 @@ export const rowTreeConfigSchema = ConfigurationSchema(
     shorthand: 'newick',
     writes: { keyedBy: 'newick', keyed: ['provenance'], emptyChanges: true },
     closed: true,
+    description:
+      'the dendrogram as newick, or { newick, provenance }; whether it draws is rows.axis.tree',
   },
 )

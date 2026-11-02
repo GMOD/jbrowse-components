@@ -3,6 +3,10 @@
  */
 import { schemaProblems } from './schemaValidate.ts'
 
+// what rows.step means, which a refused value names beside the refusal
+const STEP_MEANING =
+  'row height in px, the rows that do not fit scrolling; or "fit" (the default) to divide the track height between the rows, as heightMode "fit" does on a feature track.'
+
 function configWith(track: Record<string, unknown>) {
   return {
     assemblies: [
@@ -54,7 +58,7 @@ test.each([0, -2])('a step of %d on a display entry is reported', step => {
   ).toEqual([
     {
       where: 'tracks[0].displays[0].rows.step',
-      message: `expected a number above 0 or "fit", got ${step}`,
+      message: `expected a number above 0 or "fit", got ${step} — ${STEP_MEANING}`,
     },
   ])
 })
@@ -63,7 +67,7 @@ test.each([0, -2])('a step of %d in displayDefaults is reported', step => {
   expect(stepProblems({ displayDefaults: { rows: { step } } })).toEqual([
     {
       where: 'tracks[0].displayDefaults.rows.step',
-      message: `expected a number above 0 or "fit", got ${step}`,
+      message: `expected a number above 0 or "fit", got ${step} — ${STEP_MEANING}`,
     },
   ])
 })
@@ -75,7 +79,7 @@ test('a step no display takes in displayDefaults is reported', () => {
     [
       {
         where: 'tracks[0].displayDefaults.rows.step',
-        message: 'expected a number above 0 or "fit", got "tall"',
+        message: `expected a number above 0 or "fit", got "tall" — ${STEP_MEANING}`,
       },
     ],
   )

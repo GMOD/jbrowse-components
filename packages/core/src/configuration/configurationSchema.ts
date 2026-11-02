@@ -118,6 +118,13 @@ export interface ConfigurationSchemaOptions<
    */
   writes?: 'whole' | 'members' | KeyedWrites
   /**
+   * What the sub-schema means, in the words a slot's `description` uses: a
+   * refused key or shape names it, at load, on a write and in
+   * `jbrowse validate`, so a member written where its same-word sibling
+   * belongs (`rows.color` for `rows.colors`) points at the sibling.
+   */
+  description?: string
+  /**
    * Makes this sub-schema a plot setting wherever a display declares it, one
    * "Edit plot..." edits: a channel, a band, or another setting that changes
    * what is drawn from the track's source. A subclass inherits it, and

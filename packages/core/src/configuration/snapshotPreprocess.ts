@@ -12,6 +12,7 @@ import {
   belowMinimumNotice,
   isBelowMinimum,
   minimumRefusal,
+  slotDefinitionRefusal,
   slotWriteRefusal,
 } from './configurationSlot.ts'
 import { refusalProblems, withoutPath } from './requirements.ts'
@@ -20,6 +21,7 @@ import {
   bareFormOf,
   isBareConfigurationSchemaType,
   isConstantEntry,
+  isSlotDefinitionEntry,
   shorthandTargets,
 } from './schemaTypes.ts'
 
@@ -64,6 +66,22 @@ export function refusingUndeclaredKeys<T>(write: () => T) {
     return write()
   } finally {
     writes--
+  }
+}
+
+/**
+ * #api core/configuration
+ * What a schema's own `preProcessSnapshot` does with a value it refuses that
+ * no declared rule can name: a write throws `notice`, and a config loading
+ * names it once on the console and loads without it.
+ */
+export function refuseOnWrite(notice: string) {
+  if (writes > 0) {
+    throw new Error(notice)
+  }
+  if (!warned.has(notice)) {
+    warned.add(notice)
+    console.warn(`${notice}: loading without it`)
   }
 }
 
@@ -202,9 +220,10 @@ function checkUndeclaredKeys(
         key => !declared.includes(key) && !COMMENT_KEY.test(key),
       )
   if (unknown.length > 0) {
+    const meaning = options.description ? ` — ${options.description}` : ''
     if (bare || writes > 0) {
       throw new Error(
-        `${name} takes ${listed(declared)}, not ${unknown.join(', ')}${misnamedPointer(options.misnamed, unknown, at, schema)}`,
+        `${name} takes ${listed(declared)}, not ${unknown.join(', ')}${misnamedPointer(options.misnamed, unknown, at, schema)}${meaning}`,
       )
     }
     const key = `${name} ${unknown.toSorted().join(' ')}`
@@ -214,7 +233,7 @@ function checkUndeclaredKeys(
         options.explicitIdentifier ?? ''
       ]
       console.warn(
-        `${name}${typeof id === 'string' ? ` "${id}"` : ''} does not declare ${listed(unknown)}: loading without it${misnamedPointer(options.misnamed, unknown, at, schema)}`,
+        `${name}${typeof id === 'string' ? ` "${id}"` : ''} does not declare ${listed(unknown)}: loading without it${misnamedPointer(options.misnamed, unknown, at, schema)}${meaning}`,
       )
     }
   }
@@ -258,6 +277,51 @@ function boundedMembers(
         console.warn(
           `${notice}: loading the default, ${JSON.stringify(definition.defaultValue)}`,
         )
+      }
+      out = out === snapshot ? { ...snapshot } : out
+      out[key] = undefined
+    }
+  }
+  return out
+}
+
+function isStringMap(value: unknown) {
+  return (
+    isPlainObject(value) &&
+    Object.values(value).every(entry => typeof entry === 'string')
+  )
+}
+
+// A config loading a `stringMap` slot something other than a map of strings,
+// as `rows.labels: false` for `rows.axis.labels`, names it once with the
+// slot's meaning and loads the default; a write refuses it the same way.
+function misshapenMaps(
+  { name, definition }: ConfigurationSchemaMetadata,
+  snapshot: Record<string, unknown>,
+  at: string | undefined,
+) {
+  let out = snapshot
+  for (const key in snapshot) {
+    const entry = Object.hasOwn(definition, key) ? definition[key] : undefined
+    const value = snapshot[key]
+    if (
+      isSlotDefinitionEntry(entry) &&
+      entry.type === 'stringMap' &&
+      value !== undefined &&
+      value !== null &&
+      !isStringMap(value)
+    ) {
+      const notice = slotDefinitionRefusal(
+        slotLabel(name, key, at),
+        entry,
+        value,
+      )
+      if (writes > 0) {
+        throw new Error(notice)
+      }
+      if (!warned.has(notice)) {
+        warned.add(notice)
+        console.warn(`${notice}: loading the default`)
       }
       out = out === snapshot ? { ...snapshot } : out
       out[key] = undefined
@@ -527,7 +591,11 @@ export function preProcessSnapshotWith(
   refuseCallbacks(schema, custom)
   return routesUndeclared || !own
     ? custom
-    : refusedMembers(schema, boundedMembers(schema, custom, at), at)
+    : refusedMembers(
+        schema,
+        boundedMembers(schema, misshapenMaps(schema, custom, at), at),
+        at,
+      )
 }
 
 /**

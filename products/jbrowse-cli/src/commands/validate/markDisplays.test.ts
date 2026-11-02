@@ -828,7 +828,7 @@ describe('a transform step in a config file', () => {
 
   it('reads a slot whose value is itself a choice as that choice', () => {
     expect(stepProblems({ type: 'bin', step: 'wide' })).toEqual([
-      `${STEP}.step: expected a number or "auto", got "wide"`,
+      `${STEP}.step: expected a number or "auto", got "wide" — bin width in bp, or "auto" to follow the zoom.`,
     ])
     expect(stepProblems({ type: 'bin', step: 'jexl:1000' })).toEqual([
       `${STEP}.step: takes no "jexl:" callback, and "jexl:1000" is one: a slot that takes a callback lists its callback args in the config docs`,

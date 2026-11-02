@@ -105,6 +105,8 @@ export const rowColorConfigSchema = ConfigurationSchema(
     writes: 'whole',
     plot: true,
     closed: true,
+    description:
+      "the rows colored by an attribute, 'population' or { field, scale }; a color pinned on a row by name is rows.colors, { HG002: 'red' }",
     refuses: [
       {
         id: 'row-colors-by-name',

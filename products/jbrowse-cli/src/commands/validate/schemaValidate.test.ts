@@ -117,7 +117,12 @@ describe('the schema', () => {
 
   it('is a valid draft 2020-12 schema', () => {
     const ajv = new Ajv2020({ strict: true, strictRequired: false })
-    ajv.addVocabulary(['x-requirement', 'x-closed', 'errorMessage'])
+    ajv.addVocabulary([
+      'x-requirement',
+      'x-closed',
+      'x-meaning',
+      'errorMessage',
+    ])
     expect(ajv.validateSchema(configJsonSchema)).toBe(true)
     expect(() => ajv.compile(configJsonSchema)).not.toThrow()
   })
@@ -199,7 +204,9 @@ describe('the schema', () => {
     ]
     const [error] = schemaProblems(config)
     expect(error?.where).toBe('tracks[0].displays[0].height')
-    expect(error?.message).toBe('expected a number, got "tall"')
+    expect(error?.message).toBe(
+      'expected a number, got "tall" — Starting height in pixels for the bands together; heightMode decides what a pileup deeper than this does.',
+    )
   })
 
   it('reports a field name written where a color goes', () => {

@@ -225,15 +225,19 @@ export function minimumRefusal(
   return `${belowMinimumNotice(name, definition, value)}${description ? ` — ${description}` : ''}`
 }
 
-/** Why the slot `name` refuses `value` on a write, its bound included. */
+/**
+ * Why the slot `name` refuses `value` on a write, its bound included, and
+ * what the slot means, which names a same-word sibling it was mistaken for.
+ */
 export function slotDefinitionRefusal(
   name: string,
   definition: ConfigSlotDefinition,
   value: unknown,
 ) {
+  const { description } = definition
   return isBelowMinimum(definition, value)
     ? minimumRefusal(name, definition, value)
-    : slotWriteRefusal(name, definition.type, value)
+    : `${slotWriteRefusal(name, definition.type, value)}${description ? ` — ${description}` : ''}`
 }
 
 function refusingCallbacks(model: IAnyType) {

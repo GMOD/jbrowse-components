@@ -210,6 +210,11 @@ const REQUIREMENT = 'x-requirement'
 // validator says which.
 const CLOSED = 'x-closed'
 
+// The annotation on a sub-schema stating what it means (its `description`
+// option), which the validator names beside a refused key or shape so a
+// member written in its same-word sibling's place points at the sibling
+const MEANING = 'x-meaning'
+
 // Session keys an older release wrote and a session model still reads off the
 // snapshot: `useWorkspaces: false` drops the layout (WorkspaceLayout/model.ts).
 const LEGACY_SESSION_KEYS = ['useWorkspaces']
@@ -994,10 +999,14 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       type: form === 'list' ? 'array' : form,
       description: `Shorthand for \`{ "${slot}": ...${companionText(meta)} }\`.`,
     }))
-    const schema =
+    const { description } = meta.options
+    const shapes =
       bare.length > 0
         ? { anyOf: [...bare, { title: base, ...object }] }
         : object
+    // what the sub-schema means, which the validator appends to a refused
+    // shape or key beneath it
+    const schema = description ? { [MEANING]: description, ...shapes } : shapes
     const content = `${base}:${JSON.stringify(schema)}`
     let shared = sharedByContent.get(content)
     if (!shared) {

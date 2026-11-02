@@ -2023,6 +2023,21 @@ import { READS_REFERENCE } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/dataAdapterCache.ts)
 
+### refuseOnWrite
+
+What a schema's own `preProcessSnapshot` does with a value it refuses that no
+declared rule can name: a write throws `notice`, and a config loading names it
+once on the console and loads without it.
+
+```js
+import { refuseOnWrite } from '@jbrowse/core/configuration'
+
+// type signature
+(notice: string) => void
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/snapshotPreprocess.ts)
+
 ### refusingUndeclaredKeys
 
 Runs `write` as a write: a `closed` schema created inside it refuses a key it

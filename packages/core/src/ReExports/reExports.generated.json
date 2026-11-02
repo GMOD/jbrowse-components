@@ -935,6 +935,7 @@
         "preProcessSnapshotWith",
         "readConfObject",
         "readConfigValue",
+        "refuseOnWrite",
         "refusingUndeclaredKeys",
         "requestedIndexType",
         "requirementProblems",
@@ -4965,8 +4966,9 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "ROW_IDENTITY_FIELDS",
-        "ROW_IDENTITY_POINTER",
+        "rowExpressionPointer",
         "rowFilterList",
+        "rowIdentityPointer",
         "rowPredicateConfigSchema"
       ],
       "worker": "real"

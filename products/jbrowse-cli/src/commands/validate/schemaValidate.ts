@@ -447,6 +447,57 @@ export function createSchemaValidator(
     )
   }
 
+  // What the slot or sub-schema a refused shape sits under means: the nearest
+  // meaning from `schema` up to its property or def, a sub-schema's
+  // `x-meaning` or, where `slots` says, a slot's description (a shorthand's
+  // excepted). A same-word sibling's meaning names the other, so a member
+  // written in its sibling's place points at it.
+  function meaningOf(schema: Schema, slots: boolean) {
+    const pointer = pointers.get(schema)
+    const segments = pointer ? pointer.split('/').slice(1) : []
+    const nodeAt = (n: number) =>
+      segments
+        .slice(0, n)
+        .map(segment => segment.replaceAll('~1', '/').replaceAll('~0', '~'))
+        .reduce<unknown>(
+          (at, key) =>
+            Array.isArray(at)
+              ? at[Number(key)]
+              : isRecord(at)
+                ? at[key]
+                : undefined,
+          root,
+        )
+    for (let n = segments.length; n > 0; n--) {
+      const node = nodeAt(n)
+      const meaning = isRecord(node) ? node['x-meaning'] : undefined
+      const description = isRecord(node) ? node.description : undefined
+      if (typeof meaning === 'string') {
+        return meaning
+      }
+      if (
+        slots &&
+        segments[n - 2] === 'properties' &&
+        typeof description === 'string' &&
+        !description.startsWith('Shorthand for')
+      ) {
+        return description
+      }
+      const owner = segments[n - 2]
+      if (owner === 'properties' || owner === '$defs') {
+        return undefined
+      }
+    }
+    return undefined
+  }
+
+  function withMeaning(message: string, schema: Schema, slots = true) {
+    const meaning = meaningOf(schema, slots)
+    return meaning && !message.includes(meaning)
+      ? `${message} — ${meaning}`
+      : message
+  }
+
   // Converts ajv's errors at one validation into Problems, recursing into the
   // chosen branch of each failed union so the author sees one diagnosis rather
   // than one per alternative.
@@ -517,7 +568,11 @@ export function createSchemaValidator(
           )
           emit(
             join(where, key),
-            unknownKeyMessage(key, parent, acceptedKeys(parent)),
+            withMeaning(
+              unknownKeyMessage(key, parent, acceptedKeys(parent)),
+              parent,
+              false,
+            ),
           )
           break
         }
@@ -550,7 +605,10 @@ export function createSchemaValidator(
           ) {
             emit(
               where,
-              `expected ${branches.map(describe).join(' or ')}, got ${JSON.stringify(value)}`,
+              withMeaning(
+                `expected ${branches.map(describe).join(' or ')}, got ${JSON.stringify(value)}`,
+                parent,
+              ),
             )
             break
           }
@@ -569,7 +627,10 @@ export function createSchemaValidator(
             const nested: Problem[] = []
             explain(value, fn.errors, nested, depth + 1)
             for (const p of nested) {
-              emit(join(where, p.where).replaceAll('.[', '['), p.message)
+              emit(
+                join(where, p.where).replaceAll('.[', '['),
+                p.where === '' ? withMeaning(p.message, parent) : p.message,
+              )
             }
           } else {
             emit(where, 'does not match any accepted form')
@@ -590,7 +651,10 @@ export function createSchemaValidator(
         case 'exclusiveMinimum':
           emit(
             where,
-            `expected ${describe(parent)}, got ${JSON.stringify(error.data)}`,
+            withMeaning(
+              `expected ${describe(parent)}, got ${JSON.stringify(error.data)}`,
+              parent,
+            ),
           )
           break
         case 'not':
