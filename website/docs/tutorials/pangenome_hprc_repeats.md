@@ -14,16 +14,19 @@ tutorial_subcategory: HPRC release 2
 A tandem repeat is one sequence copied head to tail, and the number of copies
 varies from person to person. An assembled haplotype spans the whole array, so
 the Human Pangenome Reference Consortium's release 2 graph holds each
-haplotype's repeat at its full length. We read three arrays off it, one bar per
-haplotype:
+haplotype's repeat at its full length. We read three arrays off it: the kringle
+IV type 2 copies in _LPA_ and their two repeat types, a VNTR in an intron of
+_ABCA7_ that PacBio's TRGT also measured from reads, and the _AMY1_ gene copies
+in the amylase array. We:
 
-- at _LPA_, count copies of the kringle IV type 2 repeat and tell its two repeat
-  types apart
-- at _ABCA7_, measure an intronic VNTR and set PacBio's read-based TRGT
-  genotypes on the same bars
-- find the samples where the assemblies and the reads disagree
-- at amylase, count _AMY1_ gene copies against Yilmaz et al. (2024), and stack
-  one haplotype per structure, each aligned to the next
+- at _LPA_, draw every haplotype's walk through the array as a bar with the walk
+  rows layout, and open a tandem-repeat record's copies by type
+- at _ABCA7_, set TRGT's genotypes on the walk rows with the **Repeat** layout
+  entry
+- choose the samples whose TRGT ticks turn red, and draw TRGT's alleles as a
+  tandem-repeat record
+- at amylase, read _AMY1_ copies off walk rows, and stack one haplotype per
+  structure in a linear synteny view
 
 :::caution Experimental
 
@@ -107,8 +110,6 @@ position on the ruler, in the color of its node below.
 
 Each loop in the knot is a different number of copies. Click the array's purple
 label to lay the bubble's segments out alone, with a button back to the window.
-The rGFA records segments and links, and the haplotypes track records each
-haplotype's route through them, its walk.
 
 ## Haplotypes' routes through the KIV-2 array {#one-haplotypes-copies}
 
@@ -143,14 +144,17 @@ track. In the haplotypes track's menu:
 - **Haplotypes → Every haplotype in the graph** cuts the window again for the
   whole release
 
-Each copy a haplotype adds lengthens its bar, so read copy number off bar
-length. Color does not count copies: the graph routes most copies through nodes
-off GRCh38's path, so most bars are largely purple. The walk file abridges the
-costliest walks through the array, and a bar draws the steps it did not load in
-gold, its length marked ≈ where the walk runs on past the window; right-click
-one and take the **Load the … abridged steps** row, which counts them, to read
-it in full. The rows pack to fit the track, too thin to letter, so hover a bar
-for its haplotype, length and excess over GRCh38.
+Read the bars this way:
+
+- **Length counts copies.** Each copy a haplotype adds lengthens its bar.
+- **Color does not.** The graph routes most copies through nodes off GRCh38's
+  path, so most bars are largely purple.
+- **Gold is steps the file did not load.** The walk file abridges the costliest
+  walks through the array, and a bar marks its length ≈ where the walk runs on
+  past the window. Right-click one and take the **Load the … abridged steps**
+  row, which counts them, to read it in full.
+- **Hover a bar** for its haplotype, length and excess over GRCh38, since the
+  rows pack too thin to letter.
 
 <Figure caption="Every HPRC haplotype's walk across the KIV-2 array in walk rows. Purple is sequence off GRCh38's path; gold is an abridged walk's steps the file did not load." src="/img/pangenome/graph_kiv2_walk_rows.png" />
 
@@ -227,8 +231,7 @@ node tandem-repeat-vcf.mjs hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa \
 
 Given one copy's exons as BED rows with their strand, `--sites` reports where
 the units differ inside each. At KIV-2 that is exon 1's positions 14, 41 and 86,
-the three synonymous sites LPA studies use to tell KIV-2B from KIV-2A, and
-nothing in exon 2:
+the three synonymous sites LPA studies use to tell KIV-2B from KIV-2A:
 
 ```bash
 printf 'chr6\t160617116\t160617276\texon 1\t0\t-\nchr6\t160618483\t160618665\texon 2\t0\t-\n' > kiv2_exons.bed
@@ -404,10 +407,6 @@ allele's share and its length.
 
 <Figure caption="The ABCA7 VNTR record's Tandem repeat card, by allele. The dotted line is GRCh38's allele." src="/img/pangenome/hprc_abca7_tandem_repeat_alleles.png" />
 
-HG00099's genotype in the sample table is `1/2` with `AL` `387,3161`. In the
-card, hovering ALT 1's bar gives 387 bp and ALT 2's 3.2 kb, matching what TRGT
-measured.
-
 ## Amylase: counting AMY1 copies per haplotype {#amylase}
 
 A gene array varies the same way a tandem repeat does, in whole gene copies. We
@@ -424,14 +423,12 @@ structure:
 
 <Figure caption="Haplotypes' walks across the amylase array, each over its own CAT genes. Purple is sequence off GRCh38's path." src="/img/pangenome/hprc_amylase_walk_rows.png" />
 
-HG00133.1 has GRCh38's three _AMY1_ copies and its length, and its bar still
-shows a long purple stretch, because the graph routes copies of a duplication
-through nodes off GRCh38's path. Count the _AMY1_ boxes on each bar to read copy
-number. JBrowse boxes each haplotype's own CAT genes on its bar, and the view's
-GRCh38 genes on GRCh38's row. CAT names each copy after the GRCh38 copy it
-projected, so one name can label several boxes.
-[Where each haplotype's genes come from](/docs/tutorials/pangenome_hprc_haplotypes#haplotype-genes)
-says how JBrowse reads a bar's genes.
+Count the _AMY1_ boxes on each bar to read copy number. As at KIV-2, purple does
+not count copies: HG00133.1 has GRCh38's three _AMY1_ copies and its length, and
+its bar still shows a long purple stretch. Each bar boxes the CAT genes of that
+haplotype's assembly, and GRCh38's row the view's GRCh38 genes;
+[where each haplotype's genes come from](/docs/tutorials/pangenome_hprc_haplotypes#haplotype-genes)
+says how CAT names the copies.
 
 Yilmaz et al. (2024) name each structure by its _AMY1_ count:
 

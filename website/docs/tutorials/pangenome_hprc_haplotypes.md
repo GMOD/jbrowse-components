@@ -13,11 +13,15 @@ tutorial_subcategory: HPRC release 2
 We draw human haplotypes from the Human Pangenome Reference Consortium's release
 2 side by side, one lane per haplotype drawn in that haplotype's assembly
 coordinates, and use the pangenome graph to show where neighbouring lanes match.
-With that view we:
+We look at three loci: CFH, where some haplotypes lack two genes; GSTT1, a gene
+GRCh38's chromosome lacks; and FLNA / EMD, two genes some haplotypes have in the
+opposite order. We:
 
-- at CFH, find haplotypes missing two genes
-- at GSTT1, find haplotypes with a gene GRCh38's chromosome lacks
-- at FLNA / EMD, find haplotypes with two genes in the opposite order
+- configure the haplotype lanes track, and read each lane's genes from that
+  haplotype's own annotation
+- at CFH, open the lanes from the HPRC page's **Haplotypes** launch
+- at GSTT1, choose lanes and order them by structure from the **Lanes** menu
+- at FLNA / EMD, add the graph's bubbles track and filter it to inversions
 
 :::caution Experimental
 
@@ -115,8 +119,8 @@ genes across the graph.
   antibody and T-cell receptor loci, so HG002's lanes there show only their
   pseudogene segments.
 - **What we host:** one gene model per named gene for each haplotype, as
-  `https://jbrowse.org/pangenome/hprc-grch38/genes/<sample>.<haplotype>.genes.bed.gz`.
-  A haplotype keeps about 43,500 of CAT's 83,000 genes:
+  `https://jbrowse.org/pangenome/hprc-grch38/genes/<sample>.<haplotype>.genes.bed.gz`,
+  chosen by these rules:
   - Each model is the gene's Ensembl canonical transcript as CAT projected it,
     else its longest coding transcript.
   - A gene with no symbol is dropped, and so is one spanning over 5 Mb.
@@ -139,8 +143,8 @@ genes across the graph.
     through a deletion, a copy CAT did not project, or a gene the rules above
     dropped.
   - CAT names each copy of a duplicated gene after the GRCh38 copy it projected,
-    so HG00232.1, with seven _AMY1_ copies, reads _AMY1C_ five times. The number
-    of _AMY1_ boxes gives the copy number, unless CAT missed a copy.
+    so a haplotype with extra _AMY1_ copies reads _AMY1C_ several times. The
+    number of _AMY1_ boxes gives the copy number, unless CAT missed a copy.
 
 ## CFH: haplotypes missing two genes
 
@@ -193,10 +197,10 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
 
 ## What the lanes leave out {#limits}
 
-These cases mislead; [part 1](/docs/tutorials/pangenome_hprc#limits) lists the
-limits of the graph and the VCF behind them.
+[Part 1](/docs/tutorials/pangenome_hprc#limits) lists the limits of the graph
+behind the lanes, including the haplotypes it leaves without a lane and the gene
+copies it puts on one path. The lanes add three cases:
 
-- **A haplotype the graph does not align has no lane.**
 - **A deletion across the window is a row with no ribbons.** A haplotype whose
   deletion spans the whole window shows as a row at the foot of the lanes,
   headed with the deletion's length, such as "inside a 150 kb deletion". The row
@@ -208,20 +212,17 @@ limits of the graph and the VCF behind them.
   haplotype as a deletion row. At IGH, IGK and IGL such a row is often the cell
   line's deletion, as [part 1's limits](/docs/tutorials/pangenome_hprc#limits)
   explain.
-
-At IGL, `chr22:22,800,001-22,850,000`, **Lanes → Choose lanes...** with
-`HG00099.1`, `HG002.1`, `HG00097.1`, `HG002.2` and `HG01074.1` puts two such
-rows at the foot.
-
-<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 sit inside their cell lines' V(D)J deletions, so their rows at the foot draw no ribbons. HG002 haplotype 1 walks the window but draws only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
-
 - **A lane can stop partway**, at the end of the graph's alignment of that
   haplotype; its sequence can run on past it.
 - **One lane stands for many haplotypes.** The page picks one haplotype per
   structural form, grouped by structural variants of 50 bp or more, so two
   haplotypes in one form can still differ in everything smaller.
-- **Near-identical gene copies share one path**, so a lane at RHD / RHCE or
-  CYP2D6 cannot show how many copies a haplotype has.
+
+At IGL, `chr22:22,800,001-22,850,000`, **Lanes → Choose lanes...** with
+`HG00099.1`, `HG002.1`, `HG00097.1`, `HG002.2` and `HG01074.1` puts two deletion
+rows at the foot.
+
+<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 sit inside their cell lines' V(D)J deletions, so their rows at the foot draw no ribbons. HG002 haplotype 1 walks the window but draws only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
 
 ## Reproduce it end to end
 

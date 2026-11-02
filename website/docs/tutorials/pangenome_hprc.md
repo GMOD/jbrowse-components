@@ -19,15 +19,16 @@ haplotypes differ, the graph forms a bubble, and each route through a bubble is
 an allele. HPRC writes each haplotype's route through every bubble as a phased
 VCF, so a record lists which haplotypes have which allele. We open the graph and
 the VCF from the HPRC page on genomes.jbrowse.org as tracks of a linear view of
-GRCh38, and:
+GRCh38, at the complement genes C4 and beside _HLA-DRB5_ in MHC class II. We:
 
-- read a whole chromosome, one node per bubble
-- at C4 (complement genes), read the graph's backbone, bubbles and alleles
-- at MHC class II, trace an allele beside _HLA-DRB5_ to the assembly it came
-  from
-- list every haplotype with that allele from the VCF
-- back at C4, read the same alleles as aligned bases in HPRC's multiple
-  alignment
+- launch tracks from the HPRC page, and open a whole chromosome as a graph track
+  with one node per bubble
+- open C4 as a force-directed graph track and name its backbone, bubbles and
+  alleles
+- open the assembly an allele beside _HLA-DRB5_ came from with **Open in**
+- load the phased VCF as a variant track with one row per haplotype, and cluster
+  the rows
+- load HPRC's multiple alignment as a MAF track at C4
 
 :::caution Experimental
 
@@ -103,7 +104,7 @@ opens the same map.
 
 Some windows hold an allele with a published story. Click the **CFH / CFHR**
 example. Above the map, the page names the **CFHR3–CFHR1 deletion**, says what
-it does, counts its carriers in the panel (138 of the 462 haplotypes) and cites
+it does, counts its carriers in the panel and cites
 [Hughes et al. 2006](https://doi.org/10.1038/ng1890), who tied it to a lower
 risk of age-related macular degeneration. The map calls the change by the same
 name.
@@ -115,42 +116,6 @@ Press **Open in JBrowse**. Under the genes:
   a hit for its trait, paper and p-value; the two advanced age-related macular
   degeneration hits sit one on either side of the deletion
 - the matrix under the graph marks the deletion in each carrier's row
-
-## What the graph and the page do not show {#limits}
-
-The examples are loci where at least one launch draws something readable. At
-other loci, a picture that looks simple or empty is often one of these cases:
-
-- **Near-identical duplications draw as a single thread.** The graph puts the
-  copies at RHD / RHCE and CYP2D6 on one path, so those examples offer no
-  **Graph** launch, and SMN1 / SMN2, SRGAP2 and the 8p23.1 beta-defensin cluster
-  are not examples at all. A gene-level graph answers copy-number questions
-  there.
-- **The graph does not align every haplotype everywhere.** A haplotype the graph
-  does not align across a window gets no lane, and the page counts them. At FLNA
-  / EMD those are the haplotypes without an X chromosome; elsewhere the sequence
-  exists in the assembly and the graph leaves it out.
-- **The VCF has no record for the largest events.** HPRC drops the biggest sites
-  from the VCF and keeps the smaller sites nested inside them, so the
-  **Variants** launch cannot show the UGT2B17 deletion. The page's map reads
-  each haplotype's forms from the graph itself, so it draws the deletion and
-  names it.
-- **The antibody loci hold the cell lines' deletions.** Many HPRC assemblies
-  come from lymphoblastoid cell lines, B cells whose V(D)J recombination deletes
-  hundreds of kb of IGH, IGK and IGL
-  ([Rodriguez et al. 2021](https://doi.org/10.1371/journal.pone.0261374),
-  [IGLoo](https://doi.org/10.1016/j.crmeth.2025.101033) for IGH). In the walk
-  file the lanes read, `hprc-v2.1-mc-grch38-f5s.GRCh38.walks.bed.gz`, 282 of the
-  464 haplotypes jump over at least one 64 kb chunk of IGH, 200 over IGK and 29
-  over IGL, across 90 kb to 2 Mb, and none over the T-cell receptor loci TRA and
-  TRB. Check a deletion there against the donor's own germline data before
-  reporting it.
-- **Only the examples are checked.** A gene or region you type can still land
-  where the graph is a thread or the VCF is blank, and the page will offer the
-  launch anyway.
-- **No single launch shows the whole locus.** The graph shows which sequence
-  exists, the VCF which haplotypes have it, and the lanes how a few haplotypes
-  are arranged.
 
 ## Overview of chr1 with one node per variant region {#a-chromosome-and-back}
 
@@ -274,7 +239,7 @@ which covers most of _HLA-DRB5_.
 
 <Figure caption="The VCF clustered by genotype over the force-directed graph. The arrow runs from the HLA-DRB5 allele's band to the same allele in the graph." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
-The VCF holds the _HLA-DRB5_ allele as four records, one for each of its
+The VCF holds the _HLA-DRB5_ allele as several records, one for each of its
 sequences, which differ by a base or two. The blue block under the band is the
 haplotypes with any of the four, plus a smaller block with an 86 kb deletion
 that removes the whole stretch.
@@ -322,6 +287,40 @@ module, which is the dashed arc in the C4 graph. Every alignment row in the
 white block has that deletion in the VCF. The narrower blocks are haplotypes
 that lack the 6.4 kb HERV-K (endogenous retrovirus) in a C4 gene's intron, which
 GRCh38 carries: the difference between a long and a short C4.
+
+## What the graph and the page do not show {#limits}
+
+The HPRC page's examples are loci where at least one launch draws something
+readable. At a locus of your own, a picture that looks simple or empty can
+mislead in these cases:
+
+- **Near-identical duplications draw as a single thread.** The graph puts the
+  copies at RHD / RHCE and CYP2D6 on one path, so those examples offer no
+  **Graph** launch, and SMN1 / SMN2, SRGAP2 and the 8p23.1 beta-defensin cluster
+  are not examples at all. A gene-level graph shows copy number there.
+- **The graph does not align every haplotype everywhere.** A haplotype the graph
+  does not align across a window gets no lane, and the page counts them. At FLNA
+  / EMD those are the haplotypes without an X chromosome; elsewhere the sequence
+  exists in the assembly and the graph leaves it out.
+- **The VCF has no record for the largest events.** HPRC drops the biggest sites
+  from the VCF and keeps the smaller sites nested inside them, so the
+  **Variants** launch cannot show the UGT2B17 deletion. The page's map reads
+  each haplotype's forms from the graph itself, so it draws the deletion and
+  names it.
+- **The antibody loci hold the cell lines' deletions.** Many HPRC assemblies
+  come from lymphoblastoid cell lines, B cells whose V(D)J recombination deletes
+  hundreds of kb of IGH, IGK and IGL
+  ([Rodriguez et al. 2021](https://doi.org/10.1371/journal.pone.0261374),
+  [IGLoo](https://doi.org/10.1016/j.crmeth.2025.101033) for IGH). In the walk
+  file the lanes read, many haplotypes jump over chunks of IGH and IGK, fewer
+  over IGL, and none over the T-cell receptor loci TRA and TRB. Check a deletion
+  there against the donor's germline data before reporting it.
+- **Only the examples are checked.** A gene or region you type can still land
+  where the graph is a thread or the VCF is blank, and the page will offer the
+  launch anyway.
+- **No single launch shows the whole locus.** The graph shows which sequence
+  exists, the VCF which haplotypes have it, and the lanes how a few haplotypes
+  are arranged.
 
 ## Reproduce it end to end
 
