@@ -19,6 +19,7 @@ export interface SvChannelsModel {
   showReadConnections: boolean
   readConnectionsMark: ReadConnectionsMark
   showOrdinaryPairs: boolean
+  showSashimi: boolean
   writtenFacet: WrittenFacet
   applyPlot: (draft: Plot) => void
 }
@@ -32,6 +33,7 @@ export function svChannelsActive(model: SvChannelsModel) {
       mark: model.readConnectionsMark,
       ordinaryPairs: { show: model.showOrdinaryPairs },
     },
+    sashimi: { show: model.showSashimi },
   })
 }
 

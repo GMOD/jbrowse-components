@@ -54,6 +54,7 @@ function makeModel() {
       this.readConnectionsStrokeWidth = v ?? 1
     },
     showPileup: true,
+    showSashimi: true,
     facet: undefined as Facet | undefined,
     get writtenFacet() {
       return this.facet ?? {}

@@ -18,7 +18,7 @@ export const SV_CHANNELS_LABEL = 'SV channels'
 
 // One band per SV channel, each with its own coverage and its own arcs,
 // concordant pairs' arcs left out. Every setting is reachable from the other menus;
-// the preset exists because four of them spread across three menus is not an
+// the preset exists because five of them spread across three menus is not an
 // arrangement anyone finds by looking.
 //
 // `encoding.color` is deliberately NOT among them. With the pileup hidden there are no
@@ -39,6 +39,9 @@ export const SV_CHANNELS_ON = {
     mark: 'link',
     ordinaryPairs: { show: false },
   },
+  // Each band's read arcs already draw its split junctions, merged on their
+  // exact coordinates; sashimi over the same coverage would draw each again.
+  sashimi: { show: false },
 } as const
 
 // Leaving the arrangement UNSETS what it wrote rather than asserting a state:
@@ -51,6 +54,7 @@ export const SV_CHANNELS_OFF = {
   pileup: { show: null },
   facet: null,
   readConnections: { show: null, ordinaryPairs: { show: null } },
+  sashimi: { show: null },
 } as const
 
 /**
@@ -59,9 +63,10 @@ export const SV_CHANNELS_OFF = {
  */
 export function isSvChannelsActive(settings: Record<string, unknown>) {
   const on = SV_CHANNELS_ON
-  const { facet, pileup, readConnections } = settings
+  const { facet, pileup, readConnections, sashimi } = settings
   return (
     member(pileup, 'show') === on.pileup.show &&
+    member(sashimi, 'show') === on.sashimi.show &&
     (typeof facet === 'string' ? facet : member(facet, 'field')) ===
       on.facet.field &&
     member(readConnections, 'show') === on.readConnections.show &&

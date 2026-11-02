@@ -178,15 +178,16 @@ an inversion. That is evidence from one molecule rather than from a pair.
 
 Every scheme above paints one pileup, so an event's evidence arrives mixed into
 the rows around it. **Read connections → SV channels** takes the same reads
-apart into one band per kind of SV evidence, each with a coverage curve and
-arcs, and the pileup goes away: deletion-type, duplication-type, inversion, a
-partner on another chromosome or unmapped, an SV-size insertion, and no SV
-evidence. A discordant pair files by its orientation and a split read by its
-junction, so short and long reads of one event fill the same band. Concordant
-pairs and every other read without SV evidence fill the last band, the depth the
-others are read against. Which band fills names the rearrangement, and a band
-that stays empty under a call is a call with no read evidence behind it. A kind
-of evidence no read in the window carries gets no band.
+apart into one band per kind of SV evidence, each with a coverage curve and its
+reads' arcs, and the pileup and the sashimi arcs over coverage go away:
+deletion-type, duplication-type, inversion, a partner on another chromosome or
+unmapped, an SV-size insertion, and no SV evidence. A discordant pair files by
+its orientation and a split read by its junction, so short and long reads of one
+event fill the same band. Concordant pairs and every other read without SV
+evidence fill the last band, the depth the others are read against. Which band
+fills names the rearrangement, and a band that stays empty under a call is a
+call with no read evidence behind it. A kind of evidence no read in the window
+carries gets no band.
 
 **SV evidence** decides which reads count: a split read, an insertion or
 deletion of 50 bp or more, or a discordant pair, with both ends placed. **Filter

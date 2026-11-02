@@ -24,13 +24,14 @@ function clickRow(display: ReturnType<typeof createDisplay>) {
   getSvChannelsMenuItem(display).onClick()
 }
 
-test('the preset writes all four settings, not a subset', () => {
+test('the preset writes all five settings, not a subset', () => {
   const display = createDisplay()
   clickRow(display)
   expect(display.showPileup).toBe(false)
   expect(display.facet).toMatchObject({ field: 'svChannel' })
   expect(display.drawnReadConnections).toBe('link')
   expect(display.showOrdinaryPairs).toBe(false)
+  expect(display.showSashimi).toBe(false)
 })
 
 // Spelled out rather than compared against SV_CHANNELS_OFF: asserting a model
@@ -49,6 +50,7 @@ test('clicking the menu row turns the arrangement on, then back off', () => {
   expect(display.facet).toBeUndefined()
   expect(display.drawnReadConnections).toBe('off')
   expect(display.showOrdinaryPairs).toBe(true)
+  expect(display.showSashimi).toBe(true)
 })
 
 // UNSET, not false, so each member goes back to its schema default.
@@ -62,6 +64,8 @@ test('leaving the arrangement unsets what it wrote', () => {
     'show',
   )
   expect(getSnapshot(conf.pileup)).not.toHaveProperty('show')
+  expect(display.showSashimi).toBe(true)
+  expect(getSnapshot(conf)).not.toHaveProperty('sashimi.show')
 })
 
 test('the round trip leaves the read color and the placement alone', () => {
@@ -83,6 +87,7 @@ const ON = {
     mark: 'link',
     ordinaryPairs: { show: false },
   },
+  sashimi: { show: false },
 } as const
 
 test('the preset reads as itself', () => {
@@ -106,6 +111,7 @@ test.each([
       readConnections: { ...ON.readConnections, mark: 'rule' as const },
     },
   ],
+  ['sashimi.show', { ...ON, sashimi: { show: true } }],
   [
     'readConnections.ordinaryPairs.show',
     {

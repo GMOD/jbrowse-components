@@ -633,6 +633,7 @@ export const svSpecs: ScreenshotSpec[] = [
               },
               coverage: { height: 60 },
               facet: 'svChannel',
+              sashimi: { show: false },
               legend: { show: true },
               // The four bands' own stack. A taller box pads the frame from
               // inside, which neither size report sees.
@@ -715,6 +716,7 @@ export const svSpecs: ScreenshotSpec[] = [
                 ordinaryPairs: { show: false },
               },
               facet: 'svChannel',
+              sashimi: { show: false },
               legend: { show: true },
               height: 190,
             },
@@ -727,6 +729,7 @@ export const svSpecs: ScreenshotSpec[] = [
                 ordinaryPairs: { show: false },
               },
               facet: 'svChannel',
+              sashimi: { show: false },
               legend: { show: true },
               height: 460,
             },

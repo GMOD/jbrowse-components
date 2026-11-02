@@ -65,6 +65,12 @@ the reviews to settle the open calls; built in
 - **Chain mode** files a fragment where its highest-ranked record files; a
   concordant mate files as `none`, last.
 - **A band exists only where a fetched read keys to it**, as for every facet.
+- **The preset turns sashimi off** (`sashimi.show: false`, unset on leaving).
+  Sashimi counts split junctions per cut point over the coverage, and each
+  band's read arcs draw the same junctions below it, merged on their exact
+  coordinates, so every junction drew twice, once above and once below. The two
+  families stay on an ordinary track, where read connections are off by default
+  (the 2026-10-23 decision that both draw split reads stands).
 - **Group by → SV evidence (the `svSignal` facet) is cut.** Its levels repeat
   Split reads and Pair status, and the one thing it did, separating evidence
   from the rest, Filter by → Only SV evidence does with SV channel banding the
