@@ -125,6 +125,7 @@ import {
 } from './keyedVariants.ts'
 import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
 import { colorKeysOf, paintCellColors } from './paintCells.ts'
+import { mapPayloadRegions } from './payloadRegions.ts'
 import { placeVariantRows } from './placeVariantRows.ts'
 import {
   installRecordsOpeningHeight,
@@ -268,6 +269,12 @@ function fetchRegionsForLayout(
   return view.bufferedVisibleRegions.filter(b => onTrack(b.region.assemblyName))
 }
 
+/** The mark under the pointer, by the band it sits in. */
+export type VariantHover =
+  | { kind: 'cell'; cell: HoveredCell }
+  | { kind: 'record'; record: HitFeatureResult }
+  | { kind: 'matrixCell'; cell: MatrixHoveredCell }
+
 /**
  * The GPU program each layout draws with, tagged so the one upload lifecycle
  * sends each payload to the backend that can draw it.
@@ -408,21 +415,11 @@ export function stateModelFactory(
         cellDataBpPerPx: undefined as number | undefined,
         /**
          * #volatile
-         * The genotype cell under the pointer, as `hoverInk` lights it; the
-         * shared tooltip slot holds no cell instance.
+         * The mark under the pointer, in whichever band it sits: a genotype
+         * cell, a record on the records band or a matrix cell. One slot, so
+         * a hover in one band ends the last one's highlight.
          */
-        hoveredCell: undefined as HoveredCell | undefined,
-        /**
-         * #volatile
-         * The record under the pointer in the records band, plugin-features's
-         * hit result, so `hoverInk` lights the box the band painted.
-         */
-        hoveredRecord: undefined as HitFeatureResult | undefined,
-        /**
-         * #volatile
-         * The matrix cell under the pointer, in the equal-width column layout.
-         */
-        hoveredMatrixCell: undefined as MatrixHoveredCell | undefined,
+        hovered: undefined as VariantHover | undefined,
         /**
          * #volatile
          * Whether the attached backend draws columns, so the upload sends it
@@ -449,20 +446,8 @@ export function stateModelFactory(
           /**
            * #action
            */
-          setHoveredCell(cell?: HoveredCell) {
-            self.hoveredCell = cell
-          },
-          /**
-           * #action
-           */
-          setHoveredRecord(record?: HitFeatureResult) {
-            self.hoveredRecord = record
-          },
-          /**
-           * #action
-           */
-          setHoveredMatrixCell(cell?: MatrixHoveredCell) {
-            self.hoveredMatrixCell = cell
+          setHovered(hovered?: VariantHover) {
+            self.hovered = hovered
           },
           /**
            * #action
@@ -471,13 +456,37 @@ export function stateModelFactory(
            */
           clearHoveredFeature() {
             superClearHoveredFeature()
-            self.hoveredCell = undefined
-            self.hoveredRecord = undefined
-            self.hoveredMatrixCell = undefined
+            self.hovered = undefined
           },
         }
       })
       .views(self => ({
+        /**
+         * #getter
+         * The genotype cell under the pointer.
+         */
+        get hoveredCell() {
+          return self.hovered?.kind === 'cell' ? self.hovered.cell : undefined
+        },
+        /**
+         * #getter
+         * The record under the pointer on the records band, plugin-features's
+         * hit result, so `hoverInk` lights the box the band painted.
+         */
+        get hoveredRecord() {
+          return self.hovered?.kind === 'record'
+            ? self.hovered.record
+            : undefined
+        },
+        /**
+         * #getter
+         * The matrix cell under the pointer, in the equal-width column layout.
+         */
+        get hoveredMatrixCell() {
+          return self.hovered?.kind === 'matrixCell'
+            ? self.hovered.cell
+            : undefined
+        },
         /**
          * #getter
          * The samples the adapter lists, undefined until the current adapter
@@ -1986,18 +1995,14 @@ export function stateModelFactory(
          */
         get regionRecordAlpha() {
           const { cellData } = self
-          const out = new Map<number, Float32Array | undefined>()
-          if (cellData && self.variantLayout === 'genomic') {
-            const bpPerPx = densityRung(self.host.bpPerPx)
-            for (const k in cellData.perRegionCellData) {
-              const data = cellData.perRegionCellData[k]!
-              out.set(
-                Number(k),
-                recordDensityAlpha(data.featurePositions, bpPerPx),
+          return cellData && self.variantLayout === 'genomic'
+            ? mapPayloadRegions(cellData, data =>
+                recordDensityAlpha(
+                  data.featurePositions,
+                  densityRung(self.host.bpPerPx),
+                ),
               )
-            }
-          }
-          return out
+            : new Map<number, Float32Array | undefined>()
         },
         /**
          * #getter
@@ -2010,22 +2015,14 @@ export function stateModelFactory(
           const { cellData, cellHue } = self
           const options = this.cellPaintOptions
           const alpha = this.regionRecordAlpha
-          const out = new Map<number, Uint32Array>()
-          if (cellData) {
-            for (const k in cellData.perRegionCellData) {
-              const data = cellData.perRegionCellData[k]!
-              out.set(
-                Number(k),
-                fadeCellColors(
-                  paintCellColors(data, cellHue, options),
-                  data.cellFeatureIndices,
-                  data.numCells,
-                  alpha.get(Number(k)),
-                ),
-              )
-            }
-          }
-          return out
+          return mapPayloadRegions(cellData, (data, index) =>
+            fadeCellColors(
+              paintCellColors(data, cellHue, options),
+              data.cellFeatureIndices,
+              data.numCells,
+              alpha.get(index),
+            ),
+          )
         },
         /**
          * #getter
@@ -2034,17 +2031,12 @@ export function stateModelFactory(
          */
         get placedRegionRows() {
           const { cellData, rowRemap } = self
-          const out = new Map<number, Placed<VariantCellData>>()
           // never identity placement: the worker's row order is its own
-          if (cellData && rowRemap) {
-            for (const k in cellData.perRegionCellData) {
-              out.set(
-                Number(k),
-                placeVariantRows(cellData.perRegionCellData[k]!, rowRemap),
+          return rowRemap
+            ? mapPayloadRegions(cellData, data =>
+                placeVariantRows(data, rowRemap),
               )
-            }
-          }
-          return out
+            : new Map<number, Placed<VariantCellData>>()
         },
         /**
          * #getter
@@ -2054,14 +2046,7 @@ export function stateModelFactory(
          * neither a reorder nor a recolor moves a cell's span.
          */
         get regionCellGlyphs() {
-          const { cellData } = self
-          const out = new Map<number, CellGlyphs>()
-          if (cellData) {
-            for (const k in cellData.perRegionCellData) {
-              out.set(Number(k), cellGlyphs(cellData.perRegionCellData[k]!))
-            }
-          }
-          return out
+          return mapPayloadRegions(self.cellData, data => cellGlyphs(data))
         },
       }))
       .views(self => ({

@@ -145,8 +145,7 @@ export function variantRowsSurface(
         : undefined
     },
     onHover: hit => {
-      model.setHoveredCell(hit?.cell)
-      model.setHoveredRecord(undefined)
+      model.setHovered(hit && { kind: 'cell', cell: hit.cell })
     },
   }
 }

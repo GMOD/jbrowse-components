@@ -44,6 +44,7 @@ import { PHASE_SET_FIELD } from '../shared/getPhasedColor.ts'
 import { resolveSampleName } from '../shared/getSources.ts'
 import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
 import { paintFeatureColors } from './paintCells.ts'
+import { mapPayloadRegions } from './payloadRegions.ts'
 import { countRecordCarriers } from './recordCarriers.ts'
 import {
   RECORD_LABEL_LINE,
@@ -419,20 +420,12 @@ export function recordsRenderViews(self: RecordsRenderHost) {
      * shading nor the phased mode moves.
      */
     get regionRecordColors() {
-      const { cellData, cellHue, cellHueValuesRead } = self
-      const out = new Map<number, Uint32Array>()
-      if (cellData) {
-        for (const k in cellData.perRegionCellData) {
-          const data = cellData.perRegionCellData[k]!
-          out.set(
-            Number(k),
-            self.recordsColorBySvClass
-              ? svClassColors(data.featureInfo)
-              : paintFeatureColors(data, cellHue, cellHueValuesRead),
+      const { cellData } = self
+      return self.recordsColorBySvClass
+        ? mapPayloadRegions(cellData, data => svClassColors(data.featureInfo))
+        : mapPayloadRegions(cellData, data =>
+            paintFeatureColors(data, self.cellHue, self.cellHueValuesRead),
           )
-        }
-      }
-      return out
     },
     /**
      * #getter

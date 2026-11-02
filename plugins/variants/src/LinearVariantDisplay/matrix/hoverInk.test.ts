@@ -76,7 +76,7 @@ test('the hovered cell lights the box its instance painted, in the chrome', () =
   expect(display.hoverInk).toEqual([])
 
   // S1's cell at site 1: worker row 1, drawn on screen row 0
-  display.setHoveredMatrixCell({ cellIndex: 3 })
+  display.setHovered({ kind: 'matrixCell', cell: { cellIndex: 3 } })
   const { rowsTopOffset } = display
   expect(display.columnGeometry).toEqual({ n: 2, columnWidth: 400, left: 0 })
   expect(display.hoverInk).toHaveLength(1)

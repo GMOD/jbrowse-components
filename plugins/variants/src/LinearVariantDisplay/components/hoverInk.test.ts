@@ -61,11 +61,14 @@ test.each([1, 1.25, 1.5, 2])(
     withDpr(dpr, () => {
       const display = loadedDisplay()
       const region = display.renderBlocks[0]!
-      display.setHoveredCell({
-        cellIndex: 2,
-        genomicStart: 1001,
-        genomicEnd: 1002,
-        displayedRegionIndex: region.displayedRegionIndex,
+      display.setHovered({
+        kind: 'cell',
+        cell: {
+          cellIndex: 2,
+          genomicStart: 1001,
+          genomicEnd: 1002,
+          displayedRegionIndex: region.displayedRegionIndex,
+        },
       })
       expect(display.hoverInk).toHaveLength(1)
       const { left, top, width, height } = display.hoverInk[0]!

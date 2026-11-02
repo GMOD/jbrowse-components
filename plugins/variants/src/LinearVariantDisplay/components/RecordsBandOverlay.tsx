@@ -93,8 +93,7 @@ export function recordsBandSurface(
         : undefined
     },
     onHover: hit => {
-      model.setHoveredRecord(hit?.hit)
-      model.setHoveredCell(undefined)
+      model.setHovered(hit && { kind: 'record', record: hit.hit })
     },
   }
 }

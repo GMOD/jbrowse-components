@@ -124,7 +124,8 @@ export function variantMatrixSurface(
         : undefined
     },
     onHover: hit => {
-      model.setHoveredMatrixCell(hit?.cell)
+      const cell = hit?.cell
+      model.setHovered(cell && { kind: 'matrixCell', cell })
     },
   }
 }
