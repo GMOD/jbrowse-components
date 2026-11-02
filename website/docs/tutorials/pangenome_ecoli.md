@@ -10,15 +10,18 @@ tutorial_subcategory: Building a graph
 
 A pangenome graph stores the sequence several genomes share once, as a path
 every genome follows, and branches where they differ. We build one of five _E.
-coli_ strains with pggb and turn its outputs into JBrowse tracks on the K12
-genome. Most are **linear projections**, which flatten the graph onto K12's
-coordinates so it loads as an ordinary track. We:
+coli_ strains with pggb and turn its outputs into tracks on the K12 genome. Most
+are **linear projections**, which flatten the graph onto K12's coordinates so it
+loads as an ordinary track; together they show which sequence all five strains
+share and which only some have. We:
 
-- load the alignment between the strains as a synteny track
-- load the variants the graph calls against K12
-- project the whole-genome alignment onto K12 as a MAF track
-- plot depth and per-strain presence to show the core and accessory genome
-- open the graph itself as a track you browse by locus
+- load the alignment between the strains as a synteny track, and stack the
+  strains in a linear synteny view
+- load the variants the graph calls against K12 as a variant track, one row per
+  strain
+- load the graph's whole-genome alignment as a MAF track on K12
+- plot depth as a quantitative track and per-strain presence as a heatmap
+- load the graph itself as a graph track you browse by locus
 
 :::caution Experimental
 
@@ -64,13 +67,12 @@ npm install -g @jbrowse/cli@next
 
 ## The data
 
-The [build script](#reproduce-it-end-to-end) fetches the five _E. coli_ RefSeq
-assemblies by accession with the NCBI `datasets` CLI. The nanopore reads are the
-one file to download by hand, with the `curl` under
-[Testing the CPZ-55 depth trough with nanopore reads](#testing-the-cpz-55-depth-trough-with-nanopore-reads).
-The page's commands build local graph files from the assemblies, and the tracks
-over those read them from disk; every other track reads a hosted copy. To build
-the graph, supply your own set of assemblies.
+The page's commands fetch the five _E. coli_ RefSeq assemblies by accession and
+build local files from them; run [the build script](#reproduce-it-end-to-end)
+first, or follow the same commands on your own assemblies. The graph tracks read
+our hosted copy, and the nanopore reads under
+[Testing the CPZ-55 depth trough](#testing-the-cpz-55-depth-trough-with-nanopore-reads)
+are the one file the script does not fetch.
 
 | What it is                                               | File                                                                                                                  |
 | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -373,8 +375,9 @@ covers under two submenus:
 ## Pangenome depth: core versus accessory sequence {#pangenome-depth-projection-core-vs-accessory}
 
 [`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
-counts how many paths cross each K12 window: about five over core sequence and
-one over sequence only K12 has. Make 500 bp windows, count, and write a bigWig:
+counts how many paths cross each K12 window, so core sequence reads the strain
+count and sequence only K12 has reads 1. Make 500 bp windows, count, and write a
+bigWig:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
 
@@ -418,9 +421,8 @@ The config draws reference lines at the strain count and at 1:
 }
 ```
 
-The curve doubles to about 10 over the rrnC and rrnB operons (ribosomal RNA gene
-copies), because the graph folds those two copies onto each other. The other
-five operons read 5.
+The curve doubles over the rrnC and rrnB operons (ribosomal RNA gene copies),
+because the graph folds those two copies onto each other.
 
 ### Per-strain presence
 
@@ -483,16 +485,16 @@ Open `chr:450,000-590,000` with the K12 genes on. The figure shades
 
 <Figure caption="K12 genes, the aggregate depth curve, and odgi pav below it, one row per non-K12 strain." src="/img/pangenome/pav.png" />
 
-Across the shaded span IAI39's row is empty and depth drops to about 4. The
-deeper trough to its right, `chr:565,000-585,000`, is the prophage that begins
-at _intD_: depth falls to 1 or 2 there, so at most one other strain carries any
-of it.
+Across the shaded span IAI39's row is empty and depth drops by one. The deeper
+trough to its right, `chr:565,000-585,000`, is the prophage that begins at
+_intD_, where depth falls toward the **K12 alone** line.
 
 ### Testing the CPZ-55 depth trough with nanopore reads
 
-We'll check the depth trough at CPZ-55, a cryptic prophage found in K12 alone,
-with nanopore reads from _E. coli_ E146, an isolate outside the graph. Download
-them:
+A depth trough marks a stretch of K12 the other strains lack. Reads from a new
+isolate show whether it lacks the stretch too. We'll load nanopore reads from
+_E. coli_ E146, an isolate outside the graph, over CPZ-55, a cryptic prophage
+only K12 has. Download them:
 
 ```bash
 curl -fO https://ftp.sra.ebi.ac.uk/vol1/fastq/DRR193/DRR193901/DRR193901_1.fastq.gz
@@ -531,15 +533,14 @@ renamed like the decomposed one:
 in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
   /data/pggb/*.smooth.final.K12.vcf \
   | bcftools sort -Oz -o /data/ecoli_pggb_snarls.vcf.gz && tabix -p vcf /data/ecoli_pggb_snarls.vcf.gz"
-cargo install gfa-to-tabix
 gfa-to-tabix build pggb/*.smooth.final.gfa -o ecoli_pggb --reference K12 --snarls ecoli_pggb_snarls.vcf.gz
 ```
 
 The command writes the segments and links, a coarse tier with variants under 50
 bp folded into the reference, and `ecoli_pggb.config.json`. The `uri`s below are
-our hosted copy. A local build reads the contig layout instead, since the
-anchored layout at the bare prefix draws multi-megabase rows across every
-window, so set the top-level `uri` to `ecoli_pggb.contig`.
+our hosted copy. For a local build, set the top-level `uri` to
+`ecoli_pggb.contig`, the contig layout
+[a plain GFA's track reads](/docs/tutorials/pangenome_prepare_graph#the-two-indexes-a-graph-track-reads).
 
 ```json addtrack
 {
@@ -595,13 +596,15 @@ separate track:
 }
 ```
 
-In the tier track's menu, **Display types → Feature display** draws the tier's
-segments as a row at any zoom. The tier marks where the strains differ, and
-between the tier and the graph the
-[MAF track](#whole-genome-alignment-maf-projection) shows which strain, since
-its row breaks across each bubble it skips. The figure's top track is a second
-copy of the K12 genes, kept to the insertion sequences with **Filter by → Edit
-filters...** and `startsWith(get(feature,'name') || '','ins')`.
+To set the tier beside the strains:
+
+- In the tier track's menu, **Display types → Feature display** draws the tier's
+  segments as a row at any zoom, marking where the strains differ.
+- Turn on the [MAF track](#whole-genome-alignment-maf-projection) between the
+  tier and the graph. A strain's row breaks across each bubble it skips, so the
+  MAF names the strains.
+- Add a second copy of the K12 genes and keep the insertion sequences with
+  **Filter by → Edit filters...** and `startsWith(feature.name || '','ins')`.
 
 <Figure caption="K12 around two insertion sequences: the bubble tier, the MAF's strain rows and the graph track. The highlight and boxed node are insH21." src="/img/pangenome/pggb_bubble_tier.png" />
 

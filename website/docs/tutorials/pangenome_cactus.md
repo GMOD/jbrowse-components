@@ -8,15 +8,20 @@ tutorial_category: Pangenomes
 tutorial_subcategory: Building a graph
 ---
 
-We build a pangenome graph of five _E. coli_ strains with Minigraph-Cactus and
-turn its outputs into JBrowse tracks on the K12 genome. One `cactus-pangenome`
-run writes the graph, a VCF, an odgi file, a HAL alignment and short-read
-indexes, and we:
+We build a pangenome graph of five _E. coli_ strains with Minigraph-Cactus,
+which lays the other strains onto a backbone from one reference, and turn its
+outputs into tracks on the K12 genome.
+[The pggb tutorial](/docs/tutorials/pangenome_ecoli) builds the same strains
+with no reference and takes them through the same sections, so the two builders
+can be compared at the same loci. One `cactus-pangenome` run writes the graph, a
+VCF, an odgi file, a HAL alignment and short-read indexes. We:
 
-- load synteny, variants, a whole-genome alignment (MAF), depth and per-strain
-  presence as tracks
-- map the reads of an isolate outside the graph through it
-- index the graph and draw it as a track
+- load the synteny, variants, whole-genome alignment (MAF), depth and per-strain
+  presence as tracks on K12, and set both builders' depth in one track
+- load the short reads of an isolate outside the graph, mapped through it, as an
+  alignments track
+- load the graph as a graph track in the force-directed layout
+- set odgi viz's picture of the graph beside the presence heatmap on K12
 
 :::caution Experimental
 
@@ -63,13 +68,10 @@ npm install -g @jbrowse/cli@next
 
 ## The data
 
-The five _E. coli_ RefSeq assemblies come from the NCBI datasets CLI by
-accession. K12 is the `--reference` backbone the other four align onto.
-
-The page's commands build local files from these, and the tracks over those read
-them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself. You need
-your own set of assemblies to build the graph.
+The page's commands fetch the five _E. coli_ RefSeq assemblies by accession and
+build local files from them; run [the build script](#reproduce-it-end-to-end)
+first, or follow the same commands on your own assemblies. The script fetches
+the short reads too, and the graph track reads our hosted copy.
 
 | What it is                                                         | File                                                                                                                  |
 | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
@@ -259,8 +261,7 @@ other.
 `--vcf` decomposes the graph against K12 with
 [`vg deconstruct`](https://github.com/vgteam/vg), genotyped across the other
 four strains. Its `CHROM` is already `chr`, so the `.gz` and `.tbi` Cactus wrote
-load unchanged as a [`VariantTrack`](/docs/config_guides/variant_track) with the
-matrix display, one column per variant and one row per sample:
+load unchanged as a [`VariantTrack`](/docs/config_guides/variant_track):
 
 ```json addtrack
 {
@@ -279,8 +280,8 @@ matrix display, one column per variant and one row per sample:
 }
 ```
 
-Each strain is one haplotype, so `unit: "haplotype"` draws one row per strain,
-colored by that strain's allele. The
+`unit: "haplotype"` draws one row per strain, and `variantLayout: "columns"` one
+column per variant. The
 [multi-sample variant track guide](/docs/user_guides/multivariant_track) covers
 columns versus genomic positions, the genotype colors, and clustering samples by
 genotype.
@@ -448,7 +449,7 @@ are enough for the depth to read:
 ```bash
 mkdir -p reads
 for r in 1 2; do
-  # awk, not head: head closes the pipe early and gzip dies of SIGPIPE
+  # awk reads to the end; head closes the pipe early and gzip dies of SIGPIPE
   gzip -dc "DRR063408_$r.fastq.gz" | awk 'NR<=600000' | gzip > "reads/sub_$r.fastq.gz"
 done
 ```
@@ -522,11 +523,10 @@ reference's path lines:
 gfa-to-tabix build mc/ecoli.gfa.gz -o ecoli_cactus --reference K12
 ```
 
-Without `--snarls` the command writes no bubble file. Our hosted copy of the
-index loads as one `GraphTrack` at the shared prefix. A local build's track
-reads the contig layout instead, since the anchored layout at the bare prefix
-draws multi-megabase rows across every window, so set `uri` to
-`ecoli_cactus.contig`.
+Without `--snarls` the command writes no bubble file. The `uri` below is our
+hosted copy. For a local build, set it to `ecoli_cactus.contig`, the contig
+layout
+[a plain GFA's track reads](/docs/tutorials/pangenome_prepare_graph#the-two-indexes-a-graph-track-reads).
 
 ```json addtrack
 {
@@ -549,9 +549,8 @@ draws multi-megabase rows across every window, so set `uri` to
 }
 ```
 
-Turned on, the track draws the window as a graph on K12's coordinates. In its
-track menu, **Display types → Feature display** draws the same segments as a row
-of blocks instead.
+Turned on, the track draws the window as a graph on K12's coordinates; **Display
+types → Feature display** in its menu draws the segments as a row.
 
 <Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="Adding the graph track to an empty K12 session with Open track... → Add pangenome graph track." />
 
