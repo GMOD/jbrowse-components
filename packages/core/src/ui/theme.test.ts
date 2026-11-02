@@ -158,8 +158,8 @@ test('config-defined dark theme inherits dark-tuned color defaults', () => {
   expect(fromArgs.palette.coverage).not.toBe(light.palette.coverage)
   expect(fromArgs.palette.gridlineMinor).toBe(customDark.palette.gridlineMinor)
   expect(fromArgs.palette.featureHover).toBe(customDark.palette.featureHover)
-  expect(fromArgs.palette.alignmentFill.pairLR).toBe(
-    customDark.palette.alignmentFill.pairLR,
+  expect(fromArgs.palette.alignmentFill.read).toBe(
+    customDark.palette.alignmentFill.read,
   )
 })
 
@@ -172,9 +172,7 @@ test('top-level config theme opting into dark mode gets dark-tuned defaults', ()
   expect(palette.gridlineMinor).toBe(darkStock.palette.gridlineMinor)
   expect(palette.featureHover).toBe(darkStock.palette.featureHover)
   expect(palette.deletion).toBe(darkStock.palette.deletion)
-  expect(palette.alignmentFill.pairLR).toBe(
-    darkStock.palette.alignmentFill.pairLR,
-  )
+  expect(palette.alignmentFill.read).toBe(darkStock.palette.alignmentFill.read)
   expect(palette.gridlineMinor).not.toBe(light.palette.gridlineMinor)
 })
 
@@ -201,8 +199,8 @@ test('svg-export rebuild of a config dark theme matches the on-screen theme', ()
   const svg = createJBrowseTheme(myDark)
   expect(svg.palette.gridlineMinor).toBe(onScreen.palette.gridlineMinor)
   expect(svg.palette.coverage).toBe(onScreen.palette.coverage)
-  expect(svg.palette.alignmentFill.pairLR).toBe(
-    onScreen.palette.alignmentFill.pairLR,
+  expect(svg.palette.alignmentFill.read).toBe(
+    onScreen.palette.alignmentFill.read,
   )
 })
 
@@ -219,7 +217,7 @@ test('a themes map whose default lacks jbrowse colors still resolves them', () =
   expect(palette.framesCDS).toHaveLength(7)
   expect(palette.bases.A.main).toBeTruthy()
   expect(palette.coverage).toBeTruthy()
-  expect(palette.alignmentFill.pairRR).toBeTruthy()
+  expect(palette.alignmentFill.RR).toBeTruthy()
 })
 
 test('augments a custom frame color and keeps the tuple length', () => {
@@ -252,8 +250,8 @@ test('augments a custom frame color and keeps the tuple length', () => {
 
 test('orientation alignmentFill colors present for named themes', () => {
   const theme = createJBrowseTheme({}, undefined, 'darkStock')
-  expect(theme.palette.alignmentFill.pairLR).toBeTruthy()
-  expect(theme.palette.alignmentFill.pairRR).toBeTruthy()
+  expect(theme.palette.alignmentFill.read).toBeTruthy()
+  expect(theme.palette.alignmentFill.RR).toBeTruthy()
 })
 
 // createJBrowseThemeFromArgs is how the RPC worker (and any consumer of the

@@ -1323,14 +1323,14 @@ describe('sashimiLegendItems', () => {
   test('keys the junction strands drawn, in strand order', () => {
     expect(
       sashimiLegendItems(
-        sashimiLegend(new Set([0, 1]), { pairLR: '#d3d3d3' }),
+        sashimiLegend(new Set([0, 1]), { read: '#d3d3d3' }),
       ).map(i => i.label),
     ).toEqual(['Forward transcript strand', 'Transcript strand unknown'])
   })
 
   test('takes the neutral from the theme it is given', () => {
     expect(
-      sashimiLegendItems(sashimiLegend(new Set([0]), { pairLR: '#b0b0b0' })),
+      sashimiLegendItems(sashimiLegend(new Set([0]), { read: '#b0b0b0' })),
     ).toEqual([{ color: '#b0b0b0', label: 'Transcript strand unknown' }])
   })
 
@@ -1339,7 +1339,7 @@ describe('sashimiLegendItems', () => {
     const items = sashimiLegendItems(
       sashimiLegend(
         new Set([1]),
-        { pairLR: '#d3d3d3' },
+        { read: '#d3d3d3' },
         { classes: new Set(['splitBack', 'splitForward']), palette },
       ),
     )
@@ -1366,7 +1366,7 @@ describe('the sashimi section', () => {
   })
   const junctions = sashimiLegend(
     new Set([-1]),
-    { pairLR: '#d3d3d3' },
+    { read: '#d3d3d3' },
     { classes: new Set(['splitBack', 'splitForward']), palette },
   )
   const scalesWith = (arcs: LegendItem[]) =>
@@ -1389,7 +1389,7 @@ describe('the sashimi section', () => {
       legendItems: () => [],
       arcLegendTitle: 'Arc colors',
       arcLegendItems: () => [],
-      sashimiLegend: sashimiLegend(new Set([-1]), { pairLR: '#d3d3d3' }),
+      sashimiLegend: sashimiLegend(new Set([-1]), { read: '#d3d3d3' }),
     })
     expect(strandsOnly.at(-1)).toMatchObject({
       id: 'sashimi',

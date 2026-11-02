@@ -238,7 +238,7 @@ test('config theme overriding one base and one CDS frame', () => {
 
 test('config theme overriding alignmentFill partially', () => {
   expectParity({
-    configTheme: { palette: { alignmentFill: { pairRL: '#abcdef' } } },
+    configTheme: { palette: { alignmentFill: { RL: '#abcdef' } } },
   })
 })
 

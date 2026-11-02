@@ -60,7 +60,7 @@ mode, clean TLEN, both primaries on screen, slots below 10), and figures are
 captured there, so the figure corpus catches none of them. A comment asserting two
 things match is a derivation waiting to be written.
 
-**Check a themed path with `pairLR`.** It is the one alignment fill the stock dark
+**Check a themed path with `alignmentFill.read`.** It is the one alignment fill the stock dark
 palette overrides. Arcs land 1/255 under the palette value on a dark ground
 because their alpha is just under 1; that is expected.
 

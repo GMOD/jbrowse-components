@@ -14,7 +14,7 @@ import {
 export function alignmentColors() {
   const p = resolvePalette()
   return {
-    read: p.alignmentFill.pairLR,
+    read: p.alignmentFill.read,
     forward: colorFwdStrand,
     reverse: colorRevStrand,
     skip: p.skip,

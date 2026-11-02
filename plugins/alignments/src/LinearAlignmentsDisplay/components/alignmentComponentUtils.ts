@@ -74,10 +74,10 @@ export function buildColorPaletteFromPalette(
     colorRevStrand: toRgb(colorRevStrand),
     // pair colors flow through palette.alignmentFill so user theme overrides
     // render and dark mode dims pairLR (see darkPalette in theme.ts)
-    colorPairLR: toRgb(palette.alignmentFill.pairLR),
-    colorPairRL: toRgb(palette.alignmentFill.pairRL),
-    colorPairRR: toRgb(palette.alignmentFill.pairRR),
-    colorPairLL: toRgb(palette.alignmentFill.pairLL),
+    colorPairLR: toRgb(palette.alignmentFill.read),
+    colorPairRL: toRgb(palette.alignmentFill.RL),
+    colorPairRR: toRgb(palette.alignmentFill.RR),
+    colorPairLL: toRgb(palette.alignmentFill.LL),
     colorBaseA: toRgb(palette.bases.A.main),
     colorBaseC: toRgb(palette.bases.C.main),
     colorBaseG: toRgb(palette.bases.G.main),
@@ -102,7 +102,7 @@ export function buildColorPaletteFromPalette(
     // themed, not the bare constant: this slot inverts between themes the way
     // pairLR does, so reading the light value here would leave a dark-mode
     // pileup with a black fill on a #121212 ground
-    colorUnmappedMate: toRgb(palette.alignmentFill.unmappedMate),
+    colorUnmappedMate: toRgb(palette.alignmentFill.mateUnmapped),
     colorInterchrom: toRgb(colorInterchrom),
     colorOverlap: toRgb(palette.readOverlap),
     // The neutral overlays, on the foreground token. Two slots rather than one

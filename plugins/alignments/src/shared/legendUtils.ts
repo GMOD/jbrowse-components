@@ -330,7 +330,7 @@ export interface SashimiLegend {
 
 export function sashimiLegend(
   strands: ReadonlySet<number>,
-  fill: Pick<AlignmentFill, 'pairLR'>,
+  fill: Pick<AlignmentFill, 'read'>,
   split?: {
     classes: ReadonlySet<ArcSplitCategory>
     palette: Pick<ColorPalette, 'readCategoryColors'>

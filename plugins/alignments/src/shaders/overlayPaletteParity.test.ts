@@ -58,7 +58,7 @@ describe('overlay palettes follow the theme', () => {
 
   // The sharp one. An arc slot and the read swatch it maps to are the SAME
   // meaning, so a themed pileup must not paint them two colors — that is the
-  // dark-mode bug this file exists to stop coming back (`pairLR` is the entry
+  // dark-mode bug this file exists to stop coming back (`alignmentFill.read` is the entry
   // the stock dark palette dims).
   test('each arc slot equals the read swatch of the category it keys', () => {
     const arc = buildArcColorPalette(OVERRIDDEN)

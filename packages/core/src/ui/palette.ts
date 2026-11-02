@@ -63,17 +63,21 @@ export type FrameTuple<T> = [
 
 export type BaseKey = 'A' | 'C' | 'G' | 'T' | 'N'
 
+/**
+ * The read fills a theme sets, keyed as `insertSizeAndOrientation`'s
+ * `scale.domain` names the levels they paint.
+ */
 export interface AlignmentFill {
-  /** LR (→ ←): a normal, concordant proper pair */
-  pairLR: string
+  /** The plain read, and an LR (→ ←) pair of normal insert size */
+  read: string
   /** RL (← →): mates point away from each other */
-  pairRL: string
+  RL: string
   /** LL (→ →): both mates on the forward strand */
-  pairLL: string
+  LL: string
   /** RR (← ←): both mates on the reverse strand */
-  pairRR: string
+  RR: string
   /** The other end of the pair aligned nowhere, so no orientation is honest */
-  unmappedMate: string
+  mateUnmapped: string
 }
 
 // ---------------------------------------------------------------------------
@@ -762,20 +766,20 @@ const darkStringColors: Partial<StringColors> = {
 }
 
 const lightAlignmentFill: AlignmentFill = {
-  pairLR: colorPairLR,
-  pairRL: colorPairRL,
-  pairLL: colorPairLL,
-  pairRR: colorPairRR,
-  unmappedMate: colorUnmappedMate,
+  read: colorPairLR,
+  RL: colorPairRL,
+  LL: colorPairLL,
+  RR: colorPairRR,
+  mateUnmapped: colorUnmappedMate,
 }
 
-// pairLR because the light #d3d3d3 reads as glaring near-white blocks;
-// unmappedMate because its black is inside the #121212 ground's own noise and
+// read because the light #d3d3d3 reads as glaring near-white blocks;
+// mateUnmapped because its black is inside the #121212 ground's own noise and
 // paints a hole (see its own note)
 const darkAlignmentFill: AlignmentFill = {
   ...lightAlignmentFill,
-  pairLR: colorPairLRDark,
-  unmappedMate: colorUnmappedMateDark,
+  read: colorPairLRDark,
+  mateUnmapped: colorUnmappedMateDark,
 }
 
 // ---------------------------------------------------------------------------

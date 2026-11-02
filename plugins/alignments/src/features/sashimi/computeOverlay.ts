@@ -9,13 +9,13 @@ import type { AlignmentFill } from '@jbrowse/core/ui/palette'
 // theme and a themed export both get theirs.
 export function sashimiArcColor(
   strand: number,
-  fill: Pick<AlignmentFill, 'pairLR'>,
+  fill: Pick<AlignmentFill, 'read'>,
 ) {
   return strand === 1
     ? colorFwdStrand
     : strand === -1
       ? colorRevStrand
-      : fill.pairLR
+      : fill.read
 }
 
 // Owned here because `sashimiLabelSpanPx` and the apex clearance both depend on them.
