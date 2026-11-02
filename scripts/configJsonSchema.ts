@@ -47,6 +47,7 @@ export interface SchemaMetadata {
     preProcessSnapshot?: (snap: unknown) => unknown
     requires?: SchemaRequirement[]
     refuses?: SchemaRequirement[]
+    description?: string
   }
 }
 
