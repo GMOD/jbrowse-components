@@ -134,8 +134,10 @@ export const retiredTypes: RetiredDisplayType[] = [
  * palette into its rows, so its colors stay behind and the palette keeps
  * painting them; its `jexlFilters` and `renderingModeSetting` land as the
  * config's own retired spellings, which `retiredConfigSpellings` then lifts.
- * A v4 `LinearVariantDisplay` held its filters as `jexlFiltersSetting`, and a
- * v4 matrix its dragged connector band as `lineZoneHeight`.
+ * The menus' MAF floor and reference-allele toggle land the same way. A v4
+ * `LinearVariantDisplay` held its filters as `jexlFiltersSetting`, and a v4
+ * matrix its dragged connector band as `lineZoneHeight`. A pixel
+ * `rowHeightMode` is `rows.step`; its `'auto'` is the default fit.
  */
 export const retiredState: RetiredDisplayState = {
   keys: [
@@ -144,18 +146,39 @@ export const retiredState: RetiredDisplayState = {
     'jexlFilters',
     'renderingModeSetting',
     'lineZoneHeight',
+    'minorAlleleFrequencyFilterSetting',
+    'referenceDrawingModeSetting',
+    'rowHeightMode',
   ],
-  lift: instance => ({
-    ...liftRetiredRowState(instance, { colors: false }),
-    ...retiredFilterState.lift(instance),
-    ...(Array.isArray(instance.jexlFilters)
-      ? { jexlFilters: instance.jexlFilters }
-      : {}),
-    ...(typeof instance.renderingModeSetting === 'string'
-      ? { renderingMode: instance.renderingModeSetting }
-      : {}),
-    ...(typeof instance.lineZoneHeight === 'number'
-      ? { connectors: { height: instance.lineZoneHeight } }
-      : {}),
-  }),
+  lift: instance => {
+    const { rows, ...lifted } = liftRetiredRowState(instance, { colors: false })
+    const step =
+      typeof instance.rowHeightMode === 'number'
+        ? { step: instance.rowHeightMode }
+        : {}
+    const rowsSetting = { ...(isRecord(rows) ? rows : {}), ...step }
+    return {
+      ...lifted,
+      ...(Object.keys(rowsSetting).length > 0 ? { rows: rowsSetting } : {}),
+      ...retiredFilterState.lift(instance),
+      ...(Array.isArray(instance.jexlFilters)
+        ? { jexlFilters: instance.jexlFilters }
+        : {}),
+      ...(typeof instance.renderingModeSetting === 'string'
+        ? { renderingMode: instance.renderingModeSetting }
+        : {}),
+      ...(typeof instance.lineZoneHeight === 'number'
+        ? { connectors: { height: instance.lineZoneHeight } }
+        : {}),
+      ...(typeof instance.minorAlleleFrequencyFilterSetting === 'number'
+        ? {
+            minorAlleleFrequencyFilter:
+              instance.minorAlleleFrequencyFilterSetting,
+          }
+        : {}),
+      ...(typeof instance.referenceDrawingModeSetting === 'string'
+        ? { referenceDrawingMode: instance.referenceDrawingModeSetting }
+        : {}),
+    }
+  },
 }

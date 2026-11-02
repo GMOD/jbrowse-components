@@ -180,6 +180,39 @@ describe('the display config schema', () => {
       )
       expect(readConfObject(conf, 'unit')).toBe('haplotype')
     })
+
+    it("a v4.3 session's menu settings land in their slots", () => {
+      const pluginManager = new PluginManager([
+        new LinearGenomeViewPlugin(),
+        new FeaturesPlugin(),
+        new VariantsPlugin(),
+      ])
+      pluginManager.createPluggableElements()
+      pluginManager.configure()
+      const display = pluginManager.getDisplayType('LinearVariantDisplay')
+      const conf = display.configSchema.create(
+        {
+          type: 'LinearVariantDisplay',
+          displayId: 'd',
+          ...display.retiredState!.lift({
+            type: 'MultiLinearVariantDisplay',
+            minorAlleleFrequencyFilterSetting: 0.1,
+            referenceDrawingModeSetting: 'draw',
+            rowHeightMode: 12,
+            showTreeSetting: false,
+          }),
+        },
+        { pluginManager },
+      )
+      expect(predicatesOf(conf.filter)).toEqual([
+        { field: 'minorAlleleFrequency', gte: 0.1 },
+      ])
+      expect(readConfObject(conf, ['genotypes', 'reference', 'show'])).toBe(
+        true,
+      )
+      expect(readConfObject(conf, ['rows', 'step'])).toBe(12)
+      expect(readConfObject(conf, ['rows', 'axis', 'tree'])).toBe(false)
+    })
   })
 
   describe('filter', () => {
