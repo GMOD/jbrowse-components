@@ -1,32 +1,14 @@
 import { recordsDrawnAlone } from './exportLinearView.ts'
 
 describe('a variant display reads as its records', () => {
-  test('at their drawn height when no genotype row draws', () => {
+  test('as the records band states itself alone', () => {
     expect(
-      recordsDrawnAlone({
-        drawsRows: false,
-        topBands: { reserved: { records: 57 } },
-      }),
-    ).toEqual({ height: 57, fits: false })
-  })
-
-  test('fitted into that height with its rows hidden', () => {
-    expect(
-      recordsDrawnAlone({
-        drawsRows: false,
-        rowsHidden: true,
-        topBands: { reserved: { records: 57 } },
-      }),
+      recordsDrawnAlone({ recordsAlone: { height: 57, fits: true } }),
     ).toEqual({ height: 57, fits: true })
   })
 
   test('not while its rows draw', () => {
-    expect(
-      recordsDrawnAlone({
-        drawsRows: true,
-        topBands: { reserved: { records: 57 } },
-      }),
-    ).toBeUndefined()
+    expect(recordsDrawnAlone({ recordsAlone: undefined })).toBeUndefined()
   })
 
   test('not for a display with no records band', () => {

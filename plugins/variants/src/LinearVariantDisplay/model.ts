@@ -1601,6 +1601,18 @@ export function stateModelFactory(
         get rowsHidden() {
           return !self.drawsRows && !self.recordsOnly
         },
+        /**
+         * #getter
+         * The records band as the whole track, which the R export hands over
+         * as a feature track: the height it draws at, and whether it fits its
+         * records into that height, as it does over hidden rows. Undefined
+         * while genotype rows draw.
+         */
+        get recordsAlone(): { height: number; fits: boolean } | undefined {
+          return self.drawsRows
+            ? undefined
+            : { height: self.topBands.reserved.records, fits: this.rowsHidden }
+        },
       }))
       .views(self => ({
         /**

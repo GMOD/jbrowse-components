@@ -33,7 +33,7 @@ const SvgVariantOverlay = ({
   // band, the connector zone, the separators and the sidebar are drawn over it
   overlays: boolean
   text?: ExportTextStyle
-  // untranslated: it sits at the top of the display, above `connectors`
+  // each drawn from its band's top
   records?: React.ReactNode
   connectors?: React.ReactNode
   children: React.ReactNode
@@ -49,7 +49,11 @@ const SvgVariantOverlay = ({
   return (
     <>
       {overlays ? records : null}
-      {overlays ? connectors : null}
+      {overlays ? (
+        <g transform={`translate(0 ${model.topBands.top.connectors})`}>
+          {connectors}
+        </g>
+      ) : null}
       <g transform={`translate(0 ${rowsTopOffset})`}>
         {children}
         {overlays && showRowSeparators ? (
