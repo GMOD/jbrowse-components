@@ -17,8 +17,8 @@ releases of peripheral blood cells (PBMC), one RNA and one ATAC, we:
   outside JBrowse
 - load each set as one multi-wiggle track with a row per cell type
 - open nine RNA marker genes side by side
-- read the ATAC rows at a T-cell and a B-cell marker
 - add one row per cell under the pooled RNA rows, from a Zarr store
+- read the ATAC rows at a T-cell and a B-cell marker
 
 ## Prerequisites
 
@@ -50,8 +50,9 @@ RNA experiment, which the RNA build script streams and pools by cell type
 without writing the BAM to disk, and SnapATAC2's annotated release of 10x's 5k
 PBMC scATAC experiment, already clustered and cell-type-labeled.
 
-The RNA commands build local files from these, and the tracks over those read
-them from disk; every other track reads a hosted copy. The
+You don't need these files to follow the page: every track reads a hosted copy
+of what the commands below write, and the per-cell track's config points at the
+Zarr store the RNA build script makes, with the hosted copy's URL beside it. The
 [build scripts](#reproduce-it-end-to-end) fetch everything themselves; the ATAC
 one downloads the dataset through SnapATAC2 (about 800 MB, ten minutes). To
 generate per-cell-type BigWigs, supply your own barcoded BAM or fragments file
@@ -375,68 +376,6 @@ chrX:136,658,390-136,662,390 chr12:10,556,794-10,560,794 chr4:1,164,931-1,168,93
 
 <Figure caption="The per-cell-type BigWigs as one MultiQuantitativeTrack over the nine marker loci, in the order of the rows they mark." src="/img/scrna/marker_panel.png" />
 
-## ATAC accessibility at a T-cell and a B-cell marker
-
-The ATAC BigWigs load the same way, as a second track. The fence lists some of
-the cell types the figure draws; the
-[ATAC build script](#reproduce-it-end-to-end) writes the whole list, and the
-hosted demo config,
-https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has it as
-`pbmc5k_scatac_pseudobulk_hg38`:
-
-```json addtrack
-{
-  "type": "MultiQuantitativeTrack",
-  "trackId": "scatac_pseudobulk",
-  "name": "scATAC by cell type",
-  "category": ["Single cell", "Chromatin accessibility"],
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "MultiWiggleAdapter",
-    "subadapters": [
-      {
-        "type": "BigWigAdapter",
-        "name": "CD8 Naive",
-        "group": "T cell",
-        "color": "#4363d8",
-        "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Naive.bw"
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "CD8 Memory",
-        "group": "T cell",
-        "color": "#3cb44b",
-        "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Memory.bw"
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "Naive B",
-        "group": "B cell",
-        "color": "#f58231",
-        "uri": "https://jbrowse.org/demos/scatac_pbmc5k/Naive_B.bw"
-      }
-    ]
-  }
-}
-```
-
-At a T-cell marker the T-cell rows have signal and the B-cell rows stay flat,
-and at a B-cell marker the reverse. Paste a T-cell marker (_CD8A_) and a B-cell
-marker (_MS4A1_) into the location box to open them side by side:
-
-```text
-chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
-```
-
-<Figure caption="The per-cell-type ATAC BigWigs as one MultiQuantitativeTrack over CD8A and MS4A1 side by side." src="/img/scatac/pbmc5k_marker_swap.png" />
-
-[CATlas](https://www.catlas.org/) serves hg38 per-cell-type accessibility, one
-file per cell type, from
-`https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/`; its URLs
-go into the `subadapters` list like the PBMC files. Percent-encode the `+` in a
-cell-type name (`T_lymphocyte_2_CD4%2B.bw`); left unencoded, the URL breaks and
-the row loads with no data.
-
 ## Per-cell coverage rows from a Zarr store
 
 A pseudobulk RNA row sums thousands of cells. A Zarr store holding a
@@ -511,6 +450,68 @@ Two settings decide whether the speckle is visible:
 - **Pin the score axis.** A low `domainMax` puts one UMI a visible fraction up
   the color ramp, whereas autoscale takes its maximum from the tallest single
   cell in view
+
+## ATAC accessibility at a T-cell and a B-cell marker
+
+The ATAC BigWigs written under _From ATAC fragments_ load the same way, as a
+second track. The fence lists some of the cell types the figure draws; the
+[ATAC build script](#reproduce-it-end-to-end) writes the whole list, and the
+hosted demo config,
+https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has it as
+`pbmc5k_scatac_pseudobulk_hg38`:
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "scatac_pseudobulk",
+  "name": "scATAC by cell type",
+  "category": ["Single cell", "Chromatin accessibility"],
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "name": "CD8 Naive",
+        "group": "T cell",
+        "color": "#4363d8",
+        "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Naive.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "CD8 Memory",
+        "group": "T cell",
+        "color": "#3cb44b",
+        "uri": "https://jbrowse.org/demos/scatac_pbmc5k/CD8_Memory.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "Naive B",
+        "group": "B cell",
+        "color": "#f58231",
+        "uri": "https://jbrowse.org/demos/scatac_pbmc5k/Naive_B.bw"
+      }
+    ]
+  }
+}
+```
+
+At a T-cell marker the T-cell rows have signal and the B-cell rows stay flat,
+and at a B-cell marker the reverse. Paste a T-cell marker (_CD8A_) and a B-cell
+marker (_MS4A1_) into the location box to open them side by side:
+
+```text
+chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
+```
+
+<Figure caption="The per-cell-type ATAC BigWigs as one MultiQuantitativeTrack over CD8A and MS4A1 side by side." src="/img/scatac/pbmc5k_marker_swap.png" />
+
+[CATlas](https://www.catlas.org/) serves hg38 per-cell-type accessibility, one
+file per cell type, from
+`https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/`; its URLs
+go into the `subadapters` list like the PBMC files. Percent-encode the `+` in a
+cell-type name (`T_lymphocyte_2_CD4%2B.bw`); left unencoded, the URL breaks and
+the row loads with no data.
 
 ## Reproduce it end to end
 

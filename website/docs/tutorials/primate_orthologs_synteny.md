@@ -54,13 +54,13 @@ chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 Eight RefSeq assemblies, each fetched by accession with the `datasets` CLI: the
 current human reference, the six NHGRI telomere-to-telomere ape assemblies (Yoo
 et al. 2025) and the telomere-to-telomere rhesus macaque. The E. coli section
-uses forty-four E. coli and Shigella assemblies, anchored on K-12 MG1655, which
-its build script pins by accession.
+uses E. coli and Shigella assemblies anchored on K-12 MG1655, all pinned by
+accession in its build script.
 
 The tracks below read local files that the
 [build scripts](#reproduce-it-end-to-end) write, so run them first, or run _An
 ortholog table joined on gene names_ over RefSeq accessions of your own. Each
-script fetches the annotation and sequence report for every genome itself.
+script fetches the annotations and reports it needs for every genome itself.
 
 | What it is                   | File                                                                                                                                          |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -313,12 +313,12 @@ contigs shows the contig with more of them and names the other in its header.
 
 ## Joining bacterial annotations (E. coli)
 
-The `LOC` genes above are the genes NCBI left unnamed. In a bacterial annotation
-that case is common: RefSeq's Prokaryotic Genome Annotation Pipeline (PGAP)
-writes a gene's locus tag into its `Name` when it has no symbol, and renames
-genes between releases. Older PGAP runs gave every gene a locus tag and no
-symbol, so counting the named genes in an annotation shows whether a genome will
-join before anything is built:
+Genes NCBI left unnamed, the `LOC` genes above, are common in a bacterial
+annotation: RefSeq's Prokaryotic Genome Annotation Pipeline (PGAP) writes a
+gene's locus tag into its `Name` when it has no symbol, and renames genes
+between releases. Older PGAP runs gave every gene a locus tag and no symbol, so
+counting the named genes in an annotation shows whether a genome will join
+before anything is built:
 
 <!-- from: scripts/build_ecoli_orthologs.sh -->
 
@@ -437,6 +437,7 @@ bash build_ecoli_orthologs.sh
 - [](/docs/tutorials/orthofinder_synteny)
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/tutorials/t2t_apes_cactus_synteny)
+- [](/docs/tutorials/pangenome_ecoli)
 
 ## External links
 

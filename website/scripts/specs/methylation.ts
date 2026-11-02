@@ -1,6 +1,5 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
-import { MODIFICATIONS_LABEL } from '../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
 import {
   DEMO_CONFIG,
   HG38_GENCODE_PROMOTER_TRACK,
@@ -148,11 +147,7 @@ const ARABIDOPSIS_CONTEXT_LANES = [
 
 // videos/methylation.ts films the route between these two states, starting
 // from `grouped: false`.
-const snrpnReadsPanel = ({
-  grouped = false,
-  unmarked = true,
-  colored = true,
-} = {}) =>
+const snrpnReadsPanel = ({ grouped = false, unmarked = true } = {}) =>
   lgvSession(DEMO_CONFIG, {
     assembly: 'hg38',
     loc: 'chr15:24,948,000-24,962,000',
@@ -168,22 +163,16 @@ const snrpnReadsPanel = ({
         height: 320,
         forceLoad: true,
         ...(grouped ? { facet: 'tags.HP' } : {}),
-        ...(colored
-          ? {
-              pileup: {
-                bases: {
-                  show: true,
-                  encoding: { color: 'modifications' },
-                  unmodified: { show: unmarked },
-                },
-              },
-            }
-          : {}),
+        pileup: {
+          bases: {
+            show: true,
+            encoding: { color: 'modifications' },
+            unmodified: { show: unmarked },
+          },
+        },
       },
     ],
   })
-
-const SNRPN_COLOR_PATH = ['Color by', MODIFICATIONS_LABEL]
 
 export const methylationVideoFixtures = {
   ungrouped: snrpnReadsPanel(),
@@ -390,22 +379,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
         },
       },
     ],
-  },
-
-  {
-    mode: 'url',
-    name: 'methylation/hg002_snrpn_color_menu',
-    url: snrpnReadsPanel({ colored: false }),
-    readySelector: displayPainted('pileup-display'),
-    readyTimeout: 90000,
-    viewportHeight: 745,
-    hideSelectors: ['.MuiTooltip-popper'],
-    tooltip: 'hide',
-    actions: [
-      trackMenuIcon('HG002_snrpn_5mC_reads'),
-      ...menuCascade(SNRPN_COLOR_PATH),
-    ],
-    annotations: cascadeBoxes(SNRPN_COLOR_PATH),
   },
 
   {

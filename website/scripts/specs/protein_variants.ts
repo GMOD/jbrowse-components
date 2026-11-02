@@ -447,11 +447,8 @@ export function residueCallout(
 
 // From the GenPept CDD features and the launched ortholog alignments:
 //   KRAS G12 and G13 sit in the G1 box, Q61 in Switch II.
-//   TP53 R248 and R273 are DNA-binding sites.
-//   BRAF V600 lies in the activation loop.
 //   HBB residue 7 lies outside every CDD domain.
 //   Every aligned row keeps the hotspot residue.
-// BRAF uses 4MNF: 3OG7 leaves residues 597-605 unmodelled.
 
 // KRAS NM_004985.5, minus strand: G12 and G13 open exon 2's coding run, Q61
 // sits in exon 3.

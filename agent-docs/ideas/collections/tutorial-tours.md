@@ -106,8 +106,9 @@ cascade teaches a reader nothing new about the app.
   multi-wiggle add-track form is the best MECHANISM the survey found (a grid
   that does not exist until **Add tracks** is pressed, an editable Name column,
   a Submit that unlocks on three conditions), and it is on the wrong page: the
-  section is one of three the page declares interchangeable, its home is `user_guides/multiquantitative_track.md`, and
-  `ui/bulk_add_tracks` is its near twin. **It belongs on the user-guide list.**
+  section is one of three the page declares interchangeable, its home is
+  `user_guides/quantitative_track.md`, and `ui/bulk_add_tracks` is its near
+  twin. **It belongs on the user-guide list.**
 
 **The harness cannot reach it.**
 

@@ -139,14 +139,15 @@ reopens this launch.
 
 ### An AlphaFold model colored by pLDDT
 
-Where the PDB has no structure of a protein, the session opens its AlphaFold
-model. Most seedless grapes owe it to one missense change in _VviAGL11_, a MADS
-box transcription factor that regulates seed development. Arginine 197 becomes
+Most seedless grapes owe it to one missense change in _VviAGL11_, a MADS box
+transcription factor that regulates seed development. Arginine 197 becomes
 leucine (R197L) ([Royo et al. 2018](https://doi.org/10.1104/pp.18.00259)). NCBI
 names the gene _MADS5_, on the minus strand of chr18 in the Pinot Noir
 reference. Its AlphaFold model, UniProt A0A217EJJ0, was predicted from a protein
 sequenced from the seedless cultivar Sultanina, so residue 197 of the model is
-leucine. Open the protein browser on residue 197:
+leucine, where the Pinot Noir genome codes arginine. The PDB has no structure of
+the protein, so the session opens on the model. Open the protein browser on
+residue 197:
 
 - open
   [genomes.jbrowse.org/protein-browser/?gene=AGL11&ref=29760&residue=197](https://genomes.jbrowse.org/protein-browser/?gene=AGL11&ref=29760&residue=197)
@@ -158,10 +159,9 @@ leucine. Open the protein browser on residue 197:
 - hover column 197 of the `wine_grape_query` row in the alignment
 
 The model opens colored by pLDDT, AlphaFold's per-residue confidence, which the
-palette icon in the protein view's header sets for any model under **pLDDT
-confidence (AlphaFold)**. Dark blue is very high, light blue confident, yellow
-low and orange very low, and the header's **pLDDT** row draws the same scale
-along the sequence.
+protein view's palette menu sets as **pLDDT confidence (AlphaFold)**. Dark blue
+is very high, light blue confident, yellow low and orange very low, and the
+header's **pLDDT** row draws the same scale along the sequence.
 
 <Figure src="/img/protein/agl11_codon_hover.png" caption="VviAGL11 at codon 197 with its UniRef alignment and the AlphaFold model colored by pLDDT." />
 

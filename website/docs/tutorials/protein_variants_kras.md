@@ -84,14 +84,18 @@ the conditions submitters reported.
 
 ## The hotspots in the conserved sites
 
-Color the genome, the alignment and the structure by the alignment's domains and
-sites, as
-[part 1 does for HBB](/docs/tutorials/protein_variants_sickle_cell#the-domains-across-all-three-views).
-Add the third hotspot beside the first two:
+The alignment view fills its rows with NCBI's conserved domains and sites, and
+the genome view and the structure read them from the alignment, the same steps
+[part 1](/docs/tutorials/protein_variants_sickle_cell#the-domains-across-all-three-views)
+takes on HBB:
 
+- in the alignment view's menu, click **Show domains on the genome**, which adds
+  a domain track to the genome view
+- in the genome view's menu, untick **Show → CDS reading frame colors**
 - type `chr12:25245328-25245372[rev] chr12:25227320-25227364[rev]` into the
-  location box, which puts codon 61, in the next exon, beside codons 12 and 13
-- highlight codon 61 and label it `Q61`
+  location box, which puts codon 61, in the next exon, beside codons 12 and 13,
+  and highlight it as `Q61`
+- in the protein view's palette menu, pick **Domains from the alignment**
 
 <Figure src="/img/protein/kras_domains_three_views.png" caption="KRAS in three linked views, colored by the alignment's domains and sites: the genome's domain track, the alignment's rows and the 6OIM cartoon, with each site's side chains as sticks." />
 
@@ -101,12 +105,14 @@ the first two. Codon 61 sits outside all three, in the Switch II region.
 
 ## Your own gene
 
-- any gene the protein browser opens takes the same steps. The link above names
-  no residue. With `residue=12` in it, the protein browser opens the seed
-  alignment of the Pfam family the residue falls in, distant relatives from many
-  species, in place of the gene's orthologs
+- any gene the protein browser opens takes the same steps
+- add `residue=N` to the link to open on the seed alignment of the Pfam family
+  the residue falls in, distant relatives from many species, in place of the
+  gene's orthologs
 - **Launch protein view** in a gene's right-click menu picks another structure,
-  such as 4OBE, KRAS bound to GDP with glycine at 12
+  such as 4OBE, KRAS bound to GDP with glycine at 12. The chain picker in the
+  protein view's header chooses among the copies in a crystal, and a structure
+  may leave your residue unmodelled, which shows as a break in the cartoon
 - the highlight list's menu imports a BED file, so a list of hotspot codons
   highlights in one step
 
