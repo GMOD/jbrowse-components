@@ -94,18 +94,14 @@ between displays.
    plugin's own CI to run the generator without a jbrowse-components
    checkout, and the manifests themselves for the graph, ARG and Apollo
    plugins.
-4. **The variant display's `unit` becomes a `rows` field.** `unit: sample |
-   haplotype` says what one row is, which `rows.field` (today `sample`
-   alone, `SampleRowsField`) exists to say: `rows: 'haplotype'`, with the
-   `renderingMode: 'phased'` lift retargeted. Ruled 2026-11-01 from the third
-   of three reviews of the row axis (the rest went to ADR-238's Rejected
-   table and ADR-240's 2026-11-01 amendment). Before building, check the
-   reviewer's claim that `rowsForField` keeps the arrangement across that
-   switch (it keys by sample name under both), and that a bag writing
-   `rows: 'haplotype'`, which clears the arrangement where `unit` did not,
-   is acceptable. Wait for the variant display merge's sessions to land.
-   `pileup.collapsed` (2026-11-01) reaches ggjbrowse only through its engine
-   re-pin.
+4. **The row axis owns its settings
+   ([ADR-257](../architecture-decision-records/adr-257-the-row-axis-owns-its-settings.md)).**
+   Its order of work is the plan: the keyed write rule first, then `facet`,
+   then the `rows` fold on wiggle, MAF and the mark family (after the
+   `multirow-spliced-band` session lands), the variant display last with its
+   `unit` (after the variant merge lands), then the writers. Claimed
+   2026-11-02 (worktree `rows-axis`). `pileup.collapsed` (2026-11-01)
+   reaches ggjbrowse only through its engine re-pin.
 5. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
    holds them, each ruled in ADR-238, ADR-240 or the schema's own comment,
    or left by Colin (2026-10-30: the chord and matrix ramps and wiggle's key

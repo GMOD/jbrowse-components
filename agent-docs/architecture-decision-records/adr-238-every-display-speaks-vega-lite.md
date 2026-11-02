@@ -348,6 +348,9 @@ against the code, checked the spelling twice.
   - A split with its own inner scale is `facet`.
   - One position per category is `encoding.y` on a `band` scale. The
     dendrogram's toggles are an `axis` beside `rows` (see "The y channel").
+    Amended 2026-11-02: the row axis owns its settings, `rows.axis`,
+    `rows.step`, `rows.color`, `rows.groups` and `rows.filter` among them
+    ([ADR-257](adr-257-the-row-axis-owns-its-settings.md)).
   - `facet.sort` orders and never drops; a predicate drops.
 
 ### CIGAR detail in the comparative views
@@ -425,9 +428,6 @@ predicate in the layer's own `filter`:
 | A Vega-Lite word (`spacing`, `padding`, `strokeWidth`) for the views' pixel launch keys (`spacingPx`, `paddingPx`, `minimumRadiusPx`, `minVisibleWidth`, `overdrawPx`, dotplot `lineWidth`) | They are view state the app writes into sessions, and v4.3.0 share links carry the circular view's; this ADR settles display settings |
 | `splitStrands` kept as a switch, or as a `yOffset` channel on reading direction | One layout reads better at every lane height it fits, and a short lane already falls back to one row |
 | The row sidebar's `axis` as Vega-Lite's `header`, since the multi-way lanes' `axis` is an x ruler (2026-11-01 cold read) | Both are guides on a positional channel, the band y's and the lanes' x; `header` labels facet panels, and these rows are positions on one scale |
-| `rowHeight`, `rowColor`, `rowGroups` as `rows.height`, `rows.color`, `rows.groups` (2026-11-01, three reviews) | `rows` takes a string shorthand and is written whole, so a share link or `displayDefaults` writing `rows: "source"` would reset all three (ADR-231's reason for declining a shorthand on a band object). `rowColor` is a channel with its own `field` and key (`rowColorConfigSchema`), and `rowGroups` derives the row attribute `group` that `facet` and `rowColor` read |
-| One `height: number \| { step, max }` in place of `height`, `rowHeight`, `heightMode` and `growMaxHeight` | `{ step }` sizes the track from its row count, which no multi-row display does: it keeps its height and fits the rows into it (reference/ROW_HEIGHT_AND_FIT.md) |
-| `rows.tree` as `{ newick, provenance }` | The two already move together as members of the one `rows` object a clustering run writes; the object renames them and changes no write |
 | `rows.labels` as a `scale.names` list | `names` runs parallel to a declared `domain`; rows have none, their order being `rows.sort` over whatever the source lists, so a label is keyed by row name |
 
 ## Consequences
