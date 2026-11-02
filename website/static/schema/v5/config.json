@@ -12535,8 +12535,8 @@
       },
       "additionalProperties": false
     },
-    "GenotypeRows": {
-      "title": "GenotypeRows",
+    "Genotypes": {
+      "title": "Genotypes",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -12677,7 +12677,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/GenotypeRows"
+            "$ref": "#/$defs/Genotypes"
           }
         },
         "heightMode": {

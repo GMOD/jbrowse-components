@@ -12929,8 +12929,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "GenotypeRows": {
-      "title": "GenotypeRows",
+    "Genotypes": {
+      "title": "Genotypes",
       "type": "object",
       "x-closed": true,
       "properties": {
@@ -13074,7 +13074,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/GenotypeRows"
+            "$ref": "#/$defs/Genotypes"
           }
         },
         "heightMode": {

@@ -7227,7 +7227,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "genotypes",
-          "type": "GenotypeRowsConfigurationSchema",
+          "type": "GenotypesConfigurationSchema",
           "subSlots": [
             {
               "name": "show",
@@ -7246,7 +7246,7 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             }
           ],
-          "schema": "GenotypeRows",
+          "schema": "Genotypes",
           "writes": "members"
         },
         {

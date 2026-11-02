@@ -27,6 +27,7 @@ object's.
 
 ## Related links
 
+- **Extended by:** [WiggleRows](../wigglerows)
 - **Base config:** [Rows](../rows)
 
 ## Config slots

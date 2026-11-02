@@ -4327,6 +4327,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "colorByMenuItem",
+        "colorFieldMenuItems",
         "colorFieldRows",
         "colorSchemeMenuItem",
         "solidColorItem"
@@ -4653,6 +4654,7 @@
         "moveSectionTo",
         "resetOrderItem",
         "resetSectionOrderItems",
+        "sectionMenuItems",
         "sectionRowMenuItems",
         "showHiddenItems"
       ],
