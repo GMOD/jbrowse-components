@@ -1,4 +1,5 @@
 import { ConfigurationSchema, setConf } from '@jbrowse/core/configuration'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { rowsConfigSchema } from './rowsConfigSchema.ts'
 
@@ -42,3 +43,21 @@ test.each(SWAPS)(
     warn.mockRestore()
   },
 )
+
+// R's NA and Python's None write null: one such entry costs itself, not the
+// pins beside it.
+test('a map loading an entry that is no string keeps the others', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const conf = schema.create({
+    rows: { colors: { HG002: 'red', HG003: null } },
+  })
+  expect(getSnapshot(conf.rows).colors).toEqual({ HG002: 'red' })
+  expect(warn).toHaveBeenCalledWith(
+    expect.stringContaining('loading without HG003'),
+  )
+  warn.mockRestore()
+  const rows: AnyConfigurationModel = schema.create({}).rows
+  expect(() => {
+    setConf(rows, 'colors', { HG002: 'red', HG003: null })
+  }).toThrow(/stringMap slot and cannot take/)
+})

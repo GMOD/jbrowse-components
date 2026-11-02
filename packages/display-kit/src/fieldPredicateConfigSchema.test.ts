@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, setConf } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import {
@@ -82,4 +82,27 @@ test('the lists declaring defaults are found at any depth, by path', () => {
     { path: 'filter', entries: dup },
     { path: 'band.layer.filter', entries: floor },
   ])
+})
+
+// A malformed entry no schema declares a refusal for is named and kept on a
+// load, and refused on a write (ADR-221), on every filter list: only
+// `rows.filter`'s declared refusals drop an entry.
+describe('a range that is no [min, max]', () => {
+  test('a config loading it names it and keeps the entry', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(filterOf([{ field: 'score', range: 'abc' }])).toEqual([
+      { field: 'score' },
+    ])
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('range is [min, max], not "abc"'),
+    )
+    warn.mockRestore()
+  })
+
+  test('a write refuses it', () => {
+    const conf = Display.create({})
+    expect(() => {
+      setConf(conf, 'filter', [{ field: 'score', range: 'abc' }])
+    }).toThrow(/range is \[min, max\], not "abc"/)
+  })
 })

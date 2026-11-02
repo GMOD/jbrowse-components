@@ -294,7 +294,9 @@ function isStringMap(value: unknown) {
 
 // A config loading a `stringMap` slot something other than a map of strings,
 // as `rows.labels: false` for `rows.axis.labels`, names it once with the
-// slot's meaning and loads the default; a write refuses it the same way.
+// slot's meaning and loads the default; a map with some entries no string,
+// as `{ HG002: 'red', HG003: null }` from R's NA, keeps its string entries and
+// names the rest. A write refuses either.
 function misshapenMaps(
   { name, definition }: ConfigurationSchemaMetadata,
   snapshot: Record<string, unknown>,
@@ -319,12 +321,22 @@ function misshapenMaps(
       if (writes > 0) {
         throw new Error(notice)
       }
+      const kept = isPlainObject(value)
+        ? Object.fromEntries(
+            Object.entries(value).filter(([, v]) => typeof v === 'string'),
+          )
+        : undefined
+      const loading = isPlainObject(value)
+        ? `loading without ${listed(
+            Object.keys(value).filter(k => typeof value[k] !== 'string'),
+          )}`
+        : 'loading the default'
       if (!warned.has(notice)) {
         warned.add(notice)
-        console.warn(`${notice}: loading the default`)
+        console.warn(`${notice}: ${loading}`)
       }
       out = out === snapshot ? { ...snapshot } : out
-      out[key] = undefined
+      out[key] = kept
     }
   }
   return out

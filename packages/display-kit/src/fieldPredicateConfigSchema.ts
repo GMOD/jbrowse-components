@@ -3,7 +3,7 @@ import {
   getConfigurationSchemaMetadata,
   isConfigurationSchemaType,
   plotList,
-  preProcessSnapshotWith,
+  refuseOnWrite,
 } from '@jbrowse/core/configuration'
 import { PredicateField } from '@jbrowse/core/util/types/mst'
 import { getType, isType, types } from '@jbrowse/mobx-state-tree'
@@ -40,6 +40,11 @@ function tighter(
 
 function liftRange(snap: Record<string, unknown>) {
   const { range, ...rest } = snap
+  if (range !== undefined && !Array.isArray(range)) {
+    refuseOnWrite(
+      `filter entry ${JSON.stringify(snap)}: range is [min, max], not ${JSON.stringify(range)}`,
+    )
+  }
   if (!Array.isArray(range)) {
     return rest
   }
@@ -205,63 +210,28 @@ export interface FieldPredicateConfig extends Instance<
   typeof fieldPredicateConfigSchema
 > {}
 
-function statesATest(entry: unknown) {
-  return (
-    typeof entry === 'string' ||
-    (typeof entry === 'object' &&
-      entry !== null &&
-      Object.entries(entry).some(
-        ([key, value]) =>
-          TESTS.has(key) && value !== null && value !== undefined,
-      ))
-  )
-}
-
-function namesAField(entry: unknown) {
-  return (
-    typeof entry === 'string' ||
-    (typeof entry === 'object' &&
-      entry !== null &&
-      'field' in entry &&
-      typeof entry.field === 'string' &&
-      entry.field !== '')
-  )
-}
-
-// An entry stating tests, or a field, that its own schema strips, as
-// `RowPredicate` strips the field of an entry on a row's name loading. A
-// write refuses the entry instead, and the entry's own creation is what
-// reports it, so a throw here keeps the entry.
-function refusedAway(
-  meta: NonNullable<ReturnType<typeof getConfigurationSchemaMetadata>>,
-  entry: unknown,
-) {
-  try {
-    const kept = preProcessSnapshotWith(meta, entry)
-    return (
-      (statesATest(entry) && !statesATest(kept)) ||
-      (namesAField(entry) && !namesAField(kept))
-    )
-  } catch {
-    return false
-  }
-}
-
 /**
  * A list of predicates without the entries whose tests all dropped, the
- * `filter` slot's type wherever a list of predicates is stored. An entry
- * whose own schema refuses every test it states (`RowPredicate` on a row's
- * name) is dropped the same way, so a refused entry never loads as a
- * test-less stub; a write still throws the refusal.
+ * `filter` slot's type wherever a list of predicates is stored. `refused`
+ * names the entries a declared refusal drops, as `rows.filter` drops one on
+ * a row's name: it names one once on a load and throws on a write, where a
+ * throw keeps the entry for its own creation to report with its own words.
  */
 export function fieldPredicateArray(
   entry: typeof fieldPredicateConfigSchema = fieldPredicateConfigSchema,
+  refused: (item: unknown) => boolean = () => false,
 ) {
-  const meta = getConfigurationSchemaMetadata(entry)!
+  const dropped = (item: unknown) => {
+    try {
+      return refused(item)
+    } catch {
+      return false
+    }
+  }
   return types.snapshotProcessor(types.array(entry), {
     preProcessor: (snap: unknown) =>
       Array.isArray(snap)
-        ? snap.filter(item => !emptied(item) && !refusedAway(meta, item))
+        ? snap.filter(item => !emptied(item) && !dropped(item))
         : snap,
   })
 }

@@ -78,7 +78,38 @@ export const rowPredicateConfigSchema = ConfigurationSchema(
   },
 )
 
-/** `rows.filter`'s type: a list of row predicates, ANDed. */
+// The field an entry names, a bare string being the expression it lifts to
+function fieldOf(entry: unknown) {
+  return typeof entry === 'string'
+    ? entry
+    : typeof entry === 'object' &&
+        entry !== null &&
+        'field' in entry &&
+        typeof entry.field === 'string'
+      ? entry.field
+      : ''
+}
+
+// Whether an entry is one `RowPredicate` refuses: named once and dropped on a
+// load, thrown on a write
+function refusedEntry(entry: unknown) {
+  const field = fieldOf(entry)
+  const pointer = ROW_IDENTITY_FIELDS.includes(field)
+    ? rowIdentityPointer(field)
+    : isJexl(field)
+      ? rowExpressionPointer(field)
+      : undefined
+  if (pointer) {
+    refuseOnWrite(`rows.filter: ${pointer}`)
+  }
+  return pointer !== undefined
+}
+
+/**
+ * `rows.filter`'s type: a list of row predicates, ANDed. A config loading an
+ * entry `RowPredicate` refuses loads without it, never as an entry missing
+ * its field.
+ */
 export function rowFilterList() {
-  return fieldPredicateArray(rowPredicateConfigSchema)
+  return fieldPredicateArray(rowPredicateConfigSchema, refusedEntry)
 }
