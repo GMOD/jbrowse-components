@@ -48,6 +48,7 @@ test('Layout → Genotype matrix switches the layout both ways', () => {
 
 test('a kept subset puts the focus chip in a line above the rows', () => {
   const { display } = createTestEnvironment().createDisplay()
+  display.setSources([{ name: 'a' }, { name: 'b' }])
   const height = display.availableHeight
 
   display.setRowFocus(['a'])

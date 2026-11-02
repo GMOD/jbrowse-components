@@ -21,7 +21,7 @@ import {
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { arrangeRows, bandRows } from '@jbrowse/tree-sidebar/arrangeRows'
-import { keptRows } from '@jbrowse/tree-sidebar/clusterUtils'
+import { narrowRows, narrows } from '@jbrowse/tree-sidebar/narrowRows'
 import { rowColorsOfRows } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
   dealValueColors,
@@ -182,6 +182,11 @@ export async function variantTables(
     sampleName: resolveSampleName(source),
   }))
   const rowAlias = rowAliasOf(sources)
+  const narrowing = {
+    kept: arrangement.kept,
+    filter: predicatesOf(conf.rows.filter),
+    rowAlias,
+  }
   const args: RpcExecuteArgs<'MultiSampleVariantGetCellData'> = {
     sessionId: 'tables',
     adapterConfig,
@@ -189,10 +194,8 @@ export async function variantTables(
     layout: 'genomic',
     unit,
     color: cellHue.read,
-    sampleFilter: arrangement.kept.length
-      ? keptRows(sources, arrangement.kept, rowAlias)
-          .map(resolveSampleName)
-          .sort()
+    sampleFilter: narrows(narrowing)
+      ? narrowRows(sources, narrowing).map(resolveSampleName).sort()
       : undefined,
     showReference: readConfObject(conf, ['genotypes', 'reference', 'show']),
     siteFilter: predicates.filter(p => isSiteField(p.field)),
@@ -229,7 +232,7 @@ export async function variantTables(
     unlistedRowsSort: 'source',
     rowAlias,
   })
-  const arranged = keptRows(ordered, arrangement.kept, rowAlias).filter(row =>
+  const arranged = narrowRows(ordered, narrowing).filter(row =>
     fetched.has(row.name),
   )
   const facet = facetSettingOf({

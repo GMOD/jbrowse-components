@@ -356,9 +356,8 @@ describe('LinearMafDisplay row placement', () => {
   })
 
   // A focus naming no sample the adapter reports keeps its key, since the key
-  // reads no fetch result, and the display draws every row; the worker, which
-  // knows the listed samples, resolves the same focus to every row there. One
-  // fetch, and no key flip when the samples land.
+  // reads no fetch result, and the display draws no row, as the worker ships
+  // none. One fetch, and no key flip when the samples land.
   it('keys a focus naming no current row without refetching', async () => {
     const { createDisplay, mockRpcCall } = createMafTestEnvironment({
       assemblyEnd: 50_000,
@@ -373,10 +372,7 @@ describe('LinearMafDisplay row placement', () => {
 
     expect(alignmentCalls(mockRpcCall)).toHaveLength(1)
     expect(alignmentCalls(mockRpcCall)[0]![2].rowFocus).toEqual(['rn6'])
-    expect(display.sources.map((s: { name: string }) => s.name)).toEqual([
-      'hg38',
-      'mm10',
-    ])
+    expect(display.sources).toEqual([])
   })
 
   // The frames ride the alignment fetch whenever a frames adapter is

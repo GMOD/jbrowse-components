@@ -39,7 +39,7 @@ every record, a record calling no genotype included:
 
 ```js
 // type signature
-(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, ids, }: {…}) => Promise<{ samples: {…}; format: Record<string, unknown[]>; formatFields: { key: string[]; number: string[]; type: string[]; description: string[]; }; annotations: { [x: string]: number[] | string[] | (string | null)[]; key: string[]; }; annotationFields: { key: string[]; field: string[]; }; info: Record<string, unknown[]>; infoFields: { key: string[]; number: string[]; type: string[]; description: string[]; }; records: { ref: string[]; alt: string[]; filter: (string | null)[]; }; }>
+(pluginManager: PluginManager, { adapterConfig, sequenceAdapter, regions, ids, }: {…}) => Promise<{ samples: {…}; format: Record<string, unknown[]>; formatFields: { key: string[]; number: string[]; type: string[]; description: string[]; }; annotations: { [x: string]: string[] | number[] | (string | null)[]; key: string[]; }; annotationFields: { key: string[]; field: string[]; }; info: Record<string, unknown[]>; infoFields: { key: string[]; number: string[]; type: string[]; description: string[]; }; records: { ref: string[]; alt: string[]; filter: (string | null)[]; }; }>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/tables.ts)

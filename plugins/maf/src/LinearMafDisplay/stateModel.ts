@@ -436,6 +436,24 @@ export default function stateModelFactory(
         },
         /**
          * #getter
+         * `TreeSidebarMixin`'s hook: whether the track's config lists its
+         * species, so a `rows.kept` name none has is named; a copy row
+         * (`mm10~2`) exists at some loci only, and `unmatchedKeptNames`
+         * leaves it out.
+         */
+        get rowsListedUpFront(): boolean {
+          return self.speciesListed
+        },
+        /**
+         * #method
+         * `TreeSidebarMixin`'s hook: a copy row (`mm10~2`) exists only where
+         * a block aligns that species twice.
+         */
+        rowFoundAtSomeLoci(name: string): boolean {
+          return copyParent(name) !== undefined
+        },
+        /**
+         * #getter
          * `TreeSidebarMixin`'s hook: a copy row answers to its sample, so an
          * order, label, color or focus written against the sample reaches its
          * copies. Undefined while no row is a copy.
@@ -470,11 +488,8 @@ export default function stateModelFactory(
          * `visibleSamples`, so the rows drawn are the rows shipped.
          */
         get clusterableSources(): MafSource[] {
-          const { editableSources, rowFocus, speciesListed } = self
-          const visible = visibleSamples(
-            rowFocus,
-            speciesListed ? editableSources : [],
-          )
+          const { editableSources, rowFocus } = self
+          const visible = visibleSamples(rowFocus)
           return visible
             ? editableSources.filter(r => isRowVisible(r.name, visible))
             : editableSources
@@ -494,6 +509,15 @@ export default function stateModelFactory(
           }
           const refSrc = self.referenceSampleId
           return rows.filter(s => s.name !== refSrc)
+        },
+
+        /**
+         * #getter
+         * `rowNarrowingNotices`: a `rows.kept` naming no row, or naming
+         * species the config does not list.
+         */
+        get liveNotices(): string[] {
+          return self.rowNarrowingNotices
         },
 
         /**

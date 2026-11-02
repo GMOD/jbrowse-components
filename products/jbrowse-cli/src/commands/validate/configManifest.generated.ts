@@ -6865,6 +6865,52 @@ export const configManifest: ConfigManifest = {
             {
               "name": "step",
               "type": "(number | \"fit\")"
+            },
+            {
+              "name": "filter",
+              "type": "RowPredicateConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "PredicateField"
+                },
+                {
+                  "name": "equal",
+                  "type": "((string | number | boolean) | undefined)"
+                },
+                {
+                  "name": "lt",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "lte",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "gt",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "gte",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "oneOf",
+                  "type": "((string | number | boolean)[] | undefined)"
+                },
+                {
+                  "name": "range",
+                  "type": "((number | null)[] | undefined)"
+                },
+                {
+                  "name": "valid",
+                  "type": "(boolean | undefined)"
+                }
+              ],
+              "schema": "RowPredicate",
+              "shorthand": {
+                "string": "field"
+              }
             }
           ],
           "schema": "VariantRows",
@@ -7637,6 +7683,52 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "RowColor",
               "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
+              "name": "filter",
+              "type": "RowPredicateConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "PredicateField"
+                },
+                {
+                  "name": "equal",
+                  "type": "((string | number | boolean) | undefined)"
+                },
+                {
+                  "name": "lt",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "lte",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "gt",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "gte",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "oneOf",
+                  "type": "((string | number | boolean)[] | undefined)"
+                },
+                {
+                  "name": "range",
+                  "type": "((number | null)[] | undefined)"
+                },
+                {
+                  "name": "valid",
+                  "type": "(boolean | undefined)"
+                }
+              ],
+              "schema": "RowPredicate",
               "shorthand": {
                 "string": "field"
               }
@@ -9431,6 +9523,52 @@ export const configManifest: ConfigManifest = {
               "type": "(number | \"fit\")"
             },
             {
+              "name": "filter",
+              "type": "RowPredicateConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "PredicateField"
+                },
+                {
+                  "name": "equal",
+                  "type": "((string | number | boolean) | undefined)"
+                },
+                {
+                  "name": "lt",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "lte",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "gt",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "gte",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "oneOf",
+                  "type": "((string | number | boolean)[] | undefined)"
+                },
+                {
+                  "name": "range",
+                  "type": "((number | null)[] | undefined)"
+                },
+                {
+                  "name": "valid",
+                  "type": "(boolean | undefined)"
+                }
+              ],
+              "schema": "RowPredicate",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
               "name": "groups",
               "type": "RowGroupConfigurationSchema[]",
               "subSlots": [
@@ -10315,6 +10453,52 @@ export const configManifest: ConfigManifest = {
             {
               "name": "step",
               "type": "(number | \"fit\")"
+            },
+            {
+              "name": "filter",
+              "type": "RowPredicateConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "PredicateField"
+                },
+                {
+                  "name": "equal",
+                  "type": "((string | number | boolean) | undefined)"
+                },
+                {
+                  "name": "lt",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "lte",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "gt",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "gte",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "oneOf",
+                  "type": "((string | number | boolean)[] | undefined)"
+                },
+                {
+                  "name": "range",
+                  "type": "((number | null)[] | undefined)"
+                },
+                {
+                  "name": "valid",
+                  "type": "(boolean | undefined)"
+                }
+              ],
+              "schema": "RowPredicate",
+              "shorthand": {
+                "string": "field"
+              }
             },
             {
               "name": "groups",
@@ -11208,6 +11392,52 @@ export const configManifest: ConfigManifest = {
             {
               "name": "step",
               "type": "(number | \"fit\")"
+            },
+            {
+              "name": "filter",
+              "type": "RowPredicateConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "PredicateField"
+                },
+                {
+                  "name": "equal",
+                  "type": "((string | number | boolean) | undefined)"
+                },
+                {
+                  "name": "lt",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "lte",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "gt",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "gte",
+                  "type": "(number | undefined)"
+                },
+                {
+                  "name": "oneOf",
+                  "type": "((string | number | boolean)[] | undefined)"
+                },
+                {
+                  "name": "range",
+                  "type": "((number | null)[] | undefined)"
+                },
+                {
+                  "name": "valid",
+                  "type": "(boolean | undefined)"
+                }
+              ],
+              "schema": "RowPredicate",
+              "shorthand": {
+                "string": "field"
+              }
             },
             {
               "name": "groups",

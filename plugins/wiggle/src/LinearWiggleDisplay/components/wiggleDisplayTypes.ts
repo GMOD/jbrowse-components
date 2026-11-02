@@ -48,6 +48,8 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   showRowLabels: boolean
   drawsRowLabels: boolean
   rowFocus?: readonly string[]
+  rowNarrowingHint?: { text: string; title: string }
+  rowNarrowingClears: boolean
   hoveredTreeNode?: HoveredTreeNode
   treeCanvas?: HTMLCanvasElement | null
   mouseoverCanvas?: HTMLCanvasElement | null
@@ -57,6 +59,7 @@ export interface WiggleDisplayModel extends WiggleGpuDisplayModel {
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
   setRowFocus: (names?: readonly string[]) => void
+  showAllRows: () => void
   setScrollTop: (scrollTop: number) => void
   setHoveredFeature: (feat?: WiggleHoveredFeature) => void
   clearHoveredFeature: () => void

@@ -85,14 +85,16 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
     /**
      * #slot kept
      * The rows shown, by name: a clade picked off the tree, or the rows one
-     * key row stands for. Empty shows every row, and so does naming no current
-     * row where the track lists its rows.
+     * key row stands for. It narrows the rows to those it names, after
+     * `filter` where the display declares one; empty shows every row, and a
+     * list naming no current row shows none, with a notice. Keyed: a write
+     * changing `field` clears it.
      */
     kept: {
       type: 'stringArray',
       defaultValue: [],
       description:
-        'the rows shown, by name; empty shows every row, and so does naming no current row where the track lists its rows',
+        'the rows shown, by name, narrowing the rows to those it names; empty shows every row, and a list naming no current row shows none',
     },
   },
   {

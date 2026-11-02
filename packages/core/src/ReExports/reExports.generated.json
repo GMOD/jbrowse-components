@@ -4961,6 +4961,16 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/rowPredicateConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "ROW_IDENTITY_FIELDS",
+        "ROW_IDENTITY_POINTER",
+        "rowFilterList",
+        "rowPredicateConfigSchema"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/rowsConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [

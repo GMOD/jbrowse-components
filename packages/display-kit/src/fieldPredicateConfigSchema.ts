@@ -208,8 +208,10 @@ export interface FieldPredicateConfig extends Instance<
  * A list of predicates without the entries whose tests all dropped, the
  * `filter` slot's type wherever a list of predicates is stored.
  */
-export function fieldPredicateArray() {
-  return types.snapshotProcessor(types.array(fieldPredicateConfigSchema), {
+export function fieldPredicateArray(
+  entry: typeof fieldPredicateConfigSchema = fieldPredicateConfigSchema,
+) {
+  return types.snapshotProcessor(types.array(entry), {
     preProcessor: (snap: unknown) =>
       Array.isArray(snap) ? snap.filter(entry => !emptied(entry)) : snap,
   })

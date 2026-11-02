@@ -30,6 +30,19 @@ export const laneRowsConfigSchema = ConfigurationSchema(
   'LaneRows',
   {
     /**
+     * #slot kept
+     * The lanes drawn, by assembly name: it selects rather than narrows,
+     * replacing the track's lanes and able to add a lane the track does not
+     * configure. Empty draws the track's lanes, or every lane where it
+     * configures none.
+     */
+    kept: {
+      type: 'stringArray',
+      defaultValue: [],
+      description:
+        "the lanes drawn, by assembly name, selecting rather than narrowing: it replaces the track's lanes and can add one; empty draws the track's lanes, or every lane",
+    },
+    /**
      * #slot field
      * `assembly`, the one field a lane can be.
      */

@@ -105,7 +105,7 @@ export async function executeMafAlignmentData({
   // Rows outside the focus are dropped rather than shipped and hidden. The
   // returned `samples` stays the full set so the sidebar tree + "clear filter"
   // still see every genome.
-  const visible = visibleSamples(rowFocus, configSamples)
+  const visible = visibleSamples(rowFocus)
   const sink = new MafRegionSink(visible)
   await adapter.readBlocks(region, sink, args)
   const { refSampleId } = sink

@@ -151,7 +151,9 @@ test('the subtree filter drops rows but the sample list keeps every genome', asy
   expect(samples.length).toBe(3)
 })
 
-test('a focus naming no configured species packs every row', async () => {
+// The display draws no row for it and says so; the worker no longer falls
+// back to every species.
+test('a focus naming no configured species packs no row', async () => {
   const { regionData } = await run(
     [feature(10, 'ACGT', { hg38: row('ACGT'), mm10: row('AC-T') })],
     ['rn6'],
@@ -160,7 +162,7 @@ test('a focus naming no configured species packs every row', async () => {
       { id: 'mm10', label: 'mm10' },
     ],
   )
-  expect(regionData.sampleIds).toEqual(['hg38', 'mm10'])
+  expect(regionData.sampleIds).toEqual([])
 })
 
 test('a species seen only on an e line is discovered and packed as an empty', async () => {

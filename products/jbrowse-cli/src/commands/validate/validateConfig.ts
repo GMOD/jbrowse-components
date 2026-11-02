@@ -813,6 +813,58 @@ function checkAlignmentsFilters(
   }
 }
 
+// The row attributes a config states its rows carry: `group` where
+// `rows.groups` derives one, the field `rows.color` colors them by, and the
+// fields `rows.filter` tests
+function statedRowAttributes(rows: unknown) {
+  const color = isRecord(rows) && isRecord(rows.color) ? rows.color.field : ''
+  return isRecord(rows)
+    ? new Set([
+        ...(Array.isArray(rows.groups) && rows.groups.length > 0
+          ? ['group']
+          : []),
+        ...(typeof color === 'string' && color !== '' && color !== 'name'
+          ? [color]
+          : []),
+        ...filterEntriesOf(rows.filter).map(p => p.field),
+      ])
+    : new Set<string>()
+}
+
+// A top-level `filter` entry testing a row attribute, on a display whose rows
+// take a `rows.filter`: the top-level list tests records, so it points there.
+function checkRowFilterPointer(
+  display: Record<string, unknown>,
+  type: string,
+  manifest: ConfigManifest,
+  where: string,
+  report: Report,
+) {
+  const slots = manifest.displays[type]?.slots ?? []
+  if (
+    declaresSlot(slots, ['rows', 'filter']) &&
+    declaresSlot(slots, ['filter'])
+  ) {
+    const lifted = liftToSnapshot(display, slots)
+    const record = isRecord(lifted) ? lifted : {}
+    const attributes = statedRowAttributes(record.rows)
+    filterEntriesOf(record.filter).forEach((entry, i) => {
+      const at = `${where}.filter[${i}]`
+      if (
+        attributes.has(entry.field) &&
+        !report.problems.some(p => p.where === at && p.rule === 'row-filter')
+      ) {
+        report.problems.push({
+          level: 'warning',
+          where: at,
+          message: `"${entry.field}" is a row attribute, and the top-level filter tests records: rows.filter keeps rows by their attributes`,
+          rule: 'row-filter',
+        })
+      }
+    })
+  }
+}
+
 // A problem the color and scale rules and the mark rule list both reach, such
 // as the y axis's ends on a mark display, is reported once.
 function pushOnce(report: Report, problem: Problem) {
@@ -1071,6 +1123,7 @@ function checkMarkDisplays(
     }
     if (typeof node.type === 'string') {
       checkAlignmentsFilters(node, node.type, manifest, where, report)
+      checkRowFilterPointer(node, node.type, manifest, where, report)
     }
     const trackType = trackTypeOf(node)
     if (trackType && isRecord(node.displayDefaults)) {
@@ -1088,6 +1141,13 @@ function checkMarkDisplays(
           adapterType,
         )
         checkAlignmentsFilters(
+          defaults,
+          display,
+          manifest,
+          `${where}.displayDefaults`,
+          report,
+        )
+        checkRowFilterPointer(
           defaults,
           display,
           manifest,

@@ -282,6 +282,14 @@ export default function stateModelFactory(
       get rowNoun(): string {
         return 'Subtrack'
       },
+      /**
+       * #getter
+       * `TreeSidebarMixin`'s hook: the adapter lists its subtracks, so a
+       * `rows.kept` name no subtrack has is named.
+       */
+      get rowsListedUpFront(): boolean {
+        return true
+      },
 
       /**
        * #getter
@@ -337,11 +345,13 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * What the loaded sources said they could not serve.
+       * What the loaded sources said they could not serve, and
+       * `rowNarrowingNotices`.
        */
       get liveNotices(): string[] {
         return [
           ...sourceWarnings(self.rpcDataMap),
+          ...self.rowNarrowingNotices,
           ...(self.isDensityMode && self.sharesPanel
             ? [
                 'rows: an overlaid heatmap draws every source on one strip, the last covering the rest; put the sources on rows',

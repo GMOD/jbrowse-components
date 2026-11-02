@@ -9286,7 +9286,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "kept": {
-              "description": "the rows shown, by name; empty shows every row, and so does naming no current row where the track lists its rows.",
+              "description": "the lanes drawn, by assembly name, selecting rather than narrowing: it replaces the track's lanes and can add one; empty draws the track's lanes, or every lane.",
               "if": {
                 "type": "null"
               },
@@ -12064,6 +12064,470 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "RowPredicate": {
+      "title": "RowPredicate",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ..., \\"equal\\": true }\`.",
+          "default": "",
+          "$ref": "#/$defs/PredicateField",
+          "type": "string"
+        },
+        {
+          "title": "RowPredicate",
+          "type": "object",
+          "allOf": [
+            {
+              "x-requirement": {
+                "id": "row-filter-identity",
+                "slot": "equal"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name",
+                      "sampleName",
+                      "HP",
+                      "label",
+                      "color"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "equal"
+                  ],
+                  "properties": {
+                    "equal": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity",
+                "slot": "oneOf"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name",
+                      "sampleName",
+                      "HP",
+                      "label",
+                      "color"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "oneOf"
+                  ],
+                  "properties": {
+                    "oneOf": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity",
+                "slot": "lt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name",
+                      "sampleName",
+                      "HP",
+                      "label",
+                      "color"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lt"
+                  ],
+                  "properties": {
+                    "lt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity",
+                "slot": "lte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name",
+                      "sampleName",
+                      "HP",
+                      "label",
+                      "color"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lte"
+                  ],
+                  "properties": {
+                    "lte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity",
+                "slot": "gt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name",
+                      "sampleName",
+                      "HP",
+                      "label",
+                      "color"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gt"
+                  ],
+                  "properties": {
+                    "gt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity",
+                "slot": "gte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name",
+                      "sampleName",
+                      "HP",
+                      "label",
+                      "color"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gte"
+                  ],
+                  "properties": {
+                    "gte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity",
+                "slot": "range"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name",
+                      "sampleName",
+                      "HP",
+                      "label",
+                      "color"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "range"
+                  ],
+                  "properties": {
+                    "range": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity",
+                "slot": "valid"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name",
+                      "sampleName",
+                      "HP",
+                      "label",
+                      "color"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "valid"
+                  ],
+                  "properties": {
+                    "valid": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+            }
+          ],
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "the field tested, as the display names its fields, or a jexl: expression computed per feature.",
+              "default": "",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PredicateField"
+              }
+            },
+            "equal": {
+              "description": "the value must equal this. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
+                }
+              }
+            },
+            "lt": {
+              "description": "the value must be below this.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "lte": {
+              "description": "the value must be at most this.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "gt": {
+              "description": "the value must be above this.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "gte": {
+              "description": "the value must be at least this.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
+            "oneOf": {
+              "description": "the value must be one of these. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
+                }
+              }
+            },
+            "range": {
+              "description": "Vega-Lite's [min, max], both ends included and a null end open; it loads as gte and lte, the tighter bound winning where either is also written. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
+                }
+              }
+            },
+            "valid": {
+              "description": "true admits only records with a value for the field, false only those without.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "boolean"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "VariantRows": {
       "title": "VariantRows",
       "anyOf": [
@@ -12122,7 +12586,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "kept": {
-              "description": "the rows shown, by name; empty shows every row, and so does naming no current row where the track lists its rows.",
+              "description": "the rows shown, by name, narrowing the rows to those it names; empty shows every row, and a list naming no current row shows none.",
               "if": {
                 "type": "null"
               },
@@ -12198,6 +12662,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "const": "fit"
                   }
                 ]
+              }
+            },
+            "filter": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowPredicate"
+                }
               }
             }
           },
@@ -13678,7 +14153,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "kept": {
-              "description": "the rows shown, by name; empty shows every row, and so does naming no current row where the track lists its rows.",
+              "description": "the rows shown, by name, narrowing the rows to those it names; empty shows every row, and a list naming no current row shows none.",
               "if": {
                 "type": "null"
               },
@@ -13739,6 +14214,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               },
               "else": {
                 "$ref": "#/$defs/RowColor"
+              }
+            },
+            "filter": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowPredicate"
+                }
               }
             }
           },
@@ -14772,7 +15258,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "kept": {
-              "description": "the rows shown, by name; empty shows every row, and so does naming no current row where the track lists its rows.",
+              "description": "the rows shown, by name, narrowing the rows to those it names; empty shows every row, and a list naming no current row shows none.",
               "if": {
                 "type": "null"
               },
@@ -15808,7 +16294,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "kept": {
-              "description": "the rows shown, by name; empty shows every row, and so does naming no current row where the track lists its rows.",
+              "description": "the rows shown, by name, narrowing the rows to those it names; empty shows every row, and a list naming no current row shows none.",
               "if": {
                 "type": "null"
               },
@@ -15884,6 +16370,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     "const": "fit"
                   }
                 ]
+              }
+            },
+            "filter": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowPredicate"
+                }
               }
             },
             "groups": {

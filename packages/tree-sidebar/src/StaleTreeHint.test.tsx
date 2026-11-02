@@ -17,11 +17,13 @@ function model(props: Partial<TreeSidebarModel>): TreeSidebarModel {
     height: 100,
     rowsTopOffset: 0,
     rowFocusLineHeight: 0,
+    rowNarrowingClears: false,
     setTreeCanvasRef: () => {},
     setMouseoverCanvasRef: () => {},
     setHoveredTreeNode: () => {},
     setTreeAreaWidth: () => {},
     setRowFocus: () => {},
+    showAllRows: () => {},
     setScrollTop: () => {},
     ...props,
   }

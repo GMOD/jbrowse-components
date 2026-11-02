@@ -22,7 +22,6 @@ import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import {
   isExpressionEntry,
   predicatesOf,
-  unreadFieldNotice,
   unreadInEveryRegion,
 } from '@jbrowse/core/util/fieldPredicate'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
@@ -1672,7 +1671,7 @@ export function stateModelFactory(
           return [
             ...new Set(regions.flatMap(d => d.notices ?? [])),
             ...unreadInEveryRegion(regions.map(d => d.unreadFilterFields)).map(
-              field => unreadFieldNotice(field, 'feature'),
+              field => self.unreadFilterFieldNotice(field, 'feature'),
             ),
           ]
         },
@@ -1743,6 +1742,7 @@ export function stateModelFactory(
             ...self.configNotices,
             ...this.dataNotices,
             ...this.displayNotices,
+            ...self.rowNarrowingNotices,
             ...this.rowColorNotices,
             ...this.sharedKeys.map(sharedKeyNotice),
           ]
@@ -1759,6 +1759,7 @@ export function stateModelFactory(
           return [
             ...this.dataNotices,
             ...this.displayNotices,
+            ...self.rowNarrowingNotices,
             ...this.rowColorNotices,
             ...this.sharedKeys.map(sharedKeyNotice),
             ...(total > 0 && skipped === total

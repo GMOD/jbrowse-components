@@ -5,10 +5,12 @@ import {
   cssColorToHex,
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
+import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
 import { arrangeRows } from '@jbrowse/tree-sidebar/arrangeRows'
+import { narrowRows } from '@jbrowse/tree-sidebar/narrowRows'
 import { rowColorsOfRows } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
   dealValueColors,
@@ -208,13 +210,19 @@ export async function wiggleTables(
     field: readConfObject(conf.rows, 'field'),
     sort: readConfObject(conf.rows, 'sort'),
   })
-  const sources = arrangeRows(
-    data.sources,
+  const sources = narrowRows(
+    arrangeRows(
+      data.sources,
+      {
+        domain: readConfObject(conf.rows, 'sort'),
+        labels: readConfObject(conf.rows, 'labels'),
+      },
+      { unlistedRowsSort: 'source', rowAlias: undefined },
+    ),
     {
-      domain: readConfObject(conf.rows, 'sort'),
-      labels: readConfObject(conf.rows, 'labels'),
+      kept: readConfObject(conf.rows, 'kept'),
+      filter: predicatesOf(conf.rows.filter),
     },
-    { unlistedRowsSort: 'source', rowAlias: undefined },
   )
   const { gradientPaints, rowColorPaintsMarks } = wiggleMarkColoring({
     colorSetting: setting,
@@ -222,7 +230,7 @@ export async function wiggleTables(
     rect: density,
   })
   const paletteDeals =
-    wiggleSharesPanel(rowLayout, sources.length) && rowColorPaintsMarks
+    wiggleSharesPanel(rowLayout, data.sources.length) && rowColorPaintsMarks
   const rowColor = rowColorsOfRows(
     conf.rows.color,
     readConfObject(conf.rows, 'colors'),

@@ -6,6 +6,10 @@ import {
 } from '@jbrowse/core/configuration'
 import { capitalizeFirst, persistTrackConfigNow } from '@jbrowse/core/util'
 import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
+import {
+  predicatesOf,
+  unreadFieldNotice,
+} from '@jbrowse/core/util/fieldPredicate'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { ROWS_KEYED_MEMBERS } from '@jbrowse/display-kit/rowsConfigSchema'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
@@ -17,11 +21,19 @@ import {
   buildTree,
   computeClusterHierarchy,
   getLeafNames,
-  keptRows,
   matchBandClades,
 } from './clusterUtils.ts'
 import { focusRows } from './focusRows.ts'
 import { maxNodeHeight } from './hierarchy.ts'
+import {
+  filteredRows,
+  listedNames,
+  narrowRows,
+  narrows,
+  rowFilterText,
+  unmatchedKeptNames,
+  unreadRowFields,
+} from './narrowRows.ts'
 import {
   liftRowColor,
   pinnedColorsOf,
@@ -55,6 +67,7 @@ import type {
   UnlistedRowsSort,
 } from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
+import type { RowNarrowing } from './narrowRows.ts'
 import type { TreeSidebarConfigModel } from './rowAxisConfigSchema.ts'
 import type { RowColorEdits, RowColorSnapshot } from './rowColorChoice.ts'
 import type { RowColorKeyInputs, RowColorSetting } from './rowColorScale.ts'
@@ -66,7 +79,9 @@ import type {
   HoveredTreeNode,
   RowSource,
 } from './types.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { CategoricalScale } from '@jbrowse/core/ui/colorScale'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { ExportTextStyle } from '@jbrowse/display-kit/types'
 
 /**
@@ -82,7 +97,7 @@ export interface TreeSidebarHost {
 const host = (self: object) => self as TreeSidebarHost
 
 type ArrangementMember = (typeof ROWS_KEYED_MEMBERS)[number]
-type Arrangement = Partial<Record<ArrangementMember, unknown>>
+type Arrangement = Partial<Record<ArrangementMember | 'filter', unknown>>
 
 // A row's name, label and colors are what a row color is set on, never what
 // one is set by.
@@ -94,8 +109,8 @@ const NOT_COLOR_FIELDS = new Set<string>([
   'rowColor',
 ])
 
-// What "Reset row order" is offered on: the focus has a clear of its own, and
-// a reset still takes it with the rest.
+// What "Reset row order" is offered on: the shown rows have a clear of their
+// own, the chip's "Show all", and a reset still takes them with the rest.
 const ORDER_MEMBERS = ROWS_KEYED_MEMBERS.filter(m => m !== 'kept')
 
 // An empty list or map is the member's default, which a stripped snapshot
@@ -134,6 +149,11 @@ function baseRowsMember(self: object, member: string) {
 
 function liveArrangement(self: object): Arrangement {
   return getSnapshot(host(self).configuration.rows)
+}
+
+// `rows.filter`, none where the display declares no filter on its rows
+function storedRowFilter(self: object): FieldPredicate[] {
+  return predicatesOf(Reflect.get(host(self).configuration.rows, 'filter'))
 }
 
 function storedTree(self: object): string | undefined {
@@ -355,6 +375,35 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       },
       /**
        * #getter
+       * Overridable hook: `rows.filter`, the predicates over row attributes
+       * a row must pass to show, none where the display declares none. A
+       * display that can hide its rows answers none while they are hidden.
+       */
+      get rowFilter(): readonly FieldPredicate[] {
+        return storedRowFilter(self)
+      },
+      /**
+       * #getter
+       * Overridable hook: whether the track lists its rows before any region
+       * loads (a VCF's samples, a multi-wiggle's subtracks), so a `rows.kept`
+       * name no row has is a typo worth naming. False by default, for rows
+       * found per window.
+       */
+      get rowsListedUpFront(): boolean {
+        return false
+      },
+      /**
+       * #method
+       * Overridable hook: whether a row named `name` exists only at some
+       * loci even where the track lists its rows, so a `rows.kept` name
+       * missing here is no typo: MAF's copy rows (`mm10~2`). False by
+       * default.
+       */
+      rowFoundAtSomeLoci(_name: string): boolean {
+        return false
+      },
+      /**
+       * #getter
        * The `rows.color` object: the row field whose values take colors,
        * `name` where it names none, and the values with an assigned color.
        */
@@ -485,11 +534,52 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * The line the "Showing N rows" chip takes above the first row while
-       * `rows.kept` narrows the rows, 0 while every row shows.
+       * `discoveredRows` through `expandRows`: the rows at the granularity
+       * drawn, before any arrangement.
+       */
+      get expandedRows(): S[] {
+        return self.expandRows(self.discoveredRows)
+      },
+      /**
+       * #getter
+       * What narrows the rows shown: `rowFilter`, then `rowFocus`, through
+       * `rowAlias`. The one narrowing the rows drawn, the rows a run
+       * clusters, the tree, a fetch's samples and an export all read.
+       */
+      get rowNarrowing(): RowNarrowing {
+        return {
+          kept: self.rowFocus ?? [],
+          filter: self.rowFilter,
+          rowAlias: self.rowAlias,
+        }
+      },
+      /**
+       * #method
+       * `rows` narrowed by `rowNarrowing`: `filter`, then `kept`.
+       */
+      narrowRows<T extends { name: string }>(rows: T[]): T[] {
+        return narrowRows(rows, this.rowNarrowing)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether the "Showing N of M rows" chip shows: something narrows the
+       * rows, and the rows are known, so no "0 of 0" shows before the first
+       * region lands.
+       */
+      get rowNarrowingShows(): boolean {
+        return narrows(self.rowNarrowing) && self.expandedRows.length > 0
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The line the "Showing N of M rows" chip takes above the first row
+       * while `rowNarrowingShows`, 0 otherwise.
        */
       get rowFocusLineHeight(): number {
-        return self.rowFocus ? SIDEBAR_HINT_LINE_PX : 0
+        return self.rowNarrowingShows ? SIDEBAR_HINT_LINE_PX : 0
       },
     }))
     .views(self => ({
@@ -567,14 +657,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       get rowOrder(): readonly string[] {
         return self.rowSort
       },
-      /**
-       * #getter
-       * `discoveredRows` through `expandRows`: the rows at the granularity
-       * drawn, before any arrangement.
-       */
-      get expandedRows(): S[] {
-        return self.expandRows(self.discoveredRows)
-      },
     }))
     .views(self => ({
       /**
@@ -619,6 +701,26 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        */
       get rowColorFields(): readonly string[] {
         return extraColumns(self.expandedRows, NOT_COLOR_FIELDS)
+      },
+      /**
+       * #getter
+       * The `rows.filter` this display's base declares, which "Show all"
+       * and "Reset row order" return to.
+       */
+      get baseRowFilter(): FieldPredicate[] {
+        return predicatesOf(baseRowsMember(self, 'filter'))
+      },
+      /**
+       * #method
+       * The notice for a top-level `filter` field no loaded `record`
+       * carries: where a row carries it, a pointer at `rows.filter`, which
+       * keeps rows by their attributes, where the top-level `filter` tests
+       * records.
+       */
+      unreadFilterFieldNotice(field: string, record: string) {
+        return this.rowColorFields.includes(field)
+          ? `The filter tests "${field}", a row attribute no loaded ${record} carries, so it hides every ${record}: rows.filter keeps rows by their attributes`
+          : unreadFieldNotice(field, record)
       },
       /**
        * #getter
@@ -867,7 +969,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * MAF applies a focus as given on a track that discovers its species.
        */
       get clusterableSources(): S[] {
-        return keptRows(self.editableSources, self.rowFocus, self.rowAlias)
+        return self.narrowRows(self.editableSources)
       },
       /**
        * #getter
@@ -930,20 +1032,30 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * The parsed tree narrowed to the focus.
+       * The parsed tree narrowed by `rowNarrowing`, a leaf no row has
+       * reading as a row with no attributes; none where it keeps no leaf.
        */
       get root() {
         const tree = self.parsedTree
-        const focus = self.rowFocus
-        return tree && focus
-          ? treeOfLeaves(
-              tree,
-              keptRows(
-                getLeafNames(tree).map(name => ({ name })),
-                focus,
-                self.rowAlias,
-              ).map(leaf => leaf.name),
-            )
+        const narrowing = self.rowNarrowing
+        // the rows' attributes, read only where a filter tests them, so a
+        // region arrival re-prunes no tree `kept` alone narrows
+        const rows = new Map<string, { name: string }>(
+          narrowing.filter.length > 0
+            ? self.expandedRows.map(row => [row.name, row])
+            : [],
+        )
+        const leaves =
+          tree && narrows(narrowing)
+            ? narrowRows(
+                getLeafNames(tree).map(name => rows.get(name) ?? { name }),
+                narrowing,
+              ).map(leaf => leaf.name)
+            : undefined
+        return tree && leaves
+          ? leaves.length > 0
+            ? treeOfLeaves(tree, leaves)
+            : undefined
           : tree
       },
       /**
@@ -1100,6 +1212,89 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
+       * Whether "Show all" has anything to clear: `rows.kept` names rows, or
+       * `rows.filter` differs from the config's.
+       */
+      get rowNarrowingClears(): boolean {
+        return (
+          (self.rowFocus?.length ?? 0) > 0 ||
+          !compareStructural(
+            present(liveArrangement(self).filter),
+            present(baseArrangement(self).filter),
+          )
+        )
+      },
+      /**
+       * #getter
+       * The corner notice's lines on the narrowing, once the rows are known:
+       * a `rows.filter` field no row carries, what left no row where none
+       * shows, and where the track lists its rows up front
+       * (`rowsListedUpFront`), the `rows.kept` names no row has. Each
+       * display spreads it into its `notices`.
+       */
+      get rowNarrowingNotices(): string[] {
+        const rows = self.expandedRows
+        const narrowing = self.rowNarrowing
+        const unread = unreadRowFields(rows, narrowing.filter)
+        const emptiedBy =
+          rows.length > 0 && self.clusterableSources.length === 0
+            ? filteredRows(rows, narrowing.filter).length === 0
+              ? 'filter'
+              : 'kept'
+            : undefined
+        const unmatched = self.rowsListedUpFront
+          ? unmatchedKeptNames(rows, narrowing).filter(
+              name => !self.rowFoundAtSomeLoci(name),
+            )
+          : []
+        return rows.length === 0
+          ? []
+          : [
+              ...unread.map(
+                field =>
+                  `rows.filter tests "${field}", which no row carries, so it filters out every row`,
+              ),
+              ...(emptiedBy === 'filter' && unread.length === 0
+                ? ['Every row is filtered out by rows.filter']
+                : []),
+              ...(emptiedBy === 'kept'
+                ? [
+                    `rows.kept names no row${unmatched.length ? ` (${listedNames(unmatched)})` : ' here'}, so no row shows`,
+                  ]
+                : unmatched.length > 0
+                  ? [
+                      `rows.kept names ${listedNames(unmatched)}, which no row has`,
+                    ]
+                  : []),
+            ]
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The chip above the rows while `rowNarrowingShows`: "Showing N of M
+       * rows", with "Show all" where `rowNarrowingClears`, and the config's
+       * own `rows.filter`, which "Show all" keeps, stated in its tooltip.
+       */
+      get rowNarrowingHint(): { text: string; title: string } | undefined {
+        const base = rowFilterText(self.baseRowFilter)
+        const clears = self.rowNarrowingClears
+        return self.rowNarrowingShows
+          ? {
+              text: `Showing ${self.clusterableSources.length} of ${self.expandedRows.length} rows${clears ? ' · Show all' : ''}`,
+              title: [
+                ...(clears ? ['Click to show every row again'] : []),
+                ...(base
+                  ? [`The track's config keeps rows where ${base}`]
+                  : []),
+              ].join('. '),
+            }
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Whether the tree has merge heights, so a dendrogram layout differs
        * from the cladogram; gates the "Tree branch lengths" toggle.
        */
@@ -1176,6 +1371,12 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           writeTree()
         }
       }
+      function writeRowFilter(filter: unknown) {
+        const rows: AnyConfigurationModel = host(self).configuration.rows
+        if (Reflect.has(rows, 'filter')) {
+          setConf(rows, 'filter', filter ?? [])
+        }
+      }
       function writeRowColor(setting: RowColorSetting) {
         setConf(host(self), ['rows', 'color'], rowColorMembers(setting))
       }
@@ -1207,6 +1408,16 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
          */
         setRowFocus(names?: readonly string[]) {
           write('kept', names?.length ? [...names] : [])
+          persist()
+        },
+        /**
+         * #action
+         * The chip's "Show all": clears `rows.kept` and returns `rows.filter`
+         * to the config's, so a filter the config states shows through.
+         */
+        showAllRows() {
+          write('kept', [])
+          writeRowFilter(baseArrangement(self).filter)
           persist()
         },
         /**
@@ -1252,7 +1463,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         /**
          * #action
          * Return every arrangement member — order, labels, colors, tree,
-         * provenance and focus — to what the config declares, leaving
+         * provenance, kept rows and `rows.filter` — to what the config declares, leaving
          * `rows.field`, and `rows.color` to `rowColorResetTarget`: the
          * config's for the choice, which stays.
          */
@@ -1261,6 +1472,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           for (const member of ROWS_KEYED_MEMBERS) {
             write(member, base[member])
           }
+          writeRowFilter(base.filter)
           const target = rowColorResetTarget(
             self.rowColorChannel,
             self.baseRowColorChannel,

@@ -69,6 +69,10 @@ export interface TreeSidebarModel extends IStateTreeNode {
   rowBands?: readonly RowBand[]
   treelessBandCount?: number
   rowFocus?: readonly string[]
+  // The "Showing N of M rows" chip, undefined while nothing narrows the rows
+  // or they are not known yet.
+  rowNarrowingHint?: { text: string; title: string }
+  rowNarrowingClears: boolean
   hoveredTreeNode?: HoveredTreeNode
   // exactly what `buildSpatialIndex` returns, named rather than restructured:
   // the array and the index into it are only meaningful together
@@ -78,6 +82,7 @@ export interface TreeSidebarModel extends IStateTreeNode {
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
   setRowFocus: (names?: readonly string[]) => void
+  showAllRows: () => void
   // Every host composes TrackHeightMixin, which is where this comes from.
   // Displays with a virtual scroll reset it when the subtree filter
   // re-lays-out the tree, so it shows from the top instead of a stale offset.

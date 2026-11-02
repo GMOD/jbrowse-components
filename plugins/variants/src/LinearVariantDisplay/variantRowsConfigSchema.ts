@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { rowFilterList } from '@jbrowse/display-kit/rowPredicateConfigSchema'
 import { rowsWithStepConfigSchema } from '@jbrowse/display-kit/rowsWithStepConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -17,6 +18,16 @@ import { types } from '@jbrowse/mobx-state-tree'
 export const variantRowsConfigSchema = ConfigurationSchema(
   'VariantRows',
   {
+    /**
+     * #slot filter
+     * The rows shown by attribute: a list of [RowPredicate](../rowpredicate)
+     * entries over a samplesTsv column, each one a row must pass, as
+     * `[{ field: 'population', oneOf: ['EUR', 'AFR'] }]`. A row missing the attribute fails every test but
+     * `valid: false`. It narrows the rows before `kept`, and a write changing
+     * `field` keeps it, since it names no row by its value; a row's name goes
+     * in `kept`.
+     */
+    filter: rowFilterList(),
     /**
      * #slot field
      * `sample`, the one field a row of this display can be: a sample, or a

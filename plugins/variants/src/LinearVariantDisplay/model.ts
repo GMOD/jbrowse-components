@@ -22,7 +22,6 @@ import { deepEqual } from '@jbrowse/core/util/deepEqual'
 import {
   lowerBoundOf,
   predicatesOf,
-  unreadFieldNotice,
   upperBoundOf,
   withLowerBound,
   withUpperBound,
@@ -77,7 +76,6 @@ import { inkOfInstances, shiftInk } from '@jbrowse/render-core/marks'
 import {
   RowHeightMixin,
   TreeSidebarMixin,
-  keptRows,
   loadedRegionIndexAt,
 } from '@jbrowse/tree-sidebar'
 
@@ -331,13 +329,15 @@ export type VariantLayoutBackend =
  * for its haplotypes. A drag, the arrangement dialog, "Sort rows by genotype here" and
  * a clustering run write it; the rows are derived from it on every read:
  *
- * 1. `rows.kept` focuses the adapter's samples (`adapterSamples`) to the set
- *    the fetch asks for (`sourcesBase`, `sampleFilter`),
+ * 1. `rows.filter` and then `rows.kept` narrow the adapter's samples
+ *    (`adapterSamples`) to the set the fetch asks for (`sourcesBase`,
+ *    `sampleFilter`),
  * 2. phased mode expands each sample to its haplotypes (`expandedRows`), and
  *    `rows.sort` orders them, `rows.labels` relabels them and each row has
  *    its resolved color (`editableSources`, the dialog's list), each from
  *    `TreeSidebarMixin` over this display's hooks,
- * 3. the focus narrows those (`clusterableSources`, what a run clusters),
+ * 3. the same narrowing narrows those (`clusterableSources`, what a run
+ *    clusters),
  * 4. `facet` stacks those in bands (`bandedSources`), each band's rows in their
  *    arranged order,
  * 5. the result is `sources`, each row's resolved color its label bar.
@@ -715,14 +715,16 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `rowBandingNotices`, and each `filter` field no loaded variant
-         * carries.
+         * `rowBandingNotices`, `rowNarrowingNotices`, and each `filter` field
+         * no loaded variant carries, pointing at `rows.filter` where it is a
+         * row attribute.
          */
         get liveNotices(): string[] {
           return [
             ...self.rowBandingNotices,
+            ...self.rowNarrowingNotices,
             ...(self.cellData?.unreadFilterFields ?? []).map(field =>
-              unreadFieldNotice(field, 'variant'),
+              self.unreadFilterFieldNotice(field, 'variant'),
             ),
           ]
         },
@@ -864,6 +866,24 @@ export function stateModelFactory(
         get rowFocus(): readonly string[] | undefined {
           const kept: string[] = getConf(self, ['rows', 'kept'])
           return this.drawsRows && kept.length ? kept : undefined
+        },
+        /**
+         * #getter
+         * `rows.filter` while genotype rows draw, as `rowFocus` reads
+         * `rows.kept`. Overrides `TreeSidebarMixin.rowFilter`.
+         */
+        get rowFilter(): readonly FieldPredicate[] {
+          return this.drawsRows
+            ? predicatesOf(self.configuration.rows.filter)
+            : []
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: the VCF lists its samples, so a
+         * `rows.kept` name no sample has is named.
+         */
+        get rowsListedUpFront(): boolean {
+          return true
         },
       }))
       .views(recordsSettingsViews)
@@ -1254,19 +1274,17 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * The adapter's samples narrowed to the focus, `rows.kept`: the row set
-         * the fetch asks for, so it must not read `samplePloidy`. `undefined`
+         * The adapter's samples narrowed by `rowNarrowing`, `rows.filter`
+         * over their samplesTsv attributes and then `rows.kept`: the row set
+         * the fetch asks for, so it must not read `samplePloidy`. The
+         * attributes arrive with the sample list, so the filter never runs
+         * ahead of them. `undefined`
          * until the samples land; that transition wakes the fetch autorun
          * (reference/FETCH_KEYS.md).
          */
         get sourcesBase(): Source[] | undefined {
           const sources = self.adapterSamples
-          return (
-            sources &&
-            (self.drawsRows
-              ? keptRows(sources, self.rowFocus, self.rowAlias)
-              : [])
-          )
+          return sources && (self.drawsRows ? self.narrowRows(sources) : [])
         },
       }))
       .views(self => ({

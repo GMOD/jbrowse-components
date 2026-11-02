@@ -224,9 +224,11 @@ describe('keptRows with an alias', () => {
     ])
   })
 
-  test('a focus naming no current row keeps every row', () => {
-    expect(keptRows(samples, ['NA0001'], alias)).toBe(samples)
+  // The display says so in a notice rather than drawing every row
+  test('a focus naming no current row keeps none, and no focus keeps every row', () => {
+    expect(keptRows(samples, ['NA0001'], alias)).toEqual([])
     expect(keptRows(samples, undefined, alias)).toBe(samples)
+    expect(keptRows(samples, [], alias)).toBe(samples)
   })
 })
 

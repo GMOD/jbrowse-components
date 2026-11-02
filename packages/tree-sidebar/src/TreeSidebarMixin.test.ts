@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
+import { rowFilterList } from '@jbrowse/display-kit/rowPredicateConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -197,9 +198,18 @@ describe('the rows start under the display s bands and the focus chip s line', (
         TreeSidebarMixin(),
         types.model({ configuration: configSchema }),
       )
-      .views(() => ({
+      .volatile(() => ({ names: [] as string[] }))
+      .views(self => ({
         get rowsHeaderHeight() {
           return 40
+        },
+        get discoveredRows() {
+          return self.names.map(name => ({ name }))
+        },
+      }))
+      .actions(self => ({
+        setNames(names: string[]) {
+          self.names = names
         },
       }))
       .create({ configuration: {} })
@@ -207,6 +217,7 @@ describe('the rows start under the display s bands and the focus chip s line', (
 
   it('reserves the line while a subset is kept, and gives it back on clearing', () => {
     const display = makeBanded()
+    display.setNames(['a', 'b'])
     expect(display.rowsTopOffset).toBe(40)
     display.setRowFocus(['a'])
     expect(display.rowFocusLineHeight).toBe(SIDEBAR_HINT_LINE_PX)
@@ -214,6 +225,182 @@ describe('the rows start under the display s bands and the focus chip s line', (
     display.setRowFocus(undefined)
     expect(display.rowsTopOffset).toBe(40)
   })
+
+  // A wiggle's rows arrive with its first region: before then a chip would
+  // read "Showing 0 of 0 rows" and take a line it gives back a moment later.
+  it('takes no line and shows no chip until the rows are known', () => {
+    const display = makeBanded()
+    display.setRowFocus(['a'])
+    expect(display.rowFocusLineHeight).toBe(0)
+    expect(display.rowNarrowingHint).toBeUndefined()
+    display.setNames(['a', 'b'])
+    expect(display.rowFocusLineHeight).toBe(SIDEBAR_HINT_LINE_PX)
+    expect(display.rowNarrowingHint?.text).toBe(
+      'Showing 1 of 2 rows · Show all',
+    )
+  })
+})
+
+const filteredRowsSchema = ConfigurationSchema(
+  'FilteredTestRows',
+  { filter: rowFilterList() },
+  { baseConfiguration: rowsConfigSchema },
+)
+
+const filteredSchema = ConfigurationSchema('FilteredTreeDisplay', {
+  rows: filteredRowsSchema,
+})
+
+const POPULATIONS = [
+  { name: 'a', population: 'EUR' },
+  { name: 'b', population: 'AFR' },
+  { name: 'c', population: 'EUR' },
+  { name: 'd', population: '' },
+]
+
+function makeFiltered(rows: Record<string, unknown>, listed = true) {
+  return types
+    .compose(
+      'FilteredTreeDisplay',
+      TreeSidebarMixin(),
+      types.model({
+        type: types.literal('FilteredTreeDisplay'),
+        configuration: filteredSchema,
+      }),
+    )
+    .views(() => ({
+      get discoveredRows() {
+        return POPULATIONS
+      },
+      get rowsListedUpFront() {
+        return listed
+      },
+    }))
+    .create({ type: 'FilteredTreeDisplay', configuration: { rows } })
+}
+
+const namesOf = (rows: readonly { name: string }[]) => rows.map(r => r.name)
+
+describe('rows.kept and rows.filter narrow the rows', () => {
+  it('a kept list naming no row draws no row, and names what it missed', () => {
+    const display = makeFiltered({ kept: ['zz', 'yy'] })
+    expect(display.clusterableSources).toEqual([])
+    expect(display.sources).toEqual([])
+    expect(display.rowNarrowingHint?.text).toBe(
+      'Showing 0 of 4 rows · Show all',
+    )
+    expect(display.rowNarrowingNotices).toEqual([
+      'rows.kept names no row (zz, yy), so no row shows',
+    ])
+  })
+
+  // Rows found per window: a name missing here may be a row elsewhere.
+  it('where rows are found per window the notice names nothing', () => {
+    const display = makeFiltered({ kept: ['zz'] }, false)
+    expect(display.clusterableSources).toEqual([])
+    expect(display.rowNarrowingNotices).toEqual([
+      'rows.kept names no row here, so no row shows',
+    ])
+  })
+
+  it('names the kept names no row has while others match', () => {
+    const display = makeFiltered({ kept: ['a', 'zz'] })
+    expect(namesOf(display.clusterableSources)).toEqual(['a'])
+    expect(display.rowNarrowingNotices).toEqual([
+      'rows.kept names zz, which no row has',
+    ])
+  })
+
+  it('a filter keeps the rows whose attribute passes, a missing one failing', () => {
+    const display = makeFiltered({
+      filter: [{ field: 'population', oneOf: ['EUR'] }],
+    })
+    expect(namesOf(display.clusterableSources)).toEqual(['a', 'c'])
+    expect(display.rowNarrowingHint?.text).toBe(
+      'Showing 2 of 4 rows · Show all',
+    )
+  })
+
+  it('valid: false keeps the rows missing the attribute', () => {
+    const display = makeFiltered({
+      filter: [{ field: 'population', valid: false }],
+    })
+    expect(namesOf(display.clusterableSources)).toEqual(['d'])
+  })
+
+  it('filters, then keeps', () => {
+    const display = makeFiltered({
+      filter: [{ field: 'population', equal: 'EUR' }],
+      kept: ['a', 'b'],
+    })
+    expect(namesOf(display.clusterableSources)).toEqual(['a'])
+  })
+
+  it('says which half emptied the rows', () => {
+    expect(
+      makeFiltered({
+        filter: [{ field: 'population', equal: 'SAS' }],
+      }).rowNarrowingNotices,
+    ).toEqual(['Every row is filtered out by rows.filter'])
+    expect(
+      makeFiltered({
+        filter: [{ field: 'population', equal: 'AFR' }],
+        kept: ['a'],
+      }).rowNarrowingNotices,
+    ).toEqual(['rows.kept names no row here, so no row shows'])
+  })
+
+  it('names a filter field no row carries', () => {
+    expect(
+      makeFiltered({ filter: [{ field: 'superpop', equal: 'EUR' }] })
+        .rowNarrowingNotices,
+    ).toEqual([
+      'rows.filter tests "superpop", which no row carries, so it filters out every row',
+    ])
+  })
+
+  // One narrowing feeds every reader: the rows a run clusters, the tree
+  // pruned beside them and the chip's count agree.
+  it('the clustered rows, the tree and the chip read one narrowing', () => {
+    const display = makeFiltered({
+      tree: '((a,b),(c,d));',
+      filter: [{ field: 'population', oneOf: ['EUR', 'AFR'] }],
+      kept: ['a', 'b', 'd'],
+    })
+    expect(namesOf(display.clusterableSources)).toEqual(['a', 'b'])
+    expect(getLeafNames(display.root!)).toEqual(['a', 'b'])
+    expect(display.rowNarrowingHint?.text).toBe(
+      'Showing 2 of 4 rows · Show all',
+    )
+  })
+
+  it('a tree none of whose leaves shows draws none', () => {
+    const display = makeFiltered({ tree: '((a,b),c);', kept: ['d'] })
+    expect(display.root).toBeUndefined()
+  })
+
+  // `filter` names an attribute, which the new field's rows may carry too;
+  // `kept` names the old field's values.
+  it('a field change clears kept and keeps filter', () => {
+    const display = makeFiltered({
+      field: 'sample',
+      kept: ['a'],
+      filter: [{ field: 'population', equal: 'EUR' }],
+    })
+    setConf(display, ['rows', 'field'], 'source')
+    expect(getConf(display, ['rows', 'kept'])).toEqual([])
+    expect(display.rowFilter).toEqual([{ field: 'population', equal: 'EUR' }])
+  })
+
+  it.each(['name', 'sampleName', 'HP', 'label', 'color'])(
+    'refuses a filter on %s, pointing at rows.kept',
+    field => {
+      const display = makeFiltered({})
+      expect(() => {
+        setConf(display, ['rows', 'filter'], [{ field, oneOf: ['a'] }])
+      }).toThrow(/a row's name goes in rows.kept/)
+    },
+  )
 })
 
 // `((a,b),c)` has four of the six orders of its leaves as rotations; a, c, b

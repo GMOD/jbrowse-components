@@ -88,6 +88,14 @@ describe('a kept subset puts the focus chip in a line above the rows', () => {
     const { display } = createMafTestEnvironment().createDisplay()
     const bands = display.topBands.bottom
     const height = display.height
+    display.setSamples({
+      samples: [
+        { name: 'a', label: 'a' },
+        { name: 'b', label: 'b' },
+      ],
+      treeNewick: undefined,
+      samplesCanonical: true,
+    })
 
     display.setRowFocus(['a'])
 

@@ -4,31 +4,55 @@ import { RowFocusHint } from './RowFocusHint.tsx'
 
 import type { TreeSidebarModel } from './types.ts'
 
-// The chip counts the rows the focus left on screen, not the names it holds:
-// in phased mode one sample name keeps two haplotype rows.
-function model(subtreeFilter?: string[]) {
+function model(
+  hint?: { text: string; title: string },
+  clears = true,
+): TreeSidebarModel {
   return {
-    rowFocus: subtreeFilter,
-    sources: (subtreeFilter ?? []).map(name => ({ name })),
+    rowNarrowingHint: hint,
+    rowNarrowingClears: clears,
+    rowFocusLineHeight: 16,
+    sources: [],
+    showAllRows: jest.fn(),
     setRowFocus: jest.fn(),
     setScrollTop: jest.fn(),
     treeAreaWidth: 80,
     height: 100,
+    rowsTopOffset: 0,
     showTree: true,
     setTreeCanvasRef: () => {},
     setMouseoverCanvasRef: () => {},
     setHoveredTreeNode: () => {},
     setTreeAreaWidth: () => {},
-  } as unknown as TreeSidebarModel
+  }
 }
 
-test('says how many rows the focus left, and clears it on a click', () => {
-  const m = model(['a', 'b', 'c'])
+test('says how many rows show, and shows every row again on a click', () => {
+  const m = model({ text: 'Showing 3 of 10 rows · Show all', title: '' })
   const { getByText } = render(<RowFocusHint model={m} />)
-  fireEvent.click(getByText('Showing 3 rows'))
-  expect(m.setRowFocus).toHaveBeenCalledWith(undefined)
+  fireEvent.click(getByText('Showing 3 of 10 rows · Show all'))
+  expect(m.showAllRows).toHaveBeenCalledWith()
   // the rows re-lay-out from y=0, so the old offset would strand them
   expect(m.setScrollTop).toHaveBeenCalledWith(0)
+})
+
+// The config's own filter is a fact, not something a click clears: the chip
+// states it and a click only dismisses it.
+test('a narrowing nothing can clear dismisses on a click', () => {
+  const m = model(
+    {
+      text: 'Showing 3 of 10 rows',
+      title: "The track's config keeps rows where population is EUR",
+    },
+    false,
+  )
+  const { getByText, queryByTestId } = render(<RowFocusHint model={m} />)
+  expect(getByText('Showing 3 of 10 rows').title).toBe(
+    "The track's config keeps rows where population is EUR",
+  )
+  fireEvent.click(getByText('Showing 3 of 10 rows'))
+  expect(m.showAllRows).not.toHaveBeenCalled()
+  expect(queryByTestId('row_focus_hint')).toBeNull()
 })
 
 test('draws nothing while every row is shown', () => {

@@ -31,11 +31,13 @@ function model(props: Partial<TreeSidebarModel> = {}): TreeSidebarModel {
     height: 200,
     rowsTopOffset: 0,
     rowFocusLineHeight: 0,
+    rowNarrowingClears: false,
     setTreeCanvasRef: () => {},
     setMouseoverCanvasRef: () => {},
     setHoveredTreeNode: () => {},
     setTreeAreaWidth: () => {},
     setRowFocus: () => {},
+    showAllRows: () => {},
     setScrollTop: () => {},
     ...props,
   }
@@ -103,6 +105,7 @@ describe('TreeSidebar', () => {
     const { getByTestId } = draw(
       {
         rowFocus: ['a', 'b'],
+        rowNarrowingHint: { text: 'Showing 2 of 3 rows', title: '' },
         rowsTopOffset: 85 + SIDEBAR_HINT_LINE_PX,
         rowFocusLineHeight: SIDEBAR_HINT_LINE_PX,
       },

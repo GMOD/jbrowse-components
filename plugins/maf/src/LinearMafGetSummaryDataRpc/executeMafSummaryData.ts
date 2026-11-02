@@ -103,7 +103,7 @@ export async function executeMafSummaryData({
   // the sidebar tree and "clear filter" still see every genome — so discovery
   // reads every record's `src`, before the filter, as the alignment path
   // discovers from every block row before narrowing `blocks`.
-  const visible = visibleSamples(rowFocus, configSamples)
+  const visible = visibleSamples(rowFocus)
   const records: MafSummaryRecord[] = []
   // Insertion-ordered, so a discovered row set has a stable order.
   const discovered = new Set<string>()

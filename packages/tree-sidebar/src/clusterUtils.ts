@@ -198,11 +198,10 @@ export function rowsNamed<T extends { name: string }>(
 }
 
 /**
- * The rows a focus keeps: those `kept` names, in the order given. A focus
- * naming no current row keeps every row rather than none, so a stale focus
- * — one saved against rows that have since been renamed — never blanks the
- * display. Synthesis keyed to a row's place among every row runs before
- * this, for the reason {@link rowsNamed} states.
+ * The rows `kept` names, in the rows' order; every row while it names none.
+ * A list naming no current row keeps none, and the display says so.
+ * Synthesis keyed to a row's place among every row runs before this, for the
+ * reason {@link rowsNamed} states.
  *
  * With `rowAlias`, a name keeps every row answering to it, so a sample's name
  * keeps its haplotypes; and a row that is its own alias (a sample not yet
@@ -215,12 +214,8 @@ export function keptRows<T extends { name: string }>(
   kept: readonly string[] | undefined,
   rowAlias?: RowAlias,
 ): T[] {
-  if (!rowAlias) {
-    const focused = rowsNamed(rows, kept)
-    return focused.length ? focused : rows
-  }
-  if (!kept?.length) {
-    return rows
+  if (!rowAlias || !kept?.length) {
+    return rowsNamed(rows, kept)
   }
   const samples = new Set(
     kept.flatMap(name => {
@@ -231,9 +226,6 @@ export function keptRows<T extends { name: string }>(
   const ofSamples = rows.filter(row =>
     samples.has(rowAlias(row.name) ?? row.name),
   )
-  if (!ofSamples.length) {
-    return rows
-  }
   const names = new Set(kept)
   const exact = ofSamples.filter(row => {
     const sample = rowAlias(row.name)

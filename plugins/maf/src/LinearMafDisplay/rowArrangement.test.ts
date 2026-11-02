@@ -429,7 +429,8 @@ describe('rows.colors tints a row over the adapter color', () => {
   })
 })
 
-// The rows agree with what the worker ships for the focus (`visibleSamples`).
+// The rows agree with what the worker ships for the focus (`visibleSamples`),
+// which no longer falls back to every species.
 describe('a focus naming no current species', () => {
   function focused(samplesCanonical: boolean) {
     const { display } = createMafTestEnvironment({
@@ -444,17 +445,41 @@ describe('a focus naming no current species', () => {
   }
 
   // Saved against rows that have since gone, by a renamed species or another
-  // adapter.
-  it('shows every row on a track that lists its species', () => {
+  // adapter: the list draws what it names, which is nothing, and the notice
+  // names the species it missed where the config lists them.
+  it('shows no row on a track that lists its species, and names the miss', () => {
     const display = focused(true)
-    expect(rowNames(display)).toEqual(['hg38', 'mm10'])
+    expect(rowNames(display)).toEqual([])
     expect(display.rowFocusKey).toEqual(['rn6'])
+    expect(display.liveNotices).toEqual([
+      'rows.kept names no row (rn6), so no row shows',
+    ])
+    expect(display.rowNarrowingHint?.text).toBe(
+      'Showing 0 of 2 rows · Show all',
+    )
   })
 
-  it('shows no row on a track that discovers its species', () => {
+  it('shows no row on a track that discovers its species, naming none', () => {
     const display = focused(false)
     expect(rowNames(display)).toEqual([])
     expect(display.rowFocusKey).toEqual(['rn6'])
+    expect(display.liveNotices).toEqual([
+      'rows.kept names no row here, so no row shows',
+    ])
+  })
+
+  // A copy row exists only where a block aligns the species twice.
+  it('names no copy row it missed', () => {
+    const { display } = createMafTestEnvironment({
+      displayConfig: { rows: { kept: ['hg38', 'mm10~2'] } },
+    }).createDisplay()
+    display.setSamples({
+      samples: [sample('hg38'), sample('mm10')],
+      treeNewick: undefined,
+      samplesCanonical: true,
+    })
+    expect(rowNames(display)).toEqual(['hg38'])
+    expect(display.liveNotices).toEqual([])
   })
 })
 
