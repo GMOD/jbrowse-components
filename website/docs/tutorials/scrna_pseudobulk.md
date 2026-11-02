@@ -92,7 +92,7 @@ assembly has a name-alias table.
 }
 ```
 
-The figures also show NCBI's RefSeq genes as a track:
+The RNA figures show NCBI's RefSeq genes as a track:
 
 ```json addtrack
 {
@@ -105,6 +105,17 @@ The figures also show NCBI's RefSeq genes as a track:
     "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz",
     "csi": true
   }
+}
+```
+
+The ATAC figure reads the same genes from NCBI's own RefSeq GFF3:
+
+```json addtrack
+{
+  "trackId": "ncbi_refseq_109_hg38_latest",
+  "name": "NCBI RefSeq (GFF3Tabix)",
+  "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz",
+  "assemblyNames": ["hg38"]
 }
 ```
 
