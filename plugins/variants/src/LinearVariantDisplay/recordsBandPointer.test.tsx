@@ -1,4 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
+import { ringStripCanvas } from '@jbrowse/render-core/OverlayCanvas'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import RecordsBandOverlay, {
@@ -106,4 +107,19 @@ test('a band repaint counts as a paint, so a ring takes it', () => {
   })
   expect(display.paintCount).toBeGreaterThan(painted)
   expect(display.canvasDrawn).toBe(false)
+})
+
+// The ring samples the canvas the display marks, whatever canvas comes first
+// in its strip: here a 0px one standing for the rows' backend.
+test('a ring samples the band, wherever it sits in the strip', () => {
+  const { display } = recordsDisplayAt(KIT, 51)
+  const { container } = render(
+    <div>
+      <canvas data-testid="rows_canvas" />
+      <RecordsBandOverlay model={display} />
+    </div>,
+  )
+  expect(ringStripCanvas(container)).toBe(
+    screen.getByTestId('records_band_box').querySelector('canvas'),
+  )
 })

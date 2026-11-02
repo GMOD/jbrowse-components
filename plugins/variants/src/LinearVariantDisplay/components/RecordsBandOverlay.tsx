@@ -219,6 +219,7 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
       <OverlayCanvas
         width={canvasWidthPx}
         height={recordsHeight}
+        ringStrip
         draw={ctx => {
           paint(ctx)
           model.markRecordsBandPainted()

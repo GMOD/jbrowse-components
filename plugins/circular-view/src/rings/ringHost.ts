@@ -1,6 +1,7 @@
 import { scheduleDetachedDestroy } from '@jbrowse/core/util'
 import { BlockSet, wholeBaseRegions } from '@jbrowse/core/util/blockTypes'
 import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
+import { ringStripCanvas } from '@jbrowse/render-core/OverlayCanvas'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { installUpload } from '@jbrowse/render-core/installUpload'
@@ -570,7 +571,7 @@ export const RingHost = types
       const index = this.rings.findIndex(r => r.display.id === displayId)
       const ring = this.rings[index]
       const el = self.stripElements.get(displayId)
-      const canvas = el?.querySelector('canvas')
+      const canvas = el && ringStripCanvas(el)
       if (
         !ring ||
         ring.display.paintCount === 0 ||

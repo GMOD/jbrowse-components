@@ -1,3 +1,5 @@
+import { ringStripCanvas } from '@jbrowse/render-core/OverlayCanvas'
+
 import type { RingHostModel } from './ringHost.ts'
 
 export type RingPointerEvent = 'mousemove' | 'click' | 'contextmenu'
@@ -27,7 +29,7 @@ export class RingPointer {
       ? {
           strip,
           target:
-            strip.querySelector('canvas') ??
+            ringStripCanvas(strip) ??
             strip.querySelector('[data-display-id]') ??
             strip,
         }
