@@ -10,6 +10,16 @@ const LINES = [
   'ctgA\t200\tsv1\tN\t<DEL>\t.\t.\tSVTYPE=DEL;END=900',
 ]
 
+function twoSamples(lines: string[]) {
+  const parser = new VcfParser({
+    header: '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tS1\tS2',
+  })
+  return lines.map(
+    (line, i) =>
+      new VcfFeature({ parser, variant: parser.parseLine(line), id: `f${i}` }),
+  )
+}
+
 function sitesOnly() {
   const parser = new VcfParser({
     header: '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
@@ -50,16 +60,10 @@ test('columns, which draw no records band, keep dropping them', () => {
 // `genotypes.show` off asks for no sample: the worker reads the file as one
 // with no samples, so a site no sample calls stays, as on a sites-only VCF.
 test('reading no genotypes keeps a sampled VCF site no sample calls', () => {
-  const parser = new VcfParser({
-    header: '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tS1\tS2',
-  })
-  const features = [
+  const features = twoSamples([
     'ctgA\t100\trs1\tA\tG\t.\t.\t.\tGT\t0/1\t0/0',
     'ctgA\t200\trs2\tC\tT\t.\t.\t.\tGT\t./.\t./.',
-  ].map(
-    (line, i) =>
-      new VcfFeature({ parser, variant: parser.parseLine(line), id: `f${i}` }),
-  )
+  ])
   const read = analyzeVariants({ features, keepSampleLessSites: true })
   expect(read.filteredVariants.map(v => v.feature.get('name'))).toEqual(['rs1'])
   const unread = analyzeVariants({
@@ -91,16 +95,10 @@ test('a site filter keeps a sample-less VCF site', () => {
 })
 
 test('reading no genotypes tests no site filter', () => {
-  const parser = new VcfParser({
-    header: '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tS1\tS2',
-  })
-  const features = [
+  const features = twoSamples([
     'ctgA\t100\trs1\tA\tG\t.\t.\t.\tGT\t0/1\t0/0',
     'ctgA\t200\trs2\tC\tT\t.\t.\t.\tGT\t0/0\t0/0',
-  ].map(
-    (line, i) =>
-      new VcfFeature({ parser, variant: parser.parseLine(line), id: `f${i}` }),
-  )
+  ])
   const names = (readGenotypes: boolean) =>
     analyzeVariants({
       features,
@@ -110,4 +108,20 @@ test('reading no genotypes tests no site filter', () => {
     }).filteredVariants.map(v => v.feature.get('name'))
   expect(names(true)).toEqual(['rs1'])
   expect(names(false)).toEqual(['rs1', 'rs2'])
+})
+
+// the first count passes a site no sample calls on to the walk, which drops it
+// where samples were read
+test('a site filter drops a sampled VCF site no sample calls', () => {
+  const analyzed = analyzeVariants({
+    features: twoSamples([
+      'ctgA\t100\trs1\tA\tG\t.\t.\t.\tGT\t0/1\t0/0',
+      'ctgA\t200\trs2\tC\tT\t.\t.\t.\tGT\t./.\t./.',
+    ]),
+    siteFilter: MAF_FLOOR,
+    keepSampleLessSites: true,
+  })
+  expect(analyzed.filteredVariants.map(v => v.feature.get('name'))).toEqual([
+    'rs1',
+  ])
 })
