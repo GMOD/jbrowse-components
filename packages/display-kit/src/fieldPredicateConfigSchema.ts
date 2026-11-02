@@ -217,17 +217,30 @@ function statesATest(entry: unknown) {
   )
 }
 
-// An entry stating tests that its own schema strips every one of, as
-// `RowPredicate` strips an entry on a row's name loading. A write refuses the
-// entry instead, and the entry's own creation is what reports it, so a throw
-// here keeps the entry.
+function namesAField(entry: unknown) {
+  return (
+    typeof entry === 'string' ||
+    (typeof entry === 'object' &&
+      entry !== null &&
+      'field' in entry &&
+      typeof entry.field === 'string' &&
+      entry.field !== '')
+  )
+}
+
+// An entry stating tests, or a field, that its own schema strips, as
+// `RowPredicate` strips the field of an entry on a row's name loading. A
+// write refuses the entry instead, and the entry's own creation is what
+// reports it, so a throw here keeps the entry.
 function refusedAway(
   meta: NonNullable<ReturnType<typeof getConfigurationSchemaMetadata>>,
   entry: unknown,
 ) {
   try {
+    const kept = preProcessSnapshotWith(meta, entry)
     return (
-      statesATest(entry) && !statesATest(preProcessSnapshotWith(meta, entry))
+      (statesATest(entry) && !statesATest(kept)) ||
+      (namesAField(entry) && !namesAField(kept))
     )
   } catch {
     return false

@@ -34,9 +34,26 @@ function problems(track: Record<string, unknown>) {
   )
 }
 
-// A row's identity names it, which rows.kept does (ADR-257).
-test.each(['name', 'sampleName', 'HP'])(
-  'rows.filter on %s is reported, pointing at rows.kept',
+// A row's identity names it, which rows.kept does (ADR-257). One schema rule
+// covers the list, and its message names the entry's own field.
+const IDENTITY_FIELDS = [
+  'name',
+  'sampleName',
+  'sample',
+  'source',
+  'HP',
+  'label',
+  'color',
+  'rowColor',
+]
+
+const identityProblem = (where: string, field: string) => ({
+  where: `${where}.rows.filter[0].field`,
+  message: `field '${field}' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']`,
+})
+
+test.each(IDENTITY_FIELDS)(
+  'rows.filter on %s is reported, naming it and pointing at rows.kept',
   field => {
     expect(
       problems({
@@ -47,28 +64,12 @@ test.each(['name', 'sampleName', 'HP'])(
           },
         ],
       }),
-    ).toEqual([
-      {
-        where: expect.stringContaining('tracks[0].displays[0].rows.filter'),
-        message: expect.stringContaining("a row's name goes in rows.kept"),
-      },
-    ])
-  },
-)
-
-test.each(['sample', 'source', 'rowColor'])(
-  'rows.filter on %s is reported through displayDefaults too',
-  field => {
+    ).toEqual([identityProblem('tracks[0].displays[0]', field)])
     expect(
       problems({
         displayDefaults: { rows: { filter: [{ field, equal: 'x' }] } },
       }),
-    ).toEqual([
-      {
-        where: expect.stringContaining('tracks[0].displayDefaults.rows.filter'),
-        message: expect.stringContaining(`field '${field}' names a row`),
-      },
-    ])
+    ).toEqual([identityProblem('tracks[0].displayDefaults', field)])
   },
 )
 

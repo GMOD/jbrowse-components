@@ -414,6 +414,15 @@ export function createSchemaValidator(
 
   // A schema's `requires` entry, which the generator writes as an `if`/`then`
   // annotated with the entry's id, the slot path it requires and its message.
+  // A requirement's message with each `{slot}` placeholder filled from the
+  // object it judged, as core's `filledMessage` fills a refusal's
+  function filledMessage(message: string, data: unknown) {
+    return message.replaceAll(/\{(\w+)\}/g, (placeholder, slot: string) => {
+      const value = isRecord(data) ? data[slot] : undefined
+      return typeof value === 'string' ? value : placeholder
+    })
+  }
+
   function requirementOf(error: ErrorObject) {
     const parent: Schema = error.parentSchema ?? {}
     const stated = parent['x-requirement']
@@ -421,7 +430,7 @@ export function createSchemaValidator(
       ? {
           id: String(stated.id),
           slot: String(stated.slot),
-          message: String(parent.errorMessage),
+          message: filledMessage(String(parent.errorMessage), error.data),
           branch: `${error.schemaPath.replace(/\/if$/, '')}/then/`,
         }
       : undefined

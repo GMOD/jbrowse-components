@@ -23,18 +23,11 @@ export const ROW_IDENTITY_FIELDS = [
   'rowColor',
 ]
 
-const TEST_SLOTS = [
-  'equal',
-  'oneOf',
-  'lt',
-  'lte',
-  'gt',
-  'gte',
-  'range',
-  'valid',
-] as const
-
-/** What a `rows.filter` entry on a row's identity is refused with. */
+/**
+ * What a `rows.filter` entry on a row's identity is refused with, `field`
+ * naming it; the schema's refusal names the entry's own field through the
+ * `{field}` placeholder.
+ */
 export function rowIdentityPointer(field: string) {
   return `field '${field}' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']`
 }
@@ -66,12 +59,14 @@ export const rowPredicateConfigSchema = ConfigurationSchema(
   {},
   {
     baseConfiguration: fieldPredicateConfigSchema,
-    refuses: ROW_IDENTITY_FIELDS.map(field => ({
-      id: `row-filter-identity-${field}`,
-      when: { field: [field] },
-      slots: [...TEST_SLOTS],
-      message: rowIdentityPointer(field),
-    })),
+    refuses: [
+      {
+        id: 'row-filter-identity',
+        when: { field: ROW_IDENTITY_FIELDS },
+        slots: ['field'],
+        message: rowIdentityPointer('{field}'),
+      },
+    ],
     preProcessSnapshot: snap => {
       const { field } = snap
       if (typeof field === 'string' && isJexl(field)) {

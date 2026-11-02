@@ -196,7 +196,9 @@ export interface ConfigurationSchemaOptions<
    * `scale.domain` while its `field` is `name`. Met at ADR-221's doors: a
    * config loading one names it on the console and loads without it, a write
    * refuses it with `message`, and the generated JSON Schema carries it as
-   * `if`/`then`, which `jbrowse validate` reports.
+   * `if`/`then`, which `jbrowse validate` reports. A `{slot}` placeholder in
+   * `message` names the value the snapshot gives that slot, so one rule over
+   * several `when` values names the one written.
    */
   refuses?: ConfigurationSchemaRequirement[]
 }

@@ -221,6 +221,21 @@ function whenHolds(
 }
 
 /**
+ * A refusal's `message` with each `{slot}` placeholder filled with the value
+ * `snapshot` gives that slot, so one rule over several values names the one
+ * written: `field '{field}' names a row`.
+ */
+export function filledMessage(
+  message: string,
+  snapshot: Record<string, unknown>,
+) {
+  return message.replaceAll(/\{(\w+)\}/g, (placeholder, slot: string) => {
+    const value = snapshot[slot]
+    return typeof value === 'string' ? value : placeholder
+  })
+}
+
+/**
  * The `refuses` entries of a schema that `snapshot` breaks: a dotted path
  * holding a value (a non-empty string, list or object) while every slot named
  * in `when` holds one of the listed values, its default counting while
@@ -239,7 +254,7 @@ export function refusalProblems(
     .flatMap(({ id, slots, message }) =>
       slots
         .filter(path => holdsAValue(valueAt(snapshot, path.split('.'))))
-        .map(slot => ({ id, slot, message })),
+        .map(slot => ({ id, slot, message: filledMessage(message, snapshot) })),
     )
 }
 
