@@ -127,15 +127,16 @@ gzip -dc strain.gff.gz | awk -F'\t' '$3 == "gene" && $9 ~ /;gene=/' | wc -l
 
 Each strain is an assembly that needs only its chromosome's length, since the
 lanes never read sequence. The build writes `<strain>.chrom.sizes` (a name and a
-length, tab-separated) and loads it as a `ChromSizesAdapter`. A reader with ten
-strains repeats this block and the gene track below once per strain:
+length, tab-separated) and loads it as a `ChromSizesAdapter`. Repeat this block
+and the gene track below once per strain:
 
 ```json addassembly
 { "name": "MG1655", "uri": "MG1655.chrom.sizes" }
 ```
 
-Each lane draws gene models from the strain's gene track, the sorted, bgzipped
-and tabix-indexed GFF3 the build made above:
+Each lane draws gene models from the strain's gene track, a sorted, bgzipped and
+tabix-indexed GFF3 ([prep](/docs/quickstart_web)) that the build script writes
+per strain:
 
 ```json addtrack
 {
@@ -164,7 +165,7 @@ assembly:
   "assemblyNames": ["MG1655", "Sakai", "CFT073", "Sflexneri_301"],
   "adapter": {
     "type": "MCScanBlocksAdapter",
-    "mcscanBlocksLocation": { "uri": "ecoli.blocks.gz" },
+    "uri": "ecoli.blocks.gz",
     "blockAssemblies": ["MG1655", "Sakai", "CFT073", "Sflexneri_301"],
     "bedLocations": [
       "MG1655.bed.gz",

@@ -15,10 +15,12 @@ from one ancestral gene, from protein similarity alone. We:
 
 - run OrthoFinder and convert the orthogroups to a `.blocks` table that JBrowse
   reads
-- load the `wheat` orthogroups as a synteny track and stack the genomes in a
-  synteny view
-- open four more sets the same way: vertebrates, drosophila, nightshades
-  (`solanaceae`) and grasses
+- load the `wheat` orthogroups as a synteny track, stack the genomes in a linear
+  synteny view, and color wheat 4A by the tauschii chromosomes it pairs with
+- open four more sets the same way (vertebrates, drosophila, nightshades and
+  grasses), three of them also as multi-way lanes under one genome
+- chain the drosophila orthogroups into collinear blocks with MCScanX and load
+  them as a PAF track
 
 ## Prerequisites
 

@@ -11,7 +11,7 @@ tutorial_subcategory: Ortholog tables
 
 We look at one human locus across seven other primates at once. NCBI gives an
 orthologous gene the same symbol in every species it annotates, so an ortholog
-table is a join on the gene name, built from eight GFF3 files in seconds. We:
+table is a join on the gene name over eight GFF3 files. We:
 
 - build the join, and set up each lane's assembly from its hub
 - load the table as a multi-genome ortholog track, each primate a lane under the
@@ -213,7 +213,7 @@ ortholog group, named by its gene symbol, to a color:
   ],
   "adapter": {
     "type": "MCScanBlocksAdapter",
-    "mcscanBlocksLocation": { "uri": "primates.blocks.gz" },
+    "uri": "primates.blocks.gz",
     "blockAssemblies": [
       "hg38",
       "GCF_028858775.2",
@@ -297,9 +297,9 @@ Human chromosome 2 is two ape chromosomes joined end to end. To see the join:
 
 <Figure caption="Human chr2 over chimpanzee chr12 and chr13, ribbons colored by chimpanzee chromosome." src="/img/multiway_synteny/primate_chr2_fusion.png" />
 
-In the multi-lane view, each ape lane picks the contig with more genes in the
-window and names the other in its header. **Show ⟨contig⟩ in this lane** on the
-header menu swaps the lane onto it.
+In the multi-lane view, a lane whose genome holds the window's genes on two
+contigs shows the contig with more of them and names the other in its header.
+**Show ⟨contig⟩ in this lane** on the header menu swaps the lane onto it.
 
 ## Reproduce it end to end
 
