@@ -202,17 +202,17 @@ Five cases mislead in the lanes:
 - **A haplotype the graph does not align has no lane of its own.** Picked by
   hand under **Lanes → Choose lanes...**, it gets an empty row at the foot
   headed "no alignment in this window".
-- **A deletion across the window is a row with no ribbons.** A haplotype whose
-  deletion spans the whole window shows as a row at the foot of the lanes,
-  headed with the deletion's length, such as "inside a 150 kb deletion". The row
-  comes from the -f5s walk file's skip rows, so it appears only where the window
-  lies in a 64 kb chunk the deletion covers whole, for a deletion up to about 2
-  Mb. A window in the deletion's first or last chunk shows no row for that
-  haplotype. Walk rows, which
+- **A stretch the haplotype skips across the window is a row with no ribbons.**
+  A haplotype with no step on the reference across the whole window shows as a
+  row at the foot of the lanes, headed with the stretch's length, such as "no
+  step on the reference across 150 kb". The row comes from the -f5s walk file's
+  skip rows, so it appears only where the window lies in a 64 kb chunk the skip
+  covers whole, for a skip up to about 2 Mb. A window in the skip's first or
+  last chunk shows no row for that haplotype. Walk rows, which
   [part 3](/docs/tutorials/pangenome_hprc_repeats#amylase) opens, draw the same
-  haplotype as a deletion row. At IGH, IGK and IGL such a row is often the cell
-  line's deletion, as [part 1's limits](/docs/tutorials/pangenome_hprc#limits)
-  explain.
+  haplotype as a row with no step on the reference. At IGH, IGK and IGL such a
+  row is often the cell line's deletion, as
+  [part 1's limits](/docs/tutorials/pangenome_hprc#limits) explain.
 - **A lane can stop partway**, at the end of the graph's alignment of that
   haplotype; its sequence can run on past it.
 - **One lane stands for many haplotypes.** The page groups haplotypes into

@@ -72,7 +72,7 @@ export type Placeless = { kind: 'deletion'; bp: number } | { kind: 'unaligned' }
 
 function placelessText(placeless: Placeless) {
   return placeless.kind === 'deletion'
-    ? `inside a ${bpText(placeless.bp)} deletion`
+    ? `no step on the reference across ${bpText(placeless.bp)}`
     : 'no alignment in this window'
 }
 

@@ -2899,7 +2899,7 @@ test("a gene-table row the anchor lacks is read on each lane's own window and jo
   ).toBe('vioB\nnot in volvox')
 })
 
-test('a lane the window shows none of, inside a deletion its record states, is a row whose header names it', () => {
+test('a lane the window shows none of, inside a skip its record states, is a row whose header names it', () => {
   const display = createDisplay()
   display.setFeatures(
     [
@@ -2924,7 +2924,7 @@ test('a lane the window shows none of, inside a deletion its record states, is a
   )
   expect(display.rowAssemblies).toEqual(['volvox_random', 'volvox_ins'])
   const row = display.laneHeaderRows.find(r => r.assemblyName === 'volvox_ins')
-  expect(row?.changes?.text).toBe('inside a 1.2 Mb deletion')
+  expect(row?.changes?.text).toBe('no step on the reference across 1.2 Mb')
 })
 
 describe('a chosen lane the window places nothing in', () => {
@@ -2982,7 +2982,7 @@ describe('a chosen lane the window places nothing in', () => {
     expect(
       display.laneHeaderRows.find(r => r.assemblyName === 'volvox_ins')?.changes
         ?.text,
-    ).toBe('inside a 150 kb deletion')
+    ).toBe('no step on the reference across 150 kb')
   })
 })
 
