@@ -249,6 +249,43 @@ describe('allele count', () => {
 })
 
 describe('phased', () => {
+  // A haplotype row refines its sample (`rowAliasOf`), so a color pinned on
+  // the sample reaches both of its rows, as its order and label do, whether
+  // the rows are colored by name or by an attribute.
+  test.each([undefined, 'population'])(
+    'a color pinned on a sample colors both of its haplotype rows, colored by %s',
+    color => {
+      const display = loaded({ phased: true, color })
+      landCells(display)
+      display.applyRowEdits(display.editableSources, {
+        colors: { S1: '#123456' },
+      })
+      const s1 = display.sources.filter(s => s.name.startsWith('S1 '))
+      expect(s1.map(s => s.name)).toEqual(['S1 HP0', 'S1 HP1'])
+      expect(s1.map(s => s.rowColor)).toEqual(['#123456', '#123456'])
+      expect(
+        display.sources.filter(s => s.rowColor === '#123456'),
+      ).toHaveLength(2)
+    },
+  )
+
+  // `scale.unknown` deals every name the pins leave out, a haplotype row's
+  // own name among them; its sample's pin still wins.
+  test("a sample's pin beats the unknown color its haplotype rows' names are dealt", () => {
+    const display = loaded({ phased: true })
+    landCells(display)
+    display.applyRowEdits(display.editableSources, {
+      color: { scale: { unknown: '#cccccc' } },
+      colors: { S1: '#123456' },
+    })
+    expect(
+      display.sources
+        .filter(s => s.name.startsWith('S1 '))
+        .map(s => s.rowColor),
+    ).toEqual(['#123456', '#123456'])
+    expect(display.sources.some(s => s.rowColor === '#cccccc')).toBe(true)
+  })
+
   test('sample rows until the ploidy lands, then haplotypes', () => {
     const display = loaded({ phased: true, color: 'population' })
     expect(derived(display)).toMatchSnapshot()

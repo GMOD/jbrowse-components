@@ -4,12 +4,14 @@ import {
   colorDomainSlot,
   colorRangeSlot,
   colorScaleOptions,
-  colorUnknownSlot,
 } from './colorConfigSchema.ts'
 
 /**
  * #config RowColor
  * #category display
+ * `scale.unknown: ''` colors no row but those `rows.colors` pins: the "None"
+ * of the Color rows by menu and dialog.
+ *
  * `rows.color`, the row displays' rows colored by an attribute: one ordinal
  * color channel on the row axis. `field` names the row attribute whose values
  * take the colors, a samplesTsv column or a subtrack's group, and
@@ -84,7 +86,16 @@ export const rowColorConfigSchema = ConfigurationSchema(
           range:
             'the CSS color each value in domain takes, in the same order; past them, the palette the other values deal from',
         }),
-        ...colorUnknownSlot,
+        /**
+         * #slot unknown
+         * `''` colors no row but those `rows.colors` pins: the menu's None.
+         * A color is the one every row the scale leaves out takes.
+         */
+        unknown: {
+          type: 'maybeColor',
+          description:
+            '"" colors no row but those rows.colors pins: the menu\'s None. A color: every row the scale leaves out takes it. Unset: under name the palette deals a color per row where the rows share one panel, and under an attribute each value deals the next palette color; a row left without one keeps the color its file gives it',
+        },
       },
       colorScaleOptions('rows.color.scale'),
     ),

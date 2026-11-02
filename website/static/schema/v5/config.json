@@ -11581,7 +11581,7 @@
           }
         },
         "unknown": {
-          "description": "color for a value missing from domain. Unset: the next palette color where the display deals one, and the levels a preset field names, such as strand's, keep their own colors. A color: that color. \"\": no color dealt, so a feature paints the no-value grey, a variant cell the alt hue, and a row keeps the color it already has.",
+          "description": "\"\" colors no row but those rows.colors pins: the menu's None. A color: every row the scale leaves out takes it. Unset: under name the palette deals a color per row where the rows share one panel, and under an attribute each value deals the next palette color; a row left without one keeps the color its file gives it.",
           "if": {
             "type": "null"
           },

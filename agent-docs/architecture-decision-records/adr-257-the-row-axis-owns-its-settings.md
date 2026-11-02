@@ -92,14 +92,22 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
 ### Row colors
 
 - Per-row pairs live only in `rows.colors`: `rows.color` refuses
-  `scale.domain` under `field: 'name'`. Under `name` it keeps the palette
-  (`scale.range`, dealt to every row) and `scale.unknown: ''` (none), which
-  "Each row" and "None" write.
+  `scale.domain` under `field: 'name'` (the schema's `refuses`, met at
+  ADR-221's doors). Under `name` it keeps the palette (`scale.range`, dealt
+  to every row) and `scale.unknown: ''` (none), which "Each row" and "None"
+  write. Under `name` the pins read as that palette's pairs, so a row's color
+  resolves as it did when they were one object.
 - A row takes `rows.colors[row]`, else `rows.color`, else the file's own color
   (MAF `samples[].color`, a listed source's color), else the palette.
 - Under an attribute, a row `rows.colors` names leaves its value's swatch in
   the key and takes its own entry by label, where the key shows (a field, or
   rows sharing one panel); on stacked rows its label tint identifies it.
+- A choice of what colors the rows writes `rows.color` and keeps the pins,
+  except None, which colors no row and clears them. The arrangement dialog's
+  row swatches write `rows.colors` under any choice but None.
+- `colors` is a member of `Rows`, beside `color`, so the four row displays
+  declare it and the multi-way lanes, whose `rows` is the bare arrangement,
+  do not.
 
 ### The write rule
 
@@ -214,6 +222,59 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
    and docs with it.
 4. The variant display's `unit` as `rows.field`, haplotype refining sample;
    MAF's `rows` drops the one-value `field` it inherits through `SampleRows`.
+   Settled 2026-11-02, not yet built:
+   - One flat `rows.field: 'sample' | 'haplotype'`: phased clustering
+     interleaves haplotypes of different samples, which a nested spelling
+     (a y offset, a `rows.split`) cannot express. Public docs say a haplotype
+     row answers to its sample's name, and that the variant display's
+     `haplotype` is no column, unlike a mark display's `rows: 'haplotype'`
+     over a BED; they do not say "refinement".
+   - Declared as data: `KeyedWrites` gains an optional `refines`
+     (`{ haplotype: 'sample' }`, finer to coarser), declared on the variant
+     rows' `writes` alone. `changesKeyedField`
+     (`packages/add-track-core/src/keyedWrites.ts`, plain inequality today)
+     reads a `refines` pair as no change in either direction; `mergedWrites`
+     unions `refines`, a conflict falling back to `'whole'`; the schema check
+     refuses a chain, a self-map and a value the enum lacks. The parity table
+     gains refinement rows through all four consumers
+     (`mergeConfSettings`, `writeConfMember`, `trackConfigDelta`,
+     `mergeBySlots`), and `resettingRowsOnUnitChange` goes.
+   - A switch normalises no state; a read interprets it, since the CLI and
+     the share-link delta cannot see the sample list and normalising loses a
+     phased interleave. `RowAlias` becomes a row-parent hook read off the
+     row's own `sampleName` and `HP`, not parsed from its name.
+   - `sort`: a row ranks at the earlier of its own and its sample's entry, so
+     the latest reorder in either mode wins; collapsing, a sample ranks at its
+     first haplotype entry (`orderByRank`; today a phased clustering order
+     falls back to file order in sample mode, and a sample-mode reorder over
+     haplotype entries leaves them interleaved on the way back).
+   - `labels` (Colin's ruling, 2026-11-02): an own-name entry shows exactly
+     its text (`'NA12878 HP1': 'paternal'`); else a sample-keyed label
+     composes with the haplotype (`Mother HP1`); a haploid single row takes
+     the bare sample label; haplotype entries persist unseen in sample mode.
+     `arrangeRows.test.ts` pins today's replacing behaviour.
+   - `colors`: as `labels`, a sample entry coloring its haplotypes and
+     haplotype entries persisting unseen in sample mode, with nothing
+     inferred from agreement.
+   - `tree`: sample leaves expand to zero-length forks over haplotype rows; a
+     haplotype-leaf tree in sample mode hides with a hint naming that reason,
+     not "rows changed since clustering".
+   - `filter`: two-way, as `keptRows` already is.
+   - Haplotype numbering is 1-based, `<sample> HP1`, `HP2` (Colin's ruling,
+     2026-11-02), matching multi-way synteny's #1/#2 and WhatsHap/HPRC. The
+     schema, the CLI manifest and the user guide state the row name's
+     spelling, and the docs say it is JBrowse's numbering, not the VCF's
+     `HP` tag.
+   - MAF copy rows compose labels the same way (`Mouse~2`).
+   - A sample whose name parses as another's haplotype (`X HP1` beside `X`,
+     `parseRowName`) warns once.
+   - Tests: a phased → sample → phased round trip for `sort`, `labels`,
+     `colors` and `tree`; the name collision; `rowArrangement.test.ts`'s pin
+     of the old reset inverted, not deleted.
 5. Writers: menus, launch-args, jbrowse-img, the tables and R export, the
    agent prompt (`jbApi.ts`, which says `rows` and `rowColor` write whole and
-   lists `unit`), figure specs, tutorials, jb2hubs, ggjbrowse.
+   lists `unit`), figure specs, tutorials, jb2hubs, ggjbrowse. jb2hubs'
+   repeat-class displays (`columnDisplays.ts`, `repeatClassDisplay.ts`) and
+   ggjbrowse's `R/variants.R` write per-class colors as `rowColor.scale`
+   `domain` and `range` pairs; respelled, those are a `rows.colors` map, not
+   `rows.color.scale` pairs, which `field: 'name'` refuses.

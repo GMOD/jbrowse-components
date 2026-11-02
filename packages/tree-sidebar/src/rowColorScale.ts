@@ -115,10 +115,11 @@ export function dealValueColors(
 }
 
 /**
- * Each row's color, by name: under `name`, what `dealt` gives it, its own
- * entry else its alias's, the pins among them (`withPinnedColors`); under an
- * attribute, the color `pinned` (`rows.colors`) gives it, its own entry else
- * its alias's, else what `dealt` gives its value; else its own `color`.
+ * Each row's color, by name: the color `pinned` (`rows.colors`) gives it, its
+ * own entry else its alias's, so a haplotype row takes its sample's pin over
+ * the `scale.unknown` its own name is dealt; else what `dealt` gives its name
+ * (its own entry, else its alias's) or its value of the attribute; else its
+ * own `color`.
  */
 export function resolveRowColors(
   rows: readonly RowSource[],
@@ -131,10 +132,11 @@ export function resolveRowColors(
   const aliased = dealt.size > 0 ? alias : undefined
   for (const row of rows) {
     const color =
+      pinnedColorOf(pinned, row.name, alias) ??
       (field === 'name'
         ? (dealt.get(row.name) ?? aliasColor(dealt, row.name, aliased))
-        : (pinnedColorOf(pinned, row.name, alias) ??
-          dealt.get(rowFieldValue(row, field)))) ?? row.color
+        : dealt.get(rowFieldValue(row, field))) ??
+      row.color
     if (color !== undefined) {
       colors.set(row.name, color)
     }

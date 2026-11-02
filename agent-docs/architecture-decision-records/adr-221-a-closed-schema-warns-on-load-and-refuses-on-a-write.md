@@ -23,6 +23,16 @@ lifts cannot also be misnamed. A numeric slot's `exclusiveMinimum` meets a
 value at or below it as a key: a load names it once and takes the default, a
 write refuses it.
 
+Amended 2026-11-02 (ADR-257, row colors): a schema's `refuses`, the converse
+of `requires` (`{ id, when, slots, message }`), meets a member held under the
+values `when` names as a key too: a load names it once and loads without it,
+a write refuses it, from a whole object, a bag, `displayDefaults` routing or a
+member `setConf` on either side of the condition, and the generated JSON
+Schema carries it as `if`/`then`. `rows.color` declares the one: no
+`scale.domain` under `field: 'name'`, since a per-row pair has a member of
+its own, `rows.colors`. It is the one combination a channel object refuses,
+an exception ADR-257 makes to ADR-133's rule.
+
 ## Context
 
 ADR-217 left three answers to one question. A channel object refused an

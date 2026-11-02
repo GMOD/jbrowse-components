@@ -1,11 +1,14 @@
 ---
 id: rowcolor
 title: RowColor
-description: "rows.color, the row displays' rows colored by an attribute: one ordinal color channel on the row axis. field names the row attribute whose values take the colors, a samplesTsv column or a subtrack's…"
+description: "scale.unknown: '' colors no row but those rows.colors pins: the \"None\" of the Color rows by menu and dialog."
 sidebar_label: Display setting -> RowColor
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/rowColorConfigSchema.ts).
+
+`scale.unknown: ''` colors no row but those `rows.colors` pins: the "None"
+of the Color rows by menu and dialog.
 
 `rows.color`, the row displays' rows colored by an attribute: one ordinal
 color channel on the row axis. `field` names the row attribute whose values
@@ -60,7 +63,7 @@ A setting written to it replaces it whole: a member left out returns to its defa
 | Slot | Description |
 | --- | --- |
 | <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>'name'</code> | The row attribute whose values take the colors, or `name`, each row its own value. Under `name` with no `scale.unknown`, stacked rows keep only a file's own colors and the colors `rows.colors` pins, since the palette deals only where the rows share one panel. |
-| <span id="slot-scale">**scale**</span><br>[RowColorScale sub-schema](#slot-scaledomain) | Which color each value of the field takes. Under `name` it takes no `domain`: a row's own color is `rows.colors`. |
+| <span id="slot-scale">**scale**</span><br>[RowColorScale sub-schema](#slot-scaleunknown) | Which color each value of the field takes. Under `name` it takes no `domain`: a row's own color is `rows.colors`. |
+| <span id="slot-scaleunknown">**scale.unknown**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | `''` colors no row but those `rows.colors` pins: the menu's None. A color is the one every row the scale leaves out takes. |
 | <span id="slot-scaledomain">**scale.domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | the field's values that get a color, in order; none under name, where a row's own color is rows.colors |
 | <span id="slot-scalerange">**scale.range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | the CSS color each value in domain takes, in the same order; past them, the palette the other values deal from |
-| <span id="slot-scaleunknown">**scale.unknown**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | color for a value missing from domain. Unset: the next palette color where the display deals one, and the levels a preset field names, such as strand's, keep their own colors. A color: that color. "": no color dealt, so a feature paints the no-value grey, a variant cell the alt hue, and a row keeps the color it already has |
