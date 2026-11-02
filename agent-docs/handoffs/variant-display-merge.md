@@ -1,6 +1,6 @@
 ---
 name: variant-display-merge
-description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D remains; E is settled: records-only opens at its stack up to 200, once, and over rows the band is every record, added to the track, its rows hiding past the cap (ADR-254's fifth amendment). Open: D (four outside writers still name the old type), the trio tour refilm, and the scrolled export and split view not yet driven in the app."
+description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D remains; E is settled: records-only opens at its stack up to 200, once, and over rows the band is every record, added to the track, its rows hiding past the cap (ADR-254's fifth amendment). Open: D (four outside writers still name the old type), the trio tour refilm, the scrolled export and split view not yet driven in the app, and whether an SVG export keeps the chips' blank strip."
 ---
 
 # One variant display
@@ -108,6 +108,31 @@ widget's samples). Still differing, besides C1's Show/hide rows:
   menu and the details widget, samples included, on a one-sample and a
   1,094-sample VCF. The scrolled export and the split view's record have not
   been driven in the app.
+
+## Left from the band pass (2026-11-01)
+
+`topBands` is the whole `BandStack`, the live band and the export share
+`recordsBandPainter`, hover is one `hovered` slot, and the R export reads
+`recordsAlone`. Left:
+
+- **The export's chip strip.** An SVG export reserves `BAND_CHIPS_HEIGHT`
+  between the records band and the rows but draws no chips, so figures
+  carry a blank ~20px strip. Kept because the export matches the screen;
+  undecided whether figures want the rows flush.
+- **Driven only through jest:** the single scrollbar with no rows
+  (`RowsPanel` mounts only while rows draw) and a band opened on a dense
+  window, then zoomed in. The exports were drawn through jbrowse-img from
+  the branch (a cohort VCF, a sites-only VCF, LD with connectors on and
+  off).
+- **A window that opens dense settles nothing**: the band stays one
+  collapsed row until a sparser pan or zoom packs a real stack (ADR-254's
+  seventh amendment).
+- **Toggling genotype rows remounts the GPU canvas**, since `VariantBody`
+  moves in and out of `RowsPanel`: one re-upload per toggle, as a layout
+  switch already costs.
+- **Declined:** splitting `variantDisplayMenuItems.ts` by band (its 14
+  `drawsRows` checks each name their own rule), and the `recordsRole` table
+  (the "Before C" bullet).
 
 ## Evidence
 
