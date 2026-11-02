@@ -1,6 +1,6 @@
 ---
 name: variant-display-merge
-description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D remains; E is settled: records-only opens at its stack up to 200, once, and over rows the band is every record, added to the track, its rows hiding past the cap (ADR-254's fifth amendment). Open: D (four outside writers still name the old type), the trio tour refilm, the empty rows panel's scrollbar, and the scrolled export and split view not yet driven in the app."
+description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D remains; E is settled: records-only opens at its stack up to 200, once, and over rows the band is every record, added to the track, its rows hiding past the cap (ADR-254's fifth amendment). Open: D (four outside writers still name the old type), the trio tour refilm, and the scrolled export and split view not yet driven in the app."
 ---
 
 # One variant display
@@ -23,9 +23,7 @@ rule over rows are marked provisional there (the default is settled: on).
   amendment): `records.maxFeatureScreenDensity` through `FeatureGateMixin`,
   records-only alone. The Rows, Clustering and arrangement menus go while
   no row draws (`drawsRows`), and "Color by" offers the records' colors.
-  Left: the rows panel's scrollbar stays mounted (invisible, under the band)
-  with no rows, since `VariantDisplayComponent.tsx` mounts `RowsPanel`
-  unconditionally. Over rows the band's height measures the whole payload, so
+  `RowsPanel` mounts only while rows draw (`drawsRows`). Over rows the band's height measures the whole payload, so
   it steps only on a refetch (every record, E below).
 - **B. Records settings under `records`.** Built (ADR-254's second
   amendment): `records.height` (was `records.growMaxHeight`, then

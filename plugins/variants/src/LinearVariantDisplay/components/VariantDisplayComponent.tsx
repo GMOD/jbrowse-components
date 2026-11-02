@@ -134,19 +134,26 @@ const VariantDisplayComponent = observer(function VariantDisplayComponent({
               )}
             </PointerLayer>
           )}
-          <RowsPanel
-            model={model}
-            testIdPrefix={genomic ? 'variant' : 'variant-matrix'}
-          >
-            {genomic ? (
-              <VariantBody model={model} canvasRef={canvasRef} />
-            ) : (
-              <MatrixBodyOffset model={model}>
-                <VariantMatrixBody model={model} canvasRef={canvasRef} />
-              </MatrixBodyOffset>
-            )}
-            <VariantRowSeparators model={model} />
-          </RowsPanel>
+          {model.drawsRows ? (
+            <RowsPanel
+              model={model}
+              testIdPrefix={genomic ? 'variant' : 'variant-matrix'}
+            >
+              {genomic ? (
+                <VariantBody model={model} canvasRef={canvasRef} />
+              ) : (
+                <MatrixBodyOffset model={model}>
+                  <VariantMatrixBody model={model} canvasRef={canvasRef} />
+                </MatrixBodyOffset>
+              )}
+              <VariantRowSeparators model={model} />
+            </RowsPanel>
+          ) : (
+            // no rows viewport, whose scrollbar and wheel would act on the
+            // records band's scroll from below it; the canvas stays, the
+            // backend's
+            <VariantBody model={model} canvasRef={canvasRef} />
+          )}
           <PointerLayer
             mouseTracker={mouseTracker}
             rowsTopOffset={rowsTopOffset}

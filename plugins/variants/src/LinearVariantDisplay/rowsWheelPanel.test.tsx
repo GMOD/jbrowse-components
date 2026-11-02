@@ -44,3 +44,15 @@ test('the columns layout binds the wheel to a panel holding the sidebar', () => 
   expect(panel.contains(screen.getByTestId('variant_matrix_canvas'))).toBe(true)
   expect(panel.querySelector('[data-gesture-owner]')).not.toBeNull()
 })
+
+// with no rows the records band is the display, and its own scroll chrome is
+// the only one: a rows panel mounted there put a second scrollbar and wheel on
+// the band's scroll, sitting below the band
+test('no rows panel mounts while no row draws', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  display.setSources([])
+  render(<VariantDisplayComponent model={display} />)
+
+  expect(screen.queryByTestId('variant-rows')).toBeNull()
+  expect(screen.getByTestId('variant_canvas')).toBeTruthy()
+})
