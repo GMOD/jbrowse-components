@@ -45,17 +45,35 @@ grammar, writers).
 `encoding` keep their spellings, as does MultiWaySynteny's top-level `axis` (its
 lanes' x ruler). Members follow capability: `step` where rows scroll (variant,
 the mark family), `groups` on the mark family, and the multi-way lanes' `rows`
-takes only `filter` from the list.
+takes only `filter` from the list. MAF's `rows` takes no `field`, which would
+be a one-value enum there.
+
+One naming rule makes each member predictable: a plural member is a map keyed
+by row name (`labels`, `colors`), a singular member is a channel or setting
+(`color`, `step`, `filter`, `tree`), and `axis.*` holds the drawing toggles
+(`axis.labels`, `axis.tree`). Each same-word pair names its sibling in its
+description, and so does the validator's error for a swapped member. There is
+no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
+
+- `rows.filter` is a predicate list with no carve-out: one matching no row
+  draws no rows and says so, where `kept` naming no current row drew every row.
+- A plot read returns `rows.tree` in its object form whichever form was
+  written, so a wrapper handles one shape.
 
 ### The write rule
 
 `writes` gains a declared form, data so the CLI's manifest carries it:
 `{ keyedBy: 'field', keyed: [...] }`, on `rows` and `facet`.
 
-- A write whose `field` differs from the current one (an unset or empty prior
-  field counts as different) first resets the keyed members it does not
-  itself state, then merges what it states. Members outside `keyed` merge
-  per member, `null` resetting one.
+- A write whose `field` differs from the field in effect (the stored one,
+  else the schema default, so the variant display's `'sample'` compares as
+  stated) first resets the keyed members it does not itself state, then
+  merges what it states. Members outside `keyed` merge per member, `null`
+  resetting one, and `rows: null` resets the whole object.
+- In user docs: writing `rows` changes only the members stated, and `null`
+  clears one; a write that changes `field` first clears the arrangement
+  (`sort`, `labels`, `colors`, `tree`, `filter`, `groups`) except what it
+  states.
 - `rows` keys `sort`, `labels`, `colors`, `tree`, `filter` and `groups`;
   `facet` keys `sort` and `hidden`.
 - Objects whose members are alternatives (`encoding.color` `value | field |
@@ -81,6 +99,14 @@ takes only `filter` from the list.
 | The keyed rule on every shorthand object | an object of alternatives would merge `value` over `field` into both |
 | `facet.collapse` | `facet` is shared by displays the collapse means nothing on; `pileup.collapsed` (ADR-240's 2026-11-01 amendment) is on the band it reshapes |
 | Deprecated lifts for the beta-only keys | beta configs and share links may break (Colin, 2026-11-02); the v4 lifts (`showTree`, `showSidebarLabels`, `colorBy`, `renderingMode`, `liftRetiredRowState`) are retargeted |
+
+## Parked
+
+Found by the reviews, not built here: negation and a regex `match` in the
+shared predicate grammar, which would let `rows.filter` hide one row and
+`rows.groups` become predicate entries (`{ field, oneOf | match, group }`);
+`groups` on the variant display; `rows.sort` by a row attribute; a tree read
+from a file (`rows.tree: { uri }`); labels from a row attribute.
 
 ## Consequences
 
