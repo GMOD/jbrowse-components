@@ -41,10 +41,15 @@ rule over rows are marked provisional there (the default is settled: on).
   `featureDefaultColor`; the SV type key wherever an SV draws);
   `records.show` on by default (a SNV-only file spends 0 px); the band's
   members lifted into `recordsBandViews.ts`, which the model composes in
-  order. `recordsOnly` is read at ten sites on 2026-11-01 (`model.ts` 5,
-  `RecordsBandOverlay.tsx` 4, `variantDisplayMenuItems.ts` 1), and the menu
-  branches on `drawsRows` instead, so a count well past that is the
-  accretion the review found coming back.
+  order. `recordsOnly` is read at nine sites outside the seam on
+  2026-11-01 (`model.ts` 5, `RecordsBandOverlay.tsx` 3,
+  `variantDisplayMenuItems.ts` 1), and the menu branches on `drawsRows`
+  instead, so a count well past that is the accretion the review found
+  coming back. Inside `recordsBandViews.ts` the label decision is one
+  getter (`recordsLabelPlan`). A role table (`recordsRole.scrolls`,
+  `.overflow`, `.measures`...) was reviewed and declined: its fields are
+  one fact, the band is the display, under seven names, so every site
+  still branches and can read the wrong name.
 - **C1. The rename.** Built (ADR-255): the multi-sample model is
   `LinearVariantDisplay` in `plugins/variants/src/LinearVariantDisplay/`,
   the feature-based one deleted; `retired.ts` declares

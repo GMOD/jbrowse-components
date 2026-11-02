@@ -269,3 +269,26 @@ describe('encoding.color identity', () => {
     expect(display.colorScales.find(s => s.id === 'identity')).toBeUndefined()
   })
 })
+
+// over rows a record's description rides its name's one line, so hiding the
+// names alone still letters the band; with no rows each kind is its own line
+describe('the description over rows rides the one label line', () => {
+  const FEW: BandRecord[] = [['sv1', 2000, 9000, '<DEL> 7Kbp', 'DEL']]
+  const namesOff = { labels: { name: { show: false } } }
+
+  test('over rows, the line still draws', () => {
+    const display = recordsDisplayAt(FEW, 10, namesOff).display
+    expect(display.recordsRenderedLabels).toEqual({
+      showLabels: true,
+      showDescriptions: false,
+    })
+  })
+
+  test('with no rows, the description line alone draws', () => {
+    const display = recordsDisplayAt(FEW, 10, namesOff, false).display
+    expect(display.recordsRenderedLabels).toEqual({
+      showLabels: false,
+      showDescriptions: true,
+    })
+  })
+})

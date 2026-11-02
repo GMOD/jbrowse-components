@@ -42,6 +42,7 @@ import { computed, observable } from 'mobx'
 import { cellHueField } from '../shared/cellHue.ts'
 import { PHASE_SET_FIELD } from '../shared/getPhasedColor.ts'
 import { resolveSampleName } from '../shared/getSources.ts'
+import { DEFAULT_VARIANT_DISPLAY_HEIGHT } from './configSchema.ts'
 import { paintFeatureColors } from './paintCells.ts'
 import { countRecordCarriers } from './recordCarriers.ts'
 import {
@@ -553,6 +554,29 @@ export function recordsRenderViews(self: RecordsRenderHost) {
     },
     /**
      * #getter
+     * How the band letters its records: with no rows as a feature track
+     * does, a name line and a description line off the label fields; over
+     * rows one `recordLabel` line carrying both, built into each record.
+     */
+    get recordsLabelPlan() {
+      const shown = this.recordsVisibleLabels
+      const read = labelsReadByWorker(shown, self.recordFieldReads)
+      return self.recordsOnly
+        ? {
+            configLabels: read,
+            recordLabels: NO_RECORD_LABELS,
+            showLabels: shown.name !== '',
+            showDescriptions: shown.description !== '',
+          }
+        : {
+            configLabels: RECORD_LABEL_LINE,
+            recordLabels: read,
+            showLabels: shown.name !== '' || shown.description !== '',
+            showDescriptions: false,
+          }
+    },
+    /**
+     * #getter
      * The band's records as plugin-features render data, one entry per
      * fetched region, empty while the band is off. Keyed off the payload
      * and the displayed regions' bounds, never the row-placed map or
@@ -563,19 +587,13 @@ export function recordsRenderViews(self: RecordsRenderHost) {
       const cellData =
         self.canRender && self.showRecords ? self.cellData : undefined
       if (cellData) {
-        // with no rows the display's own label fields, as a feature
-        // track letters them; over rows the one-line `recordLabel`
-        const visible = labelsReadByWorker(
-          this.recordsVisibleLabels,
-          self.recordFieldReads,
-        )
+        const { configLabels, recordLabels } = this.recordsLabelPlan
         const config = recordsDisplayConfig({
           featureHeight: self.recordsFeatureHeight,
-          labels: self.recordsOnly ? visible : RECORD_LABEL_LINE,
+          labels: configLabels,
           tooltip: self.recordFieldReads.tooltip,
           faceted: self.recordsFacet !== undefined,
         })
-        const labels = self.recordsOnly ? NO_RECORD_LABELS : visible
         const { jexl } = getEnv(self).pluginManager
         const { displayedRegions } = self.view
         const featureColors = this.regionRecordColors
@@ -593,7 +611,7 @@ export function recordsRenderViews(self: RecordsRenderHost) {
                   featureColors: featureColors.get(displayedRegionIndex)!,
                 },
                 region,
-                labels,
+                labels: recordLabels,
                 carriers,
                 config,
                 jexl,
@@ -649,13 +667,11 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     get layoutInputs() {
       return self.recordsLayoutInputs
     },
-    // over rows the description rides the name's one line
     get showLabels() {
-      const { name, description } = self.recordsVisibleLabels
-      return name !== '' || (!self.recordsOnly && description !== '')
+      return self.recordsLabelPlan.showLabels
     },
     get effectiveShowDescriptions() {
-      return self.recordsOnly && self.recordsVisibleLabels.description !== ''
+      return self.recordsLabelPlan.showDescriptions
     },
     get facet() {
       return self.recordsFacet
@@ -962,7 +978,6 @@ interface RecordsOpeningHeightHost
   openingHeight: number | undefined
   heightWritten: boolean
   hostHeight: number | undefined
-  configuredHeight: number
 }
 
 export function recordsOpeningHeightActions(self: RecordsOpeningHeightHost) {
@@ -979,7 +994,7 @@ export function recordsOpeningHeightActions(self: RecordsOpeningHeightHost) {
     settleRecordsOpeningHeight() {
       self.openingHeight = Math.min(
         self.growTargetHeight,
-        self.configuredHeight,
+        DEFAULT_VARIANT_DISPLAY_HEIGHT,
       )
     },
   }
@@ -1005,9 +1020,7 @@ export function installRecordsOpeningHeight(
         !self.heightWritten &&
         !self.autoHeight &&
         self.hostHeight === undefined &&
-        self.cellData !== undefined &&
-        self.canRender &&
-        self.recordsOnScreenIds.size > 0
+        self.recordsStackHeight > 0
       ) {
         self.settleRecordsOpeningHeight()
       }
@@ -1022,9 +1035,7 @@ export function installRecordsOpeningHeight(
         self.showRecords &&
         !self.recordsHeightHeld &&
         self.recordsPackMode === self.recordsDisplayMode &&
-        self.cellData !== undefined &&
-        self.canRender &&
-        self.topBands.reserved.records > 0
+        self.recordsStackHeight > 0
       ) {
         self.settleRecordsBandHeight()
       }
