@@ -29,6 +29,7 @@ import { autorun } from 'mobx'
 import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
 import hg38Regions from './hg38DisplayedRegions.json' with { type: 'json' }
 import { stateModelFactory } from './index.ts'
+import { exportLinearViewToR } from './rExport/exportLinearView.ts'
 import {
   setDisplayedRegionsKeepingCenter,
   withRegionRemoved,
@@ -2336,9 +2337,13 @@ describe('TrackInit with display configuration', () => {
     const LinearGenomeModel = stateModelFactory(stubManager)
 
     // Track configurations that the session knows about
-    const trackConfigs: Record<string, { type: string; trackId: string }> = {
+    const trackConfigs: Record<
+      string,
+      { type: string; trackId: string; name?: string }
+    > = {
       track1: { type: 'BasicTrack', trackId: 'track1' },
       track2: { type: 'BasicTrack', trackId: 'track2' },
+      track3: { type: 'BasicTrack', trackId: 'track3', name: '<b>Third</b>' },
     }
 
     const Session = types
@@ -2379,6 +2384,33 @@ describe('TrackInit with display configuration', () => {
 
     return { Session, LinearGenomeModel, pluginManager: stubManager }
   }
+
+  test('the R export takes the tracks the screen draws, in its order and names', async () => {
+    const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
+    const session = Session.create({ configuration: {} }, { pluginManager })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracks: ['track1', 'track2', 'track3'],
+      }),
+    )
+    model.setWidth(800)
+    await waitFor(() => {
+      expect(model.tracks.length).toBe(3)
+    })
+    const [, track2, track3] = model.tracks
+    track2!.setMinimized(true)
+    track3!.setPinned(true)
+
+    // a stub display has no R reader, so each exported track is named in a note
+    const { notes } = exportLinearViewToR(model)
+    expect(notes.filter(n => n.includes('has no R reader'))).toEqual([
+      'Third: LinearBareDisplay has no R reader in ggjbrowse yet',
+      'track1: LinearBareDisplay has no R reader in ggjbrowse yet',
+    ])
+  })
 
   test('init with string trackIds works (backwards compatibility)', async () => {
     const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()

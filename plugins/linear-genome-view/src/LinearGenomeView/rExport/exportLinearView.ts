@@ -1,4 +1,5 @@
 import { fullConfSnapshot, readConfObject } from '@jbrowse/core/configuration'
+import { svgTrackName } from '@jbrowse/core/svg/trackNames'
 import { getSession } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
@@ -53,20 +54,21 @@ function drawsRecordsOnly(display: object) {
   return 'recordsOnly' in display && display.recordsOnly === true
 }
 
+// The tracks the screen draws, in the order it draws them, named as the SVG
+// export names them: pinned first, minimized ones left out.
 function tracksOf(view: LinearGenomeViewModel) {
+  const session = getSession(view)
   const tracks: RExportTrack[] = []
-  for (const track of view.tracks) {
+  for (const track of [...view.pinnedTracks, ...view.unpinnedTracks]) {
     const display = track.displays[0]
-    if (display) {
+    if (display && !track.minimized) {
       const { type, displayId, ...written } = getSnapshot(
         display.configuration,
       ) as Record<string, unknown>
       const { heightMode, height } = fullConfSnapshot(display.configuration)
       tracks.push({
         trackId: track.configuration.trackId,
-        trackName:
-          readConfObject(track.configuration, 'name') ||
-          track.configuration.trackId,
+        trackName: svgTrackName(track, session),
         displayType: display.type,
         adapter: readConfObject(track.configuration, 'adapter') as Record<
           string,
