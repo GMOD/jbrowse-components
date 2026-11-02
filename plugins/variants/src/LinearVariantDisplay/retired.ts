@@ -114,11 +114,15 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   minimalTicks: () => ({}),
 }
 
+function listOf(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : []
+}
+
 // v4 named a phased row `<sample> HP<i>` counting from 0; its layout rows carry
 // the sample as `baseName` and the index as `HP`, which name the row now
 function v4HaplotypeNames(layout: unknown) {
   const renamed = new Map<string, string>()
-  for (const row of Array.isArray(layout) ? layout : []) {
+  for (const row of listOf(layout)) {
     if (
       isRecord(row) &&
       typeof row.name === 'string' &&
@@ -142,7 +146,7 @@ function withHaplotypesFromOne(instance: Record<string, unknown>) {
   return renamed.size > 0
     ? {
         ...instance,
-        layout: (Array.isArray(layout) ? layout : []).map(row =>
+        layout: listOf(layout).map(row =>
           isRecord(row)
             ? {
                 ...row,
@@ -157,7 +161,7 @@ function withHaplotypesFromOne(instance: Record<string, unknown>) {
           ? { clusterTree: renameNewickLeaves(clusterTree, rename) }
           : {}),
         ...(Array.isArray(subtreeFilter)
-          ? { subtreeFilter: subtreeFilter.map(renameValue) }
+          ? { subtreeFilter: listOf(subtreeFilter).map(renameValue) }
           : {}),
       }
     : instance
