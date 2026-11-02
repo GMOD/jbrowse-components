@@ -93,7 +93,9 @@ hmmscan --cut_ga --cpu 2 --noali --domtblout pfam.domtblout Pfam-A.hmm proteins.
 ```
 
 An annotation pipeline that already ran InterProScan has the same calls in its
-TSV output (`-f tsv`), which the next step reads in place of `pfam.domtblout`.
+GFF3 output (`--formats gff3`), which the next step reads in place of
+`pfam.domtblout`, with `--source Pfam` to keep only the Pfam rows. Its TSV names
+each domain by Pfam's long description, which the BED would carry as `name`.
 
 ## Placing the domains on the exons
 
@@ -107,7 +109,7 @@ compresses:
 ```bash
 # matches each protein to its transcript by transcript ID, CDS protein_id or
 # CDS ID, so gffread, NCBI and Ensembl protein names all work. Where HMMER hits
-# on one protein overlap, the lowest E-value is kept.
+# on one protein overlap by more than half, the lowest E-value is kept.
 npx -y 'domains2genome@>=2.3.0' genes.gff3 pfam.domtblout | bgzip >pfam.bed.gz
 ```
 
@@ -121,12 +123,11 @@ tabix -f -p bed pfam.bed.gz
 
 - A domain crossing an intron is one row with a block per exon, as BED12 draws a
   spliced transcript.
-- The row's `name` is the Pfam family; `accession`, `description`, `transcript`,
-  `proteinStart`, `proteinEnd` and `evalue` follow as named columns, and JBrowse
-  shows them on click.
+- The row's `name` is the Pfam family; `accession`, `description`, `source`,
+  `transcript`, `proteinStart`, `proteinEnd` and `evalue` follow as named
+  columns, and JBrowse shows them on click.
 - `transcript` is the transcript's GFF3 `Name`, which the gene track labels it
   with.
-- `--source Pfam` keeps only the Pfam rows of an InterProScan TSV.
 
 ## Drawing the domains under the genes
 
@@ -183,9 +184,10 @@ The gene track trims isoforms to fit its default height, so choose **Feature
 height → Fixed feature height + autogrow track height** to see them all.
 <!-- menu-path-ok -->
 
-Clicking a domain shows its transcript, accession and residue range.
-
 <Figure src="/img/protein_domains/vav.png" caption="Honey bee vav: each RefSeq isoform named under its gene model, and its Pfam domains on a row of that name, colored by family." />
+
+XM_006568479.2 starts downstream of the exon that encodes CH, so its row begins
+at RhoGEF.
 
 ## Reproduce it end to end
 

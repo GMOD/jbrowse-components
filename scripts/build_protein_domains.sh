@@ -78,8 +78,8 @@ gffread -S -y proteins.fa -g "$FA" genes.gff3
 
 if [ ! -f Pfam-A.hmm.h3m ]; then
   curl -fL -o Pfam-A.hmm.gz https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
-  gzip -d Pfam-A.hmm.gz
-  hmmpress Pfam-A.hmm
+  gzip -df Pfam-A.hmm.gz
+  hmmpress -f Pfam-A.hmm
 fi
 
 JOBS=$((THREADS / 2 > 1 ? THREADS / 2 : 1))
@@ -106,7 +106,7 @@ tabix -f -p bed pfam.bed.gz
 jb add-assembly "$FA" --name "$ASM" --load copy --force --out "$APP"
 jb add-track genes.gff3.gz --trackId genes --name Genes -a "$ASM" \
   --load copy --force --out "$APP" \
-  --config '{"displays":[{"type":"LinearBasicDisplay","displayId":"genes-LinearBasicDisplay","labels":{"subfeatures":{"show":true,"placement":"below"}},"heightMode":"grow"}]}'
+  --config '{"displays":[{"type":"LinearBasicDisplay","displayId":"genes-LinearBasicDisplay","labels":{"subfeatures":{"placement":"below"}},"heightMode":"grow"}]}'
 jb add-track pfam.bed.gz --trackId pfam_domains --name "Pfam domains" \
   -a "$ASM" --load copy --force --out "$APP" \
   --config '{"displays":[{"type":"LinearMultiRowFeatureDisplay","displayId":"pfam_domains-LinearMultiRowFeatureDisplay","rows":"transcript","marks":[{"mark":{"type":"rect","height":{"band":0}}},{"mark":{"type":"rect","height":{"band":0.7}},"transform":[{"type":"flatten","keepEmpty":true}]}],"encoding":{"color":{"field":"name","legend":{"title":"Pfam family"}}}}]}'
