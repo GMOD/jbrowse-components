@@ -44,7 +44,7 @@ import type { CoverageMenuModel } from '@jbrowse/alignments-core/coverageMenuIte
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
-import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
+import type { RowArrangementModel } from '@jbrowse/tree-sidebar'
 
 const MafClusterDialog = lazy(() => import('./components/MafClusterDialog.tsx'))
 
@@ -67,7 +67,7 @@ interface MafMenuSelf
   extends
     IStateTreeNode,
     MafClusterSelf,
-    TreeLayoutModel<MafSource>,
+    RowArrangementModel<MafSource>,
     CoverageMenuModel {
   hasLegendKey: boolean
   showLegend: boolean

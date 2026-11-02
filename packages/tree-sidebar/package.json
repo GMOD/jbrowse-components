@@ -36,6 +36,7 @@
     "./rowGroups": "./src/rowGroups.ts",
     "./rowHeightConfigSchemaFields": "./src/rowHeight/rowHeightConfigSchemaFields.ts",
     "./rowSortColumn": "./src/rowSortColumn.ts",
+    "./RowArrangementDialog": "./src/rowArrangementDialog/RowArrangementDialog.tsx",
     "./treeSidebarGeometry": "./src/treeSidebarGeometry.ts"
   },
   "files": [
@@ -89,6 +90,7 @@
       "./rowGroups": "./esm/rowGroups.js",
       "./rowHeightConfigSchemaFields": "./esm/rowHeight/rowHeightConfigSchemaFields.js",
       "./rowSortColumn": "./esm/rowSortColumn.js",
+      "./RowArrangementDialog": "./esm/rowArrangementDialog/RowArrangementDialog.js",
       "./treeSidebarGeometry": "./esm/treeSidebarGeometry.js"
     }
   },

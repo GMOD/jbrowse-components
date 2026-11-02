@@ -93,7 +93,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
 import type { ValueScale, WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
-const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
+const RowArrangementDialog = lazy(
+  () => import('./components/RowArrangementDialog.tsx'),
+)
 const WiggleClusterDialog = lazy(
   () => import('./components/WiggleClusterDialog.tsx'),
 )
@@ -865,7 +867,7 @@ export default function stateModelFactory(
               ready: true,
               onOpen: () => {
                 getDialogHost(self).queueDialog(handleClose => [
-                  SetColorDialog,
+                  RowArrangementDialog,
                   { model: self, handleClose },
                 ])
               },

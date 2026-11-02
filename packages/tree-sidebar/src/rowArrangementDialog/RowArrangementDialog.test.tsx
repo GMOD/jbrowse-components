@@ -9,11 +9,11 @@ import {
   rowColorChoiceOf,
   startingRowColor,
 } from '../rowColorChoice.ts'
-import SetColorDialog from './SetColorDialog.tsx'
+import RowArrangementDialog from './RowArrangementDialog.tsx'
 
 import type { RowColorSnapshot } from '../rowColorChoice.ts'
 import type { RowColorSetting } from '../rowColorScale.ts'
-import type { TreeLayoutModel } from './SetColorDialog.tsx'
+import type { RowArrangementModel } from './RowArrangementDialog.tsx'
 
 interface Src {
   name: string
@@ -63,7 +63,7 @@ const EMPTY: RowColorSetting = {
   scale: { domain: [], range: [] },
 }
 
-interface FakeOptions extends Partial<TreeLayoutModel<Src>> {
+interface FakeOptions extends Partial<RowArrangementModel<Src>> {
   rowColorSetting?: RowColorSetting
   baseRowColorSetting?: RowColorSetting
   rowColorFields?: string[]
@@ -76,7 +76,7 @@ function fakeModel({
   baseRowColorSetting = EMPTY,
   rowColorFields = [],
   ...overrides
-}: FakeOptions = {}): TreeLayoutModel<Src> {
+}: FakeOptions = {}): RowArrangementModel<Src> {
   const editableSources = overrides.editableSources ?? [
     { name: 'a', rowColor: '#f00' },
     { name: 'b' },
@@ -113,13 +113,13 @@ const GROUPED: Src[] = [
   { name: 'c', group: 'g1' },
 ]
 
-function setup(model: TreeLayoutModel<Src>) {
+function setup(model: RowArrangementModel<Src>) {
   const handleClose = jest.fn()
-  render(<SetColorDialog model={model} handleClose={handleClose} />)
+  render(<RowArrangementDialog model={model} handleClose={handleClose} />)
   return { handleClose }
 }
 
-function submitted(model: TreeLayoutModel<Src>) {
+function submitted(model: RowArrangementModel<Src>) {
   const calls = (model.applyRowEdits as jest.Mock).mock.calls
   return calls[calls.length - 1] as [Src[], Record<string, unknown> | undefined]
 }
@@ -581,7 +581,7 @@ describe('the plot color line', () => {
     const model = fakeModel()
     const onSubmit = jest.fn()
     render(
-      <SetColorDialog
+      <RowArrangementDialog
         model={model}
         handleClose={jest.fn()}
         plotColor={{ ...PLOT, onSubmit }}
@@ -601,7 +601,7 @@ describe('the plot color line', () => {
 
   test('the line names where the color parts', () => {
     render(
-      <SetColorDialog
+      <RowArrangementDialog
         model={fakeModel()}
         handleClose={jest.fn()}
         plotColor={{ ...PLOT, cut: 5, onSubmit: jest.fn() }}
@@ -617,7 +617,7 @@ describe('the plot color line', () => {
 
   test('a picture two colors cannot say reads out beside its reason', () => {
     render(
-      <SetColorDialog
+      <RowArrangementDialog
         model={fakeModel()}
         handleClose={jest.fn()}
         plotColor={{
@@ -639,7 +639,7 @@ describe('the plot color line', () => {
     const handleClose = jest.fn()
     const onEditAsJson = jest.fn()
     render(
-      <SetColorDialog
+      <RowArrangementDialog
         model={model}
         handleClose={handleClose}
         onEditAsJson={onEditAsJson}
@@ -657,7 +657,7 @@ describe('the plot color line', () => {
 // buttons — the whole color UI a single-source track needs.
 test('showRows false drops the row choice, the grid and the bulk editor', () => {
   render(
-    <SetColorDialog
+    <RowArrangementDialog
       model={fakeModel({ editableSources: [{ name: 'a' }] })}
       handleClose={jest.fn()}
       showRows={false}

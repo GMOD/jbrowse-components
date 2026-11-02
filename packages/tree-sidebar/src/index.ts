@@ -130,11 +130,10 @@ export {
   moveUp,
   updateRows,
 } from './sourcesGridUtils.ts'
-export { default as SetColorDialog } from './setColorDialog/SetColorDialog.tsx'
 export type {
-  SetColorDialogProps,
-  TreeLayoutModel,
-} from './setColorDialog/SetColorDialog.tsx'
+  RowArrangementDialogProps,
+  RowArrangementModel,
+} from './rowArrangementDialog/RowArrangementDialog.tsx'
 // Displays reach the layout through `TreeSidebarMixin`'s `hierarchy`;
 // `clusterLayout` stays public only for SVG-export tests.
 export { clusterLayout } from './hierarchy.ts'

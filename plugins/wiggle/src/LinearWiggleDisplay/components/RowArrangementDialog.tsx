@@ -1,4 +1,4 @@
-import { SetColorDialog } from '@jbrowse/tree-sidebar'
+import RowArrangementDialog from '@jbrowse/tree-sidebar/RowArrangementDialog'
 import { observer } from 'mobx-react'
 
 import { plotColorOf } from '../plotColorLine.ts'
@@ -8,13 +8,13 @@ import type { Source } from '../../util.ts'
 import type { Plot } from '@jbrowse/core/configuration'
 import type { ColorSlots } from '@jbrowse/core/util/colorScale'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
-import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
+import type { RowArrangementModel } from '@jbrowse/tree-sidebar'
 
-export default observer(function WiggleSetColorDialog({
+export default observer(function WiggleRowArrangementDialog({
   model,
   handleClose,
 }: {
-  model: TreeLayoutModel<Source> & {
+  model: RowArrangementModel<Source> & {
     wiggleColor: ResolvedWiggleColor
     markSources: readonly { color?: string }[]
     colorSetting: ColorSetting
@@ -32,7 +32,7 @@ export default observer(function WiggleSetColorDialog({
   const showRows = model.discoveredRows.length > 1
   const { line, edit, parkable } = plotColorOf(model)
   return (
-    <SetColorDialog
+    <RowArrangementDialog
       model={model}
       handleClose={handleClose}
       title={showRows ? 'Wiggle color/arrangement editor' : 'Wiggle color'}

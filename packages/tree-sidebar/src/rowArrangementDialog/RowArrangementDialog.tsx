@@ -44,7 +44,7 @@ const useStyles = makeStyles()({
 // The slice of a TreeSidebarMixin display the dialog drives, which every plugin
 // passes as the model itself. The dialog snapshots `editableSources` on open
 // and holds every edit until Submit.
-export interface TreeLayoutModel<S extends RowSource> {
+export interface RowArrangementModel<S extends RowSource> {
   editableSources: S[]
   applyRowEdits: (s: S[], rowColor?: RowColorSnapshot) => void
   resetRowArrangement: () => void
@@ -62,8 +62,8 @@ export interface TreeLayoutModel<S extends RowSource> {
   ) => ReadonlyMap<string, string>
 }
 
-export interface SetColorDialogProps<S extends RowSource> {
-  model: TreeLayoutModel<S>
+export interface RowArrangementDialogProps<S extends RowSource> {
+  model: RowArrangementModel<S>
   handleClose: () => void
   title?: string
   // The display's own color rather than a row's, on one line above the rows.
@@ -115,14 +115,14 @@ function valueColors(
   }))
 }
 
-export default observer(function SetColorDialog<S extends RowSource>({
+export default observer(function RowArrangementDialog<S extends RowSource>({
   model,
   handleClose,
   title = 'Color/arrangement editor',
   plotColor,
   showRows = true,
   onEditAsJson,
-}: SetColorDialogProps<S>) {
+}: RowArrangementDialogProps<S>) {
   const { classes } = useStyles()
   // Undefined until a swatch is touched, so a reset re-reads the model rather
   // than restoring a pair snapshotted before it.

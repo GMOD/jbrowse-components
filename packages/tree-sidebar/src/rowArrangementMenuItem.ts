@@ -5,16 +5,18 @@ import PaletteIcon from '@mui/icons-material/Palette'
 
 import { clusteringMenuItem, resetRowOrderMenuItems } from './treeMenuItems.ts'
 
-import type { TreeLayoutModel } from './setColorDialog/SetColorDialog.tsx'
+import type { RowArrangementModel } from './rowArrangementDialog/RowArrangementDialog.tsx'
 import type { ClusteringMenuModel, RowOrderMenuModel } from './treeMenuItems.ts'
 import type { RowSource } from './types.ts'
 import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-const SetColorDialog = lazy(() => import('./setColorDialog/SetColorDialog.tsx'))
+const RowArrangementDialog = lazy(
+  () => import('./rowArrangementDialog/RowArrangementDialog.tsx'),
+)
 
 /**
- * "Edit colors/arrangement...", the row that opens the shared `SetColorDialog`
+ * "Edit colors/arrangement...", the row that opens the shared `RowArrangementDialog`
  * over `model`: the drag-reorder, relabel and recolor grid every tree-sidebar
  * consumer shares. `ready` is "has the row list arrived", since the dialog over
  * an empty list can only report the same thing after the user clicks. A
@@ -22,7 +24,7 @@ const SetColorDialog = lazy(() => import('./setColorDialog/SetColorDialog.tsx'))
  * do, passes its own `onOpen`.
  */
 export function rowArrangementMenuItem<S extends RowSource>(
-  model: TreeLayoutModel<S> & IAnyStateTreeNode,
+  model: RowArrangementModel<S> & IAnyStateTreeNode,
   { ready, onOpen }: { ready: boolean; onOpen?: () => void },
 ): MenuItem {
   return {
@@ -34,7 +36,7 @@ export function rowArrangementMenuItem<S extends RowSource>(
       onOpen ??
       (() => {
         getDialogHost(model).queueDialog(handleClose => [
-          SetColorDialog,
+          RowArrangementDialog,
           { model, handleClose },
         ])
       }),
@@ -47,7 +49,7 @@ export function rowArrangementMenuItem<S extends RowSource>(
  * "Clustering" where the display clusters. Spread, don't insert.
  */
 export function rowOrderMenuItems<S extends RowSource>(
-  model: TreeLayoutModel<S> &
+  model: RowArrangementModel<S> &
     IAnyStateTreeNode &
     RowOrderMenuModel &
     ClusteringMenuModel,
