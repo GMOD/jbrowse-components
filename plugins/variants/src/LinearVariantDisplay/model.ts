@@ -879,7 +879,7 @@ export function stateModelFactory(
         /**
          * #getter
          * `rows.kept` while genotype rows draw; with none no focus applies,
-         * so no "Showing N rows" chip takes a line over the records band.
+         * so no "Showing N of M rows" chip takes a line over the records band.
          * The focus comes back with the rows. Overrides
          * `TreeSidebarMixin.rowFocus`.
          */
