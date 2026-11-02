@@ -45,7 +45,7 @@ const region = (refName: string, end: number) => ({
   end,
 })
 
-test('returns one sequence per region, in the order selected, however the fetches finish', async () => {
+test('returns one sequence per region, in selection order, when the later region answers first', async () => {
   const chunks = await fetchSequence(modelWithSequence(), [
     region('chr1', 4),
     region('chr2', 2),

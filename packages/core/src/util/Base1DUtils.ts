@@ -174,6 +174,18 @@ export function basePaintedAt(
     : Math.floor(r.start + offsetBp)
 }
 
+/**
+ * How far, in bp, `offsetBp` sits past the left screen edge of the base
+ * `basePaintedAt` names for it, in either orientation.
+ */
+export function bpIntoPaintedBase(
+  r: { start: number; end: number; reversed?: boolean },
+  offsetBp: number,
+) {
+  const coord = r.reversed ? r.end - offsetBp : r.start + offsetBp
+  return r.reversed ? Math.ceil(coord) - coord : coord - Math.floor(coord)
+}
+
 // 1-based display coord: regionBase0 + 1. Use for showing a genomic position to
 // a user, not for arithmetic — round-tripping through bpToPx loses up to 1 bp
 // because bpToPx accepts 0-based BED-style coords. For arithmetic use `coord0`

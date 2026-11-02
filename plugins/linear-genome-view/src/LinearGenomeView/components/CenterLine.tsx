@@ -1,5 +1,8 @@
 import { clamp } from '@jbrowse/core/util'
-import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
+import {
+  basePaintedAt,
+  bpIntoPaintedBase,
+} from '@jbrowse/core/util/Base1DUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import { IconButton, Tooltip } from '@mui/material'
@@ -8,14 +11,6 @@ import { observer } from 'mobx-react'
 import type { LinearGenomeViewModel } from '../index.ts'
 
 type LGV = LinearGenomeViewModel
-
-function bpIntoPaintedBase(
-  r: { start: number; end: number; reversed?: boolean },
-  offsetBp: number,
-) {
-  const coord = r.reversed ? r.end - offsetBp : r.start + offsetBp
-  return r.reversed ? Math.ceil(coord) - coord : coord - Math.floor(coord)
-}
 
 const useStyles = makeStyles()(theme => ({
   centerLineContainer: {
@@ -49,10 +44,11 @@ const useStyles = makeStyles()(theme => ({
 const CenterLine = observer(function CenterLine({ model }: { model: LGV }) {
   const { bpPerPx, centerLineInfo, tracks, width } = model
   const { classes } = useStyles()
-  const left = centerLineInfo
-    ? width / 2 -
-      bpIntoPaintedBase(centerLineInfo, centerLineInfo.offset) / bpPerPx
-    : width / 2
+  const left =
+    centerLineInfo && bpPerPx < 1
+      ? width / 2 -
+        bpIntoPaintedBase(centerLineInfo, centerLineInfo.offset) / bpPerPx
+      : width / 2
 
   return tracks.length ? (
     <div

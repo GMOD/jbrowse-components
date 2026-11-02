@@ -3299,8 +3299,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       nonGenomicTrackBands() {
         const y0 = self.headerHeight + self.scalebarHeight
+        const { trackYOffsets } = self
         return [...self.pinnedTracks, ...self.unpinnedTracks].flatMap(track => {
-          const top = self.trackYOffsets.get(track.configuration.trackId)
+          const top = trackYOffsets.get(track.configuration.trackId)
           return track.activeDisplay.drawsGenomicCoordinates === false &&
             top !== undefined
             ? [{ top: top - y0, height: self.trackHeight(track) }]
