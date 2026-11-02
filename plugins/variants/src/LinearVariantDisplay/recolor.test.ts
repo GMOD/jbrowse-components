@@ -6,6 +6,7 @@ import { featureInfoOf } from '../shared/cellDataFixtures.ts'
 import { ALT_HUE, cellFill } from '../shared/cellFill.ts'
 import { CELL_ALT } from '../shared/variantCellStyles.ts'
 import { getCachedABGR } from '../shared/variantWebglUtils.ts'
+import { densityRung } from './densityFade.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -70,7 +71,7 @@ function cellData(colorRead: CellHueRead): CellDataResult {
 }
 
 function setup() {
-  const { display } = createTestEnvironment().createDisplay()
+  const { display, view } = createTestEnvironment().createDisplay()
   display.setSources(SAMPLES.map(name => ({ name })))
   display.applyPlot(afIn(['#aa0000']))
   display.setCellData(cellData({ field: 'INFO.AF' }))
@@ -79,7 +80,7 @@ function setup() {
   const dispose = autorun(() => {
     void display.perRegionCellMap
   })
-  return { display, dispose }
+  return { display, view, dispose }
 }
 
 const cells = (display: ReturnType<typeof setup>['display']) => [
@@ -258,4 +259,17 @@ test('a record takes the color of its cells, and a recolor repaints it with no f
   display.applyPlot(afIn(['#00aa00']))
   expect(colorOf()).toEqual([getCachedABGR('#00aa00')])
   expect(display.rpcProps()).toEqual(key)
+})
+
+test('a zoom that keeps the density rung repaints no cell', () => {
+  const { display, view, dispose } = setup()
+  const rung = densityRung(view.bpPerPx)
+  view.zoomTo(rung * 1.1)
+  const painted = display.perRegionCellMap
+  view.zoomTo(rung * 1.2)
+  expect(densityRung(view.bpPerPx)).toBe(rung)
+  expect(display.perRegionCellMap === painted).toBe(true)
+  view.zoomTo(rung * 4)
+  expect(display.perRegionCellMap === painted).toBe(false)
+  dispose()
 })

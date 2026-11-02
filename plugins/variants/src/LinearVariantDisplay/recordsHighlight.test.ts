@@ -1,3 +1,5 @@
+import { autorun } from 'mobx'
+
 import { recordsBandSurface } from './components/RecordsBandOverlay.tsx'
 import { KIT, recordsDisplayAt } from './recordsBand.fixture.ts'
 
@@ -89,4 +91,20 @@ test('the track menu clears every highlight at once', () => {
       .trackMenuItems()
       .some(i => 'label' in i && String(i.label).startsWith('Clear')),
   ).toBe(false)
+})
+
+// ChromeHighlight reads both on every display; with nothing selected or
+// highlighted, a pan must neither rerun them nor build the band's indexes.
+test('an empty selection and highlight list read nothing a pan moves', () => {
+  const display = sitesOnly()
+  let runs = 0
+  const dispose = autorun(() => {
+    void display.selectionInk
+    void display.pinnedInk
+    runs++
+  })
+  display.view.horizontalScroll(50)
+  display.view.horizontalScroll(50)
+  expect(runs).toBe(1)
+  dispose()
 })

@@ -90,10 +90,12 @@ export function recordsHighlightViews(self: RecordsHighlightHost) {
      * #method
      * One box per region per record, over its glyph and the labels the
      * band drew for it, in the display's px, as LinearBasicDisplay boxes a
-     * feature.
+     * feature. No id reads nothing, so an empty selection or highlight list
+     * neither builds the band's indexes nor follows a pan.
      */
     recordsInk(featureIds: Iterable<string>): HighlightRect[] {
-      return featureHighlightInk(this.recordsInkHost, featureIds)
+      const ids = [...featureIds]
+      return ids.length ? featureHighlightInk(this.recordsInkHost, ids) : []
     },
     /**
      * #method

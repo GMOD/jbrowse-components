@@ -1998,6 +1998,14 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * The power-of-two zoom the density fade is computed at, so a zoom
+         * inside one rung repaints and re-uploads no cell.
+         */
+        get densityRung() {
+          return densityRung(self.host.bpPerPx)
+        },
+        /**
+         * #getter
          * Each fetched region's records' alpha factors where they share
          * pixels at genomic positions (`recordDensityAlpha`), so a zoomed-out
          * row shades by the share of its records that are alt instead of
@@ -2005,12 +2013,10 @@ export function stateModelFactory(
          */
         get regionRecordAlpha() {
           const { cellData } = self
-          return cellData && self.variantLayout === 'genomic'
+          const rung = this.densityRung
+          return cellData && self.atGenomicPositions
             ? mapPayloadRegions(cellData, data =>
-                recordDensityAlpha(
-                  data.featurePositions,
-                  densityRung(self.host.bpPerPx),
-                ),
+                recordDensityAlpha(data.featurePositions, rung),
               )
             : new Map<number, Float32Array | undefined>()
         },
@@ -2221,10 +2227,7 @@ export function stateModelFactory(
             ).map(r => shiftInk(r, left, top))
           }
           if (cell) {
-            const region = self.renderBlocks.find(
-              b => b.displayedRegionIndex === cell.displayedRegionIndex,
-            )
-            const [ink] = inkOfInstances(
+            return inkOfInstances(
               VARIANT_MARKS,
               self.renderBlocks,
               idx => self.perRegionCellMap.get(idx),
@@ -2234,10 +2237,8 @@ export function stateModelFactory(
                   ? [{ mark: 0, index: cell.cellIndex }]
                   : undefined,
             )
-            if (!ink || !region) {
-              return []
-            }
-            return [{ ...ink, top: ink.top + self.rowsTopOffset }]
+              .slice(0, 1)
+              .map(ink => shiftInk(ink, 0, self.rowsTopOffset))
           }
           return []
         },
@@ -2252,14 +2253,13 @@ export function stateModelFactory(
         /**
          * #getter
          * Per-region spatial index over feature intervals, for the hit-test. One
-         * entry per variant, not per cell — see computeVariantCells.
+         * entry per variant, not per cell — see computeVariantCells. Off the
+         * payload alone, since neither a reorder nor a recolor moves a span.
          */
         get featureIndices() {
-          const out = new Map<number, Flatbush>()
-          for (const [regionIdx, region] of self.perRegionCellMap) {
-            out.set(regionIdx, Flatbush.from(region.featureIndexData))
-          }
-          return out
+          return mapPayloadRegions(self.cellData, data =>
+            Flatbush.from(data.featureIndexData),
+          )
         },
       }))
       .views(self => ({
