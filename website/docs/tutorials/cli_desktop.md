@@ -3,7 +3,7 @@ title: JBrowse CLI with Desktop
 description:
   Assemble a config.json with the jbrowse CLI and open it in JBrowse Desktop
 guide_category: Tutorials
-tutorial_category: Configuration & embedding
+tutorial_category: Getting started
 ---
 
 JBrowse Desktop opens a genome and its data files from your own disk, and a
