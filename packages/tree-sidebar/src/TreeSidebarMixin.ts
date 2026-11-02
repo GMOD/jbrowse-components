@@ -108,7 +108,7 @@ function baseArrangement(self: object): Arrangement {
 }
 
 function liveArrangement(self: object): Arrangement {
-  return getSnapshot(host(self).configuration.rows) as Arrangement
+  return getSnapshot(host(self).configuration.rows)
 }
 
 function storedTree(self: object): string | undefined {

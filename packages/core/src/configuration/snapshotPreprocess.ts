@@ -450,7 +450,8 @@ export function createAtPath(
   if (schema) {
     preProcessSnapshotWith(schema, snapshot, { at })
   }
-  return type.create(snapshot)
+  const created: unknown = type.create(snapshot)
+  return created
 }
 
 /**

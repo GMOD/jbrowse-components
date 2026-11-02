@@ -30,10 +30,9 @@
 3 no-unsafe-assignment packages/core/src/assemblyManager/refNameMaps.ts
 2 no-unsafe-assignment packages/core/src/BaseFeatureWidget/formatDetails.ts
 1 no-unsafe-argument packages/core/src/configuration/configurationSchema.ts
-6 no-unsafe-assignment packages/core/src/configuration/configurationSchema.ts
-3 no-unsafe-call packages/core/src/configuration/configurationSchema.ts
-6 no-unsafe-member-access packages/core/src/configuration/configurationSchema.ts
-6 no-unsafe-return packages/core/src/configuration/configurationSchema.ts
+4 no-unsafe-assignment packages/core/src/configuration/configurationSchema.ts
+3 no-unsafe-member-access packages/core/src/configuration/configurationSchema.ts
+3 no-unsafe-return packages/core/src/configuration/configurationSchema.ts
 1 no-unsafe-assignment packages/core/src/configuration/configurationSlot.ts
 1 no-unsafe-assignment packages/core/src/configuration/fullConfSnapshot.ts
 3 no-unsafe-argument packages/core/src/configuration/getConf.ts
@@ -46,7 +45,7 @@
 1 no-unsafe-assignment packages/core/src/configuration/slotFacade.ts
 1 no-unsafe-call packages/core/src/configuration/slotFacade.ts
 2 no-unsafe-member-access packages/core/src/configuration/slotFacade.ts
-2 no-unsafe-return packages/core/src/configuration/slotFacade.ts
+1 no-unsafe-return packages/core/src/configuration/slotFacade.ts
 2 no-unsafe-assignment packages/core/src/configuration/snapshotPreprocess.ts
 1 no-unsafe-member-access packages/core/src/configuration/snapshotPreprocess.ts
 1 no-unsafe-return packages/core/src/configuration/snapshotPreprocess.ts
@@ -296,7 +295,6 @@
 2 no-unsafe-assignment plugins/linear-comparative-view/src/LinearSyntenyView/util/syntenyTracks.ts
 2 no-unsafe-return plugins/linear-comparative-view/src/LinearSyntenyViewHelper/stateModelFactory.ts
 1 no-unsafe-assignment plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/laneLayers.ts
-1 no-unsafe-argument plugins/linear-comparative-view/src/SyntenyFollow/installSyntenyFollow.ts
 1 no-unsafe-argument plugins/linear-genome-view/src/LinearGenomeView/components/CrisprGuidePanel.tsx
 1 no-unsafe-argument plugins/linear-genome-view/src/LinearGenomeView/components/SequenceSearchDialog.tsx
 1 no-unsafe-argument plugins/linear-genome-view/src/LinearGenomeView/linkedViewSync.ts

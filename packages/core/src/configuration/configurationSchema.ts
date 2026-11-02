@@ -365,7 +365,7 @@ function makeConfigurationSchemaModel<
   DEFINITION extends ConfigurationSchemaDefinition,
   OPTIONS extends MergedConfigurationSchemaOptions<any, any>,
 >(modelName: string, schemaDefinition: DEFINITION, options: OPTIONS) {
-  const modelDefinition: Record<string, any> = {}
+  const modelDefinition: Record<string, IAnyType> = {}
   if (options.explicitlyTyped) {
     modelDefinition.type = types.optional(types.literal(modelName), modelName)
   }
@@ -445,7 +445,7 @@ function makeConfigurationSchemaModel<
           // checked on a copy, since the assignment runs patch listeners
           if (data != null && !isStateTreeNode(data)) {
             refusingUndeclaredKeys(() =>
-              createAtPath(modelDefinition[slotName], data, at),
+              createAtPath(modelDefinition[slotName]!, data, at),
             )
           }
           self[slotName] = data ?? undefined
@@ -457,7 +457,7 @@ function makeConfigurationSchemaModel<
         const newSchema = isStateTreeNode(data)
           ? data
           : refusingUndeclaredKeys(() =>
-              createAtPath(modelDefinition[slotName], data, at),
+              createAtPath(modelDefinition[slotName]!, data, at),
             )
         self[slotName] = newSchema
         return newSchema
@@ -481,7 +481,7 @@ function makeConfigurationSchemaModel<
           )
         }
         // MST skips its own type check in a production build; `is` does not
-        if (!modelDefinition[slotName].is(value)) {
+        if (!modelDefinition[slotName]!.is(value)) {
           const declared = schemaDefinition[slotName]
           throw new Error(
             isSlotDefinitionEntry(declared)
