@@ -11,15 +11,18 @@ tutorial_subcategory: Whole-genome alignments
 
 We stack ape genomes under a human locus in the order of their family tree and
 compare each genome with the one above it, so a change of orientation shows up
-between the two lineages that differ. The comparisons come from the Cactus
-alignment of the telomere-to-telomere ape genomes, whose authors publish a chain
-for every pair of genomes in it. We:
+between the two lineages that differ. A stack built from chains against human
+alone joins every lane to human; comparing neighbours needs a chain between each
+pair of apes. The Cactus alignment of the telomere-to-telomere ape genomes has
+one, since its authors publish a chain for every pair of genomes in it. We:
 
-- extract the chains between neighbouring genomes into one indexed file
-- load them as one multi-way synteny track over the apes, each lane drawing the
-  RefSeq genes of that ape's hub on
+- convert the chains between neighbouring genomes to PAF with PanSN names, and
+  index them as one PIF file
+- load the file as one multi-way synteny track over the apes, each lane drawing
+  the RefSeq genes of that ape's hub on
   [genomes.jbrowse.org](https://genomes.jbrowse.org)
-- color the ribbons by strand to read orientation at _ERBB2_
+- open the track in a linear genome view at _ERBB2_, with the ribbons colored by
+  strand
 
 ## Prerequisites
 
@@ -78,6 +81,9 @@ stack:
   Sumatran orangutan, the Sumatran against the Bornean orangutan, and the
   Bornean orangutan against the siamang
 
+The steps below start from pairwise chains. A Cactus alignment of your own is a
+HAL file, from which Cactus's `cactus-hal2chains` writes the same chains
+([Cactus documentation](https://github.com/ComparativeGenomicsToolkit/cactus)).
 `chain2paf` reads a chain uncompressed:
 
 <!-- from: scripts/build_t2t_apes_cactus_multiway.sh -->
@@ -87,9 +93,9 @@ gzip -dc genomeA_vs_genomeB.chain.gz > pair.chain
 ```
 
 `chain2paf` writes the chain's query (`genomeB`) as each PAF row's first
-sequence and its target (`genomeA`) as the second. A PanSN prefix on each name
-(`genome#haplotype#contig`) tells JBrowse which genome a sequence belongs to, so
-every pair can go into one file:
+sequence and its target (`genomeA`) as the second. JBrowse reads a PanSN prefix
+on each name (`genome#haplotype#contig`) as the genome the sequence belongs to,
+so every pair can go into one file:
 
 <!-- from: scripts/build_t2t_apes_cactus_multiway.sh -->
 
@@ -168,14 +174,12 @@ gene tracks come from each genome's hub unchanged, as in the hosted config.
 
 ## Orientation at ERBB2 down the tree
 
-Opened on hg38 around _ERBB2_ on 17q12, the track draws a lane per ape under
-human, each in that genome's own coordinates. Each lane header names the
-chromosome and the span the lane shows, with `[rev]` where the lane runs against
-human.
-
-The ribbons color by strand (**Color by → Strand**, under **Ribbons** in the
-track menu), blue where a lane runs against the one above it. The session below
-opens on _ERBB2_:
+We'll open the track on hg38 around _ERBB2_ on 17q12. It draws a lane per ape
+under human, each in the coordinates of that ape's assembly, and each lane
+header names the chromosome and the span the lane shows, with `[rev]` where the
+lane runs against human. The ribbons color by strand (**Color by → Strand**,
+under **Ribbons** in the track menu), blue where a lane runs against the one
+above it:
 
 ```json session config=https://jbrowse.org/demos/t2t_apes_cactus/config.json
 {
@@ -203,7 +207,7 @@ opens on _ERBB2_:
 <Figure caption="ERBB2 on hg38 over six T2T ape lanes, each ribbon joining a lane to the one above, colored by strand." src="/img/multiway_synteny/t2t_apes_cactus_17q.png" />
 
 The ribbons turn blue between human and chimpanzee, and again between gorilla
-and the Sumatran orangutan: chimpanzee, bonobo and gorilla carry _ERBB2_ in one
+and the Sumatran orangutan: chimpanzee, bonobo and gorilla have _ERBB2_ in one
 orientation, and human, both orangutans and the siamang in the other.
 
 ## Reproduce it end to end
