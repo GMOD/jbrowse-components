@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1287)
+# model members with no description (1285)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -497,8 +497,6 @@ JBrowseDesktopRootModel.saveSession
 JBrowseDesktopRootModel.setOpenNewSessionCallback
 JBrowseDesktopRootModel.version
 JBrowseReactAppRootModel.menus
-JBrowseReactAppRootModel.pluginsUpdated
-JBrowseReactAppRootModel.setPluginsUpdated
 JBrowseReactAppRootModel.setPluginsUpdatedCallback
 JBrowseReactAppRootModel.version
 JBrowseReactCircularGenomeViewSessionModel.view
@@ -515,12 +513,10 @@ JBrowseWebRootModel.configPath
 JBrowseWebRootModel.deleteSavedSession
 JBrowseWebRootModel.gitCommit
 JBrowseWebRootModel.menus
-JBrowseWebRootModel.pluginsUpdated
 JBrowseWebRootModel.reloadPluginManagerCallback
 JBrowseWebRootModel.renameSavedSession
 JBrowseWebRootModel.savedSessionMetadata
 JBrowseWebRootModel.sessionDB
-JBrowseWebRootModel.setPluginsUpdated
 JBrowseWebRootModel.setReloadPluginManagerCallback
 JBrowseWebRootModel.setSavedSessionFavorite
 JBrowseWebRootModel.setSavedSessionMetadata
@@ -1173,6 +1169,8 @@ PluginStoreWidget.selectedTags
 PluginStoreWidget.setFilterText
 PluginStoreWidget.toggleTagFilter
 PluginStoreWidget.view
+PluginsUpdatedMixin.pluginsUpdated
+PluginsUpdatedMixin.setPluginsUpdated
 RegionTooLargeMixin.regionTooLarge
 RegionTooLargeMixin.setForceLoadTrack
 RenderLifecycleMixin.markCanvasDrawn

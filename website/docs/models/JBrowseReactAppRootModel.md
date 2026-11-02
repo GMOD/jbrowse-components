@@ -33,11 +33,12 @@ From [BaseRootModel](../baserootmodel): <span id="property-jbrowse">[`jbrowse`](
 | Member | Description |
 | --- | --- |
 | <span id="volatile-version">**version**</span><br><code>string</code> |  |
-| <span id="volatile-pluginsupdated">**pluginsUpdated**</span><br><code>boolean</code> |  |
 | <span id="volatile-pluginsupdatedcallback">**pluginsUpdatedCallback**</span><br><code>((args: PluginsUpdate) =&gt; void) &#124; undefined</code> | host hook for PluginsUpdated, set from createViewState's `onPluginsUpdated`. Undefined means the host didn't ask to handle it. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>7 inherited volatiles from 2 models</summary>
+<summary>8 inherited volatiles from 3 models</summary>
+
+From [PluginsUpdatedMixin](../pluginsupdatedmixin): <span id="volatile-pluginsupdated">[`pluginsUpdated`](../pluginsupdatedmixin#volatile-pluginsupdated)</span>
 
 From [RootAppMenuMixin](../rootappmenumixin): <span id="volatile-mutablemenuactions">[`mutableMenuActions`](../rootappmenumixin#volatile-mutablemenuactions)</span>
 
@@ -57,11 +58,12 @@ From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcMana
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setpluginsupdated">**setPluginsUpdated**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setpluginsupdatedcallback">**setPluginsUpdatedCallback**</span><br><code>(callback: (args: PluginsUpdate) =&gt; void) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>16 inherited actions from 3 models</summary>
+<summary>17 inherited actions from 4 models</summary>
+
+From [PluginsUpdatedMixin](../pluginsupdatedmixin): <span id="action-setpluginsupdated">[`setPluginsUpdated`](../pluginsupdatedmixin#action-setpluginsupdated)</span>
 
 From [RootAppMenuMixin](../rootappmenumixin): <span id="action-appendmenu">[`appendMenu`](../rootappmenumixin#action-appendmenu)</span>, <span id="action-insertmenu">[`insertMenu`](../rootappmenumixin#action-insertmenu)</span>, <span id="action-appendtomenu">[`appendToMenu`](../rootappmenumixin#action-appendtomenu)</span>, <span id="action-insertinmenu">[`insertInMenu`](../rootappmenumixin#action-insertinmenu)</span>, <span id="action-appendtosubmenu">[`appendToSubMenu`](../rootappmenumixin#action-appendtosubmenu)</span>, <span id="action-insertinsubmenu">[`insertInSubMenu`](../rootappmenumixin#action-insertinsubmenu)</span>
 

@@ -6003,7 +6003,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "type": {
-          "description": "ordinal a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over insertSizeAndOrientation and mapq, and ordinal over any other field.",
+          "description": "ordinal a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over mapq and ordinal over any other field.",
           "if": {
             "type": "null"
           },
@@ -6016,7 +6016,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "domain": {
-          "description": "for an ordinal scale, the values that take the range first, in order: a preset field's levels, insertSizeAndOrientation's short, normal and long among them, '' a read with no value, a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points, which over insertSizeAndOrientation are the two between short, normal and long, where the sampled distribution otherwise sets them.",
+          "description": "for an ordinal scale, the values that take the range first, in order: a preset field's levels, insertSizeAndOrientation's short, normal, long and RL among them, '' a read with no value, a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points; the display's normalInsertSize sets the insert sizes between short and long.",
           "if": {
             "type": "null"
           },
@@ -7416,6 +7416,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "NormalInsertSize": {
+      "title": "NormalInsertSize",
+      "type": "object",
+      "properties": {
+        "min": {
+          "description": "the shortest insert in bp a pair counts as normal; shorter is short.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "max": {
+          "description": "the longest insert in bp a pair counts as normal; longer is long.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "LinearAlignmentsDisplaySlots": {
       "type": "object",
       "properties": {
@@ -7569,6 +7597,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/Sashimi"
+          }
+        },
+        "normalInsertSize": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/NormalInsertSize"
           }
         },
         "maxFeatureScreenDensity": {
@@ -17548,6 +17584,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "sashimi": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sashimi"
+            },
+            "normalInsertSize": {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/normalInsertSize"
             },
             "maxFeatureScreenDensity": {
               "anyOf": [
@@ -29376,6 +29415,67 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/Assembly"
           }
         },
+        "layout": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "number"
+                },
+                "direction": {
+                  "enum": [
+                    "row",
+                    "column"
+                  ]
+                },
+                "children": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                }
+              },
+              "patternProperties": {
+                "^_+comment": {}
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "number"
+                },
+                "tabs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  }
+                },
+                "activeTabId": {
+                  "type": "string"
+                }
+              },
+              "patternProperties": {
+                "^_+comment": {}
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "activePanelId": {
+          "type": "string"
+        },
+        "maximizedPanelId": {
+          "type": "string"
+        },
         "connectionInstances": {
           "type": "array",
           "items": {
@@ -29482,67 +29582,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "items": {
             "$ref": "#/$defs/Connection"
           }
-        },
-        "layout": {
-          "anyOf": [
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "size": {
-                  "type": "number"
-                },
-                "direction": {
-                  "enum": [
-                    "row",
-                    "column"
-                  ]
-                },
-                "children": {
-                  "type": "array",
-                  "items": {
-                    "type": "object"
-                  }
-                }
-              },
-              "patternProperties": {
-                "^_+comment": {}
-              },
-              "additionalProperties": false
-            },
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "size": {
-                  "type": "number"
-                },
-                "tabs": {
-                  "type": "array",
-                  "items": {
-                    "type": "object"
-                  }
-                },
-                "activeTabId": {
-                  "type": "string"
-                }
-              },
-              "patternProperties": {
-                "^_+comment": {}
-              },
-              "additionalProperties": false
-            }
-          ]
-        },
-        "activePanelId": {
-          "type": "string"
-        },
-        "maximizedPanelId": {
-          "type": "string"
         },
         "sessionPlugins": {
           "type": "array",

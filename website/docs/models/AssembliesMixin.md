@@ -23,6 +23,7 @@ Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="getter-takenassemblynames">**takenAssemblyNames**</span><br><code>string[]</code> | Every name and alias `findAssemblyConf` answers for, so a form can refuse one before doing work under it. |
 | <span id="getter-assemblies">**assemblies**</span><br><code><a href="../../config/baseassembly">BaseAssemblyConfig</a>[]</code> | sessionAssemblies plus jbrowse config assemblies. Does not include temporaryAssemblies; this is the list shown in the AssemblySelector dropdown. |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> | names of the assemblies returned by the `assemblies` getter |
 

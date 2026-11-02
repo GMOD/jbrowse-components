@@ -44,12 +44,13 @@ From [BaseRootModel](../baserootmodel): <span id="property-jbrowse">[`jbrowse`](
 | <span id="volatile-sessiondb">**sessionDB**</span><br><code>SessionDBHandle &#124; undefined</code> |  |
 | <span id="volatile-version">**version**</span><br><code>string</code> |  |
 | <span id="volatile-gitcommit">**gitCommit**</span><br><code>string</code> |  |
-| <span id="volatile-pluginsupdated">**pluginsUpdated**</span><br><code>boolean</code> |  |
 | <span id="volatile-savedsessionmetadata">**savedSessionMetadata**</span><br><code>SessionMetadata[] &#124; undefined</code> |  |
 | <span id="volatile-reloadpluginmanagercallback">**reloadPluginManagerCallback**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(_configSnapshot: Record&lt;string, unknown&gt;, _sessionSnapshot: Re…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(_configSnapshot: Record&lt;string, unknown&gt;, _sessionSnapshot: Record&lt;string, unknown&gt;) =&gt; void</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>6 inherited volatiles from 2 models</summary>
+<summary>7 inherited volatiles from 3 models</summary>
+
+From [PluginsUpdatedMixin](../pluginsupdatedmixin): <span id="volatile-pluginsupdated">[`pluginsUpdated`](../pluginsupdatedmixin#volatile-pluginsupdated)</span>
 
 From [RootAppMenuMixin](../rootappmenumixin): <span id="volatile-mutablemenuactions">[`mutableMenuActions`](../rootappmenumixin#volatile-mutablemenuactions)</span>
 
@@ -73,7 +74,6 @@ From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcMana
 | <span id="action-fetchsessionmetadata">**fetchSessionMetadata**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Re-reads the whole `metadata` store. For anything that changes rows this model didn't just write itself (first load, pruning, favorite, rename, delete) — the autosave path uses `upsertSessionMetadata` instead. |
 | <span id="action-upsertsessionmetadata">**upsertSessionMetadata**</span><br><code>(meta: SessionMetadata) =&gt; void</code> | Merges a row this model has just written into the in-memory list. The autosave autorun writes exactly one row on every throttled session edit — every 400ms for as long as you keep panning — and already holds its contents, so re-reading every session's metadata to learn what it just stored is the expensive way to move one row to the top. |
 | <span id="action-setsessiondb">**setSessionDB**</span><br><code>(sessionDB: SessionDBHandle &#124; undefined) =&gt; void</code> |  |
-| <span id="action-setpluginsupdated">**setPluginsUpdated**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-setreloadpluginmanagercallback">**setReloadPluginManagerCallback**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(callback: (configSnapshot: Record&lt;string, unknown&gt;, sessionSna…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(callback: (configSnapshot: Record&lt;string, unknown&gt;, sessionSnapshot: Record&lt;string, unknown&gt;) =&gt; void) =&gt; void</code></pre></dialog></span> |  |
 | <span id="action-activatesession">**activateSession**</span><br><code>(id: string) =&gt; Promise&lt;void&gt;</code> |  |
 | <span id="action-opensessioncopy">**openSessionCopy**</span><br><code>(snap: Record&lt;string, unknown&gt;) =&gt; Promise&lt;void&gt;</code> | Opens a session snapshot under a fresh id, so it autosaves beside the session it came from rather than over it. |
@@ -84,7 +84,9 @@ From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcMana
 | <span id="action-renamesavedsession">**renameSavedSession**</span><br><code>(id: string, name: string) =&gt; Promise&lt;void&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>16 inherited actions from 3 models</summary>
+<summary>17 inherited actions from 4 models</summary>
+
+From [PluginsUpdatedMixin](../pluginsupdatedmixin): <span id="action-setpluginsupdated">[`setPluginsUpdated`](../pluginsupdatedmixin#action-setpluginsupdated)</span>
 
 From [RootAppMenuMixin](../rootappmenumixin): <span id="action-appendmenu">[`appendMenu`](../rootappmenumixin#action-appendmenu)</span>, <span id="action-insertmenu">[`insertMenu`](../rootappmenumixin#action-insertmenu)</span>, <span id="action-appendtomenu">[`appendToMenu`](../rootappmenumixin#action-appendtomenu)</span>, <span id="action-insertinmenu">[`insertInMenu`](../rootappmenumixin#action-insertinmenu)</span>, <span id="action-appendtosubmenu">[`appendToSubMenu`](../rootappmenumixin#action-appendtosubmenu)</span>, <span id="action-insertinsubmenu">[`insertInSubMenu`](../rootappmenumixin#action-insertinsubmenu)</span>
 

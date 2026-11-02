@@ -5,7 +5,7 @@ description: "Saved-session-database actions (favorites, recent sessions, activa
 sidebar_label: Mixin -> WebSessionManagementMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/web-core/src/WebSessionManagement.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/WebSession/WebSessionManagement.ts).
 
 Saved-session-database actions (favorites, recent sessions, activate/delete)
 delegating to the root's AbstractWebSessionDbRootModel. Composed only

@@ -46,7 +46,9 @@ From [BaseRootModel](../baserootmodel): <span id="property-jbrowse">[`jbrowse`](
 | <span id="volatile-returntostartscreencallback">**returnToStartScreenCallback**</span><br><code>() =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>6 inherited volatiles from 2 models</summary>
+<summary>7 inherited volatiles from 3 models</summary>
+
+From [PluginsUpdatedMixin](../pluginsupdatedmixin): <span id="volatile-pluginsupdated">[`pluginsUpdated`](../pluginsupdatedmixin#volatile-pluginsupdated)</span>
 
 From [RootAppMenuMixin](../rootappmenumixin): <span id="volatile-mutablemenuactions">[`mutableMenuActions`](../rootappmenumixin#volatile-mutablemenuactions)</span>
 
@@ -71,11 +73,13 @@ From [BaseRootModel](../baserootmodel): <span id="volatile-rpcmanager">[`rpcMana
 | <span id="action-setreturntostartscreencallback">**setReturnToStartScreenCallback**</span><br><code>(cb: () =&gt; void) =&gt; void</code> | Wired by the Loader to tear down this plugin manager and show the start screen (the Loader owns plugin-manager lifecycle). |
 | <span id="action-savesession">**saveSession**</span><br><code>(val: SessionSnap, sessionPath?: string) =&gt; Promise&lt;void&gt;</code> |  |
 | <span id="action-updatetrackbase">**updateTrackBase**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(trackConf: { [key: string]: unknown; trackId: string; }) =&gt; vo…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(trackConf: { [key: string]: unknown; trackId: string; }) =&gt; void</code></pre></dialog></span> | Replace a track's base config: its sessionTracks entry when the session owns the track, otherwise its jbrowse.tracks entry. |
-| <span id="action-setpluginsupdated">**setPluginsUpdated**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Persist the session, then rebuild the plugin manager from disk so the changed plugin set takes effect (Loader wires openNewSessionCallback to reload from the session path). |
+| <span id="action-reloadplugins">**reloadPlugins**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Persist the session, then rebuild the plugin manager from disk so the changed plugin set takes effect. Run by `onPluginsUpdated`, which reports a failure on the session it leaves open |
 | <span id="action-flushsession">**flushSession**</span><br><code>() =&gt; Promise&lt;void&gt;</code> | Save now rather than waiting out the autosave's 1s throttle. Every path that tears the session down has to call this first. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>16 inherited actions from 3 models</summary>
+<summary>17 inherited actions from 4 models</summary>
+
+From [PluginsUpdatedMixin](../pluginsupdatedmixin): <span id="action-setpluginsupdated">[`setPluginsUpdated`](../pluginsupdatedmixin#action-setpluginsupdated)</span>
 
 From [RootAppMenuMixin](../rootappmenumixin): <span id="action-appendmenu">[`appendMenu`](../rootappmenumixin#action-appendmenu)</span>, <span id="action-insertmenu">[`insertMenu`](../rootappmenumixin#action-insertmenu)</span>, <span id="action-appendtomenu">[`appendToMenu`](../rootappmenumixin#action-appendtomenu)</span>, <span id="action-insertinmenu">[`insertInMenu`](../rootappmenumixin#action-insertinmenu)</span>, <span id="action-appendtosubmenu">[`appendToSubMenu`](../rootappmenumixin#action-appendtosubmenu)</span>, <span id="action-insertinsubmenu">[`insertInSubMenu`](../rootappmenumixin#action-insertinsubmenu)</span>
 

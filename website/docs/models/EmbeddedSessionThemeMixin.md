@@ -5,7 +5,7 @@ description: "Theme getters shared by the single-view embedded sessions (react-l
 sidebar_label: Mixin -> EmbeddedSessionThemeMixin
 ---
 
-Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/embedded-core/src/EmbeddedSessionThemeMixin.ts).
+Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/embedded/EmbeddedSessionThemeMixin.ts).
 
 Theme getters shared by the single-view embedded sessions
 (react-linear-genome-view, react-circular-genome-view). Embedded products

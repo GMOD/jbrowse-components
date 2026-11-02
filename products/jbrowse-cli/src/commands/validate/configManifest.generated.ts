@@ -3831,7 +3831,21 @@ export const configManifest: ConfigManifest = {
                 },
                 "insertSizeAndOrientation": {
                   "scale": {
-                    "type": "threshold"
+                    "type": "ordinal",
+                    "domain": [
+                      "short",
+                      "normal",
+                      "long",
+                      "RL",
+                      "RR",
+                      "LL",
+                      "unmappedMate",
+                      "interchrom",
+                      "splitInverted",
+                      "splitSameStrand",
+                      "segmentInverted",
+                      "segmentSameStrand"
+                    ]
                   }
                 },
                 "mateRefName": {
@@ -4421,6 +4435,22 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "Sashimi",
           "writes": "members"
+        },
+        {
+          "name": "normalInsertSize",
+          "type": "NormalInsertSizeConfigurationSchema",
+          "subSlots": [
+            {
+              "name": "min",
+              "type": "(number | undefined)"
+            },
+            {
+              "name": "max",
+              "type": "(number | undefined)"
+            }
+          ],
+          "schema": "NormalInsertSize",
+          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -4983,7 +5013,21 @@ export const configManifest: ConfigManifest = {
                 },
                 "insertSizeAndOrientation": {
                   "scale": {
-                    "type": "threshold"
+                    "type": "ordinal",
+                    "domain": [
+                      "short",
+                      "normal",
+                      "long",
+                      "RL",
+                      "RR",
+                      "LL",
+                      "unmappedMate",
+                      "interchrom",
+                      "splitInverted",
+                      "splitSameStrand",
+                      "segmentInverted",
+                      "segmentSameStrand"
+                    ]
                   }
                 },
                 "mateRefName": {
