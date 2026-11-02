@@ -82,6 +82,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-renderstate">**renderState**</span><br><code>LDRenderState</code> |  |
 | <span id="getter-connectorsstack">**connectorsStack**</span><br><code>BandStack&lt;"connectors"&gt;</code> | The `connectors` band above the matrix: the connector lines in columns, the labels at genomic positions when they are on, else nothing; taken from the display's height so the triangle keeps its floor. |
 | <span id="getter-connectorsheight">**connectorsHeight**</span><br><code>number</code> |  |
+| <span id="getter-drawslabels">**drawsLabels**</span><br><code>boolean</code> | Whether the SNP labels draw: on, in a `connectors` band that reserves room for them, so they never paint over the triangle. |
 | <span id="getter-matrixtop">**matrixTop**</span><br><code>number</code> | Where the triangle begins, under the `connectors` band. |
 | <span id="getter-connectorlinecoords">**connectorLineCoords**</span><br><code>ConnectorCoord[]</code> | Each column tied to its SNP's genomic x, for the connector lines. |
 
