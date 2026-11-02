@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment <rootDir>/config/jest/jsdom.cjs
  */
 /**
  * A session spec track entry's `modifiers`, the route Desktop and jb2capture

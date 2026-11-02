@@ -1,30 +1,22 @@
-// jsdom implements neither the PointerEvent constructor nor the pointer-capture
-// API, so any component driven by a pointer drag (usePointerDrag,
-// VerticalScrollbar, the dotplot interaction) is untestable without these:
+// A pointer event a test fires without saying which pointer is the mouse's
+// primary one, as in a browser. jsdom's PointerEvent takes the spec's
+// dictionary defaults, `pointerType: ''` and `isPrimary: false`, which no real
+// pointer has, and a handler that ignores non-primary pointers would ignore
+// every `fireEvent.pointerDown` that names none. A test that means a finger or
+// a second pointer says so.
 //
-// - With no `PointerEvent` global, testing-library's fireEvent.pointerMove
-//   falls back to a plain Event, which carries no clientX/clientY — handlers
-//   read undefined coordinates and the assertions come out NaN. Extending
-//   MouseEvent gives the coordinate properties for free.
-// - setPointerCapture only decides which element keeps receiving the pointer
-//   stream, and jsdom delivers events to whatever the test targets anyway, so
-//   a no-op is faithful enough.
+// jsdom has no pointer-capture API. Capture only decides which element keeps
+// receiving the pointer stream, and jsdom delivers events to whatever the test
+// targets anyway, so a no-op is faithful enough.
 if (typeof window !== 'undefined') {
-  if (typeof window.PointerEvent === 'undefined') {
-    class PointerEvent extends MouseEvent {
-      constructor(type, params = {}) {
-        super(type, params)
-        this.pointerId = params.pointerId ?? 0
-        this.pointerType = params.pointerType ?? 'mouse'
-        this.isPrimary = params.isPrimary ?? true
-        this.pressure = params.pressure ?? 0
-        this.width = params.width ?? 1
-        this.height = params.height ?? 1
-      }
+  const NativePointerEvent = window.PointerEvent
+  class PointerEvent extends NativePointerEvent {
+    constructor(type, params = {}) {
+      super(type, { pointerType: 'mouse', isPrimary: true, ...params })
     }
-    window.PointerEvent = PointerEvent
-    global.PointerEvent = PointerEvent
   }
+  window.PointerEvent = PointerEvent
+  global.PointerEvent = PointerEvent
   if (!Element.prototype.setPointerCapture) {
     Element.prototype.setPointerCapture = () => {}
     Element.prototype.releasePointerCapture = () => {}

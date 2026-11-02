@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment <rootDir>/config/jest/jsdom.cjs
  *
  * The environment rather than `setupEnv()`, whose own JSDOM import drags in an
  * ESM-only dep jest would have to transpile repo-wide.

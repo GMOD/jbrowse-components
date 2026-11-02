@@ -368,5 +368,5 @@ test('the key climbs beside an in-flow track label', () => {
     </TrackOverlaySlot>,
   )
   const { style } = getByTestId('floating-legend')
-  expect([style.top, style.maxHeight]).toEqual(['-20px', 'calc(100% - -16px)'])
+  expect([style.top, style.maxHeight]).toEqual(['-20px', 'calc(100% + 16px)'])
 })

@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment <rootDir>/config/jest/jsdom.cjs
  *
  * Which tracks a circular render opens. `--track` used to be parsed, warned
  * about as having no effect, and dropped: the view took every track in the

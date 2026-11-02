@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment <rootDir>/config/jest/jsdom.cjs
  */
 /// <reference types="jest" />
 import { parseResidue, residueRectInPage } from './structureAnchor.ts'

@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment <rootDir>/config/jest/jsdom.cjs
  *
  * jsdom via the environment, plus the fetch shim below, for the reasons
  * renderSessionInit.test.ts gives: importing jsdom directly drags in an ESM-only

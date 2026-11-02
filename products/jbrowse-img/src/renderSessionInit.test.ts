@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment <rootDir>/config/jest/jsdom.cjs
  *
  * jsdom via the environment rather than via `setupEnv()`: that helper builds its
  * own JSDOM, and importing jsdom here drags in an ESM-only transitive dep that

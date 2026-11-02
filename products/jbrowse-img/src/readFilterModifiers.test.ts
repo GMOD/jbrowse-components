@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment <rootDir>/config/jest/jsdom.cjs
  */
 /**
  * The read-filter modifiers against a real alignments display whose config

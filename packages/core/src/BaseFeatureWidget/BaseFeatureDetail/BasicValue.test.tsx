@@ -49,7 +49,7 @@ test('a tall value is clipped until expanded, with no scroller of its own', () =
   expect(getComputedStyle(clip).overflowY).toBe('hidden')
 
   fireEvent.click(getByText('Show more'))
-  expect(getComputedStyle(clip).maxHeight).toBe('')
+  expect(getComputedStyle(clip).maxHeight).toBe('none')
   fireEvent.click(getByText('Show less'))
   expect(getComputedStyle(clip).maxHeight).toBe('300px')
 })

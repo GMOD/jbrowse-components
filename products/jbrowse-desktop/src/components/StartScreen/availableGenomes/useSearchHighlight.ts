@@ -70,8 +70,7 @@ export function useSearchHighlight(
   // No deps: must re-run after every render so paginating to a new page
   // re-applies highlights to the new DOM content (Range objects detach on removal).
   useLayoutEffect(() => {
-    // generally just jest test but maybe unsupported browser
-    if (typeof CSS !== 'undefined') {
+    if (typeof CSS !== 'undefined' && 'highlights' in CSS) {
       setHighlightStyle(color)
       const container = containerRef.current
       const tokens = searchTokens(query)

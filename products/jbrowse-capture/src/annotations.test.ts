@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment <rootDir>/config/jest/jsdom.cjs
  */
 import { ANNOTATION_OVERLAY_ID } from './annotationOverlay.ts'
 import { clearAnnotations, drawAnnotations } from './annotations.ts'

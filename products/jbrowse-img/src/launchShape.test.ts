@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment <rootDir>/config/jest/jsdom.cjs
  *
  * The views this tool builds itself — dotplot, synteny, circular, breakpoint —
  * get their settings written directly on the view object. Nesting them under

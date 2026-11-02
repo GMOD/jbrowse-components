@@ -37,10 +37,12 @@ test('the fab floats over the app root, not the page', () => {
 })
 
 test('the fab sits on the side the drawer will come back on', () => {
-  expect(window.getComputedStyle(renderFab(stubSession())!).right).not.toBe('')
+  expect(window.getComputedStyle(renderFab(stubSession())!).right).not.toBe(
+    'auto',
+  )
   const left = renderFab(stubSession({ drawerPosition: 'left' }))
-  expect(window.getComputedStyle(left!).left).not.toBe('')
-  expect(window.getComputedStyle(left!).right).toBe('')
+  expect(window.getComputedStyle(left!).left).not.toBe('auto')
+  expect(window.getComputedStyle(left!).right).toBe('auto')
 })
 
 test('nothing to restore, no fab', () => {

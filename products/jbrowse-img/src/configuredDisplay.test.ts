@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment <rootDir>/config/jest/jsdom.cjs
  *
  * jsdom and the fetch shim for the reasons renderSessionInit.test.ts gives.
  */

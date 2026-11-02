@@ -1,4 +1,4 @@
-const JSDOMEnvironment = require('jest-environment-jsdom').default
+const JSDOMEnvironment = require('./jsdom.cjs')
 
 // jsdom ships no fetch/Response/Request at all, and a partial, request-guarded
 // `Headers` that STRIPS the `range` request header — unlike a real browser,
