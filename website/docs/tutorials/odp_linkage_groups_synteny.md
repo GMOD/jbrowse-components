@@ -102,9 +102,17 @@ a protein id, the scaffold it sits on, the strand, and the least and greatest
 CDS coordinates, tab-separated. Name each genome by a short code, which becomes
 its assembly name in JBrowse:
 
+odp's linkage-group databases ship as tarballs, and the colored tables come only
+from an unpacked one, so build them once in the clone:
+
+```bash
+# unpacks and indexes the linkage-group databases under odp/LG_db/
+cd odp && make
+```
+
 ```yaml
-# config.yaml; plot_LGs adds the gene_group and color columns from the BCnS
-# database odp ships with
+# config.yaml; plot_LGs adds the gene_group and color columns from each
+# installed linkage-group database
 plot_LGs: True
 species:
   EMU:
@@ -123,8 +131,10 @@ snakemake -r -p --snakefile odp/scripts/odp
 ```
 
 odp writes the colored tables under
-`synteny_analysis/step2-figures/synteny_coloredby_BCnS_LGs/`, one per pair,
-which the conversion below reads.
+`odp/step2-figures/synteny_coloredby_<database>/`, one per pair, where
+`<database>` is the name of the unpacked database directory. The deposit was
+made by an older odp that wrote the same tables under `synteny_analysis/`. The
+conversion below reads either.
 
 ### Converting a table to a `.blocks` file
 

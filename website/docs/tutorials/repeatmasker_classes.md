@@ -18,8 +18,8 @@ row of colored blocks, where that difference is hard to read. We:
   [multi-row feature display](/docs/user_guides/multirow_feature_track), one
   labelled row per class, from the track menu
 - pin the row order and colors in a track config
-- convert your own RepeatMasker `.out` into the BED the display reads, and load
-  it with the JBrowse CLI
+- convert your own RepeatMasker `.out` into the BED the display reads, sort it
+  with the JBrowse CLI and point the track config at it
 
 Every genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), and any UCSC
 or GenArk hub config, has a RepeatMasker track to try the first step on.

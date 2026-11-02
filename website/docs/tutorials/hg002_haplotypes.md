@@ -26,19 +26,20 @@ and:
 - a JBrowse instance to load the config into (the
   [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop))
-- for two haplotypes of your own, [minimap2](https://github.com/lh3/minimap2),
-  to align them
+- for two haplotypes of your own, [minimap2](https://github.com/lh3/minimap2) to
+  align them, and `bgzip` (htslib) and `samtools` to compress and index the
+  FASTA
 
-<!-- TUTORIAL_INSTALL minimap2 START -->
+<!-- TUTORIAL_INSTALL minimap2,htslib,samtools START -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install minimap2
+sudo apt install minimap2 tabix samtools
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge minimap2
+conda install -c bioconda -c conda-forge minimap2 htslib samtools
 ```
 
-<!-- TUTORIAL_INSTALL minimap2 END -->
+<!-- TUTORIAL_INSTALL minimap2,htslib,samtools END -->
 
 ## The data
 

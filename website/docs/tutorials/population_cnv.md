@@ -430,7 +430,7 @@ gives the layout for writing a store from something other than BigWigs.
 [`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
 tells you whether your panel is large enough to need a store. It counts the
 requests, bytes and time to fill one window from every sample's BigWig and from
-the hosted store, using the readers the browser uses, and takes the same
+your hosted store, using the readers the browser uses, and takes the same
 `samples.tsv`:
 
 ```bash

@@ -134,13 +134,18 @@ Three choices decide which pairs survive:
   liftover recruits extra pairs near an established block, and their dS runs far
   above the chained ones', which marks them as paralogs.
 
-On a genome of your own, the pair list starts from the two gene columns of the
-chained anchors. The script then drops the pairs whose two genes share a
-subgenome letter, so adapt that step to your own chromosome names:
+On a genome of your own, the pair list comes from the two gene columns of the
+chained anchors, kept where the two genes' chromosomes end in different
+subgenome letters. Adapt that test to your own chromosome names:
 
 ```bash
-# skip the ### lines that separate blocks
-awk '!/^#/ && NF >= 2 {print $1 "\t" $2}' oat.oat.anchors > oat.pairs.tsv
+# oat.bed maps each gene id (column 4) to its chromosome (column 1); the ###
+# lines between anchor blocks are skipped, and so are genes off the chromosomes
+awk 'NR == FNR {chrom[$4] = $1; next}
+  !/^#/ && ($1 in chrom) && ($2 in chrom) &&
+  substr(chrom[$1], length(chrom[$1])) != substr(chrom[$2], length(chrom[$2])) {
+    print $1 "\t" $2
+  }' oat.bed oat.oat.anchors > oat.pairs.tsv
 ```
 
 ### Measuring dN and dS on each homoeolog pair
