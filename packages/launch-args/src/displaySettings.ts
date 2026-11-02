@@ -1,5 +1,6 @@
 import { samFlagNames } from '@jbrowse/cigar-utils'
 
+import { displayAlias } from './displayAlias.ts'
 import { displaySlotPaths } from './displaySlots.generated.ts'
 import {
   invalidModifierValue,
@@ -36,6 +37,7 @@ export type Category =
   | 'other'
 
 export { mergeSettings }
+export { requestedDisplayType } from './displayAlias.ts'
 
 export const ALL_CATEGORIES = [
   'alignments',
@@ -420,25 +422,6 @@ function colorByField(r: DisplaySettings, field: string) {
         ? field
         : { value: current.value, field },
   )
-}
-
-// Aliases for the displays a track type has beyond its default, with any
-// settings the alias implies. `display:<anything-else>` passes through.
-const displayTypeAliases: Record<
-  string,
-  { type: string; settings?: DisplaySnapshot }
-> = {
-  marks: { type: 'LinearMarkDisplay' },
-}
-
-function displayAlias(name: string) {
-  return lookup(displayTypeAliases, name) ?? { type: name }
-}
-
-/** The display a `display:` modifier asks for; the last one given wins. */
-export function requestedDisplayType(modifiers: string[]) {
-  const name = modifiers.findLast(mod => mod.startsWith('display:'))?.slice(8)
-  return name ? displayAlias(name).type : undefined
 }
 
 // `sort:basePair` is the spelling before the slot named the field `base`.

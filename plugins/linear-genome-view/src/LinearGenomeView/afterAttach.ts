@@ -9,11 +9,10 @@ import {
   normalizeTrackInit,
   warmTrackDisplayGeneric,
 } from '@jbrowse/core/util/tracks'
-import { requestedDisplayType } from '@jbrowse/launch-args/displaySettings'
+import { requestedDisplayType } from '@jbrowse/launch-args/displayAlias'
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked, when } from 'mobx'
 
-import { launchTrackInit } from '../TrackModifiers/index.ts'
 import { SearchResultsNotFoundError } from '../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
@@ -201,8 +200,13 @@ export async function showInitTracks(
   self: LinearGenomeViewModel,
   init: Pick<InitState, 'tracks'>,
 ) {
-  for (const t of asArray(init.tracks)) {
-    await launchTrackInit(self, t)
+  const tracks = asArray(init.tracks)
+  if (tracks.length) {
+    // lazy, so the modifier and slot tables stay out of every page's first load
+    const { launchTrackInit } = await import('../TrackModifiers/index.ts')
+    for (const t of tracks) {
+      await launchTrackInit(self, t)
+    }
   }
 }
 
