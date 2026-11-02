@@ -793,15 +793,25 @@ export function stateModelFactory(
         // #region sameBlockThis
         /**
          * #getter
+         * Whether a circular view's ring hosts the display (`hostHeight`).
+         * The ring samples one canvas of its strip, the records band's.
+         */
+        get inRing(): boolean {
+          return self.hostHeight !== undefined
+        },
+        /**
+         * #getter
          * Whether the records band is the display, every record the filter
          * admits, sized by `heightMode` and lettered as a feature track: a VCF
-         * with no samples, or a one-sample call set whose row nobody asked for.
+         * with no samples, a one-sample call set whose row nobody asked for,
+         * or a ring, which draws one canvas and so the records alone.
          */
         get recordsOnly(): boolean {
           const sampleCount = self.adapterSamples?.length
           return (
             sampleCount === 0 ||
-            (sampleCount === 1 && !self.genotypesShowWritten)
+            (sampleCount === 1 && !self.genotypesShowWritten) ||
+            this.inRing
           )
         },
         /**
@@ -1190,10 +1200,10 @@ export function stateModelFactory(
          * #getter
          * `TreeSidebarMixin`'s hook: the adapter's samples as rows, each
          * answering to its sample name, a samplesTsv `color` column the row's
-         * own color. None while `genotypes.show` is off.
+         * own color. None while no row draws.
          */
         get discoveredRows(): ProcessedSource[] {
-          const samples = self.showGenotypes ? self.adapterSamples : undefined
+          const samples = self.drawsRows ? self.adapterSamples : undefined
           return (samples ?? []).map(source => ({
             ...source,
             sampleName: resolveSampleName(source),
@@ -1243,7 +1253,7 @@ export function stateModelFactory(
           const sources = self.adapterSamples
           return (
             sources &&
-            (self.showGenotypes
+            (self.drawsRows
               ? keptRows(sources, self.rowFocus, self.rowAlias)
               : [])
           )
@@ -1607,16 +1617,15 @@ export function stateModelFactory(
          * Over genotype rows the records band and its chip strip add their
          * height to the track above them, so the rows keep the slot's height;
          * with the rows hidden the track is the band and its chip strip.
-         * With no samples the band is the display, sized by `heightMode`,
-         * and in a ring's band it is taken from the rows. Overrides
-         * `HeightModeMixin.height`.
+         * With no samples, or in a ring, the band is the display, sized by
+         * `heightMode`. Overrides `HeightModeMixin.height`.
          */
         get height(): number {
           const sized =
             self.autoHeight && containingHost(self).initialized
               ? self.grownHeight
               : self.fitTargetHeight
-          return self.recordsOnly || self.hostHeight !== undefined
+          return self.recordsOnly
             ? sized
             : (self.rowsHidden ? 0 : sized) + self.topBands.addedHeight
         },

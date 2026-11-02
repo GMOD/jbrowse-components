@@ -75,6 +75,32 @@ test('with no samples the band is the display', () => {
   expect(display.topBands.reserved.records).toBe(display.height)
 })
 
+// A circular view's ring samples one canvas of the strip, so there the band
+// is the display whatever the samples, in its ring's height, and the rows
+// come back when the display leaves the ring.
+test('in a ring the band is the display, at the ring height', () => {
+  const { display } = recordsDisplayAt(FEW, 10, {}, true, {
+    variantLayout: 'columns',
+  })
+  const { configuredHeight } = display
+  display.setHostHeight(60)
+  expect(display.recordsOnly).toBe(true)
+  expect(display.drawsRows).toBe(false)
+  expect(display.atGenomicPositions).toBe(true)
+  expect(display.height).toBe(60)
+  expect(display.topBands.reserved).toEqual({
+    records: 60,
+    chips: 0,
+    connectors: 0,
+  })
+  expect(display.rpcProps().sampleFilter).toEqual([])
+  // what the ring asks for, which must not follow the height it gave
+  expect(display.configuredHeight).toBe(configuredHeight)
+  display.setHostHeight(undefined)
+  expect(display.drawsRows).toBe(true)
+  expect(display.rpcProps().sampleFilter).toEqual(['S0'])
+})
+
 // hidden rows leave the track the band, as it draws over them, and the strip
 // holding the chip that brings them back; the slot keeps the rows' height
 test('with genotypes hidden the track is the band and its chip strip', () => {

@@ -453,8 +453,9 @@ a `recordsOnly` choice in the model belongs there.
   (170). With the rows hidden (`rowsHidden`) the track's edge and its double
   click resize the band. The model's `height` is the rows' slot
   plus the band, so the rows keep their slot `height` under every
-  `heightMode` (`growMaxHeight` is Infinity over rows); in a ring's band the
-  band is taken from the rows instead.
+  `heightMode` (`growMaxHeight` is Infinity over rows). In a circular
+  view's ring (`inRing`) the display is records-only: the ring samples one
+  canvas of its strip, the band's, so no row draws or is fetched there.
 - **Past its height the record rows decimate, then hide.** The ladder drops
   descriptions, thins bodies and decimates names, but over rows never scales
   the boxes: `recordsLaidOutDataMap` leaves a record that still ends below

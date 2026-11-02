@@ -974,7 +974,7 @@ interface RecordsOpeningHeightHost
   extends RecordsLayoutHost, RecordsLayout, RecordsLayoutActionsHost {
   openingHeight: number | undefined
   heightWritten: boolean
-  hostHeight: number | undefined
+  inRing: boolean
 }
 
 export function recordsOpeningHeightActions(self: RecordsOpeningHeightHost) {
@@ -1016,7 +1016,7 @@ export function installRecordsOpeningHeight(
         self.openingHeight === undefined &&
         !self.heightWritten &&
         !self.autoHeight &&
-        self.hostHeight === undefined &&
+        !self.inRing &&
         self.recordsStackHeight > 0
       ) {
         self.settleRecordsOpeningHeight()

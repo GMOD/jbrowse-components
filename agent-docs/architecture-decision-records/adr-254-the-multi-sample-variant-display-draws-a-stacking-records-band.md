@@ -216,8 +216,11 @@ Settles the two provisional rules over rows.
   places by bp, so the order moves no row.
 - **The band adds its height to the track.** The display's `height` is the
   rows' slot plus `topBands.recordsHeight` (the model's `height` override),
-  so the rows keep their height whatever the band holds; in a ring's band,
-  whose height the host fixes, the band is still taken from the rows. The
+  so the rows keep their height whatever the band holds. A circular view's
+  ring samples one canvas of its strip, the band's, so there the display is
+  its records alone (`inRing` in `recordsOnly`, 2026-11-02), at the ring's
+  height; taking the band from the rows left them 0 px in a short ring and
+  never drew them anyway. The
   band's cap, `records.maxHeight`, has a floor and no ceiling
   (`RECORDS_BAND_BOUNDS`), since it no longer squeezes the rows.
 - **Past the cap the record rows decimate, then hide.** The ladder drops
