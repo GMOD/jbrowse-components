@@ -596,6 +596,20 @@ fi
 eval "$cmd_lint -f unix" >"$tmp/lint-all.log" 2>&1 &
 lint_all_pid=$!
 
+# The config validator's suite reads the GENERATED manifest, not the schemas,
+# so a schema change passes it until autogen rewrites the manifest, and then
+# fails it on main: on 2026-11-01 a field's default scale moved and three of
+# its tests went red in CI after every local gate passed. It runs here, after
+# autogen, when the push or autogen's rewrite moves the manifest.
+manifest=products/jbrowse-cli/src/commands/validate/configManifest.generated.ts
+validator=products/jbrowse-cli/src/commands/validate/validateConfig.test.ts
+validator_pid=
+if printf '%s\n' "$range_files" | grep -qxF "$manifest" ||
+  ! git diff --quiet HEAD -- "$manifest"; then
+  jest "$validator" --ci --reporters=default >"$tmp/validator.log" 2>&1 &
+  validator_pid=$!
+fi
+
 dstatus=0
 wait "$docs_pid" || dstatus=$?
 if [ "$dstatus" != 0 ]; then
@@ -626,6 +640,17 @@ if [ "$sstatus" != 0 ]; then
   echo "A changed default, type or choice you intended: 'npx jest $slot_defaults -u'" >&2
   echo "and commit the diff. One you didn't: the slot's configSchema is where to look." >&2
   status=$sstatus
+fi
+
+if [ -n "$validator_pid" ]; then
+  vstatus=0
+  wait "$validator_pid" || vstatus=$?
+  if [ "$vstatus" != 0 ]; then
+    echo >&2
+    echo "pre-push: the config validator's suite fails against the regenerated manifest" >&2
+    cat "$tmp/validator.log" >&2
+    status=$vstatus
+  fi
 fi
 
 # `tsc --noEmit` (what `pnpm typecheck` runs) does NOT stand in for this. That
