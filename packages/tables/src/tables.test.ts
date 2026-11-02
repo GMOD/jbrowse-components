@@ -162,7 +162,6 @@ test('reads paint as the display\u2019s color object paints them, with its key',
   const plain = await engine.alignments(BAM)
   expect(new Set(plain.reads.color).size).toBe(1)
   expect(plain.reads.color[0]).toMatch(/^#[0-9a-f]{6}$/)
-  expect(plain.reads.category.every(c => c === 'plain')).toBe(true)
   expect(plain.legend.label).toEqual(['Reads'])
 
   const strand = await engine.alignments({
@@ -176,9 +175,6 @@ test('reads paint as the display\u2019s color object paints them, with its key',
   expect(painted(strand, 1).size).toBe(1)
   expect(painted(strand, -1).size).toBe(1)
   expect(fwd).not.toEqual(rev)
-  expect(new Set(strand.reads.category)).toEqual(
-    new Set(['fwdStrand', 'revStrand']),
-  )
   expect(strand.legend).toEqual({
     label: ['Forward strand', 'Reverse strand'],
     color: [fwd, rev],
@@ -212,7 +208,6 @@ test('reads paint as the display\u2019s color object paints them, with its key',
   for (const color of new Set(mapq.reads.color)) {
     expect(mapq.legend.color).toContain(color)
   }
-  expect(new Set(mapq.reads.category)).toEqual(new Set(['mapq']))
   expect(mapq.ramps).toEqual([])
 })
 
@@ -271,8 +266,8 @@ test('normalInsertSize pins the band for the reads and the connections, beside a
   pinned.reads.level.forEach((level, i) => {
     expect(pinned.reads.color[i] === '#123456').toBe(level === 'RR')
   })
-  expect(pinned.arcs.category).toContain('longInsert')
-  expect(pinned.arcs.category).not.toContain('normalInsert')
+  expect(pinned.arcs.level).toContain('long')
+  expect(pinned.arcs.level).not.toContain('normal')
 })
 
 test('a ramp keys a color bar: a linear MAPQ, under the color title, and base quality', async () => {
@@ -538,7 +533,15 @@ test('base modifications paint under the modifications layer, keyed with the rea
     expect(modifications.color[i]).toMatch(/^#[0-9a-f]{6}$/)
   })
   expect(legend.label).toContain('5mC')
-  expect(new Set(reads.category)).toEqual(new Set(['modFwd', 'modRev']))
+  const bodies = (strand: number) =>
+    new Set(reads.color.filter((_, i) => reads.strand[i] === strand))
+  expect(bodies(1).size).toBe(1)
+  expect(bodies(-1).size).toBe(1)
+  expect(bodies(1)).not.toEqual(bodies(-1))
+  expect(new Set(reads.level)).toEqual(new Set(['']))
+  expect(legend.label).toEqual(
+    expect.arrayContaining(['Read, forward strand', 'Read, reverse strand']),
+  )
 
   const calls = await engine.alignments({
     ...METHYLATED,
@@ -1036,9 +1039,13 @@ test('read connections come back as the display’s band draws them', async () =
     expect(column).toHaveLength(n)
   }
   expect(new Set(arcs.arcs.shape)).toEqual(new Set(['arc']))
-  expect(new Set(arcs.arcs.category)).toEqual(
-    new Set(['normalInsert', 'pairLL', 'pairRR', 'splitInvLL']),
-  )
+  expect(new Set(arcs.arcs.level)).toEqual(new Set(['normal', 'LL', 'RR']))
+  expect(new Set(arcs.arcs.class)).toEqual(new Set(['', 'inversion']))
+  expect(
+    new Set(
+      arcs.arcs.level.filter((_, i) => arcs.arcs.class[i] === 'inversion'),
+    ),
+  ).toEqual(new Set(['LL']))
   arcs.arcs.start.forEach((start, i) => {
     const radius = Math.abs(arcs.arcs.end[i]! - start) / 2
     expect(Math.abs(arcs.arcs.y[i]! - radius)).toBeLessThanOrEqual(1)
@@ -1055,16 +1062,16 @@ test('read connections come back as the display’s band draws them', async () =
       readConnections: { show: true, ordinaryPairs: { show: false } },
     },
   })
-  expect(abnormal.arcs.category).not.toContain('normalInsert')
+  expect(abnormal.arcs.level).not.toContain('normal')
   expect(abnormal.arcs.start).toHaveLength(
-    arcs.arcs.category.filter(c => c !== 'normalInsert').length,
+    arcs.arcs.level.filter(l => l !== 'normal').length,
   )
 
   const cloud = await engine.alignments({
     ...PAIRED_INVERSION,
     display: { readConnections: { show: true, mark: 'rule' } },
   })
-  expect(cloud.arcs.category).not.toContain('normalInsert')
+  expect(cloud.arcs.level).not.toContain('normal')
   expect(new Set(cloud.arcs.shape)).toEqual(new Set(['flat', 'flatSplit']))
   expect(new Set(cloud.arcs.opacity)).toEqual(new Set([0.7]))
   cloud.arcs.span.forEach((span, i) => {

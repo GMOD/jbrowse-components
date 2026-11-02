@@ -123,6 +123,10 @@ import {
   arcsToRegionResult,
   regionIndexOf,
 } from './features/arcs/arcRegions.ts'
+import {
+  ARC_SPLIT_SWATCH,
+  isArcSplitCategory,
+} from './features/arcs/arcSplitCategory.ts'
 import { ordinaryPairsShown } from './features/arcs/arcTypes.ts'
 import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { computeArcsByGroup } from './features/arcs/compute.ts'
@@ -233,6 +237,7 @@ import type {
   RegionJunctions,
 } from './features/sashimi/junctions.ts'
 import type { ColorPalette } from './shaders/colors.ts'
+import type { ArcCategory } from './shaders/palettes.ts'
 import type { AlignmentsColorEncoding } from './shared/alignmentsColor.ts'
 import type {
   BaseLayer,
@@ -782,6 +787,25 @@ function footRegion(regionInfos: RegionInfo[], refName: string, bp: number) {
 }
 
 const ARC_SHAPE_NAMES = ['arc', 'flat', 'flatSplit', 'unplaced'] as const
+
+const INSERT_SIZE_LEVEL_OF = paintedLevelOf('insertSizeAndOrientation')
+
+/**
+ * The `insertSizeAndOrientation` level whose color an arc paints: a pair's
+ * own, and a split read's that of the pair twin it shares a color with.
+ */
+function arcLevelOf(category: ArcCategory) {
+  return (
+    INSERT_SIZE_LEVEL_OF.get(
+      isArcSplitCategory(category) ? ARC_SPLIT_SWATCH[category] : category,
+    ) ?? ''
+  )
+}
+
+/** A split read's arc's `junction.class`, '' for a pair's. */
+function arcClassOf(category: ArcCategory) {
+  return isArcSplitCategory(category) ? junctionClass(category) : ''
+}
 const DPR_PAST_THE_ANTIALIASING_FLOOR = Number.POSITIVE_INFINITY
 
 interface ArcPaint {
@@ -806,7 +830,8 @@ function arcRows(
     start,
     end,
     shape: shape.map(s => ARC_SHAPE_NAMES[s] ?? 'arc'),
-    category: colorSlot.map(c => arcSlotCategory(c)),
+    level: colorSlot.map(c => arcLevelOf(arcSlotCategory(c))),
+    class: colorSlot.map(c => arcClassOf(arcSlotCategory(c))),
     color: colorSlot.map(c => slotColor[c]!),
     opacity: shape.map(arcOpacity),
     y: Array.from(a.arcYBp.subarray(0, n)),
@@ -1028,7 +1053,7 @@ function chainTables(
 function sectionTables(
   d: WorkerPileupData,
   readYs: ArrayLike<number>,
-  colors: { color: string[]; category: string[]; level: string[] },
+  colors: { color: string[]; level: string[] },
   region: { start: number; end: number },
   keyOf: (readKey: WorkerPileupData['readKeys'][number]) => number,
   plainRead: string,
@@ -1057,7 +1082,6 @@ function sectionTables(
         v => pairDirectionOfNum(v) ?? '',
       ),
       color: colors.color,
-      category: colors.category,
       level: colors.level,
       key: Array.from(d.readKeys, keyOf),
     },

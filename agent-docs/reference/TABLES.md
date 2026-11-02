@@ -165,9 +165,8 @@ the display's pipeline: the worker filters and fetches under
 (`applyReadColorsByGroup`) paint each read, and the display's own key
 (`getReadDisplayLegendItems`) comes back as `legend` with `legendTitle`. Each
 read carries its painted `color` as
-`#rrggbb`, its `category` (`fwdStrand`, `mapq`, `unmappedMate`, ...), and its
-`level`, the value `encoding.color.scale.domain` names it by (`-1`, `RL`,
-`short`, a MAPQ, a tag's value, `''` for none). A host
+`#rrggbb` and its `level`, the value `encoding.color.scale.domain` names it by
+(`-1`, `RL`, `short`, a MAPQ, a tag's value, `''` for none). A host
 draws `color` as given and keys the legend off `legend`, so a scheme the
 browser gains paints in R with no port. A color bar the display keys (a
 linear tag or MAPQ ramp, base quality) comes back in `ramps`.
@@ -358,8 +357,10 @@ back from the display's own arc pass (`computeArcsByGroup`), run over every
 section at once as the display runs it:
 
 - `arcs`: each mate-pair or split-read connection's feet (`start`, `end`,
-  the near foot first, so `start` can lie right of `end`), `shape` (`arc`, `flat`, `flatSplit`, `unplaced`), `category`, and the
-  `color` and `opacity` the band paints it in.
+  the near foot first, so `start` can lie right of `end`), `shape` (`arc`, `flat`, `flatSplit`, `unplaced`), `level` (the
+  `insertSizeAndOrientation` level whose color it paints, a split read's that
+  of its pair twin), `class` (a split read's `junction.class`, `''` for a
+  pair), and the `color` and `opacity` the band paints it in.
 - `y` is where the band plots it in bp: an arc's genomic radius, or the read
   cloud's |TLEN| with the display's ±8% jitter. `span` is the distance
   itself, and `arcSpanMax` the read cloud's y domain.
