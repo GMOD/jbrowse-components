@@ -565,7 +565,7 @@ LGVSynteny and MAF displays at `coverage.encoding.y`.
   the coverage band's.
 - `minimalTicks` left display-ui's `ValueScale` and `computeYTicks`' options.
 
-## The tree sidebar's settings are one `axis` object
+## The tree sidebar's settings are one `rows.axis` object
 
 The wiggle, MAF, mark, variant and multi-row feature displays configure the
 guide down the left of their rows as `rows.axis` ([](/docs/config/rowaxis)), as
@@ -577,11 +577,14 @@ the value axis is `encoding.y.axis`.
 - `showRowSeparators` is `rows.axis.grid`, on every one of them but MAF. That
   `rows.axis.grid` draws lines between rows; `encoding.y.axis.grid` draws value
   gridlines, and a view's `axis.grid` draws ruler gridlines.
-- **A config or session in the old spellings lifts when it loads.** Code that
-  reads one with `getConf` needs updating; the model getters keep their names.
-- `@jbrowse/tree-sidebar` exports `rowAxisConfigSchema` and
+- **A config or session in the v4 spellings lifts when it loads.** A beta's
+  top-level `axis` does not: it loads without it and names the key on the
+  console. Code that reads one with `getConf` needs updating; the model getters
+  keep their names.
+- `@jbrowse/display-kit` exports `rowAxisConfigSchema` and
   `rowAxisWithGridConfigSchema` in place of `treeSidebarConfigSchemaFields` and
-  `rowSeparatorsConfigSchemaFields`.
+  `rowSeparatorsConfigSchemaFields`; `@jbrowse/tree-sidebar` re-exports them,
+  deprecated.
 
 ## An embedded view's track catalog is plain configs
 

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Everything about a row display's row axis lives under `rows`, as a Vega-Lite channel owns its scale, guide and sort: `rowHeight` is `rows.step` (unset fits the rows to `height`), the sidebar `axis` is `rows.axis`, per-row colors are `rows.colors`, an override map beside `labels` that wins over the row-attribute color channel `rows.color`, `rowGroups` is `rows.groups`, `rows.kept` is `rows.filter` (a predicate list over the row table), and `rows.tree` holds `{ newick, provenance }`. The variant display's `unit` becomes `rows.field: 'sample' | 'haplotype'`, haplotype a refinement of sample. A new declared write rule makes this safe: on `rows` and `facet`, a write that changes `field` unsets what names a row by its value (sort, labels, colors, tree, filter entries on the row name), so the layer below shows through, and merges the rest; what names an attribute stays. Amends ADR-238 and ADR-231; reverses ADR-194's row-height placement"
+summary: "Everything about a row display's row axis lives under `rows`, as a Vega-Lite channel owns its scale, guide and sort: `rowHeight` is `rows.step: number | 'fit'` (`'fit'`, the default, divides `height` between the rows, as `heightMode: 'fit'` does), the sidebar `axis` is `rows.axis`, per-row colors are `rows.colors`, an override map beside `labels` that wins over the row-attribute color channel `rows.color`, `rowGroups` is `rows.groups`, `rows.kept` is `rows.filter` (a predicate list over the row table), and `rows.tree` holds `{ newick, provenance }`. The variant display's `unit` becomes `rows.field: 'sample' | 'haplotype'`, haplotype a refinement of sample. A new declared write rule makes this safe: on `rows` and `facet`, a write that changes `field` unsets what names a row by its value (sort, labels, colors, tree, filter entries on the row name), so the layer below shows through, and merges the rest; what names an attribute stays. Amends ADR-238 and ADR-231; reverses ADR-194's row-height placement"
 ---
 
 # ADR-257: The row axis owns its settings
@@ -35,7 +35,7 @@ split against the code). Colin ruled the unit switch and the filter reset
 
 | Before | After | Grammar |
 | --- | --- | --- |
-| `rowHeight` (`0` = fit) | `rows.step`, unset = fit | Vega-Lite's word for one band's pitch, on the band scale; `height` stays the track, which never sizes itself from its row count |
+| `rowHeight` (`0` = fit) | `rows.step: number \| 'fit'`, default `'fit'` | Vega-Lite's word for one band's pitch, on the band scale, a number taking precedence over fit as it does there; `'fit'` is `heightMode`'s word with its one meaning; `height` stays the track, which never sizes itself from its row count |
 | `axis { tree, branchLength, labels, width, grid }` | `rows.axis` | a guide nests under its channel, as `encoding.y.axis` does |
 | `rowColor` `name` pairs | `rows.colors: { row: css }` | a per-row override map beside `labels`, ggplot2's `scale_*_manual(values = c(name = ...))` |
 | `rowColor` over an attribute, or `name` with only a palette or `unknown` | `rows.color: { field, scale }` | a mapping from a row attribute through a scale; `encoding.color` stays the value color |
@@ -65,6 +65,20 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   draws no rows and says so, where `kept` naming no current row drew every row.
 - A plot read returns `rows.tree` in its object form whichever form was
   written, so a wrapper handles one shape.
+
+### Row sizing
+
+- `'fit'` now names one behaviour in two slots: squeeze the content into the
+  track's `height`. `heightMode` sizes a display's bands (a feature track, the
+  variant display's records alone) and `rows.step` its rows; each
+  description names the other. On the variant display the menus already keep
+  them apart: Row height shows while rows draw, the records' sizing while
+  none do.
+- `rows.step` takes `bin.step`'s number-or-word slot type, so the CLI
+  manifest, the JSON schema and launch args read one form; `0` is refused
+  with a pointer to `'fit'`, and the R export writes `"fit"`.
+- The Row height menu's first radio is "Fit to track height", alignments'
+  words for the same choice.
 
 ### Row colors
 
@@ -138,6 +152,8 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
 | `height: number \| { step, max }` | `{ step }` sizes the view from its row count, which no multi-row display does (reference/ROW_HEIGHT_AND_FIT.md) |
 | `rows.domain` for the shown rows | a discrete domain also orders in Vega-Lite and ggplot2, every other `domain` sits under a `scale`, and older ADRs used `rows.domain` for the order |
 | Per-row colors as `rows.color.scale` name pairs, one channel | an override is not a mapping: `colors` pins a row whatever the channel maps, as `labels` pins its text, so a reader can color by population and still mark one sample; one channel made the two exclusive |
+| `rows.step` unset meaning fit | `'fit'` written is a value a plot read shows, a launch arg spells (`rows.step=fit`) and R can write, where an absent member is none of these |
+| `heightMode: 'fit' \| 'fixed'` on the row displays, `rows.step` the pitch `fixed` uses (with or without a fit ceiling) | on the variant display one `heightMode` would govern the records alone and the rows by turns, `grow` valid in one and not the other; a lone `rows.step` under `fit` would write nothing; the ceiling is capability nobody asked for, and its arrival is what would make `heightMode` the slot (reference/ROW_HEIGHT_AND_FIT.md) |
 | `rowGroups` as a `transform` step | the mark display's `transform` runs on feature records; a second meaning for the word |
 | The keyed rule on every shorthand object | an object of alternatives would merge `value` over `field` into both |
 | `facet.collapse` | `facet` is shared by displays the collapse means nothing on; `pileup.collapsed` (ADR-240's 2026-11-01 amendment) is on the band it reshapes |
@@ -164,6 +180,10 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
 - Beta share links lose `rowHeight`, `rowColor`, `rowGroups`, `axis` and
   `rows.kept` with a console notice; jb2hubs' hosted displays lose row colors
   and grid on a beta host older than the respell.
+- A track-wide `rows.axis` on a quantitative track reaches its wiggle display
+  alone, as its `rows` always did (wiggle's `rowsShorthand`), where a
+  top-level `axis` reached its mark display too; that display draws rows only
+  from a field of its own.
 - Same-word pairs inside one object (`rows.labels` map and `rows.axis.labels`
   boolean, `rows.tree` and `rows.axis.tree`) name each other in their
   descriptions.
@@ -183,7 +203,8 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
    `rows.color`, `rows.groups`, `rows.filter` (the multi-way lanes too), and
    `rows.tree`. Each slice moves the in-repo configs, figure specs, tests
    and docs with it.
-4. The variant display's `unit` as `rows.field`, haplotype refining sample.
+4. The variant display's `unit` as `rows.field`, haplotype refining sample;
+   MAF's `rows` drops the one-value `field` it inherits through `SampleRows`.
 5. Writers: menus, launch-args, jbrowse-img, the tables and R export, the
    agent prompt (`jbApi.ts`, which says `rows` and `rowColor` write whole and
    lists `unit`), figure specs, tutorials, jb2hubs, ggjbrowse.

@@ -40,6 +40,11 @@ needs the refusal to say which kind it is (`slotValueRefusal` returns a
 string today), and an amendment to ADR-134's "a value no declaring display
 takes fails the track's load".
 
+Narrowed 2026-11-02: a misspelt member of a namespace, at any depth, already
+costs the setting and a console line (ADR-134's ADR-257 amendment). The case
+left is a misspelt member inside a channel, which the router reads as a
+refusal.
+
 ## The call
 
 Whether a `displayDefaults` typo should cost the track or the setting. ADR-221

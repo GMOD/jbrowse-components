@@ -11,7 +11,12 @@ Accepted (2026-09-18). Makes the core fix
 [ADR-120](adr-120-one-json-schema-for-config-and-session-spec.md) named and
 left ("routing by slot acceptance rather than by name"). Amended 2026-09-27:
 a key merges only into the display entries the track has, so a setting never
-adds a display, and a retired lift that throws refuses the value.
+adds a display, and a retired lift that throws refuses the value. Amended
+2026-11-02 (ADR-257): a namespace splits by member at any depth, as it did at
+the top, so `rows.axis.grid` reaches the displays whose row axis has a grid
+and `rows.axis.tree` every one with a tree; a member no display declares is
+reported by its whole path, and a channel (`writes: 'whole'`) inside a
+namespace is still taken or refused whole.
 
 ## Context
 

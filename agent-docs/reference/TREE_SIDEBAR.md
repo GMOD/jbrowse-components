@@ -355,13 +355,14 @@ row type carrying the color under any other name type-checks and paints
 nothing, which is how MAF once shipped a per-sample color reaching no
 renderer.
 
-`rowAxisConfigSchema` is the matching `axis` object (`tree` / `branchLength` /
-`labels` / `width`), one sub-schema every row display declares, so a display
-cannot ship three of the four. `rowAxisWithGridConfigSchema` adds `grid`, the
-row separators, on the three displays that draw them.
+`rowAxisConfigSchema` (display-kit) is the matching `rows.axis` object
+(`tree` / `branchLength` / `labels` / `width`), one sub-schema every row
+display's `rows` declares, so a display cannot ship three of the four.
+`rowAxisWithGridConfigSchema` adds `grid`, the row separators, on every row
+display but MAF.
 
-- The declared row order is not in `axis`: every row display declares a `rows`
-  object, and the mixin reads its `sort` as `rowSort`.
+- The declared row order is `rows.sort`, beside the axis, which the mixin
+  reads as `rowSort`.
 - **The mixin declares the accessors over those slots**, so a display composes
   both halves or neither. Hand-written `getConf` / `setConf` one-liners
 beside slots this package's own code reads are how the labels toggle came to be

@@ -181,6 +181,14 @@ function namespaceMetadata(member: unknown) {
   return meta?.options.writes === 'whole' ? undefined : meta
 }
 
+/**
+ * Whether a settings bag writes `member`, a sub-schema or its node, member by
+ * member: every sub-schema but a channel, which declares `writes: 'whole'`.
+ */
+export function writesByMember(member: unknown) {
+  return namespaceMetadata(member) !== undefined
+}
+
 // How `schema` declares the object at `path` written; undefined for a path
 // it does not declare, or one ending on a slot
 function writesAt(schema: unknown, path: readonly string[]) {

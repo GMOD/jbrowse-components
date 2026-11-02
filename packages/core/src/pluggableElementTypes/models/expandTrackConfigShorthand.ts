@@ -1,4 +1,7 @@
-import { mergeConfSettings } from '../../configuration/getConf.ts'
+import {
+  mergeConfSettings,
+  writesByMember,
+} from '../../configuration/getConf.ts'
 import { getConfigurationSchemaMetadata } from '../../configuration/schemaRegistry.ts'
 import { isBareConfigurationSchemaType } from '../../configuration/schemaTypes.ts'
 import { slotValueRefusal } from '../../configuration/slotFacade.ts'
@@ -16,14 +19,12 @@ export interface DisplaySnapshot {
 
 // A sub-schema a bag writes member by member, rather than whole
 function isNamespace(entry: unknown): entry is AnyConfigurationSchemaType {
-  return (
-    isBareConfigurationSchemaType(entry) &&
-    getConfigurationSchemaMetadata(entry)?.options.writes !== 'whole'
-  )
+  return isBareConfigurationSchemaType(entry) && writesByMember(entry)
 }
 
 // The dotted paths into `value` the namespace `entry` declares, at any depth:
-// a member that is itself a namespace takes only the members it declares, so
+// a member that is itself a namespace, written with members, takes only the
+// members it declares, so
 // `rows.axis.grid` reaches the displays whose axis has a grid and
 // `rows.axis.tree` every display with a tree.
 function declaredPaths(
@@ -34,7 +35,9 @@ function declaredPaths(
   return membersDeclaredBy(entry, value).flatMap(member => {
     const sub = definition[member]
     const memberValue = value[member]
-    return isNamespace(sub) && isPlainObject(memberValue)
+    return isNamespace(sub) &&
+      isPlainObject(memberValue) &&
+      Object.keys(memberValue).length > 0
       ? declaredPaths(sub, memberValue).map(path => `${member}.${path}`)
       : [member]
   })

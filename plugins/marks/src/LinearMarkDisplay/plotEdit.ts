@@ -89,7 +89,10 @@ export function withSplitField(
   base: MarkPlot = plot,
 ): MarkPlot {
   if (field === '') {
-    return { ...plot, [key]: null }
+    return {
+      ...plot,
+      [key]: key === 'rows' ? rowsWithoutField(plot.rows) : null,
+    }
   }
   const held = channelObject(base[key]) ?? channelObject(plot[key]) ?? {}
   if (key === 'facet') {
@@ -102,6 +105,18 @@ export function withSplitField(
       ? rowColorForOtherRows(baseColor)
       : baseColor
   return { ...plot, rows, ...(rowColor ? { rowColor } : {}) }
+}
+
+// No rows field: the field and the arrangement naming its values go, and what
+// is not about the values, the row axis, stays.
+function rowsWithoutField(rows: MarkPlot['rows']) {
+  const dropped = new Set<string>(['field', ...ROWS_WRITES.keyed])
+  const kept = Object.fromEntries(
+    Object.entries(channelObject(rows) ?? {}).filter(
+      ([member]) => !dropped.has(member),
+    ),
+  )
+  return Object.keys(kept).length > 0 ? kept : null
 }
 
 /**

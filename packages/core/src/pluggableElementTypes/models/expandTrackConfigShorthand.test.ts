@@ -182,6 +182,75 @@ describe('a namespace value splits by member across displays', () => {
   })
 })
 
+const Channel = ConfigurationSchema(
+  'NestedChannel',
+  { field: { type: 'string', defaultValue: '' } },
+  { writes: 'whole', closed: true },
+)
+const nestedSchemas = new Map<string, AnyConfigurationSchemaType>([
+  [
+    'NestedGridDisplay',
+    ConfigurationSchema('NestedGridDisplay', {
+      rows: ConfigurationSchema('NestedGridRows', {
+        axis: AxisWithGrid,
+        color: Channel,
+      }),
+    }),
+  ],
+  [
+    'NestedGridlessDisplay',
+    ConfigurationSchema('NestedGridlessDisplay', {
+      rows: ConfigurationSchema('NestedGridlessRows', { axis: Axis }),
+    }),
+  ],
+])
+
+describe('a namespace inside a namespace splits by member too', () => {
+  test('each display gets the nested members it declares', () => {
+    const { overrides, unknownKeys, refused } = collectDisplayOverrides(
+      { rows: { axis: { tree: false, grid: true } } },
+      nestedSchemas,
+    )
+    expect(overrides.get('NestedGridDisplay')).toEqual({
+      rows: { axis: { tree: false, grid: true } },
+    })
+    expect(overrides.get('NestedGridlessDisplay')).toEqual({
+      rows: { axis: { tree: false } },
+    })
+    expect(unknownKeys).toEqual([])
+    expect(refused).toEqual([])
+  })
+
+  test('a nested member no display declares is reported by its path', () => {
+    const { overrides, unknownKeys } = collectDisplayOverrides(
+      { rows: { axis: { tree: false, gird: true } } },
+      nestedSchemas,
+    )
+    expect(overrides.get('NestedGridDisplay')).toEqual({
+      rows: { axis: { tree: false } },
+    })
+    expect(unknownKeys).toEqual(['rows.axis.gird'])
+  })
+
+  test('an empty nested object routes with no report', () => {
+    const { overrides, unknownKeys } = collectDisplayOverrides(
+      { rows: { axis: {} } },
+      nestedSchemas,
+    )
+    expect(overrides.get('NestedGridDisplay')).toEqual({ rows: { axis: {} } })
+    expect(unknownKeys).toEqual([])
+  })
+
+  test('a channel inside a namespace is still taken or refused whole', () => {
+    const { overrides, refused } = collectDisplayOverrides(
+      { rows: { color: { field: 'x', undeclared: 'y' } } },
+      nestedSchemas,
+    )
+    expect(overrides.get('NestedGridDisplay')).toBeUndefined()
+    expect(refused.map(r => r.key)).toEqual(['rows'])
+  })
+})
+
 describe('mergeOverridesIntoDisplays', () => {
   test('a display with no entry gets none', () => {
     expect(

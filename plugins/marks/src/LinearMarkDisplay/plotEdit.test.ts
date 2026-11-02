@@ -119,6 +119,16 @@ describe('the split field, typed a keystroke at a time', () => {
   })
 })
 
+test('emptying the rows field keeps the row axis and drops the arrangement', () => {
+  const rows = { field: 'sample', sort: ['b', 'a'], axis: { grid: true } }
+  expect(withSplitField({ marks: [], rows }, 'rows', '').rows).toEqual({
+    axis: { grid: true },
+  })
+  expect(
+    withSplitField({ marks: [], rows: { field: 'sample' } }, 'rows', '').rows,
+  ).toBeNull()
+})
+
 test('the order box edits sort, and a rows order typed by hand drops the tree', () => {
   const rows = { field: 'HP', sort: ['1', '2'], tree: '(1,2);', labels: {} }
   const plot: MarkPlot = {
