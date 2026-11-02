@@ -49,3 +49,13 @@ test('the key lists the no-call once the view settles over it', () => {
   expect(display.hasNoCall).toBe(true)
   dispose()
 })
+
+// The key picks its rule from the layout in effect, so a payload fetched
+// under the other layout must never be read through it.
+test('a layout switch drops the held payload before the key reads it', () => {
+  const { display, dispose } = setup()
+  expect(display.cellData).toBeDefined()
+  display.setVariantLayout('columns')
+  expect(display.cellData).toBeUndefined()
+  dispose()
+})
