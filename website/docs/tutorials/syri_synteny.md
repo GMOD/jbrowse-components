@@ -13,16 +13,19 @@ tutorial_subcategory: Whole-genome alignments
 
 The Columbia and Landsberg accessions of _Arabidopsis thaliana_ differ by an
 inversion of more than a megabase on the short arm of chromosome 4, first seen
-under the microscope and later confirmed by assembling Landsberg. We find it
-again with [SyRI](https://github.com/schneebergerlab/syri), which sorts an
-alignment into syntenic, inverted, translocated and duplicated regions. We:
+under the microscope and later confirmed by assembling Landsberg.
+[SyRI](https://github.com/schneebergerlab/syri) sorts a whole-genome alignment
+into syntenic, inverted, translocated and duplicated regions. We find the
+inversion again with it, then compare four more accessions. We:
 
-- align six assembled accessions, run SyRI on each pair, and merge the
-  comparisons into one PAF whose ribbons take the color of the type SyRI assigns
-- stack linear synteny views the way
+- run SyRI on each aligned pair of accessions, and convert its regions to one
+  PAF
+- load the PAF as a synteny track and color its ribbons by SyRI type in a linear
+  synteny view of two accessions
+- stack all six accessions in one linear synteny view, the way
   [plotsr](https://github.com/schneebergerlab/plotsr) draws them
-- draw the same accessions as lanes of a multi-way display under Columbia
-  coordinates
+- draw the accessions as lanes of a multi-way synteny display under Columbia,
+  beside a feature track with a row of SyRI regions per accession
 
 ## Prerequisites
 
@@ -263,11 +266,11 @@ between the two genomes it joins:
 
 ## Every accession in Columbia coordinates
 
-To compare every accession with Col-0 in Col-0 coordinates, `syri_to_paf.py`
-also writes each pair's regions in reference coordinates, one BED row per
-region. Each row's name is its type, its color comes from `itemRgb`, and a
-`query` column holds the accession name. The rows against Col-0 concatenate into
-one track:
+The stack compares each accession with the one above it. To read every accession
+against Col-0, in Col-0 coordinates, `syri_to_paf.py` also writes each pair's
+regions in reference coordinates, one BED row per region. Each row's name is its
+type, its color comes from `itemRgb`, and a `query` column holds the accession
+name. The rows against Col-0 concatenate into one track:
 
 <!-- from: scripts/build_syri_synteny.sh -->
 
@@ -358,10 +361,9 @@ The
 [Arabidopsis pangenome page](https://genomes.jbrowse.org/pangenomes/arabidopsis/)
 has SyRI regions for the 1001 Genomes Plus accessions on TAIR10. Type a gene or
 region there, and the page draws a map of that window with one row per
-structural form, a group of accessions with the same alleles at every
-structural-variant site in the window, beside its share of the accessions. The
-forms come from calling each accession against the pangenome graph with
-`minigraph --call`.
+structural form, beside its share of the accessions. A structural form is a
+group of accessions with the same alleles at every structural-variant site in
+the window, called against the pangenome graph with `minigraph --call`.
 
 Two links on the page open the SyRI rows in JBrowse:
 
