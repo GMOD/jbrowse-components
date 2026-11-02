@@ -56,8 +56,12 @@ test('rejects a refName with no length on record', () => {
   expect(() => parse('ctgB:1-10')).toThrow(/no length on record/)
 })
 
-test('rejects an empty range', () => {
-  expect(() => parse('ctgA:200-100')).toThrow(/empty region/)
+test('rejects a backwards range', () => {
+  expect(() => parse('ctgA:200-100')).toThrow(/start greater than end/)
+})
+
+test('rejects a range wholly past the end of its contig', () => {
+  expect(() => parse('ctgA:60001-70000')).toThrow(/empty region/)
 })
 
 // A display's `clusterRegion` is the second caller, and it depends on the span

@@ -128,6 +128,15 @@ describe('assembleLocString', () => {
     }).toThrow(`no assembly name was provided in location "${location}"`)
   })
 
+  test.each(['chr1:200-100', 'chr1:101-100', 'chr1:2k..1k'])(
+    'a backwards range %s is refused',
+    location => {
+      expect(() => {
+        parseLocString(location, refName => refName === 'chr1')
+      }).toThrow(`found start greater than end in "${location}"`)
+    },
+  )
+
   test("assemble and parse 'chr1:1..100'", () => {
     expect(
       parseLocString(

@@ -43,10 +43,11 @@ function parseCoords(suffix: string, locString: string) {
       `could not parse range "${suffix}" on location "${locString}"`,
     )
   }
-  return {
-    start,
-    end: endStr ? parseBpString(endStr) : trailing ? undefined : start,
+  const end = endStr ? parseBpString(endStr) : trailing ? undefined : start
+  if (end !== undefined && end < start) {
+    throw new Error(`found start greater than end in "${locString}"`)
   }
+  return { start, end }
 }
 
 export function parseLocStringOneBased(

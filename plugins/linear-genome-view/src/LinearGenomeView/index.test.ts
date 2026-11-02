@@ -1931,9 +1931,14 @@ test('space separated locstring', async () => {
   })
 })
 
-test.each(['ctgA:200-100', 'ctgA:200-100 ctgB:1-10'])(
-  'backwards range %s is refused before the view changes',
-  async input => {
+const ctgB = { refName: 'ctgB', start: 0, end: 10 }
+test.each([
+  ['typed', 'ctgA:200-100'],
+  ['typed, one base backwards', 'ctgA:101-100 ctgB:1-10'],
+  ['parsed', [{ refName: 'ctgA', start: 199, end: 100 }, ctgB]],
+] as const)(
+  'a backwards range (%s) is refused before the view changes',
+  async (_, input) => {
     const { Session, LinearGenomeModel } = initialize()
     const model = Session.create({
       configuration: {},
@@ -1948,9 +1953,11 @@ test.each(['ctgA:200-100', 'ctgA:200-100 ctgB:1-10'])(
     const before = model.displayedRegions
     const { offsetPx, bpPerPx } = model
 
-    await expect(model.navToLocString(input)).rejects.toThrow(
-      /start greater than end in ctgA:200\.\.100/,
-    )
+    await expect(
+      typeof input === 'string'
+        ? model.navToLocString(input)
+        : model.navToLocations([...input], 'volvox'),
+    ).rejects.toThrow(/start greater than end in "?ctgA:(200|101)/)
     expect(model.displayedRegions).toEqual(before)
     expect(model.offsetPx).toBe(offsetPx)
     expect(model.bpPerPx).toBe(bpPerPx)
