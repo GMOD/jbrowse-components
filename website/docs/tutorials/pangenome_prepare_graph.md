@@ -8,16 +8,20 @@ tutorial_category: Pangenomes
 tutorial_subcategory: Building a graph
 ---
 
-To let people browse a pangenome graph in JBrowse, from a whole chromosome down
-to single nodes, the graph has to be cut into small indexed files that JBrowse
-reads one window at a time. One command writes those files and the config that
-puts them on tracks. We run it on HPRC release 2, and:
+A pangenome graph of many genomes is too large to load whole, so JBrowse browses
+one from small indexed files, a window at a time, from a whole chromosome down
+to single nodes. One command cuts a graph into those files and writes the config
+that puts them on tracks. We run it on HPRC release 2's human graph, with _E.
+coli_ and _Arabidopsis_ graphs for the steps whose input the human graph lacks.
+We:
 
-- load the plugin and run the command
-- open the track as a graph and as a row of segments
-- check the index against the graph
-- add two optional layers: haplotypes per segment, and haplotype routes
-- convert the haplotype routes to PAF for a whole-genome synteny view
+- install the GraphGenomeView plugin and index a graph with `gfa-to-tabix build`
+- load the graph as a graph track, and as a row of segments with **Display
+  types**
+- add the tracks that record which haplotypes pass through each segment
+- index the haplotypes' walks and load them as a graph track with one lane per
+  haplotype
+- convert the walks to PAF for a linear synteny view
 
 :::caution Experimental
 
@@ -158,9 +162,8 @@ The command writes these files beside the prefix:
 | `.config.json`            | the tracks below, with the plugin entry                                                                                                              |
 
 Each `.bed.gz` gets a tabix index beside it. `--format 1` writes the index, the
-tier and the contig layout as `.segs.bed.gz` and `.links.bed.gz` pairs, as
-gfa-to-tabix did before 2.0; a track reading such a pair leaves out
-`"format": 2`.
+tier and the contig layout as `.segs.bed.gz` and `.links.bed.gz` pairs, and a
+track reading such a pair leaves out `"format": 2`.
 
 ### The coarse tier for whole-chromosome views {#a-whole-chromosome-the-bubble-tier}
 
@@ -209,9 +212,14 @@ The config's first track is the graph. Its adapter holds:
 `build` writes the config as `<prefix>.config.json`, here `hprc.config.json`.
 Merge its `plugins` and `tracks` entries into your own config, then run
 `jbrowse validate config.json`, which reports a misspelled or undeclared slot
-JBrowse otherwise ignores. Without a config, the plugin's Add pangenome graph
-track workflow reads `hprc.graph.json` beside `hprc.graph.bed.gz`, so a track
+JBrowse otherwise ignores. Without a config, **Open track... → Add pangenome
+graph track** reads `hprc.graph.json` beside `hprc.graph.bed.gz`, so a track
 opened from that url gets the coarse tier too.
+
+A plain GFA's anchored layout, at the bare prefix, files a segment under every
+reference position its branch spans. On the _E. coli_ pggb and Minigraph-Cactus
+graphs that draws multi-megabase rows across every window, so their graph tracks
+read the contig layout: set the top-level `uri` to `<prefix>.contig`.
 
 Turned on, the track draws as a graph. **Display types → Feature display** in
 its track menu draws the same segments as a row.
@@ -347,22 +355,22 @@ indexed against K12.
 }
 ```
 
-The `encoding.color` block is a color scale that maps the `sampleCount` field
-linearly from `scale.domainMin` onto the two colors of `scale.range`. The count
-is per haplotype (`HG002.1`), so a diploid sample's two copies count separately.
+The count is per haplotype (`HG002.1`), so a diploid sample's two copies count
+separately.
 
 <Figure caption="The haplotypes-per-segment track over the pggb E. coli graph near insH21, red for a segment on one strain and grey for a segment on all five." src="/img/pangenome/prepare_graph_haplotypes_per_segment.png" />
 
 ## Indexing haplotype walks with gfa-to-tabix {#haplotype-walks-tabix}
 
 A **walk** is one haplotype's route through the graph. `gfa-to-tabix --walks`
-writes every walk to one tabix-indexed file per reference, which the browser
-reads for the graph track and for the haplotype lanes. It cuts each walk into
-pieces, one for each stretch the walk spends in a 64 kb chunk of a reference,
-and files each piece under its chunk, so the browser reads one range of the file
-per window. A chunk holds the reference's path through it once, each distinct
-route a haplotype takes off that path once, and every other walk's piece as the
-list of routes it takes.
+writes every walk to one tabix-indexed file per reference, which the graph track
+and the haplotype lanes read one range at a time:
+
+- each walk is cut into pieces, one for each stretch it spends in a 64 kb chunk
+  of the reference, and each piece is filed under its chunk
+- a chunk holds the reference's path through it once, each distinct route a
+  haplotype takes off that path once, and every other walk's piece as the list
+  of routes it takes
 
 The base-level GFA holds each walk as a W line. Index it against both of HPRC's
 references:[^walks-cost]
@@ -398,12 +406,14 @@ tabix -H hprc-v2.1-mc-grch38.CHM13.walks.bed.gz | head -4
 #haplotype	HG00097#1
 ```
 
-The first line gives the file's format, the chunk size, the longest node in bp,
-the `--stay` the tool ran with, and the `--abridge-steps` and `--abridge-bytes`
-budgets. Where a chunk's walks cost more than those budgets, usually in a
-satellite array, gfa-to-tabix moves the costliest walks to detail rows that a
-window read skips. The file then lists its reference sample and every other
-haplotype with rows in it, the other reference included, once each.
+- **`#walks`** gives the file's format, the chunk size, the longest node in bp
+  and the `--stay` the tool ran with
+- **`abridge` and `abridgebytes`** are the `--abridge-steps` and
+  `--abridge-bytes` budgets. Where a chunk's walks cost more, usually in a
+  satellite array, gfa-to-tabix moves the costliest walks to detail rows that a
+  window read skips
+- **`#reference` and `#haplotype`** list the reference sample, then every other
+  haplotype with rows in the file, the other reference included
 
 A track's `walksUri` names one reference's set by its prefix,
 `<prefix>.<sample>`. The track below draws the graph and, as a second display,
@@ -471,9 +481,6 @@ The HPRC tracks built this way open at chr22:20,000,000-20,100,000 on
 [hs1, from the CHM13 set](https://jbrowse.org/code/jb2/main/?config=test_data/graphgenomeview/hprc.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hs1%22%2C%22loc%22%3A%22chr22%3A20%2C000%2C000-20%2C100%2C000%22%2C%22tracks%22%3A%5B%22hprc_v2_1_walks_hs1%22%5D%7D%5D%7D)
 and
 [hg38, from the GRCh38 set](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/hprc/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr22%3A20%2C000%2C000-20%2C100%2C000%22%2C%22tracks%22%3A%5B%22hprc_v2_1_walks%22%5D%7D%5D%7D).
-The [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) reads the GRCh38
-set for its **Haplotypes** launch, for the graph it draws under a clicked row,
-and for its BandageJS link.
 
 The track menu's **Haplotypes** submenu switches the track between **The track's
 default haplotypes**, **Every haplotype in the graph** and **Chosen in Graph
@@ -484,12 +491,13 @@ them where the reference places those nodes.
 
 Two budgets in the
 [adapter's config](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer/blob/main/src/RgfaTabixAdapter/configSchema.ts)
-refuse a window with a notice to zoom in. `walkByteBudget` caps the compressed
-bytes that the three indexes estimate a window would fetch. The estimate is the
-same for any set of haplotypes, because the browser downloads every haplotype's
-rows and drops the unwanted ones by name. `walkStepBudget` caps the walk steps a
-window keeps, counting only the haplotypes the track draws, so fewer haplotypes
-draw a wider window.
+refuse a window with a notice to zoom in:
+
+- **`walkByteBudget`** caps the compressed bytes the three indexes estimate a
+  window would fetch. The browser downloads every haplotype's rows and drops the
+  unwanted ones by name, so the estimate is the same for any set of haplotypes.
+- **`walkStepBudget`** caps the walk steps a window keeps, counting only the
+  haplotypes the track draws, so fewer haplotypes draw a wider window.
 
 ## Whole-genome synteny from the walks, as PAF {#walks-as-paf}
 
@@ -539,11 +547,8 @@ inventory, with the tools under [Prerequisites](#prerequisites). It:
 gfa-to-tabix build hprc-v2.1-mc-grch38.sv.gfa.gz -o hprc --assembly hg38
 ```
 
-[`gfa-to-tabix build`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#build)
-reads the graph once and writes the index, the tier, the alleles and the bubbles
-concurrently. The coarse tier is also
-[`gfa-to-tabix fold`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#fold),
-which runs alone:
+To rebuild the coarse tier alone, at another threshold, run
+[`gfa-to-tabix fold`](https://github.com/GMOD/gfa-to-tabix/blob/main/docs/subcommands.md#fold):
 
 ```bash
 gfa-to-tabix fold hprc-v2.1-mc-grch38.sv.gfa.gz --below 10000 -o hprc.fold10000
