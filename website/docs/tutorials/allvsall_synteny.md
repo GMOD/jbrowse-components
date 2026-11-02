@@ -8,21 +8,22 @@ tutorial_subcategory: Whole-genome alignments
 ---
 
 Strains of one bacterial species share most of their chromosome and differ by
-gene islands one strain picked up and by stretches that flipped. With five _E.
-coli_ strains we:
+gene islands one strain picked up and by stretches that flipped. One minimap2
+run aligns every strain against every other and writes a single all-vs-all PAF,
+so the strains can be stacked in any order from one file. For a few genomes in a
+fixed order, [](/docs/tutorials/synteny_visualization) aligns each pair of
+adjacent rows separately and keeps the original sequence names. With five _E.
+coli_ strains, at Sakai's Shiga-toxin prophage, the phenylacetate (paa) operon
+some strains lack, and IAI39's inversions, we:
 
-- align them with `minimap2 -X`, which writes one all-vs-all PAF, an alignment
-  of every genome against every other
-- load the PAF with `MultiGenomePAFAdapter` and stack the assemblies as rows in
-  a linear synteny view
-- add a gene track per strain and read one strain against the rest in a single
-  pileup, at Sakai's Shiga-toxin prophage, the phenylacetate (paa) operon three
-  strains lack, and IAI39's inversions
-
-The alternative to one all-vs-all file is a separate alignment for each pair of
-adjacent rows, which [](/docs/tutorials/synteny_visualization) follows through
-three _H. pylori_ strains. Pairwise files need no renaming, and suit a few
-genomes in a fixed order.
+- align the strains with `minimap2 -X` and load the all-vs-all PAF as a synteny
+  track with `MultiGenomePAFAdapter`
+- stack the assemblies as rows of a linear synteny view, from the import form or
+  a session
+- add a gene track per strain to see what a gap in the ribbons holds
+- read one strain against the rest in a linear genome view, grouped by mate
+  strain and drawn as percent identity
+- launch a stacked synteny view from a selection at one locus
 
 ## Prerequisites
 
@@ -61,10 +62,10 @@ npm install -g @jbrowse/cli@next
 Five _E. coli_ RefSeq assemblies, each fetched by accession with the `datasets`
 CLI.
 
-The page's commands build local files from these, and the tracks over those read
-them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself. You need
-your own set of assemblies to produce an all-vs-all PAF.
+The page's commands build local files from these, so run the
+[build script](#reproduce-it-end-to-end) first, or follow the same commands on
+assemblies of your own. The tracks with a hosted URL, such as the identity
+track, read jbrowse.org's copy.
 
 | What it is | File                                                                                                                  |
 | ---------- | --------------------------------------------------------------------------------------------------------------------- |
@@ -259,22 +260,23 @@ _stx2B_, the Shiga-toxin subunits, with no alignment to K-12.
 
 ## One strain against all the others
 
-In a plain linear genome view, where no second row names a target assembly, the
-`ecoli_ava` track draws the viewed strain against every other strain in the
-file. Clicking an alignment can launch a synteny view against its mate, the
-strain it aligns to.
+The stack shows each strain against its neighbours. To read one strain against
+every other, open it in a linear genome view and turn on the `ecoli_ava` track.
+With no second row naming a target assembly, the track draws the viewed strain
+against every other strain in the file, and clicking an alignment can launch a
+synteny view against its mate, the strain it aligns to.
 
 **Group by** in the track menu is a facet: it splits the track into stacked
 sections, one per value of a field. Three track-menu items set the pileup up for
 reading strain by strain:
 
-1. **Group by → Mate assembly** gives each strain a section. Untick **Show →
-   Collapse groups to one row** to stack every section, or expand one from its
-   label.
-2. **Group by → Hide self-alignment lane** drops the section for the strain
-   you're viewing. The figures below have it ticked.
-3. **Show → Coverage** adds a histogram of how many other strains cover each
-   base.
+- pick **Group by → Mate assembly** to give each strain a section, then untick
+  **Show → Collapse groups to one row** to stack every section, or expand one
+  from its label
+- tick **Group by → Hide self-alignment lane** to drop the section for the
+  strain you're viewing, as in the figures below
+- tick **Show → Coverage** to add a histogram of how many other strains cover
+  each base
 
 The figure below shows K-12's phenylacetate (paa) operon, where some strains
 stop at the shaded edge and NCTC86 runs through, with a track of the segments of
@@ -299,11 +301,12 @@ strain stack:
 **Display types → Marks** in the track menu draws each `ecoli_ava` alignment as
 a line at its identity, one row per strain, with nothing to configure. The plot
 is the percent identity plot [PipMaker](https://doi.org/10.1101/gr.10.4.577)
-drew for a pair of genomes. In
-[grammar-of-graphics](/docs/config_guides/mark_display) terms, the config below
-writes it out: `rows` assigns one row per `mate.assemblyName`, `filter` drops
-records, `encoding.y` is the y scale, and the `mark` is the shape drawn. Three
-details to read:
+drew for a pair of genomes.
+
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the config
+below writes the same display out: `rows` assigns one row per
+`mate.assemblyName`, `filter` drops records, `encoding.y` is the y scale, and
+the `mark` is the shape drawn. In it:
 
 - `identity` comes from minimap2's `de` divergence tag
 - `filter` drops K-12's alignments to itself, which otherwise take a separate
