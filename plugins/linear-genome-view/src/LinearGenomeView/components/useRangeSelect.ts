@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
-import { isFromPortal } from '@jbrowse/core/util/pressOwner'
+import { isClaimedPress, isFromPortal } from '@jbrowse/core/util/pressOwner'
 
 import { useWindowDrag } from '../../shared/useWindowDrag.ts'
 import { isOnScalebarRefLabel } from './util.ts'
@@ -70,7 +70,12 @@ export function useRangeSelect(
   })
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
-    if (isFromPortal(event) || (shiftOnly && !event.shiftKey)) {
+    if (
+      event.button !== 0 ||
+      (shiftOnly
+        ? !event.shiftKey || isClaimedPress(event)
+        : isFromPortal(event))
+    ) {
       return
     }
     // a press with the refName menu already open reopens it on the label under

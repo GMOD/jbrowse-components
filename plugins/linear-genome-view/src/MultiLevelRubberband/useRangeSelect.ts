@@ -79,18 +79,20 @@ export function useRangeSelect(
   })
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
-    event.preventDefault()
-    event.stopPropagation()
-    // clear any leftover menu/selection so a fresh drag isn't blocked by a
-    // stale anchorPosition keeping mouseDragging false
-    setAnchorPosition(undefined)
-    // the guide is what the pointer was showing up to now, and mouseMove won't
-    // touch it during the drag — leaving it set keeps the selection span from
-    // ever rendering, since the guide wins that either/or
-    setGuideX(undefined)
-    const relativeX = getRelativeX(event, ref.current)
-    setStartX(relativeX)
-    setCurrentX(relativeX)
+    if (event.button === 0) {
+      event.preventDefault()
+      event.stopPropagation()
+      // clear any leftover menu/selection so a fresh drag isn't blocked by a
+      // stale anchorPosition keeping mouseDragging false
+      setAnchorPosition(undefined)
+      // the guide is what the pointer was showing up to now, and mouseMove
+      // won't touch it during the drag — leaving it set keeps the selection
+      // span from ever rendering, since the guide wins that either/or
+      setGuideX(undefined)
+      const relativeX = getRelativeX(event, ref.current)
+      setStartX(relativeX)
+      setCurrentX(relativeX)
+    }
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {

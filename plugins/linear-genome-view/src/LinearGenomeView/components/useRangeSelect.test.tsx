@@ -8,10 +8,16 @@ import { scalebarRefLabelProps } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 
-function TestRubberband({ model }: { model: LinearGenomeViewModel }) {
+function TestRubberband({
+  model,
+  shiftOnly = false,
+}: {
+  model: LinearGenomeViewModel
+  shiftOnly?: boolean
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const { mouseDown, mouseMove, mouseOut, guideX, anchorPosition } =
-    useRangeSelect(ref, model)
+    useRangeSelect(ref, model, shiftOnly)
   return (
     <div
       data-testid="rubberband"
@@ -24,6 +30,7 @@ function TestRubberband({ model }: { model: LinearGenomeViewModel }) {
       <span data-testid="guideX">{guideX ?? 'none'}</span>
       <span data-testid="menuOpen">{String(!!anchorPosition)}</span>
       <span data-testid="refLabel" {...scalebarRefLabelProps} />
+      <button data-testid="labelButton" />
       {createPortal(<div data-testid="dialog" />, document.body)}
     </div>
   )
@@ -220,6 +227,39 @@ describe('useRangeSelect (LGV)', () => {
       expect.objectContaining({ offset: 100 }),
       expect.objectContaining({ offset: 250 }),
     )
+  })
+
+  it.each([
+    ['middle', 1],
+    ['right', 2],
+  ])('a %s press neither selects nor opens the click menu', (_, button) => {
+    const setOffsets = jest.fn()
+    render(<TestRubberband model={makeModel({ setOffsets })} />)
+    const el = screen.getByTestId('rubberband')
+
+    expect(fireEvent.mouseDown(el, { button, clientX: 100 })).toBe(true)
+    act(() => {
+      window.dispatchEvent(
+        new MouseEvent('mouseup', { bubbles: true, button, clientX: 250 }),
+      )
+    })
+    expect(setOffsets).not.toHaveBeenCalled()
+    expect(screen.getByTestId('menuOpen').textContent).toBe('false')
+  })
+
+  it('a shift-press on a button in the tracks area is left to the button', () => {
+    render(<TestRubberband model={makeModel()} shiftOnly />)
+    const button = screen.getByTestId('labelButton')
+
+    expect(fireEvent.mouseDown(button, { shiftKey: true, clientX: 100 })).toBe(
+      true,
+    )
+    act(() => {
+      window.dispatchEvent(
+        new MouseEvent('mouseup', { bubbles: true, clientX: 101 }),
+      )
+    })
+    expect(screen.getByTestId('menuOpen').textContent).toBe('false')
   })
 
   // React bubbles a portal's events to its React parent, so a press in a

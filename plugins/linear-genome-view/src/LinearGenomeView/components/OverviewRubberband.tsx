@@ -71,9 +71,11 @@ const OverviewRubberband = observer(function OverviewRubberband({
   })
 
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
-    event.preventDefault()
-    event.stopPropagation()
-    setStartX(getRelativeX(event, controlsRef.current))
+    if (event.button === 0) {
+      event.preventDefault()
+      event.stopPropagation()
+      setStartX(getRelativeX(event, controlsRef.current))
+    }
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
