@@ -5,10 +5,5 @@
 #
 # A higher count is a regression: before the tag, tell the reader the window
 # to type, the menu path to take, the config to paste or the command to run.
-tutorials/analyze_trio.md 1
-tutorials/bxd_qtl.md 1
-tutorials/dog10k_lof.md 1
-tutorials/dog10k_selection.md 1
 tutorials/genomes_basics.md 4
-tutorials/ld_mosquitoes.md 1
-tutorials/local_ancestry.md 2
+tutorials/local_ancestry.md 1
