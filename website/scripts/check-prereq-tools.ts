@@ -116,11 +116,7 @@ const ALLOWED = new Map([
     'the aligner jcvi drives through --align_soft; nothing calls it directly',
   ],
   [
-    'scatac_pseudobulk.md#bedGraphToBigWig',
-    'one of four upstream routes, each named with its own flags under "If your data lives somewhere else"',
-  ],
-  [
-    'scatac_pseudobulk.md#ArchRProject',
+    'scrna_pseudobulk.md#ArchRProject',
     'an R object the reader already holds, not a command',
   ],
 ])

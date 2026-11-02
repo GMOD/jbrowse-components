@@ -133,7 +133,7 @@ Three ways to create one:
 - The track selector lets you multi-select existing tracks and combine them into
   a multi-quantitative track, which is how a set of per-cell-type BigWigs
   becomes one stacked track (see the
-  [single-cell ATAC pseudobulk tutorial](/docs/tutorials/scatac_pseudobulk))
+  [single-cell pseudobulk tutorial](/docs/tutorials/scrna_pseudobulk))
 - Hand-edit the config, described in the
   [quantitative track configuration](/docs/config_guides/quantitative_track#many-signals-in-one-track)
   guide
@@ -214,7 +214,7 @@ every dip or spike is a copy-number change.
 - [](/docs/tutorials/genomes_basics), a worked example on a hosted BigWig, from
   finding the track to reading it against the gene model
 - [Methylation tutorial](/docs/tutorials/methylation)
-- [Single-cell ATAC pseudobulk tutorial](/docs/tutorials/scatac_pseudobulk)
+- [](/docs/tutorials/scrna_pseudobulk)
 - [](/docs/user_guides/gwas_track)
 - [SV visualization: working with large SVs](/docs/user_guides/sv_visualization#working-with-large-svs)
 - [Quantitative track configuration](/docs/config_guides/quantitative_track)

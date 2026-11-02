@@ -227,14 +227,6 @@ question the first page raised. The material exists on both pages and is unused 
 sorts the cohort by amplification; the point mutations sort a group the segments
 cannot separate" is the sentence that would make the second page arrive.
 
-**On `scrna_pseudobulk` vs `scatac_pseudobulk`: merge, or split on a different
-seam.** They pseudobulk the *same* 10x 5k PBMC donor, and
-`scrna_pseudobulk.md:146-148` concedes it: "nothing about the RNA case differs."
-If they do not merge, the seam is not RNA-vs-ATAC — it is (a) a user guide on
-loading per-group BigWigs as rows, which belongs in
-`user_guides/multiquantitative_track`, and (b) one tutorial on pseudobulking the
-donor.
-
 ## 6. The pages that want splitting, at a named seam
 
 - **`sv_visualization_cgiab.md`** — split into `sv_visualization_cgiab` (SV

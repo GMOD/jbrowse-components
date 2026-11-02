@@ -265,7 +265,7 @@ move only where a display's row source changes.
    selector item, `jb.addTrack`, the CLI and jbrowse-img, the peak formats, the
    text-index walk, and the removals. The pages that name the multi-wiggle route
    or use it as their worked example move with it:
-   `tutorials/scatac_pseudobulk.md:199`,
+   `tutorials/scrna_pseudobulk.md` (§Building the track from a list of BigWigs),
    `developer_guides/creating_addtrack_workflow.md` and
    `developer_guides/extension_points.md:1063`.
 6. **Members with rows of their own.** The qualified name, the member band and

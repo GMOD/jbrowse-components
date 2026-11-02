@@ -173,13 +173,6 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.32, 1],
     position: 'left',
   },
-  scatac_pseudobulk: {
-    // the PBMC pseudobulk rows the page's own script builds, skipping the gene
-    // lane above them
-    src: 'scatac/pbmc5k_marker_swap.png',
-    band: [0.25, 1],
-    position: 'left',
-  },
   scrna_pseudobulk: {
     // the marker panel from the track header down, so the card carries the nine
     // cell-type labels beside the diagonal the peaks walk down

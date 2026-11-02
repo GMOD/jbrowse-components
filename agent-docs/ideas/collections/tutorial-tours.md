@@ -102,11 +102,11 @@ cascade teaches a reader nothing new about the app.
   instead**: both heatmap figures set `runClustering: true`, so "rows are in
   file order until you do" is pictured nowhere, and an unclustered twin costs
   one spec and is diffable.
-- **`scatac_pseudobulk.md`** — the multi-wiggle add-track form is the best
-  MECHANISM the survey found (a grid that does not exist until **Add tracks** is
-  pressed, an editable Name column, a Submit that unlocks on three conditions),
-  and it is on the wrong page: the section is one of three the page declares
-  interchangeable, its home is `user_guides/multiquantitative_track.md`, and
+- **`scrna_pseudobulk.md`** (which absorbed `scatac_pseudobulk`) — the
+  multi-wiggle add-track form is the best MECHANISM the survey found (a grid
+  that does not exist until **Add tracks** is pressed, an editable Name column,
+  a Submit that unlocks on three conditions), and it is on the wrong page: the
+  section is one of three the page declares interchangeable, its home is `user_guides/multiquantitative_track.md`, and
   `ui/bulk_add_tracks` is its near twin. **It belongs on the user-guide list.**
 
 **The harness cannot reach it.**
@@ -116,10 +116,9 @@ cascade teaches a reader nothing new about the app.
 - **`embed_linear_genome_view.md`** — no route (four code fences and a
   `<details>`), and no way to film one if there were: `VideoSpec` carries only a
   `url` and the generator serves the jbrowse-web build. Gap 9.
-- **`scrna_pseudobulk.md`** — delegates its one UI workflow to
-  `scatac_pseudobulk` in its own words, and the only thing on it that MOVES (the
-  UMAP filtering the rows, a gene selection recoloring the cells) lives in the
-  react-LGV examples site. Also under an open merge question with its sibling.
+- **`scrna_pseudobulk.md`** — the only thing on it that MOVES (the UMAP
+  filtering the rows, a gene selection recoloring the cells) lives in the
+  react-LGV examples site.
 
 **The page has to be restructured first.** Filming a page whose sections are
 reorderable just films the confusion.

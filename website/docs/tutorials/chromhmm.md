@@ -513,7 +513,7 @@ gigabytes of scratch.
 - [](/docs/tutorials/tcga_cohort_cnv)
 - [](/docs/tutorials/bxd_qtl)
 - [](/docs/tutorials/analyze_trio)
-- [](/docs/tutorials/scatac_pseudobulk)
+- [](/docs/tutorials/scrna_pseudobulk)
 - [](/docs/tutorials/alu_age)
 - [](/docs/tutorials/alphagenome)
 - [](/docs/user_guides/clustering)

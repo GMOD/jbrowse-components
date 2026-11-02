@@ -29,15 +29,15 @@
 //
 // `python` and `r` fences are marked the same way and checked the same way,
 // because a build script's analysis step is as often a heredoc as a command —
-// satuRn behind `dtu`, snapatac2 behind `scatac_pseudobulk`. There the callee
+// satuRn behind `dtu`, snapatac2 behind `scrna_pseudobulk`. There the callee
 // stands in for the tool and the keyword-argument names stand in for the flags,
 // which leaves the values free exactly as the filenames are on the bash side.
 // `callArguments.ts` parses those; `shellCommands.ts` parses bash.
 //
 // An unmarked fence is ignored completely. That is deliberate and not laziness:
-// several pages show a route their build script does not take (scrna's
-// sinto/deeptools alternative, scatac's four routes), and those have no script
-// to be checked against.
+// several pages show a route their build script does not take (scrna_pseudobulk's
+// sinto/deeptools alternative and its ArchR and fragments routes), and those
+// have no script to be checked against.
 import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
 

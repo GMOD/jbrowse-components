@@ -152,7 +152,6 @@ export const TUTORIAL_ORDER = [
   'methylation',
   'bisulfite',
   'chromhmm',
-  'scatac_pseudobulk',
   'scrna_pseudobulk',
   'alphagenome',
   'rnaseq',
