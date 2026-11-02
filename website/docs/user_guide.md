@@ -71,11 +71,6 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ## Tutorials
 
-### Getting started
-
-- [](/docs/quickstart_web)
-- [](/docs/quickstart_desktop)
-
 ### genomes.jbrowse.org
 
 - [](/docs/tutorials/genomes_basics)
@@ -83,15 +78,21 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/genomes_proteins)
 - [](/docs/tutorials/repeatmasker_classes)
 
+### Getting started
+
+- [](/docs/quickstart_web)
+- [](/docs/quickstart_desktop)
+- [](/docs/tutorials/cli_desktop)
+
 ### Synteny & comparative genomics
 
 #### Whole-genome alignments
 
 - [](/docs/tutorials/synteny_visualization)
+- [](/docs/tutorials/allvsall_synteny)
 - [](/docs/tutorials/hg002_haplotypes)
 - [](/docs/tutorials/hg38_vertebrates_synteny)
 - [](/docs/tutorials/t2t_apes_cactus_synteny)
-- [](/docs/tutorials/allvsall_synteny)
 - [](/docs/tutorials/syri_synteny)
 - [](/docs/tutorials/circular_synteny)
 
@@ -134,12 +135,12 @@ How to drive JBrowse once it is running. New here? Start with the
 ### Cancer genomics
 
 - [](/docs/tutorials/cancer_sv)
-- [](/docs/tutorials/k562_fusions)
 - [](/docs/tutorials/sv_callset_review)
+- [](/docs/tutorials/k562_fusions)
 - [](/docs/tutorials/sv_visualization_cgiab)
 - [](/docs/tutorials/cnv_cgiab)
-- [](/docs/tutorials/tcga_cohort_mutations)
 - [](/docs/tutorials/tcga_cohort_cnv)
+- [](/docs/tutorials/tcga_cohort_mutations)
 
 ### Population genomics
 
@@ -194,7 +195,6 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/cookbook)
 - [](/docs/tutorials/display_settings)
 - [](/docs/tutorials/embed_linear_genome_view)
-- [](/docs/tutorials/cli_desktop)
 
 ### Automation
 

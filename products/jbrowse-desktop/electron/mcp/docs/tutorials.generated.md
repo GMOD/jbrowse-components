@@ -239,14 +239,6 @@ Page: https://jbrowse.org/jb2/docs/tutorials/dtu/
 - https://www.encodeproject.org/files/ENCFF641ADT/@@download/ENCFF641ADT.tsv
 - https://www.encodeproject.org/files/ENCFF996LRE/@@download/ENCFF996LRE.tsv
 
-## Synteny from gene symbols (E. coli genomes)
-
-Stack E. coli and Shigella genomes under K-12 at one operon by joining their RefSeq annotations on the gene symbol, with no alignment step
-
-Page: https://jbrowse.org/jb2/docs/tutorials/ecoli_orthologs_synteny/
-
-- https://jbrowse.org/demos/ecoli_orthologs/config.json
-
 ## Embedding JBrowse
 
 Embed the linear genome view component in a custom web page
@@ -306,6 +298,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/genomes_proteins/
 
 - https://jbrowse.org/code/jb2/main/test_data/protein3d_config.json
 - https://jbrowse.org/demos/ccr5/config.json
+- https://jbrowse.org/hubs/genark/GCF/030/704/535/GCF_030704535.1/config.json
 - https://jbrowse.org/ucsc/hg38/config.json
 
 ## Synteny on genomes.jbrowse.org
@@ -319,19 +312,6 @@ Page: https://jbrowse.org/jb2/docs/tutorials/genomes_synteny/
 - https://jbrowse.org/ucsc/hg38/config.json
 - https://jbrowse.org/ucsc/mm39/config-staging.json
 - https://jbrowse.org/ucsc/panTro6/config.json
-
-## Inspecting phased reads (GIAB HG002)
-
-Open GIAB HG002 nanopore, PacBio and Illumina reads on hg19, group and color them by the HP haplotype tag, compare one insertion across three platforms, and split coverage by strand to tell a variant from an artifact
-
-Page: https://jbrowse.org/jb2/docs/tutorials/giab_hg002_reads/
-
-- https://jbrowse.org/code/jb2/main/test_data/config_demo.json
-- https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam
-- https://jbrowse.org/demos/hg002/HG002.ONTrel2.HP.hs37d5.demo_slices.bam.bai
-- https://jbrowse.org/demos/hg002/HG002.Sequel.15kb.chr1_insertion.bam
-- https://jbrowse.org/demos/hg002/HG002.Sequel.15kb.chr1_insertion.bam.bai
-- https://jbrowse.org/genomes/hg19/giab/HG002_SVs_Tier1_v0.6.vcf.gz
 
 ## Comparing one genome's two haplotypes (T2T-HG002)
 
@@ -362,14 +342,12 @@ Page: https://jbrowse.org/jb2/docs/tutorials/hg38_vertebrates_synteny/
 
 ## Structural variants from Hi-C
 
-Find a translocation in ENCODE Hi-C by opening two chromosomes in one view, and read the domain, loop and compartment calls over the same matrices
+Find a translocation in ENCODE Hi-C by opening two chromosomes in one view, and read the domain and loop calls over the same matrices
 
 Page: https://jbrowse.org/jb2/docs/tutorials/hic_structural_variants/
 
-- https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig
 - https://encode-public.s3.amazonaws.com/2021/10/28/467750ae-7aab-47b0-a304-dc5f8dff89f7/ENCFF301CUL.bedpe.gz
 - https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic
-- https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig
 - https://encode-public.s3.amazonaws.com/2021/10/28/6f0cc163-86c7-4a68-baac-65af90f5a90d/ENCFF053VBX.hic
 - https://encode-public.s3.amazonaws.com/2021/10/28/70e6944c-1212-45f9-855c-dbc74e9a21f5/ENCFF712NKX.bedpe.gz
 - https://hgdownload.soe.ucsc.edu/gbdb/hg38/mane/mane.1.0.bb
@@ -706,13 +684,14 @@ Page: https://jbrowse.org/jb2/docs/tutorials/population_genomics/
 - https://jbrowse.org/ucsc/dm6/ncbiRefSeqCurated.gff.gz.csi
 - https://resources.aertslab.org/DGRP2/NCSU/final/dm6/DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz
 
-## Synteny from gene symbols (eight primates)
+## Synteny from gene symbols (primates and E. coli)
 
-Stack the great apes, a gibbon and a macaque under a human locus by joining their RefSeq annotations on the gene symbol
+Stack the great apes, a gibbon and a macaque under a human locus by joining their RefSeq annotations on the gene symbol, then run the same join over E. coli genomes
 
 Page: https://jbrowse.org/jb2/docs/tutorials/primate_orthologs_synteny/
 
 - https://hgdownload.soe.ucsc.edu/hubs/GCF/028/858/775/GCF_028858775.2/GCF_028858775.2.2bit
+- https://jbrowse.org/demos/ecoli_orthologs/config.json
 - https://jbrowse.org/demos/primate_orthologs/config.json
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://jbrowse.org/hubs/genark/GCF/028/858/775/GCF_028858775.2/config.json
@@ -728,15 +707,6 @@ Page: https://jbrowse.org/jb2/docs/tutorials/protein_domains/
 - https://jbrowse.org/demos/protein_domains/pfam.gff3.gz
 - https://jbrowse.org/hubs/genark/GCF/003/254/395/GCF_003254395.2/config.json
 
-## Variants on protein structures part 6: BRAF V600 in the activation loop
-
-Open BRAF on codon 600 beside a crystal structure of the V600E kinase, and read which of NCBI's conserved sites of the kinase domain the codon falls in
-
-Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_braf/
-
-- https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb
-- https://jbrowse.org/ucsc/hg38/config.json
-
 ## Variants on protein structures part 2: degenerative myelopathy in dogs
 
 Open dog SOD1 on codon 40 beside a crystal structure of the E40K protein that causes degenerative myelopathy, then read the allele across breed dogs, village dogs and wild canids from the Dog10K callset
@@ -749,16 +719,16 @@ Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_dog_myelopathy/
 - https://jbrowse.org/ucsc/canFam4/config.json
 - https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
 
-## Variants on protein structures part 4: KRAS G12 in the GTP pocket
+## Variants on protein structures part 3: cancer hotspots in KRAS
 
-Open KRAS on codon 12, the most often mutated codon of the gene in cancer, beside a crystal structure of KRAS G12C bound to sotorasib, and read which of NCBI's conserved sites the codon falls in
+Open KRAS on its cancer hotspot codons 12, 13 and 61 beside a crystal structure of KRAS G12C bound to sotorasib, read ClinVar's records at them, and read which of NCBI's conserved sites each codon falls in
 
 Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_kras/
 
 - https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarMain.bb
 - https://jbrowse.org/ucsc/hg38/config.json
 
-## Variants on protein structures part 7: MET exon 14 skipping
+## Variants on protein structures part 4: MET exon 14 skipping
 
 Find an exon skipped in RNA-seq reads, find the DNA change that causes it at the splice site, and follow the missing exon onto a crystal structure of the protein it would have bound, in MET from two lung cancer cell lines
 
@@ -768,14 +738,6 @@ Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_met_exon14/
 - https://jbrowse.org/demos/metex14/NCI-H596_DNA.bam
 - https://jbrowse.org/demos/metex14/NCI-H596_RNA.bam
 - https://jbrowse.org/ucsc/hg38/config.json
-
-## Variants on protein structures part 3: seedless grapes on an AlphaFold model
-
-Open the grapevine seedlessness gene VviAGL11 on codon 197 beside its AlphaFold model, and read the model's per-residue confidence before reading anything into the residue the seedless allele changes
-
-Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_seedless_grape/
-
-- https://jbrowse.org/hubs/genark/GCF/030/704/535/GCF_030704535.1/config.json
 
 ## Variants on protein structures part 1: sickle cell from GWAS hit to haemoglobin S
 
@@ -789,14 +751,6 @@ Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_sickle_cell/
 - https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz
 - https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz.csi
 
-## Variants on protein structures part 5: TP53 R248 and R273 on DNA
-
-Open TP53 on codons 248 and 273, two of its most often mutated codons in cancer, beside the crystal structure of the p53 core domain bound to DNA, and read which of NCBI's conserved sites they fall in
-
-Page: https://jbrowse.org/jb2/docs/tutorials/protein_variants_tp53/
-
-- https://jbrowse.org/ucsc/hg38/config.json
-
 ## A grammar of graphics over a BAM (NA12878 insert size)
 
 Declare a read's depth, insert size and mapping quality as the channels of a plot, with no variant caller in between, and scan a chromosome for a deletion
@@ -809,6 +763,14 @@ Page: https://jbrowse.org/jb2/docs/tutorials/read_marks/
 - https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
 - https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi
 - https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram
+
+## RepeatMasker as one row per class
+
+Split a hub's RepeatMasker track into a labelled row per repeat class, without preparing any data
+
+Page: https://jbrowse.org/jb2/docs/tutorials/repeatmasker_classes/
+
+- https://jbrowse.org/ucsc/hg38/rmsk.bed.gz
 
 ## RNA-seq visualization
 
@@ -828,32 +790,24 @@ Page: https://jbrowse.org/jb2/docs/tutorials/rnaseq/
 - https://s3.amazonaws.com/jbrowse.org/genomes/hg19/paired_end_rnaseq/Pairend_StrandSpecific_51mer_Human_hg19.bam
 - https://yourhost/rnaseq.bam
 
-## Single-cell ATAC pseudobulk
+## Single-cell RNA and ATAC pseudobulk
 
-Aggregate single-cell ATAC into per-cell-type coverage BigWigs
-
-Page: https://jbrowse.org/jb2/docs/tutorials/scatac_pseudobulk/
-
-- https://jbrowse.org/code/jb2/main/test_data/config_demo.json
-- https://jbrowse.org/demos/scatac_pbmc5k/CD8_Memory.bw
-- https://jbrowse.org/demos/scatac_pbmc5k/CD8_Naive.bw
-- https://jbrowse.org/demos/scatac_pbmc5k/Naive_B.bw
-- https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
-- https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz
-
-## Single-cell RNA pseudobulk
-
-Aggregate single-cell RNA into per-cell-type coverage BigWigs, with a row per cell underneath
+Aggregate single-cell RNA and ATAC into per-cell-type coverage BigWigs, with a row per cell underneath
 
 Page: https://jbrowse.org/jb2/docs/tutorials/scrna_pseudobulk/
 
 - https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_possorted_genome_bam.bam
+- https://jbrowse.org/code/jb2/main/test_data/config_demo.json
 - https://jbrowse.org/code/jb2/main/test_data/scrna_pbmc5k/config.json
+- https://jbrowse.org/demos/scatac_pbmc5k/CD8_Memory.bw
+- https://jbrowse.org/demos/scatac_pbmc5k/CD8_Naive.bw
+- https://jbrowse.org/demos/scatac_pbmc5k/Naive_B.bw
 - https://jbrowse.org/demos/scrna_pbmc5k/CD14_Mono.bw
 - https://jbrowse.org/demos/scrna_pbmc5k/CD4_T.bw
 - https://jbrowse.org/demos/scrna_pbmc5k/CD8_T.bw
 - https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz
 - https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz
+- https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GRCh38_latest_genomic.sort.gff.gz
 
 ## Selection pressure between two genomes (dN/dS)
 

@@ -151,6 +151,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-declaredlanelabels">**declaredLaneLabels**</span><br><code>Map&lt;string, string&gt;</code> | keyed by `laneKey` |
 | <span id="getter-rowlabels">**rowLabels**</span><br><code>Map&lt;string, string&gt;</code> | `rows.labels`, keyed by `laneKey` |
 | <span id="getter-laneuniverse">**laneUniverse**</span><br><code>LaneChoice[]</code> | the anchor is never a lane |
+| <span id="getter-unalignedchosenlanes">**unalignedChosenLanes**</span><br><code>string[]</code> | the lanes `rows.kept` names that the held fetch answered for and placed nothing in; an unchosen lane placing nothing draws no row |
 | <span id="getter-rowassemblies">**rowAssemblies**</span><br><code>string[]</code> | a paralogy mate on the anchor assembly draws on its axis, not as a row |
 | <span id="getter-pinsinforce">**pinsInForce**</span><br><code>LanePin[]</code> | the pins that hold under the anchor, each naming its lane as `rowAssemblies` spells it |
 | <span id="getter-structurelanekeys">**structureLaneKeys**</span><br><code>string[]</code> | every fetched lane's key, chained by its deletions and insertions against the anchor |
@@ -279,6 +280,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-holdsassembly">**holdsAssembly**</span><br><code>(assemblyName: string) =&gt; boolean</code> |  |
 | <span id="method-holdstemporarily">**holdsTemporarily**</span><br><code>(assemblyName: string) =&gt; boolean</code> |  |
 | <span id="method-lanelabel">**laneLabel**</span><br><code>(assemblyName: string) =&gt; string</code> |  |
+| <span id="method-placelessof">**placelessOf**</span><br><code>(assemblyName: string) =&gt; Placeless &#124; undefined</code> | why a lane the window shows none of draws a row, or undefined where it draws none |
 | <span id="method-anchorstageat">**anchorStageAt**</span><br><code>(originPx: number, bpPerPx: number) =&gt; AnchorStage</code> | the view at `bpPerPx`, laid out against `originPx`, as the lanes decide against it |
 | <span id="method-anchorabsxat">**anchorAbsXAt**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(bpPerPx: number) =&gt; Map&lt;string, { coord: AnchorCoord; x: numbe…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(bpPerPx: number) =&gt; Map&lt;string, { coord: AnchorCoord; x: number; }&gt;</code></pre></dialog></span> | each group's viewport-cut centre, in view px at `bpPerPx` before the scroll offset |
 | <span id="method-laneframeof">**laneFrameOf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(decision: LaneDecision, assemblyName: string) =&gt; RowFrame &#124; un…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(decision: LaneDecision, assemblyName: string) =&gt; RowFrame &#124; undefined</code></pre></dialog></span> | undefined once the pivot is off the displayed regions |
