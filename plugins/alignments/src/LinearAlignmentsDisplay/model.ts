@@ -124,11 +124,7 @@ import {
   linearFieldExtent,
 } from './bakedColorScale.ts'
 import { attachChainFields, buildReadIdsByChainName } from './chainFields.ts'
-import {
-  READ_COLOR_CATEGORY_BY_INDEX,
-  framesUnpairedChainStrand,
-  rgb255,
-} from './colorUtils.ts'
+import { framesUnpairedChainStrand, rgb255 } from './colorUtils.ts'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { firstSectionHighlight } from './components/arcHitTest.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
@@ -153,14 +149,12 @@ import {
   applyChainStrandFrames,
   applyReadColorsByGroup,
   attachLinkedReadLinesByGroup,
-  collectAcrossGroups,
   fitLaneRows,
   fittedReadPitch,
   groupRowCaps,
   layoutGroupsToViewport,
   maxRowsFor,
   resolveFitDefaultCap,
-  someAcrossGroups,
   laneLayoutOf,
 } from './groupLayout.ts'
 import {
@@ -171,6 +165,17 @@ import {
   orderedGroups,
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
+import {
+  arcSlotsInWindows,
+  connectorSlotsInWindows,
+  hasOverlapInWindows,
+  junctionInWindows,
+  keyWindowsOf,
+  modificationTypesInWindows,
+  readCategoriesInWindows,
+  readMapqsInWindows,
+  readTagValuesInWindows,
+} from './keyWindows.ts'
 import { buildLanes, drawnLanesOf } from './lanes.ts'
 import {
   featureSpacingForHeight,
@@ -188,11 +193,7 @@ import {
   getSortMenuItem,
   getTrackSizingItems,
 } from './menus/index.ts'
-import {
-  NO_QUALITY_SPAN,
-  baseQualitySpanAcrossGroups,
-  presentMapqs,
-} from './qualitySpans.ts'
+import { NO_QUALITY_SPAN, baseQualitySpanAcrossGroups } from './qualitySpans.ts'
 import { chainReadIdsAt, findRead, readInfo } from './readLookup.ts'
 import { connectorBandState } from './renderers/connectorMarks.ts'
 import { shouldDrawOverlaps } from './renderers/rendererTypes.ts'
@@ -526,7 +527,21 @@ export default function stateModelFactory(
         let rowCaps: IComputedValue<ReadonlyMap<string, RowCap>> | undefined
         let fitCap: IComputedValue<RowCap> | undefined
         const superConfigProblemsOf = self.configProblemsOf
+        const keyWindows = stableIdentityComputed(() =>
+          self.view.initialized
+            ? keyWindowsOf(self.view.settledDynamicBlocks)
+            : [],
+        )
         return {
+          /**
+           * #getter
+           * The bp each displayed region shows once a pan settles, which the
+           * keys list what is present in. Compared by value, so a pan that
+           * settles where it was rebuilds no key.
+           */
+          get keyWindows() {
+            return keyWindows.get()
+          },
           /**
            * #getter
            */
@@ -879,19 +894,12 @@ export default function stateModelFactory(
            * skipping the O(reads) scan.
            */
           get colorLegendCategories(): Set<ReadColorCategory> {
-            const present = new Set<ReadColorCategory>()
-            if (self.showLegend) {
-              // Baked categories off the laid-out groups, not a second
-              // classification of `rpcDataMap`: `readFillColors` is empty until
-              // the main thread bakes it.
-              for (const idx of collectAcrossGroups(
-                this.laidOutByGroup,
-                d => d.readColorCategories,
-              )) {
-                present.add(READ_COLOR_CATEGORY_BY_INDEX[idx]!)
-              }
-            }
-            return present
+            // Baked categories off the laid-out groups, not a second
+            // classification of `rpcDataMap`: `readFillColors` is empty until
+            // the main thread bakes it.
+            return self.showLegend
+              ? readCategoriesInWindows(this.laidOutByGroup, this.keyWindows)
+              : new Set()
           },
 
           /**
@@ -907,8 +915,8 @@ export default function stateModelFactory(
               return undefined
             }
             return self.colorField === 'mapq'
-              ? presentMapqs(this.laidOutByGroup)
-              : collectAcrossGroups(this.laidOutByGroup, d => d.readTagValues)
+              ? readMapqsInWindows(this.laidOutByGroup, this.keyWindows)
+              : readTagValuesInWindows(this.laidOutByGroup, this.keyWindows)
           },
 
           /**
@@ -923,9 +931,9 @@ export default function stateModelFactory(
             if (!self.showLegend || !paintsModifications(self.baseLayer)) {
               return undefined
             }
-            return collectAcrossGroups(
+            return modificationTypesInWindows(
               this.laidOutByGroup,
-              d => d.modificationTypes,
+              this.keyWindows,
             )
           },
 
@@ -947,9 +955,12 @@ export default function stateModelFactory(
           get arcLegendCategories(): Set<ArcCategory> {
             const present = new Set<ArcCategory>()
             if (self.showLegend && self.drawnReadConnections !== 'off') {
-              // `colorSlots`, not a walk of `arcsByGroup`, which holds only one
-              // of the two halves arcs resolve into; see `ArcsByGroupResult`.
-              for (const slot of this.arcsResult.colorSlots) {
+              // Both halves arcs resolve into, `byGroup` and
+              // `crossRegionByGroup`; see `ArcsByGroupResult`.
+              for (const slot of arcSlotsInWindows(
+                this.arcsResult,
+                this.keyWindows,
+              )) {
                 present.add(arcSlotCategory(slot))
               }
             }
@@ -973,10 +984,7 @@ export default function stateModelFactory(
             ) {
               return undefined
             }
-            return someAcrossGroups(
-              this.laidOutByGroup,
-              d => d.overlapPositions.length > 0,
-            )
+            return hasOverlapInWindows(this.laidOutByGroup, this.keyWindows)
               ? self.unit === 'chain'
                 ? 'chain'
                 : 'collapsed'
@@ -1870,23 +1878,9 @@ export default function stateModelFactory(
          * hidden so the scan is skipped.
          */
         get connectionColorTypes(): Set<number> {
-          const present = new Set<number>()
-          if (self.showLegend) {
-            for (const {
-              lines,
-              overlayPairs,
-            } of self.connectorsByGroup.values()) {
-              for (const pair of overlayPairs) {
-                present.add(pair.c.colorType)
-              }
-              for (const region of lines.values()) {
-                for (const colorType of region.linkedReadLineColorTypes) {
-                  present.add(colorType)
-                }
-              }
-            }
-          }
-          return present
+          return self.showLegend
+            ? connectorSlotsInWindows(self.connectorsByGroup, self.keyWindows)
+            : new Set<number>()
         },
 
         /**
@@ -2213,17 +2207,21 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The splice junction strands and split junction classes drawn, one
-           * key row each. Read off the merged junctions rather than the
-           * projected arcs, so a pan does not rebuild the legend. A split
-           * junction has no transcript strand.
+           * The splice junction strands and split junction classes drawn in
+           * `keyWindows`, one key row each. Read off the merged junctions and
+           * the settled window rather than the projected arcs, so a pan's
+           * frames do not rebuild the legend. A split junction has no
+           * transcript strand.
            */
           get sashimiLegendKeys() {
             const strands = new Set<number>()
             const splitClasses = new Set<ArcSplitCategory>()
             if (self.showLegend) {
+              const windows = self.keyWindows
               for (const sec of this.sashimiJunctionSections) {
-                for (const j of sec.junctions) {
+                for (const j of sec.junctions.filter(j =>
+                  junctionInWindows(j, windows),
+                )) {
                   if (j.split) {
                     splitClasses.add(j.split)
                   } else {

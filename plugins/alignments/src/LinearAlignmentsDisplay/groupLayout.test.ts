@@ -8,7 +8,6 @@ import {
   groupMaxY,
   groupRowCaps,
   reclaimFitRows,
-  someAcrossGroups,
 } from './groupLayout.ts'
 
 import type {
@@ -314,22 +313,4 @@ test('collectAcrossGroups: a field the worker did not ship contributes nothing',
 
 test('collectAcrossGroups: no groups is the empty set, not a throw', () => {
   expect(collectAcrossGroups(byGroup([]), d => d.readTagValues).size).toBe(0)
-})
-
-test('someAcrossGroups: true from a region in any group', () => {
-  const pred = (d: { overlapPositions: Uint32Array }) =>
-    d.overlapPositions.length > 0
-  expect(
-    someAcrossGroups(byGroup([[{}], [{}, { overlapPositions: [1] }]]), pred),
-  ).toBe(true)
-  expect(someAcrossGroups(byGroup([[{}], [{}]]), pred)).toBe(false)
-})
-
-test('someAcrossGroups: stops at the first yes', () => {
-  const seen: number[] = []
-  someAcrossGroups(byGroup([[{ overlapPositions: [1] }, {}], [{}]]), d => {
-    seen.push(d.overlapPositions.length)
-    return d.overlapPositions.length > 0
-  })
-  expect(seen).toEqual([1])
 })

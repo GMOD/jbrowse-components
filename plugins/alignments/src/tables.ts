@@ -93,6 +93,15 @@ import {
   buildRawDataByGroup,
   orderedGroups,
 } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
+import {
+  arcSlotsInWindows,
+  hasOverlapInWindows,
+  keyWindowsOf,
+  modificationTypesInWindows,
+  readCategoriesInWindows,
+  readMapqsInWindows,
+  readTagValuesInWindows,
+} from './LinearAlignmentsDisplay/keyWindows.ts'
 import { featureSpacingForHeight } from './LinearAlignmentsDisplay/menus/compactnessPresets.ts'
 import { pinnedInsertSizeBandOf } from './LinearAlignmentsDisplay/normalInsertSizeConfigSchema.ts'
 import { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
@@ -100,7 +109,6 @@ import { pileupMismatchesOpacityConfigSchema } from './LinearAlignmentsDisplay/p
 import {
   NO_QUALITY_SPAN,
   baseQualitySpanAcrossGroups,
-  presentMapqs,
 } from './LinearAlignmentsDisplay/qualitySpans.ts'
 import {
   intronAlpha,
@@ -223,6 +231,7 @@ import type {
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
 import type { AlignmentsUnit } from './LinearAlignmentsDisplay/constants.ts'
 import type { LaidOutByGroup } from './LinearAlignmentsDisplay/groupLayout.ts'
+import type { KeyWindow } from './LinearAlignmentsDisplay/keyWindows.ts'
 import type { PileupMismatchesOpacitySnapshot } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
 import type {
@@ -455,6 +464,7 @@ function colorReads(
   facet: { field: string; sort?: readonly string[] } | undefined,
   refNamePosition: RefNamePosition | undefined,
   overlaps: 'chain' | undefined,
+  windows: readonly KeyWindow[],
 ) {
   const setting = alignmentsColorSnapshotOf(node)
   const preset = withPreset(setting, ALIGNMENTS_FIELD_PRESETS).legend
@@ -507,8 +517,8 @@ function colorReads(
   const presentTagValues = !isBakedField(colorField)
     ? undefined
     : colorField === 'mapq'
-      ? presentMapqs(colored)
-      : collectAcrossGroups(colored, d => d.readTagValues)
+      ? readMapqsInWindows(colored, windows)
+      : readTagValuesInWindows(colored, windows)
   const detectedModifications = new Map(
     [...collectAcrossGroups(colored, d => d.detectedModifications)].map(
       type => [type, getColorForModification(type)],
@@ -523,15 +533,8 @@ function colorReads(
     colorField,
     baseLayer,
     detectedModifications,
-    presentModifications: collectAcrossGroups(
-      colored,
-      d => d.modificationTypes,
-    ),
-    presentCategories: new Set(
-      [...sections.values()].flatMap(map =>
-        [...map.values()].flatMap(s => s.category),
-      ),
-    ),
+    presentModifications: modificationTypesInWindows(colored, windows),
+    presentCategories: readCategoriesInWindows(colored, windows),
     palette,
     presentTagValues,
     refNamePosition,
@@ -974,7 +977,11 @@ function readConnectionTables(
   )
   const legend = result
     ? getArcLegendItems(
-        new Set([...result.colorSlots].map(slot => arcSlotCategory(slot))),
+        new Set(
+          [...arcSlotsInWindows(result, keyWindowsOf(regionInfos))].map(slot =>
+            arcSlotCategory(slot),
+          ),
+        ),
         colors.palette,
         colors.declared.categories,
       ).filter(item => item.color !== undefined)
@@ -1404,6 +1411,7 @@ export async function alignmentTables(
     end: r.end,
     displayedRegionIndex: i,
   }))
+  const windows = keyWindowsOf(regionInfos)
   const chained = chain ? attachChainFields(sectionData) : undefined
   const dataFor = (key: string, idx: number) =>
     chained ? chained.get(key)!.get(idx)! : sectionData.get(key)!.get(idx)!
@@ -1451,12 +1459,10 @@ export async function alignmentTables(
     colorField === 'mateRefName'
       ? positionIn(refNames ?? (await dataAdapter.getRefNames()))
       : undefined,
-    drawsOverlaps &&
-      [...laidByGroup.values()].some(map =>
-        [...map.values()].some(d => d.overlapPositions.length > 0),
-      )
+    drawsOverlaps && hasOverlapInWindows(laidByGroup, windows)
       ? 'chain'
       : undefined,
+    windows,
   )
   const paint = markColors(colors.palette, baseLayer)
   const thresholds: MarkThresholds = {

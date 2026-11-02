@@ -191,8 +191,9 @@ test('read connections on: a pan leaves the band feeds the same object', () => {
   expect(feeds.count).toBe(1)
 })
 
-// The key reads the merged junctions' strands, not the projected arcs, so a pan
-// leaves it the same object; one rebuilt per frame re-lays the legend per frame.
+// The key reads the merged junctions' strands in the settled window, not the
+// projected arcs, so a pan's frames leave it the same object; one rebuilt per
+// frame re-lays the legend per frame.
 test('a pan leaves the legend the same object', () => {
   const { view, display } = panningDisplay()
   display.setShowLegend(true)
@@ -203,7 +204,7 @@ test('a pan leaves the legend the same object', () => {
     scales.note(display.colorScales)
   })
   for (let i = 1; i <= FRAMES; i++) {
-    view.setNewView(10, i * 7)
+    view.scrollTo(i * 7)
     scales.note(display.colorScales)
   }
   stop()

@@ -75,25 +75,6 @@ export function collectAcrossGroups<T>(
   return present
 }
 
-/**
- * Whether any laid-out region satisfies `pred`. The same walk asked as a
- * question rather than a collection, and its own function because it stops at
- * the first yes — which `collectAcrossGroups` cannot do.
- */
-export function someAcrossGroups(
-  byGroup: ColoredByGroup,
-  pred: (data: PileupDataResult) => boolean,
-): boolean {
-  for (const map of byGroup.values()) {
-    for (const data of map.values()) {
-      if (pred(data)) {
-        return true
-      }
-    }
-  }
-  return false
-}
-
 // Max pileup rows a layout may produce before overflow reads collapse to the
 // bottom. Hard-capped below the Uint16 ceiling so row indices (stored in
 // `readYs`) and the overflow sentinel never wrap.

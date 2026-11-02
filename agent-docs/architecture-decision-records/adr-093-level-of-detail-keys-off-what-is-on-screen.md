@@ -14,6 +14,19 @@ no badge. That is reversed here, along with the rationale on
 `moreIsoformsBadge.test.tsx`'s representative-transcript case. Everything else
 in ADR-092 stands.
 
+Amended 2026-11-01: a key row that reports presence reports presence on
+screen. The alignments display's keys (read buckets, tag values and MAPQs,
+modification types, connection slots and ticks, connectors, junction strands
+and classes, the overlap mark) list what touches the view's settled window
+(`keyWindows.ts`, over `settledDynamicBlocks`), so a pan's frames rebuild no
+key and a settled pan rebuilds it once. They listed everything fetched, and a
+figure keyed an inter-chromosomal tick that lay off screen while the R export
+of the same locus did not. A key row that names a domain (a declared `domain`,
+a threshold's bins, an identity palette, ADR-166) still lists whole, and a
+scale extent (the base-quality ramp, a baked ramp's ends) is not windowed,
+since windowing it would recolor the reads on a pan. The tables pass their
+regions as the windows, so the display and the export share the rule.
+
 ## Context
 
 Three of this display's level-of-detail decisions were keyed off something other

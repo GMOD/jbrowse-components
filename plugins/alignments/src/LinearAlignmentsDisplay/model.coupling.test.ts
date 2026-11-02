@@ -808,6 +808,7 @@ describe('curved connectors', () => {
       },
       region(0),
     )
+    display.view.setNewView(5, 0)
     return display
   }
 
@@ -1022,6 +1023,15 @@ describe('curved connectors', () => {
     const display = connectorDisplay()
     display.setShowLegend(true)
     expect(connectionCategories(display)).toEqual(['normalInsert', 'pairRL'])
+  })
+
+  test('the key names only the connectors on screen once the view settles', () => {
+    const display = connectorDisplay()
+    display.setShowLegend(true)
+    display.view.setNewView(1, 0)
+    expect(connectionCategories(display)).toEqual(['normalInsert'])
+    display.view.setNewView(1, 900)
+    expect(connectionCategories(display)).toEqual(['pairRL'])
   })
 })
 

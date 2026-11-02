@@ -53,25 +53,6 @@ export function mapqQuantileExtentAcrossGroups(
   return min <= max ? [min, max] : undefined
 }
 
-/** The MAPQ values the reads carry, as a categorical key lists them. */
-export function presentMapqs(byGroup: LaidOutByGroup) {
-  const seen = new Uint8Array(MAPQ_UNAVAILABLE)
-  for (const map of byGroup.values()) {
-    for (const { readMapqs } of map.values()) {
-      for (let i = 0; i < readMapqs.length; i++) {
-        seen[readMapqs[i]!] = 1
-      }
-    }
-  }
-  const present = new Set<string>()
-  seen.forEach((hit, mapq) => {
-    if (hit) {
-      present.add(`${mapq}`)
-    }
-  })
-  return present
-}
-
 export interface QualitySpan {
   extent: NumericExtent | undefined
   unavailable: boolean
