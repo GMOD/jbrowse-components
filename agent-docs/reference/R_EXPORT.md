@@ -61,7 +61,7 @@ color) land in the script header.
   lives in ggjbrowse (`jbrowse_stack`), once. The header shows how to restyle
   every band (`fig & ...`, since `+` reaches only the last) and how to take one
   apart, over the script's own track names, with `ggplot2::` spelled out since
-  the script attaches only ggjbrowse; `rScriptRun.test.ts` runs both.
+  the script attaches only ggjbrowse; `rScriptRun.ci.test.ts` runs both.
 - **The engine reads, from the config as written.** A display's written
   config (`getSnapshot`, defaults left out) goes to the reader's `display`
   argument, so a setting the browser gains needs no exporter change and the
@@ -109,7 +109,8 @@ color) land in the script header.
 ## Verify a change
 
 - `npx jest plugins/linear-genome-view/src/LinearGenomeView/rExport`.
-  `rScriptRun.test.ts` runs each emitted script under Rscript, figure and
+  `rScriptRun.ci.test.ts` (left to CI by `pnpm test`, as every `*.ci.test.*`)
+  runs each emitted script under Rscript, figure and
   all, and asserts on what its tracks read; it skips without R and
   ggjbrowse, except under `REQUIRE_R=1` (the `R export` workflow: a push
   touching `rExport/` installs the `GGJBROWSE_VERSION` tag, the nightly

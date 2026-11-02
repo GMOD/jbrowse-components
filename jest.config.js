@@ -3,9 +3,17 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import webSuites from './config/jest/webSuites.cjs'
+import remoteSuites from './config/jest/remoteSuites.cjs'
 
-const { WEB_SUITES, LOCAL_DIR } = webSuites
+const { WEB_SUITES, LOCAL_DIR, CI_ONLY } = remoteSuites
+
+// `JEST_SCOPE=local` (what `pnpm test` sets) leaves out the projects remote CI
+// runs. A config switch rather than `--ignoreProjects`, which is variadic and
+// swallows every path after it as another project name.
+const REMOTE_PROJECTS = new Set(['jbrowse-web', 'ci-only'])
+const inScope = project =>
+  process.env.JEST_SCOPE !== 'local' ||
+  !REMOTE_PROJECTS.has(project.displayName)
 
 // availableParallelism() honours the CPU affinity mask, so a run already pinned
 // to a subset of cores (taskset, a container's cpuset) sizes itself to what it
@@ -339,6 +347,7 @@ export default {
         '<rootDir>/products/jbrowse-img/',
         // every jbrowse-web suite but the schema-level ones, which boot nothing
         `<rootDir>/${WEB_SUITES}(?!${LOCAL_DIR})`,
+        CI_ONLY.source,
         // Own lockfile/test runner (vitest), CI'd separately (lambdas job).
         '<rootDir>/products/aws/',
       ],
@@ -346,10 +355,28 @@ export default {
       id: 'jbrowse-default',
     },
     {
-      // Runs on remote CI only: `pnpm test` ignores this project and
-      // `pnpm test-ci` runs it. Narrow roots keep a second haste crawl off every
-      // jest invocation; node-module manual mocks apply only from a root, hence
-      // `packages/__mocks__`. The schema-level suites are the default
+      // The default project's `*.ci.test.*` suites, run where the default
+      // project's are, on remote CI only (config/jest/remoteSuites.cjs).
+      displayName: 'ci-only',
+      testMatch: [
+        '<rootDir>/packages/**/*.ci.test.{ts,tsx,js,jsx}',
+        '<rootDir>/products/**/*.ci.test.{ts,tsx,js,jsx}',
+        '<rootDir>/plugins/**/*.ci.test.{ts,tsx,js,jsx}',
+        '<rootDir>/example-plugins/**/*.ci.test.{ts,tsx,js,jsx}',
+      ],
+      testPathIgnorePatterns: [
+        '/dist/',
+        '/demos/',
+        `<rootDir>/${WEB_SUITES}`,
+        '<rootDir>/products/aws/',
+      ],
+      ...jsdomConfig,
+      id: 'jbrowse-ci-only',
+    },
+    {
+      // Runs on remote CI only. Narrow roots keep a second haste crawl off
+      // every jest invocation; node-module manual mocks apply only from a root,
+      // hence `packages/__mocks__`. The schema-level suites are the default
       // project's.
       displayName: 'jbrowse-web',
       testMatch: ['<rootDir>/products/jbrowse-web/**/*.test.{ts,tsx,js,jsx}'],
@@ -358,5 +385,5 @@ export default {
       id: 'jbrowse-web',
       roots: ['<rootDir>/products/jbrowse-web', '<rootDir>/packages/__mocks__'],
     },
-  ],
+  ].filter(inScope),
 }

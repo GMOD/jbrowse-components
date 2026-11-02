@@ -50,7 +50,7 @@
     "typecheck:node": "node --experimental-strip-types scripts/typecheck.ts node",
     "test-ci": "NODE_OPTIONS='--max-old-space-size=7000' jest --ci",
     "test-ci-no-react-compiler": "NO_RC=1 NODE_OPTIONS='--max-old-space-size=7000' scripts/heavy-run-slot.sh jest --ci --cacheDirectory node_modules/.cache/jest-no-rc plugins packages products/jbrowse-react-",
-    "test": "scripts/heavy-run-slot.sh jest --ignoreProjects jbrowse-web",
+    "test": "JEST_SCOPE=local scripts/heavy-run-slot.sh jest",
     "test-related": "node --experimental-strip-types scripts/test-related.ts",
     "gendocs": "node website/scripts/api-docs/generate.ts",
     "autogen": "node --experimental-strip-types scripts/autogen.ts",

@@ -11,13 +11,12 @@
  * A changed file whose compiled output is unchanged — comments, types,
  * formatting — selects nothing.
  *
- * The `jbrowse-web` jest project runs on remote CI; one of its suites runs here
- * only when the change edits that test file, or with `--with-web`. The
- * schema-level suites under `config/jest/webSuites.cjs`'s `LOCAL_DIR` are the
- * default project's and are selected like any other.
+ * The suites `config/jest/remoteSuites.cjs` names (jbrowse-web's app-level
+ * suites and every `*.ci.test.*`) run on remote CI; one of them runs here only
+ * when the change edits that test file, or with `--with-remote`.
  *
- * Usage: `pnpm test-related [base-ref] [--with-web]` (default `main`). Extra
- * jest flags pass through after `--`.
+ * Usage: `pnpm test-related [base-ref] [--with-remote]` (default `main`).
+ * Extra jest flags pass through after `--`.
  */
 import { execFileSync, spawn } from 'node:child_process'
 import fs from 'node:fs'
@@ -36,17 +35,14 @@ const { readFootprints } = require('../config/jest/footprints.cjs') as {
     checkoutRoots: string[],
   ) => Map<string, Set<string>>
 }
-const { WEB_SUITES, LOCAL_DIR } = require('../config/jest/webSuites.cjs') as {
-  WEB_SUITES: string
-  LOCAL_DIR: string
+const { isRemoteOnly } = require('../config/jest/remoteSuites.cjs') as {
+  isRemoteOnly: (suite: string) => boolean
 }
 
 const CODE = /\.(ts|tsx|js|jsx|cjs|mjs)$/
 const JSX = /\.(tsx|jsx|js)$/
 const TEST = /\.test\.(ts|tsx|js|jsx)$/
 const NOT_A_SUITE = /(^|\/)(dist|demos)\/|^products\/aws\//
-const isRemoteOnly = (suite: string) =>
-  suite.startsWith(WEB_SUITES) && !suite.startsWith(WEB_SUITES + LOCAL_DIR)
 // Loaded by jest itself or resolved outside the repo, so in no footprint, and
 // a change to any of them can move every suite.
 const HARNESS =
@@ -56,8 +52,11 @@ const argv = process.argv.slice(2)
 const passThroughAt = argv.indexOf('--')
 const jestArgs = passThroughAt === -1 ? [] : argv.slice(passThroughAt + 1)
 const own = passThroughAt === -1 ? argv : argv.slice(0, passThroughAt)
-const withWeb = own.includes('--with-web')
-const flags = own.filter(a => a.startsWith('-') && a !== '--with-web')
+// --with-web is the old spelling, from before the remote set held more than
+// jbrowse-web; kept so a habit or a doc that types it still works.
+const WITH_REMOTE = new Set(['--with-remote', '--with-web'])
+const withRemote = own.some(a => WITH_REMOTE.has(a))
+const flags = own.filter(a => a.startsWith('-') && !WITH_REMOTE.has(a))
 if (flags.length > 0) {
   console.error(
     `Unknown option ${flags.join(' ')}. Jest flags go after \`--\`.`,
@@ -205,10 +204,10 @@ if (unrecorded.length > 0 && staticInputs.length > 0) {
   }
 }
 
-const skippedWeb = withWeb
+const skippedRemote = withRemote
   ? []
   : [...selected].filter(t => isRemoteOnly(t) && !live.includes(t))
-for (const t of skippedWeb) {
+for (const t of skippedRemote) {
   selected.delete(t)
 }
 
@@ -223,14 +222,14 @@ const priced =
 console.log(
   `${selected.size} suite(s)${priced}, ${byGraph} of those picked by the static graph because ${unrecorded.length} suite(s) have no footprint yet`,
 )
-if (skippedWeb.length > 0) {
+if (skippedRemote.length > 0) {
   console.log(
-    `Skipped ${skippedWeb.length} products/jbrowse-web suite(s) that executed the change; remote CI runs them, --with-web runs them here.`,
+    `Skipped ${skippedRemote.length} remote-only suite(s) that executed the change; remote CI runs them, --with-remote runs them here.`,
   )
 }
 if (harness.length > 0) {
   console.log(
-    `${harness.join(', ')} changed, which no footprint records; \`pnpm test\` runs every suite but jbrowse-web's remote-only ones.`,
+    `${harness.join(', ')} changed, which no footprint records; \`pnpm test\` runs every suite but the remote-only ones.`,
   )
 }
 if (selected.size === 0) {
