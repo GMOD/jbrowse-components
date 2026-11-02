@@ -424,6 +424,8 @@ predicate in the layer's own `filter`:
 | `minWidthPx` as Vega-Lite's `minBandSize`, or kept as a slot | Nothing wrote it; the floor is 1 px for every bar and rect |
 | A Vega-Lite word (`spacing`, `padding`, `strokeWidth`) for the views' pixel launch keys (`spacingPx`, `paddingPx`, `minimumRadiusPx`, `minVisibleWidth`, `overdrawPx`, dotplot `lineWidth`) | They are view state the app writes into sessions, and v4.3.0 share links carry the circular view's; this ADR settles display settings |
 | `splitStrands` kept as a switch, or as a `yOffset` channel on reading direction | One layout reads better at every lane height it fits, and a short lane already falls back to one row |
+| The row sidebar's `axis` as Vega-Lite's `header`, since the multi-way lanes' `axis` is an x ruler (2026-11-01 cold read) | Both are guides on a positional channel, the band y's and the lanes' x; `header` labels facet panels, and these rows are positions on one scale |
+| `rows.labels` as a `scale.names` list | `names` runs parallel to a declared `domain`; rows have none, their order being `rows.sort` over whatever the source lists, so a label is keyed by row name |
 
 ## Consequences
 
