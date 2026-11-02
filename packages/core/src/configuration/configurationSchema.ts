@@ -1,4 +1,4 @@
-import { isKeyedWrites } from '@jbrowse/add-track-core'
+import { isKeyedWrites, refinesProblem } from '@jbrowse/add-track-core'
 import {
   getEnv,
   getType,
@@ -10,6 +10,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { isObservableArray } from 'mobx'
 
+import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getContainingTrack, getSession } from '../util/mstUtils.ts'
 import { isSessionWithEditableTrackConfig } from '../util/types/index.ts'
 import ConfigSlot, { slotDefinitionRefusal } from './configurationSlot.ts'
@@ -292,6 +293,18 @@ function checkShorthand(
       throw new Error(
         `${modelName}'s keyed writes name ${undeclared.join(', ')}, which it does not declare`,
       )
+    }
+    const keyedBy = definition[writes.keyedBy]
+    const problem = refinesProblem(
+      writes,
+      isSlotDefinitionEntry(keyedBy) &&
+        keyedBy.type === 'stringEnum' &&
+        keyedBy.model
+        ? getEnumerationValues(keyedBy.model)
+        : undefined,
+    )
+    if (problem) {
+      throw new Error(`${modelName}'s keyed writes' refines ${problem}`)
     }
   }
 }

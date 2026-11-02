@@ -886,6 +886,17 @@ function liftsNumbers(schema: string, slot: string) {
   return numberSlotsBySchema.get(schema)?.has(slot) ?? false
 }
 
+// A write between a value and the one it refines clears nothing, in the
+// user's words: a finer row answers to its coarser row's name
+function refinesSentence(writes: KeyedWrites) {
+  return Object.entries(writes.refines ?? {})
+    .map(
+      ([finer, coarser]) =>
+        ` A write between \`${finer}\` and \`${coarser}\` clears nothing, since a \`${finer}\` row answers to its \`${coarser}\`'s name.`,
+    )
+    .join('')
+}
+
 // A setting's write mode, which a reader editing the JSON cannot see in it.
 function writesLine(name: string) {
   const writes = schemaWrites(name)
@@ -894,7 +905,7 @@ function writesLine(name: string) {
     : writes === 'members'
       ? 'A setting written to it names members one by one: a member left out stays as it is, and `null` resets one.'
       : isKeyedWrites(writes)
-        ? `A setting written to it names members one by one: a member left out stays as it is, and \`null\` resets one. One that changes \`${writes.keyedBy}\`${writes.emptyChanges ? ', emptying or filling it included,' : ''} first clears ${writes.keyed.map(m => `\`${m}\``).join(', ')}, which name the old values, except those it states.`
+        ? `A setting written to it names members one by one: a member left out stays as it is, and \`null\` resets one. One that changes \`${writes.keyedBy}\`${writes.emptyChanges ? ', emptying or filling it included,' : ''} first clears ${writes.keyed.map(m => `\`${m}\``).join(', ')}, which name the old values, except those it states.${refinesSentence(writes)}`
         : ''
 }
 

@@ -304,6 +304,49 @@ describe('displayDefaultSlots folds writes across displays', () => {
     )
   })
 
+  test('refinements union across the displays declaring them', () => {
+    expect(
+      foldOf(
+        rowsOn(
+          {
+            keyedBy: 'field',
+            keyed: ['sort'],
+            refines: { haplotype: 'sample' },
+          },
+          ['sort'],
+        ),
+        keyedOn(['sort']),
+      )?.writes,
+    ).toEqual({
+      keyedBy: 'field',
+      keyed: ['sort'],
+      refines: { haplotype: 'sample' },
+    })
+  })
+
+  test('one value refining two is whole', () => {
+    expect(
+      foldOf(
+        rowsOn(
+          {
+            keyedBy: 'field',
+            keyed: ['sort'],
+            refines: { haplotype: 'sample' },
+          },
+          ['sort'],
+        ),
+        rowsOn(
+          {
+            keyedBy: 'field',
+            keyed: ['sort'],
+            refines: { haplotype: 'source' },
+          },
+          ['sort'],
+        ),
+      )?.writes,
+    ).toBe('whole')
+  })
+
   test('members everywhere stays members', () => {
     expect(
       foldOf(rowsOn('members', ['sort']), rowsOn('members', ['sort']))?.writes,

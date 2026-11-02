@@ -745,6 +745,73 @@ describe('an object the display keys by its field', () => {
   })
 })
 
+describe('a keyed object whose field refines another, variant rows', () => {
+  const forms: DisplayForms = {
+    wholeAt: () => false,
+    keyedAt: (_, path) =>
+      path.join('.') === 'rows'
+        ? {
+            keyedBy: 'field',
+            keyed: ['sort', 'labels', 'colors'],
+            refines: { haplotype: 'sample' },
+          }
+        : undefined,
+    canonical: (_, display) => display,
+  }
+  const track = (rows: Record<string, unknown>) => ({
+    trackId: 'v',
+    type: 'VariantTrack',
+    displays: [{ type: 'LinearVariantDisplay', displayId: 'v-var', rows }],
+  })
+  const hosted = { sort: ['NA12878', 'NA12891'], labels: { NA12878: 'Child' } }
+
+  test.each([
+    ['sample', 'haplotype'],
+    ['haplotype', 'sample'],
+  ])('a switch from %s to %s keeps the base arrangement', (from, to) => {
+    const delta = diffTrackConfig(
+      track({ field: from }),
+      track({ field: to }),
+      forms,
+    )
+    expect(delta.displays).toEqual([
+      { displayId: 'v-var', rows: { field: to } },
+    ])
+    expect(
+      mergeTrackConfig(track({ field: from, ...hosted }), delta, forms)
+        .displays[0]!.rows,
+    ).toEqual({ field: to, ...hosted })
+  })
+
+  test('a reorder at the refining field stays over a base at the refined one', () => {
+    const delta = diffTrackConfig(
+      track({ field: 'sample' }),
+      track({ field: 'haplotype', sort: ['NA12891 HP2', 'NA12878 HP1'] }),
+      forms,
+    )
+    expect(
+      mergeTrackConfig(track({ field: 'sample', ...hosted }), delta, forms)
+        .displays[0]!.rows,
+    ).toEqual({
+      ...hosted,
+      field: 'haplotype',
+      sort: ['NA12891 HP2', 'NA12878 HP1'],
+    })
+  })
+
+  test('a switch to an unrelated field still drops the arrangement', () => {
+    const delta = diffTrackConfig(
+      track({ field: 'haplotype' }),
+      track({ field: 'tissue' }),
+      forms,
+    )
+    expect(
+      mergeTrackConfig(track({ field: 'haplotype', ...hosted }), delta, forms)
+        .displays[0]!.rows,
+    ).toEqual({ field: 'tissue' })
+  })
+})
+
 describe('a keyed object whose empty value is a change, rows.tree', () => {
   const forms: DisplayForms = {
     wholeAt: () => false,

@@ -8,6 +8,7 @@ import type {
   TypeEntry,
   TypeGroup,
 } from './types.ts'
+import type { KeyedWrites } from '@jbrowse/add-track-core'
 
 // `displayDefaults: {color: 'green'}` is a track-level shorthand
 // (expandTrackConfigShorthand.ts) routing each key to whichever of the track's
@@ -58,16 +59,27 @@ export function displayDefaultsForTrackType(
   }
 }
 
-// Whole where any declaration writes it whole or two key it by different
-// fields; keyed where any keys it, by every declaration's keyed members, as
-// `rows` gains a member on some displays only, an empty value changing it
-// where any declaration says so; members otherwise.
+// Every declaration's refinements, or undefined where two say a value refines
+// different ones
+function mergedRefines(keyed: KeyedWrites[]) {
+  const pairs = keyed.flatMap(w => Object.entries(w.refines ?? {}))
+  const refines = Object.fromEntries(pairs)
+  return pairs.every(([from, to]) => refines[from] === to) ? refines : undefined
+}
+
+// Whole where any declaration writes it whole, two key it by different
+// fields or two refine one value differently; keyed where any keys it, by
+// every declaration's keyed members and refinements, as `rows` gains a member
+// on some displays only, an empty value changing it where any declaration
+// says so; members otherwise.
 function mergedWrites(slots: SlotEntry[]) {
   const keyed = slots.map(s => s.writes).filter(isKeyedWrites)
   const keyedBy = new Set(keyed.map(w => w.keyedBy))
   const [field] = keyedBy
+  const refines = mergedRefines(keyed)
   return slots.some(s => s.writes !== 'members' && !isKeyedWrites(s.writes)) ||
-    keyedBy.size > 1
+    keyedBy.size > 1 ||
+    !refines
     ? 'whole'
     : field === undefined
       ? 'members'
@@ -75,6 +87,7 @@ function mergedWrites(slots: SlotEntry[]) {
           keyedBy: field,
           keyed: [...new Set(keyed.flatMap(w => w.keyed))],
           ...(keyed.some(w => w.emptyChanges) ? { emptyChanges: true } : {}),
+          ...(Object.keys(refines).length > 0 ? { refines } : {}),
         }
 }
 

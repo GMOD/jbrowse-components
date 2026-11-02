@@ -13,6 +13,13 @@ export interface KeyedWrites {
    * the one newick beside it, so `rows.tree` declares this.
    */
   emptyChanges?: boolean
+  /**
+   * The values of `keyedBy` that refine another, finer to coarser, as
+   * `{ haplotype: 'sample' }`: a finer row names the coarser row it refines,
+   * so the keyed members carry across a write between the two, in either
+   * direction, and a read interprets them at the field in force.
+   */
+  refines?: Readonly<Record<string, string>>
 }
 
 export function isKeyedWrites(writes: unknown): writes is KeyedWrites {
@@ -28,8 +35,9 @@ export function isKeyedWrites(writes: unknown): writes is KeyedWrites {
  * Whether writing `next` over `prior` changes the field the keyed members
  * name. An empty field names no values, so a write from one or to one changes
  * nothing: the arrangement waits while rows are off, as wiggle's overlay
- * toggle turns them. Under `emptyChanges` any write `next` states of another
- * value changes it, empty (`''`, `null`, unset) included.
+ * toggle turns them, and a write between a value and the one it refines
+ * (`refines`) changes nothing either. Under `emptyChanges` any write `next`
+ * states of another value changes it, empty (`''`, `null`, unset) included.
  */
 export function changesKeyedField(
   writes: KeyedWrites,
@@ -44,7 +52,42 @@ export function changesKeyedField(
         typeof from === 'string' &&
         from !== '' &&
         to !== '' &&
-        from !== to
+        from !== to &&
+        !refinesEither(writes, from, to)
+}
+
+function refinesEither(writes: KeyedWrites, a: string, b: string) {
+  const refines = writes.refines ?? {}
+  return (
+    (Object.hasOwn(refines, a) && refines[a] === b) ||
+    (Object.hasOwn(refines, b) && refines[b] === a)
+  )
+}
+
+/**
+ * Why `writes.refines` cannot stand over a `keyedBy` whose values are
+ * `values` (all of them, or undefined for a field of any value): a value it
+ * names that the field lacks, a value refining itself, or a chain, a value
+ * both refining and refined. Undefined where it stands.
+ */
+export function refinesProblem(
+  writes: KeyedWrites,
+  values: readonly string[] | undefined,
+) {
+  const pairs = Object.entries(writes.refines ?? {})
+  const coarser = new Set(pairs.map(([, to]) => to))
+  const unknown = values
+    ? pairs.flat().filter(value => !values.includes(value))
+    : []
+  const self = pairs.find(([from, to]) => from === to)
+  const chained = pairs.find(([from]) => coarser.has(from))
+  return unknown.length > 0
+    ? `names ${[...new Set(unknown)].join(', ')}, which ${writes.keyedBy} cannot be`
+    : self
+      ? `has ${self[0]} refine itself`
+      : chained
+        ? `chains ${chained[0]}, which both refines ${chained[1]} and is refined`
+        : undefined
 }
 
 // `''`, `null` and unset as the one empty value
