@@ -289,7 +289,8 @@ block. `LinearVariantDisplay`'s records band reads both in one expression:
 get recordsOnly(): boolean {
   const sampleCount = self.adapterSamples?.length
   return (
-    sampleCount === 0 || (sampleCount === 1 && !self.genotypesShowWritten)
+    sampleCount === 0 ||
+    (sampleCount === 1 && !self.genotypesShowWritten)
   )
 },
 /**
@@ -299,18 +300,6 @@ get recordsOnly(): boolean {
  */
 get drawsRows(): boolean {
   return self.showGenotypes && !this.recordsOnly
-},
-/**
- * #getter
- * Whether the records band is drawn: at genomic positions only, where
- * a record lines up with the cells under it, and always while no row
- * draws.
- */
-get showRecords(): boolean {
-  return (
-    self.atGenomicPositions &&
-    (!this.drawsRows || getConf(self, ['records', 'show']))
-  )
 },
 ```
 

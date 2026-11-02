@@ -6633,7 +6633,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "height",
-          "type": "number"
+          "type": "(number | undefined)"
         },
         {
           "name": "variantLayout",
