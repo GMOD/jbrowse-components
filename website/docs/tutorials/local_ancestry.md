@@ -12,12 +12,18 @@ tutorial_subcategory: Dog10K
 Two of the Dog10K breeds are wolf hybrids, so some stretches of their genome
 trace back to a gray wolf ancestor and the rest to domestic dogs.
 [FLARE](https://github.com/browning-lab/flare) calls which of the two sources
-each stretch of DNA came from, against a wolf panel and 219 other breeds. We:
+each stretch of DNA came from, against a wolf panel and a panel of breed dogs,
+and a converter collapses its per-marker calls into BED blocks. Along chr1 of
+the wolfdogs, held-out wolves and other breeds, we:
 
-- run FLARE on the two wolfdog breeds
-- load its calls as a multi-row feature track, one colored row per haplotype
+- load the blocks as a multi-row feature track, one colored row per haplotype
   (one copy of a chromosome)
-- read the blocks along chr1 in the wolfdogs against controls
+- order the rows with `rows.sort` and key the BED's colors with an identity
+  color scale
+- read the wolf blocks along chr1 in the wolfdogs against held-out wolves and a
+  German Shepherd
+- cluster a track of every animal with **Clustering → Cluster rows by
+  similarity...**
 
 ## Prerequisites
 
@@ -202,10 +208,9 @@ TMSK000001      0.033   0.967     Tamaskan
 GRSD000002      0       1         German Shepherd Dog
 ```
 
-Nearly all swept breeds show a trace of wolf, and seven of the eight wolfdogs
-(four Saarloos, four Czechoslovakian) sit far above them. The eighth,
-Czechoslovakian 2 (`CZEC000002`), is inside the range of the sweep with no long
-block anywhere.
+The wolfdogs sit far above the swept breeds, apart from one Czechoslovakian
+Wolfdog (`CZEC000002`) that falls within their range and has no long block
+anywhere.
 
 ### Collapsing FLARE's calls into BED blocks
 
@@ -308,6 +313,8 @@ order of chr1 wolf fraction from FLARE's summary. For your own animals:
 
 ## Wolf blocks along chr1 in wolfdogs and controls
 
+Open the whole of chr1 with the named-animals track:
+
 <Figure caption="FLARE's local ancestry along chr1, wolf in orange and dog in blue, two rows per animal." src="/img/dog10k-wolfdog-ancestry.png" />
 
 Each pair of rows is the two chromosome copies of one animal. Orange marks a
@@ -315,9 +322,7 @@ stretch resembling a present-day gray wolf more than a breed dog. Wolf on one
 row and dog on the other is heterozygous, and both orange is homozygous
 wolf-derived.
 
-Blocks break up towards the end of chr1, tracking the genetic map: the build
-script tiles the chromosome and prints block-edge count and recombination per
-tile, and the tile with the most block edges has recombination above the median.
+Blocks break up towards the end of chr1, tracking the genetic map.
 
 ### Held-out wolves where FLARE and allele counts disagree
 
@@ -336,8 +341,8 @@ one line per animal:
   (the Kars, the Eurasier, the Spanish Mastiff).
 - The Shiloh Shepherd has the longest wolf block of any dog outside the two
   wolfdog breeds, and many more blocks than the runner-up, a Great Anglo-French
-  Tricolor Hound with three. A later genome-wide run over the same collection
-  puts it among the three dogs with the longest, most recent wolf tracts
+  Tricolor Hound. A later genome-wide run over the same collection puts it among
+  the three dogs with the longest, most recent wolf tracts
   ([Lin et al. 2025](https://doi.org/10.1073/pnas.2421768122)).
 
 **Clustering** → **Cluster rows by similarity...** in the track menu orders the
