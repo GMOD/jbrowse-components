@@ -233,8 +233,7 @@ export async function variantTables(
         })
       : sources
   const fetched = new Set(value.rowNames)
-  const rowParent = (row: ProcessedSource) =>
-    haplotypeRowParent(row, value.samplePloidy)
+  const rowParent = (row: ProcessedSource) => haplotypeRowParent(row)
   const rowAlias = rowAliasOver(
     expanded,
     finerHaplotypeRows({

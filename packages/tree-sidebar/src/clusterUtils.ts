@@ -75,18 +75,16 @@ function findSubtree<T extends ClusterNodeData>(
 //
 // `forksOf` names the rows a leaf stands for where none of them is the leaf
 // itself, as a sample leaf stands for its haplotype rows: the leaf becomes a
-// zero-length fork over them (`forkLeaves`).
+// zero-length fork over them (`forkLeaves`), after the rotation, since the
+// domain names the leaf rather than the rows it forks into.
 export function buildTree(
   newick: string,
   domain: readonly string[] = [],
   forksOf?: (leaf: string) => readonly string[] | undefined,
 ): HierarchyNode<ClusterNodeData> {
-  const parsed = parseNewick(newick)
+  const rotated = rotateNewickByDomain(parseNewick(newick), domain)
   return hierarchy<ClusterNodeData>(
-    rotateNewickByDomain(
-      forksOf ? forkLeaves(parsed, forksOf) : parsed,
-      domain,
-    ),
+    forksOf ? forkLeaves(rotated, forksOf) : rotated,
     d => d.children,
   )
 }

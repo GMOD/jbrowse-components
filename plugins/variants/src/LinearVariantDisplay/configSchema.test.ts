@@ -217,6 +217,55 @@ describe('the display config schema', () => {
       expect(readConfObject(conf, ['rows', 'field'])).toBe('haplotype')
     })
 
+    // v4.3 named a phased row from HP0, and its layout rows carry the sample
+    // and the index
+    it("a v4.3 phased session's rows, tree and focus name the haplotypes from HP1", () => {
+      const pluginManager = new PluginManager([
+        new LinearGenomeViewPlugin(),
+        new FeaturesPlugin(),
+        new VariantsPlugin(),
+      ])
+      pluginManager.createPluggableElements()
+      pluginManager.configure()
+      const display = pluginManager.getDisplayType('LinearVariantDisplay')
+      const v4Row = (baseName: string, HP: number, label?: string) => ({
+        name: `${baseName} HP${HP}`,
+        baseName,
+        HP,
+        ...(label ? { label } : {}),
+      })
+      const lifted = display.retiredState!.lift({
+        type: 'MultiLinearVariantDisplay',
+        renderingModeSetting: 'phased',
+        layout: [
+          v4Row('B', 1),
+          v4Row('A', 0, 'Mother hap1'),
+          v4Row('B', 0, 'B HP0'),
+          v4Row('A', 1),
+        ],
+        clusterTree:
+          "((('B HP1':0.1,'A HP0':0.1):0.2,'B HP0':0.3):0.1,'A HP1':0.4);",
+        subtreeFilter: ['B HP1', 'A HP0'],
+      })
+      const conf = display.configSchema.create(
+        { type: 'LinearVariantDisplay', displayId: 'd', ...lifted },
+        { pluginManager },
+      )
+      expect(readConfObject(conf, ['rows', 'sort'])).toEqual([
+        'B HP2',
+        'A HP1',
+        'B HP1',
+        'A HP2',
+      ])
+      expect(readConfObject(conf, ['rows', 'labels'])).toEqual({
+        'A HP1': 'Mother hap1',
+      })
+      expect(readConfObject(conf, ['rows', 'kept'])).toEqual(['B HP2', 'A HP1'])
+      expect(readConfObject(conf, ['rows', 'tree', 'newick'])).toBe(
+        '(((B HP2:0.1,A HP1:0.1):0.2,B HP1:0.3):0.1,A HP2:0.4);',
+      )
+    })
+
     it("a v4.3 session's menu settings land in their slots", () => {
       const pluginManager = new PluginManager([
         new LinearGenomeViewPlugin(),

@@ -4,6 +4,9 @@ import {
   liftRetiredRowState,
 } from '@jbrowse/display-kit/retiredSettings'
 import { basicRetired } from '@jbrowse/plugin-features'
+import { renameNewickLeaves } from '@jbrowse/tree-sidebar'
+
+import { haplotypeRowName } from '../shared/getSources.ts'
 
 import type { RetiredSpelling } from '@jbrowse/core/configuration'
 import type {
@@ -111,6 +114,55 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   minimalTicks: () => ({}),
 }
 
+// v4 named a phased row `<sample> HP<i>` counting from 0; its layout rows carry
+// the sample as `baseName` and the index as `HP`, which name the row now
+function v4HaplotypeNames(layout: unknown) {
+  const renamed = new Map<string, string>()
+  for (const row of Array.isArray(layout) ? layout : []) {
+    if (
+      isRecord(row) &&
+      typeof row.name === 'string' &&
+      typeof row.baseName === 'string' &&
+      typeof row.HP === 'number'
+    ) {
+      renamed.set(row.name, haplotypeRowName(row.baseName, row.HP))
+    }
+  }
+  return renamed
+}
+
+// A v4 phased session's layout, tree and subtree filter, naming its
+// haplotype rows as this release does
+function withHaplotypesFromOne(instance: Record<string, unknown>) {
+  const renamed = v4HaplotypeNames(instance.layout)
+  const rename = (name: string) => renamed.get(name) ?? name
+  const renameValue = (value: unknown) =>
+    typeof value === 'string' ? rename(value) : value
+  const { layout, clusterTree, subtreeFilter } = instance
+  return renamed.size > 0
+    ? {
+        ...instance,
+        layout: (Array.isArray(layout) ? layout : []).map(row =>
+          isRecord(row)
+            ? {
+                ...row,
+                name: renameValue(row.name),
+                ...(row.label === row.name
+                  ? { label: renameValue(row.label) }
+                  : {}),
+              }
+            : row,
+        ),
+        ...(typeof clusterTree === 'string'
+          ? { clusterTree: renameNewickLeaves(clusterTree, rename) }
+          : {}),
+        ...(Array.isArray(subtreeFilter)
+          ? { subtreeFilter: subtreeFilter.map(renameValue) }
+          : {}),
+      }
+    : instance
+}
+
 /**
  * The display types this one replaced. v4's two multi-sample displays draw
  * here as they drew, the matrix in columns. `LinearMultiSampleVariantDisplay`
@@ -151,7 +203,10 @@ export const retiredState: RetiredDisplayState = {
     'rowHeightMode',
   ],
   lift: instance => {
-    const { rows, ...lifted } = liftRetiredRowState(instance, { colors: false })
+    const { rows, ...lifted } = liftRetiredRowState(
+      withHaplotypesFromOne(instance),
+      { colors: false },
+    )
     const step =
       typeof instance.rowHeightMode === 'number'
         ? { step: instance.rowHeightMode }

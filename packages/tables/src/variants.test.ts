@@ -433,6 +433,33 @@ test('a samples file leaving out a VCF sample warns, as the display does', async
   expect(t.warnings[0]).toContain('1 of the 2 samples in the VCF')
 })
 
+test("a samples file's label composes with each haplotype in the rows' labels", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'labels-'))
+  const vcf = path.join(dir, 'two.vcf')
+  const tsv = path.join(dir, 'samples.tsv')
+  writeFileSync(
+    vcf,
+    [
+      '##fileformat=VCFv4.2',
+      '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">',
+      '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\ts1\ts2',
+      'ctgA\t100\t.\tA\tG\t50\tPASS\t.\tGT\t0|1\t1',
+    ].join('\n'),
+  )
+  writeFileSync(tsv, 'name\tlabel\ns1\tMom\ns2\tDad\n')
+  const t = await engine.variants({
+    adapterConfig: {
+      type: 'VcfAdapter',
+      vcfLocation: { uri: pathToFileURL(vcf).href },
+      samplesTsvLocation: { uri: pathToFileURL(tsv).href },
+    },
+    region: { refName: 'ctgA', start: 0, end: 1000 },
+    display: { rows: 'haplotype' },
+  })
+  expect(t.rows.name).toEqual(['s1 HP1', 's1 HP2', 's2 HP1'])
+  expect(t.rows.label).toEqual(['Mom HP1', 'Mom HP2', 'Dad'])
+})
+
 test('a no-call at a site with no ALT has no dosage, and an all-missing FORMAT key is no flag', async () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'noalt-'))
   const vcf = path.join(dir, 'noalt.vcf')

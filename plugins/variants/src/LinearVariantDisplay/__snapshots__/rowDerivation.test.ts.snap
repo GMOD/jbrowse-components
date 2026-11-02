@@ -1148,7 +1148,7 @@ exports[`allele count a switch to phased mode keeps the arrangement 2`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -1157,7 +1157,7 @@ exports[`allele count a switch to phased mode keeps the arrangement 2`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -1222,7 +1222,7 @@ exports[`allele count a switch to phased mode keeps the arrangement 2`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -1231,7 +1231,7 @@ exports[`allele count a switch to phased mode keeps the arrangement 2`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -1706,7 +1706,7 @@ exports[`phased a declared sample order and a facet over the haplotypes 1`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -1715,7 +1715,7 @@ exports[`phased a declared sample order and a facet over the haplotypes 1`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -1753,7 +1753,7 @@ exports[`phased a declared sample order and a facet over the haplotypes 1`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -1762,7 +1762,7 @@ exports[`phased a declared sample order and a facet over the haplotypes 1`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -1917,7 +1917,7 @@ exports[`phased a legend focus keeps whole samples 2`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -1926,7 +1926,7 @@ exports[`phased a legend focus keeps whole samples 2`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2011,7 +2011,7 @@ exports[`phased a legend focus keeps whole samples 2`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2020,7 +2020,7 @@ exports[`phased a legend focus keeps whole samples 2`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2073,7 +2073,7 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 1`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2082,7 +2082,7 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 1`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2091,7 +2091,7 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 1`] = `
     {
       "HP": 0,
       "color": undefined,
-      "label": "Sample three",
+      "label": "Sample three HP1",
       "name": "S3 HP1",
       "population": "EAS",
       "rowColor": "#e15759",
@@ -2167,7 +2167,7 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 1`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2176,7 +2176,7 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 1`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2211,7 +2211,7 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 2`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2220,7 +2220,7 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 2`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2305,7 +2305,7 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 2`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2314,7 +2314,7 @@ exports[`phased after a cluster run lands haplotype rows a clade focus 2`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2349,7 +2349,7 @@ exports[`phased after a cluster run lands haplotype rows a focus on one haplotyp
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2358,7 +2358,7 @@ exports[`phased after a cluster run lands haplotype rows a focus on one haplotyp
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2367,7 +2367,7 @@ exports[`phased after a cluster run lands haplotype rows a focus on one haplotyp
     {
       "HP": 0,
       "color": undefined,
-      "label": "Sample three",
+      "label": "Sample three HP1",
       "name": "S3 HP1",
       "population": "EAS",
       "rowColor": "#e15759",
@@ -2459,7 +2459,7 @@ exports[`phased after a cluster run lands haplotype rows a focus on one haplotyp
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2468,7 +2468,7 @@ exports[`phased after a cluster run lands haplotype rows a focus on one haplotyp
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2682,7 +2682,7 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2691,7 +2691,7 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2778,7 +2778,7 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2787,7 +2787,7 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2849,7 +2849,7 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2858,7 +2858,7 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2945,7 +2945,7 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -2954,7 +2954,7 @@ exports[`phased after a cluster run lands haplotype rows the tree describes the 
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -3016,7 +3016,7 @@ exports[`phased dialog edits at haplotype granularity 1`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -3090,7 +3090,7 @@ exports[`phased dialog edits at haplotype granularity 1`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -3143,7 +3143,7 @@ exports[`phased dialog edits at haplotype granularity 2`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -3152,7 +3152,7 @@ exports[`phased dialog edits at haplotype granularity 2`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -3217,7 +3217,7 @@ exports[`phased dialog edits at haplotype granularity 2`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -3226,7 +3226,7 @@ exports[`phased dialog edits at haplotype granularity 2`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -3401,7 +3401,7 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 2`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -3410,7 +3410,7 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 2`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -3497,7 +3497,7 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 2`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -3506,7 +3506,7 @@ exports[`phased sample rows until the ploidy lands, then haplotypes 2`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#4e79a7",
@@ -3568,7 +3568,7 @@ exports[`phased sort by genotype orders haplotypes 1`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -3595,7 +3595,7 @@ exports[`phased sort by genotype orders haplotypes 1`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -3642,7 +3642,7 @@ exports[`phased sort by genotype orders haplotypes 1`] = `
     {
       "HP": 0,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP1",
       "name": "S0 HP1",
       "population": "AFR",
       "rowColor": "#aa0000",
@@ -3669,7 +3669,7 @@ exports[`phased sort by genotype orders haplotypes 1`] = `
     {
       "HP": 1,
       "color": "#aa0000",
-      "label": "Sample zero",
+      "label": "Sample zero HP2",
       "name": "S0 HP2",
       "population": "AFR",
       "rowColor": "#aa0000",

@@ -1,4 +1,5 @@
 import { quoteName } from '@gmod/hclust'
+import { parseNewick } from '@gmod/newick'
 
 import type { NewickNode } from '@gmod/newick'
 
@@ -56,4 +57,25 @@ export function writeNewick(node: NewickNode): string {
     }
   }
   return `${rendered.get(node)!};`
+}
+
+/**
+ * `newick` with each leaf renamed by `rename`, its shape and its lengths, in
+ * either encoding, kept.
+ */
+export function renameNewickLeaves(
+  newick: string,
+  rename: (name: string) => string,
+) {
+  const root = parseNewick(newick)
+  const stack = [root]
+  while (stack.length > 0) {
+    const n = stack.pop()!
+    if (n.children?.length) {
+      stack.push(...n.children)
+    } else if (n.name !== undefined) {
+      n.name = rename(n.name)
+    }
+  }
+  return writeNewick(root)
 }

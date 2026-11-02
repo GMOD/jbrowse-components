@@ -101,6 +101,7 @@ export const INTERNAL_SOURCE_KEYS = new Set([
   'name',
   'sampleName',
   'HP',
+  'sole',
   'baseUri',
   'color',
   'label',

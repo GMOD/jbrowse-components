@@ -14,6 +14,8 @@ export interface Source {
   rowColor?: string
   group?: string
   HP?: number
+  // a haploid sample's one haplotype row, which reads as the sample
+  sole?: boolean
   [key: string]: unknown
 }
 

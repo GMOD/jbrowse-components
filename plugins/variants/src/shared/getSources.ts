@@ -30,20 +30,21 @@ export function haplotypeRowName(sampleName: string, HP: number) {
 // the label says so: the name stays `HP1` whatever the window's ploidy, or a
 // sample haploid on chrX non-PAR and diploid in the PAR renames its row out of
 // the arrangement on a pan. `sole` is false beside any other row of the sample,
-// such as an HP2 the arrangement still names.
+// such as an HP2 the arrangement still names, and then a label the samples
+// file gives composes with the haplotype, as a `rows.labels` entry does.
 function haplotypeRow(
   source: Source,
   sampleName: string,
   HP: number,
   sole: boolean,
 ): HaplotypeSource {
-  const row = {
-    ...source,
-    name: haplotypeRowName(sampleName, HP),
-    sampleName,
-    HP,
-  }
-  return sole ? { ...row, label: source.label ?? sampleName } : row
+  const name = haplotypeRowName(sampleName, HP)
+  const row = { ...source, name, sampleName, HP }
+  return sole
+    ? { ...row, label: source.label ?? sampleName, sole: true }
+    : source.label === undefined
+      ? row
+      : { ...row, label: `${source.label}${name.slice(sampleName.length)}` }
 }
 
 function makeHaplotypeSources(
@@ -249,20 +250,17 @@ export function expandPhasedRows({
 /**
  * The sample a haplotype row refines, read off the row's own `sampleName` and
  * `HP`, and what its label adds to the sample's (` HP1`): nothing for a
- * haploid sample's one row, which reads as the sample. None for a sample row.
+ * haploid sample's one row (`sole`), which reads as the sample. None for a
+ * sample row.
  */
 export function haplotypeRowParent(
   row: ProcessedSource,
-  ploidy: Readonly<Record<string, number>> | undefined,
 ): RowParent | undefined {
   return row.HP === undefined
     ? undefined
     : {
         name: row.sampleName,
-        labelSuffix:
-          ploidy?.[row.sampleName] === 1
-            ? ''
-            : row.name.slice(row.sampleName.length),
+        labelSuffix: row.sole ? '' : row.name.slice(row.sampleName.length),
       }
 }
 

@@ -357,6 +357,29 @@ describe('a rows.field switch keeps the arrangement', () => {
     expect(display.treeOnFinerRows).toBe(false)
   })
 
+  // A supplied tree, with no provenance, rotates towards `rows.sort`, which
+  // names its sample leaves, before they fork over the haplotype rows
+  it('rotates a supplied sample tree to the order before forking it', () => {
+    const { display } = createTestEnvironment({
+      displayConfig: {
+        ...RECORDS_BAND_OFF,
+        rows: { field: 'haplotype', tree: '((S0,S1),S2);', sort: ['S2', 'S0'] },
+      },
+    }).createDisplay()
+    display.setSources(SOURCES)
+    landPloidy(display)
+
+    expect(rowNames(display)).toEqual([
+      'S2 HP1',
+      'S2 HP2',
+      'S0 HP1',
+      'S0 HP2',
+      'S1 HP1',
+      'S1 HP2',
+    ])
+    expect(display.hierarchy).toBeDefined()
+  })
+
   it.each([
     [
       'Edit plot',
@@ -697,5 +720,81 @@ describe('the tooltip over a haplotype row', () => {
       'S2 HP1',
       'S2 HP2',
     ])
+  })
+})
+
+describe('haplotype row labels', () => {
+  function phased(
+    sources: { name: string; label?: string }[],
+    rows: Record<string, unknown>,
+    samplePloidy: Record<string, number>,
+  ) {
+    const { display } = createTestEnvironment({
+      displayConfig: {
+        ...RECORDS_BAND_OFF,
+        rows: { field: 'haplotype', ...rows },
+      },
+    }).createDisplay()
+    display.setSources(sources)
+    display.setCellData({
+      samplePloidy,
+    } as unknown as Parameters<typeof display.setCellData>[0])
+    return display
+  }
+  const labelsOf = (display: ReturnType<typeof phased>) =>
+    display.sources.map(s => [s.name, s.label])
+
+  // chrX: haploid here, with a second haplotype the order still names
+  it('a haploid sample beside a named second haplotype composes both', () => {
+    const display = phased(
+      [{ name: 'S0' }, { name: 'S1' }],
+      { sort: ['S1 HP2'], labels: { S1: 'Father' } },
+      { S0: 2, S1: 1 },
+    )
+    expect(labelsOf(display)).toEqual([
+      ['S1 HP2', 'Father HP2'],
+      ['S0 HP1', undefined],
+      ['S0 HP2', undefined],
+      ['S1 HP1', 'Father HP1'],
+    ])
+  })
+
+  it('a haploid sample alone reads as the sample', () => {
+    const display = phased(
+      [{ name: 'S0' }, { name: 'S1' }],
+      { labels: { S1: 'Father' } },
+      { S0: 2, S1: 1 },
+    )
+    expect(labelsOf(display).at(-1)).toEqual(['S1 HP1', 'Father'])
+  })
+
+  it("the samples file's label composes with each haplotype", () => {
+    const display = phased(
+      [
+        { name: 'S0', label: 'Mom' },
+        { name: 'S1', label: 'Dad' },
+      ],
+      {},
+      { S0: 2, S1: 1 },
+    )
+    expect(labelsOf(display)).toEqual([
+      ['S0 HP1', 'Mom HP1'],
+      ['S0 HP2', 'Mom HP2'],
+      ['S1 HP1', 'Dad'],
+    ])
+  })
+
+  it('a label edited back to the composed file label writes no entry', () => {
+    const display = phased(
+      [{ name: 'S0', label: 'Mom' }, { name: 'S1' }],
+      {},
+      { S0: 2, S1: 2 },
+    )
+    const [hp1, ...rest] = display.editableSources
+    display.applyRowEdits([{ ...hp1!, label: 'paternal' }, ...rest])
+    expect(display.rowLabels).toEqual({ 'S0 HP1': 'paternal' })
+    const [edited, ...others] = display.editableSources
+    display.applyRowEdits([{ ...edited!, label: 'Mom HP1' }, ...others])
+    expect(display.rowLabels).toEqual({})
   })
 })

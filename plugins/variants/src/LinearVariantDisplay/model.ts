@@ -246,12 +246,12 @@ function warnUnknownArrangementAttributes(
 }
 
 // A sample named as another's haplotype row, `X HP1` beside `X`, shares that
-// row's name in phased mode, where an entry naming it reaches the sample
+// row's name in phased mode
 function warnHaplotypeNameCollisions(samples: readonly string[]) {
   const collisions = haplotypeNameCollisions(samples)
   if (collisions.length > 0) {
     console.warn(
-      `Sample ${collisions.map(name => `"${name}"`).join(', ')} is also the name of another sample's haplotype row, so in phased mode an order, label, color or focus naming it reaches the sample alone`,
+      `Sample ${collisions.map(name => `"${name}"`).join(', ')} is also the name of another sample's haplotype row, so in phased mode the name is ambiguous: an order, label, color or focus naming it may mean that sample or the other sample's haplotype`,
     )
   }
 }
@@ -1222,11 +1222,11 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: a haplotype row's `sampleName` and `HP`,
+         * `TreeSidebarMixin`'s hook: a haplotype row's `sampleName`, `HP` and `sole`,
          * which the arrangement dialog lists as no column.
          */
         get internalRowFields(): readonly string[] {
-          return ['sampleName', 'HP']
+          return ['sampleName', 'HP', 'sole']
         },
         /**
          * #getter
@@ -1267,7 +1267,7 @@ export function stateModelFactory(
          * takes the sample's label alone.
          */
         rowParent(row: ProcessedSource): RowParent | undefined {
-          return haplotypeRowParent(row, self.samplePloidy)
+          return haplotypeRowParent(row)
         },
         /**
          * #getter
