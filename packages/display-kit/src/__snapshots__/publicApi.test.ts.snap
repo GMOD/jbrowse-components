@@ -78,6 +78,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./hiddenLegendConfigSchema",
   "./highlightHost",
   "./installGlobalFetchAutorun",
+  "./keyWindows",
   "./legendConfigSchema",
   "./legendHost",
   "./planRegionFetch",
