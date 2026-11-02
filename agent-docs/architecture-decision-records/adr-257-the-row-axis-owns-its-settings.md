@@ -92,13 +92,19 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   layer below shows through; a layer below whose keyed members name another
   field's values drops them from the merged result. A reset never writes the
   schema default over an admin's base.
-- A write over an empty stored field resets nothing: `''` names no values,
-  so a launch's `rows.sort=…` survives the data scan that picks the field.
+- A write from or to an empty field resets nothing: `''` names no values,
+  so a launch's `rows.sort=…` survives the data scan that picks the field,
+  and wiggle's overlay toggle (`rows.field` `''` and back to `source`) keeps
+  the order. A bag writing `''` and then another field keeps a stale
+  arrangement; no menu writes that sequence.
 - A refinement is not a field change: variant `haplotype` rows name their
   sample (`rowAliasOf`), so a sample-keyed arrangement applies across the
   switch and `resettingRowsOnUnitChange` goes.
 - Members outside `keyed` merge per member, `null` resetting one, and
   `rows: null` resets the whole object.
+- A `sort` written on the same field without `tree` keeps the tree: the
+  sidebar rotates it toward the order and draws it only while its leaves are
+  the drawn rows (`treeDescribesRows`), so no writer has to clear it.
 - `setConf` on a keyed object's `field` path applies the rule, as a bag does.
 - The share-link delta emits `field` beside any keyed member it emits, so a
   base that later changes field drops the user's stale arrangement.
