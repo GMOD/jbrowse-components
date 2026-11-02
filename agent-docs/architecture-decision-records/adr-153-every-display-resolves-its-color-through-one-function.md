@@ -36,7 +36,8 @@ both the cut points and the level names meant a config could not pin the band
 and recolor `RL` at once, and the band is a fact about the reads, which the
 connections and the hover classify by whatever field colors the reads. A cold
 Fable design read chose the spelling over `insertSize: { breaks }`, since
-`insertSize` is already the read field `filter` tests, and over a
+`insertSize` names the per-read value (the reads table's column) and an object
+of settings under it would give the word a second meaning, and over a
 `transform`, which the alignments display has no `marks` config to want.
 
 ## Context

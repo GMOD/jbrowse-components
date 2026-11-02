@@ -4,8 +4,9 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config ReadConnectionsOrdinaryPairs
  * #category display
  * The read connections' `ordinaryPairs` layer: the pairs that carry no
- * category, drawn as context beside the ones that do. For arcs those are the
- * concordant pairs, for the read cloud the pairs of modal insert size.
+ * category, drawn as context beside the ones that do: an LR pair inside the
+ * insert-size band, which `insertSizeAndOrientation` calls `normal` and
+ * `normalInsertSize` pins.
  *
  * #example
  * ```js

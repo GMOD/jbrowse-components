@@ -3843,8 +3843,8 @@ export const configManifest: ConfigManifest = {
                       "interchrom",
                       "splitInverted",
                       "splitSameStrand",
-                      "segmentInverted",
-                      "segmentSameStrand"
+                      "unpairedSplitInverted",
+                      "unpairedSplitSameStrand"
                     ]
                   }
                 },
@@ -5025,8 +5025,8 @@ export const configManifest: ConfigManifest = {
                       "interchrom",
                       "splitInverted",
                       "splitSameStrand",
-                      "segmentInverted",
-                      "segmentSameStrand"
+                      "unpairedSplitInverted",
+                      "unpairedSplitSameStrand"
                     ]
                   }
                 },

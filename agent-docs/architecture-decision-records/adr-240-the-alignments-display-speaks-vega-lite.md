@@ -155,7 +155,7 @@ them in its own stage:
 
 1. **A written `filter` list merges with the defaults by field.** An entry
    replaces the defaults on its own field, entries an author writes on one
-   field all apply (`gte` and `lte` on `insertSize`), and an entry naming a
+   field all apply (`gte` and `lte` on `mapq`), and an entry naming a
    field with no test removes that field's defaults. The slot declares its
    defaults (`fieldPredicateList({ defaults })`), and Edit plot lists them
    beside the written list, which `plot` keeps as written (amended

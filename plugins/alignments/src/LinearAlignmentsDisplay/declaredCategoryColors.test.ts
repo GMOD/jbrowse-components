@@ -120,7 +120,7 @@ test('an orientation field names its mate and chain levels', () => {
         'interchrom',
         'unmappedMate',
         'splitInverted',
-        'segmentInverted',
+        'unpairedSplitInverted',
       ],
       range: ['#ff0000', '#00ff00', '#0000ff', '#ffff00'],
     },
@@ -223,7 +223,7 @@ describe('a domain that names no level says so', () => {
         scale: { domain: ['150'] },
       }),
     ).toEqual([
-      'encoding.color.scale.domain: "150" names no level of insertSizeAndOrientation, whose levels are short, normal, long, RL, RR, LL, unmappedMate, interchrom, splitInverted, splitSameStrand, segmentInverted, segmentSameStrand',
+      'encoding.color.scale.domain: "150" names no level of insertSizeAndOrientation, whose levels are short, normal, long, RL, RR, LL, unmappedMate, interchrom, splitInverted, splitSameStrand, unpairedSplitInverted, unpairedSplitSameStrand',
     ])
   })
 

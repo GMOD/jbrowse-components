@@ -1220,7 +1220,7 @@
   },
   "ReadConnectionsOrdinaryPairs": {
    "category": "Display setting",
-   "text": "# ReadConnectionsOrdinaryPairs (Display setting config, alignments plugin)\n\nThe read connections' `ordinaryPairs` layer: the pairs that carry no category, drawn as context beside the ones that do. For arcs those are the concordant pairs, for the read cloud the pairs of modal insert size.\n\n```js\n{\n  type: 'LinearAlignmentsDisplay',\n  readConnections: { show: true, ordinaryPairs: { show: false } },\n}\n```\n\n## Slots\n- `show: maybeBoolean`: Unset, the mark decides: arcs draw ordinary pairs as context and the cloud leaves them out."
+   "text": "# ReadConnectionsOrdinaryPairs (Display setting config, alignments plugin)\n\nThe read connections' `ordinaryPairs` layer: the pairs that carry no category, drawn as context beside the ones that do: an LR pair inside the insert-size band, which `insertSizeAndOrientation` calls `normal` and `normalInsertSize` pins.\n\n```js\n{\n  type: 'LinearAlignmentsDisplay',\n  readConnections: { show: true, ordinaryPairs: { show: false } },\n}\n```\n\n## Slots\n- `show: maybeBoolean`: Unset, the mark decides: arcs draw ordinary pairs as context and the cloud leaves them out."
   },
   "ReadConnectionsStrokeWidth": {
    "category": "Display setting",

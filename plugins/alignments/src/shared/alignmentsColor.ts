@@ -238,8 +238,8 @@ const MATE_LEVELS: readonly ReadColorLevel[] = [
 const CHAIN_LEVELS: readonly ReadColorLevel[] = [
   ['splitInverted', 'splitInverted'],
   ['splitSameStrand', 'splitSameStrand'],
-  ['segmentInverted', 'revStrand'],
-  ['segmentSameStrand', 'fwdStrand'],
+  ['unpairedSplitInverted', 'revStrand'],
+  ['unpairedSplitSameStrand', 'fwdStrand'],
 ]
 
 /**
@@ -295,7 +295,7 @@ export function levelKeysOf(type: ColorFieldKind) {
 /**
  * Each read bucket a field paints, by the value `scale.domain` names it
  * with: under `insertSizeAndOrientation` `pairRL` is `RL` and `revStrand` a
- * chain's `segmentInverted`.
+ * chain's `unpairedSplitInverted`.
  */
 export function paintedLevelOf(type: ReadColorFieldKind) {
   return new Map(
