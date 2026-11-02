@@ -1,7 +1,11 @@
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
-import { handleSelectedRegion } from './searchUtils.ts'
+import {
+  handleSelectedRegion,
+  navigateToSelectedOption,
+} from './searchUtils.ts'
 
 import type { LinearGenomeViewModel } from './index.ts'
 
@@ -71,4 +75,23 @@ test('an {assembly} the session lacks is named in the error', async () => {
   await expect(go('{nope}ctgA:1-10')).rejects.toThrow(
     /assembly "nope" could not be resolved/,
   )
+})
+
+test('a picked option reports whether the view moved', async () => {
+  const { view } = await setup()
+  const pick = (option: BaseResult) =>
+    navigateToSelectedOption({ option, model: view, assemblyName: 'volMyt1' })
+  const hit = (locString: string) =>
+    new BaseResult({ label: 'EDEN', locString })
+
+  expect(await pick(hit('ctgA:101..200'))).toBe(true)
+  expect(
+    await pick(
+      new BaseResult({
+        label: 'EDEN',
+        results: [hit('ctgA:101..200'), hit('ctgB:101..200')],
+      }),
+    ),
+  ).toBe(false)
+  expect(view.searchPicker).toBeDefined()
 })

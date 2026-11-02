@@ -41,10 +41,10 @@ export function gapMask(gaps: { top: number; height: number }[]) {
   return `linear-gradient(to bottom, ${stops.join(', ')})`
 }
 
-// OverviewHighlight stays separate (different bpToPx API). A non-interactive
-// colored band with an optional top label; when `children` (the highlight
-// chip) is passed it renders that instead of the plain label. Visibility is
-// toggled from the view menu
+// A colored band with an optional top label; when `children` (the highlight
+// chip) is passed it renders that instead of the plain label. Clicks fall
+// through it to the tracks, which is what keeps it apart from the hoverable
+// OverviewHighlightBand. Visibility is toggled from the view menu
 const HighlightBand = observer(function HighlightBand({
   coords,
   background,

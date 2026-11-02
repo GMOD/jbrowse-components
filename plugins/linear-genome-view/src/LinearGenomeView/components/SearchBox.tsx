@@ -78,8 +78,9 @@ const SearchBox = observer(function SearchBox({
 
   async function navigate(option: BaseResult) {
     try {
-      await navigateToSelectedOption({ model, assemblyName, option })
-      addRecentLocation(recentLocationOf(option))
+      if (await navigateToSelectedOption({ model, assemblyName, option })) {
+        addRecentLocation(recentLocationOf(option))
+      }
     } catch (e) {
       notifySearchFailure(session, e)
     }

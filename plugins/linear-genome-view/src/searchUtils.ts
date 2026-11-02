@@ -56,6 +56,8 @@ const MAX_REFNAME_HITS = 10
 // shared dispatch used by SearchBox.onSelect and the LGV ImportForm submit:
 // route a chosen result to a direct nav, a multi-result dialog, or a generic
 // locstring/refname resolution
+// Resolves whether the view moved: a hit that raised the picker, or a glob
+// refused as too wide, did not.
 export async function navigateToSelectedOption({
   option,
   model,
@@ -67,15 +69,16 @@ export async function navigateToSelectedOption({
 }) {
   if (option.hasLocation()) {
     await navToOption({ option, model, assemblyName })
+    return true
   } else if (option.results?.length) {
-    await showSearchResults({
+    return showSearchResults({
       results: option.results,
       query: option.getLabel(),
       model,
       assemblyName,
     })
   } else {
-    await handleSelectedRegion({
+    return handleSelectedRegion({
       input: option.getLabel(),
       assemblyName,
       model,

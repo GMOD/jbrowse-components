@@ -88,12 +88,12 @@ const LinearGenomeViewImportForm = observer(
       model.setError(undefined)
       if (selectedAsm) {
         try {
-          await navigateToSelectedOption({
+          const moved = await navigateToSelectedOption({
             option,
             model,
             assemblyName: selectedAsm,
           })
-          if (record) {
+          if (record && moved) {
             addRecentLocation(recentLocationOf(option))
           }
         } catch (e) {
@@ -105,7 +105,7 @@ const LinearGenomeViewImportForm = observer(
     const recentMenuItems = recentLocationsMenu({
       recentLocations,
       onNavigate: option => {
-        navigate({ option, record: true }).catch(() => {})
+        void navigate({ option, record: true })
       },
       onClear: clearRecentLocations,
     })
