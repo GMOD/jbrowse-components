@@ -82,16 +82,36 @@ the reviews to settle the open calls; built in
   evidence, so no LR band, its split reads in the inversion band and its
   concordant pairs in "No SV evidence".
 - The arcs gate an inter-chromosomal tick by their own support floor
-  (`breakpoint.reads`), not by `svSignal`'s mate placement, so a tick can draw
-  in "No SV evidence" over a pair whose mate the MQ tag marks unplaced (three
-  on HG02768; their MQ tags unchecked).
+  (`breakpoint.reads`) and by no mapping quality, so a tick draws in "No SV
+  evidence" over a read `svSignal` refuses: a MAPQ-0 read, or one whose mate the
+  MQ tag marks unplaced. On HG008-T Illumina at CDKN2A that band carries dozens
+  of ticks. Gating ticks by placement would change every alignments track's
+  arcs, so it is a separate call.
+- Checked on real data (2026-11-02), every read of a slice in one band but the
+  two above. Distinct reads per band:
+
+  | slice | LR | RL | inversion | elsewhere | insertion | none |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | HG008-T HiFi, CDKN2A | 65 | | | | | 213 |
+  | HG008-T Illumina, CDKN2A | 241 | 21 | 9 | 798 | | 46,458 |
+  | HG008-T HiFi, chr3:139.9 Mb | | | 48 | 67 | 96 | 339 |
+  | HG002 ONT, 1:62.96-63.02 Mb | 20 | | | | | 26 |
+
+  Both platforms draw CDKN2A's homozygous deletion as one deletion-type arc in
+  the LR band. Every `svInsertion` read carries a CIGAR insertion of 50 bp or
+  more. Illumina's "elsewhere" band is mostly mates on another chromosome in a
+  file with no MQ tags, which `svSignal` counts as placed: about 1.5% of the
+  depth at every Illumina locus, the population Only SV evidence keeps.
 - The SV channels figure (`sv_channels`) and the user guide's band diagram show
   one inversion band; LL and RR stay apart by arc color, and Group by → Pair
   orientation still gives four bands.
 - Not exactly `svSignal` split by type at the edges: a read whose placed pieces
   are not read-adjacent counts as split evidence under `svSignal` and files in
-  `none` here, or by its orientation when its pair is discordant; a MAPQ-0
-  record of a split read takes its siblings' band.
+  `none` here, or by its orientation when its pair is discordant. A MAPQ-0
+  record of a split read takes its siblings' band when their placed pieces
+  make a junction; when its only partner is the placed primary, no junction
+  counts, the record files as `none` and the primary by its pair (2 reads of
+  about 300,000 on HG008-T Illumina).
   A supplementary whose source dropped its SA tag, or a secondary, files by its
   own evidence and may land apart from its siblings.
 - `svInsertion` from a split needs the feet on one base exactly; a one- or
