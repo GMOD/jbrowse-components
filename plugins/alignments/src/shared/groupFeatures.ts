@@ -2,7 +2,6 @@ import {
   PAIR_DIRECTION_LABELS,
   pairDirection,
   pairOrientationToNum,
-  svSignalTier,
 } from '@jbrowse/alignments-core'
 import {
   CIGAR_HAS_SKIP,
@@ -38,15 +37,9 @@ import {
   SPLICED_LEVELS,
   SPLIT_LEVELS,
   SV_CHANNEL_LEVELS,
-  SV_SIGNAL_LEVELS,
-  SV_SIGNAL_OF_TIER,
   levelOrder,
 } from './readFieldLevels.ts'
-import {
-  chainIsSplit,
-  isSplitAlignment,
-  readCategoryBitsOf,
-} from './splitAlignment.ts'
+import { chainIsSplit, isSplitAlignment } from './splitAlignment.ts'
 import { CHAIN_PRECEDENCE, svChannelOf } from './svChannel.ts'
 import {
   MAPQ_UNAVAILABLE,
@@ -59,7 +52,7 @@ import {
 } from './util.ts'
 
 import type { AlignmentsUnit } from '../LinearAlignmentsDisplay/constants.ts'
-import type { Pairing, SvChannel, SvSignal } from './readFieldLevels.ts'
+import type { Pairing, SvChannel } from './readFieldLevels.ts'
 import type { Facet, ReadDimension, WorkerFacet } from './types.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
@@ -230,27 +223,6 @@ function pairingKey(feature: Feature): GroupKey {
       ),
     )
   ]
-}
-
-const SV_SIGNAL_GROUPS = Object.fromEntries(
-  SV_SIGNAL_LEVELS.map(key => [
-    key,
-    { key, label: READ_LEVEL_LABELS.svSignal[key] },
-  ]),
-) as Record<SvSignal, GroupKey>
-
-function svSignalTierOf(feature: Feature) {
-  return svSignalTier(readCategoryBitsOf(feature))
-}
-
-// A chain is as strong evidence as its strongest record, the rule the
-// `svSignal` filter keeps a chain by.
-function chainSvSignalKey(chain: Feature[]) {
-  let tier = 0
-  for (const feature of chain) {
-    tier = Math.max(tier, svSignalTierOf(feature))
-  }
-  return SV_SIGNAL_GROUPS[SV_SIGNAL_OF_TIER[tier]!]
 }
 
 const SV_CHANNEL_GROUPS = Object.fromEntries(
@@ -477,13 +449,6 @@ export const FACET_DIMENSIONS: {
     key: splicedKey,
     chainKey: chain =>
       chain.some(isSpliced) ? SPLICED_GROUP : UNSPLICED_GROUP,
-  },
-  svSignal: {
-    field: 'svSignal',
-    fragmentLevel: false,
-    key: feature =>
-      SV_SIGNAL_GROUPS[SV_SIGNAL_OF_TIER[svSignalTierOf(feature)]!],
-    chainKey: chainSvSignalKey,
   },
   svChannel: {
     field: 'svChannel',

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "SV channels facets by `svChannel`, `svSignal`'s evidence split into six bands by the kind of SV it points at: LR pair or deletion-type split, RL pair or duplication-type split, LL or RR pair or inversion split, partner on another chromosome, SV-size insertion, no SV evidence. A split read files by its junctions, paired or not, so short and long reads of one event fill one band; a pair without a split class files by its orientation. Replaces the preset's `pairOrientation` facet, under which a long-read track was one 'No orientation' band"
+summary: "SV channels facets by `svChannel`, six bands by the kind of SV a read's evidence points at, concordant pairs staying in the LR band as its baseline: LR pair or deletion-type split, RL pair or duplication-type split, LL or RR pair or inversion split, partner on another chromosome, SV-size insertion, no SV evidence. A split read files by its junctions, paired or not, so short and long reads of one event fill one band; a pair without a split class files by its orientation. Replaces the preset's `pairOrientation` facet, under which a long-read track was one 'No orientation' band, and the `svSignal` facet (Group by → SV evidence): `svSignal` stays the filter, the sort and the split view's gate"
 ---
 
 # ADR-258: SV channels band reads by the SV their evidence points at
@@ -59,6 +59,15 @@ the reviews to settle the open calls; built in
   (`CHAIN_PRECEDENCE`), so a concordant LR mate never outranks its split
   partner.
 - **A band exists only where a fetched read keys to it**, as for every facet.
+- **Group by → SV evidence (the `svSignal` facet) is cut.** Its levels repeat
+  Split reads and Pair status, and the one thing it did, separating evidence
+  from the rest, Filter by → Only SV evidence does with SV channel banding the
+  evidence by kind. `svSignal` stays the read category: the filter, the sort
+  ("SV evidence first") and the split view's gate (ADR-229). `color: svSignal`
+  still colors nothing, and its notice names the filter and the `svChannel`
+  facet. The facet was beta-only (v5.0.0-beta.14 on), so a saved `facet:
+  svSignal` is not migrated; it reads as a field no read carries and draws one
+  section.
 
 ## Consequences
 

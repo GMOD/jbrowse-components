@@ -159,10 +159,18 @@ export const FACET_ONLY_FIELDS = [
   'pairing',
   'split',
   'spliced',
-  'svSignal',
   'svChannel',
 ] as const
-const FACET_ONLY_FIELD_SET: ReadonlySet<string> = new Set(FACET_ONLY_FIELDS)
+// The read categories a color: cannot paint, each with what answers it.
+const COLORLESS_FIELDS: ReadonlyMap<string, string> = new Map([
+  ...FACET_ONLY_FIELDS.map(
+    field => [field, `facet=${field} groups them by ${field}`] as const,
+  ),
+  [
+    'svSignal',
+    'svSignal:only keeps the SV evidence, and facet=svChannel groups it by the kind of SV',
+  ],
+])
 
 // `methylation` is the fill-unmarked view of the modifications field: one word
 // for the everyday CpG picture.
@@ -735,11 +743,11 @@ const modifiers: Record<string, Modifier> = {
             value,
             `a read field; baseColor:${value} draws it`,
           )
-        } else if (FACET_ONLY_FIELD_SET.has(value)) {
+        } else if (COLORLESS_FIELDS.has(value)) {
           invalidModifierValue(
             'color',
             value,
-            `a field color paints; reads keep their arcs' colors, and facet=${value} groups them by ${value}`,
+            `a field color paints; reads keep their arcs' colors, and ${COLORLESS_FIELDS.get(value)}`,
           )
         } else if (ALIGNMENTS_COLOR_FIELD_SET.has(value)) {
           colorByField(r, value)

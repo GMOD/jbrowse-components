@@ -90,7 +90,6 @@ export const READ_LEVEL_LABELS: {
   split: Labelled<typeof SPLIT_LEVELS>
   spliced: Labelled<typeof SPLICED_LEVELS>
   pairing: Labelled<typeof PAIRING_LEVELS>
-  svSignal: Labelled<typeof SV_SIGNAL_LEVELS>
   svChannel: Labelled<typeof SV_CHANNEL_LEVELS>
 } = {
   split: { split: 'Split (SA)', unsplit: 'Not split' },
@@ -100,12 +99,6 @@ export const READ_LEVEL_LABELS: {
     discordant: 'Discordant',
     unpaired: 'Unpaired',
     nonPrimary: 'Secondary or supplementary',
-  },
-  svSignal: {
-    splitRead: 'Split read',
-    svIndel: 'SV-size indel',
-    discordantPair: 'Discordant pair',
-    none: 'No SV evidence',
   },
   svChannel: {
     LR: 'LR pair or deletion-type split',
@@ -123,7 +116,6 @@ const LEVEL_ORDER: Readonly<Record<string, readonly string[]>> = {
   mapq: [...MAPQ_BINS.map(b => b.key), MAPQ_UNAVAILABLE_LEVEL],
   split: SPLIT_LEVELS,
   spliced: SPLICED_LEVELS,
-  svSignal: SV_SIGNAL_LEVELS,
   svChannel: SV_CHANNEL_LEVELS,
 }
 

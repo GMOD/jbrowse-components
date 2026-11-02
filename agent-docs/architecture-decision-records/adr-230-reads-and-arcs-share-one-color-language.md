@@ -32,6 +32,8 @@ which his 2026-10-12 decisions had kept as a color field.
 - **`svSignal` is a facet dimension.** Group by → SV evidence sections reads
   into split read, SV-size indel, discordant pair and no evidence, a chain
   taking its strongest record's level, as the filter keeps a chain by.
+  Superseded by ADR-258: the facet is `svChannel`, which bands the evidence by
+  the kind of SV; `svSignal` stays the filter and the sort.
 
 ## Consequences
 

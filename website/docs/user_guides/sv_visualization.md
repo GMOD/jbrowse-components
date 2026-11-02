@@ -188,6 +188,12 @@ the rearrangement, and a band that stays empty under a call is a call with no
 read evidence behind it. A kind of evidence no read in the window carries gets
 no band.
 
+**SV evidence** decides which reads count: a split read, an insertion or
+deletion of 50 bp or more, or a discordant pair, with both ends placed. **Filter
+by** and **Sort by** use it. **SV channel**, the Group by row this arrangement
+sets, decides which band a read goes in; add **Filter by → Only SV evidence** to
+leave only the evidence in each band.
+
 <Figure caption="The INVdup call's reads, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
 <figure>

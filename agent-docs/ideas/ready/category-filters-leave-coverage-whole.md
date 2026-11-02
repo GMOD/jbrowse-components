@@ -171,5 +171,5 @@ Each pin names the sabotage that turns it red.
 - **Filtering on the main thread** (ship every read, mask at layout, as
   ADR-188 moved chain identity). Instant toggles, for a skip path in every
   row-instanced packer; nothing decided needs it.
-- **A `dim` filter value or an `opacity` channel.** The `svSignal` facet
-  separates the evidence instead.
+- **A `dim` filter value or an `opacity` channel.** The SV evidence filter
+  with the `svChannel` facet separates the evidence instead (ADR-258).

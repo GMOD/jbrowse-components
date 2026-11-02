@@ -212,47 +212,46 @@ function svFeat(id: string, fields: Record<string, unknown>) {
   return feat(id, { flags: 0, score: 60, tags: {}, CIGAR: '100M', ...fields })
 }
 
-test('the SV evidence facet sections reads by their strongest evidence', () => {
+test('the SV channel facet files a pair by its orientation and any other read by its evidence', () => {
+  const split = {
+    strand: 1,
+    end: 50,
+    CIGAR: '50M50S',
+    tags: { SA: 'ctgA,200,+,50S50M,60,0;' },
+  }
   const features = [
-    svFeat('split', {
-      CIGAR: '50M50S',
-      tags: { SA: 'ctgA,200,+,50S50M,60,0;' },
-    }),
-    svFeat('deletion', { CIGAR: '40M60D60M' }),
-    feat('discordant', {
+    svFeat('split', split),
+    svFeat('insertion', { CIGAR: '40M60I60M' }),
+    feat('inverted-pair', {
       flags: 1,
       score: 60,
       tags: {},
       CIGAR: '100M',
-      pair_orientation: 'F1R2',
+      pair_orientation: 'F1F2',
     }),
     svFeat('plain', {}),
-    svFeat('unplaced-split', {
-      score: 0,
-      CIGAR: '50M50S',
-      tags: { SA: 'ctgA,200,+,50S50M,60,0;' },
-    }),
+    svFeat('unplaced-split', { ...split, score: 0 }),
   ]
-  const groups = partitionFeatures(features, { field: 'svSignal' })
+  const groups = partitionFeatures(features, { field: 'svChannel' })
   expect(groups.map(g => [g.label, g.features.map(f => f.id())])).toEqual([
-    ['Split read', ['split']],
-    ['SV-size indel', ['deletion']],
-    ['Discordant pair', ['discordant']],
+    ['LR pair or deletion-type split', ['split']],
+    ['LL or RR pair, or inversion split', ['inverted-pair']],
+    ['SV-size insertion', ['insertion']],
     ['No SV evidence', ['plain', 'unplaced-split']],
   ])
 })
 
-test('a chain takes the SV evidence of its strongest record', () => {
+test('a chain files where its most specific record files', () => {
   const groups = partitionFeatures(
     [
-      svFeat('r1', { name: 'r', CIGAR: '40M60D60M' }),
+      svFeat('r1', { name: 'r', CIGAR: '40M60I60M' }),
       svFeat('r2', { name: 'r' }),
       svFeat('s', { name: 's' }),
     ],
-    { field: 'svSignal', unit: 'chain' },
+    { field: 'svChannel', unit: 'chain' },
   )
   expect(groups.map(g => [g.key, g.features.map(f => f.id())])).toEqual([
-    ['svIndel', ['r1', 'r2']],
+    ['svInsertion', ['r1', 'r2']],
     ['none', ['s']],
   ])
 })

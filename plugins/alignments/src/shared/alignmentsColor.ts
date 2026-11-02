@@ -101,7 +101,17 @@ export function baseLayerOfField(field: string | undefined) {
   return fields.includes(field) ? (field as BaseColorField) : undefined
 }
 
-const FACET_ONLY_FIELDS = new Set<string>(FACET_ONLY_DIMENSIONS)
+// The read categories reads take no color from (ADR-230), each with what
+// answers it instead.
+const COLORLESS_FIELDS = new Map<string, string>([
+  ...FACET_ONLY_DIMENSIONS.map(
+    field => [field, `facet: "${field}" sections the reads by it`] as const,
+  ),
+  [
+    'svSignal',
+    'filter svSignal keeps or hides it, and facet: "svChannel" sections it by the kind of SV',
+  ],
+])
 
 /**
  * The `encoding.color` channel as it paints. While `scale.type` is unset the
@@ -127,9 +137,9 @@ export function alignmentsColorProblems(setting: AlignmentsColorSetting) {
     ? [
         `encoding.color.field: ${field} is drawn a cell per base, which pileup.bases paints over the reads`,
       ]
-    : FACET_ONLY_FIELDS.has(field)
+    : COLORLESS_FIELDS.has(field)
       ? [
-          `encoding.color.field: ${field} colors nothing, since reads keep their arcs' colors; facet: "${field}" sections the reads by it`,
+          `encoding.color.field: ${field} colors nothing, since reads keep their arcs' colors; ${COLORLESS_FIELDS.get(field)}`,
         ]
       : levelNotices(encoding)
 }
@@ -146,7 +156,7 @@ export function readColorFieldOf(
 ): string | undefined {
   return typeof encoding !== 'object' ||
     baseLayerOfField(encoding.field) ||
-    FACET_ONLY_FIELDS.has(encoding.field)
+    COLORLESS_FIELDS.has(encoding.field)
     ? undefined
     : encoding.field
 }

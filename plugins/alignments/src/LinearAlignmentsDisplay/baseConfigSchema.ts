@@ -89,8 +89,8 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      * #slot facet
      * In-track stacked grouping, one labelled section per value: a read
      * dimension (`strand`, `firstOfPairStrand`, `pairOrientation`, `pairing`,
-     * `split`, `spliced`, `svSignal`, `svChannel`, `mapq`, `mateRefName`,
-     * `mateAssembly`), a tag
+     * `split`, `spliced`, `svChannel`, `mapq`, `mateRefName`, `mateAssembly`), a
+     * tag
      * (`tags.HP`), or any other field. `{ field: "tags.HP", sort: ["2",
      * "1"] }` stacks the listed values first.
      */
