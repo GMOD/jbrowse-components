@@ -200,7 +200,7 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
 Five cases mislead in the lanes:
 
 - **A haplotype the graph does not align has no lane of its own.** Picked by
-  hand under **Lanes → Choose lanes...**, it draws an empty row at the foot
+  hand under **Lanes → Choose lanes...**, it gets an empty row at the foot
   headed "no alignment in this window".
 - **A deletion across the window is a row with no ribbons.** A haplotype whose
   deletion spans the whole window shows as a row at the foot of the lanes,
