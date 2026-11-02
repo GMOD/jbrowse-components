@@ -22,17 +22,20 @@
 // and with rolldown's chunking, so equality would be a standing nuisance; but a
 // pure ceiling only ever rots upward, so going far enough *under* one fails too
 // and asks you to bank the win.
-import { readFileSync, readdirSync, writeFileSync } from 'fs'
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { gzipSync } from 'zlib'
 
 import { init, parse } from 'es-module-lexer/minimal'
 
+import { eagerGraphFile } from './eagerGraphDump.mjs'
+
 const here = path.dirname(fileURLToPath(import.meta.url))
 const site = path.join(here, '..')
 const dist = path.join(site, 'dist')
 const budgetFile = path.join(site, 'eagerBundleSizes.json')
+const floorFile = path.join(site, 'eagerFloor.json')
 
 // The band around a committed figure. A dependency bump moves these numbers by
 // a few KB and rolldown re-chunks on its own, so neither edge is tight; the
@@ -41,6 +44,12 @@ const budgetFile = path.join(site, 'eagerBundleSizes.json')
 // budget is stale, which is the failure a pure ceiling never reports.
 const OVER_KB = 10
 const UNDER_KB = 25
+
+// The page every other one pays for: what it downloads up front is the engine
+// itself. Banked by source directory, uncompressed (gzip does not decompose per
+// module), so a re-bank's diff names where the bytes went.
+const FLOOR_PAGE = 'index'
+const MOVER_KB = 2
 
 await init
 
@@ -100,6 +109,75 @@ for (const page of pages) {
   }
 }
 
+// `npm:<package>`, or a first-party package and its first directory under
+// src: `packages/core/util`, `plugins/marks/LinearMarkDisplay`
+function directoryOf(id) {
+  const npm =
+    /node_modules\/(?:\.pnpm\/[^/]+\/node_modules\/)?((?:@[^/]+\/)?[^/]+)/.exec(
+      id,
+    )
+  const own = /\/(packages|plugins|products)\/([^?]*)/.exec(id)
+  return npm
+    ? `npm:${npm[1]}`
+    : own
+      ? [
+          own[1],
+          ...own[2]
+            .split('/')
+            .filter(p => p !== 'src')
+            .slice(0, 2),
+        ]
+          .join('/')
+          .replace(/\.[cm]?[jt]sx?$/, '')
+      : 'other'
+}
+
+function floorByDirectory() {
+  const graph = JSON.parse(readFileSync(eagerGraphFile, 'utf8'))
+  const bytes = new Map()
+  for (const file of eagerSet(FLOOR_PAGE)) {
+    const chunk = graph.chunks[`_astro/${file}`]
+    if (!chunk) {
+      throw new Error(
+        `${eagerGraphFile} does not describe dist/_astro/${file}: rebuild`,
+      )
+    }
+    for (const [id, length] of Object.entries(chunk.modules)) {
+      const dir = directoryOf(id)
+      bytes.set(dir, (bytes.get(dir) ?? 0) + length)
+    }
+  }
+  return Object.fromEntries(
+    [...bytes]
+      .map(([dir, b]) => [dir, Math.round(b / 1024)])
+      .filter(([, kb]) => kb > 0)
+      .sort((a, b) => b[1] - a[1]),
+  )
+}
+
+function floorMovers(banked, now) {
+  return [...new Set([...Object.keys(banked), ...Object.keys(now)])]
+    .map(dir => ({ dir, was: banked[dir] ?? 0, is: now[dir] ?? 0 }))
+    .filter(({ was, is }) => Math.abs(is - was) >= MOVER_KB)
+    .sort((a, b) => b.is - b.was - (a.is - a.was))
+    .map(
+      ({ dir, was, is }) =>
+        `  ${is > was ? '+' : ''}${is - was} KB  ${dir} (${was} -> ${is})`,
+    )
+}
+
+const floor = floorByDirectory()
+// nothing banked yet reads as every directory having grown from zero
+const bankedFloor = existsSync(floorFile)
+  ? JSON.parse(readFileSync(floorFile, 'utf8'))
+  : {}
+const movers = floorMovers(bankedFloor, floor)
+const moversReport = movers.length
+  ? `\n\nSince the last bank, the ${FLOOR_PAGE} page's up-front modules moved ` +
+    `(uncompressed, by directory):\n${movers.join('\n')}`
+  : `\n\nThe ${FLOOR_PAGE} page's up-front modules moved by under ${MOVER_KB} KB ` +
+    'in every directory since the last bank.'
+
 const rows = pages.map(
   p =>
     `  ${p.padEnd(26)} ${String(measured[p].gzipKb).padStart(4)} KB gzip` +
@@ -118,20 +196,7 @@ if (process.argv.includes('--check')) {
     const { gzipKb } = measured[page]
     if (gzipKb > allowed + OVER_KB) {
       problems.push(
-        `${page}: ${gzipKb} KB gzip eager, over its ${allowed} KB budget. ` +
-          'Three causes, and this figure cannot tell them apart — ' +
-          '`pnpm probe-eager-graph` can. A pin: something behind a dynamic ' +
-          'import is now statically reachable from an eagerly-evaluated ' +
-          'module (a plugin `exports` object, a state model naming a React ' +
-          'component, a menu-items file), which is the one worth reverting. A ' +
-          'page added or removed anywhere on the site, which re-partitions ' +
-          'chunks and moves EVERY page 12-14 KB without any page importing ' +
-          'anything new. Or diffuse growth in the state models that are eager ' +
-          'by construction, which is what a whole release of feature work ' +
-          'looks like and is banked by re-running without --check. Every ' +
-          'page over by a similar amount is the shape of the last two; one ' +
-          'page over alone is the shape of the first. ' +
-          'agent-docs/reference/EAGER_BUNDLE.md has the measurements.',
+        `${page}: ${gzipKb} KB gzip eager, over its ${allowed} KB budget.`,
       )
     } else if (gzipKb < allowed - UNDER_KB) {
       problems.push(
@@ -142,11 +207,25 @@ if (process.argv.includes('--check')) {
     }
   }
   if (problems.length) {
-    console.error(`eager bundle budget:\n${problems.join('\n')}`)
+    console.error(
+      `eager bundle budget:\n${problems.join('\n')}${moversReport}\n\n` +
+        'A directory that jumped alone is usually a pin: something behind a ' +
+        'dynamic import is now statically reachable from an eager module (a ' +
+        "plugin's index.ts, an RPC method naming its execute body, a model " +
+        'naming a React component). `pnpm probe-eager-graph --holds <path>` ' +
+        'names the importer. A page added or removed moves every page 12-14 KB ' +
+        'with no directory moving. Re-banking (run without --check) writes ' +
+        'eagerFloor.json too, so its diff names what grew: say why in the ' +
+        'commit. agent-docs/reference/EAGER_BUNDLE.md has the measurements.',
+    )
     process.exit(1)
   }
   console.log(`eager bundle within budget:\n${rows.join('\n')}`)
 } else {
   writeFileSync(budgetFile, `${JSON.stringify(measured, null, 2)}\n`)
-  console.log(`${rows.join('\n')}\nwrote ${path.relative(site, budgetFile)}`)
+  writeFileSync(floorFile, `${JSON.stringify(floor, null, 2)}\n`)
+  console.log(
+    `${rows.join('\n')}${moversReport}\n\nwrote ` +
+      `${path.relative(site, budgetFile)} and ${path.relative(site, floorFile)}`,
+  )
 }

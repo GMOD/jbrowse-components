@@ -32,10 +32,11 @@ import { existsSync, readFileSync, readdirSync } from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import { eagerGraphFile as dumpFile } from './eagerGraphDump.mjs'
+
 const here = path.dirname(fileURLToPath(import.meta.url))
 const site = path.join(here, '..')
 const dist = path.join(site, 'dist')
-const dumpFile = path.join(site, 'node_modules/.cache/eager-graph.json')
 
 const argv = process.argv.slice(2)
 const flag = name => {
@@ -46,11 +47,7 @@ const page = flag('--page') ?? 'ultraminimal'
 const holds = flag('--holds')
 
 if (!argv.includes('--no-build')) {
-  execFileSync(
-    'npx',
-    ['astro', 'build', '--config', 'astro.config.probe.mjs'],
-    { cwd: site, stdio: 'inherit' },
-  )
+  execFileSync('npx', ['astro', 'build'], { cwd: site, stdio: 'inherit' })
 }
 
 if (!existsSync(dumpFile)) {

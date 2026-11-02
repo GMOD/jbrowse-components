@@ -3,6 +3,8 @@ import { fileURLToPath } from 'node:url'
 import react from '@astrojs/react'
 import { defineConfig } from 'astro/config'
 
+import { eagerGraphDump } from './scripts/eagerGraphDump.mjs'
+
 export default defineConfig({
   site: 'https://jbrowse.org',
   base: '/storybook/byo',
@@ -18,5 +20,6 @@ export default defineConfig({
     },
     worker: { format: 'es' },
     server: { hmr: false },
+    plugins: [eagerGraphDump()],
   },
 })

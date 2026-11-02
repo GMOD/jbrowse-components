@@ -23,6 +23,3 @@ Shared rules for all four sites:
   with a jest test**, not a `check-duplication.mjs` list entry. That check sees
   only named top-level declarations, so repeated inline JSX needs a name before
   a green run means anything.
-- `pnpm probe-eager-graph` names the modules behind an eager-bundle number. Its
-  build overwrites `dist/`, so run `pnpm build` again before trusting a later
-  measurement.

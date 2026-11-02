@@ -38,6 +38,15 @@ On the same page, rendering the same thing,
 166<!--m:eager-bundle-chunks.eagerChunks.span--> chunks were reachable and
 never used. Pin 6 was measured on Desktop in raw bytes, so it has no row here.
 
+The budget check banks that page's up-front modules by directory in
+`examples-site/eagerFloor.json`, and a failure prints the directories that
+moved since the bank. A rise every page shares is not therefore drift: from
+2026-09-15 to 2026-11-02 the floor went from 373 to 509 KB gzip in 5-10 KB
+re-banks, mostly from worker-side helpers (`featureTransforms`,
+`binnedAggregate`, `svAlt`, RPC bodies) and generated tables named at module
+scope by a plugin's `index.ts`, its RPC method classes or a model's
+`afterAttach`.
+
 ## Where it went
 
 ### 2. A view model naming its own Header
