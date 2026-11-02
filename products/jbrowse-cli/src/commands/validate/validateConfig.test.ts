@@ -777,7 +777,7 @@ describe('validateConfig', () => {
       expect(
         found(
           display('LinearAlignmentsDisplay', {
-            field: 'insertSizeAndOrientation',
+            field: 'mapq',
             ...cuts,
           }),
         ),
@@ -790,7 +790,7 @@ describe('validateConfig', () => {
       expect(
         found(
           display('LGVSyntenyDisplay', {
-            field: 'insertSizeAndOrientation',
+            field: 'mapq',
             ...cuts,
           }),
         ),
@@ -917,7 +917,7 @@ describe('validateConfig', () => {
           displayDefaults: {
             encoding: {
               color: {
-                field: 'insertSizeAndOrientation',
+                field: 'mapq',
                 scale: { domain: ['2', '1'] },
               },
             },
@@ -962,7 +962,7 @@ describe('validateConfig', () => {
               displayDefaults: {
                 encoding: {
                   color: {
-                    field: 'insertSizeAndOrientation',
+                    field: 'mapq',
                     scale: { domain: ['2', '1'] },
                   },
                 },
