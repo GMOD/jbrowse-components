@@ -182,14 +182,15 @@ test('a long list can be narrowed, and Enter lands on the one row left', async (
   model.setSearchResults(many, 'HOXA', 'volvox')
   render(<SearchResultsDialog model={model} />)
   await screen.findByText('12 matches for')
-  const filter = screen.getByPlaceholderText(
-    'Filter by name, location or track',
-  )
+  const filter = screen.getByRole('textbox', { name: 'Filter search results' })
   fireEvent.change(filter, { target: { value: 'hoxa1' } })
   // HOXA1, HOXA10, HOXA11, HOXA12
   expect(screen.getAllByText('Go')).toHaveLength(4)
   fireEvent.change(filter, { target: { value: 'hoxa11' } })
   expect(screen.getAllByText('Go')).toHaveLength(1)
+  expect(
+    screen.getByRole('button', { name: 'Go to HOXA11 at ctgA:501..520' }),
+  ).toBeTruthy()
   fireEvent.keyDown(filter, { key: 'Enter' })
   await waitFor(() => {
     expect(model.searchPicker).toBeUndefined()

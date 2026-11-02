@@ -47,6 +47,7 @@ const SearchResultsTable = observer(function SearchResultsTable({
           size="small"
           margin="dense"
           placeholder="Filter by name, location or track"
+          slotProps={{ htmlInput: { 'aria-label': 'Filter search results' } }}
           value={filter}
           onChange={event => {
             setFilter(event.target.value)
@@ -88,6 +89,7 @@ const SearchResultsTable = observer(function SearchResultsTable({
                     }}
                     color="primary"
                     variant="contained"
+                    aria-label={`Go to ${row.label} at ${row.location}`}
                   >
                     Go
                   </Button>

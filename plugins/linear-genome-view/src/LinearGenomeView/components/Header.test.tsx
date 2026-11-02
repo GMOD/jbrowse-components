@@ -95,3 +95,12 @@ test('a touch device gets neither', async () => {
     container.querySelector('[data-testid="scroll-zoom-toggle"]'),
   ).toBeNull()
 })
+
+test('the zoom controls say what they are', async () => {
+  installPointer(false)
+  const { getByRole } = await renderHeader()
+  expect(getByRole('button', { name: 'Zoom options' })).toBeTruthy()
+  expect(
+    getByRole('slider', { name: 'Zoom level' }).getAttribute('aria-valuetext'),
+  ).toMatch(/^Window size: /)
+})

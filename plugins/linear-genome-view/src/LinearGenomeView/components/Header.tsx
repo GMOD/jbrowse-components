@@ -64,6 +64,7 @@ const Controls = observer(function Controls({
     <div className={classes.headerBar} ref={ref}>
       {viewMenu ? (
         <CascadingMenuButton
+          tooltip="View menu"
           menuItems={() => model.menuItems()}
           data-testid="view_menu_icon"
         >

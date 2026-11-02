@@ -46,6 +46,8 @@ const ZoomSlider = observer(function ZoomSlider({
   const { width, maxBpPerPx, minBpPerPx, bpPerPx } = model
   const [dragValue, setDragValue] = useState<number | null>(null)
   const value = dragValue ?? -Math.log2(bpPerPx) * 100
+  const windowSize = (sliderValue: number) =>
+    `Window size: ${getBpDisplayStr(2 ** (-sliderValue / 100) * width)}`
   return (
     <SingleSlider
       size="small"
@@ -59,9 +61,9 @@ const ZoomSlider = observer(function ZoomSlider({
         model.zoomTo(2 ** (-val / 100))
       }}
       valueLabelDisplay="auto"
-      valueLabelFormat={newValue =>
-        `Window size: ${getBpDisplayStr(2 ** (-newValue / 100) * width)}`
-      }
+      aria-label="Zoom level"
+      valueLabelFormat={newValue => windowSize(newValue)}
+      getAriaValueText={newValue => windowSize(newValue)}
       onChange={val => {
         // Take over from any in-flight animated zoom as soon as the user grabs
         // the thumb, so the view stops lurching underneath the drag.
@@ -89,7 +91,10 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
       halve and double, and the menu below reaches any factor the drag could */}
       {showSlider ? <ZoomSlider model={model} /> : null}
       <ZoomButton model={model} direction="in" />
-      <CascadingMenuButton menuItems={() => zoomMenuItems(model)}>
+      <CascadingMenuButton
+        tooltip="Zoom options"
+        menuItems={() => zoomMenuItems(model)}
+      >
         <MoreVert />
       </CascadingMenuButton>
     </div>

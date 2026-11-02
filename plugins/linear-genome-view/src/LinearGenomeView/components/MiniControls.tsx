@@ -60,7 +60,10 @@ const MiniControls = observer(function MiniControls({
             <TrackSelectorIcon fontSize="small" />
           </IconButton>
         </Tooltip>
-        <CascadingMenuButton menuItems={() => model.menuItems()}>
+        <CascadingMenuButton
+          tooltip="View menu"
+          menuItems={() => model.menuItems()}
+        >
           <MoreVertIcon fontSize="small" />
         </CascadingMenuButton>
         <Tooltip title={scalebarOnly ? 'Show tracks' : 'Show ruler only'}>
