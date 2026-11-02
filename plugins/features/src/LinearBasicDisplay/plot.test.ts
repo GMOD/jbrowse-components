@@ -69,7 +69,10 @@ test('a string is the one-value form of a field, on the facet and the color alik
   expect(d.facet).toEqual({ field: 'strand', sort: [] })
   expect(d.colorSetting).toMatchObject({ value: undefined, field: 'source' })
   expect(d.colorByMode).toBe('attribute')
-  expect(d.plot).toEqual({ facet: 'strand', encoding: { color: 'source' } })
+  expect(d.plot).toEqual({
+    facet: { field: 'strand' },
+    encoding: { color: 'source' },
+  })
 })
 
 test('a bare CSS color is refused as a field, and the constant is { value }', () => {
@@ -90,7 +93,10 @@ test('strand is a field on both channels, painting its own colors', () => {
   expect(d.colorByMode).toBe('strand')
   expect(d.categoricalColorField?.color('1')).toBe('tomato')
   expect(d.categoricalColorField?.color('-1')).toBe('cornflowerblue')
-  expect(d.plot).toEqual({ facet: 'strand', encoding: { color: 'strand' } })
+  expect(d.plot).toEqual({
+    facet: { field: 'strand' },
+    encoding: { color: 'strand' },
+  })
 })
 
 test('strand takes a range like any other field', () => {
@@ -105,7 +111,7 @@ test('strand takes a range like any other field', () => {
   expect(d.categoricalColorField?.color('-1')).toBe('blue')
 })
 
-test('a channel object replaces the setting whole, and null clears it', () => {
+test('a channel object replaces the setting whole, null clears it, and a facet keeps its order on its own field', () => {
   const d = display()
   d.applyPlot({
     encoding: { color: { field: 'source', scale: { range: ['red'] } } },
@@ -123,7 +129,9 @@ test('a channel object replaces the setting whole, and null clears it', () => {
   expect(d.plot.encoding).toBeUndefined()
   d.applyPlot({ facet: { field: 'biotype', sort: ['b', 'a'] } })
   d.applyPlot({ facet: { field: 'biotype' } })
-  expect(d.plot.facet).toBe('biotype')
+  expect(d.plot.facet).toEqual({ field: 'biotype', sort: ['b', 'a'] })
+  d.applyPlot({ facet: { field: 'source' } })
+  expect(d.plot.facet).toEqual({ field: 'source' })
 })
 
 test('a domain or range that is not a list is refused, and the display keeps what it had', () => {
@@ -191,9 +199,7 @@ test.each(PLOT_EXAMPLES)(
     const draft = parsePlot(plot, d.plotKeys)
     expect(d.plotProblems(draft)).toEqual([])
     d.applyPlot(draft)
-    expect(d.plot).toEqual(
-      Object.fromEntries(Object.entries(draft).filter(([, v]) => v !== null)),
-    )
+    expect(d.plotWrites(draft)).toEqual({})
   },
 )
 

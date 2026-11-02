@@ -81,7 +81,6 @@ for (const display of pluginManager.getElementTypesInGroup('display')) {
 test('the walk finds the channel objects', () => {
   expect([...channels.keys()].sort()).toEqual(
     expect.arrayContaining([
-      'Facet',
       'FeatureColor',
       'MarkColor',
       'MarkShape',

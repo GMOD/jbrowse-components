@@ -4969,6 +4969,7 @@
     "@jbrowse/display-kit/sectionFacetConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "SECTION_FACET_WRITES",
         "sectionFacetConfigSchema"
       ],
       "worker": "real"

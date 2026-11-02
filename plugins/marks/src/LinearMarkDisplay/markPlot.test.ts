@@ -181,7 +181,10 @@ describe('plotWrites over a mark display', () => {
 
   it('writes what is set, and null for what is reset', () => {
     const next: MarkPlot = { ...current, facet: 'HP', marks: null }
-    expect(plotWrites(conf, next)).toEqual({ facet: 'HP', marks: null })
+    expect(plotWrites(conf, next)).toEqual({
+      facet: { field: 'HP' },
+      marks: null,
+    })
   })
 
   it('writes only what moved', () => {

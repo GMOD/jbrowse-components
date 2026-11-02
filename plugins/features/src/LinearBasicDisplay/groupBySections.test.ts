@@ -239,7 +239,7 @@ test('no Sections row; the reset sits in Show once the order is pinned', () => {
   ) as { onClick: () => void }
   reset.onClick()
   expect(getConf(display, ['facet', 'sort'])).toEqual([])
-  expect(display.plot.facet).toBe('biotype')
+  expect(display.plot.facet).toEqual({ field: 'biotype' })
 })
 
 test('re-picking the same field from the dialog keeps a curated domain', () => {
@@ -269,5 +269,5 @@ test('a hidden section is written to the facet and costs no fetch', () => {
   expect(display.hiddenGroups.size).toBe(1)
   display.applyGroupBy('strand', false)
   expect(display.hiddenGroups.size).toBe(0)
-  expect(display.plot.facet).toBe('strand')
+  expect(display.plot.facet).toEqual({ field: 'strand' })
 })

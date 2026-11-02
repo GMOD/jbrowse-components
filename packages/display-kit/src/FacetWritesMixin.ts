@@ -1,6 +1,8 @@
-import { setConf } from '@jbrowse/core/configuration'
+import { keyedBase, setConf } from '@jbrowse/core/configuration'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
+
+import { SECTION_FACET_WRITES } from './sectionFacetConfigSchema.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
@@ -20,17 +22,19 @@ export interface FacetWritesHost {
 const host = (self: object) => self as FacetWritesHost
 
 /**
- * The facet a pick of `field` writes over `current`: the field already
- * grouping keeps its order and hidden sections, another starts with none,
- * and `''` groups nothing. Members that are not about the sections, such as
- * the mark display's per-section `transform`, stay.
+ * The facet a pick of `field` writes over `current`, by the keyed rule
+ * (ADR-257): the field already grouping keeps its order and hidden sections,
+ * another starts with none, and `''` groups nothing. Members that are not
+ * about the sections, such as the mark display's per-section `transform`,
+ * stay.
  */
 export function facetForField(current: WrittenFacet, field: string) {
-  if (field === (current.field ?? '')) {
-    return current
-  }
   const { field: _field, sort: _sort, hidden: _hidden, ...kept } = current
-  return field ? { ...kept, field } : kept
+  return field === (current.field ?? '')
+    ? current
+    : field
+      ? { ...keyedBase(SECTION_FACET_WRITES, current, { field }), field }
+      : kept
 }
 
 /**

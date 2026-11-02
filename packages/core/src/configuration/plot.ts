@@ -84,9 +84,9 @@ export function plotKeysOf(conf: AnyConfigurationModel): string[] {
 }
 
 // A one-member object a shorthand would write as a bare value prints as that
-// value, as a config file writes it, at any depth: `color: "red"`,
-// `facet: "strand"`, a list entry's `mark: "line"`. A keyed object stays an
-// object, so `plot.rows.step` is always there to write (ADR-257).
+// value, as a config file writes it, at any depth: `color: "red"`, a list
+// entry's `mark: "line"`. A keyed object (`rows`, `facet`) stays an object, so
+// `plot.rows.step` is always there to write (ADR-257).
 function folded(member: unknown, value: unknown): unknown {
   if (!isStateTreeNode(member) || typeof value !== 'object' || value === null) {
     return value

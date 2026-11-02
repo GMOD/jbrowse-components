@@ -27,8 +27,8 @@ function displayOn(config: Record<string, unknown> = {}) {
 // absent from the snapshot, so a `bar` mark does not name itself and the
 // box opens on what the author wrote rather than on forty default slots — an
 // aggregate's default op strips to `{}`, while `step: "auto"` is not a default
-// and stays. A one-member facet or color prints as the shorthand a config file
-// writes.
+// and stays. A one-member color prints as the shorthand a config file writes;
+// a facet stays an object, its sort written beside the field (ADR-257).
 it('opens on what a config declared, with the defaults left off', () => {
   const display = displayOn(PLOT)
   expect(display.plot).toEqual({
@@ -43,7 +43,7 @@ it('opens on what a config declared, with the defaults left off', () => {
         minBpPerPx: 100,
       },
     ],
-    facet: 'strand',
+    facet: { field: 'strand' },
   })
 })
 

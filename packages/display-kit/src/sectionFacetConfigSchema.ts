@@ -2,6 +2,12 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { facetConfigSchema } from './facetConfigSchema.ts'
 
+/** How a section facet is written: its order and hidden sections name the values of `field`. */
+export const SECTION_FACET_WRITES = {
+  keyedBy: 'field',
+  keyed: ['sort', 'hidden'],
+} as const
+
 /**
  * #config SectionFacet
  * #category display
@@ -38,5 +44,6 @@ export const sectionFacetConfigSchema = ConfigurationSchema(
      * #baseConfiguration
      */
     baseConfiguration: facetConfigSchema,
+    writes: SECTION_FACET_WRITES,
   },
 )

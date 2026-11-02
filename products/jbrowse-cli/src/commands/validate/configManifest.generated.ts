@@ -3360,7 +3360,13 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "SectionFacet",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "hidden"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }
@@ -3657,7 +3663,13 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "SectionFacet",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "hidden"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }
@@ -4839,7 +4851,13 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "SectionFacet",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "hidden"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }
@@ -6980,7 +6998,12 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "Facet",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }
@@ -7037,7 +7060,13 @@ export const configManifest: ConfigManifest = {
                 }
               ],
               "schema": "SectionFacet",
-              "writes": "whole",
+              "writes": {
+                "keyedBy": "field",
+                "keyed": [
+                  "sort",
+                  "hidden"
+                ]
+              },
               "shorthand": {
                 "string": "field"
               }
@@ -9157,7 +9186,13 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "MarkFacet",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "hidden"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }
@@ -10003,7 +10038,13 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "MarkFacet",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "hidden"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }
@@ -10856,7 +10897,13 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "MarkFacet",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "hidden"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }
