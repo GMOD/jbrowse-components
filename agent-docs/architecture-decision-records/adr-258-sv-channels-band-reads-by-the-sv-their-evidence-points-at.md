@@ -76,8 +76,19 @@ the reviews to settle the open calls; built in
 - `svInsertion` from a split needs the feet on one base exactly; a one- or
   two-base overlap files as duplication-type.
 - The keyer runs only under `facet: svChannel`. It reads the start clip off the
-  record and walks the SA tag in place; a bench on a real long-read fetch is
-  outstanding.
+  record, since rebuilding the CIGAR string cost 15 to 25 times the rest of the
+  classifier, and walks the SA tag in place. It costs what the `svSignal`
+  keyer costs, timed in jest on a first pass over freshly fetched records
+  (2026-11-02, load ~2.5, median of 8):
+
+  | fixture | records | with SA | `svChannel` | `svSignal` |
+  | --- | --- | --- | --- | --- |
+  | HG00151 ONT, chr1:197,785,500-197,791,000 | 126 | 87 | 6.6 µs | 6.6 µs |
+  | `benches/pacbio_hg002.bam`, chr9 | 2,296 | 13 | 1.0 µs | 0.8 µs |
+
+  A long read's category bits are computed twice, in the keyer and in the
+  extract, as under `svSignal`; at about 1 µs a record, memoizing them on the
+  record would save a couple of milliseconds a fetch.
 
 ## Rejected alternatives
 
