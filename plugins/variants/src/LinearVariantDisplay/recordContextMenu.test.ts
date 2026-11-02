@@ -85,6 +85,13 @@ describe('right-clicking a record, with no sample rows', () => {
     ])
   })
 
+  test('offers no row sort, since no row draws', () => {
+    const display = sitesOnlyDisplay()
+    expect(labels(rightClickRecord(display, '>7494>7499'))).not.toContain(
+      'Sort rows by genotype here',
+    )
+  })
+
   test('copies the tooltip the record shows', () => {
     const display = sitesOnlyDisplay()
     const copy = row(

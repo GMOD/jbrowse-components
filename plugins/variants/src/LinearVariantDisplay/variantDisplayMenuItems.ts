@@ -301,7 +301,10 @@ export function variantTrackMenuItems(
   const hueField =
     rampEncodingOf(self.colorEncoding)?.field ??
     recordHueField(self.colorEncoding)?.field
-  const recordField = hueField === SV_TYPE_FIELD ? undefined : hueField
+  const recordField =
+    hueField === SV_TYPE_FIELD || hueField === IMPACT_FIELD
+      ? undefined
+      : hueField
   const phaseSet = needs(
     'Phase set',
     'phase sets (FORMAT PS)',
@@ -613,16 +616,21 @@ export function variantContextMenuItems(
         // on those three — what the flanking tiebreak does to the rows around
         // the anchor is on `sortByGenotype`, which is where a reader of the
         // model docs looks for it.
-        sortRowsHereMenuItem({
-          label: 'Sort rows by genotype here',
-          rowCount: self.editableSources.length,
-          onClick: () => {
-            self.sortByGenotype(feat.id())
-          },
-        }),
-        // the undo for the item above, in the menu it was invoked from — the
-        // same item the track menu spreads, so it must not read as two actions
-        ...resetRowOrderMenuItems(self),
+        ...(self.drawsRows
+          ? [
+              sortRowsHereMenuItem({
+                label: 'Sort rows by genotype here',
+                rowCount: self.editableSources.length,
+                onClick: () => {
+                  self.sortByGenotype(feat.id())
+                },
+              }),
+              // the undo for the item above, in the menu it was invoked from —
+              // the same item the track menu spreads, so it must not read as
+              // two actions
+              ...resetRowOrderMenuItems(self),
+            ]
+          : []),
         ...(recordRows ? recordRows.copy : []),
       ]
     : []

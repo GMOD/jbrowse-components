@@ -29,3 +29,17 @@ test('a constant cell color ticks Solid color..., and Genotype clears it', () =>
   expect(ticked()).toEqual(['Genotype'])
   expect(display.colorSetting.value).toBeUndefined()
 })
+
+test('a preset field ticks its own row alone, and another field ticks Field...', () => {
+  const { display } = createTestEnvironment().createDisplay()
+  const ticked = () =>
+    colorByRows(display)
+      .filter(item => item.type === 'radio' && item.checked)
+      .map(labelOf)
+  display.colorByField('impact')
+  expect(ticked()).toEqual([expect.stringMatching(/^Consequence impact/)])
+  display.colorByField('svType')
+  expect(ticked()).toEqual([expect.stringMatching(/^SV type/)])
+  display.colorByField('INFO.AF')
+  expect(ticked()).toEqual(['Field (INFO.AF)...'])
+})

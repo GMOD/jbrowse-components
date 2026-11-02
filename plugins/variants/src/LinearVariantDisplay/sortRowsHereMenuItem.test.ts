@@ -12,6 +12,8 @@ import type { MenuItem } from '@jbrowse/core/ui'
 function sortRow(sources: { name: string }[]) {
   const { display } = createTestEnvironment().createDisplay()
   display.setSources(sources)
+  // a one-sample VCF draws its records alone unless its row is asked for
+  display.setShowGenotypes(true)
   display.openContextMenu({
     feature: new SimpleFeature({
       uniqueId: 'v1',
@@ -35,7 +37,7 @@ test('offers the sort once there are two rows to order', () => {
   expect(sortRow([{ name: 'S0' }, { name: 'S1' }]).disabled).toBe(false)
 })
 
-test('a single row is disabled with the shared wording', () => {
+test('a single drawn row is disabled with the shared wording', () => {
   const row = sortRow([{ name: 'S0' }])
   expect(row.disabled).toBe(true)
   expect(row.disabledHelpText).toBe('Needs at least two rows to sort')
