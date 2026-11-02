@@ -371,17 +371,18 @@ function openTrackSelectorWidget(self: IAnyStateTreeNode) {
 }
 
 /**
- * Whether the track selector is the drawer widget on screen right now. One
+ * Whether the drawer is showing this view's track selector right now. One
  * spelling for the `isTrackSelectorOpen` getter (which lights up the header
- * button) and for `toggleTrackSelector` (which decides hide-vs-show) — the
- * `!minimized` term is exactly the kind of thing that goes into one of two
- * hand-written copies and not the other.
+ * button) and for `toggleTrackSelector` (which decides hide-vs-show). The
+ * widget id is shared by every view, so the selector's `view` is what says
+ * whose it is.
  */
-function isTrackSelectorVisible(self: IAnyStateTreeNode) {
+function isTrackSelectorVisible(self: IAnyStateTreeNode & { id: string }) {
   const session = getSession(self)
   return (
     isSessionModelWithWidgets(session) &&
     session.visibleWidget?.id === TRACK_SELECTOR_WIDGET_ID &&
+    session.visibleWidget.view?.id === self.id &&
     !session.minimized
   )
 }
@@ -1906,8 +1907,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrackSelector() {
+        const wasVisible = isTrackSelectorVisible(self)
         const { session, selector } = openTrackSelectorWidget(self)
-        if (isTrackSelectorVisible(self)) {
+        if (wasVisible) {
           session.hideWidget(selector)
         } else {
           session.showWidget(selector)
