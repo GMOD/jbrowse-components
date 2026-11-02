@@ -110,15 +110,15 @@ test('a lane finds an annotation declared under an alias and draws it', async ()
 
   await waitFor(
     () => {
-      expect(
-        display.laneGenes.held?.get('peach')?.genes.length,
-      ).toBeGreaterThan(0)
+      expect(display.laneGenes.held.get('peach')?.genes.length).toBeGreaterThan(
+        0,
+      )
     },
     { timeout: 30000 },
   )
   expect(
-    display.laneGenes
-      .held!.get('peach')!
+    display.laneGenes.held
+      .get('peach')!
       .genes.map(g => g.feature.get('refName')),
   ).toEqual(['CM000001.1', 'CM000001.1'])
   expect(display.rowFrames.get('peach')!.refName).toBe('Pp1')
