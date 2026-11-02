@@ -5,13 +5,17 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
-We embed a JBrowse linear genome view in a web page with one `<script>` tag and
-no build step. The `<LinearGenomeView>` component takes three objects,
-`assembly`, `tracks` and `view`, and draws the genome browser from them. We:
+A genome browser can sit inside a page of your own, such as a lab site, a data
+portal or a report, showing your genome and your tracks beside the rest of the
+page. JBrowse's linear genome view ships as a component for this, and one
+`<script>` tag loads it with no build step. The `<LinearGenomeView>` component
+takes three objects, `assembly`, `tracks` and `view`, and draws the browser from
+them. We:
 
-- embed the view with one script tag
-- point it at your own data files
-- use the same component in a React app
+- embed the view in an HTML page with one script tag
+- point its `assembly` and `tracks` at your own data files
+- use the same component in a React app, with `useCreateViewState` for control
+  from code
 
 ## Prerequisites
 
@@ -85,9 +89,9 @@ npx serve -S .
 Open the URL `serve` prints.
 
 The `@next` tag fetches the newest v5 prerelease, which the `assembly` and
-`tracks` shorthand above needs, so pin a version for production
-(`@jbrowse/react-linear-genome-view2@5.0.0-beta.17/dist/...`). For other view
-types, a different bundler, or working demo repos, see
+`tracks` shorthand above needs. For production, pin the version you tested
+against in place of `@next` (`@jbrowse/react-linear-genome-view2@<version>`).
+For other view types, a different bundler, or working demo repos, see
 [](/docs/embedded_components).
 
 ## Using your own data files in the embedded view
@@ -124,8 +128,10 @@ The component reads its props once, on mount. To navigate or show a track from
 code afterwards, take a `ref` or use `useCreateViewState`, which builds the same
 view state as a hook.
 
-The `useCreateViewState` hook returns `undefined` for the first frame while the
-view and display types load, so render nothing until then:
+`useCreateViewState` also destroys the view when the component unmounts, which
+`<LinearGenomeView>` leaves running, so use it in a component that mounts and
+unmounts repeatedly, such as an app route. It returns `undefined` until it has
+built the view, so render nothing until then:
 
 ```js
 import {

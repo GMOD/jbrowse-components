@@ -6,17 +6,19 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
-We build a genome browser configuration from the command line with
-[`@jbrowse/cli`](/docs/cli). The commands produce one folder, a `config.json`
-next to your data files. The CLI records each file by a path _relative_ to
-`config.json`, so Desktop resolves the paths against the folder on disk and a
-web server resolves them against the served config's URL. We:
+JBrowse Desktop opens a genome and its data files from your own disk, and a
+folder holding those files with a `config.json` that lists them opens in one
+step, with every track named and a starting view set. The JBrowse command-line
+tool, [`@jbrowse/cli`](/docs/cli), writes that folder. It records each file by a
+path _relative_ to `config.json`, so Desktop resolves the paths against the
+folder on disk and a web server resolves them against the served config's URL.
+We:
 
 - compress and index the data files
-- build the config with `add-assembly` and `add-track`, and set a default view
-  with a session
-- open the folder in JBrowse Desktop
-- serve the folder on the web and index gene names for search
+- build the config with `add-assembly` and `add-track`, and index gene names
+  with `text-index`
+- set a default view with `set-default-session`
+- open the folder in JBrowse Desktop, then serve the same folder on the web
 
 ## Prerequisites
 
@@ -55,6 +57,7 @@ each later command edits that file in place:
 jbrowse add-assembly GRCh38.fa.gz --name hg38 --load copy --out myproject
 jbrowse add-track sample.bam --load copy --out myproject --name "My reads"
 jbrowse add-track variants.vcf.gz --load copy --out myproject --name "My variants"
+jbrowse add-track genes.gff3.gz --load copy --out myproject --name "My genes"
 ```
 
 `--name hg38` is the assembly name the session and the assembly selector use.
@@ -77,7 +80,8 @@ myproject/
 ├── config.json
 ├── GRCh38.fa.gz  (+ .fa.gz.fai, .fa.gz.gzi)
 ├── sample.bam    (+ .bam.bai)
-└── variants.vcf.gz  (+ .vcf.gz.tbi)
+├── variants.vcf.gz  (+ .vcf.gz.tbi)
+└── genes.gff3.gz    (+ .gff3.gz.tbi)
 ```
 
 <details>
@@ -95,6 +99,15 @@ myproject/
 ```
 
 </details>
+
+## Index gene names for search
+
+`jbrowse text-index` indexes the gene names into the same directory, so the
+location box finds a gene by name:
+
+```bash
+jbrowse text-index --out myproject
+```
 
 ## Open the folder on a default view with a session
 
@@ -163,21 +176,6 @@ instance alongside it, set up either way:
 - Point an existing deployment at your config: host `myproject/` anywhere (e.g.
   `npx serve myproject`) and open your JBrowse Web instance with its URL
   appended: `https://your-jbrowse/?config=http://localhost:3000/config.json`.
-
-## Index gene names for search
-
-The project above has no gene track yet, so add one first:
-
-```bash
-jbrowse add-track genes.gff3.gz --load copy --out myproject
-```
-
-`jbrowse text-index` then indexes the gene names into the same directory, and
-the location box finds a gene by name:
-
-```bash
-jbrowse text-index --out myproject
-```
 
 ## See also
 
