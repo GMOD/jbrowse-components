@@ -333,7 +333,7 @@ not keyed) runs first, then `rows.kept` (names, keyed, through `rowAlias`).
 Matched without a tree, so a reorder or re-cluster leaves them valid and
 `setRowOrder` keeps them. `resetRowArrangement` returns both to the base's;
 the chip's "Show all" (`showAllRows`) clears `kept` and returns `filter` to the
-base's, so a filter the config states shows through; "Clear subtree filter"
+base's, so a filter the config states shows through; "Show all rows"
 clears `kept` alone and is gated on it. The tree narrows by the rule the rows
 do: `root` runs `narrowRows` over the tree's leaves, a leaf reading its row's
 attributes, so a focus naming a sample keeps its haplotypes' clade.

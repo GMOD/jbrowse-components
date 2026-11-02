@@ -87,7 +87,7 @@ test('Reset row order restores the config’s kept and filter', () => {
   expect(namesOf(display.sources)).toEqual(['S1'])
 })
 
-// "Clear subtree filter" clears what a clade pick wrote, never the filter.
+// "Show all rows" clears what a clade pick wrote, never the filter.
 test('clearing the subtree filter leaves rows.filter', () => {
   const display = loaded()
   setConf(display, ['rows', 'filter'], [{ field: 'population', equal: 'AFR' }])

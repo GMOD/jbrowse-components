@@ -260,7 +260,7 @@ test('rowsNamed ignores filter names no row has', () => {
 // including for the ways rows move with no `setRowOrder` call to hook.
 // The root always contains every row, and clicking it is a natural "show me
 // everything" gesture — which is the click that must not apply a filter. It
-// would leave the rows where they are while making "Clear subtree filter"
+// would leave the rows where they are while making "Show all rows"
 // appear as though something had changed, and on MAF, where `subtreeFilter` is
 // an `rpcProps()` cache key, drop every loaded region to re-download identical
 // rows.

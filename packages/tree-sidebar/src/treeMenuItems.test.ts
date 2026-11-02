@@ -112,10 +112,10 @@ describe('clusteringMenuItem', () => {
       setScrollTop: jest.fn(),
     }
     const clear = subMenuOf(clusteringMenuItem(focused, runItem, 2)).find(
-      item => 'label' in item && item.label === 'Clear subtree filter',
+      item => 'label' in item && item.label === 'Show all rows',
     )
     if (!clear || !('onClick' in clear)) {
-      throw new Error('no "Clear subtree filter" item')
+      throw new Error('no "Show all rows" item')
     }
     ;(clear.onClick as () => void)()
     expect(focused.setRowFocus).toHaveBeenCalledWith(undefined)

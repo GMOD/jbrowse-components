@@ -227,7 +227,7 @@ const TreeSidebar = observer(function TreeSidebar({
             applyFilter(undefined)
           }}
         >
-          Clear subtree filter
+          Show all rows
         </MenuItem>
       ) : null}
       {menuAnchor ? (

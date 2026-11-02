@@ -83,7 +83,7 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   view's notice says which half emptied it.
 - The chip's "Show all" clears `kept` and returns `filter` to the config's, so
   a filter the config states shows through, stated in the chip's tooltip;
-  "Reset row order" restores both; "Clear subtree filter" clears `kept` alone.
+  "Reset row order" restores both; "Show all rows" clears `kept` alone.
 - A top-level `filter` entry on a row attribute (the variant and mark displays
   test records there) points at `rows.filter`, in the notice and in
   `jbrowse validate`. The validator sees no samples file, so it points only

@@ -302,7 +302,7 @@ export function keptRows<T extends { name: string }>(
 // every row on screen. The root always does, and clicking it is a natural "show
 // me everything" gesture — which is exactly the click that must not go through,
 // because applying that filter leaves the rows where they are while making
-// "Clear subtree filter" appear as though something had changed. On MAF it is
+// "Show all rows" appear as though something had changed. On MAF it is
 // worse than cosmetic: `rowFocus` is a fetch argument and therefore an
 // `rpcProps()` cache key, so a full-set filter drops every loaded region and
 // re-downloads byte-identical rows.

@@ -208,7 +208,7 @@ describe('the guide tree draws while a rotation of it lists `rows.sort`', () => 
   })
 
   // The filter is a set of row names, valid with or without a tree, and its
-  // "Clear subtree filter" track-menu item is not gated on one.
+  // "Show all rows" track-menu item is not gated on one.
   it('keeps a subtree filter across a reorder that drops the tree', () => {
     const display = treedDisplay()
     display.setRowFocus(['hg38', 'panTro4'])

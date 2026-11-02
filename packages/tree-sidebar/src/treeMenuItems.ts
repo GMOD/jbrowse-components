@@ -137,7 +137,7 @@ interface RowFocusMenuModel {
   setScrollTop: (scrollTop: number) => void
 }
 
-// "Clear subtree filter", or nothing when no filter is set — spread, don't
+// "Show all rows", or nothing when no filter is set — spread, don't
 // insert. Every display that can focus a clade needs this escape hatch and needs
 // it to survive the tree: the filter is a set of row names, so it keeps hiding
 // rows after a reorder has invalidated the dendrogram whose node-click set it,
@@ -148,7 +148,7 @@ export function clearRowFocusMenuItems(self: RowFocusMenuModel): MenuItem[] {
   return self.rowFocus?.length
     ? [
         {
-          label: 'Clear subtree filter',
+          label: 'Show all rows',
           onClick: () => {
             focusRows(self)
           },

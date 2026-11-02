@@ -260,11 +260,11 @@ track is configured with a Newick guide tree.
 Click an internal node of the tree to filter the track to that clade, or pick a
 set of species from **Edit row arrangement...**. The tree then redraws as the
 pruned dendrogram of the kept species, so it matches the visible rows, including
-for a selection that is not a single clade. **Clustering → Clear subtree
-filter** restores all species. The focus is `rows.kept`. On a track whose
-species come from a `samples` array or a Newick tree, a focus naming none of
-them shows every row; on one that finds its species in the alignment blocks, it
-shows only the species it names, so none where the alignment holds none of them.
+for a selection that is not a single clade. **Clustering → Show all rows**
+restores all species. The focus is `rows.kept`. On a track whose species come
+from a `samples` array or a Newick tree, a focus naming none of them shows every
+row; on one that finds its species in the alignment blocks, it shows only the
+species it names, so none where the alignment holds none of them.
 
 ### Clustering rows by identity
 
