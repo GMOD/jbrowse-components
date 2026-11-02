@@ -1,6 +1,6 @@
 ---
 name: ggjbrowse-rough-edges
-description: Small ggjbrowse defects and layout options left from the 2026-10-11 API and gallery reviews, none checked against ggjbrowse 0.10.0. Read before a ggjbrowse review round, so it does not re-find them.
+description: Small ggjbrowse defects and layout options from the 2026-10-11 API and gallery reviews, how tall a deep pileup exports, and the missing r-universe build. Read before a ggjbrowse review round, so it does not re-find them.
 ---
 
 # ggjbrowse rough edges
@@ -18,3 +18,12 @@ against ggjbrowse's main before fixing it.
   the row, which reads as fine stripes.
 - The strand facet could stack every section's coverage above every section's
   reads, the old R layout, as an option in both apps.
+- A deep pileup exports every read's row: HG002's 300x BAM drew 9,474 px, a
+  63-inch figure, where the browser keeps the display's height and scrolls.
+  The export should draw what the screen draws, as it already does for which
+  tracks and in what order: the exporter writes the display's height and
+  ggjbrowse crops the pileup to it (new reader argument).
+- No r-universe build, so V8 compiles from source and `install_github` skips
+  the vignette. gmod.r-universe.dev lists only JBrowseR; adding ggjbrowse
+  needs a `GMOD/gmod.r-universe.dev` registry repo with a `packages.json`
+  and the r-universe GitHub app on the GMOD org, which takes an org admin.

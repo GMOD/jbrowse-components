@@ -12,7 +12,7 @@ import type { AlignmentsRenderingBackend } from './rendererTypes.ts'
 // multisampled target held 340 MiB on a tall track at dpr 2
 // (ARCHITECTURAL_LIMITS.md). What one sample costs, the coverage band's
 // sub-pixel segments drawing whole or not at all among them:
-// agent-docs/handoffs/msaa-remaining-displays.md.
+// agent-docs/ideas/waiting-on-a-number/arc-antialiasing-without-msaa.md.
 export function AlignmentsRenderer(canvas: HTMLCanvasElement) {
   return createRenderingBackend<AlignmentsRenderingBackend>(canvas, {
     passes: ALIGNMENTS_PASSES,

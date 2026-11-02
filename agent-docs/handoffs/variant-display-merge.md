@@ -1,6 +1,6 @@
 ---
 name: variant-display-merge
-description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D remains; E is settled: records-only opens at its stack up to 200, once, and over rows the band is every record, added to the track, its rows hiding past the cap (ADR-254's fifth amendment). Open: the multi-way key position."
+description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D remains; E is settled: records-only opens at its stack up to 200, once, and over rows the band is every record, added to the track, its rows hiding past the cap (ADR-254's fifth amendment). Open: D, the figure refilms, and the audit's leftovers."
 ---
 
 # One variant display
@@ -119,11 +119,6 @@ widget's samples). Still differing, besides C1's Show/hide rows:
 - A one-sample VCF opens as its records (ADR-254's eighth amendment); the
   figure specs still write `genotypes: { show: false }` on one-sample call
   sets, which keeps the over-rows look and its `Show genotypes` chip.
-
-## Open calls (Colin)
-
-- **The multi-way synteny key** now sits under its anchor lane over the next
-  lane (`FloatingLegend` `pushedDown`).
 
 ## Evidence
 

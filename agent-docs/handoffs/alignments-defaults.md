@@ -68,9 +68,12 @@ Each verified against the code on 2026-10-31.
   rule: a sample holding a spliced read computes no band (orientation,
   interchrom and unmapped-mate colors still paint); the worker already treats a
   skip as the RNA-seq signal (`executeRenderAlignmentData.ts`, the splice-motif
-  fetch).
+  fetch). A config can now pin the band with `normalInsertSize: { min, max }`
+  (`pinnedInsertSizeBandOf`, `configSlotViews.ts`), which a default cannot
+  lean on.
 - **Other costs of that color default:** unmapped mates paint `#000000`
-  (`colorUnmappedMate`, `packages/core/src/ui/palette.ts`); the strand tint
+  (`colorUnmappedMate`, `packages/core/src/ui/palette.ts`, the `mateUnmapped`
+  level); the strand tint
   under modification calls applies only while no color field is set
   (`bodyColorKind`, `shared/alignmentsColor.ts`); the "Normal" color menu row
   ticks only on an unset field (`menus/colorBy.ts`), so plain grey needs its own

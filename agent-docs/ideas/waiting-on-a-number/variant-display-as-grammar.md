@@ -1,13 +1,13 @@
 ---
 name: variant-display-as-grammar
-description: "Aim the one variant display at a clean grammar encoding: records over genotypes as two marks over one tidy VCF table, the way ggplot2 or Vega-Lite would say it, so the display shrinks toward a spec plus the browser-only parts. Colin (2026-10-31): \"i do want to aim at this clean grammar encoding\". Open: whether LinearMarkDisplay's marks can carry the variant display's picture at its speed, and what stays hand-written."
+description: "The variant display as two grammar marks over one tidy VCF table (records over genotypes), so it shrinks toward a spec plus the browser-only parts. Colin (2026-10-31): \"i do want to aim at this clean grammar encoding\". Waits on one number: a LinearMarkDisplay spec of the RHD 1000 Genomes SV picture loading and panning at 3,202 samples as fast as the hand-written display."
 ---
 
 # The variant display as a grammar spec
 
 After the merge (handoffs/variant-display-merge.md, ADR-255) the variant display
 is about 9,100 lines of source in `plugins/variants/src/LinearVariantDisplay/`,
-2,137 of them `model.ts`, plus the worker RPC and shaders. In ggplot2 the same
+2,374 of them `model.ts`, plus the worker RPC and shaders. In ggplot2 the same
 picture is two layers over one table with a shared x. Much of the code pays for
 what a static plot never needs (streaming per region and zoom, worker/main split,
 zoom-dependent label and pile rules, hit-testing, three renderers, persisted and

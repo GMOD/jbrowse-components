@@ -61,6 +61,20 @@ between displays.
    main's spellings. ggjbrowse tags its releases on GitHub from v0.10.0
    (2026-10-30, CONTRIBUTING.md's Releases), and the wiggle display's beta
    `extent` lift went with that tag.
+   - ggjbrowse's closed-schema bundle drops an old key silently, so every
+     rename, and every new key, needs an engine re-pin, an R respell and a
+     tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`). The pin
+     is `d0feecc145`; `dog10k_lof` keeps its `557791197f` knit until the
+     callset host's certificate is renewed.
+   - jb2hubs targets `main` and, once hosted, v5.0.0-beta.18 (its ADR 0002
+     amendment, todo `beta18-joins-host-versions`). The Trix adapter's
+     `textSearchAdapterId` and `metaFilePath` stay until the merge lambda
+     dedupes on `ixFilePath`.
+   - In-tree writers fail loudly on a dead key: `pnpm check-specs` (in
+     `website/`) for figure specs, `pnpm verify --full` and the pre-commit
+     config check for tutorials and `demos/`. A jexl filter trips none of
+     them; the jexl filters left are negations, arithmetic and function
+     calls.
 2. **Plugin ABI.** The served list leaves out render-core's shader subpaths.
    `@jbrowse/tables` and `@jbrowse/launch-args` ship with v5 at its version,
    betas included (Colin, 2026-10-27). Left: baseline
@@ -80,7 +94,10 @@ between displays.
    plugin's own CI to run the generator without a jbrowse-components
    checkout, and the manifests themselves for the graph, ARG and Apollo
    plugins.
-4. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
+4. **The multi-way view's off-screen mate marks honor only the `length`
+   filter**, since the worker sends no attribute lanes with the mates. The
+   last open item of ADR-238's migration.
+5. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
    holds them, each ruled in ADR-238, ADR-240 or the schema's own comment,
    or left by Colin (2026-10-30: the chord and matrix ramps and wiggle's key
    direction).

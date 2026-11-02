@@ -122,6 +122,12 @@ color) land in the script header.
   run from `products/jbrowse-web`), a volvox view, the menu item, `Rscript` on the download, the figure beside
   a screenshot. The live path is where the normalized adapter config,
   aliases and `blob:` files differ from a fixture.
+- On hosted data with no local build: puppeteer against
+  `https://jbrowse.org/code/jb2/main/`, the item driven through
+  `view.menuItems()`, the download caught with CDP's
+  `Browser.setDownloadBehavior`. The hg38 hub at CCR5 with ten tracks
+  (GENCODE, ClinVar, phyloP, 70 ENCODE bigWigs, HG002 300x BAM, two 1000
+  Genomes CRAMs) ran in 95 s with no warning (2026-10-30).
 
 ## Declined (2026-10-11 simplicity review)
 

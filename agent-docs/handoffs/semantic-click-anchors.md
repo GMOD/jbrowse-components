@@ -1,6 +1,6 @@
 ---
 name: semantic-click-anchors
-description: "Figure and tour anchors that name what they point at, a record or a row, instead of a fraction of a track's height (Colin, 2026-10-31: \"ideally we would have semantic and accessibly click anchors on features\"). Nothing built. Open: a harness anchor resolving a feature through the display's searchFeatureByID, which needs a name-to-id lookup since ids carry the adapter id; a row anchor resolving through the tree sidebar's row geometry; whether on-screen features get ARIA elements (Colin's call); then the sweep of fractional anchors on feature and row tracks."
+description: "Figure and tour anchors that name what they point at, a record or a row, instead of a fraction of a track's height, so a screenshot spec survives a band added above its target. Nothing built. Open: a harness anchor resolving a feature through the display's searchFeatureByID, which needs a name-to-id lookup since ids carry the adapter id; a row anchor resolving through the tree sidebar's row geometry; then the sweep of fractional anchors on feature and row tracks."
 ---
 
 # Click anchors that name the thing
@@ -58,12 +58,11 @@ right word, so the sweep covers only those pointing at a record or a row.
   (`packages/tree-sidebar/src/rowHeight/RowHeightMixin.ts`). This replaces
   `trioRowTop` and the per-row fractions on the Dog10K, bovine and In(2L)t
   figures.
-- **ARIA elements per on-screen feature (Colin's call).** With these, the
-  harness clicks by role and name the way the tours already pick controls
-  (`::-p-aria([name="Assembly"][role="combobox"])` in
-  `website/scripts/videos/sv.ts`), and screen readers get the same names. The
-  cost to settle first is DOM per feature on a dense track; capping it at the
-  labelled features on screen is the obvious bound.
 - **The sweep**, once the anchors exist: replace the stopgaps above, then every
   `fracY` on a feature or row track, reshooting each figure and checking it
   against the published one.
+
+Declined: ARIA elements per on-screen feature, so the harness could click by
+role and name. The goal is screenshot specs that survive layout changes, which
+the two harness anchors reach without DOM per feature (Colin, 2026-11-01: "i
+dont care a lot about aria").

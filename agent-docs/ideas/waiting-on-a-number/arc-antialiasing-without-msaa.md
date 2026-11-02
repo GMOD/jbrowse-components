@@ -790,8 +790,25 @@ Concretely, in the order to take it:
 - **The alignments display draws at one sample since 2026-10-30**, passing
   `sampleCount: 1` at every dpr. Its coverage band's sub-pixel allele
   segments draw whole or not at all, where four samples gave a tint; a
-  common allele is many px tall and unaffected. The handoff
-  `msaa-remaining-displays.md` item 1 has the captures.
+  common allele is many px tall and unaffected. Mean error over reference
+  ink, one sample against four, at dpr 1 / 1.5 / 2
+  (`scripts/gpu-pixels/fixtures/alignments.ts`): `alignments-coverage-bar`
+  5.5 / 4.8 / 2.7% against 1.5 / 1.0 / 0.7%, all at fractional bar tops,
+  permanent since the band's bars share edges and cannot ramp;
+  `alignments-read` 1.3 / 5.9 / 0.7% against 0.5 / 1.0 / 0.3%, the loss at
+  1.5 where 7 px rows put y edges mid-pixel; `alignments-mismatch` and
+  `-subpixel` byte-identical at dpr 1 and 2, 16.2% and 36.5% at 1.5. Gap,
+  insertion and connector have no fixture. A whole-dpr-only gate was tried
+  and dropped: the count is read at construction, and browser zoom reaches a
+  fractional dpr after it.
+- **`spanMark` and `barMark` stay at four.** Their cells and bars tile, so
+  ramping x seams them and a hard sub-pixel cell owns its pixel or vanishes
+  (`spanMark` 11.8 / 8.5 / 6.2% at one sample against 2.7 / 2.1 / 1.5% at
+  four); snapping `spanMark`'s rows blinked on resize (ADR-256). Each
+  shader's header says why. `lineStepMark` is back at four too: inking each
+  quad by area compounded at dense joints (its header). The sequence track's
+  `sequenceCell`, `insertionMark` (registered only beside `spanMark` and
+  `barMark` in MAF) and the score example's `score` tile the same way.
 - **Wiggle stays at four, by choice.** Its bars' vertical cuts and density's
   edges go hard at one sample (`wiggle-xyplot-bars`, `wiggle-density`) for
   ~8 MiB a single-row track at dpr 2, which is not worth the edges.

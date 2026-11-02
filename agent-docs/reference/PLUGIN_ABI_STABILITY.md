@@ -53,8 +53,12 @@ cannot see `display.regionPayloads`, so
 lists the foundation members the ARG and graph displays read, measured from
 their source, and fails typecheck and jest when one goes. It also pins the
 exact set of `ChromeModel`'s required keys, since the host's `DisplayChrome`
-reads those off a plugin's model: a new chrome input goes in optional. A read a
-plugin adds after the measurement is not covered until someone adds it.
+reads those off a plugin's model: a new chrome input goes in optional. The
+graph display also mounts `DisplayChrome` itself, so `DisplayChrome`'s own reads
+(`displayPhase`, `painted`, `renderError`, `regionTooLargeReason`,
+`zoomCanReleaseGate`, `forceLoad`, `reload`, `statusMessage`, `notices`) are
+plugin ABI with no check. A read a plugin adds after the measurement is not
+covered until someone adds it.
 
 **The signature is as public as the name.** A required second argument breaks
 a duck-typed caller as deleting the member does, so add plugin-facing
@@ -141,7 +145,12 @@ can prove an external plugin does not use it. By leverage:
    a gate would warn on or refuse plugins that work. Core's
    `ReExports/hostShim` esbuild plugin checks names instead. A build fails on
    a name the installed `@jbrowse/core` does not serve, and the bundle throws
-   naming the export when an older host lacks one.
+   naming the export when an older host lacks one. Graphgenomeviewer, ARG,
+   msaview, protein3d and tandem-repeat build through it with a floor check.
+   Ten store plugins and both plugin templates still build against v4 core for
+   v4.3.0 hosts, each with its own copy of `host-compat-probe.mjs`; `hostShim`
+   needs a v5 core installed, so they move at 5.0.0 stable, with one generic
+   probe in the templates.
 3. **Instrument deprecations with a warning getter.** Not built, and only worth
    it to accelerate a removal, since telemetry sees only observed deployments.
 4. **Make the blessed extension points good enough that nobody reaches into
