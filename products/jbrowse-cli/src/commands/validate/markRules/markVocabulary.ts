@@ -46,6 +46,9 @@ export type MarkMember = (typeof MARK_MEMBERS)[number]
 /** The fraction of its band a rect fills where its `mark.height.band` is left unwritten. */
 export const DEFAULT_HEIGHT_BAND = 1
 
+/** The block height of the Normal row-height preset, so neighbouring rows stay apart. */
+export const NORMAL_ROW_PROPORTION = 0.8
+
 /** A `marks` entry's `mark` as a snapshot holds it: the object, or its type alone. */
 export type MarkDefSnapshot =
   | MarkType
