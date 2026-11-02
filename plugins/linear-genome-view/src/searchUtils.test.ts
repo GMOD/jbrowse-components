@@ -2,12 +2,10 @@ import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 import {
   SearchResultsNotFoundError,
-  checkRef,
   distinctDestinations,
   fetchResults,
   hitTrackToShow,
   nameNotFound,
-  splitLast,
 } from './searchUtils.ts'
 
 import type { LinearGenomeViewModel } from './index.ts'
@@ -228,54 +226,6 @@ describe('fetchResults refname matching', () => {
         ),
       ).toEqual({ ctgB: true })
     })
-  })
-})
-
-describe('checkRef', () => {
-  it('accepts a plain refName present in the set', () => {
-    expect(checkRef('ctgA', isRef)).toBe(true)
-  })
-
-  it('accepts a lowercase variant present in the set', () => {
-    expect(checkRef('ctga', isRef)).toBe(true)
-  })
-
-  it('accepts a locstring whose refName is in the set', () => {
-    expect(checkRef('ctgA:1000', isRef)).toBe(true)
-  })
-
-  it('accepts a locstring with a range whose refName is in the set', () => {
-    expect(checkRef('ctgA:1000-2000', isRef)).toBe(true)
-  })
-
-  it('rejects a gene label not in the ref set', () => {
-    expect(checkRef('Apple3', isRef)).toBe(false)
-  })
-
-  it('rejects a locstring with a non-numeric suffix', () => {
-    expect(checkRef('ctgA:notanumber', isRef)).toBe(false)
-  })
-
-  it('rejects an unknown refName even with a numeric suffix', () => {
-    expect(checkRef('unknown:1000', isRef)).toBe(false)
-  })
-
-  it('rejects an empty string', () => {
-    expect(checkRef('', isRef)).toBe(false)
-  })
-})
-
-describe('splitLast', () => {
-  it('splits on the last colon', () => {
-    expect(splitLast('ctgA:1000:extra', ':')).toEqual(['ctgA:1000', 'extra'])
-  })
-
-  it('returns [str, empty] when separator not found', () => {
-    expect(splitLast('ctgA', ':')).toEqual(['ctgA', ''])
-  })
-
-  it('splits a simple locstring', () => {
-    expect(splitLast('ctgA:1000', ':')).toEqual(['ctgA', '1000'])
   })
 })
 

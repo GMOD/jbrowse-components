@@ -23,6 +23,7 @@ import type {
   AbstractSessionModel,
   AssemblyHost,
   NotificationSink,
+  ParsedLocString,
   TrackCatalog,
 } from '@jbrowse/core/util'
 
@@ -307,28 +308,21 @@ export async function handleSelectedRegion({
   const assembly = await assemblyManager
     .waitForAssembly(assemblyName)
     .catch(() => undefined)
-  // the same predicate navToLocstrings hands parseLocStrings, so a locstring
-  // that passes here is one the parse below will accept
+  await Promise.all(
+    assembliesNamedIn(input).map(name =>
+      assemblyManager.waitForAssembly(name).catch(() => undefined),
+    ),
+  )
   const isRef = (ref: string) =>
     !!assembly && assemblyManager.isValidRefName(ref, assemblyName)
+  const parsed = parseOrError(() =>
+    parseLocStrings(input, assemblyName, (ref, asm) =>
+      assemblyManager.isValidRefName(ref, asm),
+    ),
+  )
 
-  // navigate treating input as one or more whitespace-separated locstrings
-  const navToLocstrings = () =>
-    model.navToLocations(
-      parseLocStrings(input, assemblyName, (ref, asm) =>
-        assemblyManager.isValidRefName(ref, asm),
-      ),
-      assemblyName,
-      grow,
-    )
-
-  if (
-    input
-      .split(/\s+/)
-      .filter(Boolean)
-      .every(entry => checkRef(entry, isRef))
-  ) {
-    await navToLocstrings()
+  if (parsed.locations) {
+    await model.navToLocations(parsed.locations, assemblyName, grow)
     return true
   } else if (input.includes('*') && !!assembly) {
     // Enter does what the dropdown's "Show all N regions matching …" row does,
@@ -417,34 +411,32 @@ export async function handleSelectedRegion({
       })
       return true
     } else {
-      // no search hits: still try to resolve the input as a locstring (bare
-      // refname, "ref start end" triplet, etc). If that also can't find a
-      // refname and the input names no sequence and no coordinate — a gene
-      // name, or a phrase like "breast cancer" — reframe the unknown-ref error
-      // as a name miss; keep the specific ref error for coordinate-shaped input
-      try {
-        await navToLocstrings()
-        return true
-      } catch (e) {
-        const isPlainName =
-          !input.includes(':') &&
-          input
-            .trim()
-            .split(/\s+/)
-            .every(token => !isRef(token) && !/^\d[\d,]*$/.test(token))
-        if (e instanceof UnknownRefNameError && isPlainName) {
-          throw nameNotFound(input, assemblyName, found)
-        } else {
-          throw e
-        }
-      }
+      // no search hits and no locstring either. An input naming no sequence
+      // and no coordinate — a gene name, or a phrase like "breast cancer" — is
+      // reported as a name miss; coordinate-shaped input keeps its ref error
+      const isPlainName =
+        !input.includes(':') &&
+        input
+          .trim()
+          .split(/\s+/)
+          .every(token => !isRef(token) && !/^\d[\d,]*$/.test(token))
+      throw parsed.error instanceof UnknownRefNameError && isPlainName
+        ? nameNotFound(input, assemblyName, found)
+        : parsed.error
     }
   }
 }
 
-export function checkRef(str: string, isRef: (name: string) => boolean) {
-  const [ref, rest] = splitLast(str, ':')
-  return isRef(str) || (isRef(ref) && /^\d/.test(rest))
+function parseOrError(parse: () => ParsedLocString[]) {
+  try {
+    return { locations: parse() }
+  } catch (error) {
+    return { error }
+  }
+}
+
+function assembliesNamedIn(input: string) {
+  return [...input.matchAll(/(?:^|\s)\{([^}]+)\}/g)].map(([, name]) => name!)
 }
 
 interface SearchArgs {
@@ -576,7 +568,3 @@ function searchRefNames(
 }
 
 // splits on the last instance of a character
-export function splitLast(str: string, split: string): [string, string] {
-  const i = str.lastIndexOf(split)
-  return i === -1 ? [str, ''] : [str.slice(0, i), str.slice(i + 1)]
-}
