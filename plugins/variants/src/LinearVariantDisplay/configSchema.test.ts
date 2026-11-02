@@ -283,7 +283,7 @@ describe('rows', () => {
     expect(readConfObject(config, ['rows', 'field'])).toBe('sample')
     applyConfSettings(config, { rows: { sort: ['a', 'b'] } })
     expect(readConfObject(config, ['rows', 'sort'])).toEqual(['a', 'b'])
-    expect(readConfObject(config, ['rows', 'tree'])).toBe('(b,a);')
+    expect(readConfObject(config, ['rows', 'tree', 'newick'])).toBe('(b,a);')
     expect(readConfObject(config, ['rows', 'labels'])).toEqual({ a: 'A' })
     expect(() =>
       configSchema.create({

@@ -100,9 +100,9 @@ on-track locus chip was removed as distracting — so the Clustering submenu
 
 The invariant is not that provenance is present but that it is never **wrong**,
 so the mixin writes the tree through one private `writeTree`, which sets
-`rows.tree` and `rows.treeProvenance` together from `setRowOrder`: a run passes
+`rows.tree` whole, `{ newick, provenance }`, from `setRowOrder`: a run passes
 its result, and a reorder that moves a row passes nothing; `resetRowArrangement`
-returns both to the config.json's in one action. maf's supplied `.nh` has no
+returns it to the config.json's. maf's supplied `.nh` has no
 provenance because a phylogeny has no locus, so a tree with no provenance is
 also the signal it was supplied rather than computed.
 

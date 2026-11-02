@@ -4981,6 +4981,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/rowTreeConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "rowTreeConfigSchema"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/rpcArgs": {
       "package": "@jbrowse/display-kit",
       "names": [

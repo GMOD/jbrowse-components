@@ -5766,11 +5766,22 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "tree",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "treeProvenance",
-              "type": "(frozen | undefined)"
+              "type": "RowTreeConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "newick",
+                  "type": "(string | undefined)"
+                },
+                {
+                  "name": "provenance",
+                  "type": "(frozen | undefined)"
+                }
+              ],
+              "schema": "RowTree",
+              "writes": "whole",
+              "shorthand": {
+                "string": "newick"
+              }
             },
             {
               "name": "kept",
@@ -5789,12 +5800,14 @@ export const configManifest: ConfigManifest = {
               "sort",
               "labels",
               "tree",
-              "treeProvenance",
               "kept"
             ]
           },
           "shorthand": {
             "string": "field"
+          },
+          "misnamed": {
+            "treeProvenance": "tree.provenance"
           }
         },
         {
@@ -6743,11 +6756,22 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "tree",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "treeProvenance",
-              "type": "(frozen | undefined)"
+              "type": "RowTreeConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "newick",
+                  "type": "(string | undefined)"
+                },
+                {
+                  "name": "provenance",
+                  "type": "(frozen | undefined)"
+                }
+              ],
+              "schema": "RowTree",
+              "writes": "whole",
+              "shorthand": {
+                "string": "newick"
+              }
             },
             {
               "name": "kept",
@@ -6838,7 +6862,6 @@ export const configManifest: ConfigManifest = {
               "sort",
               "labels",
               "tree",
-              "treeProvenance",
               "kept",
               "colors"
             ]
@@ -6847,6 +6870,7 @@ export const configManifest: ConfigManifest = {
             "string": "field"
           },
           "misnamed": {
+            "treeProvenance": "tree.provenance",
             "height": "step"
           }
         },
@@ -7505,11 +7529,22 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "tree",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "treeProvenance",
-              "type": "(frozen | undefined)"
+              "type": "RowTreeConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "newick",
+                  "type": "(string | undefined)"
+                },
+                {
+                  "name": "provenance",
+                  "type": "(frozen | undefined)"
+                }
+              ],
+              "schema": "RowTree",
+              "writes": "whole",
+              "shorthand": {
+                "string": "newick"
+              }
             },
             {
               "name": "kept",
@@ -7596,13 +7631,15 @@ export const configManifest: ConfigManifest = {
               "sort",
               "labels",
               "tree",
-              "treeProvenance",
               "kept",
               "colors"
             ]
           },
           "shorthand": {
             "string": "field"
+          },
+          "misnamed": {
+            "treeProvenance": "tree.provenance"
           }
         },
         {
@@ -8075,11 +8112,22 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "tree",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "treeProvenance",
-              "type": "(frozen | undefined)"
+              "type": "RowTreeConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "newick",
+                  "type": "(string | undefined)"
+                },
+                {
+                  "name": "provenance",
+                  "type": "(frozen | undefined)"
+                }
+              ],
+              "schema": "RowTree",
+              "writes": "whole",
+              "shorthand": {
+                "string": "newick"
+              }
             },
             {
               "name": "kept",
@@ -8162,13 +8210,15 @@ export const configManifest: ConfigManifest = {
               "sort",
               "labels",
               "tree",
-              "treeProvenance",
               "kept",
               "colors"
             ]
           },
           "shorthand": {
             "string": "field"
+          },
+          "misnamed": {
+            "treeProvenance": "tree.provenance"
           }
         },
         {
@@ -9252,11 +9302,22 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "tree",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "treeProvenance",
-              "type": "(frozen | undefined)"
+              "type": "RowTreeConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "newick",
+                  "type": "(string | undefined)"
+                },
+                {
+                  "name": "provenance",
+                  "type": "(frozen | undefined)"
+                }
+              ],
+              "schema": "RowTree",
+              "writes": "whole",
+              "shorthand": {
+                "string": "newick"
+              }
             },
             {
               "name": "kept",
@@ -9347,7 +9408,6 @@ export const configManifest: ConfigManifest = {
               "sort",
               "labels",
               "tree",
-              "treeProvenance",
               "kept",
               "colors"
             ]
@@ -9356,6 +9416,7 @@ export const configManifest: ConfigManifest = {
             "string": "field"
           },
           "misnamed": {
+            "treeProvenance": "tree.provenance",
             "height": "step"
           }
         },
@@ -10120,11 +10181,22 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "tree",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "treeProvenance",
-              "type": "(frozen | undefined)"
+              "type": "RowTreeConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "newick",
+                  "type": "(string | undefined)"
+                },
+                {
+                  "name": "provenance",
+                  "type": "(frozen | undefined)"
+                }
+              ],
+              "schema": "RowTree",
+              "writes": "whole",
+              "shorthand": {
+                "string": "newick"
+              }
             },
             {
               "name": "kept",
@@ -10215,7 +10287,6 @@ export const configManifest: ConfigManifest = {
               "sort",
               "labels",
               "tree",
-              "treeProvenance",
               "kept",
               "colors"
             ]
@@ -10224,6 +10295,7 @@ export const configManifest: ConfigManifest = {
             "string": "field"
           },
           "misnamed": {
+            "treeProvenance": "tree.provenance",
             "height": "step"
           }
         },
@@ -10995,11 +11067,22 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "tree",
-              "type": "(string | undefined)"
-            },
-            {
-              "name": "treeProvenance",
-              "type": "(frozen | undefined)"
+              "type": "RowTreeConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "newick",
+                  "type": "(string | undefined)"
+                },
+                {
+                  "name": "provenance",
+                  "type": "(frozen | undefined)"
+                }
+              ],
+              "schema": "RowTree",
+              "writes": "whole",
+              "shorthand": {
+                "string": "newick"
+              }
             },
             {
               "name": "kept",
@@ -11090,7 +11173,6 @@ export const configManifest: ConfigManifest = {
               "sort",
               "labels",
               "tree",
-              "treeProvenance",
               "kept",
               "colors"
             ]
@@ -11099,6 +11181,7 @@ export const configManifest: ConfigManifest = {
             "string": "field"
           },
           "misnamed": {
+            "treeProvenance": "tree.provenance",
             "height": "step"
           }
         },

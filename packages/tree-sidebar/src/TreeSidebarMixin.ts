@@ -1,4 +1,9 @@
-import { getConf, setConf } from '@jbrowse/core/configuration'
+import {
+  canonicalSpelling,
+  getConf,
+  getConfigurationSchemaMetadata,
+  setConf,
+} from '@jbrowse/core/configuration'
 import { capitalizeFirst, persistTrackConfigNow } from '@jbrowse/core/util'
 import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
@@ -105,12 +110,20 @@ function present(value: unknown) {
   return value
 }
 
-function baseArrangement(self: object): Arrangement {
-  return (baseDisplayConfig(self).rows as Arrangement | undefined) ?? {}
-}
-
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
+
+// The base's `rows` in the spelling the live one is stored in, so a
+// `rows.tree` written as its newick compares equal to the object it lifts to
+function baseArrangement(self: object): Arrangement {
+  const { rows } = baseDisplayConfig(self)
+  return isRecord(rows)
+    ? canonicalSpelling(
+        getConfigurationSchemaMetadata(host(self).configuration.rows)!,
+        rows,
+      )
+    : {}
+}
 
 // A member of the `rows` this display's base declares, none where it writes
 // the field alone
@@ -124,7 +137,7 @@ function liveArrangement(self: object): Arrangement {
 }
 
 function storedTree(self: object): string | undefined {
-  return getConf(host(self), ['rows', 'tree'])
+  return getConf(host(self), ['rows', 'tree', 'newick'])
 }
 
 /**
@@ -324,7 +337,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * for a tree that arrived as data.
        */
       get rowTreeProvenance(): ClusterProvenance | undefined {
-        return getConf(host(self), ['rows', 'treeProvenance'])
+        return getConf(host(self), ['rows', 'tree', 'provenance'])
       },
       /**
        * #getter
@@ -1145,8 +1158,10 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         persistTrackConfigNow(self)
       }
       function writeTree(run?: ClusterRun) {
-        write('tree', run?.tree)
-        write('treeProvenance', run?.provenance)
+        write(
+          'tree',
+          run?.tree ? { newick: run.tree, provenance: run.provenance } : null,
+        )
       }
       function writeOrder(rows: readonly { name: string }[], run?: ClusterRun) {
         const domain = orderOver(self.rowSort, rows)

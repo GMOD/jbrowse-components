@@ -132,6 +132,10 @@ test.each(cases.map(c => [`${c.name} ${c.path.join('.')}`, c] as const))(
 // displays declare
 describe('mergeBySlots over a keyed rows object', () => {
   const slots = displayDefaultSlots('QuantitativeTrack')
+  const CLUSTERED = {
+    newick: '(a,b);',
+    provenance: { regions: [{ refName: 'chr1', start: 0, end: 100 }] },
+  }
   const arranged = {
     rows: {
       field: 'source',
@@ -144,7 +148,7 @@ describe('mergeBySlots over a keyed rows object', () => {
   test('the merged slot keeps the keyed declaration', () => {
     expect(slots.find(s => s.name === 'rows')?.writes).toEqual({
       keyedBy: 'field',
-      keyed: ['sort', 'labels', 'tree', 'treeProvenance', 'kept', 'colors'],
+      keyed: ['sort', 'labels', 'tree', 'kept', 'colors'],
     })
   })
 
@@ -202,6 +206,18 @@ describe('mergeBySlots over a keyed rows object', () => {
       base: arranged,
       write: { rows: { labels: null } },
       rows: { ...arranged.rows, labels: null },
+    },
+    {
+      name: 'a new field drops the tree with its provenance',
+      base: { rows: { field: 'source', tree: CLUSTERED } },
+      write: { rows: 'tissue' },
+      rows: { field: 'tissue' },
+    },
+    {
+      name: 'a tree written as newick replaces the clustered one whole',
+      base: { rows: { field: 'source', tree: CLUSTERED } },
+      write: { rows: { tree: '(b,a);' } },
+      rows: { field: 'source', tree: '(b,a);' },
     },
   ])('$name', ({ base, write, rows }) => {
     expect(mergeBySlots(base, write, slots).rows).toEqual(rows)

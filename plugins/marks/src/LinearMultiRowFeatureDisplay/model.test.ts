@@ -184,7 +184,7 @@ test('One row per... another field drops the arrangement, and the field in force
     field: 'sample',
     sort: ['b', 'a'],
     labels: { a: 'A' },
-    tree: '(a,b);',
+    tree: { newick: '(a,b);' },
     kept: ['a'],
   }
   const model = display({ rows, marks: RECT_MARKS })

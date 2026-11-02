@@ -126,7 +126,7 @@ export function withSplitOrder(
   return { ...plot, [key]: sort ? { ...rest, sort } : rest }
 }
 
-function withoutTree({ tree: _tree, treeProvenance: _p, ...rest }: Snapshot) {
+function withoutTree({ tree: _tree, ...rest }: Snapshot) {
   return rest
 }
 

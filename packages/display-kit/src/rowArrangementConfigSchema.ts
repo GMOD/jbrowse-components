@@ -1,11 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { rowTreeConfigSchema } from './rowTreeConfigSchema.ts'
+
 /** The members a reader's arrangement writes, every one a config member. */
 export const ROW_ARRANGEMENT_MEMBERS = [
   'sort',
   'labels',
   'tree',
-  'treeProvenance',
   'kept',
 ] as const
 
@@ -32,8 +33,8 @@ function stringList(snap: Record<string, unknown>, key: string) {
  * The `rows` setting of a display whose rows are samples or species rather
  * than the values of a field. It holds the arrangement a reader gives the
  * rows, which every product writes as a session edit to this object: the
- * order, the labels, the tree with its provenance and the focus, each by row
- * name. The field-keyed displays' `Rows` object is this plus `field`.
+ * order, the labels, the tree and the focus, each by row name. The
+ * field-keyed displays' `Rows` object is this plus `field`.
  *
  * #example
  * ```js
@@ -75,26 +76,12 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot tree
-     * The dendrogram beside the rows, as newick. A clustering run writes it
-     * beside the order it produced, and a reorder that moves a row drops it.
-     * Whether it draws is `rows.axis.tree`.
+     * The dendrogram beside the rows, a [RowTree](../rowtree): newick, or
+     * `{ newick, provenance }` where a clustering run wrote it beside the
+     * order it produced. A reorder that moves a row drops it. Whether it
+     * draws is `rows.axis.tree`.
      */
-    tree: {
-      type: 'maybeString',
-      description:
-        'the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced',
-    },
-    /**
-     * #slot treeProvenance
-     * The locus and settings `tree` was computed from; unset for a tree that
-     * arrived as data. A clustering run writes it with `tree`; a config
-     * copies the two together or leaves both out.
-     */
-    treeProvenance: {
-      type: 'maybeFrozen',
-      description:
-        'the locus and settings the tree was computed from; unset for a tree that arrived as data',
-    },
+    tree: rowTreeConfigSchema,
     /**
      * #slot kept
      * The rows shown, by name: a clade picked off the tree, or the rows one
@@ -110,6 +97,7 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
   },
   {
     closed: true,
+    misnamed: { treeProvenance: 'tree.provenance' },
     preProcessSnapshot: (snap = {}) => ({
       ...snap,
       ...stringList(snap, 'sort'),

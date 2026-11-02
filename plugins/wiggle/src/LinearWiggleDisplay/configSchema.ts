@@ -118,10 +118,9 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * reads; leave it unset and every source is drawn in one shared plot.
      * `sort` is the row order: the subtracks it names lead, the rest keep
      * the adapter's order, and a clustering run rotates its dendrogram towards
-     * it rather than discarding it. `labels`, `colors`, `tree`,
-     * `treeProvenance` and `kept` are what the arrangement dialog, a
-     * clustering run and a focus write, each as a session edit to this
-     * object. `colors` pins a subtrack's color ahead of the adapter's and the
+     * it rather than discarding it. `labels`, `colors`, `tree` and `kept`
+     * are what the arrangement dialog, a clustering run and a focus write,
+     * each as a session edit to this object. `colors` pins a subtrack's color ahead of the adapter's and the
      * palette: its plot, on both sides of the `origin`, while
      * `encoding.color` colors by `source`, and otherwise, or under a score
      * gradient, the tint beside its label.

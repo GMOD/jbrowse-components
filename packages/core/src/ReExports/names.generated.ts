@@ -487,6 +487,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/rowColorConfigSchema': ['rowColorConfigSchema'],
   '@jbrowse/display-kit/rowsConfigSchema': ['ROWS_KEYED_MEMBERS', 'ROWS_WRITES', 'rowsConfigSchema', 'rowsForField', 'rowsSettingOf'],
   '@jbrowse/display-kit/rowsWithStepConfigSchema': ['FIT_ROWS', 'rowHeightOfStep', 'rowsWithStepConfigSchema'],
+  '@jbrowse/display-kit/rowTreeConfigSchema': ['rowTreeConfigSchema'],
   '@jbrowse/display-kit/rpcArgs': ['rpcArgs'],
   '@jbrowse/display-kit/sampleRowsConfigSchema': ['sampleRowsConfigSchema'],
   '@jbrowse/display-kit/sectionFacetConfigSchema': ['SECTION_FACET_WRITES', 'sectionFacetConfigSchema'],

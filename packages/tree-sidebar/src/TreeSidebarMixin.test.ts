@@ -280,6 +280,43 @@ describe('a guide tree the display supplies', () => {
   })
 })
 
+describe('a clustering run in `rows.tree`', () => {
+  const named = (names: string[]) => names.map(name => ({ name }))
+  const RUN_TREE = '(c,(a,b));'
+  const PROVENANCE = {
+    regions: [{ refName: 'ctgA', start: 0, end: 100 }],
+    settings: [{ name: 'Method', value: 'hclust' }],
+  }
+
+  it('lands as one object, newick and provenance, and reads back from a copy', () => {
+    const display = makeDisplay()
+    display.setRowOrder(named(['c', 'a', 'b']), {
+      tree: RUN_TREE,
+      provenance: PROVENANCE,
+    })
+    const stored = getSnapshot(display.configuration)
+    expect(stored.rows?.tree).toEqual({
+      newick: RUN_TREE,
+      provenance: PROVENANCE,
+    })
+    const copy = makeDisplay(structuredClone(stored))
+    expect(copy.rowTree).toBe(RUN_TREE)
+    expect(copy.rowTreeProvenance).toEqual(PROVENANCE)
+    expect(getLeafNames(copy.parsedTree!)).toEqual(['c', 'a', 'b'])
+  })
+
+  it('a move that drops the tree drops its provenance with it', () => {
+    const display = makeDisplay()
+    display.setRowOrder(named(['c', 'a', 'b']), {
+      tree: RUN_TREE,
+      provenance: PROVENANCE,
+    })
+    display.setRowOrder(named(['a', 'c', 'b']))
+    expect(display.rowTree).toBeUndefined()
+    expect(display.rowTreeProvenance).toBeUndefined()
+  })
+})
+
 describe('a tree the config supplies in `rows.tree`', () => {
   const TREE = '((a,b),c);'
   const named = (names: string[]) => names.map(name => ({ name }))
@@ -352,8 +389,10 @@ describe('a focus written against a row alias', () => {
         configuration: {
           rows: {
             sort: HAPLOTYPES,
-            tree: "(('A HP0':1,'A HP1':1):1,('B HP0':1,'B HP1':1):1);",
-            treeProvenance: { regions: [] },
+            tree: {
+              newick: "(('A HP0':1,'A HP1':1):1,('B HP0':1,'B HP1':1):1);",
+              provenance: { regions: [] },
+            },
             kept: ['A'],
           },
         },

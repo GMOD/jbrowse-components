@@ -9187,6 +9187,47 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "RowTree": {
+      "title": "RowTree",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"newick\\": ... }\`.",
+          "$ref": "#/$defs/PlainString",
+          "type": "string"
+        },
+        {
+          "title": "RowTree",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "newick": {
+              "description": "the tree as newick, its leaves the row names.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "provenance": {
+              "description": "the locus and settings a clustering run computed the tree from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
+                }
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "LaneRows": {
       "title": "LaneRows",
       "anyOf": [
@@ -9237,23 +9278,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "tree": {
-              "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
               "if": {
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "treeProvenance": {
-              "description": "the locus and settings the tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "not": {
-                  "$ref": "#/$defs/JexlString"
-                }
+                "$ref": "#/$defs/RowTree"
               }
             },
             "kept": {
@@ -12085,23 +12114,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "tree": {
-              "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
               "if": {
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "treeProvenance": {
-              "description": "the locus and settings the tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "not": {
-                  "$ref": "#/$defs/JexlString"
-                }
+                "$ref": "#/$defs/RowTree"
               }
             },
             "kept": {
@@ -13653,23 +13670,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "tree": {
-              "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
               "if": {
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "treeProvenance": {
-              "description": "the locus and settings the tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "not": {
-                  "$ref": "#/$defs/JexlString"
-                }
+                "$ref": "#/$defs/RowTree"
               }
             },
             "kept": {
@@ -14759,23 +14764,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "tree": {
-              "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
               "if": {
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "treeProvenance": {
-              "description": "the locus and settings the tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "not": {
-                  "$ref": "#/$defs/JexlString"
-                }
+                "$ref": "#/$defs/RowTree"
               }
             },
             "kept": {
@@ -15807,23 +15800,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "tree": {
-              "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
               "if": {
                 "type": "null"
               },
               "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "treeProvenance": {
-              "description": "the locus and settings the tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "not": {
-                  "$ref": "#/$defs/JexlString"
-                }
+                "$ref": "#/$defs/RowTree"
               }
             },
             "kept": {

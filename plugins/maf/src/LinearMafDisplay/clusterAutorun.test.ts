@@ -107,18 +107,18 @@ describe('LinearMafDisplay declarative runClustering', () => {
       samplesCanonical: true,
     })
     expect(display.rowTree).toBe('(hg38,panTro4);')
-    expect(getConf(display, ['rows', 'tree'])).toBeUndefined()
+    expect(getConf(display, ['rows', 'tree', 'newick'])).toBeUndefined()
 
     display.setRowOrder([{ name: 'panTro4' }, { name: 'hg38' }], {
       tree: '(panTro4,hg38);',
       provenance: { regions: [{ refName: 'chr1', start: 0, end: 100 }] },
     })
-    expect(getConf(display, ['rows', 'tree'])).toBe('(panTro4,hg38);')
+    expect(getConf(display, ['rows', 'tree', 'newick'])).toBe('(panTro4,hg38);')
     expect(display.rowTreeProvenance).toBeDefined()
 
     display.resetRowArrangement()
     expect(display.rowTree).toBe('(hg38,panTro4);')
     expect(display.rowTreeProvenance).toBeUndefined()
-    expect(getConf(display, ['rows', 'tree'])).toBeUndefined()
+    expect(getConf(display, ['rows', 'tree', 'newick'])).toBeUndefined()
   })
 })

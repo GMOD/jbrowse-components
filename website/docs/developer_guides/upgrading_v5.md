@@ -386,7 +386,7 @@ an entry in `rows.colors`, by name. `runClustering`, `clusterRegion` and
 | v4 display prop | v5 display config |
 | --- | --- |
 | `layout`, the rows in order with any label and color set on each | `rows.sort`, `rows.labels` and `rows.colors` |
-| `clusterTree` | `rows.tree`, beside `rows.treeProvenance` |
+| `clusterTree` | `rows.tree` |
 | `subtreeFilter` | `rows.kept` |
 
 A session with those props opens with them moved into `rows`, and a v4 session's
@@ -397,10 +397,10 @@ them now.
 
 The variant display keeps its arrangement in `rows` as well, with no `field`,
 since its rows are the samples: `rows.sort` is the row order, `rows.labels` the
-relabels, `rows.tree` and `rows.treeProvenance` a clustering run's tree, and
-`rows.kept` the focus. In phased mode the names are haplotypes,
-`"<sample> HP<n>"`, and a sample's name stands for all of its haplotypes.
-`rows.color` is `field | { field, scale: { domain, range } }`, the
+relabels, `rows.tree` a clustering run's tree, newick or
+`{ newick, provenance }`, and `rows.kept` the focus. In phased mode the names
+are haplotypes, `"<sample> HP<n>"`, and a sample's name stands for all of its
+haplotypes. `rows.color` is `field | { field, scale: { domain, range } }`, the
 sample-metadata attribute that tints every row, as v4's `colorBy` was.
 `rows.colors` pairs row names with the colors a reader set, and a row named
 there keeps its color under an attribute.

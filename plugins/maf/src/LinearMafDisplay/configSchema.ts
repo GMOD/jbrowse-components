@@ -83,9 +83,9 @@ export default function configSchemaF() {
        * The arrangement a reader gives the species rows, each member by row
        * name. `sort` is the row order: the guide tree rotates to it while
        * some rotation lists the species in that order; otherwise the listed
-       * species lead and the rest keep adapter order. `labels`, `tree`,
-       * `treeProvenance` and `kept` are what the arrangement dialog, a
-       * clustering run and a focus write. The adapter's guide tree is never
+       * species lead and the rest keep adapter order. `labels`, `tree` and
+       * `kept` are what the arrangement dialog, a clustering run and a focus
+       * write. The adapter's guide tree is never
        * written here. `rows.axis` is the guide down their left, the species
        * tree and names, with no `grid`: the rows keep a gap instead.
        * `rows.colors` pins a species row's color, drawn as the bar beside its

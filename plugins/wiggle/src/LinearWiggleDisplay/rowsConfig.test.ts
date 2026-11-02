@@ -37,7 +37,7 @@ test('the arrangement rides on rows, and there is no top-level `sort` slot', () 
   expect(readConfObject(config, ['rows', 'sort'])).toEqual(['b', 'a'])
   expect(readConfObject(config, ['rows', 'labels'])).toEqual({ a: 'Sample A' })
   expect(readConfObject(config, ['rows', 'kept'])).toEqual(['a'])
-  expect(readConfObject(config, ['rows', 'tree'])).toBeUndefined()
+  expect(readConfObject(config, ['rows', 'tree', 'newick'])).toBeUndefined()
   expect('sort' in config).toBe(false)
 })
 

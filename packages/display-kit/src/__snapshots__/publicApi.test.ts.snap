@@ -93,6 +93,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./rowAxisConfigSchema",
   "./rowAxisWithGridConfigSchema",
   "./rowColorConfigSchema",
+  "./rowTreeConfigSchema",
   "./rowsConfigSchema",
   "./rowsWithStepConfigSchema",
   "./rpcArgs",
