@@ -33,6 +33,11 @@ const cgiabPageTrack = (trackId: string, page: 'sv' | 'cnv' = 'sv') =>
 export const HG008_T_PACBIO_BAM =
   'https://jbrowse.org/demos/cgiab/HG008-T_PacBio-HiFi-Revio_116x.demo_slices.bam'
 
+// The tumour Illumina BAM's slices around its SV read evidence, CDKN2A among
+// them (paper-sv-reads.ts reads the same file).
+const HG008_T_ILLUMINA_SV_BAM =
+  'https://jbrowse.org/demos/cgiab/HG008-T_Illumina_195x.sv_read_evidence_slices.bam'
+
 const CGIAB_FTP_READS =
   'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125'
 
@@ -641,6 +646,97 @@ export const svSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     // A shorter frame drops the "No SV evidence" band at the bottom.
     viewportHeight: 1310,
+  },
+
+  // SV channels on long and short reads of one event: HG008-T's homozygous
+  // CDKN2A deletion, PacBio HiFi above Illumina, each in SV_CHANNELS_ON. The
+  // HiFi split reads and the Illumina long-insert pairs fill the same
+  // deletion-type band.
+  {
+    mode: 'url',
+    name: 'sv_channels_long_reads',
+    url: sessionSpec(CGIAB_CONFIG, {
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'hg008_t_hifi_sv_channels',
+          name: 'HG008-T PacBio HiFi',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BamAdapter',
+            bamLocation: {
+              uri: HG008_T_PACBIO_BAM,
+              locationType: 'UriLocation',
+            },
+            index: {
+              indexType: 'BAI',
+              location: {
+                uri: `${HG008_T_PACBIO_BAM}.bai`,
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'hg008_t_illumina_sv_channels',
+          name: 'HG008-T Illumina',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BamAdapter',
+            fetchSizeLimit: 30_000_000,
+            bamLocation: {
+              uri: HG008_T_ILLUMINA_SV_BAM,
+              locationType: 'UriLocation',
+            },
+            index: {
+              indexType: 'BAI',
+              location: {
+                uri: `${HG008_T_ILLUMINA_SV_BAM}.bai`,
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr9:21,930,000-21,990,000',
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: 'hg008_t_hifi_sv_channels',
+              pileup: { show: false },
+              readConnections: {
+                show: true,
+                mark: 'link',
+                ordinaryPairs: { show: false },
+              },
+              facet: 'svChannel',
+              legend: { show: true },
+              height: 190,
+            },
+            {
+              trackId: 'hg008_t_illumina_sv_channels',
+              pileup: { show: false },
+              readConnections: {
+                show: true,
+                mark: 'link',
+                ordinaryPairs: { show: false },
+              },
+              facet: 'svChannel',
+              legend: { show: true },
+              height: 460,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG008-T Illumina',
+    readyTimeout: 120000,
+    viewportHeight: 1000,
   },
 
   // The long-read half of inversion pair evidence: HG00151 ONT reads span the

@@ -253,6 +253,11 @@ arrangement sets, bands those reads by the kind of SV they point at.
 <figcaption>Which band each SV type fills. A deletion is ordinary-facing pairs that are too far apart, a tandem duplication lights the outward-pointing band, and an inversion's two junctions share the same-strand band, LL pairs green and RR pairs blue. Split reads across each junction fill the same band as its pairs.</figcaption>
 </figure>
 
+Long reads fill the same bands, a split read by the junction it crosses, so one
+event reads the same on both platforms.
+
+<Figure caption="HG008-T tumor reads at CDKN2A in SV channels, PacBio HiFi above Illumina. Both draw the deletion in the deletion-type band." src="/img/sv_channels_long_reads.png" />
+
 Clicking the row again restores the pileup, with the color scheme untouched.
 [](/docs/tutorials/sv_multisamples) reads a complex 1000 Genomes call band by
 band.
