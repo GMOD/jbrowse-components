@@ -12,15 +12,17 @@ tutorial_subcategory: Dog10K
 
 Dogs differ in body size more than any other mammal, and a haplotype (a stretch
 of neighbouring variants inherited together) at the growth-factor gene _IGF1_ is
-a major reason. In the Dog10K collection of sequenced dogs and wolves, we:
+a major reason. Breeds at the two ends of the size range differ in allele
+frequency there, which Fst measures on a scale from 0 to 1. In the Dog10K
+collection of sequenced dogs and wolves, from a genome-wide scan down to _IGF1_
+on chr15, we:
 
-- scan every window of the genome for Fst, a 0-to-1 measure of how far apart two
-  groups' allele frequencies sit, between fourteen toy breeds and eleven giant
-  breeds, and draw it as a Manhattan track
-- slice the _IGF1_ peak out of the SNV callset over HTTP and load it as a
-  multi-sample variant track with a sample-metadata TSV
-- cluster the animals by genotype to see the haplotype each size class has and
-  where the wolves fall
+- load a windowed Fst scan between toy and giant breeds as a Manhattan track,
+  with a reference line at a percentile cutoff
+- load the _IGF1_ peak, sliced out of the SNV callset, as a variant track whose
+  rows a sample sheet colors by size class
+- cluster the rows with **Clustering → Cluster rows by genotype...** to find the
+  haplotype each size class has and where the wolves fall
 
 ## Prerequisites
 
@@ -113,11 +115,10 @@ The figures also show NCBI's RefSeq genes as a track:
 ## Scanning the genome for toy-versus-giant Fst peaks
 
 Body size is the trait, so the two groups are the breeds at its extremes: every
-animal of fourteen toy or small breeds against every animal of eleven giant
-breeds. Hudson Fst
-([Hudson et al. 1992](https://doi.org/10.1093/genetics/132.2.583)) scores how
-far apart the two groups' allele frequencies sit, computed per window over the
-Dog10K phased imputation panel as a ratio of averages
+animal of the toy and small breeds against every animal of the giant breeds.
+Hudson Fst ([Hudson et al. 1992](https://doi.org/10.1093/genetics/132.2.583))
+scores how far apart the two groups' allele frequencies sit, computed per window
+over the Dog10K phased imputation panel as a ratio of averages
 ([Bhatia et al. 2013](https://doi.org/10.1101/gr.154831.113)).
 [`build_dog10k_size_fst.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_size_fst.sh)
 writes one BED line per window.
@@ -190,12 +191,12 @@ about half the size variation across breeds.
 
 Small breeds share a haplotype at _IGF1_ that large breeds largely lack
 ([Sutter et al. 2007](https://doi.org/10.1126/science.1137045)). The samples are
-the two groups the scan compared plus the twelve Greek gray wolves, taken from
-the Dog10K sample table by breed name. They include whole breeds, because
-several breeds depart from the pattern one animal at a time and the clustering
-below has to show that variation. The SNV callset is a single large VCF over
-every sequenced canid with a tabix index beside it, and `bcftools` reads only
-the window:
+the two groups the scan compared plus the Greek gray wolves, taken from the
+Dog10K sample table by breed name. They include whole breeds, because several
+breeds depart from the pattern one animal at a time and the clustering below has
+to show that variation. The SNV callset is a single large VCF over every
+sequenced canid with a tabix index beside it, and `bcftools` reads only the
+window:
 
 <!-- from: scripts/build_dog10k_igf1.sh -->
 
@@ -252,14 +253,12 @@ column that paints the swatch:
 }
 ```
 
-## Framing IGF1 on the sites that separate toy from giant
+## Clustering the IGF1 rows by genotype
 
 The build script prints which sites separate the two size classes. Frame the
 view on that span with a margin of undifferentiated sequence on each side, as
-`chr15:41,348,000-41,752,000` in the session below does, so Fst drops back to
-near zero at both edges of the figure further down.
-
-## Clustering the IGF1 rows by genotype
+`chr15:41,348,000-41,752,000` does, so Fst drops back to near zero at both
+edges.
 
 Rows arrive in the VCF's order, which is the order the sample list was built in,
 so they start out grouped by breed. Clustering reads the region on screen, and
@@ -310,6 +309,15 @@ with `clusterRegion` beside `runClustering`, as the figure below does:
 
 ## The IGF1 haplotype block in toy, giant and wolf genotypes
 
+The build script also scores Fst one site at a time over the slice, with the
+scan's estimator and size classes, and writes it as `dog10k_igf1_fst.bed.gz`. It
+loads like the genome scan, as a `GWASTrack` whose `GWASAdapter` takes
+`scoreColumn` `fst` and `columnNames` `chrom`, `chromStart`, `chromEnd`, `name`,
+`fst`, `freqToySmall`, `freqGiant`.
+
+Open `chr15:41,348,000-41,752,000` with that Fst track above the clustered
+variant track:
+
 <Figure caption="SNVs across IGF1 as a matrix, one row per canid with its size class as the sidebar swatch, under per-site Fst." src="/img/dog10k-igf1-haplotype.png" />
 
 Reading the matrix against the Fst track above it:
@@ -317,19 +325,13 @@ Reading the matrix against the Fst track above it:
 - Clustering on genotypes alone recovers the size split. Both ends of the block
   fall inside the window, and the block is a run of columns where one class is
   enriched, since the classes differ by a shift in allele frequency.
-- The Fst track is the same Hudson Fst as the genome scan, between the same two
-  size classes, computed one site at a time over this VCF, with one point per
-  matrix column. The matrix gives each record equal width and the Fst track
-  keeps genomic spacing, so sloped lines tie each column to its coordinate.
+- The Fst track has one point per matrix column. The matrix gives each record
+  equal width and the Fst track keeps genomic spacing, so sloped lines tie each
+  column to its coordinate.
 - Rows depart from their size-class color in both directions: single orange rows
   sit within the giant cluster and single blue rows within the small one.
 - The wolves form a contiguous band directly below the toy and small block, and
   have part of its haplotype.
-
-The build script writes the Fst track as `dog10k_igf1_fst.bed.gz`. It loads like
-the genome scan, as a `GWASTrack` whose `GWASAdapter` takes `scoreColumn` `fst`
-and `columnNames` `chrom`, `chromStart`, `chromEnd`, `name`, `fst`,
-`freqToySmall`, `freqGiant`.
 
 ## Scanning for peaks in another trait
 
@@ -343,7 +345,8 @@ trait:
   above.
 - Add a column to the samples TSV to color by.
 
-Schall and Kidd (2025) list structural variants associated with breed clades.
+Schall and Kidd (2025) list structural variants whose frequencies track breed
+clades, and those slice from their SV callsets the same way.
 
 ## Reproduce it end to end
 
