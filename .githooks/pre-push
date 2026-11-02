@@ -149,6 +149,8 @@ while read -r localref localsha remoteref remotesha; do
   [ "$localsha" = "$zero" ] && continue
   found=1
   [ "$remoteref" = refs/heads/main ] && to_main=1
+  pushed_sha=$localsha
+  pushed_dst=$remoteref
   refspecs=$refspecs$localref:$remoteref'
 '
   if [ "$remotesha" = "$zero" ]; then
@@ -731,15 +733,16 @@ done
 IFS=$oldifs
 
 # Committing needs somewhere to commit to: the autoheal writes onto HEAD, which
-# is only the right place when HEAD is what is being pushed. A push of some
-# other branch, a detached HEAD, or several refs at once falls back to
-# reporting.
+# is only the right place when HEAD's commit is what is being pushed, under
+# whatever remote name (a worktree branch pushed as `HEAD:main`, or `main`
+# pushed from a worktree sitting on the same commit). A push of some other
+# commit, a detached HEAD, or several refs at once falls back to reporting.
 branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)
 one_ref=$(printf '%s' "$refspecs" | grep -c . || true)
+unpushed=
 if [ -z "$branch" ] || [ "$one_ref" != 1 ] ||
-  [ "$refspecs" != "refs/heads/$branch:refs/heads/$branch
-" ]; then
-  manual=$manual$auto
+  [ "$pushed_sha" != "$(git rev-parse HEAD)" ]; then
+  unpushed=$auto
   auto=
 fi
 
@@ -767,6 +770,13 @@ if [ -n "$manual" ]; then
   printf '%s' "$manual" | sed 's/^/  /' >&2
 fi
 
+if [ -n "$unpushed" ]; then
+  echo >&2
+  echo "pre-push: the fixers changed these, but this push is not of HEAD's commit, so" >&2
+  echo "they are left uncommitted. Commit them and push again, or main goes out stale:" >&2
+  printf '%s' "$unpushed" | sed 's/^/  /' >&2
+fi
+
 if [ "$status" != 0 ]; then
   echo >&2
   echo "Push blocked. Fix the above, or push anyway with SKIP_DOCS_CHECK=1." >&2
@@ -782,11 +792,11 @@ fi
 # Something was fixed and is now committed, which the outer push cannot know —
 # it resolved its commit before this hook started. Push the new tip here.
 pstatus=0
-git push --no-verify "$remote" "refs/heads/$branch:refs/heads/$branch" >&2 || pstatus=$?
+git push --no-verify "$remote" "refs/heads/$branch:$pushed_dst" >&2 || pstatus=$?
 
 echo >&2
 if [ "$pstatus" = 0 ]; then
-  echo "pre-push: pushed that commit to $remote/$branch, so your work HAS landed." >&2
+  echo "pre-push: pushed that commit to $remote/${pushed_dst#refs/heads/}, so your work HAS landed." >&2
   echo "The 'failed to push some refs' git prints next is the push it was already" >&2
   echo "holding, which now points at an older commit than the remote does. Nothing" >&2
   echo "to do — 'git status' will say you are up to date." >&2
