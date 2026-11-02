@@ -32,8 +32,9 @@ A setting written to it names members one by one: a member left out stays as it 
 | Slot | Description |
 | --- | --- |
 | <span id="slot-bases">**bases**</span><br>[PileupBases](../pileupbases) | The per-base layer: `show` and `encoding.color`. |
-| <span class="slot-group">Inherited from [Pileup](../pileup)</span> | <span class="slot-group-count">7 slots</span> |
+| <span class="slot-group">Inherited from [Pileup](../pileup)</span> | <span class="slot-group-count">8 slots</span> |
 | <span id="slot-show">**show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the pileup band |
+| <span id="slot-collapsed">**collapsed**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Only consulted while `facet` is in effect. When set, each section draws as one row instead of a stack, and tint shading shows overlap depth instead of row count: the compact reading for a track with many sections (an all-vs-all synteny track's mate genomes). A section expanded from its label chip opts back out and draws a true stack. On the pileup rather than `facet`, which a share link writing `facet: 'HP'` replaces whole. The Show menu's "Collapse groups to one row" writes it. |
 | <span id="slot-mark">**mark**</span><br>[PileupMark](../pileupmark) | The bar each read draws as: `height`. |
 | <span id="slot-maxlayoutheight">**maxLayoutHeight**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>6000</code> | the tallest the pileup's layout grows in pixels; reads past it are not stacked, and coverage still counts them. Not the display's growMaxHeight, which caps how tall the track grows<br>_advanced_ |
 | <span id="slot-mismatches">**mismatches**</span><br>[PileupMismatches](../pileupmismatches) | How reads differ from the reference: `show`, and `encoding.opacity`, the fade by base quality. |
