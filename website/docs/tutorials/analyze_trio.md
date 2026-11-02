@@ -30,19 +30,21 @@ along a chromosome. On chr1 of a 1000 Genomes trio, we:
   ([assemblies guide](/docs/config_guides/assemblies))
 - Java 8+, for hap-ibd
 - `python3`
-- `node`
+- `node`, for the [JBrowse CLI](/docs/cli)
 - htslib (`bgzip`, `tabix`)
 
-<!-- TUTORIAL_INSTALL htslib,node START -->
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli START -->
 
 ```bash
 # Debian/Ubuntu
 sudo apt install tabix nodejs
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge htslib nodejs
+# any platform
+npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib,node END -->
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli END -->
 
 On Debian/Ubuntu, `apt install default-jre` installs Java. `hap-ibd.jar` is a
 single download from its
