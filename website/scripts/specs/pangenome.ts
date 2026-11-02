@@ -89,7 +89,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('maf-display'),
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 710,
+    viewportHeight: 745,
     tooltip: 'hide',
     actions: [PARK_CURSOR],
   },
