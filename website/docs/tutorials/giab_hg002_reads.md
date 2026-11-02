@@ -10,9 +10,9 @@ tutorial_category: Getting started
 ---
 
 HG002 is the Genome in a Bottle (GIAB) Ashkenazi son, a human benchmark sample.
-GIAB publishes reads of HG002 from every major platform, and the long reads
-carry an `HP` tag from WhatsHap saying which parental haplotype each read came
-from. We:
+GIAB publishes reads of HG002 from every major platform, and each long read has
+an `HP` tag, written by WhatsHap, that records which parental haplotype the read
+came from. We:
 
 - open HG002 Oxford Nanopore, PacBio and Illumina reads beside the GIAB SV
   benchmark
@@ -30,12 +30,29 @@ from. We:
   whose **GIAB** category in the track selector holds the hg19 tracks below, or
   your own instance with hg19 loaded
   ([assemblies guide](/docs/config_guides/assemblies))
+- for your own reads, [WhatsHap](https://whatshap.readthedocs.io/) and samtools,
+  to add the `HP` tag
+
+<!-- TUTORIAL_INSTALL samtools,whatshap START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools
+# or conda, which has every tool above
+conda install -c bioconda -c conda-forge samtools
+# any platform
+pip install whatshap
+```
+
+<!-- TUTORIAL_INSTALL samtools,whatshap END -->
 
 ## The data
 
 GIAB's HG002 reads over two hg19 chr1 windows (`1:55.69-55.72Mb` and
-`1:62.99-63.02Mb`), plus the GIAB Tier 1 SV benchmark. Nothing to download: the
-demo tracks read slices of these files by URL.
+`1:62.99-63.02Mb`), plus the GIAB Tier 1 SV benchmark.
+
+Nothing to download: the demo tracks read slices of these files by URL. Reads of
+your own get their `HP` tags and load as _Loading phased reads_ shows.
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -49,8 +66,19 @@ demo tracks read slices of these files by URL.
 
 ## Loading phased reads
 
-On your own instance, a haplotagged BAM loads like any other alignments track.
-The `facet` setting opens the track already split by `HP`:
+A haplotagged BAM loads like any other alignments track. For reads of your own,
+`whatshap haplotag` writes the `HP` tag from a phased VCF of the same sample on
+the same reference:
+
+```bash
+whatshap haplotag --reference reference.fa -o haplotagged.bam phased.vcf.gz reads.bam
+samtools index haplotagged.bam
+```
+
+The track config below loads the demo's nanopore reads. Swap `uri` for your
+`haplotagged.bam`, with its `.bai` beside it. The `facet` setting opens the
+track already split by `HP`, and `encoding.color` colors each read by the same
+tag:
 
 ```json addtrack
 {
@@ -67,7 +95,8 @@ The `facet` setting opens the track already split by `HP`:
 
 ## A heterozygous deletion in one haplotype
 
-Navigate to `1:63,005,000-63,008,000` and open the demo's **HG002 BAM ultralong
+We'll start at a deletion from the GIAB SV benchmark. Navigate to
+`1:63,005,000-63,008,000` and open the demo's **HG002 BAM ultralong
 nanopore+whatshap**, the same reads as **HG002 ONT**, beside **HG002 GIAB
 consensus SV (VCF)**. From the track menu, **Group by → Tag...** asks for the
 tag name and lists the values it finds in view:
@@ -86,7 +115,9 @@ options.
 
 ## One insertion across three platforms
 
-The PacBio reads are a slice of the GIAB Sequel run, hosted beside the demo:
+JBrowse draws an insertion differently on each platform's reads, because a long
+read spans it and a short read stops at its edge. The PacBio reads are a slice
+of the GIAB Sequel run, hosted beside the demo:
 
 ```json addtrack
 {
@@ -101,7 +132,8 @@ Navigate to `1:55,705,770-55,706,090` and open it with the demo's **HG002 dbVar
 variant calls**, **HG002 BAM ultralong nanopore+whatshap** and **HG002 Illumina
 hs37d5.2x250**. JBrowse draws the insertion inside each long read as a purple
 mark. The 250 bp Illumina reads stop at its edges, and **Show → Soft clipping**
-in the Illumina track menu draws the unaligned bases they carry past them:
+in the Illumina track menu draws each read's bases past the edge, the ones the
+aligner left unaligned:
 
 <Figure caption="Show → Soft clipping in the HG002 Illumina track menu." src="/img/alignments/insertion_soft_clipping_menu.png" />
 
@@ -109,23 +141,25 @@ in the Illumina track menu draws the unaligned bases they carry past them:
 
 ## Strand-split coverage
 
-Mismatch columns that come from basecalling errors often show on one strand
-only. **Group by → Strand** on the nanopore track gives each section a coverage
-band built from its own reads:
+A column of mismatches in a pileup is either a variant or a basecalling error,
+and basecalling errors often show on one strand only. **Group by → Strand** on
+the nanopore track splits the reads into a forward and a reverse section, each
+with a coverage band drawn from that section's reads:
 
 <Figure caption="HG002 nanopore reads grouped by strand. The left box disagrees in the reverse band only, the right box in both." src="/img/alignments/strand_split_coverage.png" />
 
 ## Methylation by haplotype
 
-HG002's nanopore reads also carry 5mC calls in their `MM`/`ML` tags. These reads
-are aligned to hg38, so open the
+HG002's nanopore reads also have 5mC calls in their `MM`/`ML` tags, and the same
+grouping by `HP` separates the two parental alleles at an imprinted locus. These
+reads are aligned to hg38, so open the
 [demo on hg38](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&assembly=hg38),
 navigate to the _SNRPN_ imprinting center at `chr15:24,948,000-24,962,000` and
 open **HG002 ONT reads (5mC, haplotagged)** from the **Methylation** category,
 under **UCSC CpG islands** and **NCBI RefSeq (GFF3Tabix)** from **Annotation**.
 In the reads' track menu, **Color by → Modifications** paints each CpG red where
-its 5mC call says methylated, and **Color by → Show unmodified in blue** adds
-blue where it says unmethylated:
+the read's 5mC call is methylated, and **Color by → Show unmodified in blue**
+adds blue where the call is unmethylated:
 
 <Figure caption="Color by → Modifications in the HG002 ONT track menu." src="/img/methylation/hg002_snrpn_color_menu.png" />
 

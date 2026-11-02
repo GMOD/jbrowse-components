@@ -15,7 +15,8 @@ diploid assembly lets us lay them against each other. We use T2T-HG002 v1.2, the
 Q100 project's telomere-to-telomere assembly of the HG002 reference individual,
 and:
 
-- load the assembly and the maternal-paternal alignment
+- load the diploid assembly, and the maternal-to-paternal chain as a synteny
+  track
 - open a dotplot of the mother's copy of every chromosome against the father's
 - open the 8p23.1 inversion in a linear synteny view, with the follow button
   keeping the two haplotypes in register
@@ -25,6 +26,19 @@ and:
 - a JBrowse instance to load the config into (the
   [web quickstart](/docs/quickstart_web), or the
   [desktop quickstart](/docs/quickstart_desktop))
+- for two haplotypes of your own, [minimap2](https://github.com/lh3/minimap2),
+  to align them
+
+<!-- TUTORIAL_INSTALL minimap2 START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install minimap2
+# or conda, which has every tool above
+conda install -c bioconda -c conda-forge minimap2
+```
+
+<!-- TUTORIAL_INSTALL minimap2 END -->
 
 ## The data
 
@@ -33,9 +47,9 @@ assembly, and the maternal-to-paternal chain the project publishes
 ([Hansen _et al._ 2026](https://doi.org/10.1016/j.cell.2026.06.016)), plus JHU
 Liftoff v0.6 gene models built on v1.1.
 
-Nothing to download: the track configs and the `curl` check below read these
-files by URL. Two haplotypes of your own go in one FASTA, as _Loading the
-assembly and the alignment_ describes.
+Nothing to download: the track configs below read these files by URL. Two
+haplotypes of your own go in one FASTA, as _Loading the assembly and the
+alignment_ describes.
 
 <details>
 <summary>The files</summary>
@@ -79,10 +93,15 @@ assemblies are both `hg002v1.2`, since the two haplotypes are contigs of one:
 }
 ```
 
-For two haplotypes of your own, put both in one FASTA with contig names that
-tell them apart (`_MATERNAL` and `_PATERNAL`, as above), and align the file
-against itself; `-X` leaves out the self-alignments. Give the track a
-`PAFAdapter` with `assemblyNames` naming that one assembly twice:
+Two haplotypes of your own follow the same contract:
+
+- **One FASTA** holds both, with contig names that tell them apart (`_MATERNAL`
+  and `_PATERNAL`, as above), compressed with `bgzip` and indexed with
+  `samtools faidx` so the `.fai` and `.gzi` sit beside it
+- **One alignment** of the file against itself, as below, where `-X` leaves out
+  the self-alignments
+- **One synteny track** over it, with a `PAFAdapter` in place of the
+  `ChainAdapter` and `assemblyNames` naming that one assembly twice
 
 ```bash
 minimap2 -cx asm5 --eqx -X hap.fa.gz hap.fa.gz > hap.paf
