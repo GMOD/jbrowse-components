@@ -8,8 +8,20 @@ import { wiggleMarkWithoutExtent } from '../shared/wiggleMarkWithoutExtent.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+/**
+ * #config WiggleRows
+ * #category display
+ * The `rows` of a `LinearWiggleDisplay` on a `MultiQuantitativeTrack`: a
+ * [QuantitativeRows](../quantitativerows) whose `field` defaults to `source`,
+ * so each subtrack draws its own row.
+ *
+ * #example
+ * ```js
+ * { type: 'LinearWiggleDisplay', rows: { field: '' } }
+ * ```
+ */
 const rowPerSource = ConfigurationSchema(
-  'Rows',
+  'WiggleRows',
   {
     field: {
       type: 'stringEnum',
