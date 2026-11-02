@@ -152,7 +152,10 @@ a file, and fails on a key it does not know.
 |  | `jexlFilters` (session) | `filter` |
 |  | `layout` (session) | `rows.sort` |
 |  | `lineZoneHeight` (session) | `connectors.height` |
+|  | `referenceDrawingModeSetting` (session) | `genotypes.reference.show` |
 |  | `renderingModeSetting` (session) | `unit` |
+|  | `rowHeightMode` (session) | `rows.step` |
+|  | `minorAlleleFrequencyFilterSetting` (session) | dropped |
 | `LinearVariantDisplay`, `LinearWiggleDisplay` | `minimalTicks` | dropped |
 |  | `clusterTree` (session) | `rows.tree` |
 |  | `showSidebarLabelsSetting` (session) | `rows.axis.labels` |
