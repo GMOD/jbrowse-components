@@ -64,7 +64,7 @@ between displays.
    - ggjbrowse's closed-schema bundle drops an old key silently, so every
      rename, and every new key, needs an engine re-pin, an R respell and a
      tutorial re-knit (memory `a-config-rename-reaches-ggjbrowse`). The pin
-     is `d0feecc145`; `dog10k_lof` keeps its `557791197f` knit until the
+     is `5e6d117f55`; `dog10k_lof` keeps its `557791197f` knit until the
      callset host's certificate is renewed.
    - jb2hubs targets `main` and, once hosted, v5.0.0-beta.18 (its ADR 0002
      amendment, todo `beta18-joins-host-versions`). The Trix adapter's
