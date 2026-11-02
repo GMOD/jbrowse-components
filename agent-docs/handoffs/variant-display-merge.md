@@ -1,6 +1,6 @@
 ---
 name: variant-display-merge
-description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D remains; E is settled: records-only opens at its stack up to 200, once, and over rows the band is every record, added to the track, its rows hiding past the cap (ADR-254's fifth amendment). Open: D (four outside writers still name the old type), the trio tour refilm, the empty rows panel's scrollbar, and a look in the running app."
+description: "Merging LinearVariantDisplay and LinearMultiSampleVariantDisplay into one LinearVariantDisplay with a records band over genotype rows (Colin, 2026-10-30: \"i'd like convergence\"). Slice one (ADR-254, the SV records band on the matrix display) landed; sub-slices A (records as the whole display with no rows, density gate included) and B (record settings under `records`) built, then the pre-C steering (one record color rule, records on by default, the band as one seam) and C1 (ADR-255: one `LinearVariantDisplay`, the multi-sample name a deprecated alias) and C2 (the in-repo sweep); D remains; E is settled: records-only opens at its stack up to 200, once, and over rows the band is every record, added to the track, its rows hiding past the cap (ADR-254's fifth amendment). Open: D (four outside writers still name the old type), the trio tour refilm, the empty rows panel's scrollbar, and the scrolled export and split view not yet driven in the app."
 ---
 
 # One variant display
@@ -101,7 +101,10 @@ widget's samples). Still differing, besides C1's Show/hide rows:
 
 - A record the adapter does not find launches the split view from the
   click's record, INFO-less, and the junction walk stops there.
-- None of the fixes above has been looked at in the running app.
+- Driven on hosted main (2026-11-01, volvox): the record hover, the record
+  menu and the details widget, samples included, on a one-sample and a
+  1,094-sample VCF. The scrolled export and the split view's record have not
+  been driven in the app.
 
 ## Evidence
 
