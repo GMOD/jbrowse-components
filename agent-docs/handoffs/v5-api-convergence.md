@@ -96,7 +96,8 @@ between displays.
    plugins.
 4. **The multi-way view's off-screen mate marks honor only the `length`
    filter**, since the worker sends no attribute lanes with the mates. The
-   last open item of ADR-238's migration.
+   last open item of ADR-238's migration. Claimed 2026-11-01 (worktree
+   `mate-strip-filter`).
 5. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
    holds them, each ruled in ADR-238, ADR-240 or the schema's own comment,
    or left by Colin (2026-10-30: the chord and matrix ramps and wiggle's key
