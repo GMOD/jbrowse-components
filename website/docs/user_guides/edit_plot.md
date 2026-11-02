@@ -38,7 +38,7 @@ display:
 | Multi-row feature display (painting) (`LinearMultiRowFeatureDisplay`) | `marks`, `transform`, `facet`, `rows`, `encoding`, `origin`, `legend`, `filter`                             |
 | Multi-way synteny display (`MultiWaySyntenyDisplay`)                  | `encoding`, `rows`, `ribbons`, `legend`, `labels`, `laneLayers`                                             |
 | Synteny alignments display (`LGVSyntenyDisplay`)                      | `unit`, `filter`, `facet`, `sort`, `encoding`, `legend`, `coverage`, `pileup`, `readConnections`            |
-| Variant display (`LinearVariantDisplay`)                              | `filter`, `rows`, `unit`, `encoding`, `legend`, `facet`, `records`, `genotypes`                             |
+| Variant display (`LinearVariantDisplay`)                              | `filter`, `rows`, `encoding`, `legend`, `facet`, `records`, `genotypes`                                     |
 | Wiggle display (`LinearWiggleDisplay`)                                | `mark`, `rows`, `encoding`, `origin`, `legend`                                                              |
 
 <!-- END GENERATED PLOT_SETTINGS -->

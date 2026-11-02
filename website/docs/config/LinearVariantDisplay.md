@@ -57,8 +57,9 @@ population" demo config:
 }
 ```
 
-Phased haplotype rows, one per haplotype of each sample. `rows` arranges
-them by sample name, so the order below puts both of HG002's rows first:
+Phased haplotype rows, one per haplotype of each sample, named
+`HG002 HP1`, `HG002 HP2`. A sample's name stands for its haplotype rows,
+so the order below puts both of HG002's rows first:
 
 ```js
 {
@@ -74,8 +75,7 @@ them by sample name, so the order below puts both of HG002's rows first:
     {
       type: 'LinearVariantDisplay',
       height: 400,
-      unit: 'haplotype',
-      rows: { sort: ['HG002'] },
+      rows: { field: 'haplotype', sort: ['HG002'] },
     },
   ],
 }
@@ -122,10 +122,9 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearVariantDispl
 | <span id="slot-connectorsshow">**connectors.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the connector lines above the columns |
 | <span id="slot-connectorsheight">**connectors.height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>20</code> | height of the connector band in pixels, taken from the genotype rows'; its seam drag writes it |
 | <span id="slot-filter">**filter**</span><br><code>fieldPredicateList()</code> | The variants the display draws, a list of [](/docs/config/fieldpredicate) entries a site must all pass: a field of the record's own, a `jexl:` expression that must hold, `minorAlleleFrequency`, the share of its called alleles the second most frequent one makes up, and `missingness`, the share of its alleles uncalled. `[{ field: "minorAlleleFrequency", gte: 0.05 }]` drops the rare variants; a site with no called allele draws nothing whatever the list says. |
-| <span id="slot-rows">**rows**</span><br>[VariantRows](../variantrows) | The rows are the file's samples, and the object is the arrangement a reader gives them, each member by row name: a sample in allele-count mode, a haplotype (`"<sample> HP<n>"`) in phased mode, where a sample name stands for all of its haplotypes. The samples `sort` lists come first and the rest keep the file's order; a facet groups within it. `rows.step` is the row height. |
+| <span id="slot-rows">**rows**</span><br>[VariantRows](../variantrows) | What one row is, `rows.field`: a sample, or with `'haplotype'` one phased haplotype of one, named `"<sample> HP1"`, `"HP2"`. The rest of the object is the arrangement a reader gives the rows, each member by row name, where a sample's name stands for its haplotype rows. The samples `sort` lists come first and the rest keep the file's order; a facet groups within it. `rows.step` is the row height. |
 | <span id="slot-tooltip">**tooltip**</span><br>[SampleTooltip sub-schema](#slot-tooltipshow) | The hover tooltip naming the record under the pointer, and over a genotype cell its genotype and sample too. Off, the crosshairs, the highlighted cell or record and the cross-display `session.hovered` channel stay. The record's line in it is `records.tooltip.field`. |
 | <span id="slot-tooltipshow">**tooltip.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | show the hover tooltip over the records and the genotype rows; the crosshairs and the hover highlight stay either way |
-| <span id="slot-unit">**unit**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (sample, haplotype) = <code>'sample'</code> | The unit one row draws: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype |
 | <span id="slot-encoding">**encoding**</span><br>[VariantCellEncoding](../variantcellencoding) | The channels the records and the genotype cells share: `encoding.color`, the hue of every record and of every cell with an alt allele. |
 | <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The floating key over the display. It is clipped to the display's own bounds, so turn it off to size a short display to its rows rather than to its key. |
 | <span id="slot-facet">**facet**</span><br>[Facet](../facet) | A sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. `"population"`) whose values each take a band of rows; or `{ field, sort }`, the listed values banding first and the rest sorted. Unset, the rows keep their existing order.<br><br>The band is applied when the rows are read, over whatever order the reader has arranged, so a drag that moves a sample into another band snaps back while this is set. Each band is labelled beside the tree and draws the clade of the cluster tree whose leaves are exactly its rows; a clustering run under bands clusters each band apart. |

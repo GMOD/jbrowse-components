@@ -34,7 +34,6 @@ each by value of the field, and `color`, the rows colored by an attribute.
 
 - **Extended by:** [QuantitativeRows](../quantitativerows)
 - **Extended by:** [RowsWithStep](../rowswithstep)
-- **Extended by:** [SampleRows](../samplerows)
 - **Base config:** [RowArrangement](../rowarrangement)
 
 ## Config slots

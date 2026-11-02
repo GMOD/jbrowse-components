@@ -25,6 +25,7 @@ field-keyed displays' `Rows` object is this plus `field`.
 ## Related links
 
 - **Extended by:** [LaneRows](../lanerows)
+- **Extended by:** [MafRows](../mafrows)
 - **Extended by:** [Rows](../rows)
 
 ## Config slots

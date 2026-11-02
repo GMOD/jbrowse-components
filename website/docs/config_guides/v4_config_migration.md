@@ -140,7 +140,7 @@ a file, and fails on a key it does not know.
 |  | `maxFeatureScreenDensity` | `records.maxFeatureScreenDensity` |
 |  | `minorAlleleFrequencyFilter` | `filter` |
 |  | `mouseover` | `records.tooltip.field` |
-|  | `renderingMode` | `unit` |
+|  | `renderingMode` | `rows.field` |
 |  | `showDescriptions` | `records.labels.description.show` |
 |  | `showLabels` | `records.labels.name.show` |
 |  | `referenceDrawingMode`, `showReferenceAlleles` | `genotypes.reference.show` |
@@ -153,7 +153,7 @@ a file, and fails on a key it does not know.
 |  | `layout` (session) | `rows.sort` |
 |  | `lineZoneHeight` (session) | `connectors.height` |
 |  | `referenceDrawingModeSetting` (session) | `genotypes.reference.show` |
-|  | `renderingModeSetting` (session) | `unit` |
+|  | `renderingModeSetting` (session) | `rows.field` |
 |  | `rowHeightMode` (session) | `rows.step` |
 |  | `minorAlleleFrequencyFilterSetting` (session) | dropped |
 | `LinearVariantDisplay`, `LinearWiggleDisplay` | `minimalTicks` | dropped |

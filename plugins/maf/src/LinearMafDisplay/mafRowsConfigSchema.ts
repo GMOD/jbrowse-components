@@ -2,7 +2,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { rowAxisConfigSchema } from '@jbrowse/display-kit/rowAxisConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
-import { ROWS_COLORS_SLOT } from '@jbrowse/display-kit/rowsConfigSchema'
 
 /**
  * #config MafRows
@@ -42,7 +41,12 @@ export const mafRowsConfigSchema = ConfigurationSchema(
      * write it. A row with none takes `rows.color`, else the adapter's
      * `samples[].color`, else the palette. A copy row takes its species'.
      */
-    colors: ROWS_COLORS_SLOT,
+    colors: {
+      type: 'stringMap',
+      defaultValue: {},
+      description:
+        "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color",
+    },
     /**
      * #slot color
      * The rows colored by an attribute: a [RowColor](../rowcolor) channel,

@@ -53,7 +53,7 @@ values aligned to `variants`, and `infoFields`, the header's declaration
 of each key; `annotations`, each record's SnpEff `ANN` or VEP `CSQ`
 consequences, a row per record and consequence, which then leave `info`
 (`consequenceTables`); `cells`, each sample's (or under
-`unit: 'haplotype'` each haplotype's) cell at each record, with its
+`rows.field: 'haplotype'` each haplotype's) cell at each record, with its
 genotype, its `dosage` and the fill the display paints it; `rows`, the
 rows the cells name, top to bottom as the display arranges them by `rows`
 and stacks them in `facet`'s bands, each with its label and band; `bands`,

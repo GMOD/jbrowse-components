@@ -52,10 +52,10 @@ and its `filter`; `info`, each INFO key's values aligned to `variants`, and
 `infoFields`, the header's declaration of each key; `annotations`, each record's
 SnpEff `ANN` or VEP `CSQ` consequences, a row per record and consequence, which
 then leave `info` (`consequenceTables`); `cells`, each sample's (or under
-`unit: 'haplotype'` each haplotype's) cell at each record, with its genotype,
-its `dosage` and the fill the display paints it; `rows`, the rows the cells
-name, top to bottom as the display arranges them by `rows` and stacks them in
-`facet`'s bands, each with its label and band; `bands`, each band's value and
+`rows.field: 'haplotype'` each haplotype's) cell at each record, with its
+genotype, its `dosage` and the fill the display paints it; `rows`, the rows the
+cells name, top to bottom as the display arranges them by `rows` and stacks them
+in `facet`'s bands, each with its label and band; `bands`, each band's value and
 label, in stacking order; `legend`, `legendTitle` and `ramps`, the key the
 display shows; and `warnings`, the samples file's. With
 `genotypes.reference.show` off, the default, a reference call draws no cell.

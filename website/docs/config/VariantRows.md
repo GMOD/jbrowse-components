@@ -1,20 +1,24 @@
 ---
 id: variantrows
 title: VariantRows
-description: "The variant display's rows: one per sample, or per haplotype in phased mode, with the RowsWithStep arrangement, axis and row height."
+description: "The variant display's rows: one per sample, or with field: 'haplotype' one per phased haplotype, with the RowsWithStep arrangement, axis and row height."
 sidebar_label: Display setting -> VariantRows
 ---
 
 Auto-generated from the config schema in the source — see the [config guide](/docs/config_guide) for concepts. Provided by the `variants` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LinearVariantDisplay/variantRowsConfigSchema.ts).
 
-The variant display's `rows`: one per sample, or per haplotype in phased
-mode, with the [RowsWithStep](../rowswithstep) arrangement, axis and row
-height.
+The variant display's `rows`: one per sample, or with `field:
+'haplotype'` one per phased haplotype, with the
+[RowsWithStep](../rowswithstep) arrangement, axis and row height.
 
 ## Example usage
 
 ```js
 { type: 'LinearVariantDisplay', rows: { sort: ['HG002'], step: 10 } }
+```
+
+```js
+{ type: 'LinearVariantDisplay', rows: 'haplotype' }
 ```
 
 ## Related links
@@ -23,13 +27,13 @@ height.
 
 ## Config slots
 
-A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. One that changes `field` first clears `sort`, `labels`, `tree`, `kept`, `colors`, which name the old values, except those it states. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. One that changes `field` first clears `sort`, `labels`, `tree`, `kept`, `colors`, which name the old values, except those it states. A write between `haplotype` and `sample` clears nothing, since a `haplotype` row answers to its `sample`'s name. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
 | <span id="slot-filter">**filter**</span><br>[RowPredicate](../rowpredicate) | The rows shown by attribute: a list of [RowPredicate](../rowpredicate) entries over a samplesTsv column, each one a row must pass, as `[{ field: 'population', oneOf: ['EUR', 'AFR'] }]`. A row missing the attribute fails every test but `valid: false`. It narrows the rows before `kept`, and a write changing `field` keeps it, since it names no row by its value; a row's name goes in `kept`. |
-| <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (sample) = <code>'sample'</code> | `sample`, the one field a row of this display can be: a sample, or a haplotype of one in phased mode. |
+| <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (sample, haplotype) = <code>'sample'</code> | What one row is: `sample`, a row per sample colored by its allele dosage, or `haplotype`, a row per phased haplotype of each sample, named `"<sample> HP1"`, `"<sample> HP2"`. That number is JBrowse's, counting a sample's alleles from 1, not the VCF's `HP` tag. A haplotype row answers to its sample's name, so a `sort`, `labels`, `colors`, `tree` or `kept` entry naming a sample reaches its haplotype rows, and switching between the two keeps them: a haplotype entry waits unseen in `sample` mode, and a sample ranks at its first haplotype entry. A haplotype row's label is its own `labels` entry exactly, else its sample's label and its haplotype (`Mother HP1`), and a haploid sample's one row takes the sample's label alone. |
 | <span class="slot-group">Inherited from [RowsWithStep](../rowswithstep)</span> | <span class="slot-group-count">1 slot</span> |
 | <span id="slot-step">**step**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>'fit'</code> | Row height in px: the px from one row's top to the next, the rows that do not fit scrolling; or `"fit"`, the default, dividing the track's `height` between the rows, as `heightMode: "fit"` does on a feature track. The track never grows to hold its rows. Vega-Lite's word for a band's size, as in `height: { step }`. |
 | <span class="slot-group">Inherited from [Rows](../rows)</span> | <span class="slot-group-count">3 slots</span> |

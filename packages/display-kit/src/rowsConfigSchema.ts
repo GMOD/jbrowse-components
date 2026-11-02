@@ -22,14 +22,6 @@ export const ROWS_KEYED_MEMBERS = [
   'colors',
 ] as const
 
-/** `rows.colors`, the colors pinned on rows by name. */
-export const ROWS_COLORS_SLOT = {
-  type: 'stringMap',
-  defaultValue: {},
-  description:
-    "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color",
-} as const
-
 /** How `rows` is written: its keyed members name the values of `field`. */
 export const ROWS_WRITES = {
   keyedBy: 'field',
@@ -91,7 +83,12 @@ export const rowsConfigSchema = ConfigurationSchema(
      * own color (MAF's `samples[].color`, a listed source's color), else the
      * palette where the rows share one panel.
      */
-    colors: ROWS_COLORS_SLOT,
+    colors: {
+      type: 'stringMap',
+      defaultValue: {},
+      description:
+        "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color",
+    },
     /**
      * #slot color
      * The rows colored by an attribute: a [RowColor](../rowcolor) channel
