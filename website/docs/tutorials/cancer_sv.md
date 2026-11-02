@@ -8,16 +8,20 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-Cancer genomes have rearrangements that join several distant pieces of the
-genome into one molecule through a chain of junctions, each joining two distant
-stretches. In the COLO829 melanoma cell line we:
+A cancer genome can stitch several distant pieces of the genome into one
+molecule through a chain of junctions. Short reads see each junction alone; a
+long read can cross several, and the reads crossing all of them can be assembled
+into the rearranged chromosome itself. We follow one such chain across chr3,
+chr10 and chr12 in the COLO829 melanoma cell line. We:
 
-- open the chain's three chromosomes side by side in a breakpoint split view
-- sort split reads first and show soft clipping to compare tumor and normal
-  reads at the chr3 breakpoints
-- load the derivative allele assembled from the spanning reads as a synteny
-  track against GRCh38
-- check the contig against the reads and the truth-set VCF
+- load tumor and normal long reads with the somatic SV calls, and sort split
+  reads first at the chr3 breakpoints
+- open a breakpoint split view from a breakend's right-click menu, following the
+  chain to all three loci
+- load the derivative allele assembled from the spanning reads as an assembly,
+  with a synteny track against GRCh38
+- open both in a linear synteny view with the realigned reads and the truth-set
+  VCF
 
 ## Prerequisites
 
@@ -55,10 +59,10 @@ All but the last file come from the ONT COLO829 open-data release and its
 `wf-somatic-variation` run; the last is the multi-platform truth set
 ([Valle-Inclán et al. 2022](https://doi.org/10.1016/j.xgen.2022.100139)).
 
-The tracks below read local files that the
-[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-swap the `uri` for your own sample's reads and follow _The derivative allele_ to
-assemble a contig from them. The script fetches everything itself.
+The read and SV call tracks read these files by URL. The derivative-allele
+tracks read local files that the [build script](#reproduce-it-end-to-end)
+writes, so run it first, or swap the `uri` for your own sample's reads and
+follow _The derivative allele_ to assemble a contig from them.
 
 | What it is                                                                                           | File                                                                                                                                                                                   |
 | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -70,10 +74,12 @@ assemble a contig from them. The script fetches everything itself.
 | The GRCh38 build the CRAM decodes against, and the der(3) (derivative chromosome 3) contig aligns to | [GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta) |
 | The COLO829 somatic SV truth set, lifted to GRCh38                                                   | [content](https://zenodo.org/api/records/4716169/files/truthset_somaticSVs_COLO829_hg38lifted.vcf/content)                                                                             |
 
-## COLO829 and its coverage tracks
+## Tumor and normal coverage as bigWigs
 
-The demo's tumor and normal coverage tracks are the `wf-somatic-variation` run's
-`mosdepth` output in 50 kb windows, converted to bigWig:
+The demo config also carries tumor and normal coverage tracks, for a
+chromosome-wide look at where the tumor gained and lost. They are the
+`wf-somatic-variation` run's `mosdepth` output in 50 kb windows, converted to
+bigWig the same way for each sample:
 
 <!-- from: scripts/build_cancer_sv_demo.sh -->
 
@@ -86,12 +92,9 @@ bedGraphToBigWig cov.bg hg38.chrom.sizes COLO829_tumor.coverage.bw
 
 ## The rearrangement chain across chr3, chr10 and chr12
 
-A series of junctions can bring two genes together, as in the KLHDC2-SNTB1
-fusion of the SK-BR-3 breast cancer line
-([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)). The chain this
-page follows is COLO829's der(3), a derivative chromosome 3 assembled from
-pieces of three chromosomes, whose three junctions close a triangle across chr3,
-chr10 and chr12:
+The chain is COLO829's der(3), a derivative chromosome 3 built from pieces of
+three chromosomes, whose three junctions close a triangle across chr3, chr10 and
+chr12[^chain]:
 
 ```text
 chr3:25,359,111  <-> chr12:72,273,112
@@ -99,8 +102,8 @@ chr3:25,359,568  <-> chr10:58,717,464
 chr10:58,717,662 <-> chr12:72,273,294
 ```
 
-The genes involved are _RARB_ (a tumor suppressor) on chr3, _BICC1_ on chr10,
-and _TRHDE_ on chr12.
+The genes at the junctions are _RARB_ (a tumor suppressor) on chr3, _BICC1_ on
+chr10, and _TRHDE_ on chr12.
 
 ## Tumor and normal reads at the chr3 breakpoints
 
@@ -150,12 +153,11 @@ beside them:
 ```
 
 Open the SV calls and the tumor and normal read tracks at
-`chr3:25,357,600-25,361,000`. The tumor reads end in soft clipping, an end the
-aligner left unaligned, because every read crossing the junction continues on
-another chromosome. The matched normal is clean.
+`chr3:25,357,600-25,361,000`. Every tumor read crossing the junction continues
+on another chromosome, so its end here is soft clipping, a stretch the aligner
+left unaligned. In each read track's menu:
 
-- **Show → Soft clipping** in the track menu draws the clipped ends, which are
-  off by default.
+- **Show → Soft clipping** draws the clipped ends, which are off by default.
 - **Sort by → Split reads first** lifts the reads that continue on another
   chromosome to the top of the pileup.
 - **Force load** approves the download when the track asks first because the
@@ -166,8 +168,8 @@ another chromosome. The matched normal is clean.
 ## Following the chain across breakpoint split view panels {#following-the-chain-across-panels}
 
 A breakpoint split view stacks the loci a rearrangement visits, one panel per
-locus, and draws the reads that leave one panel and arrive in another. Two ways
-to open one:
+locus, and draws the reads that leave one panel and arrive in another. There are
+two ways to open one:
 
 - **Add → Breakpoint split view** builds it from loci you already know, one row
   per panel.
@@ -198,9 +200,10 @@ introduced.
 
 ## Assembling the der(3) derivative allele and aligning it to GRCh38 {#the-derivative-allele}
 
-The cancer SV demo config, https://jbrowse.org/demos/cancer_sv/config.json,
-includes a der(3) contig assembled from the tumor reads that span all three
-loci, so every base in it comes from those reads.
+The split view shows each read in pieces across three panels. Assembling the
+reads that span all three loci gives the der(3) allele as one contig, every base
+of it from those reads; the cancer SV demo config,
+https://jbrowse.org/demos/cancer_sv/config.json, includes the published one.
 
 To build one from your own data, pull the reads crossing the loci with
 `samtools view`, assemble them with
@@ -348,17 +351,17 @@ track. The view shows:
 ## Checking the der(3) contig against the reads and the truth set
 
 Zoom the synteny view to the kilobase holding the junctions, where the two
-inserts have separate ribbons. The truth set has a validated call at each place
-the split reads stop against hg38, and most of the same reads cross all three
-junctions in one alignment when realigned to the derivative.
+inserts have separate ribbons:
 
-The consensus was polished from these reads, so the realignment shows that they
-agree with each other. The truth set, called from other platforms, is the
-independent check.
-
-Each hg38 window is wider than the piece the allele uses, and the read track
-shows split alignments only, so its coverage counts reads that cross a junction
-and steps down as each arm ends.
+- **Against hg38**, the split reads stop at each junction, and the truth set has
+  a validated call at each place they stop. The truth set comes from other
+  platforms, so it checks the contig independently.
+- **Against the derivative**, most of the same reads cross all three junctions
+  in one alignment. The consensus was polished from these reads, so this shows
+  that they agree with each other.
+- The read track shows split alignments only, and each hg38 window is wider than
+  the piece the allele uses, so its coverage counts reads that cross a junction
+  and steps down as each arm ends.
 
 <Figure caption="The derivative at base scale: reads against hg38 above, realigned to the allele below." src="/img/cancer_sv/derivative_inserts.png" />
 
@@ -403,3 +406,8 @@ npx --yes serve cancer_sv_build/jbrowse2
   [Complex rearrangements and oncogene amplifications revealed by long-read DNA and RNA sequencing of a breast cancer cell line](https://doi.org/10.1101/gr.231100.117)
 - Nattestad et al. (2021).
   [Ribbon: intuitive visualization for complex genomic variation](https://doi.org/10.1093/bioinformatics/btaa680)
+
+[^chain]:
+    A chain of junctions can also bring two genes together into a fusion, as in
+    the KLHDC2-SNTB1 fusion of the SK-BR-3 breast cancer line
+    ([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)).

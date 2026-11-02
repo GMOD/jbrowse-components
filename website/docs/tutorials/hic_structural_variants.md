@@ -14,12 +14,14 @@ _BCR_-_ABL1_ fusion in the K562 leukemia line, is the example, against GM12878's
 normal karyotype. JBrowse fetches a Hi-C matrix for every _pair_ of regions on
 screen. We:
 
-- load the Hi-C and contact-domain tracks on GRCh38
-- open a chr9 window and a chr22 window in one linear view, so JBrowse draws the
-  contacts between the two
-- choose the control and normalization, and rank the chr9-chr22 contact bins
-  with juicer_tools
-- compare the two lines' A and B compartment calls at _EBF1_
+- load each line's `.hic` file as a Hi-C track, and the contact domains as a
+  BEDPE feature track
+- open a chr9 window and a chr22 window in one linear genome view, so JBrowse
+  draws the contacts between the two
+- rank the chr9-chr22 contact bins with juicer_tools to find the junction, and
+  pick the control and normalization the ranking needs
+- load each line's compartment eigenvector as a bigWig track and compare them at
+  _EBF1_
 
 ## Prerequisites
 
@@ -36,12 +38,12 @@ screen. We:
 Deep in situ Hi-C for GM12878 and K562 from ENCODE, plus ENCODE's domain, loop
 and compartment calls over the same two matrices.
 
-The track configs and the scan script below read these files by URL, so no
-download is needed. Your own `.hic` file loads by swapping `uri` in the track
-config under _Adding the Hi-C and contact-domain tracks_.
+Nothing to download: the track configs and the scan script below read these
+files by URL. Your own `.hic` file loads by swapping `uri` in the track config
+under _Adding the Hi-C and contact-domain tracks_.
 
 <details>
-<summary>The files</summary>
+<summary>Read by URL (no download needed)</summary>
 
 | What it is                          | File                                                                                                                                |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
@@ -169,48 +171,26 @@ Type both locations into the location box, separated by a space:
 
 <Video src="/media/hic/two_regions.mp4" caption="A chr22 window entered beside a chr9 one, GM12878 above and K562 below. The wedge between the triangles appears with the second region." />
 
-Two regions on separate chromosomes touch at background rate. If they are fused,
-they contact each other constantly.
-
-K562 has the Philadelphia chromosome, t(9;22)(q34;q11)
-([Rowley 1973](https://doi.org/10.1038/243290a0)), joining _BCR_ on chr22 to
-_ABL1_ on chr9.
+Two regions on separate chromosomes touch at background rate, so the wedge
+between them stays faint unless the two are fused. K562 carries the Philadelphia
+chromosome, t(9;22)(q34;q11) ([Rowley 1973](https://doi.org/10.1038/243290a0)),
+joining _BCR_ on chr22 to _ABL1_ on chr9.
 
 <Figure src="/img/hic/bcr_abl1_translocation.png" caption="ABL1 and BCR as two windows in one view, GM12878 above and K562 below. The wedge between the panels is chr9 against chr22." links="Open this view=hic/bcr_abl1_translocation" />
 
 The domain boundaries inside each window line up between the two lines, so chr9
 and chr22 each fold normally in K562.
 
-## Choosing the control and normalization for the translocation scan
-
-**Control depth.** The scan script below compares a case `.hic` against a
-control, ENCODE's deep GM12878 in situ file `ENCSR410MDC` by default. The script
-leaves the much shallower GM12878 "supernatant" fraction, `ENCSR730CER`,
-commented out, because a wedge empty for want of reads looks the same as one
-empty for want of a translocation. With the deep file, the scan finds GM12878
-with more contact than K562 across the whole chr9-chr22 block except the
-junction bin, where the order inverts.
-
-**Normalization.** Matrix balancing divides out per-bin coverage differences,
-and an amplified fusion is such a difference, so balancing hides it. Re-run the
-scan with `NORM=INTER_SCALE` and _ABL1_×_BCR_ drops off the top of the table.
-Balanced matrices suit domains and loops and raw counts suit rearrangements, so
-both Hi-C tracks here set
-[`data.normalization`](/docs/config/hicdata/#slot-normalization) to `NONE`.
-
-The scan prints a ranked list for the control below the one for the case. The
-top bin in the control list is hot in both GM12878 and K562, so it is a
-reproducible mapping artifact and not a rearrangement.
-
 ## Ranking chr9-chr22 contact bins with juicer_tools
 
-To find the translocation, run one dump per `.hic` file and sort the results.
-Dump the raw contact counts between the two chromosomes:
+The wedge shows that chr9 and chr22 touch, and ranking the contact bins finds
+where. Run one dump per `.hic` file and sort the results, starting with the raw
+contact counts between the two chromosomes:
 
 <!-- from: scripts/scan_hic_translocation.sh -->
 
 ```bash
-# NONE: raw counts, for the reason above
+# NONE: raw counts, since balancing divides out an amplified fusion
 # BP 250000: 250 kb base-pair bins
 # -Xmx4g: a whole chromosome pair needs more than the default heap
 java -Xmx4g -jar juicer_tools.jar dump observed NONE \
@@ -256,6 +236,28 @@ Purpose-built callers scan the whole genome:
 a
 [paired-arc track](/docs/config_guides/hic_track#loops-and-interactions-as-arcs)
 next to the matrix it was called from.
+
+## Choosing the control and normalization for the translocation scan
+
+The ranking rests on the choice of control and of normalization, and both carry
+over to a scan of your own files:
+
+- **Control depth.** The scan compares the case against a control, ENCODE's deep
+  GM12878 in situ file `ENCSR410MDC` by default. The script leaves the much
+  shallower GM12878 "supernatant" fraction, `ENCSR730CER`, commented out,
+  because a wedge empty for want of reads looks the same as one empty for want
+  of a translocation. With the deep file, GM12878 has more contact than K562
+  across the whole chr9-chr22 block except the junction bin, where the order
+  inverts.
+- **Normalization.** Matrix balancing divides out per-bin coverage differences,
+  and an amplified fusion is such a difference. Re-run the scan with
+  `NORM=INTER_SCALE` and _ABL1_×_BCR_ drops off the top of the table. Balanced
+  matrices suit domains and loops and raw counts suit rearrangements, so both
+  Hi-C tracks here set
+  [`data.normalization`](/docs/config/hicdata/#slot-normalization) to `NONE`.
+- **The control's own ranking.** The scan prints a ranked list for the control
+  below the one for the case. A bin hot in both GM12878 and K562, such as the
+  top of the control list, is a reproducible mapping artifact.
 
 ## A and B compartments at EBF1 in GM12878 and K562
 

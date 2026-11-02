@@ -8,14 +8,19 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-Take the deletion of _RHD_, the RhD blood group gene, out of the 1000 Genomes
-ensemble SV callset. We:
+A structural variant (SV) callset for a cohort gives every person a genotype at
+every call, and each genotype rests on that person's reads. We take one call
+from the 1000 Genomes ensemble SV callset, a deletion spanning the whole of
+_RHD_, the RhD blood group gene, whose loss is the usual cause of the
+RhD-negative blood type. The call is common enough to fill all three genotype
+classes, which read depth separates into two copies of the gene, one, or none. A
+complex call in sample HG02768 on the same chromosome follows. We:
 
-- load the callset as a multi-sample variant track, with the reads and the
-  copy-number store
-- cluster the rows by genotype to sort the cohort at the deletion
-- open three samples' reads on a shared coverage axis and compare their depth
-- read a complex call from the same cohort by its read-pair orientation
+- load the callset as a multi-sample variant track, with a sample's CRAM and a
+  copy-number Zarr store
+- sort the rows by genotype from the deletion's right-click menu
+- open three samples' reads at _RHD_ and share one coverage axis between them
+- split HG02768's reads into SV channels by pair orientation at the complex call
 
 ## Prerequisites
 
@@ -38,7 +43,7 @@ VCF and CRAM swap in by `uri`, as _Loading the callset, the reads and the
 copy-number store_ shows.
 
 <details>
-<summary>The files</summary>
+<summary>Read by URL (no download needed)</summary>
 
 | What it is                                                                                                                                                                                                 | File                                                                                                                                         |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -50,14 +55,6 @@ copy-number store_ shows.
 | QuicK-mer2 copy number for the cohort, the store the [copy-number tutorial](/docs/tutorials/population_cnv) also reads. A directory of chunks that 404s at its root, and the adapter takes it as its `uri` | [qm2_cn_1kb.zarr](https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr)                                                                           |
 
 </details>
-
-## The RHD deletion in the 1000 Genomes SV callset
-
-`HGSV_1821` is a deletion on chr1 spanning the whole of _RHD_, so samples called
-homozygous have no copy of that gene. Deleting _RHD_ is the most common cause of
-the RhD-negative blood type. The call is `PASS` and common enough to fill all
-three genotype classes, which read depth separates into two copies of the gene,
-one, or none.
 
 ## Loading the callset, the reads and the copy-number store
 
@@ -128,9 +125,10 @@ is not yet in the plugin store. Add its hosted bundle to the config's `plugins`:
 }
 ```
 
-The track below reads the store; the
+The track below reads the store, drawing one heatmap row per individual with
+white at two copies; the
 [copy-number tutorial](/docs/tutorials/population_cnv#building-a-zarr-store-from-per-sample-bigwigs)
-builds one from your own BigWigs:
+explains these settings and builds a store from your own BigWigs:
 
 ```json addtrack
 {
@@ -156,35 +154,30 @@ builds one from your own BigWigs:
 }
 ```
 
-Navigate to `chr1:25,200,000-25,400,000`, the genotype figure's window. In
-[grammar-of-graphics](/docs/config_guides/mark_display) terms, the copy-number
-track's `mark` is the shape drawn, `encoding.y` its y scale and `encoding.color`
-a color scale on the score.
-
 ## Sorting the cohort by genotype at the RHD deletion
 
-The callset track draws each sample as a row at the variant's genomic span, so
-the deletion is a wide block. Clicking it opens the feature details panel, whose
-**SAMPLES** section lists every sample's genotype, read depth and other fields.
+Navigate to `chr1:25,200,000-25,400,000`. The callset track draws each sample as
+a row at the variant's genomic span, so `HGSV_1821`, the _RHD_ deletion, is a
+wide block, and rows start in the callset's order:
 
-Rows start in the callset's order. Right-click the deletion and pick **Sort by
-genotype** to order rows by genotype at that call, then by how far each keeps
-matching its neighbours. **Clustering → Cluster rows by genotype...** in the
-track menu instead clusters rows by genotypes across the whole window, with a
-dendrogram.
+- Click the deletion to open the feature details panel, whose **SAMPLES**
+  section lists every sample's genotype, read depth and other fields.
+- Right-click the deletion and pick **Sort by genotype** to order rows by
+  genotype at that call, then by how far each keeps matching its neighbours.
+- **Clustering → Cluster rows by genotype...** in the track menu clusters rows
+  by genotypes across the whole window instead, with a dendrogram.
 
 In the matrix, dark blue is no copy of _RHD_, light blue one and grey two. The
 olive stripe is `HGSV_1823`, a small copy-number record nested inside the
 deletion. The callset gives most of the cohort a no-call there (no genotype
-reported), but QuicK-mer2 measures copy number per bin from the reads, so the
-olive no-call column is a red gain in the copy-number track.
+reported), while QuicK-mer2 measures copy number per bin from the reads, so the
+olive column is a red gain in the copy-number track.
 
 A matrix cell marks some call at that column. To see which call, load the same
 VCF again in the ordinary variant display, which draws each record on a separate
 row with its id, class and size, or color cells by **SV type**, as the
-[multi-variant track guide](/docs/user_guides/multivariant_track) shows.
-
-The figure below has three tracks over NCBI RefSeq genes:
+[multi-variant track guide](/docs/user_guides/multivariant_track) shows. The
+figure has three tracks over NCBI RefSeq genes:
 
 - the callset as a genotype matrix, one row per sample, sorted by genotype at
   the _RHD_ deletion

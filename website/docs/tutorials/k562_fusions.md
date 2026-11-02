@@ -9,14 +9,17 @@ tutorial_category: Cancer genomics
 ---
 
 A fusion caller writes a table of gene pairs, each with the coordinate of the
-transcript junction where the RNA joins the two genes. In the K562 cell line we:
+transcript junction where the RNA joins the two genes. The chromosome itself
+broke somewhere in the introns around that junction, so the RNA call and the DNA
+break sit at different coordinates. In the K562 leukemia cell line we take the
+calls through long RNA reads to the DNA at _BCR_-_ABL1_ and _NUP214_-_XKR3_. We:
 
-- load STAR-Fusion's calls as a variant track beside long RNA reads, and triage
-  the calls in the SV inspector
-- open the split RNA reads at _BCR_-_ABL1_ across three regions, with read
-  connections drawn between the pieces
-- load the DNA breakpoints, lifted to hg38, and compare each with the junction
-  the caller reports under _BCR_-_ABL1_ and _NUP214_-_XKR3_
+- load long RNA reads as an alignments track, and triage STAR-Fusion's calls in
+  the SV inspector
+- open the split RNA reads at _BCR_-_ABL1_ across three regions of one view,
+  with read connections drawn between the pieces
+- load the DNA breakpoints, lifted to hg38, and the copy number, and draw them
+  with **Display types → Marks** beside the fusion calls
 
 ## Prerequisites
 
@@ -61,10 +64,10 @@ tables out of [DepMap](https://depmap.org/portal/)'s 24Q4 release, and the DNA
 breakpoints on hg19.
 
 The tracks below read local files that the
-[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-swap in your own long RNA reads, as _Loading hg38 and the merged Iso-Seq reads_
-shows; `depmap_to_jbrowse.py` takes any DepMap cell-line ID. The script fetches
-everything itself.
+[build script](#reproduce-it-end-to-end) writes from these, fetching each
+itself, so run it first, or swap in your own long RNA reads, as _Loading hg38
+and the merged Iso-Seq reads_ shows; `depmap_to_jbrowse.py` takes any DepMap
+cell-line ID.
 
 | What it is                                                                                             | File                                                                                                          |
 | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
@@ -247,7 +250,7 @@ in neither window.
 ## Where the DNA broke under BCR-ABL1 and NUP214-XKR3
 
 A fusion caller reports transcribed junctions, which sit on exon edges. Two DNA
-assays on the same cells show where the chromosome broke and how much of it is
+assays on the same cells give where the chromosome broke and how much of it is
 amplified:
 
 - **10X Chromium linked reads** from ENCODE (ENCSR053AXS,
@@ -306,12 +309,11 @@ partner is on another chromosome draws a stem at its breakpoint.
 | _XKR3_ acceptor | chr22:16,808,083, start of exon 3 | chr22:16,819,350          | 11 kb, in intron 2    |
 | none            | no call                           | chr9:131,280,138 to chr13 | no gene at either end |
 
-The amplified block on chr9 ends where the DNA breaks do. A
-[Hi-C scan](/docs/tutorials/hic_structural_variants) also pairs the _ABL1_
-intron 1 break with _BCR_. DepMap's segmentation has no interval over _BCR_, so
-the donor window shows an arc and no copy-number step. SplitThreader matched
-copy-number steps to breakpoints the same way in the SK-BR-3 _ERBB2_ amplicon
-([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)).
+The amplified block on chr9 ends where the DNA breaks do, and DepMap's
+segmentation has no interval over _BCR_, so the donor window shows an arc and no
+copy-number step.[^splitthreader] A
+[Hi-C scan](/docs/tutorials/hic_structural_variants) of the same cell line pairs
+the _ABL1_ intron 1 break with _BCR_ from contact counts alone.
 
 ## Reproduce it end to end
 
@@ -350,3 +352,8 @@ npx --yes serve cancer_sv_build/jbrowse2
   [Complex rearrangements and oncogene amplifications revealed by long-read DNA and RNA sequencing of a breast cancer cell line](https://doi.org/10.1101/gr.231100.117)
 - Zhou et al. (2019).
   [Comprehensive, integrated, and phased whole-genome analysis of the primary ENCODE cell line K562](https://doi.org/10.1101/gr.234948.118)
+
+[^splitthreader]:
+    SplitThreader matched copy-number steps to breakpoints the same way in the
+    SK-BR-3 _ERBB2_ amplicon
+    ([Nattestad et al. 2018](https://doi.org/10.1101/gr.231100.117)).

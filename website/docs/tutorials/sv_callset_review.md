@@ -9,13 +9,16 @@ tutorial_category: Cancer genomics
 ---
 
 A somatic structural-variant caller reports junctions, points where two distant
-loci are joined, and we'll check each one in the COLO829 callset against the
-tumor and normal reads. We:
+loci are joined, and a callset can hold hundreds of them. Opening each in a
+browser is slow, so we render every junction in the COLO829 callset to an image
+of the tumor reads, with the matched normal beside it, and triage the images.
+We:
 
-- render every junction as an image with `jb2export batch`
+- render every junction as a breakpoint image with `jb2export batch`
 - render the matched normal the same way, as the control
-- sort the calls with the manifest
+- sort the calls by split-read support in the batch manifest
 - render a three-chromosome rearrangement with `jb2export breakpoint`
+- open a call in JBrowse from its manifest row
 
 ## Prerequisites
 
@@ -145,10 +148,13 @@ reconstructed contig on the right.
 
 ## Opening a call in the browser
 
-Take the coordinates from an image's filename, open the
-[SV inspector](/docs/user_guides/sv_inspector_view) on the same VCF, and click
-through to the breakpoint split view, which adds the gene track and read
-details.
+A call worth a closer look opens in JBrowse from its manifest row. The row's
+`spec` column is a [session spec](/docs/urlparams#session-spec): add it,
+URL-encoded, to a JBrowse URL as `&session=spec-<spec>`, with `config=` naming
+the config you rendered from. Or open the
+[SV inspector](/docs/user_guides/sv_inspector_view) on the same VCF and click
+through to the breakpoint split view, where the gene track and each read's
+details are a click away.
 
 ## Rendering calls from other SV callers
 
