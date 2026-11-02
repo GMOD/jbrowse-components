@@ -220,22 +220,15 @@ const strokeFootprint: FootprintFn = (c, h, t, curve) => {
 }
 
 // The bezier parameter the curve fragment recovers from a row's y
-// (curveParamAtY, which clamps). Bisection rather than the shader's two Newton
-// steps: the question here is what the geometry has to contain, not how
-// accurately the fragment inverts.
+// (curveParamAtY, which clamps). The exact root rather than the shader's two
+// Newton steps: the question here is what the geometry has to contain, not how
+// accurately the fragment inverts. yCurve(t) = y is (t - 1/2)^3 + 3/4 (t - 1/2)
+// + 1/2 - y = 0, a depressed cubic with one real root, so Cardano gives it.
 function curveParamAtY(yLocal: number, h: number) {
   const yFrac = Math.min(Math.max(yLocal / h, 0), 1)
-  let lo = 0
-  let hi = 1
-  for (let i = 0; i < 60; i++) {
-    const m = (lo + hi) / 2
-    if (yCurve(m) < yFrac) {
-      lo = m
-    } else {
-      hi = m
-    }
-  }
-  return (lo + hi) / 2
+  const half = (yFrac - 0.5) / 2
+  const root = Math.sqrt(half * half + 1 / 64)
+  return 0.5 + Math.cbrt(half + root) + Math.cbrt(half - root)
 }
 
 // edgeSpan: the row's left/right x at an X-blend, taken straight rather than

@@ -95,18 +95,24 @@ function sdEllipse(px: number, py: number, radiusX: number, radiusY: number) {
   return len(f(ex - qx), f(ey - qy))
 }
 
+const N = 1000
+const ANGLES = Array.from({ length: N + 1 }, (_, i) => (i / N) * (Math.PI / 2))
+const COS = ANGLES.map(t => Math.cos(t))
+const SIN = ANGLES.map(t => Math.sin(t))
+
 function bruteForce(px: number, py: number, rx: number, ry: number) {
-  const d = (t: number) =>
-    Math.hypot(rx * Math.cos(t) - Math.abs(px), ry * Math.sin(t) - Math.abs(py))
+  const qx = Math.abs(px)
+  const qy = Math.abs(py)
+  const distSq = (cos: number, sin: number) =>
+    (rx * cos - qx) ** 2 + (ry * sin - qy) ** 2
+  const d = (t: number) => distSq(Math.cos(t), Math.sin(t))
   let bestT = 0
   let best = Number.POSITIVE_INFINITY
-  const N = 1000
   for (let i = 0; i <= N; i++) {
-    const t = (i / N) * (Math.PI / 2)
-    const v = d(t)
+    const v = distSq(COS[i]!, SIN[i]!)
     if (v < best) {
       best = v
-      bestT = t
+      bestT = ANGLES[i]!
     }
   }
   const cell = Math.PI / 2 / N
@@ -121,7 +127,7 @@ function bruteForce(px: number, py: number, rx: number, ry: number) {
       lo = m1
     }
   }
-  return d((lo + hi) / 2)
+  return Math.sqrt(d((lo + hi) / 2))
 }
 
 const HALF_PX = 1

@@ -64,8 +64,29 @@ function inCanvasStroke(g: Glyph, x: number, y: number) {
   return Math.abs(across) <= g.hw && along >= 0
 }
 
+// The stroke's bounding box, from the same definition: the butt ends reach hw
+// past the base corners and the miter hw * arm / H past the apex.
+function strokeBox(g: Glyph) {
+  return {
+    x0: -g.W - g.hw,
+    x1: (g.hw * Math.hypot(g.W, g.H)) / g.H,
+    y1: g.H + g.hw,
+  }
+}
+
 function triangle(g: Glyph, dpr: number) {
   return [0, 1, 2].map(k => chevronCornerPx(k, g.W, g.H, g.hw, dpr))
+}
+
+const STEP = 1 / 32
+
+// Cell centres STEP apart over a box, a pixel wider than it on every side.
+function* grid(x0: number, x1: number, y0: number, y1: number) {
+  for (let x = x0 - 1; x < x1 + 1; x += STEP) {
+    for (let y = y0 - 1; y < y1 + 1; y += STEP) {
+      yield [x + STEP / 2, y + STEP / 2] as const
+    }
+  }
 }
 
 function inTriangle(t: [number, number][], x: number, y: number) {
@@ -75,21 +96,21 @@ function inTriangle(t: [number, number][], x: number, y: number) {
   return s.every(v => v >= 0) || s.every(v => v <= 0)
 }
 
-const STEP = 1 / 32
-
 test.each(CASES)(
   "$name at dpr $dpr: the triangle's edges carry no ink, so the rasterizer cuts none",
   ({ g, dpr }) => {
     const t = triangle(g, dpr)
+    let onEdges = 0
     for (let e = 0; e < 3; e++) {
       const a = t[e]!
       const b = t[(e + 1) % 3]!
       for (let s = 0; s <= 1; s += 1 / 256) {
         const x = a[0] + (b[0] - a[0]) * s
         const y = a[1] + (b[1] - a[1]) * s
-        expect(coverage(g, x, y, dpr)).toBeLessThan(1e-9)
+        onEdges = Math.max(onEdges, coverage(g, x, y, dpr))
       }
     }
+    expect(onEdges).toBeLessThan(1e-9)
   },
 )
 
@@ -97,13 +118,14 @@ test.each(CASES)(
   "$name at dpr $dpr: the triangle holds all of Canvas2D's stroke",
   ({ g, dpr }) => {
     const t = triangle(g, dpr)
-    for (let x = -8; x < 8; x += STEP) {
-      for (let y = -8; y < 8; y += STEP) {
-        if (inCanvasStroke(g, x, y)) {
-          expect(inTriangle(t, x, y)).toBe(true)
-        }
-      }
-    }
+    const { x0, x1, y1 } = strokeBox(g)
+    const stroke = [...grid(x0, x1, -y1, y1)].filter(([x, y]) =>
+      inCanvasStroke(g, x, y),
+    )
+    expect(stroke.length).toBeGreaterThan(0)
+    expect(stroke.filter(([x, y]) => !inTriangle(t, x, y)).slice(0, 5)).toEqual(
+      [],
+    )
   },
 )
 
@@ -133,18 +155,24 @@ test.each(CASES)(
   },
 )
 
+// Over the triangle's box: the rasterizer draws nothing outside the triangle,
+// whose edges carry no ink, and it holds all of Canvas2D's stroke.
 test.each(CASES)(
   "$name at dpr $dpr: the ink totals Canvas2D's stroke area to within 3%",
   ({ g, dpr }) => {
+    const t = triangle(g, dpr)
+    const xs = t.map(p => p[0])
+    const ys = t.map(p => p[1])
     let area = 0
     let ink = 0
-    for (let x = -8; x < 8; x += STEP) {
-      for (let y = -8; y < 8; y += STEP) {
-        const cx = x + STEP / 2
-        const cy = y + STEP / 2
-        area += inCanvasStroke(g, cx, cy) ? 1 : 0
-        ink += coverage(g, cx, cy, dpr)
-      }
+    for (const [x, y] of grid(
+      Math.min(...xs),
+      Math.max(...xs),
+      Math.min(...ys),
+      Math.max(...ys),
+    )) {
+      area += inCanvasStroke(g, x, y) ? 1 : 0
+      ink += coverage(g, x, y, dpr)
     }
     expect(Math.abs(ink / area - 1)).toBeLessThan(0.03)
   },

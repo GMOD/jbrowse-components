@@ -74,34 +74,33 @@ function slotsFor(canvasWidth: number, c: LineChannels, clip: BlockClipResult) {
   )
 }
 
-function expectSameChevrons(
+// Every line whose chevrons the per-draw budget changes, with what each budget
+// drew, and the slots the draws shaded.
+function compareChevrons(
   canvasWidth: number,
   blocks: RenderBlock[],
   lines: [number, number][],
 ) {
   const c = lineChannels(lines)
+  const budget = chevronSlotBudget(canvasWidth)
+  const differ = []
   let shaded = 0
   for (const block of blocks) {
     const clip = clipBlock(block, canvasWidth, 100, { x: 1, y: 1 })
-    if (!clip) {
-      continue
-    }
-    const slots = slotsFor(canvasWidth, c, clip)
-    shaded += slots
-    for (const [start, end] of lines) {
+    if (clip) {
+      const slots = slotsFor(canvasWidth, c, clip)
+      shaded += slots
       const reversed = !!block.reversed
-      expect(drawnChevrons(start, end, clip, reversed, slots)).toStrictEqual(
-        drawnChevrons(
-          start,
-          end,
-          clip,
-          reversed,
-          chevronSlotBudget(canvasWidth),
-        ),
-      )
+      for (const [start, end] of lines) {
+        const drawn = drawnChevrons(start, end, clip, reversed, slots)
+        const wanted = drawnChevrons(start, end, clip, reversed, budget)
+        if (drawn.join(',') !== wanted.join(',')) {
+          differ.push({ canvasWidth, block, line: [start, end], drawn, wanted })
+        }
+      }
     }
   }
-  return shaded
+  return { shaded, differ }
 }
 
 const CANVAS_WIDTHS = [320, 1500, 4000]
@@ -151,24 +150,27 @@ function linesAround(block: RenderBlock, bpPerPx: number, widthPx: number) {
 }
 
 test('every chevron the canvas-wide budget drew, the per-draw budget draws', () => {
+  const differ = []
   for (const canvasWidth of CANVAS_WIDTHS) {
     for (const bpPerPx of BP_PER_PX) {
       for (const blocks of blockLayouts(canvasWidth, bpPerPx)) {
         for (const widthPx of LINE_PX) {
           const lines = blocks.flatMap(b => linesAround(b, bpPerPx, widthPx))
           for (const line of lines) {
-            expectSameChevrons(canvasWidth, blocks, [line])
+            differ.push(...compareChevrons(canvasWidth, blocks, [line]).differ)
           }
-          expectSameChevrons(canvasWidth, blocks, lines)
+          differ.push(...compareChevrons(canvasWidth, blocks, lines).differ)
         }
       }
     }
   }
+  expect(differ.slice(0, 3)).toEqual([])
 })
 
 test('a line a chevron or two longer than its block still fills every slot', () => {
   // The window's worst case (`chevronWindow.test.ts`): spacing furthest under
   // the full step, which only the block's own budget bounds.
+  const differ = []
   for (const canvasWidth of [320, 1920]) {
     const block = {
       displayedRegionIndex: 0,
@@ -181,39 +183,46 @@ test('a line a chevron or two longer than its block still fills every slot', () 
     for (let extraPx = 1; extraPx <= 120; extraPx += 1) {
       for (let lead = 0; lead <= 40; lead += 1) {
         const start = 1000 - lead
-        expectSameChevrons(
-          canvasWidth,
-          [block],
-          [[start, start + canvasWidth + extraPx]],
+        differ.push(
+          ...compareChevrons(
+            canvasWidth,
+            [block],
+            [[start, start + canvasWidth + extraPx]],
+          ).differ,
         )
       }
     }
   }
+  expect(differ.slice(0, 3)).toEqual([])
 })
 
 test('a line a float32 rounding short of the next chevron keeps its last slot', () => {
   // 40 * 25 px of line at a bpPerPx whose float32 rounding lifts the count
+  const differ = []
   for (const bpPerPx of [0.1, 0.3, 1 / 3, 2.2, 7.7]) {
     for (const k of [1, 2, 25, 37]) {
       const end = Math.floor(40 * k * bpPerPx)
       for (const start of [0, 1]) {
-        expectSameChevrons(
-          1500,
-          [
-            {
-              displayedRegionIndex: 0,
-              start: 0,
-              end: 1500 * bpPerPx,
-              screenStartPx: 0,
-              screenEndPx: 1500,
-              reversed: false,
-            },
-          ],
-          [[start, end]],
+        differ.push(
+          ...compareChevrons(
+            1500,
+            [
+              {
+                displayedRegionIndex: 0,
+                start: 0,
+                end: 1500 * bpPerPx,
+                screenStartPx: 0,
+                screenEndPx: 1500,
+                reversed: false,
+              },
+            ],
+            [[start, end]],
+          ).differ,
         )
       }
     }
   }
+  expect(differ).toEqual([])
 })
 
 test('a gene region shades a few chevrons per line, not a canvas of them', () => {
@@ -233,7 +242,8 @@ test('a gene region shades a few chevrons per line, not a canvas of them', () =>
     [1_013_000, 1_031_000],
     [1_040_000, 1_041_200],
   ]
-  const shaded = expectSameChevrons(canvasWidth, [block], introns)
+  const { shaded, differ } = compareChevrons(canvasWidth, [block], introns)
+  expect(differ).toEqual([])
   expect(chevronSlotBudget(canvasWidth)).toBe(40)
   expect(shaded).toBe(chevronCount(18_000 / bpPerPx) + 1)
 })
