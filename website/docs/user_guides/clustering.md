@@ -78,7 +78,8 @@ drawn in the sidebar.
 - **Show → Tree branch lengths** draws the tree with branch lengths, so the
   horizontal extent of each branch reflects distance.
 - Click any internal node to filter the track down to that subtree. Click it
-  again to clear, or use **Clear subtree filter**.
+  again to clear, or use **Clear subtree filter**. A chip above the rows reads
+  "Showing N of M rows · Show all"; clicking it shows every row again.
 - A chip at the top of the sidebar names the locus the tree was computed from.
   Navigating away from that region marks it, since the tree describes the region
   it was run on. Re-run clustering, or reset the row order, to bring the two
@@ -112,9 +113,13 @@ describes. `rows` replaces the display's setting whole, so name `field` too:
 }
 ```
 
-Add `kept` to open on one clade. On a multi-sample variant track the rows are
-the samples, so its [`rows`](/docs/config/rowarrangement) takes the same members
-with no `field`. In phased mode the names are haplotypes, `"<sample> HP<n>"`:
+Add `kept` to open on one clade; a `kept` naming no current row shows none, and
+the track's notice says which names it missed. `filter` keeps rows by an
+attribute instead, a samples file's column or a subtrack's `group`:
+`"filter": [{ "field": "population", "oneOf": ["EUR", "AFR"] }]`. A row's own
+name goes in `kept`. On a multi-sample variant track the rows are the samples,
+so its [`rows`](/docs/config/rowarrangement) takes the same members with no
+`field`. In phased mode the names are haplotypes, `"<sample> HP<n>"`:
 
 ```json
 {

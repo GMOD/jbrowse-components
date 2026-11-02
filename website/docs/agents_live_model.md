@@ -209,6 +209,32 @@ field is a read dimension (`pairOrientation`, `mapq`, ...) or a tag (`tags.HP`).
 The `filter` is a list of `jexl:` expressions, such as
 `["jexl:feature.type == 'gene'"]`.
 
+A row display's `rows` (variant, wiggle, MAF, the mark family) is one object
+written member by member, `null` resetting one:
+
+- `field`: what one row is
+- `step`: the row height in px, or `'fit'`, where rows scroll (variant, mark
+  family)
+- `sort`: the row names that lead, in order
+- `labels`: `{ row: text }`
+- `colors`: `{ row: css }`, pinned over `color`
+- `color`: the rows colored by an attribute, `'population'` or
+  `{ field, scale }`
+- `axis`: `{ tree, labels, width, grid }`, what the sidebar draws
+- `tree`: newick, or `{ newick, provenance }`
+- `kept`: the row names shown; `[]` shows every row, a list naming none shows
+  none
+- `filter`: predicates over row attributes, ANDed,
+  `[{ field: 'population', oneOf: ['EUR', 'AFR'] }]`; a row's name goes in
+  `kept`
+- `groups` (the mark family): `[{ match, group }]`, deriving the `group`
+  attribute
+
+`sort`, `labels`, `colors`, `tree` and `kept` are keyed: a write changing
+`field` clears those it does not state, and the rest stay. The multi-way lanes'
+`rows` takes `field`, `sort`, `labels`, `tree` and `kept`, where `kept` selects
+the lanes drawn.
+
 "Advanced → Edit plot..." in the track menu shows a display's plot as text.
 
 The `LinearMarkDisplay` on any feature, alignments, variant or quantitative

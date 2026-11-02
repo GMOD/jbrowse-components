@@ -195,6 +195,51 @@ test('the rows take the arrangement `rows` saves: its order first, its labels, i
   expect(new Set(focused.cells.row)).toEqual(new Set([a, b]))
 })
 
+// One narrowing, as the display's: rows.filter over the samples file's
+// attribute, then rows.kept, narrows the fetch and the rows alike.
+test('the rows take rows.filter over the samples file, then rows.kept', async () => {
+  const plain = await engine.variants({
+    ...DOG_SV,
+    display: { rows: { color: { field: 'group' } } },
+  })
+  const groupOf = new Map(
+    readFileSync(
+      path.resolve('test_data/dog10k/dog10k_amy2b_samples.tsv'),
+      'utf8',
+    )
+      .trim()
+      .split('\n')
+      .slice(1)
+      .map(line => line.split('\t') as [string, string]),
+  )
+  const wolves = plain.rows.name.filter(n => groupOf.get(n) === 'Gray wolf')
+  expect(wolves.length).toBeGreaterThan(1)
+  const filtered = await engine.variants({
+    ...DOG_SV,
+    display: { rows: { filter: [{ field: 'group', equal: 'Gray wolf' }] } },
+  })
+  expect(filtered.rows.name).toEqual(wolves)
+  expect(filtered.cells.row).toEqual(
+    plain.cells.row.filter(row => wolves.includes(row)),
+  )
+  const both = await engine.variants({
+    ...DOG_SV,
+    display: {
+      rows: {
+        filter: [{ field: 'group', equal: 'Gray wolf' }],
+        kept: [wolves[0]!, plain.rows.name.find(n => !wolves.includes(n))!],
+      },
+    },
+  })
+  expect(both.rows.name).toEqual([wolves[0]])
+  const none = await engine.variants({
+    ...DOG_VCF,
+    display: { rows: { kept: ['no such sample'] } },
+  })
+  expect(none.rows.name).toEqual([])
+  expect(none.cells.row).toEqual([])
+})
+
 test('a sample named in the order places each of its haplotype rows', async () => {
   const plain = await engine.variants(DOG_VCF)
   const last = plain.rows.name.at(-1)!

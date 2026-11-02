@@ -239,12 +239,14 @@ gives `TreeSidebarMixin`, and a run writes names beside its tree, re-appending
 the rows a focus hides after the clade.
 
 **Named stages, named readers.** `sourcesBase` is the adapter's samples narrowed
-to `rows.kept`, the fetch key's input, so it reads no `samplePloidy`: a focus
-naming a haplotype keeps its sample there (`keptRows` with `rowAlias`, through
-`parseRowName`). The rest are `TreeSidebarMixin`'s over this display's hooks:
+by `rowNarrowing` (`rows.filter` over the samplesTsv attributes, which arrive
+with the sample list, then `rows.kept`), the fetch key's input, so it reads no
+`samplePloidy`: a focus naming a haplotype keeps its sample there (`keptRows`
+with `rowAlias`, through `parseRowName`). The rest are `TreeSidebarMixin`'s over this display's hooks:
 `discoveredRows`, `expandRows` (`expandPhasedRows`), then `editableSources`,
 ordered, relabelled and tinted with no focus, palette or band — the
-dialog's list and the sort's — `clusterableSources`, narrowed to the focus,
+dialog's list and the sort's — `clusterableSources`, narrowed by the same
+`rowNarrowing`,
 which both clustering paths send, and `bandedSources`, stacked in the `facet`'s
 bands. `sources` adds the palette.
 

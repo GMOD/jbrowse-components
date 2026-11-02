@@ -264,6 +264,59 @@ test('a rows field change keeps rows.groups, so facet: group still bands', () =>
   expect(display.bandsRows).toBe(true)
 })
 
+// rows.filter tests the group rows.groups derives, and the rows table, the
+// chip and the rows a run clusters read the one narrowing.
+test('rows.filter keeps the rows whose group passes', () => {
+  const display = loaded(
+    {
+      rows: {
+        ...FAMILY_GROUPS.rows,
+        filter: [{ field: 'group', equal: 'children' }],
+      },
+    },
+    [{ mark: 'rect' }],
+  )
+  expect(display.sources.map(row => row.name)).toEqual(['s2', 's10'])
+  expect(display.clusterableSources.map(row => row.name)).toEqual(['s2', 's10'])
+  expect(display.rowNarrowingHint?.text).toBe('Showing 2 of 4 rows')
+})
+
+// The rows are found per window, so a name missing here may be a row
+// elsewhere: the notice gives no names.
+test('a kept list naming no row in the window draws none, naming nothing', () => {
+  const display = loaded({ rows: { field: 'source', kept: ['uncle'] } }, [
+    { mark: 'rect' },
+  ])
+  expect(display.sources).toEqual([])
+  expect(display.rowNarrowingHint?.text).toBe('Showing 0 of 4 rows · Show all')
+  expect(display.liveNotices).toContain(
+    'rows.kept names no row here, so no row shows',
+  )
+})
+
+test('a field change keeps rows.filter and clears rows.kept', () => {
+  const display = loaded(
+    {
+      rows: {
+        ...FAMILY_GROUPS.rows,
+        kept: ['mom'],
+        filter: [{ field: 'group', equal: 'parents' }],
+      },
+    },
+    [{ mark: 'rect' }],
+  )
+  setConf(display, ['rows', 'field'], 'tissue')
+  expect(display.rowFocus).toBeUndefined()
+  expect(display.rowFilter).toEqual([{ field: 'group', equal: 'parents' }])
+})
+
+test('a top-level filter on group, which no feature carries, points at rows.filter', () => {
+  const display = loaded(FAMILY_GROUPS, [{ mark: 'rect' }])
+  expect(display.unreadFilterFieldNotice('group', 'feature')).toContain(
+    'rows.filter keeps rows by their attributes',
+  )
+})
+
 test("a band's order follows facet.sort, and a hit names the row the band placed", () => {
   const display = loaded(
     { ...FAMILY_GROUPS, facet: { field: 'group', sort: ['children'] } },

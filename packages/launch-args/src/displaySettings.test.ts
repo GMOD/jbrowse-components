@@ -792,6 +792,44 @@ describe('color routing', () => {
       rows: { axis: { width: 150 }, color: { field: 'population' } },
     })
   })
+
+  // rows.filter is a list of predicates over row attributes: each entry by
+  // index, a list value with a trailing comma for one item, and a bracket
+  // left open refused rather than read as one value
+  test('rows.filter takes its predicates entry by entry', () => {
+    const opts = [
+      'rows.filter.0.field=population',
+      'rows.filter.0.oneOf=EUR,AFR',
+      'rows.filter.1.field=superpopulation',
+      'rows.filter.1.oneOf=EUR,',
+    ]
+    expect(() => {
+      checkModifiers(opts)
+    }).not.toThrow()
+    const members = memberWrites('LinearVariantDisplay', opts)
+    expect(memberPatch(members, () => undefined)).toEqual({
+      rows: {
+        filter: [
+          { field: 'population', oneOf: ['EUR', 'AFR'] },
+          { field: 'superpopulation', oneOf: ['EUR'] },
+        ],
+      },
+    })
+    expect(() =>
+      memberPatch(
+        memberWrites('LinearVariantDisplay', ['rows.filter.0.oneOf=a(,b']),
+        () => undefined,
+      ),
+    ).toThrow(/never closes/)
+  })
+
+  test('a settings bag writes rows.filter whole', () => {
+    expect(
+      buildDisplaySnapshot('LinearVariantDisplay', [
+        '{"rows":{"filter":[{"field":"population","equal":"EUR"}]}}',
+      ]).snap,
+    ).toEqual({ rows: { filter: [{ field: 'population', equal: 'EUR' }] } })
+  })
 })
 
 // One rule for every modifier value, whatever the track type: a value the

@@ -147,7 +147,8 @@ only the stages downstream of it:
    color as `rowColor`. It hands back `expandedRows` itself while nothing is
    arranged or colored, which the `!==` caches downstream (`encodeInputs`,
    `createEncodeMemo`) key on.
-4. `clusterableSources`: the focus (`keptRows`).
+4. `clusterableSources`: `rowNarrowing` (`narrowRows`: `rows.filter` over
+   row attributes, then `rows.kept` by name).
 5. `bandedSources`: the bands `rowBanding` names (`bandRows`), each band's rows
    in their arranged order; `clusterableSources` itself while nothing bands.
    `rowBands` is each band's value, label and row span.
@@ -234,8 +235,9 @@ What else the mixin owns:
   to what a track the session owns was added with, and never touches
   `rows.field`. A reset to empty would write a delta erasing an admin's declared
   order for that reader. `rowArrangementIsCustom` compares against the same
-  base, with `rowColorIsCustom` for the colors, and leaves `rows.kept`
-  out, since the focus has a clear of its own; a reset still clears it. The
+  base, with `rowColorIsCustom` for the colors, and leaves `rows.kept` and
+  `rows.filter` out, since they have a clear of their own (the chip's "Show
+  all"); a reset still returns both to the base's. The
   pins, `rows.colors`, are an arrangement member, keyed by the row field like
   `rows.sort` and `rows.labels`, so a reset returns them and a write that
   changes `rows.field` clears them; `rows.color` names an attribute and stays.
@@ -282,7 +284,8 @@ What else the mixin owns:
   the multi-row display, whose rows are discovered per region, a declared order
   keeps its unseen rows. `rowOrderWillDropTree` compares the same merged order,
   so a submit that moves no shown row keeps the tree.
-- **A focus naming no current row shows every row** (`keptRows`).
+- **A `rows.kept` naming no current row shows no row**, and
+  `rowNarrowingNotices` says so (ADR-257); empty shows every row.
 
 **A change reaches only the stages downstream of it, and a census gates that**:
 each display's `workCensus.test.ts`, beside its `rowDerivation.test.ts`,
@@ -312,18 +315,25 @@ rest:
   only values that exist. A neutral fill-in instead (`0`) ranks a valueless row
   above every negative score and into the middle of every color block.
 
-## The row focus goes with the row _names_, not with the tree
+## The shown rows go with the row _names_ and attributes, not with the tree
 
-Matched without a tree, so a reorder or re-cluster leaves it valid and
-`setRowOrder` keeps it. `resetRowArrangement` clears it; "Clear subtree filter"
-is gated on the filter alone. The tree narrows by the rule the rows do: `root`
-runs `keptRows` over the tree's leaves, so a focus naming a sample keeps its
-haplotypes' clade.
+`rowNarrowing` is the one narrowing every reader goes through: the rows a run
+clusters, the pruned tree, the variant fetch's samples (`sourcesBase`), the
+chip and the tables export. `rows.filter` (predicates over row attributes,
+not keyed) runs first, then `rows.kept` (names, keyed, through `rowAlias`).
+Matched without a tree, so a reorder or re-cluster leaves them valid and
+`setRowOrder` keeps them. `resetRowArrangement` returns both to the base's;
+the chip's "Show all" (`showAllRows`) clears `kept` and returns `filter` to the
+base's, so a filter the config states shows through; "Clear subtree filter"
+clears `kept` alone and is gated on it. The tree narrows by the rule the rows
+do: `root` runs `narrowRows` over the tree's leaves, a leaf reading its row's
+attributes, so a focus naming a sample keeps its haplotypes' clade.
 
-**A focus takes its own line above the rows.** The mixin's `rowsTopOffset` is
+**The chip takes its own line above the rows.** The mixin's `rowsTopOffset` is
 the display's `rowsHeaderHeight` hook (bands, an axis inset) plus
-`rowFocusLineHeight`, the `SIDEBAR_HINT_LINE_PX` the "Showing N rows" chip sits
-in while `rows.kept` narrows the rows. A display overrides `rowsHeaderHeight`,
+`rowFocusLineHeight`, the `SIDEBAR_HINT_LINE_PX` the "Showing N of M rows" chip
+sits in while something narrows the rows and the rows are known
+(`rowNarrowingShows`), so no "0 of 0" flashes before the first region lands. A display overrides `rowsHeaderHeight`,
 never `rowsTopOffset` — MST shadows a redefined getter silently — and places
 every row painter, hit test, label and export from `rowsTopOffset`.
 
