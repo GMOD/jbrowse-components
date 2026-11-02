@@ -1,13 +1,19 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { colorAt } from '@jbrowse/core/util/markEncoding'
+import { colorSettingOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
+import { paintedColorNode } from '../LinearMarkDisplay/inheritedColor.ts'
 import { SPLICED_MARKS } from '../LinearMarkDisplay/markPlot.ts'
 import { NORMAL_ROW_PROPORTION } from '../LinearMarkDisplay/markVocabulary.ts'
 import { REGION, features, workerResult } from '../LinearMarkDisplay/testEnv.ts'
 import { multiRowMenuItems } from './multiRowMenus.ts'
-import { RECT_MARKS, multiRowPlot } from './multiRowPlot.ts'
+import {
+  RECT_MARKS,
+  TRANSCRIPT_PROTEIN_MARKS,
+  multiRowPlot,
+} from './multiRowPlot.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LinearMultiRowFeatureDisplayModel } from './model.ts'
@@ -64,6 +70,65 @@ test('spliced features draw their blocks joined by a line, and a file stating co
     rows: 'name',
     color: { scale: { type: 'identity' } },
   })
+})
+
+test('protein features alone take a row per transcript they sit on, colored by family', () => {
+  expect(
+    multiRowPlot({
+      numeric: [],
+      categorical: [],
+      attributes: ['accession', 'name', 'proteinStart', 'transcript'],
+      spliced: true,
+    }),
+  ).toEqual({
+    marks: SPLICED_MARKS,
+    rows: 'transcript',
+    color: { field: 'name' },
+  })
+})
+
+test('a transcript carrying protein matches draws as the transcript with its matches over it, a row each', () => {
+  expect(
+    multiRowPlot({
+      numeric: [],
+      categorical: [],
+      attributes: ['name', 'product', 'protein_id', 'type'],
+      spliced: true,
+      childTypes: ['CDS', 'exon', 'protein_match'],
+    }),
+  ).toEqual({
+    marks: TRANSCRIPT_PROTEIN_MARKS,
+    rows: 'name',
+    color: { field: 'name' },
+  })
+  expect(
+    multiRowPlot({
+      numeric: [],
+      categorical: [],
+      spliced: true,
+      childTypes: ['CDS', 'exon'],
+    }).marks,
+  ).toBe(SPLICED_MARKS)
+})
+
+test("a match's family colors only the matches, and Color by still reaches them", () => {
+  const model = display({ marks: TRANSCRIPT_PROTEIN_MARKS })
+  model.applyDefaultPlot(
+    multiRowPlot({
+      numeric: [],
+      categorical: [],
+      attributes: ['name'],
+      spliced: true,
+      childTypes: ['CDS', 'exon', 'protein_match'],
+    }),
+  )
+  const painted = () =>
+    model.conf.marks.map(m =>
+      colorSettingOf(paintedColorNode(m, model.conf.encoding.color)),
+    )
+  expect(painted().map(c => c.field)).toEqual(['', '', '', 'name'])
+  model.colorByField('accession')
+  expect(painted().map(c => c.field)).toEqual(['', '', '', 'accession'])
 })
 
 test('the default plot writes its rows and color, and leaves a declared color alone', () => {

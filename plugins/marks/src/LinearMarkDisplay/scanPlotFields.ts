@@ -104,18 +104,25 @@ export interface PlotFields {
    * line.
    */
   spliced?: true
+  /**
+   * The `type`s a spliced feature's children carry, as a GFF3 transcript's
+   * exons, CDS and the matches placed on it do.
+   */
+  childTypes?: string[]
   /** A scanned feature states its own BED color as an `r,g,b` triple. */
   bedColored?: true
   /** The scan read no features, so it decides no default plot. */
   empty?: true
 }
 
-function isSpliced(feature: Feature) {
+// A feature's children where none has children of its own, else none: the
+// blocks a spliced feature draws joined by a line
+function splicedChildren(feature: Feature): Feature[] {
   const subfeatures = feature.get('subfeatures')
-  return (
-    !!subfeatures?.length &&
+  return subfeatures?.length &&
     subfeatures.every(sub => !sub.get('subfeatures')?.length)
-  )
+    ? subfeatures
+    : []
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -174,6 +181,7 @@ export function scanPlotFields(
   let mated: PlotFields['mated']
   let reads = features.length > 0
   let spliced = false
+  const childTypes = new Set<string>()
   let bedColored = false
   const attributes = new Set<string>()
   const genomes = new Set<string>()
@@ -185,7 +193,14 @@ export function scanPlotFields(
     }
     const record = feature.toJSON()
     reads &&= typeof record.flags === 'number'
-    spliced ||= isSpliced(feature)
+    const children = splicedChildren(feature)
+    spliced ||= children.length > 0
+    for (const child of children) {
+      const type = child.get('type')
+      if (typeof type === 'string') {
+        childTypes.add(type)
+      }
+    }
     bedColored ||= statesBedColor(feature)
     for (const field of Object.keys(record)) {
       if (!STRUCTURE_FIELDS.has(field)) {
@@ -230,6 +245,7 @@ export function scanPlotFields(
     ...(reads ? { reads: true as const } : {}),
     ...(attributes.size > 0 ? { attributes: [...attributes].sort() } : {}),
     ...(spliced ? { spliced: true as const } : {}),
+    ...(childTypes.size > 0 ? { childTypes: [...childTypes].sort() } : {}),
     ...(bedColored ? { bedColored: true as const } : {}),
     ...(features.length === 0 ? { empty: true as const } : {}),
   }

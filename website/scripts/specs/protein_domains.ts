@@ -14,14 +14,13 @@ const PFAM_TRACK = {
   name: 'Pfam domains',
   assemblyNames: [ASSEMBLY],
   adapter: {
-    type: 'BedTabixAdapter',
-    uri: 'https://jbrowse.org/demos/protein_domains/pfam.bed.gz',
+    type: 'Gff3TabixAdapter',
+    uri: 'https://jbrowse.org/demos/protein_domains/pfam.gff3.gz',
   },
   displays: [
     {
       type: 'LinearMultiRowFeatureDisplay',
       displayId: 'pfam_domains-LinearMultiRowFeatureDisplay',
-      rows: 'transcript',
       encoding: {
         color: { field: 'name', legend: { title: 'Pfam family' } },
       },
@@ -30,7 +29,7 @@ const PFAM_TRACK = {
 }
 
 export const proteinDomainsSpecs: ScreenshotSpec[] = [
-  // vav's four isoforms; one begins partway through the CH exon and has no CH
+  // vav's four isoforms; one's coding sequence starts past the CH exon
   {
     mode: 'url',
     name: 'protein_domains/vav',
@@ -42,15 +41,8 @@ export const proteinDomainsSpecs: ScreenshotSpec[] = [
           assembly: ASSEMBLY,
           loc: 'NC_037640.1:1,971,640-1,976,800',
           tracks: [
-            {
-              trackId: `${ASSEMBLY}-ncbiGff`,
-              labels: { subfeatures: { placement: 'below' } },
-              heightMode: 'grow',
-            },
-            {
-              trackId: 'pfam_domains',
-              height: 120,
-            },
+            { trackId: `${ASSEMBLY}-ncbiGff` },
+            { trackId: 'pfam_domains', height: 120 },
           ],
         },
       ],
@@ -58,6 +50,6 @@ export const proteinDomainsSpecs: ScreenshotSpec[] = [
     readyText: 'Pfam family',
     readyTimeout: 60000,
     viewportWidth: 1200,
-    viewportHeight: 550,
+    viewportHeight: 505,
   },
 ]

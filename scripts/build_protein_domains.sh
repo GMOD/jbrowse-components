@@ -8,7 +8,7 @@
 # proteins with Pfam's own gathering thresholds, and domains2genome places each
 # domain back on the exons that encode it.
 # The script then builds a JBrowse with the genes and a domain track that draws
-# each transcript's domains on a row of its own.
+# each transcript, and its domains over its exons, on a row of its own.
 #
 # Requires: samtools, gffread, hmmscan + hmmpress (HMMER 3), bgzip + tabix
 #           (htslib), and node; npx fetches domains2genome and the JBrowse
@@ -106,18 +106,17 @@ for pid in "${pids[@]}"; do wait "$pid"; done
 cat chunk.*.domtblout >pfam.domtblout
 rm -f chunk.*.fa chunk.*.domtblout
 
-npx -y 'domains2genome@>=2.3.0' genes.gff3 pfam.domtblout | bgzip >pfam.bed.gz
-tabix -f -p bed pfam.bed.gz
+npx -y 'domains2genome@>=2.4.0' genes.gff3 pfam.domtblout --gff3 | bgzip >pfam.gff3.gz
+tabix -f -p gff pfam.gff3.gz
 
 # ── JBrowse ──────────────────────────────────────────────────────────────────
 [ -f "$APP/index.html" ] || jb create "$APP"
 jb add-assembly "$FA" --name "$ASM" --load copy --force --out "$APP"
 jb add-track genes.gff3.gz --trackId genes --name Genes -a "$ASM" \
-  --load copy --force --out "$APP" \
-  --config '{"displays":[{"type":"LinearBasicDisplay","displayId":"genes-LinearBasicDisplay","labels":{"subfeatures":{"placement":"below"}},"heightMode":"grow"}]}'
-jb add-track pfam.bed.gz --trackId pfam_domains --name "Pfam domains" \
+  --load copy --force --out "$APP"
+jb add-track pfam.gff3.gz --trackId pfam_domains --name "Pfam domains" \
   -a "$ASM" --load copy --force --out "$APP" \
-  --config '{"displays":[{"type":"LinearMultiRowFeatureDisplay","displayId":"pfam_domains-LinearMultiRowFeatureDisplay","rows":"transcript","encoding":{"color":{"field":"name","legend":{"title":"Pfam family"}}}}]}'
+  --config '{"displays":[{"type":"LinearMultiRowFeatureDisplay","displayId":"pfam_domains-LinearMultiRowFeatureDisplay","encoding":{"color":{"field":"name","legend":{"title":"Pfam family"}}}}]}'
 jb text-index --tracks genes --attributes Name,gene --force --out "$APP"
 
 echo

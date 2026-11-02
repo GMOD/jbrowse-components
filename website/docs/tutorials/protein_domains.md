@@ -3,7 +3,7 @@ title: Protein domains on gene models
 sidebar_label: Protein domains (Pfam)
 description:
   Call Pfam domains on a genome's proteins, place each domain on the exons that
-  encode it, and draw each isoform's domains on a row of their own
+  encode it, and draw each isoform with its domains on a row of its own
 guide_category: Tutorials
 tutorial_category: Genes & annotation
 ---
@@ -18,8 +18,8 @@ out. We work through the honey bee RefSeq annotation and the _vav_ gene
 
 - translate the gene models and call Pfam domains on the proteins with `hmmscan`
 - place each domain on the exons that encode it with `domains2genome`
-- load the domains in the multi-row feature display, one row per transcript,
-  colored by Pfam family
+- draw each transcript on a row of its own in the multi-row feature display,
+  with its domains over its exons colored by Pfam family
 
 ## Prerequisites
 
@@ -108,7 +108,8 @@ the Pfam rows.
 
 `domains2genome` walks each transcript's CDS in the direction of translation and
 places each domain on the bases that encode it, on either strand and across
-introns. It writes a BED with one row per domain per transcript, which bgzip
+introns. With `--gff3` it writes each coding transcript as an mRNA with its
+exons and CDS, and each domain on it as a `protein_match` child, which bgzip
 compresses:
 
 <!-- from: scripts/build_protein_domains.sh -->
@@ -117,34 +118,34 @@ compresses:
 # matches each protein to its transcript by transcript ID, CDS protein_id or
 # CDS ID, so gffread, NCBI and Ensembl protein names all work. Where HMMER hits
 # on one protein overlap by more than half, the lowest E-value is kept.
-npx -y 'domains2genome@>=2.3.0' genes.gff3 pfam.domtblout | bgzip >pfam.bed.gz
+npx -y 'domains2genome@>=2.4.0' genes.gff3 pfam.domtblout --gff3 | bgzip >pfam.gff3.gz
 ```
 
-tabix indexes the BED, so JBrowse reads only the region on screen:
+tabix indexes the GFF3, so JBrowse reads only the region on screen:
 
 <!-- from: scripts/build_protein_domains.sh -->
 
 ```bash
-tabix -f -p bed pfam.bed.gz
+tabix -f -p gff pfam.gff3.gz
 ```
 
-- A domain crossing an intron is one row with a block per exon, as BED12 draws a
-  spliced transcript.
-- The row's `name` is the Pfam family; `accession`, `description`, `source`,
-  `transcript`, `proteinStart`, `proteinEnd` and `evalue` follow as named
-  columns, and JBrowse shows them on click.
-- `transcript` is the transcript's GFF3 `Name`, which the gene track labels it
-  with.
+- A `protein_match`'s `Name` is the Pfam family, its source column the analysis
+  and its score the E-value; `accession`, `description`, `proteinStart` and
+  `proteinEnd` are attributes, and JBrowse shows them on click.
+- A domain crossing an intron is one `protein_match` written on a line per exon,
+  the lines sharing an ID.
+- The mRNA carries the annotation's ID and `Name`, the name the gene track
+  labels the transcript with, and its `protein_id` and `product`.
+- Every coding transcript is written, with or without a domain on it.
+- Without `--gff3`, domains2genome writes the domains alone as BED12, one row
+  per domain per transcript, which IGV and the UCSC browser draw too.
 
-## Drawing the domains under the genes
+## Drawing the domains on their transcripts
 
-JBrowse loads the domain file as a track, here in the multi-row feature display
-with one row per transcript, so each isoform's domains sit on a row of their
-own:
-
-- `rows` names the column that assigns a domain to a row.
-- `encoding.color` colors each domain by its Pfam family, with a key naming the
-  families on screen.
+JBrowse loads the file as a track in the multi-row feature display, which gives
+each transcript a row: its exons in light grey, its coding exons darker, and its
+domains over them. `encoding.color` colors each domain by its Pfam family, with
+a key naming the families on screen.
 
 ```json addtrack loc=NC_037640.1:1,971,640-1,976,800
 {
@@ -153,14 +154,13 @@ own:
   "name": "Pfam domains",
   "assemblyNames": ["GCF_003254395.2"],
   "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/protein_domains/pfam.bed.gz"
+    "type": "Gff3TabixAdapter",
+    "uri": "https://jbrowse.org/demos/protein_domains/pfam.gff3.gz"
   },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "pfam_domains-LinearMultiRowFeatureDisplay",
-      "rows": "transcript",
       "encoding": {
         "color": { "field": "name", "legend": { "title": "Pfam family" } }
       }
@@ -169,23 +169,15 @@ own:
 }
 ```
 
-For your own data, point `uri` at your `pfam.bed.gz` and `assemblyNames` at your
-assembly. To follow along on genomes.jbrowse.org, open the honey bee genome, add
-the track above, and:
+For your own data, point `uri` at your `pfam.gff3.gz` and `assemblyNames` at
+your assembly. To follow along on genomes.jbrowse.org, open the honey bee
+genome, add the track above, turn on the gene track, **NCBI RefSeq - RefSeq All
+(GFF)**, and go to `NC_037640.1:1,971,640-1,976,800`.
 
-- turn on the gene track, **NCBI RefSeq - RefSeq All (GFF)**, and go to
-  `NC_037640.1:1,971,640-1,976,800`
-- in the gene track's menu, choose **Show → Subfeature labels → Below**, which
-  labels each transcript with the name its domain row has
+<Figure src="/img/protein_domains/vav.png" caption="Honey bee vav: the gene track, and each RefSeq isoform on a row of its own, its exons grey and its Pfam domains over them, colored by family." />
 
-The gene track trims isoforms to fit its default height, so choose **Feature
-height → Fixed feature height + autogrow track height** to see them all.
-<!-- menu-path-ok -->
-
-<Figure src="/img/protein_domains/vav.png" caption="Honey bee vav: each RefSeq isoform named under its gene model, and its Pfam domains on a row of that name, colored by family." />
-
-XM_006568479.2 begins partway through the exon that encodes CH and keeps that
-stretch as 5′ UTR, so its row has no CH.
+XM_006568479.2 carries part of the exon that encodes CH as 5′ UTR, drawn thin,
+and its coding sequence starts past it, so its row has no CH.
 
 ## Reproduce it end to end
 

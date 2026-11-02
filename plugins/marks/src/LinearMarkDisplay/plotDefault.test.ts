@@ -115,6 +115,48 @@ test('a score most features lack is offered but draws no default plot', () => {
   expect(defaultPlot(fields)?.marks).toBeUndefined()
 })
 
+test("a spliced feature's children name their types, and a feature with grandchildren is not spliced", () => {
+  const transcript = features([
+    {
+      type: 'mRNA',
+      subfeatures: [
+        { uniqueId: 'e', refName: 'ctgA', start: 0, end: 4, type: 'exon' },
+        {
+          uniqueId: 'm',
+          refName: 'ctgA',
+          start: 1,
+          end: 3,
+          type: 'protein_match',
+        },
+      ],
+    },
+  ])
+  expect(scanPlotFields(transcript, { listedSources: 0 })).toMatchObject({
+    spliced: true,
+    childTypes: ['exon', 'protein_match'],
+  })
+  const gene = features([
+    {
+      type: 'gene',
+      subfeatures: [
+        {
+          uniqueId: 't',
+          refName: 'ctgA',
+          start: 0,
+          end: 10,
+          type: 'mRNA',
+          subfeatures: [
+            { uniqueId: 'x', refName: 'ctgA', start: 0, end: 4, type: 'exon' },
+          ],
+        },
+      ],
+    },
+  ])
+  const geneFields = scanPlotFields(gene, { listedSources: 0 })
+  expect(geneFields.spliced).toBeUndefined()
+  expect(geneFields.childTypes).toBeUndefined()
+})
+
 test("a GFF3 record's source column is a color field, not a facet", () => {
   const fields = scanPlotFields(
     features([
