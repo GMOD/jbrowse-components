@@ -134,7 +134,7 @@ records that label when the cap actually clips. So a lane's `clippedBy` is a
 field read: `'budget'` (the lane's slice of the viewport, in fixed and grow;
 fit's pitch already holds every lane whole), `'ceiling'`
 (`pileup.maxLayoutHeight`), `'override'` (a cap the user set) or `'collapse'`
-(`collapseSections`).
+(`pileup.collapsed`).
 
 - `'budget'` and `'collapse'` offer the chip's expand, which banks an override
   OF `pileup.maxLayoutHeight` — and an override opts the lane out of both.

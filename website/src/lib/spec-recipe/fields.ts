@@ -876,7 +876,7 @@ const SHOW_SUBMENU_DISPLAYS = new Set([
 // (display-kit's LegendMixin), so the label is the same on all of them. The
 // displays beyond the set above have none of its read-oriented rows, so they
 // join the legend alone rather than that set, which also answers showCoverage
-// and collapseSections.
+// and pileup.collapsed.
 const SHOW_LEGEND_DISPLAYS = new Set([
   ...SHOW_SUBMENU_DISPLAYS,
   'LinearHicDisplay',
@@ -1729,7 +1729,7 @@ export const trackFields: Record<string, FieldRecipe> = {
           path: `${TRACK_MENU} → Show → Coverage (${value ? 'checked' : 'unchecked'})`,
         }
       : undefined,
-  collapseSections: (value, { displayType }) =>
+  'pileup.collapsed': (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&
     SHOW_SUBMENU_DISPLAYS.has(displayType)

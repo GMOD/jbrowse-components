@@ -22,6 +22,14 @@ display-wide `legend.show` as the only switch. Amended 2026-10-31: the plain
 being the one paired-end coloring, so `readConnections.encoding.color` has no
 field to choose and retires with them; the connections paint that field's
 levels in the colors the reads' `encoding.color` declares for them.
+Amended 2026-11-01: `collapseSections` is `pileup.collapsed`, on the band it
+reshapes, where LGVSyntenyDisplay's own `pileup` object defaults it on. The
+pileup takes no shorthand, so a share link writing `facet: 'HP'` or
+`pileup: {...}` leaves it, the reset ADR-231 declined `facet.collapse` for.
+`collapsed` is the word LinearBasicDisplay's `displayMode` uses for the same
+picture. Three reviews ruled on the other row and section respells that
+pass weighed (a row's settings into `rows`, one `height` object); ADR-238's
+Rejected table has them.
 `pairOrientation` stays a facet dimension. Amended 2026-11-01:
 `insertSizeAndOrientation` is ordinal over its levels, and the band between
 `short` and `long` is the display's `normalInsertSize: { min, max }`
@@ -215,7 +223,7 @@ them in its own stage:
 
 | Proposal | Why not |
 |---|---|
-| `collapseSections` as `pileup.stack: false` or `pileup.position` | Vega-Lite's `stack` sums values sharing a position, and ADR-118 rejected `dodge` for the pileup; the facet field on `encoding.y` misses that a collapsed section keeps its own coverage band |
+| `pileup.collapsed` as `pileup.stack: false` or `pileup.position` | Vega-Lite's `stack` sums values sharing a position, and ADR-118 rejected `dodge` for the pileup; the facet field on `encoding.y` misses that a collapsed section keeps its own coverage band |
 | `heightMode` as `autosize` | Amendment 3 |
 | A field-keyed filter map (`{ mapq: { gte: 20 } }`) | ADR-238's own rejection, and the same shape declined for `filter.tags` |
 | Junction and connection predicates in each band's own `filter` | ADR-232: several parts and the tables engine read one filter |

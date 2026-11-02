@@ -726,7 +726,9 @@ export default function stateModelFactory(
            * is inert.
            */
           get collapseSections(): boolean {
-            return this.canCollapseSections && getConf(self, 'collapseSections')
+            return (
+              this.canCollapseSections && getConf(self, ['pileup', 'collapsed'])
+            )
           },
 
           /**
@@ -3113,7 +3115,7 @@ export default function stateModelFactory(
            * collapse, which means nothing once every lane is a stack again.
            */
           setCollapseSections(flag: boolean) {
-            setConf(self, 'collapseSections', flag)
+            setConf(self, ['pileup', 'collapsed'], flag)
             self.groupSizes.clear()
             self.scrollTop = 0
           },

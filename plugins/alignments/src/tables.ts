@@ -1608,7 +1608,7 @@ export async function alignmentTables(
         collapseAsked:
           !chain &&
           facetSetting !== undefined &&
-          readConfObject(conf, 'collapseSections'),
+          readConfObject(conf, ['pileup', 'collapsed']),
         sections: order.map(({ key }) => sectionData.get(key)!),
         regions: regionBounds,
       }),
@@ -1618,7 +1618,7 @@ export async function alignmentTables(
 
 /**
  * What the layout drops of the display's `sort`, `pileup.softClips` and
- * `collapseSections` without saying so, in words a host can show: a column
+ * `pileup.collapsed` without saying so, in words a host can show: a column
  * sort with no `pos`, a sort the regions' contigs or reads leave nowhere to
  * apply, under `unit: 'chain'` any sort or soft clipping, as chains lay out
  * by chain, and a collapse of the facet's sections, which the tables lay out
@@ -1646,7 +1646,7 @@ function layoutWarnings({
   const warnings = new Set<string>()
   if (collapseAsked) {
     warnings.add(
-      'the tables lay each facet section out as a stack of rows, so collapseSections is dropped, with the overlap tint it draws',
+      'the tables lay each facet section out as a stack of rows, so pileup.collapsed is dropped, with the overlap tint it draws',
     )
   }
   if (!isLayoutOrder(sortField) && !sortColumn) {

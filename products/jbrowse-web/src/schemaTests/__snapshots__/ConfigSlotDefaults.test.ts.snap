@@ -399,7 +399,6 @@ exports[`every registered schema slot default 1`] = `
     "variantLayout": "stringEnum = "columns" of ["genomic","columns"]",
   },
   "display: LGVSyntenyDisplay": {
-    "collapseSections": "boolean = true",
     "coverage.alleles.show": "boolean = true",
     "coverage.encoding.y.axis.grid": "boolean = false",
     "coverage.encoding.y.axis.show": "boolean = true",
@@ -440,6 +439,7 @@ exports[`every registered schema slot default 1`] = `
     "height": "number = 250",
     "heightMode": "stringEnum = "fixed" of ["fixed","grow","fit"]",
     "legend.show": "boolean = false",
+    "pileup.collapsed": "boolean = true",
     "pileup.connectors.show": "boolean = false",
     "pileup.fadeLowFrequency": "boolean = true",
     "pileup.mark.height": "number = 7",
@@ -468,7 +468,6 @@ exports[`every registered schema slot default 1`] = `
     "unit": "stringEnum = "read" of ["read","chain"]",
   },
   "display: LinearAlignmentsDisplay": {
-    "collapseSections": "boolean = false",
     "coverage.alleles.show": "boolean = true",
     "coverage.encoding.y.axis.grid": "boolean = false",
     "coverage.encoding.y.axis.show": "boolean = true",
@@ -513,6 +512,7 @@ exports[`every registered schema slot default 1`] = `
     "pileup.bases.encoding.color.field": "maybeStringEnum = undefined of ["baseQuality","base","modifications","bisulfite"]",
     "pileup.bases.show": "boolean = false",
     "pileup.bases.unmodified.show": "boolean = false",
+    "pileup.collapsed": "boolean = false",
     "pileup.connectors.show": "boolean = false",
     "pileup.fadeLowFrequency": "boolean = true",
     "pileup.mark.height": "number = 7",

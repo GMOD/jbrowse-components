@@ -5,6 +5,7 @@ import { syntenyDataConfigSchema } from '@jbrowse/synteny-core'
 
 import { lgvSyntenyCoverageConfigSchema } from './lgvSyntenyCoverageConfigSchema.ts'
 import { lgvSyntenyEncodingConfigSchema } from './lgvSyntenyEncodingConfigSchema.ts'
+import { lgvSyntenyPileupConfigSchema } from './lgvSyntenyPileupConfigSchema.ts'
 import { lgvSyntenySortConfigSchema } from './lgvSyntenySortConfigSchema.ts'
 
 import type { ConfigurationSlotPath } from '@jbrowse/core/configuration'
@@ -66,19 +67,11 @@ export default function configSchemaF() {
        */
       coverage: lgvSyntenyCoverageConfigSchema,
       /**
-       * #slot
-       * One row per facet section by default: an all-vs-all track faceted by
-       * mate assembly draws each mate genome as a single band, with repeat
-       * depth shown as darker shading rather than as extra rows. Overrides the
-       * base alignments display's `collapseSections` default of `false`, where
-       * a section is a read category and the stack itself is the information.
+       * #slot pileup
+       * The alignments displays' `pileup` band with `collapsed` defaulting to
+       * on: one row per facet section.
        */
-      collapseSections: {
-        type: 'boolean',
-        defaultValue: true,
-        description:
-          'Draw each facet section as a single row rather than a stack',
-      },
+      pileup: lgvSyntenyPileupConfigSchema,
       /**
        * #slot sort
        * The row order, with `length` the default so big syntenic blocks

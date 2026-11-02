@@ -38,6 +38,7 @@ export default class AlignmentsPlugin extends Plugin {
 // '@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel'.
 export { alignmentsColorConfigSchema } from './LinearAlignmentsDisplay/alignmentsColorConfigSchema.ts'
 export { alignmentsSortConfigSchema } from './LinearAlignmentsDisplay/alignmentsSortConfigSchema.ts'
+export { pileupConfigSchema } from './LinearAlignmentsDisplay/pileupConfigSchema.ts'
 export { ALIGNMENTS_FIELD_PRESETS } from './shared/alignmentsColor.ts'
 export {
   baseLinearAlignmentsDisplayConfigSchema,

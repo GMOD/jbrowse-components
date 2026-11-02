@@ -31,6 +31,23 @@ export const pileupConfigSchema = ConfigurationSchema(
       description: 'draw the pileup band',
     },
     /**
+     * #slot
+     * Only consulted while `facet` is in effect. When set, each section
+     * draws as one row instead of a stack, and tint shading shows overlap
+     * depth instead of row count: the compact reading for a track with many
+     * sections (an all-vs-all synteny track's mate genomes). A section
+     * expanded from its label chip opts back out and draws a true stack. On
+     * the pileup rather than `facet`, which a share link writing
+     * `facet: 'HP'` replaces whole. The Show menu's "Collapse groups to one
+     * row" writes it.
+     */
+    collapsed: {
+      type: 'boolean',
+      defaultValue: false,
+      description:
+        'draw each facet section as a single row rather than a stack',
+    },
+    /**
      * #slot mark
      * The bar each read draws as: `height`.
      */

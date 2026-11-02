@@ -152,7 +152,7 @@ copied.
   empty. Where the tables return an overlap, `legend` ends with the
   display's row for it, "Pair/chain reads overlap here".
 - The tables lay each facet section out as a stack and ignore
-  `collapseSections`, so they return none of the overlap tint the display
+  `pileup.collapsed`, so they return none of the overlap tint the display
   draws over a collapsed section. Where a faceted config sets it, `warnings`
   holds a line saying so.
 
@@ -236,7 +236,7 @@ A setting the table cannot serve is refused with an error:
 - `warnings` names each setting the layout drops without an error, such as
   a column sort with no `pos`, a sort across contigs or held by no region
   with reads, a sort or `pileup.softClips` under `unit: 'chain'`,
-  and `collapseSections` on a faceted display.
+  and `pileup.collapsed` on a faceted display.
 
 Beside the reads come the marks the display draws on them, each as the
 worker ships it: `insertions` (position, length, sequence, read), `clips`

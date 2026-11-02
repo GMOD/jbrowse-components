@@ -6838,6 +6838,16 @@
             "type": "boolean"
           }
         },
+        "collapsed": {
+          "description": "draw each facet section as a single row rather than a stack.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "mark": {
           "if": {
             "type": "null"
@@ -7313,16 +7323,6 @@
           },
           "else": {
             "$ref": "#/$defs/SectionFacet"
-          }
-        },
-        "collapseSections": {
-          "description": "Draw each facet section as a single row rather than a stack.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         },
         "sort": {
@@ -8272,13 +8272,23 @@
       },
       "additionalProperties": false
     },
-    "Pileup": {
-      "title": "Pileup",
+    "LGVSyntenyPileup": {
+      "title": "LGVSyntenyPileup",
       "type": "object",
       "x-closed": true,
       "properties": {
         "show": {
           "description": "draw the pileup band.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "collapsed": {
+          "description": "draw each facet section as a single row rather than a stack.",
           "default": true,
           "if": {
             "type": "null"
@@ -8448,16 +8458,6 @@
             "$ref": "#/$defs/SectionFacet"
           }
         },
-        "collapseSections": {
-          "description": "Draw each facet section as a single row rather than a stack.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "sort": {
           "if": {
             "type": "null"
@@ -8495,7 +8495,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Pileup"
+            "$ref": "#/$defs/LGVSyntenyPileup"
           }
         },
         "readConnections": {
@@ -17024,9 +17024,6 @@
                 }
               ]
             },
-            "collapseSections": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/collapseSections"
-            },
             "sort": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sort"
             },
@@ -19846,9 +19843,6 @@
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
                 }
               ]
-            },
-            "collapseSections": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/collapseSections"
             },
             "sort": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sort"

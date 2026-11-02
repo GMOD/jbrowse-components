@@ -7033,6 +7033,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "boolean"
           }
         },
+        "collapsed": {
+          "description": "draw each facet section as a single row rather than a stack.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "mark": {
           "if": {
             "type": "null"
@@ -7531,16 +7541,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/SectionFacet"
-          }
-        },
-        "collapseSections": {
-          "description": "Draw each facet section as a single row rather than a stack.",
-          "default": false,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
           }
         },
         "sort": {
@@ -8503,13 +8503,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "Pileup": {
-      "title": "Pileup",
+    "LGVSyntenyPileup": {
+      "title": "LGVSyntenyPileup",
       "type": "object",
       "x-closed": true,
       "properties": {
         "show": {
           "description": "draw the pileup band.",
+          "default": true,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
+        "collapsed": {
+          "description": "draw each facet section as a single row rather than a stack.",
           "default": true,
           "if": {
             "type": "null"
@@ -8690,16 +8700,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/SectionFacet"
           }
         },
-        "collapseSections": {
-          "description": "Draw each facet section as a single row rather than a stack.",
-          "default": true,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "boolean"
-          }
-        },
         "sort": {
           "if": {
             "type": "null"
@@ -8737,7 +8737,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Pileup"
+            "$ref": "#/$defs/LGVSyntenyPileup"
           }
         },
         "readConnections": {
@@ -17546,9 +17546,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "collapseSections": {
-              "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/collapseSections"
-            },
             "sort": {
               "$ref": "#/$defs/LinearAlignmentsDisplaySlots/properties/sort"
             },
@@ -20460,9 +20457,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
                 }
               ]
-            },
-            "collapseSections": {
-              "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/collapseSections"
             },
             "sort": {
               "$ref": "#/$defs/LGVSyntenyDisplaySlots/properties/sort"

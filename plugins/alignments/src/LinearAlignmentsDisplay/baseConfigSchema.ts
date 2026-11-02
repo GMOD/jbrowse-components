@@ -95,23 +95,6 @@ export const baseLinearAlignmentsDisplayConfigSchema = ConfigurationSchema(
      */
     facet: sectionFacetConfigSchema,
     /**
-     * #slot
-     * Only consulted while `facet` is in effect. When set, each
-     * section draws as one row instead of a stack, and tint shading shows
-     * overlap depth instead of row count — the compact reading for a track with
-     * many sections (an all-vs-all synteny track's mate genomes). A section
-     * expanded from its label chip opts back out and draws a true stack.
-     * Beside `facet` rather than in it, as Vega-Lite keeps the layout members
-     * `spacing` and `columns` beside its `facet`. The Show menu's
-     * "Collapse groups to one row" writes it.
-     */
-    collapseSections: {
-      type: 'boolean',
-      defaultValue: false,
-      description:
-        'Draw each facet section as a single row rather than a stack',
-    },
-    /**
      * #slot sort
      * The pileup's row order by one `field`: a whole-window order
      * (`position`, `length`, `spliced`, `split`, `svSignal`) or a column sort

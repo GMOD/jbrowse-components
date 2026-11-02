@@ -2711,7 +2711,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               // collapsed, a right-click lands on whatever merged fragment is
               // under the cursor
               trackId: 'hg38_to_panTro6_liftOver',
-              collapseSections: false,
+              pileup: { collapsed: false },
               height: 60,
             },
           ],
@@ -3501,8 +3501,7 @@ export const syntenyVideoFixtures = {
           },
           {
             trackId: 'hg38_to_hs1_liftOver',
-            collapseSections: false,
-            pileup: { mark: { height: 14 } },
+            pileup: { collapsed: false, mark: { height: 14 } },
             height: 70,
           },
         ],

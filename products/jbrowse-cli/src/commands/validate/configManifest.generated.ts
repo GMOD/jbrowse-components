@@ -3663,10 +3663,6 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "collapseSections",
-          "type": "boolean"
-        },
-        {
           "name": "sort",
           "type": "AlignmentsSortConfigurationSchema",
           "subSlots": [
@@ -4109,6 +4105,10 @@ export const configManifest: ConfigManifest = {
           "subSlots": [
             {
               "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "collapsed",
               "type": "boolean"
             },
             {
@@ -4845,10 +4845,6 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "collapseSections",
-          "type": "boolean"
-        },
-        {
           "name": "sort",
           "type": "LGVSyntenySortConfigurationSchema",
           "subSlots": [
@@ -5288,10 +5284,14 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "pileup",
-          "type": "PileupConfigurationSchema",
+          "type": "LGVSyntenyPileupConfigurationSchema",
           "subSlots": [
             {
               "name": "show",
+              "type": "boolean"
+            },
+            {
+              "name": "collapsed",
               "type": "boolean"
             },
             {
@@ -5399,7 +5399,7 @@ export const configManifest: ConfigManifest = {
               "type": "boolean"
             }
           ],
-          "schema": "Pileup",
+          "schema": "LGVSyntenyPileup",
           "writes": "members"
         },
         {
