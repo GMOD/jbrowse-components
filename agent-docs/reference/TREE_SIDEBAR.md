@@ -170,14 +170,14 @@ hook's name throws at `create`:
 - `unlistedRowsSort` — `source` by default; multi-row's discovered values sort.
 - `rowOrder` — `rows.sort` by default; MAF leads with a drawn tree's leaves.
 - `rowBanding` — none by default; the variant displays' `facet`, and the
-  multi-row display's `facet` with its `rowGroups` groups listed after the
+  multi-row display's `facet` with its `rows.groups` groups listed after the
   facet's `sort`.
 - `rowBand(row)` — the row's value of the banding field by default;
-  multi-row matches `rowGroups` on the name, since its rows are tagged after the
+  multi-row matches `rows.groups` on the name, since its rows are tagged after the
   arrangement.
 - `rowColorFields` — the row fields offered to color by: by default every
   field the rows carry but their name, label and colors, which on
-  multi-row is the `group` its `rowGroups` tag; variants' are its samplesTsv
+  multi-row is the `group` its `rows.groups` tag; variants' are its samplesTsv
   columns; MAF and the mark display offer none.
 
 MAF also overrides `clusterableSources`, since on a track that discovers its
@@ -192,14 +192,14 @@ rowColorPaintsMarks`. `dealtValueColors` is the value-to-color map behind it and
 d3's ordinal way over the rows in source order (`rowColorDealRows`), so no
 reorder, focus or relabel recolors a row and a tables export deals the same
 (ADR-239). Values the config declares for the field (`rowColorDeclaredValues`,
-the multi-row display's `rowGroups` groups) take their turns first, loaded or
+the multi-row display's `rows.groups` groups) take their turns first, loaded or
 not, so a later region moves no color. Listed values take their `scale.range`
 color, the rest first seen first from tableau10 less its grey and then re-lit
 laps of it (`rowPaletteColorAt`), and a set `scale.unknown` stands in for the
 palette. A name deal skips a row carrying
 its own color; a field deal skips the empty value, so a row with none
 takes a color only from a `''` pair (ggplot's `na.value`, not a category); a
-field no row carries deals nothing. A multi-row `rowGroups` entry only
+field no row carries deals nothing. A multi-row `rows.groups` entry only
 tags a row's `group`; the group's color is
 `rows.color: { field: 'group' }`. Every row carries its color as `rowColor`: the sidebar always draws
 it as the row's label bar, and a display paints its marks in it only where

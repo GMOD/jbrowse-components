@@ -325,7 +325,7 @@ describe('computeClusterHierarchy', () => {
   })
 
   test('declines a tree whose leaves are not the rows on screen', () => {
-    // e.g. multi-row features' `rowGroups` regrouping `sources` downstream of
+    // e.g. multi-row features' `rows.groups` regrouping `sources` downstream of
     // `layout`, or a discovered row set growing as regions load
     expect(
       computeClusterHierarchy(

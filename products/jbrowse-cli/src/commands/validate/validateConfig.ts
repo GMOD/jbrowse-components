@@ -686,7 +686,7 @@ function checkMarkDisplay(
   if (!slots || !isRecord(lifted)) {
     return
   }
-  const { facet, rows, rowGroups, encoding } = lifted
+  const { facet, rows, encoding } = lifted
   const [axis] = slots.flatMap(slot =>
     valueAxesOf(lifted[slot.name], slot, slot.name),
   )
@@ -701,7 +701,9 @@ function checkMarkDisplay(
     ),
     rows: isRecord(rows) ? rows : undefined,
     rowAttributes:
-      Array.isArray(rowGroups) && rowGroups.length > 0 ? ['group'] : [],
+      isRecord(rows) && Array.isArray(rows.groups) && rows.groups.length > 0
+        ? ['group']
+        : [],
     color:
       isRecord(encoding) && isRecord(encoding.color)
         ? encoding.color

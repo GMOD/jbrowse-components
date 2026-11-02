@@ -504,7 +504,7 @@ export function validateClusterOrder(
  *
  * **Undecorated rows, not the drawn `sources`.** Every display decorates on the
  * way to the painting — multi-wiggle synthesizes a palette, the multi-row
- * feature display tags `rowGroups` colors — and
+ * feature display tags `rows.groups` groups — and
  * the arrangement holds whatever it is handed, which is meant to be only what
  * the user chose. `editableSources` narrowed by the focus is the list.
  *

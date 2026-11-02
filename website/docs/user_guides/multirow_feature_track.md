@@ -128,11 +128,11 @@ The blocks take the first of these that names a color:
   state colors, for one) opens painted with them, as
   `encoding.color.scale.type: "identity"`; `scale.domain` and `scale.names` name
   those colors in the key, and a `field` reads the colors a column holds.
-- The row's color: [`rows.colors`](/docs/config/rowswithstep/#slot-colors), a
-  color pinned on a row by its value, else
-  [`rows.color`](/docs/config/rowswithstep/#slot-color), a color per value of a
-  row attribute such as its `rowGroups` group. Use it when the row identity is
-  the signal (one color per population, per treatment arm).
+- The row's color: [`rows.colors`](/docs/config/markrows/#slot-colors), a color
+  pinned on a row by its value, else
+  [`rows.color`](/docs/config/markrows/#slot-color), a color per value of a row
+  attribute such as its `rows.groups` group. Use it when the row identity is the
+  signal (one color per population, per treatment arm).
 - Otherwise the default feature color.
 
 Binning a numeric column onto a diverging scale is the common case, e.g. segment
@@ -221,9 +221,8 @@ the track off and on. **Reset row order** appears in the track menu once any of
 the three has run, and returns the rows, their labels and their colors to what
 the config declares.
 
-[`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) tags
-each row with a `group`, the first `{ match, group }` entry whose regex its name
-matches, and
+[`rows.groups`](/docs/config/markrows/#slot-groups) tags each row with a
+`group`, the first `{ match, group }` entry whose regex its name matches, and
 [`facet: "group"`](/docs/config/linearmultirowfeaturedisplay/#slot-facet) stacks
 the rows in bands by it, each band named in a strip beside the dendrogram and
 keeping its rows in their arranged order; clustering then runs within each band.
@@ -231,13 +230,13 @@ A group takes its color from `rows.color`:
 
 ```json
 {
-  "rowGroups": [
-    { "match": "^CLUP", "group": "Wolf" },
-    { "match": "^CLAT", "group": "Coyote" }
-  ],
   "facet": "group",
   "rows": {
     "field": "sample",
+    "groups": [
+      { "match": "^CLUP", "group": "Wolf" },
+      { "match": "^CLAT", "group": "Coyote" }
+    ],
     "color": {
       "field": "group",
       "scale": {
@@ -256,11 +255,11 @@ colors as a second cue.
 **Show → Tree** toggles the dendrogram once one has been computed, and **Show →
 Row labels** the labels beside it, which are useful with no clustering run.
 
-A row that [`rows.colors`](/docs/config/rowswithstep/#slot-colors) pins, or that
-[`rows.color`](/docs/config/rowswithstep/#slot-color) colors by an attribute
-such as its group, draws a bar of that color at the left of its label, so a row
-can be found by color. A row with no value of that attribute, such as one no
-`rowGroups` entry matches, takes no color unless `rows.color`'s `scale.domain`
+A row that [`rows.colors`](/docs/config/markrows/#slot-colors) pins, or that
+[`rows.color`](/docs/config/markrows/#slot-color) colors by an attribute such as
+its group, draws a bar of that color at the left of its label, so a row can be
+found by color. A row with no value of that attribute, such as one no
+`rows.groups` entry matches, takes no color unless `rows.color`'s `scale.domain`
 pairs `""` with one. On a track colored per feature (an `itemRgb` painting, a
 jexl `encoding.color`) the bar is the only place a row's color shows.
 

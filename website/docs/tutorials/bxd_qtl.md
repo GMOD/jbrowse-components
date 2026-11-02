@@ -260,10 +260,10 @@ sections of painting rows, so the phenotype orders the rows and the painted
 genotypes can agree with it or not.
 
 The scores come from GeneNetwork's sample-data API. `jq` turns them into one
-[`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) entry
-per score, a regex matching that score's strains, and a
-[`rows.color`](/docs/config/rowswithstep/#slot-color) that pairs each group with
-its coat color:
+[`rows.groups`](/docs/config/markrows/#slot-groups) entry per score, a regex
+matching that score's strains, and a
+[`rows.color`](/docs/config/markrows/#slot-color) that pairs each group with its
+coat color:
 
 <!-- from: scripts/bxd_build_demo.sh -->
 
@@ -274,15 +274,15 @@ jq '{ "4": ["black", "rgb(30,30,30)"], "3": ["grey", "rgb(150,150,160)"],
   | [ .[] | select((.sample_name | startswith("BXD")) and (.value | IN(1, 2, 3, 4))) ]
   | group_by(-.value)
   | map($class[.[0].value | floor | tostring] + [map(.sample_name) | join("|")])
-  | { rowGroups: map({ match: ("^(" + .[2] + ")$"), group: .[0] }),
+  | { groups: map({ match: ("^(" + .[2] + ")$"), group: .[0] }),
       color: { field: "group", scale: { domain: map(.[0]), range: map(.[1]) } } }' \
   coat_color_values.json > coatColor.json
 ```
 
-Add `rowGroups` to the painting's display entry, beside `rows` and `encoding`,
-with `facet: "group"`, and put `color` inside `rows`:
+Put `groups` and `color` inside the painting's `rows`, and add `facet: "group"`
+beside it:
 
-- `rowGroups` tags each strain with its coat color as its `group`.
+- `rows.groups` tags each strain with its coat color as its `group`.
 - `facet: "group"` splits the display into one section per `group`, black at the
   top. The few strains scored between two steps match no entry and form a
   section at the bottom.
@@ -290,8 +290,8 @@ with `facet: "group"`, and put `color` inside `rows`:
   strain's coat color. The blocks keep their genotype colors, and the unscored
   strains, with no group, get no color.
 
-The fence below holds those keys as the display entry takes them, `color` inside
-`rows` and `facet` added.
+The fence below holds those keys as the display entry takes them, `groups` and
+`color` inside `rows` and `facet` added.
 `https://jbrowse.org/code/jb2/main/test_data/config_bxd.json` holds the whole
 track, as `bxd_chromosome_painting_mm10`.
 
@@ -303,24 +303,6 @@ applies edits live.
 
 ```json
 {
-  "rowGroups": [
-    {
-      "match": "^(BXD100|BXD105|BXD109|BXD11|BXD110|BXD116|BXD119|BXD120|BXD121|BXD123|BXD124|BXD125|BXD128a|BXD131|BXD133|BXD136|BXD14|BXD142|BXD145|BXD148|BXD149|BXD151|BXD152|BXD153|BXD154|BXD156|BXD165|BXD171|BXD173|BXD186|BXD190|BXD191|BXD199|BXD2|BXD20|BXD204|BXD207|BXD210|BXD217|BXD218|BXD219|BXD23|BXD31|BXD32|BXD34|BXD35|BXD42|BXD43|BXD48|BXD48a|BXD50|BXD51|BXD56|BXD86|BXD87)$",
-      "group": "black"
-    },
-    {
-      "match": "^(BXD101|BXD117|BXD12|BXD122|BXD130|BXD135|BXD139|BXD141|BXD144|BXD146|BXD147|BXD155|BXD157|BXD16|BXD162|BXD169|BXD172|BXD174|BXD175|BXD176|BXD178|BXD18|BXD180|BXD181|BXD183|BXD184|BXD19|BXD198|BXD202|BXD205|BXD208|BXD211|BXD212|BXD215|BXD22|BXD29|BXD33|BXD38|BXD39|BXD40|BXD49|BXD5|BXD6|BXD76|BXD79|BXD8|BXD94)$",
-      "group": "grey"
-    },
-    {
-      "match": "^(BXD102|BXD104|BXD106|BXD108|BXD111|BXD114|BXD115|BXD126|BXD127|BXD128|BXD13|BXD132|BXD134|BXD15|BXD150|BXD177|BXD192|BXD193|BXD194|BXD195|BXD196|BXD197|BXD200|BXD203|BXD209|BXD24|BXD24a|BXD25|BXD27|BXD28|BXD36|BXD52|BXD53|BXD55|BXD59|BXD60|BXD62|BXD65|BXD65a|BXD66|BXD68|BXD72|BXD74|BXD78|BXD88)$",
-      "group": "brown"
-    },
-    {
-      "match": "^(BXD1|BXD107|BXD112|BXD113|BXD138|BXD160|BXD161|BXD168|BXD170|BXD187|BXD188|BXD189|BXD201|BXD206|BXD21|BXD216|BXD220|BXD30|BXD44|BXD45|BXD61|BXD63|BXD64|BXD65b|BXD67|BXD69|BXD70|BXD71|BXD73|BXD73a|BXD73b|BXD75|BXD77|BXD81|BXD83|BXD84|BXD85|BXD89|BXD9|BXD90|BXD91|BXD93|BXD95|BXD98|BXD99)$",
-      "group": "dilute brown"
-    }
-  ],
   "facet": "group",
   "rows": {
     "field": "sample",
@@ -335,7 +317,25 @@ applies edits live.
           "rgb(210,175,130)"
         ]
       }
-    }
+    },
+    "groups": [
+      {
+        "match": "^(BXD100|BXD105|BXD109|BXD11|BXD110|BXD116|BXD119|BXD120|BXD121|BXD123|BXD124|BXD125|BXD128a|BXD131|BXD133|BXD136|BXD14|BXD142|BXD145|BXD148|BXD149|BXD151|BXD152|BXD153|BXD154|BXD156|BXD165|BXD171|BXD173|BXD186|BXD190|BXD191|BXD199|BXD2|BXD20|BXD204|BXD207|BXD210|BXD217|BXD218|BXD219|BXD23|BXD31|BXD32|BXD34|BXD35|BXD42|BXD43|BXD48|BXD48a|BXD50|BXD51|BXD56|BXD86|BXD87)$",
+        "group": "black"
+      },
+      {
+        "match": "^(BXD101|BXD117|BXD12|BXD122|BXD130|BXD135|BXD139|BXD141|BXD144|BXD146|BXD147|BXD155|BXD157|BXD16|BXD162|BXD169|BXD172|BXD174|BXD175|BXD176|BXD178|BXD18|BXD180|BXD181|BXD183|BXD184|BXD19|BXD198|BXD202|BXD205|BXD208|BXD211|BXD212|BXD215|BXD22|BXD29|BXD33|BXD38|BXD39|BXD40|BXD49|BXD5|BXD6|BXD76|BXD79|BXD8|BXD94)$",
+        "group": "grey"
+      },
+      {
+        "match": "^(BXD102|BXD104|BXD106|BXD108|BXD111|BXD114|BXD115|BXD126|BXD127|BXD128|BXD13|BXD132|BXD134|BXD15|BXD150|BXD177|BXD192|BXD193|BXD194|BXD195|BXD196|BXD197|BXD200|BXD203|BXD209|BXD24|BXD24a|BXD25|BXD27|BXD28|BXD36|BXD52|BXD53|BXD55|BXD59|BXD60|BXD62|BXD65|BXD65a|BXD66|BXD68|BXD72|BXD74|BXD78|BXD88)$",
+        "group": "brown"
+      },
+      {
+        "match": "^(BXD1|BXD107|BXD112|BXD113|BXD138|BXD160|BXD161|BXD168|BXD170|BXD187|BXD188|BXD189|BXD201|BXD206|BXD21|BXD216|BXD220|BXD30|BXD44|BXD45|BXD61|BXD63|BXD64|BXD65b|BXD67|BXD69|BXD70|BXD71|BXD73|BXD73a|BXD73b|BXD75|BXD77|BXD81|BXD83|BXD84|BXD85|BXD89|BXD9|BXD90|BXD91|BXD93|BXD95|BXD98|BXD99)$",
+        "group": "dilute brown"
+      }
+    ]
   }
 }
 ```

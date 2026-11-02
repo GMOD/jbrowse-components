@@ -1055,7 +1055,7 @@ test('rows beside a facet on a feature field is named as drawing alone', () => {
   expect(
     problemsOf([BAR], 'tissue', undefined, 'source').map(problemText),
   ).toEqual([
-    'rows.field: facet splits the features into a labelled section per value and rows one row per value; a facet bands the rows only on a row attribute, the group rowGroups writes, so this one draws alone',
+    'rows.field: facet splits the features into a labelled section per value and rows one row per value; a facet bands the rows only on a row attribute, the group rows.groups writes, so this one draws alone',
   ])
   expect(found([BAR], 'source', undefined, 'source')).toEqual([])
 })

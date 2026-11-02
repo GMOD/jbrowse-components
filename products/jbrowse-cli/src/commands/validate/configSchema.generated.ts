@@ -15726,8 +15726,39 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "RowsWithStep": {
-      "title": "RowsWithStep",
+    "RowGroup": {
+      "title": "RowGroup",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "match": {
+          "description": "a regex a row name has to match; one that does not compile matches nothing.",
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "group": {
+          "description": "the group a matching row joins.",
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkRows": {
+      "title": "MarkRows",
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
@@ -15736,7 +15767,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
-          "title": "RowsWithStep",
+          "title": "MarkRows",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -15873,6 +15904,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   }
                 ]
               }
+            },
+            "groups": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowGroup"
+                }
+              }
             }
           },
           "patternProperties": {
@@ -15881,37 +15923,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "additionalProperties": false
         }
       ]
-    },
-    "RowGroup": {
-      "title": "RowGroup",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "match": {
-          "description": "a regex a row name has to match; one that does not compile matches nothing.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "group": {
-          "description": "the group a matching row joins.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
     },
     "YScale3": {
       "title": "YScale",
@@ -16128,18 +16139,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/RowsWithStep"
-          }
-        },
-        "rowGroups": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/RowGroup"
-            }
+            "$ref": "#/$defs/MarkRows"
           }
         },
         "encoding": {
@@ -16290,18 +16290,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/RowsWithStep"
-          }
-        },
-        "rowGroups": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/RowGroup"
-            }
+            "$ref": "#/$defs/MarkRows"
           }
         },
         "encoding": {
@@ -16464,18 +16453,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/RowsWithStep"
-          }
-        },
-        "rowGroups": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/RowGroup"
-            }
+            "$ref": "#/$defs/MarkRows"
           }
         },
         "encoding": {
@@ -17415,19 +17393,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "rowGroups": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowGroups"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"
-                }
-              ]
-            },
             "color": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
             }
@@ -17823,9 +17788,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rows": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
-            },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -18446,9 +18408,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
             },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
-            },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
@@ -19057,9 +19016,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
             },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
-            },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
             },
@@ -19397,9 +19353,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
-            },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
@@ -19957,9 +19910,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
-            },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -20665,9 +20615,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
             },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
-            },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
@@ -20874,9 +20821,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rows": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rows"
-            },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowGroups"
             },
             "encoding": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/encoding"

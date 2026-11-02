@@ -486,18 +486,18 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_mouse_inheritance_rows-LinearMultiRowFeatureDisplay",
           "facet": "group",
-          "rowGroups": [
-            {
-              "group": "Parents",
-              "match": "^(mom|dad)$",
-            },
-          ],
           "rows": {
             "colors": {
               "mom": "#222222",
               "offspring03": "#bbbbbb",
             },
             "field": "sample",
+            "groups": [
+              {
+                "group": "Parents",
+                "match": "^(mom|dad)$",
+              },
+            ],
             "kept": [
               "offspring10",
               "dad",

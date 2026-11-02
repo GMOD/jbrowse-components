@@ -221,14 +221,16 @@ test('text labels follow a reorder, and a hidden row places none', () => {
 })
 
 const FAMILY_GROUPS = {
-  rows: 'source',
-  rowGroups: [
-    { match: '^(mom|dad)$', group: 'parents' },
-    { match: '^s', group: 'children' },
-  ],
+  rows: {
+    field: 'source',
+    groups: [
+      { match: '^(mom|dad)$', group: 'parents' },
+      { match: '^s', group: 'children' },
+    ],
+  },
 }
 
-test('a facet on the group rowGroups writes stacks the rows in bands, split by rows alone', () => {
+test('a facet on the group rows.groups writes stacks the rows in bands, split by rows alone', () => {
   const display = loaded({ ...FAMILY_GROUPS, facet: 'group' }, [
     { mark: 'rect' },
   ])
@@ -249,6 +251,17 @@ test('a facet on the group rowGroups writes stacks the rows in bands, split by r
   ])
   expect(display.configProblems).toEqual([])
   expect(display.rowColorFields).toContain('group')
+})
+
+test('a rows field change keeps rows.groups, so facet: group still bands', () => {
+  const display = loaded(
+    { rows: { ...FAMILY_GROUPS.rows, sort: ['s2'] }, facet: 'group' },
+    [{ mark: 'rect' }],
+  )
+  setConf(display, ['rows', 'field'], 'tissue')
+  expect(display.rowSort).toEqual([])
+  expect(display.rowGroups).toEqual(FAMILY_GROUPS.rows.groups)
+  expect(display.bandsRows).toBe(true)
 })
 
 test("a band's order follows facet.sort, and a hit names the row the band placed", () => {

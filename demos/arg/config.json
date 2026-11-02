@@ -171,19 +171,19 @@
             "color": {
               "field": "group",
               "scale": { "domain": ["A", "B"], "range": ["#0072b2", "#e69f00"] }
-            }
+            },
+            "groups": [
+              {
+                "match": "^A ",
+                "group": "A"
+              },
+              {
+                "match": "^B ",
+                "group": "B"
+              }
+            ]
           },
           "height": 280,
-          "rowGroups": [
-            {
-              "match": "^A ",
-              "group": "A"
-            },
-            {
-              "match": "^B ",
-              "group": "B"
-            }
-          ],
           "encoding": {
             "color": {
               "field": "color",

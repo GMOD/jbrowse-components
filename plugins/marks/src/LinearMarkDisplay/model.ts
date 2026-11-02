@@ -259,7 +259,7 @@ const MarkPlotDialog = lazy(() => import('./components/MarkPlotDialog.tsx'))
 const NO_REGIONS: ReadonlyMap<number, MarkRegionData> = new Map()
 
 // What the rule list reads beside the plot: the row attributes a config
-// gives its rows, `group` where `rowGroups` declares any, and the display's
+// gives its rows, `group` where `rows.groups` declares any, and the display's
 // own `encoding.color`.
 type MarkColorSnapshot = NonNullable<MarkSnapshot['encoding']>['color']
 
@@ -270,11 +270,11 @@ function plotContextOf(conf: AnyConfigurationModel) {
   return { rowAttributes: rowAttributesOf(conf), color: encoding?.color }
 }
 
-// The row attributes a config gives its rows: `group` where `rowGroups`
+// The row attributes a config gives its rows: `group` where `rows.groups`
 // declares any.
 function rowAttributesOf(conf: AnyConfigurationModel): readonly string[] {
-  const { rowGroups = [] } = getSnapshot<{ rowGroups?: unknown[] }>(conf)
-  return rowGroups.length > 0 ? [ROW_GROUP_FIELD] : []
+  const { rows } = getSnapshot<{ rows?: { groups?: unknown[] } }>(conf)
+  return rows?.groups?.length ? [ROW_GROUP_FIELD] : []
 }
 const NO_JOINED_FIELDS: JoinedPlotFields = { numeric: [], categorical: [] }
 const NO_LINK_REGIONS: readonly LinkRegion[] = []
@@ -457,17 +457,17 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The `rowGroups` entries, each slot filled in.
+         * The `rows.groups` entries, each slot filled in.
          */
         get rowGroups(): RowGroup[] {
-          return getSnapshot<Partial<RowGroup>[]>(self.conf.rowGroups).map(
+          return getSnapshot<Partial<RowGroup>[]>(self.conf.rows.groups).map(
             ({ match = '', group = '' }) => ({ match, group }),
           )
         },
         /**
          * #getter
          * The fields a row carries beside its name, which a facet bands the
-         * rows by: `group` where `rowGroups` declares groups. Config alone, so
+         * rows by: `group` where `rows.groups` declares groups. Config alone, so
          * whether a facet bands or splits is known before a feature loads.
          */
         get rowAttributeFields(): readonly string[] {
@@ -749,7 +749,7 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * The `rowGroups` entries whose `match` compiles.
+         * The `rows.groups` entries whose `match` compiles.
          */
         get rowGroupMatchers() {
           return compileRowGroups(self.rowGroups)
@@ -757,7 +757,7 @@ export function stateModelFactory(
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: the facet's bands where it bands the
-         * rows, its `sort` first and then the `rowGroups` groups in the order
+         * rows, its `sort` first and then the `rows.groups` groups in the order
          * they are declared.
          */
         get rowBanding(): RowBanding | undefined {
@@ -772,7 +772,7 @@ export function stateModelFactory(
         /**
          * #method
          * `TreeSidebarMixin`'s hook: each row tagged with the group of the
-         * first `rowGroups` entry its name matches.
+         * first `rows.groups` entry its name matches.
          */
         expandRows(rows: RowSource[]): RowSource[] {
           return tagRowGroups(rows, this.rowGroupMatchers)

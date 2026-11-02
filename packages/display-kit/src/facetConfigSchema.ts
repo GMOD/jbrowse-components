@@ -47,7 +47,7 @@ export const facetConfigSchema = ConfigurationSchema(
      * `strand`. A feature with no value stacks last, under `field: none`
      * (`(no value)` for a `jexl:` field, whose sections show the value alone).
      * The variant display reads a sample attribute instead, and
-     * the mark displays `group`, their `rowGroups`.
+     * the mark displays `group`, their `rows.groups`.
      * The alignments displays also take a read dimension here:
      * `firstOfPairStrand`, `pairOrientation`, `pairing`, `split`, `spliced`,
      * `mapq`, `mateRefName` or `mateAssembly`. Writing `facet: "strand"`

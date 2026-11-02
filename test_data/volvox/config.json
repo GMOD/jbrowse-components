@@ -360,9 +360,9 @@
             "field": "sample",
             "sort": ["offspring10", "dad"],
             "kept": ["offspring10", "dad", "mom", "offspring03", "offspring07"],
-            "colors": { "mom": "#222222", "offspring03": "#bbbbbb" }
+            "colors": { "mom": "#222222", "offspring03": "#bbbbbb" },
+            "groups": [{ "match": "^(mom|dad)$", "group": "Parents" }]
           },
-          "rowGroups": [{ "match": "^(mom|dad)$", "group": "Parents" }],
           "facet": "group"
         }
       ]

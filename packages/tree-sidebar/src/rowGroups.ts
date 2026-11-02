@@ -1,6 +1,6 @@
 import type { RowSource } from './types.ts'
 
-/** The row attribute a `rowGroups` entry writes. */
+/** The row attribute a `rows.groups` entry writes. */
 export const ROW_GROUP_FIELD = 'group'
 
 // Ordered: a row joins the first entry whose `match` regex it matches.

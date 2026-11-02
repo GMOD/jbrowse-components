@@ -15228,8 +15228,39 @@
         }
       ]
     },
-    "RowsWithStep": {
-      "title": "RowsWithStep",
+    "RowGroup": {
+      "title": "RowGroup",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "match": {
+          "description": "a regex a row name has to match; one that does not compile matches nothing.",
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        },
+        "group": {
+          "description": "the group a matching row joins.",
+          "default": "",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/PlainString"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "MarkRows": {
+      "title": "MarkRows",
       "anyOf": [
         {
           "description": "Shorthand for `{ \"field\": ... }`.",
@@ -15238,7 +15269,7 @@
           "type": "string"
         },
         {
-          "title": "RowsWithStep",
+          "title": "MarkRows",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -15375,6 +15406,17 @@
                   }
                 ]
               }
+            },
+            "groups": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/RowGroup"
+                }
+              }
             }
           },
           "patternProperties": {
@@ -15383,37 +15425,6 @@
           "additionalProperties": false
         }
       ]
-    },
-    "RowGroup": {
-      "title": "RowGroup",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "match": {
-          "description": "a regex a row name has to match; one that does not compile matches nothing.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        },
-        "group": {
-          "description": "the group a matching row joins.",
-          "default": "",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/PlainString"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
     },
     "YScale3": {
       "title": "YScale",
@@ -15626,18 +15637,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/RowsWithStep"
-          }
-        },
-        "rowGroups": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/RowGroup"
-            }
+            "$ref": "#/$defs/MarkRows"
           }
         },
         "encoding": {
@@ -15786,18 +15786,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/RowsWithStep"
-          }
-        },
-        "rowGroups": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/RowGroup"
-            }
+            "$ref": "#/$defs/MarkRows"
           }
         },
         "encoding": {
@@ -15958,18 +15947,7 @@
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/RowsWithStep"
-          }
-        },
-        "rowGroups": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/RowGroup"
-            }
+            "$ref": "#/$defs/MarkRows"
           }
         },
         "encoding": {
@@ -16892,19 +16870,6 @@
                 }
               ]
             },
-            "rowGroups": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowGroups"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowGroups"
-                }
-              ]
-            },
             "color": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
             }
@@ -17289,9 +17254,6 @@
             },
             "rows": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
-            },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -17891,9 +17853,6 @@
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
             },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
-            },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
@@ -18481,9 +18440,6 @@
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
             },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
-            },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
             },
@@ -18810,9 +18766,6 @@
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
-            },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
@@ -19349,9 +19302,6 @@
             },
             "facet": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/facet"
-            },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -20039,9 +19989,6 @@
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
             },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
-            },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
@@ -20238,9 +20185,6 @@
             },
             "rows": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rows"
-            },
-            "rowGroups": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowGroups"
             },
             "encoding": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/encoding"

@@ -8,16 +8,15 @@ import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
-import { rowsWithStepConfigSchema } from '@jbrowse/display-kit/rowsWithStepConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
-import { rowGroupConfigSchema } from '@jbrowse/tree-sidebar/rowGroupConfigSchema'
 
 import { markColorSchema, markLegendOptions } from './markColorConfigSchema.ts'
 import { markDefSchema } from './markDefConfigSchema.ts'
 import { markDisplayEncodingSchema } from './markDisplayEncodingConfigSchema.ts'
 import { markFacetSchema } from './markFacetConfigSchema.ts'
 import { markLocusSchema } from './markLocusConfigSchema.ts'
+import { markRowsConfigSchema } from './markRowsConfigSchema.ts'
 import { markSizeSchema } from './markSizeConfigSchema.ts'
 import { markTransformStep } from './markTransformConfigSchema.ts'
 import { DEFAULT_TEXT_FIELD, MARK_TYPES, markTypeOf } from './markVocabulary.ts'
@@ -427,7 +426,7 @@ export function configSchemaFactory() {
        * order the sections stack in and the steps each runs before any mark's,
        * a per-section `pileup` among them. A chip names each section and hides
        * it. Split after `transform` and before any mark's own steps. Beside
-       * `rows`, a facet on a row attribute, the `group` `rowGroups` writes,
+       * `rows`, a facet on a row attribute, the `group` `rows.groups` writes,
        * stacks the rows in labelled bands instead, each band's rows in their
        * arranged order.
        */
@@ -442,7 +441,8 @@ export function configSchemaFactory() {
        * color, `rows.colors` pinned on it or `rows.color` mapped from an
        * attribute, is the bar beside its label, and the color of a mark
        * naming none, or of a mark colored by the rows' own field. A `facet`
-       * on a row attribute stacks the rows in bands; a facet on a feature
+       * on a row attribute, the `group` `rows.groups` tags, stacks the rows
+       * in bands; a facet on a feature
        * field draws its sections in place of the rows, and the display shows
        * a notice.
        *
@@ -454,28 +454,7 @@ export function configSchemaFactory() {
        * { rows: { field: 'source', sort: ['tumor', 'normal'], step: 12 } }
        * ```
        */
-      rows: rowsWithStepConfigSchema,
-      /**
-       * #slot rowGroups
-       * An array of `{ match, group }` tagging each row with the `group` of
-       * the first entry whose regex its name matches, a row attribute:
-       * `facet: 'group'` stacks the groups in bands, and
-       * `rows.color: 'group'` colors them. A row no entry matches
-       * has no group.
-       *
-       * #example
-       * ```js
-       * {
-       *   rows: 'sample',
-       *   rowGroups: [
-       *     { match: '^CLUP', group: 'Wolf' },
-       *     { match: '^CLAT', group: 'Coyote' },
-       *   ],
-       *   facet: 'group',
-       * }
-       * ```
-       */
-      rowGroups: types.array(rowGroupConfigSchema),
+      rows: markRowsConfigSchema,
       /**
        * #slot encoding
        * The channels the marks are read through, owned by the display rather
@@ -525,6 +504,7 @@ export function configSchemaFactory() {
         rowHeight: 'rows.step',
         rowColor: ['rows.colors', 'rows.color'],
         axis: 'rows.axis',
+        rowGroups: 'rows.groups',
       },
       preProcessSnapshot: checkMarks,
     },
