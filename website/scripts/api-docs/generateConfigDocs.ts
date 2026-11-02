@@ -894,7 +894,7 @@ function writesLine(name: string) {
     : writes === 'members'
       ? 'A setting written to it names members one by one: a member left out stays as it is, and `null` resets one.'
       : isKeyedWrites(writes)
-        ? `A setting written to it names members one by one: a member left out stays as it is, and \`null\` resets one. One that changes \`${writes.keyedBy}\` first clears ${writes.keyed.map(m => `\`${m}\``).join(', ')}, which name the old values, except those it states.`
+        ? `A setting written to it names members one by one: a member left out stays as it is, and \`null\` resets one. One that changes \`${writes.keyedBy}\`${writes.emptyChanges ? ', emptying or filling it included,' : ''} first clears ${writes.keyed.map(m => `\`${m}\``).join(', ')}, which name the old values, except those it states.`
         : ''
 }
 

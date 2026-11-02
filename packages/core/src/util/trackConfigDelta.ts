@@ -141,7 +141,8 @@ const keyedAt = (at: At) =>
 // diff changing the field resets none of the base's keyed members: the merge
 // drops those itself, and a null would also drop what an admin later writes
 // for the new field. Each keyed member the edit states stores whole, as the
-// merge writes it over nothing.
+// merge writes it over nothing. The edit is a whole snapshot, so a field it
+// leaves out is empty, which changes a field keyed with `emptyChanges`.
 function keyedDiff(
   at: At,
   out: JsonObject,
@@ -150,7 +151,10 @@ function keyedDiff(
 ) {
   const keyed = keyedAt(at)
   if (keyed) {
-    const kept = changesKeyedField(keyed, base, edited)
+    const kept = changesKeyedField(keyed, base, {
+      [keyed.keyedBy]: null,
+      ...edited,
+    })
       ? {
           ...withoutKeyed(keyed, out),
           ...Object.fromEntries(

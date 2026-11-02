@@ -220,6 +220,12 @@ describe('mergeBySlots over a keyed rows object', () => {
       rows: { field: 'source', tree: { newick: '(b,a);' } },
     },
     {
+      name: 'emptying the newick drops the clustered provenance',
+      base: { rows: { field: 'source', tree: CLUSTERED } },
+      write: { rows: { tree: { newick: '' } } },
+      rows: { field: 'source', tree: { newick: '' } },
+    },
+    {
       name: 'a newick member write drops the clustered provenance',
       base: { rows: { field: 'source', tree: CLUSTERED } },
       write: { rows: { tree: { newick: '(b,a);' } } },

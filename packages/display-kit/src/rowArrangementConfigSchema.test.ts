@@ -165,4 +165,43 @@ describe('a provenance describes only the newick beside it', () => {
       ).rows,
     ).toEqual({ field: 'tissue' })
   })
+
+  test('a whole plot edit changing the field drops the clustered tree retyped as its newick', () => {
+    const conf = clustered()
+    expect(
+      plotWrites(
+        conf,
+        { rows: { field: 'tissue', sort: ['b', 'a'], tree: NEWICK } },
+        { whole: true },
+      ).rows,
+    ).toEqual({ field: 'tissue' })
+  })
+
+  test.each([null, ''])(
+    'emptying the newick as a member (%p), then writing one, leaves no provenance',
+    empty => {
+      const conf = clustered()
+      setConf(conf, ['rows', 'tree', 'newick'], empty)
+      expect(treeOf(conf).provenance).toBeUndefined()
+      setConf(conf, ['rows', 'tree', 'newick'], OTHER)
+      expect(treeOf(conf)).toEqual({ newick: OTHER, provenance: undefined })
+    },
+  )
+
+  test('a bag emptying the newick, then writing one, leaves no provenance', () => {
+    const conf = clustered()
+    applyConfSettings(conf, { rows: { tree: { newick: '' } } })
+    applyConfSettings(conf, { rows: { tree: { newick: OTHER } } })
+    expect(treeOf(conf)).toEqual({ newick: OTHER, provenance: undefined })
+  })
+
+  test('a whole plot edit deleting the newick line drops the provenance', () => {
+    const conf = clustered()
+    const { rows } = plotOf(conf) as { rows: Record<string, unknown> }
+    const draft = { rows: { ...rows, tree: { provenance: PROVENANCE } } }
+    expect(plotWrites(conf, draft, { whole: true }).rows).toEqual({
+      field: 'source',
+      sort: ['b', 'a'],
+    })
+  })
 })

@@ -305,12 +305,20 @@ describe('a clustering run in `rows.tree`', () => {
     expect(getLeafNames(copy.parsedTree!)).toEqual(['c', 'a', 'b'])
   })
 
-  it('reads no provenance while no newick is stored', () => {
+  it("a newick unset and written again shows no run's provenance", () => {
     const display = makeDisplay({
       rows: { tree: { newick: RUN_TREE, provenance: PROVENANCE } },
     })
     setConf(display, ['rows', 'tree', 'newick'], null)
-    expect(display.rowTree).toBeUndefined()
+    setConf(display, ['rows', 'tree', 'newick'], '((a,b),c);')
+    expect(display.rowTree).toBe('((a,b),c);')
+    expect(display.rowTreeProvenance).toBeUndefined()
+  })
+
+  it('reads no provenance a config writes with no newick beside it', () => {
+    const display = makeDisplay({
+      rows: { tree: { provenance: PROVENANCE } },
+    })
     expect(display.rowTreeProvenance).toBeUndefined()
   })
 

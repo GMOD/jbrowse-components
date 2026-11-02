@@ -744,3 +744,59 @@ describe('an object the display keys by its field', () => {
     expect(delta.displays).toEqual([{ displayId: 't-wig', rows: { step: 8 } }])
   })
 })
+
+describe('a keyed object whose empty value is a change, rows.tree', () => {
+  const forms: DisplayForms = {
+    wholeAt: () => false,
+    keyedAt: (_, path) =>
+      path.join('.') === 'rows'
+        ? { keyedBy: 'field', keyed: ['sort', 'tree'] }
+        : path.join('.') === 'rows.tree'
+          ? { keyedBy: 'newick', keyed: ['provenance'], emptyChanges: true }
+          : undefined,
+    canonical: (_, display) => display,
+  }
+  const PROVENANCE = { regions: [{ refName: 'chr1', start: 0, end: 9 }] }
+  const track = (tree: Record<string, unknown>) => ({
+    trackId: 't',
+    type: 'QuantitativeTrack',
+    displays: [
+      {
+        type: 'LinearWiggleDisplay',
+        displayId: 't-wig',
+        rows: { field: 'source', tree },
+      },
+    ],
+  })
+  const clustered = track({ newick: '(a,b);', provenance: PROVENANCE })
+
+  test('a delta emptying the newick drops the provenance', () => {
+    const merged = mergeTrackConfig(
+      clustered,
+      {
+        trackId: 't',
+        displays: [{ displayId: 't-wig', rows: { tree: { newick: null } } }],
+      },
+      forms,
+    )
+    expect(merged.displays[0]!.rows).toEqual({ field: 'source', tree: {} })
+  })
+
+  test('a newick emptied, then written again, carries no provenance', () => {
+    const emptied = mergeTrackConfig(
+      clustered,
+      diffTrackConfig(clustered, track({}), forms),
+      forms,
+    )
+    expect(emptied.displays[0]!.rows).toEqual({ field: 'source', tree: {} })
+    const rewritten = mergeTrackConfig(
+      clustered,
+      diffTrackConfig(clustered, track({ newick: '(c,(a,b));' }), forms),
+      forms,
+    )
+    expect(rewritten.displays[0]!.rows).toEqual({
+      field: 'source',
+      tree: { newick: '(c,(a,b));' },
+    })
+  })
+})

@@ -5782,7 +5782,8 @@ export const configManifest: ConfigManifest = {
                 "keyedBy": "newick",
                 "keyed": [
                   "provenance"
-                ]
+                ],
+                "emptyChanges": true
               },
               "shorthand": {
                 "string": "newick"
@@ -6777,7 +6778,8 @@ export const configManifest: ConfigManifest = {
                 "keyedBy": "newick",
                 "keyed": [
                   "provenance"
-                ]
+                ],
+                "emptyChanges": true
               },
               "shorthand": {
                 "string": "newick"
@@ -7555,7 +7557,8 @@ export const configManifest: ConfigManifest = {
                 "keyedBy": "newick",
                 "keyed": [
                   "provenance"
-                ]
+                ],
+                "emptyChanges": true
               },
               "shorthand": {
                 "string": "newick"
@@ -8143,7 +8146,8 @@ export const configManifest: ConfigManifest = {
                 "keyedBy": "newick",
                 "keyed": [
                   "provenance"
-                ]
+                ],
+                "emptyChanges": true
               },
               "shorthand": {
                 "string": "newick"
@@ -9338,7 +9342,8 @@ export const configManifest: ConfigManifest = {
                 "keyedBy": "newick",
                 "keyed": [
                   "provenance"
-                ]
+                ],
+                "emptyChanges": true
               },
               "shorthand": {
                 "string": "newick"
@@ -10222,7 +10227,8 @@ export const configManifest: ConfigManifest = {
                 "keyedBy": "newick",
                 "keyed": [
                   "provenance"
-                ]
+                ],
+                "emptyChanges": true
               },
               "shorthand": {
                 "string": "newick"
@@ -11113,7 +11119,8 @@ export const configManifest: ConfigManifest = {
                 "keyedBy": "newick",
                 "keyed": [
                   "provenance"
-                ]
+                ],
+                "emptyChanges": true
               },
               "shorthand": {
                 "string": "newick"

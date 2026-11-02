@@ -6,9 +6,9 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * `rows.tree`, the dendrogram beside the rows: its newick, and where a
  * clustering run computed it, the locus and settings it ran with. A string is
  * the newick. The provenance is keyed by the newick, as `rows.sort` is by
- * `rows.field`: a write of another newick, as a member or whole, drops the
- * provenance it does not state, so a provenance only ever describes the tree
- * beside it. A plot read gives the object whichever form was written.
+ * `rows.field`: a write of another newick, as a member or whole, emptying it
+ * or filling it included, drops the provenance it does not state, so a
+ * provenance only ever describes the tree beside it. A plot read gives the object whichever form was written.
  * Whether it draws is `rows.axis.tree`.
  *
  * #example
@@ -42,7 +42,7 @@ export const rowTreeConfigSchema = ConfigurationSchema(
   },
   {
     shorthand: 'newick',
-    writes: { keyedBy: 'newick', keyed: ['provenance'] },
+    writes: { keyedBy: 'newick', keyed: ['provenance'], emptyChanges: true },
     closed: true,
   },
 )

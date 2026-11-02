@@ -199,7 +199,11 @@ function modelOf(type) {
 // schema's constant
 function writesOf(writes = 'members') {
   return typeof writes === 'object'
-    ? { keyedBy: writes.keyedBy, keyed: [...writes.keyed] }
+    ? {
+        keyedBy: writes.keyedBy,
+        keyed: [...writes.keyed],
+        ...(writes.emptyChanges ? { emptyChanges: true } : {}),
+      }
     : writes
 }
 

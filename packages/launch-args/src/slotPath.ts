@@ -51,6 +51,11 @@ function listItems(text: string) {
       quote = c
     }
   }
+  if (depth > 0 && text.includes(',')) {
+    throw new Error(
+      `"${text}" opens a bracket it never closes, so its commas read as neither a list nor one value`,
+    )
+  }
   items.push(text.slice(start))
   return items
 }

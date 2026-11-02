@@ -10,9 +10,9 @@ Auto-generated from the config schema in the source — see the [config guide](/
 `rows.tree`, the dendrogram beside the rows: its newick, and where a
 clustering run computed it, the locus and settings it ran with. A string is
 the newick. The provenance is keyed by the newick, as `rows.sort` is by
-`rows.field`: a write of another newick, as a member or whole, drops the
-provenance it does not state, so a provenance only ever describes the tree
-beside it. A plot read gives the object whichever form was written.
+`rows.field`: a write of another newick, as a member or whole, emptying it
+or filling it included, drops the provenance it does not state, so a
+provenance only ever describes the tree beside it. A plot read gives the object whichever form was written.
 Whether it draws is `rows.axis.tree`.
 
 ## Example usage
@@ -23,7 +23,7 @@ Whether it draws is `rows.axis.tree`.
 
 ## Config slots
 
-A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. One that changes `newick` first clears `provenance`, which name the old values, except those it states. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. One that changes `newick`, emptying or filling it included, first clears `provenance`, which name the old values, except those it states. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

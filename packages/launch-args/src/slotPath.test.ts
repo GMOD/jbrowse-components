@@ -140,6 +140,12 @@ test('an item keeps the commas inside its own brackets, as a newick tree does', 
   })
 })
 
+test('an unclosed bracket in a value with commas is refused, not read as one value', () => {
+  expect(() => slotValue('type(,gene')).toThrow(/never closes/)
+  expect(() => slotWrite('filter=type(,gene')).toThrow(/never closes/)
+  expect(slotValue('type(')).toBe('type(')
+})
+
 test('a location keeps the commas grouping its digits', () => {
   const region = 'chr2:135,787,850-135,876,467'
   expect(slotValue(region)).toBe(region)

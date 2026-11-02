@@ -192,8 +192,10 @@ export interface PlotWriteOptions {
 // The whole plot text states every member a read gave it, so under a new
 // field the keyed members it left as read are the old field's, not a choice.
 // Each member is compared in the spelling the read gives, a `rows.tree` typed
-// as newick against the object it lifts to, and a keyed object inside one
-// (`rows.tree`, keyed by its newick) answers the same way.
+// as newick against the object it lifts to, and one restating part of the
+// read, that newick without its provenance, is as read. A keyed object inside
+// one (`rows.tree`, keyed by its newick) answers the same way, and a field the
+// text leaves out is empty, since the text is the whole plot.
 function withoutRestatedKeyed(
   node: AnyConfigurationModel | undefined,
   value: unknown,
@@ -218,10 +220,12 @@ function keyedRestatement(
   const unstated = Object.fromEntries(
     Object.entries(value).filter(
       ([member, v]) =>
-        !keyed.keyed.includes(member) || !compareStructural(v, read[member]),
+        !keyed.keyed.includes(member) || !restatesRead(v, read[member]),
     ),
   )
-  const restated = new Set(staleKeyedMembers(keyed, read, unstated))
+  const restated = new Set(
+    staleKeyedMembers(keyed, read, { [keyed.keyedBy]: null, ...unstated }),
+  )
   return Object.fromEntries(
     Object.entries(value)
       .filter(([member]) => !restated.has(member))
@@ -230,6 +234,16 @@ function keyedRestatement(
         withoutRestatedKeyed(subConfOf(node, member), v, read[member]),
       ]),
   )
+}
+
+// Whether `stated` says nothing the read does not: equal to it, or an object
+// each of whose members restates the read's
+function restatesRead(stated: unknown, read: unknown): boolean {
+  return isPlainObject(stated) && isPlainObject(read)
+    ? Object.entries(stated).every(([member, v]) =>
+        restatesRead(v, read[member]),
+      )
+    : compareStructural(stated, read)
 }
 
 // as a settings bag writes, so an object declaring `writes: 'members'` takes

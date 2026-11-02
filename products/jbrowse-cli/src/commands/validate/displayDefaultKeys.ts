@@ -60,7 +60,8 @@ export function displayDefaultsForTrackType(
 
 // Whole where any declaration writes it whole or two key it by different
 // fields; keyed where any keys it, by every declaration's keyed members, as
-// `rows` gains a member on some displays only; members otherwise.
+// `rows` gains a member on some displays only, an empty value changing it
+// where any declaration says so; members otherwise.
 function mergedWrites(slots: SlotEntry[]) {
   const keyed = slots.map(s => s.writes).filter(isKeyedWrites)
   const keyedBy = new Set(keyed.map(w => w.keyedBy))
@@ -70,7 +71,11 @@ function mergedWrites(slots: SlotEntry[]) {
     ? 'whole'
     : field === undefined
       ? 'members'
-      : { keyedBy: field, keyed: [...new Set(keyed.flatMap(w => w.keyed))] }
+      : {
+          keyedBy: field,
+          keyed: [...new Set(keyed.flatMap(w => w.keyed))],
+          ...(keyed.some(w => w.emptyChanges) ? { emptyChanges: true } : {}),
+        }
 }
 
 // One slot per name across several displays' lists: a sub-schema everywhere
