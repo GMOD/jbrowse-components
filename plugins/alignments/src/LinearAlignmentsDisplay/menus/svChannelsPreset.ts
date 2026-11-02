@@ -17,7 +17,7 @@ function markType(mark: unknown) {
 export const SV_CHANNELS_LABEL = 'SV channels'
 
 // One band per SV channel, each with its own coverage and its own arcs,
-// concordant pairs left out. Every setting is reachable from the other menus;
+// concordant pairs' arcs left out. Every setting is reachable from the other menus;
 // the preset exists because four of them spread across three menus is not an
 // arrangement anyone finds by looking.
 //

@@ -212,7 +212,17 @@ function svFeat(id: string, fields: Record<string, unknown>) {
   return feat(id, { flags: 0, score: 60, tags: {}, CIGAR: '100M', ...fields })
 }
 
-test('the SV channel facet files a pair by its orientation and any other read by its evidence', () => {
+function pair(id: string, flags: number, orientation: string | undefined) {
+  return feat(id, {
+    flags,
+    score: 60,
+    tags: {},
+    CIGAR: '100M',
+    pair_orientation: orientation,
+  })
+}
+
+test('the SV channel facet files a discordant pair by its orientation and every read without evidence as none', () => {
   const split = {
     strand: 1,
     end: 50,
@@ -222,22 +232,26 @@ test('the SV channel facet files a pair by its orientation and any other read by
   const features = [
     svFeat('split', split),
     svFeat('insertion', { CIGAR: '40M60I60M' }),
-    feat('inverted-pair', {
-      flags: 1,
-      score: 60,
-      tags: {},
-      CIGAR: '100M',
-      pair_orientation: 'F1F2',
-    }),
+    pair('inverted-pair', 1, 'F1F2'),
+    pair('concordant-pair', 3, 'F1R2'),
     svFeat('plain', {}),
     svFeat('unplaced-split', { ...split, score: 0 }),
+    pair('discordant-lr', 1, 'F1R2'),
+    pair('proper-rl', 3, 'R1F2'),
+    pair('secondary-inverted', 1 | 256, 'F1F2'),
+    pair('mate-unmapped', 1 | 8, undefined),
   ]
   const groups = partitionFeatures(features, { field: 'svChannel' })
   expect(groups.map(g => [g.label, g.features.map(f => f.id())])).toEqual([
-    ['LR pair or deletion-type split', ['split']],
+    ['LR pair or deletion-type split', ['split', 'discordant-lr']],
+    ['RL pair or duplication-type split', ['proper-rl']],
     ['LL or RR pair, or inversion split', ['inverted-pair']],
+    ['Partner on another chromosome or unmapped', ['mate-unmapped']],
     ['SV-size insertion', ['insertion']],
-    ['No SV evidence', ['plain', 'unplaced-split']],
+    [
+      'No SV evidence',
+      ['concordant-pair', 'plain', 'unplaced-split', 'secondary-inverted'],
+    ],
   ])
 })
 

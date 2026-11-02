@@ -40,7 +40,7 @@ import {
   levelOrder,
 } from './readFieldLevels.ts'
 import { chainIsSplit, isSplitAlignment } from './splitAlignment.ts'
-import { CHAIN_PRECEDENCE, svChannelOf } from './svChannel.ts'
+import { SV_CHANNEL_PRECEDENCE, svChannelOf } from './svChannel.ts'
 import {
   MAPQ_UNAVAILABLE,
   firstOfPairStrand,
@@ -235,7 +235,7 @@ const SV_CHANNEL_GROUPS = Object.fromEntries(
 // A chain files where its most specific member files.
 function chainSvChannelKey(chain: Feature[]) {
   const channels = new Set(chain.map(svChannelOf))
-  return SV_CHANNEL_GROUPS[CHAIN_PRECEDENCE.find(c => channels.has(c))!]
+  return SV_CHANNEL_GROUPS[SV_CHANNEL_PRECEDENCE.find(c => channels.has(c))!]
 }
 
 // A read's mate reference, or a synteny block's query contig.

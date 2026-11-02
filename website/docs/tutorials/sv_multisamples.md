@@ -220,7 +220,7 @@ track the same way as HG00113's.
 **Read connections → SV channels** in the track menu splits the reads into one
 band per kind of SV evidence, each with a separate coverage curve and arcs:
 
-- The deletion-type band holds the flat coverage profile of the concordant pairs
+- The no-evidence band holds the flat coverage profile of the concordant pairs
 - The inversion band draws two bundles of arcs, the same-strand pairs and split
   reads across each end of the inversion, green for one end and blue for the
   other

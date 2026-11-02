@@ -629,7 +629,7 @@ export const svSpecs: ScreenshotSpec[] = [
               coverage: { height: 60 },
               facet: 'svChannel',
               legend: { show: true },
-              // The five bands' own stack. A taller box pads the frame from
+              // The four bands' own stack. A taller box pads the frame from
               // inside, which neither size report sees.
               height: 800,
             },

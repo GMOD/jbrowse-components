@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "SV channels facets by `svChannel`, six bands by the kind of SV a read's evidence points at, concordant pairs staying in the LR band as its baseline: LR pair or deletion-type split, RL pair or duplication-type split, LL or RR pair or inversion split, partner on another chromosome, SV-size insertion, no SV evidence. A split read files by its junctions, paired or not, so short and long reads of one event fill one band; a pair without a split class files by its orientation. Replaces the preset's `pairOrientation` facet, under which a long-read track was one 'No orientation' band, and the `svSignal` facet (Group by → SV evidence): `svSignal` stays the filter, the sort and the split view's gate"
+summary: "SV channels facets by `svChannel`, `svSignal`'s evidence split into six bands by the kind of SV it points at, every read without evidence, concordant pairs included, in the last: LR pair or deletion-type split, RL pair or duplication-type split, LL or RR pair or inversion split, partner on another chromosome, SV-size insertion, no SV evidence. A split read files by its junctions, paired or not, so short and long reads of one event fill one band; a discordant pair files by its orientation. Replaces the preset's `pairOrientation` facet, under which a long-read track was one 'No orientation' band, and the `svSignal` facet (Group by → SV evidence): `svSignal` stays the filter, the sort and the split view's gate"
 ---
 
 # ADR-258: SV channels band reads by the SV their evidence points at
@@ -34,7 +34,7 @@ the reviews to settle the open calls; built in
   | `LR` | LR pair or deletion-type split |
   | `RL` | RL pair or duplication-type split |
   | `inversion` | LL or RR pair, or inversion split |
-  | `otherChromosome` | Partner on another chromosome |
+  | `partnerElsewhere` | Partner on another chromosome or unmapped |
   | `svInsertion` | SV-size insertion |
   | `none` | No SV evidence |
 
@@ -46,18 +46,24 @@ the reviews to settle the open calls; built in
   its band agrees with its arc.
 - **A junction counts only between two read-adjacent pieces both placed**
   (MAPQ above 0, ADR-229), and never across an unplaced piece.
-- **Within one read**: inversion, then duplication-type, deletion-type, a split
-  whose feet share a base (`svInsertion`), then a piece on another reference.
-  A same-reference junction outranks a piece leaving it: on HG00151 ONT, the
-  other order pulled 4 of 83 inversion reads out of their band for a stray
-  supplementary on chr4, chr9 or chrX.
-- **A read with no split class** files by its pair orientation (LL and RR to
-  `inversion`), else by the rest of its `svSignal` evidence: an SV-size
-  deletion to `LR`, insertion to `svInsertion`, a placed mate on another
-  reference to `otherChromosome`.
-- **Chain mode** files a fragment by its most specific member
-  (`CHAIN_PRECEDENCE`), so a concordant LR mate never outranks its split
-  partner.
+- **One ranking** (`SV_CHANNEL_PRECEDENCE`) settles a read whose junctions,
+  or a chain whose records, name several: inversion, duplication-type,
+  deletion-type, insertion, a partner elsewhere, none. A local event outranks a
+  partner elsewhere: on HG00151 ONT, the other order pulled 4 of 83 inversion
+  reads out of their band for a stray supplementary on chr4, chr9 or chrX.
+- **A read with no split class** files by the rest of its `svSignal`
+  evidence: an SV-size deletion to `LR`, insertion to `svInsertion`, a
+  discordant pair by its orientation (LL and RR to `inversion`) or, with no
+  orientation because its mate is unmapped or on another reference, to
+  `partnerElsewhere`. ADR-229 counts an unmapped mate as evidence, and the arcs
+  draw it as they draw a mate elsewhere, as a tick.
+- **Every read `svSignal` does not count files as `none`**, concordant pairs
+  included, so "No SV evidence" holds exactly the reads the Only SV evidence
+  filter hides and is the depth every other band is read against. Filing every
+  pair by its orientation, the first version, kept concordant pairs in the LR
+  band, where "No SV evidence" read as if it held them.
+- **Chain mode** files a fragment where its highest-ranked record files; a
+  concordant mate files as `none`, last.
 - **A band exists only where a fetched read keys to it**, as for every facet.
 - **Group by → SV evidence (the `svSignal` facet) is cut.** Its levels repeat
   Split reads and Pair status, and the one thing it did, separating evidence
@@ -72,14 +78,20 @@ the reviews to settle the open calls; built in
 ## Consequences
 
 - HG00151 ONT at its 1.2 kb inversion draws 5 bands where it drew 1; the
-  HG02768 Illumina inverted duplication keeps 5, its split reads leaving the LR
-  band for the inversion band.
+  HG02768 Illumina inverted duplication draws 4 where it drew 5: no deletion
+  evidence, so no LR band, its split reads in the inversion band and its
+  concordant pairs in "No SV evidence".
+- The arcs gate an inter-chromosomal tick by their own support floor
+  (`breakpoint.reads`), not by `svSignal`'s mate placement, so a tick can draw
+  in "No SV evidence" over a pair whose mate the MQ tag marks unplaced (three
+  on HG02768; their MQ tags unchecked).
 - The SV channels figure (`sv_channels`) and the user guide's band diagram show
   one inversion band; LL and RR stay apart by arc color, and Group by → Pair
   orientation still gives four bands.
 - Not exactly `svSignal` split by type at the edges: a read whose placed pieces
   are not read-adjacent counts as split evidence under `svSignal` and files in
-  `none` here, and a MAPQ-0 record of a split read takes its siblings' band.
+  `none` here, or by its orientation when its pair is discordant; a MAPQ-0
+  record of a split read takes its siblings' band.
   A supplementary whose source dropped its SA tag, or a secondary, files by its
   own evidence and may land apart from its siblings.
 - `svInsertion` from a split needs the feet on one base exactly; a one- or
@@ -101,6 +113,10 @@ the reviews to settle the open calls; built in
 
 ## Rejected alternatives
 
+- **Relabelling the LR band to say it holds concordant pairs**: its coverage
+  would stay mostly concordant depth, a deletion's pairs showing only as arcs,
+  and the band would never be empty, so "a band that stays empty under a call
+  is a call with no read evidence" would not hold.
 - **Eight bands** (LL, RR and a read-through band apart): LL and RR are the two
   ends of one inversion, and the arcs keep them apart by color.
 - **A per-read "several classes" bucket**: the commonest long-read inversion read

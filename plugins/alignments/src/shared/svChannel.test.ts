@@ -72,13 +72,13 @@ test('a same-reference junction outranks a stray piece on another reference', ()
   ).toBe('inversion')
 })
 
-test('a read whose only junctions leave its reference files as other chromosome', () => {
+test('a read whose only junctions leave its reference files as a partner elsewhere', () => {
   expect(
     splitReadChannel([
       piece(100, 200, 1, 0),
       piece(500, 600, 1, 100, { refName: 'ctgB' }),
     ]),
-  ).toBe('otherChromosome')
+  ).toBe('partnerElsewhere')
 })
 
 test('a read leaving and re-entering at one base files as an insertion', () => {

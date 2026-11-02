@@ -67,16 +67,17 @@ export const SV_SIGNAL_OF_TIER: readonly SvSignal[] = [
 
 /**
  * `svSignal`'s evidence split by the kind of SV it points at, one band per
- * kind: a pair by its orientation, a split read by its junctions' class filed
- * with the pairs across the same junction, a partner on another reference, an
- * SV-size insertion, or none. LL and RR, the two ends of one inversion, share a
- * band; their arcs keep them apart.
+ * kind: a discordant pair by its orientation, a split read by its junctions'
+ * class filed with the pairs across the same junction, a partner on another
+ * reference or unmapped, an SV-size insertion, and every read without evidence
+ * as `none`. LL and RR, the two ends of one inversion, share a band; their arcs
+ * keep them apart.
  */
 export const SV_CHANNEL_LEVELS = [
   'LR',
   'RL',
   'inversion',
-  'otherChromosome',
+  'partnerElsewhere',
   'svInsertion',
   'none',
 ] as const
@@ -104,7 +105,7 @@ export const READ_LEVEL_LABELS: {
     LR: 'LR pair or deletion-type split',
     RL: 'RL pair or duplication-type split',
     inversion: 'LL or RR pair, or inversion split',
-    otherChromosome: 'Partner on another chromosome',
+    partnerElsewhere: 'Partner on another chromosome or unmapped',
     svInsertion: 'SV-size insertion',
     none: 'No SV evidence',
   },

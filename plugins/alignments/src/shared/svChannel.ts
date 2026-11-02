@@ -1,4 +1,5 @@
 import {
+  READ_DISCORDANT,
   READ_SV_DELETION,
   READ_SV_INSERTION,
   pairDirection,
@@ -14,21 +15,17 @@ import {
 import { isMismatchFeature } from './extractCigarFeatures.ts'
 import { SV_SIGNAL_OF_TIER } from './readFieldLevels.ts'
 import { categoryBitsOf, saTagOf } from './splitAlignment.ts'
-import {
-  getFlags,
-  getMappingQuality,
-  getMateRefName,
-  getStrand,
-} from './util.ts'
+import { getFlags, getMappingQuality, getStrand } from './util.ts'
 
 import type { ArcSplitCategory } from '../features/arcs/arcSplitCategory.ts'
 import type { SvChannel } from './readFieldLevels.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
-// A split class files with the pairs across the same junction: duplication-type
-// with RL, either inversion type with LL and RR pairs, and deletion-type with
-// LR, where a deletion's stretched pairs sit beside every concordant pair.
+// A split class files with the pairs across the same junction, as
+// `ARC_SPLIT_SWATCH` pairs them: duplication-type with RL, either inversion
+// type with LL and RR pairs, and deletion-type with the stretched LR pairs of a
+// deletion.
 const CHANNEL_OF_SPLIT: Record<ArcSplitCategory, SvChannel> = {
   splitForward: 'LR',
   splitBack: 'RL',
@@ -43,28 +40,18 @@ const CHANNEL_OF_PAIR: Record<PairDirection, SvChannel> = {
   RR: 'inversion',
 }
 
-// Across one read's junctions. A junction on the read's own reference outranks
-// one leaving it: a long read through a local event often carries a stray
-// supplementary on a repeat elsewhere, which would otherwise pull it out of
-// the band its event fills.
-const READ_PRECEDENCE: readonly SvChannel[] = [
-  'inversion',
-  'RL',
-  'LR',
-  'svInsertion',
-  'otherChromosome',
-]
-
 /**
- * Across a chain's members, the most specific first: LR also holds every
- * concordant pair, so it ranks below any channel only SV evidence reaches.
+ * Which channel wins where one read's junctions, or one chain's records, name
+ * several. A local event outranks a partner elsewhere: a long read through a
+ * local event often carries a stray supplementary on a repeat elsewhere, which
+ * would otherwise pull it out of the band its event fills.
  */
-export const CHAIN_PRECEDENCE: readonly SvChannel[] = [
+export const SV_CHANNEL_PRECEDENCE: readonly SvChannel[] = [
   'inversion',
   'RL',
-  'otherChromosome',
-  'svInsertion',
   'LR',
+  'svInsertion',
+  'partnerElsewhere',
   'none',
 ]
 
@@ -91,7 +78,7 @@ function sameReferenceChannel(a: ReadPiece, b: ReadPiece) {
 function junctionChannel(a: ReadPiece, b: ReadPiece) {
   return a.refName === b.refName
     ? sameReferenceChannel(a, b)
-    : 'otherChromosome'
+    : 'partnerElsewhere'
 }
 
 /**
@@ -113,12 +100,11 @@ export function splitReadChannel(pieces: ReadPiece[]) {
       seen.add(channel)
     }
   }
-  return READ_PRECEDENCE.find(c => seen.has(c))
+  return SV_CHANNEL_PRECEDENCE.find(c => seen.has(c))
 }
 
 function ownPiece(feature: Feature): ReadPiece {
   const strand = getStrand(feature)
-  const mapq = getMappingQuality(feature)
   return {
     refName: feature.get('refName'),
     start: feature.get('start'),
@@ -127,7 +113,7 @@ function ownPiece(feature: Feature): ReadPiece {
     clip: isMismatchFeature(feature)
       ? feature.clipLengthAtStartOfRead
       : getClip((feature.get('CIGAR') as string | undefined) ?? '', strand),
-    placed: mapq !== 0,
+    placed: getMappingQuality(feature) !== 0,
   }
 }
 
@@ -146,38 +132,56 @@ function piecesOf(feature: Feature, sa: string) {
   return pieces
 }
 
-// A read with no split class, by the rest of its `svSignal` evidence.
-function evidenceChannel(feature: Feature, sa: string, orientation: number) {
-  const bits = categoryBitsOf(feature, getFlags(feature), sa, orientation)
-  const signal = SV_SIGNAL_OF_TIER[svSignalTier(bits)]
-  const mateRefName = getMateRefName(feature)
-  return signal === 'none'
+// A discordant pair files by its orientation; one with none has its mate
+// unmapped or on another reference, which the arcs draw alike, as a tick.
+function discordantPairChannel(orientation: string | undefined) {
+  const direction = pairDirection(orientation)
+  return direction === undefined
+    ? 'partnerElsewhere'
+    : CHANNEL_OF_PAIR[direction]
+}
+
+// A read with no split class, by the rest of its `svSignal` evidence, in the
+// order `svSignalTier` ranks it: an SV-size indel, then a discordant pair. A
+// read `svSignal` does not count, concordant pairs included, files as `none`.
+function evidenceChannel(
+  feature: Feature,
+  sa: string,
+  orientation: string | undefined,
+) {
+  const bits = categoryBitsOf(
+    feature,
+    getFlags(feature),
+    sa,
+    pairOrientationToNum(orientation),
+  )
+  return SV_SIGNAL_OF_TIER[svSignalTier(bits)] === 'none'
     ? 'none'
     : bits & READ_SV_DELETION
       ? 'LR'
       : bits & READ_SV_INSERTION
         ? 'svInsertion'
-        : mateRefName !== undefined && mateRefName !== feature.get('refName')
-          ? 'otherChromosome'
+        : bits & READ_DISCORDANT
+          ? discordantPairChannel(orientation)
           : 'none'
 }
 
 /**
- * A read's SV channel. A split read files by its junctions whether or not it
- * is paired, as its arcs color it: a supplementary's own pair orientation comes
+ * A read's SV channel: the kind of SV its `svSignal` evidence points at
+ * (ADR-229, ADR-258). A split read files by its junctions whether or not it is
+ * paired, as its arcs color it: a supplementary's own pair orientation comes
  * from its own strand and would file an inverted piece apart from its primary.
- * Otherwise a pair files by its orientation, and any other read (unpaired, mate
- * unmapped, mate on another reference) by its own evidence, gated as
- * `svSignal` gates it (ADR-229).
+ * Any other evidence files by its indel or its pair, and every read without
+ * evidence, concordant pairs included, files as `none`, the depth baseline.
  */
 export function svChannelOf(feature: Feature): SvChannel {
   const sa = saTagOf(feature)
-  const orientation = feature.get('pair_orientation') as string | undefined
-  const direction = pairDirection(orientation)
   return (
     (sa === '' ? undefined : splitReadChannel(piecesOf(feature, sa))) ??
-    (direction === undefined
-      ? evidenceChannel(feature, sa, pairOrientationToNum(orientation))
-      : CHANNEL_OF_PAIR[direction])
+    evidenceChannel(
+      feature,
+      sa,
+      feature.get('pair_orientation') as string | undefined,
+    )
   )
 }
