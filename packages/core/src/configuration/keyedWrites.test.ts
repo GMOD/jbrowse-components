@@ -10,11 +10,12 @@ const Rows = ConfigurationSchema(
     field: { type: 'string', defaultValue: '' },
     sort: { type: 'stringArray', defaultValue: [] },
     labels: { type: 'stringMap', defaultValue: {} },
+    colors: { type: 'stringMap', defaultValue: {} },
     step: { type: 'number', defaultValue: 0 },
   },
   {
     shorthand: 'field',
-    writes: { keyedBy: 'field', keyed: ['sort', 'labels'] },
+    writes: { keyedBy: 'field', keyed: ['sort', 'labels', 'colors'] },
     plot: true,
   },
 )
@@ -22,7 +23,13 @@ const Rows = ConfigurationSchema(
 const Display = ConfigurationSchema('KeyedRowsDisplay', { rows: Rows })
 
 const arranged = {
-  rows: { field: 'source', sort: ['b', 'a'], labels: { a: 'A' }, step: 8 },
+  rows: {
+    field: 'source',
+    sort: ['b', 'a'],
+    labels: { a: 'A' },
+    colors: { a: '#f00' },
+    step: 8,
+  },
 }
 
 function rowsOf(conf: { rows: object }) {
@@ -48,6 +55,12 @@ const cases: {
     rows: { field: 'tissue', sort: ['x'], step: 8 },
   },
   {
+    name: 'a new field keeps the pins it states, and only those',
+    base: arranged,
+    write: { rows: { field: 'tissue', colors: { liver: '#0f0' } } },
+    rows: { field: 'tissue', colors: { liver: '#0f0' }, step: 8 },
+  },
+  {
     name: 'a new field stated after a keyed member still keeps that member',
     base: arranged,
     write: { rows: { sort: ['x'], field: 'tissue' } },
@@ -69,7 +82,12 @@ const cases: {
     name: 'a write to an empty field resets nothing',
     base: arranged,
     write: { rows: { field: '' } },
-    rows: { sort: ['b', 'a'], labels: { a: 'A' }, step: 8 },
+    rows: {
+      sort: ['b', 'a'],
+      labels: { a: 'A' },
+      colors: { a: '#f00' },
+      step: 8,
+    },
   },
   {
     name: 'a member write without the field merges',
@@ -81,7 +99,7 @@ const cases: {
     name: 'null resets one member',
     base: arranged,
     write: { rows: { labels: null } },
-    rows: { field: 'source', sort: ['b', 'a'], step: 8 },
+    rows: { field: 'source', sort: ['b', 'a'], colors: { a: '#f00' }, step: 8 },
   },
 ]
 

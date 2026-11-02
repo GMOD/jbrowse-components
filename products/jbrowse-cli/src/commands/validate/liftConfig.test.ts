@@ -133,7 +133,12 @@ test.each(cases.map(c => [`${c.name} ${c.path.join('.')}`, c] as const))(
 describe('mergeBySlots over a keyed rows object', () => {
   const slots = displayDefaultSlots('QuantitativeTrack')
   const arranged = {
-    rows: { field: 'source', sort: ['b', 'a'], labels: { a: 'A' } },
+    rows: {
+      field: 'source',
+      sort: ['b', 'a'],
+      labels: { a: 'A' },
+      colors: { a: '#f00' },
+    },
   }
 
   test('the merged slot keeps the keyed declaration', () => {
@@ -155,6 +160,12 @@ describe('mergeBySlots over a keyed rows object', () => {
       base: arranged,
       write: { rows: { field: 'tissue', sort: ['x'] } },
       rows: { field: 'tissue', sort: ['x'] },
+    },
+    {
+      name: 'a new field keeps the pins it states, and only those',
+      base: arranged,
+      write: { rows: { field: 'tissue', colors: { liver: '#0f0' } } },
+      rows: { field: 'tissue', colors: { liver: '#0f0' } },
     },
     {
       name: 'a new field stated after a keyed member still keeps that member',

@@ -625,7 +625,7 @@ describe('an object the display keys by its field', () => {
     wholeAt: () => false,
     keyedAt: (type, path) =>
       type === 'LinearWiggleDisplay' && path.join('.') === 'rows'
-        ? { keyedBy: 'field', keyed: ['sort', 'labels'] }
+        ? { keyedBy: 'field', keyed: ['sort', 'labels', 'colors'] }
         : undefined,
     canonical: (_, display) => display,
   }
@@ -698,6 +698,40 @@ describe('an object the display keys by its field', () => {
     expect(merged.displays[0]!.rows).toEqual({
       field: 'tissue',
       sort: ['liver', 'lung'],
+    })
+  })
+
+  test('a field change clears the pins the base keys by the old field', () => {
+    const delta = diffTrackConfig(
+      track({ field: 'source', colors: { a: '#f00' } }),
+      track({ field: 'tissue' }),
+      forms,
+    )
+    expect(delta.displays).toEqual([
+      { displayId: 't-wig', rows: { field: 'tissue' } },
+    ])
+    const merged = mergeTrackConfig(
+      track({ field: 'source', sort: ['b', 'a'], colors: { a: '#f00' } }),
+      delta,
+      forms,
+    )
+    expect(merged.displays[0]!.rows).toEqual({ field: 'tissue' })
+  })
+
+  test("a base that changes field drops its pins under the user's", () => {
+    const delta = diffTrackConfig(
+      track({ field: 'source' }),
+      track({ field: 'source', colors: { a: '#f00' } }),
+      forms,
+    )
+    const merged = mergeTrackConfig(
+      track({ field: 'tissue', colors: { liver: '#0f0' } }),
+      delta,
+      forms,
+    )
+    expect(merged.displays[0]!.rows).toEqual({
+      field: 'source',
+      colors: { a: '#f00' },
     })
   })
 

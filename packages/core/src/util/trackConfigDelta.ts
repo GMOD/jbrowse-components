@@ -45,7 +45,9 @@
  * beside any keyed member it stores, and the merge drops the base's keyed
  * members when the delta's field differs from the base's: an arrangement
  * names one field's values, so an admin's later change of field must not
- * hand a user's old order to the new rows.
+ * hand a user's old order to the new rows. Under a field change a keyed
+ * member is stored and merged whole, so a map (`labels`, `colors`) keeps no
+ * entry of the old field's.
  *
  * Subtlety worth not "optimizing": when the base has NO `displays` array but the
  * edited snapshot does (common — a track config that omits displays gets a stub
@@ -57,7 +59,7 @@
  * silently changing which display opens by default.
  */
 
-import { changesKeyedField, keyedBase } from '@jbrowse/add-track-core'
+import { changesKeyedField } from '@jbrowse/add-track-core'
 
 import { deepEqual } from './deepEqual.ts'
 
@@ -138,7 +140,8 @@ const keyedAt = (at: At) =>
 // A keyed object's diff names the field its keyed members are values of. A
 // diff changing the field resets none of the base's keyed members: the merge
 // drops those itself, and a null would also drop what an admin later writes
-// for the new field.
+// for the new field. Each keyed member the edit states stores whole, as the
+// merge writes it over nothing.
 function keyedDiff(
   at: At,
   out: JsonObject,
@@ -147,13 +150,16 @@ function keyedDiff(
 ) {
   const keyed = keyedAt(at)
   if (keyed) {
-    const fieldChanges = changesKeyedField(keyed, base, edited)
-    const kept = Object.fromEntries(
-      Object.entries(out).filter(
-        ([member, value]) =>
-          !(fieldChanges && value === null && keyed.keyed.includes(member)),
-      ),
-    )
+    const kept = changesKeyedField(keyed, base, edited)
+      ? {
+          ...withoutKeyed(keyed, out),
+          ...Object.fromEntries(
+            keyed.keyed.flatMap(member =>
+              Object.hasOwn(edited, member) ? [[member, edited[member]]] : [],
+            ),
+          ),
+        }
+      : out
     return out[keyed.keyedBy] === undefined &&
       edited[keyed.keyedBy] !== undefined &&
       keyed.keyed.some(member => Object.hasOwn(kept, member))
@@ -161,6 +167,12 @@ function keyedDiff(
       : kept
   }
   return out
+}
+
+function withoutKeyed(keyed: KeyedWrites, o: JsonObject) {
+  return Object.fromEntries(
+    Object.entries(o).filter(([member]) => !keyed.keyed.includes(member)),
+  )
 }
 
 const UNCHANGED = Symbol('unchanged')
@@ -303,9 +315,10 @@ function mergeValue(base: Json, delta: Json, at: At): Json {
   if (isPlainObject(delta) && !isWhole(at)) {
     const keyed = keyedAt(at)
     const prior = isPlainObject(base) ? base : {}
-    const out = {
-      ...(keyed ? keyedBase(keyed, prior, delta) : prior),
-    }
+    const out =
+      keyed && changesKeyedField(keyed, prior, delta)
+        ? withoutKeyed(keyed, prior)
+        : { ...prior }
     for (const [k, v] of Object.entries(delta)) {
       if (v === null) {
         delete out[k]
