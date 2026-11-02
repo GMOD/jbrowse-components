@@ -436,7 +436,10 @@ A `tracks` entry is a trackId string, or an object with initial display state:
   options, such as
   `["color:strand", "sort:base", "encoding.color.field=tags.HP"]`. A linear
   genome view applies them over the entry's other settings once it has
-  navigated, so `sort:` pivots at the view's center.
+  navigated, so `sort:` pivots at the view's center. A path reaches into a
+  setting written flat, as a modifier writes it: on a multi-sample variant
+  track, `["rows.axis.width=150", "rows.color.field=population"]` widens the
+  row-label column and colors each sample's row by its `population`.
 
 ### Linear genome view
 

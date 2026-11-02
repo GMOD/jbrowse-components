@@ -822,6 +822,11 @@ jb2export --fasta ref.fa --bam reads.bam encoding.color.field=tags.HP \
   encoding.color.scale.domain=1,2 encoding.color.scale.range=#d9c9a3,#b7c4b1 \
   baseColor:methylation coverage.encoding.y.scale.type=log \
   --loc chr1:1-10000 --out out.svg
+
+## a row display's row settings sit under rows: a wider label column, and
+## each row colored by its sources file's group
+jb2export --genome hg38 --multiwig sources.json rows.axis.width=150 \
+  rows.color.field=group height:520 --loc GCG --out multi.png
 ```
 
 - `true` and `false` are booleans and a number is a number

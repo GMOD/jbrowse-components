@@ -4,6 +4,7 @@ import {
   buildDisplaySnapshot,
   checkModifiers,
   filterEntriesOf,
+  memberPatch,
   memberWrites,
 } from './displaySettings.ts'
 
@@ -777,6 +778,19 @@ describe('color routing', () => {
     expect(() =>
       buildDisplaySnapshot('LinearHicDisplay', ['color:red']),
     ).toThrow(/Invalid color value "red"\. Expected a color scheme: viridis, /)
+  })
+
+  test('a row setting is a flat dotted path into rows, as the docs show it', () => {
+    const opts = ['rows.axis.width=150', 'rows.color.field=population']
+    expect(() => {
+      checkModifiers(opts)
+    }).not.toThrow()
+    expect(buildDisplaySnapshot('LinearVariantDisplay', opts).snap).toEqual({})
+    const members = memberWrites('LinearVariantDisplay', opts)
+    expect(members).toEqual(opts)
+    expect(memberPatch(members, () => undefined)).toEqual({
+      rows: { axis: { width: 150 }, color: { field: 'population' } },
+    })
   })
 })
 
