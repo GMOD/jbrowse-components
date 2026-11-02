@@ -18,12 +18,12 @@ export const TRIO_VCF_TRACK = 'HG02024_VN049_KHVTrio.chr1.vcf'
 // The six VCF haplotype rows, top to bottom, labelled with the hap-ibd
 // painting's own names.
 export const TRIO_HAPLOTYPES = [
-  { sample: 'HG02024', hp: 0, label: 'Child hap1' },
-  { sample: 'HG02024', hp: 1, label: 'Child hap2' },
-  { sample: 'HG02025', hp: 0, label: 'Mother hap1' },
-  { sample: 'HG02025', hp: 1, label: 'Mother hap2' },
-  { sample: 'HG02026', hp: 0, label: 'Father hap1' },
-  { sample: 'HG02026', hp: 1, label: 'Father hap2' },
+  { sample: 'HG02024', hp: 1, label: 'Child hap1' },
+  { sample: 'HG02024', hp: 2, label: 'Child hap2' },
+  { sample: 'HG02025', hp: 1, label: 'Mother hap1' },
+  { sample: 'HG02025', hp: 2, label: 'Mother hap2' },
+  { sample: 'HG02026', hp: 1, label: 'Father hap1' },
+  { sample: 'HG02026', hp: 2, label: 'Father hap2' },
 ]
 export const trioVcfRows = {
   sort: TRIO_HAPLOTYPES.map(h => `${h.sample} HP${h.hp}`),
@@ -232,7 +232,7 @@ export const trioSpecs: ScreenshotSpec[] = [
           trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
           variantLayout: 'columns',
           height: 250,
-          unit: 'haplotype',
+          rows: 'haplotype',
         },
       ],
     }),
@@ -258,7 +258,7 @@ export const trioSpecs: ScreenshotSpec[] = [
           trackId: TRIO_VCF_TRACK,
           variantLayout: 'columns',
           height: 250,
-          unit: 'haplotype',
+          rows: 'haplotype',
         },
       ],
     }),
@@ -266,9 +266,9 @@ export const trioSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     annotations: (
       [
-        ['Child', 'HG02024 HP0'],
-        ['Mother', 'HG02025 HP0'],
-        ['Father', 'HG02026 HP0'],
+        ['Child', 'HG02024 HP1'],
+        ['Mother', 'HG02025 HP1'],
+        ['Father', 'HG02026 HP1'],
       ] as const
     ).map(([text, row]) => ({
       type: 'text' as const,
@@ -356,9 +356,8 @@ export const trioSpecs: ScreenshotSpec[] = [
         },
         {
           trackId: TRIO_VCF_TRACK,
-          unit: 'haplotype',
           height: TRIO_VCF_DISPLAY_H,
-          rows: trioVcfRows,
+          rows: { field: 'haplotype', ...trioVcfRows },
           records: { show: false },
         },
       ],

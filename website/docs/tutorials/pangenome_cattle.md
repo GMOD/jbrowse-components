@@ -172,8 +172,9 @@ table's `lineage` column through `domain` to `range`. The config also sets:
 
 - `rows.sort` lists the cattle breeds above the wild species, and `rows.labels`
   writes each breed beside its row
-- `unit: "haplotype"` draws one row per assembly, each being one haplotype, with
-  a second alternate allele in a separate color
+- `rows.field: "haplotype"` draws one row per assembly, each being one
+  haplotype, with a second alternate allele in a separate color. `rows.sort` and
+  `rows.labels` name each assembly's sample, which stands for its rows
 
 ```json addtrack loc=chr23:27,508,000-27,536,000
 {
@@ -191,8 +192,8 @@ table's `lineage` column through `domain` to `range`. The config also sets:
   "displays": [
     {
       "type": "LinearVariantDisplay",
-      "unit": "haplotype",
       "rows": {
+        "field": "haplotype",
         "sort": [
           "ANG",
           "BSW",

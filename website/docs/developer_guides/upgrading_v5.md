@@ -31,8 +31,9 @@ rewrites and the slot each becomes. Among them:
 - a v4 session's `heightPreConfig` migrates onto the `height` slot
 - the LD display's `ldMetric` becomes `encoding.color.field`
 - the variant display's `renderingMode: 'phased' | 'alleleCount'` becomes
-  `unit: 'haplotype' | 'sample'`, from the config slot and from a session's
-  `renderingModeSetting` alike
+  `rows.field: 'haplotype' | 'sample'`, from the config slot and from a
+  session's `renderingModeSetting` alike; a haplotype row is named
+  `<sample> HP1`, `<sample> HP2`, counting from 1
 
 The `heightOverride` shadow-prop that existed during development is gone, and
 there is no `<name>Override` shadow-property system.

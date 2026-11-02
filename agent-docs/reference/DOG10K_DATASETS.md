@@ -66,8 +66,8 @@ Both are the `build_dog10k_nhej1_sv.sh` recipe over the Manta callset:
 
 ## Gotchas
 
-- `layout` HP indices are **0-based** (`<sample> HP0`/`HP1`, see
-  `makeHaplotypeSources`). Using 1/2 renders every second row empty.
+- Haplotype row names are **1-based** (`<sample> HP1`/`HP2`, see
+  `haplotypeRowName`); an `HP0` entry names no row.
 - `LinearMultiRowFeatureDisplay` reads no filters, so `filter` does nothing.
 - `flare_anc_to_bed.py` keys its palette on the ancestry **name**, not FLARE's
   code, which is not stable between runs and once swapped wolf and dog colors.

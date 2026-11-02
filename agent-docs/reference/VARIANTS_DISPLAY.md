@@ -165,7 +165,7 @@ variant fetched.
 
 Mixed-ploidy files are routine (1000G chrX non-PAR). Both cell loops,
 `readPhasedAlleleIndicators` and `buildValueTable` must agree that **a diploid
-sample has no allele for HP2 in a triploid file** and that **haploid is phased**
+sample has no allele for HP3 in a triploid file** and that **haploid is phased**
 (`isPhasedOrHaploid`, not `includes('|')`). **A new fixture for anything phased
 should mix ploidies.** `readAltDosages` is the fifth and is ploidy-invariant.
 
@@ -231,18 +231,27 @@ and a clustering run, and every product writes them as session deltas (ADR-157).
 Every other channel resolves when the rows are read.
 
 **Names are at the mode's granularity** — a sample in allele-count mode, a
-haplotype in phased mode — and a row answers to its own name, then to its
-sample's, for an order, a label, a tint and the focus alike. So a config naming
-samples still arranges a phased track, and a mode switch resets the arrangement
-because it renames the rows. The answering is `rowAlias`, the hook this display
-gives `TreeSidebarMixin`, and a run writes names beside its tree, re-appending
-the rows a focus hides after the clade.
+haplotype (`<sample> HP1`, `HP2`, the name counting from 1 while the row's `HP`
+stays the 0-based allele index) in phased mode — and a row answers to its own
+name, then to its sample's, for an order, a label, a tint, the tree and the
+focus alike. So a config naming samples still arranges a phased track, and a
+`rows.field` switch keeps the arrangement (`refines: { haplotype: 'sample' }`
+on the rows' `writes`, ADR-257): a row ranks at the earlier of its own and its
+sample's entry, a sample at its first haplotype entry; a haplotype's own label
+shows exactly, else its sample's composes (`Mother HP1`); a sample-keyed tree
+forks over the haplotype rows at zero length, and a per-haplotype tree hides
+in sample mode with `finerTreeHint`. The answering is `rowParent` and
+`finerRows`, the hooks this display gives `TreeSidebarMixin`, read off each
+row's `sampleName` and `HP`, and a run writes names beside its tree,
+re-appending the rows a focus hides after the clade. A sample named as
+another's haplotype row (`X HP1` beside `X`) warns once per listing.
 
 **Named stages, named readers.** `sourcesBase` is the adapter's samples narrowed
 by `rowNarrowing` (`rows.filter` over the samplesTsv attributes, which arrive
 with the sample list, then `rows.kept`), the fetch key's input, so it reads no
 `samplePloidy`: a focus naming a haplotype keeps its sample there (`keptRows`
-with `rowAlias`, through `parseRowName`). The rest are `TreeSidebarMixin`'s over this display's hooks:
+with `entryAliasOf`, through `parseRowName`, since no haplotype row is there to
+read). The rest are `TreeSidebarMixin`'s over this display's hooks:
 `discoveredRows`, `expandRows` (`expandPhasedRows`), then `editableSources`,
 ordered, relabelled and tinted with no focus, palette or band — the
 dialog's list and the sort's — `clusterableSources`, narrowed by the same

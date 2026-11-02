@@ -99,7 +99,8 @@ between displays.
    Its order of work is the plan: the keyed write rule first, then `facet`,
    then the `rows` fold on wiggle, MAF and the mark family (after the
    `multirow-spliced-band` session lands), the variant display last with its
-   `unit` (after the variant merge lands), then the writers. Claimed
+   `unit`, now `rows.field` with haplotype refining sample (built on the
+   worktree), then the writers. Claimed
    2026-11-02 (worktree `rows-axis`). On main at c7e74e1eef: the
    keyed write rule, `facet`, and the fold's `rows.axis`, `rows.step`,
    `rows.colors` and `rows.color`; `rows.groups` and `rows.tree` on the

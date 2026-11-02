@@ -208,14 +208,15 @@ that allele. We'll add it to the graph launch's session:
   "displays": [
     {
       "type": "LinearVariantDisplay",
-      "unit": "haplotype",
+      "rows": "haplotype",
       "filter": ["jexl:alleleLength(feature)>=50"]
     }
   ]
 }
 ```
 
-- `unit: "haplotype"` draws one row per haplotype.
+- `rows: "haplotype"` draws one row per haplotype, named `<sample> HP1`,
+  `<sample> HP2`.
 - `filter` drops records, and `alleleLength(feature)>=50` keeps alleles of 50 bp
   and up, the size of the bubbles minigraph draws. `alleleLength` is the length
   of the record's longest allele, so it counts an insertion's inserted bases.
@@ -225,7 +226,7 @@ that allele. We'll add it to the graph launch's session:
   default.
 - **Filter by → Edit filters...** in the track menu shows the filter and changes
   it.
-- **Advanced → Edit plot...** in the track menu shows `unit` and `filter` as
+- **Advanced → Edit plot...** in the track menu shows `rows` and `filter` as
   text and applies edits live.
 
 Take **Clustering → Cluster rows by genotype...** in the track menu and press

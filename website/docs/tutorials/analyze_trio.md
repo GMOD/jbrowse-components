@@ -134,7 +134,7 @@ Choose **Rows → Per haplotype** from the track menu, which splits each sample
 into its two haplotypes. Per-haplotype rows need phased genotypes, written
 `0|1`; unphased calls (`0/1`) need a phasing program such as SHAPEIT first.
 
-<Figure caption="One row per haplotype: the two haplotypes (HP0, HP1) of child HG02024, mother HG02025 and father HG02026, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
+<Figure caption="One row per haplotype: the two haplotypes (HP1, HP2) of child HG02024, mother HG02025 and father HG02026, top to bottom, under the RefSeq genes, with connector lines tying each matrix column back to the position it came from." src="/img/trio-matrix-phased-clean.png"/>
 
 <Video src="/media/variants/trio_phased_matrix.mp4" caption="Layout → Genotype matrix switched on, then Rows → Per haplotype splitting each trio member into its two haplotype rows." />
 
@@ -263,7 +263,7 @@ To line the painted blocks up with the genotypes underneath:
   `["Father hap1", "Father hap2"]`.
 - To name the VCF's rows after the painting's rows, set the variant display's
   `rows.labels` to
-  `{ "HG02024 HP0": "Child hap1", "HG02024 HP1": "Child hap2", "HG02025 HP0": "Mother hap1", "HG02025 HP1": "Mother hap2", "HG02026 HP0": "Father hap1", "HG02026 HP1": "Father hap2" }`,
+  `{ "HG02024 HP1": "Child hap1", "HG02024 HP2": "Child hap2", "HG02025 HP1": "Mother hap1", "HG02025 HP2": "Mother hap2", "HG02026 HP1": "Father hap1", "HG02026 HP2": "Father hap2" }`,
   or rename the rows in **Edit colors/arrangement...** in its track menu.
 
 **Advanced → Edit plot...** in the track menu shows both `rows` edits as text

@@ -126,6 +126,16 @@ test('a legend toggle is the same Show row on every display that has a legend', 
   expect(stepPaths('legend.show', true, 'LinearArcDisplay')).toEqual([])
 })
 
+test("the variant display's rows.field is the Rows radio, unit only the alignments'", () => {
+  expect(stepPaths('rows', 'haplotype', 'LinearVariantDisplay')).toEqual([
+    'Track menu → Rows → Per haplotype',
+  ])
+  expect(
+    stepPaths('rows', { field: 'sample', sort: ['a'] }, 'LinearVariantDisplay')[0],
+  ).toBe('Track menu → Rows → Per sample')
+  expect(stepPaths('unit', 'haplotype', 'LinearVariantDisplay')).toEqual([])
+})
+
 test('branch lengths are the toggle beside Tree', () => {
   expect(stepPaths('rows.axis.branchLength', false, 'LinearMafDisplay')).toEqual([
     'Track menu → Show → Tree branch lengths (unchecked)',

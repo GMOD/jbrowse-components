@@ -67,12 +67,12 @@ The two filters can be preset so the track loads already filtered, with
 
 ## Rows: per sample or per haplotype
 
-The [`unit`](/docs/config/linearvariantdisplay/#slot-unit) display option, which
-the track menu's **Rows** item sets, decides what one row stands for and how
-each genotype cell is colored.
+The display's [`rows.field`](/docs/config/variantrows/#slot-field), which the
+track menu's **Rows** item sets, decides what one row stands for and how each
+genotype cell is colored.
 
-With **Rows → Per sample** (`unit: 'sample'`), one cell is drawn per sample and
-shaded by how many alternate alleles the call has:
+With **Rows → Per sample** (`rows.field: 'sample'`), one cell is drawn per
+sample and shaded by how many alternate alleles the call has:
 
 - homozygous reference (`0/0`) → light grey
 - heterozygous (`0/1`) → a medium shade
@@ -83,8 +83,8 @@ runs of homozygous-alt samples stand out as the darkest blocks. The dosage
 counts every non-reference allele, so `1/2` draws as dark as `1/1`, and an
 uncalled genotype (`./.`) takes the no-call color.
 
-With **Rows → Per haplotype** (`unit: 'haplotype'`), each sample is split into
-one row per haplotype and every haplotype cell is colored reference vs alt
+With **Rows → Per haplotype** (`rows.field: 'haplotype'`), each sample is split
+into one row per haplotype and every haplotype cell is colored reference vs alt
 individually, with no dosage shading, so inherited haplotype blocks line up as
 the contiguous vertical bands in the trio matrix above. A haplotype with the
 site's most frequent alt takes the same blue as a homozygous-alt cell in
@@ -97,6 +97,18 @@ file does not assign its alleles to haplotypes. Read-backed phasers such as
 WhatsHap leave homozygous calls unphased, so on their output the black marks
 every call the phaser left alone, homozygous ones among them. The menu item
 stays disabled until the view holds phased or haploid genotypes.
+
+A haplotype row is named `<sample> HP1`, `<sample> HP2`, and so on: JBrowse's
+numbering of the sample's alleles, counting from 1, not the VCF's `HP` tag.
+`haplotype` here is no column of the file, unlike a mark display's
+`rows: 'haplotype'` over a BED. A haplotype row answers to its sample's name, so
+the arrangement carries across the switch either way: an order, a label, a
+color, a tree or a kept row written against a sample reaches its haplotype rows,
+a sample's label showing on them as `Mother HP1` and `Mother HP2`, and a tree
+clustered per sample forking over each sample's haplotype rows. What is written
+against a haplotype row waits unseen in per-sample rows: a sample takes the
+place of its first listed haplotype, and a tree clustered per haplotype hides,
+the sidebar saying why, until **Per haplotype** draws it again.
 
 ## Coloring by consequence impact (SnpEff/VEP annotations)
 

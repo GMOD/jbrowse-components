@@ -335,7 +335,7 @@ columns, one row per chromosome:
     {
       "type": "LinearVariantDisplay",
       "variantLayout": "columns",
-      "unit": "haplotype",
+      "rows": "haplotype",
       "filter": [{ "field": "minorAlleleFrequency", "gte": 0.35 }],
       "forceLoad": true,
       "height": 700

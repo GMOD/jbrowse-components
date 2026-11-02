@@ -187,11 +187,12 @@ arcs are `applyDisplaySettings({ readConnections: { show: true } })` and
 
 A display's grammar settings are its plot: `display.plot` lists them by slot
 name, and `display.plotKeys` names the ones that display's config declares a
-plot setting. The common ones are `facet`, `encoding`, `rows`, `unit` and
-`filter`, and a mark display adds `marks` and `transform`. A change is a copy
-edited and handed back: `structuredClone(display.plot)`, edited as any object,
-then `display.plotProblems(draft)`, which throws what a config file would be
-refused for and lists what the display cannot draw, and
+plot setting. The common ones are `facet`, `encoding`, `rows` and `filter`, an
+alignments display adds `unit` (`read` or `chain`), and a mark display adds
+`marks` and `transform`. A change is a copy edited and handed back:
+`structuredClone(display.plot)`, edited as any object, then
+`display.plotProblems(draft)`, which throws what a config file would be refused
+for and lists what the display cannot draw, and
 `track.applyDisplaySettings(draft)`, the one write for every display setting.
 The draft patches the plot: a setting left out stays, and `null` resets one. An
 object binding a field (`encoding.color`, `rows.color`, `pileup.bases`, `facet`,
@@ -210,7 +211,8 @@ The `filter` is a list of `jexl:` expressions, such as
 A row display's `rows` (variant, wiggle, MAF, the mark family) is one object
 written member by member, `null` resetting one:
 
-- `field`: what one row is
+- `field`: what one row is; on the variant display `'sample'` or `'haplotype'`,
+  a row per phased haplotype named `'<sample> HP1'`, `'<sample> HP2'`
 - `step` (variant, mark family): the row height in px, or `'fit'`
 - `sort`: the row names that lead, in order
 - `labels`: `{ row: text }`
@@ -228,13 +230,15 @@ written member by member, `null` resetting one:
   on wiggle, and `group` on the mark family; a row's name goes in `kept`
 - `groups` (mark family): `[{ match, group }]`, deriving the `group` attribute
 
-A sample's name in `sort`, `labels`, `colors` or `kept` stands for its haplotype
-rows. `sort`, `labels`, `colors`, `tree` and `kept` are keyed: a write changing
-`field` clears those it does not state, and the rest stay. Clustering runs once
-with no dialog when a display's `runClustering` is true
-(`activeDisplay.setRunClustering(true)`, `clusterRegion` naming the locus), and
-writes `rows.tree` and `rows.sort`. The multi-way lanes' `rows` takes `field`,
-`sort`, `labels`, `tree` and `kept`, where `kept` selects the lanes drawn.
+A sample's name in `sort`, `labels`, `colors`, `tree` or `kept` stands for its
+haplotype rows, a sample's label showing on them as `'Mother HP1'`. `sort`,
+`labels`, `colors`, `tree` and `kept` are keyed: a write changing `field` clears
+those it does not state, and the rest stay, but a switch between `'sample'` and
+`'haplotype'` clears nothing. Clustering runs once with no dialog when a
+display's `runClustering` is true (`activeDisplay.setRunClustering(true)`,
+`clusterRegion` naming the locus), and writes `rows.tree` and `rows.sort`. The
+multi-way lanes' `rows` takes `field`, `sort`, `labels`, `tree` and `kept`,
+where `kept` selects the lanes drawn.
 
 "Advanced → Edit plot..." in the track menu shows a display's plot as text.
 

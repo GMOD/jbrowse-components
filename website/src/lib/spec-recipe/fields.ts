@@ -1615,6 +1615,18 @@ export const trackFields: Record<string, FieldRecipe> = {
         note: 'The list is built from the attributes the loaded features carry, so a track whose data has not loaded yet offers nothing.',
       }
     }
+    const variantRows =
+      (field === 'sample' || field === 'haplotype') &&
+      displayType &&
+      VARIANT_DISPLAYS.has(displayType)
+        ? {
+            path: `${TRACK_MENU} → Rows → ${field === 'haplotype' ? 'Per haplotype' : 'Per sample'}`,
+            note:
+              field === 'haplotype'
+                ? 'Splits each sample into one row per haplotype, named <sample> HP1, HP2. The item stays disabled until phased variants are found in the file.'
+                : undefined,
+          }
+        : undefined
     const layout =
       displayType === 'LinearWiggleDisplay' && typeof field === 'string'
         ? {
@@ -1634,7 +1646,9 @@ export const trackFields: Record<string, FieldRecipe> = {
               note: `The same dialog renames a row and recolors it, so a figure's ${sort.length} rows carry their order, any labels it shows, and any color it picked.`,
             }
           : undefined
-    const steps = [layout, arrangement].filter(step => step !== undefined)
+    const steps = [variantRows, layout, arrangement].filter(
+      step => step !== undefined,
+    )
     return steps.length ? steps : undefined
   },
   'rows.axis.labels': (value, { displayType }) =>
@@ -1686,17 +1700,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? {
           path: `${TRACK_MENU} → Read connections → Link mates and supplementary alignments (${value === 'chain' ? 'checked' : 'unchecked'})`,
         }
-      : (value === 'sample' || value === 'haplotype') &&
-          displayType &&
-          VARIANT_DISPLAYS.has(displayType)
-        ? {
-            path: `${TRACK_MENU} → Rows → ${value === 'haplotype' ? 'Per haplotype' : 'Per sample'}`,
-            note:
-              value === 'haplotype'
-                ? 'Splits each sample into one row per haplotype. The item stays disabled until phased variants are found in the file.'
-                : undefined,
-          }
-        : undefined,
+      : undefined,
   'readConnections.height': (value, { displayType }) =>
     typeof value === 'number' && isAlignmentsOnlyField(displayType)
       ? {

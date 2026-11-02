@@ -274,13 +274,13 @@ load unchanged as a [`VariantTrack`](/docs/config_guides/variant_track):
     {
       "type": "LinearVariantDisplay",
       "variantLayout": "columns",
-      "unit": "haplotype"
+      "rows": "haplotype"
     }
   ]
 }
 ```
 
-`unit: "haplotype"` draws one row per strain, and `variantLayout: "columns"` one
+`rows: "haplotype"` draws one row per strain, and `variantLayout: "columns"` one
 column per variant. The
 [multi-sample variant track guide](/docs/user_guides/multivariant_track) covers
 columns versus genomic positions, the genotype colors, and clustering samples by

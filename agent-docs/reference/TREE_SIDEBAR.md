@@ -161,9 +161,18 @@ hook's name throws at `create`:
 - `discoveredRows` — every display.
 - `guideTreeNewick` — none by default; MAF's adapter newick.
 - `expandRows(rows)` — variants.
-- `rowAlias` — variants: the sample a haplotype row answers to, so an order, a
-  label, a color and a focus written against a sample reach its haplotypes,
-  and the edit diff falls back to the sample's entry.
+- `rowParent(row)` — variants and MAF: the row a row refines, read off the row
+  (a haplotype row's `sampleName`, a MAF copy row's species), and what its
+  label adds (` HP1`, ` copy 2`), so an order, a label, a color, a tree and a
+  focus written against the parent reach its rows, a label composing as
+  `Mother HP1`, and the edit diff falls back to that composed label.
+- `finerRows` — variants: the haplotype rows phased mode draws or would, so an
+  entry naming one reaches the sample row standing for it (a sample ranks at
+  its first haplotype entry). The mixin's `rowAlias` is derived from these two
+  and `expandedRows`; MAF overrides it to read copy names no block here
+  aligns.
+- `finerTreeHint` — what the stale-tree chip says where the tree's leaves are
+  `finerRows` (`treeOnFinerRows`): a per-haplotype tree in sample mode.
 - `sharesPanel` — false by default; a wiggle overlay of several subtracks.
 - `rowColorPaintsMarks` — true by default; false where something else colors
   the marks: multi-row's `encoding.color` setting or itemRgb, wiggle's
@@ -358,7 +367,7 @@ every row painter, hit test, label and export from `rowsTopOffset`.
   `o'brien` made the whole `rownames(...)` line a syntax error. Exactly one side
   of each grammar owns it.
 - Whitespace is deliberately outside the quoted set on both sides (variants'
-  `NA18536 HP0` rows).
+  `NA18536 HP1` rows).
 
 ## `RowSource` is the row vocabulary, and the mixin's bound
 

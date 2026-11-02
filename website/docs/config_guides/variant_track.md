@@ -101,8 +101,7 @@ Preset its slots in a `displays` array; they are listed on
       "type": "LinearVariantDisplay",
       "genotypes": { "reference": { "show": true } },
       "filter": [{ "field": "minorAlleleFrequency", "gte": 0.05 }],
-      "rows": { "axis": { "labels": true } },
-      "unit": "sample"
+      "rows": { "field": "sample", "axis": { "labels": true } }
     }
   ]
 }
@@ -111,8 +110,10 @@ Preset its slots in a `displays` array; they are listed on
 - **`genotypes.reference.show`** on paints reference alleles too; off (the
   default) leaves the row solid gray with only ALT alleles on top, which keeps
   overlapping variants readable
-- **`unit`** is `sample` (one row per sample, darker for homozygous) or
-  `haplotype` (one row per haplotype)
+- **`rows.field`** is `sample` (one row per sample, darker for homozygous) or
+  `haplotype` (one row per phased haplotype, named `<sample> HP1`,
+  `<sample> HP2`, counting from 1). A haplotype row answers to its sample's
+  name, so the rest of `rows` carries across the switch
 - **`filter`** is a list of [field tests](/docs/config/fieldpredicate):
   `minorAlleleFrequency` with `gte` hides variants below an allele-frequency
   floor, `missingness` with `lte` hides those above a no-call ceiling, and a

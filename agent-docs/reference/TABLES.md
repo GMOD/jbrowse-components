@@ -504,8 +504,9 @@ and paints the cells as the display does (`paintCellColors`,
   the called alleles (null where none is called, a site with no ALT
   included), and the fill `shade(hue, dosage)` paints. Under
   `genotypes.reference.show` off, the default, a reference call has no cell.
-- `rows`: one per sample, or under `unit: 'haplotype'` one per haplotype,
-  named as the display names them, in file order.
+- `rows`: one per sample, or under `rows.field: 'haplotype'` one per
+  haplotype, named as the display names them (`<sample> HP1`), arranged as the
+  display arranges them; `haplotype` counts from 1, 0 on a sample row.
 - `legend`, `legendTitle` and `ramps`: the display's key, from
   `getVariantColorScales` over what the cells painted, shaped by
   `colorKeyTables` as the feature tables shape theirs. Each `legend` row names
