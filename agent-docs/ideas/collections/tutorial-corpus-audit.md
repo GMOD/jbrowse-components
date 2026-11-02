@@ -196,11 +196,14 @@ If they could, it is a user guide wearing a tutorial's clothes."
   half of this entry is done and not worth re-proposing: the page visits five
   sets, and each owns one `##` that leads with its organisms and names its set
   id.
-- **`genomes_proteins.md`** — two independent launchers off one menu, three genes
-  each demonstrating one capability, plus a comparison table and an install
-  section. The opening video already shows all three views connected, so §3 and
-  §4 re-derive what §2 demonstrated. `NLRP1` is the gene to spine it on: the only
-  one whose figures carry a result rather than a demonstration.
+- **`genomes_proteins.md`**: the launchers now read as a progression (the page
+  picks, then you pick), and the comparison table is gone. What fails is the
+  closing "More protein browser sessions" gallery: figures with no instruction
+  before them, built from session-only settings (cameras, `color.values`,
+  structure filters) no menu reaches, where a protein figure should be a state a
+  reader reaches through menus
+  ([protein figures handoff](../../handoffs/protein-figures-and-viz-features.md)).
+  Move it to a showcase page or cut it to the states a reader can reach.
 - **`dog10k_svs.md`** — the opening paragraph states the anti-pattern in its own words
   ("Five loci, one recipe, a different class of variant each time"; the page has
   four). The `NHEJ1` spine is real. **The cheapest fix is one paragraph**:
