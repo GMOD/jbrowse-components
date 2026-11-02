@@ -150,7 +150,10 @@ import type { FeatureRenderingBackend } from './components/featureRenderingBacke
 import type { FlatbushRegionIndexes } from './components/hitTesting.ts'
 import type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
-import type { RegionInstanceIndex } from './featureHighlightInk.ts'
+import type {
+  FeatureMatch,
+  RegionInstanceIndex,
+} from './featureHighlightInk.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
 import type { LayoutRegionData } from './layoutInputs.ts'
 import type { GroupByScanOptions } from './scanGroupByCandidates.ts'
@@ -215,7 +218,10 @@ export type { Region } from '@jbrowse/core/util'
 // emit its own declarations.
 export type { LabelReservation } from './fitLadder.ts'
 export type { LabelRoomFactors } from './layoutInputs.ts'
-export type { RegionInstanceIndex } from './featureHighlightInk.ts'
+export type {
+  FeatureMatch,
+  RegionInstanceIndex,
+} from './featureHighlightInk.ts'
 export type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 export type { GroupByCandidate } from '../RenderFeatureDataRPC/groupByCandidates.ts'
 export type { GroupByScanOptions } from './scanGroupByCandidates.ts'
@@ -1057,11 +1063,11 @@ export default function baseStateModelFactory(
       },
       /**
        * #method
-       * The drawn features this name or description labels, each boxed over
-       * its body, so a screenshot or a test can point at a feature by what it
-       * is. Built only when called.
+       * The laid-out features this name, or failing one this description,
+       * labels, each with the box its body drew, so a screenshot or a test can
+       * point at a feature by what it is. Built only when called.
        */
-      featuresNamed(name: string): NamedFeature[] {
+      featuresNamed(name: string): FeatureMatch[] {
         return featuresNamedInk(self, name)
       },
       /**

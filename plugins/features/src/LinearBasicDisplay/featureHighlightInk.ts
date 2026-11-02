@@ -252,14 +252,39 @@ export function namedFeatureInk(self: FeatureInkHost) {
   return bodyInk(self, item => (item.name ? item.name : undefined))
 }
 
+/** A feature a name or description labels, and the box its body drew, if any. */
+export interface FeatureMatch {
+  featureId: string
+  text: string
+  box: Pick<NamedFeature, 'left' | 'top' | 'width' | 'height'> | undefined
+}
+
 /**
- * The drawn features whose name, or failing one whose description (a VCF
- * record with no ID reads `C -> T`), is `text`, each boxed over its body.
+ * Every laid-out feature whose name, or failing one whose description (a VCF
+ * record with no ID reads `C -> T`), is `text`, with the box its body drew on
+ * the canvas, or none where it drew off it. The undrawn ones are listed so a
+ * caller can tell a name drawn once from one drawn once among several.
  */
 export function featuresNamedInk(self: FeatureInkHost, text: string) {
-  return bodyInk(self, item =>
-    item.name === text || item.description === text ? text : undefined,
-  )
+  const textOf = (item: FeatureDataResult['flatbushItems'][number]) =>
+    (item.name ? item.name : item.description) === text ? text : undefined
+  const drawn = new Map(bodyInk(self, textOf).map(f => [f.featureId, f]))
+  const matched = new Set<string>()
+  for (const data of self.renderDataMap.values()) {
+    for (const item of data.flatbushItems) {
+      if (textOf(item) !== undefined) {
+        matched.add(item.featureId)
+      }
+    }
+  }
+  return [...matched].map((featureId): FeatureMatch => {
+    const f = drawn.get(featureId)
+    return {
+      featureId,
+      text,
+      box: f && { left: f.left, top: f.top, width: f.width, height: f.height },
+    }
+  })
 }
 
 /**

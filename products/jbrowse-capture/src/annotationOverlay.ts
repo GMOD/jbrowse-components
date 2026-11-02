@@ -46,8 +46,9 @@ export interface AnnotationAnchor {
   // a feature or record the `trackId` track drew, by the name its label shows
   // (`rs334`, `CYP1A2`). The resolved rect is the box the display drew it in,
   // so it holds when a band is added above it, where a `fracY` would land on
-  // another row. A `loc` picks among copies of one name; a name drawn nowhere,
-  // or still more than once, is a miss. Resolved by the caller
+  // another row. A name labelling more than one laid-out feature, drawn or
+  // not, is a miss unless a `loc` picks one drawn copy; so is one drawn
+  // nowhere. A common label (`C -> T <1%`) wants its `loc`. Resolved by the caller
   // (`featureAnchor.ts`) through the display's own `featuresNamed`.
   feature?: string
   // the two axes of a DotplotView, as `4A` (the whole chromosome) or

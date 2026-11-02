@@ -1911,6 +1911,42 @@ test('a description waits for the pointer to settle before it opens', async () =
   expect(await findByText('a description')).toBeTruthy()
 })
 
+// An undescribed track still carries an empty data-tooltip; resting on it
+// opened nothing but started MUI's no-delay window, so the next row popped.
+test('resting on an undescribed track does not make the next description open at once', async () => {
+  const session = addTestAssembly(createTestSession({ adminMode: true }))
+  for (const [trackId, description] of [
+    ['plain', undefined],
+    ['described', 'a description'],
+  ] as const) {
+    session.publishTrackConf({
+      trackId,
+      name: trackId,
+      description,
+      assemblyNames: ['volMyt1'],
+      type: 'FeatureTrack',
+      adapter: { type: 'FromConfigAdapter', features: [] },
+    })
+  }
+  const view = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const { findByTestId, getByTestId, findByText, queryByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+  fireEvent.mouseOver(await findByTestId('htsTrackLabel-Tracks,plain'))
+  await new Promise(resolve => setTimeout(resolve, 700))
+  fireEvent.mouseOver(getByTestId('htsTrackLabel-Tracks,described'))
+  await new Promise(resolve => setTimeout(resolve, 100))
+  expect(queryByText('a description')).toBeNull()
+  expect(await findByText('a description')).toBeTruthy()
+})
+
 test('a description written in HTML renders as HTML in the tooltip', async () => {
   const session = addTestAssembly(createTestSession({ adminMode: true }))
   session.publishTrackConf({

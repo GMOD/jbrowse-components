@@ -91,6 +91,7 @@ export type {
 export type { FeatureBandPaint } from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export type {
   FeatureInkHost,
+  FeatureMatch,
   RegionInstanceIndex,
 } from './LinearBasicDisplay/featureHighlightInk.ts'
 export type {

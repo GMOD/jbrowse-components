@@ -130,8 +130,13 @@ export const variantsSpecs: ScreenshotSpec[] = [
     actions: [
       {
         type: 'click',
-        // the record has no ID, so it goes by the label the band draws
-        anchor: { trackId: 'volvox_test_vcf', feature: 'C -> T <1%' },
+        // the record has no ID, so it goes by the label the band draws, and
+        // the locus picks it from any other record labelled the same
+        anchor: {
+          trackId: 'volvox_test_vcf',
+          feature: 'C -> T <1%',
+          loc: 'ctgA:6,285',
+        },
       },
       { type: 'waitForText', text: 'HG00096' },
     ],

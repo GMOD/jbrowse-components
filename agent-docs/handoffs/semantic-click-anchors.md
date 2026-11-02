@@ -38,7 +38,9 @@ right word, so the sweep covers only those pointing at a record or a row.
   `products/jbrowse-capture/src/featureAnchor.ts`, for callouts and clicks
   alike. It matches the text the label shows, so over genotype rows a record
   is its one-line label with the carrier share (`C -> T <1%`), and a record
-  with no ID its description. `loc` picks among copies of one name.
+  with no ID its description. A name labelling more than one laid-out
+  feature, an undrawn one included, misses unless `loc` picks a drawn copy,
+  so a common label carries its `loc`.
 - **A `row` anchor.** `trackId` plus a row's name resolves through the tree
   sidebar's geometry: `sources` in
   `packages/tree-sidebar/src/TreeSidebarMixin.ts` is the rows drawn top to

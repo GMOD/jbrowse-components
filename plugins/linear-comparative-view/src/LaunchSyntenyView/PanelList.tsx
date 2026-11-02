@@ -163,7 +163,7 @@ const AnchorMark = observer(function AnchorMark({
 }) {
   const { classes } = useStyles()
   return (
-    <Tooltip title="The reference panel: it can be moved, not removed">
+    <Tooltip title="The other panels resolve against this one, so it moves but stays">
       <div className={classes.anchorLabel}>
         <div className={classes.anchorMark}>
           <AnchorIcon fontSize="small" />

@@ -11,6 +11,10 @@ import type { RefObject } from 'react'
 // MUI's window after a tooltip closes in which the next opens at once
 const HYSTERESIS_MS = 800
 
+// a row with a description; an undescribed track still carries an empty
+// data-tooltip, which must open nothing and so start no no-delay window
+const DESCRIBED = '[data-tooltip]:not([data-tooltip=""])'
+
 const SharedTooltip = observer(function SharedTooltip({
   containerRef,
   model,
@@ -50,9 +54,7 @@ const SharedTooltip = observer(function SharedTooltip({
     }
 
     const handleOver = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement).closest<HTMLElement>(
-        '[data-tooltip]',
-      )
+      const target = (e.target as HTMLElement).closest<HTMLElement>(DESCRIBED)
       // mouseover fires again for every descendant crossed, so keep the state
       // while the row is unchanged. A row virtualized away under the pointer
       // gets no mouseout, so landing anywhere without a tooltip clears it
@@ -67,17 +69,20 @@ const SharedTooltip = observer(function SharedTooltip({
         ) {
           show(target)
         } else {
+          // a row virtualized away during the wait anchors nowhere
           pending = setTimeout(() => {
-            show(target)
+            if (target.isConnected) {
+              show(target)
+            }
           }, enterDelay)
         }
       }
     }
 
     const handleOut = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement).closest('[data-tooltip]')
+      const target = (e.target as HTMLElement).closest(DESCRIBED)
       const related = (e.relatedTarget as HTMLElement | null)?.closest(
-        '[data-tooltip]',
+        DESCRIBED,
       )
       if (target && target !== related) {
         hide()

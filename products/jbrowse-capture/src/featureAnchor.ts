@@ -10,9 +10,11 @@ import type { Page } from 'puppeteer'
 // The display already boxes every named feature it drew (`featuresNamed`, the
 // same ink its floating labels read), so ask it.
 //
-// `region` narrows a name drawn more than once to the copy overlapping that
-// locus. A name the display did not draw, or still draws more than once, is
-// undefined, so the caller fails the spec by name.
+// The display lists every laid-out feature the name labels, drawn or not, so a
+// copy scrolled or packed out of sight still counts: a name is a miss unless
+// it labels one feature and that one drew. `region` narrows the drawn copies to
+// the one overlapping that locus, for a label as common as `C -> T <1%`. A
+// miss is undefined, so the caller fails the spec by name.
 //
 // Puppeteer serializes this into the page, so it closes over nothing.
 export function featureRectInPage(
@@ -28,7 +30,7 @@ export function featureRectInPage(
     height: number
   }
   interface Display {
-    featuresNamed?: (name: string) => Box[]
+    featuresNamed?: (name: string) => { box: Box | undefined }[]
   }
   interface View {
     id: string
@@ -54,19 +56,20 @@ export function featureRectInPage(
     document.querySelector(
       `[data-testid="trackRenderingContainer-${CSS.escape(view.id)}-${CSS.escape(trackId)}"]`,
     )
-  const boxes = display?.featuresNamed?.(name) ?? []
+  const matches = display?.featuresNamed?.(name) ?? []
   const span =
     region &&
     view?.getHighlightCoords?.({
       ...region,
       assemblyName: view.assemblyNames?.[0],
     })
-  const matching = span
-    ? boxes.filter(
-        b => b.left < span.left + span.width && b.left + b.width > span.left,
+  const candidates = span
+    ? matches.filter(
+        ({ box: b }) =>
+          b && b.left < span.left + span.width && b.left + b.width > span.left,
       )
-    : boxes
-  const box = matching.length === 1 ? matching[0] : undefined
+    : matches
+  const box = candidates.length === 1 ? candidates[0]?.box : undefined
   if (!box || !container) {
     return undefined
   }

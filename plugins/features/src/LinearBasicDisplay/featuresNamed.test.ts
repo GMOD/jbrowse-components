@@ -23,8 +23,9 @@ function rect(
   }
 }
 
-// A named two-row gene at bp 1000-2000, and at 3000-3200 a record with no
-// name, only the description a VCF record with no ID carries.
+// A named two-row gene at bp 1000-2000 whose description is `C -> T`; at
+// 3000-3200 a record with no name, only the description a VCF record with no ID
+// carries; and a second such record at 9500, past the 800px canvas.
 function data() {
   return makeFeatureData({
     ...packRenderArrays(
@@ -32,6 +33,7 @@ function data() {
         rect({ start: 1000, end: 1500, y: 0, height: 10 }),
         rect({ start: 1600, end: 2000, y: 15, height: 10 }),
         rect({ start: 3000, end: 3200, y: 0, height: 10, flatbushIdx: 1 }),
+        rect({ start: 9500, end: 9600, y: 0, height: 10, flatbushIdx: 2 }),
       ],
       [],
       [],
@@ -47,6 +49,7 @@ function data() {
         bottomPx: 25,
         featureHeightPx: 25,
         name: 'GENE1',
+        description: 'C -> T',
       }),
       makeFlatbushItem({
         featureId: 'v1',
@@ -57,8 +60,17 @@ function data() {
         featureHeightPx: 10,
         description: 'C -> T',
       }),
+      makeFlatbushItem({
+        featureId: 'v2',
+        startBp: 9500,
+        endBp: 9600,
+        topPx: 0,
+        bottomPx: 10,
+        featureHeightPx: 10,
+        description: 'C -> T',
+      }),
     ],
-    featureCount: 2,
+    featureCount: 3,
   })
 }
 
@@ -80,22 +92,25 @@ test('a name finds the body its feature drew, without its label', () => {
     {
       featureId: 'g1',
       text: 'GENE1',
-      left: 100,
-      top: 0,
-      width: 100,
-      height: 25,
+      box: { left: 100, top: 0, width: 100, height: 25 },
     },
   ])
 })
 
-test('a record with no name is found by its description', () => {
+// The named gene's own description is not what labels it, and the record past
+// the canvas is listed with no box, so a caller sees the name is not unique.
+test('a description labels only an unnamed feature, drawn or not', () => {
   const { display } = setUp()
   expect(display.featuresNamed('C -> T')).toEqual([
-    expect.objectContaining({ featureId: 'v1', left: 300, width: 20 }),
+    expect.objectContaining({
+      featureId: 'v1',
+      box: expect.objectContaining({ left: 300, width: 20 }),
+    }),
+    { featureId: 'v2', text: 'C -> T', box: undefined },
   ])
 })
 
-test('a name nothing drew finds nothing', () => {
+test('a name nothing laid out finds nothing', () => {
   const { display } = setUp()
   expect(display.featuresNamed('GENE2')).toEqual([])
 })
