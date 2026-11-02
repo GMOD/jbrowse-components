@@ -18,6 +18,8 @@ const MAX_POINTS = 4096
 // row, and a row is placed in pixels.
 const MIN_TOLERANCE_BP = 1
 
+const TOLERANCE_PRECISION = 1.05
+
 /**
  * A piecewise-linear index of one alignment's CIGAR: the offsets, from the
  * block's own start on each axis, of the points where the two axes'
@@ -80,9 +82,10 @@ function skewVariation(cigar: ArrayLike<number>) {
  * within `2 * toleranceBp` of that line: the skew stays within `toleranceBp` of
  * each endpoint's, and the line runs between them.
  *
- * The tolerance is DERIVED, not configured: an indel-free block gets two points
- * and is exact, and a block with more bends than the budget gets them spread
- * evenly over its drift rather than a truncated prefix of them.
+ * The tolerance is DERIVED, not configured: the smallest that fits the budget.
+ * An indel-free block gets two points and is exact, and a block with more bends
+ * than the budget gets them spread evenly over its drift rather than a
+ * truncated prefix of them.
  */
 export function buildCigarMap(
   cigar: ArrayLike<number>,
@@ -91,13 +94,60 @@ export function buildCigarMap(
     minToleranceBp = MIN_TOLERANCE_BP,
   }: { maxPoints?: number; minToleranceBp?: number } = {},
 ): CigarMap {
-  // Two points per bend in the worst case (before and after a large op), so the
-  // budget is halved rather than the emit rule being weakened.
-  const toleranceBp = Math.max(
+  const fits = (m: CigarMap) => m.featOffsets.length <= maxPoints
+  const finest = walkCigarMap(cigar, minToleranceBp)
+  return fits(finest)
+    ? finest
+    : searchTolerance(cigar, {
+        fits,
+        lo: minToleranceBp,
+        hi: walkCigarMap(cigar, budgetBound(cigar, maxPoints, minToleranceBp)),
+      })
+}
+
+/**
+ * A tolerance that fits the budget, from spending it as if every indel base
+ * were drift; two points per bend in the worst case, so the budget is halved.
+ * Loose wherever a few huge gaps carry most of the indel bases: 77 of 4096
+ * points on hg38 vs hs1 chr1.
+ */
+function budgetBound(
+  cigar: ArrayLike<number>,
+  maxPoints: number,
+  minToleranceBp: number,
+) {
+  return Math.max(
     minToleranceBp,
     (2 * skewVariation(cigar)) / Math.max(1, maxPoints),
   )
+}
 
+// Bisected on a log scale to within TOLERANCE_PRECISION. The point count is
+// not strictly monotone in the tolerance, so this keeps a map that fits rather
+// than proving it the smallest.
+function searchTolerance(
+  cigar: ArrayLike<number>,
+  {
+    fits,
+    lo,
+    hi,
+  }: { fits: (m: CigarMap) => boolean; lo: number; hi: CigarMap },
+) {
+  let below = lo
+  let best = hi
+  while (best.toleranceBp > below * TOLERANCE_PRECISION) {
+    const mid = Math.sqrt(below * best.toleranceBp)
+    const m = walkCigarMap(cigar, mid)
+    if (fits(m)) {
+      best = m
+    } else {
+      below = mid
+    }
+  }
+  return best
+}
+
+function walkCigarMap(cigar: ArrayLike<number>, toleranceBp: number) {
   const feat: number[] = [0]
   const mate: number[] = [0]
   let featX = 0

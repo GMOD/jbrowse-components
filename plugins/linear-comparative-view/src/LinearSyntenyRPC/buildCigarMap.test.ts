@@ -104,6 +104,22 @@ test('and stays within twice its tolerance where it was thinned', () => {
   expect(worst).toBeLessThanOrEqual(2 * m.toleranceBp)
 })
 
+// A chromosome-scale human block: most of its indel bases are one gap, which
+// is a step at any tolerance, so the budget belongs to the small indels.
+test('a huge gap does not leave the small indels without points', () => {
+  const cigar = parseCigar2(`1000000D${'10M3I'.repeat(5000)}`)
+  const m = buildCigarMap(cigar, { maxPoints: 64 })
+  const featSpan = m.featOffsets.at(-1)!
+  let worst = 0
+  for (let x = 0; x <= featSpan; x += 13) {
+    const [, truth] = findPosInCigar(cigar, x)
+    worst = Math.max(worst, Math.abs(interpolate(m, x) - truth))
+  }
+  expect(m.featOffsets.length).toBeLessThanOrEqual(64)
+  expect(m.featOffsets.length).toBeGreaterThan(48)
+  expect(worst).toBeLessThan(1000)
+})
+
 test('the thinned map still ends on the block, not short of it', () => {
   const cigar = parseCigar2('10M3I'.repeat(5000))
   const m = buildCigarMap(cigar, { maxPoints: 64 })
