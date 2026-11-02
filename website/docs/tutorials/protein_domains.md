@@ -202,7 +202,7 @@ The script reads `genome.fa` and `genes.gff3` plain or gzipped, and
 ## See also
 
 - [](/docs/tutorials/genomes_proteins)
-- [](/docs/tutorials/protein_variants_tp53)
+- [](/docs/tutorials/protein_variants_kras)
 - [](/docs/user_guides/multirow_feature_track)
 - [](/docs/tutorials/repeatmasker_classes)
 - [](/docs/cli)

@@ -1,6 +1,6 @@
 ---
-title: 'Variants on protein structures part 7: MET exon 14 skipping'
-sidebar_label: Proteins (variants pt 7, MET exon 14)
+title: 'Variants on protein structures part 4: MET exon 14 skipping'
+sidebar_label: Proteins (variants pt 4, MET exon 14)
 description:
   Find an exon skipped in RNA-seq reads, find the DNA change that causes it at
   the splice site, and follow the missing exon onto a crystal structure of the

@@ -294,7 +294,7 @@ export function countRawCallouts(list: ScreenshotSpec[]) {
 // every figure byte-identical. Mol* camera resets and hover tooltips stay: the
 // app never sees them.
 export const LONG_DELAY_MS = 1000
-export const LONG_DELAY_BASELINE = 53
+export const LONG_DELAY_BASELINE = 45
 
 export function countLongDelays(list: ScreenshotSpec[]) {
   const found = list.flatMap(spec =>

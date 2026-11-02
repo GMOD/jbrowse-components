@@ -351,7 +351,6 @@ export function hotspotSession(
   { session: base, gene, hotspots }: HotspotGene,
   region: { start: number; end: number },
   options: Omit<SessionOptions, 'highlights'>,
-  extraHotspots: Hotspot[] = [],
 ) {
   const session = structuredClone(base)
   const [, msa, protein] = session.views as [ViewJson, ViewJson, ViewJson]
@@ -367,7 +366,7 @@ export function hotspotSession(
     { row: 'human_query', ...region },
     {
       ...options,
-      highlights: [...hotspots, ...extraHotspots].map(h => ({
+      highlights: hotspots.map(h => ({
         ...h,
         assemblyName: 'hg38',
       })),
@@ -448,7 +447,7 @@ export function residueCallout(
 
 // From the GenPept CDD features and the launched ortholog alignments:
 //   KRAS G12 and G13 sit in the G1 box, Q61 in Switch II.
-//   TP53 R248 and R273 are DNA-binding sites; R175 is in none.
+//   TP53 R248 and R273 are DNA-binding sites.
 //   BRAF V600 lies in the activation loop.
 //   HBB residue 7 lies outside every CDD domain.
 //   Every aligned row keeps the hotspot residue.
@@ -470,22 +469,6 @@ const KRAS_DOMAIN_WINDOWS =
   'chr12:25245328-25245372[rev] chr12:25227320-25227364[rev]'
 const KRAS_G12 = 'chr12:25,245,350'
 
-const TP53: HotspotGene = {
-  session: readSession('protein_browser_tp53_1tup.session.json'),
-  gene: 'TP53',
-  hotspots: [
-    { label: 'R248', refName: 'chr17', start: 7674218, end: 7674221 },
-    { label: 'R273', refName: 'chr17', start: 7673800, end: 7673803 },
-  ],
-}
-const TP53_WINDOWS = 'chr17:7674201-7674239[rev] chr17:7673783-7673821[rev]'
-const TP53_R175: Hotspot = {
-  label: 'R175',
-  refName: 'chr17',
-  start: 7675086,
-  end: 7675089,
-}
-const TP53_DOMAIN_WINDOWS = `chr17:7675069-7675107[rev] ${TP53_WINDOWS}`
 const TP53_R248 = 'chr17:7,674,220'
 
 const BRAF: HotspotGene = {
@@ -851,56 +834,6 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
   },
   {
     mode: 'url',
-    name: 'protein/tp53_codon_hover',
-    url: hotspotSession(
-      TP53,
-      { start: 241, end: 280 },
-      { loc: TP53_WINDOWS, tracks: [HG38_GENE_TRACK], msaHeight: 560 },
-    ),
-    ...READY,
-    viewportWidth: 2300,
-    viewportHeight: 1070,
-    actions: hoverCodon(TP53_R248),
-  },
-  {
-    mode: 'url',
-    name: 'protein/tp53_domains_three_views',
-    url: hotspotSession(
-      TP53,
-      { start: 231, end: 290 },
-      {
-        loc: TP53_DOMAIN_WINDOWS,
-        tracks: [HG38_GENE_TRACK],
-        msaHeight: 490,
-        domains: true,
-      },
-      [TP53_R175],
-    ),
-    ...domainFigure('TP53', TP53_R248),
-    viewportHeight: 1140,
-  },
-  {
-    mode: 'url',
-    name: 'protein/braf_codon_hover',
-    url: hotspotSession(
-      BRAF,
-      { start: 585, end: 615 },
-      {
-        loc: BRAF_V600_WINDOW,
-        tracks: [HG38_GENE_TRACK, CLINVAR_TRACK],
-        msaHeight: 420,
-      },
-    ),
-    ...READY,
-    viewportWidth: 2300,
-    viewportHeight: 1150,
-    actions: hoverCodon(BRAF_V600),
-    annotations: [
-      residueCallout('Glu600: 4MNF is the V600E protein', 'A:600', -80, -300),
-    ],
-  },
-  {
-    mode: 'url',
     name: 'protein/braf_v600e',
     url: hotspotSession(
       BRAF_V600E,
@@ -1044,21 +977,5 @@ export const proteinVariantSpecs: ScreenshotSpec[] = [
       PARK_CURSOR,
       { type: 'delay', ms: 1500 },
     ],
-  },
-  {
-    mode: 'url',
-    name: 'protein/braf_domains_three_views',
-    url: hotspotSession(
-      BRAF,
-      { start: 570, end: 630 },
-      {
-        loc: BRAF_V600_WINDOW,
-        tracks: [HG38_GENE_TRACK],
-        msaHeight: 490,
-        domains: true,
-      },
-    ),
-    ...domainFigure('BRAF', BRAF_V600, 80),
-    viewportHeight: 1190,
   },
 ]

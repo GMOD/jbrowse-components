@@ -333,27 +333,9 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0.62, 0.98],
     position: 'center',
   },
-  protein_variants_seedless_grape: {
-    src: 'protein/agl11_codon_hover.png',
-    band: [0.45, 0.75],
-    xband: [0.62, 0.92],
-    position: 'center',
-  },
   protein_variants_kras: {
     src: 'protein/kras_domains_three_views.png',
     band: [0.4, 0.85],
-    xband: [0.62, 0.98],
-    position: 'center',
-  },
-  protein_variants_tp53: {
-    src: 'protein/tp53_domains_three_views.png',
-    band: [0.35, 0.85],
-    xband: [0.62, 0.98],
-    position: 'center',
-  },
-  protein_variants_braf: {
-    src: 'protein/braf_domains_three_views.png',
-    band: [0.35, 0.85],
     xband: [0.62, 0.98],
     position: 'center',
   },

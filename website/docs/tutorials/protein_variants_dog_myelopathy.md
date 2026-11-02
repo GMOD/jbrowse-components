@@ -176,7 +176,6 @@ first region is 30 bp of the upstream intron, around an SNV at chr31:27,122,819.
 ## See also
 
 - [](/docs/tutorials/protein_variants_sickle_cell)
-- [](/docs/tutorials/protein_variants_seedless_grape)
 - [](/docs/tutorials/dog10k_lof)
 - [](/docs/tutorials/genomes_proteins)
 

@@ -213,7 +213,7 @@ blinded ideator given only a capability sheet, a landscape survey):
    premature stop. The design that generalises it is
    `ideas/waiting-on-a-call/a-variant-haplotype-is-a-lane.md`.
    `protein/met_ex14` is the second, with the tutorial
-   `protein_variants_met_exon14` (part 7) that reaches it by clicks from the
+   `protein_variants_met_exon14` (part 4) that reaches it by clicks from the
    Protein Browser's `gene=MET&structure=3bux` link, on CCLE reads Colin's
    readers could swap for their own. NCI-H596 RNA joins exon 13 to 15, its DNA
    has no reference reads at c.3028+1 (chr7:116,771,990 G>T), EBC-1 keeps the

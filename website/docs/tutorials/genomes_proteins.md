@@ -15,13 +15,14 @@ proteins. The [protein browser](https://genomes.jbrowse.org/protein-browser/) on
 genomes.jbrowse.org takes a gene symbol and opens the gene, its 3D structure and
 an alignment of related proteins as one JBrowse session, linked so that a
 residue picked in one view lights up in the other two. We start on _TP53_ at
-R248, a cancer hotspot, and end on _NLRP1_, whose domains differ between
-mammals. We:
+R248, a cancer hotspot, stop at the grapevine seedlessness gene _VviAGL11_, on
+its AlphaFold model, and end on _NLRP1_, whose domains differ between mammals.
+We:
 
 - open _TP53_ on R248 from the protein browser, which launches a linear genome
   view, an alignment view and a Mol\* structure as one linked session
 - change what the session opens on: a domain, a residue, a partner, a structure
-  or a coloring
+  or a coloring, and color _VviAGL11_'s AlphaFold model by its confidence
 - launch a structure from the gene's right-click menu with **Launch protein
   view**, choosing the structure source and the isoform
 - launch an ortholog alignment of _NLRP1_ with **Launch MSA view**, then read
@@ -135,6 +136,38 @@ Two more boxes under Advanced change the structure itself:
 The page URL holds the gene, the focus and the structure, so
 [?gene=TP53&ref=9606&residue=248&structure=3kmd](https://genomes.jbrowse.org/protein-browser/?gene=TP53&ref=9606&residue=248&structure=3kmd)
 reopens this launch.
+
+### An AlphaFold model colored by pLDDT
+
+Where the PDB has no structure of a protein, the session opens its AlphaFold
+model. Most seedless grapes owe it to one missense change in _VviAGL11_, a MADS
+box transcription factor that regulates seed development. Arginine 197 becomes
+leucine (R197L) ([Royo et al. 2018](https://doi.org/10.1104/pp.18.00259)). NCBI
+names the gene _MADS5_, on the minus strand of chr18 in the Pinot Noir
+reference. Its AlphaFold model, UniProt A0A217EJJ0, was predicted from a protein
+sequenced from the seedless cultivar Sultanina, so residue 197 of the model is
+leucine. Open the protein browser on residue 197:
+
+- open
+  [genomes.jbrowse.org/protein-browser/?gene=AGL11&ref=29760&residue=197](https://genomes.jbrowse.org/protein-browser/?gene=AGL11&ref=29760&residue=197)
+  and click **Open in JBrowse ↗**
+- type `chr18:32255673-32255763[rev]` into the location box. `[rev]` keeps the
+  minus-strand gene reading left to right
+- click **Reset Zoom**, the circular arrow at the top right of the structure, to
+  fit the whole model
+- hover column 197 of the `wine_grape_query` row in the alignment
+
+The model opens colored by pLDDT, AlphaFold's per-residue confidence, which the
+palette icon in the protein view's header sets for any model under **pLDDT
+confidence (AlphaFold)**. Dark blue is very high, light blue confident, yellow
+low and orange very low, and the header's **pLDDT** row draws the same scale
+along the sequence.
+
+<Figure src="/img/protein/agl11_codon_hover.png" caption="VviAGL11 at codon 197 with its UniRef alignment and the AlphaFold model colored by pLDDT." />
+
+Arginine fills most rows of the alignment column. Residue 197 falls in
+AlphaFold's low band, where AlphaFold DB advises treating the chain's placement
+with caution, and the DNA-binding MADS domain falls in the very high band.
 
 ## Launching from the gene's right-click menu
 
@@ -350,6 +383,10 @@ The approach is described in
 
 - Broz and Dixit (2016).
   [Inflammasomes: mechanism of assembly, regulation and signalling](https://doi.org/10.1038/nri.2016.58)
+- Royo et al. (2018).
+  [The major origin of seedless grapes is associated with a missense mutation in the MADS-box gene VviAGL11](https://doi.org/10.1104/pp.18.00259)
+- Varadi et al. (2024).
+  [AlphaFold Protein Structure Database in 2024: providing structure coverage for over 214 million protein sequences](https://doi.org/10.1093/nar/gkad1011)
 
 [^constructs]:
     Some of these crystals carry engineered mutations. In the TP53 figure, 2J1X
