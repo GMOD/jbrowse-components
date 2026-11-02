@@ -48,9 +48,9 @@ export interface VariantCellData extends CellHueValues {
   // consumes ~no reference. Multiallelic records report their longest ALT,
   // matching `getAlleleLength` and the `alleleLength()` jexl.
   featureInsertedBp: Int32Array
-  // `1 << CELL_*` for every cell-color category this pass painted; the legend
-  // lists exactly these
-  paintedCategories: number
+  // `1 << CELL_*` for every cell-color category each variant painted, which
+  // the key reads for the variants on screen (`keyedVariants`)
+  featureCategories: Uint8Array
 }
 
 // the per-allele half of `svClassOf`, which named the record's class
@@ -116,10 +116,9 @@ export function computeVariantCells({
   const insertedBp = new Int32Array(numFeatures)
   const featurePositions = new Uint32Array(numFeatures * 2)
   const featureColorValues = new Uint32Array(numFeatures)
+  const featureCategories = new Uint8Array(numFeatures)
   const hueValues = makeHueValueTable()
 
-  let paintedCategories = 0
-  let altPainted = false
   // The cursors cannot collide before the buffer is full: every genotype
   // contributes at most one cell.
   let refEnd = 0
@@ -162,21 +161,18 @@ export function computeVariantCells({
     const end = feature.get('end')
     const codes = featureGenotypeCodes.get(featureId)!
     styler.site(feature, codes, mostFrequentAlt)
-    altPainted = false
+    let categories = 0
     for (let j = 0; j < numSources; j++) {
       const style = styler.styleAt(j)
       if (style) {
-        paintedCategories |= 1 << style.category
-        altPainted ||= style.isAlt
+        categories |= 1 << style.category
         addCell(j, style.abgr, style.isRef, style.altDosage, featureIdx)
       }
     }
+    featureCategories[featureIdx] = categories
 
     if (hueValue) {
-      featureColorValues[featureIdx] = hueValues.add(
-        hueValue(feature),
-        altPainted,
-      )
+      featureColorValues[featureIdx] = hueValues.add(hueValue(feature))
     }
 
     const inserted = getInsertedBp(feature)
@@ -265,7 +261,7 @@ export function computeVariantCells({
     featurePositions,
     featureIndexData: featureIndex.data,
     featureInsertedBp: insertedBp,
-    paintedCategories,
+    featureCategories,
     featureColorValues,
     ...hueValues.result(),
   }

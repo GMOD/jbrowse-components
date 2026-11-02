@@ -32,17 +32,6 @@ export function svClassColors(featureInfo: readonly VariantFeatureInfo[]) {
   })
 }
 
-/** The SV classes `featureInfo` holds, one each, skipping its other records. */
-export function svClassesOf(featureInfo: readonly VariantFeatureInfo[]) {
-  const classes = new Set<string>()
-  for (const { svType } of featureInfo) {
-    if (svType !== '') {
-      classes.add(svType)
-    }
-  }
-  return classes
-}
-
 /** The key for the SV classes the band's records hold, in the preset order. */
 export function svClassScale(svTypes: Iterable<string>): CategoricalScale {
   const field = svClassField()

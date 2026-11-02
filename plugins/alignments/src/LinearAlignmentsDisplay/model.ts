@@ -51,6 +51,7 @@ import { colorForField } from '@jbrowse/display-kit/colorConfigSchema'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
+import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
@@ -172,7 +173,6 @@ import {
   hasOverlapInWindows,
   insertSizeBandInWindows,
   junctionInWindows,
-  keyWindowsOf,
   modificationTypesInWindows,
   readCategoriesInWindows,
   readMapqsInWindows,

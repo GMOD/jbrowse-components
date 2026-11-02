@@ -35,10 +35,11 @@ import {
   densityRung,
   recordDensityAlpha,
 } from './LinearVariantDisplay/densityFade.ts'
+import { keyedVariantsFetched } from './LinearVariantDisplay/keyedVariants.ts'
 import {
+  colorKeysOf,
   paintCellColors,
   paintFeatureColors,
-  paintedColorKeys,
 } from './LinearVariantDisplay/paintCells.ts'
 import { getVariantColorScales } from './LinearVariantDisplay/variantLegend.ts'
 import SplitVcfTabixAdapterF from './SplitVcfTabixAdapter/index.ts'
@@ -332,16 +333,14 @@ export async function variantTables(
     }
   }
 
+  const keyed = keyedVariantsFetched(perRegion.map(({ data }) => data))
   const scales = getVariantColorScales({
     unit,
-    hasSecondaryAlt: value.hasSecondaryAlt,
-    hasAltWithoutPhaseSet: value.hasAltWithoutPhaseSet,
-    hasUnphased: value.hasUnphased,
-    hasNoCall: value.hasNoCall,
-    paintedDomain: paintedColorKeys(
-      perRegion.map(({ data }) => data),
-      paintHue,
-    ),
+    hasSecondaryAlt: keyed.hasSecondaryAlt,
+    hasAltWithoutPhaseSet: keyed.hasAltWithoutPhaseSet,
+    hasUnphased: keyed.hasUnphased,
+    hasNoCall: keyed.hasNoCall,
+    paintedDomain: colorKeysOf(keyed.altColorValues, paintHue),
     color: encoding,
     colorSlots: slots,
     ramp: paintHue.ramp,

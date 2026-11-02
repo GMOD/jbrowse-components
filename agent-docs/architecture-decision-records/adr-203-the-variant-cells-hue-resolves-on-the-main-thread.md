@@ -12,6 +12,10 @@ Accepted (2026-10-01). Carries
 multi-sample variant display, whose Consequences named it as the one display
 still sending its color encoding in `rpcProps()`.
 
+Amended 2026-11-01: `paintedColorValues` is gone. The key reads which variants
+painted an alt cell off `featureCategories`, per variant, so it can list the
+values on screen (ADR-093).
+
 ## Context
 
 The worker baked every alt cell's color as `cellFill(hue, dosage, shade)`

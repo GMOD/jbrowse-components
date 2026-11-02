@@ -12,10 +12,11 @@ import {
   CELL_ALT_NO_PHASE_SET,
   CELL_ALT_SECONDARY,
 } from '../../shared/variantCellStyles.ts'
+import { keyedVariantsFetched } from '../keyedVariants.ts'
 import {
   paintCellColors,
   paintFeatureColors,
-  paintedColorKeys,
+  colorKeysOf,
 } from '../paintCells.ts'
 import { computeVariantCells } from './computeVariantCells.ts'
 
@@ -374,7 +375,7 @@ describe('computeVariantCells per-variant hue', () => {
     const result = cells()
     expect(result.colorValues).toEqual([override])
     expect([...result.featureColorValues]).toEqual([1])
-    expect(result.paintedColorValues).toEqual([0])
+    expect(keyedVariantsFetched([result]).altColorValues).toEqual([override])
     expect([...result.cellColors]).toContain(getCachedABGR(ALT_HUE))
     expect([...result.cellColors]).not.toContain(getCachedABGR(override))
   })
@@ -1075,7 +1076,7 @@ test('phase-set coloring files a secondary alt with no phase set as one', () => 
       showReference: true,
       colorByPhaseSet: true,
       ...genotypeArgs([feature]),
-    }).paintedCategories
+    }).featureCategories[0]!
   }
   expect(run('1|2:.') & (1 << CELL_ALT_SECONDARY)).not.toBe(0)
   expect(run('1|2:77') & (1 << CELL_ALT_SECONDARY)).toBe(0)
@@ -1107,8 +1108,8 @@ test('phase-set coloring honors reference cells off', () => {
   expect(result.cellRowIndices[0]).toBe(0)
 })
 
-// `paintedCategories` and `paintedColorValues` are what the legend is built from, so
-// each entry claims a cell of that kind is in the fetched data. The claims below
+// `featureCategories` is what the legend is built from, so each entry claims a
+// cell of that kind is on screen. The claims below
 // are the ones that were only ever asserted through the legend's own inputs.
 describe('the painted record reports what this pass emitted', () => {
   const sources: ProcessedSource[] = [
@@ -1140,15 +1141,15 @@ describe('the painted record reports what this pass emitted', () => {
     const { CELL_ALT_SECONDARY } =
       await import('../../shared/variantCellStyles.ts')
     const bit = 1 << CELL_ALT_SECONDARY
-    expect(run('1|1').paintedCategories & bit).toBe(0)
-    expect(run('1|2').paintedCategories & bit).toBe(bit)
+    expect(run('1|1').featureCategories[0]! & bit).toBe(0)
+    expect(run('1|2').featureCategories[0]! & bit).toBe(bit)
   })
 
   test('a painted no-call sets its category bit', async () => {
     const { CELL_NO_CALL } = await import('../../shared/variantCellStyles.ts')
     const bit = 1 << CELL_NO_CALL
-    expect(run('1|1').paintedCategories & bit).toBe(0)
-    expect(run('1|.').paintedCategories & bit).toBe(bit)
+    expect(run('1|1').featureCategories[0]! & bit).toBe(0)
+    expect(run('1|.').featureCategories[0]! & bit).toBe(bit)
   })
 
   test('a domain value whose only carriers are hom-ref stays off the list', () => {
@@ -1192,7 +1193,10 @@ describe('the painted record reports what this pass emitted', () => {
     expect(result.colorValues).toEqual(['HIGH', 'MODERATE'])
     expect([...result.featureColorValues]).toEqual([1, 2])
     expect(
-      paintedColorKeys([result], { read: undefined, keyOf: v => v }),
+      colorKeysOf(keyedVariantsFetched([result]).altColorValues, {
+        read: undefined,
+        keyOf: v => v,
+      }),
     ).toEqual(['HIGH'])
   })
 })

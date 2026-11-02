@@ -1,10 +1,11 @@
+import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
+
 import { ARC_COLOR_INTERCHROM } from '../features/arcs/arcColors.ts'
 import { READ_COLOR_CATEGORY } from './colorUtils.ts'
 import {
   arcSlotsInWindows,
   insertSizeBandInWindows,
   junctionInWindows,
-  keyWindowsOf,
   readCategoriesInWindows,
   readMapqsInWindows,
 } from './keyWindows.ts'

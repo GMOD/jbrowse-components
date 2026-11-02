@@ -3,7 +3,7 @@ import { getCachedABGR } from '../shared/variantWebglUtils.ts'
 import {
   paintCellColors,
   paintFeatureColors,
-  paintedColorKeys,
+  colorKeysOf,
 } from './paintCells.ts'
 
 import type { CellHue } from '../shared/cellHue.ts'
@@ -34,7 +34,6 @@ function cells(): PaintableCells {
     refCellCount: 3,
     featureColorValues: Uint32Array.from([1, 2, 0]),
     colorValues: ['a', 'b'],
-    paintedColorValues: [],
   }
 }
 
@@ -121,13 +120,7 @@ test('each variant takes its full-dose hue', () => {
   ])
 })
 
-test('the key lists the values a variant with an alt cell carried', () => {
-  const regions = [
-    { colorValues: ['a', 'b'], paintedColorValues: [1] },
-    { colorValues: ['b', 'c'], paintedColorValues: [0, 1] },
-  ]
-  expect(paintedColorKeys(regions, byValue)).toEqual(['B', 'C'])
-  expect(paintedColorKeys(regions, { read: undefined, hueOf: v => v })).toEqual(
-    [],
-  )
+test('the key lists each value once, under the row it files under', () => {
+  expect(colorKeysOf(['b', 'c', 'b'], byValue)).toEqual(['B', 'C'])
+  expect(colorKeysOf(['b'], { read: undefined, hueOf: v => v })).toEqual([])
 })

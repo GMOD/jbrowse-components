@@ -15,12 +15,6 @@ import {
   NO_RECORD_FIELD_READS,
   recordFieldReaders,
 } from '../shared/recordFields.ts'
-import {
-  CELL_ALT_NO_PHASE_SET,
-  CELL_ALT_SECONDARY,
-  CELL_NO_CALL,
-  CELL_UNPHASED,
-} from '../shared/variantCellStyles.ts'
 import { analyzeVariants, simplifyFeatures } from './analyzeVariants.ts'
 import { fetchVariantFeatures } from './fetchVariantFeatures.ts'
 import { groupFeaturesByRegion } from './groupFeaturesByRegion.ts'
@@ -35,21 +29,6 @@ import type { GetCellDataArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
-
-// What the paint loops reported, as the three legend booleans, merged over
-// every payload of the fetch.
-function paintedLegendFlags(passes: { paintedCategories: number }[]) {
-  let mask = 0
-  for (const pass of passes) {
-    mask |= pass.paintedCategories
-  }
-  return {
-    hasSecondaryAlt: (mask & (1 << CELL_ALT_SECONDARY)) !== 0,
-    hasAltWithoutPhaseSet: (mask & (1 << CELL_ALT_NO_PHASE_SET)) !== 0,
-    hasUnphased: (mask & (1 << CELL_UNPHASED)) !== 0,
-    hasNoCall: (mask & (1 << CELL_NO_CALL)) !== 0,
-  }
-}
 
 // Which records each payload draws, under the key of the block that draws it.
 // At genomic positions, each displayed region's in file order, so overlapping
@@ -101,17 +80,6 @@ interface CellDataBase {
   // phased painter uses (`isPhasedOrHaploid`) and so the one that gates the
   // "Phased" rendering-mode entry — see analyzeVariants.
   hasPhasedOrHaploid: boolean
-  // What the cell loop actually painted: a secondary-alt fill, a black
-  // unphased fill, a no-call fill. Each drives its legend entry, so the entry
-  // means one is in the fetched cell data rather than that the data could
-  // produce one. Merged across every fetched region, which at genomic
-  // positions is wider than the viewport. A secondary alt counts whether or not
-  // an `encoding.color` hue repaints it; the key lists it under the genotype
-  // colors alone.
-  hasSecondaryAlt: boolean
-  hasAltWithoutPhaseSet: boolean
-  hasUnphased: boolean
-  hasNoCall: boolean
   // The `encoding.color` the worker read each variant's `colorValues` for, so
   // a payload read for another field is never painted through the current
   // one's scale.
@@ -342,7 +310,6 @@ export async function variantCellData({
     rowNames,
     hasPhasedOrHaploid,
     colorRead: color,
-    ...paintedLegendFlags(Object.values(perRegionCellData)),
     hasConsequence,
     hasSvType,
     hasPhaseSet,
@@ -382,6 +349,7 @@ export async function executeVariantCellData(args: {
     transferables.add(data.featurePositions.buffer)
     transferables.add(data.featureInsertedBp.buffer)
     transferables.add(data.featureColorValues.buffer)
+    transferables.add(data.featureCategories.buffer)
   }
   return rpcResult(value, [...transferables])
 }

@@ -4,6 +4,7 @@ import { autorun } from 'mobx'
 
 import { featureInfoOf } from '../shared/cellDataFixtures.ts'
 import { ALT_HUE, cellFill } from '../shared/cellFill.ts'
+import { CELL_ALT } from '../shared/variantCellStyles.ts'
 import { getCachedABGR } from '../shared/variantWebglUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -38,10 +39,6 @@ function cellData(colorRead: CellHueRead): CellDataResult {
     samplePloidy: Object.fromEntries(SAMPLES.map(name => [name, 2])),
     rowNames: SAMPLES,
     hasPhasedOrHaploid: false,
-    hasSecondaryAlt: false,
-    hasAltWithoutPhaseSet: false,
-    hasUnphased: false,
-    hasNoCall: false,
     colorRead,
     hasConsequence: false,
     hasSvType: false,
@@ -60,9 +57,8 @@ function cellData(colorRead: CellHueRead): CellDataResult {
         cellFeatureIndices: new Uint32Array(3),
         numCells: 3,
         refCellCount: 0,
-        paintedCategories: 0,
+        featureCategories: Uint8Array.of(1 << CELL_ALT),
         colorValues: ['0.5'],
-        paintedColorValues: [0],
         featureColorValues: Uint32Array.of(1),
         featureInfo: [featureInfoOf('v0', { length: 100, svType: 'DEL' })],
         featurePositions: Uint32Array.from([100, 200]),

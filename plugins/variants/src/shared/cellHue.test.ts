@@ -54,7 +54,6 @@ function hue(encoding: ColorEncoding | undefined) {
       {
         featureColorValues: Uint32Array.from([v === undefined ? 0 : 1]),
         colorValues: v === undefined ? [] : [v],
-        paintedColorValues: [],
       },
       cellHueOf(encoding),
       true,

@@ -467,7 +467,6 @@ describe('a picked color field', () => {
             ...data.perRegionCellData[0]!,
             colorValues: ['HIGH', 'MODIFIER'],
             featureColorValues: Uint32Array.of(1, 2, 1),
-            paintedColorValues: [],
           },
         },
       },

@@ -146,17 +146,20 @@ Each channel carries one variable through one scale.
   colors come from a palette the SV scale does not touch — red cannot mean
   "deletion" in one mode and "secondary alt" in another.
 
-## The legend lists what was painted
+## The legend lists what was painted on screen
 
 `LinearVariantDisplay/variantLegend.ts` builds from the scale in use plus the absent-data
 categories present, and its swatches come from the same functions the cells do.
-`hasSecondaryAlt`, `hasAltWithoutPhaseSet`, `hasUnphased` and `hasNoCall` are the cell loops' own record
-of what they emitted (`paintedCategories`, one bit per `CELL_*`), merged across
-regions in `paintedLegendFlags`; `paintedDomain` keys the values a variant with
-an alt cell carried (`paintedColorValues`). "The site is multiallelic" is not
-the same claim as "a secondary-alt cell is in the fetched cell data", and the
-legend makes the second one. Fetched, not visible: the regular display fetches
-wider than the viewport.
+The cell loop records, per variant, the `CELL_*` categories its cells painted
+(`featureCategories`, one bit each). `keyedVariants.ts` reads those, the color
+values and the SV classes off the variants whose span touches the view's
+settled window (ADR-093), since the view fetches wider than it shows:
+`hasSecondaryAlt`, `hasAltWithoutPhaseSet`, `hasUnphased` and `hasNoCall`, and
+`paintedDomain`, the values a variant on screen with an alt cell carried.
+"The site is multiallelic" is not the same claim as "a secondary-alt cell is
+on screen", and the legend makes the second one. The columns layout fetches
+only the visible span, and the tables their own regions, so both read every
+variant fetched.
 
 ## Mixed ploidy: five consumers, one contract
 

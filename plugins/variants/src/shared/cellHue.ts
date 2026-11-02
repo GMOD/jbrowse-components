@@ -183,13 +183,11 @@ export function cellHueReaderOf(
 
 /**
  * What a cell loop read for the hue: `featureColorValues` is each variant's
- * one-based index into `colorValues`, 0 where it read none, and
- * `paintedColorValues` the indices a variant with an alt cell carried.
+ * one-based index into `colorValues`, 0 where it read none.
  */
 export interface CellHueValues {
   featureColorValues: Uint32Array
   colorValues: string[]
-  paintedColorValues: number[]
 }
 
 /**
@@ -199,9 +197,8 @@ export interface CellHueValues {
 export function makeHueValueTable() {
   const indexOf = new Map<string, number>()
   const values: string[] = []
-  const painted = new Set<number>()
   return {
-    add(value: string | undefined, altPainted: boolean) {
+    add(value: string | undefined) {
       if (value === undefined) {
         return 0
       }
@@ -210,13 +207,10 @@ export function makeHueValueTable() {
         index = values.push(value)
         indexOf.set(value, index)
       }
-      if (altPainted) {
-        painted.add(index - 1)
-      }
       return index
     },
     result() {
-      return { colorValues: values, paintedColorValues: [...painted] }
+      return { colorValues: values }
     },
   }
 }

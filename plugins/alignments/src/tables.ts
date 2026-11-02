@@ -51,6 +51,7 @@ import {
 import { withPreset } from '@jbrowse/core/util/colorScale'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
+import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import {
   SCALE_TYPE_LINEAR,
   SCALE_TYPE_LOG,
@@ -97,7 +98,6 @@ import {
   arcSlotsInWindows,
   hasOverlapInWindows,
   insertSizeBandInWindows,
-  keyWindowsOf,
   modificationTypesInWindows,
   readCategoriesInWindows,
   readMapqsInWindows,
@@ -234,7 +234,6 @@ import type {
 import type { LinearAlignmentsDisplayConfigModel as DisplayConf } from './LinearAlignmentsDisplay/configSchema.ts'
 import type { AlignmentsUnit } from './LinearAlignmentsDisplay/constants.ts'
 import type { LaidOutByGroup } from './LinearAlignmentsDisplay/groupLayout.ts'
-import type { KeyWindow } from './LinearAlignmentsDisplay/keyWindows.ts'
 import type { PileupMismatchesOpacitySnapshot } from './LinearAlignmentsDisplay/pileupMismatchesOpacityConfigSchema.ts'
 import type { RegionBounds } from './RenderAlignmentDataRPC/sortLayout.ts'
 import type {
@@ -261,6 +260,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
+import type { KeyWindow } from '@jbrowse/display-kit/keyWindows'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**

@@ -57,6 +57,7 @@ import {
   onTrackAssembly,
 } from '@jbrowse/display-kit/foundationView'
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
+import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
@@ -117,12 +118,13 @@ import {
   fadeCellColors,
   recordDensityAlpha,
 } from './densityFade.ts'
-import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
 import {
-  paintCellColors,
-  paintedColorKeys,
-  recordColorKeys,
-} from './paintCells.ts'
+  NO_KEYED_VARIANTS,
+  keyedVariantsFetched,
+  keyedVariantsInWindows,
+} from './keyedVariants.ts'
+import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
+import { colorKeysOf, paintCellColors } from './paintCells.ts'
 import { placeVariantRows } from './placeVariantRows.ts'
 import {
   installRecordsOpeningHeight,
@@ -603,38 +605,6 @@ export function stateModelFactory(
          */
         get hasPhasedOrHaploid() {
           return self.cellData?.hasPhasedOrHaploid ?? false
-        },
-        /**
-         * #getter
-         * Whether the worker painted a secondary-alt cell, which keys the
-         * "Other alt allele" legend entry. Painted, not possible.
-         */
-        get hasSecondaryAlt() {
-          return self.cellData?.hasSecondaryAlt ?? false
-        },
-        /**
-         * #getter
-         * Whether phase-set coloring painted an alt cell whose call names no
-         * phase set, which keys that cell's plain hue.
-         */
-        get hasAltWithoutPhaseSet() {
-          return self.cellData?.hasAltWithoutPhaseSet ?? false
-        },
-        /**
-         * #getter
-         * Whether the worker painted a black unphased cell (drives the
-         * "Unphased" legend entry).
-         */
-        get hasUnphased() {
-          return self.cellData?.hasUnphased ?? false
-        },
-        /**
-         * #getter
-         * Whether the worker painted a no-call cell (drives the "No call"
-         * legend entry).
-         */
-        get hasNoCall() {
-          return self.cellData?.hasNoCall ?? false
         },
         /**
          * #getter
@@ -1401,26 +1371,93 @@ export function stateModelFactory(
           )
         },
       }))
-      .views(self => ({
-        /**
-         * #getter
-         * The cell scale's domain values painted in the fetched cell data —
-         * the impact tiers or SV classes the legend lists: every record's
-         * while the records band paints them, which covers each alt cell's,
-         * else those an alt cell was painted for.
-         */
-        get paintedDomain(): string[] {
-          const { cellData } = self
-          const payloads = cellData
-            ? Object.values(cellData.perRegionCellData)
-            : []
-          return self.cellHueValuesRead
-            ? self.showRecords && !self.recordsColorBySvClass
-              ? recordColorKeys(payloads, self.cellHue)
-              : paintedColorKeys(payloads, self.cellHue)
-            : []
-        },
-      }))
+      .views(self => {
+        const keyWindows = stableIdentityComputed(() =>
+          self.view.initialized
+            ? keyWindowsOf(self.view.settledDynamicBlocks)
+            : [],
+        )
+        return {
+          /**
+           * #getter
+           * The bp each displayed region shows once a pan settles, which the
+           * key lists what is present in. Compared by value, so a pan that
+           * settles where it was rebuilds no key.
+           */
+          get keyWindows() {
+            return keyWindows.get()
+          },
+          /**
+           * #getter
+           * What the key lists, read off the variants on screen at genomic
+           * positions (the fetch is wider than the view) and off every
+           * fetched variant in columns, which fetch only what is shown.
+           */
+          get keyedVariants() {
+            const { cellData } = self
+            return cellData
+              ? self.atGenomicPositions
+                ? keyedVariantsInWindows(
+                    cellData.perRegionCellData,
+                    this.keyWindows,
+                  )
+                : keyedVariantsFetched(
+                    Object.values(cellData.perRegionCellData),
+                  )
+              : NO_KEYED_VARIANTS
+          },
+          /**
+           * #getter
+           * Whether a variant on screen painted a secondary-alt cell, which
+           * keys the "Other alt allele" legend entry. Painted, not possible.
+           */
+          get hasSecondaryAlt() {
+            return this.keyedVariants.hasSecondaryAlt
+          },
+          /**
+           * #getter
+           * Whether phase-set coloring painted an alt cell on screen whose
+           * call names no phase set, which keys that cell's plain hue.
+           */
+          get hasAltWithoutPhaseSet() {
+            return this.keyedVariants.hasAltWithoutPhaseSet
+          },
+          /**
+           * #getter
+           * Whether a variant on screen painted a black unphased cell (drives
+           * the "Unphased" legend entry).
+           */
+          get hasUnphased() {
+            return this.keyedVariants.hasUnphased
+          },
+          /**
+           * #getter
+           * Whether a variant on screen painted a no-call cell (drives the "No
+           * call" legend entry).
+           */
+          get hasNoCall() {
+            return this.keyedVariants.hasNoCall
+          },
+          /**
+           * #getter
+           * The cell scale's domain values painted on screen — the impact
+           * tiers or SV classes the legend lists: every record's while the
+           * records band paints them, which covers each alt cell's, else
+           * those an alt cell was painted for.
+           */
+          get paintedDomain(): string[] {
+            const { altColorValues, recordColorValues } = this.keyedVariants
+            return self.cellHueValuesRead
+              ? colorKeysOf(
+                  self.showRecords && !self.recordsColorBySvClass
+                    ? recordColorValues
+                    : altColorValues,
+                  self.cellHue,
+                )
+              : []
+          },
+        }
+      })
       .views(recordsRenderViews)
       .views(self => {
         // the last placement handed out, so a change that moves no row (a

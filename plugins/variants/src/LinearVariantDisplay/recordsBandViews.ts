@@ -51,7 +51,7 @@ import {
   recordSpans,
   recordsDisplayConfig,
 } from './recordsRenderData.ts'
-import { svClassColors, svClassScale, svClassesOf } from './recordsSvColors.ts'
+import { svClassColors, svClassScale } from './recordsSvColors.ts'
 import {
   DEFAULT_RECORDS_HEIGHT,
   RECORDS_BAND_BOUNDS,
@@ -64,6 +64,7 @@ import type { CellHue, cellColorEncodingOf } from '../shared/cellHue.ts'
 import type { RecordFieldReads } from '../shared/recordFields.ts'
 import type { ProcessedSource } from '../shared/types.ts'
 import type { LinearVariantDisplayConfigModel } from './configSchema.ts'
+import type { KeyedVariants } from './keyedVariants.ts'
 import type { RecordCarriers } from './recordCarriers.ts'
 import type { RecordsLabels } from './recordsRenderData.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -375,6 +376,7 @@ interface RecordsRenderHost
   cellData: CellDataResult | undefined
   cellHue: CellHue
   cellHueValuesRead: boolean
+  keyedVariants: KeyedVariants
   sources: ProcessedSource[]
   view: LinearGenomeViewModel
   canRender: boolean
@@ -604,19 +606,14 @@ export function recordsRenderViews(self: RecordsRenderHost) {
     },
     /**
      * #getter
-     * The key to the records band's SV classes, the ones its records
-     * hold, while it colors by them.
+     * The key to the records band's SV classes, the ones its records on
+     * screen hold, while it colors by them.
      */
     get recordsColorScales(): ColorScale[] {
-      const { cellData } = self
-      return cellData && self.showRecords && self.recordsColorBySvClass
-        ? [
-            svClassScale(
-              Object.values(cellData.perRegionCellData).flatMap(d => [
-                ...svClassesOf(d.featureInfo),
-              ]),
-            ),
-          ].filter(scale => scale.entries.length > 0)
+      return self.showRecords && self.recordsColorBySvClass
+        ? [svClassScale(self.keyedVariants.svTypes)].filter(
+            scale => scale.entries.length > 0,
+          )
         : []
     },
   }

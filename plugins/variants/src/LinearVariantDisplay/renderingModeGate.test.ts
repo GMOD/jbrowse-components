@@ -24,10 +24,6 @@ function cellData({
   return {
     samplePloidy: { S0: ploidy },
     rowNames: ['S0'],
-    hasSecondaryAlt: false,
-    hasAltWithoutPhaseSet: false,
-    hasUnphased: false,
-    hasNoCall: false,
     colorRead: undefined,
     hasConsequence: false,
     hasSvType: false,

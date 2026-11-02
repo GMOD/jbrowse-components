@@ -108,38 +108,8 @@ export function paintCellColors(
   return cellColors
 }
 
-/** The key rows the values an alt cell carried file under. */
-export function paintedColorKeys(
-  payloads: Iterable<Pick<CellHueValues, 'colorValues' | 'paintedColorValues'>>,
-  hue: CellHue,
-) {
-  const keys = new Set<string>()
+/** The key rows color values file under. */
+export function colorKeysOf(values: readonly string[], hue: CellHue) {
   const { keyOf } = hue
-  if (keyOf) {
-    for (const { colorValues, paintedColorValues } of payloads) {
-      for (const v of paintedColorValues) {
-        keys.add(keyOf(colorValues[v]!))
-      }
-    }
-  }
-  return [...keys]
-}
-
-/** The key rows every record's value files under, what the records band paints. */
-export function recordColorKeys(
-  payloads: Iterable<Pick<CellHueValues, 'colorValues' | 'featureColorValues'>>,
-  hue: CellHue,
-) {
-  const keys = new Set<string>()
-  const { keyOf } = hue
-  if (keyOf) {
-    for (const { colorValues, featureColorValues } of payloads) {
-      for (const v of featureColorValues) {
-        if (v > 0) {
-          keys.add(keyOf(colorValues[v - 1]!))
-        }
-      }
-    }
-  }
-  return [...keys]
+  return keyOf ? [...new Set(values.map(v => keyOf(v)))] : []
 }

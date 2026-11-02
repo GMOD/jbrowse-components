@@ -34,7 +34,7 @@ interface VariantCellStyle {
 }
 
 const CELL_REF = 0
-const CELL_ALT = 1
+export const CELL_ALT = 1
 export const CELL_ALT_SECONDARY = 2
 export const CELL_NO_CALL = 3
 export const CELL_UNPHASED = 4
