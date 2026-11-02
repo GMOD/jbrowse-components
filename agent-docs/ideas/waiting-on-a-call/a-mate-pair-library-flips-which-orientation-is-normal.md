@@ -1,6 +1,6 @@
 ---
 name: a-mate-pair-library-flips-which-orientation-is-normal
-description: An RF mate-pair library's true pairs point outward, and the alignments display calls LR normal everywhere, so every true pair paints as abnormal RL and the read cloud keeps all of them as SV evidence. Detecting the library is a few lines; the cost is that LR-is-normal is spelled into the user-facing color levels, the GPU palette, the connection kinds and every label table. The call is whether the data is worth a truthful pairLR category.
+description: An RF mate-pair library's true pairs point outward, and the alignments display calls LR normal everywhere, so every true pair paints as abnormal RL and the read cloud keeps all of them as SV evidence. Detection belongs per library, as IGV does it; the cost is that LR-is-normal is spelled into the color levels, labels, export and every concordance predicate. A cheaper honest design resolves only the levels and labels against the library. Waits on someone using RF data; GIAB HG002's 6 kb mate-pair BAM is the test case.
 ---
 
 # A mate-pair library flips which orientation is normal
@@ -13,49 +13,82 @@ inserts) read outward from the circularization junction, so a true pair is
 - `isConcordantFRPair` (`features/arcs/arcColors.ts`) and `isConcordantPairRead`
   (`alignments-core/src/orientation.ts`) only pass LR, so the read cloud drops
   nothing and every true pair stays on screen as an arc.
-- The library's paired-end contaminants (short FR inserts) read as normal.
 
-The insert-size side already copes: the band is built from the aligner's proper
+What already copes: the insert-size band is built from the aligner's proper
 pairs, which are RF on such a library, and `widenBandToEventScale` is a ratio.
+The library's paired-end contaminants (~4% on GIAB HG002, TLEN median ~320
+against a ~6.3 kb proper median) are improper under bwa and sit under the band,
+so `pairCategory` already paints them `shortInsert`.
 
-## Detection is cheap
+Not every mate-pair BAM is RF: NxTrim reverse-complements mate-pair reads to FR
+by default, and those BAMs draw correctly today as FR long inserts.
 
-No setting is needed. The expected orientation is whichever of LR and RL more
-primary proper pairs in the fetched sample have, counted beside
-`computePairedInsertSizeStats` in `executeRenderAlignmentData.ts`. An FR library
-never flips, because an aligner does not mark RL pairs proper on one.
+## Detection: per library, not per region
+
+IGV detects the orientation per library (read group `LB`), pooled across loads:
+over 100 proper pairs, majority of FR / RF / FF, else FR
+(`PEStats.computeExpectedOrientation`). There is no preference for it.
+
+Per fetched region is the wrong unit: the RPC runs per displayed region, a
+low-coverage window falls back to FR on its own, the legend needs one answer,
+and a merged PE+MP BAM would follow whichever library is deeper there. Settle
+it per library on the main thread and send it with the RPC; an `auto | fr | rf`
+override covers BAMs whose aligner set no useful proper flags.
+
+What the majority counts depends on the aligner:
+
+- **bwa-mem** estimates all four orientations per input batch and calls any
+  with ≥10 pairs and ≥5% of the largest proper (`bwamem_pair.c` `MIN_DIR_CNT`,
+  `MIN_DIR_RATIO`). An MP library over 5% PE contamination has proper pairs in
+  both orientations; the majority flips only past 50%.
+- **minimap2 `-x sr`** pairs FR only. On an RF library its proper pairs are the
+  contaminants, so detection says FR, which at least agrees with the aligner.
 
 ## The cost is the vocabulary
 
-LR-is-normal is not one predicate. It is spelled into:
+LR-is-normal is not one predicate. Counted from source, a truthful `pairLR`
+category touches 25–30 files before tests and generated docs:
 
-- **User-facing color levels.** `PAIR_COLOR_LEVELS` in `shared/alignmentsColor.ts`
-  gives `RL`, `RR`, `LL` as `scale.domain` values; there is no `LR` level.
-- **The GPU palette.** `pairRL` is a slot in `ARC_SLOT_CATEGORY`
-  (`shaders/palettes.ts`) and in `read.slang`.
-- **Connection kinds.** `isAbnormalConnection` (`alignments-core/readGroupConnections.ts`)
-  lists `pairRL`, read by the breakpoint split view too.
-- **Labels.** `PAIR_DIRECTION_LABELS`, `CONNECTION_LABELS`, the legend's
-  `CATEGORY_LEGEND`, the tooltip's `PAIR_ORIENTATION_NAMES` /
-  `ABNORMAL_ORIENTATION_DESCRIPTIONS`, and the group-by chips.
+- `ReadColorCategory` / `READ_COLOR_CATEGORY` (`colorUtils.ts`), `swatchPaletteKeys`,
+  the `AlignmentFill` theme keys (`palette.ts`), `ARC_SLOT_CATEGORY`.
+  **Naming trap:** `colorPairLR` is already the neutral grey of a normal pair.
+- `PAIR_COLOR_LEVELS` (`alignmentsColor.ts`, `scale.domain` has `RL RR LL`, no
+  `LR`), `CATEGORY_LEGEND`, `PAIR_DIRECTION_LABELS` (whose LR label says
+  "Normal"), the tooltip tables, `isAbnormalConnection` and its callers,
+  `sortLayout`'s rank.
+- `isConcordantFRPair`, `pairCategory`, and `isConcordantPairRead` with its
+  callers (`readCategoryBits`, `pairing`, arcs `compute`, the breakpoint split
+  view's `readChains`), plus the Feature-only helpers (`readCategoryBitsOf`,
+  `pairingKey`, `selectChains`) that would need the expected direction before
+  chain selection.
 
-Two designs:
+The shader part is the cheap part: one `RC_PAIR_LR` constant and a
+`READ_CATEGORY_SLOTS` bump in `read.slang`. A `pairLR` connection kind already
+exists in `connectionLabels.ts`.
 
-- **Re-encode at the source.** `pairOrientationToNum` takes the detected library
-  and swaps LR/RL, so slot 1 means "expected". Every predicate stays as it is,
-  and only the labels need the library. Cheap, but a `scale.domain: ['RL']` would
-  then name physically-LR pairs on RF data, and the level names would lie.
-- **Keep the letters true.** Add a `pairLR` category (a level, a palette slot
-  and a `read.slang` change), and pass the expected direction to every
-  "is this normal" predicate. Truthful, and medium-sized: about fifteen files plus
-  a shader recompile.
+## Three designs
 
-The library is per fetched region, so the main-thread surfaces (legend, connection
-legend) also need one answer across regions.
+- **(a) Swap LR/RL at encoding** (`pairOrientationToNum`). IGV does this, and it
+  is honest there only because IGV's LR/RL are internal color keys. Here the
+  letters leave the code: `scale.domain`, the tooltip
+  (`PAIR_ORIENTATION_NAMES`), the group-by chips, and the table/R export
+  (`tables.ts`, `pairDirectionOfNum`) would all name physically-LR pairs RL.
+- **(b) A truthful `pairLR` category**, as costed above.
+- **(c) Truthful per-read codes, library-resolved meaning.** The abnormal slot
+  means "faces against the library"; only the level→category table, the labels
+  and the concordance predicates read the detected library. No new palette key
+  or GPU slot. Breaks only when one view mixes FR and RF libraries. Not yet
+  prototyped; try it before (b).
+
+IGV also swaps the LL/RR colors under RF (`AlignmentRenderer.java`'s RF table),
+the consistent frame if both reads are reverse-complemented. With truthful
+letters it is not needed.
 
 ## The call
 
-The second design, if mate-pair data has users. The modality is largely retired
-(long reads and Hi-C replaced it), so it waits on someone bringing an RF BAM.
-IGV's "expected orientation" preference also swaps the LL/RR colors under RF;
-keeping the letters true does not need that.
+Keep parked: the Nextera mate-pair kit is discontinued and no current protocol
+yields RF or FF proper pairs (Hi-C pipelines usually set no proper flags). The
+value is legacy SRA and GIAB data. The test BAM when it is picked up: GIAB HG002
+6 kb Nextera mate pair, `bwa mem` defaults, streamable from
+`ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/NIST_Stanford_Illumina_6kb_matepair/bams/`
+(every proper pair RL across five sampled windows, 2–200 kb).
