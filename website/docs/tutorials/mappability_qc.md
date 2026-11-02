@@ -9,23 +9,26 @@ tutorial_category: Structural variation
 ---
 
 A pileup looks the same whether its reads belong at a locus or merely landed
-there. At the _SMN1_/_SMN2_ duplication on chromosome 5 we:
+there. Where two copies of a sequence are near-identical, an aligner cannot tell
+which copy a read came from, so the reads, the coverage and any call made from
+them are unreliable there. We check a locus for this at the _SMN1_/_SMN2_
+duplication on chromosome 5. We:
 
-- load hg38's mappability, gnomAD coverage and problematic-region tracks from
-  genomes.jbrowse.org beside a public 1000 Genomes CRAM colored by mapping
+- load hg38's Umap mappability as a quantitative track drawn at its bin minimum,
+  beside gnomAD coverage, GIAB's problematic regions and long-read SV calls
+- add a public 1000 Genomes CRAM as an alignments track colored by mapping
   quality
-- open the same locus on T2T-CHM13 to see whether the finished assembly resolves
-  the duplication
-- compare depth and mapping quality against a control window from the same
-  sample
-- add long-read SV calls across the region
+- open a synteny view of UCSC's hg38-to-T2T-CHM13 liftOver chains over the
+  duplication
+- repeat the check at a locus of your own beside a control window
 
 ## Prerequisites
 
 - a JBrowse to open the hosted hg38 config in ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop))
-- to re-measure the numbers on this page, the tools listed under
-  [Reproduce it end to end](#reproduce-it-end-to-end)
+- `samtools` and `bigWigToBedGraph`, for the counts at your own locus, and the
+  tools listed under [Reproduce it end to end](#reproduce-it-end-to-end) for the
+  script
 
 ## The data
 
@@ -35,14 +38,15 @@ from the 1000 Genomes high-coverage short-read release and its ONT long-read
 release ([Gustafson et al. 2024](https://doi.org/10.1101/gr.279273.124)).
 
 You don't need these files to follow the page: the track configs below read the
-hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results. Applying the mappability check to another locus repeats
-it on your own locus and reads.
+hosted results. The [build script](#reproduce-it-end-to-end) streams them to
+take its counts.
+[Applying the mappability check to another locus](#applying-the-mappability-check-to-another-locus)
+runs the same check on your own locus and reads.
 
-| What it is                                                                                                                        | File                                                                                                                                                                                                  |
-| --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GM18501 ONT long reads aligned to GRCh38, counted here since the bucket serves no CORS headers and so cannot be loaded as a track | [GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam](https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam)    |
-| The same sample aligned to T2T-CHM13                                                                                              | [GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam](https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_CHM13/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam) |
+| What it is                                                                                                                         | File                                                                                                                                                                                                  |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GM18501 ONT long reads aligned to GRCh38, which the script counts; the bucket serves no CORS headers, so it cannot load as a track | [GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam](https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_HG38/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-hg38-R9-LSK110-guppy-sup-5mC.phased.bam)    |
+| The same sample aligned to T2T-CHM13                                                                                               | [GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam](https://s3.amazonaws.com/1000g-ont/PROCESSED_DATA/ALIGNED_TO_CHM13/MINIMAP2_ALIGNED_BAMS/GM18501-ONT-chm13-R9-LSK110-guppy-sup-5mC.phased.bam) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -172,10 +176,9 @@ Open `chr5:69,200,000-71,700,000` for the whole region, and a second view at
 <Figure src="/img/qc/smn_block_and_reads.png" caption="Top: the SMN region with coverage and difficult-region tracks. Below: reads colored by mapping quality." links="Open the wide view=qc/smn_problematic_regions,Open the read view=qc/smn_read_placement" />
 
 GIAB flags two long intervals, much larger than the gene, and the gnomAD track
-stays low across both. Beyond them, GIAB flags nothing larger than a few
-kilobases for megabases in either direction. In the read view, the reads stay at
-MAPQ 0 until well past the end of _SMN1_, where the Umap track steps up at the
-same coordinate as the gnomAD coverage.
+stays low across both. The long-read SV track is empty across them. In the read
+view, the reads stay at MAPQ 0 until well past the end of _SMN1_, where the Umap
+track steps up at the same coordinate as the gnomAD coverage.
 
 Zoom the read view to the SMN cassette, `chr5:70,889,000-70,989,000`.
 
@@ -226,43 +229,20 @@ the hs1 assembly and the chain file, whose query is the genome it lifts to:
 
 The gene order is the same in both assemblies, _SMN2_ first and then _SMN1_. The
 crossing chains join each GRCh38 copy to both CHM13 copies, so CHM13 has the
-same duplication, with the two genes closer together.
-
-Long reads test whether T2T-CHM13 places reads at _SMN1_ better than GRCh38
-does. The 1000 Genomes ONT release aligned GM18501 to both references with one
-minimap2 pipeline, and `scan_mappability_qc.sh` prints the share of its records
-over _SMN1_ at MAPQ 0 and MAPQ 60 on each. The long reads place better than the
-short reads at the same gene, and the MAPQ 0 share is the same on both
-references.
-
-## Depth and MAPQ at SMN1 and at a control window
-
-`scan_mappability_qc.sh` counts the reads in equal windows over _SMN1_ and over
-the right-hand end of the read view, from the same library, and finds the same
-depth in both. A coverage track with no MAPQ filter draws flat across both. The
-MAPQ 0 share separates them, with most reads at _SMN1_ at MAPQ 0 and almost none
-at the control; the gnomAD depth over _SMN1_ falls to a fraction of the
-control's for the same reason.
-
-## Long-read SV calls across the SMN1 and SMN2 region
-
-The long-read SV track in the wide view is empty across the region.
-`scan_mappability_qc.sh` counts calls over the flagged region and an equal-width
-window on either side, and finds few inside and many on both sides, where the
-older Database of Genomic Variants (DGV) merged catalogue has records
-throughout.
-
-Across the whole chromosome, both catalogues put a larger share of their calls
-inside the flagged regions than those regions' share of chr5. Segmental
-duplications are copy-number variable, so real variation and artifacts both
-concentrate there.
+same duplication, with the two genes closer together, and a read from either
+copy still has two places to go.
 
 ## Applying the mappability check to another locus
 
-For another hg38 locus, turn on the four tracks above with the same Umap
-settings, add your reads colored by mapping quality, and put a second window of
-the same width, from the same sample and outside every flagged interval, beside
-the first.
+The same check runs on any hg38 locus and your own reads, read against a control
+window: depth alone can look the same at a duplicated locus and an ordinary one,
+and the share of reads at MAPQ 0 separates them.
+
+- Turn on the four tracks above, with the same Umap settings
+- Add your reads with the `uri` in the read track config swapped for your BAM or
+  CRAM, colored by mapping quality
+- Open a second window of the same width, from the same sample and outside every
+  flagged interval, beside the first
 
 In numbers, the comparison is three `samtools` counts per window, with `-q` a
 minimum MAPQ:
@@ -293,9 +273,8 @@ Run both on the control window too, at the same width.
 ## Reproduce it end to end
 
 [`scan_mappability_qc.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/scan_mappability_qc.sh)
-produces every number on this page from the files the figures draw. It asks
-whether a read can be placed at a locus several ways, and reads each answer
-against a control:
+measures the SMN region from the files the figures draw. It asks whether a read
+can be placed at a locus several ways, and reads each answer against a control:
 
 1. Over _SMN1_, _SMN2_ and two controls, it measures how much of each window the
    Umap track has a value for, gnomAD's mean depth, and the share of NA12878's
@@ -320,8 +299,7 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash scan_mappability_qc.sh
 ```
 
-The script prints its sections in this page's order, and measures a locus added
-to its `LOCI` list the same way.
+The script measures a locus added to its `LOCI` list the same way.
 
 ## See also
 
@@ -346,5 +324,5 @@ to its `LOCI` list the same way.
   the source of the k100 mappability track.
 - Gustafson et al. (2024).
   [High-coverage nanopore sequencing of samples from the 1000 Genomes Project to build a comprehensive catalog of human genetic variation](https://doi.org/10.1101/gr.279273.124),
-  the source of both the long-read SV callset in the wide figure and the GRCh38
-  / T2T-CHM13 read counts above.
+  the source of both the long-read SV callset in the wide figure and the long
+  reads the script counts on GRCh38 and T2T-CHM13.

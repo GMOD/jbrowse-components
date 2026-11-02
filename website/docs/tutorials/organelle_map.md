@@ -14,9 +14,9 @@ ring and the genes along it in a row per strand, colored by feature type. The
 same steps make a map of any small circular sequence that NCBI annotates, from a
 chloroplast to a plasmid. We:
 
-- download the sequence and its genes
-- load the genome, marked as circular so the ring closes with no gap at its
-  origin, and the genes as a feature track
+- fetch a GenBank accession's FASTA and GFF3 from NCBI
+- load the genome as an assembly marked circular, so the ring closes with no gap
+  at its origin, and the genes as a feature track
 - open the genome in the circular view and color the genes by feature type
 - open _ND6_ and its neighbours in a linear view
 
@@ -121,8 +121,14 @@ both:
 - `geneticCodes` translates it with NCBI's vertebrate mitochondrial code, table
   2, wherever JBrowse shows a protein.
 
+The `uri` points at a hosted copy of the same FASTA. For your own accession,
+point it at your `genome.fa`, put your sequence's name in both settings, and
+pick its
+[NCBI genetic code](https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi)
+(11 for a plastid or a bacterial plasmid).
+
 We'll sort, compress and index the GFF3, keeping the pragma at the top
-([Quickstart](/docs/quickstart_web) has the general recipe):
+([Quickstart](/docs/quickstart_web#gff3-and-gtf) has the general recipe):
 
 ```bash
 jbrowse sort-gff genes.gff3 | bgzip > genes.gff.gz
@@ -136,7 +142,8 @@ In [grammar-of-graphics](/docs/config_guides/mark_display) terms, the gene
 track's `facet` splits it into a section per `strand`, and its `encoding.color`
 is a color scale mapping the GFF3 `type` field to colors. The name label falls
 back through the GFF3 attributes, so a record with no `gene` or `product`, like
-the D-loop, takes its `gbkey`:
+the D-loop, takes its `gbkey`. For your own file, swap the `uri` for
+`genes.gff.gz`:
 
 ```json addtrack
 {

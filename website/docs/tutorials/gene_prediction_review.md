@@ -9,14 +9,20 @@ guide_category: Tutorials
 tutorial_category: Genes & annotation
 ---
 
-We compare gene predictions from Tiberius, a deep-learning gene finder, on human
-chr22 with the GENCODE annotation, and:
+A gene finder run on a genome returns thousands of gene models, and most of them
+agree with the existing annotation. A person has to look at each model that
+disagrees, such as two genes predicted as one, a gene with different exons, or a
+gene where nothing was annotated. We compare the predictions of Tiberius, a
+deep-learning gene finder, with GENCODE on human chr22, and turn the
+disagreements into a review page that links each one back into JBrowse. We:
 
-- sort the models that disagree into classes
-- build a static review page with one card per model, each linking back into
-  JBrowse
-- use the page's cards and filters, and the Disagreements track of junctions
-  that differ from GENCODE
+- load the predictions and GENCODE as two gene tracks over a model that merges
+  two genes
+- sort every model against GENCODE into classes with the review pipeline
+- build the static review page, with a JBrowse capture and an **Open in
+  JBrowse** link per model
+- review the cards, and read the Disagreements track the pipeline adds under
+  each prediction
 
 The pipeline is
 [cmdcolin/gene-review-portal](https://github.com/cmdcolin/gene-review-portal),
@@ -25,21 +31,21 @@ and its README documents every option.
 ## Prerequisites
 
 - an existing annotation of the genome, to compare the predictions against
-- to build a portal over your own genome: Node 23+, pnpm, htslib for `tabix`,
-  and the JBrowse CLI
+- to build a portal over your own genome: Node 23.6 or newer, pnpm, htslib
+  (`bgzip`, `tabix`), `samtools`, and the JBrowse CLI
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli START -->
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli START -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install tabix nodejs
+sudo apt install samtools tabix nodejs
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge htslib nodejs
+conda install -c bioconda -c conda-forge samtools htslib nodejs
 # any platform
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli END -->
+<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli END -->
 
 ## The data
 
@@ -48,8 +54,9 @@ Tiberius predictions over GRCh38
 against GENCODE 47 and the hg38 reference.
 
 Nothing to download: the track configs and commands below read these files by
-URL. _Building the review portal with make-portal.mjs_ builds the same portal
-over your own genome.
+URL.
+[Building the review portal](#building-the-review-portal-with-make-portalmjs)
+takes your own prediction, annotation and genome in their place.
 
 <details>
 <summary>The files</summary>
@@ -66,8 +73,8 @@ over your own genome.
 
 We'll load the GRCh38 sequence the predictions were made on, then the two
 annotations. Each annotation is a GFF3 that is bgzipped, sorted and
-tabix-indexed with its `.tbi` beside it ([prep](/docs/quickstart_web)), and uses
-the assembly's refNames.
+tabix-indexed with its `.tbi` beside it
+([prep](/docs/quickstart_web#gff3-and-gtf)), and uses the assembly's refNames.
 
 ```json addassembly
 {
@@ -80,40 +87,25 @@ the assembly's refNames.
 }
 ```
 
-The figures show GENCODE's annotation as a track:
-
-```json addtrack
+```json addtrack loc=chr22:49,987,402-50,067,759
 {
-  "trackId": "gencode_47",
-  "name": "Gencode v47",
-  "uri": "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz",
+  "trackId": "tiberius_grch38",
+  "name": "Tiberius gene predictions",
+  "uri": "https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz",
   "assemblyNames": ["hg38"]
 }
 ```
 
-```json addtrack loc=chr22:49,987,402-50,067,759
-{
-  "type": "FeatureTrack",
-  "trackId": "tiberius",
-  "name": "Tiberius predictions",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz"
-  }
-}
-```
+GENCODE's GFF3 also has region features that would draw as a bar above the
+genes, so the `geneLike` filter keeps the genes and their transcripts:
 
 ```json addtrack loc=chr22:49,987,402-50,067,759
 {
-  "type": "FeatureTrack",
-  "trackId": "gencode_v47",
-  "name": "GENCODE 47",
+  "trackId": "gencode_47",
+  "name": "Gencode v47",
+  "uri": "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz",
   "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz"
-  }
+  "displayDefaults": { "filter": ["geneLike"] }
 }
 ```
 
@@ -127,9 +119,9 @@ and `ENSG00000138892` for _TTLL8_.
 
 ## Sorting Tiberius models into five classes against GENCODE
 
-The portal compares each Tiberius model on chr22 with GENCODE and puts it in one
-of five classes: Agrees and four classes of disagreement. Only the four
-disagreement classes get a card.
+The merge above is one kind of disagreement. The portal compares each Tiberius
+model on chr22 with GENCODE and puts it in one of five classes: Agrees and four
+classes of disagreement. Only the four disagreement classes get a card.
 
 | Class              | What it means                                                     | On chr22                                                   | What an annotator does   |
 | ------------------ | ----------------------------------------------------------------- | ---------------------------------------------------------- | ------------------------ |
@@ -144,9 +136,9 @@ The portal applies these rules, and the _PI4KA_ control exercises them:
 - **A shared junction** is an intron of one of the gene's transcripts.
 - **Exons are compared** with genes on the same strand.
 - **A merge** counts only when the genes it joins do not overlap each other.
-  _PI4KA_ spans 152 kb on the minus strand with _SERPIND1_ inside one of its
-  introns on the plus strand; Tiberius predicts _PI4KA_ correctly, and the
-  portal leaves it off the list.
+  _PI4KA_ is on the minus strand with _SERPIND1_ inside one of its introns on
+  the plus strand; Tiberius predicts _PI4KA_ correctly, and the portal leaves it
+  off the list.
 - **GENCODE readthrough genes** (one transcript spanning two neighbours) such as
   `CHKB-CPT1B` overlap the genes they join, so the portal skips them.
 
@@ -161,16 +153,22 @@ pnpm install
 ```
 
 `make-portal.mjs` reads the two annotations, classifies every model, captures a
-JBrowse view at each candidate and writes the page:
+JBrowse view at each candidate and writes the page. Each input is a local path
+or a URL; for the chr22 example, pass the three URLs from the data table:
 
 ```bash
+# --prediction: the gene finder's GFF3; --reference: the annotation to compare
+#   it with; --fasta: the genome both annotate
+# --assembly: the name the page's JBrowse config gives that genome
 # --region: scan one chromosome, fetching the annotations with tabix
 # --max: candidates kept per class
 # --with-app: bundle JBrowse, so the output needs no network
+# add --aliases <file> when the annotations and the FASTA name chromosomes
+#   differently (chr22 against 22)
 node bin/make-portal.mjs \
-  --prediction https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz \
-  --reference https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz \
-  --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
+  --prediction predictions.gff3.gz \
+  --reference reference.gff3.gz \
+  --fasta genome.fa.gz \
   --assembly hg38 --region chr22 --max 3 \
   --with-app --out ./portal
 ```
@@ -183,14 +181,14 @@ and in the links; repeat it for more BAMs, and label each with `--rnaseq-name`.
 Reads across the exons of a novel locus support it as a gene.
 
 The [example portal](https://jbrowse.org/demos/tiberius_review/) is this build
-with `--rnaseq` run on Human Brain Reference and Universal Human Reference BAMs
-from the
+run against the hg38 hub's GENCODE 49, with `--rnaseq` on Human Brain Reference
+and Universal Human Reference BAMs from the
 [Griffith lab's RNA-seq course data](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/).
 
 ## Using the review page: cards, filters and verdicts
 
-The [example portal](https://jbrowse.org/demos/tiberius_review/) covers chr22,
-with one card per model:
+Open the [example portal](https://jbrowse.org/demos/tiberius_review/), or
+`npx serve ./portal` for your own build. It has one card per model:
 
 - **Card** shows the class, the reference genes, the locus and a capture of the
   two annotations
@@ -198,10 +196,11 @@ with one card per model:
 - **Verdict buttons** record what you decide
 - **Open in JBrowse** opens the same view live
 
-Verdicts stay in your browser, and **Export decisions** writes them out as TSV.
-Building with `--apollo <url>` adds a second link to every card that opens the
-same window in [Apollo](https://github.com/GMOD/Apollo3), the annotation editor,
-and an `apollo_url` column to the exported TSV.
+Verdicts stay in your browser. **Export** writes them out as TSV, and **Import**
+reads that TSV back on another browser. Building with `--apollo <url>` adds a
+second link to every card that opens the same window in
+[Apollo](https://github.com/GMOD/Apollo3), the annotation editor, and an
+`apollo_url` column to the exported TSV.
 
 ## The Disagreements track: junctions that differ from GENCODE
 
