@@ -13,8 +13,10 @@ breast tumors we:
 
 - load the segment BED as a multi-row feature track, one row per tumor colored
   by gain or loss
-- cluster the rows by copy-number profile
-- add a gain and loss frequency track, and split it by clinical group
+- cluster the rows by copy-number profile over _ERBB2_
+- add a quantitative track of gain and loss frequency above the rows
+- split the frequency by receptor subtype as a mark display with one row per
+  group
 
 ## Prerequisites
 
@@ -307,6 +309,12 @@ Two options adjust the split:
   script names each group it dropped.
 - `--groups` takes any other column for a different split: `histology` and
   `stage` work for any TCGA project, while `subtype` is breast specific.
+
+Copy number sorts the cohort by amplification, and the 17q amplicon picks out
+the HER2+ row. The point mutations sort a group the segments cannot separate:
+the [mutation cohort](/docs/tutorials/tcga_cohort_mutations) facets the same
+tumors by the same clinical table, and its recurrence track puts _TP53_
+mutations in the triple-negative row.
 
 ## Use your own cohort
 

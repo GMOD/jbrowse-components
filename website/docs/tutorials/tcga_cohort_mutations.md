@@ -7,13 +7,19 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-We turn a TCGA project's somatic mutation calls into one matrix, each column a
-distinct mutation and each row a tumor. We:
+Breast tumors of one subtype tend to carry point mutations in the same genes.
+The [copy-number cohort](/docs/tutorials/tcga_cohort_cnv) sorts the TCGA breast
+tumors by amplification; their point mutations sort the groups the segments
+cannot separate. We turn the project's somatic mutation calls into one matrix,
+each column a distinct mutation and each row a tumor, and read it at _CDH1_ and
+_PIK3CA_. We:
 
-- load the cohort VCF as a multi-sample variant track
-- facet the rows by a clinical field, receptor status or stage, so the mutations
-  a subtype shares line up
-- add a track of mutation frequency per gene
+- load the cohort VCF, merged from the GDC's mutation files, as a multi-sample
+  variant track in matrix layout
+- facet the rows by histology over _CDH1_'s exons, with introns collapsed from
+  the gene's menu
+- facet the rows by receptor subtype over _PIK3CA_
+- add a multi-row quantitative track of mutation frequency per gene and subtype
 
 ## Prerequisites
 
@@ -54,11 +60,13 @@ multi-sample file, one column per tumor:
 chr3   179234297 .   A   G    GENE=PIK3CA;HGVSP=p.H1047R... GT:AD:DP  0/1:81,29:110     0/0
 ```
 
-Two conventions affect how to read the matrix:
+Three conventions affect how to read the matrix:
 
 - `0/0` marks a site the caller did not call, since a MAF has no coverage record
   for one
 - every somatic call is written het, because a MAF gives no ploidy
+- the GDC's open mutation calls cover the exome only, so the matrix reads at
+  gene scale
 
 Read counts are kept in `AD`/`DP`. `INFO/CSQ` re-encodes the VEP columns from
 the MAF (`Consequence`, `IMPACT`, `HGVSp_Short`, SIFT, PolyPhen), so the track
@@ -207,9 +215,6 @@ Loss of E-cadherin, the protein _CDH1_ encodes, is the defining lesion of
 lobular breast cancer
 ([Ciriello et al. 2015](https://doi.org/10.1016/j.cell.2015.09.033)).
 
-The GDC's open mutation calls cover the exome only, so every figure here is
-gene-scale.
-
 ## Facet rows by receptor subtype
 
 Setting `facet` and `rowColor` to `subtype` instead bands the rows by receptor
@@ -318,11 +323,24 @@ On the matrix:
 ## Use your own cohort
 
 [`maf_to_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_vcf.py)
-takes any directory of MAFs ([vcf2maf](https://github.com/mskcc/vcf2maf) output,
-cBioPortal study downloads, your own caller) whose rows have `Chromosome`,
-`Start_Position`, the two allele columns, `Tumor_Sample_Barcode`, and `CONTEXT`.
-A cohort that never passed through a MAF needs a multi-sample somatic VCF. For
-grouping, any TSV whose first column matches the VCF's sample names works.
+merges a directory of MAFs ([vcf2maf](https://github.com/mskcc/vcf2maf) output,
+cBioPortal study downloads, your own caller) into the cohort VCF:
+
+<!-- from: scripts/build_tcga_cohort_mutations.sh -->
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/maf_to_vcf.py
+# --sample-types 01: keep primary tumors, read off each Tumor_Sample_Barcode
+python3 maf_to_vcf.py mafs/ cohort.vcf --sample-types 01
+bgzip cohort.vcf && tabix -p vcf cohort.vcf.gz
+```
+
+Each MAF row needs `Chromosome`, `Start_Position`, the two allele columns,
+`Tumor_Sample_Barcode` and `CONTEXT`. The script reads `Tumor_Sample_Barcode` as
+a TCGA sample barcode, whose 14th and 15th characters give the sample type that
+`--sample-types` keeps, so name your tumors in that form. A cohort that never
+passed through a MAF needs a multi-sample somatic VCF. For faceting, any TSV
+whose first column matches the VCF's sample names works as `samplesTsvLocation`.
 
 ## Reproduce it end to end
 
