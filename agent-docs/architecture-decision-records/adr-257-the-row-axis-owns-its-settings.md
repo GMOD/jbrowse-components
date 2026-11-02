@@ -74,6 +74,11 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   clears one; a write that changes `field` first clears the arrangement
   (`sort`, `labels`, `colors`, `tree`, `filter`, `groups`) except what it
   states.
+- A keyed member write stamps the field its values name: where the stored
+  field is empty and the display picked one off the data (the multi-row
+  feature display's `rowsField`), a sort, label, tree or filter write stores
+  that field beside it, so a later write restating the picked field compares
+  equal and keeps the arrangement.
 - `rows` keys `sort`, `labels`, `colors`, `tree`, `filter` and `groups`;
   `facet` keys `sort` and `hidden`.
 - Objects whose members are alternatives (`encoding.color` `value | field |
