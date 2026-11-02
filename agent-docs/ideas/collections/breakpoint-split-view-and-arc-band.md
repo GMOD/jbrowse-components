@@ -40,6 +40,17 @@ launches the split view from a chord click with no menu between.
 - The reads the arc counted are highlighted across the panels where the hit
   carries their ids, and by position otherwise.
 
+Three things the hit does not carry, each a cost the bullets above skip:
+
+- **Breakend orientation.** Only `CrossRegionArc` holds `p1Dir`/`p2Dir`
+  (`features/arcs/arcTypes.ts`); a plain arc has none and a `ComputedLine`
+  cannot have one, since a tick coalesces junctions on one coordinate. The
+  launch needs it to turn panels or draw feet (`junctionEnds` works out the kept
+  side from strands), so it is new data on the hit, not plumbing.
+- **The junction, for a mate link.** A mate-pair arc's ends are the fragment's
+  outer edges, so a launch centred on them lands up to an insert size off.
+- **Read ids.** Highlighting the counted reads works by position only.
+
 Waits on a product call that an arc is clickable; the collection records that
 nobody has made it. The right-click's items, centre on the mate and copy the
 junction, can follow once the item set is decided.
@@ -59,9 +70,17 @@ molecule reads right to left through the lower panel. A foldback is the worst
 case: `eventStops` leaves ends further apart than the window as two panels, so
 a 6 kb fold gives two windows of one chromosome that read against each other.
 
-- Building the stacked panels applies `panelIsTurned` to the second panel of
-  each junction, the way the single-row launch does; the first panel stays
-  forward so the reader keeps one fixed frame.
+- Building the stacked panels turns each panel by `panelIsTurned`, the first
+  staying forward so the reader keeps one fixed frame. The single-row launch
+  turns panels only across two contigs (`navToSingleLevelBreak.ts`, "Only
+  across two contigs"), so no launch shape turns an intrachromosomal inversion
+  today.
+- **Past two panels the turns compound**: a panel reached through two
+  inversions reads forward again. Neither `ChainStop` (`walkBreakendChain.ts`)
+  nor `PanelStop` (`navToMultiLevelBreak.ts`) carries an orientation, so the
+  walk has to carry one before "turn the second panel" holds for a chain.
+- `mirror` already reverses the copied track order on every odd panel; decide
+  how it composes with a turned panel.
 - The overlay needs nothing: `placeOnRow` reads the region's `reversed` flag
   and flips the feet with it, and `Variants.test.ts` pins that.
 
@@ -72,8 +91,10 @@ panel, splits nothing and leaves the follow's fallback navigation alone.
 [route-as-a-launch-input](../ready/route-as-a-launch-input.md)
 draws an inverted segment as a reversed panel, so this is the first piece of
 that work. Waits on a call on the default; flip at launch is the
-recommendation, since the picture is wrong without it and the Flip entry
-restores the other frame in one click.
+recommendation, since the picture is wrong without it. Undoing it is not one
+click: the panels open with `hideHeader: true` and the split view's own menu
+has only "Reverse view order", so the LGV's Horizontally flip needs the header
+turned on first.
 
 ## The launch dialog offers the session's evidence tracks
 
@@ -112,8 +133,21 @@ inference.
   the arc's, printed with the distance at each end, so a near miss reads as
   one. `ArcHit` carries both ends in absolute bp and the variant display's
   features are in the same view, so the lookup is over what is already loaded.
-- A breakend record's hover adds the band's support count at that junction,
-  and "no reads" when the band draws nothing there.
+- A breakend record's hover adds whether the band draws an arc at that
+  junction, "no reads" when it draws nothing there. **Not its support count**:
+  a mate-pair arc merges only on exact coordinates, so its `support` is 1 for
+  nearly every pair, and a hover reading `DV 23 · band 1` at a real deletion
+  says the reads disagree when they are spread across 23 arcs.
+- **The caller's own counts are one click away already.** The variant widget's
+  sample grid prints every FORMAT field with the header's description
+  (`VariantSampleGrid.tsx`), and the split view's curve click opens it. The gap
+  is the hover: the split view's variant curve hovers only `A → B`. Print the
+  raw FORMAT values with their header descriptions there, never a normalized
+  "ref/alt": `DR/DV` counts reads in Sniffles2, cuteSV and Severus and pairs in
+  DELLY, and `SR` is one number in DELLY and `ref,alt` in Manta.
+- The SV inspector keeps per-sample values as raw `GT:DR:DV` strings
+  (`importAdapters/VcfImport.ts`), so a tumor's `DV` cannot be sorted; numeric
+  `sample.FORMAT` columns would make it a column.
 - Neither hover changes what is drawn. A record with no arc and an arc with no
   record are the two findings a reviewer wants to see, and each is a plain
   absence in the text.

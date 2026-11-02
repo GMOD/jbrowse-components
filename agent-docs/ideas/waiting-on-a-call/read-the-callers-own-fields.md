@@ -1,6 +1,6 @@
 ---
 name: read-the-callers-own-fields
-description: Three INFO fields state what the app guesses or ignores, and none costs an inference. VCF 4.4's `SVCLAIM` marks a `<DEL>` or `<DUP>` as a depth claim or a junction claim, so a depth-only deletion should draw as a copy-number bar; `EVENTTYPE` names an `EVENT`'s class, which the event dropdown can print beside the id; and Severus spells `EVENT` and `MATEID` as `CLUSTERID` and `MATE_ID`, which the two readers of the standard keys can accept, retiring the sed recipe the SV inspector guide carries.
+description: INFO fields that state what the app guesses or ignores, none costing an inference. VCF 4.4's `SVCLAIM` marks a `<DEL>` or `<DUP>` as a depth claim or a junction claim, so a depth-only deletion should draw as a copy-number bar; `EVENTTYPE` names an `EVENT`'s class, which the event dropdown can print beside the id; and Severus spells `EVENT` and `MATEID` as `CLUSTERID` and `MATE_ID`, which the two readers of the standard keys can accept, retiring the sed recipe the SV inspector guide carries. And `CIPOS`/`CIEND`/`IMPRECISE`/`HOMSEQ`, unread anywhere, say where a breakend may lie, which every drawing places at `POS` exactly.
 ---
 
 # Read the caller's own fields
@@ -59,6 +59,26 @@ Severus output runs the recipe first.
 Two spellings at two sites, standard first. A third caller's key goes in the
 same two places, and a caller writing no grouping is unchanged, since the walk
 still orders its stops from the records.
+
+## `CIPOS`, `CIEND`, `IMPRECISE` and `HOMSEQ`: where the breakpoint may be
+
+No app code reads them. The variant widget prints them as plain INFO with their
+reserved descriptions, so they are one click away, but every drawing places a
+breakend at `POS` exactly: a discordant-only short-read call good to a few
+hundred bases draws the same foot as a base-precise one.
+
+- Draw the stated interval in the variant display's own glyph, so every panel
+  of the split view and the LGV shows it and the split view's overlay stays one
+  mark. A solid span, not a dash.
+- Only an `IMPRECISE` call's interval shows at the split view's default zoom
+  (10 bp/px); a precise call's few bases do not.
+- A microhomology lets an aligner place one junction anywhere along it, which
+  may be why split-read arcs at one junction land a few bases apart under
+  `arcKey`'s exact-coordinate rule. Unchecked; look at a call with `HOMLEN`
+  before drawing it as the reason.
+- Some callers write `CIPOS` on a precise call to span its homology rather than
+  an uncertainty; read the header's description, keyed on `IMPRECISE` and
+  `HOMLEN`, before drawing it as one.
 
 ## What it waits on
 
