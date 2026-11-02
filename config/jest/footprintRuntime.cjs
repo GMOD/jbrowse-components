@@ -58,6 +58,26 @@ module.exports = class FootprintRuntime extends Runtime {
     }
   }
 
+  // `JEST_IMPORT_TRACE=<file>` also records which module first required each
+  // one, so `scripts/importTrace.ts` can say why a suite loads what it loads.
+  requireModuleOrMock(from, moduleName, ...rest) {
+    if (process.env.JEST_IMPORT_TRACE) {
+      this.importedBy ??= new Map()
+      try {
+        const resolved = this._resolution.resolver.resolveModule(
+          from,
+          moduleName,
+        )
+        if (!this.importedBy.has(resolved)) {
+          this.importedBy.set(resolved, from)
+        }
+      } catch {
+        // a core module or one jest maps away; nothing to attribute
+      }
+    }
+    return super.requireModuleOrMock(from, moduleName, ...rest)
+  }
+
   resetModules() {
     this.collectSeen()
     super.resetModules()
@@ -67,6 +87,12 @@ module.exports = class FootprintRuntime extends Runtime {
     this.collectSeen()
     reads = new Set()
     writeFootprint(this._config, this._testPath, this.seen)
+    if (process.env.JEST_IMPORT_TRACE) {
+      fs.appendFileSync(
+        process.env.JEST_IMPORT_TRACE,
+        `${JSON.stringify({ test: this._testPath, importedBy: [...(this.importedBy ?? [])] })}\n`,
+      )
+    }
     super.teardown()
   }
 }
