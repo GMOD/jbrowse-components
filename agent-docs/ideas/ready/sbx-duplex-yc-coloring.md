@@ -1,57 +1,94 @@
 ---
 name: sbx-duplex-yc-coloring
-description: Roche SBX duplex reads carry a per-base yc tag marking duplex-concordant, duplex-discordant and simplex-tail spans. A dedicated per-base color scheme, decoding yc in the feature detail panel, and optionally discordant positions as mismatch-style marks.
+description: Roche SBX duplex reads carry a YC tag recording, per base, whether the two strands agreed, disagreed (and what each read) or only one covered. A per-base color scheme off a YC decoder, the decode in the feature detail panel, and optionally discordant positions as mismatch-style marks labeled by strand pair.
 ---
 
-# SBX duplex reads: `yc`-tag coloring
+# SBX duplex reads: `YC`-tag coloring
 
-Split out of the alignments collection on 2026-09-27.
+Split out of the alignments collection on 2026-09-27; checked against the XOOS
+spec and source on 2026-11-01.
 
-Roche's sequencing-by-expansion (SBX, AXELIOS platform; XOOS analysis tools) emits
-**duplex consensus reads** (SBX-D) that merge both strands (R1+R2) of one
-molecule. The `yc` aux tag encodes, per base, one of three confidence classes:
-**duplex-concordant** (both strands agree — high confidence), **duplex-discordant**
-(strands disagree, a mismatch/indel between R1 and R2 — low confidence), and
-**simplex tail** (only one strand covers — medium). Format is
-`{left_tail}{±}{duplex}{±}{right_tail}`: `+`/`-` mark the contributing strand,
-numbers are runs of concordant bases, letters are individual discordant positions
-(a lookup table maps each letter to the R1→R2 base pair). Example `4+13-3` = 4 R1
-tail bases, 13 concordant duplex bases, 3 R2 tail bases.
+Roche's sequencing-by-expansion (SBX, AXELIOS platform; XOOS analysis tools)
+emits **duplex consensus reads** (SBX-D): one read per molecule, built by
+aligning the forward strand (R1) to the reverse complement read through the
+hairpin (R2). Each consensus base is one of:
 
-Key architectural fact: the XOOS demux tool **also bakes the three classes into
-the QUAL string** as three fixed Phred values (concordant=Q39, discordant=Q5,
-simplex-tail=Q22). So our existing **Color by → Base quality** overlay
-(`features/perBaseQuality`, reads `NUMERIC_QUAL`) *already* renders the duplex
-structure on SBX-D data today — discordant bases show as low-quality streaks — just
-unlabeled and on a generic gradient. Incremental work is legibility, not plumbing.
+- **duplex-concordant**: R1 and R2 agree.
+- **duplex-discordant**: a mismatch or indel between R1 and R2. The consensus
+  takes R1's call (stated for the read collapser's singleton case; demux only
+  says "resolved").
+- **simplex tail**: only one strand reaches this end of the insert.
 
-Proposed, ranked:
-- **A dedicated "SBX duplex" per-base color scheme.** `features/perBaseQuality`
-  and `features/perBaseLetter` are the exact template: an `extract.ts` that reads a
-  tag (`getTagAlt(feature, 'yc')`, same idiom as MM/ML) and walks
-  `forEachAlignedBaseInRegion(cigar, start, region, …)` to emit per-ref-base
-  entries, plus a GPU/canvas overlay over the `normal` body. Register in
-  `COLOR_FIELD_DEFS` (`shared/colorFieldDefs.ts`) + the `ColorFieldKind` union
-  (`shared/types.ts`) — a compile error until classified with a shader path + menu
-  placement — and it appears in the Color-by menu with a legend (green concordant /
-  red discordant / grey simplex). **Open question first:** confirm whether aligned
-  SBX-D BAMs carry `yc` into the output or only the Q39/Q5/Q22 QUAL encoding; if the
-  latter, drive the scheme off QUAL bins instead of parsing `yc` (even simpler, no
-  new extract).
-- **Decode `yc` in the feature detail panel** (`AlignmentsFeatureDetail/tagInfo.ts`).
-  Today `yc` shows as a raw string; a small decoder renders "N concordant / M
-  discordant / tails R1=x R2=y" plus the discordant-position breakdown. Cheap,
-  self-contained.
-- **(Optional) Discordant positions as mismatch-style marks** — the low-confidence
-  calls a variant reviewer cares about, surfaced without switching schemes. Overlaps
-  the color scheme; only if per-base coloring proves too subtle at genome scale.
+What the `YC` tag adds over a quality bin is **what each strand read** at a
+discordant position. That is the duplex-sequencing question a variant reviewer
+asks: an alt base on both strands is a mutation, one on a single strand with a
+damage signature (C/T deamination, G/T 8-oxoG) is an artifact.
 
-Explicitly **not** in scope: R1/R2 reconstruction from `yc` — that's a
-data-processing concern for the caller/collapser (XOOS), not the browser; JBrowse's
-job is surfacing the confidence classes. Pairs naturally with the
-"Color-by → coverage summarization" concordant/discordant partition idea above.
-Example data: Roche's GIAB SBX-D BAMs (HG001/HG002) at `sequencing.roche.com/SBXdata`
-/ the XOOS `web.sbxdata.kamino.platform.navify.com` platform; the XOOS repo
-(`github.com/Roche-AXELIOS/XOOS`) ships the demux source but no small BAM fixtures,
-so a region-sliced GIAB BAM is the path to a test fixture. Docs:
-`roche-axelios.gitbook.io/xoos` (SBX-D read-interpretation + yc-tag guide).
+## The tag
+
+Spec: XOOS `docs/interpreting-sbx-d-reads.md`. Reference decoder:
+`common/yc_decode/src/xoos/yc-decode/yc-decoder.{h,cpp}`.
+
+- **Uppercase `YC`**, a string aux tag. Simplex reads carry none; an empty tag
+  also means simplex.
+- `{left_tail}{delim}{duplex}{delim}{right_tail}`, always two delimiters. `+`
+  means R1 supplied that end's tail (also the default when there is no tail),
+  `-` means R2. Tails are bare counts.
+- In the duplex segment a number is a run of concordant bases and a letter is
+  one discordant position. The letter encodes the R1→R2 pair from a 5×5 table
+  over `ACGT-`: `I P J X` are bases only in R1, `L Q O Z` bases only in R2, so
+  a discordant position need not consume a consensus base on both sides.
+- **Read orientation, not reference orientation.** A reverse-strand record's
+  tag must be reverse-complemented, and soft clips trimmed off it, before it
+  maps onto the reference. The XOOS decoder's `ReverseComplement()` and
+  `Trim()` exist for this; `read_collapser/src/io/alignment.cpp` shows the call
+  order.
+
+## Does it survive alignment
+
+Roche's released GIAB BAMs carry it: their error-rate tutorial
+(`docs/measuring-error-rate-for-sbx-duplex-data.md`) pulls it out of the
+Giraffe-aligned HG001 BAM with `samtools bam2fq -T YC` and keeps it through
+`bwa mem -C`, and the read collapser and small variant caller (`YcDecodeMethod`
+`consensus` / `split`) both read it off aligned records. Third-party pipelines
+that skip `-T YC` / `-C` drop it. Not yet confirmed by opening a downloaded BAM.
+
+## QUAL is not a substitute
+
+Demux writes the three classes into QUAL as fixed values (concordant Q39,
+discordant Q5, simplex tail Q22), so **Color by → Base quality**
+(`features/perBaseQuality`) shows the duplex layout on raw demux output today,
+unlabeled. The read collapser, the next XOOS stage, rewrites QUAL with a
+calibrated model (Q5–Q50) and the bins are gone. Whether `YC` survives the
+collapser is not stated in its docs.
+
+## Proposed, ranked
+
+- **A `YC` decoder plus an "SBX duplex" per-base color scheme.**
+  `features/perBaseQuality` and `features/perBaseLetter` are the template: an
+  `extract.ts` reading the tag (`getTagAlt(feature, 'YC')`, the MM/ML idiom),
+  orienting it to the record, and walking `forEachAlignedBaseInRegion`
+  (`features/alignedBaseWalk.ts`) to emit per-ref-base classes, plus the
+  overlay over the `normal` body. Register in `COLOR_FIELD_DEFS`
+  (`shared/colorFieldDefs.ts`) and the `ColorFieldKind` union
+  (`shared/types.ts`), which fails to compile until it has a shader path and
+  menu placement. Legend: concordant, discordant, simplex tail.
+- **The decode in the feature detail panel**
+  (`AlignmentsFeatureDetail/tagInfo.ts`). Today `YC` is a raw string; render
+  the tail lengths and owning strand, the concordant count, and each
+  discordant position as its R1/R2 pair. Shares the decoder.
+- **(Optional) Discordant positions as mismatch-style marks**, labeled by the
+  R1/R2 pair, so they show without switching color schemes. Only if per-base
+  coloring proves too subtle at genome scale.
+
+Not in scope: drawing R1 and R2 as two reads (the variant caller's `split`
+mode). Pairs with the concordant/discordant partition in
+[ready/coverage-summarization-by-read-attribute.md](coverage-summarization-by-read-attribute.md).
+
+Example data: Roche's GIAB SBX-D BAMs (HG001/HG002) from
+`sequencing.roche.com/SBXdata` (download portal
+`web.sbxdata.kamino.platform.navify.com`, behind a form). The XOOS repo
+(`github.com/Roche-AXELIOS/XOOS`) ships no small BAM fixtures, so a
+region-sliced GIAB BAM is the path to a test fixture; the spec's worked
+examples (`4+13-3`, `+1WK1I1L+`, `+1KM3L+2`, `9++`) are the decoder's unit
+cases.
