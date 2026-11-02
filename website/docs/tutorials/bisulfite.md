@@ -8,17 +8,18 @@ tutorial_category: Epigenomics & single cell
 ---
 
 Whole-genome bisulfite sequencing (WGBS) and enzymatic methyl sequencing
-(EM-seq) measure DNA methylation with short reads. JBrowse computes the calls
-from the C→T changes in the reads, so the BAM needs no base-modification tags
-(`MM`/`ML`, which nanopore and PacBio basecallers write) and no methylation
-caller runs first. With an _Arabidopsis thaliana_ WGBS run we:
+(EM-seq) measure DNA methylation with short reads. JBrowse computes each call
+from the C→T changes in a read against the reference as it draws, so an aligned
+BAM is all it needs. In plants, gene bodies and transposons differ in which
+cytosine contexts are methylated. With an _Arabidopsis thaliana_ WGBS run we:
 
-- align the reads with bwameth
-- load the BAM with the TAIR10 hub assembly
-- color each read by its CpG, CHG and CHH methylation with **Color by →
-  Bisulfite / EM-seq**
-- load gene and transposon tracks beside the reads to compare gene-body
-  methylation with transposon silencing
+- align the reads with bwameth and load the BAM as an alignments track on the
+  TAIR10 hub assembly
+- load MethylDackel's per-context fractions as a multi-quantitative track
+- color each read's cytosines with **Color by → Bisulfite / EM-seq**, one
+  context at a time
+- pin the CpG, CHG and CHH contexts in three copies of the reads track, beside
+  gene and RepeatMasker tracks, to compare a gene with a transposon
 
 ## Prerequisites
 
@@ -125,71 +126,6 @@ missed. Modern libraries convert above 99%. An organism with no plastid uses the
 library's spike-in, usually unmethylated lambda or pUC19, added to the reference
 as an extra contig.
 
-### Optional aggregate methylation bigWigs from MethylDackel
-
-[MethylDackel](https://github.com/dpryan79/MethylDackel) calls a per-position
-methylation fraction in all three plant contexts, one bedGraph each, which
-becomes a bigWig once the header line is dropped and the percentage column kept:
-
-```bash
-# CpG is emitted always; --CHG --CHH add the two plant contexts.
-# -o fixes the output prefix, which the loop below reads back.
-MethylDackel extract --CHG --CHH -o arabidopsis_wgbs \
-  tair10.fa arabidopsis_wgbs.bam
-samtools faidx tair10.fa
-cut -f1,2 tair10.fa.fai > tair10.chrom.sizes  # two columns, not the .fai itself
-for ctx in CpG CHG CHH; do
-  # tail drops MethylDackel's track line; cut keeps the percentage column
-  tail -n +2 arabidopsis_wgbs_${ctx}.bedGraph | cut -f1-4 |
-    sort -k1,1 -k2,2n > ${ctx}.bg
-  bedGraphToBigWig ${ctx}.bg tair10.chrom.sizes arabidopsis_wgbs_${ctx}.bw
-done
-```
-
-A `MultiQuantitativeTrack` with a subadapter per context draws the three bigWigs
-as labeled rows, the Aggregate methylation track in the figure below.
-
-```json addtrack
-{
-  "type": "MultiQuantitativeTrack",
-  "trackId": "arabidopsis_wgbs_methyldackel",
-  "name": "Aggregate methylation (MethylDackel)",
-  "assemblyNames": ["GCF_000001735.4"],
-  "adapter": {
-    "type": "MultiWiggleAdapter",
-    "subadapters": [
-      {
-        "type": "BigWigAdapter",
-        "name": "CpG",
-        "color": "#d62728",
-        "uri": "arabidopsis_wgbs_CpG.bw"
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "CHG",
-        "color": "#ff7f0e",
-        "uri": "arabidopsis_wgbs_CHG.bw"
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "CHH",
-        "color": "#1f77b4",
-        "uri": "arabidopsis_wgbs_CHH.bw"
-      }
-    ]
-  },
-  "displayDefaults": {
-    "mark": "bar",
-    "encoding": {
-      "y": {
-        "scale": { "domainMin": 0, "domainMax": 100 },
-        "axis": { "title": "% methylated" }
-      }
-    }
-  }
-}
-```
-
 ## Loading the TAIR10 hub assembly and the WGBS BAM
 
 TAIR10 is a genome hub on [genomes.jbrowse.org](https://genomes.jbrowse.org),
@@ -278,6 +214,73 @@ is a color channel for each base, here set from the `bisulfite` field. The
 `context` entry in its [`filter`](/docs/config/pileupbases/#slot-filter) takes
 `CG`, `CHG` or `CHH`, and `{ "field": "context" }` paints every context.
 
+## Aggregate methylation per context with MethylDackel
+
+Beside the reads, a per-position fraction summarizes all the reads at each site,
+and a bigWig of it draws at any zoom. The track is optional, and the reproduce
+script leaves it out. [MethylDackel](https://github.com/dpryan79/MethylDackel)
+calls that fraction in all three plant contexts, one bedGraph each, which
+becomes a bigWig once the header line is dropped and the percentage column kept:
+
+```bash
+# CpG is emitted always; --CHG --CHH add the two plant contexts.
+# -o fixes the output prefix, which the loop below reads back.
+MethylDackel extract --CHG --CHH -o arabidopsis_wgbs \
+  tair10.fa arabidopsis_wgbs.bam
+samtools faidx tair10.fa
+cut -f1,2 tair10.fa.fai > tair10.chrom.sizes  # two columns, not the .fai itself
+for ctx in CpG CHG CHH; do
+  # tail drops MethylDackel's track line; cut keeps the percentage column
+  tail -n +2 arabidopsis_wgbs_${ctx}.bedGraph | cut -f1-4 |
+    sort -k1,1 -k2,2n > ${ctx}.bg
+  bedGraphToBigWig ${ctx}.bg tair10.chrom.sizes arabidopsis_wgbs_${ctx}.bw
+done
+```
+
+A `MultiQuantitativeTrack` with a subadapter per context draws the three bigWigs
+as labeled rows, the Aggregate methylation track in the figure below.
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "arabidopsis_wgbs_methyldackel",
+  "name": "Aggregate methylation (MethylDackel)",
+  "assemblyNames": ["GCF_000001735.4"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "name": "CpG",
+        "color": "#d62728",
+        "uri": "arabidopsis_wgbs_CpG.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "CHG",
+        "color": "#ff7f0e",
+        "uri": "arabidopsis_wgbs_CHG.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "CHH",
+        "color": "#1f77b4",
+        "uri": "arabidopsis_wgbs_CHH.bw"
+      }
+    ]
+  },
+  "displayDefaults": {
+    "mark": "bar",
+    "encoding": {
+      "y": {
+        "scale": { "domainMin": 0, "domainMax": 100 },
+        "axis": { "title": "% methylated" }
+      }
+    }
+  }
+}
+```
+
 ## Coloring the reads by cytosine context
 
 **Color by → Bisulfite / EM-seq** in the alignments track menu sets
@@ -305,8 +308,7 @@ contexts is silencing.
 
 Type `chr1:4,398,000-4,412,000` into the location box for a window containing
 one of each: the expressed gene AT1G12930 on the left, and a transposon on the
-right. The [reproduce script](#reproduce-it-end-to-end) prints the fraction per
-context for both regions.
+right.
 
 To identify the element on the right, add the RepeatMasker track from the TAIR10
 genome hub. It labels the element `META1_LTR#LTR/Copia`, an LTR retrotransposon.

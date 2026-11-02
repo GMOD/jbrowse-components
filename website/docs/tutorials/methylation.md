@@ -11,18 +11,20 @@ base-modification tags (`MM` and `ML`), and JBrowse draws those calls straight
 from the BAM. At the _SNRPN_ imprinting center, one parent's copy is methylated
 and the other's is not. In HG002 nanopore reads there we:
 
-- color each read by its modification calls
-- tally the calls into an aggregate track with modkit
-- group the reads by haplotype to pull the two parental alleles apart
-- smooth each allele into a moving average across the imprinted domain
+- load the reads as an alignments track and color them with **Color by →
+  Modifications**
+- tally the calls into a bedMethyl file with modkit and load it as a
+  multi-quantitative track
+- group the reads by their `HP` haplotype tag to pull the two parental alleles
+  apart, with a per-haplotype bedMethyl row above them
+- smooth each haplotype with a moving-average mark across the imprinted domain
 
 ## Prerequisites
 
-- for your own data, long reads whose BAM or CRAM already has `MM`/`ML`
-  modification tags, which modern ONT and PacBio basecallers write by default,
-  plus a JBrowse instance to load them into (the
-  [web quickstart](/docs/quickstart_web) or the
+- a JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
+- for your own data, long reads in a BAM or CRAM with `MM`/`ML` modification
+  tags, which current ONT and PacBio basecallers write by default
 - [modkit](https://github.com/nanoporetech/modkit/releases) 0.6 or later, Oxford
   Nanopore's single-binary tool for tallying per-read calls into per-CpG
   methylation fractions, for the aggregate section only
@@ -39,13 +41,13 @@ pip install whatshap
 
 ## The data
 
-The files are region slices of public
+Region slices of HG002 reads and modkit output from the public
 [ONT open data](https://labs.epi2me.io/dataindex/) on the `ont-open-data` S3
 bucket.
 
-The track configs below load region slices we host, cut from these files, so no
-download is needed. Reads of your own with `MM` and `ML` tags load by swapping
-`uri`, as _Per-read methylation from the alignments_ shows.
+You don't need these files to follow the page: the track configs below read
+slices we host, cut from them. Reads of your own with `MM` and `ML` tags load by
+swapping `uri`, as _Per-read methylation from the alignments_ shows.
 
 <details>
 <summary>The files</summary>
@@ -128,9 +130,9 @@ track. For your own reads, swap `uri` for a sorted modBAM or CRAM with the
 **Color by → Modifications** in the track menu paints each read with its 5mC
 calls:
 
-- On its own it paints the positions the MM tag reports as modified
-- **Show unmodified in blue** (IGV's "2-color" scheme) also fills in every CpG
-  the tag left implicit, so an unmethylated region is solid blue
+- On its own it paints red each position the `MM` tag lists as modified
+- **Show unmodified in blue** (IGV's "2-color" scheme) also paints blue every
+  CpG the tag does not list as modified, so an unmethylated region is solid blue
 
 The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
@@ -360,10 +362,14 @@ The display draws two marks over the same rows:
 - **the `line` mark** plots `meth`, which the `window` step writes: each CpG's
   mean over the 50 CpGs on either side, weighted by `n_valid_cov`, the read
   depth modkit counted there
-- **with `groupby: ["source"]`** the step averages each haplotype over that
-  haplotype's CpGs, and with `rows: "source"` the display gives each haplotype a
-  row whose label names it, so `legend.show` is off
-- **with `fetchSizeLimit`** raised, the track reads the whole slice when zoomed
+
+Three more settings shape the track:
+
+- **`groupby: ["source"]`** in the `window` step averages each haplotype over
+  that haplotype's CpGs
+- **`rows: "source"`** gives each haplotype a row whose label names it, so
+  `legend.show` is off
+- **`fetchSizeLimit`**, raised, lets the track read the whole slice when zoomed
   out
 
 Type `chr15:24,800,000-25,200,000` into the location box to see the _SNRPN_
