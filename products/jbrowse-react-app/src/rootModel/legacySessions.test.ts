@@ -242,7 +242,7 @@ test('a v4 multi-wiggle display opens as rows, in its order and colors', async (
   expect(display.renderingType).toBe('density')
   expect(display.rowSort).toEqual(['b', 'a'])
   expect(display.rowLabels).toEqual({ a: 'A sample' })
-  expect(getConf(display, ['rowColor', 'scale', 'range'])).toEqual(['red'])
+  expect(getConf(display, ['rows', 'colors'])).toEqual({ b: 'red' })
 })
 
 // A v4 multi-bigwig the user added themselves is a session track, so the entry
@@ -444,7 +444,7 @@ test('a v4 clustered multi-sample variant display loads with its order, tree and
   expect(display.rowSort).toEqual(['HG00097', 'HG00096'])
   expect(getConf(display, ['rows', 'tree'])).toBe('(HG00097:1,HG00096:1);')
   expect(getConf(display, ['rows', 'kept'])).toEqual(['HG00097'])
-  expect(getConf(display, ['rowColor', 'scale', 'domain'])).toEqual([])
+  expect(getConf(display, ['rows', 'colors'])).toEqual({})
 })
 
 function wiggleSlots(display: Parameters<typeof getConf>[0]) {

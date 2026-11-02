@@ -5,7 +5,6 @@ import {
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
-import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 
 import { DEFAULTS } from './displayDefaults.ts'
@@ -89,24 +88,18 @@ export default function configSchemaF() {
        * clustering run and a focus write. The adapter's guide tree is never
        * written here. `rows.axis` is the guide down their left, the species
        * tree and names, with no `grid`: the rows keep a gap instead.
+       * `rows.colors` pins a species row's color, drawn as the bar beside its
+       * label over the color the adapter's `samples` entry gives it.
        *
        * #example
        * ```js
        * { rows: { sort: ['mm10'], labels: { mm10: 'Mouse' } } }
        * ```
-       */
-      rows: mafRowsConfigSchema,
-      /**
-       * #slot rowColor
-       * A color per species row, drawn as the bar beside its label, over the
-       * color the adapter's `samples` entry gives it.
-       *
-       * #example
        * ```js
-       * { rowColor: { scale: { domain: ['mm10'], range: ['#f28e2b'] } } }
+       * { rows: { colors: { mm10: '#f28e2b' } } }
        * ```
        */
-      rowColor: rowColorConfigSchema,
+      rows: mafRowsConfigSchema,
       /**
        * #slot legend
        * The color key for the active row rendering: codon-change categories,
@@ -145,6 +138,7 @@ export default function configSchemaF() {
       // The rows always fit the display `height`, so a pinned row height
       // from an older config has nothing to set.
       retired: { rowHeight: () => ({}) },
+      misnamed: { rowColor: 'rows.color' },
     },
     // #endregion
   )

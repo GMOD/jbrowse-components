@@ -97,7 +97,7 @@ test('hidden travels with the item, not with the label', () => {
         items: [{ label: 'Wolf', color: 'red', hidden: true }],
       },
       {
-        id: 'rowColor',
+        id: 'rows.color',
         title: 'Group',
         items: [{ label: 'Wolf', color: 'blue' }],
       },

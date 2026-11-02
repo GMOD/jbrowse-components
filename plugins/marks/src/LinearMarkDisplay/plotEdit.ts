@@ -1,4 +1,3 @@
-import { changesKeyedField } from '@jbrowse/core/configuration'
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
 import { expressionKind } from '@jbrowse/core/util/jexlDiagnostics'
 import {
@@ -7,7 +6,6 @@ import {
   stepsOutput,
 } from '@jbrowse/core/util/stepOutputs'
 import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
-import { rowColorForOtherRows } from '@jbrowse/display-kit/rowColorConfigSchema'
 import {
   ROWS_WRITES,
   rowsForField,
@@ -80,7 +78,7 @@ export function splitOrder(plot: MarkPlot, key: 'facet' | 'rows'): string {
  * every keystroke writes: retyping the base's field keeps its order, hidden
  * sections, arrangement and row colors, and another field drops what names
  * the old field's values, as a menu pick does (`facetForField`,
- * `rowsForField`, `rowColorForOtherRows`), keeping the steps.
+ * `rowsForField`), keeping the steps and `rows.color`.
  */
 export function withSplitField(
   plot: MarkPlot,
@@ -98,13 +96,7 @@ export function withSplitField(
   if (key === 'facet') {
     return { ...plot, facet: facetForField(held, field) }
   }
-  const rows = rowsForField(held, field)
-  const baseColor = channelObject(base.rowColor)
-  const rowColor =
-    baseColor && changesKeyedField(ROWS_WRITES, held, { field })
-      ? rowColorForOtherRows(baseColor)
-      : baseColor
-  return { ...plot, rows, ...(rowColor ? { rowColor } : {}) }
+  return { ...plot, rows: rowsForField(held, field) }
 }
 
 // No rows field: the field and the arrangement naming its values go, and what

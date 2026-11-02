@@ -298,7 +298,7 @@ cat > "$APP"/config.json <<'JSON'
         {
           "type": "LinearVariantDisplay",
           "facet": { "field": "karyotype", "sort": ["Standard", "In(2L)t"] },
-          "rowColor": "karyotype",
+          "rows": { "color": "karyotype" },
           "height": 300
         }
       ]

@@ -17,7 +17,9 @@ describe('the display config schema', () => {
       displayId: 'color-by',
       colorBy: 'population',
     })
-    expect(readConfObject(config, ['rowColor', 'field'])).toBe('population')
+    expect(readConfObject(config, ['rows', 'color', 'field'])).toBe(
+      'population',
+    )
   })
 
   describe('genotypes.reference.show', () => {
@@ -260,7 +262,7 @@ describe('rows', () => {
   })
 })
 
-describe('rowColor config object', () => {
+describe('rows.color config object', () => {
   const configSchema = configSchemaFactory()
 
   it('colors by the rows themselves by default', () => {
@@ -268,15 +270,17 @@ describe('rowColor config object', () => {
       type: 'LinearVariantDisplay',
       displayId: 'test-colorby-1',
     })
-    expect(readConfObject(config, ['rowColor', 'field'])).toBe('name')
+    expect(readConfObject(config, ['rows', 'color', 'field'])).toBe('name')
   })
 
   it('can be set to a metadata attribute name', () => {
     const config = configSchema.create({
       type: 'LinearVariantDisplay',
       displayId: 'test-colorby-2',
-      rowColor: 'population',
+      rows: { color: 'population' },
     })
-    expect(readConfObject(config, ['rowColor', 'field'])).toBe('population')
+    expect(readConfObject(config, ['rows', 'color', 'field'])).toBe(
+      'population',
+    )
   })
 })

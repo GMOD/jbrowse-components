@@ -57,7 +57,7 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
   it('deals nothing under None, every subtrack in the plot color', () => {
     const display = makeDisplay({
       rows: false,
-      displayConfig: { rowColor: { scale: { unknown: '' } } },
+      displayConfig: { rows: { color: { scale: { unknown: '' } } } },
     })
     expect(rowColors(display)).toEqual([undefined, undefined, undefined])
     expect(display.rowColorChoice).toBe('')
@@ -67,8 +67,9 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
     const display = makeDisplay({
       rows: false,
       displayConfig: {
-        rowColor: {
-          scale: { domain: ['b'], range: ['#123456'], unknown: '#cccccc' },
+        rows: {
+          colors: { b: '#123456' },
+          color: { scale: { unknown: '#cccccc' } },
         },
       },
     })
@@ -116,7 +117,7 @@ describe('a row per subtrack deals no palette', () => {
     const display = makeDisplay({
       names: [],
       displayConfig: {
-        rowColor: { scale: { domain: ['b'], range: ['#123456'] } },
+        rows: { colors: { b: '#123456' } },
       },
     })
     display.setRpcData(
@@ -136,7 +137,8 @@ describe('a row per subtrack deals no palette', () => {
   it('plots a color set on one subtrack, the rest unchanged', () => {
     const display = makeDisplay()
     display.applyRowEdits(display.editableSources, {
-      scale: { domain: ['b'], range: ['#123456'] },
+      color: { field: 'name' },
+      colors: { b: '#123456' },
     })
     expect(rowColors(display)).toEqual([undefined, '#123456', undefined])
     expect(display.rowColorChoice).toBe('name')

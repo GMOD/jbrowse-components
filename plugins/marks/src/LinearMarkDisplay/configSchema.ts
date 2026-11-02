@@ -8,7 +8,6 @@ import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
-import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsWithStepConfigSchema } from '@jbrowse/display-kit/rowsWithStepConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -439,9 +438,13 @@ export function configSchemaFactory() {
        * a multi-BigWig is one xyplot per file. The worker splits the features
        * on the field as it does for `facet`, and the rows take the tree
        * sidebar, the row labels, clustering and the arrangement dialog, whose
-       * order, labels, tree and focus this object holds. A `facet` on a row
-       * attribute stacks the rows in bands; a facet on a feature field draws
-       * its sections in place of the rows, and the display shows a notice.
+       * order, labels, colors, tree and focus this object holds. A row's
+       * color, `rows.colors` pinned on it or `rows.color` mapped from an
+       * attribute, is the bar beside its label, and the color of a mark
+       * naming none, or of a mark colored by the rows' own field. A `facet`
+       * on a row attribute stacks the rows in bands; a facet on a feature
+       * field draws its sections in place of the rows, and the display shows
+       * a notice.
        *
        * #example
        * ```js
@@ -453,19 +456,11 @@ export function configSchemaFactory() {
        */
       rows: rowsWithStepConfigSchema,
       /**
-       * #slot rowColor
-       * The bar beside each row's label, and the color of a mark naming
-       * none, or of a mark colored by the rows' own field. Under the default
-       * field `name`, a row's value paired with a color in
-       * `scale.domain`/`scale.range`, which the arrangement dialog writes.
-       */
-      rowColor: rowColorConfigSchema,
-      /**
        * #slot rowGroups
        * An array of `{ match, group }` tagging each row with the `group` of
        * the first entry whose regex its name matches, a row attribute:
        * `facet: 'group'` stacks the groups in bands, and
-       * `rowColor: { field: 'group' }` colors them. A row no entry matches
+       * `rows.color: 'group'` colors them. A row no entry matches
        * has no group.
        *
        * #example
@@ -526,7 +521,7 @@ export function configSchemaFactory() {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
       retired: retiredBaseDisplaySpellings,
-      misnamed: { rowHeight: 'rows.step' },
+      misnamed: { rowHeight: 'rows.step', rowColor: 'rows.color' },
       preProcessSnapshot: checkMarks,
     },
   )

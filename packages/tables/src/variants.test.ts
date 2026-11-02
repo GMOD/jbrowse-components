@@ -119,7 +119,7 @@ test('the display’s filters drop records before any cell is painted', async ()
 test('each row takes the display’s rowColor from the samples file, under the attribute’s key', async () => {
   const t = await engine.variants({
     ...DOG_SV,
-    display: { rowColor: { field: 'group' } },
+    display: { rows: { color: { field: 'group' } } },
   })
   const groupOf = new Map(
     readFileSync(
@@ -146,8 +146,7 @@ test('each row takes the display’s rowColor from the samples file, under the a
   const reordered = await engine.variants({
     ...DOG_SV,
     display: {
-      rowColor: { field: 'group' },
-      rows: { sort: [...t.rows.name].reverse() },
+      rows: { color: { field: 'group' }, sort: [...t.rows.name].reverse() },
     },
   })
   expect(reordered.rows.color).toEqual([...t.rows.color].reverse())

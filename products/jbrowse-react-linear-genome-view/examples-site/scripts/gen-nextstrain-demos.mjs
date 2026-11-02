@@ -648,7 +648,7 @@ function buildConfig({ assembly, slug, geneFeats, seq, genomesCram }) {
             variantLayout: 'columns',
             displayId: `${assembly}-genotypes-LinearVariantDisplay`,
             height: 400,
-            rowColor: 'region',
+            rows: { color: 'region' },
           },
         ],
       },

@@ -9,8 +9,11 @@ test('a v4 quantitative row answers to its source, and its name is the label', (
       ],
     }),
   ).toEqual({
-    rows: { sort: ['tumor', 'normal'], labels: { tumor: 'Tumor' } },
-    rowColor: { scale: { domain: ['tumor'], range: ['red'] } },
+    rows: {
+      sort: ['tumor', 'normal'],
+      labels: { tumor: 'Tumor' },
+      colors: { tumor: 'red' },
+    },
   })
 })
 

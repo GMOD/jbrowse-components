@@ -181,7 +181,7 @@
           "variantLayout": "columns",
           "displayId": "RSV-A-genotypes-LinearVariantDisplay",
           "height": 400,
-          "rowColor": "region"
+          "rows": { "color": "region" }
         }
       ]
     }

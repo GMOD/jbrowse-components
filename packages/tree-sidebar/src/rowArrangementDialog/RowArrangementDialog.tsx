@@ -5,15 +5,15 @@ import { isCssColor } from '@jbrowse/core/util/cssColorParse'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { Button, DialogActions, DialogContent } from '@mui/material'
+import { compareStructural } from 'mobx'
 import { observer } from 'mobx-react'
 
+import { rowColorMembers, withPair } from '../rowColorChoice.ts'
 import {
-  rowColorMembers,
-  samePairs,
-  withPair,
-  withPairs,
-} from '../rowColorChoice.ts'
-import { resolveRowColors, rowFieldValue } from '../rowColorScale.ts'
+  resolveRowColors,
+  rowFieldValue,
+  withPinnedColors,
+} from '../rowColorScale.ts'
 import { IDENTITY_FIELDS } from '../sourcesGridUtils.ts'
 import BulkEditPanel from './BulkEditPanel.tsx'
 import ClearTreeWarningDialog from './ClearTreeWarningDialog.tsx'
@@ -22,7 +22,7 @@ import RowColorPanel from './RowColorPanel.tsx'
 import SourceGrid from './SourceGrid.tsx'
 
 import type { RowAlias } from '../arrangeRows.ts'
-import type { RowColorSnapshot } from '../rowColorChoice.ts'
+import type { RowColorEdits, RowColorSnapshot } from '../rowColorChoice.ts'
 import type { RowColorSetting } from '../rowColorScale.ts'
 import type { RowSource } from '../types.ts'
 import type { ValueColor } from './RowColorPanel.tsx'
@@ -46,7 +46,7 @@ const useStyles = makeStyles()({
 // and holds every edit until Submit.
 export interface RowArrangementModel<S extends RowSource> {
   editableSources: S[]
-  applyRowEdits: (s: S[], rowColor?: RowColorSnapshot) => void
+  applyRowEdits: (s: S[], colors?: RowColorEdits) => void
   resetRowArrangement: () => void
   // Whether submitting `next` would invalidate a loaded cluster tree; when true
   // the ClearTreeWarning is shown before Submit.
@@ -54,6 +54,7 @@ export interface RowArrangementModel<S extends RowSource> {
   rowColorChoice: string
   rowColorFieldsOffered: readonly string[]
   rowColorFor: (choice: string) => RowColorSetting
+  rowColorPins: ReadonlyMap<string, string>
   rowPaletteDeals: boolean
   rowAlias: RowAlias | undefined
   internalRowFields: readonly string[]
@@ -134,41 +135,41 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
   const [currLayout, setCurrLayout] = useState(model.editableSources)
   const [openedChoice, setOpenedChoice] = useState(model.rowColorChoice)
   const [choice, setChoice] = useState(openedChoice)
-  // The `rowColor` object each choice the reader edited in this sitting
+  // The `rows.color` object each choice the reader edited in this sitting
   // writes; an unedited one writes what it starts from.
   const [drafts, setDrafts] = useState<
     Readonly<Record<string, RowColorSetting>>
   >({})
+  // The colors pinned on rows, `rows.colors`, which every choice but None
+  // keeps
+  const [pins, setPins] = useState(model.rowColorPins)
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
 
-  const settingOf = (forChoice: string) =>
-    drafts[forChoice] ?? model.rowColorFor(forChoice)
-  const setting = settingOf(choice)
-  const eachRow = settingOf('name')
+  const channel = drafts[choice] ?? model.rowColorFor(choice)
   const editDraft = (next: (current: RowColorSetting) => RowColorSetting) => {
-    setDrafts({ ...drafts, [choice]: next(setting) })
+    setDrafts({ ...drafts, [choice]: next(channel) })
   }
-  const pairs = pairedColorsOf(setting.scale)
+  const setting = withPinnedColors(channel, pins)
+  const pairs = pairedColorsOf(channel.scale)
   const dealt = model.dealtValueColorsFor(setting)
   const colors = resolveRowColors(
     currLayout,
     setting.field,
     dealt,
+    pins,
     model.rowAlias,
   )
 
-  // Each row's picks are set from the row list's swatches, the bulk color
-  // button and a pasted color column, and choose Each row.
-  const setEachRow = (next: RowColorSetting) => {
-    setDrafts({ ...drafts, name: next })
-    setChoice('name')
-  }
-  const pickEachRow = (picked: ReadonlyMap<string, string>) => {
-    let next = eachRow
-    for (const [name, color] of picked) {
-      next = withPair(next, name, color)
+  // The pins are set from the row list's swatches, the bulk color button and
+  // a pasted color column; a pin under None chooses Each row.
+  const setRowPins = (next: ReadonlyMap<string, string>) => {
+    setPins(next)
+    if (choice === '') {
+      setChoice('name')
     }
-    setEachRow(next)
+  }
+  const pickRows = (picked: ReadonlyMap<string, string>) => {
+    setRowPins(new Map([...pins, ...picked]))
   }
 
   // A row's own `color` and its resolved `rowColor` never show as raw hex.
@@ -183,14 +184,25 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
 
   // An untouched panel writes no color object, so the config's own stands
   // whatever the panel can spell.
-  const colorTouched = choice !== openedChoice || Object.hasOwn(drafts, choice)
+  const colorTouched =
+    choice !== openedChoice ||
+    Object.hasOwn(drafts, choice) ||
+    !compareStructural(
+      Object.fromEntries(pins),
+      Object.fromEntries(model.rowColorPins),
+    )
 
   // The row color goes first: a plot color can change whether the palette
   // deals, which the written object was chosen under.
   const submit = () => {
     model.applyRowEdits(
       currLayout,
-      colorTouched ? rowColorMembers(setting) : undefined,
+      colorTouched
+        ? {
+            color: rowColorMembers(channel),
+            colors: choice === '' ? {} : Object.fromEntries(pins),
+          }
+        : undefined,
     )
     if (
       plotPair &&
@@ -217,6 +229,7 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
     setOpenedChoice(model.rowColorChoice)
     setChoice(model.rowColorChoice)
     setDrafts({})
+    setPins(model.rowColorPins)
     setPlotPair(undefined)
   }
 
@@ -226,21 +239,25 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
         <BulkEditPanel
           currLayout={currLayout.map(row => ({
             ...row,
-            rowColor: pairedColorsOf(eachRow.scale).get(row.name),
+            rowColor: pins.get(row.name),
           }))}
           onClose={next => {
             if (next) {
-              const pairs = new Map(pairedColorsOf(eachRow.scale))
+              const picked = new Map(pins)
               for (const { name, rowColor } of next) {
                 if (rowColor && isCssColor(rowColor)) {
-                  pairs.set(name, rowColor)
+                  picked.set(name, rowColor)
                 } else {
-                  pairs.delete(name)
+                  picked.delete(name)
                 }
               }
-              const picked = withPairs(eachRow, pairs)
-              if (!samePairs(picked, eachRow)) {
-                setEachRow(picked)
+              if (
+                !compareStructural(
+                  Object.fromEntries(picked),
+                  Object.fromEntries(pins),
+                )
+              ) {
+                setRowPins(picked)
               }
               setCurrLayout(next)
             }
@@ -308,6 +325,9 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
                       ...s,
                       scale: { ...s.scale, domain: [], range: [] },
                     }))
+                    if (choice === 'name') {
+                      setPins(new Map())
+                    }
                   }}
                 />
 
@@ -316,9 +336,9 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
                   onChange={setCurrLayout}
                   colors={colors}
                   eachRow={
-                    choice === 'name'
-                      ? { picks: pairs, onPick: pickEachRow }
-                      : undefined
+                    choice === ''
+                      ? undefined
+                      : { picks: pins, onPick: pickRows }
                   }
                   reserved={reserved}
                 />

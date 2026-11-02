@@ -382,10 +382,7 @@ describe('a rendering-mode switch renames the rows', () => {
       rows: {
         sort: ['S1 HP1', 'S0 HP0'],
         labels: { 'S1 HP1': 'One hap2', 'S0 HP0': 'Zero hap1' },
-      },
-      rowColor: {
-        field: 'name',
-        scale: { domain: ['S1 HP1'], range: ['#123456'] },
+        colors: { 'S1 HP1': '#123456' },
       },
     })
     display.setCellData({
@@ -565,7 +562,8 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
     const display = sortableDisplay()
     const [s0, s1, s2] = display.editableSources
     display.applyRowEdits([{ ...s0!, label: 'first' }, s1!, s2!], {
-      scale: { domain: ['S0'], range: ['red'] },
+      color: { field: 'name' },
+      colors: { S0: 'red' },
     })
 
     display.sortByGenotype('v1')

@@ -496,7 +496,54 @@
               "iPS-20b Cells",
               "iPS DF 6.9 Cells",
               "iPS DF 19.11 Cells"
-            ]
+            ],
+            "color": {
+              "field": "group",
+              "scale": {
+                "domain": [
+                  "Adipose",
+                  "Blood & T-cell",
+                  "Brain",
+                  "Digestive",
+                  "ENCODE2012",
+                  "ES-deriv",
+                  "ESC",
+                  "Epithelial",
+                  "HSC & B-cell",
+                  "Heart",
+                  "IMR90",
+                  "Mesench",
+                  "Muscle",
+                  "Myosat",
+                  "Neurosph",
+                  "Other",
+                  "Sm. Muscle",
+                  "Thymus",
+                  "iPSC"
+                ],
+                "range": [
+                  "#AF5B39",
+                  "#55A354",
+                  "#C5912B",
+                  "#C58DAA",
+                  "#000000",
+                  "#4178AE",
+                  "#924965",
+                  "#FF9D0C",
+                  "#678C69",
+                  "#D56F80",
+                  "#E41A1C",
+                  "#B65C73",
+                  "#C2655D",
+                  "#E67326",
+                  "#FFD924",
+                  "#999999",
+                  "#F182BC",
+                  "#DAB92E",
+                  "#69608A"
+                ]
+              }
+            }
           },
           "encoding": {
             "color": {
@@ -617,53 +664,6 @@
               "group": "iPSC"
             }
           ],
-          "rowColor": {
-            "field": "group",
-            "scale": {
-              "domain": [
-                "Adipose",
-                "Blood & T-cell",
-                "Brain",
-                "Digestive",
-                "ENCODE2012",
-                "ES-deriv",
-                "ESC",
-                "Epithelial",
-                "HSC & B-cell",
-                "Heart",
-                "IMR90",
-                "Mesench",
-                "Muscle",
-                "Myosat",
-                "Neurosph",
-                "Other",
-                "Sm. Muscle",
-                "Thymus",
-                "iPSC"
-              ],
-              "range": [
-                "#AF5B39",
-                "#55A354",
-                "#C5912B",
-                "#C58DAA",
-                "#000000",
-                "#4178AE",
-                "#924965",
-                "#FF9D0C",
-                "#678C69",
-                "#D56F80",
-                "#E41A1C",
-                "#B65C73",
-                "#C2655D",
-                "#E67326",
-                "#FFD924",
-                "#999999",
-                "#F182BC",
-                "#DAB92E",
-                "#69608A"
-              ]
-            }
-          },
           "height": 700
         }
       ]
@@ -5022,7 +5022,7 @@
         {
           "type": "LinearVariantDisplay",
           "displayId": "1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf-LinearVariantDisplay",
-          "rowColor": "population"
+          "rows": { "color": "population" }
         }
       ],
       "assemblyNames": ["hg19"]
@@ -5103,20 +5103,20 @@
           "displayId": "HG02024_VN049_KHVTrio.chr1.hapibd-LinearMultiRowFeatureDisplay",
           "rows": {
             "field": "parenthap",
-            "sort": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
-          },
-          "legend": { "show": false },
-          "rowColor": {
-            "scale": {
-              "domain": [
-                "Father hap1",
-                "Father hap2",
-                "Mother hap1",
-                "Mother hap2"
-              ],
-              "range": ["#2e6da4", "#8ec3e8", "#d1495b", "#f4a698"]
+            "sort": [
+              "Father hap1",
+              "Father hap2",
+              "Mother hap1",
+              "Mother hap2"
+            ],
+            "colors": {
+              "Father hap1": "#2e6da4",
+              "Father hap2": "#8ec3e8",
+              "Mother hap1": "#d1495b",
+              "Mother hap2": "#f4a698"
             }
           },
+          "legend": { "show": false },
           "height": 80
         }
       ]

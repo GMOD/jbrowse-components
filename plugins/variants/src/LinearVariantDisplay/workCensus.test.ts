@@ -118,7 +118,8 @@ test('what each row step recomputes, phased', async () => {
       run: () => {
         const [first] = display.editableSources
         display.applyRowEdits(display.editableSources, {
-          scale: { domain: [first!.name], range: ['#123456'] },
+          color: { field: 'name' },
+          colors: { [first!.name]: '#123456' },
         })
       },
     },
@@ -164,7 +165,7 @@ test('what each row step recomputes, phased and colored by population', async ()
     displayConfig: {
       ...RECORDS_BAND_OFF,
       unit: 'haplotype',
-      rowColor: 'population',
+      rows: { color: 'population' },
     },
   }).createDisplay()
   const table = await workCensus(display, [

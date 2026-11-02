@@ -284,12 +284,9 @@ describe('sources sharing one panel take the colors the display deals them', () 
 
   it("greys the sources rowColor's pairs leave out under its unknown", async () => {
     const { declared } = await colorsOf({
-      rowColor: {
-        scale: {
-          domain: ['posneg_rw2'],
-          range: ['#123456'],
-          unknown: '#cccccc',
-        },
+      rows: {
+        colors: { posneg_rw2: '#123456' },
+        color: { scale: { unknown: '#cccccc' } },
       },
     })
     expect(declared).toEqual(['#cccccc', '#123456', '#cccccc'])
@@ -297,7 +294,7 @@ describe('sources sharing one panel take the colors the display deals them', () 
 
   it('deals nothing under None, nor over a declared color, nor while a gradient paints', async () => {
     for (const display of [
-      { rowColor: { scale: { unknown: '' } } },
+      { rows: { color: { scale: { unknown: '' } } } },
       { encoding: { color: { value: 'darkgreen' } } },
       { mark: 'rect' },
     ]) {

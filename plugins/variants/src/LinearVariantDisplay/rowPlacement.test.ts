@@ -113,12 +113,7 @@ describe('variant display row placement', () => {
       display.editableSources.map((s, i) =>
         i === 0 ? { ...s, label: 'Renamed' } : s,
       ),
-      {
-        scale: {
-          domain: [display.editableSources[0]!.name],
-          range: ['#123456'],
-        },
-      },
+      { colors: { [display.editableSources[0]!.name]: '#123456' } },
     )
     expect(display.perRegionCellMap.get(0)).toBe(before)
     display.setRowOrder([{ name: 'S1' }, { name: 'S0' }, { name: 'S2' }])

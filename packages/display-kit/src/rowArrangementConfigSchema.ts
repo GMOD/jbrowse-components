@@ -9,6 +9,12 @@ export const ROW_ARRANGEMENT_MEMBERS = [
   'kept',
 ] as const
 
+/** How a bare arrangement is written: its members name the values of `field`. */
+export const ROW_ARRANGEMENT_WRITES = {
+  keyedBy: 'field',
+  keyed: ROW_ARRANGEMENT_MEMBERS,
+} as const
+
 function stringList(snap: Record<string, unknown>, key: string) {
   const value = snap[key]
   if (value === undefined) {

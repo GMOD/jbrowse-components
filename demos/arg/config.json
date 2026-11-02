@@ -166,7 +166,13 @@
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "sim_introgression_painting-LinearMultiRowFeatureDisplay",
-          "rows": "row",
+          "rows": {
+            "field": "row",
+            "color": {
+              "field": "group",
+              "scale": { "domain": ["A", "B"], "range": ["#0072b2", "#e69f00"] }
+            }
+          },
           "height": 280,
           "rowGroups": [
             {
@@ -178,10 +184,6 @@
               "group": "B"
             }
           ],
-          "rowColor": {
-            "field": "group",
-            "scale": { "domain": ["A", "B"], "range": ["#0072b2", "#e69f00"] }
-          },
           "encoding": {
             "color": {
               "field": "color",

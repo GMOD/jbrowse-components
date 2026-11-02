@@ -14,6 +14,7 @@ import {
   minimumRefusal,
   slotWriteRefusal,
 } from './configurationSlot.ts'
+import { refusalProblems, withoutPath } from './requirements.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import {
   bareFormOf,
@@ -199,6 +200,37 @@ function boundedMembers(
       out = out === snapshot ? { ...snapshot } : out
       out[key] = undefined
     }
+  }
+  return out
+}
+
+/** What a notice says of a `refuses` entry `snapshot` breaks at `at`. */
+export function refusalNotice(
+  name: string,
+  at: string | undefined,
+  { slot, message }: { slot: string; message: string },
+) {
+  return `${slotLabel(name, slot, at)}: ${message}`
+}
+
+// A config loading a value a schema's `refuses` entry refuses names it once
+// and loads without it; a write refuses it.
+function refusedMembers(
+  schema: ConfigurationSchemaMetadata,
+  snapshot: Record<string, unknown>,
+  at: string | undefined,
+) {
+  let out = snapshot
+  for (const problem of refusalProblems(schema, snapshot)) {
+    const notice = refusalNotice(schema.name, at, problem)
+    if (writes > 0) {
+      throw new Error(notice)
+    }
+    if (!warned.has(notice)) {
+      warned.add(notice)
+      console.warn(`${notice}: loading without it`)
+    }
+    out = withoutPath(out, problem.slot.split('.'))
   }
   return out
 }
@@ -431,9 +463,9 @@ export function preProcessSnapshotWith(
     checkUndeclaredKeys(schema, custom, at)
   }
   refuseCallbacks(schema, custom)
-  const processed =
-    routesUndeclared || !own ? custom : boundedMembers(schema, custom, at)
-  return processed
+  return routesUndeclared || !own
+    ? custom
+    : refusedMembers(schema, boundedMembers(schema, custom, at), at)
 }
 
 /**

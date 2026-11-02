@@ -265,7 +265,7 @@ test("records alone hand R the record settings as a feature track's", () => {
             tooltip: { field: 'INFO.CLNSIG' },
           },
           tooltip: { show: false },
-          rowColor: 'population',
+          rows: { color: 'population' },
         }),
         recordsOnly: true,
       },

@@ -10,47 +10,45 @@ import {
 /**
  * #config RowColor
  * #category display
- * The `rowColor` setting of the row displays: one ordinal color channel on
- * the row axis. `field` names the row attribute whose values take the
- * colors, `name` (the row itself) by default, and `scale.domain` and
- * `scale.range` pair those values with CSS colors, so a color a reader sets on a row in the
- * arrangement dialog is an entry under `name`. Each display paints it on the
- * element that identifies a row: the quantitative display's plot, or
- * the tint beside its label while a score gradient paints; the multi-row
- * feature display's blocks; the variant display's label tint; the
- * MAF display's label tint, over the adapter's `samples[].color`; the mark
- * display's label tint, over a listed source's color. Where the rows have
- * attributes (a samplesTsv column or a subtrack's group), `field` may name one,
- * and its values each take a palette color. Under `name` the palette deals only
- * where the rows share one panel, a wiggle overlay; stacked rows are identified by
- * their labels. `scale.unknown: ''` deals none, so only the values
- * `scale.domain` lists take a color and every other row keeps the color it
- * already has. A string is the field.
+ * `rows.color`, the row displays' rows colored by an attribute: one ordinal
+ * color channel on the row axis. `field` names the row attribute whose values
+ * take the colors, a samplesTsv column or a subtrack's group, and
+ * `scale.domain` and `scale.range` pair its values with CSS colors, the rest
+ * each taking a palette color. Under `name`, the default, each row is its
+ * own value: the palette (`scale.range`, then the row palette) deals one
+ * color per row, and only where the rows share one panel, a wiggle overlay,
+ * since stacked rows are identified by their labels; `scale.unknown` is the
+ * color every row takes instead, `''` for none. A color pinned on one row is
+ * `rows.colors`, which wins over this, so under `name` this takes no
+ * `scale.domain`. A string is the field.
  *
- * A channel of its own beside `rows`, not `rows.color`: it has its own
- * `field`, palette and key, so a write of `rows` replaces the arrangement
- * and leaves the colors. A pick of another rows field in a menu or the Edit
- * plot form drops the `name` pairs, which name the old field's rows. Nor is it `encoding.color`, which on wiggle and the
- * mark display paints by value.
+ * Each display paints a row's color on the element that identifies a row: the
+ * quantitative display's plot, or the tint beside its label while a score
+ * gradient paints; the multi-row feature display's blocks; the variant
+ * display's label tint; the MAF display's label tint, over the adapter's
+ * `samples[].color`; the mark display's label tint, over a listed source's
+ * color. Not `encoding.color`, which on wiggle and the mark display paints by
+ * value.
  *
  * #example
  * ```js
+ * { type: 'LinearVariantDisplay', rows: { color: 'population' } }
+ * ```
+ * ```js
  * {
- *   type: 'LinearWiggleDisplay',
- *   rowColor: {
- *     scale: { domain: ['tumor', 'normal'], range: ['#b2182b', '#2166ac'] },
+ *   type: 'LinearVariantDisplay',
+ *   rows: {
+ *     color: {
+ *       field: 'population',
+ *       scale: { domain: ['EUR', 'AFR'], range: ['#1f77b4', '#ff7f0e'] },
+ *     },
  *   },
  * }
  * ```
  * ```js
- * { type: 'LinearVariantDisplay', rowColor: 'population' }
- * ```
- * ```js
  * {
  *   type: 'LinearMultiRowFeatureDisplay',
- *   rowColor: {
- *     scale: { domain: ['mom'], range: ['#b2182b'], unknown: '#cccccc' },
- *   },
+ *   rows: { color: { scale: { unknown: '' } }, colors: { mom: '#b2182b' } },
  * }
  * ```
  */
@@ -59,34 +57,36 @@ export const rowColorConfigSchema = ConfigurationSchema(
   {
     /**
      * #slot field
-     * The row attribute whose values take the colors. Under `name` with no
-     * `scale`, stacked rows keep only a file's own colors, since the palette
-     * deals only where the rows share one panel; list the rows in
-     * `scale.domain` to color them.
+     * The row attribute whose values take the colors, or `name`, each row
+     * its own value. Under `name` with no `scale.unknown`, stacked rows keep
+     * only a file's own colors and the colors `rows.colors` pins, since the
+     * palette deals only where the rows share one panel.
      */
     field: {
       type: 'string',
       defaultValue: 'name',
       description:
-        "the row attribute whose values take the colors: name, the row itself, or an attribute of the rows, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group",
+        "the row attribute whose values take the colors: name, each row its own value, or an attribute of the rows, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group; a color pinned on one row is rows.colors",
     },
     /**
      * #slot scale
-     * Which color each value of the field takes.
+     * Which color each value of the field takes. Under `name` it takes no
+     * `domain`: a row's own color is `rows.colors`.
      */
     scale: ConfigurationSchema(
       'RowColorScale',
       {
         ...colorDomainSlot({
           domain:
-            "the field's values that get a color, in order: under name, rows by name",
+            "the field's values that get a color, in order; none under name, where a row's own color is rows.colors",
         }),
         ...colorRangeSlot({
-          range: 'the CSS color each value in domain takes, in the same order',
+          range:
+            'the CSS color each value in domain takes, in the same order; past them, the palette the other values deal from',
         }),
         ...colorUnknownSlot,
       },
-      colorScaleOptions('rowColor.scale'),
+      colorScaleOptions('rows.color.scale'),
     ),
   },
   {
@@ -94,27 +94,14 @@ export const rowColorConfigSchema = ConfigurationSchema(
     writes: 'whole',
     plot: true,
     closed: true,
+    refuses: [
+      {
+        id: 'row-colors-by-name',
+        when: { field: ['name'] },
+        slots: ['scale.domain'],
+        message:
+          "under field name a row's own color is rows.colors, the map beside rows.color, so scale.domain pairs only an attribute's values",
+      },
+    ],
   },
 )
-
-/**
- * `rowColor` once the rows take another field. Under `name` its `domain`
- * names the old field's rows, so those pairs go; the `range` past them, the
- * colors every other row deals from first, and `unknown` stay. Colors by an
- * attribute stay whole.
- */
-export function rowColorForOtherRows(
-  rowColor: Record<string, unknown>,
-): Record<string, unknown> {
-  const { field = 'name' } = rowColor
-  const scale = (rowColor.scale ?? {}) as Record<string, unknown>
-  const { domain, range, ...rest } = scale
-  if (field !== 'name' || !Array.isArray(domain) || domain.length === 0) {
-    return rowColor
-  }
-  const spare = Array.isArray(range) ? range.slice(domain.length) : []
-  return {
-    ...rowColor,
-    scale: { ...rest, ...(spare.length > 0 ? { range: spare } : {}) },
-  }
-}

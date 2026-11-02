@@ -248,7 +248,7 @@ test('a source color paints the pair where a row has no color, and says what it 
       color({ field: 'source', scale: { range: ['red', 'blue'] } }),
       'xyplot',
     ),
-  ).toEqual([expect.stringContaining('set the colors in rowColor')])
+  ).toEqual([expect.stringContaining('set the colors in rows.colors')])
   expect(wiggleColorProblems(color({ field: 'source' }), 'density')).toEqual([
     expect.stringContaining('leaving the score unencoded'),
   ])

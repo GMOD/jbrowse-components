@@ -57,8 +57,8 @@ const isRecord = (v: unknown): v is Snapshot =>
 const stringOf = (v: unknown) => (typeof v === 'string' ? v : undefined)
 
 /**
- * The config an old session's row display state becomes: `rows` and
- * `rowColor` from the arrangement, and `rows.axis` from the sidebar's width
+ * The config an old session's row display state becomes: `rows` from the
+ * arrangement and its colors, and `rows.axis` from the sidebar's width
  * and toggles. A `layout` row answers to its `source` where it has one, which v4's
  * quantitative display kept apart from the `name` it drew, and to its `name`
  * otherwise. `colors: false` leaves the colors behind, for a display whose
@@ -106,19 +106,10 @@ export function liftRetiredRowState(
   }
   const rowsSetting = {
     ...arrangement,
+    ...(colored.length > 0
+      ? { colors: Object.fromEntries(colored.map(r => [r.key, r.color])) }
+      : {}),
     ...(Object.keys(axis).length > 0 ? { axis } : {}),
   }
-  return {
-    ...(Object.keys(rowsSetting).length > 0 ? { rows: rowsSetting } : {}),
-    ...(colored.length > 0
-      ? {
-          rowColor: {
-            scale: {
-              domain: colored.map(r => r.key),
-              range: colored.map(r => r.color),
-            },
-          },
-        }
-      : {}),
-  }
+  return Object.keys(rowsSetting).length > 0 ? { rows: rowsSetting } : {}
 }

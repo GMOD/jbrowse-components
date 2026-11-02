@@ -359,13 +359,8 @@
           "rows": {
             "field": "sample",
             "sort": ["offspring10", "dad"],
-            "kept": ["offspring10", "dad", "mom", "offspring03", "offspring07"]
-          },
-          "rowColor": {
-            "scale": {
-              "domain": ["mom", "offspring03"],
-              "range": ["#222222", "#bbbbbb"]
-            }
+            "kept": ["offspring10", "dad", "mom", "offspring03", "offspring07"],
+            "colors": { "mom": "#222222", "offspring03": "#bbbbbb" }
           },
           "rowGroups": [{ "match": "^(mom|dad)$", "group": "Parents" }],
           "facet": "group"
@@ -3027,7 +3022,7 @@
           "type": "LinearVariantDisplay",
           "displayId": "volvox multi-sample sv-LinearVariantDisplay",
           "genotypes": { "reference": { "show": true } },
-          "rowColor": "population"
+          "rows": { "color": "population" }
         }
       ]
     },

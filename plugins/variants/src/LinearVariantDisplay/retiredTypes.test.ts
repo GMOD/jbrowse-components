@@ -104,7 +104,7 @@ test("the betas' multi-sample name loads as this display, settings whole", () =>
         type: 'LinearMultiSampleVariantDisplay',
         displayId: 't-LinearMultiSampleVariantDisplay',
         height: 350,
-        rowColor: 'population',
+        rows: { color: 'population' },
         records: { show: false },
       },
     ]),
@@ -113,7 +113,7 @@ test("the betas' multi-sample name loads as this display, settings whole", () =>
       type: 'LinearVariantDisplay',
       displayId: 't-LinearVariantDisplay',
       height: 350,
-      rowColor: 'population',
+      rows: { color: 'population' },
       records: { show: false },
     },
   ])

@@ -1718,7 +1718,7 @@ export function stateModelFactory(
               : 'encoding.color'
             return replaced.length > 0
               ? [
-                  `${path}.scale.range: ${replaced.join(', ')} paint their row colors; set those in rowColor`,
+                  `${path}.scale.range: ${replaced.join(', ')} paint their row colors; set those in rows.colors`,
                 ]
               : []
           })

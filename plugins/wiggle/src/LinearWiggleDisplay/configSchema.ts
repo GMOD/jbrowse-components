@@ -1,7 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
-import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import {
   retiredAxisSpellings,
@@ -119,9 +118,13 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * reads; leave it unset and every source is drawn in one shared plot.
      * `sort` is the row order: the subtracks it names lead, the rest keep
      * the adapter's order, and a clustering run rotates its dendrogram towards
-     * it rather than discarding it. `labels`, `tree`, `treeProvenance` and
-     * `kept` are what the arrangement dialog, a clustering run and a focus
-     * write, each as a session edit to this object.
+     * it rather than discarding it. `labels`, `colors`, `tree`,
+     * `treeProvenance` and `kept` are what the arrangement dialog, a
+     * clustering run and a focus write, each as a session edit to this
+     * object. `colors` pins a subtrack's color ahead of the adapter's and the
+     * palette: its plot, on both sides of the `origin`, while
+     * `encoding.color` colors by `source`, and otherwise, or under a score
+     * gradient, the tint beside its label.
      * #example
      * ```json
      * {
@@ -129,24 +132,14 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      *   "rows": "source"
      * }
      * ```
-     */
-    rows: quantitativeRowsConfigSchema,
-    /**
-     * #slot rowColor
-     * The color a reader set on a named subtrack, as `scale.domain` and
-     * `scale.range` pairs, ahead of the adapter's color and the palette: its
-     * plot, on both sides of the `origin`, while `encoding.color` colors by
-     * `source`, and otherwise, or under a score gradient, the tint beside its
-     * label.
-     * #example
      * ```json
      * {
      *   "type": "LinearWiggleDisplay",
-     *   "rowColor": { "scale": { "domain": ["tumor"], "range": ["#b2182b"] } }
+     *   "rows": { "colors": { "tumor": "#b2182b" } }
      * }
      * ```
      */
-    rowColor: rowColorConfigSchema,
+    rows: quantitativeRowsConfigSchema,
     ...trackHeightConfigSchemaFields(),
     /**
      * #slot encoding
@@ -192,6 +185,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
+    misnamed: { rowColor: 'rows.color' },
     retired: {
       ...retiredBaseDisplaySpellings,
       ...retiredAxisSpellings(WIGGLE_Y_PATHS.members),

@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { SIDEBAR_HINT_LINE_PX, sidebarPanelWidth } from '@jbrowse/tree-sidebar'
@@ -67,7 +68,7 @@ function derived(display: LinearWiggleDisplayModel) {
     })),
     markColors: display.markSources.map(s => s.color),
     rowColorKey:
-      display.legendSpec.sections.find(s => s.id === 'rowColor')?.items ?? [],
+      display.legendSpec.sections.find(s => s.id === 'rows.color')?.items ?? [],
     rowTree: display.rowTree,
     rowArrangementIsCustom: display.rowArrangementIsCustom,
   }
@@ -85,9 +86,9 @@ test('overlay: tableau10 by name, grouped or not', async () => {
   expect(derived(display)).toMatchSnapshot()
 })
 
-test("overlay: rowColor's spare range leads the palette", async () => {
+test("overlay: rows.color's spare range leads the palette", async () => {
   const display = await loaded(GROUPED, {
-    rowColor: { scale: { range: ['#111111', '#222222'] } },
+    rows: { color: { scale: { range: ['#111111', '#222222'] } } },
   })
   expect(derived(display)).toMatchSnapshot()
 })
@@ -115,9 +116,8 @@ test('rows, density: identity moves to the label tint', async () => {
 // group is missing a value rather than in a category, so the deal skips it.
 test('rows colored by an attribute take its values colors over their own', async () => {
   const display = await loaded(GROUPED, {
-    ...rowsPerSource(),
     defaultRendering: 'line',
-    rowColor: 'group',
+    rows: { field: 'source', color: 'group' },
   })
   expect(display.rowColorFields).toEqual(['group'])
   expect(
@@ -159,8 +159,7 @@ test('rows: the declared order leads and the rest keep adapter order', async () 
 
 test('rows: a focus hides rows without recoloring the kept ones', async () => {
   const display = await loaded(GROUPED, {
-    ...rowsPerSource(),
-    rowColor: 'group',
+    rows: { field: 'source', color: 'group' },
   })
   display.setRowFocus(['Grain2', 'Grain4'])
   expect(derived(display)).toMatchSnapshot()
@@ -175,11 +174,10 @@ test('rows: a focus hides rows without recoloring the kept ones', async () => {
 
 test('rows: a legend click focuses the group it names', async () => {
   const display = await loaded(GROUPED, {
-    ...rowsPerSource(),
     defaultRendering: 'density',
-    rowColor: 'group',
+    rows: { field: 'source', color: 'group' },
   })
-  display.focusLegendEntry('rowColor', 'Islet')
+  display.focusLegendEntry('rows.color', 'Islet')
   expect(display.sources.map(s => s.name)).toEqual(['Grain1', 'Grain2'])
 })
 
@@ -190,7 +188,8 @@ test('rows, line: dialog edits reorder, recolor the plot and relabel', async () 
   })
   const [g1, g2, g3, g4] = display.editableSources
   display.applyRowEdits([{ ...g3!, label: 'Liver 3' }, g2!, g4!, g1!], {
-    scale: { domain: [g2!.name], range: ['#00f'] },
+    color: { field: 'name' },
+    colors: { [g2!.name]: '#00f' },
   })
   expect(derived(display)).toMatchSnapshot()
   display.resetRowArrangement()
@@ -204,7 +203,8 @@ test('rows, density: a dialog edit tints the label', async () => {
   })
   const [, g2] = display.editableSources
   display.applyRowEdits(display.editableSources, {
-    scale: { domain: [g2!.name], range: ['#00f'] },
+    color: { field: 'name' },
+    colors: { [g2!.name]: '#00f' },
   })
   expect(derived(display)).toMatchSnapshot()
 })
@@ -237,7 +237,8 @@ test('rows: a run lands its tree, a reorder drops it, a reset returns to the see
 test('overlay, density: a dialog edit is kept and paints no strip', async () => {
   const display = await loaded(GROUPED, { defaultRendering: 'density' })
   display.applyRowEdits(display.editableSources, {
-    scale: { domain: ['Grain1'], range: ['#00f'] },
+    color: { field: 'name' },
+    colors: { Grain1: '#00f' },
   })
   expect(display.markSources[0]).toEqual({ name: 'Grain1', color: undefined })
   expect(pairedColorsOf(display.rowColorSetting.scale).get('Grain1')).toBe(
@@ -288,19 +289,16 @@ test('rows: the plot box writes the members it names', async () => {
 
 // A reorder alone writes the config's own color pairs back in their order,
 // so it leaves no styling delta and offers no reset for a recolor.
-test('rows: a reorder keeps the declared rowColor as it was', async () => {
+test('rows: a reorder keeps the declared rows.colors as they were', async () => {
   const display = await loaded(GROUPED, {
-    ...rowsPerSource(),
-    rowColor: {
-      scale: { domain: ['Grain3', 'Grain1'], range: ['#0f0', '#00f'] },
-    },
+    rows: { field: 'source', colors: { Grain3: '#0f0', Grain1: '#00f' } },
   })
   expect(display.rowColorIsCustom).toBe(false)
   const [g1, g2, g3, g4] = display.editableSources
   display.applyRowEdits([g1!, g3!, g2!, g4!])
-  expect(display.configuration.rowColor.scale.domain).toEqual([
-    'Grain3',
-    'Grain1',
-  ])
+  expect(getConf(display, ['rows', 'colors'])).toEqual({
+    Grain3: '#0f0',
+    Grain1: '#00f',
+  })
   expect(display.rowColorIsCustom).toBe(false)
 })

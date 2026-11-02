@@ -127,8 +127,8 @@
       "displays": [
         {
           "type": "LinearVariantDisplay",
-          "rowColor": "group",
-          "height": 900
+          "height": 900,
+          "rows": { "color": "group" }
         }
       ]
     },
@@ -157,8 +157,8 @@
       "displays": [
         {
           "type": "LinearVariantDisplay",
-          "rowColor": "group",
-          "height": 900
+          "height": 900,
+          "rows": { "color": "group" }
         }
       ]
     },
@@ -819,8 +819,8 @@
       "displays": [
         {
           "type": "LinearVariantDisplay",
-          "rowColor": "size",
-          "height": 760
+          "height": 760,
+          "rows": { "color": "size" }
         }
       ]
     }

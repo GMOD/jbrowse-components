@@ -101,7 +101,7 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
     genotypes: { reference: { show: mode === 'draw' } },
   }),
   colorBy: (field: unknown) =>
-    typeof field === 'string' && field ? { rowColor: field } : {},
+    typeof field === 'string' && field ? { rows: { color: field } } : {},
   autoscale: () => ({}),
   minScore: () => ({}),
   maxScore: () => ({}),

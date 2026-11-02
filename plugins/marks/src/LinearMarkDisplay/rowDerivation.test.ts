@@ -414,7 +414,8 @@ test('a reset returns the order, labels, tree and focus to the config', async ()
   await clusterRun(display, '((dad,s2),(mom,s10));')
   const [first, ...rest] = display.editableSources
   display.applyRowEdits([...rest, { ...first!, label: 'Last' }], {
-    scale: { domain: [first!.name], range: ['#0000ff'] },
+    color: { field: 'name' },
+    colors: { [first!.name]: '#0000ff' },
   })
   display.setRowFocus(['mom'])
   expect(display.rowArrangementIsCustom).toBe(true)

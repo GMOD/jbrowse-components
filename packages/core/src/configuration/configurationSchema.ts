@@ -12,7 +12,7 @@ import { isObservableArray } from 'mobx'
 import { getContainingTrack, getSession } from '../util/mstUtils.ts'
 import { isSessionWithEditableTrackConfig } from '../util/types/index.ts'
 import ConfigSlot, { slotDefinitionRefusal } from './configurationSlot.ts'
-import { checkRequirements } from './requirements.ts'
+import { checkRefusals, checkRequirements } from './requirements.ts'
 import {
   getConfigurationSchemaMetadata,
   registerConfigurationSchema,
@@ -178,6 +178,16 @@ export interface ConfigurationSchemaOptions<
     snapshot: Record<string, unknown>,
   ) => Record<string, unknown>
   requires?: REQUIREMENT[]
+  /**
+   * The converse of `requires`: when every slot named in `when` holds one of
+   * the listed values, each dotted path in `slots` has to hold no value (a
+   * non-empty string, list or object), as `rows.color` takes no
+   * `scale.domain` while its `field` is `name`. Met at ADR-221's doors: a
+   * config loading one names it on the console and loads without it, a write
+   * refuses it with `message`, and the generated JSON Schema carries it as
+   * `if`/`then`, which `jbrowse validate` reports.
+   */
+  refuses?: ConfigurationSchemaRequirement[]
 }
 
 type SchemaHook = (self: any) => any
@@ -324,7 +334,7 @@ function preprocessConfigurationSchemaArguments(
       baseMeta.definition,
       schemaDefinition,
     )
-    // The hooks, `requires`, `retired` and `misnamed` compose, base first,
+    // The hooks, `requires`, `refuses`, `retired` and `misnamed` compose, base first,
     // where every other option is replaced by the child's: a track schema's
     // own preProcessSnapshot must not drop the base's display-stub injection.
     const basePreProcess = baseMeta.options.preProcessSnapshot
@@ -332,6 +342,10 @@ function preprocessConfigurationSchemaArguments(
     const requires = [
       ...(baseMeta.options.requires ?? []),
       ...(inputOptions.requires ?? []),
+    ]
+    const refuses = [
+      ...(baseMeta.options.refuses ?? []),
+      ...(inputOptions.refuses ?? []),
     ]
     options = {
       ...baseMeta.options,
@@ -349,6 +363,7 @@ function preprocessConfigurationSchemaArguments(
           ? { ...baseMeta.options.retired, ...inputOptions.retired }
           : undefined,
       requires: requires.length ? requires : undefined,
+      refuses: refuses.length ? refuses : undefined,
       misnamed:
         baseMeta.options.misnamed || inputOptions.misnamed
           ? { ...baseMeta.options.misnamed, ...inputOptions.misnamed }
@@ -429,6 +444,7 @@ function makeConfigurationSchemaModel<
     }
   }
   checkRequirements(modelName, schemaDefinition, options.requires ?? [])
+  checkRefusals(modelName, schemaDefinition, options.refuses ?? [])
   checkShorthand(modelName, schemaDefinition, options)
   checkMisnamed(modelName, schemaDefinition, options)
 

@@ -11,11 +11,10 @@ const FAMILY = features([
   { source: 'kid', start: 300, end: 600, score: 5 },
 ])
 
-function loaded(color: unknown, rowColor?: unknown) {
+function loaded(color: unknown, colors?: Record<string, string>) {
   const { display } = createTestEnvironment({
     marks: [{ mark: 'bar', encoding: { y: 'score', color } }],
-    rows: 'source',
-    ...(rowColor ? { rowColor } : {}),
+    rows: colors ? { field: 'source', colors } : 'source',
   }).createDisplay()
   display.setRpcData(0, workerResult(display, FAMILY), REGION)
   return display
@@ -24,7 +23,7 @@ function loaded(color: unknown, rowColor?: unknown) {
 const keyColors = (display: ReturnType<typeof loaded>) =>
   Object.fromEntries(
     display.legendSpec.sections
-      .filter(s => s.id !== 'rowColor')
+      .filter(s => s.id !== 'rows.color')
       .flatMap(s => s.items)
       .map(item => [item.label, item.color]),
   )
@@ -32,9 +31,7 @@ const keyColors = (display: ReturnType<typeof loaded>) =>
 const BLUE = 'rgba(0,0,255,1)'
 const RED = 'rgba(255,0,0,1)'
 const YELLOW = 'rgba(255,255,0,1)'
-const MOM_DAD = {
-  scale: { domain: ['mom', 'dad'], range: ['#0000ff', '#ff0000'] },
-}
+const MOM_DAD = { mom: '#0000ff', dad: '#ff0000' }
 
 it('a color over the rows field paints each row its row color', () => {
   expect(keyColors(loaded('source', MOM_DAD))).toMatchObject({
@@ -49,7 +46,7 @@ it("a row color beats the mark's own range, which colors the rows with none", ()
       field: 'source',
       scale: { domain: ['mom', 'kid'], range: ['#00ff00', '#ffff00'] },
     },
-    { scale: { domain: ['mom'], range: ['#0000ff'] } },
+    { mom: '#0000ff' },
   )
   expect(keyColors(display)).toMatchObject({ mom: BLUE, kid: YELLOW })
 })
@@ -84,9 +81,7 @@ it('the key still names each written value', () => {
 
 it('coloring one row leaves the palette colors of the others where they were', () => {
   const before = keyColors(loaded('source'))
-  const after = keyColors(
-    loaded('source', { scale: { domain: ['mom'], range: ['#0000ff'] } }),
-  )
+  const after = keyColors(loaded('source', { mom: '#0000ff' }))
   expect(after.mom).toBe(BLUE)
   expect(after.dad).toBe(before.dad)
   expect(after.kid).toBe(before.kid)
@@ -98,7 +93,7 @@ it('a row-colored value the domain leaves out keeps its own key row, not Other',
       field: 'source',
       scale: { domain: ['mom'], range: ['#00ff00'], unknown: '#888888' },
     },
-    { scale: { domain: ['kid'], range: ['#ffff00'] } },
+    { kid: '#ffff00' },
   )
   expect(keyColors(display)).toMatchObject({ kid: YELLOW })
 })
@@ -109,7 +104,7 @@ it('a written range a row color replaces is named in the corner', () => {
       field: 'source',
       scale: { domain: ['mom', 'kid'], range: ['#00ff00', '#ffff00'] },
     },
-    { scale: { domain: ['mom'], range: ['#0000ff'] } },
+    { mom: '#0000ff' },
   )
   expect(display.cornerNotices).toContainEqual(
     expect.stringContaining('mom paint their row colors'),

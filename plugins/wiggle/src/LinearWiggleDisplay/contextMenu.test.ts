@@ -93,7 +93,8 @@ test('acts on the column the menu was opened over, not the one it is closed from
 test('keeps a per-source color across the reorder', () => {
   const display = makeDisplay({ a: 1, b: 5 })
   display.applyRowEdits([{ name: 'a' }, { name: 'b' }], {
-    scale: { domain: ['a'], range: ['red'] },
+    color: { field: 'name' },
+    colors: { a: 'red' },
   })
   display.openContextMenu({
     clientX: 0,

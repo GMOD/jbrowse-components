@@ -26,7 +26,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * chr1    2000000  5500000  seg2  HG00096
  * chr1    0        3500000  seg3  HG00097
  * ```
- * Paint one row per `sample`, coloring each row from `rowColor` and fixing
+ * Paint one row per `sample`, pinning each row's color in `rows.colors` and fixing
  * HG00097 above HG00096 regardless of file order:
  * ```js
  * {
@@ -42,12 +42,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     {
  *       type: 'LinearMultiRowFeatureDisplay',
  *       displayId: 'ancestry_painting-LinearMultiRowFeatureDisplay',
- *       rows: { field: 'sample', sort: ['HG00097', 'HG00096'] },
- *       rowColor: {
- *         scale: {
- *           domain: ['HG00096', 'HG00097'],
- *           range: ['#4e79a7', '#f28e2b'],
- *         },
+ *       rows: {
+ *         field: 'sample',
+ *         sort: ['HG00097', 'HG00096'],
+ *         colors: { HG00096: '#4e79a7', HG00097: '#f28e2b' },
  *       },
  *     },
  *   ],

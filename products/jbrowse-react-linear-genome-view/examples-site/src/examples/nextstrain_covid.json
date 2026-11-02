@@ -190,7 +190,7 @@
           "variantLayout": "columns",
           "displayId": "SARS-CoV-2-genotypes-LinearVariantDisplay",
           "height": 400,
-          "rowColor": "region"
+          "rows": { "color": "region" }
         }
       ]
     }

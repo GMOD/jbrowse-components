@@ -32,7 +32,7 @@ Minimal `VariantTrack` config. See the
 
 Preloading sample metadata: point the adapter's `samplesTsvLocation` at a TSV
 whose first column is the sample name and whose other columns are per-sample
-attributes (e.g. `population`), then `rowColor` one of those attributes to
+attributes (e.g. `population`), then `rows.color` one of those attributes to
 color the sidebar rows on load. This is the 1000 Genomes "colored by
 population" demo config:
 
@@ -51,7 +51,7 @@ population" demo config:
     {
       type: 'LinearVariantDisplay',
       height: 800,
-      rowColor: 'population',
+      rows: { color: 'population' },
     },
   ],
 }
@@ -128,7 +128,6 @@ Display slots go on a display entry: `"displays": [{ "type": "LinearVariantDispl
 | <span id="slot-unit">**unit**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (sample, haplotype) = <code>'sample'</code> | The unit one row draws: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype |
 | <span id="slot-encoding">**encoding**</span><br>[VariantCellEncoding](../variantcellencoding) | The channels the records and the genotype cells share: `encoding.color`, the hue of every record and of every cell with an alt allele. |
 | <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The floating key over the display. It is clipped to the display's own bounds, so turn it off to size a short display to its rows rather than to its key. |
-| <span id="slot-rowcolor">**rowColor**</span><br>[RowColor](../rowcolor) | The bar beside each row's label: a sample-metadata attribute whose palette colors every row, or under `name` the colors a reader set row by row. |
 | <span id="slot-facet">**facet**</span><br>[Facet](../facet) | A sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. `"population"`) whose values each take a band of rows; or `{ field, sort }`, the listed values banding first and the rest sorted. Unset, the rows keep their existing order.<br><br>The band is applied when the rows are read, over whatever order the reader has arranged, so a drag that moves a sample into another band snaps back while this is set. Each band is labelled beside the tree and draws the clade of the cluster tree whose leaves are exactly its rows; a clustering run under bands clusters each band apart. |
 | <span id="slot-records">**records**</span><br>[RecordsBand](../recordsband) | The records, stacked as a feature track stacks them, an SV colored by its type. `show` (default on), `height`, the band's height over the rows, `labels`, and a feature track's record settings: `displayMode`, `mark`, `facet`, `maxFeatureScreenDensity` and `tooltip.field`. |
 | <span id="slot-genotypes">**genotypes**</span><br>[GenotypeRows sub-schema](#slot-genotypesshow) | The genotype rows: `show` and `reference.show`. A cell with an alt allele paints its hue lightened by its dosage, the share of its called alleles that are non-reference, so a homozygote paints the hue itself and a heterozygote a lighter version of it. Unset, a VCF with two or more samples draws its rows, and a one-sample VCF, a call set, draws as one with no samples does: the records alone, every one the filter admits, sized by `heightMode`. Off, the display reads no genotypes and the track is the records band, every record the filter admits, at the band's `records.height`, with a chip that brings the rows back.<br><span class="cell-more"><button type="button" class="cell-more-trigger">example</button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{&#10;&#160;&#160;type: 'LinearVariantDisplay',&#10;&#160;&#160;genotypes: { reference: { show: true } },&#10;}</code></pre></dialog></span> |

@@ -70,7 +70,21 @@
         {
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "bxd_chromosome_painting_mm10-LinearMultiRowFeatureDisplay",
-          "rows": "sample",
+          "rows": {
+            "field": "sample",
+            "color": {
+              "field": "group",
+              "scale": {
+                "domain": ["black", "grey", "brown", "dilute brown"],
+                "range": [
+                  "rgb(30,30,30)",
+                  "rgb(150,150,160)",
+                  "rgb(130,80,40)",
+                  "rgb(210,175,130)"
+                ]
+              }
+            }
+          },
           "encoding": {
             "color": {
               "scale": {
@@ -104,18 +118,6 @@
               "group": "dilute brown"
             }
           ],
-          "rowColor": {
-            "field": "group",
-            "scale": {
-              "domain": ["black", "grey", "brown", "dilute brown"],
-              "range": [
-                "rgb(30,30,30)",
-                "rgb(150,150,160)",
-                "rgb(130,80,40)",
-                "rgb(210,175,130)"
-              ]
-            }
-          },
           "facet": "group"
         }
       ]

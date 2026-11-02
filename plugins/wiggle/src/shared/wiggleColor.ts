@@ -231,7 +231,7 @@ export function wiggleColorProblems(color: ColorSetting, rendering: string) {
     return [
       ...(wiggleColorWritten(color)
         ? [
-            'encoding.color: a color over source paints each subtrack its row color, so its value and scale paint nothing; set the colors in rowColor',
+            'encoding.color: a color over source paints each subtrack its row color, so its value and scale paint nothing; set the colors in rows.colors',
           ]
         : []),
       ...(rendering === 'density'

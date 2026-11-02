@@ -1,6 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
-import { ROWS_WRITES } from '@jbrowse/display-kit/rowsConfigSchema'
+import {
+  ROW_ARRANGEMENT_WRITES,
+  rowArrangementConfigSchema,
+} from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -44,7 +46,7 @@ export const laneRowsConfigSchema = ConfigurationSchema(
      */
     baseConfiguration: rowArrangementConfigSchema,
     shorthand: 'field',
-    writes: ROWS_WRITES,
+    writes: ROW_ARRANGEMENT_WRITES,
     plot: true,
   },
 )

@@ -4,14 +4,18 @@ import {
   staleKeyedMembers,
 } from '@jbrowse/add-track-core'
 import {
+  getParent,
+  getPathParts,
   getSnapshot,
   getType,
+  hasParent,
   isStateTreeNode,
   isType,
 } from '@jbrowse/mobx-state-tree'
 
 import { isPlainObject } from '../util/objectUtils.ts'
 import { readConfObject } from './readConfObject.ts'
+import { refusalProblems } from './requirements.ts'
 import {
   getConfigurationSchemaDefinition,
   getConfigurationSchemaMetadata,
@@ -24,6 +28,7 @@ import {
 import {
   configPathOf,
   liftRetiredSpellings,
+  refusalNotice,
   liftShorthand,
   preProcessSnapshotWith,
   refusingUndeclaredKeys,
@@ -130,6 +135,41 @@ function unsetStaleKeyedMembers(
   }
 }
 
+function withValueAt(
+  snapshot: unknown,
+  path: readonly string[],
+  value: unknown,
+): Record<string, unknown> {
+  const [head = '', ...rest] = path
+  const held = isPlainObject(snapshot) ? snapshot : {}
+  return {
+    ...held,
+    [head]: rest.length > 0 ? withValueAt(held[head], rest, value) : value,
+  }
+}
+
+// A write of one member checked against the `refuses` entries of every
+// config node above it, which see the member beside the ones it is refused
+// under, as `rows.color.scale.domain` is refused while `rows.color.field` is
+// `name`
+function refuseRefusedMemberWrite(
+  at: AnyConfigurationModel,
+  path: readonly string[],
+  value: unknown,
+) {
+  const meta = getConfigurationSchemaMetadata(at)
+  const problem = meta?.options.refuses
+    ? refusalProblems(meta, withValueAt(getSnapshot(at), path, value))[0]
+    : undefined
+  if (problem) {
+    throw new Error(refusalNotice(meta!.name, configPathOf(at), problem))
+  }
+  const parent: unknown = hasParent(at) ? getParent(at) : undefined
+  if (isConfigurationModel(parent)) {
+    refuseRefusedMemberWrite(parent, [getPathParts(at).at(-1)!, ...path], value)
+  }
+}
+
 // through setSlot or setSubschema, whose guards MST's `applyPatch` would skip
 function writeConfPath(
   conf: AnyConfigurationModel,
@@ -150,6 +190,7 @@ function writeConfPath(
     node = child
   }
   const leaf = path.at(-1)!
+  refuseRefusedMemberWrite(node, [leaf], value)
   unsetStaleKeyedMembers(node, leaf, value)
   // off the declaration: a stringArray slot holds an array node too
   const declared = getConfigurationSchemaDefinition(node)?.[leaf]

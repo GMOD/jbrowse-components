@@ -36,7 +36,7 @@ export function createMafTestEnvironment({
   assemblyEnd?: number
   // How much of the assembly `createDisplay` displays by default.
   viewRegionEnd?: number
-  // Display config slots, for the ones with no setter (`rows`, `rowColor`).
+  // Display config slots, for the ones with no setter (`rows`).
   displayConfig?: Record<string, unknown>
   assemblyAliases?: Record<string, string>
 } = {}) {

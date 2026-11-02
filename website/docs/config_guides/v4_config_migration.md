@@ -135,7 +135,7 @@ a file, and fails on a key it does not know.
 |  | `alpha` (session) | `encoding.opacity` on `LinearSyntenyView` |
 |  | `colorBy` (session) | `encoding.color.field` on `LinearSyntenyView` |
 |  | `minAlignmentLength` (session) | `filter` on `LinearSyntenyView` |
-| `LinearVariantDisplay` | `colorBy` | `rowColor` |
+| `LinearVariantDisplay` | `colorBy` | `rows.color` |
 |  | `featureHeight` | `records.mark.height` |
 |  | `maxFeatureScreenDensity` | `records.maxFeatureScreenDensity` |
 |  | `minorAlleleFrequencyFilter` | `filter` |
@@ -169,7 +169,7 @@ a file, and fails on a key it does not know.
 |  | `color` (session) | `encoding.color.value` |
 |  | `constraints` (session) | `encoding.y.scale.domainMax`, `encoding.y.scale.domainMin` |
 |  | `displayCrossHatches` (session) | `encoding.y.axis.grid` |
-|  | `layout` (session) | `rowColor.scale.domain`, `rowColor.scale.range`, `rows.sort` |
+|  | `layout` (session) | `rows.colors`, `rows.sort` |
 |  | `negColor` (session), `posColor` (session) | `encoding.color.scale.range` |
 |  | `rendererTypeNameState` (session) | `mark.type` |
 |  | `scale` (session) | `encoding.y.scale.type` |

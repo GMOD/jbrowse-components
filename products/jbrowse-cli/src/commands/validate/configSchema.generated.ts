@@ -11892,6 +11892,148 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "RowColorScale": {
+      "title": "RowColorScale",
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "domain": {
+          "description": "the field's values that get a color, in order; none under name, where a row's own color is rows.colors.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "range": {
+          "description": "the CSS color each value in domain takes, in the same order; past them, the palette the other values deal from.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/CssColorEntry"
+            }
+          }
+        },
+        "unknown": {
+          "description": "color for a value missing from domain. Unset: the next palette color where the display deals one, and the levels a preset field names, such as strand's, keep their own colors. A color: that color. \\"\\": no color dealt, so a feature paints the no-value grey, a variant cell the alt hue, and a row keeps the color it already has.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/CssColor"
+          }
+        }
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
+    "RowColor": {
+      "title": "RowColor",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "name",
+          "$ref": "#/$defs/PlainString",
+          "type": "string"
+        },
+        {
+          "title": "RowColor",
+          "type": "object",
+          "allOf": [
+            {
+              "x-requirement": {
+                "id": "row-colors-by-name",
+                "slot": "scale.domain"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "scale"
+                  ],
+                  "properties": {
+                    "scale": {
+                      "type": "object",
+                      "required": [
+                        "domain"
+                      ],
+                      "properties": {
+                        "domain": {
+                          "not": {
+                            "enum": [
+                              null,
+                              "",
+                              [],
+                              {}
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "under field name a row's own color is rows.colors, the map beside rows.color, so scale.domain pairs only an attribute's values"
+            }
+          ],
+          "x-closed": true,
+          "properties": {
+            "field": {
+              "description": "the row attribute whose values take the colors: name, each row its own value, or an attribute of the rows, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group; a color pinned on one row is rows.colors.",
+              "default": "name",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "scale": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowColorScale"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "VariantRows": {
       "title": "VariantRows",
       "anyOf": [
@@ -12000,6 +12142,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               },
               "else": {
                 "$ref": "#/$defs/RowAxisWithGrid"
+              }
+            },
+            "colors": {
+              "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "color": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowColor"
               }
             },
             "step": {
@@ -12349,101 +12511,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "additionalProperties": false
-    },
-    "RowColorScale": {
-      "title": "RowColorScale",
-      "type": "object",
-      "x-closed": true,
-      "properties": {
-        "domain": {
-          "description": "the field's values that get a color, in order: under name, rows by name.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "anyOf": [
-              {
-                "type": "array",
-                "items": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "number"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        },
-        "range": {
-          "description": "the CSS color each value in domain takes, in the same order.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/CssColorEntry"
-            }
-          }
-        },
-        "unknown": {
-          "description": "color for a value missing from domain. Unset: the next palette color where the display deals one, and the levels a preset field names, such as strand's, keep their own colors. A color: that color. \\"\\": no color dealt, so a feature paints the no-value grey, a variant cell the alt hue, and a row keeps the color it already has.",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/CssColor"
-          }
-        }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
-    },
-    "RowColor": {
-      "title": "RowColor",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "name",
-          "$ref": "#/$defs/PlainString",
-          "type": "string"
-        },
-        {
-          "title": "RowColor",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "field": {
-              "description": "the row attribute whose values take the colors: name, the row itself, or an attribute of the rows, such as a column of a multi-sample variant adapter's samplesTsvLocation, e.g. population, or a subtrack's group.",
-              "default": "name",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "scale": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/RowColorScale"
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
     },
     "Facet": {
       "title": "Facet",
@@ -12801,14 +12868,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/Legend"
-          }
-        },
-        "rowColor": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowColor"
           }
         },
         "facet": {
@@ -13655,6 +13714,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "else": {
                 "$ref": "#/$defs/RowAxisWithGrid"
               }
+            },
+            "colors": {
+              "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "color": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowColor"
+              }
             }
           },
           "patternProperties": {
@@ -14147,14 +14226,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/QuantitativeRows"
-          }
-        },
-        "rowColor": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowColor"
           }
         },
         "height": {
@@ -14746,6 +14817,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "else": {
                 "$ref": "#/$defs/RowAxis"
               }
+            },
+            "colors": {
+              "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "color": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowColor"
+              }
             }
           },
           "patternProperties": {
@@ -15104,14 +15195,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/MafRows"
-          }
-        },
-        "rowColor": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowColor"
           }
         },
         "legend": {
@@ -15752,6 +15835,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "$ref": "#/$defs/RowAxisWithGrid"
               }
             },
+            "colors": {
+              "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "color": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowColor"
+              }
+            },
             "step": {
               "description": "row height in px, the rows that do not fit scrolling; or \\"fit\\" (the default) to divide the track height between the rows, as heightMode \\"fit\\" does on a feature track.",
               "default": "fit",
@@ -16027,14 +16130,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/RowsWithStep"
           }
         },
-        "rowColor": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowColor"
-          }
-        },
         "rowGroups": {
           "if": {
             "type": "null"
@@ -16195,14 +16290,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/RowsWithStep"
-          }
-        },
-        "rowColor": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowColor"
           }
         },
         "rowGroups": {
@@ -16377,14 +16464,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/RowsWithStep"
-          }
-        },
-        "rowColor": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowColor"
           }
         },
         "rowGroups": {
@@ -17260,22 +17339,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "rowColor": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rowColor"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowColor"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowColor"
-                }
-              ]
-            },
             "data": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/data"
             },
@@ -17759,9 +17822,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rows": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
-            },
-            "rowColor": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
             },
             "rowGroups": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
@@ -18257,16 +18317,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/legend"
-                }
-              ]
-            },
-            "rowColor": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/rowColor"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
                 }
               ]
             },
@@ -18871,16 +18921,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "rowColor": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rowColor"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
-                }
-              ]
-            },
             "height": {
               "anyOf": [
                 {
@@ -19222,16 +19262,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "rowColor": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rowColor"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
-                }
-              ]
-            },
             "height": {
               "anyOf": [
                 {
@@ -19565,9 +19595,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rows": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rows"
             },
-            "rowColor": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/rowColor"
-            },
             "height": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/height"
             },
@@ -19856,16 +19883,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rows"
-                }
-              ]
-            },
-            "rowColor": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowColor"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
                 }
               ]
             },
@@ -20647,9 +20664,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "transform": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/transform"
             },
-            "rowColor": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowColor"
-            },
             "rowGroups": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
@@ -20859,9 +20873,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rows": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rows"
-            },
-            "rowColor": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowColor"
             },
             "rowGroups": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowGroups"

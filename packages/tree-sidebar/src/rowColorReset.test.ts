@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -14,7 +13,6 @@ jest.mock('@jbrowse/core/util/baseDisplayConfig', () => ({
 
 const configSchema = ConfigurationSchema('ResetTreeDisplay', {
   rows: rowsConfigSchema,
-  rowColor: rowColorConfigSchema,
 })
 
 function makeDisplay(base: Record<string, unknown>) {
@@ -46,12 +44,14 @@ const colorsOf = (display: {
 
 test("one reset returns a value recolor to the base's grey", () => {
   const display = makeDisplay({
-    rowColor: { field: 'group', scale: { unknown: '#ccc' } },
+    rows: { color: { field: 'group', scale: { unknown: '#ccc' } } },
   })
   expect(display.rowColorIsCustom).toBe(false)
   display.applyRowEdits(display.editableSources, {
-    field: 'group',
-    scale: { domain: ['y'], range: ['#abcdef'], unknown: '#ccc' },
+    color: {
+      field: 'group',
+      scale: { domain: ['y'], range: ['#abcdef'], unknown: '#ccc' },
+    },
   })
   expect(display.rowColorIsCustom).toBe(true)
   expect(colorsOf(display)).toEqual({ a: '#ccc', b: '#abcdef', c: '#ccc' })
@@ -65,9 +65,11 @@ test("one reset returns a value recolor to the base's grey", () => {
 
 test('a color by picked over name pairs survives a reset', () => {
   const display = makeDisplay({
-    rowColor: { scale: { domain: ['a'], range: ['#f00'] } },
+    rows: { colors: { a: '#f00' } },
   })
-  display.applyRowEdits(display.editableSources, { field: 'group' })
+  display.applyRowEdits(display.editableSources, {
+    color: { field: 'group' },
+  })
   expect(display.rowColorIsCustom).toBe(false)
 
   display.resetRowArrangement()
@@ -77,15 +79,15 @@ test('a color by picked over name pairs survives a reset', () => {
 
 test("a row recolored under name resets to the base's pairs", () => {
   const display = makeDisplay({
-    rowColor: { scale: { domain: ['a'], range: ['#f00'] } },
+    rows: { colors: { a: '#f00' } },
   })
   display.applyRowEdits(display.editableSources, {
-    scale: { domain: ['a', 'b'], range: ['#f00', '#00f'] },
+    colors: { a: '#f00', b: '#00f' },
   })
-  expect(display.rowColorIsCustom).toBe(true)
+  expect(display.rowArrangementIsCustom).toBe(true)
 
   display.resetRowArrangement()
 
   expect(colorsOf(display)).toEqual({ a: '#f00' })
-  expect(display.rowColorIsCustom).toBe(false)
+  expect(display.rowArrangementIsCustom).toBe(false)
 })

@@ -39,9 +39,8 @@ test('a configured facet writes no order and is not a custom row order', () => {
 // nothing and cost every session a row table it had to carry.
 test('the config after setColorBy carries no palette colors', () => {
   const display = colored()
-  expect(getSnapshot(display.configuration).rows).toBeUndefined()
-  expect(getSnapshot(display.configuration).rowColor).toEqual({
-    field: 'population',
+  expect(getSnapshot(display.configuration).rows).toEqual({
+    color: { field: 'population' },
   })
 })
 
@@ -79,7 +78,7 @@ test('None after a color-by is the config it started from', () => {
 // config's own object.
 test('None over a configured color-by is no custom arrangement', () => {
   const { display } = createTestEnvironment({
-    displayConfig: { rowColor: 'population' },
+    displayConfig: { rows: { color: 'population' } },
   }).createDisplay()
   display.setSources(SOURCES)
   display.setRowColorChoice('')

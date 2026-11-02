@@ -109,7 +109,7 @@ describe('the key names what an overlaid density paints', () => {
         mark: 'rect',
         fileColors,
         displayConfig: {
-          rowColor: { scale: { domain: ['a', 'b'], range: ['red', 'blue'] } },
+          rows: { colors: { a: 'red', b: 'blue' } },
         },
       })
       expect(markColors(display)).toEqual([undefined, undefined])
@@ -124,7 +124,7 @@ describe('the key names what an overlaid density paints', () => {
       mark: 'rect',
       displayConfig: {
         encoding: { color: { scale: { type: 'linear', scheme: 'viridis' } } },
-        rowColor: { scale: { domain: ['a', 'b'], range: ['red', 'blue'] } },
+        rows: { colors: { a: 'red', b: 'blue' } },
       },
     })
     expect(display.scoreGradientPaints).toBe(true)

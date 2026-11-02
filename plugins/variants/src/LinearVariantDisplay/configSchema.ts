@@ -4,7 +4,6 @@ import { facetConfigSchema } from '@jbrowse/display-kit/facetConfigSchema'
 import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSchema'
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
-import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { VARIANT_DISPLAY, VARIANT_UNITS } from '../shared/constants.ts'
@@ -42,7 +41,7 @@ export const DEFAULT_VARIANT_DISPLAY_HEIGHT = 200
  * #example
  * Preloading sample metadata: point the adapter's `samplesTsvLocation` at a TSV
  * whose first column is the sample name and whose other columns are per-sample
- * attributes (e.g. `population`), then `rowColor` one of those attributes to
+ * attributes (e.g. `population`), then `rows.color` one of those attributes to
  * color the sidebar rows on load. This is the 1000 Genomes "colored by
  * population" demo config:
  * ```js
@@ -60,7 +59,7 @@ export const DEFAULT_VARIANT_DISPLAY_HEIGHT = 200
  *     {
  *       type: 'LinearVariantDisplay',
  *       height: 800,
- *       rowColor: 'population',
+ *       rows: { color: 'population' },
  *     },
  *   ],
  * }
@@ -230,13 +229,6 @@ export default function configSchemaFactory() {
        */
       legend: legendConfigSchema,
       /**
-       * #slot rowColor
-       * The bar beside each row's label: a sample-metadata attribute whose
-       * palette colors every row, or under `name` the colors a reader set row
-       * by row.
-       */
-      rowColor: rowColorConfigSchema,
-      /**
        * #slot facet
        * A sample-metadata attribute (a column in the adapter's
        * samplesTsvLocation, e.g. `"population"`) whose values each take a
@@ -332,7 +324,7 @@ export default function configSchemaFactory() {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
       retired: retiredConfigSpellings,
-      misnamed: { rowHeight: 'rows.step' },
+      misnamed: { rowHeight: 'rows.step', rowColor: 'rows.color' },
       preProcessSnapshot: liftMinorAlleleFrequencyFilter,
     },
   )

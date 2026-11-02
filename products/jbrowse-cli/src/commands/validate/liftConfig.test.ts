@@ -139,7 +139,7 @@ describe('mergeBySlots over a keyed rows object', () => {
   test('the merged slot keeps the keyed declaration', () => {
     expect(slots.find(s => s.name === 'rows')?.writes).toEqual({
       keyedBy: 'field',
-      keyed: ['sort', 'labels', 'tree', 'treeProvenance', 'kept'],
+      keyed: ['sort', 'labels', 'tree', 'treeProvenance', 'kept', 'colors'],
     })
   })
 

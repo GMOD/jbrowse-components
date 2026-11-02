@@ -43,7 +43,7 @@
 #   * the row ORDER is GROUP then EID, which is what keeps a tissue's
 #     epigenomes adjacent without a hand-written list;
 #   * the row GROUP and its label-bar color are GROUP and COLOR from the same
-#     table, written out as `rowGroups` and a `rowColor` by group, so the
+#     table, written out as `rowGroups` and a `rows.color` by group, so the
 #     sidebar can say which tissue a row is at a row height far too short to
 #     write its name;
 #   * the state COLOR is colormap_15_coreMarks.tab. The segmentation BEDs
@@ -141,7 +141,7 @@ Path('labels.tsv').write_text(
 Path('roworder.json').write_text(json.dumps(labels, indent=2))
 
 # One `rowGroups` entry per GROUP, which tags each row with its tissue, and a
-# `rowColor` by group pairing each tissue with Roadmap's own group COLOR. The
+# `rows.color` by group pairing each tissue with Roadmap's own group COLOR. The
 # display draws that color as each row's label bar and keys it, so the tissue
 # a row belongs to is on screen at a row height far too short to write its
 # name -- which is the axis the clustering never saw, and therefore the one
@@ -313,10 +313,13 @@ config = {
                 {
                     'type': 'LinearMultiRowFeatureDisplay',
                     'displayId': 'roadmap_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay',
-                    'rows': {'field': 'cellType', 'domain': row_order},
+                    'rows': {
+                        'field': 'cellType',
+                        'sort': row_order,
+                        'color': row_color,
+                    },
                     'encoding': {'color': color},
                     'rowGroups': row_groups,
-                    'rowColor': row_color,
                     'height': 700,
                 }
             ],

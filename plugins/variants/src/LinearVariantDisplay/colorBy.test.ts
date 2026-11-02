@@ -31,9 +31,9 @@ describe('variant display colorBy', () => {
     model.setRowColorChoice('population')
 
     expect(model.rowColorField).toBe('population')
-    expect(readConfObject(model.configuration, ['rowColor', 'field'])).toBe(
-      'population',
-    )
+    expect(
+      readConfObject(model.configuration, ['rows', 'color', 'field']),
+    ).toBe('population')
     // same population => same color, different => different
     const byName = Object.fromEntries(
       model.sources.map(s => [s.name, s.rowColor]),
@@ -124,15 +124,15 @@ describe('variant display colorBy', () => {
     model.setSources(sources)
     expect(model.rowPaletteDeals).toBe(false)
     expect(model.rowColorChoice).toBe('')
-    model.applyRowEdits(model.editableSources, {
-      scale: { domain: ['HG001'], range: ['#123456'] },
-    })
+    model.applyRowEdits(model.editableSources, { colors: { HG001: '#123456' } })
     expect(model.rowColorChoice).toBe('name')
     expect(model.sources[0]!.rowColor).toBe('#123456')
     expect(model.sources[1]!.rowColor).toBeUndefined()
 
     model.setRowColorChoice('population')
     expect(model.rowColorChoice).toBe('population')
+    expect(model.sources[0]!.rowColor).toBe('#123456')
+    expect(model.sources[1]!.rowColor).not.toBe('#123456')
     model.setRowColorChoice('')
     expect(model.rowColorChoice).toBe('')
     expect(model.sources.some(s => s.rowColor)).toBe(false)
@@ -143,7 +143,7 @@ describe('variant display colorBy', () => {
 // menu does too, rather than ticking nothing.
 test('the Samples menu ticks a configured attribute the samples lack', () => {
   const { display } = createTestEnvironment({
-    displayConfig: { rowColor: 'tissue', genotypes: { show: true } },
+    displayConfig: { rows: { color: 'tissue' }, genotypes: { show: true } },
   }).createDisplay()
   display.setSources([{ name: 'HG001', population: 'EUR' }])
   const colorBy = display
@@ -157,7 +157,7 @@ test('the Samples menu ticks a configured attribute the samples lack', () => {
 test('the Samples menu ticks Each row where the dialog picked sample colors', () => {
   const { display } = createTestEnvironment({
     displayConfig: {
-      rowColor: { scale: { domain: ['HG001'], range: ['#f00'] } },
+      rows: { colors: { HG001: '#f00' } },
       genotypes: { show: true },
     },
   }).createDisplay()

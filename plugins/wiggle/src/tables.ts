@@ -9,7 +9,7 @@ import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
 import { orderRowsByDomain } from '@jbrowse/tree-sidebar/arrangeRows'
-import { rowColorSettingOf } from '@jbrowse/tree-sidebar/rowColorChoice'
+import { rowColorsOfRows } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
   dealValueColors,
   resolveRowColors,
@@ -219,11 +219,12 @@ export async function wiggleTables(
   })
   const paletteDeals =
     wiggleSharesPanel(rowLayout, sources.length) && rowColorPaintsMarks
-  const rowColor = rowColorSettingOf(conf.rowColor)
+  const rowColor = rowColorsOfRows(conf.rows)
   const rowColors = resolveRowColors(
     sources,
-    rowColor.field,
-    dealValueColors(rowColor, () => data.sources, paletteDeals),
+    rowColor.setting.field,
+    dealValueColors(rowColor.setting, () => data.sources, paletteDeals),
+    rowColor.pinned,
     undefined,
   )
   const markSources = wiggleMarkSources(

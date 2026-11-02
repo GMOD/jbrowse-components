@@ -525,7 +525,7 @@ for pop, (trackId, name) in karyo.items():
             # karyotype sorts standard, het, inverted on its own, so the three
             # classes come out as contiguous blocks in dosage order
             'facet': {'field': 'karyotype'},
-            'rowColor': 'karyotype',
+            'rows': {'color': 'karyotype'},
             # Reference cells on, not the default off. Off fills the whole track
             # background with REFERENCE_COLOR and paints only ALT, so a
             # standard-arrangement mosquito is indistinguishable from empty

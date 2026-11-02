@@ -194,14 +194,24 @@ test('One row per... another field drops the arrangement, and the field in force
   expect(getSnapshot(model.conf.rows)).toEqual({ field: 'name' })
 })
 
-test("One row per... another field drops the row colors paired with the old rows' names", () => {
+// The keyed rule (ADR-257): the pins name the old field's rows, and the
+// color channel names an attribute, valid on the new rows.
+test('One row per... another field drops the pinned row colors and keeps rows.color', () => {
   const model = display({
-    rows: 'sample',
-    rowColor: { scale: { domain: ['a'], range: ['#f00'], unknown: '' } },
+    rows: {
+      field: 'sample',
+      colors: { a: '#f00' },
+      color: { field: 'group', scale: { unknown: '' } },
+    },
     marks: RECT_MARKS,
   })
+  model.setRowsField('sample')
+  expect(getSnapshot(model.conf.rows).colors).toEqual({ a: '#f00' })
   model.setRowsField('name')
-  expect(getSnapshot(model.conf.rowColor)).toEqual({ scale: { unknown: '' } })
+  expect(getSnapshot(model.conf.rows)).toEqual({
+    field: 'name',
+    color: { field: 'group', scale: { unknown: '' } },
+  })
 })
 
 test("a spliced painting's rows sort and cluster on its blocks, not the line under them", () => {
@@ -278,9 +288,8 @@ test("a file's own colors with no domain take their features' names in the key",
 test("a row's color paints its blocks while no mark or display color does", () => {
   const model = loaded(
     display({
-      rows: 'sample',
+      rows: { field: 'sample', colors: { mom: '#222222' } },
       marks: RECT_MARKS,
-      rowColor: { scale: { domain: ['mom'], range: ['#222222'] } },
     }),
   )
   const [layer] = [...model.rpcDataMap.values()][0]!.layers

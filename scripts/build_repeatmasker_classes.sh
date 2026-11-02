@@ -125,7 +125,7 @@ cp -f rmsk.bed.gz rmsk.bed.gz.tbi "$APP"/
 # multi-row entry is listed first, which is what makes it the display the track
 # opens with; the plain one after it stays a menu click away.
 #
-# `rowColor` is deliberately partial. A class not named in it still gets a
+# `rows.colors` is deliberately partial. A class not named in it still gets a
 # row, painted in the default block color, so this is the list of classes that
 # get a color of their own and not a list of what exists. @ASSEMBLY@ is a real
 # JSON string so the heredoc parses on its own, which is what
@@ -147,12 +147,14 @@ sed "s|@ASSEMBLY@|$ASM|" >track.json <<'JSON'
       "rows": {
         "field": "repClass",
         "sort": ["SINE", "LINE", "LTR", "DNA", "Simple_repeat", "Low_complexity"],
-        "axis": { "grid": true }
-      },
-      "rowColor": {
-        "scale": {
-          "domain": ["SINE", "LINE", "LTR", "DNA", "Simple_repeat", "Low_complexity"],
-          "range": ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628"]
+        "axis": { "grid": true },
+        "colors": {
+          "SINE": "#e41a1c",
+          "LINE": "#377eb8",
+          "LTR": "#4daf4a",
+          "DNA": "#984ea3",
+          "Simple_repeat": "#ff7f00",
+          "Low_complexity": "#a65628"
         }
       },
       "height": 200

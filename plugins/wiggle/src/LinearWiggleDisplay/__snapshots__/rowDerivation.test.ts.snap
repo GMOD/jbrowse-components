@@ -70,7 +70,7 @@ exports[`overlay: adapter colors paint the plot 1`] = `
 }
 `;
 
-exports[`overlay: rowColor's spare range leads the palette 1`] = `
+exports[`overlay: rows.color's spare range leads the palette 1`] = `
 {
   "effectiveColor": {
     "field": "score",

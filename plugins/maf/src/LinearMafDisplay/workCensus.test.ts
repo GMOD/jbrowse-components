@@ -103,7 +103,8 @@ test('what each row step recomputes', async () => {
       run: () => {
         const [first] = display.editableSources
         display.applyRowEdits(display.editableSources, {
-          scale: { domain: [first!.name], range: ['#123456'] },
+          color: { field: 'name' },
+          colors: { [first!.name]: '#123456' },
         })
       },
     },

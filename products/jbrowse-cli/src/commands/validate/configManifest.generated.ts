@@ -6787,6 +6787,46 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             },
             {
+              "name": "colors",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "color",
+              "type": "RowColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowColorScale",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
               "name": "step",
               "type": "(number | \"fit\")"
             }
@@ -6799,7 +6839,8 @@ export const configManifest: ConfigManifest = {
               "labels",
               "tree",
               "treeProvenance",
-              "kept"
+              "kept",
+              "colors"
             ]
           },
           "shorthand": {
@@ -6949,42 +6990,6 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "Legend",
           "writes": "members"
-        },
-        {
-          "name": "rowColor",
-          "type": "RowColorConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "RowColorScaleConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "domain",
-                  "type": "string[]",
-                  "liftsNumbers": true
-                },
-                {
-                  "name": "range",
-                  "type": "CssColorEntry[]"
-                },
-                {
-                  "name": "unknown",
-                  "type": "(CssColor | undefined)"
-                }
-              ],
-              "schema": "RowColorScale",
-              "writes": "members"
-            }
-          ],
-          "schema": "RowColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
-          }
         },
         {
           "name": "facet",
@@ -7211,7 +7216,8 @@ export const configManifest: ConfigManifest = {
         "minimalTicks"
       ],
       "misnamed": {
-        "rowHeight": "rows.step"
+        "rowHeight": "rows.step",
+        "rowColor": "rows.color"
       },
       "aliases": [
         "LinearMultiSampleVariantDisplay",
@@ -7537,6 +7543,46 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "RowAxisWithGrid",
               "writes": "members"
+            },
+            {
+              "name": "colors",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "color",
+              "type": "RowColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowColorScale",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              }
             }
           ],
           "schema": "QuantitativeRows",
@@ -7547,45 +7593,10 @@ export const configManifest: ConfigManifest = {
               "labels",
               "tree",
               "treeProvenance",
-              "kept"
+              "kept",
+              "colors"
             ]
           },
-          "shorthand": {
-            "string": "field"
-          }
-        },
-        {
-          "name": "rowColor",
-          "type": "RowColorConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "RowColorScaleConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "domain",
-                  "type": "string[]",
-                  "liftsNumbers": true
-                },
-                {
-                  "name": "range",
-                  "type": "CssColorEntry[]"
-                },
-                {
-                  "name": "unknown",
-                  "type": "(CssColor | undefined)"
-                }
-              ],
-              "schema": "RowColorScale",
-              "writes": "members"
-            }
-          ],
-          "schema": "RowColor",
-          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -7863,6 +7874,9 @@ export const configManifest: ConfigManifest = {
         "numStdDev",
         "inverted"
       ],
+      "misnamed": {
+        "rowColor": "rows.color"
+      },
       "aliases": [
         "MultiLinearWiggleDisplay",
         "LinearGCContentDisplay",
@@ -8091,6 +8105,46 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "RowAxis",
               "writes": "members"
+            },
+            {
+              "name": "colors",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "color",
+              "type": "RowColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowColorScale",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              }
             }
           ],
           "schema": "MafRows",
@@ -8101,45 +8155,10 @@ export const configManifest: ConfigManifest = {
               "labels",
               "tree",
               "treeProvenance",
-              "kept"
+              "kept",
+              "colors"
             ]
           },
-          "shorthand": {
-            "string": "field"
-          }
-        },
-        {
-          "name": "rowColor",
-          "type": "RowColorConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "RowColorScaleConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "domain",
-                  "type": "string[]",
-                  "liftsNumbers": true
-                },
-                {
-                  "name": "range",
-                  "type": "CssColorEntry[]"
-                },
-                {
-                  "name": "unknown",
-                  "type": "(CssColor | undefined)"
-                }
-              ],
-              "schema": "RowColorScale",
-              "writes": "members"
-            }
-          ],
-          "schema": "RowColor",
-          "writes": "whole",
           "shorthand": {
             "string": "field"
           }
@@ -8533,6 +8552,9 @@ export const configManifest: ConfigManifest = {
         "mouseover",
         "rowHeight"
       ],
+      "misnamed": {
+        "rowColor": "rows.color"
+      },
       "stateModelProps": [
         "id",
         "type",
@@ -9262,6 +9284,46 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             },
             {
+              "name": "colors",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "color",
+              "type": "RowColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowColorScale",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
               "name": "step",
               "type": "(number | \"fit\")"
             }
@@ -9274,7 +9336,8 @@ export const configManifest: ConfigManifest = {
               "labels",
               "tree",
               "treeProvenance",
-              "kept"
+              "kept",
+              "colors"
             ]
           },
           "shorthand": {
@@ -9282,42 +9345,6 @@ export const configManifest: ConfigManifest = {
           },
           "misnamed": {
             "height": "step"
-          }
-        },
-        {
-          "name": "rowColor",
-          "type": "RowColorConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "RowColorScaleConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "domain",
-                  "type": "string[]",
-                  "liftsNumbers": true
-                },
-                {
-                  "name": "range",
-                  "type": "CssColorEntry[]"
-                },
-                {
-                  "name": "unknown",
-                  "type": "(CssColor | undefined)"
-                }
-              ],
-              "schema": "RowColorScale",
-              "writes": "members"
-            }
-          ],
-          "schema": "RowColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
           }
         },
         {
@@ -9620,7 +9647,8 @@ export const configManifest: ConfigManifest = {
         "mouseover"
       ],
       "misnamed": {
-        "rowHeight": "rows.step"
+        "rowHeight": "rows.step",
+        "rowColor": "rows.color"
       },
       "stateModelProps": [
         "id",
@@ -10120,6 +10148,46 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             },
             {
+              "name": "colors",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "color",
+              "type": "RowColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowColorScale",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
               "name": "step",
               "type": "(number | \"fit\")"
             }
@@ -10132,7 +10200,8 @@ export const configManifest: ConfigManifest = {
               "labels",
               "tree",
               "treeProvenance",
-              "kept"
+              "kept",
+              "colors"
             ]
           },
           "shorthand": {
@@ -10140,42 +10209,6 @@ export const configManifest: ConfigManifest = {
           },
           "misnamed": {
             "height": "step"
-          }
-        },
-        {
-          "name": "rowColor",
-          "type": "RowColorConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "RowColorScaleConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "domain",
-                  "type": "string[]",
-                  "liftsNumbers": true
-                },
-                {
-                  "name": "range",
-                  "type": "CssColorEntry[]"
-                },
-                {
-                  "name": "unknown",
-                  "type": "(CssColor | undefined)"
-                }
-              ],
-              "schema": "RowColorScale",
-              "writes": "members"
-            }
-          ],
-          "schema": "RowColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
           }
         },
         {
@@ -10482,7 +10515,8 @@ export const configManifest: ConfigManifest = {
         "color"
       ],
       "misnamed": {
-        "rowHeight": "rows.step"
+        "rowHeight": "rows.step",
+        "rowColor": "rows.color"
       },
       "aliases": [
         "LinearArcDisplay",
@@ -10985,6 +11019,46 @@ export const configManifest: ConfigManifest = {
               "writes": "members"
             },
             {
+              "name": "colors",
+              "type": "Map<string, string>"
+            },
+            {
+              "name": "color",
+              "type": "RowColorConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "string"
+                },
+                {
+                  "name": "scale",
+                  "type": "RowColorScaleConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "domain",
+                      "type": "string[]",
+                      "liftsNumbers": true
+                    },
+                    {
+                      "name": "range",
+                      "type": "CssColorEntry[]"
+                    },
+                    {
+                      "name": "unknown",
+                      "type": "(CssColor | undefined)"
+                    }
+                  ],
+                  "schema": "RowColorScale",
+                  "writes": "members"
+                }
+              ],
+              "schema": "RowColor",
+              "writes": "whole",
+              "shorthand": {
+                "string": "field"
+              }
+            },
+            {
               "name": "step",
               "type": "(number | \"fit\")"
             }
@@ -10997,7 +11071,8 @@ export const configManifest: ConfigManifest = {
               "labels",
               "tree",
               "treeProvenance",
-              "kept"
+              "kept",
+              "colors"
             ]
           },
           "shorthand": {
@@ -11005,42 +11080,6 @@ export const configManifest: ConfigManifest = {
           },
           "misnamed": {
             "height": "step"
-          }
-        },
-        {
-          "name": "rowColor",
-          "type": "RowColorConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "field",
-              "type": "string"
-            },
-            {
-              "name": "scale",
-              "type": "RowColorScaleConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "domain",
-                  "type": "string[]",
-                  "liftsNumbers": true
-                },
-                {
-                  "name": "range",
-                  "type": "CssColorEntry[]"
-                },
-                {
-                  "name": "unknown",
-                  "type": "(CssColor | undefined)"
-                }
-              ],
-              "schema": "RowColorScale",
-              "writes": "members"
-            }
-          ],
-          "schema": "RowColor",
-          "writes": "whole",
-          "shorthand": {
-            "string": "field"
           }
         },
         {
@@ -11343,7 +11382,8 @@ export const configManifest: ConfigManifest = {
         "mouseover"
       ],
       "misnamed": {
-        "rowHeight": "rows.step"
+        "rowHeight": "rows.step",
+        "rowColor": "rows.color"
       },
       "stateModelProps": [
         "id",

@@ -97,7 +97,7 @@ test('a v4 multi-wiggle share link opens as rows, in its order', async () => {
   expect(display.isRowLayout).toBe(true)
   expect(display.renderingType).toBe('density')
   expect(display.rowSort).toEqual(['b', 'a'])
-  expect(getConf(display, ['rowColor', 'scale', 'range'])).toEqual(['red'])
+  expect(getConf(display, ['rows', 'colors'])).toEqual({ b: 'red' })
 })
 
 test('a v4 multi-wiggle left overlaid stays overlaid', async () => {

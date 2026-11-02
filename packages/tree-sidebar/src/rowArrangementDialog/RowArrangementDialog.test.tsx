@@ -2,16 +2,19 @@ import '@testing-library/jest-dom'
 
 import React from 'react'
 
+import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 
 import {
   liftRowColor,
   rowColorChoiceOf,
+  rowColorMembers,
   startingRowColor,
 } from '../rowColorChoice.ts'
+import { withPinnedColors } from '../rowColorScale.ts'
 import RowArrangementDialog from './RowArrangementDialog.tsx'
 
-import type { RowColorSnapshot } from '../rowColorChoice.ts'
+import type { RowColorEdits, RowColorSnapshot } from '../rowColorChoice.ts'
 import type { RowColorSetting } from '../rowColorScale.ts'
 import type { RowArrangementModel } from './RowArrangementDialog.tsx'
 
@@ -69,8 +72,28 @@ interface FakeOptions extends Partial<RowArrangementModel<Src>> {
   rowColorFields?: string[]
 }
 
-// The model members the dialog reads, derived from a config's `rowColor`, its
-// base and the attributes on offer as the mixin derives them.
+// `rows.color` and `rows.colors` as one setting, the pins its pairs under
+// `name`, split back apart as the mixin reads the two
+function channelOf(setting: RowColorSetting): RowColorSetting {
+  return setting.field === 'name'
+    ? {
+        ...setting,
+        scale: {
+          ...setting.scale,
+          domain: [],
+          range: setting.scale.range.slice(setting.scale.domain.length),
+        },
+      }
+    : setting
+}
+
+function pinsOf(setting: RowColorSetting): ReadonlyMap<string, string> {
+  return setting.field === 'name' ? pairedColorsOf(setting.scale) : new Map()
+}
+
+// The model members the dialog reads, derived from a config's `rows.color`
+// with its pins folded in, its base and the attributes on offer as the mixin
+// derives them.
 function fakeModel({
   rowColorSetting = EMPTY,
   baseRowColorSetting = EMPTY,
@@ -96,9 +119,11 @@ function fakeModel({
     rowColorFor: choice =>
       startingRowColor(
         choice,
-        [rowColorSetting, baseRowColorSetting],
+        [channelOf(rowColorSetting), channelOf(baseRowColorSetting)],
         rowPaletteDeals,
+        pinsOf(rowColorSetting),
       ),
+    rowColorPins: pinsOf(rowColorSetting),
     rowPaletteDeals,
     rowAlias: undefined,
     internalRowFields: [],
@@ -119,9 +144,24 @@ function setup(model: RowArrangementModel<Src>) {
   return { handleClose }
 }
 
-function submitted(model: RowArrangementModel<Src>) {
+function submittedEdits(model: RowArrangementModel<Src>) {
   const calls = (model.applyRowEdits as jest.Mock).mock.calls
-  return calls[calls.length - 1] as [Src[], Record<string, unknown> | undefined]
+  return calls[calls.length - 1] as [Src[], RowColorEdits | undefined]
+}
+
+// The submit's colors as one setting, the pins its pairs under `name`
+function submitted(model: RowArrangementModel<Src>) {
+  const [rows, edits] = submittedEdits(model)
+  return [
+    rows,
+    edits &&
+      rowColorMembers(
+        withPinnedColors(
+          liftRowColor(edits.color),
+          new Map(Object.entries(edits.colors ?? {})),
+        ),
+      ),
+  ] as const
 }
 
 // Picks `to` in the swatch's popover and closes it, as a reader does.
@@ -375,9 +415,28 @@ describe('colored by an attribute', () => {
     )
     expect(values.getByText('g2').nextElementSibling!.textContent).toBe('1 row')
     expect(
-      screen.getAllByTestId('row-color-swatch').map(s => s.style.background),
+      ['a', 'b', 'c'].map(
+        name => gridRow(name).getByTitle(AUTO).style.backgroundColor,
+      ),
     ).toEqual(['rgb(17, 17, 17)', 'rgb(171, 205, 239)', 'rgb(17, 17, 17)'])
     expect(screen.queryByText('Clear row colors')).toBeNull()
+  })
+
+  // A pin is no choice of its own: the rows stay colored by the attribute,
+  // and the pinned row takes its pin over its value's color.
+  test("a row's swatch pins it a color and keeps the attribute", () => {
+    const model = byGroup()
+    setup(model)
+
+    pickColor(gridRow('c').getByTitle(AUTO), '#111111', '#00ff00')
+    expect(pressed('Group')).toBe('true')
+    expect(gridRow('c').queryByTitle(AUTO)).toBeNull()
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submittedEdits(model)[1]).toEqual({
+      color: { field: 'group', scale: { domain: ['g2'], range: ['#abcdef'] } },
+      colors: { c: 'rgb(0, 255, 0)' },
+    })
   })
 
   test('an untouched Submit writes no color object', () => {

@@ -41,17 +41,13 @@ test('the arrangement rides on rows, and there is no top-level `sort` slot', () 
   expect('sort' in config).toBe(false)
 })
 
-test('rowColor pairs each named subtrack with its color', () => {
+test('rows.colors pairs each named subtrack with its color', () => {
   const config = configSchema.create({
     ...base,
-    rowColor: { scale: { domain: ['a', 'b'], range: ['#f00', '#0f0'] } },
+    rows: { colors: { a: '#f00', b: '#0f0' } },
   })
-  expect(readConfObject(config, ['rowColor', 'scale', 'domain'])).toEqual([
-    'a',
-    'b',
-  ])
-  expect(readConfObject(config, ['rowColor', 'scale', 'range'])).toEqual([
-    '#f00',
-    '#0f0',
-  ])
+  expect(readConfObject(config, ['rows', 'colors'])).toEqual({
+    a: '#f00',
+    b: '#0f0',
+  })
 })

@@ -101,17 +101,22 @@ describe('the split field, typed a keystroke at a time', () => {
     expect(retype('rows', rows, ['P', 'PS'])).toEqual({ field: 'PS' })
   })
 
-  test("another rows field drops the row colors paired with the old rows' names", () => {
-    const rowColor = {
-      scale: { domain: ['1'], range: ['#f00', '#0f0'], unknown: '' },
+  // The keyed rule: the pins name the old field's rows, and the color
+  // channel names an attribute, valid on the new rows.
+  test('another rows field drops the pinned row colors and keeps rows.color', () => {
+    const base: MarkPlot = {
+      marks: [],
+      rows: {
+        field: 'HP',
+        colors: { 1: '#f00' },
+        color: { field: 'group', scale: { unknown: '' } },
+      },
     }
-    const base: MarkPlot = { marks: [], rows: { field: 'HP' }, rowColor }
-    expect(typed(base, 'rows', ['P', 'PS']).rowColor).toEqual({
-      scale: { range: ['#0f0'], unknown: '' },
+    expect(typed(base, 'rows', ['P', 'PS']).rows).toEqual({
+      field: 'PS',
+      color: { field: 'group', scale: { unknown: '' } },
     })
-    expect(typed(base, 'rows', ['H', '', 'HP']).rowColor).toBe(rowColor)
-    const byGroup: MarkPlot = { ...base, rowColor: { field: 'group' } }
-    expect(typed(byGroup, 'rows', ['PS']).rowColor).toEqual({ field: 'group' })
+    expect(typed(base, 'rows', ['H', '', 'HP']).rows).toBe(base.rows)
   })
 
   test('an empty field clears the setting', () => {

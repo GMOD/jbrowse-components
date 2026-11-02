@@ -235,7 +235,7 @@ function warnUnknownArrangementAttributes(
 ) {
   const { rowColorField } = self
   if (rowColorField && !sources.some(source => rowColorField in source)) {
-    warnMissingAttribute('rowColor', rowColorField, sources)
+    warnMissingAttribute('rows.color', rowColorField, sources)
   }
   const field = self.facet?.field
   if (field && !sources.some(source => field in source)) {
@@ -293,7 +293,7 @@ export type VariantLayoutBackend =
  * on a record or a cell. With no sample rows the records are the display.
  *
  * #example
- * `unit`, `rowColor`, `rows` and `filter` are
+ * `unit`, `rows` and `filter` are
  * config (see the display's config schema), read at runtime through `getConf`
  * and written as session edits to the track's config — they are not plain MST
  * properties. Set them in a track's `displays` array to change the default:
@@ -303,8 +303,7 @@ export type VariantLayoutBackend =
  *     type: 'LinearVariantDisplay',
  *     displayId: 'my-cohort',
  *     unit: 'haplotype',
- *     rowColor: 'population',
- *     rows: { sort: ['NA12878', 'NA12891'] },
+ *     rows: { sort: ['NA12878', 'NA12891'], color: 'population' },
  *     filter: [{ field: 'minorAlleleFrequency', gte: 0.05 }],
  *   },
  * ]
@@ -325,8 +324,8 @@ export type VariantLayoutBackend =
  *
  * ## How the rows are arranged
  *
- * The arrangement is config: `rows` holds the order, the labels, the cluster
- * tree with its provenance and the focus, and `rowColor` the colors, each by
+ * The arrangement is config: `rows` holds the order, the labels, the colors
+ * pinned on rows, the cluster tree with its provenance and the focus, each by
  * row name at the mode's granularity — a sample in allele-count mode, a
  * haplotype (`"<sample> HP<n>"`) in phased mode, where a sample name stands
  * for its haplotypes. A drag, the arrangement dialog, "Sort rows by genotype here" and
@@ -336,18 +335,17 @@ export type VariantLayoutBackend =
  *    the fetch asks for (`sourcesBase`, `sampleFilter`),
  * 2. phased mode expands each sample to its haplotypes (`expandedRows`), and
  *    `rows.sort` orders them, `rows.labels` relabels them and each row has
- *    its resolved `rowColor` (`editableSources`, the dialog's list), each from
+ *    its resolved color (`editableSources`, the dialog's list), each from
  *    `TreeSidebarMixin` over this display's hooks,
  * 3. the focus narrows those (`clusterableSources`, what a run clusters),
  * 4. `facet` stacks those in bands (`bandedSources`), each band's rows in their
  *    arranged order,
- * 5. the result is `sources`, each row's `rowColor` its label bar.
+ * 5. the result is `sources`, each row's resolved color its label bar.
  *
- * **The `rowColor` palette wins over a color the row already has**, a
- * `samplesTsv` `color` column: a channel bound to a variable beats a per-row
- * constant, so "Color by… → (none)" restores the row's color from that column.
- * `rowColor` holds one field's values, so a dialog color set under the palette
- * turns every row's color into a `name` pair.
+ * **`rows.color` wins over a color the row already has**, a `samplesTsv`
+ * `color` column: a channel bound to a variable beats a per-row constant, so
+ * "Color by… → (none)" restores the row's color from that column. A color
+ * the dialog pins on a row (`rows.colors`) wins over both.
  *
  * **The `facet` bands win over a tree**: a band draws the clade of the tree
  * whose leaves are exactly its rows in order, and a clustering run under bands
@@ -1859,21 +1857,20 @@ export function stateModelFactory(
           /**
            * #action
            * `BaseDisplay`'s, resetting the row arrangement when it moves
-           * `unit`, and then writing the `rows` and `rowColor` the settings
-           * state, which name the rows at the new unit.
+           * `unit`, and then writing the `rows` the settings state, which
+           * name the rows at the new unit.
            */
           applyDisplaySettings(
             settings: Record<string, unknown>,
             options?: { allowSetters?: boolean },
           ) {
-            const { rows, rowColor } = settings
+            const { rows } = settings
             return resettingRowsOnUnitChange(
               () => superApplyDisplaySettings(settings, options),
               () => {
-                superApplyDisplaySettings({
-                  ...(rows === undefined ? {} : { rows }),
-                  ...(rowColor === undefined ? {} : { rowColor }),
-                })
+                if (rows !== undefined) {
+                  superApplyDisplaySettings({ rows })
+                }
               },
             )
           },

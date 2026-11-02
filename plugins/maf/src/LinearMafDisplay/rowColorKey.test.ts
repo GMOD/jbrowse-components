@@ -2,9 +2,9 @@ import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 
 import { createMafTestEnvironment } from './testEnv.ts'
 
-function loaded(rowColor?: string) {
+function loaded(color?: string) {
   const { display, view } = createMafTestEnvironment({
-    displayConfig: rowColor ? { rowColor } : {},
+    displayConfig: color ? { rows: { color } } : {},
   }).createDisplay()
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
   display.setSamples({
@@ -19,7 +19,7 @@ function loaded(rowColor?: string) {
 }
 
 const rowColorKey = (display: ReturnType<typeof loaded>) =>
-  display.legendSpec.sections.find(s => s.id === 'rowColor')?.items ?? []
+  display.legendSpec.sections.find(s => s.id === 'rows.color')?.items ?? []
 
 it('keys nothing by name, whose labels are the key', () => {
   const display = loaded()
@@ -34,6 +34,6 @@ it('keys a row attribute, and a click focuses its rows', () => {
     { value: 'Chimp', label: 'Chimp', color: rowPaletteColorAt(1) },
   ])
   expect(display.hasLegendKey).toBe(true)
-  display.focusLegendEntry('rowColor', 'Chimp')
+  display.focusLegendEntry('rows.color', 'Chimp')
   expect(display.rowFocus).toEqual(['panTro4'])
 })

@@ -34,17 +34,20 @@ const REGIONS = [
 
 interface Arrangement {
   domain?: string[]
-  rowColor?: string
+  color?: string
   facet?: string
 }
 
 // The arrangement settings, spelled once: the derivation pinned below is what
-// has to survive their move into the `rows` and `rowColor` objects, so this
-// helper is all of the file that move may change.
-function arrangementConfig({ domain, rowColor, facet }: Arrangement) {
+// has to survive their move into the `rows` object, so this helper is all of
+// the file that move may change.
+function arrangementConfig({ domain, color, facet }: Arrangement) {
+  const rows = {
+    ...(domain ? { sort: domain } : {}),
+    ...(color ? { color } : {}),
+  }
   return {
-    ...(domain ? { rows: { sort: domain } } : {}),
-    ...(rowColor ? { rowColor } : {}),
+    ...(Object.keys(rows).length > 0 ? { rows } : {}),
     ...(facet ? { facet } : {}),
   }
 }
@@ -128,7 +131,7 @@ function derived(display: Display) {
     rowTree: display.rowTree,
     treeDrawn: display.hierarchy !== undefined,
     rowArrangementIsCustom: display.rowArrangementIsCustom,
-    rowColorLegend: display.colorScales.find(s => s.id === 'rowColor'),
+    rowColorLegend: display.colorScales.find(s => s.id === 'rows.color'),
   }
 }
 
@@ -139,8 +142,8 @@ describe('allele count', () => {
     expect(derived(loaded())).toMatchSnapshot()
   })
 
-  test('a rowColor attribute tints every row over its own color', () => {
-    expect(derived(loaded({ rowColor: 'population' }))).toMatchSnapshot()
+  test('a rows.color attribute tints every row over its own color', () => {
+    expect(derived(loaded({ color: 'population' }))).toMatchSnapshot()
   })
 
   test('a facet bands the rows', () => {
@@ -155,11 +158,11 @@ describe('allele count', () => {
   })
 
   test('a focus narrows the rows and the fetch', () => {
-    const display = loaded({ rowColor: 'population' })
+    const display = loaded({ color: 'population' })
     display.setRowFocus(['S2', 'S0'])
     expect(derived(display)).toMatchSnapshot()
     display.setRowFocus(undefined)
-    display.focusLegendEntry('rowColor', 'EUR')
+    display.focusLegendEntry('rows.color', 'EUR')
     expect(derived(display)).toMatchSnapshot()
   })
 
@@ -167,7 +170,8 @@ describe('allele count', () => {
     const display = loaded()
     const [s0, s1, s2, s3] = display.editableSources
     display.applyRowEdits([{ ...s2!, label: 'Two' }, s0!, s3!, s1!], {
-      scale: { domain: [s3!.name, s1!.name], range: ['#123456', '#654321'] },
+      color: { field: 'name' },
+      colors: { [s3!.name]: '#123456', [s1!.name]: '#654321' },
     })
     expect(derived(display)).toMatchSnapshot()
     display.resetRowArrangement()
@@ -177,7 +181,7 @@ describe('allele count', () => {
   // Under a color by population the dialog edits a population's color, and
   // the rows' own swatches are not read: the Color by and its legend stay.
   test("a dialog recolors a population's rows, and keeps the Color by", () => {
-    const display = loaded({ rowColor: 'population' })
+    const display = loaded({ color: 'population' })
     const [s0, s1, ...rest] = display.editableSources
     display.applyRowEdits([s0!, { ...s1!, rowColor: '#123456' }, ...rest])
     expect(display.rowColorChoice).toBe('population')
@@ -186,8 +190,10 @@ describe('allele count', () => {
     )
 
     display.applyRowEdits(display.editableSources, {
-      field: 'population',
-      scale: { domain: ['AFR'], range: ['#123456'] },
+      color: {
+        field: 'population',
+        scale: { domain: ['AFR'], range: ['#123456'] },
+      },
     })
     const afr = display.sources.filter(s => s.population === 'AFR')
     expect(afr.length).toBeGreaterThan(1)
@@ -196,7 +202,7 @@ describe('allele count', () => {
   })
 
   test('a cluster run lands its order and tree, and a facet keeps each band clade', async () => {
-    const display = loaded({ rowColor: 'population' })
+    const display = loaded({ color: 'population' })
     landCells(display)
     await cluster(display, [2, 0, 3, 1], '((S2,S0),(S3,S1));')
     expect(derived(display)).toMatchSnapshot()
@@ -223,7 +229,7 @@ describe('allele count', () => {
   })
 
   test('sort by genotype orders the rows at a variant', () => {
-    const display = loaded({ rowColor: 'population' })
+    const display = loaded({ color: 'population' })
     landCells(display)
     display.sortByGenotype('v500')
     expect(derived(display)).toMatchSnapshot()
@@ -244,7 +250,7 @@ describe('allele count', () => {
 
 describe('phased', () => {
   test('sample rows until the ploidy lands, then haplotypes', () => {
-    const display = loaded({ phased: true, rowColor: 'population' })
+    const display = loaded({ phased: true, color: 'population' })
     expect(derived(display)).toMatchSnapshot()
     landCells(display)
     expect(derived(display)).toMatchSnapshot()
@@ -261,9 +267,9 @@ describe('phased', () => {
   })
 
   test('a legend focus keeps whole samples', () => {
-    const display = loaded({ phased: true, rowColor: 'population' })
+    const display = loaded({ phased: true, color: 'population' })
     landCells(display)
-    display.focusLegendEntry('rowColor', 'AFR')
+    display.focusLegendEntry('rows.color', 'AFR')
     expect(derived(display)).toMatchSnapshot()
     landCells(display)
     expect(derived(display)).toMatchSnapshot()
@@ -275,7 +281,7 @@ describe('phased', () => {
     const [h0, h1, h2, h3, h4, h5, h6] = display.editableSources
     display.applyRowEdits(
       [h6!, { ...h1!, label: 'Zero, second' }, h0!, h4!, h2!, h3!, h5!],
-      { scale: { domain: [h4!.name], range: ['#123456'] } },
+      { color: { field: 'name' }, colors: { [h4!.name]: '#123456' } },
     )
     expect(derived(display)).toMatchSnapshot()
     display.resetRowArrangement()
@@ -291,7 +297,7 @@ describe('phased', () => {
 
   describe('after a cluster run lands haplotype rows', () => {
     async function clustered() {
-      const display = loaded({ phased: true, rowColor: 'population' })
+      const display = loaded({ phased: true, color: 'population' })
       landCells(display)
       await cluster(
         display,

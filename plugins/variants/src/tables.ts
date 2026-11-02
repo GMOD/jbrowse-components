@@ -22,7 +22,7 @@ import {
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { arrangeRows, bandRows } from '@jbrowse/tree-sidebar/arrangeRows'
 import { keptRows } from '@jbrowse/tree-sidebar/clusterUtils'
-import { rowColorSettingOf } from '@jbrowse/tree-sidebar/rowColorChoice'
+import { rowColorsOfRows } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
   dealValueColors,
   resolveRowColors,
@@ -679,10 +679,11 @@ function cellDosage(
 }
 
 /**
- * Each row's label-bar color as the display resolves it: the `rowColor`
- * field's value for the row's sample in the samples file, dealt the row
- * palette over `dealRows`, the rows in their source's order, else the sample's
- * own `color`, else `''`; and the key the display shows for an attribute.
+ * Each row's label-bar color as the display resolves it: its `rows.colors`
+ * pin, else the `rows.color` field's value for the row's sample in the
+ * samples file, dealt the row palette over `dealRows`, the rows in their
+ * source's order, else the sample's own `color`, else `''`; and the key the
+ * display shows for an attribute.
  */
 function rowColorsOf(
   conf: DisplayConf,
@@ -690,14 +691,27 @@ function rowColorsOf(
   drawn: readonly ProcessedSource[],
   rowAlias: RowAlias,
 ) {
-  const setting = rowColorSettingOf(conf.rowColor)
+  const { setting, pinned } = rowColorsOfRows(conf.rows)
   const dealt = dealValueColors(setting, () => dealRows, false)
-  const resolved = resolveRowColors(dealRows, setting.field, dealt, rowAlias)
+  const resolved = resolveRowColors(
+    dealRows,
+    setting.field,
+    dealt,
+    pinned,
+    rowAlias,
+  )
   const attribute = setting.field === 'name' ? '' : setting.field
   const entries = attribute
     ? rowColorKeyEntries(
         dealRows,
-        { setting, pairs: pairedColorsOf(setting.scale), dealt, resolved },
+        {
+          setting,
+          pairs: pairedColorsOf(setting.scale),
+          dealt,
+          resolved,
+          pinned,
+          alias: rowAlias,
+        },
         name => name,
       )
     : []

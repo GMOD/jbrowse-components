@@ -45,13 +45,16 @@ export interface SchemaMetadata {
     shorthandWith?: Record<string, unknown>
     fieldPresets?: Record<string, unknown>
     preProcessSnapshot?: (snap: unknown) => unknown
-    requires?: {
-      id: string
-      when: Record<string, string[]>
-      slots: string[]
-      message: string
-    }[]
+    requires?: SchemaRequirement[]
+    refuses?: SchemaRequirement[]
   }
+}
+
+interface SchemaRequirement {
+  id: string
+  when: Record<string, string[]>
+  slots: string[]
+  message: string
 }
 
 // What a schema's own preProcessSnapshot does to one slot, asked by probing it:
@@ -793,7 +796,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       : { allOf: [member, not] }
   }
 
-  // What a schema declares it cannot mean (`requires`), as `if`/`then` carrying
+  // What a schema declares it cannot mean (`requires`, `refuses`), as `if`/`then` carrying
   // the requirement's id and message: `errorMessage` is what an editor's JSON
   // language service shows, and the CLI validator reports the branch as that
   // one problem. A display reads the same entries through
@@ -851,21 +854,46 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     }
   }
 
-  function requirements(meta: SchemaMetadata): JsonSchema {
-    const rules = meta.options.requires ?? []
-    if (rules.length === 0) {
-      return {}
-    }
+  // A path holding a value, as a `refuses` entry refuses it: present, and not
+  // null, an empty string, an empty list or an empty object.
+  function pathHoldsAValue(path: string[]): JsonSchema {
+    const [head, ...rest] = path as [string, ...string[]]
     return {
-      allOf: rules.flatMap(rule =>
-        rule.slots.map(slot => ({
-          [REQUIREMENT]: { id: rule.id, slot },
-          if: { type: 'object', ...whenSchema(meta, rule.when) },
-          then: pathRequirement(meta, slot.split('.')),
-          errorMessage: rule.message,
-        })),
-      ),
+      type: 'object',
+      required: [head],
+      properties: {
+        [head]: rest.length
+          ? pathHoldsAValue(rest)
+          : { not: { enum: [null, '', [], {}] } },
+      },
     }
+  }
+
+  // `requires` and `refuses` alike, each path its own `if`/`then` carrying
+  // the entry's id and message
+  function requirements(meta: SchemaMetadata): JsonSchema {
+    const branches = [
+      ...(meta.options.requires ?? []).map(rule => ({
+        rule,
+        then: (slot: string) => pathRequirement(meta, slot.split('.')),
+      })),
+      ...(meta.options.refuses ?? []).map(rule => ({
+        rule,
+        then: (slot: string) => ({ not: pathHoldsAValue(slot.split('.')) }),
+      })),
+    ]
+    return branches.length === 0
+      ? {}
+      : {
+          allOf: branches.flatMap(({ rule, then }) =>
+            rule.slots.map(slot => ({
+              [REQUIREMENT]: { id: rule.id, slot },
+              if: { type: 'object', ...whenSchema(meta, rule.when) },
+              then: then(slot),
+              errorMessage: rule.message,
+            })),
+          ),
+        }
   }
 
   // A `ConfigurationSchemaUnion`: `type` is one of its keys and dispatches to

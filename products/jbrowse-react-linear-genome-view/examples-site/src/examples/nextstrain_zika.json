@@ -213,7 +213,7 @@
           "variantLayout": "columns",
           "displayId": "Zika-genotypes-LinearVariantDisplay",
           "height": 400,
-          "rowColor": "region"
+          "rows": { "color": "region" }
         }
       ]
     },

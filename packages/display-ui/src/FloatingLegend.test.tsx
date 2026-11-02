@@ -197,7 +197,7 @@ describe('FloatingLegend', () => {
       <FloatingLegend
         sections={[
           {
-            id: 'rowColor',
+            id: 'rows.color',
             focusesRows: true,
             items: [
               { label: 'Wolf', color: 'red', value: 'Wolf' },

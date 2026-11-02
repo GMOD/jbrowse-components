@@ -22,11 +22,11 @@ const GROUPED = [
 ] as WiggleSourceData[]
 
 function byGroup(display: ReturnType<typeof makeDisplay>) {
-  display.applyRowEdits(display.editableSources, { field: 'group' })
+  display.applyRowEdits(display.editableSources, { color: { field: 'group' } })
 }
 
 const rowColorKey = (display: ReturnType<typeof makeDisplay>) =>
-  display.legendSpec.sections.find(s => s.id === 'rowColor')?.items ?? []
+  display.legendSpec.sections.find(s => s.id === 'rows.color')?.items ?? []
 
 it('keys each overlaid subtrack under its label in its palette color', () => {
   const display = makeDisplay(GROUPED)
@@ -57,7 +57,7 @@ it('keys nothing in an overlay painting a score gradient', () => {
 it('focuses the subtracks a key entry lists', () => {
   const display = makeDisplay(GROUPED, { rows: true })
   byGroup(display)
-  display.focusLegendEntry('rowColor', 'T cell')
+  display.focusLegendEntry('rows.color', 'T cell')
   expect(display.sources.map(s => s.name)).toEqual(['a', 'c'])
 })
 

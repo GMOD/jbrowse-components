@@ -56,7 +56,7 @@ export const WIGGLE_FIELD_PRESETS = {
  *   and a heatmap (`mark: 'rect'`) fading to each from white at it, a ramp
  *   whose middle stop `scale.domainMid` moves
  *
- * `source` paints each subtrack its row color, `rowColor`'s entry, else the
+ * `source` paints each subtrack its row color, its `rows.colors` entry, else the
  * file's `color`, else a palette color where several share one plot, on both
  * sides of the `origin`; a subtrack with none paints the score's pair. A
  * color writing nothing does the same on bars, points and lines, so a lone

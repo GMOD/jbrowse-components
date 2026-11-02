@@ -108,8 +108,7 @@ test('a row display on a session track resets to the arrangement it was added wi
   const added = {
     type: 'LinearWiggleDisplay',
     displayId,
-    rows: { sort: ['c', 'a'], labels: { c: 'Third' } },
-    rowColor: { scale: { domain: ['a'], range: ['red'] } },
+    rows: { sort: ['c', 'a'], labels: { c: 'Third' }, colors: { a: 'red' } },
   }
   const session = sessionWith({
     type: 'MultiQuantitativeTrack',
@@ -131,8 +130,8 @@ test('a row display on a session track resets to the arrangement it was added wi
   ).toMatchObject(added)
   expect(getConf(display, ['rows', 'field'])).toBe('source')
   expect(display.baseRowColorSetting).toEqual({
-    ...added.rowColor,
     field: 'name',
+    scale: { domain: ['a'], range: ['red'] },
   })
   expect(display.rowArrangementIsCustom).toBe(false)
 
@@ -142,7 +141,6 @@ test('a row display on a session track resets to the arrangement it was added wi
 
   display.resetRowArrangement()
   expect(arrangement()).toEqual(added.rows)
-  expect(getSnapshot(display.configuration.rowColor)).toEqual(added.rowColor)
   expect(display.rowArrangementIsCustom).toBe(false)
   expect(session.trackConfigDeltas).toEqual({})
 })
