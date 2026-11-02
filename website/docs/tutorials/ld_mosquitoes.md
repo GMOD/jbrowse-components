@@ -8,14 +8,17 @@ tutorial_category: Population genomics
 ---
 
 The 2La chromosomal inversion of the malaria mosquito _Anopheles gambiae_ spans
-about 22 Mb and suppresses crossing over, so linkage disequilibrium (LD, the
-correlation between variants) runs across it as one block. We:
+about 22 Mb and suppresses crossing over between the inverted and standard
+arrangements, so linkage disequilibrium (LD, the correlation between variants)
+runs across it as one block in a population where both arrangements segregate. A
+sweep leaves a block around one gene, while an inversion's block covers most of
+a chromosome arm, so the variants are thinned to a grid before PLINK writes
+every pair. On arm 2L in Cameroon and Gabon, we:
 
-- compute the LD with `plink2 --r2-phased`
-- draw it with an [`LDTrack`](/docs/config/ldtrack)
-- load the inversion as a structural variant, genotyped per mosquito, beneath
-  the LD track
-- compare the LD block with the karyotype rows in Cameroon and Gabon
+- load a thinned PLINK r² table for each population as an LD track
+- load the inversion as one structural-variant record, genotyped per mosquito,
+  and facet the rows by karyotype from a sample sheet
+- open the whole arm with each population's LD track over its karyotype rows
 
 ## Prerequisites
 
@@ -134,7 +137,7 @@ jbrowse sort-bed < ag1000g_2L_CMgam.vcor |
 tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.vcor.gz
 ```
 
-The track over that file is an `LDTrack`. In
+The track over that file is an [`LDTrack`](/docs/config/ldtrack). In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, its
 `encoding.color` is a color scale, and `encoding.color.field` picks r² or D',
 the two metric columns, as its input:
@@ -234,8 +237,8 @@ trimodal, which the [reproduce script](#reproduce-it-end-to-end) checks.
 
 ## Comparing the 2La LD block with karyotypes in Cameroon and Gabon {#reading-the-2la-ld-block-against-the-karyotype-rows}
 
-Stack the r² track of each population over the karyotype track of the same
-population.
+Open `2L` with the r² track of each population over the karyotype track of the
+same population.
 
 <Figure src="/img/ld/anopheles_2la.png" caption="Ag1000G arm 2L with the published extents of 2La and Vgsc above r² blocks for Cameroon and Gabon."/>
 
