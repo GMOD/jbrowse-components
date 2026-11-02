@@ -25,6 +25,7 @@ export default function LinearMarkDisplayF(pluginManager: PluginManager) {
         import('./model.ts').then(f =>
           f.stateModelFactory(pluginManager, configSchema),
         ),
+      rpcMethods: ['CoreGetEncodedLayers'],
       // Every adapter behind these answers `getFeaturesArray`, so a `marks`
       // entry over a BAM is a declared pileup and one over a VCF a stacked
       // variant strip. What differs is which fields answer: a read's `score`

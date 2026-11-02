@@ -2,8 +2,6 @@ import { listsRowSources } from '@jbrowse/core/data_adapters/BaseAdapter/rowSour
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
-import { scanPlotFields } from './LinearMarkDisplay/scanPlotFields.ts'
-
 import type { PlotFields } from './LinearMarkDisplay/scanPlotFields.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util/types/data'
@@ -38,6 +36,8 @@ export default class MarkScanPlotFields extends RpcMethodTypeWithRenameRegions<'
     const listing = listsRowSources(adapter)
       ? await adapter.listRowSources({ signal })
       : undefined
+    const { scanPlotFields } =
+      await import('./LinearMarkDisplay/scanPlotFields.ts')
     return scanPlotFields(features, {
       listedSources: listing?.field === 'source' ? listing.sources.length : 0,
     })

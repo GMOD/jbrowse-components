@@ -1,15 +1,5 @@
-import { getFeatureAdapterOrThrow } from '../../data_adapters/getFeatureAdapter.ts'
 import RpcMethodTypeWithRenameRegion from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegion.ts'
-import { rpcResult } from '../../util/librpc.ts'
-import {
-  encodeFeatures,
-  encodedChannelTransferables,
-} from '../../util/markEncoding.ts'
-import { createProgressReporter } from '../../util/progress.ts'
-import { measureRegionBytes } from '../byteBudget.ts'
-import { layerFeatures } from './layerFeatures.ts'
 
-import type { EncodedLayersResult } from '../../util/markEncoding.ts'
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
 /**
@@ -24,72 +14,12 @@ import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 export default class CoreGetEncodedLayers extends RpcMethodTypeWithRenameRegion<'CoreGetEncodedLayers'> {
   name = 'CoreGetEncodedLayers' as const
 
+  override preload() {
+    return import('./executeEncodedLayers.ts')
+  }
+
   async execute(args: RpcExecuteArgs<'CoreGetEncodedLayers'>) {
-    const {
-      region,
-      layers: requested,
-      byteLimit,
-      signal,
-      statusCallback,
-    } = args
-    const { pluginManager } = this
-    const dataAdapter = await getFeatureAdapterOrThrow({
-      ...args,
-      pluginManager,
-    })
-
-    const { bytes, tooLarge } = await measureRegionBytes({
-      dataAdapter,
-      regions: [region],
-      byteLimit,
-      signal,
-      statusCallback,
-    })
-    if (tooLarge) {
-      return tooLarge
-    }
-
-    const { jexl } = pluginManager
-    const {
-      fetched,
-      layers: layered,
-      sections,
-      zoomRange,
-      notices,
-      facts,
-      unreadFilterFields,
-    } = await layerFeatures(dataAdapter, args, jexl)
-    const layers = requested.map((request, i) => {
-      const { table, row, series, gapBp } = layered[i]!
-      const encoded = encodeFeatures(
-        table,
-        { ...request.encoding, row, series },
-        request.lanes,
-        {
-          jexl,
-          root: fetched,
-          report: createProgressReporter({
-            label: 'Processing features',
-            total: table.length,
-            statusCallback,
-            signal,
-          }),
-        },
-      )
-      return gapBp === undefined ? encoded : { ...encoded, gapBp }
-    })
-    const result: EncodedLayersResult = {
-      layers,
-      facet: sections,
-      bytes,
-      zoomRange,
-      unreadFilterFields,
-      ...(notices.length > 0 ? { notices } : {}),
-      ...(Object.keys(facts).length > 0 ? { facts } : {}),
-    }
-    return rpcResult(
-      result,
-      layers.flatMap(l => encodedChannelTransferables(l)),
-    )
+    const { executeGetEncodedLayers } = await this.preload()
+    return executeGetEncodedLayers({ pluginManager: this.pluginManager, args })
   }
 }

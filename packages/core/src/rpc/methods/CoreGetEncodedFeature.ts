@@ -1,7 +1,4 @@
-import { getFeatureAdapterOrThrow } from '../../data_adapters/getFeatureAdapter.ts'
 import RpcMethodTypeWithRenameRegion from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegion.ts'
-import { wholeFeatureRow } from '../../util/stepTables.ts'
-import { layerFeatures } from './layerFeatures.ts'
 
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
@@ -15,27 +12,12 @@ import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 export default class CoreGetEncodedFeature extends RpcMethodTypeWithRenameRegion<'CoreGetEncodedFeature'> {
   name = 'CoreGetEncodedFeature' as const
 
+  override preload() {
+    return import('./executeEncodedLayers.ts')
+  }
+
   async execute(args: RpcExecuteArgs<'CoreGetEncodedFeature'>) {
-    const { layer, featureIndex } = args
-    const asked = args.layers[layer]
-    if (!asked) {
-      return undefined
-    }
-    const { pluginManager } = this
-    const dataAdapter = await getFeatureAdapterOrThrow({
-      ...args,
-      pluginManager,
-    })
-    // A layer's list does not depend on its neighbours, so only the one asked
-    // about runs its steps.
-    const { layers } = await layerFeatures(
-      dataAdapter,
-      { ...args, layers: [asked] },
-      pluginManager.jexl,
-    )
-    const table = layers[0]?.table
-    return table && featureIndex < table.length
-      ? wholeFeatureRow(table, featureIndex).toJSON()
-      : undefined
+    const { executeGetEncodedFeature } = await this.preload()
+    return executeGetEncodedFeature({ pluginManager: this.pluginManager, args })
   }
 }

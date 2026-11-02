@@ -15,6 +15,7 @@ export default function MultiWaySyntenyDisplayF(pluginManager: PluginManager) {
       configSchema,
       stateModel: () =>
         import('./model.ts').then(f => f.stateModelFactory(configSchema)),
+      rpcMethods: ['CoreGetEncodedLayers'],
       trackType: 'SyntenyTrack',
       viewType: 'LinearGenomeView',
       plotExamples: MULTI_WAY_PLOT_EXAMPLES,
