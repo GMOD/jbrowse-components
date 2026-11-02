@@ -49,8 +49,30 @@ out. That work is diffuse (probe `inclusive` over the window):
 `launchTrackGeneric` 21 ms, forced layout in `useScrollPortOverflow` and
 `useChromeHeightVar` ~14 ms, then the alignments display's layout getters
 (`sections`, `lanes`, `scrollContentHeight`) and React's first render of the
-track. The remaining move is
-[start-the-fetch-before-react-renders-the-display](../ideas/ready/start-the-fetch-before-react-renders-the-display.md).
+track.
+
+Moving that work, rather than cutting it, buys almost nothing, because from the
+boot chunks' arrival to the render request the main thread is about 75% busy on
+ada with 4 cores and saturated on a loaded laptop. A network wait that ends
+early only lets the next block of CPU start. Measured 2026-11-01 on ada against
+main `8c554a2f24`, Chrome pinned to 4 cores, 80 ms RTT, one BAM track from
+volvox without its plugin, medians of 12 interleaved cold loads, drawn at
+797 ms on main:
+
+- Setting the view's width in a layout effect instead of after the
+  ResizeObserver and a frame: 6 ms. The init then waits on the `.2bit` read.
+- Launching the tracks before navigating, so the fetch leaves before React
+  renders the navigated view: 9 ms, since React renders the track first
+  instead. It also breaks `sort:` modifiers, which pivot on the center line.
+- Reading the assembly's first `.2bit` block once `earlyStart` has the config,
+  with the TwoBit and Cytoband adapter chunks preloaded: 27 ms (38 ms on one
+  GFF track). The init starts 52 ms sooner, and the fetch then waits ~22 ms on
+  the worker's BAM header. Declined as too small for a second boot path.
+
+On the laptop at load 9-17 all three measured nothing. What is left is CPU:
+over the same window React's renders are ~25% (Emotion ~10%, spread over many
+components, none above 3 ms of its own), V8's `(program)` ~27%, module
+evaluation ~17%, and `createPluginManager` ~14%.
 
 The GFF, VCF and BED tabix adapters start the header read (BED: the column
 names) beside the region read once the index is in, since both need only the
