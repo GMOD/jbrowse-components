@@ -1,0 +1,117 @@
+import { parseAnnotationLocus } from './annotationOverlay.ts'
+
+import type { AnnotationAnchor, AnnotationRegion } from './annotationOverlay.ts'
+import type { ViewportRect } from './graphAnchor.ts'
+import type { Page } from 'puppeteer'
+
+// Where a track's display drew a feature or record it names, in viewport CSS
+// px. A fraction of the track's height moves whenever a band is added above
+// its target, and nothing fails: the click or callout lands on another row.
+// The display already boxes every named feature it drew (`featuresNamed`, the
+// same ink its floating labels read), so ask it.
+//
+// `region` narrows a name drawn more than once to the copy overlapping that
+// locus. A name the display did not draw, or still draws more than once, is
+// undefined, so the caller fails the spec by name.
+//
+// Puppeteer serializes this into the page, so it closes over nothing.
+export function featureRectInPage(
+  viewPath: number[],
+  trackId: string,
+  name: string,
+  region: AnnotationRegion | undefined,
+) {
+  interface Box {
+    left: number
+    top: number
+    width: number
+    height: number
+  }
+  interface Display {
+    featuresNamed?: (name: string) => Box[]
+  }
+  interface View {
+    id: string
+    views?: View[]
+    assemblyNames?: string[]
+    tracks?: { configuration?: { trackId?: string }; displays?: Display[] }[]
+    getHighlightCoords?: (region: {
+      assemblyName?: string
+      refName: string
+      start: number
+      end: number
+    }) => { left: number; width: number } | undefined
+  }
+  let view = (window as unknown as { JBrowseSession?: View }).JBrowseSession
+  for (const i of viewPath) {
+    view = view?.views?.[i]
+  }
+  const display = view?.tracks
+    ?.find(t => t.configuration?.trackId === trackId)
+    ?.displays?.find(d => typeof d.featuresNamed === 'function')
+  const container =
+    view &&
+    document.querySelector(
+      `[data-testid="trackRenderingContainer-${CSS.escape(view.id)}-${CSS.escape(trackId)}"]`,
+    )
+  const boxes = display?.featuresNamed?.(name) ?? []
+  const span =
+    region &&
+    view?.getHighlightCoords?.({
+      ...region,
+      assemblyName: view.assemblyNames?.[0],
+    })
+  const matching = span
+    ? boxes.filter(
+        b => b.left < span.left + span.width && b.left + b.width > span.left,
+      )
+    : boxes
+  const box = matching.length === 1 ? matching[0] : undefined
+  if (!box || !container) {
+    return undefined
+  }
+  const r = container.getBoundingClientRect()
+  return {
+    left: r.left + box.left,
+    top: r.top + box.top,
+    width: box.width,
+    height: box.height,
+  }
+}
+
+async function featureBox(page: Page, anchor: AnnotationAnchor) {
+  return anchor.feature === undefined || anchor.trackId === undefined
+    ? undefined
+    : page.evaluate(
+        featureRectInPage,
+        Array.isArray(anchor.view) ? anchor.view : [anchor.view ?? 0],
+        anchor.trackId,
+        anchor.feature,
+        anchor.loc ? parseAnnotationLocus(anchor.loc, true) : undefined,
+      )
+}
+
+// The feature's box, or with `fracY` the line through it at that fraction of
+// its height (0 its top edge), which is what an arrow head on a tall glyph
+// wants.
+export async function featureRect(
+  page: Page,
+  anchor: AnnotationAnchor,
+): Promise<ViewportRect | undefined> {
+  const box = await featureBox(page, anchor)
+  return box && anchor.fracY !== undefined
+    ? { ...box, top: box.top + anchor.fracY * box.height, height: 0 }
+    : box
+}
+
+// A click or hover on the feature: the middle of its box, or the `fracY` line
+// through it, plus the anchor's nudge.
+export async function featurePoint(page: Page, anchor: AnnotationAnchor) {
+  const rect = await featureRect(page, anchor)
+  return rect
+    ? {
+        x: rect.left + rect.width / 2 + (anchor.dx ?? 0),
+        y: rect.top + rect.height / 2 + (anchor.dy ?? 0),
+      }
+    : undefined
+}

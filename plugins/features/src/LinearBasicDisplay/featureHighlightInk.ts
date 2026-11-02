@@ -200,10 +200,15 @@ export function drawnLabelTexts(
 }
 
 /**
- * Every named top-level feature once, boxed over the body it drew without its
- * labels: what a host placing names itself anchors them to.
+ * Every top-level feature `textOf` names, once, boxed over the body it drew
+ * without its labels.
  */
-export function namedFeatureInk(self: FeatureInkHost): NamedFeature[] {
+function bodyInk(
+  self: FeatureInkHost,
+  textOf: (
+    item: FeatureDataResult['flatbushItems'][number],
+  ) => string | undefined,
+): NamedFeature[] {
   const out: NamedFeature[] = []
   const named = new Set<string>()
   for (const idx of regionIndices(self.renderBlocks)) {
@@ -213,9 +218,11 @@ export function namedFeatureInk(self: FeatureInkHost): NamedFeature[] {
       continue
     }
     const blocks = self.renderBlocks.filter(b => b.displayedRegionIndex === idx)
-    for (const { featureId, name } of data.flatbushItems) {
+    for (const item of data.flatbushItems) {
+      const { featureId } = item
+      const text = textOf(item)
       const instances = index.byFeatureId.get(featureId)
-      if (!name || !instances || named.has(featureId)) {
+      if (text === undefined || !instances || named.has(featureId)) {
         continue
       }
       const merged = mergeBounds(
@@ -230,11 +237,29 @@ export function namedFeatureInk(self: FeatureInkHost): NamedFeature[] {
       const box = merged && clipToCanvas(merged, self.renderState)
       if (box) {
         named.add(featureId)
-        out.push({ featureId, text: name, ...box })
+        out.push({ featureId, text, ...box })
       }
     }
   }
   return out
+}
+
+/**
+ * Every named top-level feature once, boxed over its body: what a host
+ * placing names itself anchors them to.
+ */
+export function namedFeatureInk(self: FeatureInkHost) {
+  return bodyInk(self, item => (item.name ? item.name : undefined))
+}
+
+/**
+ * The drawn features whose name, or failing one whose description (a VCF
+ * record with no ID reads `C -> T`), is `text`, each boxed over its body.
+ */
+export function featuresNamedInk(self: FeatureInkHost, text: string) {
+  return bodyInk(self, item =>
+    item.name === text || item.description === text ? text : undefined,
+  )
 }
 
 /**

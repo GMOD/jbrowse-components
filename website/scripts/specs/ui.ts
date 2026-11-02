@@ -801,9 +801,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         type: 'click',
         anchor: {
           trackId: 'breast_cancer_sniffles_hg19_traonly_tabix',
-          loc: '14:84,871,469',
-          fracY: 0,
-          dy: 8,
+          feature: '89844_3',
         },
       },
       { type: 'waitForText', text: SPLIT_VIEW_LINK_LABEL },

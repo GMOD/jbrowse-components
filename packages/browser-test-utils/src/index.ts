@@ -26,6 +26,7 @@ export {
   drawAnnotationOverlay,
   parseAnnotationLocus,
 } from '@jbrowse/capture/annotationOverlay'
+export { featurePoint } from '@jbrowse/capture/featureAnchor'
 export { graphNodePoint, locateGraphPane } from '@jbrowse/capture/graphAnchor'
 
 export {

@@ -43,6 +43,13 @@ export interface AnnotationAnchor {
   // when it holds several), or in that view when it is a GraphGenomeView. The
   // resolved rect is the node's drawn polyline bounds in viewport px.
   graphNode?: string
+  // a feature or record the `trackId` track drew, by the name its label shows
+  // (`rs334`, `CYP1A2`). The resolved rect is the box the display drew it in,
+  // so it holds when a band is added above it, where a `fracY` would land on
+  // another row. A `loc` picks among copies of one name; a name drawn nowhere,
+  // or still more than once, is a miss. Resolved by the caller
+  // (`featureAnchor.ts`) through the display's own `featuresNamed`.
+  feature?: string
   // the two axes of a DotplotView, as `4A` (the whole chromosome) or
   // `4A:1-5,000,000`. The resolved rect is the grid cell the pair makes, which
   // for two bare refNames is the box an off-diagonal block sits in. Naming one
@@ -454,6 +461,7 @@ export function drawAnnotationOverlay(
     // miss below
     const preResolved =
       anchor.graphNode !== undefined ||
+      anchor.feature !== undefined ||
       anchor.hLoc !== undefined ||
       anchor.vLoc !== undefined ||
       anchor.residue !== undefined

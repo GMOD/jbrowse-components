@@ -7,6 +7,7 @@ const ANCHOR_KEYS = new Set(
     selector: 0,
     text: 0,
     graphNode: 0,
+    feature: 0,
     hLoc: 0,
     vLoc: 0,
     residue: 0,

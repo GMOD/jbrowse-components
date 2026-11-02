@@ -62,6 +62,7 @@ export {
   buildRegionInstanceIndex,
   drawnLabelTexts,
   featureHighlightInk,
+  featuresNamedInk,
 } from './LinearBasicDisplay/featureHighlightInk.ts'
 export {
   buildFeatureFlatbushIndex,

@@ -9,10 +9,12 @@ import {
   createMembershipMemo,
   drawnLabelTexts,
   featureHighlightInk,
+  featuresNamedInk,
   resolveFeatureHighlights,
 } from '@jbrowse/plugin-features/band'
 
 import type { VariantTopBands } from './variantTopBands.ts'
+import type { NamedFeature } from '@jbrowse/display-kit/floatingLabelHost'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IMSTArray, IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
@@ -100,6 +102,14 @@ export function recordsHighlightViews(self: RecordsHighlightHost) {
      */
     recordsDrawnLabelTexts(featureId: string) {
       return drawnLabelTexts(this.recordsInkHost, [featureId])
+    },
+    /**
+     * #method
+     * The band's drawn records this name or description labels, each boxed
+     * over its body, as a feature track answers it. Built only when called.
+     */
+    featuresNamed(name: string): NamedFeature[] {
+      return featuresNamedInk(this.recordsInkHost, name)
     },
     /**
      * #getter

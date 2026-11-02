@@ -18,7 +18,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./annotationOverlay": "./src/annotationOverlay.ts",
-    "./graphAnchor": "./src/graphAnchor.ts"
+    "./graphAnchor": "./src/graphAnchor.ts",
+    "./featureAnchor": "./src/featureAnchor.ts"
   },
   "author": "JBrowse Team",
   "license": "Apache-2.0",
@@ -52,7 +53,8 @@
     "exports": {
       ".": "./esm/index.js",
       "./annotationOverlay": "./esm/annotationOverlay.js",
-      "./graphAnchor": "./esm/graphAnchor.js"
+      "./graphAnchor": "./esm/graphAnchor.js",
+      "./featureAnchor": "./esm/featureAnchor.js"
     }
   }
 }

@@ -1,6 +1,6 @@
 ---
 name: semantic-click-anchors
-description: "Figure and tour anchors that name what they point at, a record or a row, instead of a fraction of a track's height, so a screenshot spec survives a band added above its target. Nothing built. Open: a harness anchor resolving a feature through the display's searchFeatureByID, which needs a name-to-id lookup since ids carry the adapter id; a row anchor resolving through the tree sidebar's row geometry; then the sweep of fractional anchors on feature and row tracks."
+description: "Figure and tour anchors that name what they point at, a record or a row, instead of a fraction of a track's height, so a screenshot spec survives a band added above its target. Built: the feature anchor (`{ trackId, feature }`, through each display's `featuresNamed`), with `variant_panel` and `link_to_split_view` converted. Open: a row anchor resolving through the tree sidebar's row geometry, which the other three stopgaps need; then the sweep of fractional anchors on feature and row tracks."
 ---
 
 # Click anchors that name the thing
@@ -21,10 +21,6 @@ Each of these is an anchor this work should replace:
 - `website/scripts/specs/trio.ts`, `trioRowTop`: crossover frames measured up
   from the track's bottom edge in row pitches. This holds while rows end at the
   bottom; a band added below them would break it.
-- `website/scripts/specs/variants.ts`, `variant_panel`: clicks
-  `fracY: 0.2` of `[data-testid="records_band"]` at `ctgA:6,285`.
-- `website/scripts/specs/ui.ts`, `link_to_split_view`: clicks `fracY: 0, dy: 8`
-  at the record's locus.
 - `website/scripts/specs/popgen.ts`, `popgen/in2lt_inversion`: the carriers
   arrow at `fracY: 0.88`.
 - `website/scripts/specs/graph-mouse-cattle.ts`, `pangenome/bovine_tas2r46`: the
@@ -36,21 +32,13 @@ right word, so the sweep covers only those pointing at a record or a row.
 
 ## Next
 
-- **A `feature` anchor in the harness.** `trackId` plus a record's name
-  resolves through the display's `searchFeatureByID`, which returns
-  `[startBp, topPx, endBp, bottomPx]` for the box it drew:
-  `LinearBasicDisplay` (`plugins/features/src/LinearBasicDisplay/baseModel.ts`)
-  and the variant records band
-  (`plugins/variants/src/LinearVariantDisplay/recordsBandViews.ts`, scroll
-  already corrected). Search highlighting and the breakpoint split view's
-  overlay read the same lookup. The wrinkle is that it takes the internal
-  feature id, which adapters prefix with `getAdapterId(config)`, so a spec
-  naming a VCF ID or gene name needs a name-to-id step: the laid-out features
-  by name in the display, or the text index.
-  Anchors resolve in page context in
-  `products/jbrowse-capture/src/annotationOverlay.ts`, which is serialized and
-  import-free and is shared with the desktop selenium harness. Clicks extend it
-  through `ActionAnchor` in `website/scripts/screenshot-spec-types.ts`.
+- **The `feature` anchor is built.** `{ trackId, feature }` resolves through
+  the display's `featuresNamed` method (LinearBasicDisplay, and the variant
+  display's records band), built only when a capture calls it:
+  `products/jbrowse-capture/src/featureAnchor.ts`, for callouts and clicks
+  alike. It matches the text the label shows, so over genotype rows a record
+  is its one-line label with the carrier share (`C -> T <1%`), and a record
+  with no ID its description. `loc` picks among copies of one name.
 - **A `row` anchor.** `trackId` plus a row's name resolves through the tree
   sidebar's geometry: `sources` in
   `packages/tree-sidebar/src/TreeSidebarMixin.ts` is the rows drawn top to

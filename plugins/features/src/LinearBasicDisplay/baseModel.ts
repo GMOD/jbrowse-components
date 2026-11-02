@@ -94,6 +94,7 @@ import {
   buildRegionInstanceIndex,
   drawnLabelTexts,
   featureHighlightInk,
+  featuresNamedInk,
   namedFeatureInk,
 } from './featureHighlightInk.ts'
 import {
@@ -1053,6 +1054,15 @@ export default function baseStateModelFactory(
        */
       get namedFeatures(): NamedFeature[] {
         return namedFeatureInk(self)
+      },
+      /**
+       * #method
+       * The drawn features this name or description labels, each boxed over
+       * its body, so a screenshot or a test can point at a feature by what it
+       * is. Built only when called.
+       */
+      featuresNamed(name: string): NamedFeature[] {
+        return featuresNamedInk(self, name)
       },
       /**
        * #getter
