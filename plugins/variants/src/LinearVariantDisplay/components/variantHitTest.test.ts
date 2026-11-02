@@ -1,8 +1,4 @@
-import {
-  HIT_SEARCH_PAD_PX,
-  HIT_TOLERANCE_PX,
-  computeVariantHitQuery,
-} from './variantHitTest.ts'
+import { HIT_TOLERANCE_PX, computeVariantHitQuery } from './variantHitTest.ts'
 
 import type { HitRegion } from './variantHitTest.ts'
 
@@ -40,9 +36,8 @@ describe('computeVariantHitQuery genomicPos', () => {
   })
 
   test('bpPadding is the click tolerance in bp', () => {
-    expect(HIT_SEARCH_PAD_PX).toBe(HIT_TOLERANCE_PX)
     expect(computeVariantHitQuery(fwd, 0, 0, 0, 10, 1).bpPadding).toBe(
-      HIT_SEARCH_PAD_PX * 10,
+      HIT_TOLERANCE_PX * 10,
     )
   })
 })

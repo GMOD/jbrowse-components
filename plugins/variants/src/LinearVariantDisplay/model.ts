@@ -1022,7 +1022,7 @@ export function stateModelFactory(
           },
           /**
            * #action
-           * Enable fit-to-display-height mode: `rowHeight = 0` makes
+           * Fit the rows to the display: `rows.step: 'fit'` makes
            * `effectiveRowHeight` divide `availableHeight` across the rows.
            */
           setFitToHeight() {
@@ -1155,27 +1155,6 @@ export function stateModelFactory(
 
         /**
          * #getter
-         * Distinct sample-metadata attributes (from samplesTsv) the user can
-         * color rows by — every key the sources have except internal plumbing.
-         */
-        get colorByAttributes(): string[] {
-          const sources = self.adapterSamples
-          if (!sources?.length) {
-            return []
-          }
-          const keys = new Set<string>()
-          for (const source of sources) {
-            for (const key in source) {
-              if (!INTERNAL_SOURCE_KEYS.has(key)) {
-                keys.add(key)
-              }
-            }
-          }
-          return [...keys]
-        },
-
-        /**
-         * #getter
          * `TreeSidebarMixin`'s hook: never, since the cells paint by genotype
          * and a row's color shows only on its label bar.
          */
@@ -1193,10 +1172,19 @@ export function stateModelFactory(
         /**
          * #getter
          * `TreeSidebarMixin`'s hook: the samplesTsv attributes, the ones
-         * "Color by" offers.
+         * "Color by" and "Group by" offer — every key the samples carry but
+         * the internal plumbing.
          */
         get rowColorFields(): readonly string[] {
-          return this.colorByAttributes
+          const keys = new Set<string>()
+          for (const source of self.adapterSamples ?? []) {
+            for (const key in source) {
+              if (!INTERNAL_SOURCE_KEYS.has(key)) {
+                keys.add(key)
+              }
+            }
+          }
+          return [...keys]
         },
         /**
          * #getter
@@ -1655,12 +1643,7 @@ export function stateModelFactory(
            */
           expandToContentHeight() {
             return self.rowsHidden
-              ? self.resizeRecordsBand(
-                  Math.max(
-                    0,
-                    self.recordsStackHeight - self.topBands.reserved.records,
-                  ),
-                )
+              ? self.showAllRecordRows()
               : superExpandToContentHeight()
           },
         }

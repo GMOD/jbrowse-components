@@ -176,7 +176,7 @@ function recordsShowItems(self: LinearVariantDisplayModel): MenuItem[] {
 // handle sizes it and its fit ladder shrinks what does not fit, so a preset
 // there would be a second "height" beside Row height.
 function recordsHeightMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
-  return self.showRecords && !self.drawsRows
+  return !self.drawsRows
     ? [
         featureHeightMenuItem({
           displayMode: self.recordsDisplayMode,
@@ -246,9 +246,7 @@ function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
 
 // Items for the "Show" submenu; the subtree filter has its own entry via
 // `clusteringMenuItem`.
-export function variantShowSubmenuItems(
-  self: LinearVariantDisplayModel,
-): MenuItem[] {
+function variantShowSubmenuItems(self: LinearVariantDisplayModel): MenuItem[] {
   return [
     ...(self.adapterSamples?.length
       ? [

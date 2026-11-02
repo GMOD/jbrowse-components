@@ -29,10 +29,6 @@ interface VariantHitQuery {
 // be near-impossible to hit.
 export const HIT_TOLERANCE_PX = 5
 
-// Half-width of the feature-interval search window: the click tolerance.
-// Callers narrow the candidates back down to what each cell actually paints.
-export const HIT_SEARCH_PAD_PX = HIT_TOLERANCE_PX
-
 // Pure geometry for hit-testing one region: maps a cursor position (relative to
 // the canvas) to a bp window and a row band. Split out from VariantComponent so
 // the subtle reversed-region and sub-pixel-row math is unit-testable.
@@ -66,6 +62,6 @@ export function computeVariantHitQuery(
     genomicPos,
     rowNearest: nearest,
     rowLowest: lowest,
-    bpPadding: HIT_SEARCH_PAD_PX * bpPerPx,
+    bpPadding: HIT_TOLERANCE_PX * bpPerPx,
   }
 }

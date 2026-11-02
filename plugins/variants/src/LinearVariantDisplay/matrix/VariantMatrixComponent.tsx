@@ -3,7 +3,7 @@ import { observer } from 'mobx-react'
 
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { buildVariantHit } from '../components/buildVariantHit.ts'
-import { enrichFeatureFromClick } from '../components/enrichFeatureFromClick.ts'
+import { enrichCellHit } from '../components/enrichFeatureFromClick.ts'
 import { findCellIndex } from '../components/variantCellLookup.ts'
 import { variantSurfaceHandlers } from '../components/variantSurface.ts'
 import { matrixCellAt } from './matrixHitTest.ts'
@@ -117,12 +117,7 @@ export function variantMatrixSurface(
   return {
     getHit: (x, y) => getHoveredMatrixCell(model, x, y),
     getTooltip: hit => hit.fields,
-    enrich: hit => {
-      const baseFeature = model.featureById(hit.fields.featureId)
-      return baseFeature
-        ? enrichFeatureFromClick(baseFeature, hit.featureInfo, hit.fields)
-        : undefined
-    },
+    enrich: hit => enrichCellHit(model, hit),
     onHover: hit => {
       const cell = hit?.cell
       model.setHovered(cell && { kind: 'matrixCell', cell })

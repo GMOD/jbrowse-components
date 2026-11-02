@@ -1,6 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import type { VariantFeatureInfo } from '../../shared/types.ts'
+import type { VariantTooltipFields } from './buildVariantHit.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 export function enrichFeatureFromClick(
@@ -38,6 +39,20 @@ export function enrichFeatureFromClick(
         : {}),
     },
   })
+}
+
+/**
+ * A genotype cell's hit as the clicked record, its sample card included:
+ * the click both cell layouts hand the feature widget and the record menu.
+ */
+export function enrichCellHit(
+  model: { featureById(featureId: string): Feature | undefined },
+  hit: { fields: VariantTooltipFields; featureInfo: VariantFeatureInfo },
+) {
+  const baseFeature = model.featureById(hit.fields.featureId)
+  return baseFeature
+    ? enrichFeatureFromClick(baseFeature, hit.featureInfo, hit.fields)
+    : undefined
 }
 
 /**

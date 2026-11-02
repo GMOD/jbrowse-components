@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { buildVariantHit } from './buildVariantHit.ts'
-import { enrichFeatureFromClick } from './enrichFeatureFromClick.ts'
+import { enrichCellHit } from './enrichFeatureFromClick.ts'
 import { pickVariantCell } from './pickVariantCell.ts'
 import { computeVariantHitQuery } from './variantHitTest.ts'
 import { variantSurfaceHandlers } from './variantSurface.ts'
@@ -138,12 +138,7 @@ export function variantRowsSurface(
   return {
     getHit: (x, y) => getHoveredFeature(model, x, y),
     getTooltip: hit => hit.fields,
-    enrich: hit => {
-      const baseFeature = model.featureById(hit.fields.featureId)
-      return baseFeature
-        ? enrichFeatureFromClick(baseFeature, hit.featureInfo, hit.fields)
-        : undefined
-    },
+    enrich: hit => enrichCellHit(model, hit),
     onHover: hit => {
       model.setHovered(hit && { kind: 'cell', cell: hit.cell })
     },

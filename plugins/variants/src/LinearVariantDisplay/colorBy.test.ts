@@ -5,7 +5,7 @@ import { createTestEnvironment } from './testEnv.ts'
 
 // Runtime "Color by→Samples" wiring: setColorBy writes colorBy onto the
 // display's config and nothing else — the tint resolves on every read of
-// `sources`. colorByAttributes lists the samplesTsv metadata keys the user can
+// `sources`. rowColorFields lists the samplesTsv metadata keys the user can
 // band by.
 describe('variant display colorBy', () => {
   const sources = [
@@ -20,7 +20,7 @@ describe('variant display colorBy', () => {
   it('lists metadata attributes excluding internal plumbing', () => {
     const model = makeModel()
     model.setSources(sources)
-    expect(new Set(model.colorByAttributes)).toEqual(
+    expect(new Set(model.rowColorFields)).toEqual(
       new Set(['population', 'sex']),
     )
   })

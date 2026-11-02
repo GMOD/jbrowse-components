@@ -912,19 +912,38 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
 export type RecordsLayout = ReturnType<typeof recordsLayoutViews>
 
 interface RecordsLayoutActionsHost extends RecordsLayout {
-  setRecordsHeight: (arg: number) => void
   configuration: RecordsSettingsHost['configuration']
   openingRecordsHeight: number | undefined
 }
 
 export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
+  function resizeRecordsBand(distance: number) {
+    const before = self.topBands.reserved.records
+    const after = clampBandHeight(
+      before,
+      before + distance,
+      RECORDS_BAND_BOUNDS,
+    )
+    if (after !== before) {
+      setConf(
+        self,
+        ['records', 'height'],
+        before === 0 ? boundBandHeight(after, RECORDS_BAND_BOUNDS) : after,
+      )
+    }
+    return self.topBands.reserved.records - before
+  }
   return {
     /**
      * #action
-     * Raise the band to its whole stack, so no record row hides.
+     * Raise the band to its whole stack, so no record row hides; it never
+     * shrinks it. The `+N hidden` chip, and the track handle's double click
+     * with the rows hidden.
      */
     showAllRecordRows() {
-      self.setRecordsHeight(self.recordsStackHeight)
+      return resizeRecordsBand(
+        Math.max(0, self.recordsStackHeight - self.topBands.reserved.records),
+      )
     },
     /**
      * #action
@@ -934,22 +953,7 @@ export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
      * shut stays unwritten; one pulled open opens at least at the floor,
      * since it is empty for want of records, not set below the floor.
      */
-    resizeRecordsBand(distance: number) {
-      const before = self.topBands.reserved.records
-      const after = clampBandHeight(
-        before,
-        before + distance,
-        RECORDS_BAND_BOUNDS,
-      )
-      if (after !== before) {
-        setConf(
-          self,
-          ['records', 'height'],
-          before === 0 ? boundBandHeight(after, RECORDS_BAND_BOUNDS) : after,
-        )
-      }
-      return self.topBands.reserved.records - before
-    },
+    resizeRecordsBand,
     /**
      * #action
      * Hold the band's height over rows from its first layout of a fetched
