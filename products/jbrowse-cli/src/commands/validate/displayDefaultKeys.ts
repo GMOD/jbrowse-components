@@ -59,27 +59,32 @@ export function displayDefaultsForTrackType(
   }
 }
 
-// Every declaration's refinements, or undefined where two say a value refines
-// different ones
-function mergedRefines(keyed: KeyedWrites[]) {
-  const pairs = keyed.flatMap(w => Object.entries(w.refines ?? {}))
-  const refines = Object.fromEntries(pairs)
-  return pairs.every(([from, to]) => refines[from] === to) ? refines : undefined
+// The refinements every keyed declaration states. One merged slot serves every
+// display a bag reaches, and where a display's rows declare no refinement its
+// fields are values of their own: a VariantTrack's mark display reads `sample`
+// and `haplotype` as columns, so a switch between them is a field change there
+// and drops the arrangement, which the variant display's own merge keeps.
+function sharedRefines(keyed: KeyedWrites[]) {
+  const [first, ...rest] = keyed
+  return Object.fromEntries(
+    Object.entries(first?.refines ?? {}).filter(([finer, coarser]) =>
+      rest.every(w => w.refines?.[finer] === coarser),
+    ),
+  )
 }
 
-// Whole where any declaration writes it whole, two key it by different
-// fields or two refine one value differently; keyed where any keys it, by
-// every declaration's keyed members and refinements, as `rows` gains a member
-// on some displays only, an empty value changing it where any declaration
-// says so; members otherwise.
+// Whole where any declaration writes it whole or two key it by different
+// fields; keyed where any keys it, by every declaration's keyed members and
+// the refinements all of them state, as `rows` gains a member on some
+// displays only, an empty value changing it where any declaration says so;
+// members otherwise.
 function mergedWrites(slots: SlotEntry[]) {
   const keyed = slots.map(s => s.writes).filter(isKeyedWrites)
   const keyedBy = new Set(keyed.map(w => w.keyedBy))
   const [field] = keyedBy
-  const refines = mergedRefines(keyed)
+  const refines = sharedRefines(keyed)
   return slots.some(s => s.writes !== 'members' && !isKeyedWrites(s.writes)) ||
-    keyedBy.size > 1 ||
-    !refines
+    keyedBy.size > 1
     ? 'whole'
     : field === undefined
       ? 'members'

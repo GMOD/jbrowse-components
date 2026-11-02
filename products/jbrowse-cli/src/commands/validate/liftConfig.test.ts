@@ -236,40 +236,27 @@ describe('mergeBySlots over a keyed rows object', () => {
   })
 })
 
-// core's keyedWrites.test.ts refinement rows, on the variant display's rows,
-// whose haplotype rows refine the sample
-describe('mergeBySlots over a rows object whose field refines another', () => {
+// A VariantTrack's bag reaches its mark display too, whose rows read
+// `sample` and `haplotype` as columns, so the merged slot keeps no refinement
+// and a switch there drops the arrangement
+describe('mergeBySlots over a VariantTrack rows object', () => {
   const slots = displayDefaultSlots('VariantTrack')
   const hosted = { sort: ['NA12878', 'NA12891'], labels: { NA12878: 'Child' } }
 
-  test('the merged slot carries the refinement', () => {
-    expect(slots.find(s => s.name === 'rows')?.writes).toMatchObject({
-      keyedBy: 'field',
-      refines: { haplotype: 'sample' },
-    })
+  test('the merged slot keeps no refinement its mark display lacks', () => {
+    const writes = slots.find(s => s.name === 'rows')?.writes
+    expect(writes).toMatchObject({ keyedBy: 'field' })
+    expect(writes).not.toHaveProperty('refines')
   })
 
-  test.each([
-    {
-      name: 'a switch to haplotype keeps the arrangement',
-      base: { rows: { field: 'sample', ...hosted } },
-      write: { rows: 'haplotype' },
-      rows: { field: 'haplotype', ...hosted },
-    },
-    {
-      name: 'a switch back to sample keeps the arrangement',
-      base: { rows: { field: 'haplotype', ...hosted } },
-      write: { rows: { field: 'sample' } },
-      rows: { field: 'sample', ...hosted },
-    },
-    {
-      name: 'a field outside the refinement still resets',
-      base: { rows: { field: 'haplotype', ...hosted } },
-      write: { rows: 'tissue' },
-      rows: { field: 'tissue' },
-    },
-  ])('$name', ({ base, write, rows }) => {
-    expect(mergeBySlots(base, write, slots).rows).toEqual(rows)
+  test('a switch to haplotype drops the arrangement', () => {
+    expect(
+      mergeBySlots(
+        { rows: { field: 'sample', ...hosted } },
+        { rows: 'haplotype' },
+        slots,
+      ).rows,
+    ).toEqual({ field: 'haplotype' })
   })
 })
 
@@ -341,47 +328,49 @@ describe('displayDefaultSlots folds writes across displays', () => {
     )
   })
 
-  test('refinements union across the displays declaring them', () => {
+  const refining = (refines: Record<string, string>) =>
+    rowsOn({ keyedBy: 'field', keyed: ['sort'], refines }, ['sort'])
+
+  // core's keyedWrites.test.ts refinement rows, through the CLI's merge
+  test.each([
+    ['sample', 'haplotype'],
+    ['haplotype', 'sample'],
+  ])(
+    'a refinement every display states keeps the arrangement from %s to %s',
+    (from, to) => {
+      const rows = foldOf(
+        refining({ haplotype: 'sample' }),
+        refining({ haplotype: 'sample' }),
+      )
+      expect(rows?.writes).toEqual({
+        keyedBy: 'field',
+        keyed: ['sort'],
+        refines: { haplotype: 'sample' },
+      })
+      const merge = (write: string) =>
+        mergeBySlots(
+          { rows: { field: from, sort: ['x'] } },
+          { rows: write },
+          rows ? [rows] : [],
+        ).rows
+      expect(merge(to)).toEqual({ field: to, sort: ['x'] })
+      expect(merge('tissue')).toEqual({ field: 'tissue' })
+    },
+  )
+
+  test('a refinement one keyed display lacks is dropped', () => {
     expect(
-      foldOf(
-        rowsOn(
-          {
-            keyedBy: 'field',
-            keyed: ['sort'],
-            refines: { haplotype: 'sample' },
-          },
-          ['sort'],
-        ),
-        keyedOn(['sort']),
-      )?.writes,
-    ).toEqual({
-      keyedBy: 'field',
-      keyed: ['sort'],
-      refines: { haplotype: 'sample' },
-    })
+      foldOf(refining({ haplotype: 'sample' }), keyedOn(['sort']))?.writes,
+    ).toEqual({ keyedBy: 'field', keyed: ['sort'] })
   })
 
-  test('one value refining two is whole', () => {
+  test('a value two displays refine differently refines nothing', () => {
     expect(
       foldOf(
-        rowsOn(
-          {
-            keyedBy: 'field',
-            keyed: ['sort'],
-            refines: { haplotype: 'sample' },
-          },
-          ['sort'],
-        ),
-        rowsOn(
-          {
-            keyedBy: 'field',
-            keyed: ['sort'],
-            refines: { haplotype: 'source' },
-          },
-          ['sort'],
-        ),
+        refining({ haplotype: 'sample' }),
+        refining({ haplotype: 'source' }),
       )?.writes,
-    ).toBe('whole')
+    ).toEqual({ keyedBy: 'field', keyed: ['sort'] })
   })
 
   test('members everywhere stays members', () => {

@@ -310,7 +310,7 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
      schema, the CLI manifest and the user guide state the row name's
      spelling, and the docs say it is JBrowse's numbering, not the VCF's
      `HP` tag.
-   - MAF copy rows compose labels the same way (`Mouse~2`).
+   - MAF copy rows compose labels the same way (`Mouse copy 2`).
    - A sample whose name parses as another's haplotype (`X HP1` beside `X`,
      `parseRowName`) warns once.
    - Tests: a phased → sample → phased round trip for `sort`, `labels`,
@@ -328,7 +328,7 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
      ploidy the drawn rows need. MAF keeps its own name-parsed `rowAlias`,
      since a copy row exists at some loci only, and its `labelSuffix` is
      ` copy 2`, as its own copy label reads, so a sample label composes as
-     `Mouse copy 2` rather than `Mouse~2`.
+     `Mouse copy 2`.
    - The row's `HP` field stays the allele index from 0, which the worker
      and the genotype readers index by; the name (`haplotypeRowName`) and
      the tables export's `haplotype` column count from 1, 0 on a sample row.
@@ -337,6 +337,20 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
    - MAF's `rows` is `MafRows` over `RowArrangement`, declaring `axis`,
      `colors` and `color`, and writes member by member; `SampleRows` stays
      as a deprecated subpath no display extends.
+   - The CLI's `mergedWrites` keeps a refinement only where every keyed
+     declaration states it, not the union with a conflict writing whole: one
+     merged slot serves every display a bag reaches, and a VariantTrack's mark
+     display reads `sample` and `haplotype` as columns, so the CLI's merge
+     drops the arrangement on that switch, which the variant display's own
+     merge keeps.
+   - A haploid sample's one row is marked `sole` where the expansion builds
+     it, and only that row drops the haplotype from its label; a samples
+     file's `label` composes as a `rows.labels` entry does (`Mom HP1`).
+   - A v4.3 phased session named its rows from `HP0`; the lift renames its
+     `layout` rows, `clusterTree` leaves and `subtreeFilter` from each layout
+     row's `baseName` and `HP`.
+   - A supplied tree rotates towards `rows.sort` before its sample leaves
+     fork, since the order names the sample.
 5. Writers: menus, launch-args, jbrowse-img, the tables and R export, the
    agent prompt (`jbApi.ts`, which says `rows` and `rowColor` write whole and
    lists `unit`), figure specs, tutorials, jb2hubs, ggjbrowse. jb2hubs'
