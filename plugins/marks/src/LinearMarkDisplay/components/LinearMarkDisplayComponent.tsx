@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 
 import { findMarkHit } from '../findMarkHit.ts'
 import MarkFacetChips from './MarkFacetChips.tsx'
-import MarkRows from './MarkRows.tsx'
+import MarkRowsLayer from './MarkRowsLayer.tsx'
 import MarkTextLayer from './MarkTextLayer.tsx'
 import MarkTooltip from './MarkTooltip.tsx'
 
@@ -39,7 +39,7 @@ const LinearMarkDisplayComponent = observer(
           <>
             <MarkTextLayer model={model} />
             <MarkFacetChips model={model} />
-            <MarkRows model={model} />
+            <MarkRowsLayer model={model} />
           </>
         )}
         // The vertical guide for the pointer, and the row guide beside it

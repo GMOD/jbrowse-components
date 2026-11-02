@@ -13,7 +13,7 @@ import type { MarkDisplayModel } from './markDisplayTypes.ts'
  * `rowHeight` pushes past the plot's foot. The lines come first, so the
  * tree's panel paints over them.
  */
-const MarkRows = observer(function MarkRows({
+const MarkRowsLayer = observer(function MarkRowsLayer({
   model,
 }: {
   model: MarkDisplayModel
@@ -51,4 +51,4 @@ const MarkRows = observer(function MarkRows({
   )
 })
 
-export default MarkRows
+export default MarkRowsLayer

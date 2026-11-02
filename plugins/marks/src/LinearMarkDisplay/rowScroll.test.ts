@@ -7,7 +7,7 @@ import * as spanShader from '@jbrowse/render-core/shaders/spanMarkIface'
 import { SIDEBAR_HINT_LINE_PX } from '@jbrowse/tree-sidebar'
 import { act, render, screen } from '@testing-library/react'
 
-import MarkRows from './components/MarkRows.tsx'
+import MarkRowsLayer from './components/MarkRowsLayer.tsx'
 import { findMarkHit } from './findMarkHit.ts'
 import {
   REGION,
@@ -224,7 +224,7 @@ test('a text label follows its row up the plot, and one scrolled past the top is
 
 test('the rows panel mounts a scrollbar over itself while the rows overflow, and none once they fit', () => {
   const display = loaded(PINNED)
-  render(createElement(MarkRows, { model: display }))
+  render(createElement(MarkRowsLayer, { model: display }))
   expect(screen.getByRole('scrollbar').getAttribute('aria-controls')).toBe(
     screen.getByTestId('mark-rows').id,
   )
