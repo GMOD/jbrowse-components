@@ -426,9 +426,8 @@ structure:
 Count the _AMY1_ boxes on each bar to read copy number. As at KIV-2, purple does
 not count copies: HG00133.1 has GRCh38's three _AMY1_ copies and its length, and
 its bar still shows a long purple stretch. Each bar boxes the CAT genes of that
-haplotype's assembly, and GRCh38's row the view's GRCh38 genes;
-[where each haplotype's genes come from](/docs/tutorials/pangenome_hprc_haplotypes#haplotype-genes)
-says how CAT names the copies.
+haplotype's assembly, and GRCh38's row the view's GRCh38 genes. CAT names each
+copy after the GRCh38 copy it projected, so one name can label several boxes.
 
 Yilmaz et al. (2024) name each structure by its _AMY1_ count:
 

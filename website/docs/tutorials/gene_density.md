@@ -114,9 +114,36 @@ Add the bigWig as a track:
 or one, so the min-max band drawn around the mean would fill every zoomed-out
 pixel to the same height.
 
-The three repeat tracks come from cutting the RepeatMasker table into one BED
-per `repFamily`, so the Alu bigWig counts only Alus. An `awk` filter keeps the
-header line and the sort order, so `tabix` indexes each cut file as it is:
+The three repeat tracks start from a RepeatMasker BED. For a genome of your own,
+RepeatMasker's `.out` writes class and family as one `class/family` field, and
+splitting it under a header that names the columns gives a BED of the same
+shape:
+
+<!-- from: scripts/build_repeatmasker_classes.sh -->
+
+```bash
+# the header names the columns, so a track or an awk filter can name repFamily
+{
+  printf '#genoName\tgenoStart\tgenoEnd\tname\tstrand\trepFamily\trepClass\tswScore\tmilliDiv\n'
+  awk 'BEGIN { OFS = "\t" }
+    # a data row is the one starting with a bare integer, its SW score
+    $1 ~ /^[0-9]+$/ {
+      # "LINE/L1" splits; "Simple_repeat" does not, and UCSC repeats the class
+      # as the family for exactly those rows. Positions are 1-based inclusive
+      # and the strand column spells minus "C".
+      n = split($11, cf, "/")
+      print $5, $6 - 1, $7, $10, ($9 == "C") ? "-" : "+", (n > 1) ? cf[2] : cf[1], cf[1], $1, int($2 * 10 + 0.5)
+    }' repeats.out
+} > rmsk.bed
+
+# `sort-bed` is `sort -k1,1 -k2,2n` under LC_ALL=C, header kept on top
+jbrowse sort-bed rmsk.bed | bgzip > rmsk.bed.gz
+tabix -p bed rmsk.bed.gz
+```
+
+We cut that table into one BED per `repFamily`, so the Alu bigWig counts only
+Alus. An `awk` filter keeps the header line and the sort order, so `tabix`
+indexes each cut file as it is:
 
 <!-- from: scripts/build_gene_density.sh -->
 
@@ -127,9 +154,7 @@ gzip -dc rmsk.bed.gz | awk -F'\t' -v fam=Alu '/^#/ || $6 == fam' | bgzip > Alu.b
 tabix -p bed Alu.bed.gz
 ```
 
-[](/docs/tutorials/repeatmasker_classes) converts RepeatMasker's own `.out` into
-a BED of this shape. The same `make-density` line, run on `Alu.bed.gz`, writes
-`Alu.bed.density.bw`:
+The same `make-density` line, run on `Alu.bed.gz`, writes `Alu.bed.density.bw`:
 
 ```json addtrack loc=chr1
 {

@@ -524,9 +524,9 @@ gfa-to-tabix build mc/ecoli.gfa.gz -o ecoli_cactus --reference K12
 ```
 
 Without `--snarls` the command writes no bubble file. The `uri` below is our
-hosted copy. For a local build, set it to `ecoli_cactus.contig`, the contig
-layout
-[a plain GFA's track reads](/docs/tutorials/pangenome_prepare_graph#the-two-indexes-a-graph-track-reads).
+hosted copy. A local build's track reads the contig layout instead, since the
+anchored layout at the bare prefix draws multi-megabase rows across every
+window, so set `uri` to `ecoli_cactus.contig`.
 
 ```json addtrack
 {

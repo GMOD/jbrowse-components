@@ -281,10 +281,52 @@ CN = 2 * depth over the element / depth over the sequence around it
 ```
 
 The flanking sequence should come back at two copies in every dog, which checks
-the ratio.
+the ratio. For a locus of your own, this takes the two files above and the
+coordinates where the flanks end, and writes the BED the track below reads, one
+row per run of equal copy number per animal:
 
-Each window is 5 kb of depth stepped by 1 kb, so a call rests on 5 kb of
-evidence and is painted at 1 kb resolution.
+```python
+# python3 depth_to_cn.py chr30 FLANK_LEFT_END FLANK_RIGHT_START > cn.bed
+import statistics, sys
+
+chrom, left, right = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+# a call rests on 5 kb of depth and is painted at 1 kb; a window needs 10
+# called sites in a dog before its median depth counts
+STEP, WIDTH, MINSITES = 1000, 5000, 10
+# loss in blue, two copies grey, gain in red, six and up sharing the last red
+COLORS = ['33,102,172', '146,197,222', '224,224,224',
+          '244,165,130', '214,96,77', '178,24,43', '103,0,31']
+
+samples = [line.strip() for line in open('cohort.samples')]
+sites = []
+for line in open('cohort.dp'):
+    pos, *depths = line.rstrip('\n').split('\t')
+    sites.append((int(pos), [None if d == '.' else int(d) for d in depths]))
+
+def depths(i, keep):
+    return [d[i] for pos, d in sites if keep(pos) and d[i] is not None]
+
+def emit(sample, start, end, cn):
+    print(chrom, start, end, 'CN %d' % cn, 0, '.', start, end,
+          COLORS[min(cn, 6)], sample, cn, sep='\t')
+
+for i, sample in enumerate(samples):
+    flank = depths(i, lambda pos: pos < left or pos >= right)
+    two_copies = statistics.median(flank) if flank else 0
+    run = None
+    for start in range(sites[0][0] // STEP * STEP, sites[-1][0], STEP):
+        values = depths(i, lambda pos: abs(pos - start) < WIDTH // 2)
+        if len(values) >= MINSITES and two_copies > 0:
+            cn = min(10, round(2 * statistics.median(values) / two_copies))
+            if run and run[1] == start and run[2] == cn:
+                run[1] = start + STEP
+            else:
+                if run:
+                    emit(sample, *run)
+                run = [start, start + STEP, cn]
+    if run:
+        emit(sample, *run)
+```
 
 The callset records depth only where a variant was called, so the build script
 checks it against the 15 CRAMs the Dog10K share publishes. The CRAM-based

@@ -197,10 +197,9 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
 
 ## What the lanes leave out {#limits}
 
-[Part 1](/docs/tutorials/pangenome_hprc#limits) lists the limits of the graph
-behind the lanes, including the haplotypes it leaves without a lane and the gene
-copies it puts on one path. The lanes add three cases:
+Five cases mislead in the lanes:
 
+- **A haplotype the graph does not align has no lane.**
 - **A deletion across the window is a row with no ribbons.** A haplotype whose
   deletion spans the whole window shows as a row at the foot of the lanes,
   headed with the deletion's length, such as "inside a 150 kb deletion". The row
@@ -217,6 +216,8 @@ copies it puts on one path. The lanes add three cases:
 - **One lane stands for many haplotypes.** The page picks one haplotype per
   structural form, grouped by structural variants of 50 bp or more, so two
   haplotypes in one form can still differ in everything smaller.
+- **Near-identical gene copies share one path**, so a lane at RHD / RHCE or
+  CYP2D6 cannot show how many copies a haplotype has.
 
 At IGL, `chr22:22,800,001-22,850,000`, **Lanes → Choose lanes...** with
 `HG00099.1`, `HG002.1`, `HG00097.1`, `HG002.2` and `HG01074.1` puts two deletion

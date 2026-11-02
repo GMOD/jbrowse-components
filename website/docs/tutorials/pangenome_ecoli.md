@@ -538,9 +538,9 @@ gfa-to-tabix build pggb/*.smooth.final.gfa -o ecoli_pggb --reference K12 --snarl
 
 The command writes the segments and links, a coarse tier with variants under 50
 bp folded into the reference, and `ecoli_pggb.config.json`. The `uri`s below are
-our hosted copy. For a local build, set the top-level `uri` to
-`ecoli_pggb.contig`, the contig layout
-[a plain GFA's track reads](/docs/tutorials/pangenome_prepare_graph#the-two-indexes-a-graph-track-reads).
+our hosted copy. A local build reads the contig layout instead, since the
+anchored layout at the bare prefix draws multi-megabase rows across every
+window, so set the top-level `uri` to `ecoli_pggb.contig`.
 
 ```json addtrack
 {

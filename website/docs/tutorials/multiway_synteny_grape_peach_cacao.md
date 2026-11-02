@@ -121,10 +121,7 @@ default; the MCScanX converter keeps the best-scoring copy.
 ## Producing grape.blocks and the BEDs with jcvi {#producing-the-data}
 
 `grape.blocks` and the BEDs come from [jcvi](https://github.com/tanghaibao/jcvi)
-and the [LAST](https://gitlab.com/mcfrith/last) aligner. If you ran
-[the MCScan anchors page](/docs/tutorials/mcscan_synteny_grape_peach#producing-the-data),
-grape and peach already have their BED and CDS files from these same commands,
-and the loop below only adds cacao's.
+and the [LAST](https://gitlab.com/mcfrith/last) aligner.
 
 <!-- from: scripts/build_grape_peach_cacao_synteny.sh -->
 
