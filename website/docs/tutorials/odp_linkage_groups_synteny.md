@@ -30,6 +30,9 @@ each over several. We:
 - `samtools`
 - `curl` and `tar`
 - `node`, for the [JBrowse CLI](/docs/cli)
+- [odp](https://github.com/conchoecia/odp) and its
+  [snakemake](https://snakemake.readthedocs.io/), for
+  [your own genomes](#running-odp-on-your-own-genomes) only
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
@@ -64,9 +67,7 @@ Dryad has no direct download URL, so download the two tarballs by hand. The
 Simakov et al. 2022 named a set of gene families the BCnS linkage groups. A gene
 belongs to one group or to none. odp searches every proteome it is given against
 a database of the groups' protein models and writes the group each ortholog was
-assigned as a column beside it, which a synteny track can read. Your own genomes
-need odp's table with its `gene_group` and `color` columns, written when odp
-runs with `plot_LGs: True`, and a `.chrom` file per genome.
+assigned as a column beside it, which a synteny track can read.
 
 The dotplot uses two genomes and the stack at the end adds more:
 
@@ -92,6 +93,40 @@ rbh                    EMU_gene      RES_gene       gene_group  EMU_scaf  EMU_po
 rbh2way_EMU_RES_964    Em0019g38a    mRNA.RE04286   A1a         EMU19     180964   RES2      13815510  ...  #C23D51
 rbh2way_EMU_RES_4123   Em0019g57a    mRNA.RE14076   None        EMU19     290216   RES8      13037026  ...  #000000
 ```
+
+### Running odp on your own genomes
+
+The deposit holds odp's output for the page's genomes. For your own, odp takes a
+protein FASTA, a genome FASTA and a `.chrom` file per genome. A `.chrom` line is
+a protein id, the scaffold it sits on, the strand, and the least and greatest
+CDS coordinates, tab-separated. Name each genome by a short code, which becomes
+its assembly name in JBrowse:
+
+```yaml
+# config.yaml; plot_LGs adds the gene_group and color columns from the BCnS
+# database odp ships with
+plot_LGs: True
+species:
+  EMU:
+    proteins: EMU.pep
+    chrom: EMU.chrom
+    genome: EMU.fa
+  RES:
+    proteins: RES.pep
+    chrom: RES.chrom
+    genome: RES.fa
+```
+
+```bash
+# from the directory holding config.yaml, with odp cloned beside it
+snakemake -r -p --snakefile odp/scripts/odp
+```
+
+odp writes the colored tables under
+`synteny_analysis/step2-figures/synteny_coloredby_BCnS_LGs/`, one per pair,
+which the conversion below reads.
+
+### Converting a table to a `.blocks` file
 
 Gene intervals come from odp's `.chrom` files, since the table's position column
 holds one coordinate per gene and would make every feature one base long:
@@ -318,9 +353,6 @@ the tools under [Prerequisites](#prerequisites) and works in three steps:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_odp_linkage_groups_synteny.sh
 DRYAD_DIR=~/Downloads bash build_odp_linkage_groups_synteny.sh
 ```
-
-For your own genomes, point the conversion at the tables odp writes under
-`synteny_analysis/step2-figures/synteny_coloredby_BCnS_LGs/`.
 
 ## See also
 
