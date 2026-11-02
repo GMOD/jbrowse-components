@@ -49,7 +49,7 @@ const SvgVariantOverlay = ({
   return (
     <>
       {overlays ? records : null}
-      {overlays ? (
+      {overlays && connectors ? (
         <g transform={`translate(0 ${model.topBands.top.connectors})`}>
           {connectors}
         </g>
