@@ -127,16 +127,11 @@ widget's samples). Still differing, besides C1's Show/hide rows:
 - **Toggling genotype rows remounts the GPU canvas**, since `VariantBody`
   moves in and out of `RowsPanel`: one re-upload per toggle, as a layout
   switch already costs.
-- **A ring is records-only, not yet driven in the app.** A ring samples
-  one canvas of its strip, `querySelector('canvas')`, the band's, and
-  resamples on `paintCount`, which only the rows' GPU render bumps
-  (`markCanvasDrawn`). Whether the band's own repaints (a label toggle, a
-  relayout with no GPU frame) reach the ring is unchecked, for a no-sample
-  VCF's ring as much as for this one. Taking the band from the rows
-  instead, or compositing every canvas in the ring host, was declined
-  (2026-11-02): rows in a ring drew only by accident, with `records.show`
-  off or in columns, and a whole chromosome trips the byte gate on any
-  real cohort.
+- **A ring is records-only** (`inRing`), driven in the app on Canvas2D
+  and WebGL2 (volvox, 2026-11-02). Taking the band from the rows instead,
+  or compositing every canvas in the ring host, was declined: rows in a
+  ring drew only by accident, with `records.show` off or in columns, and
+  a whole chromosome trips the byte gate on any real cohort.
 - **Declined:** splitting `variantDisplayMenuItems.ts` by band (its 14
   `drawsRows` checks each name their own rule), the `recordsRole` table
   (the "Before C" bullet), and one `'none' | 'hidden' | 'drawn'` getter

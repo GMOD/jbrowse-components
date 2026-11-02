@@ -1105,6 +1105,16 @@ export function stateModelFactory(
           setBackendDrawsColumns(arg: boolean) {
             self.backendDrawsColumns = arg
           },
+          /**
+           * #action
+           * The records band repainted its own canvas, the one a ring
+           * samples: counted as a paint so the ring takes the new picture,
+           * which the rows' backend never repaints for. `canvasDrawn` stays
+           * that backend's answer.
+           */
+          markRecordsBandPainted() {
+            self.paintCount += 1
+          },
         }
       })
       .actions(recordsBandActions)

@@ -1,5 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import RecordsBandOverlay, {
   recordsBandSurface,
@@ -92,4 +92,18 @@ test('a tooltip with nothing left draws no box', () => {
     />,
   )
   expect(container.innerHTML).toBe('')
+})
+
+// A circular view's ring samples the band's canvas and resamples on
+// `paintCount`, which the rows' backend never bumps for a band relayout.
+test('a band repaint counts as a paint, so a ring takes it', () => {
+  const { display } = recordsDisplayAt(KIT, 51)
+  render(<RecordsBandOverlay model={display} />)
+  const painted = display.paintCount
+  expect(painted).toBeGreaterThan(0)
+  act(() => {
+    display.setRecordsDisplayMode('collapsed')
+  })
+  expect(display.paintCount).toBeGreaterThan(painted)
+  expect(display.canvasDrawn).toBe(false)
 })

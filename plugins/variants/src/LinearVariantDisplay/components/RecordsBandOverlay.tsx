@@ -221,6 +221,7 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
         height={recordsHeight}
         draw={ctx => {
           paint(ctx)
+          model.markRecordsBandPainted()
         }}
       />
       <RecordsBandInteraction model={model} id={id} />
