@@ -140,12 +140,15 @@ predicate in `filter`.
 
 ## Opening both genomes on one circle
 
-The circular view's `assembly` takes a list, and each assembly lays out its
-chromosomes in turn: hg38 takes the first arc of the circle, mm39 the next, and
-ribbons cross between them. `displayedRegionNames` matches against each assembly
-separately, so one list of chromosome names keeps both genomes' unplaced contigs
-off the circle. **Add → Circular view** opens the import form, whose Quick start
-builds the same circle once you pick the chain track. As a session:
+**Add → Circular view** opens the import form, whose Quick start builds the
+circle once you pick the chain track. As a session, two keys on the view set it
+up:
+
+- **`assembly` takes a list**, and each assembly lays out its chromosomes in
+  turn: hg38 takes the first arc of the circle, mm39 the next, and ribbons cross
+  between them.
+- **`displayedRegionNames` matches against each assembly** separately, so one
+  list of chromosome names keeps both genomes' unplaced contigs off the circle.
 
 ```json session config=https://jbrowse.org/demos/circular_synteny/config.json
 {
@@ -244,21 +247,6 @@ chromosomes, human here. To color by strand instead:
 - In a session, set `"encoding": { "color": "strand" }` on the view.
 
 <Figure src="/img/circular_synteny/color_by_strand.png" caption="The human and mouse circle colored by strand." />
-
-## The X chromosome as the control
-
-The X chromosome has stayed whole across the two lineages, so no ribbon at the
-100 kb cut should join it to an autosome. Open the first session above with
-`displayedRegionNames` cut to `["chr1", "chr2", "chrX"]` to read the control.
-The figure also has the gene density ring that
-[Gene density as a ring](#gene-density-as-a-ring) builds.
-
-<Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX against the same three mouse chromosomes, with a gene density ring. The X ribbons stay between the two X arcs." />
-
-Chain rows under the 100 kb **Min length** cut do join the X to autosomes: the
-PIF holds short rows between human chrX and mouse autosomes, each a repeat or
-retrocopy a few hundred bases long, and lowering **Min length** brings them
-back.
 
 ## Gene density as a ring
 
@@ -376,11 +364,24 @@ before the synteny track:
 
 <Figure src="/img/circular_synteny/rings.png" caption="The human and mouse circle with a gene density ring inside the ideogram, dark where a stretch is gene-rich." />
 
+## The X chromosome as the control
+
+The X chromosome has stayed whole across the two lineages, so no ribbon at the
+100 kb cut should join it to an autosome. Open the ring session above with
+`displayedRegionNames` cut to `["chr1", "chr2", "chrX"]` to read the control.
+
+<Figure src="/img/circular_synteny/x_control.png" caption="Human chr1, chr2 and chrX against the same three mouse chromosomes, with a gene density ring. The X ribbons stay between the two X arcs." />
+
+Chain rows under the 100 kb **Min length** cut do join the X to autosomes: the
+PIF holds short rows between human chrX and mouse autosomes, each a repeat or
+retrocopy a few hundred bases long, and lowering **Min length** brings them
+back.
+
 ## Hovering a ribbon
 
-Cut the ring session's `displayedRegionNames` to `["chr1", "chr2", "chrX"]` and
-hover the widest ribbon, the X block that runs reverse between the two genomes
-and so twists. A tooltip gives its span in each genome and its strand.
+Hover the widest ribbon on the same three-chromosome circle, the X block that
+runs reverse between the two genomes and so twists. A tooltip gives its span in
+each genome and its strand.
 
 <Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered, filled grey and crossing itself because it is on the reverse strand. The tooltip names its span in each genome." />
 
