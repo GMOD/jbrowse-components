@@ -146,7 +146,8 @@ sed "s|@ASSEMBLY@|$ASM|" >track.json <<'JSON'
       "displayId": "rmsk_classes-LinearMultiRowFeatureDisplay",
       "rows": {
         "field": "repClass",
-        "domain": ["SINE", "LINE", "LTR", "DNA", "Simple_repeat", "Low_complexity"]
+        "sort": ["SINE", "LINE", "LTR", "DNA", "Simple_repeat", "Low_complexity"],
+        "axis": { "grid": true }
       },
       "rowColor": {
         "scale": {
@@ -154,7 +155,6 @@ sed "s|@ASSEMBLY@|$ASM|" >track.json <<'JSON'
           "range": ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628"]
         }
       },
-      "axis": { "grid": true },
       "height": 200
     },
     {

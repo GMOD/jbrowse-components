@@ -35,36 +35,39 @@ function axisOf(
   if (!display) {
     throw new Error(`no ${type}`)
   }
-  return readConfObject(display, ['axis', member])
+  return readConfObject(display, ['rows', 'axis', member])
 }
 
-test('a track-wide axis with grid still reaches the gridless mark display', () => {
+// A quantitative track's `rows` is its wiggle plot's (wiggle's
+// rowsShorthand.ts), axis included: the mark display draws rows only from a
+// field of its own.
+test("a quantitative track's rows, its axis included, goes to the wiggle display alone", () => {
   const track = hydrate(
     'QuantitativeTrack',
     { type: 'BigWigAdapter', uri: 'a.bw' },
-    { axis: { tree: false, grid: true } },
+    { rows: { axis: { tree: false, grid: true } } },
   )
   expect(axisOf(track, 'LinearWiggleDisplay', 'tree')).toBe(false)
   expect(axisOf(track, 'LinearWiggleDisplay', 'grid')).toBe(true)
-  expect(axisOf(track, 'LinearMarkDisplay', 'tree')).toBe(false)
+  expect(axisOf(track, 'LinearMarkDisplay', 'tree')).toBe(true)
 })
 
 test("a variant track's axis labels reach its mark display", () => {
   const track = hydrate(
     'VariantTrack',
     { type: 'VcfAdapter', uri: 'a.vcf' },
-    { axis: { labels: false, grid: true } },
+    { rows: { axis: { labels: false, grid: true } } },
   )
   expect(axisOf(track, 'LinearVariantDisplay', 'labels')).toBe(false)
   expect(axisOf(track, 'LinearVariantDisplay', 'grid')).toBe(true)
   expect(axisOf(track, 'LinearMarkDisplay', 'labels')).toBe(false)
 })
 
-test('a MAF track takes the axis members it declares, and its mark display the grid', () => {
+test('a MAF track takes the rows.axis members it declares, and its mark display the grid too', () => {
   const track = hydrate(
     'MafTrack',
     { type: 'MafTabixAdapter', uri: 'a.bed.gz' },
-    { axis: { grid: true, tree: false } },
+    { rows: { axis: { grid: true, tree: false } } },
   )
   expect(axisOf(track, 'LinearMafDisplay', 'tree')).toBe(false)
   expect(axisOf(track, 'LinearMarkDisplay', 'grid')).toBe(true)

@@ -134,6 +134,7 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
 | Proposal | Why not |
 | --- | --- |
 | `rows.height` for the pitch | `height` would mean the track one level up and a row one level down |
+| `rows.pitch` or `rows.size` for the pitch | `pitch` is no grammar's word; `size` is a mark's channel. `step` is d3's and Vega's band-scale step and Vega-Lite's `height: { step }`, the px from one band's start to the next; its doc says so, and the mark display's `bin.step` is the same idea along the genome, in bp |
 | `height: number \| { step, max }` | `{ step }` sizes the view from its row count, which no multi-row display does (reference/ROW_HEIGHT_AND_FIT.md) |
 | `rows.domain` for the shown rows | a discrete domain also orders in Vega-Lite and ggplot2, every other `domain` sits under a `scale`, and older ADRs used `rows.domain` for the order |
 | Per-row colors as `rows.color.scale` name pairs, one channel | an override is not a mapping: `colors` pins a row whatever the channel maps, as `labels` pins its text, so a reader can color by population and still mark one sample; one channel made the two exclusive |
@@ -175,10 +176,14 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
    launch-args fixes; adversarially reviewed against the parity table before
    it lands.
 2. `facet` takes the rule, `records.facet` included.
-3. The `rows` fold on wiggle, MAF and the mark family, `rows.filter` on the
-   multi-way lanes too; after the mark-family session in flight lands.
-4. The variant display, `unit` and the refinement included, after the variant
-   merge lands.
+3. The `rows` fold, one setting at a time across every row display, the
+   variant display included, since each is declared or read once in shared
+   code (`rowHeightConfigSchemaFields`, `rowColorConfigSchema`,
+   `TreeSidebarMixin`): `rows.axis`, `rows.step`, `rows.colors` and
+   `rows.color`, `rows.groups`, `rows.filter` (the multi-way lanes too), and
+   `rows.tree`. Each slice moves the in-repo configs, figure specs, tests
+   and docs with it.
+4. The variant display's `unit` as `rows.field`, haplotype refining sample.
 5. Writers: menus, launch-args, jbrowse-img, the tables and R export, the
    agent prompt (`jbApi.ts`, which says `rows` and `rowColor` write whole and
    lists `unit`), figure specs, tutorials, jb2hubs, ggjbrowse.

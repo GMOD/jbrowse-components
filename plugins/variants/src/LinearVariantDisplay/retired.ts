@@ -92,8 +92,8 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   renderingMode: (v: unknown) => ({
     unit: v === 'phased' ? 'haplotype' : 'sample',
   }),
-  showSidebarLabels: (labels: unknown) => ({ axis: { labels } }),
-  showTree: (tree: unknown) => ({ axis: { tree } }),
+  showSidebarLabels: (labels: unknown) => ({ rows: { axis: { labels } } }),
+  showTree: (tree: unknown) => ({ rows: { axis: { tree } } }),
   showReferenceAlleles: (show: unknown) => ({
     genotypes: { reference: { show: !!show } },
   }),

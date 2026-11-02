@@ -263,7 +263,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * Whether the dendrogram sidebar is drawn.
        */
       get showTree(): boolean {
-        return getConf(host(self), ['axis', 'tree'])
+        return getConf(host(self), ['rows', 'axis', 'tree'])
       },
       /**
        * #getter
@@ -271,14 +271,14 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * evenly by topology (cladogram).
        */
       get showBranchLength(): boolean {
-        return getConf(host(self), ['axis', 'branchLength'])
+        return getConf(host(self), ['rows', 'axis', 'branchLength'])
       },
       /**
        * #getter
        * Whether each row's name is drawn over the left of the plot.
        */
       get showRowLabels(): boolean {
-        return getConf(host(self), ['axis', 'labels'])
+        return getConf(host(self), ['rows', 'axis', 'labels'])
       },
       /**
        * #getter
@@ -288,7 +288,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * unticking and reticking the track.
        */
       get treeAreaWidth(): number {
-        return getConf(host(self), ['axis', 'width'])
+        return getConf(host(self), ['rows', 'axis', 'width'])
       },
       /**
        * #getter
@@ -1055,22 +1055,22 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * #action
        */
       setShowTree(arg: boolean) {
-        setConf(host(self), ['axis', 'tree'], arg)
+        setConf(host(self), ['rows', 'axis', 'tree'], arg)
       },
       /**
        * #action
        */
       setShowBranchLength(arg: boolean) {
-        setConf(host(self), ['axis', 'branchLength'], arg)
+        setConf(host(self), ['rows', 'axis', 'branchLength'], arg)
       },
       /**
        * #action
        */
       setShowRowLabels(arg: boolean) {
-        setConf(host(self), ['axis', 'labels'], arg)
+        setConf(host(self), ['rows', 'axis', 'labels'], arg)
       },
       setTreeAreaWidth(width: number) {
-        setConf(host(self), ['axis', 'width'], width)
+        setConf(host(self), ['rows', 'axis', 'width'], width)
       },
       setRunClustering(arg?: boolean) {
         self.runClustering = arg

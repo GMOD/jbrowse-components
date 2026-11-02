@@ -125,7 +125,8 @@ its `domain` with a color in its `range`.
           "DNA",
           "Simple_repeat",
           "Low_complexity"
-        ]
+        ],
+        "axis": { "grid": true }
       },
       "rowColor": {
         "scale": {
@@ -146,8 +147,7 @@ its `domain` with a color in its `range`.
             "#a65628"
           ]
         }
-      },
-      "axis": { "grid": true }
+      }
     }
   ]
 }

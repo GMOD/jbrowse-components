@@ -4934,6 +4934,20 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/rowAxisConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "rowAxisConfigSchema"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/rowAxisWithGridConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "rowAxisWithGridConfigSchema"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/rowColorConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [

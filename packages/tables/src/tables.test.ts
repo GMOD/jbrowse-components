@@ -1291,12 +1291,14 @@ test('config is the display’s resolved config, the slots the call set and the 
       'data',
       { resolution: 1 },
     ],
-    [await engine.variants({ ...DOG_VCF, display }), 'axis', AXIS_DEFAULTS],
   ] as const
   for (const [tables, slot, value] of others) {
     expect(tables.config.height).toBe(150)
     expect(tables.config[slot]).toEqual(value)
   }
+  const variants = await engine.variants({ ...DOG_VCF, display })
+  expect(variants.config.height).toBe(150)
+  expect(variants.config.rows).toMatchObject({ axis: AXIS_DEFAULTS })
 })
 
 test('a region of the reference reads as its bases', async () => {

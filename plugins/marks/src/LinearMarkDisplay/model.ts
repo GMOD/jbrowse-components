@@ -721,10 +721,10 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Whether a line runs between rows, `axis.grid`.
+         * Whether a line runs between rows, `rows.axis.grid`.
          */
         get showRowSeparators(): boolean {
-          return getConf(self, ['axis', 'grid'])
+          return getConf(self, ['rows', 'axis', 'grid'])
         },
       }))
       .views(self => ({
@@ -2067,7 +2067,7 @@ export function stateModelFactory(
          * #action
          */
         setShowRowSeparators(show: boolean) {
-          setConf(self, ['axis', 'grid'], show)
+          setConf(self, ['rows', 'axis', 'grid'], show)
         },
         /**
          * #action

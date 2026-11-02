@@ -109,9 +109,28 @@ export function flatSettings(settings: Record<string, unknown>) {
 function settingEntries(key: string, value: unknown): [string, unknown][] {
   return key === 'encoding' && isPlainObject(value)
     ? channelEntries(key, value)
+    : key === 'rows' && isPlainObject(value) && isPlainObject(value.axis)
+    ? rowsEntries(value, value.axis)
     : BAND_OBJECTS.has(key) && isPlainObject(value)
     ? bandEntries(key, value)
     : [[key, value]]
+}
+
+// The row axis's members are menu toggles of their own; the rest of `rows`
+// is the arrangement its one step reads.
+function rowsEntries(
+  rows: Record<string, unknown>,
+  axis: Record<string, unknown>,
+): [string, unknown][] {
+  const { axis: _axis, ...arrangement } = rows
+  return [
+    ...(Object.keys(arrangement).length > 0
+      ? [['rows', arrangement] as [string, unknown]]
+      : []),
+    ...Object.entries(axis).map(
+      ([member, value]): [string, unknown] => [`rows.axis.${member}`, value],
+    ),
+  ]
 }
 
 function channelEntries(

@@ -101,7 +101,7 @@ Preset its slots in a `displays` array; they are listed on
       "type": "LinearVariantDisplay",
       "genotypes": { "reference": { "show": true } },
       "filter": [{ "field": "minorAlleleFrequency", "gte": 0.05 }],
-      "axis": { "labels": true },
+      "rows": { "axis": { "labels": true } },
       "unit": "sample"
     }
   ]

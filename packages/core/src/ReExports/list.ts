@@ -482,6 +482,8 @@ export default [
   '@jbrowse/display-kit/renderDisplaySvg',
   '@jbrowse/display-kit/retiredSettings',
   '@jbrowse/display-kit/rowArrangementConfigSchema',
+  '@jbrowse/display-kit/rowAxisConfigSchema',
+  '@jbrowse/display-kit/rowAxisWithGridConfigSchema',
   '@jbrowse/display-kit/rowColorConfigSchema',
   '@jbrowse/display-kit/rowsConfigSchema',
   '@jbrowse/display-kit/rpcArgs',

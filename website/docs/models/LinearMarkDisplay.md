@@ -110,7 +110,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-filtersteps">**filterSteps**</span><br><code>TransformStep[]</code> | The `filter` list as the worker's steps: each expression its own step, and the field tests one step of predicates. |
 | <span id="getter-basefilters">**baseFilters**</span><br><code>() =&gt; string[]</code> | The expressions the track's config declares, which "Clear all filters" returns to. |
 | <span id="getter-rowsfield">**rowsField**</span><br><code>string</code> | `rows.field` as written: the field each value of which takes a row. |
-| <span id="getter-showrowseparators">**showRowSeparators**</span><br><code>boolean</code> | Whether a line runs between rows, `axis.grid`. |
+| <span id="getter-showrowseparators">**showRowSeparators**</span><br><code>boolean</code> | Whether a line runs between rows, `rows.axis.grid`. |
 | <span id="getter-drawsrows">**drawsRows**</span><br><code>boolean</code> | Whether the display draws one row per value: a `rows` field and no `facet` splitting the features, which draws in the rows' place. |
 | <span id="getter-splitfield">**splitField**</span><br><code>string &#124; undefined</code> | The field the worker splits the features on: the facet's, else the rows'. One split serves both, so `rows` sends it as `facet`. |
 | <span id="getter-rowgroupmatchers">**rowGroupMatchers**</span><br><code>CompiledRowGroup[]</code> | The `rowGroups` entries whose `match` compiles. |

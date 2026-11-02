@@ -3,7 +3,6 @@ import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
-import { rowAxisWithGridConfigSchema } from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
 import {
   retiredAxisSpellings,
   retiredScaleSpellings,
@@ -160,7 +159,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * `encoding.y` is the field plotted and the value axis it is drawn
      * through: `field`, `scale`, `axis` and `rules`. `encoding.size` is a
      * point's diameter and `encoding.strokeWidth` a line's width, in px. The
-     * row axis beside `rows` is `axis`.
+     * row axis is `rows.axis`.
      * #example
      * ```json
      * {
@@ -189,13 +188,6 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * source colors where several share one plot.
      */
     legend: legendConfigSchema,
-    /**
-     * #slot axis
-     * The row axis down the left of the subtrack rows: the clustering tree,
-     * each subtrack's name and the lines between rows. The value axis is
-     * `encoding.y.axis`.
-     */
-    axis: rowAxisWithGridConfigSchema,
   },
   {
     explicitlyTyped: true,

@@ -127,7 +127,7 @@ a file, and fails on a key it does not know.
 | `LinearHicDisplay`, `LinearWiggleDisplay` | `resolution` (session) | `data.resolution` |
 | `LinearMafDisplay` | `rowHeight` | dropped |
 | `LinearMafDisplay`, `LinearVariantDisplay`, `LinearWiggleDisplay` | `subtreeFilter` (session) | `rows.kept` |
-|  | `treeAreaWidth` (session) | `axis.width` |
+|  | `treeAreaWidth` (session) | `rows.axis.width` |
 | `LinearMarkDisplay` | type `LinearArcDisplay` | `LinearMarkDisplay` with `marks: [{"mark":"link"}]` |
 |  | type `LinearPairedArcDisplay` | `LinearMarkDisplay` with `marks: [{"mark":"link","transform":[{"type":"mate"}],"encoding":{"x2":{"refName":"mate.refName","pos":"mate.start"}}}]` |
 | `LinearPairedArcDisplay` | `color`, `renderer` | dropped |
@@ -144,8 +144,8 @@ a file, and fails on a key it does not know.
 |  | `showDescriptions` | `records.labels.description.show` |
 |  | `showLabels` | `records.labels.name.show` |
 |  | `referenceDrawingMode`, `showReferenceAlleles` | `genotypes.reference.show` |
-|  | `showSidebarLabels` | `axis.labels` |
-|  | `showTree` | `axis.tree` |
+|  | `showSidebarLabels` | `rows.axis.labels` |
+|  | `showTree` | `rows.axis.tree` |
 |  | type `LinearMultiSampleVariantDisplay`, type `MultiLinearVariantDisplay` | `LinearVariantDisplay` |
 |  | type `LinearVariantMatrixDisplay` | `LinearVariantDisplay` with `variantLayout: "columns"` |
 |  | `autoscale`, `maxScore`, `minScore`, `scaleType` | dropped |
@@ -155,8 +155,8 @@ a file, and fails on a key it does not know.
 |  | `renderingModeSetting` (session) | `unit` |
 | `LinearVariantDisplay`, `LinearWiggleDisplay` | `minimalTicks` | dropped |
 |  | `clusterTree` (session) | `rows.tree` |
-|  | `showSidebarLabelsSetting` (session) | `axis.labels` |
-|  | `showTreeSetting` (session) | `axis.tree` |
+|  | `showSidebarLabelsSetting` (session) | `rows.axis.labels` |
+|  | `showTreeSetting` (session) | `rows.axis.tree` |
 | `LinearWiggleDisplay` | `autoscale` | `encoding.y.scale.fenceQuantile` |
 |  | `defaultRendering` | `mark.interpolate`, `mark.type` |
 |  | `displayCrossHatches` | `encoding.y.axis.grid` |

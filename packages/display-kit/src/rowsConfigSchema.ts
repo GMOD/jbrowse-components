@@ -4,6 +4,7 @@ import {
   ROW_ARRANGEMENT_MEMBERS,
   rowArrangementConfigSchema,
 } from './rowArrangementConfigSchema.ts'
+import { rowAxisWithGridConfigSchema } from './rowAxisWithGridConfigSchema.ts'
 
 /** The `rows` object as read: the field, and the row order. */
 export interface RowsSetting {
@@ -55,6 +56,14 @@ export const rowsConfigSchema = ConfigurationSchema(
       defaultValue: '',
       description: 'the field whose values each take a row',
     },
+    /**
+     * #slot axis
+     * The guide down the left of the rows, a
+     * [RowAxisWithGrid](../rowaxiswithgrid): whether the tree and the row
+     * names draw, the sidebar's width, and a line between rows. What it draws
+     * is `rows.tree` and `rows.labels`.
+     */
+    axis: rowAxisWithGridConfigSchema,
   },
   {
     /**

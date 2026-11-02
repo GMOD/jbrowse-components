@@ -55,10 +55,10 @@ test('an encoding flattens channel by channel, under the display or a band', () 
 })
 
 test("a row display's axis flattens to one entry per member", () => {
-  const settings = { axis: { tree: false, grid: true } }
+  const settings = { rows: { axis: { tree: false, grid: true } } }
   expect(flatSettings(settings)).toEqual([
-    ['axis.tree', false],
-    ['axis.grid', true],
+    ['rows.axis.tree', false],
+    ['rows.axis.grid', true],
   ])
   expect(nestedSettings(Object.fromEntries(flatSettings(settings)))).toEqual(
     settings,

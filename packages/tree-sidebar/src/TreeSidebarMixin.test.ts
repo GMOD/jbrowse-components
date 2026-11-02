@@ -5,14 +5,13 @@ import {
 } from '@jbrowse/core/configuration'
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { pairedColorsOf } from '@jbrowse/display-kit/colorConfigSchema'
-import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
+import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 import { getLeafNames } from './clusterUtils.ts'
-import { rowAxisConfigSchema } from './rowAxisConfigSchema.ts'
 import { SIDEBAR_HINT_LINE_PX } from './treeSidebarGeometry.ts'
 
 import type { TreeSidebarHost } from './TreeSidebarMixin.ts'
@@ -34,7 +33,7 @@ test('the host type checks the slot names the mixin reads through it', () => {
   }
   const readAxis = () => {
     // @ts-expect-error
-    return getConf(host, ['axis', 'trea'])
+    return getConf(host, ['rows', 'axis', 'trea'])
   }
   const readMember = () => {
     // @ts-expect-error
@@ -63,8 +62,7 @@ test('the host type checks the slot names the mixin reads through it', () => {
 })
 
 const configSchema = ConfigurationSchema('TestTreeDisplay', {
-  axis: rowAxisConfigSchema,
-  rows: rowArrangementConfigSchema,
+  rows: rowsConfigSchema,
   rowColor: rowColorConfigSchema,
 })
 
@@ -99,7 +97,7 @@ describe('the tree toggles', () => {
     '%s defaults on and reads its axis member',
     (slot, _setter, member) => {
       expect(makeDisplay()[slot]).toBe(true)
-      const off = makeDisplay({ axis: { [member]: false } })
+      const off = makeDisplay({ rows: { axis: { [member]: false } } })
       expect(off[slot]).toBe(false)
       for (const [other] of others(slot)) {
         expect(off[other]).toBe(true)
@@ -116,10 +114,10 @@ describe('the tree toggles', () => {
     }
   })
 
-  it('writes the width to axis.width', () => {
+  it('writes the width to rows.axis.width', () => {
     const m = makeDisplay()
     m.setTreeAreaWidth(150)
-    expect(getConf(m, ['axis', 'width'])).toBe(150)
+    expect(getConf(m, ['rows', 'axis', 'width'])).toBe(150)
     expect(m.treeAreaWidth).toBe(150)
   })
 })

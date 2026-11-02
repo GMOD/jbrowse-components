@@ -343,10 +343,10 @@ test.each([
     'jexl:get(feature,"name")',
   ],
   ['LinearVariantDisplay', ['encoding', 'color', 'value'], 'green'],
-  ['MultiLinearVariantDisplay', ['axis', 'labels'], true],
+  ['MultiLinearVariantDisplay', ['rows', 'axis', 'labels'], true],
   ['MultiLinearVariantDisplay', ['records', 'maxFeatureScreenDensity'], 5],
   ['MultiLinearVariantDisplay', ['genotypes', 'reference', 'show'], true],
-  ['LinearVariantMatrixDisplay', ['axis', 'labels'], false],
+  ['LinearVariantMatrixDisplay', ['rows', 'axis', 'labels'], false],
   ['LDTrackDisplay', 'heightMode', 'fit'],
   ['LDTrackDisplay', 'variantLayout', 'columns'],
 ] as const)('%s: a v4 key lands on %s', (type, slot, value) => {

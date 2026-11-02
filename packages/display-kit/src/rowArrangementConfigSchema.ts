@@ -58,17 +58,20 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot labels
-     * A label drawn beside a row in place of its name, by name.
+     * A label drawn beside a row in place of its name, by name. Whether any
+     * label draws is `rows.axis.labels`.
      */
     labels: {
       type: 'stringMap',
       defaultValue: {},
-      description: 'a label drawn beside a row in place of its name, by name',
+      description:
+        'a label drawn beside a row in place of its name, by name; rows.axis.labels says whether labels draw',
     },
     /**
      * #slot tree
      * The dendrogram beside the rows, as newick. A clustering run writes it
      * beside the order it produced, and a reorder that moves a row drops it.
+     * Whether it draws is `rows.axis.tree`.
      */
     tree: {
       type: 'maybeString',

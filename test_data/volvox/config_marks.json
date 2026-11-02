@@ -1250,7 +1250,7 @@
               "key": "species"
             }
           ],
-          "rows": "species",
+          "rows": { "field": "species", "axis": { "tree": true } },
           "marks": [
             {
               "mark": "rect",
@@ -1261,8 +1261,7 @@
                 }
               }
             }
-          ],
-          "axis": { "tree": true }
+          ]
         }
       ]
     },

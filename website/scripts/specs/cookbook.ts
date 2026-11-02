@@ -141,6 +141,7 @@ export const cookbookSpecs: ScreenshotSpec[] = [
                   'Simple_repeat',
                   'Low_complexity',
                 ],
+                axis: { grid: true },
               },
               rowColor: {
                 scale: {
@@ -162,7 +163,6 @@ export const cookbookSpecs: ScreenshotSpec[] = [
                   ],
                 },
               },
-              axis: { grid: true },
               height: 260,
             },
           ],

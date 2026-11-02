@@ -9,7 +9,7 @@ import type { MarkDisplayModel } from './markDisplayTypes.ts'
 
 /**
  * The rows' labels and dendrogram over the plot's rows, the lines between
- * them where `axis.grid` asks, and the scrollbar reaching the rows a pinned
+ * them where `rows.axis.grid` asks, and the scrollbar reaching the rows a pinned
  * `rowHeight` pushes past the plot's foot. The lines come first, so the
  * tree's panel paints over them.
  */

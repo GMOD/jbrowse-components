@@ -12,7 +12,6 @@ import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
-import { rowAxisWithGridConfigSchema } from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
 import { rowGroupConfigSchema } from '@jbrowse/tree-sidebar/rowGroupConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 
@@ -483,13 +482,6 @@ export function configSchemaFactory() {
        * ```
        */
       rowGroups: types.array(rowGroupConfigSchema),
-      /**
-       * #slot axis
-       * The row axis down the left of the rows `rows` draws: the cluster tree,
-       * each row's value and, with `grid`, a line between rows. The value
-       * axis is `encoding.y.axis`.
-       */
-      axis: rowAxisWithGridConfigSchema,
       ...rowHeightConfigSchemaFields({
         rowHeight:
           'per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them',
@@ -502,7 +494,7 @@ export function configSchemaFactory() {
        * names no field since each mark names its own, and `color`, which a
        * mark paints whose own `encoding.color` says nothing, as a ggplot2
        * layer inherits the plot's aesthetics. `encoding.y.axis` is the value
-       * axis; the row axis beside `rows` is `axis`.
+       * axis; the row axis is `rows.axis`.
        * #example
        * ```js
        * { encoding: { y: { scale: { type: 'log' }, axis: { title: 'depth' } } } }

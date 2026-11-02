@@ -6,14 +6,13 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
-import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
-import { rowAxisConfigSchema } from '@jbrowse/tree-sidebar/rowAxisConfigSchema'
 
 import { DEFAULTS } from './displayDefaults.ts'
 import { mafAlignmentsConfigSchema } from './mafAlignmentsConfigSchema.ts'
 import { mafConservationConfigSchema } from './mafConservationConfigSchema.ts'
 import { mafEncodingConfigSchema } from './mafEncodingConfigSchema.ts'
+import { mafRowsConfigSchema } from './mafRowsConfigSchema.ts'
 
 import type { ConfigurationSlotPath } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -43,7 +42,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   displayDefaults: {
  *     height: 400,
  *     conservation: { show: true, height: 40 },
- *     axis: { labels: true },
+ *     rows: { axis: { labels: true } },
  *   },
  * }
  * ```
@@ -81,13 +80,6 @@ export default function configSchemaF() {
        */
       encoding: mafEncodingConfigSchema,
       /**
-       * #slot axis
-       * The guide down the left of the species rows: the species tree and
-       * each species' name. No `grid`: the rows keep a gap instead. The
-       * coverage band's value axis is `coverage.encoding.y.axis`.
-       */
-      axis: rowAxisConfigSchema,
-      /**
        * #slot rows
        * The arrangement a reader gives the species rows, each member by row
        * name. `sort` is the row order: the guide tree rotates to it while
@@ -95,14 +87,15 @@ export default function configSchemaF() {
        * species lead and the rest keep adapter order. `labels`, `tree`,
        * `treeProvenance` and `kept` are what the arrangement dialog, a
        * clustering run and a focus write. The adapter's guide tree is never
-       * written here.
+       * written here. `rows.axis` is the guide down their left, the species
+       * tree and names, with no `grid`: the rows keep a gap instead.
        *
        * #example
        * ```js
        * { rows: { sort: ['mm10'], labels: { mm10: 'Mouse' } } }
        * ```
        */
-      rows: sampleRowsConfigSchema,
+      rows: mafRowsConfigSchema,
       /**
        * #slot rowColor
        * A color per species row, drawn as the bar beside its label, over the

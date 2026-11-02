@@ -100,18 +100,18 @@ describe('the display config schema', () => {
 
     it('draws the tree and labels and no grid by default', () => {
       const config = make()
-      expect(readConfObject(config, ['axis', 'tree'])).toBe(true)
-      expect(readConfObject(config, ['axis', 'labels'])).toBe(true)
-      expect(readConfObject(config, ['axis', 'grid'])).toBe(false)
-      expect(readConfObject(config, ['axis', 'width'])).toBe(80)
+      expect(readConfObject(config, ['rows', 'axis', 'tree'])).toBe(true)
+      expect(readConfObject(config, ['rows', 'axis', 'labels'])).toBe(true)
+      expect(readConfObject(config, ['rows', 'axis', 'grid'])).toBe(false)
+      expect(readConfObject(config, ['rows', 'axis', 'width'])).toBe(80)
     })
 
     it.each([
       [{ showTree: false }, 'tree', false],
       [{ showSidebarLabels: false }, 'labels', false],
-    ] as const)('lifts %j onto axis.%s', (snap, member, value) => {
+    ] as const)('lifts %j onto rows.axis.%s', (snap, member, value) => {
       const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-      expect(readConfObject(make(snap), ['axis', member])).toBe(value)
+      expect(readConfObject(make(snap), ['rows', 'axis', member])).toBe(value)
       expect(warn).not.toHaveBeenCalled()
       warn.mockRestore()
     })

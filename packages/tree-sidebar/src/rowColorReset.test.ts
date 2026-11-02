@@ -1,10 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
+import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
-import { rowAxisConfigSchema } from './rowAxisConfigSchema.ts'
 
 // A bare model has no track and so no base; the base is what a reset returns
 // to, so this file stands one in.
@@ -14,8 +13,7 @@ jest.mock('@jbrowse/core/util/baseDisplayConfig', () => ({
 }))
 
 const configSchema = ConfigurationSchema('ResetTreeDisplay', {
-  axis: rowAxisConfigSchema,
-  rows: rowArrangementConfigSchema,
+  rows: rowsConfigSchema,
   rowColor: rowColorConfigSchema,
 })
 

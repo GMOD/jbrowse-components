@@ -7,7 +7,6 @@ import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
 import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import { rowAxisWithGridConfigSchema } from '@jbrowse/tree-sidebar/rowAxisWithGridConfigSchema'
 import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 
 import { VARIANT_DISPLAY, VARIANT_UNITS } from '../shared/constants.ts'
@@ -175,12 +174,6 @@ export default function configSchemaFactory() {
        */
       filter: fieldPredicateList(),
       ...rowHeightConfigSchemaFields(),
-      /**
-       * #slot axis
-       * The guide down the left of the sample rows: the clustering tree, each
-       * sample's name and the lines between rows.
-       */
-      axis: rowAxisWithGridConfigSchema,
       /**
        * #slot rows
        * The rows are the file's samples, and the object is the arrangement a

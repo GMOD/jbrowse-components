@@ -46,8 +46,8 @@ test('the tree, the focus and the sidebar come across', () => {
     rows: {
       tree: '(a:1,b:1);',
       kept: ['a'],
+      axis: { width: 120, tree: false, labels: false },
     },
-    axis: { width: 120, tree: false, labels: false },
   })
 })
 

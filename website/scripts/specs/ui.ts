@@ -304,7 +304,7 @@ const rhdPanel = (sortRowsBy?: RowSortSpec) =>
             },
             height: 330,
             runClustering: true,
-            axis: { tree: false },
+            rows: { axis: { tree: false } },
           },
           {
             trackId: 'ncbi_refseq_hg38',
@@ -1823,8 +1823,7 @@ export const uiSpecs: ScreenshotSpec[] = [
               trackId: 'rmsk_hg38_ucsc',
               type: 'LinearMultiRowFeatureDisplay',
               // No rowColor: the figure shows what the menu path produces.
-              rows: 'repClass',
-              axis: { grid: true },
+              rows: { field: 'repClass', axis: { grid: true } },
               height: 260,
             },
           ],

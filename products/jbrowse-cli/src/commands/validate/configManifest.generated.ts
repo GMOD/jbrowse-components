@@ -6733,34 +6733,6 @@ export const configManifest: ConfigManifest = {
           "type": "number"
         },
         {
-          "name": "axis",
-          "type": "RowAxisWithGridConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "tree",
-              "type": "boolean"
-            },
-            {
-              "name": "branchLength",
-              "type": "boolean"
-            },
-            {
-              "name": "labels",
-              "type": "boolean"
-            },
-            {
-              "name": "width",
-              "type": "number"
-            },
-            {
-              "name": "grid",
-              "type": "boolean"
-            }
-          ],
-          "schema": "RowAxisWithGrid",
-          "writes": "members"
-        },
-        {
           "name": "rows",
           "type": "SampleRowsConfigurationSchema",
           "subSlots": [
@@ -6789,6 +6761,34 @@ export const configManifest: ConfigManifest = {
             {
               "name": "field",
               "type": "SampleRowsField"
+            },
+            {
+              "name": "axis",
+              "type": "RowAxisWithGridConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "tree",
+                  "type": "boolean"
+                },
+                {
+                  "name": "branchLength",
+                  "type": "boolean"
+                },
+                {
+                  "name": "labels",
+                  "type": "boolean"
+                },
+                {
+                  "name": "width",
+                  "type": "number"
+                },
+                {
+                  "name": "grid",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "RowAxisWithGrid",
+              "writes": "members"
             }
           ],
           "schema": "SampleRows",
@@ -7503,6 +7503,34 @@ export const configManifest: ConfigManifest = {
             {
               "name": "field",
               "type": "QuantitativeRowsField"
+            },
+            {
+              "name": "axis",
+              "type": "RowAxisWithGridConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "tree",
+                  "type": "boolean"
+                },
+                {
+                  "name": "branchLength",
+                  "type": "boolean"
+                },
+                {
+                  "name": "labels",
+                  "type": "boolean"
+                },
+                {
+                  "name": "width",
+                  "type": "number"
+                },
+                {
+                  "name": "grid",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "RowAxisWithGrid",
+              "writes": "members"
             }
           ],
           "schema": "QuantitativeRows",
@@ -7801,34 +7829,6 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "Legend",
           "writes": "members"
-        },
-        {
-          "name": "axis",
-          "type": "RowAxisWithGridConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "tree",
-              "type": "boolean"
-            },
-            {
-              "name": "branchLength",
-              "type": "boolean"
-            },
-            {
-              "name": "labels",
-              "type": "boolean"
-            },
-            {
-              "name": "width",
-              "type": "number"
-            },
-            {
-              "name": "grid",
-              "type": "boolean"
-            }
-          ],
-          "schema": "RowAxisWithGrid",
-          "writes": "members"
         }
       ],
       "legacyKeys": [
@@ -8033,32 +8033,8 @@ export const configManifest: ConfigManifest = {
           "writes": "members"
         },
         {
-          "name": "axis",
-          "type": "RowAxisConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "tree",
-              "type": "boolean"
-            },
-            {
-              "name": "branchLength",
-              "type": "boolean"
-            },
-            {
-              "name": "labels",
-              "type": "boolean"
-            },
-            {
-              "name": "width",
-              "type": "number"
-            }
-          ],
-          "schema": "RowAxis",
-          "writes": "members"
-        },
-        {
           "name": "rows",
-          "type": "SampleRowsConfigurationSchema",
+          "type": "MafRowsConfigurationSchema",
           "subSlots": [
             {
               "name": "sort",
@@ -8085,9 +8061,33 @@ export const configManifest: ConfigManifest = {
             {
               "name": "field",
               "type": "SampleRowsField"
+            },
+            {
+              "name": "axis",
+              "type": "RowAxisConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "tree",
+                  "type": "boolean"
+                },
+                {
+                  "name": "branchLength",
+                  "type": "boolean"
+                },
+                {
+                  "name": "labels",
+                  "type": "boolean"
+                },
+                {
+                  "name": "width",
+                  "type": "number"
+                }
+              ],
+              "schema": "RowAxis",
+              "writes": "members"
             }
           ],
-          "schema": "SampleRows",
+          "schema": "MafRows",
           "writes": {
             "keyedBy": "field",
             "keyed": [
@@ -9226,6 +9226,34 @@ export const configManifest: ConfigManifest = {
             {
               "name": "field",
               "type": "string"
+            },
+            {
+              "name": "axis",
+              "type": "RowAxisWithGridConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "tree",
+                  "type": "boolean"
+                },
+                {
+                  "name": "branchLength",
+                  "type": "boolean"
+                },
+                {
+                  "name": "labels",
+                  "type": "boolean"
+                },
+                {
+                  "name": "width",
+                  "type": "number"
+                },
+                {
+                  "name": "grid",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "RowAxisWithGrid",
+              "writes": "members"
             }
           ],
           "schema": "Rows",
@@ -9293,34 +9321,6 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "RowGroup"
-        },
-        {
-          "name": "axis",
-          "type": "RowAxisWithGridConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "tree",
-              "type": "boolean"
-            },
-            {
-              "name": "branchLength",
-              "type": "boolean"
-            },
-            {
-              "name": "labels",
-              "type": "boolean"
-            },
-            {
-              "name": "width",
-              "type": "number"
-            },
-            {
-              "name": "grid",
-              "type": "boolean"
-            }
-          ],
-          "schema": "RowAxisWithGrid",
-          "writes": "members"
         },
         {
           "name": "rowHeight",
@@ -10078,6 +10078,34 @@ export const configManifest: ConfigManifest = {
             {
               "name": "field",
               "type": "string"
+            },
+            {
+              "name": "axis",
+              "type": "RowAxisWithGridConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "tree",
+                  "type": "boolean"
+                },
+                {
+                  "name": "branchLength",
+                  "type": "boolean"
+                },
+                {
+                  "name": "labels",
+                  "type": "boolean"
+                },
+                {
+                  "name": "width",
+                  "type": "number"
+                },
+                {
+                  "name": "grid",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "RowAxisWithGrid",
+              "writes": "members"
             }
           ],
           "schema": "Rows",
@@ -10145,34 +10173,6 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "RowGroup"
-        },
-        {
-          "name": "axis",
-          "type": "RowAxisWithGridConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "tree",
-              "type": "boolean"
-            },
-            {
-              "name": "branchLength",
-              "type": "boolean"
-            },
-            {
-              "name": "labels",
-              "type": "boolean"
-            },
-            {
-              "name": "width",
-              "type": "number"
-            },
-            {
-              "name": "grid",
-              "type": "boolean"
-            }
-          ],
-          "schema": "RowAxisWithGrid",
-          "writes": "members"
         },
         {
           "name": "rowHeight",
@@ -10937,6 +10937,34 @@ export const configManifest: ConfigManifest = {
             {
               "name": "field",
               "type": "string"
+            },
+            {
+              "name": "axis",
+              "type": "RowAxisWithGridConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "tree",
+                  "type": "boolean"
+                },
+                {
+                  "name": "branchLength",
+                  "type": "boolean"
+                },
+                {
+                  "name": "labels",
+                  "type": "boolean"
+                },
+                {
+                  "name": "width",
+                  "type": "number"
+                },
+                {
+                  "name": "grid",
+                  "type": "boolean"
+                }
+              ],
+              "schema": "RowAxisWithGrid",
+              "writes": "members"
             }
           ],
           "schema": "Rows",
@@ -11004,34 +11032,6 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "RowGroup"
-        },
-        {
-          "name": "axis",
-          "type": "RowAxisWithGridConfigurationSchema",
-          "subSlots": [
-            {
-              "name": "tree",
-              "type": "boolean"
-            },
-            {
-              "name": "branchLength",
-              "type": "boolean"
-            },
-            {
-              "name": "labels",
-              "type": "boolean"
-            },
-            {
-              "name": "width",
-              "type": "number"
-            },
-            {
-              "name": "grid",
-              "type": "boolean"
-            }
-          ],
-          "schema": "RowAxisWithGrid",
-          "writes": "members"
         },
         {
           "name": "rowHeight",

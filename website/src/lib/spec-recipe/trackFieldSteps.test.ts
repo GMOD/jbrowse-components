@@ -127,18 +127,18 @@ test('a legend toggle is the same Show row on every display that has a legend', 
 })
 
 test('branch lengths are the toggle beside Tree', () => {
-  expect(stepPaths('axis.branchLength', false, 'LinearMafDisplay')).toEqual([
+  expect(stepPaths('rows.axis.branchLength', false, 'LinearMafDisplay')).toEqual([
     'Track menu → Show → Tree branch lengths (unchecked)',
   ])
-  expect(stepPaths('axis.branchLength', false, 'LinearBasicDisplay')).toEqual([])
+  expect(stepPaths('rows.axis.branchLength', false, 'LinearBasicDisplay')).toEqual([])
 })
 
 test('the tree and row separator toggles are Show rows', () => {
-  expect(stepPaths('axis.tree', false, 'LinearMafDisplay')).toEqual([
+  expect(stepPaths('rows.axis.tree', false, 'LinearMafDisplay')).toEqual([
     'Track menu → Show → Tree (unchecked)',
   ])
   expect(
-    stepPaths('axis.grid', true, 'LinearMultiRowFeatureDisplay'),
+    stepPaths('rows.axis.grid', true, 'LinearMultiRowFeatureDisplay'),
   ).toEqual(['Track menu → Show → Row separators (checked)'])
 })
 
@@ -167,7 +167,7 @@ test('rows are lanes on a multi-way track and a layout on a wiggle track', () =>
   expect(
     stepPaths(
       'rows',
-      { domain: ['a', 'b'], kept: ['a'] },
+      { sort: ['a', 'b'], kept: ['a'] },
       'MultiWaySyntenyDisplay',
     ),
   ).toEqual([
@@ -175,7 +175,7 @@ test('rows are lanes on a multi-way track and a layout on a wiggle track', () =>
     'Track menu → Lanes → Choose lanes...',
   ])
   expect(
-    stepPaths('rows', { domain: ['a'] }, 'MultiWaySyntenyDisplay'),
+    stepPaths('rows', { sort: ['a'] }, 'MultiWaySyntenyDisplay'),
   ).toEqual(['Track menu → Lanes → Lane menus'])
   expect(stepPaths('rows', '', 'LinearWiggleDisplay')).toEqual([
     'Track menu → Plot type → Overlapping',

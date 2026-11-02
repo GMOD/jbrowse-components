@@ -482,6 +482,8 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/renderDisplaySvg': ['SvgLegend', 'SvgPinnedHighlight', 'SvgYAxis', 'renderDisplaySvg', 'svgLegendGutterWidth'],
   '@jbrowse/display-kit/retiredSettings': ['RETIRED_ROW_STATE_KEYS', 'liftRetiredRowState', 'moveDisplayDefaults'],
   '@jbrowse/display-kit/rowArrangementConfigSchema': ['ROW_ARRANGEMENT_MEMBERS', 'rowArrangementConfigSchema'],
+  '@jbrowse/display-kit/rowAxisConfigSchema': ['rowAxisConfigSchema'],
+  '@jbrowse/display-kit/rowAxisWithGridConfigSchema': ['rowAxisWithGridConfigSchema'],
   '@jbrowse/display-kit/rowColorConfigSchema': ['rowColorConfigSchema', 'rowColorForOtherRows'],
   '@jbrowse/display-kit/rowsConfigSchema': ['ROWS_WRITES', 'rowsConfigSchema', 'rowsForField', 'rowsSettingOf'],
   '@jbrowse/display-kit/rpcArgs': ['rpcArgs'],

@@ -1,7 +1,4 @@
-import {
-  mergeConfSettings,
-  writesWholeAt,
-} from '../../configuration/getConf.ts'
+import { mergeConfSettings } from '../../configuration/getConf.ts'
 import { getConfigurationSchemaMetadata } from '../../configuration/schemaRegistry.ts'
 import { isBareConfigurationSchemaType } from '../../configuration/schemaTypes.ts'
 import { slotValueRefusal } from '../../configuration/slotFacade.ts'
@@ -17,22 +14,76 @@ export interface DisplaySnapshot {
   [key: string]: unknown
 }
 
+// A sub-schema a bag writes member by member, rather than whole
+function isNamespace(entry: unknown): entry is AnyConfigurationSchemaType {
+  return (
+    isBareConfigurationSchemaType(entry) &&
+    getConfigurationSchemaMetadata(entry)?.options.writes !== 'whole'
+  )
+}
+
+// The dotted paths into `value` the namespace `entry` declares, at any depth:
+// a member that is itself a namespace takes only the members it declares, so
+// `rows.axis.grid` reaches the displays whose axis has a grid and
+// `rows.axis.tree` every display with a tree.
+function declaredPaths(
+  entry: AnyConfigurationSchemaType,
+  value: Record<string, unknown>,
+): string[] {
+  const definition = getConfigurationSchemaMetadata(entry)?.definition ?? {}
+  return membersDeclaredBy(entry, value).flatMap(member => {
+    const sub = definition[member]
+    const memberValue = value[member]
+    return isNamespace(sub) && isPlainObject(memberValue)
+      ? declaredPaths(sub, memberValue).map(path => `${member}.${path}`)
+      : [member]
+  })
+}
+
+// `value` cut down to `paths`
+function picked(
+  value: Record<string, unknown>,
+  paths: readonly string[],
+): Record<string, unknown> {
+  const heads = [...new Set(paths.map(path => path.split('.')[0]!))]
+  return Object.fromEntries(
+    heads.map(head => {
+      const inner = paths
+        .filter(path => path.startsWith(`${head}.`))
+        .map(path => path.slice(head.length + 1))
+      const memberValue = value[head]
+      return [
+        head,
+        inner.length > 0 && isPlainObject(memberValue)
+          ? picked(memberValue, inner)
+          : memberValue,
+      ]
+    }),
+  )
+}
+
+// Every path to a leaf of `value`, a list or a scalar
+function leafPaths(value: Record<string, unknown>): string[] {
+  return Object.entries(value).flatMap(([member, memberValue]) =>
+    isPlainObject(memberValue) && Object.keys(memberValue).length > 0
+      ? leafPaths(memberValue).map(path => `${member}.${path}`)
+      : [member],
+  )
+}
+
 /**
- * The members of `value` a display's namespace slot `key` declares, or
- * undefined where the slot is no namespace or `value` no object: a namespace
- * takes those members and leaves the rest to its sibling displays.
+ * The paths into `value` a display's namespace slot `key` declares, at any
+ * depth, or undefined where the slot is no namespace or `value` no object: a
+ * namespace takes those and leaves the rest to its sibling displays.
  */
 function namespaceMembers(
   schema: AnyConfigurationSchemaType,
   key: string,
   value: unknown,
 ) {
-  const meta = getConfigurationSchemaMetadata(schema)
-  const entry = meta?.definition[key]
-  return isBareConfigurationSchemaType(entry) &&
-    !writesWholeAt(schema, [key]) &&
-    isPlainObject(value)
-    ? membersDeclaredBy(entry, value)
+  const entry = getConfigurationSchemaMetadata(schema)?.definition[key]
+  return isNamespace(entry) && isPlainObject(value)
+    ? declaredPaths(entry, value)
     : undefined
 }
 
@@ -55,9 +106,7 @@ function verdictOf(
     return { declares }
   }
   const placed =
-    declares && isPlainObject(value)
-      ? Object.fromEntries(declares.map(member => [member, value[member]]))
-      : value
+    declares && isPlainObject(value) ? picked(value, declares) : value
   let members
   try {
     members = retired
@@ -120,10 +169,16 @@ export function collectDisplayOverrides(
       split.length > 0 &&
       !targets.some(t => !t.declares)
     ) {
+      const declared = split.flatMap(v => v.declares ?? [])
       unknownKeys.push(
-        ...Object.keys(value)
-          .filter(member => !split.some(v => v.declares?.includes(member)))
-          .map(member => `${key}.${member}`),
+        ...leafPaths(value)
+          .filter(
+            leaf =>
+              !declared.some(
+                path => leaf === path || leaf.startsWith(`${path}.`),
+              ),
+          )
+          .map(leaf => `${key}.${leaf}`),
       )
     }
     for (const { name, members } of targets) {

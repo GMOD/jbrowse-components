@@ -108,6 +108,7 @@ export const PATH_PROSE = new Set([
   // the tree sidebar's own drag/checkbox/swatch affordances, none of them menu
   // rows
   'untick the rows you do not want',
+  'drag the rows into order',
   // the arrangement dialog's one-line plot color, above the rows
   'the plot color swatches',
   // a right-click on the data, before the context menu's row

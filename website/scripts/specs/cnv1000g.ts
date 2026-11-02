@@ -49,7 +49,7 @@ const CN_HEATMAP = {
 }
 
 // `data-clustered` sits on the first-paint element, so this waits for the
-// clustered frame even with `axis: { tree: false }`.
+// clustered frame even with `rows: { axis: { tree: false } }`.
 export const CLUSTERED_READY = `${displayPainted('wiggle-display')}[data-clustered="true"]`
 
 // Loads jbrowse-plugin-zarr from its published beta bundle, so these figures
@@ -107,7 +107,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
           ...CN_HEATMAP,
           height: 420,
           runClustering: true,
-          axis: { tree: false },
+          rows: { axis: { tree: false } },
         },
       ],
     }),
@@ -137,7 +137,7 @@ export const cnv1000gSpecs: ScreenshotSpec[] = [
           runClustering: true,
           // No row labels: at sub-pixel rows they fall back to population
           // swatches, interleaved at random by the clustering.
-          axis: { tree: false, labels: false },
+          rows: { axis: { tree: false, labels: false } },
         },
       ],
     }),

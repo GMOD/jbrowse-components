@@ -480,13 +480,12 @@ export const mafSpecs: ScreenshotSpec[] = [
               // the figure draws a named subset. The focus drops every row it
               // does not name, the reference included. No CHM13 row exists
               // under that name in this file.
-              rows: { kept: HPRC_MAF_ROWS },
+              // Most distances here are zero, so a phylogram collapses the
+              // branches against the rows.
+              rows: { kept: HPRC_MAF_ROWS, axis: { branchLength: false } },
               // Leaves the 31 rows about 15 px each after the bands.
               height: 530,
               runClustering: true,
-              // Most distances here are zero, so a phylogram collapses the
-              // branches against the rows.
-              axis: { branchLength: false },
               alignments: { mark: { height: { band: 1 } } },
             },
             graphTrack('hprc_minigraph_segments', {

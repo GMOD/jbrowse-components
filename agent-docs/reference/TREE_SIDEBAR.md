@@ -489,11 +489,11 @@ tree alone.
   scales with the export's font size, with each band's name written up its
   rows, cut short with an ellipsis where it does not fit and whole on hover. `RowLabelsOverlay` and `SvgTreeSidebar` both take `bands` and
   shift the row labels past the strip, so the screen and the export draw one
-  strip; it draws whatever `axis.labels` says, and nothing hides it.
+  strip; it draws whatever `rows.axis.labels` says, and nothing hides it.
 
 ## SVG export: `SvgTreeSidebar`, never `SvgRowLabels` alone
 
-Labels are offset right by `axis.width`, so rendering them without the tree
+Labels are offset right by `rows.axis.width`, so rendering them without the tree
 leaves a blank gutter; `SvgTreeSidebar` owns the single gate driving both.
 
 **That gate is `treeIsShowing`, not `showTree && hierarchy`.** The gutter is

@@ -1,17 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { rowPaletteColorAt } from '@jbrowse/core/ui/colors'
 import { MAX_LEGEND_ITEMS } from '@jbrowse/core/ui/legendSpec'
-import { rowArrangementConfigSchema } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
+import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { TreeSidebarMixin } from './TreeSidebarMixin.ts'
-import { rowAxisConfigSchema } from './rowAxisConfigSchema.ts'
 import { dealValueColors } from './rowColorScale.ts'
 
 const configSchema = ConfigurationSchema('RowColorKeyDisplay', {
-  axis: rowAxisConfigSchema,
-  rows: rowArrangementConfigSchema,
+  rows: rowsConfigSchema,
   rowColor: rowColorConfigSchema,
 })
 

@@ -1559,7 +1559,7 @@ export const trackFields: Record<string, FieldRecipe> = {
             note: `Clustering is scoped to the region it was run over — this figure clustered on ${value}, which is what the row order reflects even after navigating elsewhere.`,
           }
         : [],
-  'axis.grid': (value, { displayType }) =>
+  'rows.axis.grid': (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType === 'LinearMultiRowFeatureDisplay'
       ? {
@@ -1577,11 +1577,11 @@ export const trackFields: Record<string, FieldRecipe> = {
   rows: (value, { displayType }) => {
     const members =
       typeof value === 'object' && value !== null
-        ? (value as { field?: unknown; domain?: unknown; kept?: unknown })
+        ? (value as { field?: unknown; sort?: unknown; kept?: unknown })
         : { field: value }
-    const { field, domain, kept } = members
+    const { field, sort, kept } = members
     if (displayType === 'MultiWaySyntenyDisplay') {
-      const order = asList(domain)
+      const order = asList(sort)
       const steps = [
         order
           ? {
@@ -1623,16 +1623,16 @@ export const trackFields: Record<string, FieldRecipe> = {
             path: `${TRACK_MENU} → ${editor} → untick the rows you do not want`,
             note: `This figure keeps ${kept.length} row${kept.length === 1 ? '' : 's'}. The dendrogram is pruned to match, so it stays the tree of what is drawn.`,
           }
-        : editor && Array.isArray(domain)
+        : editor && Array.isArray(sort)
           ? {
               path: `${TRACK_MENU} → ${editor} → drag the rows into order`,
-              note: `The same dialog renames a row and recolors it, so a figure's ${domain.length} rows carry their order, any labels it shows, and any color it picked.`,
+              note: `The same dialog renames a row and recolors it, so a figure's ${sort.length} rows carry their order, any labels it shows, and any color it picked.`,
             }
           : undefined
     const steps = [layout, arrangement].filter(step => step !== undefined)
     return steps.length ? steps : undefined
   },
-  'axis.labels': (value, { displayType }) =>
+  'rows.axis.labels': (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LinearWiggleDisplay'
       ? {
           path: `${TRACK_MENU} → Show → Row labels (${value ? 'checked' : 'unchecked'})`,
@@ -1641,7 +1641,7 @@ export const trackFields: Record<string, FieldRecipe> = {
             : 'The labels only become worth turning off once the rows are too short to carry text, which is where they fall back to a bare column of color swatches.',
         }
       : undefined,
-  'axis.branchLength': (value, { displayType }) =>
+  'rows.axis.branchLength': (value, { displayType }) =>
     typeof value === 'boolean' &&
     displayType &&
     TREE_SIDEBAR_DISPLAYS.has(displayType)
@@ -1836,7 +1836,7 @@ export const trackFields: Record<string, FieldRecipe> = {
       : undefined,
   'encoding.size': wiggleSizeStep('Point size', 'Scatter'),
   'encoding.strokeWidth': wiggleSizeStep('Line width', 'a line'),
-  'axis.tree': (value, { displayType }) => {
+  'rows.axis.tree': (value, { displayType }) => {
     if (typeof value !== 'boolean' || !displayType) {
       return undefined
     }

@@ -9225,7 +9225,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "a label drawn beside a row in place of its name, by name.",
+              "description": "a label drawn beside a row in place of its name, by name; rows.axis.labels says whether labels draw.",
               "if": {
                 "type": "null"
               },
@@ -11837,7 +11837,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "tree": {
-          "description": "draw the clustering tree in the sidebar.",
+          "description": "draw the clustering tree in the sidebar; rows.tree is the tree itself.",
           "default": true,
           "if": {
             "type": "null"
@@ -11857,7 +11857,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "labels": {
-          "description": "draw each row’s name over the left of the plot.",
+          "description": "draw each row’s name over the left of the plot; rows.labels gives a row another label.",
           "default": true,
           "if": {
             "type": "null"
@@ -11930,7 +11930,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "a label drawn beside a row in place of its name, by name.",
+              "description": "a label drawn beside a row in place of its name, by name; rows.axis.labels says whether labels draw.",
               "if": {
                 "type": "null"
               },
@@ -11992,6 +11992,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               },
               "else": {
                 "const": "sample"
+              }
+            },
+            "axis": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowAxisWithGrid"
               }
             }
           },
@@ -12740,14 +12748,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "type": "number"
-          }
-        },
-        "axis": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowAxisWithGrid"
           }
         },
         "rows": {
@@ -13573,7 +13573,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "a label drawn beside a row in place of its name, by name.",
+              "description": "a label drawn beside a row in place of its name, by name; rows.axis.labels says whether labels draw.",
               "if": {
                 "type": "null"
               },
@@ -13638,6 +13638,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   "",
                   "source"
                 ]
+              }
+            },
+            "axis": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowAxisWithGrid"
               }
             }
           },
@@ -14185,14 +14193,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/Legend"
           }
         },
-        "axis": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowAxisWithGrid"
-          }
-        },
         "maxFeatureScreenDensity": {
           "deprecated": true,
           "description": "Legacy key: a migration rewrites it into current slots when the config loads."
@@ -14584,7 +14584,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "tree": {
-          "description": "draw the clustering tree in the sidebar.",
+          "description": "draw the clustering tree in the sidebar; rows.tree is the tree itself.",
           "default": true,
           "if": {
             "type": "null"
@@ -14604,7 +14604,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "labels": {
-          "description": "draw each row’s name over the left of the plot.",
+          "description": "draw each row’s name over the left of the plot; rows.labels gives a row another label.",
           "default": true,
           "if": {
             "type": "null"
@@ -14628,6 +14628,124 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "additionalProperties": false
+    },
+    "MafRows": {
+      "title": "MafRows",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
+          "default": "sample",
+          "const": "sample",
+          "type": "string"
+        },
+        {
+          "title": "MafRows",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "sort": {
+              "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "labels": {
+              "description": "a label drawn beside a row in place of its name, by name; rows.axis.labels says whether labels draw.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            },
+            "tree": {
+              "description": "the dendrogram beside the rows, as newick, written by a clustering run beside the order it produced.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "treeProvenance": {
+              "description": "the locus and settings the tree was computed from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
+                }
+              }
+            },
+            "kept": {
+              "description": "the rows shown, by name; empty shows every row, and so does naming no current row where the track lists its rows.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            "field": {
+              "description": "sample, the one field a row can be.",
+              "default": "sample",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "const": "sample"
+              }
+            },
+            "axis": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowAxis"
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "MafAlignmentsMarkHeight": {
       "title": "MafAlignmentsMarkHeight",
@@ -14972,20 +15090,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/MafEncoding"
           }
         },
-        "axis": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowAxis"
-          }
-        },
         "rows": {
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/SampleRows"
+            "$ref": "#/$defs/MafRows"
           }
         },
         "rowColor": {
@@ -15562,7 +15672,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "labels": {
-              "description": "a label drawn beside a row in place of its name, by name.",
+              "description": "a label drawn beside a row in place of its name, by name; rows.axis.labels says whether labels draw.",
               "if": {
                 "type": "null"
               },
@@ -15624,6 +15734,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               },
               "else": {
                 "$ref": "#/$defs/FeatureField"
+              }
+            },
+            "axis": {
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/RowAxisWithGrid"
               }
             }
           },
@@ -15902,14 +16020,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             }
           }
         },
-        "axis": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowAxisWithGrid"
-          }
-        },
         "rowHeight": {
           "description": "per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them.",
           "default": 0,
@@ -16088,14 +16198,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "items": {
               "$ref": "#/$defs/RowGroup"
             }
-          }
-        },
-        "axis": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowAxisWithGrid"
           }
         },
         "rowHeight": {
@@ -16288,14 +16390,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "items": {
               "$ref": "#/$defs/RowGroup"
             }
-          }
-        },
-        "axis": {
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "$ref": "#/$defs/RowAxisWithGrid"
           }
         },
         "rowHeight": {
@@ -17205,22 +17299,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "axis": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/axis"
-                },
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/axis"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/axis"
-                }
-              ]
-            },
             "displayCrossHatches": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/displayCrossHatches"
             },
@@ -17705,9 +17783,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rowGroups": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
-            "axis": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
-            },
             "rowHeight": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
             },
@@ -18186,16 +18261,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
-                }
-              ]
-            },
-            "axis": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/axis"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
                 }
               ]
             },
@@ -18889,16 +18954,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "axis": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/axis"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
-                }
-              ]
-            },
             "maxFeatureScreenDensity": {
               "anyOf": [
                 {
@@ -19253,16 +19308,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "axis": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/axis"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
-                }
-              ]
-            },
             "maxFeatureScreenDensity": {
               "anyOf": [
                 {
@@ -19574,9 +19619,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "legend": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/legend"
             },
-            "axis": {
-              "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/axis"
-            },
             "maxFeatureScreenDensity": {
               "$ref": "#/$defs/LinearWiggleDisplaySlots/properties/maxFeatureScreenDensity"
             },
@@ -19840,16 +19882,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/encoding"
-                }
-              ]
-            },
-            "axis": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/axis"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
                 }
               ]
             },
@@ -20644,14 +20676,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/laneGeneTracks"
             },
             "axis": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/axis"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/axis"
-                }
-              ]
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/axis"
             },
             "labels": {
               "$ref": "#/$defs/MultiWaySyntenyDisplaySlots/properties/labels"
@@ -20886,9 +20911,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rowGroups": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowGroups"
-            },
-            "axis": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/axis"
             },
             "rowHeight": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowHeight"

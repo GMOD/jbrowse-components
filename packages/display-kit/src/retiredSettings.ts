@@ -58,8 +58,8 @@ const stringOf = (v: unknown) => (typeof v === 'string' ? v : undefined)
 
 /**
  * The config an old session's row display state becomes: `rows` and
- * `rowColor` from the arrangement, and `axis` from the sidebar's width and
- * toggles. A `layout` row answers to its `source` where it has one, which v4's
+ * `rowColor` from the arrangement, and `rows.axis` from the sidebar's width
+ * and toggles. A `layout` row answers to its `source` where it has one, which v4's
  * quantitative display kept apart from the `name` it drew, and to its `name`
  * otherwise. `colors: false` leaves the colors behind, for a display whose
  * old layout copied a palette in rather than holding a reader's choice.
@@ -104,9 +104,12 @@ export function liftRetiredRowState(
       ? { labels: instance.showSidebarLabelsSetting }
       : {}),
   }
-  return {
-    ...(Object.keys(arrangement).length > 0 ? { rows: arrangement } : {}),
+  const rowsSetting = {
+    ...arrangement,
     ...(Object.keys(axis).length > 0 ? { axis } : {}),
+  }
+  return {
+    ...(Object.keys(rowsSetting).length > 0 ? { rows: rowsSetting } : {}),
     ...(colored.length > 0
       ? {
           rowColor: {
