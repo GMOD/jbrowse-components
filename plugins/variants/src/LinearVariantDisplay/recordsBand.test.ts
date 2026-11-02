@@ -49,7 +49,7 @@ function paintedText(display: LinearVariantDisplayModel) {
     display.host.visibleRegions,
     {
       canvasWidth: display.canvasWidthPx,
-      bandHeight: display.topBands.recordsHeight,
+      bandHeight: display.topBands.reserved.records,
       scrollY: display.recordsScrollTop,
       ...display.recordsRenderedLabels,
       fontSize,
@@ -108,7 +108,7 @@ test('a description costs no label row', () => {
   const names = recordsDisplayAt(one, 10, {
     labels: { description: { show: false } },
   }).display
-  expect(both.topBands.recordsHeight).toBe(names.topBands.recordsHeight)
+  expect(both.topBands.reserved.records).toBe(names.topBands.reserved.records)
 })
 
 // The band is the records, over rows as without: an SNV or small indel draws
@@ -221,9 +221,9 @@ const SNVS: BandRecord[] = [
 
 test('an SNV-only region draws its records above the rows', () => {
   const { display } = recordsDisplayAt(SNVS, 10)
-  expect(display.topBands.recordsHeight).toBeGreaterThan(0)
+  expect(display.topBands.reserved.records).toBeGreaterThan(0)
   expect(display.rowsTopOffset).toBe(
-    display.topBands.recordsHeight + display.topBands.chipsHeight,
+    display.topBands.reserved.records + display.topBands.reserved.chips,
   )
 })
 
@@ -237,7 +237,7 @@ test('the band on leaves the rows where the band off has them', () => {
   })
   expect(off.showRecords).toBe(false)
   expect(rows(on)).toEqual(rows(off))
-  expect(on.height).toBe(off.height + on.topBands.recordsHeight)
+  expect(on.height).toBe(off.height + on.topBands.reserved.records)
 })
 
 // The cells paint the genotype colors, which name no record, so the records
@@ -274,8 +274,8 @@ test('labels off letters nothing and reserves no label rows', () => {
     labels: { name: { show: false }, description: { show: false } },
   })
   expect(paintedText(display)).toEqual([])
-  expect(display.topBands.recordsHeight).toBeLessThan(
-    labelled.topBands.recordsHeight,
+  expect(display.topBands.reserved.records).toBeLessThan(
+    labelled.topBands.reserved.records,
   )
 })
 
@@ -356,8 +356,8 @@ describe('records buffered off screen', () => {
     const alone = recordsDisplayAt(sparse, 1).display
     const { display } = recordsDisplayAt(both, 1)
     expect(display.recordsMeasureIds).toBeUndefined()
-    expect(display.topBands.recordsHeight).toBeGreaterThan(
-      alone.topBands.recordsHeight,
+    expect(display.topBands.reserved.records).toBeGreaterThan(
+      alone.topBands.reserved.records,
     )
   })
 })

@@ -39,7 +39,7 @@ describe.each([
     const { display: d } = recordsDisplayAt(FEW, 10, {}, rows, display)
     expect(d.drawsRows).toBe(false)
     expect(d.availableHeight).toBe(0)
-    expect(d.topBands.recordsHeight).toBeGreaterThan(0)
+    expect(d.topBands.reserved.records).toBeGreaterThan(0)
   })
 
   test('the band draws every record, an SV in its class color and the rest in the feature track default, keying the SV classes alone', () => {
@@ -72,7 +72,7 @@ describe.each([
 test('with no samples the band is the display', () => {
   const { display } = recordsDisplayAt(FEW, 10, {}, false)
   expect(display.recordsOnly).toBe(true)
-  expect(display.topBands.recordsHeight).toBe(display.height)
+  expect(display.topBands.reserved.records).toBe(display.height)
 })
 
 // hidden rows leave the track the band, as it draws over them, and the strip
@@ -84,7 +84,7 @@ test('with genotypes hidden the track is the band and its chip strip', () => {
   expect(display.recordsOnly).toBe(false)
   expect(display.recordsDisplayMode).toBe('compact')
   expect(display.height).toBe(
-    display.topBands.recordsHeight + BAND_CHIPS_HEIGHT,
+    display.topBands.reserved.records + BAND_CHIPS_HEIGHT,
   )
   expect(display.configuredHeight).toBe(200)
   display.setShowGenotypes(true)
@@ -108,7 +108,7 @@ test('with no rows a constant color keys no genotype', () => {
 test('genotype rows on keep the band over the rows, capped', () => {
   const { display } = recordsDisplayAt(KIT, 51)
   expect(display.recordsOnly).toBe(false)
-  expect(display.topBands.recordsHeight).toBeLessThan(display.height)
+  expect(display.topBands.reserved.records).toBeLessThan(display.height)
   expect(display.availableHeight).toBeGreaterThan(0)
 })
 
@@ -117,7 +117,7 @@ describe('heightMode with no rows', () => {
     const { display } = recordsDisplayAt(PILE, 1, {}, false)
     expect(display.heightMode).toBe('fit')
     expect(display.height).toBe(200)
-    expect(display.topBands.recordsHeight).toBe(200)
+    expect(display.topBands.reserved.records).toBe(200)
     expect(display.recordsFitStage.scale).toBeLessThan(1)
   })
 
@@ -131,7 +131,7 @@ describe('heightMode with no rows', () => {
       heightMode: 'grow',
     }).display
     expect(pile.height).toBeGreaterThan(200)
-    expect(pile.topBands.recordsHeight).toBe(pile.height)
+    expect(pile.topBands.reserved.records).toBe(pile.height)
     const capped = recordsDisplayAt(PILE, 1, {}, false, {
       heightMode: 'grow',
       growMaxHeight: 120,
@@ -306,7 +306,7 @@ describe('the track menu', () => {
     }).display
     for (const display of [off, noSamples]) {
       expect(display.variantLayout).toBe('genomic')
-      expect(display.topBands.recordsHeight).toBeGreaterThan(0)
+      expect(display.topBands.reserved.records).toBeGreaterThan(0)
       expect(display.rpcProps().layout).toBe('genomic')
       expect(labelsOf(menu(display))).not.toContain('Layout')
       expect(labelsOf(menu(display))).not.toContain('Row height')
@@ -354,7 +354,7 @@ describe('the track edge with genotypes hidden', () => {
     const start = display.height
     dragTrackEdge(display, [10, 20, 30])
     expect(display.height).toBe(start + 30)
-    expect(display.recordsHeight).toBe(display.topBands.recordsHeight)
+    expect(display.recordsHeight).toBe(display.topBands.reserved.records)
   })
 
   test('leaves the rows the height they come back at', () => {
@@ -391,11 +391,11 @@ describe('the track edge with genotypes hidden', () => {
     const { display } = recordsDisplayAt(PILE, 1, {}, true, {
       genotypes: { show: false },
     })
-    const held = display.topBands.recordsHeight
+    const held = display.topBands.reserved.records
     display.setCellData(recordsCellData(FEW), [0])
     expect(display.recordsStackHeight).toBeLessThan(held)
     expect(display.expandToContentHeight()).toBe(0)
-    expect(display.topBands.recordsHeight).toBe(held)
+    expect(display.topBands.reserved.records).toBe(held)
   })
 
   test('a double click opens the band to every record', () => {
@@ -409,10 +409,10 @@ describe('the track edge with genotypes hidden', () => {
 
   test('over rows resizes the rows', () => {
     const { display } = recordsDisplayAt(FEW, 10)
-    const band = display.topBands.recordsHeight
+    const band = display.topBands.reserved.records
     dragTrackEdge(display, [10, 20, 30])
     expect(display.configuredHeight).toBe(230)
-    expect(display.topBands.recordsHeight).toBe(band)
+    expect(display.topBands.reserved.records).toBe(band)
   })
 })
 

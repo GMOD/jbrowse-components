@@ -4,36 +4,30 @@ import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import MarkSvgLayer from '@jbrowse/display-kit/MarkSvgLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { paintFeatureBand } from '@jbrowse/plugin-features/band'
 
 import { REFERENCE_COLOR } from '../shared/constants.ts'
 import SvgVariantOverlay from './components/SvgVariantOverlay.tsx'
 import { VARIANT_MARKS } from './components/variantMarks.ts'
+import {
+  recordsBandPainter,
+  recordsSectionsInBand,
+} from './recordsBandPaint.ts'
 
 import type {
   VariantRenderBlock,
   VariantRenderState,
   VariantUploadData,
 } from './components/variantRenderingBackendTypes.ts'
+import type { RecordsBandPaintModel } from './recordsBandPaint.ts'
 import type { RenderSvgBaseModel } from './renderSvgUtils.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type {
-  FeatureDataResult,
-  FeatureGroupSection,
-} from '@jbrowse/plugin-features/band'
 
-interface RenderSvgModel extends RenderSvgBaseModel {
+interface RenderSvgModel extends RenderSvgBaseModel, RecordsBandPaintModel {
   showReference: boolean
   renderBlocks: VariantRenderBlock[]
   perRegionCellMap: ReadonlyMap<number, VariantUploadData>
   renderState: VariantRenderState
-  // the records band's kept stack, empty when it is off (`recordsFitStage`)
-  recordsLaidOutDataMap: ReadonlyMap<number, FeatureDataResult>
-  recordsRenderedLabels: { showLabels: boolean; showDescriptions: boolean }
-  recordsFontSize: number
-  recordsGroupSections: FeatureGroupSection[]
-  recordsScrollTop: number
 }
 
 export async function renderSvg(
@@ -52,62 +46,41 @@ function VariantSvgBody({
 }: LgvSvgBodyProps<RenderSvgModel>) {
   // the model's own block set and region map, so the export draws what the
   // live canvas does
-  const {
-    showReference,
-    renderBlocks,
-    perRegionCellMap,
-    renderState,
-    recordsLaidOutDataMap,
-    recordsRenderedLabels,
-    recordsFontSize,
-    recordsGroupSections,
-    recordsScrollTop,
-    topBands,
-  } = model
+  const { showReference, renderBlocks, perRegionCellMap, renderState } = model
   const { canvasHeight } = renderState
+  const recordsHeight = model.topBands.reserved.records
   const palette = usePalette()
+  const paintRecords = recordsBandPainter(model, {
+    canvasWidth,
+    regions: view.visibleRegions,
+    palette,
+  })
   return (
     <SvgVariantOverlay
       model={model}
       width={canvasWidth}
       overlays={overlays}
       text={opts}
-      // the band the screen drew, through the same plugin-features call, on
-      // its own untranslated layer as the screen gives it its own canvas
+      // the band the screen drew, through the same painter, on its own
+      // untranslated layer as the screen gives it its own canvas
       records={
-        topBands.recordsHeight > 0 ? (
+        recordsHeight > 0 ? (
           <>
             <PaintLayer
               width={canvasWidth}
-              height={topBands.recordsHeight}
+              height={recordsHeight}
               opts={opts}
               paint={ctx => {
-                paintFeatureBand(
-                  ctx,
-                  recordsLaidOutDataMap,
-                  renderBlocks,
-                  view.visibleRegions,
-                  {
-                    canvasWidth,
-                    bandHeight: topBands.recordsHeight,
-                    ...recordsRenderedLabels,
-                    fontSize: recordsFontSize,
-                    scrollY: recordsScrollTop,
-                    palette,
-                  },
-                )
+                paintRecords(ctx)
               }}
             />
             {/* the record sections' names, the twin of the band's chips */}
-            {recordsGroupSections.length > 0 ? (
+            {model.recordsGroupSections.length > 0 ? (
               <GroupLabelBoxes
-                sections={recordsGroupSections.map(section => ({
-                  ...section,
-                  top: section.top - recordsScrollTop,
-                }))}
+                sections={recordsSectionsInBand(model)}
                 left={0}
                 width={canvasWidth}
-                canvasHeight={topBands.recordsHeight}
+                canvasHeight={recordsHeight}
               />
             ) : null}
           </>

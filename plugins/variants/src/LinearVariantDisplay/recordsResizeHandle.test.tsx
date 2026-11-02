@@ -15,24 +15,24 @@ function drag(handle: HTMLElement, dy: number) {
 
 test('a drag up on the seam sets the band below its stack', () => {
   const { display } = recordsDisplayAt(KIT, 51)
-  const natural = display.topBands.recordsHeight
+  const natural = display.topBands.reserved.records
   render(<RecordsBandOverlay model={display} />)
 
   drag(screen.getByTestId('records_band_resize_handle'), -30)
 
   expect(display.recordsHeight).toBe(natural - 30)
-  expect(display.topBands.recordsHeight).toBe(natural - 30)
+  expect(display.topBands.reserved.records).toBe(natural - 30)
 })
 
 test('a drag down on the seam sets the band past its stack', () => {
   const { display } = recordsDisplayAt(KIT, 51)
-  const natural = display.topBands.recordsHeight
+  const natural = display.topBands.reserved.records
   render(<RecordsBandOverlay model={display} />)
 
   drag(screen.getByTestId('records_band_resize_handle'), 20)
 
   expect(display.recordsHeight).toBe(natural + 20)
-  expect(display.topBands.recordsHeight).toBe(natural + 20)
+  expect(display.topBands.reserved.records).toBe(natural + 20)
 })
 
 test('a band dragged shut stops at the floor and stays grabbable', () => {
@@ -71,17 +71,17 @@ describe('a drag past the floor and back', () => {
 
   test('keeps the seam under the pointer', () => {
     const { display } = recordsDisplayAt(KIT, 51)
-    const natural = display.topBands.recordsHeight
+    const natural = display.topBands.reserved.records
     render(<RecordsBandOverlay model={display} />)
     const handle = screen.getByTestId('records_band_resize_handle')
 
     fireEvent.pointerDown(handle, { clientY: 0, pointerId: 1 })
     moveTo(handle, -500)
-    expect(display.topBands.recordsHeight).toBe(MIN_RECORDS_HEIGHT)
+    expect(display.topBands.reserved.records).toBe(MIN_RECORDS_HEIGHT)
     moveTo(handle, -400)
-    expect(display.topBands.recordsHeight).toBe(MIN_RECORDS_HEIGHT)
+    expect(display.topBands.reserved.records).toBe(MIN_RECORDS_HEIGHT)
     moveTo(handle, 10 - natural)
-    expect(display.topBands.recordsHeight).toBe(10)
+    expect(display.topBands.reserved.records).toBe(10)
     fireEvent.pointerUp(handle, { clientY: 10 - natural, pointerId: 1 })
   })
 })

@@ -12,7 +12,7 @@ describe('the R export reads a real variant display', () => {
   test('with no samples, as its records at their drawn height', () => {
     const { display } = recordsDisplayAt(FEW, 10, {}, false)
     expect(recordsDrawnAlone(display)).toEqual({
-      height: display.topBands.recordsHeight,
+      height: display.topBands.reserved.records,
       fits: false,
     })
   })
@@ -22,7 +22,7 @@ describe('the R export reads a real variant display', () => {
       genotypes: { show: false },
     })
     expect(recordsDrawnAlone(display)).toEqual({
-      height: display.topBands.recordsHeight,
+      height: display.topBands.reserved.records,
       fits: true,
     })
   })

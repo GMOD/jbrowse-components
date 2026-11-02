@@ -1,3 +1,4 @@
+import { bandAt } from '@jbrowse/core/util/bandLayout'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
@@ -46,7 +47,7 @@ const layoutBackends: Record<
 // records band spans the full width above.
 function hoverGenomic(model: Model, state: MouseState) {
   const { rowsTopOffset } = model
-  if (state.y < model.topBands.recordsHeight) {
+  if (bandAt(model.topBands, state.y) === 'records') {
     hoverVariantSurface(model, recordsBandSurface(model), state.x, state.y)
   } else if (state.y < rowsTopOffset || state.x < treeSidebarRightEdge(model)) {
     model.clearHoveredFeature()

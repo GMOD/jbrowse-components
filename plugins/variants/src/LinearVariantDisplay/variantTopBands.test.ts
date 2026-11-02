@@ -34,10 +34,10 @@ describe('the band stack', () => {
   // the connector lines end at genomic positions, which is where the records
   // draw, so the records sit above the zone
   test('stacks the records above the connector zone', () => {
-    expect(geometry({ connectorsHeight: 30 })).toEqual({
-      recordsHeight: 40,
-      chipsHeight: 0,
-      connectorsTop: 40,
+    expect(geometry({ connectorsHeight: 30 })).toMatchObject({
+      top: { records: 0, chips: 40, connectors: 40 },
+      reserved: { records: 40, chips: 0, connectors: 30 },
+      addedHeight: 40,
       bottom: 70,
     })
   })
@@ -45,19 +45,20 @@ describe('the band stack', () => {
   // the rows' tree, facet strip and labels draw over their left edge, so the
   // chips take a strip of their own between the band and the rows
   test('the chips take a strip under the records', () => {
-    expect(geometry({ showChips: true })).toEqual({
-      recordsHeight: 40,
-      chipsHeight: BAND_CHIPS_HEIGHT,
-      connectorsTop: 40 + BAND_CHIPS_HEIGHT,
+    expect(geometry({ showChips: true })).toMatchObject({
+      top: { records: 0, chips: 40, connectors: 40 + BAND_CHIPS_HEIGHT },
+      reserved: { records: 40, chips: BAND_CHIPS_HEIGHT, connectors: 0 },
+      addedHeight: 40 + BAND_CHIPS_HEIGHT,
       bottom: 40 + BAND_CHIPS_HEIGHT,
     })
   })
 
   test('a band that is off costs zero px, not its floor', () => {
-    expect(geometry({ showRecords: false, connectorsHeight: 30 })).toEqual({
-      recordsHeight: 0,
-      chipsHeight: 0,
-      connectorsTop: 0,
+    expect(
+      geometry({ showRecords: false, connectorsHeight: 30 }),
+    ).toMatchObject({
+      reserved: { records: 0, chips: 0, connectors: 30 },
+      addedHeight: 0,
       bottom: 30,
     })
   })
@@ -125,13 +126,13 @@ describe('the band on a display', () => {
     expect(display.recordsFitStage).toMatchObject({ level: 'full', scale: 1 })
     const natural = naturalHeight()
     expect(natural).toBeLessThan(DEFAULT_RECORDS_HEIGHT)
-    expect(display.topBands.recordsHeight).toBe(natural)
+    expect(display.topBands.reserved.records).toBe(natural)
   })
 
   test('past its height the fit ladder fits the stack into it', () => {
     const cap = 3 * GROUP_LABEL_HEIGHT
     const { display } = recordsDisplayAt(NESTED, 51, { height: cap })
-    expect(display.topBands.recordsHeight).toBe(cap)
+    expect(display.topBands.reserved.records).toBe(cap)
     expect(display.recordsFitStage.level).not.toBe('full')
     expect(maxBottom(display.recordsLaidOutDataMap)).toBeLessThanOrEqual(cap)
   })
@@ -142,7 +143,7 @@ describe('the band on a display', () => {
   test('past every rung a record that does not fit hides, counted', () => {
     const cap = 3 * GROUP_LABEL_HEIGHT
     const { display } = recordsDisplayAt(NESTED, 51, { height: cap })
-    expect(display.topBands.recordsHeight).toBe(cap)
+    expect(display.topBands.reserved.records).toBe(cap)
     expect(display.recordsHiddenCount).toBeGreaterThan(0)
     expect(maxBottom(display.recordsLaidOutDataMap)).toBeLessThanOrEqual(cap)
     const hidden = display.recordsLaidOutDataMap
@@ -153,7 +154,7 @@ describe('the band on a display', () => {
 
     display.showAllRecordRows()
     expect(display.recordsHiddenCount).toBe(0)
-    expect(display.topBands.recordsHeight).toBe(display.recordsStackHeight)
+    expect(display.topBands.reserved.records).toBe(display.recordsStackHeight)
   })
 
   // the density a feature track refuses its window at: over rows the band
@@ -190,7 +191,7 @@ describe('the band on a display', () => {
     }
 
     display.setShowRecords(true)
-    const band = display.topBands.recordsHeight
+    const band = display.topBands.reserved.records
     expect(band).toBeGreaterThan(0)
     expect(display.height).toBe(height + band)
     expect(display.rowsTopOffset).toBe(band + BAND_CHIPS_HEIGHT)
@@ -215,7 +216,7 @@ describe('the band on a display', () => {
 
   test('the key sits at the top of the band, not pushed under it', () => {
     const { display } = recordsDisplayAt(KIT, 51)
-    expect(display.topBands.recordsHeight).toBeGreaterThan(0)
+    expect(display.topBands.reserved.records).toBeGreaterThan(0)
     expect(display.legendTop).toBe(0)
   })
 
@@ -226,7 +227,7 @@ describe('the band on a display', () => {
     display.setCellData(recordsCellData(KIT), [0])
 
     expect(display.showRecords).toBe(false)
-    expect(display.topBands.recordsHeight).toBe(0)
+    expect(display.topBands.reserved.records).toBe(0)
     expect(display.rowsTopOffset).toBe(display.connectorsHeight)
   })
 })
@@ -244,7 +245,7 @@ describe('a band keeps its height', () => {
   test('a window with no record holds nothing, and spends nothing', () => {
     const { display } = recordsDisplayAt([], 51)
     expect(display.recordsHeightHeld).toBe(false)
-    expect(display.topBands.recordsHeight).toBe(0)
+    expect(display.topBands.reserved.records).toBe(0)
 
     display.setCellData(recordsCellData(KIT), [0])
     expect(display.recordsHeight).toBe(naturalHeight())
@@ -252,15 +253,15 @@ describe('a band keeps its height', () => {
 
   test('a pan into a denser or an empty window keeps it', () => {
     const { display } = recordsDisplayAt(KIT, 51)
-    const settled = display.topBands.recordsHeight
+    const settled = display.topBands.reserved.records
     const height = display.height
 
     display.setCellData(recordsCellData(NESTED), [0])
-    expect(display.topBands.recordsHeight).toBe(settled)
+    expect(display.topBands.reserved.records).toBe(settled)
     expect(display.recordsHiddenCount).toBeGreaterThan(0)
 
     display.setCellData(recordsCellData([]), [0])
-    expect(display.topBands.recordsHeight).toBe(settled)
+    expect(display.topBands.reserved.records).toBe(settled)
     expect(display.height).toBe(height)
   })
 
@@ -270,32 +271,32 @@ describe('a band keeps its height', () => {
     const { display } = recordsDisplayAt(NESTED, 51, { mark: { height: 40 } })
     expect(display.recordsStackHeight).toBeGreaterThan(DEFAULT_RECORDS_HEIGHT)
     expect(display.recordsHeightHeld).toBe(true)
-    expect(display.topBands.recordsHeight).toBe(DEFAULT_RECORDS_HEIGHT)
+    expect(display.topBands.reserved.records).toBe(DEFAULT_RECORDS_HEIGHT)
 
     display.setCellData(recordsCellData(KIT), [0])
-    expect(display.topBands.recordsHeight).toBe(DEFAULT_RECORDS_HEIGHT)
+    expect(display.topBands.reserved.records).toBe(DEFAULT_RECORDS_HEIGHT)
   })
 
   test('a height set to the default holds', () => {
     const { display } = recordsDisplayAt(KIT, 51)
     display.setRecordsHeight(DEFAULT_RECORDS_HEIGHT)
-    expect(display.topBands.recordsHeight).toBe(DEFAULT_RECORDS_HEIGHT)
+    expect(display.topBands.reserved.records).toBe(DEFAULT_RECORDS_HEIGHT)
   })
 
   test('with genotypes hidden a pan keeps it too', () => {
     const { display } = recordsDisplayAt(KIT, 51, {}, true, {
       genotypes: { show: false },
     })
-    const settled = display.topBands.recordsHeight
+    const settled = display.topBands.reserved.records
     expect(display.recordsHeightHeld).toBe(true)
     display.setCellData(recordsCellData([]), [0])
-    expect(display.topBands.recordsHeight).toBe(settled)
+    expect(display.topBands.reserved.records).toBe(settled)
   })
 
   test('a written height holds over fewer records than fill it', () => {
     const { display } = recordsDisplayAt(KIT, 51, { height: 150 })
     expect(naturalHeight()).toBeLessThan(150)
-    expect(display.topBands.recordsHeight).toBe(150)
+    expect(display.topBands.reserved.records).toBe(150)
   })
 })
 

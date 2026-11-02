@@ -127,19 +127,10 @@ const BandChips = observer(function BandChips({
   model: LinearVariantDisplayModel
 }) {
   const { classes } = useStyles()
-  const {
-    drawsRows,
-    showRecords,
-    recordsOnly,
-    atGenomicPositions,
-    recordsHiddenCount,
-  } = model
+  const { drawsRows, showRecords, recordsHiddenCount, topBands } = model
   const bothShown = drawsRows && showRecords
-  return atGenomicPositions && !recordsOnly ? (
-    <div
-      className={classes.row}
-      style={{ top: model.topBands.recordsHeight + 2 }}
-    >
+  return topBands.reserved.chips > 0 ? (
+    <div className={classes.row} style={{ top: topBands.top.chips + 2 }}>
       {bothShown ? (
         <HideablePill
           label="Records"

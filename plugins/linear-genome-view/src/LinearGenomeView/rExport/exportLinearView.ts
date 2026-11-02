@@ -58,10 +58,13 @@ export function recordsDrawnAlone(display: object) {
     'topBands' in display &&
     typeof display.topBands === 'object' &&
     display.topBands !== null &&
-    'recordsHeight' in display.topBands &&
-    typeof display.topBands.recordsHeight === 'number'
+    'reserved' in display.topBands &&
+    typeof display.topBands.reserved === 'object' &&
+    display.topBands.reserved !== null &&
+    'records' in display.topBands.reserved &&
+    typeof display.topBands.reserved.records === 'number'
     ? {
-        height: display.topBands.recordsHeight,
+        height: display.topBands.reserved.records,
         fits: 'rowsHidden' in display && display.rowsHidden === true,
       }
     : undefined

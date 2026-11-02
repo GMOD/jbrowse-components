@@ -139,7 +139,7 @@ describe('over rows the band settles at a stack it packed', () => {
     display.view.setNewView(0.5, 0)
     expect(display.recordsPackMode).toBe('compact')
     expect(display.recordsHeightHeld).toBe(true)
-    expect(display.topBands.recordsHeight).toBeGreaterThan(100)
+    expect(display.topBands.reserved.records).toBeGreaterThan(100)
   })
 })
 
@@ -154,7 +154,7 @@ describe('an opening height writes nothing', () => {
 
   test('over rows, for the band', () => {
     const { display } = recordsDisplayAt(SPARSE, 10)
-    expect(display.topBands.recordsHeight).toBeGreaterThan(0)
+    expect(display.topBands.reserved.records).toBeGreaterThan(0)
     expect(display.recordsHeightHeld).toBe(true)
     expect(display.recordsHeightWritten).toBe(false)
   })

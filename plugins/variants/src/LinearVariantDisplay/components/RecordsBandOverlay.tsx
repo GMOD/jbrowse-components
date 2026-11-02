@@ -6,14 +6,15 @@ import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import { BandSeamHandle } from '@jbrowse/display-kit/BandSeamHandle'
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
 import { moveSectionOnto } from '@jbrowse/display-kit/groupByMenu'
-import {
-  paintFeatureBand,
-  performMultiRegionHitDetection,
-} from '@jbrowse/plugin-features/band'
+import { performMultiRegionHitDetection } from '@jbrowse/plugin-features/band'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
 
+import {
+  recordsBandPainter,
+  recordsSectionsInBand,
+} from '../recordsBandPaint.ts'
 import { buildRecordHit } from './buildVariantHit.ts'
 import { enrichFeatureFromClick } from './enrichFeatureFromClick.ts'
 import { variantSurfaceHandlers } from './variantSurface.ts'
@@ -129,7 +130,7 @@ const RecordsBandInteraction = observer(function RecordsBandInteraction({
         top: 0,
         left: 0,
         width: canvasWidthPx,
-        height: topBands.recordsHeight,
+        height: topBands.reserved.records,
         cursor: model.hoveredRecord ? 'pointer' : undefined,
       }}
       {...variantSurfaceHandlers(model, recordsBandSurface(model))}
@@ -147,11 +148,11 @@ const RecordsSectionChips = observer(function RecordsSectionChips({
 }: {
   model: LinearVariantDisplayModel
 }) {
-  const { recordsGroupSections, recordsFacet, recordsScrollTop } = model
+  const { recordsGroupSections, recordsFacet } = model
   const canHide = recordsGroupSections.length > 1
   return recordsFacet && recordsGroupSections.length > 0 ? (
     <GroupLabelChips
-      canvasHeight={model.topBands.recordsHeight}
+      canvasHeight={model.topBands.reserved.records}
       hiddenCount={model.recordsHiddenGroups.size}
       onShowHidden={() => {
         model.showAllRecordsGroups()
@@ -169,9 +170,8 @@ const RecordsSectionChips = observer(function RecordsSectionChips({
           ontoKey,
         )
       }}
-      sections={recordsGroupSections.map(section => ({
+      sections={recordsSectionsInBand(model).map(section => ({
         ...section,
-        top: section.top - recordsScrollTop,
         onHide: canHide
           ? () => {
               model.hideRecordsGroup(section.key)
@@ -197,17 +197,13 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
 }) {
   const palette = usePalette()
   const id = useId()
-  const {
-    recordsLaidOutDataMap,
-    recordsRenderedLabels,
-    recordsFontSize,
-    renderBlocks,
-    topBands,
-    canvasWidthPx,
-    recordsScrollTop,
-  } = model
-  const { visibleRegions } = model.host
-  const { recordsHeight } = topBands
+  const { topBands, canvasWidthPx } = model
+  const recordsHeight = topBands.reserved.records
+  const paint = recordsBandPainter(model, {
+    canvasWidth: canvasWidthPx,
+    regions: model.host.visibleRegions,
+    palette,
+  })
   return recordsHeight > 0 ? (
     // sized, because every child is absolute and the seam handle spans its
     // parent's width: a 0px box leaves nothing to grab
@@ -225,30 +221,16 @@ const RecordsBandOverlay = observer(function RecordsBandOverlay({
         width={canvasWidthPx}
         height={recordsHeight}
         draw={ctx => {
-          paintFeatureBand(
-            ctx,
-            recordsLaidOutDataMap,
-            renderBlocks,
-            visibleRegions,
-            {
-              canvasWidth: canvasWidthPx,
-              bandHeight: recordsHeight,
-              scrollY: recordsScrollTop,
-              ...recordsRenderedLabels,
-              fontSize: recordsFontSize,
-              palette,
-            },
-          )
+          paint(ctx)
         }}
       />
       <RecordsBandInteraction model={model} id={id} />
       <RecordsSectionChips model={model} />
+      {/* with no rows the band is the display, scrolled and resized by the
+          track's own chrome */}
       {model.recordsOnly ? (
         <ScrollChrome model={model} controlsId={id} />
-      ) : null}
-      {/* with no rows the band is the display, resized by the track's own
-          handle */}
-      {model.recordsOnly ? null : (
+      ) : (
         <BandSeamHandle
           data-testid="records_band_resize_handle"
           seam={recordsHeight}

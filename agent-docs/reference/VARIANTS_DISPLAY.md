@@ -309,13 +309,17 @@ and was reverted on 2026-09-30.
 
 ## Bands above the rows
 
-`variantTopBands.ts` resolves both bands, the records band (genomic positions)
-over the connector zone (columns), and **the layout reserving a strip and the
-painter filling it read that one function**.
+`variantTopBands.ts` folds the bands, the records band (genomic positions),
+its chip strip and the connector zone (columns), through `stackBands`, and
+`topBands` is the whole `BandStack`: **the layout reserving a strip, the
+painter filling it and the pointer dispatching on it read that one fold**
+(`reserved.records`, `top.chips`, `bandAt`).
 
 - `rowsHeaderHeight` is `topBands.bottom`; `rowsTopOffset` adds the focus
   chip's line and is where rows begin.
-- **A band comes out of `availableHeight`, never `height`.**
+- **The records band and the chips add to the track; the connectors come out
+  of the rows' slot.** `addedHeight` is the first two, which the model's
+  `height` adds to the slot.
 - **A band a layout cannot paint answers 0 there** (`connectorsHeight` at
   genomic positions), whatever the config says.
 - A drag-resized height goes on a config slot, clamped via `clampBandHeight`
@@ -451,7 +455,7 @@ a `recordsOnly` choice in the model belongs there.
 - **Past its height the record rows decimate, then hide.** The ladder drops
   descriptions, thins bodies and decimates names, but over rows never scales
   the boxes: `recordsLaidOutDataMap` leaves a record that still ends below
-  `topBands.recordsHeight` unplaced (`unplaceBelow`), so no painter, pick,
+  `topBands.reserved.records` unplaced (`unplaceBelow`), so no painter, pick,
   highlight or `searchFeatureByID` sees it, and `BandChips`' `+N hidden` chip
   counts the ones on screen (`recordsHiddenCount`; a click is
   `showAllRecordRows`). Past `records.maxFeatureScreenDensity` on screen the

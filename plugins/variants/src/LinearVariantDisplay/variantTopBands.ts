@@ -16,6 +16,7 @@ import { stackBands } from '@jbrowse/core/util/bandLayout'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
 import type { BandBounds } from '@jbrowse/core/util/bandHeight'
+import type { BandStack } from '@jbrowse/core/util/bandLayout'
 
 /** Where a record stops reading as a mark: the drag floor. */
 export const MIN_RECORDS_HEIGHT = 8
@@ -30,17 +31,17 @@ export const DEFAULT_RECORDS_HEIGHT = 170
  */
 export const BAND_CHIPS_HEIGHT = GROUP_LABEL_HEIGHT + 4
 
-export interface VariantTopBands {
-  /** **0 when the band is off**, or holds no record. */
-  recordsHeight: number
-  /** The chip strip under the records band; 0 where no chip draws. */
-  chipsHeight: number
-  connectorsTop: number
+/** The bands above the genotype rows, top to bottom. */
+export const VARIANT_BAND_ORDER = ['records', 'chips', 'connectors'] as const
+
+export type VariantBandKey = (typeof VARIANT_BAND_ORDER)[number]
+
+export interface VariantTopBands extends BandStack<VariantBandKey> {
   /**
-   * Where the genotype rows begin: the sum of every band above, which
-   * `availableHeight` subtracts from the display height.
+   * What the bands add to the track above the rows' slot: the records and
+   * the chips. The connectors are taken from the slot, so they end the stack.
    */
-  bottom: number
+  addedHeight: number
 }
 
 /**
@@ -88,19 +89,11 @@ export function variantTopBandsGeometry({
   showChips: boolean
   /** 0 at genomic positions. */
   connectorsHeight: number
-}): VariantTopBands {
-  const { top, reserved, bottom } = stackBands(
-    ['records', 'chips', 'connectors'],
-    {
-      records: { active: showRecords, height: recordsHeight },
-      chips: { active: showChips, height: BAND_CHIPS_HEIGHT },
-      connectors: { active: true, height: connectorsHeight },
-    },
-  )
-  return {
-    recordsHeight: reserved.records,
-    chipsHeight: reserved.chips,
-    connectorsTop: top.connectors,
-    bottom,
-  }
+}) {
+  const stack = stackBands(VARIANT_BAND_ORDER, {
+    records: { active: showRecords, height: recordsHeight },
+    chips: { active: showChips, height: BAND_CHIPS_HEIGHT },
+    connectors: { active: true, height: connectorsHeight },
+  })
+  return { ...stack, addedHeight: stack.top.connectors }
 }

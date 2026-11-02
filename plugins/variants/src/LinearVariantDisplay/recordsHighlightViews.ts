@@ -12,6 +12,7 @@ import {
   resolveFeatureHighlights,
 } from '@jbrowse/plugin-features/band'
 
+import type { VariantTopBands } from './variantTopBands.ts'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IMSTArray, IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
@@ -30,7 +31,7 @@ interface RecordsHighlightHost extends IStateTreeNode {
   recordsLaidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   renderBlocks: readonly RenderBlock[]
   canvasWidthPx: number
-  topBands: { recordsHeight: number }
+  topBands: Pick<VariantTopBands, 'reserved'>
   recordsScrollTop: number
   recordsRenderedLabels: { showLabels: boolean; showDescriptions: boolean }
   recordsFontSize: number
@@ -73,7 +74,7 @@ export function recordsHighlightViews(self: RecordsHighlightHost) {
         renderState: {
           scrollY: self.recordsScrollTop,
           canvasWidth: self.canvasWidthPx,
-          canvasHeight: self.topBands.recordsHeight,
+          canvasHeight: self.topBands.reserved.records,
           outlineColor: 0,
         },
         regionInstanceIndexes: this.recordsRegionInstanceIndexes,

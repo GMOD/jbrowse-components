@@ -53,8 +53,8 @@ describe('records.displayMode', () => {
     const { display } = recordsDisplayAt(KIT, 51, { displayMode: 'collapsed' })
     expect(new Set(items(display).map(i => i.topPx))).toEqual(new Set([0]))
     expect(display.recordsRenderedLabels.showLabels).toBe(false)
-    expect(display.topBands.recordsHeight).toBeLessThan(
-      stacked.topBands.recordsHeight,
+    expect(display.topBands.reserved.records).toBeLessThan(
+      stacked.topBands.reserved.records,
     )
   })
 
@@ -78,8 +78,8 @@ test('records.mark.height sizes each record body', () => {
   // compact over rows draws the body at 0.6 of it
   expect(bodies(base)[0]).toBe(6)
   expect(bodies(tall)).toEqual(bodies(base).map(h => h * 2))
-  expect(tall.topBands.recordsHeight).toBeGreaterThan(
-    base.topBands.recordsHeight,
+  expect(tall.topBands.reserved.records).toBeGreaterThan(
+    base.topBands.reserved.records,
   )
 })
 

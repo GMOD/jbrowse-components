@@ -1610,9 +1610,7 @@ export function stateModelFactory(
               : self.fitTargetHeight
           return self.recordsOnly || self.hostHeight !== undefined
             ? sized
-            : (self.rowsHidden ? 0 : sized) +
-                self.topBands.recordsHeight +
-                self.topBands.chipsHeight
+            : (self.rowsHidden ? 0 : sized) + self.topBands.addedHeight
         },
       }))
       .actions(recordsLayoutActions)
@@ -1640,7 +1638,7 @@ export function stateModelFactory(
               ? self.resizeRecordsBand(
                   Math.max(
                     0,
-                    self.recordsStackHeight - self.topBands.recordsHeight,
+                    self.recordsStackHeight - self.topBands.reserved.records,
                   ),
                 )
               : superExpandToContentHeight()

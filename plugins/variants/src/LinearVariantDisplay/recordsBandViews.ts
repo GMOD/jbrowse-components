@@ -132,7 +132,7 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
      * #getter
      * `records.height`, else the height the band opened at, else the
      * default it opens at up to its stack. Raw: what the band spends is
-     * `topBands.recordsHeight`.
+     * `topBands.reserved.records`.
      */
     get recordsHeight(): number {
       return (
@@ -672,7 +672,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
     showsEveryIsoform: true,
     reservesBelowLabelRows: false,
     get fitTargetHeight() {
-      return bands.get().recordsHeight
+      return bands.get().reserved.records
     },
     get labelFontSize() {
       return self.recordsFontSize
@@ -746,7 +746,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
       const { layout, scale } = this.recordsFitStage
       const facet = self.recordsFacet
       return !self.recordsOnly
-        ? unplaceBelow(layout, this.topBands.recordsHeight)
+        ? unplaceBelow(layout, this.topBands.reserved.records)
         : scale === 1
           ? layout
           : scaleLaidOutData(
@@ -851,7 +851,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      */
     get scrollViewportHeight() {
       return self.recordsOnly
-        ? this.topBands.recordsHeight
+        ? this.topBands.reserved.records
         : self.availableHeight
     },
     /**
@@ -926,7 +926,7 @@ export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
      * since it is empty for want of records, not set below the floor.
      */
     resizeRecordsBand(distance: number) {
-      const before = self.topBands.recordsHeight
+      const before = self.topBands.reserved.records
       const after = clampBandHeight(
         before,
         before + distance,
@@ -939,7 +939,7 @@ export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
           before === 0 ? boundBandHeight(after, RECORDS_BAND_BOUNDS) : after,
         )
       }
-      return self.topBands.recordsHeight - before
+      return self.topBands.reserved.records - before
     },
     /**
      * #action
@@ -952,7 +952,7 @@ export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
      * session; a written `records.height` wins over it.
      */
     settleRecordsBandHeight() {
-      self.openingRecordsHeight = self.topBands.recordsHeight
+      self.openingRecordsHeight = self.topBands.reserved.records
     },
   }
 }
@@ -1024,7 +1024,7 @@ export function installRecordsOpeningHeight(
         self.recordsPackMode === self.recordsDisplayMode &&
         self.cellData !== undefined &&
         self.canRender &&
-        self.topBands.recordsHeight > 0
+        self.topBands.reserved.records > 0
       ) {
         self.settleRecordsBandHeight()
       }

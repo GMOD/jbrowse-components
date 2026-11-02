@@ -3,7 +3,10 @@ import { recordsDrawnAlone } from './exportLinearView.ts'
 describe('a variant display reads as its records', () => {
   test('at their drawn height when no genotype row draws', () => {
     expect(
-      recordsDrawnAlone({ drawsRows: false, topBands: { recordsHeight: 57 } }),
+      recordsDrawnAlone({
+        drawsRows: false,
+        topBands: { reserved: { records: 57 } },
+      }),
     ).toEqual({ height: 57, fits: false })
   })
 
@@ -12,14 +15,17 @@ describe('a variant display reads as its records', () => {
       recordsDrawnAlone({
         drawsRows: false,
         rowsHidden: true,
-        topBands: { recordsHeight: 57 },
+        topBands: { reserved: { records: 57 } },
       }),
     ).toEqual({ height: 57, fits: true })
   })
 
   test('not while its rows draw', () => {
     expect(
-      recordsDrawnAlone({ drawsRows: true, topBands: { recordsHeight: 57 } }),
+      recordsDrawnAlone({
+        drawsRows: true,
+        topBands: { reserved: { records: 57 } },
+      }),
     ).toBeUndefined()
   })
 

@@ -28,7 +28,7 @@ test('Show → Records toggles the band', () => {
 
   item.onClick()
   expect(display.showRecords).toBe(true)
-  expect(display.topBands.recordsHeight).toBeGreaterThan(0)
+  expect(display.topBands.reserved.records).toBeGreaterThan(0)
 })
 
 test('the columns layout offers no records band', () => {
