@@ -766,8 +766,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * @deprecated a navigation no longer moves the anchor, so there is
-       * nothing to hold; runs `fn`
+       * Runs `fn`. A navigation no longer moves the anchor, so there is nothing
+       * to hold.
+       * @deprecated
        */
       holdFollowAnchor<T>(fn: () => T) {
         return fn()

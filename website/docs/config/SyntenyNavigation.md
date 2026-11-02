@@ -24,5 +24,5 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-follow">**follow**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | the other rows follow the anchor row through the alignment; a drag or zoom on a row makes it the anchor |
-| <span id="slot-anchor">**anchor**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | the genome row, counted from the top, the others follow |
+| <span id="slot-follow">**follow**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | the other rows follow the anchor row through the alignment; clicking, dragging, scrolling or typing in a row makes it the anchor |
+| <span id="slot-anchor">**anchor**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | the genome row, counted from the top, the others follow; navigating a row from code leaves it, so set this to have that row lead |
