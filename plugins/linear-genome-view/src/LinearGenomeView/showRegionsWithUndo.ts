@@ -56,9 +56,11 @@ export function showRegionsWithUndo({
   getNotificationSink(view).notify(message, 'info', {
     name: 'Undo',
     onClick: () => {
-      view.setDisplayedRegions(previous.displayedRegions)
-      view.setWindow(previous.windowWidthBp, previous.windowStartBp)
-      alsoUndo?.()
+      transaction(() => {
+        view.setDisplayedRegions(previous.displayedRegions)
+        view.setWindow(previous.windowWidthBp, previous.windowStartBp)
+        alsoUndo?.()
+      })
     },
   })
 }
