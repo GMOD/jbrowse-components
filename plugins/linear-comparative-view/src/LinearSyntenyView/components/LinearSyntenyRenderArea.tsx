@@ -102,6 +102,7 @@ const LinearSyntenyRenderArea = observer(function LinearSyntenyRenderArea({
           <RowTouchArea
             className={classes.wrapper}
             testId={`synteny-row-${i}`}
+            scrollZoom={model.scrollZoom}
             onTouch={() => {
               model.rowTouched(i)
             }}

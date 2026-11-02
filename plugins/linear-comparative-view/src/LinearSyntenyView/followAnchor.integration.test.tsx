@@ -1,9 +1,11 @@
 import { getSession } from '@jbrowse/core/util'
 import { showRegionsWithUndo } from '@jbrowse/plugin-linear-genome-view'
 import { createTestSession } from '@jbrowse/web/testUtils'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { when } from 'mobx'
 
 import { centerStackOnFeature } from '../SyntenyFeatureDetail/centerOnFeature.ts'
+import LinearSyntenyRenderArea from './components/LinearSyntenyRenderArea.tsx'
 
 import type { LinearSyntenyViewModel } from './model.ts'
 
@@ -96,6 +98,16 @@ test('touching a followed row makes it the anchor', async () => {
   view.rowTouched(2)
   expect(view.followAnchorIndex).toBe(2)
   view.rowTouched(1)
+  expect(view.followAnchorIndex).toBe(1)
+})
+
+// the stack as drawn: each row's wrapper reports its own index
+test('a press on a drawn row makes that row the anchor', async () => {
+  const view = await openStack()
+  render(<LinearSyntenyRenderArea model={view} />)
+  fireEvent.pointerDown(await screen.findByTestId('synteny-row-2'))
+  expect(view.followAnchorIndex).toBe(2)
+  fireEvent.pointerDown(screen.getByTestId('synteny-row-1'))
   expect(view.followAnchorIndex).toBe(1)
 })
 

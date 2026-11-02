@@ -755,12 +755,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * A press, wheel or key inside a row, or a pick from that row's menu:
-       * while following, the row the reader is driving leads. A script that
-       * navigates a row sets the anchor itself with `setFollowAnchorIndex`.
+       * A press or key inside a row, a wheel it zooms or pans on, or a pick
+       * from that row's menu: while following, the row the reader is driving
+       * leads. A script that navigates a row sets the anchor itself with
+       * `setFollowAnchorIndex`.
        */
       rowTouched(idx: number) {
-        if (self.followSynteny && idx !== self.followAnchorIndex) {
+        if (self.followSynteny) {
           self.setNavigation({ anchor: idx })
         }
       },

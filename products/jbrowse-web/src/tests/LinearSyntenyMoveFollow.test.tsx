@@ -137,8 +137,8 @@ test('a band move hands the follow anchor to the panel that stays', async () => 
 }, 60000)
 
 // ...and the anchor is not bookkeeping: it decides which row leads. The move
-// hands it to row 1, and touching row 0 afterwards takes it straight back — so row 1 follows the pan
-// rather than holding. This is the half a model-level test cannot reach.
+// hands it to row 1, and touching row 0 afterwards takes it straight back, so
+// row 1 follows the pan rather than holding.
 test('...and a gesture on the panel that moved leads again', async () => {
   const { view, row0, row1 } = await followingSwap()
   const display = view.levels[0]!.linearSyntenyDisplays[0]!

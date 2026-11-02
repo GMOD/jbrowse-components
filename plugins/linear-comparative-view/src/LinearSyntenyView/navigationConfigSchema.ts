@@ -21,7 +21,7 @@ export const syntenyNavigationConfigSchema = ConfigurationSchema(
       type: 'boolean',
       defaultValue: false,
       description:
-        'the other rows follow the anchor row through the alignment; clicking, dragging, scrolling or typing in a row makes it the anchor',
+        'the other rows follow the anchor row through the alignment; clicking, panning, zooming or typing in a row makes it the anchor',
     },
     /**
      * #slot

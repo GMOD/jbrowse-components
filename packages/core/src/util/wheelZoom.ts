@@ -85,6 +85,36 @@ export function accumulateScroll(prev: number, deltaX: number) {
   return (reversed ? 0 : prev) + deltaX
 }
 
+export interface WheelIntent {
+  deltaX: number
+  deltaY: number
+  ctrlKey: boolean
+  metaKey: boolean
+  shiftKey: boolean
+}
+
+// ties go vertical, the same way the zoom test resolves them
+export function wheelIsZoom(event: WheelIntent, scrollZoom: boolean) {
+  return (
+    event.ctrlKey ||
+    event.metaKey ||
+    (scrollZoom && Math.abs(event.deltaY) >= Math.abs(event.deltaX))
+  )
+}
+
+/**
+ * Whether the linear-view wheel controller would zoom or pan a view on this
+ * wheel, rather than leave it to the page or a nested scroller. Read off the
+ * raw deltas: normalizing scales both axes alike.
+ */
+export function wheelDrivesView(event: WheelIntent, scrollZoom: boolean) {
+  return (
+    !(event.shiftKey && scrollZoom) &&
+    (wheelIsZoom(event, scrollZoom) ||
+      Math.abs(event.deltaX) > Math.abs(event.deltaY))
+  )
+}
+
 // A pinch/scroll-zoom gesture fires a continuous stream of wheel events, so we
 // treat the view as "actively zooming" until this many ms pass with no zoom
 // event. While actively zooming, callers ignore horizontal deltas: trackpads
@@ -331,11 +361,7 @@ export function createWheelZoomController({
       const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode)
       const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode)
       const isCtrlZoom = event.ctrlKey || event.metaKey
-      const isZoom =
-        isCtrlZoom ||
-        (target.scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX))
-
-      if (isZoom) {
+      if (wheelIsZoom(event, target.scrollZoom)) {
         // warn once per latched run, not once per event — a non-cancelable
         // sequence fires ~100 events/sec and console.warn is not free
         if (event.cancelable) {
