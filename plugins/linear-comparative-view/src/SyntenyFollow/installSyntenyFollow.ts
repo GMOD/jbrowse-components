@@ -1,5 +1,5 @@
 import { getNotificationSink } from '@jbrowse/core/util'
-import { addDisposer, addMiddleware, isAlive } from '@jbrowse/mobx-state-tree'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, untracked } from 'mobx'
 
 import { navToResolvedSpan } from '../LinearSyntenyDisplay/moveMatchingPanel.ts'
@@ -36,7 +36,6 @@ import type { AnchorWindow, FollowWindow } from './followAnchorWindow.ts'
 import type { FollowAnchorHost, FollowReport } from './followHost.ts'
 import type { FollowLevelState } from './followLevelStates.ts'
 import type { FollowStep } from './planFollowStep.ts'
-import type { Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface FollowLevel {
@@ -57,52 +56,6 @@ export interface SyntenyFollowHost extends FollowAnchorHost {
   setFollowReport: (report: Partial<FollowReport>) => void
   views: readonly { displayedRegions: readonly unknown[]; bpPerPx: number }[]
 }
-
-// The root actions a person's own gesture on a row produces: the search box
-// navigates by `navToLocations`, the highlight list by `navToHighlight`.
-// `gestureTakesAnchor.integration.test.ts` holds this set and the next against
-// the view's action list.
-export const ROW_GESTURES = new Set([
-  'horizontalScroll',
-  'zoomTo',
-  'zoom',
-  'scrollTo',
-  'slide',
-  'moveTo',
-  'navTo',
-  'flyTo',
-  'flyToCenter',
-  'flyToFit',
-  'navToLocString',
-  'navToLocations',
-  'navToLocation',
-  'navToHighlight',
-  'navigateNewestHighlight',
-  'editDisplayedRegions',
-  'showAllRegions',
-  'showAllRegionsInAssembly',
-  'fitAllRegions',
-])
-
-// What a held `navToLocString` reaches for after its await, as fresh roots
-// under gesture names: on a row a held navigation is still landing on, these
-// are that navigation's own
-const HELD_NAVIGATION_TAILS = new Set(['navToLocations'])
-
-// The row's other navigations: the tails a gesture reaches for after an await,
-// as fresh roots, the primitives the follow writes through, the stack's zoom
-// ceiling, and `horizontallyFlip`, since a hand flip of a followed row stands.
-export const ROW_NAVIGATIONS_HELD = new Set([
-  'navToMultiple',
-  'showRegions',
-  'setWindow',
-  'setWindowFrame',
-  'scrollToBp',
-  'setNewView',
-  'setDisplayedRegions',
-  'clampZoomToCeiling',
-  'horizontallyFlip',
-])
 
 // One level's placement, with the observables the async half needs already read
 // off the tree. `step` carries the window, the display and `toMate`; the
@@ -132,23 +85,6 @@ interface SpreadWork {
   spans: ResolvedSpan[]
 }
 
-const regionKey = (r: Region) =>
-  `${r.assemblyName}:${r.refName}:${r.start}-${r.end}`
-
-// a ruler edit that only reverses or reorders the row's regions is its flip,
-// which stands the way `horizontallyFlip` does
-function rearrangesOnly(
-  row: LinearGenomeViewModel,
-  { regions }: { regions: readonly Region[] },
-) {
-  // eslint-disable-next-line no-restricted-syntax -- EFFECT INPUT: the row's regions before an edit, read where an autorun may be the caller
-  const before = untracked(() => row.displayedRegions.map(regionKey)).sort()
-  const after = regions.map(regionKey).sort()
-  return (
-    before.length === after.length && before.every((k, i) => k === after[i])
-  )
-}
-
 interface FollowPlan extends Omit<FollowReport, 'partial'> {
   // absent when nothing loaded covers the anchor's window
   placement?: FollowWork | SpreadWork
@@ -172,8 +108,7 @@ function navSignature(
 
 /**
  * Keep the non-anchor genome rows on the region that aligns to the anchor
- * row's window, and make a gesture on any followed row the anchor. See
- * agent-docs/reference/SYNTENY_FOLLOW.md.
+ * row's window. See agent-docs/reference/SYNTENY_FOLLOW.md.
  */
 export function installSyntenyFollow(self: SyntenyFollowHost) {
   const levelStates = createFollowLevelStates<FollowLevel>()
@@ -181,83 +116,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   // under "same bp per pixel" a spread row draws no finer than the anchor
   const spreadFloor = () =>
     self.ratio === 1 ? self.views[self.followAnchorIndex]?.bpPerPx : undefined
-
-  // The rows a held navigation is still landing on, with how many: its tail
-  // arrives after an await as fresh root actions under gesture names
-  // (`navToLocString` ends in `navToLocations`), and only this tells that tail
-  // from the reader searching the same row
-  const landing = new Map<unknown, number>()
-  let holding: Set<unknown> | undefined
-
-  function heldUntilSettled(rows: Set<unknown>, result: unknown) {
-    if (rows.size > 0 && result instanceof Promise) {
-      for (const row of rows) {
-        landing.set(row, (landing.get(row) ?? 0) + 1)
-      }
-      const settle = () => {
-        for (const row of rows) {
-          const count = landing.get(row)! - 1
-          if (count > 0) {
-            landing.set(row, count)
-          } else {
-            landing.delete(row)
-          }
-        }
-      }
-      void result.then(settle, settle)
-    }
-    return result
-  }
-
-  addDisposer(
-    self,
-    addMiddleware(self, (call, next) => {
-      if (call.type === 'action' && call.name === 'holdFollowAnchor') {
-        const outer = holding
-        const rows = new Set<unknown>()
-        holding = rows
-        try {
-          next(call, result => heldUntilSettled(rows, result))
-        } finally {
-          holding = outer
-        }
-        return
-      }
-      const gesture =
-        call.type === 'action' &&
-        call.id === call.rootId &&
-        ROW_GESTURES.has(call.name)
-      const isRow =
-        (holding || gesture) &&
-        // eslint-disable-next-line no-restricted-syntax -- EFFECT INPUT: which row an action is on, read where an autorun may be the caller
-        untracked(() => self.views.includes(call.context))
-      if (holding && isRow) {
-        holding.add(call.context)
-      }
-      const heldTail =
-        HELD_NAVIGATION_TAILS.has(call.name) && landing.has(call.context)
-      const flip =
-        call.name === 'editDisplayedRegions' &&
-        rearrangesOnly(call.context, call.args[0])
-      if (gesture && isRow && !heldTail && !flip) {
-        // untracked, since the follow's own root actions come through here from
-        // inside its autoruns; a row showing nothing yet is being initialized
-        // eslint-disable-next-line no-restricted-syntax -- effect input: a gesture's row, read where an autorun may be the caller
-        const row = untracked(() => {
-          const idx = self.followSynteny ? self.views.indexOf(call.context) : -1
-          return idx !== -1 &&
-            self.views[idx]!.displayedRegions.length > 0 &&
-            idx !== self.followAnchorIndex
-            ? idx
-            : -1
-        })
-        if (row !== -1) {
-          self.setFollowAnchorIndex(row)
-        }
-      }
-      next(call)
-    }),
-  )
 
   async function execute({
     level,
@@ -329,10 +187,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       const nav = navSignature(movingWindow, span)
       if (nav !== state.lastNav) {
         state.lastNav = nav
-        await self.holdFollowAnchor(() => navToResolvedSpan(movingView, span))
-        if (stale()) {
-          return
-        }
+        await navToResolvedSpan(movingView, span)
       }
     }
   }
@@ -342,10 +197,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
   function executeSpread({ level, movingView, spans }: SpreadWork) {
     const state = levelStates.get(level)
     state.pick = undefined
-    const placed = self.holdFollowAnchor(() =>
-      positionViewOnSpans(movingView, spans, spreadFloor()),
-    )
-    if (placed) {
+    if (positionViewOnSpans(movingView, spans, spreadFloor())) {
       state.lastNav = undefined
       return
     }
@@ -357,11 +209,9 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     const nav = navSignature('spread', widest)
     if (nav !== state.lastNav) {
       state.lastNav = nav
-      self
-        .holdFollowAnchor(() => navToResolvedSpan(movingView, widest))
-        .catch((e: unknown) => {
-          reportError(level, e)
-        })
+      navToResolvedSpan(movingView, widest).catch((e: unknown) => {
+        reportError(level, e)
+      })
     }
   }
 
@@ -708,9 +558,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
             levelStates.facing(level, toMate).spreadTargets = mapped
             if (spans.length) {
               placed.set(movingView, followPlacedWindows(spans))
-              self.holdFollowAnchor(() =>
-                positionViewOnSpans(movingView, spans, spreadFloor()),
-              )
+              positionViewOnSpans(movingView, spans, spreadFloor())
             }
             continue
           }
@@ -738,10 +586,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
               : undefined,
             incumbentTarget: pick.target,
           })
-          if (
-            span &&
-            self.holdFollowAnchor(() => positionViewOnSpan(movingView, span))
-          ) {
+          if (span && positionViewOnSpan(movingView, span)) {
             written.add(movingView)
           }
         }

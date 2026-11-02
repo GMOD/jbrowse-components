@@ -137,8 +137,8 @@ nothing aligns to the anchor's window at all — a haplotype-specific insertion,
 centromere, a panel off the end of the alignments — where the other panels hold
 their position.
 
-Any panel you pan or zoom becomes the anchor, and the others follow it. Turn
-following off to move one panel alone.
+Any panel you click, pan, zoom or type in becomes the anchor, and the others
+follow it. Turn following off to move one panel alone.
 
 <Video src="/media/synteny/hg002_follow_panels.mp4" caption="Following on the two haplotypes of T2T-HG002: the header's toggle, and a window typed into the anchor panel alone." />
 

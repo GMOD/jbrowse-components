@@ -162,24 +162,28 @@ describe('navigationMenuItems', () => {
 describe('rowMenuItems', () => {
   function build(followSynteny: boolean, followAnchorIndex = 0) {
     const calls: unknown[] = []
+    const touched: number[] = []
+    const ran: string[] = []
+    const own = (row: string): MenuItem[] => [
+      { label: 'Own', onClick: () => ran.push(`${row} own`) },
+      {
+        label: 'Nested',
+        subMenu: [{ label: 'Deep', onClick: () => ran.push(`${row} deep`) }],
+      },
+    ]
     const items = rowMenuItems({
       views: [
-        {
-          assemblyNames: ['hg002mat'],
-          menuItems: () => [{ label: 'Own', onClick: () => {} }],
-        },
-        {
-          assemblyNames: ['hg002pat'],
-          menuItems: () => [{ label: 'Own', onClick: () => {} }],
-        },
+        { assemblyNames: ['hg002mat'], menuItems: () => own('mat') },
+        { assemblyNames: ['hg002pat'], menuItems: () => own('pat') },
       ],
       compactAllViews: () => {},
       expandAllViews: () => {},
       followSynteny,
       followAnchorIndex,
       setFollowAnchorIndex: idx => calls.push(idx),
+      rowTouched: idx => touched.push(idx),
     })
-    return { items, calls }
+    return { items, calls, touched, ran }
   }
 
   function subMenu(items: MenuItem[], idx: number) {
@@ -196,7 +200,26 @@ describe('rowMenuItems', () => {
     expect(items.every(i => !('icon' in i && i.icon))).toBe(true)
     expect(subMenu(items, 0).map(i => ('label' in i ? i.label : ''))).toEqual([
       'Own',
+      'Nested',
     ])
+  })
+
+  // this copy of a row's menu sits outside the row, so no press inside it
+  // reaches the row's own handler
+  test("a pick from a row's own items, at any depth, touches that row first", () => {
+    const { items, touched, ran } = build(true, 0)
+    const [take, own, nested] = subMenu(items, 1)
+    expect(take).toMatchObject({ type: 'radio' })
+    if (own && 'onClick' in own) {
+      own.onClick()
+    }
+    const deep =
+      nested && 'subMenu' in nested ? resolveSubMenu(nested)[0] : undefined
+    if (deep && 'onClick' in deep) {
+      deep.onClick()
+    }
+    expect(touched).toEqual([1, 1])
+    expect(ran).toEqual(['pat own', 'pat deep'])
   })
 
   test('following, the anchor row wears the mark and every row offers the take', () => {

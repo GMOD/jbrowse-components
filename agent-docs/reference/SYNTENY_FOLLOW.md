@@ -302,8 +302,8 @@ it.
   in the middle. A row this pass did **not** write stays tracked, since then its
   window is a real input.
 
-The exact pass does not read the moving row's blocks either. A gesture on that
-row takes the anchor, so nothing the reader does to it is the follow's to put
+The exact pass does not read the moving row's blocks either. Touching that row
+takes the anchor, so nothing the reader does to it is the follow's to put
 back, and tracking them cost settles that changed nothing: 236 against 185 over
 the jbrowse-web follow suites, for the same 80 resolves. It still re-enters on
 its own navigation, through the level's alignments: a placement that moves the
@@ -313,63 +313,37 @@ things make that converge:
 and the per-level answer promise is shared by key, so all three ride one
 `SyntenyResolveMatchingRegion`. The integration suite asserts that count.
 
-## A gesture on a followed row takes the anchor
+## Touching a followed row takes the anchor
 
 The rows follow whichever row the reader is driving. The anchor's next move
-places every other row, and cannot tell a drag of one from a navigation some
-feature made, so the gesture itself decides.
+places every other row, so the anchor has to be the row the reader last
+touched, or the follow undoes their move.
 
-**The trigger is the gesture, not the settle.** MST middleware on the stack,
-installed with the follow: a **root** action from `ROW_GESTURES` on a row that
-is not the anchor takes the anchor onto it, before the action runs, so the first
-`horizontalScroll` of a drag switches and the rest arrive from the anchor. The
-set is what a person's own gesture on a row produces — drag and wheel, rubber
-band and ruler label, the search box, the row's own menu.
+**The trigger is the input, not the action.** `RowTouchArea` wraps each row and
+calls the view's `rowTouched` on a pointer press, a wheel or a key, in the
+capture phase so a child that stops propagation still counts. React propagates
+along its own tree, so a menu or dialog the row opens in a portal counts as the
+row. `rowMenuItems`' copy of each row's menu sits in the view header instead,
+so `touchingRow` wraps its items to touch the row before running.
 
-**The follow tells a gesture from its own work by root action alone.** Its frame
-pass places rows through `zoomTo`/`scrollTo` sixty times a second and its exact
-pass through `navTo`/`navToLocString`, indistinguishable by name from a wheel or
-a search box — so every placement runs inside the host's `holdFollowAnchor`
-action, which makes them NESTED actions the middleware never sees. The explicit
-moves take the same route through `FollowAnchorTake.hold`: a band move anchors
-the row it does not navigate, and the navigation of the row it does would
-otherwise take the anchor straight back.
+**Navigation never moves the anchor.** The follow's own placements, a launch
+spec placing its rows, an appended row's init and a script calling
+`navToLocString` all leave it where it was; a script that wants a row to lead
+calls `setFollowAnchorIndex`. The view-wide moves (`squareView`,
+`showAllRegionsAcrossRows`, the rubber band's "Zoom to region(s)", a band drag)
+touch no row. `centerStackOnFeature` sets the anchor itself, onto the first row
+that moved: the feature's own, unless its `navTo` threw.
 
-**A held navigation's tail is told apart by the row it lands on.**
-`navToLocString` reaches for `navToLocations` and then `showRegions` after an
-await, as fresh roots, and the header search box navigates by `navToLocations`
-directly, so the name alone cannot say whose it is. The middleware records the
-rows a `holdFollowAnchor` touches and, where the hold hands back a promise,
-treats `navToLocations` on one of those rows as the held navigation's own until
-the promise settles. The exact pass's placements are async, so the other
-gestures are not exempted: a drag in that moment is the reader's. A search on
-any other row takes the anchor. The map stays for the launch's `placeRow`, which
-navigates by a locstring the reader wrote, so a synchronous `navToResolvedSpan`
-fallback alone would not retire it.
+**A touch that moves nothing moves nothing.** A click on a feature switches the
+anchor too, which is harmless only because re-planning from the new anchor puts
+every row where it already is; `LinearSyntenyFollow.test.tsx` holds a window cut
+across several alignments to that. Measured on volvox at all three rungs, a
+deep zoom and a block edge: 0bp, against 23bp to 4.9kb for an 80px pan.
 
-`showRegions` stays held, since only a tail reaches it as a root; so does
-`horizontallyFlip`, since a hand flip of a followed row is meant to stand. The
-ruler label's region edits are one action, `editDisplayedRegions`, because their
-re-centre, the only gesture-named step, is skipped when the edit drops the
-region the row was centred on; an edit that only reverses or reorders the row's
-regions is its Reverse region, and stands as the flip does. The view-wide zooms
-(`squareView`, `showAllRegionsAcrossRows`, the stack's rubber-band "Zoom to
-region(s)") nest the rows' zooms under the stack's own actions, and
-`centerStackOnFeature` holds its two navigations the same way and hands the
-anchor to the first row that moved, the feature's own unless its `navTo` threw.
-
-**The set is a list of names, so a contract test holds it against the view.**
-Every navigation-shaped action the row actually has must be in `ROW_GESTURES` or
-`ROW_NAVIGATIONS_HELD`; one in neither is a gesture the follow would silently
-undo, or a tail it would silently take on.
-
-**Nothing in the middleware may register as a dependency.** It also sees the
-follow's own root actions, some dispatched from inside its autoruns, so its
-reads are `untracked`. A row showing nothing yet takes nothing: `appendRow`
-builds an LGV whose own init navigates it as a root action, and that places the
-row rather than the anchor. `gestureTakesAnchor.integration.test.ts` holds all
-of this on a real stack; the unit harness's rows are not the host's children and
-see no middleware.
+Classifying a row's actions by name instead (MST middleware, retired
+2026-11) needed two hand-kept name lists, a hold wrapper on every placement and
+a record of navigations still landing, and still read a script's navigation as
+the reader's. `followAnchor.integration.test.ts` holds the rule on a real stack.
 
 ## That convergence is load-bearing, and nothing else damps it
 
@@ -516,8 +490,8 @@ snackbar model's own message dedup, so nothing downstream absorbs the repeats.
 
 ## Navigating a followed row from elsewhere in the view takes the anchor
 
-The anchor's next move places every row the follow moves, and the gesture
-middleware above only knows a gesture from its action name — so anything that
+The anchor's next move places every row the follow moves, and only a touch
+inside a row moves the anchor — so anything that
 navigates a row the follow MOVES has to take the anchor as well, explicitly and
 onto the right row, or it changes nothing and says it did.
 `showOffscreenMateContig` does, and its undo puts the anchor back with the

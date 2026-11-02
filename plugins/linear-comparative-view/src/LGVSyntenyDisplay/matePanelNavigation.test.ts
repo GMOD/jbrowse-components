@@ -287,9 +287,6 @@ const TestStack = types
     setFollowAnchorIndex(idx: number) {
       self.followAnchorIndex = idx
     },
-    holdFollowAnchor<T>(fn: () => T) {
-      return fn()
-    },
   }))
 
 function followingStack(

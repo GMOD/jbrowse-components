@@ -6,11 +6,8 @@ export interface FollowHost {
   setFollowAnchorIndex: (idx: number) => void
 }
 
-// `holdFollowAnchor` runs a navigation as a nested action, which the gesture
-// middleware lets by
 export interface FollowAnchorHost extends IStateTreeNode, FollowHost {
   views: readonly unknown[]
-  holdFollowAnchor: <T>(fn: () => T) => T
 }
 
 // a level that refused its multi-contig answer: the anchor region the rows

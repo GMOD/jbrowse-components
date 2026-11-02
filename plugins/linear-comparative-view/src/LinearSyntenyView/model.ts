@@ -58,7 +58,7 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import ViewStreamIcon from '@mui/icons-material/ViewStream'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun } from 'mobx'
+import { autorun, transaction } from 'mobx'
 
 import { linearSyntenyViewHelperModelFactory } from '../LinearSyntenyViewHelper/stateModelFactory.ts'
 import { followDirection } from '../SyntenyFollow/followDirection.ts'
@@ -755,10 +755,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Run a navigation of a row as a placement by the follow rather than as
-       * a gesture. While following, a gesture on any row makes that row the
-       * anchor, and the follow distinguishes a gesture from its placements by
-       * root action: whatever `fn` navigates is a nested action of this one.
+       * A press, wheel or key inside a row, or a pick from that row's menu:
+       * while following, the row the reader is driving leads. A script that
+       * navigates a row sets the anchor itself with `setFollowAnchorIndex`.
+       */
+      rowTouched(idx: number) {
+        if (self.followSynteny && idx !== self.followAnchorIndex) {
+          self.setNavigation({ anchor: idx })
+        }
+      },
+      /**
+       * #action
+       * @deprecated a navigation no longer moves the anchor, so there is
+       * nothing to hold; runs `fn`
        */
       holdFollowAnchor<T>(fn: () => T) {
         return fn()
@@ -1398,8 +1407,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Zoom to region(s)',
               onClick: () => {
-                // one stack zoom, which leaves the follow anchor where it was
-                self.holdFollowAnchor(() => {
+                // one stack zoom, so the follow sees every row's move at once
+                transaction(() => {
                   for (const { view, leftOffset, rightOffset } of selection) {
                     if (leftOffset && rightOffset) {
                       view.moveTo(leftOffset, rightOffset)

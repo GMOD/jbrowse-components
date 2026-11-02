@@ -178,9 +178,6 @@ const Host = types
     setFollowAnchorIndex(idx: number) {
       self.followAnchorIndex = idx
     },
-    holdFollowAnchor<T>(fn: () => T) {
-      return fn()
-    },
   }))
 
 // `getNotificationSink` walks to the first parent carrying `rpcManager` and

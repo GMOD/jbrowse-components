@@ -10,6 +10,7 @@ import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
 
 import { SyntenyLevel } from '../../LinearSyntenyViewHelper/SyntenyLevel.tsx'
+import { RowTouchArea } from './RowTouchArea.tsx'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -98,10 +99,16 @@ const LinearSyntenyRenderArea = observer(function LinearSyntenyRenderArea({
               levelIdx={i - 1}
             />
           ) : null}
-          <div className={classes.wrapper}>
+          <RowTouchArea
+            className={classes.wrapper}
+            testId={`synteny-row-${i}`}
+            onTouch={() => {
+              model.rowTouched(i)
+            }}
+          >
             <View view={view} />
             <AnchorBadge model={model} row={i} />
-          </div>
+          </RowTouchArea>
         </Fragment>
       ))}
     </div>

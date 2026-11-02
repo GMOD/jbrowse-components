@@ -1,5 +1,6 @@
 import { assembleLocString } from '@jbrowse/core/util'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
+import { transaction } from 'mobx'
 
 import type { FollowAnchorHost } from '../SyntenyFollow/followHost.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
@@ -104,7 +105,7 @@ export function syntenyCenterTargets({
 /**
  * "Center view on this feature", from the feature panel and a ribbon's context
  * menu alike: both sides onto their rows, each attempted whichever fails, and
- * a message for every side that could not move. Held as one stack move, and
+ * a message for every side that could not move. One stack move, and
  * the follow anchor goes to the first row that moved — the feature's own,
  * unless its `navTo` threw — so the follow brings the rest of the stack to it
  * rather than pulling the moved rows back to an unmoved one.
@@ -127,7 +128,7 @@ export function centerStackOnFeature({
     assemblyManager,
   })
   const problems = [...missing]
-  view.holdFollowAnchor(() => {
+  transaction(() => {
     let moved: LinearGenomeViewModel | undefined
     for (const { view: row, loc } of targets) {
       try {

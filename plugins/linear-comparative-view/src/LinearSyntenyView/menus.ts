@@ -1,4 +1,8 @@
-import { radioItems, withSubHeader } from '@jbrowse/core/ui/menuItems'
+import {
+  radioItems,
+  resolveSubMenu,
+  withSubHeader,
+} from '@jbrowse/core/ui/menuItems'
 import { rowLabels } from '@jbrowse/plugin-linear-genome-view'
 import { trackSubMenuItem } from '@jbrowse/synteny-core'
 import AnchorIcon from '@mui/icons-material/Anchor'
@@ -137,6 +141,25 @@ interface RowMenusModel extends FollowHost {
   views: { assemblyNames: string[]; menuItems: () => MenuItem[] }[]
   compactAllViews: () => void
   expandAllViews: () => void
+  rowTouched: (idx: number) => void
+}
+
+// A pick from a row's menu is the reader driving that row, though this copy of
+// it sits outside the row
+function touchingRow(items: MenuItem[], touch: () => void): MenuItem[] {
+  return items.map(item =>
+    'onClick' in item
+      ? {
+          ...item,
+          onClick: (...args: unknown[]) => {
+            touch()
+            item.onClick(...args)
+          },
+        }
+      : 'subMenu' in item
+        ? { ...item, subMenu: () => touchingRow(resolveSubMenu(item), touch) }
+        : item,
+  )
 }
 
 // with two rows the per-row item does the same in as many clicks
@@ -182,7 +205,9 @@ export function rowMenuItems(model: RowMenusModel): MenuItem[] {
             },
           ] satisfies MenuItem[])
         : []),
-      ...model.views[idx]!.menuItems(),
+      ...touchingRow(model.views[idx]!.menuItems(), () => {
+        model.rowTouched(idx)
+      }),
     ],
   }))
 }

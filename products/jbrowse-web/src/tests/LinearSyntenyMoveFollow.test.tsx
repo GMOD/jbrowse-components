@@ -41,6 +41,7 @@ interface SyntenyView {
   }[]
   setWidth: (n: number) => void
   setFollowSynteny: (flag: boolean) => void
+  rowTouched: (idx: number) => void
 }
 
 // volvox_contig_swap.paf, volvox against itself: ctgA's first 6079 bases align
@@ -136,8 +137,7 @@ test('a band move hands the follow anchor to the panel that stays', async () => 
 }, 60000)
 
 // ...and the anchor is not bookkeeping: it decides which row leads. The move
-// hands it to row 1, and a gesture on row 0 afterwards is a gesture on a
-// followed row, which takes it straight back — so row 1 follows the pan
+// hands it to row 1, and touching row 0 afterwards takes it straight back — so row 1 follows the pan
 // rather than holding. This is the half a model-level test cannot reach.
 test('...and a gesture on the panel that moved leads again', async () => {
   const { view, row0, row1 } = await followingSwap()
@@ -162,6 +162,7 @@ test('...and a gesture on the panel that moved leads again', async () => {
   await followSettled(view.views)
 
   const held = windowOf(row1)
+  view.rowTouched(0)
   await row0.navToLocString('ctgB:1000-2000', ASM)
   expect(view.followAnchorIndex).toBe(0)
   await followSettled(view.views)

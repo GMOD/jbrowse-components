@@ -21,7 +21,7 @@ export const syntenyNavigationConfigSchema = ConfigurationSchema(
       type: 'boolean',
       defaultValue: false,
       description:
-        'the other rows follow the anchor row through the alignment; a drag or zoom on a row makes it the anchor',
+        'the other rows follow the anchor row through the alignment; clicking, dragging, scrolling or typing in a row makes it the anchor',
     },
     /**
      * #slot
@@ -29,7 +29,8 @@ export const syntenyNavigationConfigSchema = ConfigurationSchema(
     anchor: {
       type: 'number',
       defaultValue: 0,
-      description: 'the genome row, counted from the top, the others follow',
+      description:
+        'the genome row, counted from the top, the others follow; navigating a row from code leaves it, so set this to have that row lead',
     },
   },
   { closed: true },

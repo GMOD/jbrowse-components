@@ -32,6 +32,7 @@ interface SyntenyView {
   setWidth: (n: number) => void
   setFollowSynteny: (flag: boolean) => void
   setFollowAnchorIndex: (idx: number) => void
+  rowTouched: (idx: number) => void
   showAllRegions: () => void
 }
 
@@ -294,7 +295,8 @@ test('a row narrowed onto an unaligned stretch is still moved', async () => {
 })
 
 // The mode's promise, at the zoom the mode is least obviously doing anything:
-// a followed row zoomed by hand is the row the reader is driving, so it takes
+// a followed row zoomed by hand is the row the reader is driving (the press
+// that starts the wheel or drag touches it), so it takes
 // the anchor and keeps its zoom, rather than the zoom being undone under the
 // reader with following still reported as on. This file's alignment covers
 // the first 6kb of ctgA alone, so the zoom itself lands over nothing and the
@@ -309,6 +311,7 @@ test('a followed row zoomed away from an overview by hand leads', async () => {
   }, timeout)
 
   // its own regions, kept — this is a zoom, not a navigation
+  view.rowTouched(1)
   target!.zoomTo(target!.bpPerPx / 8)
   expect(view.followAnchorIndex).toBe(1)
   expect(shownBy(target!).bp).toBeLessThan(WHOLE_GENOME_BP / 4)
@@ -457,11 +460,27 @@ test('the settle does not move a row the frame pass already placed', async () =>
   expect(Math.abs(windowOf(target!).start - beforeSettle)).toBeLessThan(2)
 })
 
+// Any press in a row takes the anchor, a click that moves nothing included, so
+// the switch itself must not move a row. This window cuts into several
+// alignments, where the two directions' approximate answers could disagree.
+test('touching a row that moves nothing moves no row', async () => {
+  const view = await openSyntenyView()
+  const [query, target] = view.views
+  view.setFollowSynteny(true)
+  await query!.navToLocString('ctgA:20000..45000', QUERY_ASM)
+  await followSettled(view.views)
+  const before = [windowOf(query!), windowOf(target!)]
+
+  view.rowTouched(1)
+  await followSettled(view.views)
+  expect(view.followAnchorIndex).toBe(1)
+  expect([windowOf(query!), windowOf(target!)]).toEqual(before)
+})
+
 test('a followed row navigated by hand leads, and the old anchor follows it', async () => {
-  // A gesture on a followed row takes the anchor: the row the reader is
-  // driving is the one the others should follow, whichever row was driving
-  // before. The search box is such a gesture, and the take lands before the
-  // navigation does.
+  // Touching a followed row takes the anchor: the row the reader is driving is
+  // the one the others should follow, whichever row was driving before. Typing
+  // in its search box is such a touch, and it lands before the navigation does.
   const view = await openSyntenyView()
   const [query, target] = view.views
   view.setFollowSynteny(true)
@@ -471,9 +490,9 @@ test('a followed row navigated by hand leads, and the old anchor follows it', as
     expect(windowOf(target!).start).toBeGreaterThan(29500)
   }, timeout)
 
-  const landing = target!.navToLocString('ctgA:10000..11000', TARGET_ASM)
+  view.rowTouched(1)
   expect(view.followAnchorIndex).toBe(1)
-  await landing
+  await target!.navToLocString('ctgA:10000..11000', TARGET_ASM)
 
   await waitFor(() => {
     const win = windowOf(query!)

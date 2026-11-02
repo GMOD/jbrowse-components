@@ -9,14 +9,12 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export interface FollowAnchorTake {
   taken: boolean
   release: () => void
-  hold: <T>(fn: () => T) => T
 }
 
 function noFollowAnchor(): FollowAnchorTake {
   return {
     taken: false,
     release() {},
-    hold: fn => fn(),
   }
 }
 
@@ -35,7 +33,6 @@ export function takeFollowAnchor(
   }
   return {
     taken,
-    hold: fn => host.holdFollowAnchor(fn),
     release() {
       // by node, since a removal renumbers the rows
       if (taken && isAlive(host)) {
@@ -84,8 +81,7 @@ function hasFollow(
   return (
     typeof stack.followSynteny === 'boolean' &&
     typeof stack.followAnchorIndex === 'number' &&
-    typeof stack.setFollowAnchorIndex === 'function' &&
-    typeof stack.holdFollowAnchor === 'function'
+    typeof stack.setFollowAnchorIndex === 'function'
   )
 }
 

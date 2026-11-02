@@ -156,10 +156,6 @@ export interface WheelZoomTarget {
   // Nms". event.offsetX would be simpler but is unreliable, since wheel events
   // bubble up from child elements.
   originElement: () => HTMLElement | undefined
-  // Runs the frame's row navigations as ONE action of the caller's. Without
-  // it each row's zoomTo/horizontalScroll is its own root action, and a stack
-  // whose follow re-anchors on any gesture reads N gestures on N rows.
-  hold?: <T>(fn: () => T) => T
 }
 
 export interface WheelZoomControllerOptions {
@@ -279,31 +275,24 @@ export function createWheelZoomController({
         s.zoomBacklog = 0
       }
       const step = easeZoomBacklog(s.zoomBacklog, elapsed)
-      const apply = () => {
-        transaction(() => {
-          if (step !== 0 && originLeft !== undefined) {
-            const offset = s.lastClientX - originLeft
-            let moved = false
-            for (const view of target.views) {
-              const before = view.bpPerPx
-              view.zoomTo(before * Math.exp(step), offset)
-              moved ||= view.bpPerPx !== before
-            }
-            // pinned at a zoom limit, the rest can never land
-            s.zoomBacklog = moved ? s.zoomBacklog - step : 0
+      transaction(() => {
+        if (step !== 0 && originLeft !== undefined) {
+          const offset = s.lastClientX - originLeft
+          let moved = false
+          for (const view of target.views) {
+            const before = view.bpPerPx
+            view.zoomTo(before * Math.exp(step), offset)
+            moved ||= view.bpPerPx !== before
           }
-          if (s.scrollDelta !== 0) {
-            for (const view of target.views) {
-              view.horizontalScroll(s.scrollDelta)
-            }
+          // pinned at a zoom limit, the rest can never land
+          s.zoomBacklog = moved ? s.zoomBacklog - step : 0
+        }
+        if (s.scrollDelta !== 0) {
+          for (const view of target.views) {
+            view.horizontalScroll(s.scrollDelta)
           }
-        })
-      }
-      if (target.hold) {
-        target.hold(apply)
-      } else {
-        apply()
-      }
+        }
+      })
     } else {
       s.zoomBacklog = 0
     }

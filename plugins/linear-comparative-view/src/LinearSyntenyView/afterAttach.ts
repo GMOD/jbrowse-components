@@ -163,9 +163,7 @@ function placeRow(
 }
 
 // Per-row location + track list. Rows are independent, so they navigate
-// concurrently. Each placement runs inside `holdFollowAnchor`: a spec that
-// opens following would otherwise read every row's launch navigation as a
-// gesture and leave the anchor on whichever row navigated last.
+// concurrently.
 async function applyInitViewLocsAndTracks(
   self: LinearSyntenyViewModel,
   init: SyntenyLaunch,
@@ -174,7 +172,7 @@ async function applyInitViewLocsAndTracks(
     init.views.map(async (viewInit, idx) => {
       const view = self.views[idx]
       if (view) {
-        await self.holdFollowAnchor(() => placeRow(self, view, viewInit))
+        await placeRow(self, view, viewInit)
         await showInitTracks(view, viewInit)
         // AFTER navigation, and applied here rather than by the row's own LGV
         // init: a row is built from a snapshot and navigated by this file, so
