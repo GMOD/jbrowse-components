@@ -15,7 +15,7 @@ import { ROWS_KEYED_MEMBERS } from '@jbrowse/display-kit/rowsConfigSchema'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
-import { arrangeRows, bandRows } from './arrangeRows.ts'
+import { arrangeRows, bandRows, rowAliasOver } from './arrangeRows.ts'
 import {
   treeOfLeaves,
   buildTree,
@@ -65,6 +65,7 @@ import type {
   RowAlias,
   RowBand,
   RowBanding,
+  RowParent,
   UnlistedRowsSort,
 } from './arrangeRows.ts'
 import type { ClusterProvenance } from './clusterProvenance.ts'
@@ -479,15 +480,38 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return undefined
       },
       /**
-       * #getter
-       * Overridable hook: the name a row also answers to, for a display whose
-       * rows stand for something named by another name (a variant display's
-       * haplotype rows, each answering to its sample). An order, a label, a
-       * color and a focus written against the alias reach every row answering
-       * to it. `undefined` by default.
+       * #method
+       * Overridable hook: the row `row` refines, read off the row itself, for
+       * a display whose rows stand for something named by another name (a
+       * variant display's haplotype row refines its sample, a MAF copy row
+       * its species), and what its label adds to that row's. An order, a
+       * label, a color and a focus written against the parent reach every row
+       * refining it. None by default.
        */
-      get rowAlias(): RowAlias | undefined {
+      rowParent(_row: S): RowParent | undefined {
         return undefined
+      },
+      /**
+       * #getter
+       * Overridable hook: the rows a finer field would draw, each refining a
+       * drawn row (`rowParent`), so an order or a focus naming one reaches
+       * the row it refines: a sample-mode variant display's haplotype rows.
+       * None by default.
+       */
+      get finerRows(): S[] {
+        return []
+      },
+      /**
+       * #getter
+       * Overridable hook: what the sidebar says where the tree's leaves are
+       * `finerRows`, which it hides.
+       */
+      get finerTreeHint(): { text: string; title: string } {
+        return {
+          text: 'Tree hidden — clustered on finer rows than these',
+          title:
+            'The tree names rows each of these stands for. Re-run clustering to cluster these rows. Click to dismiss.',
+        }
       },
       /**
        * #getter
@@ -541,6 +565,42 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       get expandedRows(): S[] {
         return self.expandRows(self.discoveredRows)
       },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The name each row also answers to, read off `rowParent`: a refining
+       * row its parent's, and a `finerRows` row the drawn row it refines.
+       * Undefined while no row refines another.
+       */
+      get rowAlias(): RowAlias | undefined {
+        return rowAliasOver(self.expandedRows, self.finerRows, row =>
+          self.rowParent(row),
+        )
+      },
+      /**
+       * #getter
+       * The rows refining each parent no row draws, in their order: what a
+       * tree leaf naming that parent forks into, as a sample leaf of a tree
+       * clustered per sample forks over its haplotype rows.
+       */
+      get rowForks(): ReadonlyMap<string, readonly string[]> {
+        const rows = self.expandedRows
+        const drawn = new Set(rows.map(row => row.name))
+        const forks = new Map<string, string[]>()
+        for (const row of rows) {
+          const parent = self.rowParent(row)?.name
+          if (parent !== undefined && !drawn.has(parent)) {
+            const kids = forks.get(parent)
+            if (kids) {
+              kids.push(row.name)
+            } else {
+              forks.set(parent, [row.name])
+            }
+          }
+        }
+        return forks
+      },
       /**
        * #getter
        * What narrows the rows shown: `rowFilter`, then `rowFocus`, through
@@ -551,7 +611,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         return {
           kept: self.rowFocus ?? [],
           filter: self.rowFilter,
-          rowAlias: self.rowAlias,
+          rowAlias: this.rowAlias,
         }
       },
       /**
@@ -981,7 +1041,12 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       get parsedTree() {
         const tree = storedTree(self)
         if (tree) {
-          return buildTree(tree, self.rowTreeProvenance ? [] : self.rowSort)
+          const forks = self.rowForks
+          return buildTree(
+            tree,
+            self.rowTreeProvenance ? [] : self.rowSort,
+            forks.size > 0 ? leaf => forks.get(leaf) : undefined,
+          )
         }
         return self.guideTreeHonoursDomain ? self.guideTree : undefined
       },
@@ -1304,6 +1369,26 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
+       * Whether the tree's leaves include rows a finer field draws
+       * (`finerRows`), each standing in for a drawn row, as a tree clustered
+       * per haplotype is in sample mode: it describes no drawn rows, and the
+       * hint says why (`finerTreeHint`).
+       */
+      get treeOnFinerRows(): boolean {
+        const tree = self.parsedTree
+        const alias = self.rowAlias
+        const drawn = new Set(self.expandedRows.map(row => row.name))
+        return (
+          !!tree &&
+          !!alias &&
+          getLeafNames(tree).some(leaf => {
+            const onto = drawn.has(leaf) ? undefined : alias(leaf)
+            return onto !== undefined && onto !== leaf && drawn.has(onto)
+          })
+        )
+      },
+      /**
+       * #getter
        * Whether the tree has merge heights, so a dendrogram layout differs
        * from the cladogram; gates the "Tree branch lengths" toggle.
        */
@@ -1461,7 +1546,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
               shown: self.editableSources,
               adapter: self.expandedRows,
               labels: self.rowLabels,
-              rowAlias: self.rowAlias,
+              rowParent: row => self.rowParent(row),
             }),
           )
           if (!movesNoRow(rows, self.editableSources)) {

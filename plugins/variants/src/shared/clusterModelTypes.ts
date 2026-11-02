@@ -1,4 +1,4 @@
-import type { VariantUnit } from './constants.ts'
+import type { VariantRowsField } from './constants.ts'
 import type { ProcessedSource } from './types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
@@ -19,7 +19,7 @@ export interface ReducedModel
   siteFilter: FieldPredicate[]
   filters?: SerializableFilterChain
   adapterConfig: Record<string, unknown>
-  unit: VariantUnit
+  rowsField: VariantRowsField
   samplePloidy?: Readonly<Record<string, number>>
   // Whether the fetched inputs clustering needs have arrived. Phased mode
   // clusters haplotypes, which needs `samplePloidy` — and that rides with
@@ -27,7 +27,7 @@ export interface ReducedModel
   // On this interface rather than only on the autorun's own type because BOTH
   // entry points have to gate on it: run before it, and `buildGenotypeMatrix`
   // silently builds the sample-level matrix instead, so the tree's leaves
-  // ("HG001") never match the haplotype rows ("HG001 HP0") and
+  // ("HG001") never match the haplotype rows ("HG001 HP1") and
   // `treeDescribesRows` refuses to draw the dendrogram the run just produced.
   clusteringReady: boolean
   // Whether there are at least two rows to put in an order, counted on the list

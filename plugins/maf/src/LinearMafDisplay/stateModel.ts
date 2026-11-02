@@ -155,7 +155,11 @@ import type {
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { RowAlias, SvgSidebarProps } from '@jbrowse/tree-sidebar'
+import type {
+  RowAlias,
+  RowParent,
+  SvgSidebarProps,
+} from '@jbrowse/tree-sidebar'
 import type { ValueScale } from '@jbrowse/wiggle-core'
 
 /**
@@ -453,10 +457,28 @@ export default function stateModelFactory(
           return copyParent(name) !== undefined
         },
         /**
+         * #method
+         * `TreeSidebarMixin`'s hook: a copy row refines its sample, so a
+         * label written against the sample reaches its copies as
+         * `Mouse copy 2`, as the copy's own label reads.
+         */
+        rowParent(row: MafSource): RowParent | undefined {
+          const parent = copyParent(row.name)
+          return parent === undefined
+            ? undefined
+            : {
+                name: parent,
+                labelSuffix: ` copy ${row.name.slice(parent.length + 1)}`,
+              }
+        },
+        /**
          * #getter
-         * `TreeSidebarMixin`'s hook: a copy row answers to its sample, so an
-         * order, label, color or focus written against the sample reaches its
-         * copies. Undefined while no row is a copy.
+         * `TreeSidebarMixin`'s, read off the copy row's name rather than the
+         * rows: a copy row exists at some loci only, so a name a `rows.kept`
+         * or `rows.sort` entry gives one answers to its sample where no block
+         * here aligns that copy. An order, label, color or focus written
+         * against the sample reaches its copies. Undefined while no row is a
+         * copy.
          */
         get rowAlias(): RowAlias | undefined {
           const names = self.sourcesVolatile.map(s => s.name)

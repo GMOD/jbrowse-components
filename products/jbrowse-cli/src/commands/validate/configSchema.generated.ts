@@ -12231,7 +12231,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "default": "sample",
-          "const": "sample",
+          "enum": [
+            "sample",
+            "haplotype"
+          ],
           "type": "string"
         },
         {
@@ -12306,13 +12309,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               }
             },
             "field": {
-              "description": "sample, the one field a row can be.",
+              "description": "what one row is: 'sample', a row per sample colored by allele dosage, or 'haplotype', a row per phased haplotype, named '<sample> HP1', '<sample> HP2', each answering to its sample's name.",
               "default": "sample",
               "if": {
                 "type": "null"
               },
               "else": {
-                "const": "sample"
+                "enum": [
+                  "sample",
+                  "haplotype"
+                ]
               }
             },
             "axis": {
@@ -13029,19 +13035,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "else": {
             "$ref": "#/$defs/SampleTooltip"
-          }
-        },
-        "unit": {
-          "description": "The unit one row draws: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype.",
-          "default": "sample",
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "enum": [
-              "sample",
-              "haplotype"
-            ]
           }
         },
         "encoding": {
@@ -14899,129 +14892,108 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "MafRows": {
       "title": "MafRows",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"field\\": ... }\`.",
-          "default": "sample",
-          "const": "sample",
-          "type": "string"
+      "type": "object",
+      "x-closed": true,
+      "properties": {
+        "sort": {
+          "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
         },
-        {
-          "title": "MafRows",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "sort": {
-              "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "anyOf": [
-                  {
-                    "type": "array",
-                    "items": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            },
-            "labels": {
-              "description": "a label drawn beside a row in place of its name, by name; rows.axis.labels says whether labels draw.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "string"
-                }
-              }
-            },
-            "tree": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/RowTree"
-              }
-            },
-            "kept": {
-              "description": "the rows shown, by name, narrowing the rows to those it names; empty shows every row, and a list naming no current row shows none.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "anyOf": [
-                  {
-                    "type": "array",
-                    "items": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "number"
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            },
-            "field": {
-              "description": "sample, the one field a row can be.",
-              "default": "sample",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "const": "sample"
-              }
-            },
-            "axis": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/RowAxis"
-              }
-            },
-            "colors": {
-              "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": "string"
-                }
-              }
-            },
-            "color": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/RowColor"
-              }
+        "labels": {
+          "description": "a label drawn beside a row in place of its name, by name; rows.axis.labels says whether labels draw.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
             }
+          }
+        },
+        "tree": {
+          "if": {
+            "type": "null"
           },
-          "patternProperties": {
-            "^_+comment": {}
+          "else": {
+            "$ref": "#/$defs/RowTree"
+          }
+        },
+        "kept": {
+          "description": "the rows shown, by name, narrowing the rows to those it names; empty shows every row, and a list naming no current row shows none.",
+          "if": {
+            "type": "null"
           },
-          "additionalProperties": false
+          "else": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "axis": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowAxis"
+          }
+        },
+        "colors": {
+          "description": "a color pinned on a row, by name, over the color rows.color maps it to; a row with none takes rows.color, else the file's own color.",
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "color": {
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "$ref": "#/$defs/RowColor"
+          }
         }
-      ]
+      },
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
     },
     "MafAlignmentsMarkHeight": {
       "title": "MafAlignmentsMarkHeight",
@@ -18444,9 +18416,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "tooltip": {
               "$ref": "#/$defs/LinearVariantDisplaySlots/properties/tooltip"
-            },
-            "unit": {
-              "$ref": "#/$defs/LinearVariantDisplaySlots/properties/unit"
             },
             "legend": {
               "anyOf": [

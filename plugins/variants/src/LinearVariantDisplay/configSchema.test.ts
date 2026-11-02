@@ -1,5 +1,9 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { applyConfSettings, readConfObject } from '@jbrowse/core/configuration'
+import {
+  applyConfSettings,
+  readConfObject,
+  setConf,
+} from '@jbrowse/core/configuration'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
 import FeaturesPlugin from '@jbrowse/plugin-features'
 import LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
@@ -119,44 +123,76 @@ describe('the display config schema', () => {
     })
   })
 
-  describe('unit config slot', () => {
+  describe('rows.field', () => {
     it('defaults to sample', () => {
       const config = configSchema.create({
         type: 'LinearVariantDisplay',
         displayId: 'test-7',
       })
-      expect(readConfObject(config, 'unit')).toBe('sample')
+      expect(readConfObject(config, ['rows', 'field'])).toBe('sample')
     })
 
-    it('can be set to haplotype', () => {
+    it.each([
+      ['an object', { field: 'haplotype' }],
+      ['its shorthand', 'haplotype'],
+    ])('can be set to haplotype by %s', (_, rows) => {
       const config = configSchema.create({
         type: 'LinearVariantDisplay',
         displayId: 'test-8',
+        rows,
+      })
+      expect(readConfObject(config, ['rows', 'field'])).toBe('haplotype')
+    })
+
+    it('a beta unit points at rows.field, on load and on a write', () => {
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+      const config = configSchema.create({
+        type: 'LinearVariantDisplay',
+        displayId: 'test-unit',
         unit: 'haplotype',
       })
-      expect(readConfObject(config, 'unit')).toBe('haplotype')
+      const warnings = warn.mock.calls.map(([message]) => message)
+      warn.mockRestore()
+      expect(readConfObject(config, ['rows', 'field'])).toBe('sample')
+      expect(warnings).toEqual([
+        expect.stringMatching(
+          /does not declare unit.*did you mean rows\.field\?$/,
+        ),
+      ])
+      expect(() => {
+        // @ts-expect-error a misnamed word is no slot
+        setConf(config, 'unit', 'haplotype')
+      }).toThrow(/did you mean rows\.field\?$/)
     })
 
     it.each([
       ['phased', 'haplotype'],
       ['alleleCount', 'sample'],
     ])(
-      'the v4 renderingMode %s reaches the live display as unit %s',
-      (old, unit) => {
+      'the v4 renderingMode %s reaches the live display as rows.field %s',
+      (old, rowsField) => {
         const { display } = createTestEnvironment({
           displayConfig: { renderingMode: old },
         }).createDisplay()
-        expect(display.unit).toBe(unit)
+        expect(display.rowsField).toBe(rowsField)
       },
     )
 
-    it('is part of the plot', () => {
-      const { display } = createTestEnvironment().createDisplay()
-      display.applyPlot({ unit: 'haplotype' })
-      expect(display.plot.unit).toBe('haplotype')
+    it('the v4 renderingMode lands beside an arrangement the config states', () => {
+      const { display } = createTestEnvironment({
+        displayConfig: { renderingMode: 'phased', rows: { sort: ['b'] } },
+      }).createDisplay()
+      expect(display.rowsField).toBe('haplotype')
+      expect(display.rowSort).toEqual(['b'])
     })
 
-    it("a v4.3 session's renderingModeSetting lands in the unit slot", () => {
+    it('is part of the plot', () => {
+      const { display } = createTestEnvironment().createDisplay()
+      display.applyPlot({ rows: { field: 'haplotype' } })
+      expect(display.plot.rows).toMatchObject({ field: 'haplotype' })
+    })
+
+    it("a v4.3 session's renderingModeSetting lands in rows.field", () => {
       const pluginManager = new PluginManager([
         new LinearGenomeViewPlugin(),
         new FeaturesPlugin(),
@@ -178,7 +214,7 @@ describe('the display config schema', () => {
         },
         { pluginManager },
       )
-      expect(readConfObject(conf, 'unit')).toBe('haplotype')
+      expect(readConfObject(conf, ['rows', 'field'])).toBe('haplotype')
     })
 
     it("a v4.3 session's menu settings land in their slots", () => {

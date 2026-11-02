@@ -62,14 +62,14 @@ describe('recoloring does not disturb the arrangement', () => {
     const { display } = createTestEnvironment({
       displayConfig: RECORDS_BAND_OFF,
     }).createDisplay()
-    display.setUnit('haplotype')
+    display.setRowsField('haplotype')
     display.setSources(SOURCES)
     const haplotypes = ['S2', 'S0', 'S1'].flatMap(sampleName => [
-      { name: `${sampleName} HP0`, sampleName, HP: 0 },
-      { name: `${sampleName} HP1`, sampleName, HP: 1 },
+      { name: `${sampleName} HP1`, sampleName, HP: 0 },
+      { name: `${sampleName} HP2`, sampleName, HP: 1 },
     ])
     display.setRowOrder(haplotypes, {
-      tree: '(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S1 HP0,S1 HP1));',
+      tree: '(((S2 HP1,S2 HP2),(S0 HP1,S0 HP2)),(S1 HP1,S1 HP2));',
     })
 
     display.setRowColorChoice('population')
@@ -151,27 +151,27 @@ describe('the facet bands over the arranged order', () => {
     const { display } = createTestEnvironment({
       displayConfig: RECORDS_BAND_OFF,
     }).createDisplay()
-    display.setUnit('haplotype')
+    display.setRowsField('haplotype')
     display.setSources(SOURCES)
     display.setCellData({
       samplePloidy: Object.fromEntries(SOURCES.map(s => [s.name, 2])),
     } as unknown as Parameters<typeof display.setCellData>[0])
     display.setRowOrder(
       ['S0', 'S1', 'S2'].flatMap(sampleName => [
-        { name: `${sampleName} HP0`, sampleName, HP: 0 },
-        { name: `${sampleName} HP1`, sampleName, HP: 1 },
+        { name: `${sampleName} HP1`, sampleName, HP: 0 },
+        { name: `${sampleName} HP2`, sampleName, HP: 1 },
       ]),
     )
 
     display.facetByField('population')
 
     expect(rowNames(display)).toEqual([
-      'S0 HP0',
       'S0 HP1',
-      'S2 HP0',
+      'S0 HP2',
       'S2 HP1',
-      'S1 HP0',
+      'S2 HP2',
       'S1 HP1',
+      'S1 HP2',
     ])
   })
 })
@@ -330,101 +330,179 @@ describe('the config `domain` seeds the sample order', () => {
   })
 })
 
-describe('a rendering-mode switch renames the rows', () => {
-  // The filter holds tree *leaf* names, and the mode decides whether those are
-  // sample names or "S0 HP0" haplotype names. Left behind it matched nothing
-  // and the display went blank.
-  it('clears the focus along with the order and tree', () => {
+describe('a rows.field switch keeps the arrangement', () => {
+  function landPloidy(display: ReturnType<typeof clusteredDisplay>) {
+    display.setCellData({
+      samplePloidy: { S0: 2, S1: 2, S2: 2 },
+    } as unknown as Parameters<typeof display.setCellData>[0])
+  }
+
+  // A haplotype row answers to its sample's name, so the focus, the order and
+  // the per-sample tree all read across the switch: the tree's sample leaves
+  // fork over each sample's haplotype rows.
+  it('keeps the focus, the order and the tree, the tree forking per sample', () => {
     const display = clusteredDisplay()
     display.setRowFocus(['S2', 'S0'])
-    expect(rowNames(display)).toEqual(['S2', 'S0'])
 
-    display.setUnit('haplotype')
+    display.setRowsField('haplotype')
+    landPloidy(display)
 
-    expect(display.rowFocus).toBeUndefined()
-    expect(display.rowSort).toEqual([])
-    expect(display.rowTree).toBeUndefined()
-    expect(rowNames(display)).toEqual(['S0', 'S1', 'S2'])
+    expect(display.rowFocus?.slice()).toEqual(['S2', 'S0'])
+    expect(display.rowSort).toEqual(['S2', 'S0', 'S1'])
+    expect(display.rowTree).toBe(CLUSTERED_TREE)
+    expect(rowNames(display)).toEqual(['S2 HP1', 'S2 HP2', 'S0 HP1', 'S0 HP2'])
+    expect(display.hierarchy).toBeDefined()
+    expect(getLeafNames(display.root!)).toEqual(rowNames(display))
+    expect(display.treeOnFinerRows).toBe(false)
   })
 
   it.each([
     [
       'Edit plot',
       (d: ReturnType<typeof clusteredDisplay>) => {
-        d.applyPlot({ unit: 'haplotype' })
+        d.applyPlot({ rows: { field: 'haplotype' } })
       },
     ],
     [
       'a settings bag',
       (d: ReturnType<typeof clusteredDisplay>) => {
-        d.applyDisplaySettings({ unit: 'haplotype' })
+        d.applyDisplaySettings({ rows: 'haplotype' })
       },
     ],
-  ])('clears them the same way when %s moves the unit', (_, write) => {
+  ])('keeps them the same way when %s moves rows.field', (_, write) => {
     const display = clusteredDisplay()
     display.setRowFocus(['S2', 'S0'])
 
     write(display)
 
-    expect(display.unit).toBe('haplotype')
-    expect(display.rowFocus).toBeUndefined()
-    expect(display.rowTree).toBeUndefined()
+    expect(display.rowsField).toBe('haplotype')
+    expect(display.rowFocus?.slice()).toEqual(['S2', 'S0'])
+    expect(display.rowTree).toBe(CLUSTERED_TREE)
   })
 
-  // A session spec's track entry writes `unit` and `rows` in one bag; the
-  // trio figures' haplotype labels came through this way.
-  it('keeps the rows a settings bag states beside the unit it moves', () => {
+  // A session spec's track entry writes the field and the arrangement in one
+  // bag; the trio figures' haplotype labels came through this way.
+  it('takes the rows a settings bag states beside the field', () => {
     const display = clusteredDisplay()
-    display.setRowFocus(['S2', 'S0'])
 
     display.applyDisplaySettings({
-      unit: 'haplotype',
       rows: {
-        sort: ['S1 HP1', 'S0 HP0'],
-        labels: { 'S1 HP1': 'One hap2', 'S0 HP0': 'Zero hap1' },
-        colors: { 'S1 HP1': '#123456' },
+        field: 'haplotype',
+        sort: ['S1 HP2', 'S0 HP1'],
+        labels: { 'S1 HP2': 'One hap2', 'S0 HP1': 'Zero hap1' },
+        colors: { 'S1 HP2': '#123456' },
       },
     })
-    display.setCellData({
-      samplePloidy: { S0: 2, S1: 2, S2: 2 },
-    } as unknown as Parameters<typeof display.setCellData>[0])
+    landPloidy(display)
 
-    expect(display.rowFocus).toBeUndefined()
-    expect(display.rowTree).toBeUndefined()
     expect(
       display.sources.slice(0, 3).map(s => [s.name, s.label, s.rowColor]),
     ).toEqual([
-      ['S1 HP1', 'One hap2', '#123456'],
-      ['S0 HP0', 'Zero hap1', undefined],
-      ['S0 HP1', undefined, undefined],
+      ['S1 HP2', 'One hap2', '#123456'],
+      ['S0 HP1', 'Zero hap1', undefined],
+      ['S0 HP2', undefined, undefined],
     ])
   })
 
-  // The coloring is resolved on the read, so the renamed rows arrive already
-  // tinted.
-  it('keeps the configured coloring on the renamed rows', () => {
+  // What phased mode arranged waits unseen in sample mode, read as samples
+  // there, and comes back as it was.
+  it('round-trips a phased order, labels, colors and tree through sample mode', () => {
     const { display } = createTestEnvironment({
       displayConfig: RECORDS_BAND_OFF,
     }).createDisplay()
     display.setSources(SOURCES)
-    display.setRowColorChoice('population')
-
-    display.setUnit('haplotype')
-
-    expect(display.rowColorField).toBe('population')
-    expect(display.sources.every(s => s.rowColor)).toBe(true)
-    const byName = Object.fromEntries(
-      display.sources.map(s => [s.name, s.rowColor]),
+    display.setRowsField('haplotype')
+    landPloidy(display)
+    const phasedOrder = [
+      'S2 HP1',
+      'S0 HP2',
+      'S1 HP1',
+      'S2 HP2',
+      'S0 HP1',
+      'S1 HP2',
+    ]
+    display.setRowOrder(
+      phasedOrder.map(name => ({ name })),
+      {
+        tree: `(((('S2 HP1','S0 HP2'),'S1 HP1'),('S2 HP2','S0 HP1')),'S1 HP2');`,
+        ...RUN,
+      },
     )
-    expect(byName.S0).toBe(byName.S2)
-    expect(byName.S0).not.toBe(byName.S1)
+    setConf(display, ['rows', 'labels'], {
+      'S0 HP1': 'paternal',
+      S1: 'Mother',
+    })
+    setConf(display, ['rows', 'colors'], { 'S2 HP2': '#0000ff' })
+    const phased = () => display.sources.map(s => [s.name, s.label, s.rowColor])
+    const before = phased()
+    expect(rowNames(display)).toEqual(phasedOrder)
+    expect(display.hierarchy).toBeDefined()
+
+    display.setRowsField('sample')
+
+    expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
+    expect(display.sources.map(s => s.label)).toEqual([
+      undefined,
+      undefined,
+      'Mother',
+    ])
+    expect(display.sources.map(s => s.rowColor)).toEqual([
+      undefined,
+      undefined,
+      undefined,
+    ])
+    expect(display.hierarchy).toBeUndefined()
+    expect(display.treeOnFinerRows).toBe(true)
+    expect(display.finerTreeHint.text).toMatch(/clustered per haplotype/)
+
+    display.setRowsField('haplotype')
+
+    expect(phased()).toEqual(before)
+    expect(before.map(([, label]) => label)).toEqual([
+      undefined,
+      undefined,
+      'Mother HP1',
+      undefined,
+      'paternal',
+      'Mother HP2',
+    ])
+    expect(display.hierarchy).toBeDefined()
   })
 
-  it('leaves everything alone when the mode does not change', () => {
+  // A hosted config's population order, and one the reader wrote over it,
+  // read across the phased toggle, where the toggle used to reset the
+  // reader's to the config's.
+  it.each([
+    ['the hosted order', undefined, ['S1', 'S2', 'S0']],
+    ["a reader's order over it", ['S0', 'S1', 'S2'], ['S0', 'S1', 'S2']],
+  ])('keeps %s across the phased toggle', (_, reorder, order) => {
+    const { display } = createTestEnvironment({
+      displayConfig: {
+        ...RECORDS_BAND_OFF,
+        rows: { sort: ['S1', 'S2', 'S0'] },
+      },
+    }).createDisplay()
+    display.setSources(SOURCES)
+    if (reorder) {
+      display.setRowOrder(reorder.map(name => ({ name })))
+    }
+    expect(rowNames(display)).toEqual(order)
+
+    display.setRowsField('haplotype')
+    landPloidy(display)
+
+    expect(rowNames(display)).toEqual(
+      order.flatMap(name => [`${name} HP1`, `${name} HP2`]),
+    )
+    display.setRowsField('sample')
+    expect(rowNames(display)).toEqual(order)
+  })
+
+  it('leaves everything alone when the field does not change', () => {
     const display = clusteredDisplay()
     display.setRowFocus(['S2', 'S0'])
 
-    display.setUnit(display.unit)
+    display.setRowsField(display.rowsField)
 
     expect(display.rowFocus?.slice()).toEqual(['S2', 'S0'])
     expect(display.rowTree).toBe(CLUSTERED_TREE)
@@ -531,7 +609,7 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
     const { display } = createTestEnvironment({
       displayConfig: RECORDS_BAND_OFF,
     }).createDisplay()
-    display.setUnit('haplotype')
+    display.setRowsField('haplotype')
     display.setSources(SOURCES)
     display.setCellData({
       ...ONE_VARIANT,

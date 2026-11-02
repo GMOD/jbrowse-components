@@ -130,7 +130,7 @@ function makeSources(names: string[], phased: boolean): ProcessedSource[] {
   return phased
     ? names.flatMap(name =>
         [0, 1].map(hp => ({
-          name: `${name} HP${hp}`,
+          name: `${name} HP${hp + 1}`,
           sampleName: name,
           HP: hp,
         })),
@@ -227,7 +227,7 @@ describe('sortSourcesAroundVariant', () => {
       phased: true,
     })
     // the alt-carrying haplotypes lead, regardless of which sample they are on
-    expect(names(sorted)).toEqual(['s1 HP1', 's2 HP0', 's1 HP0', 's2 HP1'])
+    expect(names(sorted)).toEqual(['s1 HP2', 's2 HP1', 's1 HP1', 's2 HP2'])
   })
 
   test('groups haplotypes carrying the same alt at a multiallelic site', () => {
@@ -243,7 +243,7 @@ describe('sortSourcesAroundVariant', () => {
       phased: true,
     })
     const hp0 = names(sorted)!.filter(n => n.endsWith('HP0'))
-    expect(hp0).toEqual(['s1 HP0', 's3 HP0', 's2 HP0'])
+    expect(hp0).toEqual(['s1 HP1', 's3 HP1', 's2 HP1'])
   })
 
   test('sorts an unphased call last in phased mode', () => {
@@ -255,7 +255,7 @@ describe('sortSourcesAroundVariant', () => {
       anchorFeatureId: 'v1',
       phased: true,
     })
-    expect(names(sorted)!.slice(-2)).toEqual(['s2 HP0', 's2 HP1'])
+    expect(names(sorted)!.slice(-2)).toEqual(['s2 HP1', 's2 HP2'])
   })
 
   test('returns undefined when the anchor is not loaded', () => {
@@ -299,19 +299,19 @@ describe('sortSourcesAroundVariant', () => {
 
 // The third consumer of a haploid genotype, after the render loops and the
 // clustering matrix. All three have to agree that a bare "1" is a real allele on
-// HP0 and says nothing about HP1 — the render loops didn't, and nothing here
+// HP1 and says nothing about HP2 — the render loops didn't, and nothing here
 // pinned it. 1000G chrX non-PAR is the canonical shape: haploid males beside
 // phased diploid females.
 describe('sortSourcesAroundVariant mixed ploidy', () => {
   // Females expand to two haplotype rows, males to one — but maxPloidy is per
-  // file, so a male still gets an HP1 row with nothing to draw on it.
+  // file, so a male still gets an HP2 row with nothing to draw on it.
   const sources: ProcessedSource[] = [
-    { name: 'FEMALE HP0', sampleName: 'FEMALE', HP: 0 },
-    { name: 'FEMALE HP1', sampleName: 'FEMALE', HP: 1 },
-    { name: 'MALE_ALT HP0', sampleName: 'MALE_ALT', HP: 0 },
-    { name: 'MALE_ALT HP1', sampleName: 'MALE_ALT', HP: 1 },
-    { name: 'MALE_REF HP0', sampleName: 'MALE_REF', HP: 0 },
-    { name: 'MALE_REF HP1', sampleName: 'MALE_REF', HP: 1 },
+    { name: 'FEMALE HP1', sampleName: 'FEMALE', HP: 0 },
+    { name: 'FEMALE HP2', sampleName: 'FEMALE', HP: 1 },
+    { name: 'MALE_ALT HP1', sampleName: 'MALE_ALT', HP: 0 },
+    { name: 'MALE_ALT HP2', sampleName: 'MALE_ALT', HP: 1 },
+    { name: 'MALE_REF HP1', sampleName: 'MALE_REF', HP: 0 },
+    { name: 'MALE_REF HP2', sampleName: 'MALE_REF', HP: 1 },
   ]
 
   test('a haploid alt outranks a haploid ref, and its absent haplotype sorts last', () => {
@@ -325,12 +325,12 @@ describe('sortSourcesAroundVariant mixed ploidy', () => {
       phased: true,
     })
     const order = names(sorted)!
-    // alt-carrying haplotypes lead: FEMALE HP0 (1) and MALE_ALT HP0 (1)
-    expect(order.slice(0, 2).sort()).toEqual(['FEMALE HP0', 'MALE_ALT HP0'])
+    // alt-carrying haplotypes lead: FEMALE HP1 (1) and MALE_ALT HP1 (1)
+    expect(order.slice(0, 2).sort()).toEqual(['FEMALE HP1', 'MALE_ALT HP1'])
     // the reference haplotypes come next
-    expect(order.slice(2, 4).sort()).toEqual(['FEMALE HP1', 'MALE_REF HP0'])
+    expect(order.slice(2, 4).sort()).toEqual(['FEMALE HP2', 'MALE_REF HP1'])
     // haplotypes the samples don't have rank last, with the no-calls
-    expect(order.slice(4).sort()).toEqual(['MALE_ALT HP1', 'MALE_REF HP1'])
+    expect(order.slice(4).sort()).toEqual(['MALE_ALT HP2', 'MALE_REF HP2'])
   })
 
   test('a haploid call is not read as unphased', () => {
@@ -346,9 +346,9 @@ describe('sortSourcesAroundVariant mixed ploidy', () => {
       phased: true,
     })
     const order = names(sorted)!
-    expect(order[0]).toBe('MALE_ALT HP0')
-    expect(order.indexOf('MALE_REF HP0')).toBeLessThan(
-      order.indexOf('FEMALE HP0'),
+    expect(order[0]).toBe('MALE_ALT HP1')
+    expect(order.indexOf('MALE_REF HP1')).toBeLessThan(
+      order.indexOf('FEMALE HP1'),
     )
   })
 })
@@ -412,7 +412,7 @@ describe('sortSourcesAroundVariant at a split site', () => {
       anchorFeatureId: 'invC',
       phased: true,
     })
-    expect(names(sorted)!.slice(0, 3)).toEqual(['s3 HP0', 's1 HP0', 's2 HP0'])
+    expect(names(sorted)!.slice(0, 3)).toEqual(['s3 HP1', 's1 HP1', 's2 HP1'])
   })
 
   // An insertion and a deletion can share a span. Read as "any alt", the site

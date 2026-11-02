@@ -18,7 +18,7 @@ export function genotypeMatrixKey(model: ReducedModel) {
         'genotypeMatrix',
         model.clusterableSources.map(s => s.name).join('\t'),
         model.siteFilter,
-        model.unit,
+        model.rowsField,
         // a SerializableFilterChain, whose toJSON is its expression list
         model.filters,
       ] as const)

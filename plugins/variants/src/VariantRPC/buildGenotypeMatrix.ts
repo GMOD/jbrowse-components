@@ -18,8 +18,8 @@ export async function buildGenotypeMatrix({
   pluginManager: PluginManager
   args: MatrixWalkArgs
 }) {
-  const { unit, samplePloidy } = args
-  return unit === 'haplotype' && samplePloidy
+  const { rowsField, samplePloidy } = args
+  return rowsField === 'haplotype' && samplePloidy
     ? getPhasedGenotypeMatrix({
         pluginManager,
         args: { ...args, samplePloidy },

@@ -328,9 +328,9 @@ export function variantTrackMenuItems(
           makeRadioSubMenu({
             label: 'Rows',
             icon: SplitscreenIcon,
-            value: self.unit,
-            onChange: unit => {
-              self.setUnit(unit)
+            value: self.rowsField,
+            onChange: rowsField => {
+              self.setRowsField(rowsField)
             },
             options: [
               {
@@ -350,7 +350,7 @@ export function variantTrackMenuItems(
                   loaded,
                 ),
                 helpText:
-                  'One row per haplotype, which needs phased genotypes: a diploid SAMPLE1 becomes rows SAMPLE1 HP0 and SAMPLE1 HP1, and a 1|0 call draws in the first row only. A row holds one allele, so there is no dosage shading. A haploid sample keeps one row, under its own name',
+                  'One row per haplotype, which needs phased genotypes: a diploid SAMPLE1 becomes rows SAMPLE1 HP1 and SAMPLE1 HP2, and a 1|0 call draws in the first row only. A row holds one allele, so there is no dosage shading. A haploid sample keeps one row, under its own name',
               },
             ],
           }),
@@ -394,7 +394,8 @@ export function variantTrackMenuItems(
                       'Color every alt-carrying cell by the phase set (FORMAT PS) its call belongs to, so one phasing block reads as a single hue along a haplotype row; ref and no-call cells keep their normal coloring',
                     type: 'radio' as const,
                     checked: self.colorField === PHASE_SET_FIELD,
-                    disabled: phaseSet.disabled || self.unit !== 'haplotype',
+                    disabled:
+                      phaseSet.disabled || self.rowsField !== 'haplotype',
                     disabledHelpText: phaseSet.disabled
                       ? undefined
                       : 'Only applies with a row per haplotype — switch Rows to Per haplotype',

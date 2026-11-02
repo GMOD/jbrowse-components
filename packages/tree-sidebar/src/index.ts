@@ -76,6 +76,8 @@ export type {
   RowAlias,
   RowBand,
   RowBanding,
+  RowParent,
+  RowParentOf,
   UnlistedRowsSort,
 } from './arrangeRows.ts'
 export { applyClusterRun } from './applyClusterRun.ts'

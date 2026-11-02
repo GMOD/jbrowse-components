@@ -103,6 +103,12 @@ test('a row display points a top-level axis at rows.axis', () => {
   expect(byTitle.get('MultiWaySyntenyDisplay')?.axis).toBeUndefined()
 })
 
+test("the variant display points a beta unit at rows.field, alignments' unit standing", () => {
+  const byTitle = misnamedByTitle()
+  expect(byTitle.get('LinearVariantDisplay')?.unit).toBe('rows.field')
+  expect(byTitle.get('LinearAlignmentsDisplay')?.unit).toBeUndefined()
+})
+
 test("a track's displayDefaults carries its displays' words", () => {
   expect(
     displayDefaultsForTrackType('RowsTrack', rowsManifest).misnamed,

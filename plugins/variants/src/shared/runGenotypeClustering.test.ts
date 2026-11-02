@@ -21,11 +21,13 @@ const regions = [
 // which site filters produced it. Asserted alongside the order and tree
 // because it has to be written in the same action as the tree — provenance left
 // over from a previous run would caption this one with the wrong region.
-const withUnit = (unit: string) => [{ name: 'unit', value: unit }]
+const withRowsField = (rowsField: string) => [
+  { name: 'rows.field', value: rowsField },
+]
 
 const PROVENANCE = {
   regions: [{ refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' }],
-  settings: withUnit('sample'),
+  settings: withRowsField('sample'),
 }
 
 const THREE = [
@@ -41,7 +43,7 @@ function makeModel(overrides: Partial<ReducedModel> = {}): ReducedModel {
     clusterableSources: THREE,
     editableSources: THREE,
     adapterConfig,
-    unit: 'sample',
+    rowsField: 'sample',
     rowSort: [],
     clusteringReady: true,
     hasClusterableRows: true,
@@ -80,7 +82,7 @@ describe('runGenotypeClustering', () => {
         regions,
         sources: model.clusterableSources,
         siteFilter: [],
-        unit: 'sample',
+        rowsField: 'sample',
       }),
     )
     expect(model.setRowOrder).toHaveBeenCalledWith(
@@ -171,13 +173,13 @@ describe('runGenotypeClustering', () => {
   // indexes those and lands as their names.
   it('orders the haplotype rows in phased mode', async () => {
     const haplotypes = ['sampleA', 'sampleB'].flatMap(sampleName => [
-      { name: `${sampleName} HP0`, sampleName, HP: 0 },
-      { name: `${sampleName} HP1`, sampleName, HP: 1 },
+      { name: `${sampleName} HP1`, sampleName, HP: 0 },
+      { name: `${sampleName} HP2`, sampleName, HP: 1 },
     ])
     const model = makeModel({
       clusterableSources: haplotypes,
       editableSources: haplotypes,
-      unit: 'haplotype',
+      rowsField: 'haplotype',
       samplePloidy: {
         sampleA: 2,
         sampleB: 2,
@@ -199,16 +201,16 @@ describe('runGenotypeClustering', () => {
 
     expect(model.setRowOrder).toHaveBeenCalledWith(
       [
+        expect.objectContaining({ name: 'sampleB HP2' }),
         expect.objectContaining({ name: 'sampleB HP1' }),
-        expect.objectContaining({ name: 'sampleB HP0' }),
+        expect.objectContaining({ name: 'sampleA HP2' }),
         expect.objectContaining({ name: 'sampleA HP1' }),
-        expect.objectContaining({ name: 'sampleA HP0' }),
       ],
       {
         tree: '(...);',
         provenance: // the recorded mode follows the run, since a phased tree clusters
           // haplotype rows rather than sample rows
-          { ...PROVENANCE, settings: withUnit('haplotype') },
+          { ...PROVENANCE, settings: withRowsField('haplotype') },
       },
     )
   })

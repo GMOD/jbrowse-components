@@ -19,7 +19,7 @@ import {
 } from '../shared/constants.ts'
 import { PHASE_SET_FIELD } from '../shared/getPhasedColor.ts'
 
-import type { VariantUnit } from '../shared/constants.ts'
+import type { VariantRowsField } from '../shared/constants.ts'
 import type {
   CategoricalEntry,
   CategoricalScale,
@@ -45,7 +45,7 @@ function entry(label: string, color?: string): CategoricalEntry {
 }
 
 export interface VariantLegendInputs {
-  unit: VariantUnit
+  rowsField: VariantRowsField
   // Painted, not possible: each is true only where the cell loops emitted a
   // cell of that category anywhere in the fetched cell data (see
   // `paintedLegendFlags`).
@@ -76,13 +76,13 @@ function keyTitle({ colorTitle }: VariantLegendInputs, own: string) {
 // unconditional because grey is the row background whether or not reference
 // cells draw; the other two are gated on having been painted.
 function absentDataEntries({
-  unit,
+  rowsField,
   hasUnphased,
   hasNoCall,
 }: VariantLegendInputs): CategoricalEntry[] {
   return [
     entry(
-      unit === 'haplotype' ? 'Reference' : 'Homozygous reference',
+      rowsField === 'haplotype' ? 'Reference' : 'Homozygous reference',
       REFERENCE_COLOR,
     ),
     ...(hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
@@ -98,7 +98,7 @@ function fieldAbsentDataEntries(inputs: VariantLegendInputs) {
 // Whether lightness carries dosage: a cell per sample, not per haplotype or
 // per record.
 function dosageShaded(inputs: VariantLegendInputs) {
-  return !inputs.recordsAlone && inputs.unit !== 'haplotype'
+  return !inputs.recordsAlone && inputs.rowsField !== 'haplotype'
 }
 
 // What a one-member alt domain spends its entries on. In allele-count mode
@@ -108,7 +108,7 @@ function dosageShaded(inputs: VariantLegendInputs) {
 // dosage, not the zygosity: the ramp is continuous, and a triploid `0/0/1`
 // paints at a third, which "Heterozygous alt" did not list.
 function altEntries(hue: string, inputs: VariantLegendInputs) {
-  if (inputs.unit === 'haplotype') {
+  if (inputs.rowsField === 'haplotype') {
     return [entry('Alt allele', hue)]
   }
   return [
@@ -127,7 +127,9 @@ export function getGenotypeEntries(
 ): CategoricalEntry[] {
   const [reference, ...rest] = absentDataEntries(inputs)
   const secondary =
-    inputs.unit === 'haplotype' && !altColorOverride && inputs.hasSecondaryAlt
+    inputs.rowsField === 'haplotype' &&
+    !altColorOverride &&
+    inputs.hasSecondaryAlt
   return [
     reference!,
     ...altEntries(altColorOverride || ALT_HUE, inputs),
@@ -282,9 +284,9 @@ export function getVariantColorScales({
   // loop never reads PS — so outside phased mode the cells are genotype-colored
   // and the legend has to say that instead of describing a scheme that isn't on
   // screen. Resolved here rather than by forbidding the combination, since
-  // unit can change after the color is chosen.
+  // rowsField can change after the color is chosen.
   const cellScale = getCellColorScale(
-    field === PHASE_SET_FIELD && inputs.unit !== 'haplotype'
+    field === PHASE_SET_FIELD && inputs.rowsField !== 'haplotype'
       ? undefined
       : color,
     inputs,

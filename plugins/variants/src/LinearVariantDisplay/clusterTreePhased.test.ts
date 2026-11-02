@@ -15,7 +15,7 @@ const SAMPLE_PLOIDY = {
 // Six haplotype rows, reordered so S2's pair leads. hclust's `order` is the leaf
 // order of the newick it returns, so leaf i lands on row i.
 const HAPLOTYPE_ORDER = [4, 5, 0, 1, 2, 3]
-const HAPLOTYPE_TREE = '(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S1 HP0,S1 HP1));'
+const HAPLOTYPE_TREE = '(((S2 HP1,S2 HP2),(S0 HP1,S0 HP2)),(S1 HP1,S1 HP2));'
 
 const regions = [
   { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
@@ -26,12 +26,12 @@ async function clusterPhased() {
     displayConfig: RECORDS_BAND_OFF,
   }).createDisplay()
   display.setSources(SOURCES)
-  display.setUnit('haplotype')
+  display.setRowsField('haplotype')
   // samplePloidy reaches the model only through cellData, which is what
   // `clusteringReady` waits for in phased mode
   display.setCellData({
     samplePloidy: SAMPLE_PLOIDY,
-    rowNames: ['S0 HP0', 'S0 HP1', 'S1 HP0', 'S1 HP1', 'S2 HP0', 'S2 HP1'],
+    rowNames: ['S0 HP1', 'S0 HP2', 'S1 HP1', 'S1 HP2', 'S2 HP1', 'S2 HP2'],
   } as unknown as Parameters<typeof display.setCellData>[0])
 
   await runGenotypeClustering({
@@ -52,7 +52,7 @@ test('phased mode reports itself ready to cluster once samplePloidy lands', () =
     displayConfig: RECORDS_BAND_OFF,
   }).createDisplay()
   display.setSources(SOURCES)
-  display.setUnit('haplotype')
+  display.setRowsField('haplotype')
   expect(display.clusteringReady).toBe(false)
 
   display.setCellData({
@@ -67,12 +67,12 @@ test('a phased clustering run leaves a drawable dendrogram', async () => {
 
   expect(display.rowTree).toBe(HAPLOTYPE_TREE)
   expect(display.sources.map(s => s.name)).toEqual([
-    'S2 HP0',
     'S2 HP1',
-    'S0 HP0',
+    'S2 HP2',
     'S0 HP1',
-    'S1 HP0',
+    'S0 HP2',
     'S1 HP1',
+    'S1 HP2',
   ])
   // the check treeDescribesRows makes before it will position the dendrogram
   expect(display.hierarchy).toBeDefined()

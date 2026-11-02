@@ -77,8 +77,8 @@ describe('featureHasPhaseSet', () => {
 // A haploid call is one allele however many digits it takes to spell. The
 // three-character fast path used to key on length alone, so allele 123 — an
 // ordinary index at a pangenome site decomposed to hundreds of alts — split into
-// alleles 1 and 3: an HP1 row for a haplotype the sample does not carry, and an
-// HP0 row colored for the wrong allele.
+// alleles 1 and 3: an HP2 row for a haplotype the sample does not carry, and an
+// HP1 row colored for the wrong allele.
 describe('splitPhasedAlleles', () => {
   it.each([
     ['0|1', ['0', '1']],

@@ -58,7 +58,7 @@ test('counts recomputes, alias calls and named reaction runs, never reads', asyn
     {
       name: 'rows land',
       run: () => {
-        rows.setNames(['a HP0', 'a HP1', 'b'])
+        rows.setNames(['a HP1', 'a HP2', 'b'])
       },
     },
     {
@@ -85,7 +85,7 @@ test('counts recomputes, alias calls and named reaction runs, never reads', asyn
 })
 
 test('an alias held from before the census fails the step it went uncounted in', async () => {
-  const rows = Rows.create({ names: ['a HP0', 'b'] })
+  const rows = Rows.create({ names: ['a HP1', 'b'] })
   namedAutorun(rows, () => void rows.sources, { name: 'Rows:draw' })
   await expect(
     workCensus(rows, [

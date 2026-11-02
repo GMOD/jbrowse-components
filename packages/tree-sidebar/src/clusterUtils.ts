@@ -72,14 +72,76 @@ function findSubtree<T extends ClusterNodeData>(
 //
 // `domain` rotates the tree towards a declared leaf order
 // (`rotateNewickByDomain`); empty leaves it as written.
+//
+// `forksOf` names the rows a leaf stands for where none of them is the leaf
+// itself, as a sample leaf stands for its haplotype rows: the leaf becomes a
+// zero-length fork over them (`forkLeaves`).
 export function buildTree(
   newick: string,
   domain: readonly string[] = [],
+  forksOf?: (leaf: string) => readonly string[] | undefined,
 ): HierarchyNode<ClusterNodeData> {
+  const parsed = parseNewick(newick)
   return hierarchy<ClusterNodeData>(
-    rotateNewickByDomain(parseNewick(newick), domain),
+    rotateNewickByDomain(
+      forksOf ? forkLeaves(parsed, forksOf) : parsed,
+      domain,
+    ),
     d => d.children,
   )
+}
+
+function forkOf(
+  leaf: ClusterNodeData,
+  rows: readonly string[],
+  incremental: boolean,
+): ClusterNodeData {
+  return incremental
+    ? {
+        length: leaf.length ?? 0,
+        children: rows.map(name => ({ name, length: 0 })),
+      }
+    : { length: 0, children: rows.map(name => ({ name })) }
+}
+
+/**
+ * `root` with each leaf `forksOf` names rows for replaced by a fork over those
+ * rows, in the order given, at zero length: the rows join where the leaf did,
+ * and split at no height. Iterative, as every traversal here, since a
+ * single-linkage tree is as deep as it has leaves. Replaces nodes in place, so
+ * it takes a tree no one else holds, as a fresh parse is.
+ */
+export function forkLeaves(
+  root: ClusterNodeData,
+  forksOf: (leaf: string) => readonly string[] | undefined,
+): ClusterNodeData {
+  const leafNodes: ClusterNodeData[] = []
+  const stack = [root]
+  while (stack.length) {
+    const node = stack.pop()!
+    if (node.children?.length) {
+      stack.push(...node.children)
+    } else {
+      leafNodes.push(node)
+    }
+  }
+  const incremental = leafNodes.some(leaf => leaf.length !== undefined)
+  const forked = (node: ClusterNodeData) => {
+    const rows =
+      node.children?.length || node.name === undefined
+        ? undefined
+        : forksOf(node.name)
+    return rows?.length ? forkOf(node, rows, incremental) : node
+  }
+  const walk = [root]
+  while (walk.length) {
+    const node = walk.pop()!
+    if (node.children) {
+      node.children = node.children.map(forked)
+      walk.push(...node.children)
+    }
+  }
+  return forked(root)
 }
 
 // Prune a Newick-shaped tree down to just the leaves in `keep`, preserving the
@@ -182,7 +244,7 @@ export function parseClusterTree(newick: string, names?: string[]) {
 //
 //   - Keyed on `name`, never a per-plugin alias like `sampleName`: the filter
 //     holds tree *leaf* names, and phased variant clustering makes those
-//     haplotype names ("HG001 HP0") rather than sample names.
+//     haplotype names ("HG001 HP1") rather than sample names.
 //   - Hide-only. Anything derived from a row's index in the full list (an index
 //     palette color, a group color) must be computed before filtering, or
 //     focusing a clade silently recolors the rows it kept.

@@ -16,8 +16,8 @@ export const VARIANT_DISPLAY = 'LinearVariantDisplay'
 export const f2 = 0.3
 
 // What one row stands for: a sample, or one of its haplotypes.
-export const VARIANT_UNITS = ['sample', 'haplotype'] as const
-export type VariantUnit = (typeof VARIANT_UNITS)[number]
+export const VARIANT_ROWS_FIELDS = ['sample', 'haplotype'] as const
+export type VariantRowsField = (typeof VARIANT_ROWS_FIELDS)[number]
 
 // Feature-detail widget opened when a variant is clicked
 export const VARIANT_FEATURE_WIDGET = {

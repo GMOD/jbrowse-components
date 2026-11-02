@@ -14,7 +14,7 @@ describe('buildCanonicalRows', () => {
       buildCanonicalRows({
         samplePloidy,
         sampleFilter: undefined,
-        unit: 'sample',
+        rowsField: 'sample',
       }).map(s => s.name),
     ).toEqual(['HG001', 'HG002', 'HG003'])
   })
@@ -27,7 +27,7 @@ describe('buildCanonicalRows', () => {
       buildCanonicalRows({
         samplePloidy,
         sampleFilter: [],
-        unit: 'sample',
+        rowsField: 'sample',
       }),
     ).toEqual([])
   })
@@ -36,12 +36,12 @@ describe('buildCanonicalRows', () => {
     const forward = buildCanonicalRows({
       samplePloidy,
       sampleFilter: ['HG001', 'HG003'],
-      unit: 'sample',
+      rowsField: 'sample',
     })
     const reversed = buildCanonicalRows({
       samplePloidy,
       sampleFilter: ['HG003', 'HG001'],
-      unit: 'sample',
+      rowsField: 'sample',
     })
     // Order-independence is the whole point: the client sends a set, so two
     // spellings of the same set must produce byte-identical row assignments or
@@ -54,15 +54,15 @@ describe('buildCanonicalRows', () => {
     const rows = buildCanonicalRows({
       samplePloidy,
       sampleFilter: undefined,
-      unit: 'haplotype',
+      rowsField: 'haplotype',
     })
-    // haploid HG002 gets one row, not a phantom HP1 it has no allele for
+    // haploid HG002 gets one row, not a phantom HP2 it has no allele for
     expect(rows.map(s => s.name)).toEqual([
-      'HG001 HP0',
       'HG001 HP1',
-      'HG002 HP0',
-      'HG003 HP0',
+      'HG001 HP2',
+      'HG002 HP1',
       'HG003 HP1',
+      'HG003 HP2',
     ])
     expect(rows.map(s => s.HP)).toEqual([0, 1, 0, 0, 1])
     // filtered by SAMPLE name, expanded after — the client narrows the
@@ -77,8 +77,8 @@ describe('buildCanonicalRows', () => {
     const rows = buildCanonicalRows({
       samplePloidy: { HG001: 2 },
       sampleFilter: ['HG001'],
-      unit: 'haplotype',
+      rowsField: 'haplotype',
     })
-    expect(rows.map(s => s.name)).toEqual(['HG001 HP0', 'HG001 HP1'])
+    expect(rows.map(s => s.name)).toEqual(['HG001 HP1', 'HG001 HP2'])
   })
 })

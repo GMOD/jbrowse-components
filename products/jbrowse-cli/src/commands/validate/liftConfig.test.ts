@@ -236,6 +236,43 @@ describe('mergeBySlots over a keyed rows object', () => {
   })
 })
 
+// core's keyedWrites.test.ts refinement rows, on the variant display's rows,
+// whose haplotype rows refine the sample
+describe('mergeBySlots over a rows object whose field refines another', () => {
+  const slots = displayDefaultSlots('VariantTrack')
+  const hosted = { sort: ['NA12878', 'NA12891'], labels: { NA12878: 'Child' } }
+
+  test('the merged slot carries the refinement', () => {
+    expect(slots.find(s => s.name === 'rows')?.writes).toMatchObject({
+      keyedBy: 'field',
+      refines: { haplotype: 'sample' },
+    })
+  })
+
+  test.each([
+    {
+      name: 'a switch to haplotype keeps the arrangement',
+      base: { rows: { field: 'sample', ...hosted } },
+      write: { rows: 'haplotype' },
+      rows: { field: 'haplotype', ...hosted },
+    },
+    {
+      name: 'a switch back to sample keeps the arrangement',
+      base: { rows: { field: 'haplotype', ...hosted } },
+      write: { rows: { field: 'sample' } },
+      rows: { field: 'sample', ...hosted },
+    },
+    {
+      name: 'a field outside the refinement still resets',
+      base: { rows: { field: 'haplotype', ...hosted } },
+      write: { rows: 'tissue' },
+      rows: { field: 'tissue' },
+    },
+  ])('$name', ({ base, write, rows }) => {
+    expect(mergeBySlots(base, write, slots).rows).toEqual(rows)
+  })
+})
+
 describe('displayDefaultSlots folds writes across displays', () => {
   const field = { name: 'field', type: 'string' }
   const rowsOn = (

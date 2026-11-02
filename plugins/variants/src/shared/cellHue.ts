@@ -13,7 +13,7 @@ import { rampEncodingOf, valueRampOf } from '@jbrowse/display-kit/valueRamp'
 import { ALT_HUE } from './cellFill.ts'
 import { PHASE_SET_FIELD } from './getPhasedColor.ts'
 
-import type { VariantUnit } from './constants.ts'
+import type { VariantRowsField } from './constants.ts'
 import type { HeldSlots } from '@jbrowse/core/ui/colors'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -153,10 +153,10 @@ export function cellHueReaderOf(
   read: CellHueRead,
   {
     jexl,
-    unit,
+    rowsField,
   }: {
     jexl: JexlInstance
-    unit: VariantUnit
+    rowsField: VariantRowsField
   },
 ): CellHueReader {
   if (read === undefined) {
@@ -175,7 +175,7 @@ export function cellHueReaderOf(
     }
   }
   if (read.field === PHASE_SET_FIELD) {
-    return { byPhaseSet: unit === 'haplotype' }
+    return { byPhaseSet: rowsField === 'haplotype' }
   }
   const get = fieldReader(read.field, jexl)
   return { value: feature => valueText(get(feature)) }

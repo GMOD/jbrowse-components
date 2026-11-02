@@ -1,5 +1,5 @@
 import type { CellHueRead } from '../shared/cellHue.ts'
-import type { VariantUnit } from '../shared/constants.ts'
+import type { VariantRowsField } from '../shared/constants.ts'
 import type { RecordFieldReads } from '../shared/recordFields.ts'
 import type { Source } from '../shared/types.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
@@ -25,7 +25,7 @@ export interface GetGenotypeMatrixArgs extends BaseVariantRpcArgs {
   sources: Source[]
   // Which matrix to build: 'haplotype' means one row per haplotype, which
   // needs `samplePloidy`. Unset means one row per sample.
-  unit?: VariantUnit
+  rowsField?: VariantRowsField
   samplePloidy?: Record<string, number>
 }
 
@@ -46,7 +46,7 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   // names; `undefined` is the sample listing not landed yet. Not MAF's
   // `rowFocus`, which is the raw focus the worker resolves.
   sampleFilter?: string[]
-  unit: VariantUnit
+  rowsField: VariantRowsField
   showReference?: boolean
   // What the alt cells' hue reads off each variant (`CellHue.read`).
   color?: CellHueRead

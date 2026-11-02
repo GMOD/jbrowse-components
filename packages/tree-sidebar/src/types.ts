@@ -68,6 +68,10 @@ export interface TreeSidebarModel extends IStateTreeNode {
   sources: TreeSource[]
   rowBands?: readonly RowBand[]
   treelessBandCount?: number
+  // Whether the tree's leaves are rows a finer field draws, and what the hint
+  // says then.
+  treeOnFinerRows?: boolean
+  finerTreeHint?: { text: string; title: string }
   rowFocus?: readonly string[]
   // The "Showing N of M rows" chip, undefined while nothing narrows the rows
   // or they are not known yet.

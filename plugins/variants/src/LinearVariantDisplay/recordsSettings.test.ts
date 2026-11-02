@@ -216,7 +216,7 @@ describe('encoding.color phaseSet', () => {
 
   test('a record holds no phase set, so it keeps its SV type color and key', () => {
     const { display } = recordsDisplayAt(svTypes, 51, {}, true, {
-      unit: 'haplotype',
+      rows: { field: 'haplotype' },
       encoding: { color: 'phaseSet' },
     })
     const featureInfo = display.cellData!.perRegionCellData[0]!.featureInfo

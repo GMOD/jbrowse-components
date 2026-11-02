@@ -58,17 +58,19 @@ export const StaleTreeHint = observer(function StaleTreeHint({
       testId="stale_tree_hint"
       hint={
         stale
-          ? bands
-            ? {
-                title:
-                  'Re-run clustering to draw a tree in each band, or reset the row order. Click to dismiss.',
-                text: `Tree hidden for ${treeless} of ${bands} bands — re-run clustering`,
-              }
-            : {
-                title:
-                  'Re-run clustering, or reset the row order, to bring the tree back. Click to dismiss.',
-                text: 'Tree hidden — rows changed since clustering',
-              }
+          ? model.treeOnFinerRows && model.finerTreeHint
+            ? model.finerTreeHint
+            : bands
+              ? {
+                  title:
+                    'Re-run clustering to draw a tree in each band, or reset the row order. Click to dismiss.',
+                  text: `Tree hidden for ${treeless} of ${bands} bands — re-run clustering`,
+                }
+              : {
+                  title:
+                    'Re-run clustering, or reset the row order, to bring the tree back. Click to dismiss.',
+                  text: 'Tree hidden — rows changed since clustering',
+                }
           : undefined
       }
     />

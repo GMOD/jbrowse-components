@@ -35,7 +35,7 @@ export async function runGenotypeClustering({
     siteFilter,
     filters,
     adapterConfig,
-    unit,
+    rowsField,
     samplePloidy,
   } = model
   if (!model.sourcesBase) {
@@ -55,7 +55,7 @@ export async function runGenotypeClustering({
         filters,
         adapterConfig,
         signal,
-        unit,
+        rowsField,
         samplePloidy,
         partition: model.clusterPartition,
         statusCallback,
@@ -64,7 +64,7 @@ export async function runGenotypeClustering({
     // matrix. `filters` reduces to whether one was active: the expressions are
     // long and the caption is one line.
     provenance: clusterProvenanceFromRegions(regions, [
-      { name: 'unit', value: unit },
+      { name: 'rows.field', value: rowsField },
       ...siteFilter.map(({ field, ...tests }) => ({
         name: field,
         value: JSON.stringify(tests),

@@ -82,7 +82,7 @@ export async function testLinearVariantDisplay({
     // row is enabled, so matching it exactly waits for the scan.
     fireEvent.click(await findByText('Per haplotype', ...opts))
     const display = view.tracks[0]!.displays[0] as LinearVariantDisplayModel
-    expect(display.unit).toBe('haplotype')
+    expect(display.rowsField).toBe('haplotype')
   }
 
   await findDisplayPainted(info.displayTestId, { timeout })

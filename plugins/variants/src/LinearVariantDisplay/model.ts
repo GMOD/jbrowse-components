@@ -77,6 +77,7 @@ import {
   RowHeightMixin,
   TreeSidebarMixin,
   loadedRegionIndexAt,
+  narrowRows,
 } from '@jbrowse/tree-sidebar'
 
 import {
@@ -96,10 +97,13 @@ import {
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { buildSampleIndex } from '../shared/genotypeCodec.ts'
 import {
+  entryAliasOf,
   expandPhasedRows,
+  finerHaplotypeRows,
+  haplotypeNameCollisions,
+  haplotypeRowParent,
   parseRowName,
   resolveSampleName,
-  rowAliasOf,
 } from '../shared/getSources.ts'
 import { CellSolidColorDialog } from '../shared/lazyDialogs.ts'
 import { isSiteField } from '../shared/minorAlleleFrequencyUtils.ts'
@@ -146,7 +150,7 @@ import { getVariantColorScales } from './variantLegend.ts'
 import type { SimplifiedVariantFeature } from '../VariantRPC/analyzeVariants.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
-import type { VariantUnit } from '../shared/constants.ts'
+import type { VariantRowsField } from '../shared/constants.ts'
 import type {
   ProcessedSource,
   Source,
@@ -186,8 +190,8 @@ import type {
   HitFeatureResult,
 } from '@jbrowse/plugin-features/band'
 import type {
-  RowAlias,
   RowBanding,
+  RowParent,
   SvgSidebarProps,
 } from '@jbrowse/tree-sidebar'
 
@@ -241,6 +245,17 @@ function warnUnknownArrangementAttributes(
   }
 }
 
+// A sample named as another's haplotype row, `X HP1` beside `X`, shares that
+// row's name in phased mode, where an entry naming it reaches the sample
+function warnHaplotypeNameCollisions(samples: readonly string[]) {
+  const collisions = haplotypeNameCollisions(samples)
+  if (collisions.length > 0) {
+    console.warn(
+      `Sample ${collisions.map(name => `"${name}"`).join(', ')} is also the name of another sample's haplotype row, so in phased mode an order, label, color or focus naming it reaches the sample alone`,
+    )
+  }
+}
+
 // Columns fetch the visible regions only: they are laid out by feature index
 // across the visible width, so a buffered feature would be crammed into the
 // viewport. Genomic positions clip, and fetch the buffered regions.
@@ -291,7 +306,7 @@ export type VariantLayoutBackend =
  * on a record or a cell. With no sample rows the records are the display.
  *
  * #example
- * `unit`, `rows` and `filter` are
+ * `rows` and `filter` are
  * config (see the display's config schema), read at runtime through `getConf`
  * and written as session edits to the track's config — they are not plain MST
  * properties. Set them in a track's `displays` array to change the default:
@@ -300,8 +315,11 @@ export type VariantLayoutBackend =
  *   {
  *     type: 'LinearVariantDisplay',
  *     displayId: 'my-cohort',
- *     unit: 'haplotype',
- *     rows: { sort: ['NA12878', 'NA12891'], color: 'population' },
+ *     rows: {
+ *       field: 'haplotype',
+ *       sort: ['NA12878', 'NA12891'],
+ *       color: 'population',
+ *     },
  *     filter: [{ field: 'minorAlleleFrequency', gte: 0.05 }],
  *   },
  * ]
@@ -657,8 +675,8 @@ export function stateModelFactory(
         /**
          * #getter
          */
-        get unit(): VariantUnit {
-          return getConf(self, 'unit')
+        get rowsField(): VariantRowsField {
+          return getConf(self, ['rows', 'field'])
         },
         /**
          * #getter
@@ -1010,6 +1028,7 @@ export function stateModelFactory(
             if (arrangementIsStale) {
               self.resetRowArrangement()
             }
+            warnHaplotypeNameCollisions([...names])
             warnUnknownArrangementAttributes(self, sources)
           },
           /**
@@ -1240,13 +1259,41 @@ export function stateModelFactory(
           }))
         },
         /**
-         * #getter
-         * `TreeSidebarMixin`'s hook: a haplotype row answers to its sample's
-         * name, so an order, a label, a tint or a focus written against a
-         * sample reaches each of its haplotypes.
+         * #method
+         * `TreeSidebarMixin`'s hook: a haplotype row refines its sample, read
+         * off the row's own `sampleName` and `HP`, so an order, a label, a
+         * tint or a focus written against a sample reaches each of its
+         * haplotypes, a label as `Mother HP1`; a haploid sample's one row
+         * takes the sample's label alone.
          */
-        get rowAlias(): RowAlias {
-          return rowAliasOf(self.adapterSamples ?? [])
+        rowParent(row: ProcessedSource): RowParent | undefined {
+          return haplotypeRowParent(row, self.samplePloidy)
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: the haplotype rows phased mode draws, or
+         * would, so an order or a focus naming a haplotype reaches a sample
+         * row standing for it: in sample mode, a sample ranking at its first
+         * haplotype entry, and in phased mode before the ploidy lands.
+         */
+        get finerRows(): ProcessedSource[] {
+          return finerHaplotypeRows({
+            rows: self.discoveredRows,
+            ploidy: self.samplePloidy,
+            domain: [...self.rowSort, ...(self.rowFocus ?? [])],
+          })
+        },
+        /**
+         * #getter
+         * `TreeSidebarMixin`'s hook: a tree clustered per haplotype hides in
+         * sample mode, and says so.
+         */
+        get finerTreeHint(): { text: string; title: string } {
+          return {
+            text: 'Tree hidden — clustered per haplotype',
+            title:
+              'The tree was clustered on haplotype rows. Show rows per haplotype to draw it, or re-run clustering per sample. Click to dismiss.',
+          }
         },
         /**
          * #getter
@@ -1262,7 +1309,7 @@ export function stateModelFactory(
          * once `samplePloidy` lands or the order names them.
          */
         expandRows(rows: ProcessedSource[]): ProcessedSource[] {
-          return self.unit === 'haplotype'
+          return self.rowsField === 'haplotype'
             ? expandPhasedRows({
                 rows,
                 ploidy: self.samplePloidy,
@@ -1284,7 +1331,16 @@ export function stateModelFactory(
          */
         get sourcesBase(): Source[] | undefined {
           const sources = self.adapterSamples
-          return sources && (self.drawsRows ? self.narrowRows(sources) : [])
+          return (
+            sources &&
+            (self.drawsRows
+              ? narrowRows(sources, {
+                  kept: self.rowFocus ?? [],
+                  filter: self.rowFilter,
+                  rowAlias: entryAliasOf(sources),
+                })
+              : [])
+          )
         },
       }))
       .views(self => ({
@@ -1297,7 +1353,7 @@ export function stateModelFactory(
         get clusteringReady() {
           return (
             !!self.adapterSamples &&
-            (self.unit !== 'haplotype' || !!self.samplePloidy)
+            (self.rowsField !== 'haplotype' || !!self.samplePloidy)
           )
         },
         /**
@@ -1369,7 +1425,7 @@ export function stateModelFactory(
             sampleFilter: self.sampleFilter,
             siteFilter: self.siteFilter,
             filters: self.filters,
-            unit: self.unit,
+            rowsField: self.rowsField,
             color: self.cellHueRead,
             recordFields: self.recordFieldReads,
             showReference: !self.atGenomicPositions || self.showReference,
@@ -1765,7 +1821,7 @@ export function stateModelFactory(
               sites,
               genotypeCodesByFeatureId,
               anchorFeatureId: featureId,
-              phased: self.unit === 'haplotype',
+              phased: self.rowsField === 'haplotype',
             })
             if (sorted) {
               self.setRowOrder(sorted)
@@ -1835,67 +1891,17 @@ export function stateModelFactory(
           }
         },
       }))
-      .actions(self => {
-        const superApplyPlot = self.applyPlot
-        const superApplyDisplaySettings = self.applyDisplaySettings
-        // The unit decides what a row is called, so everything naming rows
-        // goes stale together, whichever write moved it: the menu, Edit plot,
-        // a share link or an agent. Not a reaction, which an undo's
-        // applySnapshot would fire mid-restore. `restate` writes again what
-        // the write said of the rows, which names them at the new unit.
-        function resettingRowsOnUnitChange<T>(
-          write: () => T,
-          restate?: () => void,
-        ) {
-          const before = self.unit
-          const result = write()
-          if (self.unit !== before) {
-            self.resetRowArrangement()
-            restate?.()
-          }
-          return result
-        }
-        return {
-          /**
-           * #action
-           */
-          setUnit(unit: VariantUnit) {
-            resettingRowsOnUnitChange(() => {
-              setConf(self, 'unit', unit)
-            })
-          },
-          /**
-           * #action
-           * `BaseDisplay`'s, resetting the row arrangement when it moves
-           * `unit`.
-           */
-          applyPlot(...args: Parameters<typeof superApplyPlot>) {
-            resettingRowsOnUnitChange(() => {
-              superApplyPlot(...args)
-            })
-          },
-          /**
-           * #action
-           * `BaseDisplay`'s, resetting the row arrangement when it moves
-           * `unit`, and then writing the `rows` the settings state, which
-           * name the rows at the new unit.
-           */
-          applyDisplaySettings(
-            settings: Record<string, unknown>,
-            options?: { allowSetters?: boolean },
-          ) {
-            const { rows } = settings
-            return resettingRowsOnUnitChange(
-              () => superApplyDisplaySettings(settings, options),
-              () => {
-                if (rows !== undefined) {
-                  superApplyDisplaySettings({ rows })
-                }
-              },
-            )
-          },
-        }
-      })
+      .actions(self => ({
+        /**
+         * #action
+         * What one row is, `rows.field`. A haplotype row answers to its
+         * sample's name, so the arrangement carries across the switch either
+         * way and a read interprets it at the field in force.
+         */
+        setRowsField(field: VariantRowsField) {
+          setConf(self, ['rows', 'field'], field)
+        },
+      }))
       .views(self => {
         const { trackMenuItems: superTrackMenuItems } = self
         return {
@@ -2012,7 +2018,7 @@ export function stateModelFactory(
          */
         get cellPaintOptions() {
           return {
-            phased: self.unit === 'haplotype',
+            phased: self.rowsField === 'haplotype',
             valuesRead: self.cellHueValuesRead,
           }
         },
@@ -2292,7 +2298,7 @@ export function stateModelFactory(
             ...self.recordsColorScales,
             ...(self.cellColorKeyed
               ? getVariantColorScales({
-                  unit: self.unit,
+                  rowsField: self.rowsField,
                   hasSecondaryAlt: self.hasSecondaryAlt,
                   hasAltWithoutPhaseSet: self.hasAltWithoutPhaseSet,
                   hasUnphased: self.hasUnphased,

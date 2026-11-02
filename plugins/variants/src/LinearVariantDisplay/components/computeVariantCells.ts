@@ -8,7 +8,7 @@ import { NO_RECORD_FIELD_READERS } from '../../shared/recordFields.ts'
 import { makeSiteStyler } from '../../shared/variantCellStyles.ts'
 
 import type { CellHueValues } from '../../shared/cellHue.ts'
-import type { VariantUnit } from '../../shared/constants.ts'
+import type { VariantRowsField } from '../../shared/constants.ts'
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type { RecordFieldReaders } from '../../shared/recordFields.ts'
 import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
@@ -64,7 +64,7 @@ function svAlleles(alts: string[], ref: string, feature: Feature) {
 export function computeVariantCells({
   filteredVariants,
   sources,
-  unit,
+  rowsField,
   showReference,
   hueValue,
   recordFields = NO_RECORD_FIELD_READERS,
@@ -76,7 +76,7 @@ export function computeVariantCells({
 }: {
   filteredVariants: FilteredVariant[]
   sources: ProcessedSource[]
-  unit: VariantUnit
+  rowsField: VariantRowsField
   showReference: boolean
   // what the alt cells' hue reads off a variant, once per feature
   hueValue?: (feature: Feature) => string | undefined
@@ -97,7 +97,7 @@ export function computeVariantCells({
     sources,
     sampleNames,
     genotypeDict,
-    unit,
+    rowsField,
     drawRef: showReference,
     colorByPhaseSet,
   })

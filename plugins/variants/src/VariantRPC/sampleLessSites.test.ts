@@ -40,7 +40,7 @@ test('a sample-less VCF keeps its sites, with no cells', () => {
   const cells = computeVariantCells({
     ...analyzed,
     sources: [],
-    unit: 'sample',
+    rowsField: 'sample',
     showReference: false,
   })
   expect(cells.featureInfo.map(i => [i.name, i.svType])).toEqual([

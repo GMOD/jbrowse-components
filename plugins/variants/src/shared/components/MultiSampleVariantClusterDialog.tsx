@@ -47,7 +47,7 @@ const MultiSampleVariantClusterDialog = observer(
             siteFilter: model.siteFilter,
             filters: model.filters,
             adapterConfig: model.adapterConfig,
-            unit: model.unit,
+            rowsField: model.rowsField,
             samplePloidy: model.samplePloidy,
             ...args,
           })

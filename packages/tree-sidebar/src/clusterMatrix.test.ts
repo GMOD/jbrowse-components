@@ -29,7 +29,7 @@ test('serializes row names that carry newick metacharacters', async () => {
     'has, a comma',
     "o'brien",
     'chr1:100-200',
-    'NA18536 HP0',
+    'NA18536 HP1',
   ]
   const { order, tree } = await clusterMatrix({
     data: new Map(names.map((n, i) => [n, [i, i * 2]])),

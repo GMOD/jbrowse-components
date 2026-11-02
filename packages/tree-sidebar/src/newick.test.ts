@@ -72,14 +72,14 @@ test('leaves a label with no metacharacter unquoted', () => {
 
 // A bare space is read as part of the label, so quoting it would change the
 // serialized form of nearly every clustered track to fix nothing. Variants'
-// phased rows are named `NA18536 HP0`, and the space is load-bearing since hover
+// phased rows are named `NA18536 HP1`, and the space is load-bearing since hover
 // and subtree filtering match leaf names against row names.
 test('leaves a label whose only special character is a space unquoted', () => {
-  expect(quoteName('NA18536 HP0')).toBe('NA18536 HP0')
+  expect(quoteName('NA18536 HP1')).toBe('NA18536 HP1')
   expect(quoteName('Brain Angular Gyrus')).toBe('Brain Angular Gyrus')
-  expect(roundTrip(['NA18536 HP0', 'NA18748 HP1'])).toEqual([
-    'NA18536 HP0',
-    'NA18748 HP1',
+  expect(roundTrip(['NA18536 HP1', 'NA18748 HP2'])).toEqual([
+    'NA18536 HP1',
+    'NA18748 HP2',
   ])
 })
 

@@ -11,7 +11,7 @@ import { PHASE_SET_FIELD } from './getPhasedColor.ts'
 import { IMPACT_FIELD, getImpactColor } from './variantConsequence.ts'
 import { getCachedABGR as abgr } from './variantWebglUtils.ts'
 
-import type { VariantUnit } from './constants.ts'
+import type { VariantRowsField } from './constants.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { ColorEncoding } from '@jbrowse/core/util/markEncoding'
 
@@ -36,11 +36,11 @@ const read = (encoding: ColorEncoding | undefined, keptField?: string) =>
 
 function reader(
   encoding: ColorEncoding | undefined,
-  unit: VariantUnit = 'sample',
+  rowsField: VariantRowsField = 'sample',
 ) {
   return cellHueReaderOf(read(encoding), {
     jexl: pluginManager.jexl,
-    unit,
+    rowsField,
   })
 }
 

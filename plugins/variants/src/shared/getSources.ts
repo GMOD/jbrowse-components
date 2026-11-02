@@ -1,5 +1,6 @@
-import type { VariantUnit } from './constants.ts'
+import type { VariantRowsField } from './constants.ts'
 import type { ProcessedSource, Source } from './types.ts'
+import type { RowParent } from '@jbrowse/tree-sidebar'
 
 // A source's bare VCF sample identity: `sampleName` when present (set once a
 // source is processed/HP-expanded), else the raw `name`. Single source of truth
@@ -14,20 +15,34 @@ export function resolveSampleName(source: Source) {
 // ploidy fallback of their own.
 type HaplotypeSource = ProcessedSource & { HP: number }
 
-const HAPLOTYPE_ROW_NAME = /^(.*) HP(\d+)$/
+const HAPLOTYPE_ROW_NAME = /^(.*) HP([1-9]\d*)$/
+
+/**
+ * A haplotype row's name, `"<sampleName> HP<n>"`, `n` counting the sample's
+ * alleles from 1. `HP`, the row's own field, is the allele's index from 0,
+ * which the genotype reads and the worker's rows index by.
+ */
+export function haplotypeRowName(sampleName: string, HP: number) {
+  return `${sampleName} HP${HP + 1}`
+}
 
 // A haploid sample's one row is the sample, so it reads as the sample. Only
-// the label says so: the name stays `HP0` whatever the window's ploidy, or a
+// the label says so: the name stays `HP1` whatever the window's ploidy, or a
 // sample haploid on chrX non-PAR and diploid in the PAR renames its row out of
 // the arrangement on a pan. `sole` is false beside any other row of the sample,
-// such as an HP1 the arrangement still names.
+// such as an HP2 the arrangement still names.
 function haplotypeRow(
   source: Source,
   sampleName: string,
   HP: number,
   sole: boolean,
 ): HaplotypeSource {
-  const row = { ...source, name: `${sampleName} HP${HP}`, sampleName, HP }
+  const row = {
+    ...source,
+    name: haplotypeRowName(sampleName, HP),
+    sampleName,
+    HP,
+  }
   return sole ? { ...row, label: source.label ?? sampleName } : row
 }
 
@@ -42,9 +57,10 @@ function makeHaplotypeSources(
 }
 
 /**
- * The inverse of the haplotype naming: the sample a row name belongs to, and
- * the haplotype where it names one. A current sample's own name wins, so a
- * sample called "X HP0" never reads as a haplotype of "X". Undefined for a
+ * The inverse of the haplotype naming, for a name that has no row to read
+ * (an arrangement entry): the sample it belongs to, and the allele index
+ * (`HP`) where it names a haplotype. A current sample's own name wins, so a
+ * sample called "X HP1" never reads as a haplotype of "X". Undefined for a
  * name no current sample answers to.
  */
 export function parseRowName(
@@ -56,26 +72,38 @@ export function parseRowName(
   }
   const match = HAPLOTYPE_ROW_NAME.exec(name)
   return match && samples.has(match[1]!)
-    ? { sampleName: match[1]!, HP: Number(match[2]) }
+    ? { sampleName: match[1]!, HP: Number(match[2]) - 1 }
     : undefined
 }
 
 /**
- * The sample each row name answers to, per `parseRowName`, remembered per
- * name: the arrangement asks once per row on every region arrival, and the
- * samples change far less often.
+ * The sample each arrangement entry names, per `parseRowName`, for a reader
+ * with no haplotype rows to read it off: the fetch's samples and the tables
+ * export's narrowing. Remembered per name, since the samples change far less
+ * often than the narrowing is asked.
  */
-export function rowAliasOf(sources: readonly Source[]) {
+export function entryAliasOf(sources: readonly Source[]) {
   const samples = new Set(sources.map(resolveSampleName))
   const memo = new Map<string, string | undefined>()
   return (name: string) => {
-    let sample = memo.get(name)
-    if (sample === undefined && !memo.has(name)) {
-      sample = parseRowName(name, samples)?.sampleName
-      memo.set(name, sample)
+    if (!memo.has(name)) {
+      memo.set(name, parseRowName(name, samples)?.sampleName)
     }
-    return sample
+    return memo.get(name)
   }
+}
+
+/**
+ * The samples whose name is also another sample's haplotype row name, `X HP1`
+ * beside `X`: in phased mode the two rows share a name, and an entry naming
+ * it reaches the sample.
+ */
+export function haplotypeNameCollisions(samples: readonly string[]) {
+  const names = new Set(samples)
+  return samples.filter(name => {
+    const match = HAPLOTYPE_ROW_NAME.exec(name)
+    return !!match && names.has(match[1]!)
+  })
 }
 
 // The "<sampleName> HP<n>" haplotype-row convention, with `parseRowName` its
@@ -123,7 +151,7 @@ export function expandSourcesToHaplotypes({
 export function buildCanonicalRows({
   samplePloidy,
   sampleFilter,
-  unit,
+  rowsField,
 }: {
   samplePloidy: Record<string, number>
   // `undefined` is "every sample", an empty list is "no samples" — they are not
@@ -132,7 +160,7 @@ export function buildCanonicalRows({
   // nothing sends `[]` and must compute nothing, which is also what the display
   // will draw.
   sampleFilter: string[] | undefined
-  unit: VariantUnit
+  rowsField: VariantRowsField
 }): ProcessedSource[] {
   const keep = sampleFilter ? new Set(sampleFilter) : undefined
   const rows: ProcessedSource[] = []
@@ -141,7 +169,7 @@ export function buildCanonicalRows({
       rows.push({ name: sampleName, sampleName })
     }
   }
-  return unit === 'haplotype'
+  return rowsField === 'haplotype'
     ? expandSourcesToHaplotypes({ sources: rows, samplePloidy })
     : rows
 }
@@ -216,4 +244,37 @@ export function expandPhasedRows({
     }
   }
   return expanded ? out : rows
+}
+
+/**
+ * The sample a haplotype row refines, read off the row's own `sampleName` and
+ * `HP`, and what its label adds to the sample's (` HP1`): nothing for a
+ * haploid sample's one row, which reads as the sample. None for a sample row.
+ */
+export function haplotypeRowParent(
+  row: ProcessedSource,
+  ploidy: Readonly<Record<string, number>> | undefined,
+): RowParent | undefined {
+  return row.HP === undefined
+    ? undefined
+    : {
+        name: row.sampleName,
+        labelSuffix:
+          ploidy?.[row.sampleName] === 1
+            ? ''
+            : row.name.slice(row.sampleName.length),
+      }
+}
+
+/**
+ * The haplotype rows phased mode would draw over sample-mode `rows`, which a
+ * sample-mode arrangement reads haplotype entries through: a sample ranks at
+ * its first haplotype entry, and a focus naming one keeps the sample.
+ */
+export function finerHaplotypeRows(args: {
+  rows: ProcessedSource[]
+  ploidy: Readonly<Record<string, number>> | undefined
+  domain: readonly string[]
+}) {
+  return expandPhasedRows(args).filter(row => row.HP !== undefined)
 }

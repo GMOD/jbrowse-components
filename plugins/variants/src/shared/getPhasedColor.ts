@@ -97,7 +97,7 @@ export function getPhasedColor(
 ) {
   const allele = alleles[HP]
   // The sample has no allele at this haplotype index: phased expansion gives
-  // every sample `maxPloidy` rows, and a diploid sample has nothing for HP2.
+  // every sample `maxPloidy` rows, and a diploid sample has nothing for HP3.
   if (allele === undefined) {
     return ''
   }

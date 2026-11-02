@@ -6922,7 +6922,10 @@ export const configManifest: ConfigManifest = {
               "tree",
               "kept",
               "colors"
-            ]
+            ],
+            "refines": {
+              "haplotype": "sample"
+            }
           },
           "shorthand": {
             "string": "field"
@@ -6943,10 +6946,6 @@ export const configManifest: ConfigManifest = {
           ],
           "schema": "SampleTooltip",
           "writes": "members"
-        },
-        {
-          "name": "unit",
-          "type": "VariantUnit"
         },
         {
           "name": "encoding",
@@ -7303,7 +7302,8 @@ export const configManifest: ConfigManifest = {
           "rows.colors",
           "rows.color"
         ],
-        "axis": "rows.axis"
+        "axis": "rows.axis",
+        "unit": "rows.field"
       },
       "aliases": [
         "LinearMultiSampleVariantDisplay",
@@ -8251,10 +8251,6 @@ export const configManifest: ConfigManifest = {
               "liftsNumbers": true
             },
             {
-              "name": "field",
-              "type": "SampleRowsField"
-            },
-            {
               "name": "axis",
               "type": "RowAxisConfigurationSchema",
               "subSlots": [
@@ -8320,19 +8316,7 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "MafRows",
-          "writes": {
-            "keyedBy": "field",
-            "keyed": [
-              "sort",
-              "labels",
-              "tree",
-              "kept",
-              "colors"
-            ]
-          },
-          "shorthand": {
-            "string": "field"
-          },
+          "writes": "members",
           "misnamed": {
             "treeProvenance": "tree.provenance"
           }

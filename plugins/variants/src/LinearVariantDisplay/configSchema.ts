@@ -6,7 +6,7 @@ import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeCon
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { VARIANT_DISPLAY, VARIANT_UNITS } from '../shared/constants.ts'
+import { VARIANT_DISPLAY } from '../shared/constants.ts'
 import { cellEncodingConfigSchema } from './cellEncodingConfigSchema.ts'
 import { recordsBandConfigSchema } from './recordsBandConfigSchema.ts'
 import { retiredConfigSpellings } from './retired.ts'
@@ -66,8 +66,9 @@ export const DEFAULT_VARIANT_DISPLAY_HEIGHT = 200
  * ```
  *
  * #example
- * Phased haplotype rows, one per haplotype of each sample. `rows` arranges
- * them by sample name, so the order below puts both of HG002's rows first:
+ * Phased haplotype rows, one per haplotype of each sample, named
+ * `HG002 HP1`, `HG002 HP2`. A sample's name stands for its haplotype rows,
+ * so the order below puts both of HG002's rows first:
  * ```js
  * {
  *   type: 'VariantTrack',
@@ -82,8 +83,7 @@ export const DEFAULT_VARIANT_DISPLAY_HEIGHT = 200
  *     {
  *       type: 'LinearVariantDisplay',
  *       height: 400,
- *       unit: 'haplotype',
- *       rows: { sort: ['HG002'] },
+ *       rows: { field: 'haplotype', sort: ['HG002'] },
  *     },
  *   ],
  * }
@@ -173,12 +173,12 @@ export default function configSchemaFactory() {
       filter: fieldPredicateList(),
       /**
        * #slot rows
-       * The rows are the file's samples, and the object is the arrangement a
-       * reader gives them, each member by row name: a sample in allele-count
-       * mode, a haplotype (`"<sample> HP<n>"`) in phased mode, where a sample
-       * name stands for all of its haplotypes. The samples `sort` lists come
-       * first and the rest keep the file's order; a facet groups within it.
-       * `rows.step` is the row height.
+       * What one row is, `rows.field`: a sample, or with `'haplotype'` one
+       * phased haplotype of one, named `"<sample> HP1"`, `"HP2"`. The rest of
+       * the object is the arrangement a reader gives the rows, each member by
+       * row name, where a sample's name stands for its haplotype rows. The
+       * samples `sort` lists come first and the rest keep the file's order; a
+       * facet groups within it. `rows.step` is the row height.
        */
       rows: variantRowsConfigSchema,
       /**
@@ -203,17 +203,6 @@ export default function configSchemaFactory() {
         },
         { closed: true },
       ),
-      /**
-       * #slot
-       */
-      unit: {
-        type: 'stringEnum',
-        model: types.enumeration('VariantUnit', [...VARIANT_UNITS]),
-        defaultValue: 'sample',
-        description:
-          "The unit one row draws: 'sample' colors each row by allele dosage, 'haplotype' draws one row per phased haplotype",
-        plot: true,
-      },
       /**
        * #slot encoding
        * The channels the records and the genotype cells share:
@@ -328,6 +317,7 @@ export default function configSchemaFactory() {
         rowHeight: 'rows.step',
         rowColor: ['rows.colors', 'rows.color'],
         axis: 'rows.axis',
+        unit: 'rows.field',
       },
       preProcessSnapshot: liftMinorAlleleFrequencyFilter,
     },

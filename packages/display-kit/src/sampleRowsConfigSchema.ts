@@ -4,33 +4,14 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { rowsConfigSchema } from './rowsConfigSchema.ts'
 
 /**
- * #config SampleRows
- * #category display
- * The `rows` of a display whose rows are the file's samples, one each, with
- * nothing else a row could be: the variant display and the
- * multiple alignment display. `sample` is the one field, so the object is
- * the arrangement a reader gives the rows, and writing it changes only the
- * members stated. Nothing needs `rows: "sample"`, which writes nothing.
- *
- * #example
- * ```js
- * { type: 'LinearVariantDisplay', rows: { sort: ['HG002', 'HG003'] } }
- * ```
- * ```js
- * {
- *   type: 'LinearMafDisplay',
- *   rows: { sort: ['mm10'], labels: { mm10: 'Mouse' }, kept: ['mm10', 'hg38'] },
- * }
- * ```
+ * @deprecated no display's `rows` extends it: MAF's `rows` (`MafRows`) takes
+ * no `field`, and the variant display's is `VariantRows`. Kept while
+ * `@jbrowse/display-kit/sampleRowsConfigSchema` stays a served subpath; a
+ * plugin wanting the arrangement extends `rowArrangementConfigSchema`.
  */
 export const sampleRowsConfigSchema = ConfigurationSchema(
   'SampleRows',
   {
-    /**
-     * #slot field
-     * `sample`, the one field a row of these displays can be: a sample or a
-     * haplotype of one on the variant display, a genome on the alignment.
-     */
     field: {
       type: 'stringEnum',
       model: types.enumeration('SampleRowsField', ['sample']),
@@ -38,10 +19,5 @@ export const sampleRowsConfigSchema = ConfigurationSchema(
       description: 'sample, the one field a row can be',
     },
   },
-  {
-    /**
-     * #baseConfiguration
-     */
-    baseConfiguration: rowsConfigSchema,
-  },
+  { baseConfiguration: rowsConfigSchema },
 )

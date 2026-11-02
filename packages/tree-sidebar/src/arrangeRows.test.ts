@@ -1,25 +1,71 @@
-import { arrangeRows, bandRows, orderRowsByDomain } from './arrangeRows.ts'
+import {
+  arrangeRows,
+  bandRows,
+  orderRowsByDomain,
+  rowAliasOver,
+} from './arrangeRows.ts'
 import { keptRows } from './clusterUtils.ts'
 
-import type { ArrangeRowsHooks, RowAlias } from './arrangeRows.ts'
+import type { ArrangeRowsHooks, RowParent } from './arrangeRows.ts'
 import type { RowSource } from './types.ts'
 
-// A variant display's haplotype rows, "<sample> HP<n>", each answering to its
-// sample, and a sample row to itself.
-function haplotypeAlias(samples: string[]): RowAlias {
-  const known = new Set(samples)
-  return name => {
-    if (known.has(name)) {
-      return name
-    }
-    const sample = / HP\d+$/.test(name) ? name.replace(/ HP\d+$/, '') : ''
-    return known.has(sample) ? sample : undefined
+interface HaplotypeRow extends RowSource {
+  sampleName: string
+  HP?: number
+}
+
+// A variant display's rows: a sample, or its haplotypes "<sample> HP1",
+// "<sample> HP2", each reading its sample off its own `sampleName` and `HP`
+function sampleRow(sampleName: string): HaplotypeRow {
+  return { name: sampleName, sampleName }
+}
+
+function haplotypeRows(sampleName: string, ploidy = 2): HaplotypeRow[] {
+  return Array.from({ length: ploidy }, (_, HP) => ({
+    name: `${sampleName} HP${HP + 1}`,
+    sampleName,
+    HP,
+    ...(ploidy === 1 ? { label: sampleName } : {}),
+  }))
+}
+
+function haplotypeParent(row: HaplotypeRow): RowParent | undefined {
+  return row.HP === undefined
+    ? undefined
+    : {
+        name: row.sampleName,
+        labelSuffix: row.label === row.sampleName ? '' : ` HP${row.HP + 1}`,
+      }
+}
+
+function phasedHooks(rows: HaplotypeRow[]): ArrangeRowsHooks<HaplotypeRow> {
+  return {
+    unlistedRowsSort: 'source',
+    rowAlias: rowAliasOver(rows, [], haplotypeParent),
+    rowParent: haplotypeParent,
   }
 }
 
-const hooks: ArrangeRowsHooks = {
+// sample mode: the samples drawn, their haplotype rows the finer ones
+function sampleHooks(
+  samples: string[],
+  ploidy = 2,
+): ArrangeRowsHooks<HaplotypeRow> {
+  return {
+    unlistedRowsSort: 'source',
+    rowAlias: rowAliasOver(
+      samples.map(sampleRow),
+      samples.flatMap(sample => haplotypeRows(sample, ploidy)),
+      haplotypeParent,
+    ),
+    rowParent: haplotypeParent,
+  }
+}
+
+const hooks: ArrangeRowsHooks<RowSource> = {
   unlistedRowsSort: 'source',
   rowAlias: undefined,
+  rowParent: () => undefined,
 }
 const none = { domain: [], labels: {} }
 const names = (rows: { name: string }[]) => rows.map(r => r.name)
@@ -86,27 +132,90 @@ describe('orderRowsByDomain', () => {
 })
 
 describe('orderRowsByDomain with an alias', () => {
-  const haplotypes = ['HG001', 'HG002', 'HG003'].flatMap(sample => [
-    { name: `${sample} HP0` },
-    { name: `${sample} HP1` },
-  ])
-  const alias = haplotypeAlias(['HG001', 'HG002', 'HG003'])
+  const haplotypes = ['HG001', 'HG002', 'HG003'].flatMap(sample =>
+    haplotypeRows(sample),
+  )
+  const alias = rowAliasOver(haplotypes, [], haplotypeParent)
 
   test('a sample name places each of its haplotypes, in the order they came', () => {
     expect(
-      names(orderRowsByDomain(haplotypes, ['HG003', 'HG002 HP1'], alias)),
+      names(orderRowsByDomain(haplotypes, ['HG003', 'HG002 HP2'], alias)),
     ).toEqual([
-      'HG003 HP0',
       'HG003 HP1',
-      'HG002 HP1',
-      'HG001 HP0',
+      'HG003 HP2',
+      'HG002 HP2',
       'HG001 HP1',
-      'HG002 HP0',
+      'HG001 HP2',
+      'HG002 HP1',
     ])
   })
 
   test('an order that moves nothing hands back the rows', () => {
     expect(orderRowsByDomain(haplotypes, ['HG001'], alias)).toBe(haplotypes)
+  })
+})
+
+describe('sort across the haplotype switch', () => {
+  const samples = ['A', 'B', 'C']
+  const phased = samples.flatMap(sample => haplotypeRows(sample))
+  const sampled = samples.map(sampleRow)
+  const arranged = (
+    rows: HaplotypeRow[],
+    domain: string[],
+    with_: ArrangeRowsHooks<HaplotypeRow>,
+  ) => names(arrangeRows(rows, { domain, labels: {} }, with_))
+
+  test('a row ranks at the earlier of its own entry and its sample entry', () => {
+    expect(
+      arranged(phased, ['B HP2', 'C', 'A HP1', 'B'], phasedHooks(phased)),
+    ).toEqual(['B HP2', 'C HP1', 'C HP2', 'A HP1', 'B HP1', 'A HP2'])
+  })
+
+  test('collapsing, a sample ranks at its first haplotype entry', () => {
+    expect(
+      arranged(
+        sampled,
+        ['C HP2', 'A HP1', 'C HP1', 'B HP2'],
+        sampleHooks(samples),
+      ),
+    ).toEqual(['C', 'A', 'B'])
+  })
+
+  test("a sample's own entry ranks it where it comes before its haplotypes'", () => {
+    expect(
+      arranged(sampled, ['B', 'A HP1', 'B HP1'], sampleHooks(samples)),
+    ).toEqual(['B', 'A', 'C'])
+  })
+
+  // phased reorder, then a sample-mode reorder writing its rows ahead of the
+  // haplotype entries (`orderOver`), then phased again: the latest wins
+  test('the latest reorder wins at either field', () => {
+    const phasedOrder = ['C HP1', 'A HP2', 'C HP2', 'A HP1', 'B HP1', 'B HP2']
+    expect(arranged(sampled, phasedOrder, sampleHooks(samples))).toEqual([
+      'C',
+      'A',
+      'B',
+    ])
+    const sampleOrder = ['B', 'A', 'C', ...phasedOrder]
+    expect(arranged(phased, sampleOrder, phasedHooks(phased))).toEqual([
+      'B HP1',
+      'B HP2',
+      'A HP1',
+      'A HP2',
+      'C HP1',
+      'C HP2',
+    ])
+  })
+
+  test('a haplotype entry ranks no sibling in phased mode', () => {
+    expect(arranged(phased, ['B HP2'], phasedHooks(phased))).toEqual([
+      'B HP2',
+      'A HP1',
+      'A HP2',
+      'B HP1',
+      'C HP1',
+      'C HP2',
+    ])
   })
 })
 
@@ -165,28 +274,47 @@ describe('arrangeRows', () => {
     ).toBe(values)
   })
 
-  test('a label by row name, then by its alias', () => {
-    const haplotypes = ['HG001', 'HG002'].flatMap(sample => [
-      { name: `${sample} HP0` },
-      { name: `${sample} HP1` },
-    ])
+  test("a row's own label exactly, else its sample's composed with its haplotype", () => {
+    const haplotypes = ['HG001', 'HG002'].flatMap(sample =>
+      haplotypeRows(sample),
+    )
     const out = arrangeRows(
       haplotypes,
       {
         domain: [],
-        labels: { 'HG001 HP1': 'One, second', HG002: 'Second' },
+        labels: { 'HG001 HP2': 'paternal', HG002: 'Mother' },
       },
-      {
-        unlistedRowsSort: 'source',
-        rowAlias: haplotypeAlias(['HG001', 'HG002']),
-      },
+      phasedHooks(haplotypes),
     )
-    expect(out).toEqual([
-      { name: 'HG001 HP0' },
-      { name: 'HG001 HP1', label: 'One, second' },
-      { name: 'HG002 HP0', label: 'Second' },
-      { name: 'HG002 HP1', label: 'Second' },
+    expect(out.map(row => row.label)).toEqual([
+      undefined,
+      'paternal',
+      'Mother HP1',
+      'Mother HP2',
     ])
+  })
+
+  test("a haploid sample's one row takes the bare sample label", () => {
+    const rows = [...haplotypeRows('X', 1), ...haplotypeRows('Y')]
+    const out = arrangeRows(
+      rows,
+      { domain: [], labels: { X: 'Father', Y: 'Mother' } },
+      phasedHooks(rows),
+    )
+    expect(out.map(row => row.label)).toEqual([
+      'Father',
+      'Mother HP1',
+      'Mother HP2',
+    ])
+  })
+
+  test('a haplotype entry waits unseen in sample mode', () => {
+    const out = arrangeRows(
+      [sampleRow('X'), sampleRow('Y')],
+      { domain: [], labels: { 'X HP1': 'paternal', Y: 'Mother' } },
+      sampleHooks(['X', 'Y']),
+    )
+    expect(out.map(row => row.label)).toEqual([undefined, 'Mother'])
   })
 
   test('a row called constructor reads no inherited label', () => {
@@ -200,35 +328,43 @@ describe('arrangeRows', () => {
 })
 
 describe('keptRows with an alias', () => {
-  const samples = [{ name: 'HG001' }, { name: 'HG002' }, { name: 'HG003' }]
-  const haplotypes = ['HG001', 'HG002'].flatMap(sample => [
-    { name: `${sample} HP0` },
-    { name: `${sample} HP1` },
-  ])
-  const alias = haplotypeAlias(['HG001', 'HG002', 'HG003'])
+  const samples = [sampleRow('HG001'), sampleRow('HG002'), sampleRow('HG003')]
+  const haplotypes = ['HG001', 'HG002'].flatMap(sample => haplotypeRows(sample))
+  const alias = rowAliasOver(
+    haplotypes,
+    ['HG001', 'HG002', 'HG003'].flatMap(sample => haplotypeRows(sample)),
+    haplotypeParent,
+  )
+  const sampleAlias = sampleHooks(['HG001', 'HG002', 'HG003']).rowAlias
+
+  test('a focus on a haplotype keeps its sample, in sample mode', () => {
+    expect(names(keptRows(samples, ['HG002 HP2'], sampleAlias))).toEqual([
+      'HG002',
+    ])
+  })
 
   test('a focus on a haplotype keeps its sample, for the fetch', () => {
     expect(names(keptRows(samples, ['HG002 HP1'], alias))).toEqual(['HG002'])
   })
 
   test('and only that haplotype among the rows drawn', () => {
-    expect(names(keptRows(haplotypes, ['HG002 HP1'], alias))).toEqual([
-      'HG002 HP1',
+    expect(names(keptRows(haplotypes, ['HG002 HP2'], alias))).toEqual([
+      'HG002 HP2',
     ])
   })
 
   test('a sample name keeps all of its haplotypes', () => {
     expect(names(keptRows(haplotypes, ['HG001'], alias))).toEqual([
-      'HG001 HP0',
       'HG001 HP1',
+      'HG001 HP2',
     ])
   })
 
   // The display says so in a notice rather than drawing every row
   test('a focus naming no current row keeps none, and no focus keeps every row', () => {
-    expect(keptRows(samples, ['NA0001'], alias)).toEqual([])
-    expect(keptRows(samples, undefined, alias)).toBe(samples)
-    expect(keptRows(samples, [], alias)).toBe(samples)
+    expect(keptRows(samples, ['NA0001'], sampleAlias)).toEqual([])
+    expect(keptRows(samples, undefined, sampleAlias)).toBe(samples)
+    expect(keptRows(samples, [], sampleAlias)).toBe(samples)
   })
 })
 

@@ -1,8 +1,9 @@
 import {
+  entryAliasOf,
   expandPhasedRows,
   expandSourcesToHaplotypes,
+  haplotypeNameCollisions,
   parseRowName,
-  rowAliasOf,
 } from './getSources.ts'
 
 describe('expandSourcesToHaplotypes', () => {
@@ -16,10 +17,10 @@ describe('expandSourcesToHaplotypes', () => {
     const result = expandSourcesToHaplotypes({ sources, samplePloidy })
 
     expect(result).toEqual([
-      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
-      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
-      { name: 'HG002 HP0', sampleName: 'HG002', HP: 0 },
-      { name: 'HG002 HP1', sampleName: 'HG002', HP: 1 },
+      { name: 'HG001 HP1', sampleName: 'HG001', HP: 0 },
+      { name: 'HG001 HP2', sampleName: 'HG001', HP: 1 },
+      { name: 'HG002 HP1', sampleName: 'HG002', HP: 0 },
+      { name: 'HG002 HP2', sampleName: 'HG002', HP: 1 },
     ])
   })
 
@@ -34,12 +35,12 @@ describe('expandSourcesToHaplotypes', () => {
 
     expect(result).toHaveLength(5)
     expect(result[2]).toMatchObject({
-      name: 'HG002 HP0',
+      name: 'HG002 HP1',
       sampleName: 'HG002',
       HP: 0,
     })
     expect(result[4]).toMatchObject({
-      name: 'HG002 HP2',
+      name: 'HG002 HP3',
       sampleName: 'HG002',
       HP: 2,
     })
@@ -54,9 +55,9 @@ describe('expandSourcesToHaplotypes', () => {
 
     const rows = expandSourcesToHaplotypes({ sources, samplePloidy })
     expect(rows.map(s => s.name)).toEqual([
-      'CFT073 HP0',
-      'HG001 HP0',
+      'CFT073 HP1',
       'HG001 HP1',
+      'HG001 HP2',
     ])
     expect(rows.map(s => s.label)).toEqual(['CFT073', undefined, undefined])
   })
@@ -68,8 +69,8 @@ describe('expandSourcesToHaplotypes', () => {
     const result = expandSourcesToHaplotypes({ sources, samplePloidy })
 
     expect(result).toEqual([
-      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
-      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
+      { name: 'HG001 HP1', sampleName: 'HG001', HP: 0 },
+      { name: 'HG001 HP2', sampleName: 'HG001', HP: 1 },
     ])
   })
 
@@ -78,8 +79,8 @@ describe('expandSourcesToHaplotypes', () => {
   // and the model `sources` getter, which previously hand-rolled it.
   test('passes through sources that already have an HP index', () => {
     const sources = [
-      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
-      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
+      { name: 'HG001 HP1', sampleName: 'HG001', HP: 0 },
+      { name: 'HG001 HP2', sampleName: 'HG001', HP: 1 },
     ]
     const samplePloidy = {
       HG001: 2,
@@ -99,7 +100,7 @@ describe('expandSourcesToHaplotypes', () => {
     const result = expandSourcesToHaplotypes({ sources, samplePloidy })
 
     expect(result[0]).toMatchObject({
-      name: 'HG001 HP0',
+      name: 'HG001 HP1',
       sampleName: 'HG001',
       HP: 0,
       color: 'red',
@@ -109,11 +110,11 @@ describe('expandSourcesToHaplotypes', () => {
 })
 
 describe('parseRowName', () => {
-  const samples = new Set(['HG001', 'X HP0'])
+  const samples = new Set(['HG001', 'X HP1'])
 
   test('reads a sample, and a haplotype back to its sample', () => {
     expect(parseRowName('HG001', samples)).toEqual({ sampleName: 'HG001' })
-    expect(parseRowName('HG001 HP1', samples)).toEqual({
+    expect(parseRowName('HG001 HP2', samples)).toEqual({
       sampleName: 'HG001',
       HP: 1,
     })
@@ -121,19 +122,27 @@ describe('parseRowName', () => {
 
   // A sample's own name wins over the haplotype reading of it.
   test('a sample called like a haplotype is the sample', () => {
-    expect(parseRowName('X HP0', samples)).toEqual({ sampleName: 'X HP0' })
+    expect(parseRowName('X HP1', samples)).toEqual({ sampleName: 'X HP1' })
+  })
+
+  test('HP0 names no haplotype: the numbering counts from 1', () => {
+    expect(parseRowName('HG001 HP0', samples)).toBeUndefined()
+    expect(parseRowName('HG001 HP2', samples)).toEqual({
+      sampleName: 'HG001',
+      HP: 1,
+    })
   })
 
   test('a name no current sample answers to is undefined', () => {
-    expect(parseRowName('HG002 HP0', samples)).toBeUndefined()
+    expect(parseRowName('HG002 HP1', samples)).toBeUndefined()
     expect(parseRowName('HG002', samples)).toBeUndefined()
   })
 })
 
-test('rowAliasOf answers as parseRowName does, asked again', () => {
-  const alias = rowAliasOf([{ name: 'a', sampleName: 'HG001' }])
+test('entryAliasOf answers as parseRowName does, asked again', () => {
+  const alias = entryAliasOf([{ name: 'a', sampleName: 'HG001' }])
   for (let i = 0; i < 2; i++) {
-    expect(alias('HG001 HP1')).toBe('HG001')
+    expect(alias('HG001 HP2')).toBe('HG001')
     expect(alias('HG001')).toBe('HG001')
     expect(alias('a')).toBeUndefined()
   }
@@ -151,11 +160,11 @@ describe('expandPhasedRows', () => {
   test('a row per haplotype by ploidy, each carrying its sample', () => {
     const out = expandPhasedRows({ rows, ploidy, domain: [] })
     expect(names(out)).toEqual([
-      'HG001 HP0',
       'HG001 HP1',
-      'HG002 HP0',
+      'HG001 HP2',
       'HG002 HP1',
-      'HG003 HP0',
+      'HG002 HP2',
+      'HG003 HP1',
     ])
     expect(out[4]).toMatchObject({ label: 'HG003' })
     expect(out[1]).toMatchObject({
@@ -173,29 +182,35 @@ describe('expandPhasedRows', () => {
     const out = expandPhasedRows({
       rows,
       ploidy: undefined,
-      domain: ['HG002 HP1', 'HG002 HP0', 'HG001'],
+      domain: ['HG002 HP2', 'HG002 HP1', 'HG001'],
     })
-    expect(names(out)).toEqual(['HG001', 'HG002 HP0', 'HG002 HP1', 'HG003'])
+    expect(names(out)).toEqual(['HG001', 'HG002 HP1', 'HG002 HP2', 'HG003'])
   })
 
   // 1000G chrX: a male is diploid in the PAR and haploid past it, so a pan
   // across the boundary changes his ploidy under an arrangement naming both
-  // haplotypes. The HP0 row keeps the name the arrangement holds.
+  // haplotypes. The HP1 row keeps the name the arrangement holds.
   test("a sample's rows keep their names when its ploidy drops", () => {
-    const domain = ['HG003 HP0', 'HG003 HP1']
+    const domain = ['HG003 HP1', 'HG003 HP2']
     const diploid = expandPhasedRows({
       rows,
       ploidy: { ...ploidy, HG003: 2 },
       domain,
     })
     const haploid = expandPhasedRows({ rows, ploidy, domain })
-    expect(names(diploid).slice(-2)).toEqual(['HG003 HP0', 'HG003 HP1'])
-    expect(names(haploid).slice(-2)).toEqual(['HG003 HP0', 'HG003 HP1'])
-    // beside its HP1 row, HP0 is not the whole sample
+    expect(names(diploid).slice(-2)).toEqual(['HG003 HP1', 'HG003 HP2'])
+    expect(names(haploid).slice(-2)).toEqual(['HG003 HP1', 'HG003 HP2'])
+    // beside its HP2 row, HP1 is not the whole sample
     expect(haploid.slice(-2).map(r => r.label)).toEqual([undefined, undefined])
   })
 
   test('the rows themselves while no sample expands', () => {
     expect(expandPhasedRows({ rows, ploidy: undefined, domain: [] })).toBe(rows)
   })
+})
+
+test("a sample named as another sample's haplotype row is found", () => {
+  expect(
+    haplotypeNameCollisions(['X', 'X HP1', 'Y HP2', 'Z HP0', 'Z']),
+  ).toEqual(['X HP1'])
 })

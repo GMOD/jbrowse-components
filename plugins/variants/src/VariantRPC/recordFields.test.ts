@@ -27,7 +27,7 @@ function cellsReading(reads: Partial<RecordFieldReads>) {
   return computeVariantCells({
     ...analyzeVariants({ features, keepSampleLessSites: true }),
     sources: [],
-    unit: 'sample',
+    rowsField: 'sample',
     showReference: false,
     recordFields: recordFieldReaders(
       { ...NO_RECORD_FIELD_READS, ...reads },

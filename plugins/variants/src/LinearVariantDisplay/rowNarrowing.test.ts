@@ -114,12 +114,12 @@ test('clustering, the tree, the chip and the fetch agree', () => {
 // its haplotypes; the order naming them expands them before any cell lands.
 test('a phased sample name keeps its haplotype rows under a filter', () => {
   const display = loaded({
-    sort: ['S1 HP0', 'S1 HP1', 'S3 HP0', 'S3 HP1'],
+    sort: ['S1 HP1', 'S1 HP2', 'S3 HP1', 'S3 HP2'],
     filter: [{ field: 'population', equal: 'EUR' }],
     kept: ['S1'],
   })
-  display.setUnit('haplotype')
-  expect(namesOf(display.sources)).toEqual(['S1 HP0', 'S1 HP1'])
+  display.setRowsField('haplotype')
+  expect(namesOf(display.sources)).toEqual(['S1 HP1', 'S1 HP2'])
   expect(display.sampleFilter).toEqual(['S1'])
 })
 

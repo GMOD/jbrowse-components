@@ -68,7 +68,7 @@ function landCells(display: Display, regionIndex: number) {
 // arrangement regression lived on, per row inside one arranger run.
 test('what each row step recomputes, phased', async () => {
   const { display, view } = createTestEnvironment({
-    displayConfig: { ...RECORDS_BAND_OFF, unit: 'haplotype' },
+    displayConfig: { ...RECORDS_BAND_OFF, rows: { field: 'haplotype' } },
   }).createDisplay()
   const firstEdited = (edit: Partial<ProcessedSource>) => {
     const [first, ...rest] = display.editableSources
@@ -131,7 +131,7 @@ test('what each row step recomputes, phased', async () => {
           rpcManager: {
             call: async () => ({
               order: [2, 3, 0, 1],
-              tree: '((S2 HP0,S2 HP1),(S0 HP0,S0 HP1));',
+              tree: '((S2 HP1,S2 HP2),(S0 HP1,S0 HP2));',
             }),
           },
           sessionId: 'census',
@@ -164,8 +164,7 @@ test('what each row step recomputes, phased and colored by population', async ()
   const { display } = createTestEnvironment({
     displayConfig: {
       ...RECORDS_BAND_OFF,
-      unit: 'haplotype',
-      rows: { color: 'population' },
+      rows: { field: 'haplotype', color: 'population' },
     },
   }).createDisplay()
   const table = await workCensus(display, [
@@ -206,7 +205,7 @@ test('what each row step recomputes, phased and banded by population', async () 
   const { display } = createTestEnvironment({
     displayConfig: {
       ...RECORDS_BAND_OFF,
-      unit: 'haplotype',
+      rows: { field: 'haplotype' },
       facet: 'population',
     },
   }).createDisplay()

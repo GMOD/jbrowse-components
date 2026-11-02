@@ -141,7 +141,7 @@ export async function variantCellData({
   const {
     layout,
     sampleFilter,
-    unit,
+    rowsField,
     showReference = false,
     color,
     recordFields = NO_RECORD_FIELD_READS,
@@ -225,7 +225,7 @@ export async function variantCellData({
   // key and the cells agree.
   const hue = cellHueReaderOf(color, {
     jexl: pluginManager.jexl,
-    unit,
+    rowsField,
   })
   const colorByPhaseSet = hue.byPhaseSet ?? false
   const readers = recordFieldReaders(recordFields, pluginManager.jexl)
@@ -238,7 +238,7 @@ export async function variantCellData({
   const effectiveSources = buildCanonicalRows({
     samplePloidy,
     sampleFilter,
-    unit,
+    rowsField,
   })
   const rowNames = effectiveSources.map(s => s.name)
 
@@ -290,7 +290,7 @@ export async function variantCellData({
         result[key] = computeVariantCells({
           filteredVariants: blockVariants,
           sources: effectiveSources,
-          unit,
+          rowsField,
           showReference,
           hueValue: hue.value,
           recordFields: readers,

@@ -170,20 +170,20 @@ describe('variant display row placement', () => {
     const { display } = createTestEnvironment().createDisplay()
     // phased first: switching mode is a real fetch input, so doing it after the
     // data lands would just clear it
-    display.setUnit('haplotype')
+    display.setRowsField('haplotype')
     display.setSources([{ name: 'S0' }, { name: 'S1' }])
     // the worker's rows, in its own order — `buildCanonicalRows` produces these
     // strings, `sources` produces the screen ones, and if the two conventions
     // ever drift every phased row silently lands on HIDDEN_ROW
     display.setCellData(
-      regularCellData(['S1 HP1', 'S0 HP0', 'S1 HP0', 'S0 HP1']),
+      regularCellData(['S1 HP2', 'S0 HP1', 'S1 HP1', 'S0 HP2']),
     )
 
     expect(display.sources.map(s => s.name)).toEqual([
-      'S0 HP0',
       'S0 HP1',
-      'S1 HP0',
+      'S0 HP2',
       'S1 HP1',
+      'S1 HP2',
     ])
     expect(placement(display)).toEqual({ 0: 3, 1: 0, 2: 2, 3: 1 })
     // and the fetched set is per SAMPLE, not per haplotype

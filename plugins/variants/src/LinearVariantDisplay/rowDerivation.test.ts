@@ -41,8 +41,12 @@ interface Arrangement {
 // The arrangement settings, spelled once: the derivation pinned below is what
 // has to survive their move into the `rows` object, so this helper is all of
 // the file that move may change.
-function arrangementConfig({ domain, color, facet }: Arrangement) {
+function arrangementConfig(
+  { domain, color, facet }: Arrangement,
+  phased: boolean | undefined,
+) {
   const rows = {
+    ...(phased ? { field: 'haplotype' } : {}),
     ...(domain ? { sort: domain } : {}),
     ...(color ? { color } : {}),
   }
@@ -59,8 +63,7 @@ function loaded({
   const { display } = createTestEnvironment({
     displayConfig: {
       ...RECORDS_BAND_OFF,
-      ...arrangementConfig(arrangement),
-      ...(phased ? { unit: 'haplotype' } : {}),
+      ...arrangementConfig(arrangement, phased),
     },
   }).createDisplay()
   display.setSources(SOURCES)
@@ -235,13 +238,13 @@ describe('allele count', () => {
     expect(derived(display)).toMatchSnapshot()
   })
 
-  test('a switch to phased mode resets the arrangement', async () => {
+  test('a switch to phased mode keeps the arrangement', async () => {
     const display = loaded({ domain: ['S3'] })
     const [s3, s0, s1, s2] = display.editableSources
     display.applyRowEdits([s0!, { ...s1!, label: 'One' }, s2!, s3!])
     landCells(display)
     await cluster(display, [2, 0, 3, 1], '((S2,S0),(S3,S1));')
-    display.setUnit('haplotype')
+    display.setRowsField('haplotype')
     expect(derived(display)).toMatchSnapshot()
     landCells(display)
     expect(derived(display)).toMatchSnapshot()
@@ -249,7 +252,7 @@ describe('allele count', () => {
 })
 
 describe('phased', () => {
-  // A haplotype row refines its sample (`rowAliasOf`), so a color pinned on
+  // A haplotype row refines its sample (`rowParent`), so a color pinned on
   // the sample reaches both of its rows, as its order and label do, whether
   // the rows are colored by name or by an attribute.
   test.each([undefined, 'population'])(
@@ -261,7 +264,7 @@ describe('phased', () => {
         colors: { S1: '#123456' },
       })
       const s1 = display.sources.filter(s => s.name.startsWith('S1 '))
-      expect(s1.map(s => s.name)).toEqual(['S1 HP0', 'S1 HP1'])
+      expect(s1.map(s => s.name)).toEqual(['S1 HP1', 'S1 HP2'])
       expect(s1.map(s => s.rowColor)).toEqual(['#123456', '#123456'])
       expect(
         display.sources.filter(s => s.rowColor === '#123456'),
@@ -339,7 +342,7 @@ describe('phased', () => {
       await cluster(
         display,
         [4, 5, 0, 1, 6, 2, 3],
-        '(((S2 HP0,S2 HP1),(S0 HP0,S0 HP1)),(S3 HP0,(S1 HP0,S1 HP1)));',
+        '(((S2 HP1,S2 HP2),(S0 HP1,S0 HP2)),(S3 HP1,(S1 HP1,S1 HP2)));',
       )
       return display
     }
@@ -354,7 +357,7 @@ describe('phased', () => {
 
     test('a clade focus', async () => {
       const display = await clustered()
-      display.setRowFocus(['S2 HP0', 'S2 HP1', 'S0 HP0', 'S0 HP1'])
+      display.setRowFocus(['S2 HP1', 'S2 HP2', 'S0 HP1', 'S0 HP2'])
       expect(derived(display)).toMatchSnapshot()
       landCells(display)
       expect(derived(display)).toMatchSnapshot()
@@ -362,17 +365,17 @@ describe('phased', () => {
 
     test('a focus on one haplotype of one sample still fetches the sample', async () => {
       const display = await clustered()
-      display.setRowFocus(['S1 HP0'])
+      display.setRowFocus(['S1 HP1'])
       expect(display.sampleFilter).toEqual(['S1'])
       expect(derived(display)).toMatchSnapshot()
       landCells(display)
-      expect(names(display)).toEqual(['S1 HP0'])
+      expect(names(display)).toEqual(['S1 HP1'])
       expect(derived(display)).toMatchSnapshot()
     })
 
-    test('a switch back to allele count resets', async () => {
+    test('a switch back to allele count keeps the arrangement, read as samples', async () => {
       const display = await clustered()
-      display.setUnit('sample')
+      display.setRowsField('sample')
       expect(derived(display)).toMatchSnapshot()
     })
   })

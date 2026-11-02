@@ -247,7 +247,7 @@ test('a sample named in the order places each of its haplotype rows', async () =
     ...DOG_VCF,
     display: { unit: 'haplotype', rows: { sort: [last] } },
   })
-  expect(t.rows.name.slice(0, 2)).toEqual([`${last} HP0`, `${last} HP1`])
+  expect(t.rows.name.slice(0, 2)).toEqual([`${last} HP1`, `${last} HP2`])
   expect(t.rows.sample.slice(0, 2)).toEqual([last, last])
 })
 

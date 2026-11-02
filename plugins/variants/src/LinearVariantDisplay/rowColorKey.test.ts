@@ -41,12 +41,12 @@ test('a legend click on the population key focuses it, on the genotype key nothi
 // samples.
 test('a legend focus in phased mode shows the group as haplotype rows', () => {
   const d = display()
-  d.setUnit('haplotype')
+  d.setRowsField('haplotype')
   d.setCellData({
     samplePloidy: { S0: 2, S1: 2, S2: 2, S3: 2 },
     rowNames: [],
   } as unknown as Parameters<typeof d.setCellData>[0])
   d.focusLegendEntry('rows.color', 'AFR')
-  expect(d.rowFocus).toEqual(['S0 HP0', 'S0 HP1', 'S2 HP0', 'S2 HP1'])
+  expect(d.rowFocus).toEqual(['S0 HP1', 'S0 HP2', 'S2 HP1', 'S2 HP2'])
   expect(d.sampleFilter).toEqual(['S0', 'S2'])
 })

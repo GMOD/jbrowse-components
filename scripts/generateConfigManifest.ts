@@ -195,14 +195,15 @@ function modelOf(type) {
   return asModelType(bare) ?? (element && asModelType(element))
 }
 
-// A keyed form (ADR-257) as plain data, its member list copied off the
-// schema's constant
+// A keyed form (ADR-257) as plain data, its member list and refinements
+// copied off the schema's constants
 function writesOf(writes = 'members') {
   return typeof writes === 'object'
     ? {
         keyedBy: writes.keyedBy,
         keyed: [...writes.keyed],
         ...(writes.emptyChanges ? { emptyChanges: true } : {}),
+        ...(writes.refines ? { refines: { ...writes.refines } } : {}),
       }
     : writes
 }

@@ -73,7 +73,7 @@ test('a subtree filter down to one row closes the gate', () => {
 
 test('phased mode holds the auto path back until the ploidy lands', () => {
   const d = display(two)
-  d.setUnit('haplotype')
+  d.setRowsField('haplotype')
 
   expect(d.hasClusterableRows).toBe(true)
   expect(d.clusteringReady).toBe(false)
@@ -138,7 +138,7 @@ function findItem(items: MenuItem[], label: string): MenuItem | undefined {
 // write a sample order over the haplotype rows the display is about to draw.
 test('the phased arrangement dialog waits for the haplotype rows', () => {
   const d = display(two)
-  d.setUnit('haplotype')
+  d.setRowsField('haplotype')
   const arrangement = () =>
     findItem(d.trackMenuItems(), 'Edit colors/arrangement...')
   expect(arrangement()).toMatchObject({ disabled: true })

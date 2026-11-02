@@ -629,7 +629,7 @@ describe('a tree the config supplies in `rows.tree`', () => {
 // A focus naming a sample keeps its haplotype rows (`keptRows`), so the tree
 // narrows to the same leaves.
 describe('a focus written against a row alias', () => {
-  const HAPLOTYPES = ['A HP0', 'A HP1', 'B HP0', 'B HP1']
+  const HAPLOTYPES = ['A HP1', 'A HP2', 'B HP1', 'B HP2']
 
   it('narrows the tree to the rows it keeps', () => {
     const display = types
@@ -658,15 +658,15 @@ describe('a focus written against a row alias', () => {
           rows: {
             sort: HAPLOTYPES,
             tree: {
-              newick: "(('A HP0':1,'A HP1':1):1,('B HP0':1,'B HP1':1):1);",
+              newick: "(('A HP1':1,'A HP2':1):1,('B HP1':1,'B HP2':1):1);",
               provenance: { regions: [] },
             },
             kept: ['A'],
           },
         },
       })
-    expect(display.sources.map(r => r.name)).toEqual(['A HP0', 'A HP1'])
-    expect(getLeafNames(display.root!)).toEqual(['A HP0', 'A HP1'])
+    expect(display.sources.map(r => r.name)).toEqual(['A HP1', 'A HP2'])
+    expect(getLeafNames(display.root!)).toEqual(['A HP1', 'A HP2'])
     expect(display.hierarchy).toBeDefined()
   })
 })

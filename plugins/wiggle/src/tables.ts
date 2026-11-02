@@ -217,7 +217,11 @@ export async function wiggleTables(
         domain: readConfObject(conf.rows, 'sort'),
         labels: readConfObject(conf.rows, 'labels'),
       },
-      { unlistedRowsSort: 'source', rowAlias: undefined },
+      {
+        unlistedRowsSort: 'source',
+        rowAlias: undefined,
+        rowParent: () => undefined,
+      },
     ),
     {
       kept: readConfObject(conf.rows, 'kept'),

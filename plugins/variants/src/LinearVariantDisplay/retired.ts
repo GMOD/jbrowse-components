@@ -90,7 +90,7 @@ export const retiredConfigSpellings: Record<string, RetiredSpelling> = {
   }),
   maxHeight: () => ({}),
   renderingMode: (v: unknown) => ({
-    unit: v === 'phased' ? 'haplotype' : 'sample',
+    rows: { field: v === 'phased' ? 'haplotype' : 'sample' },
   }),
   showSidebarLabels: (labels: unknown) => ({ rows: { axis: { labels } } }),
   showTree: (tree: unknown) => ({ rows: { axis: { tree } } }),

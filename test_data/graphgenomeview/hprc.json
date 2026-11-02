@@ -94,7 +94,7 @@
         {
           "type": "LinearVariantDisplay",
           "displayId": "hprc2_wave_grch38_regular",
-          "unit": "haplotype"
+          "rows": "haplotype"
         }
       ]
     },
@@ -112,7 +112,7 @@
         {
           "type": "LinearVariantDisplay",
           "displayId": "hprc2_pgbi_grch38_regular",
-          "unit": "haplotype"
+          "rows": "haplotype"
         }
       ]
     },

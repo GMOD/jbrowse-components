@@ -12,7 +12,7 @@ import {
 import { makePhaseSetReader } from './phaseSetReader.ts'
 import { getCachedABGR } from './variantWebglUtils.ts'
 
-import type { VariantUnit } from './constants.ts'
+import type { VariantRowsField } from './constants.ts'
 import type { ProcessedSource } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -243,7 +243,7 @@ export function makeSiteStyler({
   sources,
   sampleNames,
   genotypeDict,
-  unit,
+  rowsField,
   drawRef,
   colorByPhaseSet,
 }: {
@@ -251,13 +251,13 @@ export function makeSiteStyler({
   sampleNames: string[]
   // `genotypeDict[code - 1]` is a code's genotype; code 0 is "no genotype"
   genotypeDict: readonly string[]
-  unit: VariantUnit
+  rowsField: VariantRowsField
   drawRef: boolean
   colorByPhaseSet?: boolean
 }) {
   const sampleIndices = buildSourceSampleIndices(sources, sampleNames)
   const hps = Int32Array.from(sources, source => source.HP ?? -1)
-  const phased = unit === 'haplotype'
+  const phased = rowsField === 'haplotype'
   const numHaplotypes = countHaplotypes(sources)
   const phaseSets = makePhaseSetReader(sampleNames)
   const phaseSetStyle = makePhaseSetStyler()

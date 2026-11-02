@@ -20,7 +20,11 @@ import {
   pairedColorsOf,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
-import { arrangeRows, bandRows } from '@jbrowse/tree-sidebar/arrangeRows'
+import {
+  arrangeRows,
+  bandRows,
+  rowAliasOver,
+} from '@jbrowse/tree-sidebar/arrangeRows'
 import { narrowRows, narrows } from '@jbrowse/tree-sidebar/narrowRows'
 import { rowColorsOfRows } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
@@ -55,13 +59,15 @@ import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { cellColorEncodingOf, cellHueOf } from './shared/cellHue.ts'
 import { buildSampleIndex, decodeGenotype } from './shared/genotypeCodec.ts'
 import {
+  entryAliasOf,
   expandPhasedRows,
+  finerHaplotypeRows,
+  haplotypeRowParent,
   resolveSampleName,
-  rowAliasOf,
 } from './shared/getSources.ts'
 import { isSiteField } from './shared/minorAlleleFrequencyUtils.ts'
 
-import type { VariantUnit } from './shared/constants.ts'
+import type { VariantRowsField } from './shared/constants.ts'
 import type { ProcessedSource } from './shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TablesRegion } from '@jbrowse/core/data_adapters/tables'
@@ -90,7 +96,7 @@ export interface VariantTablesArgs {
   regions: TablesRegion[]
   /**
    * The display's config as a track's `displays` entry writes it for a
-   * `LinearVariantDisplay`: `encoding`, `unit` (`'sample'` or
+   * `LinearVariantDisplay`: `encoding`, `rows.field` (`'sample'` or
    * `'haplotype'`), `filter` (a predicate list, `minorAlleleFrequency` and
    * `missingness` among its fields), `genotypes.reference.show`, the
    * arrangement `rows` and `facet` and the rest of its slots. Unset reads the
@@ -113,7 +119,7 @@ export interface VariantTablesArgs {
  * of each key; `annotations`, each record's SnpEff `ANN` or VEP `CSQ`
  * consequences, a row per record and consequence, which then leave `info`
  * (`consequenceTables`); `cells`, each sample's (or under
- * `unit: 'haplotype'` each haplotype's) cell at each record, with its
+ * `rows.field: 'haplotype'` each haplotype's) cell at each record, with its
  * genotype, its `dosage` and the fill the display paints it; `rows`, the
  * rows the cells name, top to bottom as the display arranges them by `rows`
  * and stacks them in `facet`'s bands, each with its label and band; `bands`,
@@ -156,7 +162,7 @@ export async function variantTables(
     colorSetting.field,
     slots,
   )
-  const unit: VariantUnit = readConfObject(conf, 'unit')
+  const rowsField: VariantRowsField = readConfObject(conf.rows, 'field')
   const predicates = predicatesOf(conf.filter)
   const filters = predicates.filter(p => !isSiteField(p.field))
   const arrangement = {
@@ -181,18 +187,17 @@ export async function variantTables(
     ...source,
     sampleName: resolveSampleName(source),
   }))
-  const rowAlias = rowAliasOf(sources)
   const narrowing = {
     kept: arrangement.kept,
     filter: predicatesOf(conf.rows.filter),
-    rowAlias,
+    rowAlias: entryAliasOf(sources),
   }
   const args: RpcExecuteArgs<'MultiSampleVariantGetCellData'> = {
     sessionId: 'tables',
     adapterConfig,
     regions: fetchRegions,
     layout: 'genomic',
-    unit,
+    rowsField,
     color: cellHue.read,
     sampleFilter: narrows(narrowing)
       ? narrowRows(sources, narrowing).map(resolveSampleName).sort()
@@ -220,7 +225,7 @@ export async function variantTables(
 
   const sampleIndex = buildSampleIndex(value.sampleNames)
   const expanded =
-    unit === 'haplotype'
+    rowsField === 'haplotype'
       ? expandPhasedRows({
           rows: sources,
           ploidy: value.samplePloidy,
@@ -228,11 +233,23 @@ export async function variantTables(
         })
       : sources
   const fetched = new Set(value.rowNames)
+  const rowParent = (row: ProcessedSource) =>
+    haplotypeRowParent(row, value.samplePloidy)
+  const rowAlias = rowAliasOver(
+    expanded,
+    finerHaplotypeRows({
+      rows: sources,
+      ploidy: value.samplePloidy,
+      domain: [...arrangement.domain, ...arrangement.kept],
+    }),
+    rowParent,
+  )
   const ordered = arrangeRows(expanded, arrangement, {
     unlistedRowsSort: 'source',
     rowAlias,
+    rowParent,
   })
-  const arranged = narrowRows(ordered, narrowing).filter(row =>
+  const arranged = narrowRows(ordered, { ...narrowing, rowAlias }).filter(row =>
     fetched.has(row.name),
   )
   const facet = facetSettingOf({
@@ -255,7 +272,7 @@ export async function variantTables(
     name: drawn.map(row => row.name),
     label: drawn.map(row => row.label ?? row.name),
     sample: drawn.map(row => row.sampleName),
-    haplotype: drawn.map(row => row.HP ?? 0),
+    haplotype: drawn.map(row => (row.HP === undefined ? 0 : row.HP + 1)),
     ploidy: drawn.map(row => value.samplePloidy[row.sampleName] ?? 0),
     band: drawn.map(row => (facet ? rowFieldValue(row, facet.field) : '')),
     color: rowColor.colors,
@@ -309,7 +326,7 @@ export async function variantTables(
       variants.key.push(keys.get(info.featureId)!)
     })
     const colors = paintCellColors(data, paintHue, {
-      phased: unit === 'haplotype',
+      phased: rowsField === 'haplotype',
       valuesRead: true,
     })
     for (let i = 0; i < data.numCells; i++) {
@@ -333,7 +350,7 @@ export async function variantTables(
         cellDosage(
           cells.genotype[cells.genotype.length - 1]!,
           data.featureInfo[f]!.alt.length,
-          unit === 'haplotype' ? rows.haplotype[row]! : undefined,
+          rowsField === 'haplotype' ? rows.haplotype[row]! - 1 : undefined,
           rows.ploidy[row]!,
         ),
       )
@@ -344,7 +361,7 @@ export async function variantTables(
 
   const keyed = keyedVariantsFetched(perRegion.map(({ data }) => data))
   const scales = getVariantColorScales({
-    unit,
+    rowsField,
     hasSecondaryAlt: keyed.hasSecondaryAlt,
     hasAltWithoutPhaseSet: keyed.hasAltWithoutPhaseSet,
     hasUnphased: keyed.hasUnphased,
@@ -698,7 +715,7 @@ function rowColorsOf(
   conf: DisplayConf,
   dealRows: readonly ProcessedSource[],
   drawn: readonly ProcessedSource[],
-  rowAlias: RowAlias,
+  rowAlias: RowAlias | undefined,
   labelOf: (name: string) => string,
 ) {
   const { setting, pinned } = rowColorsOfRows(

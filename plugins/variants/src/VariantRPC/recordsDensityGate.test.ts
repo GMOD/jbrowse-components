@@ -37,7 +37,7 @@ function cellData(args: Partial<GetCellDataArgs>) {
       displayedRegionIndices: [3, 4],
       sampleFilter: [],
       siteFilter: [],
-      unit: 'sample',
+      rowsField: 'sample',
       layout: 'genomic',
       bpPerPx: 1000,
       ...args,

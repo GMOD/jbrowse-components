@@ -135,7 +135,7 @@ test('the label ends with the share of the samples shown as rows', () => {
 
 test('haplotype rows count their sample once', () => {
   const display = recordsDisplay()
-  display.setUnit('haplotype')
+  display.setRowsField('haplotype')
   display.setCellData(cellData([1, 2, 3, 4]), [0])
   expect(display.sources.length).toBe(8)
   expect(display.recordCarrierSamples).toEqual(SAMPLES)

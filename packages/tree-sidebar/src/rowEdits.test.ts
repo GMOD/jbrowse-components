@@ -13,11 +13,18 @@ const shown: RowSource[] = [
   { name: 'b' },
   { name: 'c', label: 'Sea' },
 ]
+function haplotypeParent(row: RowSource) {
+  const match = / HP\d+$/.exec(row.name)
+  return match
+    ? { name: row.name.slice(0, match.index), labelSuffix: match[0] }
+    : undefined
+}
+
 const live = {
   shown,
   adapter,
   labels: { c: 'Sea' },
-  rowAlias: undefined,
+  rowParent: () => undefined,
 }
 
 test('an unchanged submit writes the config back as it was', () => {
@@ -40,7 +47,7 @@ test('a row the dialog never showed keeps its label', () => {
 
 // A variant dialog opened before the first genotypes land shows sample rows.
 test('a dialog row the current rows no longer hold writes nothing', () => {
-  const haplotypes: RowSource[] = ['S0 HP0', 'S0 HP1'].map(name => ({
+  const haplotypes: RowSource[] = ['S0 HP1', 'S0 HP2'].map(name => ({
     name,
     label: 'Sample zero',
   }))
@@ -50,7 +57,7 @@ test('a dialog row the current rows no longer hold writes nothing', () => {
       shown: haplotypes,
       adapter: haplotypes,
       labels: {},
-      rowAlias: name => name.replace(/ HP\d+$/, ''),
+      rowParent: haplotypeParent,
     }),
   ).toEqual({})
 })
@@ -73,16 +80,29 @@ test('a label changed back to the adapter one removes the entry', () => {
   ).toEqual({})
 })
 
-// A haplotype row shows its sample's entry until it has one of its own, so a
-// label changed back to the sample's removes the row's own entry.
-test('a row answering to an alias falls back to the alias entry', () => {
+// A haplotype row shows its sample's entry composed with its haplotype until
+// it has one of its own, so a label changed back to that removes the row's
+// own entry.
+test("a row with a parent falls back to the parent's entry, composed", () => {
   expect(
     labelEdits({
-      shown: [{ name: 'S1 HP0', label: 'Own' }],
-      adapter: [{ name: 'S1 HP0' }],
-      labels: { S1: 'Sample', 'S1 HP0': 'Own' },
-      rowAlias: name => name.replace(/ HP\d+$/, ''),
-      rows: [{ name: 'S1 HP0', label: 'Sample' }],
+      shown: [{ name: 'S1 HP1', label: 'Own' }],
+      adapter: [{ name: 'S1 HP1' }],
+      labels: { S1: 'Sample', 'S1 HP1': 'Own' },
+      rowParent: haplotypeParent,
+      rows: [{ name: 'S1 HP1', label: 'Sample HP1' }],
     }),
   ).toEqual({ S1: 'Sample' })
+})
+
+test("a row relabelled as its parent's bare label keeps its own entry", () => {
+  expect(
+    labelEdits({
+      shown: [{ name: 'S1 HP1', label: 'Own' }],
+      adapter: [{ name: 'S1 HP1' }],
+      labels: { S1: 'Sample', 'S1 HP1': 'Own' },
+      rowParent: haplotypeParent,
+      rows: [{ name: 'S1 HP1', label: 'Sample' }],
+    }),
+  ).toEqual({ S1: 'Sample', 'S1 HP1': 'Sample' })
 })
