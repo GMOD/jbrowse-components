@@ -165,6 +165,7 @@ import {
   bodyColorKind,
   declaredReadLabels,
   isBakedField,
+  paintedLevelOf,
   pinnedInsertSizeBand,
   readColorFieldOf,
   writtenReadCategoryColors,
@@ -176,7 +177,10 @@ import {
   readPredicatesOf,
 } from './shared/alignmentsFilter.ts'
 import { basesFilterOf } from './shared/basesFilter.ts'
-import { paintsModifications } from './shared/colorFieldDefs.ts'
+import {
+  colorFieldKindOf,
+  paintsModifications,
+} from './shared/colorFieldDefs.ts'
 import { fieldTag } from './shared/facetLabels.ts'
 import {
   facetForUnit,
@@ -409,6 +413,22 @@ function positionIn(refNames: readonly string[]): RefNamePosition {
 }
 
 /**
+ * A read's value under the color field as `scale.domain` spells it: a
+ * level field's level (`short`, `RL`, `-1`), a MAPQ, or a tag's or mate
+ * reference's value, `''` where the field gives the read none.
+ */
+function readLevelOf(colorField: string | undefined) {
+  const kind = colorFieldKindOf(colorField)
+  const levels = paintedLevelOf(kind)
+  return kind === 'mapq'
+    ? (data: WorkerPileupData, i: number) => `${data.readMapqs[i]}`
+    : isBakedField(colorField)
+      ? (data: WorkerPileupData, i: number) => data.readTagValues?.[i] ?? ''
+      : (_data: WorkerPileupData, _i: number, category: ReadColorCategory) =>
+          levels.get(category) ?? ''
+}
+
+/**
  * The display's color pipeline over its laid-out sections: `encoding.color`
  * resolved as the display resolves it, the worker's reads baked through one
  * scale and classified into the same buckets, each painted the color the
@@ -452,12 +472,13 @@ function colorReads(
   const palette = buildColorPaletteFromPalette(resolvePalette(), {
     declared: writtenReadCategoryColors(setting, encoding),
   })
+  const levelOf = readLevelOf(colorField)
   const sections = new Map(
     [...colored].map(([key, map]) => [
       key,
       new Map(
         [...map].map(([idx, data]) => {
-          const category: string[] = Array.from(
+          const category = Array.from(
             data.readColorCategories,
             i => READ_COLOR_CATEGORY_BY_INDEX[i]!,
           )
@@ -471,7 +492,8 @@ function colorReads(
               ),
             ),
           )
-          return [idx, { color, category }]
+          const level = category.map((c, i) => levelOf(data, i, c))
+          return [idx, { color, category, level }]
         }),
       ),
     ]),
@@ -503,7 +525,7 @@ function colorReads(
     presentCategories: new Set(
       [...sections.values()].flatMap(map =>
         [...map.values()].flatMap(s => s.category),
-      ) as ReadColorCategory[],
+      ),
     ),
     palette,
     presentTagValues,
@@ -1006,7 +1028,7 @@ function chainTables(
 function sectionTables(
   d: WorkerPileupData,
   readYs: ArrayLike<number>,
-  colors: { color: string[]; category: string[] },
+  colors: { color: string[]; category: string[]; level: string[] },
   region: { start: number; end: number },
   keyOf: (readKey: WorkerPileupData['readKeys'][number]) => number,
   plainRead: string,
@@ -1036,6 +1058,7 @@ function sectionTables(
       ),
       color: colors.color,
       category: colors.category,
+      level: colors.level,
       key: Array.from(d.readKeys, keyOf),
     },
     mismatches: {

@@ -165,7 +165,9 @@ the display's pipeline: the worker filters and fetches under
 (`applyReadColorsByGroup`) paint each read, and the display's own key
 (`getReadDisplayLegendItems`) comes back as `legend` with `legendTitle`. Each
 read carries its painted `color` as
-`#rrggbb` and its `category` (`fwdStrand`, `mapq`, `unmappedMate`, ...). A host
+`#rrggbb`, its `category` (`fwdStrand`, `mapq`, `unmappedMate`, ...), and its
+`level`, the value `encoding.color.scale.domain` names it by (`-1`, `RL`,
+`short`, a MAPQ, a tag's value, `''` for none). A host
 draws `color` as given and keys the legend off `legend`, so a scheme the
 browser gains paints in R with no port. A color bar the display keys (a
 linear tag or MAPQ ramp, base quality) comes back in `ramps`.

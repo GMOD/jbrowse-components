@@ -216,6 +216,43 @@ test('reads paint as the display\u2019s color object paints them, with its key',
   expect(mapq.ramps).toEqual([])
 })
 
+test('a read’s level is its value as the color’s scale.domain names it', async () => {
+  const plain = await engine.alignments(BAM)
+  expect(new Set(plain.reads.level)).toEqual(new Set(['']))
+
+  const strand = await engine.alignments({
+    ...BAM,
+    display: { encoding: { color: 'strand' } },
+  })
+  strand.reads.level.forEach((level, i) => {
+    expect(level).toBe(`${strand.reads.strand[i]}`)
+  })
+
+  const mapq = await engine.alignments({
+    ...BAM,
+    display: { encoding: { color: 'mapq' } },
+  })
+  mapq.reads.level.forEach((level, i) => {
+    expect(level).toBe(`${mapq.reads.mapq[i]}`)
+  })
+
+  const pairs = await engine.alignments({
+    ...PAIRED_INVERSION,
+    display: {
+      encoding: {
+        color: {
+          field: 'insertSizeAndOrientation',
+          scale: { type: 'ordinal', domain: ['RR'], range: ['#ff0000'] },
+        },
+      },
+    },
+  })
+  expect(new Set(pairs.reads.level)).toEqual(new Set(['normal', 'LL', 'RR']))
+  pairs.reads.level.forEach((level, i) => {
+    expect(pairs.reads.color[i] === '#ff0000').toBe(level === 'RR')
+  })
+})
+
 test('a ramp keys a color bar: a linear MAPQ, under the color title, and base quality', async () => {
   const t = await engine.alignments({
     ...BAM,

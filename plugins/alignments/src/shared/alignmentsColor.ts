@@ -295,6 +295,17 @@ export function levelKeysOf(type: ColorFieldKind) {
 }
 
 /**
+ * Each read bucket a field paints, by the value `scale.domain` names it
+ * with: under `insertSizeAndOrientation` `pairRL` is `RL` and `revStrand` a
+ * chain's `segmentInverted`.
+ */
+export function paintedLevelOf(type: ReadColorFieldKind) {
+  return new Map(
+    paintedLevels(type).map(([value, category]) => [category, value]),
+  )
+}
+
+/**
  * What each field paints through while `scale.type` is unset: an insert-size
  * field a threshold, and any other field ordinal, a preset field over
  * its own levels, which `scale.range` and `scale.names` then index while
