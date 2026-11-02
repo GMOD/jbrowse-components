@@ -8,15 +8,19 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-hap-ibd identifies which stretches of a phased child's genome came down from the
-mother and which from the father. We:
+A child inherits one copy of each chromosome from each parent, and each copy is
+a patchwork of the parent's own two copies, switching at the crossovers of that
+meiosis. In a phased trio, hap-ibd finds the stretches where the child's
+haplotypes match a parent's, so the patchwork and its crossovers can be painted
+along a chromosome. On chr1 of a 1000 Genomes trio, we:
 
-- load the trio's phased VCF as a genotype matrix, split into one row per
-  haplotype
-- run hap-ibd and convert its segments into a BED track
-- draw that track as one colored row per parental haplotype, so a crossover
-  reads as a color change
-- compare the painted rows with the raw genotypes
+- load the trio's phased VCF as a variant track, then switch it to a genotype
+  matrix with one row per haplotype
+- load hap-ibd's segments, converted to BED, as a multi-row feature track with
+  one colored row per parental haplotype
+- read the crossovers along chr1 off the painted rows
+- line the painted rows up with the genotypes at a paternal and a maternal
+  crossover
 
 ## Prerequisites
 
@@ -229,22 +233,21 @@ already name the four categories:
 
 ## Reading crossovers off the painted blocks
 
-The painted track draws each parent's two copies as rows, blue for father
-HG02026 and red for mother HG02025:
+Open the whole of chr1 with the painted track. It draws each parent's two copies
+as rows, blue for father HG02026 and red for mother HG02025:
 
 <Figure caption="hap-ibd inheritance blocks in the multi-row feature display, the father's haplotypes blue and the mother's red." src="/img/trio-hapibd-painting.png"/>
 
 The blue rows together are the child's paternal chromosome. A filled blue row
-marks the father's copy the child inherited there, so hap-ibd places a paternal
-crossover at each step between the blue rows. Likewise, the red rows are the
+marks the father's copy the child inherited there, so each step from one blue
+row to the other is a paternal crossover. Likewise, the red rows are the
 maternal chromosome.
 
-The control in the figure is that no position has both blue rows filled, or both
-red rows, which would mean hap-ibd matched one child haplotype to both of a
-parent's copies. That holds along the whole chromosome. A position with neither
-row filled, such as the gap all four rows share around the 50M tick, is one
-where hap-ibd found no segment long enough to report. The blocks run straight
-through the centromere, because hap-ibd joins the markers on either side of it.
+No position should have both blue rows filled, or both red rows, which would
+mean hap-ibd matched one child haplotype to both of a parent's copies. A
+position with neither row filled is one where hap-ibd found no segment long
+enough to report. The blocks run straight through the centromere, because
+hap-ibd joins the markers on either side of it.
 
 ## Comparing the painted blocks with the raw genotypes
 
