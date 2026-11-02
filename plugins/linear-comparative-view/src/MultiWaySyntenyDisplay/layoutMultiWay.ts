@@ -712,10 +712,17 @@ export function rowAssembliesOf(
       pinned.add(assemblyName)
     }
   }
+  const foot = new Map<string, string>()
+  for (const name of placeless) {
+    const key = keyOf(name)
+    if (!byKey.has(key) && !foot.has(key)) {
+      foot.set(key, name)
+    }
+  }
   return [
     ...pinned,
     ...present.filter(name => !pinned.has(name)),
-    ...new Set(placeless.filter(name => !evidence.has(name))),
+    ...foot.values(),
   ]
 }
 

@@ -214,6 +214,12 @@ cost is linear in lanes.
   at the foot of the stack, and its header reads "inside a 1.2 Mb deletion".
   A deletion two records state is out of reach, since neither record meets
   the window.
+- **A chosen lane the window places nothing in** (`unalignedChosenLanes`): a
+  lane `rows.kept` names joins the same foot rows, headed "no alignment in this
+  window", once the held fetch has landed and asked for it
+  (`answeredLaneTest`, the gate the picker's `placed: false` reads). An
+  unconstrained stack, or `configuredLanes` alone, adds no row. A pan keeps
+  the held answer until the next fetch lands, as every other lane does.
 - **Graph and PIF lanes read GSTT1 alike.** The graph plugin stamps one
   `recordId` on every run of a walk record from 7.1.12, and
   `hprc_multiway_gfa.pif.gz` writes HG00099#1's insertion as a gap between two

@@ -2927,6 +2927,65 @@ test('a lane the window shows none of, inside a deletion its record states, is a
   expect(row?.changes?.text).toBe('inside a 1.2 Mb deletion')
 })
 
+describe('a chosen lane the window places nothing in', () => {
+  test('is a row at the foot whose header says so', () => {
+    const display = createDisplay()
+    display.setSelectedLanes(['volvox_ins', 'volvox_random'])
+    display.setFeatures([mateRecord('r1', 'volvox_random')])
+    expect(display.rowAssemblies).toEqual(['volvox_random', 'volvox_ins'])
+    const row = display.laneHeaderRows.find(
+      r => r.assemblyName === 'volvox_ins',
+    )
+    expect(row?.changes?.text).toBe('no alignment in this window')
+    expect(
+      display.laneHeaderRows.find(r => r.assemblyName === 'volvox_random')
+        ?.changes,
+    ).toBeUndefined()
+  })
+
+  test('draws no row before the fetch lands, nor while the landed fetch did not ask for it', () => {
+    const display = createDisplay()
+    display.setSelectedLanes(['volvox_random', 'volvox_ins'])
+    expect(display.features).toBeUndefined()
+    expect(display.rowAssemblies).toEqual([])
+    display.setFeatures([mateRecord('r1', 'volvox_random')], undefined, [
+      'volvox_random',
+    ])
+    expect(display.rowAssemblies).toEqual(['volvox_random'])
+    display.setFeatures([mateRecord('r1', 'volvox_random')], undefined, [
+      'volvox_random',
+      'volvox_ins',
+    ])
+    expect(display.rowAssemblies).toEqual(['volvox_random', 'volvox_ins'])
+  })
+
+  test('draws no row unless chosen, or once hidden', () => {
+    const display = createDisplay()
+    display.setFeatures([mateRecord('r1', 'volvox_random')])
+    expect(display.rowAssemblies).toEqual(['volvox_random'])
+    display.setSelectedLanes(['volvox_random', 'volvox_ins'])
+    display.hideLane('volvox_ins')
+    expect(display.rowAssemblies).toEqual(['volvox_random'])
+  })
+
+  test('a deletion spanning the window keeps its own header', () => {
+    const display = createDisplay()
+    display.setSelectedLanes(['volvox_random', 'volvox_ins'])
+    display.setFeatures(
+      [mateRecord('r1', 'volvox_random')],
+      undefined,
+      undefined,
+      NO_OPS,
+      [{ assemblyName: 'volvox_ins', refName: 'ctgA', at: 5000, bp: 150_000 }],
+    )
+    expect(display.rowAssemblies).toEqual(['volvox_random', 'volvox_ins'])
+    expect(
+      display.laneHeaderRows.find(r => r.assemblyName === 'volvox_ins')?.changes
+        ?.text,
+    ).toBe('inside a 150 kb deletion')
+  })
+})
+
 // ADR-157: a lane choice or order lands in the session at once, so it is one
 // undo step, the hide-set written beside it included.
 test('each lane write saves the track config to the session at once', () => {

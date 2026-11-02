@@ -153,6 +153,7 @@ import {
   withPin,
 } from './lanePins.ts'
 import {
+  answeredLaneTest,
   laneRowsOf,
   laneUniverseOf,
   lanesInForce,
@@ -239,6 +240,7 @@ import type {
   LanePair,
   LaneWindow,
 } from './laneFetch.ts'
+import type { Placeless } from './laneHeader.ts'
 import type { GeneLabel, NamedSpan, PlacedLaneLabel } from './laneLabels.ts'
 import type {
   HeldLaneLayer,
@@ -1112,12 +1114,51 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * the lanes `rows.kept` names that the held fetch answered for and
+       * placed nothing in; an unchosen lane placing nothing draws no row
+       */
+      get unalignedChosenLanes(): string[] {
+        const answered = answeredLaneTest(
+          self.features !== undefined,
+          self.features && self.fetchedFeatures?.lanes,
+          self.laneKey,
+        )
+        const placed = new Set(
+          self.groups.flatMap(group =>
+            [...group.mates.keys()].map(self.laneKey),
+          ),
+        )
+        return (self.laneChoice ?? []).filter(
+          name => answered(name) && !placed.has(self.laneKey(name)),
+        )
+      },
+      /**
+       * #method
+       * why a lane the window shows none of draws a row, or undefined where it
+       * draws none
+       */
+      placelessOf(assemblyName: string): Placeless | undefined {
+        const key = self.laneKey(assemblyName)
+        const spanning = self.windowDeletions.filter(
+          d => self.laneKey(d.assemblyName) === key,
+        )
+        return spanning.length
+          ? { kind: 'deletion', bp: Math.max(...spanning.map(d => d.bp)) }
+          : this.unalignedChosenLanes.some(name => self.laneKey(name) === key)
+            ? { kind: 'unaligned' }
+            : undefined
+      },
+      /**
+       * #getter
        * a paralogy mate on the anchor assembly draws on its axis, not as a row
        */
       get rowAssemblies() {
         return laneRowsOf({
           groups: self.groups,
-          placeless: self.windowDeletions.map(d => d.assemblyName),
+          placeless: [
+            ...self.windowDeletions.map(d => d.assemblyName),
+            ...this.unalignedChosenLanes,
+          ],
           anchor: self.anchorAssemblyName,
           preferred: [...self.domain, ...(self.heldLaneOrder?.lanes ?? [])],
           selection: self.laneSelection,
@@ -2056,15 +2097,7 @@ export function stateModelFactory(
           self.inlineLaneNames ? self.laneStack.glyphHeight : undefined,
           self.rowsVsAnchor ? self.anchorAssemblyName : undefined,
           self.laneChanges,
-          assemblyName => {
-            const key = self.laneKey(assemblyName)
-            const spanning = self.windowDeletions.filter(
-              d => self.laneKey(d.assemblyName) === key,
-            )
-            return spanning.length
-              ? Math.max(...spanning.map(d => d.bp))
-              : undefined
-          },
+          assemblyName => self.placelessOf(assemblyName),
         )
       },
       /**

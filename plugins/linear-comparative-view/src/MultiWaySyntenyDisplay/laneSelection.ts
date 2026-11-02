@@ -47,6 +47,20 @@ export function drawnLaneTest(
 }
 
 /**
+ * Whether the held fetch answers for a lane: it has landed, and asked for
+ * every lane or for this one
+ */
+export function answeredLaneTest(
+  featuresLoaded: boolean,
+  landedLanes: readonly string[] | undefined,
+  keyOf: KeyOf,
+) {
+  const asked = landedLanes && new Set(landedLanes.map(keyOf))
+  return (name: string) =>
+    featuresLoaded && (asked === undefined || asked.has(keyOf(name)))
+}
+
+/**
  * The mate lanes the stack draws, in order: `preferred` first, then by their
  * heaviest contig's group weight, then each lane `placeless` names that no
  * group places
@@ -104,9 +118,7 @@ export function laneUniverseOf({
   const anchorKey = keyOf(anchor)
   const placed = new Set(mateNames.map(keyOf))
   const drawn = drawnLaneTest(selection, hidden, keyOf)
-  const asked = landedLanes && new Set(landedLanes.map(keyOf))
-  const known = (key: string) =>
-    featuresLoaded && (asked === undefined || asked.has(key))
+  const answered = answeredLaneTest(featuresLoaded, landedLanes, keyOf)
   const out = new Map<string, LaneChoice>()
   const offer = (lane: DeclaredLane) => {
     const key = keyOf(lane.name)
@@ -116,7 +128,7 @@ export function laneUniverseOf({
       out.set(key, {
         ...lane,
         ...(label === lane.name ? {} : { label }),
-        placed: placed.has(key) || (known(key) ? false : undefined),
+        placed: placed.has(key) || (answered(lane.name) ? false : undefined),
         drawn: drawn(lane.name),
       })
     }

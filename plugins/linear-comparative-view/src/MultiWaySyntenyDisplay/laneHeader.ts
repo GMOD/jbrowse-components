@@ -64,6 +64,18 @@ function bpText(n: number) {
       : `${n} bp`
 }
 
+/**
+ * Why a lane the window shows none of still draws a row: a deletion its record
+ * states across the whole window, or a lane chosen by name
+ */
+export type Placeless = { kind: 'deletion'; bp: number } | { kind: 'unaligned' }
+
+function placelessText(placeless: Placeless) {
+  return placeless.kind === 'deletion'
+    ? `inside a ${bpText(placeless.bp)} deletion`
+    : 'no alignment in this window'
+}
+
 /** the stated changes the lane's shown frame meets, largest first */
 export function shownLaneChanges(
   lane: Pick<Lane, 'frame' | 'canon'>,
@@ -168,8 +180,7 @@ export function laneHeaderRows(
     assemblyName: string,
     refName: string,
   ) => readonly LaneChange[] = () => [],
-  /** bp of a deletion a lane's record states across the whole window */
-  windowDeletionOf: (assemblyName: string) => number | undefined = () =>
+  placelessOf: (assemblyName: string) => Placeless | undefined = () =>
     undefined,
 ): LaneHeaderRow[] {
   const inline = inlineGlyphHeight !== undefined
@@ -189,12 +200,11 @@ export function laneHeaderRows(
     const alsoAt = frame?.alsoAt.length
       ? `· also at ${frame.alsoAt.map(block => blockLocString(lane, frame.refName, block)).join(', ')}`
       : undefined
-    const inside = frame ? undefined : windowDeletionOf(lane.assemblyName)
+    const placeless =
+      frame || lane.isAnchor ? undefined : placelessOf(lane.assemblyName)
     const changes = frame
       ? laneChanges(lane, changesOf(lane.assemblyName, frame.refName))
-      : inside !== undefined && !lane.isAnchor
-        ? `inside a ${bpText(inside)} deletion`
-        : undefined
+      : placeless && placelessText(placeless)
     return {
       assemblyName: lane.assemblyName,
       label: inline
