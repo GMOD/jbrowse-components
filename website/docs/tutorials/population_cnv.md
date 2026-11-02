@@ -7,17 +7,18 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-Copy number varies from person to person, and we show the whole 1000 Genomes
-panel at once: one heatmap row per individual, colored by how far that person
-strays from the diploid baseline of 2. We:
+Most of the genome comes in two copies, but some stretches are duplicated or
+deleted in one person and not the next. We read copy number for the whole 1000
+Genomes panel at once, one row per individual, colored by how far that person
+strays from two copies, at the chemokine genes _CCL3L1_, a deletion of
+_UGT2B17_, and two nested deletions on chr3. We:
 
-- load per-sample BigWigs as one multi-row heatmap track
-- compare individuals' profiles at _CCL3L1_, and a deletion at _UGT2B17_ against
-  the 1000 Genomes SV map
-- pack the values into one Zarr store, because past a few hundred samples the
-  per-file requests dominate the load time
-- load the whole panel from the store and cluster the rows to sort a nested chr3
-  deletion
+- load per-sample BigWigs as one multi-row heatmap track, and a few individuals
+  as step lines at _CCL3L1_
+- add the 1000 Genomes SV map as a variant track over _UGT2B17_
+- load the whole panel from one Zarr store, and cluster its rows over the nested
+  chr3 deletions under a length-filtered variant track
+- turn your own QuicK-mer2 output into BigWigs, and build a Zarr store from them
 
 ## Prerequisites
 
@@ -56,8 +57,9 @@ lab at the University of Michigan
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results. Run QuicK-mer2 on your own samples covers a cohort of
-your own.
+rebuild those results, and
+[Run QuicK-mer2 on your own samples](#your-own-samples) takes a cohort of your
+own.
 
 | What it is                                                           | File                                                                                                   |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -246,12 +248,15 @@ is a _TBC1D3_ repeat.
 
 ## UGT2B17, a simple deletion, against the 1000 Genomes SV map
 
-At a simple biallelic deletion the 1000 Genomes phase 3 integrated structural
-variant (SV) map and the depth profiles should agree. We'll add the SV map as a
-variant track, then navigate to _UGT2B17_ on chr4 with the PUR panel track from
-[Load the panel as one heatmap track](#load-the-panel-as-one-heatmap-track)
-under it. For your own callset, swap `uri` for a bgzip-compressed, tabix-indexed
-VCF on the same assembly:
+_UGT2B17_ on chr4 is deleted whole in many people, a simple biallelic deletion
+that a structural variant (SV) callset genotypes directly. We'll set the 1000
+Genomes phase 3 integrated SV map beside the copy-number rows:
+
+- Add the SV map as a variant track. For your own callset, swap `uri` for a
+  bgzip-compressed, tabix-indexed VCF on the same assembly.
+- Navigate to _UGT2B17_ with the PUR panel track from
+  [Load the panel as one heatmap track](#load-the-panel-as-one-heatmap-track)
+  under it.
 
 ```json addtrack
 {
@@ -267,41 +272,16 @@ VCF on the same assembly:
 
 ## Load the whole panel from one Zarr store {#a-zarr-store-for-the-whole-panel}
 
-The PUR panel track in `config_demo.json` holds the PUR individuals, not the
-full 1000 Genomes panel.
-[`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
-measures the requests, bytes and time to fill the _CCL3L1_ window from every
-sample's BigWig and from a Zarr store of the same samples, using the readers the
-browser uses. It takes the converter's `name`/`group`/`url` TSV, which the
-[build script](#reproduce-it-end-to-end) writes:
+The PUR track lists one population's files. Each BigWig needs several dependent
+reads to find and fetch a region's values, so a track listing every individual
+in the panel slows with each file it adds. A [Zarr](https://zarr.dev/) v3 store
+holds the whole panel as one array of samples by bins, in chunk files on static
+hosting, and fills a window in two metadata requests and one chunk.
 
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/measure_signal_latency.ts
-npm install @gmod/bbi generic-filehandle2
-
-node measure_signal_latency.ts --samples 1000g_cnv_build/samples.tsv \
-  --region chr17:36,080,000-36,270,000 \
-  --zarr https://jbrowse.org/demos/1000g/qm2_cn_1kb.zarr
-```
-
-Against the hosted files, at a median range request of 25 ms:
-
-| chr17:36,080,000-36,270,000, 2504 samples | 2504 BigWigs | Zarr store |
-| ----------------------------------------- | ------------ | ---------- |
-| requests                                  | 15,048       | 3          |
-| bytes                                     | 48.39 MB     | 0.22 MB    |
-| wall clock                                | 24.5 s       | 0.2 s      |
-
-Each BigWig needs several dependent reads to find and fetch a region's values,
-so the cost grows with the number of files. The Zarr store is one array of
-samples by bins, read in two metadata requests and one chunk.
-
-[Zarr](https://zarr.dev/) v3 stores such arrays as chunk files on static
-hosting, and
 [`jbrowse-plugin-zarr`](https://github.com/cmdcolin/jbrowse-plugin-zarr) adds a
-`MultiWiggleZarrAdapter` that reads them with the same display settings as the
-BigWig track. The plugin is in beta and not yet in the plugin store. On Desktop,
-add the URL below as a
+`MultiWiggleZarrAdapter` that reads such a store with the same display settings
+as the BigWig track. The plugin is in beta and not yet in the plugin store. On
+Desktop, add the URL below as a
 [custom plugin](/docs/user_guides/plugin_store#a-plugin-not-in-the-store) named
 `Zarr`; elsewhere, add this `plugins` entry to `config.json`:
 
@@ -350,14 +330,13 @@ your `config.json` takes `qm2_cn_1kb.zarr`.
 ## A deletion nested inside another on chr3, sorted by clustering
 
 The Zarr store covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits inside a
-114 kb one:
+114 kb one. Clustering sorts the individuals by which deletion they carry, and
+the long-read assembly calls of the Human Genome Structural Variation Consortium
+([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6)) place both:
 
 - Navigate the Zarr track to `chr3:162,650,000-163,050,000`.
-- Run **Clustering → Cluster rows by score...** to sort individuals by which of
-  the two deletions they have.
-- The long-read assembly calls of the Human Genome Structural Variation
-  Consortium ([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6))
-  place both. We'll add those calls as a variant track:
+- Run **Clustering → Cluster rows by score...** from its track menu.
+- Add the HGSVC3 calls as a variant track:
 
 ```json addtrack loc=chr3:162,650,000-163,050,000
 {
@@ -369,17 +348,38 @@ The Zarr store covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits inside a
 }
 ```
 
-The HGSVC3 track holds every insertion and deletion, and a filter keeps the long
-ones.
-
-**Filter by → Edit filters...** in the track menu takes a `filter`. Enter this
-one to drop every record under 5 kb:
+The HGSVC3 track holds every insertion and deletion, so **Filter by → Edit
+filters...** in its track menu takes a `filter` that drops the records under 5
+kb:
 
 ```text
 jexl:alleleLength(feature)>=5000
 ```
 
 <Figure caption="Every individual over the nested deletion, clustered, under HGSVC3 structural variants." src="/img/paper/cohort_cnv.png" />
+
+## Run QuicK-mer2 on your own samples {#your-own-samples}
+
+Run [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) over your aligned reads.
+The lab's
+[tutorial](https://github.com/KiddLab/QuicK-mer2/blob/master/tutorial.md) takes
+one 30x 1000 Genomes CRAM through `count` and `est`, and the GRCh38 k-mer index
+is
+[prebuilt](https://kiddlabshare.med.umich.edu/QuicK-mer/QuicK-mer2-refs/GRCh38/).
+
+`est` writes copy number in 1 kb windows, and its four columns are bedGraph once
+the decoy and EBV contigs are dropped:
+
+```bash
+grep -v decoy sample.qm2.CN.1k.bed | grep -v chrEBV >sample.bedgraph
+samtools faidx GRCh38_BSM.fa
+cut -f1,2 GRCh38_BSM.fa.fai >GRCh38_BSM.chrom.sizes
+bedGraphToBigWig sample.bedgraph GRCh38_BSM.chrom.sizes sample.qm2.CN.1k.bw
+```
+
+Host it, then add its URL to a heatmap track's `bigWigs`, or a `name` and `url`
+row to `samples.tsv` for the Zarr build below. An individual the panel already
+covers gives the lab's estimate as a check.
 
 ## Building a Zarr store from per-sample BigWigs
 
@@ -402,18 +402,15 @@ node build_signal_zarr.ts \
   --levels 1000,10000
 ```
 
-The `build_signal_zarr.ts` command above built the hosted store from every
-sample over the windows in the figures.
-
-Three things shape the store:
+The hosted store was built this way, from every sample over the windows in the
+figures. Three things shape a store:
 
 - **`--levels`** sets the resolution pyramid, one samples-by-bins array per
   entry, with coarser ones averaged from the finest. The adapter reads the
   coarsest level whose bins are no wider than a screen pixel, so a
   whole-chromosome view costs the same couple of requests. List the input's bin
-  size first, then steps of roughly 3x (`10000,30000,100000`, not
-  `10000,100000`), since a 10x gap leaves a view fetching 10x the bins it can
-  draw.
+  size first, then steps of roughly 3x such as `10000,30000,100000`; a 10x gap
+  leaves a view fetching 10x the bins it can draw.
 - **`--region`** limits the build to the windows you pass. The converter holds
   the finest level in memory and derives the rest from it, so without `--region`
   this panel takes a few GB at 10 kb bins and tens of GB at the 1 kb of the
@@ -430,28 +427,29 @@ serve to a track. The plugin's
 [store format](https://github.com/cmdcolin/jbrowse-plugin-zarr#store-format)
 gives the layout for writing a store from something other than BigWigs.
 
-## Run QuicK-mer2 on your own samples {#your-own-samples}
-
-Run [QuicK-mer2](https://github.com/KiddLab/QuicK-mer2) over your aligned reads.
-The lab's
-[tutorial](https://github.com/KiddLab/QuicK-mer2/blob/master/tutorial.md) takes
-one 30x 1000 Genomes CRAM through `count` and `est`, and the GRCh38 k-mer index
-is
-[prebuilt](https://kiddlabshare.med.umich.edu/QuicK-mer/QuicK-mer2-refs/GRCh38/).
-
-`est` writes copy number in 1 kb windows, and its four columns are bedGraph once
-the decoy and EBV contigs are dropped:
+[`measure_signal_latency.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/measure_signal_latency.ts)
+tells you whether your panel is large enough to need a store. It counts the
+requests, bytes and time to fill one window from every sample's BigWig and from
+the hosted store, using the readers the browser uses, and takes the same
+`samples.tsv`:
 
 ```bash
-grep -v decoy sample.qm2.CN.1k.bed | grep -v chrEBV >sample.bedgraph
-samtools faidx GRCh38_BSM.fa
-cut -f1,2 GRCh38_BSM.fa.fai >GRCh38_BSM.chrom.sizes
-bedGraphToBigWig sample.bedgraph GRCh38_BSM.chrom.sizes sample.qm2.CN.1k.bw
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/measure_signal_latency.ts
+
+# --zarr: the store's URL once hosted; both halves are read over HTTP
+node measure_signal_latency.ts --samples samples.tsv \
+  --region chr17:36,080,000-36,270,000 \
+  --zarr https://example.org/qm2_cn_1kb.zarr
 ```
 
-Host it, then add its URL to `bigWigs`, or a `name` and `url` row to
-`samples.tsv` for the Zarr build. An individual the panel already covers gives
-the lab's estimate as a check.
+Over the _CCL3L1_ window against the hosted files, at a median range request of
+25 ms:
+
+| chr17:36,080,000-36,270,000, 2504 samples | 2504 BigWigs | Zarr store |
+| ----------------------------------------- | ------------ | ---------- |
+| requests                                  | 15,048       | 3          |
+| bytes                                     | 48.39 MB     | 0.22 MB    |
+| wall clock                                | 24.5 s       | 0.2 s      |
 
 ## Reproduce it end to end
 
