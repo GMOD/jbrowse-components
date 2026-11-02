@@ -8,20 +8,21 @@ guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 ---
 
-Repeat classes spread along a genome differently: over a window of 17q21, SINE
-copies fill it end to end while LINE copies come in clusters. A RepeatMasker
-track draws every class in one packed row of colored blocks, where that
-difference is hard to read. We:
+RepeatMasker annotates a genome's repeats and names each copy's class (SINE,
+LINE, LTR, DNA transposon, simple repeat). The classes spread along a genome
+differently: over a window of 17q21, SINE copies fill it end to end while LINE
+copies come in clusters. A RepeatMasker track draws every class in one packed
+row of colored blocks, where that difference is hard to read. We:
 
 - switch hg38's RepeatMasker track to a
   [multi-row feature display](/docs/user_guides/multirow_feature_track), one
-  labelled row per class
+  labelled row per class, from the track menu
 - pin the row order and colors in a track config
-- serve your own RepeatMasker output the same way
+- convert your own RepeatMasker `.out` into the BED the display reads, and load
+  it with the JBrowse CLI
 
-JBrowse reads the classes from the file, so no data preparation is needed. Every
-genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), and any UCSC or
-GenArk hub config, has a RepeatMasker track to try.
+Every genome at [genomes.jbrowse.org](https://genomes.jbrowse.org), and any UCSC
+or GenArk hub config, has a RepeatMasker track to try the first step on.
 
 ## Prerequisites
 
@@ -49,16 +50,36 @@ npm install -g @jbrowse/cli@next
 
 ## The data
 
-The figures read UCSC's RepeatMasker track for hg38 and dm6, rehosted on
-jbrowse.org.
+The figures read UCSC's RepeatMasker track for hg38, rehosted on jbrowse.org.
 
 Nothing to download: the track configs read their files by URL. The
 [build script](#reproduce-it-end-to-end) takes a genome of your own, as its
 FASTA and RepeatMasker's `.out`.
 
+## Switching hg38's RepeatMasker track to one row per class
+
+We'll open hg38 on [genomes.jbrowse.org](https://genomes.jbrowse.org) and switch
+the track:
+
+- Turn on **RepeatMasker** and type `chr17:45,700,000-45,750,000` into the
+  location box.
+- Choose **Display types → Multi-row feature display (painting)** in the track
+  menu.
+
+The display partitions on `repClass` whenever the file has that column, and
+**One row per...** in the same menu lists every column the features carry,
+`repFamily` among them. <!-- menu-path-ok -->
+
+<Figure src="/img/multirow/display_types_menu.png" caption="Top: the track menu's Display types submenu on the UCSC RepeatMasker track; any feature track offers the multi-row display beside its default one. Bottom: the same window after picking it, one row per repeat class." />
+
+<Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed row to a labelled row per class: the track menu's Display types, and the multi-row painting partitioning on the repeat class column in the file." />
+
+<Figure caption="Top: RepeatMasker colored by repClass in one packed row. Bottom: the same track with one row per repClass." src="/img/cookbook_color_by_type_two_ways.png"/>
+
 ## Where UCSC and GenArk hubs store the repeat class
 
-The multi-row display's `rows` assigns one row per value of a `field`. UCSC
+The multi-row display's `rows` assigns one row per value of a `field`, and on a
+GenArk genome the switch above needs that field spelled out, because UCSC
 golden-path and GenArk hubs store the repeat class in different places:
 
 - A **UCSC golden-path** assembly ships a BED whose header names its columns,
@@ -73,25 +94,6 @@ golden-path and GenArk hubs store the repeat class in different places:
 In both cases JBrowse builds the rows from the values in the window, so a window
 with no satellite repeats has no satellite row.
 
-## Switching hg38's RepeatMasker track to one row per class
-
-We'll open hg38 on [genomes.jbrowse.org](https://genomes.jbrowse.org) and switch
-the track:
-
-- Turn on **RepeatMasker** and type `chr17:45,700,000-45,750,000` into the
-  location box.
-- **Display types → Multi-row feature display (painting)** in the track menu.
-
-The display partitions on `repClass` whenever the file has that column, and
-**One row per...** in the same menu lists every column the features carry,
-`repFamily` among them. <!-- menu-path-ok -->
-
-<Figure src="/img/multirow/display_types_menu.png" caption="Top: the track menu's Display types submenu on the UCSC RepeatMasker track; any feature track offers the multi-row display beside its default one. Bottom: the same window after picking it, one row per repeat class." />
-
-<Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed row to a labelled row per class: the track menu's Display types, and the multi-row painting partitioning on the repeat class column in the file." />
-
-<Figure caption="Top: RepeatMasker colored by repClass in one packed row. Bottom: the same track with one row per repClass." src="/img/cookbook_color_by_type_two_ways.png"/>
-
 ## Pinning row order and colors in a track config
 
 A track config can open the track in the partitioned view, and two settings keep
@@ -100,13 +102,17 @@ classes that come first, in order, and a class it leaves out follows the listed
 ones. `rowColor` is a color scale on each row's label bar, pairing each class in
 its `domain` with a color in its `range`.
 
-```json addtrack
+```json addtrack loc=chr17:45,700,000-45,750,000
 {
   "type": "FeatureTrack",
   "trackId": "rmsk_hg38_rows",
   "name": "RepeatMasker by class",
-  "uri": "rmsk.bed.gz",
   "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "https://jbrowse.org/ucsc/hg38/rmsk.bed.gz",
+    "csi": true
+  },
   "displays": [
     {
       "type": "LinearMultiRowFeatureDisplay",
@@ -147,15 +153,13 @@ its `domain` with a color in its `range`.
 }
 ```
 
-A row not named in `rowColor` paints in the default block color. `unknown` in
-`rowColor` sets one color for every unnamed row.
+The rows come from the classes in the file, so a class `rowColor` leaves out
+still gets a row, as `Unknown` does in the figures, painted in the default block
+color. `unknown` in `rowColor` sets one color for every unnamed row.
 
 The track opens with the first display listed, so the multi-row entry makes rows
 the default. A bare `{ "type": "LinearBasicDisplay" }` ahead of it keeps the
 packed form as the default and leaves the rows one menu click away.
-
-The rows come from the classes in the file, so a class `rowColor` leaves out
-still gets a row, as `Unknown` does in the figures.
 
 ## Serving your own RepeatMasker output
 
@@ -163,7 +167,7 @@ A hub's RepeatMasker BED has the `repClass` column the display partitions on.
 The RepeatMasker `.out` file instead writes a single `class/family` field,
 `LINE/L1` for a repeat with both and a bare `Simple_repeat` for one whose family
 is its class. Splitting that field in two, under a header naming the columns,
-turns the `.out` into the file the track above reads:
+turns the `.out` into a file of the same shape as the one the track above reads:
 
 <!-- from: scripts/build_repeatmasker_classes.sh -->
 
@@ -187,6 +191,10 @@ turns the `.out` into the file the track above reads:
 jbrowse sort-bed rmsk.bed | bgzip > rmsk.bed.gz
 tabix -p bed rmsk.bed.gz
 ```
+
+Serve `rmsk.bed.gz` and its `.tbi` together. In the track config above, put its
+path or URL in `uri`, drop `"csi": true` (the hosted copy is CSI-indexed and
+yours is TBI), and put your assembly's name in `assemblyNames`.
 
 ## Reproduce it end to end
 

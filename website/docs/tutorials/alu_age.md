@@ -10,16 +10,20 @@ tutorial_category: Grammar of graphics
 
 RepeatMasker annotates Alu, a primate-specific repeat family, and its `milliDiv`
 column records each copy's divergence from its subfamily consensus, in tenths of
-a percent. Divergence grows with time, so the column is an age. We:
+a percent. Divergence grows with time, so the column is an age, and the
+subfamily name (AluJ, AluS, AluY, oldest to youngest) is a coarser one. We ask
+where along chromosome 1 the young copies sit. We:
 
-- plot each copy's `milliDiv` as a bar at one locus
-- bin and count copies when zoomed out
-- plot the AluY share per megabase against the genome-wide share
-- plot that share against Alu density across chromosome 1
+- load the Alu rows of a RepeatMasker BED as a `LinearMarkDisplay`, one bar per
+  copy with `milliDiv` as its height and its lineage as its color
+- bin and count the copies per window when zoomed out, with AluY's count over
+  the total
+- count copies per kilobase over a whole chromosome into a bigWig with
+  `jbrowse make-density`
+- plot the AluY share per megabase as a two-color bar track under that density
 
-The plots come from `LinearMarkDisplay`, which turns the columns of a feature
-file into plots from a JSON `marks` list. It is experimental, and its config
-shape may change.
+`LinearMarkDisplay` turns the columns of a feature file into plots from a JSON
+`marks` list. It is experimental, and its config shape may change.
 
 ## Prerequisites
 
@@ -81,16 +85,28 @@ We'll load hg38, the assembly the RepeatMasker coordinates are on.
 }
 ```
 
+The track reads one family's rows of a RepeatMasker BED.
+[](/docs/tutorials/repeatmasker_classes) converts RepeatMasker's own `.out` into
+a BED of this shape. An `awk` filter on the `repFamily` column keeps the header
+line and the sort order, so `tabix` indexes the cut file as it is:
+
+<!-- from: scripts/build_alu_age.sh -->
+
+```bash
+# the header line names the columns, repFamily the sixth
+gzip -dc rmsk.bed.gz | awk -F'\t' -v fam=Alu '/^#/ || $6 == fam' | bgzip > Alu.bed.gz
+tabix -p bed Alu.bed.gz
+```
+
 The track reads any BED-like file, bgzipped and tabix-indexed, with a `#` header
-line naming the columns; a mark refers to a column by name. In
+line naming the columns, and a mark refers to a column by name. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `encoding` maps
 columns to a mark's channels, and `color` is a color scale from a `field`
 through `scale.domain` to `scale.range`. The track below lists three marks:
 
 - **Per-copy bars** (below `maxBpPerPx`): a `bar` per copy with `milliDiv` as
   the height. A `formula` step writes the first four characters of the name into
-  `lineage` (AluJ, AluS, AluY: oldest to youngest, and AluY is still inserting),
-  and the ordinal `scale.domain` fixes the legend order
+  `lineage`, and the ordinal `scale.domain` fixes the legend order
 - **Copies per bin** (past `minBpPerPx`): every Alu copy counted per bin, in
   grey
 - **AluY per bin**: the same count behind a `filter` for AluY, in red
@@ -169,15 +185,16 @@ through `scale.domain` to `scale.range`. The track below lists three marks:
 ```
 
 Open `chr1:151,000,000-151,030,000`, 30 kb of 1q21, and click a bar to open its
-row.
+row of the BED.
 
 <Figure src="/img/alu_age/locus.png" caption="Alu copies over 1q21: bar height is divergence from consensus, color is lineage." />
 
 ## Counting Alu copies per bin when zoomed out {#zooming-out}
 
-On a whole chromosome the track exceeds its fetch budget and shows a "region too
-large" message. A bigWig of copies per kilobase, counted once from the BED,
-covers that width:
+Zoomed out past `minBpPerPx`, the track switches to the two binned marks. On a
+whole chromosome it exceeds its fetch budget and shows a "region too large"
+message, so a bigWig of copies per kilobase, counted once from the BED, covers
+that width:
 
 <!-- from: scripts/build_alu_age.sh -->
 
@@ -203,9 +220,9 @@ Add the bigWig as a track:
 ## AluY share per megabase, against the genome-wide share
 
 The red AluY count is too small to read against a total that varies between
-bins. A script instead writes a BED with two log2 columns, the AluY share per
-megabase against the genome-wide share and the plus-strand share against one
-half as the control.
+bins. A script instead writes a BED with two log2 columns: the AluY share per
+megabase against the genome-wide share, and the plus-strand share against one
+half as a control that should show no pattern.
 
 Fetch the script:
 
@@ -217,8 +234,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 
 ```bash
 # columns: copies, young, plus, youngShare, youngLog2, strandLog2, one row per
-# 1 Mb bin holding at least 50 copies; prints the rank correlation of each share
-# against copies per bin
+# 1 Mb bin holding at least 50 copies; also prints the Spearman rank correlation
+# of each share against copies per bin
 python3 alu_young_share.py Alu.bed.gz Alu.young_share.bed AluY
 bgzip -f Alu.young_share.bed
 tabix -f -p bed Alu.young_share.bed.gz
@@ -268,23 +285,17 @@ and key names live. The config below sets them in the track:
 
 <Figure src="/img/alu_age/young_share.png" caption="Top: chromosome 1, Alu copies per kilobase above the AluY share per megabase. Below: the copies track over the same AluY share, copies per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
 
-## Correlating AluY share with Alu density across the genome
-
-`alu_young_share.py` prints the Spearman rank correlation of each share against
-copies per megabase:
-
-| share, per megabase | bins | Spearman rho |        p |
-| ------------------- | ---: | -----------: | -------: |
-| AluY share          | 2873 |       -0.688 | < 1e-300 |
-| plus-strand share   | 2873 |        0.003 |     0.87 |
-
-The young share falls as the copies rise, and the plus-strand control shows no
-trend.[^perbin]
-
 ## Reproduce it end to end
 
 [`build_alu_age.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_alu_age.sh)
-runs every step above:
+runs every step above. It:
+
+1. fetches UCSC's hg38 RepeatMasker table and the reference lengths, or copies
+   your own RepeatMasker BED and FASTA
+2. cuts out the Alu rows and indexes them
+3. counts the copies per kilobase into a bigWig, and per megabase into the AluY
+   share BED
+4. writes a JBrowse with the copies, the bigWig and the share as tracks
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_alu_age.sh
@@ -315,9 +326,3 @@ and `FAMILY` and `YOUNG` pick another family and its youngest lineage.
   first described.
 - Smit, Hubley and Green (2013-2015).
   [RepeatMasker Open-4.0](https://www.repeatmasker.org)
-
-[^perbin]:
-    Insertions cluster, so the copies per megabase scatter several times more
-    widely than independent copies would. A per-megabase test that assumed
-    independence would flag most of the genome, so the page reports the
-    genome-wide correlation.

@@ -15,8 +15,9 @@ than a browser fetches at once. We:
 
 - count each file's features per kilobase into a small bigWig with
   `jbrowse make-density`
-- load the counts as gene and repeat density tracks along chromosome 1
-- zoom in to 1q21, where the tracks give way to the features themselves
+- load the bigWigs as quantitative tracks of gene and repeat density along
+  chromosome 1
+- zoom in to 1q21 and add the genes as a feature track beside the counts
 
 ## Prerequisites
 
@@ -54,7 +55,7 @@ per-kilobase bigWig beside each file.
 
 You don't need these files to follow the page: the track configs below read the
 hosted results. The [build script](#reproduce-it-end-to-end) fetches them to
-rebuild those results. The counting step takes any GFF3 or BED of your own.
+rebuild those results. The counting step takes any GFF3, BED or VCF of your own.
 
 | What it is                                                     | File                                                                                         |
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -114,8 +115,21 @@ or one, so the min-max band drawn around the mean would fill every zoomed-out
 pixel to the same height.
 
 The three repeat tracks come from cutting the RepeatMasker table into one BED
-per `repFamily`, so the Alu bigWig counts only Alus. The same `make-density`
-line over each family BED builds its bigWig:
+per `repFamily`, so the Alu bigWig counts only Alus. An `awk` filter keeps the
+header line and the sort order, so `tabix` indexes each cut file as it is:
+
+<!-- from: scripts/build_gene_density.sh -->
+
+```bash
+# rmsk.bed.gz is a RepeatMasker BED whose header names repFamily as the sixth
+# column; swap Alu for L1 or Simple_repeat for the other two
+gzip -dc rmsk.bed.gz | awk -F'\t' -v fam=Alu '/^#/ || $6 == fam' | bgzip > Alu.bed.gz
+tabix -p bed Alu.bed.gz
+```
+
+[](/docs/tutorials/repeatmasker_classes) converts RepeatMasker's own `.out` into
+a BED of this shape. The same `make-density` line, run on `Alu.bed.gz`, writes
+`Alu.bed.density.bw`:
 
 ```json addtrack loc=chr1
 {
