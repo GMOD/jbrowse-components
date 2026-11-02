@@ -365,19 +365,19 @@ test('the tooltip drops a row the drawn name already says', () => {
   const { display } = setUp()
 
   display.setHover('g1', undefined, ['GENE1', 'exon 2/3'])
-  expect(display.shownTooltipRows).toEqual(['exon 2/3'])
+  expect(display.shownTooltipLines).toEqual(['exon 2/3'])
 
   display.setHover('g1', undefined, ['GENE1'])
-  expect(display.shownTooltipRows).toBeUndefined()
+  expect(display.shownTooltipLines).toBeUndefined()
 })
 
 test('tooltip.show off opens no tooltip, and the hover stays', () => {
   const { display } = setUp()
   display.setHover('g1', undefined, ['exon 2/3'])
-  expect(display.shownTooltipRows).toEqual(['exon 2/3'])
+  expect(display.shownTooltipLines).toEqual(['exon 2/3'])
 
   setConf(display, ['tooltip', 'show'], false)
-  expect(display.shownTooltipRows).toBeUndefined()
+  expect(display.shownTooltipLines).toBeUndefined()
   expect(display.featureIdUnderMouse).toBe('g1')
 })
 
@@ -387,7 +387,7 @@ test('the tooltip keeps a name its label does not draw', () => {
   display.setShowDescriptions(false)
 
   display.setHover('g1', undefined, ['GENE1'])
-  expect(display.shownTooltipRows).toEqual(['GENE1'])
+  expect(display.shownTooltipLines).toEqual(['GENE1'])
 })
 
 // A ring of the circular view draws these records itself, so an overlay

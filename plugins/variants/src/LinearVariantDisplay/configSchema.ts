@@ -262,7 +262,7 @@ export default function configSchemaFactory() {
        * ```
        */
       genotypes: ConfigurationSchema(
-        'GenotypeRows',
+        'Genotypes',
         {
           /**
            * #slot genotypes.show
