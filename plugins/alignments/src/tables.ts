@@ -96,6 +96,7 @@ import {
 import {
   arcSlotsInWindows,
   hasOverlapInWindows,
+  insertSizeBandInWindows,
   keyWindowsOf,
   modificationTypesInWindows,
   readCategoriesInWindows,
@@ -208,6 +209,7 @@ import {
   colorRampScales,
   getArcLegendItems,
   getReadDisplayLegendItems,
+  insertSizeBandLabels,
   sashimiLegendItems,
   SASHIMI_LEGEND_TITLE,
   sashimiLegend,
@@ -514,6 +516,13 @@ function colorReads(
     ]),
   )
   const declared = declaredReadLabels(encoding, setting.scale.names ?? [])
+  const keyLabels = {
+    ...declared,
+    categories: {
+      ...insertSizeBandLabels(insertSizeBandInWindows(byGroup, windows)),
+      ...declared.categories,
+    },
+  }
   const presentTagValues = !isBakedField(colorField)
     ? undefined
     : colorField === 'mapq'
@@ -541,7 +550,7 @@ function colorReads(
     bakedScale,
     sectionOrder: keySectionOrder(facet, colorField),
     baseQualityUnavailable: qualitySpan.unavailable,
-    labels: declared,
+    labels: keyLabels,
     descending: preset.descending,
   }).filter(item => item.color !== undefined)
   const { ramps, readTitle } = titledReadColorKey(
@@ -558,6 +567,7 @@ function colorReads(
     sections,
     palette,
     declared,
+    keyLabels,
     readField: colorField,
     legend: {
       label: legend.map(item => item.label),
@@ -984,7 +994,7 @@ function readConnectionTables(
           ),
         ),
         colors.palette,
-        colors.declared.categories,
+        colors.keyLabels.categories,
       ).filter(item => item.color !== undefined)
     : []
   return {

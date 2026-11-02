@@ -268,6 +268,8 @@ test('normalInsertSize pins the band for the reads and the connections, beside a
   })
   expect(pinned.arcs.level).toContain('long')
   expect(pinned.arcs.level).not.toContain('normal')
+  expect(pinned.legend.label).toContain('Long insert (> 2 bp)')
+  expect(pinned.arcLegend.label).toContain('Long insert (> 2 bp)')
 })
 
 test('a ramp keys a color bar: a linear MAPQ, under the color title, and base quality', async () => {

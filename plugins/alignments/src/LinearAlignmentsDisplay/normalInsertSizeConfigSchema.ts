@@ -12,7 +12,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * proper pair counts as `normal`, which every reader of
  * `insertSizeAndOrientation` classifies by, the read fills, the connections
  * and the hover. Both ends pin the band together; unset, each region's band
- * is sampled from its own pairs. Recoloring a level is `encoding.color`'s.
+ * is sampled from its own pairs. The key names the band in bp wherever every
+ * region in view classifies by one, and the hover names the bound a pair
+ * crosses. Recoloring a level is `encoding.color`'s.
  *
  * #example
  * ```js

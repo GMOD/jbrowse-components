@@ -52,7 +52,7 @@ describe('formatReadTooltip pair anomalies', () => {
       'chr1',
     )
     expect(tip).toContain('Outward facing pair')
-    expect(tip).toContain('Long insert size')
+    expect(tip).toContain('Long insert size (> 1,000 bp)')
   })
 
   it('reports both for an abnormal-orientation short-insert pair', () => {
@@ -65,7 +65,7 @@ describe('formatReadTooltip pair anomalies', () => {
       'chr1',
     )
     expect(tip).toContain('Both mates reverse strand')
-    expect(tip).toContain('Short insert size')
+    expect(tip).toContain('Short insert size (< 200 bp)')
   })
 
   it('normal LR pair with a long insert shows only the insert row', () => {
@@ -130,7 +130,7 @@ describe('formatReadTooltip pair anomalies', () => {
     )
     expect(tip).not.toContain('Inter-chromosomal')
     expect(tip).toContain('Outward facing pair')
-    expect(tip).toContain('Long insert size')
+    expect(tip).toContain('Long insert size (> 1,000 bp)')
   })
 })
 

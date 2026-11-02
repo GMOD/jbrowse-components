@@ -2,6 +2,7 @@ import { ARC_COLOR_INTERCHROM } from '../features/arcs/arcColors.ts'
 import { READ_COLOR_CATEGORY } from './colorUtils.ts'
 import {
   arcSlotsInWindows,
+  insertSizeBandInWindows,
   junctionInWindows,
   keyWindowsOf,
   readCategoriesInWindows,
@@ -92,4 +93,26 @@ test('a junction keys where its span touches a window on its reference', () => {
   expect(
     junctionInWindows({ refName: 'chr1', start: 2000, end: 5000 }, window),
   ).toBe(false)
+})
+
+test('a key states the insert-size band only where every region in view shares one', () => {
+  const band = { lower: 150, upper: 600 }
+  const regions = (
+    ...bands: ({ lower: number; upper: number } | undefined)[]
+  ) =>
+    new Map([['', new Map(bands.map((b, i) => [i, { insertSizeStats: b }]))]])
+  const both = keyWindowsOf([
+    { displayedRegionIndex: 0, refName: 'chr1', start: 0, end: 10 },
+    { displayedRegionIndex: 1, refName: 'chr2', start: 0, end: 10 },
+  ])
+  expect(insertSizeBandInWindows(regions(band, band), both)).toEqual(band)
+  expect(
+    insertSizeBandInWindows(regions(band, { lower: 100, upper: 600 }), both),
+  ).toBeUndefined()
+  expect(
+    insertSizeBandInWindows(regions(band, undefined), both),
+  ).toBeUndefined()
+  expect(
+    insertSizeBandInWindows(regions(band, { lower: 100, upper: 600 }), window),
+  ).toEqual(band)
 })

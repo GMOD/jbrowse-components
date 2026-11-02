@@ -112,6 +112,7 @@ import {
   arcLegendTitle,
   getArcLegendItems,
   getReadDisplayLegendItems,
+  insertSizeBandLabels,
   readCategoryLabelOverrides,
   readColorCategoryLabel,
   sashimiLegend,
@@ -169,6 +170,7 @@ import {
   arcSlotsInWindows,
   connectorSlotsInWindows,
   hasOverlapInWindows,
+  insertSizeBandInWindows,
   junctionInWindows,
   keyWindowsOf,
   modificationTypesInWindows,
@@ -948,6 +950,30 @@ export default function stateModelFactory(
 
           /**
            * #getter
+           * The keys' row names: `declaredReadLabels` over the insert-size rows
+           * named with the band they part at, where every region in view
+           * classifies by one band.
+           */
+          get keyReadLabels(): DeclaredReadLabels {
+            const declared = this.declaredReadLabels
+            return {
+              ...declared,
+              categories: {
+                ...insertSizeBandLabels(
+                  self.showLegend
+                    ? insertSizeBandInWindows(
+                        this.laidOutByGroup,
+                        this.keyWindows,
+                      )
+                    : undefined,
+                ),
+                ...declared.categories,
+              },
+            }
+          },
+
+          /**
+           * #getter
            * The arc color slots plotted, mapped to legend buckets, for curved
            * arcs and the read cloud alike. Empty unless an overlay is on with
            * the legend shown.
@@ -1020,7 +1046,7 @@ export default function stateModelFactory(
               bakedScale: this.bakedColorScale,
               sectionOrder: this.keySectionOrder,
               baseQualityUnavailable: this.baseQualitySpan.unavailable,
-              labels: this.declaredReadLabels,
+              labels: this.keyReadLabels,
               descending: self.colorKeyDescending,
             })
           },
@@ -1895,7 +1921,7 @@ export default function stateModelFactory(
               ...connectorCategories(this.connectionColorTypes),
             ]),
             palette,
-            self.declaredReadLabels.categories,
+            self.keyReadLabels.categories,
           )
         },
 

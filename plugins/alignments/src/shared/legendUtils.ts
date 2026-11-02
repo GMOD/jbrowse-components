@@ -532,6 +532,25 @@ function strandLabelOverrides(colorField: string | undefined) {
 // rather than the bare "No value" the table can't specialize.
 // `declared` is `encoding.color.scale.names` by bucket (`declaredReadLabels`), which names a
 // bucket over every wording here.
+/**
+ * The insert-size rows of a key named with the band they part at, in bp.
+ */
+export function insertSizeBandLabels(
+  band: { lower: number; upper: number } | undefined,
+): Partial<Record<ReadColorCategory, string>> {
+  return band
+    ? {
+        shortInsert: `Short insert (< ${bpLabel(band.lower)} bp)`,
+        normalInsert: `Normal (${bpLabel(band.lower)}–${bpLabel(band.upper)} bp)`,
+        longInsert: `Long insert (> ${bpLabel(band.upper)} bp)`,
+      }
+    : {}
+}
+
+function bpLabel(bp: number) {
+  return Math.round(bp).toLocaleString('en-US')
+}
+
 export function readCategoryLabelOverrides(
   colorField: string | undefined,
   declared: Partial<Record<ReadColorCategory, string>> = {},

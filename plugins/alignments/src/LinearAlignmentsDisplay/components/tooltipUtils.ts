@@ -220,10 +220,14 @@ function getPairTypeDescriptions({
     out.push(orient)
   }
   const insertClass = classifyInsertSize(insertSize, insertSizeStats)
-  if (insertClass === 'long') {
-    out.push('Long insert size')
-  } else if (insertClass === 'short') {
-    out.push('Short insert size')
+  if (insertClass === 'long' && insertSizeStats) {
+    out.push(
+      `Long insert size (> ${toLocale(Math.round(insertSizeStats.upper))} bp)`,
+    )
+  } else if (insertClass === 'short' && insertSizeStats) {
+    out.push(
+      `Short insert size (< ${toLocale(Math.round(insertSizeStats.lower))} bp)`,
+    )
   }
   return out
 }

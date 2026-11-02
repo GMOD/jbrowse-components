@@ -326,3 +326,31 @@ export function junctionInWindows(
   }
   return false
 }
+
+/**
+ * The insert-size band every region touching a window classifies by, which a
+ * key can state in bp; undefined where a region has none or two disagree.
+ */
+export function insertSizeBandInWindows(
+  byGroup: ByGroup<Pick<WorkerPileupData, 'insertSizeStats'>>,
+  windows: readonly KeyWindow[],
+) {
+  const regions = byRegion(windows)
+  const bands = new Map<string, { lower: number; upper: number }>()
+  let unsampled = false
+  for (const map of byGroup.values()) {
+    for (const [regionIndex, { insertSizeStats }] of map) {
+      if (regions.has(regionIndex)) {
+        if (insertSizeStats) {
+          bands.set(
+            `${insertSizeStats.lower}:${insertSizeStats.upper}`,
+            insertSizeStats,
+          )
+        } else {
+          unsampled = true
+        }
+      }
+    }
+  }
+  return bands.size === 1 && !unsampled ? [...bands.values()][0] : undefined
+}
