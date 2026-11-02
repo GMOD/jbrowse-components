@@ -16,8 +16,9 @@ Unlike a feature track, which deals colors in the order values appear, a
 tag or attribute with no `scale.domain`, `range` or `unknown` colors each
 value by its text alone, so the value keeps its color in every region and
 session.
-`split`, `spliced`, `pairing` and `svSignal` color nothing: reads keep their
-arcs' colors, and a facet sections them by those.
+`split`, `spliced`, `pairing`, `svChannel` and `svSignal` color nothing:
+reads keep their arcs' colors. A facet sections them by the first four, and
+the `svSignal` filter keeps or hides SV evidence.
 The per-base layer over the reads is `pileup.bases`.
 
 ## Example usage
@@ -95,7 +96,7 @@ A setting written to it replaces it whole: a member left out returns to its defa
 | <span id="slot-scaleunknown">**scale.unknown**</span><br>[`maybeColor`](/docs/config_guides/slot_types#the-maybe-types) | The fill of a read whose tag, attribute, mate reference or MAPQ an ordinal `domain` leaves out, d3's `ordinal.unknown`: `unknown: "#999"` beside `domain: ["1", "2"]` on `tags.HP` paints every other haplotype grey, and the key lists them as one row, Other. A field with fixed levels, such as strand, has no value outside them. |
 | <span id="slot-scalenames">**scale.names**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | Names for each level or value `range` colors, in the same order, in the key, the hovers and the arc key: `names: ["Maternal", "Paternal"]` beside `domain: ["1", "2"]` on `tags.HP`. |
 | <span id="slot-legend">**legend**</span><br>[AlignmentsColorLegend sub-schema](#slot-legendtitle) | The key this channel draws. |
-| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | field to color each read by: a preset field by its levels or bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing and svSignal color nothing, as a facet sections by them |
+| <span id="slot-field">**field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | field to color each read by: a preset field by its levels or bins; tags.XX reads a SAM tag; any other name reads as a facet over it does: mateAssembly, a feature attribute, a dotted path or a jexl: expression; split, spliced, pairing, svChannel and svSignal color nothing: a facet sections by the first four and the svSignal filter keeps or hides SV evidence |
 | <span id="slot-scaletype">**scale.type**</span><br>[`maybeStringEnum`](/docs/config_guides/slot_types#the-maybe-types) (ordinal, linear, threshold) | ordinal a range color per value; linear a ramp over mapq or a numeric tag or attribute between domainMin and domainMax; threshold the bins domain cuts; unset, threshold over mapq and ordinal over any other field |
 | <span id="slot-scaledomain">**scale.domain**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | for an ordinal scale, the values that take the range first, in order: a preset field's levels, insertSizeAndOrientation's short, normal, long and RL among them, '' a read with no value, a MAPQ, 255 for unavailable, or a tag's values; for a threshold scale, the cut points; the display's normalInsertSize sets the insert sizes between short and long |
 | <span id="slot-scalerange">**scale.range**</span><br>[`colorArray`](/docs/config_guides/slot_types#colorarray) = <code>[]</code> | CSS colors an ordinal scale hands its domain in order, or with no domain a preset field's levels in their preset order, a threshold scale its bins, or a linear scale's stops, evenly spaced; a level left out keeps its default; empty uses the field's default colors, cividis over mapq's bins, the tag palette or viridis |
