@@ -18,8 +18,8 @@ out. We work through the honey bee RefSeq annotation and the _vav_ gene
 
 - translate the gene models and call Pfam domains on the proteins with `hmmscan`
 - place each domain on the exons that encode it with `domains2genome`
-- load the domains as a track with one row per transcript, colored by Pfam
-  family
+- load the domains in the multi-row feature display, one row per transcript,
+  colored by Pfam family
 
 ## Prerequisites
 
@@ -50,9 +50,9 @@ conda install -c bioconda -c conda-forge gffread hmmer htslib samtools \
 
 The figures read the honey bee Amel_HAv3.1 assembly and its NCBI RefSeq
 annotation from genomes.jbrowse.org, and a Pfam domain file built from that
-annotation with the commands below. Nothing to download to follow the page: the
-track config reads the domain file by URL. The commands take your own genome
-FASTA and GFF3 the same way.
+annotation with the commands below. You don't need these files to follow the
+page, since the track config reads a hosted copy of the domain file; to build
+your own, run the commands on your genome FASTA and GFF3.
 
 | What it is                                                                         | File                                                                                                                                                                          |
 | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -179,13 +179,13 @@ own:
 ```
 
 For your own data, point `uri` at your `pfam.bed.gz` and `assemblyNames` at your
-assembly.
+assembly. To follow along on genomes.jbrowse.org, open the honey bee genome, add
+the track above, and:
 
-To follow along on genomes.jbrowse.org, open the honey bee genome, add the track
-above, turn on the gene track, **NCBI RefSeq - RefSeq All (GFF)**, and go to
-`NC_037640.1:1,971,400-1,976,800`. In the gene track's menu, choose **Show →
-Subfeature labels → Below** to label each transcript with the name its domain
-row carries.
+- turn on the gene track, **NCBI RefSeq - RefSeq All (GFF)**, and go to
+  `NC_037640.1:1,971,400-1,976,800`
+- in the gene track's menu, choose **Show → Subfeature labels → Below**, which
+  labels each transcript with the name its domain row has
 
 The gene track trims isoforms to fit its default height, so choose **Feature
 height → Fixed feature height + autogrow track height** to see them all.
