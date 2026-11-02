@@ -120,7 +120,7 @@ read the capture; the wedge sits at the deletion.
    protein story already has three CCR5 figures in `genomes_proteins`.
 2. **The allele's gene model.** The hosted figures label "31 novel residues" and
    "premature stop" from a hand-built GFF
-   (`/var/tmp/ccr5/bin/frameshift.py`, `build_ccr5_delta32.py`). The reader's
+   (`~/src/protein-figure-builders/ccr5/frameshift.py`, `build_ccr5_delta32.py`). The reader's
    route has no equivalent, so the allele row shows sequence only. Options: drop
    the annotation and let the sequence track's translation carry the stop
    (unchecked at base level); give the reader a short script that re-derives the

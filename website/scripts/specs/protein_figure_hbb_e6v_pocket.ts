@@ -191,7 +191,7 @@ const MARKS = [
 // brought in to 0.75 of its distance to fill the shorter panel and moved 9 Å
 // along its up vector, so the molecules sit clear of the panel's pill.
 // Both take this up vector, the line of sight crossed with the up that
-// /var/tmp/hero2/bin/hbb_e6v_roll.py gave them, so in the landscape panels the
+// ~/src/protein-figure-builders/hero2/hbb_e6v_roll.py gave them, so in the landscape panels the
 // two molecules sit side by side.
 const SIDE_BY_SIDE_UP = [0.8236, -0.525, -0.2145]
 const OVERVIEW_CAMERA = {

@@ -11,7 +11,7 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // on the right, one camera. The genome view draws the same two variables at
 // base resolution: the scan as a dot per missense change, AlphaMissense as the
 // hub's four-row heatmap on the plugin's own ramp. The sessions come from
-// /var/tmp/hero-figures/build_brca1.py and build_tp53.py; the camera is the
+// ~/src/protein-figure-builders/hero-figures/build_brca1.py and build_tp53.py; the camera is the
 // auto-framed one read back in page and brought 0.70 (BRCA1) or 0.80 (TP53)
 // of the way in, TP53's turned to look across the DNA axis. The data:
 // BRCA1 SGE (Findlay 2018) every missense SNV and its residue mean, hosted at

@@ -33,7 +33,7 @@ together.
   the hub's AlphaMissense heatmap, the fold painted by `color.field: 'track'`
   and by `alphaMissense`, one camera. Sessions beside the spec; the builders,
   the in-page camera reader and the capture script with a paint gate are
-  machine-local in `/var/tmp/hero-figures/`.
+  machine-local in `~/src/protein-figure-builders/hero-figures/`.
 - **TP53 Y220C, a hero**, `protein_figure_tp53_y220c.ts`: the
   scan over codons 198–224 above three opaque-surface panels at residue 220,
   2XWR (Tyr220 fills the spot), 2J1X (an empty pocket) and 9S9O (rezatapopt in
@@ -42,7 +42,7 @@ together.
   direction. Pills name the
   state; one callout points at the empty pocket.
 - **HBB E6V, the other hero**, `protein_figure_hbb_e6v.ts` with
-  `hbb_e6v.session.json`, built by `/var/tmp/hero2/bin/build_hbb_e6v.py`
+  `hbb_e6v.session.json`, built by `~/src/protein-figure-builders/hero2/build_hbb_e6v.py`
   (the `hb_j` prototype in main's spelling): 2HHB with Glu6 and nothing
   beside it; 2HBS with Val6 of one tetramer in the Phe85/Leu88 pocket of the
   next, cartoon with sphere marks. The builder carries one camera through a
@@ -88,7 +88,7 @@ together.
     A cartoon mark draws the polymer alone, so that chain's heme goes
     undrawn; D still hides its highlight label.
   - Both close-ups roll a quarter turn so the Val6 tetramer sits below, as in
-    the zoom-out. Cameras: `/var/tmp/hero2/bin/hbb_e6v_roll.py` and
+    the zoom-out. Cameras: `~/src/protein-figure-builders/hero2/hbb_e6v_roll.py` and
     `hbb_e6v_overview.py`.
   - Protein3d has no range site (`B:4-18`), so a sub-chain color goes through
     `color.values`, which paints every drawn copy of the mapped entity.
@@ -135,7 +135,10 @@ together.
   `protein_figure_snca_e46k.ts`; the SNCA builder looks down each fibril's rung
   axis and turns the E46K layer to put Lys80 on the wild type's pixel.
 - Builders for both (superposition, pocket aim, in-plane fit) are
-  machine-local in `/var/tmp/hero2/bin/`, beside the prototype shots.
+  machine-local in `~/src/protein-figure-builders/hero2/`. Every builder
+  writes a session committed beside its spec, so a figure recaptures without
+  them; they re-derive cameras and superpositions. They left `/var/tmp`,
+  which this machine's tmpfiles rule empties of files untouched for 30 days.
 - The older specs in `protein_variants.ts`.
 - Protein3d 1.25.0 (released and live in the store 2026-10-22): a mark is a
   layer in the mark display's spelling,
@@ -159,7 +162,7 @@ together.
 
 ## What the three reviews said
 
-In `/var/tmp/hero-figures/review/` (a cold reviewer of the eight figures, a
+In `~/src/protein-figure-builders/hero-figures/review/` (a cold reviewer of the eight figures, a
 blinded ideator given only a capability sheet, a landscape survey):
 
 - No surveyed tool (UCSC, Ensembl, gnomAD, cBioPortal, COSMIC-3D, ProtVar,
@@ -192,10 +195,10 @@ blinded ideator given only a capability sheet, a landscape survey):
    HG00101 Δ32/+, HG00096 +/+, genotypes from EBI's 2022 phased panel; the S3
    copies of the 2020 VCFs are empty), over two views of 6MEO (gp120)
    colored by the residues Δ32 loses (185 on; it keeps 1–184,
-   adds 31 frameshifted, stops at 215). Builder `/var/tmp/ccr5/bin/`.
+   adds 31 frameshifted, stops at 215). Builder `~/src/protein-figure-builders/ccr5/`.
    A track of the codons Δ32's shifted frame reads (31 new ones, then a stop
    at 216) carries the step between the missing bases and the missing half of
-   the receptor; `/var/tmp/ccr5/bin/frameshift.py` writes them. Maraviroc went: Colin called it an analogy
+   the receptor; `~/src/protein-figure-builders/ccr5/frameshift.py` writes them. Maraviroc went: Colin called it an analogy
    beside a consequence. Allele frequency went too, since its interesting
    form is by population ([[no-race-or-ancestry-framed-figures]]), and so did
    ClinVar, which draws the deletion as a green "benign" bar here.
@@ -220,7 +223,7 @@ blinded ideator given only a capability sheet, a landscape survey):
    `splice:sr` lost most spliced reads); the BAMs are in `demos/metex14/`'s
    bucket path, the README in the repo. The session is the landing session
    plus the tutorial's clicks; its builder is machine-local,
-   `/var/tmp/metex14/bin/build_met_ex14_v2.py`. A review cut the first draft's
+   `~/src/protein-figure-builders/metex14/build_met_ex14_v2.py`. A review cut the first draft's
    "empty pocket" panel (a chain filter no reader can set, and CBL still binds
    other substrates) and its custom colors.
    Unbuilt ideas on the same footing: a population-constraint track whose
@@ -279,7 +282,7 @@ blinded ideator given only a capability sheet, a landscape survey):
   height, lands on the track's shared display config, so one track open in
   two views draws at one height and one sort in both. `met_ex14` gives its DNA
   track one height for that reason.
-- `/var/tmp/metex14/bin/walk.mjs` walks the MET tutorial's clicks in headless
+- `~/src/protein-figure-builders/metex14/walk.mjs` walks the MET tutorial's clicks in headless
   Chrome against the hosted app and screenshots each step; rerun it after
   changing a step. Copy view sits under the view menu's View options, and a
   copy opens below the original, off screen and drawn only once scrolled to.
@@ -317,5 +320,5 @@ blinded ideator given only a capability sheet, a landscape survey):
   Glu46–Lys80 line was tried on SNCA and dropped.
 - `/tmp` is a 16 GB quota tmpfs, so run captures with `TMPDIR=/var/tmp/<dir>`.
 - A commit message containing "update docs" deploys the site.
-- Screen outputs are machine-local scratch: `/var/tmp/hero2/`, `/var/tmp/hero-figures/`,
+- Screen outputs are machine-local scratch, deleted after 30 days untouched: `/var/tmp/hero2/`, `/var/tmp/hero-figures/`,
   `/var/tmp/proto-shots/`, `/var/tmp/sge-screen/`, `/var/tmp/r01-*/`.

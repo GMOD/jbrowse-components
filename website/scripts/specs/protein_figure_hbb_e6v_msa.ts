@@ -188,7 +188,7 @@ const neighborMarks = [
   })),
 ]
 
-// /var/tmp/hero2/bin/hbb_e6v_roll.py rolls both close-ups a quarter turn, so
+// ~/src/protein-figure-builders/hero2/hbb_e6v_roll.py rolls both close-ups a quarter turn, so
 // the Val6 tetramer sits below its neighbour as in the zoom-out, which
 // hbb_e6v_overview.py frames along the close-up's line of sight.
 const CLOSE_UP_UP = {
