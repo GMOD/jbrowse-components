@@ -37,8 +37,9 @@ test('says how many rows show, and shows every row again on a click', () => {
 })
 
 // The config's own filter is a fact, not something a click clears: the chip
-// states it and a click only dismisses it.
-test('a narrowing nothing can clear dismisses on a click', () => {
+// states it, and a click neither clears nor dismisses it, so it never leaves
+// its line empty above the rows.
+test('a narrowing nothing can clear stays, and a click does nothing', () => {
   const m = model(
     {
       text: 'Showing 3 of 10 rows',
@@ -52,7 +53,7 @@ test('a narrowing nothing can clear dismisses on a click', () => {
   )
   fireEvent.click(getByText('Showing 3 of 10 rows'))
   expect(m.showAllRows).not.toHaveBeenCalled()
-  expect(queryByTestId('row_focus_hint')).toBeNull()
+  expect(queryByTestId('row_focus_hint')).not.toBeNull()
 })
 
 test('draws nothing while every row is shown', () => {

@@ -48,6 +48,17 @@ const useStyles = makeStyles()(theme => ({
     // node, which is pointer-events:none so it doesn't eat canvas events
     pointerEvents: 'auto',
   },
+  // a statement of fact nothing clears: no ✕ to promise a way out, and no
+  // dismissal, which would leave its line empty above the rows
+  fact: {
+    cursor: 'default',
+    '&::after': {
+      content: 'none',
+    },
+    '&:hover': {
+      background: theme.palette.background.paper,
+    },
+  },
 }))
 
 /**
@@ -71,6 +82,8 @@ const useStyles = makeStyles()(theme => ({
  *
  * `onClick` makes the chip act instead of dismiss — the subtree-filter chip
  * clears the filter, which is what makes the condition go away.
+ * `dismissible: false` with no `onClick` makes it a plain statement: no ✕,
+ * and a click does nothing.
  */
 export const SidebarHintChip = observer(function SidebarHintChip({
   hint,
@@ -78,26 +91,30 @@ export const SidebarHintChip = observer(function SidebarHintChip({
   maxWidth,
   testId,
   onClick,
+  dismissible = true,
 }: {
   hint?: { title: string; text: string }
   top?: number
   maxWidth?: number
   testId: string
   onClick?: () => void
+  dismissible?: boolean
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const [dismissed, setDismissed] = useState(false)
   return hint && !dismissed ? (
     <button
       type="button"
-      className={classes.chip}
+      className={cx(classes.chip, !onClick && !dismissible && classes.fact)}
       style={{ top, maxWidth }}
       data-testid={testId}
       title={hint.title}
       onClick={
         onClick ??
         (() => {
-          setDismissed(true)
+          if (dismissible) {
+            setDismissed(true)
+          }
         })
       }
     >

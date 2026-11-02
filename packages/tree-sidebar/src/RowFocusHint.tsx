@@ -10,7 +10,9 @@ import type { TreeSidebarModel } from './types.ts'
  * on a click ("Show all"), leaving a filter the config states. Rendered by
  * `TreeSidebar`, with or without a tree, so every way of narrowing the rows
  * (a node click, a legend click, a session's `rows.kept` or `rows.filter`)
- * gets the same way out; a narrowing nothing can clear dismisses on a click.
+ * gets the same way out. A narrowing nothing can clear, the config's own
+ * filter, is a plain statement with no ✕: dismissed, it would leave its line
+ * empty and hide a later clade pick's "Show all".
  *
  * It sits in the line `rowFocusLineHeight` reserves directly above the first
  * row, so it covers no row's label.
@@ -35,6 +37,7 @@ export const RowFocusHint = observer(function RowFocusHint({
             }
           : undefined
       }
+      dismissible={false}
     />
   )
 })

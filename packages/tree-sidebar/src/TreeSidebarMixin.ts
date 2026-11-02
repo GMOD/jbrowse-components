@@ -21,6 +21,7 @@ import {
   buildTree,
   computeClusterHierarchy,
   getLeafNames,
+  keptRows,
   matchBandClades,
 } from './clusterUtils.ts'
 import { focusRows } from './focusRows.ts'
@@ -1240,8 +1241,11 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           rows.length > 0 && self.clusterableSources.length === 0
             ? filteredRows(rows, narrowing.filter).length === 0
               ? 'filter'
-              : 'kept'
+              : keptRows(rows, narrowing.kept, narrowing.rowAlias).length > 0
+                ? 'hidden'
+                : 'kept'
             : undefined
+        const filterText = rowFilterText(narrowing.filter)
         const unmatched = self.rowsListedUpFront
           ? unmatchedKeptNames(rows, narrowing).filter(
               name => !self.rowFoundAtSomeLoci(name),
@@ -1255,7 +1259,12 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
                   `rows.filter tests "${field}", which no row carries, so it filters out every row`,
               ),
               ...(emptiedBy === 'filter' && unread.length === 0
-                ? ['Every row is filtered out by rows.filter']
+                ? [`Every row is filtered out by rows.filter (${filterText})`]
+                : []),
+              ...(emptiedBy === 'hidden'
+                ? [
+                    `Every row rows.kept names is hidden by rows.filter (${filterText})`,
+                  ]
                 : []),
               ...(emptiedBy === 'kept'
                 ? [
@@ -1502,14 +1511,15 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #action
        * `LegendHost`'s hook: a click on a row color key entry narrows the
-       * rows to those it lists. Every other scale's entries name colors, not
-       * rows, and stay inert.
+       * rows to those it lists that `rows.filter` admits, so the focus names
+       * no row the filter would hide. Every other scale's entries name
+       * colors, not rows, and stay inert.
        */
       focusLegendEntry(scaleId: string, value: string) {
         const key = self.rowColorKeyInputs
         const names =
           scaleId === ROW_COLOR_SCALE_ID
-            ? self.editableSources
+            ? filteredRows(self.editableSources, self.rowFilter)
                 .filter(row => rowColorKeyValue(row, key) === value)
                 .map(row => row.name)
             : []

@@ -236,6 +236,46 @@ test('a multi-wiggle stacks its sources in the order rows.sort gives', async () 
   expect(new Set(shared.marks.source).size).toBe(3)
 })
 
+// The export narrows as the display does: rows.filter over a subtrack's
+// field, then rows.kept, the rows stacking in what is left.
+test('a multi-wiggle draws the sources rows.filter and rows.kept leave', async () => {
+  const tsv = path.join(mkdtempSync(path.join(tmpdir(), 'samples-')), 's.tsv')
+  writeFileSync(
+    tsv,
+    'name\tgroup\nposneg_rw1\ttumor\nposneg_rw2\tnormal\nposneg_rw3\ttumor\n',
+  )
+  const grouped = {
+    ...MULTI_BIGWIG,
+    adapterConfig: {
+      ...MULTI_BIGWIG.adapterConfig,
+      samplesTsvLocation: { uri: pathToFileURL(tsv).href },
+    },
+  }
+  const filtered = await engine.wiggle({
+    ...grouped,
+    display: {
+      rows: { field: 'source', filter: [{ field: 'group', equal: 'tumor' }] },
+    },
+  })
+  expect(filtered.sources.name).toEqual(['posneg_rw1', 'posneg_rw3'])
+  expect(new Set(filtered.marks.source)).toEqual(
+    new Set(['posneg_rw1', 'posneg_rw3']),
+  )
+  expect(new Set(filtered.marks.row)).toEqual(new Set([0, 1]))
+  const kept = await engine.wiggle({
+    ...grouped,
+    display: {
+      rows: {
+        field: 'source',
+        filter: [{ field: 'group', equal: 'tumor' }],
+        kept: ['posneg_rw2', 'posneg_rw3'],
+      },
+    },
+  })
+  expect(kept.sources.name).toEqual(['posneg_rw3'])
+  expect(new Set(kept.marks.source)).toEqual(new Set(['posneg_rw3']))
+})
+
 test('a multi-wiggle reads under the multi-track defaults: a row per source, no min-max extent', async () => {
   const zoomedOut = { ...MULTI_BIGWIG, bpPerPx: 500 }
   const t = await engine.wiggle(zoomedOut)

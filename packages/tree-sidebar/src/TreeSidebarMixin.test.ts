@@ -252,10 +252,10 @@ const filteredSchema = ConfigurationSchema('FilteredTreeDisplay', {
 })
 
 const POPULATIONS = [
-  { name: 'a', population: 'EUR' },
-  { name: 'b', population: 'AFR' },
-  { name: 'c', population: 'EUR' },
-  { name: 'd', population: '' },
+  { name: 'a', population: 'EUR', sex: 'F' },
+  { name: 'b', population: 'AFR', sex: 'M' },
+  { name: 'c', population: 'EUR', sex: 'M' },
+  { name: 'd', population: '', sex: 'F' },
 ]
 
 function makeFiltered(rows: Record<string, unknown>, listed = true) {
@@ -275,6 +275,9 @@ function makeFiltered(rows: Record<string, unknown>, listed = true) {
       get rowsListedUpFront() {
         return listed
       },
+    }))
+    .actions(() => ({
+      setScrollTop(_top: number) {},
     }))
     .create({ type: 'FilteredTreeDisplay', configuration: { rows } })
 }
@@ -336,18 +339,39 @@ describe('rows.kept and rows.filter narrow the rows', () => {
     expect(namesOf(display.clusterableSources)).toEqual(['a'])
   })
 
-  it('says which half emptied the rows', () => {
+  it('says which half emptied the rows, stating the filter', () => {
     expect(
       makeFiltered({
-        filter: [{ field: 'population', equal: 'SAS' }],
+        filter: [{ field: 'population', oneOf: ['SAS', 'EAS'] }],
       }).rowNarrowingNotices,
-    ).toEqual(['Every row is filtered out by rows.filter'])
+    ).toEqual([
+      'Every row is filtered out by rows.filter (population is one of SAS, EAS)',
+    ])
     expect(
       makeFiltered({
         filter: [{ field: 'population', equal: 'AFR' }],
         kept: ['a'],
       }).rowNarrowingNotices,
-    ).toEqual(['rows.kept names no row here, so no row shows'])
+    ).toEqual([
+      'Every row rows.kept names is hidden by rows.filter (population is AFR)',
+    ])
+    expect(
+      makeFiltered({
+        filter: [{ field: 'population', equal: 'AFR' }],
+        kept: ['zz'],
+      }).rowNarrowingNotices,
+    ).toEqual(['rows.kept names no row (zz), so no row shows'])
+  })
+
+  // A key entry's rows the filter hides would be a focus naming rows that
+  // never show.
+  it('a key click focuses only the rows the filter admits', () => {
+    const display = makeFiltered({
+      color: 'population',
+      filter: [{ field: 'sex', equal: 'M' }],
+    })
+    display.focusLegendEntry('rows.color', 'EUR')
+    expect(getConf(display, ['rows', 'kept'])).toEqual(['c'])
   })
 
   it('names a filter field no row carries', () => {
@@ -392,15 +416,55 @@ describe('rows.kept and rows.filter narrow the rows', () => {
     expect(display.rowFilter).toEqual([{ field: 'population', equal: 'EUR' }])
   })
 
-  it.each(['name', 'sampleName', 'HP', 'label', 'color'])(
-    'refuses a filter on %s, pointing at rows.kept',
-    field => {
-      const display = makeFiltered({})
-      expect(() => {
-        setConf(display, ['rows', 'filter'], [{ field, oneOf: ['a'] }])
-      }).toThrow(/a row's name goes in rows.kept/)
-    },
-  )
+  it.each([
+    'name',
+    'sampleName',
+    'sample',
+    'source',
+    'HP',
+    'label',
+    'color',
+    'rowColor',
+  ])('refuses a filter on %s, leading with the field', field => {
+    const display = makeFiltered({})
+    expect(() => {
+      setConf(display, ['rows', 'filter'], [{ field, oneOf: ['a'] }])
+    }).toThrow(
+      `field '${field}' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']`,
+    )
+  })
+
+  it.each([
+    [{ field: 'jexl:row.population == "EUR"', equal: true }],
+    ['jexl:row.population == "EUR"'],
+  ])('refuses a jexl: expression, %j', entry => {
+    const display = makeFiltered({})
+    expect(() => {
+      setConf(display, ['rows', 'filter'], [entry])
+    }).toThrow(/is an expression, and rows.filter computes none/)
+  })
+
+  // A refused entry loads as no entry, never as a test-less stub that would
+  // keep a "Showing 4 of 4 rows" chip up with nothing to clear.
+  it.each([
+    [{ field: 'name', oneOf: ['a'] }],
+    ['jexl:row.population == "EUR"'],
+  ])('a config loading a refused entry %j loads without it', entry => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const display = makeFiltered({ filter: [entry] })
+    expect(display.rowFilter).toEqual([])
+    expect(display.rowNarrowingHint).toBeUndefined()
+    expect(namesOf(display.clusterableSources)).toEqual(['a', 'b', 'c', 'd'])
+    expect(warn).toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
+  it('a filter entry stating no test narrows nothing', () => {
+    const display = makeFiltered({ filter: [{ field: 'population' }] })
+    expect(display.rowFilter).toEqual([{ field: 'population' }])
+    expect(display.rowNarrowingShows).toBe(false)
+    expect(display.rowNarrowingHint).toBeUndefined()
+  })
 })
 
 // `((a,b),c)` has four of the six orders of its leaves as rotations; a, c, b

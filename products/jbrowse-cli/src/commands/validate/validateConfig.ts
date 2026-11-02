@@ -831,9 +831,18 @@ function statedRowAttributes(rows: unknown) {
     : new Set<string>()
 }
 
-// A top-level `filter` entry testing a row attribute, on a display whose rows
-// take a `rows.filter`: the top-level list tests records, so it points there.
-function checkRowFilterPointer(
+// What `RowPredicate` refuses that its schema cannot spell as `refuses`: a
+// `jexl:` field, which no row has a record to compute over. Copied from
+// `rowExpressionPointer`.
+function rowExpressionProblem(field: string) {
+  return `field '${field}' is an expression, and rows.filter computes none: it tests a row attribute, such as population`
+}
+
+// The row filter's checks the schema cannot make: a `rows.filter` entry on a
+// `jexl:` expression, and a top-level `filter` entry testing a row attribute,
+// on a display whose rows take a `rows.filter`: the top-level list tests
+// records, so it points there.
+function checkRowFilters(
   display: Record<string, unknown>,
   type: string,
   manifest: ConfigManifest,
@@ -841,14 +850,27 @@ function checkRowFilterPointer(
   report: Report,
 ) {
   const slots = manifest.displays[type]?.slots ?? []
-  if (
-    declaresSlot(slots, ['rows', 'filter']) &&
-    declaresSlot(slots, ['filter'])
-  ) {
+  if (declaresSlot(slots, ['rows', 'filter'])) {
     const lifted = liftToSnapshot(display, slots)
     const record = isRecord(lifted) ? lifted : {}
     const attributes = statedRowAttributes(record.rows)
-    filterEntriesOf(record.filter).forEach((entry, i) => {
+    const rowFilter = isRecord(record.rows) ? record.rows.filter : undefined
+    filterEntriesOf(rowFilter).forEach((entry, i) => {
+      const at = `${where}.rows.filter[${i}].field`
+      if (
+        entry.field.startsWith('jexl:') &&
+        !report.problems.some(p => p.where === at && p.rule === 'row-filter')
+      ) {
+        report.problems.push({
+          level: 'error',
+          where: at,
+          message: rowExpressionProblem(entry.field),
+          rule: 'row-filter',
+        })
+      }
+    })
+    const topLevel = declaresSlot(slots, ['filter']) ? record.filter : []
+    filterEntriesOf(topLevel).forEach((entry, i) => {
       const at = `${where}.filter[${i}]`
       if (
         attributes.has(entry.field) &&
@@ -1123,7 +1145,7 @@ function checkMarkDisplays(
     }
     if (typeof node.type === 'string') {
       checkAlignmentsFilters(node, node.type, manifest, where, report)
-      checkRowFilterPointer(node, node.type, manifest, where, report)
+      checkRowFilters(node, node.type, manifest, where, report)
     }
     const trackType = trackTypeOf(node)
     if (trackType && isRecord(node.displayDefaults)) {
@@ -1147,7 +1169,7 @@ function checkMarkDisplays(
           `${where}.displayDefaults`,
           report,
         )
-        checkRowFilterPointer(
+        checkRowFilters(
           defaults,
           display,
           manifest,

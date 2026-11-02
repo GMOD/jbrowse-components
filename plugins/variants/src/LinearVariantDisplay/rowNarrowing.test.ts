@@ -132,3 +132,29 @@ test('a top-level filter on a row attribute points at rows.filter', () => {
     'rows.filter',
   )
 })
+
+// A launch's settings bag writes as any edit does, so it refuses a filter on
+// a row's identity with the pointer, where a config loading the same entry
+// loads without it.
+test('a settings bag refuses rows.filter on a row name; a config loads without it', () => {
+  const display = loaded()
+  const report = display.applyDisplaySettings({
+    rows: { filter: [{ field: 'name', oneOf: ['S0'] }] },
+  })
+  expect(report.failed).toEqual([
+    {
+      key: 'rows',
+      error: expect.stringContaining(
+        "field 'name' names a row rather than an attribute of one: a row's name goes in rows.kept",
+      ),
+    },
+  ])
+  expect(display.rowFilter).toEqual([])
+
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const loadedWithIt = loaded({ filter: [{ field: 'sample', equal: 'S0' }] })
+  expect(loadedWithIt.rowFilter).toEqual([])
+  expect(loadedWithIt.rowNarrowingHint).toBeUndefined()
+  expect(namesOf(loadedWithIt.sources)).toEqual(['S0', 'S1', 'S2', 'S3'])
+  warn.mockRestore()
+})

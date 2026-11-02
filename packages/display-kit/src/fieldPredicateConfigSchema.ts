@@ -3,6 +3,7 @@ import {
   getConfigurationSchemaMetadata,
   isConfigurationSchemaType,
   plotList,
+  preProcessSnapshotWith,
 } from '@jbrowse/core/configuration'
 import { PredicateField } from '@jbrowse/core/util/types/mst'
 import { getType, isType, types } from '@jbrowse/mobx-state-tree'
@@ -204,16 +205,51 @@ export interface FieldPredicateConfig extends Instance<
   typeof fieldPredicateConfigSchema
 > {}
 
+function statesATest(entry: unknown) {
+  return (
+    typeof entry === 'string' ||
+    (typeof entry === 'object' &&
+      entry !== null &&
+      Object.entries(entry).some(
+        ([key, value]) =>
+          TESTS.has(key) && value !== null && value !== undefined,
+      ))
+  )
+}
+
+// An entry stating tests that its own schema strips every one of, as
+// `RowPredicate` strips an entry on a row's name loading. A write refuses the
+// entry instead, and the entry's own creation is what reports it, so a throw
+// here keeps the entry.
+function refusedAway(
+  meta: NonNullable<ReturnType<typeof getConfigurationSchemaMetadata>>,
+  entry: unknown,
+) {
+  try {
+    return (
+      statesATest(entry) && !statesATest(preProcessSnapshotWith(meta, entry))
+    )
+  } catch {
+    return false
+  }
+}
+
 /**
  * A list of predicates without the entries whose tests all dropped, the
- * `filter` slot's type wherever a list of predicates is stored.
+ * `filter` slot's type wherever a list of predicates is stored. An entry
+ * whose own schema refuses every test it states (`RowPredicate` on a row's
+ * name) is dropped the same way, so a refused entry never loads as a
+ * test-less stub; a write still throws the refusal.
  */
 export function fieldPredicateArray(
   entry: typeof fieldPredicateConfigSchema = fieldPredicateConfigSchema,
 ) {
+  const meta = getConfigurationSchemaMetadata(entry)!
   return types.snapshotProcessor(types.array(entry), {
     preProcessor: (snap: unknown) =>
-      Array.isArray(snap) ? snap.filter(entry => !emptied(entry)) : snap,
+      Array.isArray(snap)
+        ? snap.filter(item => !emptied(item) && !refusedAway(meta, item))
+        : snap,
   })
 }
 

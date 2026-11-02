@@ -9189,6 +9189,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "RowTree": {
       "title": "RowTree",
+      "x-meaning": "the dendrogram as newick, or { newick, provenance }; whether it draws is rows.axis.tree",
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"newick\\": ... }\`.",
@@ -11978,6 +11979,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "RowColor": {
       "title": "RowColor",
+      "x-meaning": "the rows colored by an attribute, 'population' or { field, scale }; a color pinned on a row by name is rows.colors, { HG002: 'red' }",
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
@@ -12079,7 +12081,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "allOf": [
             {
               "x-requirement": {
-                "id": "row-filter-identity",
+                "id": "row-filter-identity-name",
                 "slot": "equal"
               },
               "if": {
@@ -12087,10 +12089,1926 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "properties": {
                   "field": {
                     "enum": [
-                      "name",
-                      "sampleName",
-                      "HP",
-                      "label",
+                      "name"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "equal"
+                  ],
+                  "properties": {
+                    "equal": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'name' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-name",
+                "slot": "oneOf"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "oneOf"
+                  ],
+                  "properties": {
+                    "oneOf": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'name' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-name",
+                "slot": "lt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lt"
+                  ],
+                  "properties": {
+                    "lt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'name' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-name",
+                "slot": "lte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lte"
+                  ],
+                  "properties": {
+                    "lte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'name' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-name",
+                "slot": "gt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gt"
+                  ],
+                  "properties": {
+                    "gt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'name' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-name",
+                "slot": "gte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gte"
+                  ],
+                  "properties": {
+                    "gte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'name' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-name",
+                "slot": "range"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "range"
+                  ],
+                  "properties": {
+                    "range": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'name' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-name",
+                "slot": "valid"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "name"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "valid"
+                  ],
+                  "properties": {
+                    "valid": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'name' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sampleName",
+                "slot": "equal"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sampleName"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "equal"
+                  ],
+                  "properties": {
+                    "equal": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sampleName' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sampleName",
+                "slot": "oneOf"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sampleName"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "oneOf"
+                  ],
+                  "properties": {
+                    "oneOf": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sampleName' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sampleName",
+                "slot": "lt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sampleName"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lt"
+                  ],
+                  "properties": {
+                    "lt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sampleName' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sampleName",
+                "slot": "lte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sampleName"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lte"
+                  ],
+                  "properties": {
+                    "lte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sampleName' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sampleName",
+                "slot": "gt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sampleName"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gt"
+                  ],
+                  "properties": {
+                    "gt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sampleName' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sampleName",
+                "slot": "gte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sampleName"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gte"
+                  ],
+                  "properties": {
+                    "gte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sampleName' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sampleName",
+                "slot": "range"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sampleName"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "range"
+                  ],
+                  "properties": {
+                    "range": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sampleName' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sampleName",
+                "slot": "valid"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sampleName"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "valid"
+                  ],
+                  "properties": {
+                    "valid": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sampleName' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sample",
+                "slot": "equal"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sample"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "equal"
+                  ],
+                  "properties": {
+                    "equal": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sample' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sample",
+                "slot": "oneOf"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sample"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "oneOf"
+                  ],
+                  "properties": {
+                    "oneOf": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sample' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sample",
+                "slot": "lt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sample"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lt"
+                  ],
+                  "properties": {
+                    "lt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sample' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sample",
+                "slot": "lte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sample"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lte"
+                  ],
+                  "properties": {
+                    "lte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sample' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sample",
+                "slot": "gt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sample"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gt"
+                  ],
+                  "properties": {
+                    "gt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sample' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sample",
+                "slot": "gte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sample"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gte"
+                  ],
+                  "properties": {
+                    "gte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sample' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sample",
+                "slot": "range"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sample"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "range"
+                  ],
+                  "properties": {
+                    "range": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sample' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-sample",
+                "slot": "valid"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "sample"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "valid"
+                  ],
+                  "properties": {
+                    "valid": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'sample' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-source",
+                "slot": "equal"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "source"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "equal"
+                  ],
+                  "properties": {
+                    "equal": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'source' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-source",
+                "slot": "oneOf"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "source"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "oneOf"
+                  ],
+                  "properties": {
+                    "oneOf": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'source' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-source",
+                "slot": "lt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "source"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lt"
+                  ],
+                  "properties": {
+                    "lt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'source' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-source",
+                "slot": "lte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "source"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lte"
+                  ],
+                  "properties": {
+                    "lte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'source' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-source",
+                "slot": "gt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "source"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gt"
+                  ],
+                  "properties": {
+                    "gt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'source' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-source",
+                "slot": "gte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "source"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gte"
+                  ],
+                  "properties": {
+                    "gte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'source' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-source",
+                "slot": "range"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "source"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "range"
+                  ],
+                  "properties": {
+                    "range": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'source' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-source",
+                "slot": "valid"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "source"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "valid"
+                  ],
+                  "properties": {
+                    "valid": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'source' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-HP",
+                "slot": "equal"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "HP"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "equal"
+                  ],
+                  "properties": {
+                    "equal": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'HP' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-HP",
+                "slot": "oneOf"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "HP"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "oneOf"
+                  ],
+                  "properties": {
+                    "oneOf": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'HP' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-HP",
+                "slot": "lt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "HP"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lt"
+                  ],
+                  "properties": {
+                    "lt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'HP' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-HP",
+                "slot": "lte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "HP"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lte"
+                  ],
+                  "properties": {
+                    "lte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'HP' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-HP",
+                "slot": "gt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "HP"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gt"
+                  ],
+                  "properties": {
+                    "gt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'HP' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-HP",
+                "slot": "gte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "HP"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gte"
+                  ],
+                  "properties": {
+                    "gte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'HP' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-HP",
+                "slot": "range"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "HP"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "range"
+                  ],
+                  "properties": {
+                    "range": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'HP' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-HP",
+                "slot": "valid"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "HP"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "valid"
+                  ],
+                  "properties": {
+                    "valid": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'HP' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-label",
+                "slot": "equal"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "label"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "equal"
+                  ],
+                  "properties": {
+                    "equal": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'label' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-label",
+                "slot": "oneOf"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "label"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "oneOf"
+                  ],
+                  "properties": {
+                    "oneOf": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'label' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-label",
+                "slot": "lt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "label"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lt"
+                  ],
+                  "properties": {
+                    "lt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'label' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-label",
+                "slot": "lte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "label"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lte"
+                  ],
+                  "properties": {
+                    "lte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'label' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-label",
+                "slot": "gt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "label"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gt"
+                  ],
+                  "properties": {
+                    "gt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'label' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-label",
+                "slot": "gte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "label"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gte"
+                  ],
+                  "properties": {
+                    "gte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'label' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-label",
+                "slot": "range"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "label"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "range"
+                  ],
+                  "properties": {
+                    "range": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'label' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-label",
+                "slot": "valid"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "label"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "valid"
+                  ],
+                  "properties": {
+                    "valid": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'label' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-color",
+                "slot": "equal"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
                       "color"
                     ]
                   }
@@ -12119,11 +14037,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   }
                 }
               },
-              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+              "errorMessage": "field 'color' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
             },
             {
               "x-requirement": {
-                "id": "row-filter-identity",
+                "id": "row-filter-identity-color",
                 "slot": "oneOf"
               },
               "if": {
@@ -12131,10 +14049,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "properties": {
                   "field": {
                     "enum": [
-                      "name",
-                      "sampleName",
-                      "HP",
-                      "label",
                       "color"
                     ]
                   }
@@ -12163,11 +14077,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   }
                 }
               },
-              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+              "errorMessage": "field 'color' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
             },
             {
               "x-requirement": {
-                "id": "row-filter-identity",
+                "id": "row-filter-identity-color",
                 "slot": "lt"
               },
               "if": {
@@ -12175,10 +14089,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "properties": {
                   "field": {
                     "enum": [
-                      "name",
-                      "sampleName",
-                      "HP",
-                      "label",
                       "color"
                     ]
                   }
@@ -12207,11 +14117,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   }
                 }
               },
-              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+              "errorMessage": "field 'color' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
             },
             {
               "x-requirement": {
-                "id": "row-filter-identity",
+                "id": "row-filter-identity-color",
                 "slot": "lte"
               },
               "if": {
@@ -12219,10 +14129,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "properties": {
                   "field": {
                     "enum": [
-                      "name",
-                      "sampleName",
-                      "HP",
-                      "label",
                       "color"
                     ]
                   }
@@ -12251,11 +14157,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   }
                 }
               },
-              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+              "errorMessage": "field 'color' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
             },
             {
               "x-requirement": {
-                "id": "row-filter-identity",
+                "id": "row-filter-identity-color",
                 "slot": "gt"
               },
               "if": {
@@ -12263,10 +14169,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "properties": {
                   "field": {
                     "enum": [
-                      "name",
-                      "sampleName",
-                      "HP",
-                      "label",
                       "color"
                     ]
                   }
@@ -12295,11 +14197,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   }
                 }
               },
-              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+              "errorMessage": "field 'color' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
             },
             {
               "x-requirement": {
-                "id": "row-filter-identity",
+                "id": "row-filter-identity-color",
                 "slot": "gte"
               },
               "if": {
@@ -12307,10 +14209,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "properties": {
                   "field": {
                     "enum": [
-                      "name",
-                      "sampleName",
-                      "HP",
-                      "label",
                       "color"
                     ]
                   }
@@ -12339,11 +14237,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   }
                 }
               },
-              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+              "errorMessage": "field 'color' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
             },
             {
               "x-requirement": {
-                "id": "row-filter-identity",
+                "id": "row-filter-identity-color",
                 "slot": "range"
               },
               "if": {
@@ -12351,10 +14249,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "properties": {
                   "field": {
                     "enum": [
-                      "name",
-                      "sampleName",
-                      "HP",
-                      "label",
                       "color"
                     ]
                   }
@@ -12383,11 +14277,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   }
                 }
               },
-              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+              "errorMessage": "field 'color' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
             },
             {
               "x-requirement": {
-                "id": "row-filter-identity",
+                "id": "row-filter-identity-color",
                 "slot": "valid"
               },
               "if": {
@@ -12395,10 +14289,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "properties": {
                   "field": {
                     "enum": [
-                      "name",
-                      "sampleName",
-                      "HP",
-                      "label",
                       "color"
                     ]
                   }
@@ -12427,7 +14317,327 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                   }
                 }
               },
-              "errorMessage": "names a row rather than an attribute of one: a row's name goes in rows.kept"
+              "errorMessage": "field 'color' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-rowColor",
+                "slot": "equal"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "rowColor"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "equal"
+                  ],
+                  "properties": {
+                    "equal": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'rowColor' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-rowColor",
+                "slot": "oneOf"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "rowColor"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "oneOf"
+                  ],
+                  "properties": {
+                    "oneOf": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'rowColor' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-rowColor",
+                "slot": "lt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "rowColor"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lt"
+                  ],
+                  "properties": {
+                    "lt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'rowColor' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-rowColor",
+                "slot": "lte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "rowColor"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "lte"
+                  ],
+                  "properties": {
+                    "lte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'rowColor' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-rowColor",
+                "slot": "gt"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "rowColor"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gt"
+                  ],
+                  "properties": {
+                    "gt": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'rowColor' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-rowColor",
+                "slot": "gte"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "rowColor"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "gte"
+                  ],
+                  "properties": {
+                    "gte": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'rowColor' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-rowColor",
+                "slot": "range"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "rowColor"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "range"
+                  ],
+                  "properties": {
+                    "range": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'rowColor' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
+            },
+            {
+              "x-requirement": {
+                "id": "row-filter-identity-rowColor",
+                "slot": "valid"
+              },
+              "if": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "enum": [
+                      "rowColor"
+                    ]
+                  }
+                },
+                "required": [
+                  "field"
+                ]
+              },
+              "then": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "valid"
+                  ],
+                  "properties": {
+                    "valid": {
+                      "not": {
+                        "enum": [
+                          null,
+                          "",
+                          [],
+                          {}
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              "errorMessage": "field 'rowColor' names a row rather than an attribute of one: a row's name goes in rows.kept, as kept: ['HG002']"
             }
           ],
           "x-closed": true,

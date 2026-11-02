@@ -56,6 +56,43 @@ test.each(['name', 'sampleName', 'HP'])(
   },
 )
 
+test.each(['sample', 'source', 'rowColor'])(
+  'rows.filter on %s is reported through displayDefaults too',
+  field => {
+    expect(
+      problems({
+        displayDefaults: { rows: { filter: [{ field, equal: 'x' }] } },
+      }),
+    ).toEqual([
+      {
+        where: expect.stringContaining('tracks[0].displayDefaults.rows.filter'),
+        message: expect.stringContaining(`field '${field}' names a row`),
+      },
+    ])
+  },
+)
+
+test.each([
+  [{ field: 'jexl:row.population == "EUR"', equal: true }],
+  ['jexl:row.population == "EUR"'],
+])('rows.filter on a jexl: expression %j is reported', entry => {
+  expect(
+    problems({
+      displays: [
+        {
+          type: 'LinearVariantDisplay',
+          rows: { filter: [entry] },
+        },
+      ],
+    }),
+  ).toEqual([
+    {
+      where: 'tracks[0].displays[0].rows.filter[0].field',
+      message: expect.stringContaining('rows.filter computes none'),
+    },
+  ])
+})
+
 test('rows.filter on an attribute is clean', () => {
   expect(
     problems({

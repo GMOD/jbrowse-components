@@ -1,5 +1,6 @@
 import {
   compilePredicates,
+  testsSomething,
   unreadFields,
 } from '@jbrowse/core/util/fieldPredicate'
 
@@ -20,9 +21,12 @@ export interface RowNarrowing {
   rowAlias?: RowAlias
 }
 
-/** Whether `narrowing` narrows anything. */
+/**
+ * Whether `narrowing` narrows anything: a name kept, or a predicate stating
+ * a test, since one stating none admits every row.
+ */
 export function narrows({ kept, filter }: RowNarrowing) {
-  return kept.length > 0 || filter.length > 0
+  return kept.length > 0 || filter.some(testsSomething)
 }
 
 /**
