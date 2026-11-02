@@ -77,7 +77,7 @@ function needs(label: string, what: string, present: boolean, loaded: boolean) {
 // A Color by field row's help: over rows it paints the alt cells, with none
 // the records.
 function fieldColorHelp(self: LinearVariantDisplayModel, by: string) {
-  return self.drawsRows
+  return self.drawsGenotypeRows
     ? `Color every alt-carrying cell by ${by}; ref and no-call cells keep their normal coloring`
     : `Color every record by ${by}`
 }
@@ -176,7 +176,7 @@ function recordsShowItems(self: LinearVariantDisplayModel): MenuItem[] {
 // handle sizes it and its fit ladder shrinks what does not fit, so a preset
 // there would be a second "height" beside Row height.
 function recordsHeightMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
-  return !self.drawsRows
+  return !self.drawsGenotypeRows
     ? [
         featureHeightMenuItem({
           displayMode: self.recordsDisplayMode,
@@ -202,7 +202,7 @@ function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
     facetField && !self.rowColorFields.includes(facetField)
       ? [...self.rowColorFields, facetField]
       : self.rowColorFields
-  return !self.drawsRows
+  return !self.drawsGenotypeRows
     ? [
         groupByRadioMenuItem<never, typeof RECORD_FIELD>({
           current: recordsField ? RECORD_FIELD : undefined,
@@ -262,7 +262,9 @@ function variantShowSubmenuItems(self: LinearVariantDisplayModel): MenuItem[] {
           },
         ]
       : []),
-    ...(self.drawsRows ? genotypeRowShowItems(self) : recordsShowItems(self)),
+    ...(self.drawsGenotypeRows
+      ? genotypeRowShowItems(self)
+      : recordsShowItems(self)),
     {
       label: 'Tooltips',
       helpText:
@@ -320,10 +322,12 @@ export function variantTrackMenuItems(
     ...makeShowSubMenu(variantShowSubmenuItems(self)),
     // No presets: a cohort's useful row heights depend on how many samples it
     // has, so fit and a typed height are the two that mean anything here.
-    ...(self.drawsRows ? [layoutMenuItem(self), rowHeightMenuItem(self)] : []),
+    ...(self.drawsGenotypeRows
+      ? [layoutMenuItem(self), rowHeightMenuItem(self)]
+      : []),
     ...recordsHeightMenuItems(self),
     // the rows' own items, absent while no row draws
-    ...(self.drawsRows
+    ...(self.drawsGenotypeRows
       ? [
           makeRadioSubMenu({
             label: 'Rows',
@@ -362,10 +366,10 @@ export function variantTrackMenuItems(
     colorByMenuItem({
       blocks: [
         {
-          header: self.drawsRows ? 'Cells' : 'Records',
+          header: self.drawsGenotypeRows ? 'Cells' : 'Records',
           rows: [
             {
-              ...(self.drawsRows
+              ...(self.drawsGenotypeRows
                 ? {
                     label: 'Genotype',
                     helpText:
@@ -379,14 +383,14 @@ export function variantTrackMenuItems(
               type: 'radio' as const,
               // with no rows a phase set, which no record holds, paints the
               // records as the default does
-              checked: self.drawsRows
+              checked: self.drawsGenotypeRows
                 ? self.colorEncoding === undefined
                 : self.recordsColorBySvClass,
               onClick: () => {
                 self.setColorValue(undefined)
               },
             },
-            ...(self.drawsRows
+            ...(self.drawsGenotypeRows
               ? [
                   {
                     ...phaseSet,
@@ -467,7 +471,7 @@ export function variantTrackMenuItems(
         {
           header: 'Samples',
           rows:
-            self.drawsRows &&
+            self.drawsGenotypeRows &&
             (self.rowColorFieldsOffered.length || self.rowColorChoice)
               ? rowColorItems(self)
               : [],
@@ -485,7 +489,7 @@ export function variantTrackMenuItems(
       narrowings: {
         filter: filterFieldNarrowing(
           self,
-          field => self.drawsRows || !isSiteField(field),
+          field => self.drawsGenotypeRows || !isSiteField(field),
         ),
       },
       onEdit: () => {
@@ -503,7 +507,7 @@ export function variantTrackMenuItems(
       // rather than a dialog round-trip. They're fetch inputs (rpcProps), so
       // commitOnRelease keeps a drag from firing a worker refetch per step.
       // Both read called alleles, so with no rows, which reads none, they go.
-      subItems: !self.drawsRows
+      subItems: !self.drawsGenotypeRows
         ? []
         : [
             makeSizeMenu({
@@ -543,7 +547,7 @@ export function variantTrackMenuItems(
             }),
           ],
     }),
-    ...(self.drawsRows
+    ...(self.drawsGenotypeRows
       ? rowOrderMenuItems(self, {
           arrangement: {
             ready: self.clusteringReady && !!self.adapterSamples?.length,
@@ -622,7 +626,7 @@ export function variantContextMenuItems(
         // on those three — what the flanking tiebreak does to the rows around
         // the anchor is on `sortByGenotype`, which is where a reader of the
         // model docs looks for it.
-        ...(self.drawsRows
+        ...(self.drawsGenotypeRows
           ? [
               sortRowsHereMenuItem({
                 label: 'Sort rows by genotype here',

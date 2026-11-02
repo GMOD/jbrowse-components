@@ -37,7 +37,7 @@ describe.each([
 ])('%s', (_, rows, display) => {
   test('the rows take no height', () => {
     const { display: d } = recordsDisplayAt(FEW, 10, {}, rows, display)
-    expect(d.drawsRows).toBe(false)
+    expect(d.drawsGenotypeRows).toBe(false)
     expect(d.availableHeight).toBe(0)
     expect(d.topBands.reserved.records).toBeGreaterThan(0)
   })
@@ -85,7 +85,7 @@ test('in a ring the band is the display, at the ring height', () => {
   const { configuredHeight } = display
   display.setHostHeight(60)
   expect(display.recordsOnly).toBe(true)
-  expect(display.drawsRows).toBe(false)
+  expect(display.drawsGenotypeRows).toBe(false)
   expect(display.atGenomicPositions).toBe(true)
   expect(display.height).toBe(60)
   expect(display.topBands.reserved).toEqual({
@@ -97,7 +97,7 @@ test('in a ring the band is the display, at the ring height', () => {
   // what the ring asks for, which must not follow the height it gave
   expect(display.configuredHeight).toBe(configuredHeight)
   display.setHostHeight(undefined)
-  expect(display.drawsRows).toBe(true)
+  expect(display.drawsGenotypeRows).toBe(true)
   expect(display.rpcProps().sampleFilter).toEqual(['S0'])
 })
 

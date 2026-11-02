@@ -385,7 +385,7 @@ a `recordsOnly` choice in the model belongs there.
   facet strip and labels draw over the rows' left edge):
   `Records ×` and `Genotypes ×` while both draw, `Show records` or `Show
   genotypes` for the one hidden, beside the hidden-records count. With
-  `genotypes.show` off on a VCF with samples (`drawsRows` false) the rows
+  `genotypes.show` off on a VCF with samples (`drawsGenotypeRows` false) the rows
   take 0 px and the track is the band as it draws over rows plus the chips'
   strip (`BAND_CHIPS_HEIGHT`), the slot `height` kept for the rows' return;
   the band can't hide then (`showRecords`). The worker reads no genotype

@@ -22,8 +22,8 @@ rule over rows are marked provisional there (the default is settled: on).
   reference/MULTI_SAMPLE_VARIANTS.md. The density gate is done (ADR-254's
   amendment): `records.maxFeatureScreenDensity` through `FeatureGateMixin`,
   records-only alone. The Rows, Clustering and arrangement menus go while
-  no row draws (`drawsRows`), and "Color by" offers the records' colors.
-  `RowsPanel` mounts only while rows draw (`drawsRows`). Over rows the band's height measures the whole payload, so
+  no row draws (`drawsGenotypeRows`), and "Color by" offers the records' colors.
+  `RowsPanel` mounts only while rows draw (`drawsGenotypeRows`). Over rows the band's height measures the whole payload, so
   it steps only on a refetch (every record, E below).
 - **B. Records settings under `records`.** Built (ADR-254's second
   amendment): `records.height` (was `records.growMaxHeight`, then
@@ -43,7 +43,7 @@ rule over rows are marked provisional there (the default is settled: on).
   members lifted into `recordsBandViews.ts`, which the model composes in
   order. `recordsOnly` is read at nine sites outside the seam on
   2026-11-01 (`model.ts` 5, `RecordsBandOverlay.tsx` 3,
-  `variantDisplayMenuItems.ts` 1), and the menu branches on `drawsRows`
+  `variantDisplayMenuItems.ts` 1), and the menu branches on `drawsGenotypeRows`
   instead, so a count well past that is the accretion the review found
   coming back. Inside `recordsBandViews.ts` the label decision is one
   getter (`recordsLabelPlan`). A role table (`recordsRole.scrolls`,
@@ -133,9 +133,9 @@ widget's samples). Still differing, besides C1's Show/hide rows:
   ring drew only by accident, with `records.show` off or in columns, and
   a whole chromosome trips the byte gate on any real cohort.
 - **Declined:** splitting `variantDisplayMenuItems.ts` by band (its 14
-  `drawsRows` checks each name their own rule), the `recordsRole` table
+  `drawsGenotypeRows` checks each name their own rule), the `recordsRole` table
   (the "Before C" bullet), and one `'none' | 'hidden' | 'drawn'` getter
-  in place of `recordsOnly`, `drawsRows` and `rowsHidden` (2026-11-02):
+  in place of `recordsOnly`, `drawsGenotypeRows` and `rowsHidden` (2026-11-02):
   each is derived from the other two inputs, so no state is impossible
   today, and every site would still branch on one value of it. Also
   left: lifting `recordsOnScreenIds` and `recordsLabelDensityPerPx` into

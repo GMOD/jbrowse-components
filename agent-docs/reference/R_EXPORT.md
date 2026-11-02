@@ -36,7 +36,7 @@ from the view menu (`menuItems.ts`):
 | `LinearWiggleDisplay`     | `jbrowse_wiggle`     | BigWig, multi-BigWig                         |
 | `LinearAlignmentsDisplay` | `jbrowse_alignments` | BAM, CRAM                                    |
 
-A `LinearVariantDisplay` drawing no genotype rows (`drawsRows` false: a VCF
+A `LinearVariantDisplay` drawing no genotype rows (`drawsGenotypeRows` false: a VCF
 with no samples, a one-sample VCF with `genotypes.show` unset, or rows hidden)
 reads through `jbrowse_features` instead, its `records` settings handed over
 as the feature track's top-level ones (`recordsAsFeatureDisplay`), at the

@@ -308,7 +308,7 @@ get recordsOnly(): boolean {
  * Whether genotype rows draw: `genotypes.show`, on a VCF with samples.
  * Hidden, the rows take no height and the records band is the track.
  */
-get drawsRows(): boolean {
+get drawsGenotypeRows(): boolean {
   return self.showGenotypes && !this.recordsOnly
 },
 ```

@@ -127,8 +127,8 @@ const BandChips = observer(function BandChips({
   model: LinearVariantDisplayModel
 }) {
   const { classes } = useStyles()
-  const { drawsRows, showRecords, recordsHiddenCount, topBands } = model
-  const bothShown = drawsRows && showRecords
+  const { drawsGenotypeRows, showRecords, recordsHiddenCount, topBands } = model
+  const bothShown = drawsGenotypeRows && showRecords
   return topBands.reserved.chips > 0 ? (
     <div className={classes.row} style={{ top: topBands.top.chips + 2 }}>
       {bothShown ? (
@@ -157,7 +157,7 @@ const BandChips = observer(function BandChips({
           }}
         />
       ) : null}
-      {drawsRows && !showRecords ? (
+      {drawsGenotypeRows && !showRecords ? (
         <ChipButton
           testid="show_records_chip"
           title="Draw the records above the genotype rows"
@@ -167,7 +167,7 @@ const BandChips = observer(function BandChips({
           }}
         />
       ) : null}
-      {drawsRows ? null : (
+      {drawsGenotypeRows ? null : (
         <ChipButton
           testid="show_genotypes_chip"
           title="Draw a row per sample under the records"

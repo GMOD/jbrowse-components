@@ -91,7 +91,7 @@ const NO_FEATURE_IDS: ReadonlySet<string> = new Set()
 export interface RecordsSettingsHost {
   configuration: Instance<LinearVariantDisplayConfigModel>
   recordsOnly: boolean
-  drawsRows: boolean
+  drawsGenotypeRows: boolean
   atGenomicPositions: boolean
   colorEncoding: ReturnType<typeof cellColorEncodingOf>
   gateActive: boolean
@@ -110,7 +110,7 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     get showRecords(): boolean {
       return (
         self.atGenomicPositions &&
-        (!self.drawsRows || getConf(self, ['records', 'show']))
+        (!self.drawsGenotypeRows || getConf(self, ['records', 'show']))
       )
     },
     /**
@@ -233,7 +233,9 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
      * records paint. A constant paints every record alike, so keys nothing.
      */
     get cellColorKeyed() {
-      return self.drawsRows || cellHueField(self.colorEncoding) !== undefined
+      return (
+        self.drawsGenotypeRows || cellHueField(self.colorEncoding) !== undefined
+      )
     },
     /**
      * #getter
@@ -374,7 +376,7 @@ export function recordsBandActions(self: RecordsActionsHost) {
 interface RecordsRenderHost
   extends
     RecordsSettings,
-    Pick<RecordsSettingsHost, 'recordsOnly' | 'drawsRows'> {
+    Pick<RecordsSettingsHost, 'recordsOnly' | 'drawsGenotypeRows'> {
   cellData: CellDataResult | undefined
   cellHue: CellHue
   cellHueValuesRead: boolean
@@ -408,7 +410,7 @@ export function recordsRenderViews(self: RecordsRenderHost) {
      */
     get recordCarriers(): ReadonlyMap<string, RecordCarriers> {
       const { cellData } = self
-      return cellData && self.showRecords && self.drawsRows
+      return cellData && self.showRecords && self.drawsGenotypeRows
         ? countRecordCarriers(cellData, this.recordCarrierSamples)
         : new Map<string, RecordCarriers>()
     },

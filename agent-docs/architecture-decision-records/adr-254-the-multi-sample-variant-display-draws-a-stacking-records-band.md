@@ -266,12 +266,12 @@ rows off draws what a sites-only one draws.
   nothing. Both write the slots the menu's checkboxes write, `records.show`
   and `genotypes.show`.
 - **Genotypes hidden is not records-only.** `recordsOnly` is now a VCF with
-  no samples alone; `drawsRows` is `genotypes.show` on a VCF with samples.
+  no samples alone; `drawsGenotypeRows` is `genotypes.show` on a VCF with samples.
   With the rows hidden the band keeps its look over rows (compact, one label
   line, collapsing past the density budget rather than refusing the window),
   and the track is the band plus the chips' strip, so it shrinks. The slot
   `height` stays the rows', so they come back at the height they had. The
-  menus key their row-only items on `drawsRows`, and track sizing on
+  menus key their row-only items on `drawsGenotypeRows`, and track sizing on
   `recordsOnly`, since with the rows hidden the band sets the height.
 - **The key sits at the top of the display** over the band, as on a feature
   track, rather than pushed under it (`legendTop` no longer overridden). It

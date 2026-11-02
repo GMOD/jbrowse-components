@@ -31,12 +31,12 @@ test('the genotypes hide from their chip and come back at their height', () => {
   render(<BandChips model={display} />)
 
   fireEvent.click(screen.getByTitle('Hide genotypes'))
-  expect(display.drawsRows).toBe(false)
+  expect(display.drawsGenotypeRows).toBe(false)
   expect(display.availableHeight).toBe(0)
   expect(screen.queryByTitle('Hide records')).toBeNull()
 
   fireEvent.click(screen.getByTestId('show_genotypes_chip'))
-  expect(display.drawsRows).toBe(true)
+  expect(display.drawsGenotypeRows).toBe(true)
   expect(display.availableHeight).toBe(rowsHeight)
 })
 

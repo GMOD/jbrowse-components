@@ -839,7 +839,7 @@ export function stateModelFactory(
          * Whether genotype rows draw: `genotypes.show`, on a VCF with samples.
          * Hidden, the rows take no height and the records band is the track.
          */
-        get drawsRows(): boolean {
+        get drawsGenotypeRows(): boolean {
           return self.showGenotypes && !this.recordsOnly
         },
         // #endregion
@@ -853,7 +853,9 @@ export function stateModelFactory(
          * come back with the rows.
          */
         get variantLayout(): 'genomic' | 'columns' {
-          return this.drawsRows ? getConf(self, 'variantLayout') : 'genomic'
+          return this.drawsGenotypeRows
+            ? getConf(self, 'variantLayout')
+            : 'genomic'
         },
         /**
          * #getter
@@ -883,7 +885,7 @@ export function stateModelFactory(
          */
         get rowFocus(): readonly string[] | undefined {
           const kept: string[] = getConf(self, ['rows', 'kept'])
-          return this.drawsRows && kept.length ? kept : undefined
+          return this.drawsGenotypeRows && kept.length ? kept : undefined
         },
         /**
          * #getter
@@ -891,7 +893,7 @@ export function stateModelFactory(
          * `rows.kept`. Overrides `TreeSidebarMixin.rowFilter`.
          */
         get rowFilter(): readonly FieldPredicate[] {
-          return this.drawsRows
+          return this.drawsGenotypeRows
             ? predicatesOf(self.configuration.rows.filter)
             : []
         },
@@ -1252,7 +1254,9 @@ export function stateModelFactory(
          * own color. None while no row draws.
          */
         get discoveredRows(): ProcessedSource[] {
-          const samples = self.drawsRows ? self.adapterSamples : undefined
+          const samples = self.drawsGenotypeRows
+            ? self.adapterSamples
+            : undefined
           return (samples ?? []).map(source => ({
             ...source,
             sampleName: resolveSampleName(source),
@@ -1342,7 +1346,7 @@ export function stateModelFactory(
           const sources = self.adapterSamples
           return (
             sources &&
-            (self.drawsRows
+            (self.drawsGenotypeRows
               ? narrowRows(sources, {
                   kept: self.rowFocus ?? [],
                   filter: self.rowFilter,
@@ -1625,7 +1629,7 @@ export function stateModelFactory(
            * draws.
            */
           get availableHeight() {
-            return self.drawsRows
+            return self.drawsGenotypeRows
               ? Math.max(0, self.height - self.rowsTopOffset)
               : 0
           },
@@ -1689,7 +1693,7 @@ export function stateModelFactory(
          * return.
          */
         get rowsHidden() {
-          return !self.drawsRows && !self.recordsOnly
+          return !self.drawsGenotypeRows && !self.recordsOnly
         },
         /**
          * #getter
@@ -1699,7 +1703,7 @@ export function stateModelFactory(
          * while genotype rows draw.
          */
         get recordsAlone(): { height: number; fits: boolean } | undefined {
-          return self.drawsRows
+          return self.drawsGenotypeRows
             ? undefined
             : { height: self.topBands.reserved.records, fits: this.rowsHidden }
         },
@@ -1950,7 +1954,7 @@ export function stateModelFactory(
          * sections' chips sit where the label would.
          */
         get prefersOffset() {
-          return self.drawsRows || self.recordsFacet !== undefined
+          return self.drawsGenotypeRows || self.recordsFacet !== undefined
         },
         /**
          * #getter
@@ -2313,7 +2317,7 @@ export function stateModelFactory(
                   hasUnphased: self.hasUnphased,
                   hasNoCall: self.hasNoCall,
                   paintedDomain: self.paintedDomain,
-                  recordsAlone: !self.drawsRows,
+                  recordsAlone: !self.drawsGenotypeRows,
                   color: self.colorEncoding,
                   colorSlots: heldColorSlots(self, self.colorEncoding),
                   ramp: self.cellHue.ramp,

@@ -134,7 +134,7 @@ const VariantDisplayComponent = observer(function VariantDisplayComponent({
               )}
             </PointerLayer>
           )}
-          {model.drawsRows ? (
+          {model.drawsGenotypeRows ? (
             <RowsPanel
               model={model}
               testIdPrefix={genomic ? 'variant' : 'variant-matrix'}
