@@ -7220,7 +7220,8 @@ export const configManifest: ConfigManifest = {
         "rowColor": [
           "rows.colors",
           "rows.color"
-        ]
+        ],
+        "axis": "rows.axis"
       },
       "aliases": [
         "LinearMultiSampleVariantDisplay",
@@ -7881,7 +7882,8 @@ export const configManifest: ConfigManifest = {
         "rowColor": [
           "rows.colors",
           "rows.color"
-        ]
+        ],
+        "axis": "rows.axis"
       },
       "aliases": [
         "MultiLinearWiggleDisplay",
@@ -8562,7 +8564,8 @@ export const configManifest: ConfigManifest = {
         "rowColor": [
           "rows.colors",
           "rows.color"
-        ]
+        ],
+        "axis": "rows.axis"
       },
       "stateModelProps": [
         "id",
@@ -9660,7 +9663,8 @@ export const configManifest: ConfigManifest = {
         "rowColor": [
           "rows.colors",
           "rows.color"
-        ]
+        ],
+        "axis": "rows.axis"
       },
       "stateModelProps": [
         "id",
@@ -10531,7 +10535,8 @@ export const configManifest: ConfigManifest = {
         "rowColor": [
           "rows.colors",
           "rows.color"
-        ]
+        ],
+        "axis": "rows.axis"
       },
       "aliases": [
         "LinearArcDisplay",
@@ -11401,7 +11406,8 @@ export const configManifest: ConfigManifest = {
         "rowColor": [
           "rows.colors",
           "rows.color"
-        ]
+        ],
+        "axis": "rows.axis"
       },
       "stateModelProps": [
         "id",

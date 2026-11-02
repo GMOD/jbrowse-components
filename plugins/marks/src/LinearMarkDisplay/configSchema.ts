@@ -524,6 +524,7 @@ export function configSchemaFactory() {
       misnamed: {
         rowHeight: 'rows.step',
         rowColor: ['rows.colors', 'rows.color'],
+        axis: 'rows.axis',
       },
       preProcessSnapshot: checkMarks,
     },

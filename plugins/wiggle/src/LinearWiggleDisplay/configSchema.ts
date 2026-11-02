@@ -185,7 +185,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   {
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
-    misnamed: { rowColor: ['rows.colors', 'rows.color'] },
+    misnamed: { rowColor: ['rows.colors', 'rows.color'], axis: 'rows.axis' },
     retired: {
       ...retiredBaseDisplaySpellings,
       ...retiredAxisSpellings(WIGGLE_Y_PATHS.members),
