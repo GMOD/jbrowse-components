@@ -32,6 +32,7 @@ export interface SvgDisplayResult {
     displays: ({
       height: number
       regionTooLarge?: boolean
+      drawsGenomicCoordinates?: boolean
     } & SidebarDisplay)[]
   }
   result: ReactNode

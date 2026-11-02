@@ -68,9 +68,15 @@ function stubDisplayStateModel(configSchema: AnyConfigurationSchemaType) {
         resolution: 1,
       }),
     )
+    .volatile(() => ({
+      drawsGenomicCoordinates: undefined as boolean | undefined,
+    }))
     .actions(self => ({
       setResolution(resolution: number) {
         self.resolution = resolution
+      },
+      setDrawsGenomicCoordinates(flag: boolean) {
+        self.drawsGenomicCoordinates = flag
       },
     }))
 }
@@ -2428,6 +2434,39 @@ describe('TrackInit with display configuration', () => {
     model.setTrackLabelBand('track2', 0)
     expect(model.getTrackYOffset('track2')).toBe(top2)
     expect(model.height).toBe(height)
+  })
+
+  test('highlight gaps follow the drawn order, pinned tracks first', async () => {
+    const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
+    const session = Session.create({ configuration: {} }, { pluginManager })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracks: ['track1', 'track2'],
+      }),
+    )
+    model.setWidth(800)
+    await waitFor(() => {
+      expect(model.tracks.length).toBe(2)
+    })
+    const [track1, track2] = model.tracks
+    expect(model.nonGenomicTrackBands()).toEqual([])
+
+    track2!.setPinned(true)
+    for (const track of [track1!, track2!]) {
+      ;(track.displays[0]! as StubDisplay).setDrawsGenomicCoordinates(false)
+    }
+    const y0 = model.headerHeight + model.scalebarHeight
+    const bandOf = (trackId: string, track: (typeof model.tracks)[number]) => ({
+      top: model.getTrackYOffset(trackId)! - y0,
+      height: model.trackHeight(track),
+    })
+    expect(model.nonGenomicTrackBands()).toEqual([
+      bandOf('track2', model.tracks[1]!),
+      bandOf('track1', model.tracks[0]!),
+    ])
   })
 
   test('resizeTracks splits a distance by headroom and skips minimized tracks', async () => {

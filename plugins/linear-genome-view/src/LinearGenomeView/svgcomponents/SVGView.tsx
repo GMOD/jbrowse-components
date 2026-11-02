@@ -1,6 +1,7 @@
 import SVGGridlines from './SVGGridlines.tsx'
 import SVGHighlightsOverlay from './SVGHighlightsOverlay.tsx'
 import SVGTracks from './SVGTracks.tsx'
+import { labelOffset, trackBoxOffsets } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
@@ -52,6 +53,19 @@ export default function SVGView({
   // by a margin pass that margin here.
   leftBuffer: number
 }) {
+  const tracks = displayResults.map(r => r.track)
+  const offsets = trackBoxOffsets(tracks, trackLabels, textHeight)
+  const nonGenomicBands = tracks.flatMap((track, i) => {
+    const display = track.displays[0]!
+    return display.drawsGenomicCoordinates === false
+      ? [
+          {
+            top: offsets[i]! + labelOffset(track, trackLabels, textHeight),
+            height: display.height,
+          },
+        ]
+      : []
+  })
   return (
     <>
       <g transform={`translate(${trackLabelOffset})`}>{header}</g>
@@ -78,7 +92,11 @@ export default function SVGView({
         user's highlights entirely for as long as it was the caller's job.
       */}
       <g transform={`translate(${trackLabelOffset} ${contentTop})`}>
-        <SVGHighlightsOverlay model={view} tracksHeight={tracksHeight} />
+        <SVGHighlightsOverlay
+          model={view}
+          tracksHeight={tracksHeight}
+          gaps={nonGenomicBands}
+        />
       </g>
     </>
   )

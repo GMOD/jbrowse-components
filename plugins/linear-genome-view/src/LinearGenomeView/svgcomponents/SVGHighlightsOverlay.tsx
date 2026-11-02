@@ -5,6 +5,7 @@ import { getEnv } from '@jbrowse/core/util'
 
 import SVGHighlights from './SVGHighlights.tsx'
 
+import type { BandGap } from '../components/SVGHighlightBand.tsx'
 import type { LinearGenomeViewModel } from '../index.ts'
 
 // The highlight layer over one view's tracks area: the view's highlights plus
@@ -13,9 +14,11 @@ import type { LinearGenomeViewModel } from '../index.ts'
 export default function SVGHighlightsOverlay({
   model,
   tracksHeight,
+  gaps,
 }: {
   model: LinearGenomeViewModel
   tracksHeight: number
+  gaps: BandGap[]
 }) {
   const { pluginManager } = getEnv(model)
   return (
@@ -24,7 +27,7 @@ export default function SVGHighlightsOverlay({
       width={model.width}
       height={tracksHeight}
     >
-      <SVGHighlights model={model} height={tracksHeight} />
+      <SVGHighlights model={model} height={tracksHeight} gaps={gaps} />
       <PluggableElements
         pluginManager={pluginManager}
         name="LinearGenomeView-HighlightSVGComponent"

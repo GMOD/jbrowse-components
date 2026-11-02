@@ -30,6 +30,12 @@ export interface LinearDisplayModel extends DisplayModel {
    */
   expandToContentHeight?: () => void
   prefersOffset?: boolean
+  /**
+   * False while the display lays its content out on its own x axis rather
+   * than the view's genomic one (a graph in force layout); the view's
+   * highlight bands leave a gap over it.
+   */
+  drawsGenomicCoordinates?: boolean
   /** The room an SVG export reserves left of the track for its sidebar. */
   svgSidebarWidth?: (text?: ExportTextStyle) => number
 }

@@ -59,6 +59,7 @@ const HighlightBand = observer(function HighlightBand({
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()
+  const mask = gaps?.length ? gapMask(gaps) : undefined
   const content =
     children ??
     (label ? (
@@ -75,9 +76,8 @@ const HighlightBand = observer(function HighlightBand({
           transform: `translateX(${coords.left}px)`,
           width: coords.width,
           background,
-          ...(gaps?.length
-            ? { maskImage: gapMask(gaps), WebkitMaskImage: gapMask(gaps) }
-            : undefined),
+          maskImage: mask,
+          WebkitMaskImage: mask,
         }}
       />
       {content ? (

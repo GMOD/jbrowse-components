@@ -4,6 +4,7 @@ import { getSession } from '@jbrowse/core/util'
 import SVGHighlightBand from '../components/SVGHighlightBand.tsx'
 import { getHighlightColor, highlightKey } from '../components/util.ts'
 
+import type { BandGap } from '../components/SVGHighlightBand.tsx'
 import type { LinearGenomeViewModel } from '../index.ts'
 
 // The view's highlights drawn as full-height bands over the tracks area, with
@@ -20,9 +21,11 @@ import type { LinearGenomeViewModel } from '../index.ts'
 export default function SVGHighlights({
   model,
   height,
+  gaps,
 }: {
   model: LinearGenomeViewModel
   height: number
+  gaps: BandGap[]
 }) {
   const theme = useStyleTheme()
   const session = getSession(model)
@@ -34,6 +37,7 @@ export default function SVGHighlights({
             key={highlightKey(h, idx)}
             coords={coords}
             height={height}
+            gaps={gaps}
             color={getHighlightColor(h, theme).toRgbString()}
             label={session.highlightLabelsVisible ? h.label : undefined}
             labelColor={theme.palette.text.primary}

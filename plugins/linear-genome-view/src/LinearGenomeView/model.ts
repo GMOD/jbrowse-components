@@ -1216,16 +1216,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * short by the unmeasured bands.
        */
       getTrackYOffset(trackId: string) {
+        return this.trackYOffsets.get(trackId)
+      },
+
+      /**
+       * #getter
+       * `getTrackYOffset` for every shown track, by trackId, from one walk
+       */
+      get trackYOffsets() {
+        const offsets = new Map<string, number>()
         let y =
           this.headerHeight + this.scalebarHeight + this.trackLeadingChrome
         for (const t of [...self.pinnedTracks, ...self.unpinnedTracks]) {
           y += this.trackLabelBand(t)
-          if (t.configuration.trackId === trackId) {
-            return y
-          }
+          offsets.set(t.configuration.trackId, y)
           y += this.trackHeight(t) + this.trackChromeHeight
         }
-        return undefined
+        return offsets
       },
 
       /**
@@ -3293,11 +3300,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       nonGenomicTrackBands() {
         const y0 = self.headerHeight + self.scalebarHeight
         return [...self.pinnedTracks, ...self.unpinnedTracks].flatMap(track => {
-          const display = track.activeDisplay as {
-            drawsGenomicCoordinates?: boolean
-          }
-          const top = self.getTrackYOffset(track.configuration.trackId)
-          return display.drawsGenomicCoordinates === false && top !== undefined
+          const top = self.trackYOffsets.get(track.configuration.trackId)
+          return track.activeDisplay.drawsGenomicCoordinates === false &&
+            top !== undefined
             ? [{ top: top - y0, height: self.trackHeight(track) }]
             : []
         })
