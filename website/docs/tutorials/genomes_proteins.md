@@ -14,14 +14,18 @@ residue sits in the folded protein and how conserved it is across related
 proteins. The [protein browser](https://genomes.jbrowse.org/protein-browser/) on
 genomes.jbrowse.org takes a gene symbol and opens the gene, its 3D structure and
 an alignment of related proteins as one JBrowse session, linked so that a
-residue picked in one view lights up in the other two. We'll:
+residue picked in one view lights up in the other two. We start on _TP53_ at
+R248, a cancer hotspot, and end on _NLRP1_, whose domains differ between
+mammals. We:
 
-- open _TP53_ in the protein browser on R248, a cancer hotspot, and read the
-  session it launches
-- change what the session opens on: a domain, a structure, a coloring
-- launch the same views from a gene's right-click menu, where you choose the
-  structure and the species to align, on _NLRP1_, whose domains differ between
-  mammals
+- open _TP53_ on R248 from the protein browser, which launches a linear genome
+  view, an alignment view and a Mol\* structure as one linked session
+- change what the session opens on: a domain, a residue, a partner, a structure
+  or a coloring
+- launch a structure from the gene's right-click menu with **Launch protein
+  view**, choosing the structure source and the isoform
+- launch an ortholog alignment of _NLRP1_ with **Launch MSA view**, then read
+  NCBI's conserved domains on it and UniProt's domains as a genome track
 
 ## Prerequisites
 
@@ -68,13 +72,16 @@ cancer, where the protein contacts DNA. Open the
   how damaging AlphaMissense predicts a substitution there to be.
 - Click **Open in JBrowse ↗**.
 
-Typing a gene into the search box and pressing **Search** opens the same card
-with no focus. Advanced also adds a species box, which takes any species name or
-NCBI taxon ID whose genome genomes.jbrowse.org hosts with NCBI gene annotation,
-and the chips after **TP53** open other organisms on a residue each, such as
-rifampicin resistance in _M. tuberculosis_ _rpoB_.
-
 <Figure caption="The protein browser on the TP53 chip with Advanced ticked: the picked structure and coloring above the launch button, and the protein map below." src="/img/protein/protein_browser_page.png" />
+
+The same page opens a gene of your own:
+
+- type its symbol into the search box and press **Search**, which opens the same
+  card with no focus
+- under **Advanced**, the species box takes any species name or NCBI taxon ID
+  whose genome genomes.jbrowse.org hosts with NCBI gene annotation
+- the chips after **TP53** open other organisms on a residue each, such as
+  rifampicin resistance in _M. tuberculosis_ _rpoB_
 
 ## Reading the TP53 session
 
@@ -92,8 +99,8 @@ transcript:
 Hover a codon in the gene view and its residue lights up on the structure and
 its column in the alignment; hover the structure or the alignment and the codon
 lights up in turn. [g2p_mapper](https://github.com/cmdcolin/g2p_mapper) maps
-each position through the transcript's coding sequence, so introns, UTRs and
-residues the structure does not cover highlight nothing.
+each position through the transcript's coding sequence, so hovering an intron, a
+UTR or a residue outside the structure highlights nothing.
 
 <Figure caption="TP53 as the protein browser launches it on R248: the coding exons over ClinVar and AlphaMissense, the P53 family alignment on R248's column, and 3KMD colored by AlphaMissense with R248 in magenta." src="/img/protein/protein_browser_tp53.png" />
 
@@ -119,10 +126,13 @@ launch button. Click **Clear** to drop it, and choose another:
   browser when the session opens. NCBI lists orthologs for vertebrates and
   insects; any other protein gets its UniRef50 cluster instead.
 
-**Structure** under Advanced overrides the pick with any AlphaFold or PDB entry,
-and **Color** also offers ClinVar pathogenic variants and, on an AlphaFold
-model, AlphaFold confidence (pLDDT). The page URL holds the gene, the focus and
-the structure, so
+Two more boxes under Advanced change the structure itself:
+
+- **Structure** overrides the pick with any AlphaFold or PDB entry
+- **Color** also offers ClinVar pathogenic variants and, on an AlphaFold model,
+  AlphaFold confidence (pLDDT)
+
+The page URL holds the gene, the focus and the structure, so
 [?gene=TP53&ref=9606&residue=248&structure=3kmd](https://genomes.jbrowse.org/protein-browser/?gene=TP53&ref=9606&residue=248&structure=3kmd)
 reopens this launch.
 
@@ -149,18 +159,22 @@ The dialog opens on its **AlphaFoldDB search** tab:
 <Video src="/media/proteins/genomes_protein_launch.mp4" caption="TP53's right-click launcher, the dialog resolving a UniProt entry and an isoform, and the structure Launch renders. Hovering a coding position picks out its residue." />
 
 The structure opens under the genome view, linked the same way as the protein
-browser's. Where its sequence differs from the transcript's translation, the
-**Pairwise alignment** panel shows each residue the structure lacks as a gap,
-and **Import manual alignment...** in the view menu takes a pairwise alignment
-of your own in Clustal format instead. The lookup needs a gene feature with a
-recognizable protein or transcript ID, which the hosted configs' RefSeq gene
-tracks, **NCBI RefSeq - RefSeq All** and **NCBI RefSeq - RefSeq Curated**, have.
+browser's:
 
-The protein view also has per-residue tracks for pLDDT, domains, helices and
-hydrophobicity. **Open side by side**, at the foot of the list the arrow beside
-the dialog's **Launch** button opens, puts the protein view beside the genome
-view. Click the nuclear export signal on the alignment panel's **Motif** row to
-select its residues and band their codons on the gene.
+- **The Pairwise alignment panel** shows each residue the structure lacks as a
+  gap, where the structure's sequence differs from the transcript's translation.
+  **Import manual alignment...** in the view menu takes a pairwise alignment of
+  your own in Clustal format instead.
+- **A gene track of your own** works when its features have a protein or
+  transcript ID the lookup recognizes, as the hosted configs' **NCBI RefSeq -
+  RefSeq All** and **NCBI RefSeq - RefSeq Curated** tracks do.
+- **Per-residue tracks** in the protein view draw pLDDT, domains, helices and
+  hydrophobicity.
+
+To put the two views beside each other, open the arrow beside the dialog's
+**Launch** button and choose **Open side by side**, at the foot of the list.
+Then click the nuclear export signal on the alignment panel's **Motif** row,
+which selects its residues and bands their codons on the gene.
 
 <Figure caption="A connected session on TP53, NCBI RefSeq above the AlphaFold structure. A motif clicked on the protein's feature track selects its residues and bands their codons." src="/img/protein/connected.png" />
 
@@ -173,11 +187,11 @@ The dialog's other tabs take a structure from elsewhere:
 - **Foldseek search** finds structures similar to the protein's
 - **File or URL** takes a PDB or mmCIF file of yours
 
-Click the arrow beside **Launch** to list everything the dialog can build.
-**Launch 1D protein annotation view** opens a linear genome view whose genome is
-the protein. The plugin registers the UniProt accession as a temporary assembly
-with the amino-acid sequence as its reference, so coordinates are residues. The
-view opens with these tracks on:
+Click the arrow beside **Launch** to list everything the dialog can build, and
+choose **Launch 1D protein annotation view**. It opens a linear genome view
+whose genome is the protein. The plugin registers the UniProt accession as a
+temporary assembly with the amino-acid sequence as its reference, so coordinates
+are residues. The view opens with these tracks on:
 
 - **UniProt features**, a section per feature type
 - **Antigen**
@@ -211,11 +225,11 @@ and choose **Launch MSA view**. The dialog opens on its **Orthologs** tab:
 - **MSA Algorithm** sets which aligner EBI runs, Clustal Omega by default
 - **BLAST query**, a separate tab, takes a gene with no resolvable symbol
 
-Press **Submit**. The alignment opens below the genome view, with a tree on the
-left and NCBI's conserved domains drawn over the residues once NCBI returns
-them. It opens at residue zoom on the N terminus; **View → Zoom → Fit width**
-(View is the eye icon in the alignment's toolbar) puts the whole alignment on
-screen, which is the zoom the domain blocks read at.
+Press **Submit**. The alignment opens below the genome view at residue zoom on
+the N terminus, with a tree on the left and NCBI's conserved domains drawn over
+the residues once NCBI returns them. Choose **View → Zoom → Fit width** (View is
+the eye icon in the alignment's toolbar) to put the whole alignment on screen,
+the zoom the domain blocks read at.
 
 <Figure src="/img/genomes_msa/launch_sequence.png" caption="NLRP1's right-click menu, the Launch MSA view dialog on its Orthologs tab, and the alignment Submit builds." />
 
@@ -237,9 +251,9 @@ calls for:
 
 ### UniProt domains in genome coordinates for NLRP1
 
-UCSC projects UniProt's annotations onto the genome, so the hosted config holds
-them as tracks. Turn on **UniProt - Domains** (under Genes and Gene Predictions)
-in the linear view you launched from, then narrow it to one record:
+UCSC projects UniProt's annotations onto the genome, so the hosted hg38 config
+holds them as tracks. Turn on **UniProt - Domains** (under Genes and Gene
+Predictions) in the linear view you launched from, then narrow it to one record:
 
 - **Filter by...** in the track menu applies the row `uniProtId` is `Q9C000`,
   the gene's reviewed UniProt entry. Without it, the track draws a domain once
@@ -249,14 +263,16 @@ in the linear view you launched from, then narrow it to one record:
 
 <Figure src="/img/genomes_msa/genomic_domains.png" caption="NLRP1 with NCBI RefSeq above UniProt - Domains, filtered to the gene's reviewed UniProt entry." />
 
+For a genome UCSC projects no UniProt record onto, or for your own gene models,
+[](/docs/tutorials/protein_domains) calls Pfam domains on the proteins and
+places each one on the exons that encode it, as a track of the same kind.
+
 ## More protein browser sessions
 
 A protein browser session takes any other JBrowse track beside the codon, and a
-second protein view beside the first. Each figure's live link opens its
-session.[^constructs]
-
-Open a figure's live link and hover the highlighted codon in the genome view;
-each protein view then lights the residue it codes for.
+second protein view beside the first. Open a figure's live link to load its
+session, then hover the highlighted codon in the genome view: each protein view
+lights the residue it codes for.[^constructs]
 
 <Figure src="/img/protein/brca1_sge_alphamissense.png" caption="BRCA1 at codon 1775 with the saturation genome editing score of every missense change and the AlphaMissense score of every possible base change, above 1T15 twice: colored by the scan's residue mean on the left and by AlphaMissense on the right. The M1775R highlight names the residue in both structures." />
 
@@ -294,11 +310,15 @@ The plugin store lists the two plugins as **Protein3d** and **MSAView**, and
 [](/docs/user_guides/plugin_store) covers each way to install them.
 
 The protein3d and msaview plugins add view types launched from a gene's
-right-click menu in JBrowse Web and Desktop. The single-view embedded components
-host only a linear genome view, so neither view type appears there.
-[](/docs/jbrowser)'s `JBrowseRApp` takes both runtime plugins and a `views`
-list, while [anywidget](/docs/jbrowse_anywidget)'s `JBrowseApp` has no plugin
-loading yet.[^session]
+right-click menu, so they appear wherever JBrowse hosts more than one view:
+
+- JBrowse Web and Desktop
+- [](/docs/jbrowser)'s `JBrowseRApp`, which takes both runtime plugins and a
+  `views` list[^session]
+
+The single-view embedded components host only a linear genome view, and
+[anywidget](/docs/jbrowse_anywidget)'s `JBrowseApp` loads no plugins yet, so
+neither view type appears there.
 
 The approach is described in
 [_Proteins in the Genome Browser_](https://doi.org/10.1016/j.jmb.2026.169645)
