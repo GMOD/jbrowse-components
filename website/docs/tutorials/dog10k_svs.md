@@ -14,12 +14,13 @@ traits, such as a deletion in _NHEJ1_ behind Collie eye anomaly, a duplication
 of the amylase gene _AMY2B_, a SINE insertion in _RNASE1_, and the footprint an
 _FGF4_ retrogene leaves at its parent gene. We:
 
-- slice the _NHEJ1_ locus out of a Dog10K callset over HTTP and load it as a
-  variant track, one row per animal labelled by breed
-- filter the window to the deletion record
-- load the _AMY2B_ and _RNASE1_ slices the same way
-- align the _FGF4_ retrocopies to their parent gene, where the callset records
-  them as intron deletions
+- load the _NHEJ1_ slice of a Dog10K SV callset as a variant track, facet its
+  rows by clade from a sample sheet, and filter it to the deletion record
+- add OMIA's curated record of the same deletion as a feature track
+- load the _AMY2B_ and _RNASE1_ slices with the same animals in the same row
+  order, colored by group
+- load the _FGF4_ intron records, then open a linear synteny view with the two
+  retrocopies aligned to their parent gene
 
 ## Prerequisites
 
@@ -325,6 +326,8 @@ copy number from the SNV callset's per-sample `DP`.
 
 ## An FGF4 retrogene called as intron deletions
 
+Each record so far is the variant its type names. A deletion record can also
+mark an insertion somewhere else in the genome.
 [Parker et al. (2009)](https://doi.org/10.1126/science.1173275) tied
 breed-defining short legs to an expressed _FGF4_ retrogene, a copy of the
 spliced _FGF4_ mRNA reinserted elsewhere in the genome. The copy has no introns,
