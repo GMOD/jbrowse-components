@@ -16,8 +16,8 @@ trait. We:
 - load GeneNetwork's BXD genotype file as a BED track and paint each strain's B
   and D blocks, one row per strain
 - load the coat-color scan as a Manhattan track above the strains
-- facet the strains by coat color
-- zoom to the chr9 peak at _Myo5a_
+- facet the strains by coat color and open the chr4 peak at _Tyrp1_
+- open the chr9 peak at _Myo5a_ with the same sections
 
 ## Prerequisites
 
@@ -25,20 +25,23 @@ trait. We:
 - `jq`, to reshape it
 - `python3`, for the painting
 - htslib (`bgzip`, `tabix`), for the painting
+- `node`, for the [JBrowse CLI](/docs/cli)'s `sort-bed`
 - A JBrowse instance to add the tracks to
   ([web quickstart](/docs/quickstart_web) or
   [desktop quickstart](/docs/quickstart_desktop))
 
-<!-- TUTORIAL_INSTALL htslib START -->
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli START -->
 
 ```bash
 # Debian/Ubuntu
-sudo apt install tabix
+sudo apt install tabix nodejs
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge htslib
+conda install -c bioconda -c conda-forge htslib nodejs
+# any platform
+npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib END -->
+<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli END -->
 
 ## The data
 
@@ -336,12 +339,10 @@ applies edits live.
 
 </details>
 
-Add the mm10 RefSeq genes
-(`https://jbrowse.org/demos/bxd/mm10.ncbiRefSeq.sorted.gtf.gz`, with its `.tbi`
-beside it), then:
+With the coat-color sections in place:
 
-- Filter them to _Tyrp1_ with **Filter by...** in their track menu
-  (`jexl:feature.name=='Tyrp1'`).
+- Filter the RefSeq gene track to _Tyrp1_ with **Filter by...** in its track
+  menu (`jexl:feature.name=='Tyrp1'`).
 - Open chr4 with the genes, the scan and the painting.
 
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="chr4 with the painting's rows banded by coat color, B in blue and D in red."/>
@@ -353,8 +354,8 @@ sets coat color.
 ## Myo5a, the dilute locus, under the chr9 peak
 
 The chr9 peak falls on _Myo5a_, the dilute locus (its mutation lightens coat
-color). The same grouped painting, with the gene track filtered to _Myo5a_,
-splits the sections the other way:
+color). Open chr9 with the same grouped painting, and filter the gene track to
+_Myo5a_ the same way. The sections split the other way:
 
 <Figure src="/img/qtl/bxd_myo5a_locus.png" caption="chr9, banded the same way. Under the peak the black and brown bands are blue, the grey and dilute brown bands red."/>
 
