@@ -1,3 +1,5 @@
+import { isKeyedWrites } from '@jbrowse/add-track-core'
+
 import { configManifest } from './configManifest.generated.ts'
 
 import type {
@@ -40,9 +42,25 @@ export function displayDefaultsForTrackType(
   }
 }
 
+// Whole where any declaration writes it whole or two key it by different
+// fields; keyed where any keys it, by every declaration's keyed members, as
+// `rows` gains a member on some displays only; members otherwise.
+function mergedWrites(slots: SlotEntry[]) {
+  const keyed = slots.map(s => s.writes).filter(isKeyedWrites)
+  const keyedBy = new Set(keyed.map(w => w.keyedBy))
+  const [field] = keyedBy
+  return slots.some(s => s.writes !== 'members' && !isKeyedWrites(s.writes)) ||
+    keyedBy.size > 1
+    ? 'whole'
+    : field === undefined
+      ? 'members'
+      : { keyedBy: field, keyed: [...new Set(keyed.flatMap(w => w.keyed))] }
+}
+
 // One slot per name across several displays' lists: a sub-schema everywhere
-// it is declared merges its members' slots, writes members only where every
-// declaration does, and lifts a bare value only into the target they share.
+// it is declared merges its members' slots, writes them as `mergedWrites`
+// folds the declarations, and lifts a bare value only into the target they
+// share.
 function mergedSlots(lists: SlotEntry[][]): SlotEntry[] {
   const byName = new Map<string, SlotEntry[]>()
   for (const slot of lists.flat()) {
@@ -66,7 +84,7 @@ function mergedSlots(lists: SlotEntry[][]): SlotEntry[] {
     )
     return {
       ...first,
-      writes: slots.every(s => s.writes === 'members') ? 'members' : 'whole',
+      writes: mergedWrites(slots),
       shorthand,
       subSlots: mergedSlots(slots.map(s => s.subSlots!)),
     }

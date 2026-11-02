@@ -10,7 +10,11 @@ import type { HydratedForms } from '@jbrowse/product-core'
 const asWritten: HydratedForms = {
   track: t => t,
   assembly: a => a,
-  displays: { wholeAt: () => false, canonical: (_, d) => d },
+  displays: {
+    wholeAt: () => false,
+    keyedAt: () => undefined,
+    canonical: (_, d) => d,
+  },
 }
 
 // stands in for the live session, for copyTextWithSession's notification

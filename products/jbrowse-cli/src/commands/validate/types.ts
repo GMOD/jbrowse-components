@@ -1,4 +1,5 @@
 import type { FieldPreset } from './markRules/colorScale.ts'
+import type { KeyedWrites } from '@jbrowse/add-track-core'
 
 // Shape of the generated config manifest (configManifest.generated.ts), which
 // scripts/generateConfigManifest.ts reads out of the live ConfigurationSchema
@@ -28,10 +29,11 @@ export interface SlotEntry {
   /** A sub-schema slot: the schema's name, its config reference page. */
   schema?: string
   /**
-   * A sub-schema slot: how a settings bag writes it, member by member or
-   * replaced whole (the schema's `writes` option).
+   * A sub-schema slot: how a settings bag writes it, member by member,
+   * replaced whole, or member by member with the keyed members unset when
+   * the field they name changes (the schema's `writes` option).
    */
-  writes?: 'whole' | 'members'
+  writes?: 'whole' | 'members' | KeyedWrites
   /**
    * A list of sub-schemas that draws these entries until a config writes its
    * own (a display's default plot), which the rules read where the slot is

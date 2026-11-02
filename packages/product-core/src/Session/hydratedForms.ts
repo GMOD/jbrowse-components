@@ -2,6 +2,7 @@ import {
   canonicalSpelling,
   getConfigurationSchemaMetadata,
   isBareConfigurationSchemaType,
+  keyedWritesAt,
   writesWholeAt,
 } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
@@ -49,6 +50,7 @@ export function displayForms(pluginManager: PluginManager): DisplayForms {
       : undefined
   return {
     wholeAt: (displayType, path) => writesWholeAt(schemaOf(displayType), path),
+    keyedAt: (displayType, path) => keyedWritesAt(schemaOf(displayType), path),
     canonical: (displayType, display) => {
       const schema = schemaOf(displayType)
       const meta = isBareConfigurationSchemaType(schema)

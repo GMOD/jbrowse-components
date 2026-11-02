@@ -186,7 +186,7 @@ describe('plotWrites over a mark display', () => {
 
   it('writes only what moved', () => {
     expect(plotWrites(conf, { ...current, rows: 'source' })).toEqual({
-      rows: 'source',
+      rows: { field: 'source' },
     })
   })
 })

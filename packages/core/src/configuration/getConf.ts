@@ -1,4 +1,9 @@
 import {
+  isKeyedWrites,
+  keyedBase,
+  staleKeyedMembers,
+} from '@jbrowse/add-track-core'
+import {
   getSnapshot,
   getType,
   isStateTreeNode,
@@ -106,6 +111,24 @@ export function setConf<
   )
 }
 
+// A write of a keyed object's field that changes it resets the members naming
+// the old field's values (ADR-257)
+function unsetStaleKeyedMembers(
+  node: AnyConfigurationModel,
+  leaf: string,
+  value: unknown,
+) {
+  const writes = getConfigurationSchemaMetadata(node)?.options.writes
+  if (isKeyedWrites(writes) && writes.keyedBy === leaf) {
+    const prior = getSnapshot<Record<string, unknown>>(node)
+    for (const member of staleKeyedMembers(writes, prior, { [leaf]: value })) {
+      if (Object.hasOwn(prior, member)) {
+        writeConfPath(node, [member], null)
+      }
+    }
+  }
+}
+
 // through setSlot or setSubschema, whose guards MST's `applyPatch` would skip
 function writeConfPath(
   conf: AnyConfigurationModel,
@@ -126,6 +149,7 @@ function writeConfPath(
     node = child
   }
   const leaf = path.at(-1)!
+  unsetStaleKeyedMembers(node, leaf, value)
   // off the declaration: a stringArray slot holds an array node too
   const declared = getConfigurationSchemaDefinition(node)?.[leaf]
   if (isConfigurationSchemaType(declared)) {
@@ -157,6 +181,22 @@ function namespaceMetadata(member: unknown) {
   return meta?.options.writes === 'whole' ? undefined : meta
 }
 
+// How `schema` declares the object at `path` written; undefined for a path
+// it does not declare, or one ending on a slot
+function writesAt(schema: unknown, path: readonly string[]) {
+  let member = schema
+  for (const key of path) {
+    const definition = isType(member)
+      ? getConfigurationSchemaMetadata(member)?.definition
+      : undefined
+    member =
+      definition && Object.hasOwn(definition, key) ? definition[key] : undefined
+  }
+  return path.length > 0 && isType(member)
+    ? getConfigurationSchemaMetadata(member)?.options.writes
+    : undefined
+}
+
 /**
  * #api core/configuration
  * Whether `schema` writes the object at `path` whole: a channel, which
@@ -164,21 +204,17 @@ function namespaceMetadata(member: unknown) {
  * False for a path the schema does not declare.
  */
 export function writesWholeAt(schema: unknown, path: readonly string[]) {
-  let member = schema
-  for (const key of path) {
-    const definition = isType(member)
-      ? getConfigurationSchemaMetadata(member)?.definition
-      : undefined
-    if (!definition || !Object.hasOwn(definition, key)) {
-      return false
-    }
-    member = definition[key]
-  }
-  return (
-    path.length > 0 &&
-    isType(member) &&
-    getConfigurationSchemaMetadata(member)?.options.writes === 'whole'
-  )
+  return writesAt(schema, path) === 'whole'
+}
+
+/**
+ * #api core/configuration
+ * The keyed writes `schema` declares on the object at `path` (ADR-257), as
+ * `rows` declares its arrangement keyed by `field`; undefined elsewhere.
+ */
+export function keyedWritesAt(schema: unknown, path: readonly string[]) {
+  const writes = writesAt(schema, path)
+  return isKeyedWrites(writes) ? writes : undefined
 }
 
 /**
@@ -213,10 +249,28 @@ export function mergeConfSettings(
     const next = namespace ? liftShorthand(namespace, value) : value
     out[key] =
       namespace && isPlainObject(prior) && isPlainObject(next)
-        ? mergeConfSettings(member, prior, next)
+        ? mergeConfSettings(
+            member,
+            isKeyedWrites(namespace.options.writes)
+              ? keyedBase(namespace.options.writes, prior, next)
+              : prior,
+            next,
+          )
         : value
   }
   return out
+}
+
+// A keyed object's field writes first, so the keyed members its change
+// unsets are the ones the bag then writes again.
+function keyedByFirst(writes: unknown, members: Record<string, unknown>) {
+  const entries = Object.entries(members)
+  return isKeyedWrites(writes)
+    ? [
+        ...entries.filter(([k]) => k === writes.keyedBy),
+        ...entries.filter(([k]) => k !== writes.keyedBy),
+      ]
+    : entries
 }
 
 function writeConfMember(
@@ -235,7 +289,7 @@ function writeConfMember(
       getType(member).create({ ...getSnapshot(member), ...lifted })
       return lifted
     })
-    for (const [k, v] of Object.entries(members)) {
+    for (const [k, v] of keyedByFirst(namespace.options.writes, members)) {
       writeConfMember(member, k, v)
     }
   } else {

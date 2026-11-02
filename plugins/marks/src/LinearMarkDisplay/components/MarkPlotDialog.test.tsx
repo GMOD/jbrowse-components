@@ -512,7 +512,7 @@ describe('the plot as a whole', () => {
     fireEvent.change(order, { target: { value: '1, -1' } })
     fireEvent.click(apply())
     expect(written).toHaveBeenCalledWith(
-      writes({ rows: { field: 'strand', sort: ['1', '-1'] } }),
+      writes({ rows: { field: 'strand', sort: ['1', '-1'], tree: null } }),
     )
   })
 

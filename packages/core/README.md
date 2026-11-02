@@ -1340,6 +1340,20 @@ import { junctionEnds } from '@jbrowse/core/util/svAlt'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/svAlt.ts)
 
+### keyedWritesAt
+
+The keyed writes `schema` declares on the object at `path` (ADR-257), as `rows`
+declares its arrangement keyed by `field`; undefined elsewhere.
+
+```js
+import { keyedWritesAt } from '@jbrowse/core/configuration'
+
+// type signature
+(schema: unknown, path: readonly string[]) => KeyedWrites | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
+
 ### keyNames
 
 The display name of each of `keys`, from a color object's `labels`: one each in

@@ -246,10 +246,10 @@ test('overlay, density: a dialog edit is kept and paints no strip', async () => 
   expect(display.liveNotices.join('\n')).toContain('one strip')
 })
 
-// The Edit plot box writes rows whole: an order typed over what it shows keeps
-// the labels and the focus beside it, and a rows naming only its order drops
-// them, as a config file naming only that would.
-test('rows: the plot box writes rows whole', async () => {
+// The Edit plot box writes the members it names (ADR-257): an order typed
+// over what it shows keeps the labels and the focus beside it, `null` resets
+// one, and the tree rotates to the order rather than going with it.
+test('rows: the plot box writes the members it names', async () => {
   const display = await loaded(GROUPED, rowsPerSource())
   const [g1, g2, g3, g4] = display.editableSources
   display.applyRowEdits([{ ...g1!, label: 'One' }, g2!, g3!, g4!])
@@ -265,16 +265,19 @@ test('rows: the plot box writes rows whole', async () => {
   expect(display.rowLabels).toEqual({ Grain1: 'One' })
   expect(display.rowFocus).toEqual(['Grain1', 'Grain2'])
 
-  display.applyPlot({ rows: { field: 'source', sort: ['Grain2', 'Grain1'] } })
+  display.applyPlot({
+    rows: { field: 'source', sort: ['Grain2', 'Grain1'], kept: null },
+  })
   expect(display.sources.map(s => s.name)).toEqual([
     'Grain2',
     'Grain1',
     'Grain3',
     'Grain4',
   ])
-  expect(display.rowLabels).toEqual({})
+  expect(display.rowLabels).toEqual({ Grain1: 'One' })
   expect(display.rowFocus).toBeUndefined()
-  expect(display.rowTree).toBeUndefined()
+  expect(display.rowTree).toBe('((Grain1,Grain2),(Grain3,Grain4));')
+  expect(display.hierarchy).toBeDefined()
 
   expect(() => display.plotProblems({ rows: { field: 'group' } })).toThrow()
 

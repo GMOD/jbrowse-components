@@ -21,3 +21,10 @@ export {
   indexableAdapters,
   isSupportedIndexingAdapter,
 } from './indexableAdapters.ts'
+export {
+  type KeyedWrites,
+  changesKeyedField,
+  isKeyedWrites,
+  keyedBase,
+  staleKeyedMembers,
+} from './keyedWrites.ts'

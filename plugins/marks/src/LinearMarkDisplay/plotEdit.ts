@@ -1,3 +1,4 @@
+import { changesKeyedField } from '@jbrowse/core/configuration'
 import { aggregateFieldName } from '@jbrowse/core/util/aggregateFieldName'
 import { expressionKind } from '@jbrowse/core/util/jexlDiagnostics'
 import {
@@ -7,7 +8,10 @@ import {
 } from '@jbrowse/core/util/stepOutputs'
 import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
 import { rowColorForOtherRows } from '@jbrowse/display-kit/rowColorConfigSchema'
-import { rowsForField } from '@jbrowse/display-kit/rowsConfigSchema'
+import {
+  ROWS_WRITES,
+  rowsForField,
+} from '@jbrowse/display-kit/rowsConfigSchema'
 
 import { AUTO_BIN } from './autoBin.ts'
 import {
@@ -94,7 +98,9 @@ export function withSplitField(
   const rows = rowsForField(held, field)
   const baseColor = channelObject(base.rowColor)
   const rowColor =
-    baseColor && rows !== held ? rowColorForOtherRows(baseColor) : baseColor
+    baseColor && changesKeyedField(ROWS_WRITES, held, { field })
+      ? rowColorForOtherRows(baseColor)
+      : baseColor
   return { ...plot, rows, ...(rowColor ? { rowColor } : {}) }
 }
 

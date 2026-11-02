@@ -13,14 +13,6 @@ reader gives the rows. A string is the field; the object adds the order,
 the labels, the tree with its provenance and the kept rows, each by value
 of the field.
 
-- A settings bag, an agent's plot, a session spec and `displayDefaults`
-  write `rows` whole, so `rows: "source"` over arranged rows drops the
-  arrangement. To keep it, write back the object a plot read returned.
-- A dotted launch modifier, `rows.sort=…`, writes that member alone.
-- A pick of another field in a menu or the Edit plot form drops the
-  arrangement, which names the old field's values; the field in force
-  keeps it.
-
 ## Example usage
 
 ```js
@@ -47,7 +39,7 @@ of the field.
 
 ## Config slots
 
-A setting written to it replaces it whole: a member left out returns to its default. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. One that changes `field` first clears `sort`, `labels`, `tree`, `treeProvenance`, `kept`, which name the old values, except those it states. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

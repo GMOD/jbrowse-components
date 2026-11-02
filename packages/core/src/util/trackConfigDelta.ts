@@ -40,6 +40,13 @@
  * other array (value arrays like `filter`, `assemblyNames`) is replaced
  * wholesale when changed.
  *
+ * An object the schema declares keyed (`keyedAt`, `rows` keying its
+ * arrangement by `field`, ADR-257) recurses too, but the diff stores the field
+ * beside any keyed member it stores, and the merge drops the base's keyed
+ * members when the delta's field differs from the base's: an arrangement
+ * names one field's values, so an admin's later change of field must not
+ * hand a user's old order to the new rows.
+ *
  * Subtlety worth not "optimizing": when the base has NO `displays` array but the
  * edited snapshot does (common — a track config that omits displays gets a stub
  * per compatible display type injected by `baseTrackConfig.preProcessSnapshot`
@@ -50,7 +57,11 @@
  * silently changing which display opens by default.
  */
 
+import { changesKeyedField, keyedBase } from '@jbrowse/add-track-core'
+
 import { deepEqual } from './deepEqual.ts'
+
+import type { KeyedWrites } from '@jbrowse/add-track-core'
 
 type Json =
   | string
@@ -90,6 +101,10 @@ export type WholeAt = (displayType: string, path: readonly string[]) => boolean
  */
 export interface DisplayForms {
   wholeAt: WholeAt
+  keyedAt: (
+    displayType: string,
+    path: readonly string[],
+  ) => KeyedWrites | undefined
   canonical: (
     displayType: string,
     display: Record<string, unknown>,
@@ -116,6 +131,37 @@ const displayAt = (at: At, ...displays: (JsonObject | undefined)[]): At => ({
 
 const isWhole = (at: At) =>
   at.type !== undefined && !!at.forms?.wholeAt(at.type, at.path)
+
+const keyedAt = (at: At) =>
+  at.type === undefined ? undefined : at.forms?.keyedAt(at.type, at.path)
+
+// A keyed object's diff names the field its keyed members are values of. A
+// diff changing the field resets none of the base's keyed members: the merge
+// drops those itself, and a null would also drop what an admin later writes
+// for the new field.
+function keyedDiff(
+  at: At,
+  out: JsonObject,
+  base: JsonObject,
+  edited: JsonObject,
+) {
+  const keyed = keyedAt(at)
+  if (keyed) {
+    const fieldChanges = changesKeyedField(keyed, base, edited)
+    const kept = Object.fromEntries(
+      Object.entries(out).filter(
+        ([member, value]) =>
+          !(fieldChanges && value === null && keyed.keyed.includes(member)),
+      ),
+    )
+    return out[keyed.keyedBy] === undefined &&
+      edited[keyed.keyedBy] !== undefined &&
+      keyed.keyed.some(member => Object.hasOwn(kept, member))
+      ? { ...kept, [keyed.keyedBy]: edited[keyed.keyedBy] }
+      : kept
+  }
+  return out
+}
 
 const UNCHANGED = Symbol('unchanged')
 
@@ -181,7 +227,9 @@ function diffValue(base: Json, edited: Json, at: At): Json | typeof UNCHANGED {
         out[k] = d
       }
     }
-    return Object.keys(out).length > 0 ? out : UNCHANGED
+    return Object.keys(out).length > 0
+      ? keyedDiff(at, out, base, edited)
+      : UNCHANGED
   }
   return edited
 }
@@ -253,7 +301,11 @@ function mergeValue(base: Json, delta: Json, at: At): Json {
     return merged
   }
   if (isPlainObject(delta) && !isWhole(at)) {
-    const out: JsonObject = isPlainObject(base) ? { ...base } : {}
+    const keyed = keyedAt(at)
+    const prior = isPlainObject(base) ? base : {}
+    const out = {
+      ...(keyed ? keyedBase(keyed, prior, delta) : prior),
+    }
     for (const [k, v] of Object.entries(delta)) {
       if (v === null) {
         delete out[k]

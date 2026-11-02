@@ -1,4 +1,4 @@
-import { mergeConfSettings } from '@jbrowse/core/configuration'
+import { keyedWritesAt, mergeConfSettings } from '@jbrowse/core/configuration'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import {
@@ -351,7 +351,9 @@ export async function launchTrackInit(
  * after every other modifier, so a member write keeps the rest of the setting
  * whatever order the command line gives them in. A display replaces a color
  * or facet object whole, which is why these cannot ride in on the launch
- * snapshot.
+ * snapshot. A keyed object (`rows`, ADR-257) seeds only its field: seeded
+ * whole it would restate the arrangement a field write must drop, and
+ * unseeded a spec holding the patch would lose the field.
  */
 export function writeMembers(
   view: Pick<ModifierView, 'tracks' | 'showTrack'>,
@@ -373,12 +375,19 @@ export function writeMembers(
     // a list at a default the snapshot strips, Manhattan's marks, still seeds
     // the write, so `marks.0.mark=bar` edits the mark drawn
     const member = configuration[root]
-    return (
-      configured[root] ??
-      (isStateTreeNode(member) && isArrayType(getType(member))
-        ? getSnapshot(member)
-        : undefined)
-    )
+    const keyed = keyedWritesAt(getType(configuration), [root])
+    const field =
+      keyed && isStateTreeNode(member)
+        ? getSnapshot<Record<string, unknown>>(member)[keyed.keyedBy]
+        : undefined
+    return keyed
+      ? field === undefined
+        ? undefined
+        : { [keyed.keyedBy]: field }
+      : (configured[root] ??
+          (isStateTreeNode(member) && isArrayType(getType(member))
+            ? getSnapshot(member)
+            : undefined))
   })
   view.showTrack(trackId, {}, patch)
   return patch

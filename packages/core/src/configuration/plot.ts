@@ -1,3 +1,4 @@
+import { isKeyedWrites, staleKeyedMembers } from '@jbrowse/add-track-core'
 import {
   getSnapshot,
   getType,
@@ -16,7 +17,8 @@ import {
   scaleEndsOf,
   withImpliedField,
 } from '../util/colorScale.ts'
-import { mergeConfSettings } from './getConf.ts'
+import { isPlainObject } from '../util/objectUtils.ts'
+import { keyedWritesAt, mergeConfSettings } from './getConf.ts'
 import { readConfObject } from './readConfObject.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import {
@@ -83,7 +85,8 @@ export function plotKeysOf(conf: AnyConfigurationModel): string[] {
 
 // A one-member object a shorthand would write as a bare value prints as that
 // value, as a config file writes it, at any depth: `color: "red"`,
-// `facet: "strand"`, a list entry's `mark: "line"`.
+// `facet: "strand"`, a list entry's `mark: "line"`. A keyed object stays an
+// object, so `plot.rows.step` is always there to write (ADR-257).
 function folded(member: unknown, value: unknown): unknown {
   if (!isStateTreeNode(member) || typeof value !== 'object' || value === null) {
     return value
@@ -110,6 +113,7 @@ function folded(member: unknown, value: unknown): unknown {
     ([key, member]) => !(key in shorthandWith && shorthandWith[key] === member),
   )
   if (
+    isKeyedWrites(meta.options.writes) ||
     entries.length !== 1 ||
     Object.keys(members).length !== 1 + Object.keys(shorthandWith).length
   ) {
@@ -181,6 +185,30 @@ export interface PlotWriteOptions {
   whole?: boolean
 }
 
+// The whole plot text states every member a read gave it, so under a new
+// field the keyed members it left as read are the old field's, not a choice
+function withoutRestatedKeyed(
+  conf: AnyConfigurationModel,
+  key: string,
+  value: unknown,
+  read: unknown,
+) {
+  const keyed = keyedWritesAt(getType(conf), [key])
+  if (keyed && isPlainObject(value) && isPlainObject(read)) {
+    const unstated = Object.fromEntries(
+      Object.entries(value).filter(
+        ([member, v]) =>
+          !keyed.keyed.includes(member) || !compareStructural(v, read[member]),
+      ),
+    )
+    const restated = new Set(staleKeyedMembers(keyed, read, unstated))
+    return Object.fromEntries(
+      Object.entries(value).filter(([member]) => !restated.has(member)),
+    )
+  }
+  return value
+}
+
 // as a settings bag writes, so an object declaring `writes: 'members'` takes
 // the members a draft names and keeps the rest
 function merged(
@@ -194,7 +222,12 @@ function merged(
   )
   if (whole) {
     return Object.fromEntries(
-      Object.entries(stated).filter(([, value]) => value !== null),
+      Object.entries(stated)
+        .filter(([, value]) => value !== null)
+        .map(([key, value]) => [
+          key,
+          withoutRestatedKeyed(conf, key, value, current[key]),
+        ]),
     )
   }
   const out = mergeConfSettings(getType(conf), current, stated)

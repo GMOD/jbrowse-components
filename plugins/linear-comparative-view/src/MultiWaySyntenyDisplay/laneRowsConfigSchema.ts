@@ -7,7 +7,7 @@ import { types } from '@jbrowse/mobx-state-tree'
  * #category display
  * The multi-way synteny display's `rows`: one lane per assembly below the
  * anchor, so `assembly` is the one field, and the object is the arrangement a
- * reader gives the lanes, written whole as every display's `rows` is. `sort`
+ * reader gives the lanes, and writing it changes only the members stated. `sort`
  * lists the lanes that stack first, in order, the rest following densest-first
  * so a ribbon chain through adjacent lanes is cut as late as possible; `kept`
  * names the lanes drawn, empty drawing the track's lanes or every lane.

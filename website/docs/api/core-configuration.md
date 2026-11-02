@@ -145,6 +145,20 @@ import { hydrateTrackConfig } from '@jbrowse/core/configuration'
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchema.ts)
 
+## keyedWritesAt
+
+The keyed writes `schema` declares on the object at `path` (ADR-257), as
+`rows` declares its arrangement keyed by `field`; undefined elsewhere.
+
+```js
+import { keyedWritesAt } from '@jbrowse/core/configuration'
+
+// type signature
+(schema: unknown, path: readonly string[]) => KeyedWrites | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
+
 ## liftPlot
 
 A draft as the display's config would hold it, through the schema's own

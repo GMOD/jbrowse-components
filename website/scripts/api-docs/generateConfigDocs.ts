@@ -8,6 +8,7 @@ import {
   matchFormat,
   trackTypeForAdapter,
 } from '../../../packages/add-track-core/src/index.ts'
+import { isKeyedWrites } from '../../../packages/add-track-core/src/keyedWrites.ts'
 import { UNIVERSAL_FIELD_PRESETS } from '../../../packages/core/src/util/colorScale.ts'
 import {
   hasSchemaDefinition,
@@ -59,6 +60,7 @@ import {
   withHeaders,
 } from './util.ts'
 
+import type { KeyedWrites } from '../../../packages/add-track-core/src/keyedWrites.ts'
 import type { FieldPresets } from '../../../packages/core/src/util/colorScale.ts'
 import type { Example, ExtractedNode, ReachedSchema } from './util.ts'
 
@@ -716,7 +718,7 @@ export interface ManifestSlot {
   type: string
   subSlots?: ManifestSlot[]
   schema?: string
-  writes?: 'whole' | 'members'
+  writes?: ManifestWrites
   liftsNumbers?: true
   fieldPresets?: FieldPresets<string>
 }
@@ -805,11 +807,13 @@ function configManifest() {
 
 // Every sub-schema by name and how a settings bag writes it, off every slot the
 // manifest lists at any depth.
-let writesBySchema: Map<string, 'whole' | 'members'> | undefined
+type ManifestWrites = 'whole' | 'members' | KeyedWrites
+
+let writesBySchema: Map<string, ManifestWrites> | undefined
 
 function schemaWrites(name: string) {
   if (!writesBySchema) {
-    const found = new Map<string, 'whole' | 'members'>()
+    const found = new Map<string, ManifestWrites>()
     const visit = (slots: ManifestSlot[] = []) => {
       for (const slot of slots) {
         if (slot.schema && slot.writes) {
@@ -889,7 +893,9 @@ function writesLine(name: string) {
     ? 'A setting written to it replaces it whole: a member left out returns to its default.'
     : writes === 'members'
       ? 'A setting written to it names members one by one: a member left out stays as it is, and `null` resets one.'
-      : ''
+      : isKeyedWrites(writes)
+        ? `A setting written to it names members one by one: a member left out stays as it is, and \`null\` resets one. One that changes \`${writes.keyedBy}\` first clears ${writes.keyed.map(m => `\`${m}\``).join(', ')}, which name the old values, except those it states.`
+        : ''
 }
 
 function shorthandLine(name: string, category: string, isBase: boolean) {

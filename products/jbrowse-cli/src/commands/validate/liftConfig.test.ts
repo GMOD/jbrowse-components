@@ -127,3 +127,147 @@ test.each(cases.map(c => [`${c.name} ${c.path.join('.')}`, c] as const))(
     })
   },
 )
+
+// core's keyedWrites.test.ts table, on the rows a quantitative track's
+// displays declare
+describe('mergeBySlots over a keyed rows object', () => {
+  const slots = displayDefaultSlots('QuantitativeTrack')
+  const arranged = {
+    rows: { field: 'source', sort: ['b', 'a'], labels: { a: 'A' } },
+  }
+
+  test('the merged slot keeps the keyed declaration', () => {
+    expect(slots.find(s => s.name === 'rows')?.writes).toEqual({
+      keyedBy: 'field',
+      keyed: ['sort', 'labels', 'tree', 'treeProvenance', 'kept'],
+    })
+  })
+
+  test.each([
+    {
+      name: 'a new field unsets the keyed members',
+      base: arranged,
+      write: { rows: 'tissue' },
+      rows: { field: 'tissue' },
+    },
+    {
+      name: 'a new field keeps the keyed members it states',
+      base: arranged,
+      write: { rows: { field: 'tissue', sort: ['x'] } },
+      rows: { field: 'tissue', sort: ['x'] },
+    },
+    {
+      name: 'a new field stated after a keyed member still keeps that member',
+      base: arranged,
+      write: { rows: { sort: ['x'], field: 'tissue' } },
+      rows: { field: 'tissue', sort: ['x'] },
+    },
+    {
+      name: 'restating the field in force keeps the arrangement',
+      base: arranged,
+      write: { rows: 'source' },
+      rows: arranged.rows,
+    },
+    {
+      name: 'a write over an empty field resets nothing',
+      base: { rows: { sort: ['b', 'a'] } },
+      write: { rows: 'sample' },
+      rows: { field: 'sample', sort: ['b', 'a'] },
+    },
+    {
+      name: 'a write over a bare field unsets nothing it did not hold',
+      base: { rows: 'source' },
+      write: { rows: 'tissue' },
+      rows: { field: 'tissue' },
+    },
+    {
+      name: 'a member write without the field merges',
+      base: arranged,
+      write: { rows: { sort: ['a', 'b'] } },
+      rows: { ...arranged.rows, sort: ['a', 'b'] },
+    },
+    {
+      name: 'null resets one member, left for the app to read',
+      base: arranged,
+      write: { rows: { labels: null } },
+      rows: { ...arranged.rows, labels: null },
+    },
+  ])('$name', ({ base, write, rows }) => {
+    expect(mergeBySlots(base, write, slots).rows).toEqual(rows)
+  })
+})
+
+describe('displayDefaultSlots folds writes across displays', () => {
+  const field = { name: 'field', type: 'string' }
+  const rowsOn = (
+    writes: SlotEntry['writes'],
+    members: string[],
+  ): SlotEntry => ({
+    name: 'rows',
+    type: 'Rows',
+    subSlots: [field, ...members.map(name => ({ name, type: 'stringArray' }))],
+    writes,
+    shorthand: { string: 'field' },
+  })
+  const foldOf = (...rows: SlotEntry[]) => {
+    const displays = Object.fromEntries(
+      rows.map((slot, i) => [`D${i}`, { slots: [slot] }]),
+    )
+    const manifest = {
+      ...configManifest,
+      tracks: { T: { slots: [], displayTypes: Object.keys(displays) } },
+      displays,
+    }
+    return displayDefaultSlots('T', manifest).find(s => s.name === 'rows')
+  }
+  const keyedOn = (keyed: string[], keyedBy = 'field') =>
+    rowsOn({ keyedBy, keyed }, keyed)
+
+  test('keyed lists union, a member some displays lack included', () => {
+    const rows = foldOf(
+      keyedOn(['sort', 'labels']),
+      rowsOn({ keyedBy: 'field', keyed: ['sort', 'groups'] }, [
+        'sort',
+        'groups',
+        'step',
+      ]),
+    )
+    expect(rows?.writes).toEqual({
+      keyedBy: 'field',
+      keyed: ['sort', 'labels', 'groups'],
+    })
+    expect(
+      mergeBySlots(
+        {
+          rows: { field: 'a', sort: ['x'], labels: {}, groups: [], step: 8 },
+        },
+        { rows: 'b' },
+        rows ? [rows] : [],
+      ),
+    ).toEqual({ rows: { field: 'b', step: 8 } })
+  })
+
+  test('keyed beside members is keyed', () => {
+    expect(
+      foldOf(keyedOn(['sort']), rowsOn('members', ['sort']))?.writes,
+    ).toEqual({ keyedBy: 'field', keyed: ['sort'] })
+  })
+
+  test('any whole declaration is whole', () => {
+    expect(foldOf(keyedOn(['sort']), rowsOn('whole', ['sort']))?.writes).toBe(
+      'whole',
+    )
+  })
+
+  test('keyed by different fields is whole', () => {
+    expect(foldOf(keyedOn(['sort']), keyedOn(['sort'], 'sort'))?.writes).toBe(
+      'whole',
+    )
+  })
+
+  test('members everywhere stays members', () => {
+    expect(
+      foldOf(rowsOn('members', ['sort']), rowsOn('members', ['sort']))?.writes,
+    ).toBe('members')
+  })
+})

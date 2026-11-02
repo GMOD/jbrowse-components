@@ -1,7 +1,7 @@
 ---
 id: lanerows
 title: LaneRows
-description: "The multi-way synteny display's rows: one lane per assembly below the anchor, so assembly is the one field, and the object is the arrangement a reader gives the lanes, written whole as every…"
+description: "The multi-way synteny display's rows: one lane per assembly below the anchor, so assembly is the one field, and the object is the arrangement a reader gives the lanes, and writing it changes only the…"
 sidebar_label: Display setting -> LaneRows
 ---
 
@@ -9,7 +9,7 @@ Auto-generated from the config schema in the source — see the [config guide](/
 
 The multi-way synteny display's `rows`: one lane per assembly below the
 anchor, so `assembly` is the one field, and the object is the arrangement a
-reader gives the lanes, written whole as every display's `rows` is. `sort`
+reader gives the lanes, and writing it changes only the members stated. `sort`
 lists the lanes that stack first, in order, the rest following densest-first
 so a ribbon chain through adjacent lanes is cut as late as possible; `kept`
 names the lanes drawn, empty drawing the track's lanes or every lane.
@@ -32,7 +32,7 @@ anchor match sit together, in an order worked out once per window.
 
 ## Config slots
 
-A setting written to it replaces it whole: a member left out returns to its default. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. One that changes `field` first clears `sort`, `labels`, `tree`, `treeProvenance`, `kept`, which name the old values, except those it states. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

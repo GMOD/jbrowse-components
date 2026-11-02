@@ -498,6 +498,7 @@ describe('an object the display writes whole', () => {
   const forms: DisplayForms = {
     wholeAt: (type, path) =>
       type === 'LinearVariantDisplay' && path.join('.') === 'color',
+    keyedAt: () => undefined,
     canonical: (_, display) => display,
   }
   const withColor = (color: Record<string, unknown>) => {
@@ -576,6 +577,7 @@ describe('a stored delta in a spelling the base does not use', () => {
   const seen: string[] = []
   const forms: DisplayForms = {
     wholeAt: () => false,
+    keyedAt: () => undefined,
     canonical: (type, display) => {
       seen.push(type)
       return asType(display)
@@ -615,5 +617,96 @@ describe('a stored delta in a spelling the base does not use', () => {
         c.to,
       ]),
     ).toEqual([['displays.LinearWiggleDisplay.mark.type', 'bar', 'line']])
+  })
+})
+
+describe('an object the display keys by its field', () => {
+  const forms: DisplayForms = {
+    wholeAt: () => false,
+    keyedAt: (type, path) =>
+      type === 'LinearWiggleDisplay' && path.join('.') === 'rows'
+        ? { keyedBy: 'field', keyed: ['sort', 'labels'] }
+        : undefined,
+    canonical: (_, display) => display,
+  }
+  const track = (rows: Record<string, unknown>) => ({
+    trackId: 't',
+    type: 'QuantitativeTrack',
+    displays: [{ type: 'LinearWiggleDisplay', displayId: 't-wig', rows }],
+  })
+
+  test('a reorder stores the field beside the order', () => {
+    const delta = diffTrackConfig(
+      track({ field: 'source' }),
+      track({ field: 'source', sort: ['b', 'a'] }),
+      forms,
+    )
+    expect(delta.displays).toEqual([
+      { displayId: 't-wig', rows: { field: 'source', sort: ['b', 'a'] } },
+    ])
+  })
+
+  test("a base that changes field drops the user's stale order", () => {
+    const delta = diffTrackConfig(
+      track({ field: 'source' }),
+      track({ field: 'source', sort: ['b', 'a'] }),
+      forms,
+    )
+    const merged = mergeTrackConfig(
+      track({ field: 'tissue', sort: ['liver'], labels: { liver: 'L' } }),
+      delta,
+      forms,
+    )
+    expect(merged.displays[0]!.rows).toEqual({
+      field: 'source',
+      sort: ['b', 'a'],
+    })
+  })
+
+  test('a delta on the base field keeps the base arrangement it leaves', () => {
+    const merged = mergeTrackConfig(
+      track({ field: 'source', sort: ['b', 'a'], labels: { a: 'A' } }),
+      {
+        trackId: 't',
+        displays: [
+          { displayId: 't-wig', rows: { field: 'source', sort: ['a'] } },
+        ],
+      },
+      forms,
+    )
+    expect(merged.displays[0]!.rows).toEqual({
+      field: 'source',
+      sort: ['a'],
+      labels: { a: 'A' },
+    })
+  })
+
+  test("a field change leaves the base's arrangement to the merge", () => {
+    const delta = diffTrackConfig(
+      track({ field: 'source', sort: ['b', 'a'] }),
+      track({ field: 'tissue' }),
+      forms,
+    )
+    expect(delta.displays).toEqual([
+      { displayId: 't-wig', rows: { field: 'tissue' } },
+    ])
+    const merged = mergeTrackConfig(
+      track({ field: 'tissue', sort: ['liver', 'lung'] }),
+      delta,
+      forms,
+    )
+    expect(merged.displays[0]!.rows).toEqual({
+      field: 'tissue',
+      sort: ['liver', 'lung'],
+    })
+  })
+
+  test('a member outside the keyed ones stores alone', () => {
+    const delta = diffTrackConfig(
+      track({ field: 'source' }),
+      track({ field: 'source', step: 8 }),
+      forms,
+    )
+    expect(delta.displays).toEqual([{ displayId: 't-wig', rows: { step: 8 } }])
   })
 })

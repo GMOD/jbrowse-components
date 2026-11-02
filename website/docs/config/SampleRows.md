@@ -10,9 +10,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 The `rows` of a display whose rows are the file's samples, one each, with
 nothing else a row could be: the variant display and the
 multiple alignment display. `sample` is the one field, so the object is
-the arrangement a reader gives the rows, written whole as every display's
-`rows` is. Nothing needs `rows: "sample"`, and writing it clears the
-arrangement.
+the arrangement a reader gives the rows, and writing it changes only the
+members stated. Nothing needs `rows: "sample"`, which writes nothing.
 
 ## Example usage
 
@@ -33,7 +32,7 @@ arrangement.
 
 ## Config slots
 
-A setting written to it replaces it whole: a member left out returns to its default. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. One that changes `field` first clears `sort`, `labels`, `tree`, `treeProvenance`, `kept`, which name the old values, except those it states. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

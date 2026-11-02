@@ -18,7 +18,11 @@ import type { HydratedForms } from '@jbrowse/product-core'
 const asWritten: HydratedForms = {
   track: t => t,
   assembly: a => a,
-  displays: { wholeAt: () => false, canonical: (_, d) => d },
+  displays: {
+    wholeAt: () => false,
+    keyedAt: () => undefined,
+    canonical: (_, d) => d,
+  },
 }
 
 function hub(config: HostedBaseConfig) {
@@ -33,7 +37,11 @@ const stripsDefaults: HydratedForms = {
     Array.isArray(aliases) && aliases.length === 0
       ? rest
       : { ...rest, aliases },
-  displays: { wholeAt: () => false, canonical: (_, d) => d },
+  displays: {
+    wholeAt: () => false,
+    keyedAt: () => undefined,
+    canonical: (_, d) => d,
+  },
 }
 
 test('analyzeWebPortability reports an all-remote session as portable', () => {

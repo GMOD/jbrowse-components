@@ -195,6 +195,14 @@ function modelOf(type) {
   return asModelType(bare) ?? (element && asModelType(element))
 }
 
+// A keyed form (ADR-257) as plain data, its member list copied off the
+// schema's constant
+function writesOf(writes = 'members') {
+  return typeof writes === 'object'
+    ? { keyedBy: writes.keyedBy, keyed: [...writes.keyed] }
+    : writes
+}
+
 function slotsOf(type) {
   const model = modelOf(type)
   if (!model?.properties) {
@@ -229,7 +237,7 @@ function slotsOf(type) {
       schema: subMeta?.name,
       writes:
         subMeta && !prop.name?.endsWith('[]')
-          ? (subOptions.writes ?? 'members')
+          ? writesOf(subOptions.writes)
           : undefined,
       // A list of sub-schemas drawing entries of its own until a config
       // writes some (a display's default plot), which the validator's rules

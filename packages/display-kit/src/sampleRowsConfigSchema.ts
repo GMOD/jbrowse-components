@@ -9,9 +9,8 @@ import { rowsConfigSchema } from './rowsConfigSchema.ts'
  * The `rows` of a display whose rows are the file's samples, one each, with
  * nothing else a row could be: the variant display and the
  * multiple alignment display. `sample` is the one field, so the object is
- * the arrangement a reader gives the rows, written whole as every display's
- * `rows` is. Nothing needs `rows: "sample"`, and writing it clears the
- * arrangement.
+ * the arrangement a reader gives the rows, and writing it changes only the
+ * members stated. Nothing needs `rows: "sample"`, which writes nothing.
  *
  * #example
  * ```js

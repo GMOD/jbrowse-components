@@ -1,3 +1,4 @@
+import { isKeyedWrites } from '@jbrowse/add-track-core'
 import {
   getEnv,
   isArrayType,
@@ -42,6 +43,7 @@ import type {
   MergeConfigDef,
   TypeSlotDef,
 } from './types.ts'
+import type { KeyedWrites } from '@jbrowse/add-track-core'
 import type {
   IAnyType,
   ISimpleType,
@@ -101,9 +103,12 @@ export interface ConfigurationSchemaOptions<
    * the default, names members one by one and leaves the rest. `whole` replaces
    * the object, for one whose members hang together: `{ field }` written over
    * `{ field, sort }` is a facet with no order, where a merge would leave the
-   * old field's order standing.
+   * old field's order standing. A keyed form, `{ keyedBy, keyed }`, merges
+   * member by member except that a write changing `keyedBy` unsets the
+   * `keyed` members, which name that member's values, unless it states them
+   * (ADR-257).
    */
-  writes?: 'whole' | 'members'
+  writes?: 'whole' | 'members' | KeyedWrites
   /**
    * Makes this sub-schema a plot setting wherever a display declares it, one
    * "Edit plot..." edits: a channel, a band, or another setting that changes
@@ -242,6 +247,16 @@ function checkShorthand(
     throw new Error(
       `${modelName} declares a shorthand, so it declares writes: 'whole' where its members hang together and a settings bag replaces them at once, or 'members' where a bag names them one by one`,
     )
+  }
+  if (isKeyedWrites(writes)) {
+    const undeclared = [writes.keyedBy, ...writes.keyed].filter(
+      member => !(member in definition),
+    )
+    if (undeclared.length > 0) {
+      throw new Error(
+        `${modelName}'s keyed writes name ${undeclared.join(', ')}, which it does not declare`,
+      )
+    }
   }
 }
 

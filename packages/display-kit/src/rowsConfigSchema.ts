@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, keyedBase } from '@jbrowse/core/configuration'
 
 import {
   ROW_ARRANGEMENT_MEMBERS,
@@ -11,6 +11,12 @@ export interface RowsSetting {
   sort: readonly string[]
 }
 
+/** How `rows` is written: its arrangement names the values of `field`. */
+export const ROWS_WRITES = {
+  keyedBy: 'field',
+  keyed: ROW_ARRANGEMENT_MEMBERS,
+} as const
+
 /**
  * #config Rows
  * #category display
@@ -19,14 +25,6 @@ export interface RowsSetting {
  * reader gives the rows. A string is the field; the object adds the order,
  * the labels, the tree with its provenance and the kept rows, each by value
  * of the field.
- *
- * - A settings bag, an agent's plot, a session spec and `displayDefaults`
- *   write `rows` whole, so `rows: "source"` over arranged rows drops the
- *   arrangement. To keep it, write back the object a plot read returned.
- * - A dotted launch modifier, `rows.sort=…`, writes that member alone.
- * - A pick of another field in a menu or the Edit plot form drops the
- *   arrangement, which names the old field's values; the field in force
- *   keeps it.
  *
  * #example
  * ```js
@@ -64,31 +62,24 @@ export const rowsConfigSchema = ConfigurationSchema(
      */
     baseConfiguration: rowArrangementConfigSchema,
     shorthand: 'field',
-    writes: 'whole',
+    writes: ROWS_WRITES,
     plot: true,
   },
 )
 
 /**
- * The rows a pick of `field` writes over `current`: the field in force keeps
- * its arrangement, and another starts with none. The arrangement names the
- * old field's values, so kept it would relabel, hide or draw a tree over the
- * new field's rows wherever the two share a value.
+ * The rows a pick of `field` writes over `current`, by the keyed rule
+ * (ADR-257): the field in force keeps its arrangement, and another drops it,
+ * since kept it would relabel, hide or draw a tree over the new field's rows
+ * wherever the two share a value. A pick over no field keeps it.
  */
 export function rowsForField(
   current: Record<string, unknown>,
   field: string,
 ): Record<string, unknown> {
-  if (field === (current.field ?? '')) {
-    return current
-  }
-  const arrangement = new Set<string>(ROW_ARRANGEMENT_MEMBERS)
-  return {
-    ...Object.fromEntries(
-      Object.entries(current).filter(([key]) => !arrangement.has(key)),
-    ),
-    field,
-  }
+  return field === (current.field ?? '')
+    ? current
+    : { ...keyedBase(ROWS_WRITES, current, { field }), field }
 }
 
 /** The rows as read back: undefined while nothing is on rows. */

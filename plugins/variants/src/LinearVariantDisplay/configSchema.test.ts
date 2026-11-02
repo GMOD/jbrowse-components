@@ -239,7 +239,7 @@ describe('the display config schema', () => {
 describe('rows', () => {
   const configSchema = configSchemaFactory()
 
-  it('is the sample rows object, written whole', () => {
+  it('is the sample rows object, written member by member', () => {
     const config = configSchema.create({
       type: 'LinearVariantDisplay',
       displayId: 'test-rows-1',
@@ -248,8 +248,8 @@ describe('rows', () => {
     expect(readConfObject(config, ['rows', 'field'])).toBe('sample')
     applyConfSettings(config, { rows: { sort: ['a', 'b'] } })
     expect(readConfObject(config, ['rows', 'sort'])).toEqual(['a', 'b'])
-    expect(readConfObject(config, ['rows', 'tree'])).toBeUndefined()
-    expect(readConfObject(config, ['rows', 'labels'])).toEqual({})
+    expect(readConfObject(config, ['rows', 'tree'])).toBe('(b,a);')
+    expect(readConfObject(config, ['rows', 'labels'])).toEqual({ a: 'A' })
     expect(() =>
       configSchema.create({
         type: 'LinearVariantDisplay',

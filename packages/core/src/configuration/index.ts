@@ -76,9 +76,17 @@ export {
   getConf,
   mergeConfSettings,
   setConf,
+  keyedWritesAt,
   writesWholeAt,
 } from './getConf.ts'
 export type { ConfSettingsReport } from './getConf.ts'
+export {
+  type KeyedWrites,
+  changesKeyedField,
+  isKeyedWrites,
+  keyedBase,
+  staleKeyedMembers,
+} from '@jbrowse/add-track-core'
 export { fillLocations } from './fillLocations.ts'
 export {
   applyRetiredSpellings,

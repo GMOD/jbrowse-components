@@ -5765,7 +5765,16 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "LaneRows",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "labels",
+              "tree",
+              "treeProvenance",
+              "kept"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }
@@ -6765,7 +6774,16 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "SampleRows",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "labels",
+              "tree",
+              "treeProvenance",
+              "kept"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }
@@ -7459,7 +7477,16 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "QuantitativeRows",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "labels",
+              "tree",
+              "treeProvenance",
+              "kept"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }
@@ -8032,7 +8059,16 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "SampleRows",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "labels",
+              "tree",
+              "treeProvenance",
+              "kept"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }
@@ -9158,7 +9194,16 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "Rows",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "labels",
+              "tree",
+              "treeProvenance",
+              "kept"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }
@@ -9995,7 +10040,16 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "Rows",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "labels",
+              "tree",
+              "treeProvenance",
+              "kept"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }
@@ -10839,7 +10893,16 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "Rows",
-          "writes": "whole",
+          "writes": {
+            "keyedBy": "field",
+            "keyed": [
+              "sort",
+              "labels",
+              "tree",
+              "treeProvenance",
+              "kept"
+            ]
+          },
           "shorthand": {
             "string": "field"
           }

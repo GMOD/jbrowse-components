@@ -1,3 +1,5 @@
+import { isKeyedWrites, keyedBase } from '@jbrowse/add-track-core'
+
 import type { SlotEntry } from './types.ts'
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -61,7 +63,9 @@ export function liftToSnapshot(value: unknown, slots: SlotEntry[]): unknown {
 /**
  * Two settings bags as one, `over` written after `under` as the app folds
  * them (core's `mergeConfSettings`): a sub-schema writing its members one by
- * one merges member by member, a bare value its shorthand lifts included, and
+ * one merges member by member, a bare value its shorthand lifts included, a
+ * keyed one first dropping the keyed members a change of its field leaves
+ * stale (ADR-257), and
  * any other slot or a channel takes `over`'s value whole. A key no slot
  * declares, a plugin's, merges as plain JSON. A value merged with nothing
  * keeps its written spelling.
@@ -74,12 +78,19 @@ export function mergeBySlots(
   const out = { ...under }
   for (const [key, value] of Object.entries(over)) {
     const slot = slots.find(s => s.name === key)
-    const members = !slot || (slot.subSlots && slot.writes === 'members')
+    const writes = slot?.writes
+    const keyed = isKeyedWrites(writes) ? writes : undefined
+    const members =
+      !slot || (slot.subSlots && (writes === 'members' || keyed !== undefined))
     const prior = slot ? liftedBare(slot, out[key]) : out[key]
     const next = slot ? liftedBare(slot, value) : value
     out[key] =
       members && isRecord(prior) && isRecord(next)
-        ? mergeBySlots(prior, next, slot?.subSlots)
+        ? mergeBySlots(
+            keyed ? keyedBase(keyed, prior, next) : prior,
+            next,
+            slot?.subSlots,
+          )
         : value
   }
   return out

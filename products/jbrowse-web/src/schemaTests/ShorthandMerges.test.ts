@@ -1,3 +1,4 @@
+import { isKeyedWrites } from '@jbrowse/add-track-core'
 import PluginManager from '@jbrowse/core/PluginManager'
 import {
   getConfigurationSchemaMetadata,
@@ -17,7 +18,8 @@ import type { IAnyType } from '@jbrowse/mobx-state-tree'
 // `{ type, extent }` and drops `extent`. Every sub-schema a bag writes member
 // by member and that takes a bare value is found by walking the registered
 // displays, so a new one is covered the day it registers, and each merge path
-// the app has is held to it.
+// the app has is held to it. A keyed object's keyed members go with a new
+// field (ADR-257, `keyedWrites.test.ts`), so the member kept is another.
 
 interface Case {
   display: string
@@ -34,13 +36,17 @@ function casesUnder(display: string, schema: IAnyType, path: string[]): Case[] {
   if (!meta || meta.options.writes === 'whole') {
     return []
   }
+  const { writes } = meta.options
+  const keyed = new Set(isKeyedWrites(writes) ? writes.keyed : [])
   const own =
     path.length === 0
       ? []
       : Object.entries(shorthandTargets(meta)).flatMap(([form, target]) => {
           const other = Object.keys(meta.definition).find(
             key =>
-              key !== target && !(key in (meta.options.shorthandWith ?? {})),
+              key !== target &&
+              !keyed.has(key) &&
+              !(key in (meta.options.shorthandWith ?? {})),
           )
           return other
             ? [

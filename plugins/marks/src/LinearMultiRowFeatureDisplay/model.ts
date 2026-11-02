@@ -1,4 +1,8 @@
-import { ConfigurationReference, setConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  setConf,
+  changesKeyedField,
+} from '@jbrowse/core/configuration'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { getSession } from '@jbrowse/core/util'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
@@ -6,7 +10,7 @@ import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import { rowColorForOtherRows } from '@jbrowse/display-kit/rowColorConfigSchema'
-import { rowsForField } from '@jbrowse/display-kit/rowsConfigSchema'
+import { ROWS_WRITES } from '@jbrowse/display-kit/rowsConfigSchema'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { stateModelFactory as markStateModelFactory } from '../LinearMarkDisplay/model.ts'
@@ -117,14 +121,17 @@ export function stateModelFactory(
       /**
        * #action
        * One row per value of `field`; another field than the one in force
-       * drops the arrangement (`rowsForField`) and the row colors paired with
-       * the old rows' names (`rowColorForOtherRows`).
+       * drops the arrangement (the keyed rule, ADR-257) and the row colors
+       * paired with the old rows' names (`rowColorForOtherRows`).
        */
       setRowsField(field: string) {
-        const current = snapshotOf(self.conf.rows)
-        const next = rowsForField(current, field)
-        if (next !== current) {
-          setConf(self.conf, 'rows', next)
+        const changes = changesKeyedField(
+          ROWS_WRITES,
+          snapshotOf(self.conf.rows),
+          { field },
+        )
+        setConf(self.conf, ['rows', 'field'], field)
+        if (changes) {
           const rowColor = snapshotOf(self.conf.rowColor)
           const kept = rowColorForOtherRows(rowColor)
           if (kept !== rowColor) {

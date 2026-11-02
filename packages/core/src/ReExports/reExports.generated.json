@@ -891,6 +891,7 @@
         "bamIndexFields",
         "bamIndexSchema",
         "canonicalSpelling",
+        "changesKeyedField",
         "declaredSnapshot",
         "evaluateForFeature",
         "evaluateJexl",
@@ -915,7 +916,10 @@
         "isConfigurationSlot",
         "isConstantEntry",
         "isCsiLocation",
+        "isKeyedWrites",
         "isSlotDefinitionEntry",
+        "keyedBase",
+        "keyedWritesAt",
         "liftPlot",
         "liftRetiredSpellings",
         "makeSlotFacade",
@@ -939,6 +943,7 @@
         "shorthandTargetsOf",
         "slotChoices",
         "slotValueRefusal",
+        "staleKeyedMembers",
         "tabixIndexFields",
         "tabixIndexSchema",
         "tabixIndexSnapshot",
@@ -4940,6 +4945,7 @@
     "@jbrowse/display-kit/rowsConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "ROWS_WRITES",
         "rowsConfigSchema",
         "rowsForField",
         "rowsSettingOf"
