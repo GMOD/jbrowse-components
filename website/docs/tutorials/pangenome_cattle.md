@@ -15,9 +15,12 @@ graph, and `vg deconstruct` turns those paths into a VCF, so one locus reads
 both as a graph of where sequence is present and absent and as a callset listing
 which assemblies have it. We:
 
-- read a whole chromosome with one node per variant region
-- at _HSPA1A_, compare the graph's list of alleles with the callset
-- find three published breed and species variants in the callset
+- load the graph as a graph track, and open a whole chromosome with small
+  variants folded
+- at _HSPA1A_, load the deconstructed callset as a variant track with one row
+  per assembly, beside the allele inventory
+- add OMIA's curated variants as a track, and read three published breed and
+  species variants in the callset
 
 Every step starts from the graph's page on
 [genomes.jbrowse.org](https://genomes.jbrowse.org/pangenomes/bovine), which
@@ -52,10 +55,11 @@ conda install -c bioconda -c conda-forge htslib vg
 
 ## The data
 
-The [OMIA build script](#the-celtic-polled-allele) fetches OMIA's dump, and the
-track configs below read the hosted files by URL. For a graph of your own, swap
-the prefix in `uri` for your `gfa-to-tabix build`, as _Load the genome and the
-graph_ shows.
+The graph tracks read the hosted files by URL, and the OMIA track reads a file
+you build from OMIA's dump with
+[the script under The Celtic polled allele](#the-celtic-polled-allele). For a
+graph of your own, swap the prefix in `uri` for your `gfa-to-tabix build`, as
+[Load the genome and the graph](#load-the-genome-and-the-graph) shows.
 
 | What it is                                                    | File                                               |
 | ------------------------------------------------------------- | -------------------------------------------------- |
@@ -300,9 +304,9 @@ under the **Layout** row of its menu.
 
 <Figure caption="Upstream of KIT with the callset and the graph track, which draws the deletion as a dashed arc." src="/img/pangenome/bovine_kit.png" />
 
-Every other assembly carries the record's 20.6 kb deletion, in blue. Simmental's
-row is red, the record's second allele: 37.5 kb where the Hereford reference has
-20.6 kb, so Simmental carries more of the repeat than the reference.
+Every other assembly has the record's deletion, in blue. Simmental's row is red,
+the record's second allele, longer than the Hereford reference's, so Simmental
+has more copies of the repeat than the reference.
 
 ### A deletion of TAS2R46 in gaur
 
@@ -312,8 +316,8 @@ deletion in gaur that removes it. Open `chr5:98,575,000-98,615,000`.
 <Figure caption="TAS2R46 with the callset and the graph track, which draws the deletion as a dashed arc." src="/img/pangenome/bovine_tas2r46.png" />
 
 Angus, Piedmontese, Brahman and Nellore, two taurine and two indicine breeds,
-carry an allele about 1 kb longer than the reference's 17 kb, in blue. Only the
-gaur's allele, in red, deletes the span.
+have an allele slightly longer than the reference's, in blue. The gaur's allele,
+in red, deletes the span.
 
 ## Building the bovine graph files
 
@@ -338,9 +342,11 @@ chromosome lengths, and a
 hosted files records the source and every modification.
 
 Leonard et al. also built pggb and Minigraph-Cactus graphs of the same twelve
-assemblies, base-level GFAs with path lines and no rGFA tags. From those,
-`gfa-to-tabix build` writes an `SB:H:` bitmask per segment marking the
-assemblies that pass through it.
+assemblies, base-level GFAs with path lines. From one of those,
+`gfa-to-tabix build` records the assemblies that pass through each segment,
+which
+[a haplotypes-per-segment track](/docs/tutorials/pangenome_prepare_graph#which-haplotypes-walk-each-segment)
+colors by count.
 
 ## See also
 

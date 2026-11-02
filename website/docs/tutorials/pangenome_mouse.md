@@ -15,10 +15,12 @@ the panel. No locus list has been published for these strains, so we rank the
 graph's bubbles, the regions where the strains' paths split and rejoin, by how
 many segments each holds, and open the densest. We:
 
-- at _Nnt_, read a C57BL/6J deletion as sequence the other strains have
-- rank the bubbles in the graph and open the densest one that fits in a window,
-  at _Dock2_
-- look the _Dock2_ bubble up in the hosted index
+- load the graph and its bubbles as tracks on mm39
+- at _Nnt_, open the graph track with bubble halos, then the liftOver lanes that
+  name the strains
+- rank the bubbles file by segment count and open the densest that fits a
+  window, at _Dock2_
+- build a minigraph graph from strain assemblies of your own
 
 Every step starts from the mouse graph page on
 [genomes.jbrowse.org](https://genomes.jbrowse.org/pangenomes/mouse), which
@@ -59,9 +61,9 @@ The reference is UCSC's mm39 and the strains are the Mouse Genomes Project
 assemblies plus T2T builds of C57BL/6J and CAST/EiJ, as UCSC GenArk rehosts
 them.
 
-The track configs below read the index files by URL, so no download is needed.
-_Building a minigraph graph from the strain assemblies_ builds the files for
-strains of your own.
+Nothing to download: the track configs below read the index files by URL.
+[Building a minigraph graph](#building-a-minigraph-graph-from-the-strain-assemblies)
+builds the files for strains of your own.
 
 <details>
 <summary>The files</summary>
@@ -134,23 +136,24 @@ The bubbles track reads the same build's bubble index:
 
 ## Nnt: a C57BL/6J deletion that appears as an insertion
 
-Open
-[chr13 on the portal page](https://genomes.jbrowse.org/pangenomes/mouse/?region=chr13)
-and press **Open in JBrowse**, which opens the whole chromosome with the graph's
-variants under 10 kb folded into the reference. Type
-`chr13:119,440,000-119,600,000` to draw the segments there. Then:
-
-- in the graph track's menu, tick **Show → Show bubble halos**
-- turn on the bubbles track in the track selector
-
 C57BL/6J has a multi-exon deletion at _Nnt_ (nicotinamide nucleotide
 transhydrogenase) that abolishes the protein and makes C57BL/6J mice glucose
-intolerant. **GRCm39 is C57BL/6J**, so the backbone of this graph, the reference
-path, is the strain with the deletion. The portal's **Nnt** example names the
-deletion above its map and cites
-[Toye et al. 2005](https://doi.org/10.1007/s00125-005-1680-z). Its map calls the
-other strains' insertion "intact Nnt", and each launch from it opens a **Known
-alleles** row over the site.
+intolerant ([Toye et al. 2005](https://doi.org/10.1007/s00125-005-1680-z)).
+**GRCm39 is C57BL/6J**, so the backbone of this graph, the reference path, is
+the strain with the deletion, and the other strains' intact gene is an
+insertion. To see it:
+
+- Open
+  [chr13 on the portal page](https://genomes.jbrowse.org/pangenomes/mouse/?region=chr13)
+  and press **Open in JBrowse**, which opens the whole chromosome with the
+  graph's variants under 10 kb folded into the reference.
+- Type `chr13:119,440,000-119,600,000` to draw the segments there.
+- In the graph track's menu, tick **Show → Show bubble halos**.
+- Turn on the bubbles track in the track selector.
+
+The portal's **Nnt** example names the deletion above its map, calls the other
+strains' insertion "intact Nnt", and opens a **Known alleles** row over the site
+in each launch.
 
 <Figure caption="Nnt with the RefSeq genes and the bubbles track above the force-directed graph track. Of its four haloed bubbles, the one inside Nnt, labelled as a 16.8 kb insertion with five alleles, is the sequence the other strains have and C57BL/6J lacks." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
@@ -163,7 +166,7 @@ turns on **mm39 vs 76 genomes (liftOver, multi-way)** at the same gene.
 
 ## Ranking the graph's bubbles to find Dock2 {#finding-the-loci}
 
-The whole-chromosome overview records how many segments each bubble holds.
+The bubbles file's fourth column records how many segments each bubble holds.
 Ranking the bubbles that overlap a gene by that count recovers the vomeronasal
 receptor and Speer families and the immunoglobulin heavy chain locus, each too
 wide for one window. _Dock2_ is the densest bubble that fits in one, inside one
@@ -185,9 +188,8 @@ To open the _Dock2_ bubble:
 
 <Figure caption="The Dock2 intron bubble in the bubbles track, the allele inventory and the graph. Each charcoal loop is sequence the reference lacks." src="/img/pangenome/mouse_dock2.png" />
 
-Which strains have an allele is absent from the graph, because `minigraph`
-writes no path lines. The allele inventory's `firstSeenIn` lists the first
-assembly to contribute it.
+The allele inventory's `firstSeenIn` names the first assembly to contribute each
+allele.
 
 ## Building a minigraph graph from the strain assemblies
 
