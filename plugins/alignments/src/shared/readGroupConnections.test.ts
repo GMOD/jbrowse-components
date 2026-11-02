@@ -345,6 +345,17 @@ describe('resolveReadGroup loneMateLink', () => {
     ).toEqual(['chain:a1', 'chain:a2', 'lone:a1'])
   })
 
+  // A supplementary's RNEXT names the mate of the whole fragment, which is
+  // joined to the off-screen primary, not to this piece.
+  test('does NOT fire when the one mate on screen is only a supplementary', () => {
+    expect(
+      resolveReadGroup(
+        entries([{ id: 'a2', flags: SUPP_1, start: 500, end: 600, strand: 1 }]),
+        hooks,
+      ),
+    ).toEqual(['chain:a2'])
+  })
+
   test('does NOT fire when both mates are present', () => {
     expect(
       resolveReadGroup(

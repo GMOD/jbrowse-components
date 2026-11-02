@@ -40,6 +40,8 @@ function arcCategory(
       // carried for the concordant-arc filter, which coloring never consults
       flags: 0,
       stats,
+      p1Clip: 0,
+      p2Clip: 0,
     }),
   )
 }

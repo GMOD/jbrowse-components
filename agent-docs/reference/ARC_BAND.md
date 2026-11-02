@@ -89,6 +89,35 @@ keep MAPQ-0 reads; the gate is for the family the floor above already treats
 as mismapping-prone. Without MQ tags a mate counts as placed, as `svSignal`
 counts it.
 
+**Support counts fragments, not records.** A mate link whose two ends' unclipped
+5' positions and strands repeat another's (`fragmentEndsKey`: aligned 5' edge,
+the clip before it, strand; `PairedPendingArc.p1Clip`) is a PCR or optical
+copy. It still draws and keeps its cluster and QNAME, so `belowFloor` and the
+connectors agree, but adds nothing to a cluster's size or a coalesced arc's
+support. The key is built only where connections already coincide, an
+interchromosomal cluster of two or more or a second connection on one `arcKey`,
+never in the per-read collection loop. The clip is in the key because every
+read crossing one junction shares the aligned edge there: without it a
+breakpoint's distinct molecules collapse. Split junctions are never copies; reads agreeing on
+one to the base are its evidence. HG008-T Illumina at 195x is four lanes merged
+and never duplicate-marked (no 0x400 flags); there the copies were 50 of the 51
+ticks this removed at chr19:11.17-11.245 Mb and 47 of 51 at CDKN2A: records
+sharing one start, CIGAR and mate position, most on one flowcell tile.
+
+**A supplementary with no primary in view draws no mate link**
+(`resolveReadGroup`). Its RNEXT names the whole fragment's mate, joined to the
+off-screen primary, so a tick from it claims an adjacency the molecule does not
+have; its own junction draws through the SA chain. At chr19:11,187,840, where
+34 bp supplementaries of chr15 reads land, the tick named 13 partner loci
+beside chr15 (chr14, chr1, chr7, ...), each the mate of a read whose primary is
+on chr15; it now names chr15 alone, the split reads' junction.
+
+**MAPQ 20 was measured and declined.** It thinned the partner band further, but
+a tick at MAPQ 1-19 is uncertain, not wrong, and minimap2 scores short
+supplementaries below 20, so it would hide real templated-insertion pieces on
+long reads (COLO829's der(3)). The two rules above each remove a tick the reads
+show to be false.
+
 ## Support, and why a tick can hide behind an arc's foot
 
 **A tick is solid, and nothing in the mark separates it from an arc's foot.** The

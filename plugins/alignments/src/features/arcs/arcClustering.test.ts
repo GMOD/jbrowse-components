@@ -25,6 +25,8 @@ function link(p1Ref: string, p1Bp: number, p2Ref: string, p2Bp: number) {
     interchrom: p1Ref !== p2Ref,
     flags: 1,
     stats: undefined,
+    p1Clip: 0,
+    p2Clip: 0,
   } satisfies PendingArc
 }
 

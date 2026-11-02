@@ -459,7 +459,13 @@ export function resolveReadGroup<E extends MinEntry, T>(
       out.push(...mateLink(primaryOf(first), primaryOf(second)))
     } else {
       // `hasPaired` guarantees a survivor, so exactly one side is populated.
-      out.push(...loneMateLink(primaryOf(first.length > 0 ? first : second)))
+      // Only its PRIMARY can stand for the pair: a supplementary's RNEXT names
+      // the mate of the whole fragment, which is joined to the primary, not to
+      // this piece, and its own junction already draws through the SA chain.
+      const primary = (first.length > 0 ? first : second).find(
+        e => !isSupplementary(e),
+      )
+      out.push(...(primary ? loneMateLink(primary) : []))
     }
   }
   return out

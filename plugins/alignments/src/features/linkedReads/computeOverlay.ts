@@ -124,8 +124,10 @@ export function enumerateConnectorPairs(
  * Whether the connectors draw a pair under `connectionFilter`, by the test
  * the arc band applies to the same connection. A connector joins two laid-out
  * reads, so it is never an off-screen mate, and it crosses chromosomes when
- * its two ends' regions do. Such a connection draws only between placed
- * records (`isPlacedRead`), and a mate link only when the band's collection
+ * its two ends' regions do. A connection that paints inter-chromosomal (its
+ * ends cross chromosomes, or its records name a mate on another, as the band
+ * tests it) draws only between placed records
+ * (`isPlacedRead`), and a mate link only when the band's collection
  * stage counted `minInterchromReads` at its breakpoint, the QNAMEs
  * `belowFloor` returns; a split read is exempt from that floor, as on the band.
  */
@@ -136,10 +138,11 @@ export function connectorFilterOf(
 ) {
   return ({ e1, e2, c }: LinkedPair) => {
     const crosses = crossesChromosomes(e1, e2, refNameAt)
+    const paintsInterchrom = crosses || c.interchrom
     return (
-      passesCategory(crosses || c.interchrom, interchrom) &&
+      passesCategory(paintsInterchrom, interchrom) &&
       passesCategory(false, offscreenMates) &&
-      !(crosses && !(isPlacedRead(e1) && isPlacedRead(e2))) &&
+      !(paintsInterchrom && !(isPlacedRead(e1) && isPlacedRead(e2))) &&
       !(
         crosses &&
         !c.isSplit &&

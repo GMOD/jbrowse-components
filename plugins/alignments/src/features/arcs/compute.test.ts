@@ -187,6 +187,8 @@ describe('computeArcsFromPileupData', () => {
       ...namesToBlock(['readA', 'readB', 'readC']),
       ...nextRefsToTable(['chr2', 'chr2', 'chr2']),
       readNextPositions: new Uint32Array([5000, 5000, 5000]),
+      // distinct molecules clipped differently at the junction, not copies
+      readClipAtStart: new Uint32Array([0, 1, 2]),
     })
 
     const result = computeArcsFromPileupData(
@@ -228,6 +230,8 @@ describe('computeArcsFromPileupData', () => {
       ...namesToBlock(['readA', 'readB', 'readC']),
       ...nextRefsToTable(['chr2', 'chr2', 'chr2']),
       readNextPositions: new Uint32Array([5000, 900_000, 900_000]),
+      // distinct molecules clipped differently at the junction, not copies
+      readClipAtStart: new Uint32Array([0, 1, 2]),
     })
 
     const result = computeArcsFromPileupData(
@@ -653,10 +657,13 @@ describe('computeArcsFromPileupData', () => {
         ...namesToBlock(starts.map((_, i) => `read${i}`)),
         ...nextRefsToTable(starts.map(() => 'chr2')),
         readNextPositions: new Uint32Array(starts.map(() => mateBp)),
+        // distinct molecules clipped differently at the junction, not copies
+        readClipAtStart: new Uint32Array(starts.map((_, i) => i)),
       })
     }
     const run = (
       regions: typeof bothContigs,
+
       data: PileupDataResult,
       cloud = false,
     ) =>
@@ -803,11 +810,15 @@ describe('computeArcsFromPileupData', () => {
     // describes the pair, not the segment — so a chimeric read carrying
     // split-read evidence must not be filtered away as routine. Same rule, same
     // reason, as the read filter's.
-    test('a supplementary segment is never ordinary', () => {
+    // A supplementary's RNEXT names the mate of the whole fragment, joined to
+    // the primary rather than to this piece, so with no primary in view there
+    // is no pair to draw at all, ordinary or not.
+    test('a supplementary with no primary in view draws no mate link', () => {
       const data = pairs([
         { flags: PROPER | SAM_FLAG_SUPPLEMENTARY, orientation: 1 },
       ])
-      expect(run(data, false).arcs).toHaveLength(1)
+      expect(run(data, true).arcs).toHaveLength(0)
+      expect(run(data, false).arcs).toHaveLength(0)
     })
 
     test('the ordinary ones go while the evidence stays, in one feed', () => {
@@ -909,6 +920,8 @@ describe('computeArcsFromPileupData', () => {
       ...namesToBlock(['readA', 'readB', 'readC']),
       ...nextRefsToTable(['chr2', 'chr2', 'chr2']),
       readNextPositions: new Uint32Array([5000, 50_000, 50_000]),
+      // distinct molecules clipped differently at the junction, not copies
+      readClipAtStart: new Uint32Array([0, 1, 2]),
     })
 
     const { lines } = computeArcsFromPileupData(
@@ -1108,6 +1121,59 @@ describe('computeArcsFromPileupData', () => {
       expect(lines).toHaveLength(ticks)
     },
   )
+
+  // An unmarked file's PCR and optical copies: one fragment read several times
+  // is one fragment of support, however many records carry it.
+  describe('a copy of a fragment adds no support', () => {
+    function toChr2(clips: number[]) {
+      return makePileupData({
+        readPositions: new Uint32Array(clips.flatMap(() => [1000, 1100])),
+        readFlags: new Uint16Array(clips.length).fill(SAM_FLAG_PAIRED),
+        readStrands: new Int8Array(clips.length).fill(1),
+        ...namesToBlock(clips.map((_, i) => `pair${i}`)),
+        ...nextRefsToTable(clips.map(() => 'chr2')),
+        readNextPositions: new Uint32Array(clips.map(() => 9000)),
+        readClipAtStart: new Uint32Array(clips),
+      })
+    }
+    const run = (data: PileupDataResult) =>
+      computeArcsFromPileupData(
+        new Map([[0, data]]),
+        [{ refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 }],
+        { filter: { minInterchromReads: 2 } },
+      ).lines
+
+    test('two copies of one fragment stay below a floor of 2', () => {
+      expect(run(toChr2([0, 0]))).toEqual([])
+    })
+
+    test('two molecules clipped differently at one junction clear it', () => {
+      expect(run(toChr2([0, 30])).map(l => l.support)).toEqual([2, 2])
+    })
+
+    test('three records of two molecules count 2', () => {
+      expect(run(toChr2([0, 0, 30])).map(l => l.support)).toEqual([2, 2])
+    })
+
+    test('same-chromosome copies coalesce into one arc of support 1', () => {
+      const data = makePileupData({
+        readPositions: new Uint32Array([1000, 1100, 1000, 1100]),
+        readFlags: new Uint16Array(2).fill(SAM_FLAG_PAIRED),
+        readStrands: new Int8Array([1, 1]),
+        readInsertSizes: new Float32Array([5000, 5000]),
+        readPairOrientations: new Uint8Array([1, 1]),
+        ...namesToBlock(['pairA', 'pairB']),
+        ...nextRefsToTable(['chr1', 'chr1']),
+        readNextPositions: new Uint32Array([6000, 6000]),
+      })
+      const { arcs } = computeArcsFromPileupData(
+        new Map([[0, data]]),
+        [{ refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 }],
+        { filter: { interchrom: 'exclude' } },
+      )
+      expect(arcs.map(a => a.support)).toEqual([1])
+    })
+  })
 
   // ONE DONOR, TWO ACCEPTORS — K562's BCR-ABL1 in miniature, which is one donor
   // and 24 acceptors spread over ~154 kb (reference/DEMO_DATASETS.md). A split
@@ -1627,7 +1693,7 @@ describe('computeArcsFromPileupData', () => {
 
   test('identical read-cloud pairs still coalesce into one supported arc', () => {
     // The converse of the test above, and the reason `yBp` can be keyed on at
-    // all: the jitter hashes the endpoints, so two genuinely identical pairs
+    // all: the jitter hashes the endpoints, so two pairs on identical endpoints
     // land on the same Y and still sum.
     const data = makePileupData({
       readPositions: new Uint32Array([0, 100, 0, 100]),
@@ -1638,6 +1704,8 @@ describe('computeArcsFromPileupData', () => {
       ...namesToBlock(['readA', 'readB']),
       ...nextRefsToTable(['chr1', 'chr1']),
       readNextPositions: new Uint32Array([5000, 5000]),
+      // distinct molecules clipped differently at the junction, not copies
+      readClipAtStart: new Uint32Array([0, 1]),
     })
     const { arcs } = computeArcsFromPileupData(
       new Map([[0, data]]),
@@ -2968,6 +3036,8 @@ describe('identical arcs coalesce and carry their support', () => {
       ...namesToBlock(starts.map((_, i) => `read${i}`)),
       ...nextRefsToTable(starts.map(() => 'chr1')),
       readNextPositions: new Uint32Array(starts.map(() => mateBp)),
+      // distinct molecules clipped differently at the junction, not copies
+      readClipAtStart: new Uint32Array(starts.map((_, i) => i)),
     })
   }
   const regions = [
@@ -3036,6 +3106,8 @@ describe('identical arcs coalesce and carry their support', () => {
             ...namesToBlock(['a', 'b', 'c', 'd']),
             ...nextRefsToTable(Array.from({ length: 4 }, () => 'chr1')),
             readNextPositions: new Uint32Array([2000, 2000, 1000, 1000]),
+            // distinct molecules clipped differently at the junction, not copies
+            readClipAtStart: new Uint32Array([0, 1, 2, 3]),
           }),
         ],
       ]),
@@ -3093,6 +3165,8 @@ describe('identical arcs coalesce and carry their support', () => {
       ...namesToBlock(['a', 'b', 'c', 'rr']),
       ...nextRefsToTable(new Array(4).fill('chr1')),
       readNextPositions: new Uint32Array([2000, 2000, 2000, 2500]),
+      // distinct molecules clipped differently at the junction, not copies
+      readClipAtStart: new Uint32Array([0, 1, 2, 0]),
     })
     const { arcs } = computeArcsFromPileupData(
       new Map([[0, data]]),

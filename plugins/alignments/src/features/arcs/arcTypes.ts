@@ -281,9 +281,38 @@ export interface PairedPendingArc extends PendingArcEndpoints {
   // the read under the arc is filled by. Each region's fetch samples its own,
   // so one pooled band colored an arc by whichever region loaded first.
   stats: InsertSizeBand | undefined
+  // The clip before each end's 5' edge, which with the edge and strand is the
+  // unclipped 5' position a PCR or optical copy reproduces (`fragmentEndsKey`).
+  // Every read crossing one junction shares the aligned edge there, so the clip
+  // is what tells a breakpoint's molecules apart. `MATE_CLIP_UNKNOWN` for a
+  // mate known only from PNEXT.
+  p1Clip: number
+  p2Clip: number
 }
 
 export type PendingArc = SplitPendingArc | PairedPendingArc
+
+export const MATE_CLIP_UNKNOWN = -1
+
+/**
+ * What a copy of this connection's fragment shares with it: both ends' edges,
+ * strands and clips, in an order-free form, since which end of a copy was read
+ * first is chance. Asked only where connections already coincide (a cluster, a
+ * coalesced arc), so the hot collection loop builds none. A split junction is
+ * never a copy: reads agreeing on it to the base are its evidence.
+ */
+export function fragmentEndsKey(arc: PendingArc, index: number) {
+  return arc.isSplit
+    ? `split\0${index}`
+    : orderFree(
+        `${arc.p1Ref}\0${arc.p1Bp}\0${arc.p1Strand}\0${arc.p1Clip}`,
+        `${arc.p2Ref}\0${arc.p2Bp}\0${arc.p2Strand}\0${arc.p2Clip}`,
+      )
+}
+
+function orderFree(a: string, b: string) {
+  return a < b ? `${a}\0${b}` : `${b}\0${a}`
+}
 // Carries `refName` — unlike the connector mark's entry — because this path
 // compares a fetched segment against one named only by an SA tag or RNEXT, and
 // same-chromosome-ness is the whole difference between an arc and a connector

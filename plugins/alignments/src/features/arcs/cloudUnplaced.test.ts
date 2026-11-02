@@ -137,6 +137,8 @@ describe('a connection the view can place only one end of', () => {
       ...namesToBlock(['readA', 'readB']),
       ...nextRefsToTable(['chr1', 'chr1']),
       readNextPositions: new Uint32Array([50_001_000, 50_001_000]),
+      // distinct molecules clipped differently at the junction, not copies
+      readClipAtStart: new Uint32Array([0, 1]),
     })
     const { arcs } = runCloud(two, [region(0, 20_000)])
     expect(arcs).toHaveLength(1)

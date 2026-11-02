@@ -90,10 +90,15 @@ the reviews to settle the open calls; built in
 - Interchromosomal connections draw only between placed records (MAPQ above
   0; `reference/ARC_BAND.md`), so no tick draws over "No SV evidence" from a
   read `svSignal` refuses: on HG008-T Illumina every such tick had come from a
-  MAPQ-0 read, 173 records at CDKN2A and 163 at chr19:11.2 Mb. The "elsewhere"
-  band itself stays busy in a file with no MQ tags: its reads are placed and
-  their mates' placement unknown, and a higher `breakpoint.reads` floor thins
-  CDKN2A's ticks but not chr19's, whose mismapped clusters run past 5 reads.
+  MAPQ-0 read, 173 records at CDKN2A and 163 at chr19:11.2 Mb. That gate left
+  the "elsewhere" band as busy as before. Two kinds of tick there were false: copies
+  of one fragment counted as independent reads in a file never
+  duplicate-marked, and supplementaries with no primary in view drawing their
+  fragment's mate as their own partner. Counting fragments and dropping that
+  mate link removed 51 of 161 ticks at chr19:11.17-11.245 Mb and 51 of 149 at
+  CDKN2A, every one traced to those records (ARC_BAND.md). What remains is
+  placed evidence from two or more molecules, or a split read, and telling a
+  real event from a library chimera there is SV calling (ADR-140).
 - Checked on real data (2026-11-02), every read of a slice in one band but the
   two above. Distinct reads per band:
 

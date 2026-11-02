@@ -1,4 +1,5 @@
 import { getOrCreate } from '../../shared/util.ts'
+import { fragmentEndsKey } from './arcTypes.ts'
 
 import type { PendingArc } from './arcTypes.ts'
 
@@ -304,7 +305,14 @@ export function clusteredInterchromSupport(
   for (const { windowBp, entries } of byContigPair.values()) {
     for (const cluster of linkWithinWindow(entries, windowBp)) {
       const id = sizeOf.length
-      sizeOf.push(cluster.length)
+      // Fragments, not records: a PCR or optical copy shares both coordinates
+      // with its original, so lands in its cluster, and adds nothing to it.
+      sizeOf.push(
+        cluster.length === 1
+          ? 1
+          : new Set(cluster.map(m => fragmentEndsKey(arcs[m.index]!, m.index)))
+              .size,
+      )
       for (const m of cluster) {
         clusterOf[m.index] = id
       }

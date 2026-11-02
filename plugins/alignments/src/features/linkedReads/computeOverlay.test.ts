@@ -1520,6 +1520,25 @@ describe('connectorFilterOf', () => {
     },
   )
 
+  // the band refuses this pair by its records' RNEXT, so the connector, which
+  // paints it inter-chromosomal by the same records, must refuse it too
+  test('a mate link on one contig naming a mate elsewhere does not draw from a MAPQ-0 record', () => {
+    const data = twoRegions(1)
+    data.get(1)!.readMapqs[0] = 0
+    const { overlayPairs } = resolveConnectors(data, {
+      lines: true,
+      scope: 'all',
+      admits: connectorFilterOf(
+        { minInterchromReads: 2 },
+        () => 'chr1',
+        () => new Set<string>(),
+      ),
+    })
+    expect(
+      overlayPairs.map(({ e1 }) => readNameAt(e1.data, e1.readIdx)).toSorted(),
+    ).toEqual(['r'])
+  })
+
   test('the floor drops a mate link, and a split read is exempt', () => {
     expect(drawn({}, { belowFloor: () => new Set(['m', 'r']) })).toEqual({
       lines: 1,

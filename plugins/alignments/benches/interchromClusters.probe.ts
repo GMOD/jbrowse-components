@@ -206,6 +206,8 @@ async function main() {
       interchrom: true,
       flags: r.flags,
       stats: undefined,
+      p1Clip: 0,
+      p2Clip: 0,
     })
   }
   console.log(

@@ -22,6 +22,7 @@ import {
 import { isMatePlacedRead, isPlacedRead } from '../../shared/placedReads.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getOrCreate } from '../../shared/util.ts'
+import { MATE_CLIP_UNKNOWN } from './arcTypes.ts'
 
 import type { WorkerPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
@@ -362,6 +363,8 @@ export function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
     flags: flagsOf(src),
     stats: src.data.insertSizeStats,
     offScreen: false,
+    p1Clip: clipAt(e1),
+    p2Clip: clipAt(e2),
   }
 }
 
@@ -396,7 +399,7 @@ export function mateLinkArc(e1: ReadEntry, e2: ReadEntry): PairedPendingArc {
 export function offScreenMateArcs(
   entry: ReadEntry,
   ctx: ArcChainContext,
-): PendingArc[] {
+): PairedPendingArc[] {
   const { data, readIdx, refName } = entry
   const mateRef = nextRefAt(data, readIdx)
   const mateBp = data.readNextPositions?.[readIdx]
@@ -445,6 +448,8 @@ export function offScreenMateArcs(
       stats: data.insertSizeStats,
       isSplit: false,
       offScreen: true,
+      p1Clip: clipAt(entry),
+      p2Clip: MATE_CLIP_UNKNOWN,
     },
   ]
 }

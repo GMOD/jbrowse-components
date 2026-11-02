@@ -27,7 +27,11 @@ import {
   nearLoadedRegion,
   regionIndexOf,
 } from './arcRegions.ts'
-import { CLOUD_JITTER_BOUNDS, ordinaryPairsShown } from './arcTypes.ts'
+import {
+  CLOUD_JITTER_BOUNDS,
+  fragmentEndsKey,
+  ordinaryPairsShown,
+} from './arcTypes.ts'
 import {
   ARC_SHAPE_ARC,
   ARC_SHAPE_FLAT,
@@ -250,6 +254,22 @@ function resolveArcs(
   // sight and the later `support++` mutates that same object, so the count
   // cannot end up on a copy in the other half.
   const byKey = new Map<string, ComputedArc>()
+  // The fragments behind each arc, so a PCR or optical copy adds no support
+  // (`fragmentEndsKey`). Built only once a second connection reaches a key,
+  // from the index of the first, so an arc of one read keys nothing.
+  const firstAt = new Map<string, number>()
+  const fragmentsAt = new Map<string, Set<string>>()
+  function addsFragment(key: string, index: number) {
+    const first = firstAt.get(key)!
+    const fragments =
+      fragmentsAt.get(key) ??
+      new Set([fragmentEndsKey(pendingArcs[first]!, first)])
+    const fragment = fragmentEndsKey(pendingArcs[index]!, index)
+    const added = !fragments.has(fragment)
+    fragments.add(fragment)
+    fragmentsAt.set(key, fragments)
+    return added
+  }
   // The tick, the clusters already counted into it, and whether any of them is
   // exempt from the floor — see `pushLine`. All three are off `ComputedLine`
   // because they are bookkeeping for the coalescing rather than fields of the
@@ -372,10 +392,10 @@ function resolveArcs(
     arc: Omit<ComputedArc, 'support' | 'key'>,
     p1RegionIndex: number | undefined,
     p2RegionIndex: number | undefined,
-    // The two arm directions, carried through from the producer that chose the
-    // endpoints. Taken here rather than on `arc` because they are only kept on
-    // the cross-region half — see `CrossRegionArc.p1Dir`.
-    feetDirs: { p1Dir: number; p2Dir: number },
+    // The index of the connection in `pendingArcs`: its two arm directions,
+    // kept only on the cross-region half (`CrossRegionArc.p1Dir`), and the
+    // fragment it counts as.
+    pendingIndex: number,
     // The reads this connection already stands for, when its family cannot be
     // counted a read at a time — `ComputedArc.support`. Absent means COUNT: each
     // connection is one more read agreeing on this junction to the base.
@@ -406,11 +426,12 @@ function resolveArcs(
       // than a shortcut: every connection coalescing onto one arc shares both
       // coordinates, so it is in the same cluster and arrived with the same
       // number. One arc is one junction is one cluster.
-      if (clusterSupport === undefined) {
+      if (clusterSupport === undefined && addsFragment(key, pendingIndex)) {
         seen.support++
       }
       return
     }
+    firstAt.set(key, pendingIndex)
     const computed: ComputedArc = {
       ...arc,
       support: clusterSupport ?? 1,
@@ -440,8 +461,8 @@ function resolveArcs(
         Object.assign(computed, {
           p1RegionIndex,
           p2RegionIndex,
-          p1Dir: feetDirs.p1Dir,
-          p2Dir: feetDirs.p2Dir,
+          p1Dir: pendingArcs[pendingIndex]!.p1Dir,
+          p2Dir: pendingArcs[pendingIndex]!.p2Dir,
         }),
       )
     } else {
@@ -550,7 +571,7 @@ function resolveArcs(
             },
             p1RegionIndex,
             p2RegionIndex,
-            arc,
+            i,
             support,
           )
         }
@@ -695,7 +716,7 @@ function resolveArcs(
       },
       unplaced ? footRegionIndex : p1RegionIndex,
       unplaced ? footRegionIndex : p2RegionIndex,
-      arc,
+      i,
       undefined,
       unplaced ? { p1Ref, p1Bp, p2Ref, p2Bp } : undefined,
     )
