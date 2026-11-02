@@ -164,12 +164,13 @@ export function matePanelSpan(
  * one takes a tick.
  *
  * IT TAKES THE FOLLOW ANCHOR FIRST, when the stack is following and the clicked
- * panel is not already the anchor. A panel the follow MOVES is re-asserted onto
- * the anchor's mapping the moment it settles, and the navigation below is what
- * wakes that pass — so without the take this ran, moved the neighbour, and the
- * follow pulled it straight back. Anchoring the clicked panel is what the click
- * MEANS: this panel stays, the others come to it, which is the item's own label.
- * `showOffscreenMateContig` states the rule at length.
+ * panel is not already the anchor: this panel stays, the others come to it,
+ * which is the item's own label. In the app the press that opened the menu has
+ * already made this panel the anchor (`RowTouchArea`), so the take finds
+ * nothing to do; it is for a caller that runs the item without a press, where
+ * the moved neighbour would otherwise be pulled back onto the old anchor's
+ * mapping at that anchor's next move. `showOffscreenMateContig` states the rule
+ * at length.
  *
  * `beginStackMove` decides whether the stack has a follow to take at all.
  * `movePanelsToSpan` owns the rest: the release when nothing landed, and the
