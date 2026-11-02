@@ -1,4 +1,8 @@
-import { keyedWritesAt, mergeConfSettings } from '@jbrowse/core/configuration'
+import {
+  keyedWritesAt,
+  mergeConfSettings,
+  writesWholeAt,
+} from '@jbrowse/core/configuration'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import {
@@ -346,14 +350,29 @@ export async function launchTrackInit(
   }
 }
 
+// the named members of a keyed object as configured, undefined when it
+// states none of them
+function keyedSeed(member: unknown, names: string[]) {
+  const configured = isStateTreeNode(member)
+    ? getSnapshot<Record<string, unknown>>(member)
+    : {}
+  const seed = Object.fromEntries(
+    names.flatMap(name =>
+      configured[name] === undefined ? [] : [[name, configured[name]]],
+    ),
+  )
+  return Object.keys(seed).length > 0 ? seed : undefined
+}
+
 /**
  * Write a track's `memberWrites` onto what its display in `view` already has,
  * after every other modifier, so a member write keeps the rest of the setting
  * whatever order the command line gives them in. A display replaces a color
  * or facet object whole, which is why these cannot ride in on the launch
- * snapshot. A keyed object (`rows`, ADR-257) seeds only its field: seeded
+ * snapshot. A keyed object (`rows`, ADR-257) seeds only its field and the
+ * objects written whole that the writes reach, such as `rows.color`: seeded
  * whole it would restate the arrangement a field write must drop, and
- * unseeded a spec holding the patch would lose the field.
+ * unseeded a spec holding the patch would lose the field and the channel.
  */
 export function writeMembers(
   view: Pick<ModifierView, 'tracks' | 'showTrack'>,
@@ -371,19 +390,17 @@ export function writeMembers(
   }
   const { configuration } = track.activeDisplay
   const configured: Record<string, unknown> = getSnapshot(configuration)
-  const patch = memberPatch(members, root => {
+  const type = getType(configuration)
+  const patch = memberPatch(members, (root, reached) => {
     // a list at a default the snapshot strips, Manhattan's marks, still seeds
     // the write, so `marks.0.mark=bar` edits the mark drawn
     const member = configuration[root]
-    const keyed = keyedWritesAt(getType(configuration), [root])
-    const field =
-      keyed && isStateTreeNode(member)
-        ? getSnapshot<Record<string, unknown>>(member)[keyed.keyedBy]
-        : undefined
+    const keyed = keyedWritesAt(type, [root])
     return keyed
-      ? field === undefined
-        ? undefined
-        : { [keyed.keyedBy]: field }
+      ? keyedSeed(member, [
+          keyed.keyedBy,
+          ...reached.filter(m => writesWholeAt(type, [root, m])),
+        ])
       : (configured[root] ??
           (isStateTreeNode(member) && isArrayType(getType(member))
             ? getSnapshot(member)

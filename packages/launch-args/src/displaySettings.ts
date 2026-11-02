@@ -931,15 +931,19 @@ export function memberWrites(displayType: string | undefined, opts: string[]) {
 /**
  * The patch a track's member writes make: each write applied over the value
  * `configured` gives the setting it names, so the rest of that setting stays.
+ * `configured` also hears the members of the setting the writes reach.
  */
 export function memberPatch(
   members: string[],
-  configured: (setting: string) => unknown,
+  configured: (setting: string, reached: string[]) => unknown,
 ) {
   const writes = members.map(slotWrite)
   const seed = Object.fromEntries(
     [...new Set(writes.map(write => write.segments[0]!))].flatMap(setting => {
-      const value = configured(setting)
+      const reached = writes.flatMap(({ segments: [root, member] }) =>
+        root === setting && member !== undefined ? [member] : [],
+      )
+      const value = configured(setting, [...new Set(reached)])
       return value === undefined ? [] : [[setting, value]]
     }),
   )

@@ -158,7 +158,8 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   all four and expects one result.
 - A plot read never folds a keyed object to its shorthand, so `plot.rows.step`
   is always reachable; a launch modifier lifts `rows=source` beside a
-  `rows.*` member to `{ field }`, and `memberPatch` seeds only whole objects.
+  `rows.*` member to `{ field }`, and `writeMembers` seeds a keyed object
+  with its field and the whole members a write reaches (`rows.color`).
 - Edit plot's whole write applies the keyed reset when its `field` changes,
   counting a keyed member whose text equals the read as unstated, since a
   plot read states every member.
