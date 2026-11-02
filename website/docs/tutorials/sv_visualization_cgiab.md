@@ -8,19 +8,21 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-The Cancer Genome in a Bottle project publishes HG008, a matched tumor/normal
-PDAC cell line, as PacBio HiFi reads, a draft SV and CNV benchmark, and a
-telomere-to-telomere assembly of the tumor. We read its structural variants
-against the reads and the assembly; [part 2](/docs/tutorials/cnv_cgiab) reads
-its copy number. We:
+The Cancer Genome in a Bottle (C-GIAB) project publishes HG008, a pancreatic
+ductal adenocarcinoma (PDAC) cell line and its donor's normal pancreatic tissue,
+as PacBio HiFi reads, a draft SV and CNV benchmark, and a telomere-to-telomere
+assembly of the tumor. We read one of the tumor's rearrangements, a chr3-chr13
+translocation, and a small deletion in _CUZD1_ against the reads and the
+assembly; [part 2](/docs/tutorials/cnv_cgiab) reads the tumor's copy number from
+the same files. We:
 
 - load the benchmark SV calls and four further published SV callsets as variant
   tracks
 - align the tumor assembly to GRCh38 and load the alignment as a synteny track
 - open one chr3-chr13 translocation in the SV inspector and a breakpoint split
   view, and compare the tumor reads with the normal's
-- read a small heterozygous deletion in _CUZD1_ in a read pileup, beside
-  ClinVar's copy-number variants
+- find a small heterozygous deletion in _CUZD1_ with the SV inspector's search,
+  and sort its reads by base beside a ClinVar CNV track
 - open the translocation in a dotplot and a linear synteny view of the assembly
 
 ## Prerequisites
@@ -55,12 +57,14 @@ npm install -g @jbrowse/cli@next
 
 ## The data
 
-HG008, the C-GIAB matched tumor/normal pair (NCBI BioProject PRJNA200694), is on
-the C-GIAB FTP, and the assemblies are on NIST's S3 bucket. The
-[build script](#reproduce-it-end-to-end) takes these files from their URLs, over
-200 GB and hours of download. The page's commands build local files from them,
-and the tracks over those read them from disk; every other track reads a hosted
-copy. Each step takes your own tumor and normal reads in place of HG008's.
+HG008, the [C-GIAB](https://www.nist.gov/programs-projects/cancer-genome-bottle)
+matched pair of tumor (HG008-T) and normal (HG008-N-P), is on the C-GIAB FTP
+under NCBI BioProject PRJNA200694, and the assemblies are on NIST's S3 bucket.
+The [build script](#reproduce-it-end-to-end) takes these files from their URLs,
+over 200 GB and hours of download. The page's commands build local files from
+them, and the tracks over those read them from disk; every other track reads a
+hosted copy. Each step takes your own tumor and normal reads in place of
+HG008's.
 
 | What it is                                                             | File                                                                                                                                                                                                                                                  |
 | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -73,15 +77,6 @@ copy. Each step takes your own tumor and normal reads in place of HG008's.
 | NYGC's somatic SVs (Illumina)                                          | [GRCh38-GIABv3/](https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3/)                                                                                         |
 | The T2T tumor assembly, v3.2                                           | [HG008T_v3.2.fasta.gz](https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008T_v3.2/HG008T_v3.2.fasta.gz)                                                                                                   |
 | The matched normal assembly, v6.3, which the build script leaves out   | [HG008N_v6.3.fasta.gz](https://nist-giab.s3.us-east-1.amazonaws.com/giab_tumor-normal/analysis/HG008/NIST_asm_dev/HG008N_v6.3/HG008N_v6.3.fasta.gz)                                                                                                   |
-
-## HG008, a pancreatic tumor and its matched normal
-
-[C-GIAB](https://www.nist.gov/programs-projects/cancer-genome-bottle) publishes
-HG008 from one pancreatic ductal adenocarcinoma (PDAC) donor, as the tumor
-(HG008-T) and normal pancreatic tissue (HG008-N-P). HG008-T is **hypodiploid**:
-35 chromosomes down from 46, with widespread arm-level loss and truncal (present
-in every tumor cell) interchromosomal rearrangements
-([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)).
 
 ## Assemblies: the C-GIAB GRCh38 reference and the tumor assembly
 
@@ -396,8 +391,7 @@ clinical significance, served by UCSC as a bigBed:
 }
 ```
 
-The filter keeps ClinVar CNVs under 50 kb, and none of those covers this
-deletion.
+The filter keeps ClinVar CNVs under 50 kb.
 
 <Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion, and the linear genome view its location link opens: the <DEL> ALT allele over the ClinVar CNV and NCBI RefSeq gene tracks." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 

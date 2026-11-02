@@ -8,21 +8,25 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-HG008-T, the tumor of the C-GIAB matched pair, is hypodiploid: 35 chromosomes
-down from 46, with widespread arm-level loss
-([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). C-GIAB
-publishes copy-number calls on it from four groups. Starting from the assembly,
-reads and benchmark that [part 1](/docs/tutorials/sv_visualization_cgiab) loads,
-we:
+A tumor gains and loses whole stretches of chromosome, and the gains and losses
+that cover a cancer gene push the tumor along. HG008-T, the tumor of the C-GIAB
+matched pair, is hypodiploid: 35 chromosomes down from 46, with widespread
+arm-level loss
+([Wagner et al. 2026](https://doi.org/10.64898/2026.05.01.722316)). Starting
+from the assembly, reads and benchmark that
+[part 1](/docs/tutorials/sv_visualization_cgiab) loads, we read its copy number
+from four published callsets, the read depth and the B-allele frequency, at the
+pancreatic cancer drivers _CDKN2A_, _TP53_, _SMAD4_ and _KRAS_. We:
 
 - load four copy-number callsets as tracks: DRAGEN's segments, NYGC's segments
-  and log2 ratio, Wakhan's copy number per haplotype, and the benchmark's
-  absolute copy number
+  and log2 ratio, Wakhan's copy number per haplotype as a multi-row feature
+  track, and the benchmark's absolute copy number
 - build binned depth from the reads with HiFiCNV and B-allele frequency with
-  bcftools, and load both beside the callsets
-- load tumor and matched-normal coverage as overlapping scatter tracks
-- check copy number at four driver genes, _CDKN2A_, _TP53_, _SMAD4_ and _KRAS_,
-  against depth and B-allele frequency
+  bcftools, and load both as scatter tracks beside the callsets
+- load tumor and matched-normal coverage as one multi-wiggle track, drawn as
+  overlapping scatter
+- navigate to each driver gene and read its copy-number call against depth and
+  B-allele frequency
 
 ## Prerequisites
 
@@ -103,7 +107,8 @@ megadepth HG008-T.cram --bigwig
 
 ## Copy number from the published callsets
 
-C-GIAB publishes copy-number calls on this pair from four groups:
+C-GIAB publishes copy-number calls on this pair from four groups, each drawing a
+different quantity:
 
 | Callset                                                                                                                                  | Called from                           | Each segment has                                                                                 |
 | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------ |
