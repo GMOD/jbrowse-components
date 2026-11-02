@@ -277,9 +277,9 @@ export function notifySearchFailure(session: NotificationSink, e: unknown) {
   )
 }
 
-// if input is a known ref or locstring, navigate directly;
-// otherwise search and: pop a dialog for multiple results, navigate for one,
-// or fall back to treating input as a locstring
+// if input parses as one or more locstrings, navigate directly; otherwise
+// search and: pop a dialog for multiple results, navigate for one, or report
+// the miss
 //
 // Returns whether the view actually moved. Three branches deliberately do not
 // navigate — a glob too wide to open, a multi-hit search whose hits disagree
@@ -309,9 +309,7 @@ export async function handleSelectedRegion({
     .waitForAssembly(assemblyName)
     .catch(() => undefined)
   await Promise.all(
-    assembliesNamedIn(input).map(name =>
-      assemblyManager.waitForAssembly(name).catch(() => undefined),
-    ),
+    assembliesNamedIn(input).map(name => assemblyManager.requireAssembly(name)),
   )
   const isRef = (ref: string) =>
     !!assembly && assemblyManager.isValidRefName(ref, assemblyName)
@@ -566,5 +564,3 @@ function searchRefNames(
     weak: hits.filter(h => h.tier === 'substring').map(h => h.result),
   }
 }
-
-// splits on the last instance of a character
