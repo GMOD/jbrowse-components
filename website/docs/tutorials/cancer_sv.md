@@ -30,21 +30,28 @@ chr10 and chr12 in the COLO829 melanoma cell line. We:
 - [](/docs/cli)
 - [samtools](http://www.htslib.org/) (v1.21 or later)
 - [minimap2](https://github.com/lh3/minimap2)
+- `bedGraphToBigWig` from the
+  [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/)
 - `python3`
 - a GRCh38 FASTA, and roughly 40 GB of free disk
 
-<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli START -->
+<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig START -->
 
 ```bash
 # Debian/Ubuntu
 sudo apt install samtools tabix minimap2 nodejs
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge samtools htslib minimap2 nodejs
+conda install -c bioconda -c conda-forge samtools htslib minimap2 nodejs \
+  ucsc-bedgraphtobigwig
+# or Linux x86_64 binaries for the tools apt lacks
+wget -P ~/.local/bin \
+  https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
+chmod +x ~/.local/bin/bedGraphToBigWig
 # any platform
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli END -->
+<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig END -->
 
 ## The data
 
@@ -62,8 +69,26 @@ follow _The derivative allele_ to assemble a contig from them.
 | COLO829 tumor reads (ONT R10, haplotagged), streamed and never downloaded                            | [COLO829_tumor.ht.cram](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram)                                                         |
 | COLO829BL matched normal reads, streamed and never downloaded                                        | [PAU59807.d052sup4305mCG_5hmCGvHg38.bam](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam)                        |
 | The somatic SV calls this page works from                                                            | [COLO829.wf-somatic-sv.vcf.gz](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829.wf-somatic-sv.vcf.gz)                                           |
+| Mosdepth coverage regions, tumor                                                                     | [COLO829_tumor.regions.bed.gz](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_tumor.regions.bed.gz)                       |
+| Mosdepth coverage regions, normal                                                                    | [COLO829_normal.regions.bed.gz](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829/qc/coverage/COLO829_normal.regions.bed.gz)                     |
 | The GRCh38 build the CRAM decodes against, and the der(3) (derivative chromosome 3) contig aligns to | [GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta](https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta) |
 | The COLO829 somatic SV truth set, lifted to GRCh38                                                   | [content](https://zenodo.org/api/records/4716169/files/truthset_somaticSVs_COLO829_hg38lifted.vcf/content)                                                                             |
+
+## Tumor and normal coverage as bigWigs
+
+The demo config also carries tumor and normal coverage tracks, for a
+chromosome-wide look at where the tumor gained and lost. They are the
+`wf-somatic-variation` run's `mosdepth` output in 50 kb windows, converted to
+bigWig the same way for each sample:
+
+<!-- from: scripts/build_cancer_sv_demo.sh -->
+
+```bash
+# awk keeps the contigs in hg38.chrom.sizes; bedGraphToBigWig fails on any other
+gzip -dc COLO829_tumor.regions.bed.gz | sort -k1,1 -k2,2n |
+  awk 'NR==FNR{ok[$1];next} ($1 in ok)' hg38.chrom.sizes - > cov.bg
+bedGraphToBigWig cov.bg hg38.chrom.sizes COLO829_tumor.coverage.bw
+```
 
 ## The rearrangement chain across chr3, chr10 and chr12
 
@@ -348,9 +373,9 @@ inserts have separate ribbons:
 builds everything above from public sources into `./cancer_sv_build/jbrowse2`.
 For COLO829 the script:
 
-1. Adds the tumor and normal reads as tracks streamed from ONT's bucket, and
-   their coverage as bigWigs for the demo config.
-2. Downloads the published der(3) contig with its alignment to GRCh38, its
+1. Converts the coverage to bigWig as above.
+2. Adds the tumor and normal reads as tracks streamed from ONT's bucket.
+3. Downloads the published der(3) contig with its alignment to GRCh38, its
    segment labels and the spanning reads realigned to it.
 
 [The derivative allele](#the-derivative-allele) shows how to assemble a contig
