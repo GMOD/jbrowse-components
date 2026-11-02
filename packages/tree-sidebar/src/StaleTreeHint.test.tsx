@@ -44,6 +44,19 @@ describe('StaleTreeHint', () => {
     expect(draw({ root: buildTree('((c,a),b);') })).not.toBeNull()
   })
 
+  it('names the reason where the tree is on rows a finer field draws', () => {
+    const hint = draw({
+      root: buildTree("(('a HP1','a HP2'),b);"),
+      treeOnFinerRows: true,
+      finerTreeHint: {
+        text: 'Tree hidden — clustered per haplotype',
+        title: '',
+      },
+    })
+    expect(hint?.textContent).toContain('clustered per haplotype')
+    expect(hint?.textContent).not.toContain('rows changed since clustering')
+  })
+
   it('stays silent when there is no tree at all', () => {
     expect(draw({})).toBeNull()
   })

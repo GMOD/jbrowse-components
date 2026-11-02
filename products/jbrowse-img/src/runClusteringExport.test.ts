@@ -63,8 +63,8 @@ test('runClustering=true with a clusterRegion that names no contig fails the exp
 
 test('runClustering=true in haplotype mode clusters the phased rows', async () => {
   const [plain, clustered] = await Promise.all([
-    render('unit=haplotype'),
-    render('unit=haplotype', 'runClustering=true'),
+    render('rows=haplotype'),
+    render('rows=haplotype', 'runClustering=true'),
   ])
   expect(clustered).not.toBe(plain)
 }, 120000)

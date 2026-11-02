@@ -207,7 +207,7 @@ test.each([
 
 test.each([
   ['allele', DOG_VCF],
-  ['haplotype', { ...DOG_VCF, display: { unit: 'haplotype' } }],
+  ['haplotype', { ...DOG_VCF, display: { rows: 'haplotype' } }],
 ])(
   'the bundle answers a multi-sample VCF by %s as the engine does, in a bare host',
   async (_, args) => {

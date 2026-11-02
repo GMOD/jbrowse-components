@@ -242,8 +242,8 @@ describe('sortSourcesAroundVariant', () => {
       anchorFeatureId: 'v1',
       phased: true,
     })
-    const hp0 = names(sorted)!.filter(n => n.endsWith('HP0'))
-    expect(hp0).toEqual(['s1 HP1', 's3 HP1', 's2 HP1'])
+    const first = names(sorted)!.filter(n => n.endsWith('HP1'))
+    expect(first).toEqual(['s1 HP1', 's3 HP1', 's2 HP1'])
   })
 
   test('sorts an unphased call last in phased mode', () => {
@@ -434,7 +434,7 @@ describe('sortSourcesAroundVariant at a split site', () => {
       phased,
     })
     const samples = names(sorted)!
-      .filter(n => !n.endsWith('HP1'))
+      .filter(n => !n.endsWith('HP2'))
       .map(n => n.split(' ')[0])
     expect(samples).toEqual(['q', 't', 'p', 'r'])
   })

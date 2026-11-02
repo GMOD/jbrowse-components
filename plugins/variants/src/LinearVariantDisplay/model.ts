@@ -1271,20 +1271,6 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * `TreeSidebarMixin`'s hook: the haplotype rows phased mode draws, or
-         * would, so an order or a focus naming a haplotype reaches a sample
-         * row standing for it: in sample mode, a sample ranking at its first
-         * haplotype entry, and in phased mode before the ploidy lands.
-         */
-        get finerRows(): ProcessedSource[] {
-          return finerHaplotypeRows({
-            rows: self.discoveredRows,
-            ploidy: self.samplePloidy,
-            domain: [...self.rowSort, ...(self.rowFocus ?? [])],
-          })
-        },
-        /**
-         * #getter
          * `TreeSidebarMixin`'s hook: a tree clustered per haplotype hides in
          * sample mode, and says so.
          */
@@ -1318,6 +1304,29 @@ export function stateModelFactory(
             : rows
         },
       }))
+      .views(self => {
+        const finer = stableIdentityComputed(() =>
+          finerHaplotypeRows({
+            rows: self.discoveredRows,
+            ploidy: self.samplePloidy,
+            domain: [...self.rowSort, ...(self.rowFocus ?? [])],
+          }),
+        )
+        return {
+          /**
+           * #getter
+           * `TreeSidebarMixin`'s hook: the haplotype rows phased mode draws,
+           * or would, so an order or a focus naming a haplotype reaches a
+           * sample row standing for it: in sample mode, a sample ranking at
+           * its first haplotype entry, and in phased mode before the ploidy
+           * lands. The same array while a write names no new haplotype, so a
+           * focus or a reorder re-arranges nothing for it.
+           */
+          get finerRows(): ProcessedSource[] {
+            return finer.get()
+          },
+        }
+      })
       .views(self => ({
         /**
          * #getter

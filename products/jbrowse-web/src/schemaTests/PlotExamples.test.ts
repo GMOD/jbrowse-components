@@ -168,7 +168,6 @@ test("each display's plot settings", () => {
       'legend',
       'records',
       'rows',
-      'unit',
     ],
     LinearWiggleDisplay: ['encoding', 'legend', 'mark', 'origin', 'rows'],
     MultiWaySyntenyDisplay: [

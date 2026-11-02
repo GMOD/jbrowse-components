@@ -80,11 +80,16 @@ test('drawing reference calls fills the grid, one cell a sample a site', async (
 test('haplotype rows split each sample, and an unphased call paints as unphased', async () => {
   const t = await engine.variants({
     ...DOG_VCF,
-    display: { unit: 'haplotype' },
+    display: { rows: 'haplotype' },
   })
   expect(t.rows.name).toHaveLength(78)
   expect(new Set(t.rows.sample).size).toBe(39)
-  expect(new Set(t.rows.haplotype)).toEqual(new Set([0, 1]))
+  expect(new Set(t.rows.haplotype)).toEqual(new Set([1, 2]))
+  expect(
+    t.rows.name.every(
+      (name, i) => name === `${t.rows.sample[i]} HP${t.rows.haplotype[i]}`,
+    ),
+  ).toBe(true)
   const unphased = t.cells.color.filter((_, i) =>
     t.cells.genotype[i]!.includes('/'),
   )
@@ -92,7 +97,7 @@ test('haplotype rows split each sample, and an unphased call paints as unphased'
   expect(t.legend.label.some(l => /unphased/i.test(l))).toBe(true)
   t.cells.genotype.forEach((gt, i) => {
     const d = t.cells.dosage[i]
-    const hp = t.rows.haplotype[t.rows.name.indexOf(t.cells.row[i]!)]!
+    const hp = t.rows.haplotype[t.rows.name.indexOf(t.cells.row[i]!)]! - 1
     if (gt.includes('/') || gt.split('|')[hp] === '.') {
       expect(d).toBeNull()
     } else {
@@ -245,10 +250,39 @@ test('a sample named in the order places each of its haplotype rows', async () =
   const last = plain.rows.name.at(-1)!
   const t = await engine.variants({
     ...DOG_VCF,
-    display: { unit: 'haplotype', rows: { sort: [last] } },
+    display: { rows: { field: 'haplotype', sort: [last] } },
   })
   expect(t.rows.name.slice(0, 2)).toEqual([`${last} HP1`, `${last} HP2`])
   expect(t.rows.sample.slice(0, 2)).toEqual([last, last])
+})
+
+test('a sample-keyed label composes with each haplotype, an own entry exact', async () => {
+  const plain = await engine.variants(DOG_VCF)
+  const [first, second] = plain.rows.name
+  const t = await engine.variants({
+    ...DOG_VCF,
+    display: {
+      rows: {
+        field: 'haplotype',
+        labels: { [first!]: 'Mother', [`${second} HP2`]: 'paternal' },
+      },
+    },
+  })
+  const labelOf = (name: string) => t.rows.label[t.rows.name.indexOf(name)]
+  expect(labelOf(`${first} HP1`)).toBe('Mother HP1')
+  expect(labelOf(`${first} HP2`)).toBe('Mother HP2')
+  expect(labelOf(`${second} HP2`)).toBe('paternal')
+})
+
+test('a sample mode export ranks a sample at its first haplotype entry', async () => {
+  const plain = await engine.variants(DOG_VCF)
+  const [first, second, third] = plain.rows.name
+  const t = await engine.variants({
+    ...DOG_VCF,
+    display: { rows: { sort: [`${third} HP2`, `${second} HP1`, first!] } },
+  })
+  expect(t.rows.name.slice(0, 3)).toEqual([third, second, first])
+  expect(new Set(t.rows.haplotype)).toEqual(new Set([0]))
 })
 
 test('a facet stacks the rows in a band per value of the samples file’s attribute', async () => {

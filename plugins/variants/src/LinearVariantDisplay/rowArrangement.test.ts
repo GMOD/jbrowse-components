@@ -2,6 +2,7 @@ import { setConf } from '@jbrowse/core/configuration'
 import { getLeafNames } from '@jbrowse/tree-sidebar'
 
 import { runGenotypeClustering } from '../shared/runGenotypeClustering.ts'
+import { tooltipPlainText } from './components/getTooltipRows.ts'
 import { RECORDS_BAND_OFF, createTestEnvironment } from './testEnv.ts'
 
 // Sample metadata as samplesTsv supplies it: `population` is what "Color by…"
@@ -651,5 +652,50 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
       label: 'first',
       rowColor: 'red',
     })
+  })
+})
+
+describe('a sample named as another sample’s haplotype row', () => {
+  it('warns once per listing, naming the sample', () => {
+    const { display } = createTestEnvironment({
+      displayConfig: RECORDS_BAND_OFF,
+    }).createDisplay()
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const listing = [{ name: 'X' }, { name: 'X HP1' }, { name: 'Y' }]
+    display.setSources(listing)
+    display.setSources(listing.map(source => ({ ...source })))
+    const collisions = warn.mock.calls
+      .map(([message]) => String(message))
+      .filter(message => message.includes('haplotype row'))
+    warn.mockRestore()
+    expect(collisions).toEqual([
+      expect.stringMatching(/^Sample "X HP1" is also the name of another/),
+    ])
+  })
+})
+
+describe('the tooltip over a haplotype row', () => {
+  it('names the row from 1, by its composed label where the sample has one', () => {
+    const { display } = createTestEnvironment({
+      displayConfig: {
+        ...RECORDS_BAND_OFF,
+        rows: { field: 'haplotype', labels: { S1: 'Mother' } },
+      },
+    }).createDisplay()
+    display.setSources(SOURCES)
+    display.setCellData({
+      samplePloidy: { S0: 2, S1: 2, S2: 2 },
+    } as unknown as Parameters<typeof display.setCellData>[0])
+    const headings = display.sources.map(
+      source => tooltipPlainText(source).split('\n')[0],
+    )
+    expect(headings).toEqual([
+      'S0 HP1',
+      'S0 HP2',
+      'Mother HP1',
+      'Mother HP2',
+      'S2 HP1',
+      'S2 HP2',
+    ])
   })
 })
