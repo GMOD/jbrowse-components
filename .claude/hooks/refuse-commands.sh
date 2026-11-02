@@ -18,6 +18,37 @@ compiler='(([^[:space:]]*/)?(tsc|tsgo)|node[[:space:]]+[^[:space:]]*typescript[^
 if grep -Eq "${start}${wrapper}${runner}${compiler}" <<<"$cmd"; then
   refuse 'Refused: bare tsc/tsgo. Each whole-repo program is ~4GB; `pnpm typecheck` queues on the machine-wide slots (scripts/heavy-run-slot.sh) so a dozen agents do not swap the box.'
 fi
+# More than a test file or two goes to a remote runner where one is installed:
+# an agent's multi-suite jest here competes with every other session on the
+# box, and ran ~3x slower than the same selection on the runner at a moderate
+# load (2026-11-02: 52s vs 17s for ~190 suites). Only where `jb-test` exists,
+# since this hook is in the repo and the runner is one machine's. Named test
+# files, snapshot updates (whose writes must land here), --listTests and
+# anything sent over ssh pass; JB_LOCAL_TESTS=1 is the way through when the
+# runner is unreachable.
+jest_call="${start}${wrapper}((pnpm[[:space:]]+(run[[:space:]]+)?(test|test-related))|((npx|pnpm exec)[[:space:]]+jest)|([^[:space:]]*node_modules/\.bin/jest))([[:space:]]|$)"
+if command -v jb-test >/dev/null &&
+  ! grep -Eq '\bssh\b|JB_LOCAL_TESTS=1|(^|[[:space:]])(-u|--updateSnapshot|--listTests)\b' <<<"$cmd" &&
+  grep -Eq "$jest_call" <<<"$cmd"; then
+  invocation=$(grep -oE "${jest_call}[^;&|]*" <<<"$cmd" | head -1)
+  multi=$(grep -q 'test-related' <<<"$invocation" && echo yes)
+  if [ -z "$multi" ]; then
+    # only words that exist as paths: a -t name or a flag's value is neither
+    named=0
+    while IFS= read -r w; do
+      case $w in /*) p=$w ;; *) p=${cwd:-.}/$w ;; esac
+      [ -n "$w" ] && [ -e "$p" ] || continue
+      named=$((named + 1))
+      if [ -d "$p" ] || ! grep -qE '\.test\.[cm]?[jt]sx?$' <<<"$w"; then
+        multi=yes
+      fi
+    done < <(sed -E 's/.*(test|jest)([[:space:]]|$)//' <<<"$invocation" | tr -d "\"'" | tr -s '[:space:]' '\n')
+    [ "$named" -eq 0 ] && multi=yes
+  fi
+  if [ -n "$multi" ]; then
+    refuse 'Refused: a multi-suite jest run on the laptop. `jb-test` runs the suites this branch changed on ada (`jb-test -- <jest flags>`, `jb-test --all`), queued so parallel agents cannot overrun it. Name test files to run them here; JB_LOCAL_TESTS=1 when ada is unreachable.'
+  fi
+fi
 if grep -Eq "${start}npx[[:space:]]+prettier\b" <<<"$cmd"; then
   refuse 'Refused: npx prettier. Formatting is oxfmt — `pnpm format` / `pnpm check-format`.'
 fi
