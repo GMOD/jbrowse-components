@@ -2,6 +2,7 @@ import { scaleEndsOf } from '@jbrowse/core/util/colorScale'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { confNodeAt } from '@jbrowse/wiggle-core'
 
+import { NORMAL_ROW_PROPORTION } from './markVocabulary.ts'
 import { MARK_Y_PATHS } from './markYPaths.ts'
 
 import type {
@@ -20,6 +21,18 @@ import type { AnyConfigurationModel, Plot } from '@jbrowse/core/configuration'
  */
 export type MarkPlot = Plot
 
+/** Each feature's span as a line, and its blocks over it. */
+export const SPLICED_MARKS: MarkSnapshot[] = [
+  { mark: { type: 'rect', height: { band: 0 } } },
+  {
+    mark: { type: 'rect', height: { band: NORMAL_ROW_PROPORTION } },
+    transform: [{ type: 'flatten', keepEmpty: true }],
+  },
+]
+
+/** "Edit plot..."'s example for the spliced marks, as the dialog takes it. */
+export const SPLICED_PLOT_EXAMPLE = JSON.stringify({ marks: SPLICED_MARKS })
+
 /** What "Edit plot..." lists above the text, one line each. */
 export const MARK_PLOT_EXAMPLES = [
   {
@@ -31,7 +44,7 @@ export const MARK_PLOT_EXAMPLES = [
     description: 'one band per haplotype, each packed on its own',
   },
   {
-    plot: '{"marks":[{"mark":{"type":"rect","height":{"band":0}}},{"mark":"rect","transform":[{"type":"flatten","keepEmpty":true}]}]}',
+    plot: SPLICED_PLOT_EXAMPLE,
     description:
       "each feature's blocks joined by a line, as BED12 rows and transcripts draw",
   },

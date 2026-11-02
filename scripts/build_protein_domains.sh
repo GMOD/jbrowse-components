@@ -117,7 +117,7 @@ jb add-track genes.gff3.gz --trackId genes --name Genes -a "$ASM" \
   --config '{"displays":[{"type":"LinearBasicDisplay","displayId":"genes-LinearBasicDisplay","labels":{"subfeatures":{"placement":"below"}},"heightMode":"grow"}]}'
 jb add-track pfam.bed.gz --trackId pfam_domains --name "Pfam domains" \
   -a "$ASM" --load copy --force --out "$APP" \
-  --config '{"displays":[{"type":"LinearMultiRowFeatureDisplay","displayId":"pfam_domains-LinearMultiRowFeatureDisplay","rows":"transcript","marks":[{"mark":{"type":"rect","height":{"band":0}}},{"mark":{"type":"rect","height":{"band":0.7}},"transform":[{"type":"flatten","keepEmpty":true}]}],"encoding":{"color":{"field":"name","legend":{"title":"Pfam family"}}}}]}'
+  --config '{"displays":[{"type":"LinearMultiRowFeatureDisplay","displayId":"pfam_domains-LinearMultiRowFeatureDisplay","rows":"transcript","encoding":{"color":{"field":"name","legend":{"title":"Pfam family"}}}}]}'
 jb text-index --tracks genes --attributes Name,gene --force --out "$APP"
 
 echo

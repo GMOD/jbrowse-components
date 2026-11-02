@@ -3,9 +3,11 @@ import { colorAt } from '@jbrowse/core/util/markEncoding'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
+import { SPLICED_MARKS } from '../LinearMarkDisplay/markPlot.ts'
+import { NORMAL_ROW_PROPORTION } from '../LinearMarkDisplay/markVocabulary.ts'
 import { REGION, features, workerResult } from '../LinearMarkDisplay/testEnv.ts'
 import { multiRowMenuItems } from './multiRowMenus.ts'
-import { RECT_MARKS, SPLICED_MARKS, multiRowPlot } from './multiRowPlot.ts'
+import { RECT_MARKS, multiRowPlot } from './multiRowPlot.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LinearMultiRowFeatureDisplayModel } from './model.ts'
@@ -144,7 +146,7 @@ test("a spliced painting's rows sort and cluster on its blocks, not the line und
 
 test("Row height sizes a spliced painting's blocks and leaves the line under them a line", () => {
   const model = display({ rows: 'sample', marks: SPLICED_MARKS })
-  expect(model.rowProportion).toBe(1)
+  expect(model.rowProportion).toBe(NORMAL_ROW_PROPORTION)
   model.setRowProportion(0.5)
   expect(model.markRowProportions).toEqual([0, 0.5])
 })

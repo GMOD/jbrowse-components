@@ -143,12 +143,10 @@ with one row per transcript, so each isoform's domains sit on a row of their
 own:
 
 - `rows` names the column that assigns a domain to a row.
-- `marks` draws a domain's blocks joined by a line, at 0.7 of the row's height
-  so one family's domains on neighbouring rows stay apart.
 - `encoding.color` colors each domain by its Pfam family, with a key naming the
   families on screen.
 
-```json addtrack loc=NC_037640.1:1,971,400-1,976,800
+```json addtrack loc=NC_037640.1:1,971,640-1,976,800
 {
   "type": "FeatureTrack",
   "trackId": "pfam_domains",
@@ -163,13 +161,6 @@ own:
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "pfam_domains-LinearMultiRowFeatureDisplay",
       "rows": "transcript",
-      "marks": [
-        { "mark": { "type": "rect", "height": { "band": 0 } } },
-        {
-          "mark": { "type": "rect", "height": { "band": 0.7 } },
-          "transform": [{ "type": "flatten", "keepEmpty": true }]
-        }
-      ],
       "encoding": {
         "color": { "field": "name", "legend": { "title": "Pfam family" } }
       }
@@ -183,7 +174,7 @@ assembly. To follow along on genomes.jbrowse.org, open the honey bee genome, add
 the track above, and:
 
 - turn on the gene track, **NCBI RefSeq - RefSeq All (GFF)**, and go to
-  `NC_037640.1:1,971,400-1,976,800`
+  `NC_037640.1:1,971,640-1,976,800`
 - in the gene track's menu, choose **Show → Subfeature labels → Below**, which
   labels each transcript with the name its domain row has
 

@@ -1,6 +1,7 @@
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
 import { ReactComponent } from '../LinearMarkDisplay/index.ts'
+import { SPLICED_PLOT_EXAMPLE } from '../LinearMarkDisplay/markPlot.ts'
 import { configSchemaFactory } from './configSchema.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -21,7 +22,7 @@ export const MULTI_ROW_PLOT_EXAMPLES: PlotExample[] = [
     description: 'one color for everything',
   },
   {
-    plot: '{"marks":[{"mark":{"type":"rect","height":{"band":0}}},{"mark":"rect","transform":[{"type":"flatten","keepEmpty":true}]}]}',
+    plot: SPLICED_PLOT_EXAMPLE,
     description: "each feature's blocks joined by a line",
   },
 ]

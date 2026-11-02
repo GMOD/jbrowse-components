@@ -31,7 +31,10 @@ import ShowChartIcon from '@mui/icons-material/ShowChart'
 
 import { hitLocString } from './findMarkHit.ts'
 import { markColorScales } from './legend.ts'
-import { DEFAULT_POINT_DIAMETER_PX } from './markVocabulary.ts'
+import {
+  DEFAULT_POINT_DIAMETER_PX,
+  NORMAL_ROW_PROPORTION,
+} from './markVocabulary.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -43,7 +46,7 @@ const MarkClusterDialog = lazy(
 )
 
 const ROW_HEIGHT_PRESETS: RowHeightPreset[] = [
-  { label: 'Normal', rowHeight: 15, rowProportion: 0.8 },
+  { label: 'Normal', rowHeight: 15, rowProportion: NORMAL_ROW_PROPORTION },
   { label: 'Compact', rowHeight: 8, rowProportion: 0.9 },
 ]
 

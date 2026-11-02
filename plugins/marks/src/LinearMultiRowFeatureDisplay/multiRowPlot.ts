@@ -1,15 +1,11 @@
+import { SPLICED_MARKS } from '../LinearMarkDisplay/markPlot.ts'
+
 import type { MarkSnapshot } from '../LinearMarkDisplay/markProblems.ts'
 import type { DefaultPlot } from '../LinearMarkDisplay/plotDefault.ts'
 import type { PlotFields } from '../LinearMarkDisplay/scanPlotFields.ts'
 
 /** A rect per feature. */
 export const RECT_MARKS: MarkSnapshot[] = [{ mark: 'rect' }]
-
-/** Each feature's span as a line, and its blocks over it. */
-export const SPLICED_MARKS: MarkSnapshot[] = [
-  { mark: { type: 'rect', height: { band: 0 } } },
-  { mark: 'rect', transform: [{ type: 'flatten', keepEmpty: true }] },
-]
 
 const PREFERRED_ROWS_FIELD = 'repClass'
 const FALLBACK_ROWS_FIELD = 'name'
