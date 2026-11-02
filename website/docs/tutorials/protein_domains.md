@@ -94,15 +94,15 @@ hmmpress Pfam-A.hmm
 # --cut_ga: each Pfam family's curated gathering threshold, the cutoff InterPro
 # uses, in place of one E-value for every family. hmmscan keeps about two cores
 # busy whatever --cpu asks for, so the build script splits proteins.fa into
-# chunks and scans them at once, about a quarter hour for an insect proteome on
-# 18 cores.
+# chunks and scans them at once, about a quarter hour for an insect proteome
+# with THREADS=18.
 hmmscan --cut_ga --cpu 2 --noali --domtblout pfam.domtblout Pfam-A.hmm proteins.fa >/dev/null
 ```
 
-An annotation pipeline that already ran InterProScan has the same calls in its
-GFF3 output (`--formats gff3`), which the next step reads in place of
-`pfam.domtblout`, with `--source Pfam` to keep only the Pfam rows. Its TSV names
-each domain by Pfam's long description, which the BED would carry as `name`.
+An annotation pipeline that already ran InterProScan 6 has the same calls in its
+GFF3 output (`--formats gff3`), named by Pfam's short family names. The next
+step reads it in place of `pfam.domtblout`, with `--source Pfam` to keep only
+the Pfam rows.
 
 ## Placing the domains on the exons
 
@@ -193,8 +193,8 @@ height → Fixed feature height + autogrow track height** to see them all.
 
 <Figure src="/img/protein_domains/vav.png" caption="Honey bee vav: each RefSeq isoform named under its gene model, and its Pfam domains on a row of that name, colored by family." />
 
-XM_006568479.2 keeps only part of the exon that encodes CH, as 5′ UTR, and
-starts translating in an exon the other isoforms skip, so its row has no CH.
+XM_006568479.2 begins partway through the exon that encodes CH and keeps that
+stretch as 5′ UTR, so its row has no CH.
 
 ## Reproduce it end to end
 

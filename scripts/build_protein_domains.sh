@@ -27,6 +27,13 @@ if [ $# -lt 2 ]; then
   exit 1
 fi
 
+case "$2" in
+  *.gtf | *.gtf.gz)
+    echo "error: $2 is a GTF; convert it first: gffread genes.gtf -o genes.gff3" >&2
+    exit 1
+    ;;
+esac
+
 for tool in samtools gffread hmmscan hmmpress bgzip tabix node; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2

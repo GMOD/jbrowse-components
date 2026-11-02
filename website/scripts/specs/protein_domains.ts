@@ -37,7 +37,7 @@ const PFAM_TRACK = {
 }
 
 export const proteinDomainsSpecs: ScreenshotSpec[] = [
-  // vav's four isoforms; one translates from an exon the others skip and has no CH
+  // vav's four isoforms; one begins partway through the CH exon and has no CH
   {
     mode: 'url',
     name: 'protein_domains/vav',
