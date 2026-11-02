@@ -3,7 +3,7 @@ title: Structural variants from Hi-C
 sidebar_label: SVs from Hi-C
 description:
   Find a translocation in ENCODE Hi-C by opening two chromosomes in one view,
-  and read the domain, loop and compartment calls over the same matrices
+  and read the domain and loop calls over the same matrices
 guide_category: Tutorials
 tutorial_category: Structural variation
 ---
@@ -20,8 +20,6 @@ screen. We:
   draws the contacts between the two
 - rank the chr9-chr22 contact bins with juicer_tools to find the junction, and
   pick the control and normalization the ranking needs
-- load each line's compartment eigenvector as a bigWig track and compare them at
-  _EBF1_
 
 ## Prerequisites
 
@@ -35,8 +33,8 @@ screen. We:
 
 ## The data
 
-Deep in situ Hi-C for GM12878 and K562 from ENCODE, plus ENCODE's domain, loop
-and compartment calls over the same two matrices.
+Deep in situ Hi-C for GM12878 and K562 from ENCODE, plus ENCODE's domain and
+loop calls over the GM12878 matrix.
 
 Nothing to download: the track configs and the scan script below read these
 files by URL. Your own `.hic` file loads by swapping `uri` in the track config
@@ -51,8 +49,6 @@ under _Adding the Hi-C and contact-domain tracks_.
 | K562 in situ Hi-C (ENCSR545YBD)     | [ENCFF080DPJ.hic](https://encode-public.s3.amazonaws.com/2021/10/28/4d332729-3463-4782-b33c-76e4fa8ff72a/ENCFF080DPJ.hic)           |
 | GM12878 contact domains (Arrowhead) | [ENCFF301CUL.bedpe.gz](https://encode-public.s3.amazonaws.com/2021/10/28/467750ae-7aab-47b0-a304-dc5f8dff89f7/ENCFF301CUL.bedpe.gz) |
 | GM12878 loops (HiCCUPS)             | [ENCFF712NKX.bedpe.gz](https://encode-public.s3.amazonaws.com/2021/10/28/70e6944c-1212-45f9-855c-dbc74e9a21f5/ENCFF712NKX.bedpe.gz) |
-| GM12878 compartment eigenvector     | [ENCFF661LPK.bigWig](https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig)     |
-| K562 compartment eigenvector        | [ENCFF699RSL.bigWig](https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig)     |
 
 </details>
 
@@ -258,56 +254,6 @@ over to a scan of your own files:
 - **The control's own ranking.** The scan prints a ranked list for the control
   below the one for the case. A bin hot in both GM12878 and K562, such as the
   top of the control list, is a reproducible mapping artifact.
-
-## A and B compartments at EBF1 in GM12878 and K562
-
-The genome sorts into two interleaved sets of regions, the gene-rich, active A
-compartment and the inactive B compartment, and each region contacts regions in
-the same set most. ENCODE publishes that call for every experiment as a
-[compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments).
-
-We load each line's eigenvector, a score per bin whose sign marks the
-compartment, as a bigWig. Both tracks pin `encoding.y`, the y scale, to one
-symmetric range, so they compare directly and 0, where the compartment flips,
-sits in the middle of each:
-
-```json addtrack
-{
-  "trackId": "hic_gm12878_compartments",
-  "name": "GM12878 compartment eigenvector (ENCFF661LPK)",
-  "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig",
-  "assemblyNames": ["hg38"],
-  "displayDefaults": {
-    "encoding": {
-      "y": { "scale": { "domainMin": -0.012, "domainMax": 0.012 } }
-    }
-  }
-}
-```
-
-```json addtrack
-{
-  "trackId": "hic_k562_compartments",
-  "name": "K562 compartment eigenvector (ENCFF699RSL)",
-  "uri": "https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig",
-  "assemblyNames": ["hg38"],
-  "displayDefaults": {
-    "encoding": {
-      "y": { "scale": { "domainMin": -0.012, "domainMax": 0.012 } }
-    }
-  }
-}
-```
-
-On an eigenvector track already open, **Y axis... → Range** writes the same two
-ends. Open both eigenvector tracks over _EBF1_ on chr5:
-
-<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over one window. At the EBF1 band they take opposite signs." links="Open this view=hic/compartment_switch" />
-
-The band over _EBF1_ is in the A compartment in GM12878, a B-lymphoblastoid
-line, and the B compartment in K562, an erythroleukemia, while the sequence
-either side of it agrees. The sign of an eigenvector is arbitrary, so use the
-gene track to tell which sign is A, the gene-rich compartment.
 
 ## See also
 
