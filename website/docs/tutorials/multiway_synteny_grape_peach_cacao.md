@@ -121,8 +121,10 @@ default; the MCScanX converter keeps the best-scoring copy.
 ## Producing grape.blocks and the BEDs with jcvi {#producing-the-data}
 
 `grape.blocks` and the BEDs come from [jcvi](https://github.com/tanghaibao/jcvi)
-and the [LAST](https://gitlab.com/mcfrith/last) aligner over the seven
-accessions:
+and the [LAST](https://gitlab.com/mcfrith/last) aligner. If you ran
+[the MCScan anchors page](/docs/tutorials/mcscan_synteny_grape_peach#producing-the-data),
+grape and peach already have their BED and CDS files from these same commands,
+and the loop below only adds cacao's.
 
 <!-- from: scripts/build_grape_peach_cacao_synteny.sh -->
 
@@ -137,18 +139,21 @@ done
 ```
 
 `--key=ID` writes the GFF3 id of each mRNA into BED column 4, matching the CDS
-name gffread wrote. An unresolved key becomes an id like `mrna_494685` that
-joins nothing; `--key=transcript_id` and `--key=Name` give that same id on an
-NCBI annotation.
+name gffread wrote. On an NCBI annotation, `--key=transcript_id` and
+`--key=Name` leave jcvi a key it cannot resolve, and it writes a placeholder id
+like `mrna_494685` that joins nothing.
 
-Then catalog orthologs against the reference, MCScan each pair, and join:
+Then catalog orthologs against grape, MCScan each pair, and join. The grape and
+peach catalog step is the one the MCScan anchors page ran, and it writes
+`grape.peach.lifted.anchors` beside the `.anchors` file that page loads:
 
 <!-- from: scripts/build_grape_peach_cacao_synteny.sh -->
 
 ```bash
 for sp in peach cacao; do
-  # --no_strip_names keeps the ids matching the BEDs above
-  python -m jcvi.compara.catalog ortholog --no_strip_names grape "$sp"
+  # --no_strip_names keeps the ids matching the BEDs above; --no_dotplot skips
+  # jcvi's own PDF, which needs LaTeX
+  python -m jcvi.compara.catalog ortholog --no_strip_names --no_dotplot grape "$sp"
   # --iter=1 keeps one block per grape gene, so one mate per genome
   python -m jcvi.compara.synteny mcscan grape.bed "grape.$sp.lifted.anchors" \
     --iter=1 -o "grape.$sp.i1.blocks"
@@ -241,8 +246,9 @@ The hosted
 [config.json](https://jbrowse.org/demos/grape_peach_cacao/config.json) holds the
 seven-column version of this track under the same `trackId`, named **Grape vs
 peach, cacao, arabidopsis, poplar, tomato, citrus (MCScan blocks)**. Every
-session and figure below runs on that one. Its `assemblyNames` stays the three
-declared genomes, since a lane takes just the table and that genome's BED.
+session and figure below runs on that one. Its `assemblyNames` lists only grape,
+peach and cacao, the genomes with an assembly; the other four columns draw as
+multi-way lanes from the table and their BED alone.
 
 ## Stacking grape, peach and cacao
 
@@ -283,15 +289,19 @@ dialog. As a `defaultSession`, the same stack ordered peach-cacao-grape:
 
 ## Direct and transitive pairs {#direct-vs-transitive-pairs}
 
-Every row starts from a grape gene, as in jcvi MCScan tables, which anchor on
-column 0. The adapter also loads an all-against-all table, where a row holds
-orthologs inferred across all genomes at once. Bands touching grape come
-straight from the table (direct pairs). Each ribbon in a peach-cacao band is
-transitive, since it passes through a grape gene both genomes share, and only
-rows where grape has a member draw. The stack above puts grape at the bottom, so
-its peach-cacao band is the transitive one; a peach, grape, cacao stack makes
-both bands direct. The [script](#reproduce-it-end-to-end) prints, per column
-pair, the rows where both cells resolve.
+Every row of `grape.blocks` starts from a grape gene, as in any jcvi MCScan
+table, so the bands of a stack differ in where their ribbons come from:
+
+- A band touching grape draws pairs straight from the table (direct pairs).
+- A peach-cacao band draws a ribbon only through a grape gene both genomes
+  share, so each of its ribbons is transitive, and a row where grape has no
+  member draws nothing there.
+- The stack above puts grape at the bottom, so its peach-cacao band is the
+  transitive one. A peach, grape, cacao stack makes both bands direct.
+
+The adapter also loads an all-against-all table, such as an
+[OrthoFinder one](/docs/tutorials/orthofinder_synteny), where a row holds
+orthologs inferred across all genomes at once.
 
 ## Zooming to one block conserved in every genome
 

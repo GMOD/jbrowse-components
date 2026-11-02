@@ -159,11 +159,11 @@ a `uri` to read the plain file.
 
 Grape and peach are each a genome hub on
 [genomes.jbrowse.org](https://genomes.jbrowse.org) under the RefSeq accession
-the BEDs were built from, and the build takes each assembly entry and NCBI
-RefSeq gene track from there, as
+the BEDs were built from. The build takes each assembly entry and NCBI RefSeq
+gene track from the hub's `config.json`, and adds the short name as an alias so
+a session can still say `grape`;
 [the three-genome page](/docs/tutorials/multiway_synteny_grape_peach_cacao#setting-up-the-grape-peach-and-cacao-assemblies)
-shows. Each entry carries the short name as an alias, so a session can still say
-`grape`.
+shows the entry.
 
 A genome of your own loads from its FASTA, with a `.fai` from `samtools faidx`
 beside it:
@@ -294,11 +294,10 @@ turns orange where several genes share one ortholog. The count covers the whole
 
 ## Viewing the gene pairs as a dotplot
 
-The anchors track and the simple anchors track also load in a dotplot, where a
-gene pair is one point and a block a run of them; **Add → Dotplot view** opens
-one. The axes start in index order; **Re-order chromosomes**, in the overflow
-menu of the dotplot header, sorts the vertical axis to follow the horizontal
-one.
+**Add → Dotplot view** with peach and grape opens either MCScan track as a
+dotplot, where a gene pair is one point and a block a run of them. The axes
+start in index order; **Re-order chromosomes**, in the overflow menu of the
+dotplot header, sorts the vertical axis to follow the horizontal one.
 
 <Video src="/media/synteny/dotplot_reorder.mp4" caption="The dotplot axes in index order, then re-sorted from the header's overflow menu." />
 
