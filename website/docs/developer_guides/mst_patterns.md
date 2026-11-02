@@ -282,15 +282,25 @@ block. `LinearVariantDisplay`'s records band reads both in one expression:
 ```ts
 /**
  * #getter
+ * Whether a circular view's ring hosts the display (`hostHeight`).
+ * The ring samples one canvas of its strip, the records band's.
+ */
+get inRing(): boolean {
+  return self.hostHeight !== undefined
+},
+/**
+ * #getter
  * Whether the records band is the display, every record the filter
  * admits, sized by `heightMode` and lettered as a feature track: a VCF
- * with no samples, or a one-sample call set whose row nobody asked for.
+ * with no samples, a one-sample call set whose row nobody asked for,
+ * or a ring, which draws one canvas and so the records alone.
  */
 get recordsOnly(): boolean {
   const sampleCount = self.adapterSamples?.length
   return (
     sampleCount === 0 ||
-    (sampleCount === 1 && !self.genotypesShowWritten)
+    (sampleCount === 1 && !self.genotypesShowWritten) ||
+    this.inRing
   )
 },
 /**

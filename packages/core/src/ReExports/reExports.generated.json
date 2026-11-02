@@ -5642,7 +5642,8 @@
     "@jbrowse/render-core/OverlayCanvas": {
       "package": "@jbrowse/render-core",
       "names": [
-        "default"
+        "default",
+        "ringStripCanvas"
       ],
       "worker": "real"
     },

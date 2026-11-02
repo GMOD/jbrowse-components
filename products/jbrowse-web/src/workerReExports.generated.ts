@@ -261,7 +261,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/render-core/marks/glyphPaint': m128,
   '@jbrowse/render-core/marks/hit': m129,
   '@jbrowse/render-core/namedReactions': m130,
-  '@jbrowse/render-core/OverlayCanvas': m131.default,
+  '@jbrowse/render-core/OverlayCanvas': { ...m131, __esModule: true },
   '@jbrowse/render-core/perRegionRenderingBackend': m132,
   '@jbrowse/render-core/regionDataMap': m133,
   '@jbrowse/render-core/renderBlock': m134,

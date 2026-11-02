@@ -539,7 +539,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/render-core/marks/glyphPaint': ['appendGlyph', 'glyphBox', 'pointInsetPx'],
   '@jbrowse/render-core/marks/hit': ['inkAtPoint', 'inkHitNearest', 'inkOnRect', 'nearestInk', 'shapeHitNearest'],
   '@jbrowse/render-core/namedReactions': ['namedAutorun', 'reactionDependencies', 'recordNamedReaction'],
-  '@jbrowse/render-core/OverlayCanvas': ['default'],
+  '@jbrowse/render-core/OverlayCanvas': ['default', 'ringStripCanvas'],
   '@jbrowse/render-core/perRegionRenderingBackend': ['Canvas2DPerRegionRenderingBackend', 'GpuPerRegionRenderingBackend'],
   '@jbrowse/render-core/regionDataMap': ['isCheckedAtTheStore', 'regionDataMap'],
   '@jbrowse/render-core/renderBlock': ['buildRenderBlocks', 'canvasWideBlock', 'canvasWideBlocks'],
