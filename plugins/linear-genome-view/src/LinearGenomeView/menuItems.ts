@@ -369,9 +369,8 @@ export function buildRubberBandMenuItems(
   // reversed region it names neither the base painted at the pixel nor the ends
   // in ascending order, and a `leftRef === rightRef` test calls a selection
   // crossing a collapsed intron one range when it is two.
-  const rangeString = assembleLocStrings(
-    self.getSelectedRegions(leftOffset, rightOffset),
-  )
+  const regions = self.getSelectedRegions(leftOffset, rightOffset)
+  const rangeString = assembleLocStrings(regions)
   const launch: MenuItem[] = [
     ...(self.isTopLevelView
       ? [
@@ -401,7 +400,6 @@ export function buildRubberBandMenuItems(
       label: 'Get sequence...',
       icon: MenuOpenIcon,
       onClick: () => {
-        const regions = self.getSelectedRegions(leftOffset, rightOffset)
         getDialogHost(self).queueDialog(handleClose => [
           GetSequenceDialog,
           {
@@ -426,9 +424,9 @@ export function buildRubberBandMenuItems(
       label: 'Highlight region',
       icon: Highlighter,
       onClick: () => {
-        const [region] = self.getSelectedRegions(leftOffset, rightOffset)
-        if (region) {
-          getSession(self).addHighlight(region)
+        const session = getSession(self)
+        for (const region of regions) {
+          session.addHighlight(region)
         }
       },
     },

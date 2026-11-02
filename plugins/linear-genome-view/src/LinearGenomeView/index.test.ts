@@ -2777,6 +2777,27 @@ describe('highlights', () => {
     ])
   })
 
+  test('a selection across two regions highlights both', () => {
+    const model = setupHighlightModel()
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 300, refName: 'ctgA' },
+      { assemblyName: 'volvox', start: 0, end: 300, refName: 'ctgB' },
+    ])
+    model.setNewView(1, 0)
+    model.setOffsets(model.pxToBp(100), model.pxToBp(500))
+    const item = model
+      .rubberBandMenuItems()
+      .find(m => 'label' in m && m.label === 'Highlight region')
+    if (!item || !('onClick' in item)) {
+      throw new Error('no Highlight region item')
+    }
+    item.onClick()
+    expect(getSession(model).highlights.map(h => h.refName)).toEqual([
+      'ctgA',
+      'ctgB',
+    ])
+  })
+
   test('label toggle defaults to true and can be flipped', () => {
     const session = getSession(setupHighlightModel())
     expect(session.highlightLabelsVisible).toBe(true)
