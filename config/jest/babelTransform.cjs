@@ -4,6 +4,7 @@ const { join, relative } = require('node:path')
 
 const transformer = require('babel-jest').default.createTransformer({
   rootMode: 'upward',
+  plugins: [require.resolve('./muiPathImports.cjs')],
 })
 
 // The cache key, ours, and the reason is that babel-jest's costs more than the
@@ -51,6 +52,8 @@ function fingerprint() {
       .update(readFileSync(__filename))
       .update('\0')
       .update(read('babel.config.cjs'))
+      .update('\0')
+      .update(read('config/jest/muiPathImports.cjs'))
       .update('\0')
       .update(read('pnpm-lock.yaml'))
       .update('\0')
