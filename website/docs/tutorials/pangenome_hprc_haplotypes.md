@@ -227,7 +227,7 @@ At IGL, `chr22:22,800,001-22,850,000`, **Lanes → Choose lanes...** with
 `HG00099.1`, `HG002.1`, `HG00097.1`, `HG002.2` and `HG01074.1` puts two skip
 rows at the foot.
 
-<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 sit inside their cell lines' V(D)J deletions, so their rows at the foot draw no ribbons. HG002 haplotype 1 walks the window but draws only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
+<Figure caption="IGL in five lanes. HG002 haplotype 2 and HG01074 haplotype 1 have no step on the reference across the window, so their rows at the foot draw no ribbons and are headed with the length of the stretch. HG002 haplotype 1 walks the window but draws only MIR650 and IGLV3-7, since its Liftoff annotation leaves out functional V segments." src="/img/pangenome/hprc_igl_deletion_lanes.png" />
 
 ## Reproduce it end to end
 
