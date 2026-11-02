@@ -49,10 +49,10 @@ The assemblies are two GenArk genomes
 hub config holds the 2bit sequence, a chromAlias file, an NCBI RefSeq gene track
 and a Trix text index.
 
-No download is needed, since the agent fetches both sequences itself and aligns
-them, a step that takes minutes and gigabytes of memory. For a pair of your own,
-swap in your `.pif.gz` and assemblies, as _Ask the agent to align and open the
-two genomes_ shows.
+The agent downloads both sequences and aligns them, which takes minutes and
+gigabytes of memory. For a pair of your own, name your two FASTA files in the
+first request, or swap in your `.pif.gz` and assemblies, as _Ask the agent to
+align and open the two genomes_ shows.
 
 <details>
 <summary>The files</summary>
@@ -132,9 +132,8 @@ With the axes restricted to the chromosome arms, the plot shows one diagonal:
 Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 ```
 
-Ask the agent to quantify what restricting the axes drops. Add one more request,
-to color the dotplot by strand, so a reversed block draws in blue and a forward
-one in red.
+Add one more request to color the dotplot by strand, so a reversed block draws
+in blue and a forward one in red.
 
 <Figure caption="The alignment as a dotplot cut to the chromosome arms, colored by strand." src="/img/agent_synteny/dotplot_arms.png" />
 
@@ -169,26 +168,10 @@ END {
 }' sim_vs_mau.paf | sort
 ```
 
-```text
-2L   22.15 Mb aligned,  0.28% reverse
-2R   20.56 Mb aligned,  5.02% reverse
-3L   22.56 Mb aligned,  0.03% reverse
-3R   27.03 Mb aligned,  0.01% reverse
-4     1.10 Mb aligned,  0.00% reverse
-X    21.04 Mb aligned,  4.44% reverse
-```
-
-Four arms have essentially no reverse-strand alignment and are the control: 2R
-and X sit an order of magnitude above them.
-
-Grouping the reverse-strand blocks of 5 kb or more, and cutting a group wherever
-half a megabase passes with none, gives three regions:
-
-```text
-2R  sim    59,995 - 2,256,808  <->  mau   628,956 - 3,646,198   (2.20 Mb, 75 blocks)
-X   sim 8,303,553 - 8,752,357  <->  mau 8,530,265 - 8,980,862   (0.45 Mb,  2 blocks)
-X   sim 21,441,285 - 22,026,996 <->  mau 21,459,277 - 22,872,816 (0.59 Mb, 12 blocks)
-```
+The agent reports 2R and X with far more reverse-strand alignment than the other
+four arms, which serve as the control. Asked to group the reverse-strand blocks
+of 5 kb or more, cutting a group wherever half a megabase passes with none, it
+names one region on 2R and two on X.
 
 ## Ask the agent to open the 2R and X regions
 
