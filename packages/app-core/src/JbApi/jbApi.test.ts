@@ -24,6 +24,22 @@ import {
 
 import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 
+// The settle polls and holds on the clock (a 1s hold, up to its deadline), so
+// the suites that settle run on a fake one, drained to the answer.
+async function drained<T>(answer: Promise<T>) {
+  await Promise.allSettled([answer, jest.runAllTimersAsync()])
+  return answer
+}
+
+function onAFakeClock() {
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+}
+
 describe('safeJson', () => {
   it('reports a real cycle', () => {
     const a: Record<string, unknown> = { name: 'a' }
@@ -86,6 +102,7 @@ describe('sessionOf', () => {
 // display chrome's data-display-animating), so a rename there would otherwise
 // only surface as a settle that never settles.
 describe('waitReady', () => {
+  onAFakeClock()
   afterEach(() => {
     document.body.replaceChildren()
   })
@@ -96,24 +113,30 @@ describe('waitReady', () => {
   } as unknown as AbstractSessionModel
 
   it('does not settle while the ready marker is absent', async () => {
-    expect(await waitReady(300, session)).toMatchObject({ settled: false })
+    expect(await drained(waitReady(5000, session))).toMatchObject({
+      settled: false,
+    })
   })
 
   it('does not settle while a loading overlay is up', async () => {
     document.body.innerHTML =
       '<div data-app-phase="ready"></div><div data-testid="loading-overlay"></div>'
-    expect(await waitReady(300, session)).toMatchObject({ settled: false })
+    expect(await drained(waitReady(5000, session))).toMatchObject({
+      settled: false,
+    })
   })
 
   it('does not settle while a display is animating', async () => {
     document.body.innerHTML =
       '<div data-app-phase="ready"></div><div data-display-animating="true"></div>'
-    expect(await waitReady(300, session)).toMatchObject({ settled: false })
+    expect(await drained(waitReady(5000, session))).toMatchObject({
+      settled: false,
+    })
   })
 
   it('settles once the marker is ready and nothing is loading', async () => {
     document.body.innerHTML = '<div data-app-phase="ready"></div>'
-    const settle = await waitReady(5000, session)
+    const settle = await drained(waitReady(5000, session))
     expect(settle).toMatchObject({ settled: true })
     expect(settle).not.toHaveProperty('offscreen')
   })
@@ -133,7 +156,7 @@ describe('waitReady', () => {
       ],
       snackbarMessages: [],
     } as unknown as AbstractSessionModel
-    expect(await waitReady(5000, tall)).toMatchObject({
+    expect(await drained(waitReady(5000, tall))).toMatchObject({
       settled: true,
       offscreen: {
         windowHeight: 768,
@@ -170,7 +193,7 @@ describe('waitReady', () => {
       ],
       snackbarMessages: [],
     } as unknown as AbstractSessionModel
-    expect(await waitReady(5000, failed)).toMatchObject({
+    expect(await drained(waitReady(5000, failed))).toMatchObject({
       settled: true,
       notReady: [
         { viewId: 'v1', error: 'Assembly volvix not found' },
@@ -219,7 +242,7 @@ describe('waitReady', () => {
       ],
       snackbarMessages: [],
     } as unknown as AbstractSessionModel
-    expect(await waitReady(5000, session)).toMatchObject({
+    expect(await drained(waitReady(5000, session))).toMatchObject({
       settled: true,
       notReady: [
         {
@@ -251,7 +274,7 @@ describe('waitReady', () => {
       ],
       snackbarMessages: [],
     } as unknown as AbstractSessionModel
-    expect(await waitReady(5000, launching)).toMatchObject({
+    expect(await drained(waitReady(5000, launching))).toMatchObject({
       notReady: [
         {
           viewId: 'v1',
@@ -276,7 +299,7 @@ describe('waitReady', () => {
       ],
       snackbarMessages: [],
     } as unknown as AbstractSessionModel
-    expect(await waitReady(5000, done)).not.toHaveProperty('notReady')
+    expect(await drained(waitReady(5000, done))).not.toHaveProperty('notReady')
   })
 
   // A settle is a CONSUMER of the session's toasts, so the MCP envelope's
@@ -298,7 +321,7 @@ describe('waitReady', () => {
         },
       },
     )
-    await jb.waitReady(5000)
+    await drained(jb.waitReady(5000))
     expect(consumed).toEqual([{ level: 'error', message: 'track x failed' }])
     // and the toast is spent either way, so nothing double-reports it
     expect(undeliveredNotifications(noisy)).toEqual([])
@@ -400,7 +423,7 @@ describe('waitReady', () => {
     })
     // and the settle says so too, since that is the report read before a
     // screenshot
-    expect(await jb.waitReady(5000)).toMatchObject({
+    expect(await drained(jb.waitReady(5000))).toMatchObject({
       drawer: { width: 384 },
     })
   })
@@ -446,12 +469,14 @@ describe('waitReady', () => {
       views: [],
       snackbarMessages: toasts,
     } as unknown as AbstractSessionModel
-    expect(await waitReady(5000, noisy)).toMatchObject({
+    expect(await drained(waitReady(5000, noisy))).toMatchObject({
       notifications: [{ level: 'error', message: 'track x failed' }],
     })
-    expect(await waitReady(5000, noisy)).not.toHaveProperty('notifications')
+    expect(await drained(waitReady(5000, noisy))).not.toHaveProperty(
+      'notifications',
+    )
     toasts.push({ message: 'track added', level: 'info' })
-    expect(await waitReady(5000, noisy)).toMatchObject({
+    expect(await drained(waitReady(5000, noisy))).toMatchObject({
       notifications: [{ level: 'info', message: 'track added' }],
     })
   })
@@ -462,7 +487,7 @@ describe('waitReady', () => {
     document.body.innerHTML =
       '<div id="other"><div data-app-phase="ready"></div></div><div id="mine"></div>'
     const mine = document.querySelector('#mine')!
-    expect(await waitReady(300, session, mine)).toMatchObject({
+    expect(await drained(waitReady(5000, session, mine))).toMatchObject({
       settled: false,
     })
   })
@@ -1292,6 +1317,7 @@ describe('rows of a nested view', () => {
 // hand after the settle said `offscreen`. The overflow is arithmetic the settle
 // already does, so the fit spends it for the agent.
 describe('fitToWindow', () => {
+  onAFakeClock()
   afterEach(() => {
     document.body.replaceChildren()
   })
@@ -1348,7 +1374,7 @@ describe('fitToWindow', () => {
       clientHeight: { configurable: true, value: 700 },
     })
     page(100, [])
-    expect(await jbOver([tall]).fitToWindow(5000)).toEqual({
+    expect(await drained(jbOver([tall]).fitToWindow(5000))).toEqual({
       fits: true,
       overflowBefore: 200,
       overflowAfter: 0,
@@ -1375,7 +1401,7 @@ describe('fitToWindow', () => {
       clientHeight: { configurable: true, value: 700 },
     })
     page(100, [])
-    expect(await jbOver([tall]).fitToWindow(5000)).toEqual({
+    expect(await drained(jbOver([tall]).fitToWindow(5000))).toEqual({
       fits: true,
       overflowBefore: 200,
       overflowAfter: 0,
@@ -1386,7 +1412,7 @@ describe('fitToWindow', () => {
 
   it('answers plainly when the session already fits', async () => {
     page(100, [])
-    expect(await jbOver([]).fitToWindow(100)).toEqual({
+    expect(await drained(jbOver([]).fitToWindow(100))).toEqual({
       fits: true,
       pageHeight: 100,
       windowHeight: 768,
@@ -1399,7 +1425,9 @@ describe('fitToWindow', () => {
     const short = sized(100)
     const band = sized(300)
     page(168, [tall, short, band])
-    expect(await jbOver([tall, short], [band]).fitToWindow(5000)).toEqual({
+    expect(
+      await drained(jbOver([tall, short], [band]).fitToWindow(5000)),
+    ).toEqual({
       fits: true,
       overflowBefore: 400,
       overflowAfter: 0,
@@ -1427,7 +1455,7 @@ describe('fitToWindow', () => {
       },
     }
     page(500, [grown])
-    expect(await jbOver([grown]).fitToWindow(5000)).toMatchObject({
+    expect(await drained(jbOver([grown]).fitToWindow(5000))).toMatchObject({
       fits: true,
       shrunk: [{ what: 't0', from: 400, to: 268 }],
     })
@@ -1473,7 +1501,7 @@ describe('fitToWindow', () => {
       },
     } as unknown as PluginManager)
 
-    expect(await jb.fitToWindow(5000)).toEqual({
+    expect(await drained(jb.fitToWindow(5000))).toEqual({
       fits: true,
       overflowBefore: 300,
       overflowAfter: 0,
@@ -1488,7 +1516,7 @@ describe('fitToWindow', () => {
     document.body.innerHTML = '<div data-app-phase="ready"></div>'
     const nearFloor = sized(50)
     page(1000, [nearFloor])
-    expect(await jbOver([nearFloor]).fitToWindow(5000)).toMatchObject({
+    expect(await drained(jbOver([nearFloor]).fitToWindow(5000))).toMatchObject({
       fits: false,
       overflowBefore: 282,
       overflowAfter: 272,
@@ -1642,6 +1670,7 @@ describe('addView', () => {
 // The session as one document, rewritten: MST reconciles by identifier, so an
 // id the document keeps is patched in place and one it drops is closed.
 describe('setSession', () => {
+  onAFakeClock()
   afterEach(() => {
     document.body.replaceChildren()
   })
@@ -1726,14 +1755,16 @@ describe('setSession', () => {
     })
     const a = session.views[0]
     const jb = jbOver(session)
-    const result = await jb.setSession(
-      {
-        views: [
-          { id: 'a', type: 'StubView', label: 'two' },
-          { id: 'b', type: 'StubView' },
-        ],
-      },
-      5000,
+    const result = await drained(
+      jb.setSession(
+        {
+          views: [
+            { id: 'a', type: 'StubView', label: 'two' },
+            { id: 'b', type: 'StubView' },
+          ],
+        },
+        5000,
+      ),
     )
     expect(session.views[0]).toBe(a)
     expect(mst.getSnapshot(session).views[0]).toMatchObject({ label: 'two' })
@@ -1744,7 +1775,9 @@ describe('setSession', () => {
       session: { views: [{ id: 'a' }, { id: 'b' }] },
     })
 
-    await jb.setSession({ views: [{ id: 'b', type: 'StubView' }] }, 5000)
+    await drained(
+      jb.setSession({ views: [{ id: 'b', type: 'StubView' }] }, 5000),
+    )
     expect(session.views.map(v => v.id)).toEqual(['b'])
     // views leave through the session's own detach first, ADR-069
     expect(takenOut).toHaveLength(2)
@@ -1760,16 +1793,20 @@ describe('setSession', () => {
       views: [{ id: 'a', type: 'StubView', label: 'one' }],
     })
     const jb = jbOver(session)
-    await jb.setSession(
-      { views: [{ id: 'a', type: 'StubView', labl: 'two' }] },
-      5000,
+    await drained(
+      jb.setSession(
+        { views: [{ id: 'a', type: 'StubView', labl: 'two' }] },
+        5000,
+      ),
     )
     expect(notified).toEqual(['StubView ignored unknown key(s): labl'])
 
     notified.length = 0
-    await jb.setSession(
-      { views: [{ id: 'c', type: 'StubView', labl: 'two' }] },
-      5000,
+    await drained(
+      jb.setSession(
+        { views: [{ id: 'c', type: 'StubView', labl: 'two' }] },
+        5000,
+      ),
     )
     expect(notified).toEqual(['StubView ignored unknown key(s): labl'])
   })
@@ -1785,9 +1822,11 @@ describe('setSession', () => {
     const session = Session.create({
       views: [{ id: 'a', type: 'StubView', label: 'one' }],
     })
-    await jbOver(session).setSession(
-      { views: [{ id: 'a', type: 'StubView', legacyFlag: true }] },
-      5000,
+    await drained(
+      jbOver(session).setSession(
+        { views: [{ id: 'a', type: 'StubView', legacyFlag: true }] },
+        5000,
+      ),
     )
     expect(notified).toEqual([])
   })
@@ -1801,9 +1840,11 @@ describe('setSession', () => {
     const session = Session.create({
       views: [{ id: 'a', type: 'StubView', label: 'one' }],
     })
-    await jbOver(session).setSession(
-      { views: [{ id: 'a', type: 'StubView', ownViews: [] }] },
-      5000,
+    await drained(
+      jbOver(session).setSession(
+        { views: [{ id: 'a', type: 'StubView', ownViews: [] }] },
+        5000,
+      ),
     )
     expect(notified).toEqual(['StubView ignored unknown key(s): ownViews'])
   })
@@ -1813,9 +1854,11 @@ describe('setSession', () => {
   it('sends a launcher-only key to jb.addView instead of dropping it', async () => {
     document.body.innerHTML = '<div data-app-phase="ready"></div>'
     notified.length = 0
-    await jbOver(Session.create({})).setSession(
-      { views: [{ id: 'p', type: 'PluginView', uniprotId: 'P04637' }] },
-      5000,
+    await drained(
+      jbOver(Session.create({})).setSession(
+        { views: [{ id: 'p', type: 'PluginView', uniprotId: 'P04637' }] },
+        5000,
+      ),
     )
     expect(notified).toEqual([
       'PluginView ignored unknown key(s): uniprotId — a document runs no launcher, so its launch keys go through jb.addView',
@@ -1826,17 +1869,19 @@ describe('setSession', () => {
     preloaded.length = 0
     document.body.innerHTML = '<div data-app-phase="ready"></div>'
     const jb = jbOver(Session.create({}))
-    await jb.setSession({ views: [{ id: 'a', type: 'StubView' }] }, 5000)
+    await drained(
+      jb.setSession({ views: [{ id: 'a', type: 'StubView' }] }, 5000),
+    )
     expect(preloaded).toMatchObject([{ views: [{ type: 'StubView' }] }])
   })
 
   it('refuses what is not a document, and a document the model rejects, by name', async () => {
     const jb = jbOver(Session.create({}))
     await expect(
-      jb.setSession([] as unknown as Record<string, unknown>, 100),
+      drained(jb.setSession([] as unknown as Record<string, unknown>, 100)),
     ).rejects.toThrow(/takes the session as a document/)
     await expect(
-      jb.setSession({ views: [{ id: 'x', type: 'Nope' }] }, 100),
+      drained(jb.setSession({ views: [{ id: 'x', type: 'Nope' }] }, 100)),
     ).rejects.toThrow(/jb\.setSession refused the document: .*Nope/)
   })
 })

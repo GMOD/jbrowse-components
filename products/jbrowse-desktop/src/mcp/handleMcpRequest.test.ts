@@ -16,11 +16,17 @@ function fakeApp() {
   return { session, pluginManager }
 }
 
-function run(pluginManager: PluginManager, code: string, extra = {}) {
-  return handleMcpRequest(
+// Every call settles on the clock afterwards (a 1s hold, up to a 5s deadline
+// over this app, which never reports ready), and its code's own waits and
+// timeoutMs are the clock's too, so the envelope runs on a fake one, drained
+// to the answer.
+async function run(pluginManager: PluginManager, code: string, extra = {}) {
+  const answer = handleMcpRequest(
     { id: 1, tool: 'run_javascript', args: { code, ...extra } },
     pluginManager,
   ) as Promise<Record<string, unknown>>
+  await Promise.allSettled([answer, jest.runAllTimersAsync()])
+  return answer
 }
 
 describe('captureConsole', () => {
@@ -114,6 +120,13 @@ describe('measure', () => {
 })
 
 describe('run_javascript envelope', () => {
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
   it('carries logs beside the value', async () => {
     const { pluginManager } = fakeApp()
     const spy = jest.spyOn(console, 'log').mockImplementation(() => {})

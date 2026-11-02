@@ -2,6 +2,19 @@ import { waitForJBrowseReady } from './ready.ts'
 
 import type { Page } from 'puppeteer'
 
+// The chain holds and polls on the clock (a 1s settle hold, timeouts up to
+// 30s), so it runs on a fake one, drained to the answer.
+beforeEach(() => {
+  jest.useFakeTimers()
+})
+afterEach(() => {
+  jest.useRealTimers()
+})
+async function drained<T>(answer: Promise<T>) {
+  await Promise.allSettled([answer, jest.runAllTimersAsync()])
+  return answer
+}
+
 // A page whose evaluate/wait primitives run against jsdom's own document, so
 // the chain under test executes the real in-page predicates rather than copies
 // of them — the same approach as appSettled.test.ts, extended to the two wait
@@ -59,11 +72,13 @@ afterEach(() => {
 
 test('a ready app with nothing pending settles clean', async () => {
   app('ready')
-  const report = await waitForJBrowseReady(fakePage(), {
-    assembly: 'hg38',
-    trackIds: ['genes'],
-    timeout: 10000,
-  })
+  const report = await drained(
+    waitForJBrowseReady(fakePage(), {
+      assembly: 'hg38',
+      trackIds: ['genes'],
+      timeout: 10000,
+    }),
+  )
   expect(report.unsettled).toEqual([])
   expect(report.pending).toEqual([])
 }, 20000)
@@ -74,7 +89,9 @@ test('a ready app with nothing pending settles clean', async () => {
 test('a trackId that never opens fails the gate, not the settle wait', async () => {
   app('ready')
   await expect(
-    waitForJBrowseReady(fakePage(), { trackIds: ['typo'], timeout: 300 }),
+    drained(
+      waitForJBrowseReady(fakePage(), { trackIds: ['typo'], timeout: 300 }),
+    ),
   ).rejects.toThrow('the session never reached the requested state')
 })
 
@@ -88,10 +105,12 @@ test('an app that never goes ready reports the stage and the census', async () =
     `<div data-testid="pileup" data-display-drawn="false"
           data-display-phase="loading"></div>`,
   )
-  const report = await waitForJBrowseReady(fakePage(), {
-    allowUnsettled: true,
-    timeout: 200,
-  })
+  const report = await drained(
+    waitForJBrowseReady(fakePage(), {
+      allowUnsettled: true,
+      timeout: 200,
+    }),
+  )
   expect(report.unsettled).toEqual([
     'the app never held itself ready (last blocked by an app still loading)',
     'display(s) never painted: pileup is loading',
@@ -107,10 +126,12 @@ test('a loading display the marker cannot see keeps the chain waiting', async ()
     `<div data-testid="pileup" data-display-drawn="true"
           data-display-phase="loading"></div>`,
   )
-  const report = await waitForJBrowseReady(fakePage(), {
-    allowUnsettled: true,
-    timeout: 1500,
-  })
+  const report = await drained(
+    waitForJBrowseReady(fakePage(), {
+      allowUnsettled: true,
+      timeout: 1500,
+    }),
+  )
   expect(report.unsettled).toEqual([
     'the app never held itself ready (last blocked by a display still loading)',
   ])
@@ -135,7 +156,7 @@ test.each([
     )
     const start = Date.now()
     await expect(
-      waitForJBrowseReady(fakePage(), { timeout: 30000 }),
+      drained(waitForJBrowseReady(fakePage(), { timeout: 30000 })),
     ).rejects.toThrow(
       /^display\(s\) showing an error: pileup is error\. No timeout/,
     )
@@ -154,7 +175,7 @@ test('a canceled display fails the chain at once rather than timing out', async 
   )
   const start = Date.now()
   await expect(
-    waitForJBrowseReady(fakePage(), { timeout: 30000 }),
+    drained(waitForJBrowseReady(fakePage(), { timeout: 30000 })),
   ).rejects.toThrow(
     /^display\(s\) canceled, which lasts until Retry: pileup is canceled\. No timeout/,
   )
@@ -169,7 +190,9 @@ test('a too-large display passes the chain and is reported', async () => {
     `<div style="display: contents" data-display-id="hg38-clinvar"
           data-display-phase="tooLarge"></div>`,
   )
-  const report = await waitForJBrowseReady(fakePage(), { timeout: 10000 })
+  const report = await drained(
+    waitForJBrowseReady(fakePage(), { timeout: 10000 }),
+  )
   expect(report.unsettled).toEqual([])
   expect(report.tooLarge).toEqual([
     { name: 'hg38-clinvar', id: 'hg38-clinvar', phase: 'tooLarge' },
@@ -184,7 +207,7 @@ test('a display whose renderer failed fails the chain', async () => {
           data-display-phase="renderError"></div>`,
   )
   await expect(
-    waitForJBrowseReady(fakePage(), { timeout: 10000 }),
+    drained(waitForJBrowseReady(fakePage(), { timeout: 10000 })),
   ).rejects.toThrow(
     /^display\(s\) showing an error: hg38-genes is renderError\. No timeout/,
   )
@@ -197,7 +220,7 @@ test('a stage that timed out says so, and names the timeout as the fix', async (
           data-display-phase="loading"></div>`,
   )
   await expect(
-    waitForJBrowseReady(fakePage(), { timeout: 200 }),
+    drained(waitForJBrowseReady(fakePage(), { timeout: 200 })),
   ).rejects.toThrow(/^gave up waiting after 200ms: .*Raise the timeout/)
 }, 15000)
 
@@ -206,10 +229,12 @@ test('a stage that timed out says so, and names the timeout as the fix', async (
 test('a views floor of 0 reaches the gate through the whole chain', async () => {
   document.body.innerHTML = `<span hidden data-app-phase="ready"
     data-app-views="0" data-app-assemblies='[]' data-app-tracks='[]'></span>`
-  const report = await waitForJBrowseReady(fakePage(), {
-    minViews: 0,
-    timeout: 10000,
-  })
+  const report = await drained(
+    waitForJBrowseReady(fakePage(), {
+      minViews: 0,
+      timeout: 10000,
+    }),
+  )
   expect(report.unsettled).toEqual([])
 }, 20000)
 
@@ -227,7 +252,7 @@ test.each([
       `<div data-testid="${testid}">Track "fst" has an invalid configuration</div>`,
     )
     await expect(
-      waitForJBrowseReady(fakePage(), { timeout: 10000 }),
+      drained(waitForJBrowseReady(fakePage(), { timeout: 10000 })),
     ).rejects.toThrow(
       /^error\(s\) on screen: Track "fst" has an invalid configuration\. No timeout/,
     )
@@ -237,6 +262,8 @@ test.each([
 
 test('a warning toast is not an error', async () => {
   app('ready', `<div data-testid="snackbar-warning">Slow fetch</div>`)
-  const report = await waitForJBrowseReady(fakePage(), { timeout: 10000 })
+  const report = await drained(
+    waitForJBrowseReady(fakePage(), { timeout: 10000 }),
+  )
   expect(report.unsettled).toEqual([])
 }, 20000)
