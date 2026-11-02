@@ -193,7 +193,7 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="method-lowerbound">[
 | <span id="action-setfollowsynteny">**setFollowSynteny**</span><br><code>(flag: boolean) =&gt; void</code> |  |
 | <span id="action-setfollowanchorindex">**setFollowAnchorIndex**</span><br><code>(idx: number) =&gt; void</code> |  |
 | <span id="action-clearclickedfeatures">**clearClickedFeatures**</span><br><code>() =&gt; void</code> | Release the clicked ribbon in every band before a band sets a new one: the drawer shows one feature, so one ribbon is outlined |
-| <span id="action-rowtouched">**rowTouched**</span><br><code>(idx: number) =&gt; void</code> | A press, wheel or key inside a row, or a pick from that row's menu: while following, the row the reader is driving leads. A script that navigates a row sets the anchor itself with `setFollowAnchorIndex`. |
+| <span id="action-rowtouched">**rowTouched**</span><br><code>(idx: number) =&gt; void</code> | A press or key inside a row, a wheel it zooms or pans on, or a pick from that row's menu: while following, the row the reader is driving leads. A script that navigates a row sets the anchor itself with `setFollowAnchorIndex`. |
 | <span id="action-holdfollowanchor">**holdFollowAnchor**</span><br><code>&lt;T&gt;(fn: () =&gt; T) =&gt; T</code> | Runs `fn`. A navigation no longer moves the anchor, so there is nothing to hold. |
 | <span id="action-takeoutrows">**takeOutRows**</span><br><code>() =&gt; void</code> |  |
 | <span id="action-reconcilelevels">**reconcileLevels**</span><br><code>() =&gt; void</code> | Keep exactly one synteny level per gap between adjacent views, growing or shrinking from the end, and both anchors inside the stack. |

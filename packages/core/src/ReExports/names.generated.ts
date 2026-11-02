@@ -405,7 +405,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/core/util/viewHighlights': ['highlightsOnAssemblies'],
   '@jbrowse/core/util/viewStatus': ['assemblyErrorMessage', 'computeViewStatus', 'viewLoading'],
   '@jbrowse/core/util/virtualRange': ['virtualRange'],
-  '@jbrowse/core/util/wheelZoom': ['MAX_ZOOM_RATE_PER_MS', 'SCROLL_ZOOM_FACTOR_DIVISOR', 'ZOOM_ACTIVE_WINDOW_MS', 'accumulateScroll', 'applyZoomAccum', 'createWheelZoomController', 'getZoomNormalizer', 'isActivelyZooming', 'normalizeWheelDelta', 'wheelFrameElapsedMs', 'wheelZoomAccum'],
+  '@jbrowse/core/util/wheelZoom': ['MAX_ZOOM_RATE_PER_MS', 'SCROLL_ZOOM_FACTOR_DIVISOR', 'ZOOM_ACTIVE_WINDOW_MS', 'accumulateScroll', 'applyZoomAccum', 'createWheelZoomController', 'getZoomNormalizer', 'isActivelyZooming', 'normalizeWheelDelta', 'wheelDrivesView', 'wheelFrameElapsedMs', 'wheelIsZoom', 'wheelZoomAccum'],
   '@jbrowse/core/util/whenViewSettled': ['viewSettled', 'whenViewSettled', 'whenViewsSettled'],
   '@jbrowse/core/util/withLaunchInput': ['defineLaunchKeys', 'isTrackRecipe', 'legacyInitMessage', 'pendingLaunch', 'snapshotSettings', 'unknownKeysMessage', 'withLaunchInput'],
   '@jbrowse/display-kit/BandSeamHandle': ['BAND_SEAM_HIT_PX', 'BandSeamHandle'],

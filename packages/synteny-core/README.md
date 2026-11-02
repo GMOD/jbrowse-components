@@ -120,7 +120,7 @@ dotplot point and a circle's ribbon draw at different densities.
 
 ```js
 // type signature
-(view: SyntenyColorsModel) => { trackColors: IKeyValueMap<string>; filter: ModelSnapshotType<Record<string, any>>[]; encoding?: { color: ModelSnapshotType<Record<string, any>>; } | undefined; }
+(view: SyntenyColorsModel) => { trackColors: IKeyValueMap<string>; filter: ModelSnapshotType<Record<string, IAnyType>>[]; encoding?: { color: ModelSnapshotType<Record<string, IAnyType>>; } | undefined; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/SyntenyColorsMixin.ts)

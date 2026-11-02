@@ -4201,7 +4201,9 @@
         "getZoomNormalizer",
         "isActivelyZooming",
         "normalizeWheelDelta",
+        "wheelDrivesView",
         "wheelFrameElapsedMs",
+        "wheelIsZoom",
         "wheelZoomAccum"
       ],
       "worker": "real"
