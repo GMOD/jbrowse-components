@@ -9,18 +9,20 @@ tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Whole-genome alignments
 ---
 
-We compare three _Helicobacter pylori_ strains (26695, CHC155 and J99) by
-aligning their assemblies with minimap2. The steps work the same on any pair of
-assemblies. We:
+Two assemblies of one species share most of their sequence, and an alignment
+between them shows where the order breaks: an inversion, a moved block, a gene
+only one strain has. We align three _Helicobacter pylori_ strains (26695, CHC155
+and J99) with minimap2, one pair at a time, and the steps work the same on any
+pair of assemblies of your own. The other route to a stack of genomes aligns
+every genome against every other in one run, which
+[](/docs/tutorials/allvsall_synteny) follows through five _E. coli_ strains. We:
 
-- align each pair of genomes and load the assemblies and the PAF
-- open the whole-genome alignment in a dotplot
-- stack the strains in a linear synteny view, and color genes by ortholog
+- load the assemblies, and the minimap2 PAF as a synteny track
+- open the whole-genome alignment in a dotplot view
+- stack the strains in a linear synteny view, with a gene track on each row
+- color the gene tracks by gene symbol, so an ortholog is one color down the
+  stack
 - index a large alignment as PIF
-
-Aligning each pair of genomes separately is one of two routes to a stacked view.
-The other aligns every genome against every other in one minimap2 run, and
-[](/docs/tutorials/allvsall_synteny) follows it through five _E. coli_ strains.
 
 ## Prerequisites
 
@@ -66,17 +68,20 @@ fetches everything itself.
 
 ## Aligning the assemblies
 
+minimap2 takes the target genome first and the query second, and writes one PAF
+row per aligned block:
+
 <!-- from: scripts/build_hpylori_synteny.sh -->
 
 ```bash
+# -x asm20: the assembly preset for strains this diverged
+# -c: emit the base-level CIGAR the linear synteny view draws from
+# --eqx: split CIGAR matches (=) from mismatches (X)
 minimap2 -c -x asm20 --eqx hpylori_j99.fa.gz hpylori_26695.fa.gz > 26695_vs_j99.paf
 ```
 
-- `-x asm20` is the assembly preset for strains this diverged.
-- `-c` emits the base-level CIGAR the linear synteny view draws from.
-- `--eqx` splits CIGAR matches (`=`) from mismatches (`X`).
-  [Color by value → Identity](/docs/user_guides/linear_synteny_view#coloring-the-ribbons)
-  reads the PAF's divergence tag or match counts.
+[Color by value → Identity](/docs/user_guides/linear_synteny_view#coloring-the-ribbons)
+reads the PAF's divergence tag or match counts.
 
 JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
 `.chain` files directly. To convert them to PAF instead,
@@ -179,9 +184,9 @@ minimap2 -c -x asm20 --eqx hpylori_chc155.fa.gz hpylori_26695.fa.gz > 26695_vs_c
 minimap2 -c -x asm20 --eqx hpylori_j99.fa.gz hpylori_chc155.fa.gz > chc155_vs_j99.paf
 ```
 
-A single all-vs-all PAF is the alternative to one file per pair: every band of
-the stack reads the same file, in any row order, at the cost of renaming each
-genome's sequences to PanSN names before aligning
+With one file per pair, the pairs you aligned fix the row order. A single
+all-vs-all PAF lets every band read the same file in any row order, after
+renaming each genome's sequences to PanSN names
 ([](/docs/tutorials/allvsall_synteny)).
 
 Take the third assembly from its hub and add both alignments the same way as
@@ -212,15 +217,19 @@ NZ_CP011330v1:1,238,100-1,258,100
 
 ## Coloring genes by ortholog
 
-NCBI reuses standardized gene symbols across bacterial strains, so the symbol is
-effectively an ortholog id. In
+NCBI reuses standardized gene symbols across bacterial strains, so the `gene`
+attribute works as an ortholog id. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, a track's
-`encoding.color` is a color scale, a `field` mapped to colors. Pick **Color by →
-Attribute...** on each gene track's menu and enter `gene` as the field. An
-ortholog is one color down all the panels, and features with no `gene` value
-(most genes here have only a locus tag) stay grey. Inside the inversion, _rsmA_
-and _rlmN_ trade places in J99. **Advanced → Edit plot...** in the same menu
-shows the setting as text and applies edits live.
+`encoding.color` is a color scale, a `field` mapped to colors. On each gene
+track's menu:
+
+- pick **Color by → Attribute...** and enter `gene` as the field
+- open **Advanced → Edit plot...** to see the setting as text, where an edit
+  applies live
+
+An ortholog is then one color down all the rows, and a gene with no `gene` value
+(most genes here have only a locus tag) stays grey. Inside the inversion, _rsmA_
+and _rlmN_ trade places in J99.
 
 <Figure caption="Left, the Color by attribute dialog on the first gene track. Right, the strains after applying it, a shared symbol one color down all of them." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
