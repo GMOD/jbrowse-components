@@ -324,7 +324,10 @@ export default function configSchemaFactory() {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
       retired: retiredConfigSpellings,
-      misnamed: { rowHeight: 'rows.step', rowColor: 'rows.color' },
+      misnamed: {
+        rowHeight: 'rows.step',
+        rowColor: ['rows.colors', 'rows.color'],
+      },
       preProcessSnapshot: liftMinorAlleleFrequencyFilter,
     },
   )

@@ -1,6 +1,8 @@
 // "did you mean" for a mistyped identifier, shared by the validator and by
 // add-track's up-front check on the settings it is about to write.
 
+import type { Misnamed } from './types.ts'
+
 function editDistance(a: string, b: string) {
   // Two rolling rows rather than the full matrix; these are short identifiers
   // and this runs once per unknown key.
@@ -44,23 +46,35 @@ export function didYouMean(word: string, candidates: string[]) {
   return hit ? ` — did you mean "${hit}"?` : ''
 }
 
+function guessesOf(key: string, accepted: string[], misnamed: Misnamed) {
+  const nearest = suggest(key, accepted)
+  return Object.hasOwn(misnamed, key)
+    ? [misnamed[key]!].flat()
+    : nearest === undefined
+      ? []
+      : [nearest]
+}
+
 /**
- * What an unknown key most likely meant: the path the schema's `misnamed`
- * names for it, else the nearest accepted key.
+ * What an unknown key most likely meant, quoted: each path the schema's
+ * `misnamed` names for it, else the nearest accepted key.
  */
 export function suggestKey(
   key: string,
   accepted: string[],
-  misnamed: Readonly<Record<string, string>> = {},
+  misnamed: Misnamed = {},
 ) {
-  return Object.hasOwn(misnamed, key) ? misnamed[key] : suggest(key, accepted)
+  const guesses = guessesOf(key, accepted, misnamed)
+  return guesses.length > 0
+    ? guesses.map(guess => `"${guess}"`).join(' or ')
+    : undefined
 }
 
 export function didYouMeanKey(
   key: string,
   accepted: string[],
-  misnamed: Readonly<Record<string, string>> = {},
+  misnamed: Misnamed = {},
 ) {
   const hit = suggestKey(key, accepted, misnamed)
-  return hit ? ` — did you mean "${hit}"?` : ''
+  return hit ? ` — did you mean ${hit}?` : ''
 }

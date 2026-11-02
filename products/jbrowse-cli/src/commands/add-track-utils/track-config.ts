@@ -151,7 +151,7 @@ function checkDisplayDefaultKeys(
       unknown
         .map(key => {
           const hit = suggestKey(key, keys, misnamed)
-          return `"${key}" is not a setting ${declarer} declares${hit ? `, did you mean "${hit}"?` : ''}`
+          return `"${key}" is not a setting ${declarer} declares${hit ? `, did you mean ${hit}?` : ''}`
         })
         .join('\n'),
     )

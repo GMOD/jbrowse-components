@@ -5,7 +5,10 @@ import {
 import { getConfigurationSchemaMetadata } from '../../configuration/schemaRegistry.ts'
 import { isBareConfigurationSchemaType } from '../../configuration/schemaTypes.ts'
 import { slotValueRefusal } from '../../configuration/slotFacade.ts'
-import { membersDeclaredBy } from '../../configuration/snapshotPreprocess.ts'
+import {
+  membersDeclaredBy,
+  misnamedPaths,
+} from '../../configuration/snapshotPreprocess.ts'
 import { isPlainObject } from '../../util/objectUtils.ts'
 
 import type PluginManager from '../../PluginManager.ts'
@@ -202,8 +205,8 @@ export function collectDisplayOverrides(
   return { overrides, reached, unknownKeys, refused }
 }
 
-// The path the `misnamed` of the sub-schema holding a dotted key's last member
-// names for it, from the display: `rowHeight` to `rows.step`, and
+// The paths the `misnamed` of the sub-schema holding a dotted key's last
+// member names for it, from the display: `rowHeight` to `rows.step`, and
 // `rows.height` too.
 function misnamedTargetOf(schema: AnyConfigurationSchemaType, key: string) {
   const members = key.split('.')
@@ -217,7 +220,9 @@ function misnamedTargetOf(schema: AnyConfigurationSchemaType, key: string) {
         : undefined
   }
   const target = meta?.options.misnamed?.[last]
-  return target === undefined ? undefined : [...members, target].join('.')
+  return target === undefined
+    ? []
+    : misnamedPaths(target).map(path => [...members, path].join('.'))
 }
 
 /**
@@ -230,10 +235,9 @@ export function misnamedPointerOf(
 ) {
   const targets = [
     ...new Set(
-      [...displaySchemas.values()].flatMap(schema => {
-        const target = misnamedTargetOf(schema, key)
-        return target === undefined ? [] : [target]
-      }),
+      [...displaySchemas.values()].flatMap(schema =>
+        misnamedTargetOf(schema, key),
+      ),
     ),
   ]
   return targets.length > 0 ? ` — did you mean ${targets.join(' or ')}?` : ''

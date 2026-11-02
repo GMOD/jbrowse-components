@@ -9,7 +9,7 @@ import { configJsonSchema } from './configSchema.generated.ts'
 import { misnamedByTitle } from './misnamed.ts'
 import { didYouMeanKey } from './suggest.ts'
 
-import type { Problem } from './types.ts'
+import type { Misnamed, Problem } from './types.ts'
 import type { ErrorObject, ValidateFunction } from 'ajv/dist/2020.js'
 
 type Schema = Record<string, unknown>
@@ -22,10 +22,7 @@ type Schema = Record<string, unknown>
  */
 export function createSchemaValidator(
   root: Schema,
-  misnamed: ReadonlyMap<
-    string,
-    Readonly<Record<string, string>>
-  > = misnamedByTitle(),
+  misnamed: ReadonlyMap<string, Misnamed> = misnamedByTitle(),
 ) {
   const defs = root.$defs as Record<string, Schema>
   const schemaId = root.$id as string

@@ -42,16 +42,24 @@ const rowsManifest = manifestOf(
 
 test('a misnamed word names its target before edit distance', () => {
   expect(suggestKey('height', ['step', 'weight'], { height: 'step' })).toBe(
-    'step',
+    '"step"',
   )
   expect(didYouMeanKey('rowHeight', ['rows'], { rowHeight: 'rows.step' })).toBe(
     ' — did you mean "rows.step"?',
   )
 })
 
+test('a word that could mean two paths names both', () => {
+  expect(
+    didYouMeanKey('rowColor', ['rows'], {
+      rowColor: ['rows.colors', 'rows.color'],
+    }),
+  ).toBe(' — did you mean "rows.colors" or "rows.color"?')
+})
+
 test('a key misnamed nowhere falls back to edit distance', () => {
   expect(suggestKey('heigth', ['height'], { rowHeight: 'rows.step' })).toBe(
-    'height',
+    '"height"',
   )
   expect(didYouMeanKey('toString', ['step'])).toBe('')
 })

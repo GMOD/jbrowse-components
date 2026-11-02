@@ -521,7 +521,10 @@ export function configSchemaFactory() {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
       retired: retiredBaseDisplaySpellings,
-      misnamed: { rowHeight: 'rows.step', rowColor: 'rows.color' },
+      misnamed: {
+        rowHeight: 'rows.step',
+        rowColor: ['rows.colors', 'rows.color'],
+      },
       preProcessSnapshot: checkMarks,
     },
   )

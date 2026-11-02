@@ -10,6 +10,12 @@ import type { KeyedWrites } from '@jbrowse/add-track-core'
 /** One field's defaults in a color channel's `fieldPresets`, a partial channel (core's `FieldPreset`). */
 export type FieldPresetEntry = FieldPreset<string>
 
+/**
+ * A schema's `misnamed` words, each to the path it means, or to the paths
+ * where it could mean either (`rowColor`: `rows.colors` or `rows.color`).
+ */
+export type Misnamed = Readonly<Record<string, string | readonly string[]>>
+
 export interface SlotEntry {
   name: string
   /** MST's own name for the slot type, e.g. `(JexlString | number)` */
@@ -50,7 +56,7 @@ export interface SlotEntry {
    * A sub-schema slot: the words a reader writes in place of a member, each
    * to the path from the sub-schema it means (the schema's `misnamed`).
    */
-  misnamed?: Record<string, string>
+  misnamed?: Misnamed
   /**
    * A color object: each field's defaults, `*` for any other field — the
    * scale while `scale` is unset and the members it reads while unwritten
@@ -99,7 +105,7 @@ export interface TypeEntry {
    * The words a reader writes in place of a slot, each to the path from this
    * entry it means (`rowHeight` to `rows.step`), the schema's `misnamed`.
    */
-  misnamed?: Record<string, string>
+  misnamed?: Misnamed
   /** Tracks only: the display types this track offers. */
   displayTypes?: string[]
   /**

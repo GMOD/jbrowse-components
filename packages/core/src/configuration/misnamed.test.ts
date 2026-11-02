@@ -100,6 +100,53 @@ test('an undeclared key not in misnamed keeps the plain message', () => {
   )
 })
 
+describe('a word that could mean either of two paths', () => {
+  const colors = ConfigurationSchema(
+    'MisnamedColorsDisplay',
+    {
+      rows: ConfigurationSchema('MisnamedColorsRows', {
+        colors: { type: 'stringMap', defaultValue: {} },
+        color: { type: 'string', defaultValue: 'name' },
+      }),
+    },
+    {
+      explicitlyTyped: true,
+      explicitIdentifier: 'displayId',
+      misnamed: { rowColor: ['rows.colors', 'rows.color'] },
+    },
+  )
+
+  test('a load names both paths', () => {
+    expect(
+      warningsOf(() => colors.create({ displayId: 'c1', rowColor: {} })),
+    ).toEqual([
+      'MisnamedColorsDisplay "c1" does not declare rowColor: loading without it — did you mean rows.colors or rows.color?',
+    ])
+  })
+
+  test('beside other undeclared keys both paths answer the key', () => {
+    expect(() =>
+      refusingUndeclaredKeys(() =>
+        colors.create({ rowColor: {}, rowHeight: 4 }),
+      ),
+    ).toThrow(
+      'MisnamedColorsDisplay takes rows, type and displayId, not rowColor, rowHeight — did you mean rows.colors or rows.color for rowColor?',
+    )
+  })
+
+  test('each path must name a declared member', () => {
+    expect(() =>
+      ConfigurationSchema(
+        'MisnamedHalfNowhere',
+        { rows: { type: 'string', defaultValue: '' } },
+        { misnamed: { rowColor: ['rows.colors', 'tint.color'] } },
+      ),
+    ).toThrow(
+      "MisnamedHalfNowhere's misnamed points rowColor at tint.color, but it declares no tint",
+    )
+  })
+})
+
 test('a subclass adds to its base misnamed', () => {
   const child = ConfigurationSchema(
     'MisnamedChild',

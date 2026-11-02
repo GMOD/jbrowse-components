@@ -1,9 +1,7 @@
 import { configManifest } from './configManifest.generated.ts'
 import { displayDefaultMisnamed } from './displayDefaultKeys.ts'
 
-import type { ConfigManifest, SlotEntry } from './types.ts'
-
-type Misnamed = Readonly<Record<string, string>>
+import type { ConfigManifest, Misnamed, SlotEntry } from './types.ts'
 
 function subSchemaMisnamed(slots: SlotEntry[]): [string, Misnamed][] {
   return slots.flatMap(slot => [

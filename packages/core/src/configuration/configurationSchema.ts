@@ -27,6 +27,7 @@ import {
   configPathOf,
   createAtPath,
   memberPathOf,
+  misnamedPaths,
   misnamedPointer,
   preProcessSnapshotWith,
   refusingUndeclaredKeys,
@@ -38,6 +39,7 @@ import type { FieldPresets } from '../util/colorScale.ts'
 import type { IsAny } from '../util/types/isAny.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { ConfigurationSchemaRequirement } from './requirements.ts'
+import type { MisnamedTarget } from './snapshotPreprocess.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
@@ -155,9 +157,10 @@ export interface ConfigurationSchemaOptions<
    * dotted path, from this schema, to write instead (`{ height: 'step' }` on
    * a rows schema, `{ rowHeight: 'rows.step' }` on a display), where edit
    * distance would not find it. Nothing lifts: the `closed` notice, a refused
-   * write and `jbrowse validate` name the path. A subclass adds to its base's.
+   * write and `jbrowse validate` name the path. A list names each path the
+   * word could mean. A subclass adds to its base's.
    */
-  misnamed?: Record<string, string>
+  misnamed?: Record<string, MisnamedTarget>
   /**
    * A color channel's defaults by `field`, `*` for any other: the scale while
    * `scale.type` is unset, and the members that scale and its key read while
@@ -288,8 +291,7 @@ function checkMisnamed(
   definition: ConfigurationSchemaDefinition,
   { misnamed = {}, retired = {} }: MergedConfigurationSchemaOptions<any, any>,
 ) {
-  for (const [word, path] of Object.entries(misnamed)) {
-    const [member = ''] = path.split('.')
+  for (const [word, target] of Object.entries(misnamed)) {
     if (Object.hasOwn(definition, word)) {
       throw new Error(
         `${modelName}'s misnamed names ${word}, which it declares, so a snapshot writing ${word} means that member`,
@@ -300,10 +302,13 @@ function checkMisnamed(
         `${modelName}'s misnamed names ${word}, which its retired lifts: a key is a spelling that moved, which a load rewrites, or a word that never was a key, not both`,
       )
     }
-    if (!Object.hasOwn(definition, member)) {
-      throw new Error(
-        `${modelName}'s misnamed points ${word} at ${path}, but it declares no ${member}`,
-      )
+    for (const path of misnamedPaths(target)) {
+      const [member = ''] = path.split('.')
+      if (!Object.hasOwn(definition, member)) {
+        throw new Error(
+          `${modelName}'s misnamed points ${word} at ${path}, but it declares no ${member}`,
+        )
+      }
     }
   }
 }

@@ -7217,7 +7217,10 @@ export const configManifest: ConfigManifest = {
       ],
       "misnamed": {
         "rowHeight": "rows.step",
-        "rowColor": "rows.color"
+        "rowColor": [
+          "rows.colors",
+          "rows.color"
+        ]
       },
       "aliases": [
         "LinearMultiSampleVariantDisplay",
@@ -7875,7 +7878,10 @@ export const configManifest: ConfigManifest = {
         "inverted"
       ],
       "misnamed": {
-        "rowColor": "rows.color"
+        "rowColor": [
+          "rows.colors",
+          "rows.color"
+        ]
       },
       "aliases": [
         "MultiLinearWiggleDisplay",
@@ -8553,7 +8559,10 @@ export const configManifest: ConfigManifest = {
         "rowHeight"
       ],
       "misnamed": {
-        "rowColor": "rows.color"
+        "rowColor": [
+          "rows.colors",
+          "rows.color"
+        ]
       },
       "stateModelProps": [
         "id",
@@ -9648,7 +9657,10 @@ export const configManifest: ConfigManifest = {
       ],
       "misnamed": {
         "rowHeight": "rows.step",
-        "rowColor": "rows.color"
+        "rowColor": [
+          "rows.colors",
+          "rows.color"
+        ]
       },
       "stateModelProps": [
         "id",
@@ -10516,7 +10528,10 @@ export const configManifest: ConfigManifest = {
       ],
       "misnamed": {
         "rowHeight": "rows.step",
-        "rowColor": "rows.color"
+        "rowColor": [
+          "rows.colors",
+          "rows.color"
+        ]
       },
       "aliases": [
         "LinearArcDisplay",
@@ -11383,7 +11398,10 @@ export const configManifest: ConfigManifest = {
       ],
       "misnamed": {
         "rowHeight": "rows.step",
-        "rowColor": "rows.color"
+        "rowColor": [
+          "rows.colors",
+          "rows.color"
+        ]
       },
       "stateModelProps": [
         "id",

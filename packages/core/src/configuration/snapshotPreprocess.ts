@@ -106,20 +106,36 @@ export function slotLabel(name: string, key: string, at: string | undefined) {
 }
 
 /**
+ * A `misnamed` word's target: the dotted path to write, or the paths where
+ * the word could mean either (`rowColor`: `rows.colors` pins a row,
+ * `rows.color` colors by an attribute).
+ */
+export type MisnamedTarget = string | readonly string[]
+
+export type Misnamed = Readonly<Record<string, MisnamedTarget>>
+
+/** The paths a `misnamed` target names. */
+export function misnamedPaths(target: MisnamedTarget): readonly string[] {
+  return typeof target === 'string' ? [target] : target
+}
+
+/**
  * What a notice calls the `misnamed` targets of `unknown`, from a schema at
  * `at`: the dotted path to write, from the typed entry where the path is
  * known, else from the schema itself. Empty where none is misnamed.
  */
 export function misnamedPointer(
-  misnamed: Readonly<Record<string, string>> = {},
+  misnamed: Misnamed = {},
   unknown: readonly string[],
   at = '',
 ) {
   const pointed = Object.entries(misnamed)
     .filter(([key]) => unknown.includes(key))
     .map(([key, target]) => {
-      const path = joinPath(at, target)
-      return unknown.length > 1 ? `${path} for ${key}` : path
+      const paths = misnamedPaths(target)
+        .map(path => joinPath(at, path))
+        .join(' or ')
+      return unknown.length > 1 ? `${paths} for ${key}` : paths
     })
   return pointed.length > 0 ? ` — did you mean ${listed(pointed)}?` : ''
 }

@@ -5,6 +5,7 @@ import { isConfigurationModel } from '../configuration/schemaTypes.ts'
 import { misnamedPointer } from '../configuration/snapshotPreprocess.ts'
 import { getNotificationSink } from './sessionServices.ts'
 
+import type { Misnamed } from '../configuration/snapshotPreprocess.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /** what a diagnostic calls the view: its snapshot `type`, or the model name */
@@ -72,7 +73,7 @@ export function displayMisnamed(display: unknown) {
 export function unappliedSettingsMessages(
   label: string,
   unapplied: UnappliedSetting[],
-  misnamed: Readonly<Record<string, string>>,
+  misnamed: Misnamed,
 ) {
   const keys = (of: UnappliedSetting[]) => of.map(entry => entry.key)
   const pointed = unapplied.filter(e => Object.hasOwn(misnamed, e.key))
