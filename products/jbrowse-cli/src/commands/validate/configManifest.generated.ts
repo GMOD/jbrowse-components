@@ -5778,7 +5778,12 @@ export const configManifest: ConfigManifest = {
                 }
               ],
               "schema": "RowTree",
-              "writes": "whole",
+              "writes": {
+                "keyedBy": "newick",
+                "keyed": [
+                  "provenance"
+                ]
+              },
               "shorthand": {
                 "string": "newick"
               }
@@ -6768,7 +6773,12 @@ export const configManifest: ConfigManifest = {
                 }
               ],
               "schema": "RowTree",
-              "writes": "whole",
+              "writes": {
+                "keyedBy": "newick",
+                "keyed": [
+                  "provenance"
+                ]
+              },
               "shorthand": {
                 "string": "newick"
               }
@@ -7541,7 +7551,12 @@ export const configManifest: ConfigManifest = {
                 }
               ],
               "schema": "RowTree",
-              "writes": "whole",
+              "writes": {
+                "keyedBy": "newick",
+                "keyed": [
+                  "provenance"
+                ]
+              },
               "shorthand": {
                 "string": "newick"
               }
@@ -8124,7 +8139,12 @@ export const configManifest: ConfigManifest = {
                 }
               ],
               "schema": "RowTree",
-              "writes": "whole",
+              "writes": {
+                "keyedBy": "newick",
+                "keyed": [
+                  "provenance"
+                ]
+              },
               "shorthand": {
                 "string": "newick"
               }
@@ -9314,7 +9334,12 @@ export const configManifest: ConfigManifest = {
                 }
               ],
               "schema": "RowTree",
-              "writes": "whole",
+              "writes": {
+                "keyedBy": "newick",
+                "keyed": [
+                  "provenance"
+                ]
+              },
               "shorthand": {
                 "string": "newick"
               }
@@ -10193,7 +10218,12 @@ export const configManifest: ConfigManifest = {
                 }
               ],
               "schema": "RowTree",
-              "writes": "whole",
+              "writes": {
+                "keyedBy": "newick",
+                "keyed": [
+                  "provenance"
+                ]
+              },
               "shorthand": {
                 "string": "newick"
               }
@@ -11079,7 +11109,12 @@ export const configManifest: ConfigManifest = {
                 }
               ],
               "schema": "RowTree",
-              "writes": "whole",
+              "writes": {
+                "keyedBy": "newick",
+                "keyed": [
+                  "provenance"
+                ]
+              },
               "shorthand": {
                 "string": "newick"
               }

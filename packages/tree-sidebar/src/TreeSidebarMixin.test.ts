@@ -305,6 +305,15 @@ describe('a clustering run in `rows.tree`', () => {
     expect(getLeafNames(copy.parsedTree!)).toEqual(['c', 'a', 'b'])
   })
 
+  it('reads no provenance while no newick is stored', () => {
+    const display = makeDisplay({
+      rows: { tree: { newick: RUN_TREE, provenance: PROVENANCE } },
+    })
+    setConf(display, ['rows', 'tree', 'newick'], null)
+    expect(display.rowTree).toBeUndefined()
+    expect(display.rowTreeProvenance).toBeUndefined()
+  })
+
   it('a move that drops the tree drops its provenance with it', () => {
     const display = makeDisplay()
     display.setRowOrder(named(['c', 'a', 'b']), {

@@ -214,10 +214,16 @@ describe('mergeBySlots over a keyed rows object', () => {
       rows: { field: 'tissue' },
     },
     {
-      name: 'a tree written as newick replaces the clustered one whole',
+      name: 'a tree written as newick drops the clustered provenance',
       base: { rows: { field: 'source', tree: CLUSTERED } },
       write: { rows: { tree: '(b,a);' } },
-      rows: { field: 'source', tree: '(b,a);' },
+      rows: { field: 'source', tree: { newick: '(b,a);' } },
+    },
+    {
+      name: 'a newick member write drops the clustered provenance',
+      base: { rows: { field: 'source', tree: CLUSTERED } },
+      write: { rows: { tree: { newick: '(b,a);' } } },
+      rows: { field: 'source', tree: { newick: '(b,a);' } },
     },
   ])('$name', ({ base, write, rows }) => {
     expect(mergeBySlots(base, write, slots).rows).toEqual(rows)

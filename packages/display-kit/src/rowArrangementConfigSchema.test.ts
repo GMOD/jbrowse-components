@@ -3,6 +3,7 @@ import {
   applyConfSettings,
   getConfigurationSchemaMetadata,
   plotOf,
+  plotWrites,
   readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
@@ -105,4 +106,63 @@ test('a treeProvenance written beside rows.tree points at rows.tree', () => {
     'Rows does not declare treeProvenance: loading without it — did you mean tree.provenance?',
   ])
   spy.mockRestore()
+})
+
+describe('a provenance describes only the newick beside it', () => {
+  const clustered = () =>
+    Display.create({
+      displayId: 'c',
+      rows: {
+        field: 'source',
+        sort: ['b', 'a'],
+        tree: { newick: NEWICK, provenance: PROVENANCE },
+      },
+    })
+  const OTHER = '(c,(a,b));'
+
+  test('a newick member write drops it, and restating the newick keeps it', () => {
+    const conf = clustered()
+    setConf(conf, ['rows', 'tree', 'newick'], NEWICK)
+    expect(treeOf(conf)).toEqual({ newick: NEWICK, provenance: PROVENANCE })
+    setConf(conf, ['rows', 'tree', 'newick'], OTHER)
+    expect(treeOf(conf)).toEqual({ newick: OTHER, provenance: undefined })
+  })
+
+  test('a bag writing another newick member drops it', () => {
+    const conf = clustered()
+    applyConfSettings(conf, { rows: { tree: { newick: OTHER } } })
+    expect(treeOf(conf)).toEqual({ newick: OTHER, provenance: undefined })
+  })
+
+  test('a plot edit of the newick drops the provenance the read restates', () => {
+    const conf = clustered()
+    const { rows } = plotOf(conf) as { rows: Record<string, unknown> }
+    const draft = {
+      rows: { ...rows, tree: { ...(rows.tree as object), newick: OTHER } },
+    }
+    expect(plotWrites(conf, draft, { whole: true }).rows).toEqual({
+      field: 'source',
+      sort: ['b', 'a'],
+      tree: { newick: OTHER },
+    })
+    expect(plotWrites(conf, { rows: { tree: OTHER } }).rows).toEqual({
+      field: 'source',
+      sort: ['b', 'a'],
+      tree: { newick: OTHER },
+    })
+  })
+
+  test('a whole plot edit changing the field drops a tree restated as newick', () => {
+    const conf = Display.create({
+      displayId: 'f',
+      rows: { field: 'source', sort: ['b', 'a'], tree: NEWICK },
+    })
+    expect(
+      plotWrites(
+        conf,
+        { rows: { field: 'tissue', sort: ['b', 'a'], tree: NEWICK } },
+        { whole: true },
+      ).rows,
+    ).toEqual({ field: 'tissue' })
+  })
 })

@@ -1,4 +1,8 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  applyConfSettings,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
 
 import { writeMembers } from './index.ts'
@@ -100,3 +104,23 @@ test('a domain written into a channel configured by an attribute keeps its field
     },
   })
 })
+
+test.each(['rows.tree=(b,(a,c));', 'rows.tree.newick=(b,(a,c));'])(
+  '%s writes a multi-leaf newick and drops the clustered provenance',
+  opt => {
+    const { view } = viewWith({
+      rows: {
+        field: 'source',
+        tree: { newick: '(a,b);', provenance: { regions: [] } },
+      },
+    })
+    const { configuration } = view.tracks[0]!.activeDisplay
+    applyConfSettings(configuration, writeMembers(view, 't', [opt]))
+    expect(readConfObject(configuration, ['rows', 'tree', 'newick'])).toBe(
+      '(b,(a,c));',
+    )
+    expect(
+      readConfObject(configuration, ['rows', 'tree', 'provenance']),
+    ).toBeUndefined()
+  },
+)

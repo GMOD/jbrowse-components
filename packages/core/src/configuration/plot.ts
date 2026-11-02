@@ -18,7 +18,7 @@ import {
   withImpliedField,
 } from '../util/colorScale.ts'
 import { isPlainObject } from '../util/objectUtils.ts'
-import { keyedWritesAt, mergeConfSettings } from './getConf.ts'
+import { mergeConfSettings } from './getConf.ts'
 import { readConfObject } from './readConfObject.ts'
 import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import {
@@ -26,10 +26,14 @@ import {
   isSlotDefinitionEntry,
   shorthandTargets,
 } from './schemaTypes.ts'
-import { refusingUndeclaredKeys } from './snapshotPreprocess.ts'
+import {
+  canonicalSpelling,
+  refusingUndeclaredKeys,
+} from './snapshotPreprocess.ts'
 
 import type { ConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import type { AnyConfigurationModel } from './types.ts'
+import type { KeyedWrites } from '@jbrowse/add-track-core'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 const plotLists = new WeakSet<IAnyType>()
@@ -85,9 +89,8 @@ export function plotKeysOf(conf: AnyConfigurationModel): string[] {
 
 // A one-member object a shorthand would write as a bare value prints as that
 // value, as a config file writes it, at any depth: `color: "red"`, a list
-// entry's `mark: "line"`. A keyed object (`rows`, `facet`) stays an object, so
-// `plot.rows.step` is always there to write, and so does one declaring
-// `readsAsObject` (`rows.tree`) (ADR-257).
+// entry's `mark: "line"`. A keyed object (`rows`, `facet`, `rows.tree`) stays
+// an object, so `plot.rows.step` is always there to write (ADR-257).
 function folded(member: unknown, value: unknown): unknown {
   if (!isStateTreeNode(member) || typeof value !== 'object' || value === null) {
     return value
@@ -115,7 +118,6 @@ function folded(member: unknown, value: unknown): unknown {
   )
   if (
     isKeyedWrites(meta.options.writes) ||
-    meta.options.readsAsObject ||
     entries.length !== 1 ||
     Object.keys(members).length !== 1 + Object.keys(shorthandWith).length
   ) {
@@ -188,27 +190,46 @@ export interface PlotWriteOptions {
 }
 
 // The whole plot text states every member a read gave it, so under a new
-// field the keyed members it left as read are the old field's, not a choice
+// field the keyed members it left as read are the old field's, not a choice.
+// Each member is compared in the spelling the read gives, a `rows.tree` typed
+// as newick against the object it lifts to, and a keyed object inside one
+// (`rows.tree`, keyed by its newick) answers the same way.
 function withoutRestatedKeyed(
-  conf: AnyConfigurationModel,
-  key: string,
+  node: AnyConfigurationModel | undefined,
   value: unknown,
   read: unknown,
+): unknown {
+  const meta = node ? getConfigurationSchemaMetadata(node) : undefined
+  const writes = meta?.options.writes
+  return meta &&
+    isKeyedWrites(writes) &&
+    isPlainObject(value) &&
+    isPlainObject(read)
+    ? keyedRestatement(node!, writes, canonicalSpelling(meta, value), read)
+    : value
+}
+
+function keyedRestatement(
+  node: AnyConfigurationModel,
+  keyed: KeyedWrites,
+  value: Record<string, unknown>,
+  read: Record<string, unknown>,
 ) {
-  const keyed = keyedWritesAt(getType(conf), [key])
-  if (keyed && isPlainObject(value) && isPlainObject(read)) {
-    const unstated = Object.fromEntries(
-      Object.entries(value).filter(
-        ([member, v]) =>
-          !keyed.keyed.includes(member) || !compareStructural(v, read[member]),
-      ),
-    )
-    const restated = new Set(staleKeyedMembers(keyed, read, unstated))
-    return Object.fromEntries(
-      Object.entries(value).filter(([member]) => !restated.has(member)),
-    )
-  }
-  return value
+  const unstated = Object.fromEntries(
+    Object.entries(value).filter(
+      ([member, v]) =>
+        !keyed.keyed.includes(member) || !compareStructural(v, read[member]),
+    ),
+  )
+  const restated = new Set(staleKeyedMembers(keyed, read, unstated))
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([member]) => !restated.has(member))
+      .map(([member, v]) => [
+        member,
+        withoutRestatedKeyed(subConfOf(node, member), v, read[member]),
+      ]),
+  )
 }
 
 // as a settings bag writes, so an object declaring `writes: 'members'` takes
@@ -228,7 +249,7 @@ function merged(
         .filter(([, value]) => value !== null)
         .map(([key, value]) => [
           key,
-          withoutRestatedKeyed(conf, key, value, current[key]),
+          withoutRestatedKeyed(subConfOf(conf, key), value, current[key]),
         ]),
     )
   }

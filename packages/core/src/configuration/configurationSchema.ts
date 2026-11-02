@@ -130,12 +130,6 @@ export interface ConfigurationSchemaOptions<
    */
   shorthandWith?: Record<string, unknown>
   /**
-   * A plot read gives this object in its object form whatever was written,
-   * never folded to its `shorthand`, so a reader handles one shape: `rows.tree`
-   * reads as `{ newick, provenance }` whether a config wrote the newick alone.
-   */
-  readsAsObject?: boolean
-  /**
    * What a snapshot key the schema does not declare meets, where MST would
    * drop it in silence: a config loading names the key on the console and
    * loads without it, so a config written for another version still draws,

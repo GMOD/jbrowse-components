@@ -10,7 +10,8 @@ Auto-generated from the config schema in the source — see the [config guide](/
 The `rows` setting of a display whose rows are samples or species rather
 than the values of a field. It holds the arrangement a reader gives the
 rows, which every product writes as a session edit to this object: the
-order, the labels, the tree and the focus, each by row name. The field-keyed displays' `Rows` object is this plus `field`.
+order, the labels, the tree and the focus, each by row name. The
+field-keyed displays' `Rows` object is this plus `field`.
 
 ## Example usage
 

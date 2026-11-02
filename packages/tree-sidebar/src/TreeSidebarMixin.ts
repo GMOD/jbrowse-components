@@ -334,10 +334,13 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
       /**
        * #getter
        * What `rowTree` was computed from, the locus and the settings; undefined
-       * for a tree that arrived as data.
+       * for a tree that arrived as data, and while no newick is stored, since
+       * a provenance describes only the newick beside it.
        */
       get rowTreeProvenance(): ClusterProvenance | undefined {
-        return getConf(host(self), ['rows', 'tree', 'provenance'])
+        return storedTree(self)
+          ? getConf(host(self), ['rows', 'tree', 'provenance'])
+          : undefined
       },
       /**
        * #getter

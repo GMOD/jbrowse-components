@@ -148,7 +148,11 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   what it states.
 - Objects whose members are alternatives (`encoding.color` `value | field |
   datum`, size, opacity) and one-action objects (alignments `sort`) stay
-  `writes: 'whole'`; `rows.color` and `rows.tree` are whole.
+  `writes: 'whole'`; `rows.color` is whole. `rows.tree` is keyed by its
+  `newick`, `provenance` its one keyed member: a provenance describes only
+  the newick beside it, so another newick, written as a member, a bag, a
+  launch arg or a plot edit, drops the provenance it does not state. Whole,
+  a member write of `rows.tree.newick` kept the old run's provenance.
 - One pure helper serves `mergeConfSettings`, `writeConfMember`, the share
   link delta (`trackConfigDelta`) and the CLI's `mergeBySlots`, whose
   `mergedSlots` gains the keyed form and unions the keyed lists across a
