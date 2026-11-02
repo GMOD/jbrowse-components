@@ -231,7 +231,7 @@ const NO_VALUE_LEVEL: ReadColorLevel = ['', 'noTagValue']
 // with no placement or on another chromosome, and in a chain a split mate's
 // junction and an unpaired segment's strand against its molecule's.
 const MATE_LEVELS: readonly ReadColorLevel[] = [
-  ['unmappedMate', 'unmappedMate'],
+  ['mateUnmapped', 'unmappedMate'],
   ['interchrom', 'interchrom'],
 ]
 

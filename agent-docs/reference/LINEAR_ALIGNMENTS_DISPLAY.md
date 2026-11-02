@@ -65,7 +65,7 @@ call site** — read `readChainHasSupp`. `framesUnpairedChainStrand` is the sing
 statement of when framing is live: in a chain, under an orientation field
 (`pairOrientation`, `insertSizeAndOrientation`). There a framed segment, a split
 mate's junction, an unmapped mate and an interchromosomal mate are levels of
-the field (`unpairedSplitSameStrand`, `splitInverted`, `unmappedMate`, ...), so
+the field (`unpairedSplitSameStrand`, `splitInverted`, `mateUnmapped`, ...), so
 `encoding.color`'s `scale.domain`, `scale.range` and `scale.names` reach them.
 Under every other field, and under a constant, a read paints its field's
 value: `strand` is the read's own, and a constant fill is one color in a chain
