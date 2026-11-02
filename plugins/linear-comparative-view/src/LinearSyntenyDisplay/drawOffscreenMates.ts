@@ -107,7 +107,6 @@ export interface OffscreenMateLane {
   bpPerPx: number
   offsetPx: number
   side: OffscreenMateSide
-  minAlignmentLength: number
   // the color for the contig a mark names, or absent for the band's grey
   markColorFor?: (refName: string) => string
   width: number
@@ -210,17 +209,16 @@ function forEachMark(
     w: number,
   ) => void,
 ) {
-  const { bpPerPx, offsetPx, width, minAlignmentLength, mateBand } = lane
+  const { bpPerPx, offsetPx, width, mateBand } = lane
   const contigFloor = MIN_CONTIG_MARK_PX * bpPerPx
   const contigBp = laneContigBp(lane.datasets)
   for (const [d, data] of lane.datasets.entries()) {
-    const { starts, ends, lengths, mateRefNameIds, mateAxis } = data
+    const { starts, ends, mateRefNameIds, mateAxis } = data
     const bpOfContig = contigBp[d]!
     for (let i = 0; i < starts.length; i++) {
       const x1 = starts[i]! / bpPerPx - offsetPx
       const x2 = ends[i]! / bpPerPx - offsetPx
       if (
-        lengths[i]! >= minAlignmentLength &&
         bpOfContig[mateRefNameIds[i]!]! >= contigFloor &&
         x2 >= 0 &&
         x1 <= width &&
@@ -359,7 +357,7 @@ interface LaneMarks {
   widths: Float64Array
   dataset: Uint32Array
   entry: Uint32Array
-  // Aligned bp, the number the `minAlignmentLength` floor reads, decides every
+  // Aligned bp, the number a `length` filter reads, decides every
   // contest a zoomed-out strip has more entrants than room for: which stretch
   // gets a label row, which contig a pointer over stacked marks names, and
   // which color is painted last. A whole-genome band puts a 12Mb block and a

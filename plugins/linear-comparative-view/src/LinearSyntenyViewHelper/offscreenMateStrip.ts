@@ -43,7 +43,6 @@ export interface OffscreenMateSource {
   })[]
   parentView: {
     offscreenDrawn: boolean
-    minLength: number
     overdrawPx: number
     width: number
   }
@@ -96,7 +95,7 @@ export function offscreenMateStrips(
   if (!parentView.offscreenDrawn || !rowPair) {
     return []
   }
-  const { minLength, overdrawPx, width } = parentView
+  const { overdrawPx, width } = parentView
   const { v0, v1 } = rowPair
   const sides = [
     { side: 'top' as const, row: v0, mateRow: v1, navRow: level + 1 },
@@ -115,7 +114,6 @@ export function offscreenMateStrips(
             mateBand,
             bpPerPx: row.bpPerPx,
             offsetPx: row.offsetPx,
-            minAlignmentLength: minLength,
             side,
             navRow,
             markColorFor: offscreenMateMarkColorFor(
@@ -154,8 +152,9 @@ export function offscreenMateHit(
 
 // What this band sends to one contig, in sequence and in alignments: a property
 // of the band's data rather than the current transform, so it holds the ones
-// drawn right now and the ones under the length floor too. Which of them are
-// drawable is what the mark's presence already says. Both numbers are per
+// drawn right now and the ones under the contig floor too, but none the view's
+// `filter` refuses. Which of them are drawable is what the mark's presence
+// already says. Both numbers are per
 // contig in the lane, so the hover reads them rather than walking the marks.
 export function offscreenMateTotals(
   model: OffscreenMateSource,

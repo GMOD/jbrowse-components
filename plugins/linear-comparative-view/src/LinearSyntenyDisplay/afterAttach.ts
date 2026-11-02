@@ -157,13 +157,13 @@ export function doAfterAttach(
         // names belong to the target assembly and the target-axis strip's to
         // the query one. Sharing one resolver reads as working on any pair
         // whose two assemblies spell a contig alike, which is most of them.
-        offscreenMates: renameOffscreenMates(
-          result.offscreenMates,
-          targetCanonical,
-        ),
+        offscreenMates: renameOffscreenMates(result.offscreenMates, {
+          mate: targetCanonical,
+          anchor: queryCanonical,
+        }),
         targetOffscreenMates: renameOffscreenMates(
           result.targetOffscreenMates,
-          queryCanonical,
+          { mate: queryCanonical, anchor: targetCanonical },
         ),
       }
     },

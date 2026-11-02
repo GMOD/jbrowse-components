@@ -120,7 +120,6 @@ const params = {
   height: 50,
   side: 'top' as const,
   mateBand: { lo: -Infinity, hi: Infinity },
-  minAlignmentLength: 0,
   markColor: 'red',
   labelColor: 'blue',
   haloColor: 'white',
@@ -255,38 +254,6 @@ test('a collapsed band draws nothing rather than a zero-height row', () => {
   const { ctx, rects } = fakeCtx()
   draw(ctx, [{ datasets: [data([[100, 400]])] }], { height: 0 })
   expect(rects).toHaveLength(0)
-})
-
-test('the alignment-length floor hides a mark the ribbons would also hide', () => {
-  const { ctx, rects } = fakeCtx()
-  draw(ctx, [
-    {
-      minAlignmentLength: 200,
-      datasets: [
-        data([
-          [100, 400],
-          [1000, 1100],
-        ]),
-      ],
-    },
-  ])
-  expect(rects).toHaveLength(1)
-  expect(rects[0]!.x).toBe(10)
-})
-
-// The floor is the block's own length, which the region clamp can make much
-// shorter than the span drawn for it — see collectOffscreenMates. Culling on
-// what is drawn hid the marks at a region's edges and nothing else.
-test('the floor reads the block length, not the span the clamp left', () => {
-  const { ctx, rects } = fakeCtx()
-  const clamped = data([[100, 200]])
-  draw(ctx, [
-    {
-      minAlignmentLength: 500,
-      datasets: [{ ...clamped, lengths: Float32Array.from([900]) }],
-    },
-  ])
-  expect(rects).toHaveLength(1)
 })
 
 // The marks are the background and the labels are the finding, so the greys are
@@ -513,15 +480,6 @@ test('a hover below the strip reads no alignment at all', () => {
 test('beside every mark is not a hit', () => {
   const layout = { ...params, datasets: [data([[100, 400]], ['ctgB'])] }
   expect(offscreenMateAt(layout, 60, 3)).toBeUndefined()
-})
-
-test('a mark the length floor hid is not hittable either', () => {
-  const layout = {
-    ...params,
-    minAlignmentLength: 500,
-    datasets: [data([[100, 400]], ['ctgB'])],
-  }
-  expect(offscreenMateAt(layout, 20, 3)).toBeUndefined()
 })
 
 // Overlapping marks composite into one grey, so nothing is literally on top:

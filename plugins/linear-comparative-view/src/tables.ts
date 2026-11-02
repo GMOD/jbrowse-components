@@ -1,6 +1,5 @@
 import { clamp } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { lowerBoundOf } from '@jbrowse/core/util/fieldPredicate'
 import { measureText } from '@jbrowse/core/util/measureText'
 import { registerComparativeAdapters } from '@jbrowse/plugin-comparative-adapters/tables'
 import {
@@ -31,6 +30,10 @@ import {
   createSyntenyColorFunction,
 } from './LinearSyntenyDisplay/syntenyColors.ts'
 import { ribbonThinFade } from './LinearSyntenyDisplay/syntenyRibbonPath.ts'
+import {
+  admittedOffscreenMates,
+  offscreenMateFilter,
+} from './LinearSyntenyRPC/collectOffscreenMates.ts'
 import { executeSyntenyFeaturesAndPositions } from './LinearSyntenyRPC/executeSyntenyFeaturesAndPositions.ts'
 import { computePresentCigarKinds } from './LinearSyntenyRPC/presentCigarKinds.ts'
 import {
@@ -46,8 +49,12 @@ import { offscreenMateMarkColorFor } from './LinearSyntenyViewHelper/offscreenMa
 import { offscreenMateSummary } from './LinearSyntenyViewHelper/offscreenMateStrip.ts'
 
 import type { OffscreenMateLane } from './LinearSyntenyDisplay/drawOffscreenMates.ts'
-import type { OffscreenMateData } from './LinearSyntenyRPC/collectOffscreenMates.ts'
+import type {
+  FetchedOffscreenMates,
+  OffscreenMateData,
+} from './LinearSyntenyRPC/collectOffscreenMates.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   AxisArgs,
@@ -104,30 +111,33 @@ const KIND_NAMES: Record<number, string> = {
 const DEFAULT_LEVEL_HEIGHT = 100
 
 interface OffscreenLane {
+  // every entry the worker placed, which the rows list
+  fetched: FetchedOffscreenMates
+  // the ones the filter admits, which the strip draws and the contigs count
   data: OffscreenMateData
+  passes?: (index: number) => boolean
   axis: 'query' | 'target'
   on: ComparativeAxis
   // the contig color the strip paints a mark in, absent for the band's grey
   markColorFor?: (refName: string) => string
   colorOf: (refName: string) => { color: string; alpha: number }
-  minAlignmentLength: number
 }
 
 // The lane the display hangs off a row's edge, its marks in the colors
 // `offscreenMateMarkColorFor` gives them: a contig's ribbon color where the
 // ribbons are keyed by the axis the mate is on, the band's grey otherwise
 function offscreenLane(
-  data: OffscreenMateData,
+  fetched: FetchedOffscreenMates,
   axis: 'query' | 'target',
   on: ComparativeAxis,
   {
     field,
     namePosition,
-    minAlignmentLength,
+    filter,
   }: {
     field: string | undefined
     namePosition?: RefNamePosition
-    minAlignmentLength: number
+    filter: readonly FieldPredicate[]
   },
 ): OffscreenLane {
   const markColorFor = offscreenMateMarkColorFor(
@@ -136,12 +146,13 @@ function offscreenLane(
   )
   const grey = offscreenMateColors(bandGroundColor()).markColor
   return {
-    data,
+    fetched,
+    data: admittedOffscreenMates(fetched, filter, { axis }),
+    passes: offscreenMateFilter(fetched, filter, { axis }),
     axis,
     on,
     markColorFor,
     colorOf: refName => unpack(cssColorToABGR(markColorFor?.(refName) ?? grey)),
-    minAlignmentLength,
   }
 }
 
@@ -225,7 +236,6 @@ function offscreenStrip(
       bpPerPx: lane.on.bpPerPx,
       offsetPx: 0,
       side: lane.axis === 'query' ? 'top' : 'bottom',
-      minAlignmentLength: lane.minAlignmentLength,
       markColorFor: lane.markColorFor,
       width,
       height,
@@ -250,11 +260,12 @@ function offscreenStrip(
 // back on the region of that axis its clamped span lies in, in the color the
 // strip paints it and whether it clears the strip's floors
 function offscreenRows({
-  data,
+  fetched: data,
+  data: admitted,
+  passes,
   axis,
   on,
   colorOf,
-  minAlignmentLength,
 }: OffscreenLane) {
   const n = data.starts.length
   const from = Array.from(data.starts, (s, i) => locateCum(on, s, data.ends[i]))
@@ -280,8 +291,8 @@ function offscreenRows({
     drawn: Array.from(
       data.mateRefNameIds,
       (id, i) =>
-        data.lengths[i]! >= minAlignmentLength &&
-        (data.alignedBp[id] ?? Infinity) >= contigFloor,
+        (passes?.(i) ?? true) &&
+        (admitted.alignedBp[id] ?? Infinity) >= contigFloor,
     ),
   }
 }
@@ -411,7 +422,6 @@ export async function syntenyTables(
   })
 
   const n = featureData.featureIds.length
-  const minLength = lowerBoundOf(config.filter, 'length') ?? 0
   const mode = config.render.antialias
   const fadeThin =
     mode === undefined
@@ -530,12 +540,12 @@ export async function syntenyTables(
     offscreenLane(featureData.offscreenMates, 'query', q, {
       field: settings.field,
       namePosition: axisNamePosition(t),
-      minAlignmentLength: minLength,
+      filter: config.filter,
     }),
     offscreenLane(featureData.targetOffscreenMates, 'target', t, {
       field: settings.field,
       namePosition: axisNamePosition(q),
-      minAlignmentLength: minLength,
+      filter: config.filter,
     }),
   ] as const
   const offscreen = concatColumns(

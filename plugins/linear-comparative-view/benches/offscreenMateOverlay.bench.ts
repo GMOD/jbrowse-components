@@ -12,8 +12,8 @@
 //
 // THE QUESTION. `offscreenMateHit` runs on every pointer move in a synteny band,
 // AHEAD of the ribbon pick, and again on every pointer up. The marks it scans are
-// unbounded in the same way the ribbons are — no cap, and `minAlignmentLength` is
-// applied at draw time rather than at fetch time — so a level whose target row is
+// unbounded in the same way the ribbons are — no cap, and the view's `filter` is
+// applied on the main thread rather than at fetch time — so a level whose target row is
 // narrowed to one contig can carry a mark per alignment in the whole query
 // genome. The overlay's own repaint is on the same budget.
 //
@@ -109,7 +109,6 @@ function layoutFor(data: OffscreenMateData): OffscreenMateLane {
     bpPerPx: GENOME_BP / WIDTH,
     offsetPx: 0,
     side: 'top',
-    minAlignmentLength: 0,
     width: WIDTH,
     height: HEIGHT,
   }

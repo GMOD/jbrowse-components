@@ -40,7 +40,7 @@ Four things followed from having no measure of a mark's weight:
 
 ## Decision
 
-**Aligned bp — the same number `minAlignmentLength` reads — decides every
+**Aligned bp — the same number a `length` filter reads — decides every
 contest, summed over whatever is competing.**
 
 - **A label row goes to the stretch holding the most sequence**, a stretch

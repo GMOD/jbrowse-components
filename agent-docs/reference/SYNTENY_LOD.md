@@ -155,6 +155,13 @@ degenerate ribbon: the full-height band reads as an alignment to the locus below
   the one place draw, hit test, tooltip count and SVG export all read.
 - Marks are placed from `views[level]`, the level's upper row; the lower row's
   ruler puts every mark at a wrong offset.
+- **A mark honors the view's whole `filter`, as its ribbon would.** C and D
+  read it through the ribbon colors, a refused ribbon painting at zero alpha.
+  A and B have no ribbon, so the worker sends each placed mate's strand,
+  anchored contig and channels, and `admittedOffscreenMates` tests them,
+  `query` and `target` swapped on the target axis. A refused mark leaves its
+  contig's tallies; a mate the worker could not place has no lanes and keeps
+  counting.
 The flight arc costs one extra synteny RPC, because the 500ms leading-edge
 debounce absorbs it.
 

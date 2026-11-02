@@ -142,7 +142,6 @@ const lane = {
   bpPerPx: 2000,
   offsetPx: 0,
   side: 'top' as const,
-  minAlignmentLength: 0,
   width: WIDTH,
   height: HEIGHT,
 }

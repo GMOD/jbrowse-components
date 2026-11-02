@@ -52,11 +52,9 @@ export interface ParentViewDuck extends FollowAnchorHost {
   // paint (see ComparativeSurface.hostMounted)
   effectiveBodyMounted: boolean
   offscreenDrawn: boolean
-  // the same floor the ribbons are culled by, applied to the marks so filtering
-  // a hairball down does not leave a fringe of marks for what it hid
-  minLength: number
   // the alignments drawn; the color pass paints one the filter rejects at zero
-  // alpha
+  // alpha, and the off-screen marks drop it, so filtering a hairball down does
+  // not leave a fringe of marks for what it hid
   predicates: FieldPredicate[]
   // The view-wide ribbon settings a display renders and fetches by. View-wide
   // rather than per display on purpose: one opacity slider, one CIGAR mode and

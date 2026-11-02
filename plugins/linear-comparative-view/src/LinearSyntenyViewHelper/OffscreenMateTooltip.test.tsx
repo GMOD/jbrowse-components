@@ -31,7 +31,6 @@ function source(
     ],
     parentView: {
       offscreenDrawn: true,
-      minLength: 0,
     },
   } as OffscreenMateSource
 }
@@ -153,7 +152,6 @@ function bothLanes() {
     ],
     parentView: {
       offscreenDrawn: true,
-      minLength: 0,
     },
   } as unknown as OffscreenMateSource
 }

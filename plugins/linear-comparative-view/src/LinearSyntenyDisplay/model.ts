@@ -28,6 +28,7 @@ import {
   unreadFilterFields,
 } from '@jbrowse/synteny-core'
 
+import { admittedOffscreenMates } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
 import { isSyntenyLevel } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import { getCigarOpAtInstance, getTooltipLines } from './components/util.ts'
@@ -35,7 +36,7 @@ import { culledRibbonMateData } from './culledRibbonMates.ts'
 import { computeSyntenyColors } from './syntenyColors.ts'
 
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
-import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
+import type { FetchedOffscreenMates } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import type { ParentViewDuck } from '../LinearSyntenyViewHelper/parentViewDuck.ts'
 import type { ClickCoord } from './components/util.ts'
 import type { LinearSyntenyDisplayConfigSchema } from './configSchemaF.ts'
@@ -74,13 +75,13 @@ export interface SyntenyFeatureData extends SyntenyFeatureLanes {
   // no region the facing row displays reaches their mate. Counted per contig
   // and placed on the query axis. Not a subset of anything above: no entry
   // here has a row in the per-feature lanes.
-  offscreenMates: OffscreenMateData
+  offscreenMates: FetchedOffscreenMates
   // The same thing seen from the other row, and empty unless the view asked for
   // the second fetch: alignments anchored on a target-axis contig whose query
   // end no region of the row above reaches. The query-axis fetch
   // never requests these, so this is the one class the view cannot report from
   // one fetch. Placed on the TARGET axis.
-  targetOffscreenMates: OffscreenMateData
+  targetOffscreenMates: FetchedOffscreenMates
   // whether the lower row was queried for this payload, which is what lets its
   // strip be drawn: from one fetch the lower row's culled lane holds only what
   // fell inside the upper row's pan buffer
@@ -506,10 +507,31 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #getter
        * the payload's off-screen mate marks while `geometryCurrent`, which is
-       * what the strip places them against
+       * what the strip places them against, less what the view's `filter`
+       * refuses
        */
       get mateMarks() {
-        return this.geometryCurrent ? self.featureData : undefined
+        const data = this.geometryCurrent ? self.featureData : undefined
+        const { predicates } = this.view
+        const extras = {
+          trackId: this.trackId,
+          referenceSide: this.referenceSide,
+        }
+        return data
+          ? {
+              offscreenMates: admittedOffscreenMates(
+                data.offscreenMates,
+                predicates,
+                { ...extras, axis: 'query' },
+              ),
+              targetOffscreenMates: admittedOffscreenMates(
+                data.targetOffscreenMates,
+                predicates,
+                { ...extras, axis: 'target' },
+              ),
+              targetQueried: data.targetQueried,
+            }
+          : undefined
       },
       /**
        * #getter

@@ -238,7 +238,14 @@ export async function executeSyntenyFeaturesAndPositions({
    *   endpoint to run a ribbon to, so it is counted and marked on the target
    *   axis: the mirror of `offscreenMates` below.
    */
-  const targetOffscreenMates = createOffscreenMateCollector(v2Index)
+  const channelNames = [
+    ...PRESET_ATTRIBUTES,
+    ...declaredAttributes(adapterConfig),
+  ]
+  const targetOffscreenMates = createOffscreenMateCollector(
+    v2Index,
+    channelNames,
+  )
   const flippedRibbons: Feature[] = []
   if (targetAxisFeatures) {
     // the FETCHED window, not the displayed regions: what makes the two sets
@@ -257,12 +264,9 @@ export async function executeSyntenyFeaturesAndPositions({
       const hi = Math.max(mate.start, mate.end)
       if (!findRegionEntry(v1Index, mate.refName, lo, hi)) {
         targetOffscreenMates.add(
-          refName,
-          f.get('start'),
-          f.get('end'),
-          mate.refName,
-          lo,
-          hi,
+          f,
+          { refName, start: f.get('start'), end: f.get('end') },
+          mate,
         )
       } else if (!findRegionEntry(v1FetchedIndex, mate.refName, lo, hi, true)) {
         const flipped = flipSyntenyFeature(f)
@@ -282,7 +286,7 @@ export async function executeSyntenyFeaturesAndPositions({
   // The v2 half of the test above is not just a filter — see
   // `collectOffscreenMates`. Split out so what it drops can be counted and
   // placed on the query axis instead of vanishing.
-  const offscreenMates = createOffscreenMateCollector(v1Index)
+  const offscreenMates = createOffscreenMateCollector(v1Index, channelNames)
   function decorate(f: Feature, flipped: boolean) {
     const refName = f.get('refName')
     const mate = getMate(f)
@@ -292,14 +296,7 @@ export async function executeSyntenyFeaturesAndPositions({
       // before the draw-order tier below, which is about how a ribbon stacks
       // against the others — this one gets no ribbon
       if (!v2RefNames.has(mate.refName)) {
-        offscreenMates.add(
-          refName,
-          start,
-          end,
-          mate.refName,
-          mate.start,
-          mate.end,
-        )
+        offscreenMates.add(f, { refName, start, end }, mate)
         return
       }
       const px = Math.max(
@@ -357,10 +354,7 @@ export async function executeSyntenyFeaturesAndPositions({
   // presets plus whatever the track declares. `identity` is in here too and
   // aliases identitiesArray below, so identity fade and the detail panel keep
   // their named field without a second copy or a second transfer.
-  const channels = createAttributeChannels(
-    [...PRESET_ATTRIBUTES, ...declaredAttributes(adapterConfig)],
-    count,
-  )
+  const channels = createAttributeChannels(channelNames, count)
 
   // Distinct values per feature, so a dictionary would cost the same clone plus
   // an index array — see `makeStringDict` for where the line is.
@@ -427,15 +421,16 @@ export async function executeSyntenyFeaturesAndPositions({
   ) {
     if (d.flipped) {
       targetOffscreenMates.add(
-        d.mateRefName,
-        d.mate.start,
-        d.mate.end,
-        d.refName,
-        fStart,
-        fEnd,
+        d.f,
+        { refName: d.mateRefName, start: d.mate.start, end: d.mate.end },
+        { refName: d.refName, start: fStart, end: fEnd },
       )
     } else {
-      offscreenMates.add(d.refName, d.start, d.end, d.mateRefName, mStart, mEnd)
+      offscreenMates.add(
+        d.f,
+        { refName: d.refName, start: d.start, end: d.end },
+        { refName: d.mateRefName, start: mStart, end: mEnd },
+      )
     }
   }
   let validCount = 0
@@ -738,6 +733,11 @@ export async function executeSyntenyFeaturesAndPositions({
   // Derived rather than hand-listed. The list this replaces named eighteen
   // buffers in two groups and had no dedup, so `attributes` gaining a channel
   // that aliases another field, or `instanceData` gaining an array, was a
-  // DataCloneError naming an index in a list nobody could see.
-  return rpcResultWithArrayBuffers({ ...featureData, instanceData })
+  // DataCloneError naming an index in a list nobody could see. Two levels
+  // down, since the off-screen mates carry their own channels, allocated per
+  // call like everything else here.
+  return rpcResultWithArrayBuffers(
+    { ...featureData, instanceData },
+    { depth: 2 },
+  )
 }

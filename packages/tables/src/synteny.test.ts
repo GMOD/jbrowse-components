@@ -248,6 +248,19 @@ test('the strip names a mate contig in its ribbon color only where the ribbons k
     view: { filter: [{ field: 'length', gte: 10000 }] },
   })
   expect(short.offscreen.drawn).toEqual([false])
+  expect(short.offscreenContigs.count).toEqual([0])
+  expect(short.offscreenStrip.marks.x).toHaveLength(0)
+  const elsewhere = await engine.synteny({
+    ...narrow,
+    view: { filter: [{ field: 'query', oneOf: ['ctgZ'] }] },
+  })
+  expect(elsewhere.offscreen.drawn).toEqual([false])
+  expect(elsewhere.offscreenStrip.marks.x).toHaveLength(0)
+  const kept = await engine.synteny({
+    ...narrow,
+    view: { filter: [{ field: 'query', oneOf: ['ctgA'] }] },
+  })
+  expect(kept.offscreen.drawn).toEqual([true])
 })
 
 test('identity keys as a ramp from 0% to 100%, and mapq as chips', async () => {

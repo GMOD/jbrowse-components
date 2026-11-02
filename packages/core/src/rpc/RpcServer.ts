@@ -128,7 +128,14 @@ function detachedFieldName(view: ArrayBufferView, path: string) {
 // the wiggle score matrix and the variant genotype matrix return — derives its
 // list here rather than looping at the call site. Both had to, because
 // `Object.entries` is blank on either.
-export function rpcResultWithArrayBuffers<T extends object>(value: T) {
+//
+// `depth` walks further for a producer that nests a group inside a group,
+// and is that producer's promise that every buffer down there is its own
+// per-call allocation, since a transfer moves it.
+export function rpcResultWithArrayBuffers<T extends object>(
+  value: T,
+  { depth = 1 }: { depth?: number } = {},
+) {
   // A Set because several fields can be views onto one allocation (subarrays of
   // a shared buffer), and postMessage rejects a transfer list with a duplicate
   // entry outright. SharedArrayBuffer-backed views are skipped for the same
@@ -156,7 +163,7 @@ export function rpcResultWithArrayBuffers<T extends object>(value: T) {
       }
     }
   }
-  collect(value, '', 1)
+  collect(value, '', depth)
 
   if (detached.length > 0) {
     throw new Error(
