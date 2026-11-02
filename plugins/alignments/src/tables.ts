@@ -152,6 +152,7 @@ import {
 } from './features/sashimi/bandFeed.ts'
 import { visibleRegionJunctions } from './features/sashimi/computeOverlay.ts'
 import {
+  SPLIT_JUNCTION_CLASSES,
   junctionClass,
   junctionSource,
 } from './features/sashimi/junctionClass.ts'
@@ -238,7 +239,6 @@ import type {
   LaidOutPileupData,
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
-import type { ArcSplitCategory } from './features/arcs/arcSplitCategory.ts'
 import type { CrossRegionArc, RegionInfo } from './features/arcs/arcTypes.ts'
 import type { ArcsUploadData } from './features/arcs/types.ts'
 import type {
@@ -732,8 +732,9 @@ function interbase(d: WorkerPileupData, paint: MarkColors) {
 /**
  * The junctions the reads' skips and split reads support, merged as the
  * sashimi band merges them: each once, with its supporting-read count, its
- * `class` and `source` as the filter's `junction` fields name them, its
- * split class (`split`, '' for a splice junction), the
+ * `class` and `source` as the filter's `junction` fields name them, a split
+ * junction's `level` (the `insertSizeAndOrientation` level its color paints,
+ * '' for a splice junction), the
  * strand its reads' tags or its splice motif give a splice junction (0 where
  * neither says, and for a split junction), and the motif where the reference
  * was read. Every junction, down to a single
@@ -768,7 +769,7 @@ function junctions(
     end: merged.map(j => j.end),
     count: merged.map(j => j.count),
     class: merged.map(j => junctionClass(j.split)),
-    split: merged.map(j => j.split ?? ''),
+    level: merged.map(j => (j.split ? arcLevelOf(j.split) : '')),
     source: merged.map(j => junctionSource(junctionClass(j.split))),
     strand: merged.map(j => j.strand),
     motif: merged.map(j => spliceMotifLabel(j.motif) ?? ''),
@@ -1688,7 +1689,8 @@ function markLegends(
     junctions: {
       strand: number[]
       source: string[]
-      split: (ArcSplitCategory | '')[]
+      class: string[]
+      level: string[]
       shown: boolean[]
     }
     interbaseCoverage: { type: InterbaseTypeName[] }
@@ -1714,9 +1716,13 @@ function markLegends(
       resolvePalette().alignmentFill,
       {
         classes: new Set(
-          tables.junctions.split.filter(
-            (split, i): split is ArcSplitCategory =>
-              split !== '' && shownJunction(i),
+          SPLIT_JUNCTION_CLASSES.filter(split =>
+            tables.junctions.class.some(
+              (c, i) =>
+                shownJunction(i) &&
+                c === junctionClass(split) &&
+                tables.junctions.level[i] === arcLevelOf(split),
+            ),
           ),
         ),
         palette: paint.palette,

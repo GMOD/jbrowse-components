@@ -1228,14 +1228,18 @@ test('a junction says whether the display shows it, its arc height and its strok
 
 test('the junction key lists the split classes shown, and nothing while the sashimi band is hidden', async () => {
   const t = await engine.alignments(LONG_READS)
-  const splits = new Set(t.junctions.split.filter(s => s !== ''))
+  const splits = new Set(
+    t.junctions.level
+      .map((level, i) => `${t.junctions.class[i]} ${level}`)
+      .filter((_, i) => t.junctions.source[i] === 'split'),
+  )
   expect(splits.size).toBeGreaterThan(0)
   expect(t.junctionLegend.label).toHaveLength(splits.size)
   const hidden = await engine.alignments({
     ...LONG_READS,
     display: { sashimi: { show: false } },
   })
-  expect(hidden.junctions.split).toEqual([])
+  expect(hidden.junctions.level).toEqual([])
   expect(hidden.junctionLegend).toEqual({ label: [], color: [] })
 })
 

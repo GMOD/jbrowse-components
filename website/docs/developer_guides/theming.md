@@ -85,7 +85,7 @@ theme; anything you don't set keeps its preset value.
 | `bases.N` | `PaletteColor` | N / ambiguous base |
 | `frames` | `Frames` | Reading-frame coloring outside CDS, indexed 1..3 and -1..-3 |
 | `framesCDS` | `Frames` | Reading-frame coloring within CDS, indexed 1..3 and -1..-3 |
-| `alignmentFill` | `AlignmentFill` | Read fill by pair orientation, when coloring alignments by pair |
+| `alignmentFill` | `AlignmentFill` | Read fills keyed by the `insertSizeAndOrientation` levels they paint: `read`, `RL`, `LL`, `RR`, `mateUnmapped` |
 
 <!-- PALETTE_KEYS END -->
 

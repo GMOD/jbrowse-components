@@ -74,7 +74,7 @@ declare module '@mui/material/styles' {
     frames: Frames
     /** Reading-frame coloring within CDS, indexed 1..3 and -1..-3 */
     framesCDS: Frames
-    /** Read fill by pair orientation, when coloring alignments by pair */
+    /** Read fills keyed by the `insertSizeAndOrientation` levels they paint: `read`, `RL`, `LL`, `RR`, `mateUnmapped` */
     alignmentFill: AlignmentFill
   }
   interface PaletteOptions extends Partial<StringColors> {
