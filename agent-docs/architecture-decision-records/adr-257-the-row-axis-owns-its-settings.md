@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Everything about a row display's row axis lives under `rows`, as a Vega-Lite channel owns its scale, guide and sort: `rowHeight` is `rows.step: number | 'fit'` (`'fit'`, the default, divides `height` between the rows, as `heightMode: 'fit'` does), the sidebar `axis` is `rows.axis`, per-row colors are `rows.colors`, an override map beside `labels` that wins over the row-attribute color channel `rows.color`, `rowGroups` is `rows.groups`, `rows.kept` is `rows.filter` (a predicate list over the row table), and `rows.tree` holds `{ newick, provenance }`. The variant display's `unit` becomes `rows.field: 'sample' | 'haplotype'`, haplotype a refinement of sample. A new declared write rule makes this safe: on `rows` and `facet`, a write that changes `field` unsets what names a row by its value (sort, labels, colors, tree, filter entries on the row name), so the layer below shows through, and merges the rest; what names an attribute stays. Amends ADR-238 and ADR-231; reverses ADR-194's row-height placement"
+summary: "Everything about a row display's row axis lives under `rows`, as a Vega-Lite channel owns its scale, guide and sort: `rowHeight` is `rows.step: number | 'fit'` (`'fit'`, the default, divides `height` between the rows, as `heightMode: 'fit'` does), the sidebar `axis` is `rows.axis`, per-row colors are `rows.colors`, an override map beside `labels` that wins over the row-attribute color channel `rows.color`, `rowGroups` is `rows.groups`, `rows.kept` stays (row names, keyed) beside a new `rows.filter` (attribute predicates, not keyed), and `rows.tree` holds `{ newick, provenance }`. The variant display's `unit` becomes `rows.field: 'sample' | 'haplotype'`, haplotype a refinement of sample. A new declared write rule makes this safe: on `rows` and `facet`, a write that changes `field` unsets what names a row by its value (sort, labels, colors, tree, kept), so the layer below shows through, and merges the rest; what names an attribute stays. Amends ADR-238 and ADR-231; reverses ADR-194's row-height placement"
 ---
 
 # ADR-257: The row axis owns its settings
@@ -40,7 +40,7 @@ split against the code). Colin ruled the unit switch and the filter reset
 | `rowColor` `name` pairs | `rows.colors: { row: css }` | a per-row override map beside `labels`, ggplot2's `scale_*_manual(values = c(name = ...))` |
 | `rowColor` over an attribute, or `name` with only a palette or `unknown` | `rows.color: { field, scale }` | a mapping from a row attribute through a scale; `encoding.color` stays the value color |
 | `rowGroups [{ match, group }]` | `rows.groups` | derives the `group` row attribute (ggplot2's `group`) that `facet` and `rows.color` read |
-| `rows.kept` | `rows.filter: [{ field, oneOf, ... }]` | "a predicate drops" (ADR-238): a clade pick writes `{ field: 'name', oneOf }`, and a row attribute can narrow too |
+| `rows.kept` | `rows.kept` stays (names, keyed); new `rows.filter` (attribute predicates, not keyed) | `kept` lists row names, which only a literal name can follow through the haplotype alias; `filter` is "a predicate drops" (ADR-238) over row attributes, ANDed, applied before `kept`, refusing `name`, `sampleName`, `HP`, `label` and `color` with a pointer at `kept` |
 | `rows.tree` + `rows.treeProvenance` | `rows.tree`: newick, or `{ newick, provenance }` | one setting, written whole |
 | variant `unit: sample \| haplotype` | variant `rows.field: 'sample' \| 'haplotype'` | what one row is, which `rows.field` exists to say |
 
@@ -50,8 +50,10 @@ lanes' x ruler) and the alignments display's top-level `unit: read | chain`,
 which says what one drawn glyph is rather than what one row is. Members follow
 capability: `step` where rows scroll (variant, the mark family), `groups` on
 the mark family. The multi-way lanes' `rows` keeps the `sort` and `labels` it
-already reads and takes `filter` for `kept`; with no filter it shows the
-configured lanes, as an empty `kept` did. MAF's `rows` takes no `field`, which
+already reads and keeps `kept`, a selection there (it replaces the configured
+lanes and can add one) where on a row display it narrows; empty shows the
+configured lanes. It takes no `filter`, and neither does MAF, whose rows carry
+no attributes. MAF's `rows` takes no `field`, which
 would be a one-value enum there.
 
 One naming rule makes each member predictable: a plural member is a map keyed
@@ -61,8 +63,26 @@ by row name (`labels`, `colors`), a singular member is a channel or setting
 description, and so does the validator's error for a swapped member. There is
 no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
 
-- `rows.filter` is a predicate list with no carve-out: one matching no row
-  draws no rows and says so, where `kept` naming no current row drew every row.
+- `rows.kept` has no carve-out: a list matching no row draws no rows and says
+  so, where naming no current row drew every row, on the worker's MAF fetch
+  too (`visibleSamples`). Empty still shows every row. The notice names the
+  unmatched names only where the track lists its rows up front (VCF samples,
+  configured MAF species, wiggle's subtracks); mark-family rows are found per
+  window and MAF copy rows exist at some loci, so there it gives the count.
+- `rows.filter` is declared where rows carry attributes (variant: samplesTsv
+  columns; wiggle: subtrack fields; the mark family: `group`), and names an
+  attribute, never compared with the current `rows.field`, which changes after
+  load. Absent or `''` is missing and fails every test but `valid: false`.
+- One narrowing (`rowNarrowing`: `filter`, then `kept`) feeds every reader:
+  `clusterableSources`, the pruned tree, the variant fetch's samples, the
+  "Showing N of M rows" chip and its line, and the tables export. An empty
+  view's notice says which half emptied it.
+- The chip's "Show all" clears `kept` and returns `filter` to the config's, so
+  a filter the config states shows through, stated in the chip's tooltip;
+  "Reset row order" restores both; "Clear subtree filter" clears `kept` alone.
+- A top-level `filter` entry on a row attribute (the variant and mark displays
+  test records there) points at `rows.filter`, in the notice and in
+  `jbrowse validate`.
 - A plot read returns `rows.tree` in its object form whichever form was
   written, so a wrapper handles one shape.
 
@@ -118,9 +138,9 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
 `{ keyedBy: 'field', keyed: [...] }`, on `rows` and `facet`.
 
 - What names a row by its value is keyed; what names an attribute is not.
-  `rows` keys `sort`, `labels`, `colors`, `tree`, and the `filter` entries on
-  the row name; `facet` keys `sort` and `hidden`. Attribute predicates in
-  `filter`, `groups`, `step`, `axis` and `color` stay.
+  `rows` keys `sort`, `labels`, `colors`, `tree` and `kept`; `facet` keys
+  `sort` and `hidden`. `filter`, which names attributes, `groups`, `step`,
+  `axis` and `color` stay.
 - A write whose `field` differs from the stored field it writes over unsets
   the keyed members it does not itself state in the layer it writes, so the
   layer below shows through; a layer below whose keyed members name another
@@ -144,7 +164,7 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   base that later changes field drops the user's stale arrangement.
 - In user docs: writing `rows` changes only the members stated, and `null`
   clears one; a write that changes `field` first clears what names the old
-  rows (`sort`, `labels`, `colors`, `tree`, filters on the row name) except
+  rows (`sort`, `labels`, `colors`, `tree`, `kept`) except
   what it states.
 - Objects whose members are alternatives (`encoding.color` `value | field |
   datum`, size, opacity) and one-action objects (alignments `sort`) stay
@@ -183,13 +203,16 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
 | The keyed rule on every shorthand object | an object of alternatives would merge `value` over `field` into both |
 | `facet.collapse` | `facet` is shared by displays the collapse means nothing on; `pileup.collapsed` (ADR-240's 2026-11-01 amendment) is on the band it reshapes |
 | Resetting a keyed member to the schema default | it wrote over an admin's base arrangement, which the variant unit switch restored until now |
+| One predicate list holding name and attribute entries (`rows.kept` as `rows.filter: [{ field: 'name', oneOf }]`) | a clade pick, written whole, copied an admin's attribute entries into the user's share-link layer; per-entry keying needed special cases in five consumers, and only literal names can follow the haplotype alias (owner, 2026-11-02) |
 | Resetting the whole `filter` and `groups` on a field change | an attribute predicate is valid on the new rows, and a reset `groups` left `facet: 'group'` and `rows.color: 'group'` reading nothing |
 | Stamping the picked field beside a keyed member write | the display stores the field it picks (`applyDefaultPlot`), so no state needed it, and it wiped a launch's sort when the scan picked the field |
 | Deprecated lifts for the beta-only keys | beta configs and share links may break (Colin, 2026-11-02); the v4 lifts (`showTree`, `showSidebarLabels`, `colorBy`, `renderingMode`, `liftRetiredRowState`) are retargeted |
 
 ## Parked
 
-Found by the reviews, not built here: negation and a regex `match` in the
+Found by the reviews, not built here: a "Keep rows where…" menu writing
+`rows.filter`, which config, launch args and R write until then; `filter` on
+MAF once its rows carry attributes; negation and a regex `match` in the
 shared predicate grammar, which would let `rows.filter` hide one row and
 `rows.groups` become predicate entries (`{ field, oneOf | match, group }`);
 `groups` on the variant display; `rows.sort` by a row attribute; a tree read
@@ -202,9 +225,10 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
   arrangement, where it used to clear it.
 - Ticking phased on a variant track keeps a hosted population sort, where it
   used to reset to the base.
-- Beta share links lose `rowHeight`, `rowColor`, `rowGroups`, `axis` and
-  `rows.kept` with a console notice; jb2hubs' hosted displays lose row colors
-  and grid on a beta host older than the respell.
+- Beta share links lose `rowHeight`, `rowColor`, `rowGroups` and `axis` with a
+  console notice, and keep `rows.kept`; one naming no current row now draws
+  none, with a notice, where it drew every row. jb2hubs' hosted displays lose
+  row colors and grid on a beta host older than the respell.
 - A track-wide `rows.axis` on a quantitative track reaches its wiggle display
   alone, as its `rows` always did (wiggle's `rowsShorthand`), where a
   top-level `axis` reached its mark display too; that display draws rows only
@@ -225,7 +249,7 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
    variant display included, since each is declared or read once in shared
    code (`rowHeightConfigSchemaFields`, `rowColorConfigSchema`,
    `TreeSidebarMixin`): `rows.axis`, `rows.step`, `rows.colors` and
-   `rows.color`, `rows.groups`, `rows.filter` (the multi-way lanes too), and
+   `rows.color`, `rows.groups`, `rows.kept` and `rows.filter`, and
    `rows.tree`. Each slice moves the in-repo configs, figure specs, tests
    and docs with it.
 4. The variant display's `unit` as `rows.field`, haplotype refining sample;
@@ -267,7 +291,7 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
    - `tree`: sample leaves expand to zero-length forks over haplotype rows; a
      haplotype-leaf tree in sample mode hides with a hint naming that reason,
      not "rows changed since clustering".
-   - `filter`: two-way, as `keptRows` already is.
+   - `kept`: two-way, as `keptRows` already is.
    - Haplotype numbering is 1-based, `<sample> HP1`, `HP2` (Colin's ruling,
      2026-11-02), matching multi-way synteny's #1/#2 and WhatsHap/HPRC. The
      schema, the CLI manifest and the user guide state the row name's
