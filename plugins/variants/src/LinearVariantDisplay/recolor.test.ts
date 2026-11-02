@@ -273,3 +273,16 @@ test('a zoom that keeps the density rung repaints no cell', () => {
   expect(display.perRegionCellMap === painted).toBe(false)
   dispose()
 })
+
+test('in columns, which draw no density fade, a zoom repaints no cell', () => {
+  const { display, view, dispose } = setup()
+  display.setVariantLayout('columns')
+  const keep = autorun(() => {
+    void display.paintedRegionRows
+  })
+  const painted = display.paintedRegionRows
+  view.zoomTo(densityRung(view.bpPerPx) * 4)
+  expect(display.paintedRegionRows === painted).toBe(true)
+  keep()
+  dispose()
+})

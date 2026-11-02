@@ -51,7 +51,8 @@ export function recordsHighlightViews(self: RecordsHighlightHost) {
     /**
      * #getter
      * The band's record ids to the primitives they painted, per region,
-     * built when a hover or a highlight first asks.
+     * held alive beside the hit indexes (`afterAttach`), since a hover asks
+     * from an untracked pointer handler.
      */
     get recordsRegionInstanceIndexes(): ReadonlyMap<
       number,

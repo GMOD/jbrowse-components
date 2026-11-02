@@ -1996,10 +1996,9 @@ export function stateModelFactory(
          */
         get regionRecordAlpha() {
           const { cellData } = self
-          const rung = this.densityRung
           return cellData && self.atGenomicPositions
             ? mapPayloadRegions(cellData, data =>
-                recordDensityAlpha(data.featurePositions, rung),
+                recordDensityAlpha(data.featurePositions, this.densityRung),
               )
             : new Map<number, Float32Array | undefined>()
         },
@@ -2333,6 +2332,7 @@ export function stateModelFactory(
             self,
             () => {
               void self.recordsFlatbushIndexes
+              void self.recordsRegionInstanceIndexes
             },
             { name: 'RecordsHitIndexes' },
           )

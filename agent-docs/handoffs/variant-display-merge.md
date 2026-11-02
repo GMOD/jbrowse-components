@@ -127,9 +127,24 @@ widget's samples). Still differing, besides C1's Show/hide rows:
 - **Toggling genotype rows remounts the GPU canvas**, since `VariantBody`
   moves in and out of `RowsPanel`: one re-upload per toggle, as a layout
   switch already costs.
+- **A ring leaves the rows no height.** With `hostHeight` set (a circular
+  view's ring, reached only by switching a variant track off its chords),
+  `height` is the ring's band, but the records band over rows and the chip
+  strip still reserve their full height: a 60px ring with seven records
+  reserves 53 + 20 and the rows get 0px (`availableHeight`). Wants a rule
+  for the band's share of a ring, as `connectorsBandStack` takes the
+  connectors from the rows' slot with a floor.
 - **Declined:** splitting `variantDisplayMenuItems.ts` by band (its 14
-  `drawsRows` checks each name their own rule), and the `recordsRole` table
-  (the "Before C" bullet).
+  `drawsRows` checks each name their own rule), the `recordsRole` table
+  (the "Before C" bullet), and one `'none' | 'hidden' | 'drawn'` getter
+  in place of `recordsOnly`, `drawsRows` and `rowsHidden` (2026-11-02):
+  each is derived from the other two inputs, so no state is impossible
+  today, and every site would still branch on one value of it. Also
+  left: lifting `recordsOnScreenIds` and `recordsLabelDensityPerPx` into
+  plugin-features beside LinearBasicDisplay's `onScreenFeatureIds`; the
+  two read different payload shapes, and the band's
+  `settledDynamicBlocks` is the feature track's `coarseDynamicBlocks`
+  with a fallback before the first settle, not a divergence.
 
 ## Evidence
 
