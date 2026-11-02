@@ -435,10 +435,9 @@ python3 symbols_to_blocks.py --anchor human -o primates.blocks \
   human=human.gff.gz chimp=chimp.gff.gz macaque=macaque.gff.gz
 ```
 
-[](/docs/tutorials/primate_orthologs_synteny) runs it on eukaryotic annotations.
-[](/docs/tutorials/ecoli_orthologs_synteny) adds the flags bacterial (PGAP)
-annotations need, for genes named by locus tag and genes renamed between
-releases.
+[](/docs/tutorials/primate_orthologs_synteny) runs it on eukaryotic annotations,
+and closes on the flags bacterial (PGAP) annotations need, for genes named by
+locus tag and genes renamed between releases.
 
 ### From odp
 

@@ -3332,13 +3332,6 @@
     "reviewedAt": "2026-09-18T03:52:02.218Z",
     "hash": "88d2ce50e3a1dcb25d8e7ec93ccc89568752dc22"
   },
-  "multiway_synteny/ecoli_symbol_atp_operon": {
-    "name": "multiway_synteny/ecoli_symbol_atp_operon",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-17T16:30:14.006Z",
-    "hash": "aba2a6e5f910e5b429eb6ecef21a3c6ca0acf72a"
-  },
   "multiway_synteny/ecoli_symbol_oantigen": {
     "name": "multiway_synteny/ecoli_symbol_oantigen",
     "status": "good",

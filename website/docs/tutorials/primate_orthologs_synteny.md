@@ -1,9 +1,10 @@
 ---
-title: Synteny from gene symbols (eight primates)
+title: Synteny from gene symbols (primates and E. coli)
 sidebar_label: Synteny (gene-symbol lanes)
 description:
   Stack the great apes, a gibbon and a macaque under a human locus by joining
-  their RefSeq annotations on the gene symbol
+  their RefSeq annotations on the gene symbol, then run the same join over E.
+  coli genomes
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Ortholog tables
@@ -11,27 +12,34 @@ tutorial_subcategory: Ortholog tables
 
 We look at one human locus across seven other primates at once. NCBI gives an
 orthologous gene the same symbol in every species it annotates, so an ortholog
-table is a join on the gene name over eight GFF3 files. We:
+table is a join on the gene name over eight GFF3 files. Bacterial annotations
+name fewer genes and rename more of them, so the page closes on E. coli to see
+what the join does with them. We:
 
 - build the join, and set up each lane's assembly from its hub
 - load the table as a multi-genome ortholog track, each primate a lane under the
   human view in the coordinates of that primate's genome
 - read the _TP53_ neighbourhood and a 17q window across the lanes
 - read human chromosome 2 against the ape chromosomes it fused from
+- rebuild the join over E. coli annotations, with lanes built from chromosome
+  lengths, and read the O-antigen cluster
 
 ## Prerequisites
 
 - The
   [NCBI datasets CLI](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/)
+- htslib (`bgzip`, `tabix`), for the E. coli build
 - `python3`
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-<!-- TUTORIAL_INSTALL datasets START -->
+<!-- TUTORIAL_INSTALL htslib,datasets START -->
 
 ```bash
-# conda
-conda install -c bioconda -c conda-forge ncbi-datasets-cli
+# Debian/Ubuntu
+sudo apt install tabix
+# or conda, which has every tool above
+conda install -c bioconda -c conda-forge htslib ncbi-datasets-cli
 # or Linux x86_64 binaries for the tools apt lacks
 wget -P ~/.local/bin \
   https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/datasets \
@@ -39,19 +47,20 @@ wget -P ~/.local/bin \
 chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 ```
 
-<!-- TUTORIAL_INSTALL datasets END -->
+<!-- TUTORIAL_INSTALL htslib,datasets END -->
 
 ## The data
 
 Eight RefSeq assemblies, each fetched by accession with the `datasets` CLI: the
 current human reference, the six NHGRI telomere-to-telomere ape assemblies (Yoo
-et al. 2025) and the telomere-to-telomere rhesus macaque. The build downloads
-the annotation and sequence report for each genome.
+et al. 2025) and the telomere-to-telomere rhesus macaque. The E. coli section
+uses forty-four E. coli and Shigella assemblies, anchored on K-12 MG1655, which
+its build script pins by accession.
 
 The tracks below read local files that the
-[build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-run _An ortholog table joined on gene names_ over RefSeq accessions of your own.
-The script fetches everything itself.
+[build scripts](#reproduce-it-end-to-end) write, so run them first, or run _An
+ortholog table joined on gene names_ over RefSeq accessions of your own. Each
+script fetches the annotation and sequence report for every genome itself.
 
 | What it is                   | File                                                                                                                                          |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -63,6 +72,7 @@ The script fetches everything itself.
 | Bornean orangutan            | [GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/885/625/GCF_028885625.2_NHGRI_mPonPyg2-v2.1_pri/) |
 | Siamang                      | [GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/028/878/055/GCF_028878055.3_NHGRI_mSymSyn1-v2.1_pri/) |
 | Rhesus macaque, T2T-MMU8v2.0 | [GCF_049350105.2_T2T-MMU8v2.0/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/049/350/105/GCF_049350105.2_T2T-MMU8v2.0/)                       |
+| E. coli K-12 MG1655          | [GCF_000005845.2_ASM584v2/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/)                               |
 
 ## An ortholog table joined on gene names
 
@@ -301,10 +311,97 @@ In the multi-lane view, a lane whose genome holds the window's genes on two
 contigs shows the contig with more of them and names the other in its header.
 **Show ⟨contig⟩ in this lane** on the header menu swaps the lane onto it.
 
+## Joining bacterial annotations (E. coli)
+
+The `LOC` genes above are the genes NCBI left unnamed. In a bacterial annotation
+that case is common: RefSeq's Prokaryotic Genome Annotation Pipeline (PGAP)
+writes a gene's locus tag into its `Name` when it has no symbol, and renames
+genes between releases. Older PGAP runs gave every gene a locus tag and no
+symbol, so counting the named genes in an annotation shows whether a genome will
+join before anything is built:
+
+<!-- from: scripts/build_ecoli_orthologs.sh -->
+
+```bash
+gzip -dc strain.gff.gz | awk -F'\t' '$3 == "gene" && $9 ~ /;gene=/' | wc -l
+```
+
+The join is the same command with three flags for PGAP:
+
+<!-- from: scripts/build_ecoli_orthologs.sh -->
+
+```bash
+# --unnamed swaps the LOC pattern for the locus-tag shape PGAP falls back to,
+# so a hypothetical protein joins nothing; --merge-cited joins a gene PGAP
+# renamed to the gene it was annotated from; --pseudogenes keeps a gene NCBI
+# writes as a pseudogene feature, such as K-12's wbbL
+python3 symbols_to_blocks.py --anchor MG1655 -o ecoli.blocks --unnamed '_RS[0-9]+$' --merge-cited --pseudogenes \
+  MG1655=MG1655.gff.gz Sakai=Sakai.gff.gz CFT073=CFT073.gff.gz Sflexneri_301=Sflexneri_301.gff.gz
+```
+
+PGAP writes on each CDS the protein it annotated the gene from
+(`similar to AA sequence:RefSeq:NP_416533.1`, the K-12 _gnd_ protein), and
+`--merge-cited` reads that note to join K-12's _gnd_ to the _gndA_ most strains
+carry.
+
+A lane draws its genes from the BED and the gene track, so a strain's assembly
+is its chromosome's name and length. The build writes `<strain>.chrom.sizes`,
+one tab-separated line, and loads it as a `ChromSizesAdapter`:
+
+```json addassembly
+{ "name": "MG1655", "uri": "MG1655.chrom.sizes" }
+```
+
+Each strain then takes a gene track like the chimpanzee one above, and the
+`SyntenyTrack` lists strains where the primate track lists primates. The
+O-antigen cluster between _galF_ and _gnd_ holds the genes that build a strain's
+surface sugar chain, a different set in each serotype. The session opens it on
+the hosted config, which has every strain, with `height` set to fit the stack:
+
+```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
+{
+  "defaultSession": {
+    "name": "The O-antigen cluster across 44 genomes",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "MG1655",
+        "loc": "NC_000913.3:2,095,000-2,115,000",
+        "tracks": [
+          {
+            "trackId": "ecoli_orthologs",
+            "type": "MultiWaySyntenyDisplay",
+            "height": 1500
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+<Figure caption="The O-antigen cluster on K-12 over the E. coli and Shigella lanes, each with its own RefSeq genes." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
+
+Read the lanes from the top:
+
+- The K-12 derivatives sort to the top, since lanes stack by how many of the
+  window's genes they place on one contig, and have the cluster gene for gene.
+- Below them the flanks chain down every lane: _galF_ on one side, _gnd_ (_gndA_
+  in most lanes), _ugd_ and _wzzB_ on the other.
+- The interior is grey, except the _rfb_ genes, _wzx_ and _wzy_, which join
+  wherever a strain has them.
+
+`symbols_to_blocks.py` gives a symbol K-12 lacks a row of its own, so _vioB_ is
+one color down IAI39 and the BL21 lanes. A gene PGAP left under its locus tag,
+such as `ECOLC_RS24020` in the ATCC_8739 lane, has no row. Most of the grey is
+each serotype's sugar genes, which have no K-12 counterpart to join by name;
+[OrthoFinder](/docs/tutorials/orthofinder_synteny) groups genes by protein
+sequence, which joins the ones the annotations named differently.
+
 ## Reproduce it end to end
 
-The script needs the tools under [Prerequisites](#prerequisites) and works in
-three steps:
+The primate script needs the tools under [Prerequisites](#prerequisites) and
+works in three steps:
 
 1. Download the eight annotations and sequence reports, and keep the genes on
    the assembled chromosomes each report names, so no lane has a gene on an
@@ -318,11 +415,26 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_primate_orthologs.sh
 ```
 
+The E. coli script also needs htslib, and works in three steps:
+
+1. Download each genome's annotation, sequence report and assembly report, name
+   each lane after the report's strain field, and drop a genome the report calls
+   neither _E. coli_ nor _Shigella_.
+2. Keep each genome's longest sequence as its chromosome, so a lane follows one
+   contig and no plasmid, and sort and index the GFF3 as in the
+   [web quickstart](/docs/quickstart_web).
+3. Join the annotations on gene symbol with the PGAP flags, and write the
+   config.
+
+```bash
+curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_ecoli_orthologs.sh
+bash build_ecoli_orthologs.sh
+```
+
 ## See also
 
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/orthofinder_synteny)
-- [](/docs/tutorials/ecoli_orthologs_synteny)
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/tutorials/t2t_apes_cactus_synteny)
 
@@ -334,5 +446,7 @@ bash build_primate_orthologs.sh
 
 - Yoo et al. (2025).
   [Complete sequencing of ape genomes](https://doi.org/10.1038/s41586-025-08816-3)
+- Li et al. (2021).
+  [RefSeq: expanding the Prokaryotic Genome Annotation Pipeline reach with protein family model curation](https://doi.org/10.1093/nar/gkaa1105)
 - O'Leary et al. (2016).
   [Reference sequence (RefSeq) database at NCBI: current status, taxonomic expansion, and functional annotation](https://doi.org/10.1093/nar/gkv1189)

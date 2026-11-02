@@ -102,7 +102,6 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/orthofinder_synteny)
 - [](/docs/tutorials/primate_orthologs_synteny)
-- [](/docs/tutorials/ecoli_orthologs_synteny)
 - [](/docs/tutorials/odp_linkage_groups_synteny)
 - [](/docs/tutorials/selection_pressure)
 - [](/docs/tutorials/homoeolog_synteny)

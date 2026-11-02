@@ -443,12 +443,6 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'syri/col_ler_chr4.png',
     band: [0.1, 0.95],
   },
-  ecoli_orthologs_synteny: {
-    // The top of the 44-lane stack at the atp operon, where the ortholog
-    // color columns run straight down.
-    src: 'multiway_synteny/ecoli_symbol_atp_operon.png',
-    band: [0.14, 0.5],
-  },
   odp_linkage_groups_synteny: {
     // the stack's lower bands, where the groups run as bundles; the dotplots
     // carry callouts

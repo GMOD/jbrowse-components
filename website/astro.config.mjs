@@ -103,6 +103,7 @@ export default defineConfig({
     '/docs/tutorials/protein_variants_tp53/': `${BASE}/docs/tutorials/protein_variants_kras/`,
     '/docs/tutorials/protein_variants_braf/': `${BASE}/docs/tutorials/protein_variants_kras/`,
     '/docs/tutorials/protein_variants_seedless_grape/': `${BASE}/docs/tutorials/genomes_proteins/`,
+    '/docs/tutorials/ecoli_orthologs_synteny/': `${BASE}/docs/tutorials/primate_orthologs_synteny/`,
     '/docs/user_guides/multiquantitative_track/': `${BASE}/docs/user_guides/quantitative_track/`,
     '/docs/config_guides/multiquantitative_track/': `${BASE}/docs/config_guides/quantitative_track/`,
   },

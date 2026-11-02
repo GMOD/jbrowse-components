@@ -404,7 +404,7 @@ npx --yes serve ecoli_pangenome_build/jbrowse2 # then open the printed URL
 ## See also
 
 - [](/docs/tutorials/pangenome_ecoli)
-- [](/docs/tutorials/ecoli_orthologs_synteny)
+- [](/docs/tutorials/primate_orthologs_synteny)
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/tutorials/synteny_visualization)
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)

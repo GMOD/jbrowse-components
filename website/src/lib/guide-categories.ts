@@ -118,7 +118,6 @@ export const TUTORIAL_ORDER = [
   'multiway_synteny_grape_peach_cacao',
   'orthofinder_synteny',
   'primate_orthologs_synteny',
-  'ecoli_orthologs_synteny',
   'odp_linkage_groups_synteny',
   'selection_pressure',
   'homoeolog_synteny',

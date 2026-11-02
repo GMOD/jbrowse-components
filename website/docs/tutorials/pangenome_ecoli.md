@@ -687,7 +687,7 @@ genome count.
 - [](/docs/tutorials/pangenome_cactus)
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/allvsall_synteny)
-- [](/docs/tutorials/ecoli_orthologs_synteny)
+- [](/docs/tutorials/primate_orthologs_synteny)
 - [](/docs/user_guides/maf_track)
 - [](/docs/user_guides/multivariant_track)
 - [](/docs/developer_guides/pif_format)

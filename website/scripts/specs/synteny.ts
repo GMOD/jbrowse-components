@@ -1319,37 +1319,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // No highlight on the operon or the O-antigen cluster: a K-12 highlight spans
-  // every lane, and a lane on its own coordinates puts glmU, rsmG or gndA under
-  // it.
-  {
-    mode: 'url',
-    name: 'multiway_synteny/ecoli_symbol_atp_operon',
-    url: sessionSpec('https://jbrowse.org/demos/ecoli_orthologs/config.json', {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'MG1655',
-          loc: 'NC_000913.3:3,910,000-3,925,000',
-          tracks: [
-            {
-              trackId: 'ecoli_orthologs',
-              height: 1500,
-              // strand color here mostly shows deposit orientation and drowns
-              // the gene colors
-              ribbons: {
-                encoding: { color: { value: 'rgb(130,130,130)' } },
-              },
-            },
-          ],
-        },
-      ],
-    }),
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 240000,
-    viewportHeight: 1740,
-  },
-
+  // No highlight on the O-antigen cluster: a K-12 highlight spans every lane,
+  // and a lane on its own coordinates puts gndA under it.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_symbol_oantigen',
@@ -1363,6 +1334,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
             {
               trackId: 'ecoli_orthologs',
               height: 1500,
+              // strand color here mostly shows deposit orientation and drowns
+              // the gene colors
               ribbons: {
                 encoding: { color: { value: 'rgb(130,130,130)' } },
               },
