@@ -14,9 +14,9 @@ function markType(mark: unknown) {
   return typeof mark === 'string' ? mark : member(mark, 'type')
 }
 
-export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
+export const SV_CHANNELS_LABEL = 'SV channels'
 
-// One band per pair orientation, each with its own coverage and its own arcs,
+// One band per SV channel, each with its own coverage and its own arcs,
 // concordant pairs left out. Every setting is reachable from the other menus;
 // the preset exists because four of them spread across three menus is not an
 // arrangement anyone finds by looking.
@@ -33,7 +33,7 @@ export const SV_CHANNELS_LABEL = 'SV channels (pairs by orientation)'
 // kept the row ticked, then leaving and re-entering silently reverted the flip.
 export const SV_CHANNELS_ON = {
   pileup: { show: false },
-  facet: { field: 'pairOrientation' },
+  facet: { field: 'svChannel' },
   readConnections: {
     show: true,
     mark: 'link',

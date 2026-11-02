@@ -65,6 +65,24 @@ export const SV_SIGNAL_OF_TIER: readonly SvSignal[] = [
   'splitRead',
 ]
 
+/**
+ * `svSignal`'s evidence split by the kind of SV it points at, one band per
+ * kind: a pair by its orientation, a split read by its junctions' class filed
+ * with the pairs across the same junction, a partner on another reference, an
+ * SV-size insertion, or none. LL and RR, the two ends of one inversion, share a
+ * band; their arcs keep them apart.
+ */
+export const SV_CHANNEL_LEVELS = [
+  'LR',
+  'RL',
+  'inversion',
+  'otherChromosome',
+  'svInsertion',
+  'none',
+] as const
+
+export type SvChannel = (typeof SV_CHANNEL_LEVELS)[number]
+
 type Labelled<L extends readonly string[]> = Readonly<Record<L[number], string>>
 
 /** Each level's name, as a facet section prints it. */
@@ -73,6 +91,7 @@ export const READ_LEVEL_LABELS: {
   spliced: Labelled<typeof SPLICED_LEVELS>
   pairing: Labelled<typeof PAIRING_LEVELS>
   svSignal: Labelled<typeof SV_SIGNAL_LEVELS>
+  svChannel: Labelled<typeof SV_CHANNEL_LEVELS>
 } = {
   split: { split: 'Split (SA)', unsplit: 'Not split' },
   spliced: { spliced: 'Spliced', unspliced: 'Not spliced' },
@@ -88,6 +107,14 @@ export const READ_LEVEL_LABELS: {
     discordantPair: 'Discordant pair',
     none: 'No SV evidence',
   },
+  svChannel: {
+    LR: 'LR pair or deletion-type split',
+    RL: 'RL pair or duplication-type split',
+    inversion: 'LL or RR pair, or inversion split',
+    otherChromosome: 'Partner on another chromosome',
+    svInsertion: 'SV-size insertion',
+    none: 'No SV evidence',
+  },
 }
 
 const LEVEL_ORDER: Readonly<Record<string, readonly string[]>> = {
@@ -97,6 +124,7 @@ const LEVEL_ORDER: Readonly<Record<string, readonly string[]>> = {
   split: SPLIT_LEVELS,
   spliced: SPLICED_LEVELS,
   svSignal: SV_SIGNAL_LEVELS,
+  svChannel: SV_CHANNEL_LEVELS,
 }
 
 /** A read field's own value order, after the values `domain` lists. */

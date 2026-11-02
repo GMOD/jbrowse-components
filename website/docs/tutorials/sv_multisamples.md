@@ -20,7 +20,7 @@ complex call in sample HG02768 on the same chromosome follows. We:
   copy-number Zarr store
 - sort the rows by genotype from the deletion's right-click menu
 - open three samples' reads at _RHD_ and share one coverage axis between them
-- split HG02768's reads into SV channels by pair orientation at the complex call
+- split HG02768's reads into SV channels at the complex call
 
 ## Prerequisites
 
@@ -217,17 +217,17 @@ rest of its arm.
 Put `1:39,658,200-39,661,800` in the location box and add HG02768's CRAM as a
 track the same way as HG00113's.
 
-**Read connections → SV channels (pairs by orientation)** in the track menu
-splits the reads into one band per orientation class, each with a separate
-coverage curve and arcs:
+**Read connections → SV channels** in the track menu splits the reads into one
+band per kind of SV evidence, each with a separate coverage curve and arcs:
 
-- The normal-orientation band holds the flat coverage profile
-- The two same-strand bands (both mates on one strand) each draw a bundle of
-  arcs on one pair of breakpoints, the inversion signature
-- The outward-pointing band (mates facing away from each other), where a tandem
+- The deletion-type band holds the flat coverage profile of the concordant pairs
+- The inversion band draws two bundles of arcs, the same-strand pairs and split
+  reads across each end of the inversion, green for one end and blue for the
+  other
+- The duplication-type band (mates facing away from each other), where a tandem
   duplication would go, stays near empty
 
-<Figure caption="HG02768's reads at the complex call, one band per pair orientation. Reads whose mate is unmapped or elsewhere draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
+<Figure caption="HG02768's reads at the complex call, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
 The call also lists a duplicated copy in `INFO.CPX_INTERVALS`, which no band
 shows. A copy inserted beside its origin leaves pair orientation unchanged, so

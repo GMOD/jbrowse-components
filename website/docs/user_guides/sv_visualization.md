@@ -177,16 +177,21 @@ an inversion. That is evidence from one molecule rather than from a pair.
 ### SV channels
 
 Every scheme above paints one pileup, so an event's evidence arrives mixed into
-the rows around it. **Read connections → SV channels (pairs by orientation)**
-takes the same reads apart: each orientation class gets a separate band with a
-coverage curve and arcs, the concordant pairs drop out, and the pileup goes
-away. Which band fills names the rearrangement, and a band that stays empty
-under a call is a call with no read-pair evidence behind it.
+the rows around it. **Read connections → SV channels** takes the same reads
+apart into one band per kind of SV evidence, each with a coverage curve and
+arcs, and the pileup goes away: deletion-type, duplication-type, inversion, a
+partner on another chromosome, an SV-size insertion, and no SV evidence. A pair
+files by its orientation and a split read by its junction, so short and long
+reads of one event fill the same band. Concordant pairs stay in the
+deletion-type band as its baseline, their arcs hidden. Which band fills names
+the rearrangement, and a band that stays empty under a call is a call with no
+read evidence behind it. A kind of evidence no read in the window carries gets
+no band.
 
-<Figure caption="The INVdup call's reads, one band per pair orientation. Reads whose mate is unmapped or elsewhere draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
+<Figure caption="The INVdup call's reads, one band per kind of SV evidence. Reads whose mate is on another chromosome draw as inter-chromosomal ticks." src="/img/sv_channels.png" />
 
 <figure>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 404" style="max-width:100%;height:auto;display:block" width="900" font-family="system-ui, sans-serif" font-size="13" fill="#333" role="img" aria-label="Which pair-orientation band each SV type fills">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 314" style="max-width:100%;height:auto;display:block" width="900" font-family="system-ui, sans-serif" font-size="13" fill="#333" role="img" aria-label="Which SV channel band each SV type fills">
 <text x="280.0" y="32" text-anchor="middle" font-weight="600">Deletion</text>
 <text x="530.0" y="32" text-anchor="middle" font-weight="600">Tandem duplication</text>
 <text x="780.0" y="32" text-anchor="middle" font-weight="600">Inversion</text>
@@ -220,9 +225,10 @@ under a call is a call with no read-pair evidence behind it.
 <rect x="670" y="136" width="220" height="78" fill="#fff" stroke="#e2e2e2"/>
 <rect x="684" y="152" width="192" height="5" fill="#e4e4e4"/>
 <rect x="752" y="150" width="56" height="9" fill="#666"/>
-<rect x="144" y="226" width="6" height="78" fill="#4d9a4d"/>
-<text x="134" y="263.0" text-anchor="end" font-weight="600">LL</text>
-<text x="134" y="281.0" text-anchor="end" fill="#666">→ →</text>
+<rect x="144" y="226" width="6" height="39" fill="#4d9a4d"/>
+<rect x="144" y="265" width="6" height="39" fill="#5555bb"/>
+<text x="134" y="263.0" text-anchor="end" font-weight="600">LL · RR</text>
+<text x="134" y="281.0" text-anchor="end" fill="#666">→ → · ← ←</text>
 <rect x="170" y="226" width="220" height="78" fill="#fff" stroke="#e2e2e2"/>
 <rect x="184" y="242" width="192" height="5" fill="#e4e4e4"/>
 <rect x="252" y="240" width="56" height="9" fill="#666"/>
@@ -235,23 +241,11 @@ under a call is a call with no read-pair evidence behind it.
 <path d="M733,250 Q764.0,284.1 795,250" fill="none" stroke="#4d9a4d" stroke-width="1.8"/>
 <path d="M736,250 Q767.0,284.1 798,250" fill="none" stroke="#4d9a4d" stroke-width="1.8"/>
 <path d="M739,250 Q770.0,284.1 801,250" fill="none" stroke="#4d9a4d" stroke-width="1.8"/>
-<rect x="144" y="316" width="6" height="78" fill="#5555bb"/>
-<text x="134" y="353.0" text-anchor="end" font-weight="600">RR</text>
-<text x="134" y="371.0" text-anchor="end" fill="#666">← ←</text>
-<rect x="170" y="316" width="220" height="78" fill="#fff" stroke="#e2e2e2"/>
-<rect x="184" y="332" width="192" height="5" fill="#e4e4e4"/>
-<rect x="252" y="330" width="56" height="9" fill="#666"/>
-<rect x="420" y="316" width="220" height="78" fill="#fff" stroke="#e2e2e2"/>
-<rect x="434" y="332" width="192" height="5" fill="#e4e4e4"/>
-<rect x="502" y="330" width="56" height="9" fill="#666"/>
-<rect x="670" y="316" width="220" height="78" fill="#fff" stroke="#e2e2e2"/>
-<rect x="684" y="332" width="192" height="5" fill="#e4e4e4"/>
-<rect x="752" y="330" width="56" height="9" fill="#666"/>
-<path d="M759,340 Q790.0,374.1 821,340" fill="none" stroke="#5555bb" stroke-width="1.8"/>
-<path d="M762,340 Q793.0,374.1 824,340" fill="none" stroke="#5555bb" stroke-width="1.8"/>
-<path d="M765,340 Q796.0,374.1 827,340" fill="none" stroke="#5555bb" stroke-width="1.8"/>
+<path d="M759,250 Q790.0,284.1 821,250" fill="none" stroke="#5555bb" stroke-width="1.8"/>
+<path d="M762,250 Q793.0,284.1 824,250" fill="none" stroke="#5555bb" stroke-width="1.8"/>
+<path d="M765,250 Q796.0,284.1 827,250" fill="none" stroke="#5555bb" stroke-width="1.8"/>
 </svg>
-<figcaption>Which band each SV type fills. A deletion is ordinary-facing pairs that are too far apart, a tandem duplication lights the outward-pointing band, and an inversion lights the two same-strand bands, each holding one junction.</figcaption>
+<figcaption>Which band each SV type fills. A deletion is ordinary-facing pairs that are too far apart, a tandem duplication lights the outward-pointing band, and an inversion's two junctions share the same-strand band, LL pairs green and RR pairs blue. Split reads across each junction fill the same band as its pairs.</figcaption>
 </figure>
 
 Clicking the row again restores the pileup, with the color scheme untouched.
@@ -445,7 +439,7 @@ this through with the HG008 phased tumor assembly.
 | Pileup (default)                     | Default lower panel             | Base-level detail, individual reads                |
 | Color by insert size and orientation | Color by in track menu          | Long, short and abnormally oriented pairs          |
 | Read arcs                            | Read connections in track menu  | Overview of long-range connections                 |
-| SV channels                          | Read connections in track menu  | One band per orientation class, with arcs          |
+| SV channels                          | Read connections in track menu  | One band per kind of SV evidence, with arcs        |
 | Read cloud                           | Read connections in track menu  | Counting discordant pairs, orientation per read    |
 | Linear read vs ref                   | Right-click on any read         | Complex alignment of a single long read            |
 | Breakpoint split view                | Feature details or SV inspector | Side-by-side inspection of both breakpoint loci    |

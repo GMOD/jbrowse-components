@@ -37,6 +37,7 @@ import {
   READ_LEVEL_LABELS,
   SPLICED_LEVELS,
   SPLIT_LEVELS,
+  SV_CHANNEL_LEVELS,
   SV_SIGNAL_LEVELS,
   SV_SIGNAL_OF_TIER,
   levelOrder,
@@ -46,6 +47,7 @@ import {
   isSplitAlignment,
   readCategoryBitsOf,
 } from './splitAlignment.ts'
+import { CHAIN_PRECEDENCE, svChannelOf } from './svChannel.ts'
 import {
   MAPQ_UNAVAILABLE,
   firstOfPairStrand,
@@ -57,7 +59,7 @@ import {
 } from './util.ts'
 
 import type { AlignmentsUnit } from '../LinearAlignmentsDisplay/constants.ts'
-import type { Pairing, SvSignal } from './readFieldLevels.ts'
+import type { Pairing, SvChannel, SvSignal } from './readFieldLevels.ts'
 import type { Facet, ReadDimension, WorkerFacet } from './types.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
@@ -249,6 +251,19 @@ function chainSvSignalKey(chain: Feature[]) {
     tier = Math.max(tier, svSignalTierOf(feature))
   }
   return SV_SIGNAL_GROUPS[SV_SIGNAL_OF_TIER[tier]!]
+}
+
+const SV_CHANNEL_GROUPS = Object.fromEntries(
+  SV_CHANNEL_LEVELS.map(key => [
+    key,
+    { key, label: READ_LEVEL_LABELS.svChannel[key] },
+  ]),
+) as Record<SvChannel, GroupKey>
+
+// A chain files where its most specific member files.
+function chainSvChannelKey(chain: Feature[]) {
+  const channels = new Set(chain.map(svChannelOf))
+  return SV_CHANNEL_GROUPS[CHAIN_PRECEDENCE.find(c => channels.has(c))!]
 }
 
 // A read's mate reference, or a synteny block's query contig.
@@ -469,6 +484,12 @@ export const FACET_DIMENSIONS: {
     key: feature =>
       SV_SIGNAL_GROUPS[SV_SIGNAL_OF_TIER[svSignalTierOf(feature)]!],
     chainKey: chainSvSignalKey,
+  },
+  svChannel: {
+    field: 'svChannel',
+    fragmentLevel: false,
+    key: feature => SV_CHANNEL_GROUPS[svChannelOf(feature)],
+    chainKey: chainSvChannelKey,
   },
   mapq: {
     field: 'mapq',

@@ -16,11 +16,8 @@ import { SPLIT_JUNCTION_CLASSES, splitClassCode } from './junctionClass.ts'
 import type { FeatureData } from '../../shared/webglRpcTypes.ts'
 import type { ReadNames } from '@jbrowse/alignments-core'
 
-const CODE_OF_SLOT = new Map(
-  SPLIT_JUNCTION_CLASSES.map(c => [
-    ARC_SLOT_CATEGORY.indexOf(c),
-    splitClassCode(c),
-  ]),
+const CATEGORY_OF_SLOT = new Map(
+  SPLIT_JUNCTION_CLASSES.map(c => [ARC_SLOT_CATEGORY.indexOf(c), c]),
 )
 
 const MINUS = 45
@@ -57,9 +54,40 @@ type Visit = (
   predecessorClip: number,
 ) => void
 
-// The junction from segment 1's read-trailing edge to segment 2's
-// read-leading edge, classed as the read arcs class it (`splitJunctionColor`).
-// A join whose feet share a base spans nothing to draw.
+/**
+ * The junction a read makes leaving segment 1 by its read-trailing edge and
+ * entering segment 2 by its read-leading edge, classed as the read arcs class
+ * it (`splitJunctionColor`): undefined when a strand is unknown, `category`
+ * undefined when the two feet share a base and the junction spans nothing.
+ */
+export function splitJoin(
+  s1: number,
+  start1: number,
+  end1: number,
+  s2: number,
+  start2: number,
+  end2: number,
+) {
+  const kind = splitJunctionKind(s1, s2)
+  const bp1 = readTrailingBp(s1, start1, end1)
+  const bp2 = readLeadingBp(s2, start2, end2)
+  return kind === undefined
+    ? undefined
+    : {
+        bp1,
+        bp2,
+        category:
+          bp1 === bp2
+            ? undefined
+            : CATEGORY_OF_SLOT.get(
+                splitJunctionSlot(
+                  kind === 'inversion',
+                  bp1 < bp2 ? readTrailingBodyDir(s1) : readLeadingBodyDir(s2),
+                ),
+              ),
+      }
+}
+
 function visitJoin(
   s1: number,
   start1: number,
@@ -70,47 +98,38 @@ function visitJoin(
   predecessorClip: number,
   visit: Visit,
 ) {
-  const kind = splitJunctionKind(s1, s2)
-  const bp1 = readTrailingBp(s1, start1, end1)
-  const bp2 = readLeadingBp(s2, start2, end2)
-  if (kind !== undefined && bp1 !== bp2) {
-    const lowerDir =
-      bp1 < bp2 ? readTrailingBodyDir(s1) : readLeadingBodyDir(s2)
+  const join = splitJoin(s1, start1, end1, s2, start2, end2)
+  if (join?.category !== undefined) {
     visit(
-      Math.min(bp1, bp2),
-      Math.max(bp1, bp2),
-      CODE_OF_SLOT.get(splitJunctionSlot(kind === 'inversion', lowerDir))!,
+      Math.min(join.bp1, join.bp2),
+      Math.max(join.bp1, join.bp2),
+      splitClassCode(join.category),
       predecessorClip,
     )
   }
 }
 
 /**
- * The split junctions one record's segment makes with its read neighbours:
- * the SA segments just before and just after it in read order (by clip at the
- * start of the read). A neighbour on another reference breaks the adjacency
- * and joins nothing here. An SA entry the read arcs drop (`saSegments`: no
- * CIGAR, no reference span, a non-numeric position) joins nothing either.
- * Parses the SA tag in place, without `featurizeSA`'s object, id string and
- * mate record per entry.
+ * Called once per SA entry with a reference span: the entry's refName as
+ * `sa.slice(nameStart, nameEnd)`, its 0-based span, strand, clip at the start
+ * of the read, and MAPQ (NaN when the field is absent).
  */
-export function forEachSplitJunction(
-  segment: { start: number; end: number; strand: number; clipAtStart: number },
-  sa: string,
-  isHere: (refName: string) => boolean,
-  visit: Visit,
-) {
-  const { clipAtStart } = segment
-  let beforeClip = -1
-  let beforeHere = false
-  let beforeStrand = 0
-  let beforeStart = 0
-  let beforeEnd = 0
-  let afterClip = Infinity
-  let afterHere = false
-  let afterStrand = 0
-  let afterStart = 0
-  let afterEnd = 0
+type SAEntryVisit = (
+  nameStart: number,
+  nameEnd: number,
+  start: number,
+  end: number,
+  strand: number,
+  clip: number,
+  mapq: number,
+) => void
+
+/**
+ * Every entry of an SA tag the read arcs keep (`saSegments`: a CIGAR, a
+ * reference span, a numeric position), parsed in place, without
+ * `featurizeSA`'s object, id string and mate record per entry.
+ */
+export function forEachSAEntry(sa: string, visit: SAEntryVisit) {
   const n = sa.length
   let i = 0
   while (i < n) {
@@ -144,49 +163,89 @@ export function forEachSplitJunction(
           len = 0
         }
       }
-      const clip = strand === -1 ? lastClip : Math.max(0, firstClip)
       if (refLength > 0) {
-        if (clip < clipAtStart && clip > beforeClip) {
-          beforeClip = clip
-          beforeHere = isHere(sa.slice(i, c1))
-          beforeStrand = strand
-          beforeStart = start
-          beforeEnd = start + refLength
-        } else if (clip > clipAtStart && clip < afterClip) {
-          afterClip = clip
-          afterHere = isHere(sa.slice(i, c1))
-          afterStrand = strand
-          afterStart = start
-          afterEnd = start + refLength
-        }
+        const c5 = sa.indexOf(',', c4 + 1)
+        visit(
+          i,
+          c1,
+          start,
+          start + refLength,
+          strand,
+          strand === -1 ? lastClip : Math.max(0, firstClip),
+          digitsAt(sa, c4 + 1, c5 === -1 || c5 > entryEnd ? entryEnd : c5),
+        )
       }
     }
     i = entryEnd + 1
   }
-  if (beforeHere) {
+}
+
+/**
+ * The split junctions one record's segment makes with its read neighbours:
+ * the SA segments just before and just after it in read order (by clip at the
+ * start of the read). A neighbour on another reference breaks the adjacency
+ * and joins nothing here. An SA entry the read arcs drop joins nothing either.
+ */
+export function forEachSplitJunction(
+  segment: { start: number; end: number; strand: number; clipAtStart: number },
+  sa: string,
+  isHere: (refName: string) => boolean,
+  visit: Visit,
+) {
+  const { clipAtStart } = segment
+  const near: { before?: Neighbour; after?: Neighbour } = {}
+  forEachSAEntry(sa, (nameStart, nameEnd, start, end, strand, clip) => {
+    if (clip < clipAtStart && clip > (near.before?.clip ?? -1)) {
+      near.before = {
+        here: isHere(sa.slice(nameStart, nameEnd)),
+        strand,
+        start,
+        end,
+        clip,
+      }
+    } else if (clip > clipAtStart && clip < (near.after?.clip ?? Infinity)) {
+      near.after = {
+        here: isHere(sa.slice(nameStart, nameEnd)),
+        strand,
+        start,
+        end,
+        clip,
+      }
+    }
+  })
+  const { before, after } = near
+  if (before?.here) {
     visitJoin(
-      beforeStrand,
-      beforeStart,
-      beforeEnd,
+      before.strand,
+      before.start,
+      before.end,
       segment.strand,
       segment.start,
       segment.end,
-      beforeClip,
+      before.clip,
       visit,
     )
   }
-  if (afterHere) {
+  if (after?.here) {
     visitJoin(
       segment.strand,
       segment.start,
       segment.end,
-      afterStrand,
-      afterStart,
-      afterEnd,
+      after.strand,
+      after.start,
+      after.end,
       -1,
       visit,
     )
   }
+}
+
+interface Neighbour {
+  here: boolean
+  strand: number
+  start: number
+  end: number
+  clip: number
 }
 
 export interface SplitJunction {

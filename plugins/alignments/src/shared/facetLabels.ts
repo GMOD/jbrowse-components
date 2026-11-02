@@ -21,6 +21,7 @@ export const FACET_LABELS: Record<ReadDimension, string> = {
   split: 'Split reads',
   spliced: 'Spliced reads',
   svSignal: 'SV evidence',
+  svChannel: 'SV channel',
   mapq: 'Mapping quality',
   mateRefName: 'Mate chromosome',
   mateAssembly: 'Mate assembly',

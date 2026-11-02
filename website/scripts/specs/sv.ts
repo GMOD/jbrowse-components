@@ -602,7 +602,7 @@ export const svSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The same INVdup with one band per pair orientation. The settings are
+  // The same INVdup with one band per kind of SV evidence. The settings are
   // SV_CHANNELS_ON (svChannelsPreset.ts) verbatim; `readConnectionsDown` and
   // the heights are this figure's own.
   {
@@ -627,7 +627,7 @@ export const svSpecs: ScreenshotSpec[] = [
                 height: 90,
               },
               coverage: { height: 60 },
-              facet: 'pairOrientation',
+              facet: 'svChannel',
               legend: { show: true },
               // The five bands' own stack. A taller box pads the frame from
               // inside, which neither size report sees.
@@ -639,8 +639,8 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02768',
     readyTimeout: 60000,
-    // A shorter frame drops the LL band and the "No orientation" band under it.
-    viewportHeight: 1150,
+    // A shorter frame drops the "No SV evidence" band at the bottom.
+    viewportHeight: 1310,
   },
 
   // The long-read half of inversion pair evidence: HG00151 ONT reads span the

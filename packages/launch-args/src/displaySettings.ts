@@ -160,6 +160,7 @@ export const FACET_ONLY_FIELDS = [
   'split',
   'spliced',
   'svSignal',
+  'svChannel',
 ] as const
 const FACET_ONLY_FIELD_SET: ReadonlySet<string> = new Set(FACET_ONLY_FIELDS)
 

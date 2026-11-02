@@ -106,7 +106,7 @@ describe('read connections menu', () => {
     expect(labelsOf(items)).toEqual([
       'Link mates and supplementary alignments',
       'Pileup connectors',
-      'SV channels (pairs by orientation)',
+      'SV channels',
       'Ordinary pairs',
       'Pair band',
       'None',

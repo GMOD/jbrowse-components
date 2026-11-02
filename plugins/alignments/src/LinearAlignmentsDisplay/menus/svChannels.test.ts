@@ -28,7 +28,7 @@ test('the preset writes all four settings, not a subset', () => {
   const display = createDisplay()
   clickRow(display)
   expect(display.showPileup).toBe(false)
-  expect(display.facet).toMatchObject({ field: 'pairOrientation' })
+  expect(display.facet).toMatchObject({ field: 'svChannel' })
   expect(display.drawnReadConnections).toBe('link')
   expect(display.showOrdinaryPairs).toBe(false)
 })
@@ -77,7 +77,7 @@ test('the round trip leaves the read color and the placement alone', () => {
 
 const ON = {
   pileup: { show: false },
-  facet: { field: 'pairOrientation' },
+  facet: { field: 'svChannel' },
   readConnections: {
     show: true,
     mark: 'link',
@@ -118,7 +118,7 @@ test.each([
 })
 
 test('a spec spelling the facet as its field string still matches', () => {
-  expect(isSvChannelsActive({ ...ON, facet: 'pairOrientation' })).toBe(true)
+  expect(isSvChannelsActive({ ...ON, facet: 'svChannel' })).toBe(true)
 })
 
 test('flipping the arcs above the coverage stays in the arrangement', () => {
