@@ -8,12 +8,12 @@ guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 ---
 
-Comparing two genomes starts from an alignment between them, and for mammals
-that takes hours to compute. UCSC has already aligned each genome it hosts to
-many others as liftOver chains, and genomes.jbrowse.org serves those chains as
-tracks beside each genome. We compare human with the T2T human reference at
-_TNNT3_, with chimp at an _FTO_ intron, with mouse strains at _Nnt_, and one
-person's two haplotypes at the 17q21.31 inversion. We:
+Comparing two genomes starts from an alignment between them. UCSC has already
+aligned each genome it hosts to many others as liftOver chains, and
+genomes.jbrowse.org serves those chains as tracks beside each genome. We compare
+human with the T2T human reference at _TNNT3_, with chimp at an _FTO_ intron,
+with mouse strains at _Nnt_, and one person's two haplotypes at the 17q21.31
+inversion. We:
 
 - turn on a liftOver track and launch a linear synteny view from one of its
   chain blocks

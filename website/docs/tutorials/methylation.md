@@ -131,8 +131,9 @@ track. For your own reads, swap `uri` for a sorted modBAM or CRAM with the
 calls:
 
 - On its own it paints red each position the `MM` tag lists as modified
-- **Show unmodified in blue** (IGV's "2-color" scheme) also paints blue every
-  CpG the tag does not list as modified, so an unmethylated region is solid blue
+- **Show unmodified in blue** (IGV's "2-color" scheme) marks every CpG,
+  including the ones the tag leaves implicit, and paints blue each one more
+  likely unmodified than modified, so an unmethylated region is solid blue
 
 The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
