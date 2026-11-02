@@ -2831,9 +2831,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // [minOffset, maxOffset]. scrollTo is called explicitly rather than
         // left to zoomTo's internal scrollTo, which is skipped when bpPerPx
         // is already in range — shrinking the region set would otherwise
-        // strand the view scrolled past the end, on blank space.
-        self.zoomTo(self.bpPerPx)
-        self.scrollTo(self.offsetPx)
+        // strand the view scrolled past the end, on blank space. An unmeasured
+        // view has no bounds to clamp to, and keeps its window as a restored
+        // snapshot does.
+        if (self.bpPerPx > 0) {
+          self.zoomTo(self.bpPerPx)
+          self.scrollTo(self.offsetPx)
+        }
         self.settleCoarseBlocks()
       },
 

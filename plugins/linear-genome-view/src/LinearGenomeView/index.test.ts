@@ -1987,6 +1987,20 @@ test('unknown-ref coordinate query keeps the specific ref error', async () => {
   )
 })
 
+test('regions set before the first measure keep the window and need no width', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(LinearGenomeModel.create({ type: 'LinearGenomeView' }))
+
+  model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 1))
+  model.clearView()
+  model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 2))
+  model.setWidth(800)
+  expect(model.bpPerPx).toBe(1)
+  expect(model.offsetPx).toBe(0)
+})
+
 test('showLoading is true when displayedRegions are set but not yet initialized', () => {
   const { Session, LinearGenomeModel } = initialize()
   const model = Session.create({
