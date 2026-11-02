@@ -190,7 +190,7 @@ config = {
                     'type': 'MultiWaySyntenyDisplay',
                     'displayId': f'wheat_{chrom}-MultiWaySyntenyDisplay',
                     'height': 700,
-                    'rows': {'domain': names[1:]},
+                    'rows': {'sort': names[1:]},
                     'ribbons': {'encoding': {'color': 'identity'}},
                     'laneGeneTracks': [f'{name}_genes' for name in names],
                 }

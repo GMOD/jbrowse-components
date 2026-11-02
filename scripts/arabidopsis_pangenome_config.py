@@ -204,7 +204,7 @@ def graph_tracks(names):
                     {
                         'type': 'LinearMultiRowFeatureDisplay',
                         'displayId': 'arabidopsis_minigraph_paths-LinearMultiRowFeatureDisplay',
-                        'rows': {'field': 'strain', 'domain': names},
+                        'rows': {'field': 'strain', 'sort': names},
                     }
                 ],
             }
@@ -315,7 +315,7 @@ def main():
                     {
                         'type': 'LinearMultiRowFeatureDisplay',
                         'displayId': 'syri_regions_on_TAIR10-LinearMultiRowFeatureDisplay',
-                        'rows': {'field': 'query', 'domain': names},
+                        'rows': {'field': 'query', 'sort': names},
                         'encoding': {'color': {'scale': {'domain': SYRI_TYPES}}},
                     }
                 ],

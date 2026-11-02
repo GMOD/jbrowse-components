@@ -111,7 +111,7 @@ track = {
         "displayId": "khv_trio_hapibd-LinearMultiRowFeatureDisplay",
         "rows": {
             "field": "parenthap",
-            "domain": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"],
+            "sort": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"],
         },
     }],
 }

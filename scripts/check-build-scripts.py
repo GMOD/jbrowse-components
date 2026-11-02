@@ -51,11 +51,22 @@ if not have_shellcheck:
 # deprecated nesting, still lifted, and its contents get the same check.
 MANIFEST = "products/jbrowse-cli/src/commands/validate/configManifest.generated.ts"
 _manifest = open(MANIFEST).read()
+_manifest_json = json.loads(_manifest[_manifest.index("= {") + 2:])
 VIEW_KEYS = {
     name: (set(entry["stateModelProps"]) | set(entry["launchKeys"])
            | set(entry.get("passThrough", [])) | {"init"})
-    for name, entry in
-    json.loads(_manifest[_manifest.index("= {") + 2:])["views"].items()
+    for name, entry in _manifest_json["views"].items()
+}
+
+# What a display's `rows` object declares, the same way: `rows.domain`, an
+# order spelling ADR-257 declined for `rows.sort`, loads as a key the closed
+# rows schema names on the console and drops, so the lanes a script ordered
+# come up in the source's order.
+ROWS_KEYS = {
+    name: {sub["name"] for sub in slot["subSlots"]}
+    for name, entry in _manifest_json["displays"].items()
+    for slot in entry["slots"]
+    if slot["name"] == "rows" and slot.get("subSlots")
 }
 
 
@@ -102,6 +113,48 @@ def py_views(tree):
         init = entry(node, "init")
         if isinstance(init, ast.Dict):
             yield kind.value, keys_of(init)
+
+
+def json_rows(node):
+    """Every display's `rows` object in a parsed JSON heredoc, as (type, keys)."""
+    if isinstance(node, list):
+        for item in node:
+            yield from json_rows(item)
+    elif isinstance(node, dict):
+        kind = node.get("type")
+        if kind in ROWS_KEYS and isinstance(node.get("rows"), dict):
+            yield kind, set(node["rows"])
+        for value in node.values():
+            yield from json_rows(value)
+
+
+def py_rows(tree):
+    """The same, out of Python dict literals."""
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Dict):
+            continue
+        entries = {k.value: v for k, v in zip(node.keys, node.values)
+                   if isinstance(k, ast.Constant)}
+        kind = entries.get("type")
+        rows = entries.get("rows")
+        if (isinstance(kind, ast.Constant) and kind.value in ROWS_KEYS
+                and isinstance(rows, ast.Dict)):
+            yield kind.value, {k.value for k in rows.keys
+                               if isinstance(k, ast.Constant)
+                               and isinstance(k.value, str)}
+
+
+def dead_rows_keys(displays, script):
+    bad = False
+    for kind, keys in displays:
+        dead = sorted(k for k in keys if k not in ROWS_KEYS[kind])
+        if dead:
+            print(f"FAIL dead rows key(s) in {script}: a {kind}'s rows are "
+                  f"authored with {', '.join(dead)}, which its rows do not "
+                  f"declare ({', '.join(sorted(ROWS_KEYS[kind]))}) — a load "
+                  f"drops it, so the setting silently does nothing")
+            bad = True
+    return bad
 
 
 view_objects = 0
@@ -223,13 +276,17 @@ for f in scripts:
     for tag, body in re.findall(r"<<'(\w+)'[^\n]*\n(.*?)\n\1\b", src, re.S):
         if tag == "JSON":
             try:
-                failed |= dead_view_keys(json_views(json.loads(body)), f)
+                parsed = json.loads(body)
+                failed |= dead_view_keys(json_views(parsed), f)
+                failed |= dead_rows_keys(json_rows(parsed), f)
             except json.JSONDecodeError as e:
                 print(f"FAIL invalid JSON heredoc in {f}: {e}")
                 failed = True
         elif tag == "PY":
             try:
-                failed |= dead_view_keys(py_views(ast.parse(body)), f)
+                tree = ast.parse(body)
+                failed |= dead_view_keys(py_views(tree), f)
+                failed |= dead_rows_keys(py_rows(tree), f)
             except SyntaxError as e:
                 print(f"FAIL invalid PY heredoc in {f}: {e}")
                 failed = True
@@ -296,7 +353,7 @@ for f in scripts:
 helpers = sorted(glob.glob("scripts/*.py"))
 for f in helpers:
     try:
-        ast.parse(open(f).read(), filename=f)
+        failed |= dead_rows_keys(py_rows(ast.parse(open(f).read(), filename=f)), f)
     except SyntaxError as e:
         print(f"FAIL invalid python: {f}: {e}")
         failed = True

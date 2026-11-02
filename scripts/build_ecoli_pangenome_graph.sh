@@ -541,7 +541,7 @@ cat > untangle_rows_track.json <<JSON
       "type": "LinearMultiRowFeatureDisplay",
       "rows": {
         "field": "strain",
-        "domain": [$(echo "$STRAINS" | tr ' ' '\n' | grep -v "^$REF$" \
+        "sort": [$(echo "$STRAINS" | tr ' ' '\n' | grep -v "^$REF$" \
           | paste -sd' ' - | sed 's/ /", "/g; s/^/"/; s/$/"/')]
       },
       "encoding": {

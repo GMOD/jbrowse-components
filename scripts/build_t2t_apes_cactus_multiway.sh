@@ -141,7 +141,7 @@ config = {
         'displays': [{
             'type': 'MultiWaySyntenyDisplay',
             'displayId': 't2t_apes_cactus-MultiWaySyntenyDisplay',
-            'rows': {'domain': order[1:]},
+            'rows': {'sort': order[1:]},
         }],
     }],
     'defaultSession': {

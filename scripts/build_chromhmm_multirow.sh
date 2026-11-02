@@ -86,7 +86,7 @@ cp wgEncodeBroadHmm.multirow.bed.gz wgEncodeBroadHmm.multirow.bed.gz.tbi "$APP"/
 # automatically. The CLI can't set `rows`, so the track is written straight
 # into config.json.
 #
-# `rows.domain` is substituted from CELL_TYPES rather than typed out a second time.
+# `rows.sort` is substituted from CELL_TYPES rather than typed out a second time.
 # The placeholder is a real JSON string so the heredoc still parses on its own,
 # which is what scripts/check-build-scripts.py validates it as.
 ROW_ORDER=$(printf '"%s", ' "${CELL_TYPES[@]#*:}")
@@ -126,7 +126,7 @@ sed "s|\"@ROW_ORDER@\"|${ROW_ORDER%, }|" > "$APP"/config.json <<'JSON'
       "displays": [
         {
           "type": "LinearMultiRowFeatureDisplay",
-          "rows": { "field": "cellType", "domain": ["@ROW_ORDER@"] },
+          "rows": { "field": "cellType", "sort": ["@ROW_ORDER@"] },
           "height": 200
         }
       ]
