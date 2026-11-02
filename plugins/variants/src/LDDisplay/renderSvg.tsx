@@ -27,7 +27,7 @@ function LdSvgBody({
   overlays,
   opts,
 }: LgvSvgBodyProps<LDDisplayModel>) {
-  const { connectorLineCoords: coords, connectorsHeight, showNames } = model
+  const { connectorLineCoords: coords, connectorsHeight, drawsLabels } = model
   return (
     <>
       <TriangleMatrixSvgLayer
@@ -48,7 +48,7 @@ function LdSvgBody({
           opts={opts}
         />
       ) : null}
-      {overlays && showNames ? <ConnectorLabels coords={coords} /> : null}
+      {overlays && drawsLabels ? <ConnectorLabels coords={coords} /> : null}
     </>
   )
 }

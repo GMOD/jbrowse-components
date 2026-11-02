@@ -108,6 +108,41 @@ describe('the first layout keeps the height it has', () => {
   })
 })
 
+// SNVs past the density budget over rows, collapsing into one row, over a
+// pile of DELs a zoom in stacks
+const DENSE_OVER_PILE: BandRecord[] = [
+  ...Array.from({ length: 4000 }, (_, i): BandRecord => [
+    `s${i}`,
+    100 + i * 5,
+    101 + i * 5,
+    'A -> G',
+    '',
+  ]),
+  ...Array.from({ length: 30 }, (_, i): BandRecord => [
+    `d${i}`,
+    200,
+    600 + i * 10,
+    '<DEL>',
+    'DEL',
+  ]),
+]
+
+describe('over rows the band settles at a stack it packed', () => {
+  test('not while the records collapse past the density budget', () => {
+    const { display } = recordsDisplayAt(DENSE_OVER_PILE, 10)
+    expect(display.recordsPackMode).toBe('collapsed')
+    expect(display.recordsHeightHeld).toBe(false)
+  })
+
+  test('the zoom in that packs them settles it, every DEL shown', () => {
+    const { display } = recordsDisplayAt(DENSE_OVER_PILE, 10)
+    display.view.setNewView(0.5, 0)
+    expect(display.recordsPackMode).toBe('compact')
+    expect(display.recordsHeightHeld).toBe(true)
+    expect(display.topBands.recordsHeight).toBeGreaterThan(100)
+  })
+})
+
 // the opening heights live on the display: opening a track edits no session,
 // shows no track as overridden, and leaves Reset and undo nothing to fight
 describe('an opening height writes nothing', () => {

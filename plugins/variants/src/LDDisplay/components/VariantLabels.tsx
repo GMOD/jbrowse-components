@@ -38,7 +38,7 @@ const VariantLabels = observer(function VariantLabels({
 }: {
   model: LDDisplayModel
 }) {
-  return model.showNames ? (
+  return model.drawsLabels ? (
     <ConnectorLabels coords={model.connectorLineCoords} />
   ) : null
 })

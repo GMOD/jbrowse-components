@@ -300,6 +300,14 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #getter
+       * Whether the SNP labels draw: on, in a `connectors` band that
+       * reserves room for them, so they never paint over the triangle.
+       */
+      get drawsLabels(): boolean {
+        return self.showNames && this.connectorsHeight > 0
+      },
+      /**
+       * #getter
        * Where the triangle begins, under the `connectors` band.
        */
       get matrixTop(): number {

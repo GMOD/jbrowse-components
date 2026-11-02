@@ -311,7 +311,9 @@ its ladder, the hiding and the chip stay.
   amendment "the opening heights live on the display"); a drag or
   `+N hidden` writes `records.height`, which wins. A VCF opening on a window with no record
   spends nothing until one is in view; after that an empty window shows the
-  band empty.
+  band empty. A window whose records collapse past the density budget
+  settles nothing: opened there, the band held one collapsed row (15px),
+  and a zoom in hid every record behind `+N hidden`.
 - **`+N hidden` sets the height to the whole stack** (`showAllRecordRows`).
 - Beta-only slot, so no lift from `maxHeight`.
 

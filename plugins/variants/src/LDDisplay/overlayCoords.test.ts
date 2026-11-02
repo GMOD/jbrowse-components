@@ -1,3 +1,4 @@
+import { setConf } from '@jbrowse/core/configuration'
 import { LD_NOT_COMPUTED } from '@jbrowse/ld-core'
 
 import { bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
@@ -232,4 +233,20 @@ test('the focal SNP is the one clicked where two share a position', () => {
   display.setRpcData({ ...display.rpcData!, snps })
   display.setFocalSnp(snps[1])
   expect(display.focalSnpIndex).toBe(1)
+})
+
+// The labels draw in the `connectors` band, so they follow what it reserves:
+// with the band off they would paint over the triangle's top.
+describe('the SNP labels draw only in a band that reserves them', () => {
+  for (const appliedLayout of ['columns', 'genomic'] as const) {
+    it(`at ${appliedLayout}`, () => {
+      const { display } = loadedDisplay({ data: { appliedLayout } })
+      setConf(display, ['labels', 'name', 'show'], true)
+      expect(display.connectorsHeight).toBeGreaterThan(0)
+      expect(display.drawsLabels).toBe(true)
+      setConf(display, ['connectors', 'show'], false)
+      expect(display.matrixTop).toBe(0)
+      expect(display.drawsLabels).toBe(false)
+    })
+  }
 })

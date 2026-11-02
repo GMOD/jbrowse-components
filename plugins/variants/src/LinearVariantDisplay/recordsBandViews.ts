@@ -943,8 +943,9 @@ export function recordsLayoutActions(self: RecordsLayoutActionsHost) {
     },
     /**
      * #action
-     * Hold the band's height over rows from its first layout with a record
-     * on screen: what it draws then, its stack up to the default. From
+     * Hold the band's height over rows from its first layout of a fetched
+     * record at `records.displayMode`, not one collapsed past the density
+     * budget: what it draws then, its stack up to the default. From
      * then on a pan fits the records inside the band rather than resizing
      * it, and a region with no record before that spends nothing. Held on
      * this display alone, never written, so viewing a track edits no
@@ -985,9 +986,10 @@ export function recordsOpeningHeightActions(self: RecordsOpeningHeightHost) {
 }
 
 /**
- * Settle the opening heights at the first layout with a record on screen:
- * with no rows the track's, unless `grow`, a ring or a written `height`
- * sizes it; over rows the band's, unless `records.height` is written.
+ * Settle the opening heights once: with no rows the track's, at the first
+ * layout with a record on screen, unless `grow`, a ring or a written `height`
+ * sizes it; over rows the band's, at the first layout packing a record at its
+ * display mode, unless `records.height` is written.
  */
 export function installRecordsOpeningHeight(
   self: RecordsOpeningHeightHost &
@@ -1019,6 +1021,7 @@ export function installRecordsOpeningHeight(
         !self.recordsOnly &&
         self.showRecords &&
         !self.recordsHeightHeld &&
+        self.recordsPackMode === self.recordsDisplayMode &&
         self.cellData !== undefined &&
         self.canRender &&
         self.topBands.recordsHeight > 0

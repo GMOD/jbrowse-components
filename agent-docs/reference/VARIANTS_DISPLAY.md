@@ -439,7 +439,8 @@ a `recordsOnly` choice in the model belongs there.
   default, so a value equal to the default still reads as written) once a
   drag, `+N hidden` or a config writes it, else the `openingRecordsHeight`
   volatile the first layout that draws a record holds
-  (`settleRecordsBandHeight`), whatever the records in view need, so a pan
+  (`settleRecordsBandHeight`), but not one collapsed past the density
+  budget, whose one row a zoom in would leave the band at, whatever the records in view need, so a pan
   never resizes the track (`recordsBandHeightOverRows`). Before that, the
   `full` rung's packed height at compact feature size up to the default
   (170). With the rows hidden (`rowsHidden`) the track's edge and its double
