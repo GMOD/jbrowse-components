@@ -135,6 +135,8 @@ calls:
   including the ones the tag leaves implicit, and paints blue each one more
   likely unmodified than modified, so an unmethylated region is solid blue
 
+<Figure caption="Color by → Modifications in the HG002 ONT track menu." src="/img/methylation/hg002_snrpn_color_menu.png" />
+
 The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
 covers both modes and the probability and cytosine-context filters.
@@ -390,7 +392,6 @@ then type `chr15:22,200,000-26,900,000` to take in the whole imprinted domain:
 - [](/docs/tutorials/bisulfite)
 - [](/docs/tutorials/analyze_trio)
 - [](/docs/tutorials/hg002_haplotypes)
-- [](/docs/tutorials/giab_hg002_reads)
 - [](/docs/tutorials/rnaseq)
 - [](/docs/user_guides/quantitative_track)
 

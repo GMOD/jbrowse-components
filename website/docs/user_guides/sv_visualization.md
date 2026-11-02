@@ -397,9 +397,13 @@ HiPhase), reads have an `HP` tag, and sorting, coloring or
 track menu clusters each haplotype. Grouping goes furthest: each haplotype gets
 a separate pileup section, and untagged reads get one too, so unphased support
 stays visible. The [phased trio tutorial](/docs/tutorials/analyze_trio) covers
-phased haplotypes end to end, and the
-[GIAB HG002 tutorial](/docs/tutorials/giab_hg002_reads) walks through this
-deletion.
+phased haplotypes end to end.
+
+The deletion below is at `1:63,005,000-63,008,000` in the
+[hg19 demo](https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&assembly=hg19):
+open **HG002 BAM ultralong nanopore+whatshap** beside **HG002 GIAB consensus SV
+(VCF)**, then pick **Group by → Tag...** in the reads' track menu and enter
+`HP`.
 
 <Figure caption="A heterozygous deletion in GIAB HG002 nanopore reads grouped by HP tag, the SNP coverage above." src="/img/smalldel.png" />
 

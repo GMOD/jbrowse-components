@@ -105,6 +105,7 @@ export default defineConfig({
     '/docs/tutorials/protein_variants_seedless_grape/': `${BASE}/docs/tutorials/genomes_proteins/`,
     '/docs/tutorials/ecoli_orthologs_synteny/': `${BASE}/docs/tutorials/primate_orthologs_synteny/`,
     '/docs/tutorials/scatac_pseudobulk/': `${BASE}/docs/tutorials/scrna_pseudobulk/`,
+    '/docs/tutorials/giab_hg002_reads/': `${BASE}/docs/user_guides/alignments_track/`,
     '/docs/user_guides/multiquantitative_track/': `${BASE}/docs/user_guides/quantitative_track/`,
     '/docs/config_guides/multiquantitative_track/': `${BASE}/docs/config_guides/quantitative_track/`,
   },

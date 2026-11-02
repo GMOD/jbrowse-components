@@ -278,7 +278,11 @@ reads at that base.
 
 <Figure caption="Clip indicators above the coverage track: blue marks soft clips, red marks hard clips." src="/img/alignment_clipping_indicators.png" />
 
-Insertions larger than 10bp also draw a purple rectangle in the pileup.
+Insertions larger than 10bp also draw a purple rectangle in the pileup. A long
+read spans the insertion and carries the mark. A short read ends at the
+insertion's edge, and [**Show → Soft clipping**](#soft-clipping) draws its
+unaligned bases past that edge, as on the Illumina track below (GIAB HG002 reads
+at `1:55,705,770-55,706,090` on hg19).
 
 <Figure caption="A large insertion across GIAB HG002 nanopore, PacBio and Illumina reads, drawn as purple insertion marks." src="/img/insertion.png" />
 
@@ -425,7 +429,6 @@ read visits one locus repeatedly.
 ## See also
 
 - [](/docs/user_guides/consensus_sequence)
-- [](/docs/tutorials/giab_hg002_reads)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
 - [SV inspector](/docs/user_guides/sv_inspector_view)
 - [](/docs/user_guides/variant_track)

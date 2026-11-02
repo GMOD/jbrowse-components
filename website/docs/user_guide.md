@@ -75,7 +75,6 @@ How to drive JBrowse once it is running. New here? Start with the
 
 - [](/docs/quickstart_web)
 - [](/docs/quickstart_desktop)
-- [](/docs/tutorials/giab_hg002_reads)
 
 ### genomes.jbrowse.org
 
