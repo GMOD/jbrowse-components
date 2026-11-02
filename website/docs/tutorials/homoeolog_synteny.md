@@ -118,9 +118,9 @@ Two flags matter here:
 - `--no_strip_names` keeps the ids byte-identical to the BED the adapter joins
   on
 
-The alignment is the long step. When you run it separately, DIAMOND uses default
-sensitivity, which finds homoeologs this recent. jcvi picks the file up by name
-and skips its alignment step.
+The alignment is the long step. Run separately as above, DIAMOND uses its
+default sensitivity, which finds homoeologs this recent, and jcvi picks up
+`oat.oat.last` by name and skips its own alignment.
 
 Three choices decide which pairs survive:
 
@@ -133,6 +133,15 @@ Three choices decide which pairs survive:
 - The script reads `oat.oat.anchors` and skips `oat.oat.lifted.anchors`, because
   liftover recruits extra pairs near an established block, and their dS runs far
   above the chained ones', which marks them as paralogs.
+
+On a genome of your own, the pair list starts from the two gene columns of the
+chained anchors. The script then drops the pairs whose two genes share a
+subgenome letter, so adapt that step to your own chromosome names:
+
+```bash
+# skip the ### lines that separate blocks
+awk '!/^#/ && NF >= 2 {print $1 "\t" $2}' oat.oat.anchors > oat.pairs.tsv
+```
 
 ### Measuring dN and dS on each homoeolog pair
 
@@ -188,9 +197,6 @@ button's **dN/dS**.
 the session [below](#checking-the-rates-against-the-raw-data) does the same.
 
 ## Coloring homoeolog pairs by dS, with A-D pairs as the control {#checking-the-rates-against-the-raw-data}
-
-The [script](#reproduce-it-end-to-end) ends by printing the median dS for each
-subgenome pair, the numbers behind the picture below.
 
 **Color by value → ds** <!-- menu-path-ok --> on the palette button paints each
 pair by its dS. Oat's A and D subgenomes descend from closely related diploid

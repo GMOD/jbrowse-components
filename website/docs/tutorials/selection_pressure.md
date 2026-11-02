@@ -89,9 +89,21 @@ macaque sits in that window against human.[^chimp]
 
 ### Calling human-rhesus orthologs with jcvi
 
-The [end-to-end script](#reproduce-it-end-to-end) turns each GFF3 into the BED
-the adapter reads, translates each CDS to a proteome keyed the same way, and
-runs jcvi:
+jcvi takes a BED and a proteome per genome under one set of ids. The BED comes
+from the GFF3, one primary transcript per gene on the assembled chromosomes, and
+the adapter reads the same file:
+
+<!-- from: scripts/build_primate_selection.sh -->
+
+```bash
+python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
+  --primary_only human.gff3.gz -o human.all.bed
+awk -F'\t' '$1 ~ /^([0-9]+|X|Y)$/' human.all.bed > human.bed
+```
+
+The [end-to-end script](#reproduce-it-end-to-end) translates each CDS into
+`human.pep` and `rhesus.pep`, keeping the transcripts the BED names under the
+same ids. DIAMOND aligns human against rhesus, and jcvi chains the hits:
 
 <!-- from: scripts/build_primate_selection.sh -->
 
@@ -114,10 +126,19 @@ Two input mistakes leave jcvi with no orthologs:
 
 ### Measuring dN and dS on each pair {#dn-and-ds}
 
-`pairs.tsv` is the two gene columns of `human.rhesus.anchors`. The script skips
-`human.rhesus.lifted.anchors`, which recruits extra pairs near an established
-syntenic block. Their median dS is several times that of the chained pairs,
-which marks them as paralogs.
+The pair list is the two gene columns of `human.rhesus.anchors`. The script
+skips `human.rhesus.lifted.anchors`, which recruits extra pairs near an
+established syntenic block. Their median dS is several times that of the chained
+pairs, which marks them as paralogs.
+
+<!-- from: scripts/build_primate_selection.sh -->
+
+```bash
+# skip the ### lines that separate blocks
+awk '!/^#/ && NF >= 2 {print $1 "\t" $2}' human.rhesus.anchors > pairs.tsv
+# one CDS file for both genomes, whose ids (ENST, ENSMMUT) are distinct
+cat human.cds.fa.gz rhesus.cds.fa.gz > both.cds.fa.gz
+```
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/kaks_from_pairs.py
@@ -213,8 +234,8 @@ the middle and 2 at the top.
 Two view settings matter for a view this sparse:
 
 - **Opacity** on the sliders button in the view header sets `encoding.opacity`,
-  which defaults to 0.25 for whole-genome views where ribbons overlap. 0.95
-  shows the color as it is.
+  which starts low for whole-genome views where ribbons overlap. 0.95 shows the
+  color as it is.
 - **Curved lines** on the same menu sets `mark: { interpolate: 'bump' }`, which
   separates stacked neighbours.
 
@@ -263,11 +284,11 @@ lineages.
 ## YEATS4, a conserved neighbour, as the control for LYZ
 
 _YEATS4_ begins just past where _LYZ_ ends, so the two share a locus and a
-divergence time yet sit at opposite ends of the ramp. _YEATS4_ is conserved and
-compact, so its dS is low while its synonymous count clears the floor. Blue is
-the low end of the ramp, where the Fisher test does reach significance, because
-a conserved gene accumulates measurable synonymous change while its
-non-synonymous change stays near zero.
+divergence time. Click the blue _YEATS4_ ribbon beside _LYZ_ for the same
+evidence at the other end of the ramp. A conserved gene accumulates measurable
+synonymous change while its non-synonymous change stays near zero, so its
+synonymous count clears the floor and the Fisher test reaches significance at
+the low end too.
 
 ## Reproduce it end to end
 
