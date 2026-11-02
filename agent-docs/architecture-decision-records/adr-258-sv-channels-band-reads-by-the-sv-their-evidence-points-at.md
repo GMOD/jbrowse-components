@@ -87,12 +87,13 @@ the reviews to settle the open calls; built in
   HG02768 Illumina inverted duplication draws 4 where it drew 5: no deletion
   evidence, so no LR band, its split reads in the inversion band and its
   concordant pairs in "No SV evidence".
-- The arcs gate an inter-chromosomal tick by their own support floor
-  (`breakpoint.reads`) and by no mapping quality, so a tick draws in "No SV
-  evidence" over a read `svSignal` refuses: a MAPQ-0 read, or one whose mate the
-  MQ tag marks unplaced. On HG008-T Illumina at CDKN2A that band carries dozens
-  of ticks. Gating ticks by placement would change every alignments track's
-  arcs, so it is a separate call.
+- Interchromosomal connections draw only between placed records (MAPQ above
+  0; `reference/ARC_BAND.md`), so no tick draws over "No SV evidence" from a
+  read `svSignal` refuses: on HG008-T Illumina every such tick had come from a
+  MAPQ-0 read, 173 records at CDKN2A and 163 at chr19:11.2 Mb. The "elsewhere"
+  band itself stays busy in a file with no MQ tags: its reads are placed and
+  their mates' placement unknown, and a higher `breakpoint.reads` floor thins
+  CDKN2A's ticks but not chr19's, whose mismapped clusters run past 5 reads.
 - Checked on real data (2026-11-02), every read of a slice in one band but the
   two above. Distinct reads per band:
 

@@ -19,6 +19,7 @@ import {
   SAM_FLAG_MATE_UNMAPPED,
 } from '@jbrowse/cigar-utils'
 
+import { isMatePlacedRead, isPlacedRead } from '../../shared/placedReads.ts'
 import { nextRefAt } from '../../shared/readNextRefs.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
@@ -129,6 +130,7 @@ function entrySeg(entry: ReadEntry): SegAln {
     strand: strandOf(entry),
     clipAtStart: clipAt(entry),
     onScreen: true,
+    placed: isPlacedRead(entry),
   }
 }
 
@@ -180,6 +182,7 @@ function saSegments(
       strand: sa.strand,
       clipAtStart: sa.clipLengthAtStartOfRead,
       onScreen: false,
+      placed: sa.mapq !== 0,
     }))
 }
 
@@ -271,7 +274,11 @@ function unpairedChainArcs(
     const a1 = chain[j]!
     const a2 = chain[j + 1]!
     const offScreen = !a1.onScreen || !a2.onScreen
-    if (!offScreen || emitsOffScreenPartner(ctx, a1.refName !== a2.refName)) {
+    const interchromosomal = a1.refName !== a2.refName
+    if (
+      (!interchromosomal || (a1.placed && a2.placed)) &&
+      (!offScreen || emitsOffScreenPartner(ctx, interchromosomal))
+    ) {
       arcs.push(splitJunctionArc(a1, a2, offScreen))
     }
   }
@@ -401,7 +408,11 @@ export function offScreenMateArcs(
   // fetched `1` is the same chromosome, and asking the gate with the raw name
   // would call every aliased mate a translocation.
   const mateCanonRef = ctx.canonicalRefName(mateRef)
-  if (!emitsOffScreenPartner(ctx, mateCanonRef !== refName)) {
+  const interchromosomal = mateCanonRef !== refName
+  if (
+    !emitsOffScreenPartner(ctx, interchromosomal) ||
+    (interchromosomal && !(isPlacedRead(entry) && isMatePlacedRead(entry)))
+  ) {
     return []
   }
   const strand = strandOf(entry)
@@ -490,10 +501,13 @@ export function collectPendingArcsByLane(
       },
       // The entry the orientation and TLEN are already read off, so the lane a
       // mate link draws in is the one whose reads gave it its color.
-      mateLink: (e1, e2) => ({
-        groupKey: pairFieldEntry(e1, e2).groupKey,
-        arc: mateLinkArc(e1, e2),
-      }),
+      mateLink: (e1, e2) => {
+        const arc = mateLinkArc(e1, e2)
+        const crosses = arc.interchrom || e1.refName !== e2.refName
+        return crosses && !(isPlacedRead(e1) && isPlacedRead(e2))
+          ? []
+          : [{ groupKey: pairFieldEntry(e1, e2).groupKey, arc }]
+      },
       loneMateLink: primary =>
         offScreenMateArcs(primary, ctx).map(arc => ({
           groupKey: primary.groupKey,

@@ -54,6 +54,7 @@ export {
 } from './orientation.ts'
 export {
   READ_DISCORDANT,
+  READ_MATE_UNPLACED,
   READ_SPLICED,
   READ_SPLIT,
   READ_SV_DELETION,

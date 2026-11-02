@@ -76,6 +76,19 @@ breakpoint's pairs. The same floor on same-chromosome arcs was measured and
 declined as a density filter, not an evidence filter
 ([DEEP_COVERAGE.md](DEEP_COVERAGE.md)).
 
+**An interchromosomal connection draws only between placed records** (MAPQ
+above 0): a mate link's two primaries, a split read's two pieces (the SA
+piece's MAPQ read off its tag, `SegAln.placed`), and an off-screen mate, which
+also needs its mate placed where the MQ tag says (`READ_MATE_UNPLACED`, a
+category bit beside the tier). `shared/placedReads.ts` is the one test; the
+band's producers in `arcChains.ts` and the connectors' `connectorFilterOf` both
+ask it. ADR-229 counts a MAPQ-0 record as no evidence. On HG008-T Illumina at
+195x every tick drawn over SV channels' "No SV evidence" band came from a
+MAPQ-0 read: 173 records at CDKN2A, 163 at chr19:11.2 Mb. Same-chromosome arcs
+keep MAPQ-0 reads; the gate is for the family the floor above already treats
+as mismapping-prone. Without MQ tags a mate counts as placed, as `svSignal`
+counts it.
+
 ## Support, and why a tick can hide behind an arc's foot
 
 **A tick is solid, and nothing in the mark separates it from an arc's foot.** The

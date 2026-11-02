@@ -1,6 +1,37 @@
-import { splitAlignmentSegments, splitReadLaunch } from './splitAlignment.ts'
+import { READ_MATE_UNPLACED } from '@jbrowse/alignments-core'
+import { SAM_FLAG_PAIRED } from '@jbrowse/cigar-utils'
+import { SimpleFeature } from '@jbrowse/core/util'
+
+import {
+  readCategoryBitsOf,
+  splitAlignmentSegments,
+  splitReadLaunch,
+} from './splitAlignment.ts'
 
 import type { Feature } from '@jbrowse/core/util'
+
+test.each([
+  [0, true],
+  [60, false],
+  [undefined, false],
+])(
+  'a pair whose mate is on another chromosome at MQ %s is marked mate-unplaced: %s',
+  (mq, unplaced) => {
+    const feature = new SimpleFeature({
+      uniqueId: 'pair',
+      refName: 'chr1',
+      start: 100,
+      end: 200,
+      flags: SAM_FLAG_PAIRED,
+      score: 60,
+      CIGAR: '100M',
+      tags: mq === undefined ? {} : { MQ: mq },
+    })
+    expect((readCategoryBitsOf(feature) & READ_MATE_UNPLACED) !== 0).toBe(
+      unplaced,
+    )
+  },
+)
 
 function makeFeature(fields: Record<string, unknown>): Feature {
   return {

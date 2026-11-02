@@ -1495,6 +1495,31 @@ describe('connectorFilterOf', () => {
     expect(drawn({ offscreenMates: 'exclude' })).toEqual(drawn({}))
   })
 
+  test.each([
+    ['the mate link', 1, 0, ['r']],
+    ['the split read', 1, 1, ['m']],
+  ])(
+    'a connection across chromosomes from a MAPQ-0 record does not draw: %s',
+    (_name, region, readIdx, curves) => {
+      const data = twoRegions(1)
+      data.get(region)!.readMapqs[readIdx] = 0
+      const { overlayPairs } = resolveConnectors(data, {
+        lines: true,
+        scope: 'all',
+        admits: connectorFilterOf(
+          { minInterchromReads: 2 },
+          i => ['chr1', 'chr2'][i],
+          () => new Set<string>(),
+        ),
+      })
+      expect(
+        overlayPairs
+          .map(({ e1 }) => readNameAt(e1.data, e1.readIdx))
+          .toSorted(),
+      ).toEqual(curves)
+    },
+  )
+
   test('the floor drops a mate link, and a split read is exempt', () => {
     expect(drawn({}, { belowFloor: () => new Set(['m', 'r']) })).toEqual({
       lines: 1,

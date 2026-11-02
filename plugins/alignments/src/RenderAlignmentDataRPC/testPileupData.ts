@@ -74,7 +74,9 @@ export function baseWorkerPileupData(numReads: number): WorkerPileupData {
   return {
     readPositions: new Uint32Array(n * 2),
     readFlags: new Uint16Array(n),
-    readMapqs: new Uint8Array(n),
+    // Placed, as a real aligned read is: a MAPQ-0 read carries no SV evidence
+    // (ADR-229), and the arcs draw no inter-chromosomal connection from one.
+    readMapqs: new Uint8Array(n).fill(60),
     readInsertSizes: new Float32Array(n),
     readPairOrientations: new Uint8Array(n),
     readStrands: new Int8Array(n),

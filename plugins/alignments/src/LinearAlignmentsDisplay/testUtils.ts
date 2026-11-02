@@ -590,7 +590,7 @@ export function oneReadWithMate(
     ...namesToBlock([identity.name]),
     readPositions: new Uint32Array([1000, 1100]),
     readFlags: new Uint16Array([mateBp === undefined ? 0 : SAM_FLAG_PAIRED]),
-    readMapqs: new Uint8Array(1),
+    readMapqs: new Uint8Array([60]),
     readStrands: new Int8Array([1]),
     readInsertSizes: new Float32Array([500]),
     readPairOrientations: new Uint8Array([1]),

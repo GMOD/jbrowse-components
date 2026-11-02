@@ -267,6 +267,8 @@ export function featurizeSAEntries(
       seqLength: saLength,
       clipLengthAtStartOfRead: saClipPos,
       CIGAR: saCigar,
+      // NaN where the record omits it, which reads as placed
+      mapq: Number(ret[4]),
       strand: effectiveStrand,
       uniqueId: `${id}_SA${index}`,
       mate: {

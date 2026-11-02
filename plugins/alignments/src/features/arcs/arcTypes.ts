@@ -76,6 +76,8 @@ export interface SegAln {
   // present in the current view (a fetched pileup entry) vs. known only from a
   // sibling's SA tag (maps to a region no displayed region covers)
   onScreen: boolean
+  // above MAPQ 0, as ADR-229 counts a piece placed
+  placed: boolean
 }
 
 export interface ArcEndpoint {

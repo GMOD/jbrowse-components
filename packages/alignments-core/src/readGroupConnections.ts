@@ -443,7 +443,7 @@ export function resolveReadGroup<E extends MinEntry, T>(
     loneMateLink = () => [],
   }: {
     chainMate: (segs: E[]) => T[]
-    mateLink: (primary1: E, primary2: E) => T
+    mateLink: (primary1: E, primary2: E) => T[]
     loneMateLink?: (primary: E) => T[]
   },
 ): T[] {
@@ -456,7 +456,7 @@ export function resolveReadGroup<E extends MinEntry, T>(
   if (hasPaired) {
     out.push(...chainMate(second))
     if (first.length > 0 && second.length > 0) {
-      out.push(mateLink(primaryOf(first), primaryOf(second)))
+      out.push(...mateLink(primaryOf(first), primaryOf(second)))
     } else {
       // `hasPaired` guarantees a survivor, so exactly one side is populated.
       out.push(...loneMateLink(primaryOf(first.length > 0 ? first : second)))
@@ -483,6 +483,6 @@ export function readGroupConnections<E extends MinEntry>(
 ): ReadConnection<E>[] {
   return resolveReadGroup(entries, {
     chainMate: segs => splitJunctions(segs, canonicalRefName),
-    mateLink: (e1, e2) => ({ e1, e2, isSplit: false }),
+    mateLink: (e1, e2) => [{ e1, e2, isSplit: false }],
   })
 }

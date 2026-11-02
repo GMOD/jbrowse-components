@@ -1,5 +1,6 @@
 import {
   READ_DISCORDANT,
+  READ_MATE_UNPLACED,
   READ_SPLIT,
   pairOrientationToNum,
   readCategoryBits,
@@ -76,11 +77,14 @@ export function categoryBitsOf(
     cigarCategoryBitsOf(feature),
     pairOrientation,
   )
+  // Read for a discordant pair alone, the only kind whose mate's placement a
+  // reader asks: every interchromosomal pair is one.
+  const mateMapq = bits & READ_DISCORDANT ? mateMapqOf(feature) : undefined
   return withSvTier(
-    bits,
+    mateMapq === 0 ? bits | READ_MATE_UNPLACED : bits,
     getMappingQuality(feature),
     sa,
-    bits & READ_DISCORDANT ? mateMapqOf(feature) : undefined,
+    mateMapq,
   )
 }
 

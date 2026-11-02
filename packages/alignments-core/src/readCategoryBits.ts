@@ -24,6 +24,14 @@ export const READ_SV_DELETION = CIGAR_HAS_SV_DELETION
 export const READ_SV_INSERTION = CIGAR_HAS_SV_INSERTION
 export const READ_DISCORDANT = 16
 
+/**
+ * The record's mate is at MAPQ 0, where its MQ tag says. Kept beside the tier
+ * because the tier is the read's strongest evidence: a split read keeps tier 3
+ * whatever its mate's placement, and an interchromosomal mate link still needs
+ * the mate placed.
+ */
+export const READ_MATE_UNPLACED = 128
+
 /** An indel of `SV_INDEL_MIN_BP` or more. */
 export const READ_SV_INDEL = READ_SV_DELETION | READ_SV_INSERTION
 

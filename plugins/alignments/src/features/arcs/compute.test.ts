@@ -1,4 +1,4 @@
-import { namesToBlock } from '@jbrowse/alignments-core'
+import { READ_MATE_UNPLACED, namesToBlock } from '@jbrowse/alignments-core'
 import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_MATE_UNMAPPED,
@@ -455,6 +455,61 @@ describe('computeArcsFromPileupData', () => {
     // ticks, so this doubles as the floor gating the arc branch: `showInterchrom` and
     // `minInterchromSupport` used to sit inside the tick push, and an arc branch
     // beside them would have inherited neither.
+    test.each([
+      [60, 60, 1],
+      [60, 0, 0],
+    ])(
+      'a pair with both mates on screen across chromosomes, at MAPQ %i and %i, draws %i arcs',
+      (mapq1, mapq2, arcs) => {
+        const mate = (
+          refName: string,
+          start: number,
+          mapq: number,
+          flag: number,
+          mateRef: string,
+          mateBp: number,
+        ) =>
+          makePileupData({
+            readPositions: new Uint32Array([start, start + 100]),
+            readFlags: new Uint16Array([SAM_FLAG_PAIRED | flag]),
+            readMapqs: new Uint8Array([mapq]),
+            readStrands: new Int8Array([1]),
+            readKeys: [`${refName}-p`],
+            ...namesToBlock(['p']),
+            ...nextRefsToTable([mateRef]),
+            readNextPositions: new Uint32Array([mateBp]),
+          })
+        const { crossRegion } = computeArcsFromPileupData(
+          new Map([
+            [
+              0,
+              mate('chr1', 2000, mapq1, SAM_FLAG_FIRST_IN_PAIR, 'chr2', 5000),
+            ],
+            [
+              1,
+              mate('chr2', 5000, mapq2, SAM_FLAG_SECOND_IN_PAIR, 'chr1', 2000),
+            ],
+          ]),
+          [
+            {
+              refName: 'chr1',
+              start: 1000,
+              end: 9000,
+              displayedRegionIndex: 0,
+            },
+            {
+              refName: 'chr2',
+              start: 4000,
+              end: 9000,
+              displayedRegionIndex: 1,
+            },
+          ],
+          { filter: { minInterchromReads: 1 } },
+        )
+        expect(crossRegion).toHaveLength(arcs)
+      },
+    )
+
     test('a translocation counts both mate orders as one cluster', () => {
       const chr1 = makePileupData({
         readPositions: new Uint32Array([2000, 2100, 2100, 2200]),
@@ -1000,6 +1055,59 @@ describe('computeArcsFromPileupData', () => {
     expect(arcs).toEqual([])
     expect(lines.map(l => l.x.refName)).toEqual(['chr1', 'chr2'])
   })
+
+  // A MAPQ-0 piece carries no evidence (ADR-229): its inter-chromosomal ticks
+  // are a mismapped read claiming a translocation the SV evidence filter hides.
+  test.each([
+    ['the fetched piece', 0, 60, 0],
+    ['the SA piece', 60, 0, 0],
+    ['no piece', 60, 60, 2],
+  ])(
+    'a split read reaching another chromosome with %s at MAPQ 0',
+    (_name, ownMapq, saMapq, ticks) => {
+      const data = makePileupData({
+        readPositions: new Uint32Array([1000, 1500]),
+        readFlags: new Uint16Array([0]),
+        readMapqs: new Uint8Array([ownMapq]),
+        readStrands: new Int8Array([1]),
+        ...namesToBlock(['splitRead']),
+        readClipAtStart: new Uint32Array([0]),
+        readSuppAlignments: [`chr2,9000,+,500S500M,${saMapq},0;`],
+      })
+      const { lines } = computeArcsFromPileupData(
+        new Map([[0, data]]),
+        [{ refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 }],
+        {},
+      )
+      expect(lines).toHaveLength(ticks)
+    },
+  )
+
+  test.each([
+    ['at MAPQ 0', 0, 0, 0],
+    ['whose mate the MQ tag marks unplaced', 60, READ_MATE_UNPLACED, 0],
+    ['placed, mates placed', 60, 0, 4],
+  ])(
+    'two pairs whose mates are on another chromosome, %s',
+    (_name, mapq, bits, ticks) => {
+      const data = makePileupData({
+        readPositions: new Uint32Array([1000, 1100, 1200, 1300]),
+        readFlags: new Uint16Array([SAM_FLAG_PAIRED, SAM_FLAG_PAIRED]),
+        readMapqs: new Uint8Array([mapq, mapq]),
+        readCategoryBits: new Uint8Array([bits, bits]),
+        readStrands: new Int8Array([1, 1]),
+        ...namesToBlock(['pairA', 'pairB']),
+        ...nextRefsToTable(['chr2', 'chr2']),
+        readNextPositions: new Uint32Array([9000, 9100]),
+      })
+      const { lines } = computeArcsFromPileupData(
+        new Map([[0, data]]),
+        [{ refName: 'chr1', start: 1000, end: 20000, displayedRegionIndex: 0 }],
+        {},
+      )
+      expect(lines).toHaveLength(ticks)
+    },
+  )
 
   // ONE DONOR, TWO ACCEPTORS — K562's BCR-ABL1 in miniature, which is one donor
   // and 24 acceptors spread over ~154 kb (reference/DEMO_DATASETS.md). A split

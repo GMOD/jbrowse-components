@@ -315,7 +315,7 @@ describe('a junction over segments no region fetched', () => {
 describe('resolveReadGroup loneMateLink', () => {
   const hooks = {
     chainMate: (segs: Entry[]) => segs.map(s => `chain:${s.id}`),
-    mateLink: (p1: Entry, p2: Entry) => `mate:${p1.id}-${p2.id}`,
+    mateLink: (p1: Entry, p2: Entry) => [`mate:${p1.id}-${p2.id}`],
     loneMateLink: (p: Entry) => [`lone:${p.id}`],
   }
 
