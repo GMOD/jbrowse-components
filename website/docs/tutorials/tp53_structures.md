@@ -9,15 +9,20 @@ guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 ---
 
-The p53 protein has a predicted structure covering every residue and crystal
-structures covering the parts that fold. The protein3d plugin maps each
-structure to the transcript, and Mol\* draws the structures. We:
+The p53 protein has a predicted structure covering every residue, and
+experimental structures of the parts that fold: a crystal of the DNA-binding
+core on DNA, a crystal of a short p53 peptide bound to its regulator MDM2, and
+an NMR ensemble of the transactivation domain. A crystal numbers its residues
+from wherever its construct began, and a complex holds chains of more than one
+protein, so reading a residue back to its codon means aligning each structure to
+the transcript first. We:
 
-- open three structures in one view beside the _TP53_ gene, each mapped to the
-  same transcript
-- click a residue on a crystal to find its codon, and check the codon against
-  the reference sequence
-- choose the mapped chain in a complex, and open an NMR ensemble
+- open an AlphaFold model and two crystal structures in one protein view beside
+  the _TP53_ gene track, each mapped to the same transcript
+- select the R248 hotspot on a crystal to band its codon on the gene, and read
+  the codon on the reference sequence track
+- switch the mapped chain in a complex with the **Mapped chain** picker
+- open an NMR ensemble with its helices selected
 
 ## Prerequisites
 
@@ -27,8 +32,8 @@ structure to the transcript, and Mol\* draws the structures. We:
 
 ## The data
 
-The links open a hosted hg38 config with NCBI RefSeq genes, and the protein3d
-plugin fetches these files when a link opens, so no download is needed.
+The links open a hosted hg38 config with NCBI RefSeq genes. Nothing to download:
+the protein3d plugin fetches these files by URL when a link opens, and
 _Structures of your own gene_ covers a gene of your own.
 
 <details>
@@ -47,10 +52,10 @@ _Structures of your own gene_ covers a gene of your own.
 
 ## Opening three TP53 structures mapped to one transcript
 
-An AlphaFold model is one chain, numbered like the UniProt sequence. A crystal
-structure often holds one domain of the protein, numbered from wherever the
-crystallised construct began. The plugin maps both kinds to the gene by aligning
-the structure's sequence to the transcript's translation.
+An AlphaFold model is one chain, numbered like the UniProt sequence, and a
+crystal often holds one domain. The protein3d plugin maps both kinds to the gene
+by aligning the structure's sequence to the transcript's translation, and Mol\*
+draws them.
 
 [Open the three structures of TP53](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22uniprotId%22%3A%22P04637%22%7D%2C%7B%22pdbId%22%3A%221TUP%22%7D%2C%7B%22pdbId%22%3A%221YCR%22%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C671%2C000-7%2C684%2C500%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%5D%7D%2C%22color%22%3A%7B%22field%22%3A%22mappedChain%22%7D%7D%5D%7D).
 The plugin superposes the structures with TM-align, and the **Color** menu is
@@ -69,15 +74,16 @@ STRUCT row and a ruler in the authors' residue numbering:
 
 ## UniProt annotations on the 1TUP core-domain crystal
 
-The feature tracks under each panel come from UniProt, shifted to the
-construct's numbering with the SIFTS offset. **Show all feature tracks** in the
-display settings menu adds secondary structure, modified residues and other
-minor types to the default domains, binding sites and variants.
+Open the 1TUP panel:
 
-1TUP holds three copies of the core and two DNA strands. The panel's **Mapped
-chain** picker lists them, and the plugin chose the protein entity because its
-sequence aligns to the transcript. Hovering any copy in the 3D canvas highlights
-the same residue on the genome.
+- **The feature tracks** under it come from UniProt, shifted to the construct's
+  numbering with the SIFTS offset. **Show all feature tracks** in the display
+  settings menu adds secondary structure, modified residues and other minor
+  types to the default domains, binding sites and variants.
+- **The Mapped chain picker** lists the three copies of the core and the two DNA
+  strands 1TUP holds. The plugin chose the protein entity because its sequence
+  aligns to the transcript. Hovering any copy in the 3D canvas highlights the
+  same residue on the genome.
 
 ## Finding the codon of the R248 hotspot from the crystal
 
@@ -91,13 +97,20 @@ numbered their construct the way UniProt numbers the whole protein.
 Hovering the codon on the gene highlights the residue on the structures that
 contain it; hovering the intron beside the exon highlights nothing.
 
+## Checking the R248 codon against the reference sequence
+
+To read the codon itself, zoom the genome view into the band the selection drew
+on _TP53_, down to base level, and tick **Reference sequence** in the track
+selector. The transcript is on the minus strand, so the codon under the band
+reads `CCG` left to right on the reference track, which is `CGG`, arginine, on
+the transcript.
+
 ## Choosing the mapped chain in the MDM2 complex 1YCR
 
-1YCR holds the N-terminal domain of MDM2, a p53 regulator, and a fifteen-residue
-peptide from the p53 transactivation region, and the transcript encodes the
-peptide. Open the 1YCR panel: its **Mapped chain** picker lists both chains, and
-the plugin picked the peptide, a short exact match near the start of the
-transcript row.
+1YCR holds the N-terminal domain of MDM2 and a fifteen-residue peptide from the
+p53 transactivation region, which the transcript encodes. Open the 1YCR panel:
+its **Mapped chain** picker lists both chains, and the plugin picked the
+peptide, a short exact match near the start of the transcript row.
 
 <Figure src="/img/protein/tp53_mapped_chain.png" caption="1YCR with its Mapped chain picker open." />
 
@@ -124,14 +137,6 @@ the canvas, to fit the whole ensemble.
 The grey spray on the right is the C-terminal tail of CBP. The first helix lies
 within the stretch the 1YCR peptide covers, and its codons straddle an intron,
 so its band on the gene splits across two exons.
-
-## Checking the R248 codon against the reference sequence
-
-In the R248 session's genome view, zoom into the band the selection drew on
-_TP53_, down to base level, and tick **Reference sequence** in the track
-selector. The transcript is on the minus strand, so the codon under the band
-reads `CCG` left to right on the reference track, which is `CGG`, arginine, on
-the transcript.
 
 ## Structures of your own gene
 
