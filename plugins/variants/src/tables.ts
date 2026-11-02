@@ -225,14 +225,13 @@ export async function variantTables(
         })
       : sources
   const fetched = new Set(value.rowNames)
-  const arranged = keptRows(
-    arrangeRows(expanded, arrangement, {
-      unlistedRowsSort: 'source',
-      rowAlias,
-    }),
-    arrangement.kept,
+  const ordered = arrangeRows(expanded, arrangement, {
+    unlistedRowsSort: 'source',
     rowAlias,
-  ).filter(row => fetched.has(row.name))
+  })
+  const arranged = keptRows(ordered, arrangement.kept, rowAlias).filter(row =>
+    fetched.has(row.name),
+  )
   const facet = facetSettingOf({
     field: readConfObject(conf.facet, 'field'),
     sort: readConfObject(conf.facet, 'sort'),
@@ -241,7 +240,14 @@ export async function variantTables(
     ? bandRows(arranged, row => rowFieldValue(row, facet.field), facet)
     : { rows: arranged, bands: [] }
   const drawn = banded.rows
-  const rowColor = rowColorsOf(conf, expanded, drawn, rowAlias)
+  const labels = new Map(ordered.map(row => [row.name, row.label ?? row.name]))
+  const rowColor = rowColorsOf(
+    conf,
+    expanded,
+    drawn,
+    rowAlias,
+    name => labels.get(name) ?? name,
+  )
   const rows = {
     name: drawn.map(row => row.name),
     label: drawn.map(row => row.label ?? row.name),
@@ -683,13 +689,14 @@ function cellDosage(
  * pin, else the `rows.color` field's value for the row's sample in the
  * samples file, dealt the row palette over `dealRows`, the rows in their
  * source's order, else the sample's own `color`, else `''`; and the key the
- * display shows for an attribute.
+ * display shows for an attribute, a pinned row's entry by `labelOf`.
  */
 function rowColorsOf(
   conf: DisplayConf,
   dealRows: readonly ProcessedSource[],
   drawn: readonly ProcessedSource[],
   rowAlias: RowAlias,
+  labelOf: (name: string) => string,
 ) {
   const { setting, pinned } = rowColorsOfRows(
     conf.rows.color,
@@ -715,7 +722,7 @@ function rowColorsOf(
           pinned,
           alias: rowAlias,
         },
-        name => name,
+        labelOf,
       )
     : []
   return {

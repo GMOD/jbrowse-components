@@ -8,7 +8,7 @@ import {
 import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
-import { orderRowsByDomain } from '@jbrowse/tree-sidebar/arrangeRows'
+import { arrangeRows } from '@jbrowse/tree-sidebar/arrangeRows'
 import { rowColorsOfRows } from '@jbrowse/tree-sidebar/rowColorChoice'
 import {
   dealValueColors,
@@ -208,9 +208,13 @@ export async function wiggleTables(
     field: readConfObject(conf.rows, 'field'),
     sort: readConfObject(conf.rows, 'sort'),
   })
-  const sources = orderRowsByDomain(
+  const sources = arrangeRows(
     data.sources,
-    readConfObject(conf.rows, 'sort'),
+    {
+      domain: readConfObject(conf.rows, 'sort'),
+      labels: readConfObject(conf.rows, 'labels'),
+    },
+    { unlistedRowsSort: 'source', rowAlias: undefined },
   )
   const { gradientPaints, rowColorPaintsMarks } = wiggleMarkColoring({
     colorSetting: setting,
@@ -334,7 +338,8 @@ export async function wiggleTables(
     min: [] as number[],
     max: [] as number[],
   }
-  const rowOrder = sources.map(source => data.sources.indexOf(source))
+  const sourceIndex = new Map(data.sources.map((source, i) => [source.name, i]))
+  const rowOrder = sources.map(source => sourceIndex.get(source.name)!)
   results.forEach((result, regionIndex) => {
     for (const k of rowOrder) {
       const source = result.sources[k]!

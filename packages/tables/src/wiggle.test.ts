@@ -282,6 +282,24 @@ describe('sources sharing one panel take the colors the display deals them', () 
     expect(reordered.painted).toEqual(domain.map(name => colorOf.get(name)))
   })
 
+  it('labels a source by rows.labels, as the display does, and keeps its bins', async () => {
+    const plain = await engine.wiggle({ ...MULTI_BIGWIG, display: SHARED })
+    const t = await engine.wiggle({
+      ...MULTI_BIGWIG,
+      display: {
+        ...SHARED,
+        rows: {
+          sort: ['posneg_rw3'],
+          labels: { posneg_rw2: 'Second' },
+        },
+      },
+    })
+    expect(t.sources.name).toEqual(['posneg_rw3', 'posneg_rw1', 'posneg_rw2'])
+    expect(t.sources.label).toEqual(['posneg_rw3', 'posneg_rw1', 'Second'])
+    expect(t.bins.source.length).toBe(plain.bins.source.length)
+    expect(new Set(t.bins.source)).toEqual(new Set(plain.bins.source))
+  })
+
   it("greys the sources rows.colors leave out under rows.color's unknown", async () => {
     const { declared } = await colorsOf({
       rows: {

@@ -155,6 +155,25 @@ test('each row takes the display’s rows.color from the samples file, under the
   expect(plain.rowLegend.label).toEqual([])
 })
 
+test('a row rows.colors pins takes its key entry by its rows.labels label, as the display keys it', async () => {
+  const plain = await engine.variants(DOG_SV)
+  const pinned = plain.rows.name[0]!
+  const t = await engine.variants({
+    ...DOG_SV,
+    display: {
+      rows: {
+        color: { field: 'group' },
+        colors: { [pinned]: '#123456' },
+        labels: { [pinned]: 'Pinned dog' },
+      },
+    },
+  })
+  const at = t.rowLegend.label.indexOf('Pinned dog')
+  expect(at).toBeGreaterThan(-1)
+  expect(t.rowLegend.color[at]).toBe('#123456')
+  expect(t.rowLegend.label).not.toContain(pinned)
+})
+
 test('the rows take the arrangement `rows` saves: its order first, its labels, its focus', async () => {
   const plain = await engine.variants(DOG_VCF)
   const [a, b, c] = plain.rows.name.slice(-3) as [string, string, string]
