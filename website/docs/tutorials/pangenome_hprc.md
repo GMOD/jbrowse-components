@@ -89,7 +89,8 @@ launch:
 - **Graph**: the region drawn as a graph, with the structural variants each
   haplotype has under it
 - **Variants**: the structural variants each haplotype has, over the genes
-- **Haplotypes**: one lane per structural form, commonest first
+- **Haplotypes**: a lane for each structural form, commonest first, and more
+  lanes for the forms more haplotypes carry
 - **BandageJS**: the same haplotypes' walks in
   [BandageJS](https://jbrowse.org/demos/bandagejs/)
 
@@ -295,9 +296,9 @@ readable. At a locus of your own, a picture that looks simple or empty can
 mislead in these cases:
 
 - **Near-identical duplications draw as a single thread.** The graph puts the
-  copies at RHD / RHCE and CYP2D6 on one path, so those examples offer no
-  **Graph** launch, and SMN1 / SMN2, SRGAP2 and the 8p23.1 beta-defensin cluster
-  are not examples at all. A gene-level graph shows copy number there.
+  copies of SMN1 / SMN2, SRGAP2 and the 8p23.1 beta-defensin cluster on one
+  path, so those examples offer no **Graph** launch. A gene-level graph shows
+  copy number there.
 - **The graph does not align every haplotype everywhere.** A haplotype the graph
   does not align across a window gets no lane, and the page counts them. At FLNA
   / EMD those are the haplotypes without an X chromosome; elsewhere the sequence

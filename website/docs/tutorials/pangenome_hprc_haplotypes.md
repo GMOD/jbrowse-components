@@ -213,11 +213,12 @@ Five cases mislead in the lanes:
   explain.
 - **A lane can stop partway**, at the end of the graph's alignment of that
   haplotype; its sequence can run on past it.
-- **One lane stands for many haplotypes.** The page picks one haplotype per
-  structural form, grouped by structural variants of 50 bp or more, so two
-  haplotypes in one form can still differ in everything smaller.
-- **Near-identical gene copies share one path**, so a lane at RHD / RHCE or
-  CYP2D6 cannot show how many copies a haplotype has.
+- **One lane stands for many haplotypes.** The page groups haplotypes into
+  structural forms by their structural variants of 50 bp or more, gives each
+  form a lane and the commoner forms more, so two haplotypes in one form can
+  still differ in everything smaller.
+- **Near-identical gene copies share one path**, so where the graph merges the
+  copies, as at SMN1 / SMN2, a lane cannot show how many copies a haplotype has.
 
 At IGL, `chr22:22,800,001-22,850,000`, **Lanes → Choose lanes...** with
 `HG00099.1`, `HG002.1`, `HG00097.1`, `HG002.2` and `HG01074.1` puts two deletion
