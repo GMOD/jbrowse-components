@@ -6,7 +6,7 @@ import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { saveAs } from '@jbrowse/core/util'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { fireEvent, render, waitFor, within } from '@testing-library/react'
 import { createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
@@ -394,17 +394,20 @@ interface Results2 extends Results {
 }
 export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
   const args = await createView(val)
-  const { view, findByTestId, getByPlaceholderText, findByPlaceholderText } =
-    args
+  const { view, findByTestId, getByPlaceholderText } = args
 
   view.clearView()
 
-  const autocomplete = await findByTestId(
+  // Scoped to the form: until React re-renders after clearView, the view's own
+  // header search box is still mounted under the same placeholder, and typing
+  // into it opens nothing.
+  const form = within(await findByTestId('import-form', {}, { timeout: 10000 }))
+  const autocomplete = await form.findByTestId(
     'autocomplete',
     {},
     { timeout: 10000 },
   )
-  const input = (await findByPlaceholderText(
+  const input = (await form.findByPlaceholderText(
     'Search for location',
     {},
     { timeout: 10000 },

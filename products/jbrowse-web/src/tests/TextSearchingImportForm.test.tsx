@@ -40,14 +40,7 @@ const delay = { timeout }
 const opts = [{}, delay]
 
 async function getInput() {
-  const rest = await doSetupForImportForm(config)
-  return {
-    ...rest,
-    input: (await rest.findByPlaceholderText(
-      'Search for location',
-      ...opts,
-    )) as HTMLInputElement,
-  }
+  return doSetupForImportForm(config)
 }
 
 test(
