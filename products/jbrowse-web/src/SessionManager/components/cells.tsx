@@ -51,7 +51,7 @@ const IconCell = observer(function IconCell({
   children: React.ReactElement
 }) {
   return (
-    <Tooltip disableInteractive title={label}>
+    <Tooltip title={label}>
       {/* span so the tooltip still fires over a disabled button */}
       <span>
         <IconButton aria-label={label} disabled={disabled} onClick={onClick}>

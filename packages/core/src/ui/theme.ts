@@ -224,8 +224,14 @@ const baseThemeOptions: ThemeOptions = {
     },
     MuiTooltip: {
       // a pointer crossing the header on its way to a track shouldn't open
-      // every tooltip it passes; once one is open, its neighbours open at once
-      defaultProps: { enterDelay: 600 },
+      // every tooltip it passes; once one is open, its neighbours open at once.
+      // A tooltip closes when the pointer leaves its control, so a large one
+      // never lingers over the track the pointer was heading for. On a
+      // labelled control a tooltip adds one short clause or is left out; a
+      // longer explanation goes in Preferences or the docs. A preference to
+      // hide tooltips was declined: delayed, short and closing on leave, they
+      // rarely get in the way
+      defaultProps: { enterDelay: 600, disableInteractive: true },
       styleOverrides: {
         tooltip: {
           fontSize: 12,

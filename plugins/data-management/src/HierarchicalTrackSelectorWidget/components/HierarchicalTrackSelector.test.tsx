@@ -1884,6 +1884,33 @@ test('entering a row without a description hides the tooltip', async () => {
   })
 })
 
+test('a description waits for the pointer to settle before it opens', async () => {
+  const session = addTestAssembly(createTestSession({ adminMode: true }))
+  session.publishTrackConf({
+    trackId: 'described',
+    name: 'described',
+    description: 'a description',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  const view = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const { findByTestId, findByText, queryByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <HierarchicalTrackSelector model={model} toolbarHeight={20} />
+    </ThemeProvider>,
+  )
+  fireEvent.mouseOver(await findByTestId('htsTrackLabel-Tracks,described'))
+  await new Promise(resolve => setTimeout(resolve, 300))
+  expect(queryByText('a description')).toBeNull()
+  expect(await findByText('a description')).toBeTruthy()
+})
+
 test('a description written in HTML renders as HTML in the tooltip', async () => {
   const session = addTestAssembly(createTestSession({ adminMode: true }))
   session.publishTrackConf({

@@ -163,7 +163,7 @@ const AnchorMark = observer(function AnchorMark({
 }) {
   const { classes } = useStyles()
   return (
-    <Tooltip title="The assembly you selected in. Every other panel's locus is resolved against it, so this panel can be moved but not removed.">
+    <Tooltip title="The reference panel: it can be moved, not removed">
       <div className={classes.anchorLabel}>
         <div className={classes.anchorMark}>
           <AnchorIcon fontSize="small" />

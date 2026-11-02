@@ -20,7 +20,7 @@ import { isGpuContextLostError } from '@jbrowse/render-core/useRenderingBackend'
 export const GPU_FALLBACK_LABEL = 'Use Canvas2D'
 
 export const GPU_FALLBACK_TOOLTIP =
-  'Stop using the GPU for the rest of this session and draw with Canvas2D instead. Slower on dense data, but unaffected by how many views are open.'
+  'Stop using the GPU this session; slower on dense data'
 
 /**
  * Whether this error is one switching to Canvas2D would actually fix, and the

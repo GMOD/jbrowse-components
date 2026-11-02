@@ -223,8 +223,8 @@ const SlotEditor = observer(function SlotEditor({
           <Tooltip
             title={
               callbackMode
-                ? 'Editing as a callback (Jexl expression). Click to use a fixed value.'
-                : 'Editing as a fixed value. Click to use a callback (Jexl expression).'
+                ? 'Callback (Jexl). Click for a fixed value'
+                : 'Fixed value. Click for a callback (Jexl)'
             }
           >
             <IconButton

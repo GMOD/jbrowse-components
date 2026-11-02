@@ -126,8 +126,8 @@ const KeepPluginToggle = observer(function KeepPluginToggle({
       className={classes.iconMargin}
       title={
         permanent
-          ? 'Loaded on every visit to this JBrowse. Click to keep it in this session only'
-          : 'Keep this plugin on every visit to this JBrowse, in this browser'
+          ? 'Loaded on every visit. Click to keep for this session only'
+          : 'Keep on every visit, in this browser'
       }
     >
       <ToggleButton

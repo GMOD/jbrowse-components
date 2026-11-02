@@ -264,7 +264,7 @@ const CircularImportForm = observer(function CircularImportForm({
           ) : (
             <Tooltip
               describeChild
-              title="Draw a second genome on the circle, with a synteny track's ribbons between the two"
+              title="Add a second genome, linked by synteny ribbons"
             >
               <Button
                 variant="outlined"
