@@ -73,11 +73,10 @@ transcripts than the track's height holds. Two controls trim them:
 Every other track in the catalog is a checkbox in the track selector, the drawer
 down the right, which the button at the top left of the view header closes and
 reopens. The selector lists the catalog under UCSC's categories, and **Filter
-tracks** searches all of them:
+tracks** searches all of them.
 
-- Type `phyloP` into **Filter tracks**
-- Tick **Basewise Conservation (phyloP) - 100-way vertebrate alignment**, under
-  Comparative Genomics
+Type `phyloP` into **Filter tracks**. Under Comparative Genomics, tick
+**Basewise Conservation (phyloP) - 100-way vertebrate alignment**.
 
 <Video src="/media/genomes_basics/find_a_track.mp4" caption="The hg38 track catalog in the selector, narrowed by typing phyloP into Filter tracks, with the 100-way vertebrate alignment ticked under Comparative Genomics. The conservation track appears under the TP53 transcript." />
 
@@ -203,8 +202,8 @@ tracks and resolves gene symbols, while a `GCA_` accession generally has neither
 and takes coordinates. An assembly released both ways appears under both
 accessions: the axolotl `Mex_15411` is `GCF_040938575.1` and `GCA_040938575.1`.
 
-- Type `axolotl` into the site's header search and open `GCF_040938575.1`
-- Type `TP53` into its location box
+Type `axolotl` into the site's header search, open `GCF_040938575.1`, and type
+`TP53` into its location box.
 
 <Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box." />
 
