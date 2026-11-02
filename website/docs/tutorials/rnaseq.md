@@ -13,18 +13,30 @@ extra files or configuration. We:
 
 - load the stranded reads and RefSeq genes on hg19, and read coverage and splice
   arcs over _ACTB_
-- sort and filter to the spliced reads in a deep pileup
-- color and group the reads by first-of-pair strand at the surfeit locus
-- load a long-read alignment, and STAR, regtools and portcullis junction tables,
-  as tracks
+- sort and filter to the spliced reads, then load IsoSeq long reads over the
+  same gene
+- color and group the reads by first-of-pair strand where genes on opposite
+  strands sit close together
 - draw a circular RNA's back-splice from split reads
+- load STAR, regtools and portcullis junction tables as arc tracks
 
 ## Prerequisites
 
-- for your own reads, an aligned, sorted and indexed BAM or CRAM from a spliced
-  aligner
-- a JBrowse instance to load it into: the [web quickstart](/docs/quickstart_web)
-  or the [desktop quickstart](/docs/quickstart_desktop)
+- a JBrowse instance: the [web quickstart](/docs/quickstart_web) or the
+  [desktop quickstart](/docs/quickstart_desktop)
+- for your own reads, a spliced aligner such as
+  [STAR](https://github.com/alexdobin/STAR), and samtools to index its output
+
+<!-- TUTORIAL_INSTALL samtools START -->
+
+```bash
+# Debian/Ubuntu
+sudo apt install samtools
+# or conda, which has every tool above
+conda install -c bioconda -c conda-forge samtools
+```
+
+<!-- TUTORIAL_INSTALL samtools END -->
 
 ## The data
 
@@ -81,8 +93,19 @@ its index beside it:
 
 ## Loading your own RNA-seq data
 
-An aligned, sorted and indexed BAM or CRAM loads as an `AlignmentsTrack` from
-one `uri`, and JBrowse finds the `.bai` or `.crai` beside the file:
+STAR aligns reads of your own into a sorted BAM.
+`--outSAMstrandField intronMotif` writes the `XS` strand tag that colors the
+splice arcs further down:
+
+```bash
+STAR --genomeDir star_index --readFilesIn R1.fq.gz R2.fq.gz \
+  --readFilesCommand gzip -dc --outSAMtype BAM SortedByCoordinate \
+  --outSAMstrandField intronMotif
+samtools index Aligned.sortedByCoord.out.bam
+```
+
+The sorted, indexed BAM or CRAM loads as an `AlignmentsTrack` from one `uri`,
+and JBrowse finds the `.bai` or `.crai` beside the file:
 
 ```json addtrack
 {
@@ -93,14 +116,11 @@ one `uri`, and JBrowse finds the `.bai` or `.crai` beside the file:
 }
 ```
 
-Your own reads load like the track above once three things are in place:
+Two more things apply to your own reads:
 
-- **Assembly.** `assemblyNames` must match an assembly already configured in
-  JBrowse; see the
+- **Assembly.** `assemblyNames` must name an assembly already configured in
+  JBrowse, the one the reads were aligned to; see the
   [assemblies configuration guide](/docs/config_guides/assemblies).
-- **Alignment.** Align reads with a spliced aligner such as STAR, then
-  `samtools sort` and `samtools index` so the `.bai` sits beside the BAM.
-
 - **Coverage signal.** A precomputed signal, such as a strand-specific BigWig
   from the aligner, loads separately as a
   [quantitative track](/docs/user_guides/quantitative_track).
@@ -118,9 +138,9 @@ them.
 
 ## Read coverage and read height
 
-The histogram counts the reads in the pileup below it at each position.
-
-**Read height → Compact** in the track menu packs the full read stack into view:
+A deep gene stacks more reads than the track shows at once. The histogram above
+the pileup counts the reads at each position, and **Read height → Compact** in
+the track menu packs the full stack into view:
 
 <Figure caption="ACTB at compact read height, the whole stack fitting the track." src="/img/rnaseq/compact_stacked.png" />
 
@@ -156,8 +176,8 @@ It finds the strand two ways:
 
 ## Picking out spliced reads in a deep pileup
 
-In a deep pileup, reads with a skip sit among many more that have none. Three
-track-menu settings pull the splicing evidence out.
+In the compact _ACTB_ stack, reads with a skip sit among many more that have
+none. Three track-menu settings pull the splicing evidence out.
 
 **Sort by → Spliced reads first** gives every read whose CIGAR has a skip the
 lowest rows, so the junction-spanning reads sit together at the top of the
@@ -178,40 +198,13 @@ support.
 
 <Figure caption="Every junction above, only the canonical ones below." src="/img/rnaseq/hide_non_canonical.png" links="All junctions=rnaseq/sashimi_all_junctions,Canonical only=rnaseq/sashimi_canonical_only" />
 
-## Strand-specific RNA-seq
-
-Splice-arc colors give the strand of spliced reads only. A _strand-specific_
-library records the transcript strand in which mate of the pair a read is, so
-every read has it, which separates genes close together or overlapping on
-opposite strands.
-
-The surfeit locus is a tight cluster of genes on alternating strands (_RPL7A_,
-_SURF1_, _SURF2_, _SURF4_). Type `chr9:136,214,000-136,229,000` into the
-location box, then pick this path from the track menu:
-
-**Color by → First-of-pair strand**
-
-<Figure caption="The surfeit locus colored by first-of-pair strand." src="/img/rnaseq/strand_specific.png" />
-
-Grouping the reads by first-of-pair strand shows transcript strand over a whole
-gene.
-
-**Group by → First-of-pair strand** applies a `facet`, one section per group,
-each with a coverage histogram from only that group's reads, forward and reverse
-on one autoscaled axis. Turning off **Show → Pileup** leaves the two histograms
-alone.
-
-On chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type
-`chr6:31,920,500-31,933,000` into the location box:
-
-<Figure caption="NELFE and SKIV2L grouped by first-of-pair strand." src="/img/rnaseq/strand_split_coverage.png" />
-
 ## Long-read splicing: IsoSeq over ACTB
 
-A long read (PacBio IsoSeq, Nanopore) often spans a whole transcript, aligning
-across every exon with one `N` skip per intron, and JBrowse derives the same
-arcs and connectors from those skips. The IsoSeq alignments are a second BAM on
-the same assembly:
+A short read crosses at most one or two junctions, so the arcs alone leave open
+which exons sit together in one transcript. A long read (PacBio IsoSeq,
+Nanopore) often spans a whole transcript, aligning across every exon with one
+`N` skip per intron, and JBrowse draws the same arcs and connectors from those
+skips. The IsoSeq alignments are a second BAM on the same assembly:
 
 ```json addtrack loc=chr7:5,567,000-5,570,000
 {
@@ -224,15 +217,42 @@ the same assembly:
 
 <Figure caption="IsoSeq isoforms over ACTB." src="/img/rnaseq/longread_isoseq.png" />
 
+## Strand-specific RNA-seq
+
+The arc colors give the transcript strand of the spliced reads, and an unspliced
+read has none. A _strand-specific_ library records the transcript strand in
+which mate of the pair a read is, so every read has a strand, which separates
+genes close together or overlapping on opposite strands.
+
+The surfeit locus is a tight cluster of genes on alternating strands (_RPL7A_,
+_SURF1_, _SURF2_, _SURF4_). Type `chr9:136,214,000-136,229,000` into the
+location box, then pick this path from the track menu:
+
+**Color by → First-of-pair strand**
+
+<Figure caption="The surfeit locus colored by first-of-pair strand." src="/img/rnaseq/strand_specific.png" />
+
+The color marks each read's strand. To compare the strands over a whole gene,
+**Group by → First-of-pair strand** applies a `facet`, one section per strand,
+each with a coverage histogram drawn from that section's reads, forward and
+reverse on one autoscaled axis. **Show → Pileup**, unticked, hides the reads and
+leaves the two histograms.
+
+On chr6, _NELFE_ and _SKIV2L_ sit back to back on opposite strands. Type
+`chr6:31,920,500-31,933,000` into the location box:
+
+<Figure caption="NELFE and SKIV2L grouped by first-of-pair strand." src="/img/rnaseq/strand_split_coverage.png" />
+
 ## Circular RNA: back-splice junctions
 
-A circular RNA joins the end of an exon back to the start of an upstream one. A
-short read across that joint aligns in two pieces, and the aligner writes the
-second piece into the read's `SA` tag. The sashimi band counts split-read
-junctions beside the N-gap splices, one arc per junction, and colors each by its
-class. A back-splice is a duplication-type split, drawn in the teal of an RL
-pair. **Split-read junctions → Hide split-read junctions** in **Filter by → More
-filters...** turns them off.
+Every junction so far joins an exon to a downstream one. A circular RNA joins
+the end of an exon back to the start of an upstream one. A short read across
+that joint aligns in two pieces, and the aligner writes the second piece into
+the read's `SA` tag. The sashimi band counts split-read junctions beside the
+N-gap splices, one arc per junction, and colors each by its class. A back-splice
+is a duplication-type split, drawn in the teal of an RL pair. **Split-read
+junctions → Hide split-read junctions** in **Filter by → More filters...** turns
+them off.
 
 STAR writes those `SA` tags only in chimeric mode. With its defaults it
 soft-clips the joint, and no back-splice arc appears:
@@ -304,12 +324,12 @@ At _ZKSCAN1_ the circle spans two exons:
 
 ## Loading STAR, regtools and portcullis junction tables
 
-A junction table from an RNA-seq pipeline adds what JBrowse cannot compute from
-the reads in view: whole-library read counts, an annotated-or-novel flag and
-portcullis's filtering verdict. One `awk` line converts each table to BED, with
-the intron as the interval, the read count as the score, then the strand and the
-tool's own columns, and the BED draws as arcs on a feature track. Sort and index
-all three the same way:
+The sashimi arcs on a reads track count the reads in view. A junction table from
+an RNA-seq pipeline adds whole-library read counts, an annotated-or-novel flag
+and portcullis's filtering verdict. One `awk` line converts each table to BED,
+with the intron as the interval, the read count as the score, then the strand
+and the tool's own columns, and the BED draws as arcs on a feature track. Sort
+and index all three the same way:
 
 ```bash
 sort -k1,1 -k2,2n junctions.bed | bgzip > junctions.bed.gz
