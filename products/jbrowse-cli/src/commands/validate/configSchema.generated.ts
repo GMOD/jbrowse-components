@@ -28523,7 +28523,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "x-closed": true,
       "properties": {
         "follow": {
-          "description": "the other rows follow the anchor row through the alignment; a drag or zoom on a row makes it the anchor.",
+          "description": "the other rows follow the anchor row through the alignment; clicking, dragging, scrolling or typing in a row makes it the anchor.",
           "default": false,
           "if": {
             "type": "null"
@@ -28533,7 +28533,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "anchor": {
-          "description": "the genome row, counted from the top, the others follow.",
+          "description": "the genome row, counted from the top, the others follow; navigating a row from code leaves it, so set this to have that row lead.",
           "default": 0,
           "if": {
             "type": "null"
