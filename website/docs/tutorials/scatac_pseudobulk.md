@@ -13,6 +13,8 @@ profile per cell type. With a clustered 10x peripheral blood (PBMC) dataset we:
 - load the set as one multi-wiggle track with a row per file, on GRCh38 with
   chr-style names
 - read the rows at T-cell and B-cell marker genes
+- build the same track from a folder of BigWigs with **Add multi-row track** or
+  `jbrowse add-track --multiwig`
 
 ## Prerequisites
 
@@ -46,22 +48,19 @@ own cells.
 <details>
 <summary>Read by URL (no download needed)</summary>
 
-| What it is                                                      | File                                                                      |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| CATlas' published hg38 per-cell-type accessibility BigWigs from | [bw/](https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/) |
+| What it is                                                 | File                                                                      |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------- |
+| CATlas' published hg38 per-cell-type accessibility BigWigs | [bw/](https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/) |
 
 </details>
 
-## Pooling cells into one coverage track per cell type
-
-One ATAC cell contributes only a few thousand fragments, so a single cell's
-coverage is almost entirely zero. JBrowse stacks the pooled files as rows of one
-track.[^inline]
-
-PBMC marker genes are the control. At a T-cell marker the T-cell rows have
-signal and the B-cell rows stay flat, and at a B-cell marker the reverse.
-
 ## Generating one pseudobulk BigWig per cell type
+
+One ATAC cell contributes a few thousand fragments, so a single cell's coverage
+is almost entirely zero, and pooling a cluster's cells gives a profile with
+peaks. JBrowse stacks the pooled files as rows of one track.[^inline] PBMC
+marker genes are the control: at a T-cell marker the T-cell rows have signal and
+the B-cell rows stay flat, and at a B-cell marker the reverse.
 
 Clustering and cell-type labeling happen upstream, in Cell Ranger ATAC, ArchR,
 Signac, or SnapATAC2. Whichever tool writes the files, two settings decide
@@ -241,7 +240,7 @@ open them side by side in one view, a T-cell marker (_CD8A_) and a B-cell marker
 chr2:86,780,000-86,820,000 chr11:60,450,000-60,490,000
 ```
 
-<Figure caption="Twelve per-cell-type BigWigs as one MultiQuantitativeTrack over CD8A and MS4A1 side by side." src="/img/scatac/pbmc5k_marker_swap.png" />
+<Figure caption="The per-cell-type BigWigs as one MultiQuantitativeTrack over CD8A and MS4A1 side by side." src="/img/scatac/pbmc5k_marker_swap.png" />
 
 ### Building the track from a folder of BigWigs
 

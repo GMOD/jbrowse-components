@@ -43,10 +43,10 @@ them from disk; every other track reads a hosted copy. The
 [build script](#reproduce-it-end-to-end) fetches everything itself. To generate
 per-cell-type BigWigs, supply your own barcoded BAM and barcode table.
 
-| What it is                                                           | File                                                                                                                                              |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The barcoded alignments, which the script reads by region over HTTPS | [5k_pbmc_v3_possorted_genome_bam.bam](https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_possorted_genome_bam.bam)           |
-| The filtered feature-barcode matrix the clustering runs on           | [5k_pbmc_v3_filtered_feature_bc_matrix.h5](https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_filtered_feature_bc_matrix.h5) |
+| What it is                                                 | File                                                                                                                                              |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The barcoded alignments, streamed and never downloaded     | [5k_pbmc_v3_possorted_genome_bam.bam](https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_possorted_genome_bam.bam)           |
+| The filtered feature-barcode matrix the clustering runs on | [5k_pbmc_v3_filtered_feature_bc_matrix.h5](https://cf.10xgenomics.com/samples/cell-exp/3.0.2/5k_pbmc_v3/5k_pbmc_v3_filtered_feature_bc_matrix.h5) |
 
 ## Loading GRCh38
 
@@ -222,12 +222,11 @@ as `pbmc5k_scrna_pseudobulk_hg38`:
 ```
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `encoding.y`
-is the y scale, and its `log` type keeps the dim rows readable: _LYZ_ in
-monocytes sits an order of magnitude above _IL7R_ in CD4 T cells, and the rows
-share one axis.
+is the y scale. The rows share one axis, and its `log` type keeps a dim row
+readable beside a bright one such as _LYZ_ in monocytes.
 
 Take the row order and colors from the single-cell object, so related lineages
-stay adjacent and each row keeps its cluster's UMAP color.
+sit together and each row has the color its cluster has in the UMAP.
 
 We named the clusters by scoring them against marker panels, so those markers
 have signal in the rows of their cell types by construction. To test the labels,
@@ -241,7 +240,7 @@ them side by side:
 chrX:136,658,390-136,662,390 chr12:10,556,794-10,560,794 chr4:1,164,931-1,168,931 chr19:35,345,361-35,349,361 chr1:153,371,710-153,375,710 chr1:996,963-1,000,963 chr9:34,519,042-34,523,042 chr9:137,166,757-137,170,757 chr7:93,926,610-93,930,610
 ```
 
-<Figure caption="Nine per-cell-type BigWigs as one MultiQuantitativeTrack over nine marker loci, in the order of the rows they mark." src="/img/scrna/marker_panel.png" />
+<Figure caption="The per-cell-type BigWigs as one MultiQuantitativeTrack over the nine marker loci, in the order of the rows they mark." src="/img/scrna/marker_panel.png" />
 
 Two other routes build the same track:
 
@@ -301,14 +300,14 @@ points at a store with the same layout, built by the reproduce script below:
 A relative `uri` resolves against the config that holds it, so the store is
 served as static files beside `config.json`.
 
-The store covers only marker windows, where the cells have reads, which keeps it
+The store covers the marker windows, where the cells have reads, which keeps it
 small. The lookup is by chromosome name, so the build script picks one marker
 per chromosome.
 
 Type `chr12:69,353,000-69,354,500` into the location box, the 3' end of _LYZ_,
 where the 3' kit's reads land:
 
-<Figure caption="The nine pseudobulk rows at LYZ above the cells they sum, ordered by cell type and colored to match." src="/img/scrna/percell_lyz.png" />
+<Figure caption="The pseudobulk rows at LYZ above the cells they sum, ordered by cell type and colored to match." src="/img/scrna/percell_lyz.png" />
 
 Per cell, many lymphocytes have a single UMI of a monocyte gene, ambient RNA
 that was free in the droplet.
