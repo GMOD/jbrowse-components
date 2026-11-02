@@ -316,9 +316,11 @@ mislead in these cases:
   file the lanes read, many haplotypes jump over chunks of IGH and IGK, fewer
   over IGL, and none over the T-cell receptor loci TRA and TRB. Check a deletion
   there against the donor's germline data before reporting it.
-- **Only the examples are checked.** A gene or region you type can still land
-  where the graph is a thread or the VCF is blank, and the page will offer the
-  launch anyway.
+- **A typed locus is checked for structure only.** The page reads the window you
+  type, and where the haplotypes share one structure it says so, as do the
+  **Graph** and **Variants** launches. A window can still land where the graph
+  merges duplicated copies into one thread or the VCF has no record, and the
+  page offers the launch anyway.
 - **No single launch shows the whole locus.** The graph shows which sequence
   exists, the VCF which haplotypes have it, and the lanes how a few haplotypes
   are arranged.

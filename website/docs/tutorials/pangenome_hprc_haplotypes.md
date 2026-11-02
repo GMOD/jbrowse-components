@@ -199,7 +199,9 @@ them is inverted on many X chromosomes (Small et al. 1997). From any
 
 Five cases mislead in the lanes:
 
-- **A haplotype the graph does not align has no lane.**
+- **A haplotype the graph does not align has no lane of its own.** Picked by
+  hand under **Lanes → Choose lanes...**, it draws an empty row at the foot
+  headed "no alignment in this window".
 - **A deletion across the window is a row with no ribbons.** A haplotype whose
   deletion spans the whole window shows as a row at the foot of the lanes,
   headed with the deletion's length, such as "inside a 150 kb deletion". The row
@@ -215,8 +217,9 @@ Five cases mislead in the lanes:
   haplotype; its sequence can run on past it.
 - **One lane stands for many haplotypes.** The page groups haplotypes into
   structural forms by their structural variants of 50 bp or more, gives each
-  form a lane and the commoner forms more, so two haplotypes in one form can
-  still differ in everything smaller.
+  form a lane and the commoner forms more, and names each lane with how many
+  haplotypes share its form (`HG00099.1 · 1 of 140 alike`). Two haplotypes in
+  one form can still differ in everything smaller.
 - **Near-identical gene copies share one path**, so where the graph merges the
   copies, as at SMN1 / SMN2, a lane cannot show how many copies a haplotype has.
 
