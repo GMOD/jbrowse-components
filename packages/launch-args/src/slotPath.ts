@@ -23,9 +23,10 @@ function groupsDigits(text: string, start: number, i: number) {
   )
 }
 
-// A `jexl:` item runs to the first comma outside its own brackets and quotes,
-// since a jexl call separates its arguments with commas, and a location keeps
-// the commas grouping its digits.
+// An item runs to the first comma outside its own brackets, since a newick
+// tree, an `rgb(...)` color and a jexl call all hold commas, and a location
+// keeps the commas grouping its digits. A `jexl:` item's quotes hold commas
+// too; elsewhere a quote is an apostrophe.
 function listItems(text: string) {
   const items: string[] = []
   let start = 0
@@ -42,14 +43,12 @@ function listItems(text: string) {
     } else if (c === ',' && depth === 0 && !groupsDigits(text, start, i)) {
       items.push(text.slice(start, i))
       start = i + 1
-    } else if (text.startsWith('jexl:', start)) {
-      if (c === "'" || c === '"') {
-        quote = c
-      } else if ('([{'.includes(c)) {
-        depth++
-      } else if (')]}'.includes(c)) {
-        depth--
-      }
+    } else if ('([{'.includes(c)) {
+      depth++
+    } else if (')]}'.includes(c)) {
+      depth = Math.max(0, depth - 1)
+    } else if ((c === "'" || c === '"') && text.startsWith('jexl:', start)) {
+      quote = c
     }
   }
   items.push(text.slice(start))
@@ -58,9 +57,9 @@ function listItems(text: string) {
 
 /**
  * The value of a `path=value` modifier: `true`/`false`, a number, a
- * comma-separated list (a trailing comma makes a list of one, and a `jexl:`
- * item keeps the commas inside its own brackets and quotes), or the text as
- * written.
+ * comma-separated list (a trailing comma makes a list of one, an item keeps
+ * the commas inside its own brackets, as a newick tree does, and a `jexl:`
+ * item those inside its quotes too), or the text as written.
  */
 export function slotValue(text: string) {
   const items = listItems(text)

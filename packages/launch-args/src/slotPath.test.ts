@@ -126,6 +126,20 @@ test('a jexl: item runs to the first comma outside its brackets and quotes', () 
   ])
 })
 
+test('an item keeps the commas inside its own brackets, as a newick tree does', () => {
+  expect(slotValue('(c,(a,b));')).toBe('(c,(a,b));')
+  expect(slotValue("(('A HP1':1,'A HP2':1):1,B:2);")).toBe(
+    "(('A HP1':1,'A HP2':1):1,B:2);",
+  )
+  expect(slotValue('rgb(1,2,3),red')).toEqual(['rgb(1,2,3)', 'red'])
+  expect(write('rows.tree=(c,(a,b));', write('rows.sort=b,a'))).toEqual({
+    rows: { sort: ['b', 'a'], tree: '(c,(a,b));' },
+  })
+  expect(write('rows.tree.newick=(c,(a,b));')).toEqual({
+    rows: { tree: { newick: '(c,(a,b));' } },
+  })
+})
+
 test('a location keeps the commas grouping its digits', () => {
   const region = 'chr2:135,787,850-135,876,467'
   expect(slotValue(region)).toBe(region)
