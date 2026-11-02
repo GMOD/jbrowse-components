@@ -73,7 +73,7 @@ export type ColorPreset = { label: string; checked: boolean } & (
  * picked in a dialog where the display has one, and Solid color. Picking a
  * preset shows its key.
  */
-export function colorFieldRows(
+export function colorFieldMenuItems(
   self: {
     colorByMode: 'default' | 'solid' | 'attribute' | (string & {})
     pickDefaultColor: () => void
@@ -126,6 +126,9 @@ export function colorFieldRows(
     }),
   ]
 }
+
+/** @deprecated use colorFieldMenuItems */
+export const colorFieldRows = colorFieldMenuItems
 
 /**
  * A ramp's Color scheme submenu: a radio per named scheme with the painted one

@@ -4,7 +4,7 @@ import { BED_COLOR_FIELDS } from '@jbrowse/core/util/colorBits'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import {
   colorByMenuItem,
-  colorFieldRows,
+  colorFieldMenuItems,
 } from '@jbrowse/display-kit/colorByMenu'
 import { groupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
 import TableRowsIcon from '@mui/icons-material/TableRows'
@@ -102,7 +102,7 @@ function colorByMenuItems(self: MultiRowMenuModel): MenuItem[] {
     colorByMenuItem({
       blocks: [
         {
-          rows: colorFieldRows(self, [
+          rows: colorFieldMenuItems(self, [
             {
               label: 'Strand',
               field: STRAND_FIELD,

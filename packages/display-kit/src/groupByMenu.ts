@@ -258,7 +258,7 @@ export function resetSectionOrderItems(
  * `keepMenuOpen`, because moving a section two places is two clicks; the rows'
  * disabled marks update live.
  */
-export function sectionRowMenuItems(
+export function sectionMenuItems(
   model: SectionOrderModel,
   key: string,
   noun: SectionNoun,
@@ -295,6 +295,9 @@ export function sectionRowMenuItems(
     },
   ]
 }
+
+/** @deprecated use sectionMenuItems */
+export const sectionRowMenuItems = sectionMenuItems
 
 /** Dead while the domain pins nothing. */
 export function resetOrderItem(

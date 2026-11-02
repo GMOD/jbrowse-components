@@ -14,7 +14,7 @@ import {
 } from '@jbrowse/display-kit/colorByMenu'
 import {
   resetOrderItem,
-  sectionRowMenuItems,
+  sectionMenuItems,
   showHiddenItems,
 } from '@jbrowse/display-kit/groupByMenu'
 import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-features'
@@ -125,7 +125,7 @@ export function laneHeaderMenuItems(
   const loc =
     region && assembleLocStringRaw({ ...region, reversed: lane.frame?.flipped })
   return [
-    ...sectionRowMenuItems(
+    ...sectionMenuItems(
       {
         sections: model.rowAssemblies.map(key => ({ key, label: key })),
         domain: model.domain,

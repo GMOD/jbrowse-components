@@ -1,6 +1,6 @@
 import {
   colorByMenuItem,
-  colorFieldRows,
+  colorFieldMenuItems,
   solidColorItem,
 } from './colorByMenu.ts'
 
@@ -62,7 +62,7 @@ test('Solid color... is a radio that closes the menu to open its picker', () => 
 })
 
 function fieldRows(colorByMode: string, checked: boolean, calls: string[]) {
-  return colorFieldRows(
+  return colorFieldMenuItems(
     {
       colorByMode,
       pickDefaultColor: () => calls.push('default'),

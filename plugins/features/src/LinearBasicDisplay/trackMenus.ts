@@ -10,7 +10,7 @@ import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   colorByMenuItem,
-  colorFieldRows,
+  colorFieldMenuItems,
 } from '@jbrowse/display-kit/colorByMenu'
 import {
   groupByRadioMenuItem,
@@ -211,9 +211,9 @@ export function inertLabelHint<T extends string>(
 }
 
 export function colorBySubMenuItems(
-  self: Parameters<typeof colorFieldRows>[0],
+  self: Parameters<typeof colorFieldMenuItems>[0],
 ): MenuItem[] {
-  return colorFieldRows(self, [
+  return colorFieldMenuItems(self, [
     {
       label: 'Strand',
       field: STRAND_FIELD,
