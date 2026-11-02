@@ -37,7 +37,9 @@ test('Undo publishes only the window it restores, not one clamped in between', (
     regions: [{ ...ctgA, start: 100, end: 200 }],
     message: 'moved',
   })
-  const undo = notify.mock.calls[0]![2]!.onClick!
+  const undo = [notify.mock.calls[0]![2]!]
+    .flat()
+    .find(a => a.name === 'Undo')!.onClick
 
   const published: { regions: unknown; startBp: number }[] = []
   const dispose = autorun(() => {
