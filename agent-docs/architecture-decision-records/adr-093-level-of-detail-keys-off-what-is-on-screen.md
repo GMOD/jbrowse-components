@@ -29,7 +29,13 @@ regions as the windows, so the display and the export share the rule.
 The variant display's key follows the same rule (`keyedVariants.ts`, over the
 same windows): its cell loop records the categories each variant painted, a
 byte per variant in place of one mask per fetch, which measured no slower
-(5M cells), and the pass per settle is 8 ms over 500k variants.
+(5M cells), and the pass per settle is 8 ms over 500k variants. So does the
+mark display's (`LinearMarkDisplay/keyOnScreen.ts`): a categorical, identity
+or shape key lists the values an instance on screen paints, read back off its
+packed color or glyph, and a threshold's or baked ramp's no-value rows the
+same way; a ramp's extent stays over every loaded region, since the shaders
+paint through it. The scan stops once every row is found: 2 ms over 1M
+instances, 22 ms when a value lies only off screen.
 
 ## Context
 

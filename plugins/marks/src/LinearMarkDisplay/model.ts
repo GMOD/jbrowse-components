@@ -54,6 +54,7 @@ import {
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
+import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import {
@@ -117,6 +118,7 @@ import { instancesOfFeature } from './featureInstances.ts'
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { paintedColorNode, saysColor } from './inheritedColor.ts'
+import { regionsKeyOnScreen } from './keyOnScreen.ts'
 import {
   buildMarkLegend,
   colorSection,
@@ -1232,6 +1234,24 @@ export function stateModelFactory(
             : undefined
         },
       }))
+      .views(self => {
+        const keyWindows = stableIdentityComputed(() =>
+          self.host.initialized
+            ? keyWindowsOf(self.host.settledDynamicBlocks)
+            : [],
+        )
+        return {
+          /**
+           * #getter
+           * The bp each displayed region shows once a pan settles, which the
+           * key lists what is present in. Compared by value, so a pan that
+           * settles where it was rebuilds no key.
+           */
+          get keyWindows() {
+            return keyWindows.get()
+          },
+        }
+      })
       .views(self => ({
         /**
          * #getter
@@ -1784,13 +1804,14 @@ export function stateModelFactory(
          * #getter
          * the color keys for the loaded regions, one per scale the marks
          * drawing at the view's zoom resolve through, each headed with its
-         * channel's `title`
+         * channel's `title`; a categorical or shape key lists the values on
+         * screen, a ramp's domain stays over every loaded region
          */
         get legendSections() {
           const { visible } = self.markView
           const { marks } = self.conf
           return buildMarkLegend(
-            self.scaleDataMap.values(),
+            regionsKeyOnScreen(self.scaleDataMap, self.keyWindows),
             i => !!visible[i],
             (i, channel) =>
               keySettingOf(

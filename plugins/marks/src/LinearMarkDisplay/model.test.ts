@@ -1607,6 +1607,7 @@ test('the legend reads the scale table the worker resolved', () => {
     result([
       {
         y: [1],
+        color: [0xff0000ff],
         scale: {
           kind: 'categorical',
           field: 'type',
@@ -1632,6 +1633,60 @@ test('the legend reads the scale table the worker resolved', () => {
     },
   ])
   expect(display.showLegend).toBe(true)
+})
+
+// The view fetches wider than it shows: a value only in the buffer keyed a
+// row for nothing on screen (ADR-093).
+test('the key lists the categories on screen and a pan moves no color', () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      mark: 'bar',
+      encoding: {
+        y: 'score',
+        color: { field: 'type', scale: { type: 'ordinal' } },
+      },
+    },
+  ])
+  const { display, view } = createDisplay()
+  const RED = 0xff0000ff
+  const GREEN = 0xff00ff00
+  const BLUE = 0xffff0000
+  display.setRpcData(
+    0,
+    result([
+      {
+        y: [1, 2, 3],
+        color: [RED, GREEN, BLUE],
+        scale: {
+          kind: 'categorical',
+          field: 'type',
+          domain: [],
+          entries: [
+            { value: 'gene', color: RED },
+            { value: 'exon', color: GREEN },
+            { value: 'CDS', color: BLUE },
+          ],
+        },
+      },
+    ]),
+    REGION,
+  )
+  const keyed = () =>
+    display.legendSections.flatMap(s =>
+      s.scale.kind === 'categorical' ? s.scale.entries.map(e => e.value) : [],
+    )
+  const colors = () => [
+    ...(display.scaleDataMap.get(0)!.layers[0]!.color as Uint32Array),
+  ]
+  expect(keyed()).toEqual(['gene', 'exon', 'CDS'])
+  view.setNewView(0.05, 0)
+  expect(display.keyWindows[0]!.end).toBeLessThan(100)
+  expect(keyed()).toEqual(['gene'])
+  expect(colors()).toEqual([RED, GREEN, BLUE])
+  view.setNewView(0.25, 600)
+  expect(display.keyWindows[0]!.start).toBe(150)
+  expect(keyed()).toEqual(['CDS'])
+  expect(colors()).toEqual([RED, GREEN, BLUE])
 })
 
 test("the color's title heads its key, and a write retitles it without a fetch", () => {
@@ -1698,8 +1753,16 @@ test('two marks coloring by one field through one range share a key', () => {
   shared.setRpcData(
     0,
     result([
-      { y: [1], scale: strandTable([{ value: '1', color: 0xff0000ff }]) },
-      { y: [2], scale: strandTable([{ value: '-1', color: 0xff00ff00 }]) },
+      {
+        y: [1],
+        color: [0xff0000ff],
+        scale: strandTable([{ value: '1', color: 0xff0000ff }]),
+      },
+      {
+        y: [2],
+        color: [0xff00ff00],
+        scale: strandTable([{ value: '-1', color: 0xff00ff00 }]),
+      },
     ]),
     REGION,
   )
@@ -1725,8 +1788,16 @@ test('two marks coloring by one field through one range share a key', () => {
   apart.setRpcData(
     0,
     result([
-      { y: [1], scale: strandTable(both, ['red']) },
-      { y: [2], scale: strandTable(both, ['blue']) },
+      {
+        y: [1, 2],
+        color: [0xff0000ff, 0xff00ff00],
+        scale: strandTable(both, ['red']),
+      },
+      {
+        y: [1, 2],
+        color: [0xff0000ff, 0xff00ff00],
+        scale: strandTable(both, ['blue']),
+      },
     ]),
     REGION,
   )
@@ -1755,6 +1826,7 @@ test('a shape scale over the field the color classifies folds into one key', () 
     result([
       {
         y: [1, 2],
+        color: [0xff0000ff, 0xff00ff00],
         scale: {
           kind: 'categorical',
           field: 'strand',
@@ -2620,7 +2692,7 @@ test("a threshold key keeps the no-value row another region paints after a hidde
         },
       },
     ],
-    REGION,
+    [REGION, { ...REGION, refName: 'ctgB' }],
     'BedAdapter',
     { facet: 'sample' },
   ).createDisplay()
