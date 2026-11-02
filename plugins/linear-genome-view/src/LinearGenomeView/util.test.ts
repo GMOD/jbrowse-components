@@ -1428,4 +1428,25 @@ describe('parseLocStrings', () => {
       parseLocStrings('chr3:1M-2M', 'hg38', isValidRefName)
     }).toThrow()
   })
+
+  test('a {braced} assembly is the one its refName is checked against', () => {
+    const refNamesOf: Record<string, string[]> = {
+      hg38: ['chr1'],
+      mm39: ['chrX'],
+    }
+    const isRefIn = (refName: string, asm: string) =>
+      refNamesOf[asm]!.includes(refName)
+    expect(
+      parseLocStrings('{mm39}chrX:1-10 chr1:1-10', 'hg38', isRefIn),
+    ).toEqual([
+      {
+        assemblyName: 'mm39',
+        refName: 'chrX',
+        start: 0,
+        end: 10,
+        reversed: false,
+      },
+      { refName: 'chr1', start: 0, end: 10, reversed: false },
+    ])
+  })
 })

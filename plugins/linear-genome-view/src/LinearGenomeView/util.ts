@@ -1,5 +1,6 @@
 import {
   UnknownRefNameError,
+  assembleLocString,
   assembleLocStrings,
   getTickDisplayStr,
   measureText,
@@ -820,6 +821,14 @@ export async function generateLocations({
   assemblyName?: string
   grow?: number
 }) {
+  const backwards = regions.find(
+    ({ start, end }) => start !== undefined && end !== undefined && start > end,
+  )
+  if (backwards) {
+    throw new Error(
+      `found start greater than end in ${assembleLocString(backwards)}`,
+    )
+  }
   return Promise.all(
     regions.map(async region => {
       const asmName = region.assemblyName || assemblyName
@@ -880,16 +889,13 @@ export function parseLocStrings(
   assemblyName: string,
   isValidRefName: (str: string, assemblyName: string) => boolean,
 ) {
-  const inputs = input
-    .split(/(\s+)/)
-    .map(f => f.trim())
-    .filter(f => !!f)
+  const inputs = input.split(/\s+/).filter(Boolean)
+  const isRef = (ref: string, asm?: string) =>
+    isValidRefName(ref, asm ?? assemblyName)
   // first try interpreting as a whitespace-separated sequence of
   // multiple locstrings
   try {
-    return inputs.map(loc =>
-      parseLocString(loc, ref => isValidRefName(ref, assemblyName)),
-    )
+    return inputs.map(loc => parseLocString(loc, isRef))
   } catch (e) {
     // if this fails, try interpreting as a whitespace-separated refname,
     // start, end if start and end are base-pair quantities. The tokens are
@@ -903,11 +909,7 @@ export function parseLocStrings(
       parseBpString(start) !== undefined &&
       parseBpString(end) !== undefined
     ) {
-      return [
-        parseLocString(`${refName}:${start}..${end}`, ref =>
-          isValidRefName(ref, assemblyName),
-        ),
-      ]
+      return [parseLocString(`${refName}:${start}..${end}`, isRef)]
     }
     throw e
   }

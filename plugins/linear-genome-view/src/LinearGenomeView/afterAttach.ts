@@ -226,8 +226,8 @@ export function applyInitHighlights(
     // parseLocString throws on an unknown refName or a malformed locstring, and
     // one bad entry must take out neither its siblings nor the rest of init
     try {
-      const highlight = coerceHighlight(h, init.assembly, refName =>
-        session.assemblyManager.isValidRefName(refName, init.assembly),
+      const highlight = coerceHighlight(h, init.assembly, (refName, asm) =>
+        session.assemblyManager.isValidRefName(refName, asm ?? init.assembly),
       )
       if (highlight) {
         session.addHighlight(highlight)

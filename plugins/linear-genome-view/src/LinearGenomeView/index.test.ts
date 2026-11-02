@@ -1925,6 +1925,32 @@ test('space separated locstring', async () => {
   })
 })
 
+test.each(['ctgA:200-100', 'ctgA:200-100 ctgB:1-10'])(
+  'backwards range %s is refused before the view changes',
+  async input => {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({
+      configuration: {},
+    }).setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions(volvoxDisplayedRegions.slice(1, 2))
+    const before = model.displayedRegions
+    const { offsetPx, bpPerPx } = model
+
+    await expect(model.navToLocString(input)).rejects.toThrow(
+      /start greater than end in ctgA:200\.\.100/,
+    )
+    expect(model.displayedRegions).toEqual(before)
+    expect(model.offsetPx).toBe(offsetPx)
+    expect(model.bpPerPx).toBe(bpPerPx)
+  },
+)
+
 test('unresolved gene name reports a clean no-results error', async () => {
   const { Session, LinearGenomeModel } = initialize()
   const model = Session.create({
