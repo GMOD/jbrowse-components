@@ -40,15 +40,17 @@ export function useWindowDrag(
     const mouseMove = (event: MouseEvent) => {
       onMove(event.clientX - left)
     }
-    const mouseUp = ({ clientX, clientY }: MouseEvent) => {
-      const endX = clientX - left
-      onEnd({
-        startX,
-        endX,
-        isClick: Math.abs(endX - startX) <= 3,
-        clientX,
-        clientY,
-      })
+    const mouseUp = ({ button, clientX, clientY }: MouseEvent) => {
+      if (button === 0) {
+        const endX = clientX - left
+        onEnd({
+          startX,
+          endX,
+          isClick: Math.abs(endX - startX) <= 3,
+          clientX,
+          clientY,
+        })
+      }
     }
     const keyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {

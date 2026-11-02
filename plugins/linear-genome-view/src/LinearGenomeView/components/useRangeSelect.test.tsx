@@ -247,6 +247,29 @@ describe('useRangeSelect (LGV)', () => {
     expect(screen.getByTestId('menuOpen').textContent).toBe('false')
   })
 
+  it('a right-button release during a left drag does not end it', () => {
+    const setOffsets = jest.fn()
+    render(<TestRubberband model={makeModel({ setOffsets })} />)
+    const el = screen.getByTestId('rubberband')
+
+    fireEvent.mouseDown(el, { clientX: 100 })
+    act(() => {
+      window.dispatchEvent(
+        new MouseEvent('mouseup', { bubbles: true, button: 2, clientX: 150 }),
+      )
+    })
+    expect(screen.getByTestId('menuOpen').textContent).toBe('false')
+    act(() => {
+      window.dispatchEvent(
+        new MouseEvent('mouseup', { bubbles: true, clientX: 250 }),
+      )
+    })
+    expect(setOffsets).toHaveBeenCalledWith(
+      expect.objectContaining({ offset: 100 }),
+      expect.objectContaining({ offset: 250 }),
+    )
+  })
+
   it('a shift-press on a button in the tracks area is left to the button', () => {
     render(<TestRubberband model={makeModel()} shiftOnly />)
     const button = screen.getByTestId('labelButton')
