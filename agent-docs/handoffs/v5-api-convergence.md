@@ -100,7 +100,10 @@ between displays.
    then the `rows` fold on wiggle, MAF and the mark family (after the
    `multirow-spliced-band` session lands), the variant display last with its
    `unit` (after the variant merge lands), then the writers. Claimed
-   2026-11-02 (worktree `rows-axis`). `pileup.collapsed` (2026-11-01)
+   2026-11-02 (worktree `rows-axis`). On main at c7e74e1eef: the
+   keyed write rule, `facet`, and the fold's `rows.axis`, `rows.step`,
+   `rows.colors` and `rows.color`; `rows.groups` and `rows.tree` on the
+   worktree. `pileup.collapsed` (2026-11-01)
    reaches ggjbrowse only through its engine re-pin.
 5. **Member differences left as taste.** CONFIG_SPELLINGS.md's first table
    holds them, each ruled in ADR-238, ADR-240 or the schema's own comment,
