@@ -60,7 +60,11 @@ One naming rule makes each member predictable: a plural member is a map keyed
 by row name (`labels`, `colors`), a singular member is a channel or setting
 (`color`, `step`, `filter`, `tree`), and `axis.*` holds the drawing toggles
 (`axis.labels`, `axis.tree`). Each same-word pair names its sibling in its
-description, and so does the validator's error for a swapped member. There is
+description, and a refused shape or key names that description at load, on a
+write and in `jbrowse validate`: a slot's `description`, and a sub-schema's
+`description` option (`RowColor`, `RowTree`), so `rows.color: { HG002: 'red' }`,
+`rows.colors: 'population'`, `rows.labels: false` and `rows.tree: false` each
+point at their sibling. There is
 no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
 
 - `rows.kept` has no carve-out: a list matching no row draws no rows and says
@@ -82,7 +86,15 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   "Reset row order" restores both; "Clear subtree filter" clears `kept` alone.
 - A top-level `filter` entry on a row attribute (the variant and mark displays
   test records there) points at `rows.filter`, in the notice and in
-  `jbrowse validate`.
+  `jbrowse validate`. The validator sees no samples file, so it points only
+  for attributes the config itself states (`group` under `rows.groups`, the
+  `rows.color` field, a field `rows.filter` already tests); the live notice
+  covers the rest.
+- `rows.filter` refuses a row's identity (`name`, `sampleName`, `sample`,
+  `source`, `HP`, `label`, `color`, `rowColor`) and a `jexl:` field, which a
+  row has no record to compute over: a write throws, a config loads without
+  the entry rather than as a test-less stub, and `jbrowse validate` reports
+  it.
 - A plot read returns `rows.tree` in its object form whichever form was
   written, so a wrapper handles one shape.
 
