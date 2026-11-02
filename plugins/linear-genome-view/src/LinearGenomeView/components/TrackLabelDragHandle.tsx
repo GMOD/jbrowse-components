@@ -30,9 +30,8 @@ const TrackLabelDragHandle = observer(function TrackLabelDragHandle({
       draggable
       className={classes.dragHandle}
       onDragStart={event => {
-        const target = event.currentTarget
-        if (target.parentNode) {
-          const parent = target.parentNode as HTMLElement
+        const parent = event.currentTarget.parentElement
+        if (parent) {
           event.dataTransfer.setDragImage(parent, 20, 20)
           view.setDraggingTrackId(track.id)
         }

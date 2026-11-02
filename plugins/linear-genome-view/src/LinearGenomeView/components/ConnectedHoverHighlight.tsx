@@ -1,4 +1,4 @@
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import HoverPositionHighlight from './HoverPositionHighlight.tsx'
@@ -22,12 +22,9 @@ const ConnectedHoverHighlight = observer(function ConnectedHoverHighlight({
   ) => HoverHighlightPosition | undefined
 }) {
   const session = getSession(model)
-  const widgets =
-    'widgets' in session ? (session.widgets as Map<string, unknown>) : undefined
-
-  return !widgets ? null : (
+  return !isSessionModelWithWidgets(session) ? null : (
     <>
-      {[...widgets].flatMap(([id, widget]) => {
+      {[...session.widgets].flatMap(([id, widget]) => {
         const position = getPosition(widget, model.id)
         return position
           ? [
