@@ -10,31 +10,38 @@ tutorial_subcategory: Whole-genome alignments
 ---
 
 We look at one human locus across eight other mammals at once, from alignments
-that already exist. UCSC publishes a liftOver chain from hg38 to every genome it
-hosts, and jbrowse.org keeps each chain as an indexed alignment file. We:
+that already exist. UCSC publishes a liftOver chain from hg38 to each genome it
+hosts, and jbrowse.org keeps each chain as an indexed alignment file. The same
+config works for any set of pairwise chains that share one genome. We look at
+_TP53_, where the genomes keep one gene order, and at the _PMP22_ segmental
+duplications, where they break into many blocks. We:
 
-- compose the chains into one multi-way synteny track, a lane per genome under
-  the human view, each lane drawing the RefSeq gene models from that genome's
-  UCSC hub
-- stack the genomes at _TP53_
-- pin and flip lanes near the _PMP22_ duplications
+- index a chain as PIF, and compose the chains into one multi-way synteny track,
+  each lane drawing the RefSeq gene models from that genome's UCSC hub
+- open the track in a linear genome view at _TP53_, with the lanes in tree order
+- pin and flip lanes from the lane header menu near _PMP22_
 
 ## Prerequisites
 
 - htslib (`tabix`), to read a hosted index without downloading the alignment
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
+- for a chain of your own,
+  [chain2paf](https://github.com/AndreaGuarracino/chain2paf) and the
+  [JBrowse CLI](/docs/cli), for `jbrowse make-pif`
 
-<!-- TUTORIAL_INSTALL htslib START -->
+<!-- TUTORIAL_INSTALL htslib,jbrowse-cli START -->
 
 ```bash
 # Debian/Ubuntu
 sudo apt install tabix
 # or conda, which has every tool above
 conda install -c bioconda -c conda-forge htslib
+# any platform
+npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib END -->
+<!-- TUTORIAL_INSTALL htslib,jbrowse-cli END -->
 
 ## The data
 
@@ -43,11 +50,9 @@ an indexed PAF and rehosted beside the hub configs
 [genomes.jbrowse.org](https://genomes.jbrowse.org) serves, and eight UCSC genome
 hubs, whose assembly entry and NCBI RefSeq gene track each lane takes verbatim.
 
-The page's commands build local files from these, and the tracks over those read
-them from disk; every other track reads a hosted copy. The
-[build script](#reproduce-it-end-to-end) fetches everything itself. To index a
-chain of your own, convert it with `chain2paf` and `make-pif`, as _LiftOver
-chains as one indexed alignment per genome_ shows.
+You don't need these files to follow the page: the track config below reads the
+hosted indexed copies. To index a chain of your own, convert it with `chain2paf`
+and `make-pif`, as _LiftOver chains as one indexed alignment per genome_ shows.
 
 | What it is                                                                     | File                                                                   |
 | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
@@ -72,19 +77,13 @@ chains as one indexed alignment per genome_ shows.
 ## LiftOver chains as one indexed alignment per genome
 
 A liftOver chain maps each stretch of one genome to a position in another,
-whether or not a gene lies there, so the track can draw each lane from the chain
-alone.
-
-Each UCSC chain aligns hg38 to one other genome, so no row aligns chimpanzee to
-mouse. The track places each lane from the chain for that genome, and every
-ribbon joins a lane to hg38, whichever lane sits above it.
+whether or not a gene lies there, so the track draws each lane from the chain
+alone. Each UCSC chain aligns hg38 to one other genome, so no file aligns
+chimpanzee to mouse, and every ribbon joins a lane to hg38, whichever lane sits
+above it.
 
 Each hosted file is a chain converted to PAF and indexed with
-`jbrowse make-pif`, which can write a coarser tier beside the per-base one for
-whole-chromosome zooms. Coarse-tier sequence names are upper-case, so `tabix`
-lists the tiers from the index without downloading the alignment.
-
-To index a chain of your own, convert it to PAF with
+`jbrowse make-pif`. To index a chain of your own, convert it to PAF with
 [chain2paf](https://github.com/AndreaGuarracino/chain2paf), which reads an
 uncompressed chain, then run `make-pif`:
 
@@ -94,6 +93,10 @@ chain2paf -i genomeA_genomeB.chain > genomeA_genomeB.paf
 # --csi writes the .csi index that "csi": true in the track below reads
 jbrowse make-pif genomeA_genomeB.paf --csi
 ```
+
+`make-pif` can write a coarser tier beside the per-base one, for
+whole-chromosome zooms. Coarse-tier sequence names are upper-case, so `tabix`
+lists a file's tiers from its index without downloading the alignment:
 
 <!-- from: scripts/build_hg38_liftover_multiway.sh -->
 
@@ -173,11 +176,11 @@ tier, which the `tabix -l` line above checks on each file.
 
 ## Stacking the genomes at TP53 and at PMP22
 
-Opened on hg38 around _TP53_, the track draws a lane per genome under the human
-axis, each fitted to wherever its chain places the window. Each lane header
-names the chromosome and the span the lane shows, with `[rev]` where that
-chromosome runs the other way relative to hg38. `rows.sort` stacks the lanes
-down the tree from human, the apes first and the cow last.
+We'll open the track on hg38 around _TP53_. It draws a lane per genome under the
+human axis, each fitted to wherever its chain places the window, and each lane
+header names the chromosome and the span the lane shows, with `[rev]` where that
+chromosome runs the other way relative to hg38. In the session, `rows.sort`
+stacks the lanes down the tree from human, the apes first and the cow last.
 
 ```json session config=https://jbrowse.org/demos/hg38_vertebrates/config.json
 {
@@ -221,34 +224,35 @@ the chain record that placed it, red where the lane runs the same way as hg38
 and blue where it runs reversed.
 
 Around _TP53_ every lane but gorilla places the whole window from one chain,
-with the same genes in the same order.
+with the same genes in the same order:
 
-- The gorilla ribbons stop after _FXR2_, because gorGor6 holds the _TP53_ end of
-  the window on an unplaced contig.
-- The mouse, cow and dog lanes break into many ribbons, because the track cuts a
-  chain record at every indel of 10 kb or more, which leaves gap-free runs, one
-  ribbon each, with a gap wherever the lane has sequence hg38 lacks.
-- The ape chain gaps fall under the 10 kb cut, so their ribbons look continuous.
-- The mouse lane shows `[rev]` because its chain runs the other way against hg38
-  here, so its ribbons are blue.
+- **The gorilla ribbons** stop after _FXR2_, because gorGor6 holds the _TP53_
+  end of the window on an unplaced contig.
+- **The mouse, cow and dog lanes** break into many ribbons, because the track
+  cuts a chain record at every long indel and draws each gap-free run as one
+  ribbon, with a gap wherever the lane has sequence hg38 lacks.
+- **The ape lanes** have only short gaps, so their ribbons look continuous.
+- **The mouse lane** shows `[rev]` because its chain runs the other way against
+  hg38 here, so its ribbons are blue.
 
 <Figure caption="TP53 on hg38 over eight UCSC genome lanes in tree order, ribbons colored by strand." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
 
 Navigate to `chr17:15,200,000-16,400,000`, toward the centromere, near _PMP22_.
 The region is a hotspot of segmental duplications (long repeated copies of
 sequence): every genome places it as several blocks, and many of those blocks
-run the other way against their neighbours.
+run the other way against their neighbours. Three rules decide how a lane draws
+them:
 
-A lane whose blocks mostly run backwards along hg38 draws flipped, so its
-ribbons run straight on screen while the strand color still marks each of them
-as an inversion. Inside a lane, a ribbon crosses where one block runs against
-its neighbour, as in the dog and cow lanes.
-
-A lane draws one stretch of its chromosome at a time. Where the window aligns to
-two stretches a window or more apart, the lane draws the one holding more of the
-window, and its header names the other after `also at`. The marmoset lane draws
-the reversed block that places the right of the window, and names the forward
-chain that places the left.
+- **A lane whose blocks mostly run backwards** along hg38 draws flipped, so its
+  ribbons run straight on screen while the strand color still marks each of them
+  as an inversion.
+- **Inside a lane**, a ribbon crosses where one block runs against its
+  neighbour, as in the dog and cow lanes.
+- **A lane draws one stretch of its chromosome at a time.** Where the window
+  aligns to two stretches a window or more apart, the lane draws the one holding
+  more of the window, and its header names the other after `also at`. The
+  marmoset lane draws the reversed block that places the right of the window,
+  and names the forward chain that places the left.
 
 The gorilla lane header names chr17 beside chr5, the chromosome the lane drew.
 Part of the window aligns to chr17, the homologous chromosome, so the chr5 frame
@@ -274,11 +278,12 @@ The script writes one config, with nothing to build or upload, in three steps:
 3. Write each kept genome's hub entry and gene track, and one composed track
    with a child per chain.
 
-`GENOMES` picks a different set; see [Prerequisites](#prerequisites).
+`GENOMES`, a space-separated list of UCSC genome names, stacks a different set:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hg38_liftover_multiway.sh
 bash build_hg38_liftover_multiway.sh   # writes ./hg38_vertebrates_build/config.json
+GENOMES="panTro6 mm39" bash build_hg38_liftover_multiway.sh my_stack/config.json
 ```
 
 ## See also
