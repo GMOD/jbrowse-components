@@ -940,8 +940,10 @@ export function memberPatch(
   const writes = members.map(slotWrite)
   const seed = Object.fromEntries(
     [...new Set(writes.map(write => write.segments[0]!))].flatMap(setting => {
-      const reached = writes.flatMap(({ segments: [root, member] }) =>
-        root === setting && member !== undefined ? [member] : [],
+      const reached = writes.flatMap(({ segments }) =>
+        segments[0] === setting && segments[1] !== undefined
+          ? [segments[1]]
+          : [],
       )
       const value = configured(setting, [...new Set(reached)])
       return value === undefined ? [] : [[setting, value]]
