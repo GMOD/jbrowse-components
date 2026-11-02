@@ -14,6 +14,13 @@ import type { BaseExportSvgOptions } from '@jbrowse/core/ui'
 const MIN_WIDTH = 100
 const MAX_WIDTH = 10000
 
+const TRACK_LABEL_MODES = [
+  { mode: 'offset', label: 'Offset' },
+  { mode: 'overlapping', label: 'Overlapping' },
+  { mode: 'left', label: 'Left' },
+  { mode: 'hidden', label: 'Hidden' },
+] as const satisfies readonly { mode: TrackLabelMode; label: string }[]
+
 // Shared track-label + gridlines export dialog. Used by LGV, linear-synteny and
 // breakpoint-split views (their lazyDialogs re-export this). Only a caller
 // passing `chooseWidth` offers the width field, whose model lays itself out at
@@ -87,13 +94,19 @@ const ExportSvgDialog = observer(function ExportSvgDialog({
         style={{ minWidth: 200 }}
         value={trackLabels}
         onChange={event => {
-          setTrackLabels(event.target.value as TrackLabelMode)
+          const picked = TRACK_LABEL_MODES.find(
+            m => m.mode === event.target.value,
+          )
+          if (picked) {
+            setTrackLabels(picked.mode)
+          }
         }}
       >
-        <MenuItem value="offset">Offset</MenuItem>
-        <MenuItem value="overlapping">Overlapping</MenuItem>
-        <MenuItem value="left">Left</MenuItem>
-        <MenuItem value="hidden">Hidden</MenuItem>
+        {TRACK_LABEL_MODES.map(({ mode, label }) => (
+          <MenuItem key={mode} value={mode}>
+            {label}
+          </MenuItem>
+        ))}
       </TextField>
       {chooseWidth ? (
         <TextField
