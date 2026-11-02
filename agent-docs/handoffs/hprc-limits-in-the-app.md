@@ -37,8 +37,8 @@ differences under 50 bp inside a structural form.
   departures and `missingBp` feed it directly, so build it after format 6.
   Moderate: plugin plus a new mark here.
 - **The VCF parents vcfbub dropped.** The release removed every site with an
-  allele over 100 kb and kept the sites nested in it (jb2hubs
-  `agent-docs/reference/PANGENOME_PORTAL.md`, the vcfbub section), so the
+  allele over 100 kb and kept the sites nested in it (the vcfbub section of
+  `jb2hubs/agent-docs/reference/PANGENOME_PORTAL.md`), so the
   Variants launch cannot show the UGT2B17 deletion. The release's
   `raw.vcf.gz` holds the parents. Sketch: extract them, write symbolic
   `<DEL>`/`<INS>` alleles, host them as a second callset row. Check the record

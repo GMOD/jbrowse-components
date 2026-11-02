@@ -559,10 +559,11 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // computed MAF bridged its own `color` field with, named because that bridge
   // is why three adapter schemas advertised a slot reaching no renderer.
   'labelSources',
-  // `agent-docs/reference/SYNTENY_FOLLOW.md` §"A gesture on
-  // a followed row takes the anchor": the drag-vs-navigation heuristic tried
-  // before root-action gating, named to say it had an untestable false
-  // positive and was replaced. Gone with the snap-back snackbar it explained.
+  // `agent-docs/reference/SYNTENY_FOLLOW.md` §"Touching a
+  // followed row takes the anchor": the drag-vs-navigation heuristic tried
+  // before the anchor followed the touched row, named to say it had an
+  // untestable false positive and was replaced. Gone with the snap-back
+  // snackbar it explained.
   'handNudged',
   // reference/GPU_DISPLAY_LIFECYCLE.md §"Release is per key, never an active-set
   // prune": the HAL method the per-key release replaced, named to say why the
