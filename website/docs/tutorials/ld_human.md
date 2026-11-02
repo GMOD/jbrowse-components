@@ -8,15 +8,19 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-We look at linkage disequilibrium (LD) around the lactase gene, where selection
-for lactase persistence left one long block of correlated variants. PLINK
-correlates the phased genotypes and JBrowse draws the triangle from its output.
-With that view we:
+Selection for lactase persistence in Europe swept one haplotype around the
+lactase gene _LCT_ to high frequency, and the variants on it are still inherited
+together as one long block of linkage disequilibrium (LD). PLINK correlates the
+phased genotypes of the 1000 Genomes samples, and JBrowse draws the correlation
+of every pair of variants as a triangle. Across the _LCT_ block on chr2, we:
 
-- read the edges of the block against Fst and a genetic map
-- compare the swept population's triangle against the pooled release
-- cluster a haplotype matrix into the block the triangle draws
-- draw each population's allele frequency across the block
+- load PLINK's r² table for the European samples as an LD track
+- add Fst, a deCODE recombination map and a second LD track over the pooled
+  release, and read the block's edges against them
+- cluster a variant track of the haplotypes with **Clustering → Cluster rows by
+  genotype...**
+- draw each population's allele frequency at the lactase-persistence variant as
+  a row of a multi-wiggle track
 
 ## Prerequisites
 
@@ -84,40 +88,6 @@ so the tracks below go on that assembly.
 }
 ```
 
-## Drawing the LCT LD triangle from a PLINK table
-
-In the triangle, red means two variants are inherited together and white means
-independent. The triangle is a matrix turned on its corner, so the vertical axis
-is the distance between the two variants.
-
-Point an [`LDTrack`](/docs/config/ldtrack) at the r² table (squared correlation
-per variant pair) [PLINK wrote below](#correlating-the-lct-variants-with-plink),
-in an hg38 session:
-
-```json addtrack loc=chr2:134,400,000-136,900,000
-{
-  "type": "LDTrack",
-  "trackId": "kgp_lct_ld",
-  "name": "LCT lactase-persistence LD, 1000G European panel (r²)",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "PlinkLDTabixAdapter",
-    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur.ld.gz"
-  },
-  "displayDefaults": {
-    "variantLayout": "genomic",
-    "legend": { "show": true },
-    "height": 360
-  }
-}
-```
-
-The block is the lactase-persistence sweep
-([Bersaglieri et al. 2004](https://doi.org/10.1086/421051)). In
-[grammar-of-graphics](/docs/config_guides/mark_display) terms, `encoding.color`
-is a color scale, and [`encoding.color.field`](/docs/config/ldcolor/#slot-field)
-sets its input to r² or D' (a second LD measure). This table has both.
-
 ## Cutting the LCT region out of the 1000 Genomes VCF
 
 Cut the region twice: over the whole release, and over its European samples (the
@@ -177,6 +147,39 @@ awk 'NR==1{$1=$1; print "#" $0; next} {$1=$1; print}' OFS='\t' \
   lct_1kg38_chr2_eur.ld | bgzip > lct_1kg38_chr2_eur.ld.gz
 tabix -s 1 -b 2 -e 2 -f lct_1kg38_chr2_eur.ld.gz
 ```
+
+## Drawing the LCT LD triangle from a PLINK table
+
+In the triangle, red means two variants are inherited together and white means
+independent. The triangle is a matrix turned on its corner, so the vertical axis
+is the distance between the two variants.
+
+Point an [`LDTrack`](/docs/config/ldtrack) at the r² table (squared correlation
+per variant pair) PLINK wrote:
+
+```json addtrack loc=chr2:134,400,000-136,900,000
+{
+  "type": "LDTrack",
+  "trackId": "kgp_lct_ld",
+  "name": "LCT lactase-persistence LD, 1000G European panel (r²)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "PlinkLDTabixAdapter",
+    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur.ld.gz"
+  },
+  "displayDefaults": {
+    "variantLayout": "genomic",
+    "legend": { "show": true },
+    "height": 360
+  }
+}
+```
+
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
+`encoding.color` is a color scale, and
+[`encoding.color.field`](/docs/config/ldcolor/#slot-field) sets its input to r²
+or D' (a second LD measure). This table has both. For your own table, swap `uri`
+for the `.ld.gz` that `tabix` indexed, with its `.tbi` beside it.
 
 ## Computing Fst per variant with plink2
 
@@ -310,7 +313,8 @@ triangles:
 - The block fills the flat span of the
   [deCODE map](https://doi.org/10.1126/science.aau1043). The map counts
   crossovers in sequenced families, so it checks the triangle independently of
-  LD.
+  LD. The HapMap and 1000 Genomes recombination maps in the UCSC hg38 hub are
+  estimated from LD, so they cannot check a triangle.
 - Pooling the swept European samples with populations the sweep never reached
   lightens the pooled triangle.
 
@@ -516,7 +520,7 @@ Three more scripts build the other files:
 - [`build_lct_population_af.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_lct_population_af.sh)
   builds the [per-population frequencies](#allele-frequency-per-population) from
   every unrelated sample of the populations in the pooled slice, and prints the
-  frequencies at `rs4988235` to check the bars against.
+  frequencies at `rs4988235`.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_lct_fst_scan.sh
