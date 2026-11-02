@@ -32,10 +32,13 @@ export function createTestEnvironment({
   marks,
   rows,
   ldAdapter = true,
+  regions = REGIONS,
 }: {
   marks?: Record<string, unknown>[]
   rows?: string
   ldAdapter?: boolean
+  // what the view displays, for a test whose data must be on screen
+  regions?: typeof REGIONS
 } = {}) {
   const env = createDisplayTestEnvironment<LinearManhattanDisplayModel>({
     plugins: [new LinearGenomeViewPlugin()],
@@ -63,7 +66,7 @@ export function createTestEnvironment({
       ...(marks === undefined ? {} : { marks }),
       ...(rows === undefined ? {} : { rows }),
     },
-    regions: REGIONS,
+    regions,
     onViewReady: view => {
       view.showAllRegions()
     },

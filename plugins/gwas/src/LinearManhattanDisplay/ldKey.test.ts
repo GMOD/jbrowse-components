@@ -11,16 +11,19 @@ import { createTestEnvironment } from './testEnv.ts'
 import type { CategoricalEntry } from '@jbrowse/core/ui/colorScale'
 import type { EncodedLayersResult } from '@jbrowse/core/util/markEncoding'
 
+// the view shows the SLE SNPs, since a key lists what is on screen
 const REGION = {
-  refName: 'ctgA',
-  start: 0,
-  end: 10_000,
+  refName: SLE_REGION.refName,
+  start: SLE_REGION.start,
+  end: SLE_REGION.end,
   assemblyName: 'volvox',
 }
 
 async function ldColoredOverSle() {
   const pluginManager = slePluginManager()
-  const { display } = createTestEnvironment().createDisplay()
+  const { display } = createTestEnvironment({
+    regions: [REGION],
+  }).createDisplay()
   display.setLdColoring(true)
   const { value } = (await pluginManager
     .getRpcMethodType('CoreGetEncodedLayers')
@@ -62,8 +65,8 @@ test('LD coloring keys the r² bins and the index SNP as a pink diamond, and nam
   expect(keys.flatMap(k => labels(k.entries))).not.toContain('(no value)')
 })
 
-// The SLE positions lie past the test view's ctgA, so this reads the hits the
-// region reported rather than `topSnp`, which counts only hits on screen.
+// The hits the region reported, which the join reads, rather than `topSnp`,
+// which counts only hits on screen.
 test('the top hit is the index SNP once the join moves it into its own mark', async () => {
   const display = await ldColoredOverSle()
   const hits = readTopHits(display.rpcDataMap.get(0)?.facts)
