@@ -9,6 +9,14 @@ import type { LinearGenomeViewModel } from '../index.ts'
 
 type LGV = LinearGenomeViewModel
 
+function bpIntoPaintedBase(
+  r: { start: number; end: number; reversed?: boolean },
+  offsetBp: number,
+) {
+  const coord = r.reversed ? r.end - offsetBp : r.start + offsetBp
+  return r.reversed ? Math.ceil(coord) - coord : coord - Math.floor(coord)
+}
+
 const useStyles = makeStyles()(theme => ({
   centerLineContainer: {
     background: 'transparent',
@@ -41,7 +49,10 @@ const useStyles = makeStyles()(theme => ({
 const CenterLine = observer(function CenterLine({ model }: { model: LGV }) {
   const { bpPerPx, centerLineInfo, tracks, width } = model
   const { classes } = useStyles()
-  const startingPosition = width / 2
+  const left = centerLineInfo
+    ? width / 2 -
+      bpIntoPaintedBase(centerLineInfo, centerLineInfo.offset) / bpPerPx
+    : width / 2
 
   return tracks.length ? (
     <div
@@ -49,7 +60,7 @@ const CenterLine = observer(function CenterLine({ model }: { model: LGV }) {
       className={classes.centerLineContainer}
       role="presentation"
       style={{
-        transform: `translateX(${startingPosition}px)`,
+        transform: `translateX(${left}px)`,
         width: Math.max(1 / bpPerPx, 1),
       }}
     >

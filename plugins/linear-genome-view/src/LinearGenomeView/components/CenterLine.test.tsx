@@ -86,3 +86,24 @@ test('a region that does not start at 0 labels its own coordinate', async () => 
     expect(await label()).toBe('ctgA: 5,401')
   })
 })
+
+test.each([false, true])(
+  'zoomed in past one base, the box covers the labelled base (flipped: %s)',
+  async flipped => {
+    const model = await setup([region(0, 10_000)])
+    model.zoomTo(0.05)
+    if (flipped) {
+      model.horizontallyFlip()
+    }
+    model.scrollTo(10)
+    const label = await screen.findByTestId('centerline_text')
+    const base = Number(label.textContent.replaceAll(/\D/g, '')) - 1
+    const baseLeftPx =
+      model.bpToPx({ refName: 'ctgA', coord: flipped ? base + 1 : base })!
+        .offsetPx - model.offsetPx
+    const { transform } = screen.getByTestId('centerline_container').style
+    expect(Number(/translateX\((.*)px\)/.exec(transform)![1])).toBeCloseTo(
+      baseLeftPx,
+    )
+  },
+)
