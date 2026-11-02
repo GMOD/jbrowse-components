@@ -569,9 +569,11 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
     .views(self => ({
       /**
        * #getter
-       * The name each row also answers to, read off `rowParent`: a refining
-       * row its parent's, and a `finerRows` row the drawn row it refines.
-       * Undefined while no row refines another.
+       * Overridable hook: the name each row also answers to, read off
+       * `rowParent`: a refining row its parent's, and a `finerRows` row the
+       * drawn row it refines. Undefined while no row refines another. MAF
+       * reads it off a copy row's name instead, since a copy exists at some
+       * loci only and a stored name must answer where no block aligns it.
        */
       get rowAlias(): RowAlias | undefined {
         return rowAliasOver(self.expandedRows, self.finerRows, row =>
