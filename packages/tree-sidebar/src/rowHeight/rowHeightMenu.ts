@@ -40,7 +40,7 @@ export interface RowHeightPreset {
 }
 
 /**
- * The "Row height" submenu: "Squeeze to fit view", the display's presets, and
+ * The "Row height" submenu: "Fit to track height", the display's presets, and
  * "Custom...". One builder for the multi-row feature painting and the
  * variant display's two layouts, which with MAF's (since removed) had three
  * copies of it and three copies of its dialog.
@@ -68,7 +68,7 @@ export function rowHeightMenuItem(
     type: 'subMenu',
     subMenu: [
       {
-        label: 'Squeeze to fit view',
+        label: 'Fit to track height',
         type: 'radio',
         checked: isFit,
         onClick: () => {

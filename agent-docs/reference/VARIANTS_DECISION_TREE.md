@@ -82,7 +82,7 @@ packed colors it produces.
 - The cell arrays stay in the worker's row numbering; the hit test converts the
   one row under the cursor.
 - Bands come out of the available height, and rows begin below them.
-- `rowHeight` of 0 means fit-to-height
+- `rows.step: "fit"` (the default) means fit-to-height
   ([row-height-and-fit](ROW_HEIGHT_AND_FIT.md)); a configured
   height scrolls instead of resizing.
 - The Canvas2D painters are the ones the SVG export calls.

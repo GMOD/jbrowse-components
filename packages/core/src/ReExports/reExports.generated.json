@@ -4966,6 +4966,15 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/rowsWithStepConfigSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "FIT_ROWS",
+        "rowHeightOfStep",
+        "rowsWithStepConfigSchema"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/rpcArgs": {
       "package": "@jbrowse/display-kit",
       "names": [

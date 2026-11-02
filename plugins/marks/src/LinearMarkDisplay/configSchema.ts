@@ -9,11 +9,10 @@ import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSch
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
-import { rowsConfigSchema } from '@jbrowse/display-kit/rowsConfigSchema'
+import { rowsWithStepConfigSchema } from '@jbrowse/display-kit/rowsWithStepConfigSchema'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 import { rowGroupConfigSchema } from '@jbrowse/tree-sidebar/rowGroupConfigSchema'
-import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 
 import { markColorSchema, markLegendOptions } from './markColorConfigSchema.ts'
 import { markDefSchema } from './markDefConfigSchema.ts'
@@ -449,10 +448,10 @@ export function configSchemaFactory() {
        * { rows: 'source' }
        * ```
        * ```js
-       * { rows: { field: 'source', sort: ['tumor', 'normal'] } }
+       * { rows: { field: 'source', sort: ['tumor', 'normal'], step: 12 } }
        * ```
        */
-      rows: rowsConfigSchema,
+      rows: rowsWithStepConfigSchema,
       /**
        * #slot rowColor
        * The bar beside each row's label, and the color of a mark naming
@@ -482,10 +481,6 @@ export function configSchemaFactory() {
        * ```
        */
       rowGroups: types.array(rowGroupConfigSchema),
-      ...rowHeightConfigSchemaFields({
-        rowHeight:
-          'per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them',
-      }),
       /**
        * #slot encoding
        * The channels the marks are read through, owned by the display rather
@@ -531,6 +526,7 @@ export function configSchemaFactory() {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
       retired: retiredBaseDisplaySpellings,
+      misnamed: { rowHeight: 'rows.step' },
       preProcessSnapshot: checkMarks,
     },
   )

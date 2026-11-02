@@ -11892,8 +11892,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "SampleRows": {
-      "title": "SampleRows",
+    "VariantRows": {
+      "title": "VariantRows",
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
@@ -11902,7 +11902,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
-          "title": "SampleRows",
+          "title": "VariantRows",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -12000,6 +12000,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               },
               "else": {
                 "$ref": "#/$defs/RowAxisWithGrid"
+              }
+            },
+            "step": {
+              "description": "row height in px, the rows that do not fit scrolling; or \\"fit\\" (the default) to divide the track height between the rows, as heightMode \\"fit\\" does on a feature track.",
+              "default": "fit",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "const": "fit"
+                  }
+                ]
               }
             }
           },
@@ -12740,22 +12757,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             }
           }
         },
-        "rowHeight": {
-          "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
-          }
-        },
         "rows": {
           "if": {
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/SampleRows"
+            "$ref": "#/$defs/VariantRows"
           }
         },
         "tooltip": {
@@ -15634,8 +15641,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
-    "Rows": {
-      "title": "Rows",
+    "RowsWithStep": {
+      "title": "RowsWithStep",
       "anyOf": [
         {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
@@ -15644,7 +15651,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string"
         },
         {
-          "title": "Rows",
+          "title": "RowsWithStep",
           "type": "object",
           "x-closed": true,
           "properties": {
@@ -15742,6 +15749,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               },
               "else": {
                 "$ref": "#/$defs/RowAxisWithGrid"
+              }
+            },
+            "step": {
+              "description": "row height in px, the rows that do not fit scrolling; or \\"fit\\" (the default) to divide the track height between the rows, as heightMode \\"fit\\" does on a feature track.",
+              "default": "fit",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "const": "fit"
+                  }
+                ]
               }
             }
           },
@@ -15998,7 +16022,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Rows"
+            "$ref": "#/$defs/RowsWithStep"
           }
         },
         "rowColor": {
@@ -16018,16 +16042,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "items": {
               "$ref": "#/$defs/RowGroup"
             }
-          }
-        },
-        "rowHeight": {
-          "description": "per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
           }
         },
         "encoding": {
@@ -16178,7 +16192,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Rows"
+            "$ref": "#/$defs/RowsWithStep"
           }
         },
         "rowColor": {
@@ -16198,16 +16212,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "items": {
               "$ref": "#/$defs/RowGroup"
             }
-          }
-        },
-        "rowHeight": {
-          "description": "per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
           }
         },
         "encoding": {
@@ -16370,7 +16374,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "null"
           },
           "else": {
-            "$ref": "#/$defs/Rows"
+            "$ref": "#/$defs/RowsWithStep"
           }
         },
         "rowColor": {
@@ -16390,16 +16394,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "items": {
               "$ref": "#/$defs/RowGroup"
             }
-          }
-        },
-        "rowHeight": {
-          "description": "per-row height in px under rows, scrolling the rows that do not fit; 0 (the default) fits the rows to the plot instead, dividing it between them.",
-          "default": 0,
-          "if": {
-            "type": "null"
-          },
-          "else": {
-            "type": "number"
           }
         },
         "encoding": {
@@ -17368,19 +17362,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 }
               ]
             },
-            "rowHeight": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowHeight"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
-                },
-                {
-                  "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots/properties/rowHeight"
-                }
-              ]
-            },
             "color": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/color"
             }
@@ -17782,9 +17763,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rowGroups": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
-            },
-            "rowHeight": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
             },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
@@ -18251,16 +18229,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 },
                 {
                   "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
-                }
-              ]
-            },
-            "rowHeight": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearVariantDisplaySlots/properties/rowHeight"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
                 }
               ]
             },
@@ -19049,9 +19017,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rowGroups": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
-            "rowHeight": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
-            },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
             },
@@ -19402,9 +19367,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rowGroups": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
-            },
-            "rowHeight": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
             },
             "filter": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/filter"
@@ -19965,14 +19927,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               ]
             },
             "rowHeight": {
-              "anyOf": [
-                {
-                  "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowHeight"
-                },
-                {
-                  "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
-                }
-              ]
+              "$ref": "#/$defs/LinearMafDisplaySlots/properties/rowHeight"
             },
             "marks": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/marks"
@@ -20696,9 +20651,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "rowGroups": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowGroups"
             },
-            "rowHeight": {
-              "$ref": "#/$defs/LinearMarkDisplaySlots/properties/rowHeight"
-            },
             "origin": {
               "$ref": "#/$defs/LinearMarkDisplaySlots/properties/origin"
             },
@@ -20911,9 +20863,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "rowGroups": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowGroups"
-            },
-            "rowHeight": {
-              "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/rowHeight"
             },
             "encoding": {
               "$ref": "#/$defs/LinearManhattanDisplaySlots/properties/encoding"

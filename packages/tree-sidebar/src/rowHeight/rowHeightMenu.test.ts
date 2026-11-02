@@ -43,7 +43,7 @@ function checkedLabel(items: MenuItem[]) {
 // The one coupled axis: 0 is the fit sentinel, a preset value is that preset,
 // anything else is the leftover "Custom..." row. Exactly one is ever checked.
 test.each([
-  [0, 'Squeeze to fit view'],
+  [0, 'Fit to track height'],
   [15, 'Normal'],
   [8, 'Compact'],
   [23, 'Custom...'],
@@ -53,7 +53,7 @@ test.each([
 
 test('a display with no presets still gets fit and custom', () => {
   expect(labels(subMenu(makeModel(0), []))).toEqual([
-    'Squeeze to fit view',
+    'Fit to track height',
     'Custom...',
   ])
   expect(checkedLabel(subMenu(makeModel(20), []))).toEqual(['Custom...'])

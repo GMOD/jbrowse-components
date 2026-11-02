@@ -59,6 +59,7 @@ import {
 import { heldColorSlots } from '@jbrowse/display-kit/heldColorSlots'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import { editPlotMenuItems } from '@jbrowse/display-kit/plotMenu'
+import { FIT_ROWS } from '@jbrowse/display-kit/rowsWithStepConfigSchema'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -1027,7 +1028,7 @@ export function stateModelFactory(
            * `effectiveRowHeight` divide `availableHeight` across the rows.
            */
           setFitToHeight() {
-            setConf(self, 'rowHeight', 0)
+            setConf(self, ['rows', 'step'], FIT_ROWS)
           },
           /**
            * #action

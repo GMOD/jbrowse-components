@@ -248,6 +248,7 @@ function slotsOf(type) {
       // sub-schema's shorthand slot taking it or a string into a list of one,
       // and numbers carried as strings.
       shorthand: Object.keys(targets).length > 0 ? targets : undefined,
+      misnamed: subOptions?.misnamed ? { ...subOptions.misnamed } : undefined,
       // a color object's defaults by field, which the validator's color
       // rules read the object with
       fieldPresets: subOptions?.fieldPresets,
@@ -802,6 +803,13 @@ function retiredTypeKeysOf(entry, slots) {
   return { legacy: [...legacy], dropped: [...dropped] }
 }
 
+// The words a reader writes in place of one of the entry's own slots, as
+// plain data
+function misnamedOf(configSchema) {
+  const misnamed = getConfigurationSchemaMetadata(configSchema)?.options.misnamed
+  return misnamed ? { misnamed: { ...misnamed } } : {}
+}
+
 function collect(group, getType) {
   const record = pm.getElementTypeRecord(group)
   const out = {}
@@ -859,6 +867,7 @@ function collect(group, getType) {
       ...(legacyKeys.length ? { legacyKeys } : {}),
       ...(droppedKeys.length ? { droppedKeys } : {}),
       ...(Object.keys(legacyValues).length ? { legacyValues } : {}),
+      ...misnamedOf(entry.configSchema),
       ...(group === 'adapter' || group === 'text search adapter'
         ? { shorthandKeys: shorthandKeysOf(entry) }
         : {}),

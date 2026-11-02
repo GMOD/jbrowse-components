@@ -96,7 +96,7 @@ one.
 | one row per element of a list field, or per entry of a keyed record | `tidyr::unnest()` | `{"flatten": [field]}` | `{"type": "flatten", "field"}`, with the entry's key in `key` |
 | how many features overlap each position | | GenomeSpy `{"type": "coverage"}` | `{"type": "coverage"}` |
 | overlapping features stacked into rows | | GenomeSpy `{"type": "pileup", "as": "lane"}` | `{"type": "pileup"}`, read by the mark's `row` |
-| a fixed px height per row | | `"height": {"step": 20}` on the view | the display's `rowHeight`, under `rows` |
+| a fixed px height per row | | `"height": {"step": 20}` on the view | `rows.step` |
 | a label at each feature | `geom_text(aes(label = name), check_overlap = TRUE)` | `"mark": "text"`, `"text": {"field": "name"}` | `"mark": "text"`, `"encoding": {"text": "name"}` |
 | a curve between two positions | `geom_curve(aes(x, xend))` | GenomeSpy `"mark": "link"`, `"x2"` | `"mark": "link"`, `x` to `x2` |
 | a stroke width per feature | `aes(linewidth = score)` | `"strokeWidth": {"field": "score"}` | `"encoding": {"strokeWidth": {"field": "score"}}` on a link |
@@ -697,12 +697,13 @@ rows by value here** on a right-click. As an object, `rows` takes the order too,
 clustering run or a clade off the tree is written there, so undo, **Reset row
 order** and a share link all reach it.
 
-The rows divide the plot between them by default, so every row shows.
-`"rowHeight": 20` pins each row at 20 px instead, and the rows that do not fit
-scroll: a wheel over the rows or the scrollbar at the right reaches them, and
-shift+wheel resizes them. `0`, the default, fits them to the plot again, and
-**Row height → Squeeze to fit view** writes it. The menu's Normal and Compact
-presets also set every rect's `mark.height.band`, so the rows stand apart.
+The rows divide the plot between them by default, `"step": "fit"`, so every row
+shows. The row height, `"rows": { "field": "source", "step": 20 }`, pins each
+row at 20 px instead, and the rows that do not fit scroll: a wheel over the rows
+or the scrollbar at the right reaches them, and shift+wheel resizes them. **Row
+height → Fit to track height** writes `"fit"` again. The menu's Normal and
+Compact presets also set every rect's `mark.height.band`, so the rows stand
+apart.
 
 The display's [`rowColor`](/docs/config/linearmarkdisplay/#slot-rowcolor) paints
 the bar beside each row's label, a mark naming no color, and a mark colored by

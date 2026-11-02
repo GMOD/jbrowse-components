@@ -6,7 +6,8 @@
 import { Ajv2020 } from 'ajv/dist/2020.js'
 
 import { configJsonSchema } from './configSchema.generated.ts'
-import { didYouMean } from './suggest.ts'
+import { misnamedByTitle } from './misnamed.ts'
+import { didYouMeanKey } from './suggest.ts'
 
 import type { Problem } from './types.ts'
 import type { ErrorObject, ValidateFunction } from 'ajv/dist/2020.js'
@@ -15,9 +16,17 @@ type Schema = Record<string, unknown>
 
 /**
  * The checks over one config JSON Schema: core's, or core's with a plugin
- * manifest's types beside its own (`withPluginSchemas`).
+ * manifest's types beside its own (`withPluginSchemas`). `misnamed` holds
+ * each schema's `misnamed` words by the title of the object they sit on
+ * (`misnamedByTitle`).
  */
-export function createSchemaValidator(root: Schema) {
+export function createSchemaValidator(
+  root: Schema,
+  misnamed: ReadonlyMap<
+    string,
+    Readonly<Record<string, string>>
+  > = misnamedByTitle(),
+) {
   const defs = root.$defs as Record<string, Schema>
   const schemaId = root.$id as string
 
@@ -210,7 +219,7 @@ export function createSchemaValidator(root: Schema) {
     accepted: string[],
   ): string {
     const title = typeof schema.title === 'string' ? schema.title : ''
-    const guess = didYouMean(key, accepted)
+    const guess = didYouMeanKey(key, accepted, misnamed.get(title))
     if (key === 'sequenceAdapter' && !title.endsWith('Snapshot')) {
       return 'JBrowse takes the sequence from the assembly the track is displayed against, and this adapter declares no `sequenceAdapter` slot, so the one written here is never read — delete it'
     }
@@ -219,7 +228,7 @@ export function createSchemaValidator(root: Schema) {
         defs[`${title.replace(/Snapshot$/, '')}Slots`]?.properties
       return Object.keys((properties as Schema | undefined) ?? {}).includes(key)
         ? `"${key}" is a config slot, not a display property, so a session snapshot drops it and the setting silently does nothing — put it on the track's "displays" entry under "tracks", or in a "trackConfigDeltas" entry, instead`
-        : `unknown display property "${key}"${didYouMean(key, [...accepted, ...currentKeys(properties)])} — a session snapshot drops keys the display does not declare, so this setting silently does nothing`
+        : `unknown display property "${key}"${didYouMeanKey(key, [...accepted, ...currentKeys(properties)])} — a session snapshot drops keys the display does not declare, so this setting silently does nothing`
     }
     if (viewNames.has(title)) {
       const elsewhere = [...viewNames].filter(

@@ -56,6 +56,7 @@ import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { onTrackAssembly } from '@jbrowse/display-kit/foundationView'
 import { keyWindowsOf } from '@jbrowse/display-kit/keyWindows'
 import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
+import { FIT_ROWS } from '@jbrowse/display-kit/rowsWithStepConfigSchema'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import {
   sameAsLast,
@@ -1895,7 +1896,7 @@ export function stateModelFactory(
          * so nothing needs seeding on the way in.
          */
         setFitToHeight() {
-          setConf(self, 'rowHeight', 0)
+          setConf(self, ['rows', 'step'], FIT_ROWS)
         },
         /**
          * #action

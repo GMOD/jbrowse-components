@@ -78,7 +78,13 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   manifest, the JSON schema and launch args read one form; `0` is refused
   with a pointer to `'fit'`, and the R export writes `"fit"`.
 - The Row height menu's first radio is "Fit to track height", alignments'
-  words for the same choice.
+  words for the same choice; the submenu keeps "Row height".
+- `step` sits where rows scroll, the mark family's and the variant display's
+  `rows`; wiggle's and MAF's rows always fit and declare none.
+- A schema may name the words a reader reaches for in place of a member
+  (`misnamed: { height: 'step' }`), data the CLI manifest carries, so the
+  load notice, a refused write and `jbrowse validate` all say "did you mean
+  `rows.step`, the row height in px".
 
 ### Row colors
 
@@ -147,7 +153,7 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
 
 | Proposal | Why not |
 | --- | --- |
-| `rows.height` for the pitch | `height` would mean the track one level up and a row one level down |
+| `rows.height` for the pitch | `height` would mean the track one level up and a row one level down, and on the variant display `records.height` is a band's total beside it; IGV, igv.js and igvR say row height, so the description leads with "Row height in px" and a write of `rows.height` or `rowHeight` is refused with a pointer to `rows.step` |
 | `rows.pitch` or `rows.size` for the pitch | `pitch` is no grammar's word; `size` is a mark's channel. `step` is d3's and Vega's band-scale step and Vega-Lite's `height: { step }`, the px from one band's start to the next; its doc says so, and the mark display's `bin.step` is the same idea along the genome, in bp |
 | `height: number \| { step, max }` | `{ step }` sizes the view from its row count, which no multi-row display does (reference/ROW_HEIGHT_AND_FIT.md) |
 | `rows.domain` for the shown rows | a discrete domain also orders in Vega-Lite and ggplot2, every other `domain` sits under a `scale`, and older ADRs used `rows.domain` for the order |

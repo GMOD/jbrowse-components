@@ -146,6 +146,14 @@ export interface ConfigurationSchemaOptions<
    */
   retired?: Record<string, RetiredSpelling>
   /**
+   * The words a reader reaches for in place of a member, each naming the
+   * dotted path, from this schema, to write instead (`{ height: 'step' }` on
+   * a rows schema, `{ rowHeight: 'rows.step' }` on a display), where edit
+   * distance would not find it. Nothing lifts: the `closed` notice, a refused
+   * write and `jbrowse validate` name the path. A subclass adds to its base's.
+   */
+  misnamed?: Record<string, string>
+  /**
    * A color channel's defaults by `field`, `*` for any other: the scale while
    * `scale.type` is unset, and the members that scale and its key read while
    * unwritten (`FieldPreset`).
@@ -260,6 +268,26 @@ function checkShorthand(
   }
 }
 
+function checkMisnamed(
+  modelName: string,
+  definition: ConfigurationSchemaDefinition,
+  { misnamed = {} }: MergedConfigurationSchemaOptions<any, any>,
+) {
+  for (const [word, path] of Object.entries(misnamed)) {
+    const [member = ''] = path.split('.')
+    if (Object.hasOwn(definition, word)) {
+      throw new Error(
+        `${modelName}'s misnamed names ${word}, which it declares, so a snapshot writing ${word} means that member`,
+      )
+    }
+    if (!Object.hasOwn(definition, member)) {
+      throw new Error(
+        `${modelName}'s misnamed points ${word} at ${path}, but it declares no ${member}`,
+      )
+    }
+  }
+}
+
 function preprocessConfigurationSchemaArguments(
   modelName: string,
   inputSchemaDefinition: ConfigurationSchemaDefinition,
@@ -286,9 +314,9 @@ function preprocessConfigurationSchemaArguments(
       baseMeta.definition,
       schemaDefinition,
     )
-    // The hooks, `requires` and `retired` compose, base first, where every
-    // other option is replaced by the child's: a track schema's own
-    // preProcessSnapshot must not drop the base's display-stub injection.
+    // The hooks, `requires`, `retired` and `misnamed` compose, base first,
+    // where every other option is replaced by the child's: a track schema's
+    // own preProcessSnapshot must not drop the base's display-stub injection.
     const basePreProcess = baseMeta.options.preProcessSnapshot
     const childPreProcess = inputOptions.preProcessSnapshot
     const requires = [
@@ -311,6 +339,10 @@ function preprocessConfigurationSchemaArguments(
           ? { ...baseMeta.options.retired, ...inputOptions.retired }
           : undefined,
       requires: requires.length ? requires : undefined,
+      misnamed:
+        baseMeta.options.misnamed || inputOptions.misnamed
+          ? { ...baseMeta.options.misnamed, ...inputOptions.misnamed }
+          : undefined,
     }
   }
   if (options.explicitlyTyped && options.explicitIdentifier === 'displayId') {
@@ -384,6 +416,7 @@ function makeConfigurationSchemaModel<
   }
   checkRequirements(modelName, schemaDefinition, options.requires ?? [])
   checkShorthand(modelName, schemaDefinition, options)
+  checkMisnamed(modelName, schemaDefinition, options)
 
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)

@@ -161,12 +161,14 @@ describe('row height resolution', () => {
     expect(m.rowHeight).toBe(10)
   })
 
-  // rowHeight lives on the config node, which outlives the display instance, so
-  // a pinned height survives unticking and reticking the track.
-  it('pins the row height on the config slot, not the display snapshot', () => {
+  // rows.step lives on the config node, which outlives the display instance,
+  // so a pinned height survives unticking and reticking the track.
+  it('pins the row height on rows.step, not the display snapshot', () => {
     const m = createDisplay()
     m.setRowHeight(25)
-    expect(readConfObject(m.configuration, 'rowHeight')).toBe(25)
+    expect(readConfObject(m.configuration, ['rows', 'step'])).toBe(25)
+    m.setRowHeight(0)
+    expect(readConfObject(m.configuration, ['rows', 'step'])).toBe('fit')
     expect('rowHeight' in getSnapshot(m)).toBe(false)
   })
 })

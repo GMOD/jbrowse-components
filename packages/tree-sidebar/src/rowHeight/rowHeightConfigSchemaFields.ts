@@ -1,7 +1,8 @@
-import type { ConfigModelForFields } from '@jbrowse/core/configuration'
-
 /**
- * The config slot a display owes `RowHeightMixin`, so composing the mixin and
+ * @deprecated `rows.step` on `RowsWithStep` (`@jbrowse/display-kit/rowsWithStepConfigSchema`)
+ * is the row height (ADR-257); nothing composes this slot any more.
+ *
+ * The config slot a display owed `RowHeightMixin`, so composing the mixin and
  * shipping no slot for it — which compiles, and then throws on the first read —
  * is unspellable.
  *
@@ -41,19 +42,3 @@ export function rowHeightConfigSchemaFields({
     },
   } as const
 }
-
-/**
- * What `RowHeightMixin` asks a composing display's `configuration` to be — the
- * one slot above and nothing else, since that is the only slot the mixin
- * touches. **Narrow on purpose.** `getConf`/`setConf` check a slot name against
- * the schema of the model they are handed, so a mixin reaching its host through
- * the widened `AnyConfigurationModel` gets no check at all and every name
- * typechecks. What that costs is not symmetric, and the read is the bad half:
- * `setSlot` throws on an unknown name (ADR-052), so a misspelled write is a
- * first-click crash, while a misspelled read just returns `undefined` and has no
- * runtime diagnostic anywhere. Deriving the type from the fields keeps the two
- * in step — rename the slot and every accessor over it stops compiling.
- */
-export type RowHeightConfigModel = ConfigModelForFields<
-  ReturnType<typeof rowHeightConfigSchemaFields>
->

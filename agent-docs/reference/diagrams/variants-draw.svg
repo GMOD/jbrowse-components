@@ -47,8 +47,8 @@
 <!-- fit -->
 <g id="node2" class="node">
 <title>fit</title>
-<polygon fill="none" stroke="black" points="293,-610.5 180.51,-592.5 293,-574.5 405.49,-592.5 293,-610.5"/>
-<text xml:space="preserve" text-anchor="middle" x="293" y="-589.38" font-family="monospace" font-size="10.00">rowHeight slot is 0</text>
+<polygon fill="none" stroke="black" points="293,-610.5 196.09,-592.5 293,-574.5 389.91,-592.5 293,-610.5"/>
+<text xml:space="preserve" text-anchor="middle" x="293" y="-589.38" font-family="monospace" font-size="10.00">rows.step is fit</text>
 </g>
 <!-- fitauto -->
 <g id="node11" class="node">
@@ -59,8 +59,8 @@
 <!-- fit&#45;&gt;fitauto -->
 <g id="edge10" class="edge">
 <title>fit&#45;&gt;fitauto</title>
-<path fill="none" stroke="black" d="M277.39,-576.7C263.69,-563.7 243.46,-544.52 227.26,-529.16"/>
-<polygon fill="black" stroke="black" points="229.98,-526.91 220.31,-522.57 225.16,-531.99 229.98,-526.91"/>
+<path fill="none" stroke="black" d="M277.81,-577.09C264.16,-564.15 243.82,-544.86 227.5,-529.38"/>
+<polygon fill="black" stroke="black" points="230.15,-527.07 220.48,-522.73 225.33,-532.15 230.15,-527.07"/>
 <text xml:space="preserve" text-anchor="middle" x="269.49" y="-543.2" font-family="Times,serif" font-size="14.00"> yes</text>
 </g>
 <!-- fitconf -->
@@ -73,8 +73,8 @@
 <!-- fit&#45;&gt;fitconf -->
 <g id="edge11" class="edge">
 <title>fit&#45;&gt;fitconf</title>
-<path fill="none" stroke="black" d="M308.61,-576.7C322.31,-563.7 342.54,-544.52 358.74,-529.16"/>
-<polygon fill="black" stroke="black" points="360.84,-531.99 365.69,-522.57 356.02,-526.91 360.84,-531.99"/>
+<path fill="none" stroke="black" d="M308.19,-577.09C321.84,-564.15 342.18,-544.86 358.5,-529.38"/>
+<polygon fill="black" stroke="black" points="360.67,-532.15 365.52,-522.73 355.85,-527.07 360.67,-532.15"/>
 <text xml:space="preserve" text-anchor="middle" x="358.12" y="-543.2" font-family="Times,serif" font-size="14.00"> no</text>
 </g>
 <!-- backend -->
@@ -260,5 +260,4 @@
 <polygon fill="black" stroke="black" points="295.5,-47.54 292,-37.54 288.5,-47.54 295.5,-47.54"/>
 </g>
 </g>
-<!-- diagram-source-sha256 6088231309cfbeb60763abeee233f41bd93192fafbbe381b5b7fbb3fe9c69db4 -->
 </svg>

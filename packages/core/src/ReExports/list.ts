@@ -486,6 +486,7 @@ export default [
   '@jbrowse/display-kit/rowAxisWithGridConfigSchema',
   '@jbrowse/display-kit/rowColorConfigSchema',
   '@jbrowse/display-kit/rowsConfigSchema',
+  '@jbrowse/display-kit/rowsWithStepConfigSchema',
   '@jbrowse/display-kit/rpcArgs',
   '@jbrowse/display-kit/sampleRowsConfigSchema',
   '@jbrowse/display-kit/sectionFacetConfigSchema',

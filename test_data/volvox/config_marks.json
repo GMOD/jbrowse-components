@@ -1389,8 +1389,7 @@
               "type": "cells"
             }
           ],
-          "rows": "species",
-          "rowHeight": 20,
+          "rows": { "field": "species", "step": 20 },
           "height": 120,
           "marks": [
             {

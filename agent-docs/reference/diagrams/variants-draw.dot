@@ -21,7 +21,7 @@ digraph variant_draw {
 
   bands [label="top band: connector zone\nrows begin at rowsTopOffset"]
   bands -> fit
-  fit [label="rowHeight slot is 0"]
+  fit [label="rows.step is fit"]
   fit -> fitauto [label=" yes"]
   fit -> fitconf [label=" no"]
   fitauto [label="available height / row count"]

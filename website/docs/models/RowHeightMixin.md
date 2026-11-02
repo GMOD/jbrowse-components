@@ -1,13 +1,13 @@
 ---
 id: rowheightmixin
 title: RowHeightMixin
-description: "The two-valued row height every multi-row display has. A rowHeightConfigSchemaFields slot whose 0 means fit-to-display-height, and an autoRowHeight getter saying what that fit divides."
+description: "The two-valued row height every scrolling row display has. A rows.step (RowsWithStep) of px or \"fit\", and an autoRowHeight getter saying what fit divides."
 sidebar_label: Mixin -> RowHeightMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/tree-sidebar/src/rowHeight/RowHeightMixin.ts).
 
-The two-valued row height every multi-row display has. A `rowHeightConfigSchemaFields` slot whose `0` means fit-to-display-height, and an `autoRowHeight` getter saying what that fit divides. Brings the raw `rowHeight` getter, `setRowHeight`, and the resolved `effectiveRowHeight` every consumer reads
+The two-valued row height every scrolling row display has. A `rows.step` (`RowsWithStep`) of px or `"fit"`, and an `autoRowHeight` getter saying what fit divides. Brings the raw `rowHeight` getter (`0` while the rows fit), `setRowHeight`, and the resolved `effectiveRowHeight` every consumer reads
 
 The convention itself is
 agent-docs/reference/ROW_HEIGHT_AND_FIT.md; this is the middle link of it.
@@ -48,4 +48,4 @@ display honours a pinned `rowHeight` only while it draws rows.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="action-setrowheight">**setRowHeight**</span><br><code>(n: number) =&gt; void</code> | Pin a px row height. `0` is the fit sentinel, but enter fit mode through `setFitToHeight` instead — displays whose `height` getter is content-derived have to re-seed the slot on the way in, and that is what the action is for. |
+| <span id="action-setrowheight">**setRowHeight**</span><br><code>(n: number) =&gt; void</code> | Pin a px row height, `rows.step`; `0` writes `"fit"`. Enter fit mode through `setFitToHeight` instead — displays whose `height` getter is content-derived have to re-seed the slot on the way in, and that is what the action is for. |

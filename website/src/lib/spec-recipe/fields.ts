@@ -691,14 +691,13 @@ interface RowHeightPreset {
   rowHeight: number
 }
 
-function rowHeightPath(rowHeight: number, presets: readonly RowHeightPreset[]) {
-  if (rowHeight === 0) {
-    return `${TRACK_MENU} → Row height → Squeeze to fit view`
-  }
-  const preset = presets.find(p => p.rowHeight === rowHeight)
-  return preset
-    ? `${TRACK_MENU} → Row height → ${preset.label}`
-    : `${TRACK_MENU} → Row height → Custom... → ${rowHeight}px`
+function rowHeightPath(step: number | 'fit', presets: readonly RowHeightPreset[]) {
+  const preset = presets.find(p => p.rowHeight === step)
+  return step === 'fit'
+    ? `${TRACK_MENU} → Row height → Fit to track height`
+    : preset
+      ? `${TRACK_MENU} → Row height → ${preset.label}`
+      : `${TRACK_MENU} → Row height → Custom... → ${step}px`
 }
 
 // The one dialog that edits row order, labels and which rows are shown. Each
@@ -1782,9 +1781,9 @@ export const trackFields: Record<string, FieldRecipe> = {
         }
       : undefined
   },
-  rowHeight: (value, { displayType }) => {
+  'rows.step': (value, { displayType }) => {
     const presets = displayType ? ROW_HEIGHT_MENUS[displayType] : undefined
-    return typeof value === 'number' && presets
+    return (typeof value === 'number' || value === 'fit') && presets
       ? { path: rowHeightPath(value, presets) }
       : undefined
   },

@@ -53,6 +53,21 @@ export function refusingUndeclaredKeys<T>(write: () => T) {
   }
 }
 
+// A typed entry's path is the one its file writes; a sub-schema knows only
+// the path from itself, so the pointer says whose it is.
+function misnamedPointer(
+  { name, options }: ConfigurationSchemaMetadata,
+  unknown: string[],
+) {
+  const pointed = Object.entries(options.misnamed ?? {})
+    .filter(([key]) => unknown.includes(key))
+    .map(([key, target]) => {
+      const path = options.explicitlyTyped ? target : `${name}'s ${target}`
+      return unknown.length > 1 ? `${path} for ${key}` : path
+    })
+  return pointed.length > 0 ? ` — did you mean ${listed(pointed)}?` : ''
+}
+
 function checkUndeclaredKeys(
   schema: ConfigurationSchemaMetadata,
   snapshot: unknown,
@@ -70,7 +85,7 @@ function checkUndeclaredKeys(
   if (unknown.length > 0) {
     if (bare || writes > 0) {
       throw new Error(
-        `${name} takes ${listed(declared)}, not ${unknown.join(', ')}`,
+        `${name} takes ${listed(declared)}, not ${unknown.join(', ')}${misnamedPointer(schema, unknown)}`,
       )
     }
     const key = `${name} ${unknown.toSorted().join(' ')}`
@@ -80,7 +95,7 @@ function checkUndeclaredKeys(
         options.explicitIdentifier ?? ''
       ]
       console.warn(
-        `${name}${typeof id === 'string' ? ` "${id}"` : ''} does not declare ${listed(unknown)}: loading without it`,
+        `${name}${typeof id === 'string' ? ` "${id}"` : ''} does not declare ${listed(unknown)}: loading without it${misnamedPointer(schema, unknown)}`,
       )
     }
   }

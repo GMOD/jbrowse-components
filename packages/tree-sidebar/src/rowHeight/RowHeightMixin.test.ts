@@ -4,10 +4,10 @@ import {
   readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
+import { rowsWithStepConfigSchema } from '@jbrowse/display-kit/rowsWithStepConfigSchema'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { RowHeightMixin } from './RowHeightMixin.ts'
-import { rowHeightConfigSchemaFields } from './rowHeightConfigSchemaFields.ts'
 
 import type { RowHeightHost } from './RowHeightMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
@@ -37,7 +37,7 @@ function makeDisplay({
   autoRowHeight?: number
 } = {}) {
   const configSchema = ConfigurationSchema('TestRowHeightDisplay', {
-    ...rowHeightConfigSchemaFields(),
+    rows: rowsWithStepConfigSchema,
   })
   return types
     .compose(
@@ -63,7 +63,9 @@ function makeDisplay({
       type: 'TestRowHeightDisplay',
       configuration: configSchema.create({
         type: 'TestRowHeightDisplay',
-        ...(rowHeight === undefined ? {} : { rowHeight }),
+        ...(rowHeight === undefined
+          ? {}
+          : { rows: { step: rowHeight > 0 ? rowHeight : 'fit' } }),
       }),
     })
 }
@@ -92,7 +94,7 @@ describe('setRowHeight', () => {
   it('writes the config node, not the display snapshot', () => {
     const display = makeDisplay()
     display.setRowHeight(20)
-    expect(readConfObject(display.configuration, 'rowHeight')).toBe(20)
+    expect(readConfObject(display.configuration, ['rows', 'step'])).toBe(20)
     expect('rowHeight' in getSnapshot(display)).toBe(false)
   })
 })
@@ -167,7 +169,7 @@ describe('what the mixin assumes of its host', () => {
   // read of an undeclared `autoRowHeight` did before the mixin declared one.
   it('resolves a display that overrides no autoRowHeight to the floor', () => {
     const configSchema = ConfigurationSchema('NoOverride', {
-      ...rowHeightConfigSchemaFields(),
+      rows: rowsWithStepConfigSchema,
     })
     const display = types
       .compose(

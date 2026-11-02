@@ -264,8 +264,8 @@ export const popgenSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'dgrp_In2Lt_sv',
-              // 2 px a row: auto-fit rows under a pixel alias into a smear.
-              rowHeight: 2,
+              // 2 px a row: fit rows under a pixel alias into a smear.
+              rows: { step: 2 },
               height: 400,
             },
           ],

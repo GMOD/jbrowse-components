@@ -9,7 +9,7 @@ import {
   displayDefaultsForTrackType,
 } from '../validate/displayDefaultKeys.ts'
 import { mergeBySlots } from '../validate/liftConfig.ts'
-import { suggest } from '../validate/suggest.ts'
+import { suggestKey } from '../validate/suggest.ts'
 import { parseJsonFlag } from './validators.ts'
 
 import type { Track } from '../../base.ts'
@@ -138,7 +138,8 @@ function checkDisplayDefaultKeys(
   merged: Record<string, unknown>,
   trackType: string,
 ) {
-  const { displayTypes, keys } = displayDefaultsForTrackType(trackType)
+  const { displayTypes, keys, misnamed } =
+    displayDefaultsForTrackType(trackType)
   if (keys.length === 0) {
     return
   }
@@ -149,7 +150,7 @@ function checkDisplayDefaultKeys(
     throw new Error(
       unknown
         .map(key => {
-          const hit = suggest(key, keys)
+          const hit = suggestKey(key, keys, misnamed)
           return `"${key}" is not a setting ${declarer} declares${hit ? `, did you mean "${hit}"?` : ''}`
         })
         .join('\n'),

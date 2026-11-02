@@ -6729,12 +6729,8 @@ export const configManifest: ConfigManifest = {
           }
         },
         {
-          "name": "rowHeight",
-          "type": "number"
-        },
-        {
           "name": "rows",
-          "type": "SampleRowsConfigurationSchema",
+          "type": "VariantRowsConfigurationSchema",
           "subSlots": [
             {
               "name": "sort",
@@ -6760,7 +6756,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "field",
-              "type": "SampleRowsField"
+              "type": "VariantRowsField"
             },
             {
               "name": "axis",
@@ -6789,9 +6785,13 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "RowAxisWithGrid",
               "writes": "members"
+            },
+            {
+              "name": "step",
+              "type": "(number | \"fit\")"
             }
           ],
-          "schema": "SampleRows",
+          "schema": "VariantRows",
           "writes": {
             "keyedBy": "field",
             "keyed": [
@@ -6804,6 +6804,9 @@ export const configManifest: ConfigManifest = {
           },
           "shorthand": {
             "string": "field"
+          },
+          "misnamed": {
+            "height": "step"
           }
         },
         {
@@ -7207,6 +7210,9 @@ export const configManifest: ConfigManifest = {
         "numStdDev",
         "minimalTicks"
       ],
+      "misnamed": {
+        "rowHeight": "rows.step"
+      },
       "aliases": [
         "LinearMultiSampleVariantDisplay",
         "MultiLinearVariantDisplay",
@@ -9199,7 +9205,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rows",
-          "type": "RowsConfigurationSchema",
+          "type": "RowsWithStepConfigurationSchema",
           "subSlots": [
             {
               "name": "sort",
@@ -9254,9 +9260,13 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "RowAxisWithGrid",
               "writes": "members"
+            },
+            {
+              "name": "step",
+              "type": "(number | \"fit\")"
             }
           ],
-          "schema": "Rows",
+          "schema": "RowsWithStep",
           "writes": {
             "keyedBy": "field",
             "keyed": [
@@ -9269,6 +9279,9 @@ export const configManifest: ConfigManifest = {
           },
           "shorthand": {
             "string": "field"
+          },
+          "misnamed": {
+            "height": "step"
           }
         },
         {
@@ -9321,10 +9334,6 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "RowGroup"
-        },
-        {
-          "name": "rowHeight",
-          "type": "number"
         },
         {
           "name": "encoding",
@@ -9610,6 +9619,9 @@ export const configManifest: ConfigManifest = {
         "fetchSizeLimit",
         "mouseover"
       ],
+      "misnamed": {
+        "rowHeight": "rows.step"
+      },
       "stateModelProps": [
         "id",
         "type",
@@ -10051,7 +10063,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rows",
-          "type": "RowsConfigurationSchema",
+          "type": "RowsWithStepConfigurationSchema",
           "subSlots": [
             {
               "name": "sort",
@@ -10106,9 +10118,13 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "RowAxisWithGrid",
               "writes": "members"
+            },
+            {
+              "name": "step",
+              "type": "(number | \"fit\")"
             }
           ],
-          "schema": "Rows",
+          "schema": "RowsWithStep",
           "writes": {
             "keyedBy": "field",
             "keyed": [
@@ -10121,6 +10137,9 @@ export const configManifest: ConfigManifest = {
           },
           "shorthand": {
             "string": "field"
+          },
+          "misnamed": {
+            "height": "step"
           }
         },
         {
@@ -10173,10 +10192,6 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "RowGroup"
-        },
-        {
-          "name": "rowHeight",
-          "type": "number"
         },
         {
           "name": "encoding",
@@ -10466,6 +10481,9 @@ export const configManifest: ConfigManifest = {
         "renderer",
         "color"
       ],
+      "misnamed": {
+        "rowHeight": "rows.step"
+      },
       "aliases": [
         "LinearArcDisplay",
         "LinearPairedArcDisplay"
@@ -10910,7 +10928,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "rows",
-          "type": "RowsConfigurationSchema",
+          "type": "RowsWithStepConfigurationSchema",
           "subSlots": [
             {
               "name": "sort",
@@ -10965,9 +10983,13 @@ export const configManifest: ConfigManifest = {
               ],
               "schema": "RowAxisWithGrid",
               "writes": "members"
+            },
+            {
+              "name": "step",
+              "type": "(number | \"fit\")"
             }
           ],
-          "schema": "Rows",
+          "schema": "RowsWithStep",
           "writes": {
             "keyedBy": "field",
             "keyed": [
@@ -10980,6 +11002,9 @@ export const configManifest: ConfigManifest = {
           },
           "shorthand": {
             "string": "field"
+          },
+          "misnamed": {
+            "height": "step"
           }
         },
         {
@@ -11032,10 +11057,6 @@ export const configManifest: ConfigManifest = {
             }
           ],
           "schema": "RowGroup"
-        },
-        {
-          "name": "rowHeight",
-          "type": "number"
         },
         {
           "name": "encoding",
@@ -11321,6 +11342,9 @@ export const configManifest: ConfigManifest = {
         "fetchSizeLimit",
         "mouseover"
       ],
+      "misnamed": {
+        "rowHeight": "rows.step"
+      },
       "stateModelProps": [
         "id",
         "type",

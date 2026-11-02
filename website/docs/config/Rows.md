@@ -33,12 +33,13 @@ of the field.
 ## Related links
 
 - **Extended by:** [QuantitativeRows](../quantitativerows)
+- **Extended by:** [RowsWithStep](../rowswithstep)
 - **Extended by:** [SampleRows](../samplerows)
 - **Base config:** [RowArrangement](../rowarrangement)
 
 ## Config slots
 
-A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. One that changes `field` first clears `sort`, `labels`, `tree`, `treeProvenance`, `kept`, which name the old values, except those it states. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |

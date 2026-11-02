@@ -43,3 +43,24 @@ export function didYouMean(word: string, candidates: string[]) {
   const hit = suggest(word, candidates)
   return hit ? ` — did you mean "${hit}"?` : ''
 }
+
+/**
+ * What an unknown key most likely meant: the path the schema's `misnamed`
+ * names for it, else the nearest accepted key.
+ */
+export function suggestKey(
+  key: string,
+  accepted: string[],
+  misnamed: Readonly<Record<string, string>> = {},
+) {
+  return Object.hasOwn(misnamed, key) ? misnamed[key] : suggest(key, accepted)
+}
+
+export function didYouMeanKey(
+  key: string,
+  accepted: string[],
+  misnamed: Readonly<Record<string, string>> = {},
+) {
+  const hit = suggestKey(key, accepted, misnamed)
+  return hit ? ` — did you mean "${hit}"?` : ''
+}

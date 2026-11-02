@@ -5,14 +5,13 @@ import { fieldPredicateList } from '@jbrowse/display-kit/fieldPredicateConfigSch
 import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeConfigSchemaFields'
 import { legendConfigSchema } from '@jbrowse/display-kit/legendConfigSchema'
 import { rowColorConfigSchema } from '@jbrowse/display-kit/rowColorConfigSchema'
-import { sampleRowsConfigSchema } from '@jbrowse/display-kit/sampleRowsConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 
 import { VARIANT_DISPLAY, VARIANT_UNITS } from '../shared/constants.ts'
 import { cellEncodingConfigSchema } from './cellEncodingConfigSchema.ts'
 import { recordsBandConfigSchema } from './recordsBandConfigSchema.ts'
 import { retiredConfigSpellings } from './retired.ts'
+import { variantRowsConfigSchema } from './variantRowsConfigSchema.ts'
 
 /** The height the rows take, and records alone open up to, with `height` unset. */
 export const DEFAULT_VARIANT_DISPLAY_HEIGHT = 200
@@ -173,7 +172,6 @@ export default function configSchemaFactory() {
        * whatever the list says.
        */
       filter: fieldPredicateList(),
-      ...rowHeightConfigSchemaFields(),
       /**
        * #slot rows
        * The rows are the file's samples, and the object is the arrangement a
@@ -181,9 +179,9 @@ export default function configSchemaFactory() {
        * mode, a haplotype (`"<sample> HP<n>"`) in phased mode, where a sample
        * name stands for all of its haplotypes. The samples `sort` lists come
        * first and the rest keep the file's order; a facet groups within it.
-       * Written whole, as every display's `rows` is.
+       * `rows.step` is the row height.
        */
-      rows: sampleRowsConfigSchema,
+      rows: variantRowsConfigSchema,
       /**
        * #slot tooltip
        * The hover tooltip naming the record under the pointer, and over a
@@ -334,6 +332,7 @@ export default function configSchemaFactory() {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
       retired: retiredConfigSpellings,
+      misnamed: { rowHeight: 'rows.step' },
       preProcessSnapshot: liftMinorAlleleFrequencyFilter,
     },
   )

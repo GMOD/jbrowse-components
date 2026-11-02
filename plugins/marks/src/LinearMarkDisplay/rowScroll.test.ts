@@ -32,7 +32,7 @@ const FOUR = features(
 )
 
 // 40 px rows in an 80 px plot: two of the four show, and 80 px scroll.
-const PINNED = { rows: 'source', rowHeight: 40, height: 90 }
+const PINNED = { rows: { field: 'source', step: 40 }, height: 90 }
 
 function loaded(display: Record<string, unknown>, marks: unknown[] = SPAN) {
   const { display: model } = createTestEnvironment({
@@ -62,7 +62,7 @@ function rowAt(display: LinearMarkDisplayModel, y: number) {
   return undefined
 }
 
-test('a pinned rowHeight is the row height under rows, and fit mode splits the plot', () => {
+test('a pinned rows.step is the row height under rows, and fit mode splits the plot', () => {
   const display = loaded(PINNED)
   expect(axisPlotBox(display.height).plotHeight).toBe(80)
   expect(display.rowCount).toBe(4)
@@ -73,8 +73,8 @@ test('a pinned rowHeight is the row height under rows, and fit mode splits the p
   expect(display.effectiveRowHeight).toBe(20)
 })
 
-test('a facet fits its rows to the plot whatever rowHeight holds', () => {
-  const display = loaded({ facet: 'source', rowHeight: 40, height: 90 })
+test('a facet fits its rows to the plot whatever rows.step holds', () => {
+  const display = loaded({ facet: 'source', rows: { step: 40 }, height: 90 })
   expect(display.effectiveRowHeight).toBe(20)
   expect(display.scrollableHeight).toBe(0)
 })

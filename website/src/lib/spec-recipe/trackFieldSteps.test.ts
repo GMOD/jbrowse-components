@@ -2,17 +2,17 @@ import { specTrackSettings } from './decode.ts'
 import { trackFields } from './fields.ts'
 
 test('a row height is the shared Row height menu, with each display its presets', () => {
-  const path = (value: number, displayType: string) => {
-    const step = trackFields.rowHeight!(value, { noun: 'row', displayType })
+  const path = (value: number | 'fit', displayType: string) => {
+    const step = trackFields['rows.step']!(value, { noun: 'row', displayType })
     return Array.isArray(step) ? undefined : step?.path
   }
-  // MAF is always-fit, so a retired `rowHeight` on it is no click at all
+  // MAF is always-fit, so a step on it is no click at all
   expect(path(8, 'LinearMafDisplay')).toBeUndefined()
   expect(path(2, 'LinearVariantDisplay')).toBe(
     'Track menu → Row height → Custom... → 2px',
   )
-  expect(path(0, 'LinearVariantDisplay')).toBe(
-    'Track menu → Row height → Squeeze to fit view',
+  expect(path('fit', 'LinearVariantDisplay')).toBe(
+    'Track menu → Row height → Fit to track height',
   )
 })
 

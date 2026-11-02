@@ -3,6 +3,7 @@ import { parseArgs } from 'node:util'
 import { printHelp, readConfigFile, readJsonFile } from '../../utils.ts'
 import { configManifest } from './configManifest.generated.ts'
 import { configJsonSchema } from './configSchema.generated.ts'
+import { misnamedByTitle } from './misnamed.ts'
 import { withPluginManifests, withPluginSchemas } from './pluginManifest.ts'
 import { coreSchemaValidator, createSchemaValidator } from './schemaValidate.ts'
 import { validateConfig } from './validateConfig.ts'
@@ -119,12 +120,14 @@ export async function run(args?: string[]) {
       readJsonFile<PluginManifest>(manifest),
     ),
   )
+  const manifest = withPluginManifests(configManifest, pluginManifests)
   const result = validateConfig(
     config,
-    withPluginManifests(configManifest, pluginManifests),
+    manifest,
     pluginManifests.length > 0
       ? createSchemaValidator(
           withPluginSchemas(configJsonSchema, pluginManifests),
+          misnamedByTitle(manifest),
         )
       : coreSchemaValidator,
   )

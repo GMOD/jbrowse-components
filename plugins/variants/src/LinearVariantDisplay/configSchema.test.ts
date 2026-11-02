@@ -239,7 +239,7 @@ describe('the display config schema', () => {
 describe('rows', () => {
   const configSchema = configSchemaFactory()
 
-  it('is the sample rows object, written member by member', () => {
+  it('is the variant rows object, written member by member', () => {
     const config = configSchema.create({
       type: 'LinearVariantDisplay',
       displayId: 'test-rows-1',
@@ -256,7 +256,7 @@ describe('rows', () => {
         displayId: 'test-rows-2',
         rows: 'HP',
       }),
-    ).toThrow(/SampleRowsField/)
+    ).toThrow(/VariantRowsField/)
   })
 })
 

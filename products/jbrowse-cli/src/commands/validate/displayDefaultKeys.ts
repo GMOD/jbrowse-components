@@ -22,6 +22,21 @@ export function displayDefaultKeys(
   )
 }
 
+/**
+ * The `misnamed` words of a track's displays, one map over them, as
+ * `displayDefaults` routes a key to whichever display declares it.
+ */
+export function displayDefaultMisnamed(
+  trackEntry: TypeEntry,
+  manifest: ConfigManifest,
+) {
+  return Object.fromEntries(
+    (trackEntry.displayTypes ?? []).flatMap(name =>
+      Object.entries(manifest.displays[name]?.misnamed ?? {}),
+    ),
+  )
+}
+
 // The same set for a track type named rather than resolved — add-track knows
 // the type it is writing, not a manifest entry. The display types come back
 // alongside, because most tracks offer exactly one and naming it is the whole
@@ -39,6 +54,7 @@ export function displayDefaultsForTrackType(
   return {
     displayTypes: entry?.displayTypes ?? [],
     keys: entry ? displayDefaultKeys(entry, manifest) : [],
+    misnamed: entry ? displayDefaultMisnamed(entry, manifest) : {},
   }
 }
 

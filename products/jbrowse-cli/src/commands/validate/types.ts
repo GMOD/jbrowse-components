@@ -47,6 +47,11 @@ export interface SlotEntry {
    */
   shorthand?: Partial<Record<'string' | 'number' | 'list', string>>
   /**
+   * A sub-schema slot: the words a reader writes in place of a member, each
+   * to the path from the sub-schema it means (the schema's `misnamed`).
+   */
+  misnamed?: Record<string, string>
+  /**
    * A color object: each field's defaults, `*` for any other field — the
    * scale while `scale` is unset and the members it reads while unwritten
    * (the schema's `fieldPresets` option).
@@ -90,6 +95,11 @@ export interface TypeEntry {
    * even though the schema declares `bamLocation`.
    */
   shorthandKeys?: string[]
+  /**
+   * The words a reader writes in place of a slot, each to the path from this
+   * entry it means (`rowHeight` to `rows.step`), the schema's `misnamed`.
+   */
+  misnamed?: Record<string, string>
   /** Tracks only: the display types this track offers. */
   displayTypes?: string[]
   /**

@@ -29,7 +29,9 @@ test('a record is found where the band drew it, over rows', () => {
 
 test('the rows scrolling leave the band, and the answer, where they were', () => {
   // one row taller than the display, so the rows scroll
-  const { display } = recordsDisplayAt(KIT, 51, {}, true, { rowHeight: 600 })
+  const { display } = recordsDisplayAt(KIT, 51, {}, true, {
+    rows: { step: 600 },
+  })
   const item = bandItem(display, '>7494>7499')
   display.setScrollTop(40)
   expect(display.scrollTop).toBe(40)

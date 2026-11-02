@@ -1,8 +1,21 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 import { resolveRowHeight } from '@jbrowse/core/util/resolveRowHeight'
+import {
+  FIT_ROWS,
+  rowHeightOfStep,
+} from '@jbrowse/display-kit/rowsWithStepConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { RowHeightConfigModel } from './rowHeightConfigSchemaFields.ts'
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
+import type { rowsWithStepConfigSchema } from '@jbrowse/display-kit/rowsWithStepConfigSchema'
+
+/**
+ * The config `RowHeightMixin` reads: a `rows` whose `step` is the row height
+ * (`RowsWithStep`), narrowed so the reads below get their path checked.
+ */
+export type RowHeightConfigModel = ConfigModelForFields<{
+  rows: typeof rowsWithStepConfigSchema
+}>
 
 /**
  * The whole of what `RowHeightMixin` needs a composing display to be. Exported
@@ -26,7 +39,7 @@ const confNode = (self: object) => self as RowHeightHost
 /**
  * #stateModel RowHeightMixin
  * #category display
- * #crossCuttingMixin The two-valued row height every multi-row display has. A `rowHeightConfigSchemaFields` slot whose `0` means fit-to-display-height, and an `autoRowHeight` getter saying what that fit divides. Brings the raw `rowHeight` getter, `setRowHeight`, and the resolved `effectiveRowHeight` every consumer reads
+ * #crossCuttingMixin The two-valued row height every scrolling row display has. A `rows.step` (`RowsWithStep`) of px or `"fit"`, and an `autoRowHeight` getter saying what fit divides. Brings the raw `rowHeight` getter (`0` while the rows fit), `setRowHeight`, and the resolved `effectiveRowHeight` every consumer reads
  *
  * The convention itself is
  * agent-docs/reference/ROW_HEIGHT_AND_FIT.md; this is the middle link of it.
@@ -67,7 +80,7 @@ export function RowHeightMixin() {
        * unticking and reticking the track.
        */
       get rowHeight(): number {
-        return getConf(confNode(self), 'rowHeight')
+        return rowHeightOfStep(getConf(confNode(self), ['rows', 'step']))
       },
       /**
        * #getter
@@ -109,13 +122,13 @@ export function RowHeightMixin() {
     .actions(self => ({
       /**
        * #action
-       * Pin a px row height. `0` is the fit sentinel, but enter fit mode
+       * Pin a px row height, `rows.step`; `0` writes `"fit"`. Enter fit mode
        * through `setFitToHeight` instead — displays whose `height` getter is
        * content-derived have to re-seed the slot on the way in, and that is
        * what the action is for.
        */
       setRowHeight(n: number) {
-        setConf(confNode(self), 'rowHeight', n)
+        setConf(confNode(self), ['rows', 'step'], n > 0 ? n : FIT_ROWS)
       },
     }))
 }

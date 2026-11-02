@@ -40,7 +40,7 @@ import {
   hasDeclaredShape,
   schemaProblems,
 } from './schemaValidate.ts'
-import { didYouMean, suggest } from './suggest.ts'
+import { didYouMean, didYouMeanKey, suggest } from './suggest.ts'
 
 import type { FieldPredicate } from './alignmentsFilterRules/filterRuleFacts.ts'
 import type { ScaleProblem } from './markRules/colorScale.ts'
@@ -1140,7 +1140,7 @@ export function validateConfig(
   for (const key of pluginSlots) {
     report.warn(
       `configuration.${key}`,
-      `core declares no "${key}" slot${didYouMean(key, [...schema.rootConfigurationSlots])} — a plugin this config declares may`,
+      `core declares no "${key}" slot${didYouMeanKey(key, [...schema.rootConfigurationSlots])} — a plugin this config declares may`,
     )
   }
   report.problems.push(
