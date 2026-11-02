@@ -164,7 +164,7 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   the order. A bag writing `''` and then another field keeps a stale
   arrangement; no menu writes that sequence.
 - A refinement is not a field change: variant `haplotype` rows name their
-  sample (`rowAliasOf`), so a sample-keyed arrangement applies across the
+  sample (`rowParent`), so a sample-keyed arrangement applies across the
   switch and `resettingRowsOnUnitChange` goes.
 - Members outside `keyed` merge per member, `null` resetting one, and
   `rows: null` resets the whole object.
@@ -266,7 +266,8 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
    and docs with it.
 4. The variant display's `unit` as `rows.field`, haplotype refining sample;
    MAF's `rows` drops the one-value `field` it inherits through `SampleRows`.
-   Settled 2026-11-02, not yet built:
+   Settled 2026-11-02, built 2026-11-02 (below the list, what the code
+   decided where this note did not):
    - One flat `rows.field: 'sample' | 'haplotype'`: phased clustering
      interleaves haplotypes of different samples, which a nested spelling
      (a y offset, a `rows.split`) cannot express. Public docs say a haplotype
@@ -315,6 +316,27 @@ from a file (`rows.tree: { uri }`); labels from a row attribute.
    - Tests: a phased → sample → phased round trip for `sort`, `labels`,
      `colors` and `tree`; the name collision; `rowArrangement.test.ts`'s pin
      of the old reset inverted, not deleted.
+   - Built: `RowAlias` stays the name-to-name lookup the readers share, now
+     derived by the mixin (`rowAliasOver`) from a display's `rowParent(row)`
+     (`{ name, labelSuffix }`) and `finerRows`, the rows a finer field
+     draws; the variant display's are the haplotype rows phased mode would
+     draw (`finerHaplotypeRows`, a stable-identity computed so a focus
+     re-arranges nothing new), in both modes, so a focus on a haplotype
+     keeps its sample row while the ploidy has not landed. The fetch's
+     samples and the tables export's narrowing read `entryAliasOf`
+     (`parseRowName` over the sample list): the fetch must not read the
+     ploidy the drawn rows need. MAF keeps its own name-parsed `rowAlias`,
+     since a copy row exists at some loci only, and its `labelSuffix` is
+     ` copy 2`, as its own copy label reads, so a sample label composes as
+     `Mouse copy 2` rather than `Mouse~2`.
+   - The row's `HP` field stays the allele index from 0, which the worker
+     and the genotype readers index by; the name (`haplotypeRowName`) and
+     the tables export's `haplotype` column count from 1, 0 on a sample row.
+   - The tree hint is a mixin hook (`finerTreeHint`), shown where
+     `treeOnFinerRows`.
+   - MAF's `rows` is `MafRows` over `RowArrangement`, declaring `axis`,
+     `colors` and `color`, and writes member by member; `SampleRows` stays
+     as a deprecated subpath no display extends.
 5. Writers: menus, launch-args, jbrowse-img, the tables and R export, the
    agent prompt (`jbApi.ts`, which says `rows` and `rowColor` write whole and
    lists `unit`), figure specs, tutorials, jb2hubs, ggjbrowse. jb2hubs'
