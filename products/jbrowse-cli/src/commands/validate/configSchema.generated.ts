@@ -11970,7 +11970,8 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "properties": {
                   "field": {
                     "enum": [
-                      "name"
+                      "name",
+                      ""
                     ]
                   }
                 }

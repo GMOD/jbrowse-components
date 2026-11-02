@@ -44,3 +44,10 @@ test('rows.color under name loads without a scale.domain, naming it', () => {
   spy.mockRestore()
   expect(readConfObject(conf, ['rows', 'color', 'scale', 'domain'])).toEqual([])
 })
+
+test('an empty field reads as name, so it refuses scale.domain too', () => {
+  const conf = display.create({ displayId: 'empty' })
+  expect(() => {
+    setConf(conf, ['rows', 'color'], { field: '', ...NAME_PAIRS })
+  }).toThrow(/^rows\.color\.scale\.domain: .*rows\.colors/)
+})

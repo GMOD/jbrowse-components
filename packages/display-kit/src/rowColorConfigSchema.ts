@@ -108,7 +108,7 @@ export const rowColorConfigSchema = ConfigurationSchema(
     refuses: [
       {
         id: 'row-colors-by-name',
-        when: { field: ['name'] },
+        when: { field: ['name', ''] },
         slots: ['scale.domain'],
         message:
           "under field name a row's own color is rows.colors, the map beside rows.color, so scale.domain pairs only an attribute's values",

@@ -11617,7 +11617,7 @@
                 "type": "object",
                 "properties": {
                   "field": {
-                    "enum": ["name"]
+                    "enum": ["name", ""]
                   }
                 }
               },
