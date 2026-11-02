@@ -195,6 +195,13 @@ const RECORD_FIELD = 'field' as const
 // feature track; over rows the sample attributes band the rows.
 function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
   const recordsField = self.recordsFacet?.field
+  // the configured field stays listed where no sample carries it, so it
+  // shows as chosen and None can clear it, as Color by keeps its own
+  const facetField = self.facet?.field
+  const rowFields =
+    facetField && !self.rowColorFields.includes(facetField)
+      ? [...self.rowColorFields, facetField]
+      : self.rowColorFields
   return !self.drawsRows
     ? [
         groupByRadioMenuItem<never, typeof RECORD_FIELD>({
@@ -218,11 +225,11 @@ function groupByMenuItems(self: LinearVariantDisplayModel): MenuItem[] {
           ],
         }),
       ]
-    : self.rowColorFields.length
+    : rowFields.length
       ? [
           groupByRadioMenuItem({
-            current: self.facet?.field,
-            options: self.rowColorFields.map(attr => ({
+            current: facetField,
+            options: rowFields.map(attr => ({
               type: attr,
               label: capitalizeFirst(attr),
             })),

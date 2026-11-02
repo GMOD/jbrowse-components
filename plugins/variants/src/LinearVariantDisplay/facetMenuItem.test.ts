@@ -44,6 +44,21 @@ test('nothing to band by means no row at all', () => {
   expect(facetSubMenu(display([{ name: 'HG001' }]))).toEqual([])
 })
 
+test('a configured field no sample carries stays listed, so None clears it', () => {
+  const d = display([{ name: 'HG001' }])
+  d.facetByField('population')
+  const items = facetSubMenu(d)
+  expect(items.map(i => 'label' in i && i.label)).toEqual([
+    'None',
+    'Population',
+  ])
+  const none = items[0]!
+  if ('onClick' in none) {
+    none.onClick()
+  }
+  expect(d.facet).toBeUndefined()
+})
+
 test('picking an attribute bands the rows and ticks itself', () => {
   const d = display(SOURCES)
   const population = facetSubMenu(d)[1]!
