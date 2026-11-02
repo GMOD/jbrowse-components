@@ -1925,47 +1925,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
-       * #method
-       * Helper method for the fetchSequence.
-       * Returns the regions the user selected with the
-       * rubberband
-       *
-       * @param leftOffset - `object as {start, end, index, offset}`, offset = start
-       * of user drag
-       * @param rightOffset - `object as {start, end, index, offset}`,
-       * offset = end of user drag
-       * @returns array of Region[]
-       */
-      getSelectedRegions(leftOffset?: BpOffset, rightOffset?: BpOffset) {
-        if (!leftOffset || !rightOffset) {
-          return []
-        }
-        const layout = {
-          displayedRegions: self.displayedRegions,
-          bpPerPx: self.bpPerPx,
-          offsetPx: self.offsetPx,
-          width: self.width,
-          minimumBlockWidth: self.minimumBlockWidth,
-        }
-        const { bpPerPx, offsetPx: rawOffsetPx } = computeMoveToLayout(
-          layout,
-          leftOffset,
-          rightOffset,
-        )
-        // mirror Base1DView.scrollTo clamping: raw offsetPx can be far outside
-        // the valid range when both offsets are oob on the same side
-        const { min, max } = offsetBounds(self.totalBp / bpPerPx, self.width)
-        const offsetPx = clamp(rawOffsetPx, min, max)
-        return wholeBaseRegions(
-          calculateDynamicBlocks({
-            ...layout,
-            bpPerPx,
-            offsetPx,
-          }).contentBlocks,
-        )
-      },
-
-      /**
        * #action
        */
       horizontalScroll(distance: number) {
@@ -2013,6 +1972,48 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setLaunch(launch?: LaunchInput<InitState>) {
         self.launch = launch
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Helper method for the fetchSequence.
+       * Returns the regions the user selected with the
+       * rubberband
+       *
+       * @param leftOffset - `object as {start, end, index, offset}`, offset = start
+       * of user drag
+       * @param rightOffset - `object as {start, end, index, offset}`,
+       * offset = end of user drag
+       * @returns array of Region[]
+       */
+      getSelectedRegions(leftOffset?: BpOffset, rightOffset?: BpOffset) {
+        if (!leftOffset || !rightOffset) {
+          return []
+        }
+        const layout = {
+          displayedRegions: self.displayedRegions,
+          bpPerPx: self.bpPerPx,
+          offsetPx: self.offsetPx,
+          width: self.width,
+          minimumBlockWidth: self.minimumBlockWidth,
+        }
+        const { bpPerPx, offsetPx: rawOffsetPx } = computeMoveToLayout(
+          layout,
+          leftOffset,
+          rightOffset,
+        )
+        // mirror Base1DView.scrollTo clamping: raw offsetPx can be far outside
+        // the valid range when both offsets are oob on the same side
+        const { min, max } = offsetBounds(self.totalBp / bpPerPx, self.width)
+        const offsetPx = clamp(rawOffsetPx, min, max)
+        return wholeBaseRegions(
+          calculateDynamicBlocks({
+            ...layout,
+            bpPerPx,
+            offsetPx,
+          }).contentBlocks,
+        )
       },
     }))
     .actions(self => {
