@@ -9,21 +9,30 @@ guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 ---
 
-genomes.jbrowse.org hosts a ready-made JBrowse config for every UCSC genome,
-with that genome's UCSC track catalog. On hg38 we:
+A genome browser lays a genome's sequence out as a horizontal coordinate axis
+and stacks annotation files under it as tracks (genes, conservation scores,
+variant catalogs), so you can read them together at one locus and zoom from a
+whole chromosome down to single bases. genomes.jbrowse.org has a browser ready
+to open for every UCSC genome, each with that genome's UCSC track catalog. We
+read the human tumor suppressor gene _TP53_ on hg38, then look up the same gene
+on the axolotl. We:
 
-- open the genome and search for _TP53_, trimming its isoforms
-- find the phyloP conservation track in the catalog and add regulation tracks at
-  the promoter
-- filter gnomAD's _TP53_ variants to predicted loss of function
-- repeat the search on a GenArk genome, the axolotl
+- open hg38 from the site, search for _TP53_ in the location box and trim the
+  gene track's isoforms
+- tick the phyloP conservation track and its multiple alignment in the track
+  selector
+- turn on regulation tracks at the promoter and split the layered ones into a
+  row per cell line from **Plot type**
+- filter the gnomAD variant track to predicted loss of function from **Filter
+  by**
+- search for _TP53_ on a GenArk genome, the axolotl
 
 ## Opening a genome
 
-[genomes.jbrowse.org](https://genomes.jbrowse.org) hosts a JBrowse 2 instance
-for every main UCSC database (hg19, hg38, hs1, mm39 and the rest) plus the UCSC
-GenArk assemblies, track hubs for tens of thousands of NCBI plants, animals,
-fungi, bacteria and viruses. Three routes lead to one, each ending at an
+[genomes.jbrowse.org](https://genomes.jbrowse.org) hosts a JBrowse instance for
+every main UCSC database (hg19, hg38, hs1, mm39 and the rest) and for the UCSC
+GenArk assemblies, the track hubs UCSC builds for NCBI's plant, animal, fungal,
+bacterial and viral genomes. Three routes lead to one, each ending at an
 instance with a URL you can share:
 
 - The front page's table of main genomes, with the GenArk catalog below it
@@ -42,15 +51,17 @@ instance with a URL you can share:
 
 ## Searching for TP53 and trimming its isoforms
 
-Open hg38. The page starts with **NCBI RefSeq - RefSeq All** on and the track
-selector showing. Type `TP53` into the location box and press Enter. The hosted
-config ships a name index, so gene symbols resolve, and coordinates like
-`chr17:7,668,400-7,687,550` work too.
+Open hg38. It starts with one track on, the **NCBI RefSeq - RefSeq All** gene
+track, and the track selector open down the right. The location box at the top
+of the view takes a gene symbol, because the hosted config ships a name index,
+or a coordinate range such as `chr17:7,668,400-7,687,550`:
+
+- Type `TP53` into the location box and press Enter
 
 <Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box. Bottom: the view Enter opens, with the isoform control circled." />
 
-RefSeq All draws each transcript on a separate row, and _TP53_ has more than the
-track's height holds. Two controls trim the isoforms:
+RefSeq All draws each transcript on a separate row, and _TP53_ has more
+transcripts than the track's height holds. Two controls trim them:
 
 - Click the **+19 more** link beside the gene name to open that one gene
 - Click the `Isoforms trimmed` chip at the bottom right for **Auto / All
@@ -59,11 +70,14 @@ track's height holds. Two controls trim the isoforms:
 
 ## Finding the phyloP conservation track in the catalog
 
-The track selector is the drawer down the right, which the button at the top
-left of the view header closes and reopens. The selector lists the catalog under
-UCSC's categories, and **Filter tracks** searches all of them. Type `phyloP` and
-tick **Basewise Conservation (phyloP) - 100-way vertebrate alignment**, under
-Comparative Genomics.
+Every other track in the catalog is a checkbox in the track selector, the drawer
+down the right, which the button at the top left of the view header closes and
+reopens. The selector lists the catalog under UCSC's categories, and **Filter
+tracks** searches all of them:
+
+- Type `phyloP` into **Filter tracks**
+- Tick **Basewise Conservation (phyloP) - 100-way vertebrate alignment**, under
+  Comparative Genomics
 
 <Video src="/media/genomes_basics/find_a_track.mp4" caption="The hg38 track catalog in the selector, narrowed by typing phyloP into Filter tracks, with the 100-way vertebrate alignment ticked under Comparative Genomics. The conservation track appears under the TP53 transcript." />
 
@@ -73,17 +87,17 @@ phyloP scores each base against the neutral rate the alignment implies. The
 score is signed: blue above the line marks a base that changes more slowly than
 neutral, and red below it one that changes faster.
 
-Type `chr17:7,674,180-7,674,290`, a stretch of exon 7, into the location box.
+We'll zoom to single bases in exon 7, where phyloP draws one bar per base:
 
+- Type `chr17:7,674,180-7,674,290` into the location box
 - Tick **Reference sequence**, which is off by default
-- At this zoom the gene track draws a codon row per transcript; pick
-  **Representative transcript** from the isoform control to keep one
+- If the gene track draws a codon row per transcript, pick **Representative
+  transcript** from the isoform control to keep one
 
 <Figure src="/img/genomes_basics/isoform_control.png" caption="The gene track's isoform control and the popover it opens." />
 
-At this zoom phyloP draws one bar per base, and within a codon the third base's
-bar is the short one, since most third-position changes leave the amino acid
-alone. Hover a bar to read its score.
+Within a codon the third base's bar is the short one, since most third-position
+changes leave the amino acid alone. Hover a bar to read its score.
 
 ## The multiple alignment behind the phyloP score
 
@@ -120,11 +134,11 @@ Zoom out to the whole gene, and tick five Regulation and Expression tracks:
 - **EPDnew Promoters - EPDnew v6**
 
 The Layered H3K4Me3 and H3K27Ac tracks each hold several cell lines and open
-with all of them in one plot box, UCSC's layered arrangement. Their names
-include hg19 from ENCODE3's release, but the config points at the hg38 files.
+with all of them overlaid in one plot, UCSC's layered arrangement. Their names
+include hg19 from ENCODE3's release, but the config points at the hg38 files. To
+give each cell line a row:
 
-**Plot type → Multi-row → Bar plot** in the track menu gives each cell line a
-row.
+- Choose **Plot type → Multi-row → Bar plot** in each layered track's menu
 
 <Figure src="/img/genomes_basics/promoter_regulation.png" caption="TP53's promoter. Left: the Plot type menu over the overlaid marks. Right: a row per cell line." />
 
@@ -134,15 +148,17 @@ where every track in the figure has a call.
 ## Filtering gnomAD's TP53 variants to predicted loss of function
 
 The **gnomAD v4.1.1 - gnomAD v4.1.1 Exomes** track, under Variation and Repeats,
-opens as a dense run of variant records over _TP53_, one block of color.
-**Filter by → Edit filters...** in the track menu takes one
-[jexl](/docs/config_guides/jexl) expression per line, and a record has to pass
-every line. **Insert field…** lists the file's columns with the description the
-file gives each, and writes the one you pick at the cursor:
+opens as a dense run of variant records over _TP53_, one block of color. A
+filter keeps the records that match an expression:
 
-- `feature.annot == 'pLoF'` keeps gnomAD's predicted loss-of-function
+- Choose **Filter by → Edit filters...** in the track menu. The dialog takes one
+  [jexl](/docs/config_guides/jexl) expression per line, and a record has to pass
+  every line
+- **Insert field…** lists the file's columns with the description the file gives
+  each, and writes the one you pick at the cursor
+- Type `feature.annot == 'pLoF'` to keep gnomAD's predicted loss-of-function
   consequence class (the others are missense, synonymous and other)
-- `feature.AF >= 0.001` drops the rarest variants
+- Add `feature.AF >= 0.001` on a second line to drop the rarest variants
 
 <Figure src="/img/genomes_basics/gnomad_filter_menu.png" caption="The gnomAD track's menu and the filter dialog Edit filters... opens." />
 
@@ -152,15 +168,19 @@ Once a filter is in effect, the same submenu adds **Clear all filters**.
 
 The filter works on any column a BigBed has. ClinVar's clinical classification
 is the column `clinSign`, so `feature.clinSign == 'Pathogenic'` filters that
-catalog the same way. The same menus apply to a bigWig or BigBed of your own
-added with **Add track**; the
-[web quickstart](/docs/quickstart_web#adding-tracks) covers the steps.
+catalog the same way.
+
+The same menus work on a file of your own, drawn beside the hosted catalog.
+Click **Add track** in the track selector and give it the file's URL, or pick it
+from disk; the [web quickstart](/docs/quickstart_web#adding-tracks) lists the
+index each format needs.
 
 ## Where the track data is read from
 
-The config is hosted on jbrowse.org, but most UCSC track data resolves back to
-hgdownload, read by byte range. The track menu's **About track** prints the
-adapter, which is where to look when a track is slow or missing.
+The config is hosted on jbrowse.org, and most UCSC track data resolves back to
+hgdownload, read by byte range. **About track** in the track menu prints the
+adapter and its file URL, which is where to look when a track is slow or
+missing.
 
 <Figure src="/img/genomes_basics/about_track.png" caption="Left: the phyloP track menu with About track boxed. Right: the dialog it opens." />
 
@@ -182,18 +202,21 @@ their name indexes come from NCBI RefSeq annotation. A `GCF_` accession has gene
 tracks and resolves gene symbols, while a `GCA_` accession generally has neither
 and takes coordinates. An assembly released both ways appears under both
 accessions: the axolotl `Mex_15411` is `GCF_040938575.1` and `GCA_040938575.1`.
-Open `GCF_040938575.1` from the site's header search for `axolotl`, and type
-`TP53` into its location box.
+
+- Type `axolotl` into the site's header search and open `GCF_040938575.1`
+- Type `TP53` into its location box
 
 <Figure src="/img/genomes_basics/genark_axolotl.png" caption="Axolotl TP53, reached by typing the symbol into the location box." />
 
 ## See also
 
-- [](/docs/user_guides/gene_track)
 - [](/docs/tutorials/genomes_synteny)
 - [](/docs/tutorials/genomes_proteins)
-- [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/repeatmasker_classes)
+- [](/docs/quickstart_web)
+- [](/docs/quickstart_desktop)
+- [](/docs/tutorials/pangenome_hprc)
+- [](/docs/user_guides/gene_track)
 - [](/docs/user_guides/quantitative_track)
 - [](/docs/user_guides/hub_url)
 - [](/docs/agents_hosted_data)
