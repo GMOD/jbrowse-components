@@ -156,6 +156,7 @@ From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../b
 | <span id="getter-trackheightswithchrome">**trackHeightsWithChrome**</span><br><code>number</code> |  |
 | <span id="getter-height">**height**</span><br><code>number</code> |  |
 | <span id="getter-resizabletrackheights">**resizableTrackHeights**</span><br><code>Map&lt;string, number&gt;</code> | The display height of each track a whole-stack resize moves, by track instance id: every shown track that is not minimized. |
+| <span id="getter-trackyoffsets">**trackYOffsets**</span><br><code>Map&lt;string, number&gt;</code> | `getTrackYOffset` for every shown track, by trackId, from one walk |
 | <span id="getter-totalbp">**totalBp**</span><br><code>number</code> |  |
 | <span id="getter-fitbpperpx">**fitBpPerPx**</span><br><code>number</code> |  |
 | <span id="getter-maxbpperpx">**maxBpPerPx**</span><br><code>number</code> | The zoom-out limit. Equal to the fit for this view's regions, except while a container holds it on a coarser shared scale, such as a small genome next to a large one, drawn short so the two compare by length.<br><br>The shared scale raises the limit. A bpPerPx written past the limit would be undone by the first operation that clamps (a wheel tick, a rubberband, a `setDisplayedRegions`), as with the dotplot's locked aspect ratio turning "zoom out" into a zoom in (`axisMaxBpPerPx`). Every zoom clamps against the same ceiling, so full zoom-out stops at the shared scale. |

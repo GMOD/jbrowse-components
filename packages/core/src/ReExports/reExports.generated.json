@@ -2735,6 +2735,7 @@
       "package": "@jbrowse/core",
       "names": [
         "basePaintedAt",
+        "bpIntoPaintedBase",
         "bpOffsetInRegion",
         "bpToLinearBp",
         "bpToOffset",
