@@ -185,8 +185,9 @@ any attribute you supply. Two slots wire it up:
 - `rows.color` on the display takes the name of one of those columns, and while
   it is set the per-sample rows are tinted by that attribute, over any color the
   TSV gives a row. A sample's swatch in the arrangement editor pins a color on
-  that row, `rows.colors`, over both. **Color rows by → None** clears both and
-  restores the TSV's colors.
+  that row, `rows.colors`, over both. **Color rows by → None** clears the
+  attribute and restores the TSV's colors, keeping any pinned row's color;
+  **Reset row order** clears the pins.
 - `facet` bands the rows so each value of a column is contiguous: the column's
   name, or `{ "field": …, "sort": [...] }` with the band order. Each band's name
   runs up a strip beside the dendrogram where the band is tall enough to hold

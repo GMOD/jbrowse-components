@@ -8,7 +8,6 @@ import {
 } from './rowColorChoice.ts'
 
 const lift = liftRowColor
-const NO_PINS: ReadonlyMap<string, string> = new Map()
 
 describe('liftRowColor', () => {
   it('reads a string as the field, and an empty or missing field as name', () => {
@@ -104,30 +103,22 @@ describe('startingRowColor', () => {
   })
 
   it('None colors no row', () => {
-    expect(
-      rowColorMembers(startingRowColor('', [grey], false, NO_PINS)),
-    ).toEqual({
+    expect(rowColorMembers(startingRowColor('', [grey], false))).toEqual({
       field: 'name',
     })
-    expect(
-      rowColorMembers(startingRowColor('', [grey], true, NO_PINS)),
-    ).toEqual({
+    expect(rowColorMembers(startingRowColor('', [grey], true))).toEqual({
       field: 'name',
       scale: { unknown: '' },
     })
   })
 
   it('takes the first setting showing the choice, the current then the config', () => {
-    expect(startingRowColor('group', [grey, tissue], false, NO_PINS)).toBe(grey)
-    expect(startingRowColor('tissue', [grey, tissue], false, NO_PINS)).toBe(
-      tissue,
-    )
+    expect(startingRowColor('group', [grey, tissue], false)).toBe(grey)
+    expect(startingRowColor('tissue', [grey, tissue], false)).toBe(tissue)
   })
 
   it('starts any other choice with no color of its own', () => {
-    expect(
-      rowColorMembers(startingRowColor('pop', [grey], false, NO_PINS)),
-    ).toEqual({
+    expect(rowColorMembers(startingRowColor('pop', [grey], false))).toEqual({
       field: 'pop',
     })
   })
@@ -137,44 +128,20 @@ describe('startingRowColor', () => {
   it("does not start Each row from a None's unknown: ''", () => {
     expect(
       rowColorMembers(
-        startingRowColor(
-          'name',
-          [lift({ scale: { unknown: '' } })],
-          true,
-          NO_PINS,
-        ),
+        startingRowColor('name', [lift({ scale: { unknown: '' } })], true),
       ),
     ).toEqual({ field: 'name' })
-  })
-
-  // On stacked rows a name setting colors a row only through its pins, so a
-  // pick of Each row keeps the setting the pins show it under.
-  it('starts Each row from the setting the pins color rows under', () => {
-    const stacked = lift({})
-    expect(
-      startingRowColor('name', [stacked], false, new Map([['a', '#f00']])),
-    ).toBe(stacked)
   })
 })
 
 // Whatever the reset writes is itself no custom arrangement, so one reset is
 // the whole way back.
 describe('rowColorResetTarget', () => {
-  function settled(
-    live: unknown,
-    base: unknown,
-    paletteDeals = false,
-    pins = NO_PINS,
-  ) {
-    const target = rowColorResetTarget(
-      lift(live),
-      lift(base),
-      paletteDeals,
-      pins,
-    )
+  function settled(live: unknown, base: unknown, paletteDeals = false) {
+    const target = rowColorResetTarget(lift(live), lift(base), paletteDeals)
     if (target) {
       expect(
-        rowColorResetTarget(target, lift(base), paletteDeals, pins),
+        rowColorResetTarget(target, lift(base), paletteDeals),
       ).toBeUndefined()
     }
     return target && rowColorMembers(target)
@@ -184,19 +151,16 @@ describe('rowColorResetTarget', () => {
     expect(settled('group', {})).toBeUndefined()
     expect(settled({}, 'group')).toBeUndefined()
     expect(settled('tissue', 'group')).toBeUndefined()
-    expect(
-      settled('group', {}, false, new Map([['a', '#f00']])),
-    ).toBeUndefined()
+    expect(settled('group', {})).toBeUndefined()
     expect(settled({ scale: { unknown: '' } }, {}, true)).toBeUndefined()
   })
 
   // The pins are an arrangement member, which the reset returns apart.
   it("returns the choice's pairs and unknown to the base's", () => {
-    const pinned = new Map([['a', '#f00']])
-    expect(settled({ scale: { unknown: '#ccc' } }, {}, false, pinned)).toEqual({
+    expect(settled({ scale: { unknown: '#ccc' } }, {})).toEqual({
       field: 'name',
     })
-    expect(settled({}, {}, false, pinned)).toBeUndefined()
+    expect(settled({}, {})).toBeUndefined()
     const grouped = {
       field: 'group',
       scale: { domain: ['x'], range: ['#0f0'] },

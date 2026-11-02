@@ -102,9 +102,12 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
 - Under an attribute, a row `rows.colors` names leaves its value's swatch in
   the key and takes its own entry by label, where the key shows (a field, or
   rows sharing one panel); on stacked rows its label tint identifies it.
-- A choice of what colors the rows writes `rows.color` and keeps the pins,
-  except None, which colors no row and clears them. The arrangement dialog's
-  row swatches write `rows.colors` under any choice but None.
+- The Color by choice is read off `rows.color` alone, so a pin never changes
+  which choice shows: None is `field: 'name'` with `scale.unknown: ''` (or
+  unset where no palette deals) and colors no row but the pins. Every choice,
+  None included, writes `rows.color` and keeps `rows.colors`; the arrangement
+  dialog's row swatches pin a color under any choice and leave the choice as
+  it is. "Reset row order" returns the pins with the arrangement.
 - `colors` is a member of `Rows`, beside `color`, so the four row displays
   declare it and the multi-way lanes, whose `rows` is the bare arrangement,
   do not.

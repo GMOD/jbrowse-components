@@ -141,7 +141,7 @@ describe('a row per subtrack deals no palette', () => {
       colors: { b: '#123456' },
     })
     expect(rowColors(display)).toEqual([undefined, '#123456', undefined])
-    expect(display.rowColorChoice).toBe('name')
+    expect(display.rowColorChoice).toBe('')
   })
 })
 

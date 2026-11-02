@@ -253,12 +253,13 @@ What else the mixin owns:
   `scale.unknown`: Auto, None, or a color, with None hidden where it equals
   Auto. A field's picks are its value table, each value with its color and row
   count in the key's order. The row list's swatches show every row's color
-  under any choice and pin one under any choice but None, writing
+  under any choice and pin one under any choice, writing
   `rows.colors`, as the bulk color button does. The bulk editor sets `label`
   and `rowColor` alone (`BULK_EDIT_FIELDS`), warns on a pasted column that
   would change anything else, and its `rowColor` column edits the pins of the
-  rows it names, so a pin for a row the dialog does not show stands. None
-  colors no row and clears the pins. A choice opens on
+  rows it names, so a pin for a row the dialog does not show stands. The
+  choice is read off `rows.color` alone, so a pin never changes it, and None
+  colors no row but the pins, which it keeps. A choice opens on
   the mixin's `rowColorFor` (`startingRowColor` over the live object and the
   config's), and the dialog keeps a draft per choice for the sitting. The rows carry order and labels only, written by `labelEdits`: an
   entry the config holds stands unless the reader relabelled that row, a label

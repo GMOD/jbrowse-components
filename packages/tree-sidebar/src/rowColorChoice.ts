@@ -160,10 +160,11 @@ export function withPair(
 }
 
 /**
- * What the dialog and a menu show `setting`, `rows.color` with the pins
- * folded in (`withPinnedColors`), as: its field, `name` for Each row, or ''
- * for None where it colors no row: `name` with no pin and an
- * `scale.unknown` of '', or unset where no palette deals (`paletteDeals`).
+ * What the dialog and a menu show `setting`, `rows.color`, as: its field,
+ * `name` for Each row, or '' for None where it colors no row: `name` with no
+ * pair and an `scale.unknown` of '', or unset where no palette deals
+ * (`paletteDeals`). The pins (`rows.colors`) are no choice: they color their
+ * rows under any.
  */
 export function rowColorChoiceOf(
   setting: RowColorSetting,
@@ -188,17 +189,15 @@ export function rowColorChoiceLabel(choice: string) {
 }
 
 /**
- * The `rows.color` object a choice starts from: None's, which colors no row;
- * else the first of `from` showing that choice beside `pinned`, the current
+ * The `rows.color` object a choice starts from: None's, which colors no row
+ * but the pins; else the first of `from` showing that choice, the current
  * object then the config's, so a reader's colors stand and a config's
- * return; else the field with no color of its own. None also clears the
- * pins (`rows.colors`), which the other choices keep.
+ * return; else the field with no color of its own.
  */
 export function startingRowColor(
   choice: string,
   from: readonly RowColorSetting[],
   paletteDeals: boolean,
-  pinned: ReadonlyMap<string, string>,
 ): RowColorSetting {
   return choice === ''
     ? liftRowColor({
@@ -206,32 +205,26 @@ export function startingRowColor(
         scale: { unknown: paletteDeals ? '' : undefined },
       })
     : (from.find(
-        setting =>
-          rowColorChoiceOf(withPinnedColors(setting, pinned), paletteDeals) ===
-          choice,
+        setting => rowColorChoiceOf(setting, paletteDeals) === choice,
       ) ?? liftRowColor({ field: choice }))
 }
 
 /**
  * What "Reset row order" returns the `rows.color` object to, or undefined
- * while `live` already shows it: the object `live`'s choice beside `pinned`
- * starts from in `base`, and nothing under None, which has no color to
- * return. A reset recolors and never changes the choice, as no other Color
- * by is undone by a reset, and the target is never itself custom, so one
- * reset is the whole way back. Pairs compare as a set; the pins themselves
- * reset with the arrangement.
+ * while `live` already shows it: the object `live`'s choice starts from in
+ * `base`, and nothing under None, which has no color to return. A reset
+ * recolors and never changes the choice, as no other Color by is undone by a
+ * reset, and the target is never itself custom, so one reset is the whole
+ * way back. Pairs compare as a set; the pins reset with the arrangement.
  */
 export function rowColorResetTarget(
   live: RowColorSetting,
   base: RowColorSetting,
   paletteDeals: boolean,
-  pinned: ReadonlyMap<string, string>,
 ): RowColorSetting | undefined {
-  const choice = rowColorChoiceOf(withPinnedColors(live, pinned), paletteDeals)
+  const choice = rowColorChoiceOf(live, paletteDeals)
   const target =
-    choice === ''
-      ? undefined
-      : startingRowColor(choice, [base], paletteDeals, pinned)
+    choice === '' ? undefined : startingRowColor(choice, [base], paletteDeals)
   return target === undefined ||
     (live.scale.unknown === target.scale.unknown && samePairs(live, target))
     ? undefined

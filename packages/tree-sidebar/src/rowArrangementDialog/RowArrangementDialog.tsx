@@ -140,8 +140,8 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
   const [drafts, setDrafts] = useState<
     Readonly<Record<string, RowColorSetting>>
   >({})
-  // The colors pinned on rows, `rows.colors`, which every choice but None
-  // keeps
+  // The colors pinned on rows, `rows.colors`, which color their rows under
+  // every choice
   const [pins, setPins] = useState(model.rowColorPins)
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
 
@@ -161,15 +161,9 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
   )
 
   // The pins are set from the row list's swatches, the bulk color button and
-  // a pasted color column; a pin under None chooses Each row.
-  const setRowPins = (next: ReadonlyMap<string, string>) => {
-    setPins(next)
-    if (choice === '') {
-      setChoice('name')
-    }
-  }
+  // a pasted color column.
   const pickRows = (picked: ReadonlyMap<string, string>) => {
-    setRowPins(new Map([...pins, ...picked]))
+    setPins(new Map([...pins, ...picked]))
   }
 
   // A row's own `color` and its resolved `rowColor` never show as raw hex.
@@ -200,7 +194,7 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
       colorTouched
         ? {
             color: rowColorMembers(channel),
-            colors: choice === '' ? {} : Object.fromEntries(pins),
+            colors: Object.fromEntries(pins),
           }
         : undefined,
     )
@@ -257,7 +251,7 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
                   Object.fromEntries(pins),
                 )
               ) {
-                setRowPins(picked)
+                setPins(picked)
               }
               setCurrLayout(next)
             }
@@ -335,11 +329,7 @@ export default observer(function RowArrangementDialog<S extends RowSource>({
                   rows={currLayout}
                   onChange={setCurrLayout}
                   colors={colors}
-                  eachRow={
-                    choice === ''
-                      ? undefined
-                      : { picks: pins, onPick: pickRows }
-                  }
+                  eachRow={{ picks: pins, onPick: pickRows }}
                   reserved={reserved}
                 />
               </>

@@ -684,7 +684,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
             self.rowColorChannel,
             self.baseRowColorChannel,
             self.rowPaletteDeals,
-            self.rowColorPins,
           ) !== undefined
         )
       },
@@ -695,7 +694,7 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * field.
        */
       get rowColorChoice(): string {
-        return rowColorChoiceOf(self.rowColorSetting, self.rowPaletteDeals)
+        return rowColorChoiceOf(self.rowColorChannel, self.rowPaletteDeals)
       },
       /**
        * #method
@@ -707,7 +706,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
           choice,
           [self.rowColorChannel, self.baseRowColorChannel],
           self.rowPaletteDeals,
-          self.rowColorPins,
         )
       },
       /**
@@ -1249,7 +1247,6 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
             self.rowColorChannel,
             self.baseRowColorChannel,
             self.rowPaletteDeals,
-            self.rowColorPins,
           )
           if (target) {
             writeRowColor(target)
@@ -1259,16 +1256,13 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
         /**
          * #action
          * Color the rows by `choice`, as a menu picks it: '' for None,
-         * which clears the pins too, `name` for Each row, or a field,
-         * starting from `rowColorFor`. A pick of the current choice writes
+         * `name` for Each row, or a field, starting from `rowColorFor`. The
+         * pins stay under every choice. A pick of the current choice writes
          * nothing.
          */
         setRowColorChoice(choice: string) {
           if (choice !== self.rowColorChoice) {
             writeRowColor(self.rowColorFor(choice))
-            if (choice === '') {
-              write('colors', {})
-            }
             persist()
           }
         },

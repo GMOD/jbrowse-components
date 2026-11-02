@@ -119,13 +119,14 @@ describe('variant display colorBy', () => {
     expect(model.sources[0]!.rowColor).toBe(before.get('HG002'))
   })
 
-  it('reads the tints set row by row as Each row, and None clears them', () => {
+  // A pin is no choice: it colors its row under every one, None included.
+  it('keeps the tints set row by row through every choice', () => {
     const model = makeModel()
     model.setSources(sources)
     expect(model.rowPaletteDeals).toBe(false)
     expect(model.rowColorChoice).toBe('')
     model.applyRowEdits(model.editableSources, { colors: { HG001: '#123456' } })
-    expect(model.rowColorChoice).toBe('name')
+    expect(model.rowColorChoice).toBe('')
     expect(model.sources[0]!.rowColor).toBe('#123456')
     expect(model.sources[1]!.rowColor).toBeUndefined()
 
@@ -135,7 +136,11 @@ describe('variant display colorBy', () => {
     expect(model.sources[1]!.rowColor).not.toBe('#123456')
     model.setRowColorChoice('')
     expect(model.rowColorChoice).toBe('')
-    expect(model.sources.some(s => s.rowColor)).toBe(false)
+    expect(model.sources.map(s => s.rowColor)).toEqual([
+      '#123456',
+      undefined,
+      undefined,
+    ])
   })
 })
 
@@ -154,7 +159,7 @@ test('the Samples menu ticks a configured attribute the samples lack', () => {
   expect(tissue && 'checked' in tissue && tissue.checked).toBe(true)
 })
 
-test('the Samples menu ticks Each row where the dialog picked sample colors', () => {
+test('the Samples menu ticks None over the colors the dialog pinned', () => {
   const { display } = createTestEnvironment({
     displayConfig: {
       rows: { colors: { HG001: '#f00' } },
@@ -169,5 +174,7 @@ test('the Samples menu ticks Each row where the dialog picked sample colors', ()
   const ticked = items.flatMap(i =>
     'checked' in i && i.checked && 'label' in i ? [i.label] : [],
   )
-  expect(ticked).toContain('Each row')
+  expect(ticked).toContain('None')
+  expect(ticked).not.toContain('Each row')
+  expect(display.sources[0]!.rowColor).toBe('#f00')
 })

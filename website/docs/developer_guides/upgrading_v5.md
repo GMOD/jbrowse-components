@@ -585,6 +585,20 @@ the value axis is `encoding.y.axis`.
   `rowSeparatorsConfigSchemaFields`; `@jbrowse/tree-sidebar` re-exports them,
   deprecated.
 
+## A row's color is `rows.colors` or `rows.color`
+
+The beta releases' top-level `rowColor` on the row displays is two members of
+`rows`: `rows.colors` pins a color on a row by name
+([](/docs/config/rows/#slot-colors)), and `rows.color` colors the rows by an
+attribute through a scale ([](/docs/config/rowcolor)).
+
+- A beta's `rowColor` loads without it, and the console names `rows.color`.
+- Its name pairs (`scale.domain` and `scale.range` under the default
+  `field: "name"`) belong in `rows.colors`, as `{ "mom": "#b2182b" }`;
+  `rows.color` refuses a `scale.domain` under `name`.
+- A `rowColor` naming an attribute, `"population"` or
+  `{ "field": "population", "scale": {...} }`, is `rows.color` as written.
+
 ## An embedded view's track catalog is plain configs
 
 `session.tracks` in `@jbrowse/react-linear-genome-view2` and

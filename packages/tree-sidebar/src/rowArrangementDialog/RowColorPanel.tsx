@@ -183,7 +183,8 @@ const RowColorPanel = observer(function RowColorPanel({
       </div>
       {!other ? (
         <Typography variant="body2" color="textSecondary">
-          Rows show the colors their data gives them.
+          Rows show the colors their data gives them, or one set on a row in the
+          list.
         </Typography>
       ) : choice === 'name' ? (
         <>

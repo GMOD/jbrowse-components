@@ -512,7 +512,7 @@ describe('the order a row takes its color in', () => {
     })
   })
 
-  it('keeps a pin through a change of the channel, and None clears it', () => {
+  it('keeps a pin through every choice of the channel, None included', () => {
     const display = makeRowDisplay(
       { rows: { colors: { b: '#00f' } } },
       { rows: MIXED, shared: true },
@@ -521,12 +521,15 @@ describe('the order a row takes its color in', () => {
     expect(colorsOf(display)).toEqual({ a: p(0), b: '#00f', c: '#0c0c0c' })
     expect(getConf(display, ['rows', 'colors'])).toEqual({ b: '#00f' })
     display.setRowColorChoice('')
-    expect(getConf(display, ['rows', 'colors'])).toEqual({})
+    expect(display.rowColorChoice).toBe('')
+    expect(getConf(display, ['rows', 'colors'])).toEqual({ b: '#00f' })
     expect(colorsOf(display)).toEqual({
       a: '#0a0a0a',
-      b: '#0b0b0b',
+      b: '#00f',
       c: '#0c0c0c',
     })
+    display.resetRowArrangement()
+    expect(getConf(display, ['rows', 'colors'])).toEqual({})
   })
 })
 
@@ -784,13 +787,14 @@ describe('a dialog submit of the row colors', () => {
     expect(colorsOf(display)).toEqual({ a: '#ccc', b: '#00f', c: '#ccc' })
   })
 
-  it('paints only the picks under Each row with Other none', () => {
+  // None is rows.color alone: it colors no row but the pins.
+  it('paints only the pins under None', () => {
     const display = makeGrouped()
     display.applyRowEdits(display.editableSources, {
       color: { field: 'name', scale: { unknown: '' } },
       colors: { b: '#123456' },
     })
-    expect(display.rowColorChoice).toBe('name')
+    expect(display.rowColorChoice).toBe('')
     expect(colorsOf(display)).toEqual({ b: '#123456' })
   })
 

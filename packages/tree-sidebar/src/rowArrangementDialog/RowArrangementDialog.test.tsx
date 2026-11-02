@@ -105,7 +105,7 @@ function fakeModel({
     { name: 'b' },
   ]
   const rowPaletteDeals = overrides.rowPaletteDeals ?? true
-  const current = rowColorChoiceOf(rowColorSetting, rowPaletteDeals)
+  const current = rowColorChoiceOf(channelOf(rowColorSetting), rowPaletteDeals)
   return {
     editableSources,
     applyRowEdits: jest.fn(),
@@ -121,7 +121,6 @@ function fakeModel({
         choice,
         [channelOf(rowColorSetting), channelOf(baseRowColorSetting)],
         rowPaletteDeals,
-        pinsOf(rowColorSetting),
       ),
     rowColorPins: pinsOf(rowColorSetting),
     rowPaletteDeals,
@@ -305,12 +304,12 @@ describe('Each row', () => {
       target: { value: 'name,rowColor\nb,#00ff00\na,reddish' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Update rows' }))
-    expect(pressed('Each row')).toBe('true')
+    expect(pressed('None')).toBe('true')
     fireEvent.click(screen.getByText('Submit'))
 
-    expect(submitted(model)[1]).toEqual({
-      field: 'name',
-      scale: { domain: ['b'], range: ['#00ff00'] },
+    expect(submittedEdits(model)[1]).toEqual({
+      color: { field: 'name' },
+      colors: { b: '#00ff00' },
     })
   })
 })
@@ -517,9 +516,27 @@ describe('None', () => {
     )
     expect(pressed('None')).toBe('true')
     expect(screen.queryByText('Other rows')).toBeNull()
-    expect(
-      screen.getAllByTestId('row-color-swatch').map(s => s.style.background),
-    ).toEqual(['rgb(0, 255, 0)'])
+    expect(gridRow('a').getByTitle(AUTO).style.backgroundColor).toBe(
+      'rgb(0, 255, 0)',
+    )
+  })
+
+  // A pin is no choice: under None a row's swatch pins it, None stays, and
+  // the submit writes the pin beside None's rows.color.
+  test("a row's swatch pins it, and None stays chosen", () => {
+    const model = fakeModel({
+      rowColorSetting: { ...EMPTY, scale: { ...EMPTY.scale, unknown: '' } },
+    })
+    setup(model)
+
+    pickColor(gridRow('b').getByTitle(AUTO), 'blue', '#00ff00')
+    expect(pressed('None')).toBe('true')
+    fireEvent.click(screen.getByText('Submit'))
+
+    expect(submittedEdits(model)[1]).toEqual({
+      color: { field: 'name', scale: { unknown: '' } },
+      colors: { b: 'rgb(0, 255, 0)' },
+    })
   })
 
   test('on a display dealing no palette writes no unknown', () => {

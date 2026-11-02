@@ -273,8 +273,8 @@ warning for a field no sample carries: a pick starts from the colors the current
 config gives that choice (`startingRowColor`), and '' is None,
 `{ field: 'name' }`. The menu's Samples group offers None and the attributes
 and ticks the dialog's choice (`rowColorChoice`), Each row included; the dialog
-picks a value's color under an attribute, and pins a sample's under any choice
-but None (ADR-209). A reset returns `rows.colors` with the arrangement and
+picks a value's color under an attribute, and pins a sample's under any
+choice, None included, which a pin never changes (ADR-209). A reset returns `rows.colors` with the arrangement and
 `rows.color` by tree-sidebar's `rowColorResetTarget`,
 which keeps the choice, so a Color by survives it and a mode switch. The
 missing-attribute warning reads the mixin's `rowColorField`.
