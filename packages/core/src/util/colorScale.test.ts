@@ -202,8 +202,8 @@ test('a notice line names the channel and the scale member', () => {
     /^encoding\.color\.scale\.domain: a linear, log or symlog scale reads no domain/,
   )
   expect(
-    colorNotices(scaled({ type: 'log', domainMin: 0 }), {}, 'rowColor')[0],
-  ).toMatch(/^rowColor\.scale\.domainMin: a log scale has no 0/)
+    colorNotices(scaled({ type: 'log', domainMin: 0 }), {}, 'rows.color')[0],
+  ).toMatch(/^rows\.color\.scale\.domainMin: a log scale has no 0/)
 })
 
 test('an identity scale names one color per name, with or without a field', () => {

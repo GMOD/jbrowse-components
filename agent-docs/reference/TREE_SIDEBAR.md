@@ -108,10 +108,10 @@ also the signal it was supplied rather than computed.
 
 ## One mixin holds the arrangement and derives the rows
 
-`TreeSidebarMixin` keeps a display's arrangement in its `rows` config object and
-its row colors in the `rowColor` object — the quantitative display's,
-the variant display's, the multi-row feature display's, MAF's and the
-mark display's (ADR-157) — and derives the rows from them.
+`TreeSidebarMixin` keeps a display's arrangement and its row colors in its
+`rows` config object — the quantitative display's, the variant display's, the
+multi-row feature display's, MAF's and the mark display's (ADR-157) — and
+derives the rows from it.
 
 **`rows` is one `Rows` object on every display, and the mixin reads its
 arrangement.** display-kit's `RowArrangement` is the five arrangement members,
@@ -119,10 +119,15 @@ and `Rows` extends it with `field`: a feature field where the rows are a field's
 values, `source` alone on the quantitative display (`QuantitativeRows`) and
 `sample` alone where the rows are the file's samples (`SampleRows`, ADR-215).
 The host is typed on `RowArrangement`, so the mixin never reaches for `field`,
-which stays the display's own. `rowColor` is
+which stays the display's own. `rows.color` is
 display-kit's `RowColor` on every row display, one categorical channel whose
 `field` names a row attribute, `name` by default, with
-`scale.domain`/`scale.range` pairing that field's values with colors (ADR-160). **Shared code reads the mixin's API,
+`scale.domain`/`scale.range` pairing that field's values with colors (ADR-160).
+Under `name` it refuses `scale.domain`: `rows.colors`, a `{ row: css }` map
+beside `labels`, pins a color on a row by name (ADR-257). `rowColorSetting`
+folds the pins into `rows.color` under `name` as its pairs
+(`withPinnedColors`), the one shape the deal, the choice and the key read.
+**Shared code reads the mixin's API,
 never a config member behind it**: `rowSort`, `rowTree`, `rowTreeProvenance`,
 `rowFocus`, `resolvedRowColors`, `rowArrangementIsCustom`, `rowOrderWillDropTree`,
 `setRowOrder`, `setRowFocus`, `resetRowArrangement`.
@@ -178,8 +183,9 @@ hook's name throws at `create`:
 MAF also overrides `clusterableSources`, since on a track that discovers its
 species a focus applies as given, as the worker's does.
 
-**A row's color is one getter, `resolvedRowColors`**: its `rowColor` entry (a
-`name` pair, or the color its field's value is dealt), else its own `color`,
+**A row's color is one getter, `resolvedRowColors`**: its `rows.colors` pin,
+else its `rows.color` entry (the color its field's value is dealt), else its own
+`color`,
 else the palette's by name where `rowPaletteDeals` — `sharesPanel &&
 rowColorPaintsMarks`. `dealtValueColors` is the value-to-color map behind it and
 `dealtValueColorsFor` the dialog's preview of another setting. `dealRowColors` deals
@@ -195,18 +201,20 @@ its own color; a field deal skips the empty value, so a row with none
 takes a color only from a `''` pair (ggplot's `na.value`, not a category); a
 field no row carries deals nothing. A multi-row `rowGroups` entry only
 tags a row's `group`; the group's color is
-`rowColor: { field: 'group' }`. Every row carries it as `rowColor`: the sidebar always draws
+`rows.color: { field: 'group' }`. Every row carries its color as `rowColor`: the sidebar always draws
 it as the row's label bar, and a display paints its marks in it only where
 `rowColorPaintsMarks`. A row's own `color` stays the file's attribute.
 
 **A row color has one key, `rowColorScales`**, which every display spreads last
-into its `colorScales`: one scale titled by the `rowColor` field, capitalised,
+into its `colorScales`: one scale titled by the `rows.color` field, capitalised,
 or none where it would have no entries. It keys wherever the labels cannot name
 the colors: by a field on any display at any row height, and by `name`
 only in a shared panel. By `name` on stacked rows the labels are the key. `rowColorKeyEntries` lists
 one entry per value some row carries with a color, in deal order (pairs first,
 then first seen over the rows in source order, so a focus never re-ranks or drops
-one); the empty value has none, even under a `''` pair. It lists every value:
+one), then under an attribute one entry by label for each row `rows.colors`
+pins, its value left to the other rows; the empty value has none, even under a
+`''` pair. It lists every value:
 the key is unconditional, so it never summarizes, and `FloatingLegend`'s
 "Show N more" toggle shortens a long one. A set `scale.unknown` adds one trailing "Other"
 in that color for the rows that took it; a `scale.unknown` of `''` adds
@@ -227,33 +235,37 @@ What else the mixin owns:
   `rows.field`. A reset to empty would write a delta erasing an admin's declared
   order for that reader. `rowArrangementIsCustom` compares against the same
   base, with `rowColorIsCustom` for the colors, and leaves `rows.kept`
-  out, since the focus has a clear of its own; a reset still clears it.
+  out, since the focus has a clear of its own; a reset still clears it. The
+  pins, `rows.colors`, are an arrangement member, keyed by the row field like
+  `rows.sort` and `rows.labels`, so a reset returns them and a write that
+  changes `rows.field` clears them; `rows.color` names an attribute and stays.
   `rowColorResetTarget` (`rowColorChoice.ts`) is the one rule for both: what
-  a reset writes to `rowColor`, or nothing while the live object is not
+  a reset writes to `rows.color`, or nothing while the live object is not
   custom: the object the live choice starts from in the base
   (`startingRowColor`), and nothing under None. A reset recolors and never
   changes the choice, so a Color by and None survive a reset and a mode
   switch. Its target is never itself custom, so one reset is the whole way
   back (ADR-209).
-- **The dialog shows the `rowColor` object and submits it**
-  (`applyRowEdits(rows, rowColor)`, ADR-209): "Color rows by" None, Each row
-  or a field, on every row display. Each row and a field hold their
-  picks and an Other swatch, the `scale.unknown`: Auto, None, or a color, with
-  None hidden where it equals Auto. A field's picks are its value table, each
-  value with its color and row count in the key's order; Each row's are the
-  row list's swatches, which show every row's color under any choice and edit
-  only there, as the bulk color button does. The bulk editor sets `label` and
-  `rowColor` alone (`BULK_EDIT_FIELDS`), warns on a pasted column that would
-  change anything else, and its `rowColor` column edits the picks of the rows
-  it names, so a pick for a row the dialog does not show stands. None colors
-  no row. A choice opens on
+- **The dialog shows `rows.color` and the pins and submits them**
+  (`applyRowEdits(rows, { color, colors })`, `RowColorEdits`, ADR-209): "Color
+  rows by" None, Each row or a field, on every row display, writes
+  `rows.color`. Each row and a field hold their picks and an Other swatch, the
+  `scale.unknown`: Auto, None, or a color, with None hidden where it equals
+  Auto. A field's picks are its value table, each value with its color and row
+  count in the key's order. The row list's swatches show every row's color
+  under any choice and pin one under any choice but None, writing
+  `rows.colors`, as the bulk color button does. The bulk editor sets `label`
+  and `rowColor` alone (`BULK_EDIT_FIELDS`), warns on a pasted column that
+  would change anything else, and its `rowColor` column edits the pins of the
+  rows it names, so a pin for a row the dialog does not show stands. None
+  colors no row and clears the pins. A choice opens on
   the mixin's `rowColorFor` (`startingRowColor` over the live object and the
   config's), and the dialog keeps a draft per choice for the sitting. The rows carry order and labels only, written by `labelEdits`: an
   entry the config holds stands unless the reader relabelled that row, a label
   changed back to what the row shows with no entry of its own removes the
   entry, and a row the dialog never showed keeps its entry. An order that
   moves no row is not written, and a submit that leaves the color panel alone
-  passes no `rowColor` object, so the config's own stands as written.
+  passes no colors, so the config's own stand as written.
 - **A display's own color rides above the rows, and is written on Submit.**
   `plotColor` is the quantitative display's two plot colors on one line
   (`PlotColorRow`): held in the dialog's local state and written in `submit()`

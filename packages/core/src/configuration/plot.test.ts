@@ -73,7 +73,7 @@ test('a subclass inherits the flag, and opts out with false', () => {
   )
   const conf = ConfigurationSchema('PlotTestInherits', {
     facet: SubFacet,
-    rowColor: Unflagged,
+    unflagged: Unflagged,
   }).create()
   expect(plotKeysOf(conf)).toEqual(['facet'])
 })

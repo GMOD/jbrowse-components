@@ -116,15 +116,18 @@ function settingEntries(key: string, value: unknown): [string, unknown][] {
     : [[key, value]]
 }
 
-// The row axis's members and the row height are menu rows of their own; the
-// rest of `rows` is the arrangement its one step reads.
+// The row axis's members, the row height and the row colors are menu rows of
+// their own; the rest of `rows` is the arrangement its one step reads.
 function rowsEntries(rows: Record<string, unknown>): [string, unknown][] {
-  const { axis, step, ...arrangement } = rows
+  const { axis, step, color, colors, ...arrangement } = rows
+  const members = { step, color, colors }
   return [
     ...(Object.keys(arrangement).length > 0
       ? [['rows', arrangement] as [string, unknown]]
       : []),
-    ...(step === undefined ? [] : [['rows.step', step] as [string, unknown]]),
+    ...Object.entries(members).flatMap(([member, value]): [string, unknown][] =>
+      value === undefined ? [] : [[`rows.${member}`, value]],
+    ),
     ...(isPlainObject(axis)
       ? Object.entries(axis).map(
           ([member, value]): [string, unknown] => [`rows.axis.${member}`, value],

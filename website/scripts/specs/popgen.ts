@@ -98,7 +98,7 @@ const IN2LT_SV_TRACK = {
     {
       type: 'LinearVariantDisplay',
       facet: { field: 'karyotype', sort: ['Standard', 'In(2L)t'] },
-      rowColor: 'karyotype',
+      rows: { color: 'karyotype' },
     },
   ],
 }

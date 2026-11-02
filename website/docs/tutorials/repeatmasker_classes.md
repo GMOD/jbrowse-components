@@ -99,8 +99,7 @@ with no satellite repeats has no satellite row.
 A track config can open the track in the partitioned view, and two settings keep
 the rows stable as the window's class list changes. `rows.sort` lists the
 classes that come first, in order, and a class it leaves out follows the listed
-ones. `rowColor` is a color scale on each row's label bar, pairing each class in
-its `domain` with a color in its `range`.
+ones. `rows.colors` pins a color on the label bar of each class it names.
 
 ```json addtrack loc=chr17:45,700,000-45,750,000
 {
@@ -126,26 +125,14 @@ its `domain` with a color in its `range`.
           "Simple_repeat",
           "Low_complexity"
         ],
-        "axis": { "grid": true }
-      },
-      "rowColor": {
-        "scale": {
-          "domain": [
-            "SINE",
-            "LINE",
-            "LTR",
-            "DNA",
-            "Simple_repeat",
-            "Low_complexity"
-          ],
-          "range": [
-            "#e41a1c",
-            "#377eb8",
-            "#4daf4a",
-            "#984ea3",
-            "#ff7f00",
-            "#a65628"
-          ]
+        "axis": { "grid": true },
+        "colors": {
+          "SINE": "#e41a1c",
+          "LINE": "#377eb8",
+          "LTR": "#4daf4a",
+          "DNA": "#984ea3",
+          "Simple_repeat": "#ff7f00",
+          "Low_complexity": "#a65628"
         }
       }
     }
@@ -153,9 +140,9 @@ its `domain` with a color in its `range`.
 }
 ```
 
-The rows come from the classes in the file, so a class `rowColor` leaves out
+The rows come from the classes in the file, so a class `rows.colors` leaves out
 still gets a row, as `Unknown` does in the figures, painted in the default block
-color. `unknown` in `rowColor` sets one color for every unnamed row.
+color. `scale.unknown` in `rows.color` sets one color for every unnamed row.
 
 The track opens with the first display listed, so the multi-row entry makes rows
 the default. A bare `{ "type": "LinearBasicDisplay" }` ahead of it keeps the

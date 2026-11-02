@@ -9,7 +9,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // "Group by" is the banding twin of "Color by → Samples": same
 // candidate attributes off the samplesTsv columns, writing the `facet.field`
-// slot instead of `rowColor`. The user guide has always described the banding as
+// slot instead of `rows.color`. The user guide has always described the banding as
 // interactive; only the config slot was.
 function display(sources?: Source[]) {
   const { display } = createTestEnvironment({

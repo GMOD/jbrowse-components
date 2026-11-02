@@ -5,7 +5,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #category display
  * One entry of a row display's `rowGroups`: a row joins the `group` of the
  * first entry whose `match` regex its name matches, `facet: 'group'` stacks
- * the groups in bands, and `rowColor: { field: 'group' }` colors them.
+ * the groups in bands, and `rows.color: 'group'` colors them.
  *
  * #example
  * ```js

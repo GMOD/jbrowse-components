@@ -67,7 +67,7 @@ From [BaseDisplay](../basedisplay): <span id="property-id">[`id`](../basedisplay
 | Member | Description |
 | --- | --- |
 | <span id="volatile-framesgateblocked">**framesGateBlocked**</span><br><code>boolean</code> | The `byteLimit` refused the last frames fetch, so the strip stops drawing; the menu reads this to say so.<br><br>Never in `rpcProps()`: the fetch writes it, the loop trap ARCHITECTURE.md names. |
-| <span id="volatile-sourcesvolatile">**sourcesVolatile**</span><br><code>MafSource[]</code> | The worker's authoritative row set, in tree (leaf) order. `editableSources` arranges it by `rows` and `rowColor`, and `sources` narrows that by the focus. |
+| <span id="volatile-sourcesvolatile">**sourcesVolatile**</span><br><code>MafSource[]</code> | The worker's authoritative row set, in tree (leaf) order. `editableSources` arranges and colors it by `rows`, and `sources` narrows that by the focus. |
 | <span id="volatile-treenewickvolatile">**treeNewickVolatile**</span><br><code>string &#124; undefined</code> | The adapter's guide tree as newick, which `rowTree` draws while some rotation of it lists `rows.sort` in order. |
 | <span id="volatile-specieslisted">**speciesListed**</span><br><code>boolean</code> | Whether the adapter lists its species, by a `samples` config or its guide tree, rather than discovering them from the blocks it reads. |
 | <span id="volatile-refsampleidvolatile">**refSampleIdVolatile**</span><br><code>string &#124; undefined</code> | The reference sample row the worker resolved, held here because the region store that delivers it empties on chromosome navigation.<br><br>Last write wins, not a latch: a re-pointed adapter or edited `refAssemblyName` keeps the display instance. |

@@ -182,10 +182,11 @@ any attribute you supply. Two slots wire it up:
 - `samplesTsvLocation` on the adapter takes a samples TSV whose first column is
   the sample name (matching the VCF header) and whose every remaining column is
   a metadata attribute.
-- `rowColor` on the display takes the name of one of those columns, and while it
-  is set the per-sample rows are tinted by that attribute, over any color the
-  TSV gives a row. Set it back to None to restore the TSV's colors; the
-  arrangement editor's **Each row** picks a color per sample instead.
+- `rows.color` on the display takes the name of one of those columns, and while
+  it is set the per-sample rows are tinted by that attribute, over any color the
+  TSV gives a row. A sample's swatch in the arrangement editor pins a color on
+  that row, `rows.colors`, over both. **Color rows by → None** clears both and
+  restores the TSV's colors.
 - `facet` bands the rows so each value of a column is contiguous: the column's
   name, or `{ "field": …, "sort": [...] }` with the band order. Each band's name
   runs up a strip beside the dendrogram where the band is tall enough to hold

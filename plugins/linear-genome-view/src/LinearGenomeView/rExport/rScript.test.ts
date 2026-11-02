@@ -276,7 +276,7 @@ test("records alone hand R the record settings as a feature track's", () => {
   expect(script).toContain(
     'tooltip = list(show = FALSE, field = "INFO.CLNSIG")',
   )
-  expect(script).not.toMatch(/records|rowColor/)
+  expect(script).not.toMatch(/records|population/)
 })
 
 test('the header names what the figure leaves out, and an unreadable track does not stop it', () => {

@@ -219,13 +219,14 @@ ALT, all spanning one reference interval.
   cell, so `rpcProps` sends it only in the first.
 - A drag-resized dimension goes on a config slot; the node outlives the display.
 
-## The arrangement is `rows` and `rowColor`, by row name
+## The arrangement is `rows`, by row name
 
 **`rows` (`SampleRows`: `sample` is its one field, since the rows are the
-samples) holds the order, labels, tree, provenance and focus; `rowColor` holds the tints**, display-kit's
-`RowColor`: a samplesTsv attribute whose values each take a palette color, or
-`name`, the default, whose entries are the tints set row by row. Both are
-config, written by a drag, the arrangement dialog, "Sort rows by genotype here"
+samples) holds the order, labels, tints, tree, provenance and focus, and
+`rows.color` the attribute the rows are tinted by.** `rows.colors` holds the
+tints set row by row. `rows.color` is display-kit's `RowColor`: a samplesTsv
+attribute whose values each take a palette color, or `name`, the default. It is
+all config, written by a drag, the arrangement dialog, "Sort rows by genotype here"
 and a clustering run, and every product writes them as session deltas (ADR-157).
 Every other channel resolves when the rows are read.
 
@@ -242,7 +243,7 @@ to `rows.kept`, the fetch key's input, so it reads no `samplePloidy`: a focus
 naming a haplotype keeps its sample there (`keptRows` with `rowAlias`, through
 `parseRowName`). The rest are `TreeSidebarMixin`'s over this display's hooks:
 `discoveredRows`, `expandRows` (`expandPhasedRows`), then `editableSources`,
-ordered, relabelled and tinted by pair with no focus, palette or band — the
+ordered, relabelled and tinted with no focus, palette or band — the
 dialog's list and the sort's — `clusterableSources`, narrowed to the focus,
 which both clustering paths send, and `bandedSources`, stacked in the `facet`'s
 bands. `sources` adds the palette.
@@ -254,16 +255,17 @@ settings change triggers rather than folding back to samples. `samplePloidy`
 keeps its identity while each fetch reports the same ploidies, so a region
 arrival re-derives no row.
 
-**A row's color is its `rowColor`**, the label bar tree-sidebar's
+**A row's color is its resolved `rowColor`**, the label bar tree-sidebar's
 `RowLabelsOverlay` and `SvgRowLabels` draw — the cells are colored by genotype,
 so `rowColorPaintsMarks` is false and the bar is the only place it shows. The
 tooltip swatch reads it too, and tree-sidebar's row color key
-(`rowColorScales`) keys it by an attribute, after the genotype key; by `name` the
-labels are the key. A `samplesTsv` `color` column
+(`rowColorScales`) keys it by an attribute, after the genotype key, a pinned
+row by its label; by `name` the labels are the key. A `samplesTsv` `color` column
 is the row's own `color`, which `resolvedRowColors` falls back to.
 
-**An attribute in `rowColor.field` beats a `samplesTsv` `color` column**: a
-channel bound to a variable beats a per-row constant. `TreeSidebarMixin` deals
+**A pin in `rows.colors` beats an attribute in `rows.color.field`, which beats
+a `samplesTsv` `color` column**: a channel bound to a variable beats a per-row
+constant, and a color pinned on the row by name beats both. `TreeSidebarMixin` deals
 the attribute's values first seen first over the rows in source order, so a focus
 or the phased expansion recolors nothing, and `rowColorPaintsMarks` is false,
 since the cells paint by genotype. Its `setRowColorChoice` is the mixin's, then a
@@ -271,8 +273,9 @@ warning for a field no sample carries: a pick starts from the colors the current
 config gives that choice (`startingRowColor`), and '' is None,
 `{ field: 'name' }`. The menu's Samples group offers None and the attributes
 and ticks the dialog's choice (`rowColorChoice`), Each row included; the dialog
-picks a value's color under an attribute and a sample's under Each row
-(ADR-209). A reset returns `rowColor` by tree-sidebar's `rowColorResetTarget`,
+picks a value's color under an attribute, and pins a sample's under any choice
+but None (ADR-209). A reset returns `rows.colors` with the arrangement and
+`rows.color` by tree-sidebar's `rowColorResetTarget`,
 which keeps the choice, so a Color by survives it and a mode switch. The
 missing-attribute warning reads the mixin's `rowColorField`.
 The flip ADR-160 names puts the row's own color ahead of the palette here too.

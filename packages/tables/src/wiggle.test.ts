@@ -282,7 +282,7 @@ describe('sources sharing one panel take the colors the display deals them', () 
     expect(reordered.painted).toEqual(domain.map(name => colorOf.get(name)))
   })
 
-  it("greys the sources rowColor's pairs leave out under its unknown", async () => {
+  it("greys the sources rows.colors leave out under rows.color's unknown", async () => {
     const { declared } = await colorsOf({
       rows: {
         colors: { posneg_rw2: '#123456' },

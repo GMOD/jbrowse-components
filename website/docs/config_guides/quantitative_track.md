@@ -86,10 +86,10 @@ middle stop, and with one color runs from white to it. The
 [cookbook](/docs/cookbook#quantitative-wiggle-tracks) has worked recipes.
 
 `encoding.color` reads `score` alone. A color per source is the row's:
-[`rowColor`](/docs/config/linearwiggledisplay/#slot-rowcolor) names each
-source's color as `scale.domain`/`scale.range` pairs, and several sources
-sharing one plot box with no `encoding.color` set take palette colors by name
-unprompted, except under `rect`, where the score ramp is the whole color.
+[`rows.colors`](/docs/config/quantitativerows/#slot-colors) names each source's
+color, `{ "k1": "red" }`, and several sources sharing one plot box with no
+`encoding.color` set take palette colors by name unprompted, except under
+`rect`, where the score ramp is the whole color.
 
 ## Adapters
 
@@ -158,10 +158,9 @@ and a 200px height, so it opens as one row per source without saying so.
 `rows: ""` puts every source back in one shared plot box, and
 `rows: { "field": "source", "sort": […] }` names the sources that lead the row
 order. The same object takes `labels`, a label per source by name, and
-[`rowColor`](/docs/config/linearwiggledisplay/#slot-rowcolor) gives each source
-a color. **Edit colors/arrangement...** in the track menu writes both, as
-settings a reader can undo or reset, and choosing Each row there also writes the
-`color` below, since a color per subtrack is the two together.
+[`colors`](/docs/config/quantitativerows/#slot-colors), a color per source.
+**Edit colors/arrangement...** in the track menu writes both, as settings a
+reader can undo or reset, and its "Color rows by" choice writes `rows.color`.
 
 ### The subadapters form
 

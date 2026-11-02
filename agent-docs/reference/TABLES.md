@@ -481,7 +481,7 @@ layer encoder (`buildSourceRenderData`):
 A source paints the color the display gives it, through the tree sidebar's
 own rules (`dealValueColors`, `resolveRowColors`, `markColorOf`): its row
 color where nothing else colors the marks, and in a shared panel the
-tableau10 palette dealt by name, or `rowColor`'s pairs. The `display` config
+tableau10 palette dealt by name, or `rows.colors`. The `display` config
 fills its defaults from the track type's: a `MultiQuantitativeTrack`
 (`trackType`, inferred from a `MultiWiggleAdapter`) defaults to a row per
 source and no min-max extent.

@@ -46,14 +46,14 @@ export function liftRowColor(value: unknown): RowColorSetting {
 
 /** A `rows.color` config node read as a `RowColorSetting`. */
 export function rowColorSettingOf(
-  rowColor: AnyConfigurationModel,
+  color: AnyConfigurationModel,
 ): RowColorSetting {
   return liftRowColor({
-    field: readConfObject(rowColor, 'field'),
+    field: readConfObject(color, 'field'),
     scale: {
-      domain: readConfObject(rowColor, ['scale', 'domain']),
-      range: readConfObject(rowColor, ['scale', 'range']),
-      unknown: readConfObject(rowColor, ['scale', 'unknown']),
+      domain: readConfObject(color, ['scale', 'domain']),
+      range: readConfObject(color, ['scale', 'range']),
+      unknown: readConfObject(color, ['scale', 'unknown']),
     },
   })
 }
@@ -73,15 +73,15 @@ export function pinnedColorsOf(colors: unknown): ReadonlyMap<string, string> {
 }
 
 /**
- * A `rows` config node's colors: the pins, `rows.colors`, and `rows.color`
- * with them folded in (`withPinnedColors`), what a tables export resolves
- * a row's color from as the display does.
+ * A display's row colors: the pins, `rows.colors` as written, and the
+ * `rows.color` node with them folded in (`withPinnedColors`), what a tables
+ * export resolves a row's color from as the display does.
  */
-export function rowColorsOfRows(rows: AnyConfigurationModel) {
-  const pinned = pinnedColorsOf(readConfObject(rows, 'colors'))
+export function rowColorsOfRows(color: AnyConfigurationModel, colors: unknown) {
+  const pinned = pinnedColorsOf(colors)
   return {
     pinned,
-    setting: withPinnedColors(rowColorSettingOf(rows.color), pinned),
+    setting: withPinnedColors(rowColorSettingOf(color), pinned),
   }
 }
 

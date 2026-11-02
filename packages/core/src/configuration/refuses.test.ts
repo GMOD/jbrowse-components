@@ -136,9 +136,9 @@ test('a refusal naming no slot, no value the slot takes, or no path is refused a
       { refuses: [{ id: 'bad', message: 'no', ...rule }] },
     )
   expect(() =>
-    refusing({ when: { feild: ['name'] }, slots: ['scale.domain'] }),
+    refusing({ when: { kind: ['name'] }, slots: ['scale.domain'] }),
   ).toThrow(/declares no such slot/)
   expect(() =>
-    refusing({ when: { field: ['name'] }, slots: ['scale.domian'] }),
-  ).toThrow(/refuses "scale.domian", and RefusalScale declares no "domian"/)
+    refusing({ when: { field: ['name'] }, slots: ['scale.order'] }),
+  ).toThrow(/refuses "scale.order", and RefusalScale declares no "order"/)
 })

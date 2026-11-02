@@ -142,15 +142,18 @@ test('the tree and row separator toggles are Show rows', () => {
   ).toEqual(['Track menu → Show → Row separators (checked)'])
 })
 
-test('a row color table is the arrangement dialog, and a column name stays a Samples row', () => {
-  const table = { scale: { domain: ['a', 'b'], range: ['#111', '#222'] } }
-  expect(stepPaths('rowColor', table, 'LinearMultiRowFeatureDisplay')).toEqual([
-    'Track menu → Edit colors/arrangement...',
+test('rows.colors is the arrangement dialog, and a rows.color column stays a Samples row', () => {
+  const colors = { a: '#111', b: '#222' }
+  expect(
+    stepPaths('rows.colors', colors, 'LinearMultiRowFeatureDisplay'),
+  ).toEqual(['Track menu → Edit colors/arrangement...'])
+  expect(stepPaths('rows.color', 'group', 'LinearVariantDisplay')).toEqual([
+    'Track menu → Color by → Samples → Group',
   ])
   expect(
-    stepPaths('rowColor', 'group', 'LinearVariantDisplay'),
+    stepPaths('rows.color', { field: 'group' }, 'LinearVariantDisplay'),
   ).toEqual(['Track menu → Color by → Samples → Group'])
-  expect(stepPaths('rowColor', table, 'LinearBasicDisplay')).toEqual([])
+  expect(stepPaths('rows.colors', colors, 'LinearBasicDisplay')).toEqual([])
 })
 
 test('a multi-row facet is a Group by row named for its field', () => {

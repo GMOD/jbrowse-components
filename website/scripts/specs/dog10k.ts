@@ -21,17 +21,10 @@ function arrangedSamples(rows: SampleRow[]) {
     rows: {
       sort: rows.map(r => r.name),
       labels: Object.fromEntries(rows.map(r => [r.name, r.label])),
+      ...(tinted.length
+        ? { colors: Object.fromEntries(tinted.map(r => [r.name, r.color!])) }
+        : {}),
     },
-    ...(tinted.length
-      ? {
-          rowColor: {
-            scale: {
-              domain: tinted.map(r => r.name),
-              range: tinted.map(r => r.color!),
-            },
-          },
-        }
-      : {}),
   }
 }
 
@@ -103,7 +96,7 @@ const CYP_ROWS = arrangedSamples(
 )
 
 // Ids are spelled out because two runs have holes: no CLUPCN000008, and the
-// Tajikistan wolves are 3 and 5. The swatch is the track's own `rowColor:
+// Tajikistan wolves are 3 and 5. The swatch is the track's own `rows.color:
 // 'group'`.
 
 const AMY2B_GROUPS: [string, string[]][] = [
@@ -320,7 +313,7 @@ export const dog10kVideoFixtures = {
           variantLayout: 'columns',
           height: 620,
           connectors: { height: 34 },
-          rowColor: 'size',
+          rows: { color: 'size' },
         },
       ],
     }),
@@ -372,7 +365,7 @@ function fgf4SyntenySession(parent: string, retro: Record<string, string>) {
               {
                 trackId: 'dog10k_fgf4_svs',
                 height: 330,
-                rowColor: 'group',
+                rows: { color: 'group' },
               },
             ],
           },
@@ -1006,7 +999,7 @@ export const dog10kSpecs: ScreenshotSpec[] = [
           connectors: { height: 34 },
           runClustering: true,
           clusterRegion: IGF1_CLUSTER_CORE,
-          rowColor: 'size',
+          rows: { color: 'size' },
         },
       ],
     }),

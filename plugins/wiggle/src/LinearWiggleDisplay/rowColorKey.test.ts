@@ -51,7 +51,7 @@ it('keys nothing in an overlay painting a score gradient', () => {
   display.applyPlot({
     encoding: { color: { scale: { type: 'linear', scheme: 'viridis' } } },
   })
-  expect(display.colorScales.map(s => s.id)).not.toContain('rowColor')
+  expect(display.colorScales.map(s => s.id)).not.toContain('rows.color')
 })
 
 it('focuses the subtracks a key entry lists', () => {

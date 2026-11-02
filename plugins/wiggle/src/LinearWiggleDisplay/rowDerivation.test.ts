@@ -80,7 +80,7 @@ test('overlay: adapter colors paint the plot', async () => {
 })
 
 // Several subtracks share the box, so the palette deals tableau10 by name; a
-// group is an attribute and colors nothing until rowColor names it.
+// group is an attribute and colors nothing until rows.color names it.
 test('overlay: tableau10 by name, grouped or not', async () => {
   const display = await loaded(GROUPED, {})
   expect(derived(display)).toMatchSnapshot()
@@ -94,7 +94,7 @@ test("overlay: rows.color's spare range leads the palette", async () => {
 })
 
 // Each subtrack has a row of its own, so it draws in the plot color unless
-// rowColor or the file gives it one.
+// rows.colors or the file gives it one.
 test('rows, line: the adapter color, else the plot color', async () => {
   const display = await loaded(GROUPED, {
     ...rowsPerSource(),
@@ -233,7 +233,7 @@ test('rows: a run lands its tree, a reorder drops it, a reset returns to the see
 })
 
 // A heatmap reads its color scale alone, so a color set in the dialog is kept
-// on `rowColor` and paints no strip; an overlaid heatmap says to use rows.
+// on `rows.colors` and paints no strip; an overlaid heatmap says to use rows.
 test('overlay, density: a dialog edit is kept and paints no strip', async () => {
   const display = await loaded(GROUPED, { defaultRendering: 'density' })
   display.applyRowEdits(display.editableSources, {

@@ -548,27 +548,32 @@ function constantColorStep(
         }
 }
 
-// The variant display's row tint: a sample attribute, named from
-// one menu row over whichever metadata columns the track carries. A row-keyed
-// `scale.domain` and `scale.range` is each row's own swatch in the arrangement
-// dialog.
-function rowColorStep(
+// `rows.color` on the variant display: a sample attribute, named from one menu
+// row over whichever metadata columns the track carries.
+function rowsColorStep(
   value: unknown,
   { displayType }: FieldContext,
 ): FieldStep | undefined {
-  const attribute = asString(value)
-  if (
-    attribute &&
+  const attribute = asString(value) ?? asString(asRecord(value)?.field)
+  return attribute &&
+    attribute !== 'name' &&
     displayType &&
     VARIANT_DISPLAYS.has(displayType)
-  ) {
-    return {
-      path: `${TRACK_MENU} → Color by → Samples → ${capitalizeFirst(attribute)}`,
-      note: `The Samples section lists whichever metadata columns your samples carry, so "${attribute}" appears only if yours have it.`,
-    }
-  }
+    ? {
+        path: `${TRACK_MENU} → Color by → Samples → ${capitalizeFirst(attribute)}`,
+        note: `The Samples section lists whichever metadata columns your samples carry, so "${attribute}" appears only if yours have it.`,
+      }
+    : undefined
+}
+
+// `rows.colors`, each row's own swatch in the arrangement dialog.
+function rowsColorsStep(
+  value: unknown,
+  { displayType }: FieldContext,
+): FieldStep | undefined {
   const editor = displayType ? ROW_ARRANGEMENT_EDITORS[displayType] : undefined
-  return editor && asList(scaleOf(asRecord(value)).domain)
+  const colors = asRecord(value)
+  return editor && colors && Object.keys(colors).length > 0
     ? {
         path: `${TRACK_MENU} → ${editor}`,
         note: 'The grid in that dialog has a Color column: set a color on each row you want tinted.',
@@ -1508,7 +1513,8 @@ export const trackFields: Record<string, FieldRecipe> = {
   ...graphTrackFields,
   'encoding.color': colorStep,
   'pileup.bases': basesStep,
-  rowColor: rowColorStep,
+  'rows.color': rowsColorStep,
+  'rows.colors': rowsColorsStep,
   facet: facetStep,
   filter: filterListStep,
   // Declared by LinearHicDisplay alone, so as with the alignments-only fields

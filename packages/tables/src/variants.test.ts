@@ -116,7 +116,7 @@ test('the display’s filters drop records before any cell is painted', async ()
   expect(Math.min(...late.variants.start)).toBeGreaterThan(38262000)
 })
 
-test('each row takes the display’s rowColor from the samples file, under the attribute’s key', async () => {
+test('each row takes the display’s rows.color from the samples file, under the attribute’s key', async () => {
   const t = await engine.variants({
     ...DOG_SV,
     display: { rows: { color: { field: 'group' } } },

@@ -262,8 +262,8 @@ genotypes can agree with it or not.
 The scores come from GeneNetwork's sample-data API. `jq` turns them into one
 [`rowGroups`](/docs/config/linearmultirowfeaturedisplay/#slot-rowgroups) entry
 per score, a regex matching that score's strains, and a
-[`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) that
-pairs each group with its coat color:
+[`rows.color`](/docs/config/rowswithstep/#slot-color) that pairs each group with
+its coat color:
 
 <!-- from: scripts/bxd_build_demo.sh -->
 
@@ -275,23 +275,23 @@ jq '{ "4": ["black", "rgb(30,30,30)"], "3": ["grey", "rgb(150,150,160)"],
   | group_by(-.value)
   | map($class[.[0].value | floor | tostring] + [map(.sample_name) | join("|")])
   | { rowGroups: map({ match: ("^(" + .[2] + ")$"), group: .[0] }),
-      rowColor: { field: "group",
-                  scale: { domain: map(.[0]), range: map(.[1]) } } }' \
+      color: { field: "group", scale: { domain: map(.[0]), range: map(.[1]) } } }' \
   coat_color_values.json > coatColor.json
 ```
 
-Add both keys to the painting's display entry, beside `rows` and `encoding`,
-together with `facet: "group"`:
+Add `rowGroups` to the painting's display entry, beside `rows` and `encoding`,
+with `facet: "group"`, and put `color` inside `rows`:
 
 - `rowGroups` tags each strain with its coat color as its `group`.
 - `facet: "group"` splits the display into one section per `group`, black at the
   top. The few strains scored between two steps match no entry and form a
   section at the bottom.
-- `rowColor` by `group` is a color scale on each row's label bar, showing the
+- `rows.color` by `group` is a color scale on each row's label bar, showing the
   strain's coat color. The blocks keep their genotype colors, and the unscored
   strains, with no group, get no color.
 
-The fence below holds those new keys, `coatColor.json` with `facet` added.
+The fence below holds those keys as the display entry takes them, `color` inside
+`rows` and `facet` added.
 `https://jbrowse.org/code/jb2/main/test_data/config_bxd.json` holds the whole
 track, as `bxd_chromosome_painting_mm10`.
 
@@ -299,7 +299,7 @@ track, as `bxd_chromosome_painting_mm10`.
 applies edits live.
 
 <details>
-<summary>The generated coatColor.json keys</summary>
+<summary>The coat-color keys on the display entry</summary>
 
 ```json
 {
@@ -322,16 +322,19 @@ applies edits live.
     }
   ],
   "facet": "group",
-  "rowColor": {
-    "field": "group",
-    "scale": {
-      "domain": ["black", "grey", "brown", "dilute brown"],
-      "range": [
-        "rgb(30,30,30)",
-        "rgb(150,150,160)",
-        "rgb(130,80,40)",
-        "rgb(210,175,130)"
-      ]
+  "rows": {
+    "field": "sample",
+    "color": {
+      "field": "group",
+      "scale": {
+        "domain": ["black", "grey", "brown", "dilute brown"],
+        "range": [
+          "rgb(30,30,30)",
+          "rgb(150,150,160)",
+          "rgb(130,80,40)",
+          "rgb(210,175,130)"
+        ]
+      }
     }
   }
 }

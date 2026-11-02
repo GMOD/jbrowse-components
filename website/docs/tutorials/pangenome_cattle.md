@@ -166,8 +166,8 @@ ANG	Angus	taurine
 BIS	Bison	bison
 ```
 
-In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rowColor` in
-the track config is a color scale on each row's label bar, mapping the sample
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows.color`
+in the track config is a color scale on each row's label bar, mapping the sample
 table's `lineage` column through `domain` to `range`. The config also sets:
 
 - `rows.sort` lists the cattle breeds above the wild species, and `rows.labels`
@@ -218,13 +218,13 @@ table's `lineage` column through `domain` to `range`. The config also sets:
           "GAU": "Gaur",
           "BIS": "Bison",
           "YAK": "Yak"
-        }
-      },
-      "rowColor": {
-        "field": "lineage",
-        "scale": {
-          "domain": ["taurine", "indicine", "gaur", "bison", "yak"],
-          "range": ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#D55E00"]
+        },
+        "color": {
+          "field": "lineage",
+          "scale": {
+            "domain": ["taurine", "indicine", "gaur", "bison", "yak"],
+            "range": ["#0072B2", "#E69F00", "#009E73", "#CC79A7", "#D55E00"]
+          }
         }
       }
     }

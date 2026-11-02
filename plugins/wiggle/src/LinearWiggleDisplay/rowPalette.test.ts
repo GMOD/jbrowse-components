@@ -63,7 +63,7 @@ describe('an overlay of several subtracks deals tableau10 by name', () => {
     expect(display.rowColorChoice).toBe('')
   })
 
-  it("greys the subtracks rowColor's pairs leave out under its unknown", () => {
+  it("greys the subtracks rows.colors leave out under rows.color's unknown", () => {
     const display = makeDisplay({
       rows: false,
       displayConfig: {
@@ -104,7 +104,7 @@ it('a lone subtrack keeps the pos/neg pair', () => {
 })
 
 // Each subtrack has a row of its own, so each draws in the plot color unless
-// rowColor or the file gives it one.
+// rows.colors or the file gives it one.
 describe('a row per subtrack deals no palette', () => {
   it('draws every row in the plot color', () => {
     const display = makeDisplay()
@@ -113,7 +113,7 @@ describe('a row per subtrack deals no palette', () => {
     expect(display.rowColorChoice).toBe('')
   })
 
-  it('paints a row rowColor or the file gives a color', () => {
+  it('paints a row rows.colors or the file gives a color', () => {
     const display = makeDisplay({
       names: [],
       displayConfig: {

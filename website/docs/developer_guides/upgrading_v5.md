@@ -379,19 +379,19 @@ the plot and the layout it drew: `multirowxy` is a `bar` on rows, and `xyplot` a
 `MultiLinearWiggleDisplay` kept as display props. The arrangement is therefore
 one per track, shared by every view showing it, and an edit to it is a change to
 the track's settings that undo and reset reach. A color set on one subtrack is
-`rowColor: { scale: { domain, range } }`. `runClustering`, `clusterRegion` and
+an entry in `rows.colors`, by name. `runClustering`, `clusterRegion` and
 `sortRowsBy` stay display props.
 
 <!-- prettier-ignore -->
 | v4 display prop | v5 display config |
 | --- | --- |
-| `layout`, the rows in order with any label and color set on each | `rows.sort`, `rows.labels` and `rowColor` |
+| `layout`, the rows in order with any label and color set on each | `rows.sort`, `rows.labels` and `rows.colors` |
 | `clusterTree` | `rows.tree`, beside `rows.treeProvenance` |
 | `subtreeFilter` | `rows.kept` |
 
-A session with those props opens with them moved into `rows` and `rowColor`, and
-a v4 session's plot, scale, autoscale, domain and colors move to the config
-slots that hold them now.
+A session with those props opens with them moved into `rows`, and a v4 session's
+plot, scale, autoscale, domain and colors move to the config slots that hold
+them now.
 
 ## The variant rows are config too
 
@@ -400,15 +400,15 @@ since its rows are the samples: `rows.sort` is the row order, `rows.labels` the
 relabels, `rows.tree` and `rows.treeProvenance` a clustering run's tree, and
 `rows.kept` the focus. In phased mode the names are haplotypes,
 `"<sample> HP<n>"`, and a sample's name stands for all of its haplotypes.
-`rowColor` is `field | { field, scale: { domain, range } }`: the string is still
-the sample-metadata attribute that tints every row, and
-`scale.domain`/`scale.range` pair row names with the colors a reader set; while
-an attribute is named, its palette takes precedence over them.
+`rows.color` is `field | { field, scale: { domain, range } }`, the
+sample-metadata attribute that tints every row, as v4's `colorBy` was.
+`rows.colors` pairs row names with the colors a reader set, and a row named
+there keeps its color under an attribute.
 
 <!-- prettier-ignore -->
 | v4 | v5 display config |
 | --- | --- |
-| `layout` display prop, the rows in order with any label and color set on each | `rows.sort`, `rows.labels` and `rowColor.scale.domain`/`scale.range` |
+| `layout` display prop, the rows in order with any label and color set on each | `rows.sort`, `rows.labels` and `rows.colors` |
 | `clusterTree` display prop | `rows.tree` |
 | `subtreeFilter` display prop | `rows.kept` |
 
@@ -421,9 +421,9 @@ palette.
 The multi-row feature display is new in v5. Its rows are the values of a feature
 attribute, and `rows` holds both halves: `rows.field` is the attribute, empty
 still picking one off the data, and the other members are the arrangement, as on
-the quantitative display. `rowColor: { scale: { domain, range } }` pairs row
-values with colors, and holds both a color a config names and a color a reader
-sets in **Edit colors/arrangement...**.
+the quantitative display. `rows.colors` pairs row values with colors, and holds
+both a color a config names and a color a reader sets in **Edit
+colors/arrangement...**.
 
 ## The MAF rows are config too
 
@@ -431,11 +431,10 @@ The MAF display keeps its arrangement in `rows` with no `field`, since its rows
 are the species, as on the variant display. The adapter's guide tree stays the
 adapter's: it draws while some rotation of it lists the species in `rows.sort`'s
 order, so a reorder that splits a clade hides it and **Reset row order** brings
-it back, and a clustering run's tree in `rows.tree` replaces it.
-`rowColor: { scale: { domain, range } }` pairs species with the label tint a
-reader set, over the adapter's `samples[].color`. A session saved with
-jbrowse-plugin-mafviewer opens with its `subtreeFilter` in `rows.kept` and its
-`treeAreaWidth` in `rows.axis.width`.
+it back, and a clustering run's tree in `rows.tree` replaces it. `rows.colors`
+pairs species with the label tint a reader set, over the adapter's
+`samples[].color`. A session saved with jbrowse-plugin-mafviewer opens with its
+`subtreeFilter` in `rows.kept` and its `treeAreaWidth` in `rows.axis.width`.
 
 ## The wiggle color is one `encoding.color` object
 

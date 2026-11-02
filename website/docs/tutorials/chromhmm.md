@@ -236,7 +236,7 @@ mnemonics (`12_EnhBiv`, `14_ReprPCWk`), so this track labels its colors with
 `scale.names` spells out the fifteen `scale.domain` colors in order.
 
 The config below leaves out three settings the PAX5 figure uses: a `rows.sort`
-naming every epigenome, grouped by tissue, and the `rowGroups` and `rowColor`
+naming every epigenome, grouped by tissue, and the `rowGroups` and `rows.color`
 built further down that color the label bars. The hosted demo config,
 https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has the track with
 all three:
@@ -312,9 +312,8 @@ settings:
   `match` is a regex over the row names
 - [`facet`](/docs/config/linearmultirowfeaturedisplay/#slot-facet) `"group"`
   splits the display into stacked sections, one per tissue
-- [`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) with
-  `field: "group"` is a color scale on each row's label bar that pairs each
-  tissue with a color
+- [`rows.color`](/docs/config/rowswithstep/#slot-color) with `field: "group"` is
+  a color scale on each row's label bar that pairs each tissue with a color
 
 The file's `itemRgb` still paints the blocks their state colors, so the tissue
 color appears on the label bar alone. Two of the nineteen tissues look like
@@ -330,11 +329,14 @@ this:
     }
   ],
   "facet": "group",
-  "rowColor": {
-    "field": "group",
-    "scale": {
-      "domain": ["Adipose", "Heart"],
-      "range": ["#AF5B39", "#D56F80"]
+  "rows": {
+    "field": "cellType",
+    "color": {
+      "field": "group",
+      "scale": {
+        "domain": ["Adipose", "Heart"],
+        "range": ["#AF5B39", "#D56F80"]
+      }
     }
   }
 }
@@ -348,13 +350,13 @@ escaping the regex metacharacters in the names:
 jq -R -s 'split("\n")[1:-1] | map(split("\t")) | group_by(.[1])
   | { rowGroups: map({ match: ("^(" + (map(.[4] | gsub("(?<c>[.()+*?\\[\\]^$|\\\\{}])"; "\\" + .c)) | join("|")) + ")$"),
                        group: .[0][1] }),
-      rowColor: { field: "group",
-                  scale: { domain: map(.[0][1]), range: map(.[0][2]) } } }' EID_metadata.tab > tissues.json
+      color: { field: "group",
+               scale: { domain: map(.[0][1]), range: map(.[0][2]) } } }' EID_metadata.tab > tissues.json
 ```
 
-Merge the two keys of `tissues.json` into the display. The build script also
-appends the mnemonic to a name that two epigenomes share, which a `STD_NAME`
-match leaves as one row.
+Merge `rowGroups` from `tissues.json` into the display and `color` into its
+`rows`. The build script also appends the mnemonic to a name that two epigenomes
+share, which a `STD_NAME` match leaves as one row.
 
 The hosted track orders the rows by tissue group through `rows.sort` and leaves
 `facet` out, so clustering runs over all the rows together and the label bars

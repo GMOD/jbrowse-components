@@ -83,7 +83,7 @@ box and the export's clip translate. Wiggle-core's `ScorePlotChrome` and
 `ScorePlotSvgFrame` take it as a prop defaulting to the single-plot box, which
 is what the Manhattan and mark displays (no such getter) draw in.
 
-**`encoding.color` maps `score` or `source`; a subtrack's color is `rowColor`'s** (ADR-251).
+**`encoding.color` maps `score` or `source`; a subtrack's color is its row's, `rows.colors` or `rows.color`** (ADR-251).
 Unset, `effectiveColor` is the pair about the `origin` a quantitative track has
 always drawn: no `scale.type`, and a `scale.range` of the color below and the
 color above (`wigglePairOf`). Each mark draws the pair in its own idiom —
@@ -304,7 +304,7 @@ keys them only while its marks paint them, so a written color or a gradient
 keys none.
 
 **`scoreGradientPaints` leaves a row's color on its label bar only.** The
-arrangement dialog's one swatch column edits `rowColor` whatever paints the
+arrangement dialog's one swatch column edits `rows.colors` whatever paints the
 plot. An overlaid heatmap of several sources draws every strip on row 0, the
 last covering the rest, and says so in the corner (`liveNotices`).
 
@@ -338,9 +338,9 @@ written whole, because a channel replaces its setting. Three rules it turns on:
 overlay of several subtracks, and `rowColorPaintsMarks` holds while no gradient
 and no declared `encoding.color` paints the plot, so a lone BigWig keeps the
 red below its baseline and a row per subtrack draws each in the plot color
-unless `rowColor` or the file gives it one.
+unless `rows.colors`, `rows.color` or the file gives it one.
 
-**A reader's color for a row is `rowColor`, and its label is `rows.labels`.**
+**A reader's color for a row is `rows.colors`, and its label is `rows.labels`.**
 `TreeSidebarMixin` arranges them over `discoveredRows`, stamps each row's
 resolved `rowColor` and writes the dialog's submit. `group` has no config home,
 so a `group` pasted into the bulk editor is not kept.
@@ -348,17 +348,17 @@ so a `group` pasted into the bulk editor is not kept.
 **`markSources` is what the plot paints**, by one rule the model and
 `wiggleTables` share (`wiggleMarkColoring`, `wiggleMarkSources`). A color
 over `score`, written or a gradient, paints every mark, so no source color
-reaches them. Over `source`, a source's marks take its `rowColor`. A file's own `color` reaches the
-marks only through `rowColor`, never past a heatmap's ramp, where a fade to
+reaches them. Over `source`, a source's marks take its row color. A file's own `color` reaches the
+marks only through the row color, never past a heatmap's ramp, where a fade to
 each row's file color once keyed nothing and spent hue on two variables. The
 encoder and the tooltip read `markSources`; the label bar
-reads `rowColor` always, so a color set on a row stays on its bar when a
+reads the row color always, so a color set on a row stays on its bar when a
 gradient starts painting rather than going into the ramp. A `group` colors
-nothing until `rowColor` names it.
+nothing until `rows.color` names it.
 
 **A row left uncolored beside dealt ones paints grey** (`UNCOLORED_ROW`,
 `#999`, ggplot's `na.value`): where the palette deals the shared box and some
-row took a color, a subtrack with no value of the `rowColor` field would
+row took a color, a subtrack with no value of the `rows.color` field would
 otherwise paint the plot color, which reads as palette color 0. Rows of their
 own keep the plot color, since nothing beside them is dealt.
 

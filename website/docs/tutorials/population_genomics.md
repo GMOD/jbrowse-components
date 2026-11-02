@@ -425,7 +425,7 @@ ones, with the far breakpoint in `END`:
 
 The samples TSV pairs each line with its `karyotype` (standard or inverted).
 `facet` splits the display into sections, one per `karyotype` value,
-`facet.sort` orders them, and `rowColor` is a color scale on each row's label
+`facet.sort` orders them, and `rows.color` is a color scale on each row's label
 bar:
 
 ```json addtrack
@@ -445,7 +445,7 @@ bar:
     {
       "type": "LinearVariantDisplay",
       "facet": { "field": "karyotype", "sort": ["Standard", "In(2L)t"] },
-      "rowColor": "karyotype"
+      "rows": { "color": "karyotype" }
     }
   ]
 }

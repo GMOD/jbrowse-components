@@ -219,7 +219,10 @@ export async function wiggleTables(
   })
   const paletteDeals =
     wiggleSharesPanel(rowLayout, sources.length) && rowColorPaintsMarks
-  const rowColor = rowColorsOfRows(conf.rows)
+  const rowColor = rowColorsOfRows(
+    conf.rows.color,
+    readConfObject(conf.rows, 'colors'),
+  )
   const rowColors = resolveRowColors(
     sources,
     rowColor.setting.field,

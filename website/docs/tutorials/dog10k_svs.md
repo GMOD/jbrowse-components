@@ -190,10 +190,10 @@ block. The track below also:
 
 The VCF names each sample by its Dog10K ID. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` orders the
-sample rows and names them, and `rowColor` is a color scale on each row's label
-bar. The session below sets both for two animals, and the figure names every row
-the same way. **Edit colors/arrangement...** in the track menu writes both as
-you rename and recolor rows by hand.
+sample rows, names them, and pins a color on each row's label bar. The session
+below sets all three for two animals, and the figure names every row the same
+way. **Edit colors/arrangement...** in the track menu writes them as you rename
+and recolor rows by hand.
 
 ```json session config=test_data/dog10k/config.json
 {
@@ -210,13 +210,8 @@ you rename and recolor rows by hand.
             "type": "LinearVariantDisplay",
             "rows": {
               "sort": ["COLL000001", "CLUPGR000001"],
-              "labels": { "COLL000001": "Collie 1", "CLUPGR000001": "Wolf 1" }
-            },
-            "rowColor": {
-              "scale": {
-                "domain": ["COLL000001", "CLUPGR000001"],
-                "range": ["#0072B2", "#E69F00"]
-              }
+              "labels": { "COLL000001": "Collie 1", "CLUPGR000001": "Wolf 1" },
+              "colors": { "COLL000001": "#0072B2", "CLUPGR000001": "#E69F00" }
             }
           }
         ]
@@ -302,7 +297,7 @@ so the two tracks line up row for row:
   "displays": [
     {
       "type": "LinearVariantDisplay",
-      "rowColor": "group",
+      "rows": { "color": "group" },
       "height": 900
     }
   ]
@@ -310,8 +305,8 @@ so the two tracks line up row for row:
 ```
 
 A samples TSV labels these rows. Its first column is the sample name and every
-other column is an attribute that `rowColor` can name. The _RNASE1_ track is the
-same config with the other slice's `uri`.
+other column is an attribute that `rows.color` can name. The _RNASE1_ track is
+the same config with the other slice's `uri`.
 
 <Figure caption="Top: a duplication over pancreatic amylase. Bottom: an insertion in pancreatic ribonuclease. The same animals are in the same order in both." src="/img/dog10k-diet-genes.png" />
 
@@ -370,8 +365,8 @@ tabix -p vcf dog10k_fgf4_svs.vcf.gz
 
 `fgf4.samples` holds whole breeds: three breeds whose short legs are the trait
 Parker et al. mapped, two spaniel breeds, two standard-proportioned breeds, and
-the Greek gray wolves. A samples TSV labels the rows, and `rowColor` paints its
-`group` column, a breed's body proportions.
+the Greek gray wolves. A samples TSV labels the rows, and `rows.color` paints
+its `group` column, a breed's body proportions.
 
 ```json addtrack
 {
@@ -387,7 +382,7 @@ the Greek gray wolves. A samples TSV labels the rows, and `rowColor` paints its
   "displays": [
     {
       "type": "LinearVariantDisplay",
-      "rowColor": "group",
+      "rows": { "color": "group" },
       "height": 690
     }
   ]

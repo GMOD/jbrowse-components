@@ -229,7 +229,7 @@ STBD000001	Saint Bernard	Giant
 CLUPGR000001	Greek gray wolf	Gray wolf
 ```
 
-`rowColor` is a color scale on each row's label bar, and here it names the
+`rows.color` is a color scale on each row's label bar, and here it names the
 column that paints the swatch:
 
 ```json addtrack
@@ -246,7 +246,7 @@ column that paints the swatch:
   "displays": [
     {
       "type": "LinearVariantDisplay",
-      "rowColor": "size",
+      "rows": { "color": "size" },
       "height": 760
     }
   ]

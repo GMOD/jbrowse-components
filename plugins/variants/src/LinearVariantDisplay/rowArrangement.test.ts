@@ -556,9 +556,9 @@ describe('sorting by genotype keeps what the arrangement put on the rows', () =>
   })
 
   // Same rule, for the overrides the arrangement dialog writes rather than a
-  // palette: `rows.labels` and `rowColor` hold them by name, so they follow the
+  // palette: `rows.labels` and `rows.colors` hold them by name, so they follow the
   // row.
-  it('keeps a hand-set label and rowColor through a sort', () => {
+  it('keeps a hand-set label and color through a sort', () => {
     const display = sortableDisplay()
     const [s0, s1, s2] = display.editableSources
     display.applyRowEdits([{ ...s0!, label: 'first' }, s1!, s2!], {

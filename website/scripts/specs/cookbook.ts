@@ -142,25 +142,13 @@ export const cookbookSpecs: ScreenshotSpec[] = [
                   'Low_complexity',
                 ],
                 axis: { grid: true },
-              },
-              rowColor: {
-                scale: {
-                  domain: [
-                    'SINE',
-                    'LINE',
-                    'LTR',
-                    'DNA',
-                    'Simple_repeat',
-                    'Low_complexity',
-                  ],
-                  range: [
-                    '#e41a1c',
-                    '#377eb8',
-                    '#4daf4a',
-                    '#984ea3',
-                    '#ff7f00',
-                    '#a65628',
-                  ],
+                colors: {
+                  SINE: '#e41a1c',
+                  LINE: '#377eb8',
+                  LTR: '#4daf4a',
+                  DNA: '#984ea3',
+                  Simple_repeat: '#ff7f00',
+                  Low_complexity: '#a65628',
                 },
               },
               height: 260,

@@ -204,7 +204,7 @@ with a `LinearVariantDisplay`:
         "field": "karyotype",
         "sort": ["2L+a/2L+a", "2La/2L+a", "2La/2La"]
       },
-      "rowColor": "karyotype"
+      "rows": { "color": "karyotype" }
     }
   ]
 }
@@ -212,7 +212,7 @@ with a `LinearVariantDisplay`:
 
 [`facet`](/docs/config/linearvariantdisplay/#slot-facet) splits the display into
 one section per `karyotype` value, `facet.sort` orders them by dosage, and
-`rowColor` is a color scale on each row's label bar. With
+`rows.color` is a color scale on each row's label bar. With
 [`genotypes.reference.show`](/docs/config/linearvariantdisplay/#slot-genotypes)
 off, the default, the track fills with the reference color and alt cells paint
 on top.

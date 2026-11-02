@@ -269,7 +269,7 @@ export default function stateModelFactory(
         /**
          * #volatile
          * The worker's authoritative row set, in tree (leaf) order.
-         * `editableSources` arranges it by `rows` and `rowColor`, and `sources`
+         * `editableSources` arranges and colors it by `rows`, and `sources`
          * narrows that by the focus.
          */
         sourcesVolatile: [] as MafSource[],

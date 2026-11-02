@@ -215,11 +215,11 @@ An SNV VCF loads as an ordinary `VariantTrack`:
 
 The display draws one row per sample, labelled with the Dog10K IDs. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, the figure's
-`rows` orders the rows through `sort` and names them through `labels`
-(`{ "GHND000001": "German Hound 1" }`), and `rowColor`, a color scale on each
-row's label bar, tints them.
+`rows` orders the rows through `sort`, names them through `labels`
+(`{ "GHND000001": "German Hound 1" }`), and tints each row's label bar through
+`colors`.
 
-**Edit colors/arrangement...** in the track menu writes both as you rename and
+**Edit colors/arrangement...** in the track menu writes these as you rename and
 recolor rows, and **Advanced → Edit plot...** shows them as text. For a larger
 panel, a `samplesTsvLocation` on the adapter supplies the names instead.
 

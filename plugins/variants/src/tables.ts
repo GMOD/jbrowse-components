@@ -691,7 +691,10 @@ function rowColorsOf(
   drawn: readonly ProcessedSource[],
   rowAlias: RowAlias,
 ) {
-  const { setting, pinned } = rowColorsOfRows(conf.rows)
+  const { setting, pinned } = rowColorsOfRows(
+    conf.rows.color,
+    readConfObject(conf.rows, 'colors'),
+  )
   const dealt = dealValueColors(setting, () => dealRows, false)
   const resolved = resolveRowColors(
     dealRows,

@@ -39,7 +39,7 @@ const overflowingMultiSampleSpec = {
 // retired type of LinearVariantDisplay. An old saved session stores the
 // pre-rename type on the active display instance; the alias must remap it so
 // the dispatcher-less `displays` union still resolves and the display renders. The demo track carries samplesTsvLocation +
-// rowColor:'population' + genotypes.reference.show, so this also exercises the
+// rows.color:'population' + genotypes.reference.show, so this also exercises the
 // metadata-preloading path end to end. `volvox_test_vcf` has genotypes and
 // resolves through the same model.
 const oldTypeNameSpec = {
@@ -101,12 +101,13 @@ const suite: TestSuite = {
       },
     },
 
-    // rowColor:'population' + samplesTsvLocation end to end: the sample-metadata
-    // TSV must parse, reach the display's sources, and drive the palette so
-    // same-population rows share a color and different populations differ.
-    // The color is `rowColor`, which tree-sidebar draws a row's label bar in.
+    // rows.color:'population' + samplesTsvLocation end to end: the
+    // sample-metadata TSV must parse, reach the display's sources, and drive
+    // the palette so same-population rows share a color and different
+    // populations differ. A source's resolved color is its `rowColor`, which
+    // tree-sidebar draws a row's label bar in.
     {
-      name: 'rowColor population colors sample rows from samplesTsv metadata',
+      name: 'rows.color population colors sample rows from samplesTsv metadata',
       fn: async page => {
         await navigateWithSessionSpec(page, populationDemoSpec)
         await findDisplayPainted(page, 'variant-display', 30000)
@@ -140,7 +141,7 @@ const suite: TestSuite = {
         })
         if (info.rowColorField !== 'population') {
           throw new Error(
-            `expected rowColor.field 'population', got '${info.rowColorField}'`,
+            `expected rows.color.field 'population', got '${info.rowColorField}'`,
           )
         }
         if (info.sources.length === 0) {

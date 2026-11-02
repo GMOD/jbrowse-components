@@ -128,11 +128,11 @@ The blocks take the first of these that names a color:
   state colors, for one) opens painted with them, as
   `encoding.color.scale.type: "identity"`; `scale.domain` and `scale.names` name
   those colors in the key, and a `field` reads the colors a column holds.
-- [`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor), a
-  color per row as pairs, the row values in `scale.domain` and their colors in
-  `scale.range`, or with a `field` a color per value of a row attribute such as
-  its `rowGroups` group. Use it when the row identity is the signal (one color
-  per population, per treatment arm).
+- The row's color: [`rows.colors`](/docs/config/rowswithstep/#slot-colors), a
+  color pinned on a row by its value, else
+  [`rows.color`](/docs/config/rowswithstep/#slot-color), a color per value of a
+  row attribute such as its `rowGroups` group. Use it when the row identity is
+  the signal (one color per population, per treatment arm).
 - Otherwise the default feature color.
 
 Binning a numeric column onto a diverging scale is the common case, e.g. segment
@@ -183,9 +183,9 @@ is hidden and offers **Show all categories** to put them back.
 lists first, the rest sorted — the same rule `rows.sort` orders the track's rows
 by.
 
-You can also pick a color for single rows under **Color rows by → Each row** in
-**Edit colors/arrangement...**, which writes each as a `rowColor` entry and
-applies at render time, with no refetch.
+You can also pick a color for single rows from their swatches in **Edit
+colors/arrangement...**, which writes each as a `rows.colors` entry and applies
+at render time, with no refetch.
 
 ## Row height
 
@@ -227,7 +227,7 @@ matches, and
 [`facet: "group"`](/docs/config/linearmultirowfeaturedisplay/#slot-facet) stacks
 the rows in bands by it, each band named in a strip beside the dendrogram and
 keeping its rows in their arranged order; clustering then runs within each band.
-A group takes its color from `rowColor`:
+A group takes its color from `rows.color`:
 
 ```json
 {
@@ -236,11 +236,14 @@ A group takes its color from `rowColor`:
     { "match": "^CLAT", "group": "Coyote" }
   ],
   "facet": "group",
-  "rowColor": {
-    "field": "group",
-    "scale": {
-      "domain": ["Wolf", "Coyote"],
-      "range": ["rgb(27,120,55)", "rgb(224,130,20)"]
+  "rows": {
+    "field": "sample",
+    "color": {
+      "field": "group",
+      "scale": {
+        "domain": ["Wolf", "Coyote"],
+        "range": ["rgb(27,120,55)", "rgb(224,130,20)"]
+      }
     }
   }
 }
@@ -253,14 +256,13 @@ colors as a second cue.
 **Show → Tree** toggles the dendrogram once one has been computed, and **Show →
 Row labels** the labels beside it, which are useful with no clustering run.
 
-A row that
-[`rowColor`](/docs/config/linearmultirowfeaturedisplay/#slot-rowcolor) colors by
-its name or by an attribute such as its group draws a bar of that color at the
-left of its label, so a row can be found by color. A row with no value of that
-attribute, such as one no `rowGroups` entry matches, takes no color unless
-`scale.domain` pairs `""` with one. On a track colored per feature (an `itemRgb`
-painting, a jexl `encoding.color`) the bar is the only place a row's color
-shows.
+A row that [`rows.colors`](/docs/config/rowswithstep/#slot-colors) pins, or that
+[`rows.color`](/docs/config/rowswithstep/#slot-color) colors by an attribute
+such as its group, draws a bar of that color at the left of its label, so a row
+can be found by color. A row with no value of that attribute, such as one no
+`rowGroups` entry matches, takes no color unless `rows.color`'s `scale.domain`
+pairs `""` with one. On a track colored per feature (an `itemRgb` painting, a
+jexl `encoding.color`) the bar is the only place a row's color shows.
 
 <Figure src="/img/tcga/cohort_cnv_erbb2.png" caption="1104 tumors clustered by copy-number profile around ERBB2, with the dendrogram beside them." />
 

@@ -124,7 +124,7 @@ test('the plot reads back what was written', () => {
 })
 
 // The channel reads the score it plots or the subtrack, whose colors are
-// `rowColor`'s, so it takes no other field and no ordinal scale.
+// `rows.colors`', so it takes no other field and no ordinal scale.
 test('the color refuses another field and an ordinal scale', () => {
   const display = makeDisplay(['a'], true)
   for (const color of [

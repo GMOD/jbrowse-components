@@ -356,7 +356,7 @@ describe('the configured per-sample color reaches the sidebar', () => {
   })
 })
 
-describe('rowColor tints a row over the adapter color', () => {
+describe('rows.colors tints a row over the adapter color', () => {
   const SAMPLES = [
     { name: 'hg38', label: 'Human', color: 'red' },
     { name: 'mm10', label: 'Mouse' },

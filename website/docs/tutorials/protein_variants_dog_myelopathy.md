@@ -135,7 +135,7 @@ awk -F'\t' 'BEGIN { OFS = "\t"
 
 The track reads hosted copies of the slice and the sheet; for your own, point
 `vcfGzLocation` and `samplesTsvLocation` at the files the commands wrote.
-`rowColor` names the sheet's column that colors each row:
+`rows.color` names the sheet's column that colors each row:
 
 ```json addtrack
 {
@@ -161,7 +161,7 @@ The track reads hosted copies of the slice and the sheet; for your own, point
     {
       "type": "LinearVariantDisplay",
       "displayId": "dog10k_sod1-LinearVariantDisplay",
-      "rowColor": "category"
+      "rows": { "color": "category" }
     }
   ]
 }

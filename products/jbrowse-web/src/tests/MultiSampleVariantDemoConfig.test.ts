@@ -12,8 +12,8 @@ jest.mock('../makeWorkerInstance', () => () => {})
 // Locks in the v4.1.1 "multi-sample variants colored by population" demo config
 // so it keeps hydrating on this branch: the old `MultiLinearVariantDisplay` type
 // string (renamed to LinearVariantDisplay), the adapter's
-// `samplesTsvLocation` metadata slot, and the display's `rowColor` (`colorBy`
-// until ADR-131) / `referenceDrawingMode` (now `genotypes.reference.show`) /
+// `samplesTsvLocation` metadata slot, and the display's `colorBy` (now
+// `rows.color`) / `referenceDrawingMode` (now `genotypes.reference.show`) /
 // `height` slots must all survive.
 function makePluginManager() {
   return new PluginManager(corePlugins.map(P => new P()))
@@ -52,7 +52,7 @@ test('v4.1.1 multi-sample variant demo config still hydrates', async () => {
         // renamed display type; the DisplayType alias remaps it on hydrate
         type: 'MultiLinearVariantDisplay',
         referenceDrawingMode: 'draw',
-        rowColor: 'population',
+        colorBy: 'population',
         height: 800,
       },
     ],
@@ -70,7 +70,7 @@ test('v4.1.1 multi-sample variant demo config still hydrates', async () => {
     throw new Error('LinearVariantDisplay not found after remap')
   }
 
-  expect(readConfObject(display, ['rowColor', 'field'])).toBe('population')
+  expect(readConfObject(display, ['rows', 'color', 'field'])).toBe('population')
   expect(readConfObject(display, 'height')).toBe(800)
   expect(readConfObject(display, ['genotypes', 'reference', 'show'])).toBe(true)
 })
@@ -119,7 +119,7 @@ test('old MultiLinearVariantDisplay instance resolves on session restore', async
             {
               type: 'LinearVariantDisplay',
               displayId: 'cohort-LinearVariantDisplay',
-              rowColor: 'population',
+              rows: { color: 'population' },
             },
           ],
         },

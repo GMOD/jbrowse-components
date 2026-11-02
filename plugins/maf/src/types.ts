@@ -162,7 +162,7 @@ export interface MafRegionPayload<T> {
  * One species row, in the worker's reply, the display's rows and the sequence
  * widget alike: `RowSource` plus the two navigation fields only MAF has. Every
  * producer fills `label`, with the name when the config gives none. The
- * adapter's `samples[].color` is the row's own `color`, which a `rowColor`
+ * adapter's `samples[].color` is the row's own `color`, which a `rows.colors`
  * entry overrides.
  */
 export interface MafSource extends RowSource {

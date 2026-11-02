@@ -1822,7 +1822,7 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: 'rmsk_hg38_ucsc',
               type: 'LinearMultiRowFeatureDisplay',
-              // No rowColor: the figure shows what the menu path produces.
+              // No rows.colors: the figure shows what the menu path produces.
               rows: { field: 'repClass', axis: { grid: true } },
               height: 260,
             },

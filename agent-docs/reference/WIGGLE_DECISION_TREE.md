@@ -71,16 +71,16 @@ Config bounds are still checked first.
 
 `encoding.color` is one object — `{ value }` holding a CSS string, or
 `{ scale: { type, domain, range, scheme } }` over `score` — and a subtrack's
-color is `rowColor`'s:
+color is its row's, pinned in `rows.colors` or mapped by `rows.color`:
 
 | the layout | an unset `encoding.color` means | the marks paint | the palette deals |
 | --- | --- | --- | --- |
-| shared: several sources in one box | the threshold pair, each source painting its row color on both sides | `rowColor` | by name |
-| row: a row per source, or a lone plot | the threshold pair about the `origin` | `rowColor` | by an attribute only |
+| shared: several sources in one box | the threshold pair, each source painting its row color on both sides | the row color | by name |
+| row: a row per source, or a lone plot | the threshold pair about the `origin` | the row color | by an attribute only |
 | density, either of the above | the pair, as a **ramp** through white at the `origin` | the ramp | by an attribute only |
 
 A written `encoding.color`, a constant or a scale, paints every mark in any
-layout; the table is what an unset one leaves to the rows. A row's `rowColor` draws
+layout; the table is what an unset one leaves to the rows. A row's color draws
 its label bar in every layout that has row labels.
 
 - `colorEncoding` resolves the object through display-kit's `colorEncodingOf`,
@@ -90,7 +90,7 @@ its label bar in every layout that has row labels.
   partitions by, the value they part at, the density LUT, and the color a
   source paints on both sides where it has one.
 - **In density, `encoding.color` is a scale, not an identity**, so every cell
-  reads the one ramp and a row's `rowColor` shows only on the label bar.
+  reads the one ramp and a row's color shows only on the label bar.
 - The color key follows the scale, so which channel it reads and what an unset
   one falls back to come from the same table.
 - One cursor hands out every palette entry, the color's `scale.range` and then

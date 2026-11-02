@@ -169,8 +169,8 @@ In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 [`facet`](/docs/config/linearvariantdisplay/#slot-facet) splits the display into
 stacked sections, one per value of a samples TSV column, sorted, and
 `facet.sort` pins the sections you want first.
-[`rowColor`](/docs/config/linearvariantdisplay/#slot-rowcolor) is a color scale
-on each row's label bar, so it puts the matching color strip in the gutter.
+[`rows.color`](/docs/config/variantrows/#slot-color) is a color scale on each
+row's label bar, so it puts the matching color strip in the gutter.
 
 **Group by** and **Color by → Samples** in the track menu set the same two keys.
 
@@ -196,7 +196,7 @@ on each row's label bar, so it puts the matching color strip in the gutter.
       "connectors": { "height": 130 },
       "encoding": { "color": "impact" },
       "facet": { "field": "histology", "sort": ["ductal", "lobular"] },
-      "rowColor": "histology"
+      "rows": { "color": "histology" }
     }
   ]
 }
@@ -217,7 +217,7 @@ lobular breast cancer
 
 ## Facet rows by receptor subtype
 
-Setting `facet` and `rowColor` to `subtype` instead bands the rows by receptor
+Setting `facet` and `rows.color` to `subtype` instead bands the rows by receptor
 status ([TCGA 2012](https://doi.org/10.1038/nature11412)), with the HR+/HER2-
 band first in `sort`:
 
@@ -246,7 +246,7 @@ band first in `sort`:
         "field": "subtype",
         "sort": ["HR+/HER2-", "HER2+", "triple-negative"]
       },
-      "rowColor": "subtype"
+      "rows": { "color": "subtype" }
     }
   ]
 }

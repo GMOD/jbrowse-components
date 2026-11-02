@@ -102,7 +102,7 @@ BigWig assumptions:
   plus a `warnings` member, which `RowSourceListing` lacks
   (`rowSources.ts`). Today's listing strips everything but label and color
   (`MultiWiggleAdapter.ts:369-375`), so a samples-TSV column never reaches
-  `rowColor` or `facet`, and the table's warnings are dropped
+  `rows.color` or `facet`, and the table's warnings are dropped
   (`:362-364`).
 - It declares `READS_REFERENCE`, so members get a reference:
   `getSubAdapter` hands each member its parent's `keyedSequence`
@@ -215,7 +215,7 @@ likeliest per-sample peak files, match no regex in
 
 `MultiWiggleAddTrackWorkflow` and `CreateMultiWiggleExtension` go, and with
 them the pasted-JSON subadapter form: rename is in the table, color is
-`rowColor` (ADR-160), and a hand-written subadapter list is a config file.
+`rows.colors` (ADR-160, ADR-257), and a hand-written subadapter list is a config file.
 
 `jbrowse text-index` indexes by adapter type (`indexableAdapters`,
 `text-index/command.ts:109`) and skips a stack of BEDs without a word; it walks

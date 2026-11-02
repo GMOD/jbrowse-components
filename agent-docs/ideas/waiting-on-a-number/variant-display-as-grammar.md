@@ -28,7 +28,7 @@ that kind of cost.
 
 `plugins/marks/src/LinearMarkDisplay/`: `pileup` (packing), `flatten` (fans a
 VCF `samples` record out, its `key` the sample: markTransformConfigSchema.ts
-~245), `encoding.row`, `rows` and `rowColor` (sample rows, display-kit),
+~245), `encoding.row`, `rows` with its `colors` and `color` (sample rows, display-kit),
 `facet`, `aggregate`/`bin`, `mate` + `link` (arcs; todo/variant-display-links-band.md),
 legends and scales per ADR-238. reference/MARK_ENCODING.md and
 reference/GRAMMAR_OF_GRAPHICS.md describe them.
