@@ -212,8 +212,8 @@ it:
 
 - the point track's `filter` under 20 kb keeps the centromere's megabase inserts
   off the axis
-- the count track's axis, pinned at 60, lets the centromere saturate so a
-  deletion's few dozen pairs stand up
+- the count track's axis, pinned at 60, lets the centromere saturate so the bin
+  over a deletion stands up
 
 ```json addtrack loc=chr20
 {

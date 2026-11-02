@@ -10,9 +10,10 @@ enhancer, heterochromatin and so on, once per cell type. We:
 
 - merge per-cell-type segmentation BEDs into one file
 - load it as one feature track with a row per cell type, each segment colored by
-  state
-- add a legend, filter states and cluster the rows by similarity
-- load Roadmap's epigenomes and read _HOXA_ and _PAX5_
+  state, over _HOXA_
+- read the state legend, hide states from it and cluster the rows by similarity
+- load Roadmap's epigenomes banded by tissue group over _PAX5_, then narrow the
+  rows to fibroblasts and ES cells over _HOXA_
 
 ## Prerequisites
 
@@ -208,7 +209,7 @@ lineage commits.
 JBrowse builds the key from the state colors, one entry per distinct color,
 labeled with the first state name seen in it. States that share a color merge
 into one entry, so in the Broad 15-state model `4_Strong_Enhancer` shares its
-entry with `5_`. An identity
+entry with `5_Strong_Enhancer`. An identity
 [`encoding.color`](/docs/config/featureencoding/#slot-color) scale keeps the
 file's colors and relabels them in the key.
 
@@ -226,16 +227,17 @@ these actions for reading the rest:
 
 ## Roadmap's epigenomes at PAX5 and HOXA
 
-The
+The nine ENCODE lines are a small sample of tissues. The
 [Roadmap Epigenomics](https://egg2.wustl.edu/roadmap/web_portal/chr_state_learning.html)
 15-state segmentations of the Roadmap epigenomes merge the same way, into one
-track and one fetch. Their state names are mnemonics (`12_EnhBiv`,
-`14_ReprPCWk`), so this track labels its colors with `scale.type: "identity"`:
-the file's `itemRgb` still paints each block, and `scale.names` spells out the
-fifteen `scale.domain` colors in order. The merged file is hosted, so the track
-loads as it stands. The track omits three settings the PAX5 figure uses: a
-`rows.sort` naming every epigenome, grouped by tissue, and the `rowGroups` and
-`rowColor` built below that color the label bars. The hosted demo config,
+track and one fetch, and the merged file is hosted. Their state names are
+mnemonics (`12_EnhBiv`, `14_ReprPCWk`), so this track labels its colors with
+`scale.type: "identity"`: the file's `itemRgb` still paints each block, and
+`scale.names` spells out the fifteen `scale.domain` colors in order.
+
+The config below leaves out three settings the PAX5 figure uses: a `rows.sort`
+naming every epigenome, grouped by tissue, and the `rowGroups` and `rowColor`
+built further down that color the label bars. The hosted demo config,
 https://jbrowse.org/code/jb2/main/test_data/config_demo.json, has the track with
 all three:
 
