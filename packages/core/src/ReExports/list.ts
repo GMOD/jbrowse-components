@@ -462,6 +462,7 @@ export default [
   '@jbrowse/display-kit/highlightHost',
   '@jbrowse/display-kit/installGlobalFetchAutorun',
   '@jbrowse/display-kit/KeyedFetchMixin',
+  '@jbrowse/display-kit/keyWindows',
   '@jbrowse/display-kit/legendConfigSchema',
   '@jbrowse/display-kit/legendHost',
   '@jbrowse/display-kit/LegendMixin',

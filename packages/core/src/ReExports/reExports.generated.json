@@ -4756,6 +4756,15 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/keyWindows": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "keyWindowsOf",
+        "touchesAny",
+        "windowsByRegion"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/legendConfigSchema": {
       "package": "@jbrowse/display-kit",
       "names": [

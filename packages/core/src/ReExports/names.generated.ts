@@ -462,6 +462,7 @@ const names: Record<string, string[]> = {
   '@jbrowse/display-kit/highlightHost': ['isHighlightHost', 'isPinnedInkHost', 'mergeBounds'],
   '@jbrowse/display-kit/installGlobalFetchAutorun': ['installGlobalFetchAutorun'],
   '@jbrowse/display-kit/KeyedFetchMixin': ['default'],
+  '@jbrowse/display-kit/keyWindows': ['keyWindowsOf', 'touchesAny', 'windowsByRegion'],
   '@jbrowse/display-kit/legendConfigSchema': ['legendConfigSchema'],
   '@jbrowse/display-kit/legendHost': ['isLegendHost'],
   '@jbrowse/display-kit/LegendMixin': ['default', 'legendCheckboxItem'],
