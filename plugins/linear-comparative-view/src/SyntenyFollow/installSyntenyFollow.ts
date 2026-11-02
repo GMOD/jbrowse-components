@@ -523,10 +523,6 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
       return { unaligned: false, approximate: false, noSyntenyTrack }
     }
 
-    // the moving row is a dependency of every rung, which re-asserts the follow
-    // over a row something other than a gesture moved
-    void movingView.coarseDynamicBlocks
-
     const spread =
       windows.length > 1
         ? planSpread({

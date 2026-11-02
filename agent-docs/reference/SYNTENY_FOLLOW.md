@@ -208,12 +208,6 @@ can because the rung chooses no block, holds no strand and needs no transform.
 over one window**, so zooming from an overview into one contig does not leave
 every row on the whole genome until the settle.
 
-**Rung 3 reads the moving row like the rung below does**, so a hand zoom
-re-asserts on the next coarse-block debounce. The read costs one re-entry per
-placement, which converges: re-placing writes the same numbers,
-`setCoarseDynamicBlocks` does not assign an equivalent array, and no RPC is
-involved.
-
 The overview is a fixed point only **up to the unaligned flanks**: the union
 starts at the first block's mate edge, so a row with unaligned ends settles a
 hair inside its full extent, once, and reports `followReport.approximate`.
@@ -236,8 +230,7 @@ far row to the three chromosomes the carry keeps.
 The carry is **not filtered against what the moving row can show**: the fetch
 keeps a block only when both ends are in view, so a carried window on a contig
 the row is not displaying maps to nothing. A carried row's blocks are not read
-at all; what re-asserts a hand-nudged interior row is the level that moves it,
-which reads its coarse blocks on every rung.
+at all.
 
 The mechanism, stated without the genomics:
 `agent-docs/mechanisms/carry-the-decision-not-the-rendered-state.md`.
@@ -309,18 +302,21 @@ it.
   in the middle. A row this pass did **not** write stays tracked, since then its
   window is a real input.
 
-The exact pass reads the moving row on purpose, inverting that rule: `planLevel`
-reads its coarse blocks, and that dependency is what re-asserts the follow over
-a row the user nudged by hand. It therefore re-enters on its own navigation —
-one settle wakes it three times, and two things make that converge:
+The exact pass does not read the moving row's blocks either. A gesture on that
+row takes the anchor, so nothing the reader does to it is the follow's to put
+back, and tracking them cost settles that changed nothing: 236 against 185 over
+the jbrowse-web follow suites, for the same 80 resolves. It still re-enters on
+its own navigation, through the level's alignments: a placement that moves the
+row's snapped fetch window refetches them, and `planLevel` reads them. Two
+things make that converge:
 `alreadyShowing` compares against where the row actually is, with a tolerance;
 and the per-level answer promise is shared by key, so all three ride one
 `SyntenyResolveMatchingRegion`. The integration suite asserts that count.
 
 ## A gesture on a followed row takes the anchor
 
-The rows follow whichever row the reader is driving. The exact pass re-asserts
-the follow over any row that moved and cannot tell a drag from a navigation some
+The rows follow whichever row the reader is driving. The anchor's next move
+places every other row, and cannot tell a drag of one from a navigation some
 feature made, so the gesture itself decides.
 
 **The trigger is the gesture, not the settle.** MST middleware on the stack,
@@ -373,8 +369,7 @@ reads are `untracked`. A row showing nothing yet takes nothing: `appendRow`
 builds an LGV whose own init navigates it as a root action, and that places the
 row rather than the anchor. `gestureTakesAnchor.integration.test.ts` holds all
 of this on a real stack; the unit harness's rows are not the host's children and
-see no middleware, which is what lets it still test the exact pass re-asserting
-over a row something other than a gesture moved.
+see no middleware.
 
 ## That convergence is load-bearing, and nothing else damps it
 
@@ -387,12 +382,12 @@ The loudest way in is **a navigation that replaces `displayedRegions`** whether
 or not the row moved, which invalidates `followPairs`, the first thing the exact
 pass reads. `navToResolvedSpan` takes `navTo` first, which moves inside the
 row's existing regions, so a navigation that does not move the row wakes
-nothing. It is not the only way in: the exact pass reads the moving row on
-purpose, so any placement it disagrees with wakes it again. The backstop
-therefore stays load-bearing: asking for the same span **from the same observed
-window** twice cannot be a real disagreement, so `execute` refuses the second.
-Arriving clears the record, which keeps a hand-nudged row navigable back to
-exactly the span it was nudged off.
+nothing. It is not the only way in: a placement that moves the row's fetch
+window refetches the alignments the exact pass reads, so any placement it
+disagrees with wakes it again. The backstop therefore stays load-bearing: asking
+for the same span **from the same observed window** twice cannot be a real
+disagreement, so `execute` refuses the second. Arriving clears the record, which
+keeps a row navigable back to exactly the span it left.
 
 **A navigation that REJECTED keeps its record too, deliberately.** A
 `navToLocString` that replaces `displayedRegions` and then throws would wake the
@@ -521,7 +516,7 @@ snackbar model's own message dedup, so nothing downstream absorbs the repeats.
 
 ## Navigating a followed row from elsewhere in the view takes the anchor
 
-The exact pass re-asserts the follow over any row that moved, and the gesture
+The anchor's next move places every row the follow moves, and the gesture
 middleware above only knows a gesture from its action name — so anything that
 navigates a row the follow MOVES has to take the anchor as well, explicitly and
 onto the right row, or it changes nothing and says it did.

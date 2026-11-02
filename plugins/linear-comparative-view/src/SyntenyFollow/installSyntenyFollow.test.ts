@@ -610,7 +610,7 @@ test('a row that held over an unaligned window keeps no incumbent', async () => 
   ).toEqual(fresh.shown)
 })
 
-describe('a whole-genome row zoomed by hand', () => {
+describe('a whole-genome row', () => {
   async function wholeGenome() {
     const { rows, host } = twoRows([
       display(
@@ -625,12 +625,17 @@ describe('a whole-genome row zoomed by hand', () => {
     return { rows, host }
   }
 
-  test('is put back on the next pass rather than on the next fetch', async () => {
+  // a gesture on the row would take the anchor, so this is only something
+  // else moving it, which the anchor's next move undoes
+  test('moved by something other than a gesture waits for the anchor', async () => {
     const { rows } = await wholeGenome()
     expect(shown(rows[1]!)).toHaveLength(CONTIGS)
     place(rows[1]!, 0, CONTIG)
-    // no fetch key in this harness: only a tracked read of the moving row's
-    // blocks can wake the pass
+    await new Promise(resolve => setTimeout(resolve, 0))
+    expect(shown(rows[1]!)).toEqual(['chr1'])
+
+    place(rows[0]!, 0, CONTIG * CONTIGS - 1)
+    await new Promise(resolve => setTimeout(resolve, 0))
     expect(shown(rows[1]!)).toHaveLength(CONTIGS)
   })
 
@@ -674,11 +679,8 @@ describe('a whole-genome row zoomed by hand', () => {
   })
 })
 
-// the other rung, which navigates rather than positions. The rows here are
-// not the host's children, so no gesture middleware sees the nudge: this is
-// the exact pass re-asserting over a row something other than a gesture
-// moved, which `gestureTakesAnchor.integration.test.ts` is the other half of
-describe('a row nudged off a single-contig answer', () => {
+// the other rung, which navigates rather than positions
+describe('a row moved off a single-contig answer by something other than a gesture', () => {
   const settle = () => new Promise(resolve => setTimeout(resolve, 0))
 
   async function placed() {
@@ -701,13 +703,18 @@ describe('a row nudged off a single-contig answer', () => {
     return { rows, host }
   }
 
-  test('is put back', async () => {
+  test('stays until the anchor moves, then follows it', async () => {
     const { rows } = await placed()
     const before = rows[1]!.offsetPx
     place(rows[1]!, 0, CONTIG * CONTIGS)
     await settle()
     await settle()
-    expect(rows[1]!.offsetPx).toBe(before)
+    expect(rows[1]!.offsetPx).not.toBe(before)
+
+    place(rows[0]!, 0, CONTIG - 1)
+    await settle()
+    await settle()
+    expect(rows[1]!.offsetPx).toBeCloseTo(before, -1)
   })
 })
 
@@ -846,6 +853,7 @@ test('a spread refused mid-drag goes onto the contig that is widest now', async 
   rows[1]!.holdCoarseBlocks()
   place(rows[0]!, 900_000, 1_700_000)
   rows[1]!.releaseCoarseBlocks()
+  rows[0]!.releaseCoarseBlocks()
   await settle()
   await settle()
 
