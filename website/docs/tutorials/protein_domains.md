@@ -54,11 +54,11 @@ annotation with the commands below. Nothing to download to follow the page: the
 track config reads the domain file by URL. The commands take your own genome
 FASTA and GFF3 the same way.
 
-| What it is                                                 | File                                                                                                                                                                          |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The honey bee genome, which gffread reads the CDS from     | [GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz) |
-| Its RefSeq gene models, which the domains are placed on    | [GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz) |
-| The Pfam HMM library, about 400 MB, which hmmscan searches | [Pfam-A.hmm.gz](https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz)                                                                                       |
+| What it is                                                                         | File                                                                                                                                                                          |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The honey bee genome, which gffread reads the CDS from                             | [GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.fna.gz) |
+| Its RefSeq gene models, which the domains are placed on                            | [GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/003/254/395/GCF_003254395.2_Amel_HAv3.1/GCF_003254395.2_Amel_HAv3.1_genomic.gff.gz) |
+| The Pfam HMM library, about 400 MB and 1.5 GB once pressed, which hmmscan searches | [Pfam-A.hmm.gz](https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz)                                                                                       |
 
 ## Calling Pfam domains on the proteins
 
@@ -75,8 +75,14 @@ gffread -S -y proteins.fa -g genome.fa genes.gff3
 ```
 
 `hmmscan` searches each protein against every Pfam family and writes one row per
-domain hit, in residue coordinates along the protein. The library needs pressing
-once:
+domain hit, in residue coordinates along the protein. The library downloads
+gzipped, and needs unpacking and pressing once:
+
+<!-- from: scripts/build_protein_domains.sh -->
+
+```bash
+gzip -d Pfam-A.hmm.gz
+```
 
 <!-- from: scripts/build_protein_domains.sh -->
 
@@ -88,7 +94,8 @@ hmmpress Pfam-A.hmm
 # --cut_ga: each Pfam family's curated gathering threshold, the cutoff InterPro
 # uses, in place of one E-value for every family. hmmscan keeps about two cores
 # busy whatever --cpu asks for, so the build script splits proteins.fa into
-# chunks and scans them at once.
+# chunks and scans them at once, about a quarter hour for an insect proteome on
+# 18 cores.
 hmmscan --cut_ga --cpu 2 --noali --domtblout pfam.domtblout Pfam-A.hmm proteins.fa >/dev/null
 ```
 
@@ -186,8 +193,8 @@ height → Fixed feature height + autogrow track height** to see them all.
 
 <Figure src="/img/protein_domains/vav.png" caption="Honey bee vav: each RefSeq isoform named under its gene model, and its Pfam domains on a row of that name, colored by family." />
 
-XM_006568479.2 starts downstream of the exon that encodes CH, so its row begins
-at RhoGEF.
+XM_006568479.2 keeps only part of the exon that encodes CH, as 5′ UTR, and
+starts translating in an exon the other isoforms skip, so its row has no CH.
 
 ## Reproduce it end to end
 

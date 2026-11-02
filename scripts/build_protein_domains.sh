@@ -78,7 +78,8 @@ gffread -S -y proteins.fa -g "$FA" genes.gff3
 
 if [ ! -f Pfam-A.hmm.h3m ]; then
   curl -fL -o Pfam-A.hmm.gz https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
-  gzip -df Pfam-A.hmm.gz
+  rm -f Pfam-A.hmm
+  gzip -d Pfam-A.hmm.gz
   hmmpress -f Pfam-A.hmm
 fi
 
