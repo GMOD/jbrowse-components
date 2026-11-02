@@ -1,5 +1,6 @@
 import { ConfigurationSchema } from '../configuration/configurationSchema.ts'
 import {
+  displayConfigSchema,
   displayMisnamed,
   unappliedSettingsMessages,
 } from './unknownSnapshotKeys.ts'
@@ -38,6 +39,23 @@ test('a misnamed key points at its path over the setter the display has', () => 
     ),
   ).toEqual([
     'ReportDisplay for track "t" did not apply rowHeight: no config slot takes it — did you mean rows.step?',
+  ])
+})
+
+test('a dotted key naming a declared path points at its nested spelling', () => {
+  expect(
+    unappliedSettingsMessages(
+      label,
+      [
+        { key: 'rows.step', reason: 'no-slot' },
+        { key: 'rows.colour', reason: 'no-slot' },
+      ],
+      displayMisnamed(display),
+      displayConfigSchema(display),
+    ),
+  ).toEqual([
+    'ReportDisplay for track "t" did not apply rows.step: no config slot takes it — did you mean rows: { step }?',
+    'ReportDisplay for track "t" ignored unknown key(s): rows.colour',
   ])
 })
 

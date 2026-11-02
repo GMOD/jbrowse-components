@@ -6,8 +6,10 @@ import { getConfigurationSchemaMetadata } from '../../configuration/schemaRegist
 import { isBareConfigurationSchemaType } from '../../configuration/schemaTypes.ts'
 import { slotValueRefusal } from '../../configuration/slotFacade.ts'
 import {
+  isDottedMemberPath,
   membersDeclaredBy,
   misnamedPaths,
+  nestedSpelling,
 } from '../../configuration/snapshotPreprocess.ts'
 import { isPlainObject } from '../../util/objectUtils.ts'
 
@@ -227,18 +229,22 @@ function misnamedTargetOf(schema: AnyConfigurationSchemaType, key: string) {
 
 /**
  * What a `displayDefaults` key no display takes points at, where a candidate
- * display's `misnamed` names it: ` — did you mean rows.step?`.
+ * display's `misnamed` names it, ` — did you mean rows.step?`, or where it is
+ * a dotted path a display declares, ` — did you mean rows: { step }?`.
  */
 export function misnamedPointerOf(
   key: string,
   displaySchemas: ReadonlyMap<string, AnyConfigurationSchemaType>,
 ) {
+  const schemas = [...displaySchemas.values()]
+  const nested = schemas.some(schema =>
+    isDottedMemberPath(getConfigurationSchemaMetadata(schema), key),
+  )
   const targets = [
-    ...new Set(
-      [...displaySchemas.values()].flatMap(schema =>
-        misnamedTargetOf(schema, key),
-      ),
-    ),
+    ...new Set([
+      ...(nested ? [nestedSpelling(key)] : []),
+      ...schemas.flatMap(schema => misnamedTargetOf(schema, key)),
+    ]),
   ]
   return targets.length > 0 ? ` — did you mean ${targets.join(' or ')}?` : ''
 }

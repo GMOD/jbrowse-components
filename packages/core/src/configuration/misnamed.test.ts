@@ -87,6 +87,63 @@ test('beside other undeclared keys the pointer names the key it answers', () => 
   )
 })
 
+describe('a dotted key naming a declared path', () => {
+  test('a load points at the nested spelling', () => {
+    expect(
+      warningsOf(() => display.create({ displayId: 'd6', 'rows.step': 12 })),
+    ).toEqual([
+      'MisnamedDisplay "d6" does not declare rows.step: loading without it — did you mean rows: { step }?',
+    ])
+  })
+
+  test('a write refuses it with the nested spelling', () => {
+    expect(() =>
+      refusingUndeclaredKeys(() => display.create({ 'rows.step': 12 })),
+    ).toThrow(
+      'MisnamedDisplay takes rows, color, type and displayId, not rows.step — did you mean rows: { step }?',
+    )
+    const conf = display.create({ displayId: 'd7' })
+    expect(() => {
+      // @ts-expect-error a dotted key is no slot
+      setConf(conf, 'rows.step', 1)
+    }).toThrow(
+      'MisnamedDisplay has no config slot "rows.step". Valid slots: color — did you mean rows: { step }?',
+    )
+  })
+
+  test('a sub-schema written whole spells it from the typed entry', () => {
+    const deep = ConfigurationSchema(
+      'DottedDeepDisplay',
+      {
+        rows: ConfigurationSchema(
+          'DottedDeepRows',
+          {
+            axis: ConfigurationSchema('DottedDeepAxis', {
+              width: { type: 'number', defaultValue: 1 },
+            }),
+          },
+          { closed: true },
+        ),
+      },
+      { explicitlyTyped: true, explicitIdentifier: 'displayId' },
+    )
+    const conf = deep.create({ displayId: 'd8' })
+    expect(() => {
+      setConf(conf, 'rows', { 'axis.width': 150 })
+    }).toThrow(
+      'DottedDeepRows takes axis, not axis.width — did you mean rows: { axis: { width } }?',
+    )
+  })
+
+  test('a dotted key the schema does not declare keeps the plain message', () => {
+    expect(
+      warningsOf(() => display.create({ displayId: 'd9', 'rows.height': 4 })),
+    ).toEqual([
+      'MisnamedDisplay "d9" does not declare rows.height: loading without it',
+    ])
+  })
+})
+
 test('an undeclared key not in misnamed keeps the plain message', () => {
   expect(
     warningsOf(() => display.create({ displayId: 'd3', colour: 'red' })),

@@ -372,4 +372,16 @@ describe('a displayDefaults key a display calls misnamed', () => {
     expect(misnamedPointerOf('colour', schemas)).toBe('')
     expect(misnamedPointerOf('rows.colour', schemas)).toBe('')
   })
+
+  test('a dotted key a display declares is unknown, and points at it nested', () => {
+    const { unknownKeys, overrides } = collectDisplayOverrides(
+      { 'rows.step': 12 },
+      schemas,
+    )
+    expect(unknownKeys).toEqual(['rows.step'])
+    expect(overrides.size).toBe(0)
+    expect(misnamedPointerOf('rows.step', schemas)).toBe(
+      ' — did you mean rows: { step }?',
+    )
+  })
 })

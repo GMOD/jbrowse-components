@@ -120,23 +120,69 @@ export function misnamedPaths(target: MisnamedTarget): readonly string[] {
 }
 
 /**
- * What a notice calls the `misnamed` targets of `unknown`, from a schema at
- * `at`: the dotted path to write, from the typed entry where the path is
- * known, else from the schema itself. Empty where none is misnamed.
+ * Whether `members` walks `schema`'s sub-schemas to a member each declares:
+ * `rows`, `step` on a display whose rows declare a step.
+ */
+export function declaresMemberPath(
+  schema: ConfigurationSchemaMetadata | undefined,
+  members: readonly string[],
+): boolean {
+  const [head, ...rest] = members
+  const entry =
+    head !== undefined && schema && Object.hasOwn(schema.definition, head)
+      ? schema.definition[head]
+      : undefined
+  return (
+    entry !== undefined &&
+    !isConstantEntry(entry) &&
+    (rest.length === 0 ||
+      (isBareConfigurationSchemaType(entry) &&
+        declaresMemberPath(getConfigurationSchemaMetadata(entry), rest)))
+  )
+}
+
+/** A dotted path as the nested objects a config writes: `rows: { step }`. */
+export function nestedSpelling(path: string): string {
+  const [head, ...rest] = path.split('.')
+  return rest.length > 0
+    ? `${head}: { ${nestedSpelling(rest.join('.'))} }`
+    : `${head}`
+}
+
+/**
+ * A key a config wrote dotted, `"rows.step"`, where `schema` declares that
+ * path: one key, never a path, so it means nothing until written nested.
+ */
+export function isDottedMemberPath(
+  schema: ConfigurationSchemaMetadata | undefined,
+  key: string,
+) {
+  return key.includes('.') && declaresMemberPath(schema, key.split('.'))
+}
+
+/**
+ * What a notice calls the targets of `unknown`, from a schema at `at`: a
+ * `misnamed` word's dotted path, and a dotted key `schema` declares as the
+ * nested objects to write, each from the typed entry where the path is known,
+ * else from the schema itself. Empty where neither answers a key.
  */
 export function misnamedPointer(
   misnamed: Misnamed = {},
   unknown: readonly string[],
   at = '',
+  schema?: ConfigurationSchemaMetadata,
 ) {
-  const pointed = Object.entries(misnamed)
-    .filter(([key]) => unknown.includes(key))
-    .map(([key, target]) => {
-      const paths = misnamedPaths(target)
-        .map(path => joinPath(at, path))
-        .join(' or ')
-      return unknown.length > 1 ? `${paths} for ${key}` : paths
-    })
+  const pointed = unknown.flatMap(key => {
+    const targets = Object.hasOwn(misnamed, key)
+      ? misnamedPaths(misnamed[key]!).map(path => joinPath(at, path))
+      : isDottedMemberPath(schema, key)
+        ? [nestedSpelling(joinPath(at, key))]
+        : []
+    const paths = targets.join(' or ')
+    return targets.length === 0
+      ? []
+      : [unknown.length > 1 ? `${paths} for ${key}` : paths]
+  })
   return pointed.length > 0 ? ` — did you mean ${listed(pointed)}?` : ''
 }
 
@@ -158,7 +204,7 @@ function checkUndeclaredKeys(
   if (unknown.length > 0) {
     if (bare || writes > 0) {
       throw new Error(
-        `${name} takes ${listed(declared)}, not ${unknown.join(', ')}${misnamedPointer(options.misnamed, unknown, at)}`,
+        `${name} takes ${listed(declared)}, not ${unknown.join(', ')}${misnamedPointer(options.misnamed, unknown, at, schema)}`,
       )
     }
     const key = `${name} ${unknown.toSorted().join(' ')}`
@@ -168,7 +214,7 @@ function checkUndeclaredKeys(
         options.explicitIdentifier ?? ''
       ]
       console.warn(
-        `${name}${typeof id === 'string' ? ` "${id}"` : ''} does not declare ${listed(unknown)}: loading without it${misnamedPointer(options.misnamed, unknown, at)}`,
+        `${name}${typeof id === 'string' ? ` "${id}"` : ''} does not declare ${listed(unknown)}: loading without it${misnamedPointer(options.misnamed, unknown, at, schema)}`,
       )
     }
   }

@@ -1,6 +1,7 @@
 import { isKeyedWrites } from '@jbrowse/add-track-core'
 import {
   getEnv,
+  getType,
   isArrayType,
   isMapType,
   isOptionalType,
@@ -496,9 +497,12 @@ function makeConfigurationSchemaModel<
                   ...slotKeys,
                 ]
                   .sort()
-                  .join(
-                    ', ',
-                  )}${misnamedPointer(options.misnamed, [slotName], configPathOf(self))}`,
+                  .join(', ')}${misnamedPointer(
+                  options.misnamed,
+                  [slotName],
+                  configPathOf(self),
+                  getConfigurationSchemaMetadata(getType(self)),
+                )}`,
           )
         }
         // MST skips its own type check in a production build; `is` does not

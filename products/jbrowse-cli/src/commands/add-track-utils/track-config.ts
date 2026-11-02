@@ -9,7 +9,7 @@ import {
   displayDefaultsForTrackType,
 } from '../validate/displayDefaultKeys.ts'
 import { mergeBySlots } from '../validate/liftConfig.ts'
-import { suggestKey } from '../validate/suggest.ts'
+import { slotsDeclarePath, suggestKey } from '../validate/suggest.ts'
 import { parseJsonFlag } from './validators.ts'
 
 import type { Track } from '../../base.ts'
@@ -150,7 +150,9 @@ function checkDisplayDefaultKeys(
     throw new Error(
       unknown
         .map(key => {
-          const hit = suggestKey(key, keys, misnamed)
+          const hit = suggestKey(key, keys, misnamed, members =>
+            slotsDeclarePath(displayDefaultSlots(trackType), members),
+          )
           return `"${key}" is not a setting ${declarer} declares${hit ? `, did you mean ${hit}?` : ''}`
         })
         .join('\n'),

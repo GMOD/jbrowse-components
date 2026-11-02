@@ -2,9 +2,13 @@ import { getType } from '@jbrowse/mobx-state-tree'
 
 import { getConfigurationSchemaMetadata } from '../configuration/schemaRegistry.ts'
 import { isConfigurationModel } from '../configuration/schemaTypes.ts'
-import { misnamedPointer } from '../configuration/snapshotPreprocess.ts'
+import {
+  isDottedMemberPath,
+  misnamedPointer,
+} from '../configuration/snapshotPreprocess.ts'
 import { getNotificationSink } from './sessionServices.ts'
 
+import type { ConfigurationSchemaMetadata } from '../configuration/schemaRegistry.ts'
 import type { Misnamed } from '../configuration/snapshotPreprocess.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -54,30 +58,38 @@ export function setterOnlyMessage(label: string, keys: string[]) {
   }. Call ${keys.map(displaySetterName).join(', ')} on the display instead.`
 }
 
-/** The `misnamed` words of a display's config schema. */
-export function displayMisnamed(display: unknown) {
+/** A display's config schema, where it has one. */
+export function displayConfigSchema(display: unknown) {
   return typeof display === 'object' &&
     display !== null &&
     'configuration' in display &&
     isConfigurationModel(display.configuration)
-    ? (getConfigurationSchemaMetadata(display.configuration)?.options
-        .misnamed ?? {})
-    : {}
+    ? getConfigurationSchemaMetadata(display.configuration)
+    : undefined
+}
+
+/** The `misnamed` words of a display's config schema. */
+export function displayMisnamed(display: unknown) {
+  return displayConfigSchema(display)?.options.misnamed ?? {}
 }
 
 /**
  * What a surface says of the settings a display did not apply: a word its
- * schema calls `misnamed` points at the path to write, ahead of a setter the
- * display also has, then the setter-only keys, then the rest.
+ * schema calls `misnamed`, or a dotted key naming a path `schema` declares,
+ * points at what to write, ahead of a setter the display also has, then the
+ * setter-only keys, then the rest.
  */
 export function unappliedSettingsMessages(
   label: string,
   unapplied: UnappliedSetting[],
   misnamed: Misnamed,
+  schema?: ConfigurationSchemaMetadata,
 ) {
   const keys = (of: UnappliedSetting[]) => of.map(entry => entry.key)
-  const pointed = unapplied.filter(e => Object.hasOwn(misnamed, e.key))
-  const rest = unapplied.filter(e => !Object.hasOwn(misnamed, e.key))
+  const isPointed = (e: UnappliedSetting) =>
+    Object.hasOwn(misnamed, e.key) || isDottedMemberPath(schema, e.key)
+  const pointed = unapplied.filter(e => isPointed(e))
+  const rest = unapplied.filter(e => !isPointed(e))
   const setterOnly = rest.filter(e => e.reason === 'setter-only')
   const unknown = rest.filter(e => e.reason !== 'setter-only')
   return [
@@ -85,7 +97,7 @@ export function unappliedSettingsMessages(
       ? [
           `${label} did not apply ${keys(pointed).join(', ')}: no config slot takes ${
             pointed.length > 1 ? 'them' : 'it'
-          }${misnamedPointer(misnamed, keys(pointed))}`,
+          }${misnamedPointer(misnamed, keys(pointed), '', schema)}`,
         ]
       : []),
     ...(unknown.length ? [unknownKeysMessage(label, keys(unknown))] : []),

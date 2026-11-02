@@ -4081,6 +4081,7 @@
     "@jbrowse/core/util/unknownSnapshotKeys": {
       "package": "@jbrowse/core",
       "names": [
+        "displayConfigSchema",
         "displayMisnamed",
         "displaySetterName",
         "legacyInitMessage",

@@ -121,6 +121,41 @@ export function createSchemaValidator(
     return [...new Set([...currentKeys(schema.properties), ...composed])]
   }
 
+  // The object schemas a property may hold: through a `$ref`, a member's reset
+  // (`if: null, else: …`) and a union, as a track's `displayDefaults` holds
+  // each display's slot
+  function holders(schema: Schema): Schema[] {
+    const named =
+      typeof schema.$ref === 'string' ? atPointer(schema.$ref) : undefined
+    return named
+      ? holders(named)
+      : [
+          schema,
+          ...(isRecord(schema.else) ? holders(schema.else) : []),
+          ...((schema.anyOf as Schema[] | undefined) ?? []).flatMap(holders),
+        ]
+  }
+
+  function propertyOf(schema: Schema, key: string) {
+    return [schema, ...((schema.allOf as Schema[] | undefined) ?? [])]
+      .map(part => (resolve(part).properties ?? {}) as Record<string, Schema>)
+      .find(properties => Object.hasOwn(properties, key))?.[key]
+  }
+
+  // Whether `members` walks the object's properties to a current one at each
+  // step: `rows`, `step` on a display whose rows declare a step
+  function declaresPath(schema: Schema, members: readonly string[]): boolean {
+    const [head, ...rest] = members
+    return holders(schema).some(holder => {
+      const property = head === undefined ? undefined : propertyOf(holder, head)
+      return (
+        property !== undefined &&
+        property.deprecated !== true &&
+        (rest.length === 0 || declaresPath(property, rest))
+      )
+    })
+  }
+
   function describe(schema: Schema): string {
     const name = refName(schema)
     if (name === 'FileLocation') {
@@ -243,7 +278,9 @@ export function createSchemaValidator(
     accepted: string[],
   ): string {
     const title = typeof schema.title === 'string' ? schema.title : ''
-    const guess = didYouMeanKey(key, accepted, misnamed.get(title))
+    const guess = didYouMeanKey(key, accepted, misnamed.get(title), members =>
+      declaresPath(schema, members),
+    )
     if (key === 'sequenceAdapter' && !title.endsWith('Snapshot')) {
       return 'JBrowse takes the sequence from the assembly the track is displayed against, and this adapter declares no `sequenceAdapter` slot, so the one written here is never read — delete it'
     }
@@ -266,7 +303,9 @@ export function createSchemaValidator(
       return `unknown session key "${key}"${guess} — a session snapshot drops keys it does not declare, so this setting silently does nothing`
     }
     if (title.endsWith('DisplayDefaults')) {
-      return `no display of this track declares "${key}"${guess}`
+      return key.includes('.') && declaresPath(schema, key.split('.'))
+        ? `"${key}" is one key, not a path, so no display of this track reads it${guess}`
+        : `no display of this track declares "${key}"${guess}`
     }
     if (title.endsWith('TrackEntry')) {
       return `"${key}" is neither a config slot nor a property of ${title.replace(/TrackEntry$/, '')}${guess} — the entry's keys are folded onto that display, which reports one it does not declare as an error and ignores it`

@@ -54,6 +54,7 @@ import {
 } from './mstUtils.ts'
 import { isViewModel } from './types/index.ts'
 import {
+  displayConfigSchema,
   displayMisnamed,
   unappliedSettingsMessages,
 } from './unknownSnapshotKeys.ts'
@@ -810,6 +811,7 @@ function notifySettingsReport(
     `${displayType} for track "${trackId}"`,
     unapplied,
     displayMisnamed(display),
+    displayConfigSchema(display),
   )) {
     session.notifyError(message)
   }
