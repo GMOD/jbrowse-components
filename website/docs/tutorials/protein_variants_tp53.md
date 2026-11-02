@@ -15,7 +15,7 @@ the cell cycle after DNA damage. Most _TP53_ mutations in tumours are missense
 changes in its DNA-binding core, and the arginines at residues 175, 248 and 273
 change more often than any other residue. We open codons 248 and 273 side by
 side, beside the crystal structure of the core domain bound to DNA, and read
-which of the protein's conserved sites each hotspot falls in. We'll:
+which of the protein's conserved sites each hotspot falls in. We:
 
 - open _TP53_ in the protein browser with structure 1TUP, and pin the human row
   of the ortholog alignment

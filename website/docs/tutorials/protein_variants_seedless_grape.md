@@ -17,16 +17,13 @@ leucine (R197L), and among the cultivars tested only this change was fully
 linked with seedlessness
 ([Royo et al. 2018](https://doi.org/10.1104/pp.18.00259)). The PDB has no
 structure of the protein, so we open the codon beside its AlphaFold model and
-read how confident the prediction is at residue 197. We'll:
+read how confident the prediction is at residue 197. We:
 
 - open _VviAGL11_ on codon 197 from the protein browser, on the Pinot Noir
-  reference
-- hover the codon's alignment column to find its residue on the model
-- read the model's confidence colors around residue 197 and in the MADS domain
-
-The model is of UniProt A0A217EJJ0, a protein sequenced from the seedless
-cultivar Sultanina (Thompson Seedless), so residue 197 of the model is leucine,
-where the Pinot Noir genome codes arginine.
+  reference, with its AlphaFold model
+- hover the codon's column in the alignment view to find its residue on the
+  model
+- read the model's pLDDT coloring around residue 197 and in the MADS domain
 
 ## Prerequisites
 
@@ -52,7 +49,10 @@ URL. _Your own model_ opens a model of your own.
 
 ## Opening VviAGL11 on codon 197
 
-NCBI names the gene _MADS5_ (NM_001281189.1), on the minus strand of chr18. Open
+NCBI names the gene _MADS5_ (NM_001281189.1), on the minus strand of chr18. The
+protein browser opens the AlphaFold model of UniProt A0A217EJJ0, a protein
+sequenced from the seedless cultivar Sultanina (Thompson Seedless), so residue
+197 of the model is leucine, where the Pinot Noir genome codes arginine. Open
 the protein browser on residue 197:
 
 - open

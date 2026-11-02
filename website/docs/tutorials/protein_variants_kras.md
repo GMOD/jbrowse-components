@@ -16,12 +16,12 @@ holds GTP. In tumours its missense mutations pile up on a few codons: glycine
 its GTP-bound, active state. The drug sotorasib binds KRAS G12C covalently at
 the mutant cysteine. We open the codon beside the crystal structure of that
 complex and read which of the protein's conserved sites the hotspots fall in.
-We'll:
+We:
 
 - open _KRAS_ on codon 12 in the protein browser, with structure 6OIM, and pin
   the human row of the ortholog alignment
 - highlight and label codons 12, 13 and 61 on the genome
-- read ClinVar's records at the codon
+- open ClinVar's records at the codon from the ClinVar track
 - color the genome, the alignment and the structure by the alignment's protein
   domains and sites
 
@@ -62,13 +62,16 @@ browser's linked session. Open it on _KRAS_ residue 12 with structure 6OIM:
 - pick **Use as reference row** on the `human_query` tip of the alignment's
   tree, so a residue matching human draws as a dot
 
-To label the hotspots, drag across the scale bar over codon 12 and pick
-**Highlight region**, then do the same for codon 13. Click the link chip at the
-top of each band, pick **Edit label...** and type `G12` or `G13`.
+A highlight on the genome reaches the alignment and the structure too, so label
+the two hotspots there:
 
-Hover codon 12 on the gene. The hover lights the codon, the alignment column and
-the residue on the structure, and the protein view's header compares the two
-letters: glycine in the genome, cysteine in the crystal.
+- drag across the scale bar over codon 12 and pick **Highlight region**, then do
+  the same for codon 13
+- click the link chip at the top of each band, pick **Edit label...** and type
+  `G12` or `G13`
+- hover codon 12 on the gene. The hover lights the codon, the alignment column
+  and the residue on the structure, and the protein view's header compares the
+  two letters: glycine in the genome, cysteine in the crystal
 
 <Figure src="/img/protein/kras_codon_hover.png" caption="KRAS at codons 12 and 13 with ClinVar, the ortholog alignment pinned to its human row, and 6OIM. The hovered codon, the alignment column and Cys12 mark one position." />
 

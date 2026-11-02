@@ -15,16 +15,16 @@ tutorial_subcategory: Variants on protein structures
 Sickle cell disease comes from one base change in _HBB_, the gene for the β
 chain of haemoglobin. Codon 7 changes from GAG to GTG, so glutamate 6 of the
 mature protein becomes valine. The variant, rs334, turns up again and again in
-genome-wide association studies, and population callsets show who carries one
-copy and who carries two. We put all of that in one JBrowse session beside the
-residue it changes, in a crystal structure of sickle haemoglobin. We'll:
+genome-wide association studies, and population callsets show who has one copy
+and who has two. We put all of that in one JBrowse session beside the residue it
+changes, in a crystal structure of sickle haemoglobin. We:
 
-- open _HBB_ on codon 7 in the protein browser, with structure 2HBS, and hover
-  the codon's alignment column to find its residue
-- add the GWAS Catalog, then a copy filtered to rs334's strongest record for
-  each trait tied to sickle cell trait, and read what each record reports
-- add 1000 Genomes genotypes, one row per genome, with a common synonymous
-  variant four codons upstream as the control
+- open _HBB_ on codon 7 from the protein browser with structure 2HBS, pin the
+  human row of the alignment, and highlight and label the codon
+- add the GWAS Catalog track, then a copy whose filter and labels keep rs334's
+  strongest record for each trait
+- add the 1000 Genomes VCF as a variant track, one row per genome, and sort the
+  rows by genotype at rs334
 - color the genome, the alignment and the structure by the alignment's protein
   domains
 
@@ -84,16 +84,17 @@ transcript and valine in the crystal.
 
 ## The GWAS Catalog at rs334
 
-Open the track selector from the genome view's menu, **Open track selector**,
-search `GWAS Catalog`, and tick it. The catalog has one record per study and
-trait, so a variant studied many times draws as a stack. Click a box to open its
-record.
+The hosted hg38 config already has the GWAS Catalog, one record per study and
+trait:
 
-The records at rs334 include malaria, haemolytic anaemias, glycated haemoglobin
-(HbA1c) and kidney disease. A second copy of the catalog keeps rs334's strongest
-record for each of those traits, the one with the smallest p-value, and labels
-it with its trait, p-value, first author and year, read from the file's own
-columns:
+- choose **Open track selector** in the genome view's menu, search
+  `GWAS Catalog`, and tick it. A variant studied many times draws as a stack
+- click a box to open its record. The records at rs334 include malaria,
+  haemolytic anaemias, glycated haemoglobin (HbA1c) and kidney disease
+
+A second copy of the catalog keeps rs334's strongest record for each of those
+traits, the one with the smallest p-value, and labels it with its trait,
+p-value, first author and year, read from the file's columns:
 
 ```json addtrack loc=chr11:5226956-5227046
 {
@@ -127,8 +128,8 @@ columns:
 }
 ```
 
-The subset is a filter, which **Filter by → Edit filters...** in the track menu
-edits to keep other traits.
+To keep other traits, edit the filter with **Filter by → Edit filters...** in
+the track menu.
 
 <Figure src="/img/protein/hbb_gwas_catalog.png" caption="The GWAS Catalog under HBB, and the copy filtered to rs334's strongest record for each trait, labeled with its trait." />
 
@@ -164,11 +165,14 @@ as one row per genome:
 ```
 
 rs334 sits under the highlighted codon. Right-click its column and pick **Sort
-rows by genotype here**, which gathers its carriers into one block. Nearly all
-of them carry one copy. rs713040, a synonymous change in the His3 codon four
-codons upstream, sits to its left on screen as the control: common, and carried
-as one copy or two. HbC, rs33930165, a second allele of the same codon, shares
-the highlighted column.
+rows by genotype here**, which gathers the genomes with the allele into one
+block, nearly all of them with one copy. Two neighbours help read it:
+
+- **rs713040**, a synonymous change in the His3 codon four codons upstream, sits
+  to its left on screen as the control, a common variant with one copy in some
+  genomes and two in others
+- **HbC**, rs33930165, a second allele of the same codon, shares the highlighted
+  column
 
 <Figure src="/img/protein/hbb_1000_genomes.png" caption="1000 Genomes genotypes under HBB, one row per genome, sorted by genotype at rs334." />
 
@@ -219,15 +223,16 @@ Each step on this page works on any gene the protein browser opens:
 
 - the chips under the search box open other organisms on a residue each, from
   _M. tuberculosis_ _rpoB_ to dog _SOD1_, on genomes.jbrowse.org's GenArk
-  assemblies. [Part 2](/docs/tutorials/protein_variants_dog_myelopathy) takes
-  dog _SOD1_ onto the assembly its population callset uses, and
-  [part 3](/docs/tutorials/protein_variants_seedless_grape) reads a grapevine
-  gene on an AlphaFold model
+  assemblies. [Part 3](/docs/tutorials/protein_variants_seedless_grape) reads a
+  grapevine gene on an AlphaFold model
 - **Launch protein view** in a gene's right-click menu picks the structure
   yourself, and its **File or URL** tab takes a PDB or mmCIF of your own, such
   as a ColabFold or AlphaFold model
-- any multi-sample VCF adds the genotype layer, and **Sort rows by genotype
-  here** gathers the carriers of whichever variant you right-click
+- any multi-sample VCF, bgzipped and tabix-indexed, adds the genotype layer as a
+  variant track configured like the 1000 Genomes track above, and **Sort rows by
+  genotype here** gathers the genomes with whichever variant you right-click.
+  [Part 2](/docs/tutorials/protein_variants_dog_myelopathy) slices one gene out
+  of a large callset and colors the rows from a sample sheet
 
 ## See also
 

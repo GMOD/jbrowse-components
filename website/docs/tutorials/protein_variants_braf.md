@@ -14,7 +14,7 @@ growth signals from RAS to MEK. In about half of melanomas, and in thyroid and
 colorectal tumours, one base change turns valine 600 into glutamate (V600E), and
 the kinase signals without RAS. Vemurafenib and dabrafenib inhibit the mutant
 kinase. We open the codon beside a crystal structure of the V600E kinase domain
-and read which of the kinase domain's conserved sites it falls in. We'll:
+and read which of the kinase domain's conserved sites it falls in. We:
 
 - open _BRAF_ in the protein browser with structure 4MNF, and pin the human row
   of the ortholog alignment

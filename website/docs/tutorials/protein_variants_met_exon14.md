@@ -68,8 +68,8 @@ same way.
 ## Aligning your own RNA-seq reads
 
 A splice-aware aligner writes each read that crosses an intron as one alignment
-with a gap, and JBrowse draws those gaps as junction arcs. HISAT2 gives a BAM
-the protein browser can read:
+with a gap, and JBrowse draws those gaps as junction arcs. HISAT2 writes a
+sorted BAM that JBrowse loads as an alignments track:
 
 ```bash
 # -x: a HISAT2 index of hg38; -1/-2: the read pairs
@@ -124,8 +124,8 @@ structure until they face you; they lie in a groove on CBL.
 ## The cause at the splice site
 
 The first two bases of an intron are almost always GT, and the splicing
-machinery reads them to find the end of the exon. We copy the view to the end of
-exon 14:
+machinery reads them to find the end of the exon. To look for a change there in
+the DNA reads, copy the view to the end of exon 14:
 
 - pick **View options → Copy view** in the view's menu; the copy opens under the
   first view, so scroll down to it and close its RNA-seq tracks
@@ -136,9 +136,9 @@ exon 14:
 
 In panel A, the NCI-H596 arcs leave exon 13 and land on exon 15, over a dip in
 coverage across exon 14, while the EBC-1 arcs enter exon 14 and leave it. In
-panel B, every NCI-H596 read carries T where the reference has the G of the
-intron's GT. Without exon 14 the receptor lacks tyrosine 1003, the residue CBL
-binds in panel C, and CBL marks it for degradation less
+panel B, every NCI-H596 read has T where the reference has the G of the intron's
+GT. Without exon 14 the receptor lacks tyrosine 1003, the residue CBL binds in
+panel C, so CBL marks less of the receptor for degradation
 ([Kong-Beltran et al. 2006](https://doi.org/10.1158/0008-5472.CAN-05-2749)).
 
 ## Your own reads

@@ -17,18 +17,15 @@ to lysine (E40K), and most affected dogs are homozygous for it
 ([Awano et al. 2009](https://doi.org/10.1073/pnas.0812297106)). We put the codon
 beside a crystal structure of the E40K protein itself, then read the allele
 across the Dog10K collection, with wolves and coyotes as the control, since an
-allele they share would predate domestication. We'll:
+allele they share would predate domestication. We:
 
-- open _SOD1_ on codon 40 of the canFam4 dog assembly and launch structure 7WX0
-  and an ortholog alignment from the gene's right-click menu
-- slice _SOD1_ out of the Dog10K SNV callset and make a sample sheet of each
-  animal's category
-- add the slice as a track, one row per animal, colored by category
-
-[Part 1](/docs/tutorials/protein_variants_sickle_cell) opened its gene from the
-protein browser. The protein browser opens dog genes on a Labrador assembly, and
-Dog10K is called against canFam4, so here we launch the same three views
-ourselves on canFam4.
+- launch structure 7WX0 and an ortholog alignment from the _SOD1_ gene's
+  right-click menu on the canFam4 dog assembly, with **Launch protein view** and
+  **Launch MSA view**
+- slice _SOD1_ out of the Dog10K SNV callset with `bcftools`, and write a sample
+  sheet of each animal's category
+- add the slice as a variant track, one row per animal, with the rows colored by
+  category
 
 ## Prerequisites
 
@@ -51,15 +48,16 @@ conda install -c bioconda -c conda-forge bcftools htslib
 
 ## The data
 
-The Dog10K consortium's public share
-([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)). Nothing to
-download: the commands below read these files by URL. The slicing step reads any
-tabix-indexed VCF over HTTP, so a callset of your own slices the same way.
+The callset and the sample table come from the Dog10K consortium's public share
+([Meadows et al. 2023](https://doi.org/10.1186/s13059-023-03023-7)). You don't
+need these files to follow the page: the track reads hosted copies of what the
+commands below write. The slicing command streams the callset over HTTP, so a
+tabix-indexed VCF of your own slices the same way.
 
-| What it is                                                             | File                                                                                                                                                            |
-| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The SNV callset, 397 GB over 1,987 canids on canFam4 (UU_Cfam_GSD_1.0) | [AutoAndXPAR.SNPs.vqsr99.vcf.gz](https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz)                       |
-| The sample table, breed and category per animal                        | [dog10K-alignment-sample-table.2022-02-23-v7.txt](https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt) |
+| What it is                                                                                            | File                                                                                                                                                            |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The SNV callset, 397 GB over 1,987 canids on canFam4 (UU_Cfam_GSD_1.0), streamed and never downloaded | [AutoAndXPAR.SNPs.vqsr99.vcf.gz](https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz)                       |
+| The sample table, breed and category per animal                                                       | [dog10K-alignment-sample-table.2022-02-23-v7.txt](https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt) |
 
 <details>
 <summary>Read by URL (no download needed)</summary>
@@ -73,8 +71,11 @@ tabix-indexed VCF over HTTP, so a callset of your own slices the same way.
 
 ## Opening SOD1 on codon 40 with the E40K structure
 
-Codon 40 of NM_001003035.1 sits in _SOD1_'s second coding exon, at
-chr31:27,123,057-27,123,059 on canFam4. Open the
+[Part 1](/docs/tutorials/protein_variants_sickle_cell) opened its gene from the
+protein browser, which opens dog genes on a Labrador assembly. Dog10K is called
+against canFam4, so here we launch the same three views from the gene's
+right-click menu on canFam4. Codon 40 of NM_001003035.1 sits in _SOD1_'s second
+coding exon, at chr31:27,123,057-27,123,059. Open the
 [canFam4 hub on genomes.jbrowse.org](https://genomes.jbrowse.org/ucsc/canFam4/)
 and:
 
@@ -97,8 +98,9 @@ letters: glutamate in the dog genome, lysine in the crystal.
 
 ## Slicing SOD1 out of Dog10K
 
-The Dog10K callset has a tabix index, so `bcftools` reads one gene over HTTP.
-This keeps the genotypes and drops the rest:
+`bcftools` reads one gene of the tabix-indexed callset over HTTP and writes a
+small VCF of its genotypes. Set `SNVS` to your own callset's path or URL to
+slice it the same way:
 
 ```bash
 SNVS=https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/AutoAndXPAR.SNPs.vqsr99.vcf.gz
@@ -114,9 +116,11 @@ The sample table files each animal under a category:
 curl -o sample-table.txt https://kiddlabshare.med.umich.edu/dog10K/sample-information/dog10K-alignment-sample-table.2022-02-23-v7.txt
 ```
 
-An awk command turns the table into the sheet JBrowse reads, with wolves first,
-then coyotes, village dogs, mixed and other dogs, and breed dogs, sorted by
-breed within each:
+JBrowse reads a sample sheet as a TSV whose first column, `name`, matches the
+VCF's sample names, with any further columns as metadata the rows can be colored
+by. An awk command writes that sheet from the table, with wolves first, then
+coyotes, village dogs, mixed and other dogs, and breed dogs, sorted by breed
+within each:
 
 ```bash
 awk -F'\t' 'BEGIN { OFS = "\t"
@@ -129,7 +133,9 @@ awk -F'\t' 'BEGIN { OFS = "\t"
 
 ## E40K across breeds, village dogs and wild canids
 
-Add the slice as a track, with hosted copies of the two files:
+The track reads hosted copies of the slice and the sheet; for your own, point
+`vcfGzLocation` and `samplesTsvLocation` at the files the commands wrote.
+`rowColor` names the sheet's column that colors each row:
 
 ```json addtrack
 {
