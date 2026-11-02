@@ -259,6 +259,7 @@ function abca7View({
       },
       {
         trackId: 'hprc_abca7_trgt',
+        genotypes: { show: false },
         height: 40,
       },
       graphTrack('hprc_v2_1_walk_lanes', {
