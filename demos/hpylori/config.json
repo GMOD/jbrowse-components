@@ -160,10 +160,10 @@
         },
         "index": {
           "location": {
-            "uri": "26695_vs_j99.pif.gz.tbi",
+            "uri": "26695_vs_j99.pif.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         },
         "assemblyNames": ["GCF_000982695.1", "GCF_000307795.1"]
       },
@@ -181,10 +181,10 @@
         },
         "index": {
           "location": {
-            "uri": "26695_vs_chc155.pif.gz.tbi",
+            "uri": "26695_vs_chc155.pif.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         },
         "assemblyNames": ["GCF_025998455.1", "GCF_000307795.1"]
       },
@@ -202,10 +202,10 @@
         },
         "index": {
           "location": {
-            "uri": "chc155_vs_j99.pif.gz.tbi",
+            "uri": "chc155_vs_j99.pif.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         },
         "assemblyNames": ["GCF_000982695.1", "GCF_025998455.1"]
       },

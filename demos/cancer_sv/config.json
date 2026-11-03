@@ -143,9 +143,9 @@
           "uri": "der3_RARB.vs_reference.pif.gz"
         },
         "index": {
-          "indexType": "TBI",
+          "indexType": "CSI",
           "location": {
-            "uri": "der3_RARB.vs_reference.pif.gz.tbi"
+            "uri": "der3_RARB.vs_reference.pif.gz.csi"
           }
         }
       }
@@ -163,7 +163,7 @@
         },
         "index": {
           "location": {
-            "uri": "der3_RARB.derivative_segments.bed.gz.tbi"
+            "uri": "der3_RARB.derivative_segments.bed.gz.csi"
           }
         }
       }

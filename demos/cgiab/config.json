@@ -169,9 +169,9 @@
           "locationType": "UriLocation"
         },
         "index": {
-          "indexType": "TBI",
+          "indexType": "CSI",
           "location": {
-            "uri": "HG008T_v3.2.pif.gz.tbi",
+            "uri": "HG008T_v3.2.pif.gz.csi",
             "locationType": "UriLocation"
           }
         }
@@ -383,9 +383,9 @@
           "locationType": "UriLocation"
         },
         "index": {
-          "indexType": "TBI",
+          "indexType": "CSI",
           "location": {
-            "uri": "HG008T-clones.cnv.multirow.bed.gz.tbi",
+            "uri": "HG008T-clones.cnv.multirow.bed.gz.csi",
             "locationType": "UriLocation"
           }
         }

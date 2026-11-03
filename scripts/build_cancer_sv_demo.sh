@@ -104,9 +104,9 @@ DER3=(
   der3_RARB.reads_vs_derivative.bam
   der3_RARB.reads_vs_derivative.bam.bai
   der3_RARB.derivative_segments.bed.gz
-  der3_RARB.derivative_segments.bed.gz.tbi
+  der3_RARB.derivative_segments.bed.gz.csi
   der3_RARB.vs_reference.pif.gz
-  der3_RARB.vs_reference.pif.gz.tbi
+  der3_RARB.vs_reference.pif.gz.csi
   der3_RARB.vs_reference.pif.gz.gzi
 )
 for f in "${DER3[@]}"; do
