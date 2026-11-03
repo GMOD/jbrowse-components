@@ -126,15 +126,16 @@ export async function executeMafAlignmentData({
   //
   // The reference is normally listed as a sample, so it self-matches at every
   // column; `MafRegionSink` names its row so the conservation metric can
-  // exclude it. `region.assemblyName` is the fallback for a file whose blocks
-  // resolved no reference at all; identity runs over every row when neither
-  // names one.
-  const refRowId = refSampleId ?? region.assemblyName
+  // exclude it. A reference the sample set leaves out has no row, and the
+  // view's assembly name is not a stand-in: it can match a listed sample that
+  // is not the reference. Identity runs over every row when none is named.
   const coverage = buildMafCoverageRegion(
     packed,
     region.start,
     region.end,
-    isVisible(refRowId) ? refRowId : undefined,
+    refSampleId !== undefined && isVisible(refSampleId)
+      ? refSampleId
+      : undefined,
     interbaseIndicators,
   )
 

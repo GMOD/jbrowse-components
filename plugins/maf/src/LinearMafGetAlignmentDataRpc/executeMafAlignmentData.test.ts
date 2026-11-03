@@ -30,13 +30,14 @@ function feature(
   refSeq: string,
   alignments: Record<string, AlignmentRecord>,
   empties: Record<string, EmptyRecord> = {},
+  reference = { sampleId: 'hg38' in alignments ? 'hg38' : undefined },
 ) {
   const data: Record<string, unknown> = {
     start: startBp,
     seq: refSeq,
     alignments,
     empties,
-    refSampleId: 'hg38' in alignments ? 'hg38' : undefined,
+    refSampleId: reference.sampleId,
   }
   return {
     id: () => `b${startBp}`,
@@ -196,4 +197,24 @@ test('a region with no blocks packs empty rather than throwing', async () => {
   expect(regionData.blockStartBp.length).toBe(0)
   expect(regionData.arena.length).toBe(0)
   expect(samples).toEqual([])
+})
+
+// The view assembly name is not the MAF reference. A MAF whose reference the
+// sample set leaves out names none, and a listed row that merely shares the
+// view name is an ordinary row, so identity runs over it too.
+test('identity counts a listed row that only shares the view assembly name', async () => {
+  const { regionData } = await run([
+    feature(
+      0,
+      'ACGT',
+      { hg38: row('ACGG'), mm10: row('ACGT') },
+      {},
+      { sampleId: undefined },
+    ),
+  ])
+
+  expect(regionData.refSampleId).toBeUndefined()
+  expect([...regionData.coverage.identityScores.slice(0, 4)]).toEqual([
+    1, 1, 1, 0.5,
+  ])
 })
