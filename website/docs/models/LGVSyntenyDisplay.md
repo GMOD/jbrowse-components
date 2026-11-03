@@ -100,7 +100,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-livelodtier">**liveLodTier**</span><br><code>LodTier</code> | The same tier off the live zoom, for the base's `dataSuperseded`. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>283 inherited getters from 16 models</summary>
+<summary>284 inherited getters from 16 models</summary>
 
 From [LodTierInfoMixin](../lodtierinfomixin): <span id="getter-adapterheader">[`adapterHeader`](../lodtierinfomixin#getter-adapterheader)</span>, <span id="getter-lodtierinfo">[`lodTierInfo`](../lodtierinfomixin#getter-lodtierinfo)</span>
 
@@ -112,7 +112,7 @@ From [FacetWritesMixin](../facetwritesmixin): <span id="getter-writtenfacet">[`w
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
 
-From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>, <span id="getter-parkedidentity">[`parkedIdentity`](../parkedcolormixin#getter-parkedidentity)</span>
 
 From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendtop">[`legendTop`](../legendmixin#getter-legendtop)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span>
 
@@ -172,7 +172,7 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-setresolution">**setResolution**</span><br><code>(arg: LodMode) =&gt; void</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>112 inherited actions from 15 models</summary>
+<summary>113 inherited actions from 15 models</summary>
 
 From [LodTierInfoMixin](../lodtierinfomixin): <span id="action-setadapterheader">[`setAdapterHeader`](../lodtierinfomixin#action-setadapterheader)</span>
 
@@ -182,7 +182,7 @@ From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-hidegroup">[`hi
 
 From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetsort">[`setFacetSort`](../facetwritesmixin#action-setfacetsort)</span>
 
-From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-colorbyidentity">[`colorByIdentity`](../colorwritesmixin#action-colorbyidentity)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 

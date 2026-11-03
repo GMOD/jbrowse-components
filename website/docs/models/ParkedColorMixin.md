@@ -1,13 +1,13 @@
 ---
 id: parkedcolormixin
 title: ParkedColorMixin
-description: "The field the last write took off a color object, with its domain, range and key names, so picking that field again gives them back (colorForField)."
+description: "The field the last write took off a color object, with its domain, range and key names, so picking that field again gives them back (colorForField), and likewise the fieldless identity scale and its…"
 sidebar_label: Mixin -> ParkedColorMixin
 ---
 
 Auto-generated from the @jbrowse/mobx-state-tree model in the source — see the [developer guide](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/ParkedColorMixin.ts).
 
-The field the last write took off a color object, with its domain, range and key names, so picking that field again gives them back (`colorForField`). A written field always paints, so the field a write leaves, for Default, Solid color or another field, is display state rather than config. Each writer parks before it writes, so no reader sees the field gone unparked
+The field the last write took off a color object, with its domain, range and key names, so picking that field again gives them back (`colorForField`), and likewise the fieldless identity scale and its key (`colorForIdentity`). A written field always paints, so the field a write leaves, for Default, Solid color or another field, is display state rather than config. Each writer parks before it writes, so no reader sees the field gone unparked
 
 ## Properties
 
@@ -22,6 +22,7 @@ The field the last write took off a color object, with its domain, range and key
 | Member | Description |
 | --- | --- |
 | <span id="getter-parkedcolor">**parkedColor**</span><br><code>ColorSlots &#124; undefined</code> | The `color` object's parked field |
+| <span id="getter-parkedidentity">**parkedIdentity**</span><br><code>ColorSlots &#124; undefined</code> | The `color` object's parked identity scale and its key |
 
 ## Methods
 

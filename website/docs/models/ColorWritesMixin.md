@@ -28,9 +28,9 @@ From [ParkedColorMixin](../parkedcolormixin): <span id="property-parkedcolors">[
 | <span id="getter-writtencolor">**writtenColor**</span><br><code>ColorSlots</code> | The `encoding.color` channel as these writes and an Apply button read it, `writtenColorOf`. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>1 inherited getter from one model</summary>
+<summary>2 inherited getters from one model</summary>
 
-From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>, <span id="getter-parkedidentity">[`parkedIdentity`](../parkedcolormixin#getter-parkedidentity)</span>
 
 </details>
 
@@ -50,7 +50,8 @@ From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`
 | --- | --- |
 | <span id="action-colorbyfield">**colorByField**</span><br><code>(field: string &#124; undefined) =&gt; void</code> | Paint by `field`, keeping its domain, range and key names while it is the field already painting or the one parked; undefined paints `value` and parks the field. |
 | <span id="action-setcolorvalue">**setColorValue**</span><br><code>(value: string &#124; undefined) =&gt; void</code> | Paint every feature `value`, a CSS color or a `jexl:` callback, parking the field; undefined lets each feature's own color paint. |
-| <span id="action-pickdefaultcolor">**pickDefaultColor**</span><br><code>() =&gt; void</code> | Color by's Default: no field and no constant, so the track's own color paints, a `jexl:` expression included. |
+| <span id="action-colorbyidentity">**colorByIdentity**</span><br><code>() =&gt; void</code> | Paint each feature its file's own color through a fieldless identity scale, parking the field and taking back a parked key. |
+| <span id="action-pickdefaultcolor">**pickDefaultColor**</span><br><code>() =&gt; void</code> | Color by's Default: no field, no constant and no identity scale, so the track's own color paints, a `jexl:` expression included. |
 | <span id="action-picksolidcolor">**pickSolidColor**</span><br><code>() =&gt; void</code> | Color by's Solid color...: paints the constant kept beside a painting field, where there is one, and opens the display's picker. |
 
 <details class="inherited-members" data-pagefind-ignore>

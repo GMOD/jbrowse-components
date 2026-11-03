@@ -4372,6 +4372,7 @@
         "colorFieldOf",
         "colorFieldSlot",
         "colorForField",
+        "colorForIdentity",
         "colorForScheme",
         "colorForValue",
         "colorInvalidSlot",
@@ -4400,6 +4401,7 @@
         "paintedScale",
         "pairedColorsOf",
         "parkedColorOf",
+        "parkedIdentityOf",
         "presetOf",
         "withPreset"
       ],
@@ -4409,6 +4411,7 @@
       "package": "@jbrowse/display-kit",
       "names": [
         "default",
+        "solidColorOf",
         "writtenColorOf"
       ],
       "worker": "real"

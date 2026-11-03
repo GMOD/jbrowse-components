@@ -116,7 +116,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-viewsignature">**viewSignature**</span><br><code>string &#124; undefined</code> | The static blocks plus the binsize, so a pan inside them redraws and only a block entering or a binsize step refetches. Undefined until the header lands. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>92 inherited getters from 13 models</summary>
+<summary>93 inherited getters from 13 models</summary>
 
 From [PointerHoverMixin](../pointerhovermixin): <span id="getter-hoveredfeature">[`hoveredFeature`](../pointerhovermixin#getter-hoveredfeature)</span>
 
@@ -124,7 +124,7 @@ From [TriangleMatrixMixin](../trianglematrixmixin): <span id="getter-heightmode"
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
 
-From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>, <span id="getter-parkedidentity">[`parkedIdentity`](../parkedcolormixin#getter-parkedidentity)</span>
 
 From [MatrixRampMixin](../matrixrampmixin): <span id="getter-colorencoding">[`colorEncoding`](../matrixrampmixin#getter-colorencoding)</span>, <span id="getter-colorscaletype">[`colorScaleType`](../matrixrampmixin#getter-colorscaletype)</span>, <span id="getter-colorscheme">[`colorScheme`](../matrixrampmixin#getter-colorscheme)</span>, <span id="getter-colorreverse">[`colorReverse`](../matrixrampmixin#getter-colorreverse)</span>, <span id="getter-colorramp">[`colorRamp`](../matrixrampmixin#getter-colorramp)</span>, <span id="getter-colorscale">[`colorScale`](../matrixrampmixin#getter-colorscale)</span>, <span id="getter-colordomain">[`colorDomain`](../matrixrampmixin#getter-colordomain)</span>, <span id="getter-colormidnorm">[`colorMidNorm`](../matrixrampmixin#getter-colormidnorm)</span>, <span id="getter-matrixcolor">[`matrixColor`](../matrixrampmixin#getter-matrixcolor)</span>, <span id="getter-colorfieldtitle">[`colorFieldTitle`](../matrixrampmixin#getter-colorfieldtitle)</span>
 
@@ -191,13 +191,13 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-stepresolution">**stepResolution**</span><br><code>(delta: number) =&gt; void</code> | `delta` binsizes finer, clamped to the file's. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>43 inherited actions from 12 models</summary>
+<summary>44 inherited actions from 12 models</summary>
 
 From [PointerHoverMixin](../pointerhovermixin): <span id="action-setpointer">[`setPointer`](../pointerhovermixin#action-setpointer)</span>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="action-setrpcdata">[`setRpcData`](../trianglematrixmixin#action-setrpcdata)</span>, <span id="action-setheightmode">[`setHeightMode`](../trianglematrixmixin#action-setheightmode)</span>
 
-From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-colorbyidentity">[`colorByIdentity`](../colorwritesmixin#action-colorbyidentity)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 

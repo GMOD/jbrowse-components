@@ -329,7 +329,7 @@ From [TrackHeightMixin](../trackheightmixin): <span id="volatile-scrolltop">[`sc
 | <span id="getter-gateenabled">**gateEnabled**</span><br><code>boolean</code> | Opt into RegionTooLargeMixin's byte gate: `fetchNeeded` passes `resolvedByteLimit()` to `RenderAlignmentData`, whose first await is the index estimate, so an over-budget region is refused before a read downloads. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>101 inherited getters from 14 models</summary>
+<summary>102 inherited getters from 14 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="getter-hiddengroups">[`hiddenGroups`](../hiddengroupsmixin#getter-hiddengroups)</span>, <span id="getter-hiddengroupkeys">[`hiddenGroupKeys`](../hiddengroupsmixin#getter-hiddengroupkeys)</span>, <span id="getter-groupstatekey">[`groupStateKey`](../hiddengroupsmixin#getter-groupstatekey)</span>
 
@@ -337,7 +337,7 @@ From [FacetWritesMixin](../facetwritesmixin): <span id="getter-writtenfacet">[`w
 
 From [ColorWritesMixin](../colorwritesmixin): <span id="getter-writtencolor">[`writtenColor`](../colorwritesmixin#getter-writtencolor)</span>
 
-From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>, <span id="getter-parkedidentity">[`parkedIdentity`](../parkedcolormixin#getter-parkedidentity)</span>
 
 From [LegendMixin](../legendmixin): <span id="getter-showlegend">[`showLegend`](../legendmixin#getter-showlegend)</span>, <span id="getter-legendright">[`legendRight`](../legendmixin#getter-legendright)</span>, <span id="getter-legendtop">[`legendTop`](../legendmixin#getter-legendtop)</span>, <span id="getter-legendspec">[`legendSpec`](../legendmixin#getter-legendspec)</span>, <span id="getter-haslegendkey">[`hasLegendKey`](../legendmixin#getter-haslegendkey)</span>
 
@@ -464,13 +464,13 @@ From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`rendering
 | <span id="action-clearhoveredfeature">**clearHoveredFeature**</span><br><code>() =&gt; void</code> | Fills `BaseDisplay`'s hover-clear hook, which the fetch foundation's reaction calls on every viewport change. A pan, zoom or internal scroll under a stationary cursor fires no mousemove or mouseleave, so the highlight and tooltip would keep naming the read that was there. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>60 inherited actions from 13 models</summary>
+<summary>61 inherited actions from 13 models</summary>
 
 From [HiddenGroupsMixin](../hiddengroupsmixin): <span id="action-hidegroup">[`hideGroup`](../hiddengroupsmixin#action-hidegroup)</span>, <span id="action-showallgroups">[`showAllGroups`](../hiddengroupsmixin#action-showallgroups)</span>
 
 From [FacetWritesMixin](../facetwritesmixin): <span id="action-facetbyfield">[`facetByField`](../facetwritesmixin#action-facetbyfield)</span>, <span id="action-setfacetsort">[`setFacetSort`](../facetwritesmixin#action-setfacetsort)</span>
 
-From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
+From [ColorWritesMixin](../colorwritesmixin): <span id="action-colorbyfield">[`colorByField`](../colorwritesmixin#action-colorbyfield)</span>, <span id="action-setcolorvalue">[`setColorValue`](../colorwritesmixin#action-setcolorvalue)</span>, <span id="action-colorbyidentity">[`colorByIdentity`](../colorwritesmixin#action-colorbyidentity)</span>, <span id="action-pickdefaultcolor">[`pickDefaultColor`](../colorwritesmixin#action-pickdefaultcolor)</span>, <span id="action-picksolidcolor">[`pickSolidColor`](../colorwritesmixin#action-picksolidcolor)</span>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="action-parkcolor">[`parkColor`](../parkedcolormixin#action-parkcolor)</span>
 

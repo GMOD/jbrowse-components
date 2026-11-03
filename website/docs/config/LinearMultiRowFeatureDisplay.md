@@ -13,7 +13,8 @@ track per cell type. It is the mark display with a `rect` per feature as
 its default plot, so every mark, scale, facet and row setting applies.
 
 With nothing declared it reads a sample of the features once: a row per
-`repClass` where they carry one, else per `name`; each feature its file's
+`repClass` where they carry one, else per the first attribute few values
+apart (`sample` in the first example), else per `name`; each feature its file's
 own BED color where it has one; and a feature whose children have none of
 their own, a BED12 row or a transcript, as its blocks joined by a line.
 

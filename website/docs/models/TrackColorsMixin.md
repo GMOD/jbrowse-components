@@ -64,9 +64,9 @@ From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="property-filter">[`f
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | The active mode's key, or none for a mode without one. View-wide rather than per display because the key is one box for the whole view, and the ramp domain it labels is the view's. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>3 inherited getters from 2 models</summary>
+<summary>4 inherited getters from 2 models</summary>
 
-From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>
+From [ParkedColorMixin](../parkedcolormixin): <span id="getter-parkedcolor">[`parkedColor`](../parkedcolormixin#getter-parkedcolor)</span>, <span id="getter-parkedidentity">[`parkedIdentity`](../parkedcolormixin#getter-parkedidentity)</span>
 
 From [SyntenyFilterMixin](../syntenyfiltermixin): <span id="getter-predicates">[`predicates`](../syntenyfiltermixin#getter-predicates)</span>, <span id="getter-minlength">[`minLength`](../syntenyfiltermixin#getter-minlength)</span>
 
