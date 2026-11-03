@@ -1468,7 +1468,7 @@ Options:
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
   --trackLabels     Track label position: offset, overlapping, left, or hidden
   --refseq          Show the reference sequence track [default: false]
-  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view, as a batch manifest's spec column or a &session=spec- URL writes it; see urlparams.md
   --help            Show help
   --version         Print version
 
@@ -1488,7 +1488,7 @@ Examples:
 
 Track options: --bam, --cram, --bigwig, --bigbed, --hic, --vcf, --gff, --bed, --multiwig
 
-Comparative subcommands (run "jb2export dotplot --help"): dotplot, synteny, circular, breakpoint
+Other views (run "jb2export <view> --help" for its options): dotplot, synteny, circular, breakpoint
 
 Whole callsets: "jb2export batch --sites calls.vcf.gz" writes one image per record (run "jb2export batch --help")
 
@@ -1499,12 +1499,9 @@ Usage: jb2export dotplot [options]
 Options:
   --fasta           Genome FASTA or 2bit, for a name the file does not say; takes aliases: and cytobands: modifiers naming those files
   --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
-  --assembly        Which of the config's assemblies to open, by name
   --genome          Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
-  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
@@ -1514,10 +1511,7 @@ Options:
   --themeName       Palette for rendering: default, stock, or minimal
   --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
-  --showGridlines   Show genomic coordinate gridlines in the output [default: false]
-  --trackLabels     Track label position: offset, overlapping, left, or hidden
-  --refseq          Show the reference sequence track [default: false]
-  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view, as a batch manifest's spec column or a &session=spec- URL writes it; see urlparams.md
 
 Examples:
   jb2export dotplot --fasta a.fa --fasta b.fa --paf a_vs_b.paf --out out.svg
@@ -1538,12 +1532,9 @@ Usage: jb2export synteny [options]
 Options:
   --fasta           Genome FASTA or 2bit, for a name the file does not say; takes aliases: and cytobands: modifiers naming those files
   --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
-  --assembly        Which of the config's assemblies to open, by name
   --genome          Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
-  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
@@ -1555,8 +1546,7 @@ Options:
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
   --trackLabels     Track label position: offset, overlapping, left, or hidden
-  --refseq          Show the reference sequence track [default: false]
-  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view, as a batch manifest's spec column or a &session=spec- URL writes it; see urlparams.md
 
 Examples:
   jb2export dotplot --fasta a.fa --fasta b.fa --paf a_vs_b.paf --out out.svg
@@ -1582,7 +1572,6 @@ Options:
   --track           Show a trackId already in the config (from --genome/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path, URL, or "-" for stdin)
   --session         Path to session JSON (or "-" for stdin)
-  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --genome). Several regions draw side by side
   --view            Settings written on the view, by the names a session spec gives them: path=value or a JSON object, e.g. --view mark.interpolate=bump encoding.opacity=0.3 for a synteny view
   --out             Output file path (SVG, PNG, or PDF by extension). Omit it to write the SVG to stdout, which pipes into rsvg-convert for other formats
   --width           Width of output in pixels [default: 1500]
@@ -1592,14 +1581,13 @@ Options:
   --themeName       Palette for rendering: default, stock, or minimal
   --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
-  --showGridlines   Show genomic coordinate gridlines in the output [default: false]
-  --trackLabels     Track label position: offset, overlapping, left, or hidden
-  --refseq          Show the reference sequence track [default: false]
-  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view, as a batch manifest's spec column or a &session=spec- URL writes it; see urlparams.md
 
 Examples:
   jb2export circular ref.fa sv.vcf.gz --out out.svg
       Circular (chord) view of structural variants
+
+Track options: --bam, --cram, --bigwig, --bigbed, --hic, --vcf, --gff, --bed, --multiwig
 
 Usage: jb2export breakpoint [options]
 
@@ -1623,8 +1611,7 @@ Options:
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
   --showGridlines   Show genomic coordinate gridlines in the output [default: false]
   --trackLabels     Track label position: offset, overlapping, left, or hidden
-  --refseq          Show the reference sequence track [default: false]
-  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --spec            Session-spec JSON (inline, path to .json, or "-" for stdin) describing the view, as a batch manifest's spec column or a &session=spec- URL writes it; see urlparams.md
 
 Examples:
   jb2export breakpoint --fasta ref.fa --bam tumor.bam --loc chr1:1,000,000-1,001,000 --loc chr5:2,000,000-2,001,000 --out sv.png
@@ -1633,6 +1620,8 @@ Examples:
       A multi-hop chain: one panel per locus, in the order the reads cross them
   jb2export breakpoint --fasta ref.fa --bam tumor.bam --loc "chr9:28,030,000-28,032,000 chr9:28,058,000-28,060,000" --loc chr9:28,059,000-28,061,000 --out fb.png
       Quote one --loc to put several windows in a single panel
+
+Track options: --bam, --cram, --bigwig, --bigbed, --hic, --vcf, --gff, --bed, --multiwig
 
 Usage: jb2export batch --sites <file> [options]
 
@@ -1714,6 +1703,11 @@ force:false on a track restores its size limit.
 Records a caller files under one VCF EVENT are also drawn together, as
 event_<n>_<label>, when the event visits more than two loci, its contigs
 in the order the VCF header lists them.
+
+A manifest row's spec opens its view as a session spec: its windows,
+its band, and the --track tracks with the settings they were drawn with.
+Passed as --spec beside the same genome and track files it opens that
+view, without the sort and arcs a batch gives the file-flag tracks.
 ```
 
 <!-- INJECT_HELP END -->
