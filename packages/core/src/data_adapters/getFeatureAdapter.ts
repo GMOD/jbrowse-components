@@ -69,18 +69,15 @@ export async function tablesAdapter(
 }
 
 /** {@link tablesAdapter}, refusing an adapter that serves no features. */
-export async function tablesFeatureAdapter(
+export function tablesFeatureAdapter(
   pluginManager: PluginManager,
   adapterConfig: Record<string, unknown>,
   sequenceAdapter: Record<string, unknown> | undefined,
 ) {
-  const adapter = await tablesAdapter(
+  return getFeatureAdapterOrThrow({
     pluginManager,
+    sessionId: 'tables',
     adapterConfig,
     sequenceAdapter,
-  )
-  if (!isFeatureAdapter(adapter)) {
-    throw new Error(`adapter "${adapterConfig.type}" is not a feature adapter`)
-  }
-  return adapter
+  })
 }

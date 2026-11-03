@@ -1,3 +1,5 @@
+import { isSequenceAdapter } from './BaseAdapter/index.ts'
+
 import type { BaseAdapter, BaseSequenceAdapter } from './BaseAdapter/index.ts'
 
 /**
@@ -45,12 +47,4 @@ export async function getSequenceSubAdapter(
     )
   }
   return dataAdapter
-}
-
-function isSequenceAdapter(
-  adapter: BaseAdapter,
-): adapter is BaseAdapter & BaseSequenceAdapter {
-  return (
-    typeof (adapter as { getSequence?: unknown }).getSequence === 'function'
-  )
 }
