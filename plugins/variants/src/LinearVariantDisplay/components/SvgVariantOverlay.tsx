@@ -30,7 +30,8 @@ const SvgVariantOverlay = ({
   model: RenderSvgBaseModel
   width: number
   // false for a reader that samples only the display's canvas: the records
-  // band, the connector zone, the separators and the sidebar are drawn over it
+  // band over rows, the connector zone, the separators and the sidebar are
+  // drawn over it. A records-only display's band is that canvas, so it draws
   overlays: boolean
   text?: ExportTextStyle
   // each drawn from its band's top
@@ -48,7 +49,7 @@ const SvgVariantOverlay = ({
   } = model
   return (
     <>
-      {overlays ? records : null}
+      {overlays || model.recordsOnly ? records : null}
       {overlays && connectors ? (
         <g transform={`translate(0 ${model.topBands.top.connectors})`}>
           {connectors}

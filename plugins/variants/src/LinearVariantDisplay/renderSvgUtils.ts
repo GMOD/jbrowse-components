@@ -13,6 +13,7 @@ export interface RenderSvgBaseModel extends LgvSvgExportable {
   effectiveRowHeight: number
   sources: Source[]
   showRowSeparators: boolean
+  recordsOnly: boolean
   canvasWidthPx: number
   // Px the rows sit below: the records band and the columns layout's
   // connector-line zone. See variantTopBands.ts.

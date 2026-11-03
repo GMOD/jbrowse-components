@@ -89,3 +89,23 @@ test('the export names the record sections', async () => {
   expect(container.textContent).toContain('Benign')
   expect(container.textContent).toContain('Pathogenic')
 })
+
+test('a plot-only export draws the records when they are the whole display', async () => {
+  const { display } = recordsDisplayAt(KIT, 51, {}, false)
+  expect(display.recordsOnly).toBe(true)
+  const { container } = render(
+    <svg>{await renderSvg(display, { plotOnly: true })}</svg>,
+  )
+  for (const [id] of KIT) {
+    expect(container.textContent).toContain(id)
+  }
+})
+
+test('a plot-only export leaves the band over rows to the overlays', async () => {
+  const { display } = recordsDisplayAt(KIT, 51)
+  expect(display.recordsOnly).toBe(false)
+  const { container } = render(
+    <svg>{await renderSvg(display, { plotOnly: true })}</svg>,
+  )
+  expect(container.textContent).not.toContain(KIT[0]![0])
+})
