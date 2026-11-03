@@ -72,6 +72,17 @@ export function largestRegionBytes(perRegion: (number | undefined)[]) {
   return largest
 }
 
+/** Each region's own index-only byte estimate, in region order. */
+export function perRegionBytes(
+  dataAdapter: ByteMeasurableAdapter,
+  regions: AugmentedRegion[],
+  opts?: { signal?: AbortSignal; statusCallback?: StatusCallback },
+) {
+  return Promise.all(
+    regions.map(region => dataAdapter.getRegionByteSize([region], opts)),
+  )
+}
+
 /**
  * The regions' index-only byte estimates summed, for a reader that holds
  * every region at once; undefined, never 0, when no region could be measured.
@@ -82,9 +93,7 @@ export async function totalRegionBytes(
   opts?: { signal?: AbortSignal; statusCallback?: StatusCallback },
 ) {
   let total: number | undefined
-  for (const bytes of await Promise.all(
-    regions.map(region => dataAdapter.getRegionByteSize([region], opts)),
-  )) {
+  for (const bytes of await perRegionBytes(dataAdapter, regions, opts)) {
     if (bytes !== undefined) {
       total = (total ?? 0) + bytes
     }
@@ -152,14 +161,7 @@ export async function measureRegionBytes({
   }
   const bytes = largestRegionBytes(
     await updateStatus('Downloading index', statusCallback, () =>
-      Promise.all(
-        regions.map(region =>
-          dataAdapter.getRegionByteSize([region], {
-            signal,
-            statusCallback,
-          }),
-        ),
-      ),
+      perRegionBytes(dataAdapter, regions, { signal, statusCallback }),
     ),
   )
   checkAbortSignal(signal)

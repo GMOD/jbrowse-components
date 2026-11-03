@@ -1,7 +1,7 @@
 import { isFeatureAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodTypeWithRenameRegions from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegions.ts'
-import { largestRegionBytes } from '../byteBudget.ts'
+import { largestRegionBytes, perRegionBytes } from '../byteBudget.ts'
 
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
@@ -26,10 +26,6 @@ export default class CoreGetRegionByteEstimate extends RpcMethodTypeWithRenameRe
       return dataAdapter.getRegionByteSize(regions, args)
     }
 
-    return largestRegionBytes(
-      await Promise.all(
-        regions.map(region => dataAdapter.getRegionByteSize([region], args)),
-      ),
-    )
+    return largestRegionBytes(await perRegionBytes(dataAdapter, regions, args))
   }
 }
