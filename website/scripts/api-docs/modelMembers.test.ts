@@ -2,7 +2,8 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { accumulateModel } from './generateStateModelDocs.ts'
+import { modelAnchor } from './generateSpecKeyDocs.ts'
+import { MEMBER_KINDS, accumulateModel } from './generateStateModelDocs.ts'
 import { createDocProgram, extractWithComment } from './util.ts'
 
 import type { StateModel } from './generateStateModelDocs.ts'
@@ -100,4 +101,39 @@ test('a member a later block redefines is one row, with the override’s text', 
   expect(model!.members.getters.map(m => [m.name, m.docs.trim()])).toEqual([
     ['rules', 'the drawn rules'],
   ])
+})
+
+// The row's name cell already carries the name, so the code under it starts at
+// the value, as a config slot's does
+test("a property's code is its value, not its name again", () => {
+  const nodes = extract(`
+    /**
+     * #stateModel WindowModel
+     */
+    export function WindowModel() {
+      return types.model({
+        /**
+         * #property
+         */
+        windowStartBp: types.optional(types.number, 0),
+      })
+    }
+  `)
+  const byFile: Record<string, StateModel> = {}
+  for (const node of nodes) {
+    accumulateModel(byFile, node)
+  }
+  const [model] = Object.values(byFile)
+  const properties = MEMBER_KINDS.find(k => k.key === 'properties')
+  expect(model?.members.properties.map(m => properties?.memberCode(m))).toEqual(
+    ['types.optional(types.number, 0)'],
+  )
+})
+
+// The URL parameters page links a key to the row on the declaring model's page,
+// so it has to spell that page and that row the way the model page does
+test('a spec key links the page id and anchor the model page writes', () => {
+  expect(modelAnchor('Track$View', 'windowStartBp')).toBe(
+    '/docs/models/trackdollarview#property-windowstartbp',
+  )
 })

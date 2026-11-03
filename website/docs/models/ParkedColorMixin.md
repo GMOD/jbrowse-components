@@ -14,7 +14,7 @@ The field the last write took off a color object, with its domain, range and key
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-parkedcolors">**parkedColors**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>parkedColors: types.maybe(types.frozen&lt;Record&lt;string, ColorSlot…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>parkedColors: types.maybe(types.frozen&lt;Record&lt;string, ColorSlots&gt;&gt;())</code></pre></dialog></span> | By color object, the field the last write away from one left, with its members |
+| <span id="property-parkedcolors">**parkedColors**</span><br><code>types.maybe(types.frozen&lt;Record&lt;string, ColorSlots&gt;&gt;())</code> | By color object, the field the last write away from one left, with its members |
 
 ## Getters
 

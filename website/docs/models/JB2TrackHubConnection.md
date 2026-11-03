@@ -19,8 +19,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
-| <span id="property-type">**type**</span><br><code>type: types.literal('JB2TrackHubConnection')</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-type">**type**</span><br><code>types.literal('JB2TrackHubConnection')</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>2 inherited properties from one model</summary>

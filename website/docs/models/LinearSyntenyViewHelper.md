@@ -23,10 +23,10 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
-| <span id="property-type">**type**</span><br><code>type: 'LinearSyntenyViewHelper'</code> |  |
-| <span id="property-tracks">**tracks**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>tracks: types.array( pluginManager.pluggableMstType('track', 's…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>tracks: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('track', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
-| <span id="property-height">**height**</span><br><code>height: types.stripDefault(types.number, 100)</code> |  |
+| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
+| <span id="property-type">**type**</span><br><code>'LinearSyntenyViewHelper'</code> |  |
+| <span id="property-tracks">**tracks**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.array( pluginManager.pluggableMstType('track', 'stateMode…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.array(&#10;&#160;&#160;pluginManager.pluggableMstType('track', 'stateModel'),&#10;)</code></pre></dialog></span> |  |
+| <span id="property-height">**height**</span><br><code>types.stripDefault(types.number, 100)</code> |  |
 
 ## Volatiles
 

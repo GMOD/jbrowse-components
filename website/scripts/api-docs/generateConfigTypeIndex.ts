@@ -1,4 +1,4 @@
-import { readDoc, writeDoc, writtenDocs } from './format.ts'
+import { writeDoc, writtenDocs } from './format.ts'
 import { configManifestTables } from './generateConfigDocs.ts'
 
 // The jbrowse-authoring skill's index of every registered type: the manifest's
@@ -7,42 +7,32 @@ import { configManifestTables } from './generateConfigDocs.ts'
 // pages exist and so linked against the previous run's set.
 const INDEX = '.claude/skills/jbrowse-authoring/references/config-types.md'
 const CONFIG_DIR = 'website/docs/config/'
+const TYPE_GROUPS = [
+  'tracks',
+  'displays',
+  'adapters',
+  'textSearchAdapters',
+  'connections',
+]
 
 export function writeConfigTypeIndex() {
   const schema = configManifestTables()
   const pages = writtenDocs().filter(
     f => f.startsWith(CONFIG_DIR) && f.endsWith('.md'),
   )
-  const slugOf = (file: string) =>
-    file.slice(CONFIG_DIR.length).replace(/\.md$/, '')
-  const documented = new Set(pages.map(f => slugOf(f).toLowerCase()))
-
-  // A display taking its schema from a shared one (the multi-sample variant
-  // displays from SharedVariantDisplay) is documented on the Shared* page that
-  // names it.
-  const sharedPageFor = new Map<string, string>()
-  for (const file of pages.filter(f => slugOf(f).startsWith('Shared'))) {
-    const body = readDoc(file)
-    for (const group of ['tracks', 'displays', 'adapters']) {
-      for (const name of Object.keys(schema[group] ?? {})) {
-        if (!documented.has(name.toLowerCase()) && body.includes(name)) {
-          sharedPageFor.set(name, slugOf(file))
-        }
-      }
-    }
+  const documented = new Set(
+    pages.map(f => f.slice(CONFIG_DIR.length, -'.md'.length).toLowerCase()),
+  )
+  const undocumented = TYPE_GROUPS.flatMap(group =>
+    Object.keys(schema[group] ?? {}),
+  ).filter(name => !documented.has(name.toLowerCase()))
+  if (undocumented.length) {
+    throw new Error(
+      `${INDEX} would link a config page no \`#config\` wrote: ${undocumented.join(', ')}`,
+    )
   }
-
-  const pageUrl = (slug: string) =>
-    `https://jbrowse.org/jb2/docs/config/${slug.toLowerCase()}.md`
-  const link = (name: string) => {
-    if (documented.has(name.toLowerCase())) {
-      return `[${name}](${pageUrl(name)})`
-    }
-    const shared = sharedPageFor.get(name)
-    return shared
-      ? `${name} — slots documented under [${shared}](${pageUrl(shared)})`
-      : `${name} (no docs page)`
-  }
+  const link = (name: string) =>
+    `[${name}](https://jbrowse.org/jb2/docs/config/${name.toLowerCase()}.md)`
   const names = (group: string) => Object.keys(schema[group] ?? {})
 
   const lines = [

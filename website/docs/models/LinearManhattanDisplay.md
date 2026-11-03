@@ -19,9 +19,9 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>type: types.literal('LinearManhattanDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
-| <span id="property-indexsnp">**indexSnp**</span><br><code>indexSnp: types.maybe(types.string)</code> | The index SNP the LD join reads r² to, as a 1-based `chr:bp`. The display picks the top hit on screen once, when a plot first joins LD or LD coloring is turned on; after that only the user moves it. |
+| <span id="property-type">**type**</span><br><code>types.literal('LinearManhattanDisplay')</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-indexsnp">**indexSnp**</span><br><code>types.maybe(types.string)</code> | The index SNP the LD join reads r² to, as a 1-based `chr:bp`. The display picks the top hit on screen once, when a plot first joins LD or LD coloring is turned on; after that only the user moves it. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>5 inherited properties from 3 models</summary>

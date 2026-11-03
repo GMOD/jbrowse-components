@@ -17,7 +17,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-sessionconnections">**sessionConnections**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>sessionConnections: types.stripDefault( types.array(pluginManag…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>sessionConnections: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.array(pluginManager.pluggableConfigSchemaType('connection')),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[],&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
+| <span id="property-sessionconnections">**sessionConnections**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.stripDefault( types.array(pluginManager.pluggableConfigSc…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.stripDefault(&#10;&#160;&#160;types.array(pluginManager.pluggableConfigSchemaType('connection')),&#10;&#160;&#160;[],&#10;)</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>2 inherited properties from one model</summary>

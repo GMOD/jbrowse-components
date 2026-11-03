@@ -15,8 +15,8 @@ changes and exposes canUndo/canRedo with undo/redo actions.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-undoidx">**undoIdx**</span><br><code>undoIdx: -1</code> |  |
-| <span id="property-targetpath">**targetPath**</span><br><code>targetPath: ''</code> |  |
+| <span id="property-undoidx">**undoIdx**</span><br><code>-1</code> |  |
+| <span id="property-targetpath">**targetPath**</span><br><code>''</code> |  |
 
 ## Volatiles
 

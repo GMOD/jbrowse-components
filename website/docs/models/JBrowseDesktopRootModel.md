@@ -21,7 +21,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-jobsmanager">**jobsManager**</span><br><code>jobsManager: types.optional(JobsManager, {})</code> |  |
+| <span id="property-jobsmanager">**jobsManager**</span><br><code>types.optional(JobsManager, {})</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>6 inherited properties from 3 models</summary>

@@ -20,9 +20,9 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>type: types.literal('LinearMarkDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
-| <span id="property-hiddencategories">**hiddenCategories**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>hiddenCategories: types.frozen&lt; readonly HiddenCategory[] &#124; und…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>hiddenCategories: types.frozen&lt;&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;readonly HiddenCategory[] &#124; undefined&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&gt;()</code></pre></dialog></span> | The categories the key's rows hide, each a value of the field a categorical color reads or a color an identity key lists: session state the Categories menu toggles, applied where the colors resolve, so a toggle refetches nothing. Kept across a field change and live again when the field comes back. |
+| <span id="property-type">**type**</span><br><code>types.literal('LinearMarkDisplay')</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-hiddencategories">**hiddenCategories**</span><br><code>types.frozen&lt; readonly HiddenCategory[] &#124; undefined &gt;()</code> | The categories the key's rows hide, each a value of the field a categorical color reads or a color an identity key lists: session state the Categories menu toggles, applied where the colors resolve, so a toggle refetches nothing. Kept across a field change and live again when the field comes back. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>4 inherited properties from 2 models</summary>

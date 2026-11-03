@@ -15,10 +15,10 @@ and this product's own props.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-disableaddtracks">**disableAddTracks**</span><br><code>disableAddTracks: types.stripDefault(types.boolean, false)</code> |  |
-| <span id="property-menubar">**menuBar**</span><br><code>menuBar: types.stripDefault(types.boolean, false)</code> | Draw the app-shaped `File` menu bar above the view. Off by default: an embed is the chrome a host asked for, and this is a component that has never had an application's bar. |
-| <span id="property-height">**height**</span><br><code>height: types.maybe(types.string)</code> | Any CSS height, applied to the component's own root whether or not a drawer is open. Absent, the component is content-height and grows with the page, and the host's box is what bounds it. |
-| <span id="property-drawerviewheight">**drawerViewHeight**</span><br><code>drawerViewHeight: types.stripDefault(types.string, '100vh')</code> | Superseded by `height`, which does the same thing without the "only while a drawer is open" condition. Still honored when `height` is absent. |
+| <span id="property-disableaddtracks">**disableAddTracks**</span><br><code>types.stripDefault(types.boolean, false)</code> |  |
+| <span id="property-menubar">**menuBar**</span><br><code>types.stripDefault(types.boolean, false)</code> | Draw the app-shaped `File` menu bar above the view. Off by default: an embed is the chrome a host asked for, and this is a component that has never had an application's bar. |
+| <span id="property-height">**height**</span><br><code>types.maybe(types.string)</code> | Any CSS height, applied to the component's own root whether or not a drawer is open. Absent, the component is content-height and grows with the page, and the host's box is what bounds it. |
+| <span id="property-drawerviewheight">**drawerViewHeight**</span><br><code>types.stripDefault(types.string, '100vh')</code> | Superseded by `height`, which does the same thing without the "only while a drawer is open" condition. Still honored when `height` is absent. |
 
 ## Getters
 

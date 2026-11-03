@@ -31,6 +31,7 @@ import {
   repoRelative,
   section,
   startsWithTag,
+  stripPropertyName,
   suffixCategory,
   withHeaders,
   unreadableSignature,
@@ -55,7 +56,7 @@ type MemberKey = 'properties' | 'volatiles' | 'getters' | 'methods' | 'actions'
 // (`types.stripDefault(types.boolean, false)` says more than
 // `IOptionalIType<ISimpleType<boolean>, [undefined]>`), everything else as its
 // type signature. This one table drives accumulation and every rendered section.
-const MEMBER_KINDS: {
+export const MEMBER_KINDS: {
   key: MemberKey
   tag: TagType
   label: string
@@ -65,7 +66,7 @@ const MEMBER_KINDS: {
     key: 'properties',
     tag: 'property',
     label: 'Properties',
-    memberCode: m => m.code,
+    memberCode: m => stripPropertyName(m.code),
   },
   {
     key: 'volatiles',
@@ -163,7 +164,7 @@ export function accumulateModel(
       name: member.name,
       docs: member.docs.trim(),
       examples: member.examples,
-      id: slugify(member.name, { lower: true }),
+      id: modelPageId(member.name),
       selfDeclId: obj.selfDeclId,
       composedOf: obj.composedOf ?? [],
       category: member.category,
@@ -194,7 +195,7 @@ function resolveComposedRef(ref: ComposedRef, index: ModelIndex) {
     index.byDeclId,
     index.bySlug,
     ref.declId,
-    ref.name ? slugify(ref.name, { lower: true }) : undefined,
+    ref.name ? modelPageId(ref.name) : undefined,
   )
 }
 
@@ -296,8 +297,12 @@ function collectInheritedMembers(
 
 // The in-page anchor of a member's row, so another model's page can deep-link
 // to the member it inherits from this one.
-function memberAnchor(def: MemberKind, name: string) {
-  return `${def.tag}-${name.toLowerCase()}`
+export function memberAnchor(tag: TagType, name: string) {
+  return `${tag}-${name.toLowerCase()}`
+}
+
+export function modelPageId(name: string) {
+  return slugify(name, { lower: true })
 }
 
 // One row: the member's name over its type/declaration in a single cell, then
@@ -319,7 +324,7 @@ function memberRow(
   const description = [proseCell(m.docs), exampleCell(m.examples)]
     .filter(Boolean)
     .join('<br>')
-  const anchor = memberAnchor(def, m.name)
+  const anchor = memberAnchor(def.tag, m.name)
   const named = seen.has(anchor)
     ? `**${m.name}**`
     : `<span id="${anchor}">**${m.name}**</span>`
@@ -338,7 +343,7 @@ function inheritedLine(
 ) {
   const page = `../${model.header.id}`
   const names = members[def.key].map(m => {
-    const anchor = memberAnchor(def, m.name)
+    const anchor = memberAnchor(def.tag, m.name)
     const link = `[\`${m.name}\`](${page}#${anchor})`
     const named = seen.has(anchor)
       ? link
@@ -481,7 +486,7 @@ function renderAgentModel(
         memberLine(
           m.name,
           key === 'properties'
-            ? ` = ${flatCode(kind.memberCode(m)).replace(new RegExp(`^${m.name}\\s*:\\s*`), '')}`
+            ? ` = ${flatCode(kind.memberCode(m))}`
             : key === 'getters'
               ? `: ${flatCode(kind.memberCode(m))}`
               : flatCode(kind.memberCode(m)),

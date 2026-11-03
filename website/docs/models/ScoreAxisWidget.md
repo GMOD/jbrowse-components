@@ -16,7 +16,7 @@ than leaving the widget writing to a dead node.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
-| <span id="property-type">**type**</span><br><code>type: types.literal('ScoreAxisWidget')</code> |  |
-| <span id="property-display">**display**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>display: types.safeReference( pluginManager.pluggableMstType('d…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>display: types.safeReference(&#10;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('display', 'stateModel'),&#10;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
-| <span id="property-label">**label**</span><br><code>label: types.optional(types.string, 'Y axis')</code> | The name of the menu row that opened the widget, "Y axis" or "Coverage axis"; the heading shows the same name. |
+| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
+| <span id="property-type">**type**</span><br><code>types.literal('ScoreAxisWidget')</code> |  |
+| <span id="property-display">**display**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.safeReference( pluginManager.pluggableMstType('display',…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.safeReference(&#10;&#160;&#160;pluginManager.pluggableMstType('display', 'stateModel'),&#10;)</code></pre></dialog></span> |  |
+| <span id="property-label">**label**</span><br><code>types.optional(types.string, 'Y axis')</code> | The name of the menu row that opened the widget, "Y axis" or "Coverage axis"; the heading shows the same name. |

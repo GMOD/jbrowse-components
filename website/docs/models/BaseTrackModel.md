@@ -16,12 +16,12 @@ this model, and several shown tracks can use the same configuration.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
-| <span id="property-type">**type**</span><br><code>type: types.literal(trackType)</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(baseTrackConfig)</code> |  |
-| <span id="property-minimized">**minimized**</span><br><code>minimized: types.stripDefault(types.boolean, false)</code> |  |
-| <span id="property-pinned">**pinned**</span><br><code>pinned: types.stripDefault(types.boolean, false)</code> |  |
-| <span id="property-displays">**displays**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>displays: types.array(pm.pluggableMstType('display', 'stateMode…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>displays: types.array(pm.pluggableMstType('display', 'stateModel'))</code></pre></dialog></span> | the displays drawing this track; `activeDisplay` is the first |
+| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
+| <span id="property-type">**type**</span><br><code>types.literal(trackType)</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(baseTrackConfig)</code> |  |
+| <span id="property-minimized">**minimized**</span><br><code>types.stripDefault(types.boolean, false)</code> |  |
+| <span id="property-pinned">**pinned**</span><br><code>types.stripDefault(types.boolean, false)</code> |  |
+| <span id="property-displays">**displays**</span><br><code>types.array(pm.pluggableMstType('display', 'stateModel'))</code> | the displays drawing this track; `activeDisplay` is the first |
 
 ## Volatiles
 

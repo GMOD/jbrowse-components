@@ -15,7 +15,7 @@ looks one up by name or alias.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-assemblies">**assemblies**</span><br><code>assemblies: types.array(assemblyFactory(conf, pm))</code> | this is automatically managed by an autorun which looks in the parent session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies |
+| <span id="property-assemblies">**assemblies**</span><br><code>types.array(assemblyFactory(conf, pm))</code> | this is automatically managed by an autorun which looks in the parent session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies |
 
 ## Volatiles
 

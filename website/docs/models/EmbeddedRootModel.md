@@ -21,9 +21,9 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-config">**config**</span><br><code>config: createConfigModel(pluginManager, assemblyConfigSchema)</code> |  |
-| <span id="property-session">**session**</span><br><code>session: sessionModelType</code> |  |
-| <span id="property-assemblymanager">**assemblyManager**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>assemblyManager: types.optional( assemblyManagerFactory(assembl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>assemblyManager: types.optional(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;assemblyManagerFactory(assemblyConfigSchema, pluginManager),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;{},&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
+| <span id="property-config">**config**</span><br><code>createConfigModel(pluginManager, assemblyConfigSchema)</code> |  |
+| <span id="property-session">**session**</span><br><code>sessionModelType</code> |  |
+| <span id="property-assemblymanager">**assemblyManager**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.optional( assemblyManagerFactory(assemblyConfigSchema, pl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.optional(&#10;&#160;&#160;assemblyManagerFactory(assemblyConfigSchema, pluginManager),&#10;&#160;&#160;{},&#10;)</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>1 inherited property from one model</summary>

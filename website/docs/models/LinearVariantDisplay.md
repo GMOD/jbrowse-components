@@ -89,9 +89,9 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>type: types.literal(VARIANT_DISPLAY)</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
-| <span id="property-featurehighlights">**featureHighlights**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>featureHighlights: types.stripDefault( types.array(FeatureHighl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>featureHighlights: types.stripDefault(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.array(FeatureHighlightModel),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;[],&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> | The records a search hit, a right-click or the `highlight=` param boxes on the records band, as on a feature track. |
+| <span id="property-type">**type**</span><br><code>types.literal(VARIANT_DISPLAY)</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-featurehighlights">**featureHighlights**</span><br><code>types.stripDefault( types.array(FeatureHighlightModel), [], )</code> | The records a search hit, a right-click or the `highlight=` param boxes on the records band, as on a feature track. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>5 inherited properties from 3 models</summary>

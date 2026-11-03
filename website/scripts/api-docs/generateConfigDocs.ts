@@ -122,7 +122,6 @@ export interface Config {
   // config-name fallback for dynamic base references (getDisplayType('Name'))
   baseConfigName?: string
   identifier?: Item
-  preProcess?: Item
   slots: Item[]
   // slots pulled in by spreading a shared slot table, folded into `slots` by
   // mergeSpreadSlots once accumulation is done (see spreadSlots)
@@ -304,8 +303,6 @@ export function accumulateConfig(
     file.baseConfigName = obj.baseConfigName
   } else if (obj.type === 'identifier') {
     file.identifier = item
-  } else if (obj.type === 'preProcessSnapshot') {
-    file.preProcess = item
   } else if (obj.type === 'slot') {
     const name = slotPathOf(obj, item.name)
     const seen = file.slots.find(s => s.name === name)
@@ -1059,28 +1056,13 @@ function stripNameTautology(docs: string, name: string) {
 }
 
 function renderConfig(
-  {
-    header,
-    derives,
-    identifier,
-    preProcess,
-    slots,
-    filename,
-  }: ConfigWithHeader,
+  { header, derives, identifier, slots, filename }: ConfigWithHeader,
   bases: ConfigWithHeader[],
   links: DisplayLinkContext,
 ): string {
   const directBase = bases[0]
-  // Overview holds only conceptual prose. The pre-processor's simplified-config
-  // snippet duplicates a hand-authored #example (same minimal `{ type, uri }`
-  // shape), so it renders only as a fallback when no #example exists.
+  // Overview holds only conceptual prose
   const overviewParts = section(
-    preProcess &&
-      !header.examples.length &&
-      section(
-        `### ${header.name} - Pre-processor / simplified config`,
-        preProcess.docs,
-      ),
     identifier &&
       section(
         `### ${header.name} - Identifier`,
@@ -1273,12 +1255,24 @@ function presetFieldsSection(name: string) {
   )
 }
 
-const SCHEMA_JSON = 'website/static/schema/v5/config.json'
+// Where generateConfigManifest.ts writes the published schema: under the
+// web app's major version
+export function schemaJsonPath(
+  version = (
+    JSON.parse(
+      fs.readFileSync('products/jbrowse-web/package.json', 'utf8'),
+    ) as {
+      version: string
+    }
+  ).version,
+) {
+  return `website/static/schema/v${version.split('.')[0]}/config.json`
+}
 let schemaDefs: Record<string, { properties?: Record<string, unknown> }>
 
 function scaleTypesOf(scaleSchema: string | undefined) {
   schemaDefs ??= (
-    JSON.parse(fs.readFileSync(SCHEMA_JSON, 'utf8')) as {
+    JSON.parse(fs.readFileSync(schemaJsonPath(), 'utf8')) as {
       $defs: typeof schemaDefs
     }
   ).$defs
@@ -2449,10 +2443,14 @@ export function linkedConfigs(byFile: Record<string, Config>) {
 }
 
 // Each sub-schema slot's link: the `#config` page its value names, else the
-// rows of its schema on this page, own or inherited, else the first page whose
-// own rows document a schema its value reaches.
+// rows of its schema on this page, own or inherited, else the page whose own
+// rows document a schema its value reaches, the first by name where several
+// do, since the configs arrive in program order.
 function linkSlotSchemas(configs: ConfigWithHeader[], index: ConfigIndex) {
-  const documented = new Map<string, { page: string; firstSlot: string }>()
+  const documented = new Map<
+    string,
+    { name: string; page: string; firstSlot: string }
+  >()
   for (const config of configs) {
     const { header, slots } = config
     const pageSlots = [
@@ -2489,8 +2487,17 @@ function linkSlotSchemas(configs: ConfigWithHeader[], index: ConfigIndex) {
           firstSlot: first.name,
         }
         const { name } = slot.subSchema
-        if (name && slots.includes(first) && !documented.has(name)) {
-          documented.set(name, { page: header.id, firstSlot: first.name })
+        const prior = name ? documented.get(name) : undefined
+        if (
+          name &&
+          slots.includes(first) &&
+          !(prior && prior.name.localeCompare(header.name, 'en') <= 0)
+        ) {
+          documented.set(name, {
+            name: header.name,
+            page: header.id,
+            firstSlot: first.name,
+          })
         }
       }
     }

@@ -19,7 +19,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-sessionplugins">**sessionPlugins**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>sessionPlugins: types.array( types.frozen&lt;PluginDefinition &amp; {…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>sessionPlugins: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;types.frozen&lt;PluginDefinition &amp; { name: string }&gt;(),&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
+| <span id="property-sessionplugins">**sessionPlugins**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.array( types.frozen&lt;PluginDefinition &amp; { name: string }&gt;(…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.array(&#10;&#160;&#160;types.frozen&lt;PluginDefinition &amp; { name: string }&gt;(),&#10;)</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>24 inherited properties from 8 models</summary>

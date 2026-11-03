@@ -25,7 +25,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-view">**view**</span><br><code>view: pluginManager.getViewType('CircularView').stateModel</code> |  |
+| <span id="property-view">**view**</span><br><code>pluginManager.getViewType('CircularView').stateModel</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>16 inherited properties from 4 models</summary>

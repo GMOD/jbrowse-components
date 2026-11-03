@@ -1,6 +1,10 @@
 import * as ts from 'typescript'
 
-import { resolvedProperties } from './generateStateModelDocs.ts'
+import {
+  memberAnchor,
+  modelPageId,
+  resolvedProperties,
+} from './generateStateModelDocs.ts'
 import { markdownTable, proseCell, rewriteGroupedMarkerBlocks } from './util.ts'
 
 import type { StateModel } from './generateStateModelDocs.ts'
@@ -382,12 +386,11 @@ function omittedFor(viewType: string, scan: Scan) {
 }
 
 // The model page a key's full row lives on, so the table can link a name to its
-// description rather than restating it. Matches docPage's `id`, which is the
-// slugified model name — and it is the page of the model that DECLARES the
-// property, not the view that inherits it, since that is the page carrying the
-// row.
-function modelAnchor(declaredBy: string, name: string) {
-  return `/docs/models/${declaredBy.toLowerCase()}#property-${name.toLowerCase()}`
+// description rather than restating it: the page of the model that DECLARES
+// the property, not the view that inherits it, since that is the page carrying
+// the row.
+export function modelAnchor(declaredBy: string, name: string) {
+  return `/docs/models/${modelPageId(declaredBy)}#${memberAnchor('property', name)}`
 }
 
 // Two idioms in the repo put a view's launch keys in two places, and a view

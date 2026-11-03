@@ -19,8 +19,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>type: types.literal('LinearMultiRowFeatureDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
+| <span id="property-type">**type**</span><br><code>types.literal('LinearMultiRowFeatureDisplay')</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>6 inherited properties from 4 models</summary>

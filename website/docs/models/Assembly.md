@@ -16,7 +16,7 @@ names.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: types.safeReference(assemblyConfigType)</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>types.safeReference(assemblyConfigType)</code> |  |
 
 ## Volatiles
 

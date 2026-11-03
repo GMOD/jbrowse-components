@@ -48,9 +48,9 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>type: types.literal('LinearSyntenyDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
-| <span id="property-hiddenfeatureids">**hiddenFeatureIds**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>hiddenFeatureIds: types.stripDefault(types.array(types.string),…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>hiddenFeatureIds: types.stripDefault(types.array(types.string), [])</code></pre></dialog></span> |  |
+| <span id="property-type">**type**</span><br><code>types.literal('LinearSyntenyDisplay')</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-hiddenfeatureids">**hiddenFeatureIds**</span><br><code>types.stripDefault(types.array(types.string), [])</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>1 inherited property from one model</summary>

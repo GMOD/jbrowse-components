@@ -17,7 +17,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>type: types.literal('SyntenyFeatureWidget')</code> |  |
+| <span id="property-type">**type**</span><br><code>types.literal('SyntenyFeatureWidget')</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>9 inherited properties from one model</summary>

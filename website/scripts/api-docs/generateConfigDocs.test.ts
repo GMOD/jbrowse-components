@@ -646,6 +646,26 @@ describe('a slot a schema factory builds', () => {
   })
 
   const FILES = {
+    // read first, so a choice by program order lands here
+    'zed.ts': `
+const zedMark = ConfigurationSchema('FixtureMark', {
+  /**
+   * #slot marks.mark
+   * What the mark draws, again.
+   */
+  mark: { type: 'string', defaultValue: 'bar' },
+})
+/**
+ * #config FixtureZed
+ */
+export const fixtureZed = ConfigurationSchema('FixtureZed', {
+  /**
+   * #slot marks
+   * Its own marks.
+   */
+  marks: types.array(zedMark),
+})
+`,
     'base.ts': `
 const markSchema = ConfigurationSchema('FixtureMark', {
   /**
@@ -773,8 +793,14 @@ export const fixtureLane = ConfigurationSchema('FixtureLane', {
     )
   })
 
-  test('links rows another page documents', () => {
-    expect(typeCells()['FixtureLane marks']).toBe(
+  // FixtureZed documents the same rows and is read first; the link is the
+  // same whatever order the program reads the pages in
+  test('links rows another page documents, the first by name', () => {
+    const cells = typeCells()
+    expect(cells['FixtureZed marks']).toBe(
+      '[list of FixtureMark entries](#slot-marksmark)',
+    )
+    expect(cells['FixtureLane marks']).toBe(
       '[list of FixtureMark entries](../fixturebase#slot-marksmark)',
     )
   })

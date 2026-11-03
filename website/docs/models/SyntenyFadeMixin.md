@@ -18,7 +18,7 @@ circular view both compose it; a view supplies `autoFadeWidthPx`.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-render">**render**</span><br><code>render: types.stripDefault(syntenyRenderConfigSchema, {})</code> | How the ribbons rasterize, a [](/docs/config/syntenyrender) object: `antialias` fades a sub-pixel ribbon by its on-screen width, so an unfiltered whole-genome view doesn't read as a full-opacity hairball. Unset, it fades once sub-pixel ribbons dominate a display and leaves a sparse comparison at full alpha; `true` and `false` fix it. Resolved view-wide by `fadeThinAlignments`. |
+| <span id="property-render">**render**</span><br><code>types.stripDefault(syntenyRenderConfigSchema, {})</code> | How the ribbons rasterize, a [](/docs/config/syntenyrender) object: `antialias` fades a sub-pixel ribbon by its on-screen width, so an unfiltered whole-genome view doesn't read as a full-opacity hairball. Unset, it fades once sub-pixel ribbons dominate a display and leaves a sparse comparison at full alpha; `true` and `false` fix it. Resolved view-wide by `fadeThinAlignments`. |
 
 ## Volatiles
 

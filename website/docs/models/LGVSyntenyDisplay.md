@@ -46,8 +46,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>type: types.literal('LGVSyntenyDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(schema)</code> |  |
+| <span id="property-type">**type**</span><br><code>types.literal('LGVSyntenyDisplay')</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(schema)</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>2 inherited properties from 2 models</summary>

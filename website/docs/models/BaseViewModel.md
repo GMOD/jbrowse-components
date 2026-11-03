@@ -15,9 +15,9 @@ minimized. Every view composes this model.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
-| <span id="property-displayname">**displayName**</span><br><code>displayName: types.maybe(types.string)</code> | displayName is displayed in the header of the view, or assembly names being used if none is specified |
-| <span id="property-minimized">**minimized**</span><br><code>minimized: types.stripDefault(types.boolean, false)</code> | collapse the view to its header bar and keep it in the session |
+| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
+| <span id="property-displayname">**displayName**</span><br><code>types.maybe(types.string)</code> | displayName is displayed in the header of the view, or assembly names being used if none is specified |
+| <span id="property-minimized">**minimized**</span><br><code>types.stripDefault(types.boolean, false)</code> | collapse the view to its header bar and keep it in the session |
 
 ## Volatiles
 

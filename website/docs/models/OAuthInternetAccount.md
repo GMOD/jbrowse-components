@@ -17,8 +17,8 @@ The configuration slots for this model are documented on its [config schema page
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>type: types.literal('OAuthInternetAccount')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
+| <span id="property-type">**type**</span><br><code>types.literal('OAuthInternetAccount')</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
 
 ## Getters
 

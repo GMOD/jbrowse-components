@@ -15,10 +15,10 @@ favorites and recently used tracks, and a group for each connection.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
-| <span id="property-type">**type**</span><br><code>type: types.literal('HierarchicalTrackSelectorWidget')</code> |  |
-| <span id="property-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>view: types.safeReference( pluginManager.pluggableMstType('view…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>view: types.safeReference(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('view', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
-| <span id="property-trackcontainerid">**trackContainerId**</span><br><code>trackContainerId: types.maybe(types.string)</code> | Which of the view's track containers this selector writes into, by id. Absent — the usual case — means the view itself. A view owning several track lists (the synteny view, one per level band) names one here; the container is resolved through `view.trackContainerFor` rather than referenced directly, because it isn't a view and so isn't a legal target for the `view` reference above. |
+| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
+| <span id="property-type">**type**</span><br><code>types.literal('HierarchicalTrackSelectorWidget')</code> |  |
+| <span id="property-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>types.safeReference( pluginManager.pluggableMstType('view', 'st…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>types.safeReference(&#10;&#160;&#160;pluginManager.pluggableMstType('view', 'stateModel'),&#10;)</code></pre></dialog></span> |  |
+| <span id="property-trackcontainerid">**trackContainerId**</span><br><code>types.maybe(types.string)</code> | Which of the view's track containers this selector writes into, by id. Absent — the usual case — means the view itself. A view owning several track lists (the synteny view, one per level band) names one here; the container is resolved through `view.trackContainerFor` rather than referenced directly, because it isn't a view and so isn't a legal target for the `view` reference above. |
 
 ## Volatiles
 

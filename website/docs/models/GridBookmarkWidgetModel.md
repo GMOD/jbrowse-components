@@ -15,8 +15,8 @@ recolors or removes the selected ones.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
-| <span id="property-type">**type**</span><br><code>type: types.literal('GridBookmarkWidget')</code> |  |
+| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
+| <span id="property-type">**type**</span><br><code>types.literal('GridBookmarkWidget')</code> |  |
 
 ## Volatiles
 

@@ -16,7 +16,7 @@ view's ribbons.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-filter">**filter**</span><br><code>filter: types.stripDefault(fieldPredicateArray(), [])</code> | The alignments drawn, a list of [](/docs/config/fieldpredicate) entries an alignment must all pass. A field is any field `color` takes, or `length`, the alignment's bp on its own axis: `[{ field: 'length', gte: 10000 }]` clears a whole-genome hairball. A filter edit recolors and refetches nothing. |
+| <span id="property-filter">**filter**</span><br><code>types.stripDefault(fieldPredicateArray(), [])</code> | The alignments drawn, a list of [](/docs/config/fieldpredicate) entries an alignment must all pass. A field is any field `color` takes, or `length`, the alignment's bp on its own axis: `[{ field: 'length', gte: 10000 }]` clears a whole-genome hairball. A filter edit recolors and refetches nothing. |
 
 ## Getters
 

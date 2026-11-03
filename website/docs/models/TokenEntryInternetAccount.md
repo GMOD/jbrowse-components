@@ -18,8 +18,8 @@ and ExternalTokenInternetAccount.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>type: types.literal(typeName)</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
+| <span id="property-type">**type**</span><br><code>types.literal(typeName)</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
 
 ## Getters
 

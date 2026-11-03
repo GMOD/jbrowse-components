@@ -16,9 +16,9 @@ edits back to the session.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
-| <span id="property-type">**type**</span><br><code>type: types.literal('ConfigurationEditorWidget')</code> |  |
-| <span id="property-trackid">**trackId**</span><br><code>trackId: types.maybe(types.string)</code> | the track whose working copy this edits, re-resolved on every read so an undo that replaces the copy moves the editor with it |
+| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
+| <span id="property-type">**type**</span><br><code>types.literal('ConfigurationEditorWidget')</code> |  |
+| <span id="property-trackid">**trackId**</span><br><code>types.maybe(types.string)</code> | the track whose working copy this edits, re-resolved on every read so an undo that replaces the copy moves the editor with it |
 
 ## Volatiles
 

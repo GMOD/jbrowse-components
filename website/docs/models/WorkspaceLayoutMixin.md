@@ -19,9 +19,9 @@ undo is `applySnapshot` on this node.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-layout">**layout**</span><br><code>layout: types.optional(LayoutNode, emptyPanel)</code> |  |
-| <span id="property-activepanelid">**activePanelId**</span><br><code>activePanelId: types.maybe(types.string)</code> |  |
-| <span id="property-maximizedpanelid">**maximizedPanelId**</span><br><code>maximizedPanelId: types.maybe(types.string)</code> | Show only this cell, at the size of the whole workspace. Kept here rather than as a flag on `PanelNode` so no `tree.ts` operation has to say what it does to it. |
+| <span id="property-layout">**layout**</span><br><code>types.optional(LayoutNode, emptyPanel)</code> |  |
+| <span id="property-activepanelid">**activePanelId**</span><br><code>types.maybe(types.string)</code> |  |
+| <span id="property-maximizedpanelid">**maximizedPanelId**</span><br><code>types.maybe(types.string)</code> | Show only this cell, at the size of the whole workspace. Kept here rather than as a flag on `PanelNode` so no `tree.ts` operation has to say what it does to it. |
 
 ## Getters
 

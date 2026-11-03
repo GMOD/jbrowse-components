@@ -15,9 +15,9 @@ Holds the tracks a connection has loaded. Each connection type overrides
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-tracks">**tracks**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>tracks: types.array(pluginManager.pluggableConfigSchemaType('tr…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))</code></pre></dialog></span> |  |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
-| <span id="property-silent">**silent**</span><br><code>silent: types.optional(types.boolean, false)</code> | set when the connection is being re-established on session load (its open tracks are already restored from `connectionTrackConfigs`), so `doConnect` suppresses first-connect side effects like launching a view or a success snackbar. Runtime-only: connection instances aren't serialized. |
+| <span id="property-tracks">**tracks**</span><br><code>types.array(pluginManager.pluggableConfigSchemaType('track'))</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-silent">**silent**</span><br><code>types.optional(types.boolean, false)</code> | set when the connection is being re-established on session load (its open tracks are already restored from `connectionTrackConfigs`), so `doConnect` suppresses first-connect side effects like launching a view or a success snackbar. Runtime-only: connection instances aren't serialized. |
 
 ## Volatiles
 

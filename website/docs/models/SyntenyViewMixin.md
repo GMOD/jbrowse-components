@@ -18,8 +18,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-data">**data**</span><br><code>data: types.stripDefault(syntenyDataConfigSchema, {})</code> | What the fetch reads, a [](/docs/config/syntenydata) object: `resolution` picks a tiered file's stored tier. One value for the view, so every track draws at the same tier. |
-| <span id="property-legend">**legend**</span><br><code>legend: types.stripDefault(legendConfigSchema, {})</code> | Whether the view draws its color key, a [](/docs/config/legend) object. The key's close button hides it for the current mode only and is never saved. |
+| <span id="property-data">**data**</span><br><code>types.stripDefault(syntenyDataConfigSchema, {})</code> | What the fetch reads, a [](/docs/config/syntenydata) object: `resolution` picks a tiered file's stored tier. One value for the view, so every track draws at the same tier. |
+| <span id="property-legend">**legend**</span><br><code>types.stripDefault(legendConfigSchema, {})</code> | Whether the view draws its color key, a [](/docs/config/legend) object. The key's close button hides it for the current mode only and is never saved. |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>4 inherited properties from 3 models</summary>

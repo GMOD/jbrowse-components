@@ -18,11 +18,11 @@ Its page sits under General because it is not a pluggable view type.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
-| <span id="property-displayedregions">**displayedRegions**</span><br><code>displayedRegions: types.optional(types.frozen&lt;IRegion[]&gt;(), [])</code> |  |
-| <span id="property-bpperpx">**bpPerPx**</span><br><code>bpPerPx: 0</code> |  |
-| <span id="property-offsetpx">**offsetPx**</span><br><code>offsetPx: 0</code> |  |
-| <span id="property-minimumblockwidth">**minimumBlockWidth**</span><br><code>minimumBlockWidth: types.stripDefault(types.number, 0)</code> |  |
+| <span id="property-id">**id**</span><br><code>ElementId</code> |  |
+| <span id="property-displayedregions">**displayedRegions**</span><br><code>types.optional(types.frozen&lt;IRegion[]&gt;(), [])</code> |  |
+| <span id="property-bpperpx">**bpPerPx**</span><br><code>0</code> |  |
+| <span id="property-offsetpx">**offsetPx**</span><br><code>0</code> |  |
+| <span id="property-minimumblockwidth">**minimumBlockWidth**</span><br><code>types.stripDefault(types.number, 0)</code> |  |
 
 ## Volatiles
 

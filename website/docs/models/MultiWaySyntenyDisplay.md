@@ -20,11 +20,11 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>type: types.literal('MultiWaySyntenyDisplay')</code> |  |
-| <span id="property-configuration">**configuration**</span><br><code>configuration: ConfigurationReference(configSchema)</code> |  |
-| <span id="property-hiddenlanenames">**hiddenLaneNames**</span><br><code>hiddenLaneNames: types.frozen&lt;readonly string[] &#124; undefined&gt;()</code> | the lanes a reader hid from the lane menu, by assembly name; the lanes chosen are `rows.kept` |
-| <span id="property-frozenlanes">**frozenLanes**</span><br><code>frozenLanes: types.frozen&lt;FrozenLanes &#124; undefined&gt;()</code> |  |
-| <span id="property-lanepins">**lanePins**</span><br><code>lanePins: types.frozen&lt;readonly LanePin[] &#124; undefined&gt;()</code> | the reader's pins: a lane's contig, or a block on it, and its orientation on a contig against the anchor it was set under |
+| <span id="property-type">**type**</span><br><code>types.literal('MultiWaySyntenyDisplay')</code> |  |
+| <span id="property-configuration">**configuration**</span><br><code>ConfigurationReference(configSchema)</code> |  |
+| <span id="property-hiddenlanenames">**hiddenLaneNames**</span><br><code>types.frozen&lt;readonly string[] &#124; undefined&gt;()</code> | the lanes a reader hid from the lane menu, by assembly name; the lanes chosen are `rows.kept` |
+| <span id="property-frozenlanes">**frozenLanes**</span><br><code>types.frozen&lt;FrozenLanes &#124; undefined&gt;()</code> |  |
+| <span id="property-lanepins">**lanePins**</span><br><code>types.frozen&lt;readonly LanePin[] &#124; undefined&gt;()</code> | the reader's pins: a lane's contig, or a block on it, and its orientation on a contig against the anchor it was set under |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>2 inherited properties from 2 models</summary>

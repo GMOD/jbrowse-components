@@ -3034,24 +3034,21 @@ export function overviewSection(...parts: (string | false | 0 | undefined)[]) {
 // were authored.
 //
 // heading controls the level: '## Example usage' for top-level config/model
-// pages, '#### Example usage' for API exports, '**Example:**' for slot/member
-// level. Sub-example labels nest one level deeper (### for ##, ##### for ####,
-// _italic_ for non-heading markers).
+// pages, '#### Example usage' for API exports. Sub-example labels nest one
+// level deeper (### for ##, ##### for ####).
 export function exampleSection(
   examples: Example[],
   heading = '## Example usage',
 ) {
-  if (!examples.length) {
-    return ''
-  }
-  const levelMatch = /^(#+)/.exec(heading)
-  const subPrefix = levelMatch
-    ? '#'.repeat(levelMatch[1]!.length + 1)
-    : undefined
-  const labelHeading = (label: string) =>
-    label ? (subPrefix ? `${subPrefix} Example: ${label}` : `_${label}_`) : ''
-  const bodies = examples.map(ex => section(labelHeading(ex.label), ex.content))
-  return section(heading, ...bodies)
+  const level = '#'.repeat(heading.length - heading.replace(/^#+/, '').length)
+  return examples.length
+    ? section(
+        heading,
+        ...examples.map(ex =>
+          section(ex.label && `${level}# Example: ${ex.label}`, ex.content),
+        ),
+      )
+    : ''
 }
 
 // Parse every `#<tag> <a> | <b> | <rest...>` occurrence in a comment into

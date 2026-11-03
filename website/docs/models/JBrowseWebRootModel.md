@@ -22,7 +22,7 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-configpath">**configPath**</span><br><code>configPath: types.maybe(types.string)</code> |  |
+| <span id="property-configpath">**configPath**</span><br><code>types.maybe(types.string)</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>6 inherited properties from 3 models</summary>

@@ -1,6 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 
+import { schemaJsonPath } from './generateConfigDocs.ts'
+
 // Every row a config page prints names a path the published JSON schema
 // declares. The generator reads JSDoc tags, which can name a nested slot by
 // its own name alone; the pages then printed `scale.names` as a root `names`
@@ -11,12 +13,9 @@ type Json = Record<string, unknown>
 
 const root = path.resolve(__dirname, '../../..')
 const defs = (
-  JSON.parse(
-    fs.readFileSync(
-      path.join(root, 'website/static/schema/v5/config.json'),
-      'utf8',
-    ),
-  ) as { $defs: Record<string, Json> }
+  JSON.parse(fs.readFileSync(path.join(root, schemaJsonPath()), 'utf8')) as {
+    $defs: Record<string, Json>
+  }
 ).$defs
 
 // a plugin's config lives under the root config's `configuration`, not under
@@ -70,6 +69,13 @@ const pages = fs
   .filter(
     name => (defs[`${name}Slots`] ?? defs[name]) && !ROOTED_ELSEWHERE.has(name),
   )
+
+test("the schema's path follows the web app's major version", () => {
+  expect(schemaJsonPath('6.0.0-beta.1')).toBe(
+    'website/static/schema/v6/config.json',
+  )
+  expect(fs.existsSync(path.join(root, schemaJsonPath()))).toBe(true)
+})
 
 test.each(pages)('every row on %s names a declared path', name => {
   const declared = pathsOf(defs[`${name}Slots`] ?? defs[name], '', new Set())

@@ -17,8 +17,8 @@ Each section ends with the members a composed model contributes, linked to the p
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="property-type">**type**</span><br><code>type: types.literal('VariantFeatureWidget')</code> |  |
-| <span id="property-descriptions">**descriptions**</span><br><code>descriptions: types.frozen&lt;Descriptions &#124; undefined&gt;()</code> |  |
+| <span id="property-type">**type**</span><br><code>types.literal('VariantFeatureWidget')</code> |  |
+| <span id="property-descriptions">**descriptions**</span><br><code>types.frozen&lt;Descriptions &#124; undefined&gt;()</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
 <summary>8 inherited properties from one model</summary>
