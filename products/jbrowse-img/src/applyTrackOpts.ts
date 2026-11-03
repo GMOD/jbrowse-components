@@ -140,13 +140,10 @@ export async function applyDisplayOpts(
 // launchTrack says why it failed only to the session's snackbar
 function lastSessionError(view: LinearGenomeViewModel) {
   try {
-    const session = getSession(view)
-    return 'snackbarMessages' in session &&
-      Array.isArray(session.snackbarMessages)
-      ? session.snackbarMessages.findLast(
-          (m: SnackbarMessage) => m.level === 'error',
-        )?.message
-      : undefined
+    const { snackbarMessages } = getSession(view) as unknown as {
+      snackbarMessages: SnackbarMessage[]
+    }
+    return snackbarMessages.findLast(m => m.level === 'error')?.message
   } catch {
     return undefined
   }
