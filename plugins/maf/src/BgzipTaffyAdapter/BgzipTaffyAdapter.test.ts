@@ -1236,19 +1236,14 @@ describe('blockToFeature places a minus-strand reference row forward', () => {
   })
 })
 
-// The premise of the chromosome filter, over a real bgzf read rather than a
-// hand-fed slice: a query on `ctgA` decodes `ctgB`'s blocks too, because
-// `queryBlockSpan` bounds a past-the-end read at the *next* contig's first block
-// and the caller adds a 64KB cushion past that. Coordinates restart per contig,
-// so those blocks overlap the query numerically and used to be emitted at real
-// positions on `ctgA`.
+// A query on `ctgA` past its last sparse `.tai` entry is bounded by `ctgB`'s
+// first entry, so over a real bgzf read the slice stops where `ctgB` begins
+// instead of carrying its blocks, which restart their coordinates and overlap
+// the query numerically. The chromosome filter stays as the second line.
 //
-// It takes a SHORT contig to be reachable, which is why the fixture has one. The
-// query has to sit in its contig's last sparse `.tai` interval (entries are
-// ~10kb apart in taffy's output) *and* fall inside the next contig's decoded
-// opening, so on chr1 the two conditions cannot hold at once — a query at 248.9
-// Mb never meets chr2's opening blocks. On chrM, an unplaced scaffold, or a
-// draft/pangenome contig, they are the same query.
+// It takes a SHORT contig to be reachable, which is why the fixture has one:
+// the query has to sit in its contig's last sparse `.tai` interval (entries are
+// ~10kb apart in taffy's output).
 describe('a query near a short contig end does not take the next contig', () => {
   const adapter = new BgzipTaffyAdapter(
     configSchema.create({
@@ -1269,7 +1264,7 @@ describe('a query near a short contig end does not take the next contig', () => 
     end: 4,
   }
 
-  test('the read really does cross the contig boundary', async () => {
+  test('the read stops at the next contig first entry', async () => {
     const { index } = await adapter.configure()
     expect([...index.keys()]).toEqual(['ctgA', 'ctgB'])
     const slice = (await readTaiSlice({
@@ -1284,11 +1279,7 @@ describe('a query near a short contig end does not take the next contig', () => 
       false,
       makeSourceResolver().resolve,
     )
-    expect(decoded.map(f => f.refSrc)).toEqual(['sp.ctgA', 'sp.ctgB'])
-    // and both overlap the query, which is what the numeric test alone saw
-    expect(
-      decoded.filter(f => f.end > query.start && f.start < query.end),
-    ).toHaveLength(2)
+    expect(decoded.map(f => f.refSrc)).toEqual(['sp.ctgA'])
   })
 
   test('only the queried contig is emitted', async () => {

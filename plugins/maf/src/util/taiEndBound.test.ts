@@ -111,7 +111,7 @@ describe('the read is bounded at the first entry at or past the query end', () =
     const records = index.get('chrI')!
     const at = records[100]!
     const ending = queryBlockSpan(index, 'chrI', at.start - 400, at.start)!
-    expect(ending.nextEntry).toBe(at)
+    expect(ending.boundEntry).toBe(at)
     expect(ending.endBlock).toBe(at.virtualOffset.blockPosition)
     const crossing = queryBlockSpan(
       index,
@@ -119,14 +119,14 @@ describe('the read is bounded at the first entry at or past the query end', () =
       at.start - 400,
       at.start + 1,
     )!
-    expect(crossing.nextEntry).toBe(records[101])
+    expect(crossing.boundEntry).toBe(records[101])
   })
 
   test('a query past the last entry reads to the end of the chromosome', async () => {
     const { index } = await readTaiIndex(local('celegans/chrI.taf.gz.tai'))
     const last = index.get('chrI')!.at(-1)!
     const span = queryBlockSpan(index, 'chrI', last.start + 1, last.start + 10)!
-    expect(span.nextEntry).toBeUndefined()
+    expect(span.boundEntry).toBeUndefined()
     expect(span.toEnd).toBe(true)
   })
 })

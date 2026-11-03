@@ -27,8 +27,10 @@ async function describeFeatures(
 
 /**
  * Each query's features against what a read of the whole chromosome has in the
- * query. The whole read has no bounding entry, so it is the oracle for what a
- * bounded read must not lose.
+ * query. The whole read of the file's LAST chromosome has no bounding entry, so
+ * there it is an independent oracle for what a bounded read must not lose. On
+ * any other chromosome the whole read is bounded at the next chromosome's first
+ * entry through the same code under test, so use known records instead.
  */
 export async function queriesDifferingFromWholeChromosome(
   adapter: MafAdapterBase,

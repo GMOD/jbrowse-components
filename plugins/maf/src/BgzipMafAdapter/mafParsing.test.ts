@@ -268,12 +268,10 @@ describe('a minus-strand reference row', () => {
   })
 })
 
-// The composite the adapter applies. `queryBlockSpan` bounds a past-the-end
-// read at the *next chromosome's* first block and the caller adds a 64KB
-// cushion, so blocks of the following chromosome are decoded by design — and
-// they overlap the query numerically, because coordinates restart per
-// chromosome. Filtering on the span alone emitted them at real positions on the
-// queried scaffold.
+// The composite the adapter applies. A slice can still carry blocks of the
+// following chromosome, and they overlap the query numerically because
+// coordinates restart per chromosome. Filtering on the span alone emitted them
+// at real positions on the queried scaffold.
 test('the adapter filter keeps only the queried chromosome', () => {
   const twoRefNames = [
     'a',

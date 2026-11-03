@@ -12,7 +12,7 @@ export interface ByteRange {
 
 /**
  * A parsed `.tai`. A `Map` because the key order is load-bearing —
- * `nextRefNameStartBlock` reads "the chromosome after this one" off it and means
+ * `nextRefNameFirstEntry` reads "the chromosome after this one" off it and means
  * next *in the file*, which a plain object cannot express: JS enumerates
  * integer-like keys numerically, so an Ensembl-style index (`1`..`22`) put `2`
  * after `1` whatever the file's order.
@@ -43,11 +43,9 @@ function refNameOfSource(name: string) {
 
 /**
  * Whether a block's reference source token names `refName` — the chromosome
- * filter both bgzip adapters apply to what they decode. The read is
- * deliberately generous (`queryBlockSpan` bounds past-the-end at the *next*
- * chromosome's first block, plus a 64KB cushion), and coordinates restart per
- * chromosome, so filtering on numeric overlap alone put the next chromosome's
- * blocks at real positions on the queried scaffold.
+ * filter both bgzip adapters apply to what they decode. Coordinates restart per
+ * chromosome, so filtering on numeric overlap alone puts any block of another
+ * chromosome a slice carries at real positions on the queried scaffold.
  *
  * Compared through `refNameOfSource`, which is how the `.tai` keys
  * `getRefNames` advertises are built, so both sides are in one namespace.
@@ -170,7 +168,7 @@ export function selectIndexEntries(
 }
 
 /**
- * Compressed byte offset where the chromosome after `refName` begins, i.e. where
+ * The first index entry of the chromosome after `refName`, i.e. where
  * `refName`'s data ends — `undefined` if `refName` is the last chromosome. TAF
  * and MAF are sorted by reference position so each chromosome's blocks are
  * contiguous, and the index preserves that file order. Used to bound a read that
@@ -180,7 +178,7 @@ export function selectIndexEntries(
  * File order is the whole point, which is why `IndexData` is a `Map` — see its
  * own comment for what an object's integer-like key ordering did to this.
  */
-export function nextRefNameStartBlock(index: IndexData, refName: string) {
+export function nextRefNameFirstEntry(index: IndexData, refName: string) {
   let seenRefName = false
   let next: ByteRange[] | undefined
   for (const [entryRefName, entries] of index) {
@@ -190,14 +188,19 @@ export function nextRefNameStartBlock(index: IndexData, refName: string) {
     }
     seenRefName = entryRefName === refName
   }
-  return next?.[0]?.virtualOffset.blockPosition
+  return next?.[0]
 }
 
 /** The index entries and compressed block span one region query resolves to. */
 interface QueryBlockSpan {
   firstEntry: ByteRange
-  /** undefined past the chromosome's last sparse entry */
-  nextEntry: ByteRange | undefined
+  /**
+   * The entry the read ends at, in the same rule whichever side of the
+   * chromosome's last sparse entry the query sits: the first entry at or past
+   * the query end, else the next chromosome's first entry. undefined only on
+   * the last chromosome, where `toEnd` is set.
+   */
+  boundEntry: ByteRange | undefined
   /** compressed byte offset of the bgzf block the read starts in */
   startBlock: number
   /** compressed byte offset the read is bounded at (== startBlock for a
@@ -243,10 +246,11 @@ const MIN_BLOCK_SIZE = 65536
  * running past a chromosome's last sparse entry estimated 0 bytes for a real
  * 64KB download. That is exactly the case the fetch gate exists to catch.
  *
- * A query past the last sparse entry has no entry to bound at, and taffy gives
- * no guarantee that entry is near the chromosome's data end — so it bounds at
- * the next chromosome's first block, or on the last chromosome runs to the end
- * of the file (`toEnd`).
+ * A query past the last sparse entry has no entry of its own to bound at, and
+ * taffy gives no guarantee that entry is near the chromosome's data end — so
+ * the bound is the next chromosome's first entry, or on the last chromosome the
+ * read runs to the end of the file (`toEnd`). Either way `boundEntry` is the
+ * one entry the read ends at, and `readTaiSlice` trims the decoded slice there.
  */
 export function queryBlockSpan(
   index: IndexData,
@@ -261,19 +265,17 @@ export function queryBlockSpan(
   const firstEntry = selected?.firstEntry
   let span: QueryBlockSpan | undefined
   if (selected !== undefined && firstEntry !== undefined) {
-    const { nextEntry } = selected
+    const boundEntry =
+      selected.nextEntry ?? nextRefNameFirstEntry(index, refName)
     const startBlock = firstEntry.virtualOffset.blockPosition
-    const bound = nextEntry
-      ? nextEntry.virtualOffset.blockPosition
-      : nextRefNameStartBlock(index, refName)
-    const endBlock = bound ?? startBlock
+    const endBlock = boundEntry?.virtualOffset.blockPosition ?? startBlock
     span = {
       firstEntry,
-      nextEntry,
+      boundEntry,
       startBlock,
       endBlock,
       readLength: Math.max(endBlock, startBlock) + MIN_BLOCK_SIZE - startBlock,
-      toEnd: bound === undefined,
+      toEnd: boundEntry === undefined,
     }
   }
   return span

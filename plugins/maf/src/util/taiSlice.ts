@@ -1,11 +1,11 @@
 import { scanBgzfBlocks, unzip } from '@gmod/bgzf-filehandle'
-import { updateStatus } from '@jbrowse/core/util'
+import { getFileName, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import { NEWLINE, byteOffsetsOf } from './taiBlocks.ts'
 import { lowerBound, parseTaiIndex, queryBlockSpan } from './taiIndex.ts'
 
-import type { IndexData } from './taiIndex.ts'
+import type { ByteRange, IndexData } from './taiIndex.ts'
 import type { BgzfBlockInfo } from '@gmod/bgzf-filehandle'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation, Region, StatusCallback } from '@jbrowse/core/util'
@@ -75,12 +75,16 @@ export async function readToEnd(
  * estimate drifting apart, and a trim that is wrong still parses and still
  * draws.
  *
- * The slice always ends at the bounding entry's virtual offset when there is
- * one, wherever its bgzf block sits in the read. A TAF block has no terminator,
- * so the last block overlapping the query is complete only once the bounding
- * coordinate line arrives or the slice ends on a line break; a slice that kept
- * everything decoded ended wherever the read's last bgzf block did, cut that
- * line, and dropped the block before it with no error.
+ * The slice always ends at the span's `boundEntry` virtual offset when there is
+ * one — the first entry at or past the query end, or past a chromosome's last
+ * sparse entry the next chromosome's first entry — wherever its bgzf block sits
+ * in the read. A TAF block has no terminator, so the last block overlapping the
+ * query is complete only once the bounding coordinate line arrives or the slice
+ * ends on a line break; a slice that kept everything decoded ended wherever the
+ * read's last bgzf block did, cut that line, and dropped the block before it
+ * with no error. Only the last chromosome has no bound and reads to the end of
+ * the file. A bound whose bgzf block is not in the read means the `.tai` does
+ * not match the file, and throws rather than guess where to cut.
  *
  * Returns undefined when the chromosome is not in the index — no span, nothing
  * to read.
@@ -108,7 +112,7 @@ export async function readTaiSlice({
   if (!span) {
     return undefined
   }
-  const { firstEntry, nextEntry, startBlock, readLength, toEnd } = span
+  const { firstEntry, boundEntry, startBlock, readLength, toEnd } = span
 
   const file = openLocation(location, pluginManager)
   const compressed = await updateStatus(
@@ -126,15 +130,9 @@ export async function readTaiSlice({
   const starts = decompressedStarts(blocks)
 
   const startOffset = firstEntry.virtualOffset.dataPosition
-  const boundBlock = nextEntry
-    ? blocks.findIndex(
-        block => block.filePosition === nextEntry.virtualOffset.blockPosition,
-      )
-    : -1
-  const endOffset =
-    nextEntry && boundBlock !== -1
-      ? starts[boundBlock]! + nextEntry.virtualOffset.dataPosition
-      : buffer.length
+  const endOffset = boundEntry
+    ? boundOffset(boundEntry, blocks, starts, refName, getFileName(location))
+    : buffer.length
 
   // subarray (not slice) — TextDecoder.decode handles either, and subarray
   // avoids a Uint8Array copy of what can be a sizable chunk.
@@ -155,6 +153,25 @@ export async function readTaiSlice({
     blockIdAt: (textOffset: number) =>
       virtualOffsetAt(byteOffsetAt(textOffset)),
   }
+}
+
+function boundOffset(
+  boundEntry: ByteRange,
+  blocks: BgzfBlockInfo[],
+  starts: number[],
+  refName: string,
+  fileName: string,
+) {
+  const { blockPosition, dataPosition } = boundEntry.virtualOffset
+  const boundBlock = blocks.findIndex(
+    block => block.filePosition === blockPosition,
+  )
+  if (boundBlock === -1) {
+    throw new Error(
+      `The .tai index does not match ${fileName}: the read of ${refName} is bounded at the bgzf block at byte ${blockPosition}, which the file does not have`,
+    )
+  }
+  return starts[boundBlock]! + dataPosition
 }
 
 /** Where each block's bytes start in the decompressed buffer. */

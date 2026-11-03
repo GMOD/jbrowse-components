@@ -1,7 +1,7 @@
 import {
   lowerBound,
   makeRefNameFilter,
-  nextRefNameStartBlock,
+  nextRefNameFirstEntry,
   parseTaiIndex,
   queryBlockSpan,
   selectIndexEntries,
@@ -148,7 +148,7 @@ describe('parseTaiIndex', () => {
     ])
   })
 
-  // `nextRefNameStartBlock` reads "the chromosome after this one" off the key
+  // `nextRefNameFirstEntry` reads "the chromosome after this one" off the key
   // order, so integer-like names are the case a plain object silently got
   // wrong: `Object.keys` sorts `1`..`22` numerically whatever the insertion
   // order, which put `2` next to `1` in a lexicographically sorted file and
@@ -273,7 +273,7 @@ describe('selectIndexEntries', () => {
   })
 })
 
-describe('nextRefNameStartBlock', () => {
+describe('nextRefNameFirstEntry', () => {
   // blockPosition = compressed byte offset; start is irrelevant here.
   const at = (blockPosition: number): ByteRange => ({
     start: 0,
@@ -286,17 +286,17 @@ describe('nextRefNameStartBlock', () => {
   ])
 
   test('interior chromosome bounds at the next chromosome first block', () => {
-    expect(nextRefNameStartBlock(index, 'chr1')).toBe(5000)
-    expect(nextRefNameStartBlock(index, 'chr2')).toBe(9000)
+    expect(nextRefNameFirstEntry(index, 'chr1')).toBe(index.get('chr2')![0])
+    expect(nextRefNameFirstEntry(index, 'chr2')).toBe(index.get('chr3')![0])
   })
 
   test('last chromosome has no next block', () => {
-    expect(nextRefNameStartBlock(index, 'chr3')).toBeUndefined()
+    expect(nextRefNameFirstEntry(index, 'chr3')).toBeUndefined()
   })
 
   test('single-chromosome index has no next block', () => {
     expect(
-      nextRefNameStartBlock(new Map([['chr1', [at(0)]]]), 'chr1'),
+      nextRefNameFirstEntry(new Map([['chr1', [at(0)]]]), 'chr1'),
     ).toBeUndefined()
   })
 
@@ -309,9 +309,9 @@ describe('nextRefNameStartBlock', () => {
       ['10', [at(1000)]],
       ['2', [at(9000)]],
     ])
-    expect(nextRefNameStartBlock(index, '1')).toBe(1000)
-    expect(nextRefNameStartBlock(index, '10')).toBe(9000)
-    expect(nextRefNameStartBlock(index, '2')).toBeUndefined()
+    expect(nextRefNameFirstEntry(index, '1')).toBe(index.get('10')![0])
+    expect(nextRefNameFirstEntry(index, '10')).toBe(index.get('2')![0])
+    expect(nextRefNameFirstEntry(index, '2')).toBeUndefined()
   })
 })
 
@@ -329,7 +329,7 @@ describe('queryBlockSpan', () => {
       ],
     ])
     const span = queryBlockSpan(index, 'chr1', 50, 120)!
-    expect(span.nextEntry).toBeDefined()
+    expect(span.boundEntry).toBe(index.get('chr1')![2])
     expect(span.startBlock).toBe(0)
     // first start >= 120 is index 2 -> block 2000
     expect(span.endBlock).toBe(2000)
@@ -341,7 +341,7 @@ describe('queryBlockSpan', () => {
       ['chr2', [entry(0, 90000)]],
     ])
     const span = queryBlockSpan(index, 'chr1', 50, 99999)!
-    expect(span.nextEntry).toBeUndefined()
+    expect(span.boundEntry).toBe(index.get('chr2')![0])
     // the whole of chr1's data, not the distance to its last entry (1000)
     expect(span.endBlock - span.startBlock).toBe(90000)
   })
@@ -365,7 +365,7 @@ describe('queryBlockSpan', () => {
       ['chr1', [entry(0, 0), entry(100, 1000)]],
     ])
     const span = queryBlockSpan(index, 'chr1', 50, 99999)!
-    expect(span.nextEntry).toBeUndefined()
+    expect(span.boundEntry).toBeUndefined()
     expect(span.toEnd).toBe(true)
     expect(span.readLength).toBe(65536)
   })
