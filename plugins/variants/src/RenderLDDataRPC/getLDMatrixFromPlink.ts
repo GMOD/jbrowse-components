@@ -128,6 +128,7 @@ export async function getLDMatrixFromPlink({
         )
       ).filter(
         r =>
+          r.chrA === region.refName &&
           bpInRegion(r.bpA, region) &&
           regionIndexOf(r.chrB, r.bpB, regions) !== -1,
       ),

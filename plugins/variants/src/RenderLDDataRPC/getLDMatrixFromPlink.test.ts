@@ -78,3 +78,32 @@ test('two variants at one position keep a column each', async () => {
   expect(ldValues[bandPairIndex(0, 2, band)]).toBeCloseTo(0.4)
   expect(ldValues[bandPairIndex(1, 2, band)]).toBeCloseTo(0.6)
 })
+
+test('a tabix index on the B column leaves out pairs whose A is on another chromosome', async () => {
+  const pluginManager = new PluginManager([new VariantsPlugin()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+  const ldLocation =
+    require.resolve('../PlinkLDAdapter/test_data/indexed_on_chrb.ld.gz')
+  const { snps } = await getLDMatrixFromPlink({
+    pluginManager,
+    args: {
+      sessionId: 'ldMatrixChrB',
+      adapterConfig: {
+        type: 'PlinkLDTabixAdapter',
+        ldLocation: {
+          localPath: ldLocation,
+          locationType: 'LocalPathLocation',
+        },
+        index: {
+          location: {
+            localPath: `${ldLocation}.tbi`,
+            locationType: 'LocalPathLocation',
+          },
+        },
+      },
+      regions: [{ assemblyName: 'a', refName: '1', start: 0, end: 5000 }],
+    },
+  })
+  expect(snps.map(s => s.id)).toEqual(['rsA', 'rsB'])
+})
