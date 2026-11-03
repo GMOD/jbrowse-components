@@ -14,6 +14,7 @@ import {
 } from '@jbrowse/core/util'
 import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
+import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import {
   FEATURE_FIELD_PRESETS,
   withPreset,
@@ -696,6 +697,25 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * Whether `genotypesShowDefault` is the answer rather than a guess
+         * made before the samples loaded, and the track entry the display
+         * came from leaves `genotypes.show` unset. Only then is a value equal
+         * to the default the same state as unset.
+         */
+        get genotypesShowClearable(): boolean {
+          const { genotypes } = baseDisplayConfig(self)
+          return (
+            self.adapterSamples !== undefined &&
+            (!(
+              typeof genotypes === 'object' &&
+              genotypes !== null &&
+              'show' in genotypes
+            ) ||
+              genotypes.show === undefined)
+          )
+        },
+        /**
+         * #getter
          * `genotypes.show`: whether the display reads genotypes and draws a
          * row per sample. Unset, `genotypesShowDefault`.
          */
@@ -1152,13 +1172,18 @@ export function stateModelFactory(
            * swaps the backend as `setVariantLayout` does, so it clears the
            * render error the same way. A value the slot resolves to unset is
            * cleared rather than written, since a written `false` keeps the
-           * band's look over rows (ADR-254).
+           * band's look over rows (ADR-254). That holds only once the samples
+           * are known and the track entry the display came from sets no
+           * `genotypes.show`: a value the entry sets is written, so returning
+           * to it leaves no delta against it.
            */
           setShowGenotypes(arg: boolean) {
             setConf(
               self,
               ['genotypes', 'show'],
-              arg === self.genotypesShowDefault ? undefined : arg,
+              self.genotypesShowClearable && arg === self.genotypesShowDefault
+                ? undefined
+                : arg,
             )
             self.setRenderError(undefined)
           },

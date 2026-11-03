@@ -1,8 +1,11 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { diffTrackConfig } from '@jbrowse/core/util'
+import { baseDisplayConfig } from '@jbrowse/core/util/baseDisplayConfig'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { MIN_GROW_HEIGHT } from '@jbrowse/plugin-features/band'
 
 import { recordsCellData, recordsDisplayAt } from './recordsBand.fixture.ts'
+import { createTestEnvironment } from './testEnv.ts'
 
 import type { BandRecord } from './recordsBand.fixture.ts'
 
@@ -218,5 +221,55 @@ describe('a one-sample VCF opening as its records', () => {
     expect(display.genotypesShowWritten).toBe(false)
     expect(display.recordsOnly).toBe(true)
     expect(display.height).toBe(opening)
+  })
+})
+
+describe('toggling the rows against the track entry the display came from', () => {
+  const withGenotypes = (genotypes: Record<string, unknown>) =>
+    recordsDisplayAt(SPARSE, 10, {}, true, { genotypes }).display
+
+  const deltaAgainstBase = (display: ReturnType<typeof withGenotypes>) =>
+    diffTrackConfig(
+      baseDisplayConfig(display),
+      getSnapshot(display.configuration),
+    )
+
+  test('a one-sample base that writes false is returned to by writing false', () => {
+    const display = withGenotypes({ show: false })
+    display.setShowGenotypes(true)
+    expect(deltaAgainstBase(display)).toMatchObject({
+      genotypes: { show: true },
+    })
+    display.setShowGenotypes(false)
+    expect(deltaAgainstBase(display).genotypes).toBeUndefined()
+    expect(display.showGenotypes).toBe(false)
+  })
+
+  test('a cohort base that writes true is returned to by writing true', () => {
+    const display = withGenotypes({ show: true })
+    display.setSources([{ name: 'S0' }, { name: 'S1' }])
+    display.setShowGenotypes(false)
+    expect(display.showGenotypes).toBe(false)
+    display.setShowGenotypes(true)
+    expect(display.showGenotypes).toBe(true)
+    expect(deltaAgainstBase(display).genotypes).toBeUndefined()
+  })
+
+  test('a base that writes nothing clears the slot when the value is the default', () => {
+    const display = withGenotypes({})
+    display.setShowGenotypes(true)
+    display.setShowGenotypes(false)
+    expect(display.genotypesShowWritten).toBe(false)
+  })
+
+  test('asking for rows before the samples load writes the value', () => {
+    const { display } = createTestEnvironment({
+      displayConfig: { genotypes: {} },
+    }).createDisplay()
+    expect(display.adapterSamples).toBeUndefined()
+    display.setShowGenotypes(true)
+    expect(display.genotypesShowWritten).toBe(true)
+    display.setSources([{ name: 'S0' }])
+    expect(display.showGenotypes).toBe(true)
   })
 })
