@@ -8,14 +8,15 @@ import { createJBrowseTheme } from '../../ui/index.ts'
 import { stateModelFactory } from '../index.ts'
 import BaseFeatureDetails from './index.tsx'
 
-function exon(start: number, id: string) {
+function exon(start: number, id: string, parent: string) {
   return {
     refName: 'ctgA',
     start,
     end: start + 10,
     type: 'exon',
-    ID: id,
-    Parent: 'tx1',
+    id,
+    parent,
+    exon_id: `ENSE_${id}`,
   }
 }
 
@@ -33,7 +34,11 @@ function renderGene(transcripts: number) {
     end: 100,
     strand: -1,
     type: 'mRNA',
-    subfeatures: [exon(0, 'e1'), exon(40, 'e2'), exon(80, 'e3')],
+    subfeatures: [
+      exon(0, 'e1', name),
+      exon(40, 'e2', name),
+      exon(80, 'e3', name),
+    ],
   })
   const model = Session.create(
     {
@@ -61,28 +66,31 @@ function renderGene(transcripts: number) {
   )
 }
 
-test('a gene lists its transcripts collapsed, and a transcript groups its exons into one table', () => {
-  const { getByTestId, queryByTestId } = renderGene(2)
-  expect(getByTestId('BaseCard-EDEN.2 - mRNA')).toBeTruthy()
-  expect(queryByTestId('BaseCard-exon (3)')).toBeNull()
-
-  fireEvent.click(
-    within(getByTestId('BaseCard-EDEN.1 - mRNA')).getAllByRole('button')[0]!,
-  )
-  const exons = getByTestId('BaseCard-exon (3)')
-  fireEvent.click(within(exons).getAllByRole('button')[0]!)
-
-  const rows = within(exons).getAllByRole('row')
+test('a gene opens on a table of its transcripts, each summarising what it holds', () => {
+  const { getByTestId } = renderGene(2)
+  const rows = within(getByTestId('subfeature-group-mRNA')).getAllByRole('row')
   expect(rows.map(row => row.textContent)).toEqual([
-    '#PositionLengthID',
-    '181-9010e3',
-    '241-5010e2',
-    '31-1010e1',
+    '#NamePositionLength',
+    '1EDEN.13 exon1-100100',
+    '2EDEN.23 exon1-100100',
   ])
-  expect(within(exons).getByText('Parent')).toBeTruthy()
 })
 
-test('a gene with one transcript opens it', () => {
-  const { getByTestId } = renderGene(1)
-  expect(getByTestId('BaseCard-exon (3)')).toBeTruthy()
+test("opening a transcript row shows its exons 5′ to 3′, without the parent's tags", () => {
+  const { getByTestId, getAllByRole } = renderGene(2)
+  fireEvent.click(getAllByRole('button', { name: 'Show details' })[0]!)
+  const exons = getByTestId('subfeature-group-exon')
+  const rows = within(exons).getAllByRole('row')
+  expect(rows.map(row => row.textContent)).toEqual([
+    '#NamePositionLength',
+    '1e381-9010',
+    '2e241-5010',
+    '3e11-1010',
+  ])
+  expect(within(exons).queryByText('parent')).toBeNull()
+
+  fireEvent.click(
+    within(exons).getAllByRole('button', { name: 'Show details' })[0]!,
+  )
+  expect(within(exons).getByText('ENSE_e3')).toBeTruthy()
 })

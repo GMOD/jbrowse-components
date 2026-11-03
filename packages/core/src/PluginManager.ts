@@ -377,9 +377,10 @@ export interface FeaturePanelProps {
   /** the same feature before `formatDetails` ran */
   unformatted?: SimpleFeatureSerialized
   /**
-   * how far down the subfeature tree this card is: 0 is the feature the user
-   * clicked, 1 its subfeatures, and so on. The point fires for every card, so a
-   * panel that belongs only on the clicked feature selects on `depth === 0`
+   * how far down the subfeature tree this feature is: 0 is the feature the
+   * user clicked, 1 its subfeatures, and so on. The point fires for the clicked
+   * feature and for each subfeature row the user opens, so a panel that
+   * belongs only on the clicked feature selects on `depth === 0`
    */
   depth: number
 }

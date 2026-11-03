@@ -10,7 +10,7 @@ import type { BaseProps } from '../types.tsx'
 const CoreDetails = observer(function CoreDetails({
   feature,
   fieldActions,
-  navigate,
+  locate,
 }: BaseProps) {
   const { name, description, type, start, end, strand } = feature
   // only a formatDetails callback sets `length`, to rewrite or hide the row:
@@ -19,6 +19,7 @@ const CoreDetails = observer(function CoreDetails({
   const position = [assembleLocString(feature), getStrandStr(strand)]
     .filter(Boolean)
     .join(' ')
+  const go = locate?.(feature)
   const rows: { label: string; value: unknown; field?: string }[] = [
     { label: 'Name', value: name, field: 'name' },
     { label: 'Description', value: description },
@@ -33,11 +34,11 @@ const CoreDetails = observer(function CoreDetails({
       <SimpleField
         name="Position"
         value={
-          navigate ? (
+          go ? (
             <ActionLink
               title="Show in view"
               onClick={() => {
-                navigate(feature)
+                go()
               }}
             >
               {position}

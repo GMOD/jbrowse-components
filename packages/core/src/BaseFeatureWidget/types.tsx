@@ -39,8 +39,8 @@ export interface BaseProps extends BaseCardProps {
   formatter?: FeatureFormatter
   descriptions?: Descriptors
   fieldActions?: FieldActions
-  /** moves the view onto a feature; unset when the view cannot */
-  navigate?: (feature: SimpleFeatureSerialized) => void
+  /** what moves the view onto a feature, or undefined when it cannot */
+  locate?: (feature: SimpleFeatureSerialized) => (() => void) | undefined
 }
 
 export interface BaseCardProps {

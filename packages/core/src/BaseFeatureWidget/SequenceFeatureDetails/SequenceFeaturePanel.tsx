@@ -1,5 +1,6 @@
 import { Suspense, lazy, useState } from 'react'
 
+import ExpandMore from '@mui/icons-material/ExpandMore'
 import Help from '@mui/icons-material/Help'
 import { Button, FormControl, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -24,8 +25,14 @@ const useStyles = makeStyles()(theme => ({
   },
 
   container: {
-    marginTop: theme.spacing(4),
-    marginBottom: theme.spacing(4),
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+  },
+  chevron: {
+    transition: 'transform 150ms',
+  },
+  closed: {
+    transform: 'rotate(-90deg)',
   },
 }))
 
@@ -39,14 +46,20 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
   model: FeatureDetailsModel
   feature: SimpleFeatureSerialized
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
   const [shown, setShown] = useState(false)
 
   return (
     <div className={classes.container}>
       <FormControl className={classes.formControl}>
         <Button
-          variant="contained"
+          size="small"
+          aria-expanded={shown}
+          startIcon={
+            <ExpandMore
+              className={cx(classes.chevron, !shown && classes.closed)}
+            />
+          }
           onClick={() => {
             setShown(val => !val)
           }}
@@ -56,6 +69,7 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
       </FormControl>
 
       <IconButton
+        size="small"
         onClick={() => {
           getDialogHost(model).queueDialog(handleClose => [
             HelpDialog,

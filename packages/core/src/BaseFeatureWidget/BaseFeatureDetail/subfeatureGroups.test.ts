@@ -1,6 +1,16 @@
-import { subfeatureGroups } from './subfeatureGroups.ts'
+import {
+  omittedForMember,
+  subfeatureGroups,
+  subfeatureSummary,
+} from './subfeatureGroups.ts'
 
-const part = (type: string, start: number, extra = {}) => ({
+import type { SimpleFeatureSerializedNoId } from '../../util/index.ts'
+
+const part = (
+  type: string,
+  start: number,
+  extra = {},
+): SimpleFeatureSerializedNoId => ({
   refName: 'ctgA',
   type,
   start,
@@ -8,66 +18,98 @@ const part = (type: string, start: number, extra = {}) => ({
   ...extra,
 })
 
-test('leaf parts of one type are one group, placed where the first sits', () => {
-  const groups = subfeatureGroups({
-    uniqueId: 't',
-    refName: 'ctgA',
-    start: 0,
-    end: 100,
-    subfeatures: [part('exon', 0), part('CDS', 5), part('exon', 50)],
-  })
-  expect(groups.map(g => (g.kind === 'parts' ? g.type : g.kind))).toEqual([
-    'exon',
-    'CDS',
-  ])
-  expect(groups[0]!.kind === 'parts' && groups[0]!.parts.length).toBe(2)
+const transcript = (
+  subfeatures: SimpleFeatureSerializedNoId[],
+  extra = {},
+) => ({
+  uniqueId: 't',
+  id: 'tx1',
+  refName: 'ctgA',
+  start: 0,
+  end: 100,
+  source: 'havana',
+  subfeatures,
+  ...extra,
 })
 
-test('a subfeature with children of its own stays a feature', () => {
-  const groups = subfeatureGroups({
-    uniqueId: 'g',
-    refName: 'ctgA',
-    start: 0,
-    end: 100,
-    subfeatures: [
-      { ...part('mRNA', 0), subfeatures: [part('exon', 0)] },
-      { ...part('mRNA', 0), subfeatures: [part('exon', 0)] },
-    ],
-  })
-  expect(groups.map(g => g.kind)).toEqual(['feature', 'feature'])
-  expect(groups[1]!.kind === 'feature' && groups[1]!.feature.uniqueId).toBe(
-    'g_1',
+test('subfeatures group by type, in the order the types first appear', () => {
+  const groups = subfeatureGroups(
+    transcript([part('exon', 0), part('CDS', 5), part('exon', 50)]),
   )
-})
-
-test('parts run 5′ to 3′ on a minus-strand parent', () => {
-  const [group] = subfeatureGroups({
-    uniqueId: 't',
-    refName: 'ctgA',
-    start: 0,
-    end: 100,
-    strand: -1,
-    subfeatures: [part('exon', 0), part('exon', 50), part('exon', 20)],
-  })
-  expect(group!.kind === 'parts' && group!.parts.map(p => p.start)).toEqual([
-    50, 20, 0,
+  expect(groups.map(g => [g.type, g.members.length])).toEqual([
+    ['exon', 2],
+    ['CDS', 1],
   ])
 })
 
-test('an attribute with one value across the parts is shared, others vary', () => {
-  const [group] = subfeatureGroups({
-    uniqueId: 't',
-    refName: 'ctgA',
-    start: 0,
-    end: 100,
-    subfeatures: [
-      part('CDS', 0, { protein_id: 'NP_1', phase: 0, note: null }),
-      part('CDS', 50, { protein_id: 'NP_1', phase: 2 }),
-      part('CDS', 80, { protein_id: 'NP_1', phase: 1, exon_number: 3 }),
-    ],
-  })
-  expect(group).toMatchObject({
-    shared: { protein_id: 'NP_1' },
-    varying: ['phase', 'exon_number'],
-  })
+test('a part with children of its own stays in its type group', () => {
+  const groups = subfeatureGroups(
+    transcript([
+      part('CDS', 0),
+      { ...part('CDS', 50), subfeatures: [part('mature_protein_region', 50)] },
+    ]),
+  )
+  expect(groups.map(g => [g.type, g.members.length])).toEqual([['CDS', 2]])
+})
+
+test('members run 5′ to 3′ on a minus-strand parent', () => {
+  const [group] = subfeatureGroups(
+    transcript([part('exon', 0), part('exon', 50), part('exon', 20)], {
+      strand: -1,
+    }),
+  )
+  expect(group!.members.map(m => m.feature.start)).toEqual([50, 20, 0])
+})
+
+test('shared attributes leave out what repeats the parent', () => {
+  const [group] = subfeatureGroups(
+    transcript([
+      part('CDS', 0, {
+        source: 'havana',
+        parent: 'tx1',
+        protein_id: 'NP_1',
+        phase: 0,
+      }),
+      part('CDS', 50, {
+        source: 'havana',
+        parent: 'tx1',
+        protein_id: 'NP_1',
+        phase: 2,
+      }),
+    ]),
+  )
+  expect(group!.shared).toEqual({ protein_id: 'NP_1' })
+})
+
+test("a member's own detail leaves out the row, the shared and the parent's", () => {
+  const parent = transcript([
+    part('exon', 0, { exon_id: 'E1', source: 'havana', rank: 1 }),
+    part('exon', 50, { exon_id: 'E2', source: 'havana', rank: 1 }),
+  ])
+  const [group] = subfeatureGroups(parent)
+  const omitted = omittedForMember(group!.members[0]!.feature, group!, parent)
+  expect(omitted).toEqual(expect.arrayContaining(['start', 'rank', 'source']))
+  expect(omitted).not.toContain('exon_id')
+})
+
+test('the summary counts each type and sums the coding bases', () => {
+  expect(
+    subfeatureSummary(
+      transcript([
+        part('exon', 0),
+        part('exon', 50),
+        part('CDS', 5),
+        part('CDS', 5),
+        part('CDS', 55),
+      ]),
+    ),
+  ).toBe('2 exon · CDS 20 bp')
+})
+
+test('unformatted members pair with their formatted subfeature by position', () => {
+  const formatted = transcript([part('exon', 0, { name: 'shown' })])
+  const raw = transcript([part('exon', 0, { name: 'raw' })])
+  const [group] = subfeatureGroups(formatted, raw)
+  expect(group!.members[0]!.unformatted?.name).toBe('raw')
+  expect(group!.members[0]!.unformatted?.uniqueId).toBe('t_0')
 })
