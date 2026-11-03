@@ -15,7 +15,7 @@
 // thousands, which is the range this sweeps.
 //
 // WHAT IS MODELLED: the block walk itself, over `types.frozen<Region[]>()` —
-// plain objects, which is what the LGV, the circular view and `Base1DViewModel`
+// plain objects, which is what the LGV, the circular view and `BlockLayoutInput`
 // all store (`displayedRegions: types.frozen`). A `types.array(Region)` view
 // would read every field through a MobX atom and cost several times this; none
 // of the hot views does.
@@ -59,12 +59,12 @@
 // Same four rules as the sibling benches — separate drivers per arm, a control
 // arm that is the baseline declared twice, min of interleaved rounds, identity
 // before timing. See `agent-docs/reference/BENCHMARKING.md`.
-import { BlockSet } from '../src/util/blockTypes.ts'
+import { BlockSet, blockKey } from '../src/util/blockTypes.ts'
 import calculateDynamicBlocks from '../src/util/calculateDynamicBlocks.ts'
 import { intersection2 } from '../src/util/range.ts'
 
 import type { BaseBlock } from '../src/util/blockTypes.ts'
-import type { Base1DViewModel } from '../src/util/calculateStaticBlocks.ts'
+import type { BlockLayoutInput } from '../src/util/calculateStaticBlocks.ts'
 
 const rounds =
   Number(
@@ -116,7 +116,7 @@ function makeModel(regions: Region[], bpPerPx: number, offsetPx: number) {
 // is deliberate: an arm that calls the same function the baseline calls shares
 // its inline caches and measures nothing.
 // ---------------------------------------------------------------------------
-function controlBlocks(model: Base1DViewModel) {
+function controlBlocks(model: BlockLayoutInput) {
   const { offsetPx, displayedRegions, bpPerPx, width, minimumBlockWidth } =
     model
   const invBpPerPx = 1 / bpPerPx
@@ -222,7 +222,7 @@ function firstRegionAfter(cum: Float64Array, bp: number) {
   return lo
 }
 
-function indexedBlocks(model: Base1DViewModel, cum: Float64Array) {
+function indexedBlocks(model: BlockLayoutInput, cum: Float64Array) {
   const { offsetPx, displayedRegions, bpPerPx, width, minimumBlockWidth } =
     model
   const invBpPerPx = 1 / bpPerPx
@@ -313,7 +313,14 @@ function emitRegionBlock(
   const isLeftEndOfDisplayedRegion = leftPx <= displayedRegionLeftPx
   const isRightEndOfDisplayedRegion = rightPx >= displayedRegionRightPx
   const blockOffsetPx = leftPx
-  const key = `${assemblyName}:${refName}:${start}:${end}:${displayedRegionIndex}${reversed ? ':rev' : ''}`
+  const key = blockKey(
+    assemblyName,
+    refName,
+    start,
+    end,
+    displayedRegionIndex,
+    reversed,
+  )
 
   if (displayedRegionIndex === 0 && isLeftEndOfDisplayedRegion) {
     blocks.push({
@@ -368,7 +375,7 @@ function emitRegionBlock(
 // object literals were built and thrown away for every region in an elided run
 // but its first.
 // ---------------------------------------------------------------------------
-function priorBlocks(model: Base1DViewModel) {
+function priorBlocks(model: BlockLayoutInput) {
   const { offsetPx, displayedRegions, bpPerPx, width, minimumBlockWidth } =
     model
   const invBpPerPx = 1 / bpPerPx
@@ -423,7 +430,7 @@ function priorBlocks(model: Base1DViewModel) {
 
 // --- drivers, written out longhand so no call site goes polymorphic ---------
 
-function timeCurrent(model: Base1DViewModel, reps: number) {
+function timeCurrent(model: BlockLayoutInput, reps: number) {
   const t = performance.now()
   for (let i = 0; i < reps; i++) {
     calculateDynamicBlocks(model)
@@ -431,7 +438,7 @@ function timeCurrent(model: Base1DViewModel, reps: number) {
   return (performance.now() - t) / reps
 }
 
-function timeControl(model: Base1DViewModel, reps: number) {
+function timeControl(model: BlockLayoutInput, reps: number) {
   const t = performance.now()
   for (let i = 0; i < reps; i++) {
     controlBlocks(model)
@@ -439,7 +446,7 @@ function timeControl(model: Base1DViewModel, reps: number) {
   return (performance.now() - t) / reps
 }
 
-function timeIndexed(model: Base1DViewModel, cum: Float64Array, reps: number) {
+function timeIndexed(model: BlockLayoutInput, cum: Float64Array, reps: number) {
   const t = performance.now()
   for (let i = 0; i < reps; i++) {
     indexedBlocks(model, cum)
@@ -447,7 +454,7 @@ function timeIndexed(model: Base1DViewModel, cum: Float64Array, reps: number) {
   return (performance.now() - t) / reps
 }
 
-function timePrior(model: Base1DViewModel, reps: number) {
+function timePrior(model: BlockLayoutInput, reps: number) {
   const t = performance.now()
   for (let i = 0; i < reps; i++) {
     priorBlocks(model)
@@ -484,7 +491,7 @@ function report(message: string) {
 }
 
 function checkIdentity(
-  model: Base1DViewModel,
+  model: BlockLayoutInput,
   cum: Float64Array,
   label: string,
 ) {

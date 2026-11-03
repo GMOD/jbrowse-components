@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/render-core/graphicsCapabilities'
 
 import { readConfObject } from '../configuration/index.ts'
-import { isElectron, rIC } from '../util/index.ts'
+import { isElectron, rIC } from './environment.ts'
 import {
   createSessionActivity,
   describeSession,

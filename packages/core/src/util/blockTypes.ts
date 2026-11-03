@@ -59,6 +59,26 @@ export function wholeBaseRegions(blocks: ContentBlock[]) {
   return blocks.map(wholeBaseRegion)
 }
 
+export function blockKey(
+  assemblyName: string,
+  refName: string,
+  start: number,
+  end: number,
+  displayedRegionIndex: number,
+  reversed: boolean | undefined,
+) {
+  return `${assemblyName}:${refName}:${start}:${end}:${displayedRegionIndex}${reversed ? ':rev' : ''}`
+}
+
+export function contentOrElidedBlock(
+  data: Omit<ContentBlock, 'type'>,
+  elided: boolean,
+): ContentBlock | ElidedBlock {
+  return elided
+    ? { ...data, type: 'ElidedBlock' }
+    : { ...data, type: 'ContentBlock' }
+}
+
 type Func<T> = (value: BaseBlock, index: number, array: BaseBlock[]) => T
 
 // A merged elided run can span several displayed regions, so its per-region

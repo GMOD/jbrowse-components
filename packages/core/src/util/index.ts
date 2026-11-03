@@ -359,10 +359,6 @@ export {
   getSessionServices,
 } from './sessionServices.ts'
 
-// this is recommended in a later comment in
-// https://github.com/electron/electron/issues/2288 for detecting electron in a
-// renderer process, which is the one that has node enabled for us
-//
 /**
  * Convert a browser File (from a drop zone or file input) into a FileLocation:
  * a native local path under electron, or an in-memory blob location otherwise.
@@ -451,6 +447,7 @@ export function notEmpty<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined
 }
 
+/** @deprecated no remaining consumers; match the file name in the adapter's own guesser */
 export function testAdapter(
   fileName: string,
   regex: RegExp,
@@ -488,9 +485,13 @@ export { createSharedSetup } from './cachedSetup.ts'
 export { scheduleDetachedDestroy } from './scheduleDetachedDestroy.ts'
 export { isDataCurrent } from './isDataCurrent.ts'
 export {
+  type AbortBreakpoint,
+  checkAbortSignal,
+  createAbortBreakpoint,
   handleFetchError,
   isAbortException,
   makeAbortError,
+  withAbortCheck,
 } from './aborting.ts'
 export { linkify } from './linkify.ts'
 export { isGeneLikeType, isSequenceMatchType } from './featureTypes.ts'
@@ -508,12 +509,6 @@ export {
   parseLocStringOneBased,
   stringify,
 } from './locString.ts'
-export {
-  type AbortBreakpoint,
-  checkAbortSignal,
-  createAbortBreakpoint,
-  withAbortCheck,
-} from './aborting.ts'
 export {
   type AddTrackComponentModel,
   type AddTrackComponentProps,

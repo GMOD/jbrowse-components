@@ -1,8 +1,4 @@
-// local rather than the `isObject` in `util/index.ts`, which re-exports this
-// file — importing it back would be a module cycle for one predicate
-function isObjectLike(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
+import { isObject } from './objectUtils.ts'
 
 /**
  * Freeze `value` and everything reachable from it, in place, and return it.
@@ -30,7 +26,7 @@ function isObjectLike(value: unknown): value is Record<string, unknown> {
  * production. Don't add the gate.
  */
 export function freezeDeep<T>(value: T): T {
-  if (isObjectLike(value) && !Object.isFrozen(value)) {
+  if (isObject(value) && !Object.isFrozen(value)) {
     Object.freeze(value)
     for (const child of Object.values<unknown>(value)) {
       freezeDeep(child)

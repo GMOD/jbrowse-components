@@ -1,7 +1,7 @@
-import { BlockSet } from './blockTypes.ts'
+import { BlockSet, blockKey, contentOrElidedBlock } from './blockTypes.ts'
 import { intersection2 } from './range.ts'
 
-import type { Base1DViewModel } from './calculateStaticBlocks.ts'
+import type { BlockLayoutInput } from './calculateStaticBlocks.ts'
 
 /**
  * Returns a BlockSet covering only the regions currently visible in the view.
@@ -9,7 +9,7 @@ import type { Base1DViewModel } from './calculateStaticBlocks.ts'
  * be fractional.
  */
 export default function calculateDynamicBlocks(
-  model: Base1DViewModel,
+  model: BlockLayoutInput,
   padding = true,
   elision = true,
 ) {
@@ -80,7 +80,14 @@ export default function calculateDynamicBlocks(
         // make end !== regionEnd even when the full region is in view.
         const isLeftEndOfDisplayedRegion = leftPx <= displayedRegionLeftPx
         const isRightEndOfDisplayedRegion = rightPx >= displayedRegionRightPx
-        const key = `${assemblyName}:${refName}:${start}:${end}:${displayedRegionIndex}${reversed ? ':rev' : ''}`
+        const key = blockKey(
+          assemblyName,
+          refName,
+          start,
+          end,
+          displayedRegionIndex,
+          reversed,
+        )
 
         if (
           padding &&
@@ -110,9 +117,10 @@ export default function calculateDynamicBlocks(
           key,
         }
         blocks.push(
-          elision && regionWidthPx < minimumBlockWidth
-            ? { ...data, type: 'ElidedBlock' }
-            : { ...data, type: 'ContentBlock' },
+          contentOrElidedBlock(
+            data,
+            elision && regionWidthPx < minimumBlockWidth,
+          ),
         )
 
         if (

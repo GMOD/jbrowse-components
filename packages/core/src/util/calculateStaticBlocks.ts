@@ -1,10 +1,10 @@
-import { BlockSet } from './blockTypes.ts'
+import { BlockSet, blockKey, contentOrElidedBlock } from './blockTypes.ts'
 
 import type { Region } from './types/data.ts'
 import type { Region as RegionModel } from './types/mst.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-export interface Base1DViewModel {
+export interface BlockLayoutInput {
   offsetPx: number
   width: number
   displayedRegions: (Region | Instance<typeof RegionModel>)[]
@@ -12,10 +12,13 @@ export interface Base1DViewModel {
   minimumBlockWidth: number
 }
 
+/** @deprecated use BlockLayoutInput */
+export type Base1DViewModel = BlockLayoutInput
+
 const blockSizeCssPx = 800
 
 export default function calculateStaticBlocks(
-  model: Base1DViewModel,
+  model: BlockLayoutInput,
   padding = true,
   elision = true,
 ) {
@@ -91,7 +94,14 @@ export default function calculateStaticBlocks(
       const widthPx = (end - start) * invBpPerPx
       const blockOffsetPx =
         (regionBpOffset + blockNum * blockSizeBp) * invBpPerPx
-      const key = `${assemblyName}:${refName}:${start}:${end}:${displayedRegionIndex}${reversed ? ':rev' : ''}`
+      const key = blockKey(
+        assemblyName,
+        refName,
+        start,
+        end,
+        displayedRegionIndex,
+        reversed,
+      )
 
       if (padding && displayedRegionIndex === 0 && blockNum === 0) {
         blocks.push({
@@ -117,9 +127,10 @@ export default function calculateStaticBlocks(
         key,
       }
       blocks.push(
-        elision && regionWidthPx < minimumBlockWidth
-          ? { ...data, type: 'ElidedBlock' }
-          : { ...data, type: 'ContentBlock' },
+        contentOrElidedBlock(
+          data,
+          elision && regionWidthPx < minimumBlockWidth,
+        ),
       )
 
       if (
