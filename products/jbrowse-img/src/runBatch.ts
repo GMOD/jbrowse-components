@@ -178,6 +178,12 @@ export async function runBatch(opts: BatchOpts) {
     )
   }
 
+  if (opts.refseq && !opts.shard && planned.some(row => row.rows.length > 1)) {
+    console.warn(
+      'Warning: --refseq draws only on the records drawn as a linear view, not on those spanning several contigs',
+    )
+  }
+
   if (dryRun) {
     for (const { file, rows } of planned) {
       console.log([file, ...rows.flat()].join('\t'))
@@ -211,22 +217,27 @@ export async function runBatch(opts: BatchOpts) {
     })
   const manifestFile = path.join(outDir, MANIFEST_FILE)
   const prior = opts.resume
-    ? priorResults(manifestFile)
-    : new Map<string, ReportedCounts>()
+    ? priorManifest(manifestFile)
+    : new Map<string, PriorRow>()
   const plannedByFile = new Map(planned.map(row => [row.file, row]))
   if (opts.manifest && !(opts.resume && fs.existsSync(manifestFile))) {
     fs.writeFileSync(manifestFile, `${MANIFEST_COLUMNS.join('\t')}\n`)
   }
+  // an image is published only once its row is recorded, so a killed run
+  // leaves no image whose counts were lost
   const report = (reported: RowResult) => {
     const result: RowResult =
       reported.status === 'exists'
-        ? { ...prior.get(reported.file), ...reported }
+        ? { ...prior.get(reported.file)?.counts, ...reported }
         : reported
     const { file, status, error } = result
     results.set(file, result)
     const row = plannedByFile.get(file)
     if (opts.manifest && row) {
       fs.appendFileSync(manifestFile, `${manifestLine(row, result)}\n`)
+    }
+    if (status === 'ok') {
+      fs.renameSync(partialPath(outDir, file), path.join(outDir, file))
     }
     progress.step(
       status === 'exists' ? `${file} (exists)` : file,
@@ -249,9 +260,16 @@ export async function runBatch(opts: BatchOpts) {
     .map(r => ({ name: r.file, error: r.error }))
   const done = finished.filter(r => r.status === 'ok').length
   if (opts.manifest) {
+    // rows of an earlier run outside this plan stay; names sort in callset order
+    const lines = new Map(
+      [...prior].map(([file, { line }]) => [file, line] as const),
+    )
+    for (const [i, row] of planned.entries()) {
+      lines.set(row.file, manifestLine(row, finished[i]!))
+    }
     fs.writeFileSync(
       manifestFile,
-      `${[MANIFEST_COLUMNS.join('\t'), ...planned.map((row, i) => manifestLine(row, finished[i]!))].join('\n')}\n`,
+      `${[MANIFEST_COLUMNS.join('\t'), ...[...lines].sort(([a], [b]) => a.localeCompare(b)).map(([, line]) => line)].join('\n')}\n`,
     )
   }
   const reused = finished.filter(r => r.status === 'exists').length
@@ -351,6 +369,7 @@ async function renderRows(
             }
           : {
               ...shared,
+              refseq: false,
               mode: 'breakpoint',
               argv: [
                 ...argv,
@@ -360,10 +379,7 @@ async function renderRows(
             },
         configObject,
       )
-      // so --resume never skips an interrupted write
-      const partial = path.join(outDir, `.partial-${file}`)
-      writeRendered(rendered.svg, partial, width)
-      fs.renameSync(partial, out)
+      writeRendered(rendered.svg, partialPath(outDir, file), width)
       report({
         file,
         status: 'ok',
@@ -372,6 +388,7 @@ async function renderRows(
         spec: rendered.spec ? JSON.stringify(rendered.spec) : '',
       })
     } catch (error) {
+      fs.rmSync(partialPath(outDir, file), { force: true })
       report({
         file,
         status: 'failed',
@@ -398,26 +415,37 @@ const MANIFEST_COLUMNS = [
 
 const MANIFEST_FILE = 'manifest.tsv'
 
-type ReportedCounts = Partial<Record<ReportedColumn, string>>
+interface PriorRow {
+  line: string
+  /** what the run that drew the image counted, for an image it drew */
+  counts?: Partial<Record<ReportedColumn, string>>
+}
+
+function partialPath(outDir: string, file: string) {
+  return path.join(outDir, `.partial-${file}`)
+}
 
 // The last row per file wins, since rows are appended as records finish
-function priorResults(manifestFile: string) {
+function priorManifest(manifestFile: string) {
   const [head = '', ...lines] = fs.existsSync(manifestFile)
     ? fs.readFileSync(manifestFile, 'utf8').split('\n')
     : []
   const columns = head.split('\t')
-  const prior = new Map<string, ReportedCounts>()
+  const prior = new Map<string, PriorRow>()
   for (const line of lines) {
     const fields = line.split('\t')
     const field = (name: string) => fields[columns.indexOf(name)]
     const file = field('file')
-    if (file && (field('status') === 'ok' || field('status') === 'exists')) {
-      prior.set(
-        file,
-        Object.fromEntries(
-          REPORTED_COLUMNS.map(column => [column, field(column) ?? '']),
-        ),
-      )
+    const drawn = field('status') === 'ok' || field('status') === 'exists'
+    if (file) {
+      prior.set(file, {
+        line,
+        counts: drawn
+          ? Object.fromEntries(
+              REPORTED_COLUMNS.map(column => [column, field(column) ?? '']),
+            )
+          : undefined,
+      })
     }
   }
   return prior

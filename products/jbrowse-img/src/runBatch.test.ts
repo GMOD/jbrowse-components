@@ -286,6 +286,40 @@ describe('runBatch', () => {
     ])
   })
 
+  it('says once, not per record, that --refseq skips a breakpoint view', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    await runBatch(opts({ refseq: true, progress: steps().progress }))
+    const handed = mockRenderRegion.mock.calls.map(
+      c => (c[0] as { refseq?: boolean }).refseq,
+    )
+    expect(handed).toEqual([false, false])
+    expect(
+      warn.mock.calls.filter(c => `${c[0]}`.includes('--refseq')),
+    ).toHaveLength(1)
+    warn.mockRestore()
+  })
+
+  it('keeps the rows a narrower --resume run did not plan', async () => {
+    mockRenderRegion
+      .mockResolvedValueOnce({ svg: '<svg/>', links: [5] })
+      .mockResolvedValueOnce({ svg: '<svg/>', links: [7] })
+    await runBatch(opts({ manifest: true, progress: steps().progress }))
+    await runBatch(
+      opts({
+        manifest: true,
+        resume: true,
+        limit: 1,
+        progress: steps().progress,
+      }),
+    )
+    const linksAt = manifestRows()[0]!.indexOf('links')
+    expect(manifestRows().map(r => [r[linksAt], r.at(-1)])).toEqual([
+      ['links', 'status'],
+      ['5', 'exists'],
+      ['7', 'ok'],
+    ])
+  })
+
   it('keeps an interrupted run’s counts for --resume', async () => {
     let manifestMidRun = ''
     mockRenderRegion
@@ -507,12 +541,16 @@ describe('runBatch', () => {
     const script = path.join(dir, 'worker.mjs')
     fs.writeFileSync(
       script,
-      `const [index, of] = process.argv.at(-1).split('/').map(Number)
+      `import fs from 'node:fs'
+import path from 'node:path'
+const outDir = ${JSON.stringify(path.join(dir, 'out'))}
+const [index, of] = process.argv.at(-1).split('/').map(Number)
 const names = Array.from({ length: 10 }, (_, i) =>
   \`\${String(i + 1).padStart(2, '0')}_chr1_\${(i + 1) * 100000 - 1}_ins\${i}.svg\`)
 let n = 0
 for (const [i, file] of names.entries()) {
   if (i % of === index) {
+    fs.writeFileSync(path.join(outDir, '.partial-' + file), '<svg/>')
     if (index === 1 && n++ === 1) {
       process.exit(3)
     }
@@ -560,6 +598,12 @@ for (const [i, file] of names.entries()) {
       ['1', 'ok'],
       ['2', 'ok'],
     ])
+    // the image a worker drew but never reported is not published
+    const published = fs
+      .readdirSync(path.join(dir, 'out'))
+      .filter(f => f.endsWith('.svg') && !f.startsWith('.'))
+    expect(published).toHaveLength(6)
+    expect(published).not.toContain('04_chr1_399999_ins3.svg')
   })
 
   it('renders a callset too small to be worth a second process in this one', async () => {
