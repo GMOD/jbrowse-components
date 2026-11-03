@@ -83,11 +83,14 @@ const OwnAttributes = observer(function OwnAttributes({
  */
 const SubfeatureParts = observer(function SubfeatureParts({
   group,
+  owner,
   locate,
   descriptions,
   formatter,
 }: {
   group: PartsGroup
+  /** the readable name of the feature these are parts of */
+  owner?: string
   locate?: (feature: SimpleFeatureSerialized) => (() => void) | undefined
   descriptions?: Descriptors
   formatter?: FeatureFormatter
@@ -96,7 +99,12 @@ const SubfeatureParts = observer(function SubfeatureParts({
   const { type, parts, shared, phased } = group
   const columns = 3 + Number(phased)
   return (
-    <BaseCard title={`${type} (${parts.length})`} defaultExpanded={false}>
+    <BaseCard
+      title={[owner, `${type} (${parts.length})`]
+        .filter(part => part !== undefined)
+        .join(' · ')}
+      defaultExpanded={false}
+    >
       <Attributes
         attributes={shared}
         descriptions={descriptions}

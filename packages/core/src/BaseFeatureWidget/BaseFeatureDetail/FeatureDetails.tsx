@@ -15,7 +15,7 @@ import CoreDetails from './CoreDetails.tsx'
 import SubfeatureParts from './SubfeatureParts.tsx'
 import { featureNavigator } from './featureNavigator.ts'
 import { subfeatureGroups } from './subfeatureGroups.ts'
-import { generateTitle } from './util.ts'
+import { generateTitle, readableName } from './util.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type {
@@ -78,7 +78,7 @@ const FeatureDetails = observer(function FeatureDetails(
   } = props
   const { classes } = useStyles()
   const maxDepth = model.maxDepth ?? Infinity
-  const { mate, name, subfeatures, uniqueId } = feature
+  const { mate, subfeatures, uniqueId } = feature
   // a panel selecting on `depth === 0` has to see the default, not undefined
   const panelProps = { ...props, depth }
   const locate = featureNavigator(model)
@@ -121,11 +121,7 @@ const FeatureDetails = observer(function FeatureDetails(
       <Attributes
         attributes={feature}
         omit={omit}
-        omitSingleLevel={[
-          ...shownByCoreDetails,
-          'mate',
-          ...(feature.id === name ? ['id'] : []),
-        ]}
+        omitSingleLevel={[...shownByCoreDetails, 'mate']}
         descriptions={descriptions}
         formatter={formatter}
         fieldActions={fieldActions}
@@ -174,6 +170,7 @@ const FeatureDetails = observer(function FeatureDetails(
             <SubfeatureParts
               key={group.type}
               group={group}
+              owner={readableName(feature)}
               locate={locate}
               descriptions={descriptions}
               formatter={formatter}

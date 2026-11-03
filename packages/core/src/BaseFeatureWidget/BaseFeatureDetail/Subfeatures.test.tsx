@@ -120,7 +120,7 @@ test('the sequence panel reads the same pick as the Subfeatures menu', async () 
 test('a transcript groups its exons into one table, with what each exon has of its own under its row', () => {
   const { getByTestId, queryByTestId } = renderGene([transcript('EDEN.1')])
   expect(queryByTestId('transcript-select')).toBeNull()
-  const exons = getByTestId('BaseCard-exon (3)')
+  const exons = getByTestId('BaseCard-EDEN.1 · exon (3)')
   fireEvent.click(within(exons).getAllByRole('button')[0]!)
 
   const rows = within(exons).getAllByRole('row')
@@ -135,4 +135,11 @@ test('a transcript groups its exons into one table, with what each exon has of i
   ])
   expect(within(exons).queryByText('Parent')).toBeNull()
   expect(within(exons).queryByText('source')).toBeNull()
+})
+
+test('a card shows its id as the data states it, even when it equals the name', () => {
+  const { getByTestId } = renderGene([transcript('EDEN.1', { id: 'EDEN.1' })])
+  const card = within(getByTestId('BaseCard-EDEN.1 · mRNA'))
+  expect(card.getByText('id')).toBeTruthy()
+  expect(card.getAllByText('EDEN.1').length).toBeGreaterThan(1)
 })

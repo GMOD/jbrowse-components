@@ -9,17 +9,35 @@ function plainText(value: unknown) {
   return text === '' ? undefined : text
 }
 
+/** A feature's readable name: `name`, else e.g. `transcript_name`. */
+export function readableName(feature: Record<string, unknown>) {
+  return (
+    plainText(feature.name) ??
+    plainText(feature[`${String(feature.type)}_name`])
+  )
+}
+
+// an ID namespaced by a feature type, as Ensembl's `transcript:ENST…` and
+// `CDS:ENSP…` are, reads as the accession after the colon
+function withoutTypePrefix(accession: string, type: unknown) {
+  const colon = accession.indexOf(':')
+  const prefix = accession.slice(0, colon).toLowerCase()
+  return colon > 0 &&
+    ['gene', 'transcript', String(type).toLowerCase()].includes(prefix)
+    ? accession.slice(colon + 1)
+    : accession
+}
+
 /**
- * What names a feature to a reader: its readable name (`name`, else e.g.
- * `transcript_name`), then its accession (e.g. `transcript_id`, else `id`)
- * when the accession does not already spell the name out
+ * What names a feature to a reader: its readable name, then its accession
+ * (e.g. `transcript_id`, else `id`) when the accession does not already spell
+ * the name out
  */
 export function featureLabel(feature: Record<string, unknown>) {
   const { type } = feature
-  const readable =
-    plainText(feature.name) ?? plainText(feature[`${String(type)}_name`])
-  const accession =
-    plainText(feature[`${String(type)}_id`]) ?? plainText(feature.id)
+  const readable = readableName(feature)
+  const id = plainText(feature[`${String(type)}_id`]) ?? plainText(feature.id)
+  const accession = id === undefined ? undefined : withoutTypePrefix(id, type)
   return readable !== undefined &&
     accession !== undefined &&
     !accession.includes(readable)

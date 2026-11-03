@@ -1,4 +1,10 @@
-import { accessNested, featureLabel, generateTitle, isEmpty } from './util.ts'
+import {
+  accessNested,
+  featureLabel,
+  generateTitle,
+  isEmpty,
+  readableName,
+} from './util.ts'
 
 describe('isEmpty', () => {
   test('empty object', () => {
@@ -85,6 +91,30 @@ describe('featureLabel', () => {
     ).toBe('HBB-201 · ENST00000335295')
   })
 
+  test('an Ensembl ID loses the type it is namespaced by', () => {
+    expect(
+      featureLabel({
+        type: 'mRNA',
+        id: 'transcript:ENST00000335295',
+        name: 'HBB-201',
+        transcript_id: 'ENST00000335295',
+      }),
+    ).toBe('HBB-201 · ENST00000335295')
+    expect(
+      featureLabel({ type: 'gene', id: 'gene:ENSG00000244734', name: 'HBB' }),
+    ).toBe('HBB · ENSG00000244734')
+    expect(featureLabel({ type: 'CDS', id: 'CDS:ENSP00000333994' })).toBe(
+      'ENSP00000333994',
+    )
+  })
+
+  test('a colon that is not a type namespace stays', () => {
+    expect(featureLabel({ type: 'match', id: 'ctgA:100-200' })).toBe(
+      'ctgA:100-200',
+    )
+    expect(featureLabel({ type: 'gene', id: 'HGNC:4827' })).toBe('HGNC:4827')
+  })
+
   test('nothing to name it by', () => {
     expect(featureLabel({ type: 'exon' })).toBeUndefined()
     expect(featureLabel({ type: 'exon', name: '' })).toBeUndefined()
@@ -106,5 +136,15 @@ describe('accessNested', () => {
 
   test('a subfield does not inherit its parent field description', () => {
     expect(accessNested(['a', 'b'], { a: 'parent desc' })).toBeUndefined()
+  })
+})
+
+describe('readableName', () => {
+  test('name, else the type-named name, never an accession', () => {
+    expect(
+      readableName({ type: 'transcript', transcript_name: 'TP53-201' }),
+    ).toBe('TP53-201')
+    expect(readableName({ type: 'mRNA', name: '<a>EDEN.1</a>' })).toBe('EDEN.1')
+    expect(readableName({ type: 'mRNA', id: 'rna-NM_1' })).toBeUndefined()
   })
 })
