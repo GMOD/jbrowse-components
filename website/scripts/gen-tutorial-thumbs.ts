@@ -588,10 +588,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   protein_domains: {
-    // the SET row above the rows carrying the eIF2 gamma domains
+    // the one exon, ending in SET on the top row and running into the eIF2
+    // gamma domains on the rows below
     src: 'protein_domains/suvar39.png',
     band: [0.45, 0.97],
-    xband: [0.1, 0.64],
+    xband: [0.415, 0.648],
   },
   alu_age: {
     // The binned frame below the app header and the view's toolbar: the grey
