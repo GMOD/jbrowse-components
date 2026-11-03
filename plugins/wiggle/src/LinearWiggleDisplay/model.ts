@@ -709,14 +709,6 @@ export default function stateModelFactory(
       }
     })
     .actions(self => ({
-      startRenderingBackend(backend: WiggleRenderingBackend) {
-        installWiggleRenderingBackend(self, backend)
-      },
-
-      setShowRowSeparators(arg: boolean) {
-        setConf(self, ['rows', 'axis', 'grid'], arg)
-      },
-
       /**
        * #action
        * The layout half of a Plot type leaf — `Multi-row` or `Overlapping`,
@@ -727,10 +719,20 @@ export default function stateModelFactory(
       setRowLayout(on: boolean) {
         setConf(self, ['rows', 'field'], on ? 'source' : '')
       },
+    }))
+    .actions(self => ({
+      startRenderingBackend(backend: WiggleRenderingBackend) {
+        installWiggleRenderingBackend(self, backend)
+      },
+
+      setShowRowSeparators(arg: boolean) {
+        setConf(self, ['rows', 'axis', 'grid'], arg)
+      },
+
       /**
        * #action
-       * A Plot type leaf whole, so the regions encode once and never as the
-       * new plot in the old layout.
+       * A Plot type leaf whole: `setMark` then `setRowLayout` in one action, so
+       * the regions encode once and never as the new plot in the old layout.
        */
       setPlot({
         mark,
@@ -740,7 +742,7 @@ export default function stateModelFactory(
         rowLayout: boolean
       }) {
         self.setMark(mark.type, mark.interpolate)
-        setConf(self, ['rows', 'field'], rowLayout ? 'source' : '')
+        self.setRowLayout(rowLayout)
       },
 
       /**
