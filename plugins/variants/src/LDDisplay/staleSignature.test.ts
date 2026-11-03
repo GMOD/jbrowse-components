@@ -42,7 +42,6 @@ test('a pan during the RPC leaves the fetch stamped with the issued signature', 
   landData!({
     ldValues: new Float32Array(0),
     boundaries: new Float32Array(0),
-    numCells: 0,
     band: 1_000_000,
     uniformW: 0,
     originBp: 500,

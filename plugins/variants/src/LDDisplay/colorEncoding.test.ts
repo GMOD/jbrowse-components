@@ -16,7 +16,6 @@ function served(metric: LDMetric): LDDataResult {
   return {
     ldValues: new Float32Array([0.5]),
     boundaries: new Float32Array([0, 10, 20]),
-    numCells: 1,
     band: 1,
     uniformW: 10,
     originBp: 0,

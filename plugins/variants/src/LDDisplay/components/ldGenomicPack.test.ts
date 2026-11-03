@@ -65,7 +65,7 @@ function bandPairs() {
 describe('packGenomicCells', () => {
   test('packs one instance per band cell, each on its boundaries', () => {
     const ldValues = valuesWith()
-    const buf = packGenomicCells({ boundaries, band: BAND, ldValues, numCells })
+    const buf = packGenomicCells({ boundaries, band: BAND, ldValues })
 
     expect(buf.byteLength).toBe(numCells * INSTANCE_STRIDE_BYTES)
     expect(unpack(buf)).toEqual(
@@ -79,7 +79,7 @@ describe('packGenomicCells', () => {
       [5, 4],
     ]
     const ldValues = valuesWith(skipped)
-    const buf = packGenomicCells({ boundaries, band: BAND, ldValues, numCells })
+    const buf = packGenomicCells({ boundaries, band: BAND, ldValues })
 
     expect(buf.byteLength).toBe((numCells - 2) * INSTANCE_STRIDE_BYTES)
     expect(unpack(buf)).toEqual(
@@ -92,7 +92,7 @@ describe('packGenomicCells', () => {
   test('packs a real 0', () => {
     const ldValues = valuesWith()
     ldValues[0] = 0
-    const buf = packGenomicCells({ boundaries, band: BAND, ldValues, numCells })
+    const buf = packGenomicCells({ boundaries, band: BAND, ldValues })
 
     expect(buf.byteLength).toBe(numCells * INSTANCE_STRIDE_BYTES)
   })
@@ -101,15 +101,13 @@ describe('packGenomicCells', () => {
     const ldValues = new Float32Array(numCells).fill(LD_NOT_COMPUTED)
 
     expect(
-      packGenomicCells({ boundaries, band: BAND, ldValues, numCells })
-        .byteLength,
+      packGenomicCells({ boundaries, band: BAND, ldValues }).byteLength,
     ).toBe(0)
     expect(
       packGenomicCells({
         boundaries: new Float32Array(0),
         band: 0,
         ldValues: new Float32Array(0),
-        numCells: 0,
       }).byteLength,
     ).toBe(0)
   })

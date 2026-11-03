@@ -81,7 +81,7 @@ test('an empty result still declines genomic mode across multiple regions', asyn
 // the requested value the file could not serve.
 test('an empty result still reports the metric the file can serve', async () => {
   const result = await run([region()], true)
-  expect(result.numCells).toBe(0)
+  expect(result.ldValues).toHaveLength(0)
   expect(result.snps).toEqual([])
   expect(result.appliedField).toBe('r2')
   expect(result.hasDprime).toBe(true)

@@ -66,7 +66,6 @@ function boundRamp(metric: LDMetric) {
   const data: LDUploadData = {
     boundaries: new Float32Array([0, 10, 20]),
     ldValues: new Float32Array([0.5]),
-    numCells: 1,
     band: 1_000_000,
     uniformW: 10,
     appliedLayout: 'columns',

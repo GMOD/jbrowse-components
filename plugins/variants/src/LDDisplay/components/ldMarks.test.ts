@@ -74,7 +74,6 @@ function makeOneCell(overrides?: Partial<LDUploadData>): LDUploadData {
   return {
     boundaries: new Float32Array([0, 10, 20]),
     ldValues: new Float32Array([0.5]),
-    numCells: 1,
     band: 1_000_000,
     uniformW: 10,
     appliedLayout: 'columns',
@@ -132,7 +131,6 @@ describe('the LD mark list', () => {
     const cells = {
       boundaries: new Float32Array([0, 10, 20, 30]),
       ldValues,
-      numCells: 3,
     }
 
     expect(render(makeOneCell(cells)).hal.getBuffer(0, 'main')!.count).toBe(3)
@@ -141,7 +139,7 @@ describe('the LD mark list', () => {
     ).toBe(2)
   })
 
-  // A single cell is a real two-SNP matrix — numCells is the triangular count
+  // A single cell is a real two-SNP matrix — the cell count is the triangular count
   // n*(n-1)/2 — so only an empty one releases. An `n < 2` floor here once made
   // the GPU backend the only path that showed nothing.
   it('releases both buffers for a matrix with no cells', () => {
@@ -151,10 +149,7 @@ describe('the LD mark list', () => {
     backend.upload(0, makeOneCell())
     expect(hal.getBufferCount(0, 'main')).toBe(1)
 
-    backend.upload(
-      0,
-      makeOneCell({ ldValues: new Float32Array(0), numCells: 0 }),
-    )
+    backend.upload(0, makeOneCell({ ldValues: new Float32Array(0) }))
     expect(hal.getBufferCount(0, 'main')).toBe(0)
     expect(hal.getBufferCount(0, 'genomic')).toBe(0)
   })
@@ -257,7 +252,7 @@ describe('the LD mark list, paint reporting', () => {
   // good and held the loading scrim over an empty triangle.
   it('true for a matrix that computed no cells', () => {
     const { painted, hal } = render(
-      makeOneCell({ ldValues: new Float32Array(0), numCells: 0 }),
+      makeOneCell({ ldValues: new Float32Array(0) }),
     )
 
     expect(painted).toBe(true)
@@ -488,7 +483,6 @@ describe('drawLDBlocks over a real band', () => {
       {
         boundaries,
         ldValues: new Float32Array(numCells).fill(0.5),
-        numCells,
         band,
         uniformW: CELL,
         appliedLayout: 'columns',
@@ -559,7 +553,6 @@ describe('drawLDBlocks over a cell nothing computed', () => {
       {
         boundaries,
         ldValues,
-        numCells: ldValues.length,
         band: BAND,
         uniformW: CELL,
         appliedLayout: 'columns',

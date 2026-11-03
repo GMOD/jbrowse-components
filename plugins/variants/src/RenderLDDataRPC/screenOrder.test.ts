@@ -171,7 +171,7 @@ describe('the band', () => {
     const adjacent = loci.slice(1).map((b, i) => record(loci[i]!, b))
     const out = await run([region('a', false)], adjacent)
     expect(out.band).toBe(1)
-    expect(out.numCells).toBe(4)
+    expect(out.ldValues).toHaveLength(4)
     expect(valueFor(out, 100, 200)).toBeCloseTo(pairValue(loci[0]!, loci[1]!))
   })
 

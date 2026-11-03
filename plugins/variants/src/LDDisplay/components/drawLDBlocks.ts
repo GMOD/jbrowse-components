@@ -24,8 +24,8 @@ export function drawLDBlocks(
   state: LDRenderState,
   width: number,
 ) {
-  const { ldValues, boundaries, numCells, band } = data
-  if (numCells === 0) {
+  const { ldValues, boundaries, band } = data
+  if (ldValues.length === 0) {
     return
   }
   const { viewScale, color } = state

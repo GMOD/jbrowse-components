@@ -26,10 +26,9 @@ export function packGenomicCells({
   boundaries,
   band,
   ldValues,
-  numCells,
-}: Pick<LDUploadData, 'boundaries' | 'band' | 'ldValues' | 'numCells'>) {
+}: Pick<LDUploadData, 'boundaries' | 'band' | 'ldValues'>) {
   let computed = 0
-  for (let k = 0; k < numCells; k++) {
+  for (let k = 0; k < ldValues.length; k++) {
     if (ldValueComputed(ldValues[k]!)) {
       computed++
     }

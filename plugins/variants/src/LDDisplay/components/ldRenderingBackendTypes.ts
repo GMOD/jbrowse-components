@@ -6,7 +6,7 @@ import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRe
 /** The part of the payload the marks draw from. */
 export type LDUploadData = Pick<
   LDDataResult,
-  'ldValues' | 'boundaries' | 'numCells' | 'band' | 'uniformW' | 'appliedLayout'
+  'ldValues' | 'boundaries' | 'band' | 'uniformW' | 'appliedLayout'
 >
 
 /** The frame plus `encoding.color` as the painters read it. */
