@@ -10,6 +10,7 @@ import {
   localStorageSetJSON,
   localStorageSetNumber,
 } from '../../util/index.ts'
+import { sequenceModes } from './sequenceModes.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -53,7 +54,7 @@ const sequenceDisplayModes = [
 export type SequenceDisplayMode = (typeof sequenceDisplayModes)[number]
 
 function isSequenceDisplayMode(val: string): val is SequenceDisplayMode {
-  return sequenceDisplayModes.includes(val)
+  return Object.hasOwn(sequenceModes, val)
 }
 
 const p = 'sequenceFeatureDetails'

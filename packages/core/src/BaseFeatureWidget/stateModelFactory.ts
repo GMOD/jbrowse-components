@@ -175,9 +175,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * panel opens on the transcript the track draws first
        */
       get canonicalTranscripts(): CanonicalTranscripts {
+        const displays: unknown[] | undefined = self.track?.displays
         return (
-          self.track?.displays.find(isCanonicalTranscriptsHost)
-            ?.canonicalTranscripts ?? DEFAULT_CANONICAL_TRANSCRIPTS
+          displays?.find(isCanonicalTranscriptsHost)?.canonicalTranscripts ??
+          DEFAULT_CANONICAL_TRANSCRIPTS
         )
       },
       /**

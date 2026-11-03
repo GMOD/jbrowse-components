@@ -431,13 +431,44 @@ const MUI_STYLES_FILE = path.join(
 )
 const MUI_STYLES_OVERRIDDEN = new Set(['makeStyles'])
 
+// A runtime export the package's types do not declare cannot be imported by
+// name, so the bindings follow the declared names and the runtime ones together.
+function declaredExports(specifier: string, containingFile: string) {
+  const options: ts.CompilerOptions = {
+    moduleResolution: ts.ModuleResolutionKind.Bundler,
+    module: ts.ModuleKind.ESNext,
+    skipLibCheck: true,
+  }
+  const resolved = ts.resolveModuleName(
+    specifier,
+    containingFile,
+    options,
+    ts.sys,
+  ).resolvedModule
+  if (!resolved) {
+    throw new Error(`cannot resolve the types of ${specifier}`)
+  }
+  const program = ts.createProgram([resolved.resolvedFileName], options)
+  const checker = program.getTypeChecker()
+  const source = program.getSourceFile(resolved.resolvedFileName)
+  const moduleSymbol = source && checker.getSymbolAtLocation(source)
+  if (!moduleSymbol) {
+    throw new Error(`${specifier} declares no module`)
+  }
+  return new Set(checker.getExportsOfModule(moduleSymbol).map(e => e.name))
+}
+
 function emitMuiStyles() {
   const coreRequire = createRequire(
     path.join(ROOT, 'packages/core/package.json'),
   )
   const styles = coreRequire('@mui/material/styles') as Record<string, unknown>
+  const declared = declaredExports(
+    '@mui/material/styles',
+    path.join(ROOT, 'packages/core/package.json'),
+  )
   const names = Object.keys(styles)
-    .filter(k => k !== 'default' && k !== '__esModule')
+    .filter(k => declared.has(k) && k !== 'default')
     .filter(k => !MUI_STYLES_OVERRIDDEN.has(k))
     .sort((a, b) => a.localeCompare(b, 'en'))
   const list = names.map(n => `  ${n},\n`).join('')
