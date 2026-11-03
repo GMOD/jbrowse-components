@@ -98,6 +98,14 @@ function buildTocSection(
   return lines
 }
 
+interface TutorialEntry {
+  slug: string
+  title: string
+  url: string
+  category: string
+  subcategory?: string
+}
+
 // Tutorials all declare `guide_category: Tutorials`, so they split by
 // `tutorial_category` and `tutorial_subcategory` in the landing page's order.
 // The landing page fails the build on an unknown value; here one falls into the
@@ -110,16 +118,15 @@ function buildTutorialSection(): string[] {
   }
   const extras = pagesIn(docsDir)
     .filter(({ slug }) => slug in TUTORIAL_EXTRA_DOCS)
-    .map(({ slug, title }) => ({
+    .map(({ slug, title }): TutorialEntry => ({
       slug,
       title,
       url: `/docs/${slug}`,
       category: TUTORIAL_EXTRA_DOCS[slug]!,
-      subcategory: undefined,
     }))
   const entries = pagesIn(dir)
     .filter(({ fm }) => fm.guide_category === 'Tutorials')
-    .map(({ slug, title, fm }) => ({
+    .map(({ slug, title, fm }): TutorialEntry => ({
       slug,
       title,
       url: `/docs/tutorials/${slug}`,
