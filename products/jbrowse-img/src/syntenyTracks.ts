@@ -1,3 +1,5 @@
+import { canonicalAssemblyName } from './assemblyName.ts'
+
 import type { Config, Track } from './types.ts'
 
 // Which SyntenyTracks in a config belong to which pair of stacked assemblies.
@@ -21,8 +23,10 @@ export function stackedRows(data: Config) {
 // format (a chain's query is the LOWER assembly), not the stacking order. A
 // self pair needs the assembly named twice. A track declaring no
 // assemblyNames matches nothing.
-function comparesPair(track: Track, a: string, b: string) {
-  const names = track.assemblyNames ?? []
+function comparesPair(data: Config, track: Track, a: string, b: string) {
+  const names = (track.assemblyNames ?? []).map(name =>
+    canonicalAssemblyName(data.assemblies, name),
+  )
   return a === b
     ? names.filter(name => name === a).length >= 2
     : names.includes(a) && names.includes(b)
@@ -34,7 +38,7 @@ function comparesPair(track: Track, a: string, b: string) {
 // block's assembly.
 export function pairSyntenyTrackIds(data: Config, a: string, b: string) {
   return syntenyTracks(data)
-    .filter(track => comparesPair(track, a, b))
+    .filter(track => comparesPair(data, track, a, b))
     .map(track => track.trackId)
 }
 
@@ -49,7 +53,7 @@ export function stackSyntenyTrackIds(data: Config) {
     .filter(track => {
       const placed = order
         .slice(1)
-        .some((name, i) => comparesPair(track, order[i]!, name))
+        .some((name, i) => comparesPair(data, track, order[i]!, name))
       if (!placed) {
         console.warn(
           `Warning: skipping synteny track "${track.trackId}" (${(track.assemblyNames ?? []).join(', ')}) — no pair of stacked assemblies is covered by it`,

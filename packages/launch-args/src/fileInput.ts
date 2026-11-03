@@ -14,6 +14,7 @@ import type { Adapter, Location } from './fileAdapter.ts'
 export interface Assembly {
   name: string
   sequence: Record<string, unknown>
+  aliases?: string[]
   refNameAliases?: Record<string, unknown>
   cytobands?: Record<string, unknown>
 }

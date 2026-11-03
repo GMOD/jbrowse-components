@@ -32,6 +32,15 @@ describe('pairSyntenyTrackIds', () => {
   // A dotplot of the first two assemblies must not open the hs1-mm39 track: it
   // fetches that (often remote) alignment only to log "hg38 not found in this
   // adapter" for every block.
+  test('a track naming an assembly by one of its aliases compares that assembly', () => {
+    const aliased: Config = {
+      ...threeWay,
+      assemblies: [{ ...asm('hg38'), aliases: ['GRCh38'] }, asm('hs1')],
+      tracks: [synteny('grch38_hs1', ['GRCh38', 'hs1'])],
+    }
+    expect(pairSyntenyTrackIds(aliased, 'hg38', 'hs1')).toEqual(['grch38_hs1'])
+  })
+
   test('a pair with no comparison between it gets no tracks', () => {
     expect(pairSyntenyTrackIds(threeWay, 'hg38', 'mm39')).toEqual([])
   })

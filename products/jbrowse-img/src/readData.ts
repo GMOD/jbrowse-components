@@ -14,6 +14,7 @@ import {
   uniqueId,
 } from '@jbrowse/launch-args'
 
+import { findAssembly } from './assemblyName.ts'
 import { makeMultiWiggleTrackConfig } from './makeConfigs.ts'
 import { STDIN_ARG, readTextInput } from './util.ts'
 
@@ -208,7 +209,7 @@ export function readData(
       )
     }
     if (asm) {
-      const assembly = configData.assemblies.find(entry => entry.name === asm)
+      const assembly = findAssembly(configData.assemblies, asm)
       if (!assembly) {
         throw new Error(`assembly ${asm} not found in config`)
       }

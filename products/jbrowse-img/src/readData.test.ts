@@ -128,6 +128,22 @@ describe('readData with a config', () => {
     )
   })
 
+  test('--assembly finds an assembly by one of its aliases', () => {
+    const aliased = path.join(tmpDir, 'aliased.json')
+    fs.writeFileSync(
+      aliased,
+      JSON.stringify({
+        assemblies: [
+          { name: 'hs1', sequence: {} },
+          { name: 'hg38', aliases: ['GRCh38'], sequence: {} },
+        ],
+      }),
+    )
+    expect(
+      readData({ config: aliased, assembly: 'GRCh38' }).assembly.name,
+    ).toBe('hg38')
+  })
+
   test('an --assembly naming a directory is a name to look up, not JSON to read', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hg38-'))
     try {
