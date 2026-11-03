@@ -22,11 +22,11 @@ import {
   proseCell,
   section,
 } from './markdown.ts'
+import { configNodeName, unreadableSignature } from './typeSignatures.ts'
 import {
   assertSingleHeader,
   assertUniquePages,
   collectTransitive,
-  configNodeName,
   filterUnseenByName,
   headerGaps,
   lookupByIdOrName,
@@ -36,7 +36,6 @@ import {
   stripPropertyName,
   suffixCategory,
   withHeaders,
-  unreadableSignature,
 } from './util.ts'
 
 import type { Example, TagType } from './jsDocTags.ts'

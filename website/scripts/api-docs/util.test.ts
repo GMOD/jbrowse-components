@@ -7,17 +7,19 @@ import {
   section,
 } from './markdown.ts'
 import {
-  categoryLabel,
-  collectTransitive,
   dropNodeTails,
   elideSignature,
-  filterUnseenByName,
   nameTypes,
+  sortUnionMembers,
+  unreadableSignature,
+} from './typeSignatures.ts'
+import {
+  categoryLabel,
+  collectTransitive,
+  filterUnseenByName,
   removeComments,
   repoRelative,
-  sortUnionMembers,
   stripPropertyName,
-  unreadableSignature,
 } from './util.ts'
 
 describe('lastTaggedLine', () => {

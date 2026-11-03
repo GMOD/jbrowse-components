@@ -27,11 +27,11 @@ import { writeSpecKeyDocs } from './generateSpecKeyDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 import { MARKER_GENERATORS, PROGRAM_MARKERS } from './markerGenerators.ts'
 import { corpusFiles, getAllFiles, sourceCorpus } from './sourceCorpus.ts'
+import { unreadableSignature } from './typeSignatures.ts'
 import {
   assertEveryDisplayTypeIsDocumented,
   createDocProgram,
   extractWithComment,
-  unreadableSignature,
 } from './util.ts'
 
 import type { ApiGroup } from './generateApiDocs.ts'
