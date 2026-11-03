@@ -1,3 +1,5 @@
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { getStrokeProps } from '@jbrowse/core/util/svgColorProps'
 import { observer } from 'mobx-react'
 
 import { clampStrokeInsideAxis } from './yScaleTicks.ts'
@@ -17,6 +19,7 @@ export function CrossHatchLines({
   width: number
   offsetY?: number
 }) {
+  const stroke = getStrokeProps(usePalette().plotGridlineMajor)
   return (
     <>
       {ticks.items.map(({ value, y }) => {
@@ -32,11 +35,10 @@ export function CrossHatchLines({
             x2={width}
             y1={lineY}
             y2={lineY}
-            stroke="rgb(200,200,200)"
             // a separate stroke-opacity attribute (not baked into an rgba()
             // string) survives the SVG export, whose renderToStaticMarkup strips
             // rgba() alpha
-            strokeOpacity={0.8}
+            {...stroke}
             strokeWidth={1}
           />
         )

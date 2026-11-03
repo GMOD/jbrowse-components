@@ -1,7 +1,6 @@
 import Check from '@mui/icons-material/Check'
 import Close from '@mui/icons-material/Close'
 import { Tooltip } from '@mui/material'
-import { green, red } from '@mui/material/colors'
 import { observer } from 'mobx-react'
 
 import StarIcon from '../StarIcon.tsx'
@@ -82,12 +81,12 @@ const NcbiBadges = observer(function NcbiBadges({ row }: { row: Entry }) {
     <>
       {row.ncbiRefSeqCategory === 'reference genome' ? (
         <Tooltip title="NCBI designated reference">
-          <Check style={{ color: green[600] }} />
+          <Check color="success" />
         </Tooltip>
       ) : null}
       {row.suppressed ? (
         <Tooltip title="NCBI RefSeq suppressed">
-          <Close style={{ color: red[600] }} />
+          <Close color="error" />
         </Tooltip>
       ) : null}
     </>

@@ -1,13 +1,14 @@
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
+import { alpha } from './palette.ts'
 
 const useStyles = makeStyles()(theme => ({
   bg: {
     padding: 4,
     margin: 4,
     overflow: 'auto',
-    background: theme.palette.mode === 'dark' ? '#833' : '#f88',
+    background: alpha(theme.palette.error.main, 0.4),
     border: `1px solid ${theme.palette.divider}`,
   },
 }))
@@ -18,7 +19,7 @@ const useStyles = makeStyles()(theme => ({
 // `reload_button` and `notifyError` publishes `snackbar-error`, so a capture
 // that still showed either failed loudly — but an MST type error surfacing here
 // over a view was captured and committed as if the figure were fine. Keying off
-// `#f88` instead would break on the dark theme and on any restyle.
+// the background instead would break on the dark theme and on any restyle.
 const RedErrorMessageBox = observer(function RedErrorMessageBox({
   children,
 }: {

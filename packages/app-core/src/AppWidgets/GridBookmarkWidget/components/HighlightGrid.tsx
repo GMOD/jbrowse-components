@@ -29,13 +29,17 @@ const ROW_HEIGHT = 32
 // MUI DataGrid's default page size, so the pager shows only when it pages
 const PAGE_SIZE = 100
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => ({
   cell: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-})
+  placeholder: {
+    color: theme.palette.text.secondary,
+    fontStyle: 'italic',
+  },
+}))
 
 const NoHighlightsOverlay = observer(function NoHighlightsOverlay() {
   return (
@@ -100,9 +104,7 @@ const HighlightGrid = observer(function HighlightGrid({
             {value}
           </span>
         ) : (
-          <span style={{ color: 'grey', fontStyle: 'italic' }}>
-            Add label...
-          </span>
+          <span className={classes.placeholder}>Add label...</span>
         ),
     },
     ...(new Set(assemblyNames).size > 1

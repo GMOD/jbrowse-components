@@ -3,6 +3,8 @@ import './svgExportMocks.ts'
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { getStrokeProps } from '@jbrowse/core/util/svgColorProps'
 import { fireEvent } from '@testing-library/react'
 import { createCanvas as nodeCreateCanvas } from 'canvas'
 
@@ -20,6 +22,12 @@ import {
 } from './util.tsx'
 
 import type { LinearWiggleDisplayModel } from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
+
+// the cross hatches' stroke, as getStrokeProps splits the plot gridline token,
+// at the three digits the export rounds an opacity to
+const hatch = getStrokeProps(resolvePalette().plotGridlineMajor)
+const hatchStroke = hatch.stroke
+const hatchOpacity = Number(Number(hatch.strokeOpacity).toFixed(3))
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
@@ -188,8 +196,9 @@ test('wiggle SVG export includes cross-hatches when enabled', async () => {
   // separate stroke-opacity attribute (not baked into rgba) so it survives the
   // export, which strips rgba() alpha.
   const svg = getSavedSvg()
-  expect(svg).toContain('stroke="rgb(200,200,200)"')
-  expect(svg).toContain('stroke-opacity="0.8"')
+  expect(svg).toContain(
+    `stroke-opacity="${hatchOpacity}" stroke="${hatchStroke}"`,
+  )
 }, 45000)
 
 test('multi-wiggle SVG export includes row separators and cross-hatches when enabled', async () => {
@@ -208,11 +217,11 @@ test('multi-wiggle SVG export includes row separators and cross-hatches when ena
   const svg = getSavedSvg()
   // inter-row separators: theme divider hue with its alpha split onto a
   // stroke-opacity attribute by getStrokeProps (colord quantizes to n/255, so
-  // ~0.15 renders as 0.149). No other exported element pairs #000000 with a
-  // sub-1 stroke-opacity, so this uniquely identifies the separators.
-  expect(svg).toMatch(/stroke-opacity="0\.1\d+" stroke="#000000"/)
-  expect(svg).toContain('stroke="rgb(200,200,200)"') // cross-hatches
-  expect(svg).toContain('stroke-opacity="0.8"')
+  // ~0.15 renders as 0.149)
+  expect(svg).toMatch(/stroke-opacity="0\.149\d*" stroke="#000000"/)
+  expect(svg).toContain(
+    `stroke-opacity="${hatchOpacity}" stroke="${hatchStroke}"`,
+  )
 }, 45000)
 
 // x of each ruler coordinate label. The ruler clip group holds only the tick

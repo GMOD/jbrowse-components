@@ -1,4 +1,5 @@
 import { AssemblySelector } from '@jbrowse/core/ui'
+import { darken } from '@jbrowse/core/ui/palette'
 import { getSession } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import {
@@ -79,11 +80,11 @@ const useStyles = makeStyles()(theme => ({
     },
   },
   markerSelected: {
-    background: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
+    background: theme.palette.accent,
+    color: theme.palette.background.paper,
     boxShadow: 'none',
     '&:hover': {
-      background: theme.palette.primary.dark,
+      background: darken(theme.palette.accent, 0.3),
     },
   },
   markerUnfinished: {

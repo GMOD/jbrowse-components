@@ -1,5 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
+import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { getStrokeProps } from '@jbrowse/core/util/svgColorProps'
 import { SvgLegend } from '@jbrowse/display-kit/renderDisplaySvg'
 import { leftAxisGutterWidth } from '@jbrowse/display-ui'
 import { clusterLayout } from '@jbrowse/tree-sidebar'
@@ -17,6 +19,11 @@ import type {
   SvgSidebarProps,
 } from '@jbrowse/tree-sidebar'
 import type React from 'react'
+
+// the cross hatches' stroke, as getStrokeProps splits the plot gridline token
+const { stroke: hatchStroke, strokeOpacity: hatchOpacity } = getStrokeProps(
+  resolvePalette().plotGridlineMajor,
+)
 
 // renderDisplaySvg reaches the containing view for its geometry, and the model
 // here is a plain object; awaitSvgReady awaits a mobx `when`, which a model with
@@ -344,7 +351,9 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
         makeModel({ showRowSeparators: true, axes: axes({ grid: true }) }),
       ),
     )
-    expect(html).toContain('stroke="rgb(200,200,200)"')
+    expect(html).toContain(
+      `stroke-opacity="${hatchOpacity}" stroke="${hatchStroke}"`,
+    )
     expect(html).toContain('y1="50.5"')
   })
 

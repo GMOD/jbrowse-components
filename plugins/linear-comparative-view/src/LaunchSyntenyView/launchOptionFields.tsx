@@ -23,7 +23,7 @@ import type { ReactNode } from 'react'
 const useStyles = makeStyles()(theme => ({
   formControl: {
     margin: 10,
-    border: '1px solid #ccc',
+    border: `1px solid ${theme.palette.divider}`,
   },
   // Flattened out of MUI's default Accordion, which is a Paper: in a dialog the
   // elevation and the ::before divider read as a second dialog inside the

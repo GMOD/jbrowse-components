@@ -3,7 +3,9 @@ import { useId } from 'react'
 
 import { svgSafeId } from '../svg/svgId.ts'
 import { LegendSwatchGlyph } from './LegendSwatchGlyph.tsx'
+import { usePalette } from './PaletteContext.tsx'
 import { measureLegendText } from './measureLegendText.ts'
+import { alpha } from './palette.ts'
 
 import type { ColorLegendEntry, LegendSwatch } from './legendSpec.ts'
 
@@ -22,6 +24,16 @@ const GRADIENT_BAR_WIDTH = 100
 const GRADIENT_BAR_HEIGHT = 10
 // the bar plus the row of domain labels under it
 const GRADIENT_ROW_HEIGHT = GRADIENT_BAR_HEIGHT + 4 + LEGEND_ROW_HEIGHT
+
+// The key's paper and inks, translucent over whatever the display drew
+function useLegendInks() {
+  const palette = usePalette()
+  return {
+    paper: alpha(palette.background.paper, 0.95),
+    text: palette.text.primary,
+    faint: palette.text.secondary,
+  }
+}
 
 // A row's swatches, with the flat `color` shorthand read as the single
 // square it has always drawn.
@@ -80,6 +92,7 @@ function GradientRow({
   gradientId: string
 }) {
   const { stops, minLabel, maxLabel } = entry.gradient!
+  const inks = useLegendInks()
   const barTop = (entry.label ? LEGEND_ROW_HEIGHT : 0) + 2
   const labelY = barTop + GRADIENT_BAR_HEIGHT + 2 + FONT_SIZE
   return (
@@ -89,10 +102,10 @@ function GradientRow({
         y={0}
         width={width}
         height={rowHeight(entry)}
-        fill="rgba(255,255,255,0.95)"
+        fill={inks.paper}
       />
       {entry.label ? (
-        <text x={SWATCH_LEFT} y={11} fontSize={FONT_SIZE} fill="black">
+        <text x={SWATCH_LEFT} y={11} fontSize={FONT_SIZE} fill={inks.text}>
           {entry.label}
         </text>
       ) : null}
@@ -115,14 +128,14 @@ function GradientRow({
         fill={`url(#${gradientId})`}
         rx={2}
       />
-      <text x={SWATCH_LEFT} y={labelY} fontSize={FONT_SIZE} fill="black">
+      <text x={SWATCH_LEFT} y={labelY} fontSize={FONT_SIZE} fill={inks.text}>
         {minLabel}
       </text>
       <text
         x={SWATCH_LEFT + GRADIENT_BAR_WIDTH}
         y={labelY}
         fontSize={FONT_SIZE}
-        fill="black"
+        fill={inks.text}
         textAnchor="end"
       >
         {maxLabel}
@@ -218,6 +231,7 @@ export default function SvgColorLegend({
   testid?: string
 }) {
   const reactId = useId()
+  const inks = useLegendInks()
   const legendId = idPrefix ?? reactId
   const {
     shown,
@@ -245,10 +259,10 @@ export default function SvgColorLegend({
                 y={0}
                 width={totalWidth}
                 height={LEGEND_ROW_HEIGHT}
-                fill="rgba(255,255,255,0.95)"
+                fill={inks.paper}
               />
               {/* only the swatch and label dim for a toggled-off entry — dimming
-                  the row group would take the white paper with it, letting the
+                  the row group would take the paper with it, letting the
                   canvas bleed through and making the struck-out label harder to
                   read */}
               <g opacity={entry.hidden ? 0.35 : 1}>
@@ -265,7 +279,7 @@ export default function SvgColorLegend({
                   x={textLeft}
                   y={11}
                   fontSize={FONT_SIZE}
-                  fill="black"
+                  fill={inks.text}
                   textDecoration={entry.hidden ? 'line-through' : undefined}
                 >
                   {entry.label}
@@ -282,9 +296,9 @@ export default function SvgColorLegend({
             y={0}
             width={totalWidth}
             height={LEGEND_ROW_HEIGHT}
-            fill="rgba(255,255,255,0.95)"
+            fill={inks.paper}
           />
-          <text x={textLeft} y={11} fontSize={FONT_SIZE} fill="#555">
+          <text x={textLeft} y={11} fontSize={FONT_SIZE} fill={inks.faint}>
             {overflowLabel}
           </text>
         </g>

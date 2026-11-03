@@ -1,4 +1,5 @@
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { lighten } from '@jbrowse/core/ui/palette'
 import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
@@ -7,7 +8,7 @@ import type { MafSource } from '../types.ts'
 
 const useStyles = makeStyles()(theme => ({
   insertion: {
-    color: theme.palette.warning.light,
+    color: lighten(theme.palette.insertion, 0.6),
     fontStyle: 'italic',
   },
 }))

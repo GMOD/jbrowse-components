@@ -1,7 +1,7 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import {
   highlightBoxColors,
-  hoverBoxStyle,
+  hoverBoxStyleFor,
 } from '@jbrowse/core/ui/hoverBoxStyle'
 import { alpha } from '@jbrowse/core/ui/palette'
 import { observer } from 'mobx-react'
@@ -17,7 +17,7 @@ function hoverStyle(
 ): CSSProperties {
   switch (style) {
     case 'box':
-      return hoverBoxStyle
+      return hoverBoxStyleFor(palette)
     case 'ring':
       // a radius past half of either side: a circle round a square box, a
       // capsule along a long one

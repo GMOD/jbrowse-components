@@ -2,6 +2,7 @@ import { createTheme } from '@mui/material/styles'
 
 import { deepMerge } from '../util/deepMerge.ts'
 import {
+  alpha,
   palettePresets,
   resolvePalette,
   resolveThemeSelection,
@@ -10,28 +11,19 @@ import { DEFAULT_FONT_SIZE, DEFAULT_SPACING } from './styleTheme.ts'
 
 import type {
   AlignmentFill,
+  FrameTuple,
   PaletteMode,
   StringColors,
   legacyThemeNames,
 } from './palette.ts'
 import type {
+  CSSObject,
   PaletteColor,
   PaletteColorOptions,
   Theme,
   ThemeOptions,
 } from '@mui/material/styles'
 
-// [null, f1, f2, f3, f-3, f-2, f-1] — slot 0 unused so positive frames read as
-// .at(1/2/3) and negative frames fall out of JS negative-index semantics
-type FrameTuple<T> = [
-  null,
-  T | undefined,
-  T | undefined,
-  T | undefined,
-  T | undefined,
-  T | undefined,
-  T | undefined,
-]
 type Frames = FrameTuple<PaletteColor>
 type FramesOptions = FrameTuple<PaletteColorOptions>
 // The plain '#rrggbb' string colors are `StringColors` from palette.ts, reused
@@ -204,6 +196,17 @@ const darkModePrimaryIconOverride = {
 // the static half of a JBrowse theme: sizing plus the MUI component defaults
 // and style overrides every theme shares. No palette — that is the caller's,
 // merged over this by createJBrowseBaseTheme.
+// A Material control left on its default `color="primary"` paints midnight,
+// which vanishes on the dark ground; in dark mode it takes `accent` instead
+function darkModeAccent<O>(
+  style: (accent: string, ownerState: O) => CSSObject | undefined,
+) {
+  return ({ theme, ownerState }: { theme: Theme; ownerState: O }) =>
+    theme.palette.mode === 'dark'
+      ? style(theme.palette.accent, ownerState)
+      : undefined
+}
+
 const baseThemeOptions: ThemeOptions = {
   typography: {
     fontSize: DEFAULT_FONT_SIZE,
@@ -380,6 +383,40 @@ const baseThemeOptions: ThemeOptions = {
         expandIconWrapper: ({ theme: t }: { theme: Theme }) => ({
           color: t.palette.tertiary.contrastText,
         }),
+      },
+    },
+    MuiCircularProgress: {
+      styleOverrides: {
+        colorPrimary: darkModeAccent(accent => ({ color: accent })),
+      },
+    },
+    MuiLinearProgress: {
+      styleOverrides: {
+        root: darkModeAccent<{ color?: string }>((accent, { color }) =>
+          color === 'primary'
+            ? { backgroundColor: alpha(accent, 0.24) }
+            : undefined,
+        ),
+        bar: darkModeAccent<{ color?: string }>((accent, { color }) =>
+          color === 'primary' ? { backgroundColor: accent } : undefined,
+        ),
+      },
+    },
+    MuiTabs: {
+      styleOverrides: {
+        indicator: darkModeAccent<{ indicatorColor?: string }>(
+          (accent, { indicatorColor }) =>
+            indicatorColor === 'primary'
+              ? { backgroundColor: accent }
+              : undefined,
+        ),
+      },
+    },
+    MuiTab: {
+      styleOverrides: {
+        textColorPrimary: darkModeAccent(accent => ({
+          '&.Mui-selected': { color: accent },
+        })),
       },
     },
     MuiToggleButtonGroup: {
