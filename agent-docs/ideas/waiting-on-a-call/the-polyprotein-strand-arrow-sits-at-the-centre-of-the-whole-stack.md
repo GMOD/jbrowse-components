@@ -1,6 +1,6 @@
 ---
 name: the-polyprotein-strand-arrow-sits-at-the-centre-of-the-whole-stack
-description: a visual call; the position is measured and the disagreement with the transcript path is the only argument against it
+description: a visual call on where a strand arrow sits; the polyprotein's position is measured and disagrees with the transcript path, and a childless isoform row draws none
 ---
 
 # The polyprotein strand arrow sits at the centre of the whole stack
@@ -27,3 +27,26 @@ whole ORF block, is defensible; the case against it is that it disagrees with
 the transcript path. Get the visual call before editing. In `below` mode each
 product also owns a label row, so the drawn stack is taller than `totalHeight`
 and the midpoint is off by more than the arithmetic above suggests.
+
+## A childless isoform row draws no strand arrow
+
+A gene stacked as isoforms where one child has no children of its own, such as
+`[mRNA with exons, lnc_RNA with no children]`, draws the childless row with no
+direction. `findGlyph.ts` falls through to `layoutBox` for it (the final return
+after the subfeature checks). `emitBox` in `collect/glyphEmitters.ts` emits a
+strand arrow only `if (isRoot)`, and a child is never the root. The enclosing
+Subfeatures container (`emitSubfeaturesGlyph`) draws none, so nothing on the row
+says which way the lnc_RNA runs. The comment above `processMatureProteinLayout`
+describes the same gap for a nested polyprotein CDS, which that function closes
+by drawing its arrow unconditionally.
+
+The fix shape: `emitBox` emits `emitTopLevelStrandArrow` for a child whose layout
+is an isoform-stack row, as well as for the root. A plain leaf child of a gene
+(an exon-less `CDS` or `five_prime_UTR` box) must not gain one, so the
+condition has to name the isoform-stack row rather than "any non-root box".
+
+Not verified: how it looks. An arrow on a box row that has no exon structure
+beside transcripts drawn with exons and introns may read as a different kind of
+feature, and the arrow sits mid-box where the transcript path draws it on the
+intron line. Get the visual call, together with the polyprotein one above,
+before editing.
