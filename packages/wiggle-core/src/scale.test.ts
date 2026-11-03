@@ -97,6 +97,34 @@ test('one value in view widens the free end', () => {
   ).toEqual([0, 1])
 })
 
+test.each([
+  { domain: [120, 282], bounds: [undefined, 100], expected: [0, 100] },
+  { domain: [-282, -120], bounds: [undefined, -300], expected: [-600, -300] },
+  { domain: [-282, -120], bounds: [-100, undefined], expected: [-100, 0] },
+  { domain: [20, 60], bounds: [200, undefined], expected: [200, 400] },
+  { domain: [20, 60], bounds: [undefined, 0], expected: [-1, 0] },
+] as const)(
+  'a pin the data lies wholly past widens the free end away from it: $bounds over $domain',
+  ({ domain, bounds, expected }) => {
+    for (const scaleType of ['linear', 'symlog']) {
+      expect(getNiceDomain({ zero: false, scaleType, domain, bounds })).toEqual(
+        expected,
+      )
+    }
+  },
+)
+
+test('log keeps a pinned max the data lies wholly above', () => {
+  expect(
+    getNiceDomain({
+      zero: false,
+      scaleType: 'log',
+      domain: [120, 282],
+      bounds: [undefined, 100],
+    }),
+  ).toEqual([32, 100])
+})
+
 test('linear explicit max bound caps the domain', () => {
   expect(
     getNiceDomain({

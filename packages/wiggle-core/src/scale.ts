@@ -186,21 +186,24 @@ export function getNiceDomain({
       min = max > 1 ? 1 : max > 0 ? max / 100 : 1
     }
     if (max <= min) {
-      max = min * 2
+      if (minScore === undefined && maxScore !== undefined && max > 0) {
+        min = max / 2
+      } else {
+        max = min * 2
+      }
     }
   } else if (max < min) {
     // A bound can invert the domain — `minScore: 200` against an autoscaled max
-    // of 60, or `maxScore: -100` against an autoscaled min of -40. A descending
+    // of 60, or `maxScore: 100` against an autoscaled min of 120. A descending
     // domain is not a picture: the two score normalizers disagree about it, so
     // the same view draws an empty band on the GPU and a solid full-height
-    // block in an SVG export. Widen whichever end the user did not pin, keeping
-    // the one they did; with both pinned there is no free end, so order them.
-    // (log has its own version above — its positivity floor has already moved
-    // `min`, so it can only ever widen upward.)
+    // block in an SVG export. Widen whichever end the user did not pin away
+    // from the one they did, by that bound's own size; with both pinned there
+    // is no free end, so order them.
     if (maxScore === undefined) {
-      max = min * 2
+      max = min + (Math.abs(min) || 1)
     } else if (minScore === undefined) {
-      min = max * 2
+      min = max - (Math.abs(max) || 1)
     } else {
       ;[min, max] = [max, min]
     }
