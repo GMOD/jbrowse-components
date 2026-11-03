@@ -253,11 +253,4 @@ export function featuresToRaw(
 // wiggle.slang's own `MIN_FILL_WIDTH_PX` (adr-051), under this module's name.
 export const WIGGLE_MIN_PX = MIN_FILL_WIDTH_PX
 
-// One name per file wherever it arrives from: a dropped file, a pasted URL and a
-// subadapter location all name their row by `getFileName` less its extension.
-export function withoutExtension(filename: string) {
-  const dotIdx = filename.lastIndexOf('.')
-  return dotIdx > 0 ? filename.slice(0, dotIdx) : filename
-}
-
 export { formatScore } from '@jbrowse/core/util/numericUtils'

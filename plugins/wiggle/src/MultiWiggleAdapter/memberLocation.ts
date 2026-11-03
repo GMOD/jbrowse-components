@@ -1,8 +1,7 @@
 import { matchFormat } from '@jbrowse/add-track-core'
 import { getFileName } from '@jbrowse/core/util'
+import { stripFileExtension } from '@jbrowse/core/util/tracks'
 import { isLocalPathLocation, isUriLocation } from '@jbrowse/core/util/types'
-
-import { withoutExtension } from '../util.ts'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
@@ -41,5 +40,5 @@ export function getPrimaryLocationPath(config: MemberConfig) {
 export function getFilenameFromAdapterConfig(config: MemberConfig) {
   const location = primaryLocation(config)
   const name = location ? getFileName(location) : ''
-  return name ? withoutExtension(name) : undefined
+  return name ? stripFileExtension(name) : undefined
 }

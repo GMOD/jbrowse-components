@@ -195,9 +195,17 @@ describe('classifyFile', () => {
     expect(
       classifyFile(new File(['data'], 'peaks.bed.gz'), guessers()),
     ).toMatchObject({
-      name: 'peaks.bed',
+      name: 'peaks',
       reason: expect.stringContaining('index'),
     })
+  })
+})
+
+describe('a dropped compressed file', () => {
+  it('names its row without the compression suffix or the format', () => {
+    expect(
+      classifyFile(new File(['data'], 'cov.bedgraph.gz'), guessers()),
+    ).toMatchObject({ name: 'cov' })
   })
 })
 

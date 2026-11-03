@@ -4,7 +4,7 @@ import {
   getScale,
 } from '@jbrowse/wiggle-core'
 
-import { formatScore, withoutExtension } from './util.ts'
+import { formatScore } from './util.ts'
 
 test('linear scale', () => {
   const scaleType = 'linear'
@@ -198,17 +198,5 @@ describe('formatScore', () => {
   test('passes the >=100 and zero branches through', () => {
     expect(formatScore(0)).toBe('0')
     expect(formatScore(1500.4)).toBe('1500')
-  })
-})
-
-describe('withoutExtension', () => {
-  test.each([
-    ['sample.bw', 'sample'],
-    ['sample.data.bw', 'sample.data'],
-    ['sample', 'sample'],
-    ['sample#2.bw', 'sample#2'],
-    ['.bw', '.bw'],
-  ])('%s -> %s', (input, expected) => {
-    expect(withoutExtension(input)).toBe(expected)
   })
 })
