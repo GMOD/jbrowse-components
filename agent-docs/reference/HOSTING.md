@@ -57,11 +57,11 @@ issues and papers. There is deliberately no `gc`.
 
 ## Plugins served off jbrowse.org, not npm
 
-- **blat** is the only **versioned** path
-  (`plugins/jbrowse-plugin-blat/dist/v1/…umd.production.min.js`), because the URL
-  lands in jb2hubs' generated configs and an unversioned one would push a future
-  bundle into every config already out. A change demanding more of the host gets a
-  v2. Publish with `plugins/blat/scripts/publish-umd.sh`.
+- **blat**'s `plugins/jbrowse-plugin-blat/dist/v1/…umd.production.min.js` is
+  frozen: hub configs named it until the plugin store hosted the plugin, and
+  configs published then still do. Nothing republishes it; the plugin
+  (GMOD/jbrowse-plugin-blat) releases through the store's `latest/` path like
+  the other hub plugins.
 
 ## Private files in S3
 

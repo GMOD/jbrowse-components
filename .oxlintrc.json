@@ -125,7 +125,6 @@
     "products/**/webpack.config.mjs",
     "**/umd_plugin.js",
     "products/jbrowse-desktop/test/**",
-    "plugins/blat/esbuild.mjs",
     "packages/core/src/util/nanoid.ts",
     "scripts/analyze_cpuprof.ts",
     "scripts/getSuggestions.js",

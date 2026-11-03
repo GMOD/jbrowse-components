@@ -24,7 +24,6 @@
     { "path": "plugins/alignments/tsconfig.build.esm.json" },
     { "path": "plugins/authentication/tsconfig.build.esm.json" },
     { "path": "plugins/bed/tsconfig.build.esm.json" },
-    { "path": "plugins/blat/tsconfig.build.esm.json" },
     { "path": "plugins/breakpoint-split-view/tsconfig.build.esm.json" },
     { "path": "plugins/circular-view/tsconfig.build.esm.json" },
     { "path": "plugins/comparative-adapters/tsconfig.build.esm.json" },

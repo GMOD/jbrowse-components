@@ -39,8 +39,9 @@ category tree) and `directrna_isoforms` (a jbrowse.org-hosted BAM).
 
 **BLAT, in-silico PCR, sequence search, CRISPR guides.** New and valuable, and
 the area Colin knows least, so write it against the source and verify by
-driving the real UI. `plugins/blat` has `BlatDialog` and `IsPcrDialog` (two
-Tools menu items, Desktop only; Web does not bundle the plugin);
+driving the real UI. GMOD/jbrowse-plugin-blat has `BlatDialog` and
+`IsPcrDialog` (two Tools menu items, on any genomes.jbrowse.org genome, which
+names the plugin);
 `plugins/sequence/src/CrisprGuideAdapter` has `pam`, `guideLength`,
 `pamLocation` (3prime for Cas9, 5prime for Cas12a) and `cutOffset`, a canvas
 glyph and `CrisprGuidePanel`; `SequenceSearchAdapter`. Documented only in

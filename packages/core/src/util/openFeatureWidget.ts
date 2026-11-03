@@ -80,6 +80,7 @@ export function openFeatureWidget(
     parentFeature?: ParentFeatureSummary
   } = {},
 ): Widget | undefined {
+  // #region openWidget
   const session = getSession(node)
   if (!isSessionModelWithWidgets(session)) {
     return undefined
@@ -94,6 +95,7 @@ export function openFeatureWidget(
     ...opts.extra,
   })
   return widget
+  // #endregion
 }
 
 /**

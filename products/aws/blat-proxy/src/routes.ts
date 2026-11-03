@@ -56,7 +56,7 @@ export const BLAT_ROUTE: ProxyRoute = {
 // `turnstile.render(` is the call that mounts the widget, which only the
 // challenge page makes.
 //
-// Duplicated in `plugins/blat/src/blatQuery.ts`, which decides the same thing
+// Duplicated in jbrowse-plugin-blat's `src/blatQuery.ts`, which decides the same thing
 // about the same pages client-side. This package is standalone and cannot import
 // the plugin, so the copies are deliberate: narrow one and narrow both.
 const CHALLENGE_MARKERS = /turnstile\s*\.\s*render|cf[-_](?:chl|turnstile)/i

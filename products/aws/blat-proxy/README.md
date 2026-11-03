@@ -8,8 +8,9 @@ Turnstile. This proxy solves both:
 - **Injects a server-side `apiKey`** (UCSC account → Hub Development → API key)
   so the key never ships in the public plugin bundle. The apiKey bypasses the
   Turnstile.
-- **Adds CORS headers** so `@jbrowse/plugin-blat` running in a browser can reach
-  it.
+- **Adds CORS headers** so the BLAT plugin
+  ([GMOD/jbrowse-plugin-blat](https://github.com/GMOD/jbrowse-plugin-blat)),
+  which queries from the renderer on web and Desktop alike, can reach it.
 
 It is a **transparent proxy**: the plugin already POSTs a well-formed hgBlat
 body (`userSeq/type/db/output`), so the proxy just forces `apiKey` +
@@ -76,9 +77,9 @@ also why `BasePath` carries a version (`ucsc/v1`): a `v2` can be mounted
 alongside while `v1` keeps answering older builds.
 
 The `BlatProxyApiUrl` stack output is the URL to configure in the plugin (or set
-as `DEFAULT_BLAT_URL` in `plugins/blat/src/blatQuery.ts` once it's stable). To
-find it for an existing deployment, without publishing it here where it would
-invite traffic against the shared key's budget:
+as `DEFAULT_BLAT_URL` in jbrowse-plugin-blat's `src/blatQuery.ts` once it's
+stable). To find it for an existing deployment, without publishing it here where
+it would invite traffic against the shared key's budget:
 
 ```bash
 aws cloudformation describe-stacks --stack-name jbrowse-blat-proxy \

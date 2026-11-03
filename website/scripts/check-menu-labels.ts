@@ -102,6 +102,7 @@ const EXTERNAL_PLUGIN_PAGES = new Map([
     [LIBRARY_SRC('alphagenome_browser', 'plugin', 'src')],
   ],
   ['user_guides/graph_genome_view.md', GRAPH_SRC],
+  ['user_guides/blat.md', pluginSourceDirs('blat')],
   ['tutorials/pangenome_ecoli.md', GRAPH_SRC],
   ['tutorials/pangenome_hprc.md', GRAPH_SRC],
   ['tutorials/pangenome_hprc_haplotypes.md', GRAPH_SRC],

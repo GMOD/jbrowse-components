@@ -21,7 +21,7 @@ Another JBrowse offers the two items once its config carries the same entry:
   "plugins": [
     {
       "name": "Blat",
-      "url": "https://jbrowse.org/plugins/jbrowse-plugin-blat/dist/v1/jbrowse-plugin-blat.umd.production.min.js"
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-blat/latest/dist/jbrowse-plugin-blat.umd.production.min.js"
     }
   ]
 }

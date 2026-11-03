@@ -169,7 +169,7 @@ externalizing and checks each import by name:
   first use
 
 Pass `hostShim({ pluginName: 'MyPlugin' })` in esbuild's `plugins`;
-[BLAT's UMD build](https://github.com/GMOD/jbrowse-components/blob/main/plugins/blat/scripts/build-umd.ts)
+[BLAT's UMD build](https://github.com/GMOD/jbrowse-plugin-blat/blob/main/scripts/umdBuild.ts)
 is a working one.
 
 The installed `@jbrowse/core` is the oldest host the plugin supports. To find an

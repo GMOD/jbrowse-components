@@ -189,7 +189,6 @@
 1 no-unsafe-assignment plugins/alignments/src/shared/alignmentsFilter.ts
 1 no-unsafe-member-access plugins/alignments/src/shared/alignmentsFilter.ts
 1 no-unsafe-return plugins/authentication/src/tokenEntryModelFactory.ts
-1 no-unsafe-return plugins/blat/src/ucscShared.ts
 3 no-unsafe-assignment plugins/breakpoint-split-view/src/BreakpointSplitView/components/BreakpointSplitViewOverlay.tsx
 3 no-unsafe-argument plugins/breakpoint-split-view/src/BreakpointSplitView/components/overlayUtils.tsx
 1 no-unsafe-return plugins/breakpoint-split-view/src/BreakpointSplitView/components/overlayUtils.tsx

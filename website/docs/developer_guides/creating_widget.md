@@ -77,36 +77,37 @@ user saves or shares.
 ## Opening a widget
 
 A caller opens a widget by the `name` its `WidgetType` was registered under.
-BLAT opens its results table that way when a search returns hits:
+Clicking a feature opens its details panel that way. The guard is not optional:
+not every session has a drawer, and an embedded component may be built without
+one.
 
-<!-- include: plugins/blat/src/ucscShared.ts#showWidget -->
+<!-- include: packages/core/src/util/openFeatureWidget.ts#openWidget -->
 
 ```ts
-// openWidget constructs the widget and puts it in the drawer, which is
-// addWidget followed by showWidget. The third argument is the initial state,
-// so its keys are the properties UcscResultsWidget's state model declares. Not
-// every session has a drawer — an embedded component may be built without one
-// — so the guard is not optional. One widget per result track: openWidget
-// replaces a widget of the same id, so a shared id threw away the previous
-// search's hit list while its track stayed open.
-if (isSessionModelWithWidgets(session)) {
-  session.openWidget('UcscResultsWidget', `ucscResults-${trackId}`, {
-    features,
-    assembly,
-    trackName,
-    resultNoun,
-    queries,
-  })
+const session = getSession(node)
+if (!isSessionModelWithWidgets(session)) {
+  return undefined
 }
+session.setSelection(opts.feature ?? new SimpleFeature(featureData))
+const { type, id } = opts.widget ?? DEFAULT_FEATURE_WIDGET
+const widget = session.openWidget(type, id, {
+  featureData,
+  parentFeature: opts.parentFeature,
+  view: getContainingView(node),
+  track: getContainingTrack(node),
+  ...opts.extra,
+})
+return widget
 ```
 
 **That second argument is the widget's identity, not a label.**
 `session.widgets` is a map keyed by it, so `addWidget` with an id already in the
-map replaces what was there. BLAT builds the id from the result track's id, so
-each search gets its own results widget and the drawer's widget picker switches
-between them. Reuse one id where a new instance should replace the last; use
-`createElementId()`, from the same module as `ElementId`, where nothing
-identifies an instance.
+map replaces what was there. The feature-details panel reuses one id, so a click
+on a second feature replaces the first one's panel; a widget that shows one
+search's results builds its id from that search, so each gets its own and the
+drawer's widget picker switches between them. Reuse one id where a new instance
+should replace the last; use `createElementId()`, from the same module as
+`ElementId`, where nothing identifies an instance.
 
 See [](/docs/developer_guides/drawer_widgets) for the rest of the drawer:
 position, width, minimizing, and closing a widget again.
