@@ -14,8 +14,8 @@ import {
 } from './renderSequenceSegments.tsx'
 
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
-import type { Feat } from '../../util.tsx'
 import type { SequenceFeatureDetailsModel } from '../model.ts'
+import type { Feat } from '../types.ts'
 import type { SeqSegment } from './renderSequenceSegments.tsx'
 
 const CDNASequence = observer(function CDNASequence({

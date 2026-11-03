@@ -10,8 +10,8 @@ import { proteinColor, translExceptColor } from '../consts.ts'
 import PlainSequence from './PlainSequence.tsx'
 
 import type { TranslExcept } from '../../../util/geneticCodes.ts'
-import type { Feat } from '../../util.tsx'
 import type { SequenceFeatureDetailsModel } from '../model.ts'
+import type { Feat } from '../types.ts'
 
 // transl_except amino-acid overrides we annotate, in display order.
 const TRANSL_EXCEPT_LABELS = [

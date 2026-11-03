@@ -12,8 +12,8 @@ import type {
   SimpleFeatureSerialized,
   SimpleFeatureSerializedNoId,
 } from '../../util/index.ts'
-import type { SeqState } from '../util.tsx'
 import type { SequenceDisplayMode, SequenceHoverPosition } from './model.ts'
+import type { SeqState } from './types.ts'
 
 // What the panel puts on screen, which is not what `getSequenceFasta` exports:
 // the rendered rows carry their coordinate label and the space every ten bases,

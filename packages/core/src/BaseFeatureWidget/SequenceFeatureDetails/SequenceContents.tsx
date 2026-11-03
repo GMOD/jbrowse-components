@@ -11,18 +11,18 @@ import {
   modeSupportsRevcomp,
   resolveShowCoordinates,
 } from './featureTypeUtil.ts'
+import { getSequenceData } from './getSequenceData.ts'
 import CDNASequence from './seqtypes/CDNASequence.tsx'
 import CDSSequence from './seqtypes/CDSSequence.tsx'
 import GenomicSequence from './seqtypes/GenomicSequence.tsx'
 import ProteinSequence from './seqtypes/ProteinSequence.tsx'
-import { getSequenceData } from './useSequenceData.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { SeqState } from '../util.tsx'
 import type {
   SequenceDisplayMode,
   SequenceFeatureDetailsModel,
 } from './model.ts'
+import type { SeqState } from './types.ts'
 
 // Dispatches to the renderer for the current sequence type. An observer because
 // it reads showCoordinatesSetting: that setting moving relative<->genomic

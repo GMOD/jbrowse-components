@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
 
 import { assembleLocString, toLocale } from '../../util/index.ts'
-import { getStrandStr } from '../util.tsx'
+import { getStrandStr } from '../util.ts'
 import SimpleField from './SimpleField.tsx'
 
 import type { BaseProps } from '../types.tsx'

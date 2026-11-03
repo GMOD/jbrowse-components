@@ -4,8 +4,8 @@ import { stitch } from '../../../util/seqUtils.ts'
 import { cdsColor } from '../consts.ts'
 import PlainSequence from './PlainSequence.tsx'
 
-import type { Feat } from '../../util.tsx'
 import type { SequenceFeatureDetailsModel } from '../model.ts'
+import type { Feat } from '../types.ts'
 
 const CDSSequence = observer(function CDSSequence({
   cds,

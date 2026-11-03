@@ -1,5 +1,8 @@
 import { coarseStripHTML, isObject } from '../../util/index.ts'
-import { ellipses } from '../util.tsx'
+
+function ellipses(slug: string) {
+  return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
+}
 
 export function isEmpty(obj: Record<string, unknown>) {
   return Object.keys(obj).length === 0

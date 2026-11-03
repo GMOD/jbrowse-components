@@ -1,5 +1,5 @@
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { Feat } from '../util.tsx'
+import type { Feat } from './types.ts'
 
 /**
  * Splits a string into chunks for display with optional coordinate spacing.

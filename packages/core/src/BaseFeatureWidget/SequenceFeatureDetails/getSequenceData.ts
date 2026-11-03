@@ -1,10 +1,19 @@
 import { revlist } from '../../util/revlist.ts'
 import { revcom } from '../../util/seqUtils.ts'
-import { filterSuccessiveElementsWithSameStartAndEndCoord } from '../util.tsx'
 import { displayStrand } from './util.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { Feat, SeqState } from '../util.tsx'
+import type { Feat, SeqState } from './types.ts'
+
+function getItemId(feat: Feat) {
+  return `${feat.start}-${feat.end}`
+}
+
+export function filterSuccessiveElementsWithSameStartAndEndCoord(list: Feat[]) {
+  return list.filter(
+    (item, pos, ary) => !pos || getItemId(item) !== getItemId(ary[pos - 1]!),
+  )
+}
 
 interface FeatureData {
   sequence: SeqState

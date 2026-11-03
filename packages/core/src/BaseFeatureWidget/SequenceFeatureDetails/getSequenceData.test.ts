@@ -1,6 +1,10 @@
-import { getSequenceData } from './useSequenceData.ts'
+import {
+  filterSuccessiveElementsWithSameStartAndEndCoord,
+  getSequenceData,
+} from './getSequenceData.ts'
 
 import type { SimpleFeatureSerializedNoId } from '../../util/index.ts'
+import type { Feat } from './types.ts'
 
 const row = (type: string, start: number, end: number) => ({
   type,
@@ -49,5 +53,38 @@ describe('getSequenceData for a polyprotein CDS', () => {
       [0, 30],
       [29, 60],
     ])
+  })
+})
+
+describe('filterSuccessiveElementsWithSameStartAndEndCoord', () => {
+  test('removes immediately successive duplicates', () => {
+    const input: Feat[] = [
+      { start: 10, end: 20 },
+      { start: 10, end: 20 },
+      { start: 30, end: 40 },
+    ]
+    expect(
+      filterSuccessiveElementsWithSameStartAndEndCoord(input),
+    ).toStrictEqual([
+      { start: 10, end: 20 },
+      { start: 30, end: 40 },
+    ])
+  })
+
+  test('keeps non-successive duplicates', () => {
+    const input: Feat[] = [
+      { start: 10, end: 20 },
+      { start: 30, end: 40 },
+      { start: 10, end: 20 },
+    ]
+    expect(
+      filterSuccessiveElementsWithSameStartAndEndCoord(input),
+    ).toHaveLength(3)
+  })
+
+  test('empty list returns empty list', () => {
+    expect(filterSuccessiveElementsWithSameStartAndEndCoord([])).toStrictEqual(
+      [],
+    )
   })
 })

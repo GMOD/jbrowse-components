@@ -1,5 +1,4 @@
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { SeqState } from '../util.tsx'
 import type {
   SequenceDisplayMode,
   SequenceFeatureDetailsModel,
@@ -23,4 +22,23 @@ export interface SequencePanelProps {
   // each render would clear the hover it just set
   hoverTarget?: SequenceHoverTarget
   ref?: RefObject<HTMLDivElement | null>
+}
+
+export interface Feat {
+  start: number
+  end: number
+  type?: string
+  name?: string
+  id?: string | number
+  phase?: number
+}
+
+export interface SeqState {
+  seq: string
+  upstream?: string
+  downstream?: string
+}
+
+export interface ErrorState {
+  error: string
 }

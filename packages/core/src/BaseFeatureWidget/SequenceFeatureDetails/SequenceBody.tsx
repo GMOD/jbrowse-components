@@ -6,12 +6,12 @@ import { statusProgressLabel } from '../../util/progress.ts'
 import SequencePanel from './SequencePanel.tsx'
 
 import type { RpcStatus, SimpleFeatureSerialized } from '../../util/index.ts'
-import type { ErrorState, SeqState } from '../util.tsx'
 import type {
   SequenceDisplayMode,
   SequenceFeatureDetailsModel,
   SequenceHoverTarget,
 } from './model.ts'
+import type { ErrorState, SeqState } from './types.ts'
 import type { RefObject } from 'react'
 
 const SequenceBody = observer(function SequenceBody({

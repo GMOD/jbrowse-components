@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
 
 import { coarseStripHTML, toLocale } from '../../util/index.ts'
-import { getStrandStr } from '../util.tsx'
+import { getStrandStr } from '../util.ts'
 import { modeHasUpDownstream, modeSupportsRevcomp } from './featureTypeUtil.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
