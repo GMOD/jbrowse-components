@@ -21,7 +21,7 @@ import {
 } from './generateConfigDocs.ts'
 
 import type { ManifestSlot, TypedManifestEntry } from './configManifest.ts'
-import type { Config } from './generateConfigDocs.ts'
+import type { Config } from './configTypes.ts'
 
 // The rule assertManifestSlotsAreDocumented applies to one runtime slot. Each
 // exemption here is a shape that is absent from a page by design; getting one

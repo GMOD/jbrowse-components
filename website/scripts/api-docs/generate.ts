@@ -34,9 +34,9 @@ import { MARKER_GENERATORS, PROGRAM_MARKERS } from './markerGenerators.ts'
 import { corpusFiles, getAllFiles, sourceCorpus } from './sourceCorpus.ts'
 import { unreadableSignature } from './typeSignatures.ts'
 
+import type { Config } from './configTypes.ts'
 import type { DisplayTrackLink } from './docProgram.ts'
 import type { ApiGroup } from './generateApiDocs.ts'
-import type { Config } from './generateConfigDocs.ts'
 import type { StateModel } from './generateStateModelDocs.ts'
 
 // Build the TypeScript program over the whole repo ONCE and route each tagged
