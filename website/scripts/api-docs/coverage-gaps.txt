@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1270)
+# model members with no description (1263)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -1298,11 +1298,8 @@ WebSessionManagementMixin.renameSavedSession
 WebSessionManagementMixin.savedSessionMetadata
 WebSessionManagementMixin.setSavedSessionFavorite
 WorkspaceLayoutMixin.activePanelId
-WorkspaceLayoutMixin.activeTabId
 WorkspaceLayoutMixin.addViewToTab
-WorkspaceLayoutMixin.children
 WorkspaceLayoutMixin.closePanel
-WorkspaceLayoutMixin.direction
 WorkspaceLayoutMixin.findTab
 WorkspaceLayoutMixin.hasPanel
 WorkspaceLayoutMixin.homeUnassignedViews
@@ -1314,12 +1311,8 @@ WorkspaceLayoutMixin.restorePanels
 WorkspaceLayoutMixin.setActivePanelId
 WorkspaceLayoutMixin.setActiveTab
 WorkspaceLayoutMixin.setSizes
-WorkspaceLayoutMixin.size
-WorkspaceLayoutMixin.size
 WorkspaceLayoutMixin.tabContainingView
 WorkspaceLayoutMixin.tabs
-WorkspaceLayoutMixin.tabs
-WorkspaceLayoutMixin.viewIds
 
 # members the structural pass cannot see (0)
 # fix: add #getter/#method/#action to the local declaration the shorthand returns

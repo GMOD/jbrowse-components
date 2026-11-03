@@ -12,6 +12,7 @@ import {
   nameTypes,
   overviewSection,
   parseTaggedComment,
+  proseCell,
   removeComments,
   repoRelative,
   section,
@@ -135,6 +136,20 @@ describe('parseTaggedComment', () => {
     )
     expect(name).toBe('Foo')
     expect(docs).toBe('see #configuration notes')
+  })
+})
+
+describe('proseCell', () => {
+  test('a < outside a code span is text, inside one it is code', () => {
+    expect(proseCell('reads multiz<N>way and `Map<string, number>`')).toBe(
+      'reads multiz&lt;N>way and `Map<string, number>`',
+    )
+  })
+
+  test('a fence becomes a pre beside the paragraphs around it', () => {
+    expect(
+      proseCell('One.\n\nTwo:\n```typescript\ntype A = 1\n```\nThree.'),
+    ).toBe('One.<br><br>Two:<pre><code>type A = 1</code></pre>Three.')
   })
 })
 

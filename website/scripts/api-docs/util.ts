@@ -4,15 +4,14 @@ import path from 'path'
 import * as ts from 'typescript'
 
 import {
-  BUILD_DIRS,
   GENERATED_NOTICE,
   docFiles,
+  isDocFile,
   isTsSource,
   escapeRegExp,
   isWebsiteDoc,
   replaceMarkerRegions,
   repoFiles,
-  walkFiles,
 } from '../check-utils.ts'
 import { firstParagraph } from './agentText.ts'
 import { slotSpreadPairs, slotSpreadPart } from './enumConstants.ts'
@@ -584,7 +583,10 @@ function emitUntaggedMember(
   blindSpots: BlindSpot[],
 ) {
   const block = enclosingMemberBlock(node)
-  if (!block) {
+  if (
+    !block ||
+    !modelDeclarations(node.getSourceFile()).some(d => encloses(d, node))
+  ) {
     return
   }
   const type = memberType(node, block)
@@ -612,6 +614,88 @@ function emitUntaggedMember(
       name: node.name.text,
     })
   }
+}
+
+function encloses(outer: ts.Node, inner: ts.Node) {
+  return outer.pos <= inner.pos && inner.end <= outer.end
+}
+
+// The declarations whose MST blocks are the documented model: the one the
+// `#stateModel` JSDoc sits on, and every same-file declaration it reaches as a
+// `types.compose` argument or as the base a `.props/.views/...` chain extends.
+// A `types.model` reached only as a property's type — `types.array(LayoutTab)`
+// — is a different node's model, and its members are not this one's.
+const modelDeclarationCache = new WeakMap<ts.SourceFile, ts.Node[]>()
+
+function modelDeclarations(sourceFile: ts.SourceFile) {
+  let found = modelDeclarationCache.get(sourceFile)
+  if (!found) {
+    const topLevel = new Map<string, ts.Node>()
+    for (const statement of sourceFile.statements) {
+      if (ts.isFunctionDeclaration(statement) && statement.name) {
+        topLevel.set(statement.name.text, statement)
+      } else if (ts.isVariableStatement(statement)) {
+        for (const decl of statement.declarationList.declarations) {
+          if (ts.isIdentifier(decl.name)) {
+            topLevel.set(decl.name.text, decl)
+          }
+        }
+      }
+    }
+    const owned: ts.Node[] = []
+    const own = (node: ts.Node | undefined) => {
+      if (node && !owned.includes(node)) {
+        owned.push(node)
+        ts.forEachChild(node, reach)
+      }
+    }
+    const ownNamed = (expr: ts.Expression) => {
+      const head = composedHead(expr)
+      if (head) {
+        own(topLevel.get(head))
+      }
+    }
+    const reach = (node: ts.Node) => {
+      if (
+        ts.isCallExpression(node) &&
+        isTypesMember(node.expression, 'compose')
+      ) {
+        node.arguments.forEach(ownNamed)
+      } else if (
+        ts.isCallExpression(node) &&
+        ts.isPropertyAccessExpression(node.expression) &&
+        MODEL_CHAIN_METHODS.has(node.expression.name.text)
+      ) {
+        ownNamed(node.expression.expression)
+      }
+      ts.forEachChild(node, reach)
+    }
+    const visitHeader = (node: ts.Node) => {
+      if (startsWithTag(getOwnJSDocText(node), 'stateModel')) {
+        own(node)
+      } else {
+        ts.forEachChild(node, visitHeader)
+      }
+    }
+    ts.forEachChild(sourceFile, visitHeader)
+    found = owned
+    modelDeclarationCache.set(sourceFile, found)
+  }
+  return found
+}
+
+// `Base`, `Mixin()`, `Base!` and `factory(pm).named('X')` all name their head
+// identifier.
+function composedHead(expr: ts.Expression): string | undefined {
+  return ts.isIdentifier(expr)
+    ? expr.text
+    : ts.isCallExpression(expr) || ts.isNonNullExpression(expr)
+      ? composedHead(expr.expression)
+      : ts.isPropertyAccessExpression(expr) &&
+          (MODEL_CHAIN_METHODS.has(expr.name.text) ||
+            expr.name.text === 'named')
+        ? composedHead(expr.expression)
+        : undefined
 }
 
 // True when a `{ foo }` shorthand's target declaration carries no member tag, so
@@ -1730,6 +1814,23 @@ function slotValueReferences(checker: ts.TypeChecker, node: ts.Node) {
         }
         queue.push({ expr: returned, depth: depth + 1, list })
       }
+      // A factory's schema may arrive as a parameter's default
+      // (`entry = fieldPredicateConfigSchema`) or through a local
+      // (`const type = fieldPredicateArray()`), and both are its value.
+      for (const param of fn?.parameters ?? []) {
+        if (param.initializer) {
+          queue.push({ expr: param.initializer, depth: depth + 1, list })
+        }
+      }
+      if (
+        !fn &&
+        decl &&
+        ts.isVariableDeclaration(decl) &&
+        decl.initializer &&
+        !name
+      ) {
+        queue.push({ expr: decl.initializer, depth: depth + 1, list })
+      }
     }
   }
   return {
@@ -2542,13 +2643,37 @@ export function tableCell(text: string | undefined) {
 
 // Prose that keeps its paragraph breaks inside a cell. A cell is one line of
 // markdown, so a blank line isn't available — `<br><br>` is what a multi-
-// paragraph slot description renders as.
+// paragraph slot description renders as, and a fence becomes a `<pre>`. A `<`
+// outside a code span is text: `multiz<N>way` would otherwise open an `<n>`
+// element that swallows the rest of the cell.
 export function proseCell(text: string | undefined) {
-  return (text ?? '')
-    .split(/\n\s*\n/)
-    .map(p => tableCell(p))
+  return cellBlocks(text ?? '', part =>
+    part
+      .split(/\n\s*\n/)
+      .map(p => escapeProseAngles(tableCell(p)))
+      .filter(Boolean)
+      .join('<br><br>'),
+  )
+}
+
+function escapeProseAngles(text: string) {
+  return text
+    .split(/(`[^`]*`)/)
+    .map((part, i) => (i % 2 ? part : part.replaceAll('<', '&lt;')))
+    .join('')
+}
+
+// Cell content with its fenced code as `<pre>` blocks, since a fence needs
+// lines of its own and a cell is one line; the prose between goes through
+// `prose`.
+function cellBlocks(text: string, prose: (part: string) => string) {
+  return text
+    .split(/```\w*\n([\s\S]*?)```/)
+    .map((part, i) =>
+      i % 2 ? `<pre><code>${preCell(part)}</code></pre>` : prose(part),
+    )
     .filter(Boolean)
-    .join('<br><br>')
+    .join('')
 }
 
 // Raw-HTML escaping for a cell: `&`/`<`/`>` so code can't be read as markup,
@@ -2613,22 +2738,16 @@ function dialogCell(trigger: string, body: string) {
 }
 
 // An authored `#example` inside a table cell. Its prose stays markdown (a cell
-// parses as inline markdown, so backticks and links still render); its fenced
-// code can't — a fence needs its own lines — so it becomes a `<pre>`.
+// parses as inline markdown, so backticks and links still render).
 export function exampleCell(examples: Example[]) {
   return examples
     .map(ex =>
       dialogCell(
         ex.label ? `example: ${ex.label}` : 'example',
-        ex.content
-          .split(/```[\w]*\n([\s\S]*?)```/)
-          .map((part, i) =>
-            i % 2
-              ? `<pre><code>${preCell(part)}</code></pre>`
-              : tableCell(part) && `<p>${tableCell(part)}</p>`,
-          )
-          .filter(Boolean)
-          .join(''),
+        cellBlocks(ex.content, part => {
+          const prose = escapeProseAngles(tableCell(part))
+          return prose && `<p>${prose}</p>`
+        }),
       ),
     )
     .join('')
@@ -2982,16 +3101,9 @@ export function lastTaggedLine(comment: string, tag: string) {
   return value || undefined
 }
 
-// Recursively list every non-test .ts/.tsx source under a directory, skipping
-// build output.
-export function listSources(dir: string): string[] {
-  return walkFiles(dir, isTsSource, BUILD_DIRS)
-}
-
 // The sources the text-scanning generators read tags out of, read once.
 //
-// Five of them used to walk the tree themselves with `listSources` and read
-// every file again — five full walks and five full reads per run, and three
+// Five of them used to walk the tree themselves and read every file again — five full walks and five full reads per run, and three
 // different answers about what "the source tree" is. Two scanned
 // `packages`+`plugins` and two `packages`+`plugins`+`products`, so the same tag
 // written in a product was documented by one generator and silently ignored by
@@ -2999,7 +3111,7 @@ export function listSources(dir: string): string[] {
 // program-driven half of the pipeline (`getAllFiles`) does not.
 //
 // So the list comes from `getAllFiles` now, the same list the TypeScript
-// program is built over, narrowed to what `listSources` used to yield: no test
+// program is built over, narrowed to what a walk used to yield: no test
 // files (a `#extensionPoint` in a fixture is not an extension point) and no
 // `.js`, which `getAllFiles` includes for the program's benefit and which
 // carries no tags.
@@ -3057,8 +3169,14 @@ export function sourceCorpus(
 // relists and rereads these once per marker — 30 sweeps in `markers.ts`, not the
 // eight the note here used to be measured against. The relisting stays uncached
 // at 1ms a sweep; the rereading is `readDoc`'s, and format.ts says what it cost.
+// From the same listing as the sources, so under the pre-push hook another
+// agent's untracked doc is neither spliced nor indexed.
 function markerDocs() {
-  return [...docFiles('website/docs'), ...docFiles('agent-docs')]
+  return repoFiles().filter(
+    f =>
+      (f.startsWith('website/docs/') || f.startsWith('agent-docs/')) &&
+      isDocFile(path.basename(f)),
+  )
 }
 
 // Which docs carry each `<!-- MARKER … START -->` pair, and which markers a

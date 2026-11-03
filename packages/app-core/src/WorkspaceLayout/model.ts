@@ -52,17 +52,6 @@ function sessionViewIds(self: LayoutHostSelf) {
   return self.views?.map(v => v.id)
 }
 
-/**
- * #stateModel WorkspaceLayoutMixin
- *
- * The whole workspace as one MST tree:
- *
- *   branch (a split)  >  panel (a grid cell)  >  tab  >  views (stacked)
- *
- * Every action is `tree -> tree` through the pure functions in `tree.ts`, so
- * undo is `applySnapshot` on this node.
- */
-
 const LayoutTab = types.model('LayoutTab', {
   id: types.identifier,
   viewIds: types.array(types.string),
@@ -114,6 +103,16 @@ function emptyPanel(): PanelNode {
   }
 }
 
+/**
+ * #stateModel WorkspaceLayoutMixin
+ *
+ * The whole workspace as one MST tree:
+ *
+ *   branch (a split)  >  panel (a grid cell)  >  tab  >  views (stacked)
+ *
+ * Every action is `tree -> tree` through the pure functions in `tree.ts`, so
+ * undo is `applySnapshot` on this node.
+ */
 export function WorkspaceLayoutMixin() {
   return (
     types

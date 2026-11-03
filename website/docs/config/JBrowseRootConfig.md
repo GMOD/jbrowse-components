@@ -21,7 +21,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot typ
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-plugins">**plugins**</span><br><code>types.array(types.frozen&lt;PluginDefinition&gt;())</code> | defines plugins of the format ```typescript type PluginDefinition= { umdUrl: string, name:string } \| { url: string, name: string } \| { esmUrl: string } \| { umdLoc: { uri: string } } \| { esmLoc: { uri: string } } \| { storePlugin: string } ``` |
+| <span id="slot-plugins">**plugins**</span><br><code>types.array(types.frozen&lt;PluginDefinition&gt;())</code> | defines plugins of the format<pre><code>type PluginDefinition=&#10;&#160;&#160;&#160;{ umdUrl: string, name:string } &#124;&#10;&#160;&#160;&#160;{ url: string, name: string } &#124;&#10;&#160;&#160;&#160;{ esmUrl: string } &#124;&#10;&#160;&#160;&#160;{ umdLoc: { uri: string } } &#124;&#10;&#160;&#160;&#160;{ esmLoc: { uri: string } } &#124;&#10;&#160;&#160;&#160;{ storePlugin: string }</code></pre> |
 | <span id="slot-assemblies">**assemblies**</span><br><code>types.array(assemblyConfigSchema)</code> | configuration of the assemblies in the instance, see BaseAssembly |
 | <span id="slot-tracks">**tracks**</span><br><code>types.frozen([] as TrackConfigEntry[])</code> | track configuration is an array of track config schemas. multiple instances of a track can exist that use the same configuration. Always uses frozen for performance - editing creates temporary MST models. |
 | <span id="slot-internetaccounts">**internetAccounts**</span><br>[list of internet account configs](/docs/config#internet-account) | configuration for internet accounts, see InternetAccounts |

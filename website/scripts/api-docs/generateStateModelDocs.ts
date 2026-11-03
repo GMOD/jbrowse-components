@@ -172,7 +172,15 @@ export function accumulateModel(
   } else {
     const def = MEMBER_KINDS.find(k => k.tag === obj.type)
     if (def) {
-      file.members[def.key].push(member)
+      // A later block redefining a member overrides it, as in MST, so the
+      // row keeps the first one's place and the override's text.
+      const own = file.members[def.key]
+      const overridden = own.findIndex(m => m.name === member.name)
+      if (overridden === -1) {
+        own.push(member)
+      } else {
+        own[overridden] = member
+      }
     }
   }
 }
@@ -299,10 +307,8 @@ function memberAnchor(def: MemberKind, name: string) {
 // rather than holding the row open.
 //
 // `seen` carries the anchors already emitted on this page, and only the first
-// row for a name gets the `id`. A model composed of several sub-models lists
-// each one's members in the same table — WorkspaceLayoutMixin has three `id`
-// properties and two `size` ones, from LayoutTab, LayoutPanel and LayoutNode —
-// and repeating the anchor renders duplicate ids, which the website build
+// row for a name gets the `id`: anchors are lowercased, so two names differing
+// only in case would otherwise render duplicate ids, which the website build
 // fails on.
 function memberRow(
   def: MemberKind,

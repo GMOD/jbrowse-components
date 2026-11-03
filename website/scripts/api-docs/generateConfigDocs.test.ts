@@ -30,19 +30,23 @@ const page = (...names: string[]) => new Set(names)
 const slot = (name: string, type = 'string'): ManifestSlot => ({ name, type })
 
 test('a slot with no row is named', () => {
-  expect(missingSlotNames(slot('filter'), page())).toEqual(['filter'])
-  expect(missingSlotNames(slot('filter'), page('filter'))).toEqual([])
+  expect(missingSlotNames(slot('filter'), page(), page())).toEqual(['filter'])
+  expect(missingSlotNames(slot('filter'), page('filter'), page())).toEqual([])
 })
 
 test('the type discriminator is exempt', () => {
-  expect(missingSlotNames(slot('type', '"BamAdapter"'), page())).toEqual([])
+  expect(
+    missingSlotNames(slot('type', '"BamAdapter"'), page(), page()),
+  ).toEqual([])
 })
 
 // By manifest type, not by name: HtsgetBamAdapter's `htsgetTrackId` is an
 // ordinary string slot that the page does owe a row for.
 test('identifier slots are exempt, `Id`-suffixed strings are not', () => {
-  expect(missingSlotNames(slot('displayId', 'identifier'), page())).toEqual([])
-  expect(missingSlotNames(slot('htsgetTrackId'), page())).toEqual([
+  expect(
+    missingSlotNames(slot('displayId', 'identifier'), page(), page()),
+  ).toEqual([])
+  expect(missingSlotNames(slot('htsgetTrackId'), page(), page())).toEqual([
     'htsgetTrackId',
   ])
 })
@@ -54,21 +58,32 @@ describe('a container sub-schema', () => {
     subSlots: [slot('indexType'), slot('location')],
   }
 
-  test('is covered by its own row', () => {
-    expect(missingSlotNames(index, page('index'))).toEqual([])
+  test('is covered by its own row when that row links its page', () => {
+    expect(missingSlotNames(index, page('index'), page('index'))).toEqual([])
+  })
+
+  test('is not covered by its own row alone', () => {
+    expect(missingSlotNames(index, page('index'), page())).toEqual([
+      'index.indexType',
+      'index.location',
+    ])
   })
 
   test('is covered by every child', () => {
     expect(
-      missingSlotNames(index, page('index.indexType', 'index.location')),
+      missingSlotNames(
+        index,
+        page('index.indexType', 'index.location'),
+        page(),
+      ),
     ).toEqual([])
   })
 
   test('names the children it is missing', () => {
-    expect(missingSlotNames(index, page('index.indexType'))).toEqual([
+    expect(missingSlotNames(index, page('index.indexType'), page())).toEqual([
       'index.location',
     ])
-    expect(missingSlotNames(index, page())).toEqual([
+    expect(missingSlotNames(index, page(), page())).toEqual([
       'index.indexType',
       'index.location',
     ])

@@ -167,28 +167,36 @@ function spreadSlots(configNode: string): Item[] {
     true,
   )
   const slots: Item[] = []
+  const addPairs = (expr: ts.Expression, prefix: string) => {
+    for (const [name, value] of spreadPairs(expr, sf) ?? []) {
+      slots.push({
+        name: `${prefix}${name}`,
+        docs: '',
+        examples: [],
+        code: `${name}: ${value}`,
+      })
+    }
+  }
   const visit = (node: ts.Node, prefix: string) => {
     if (ts.isSpreadAssignment(node)) {
-      const pairs = spreadPairs(node.expression, sf)
-      for (const [name, value] of pairs ?? []) {
-        slots.push({
-          name: `${prefix}${name}`,
-          docs: '',
-          examples: [],
-          code: `${name}: ${value}`,
-        })
-      }
+      addPairs(node.expression, prefix)
     }
     // A property whose value is a nested `ConfigurationSchema(...)` opens a
-    // level; anything else keeps the prefix it was reached with.
-    const nested =
+    // level; anything else keeps the prefix it was reached with. A slot table
+    // passed whole, `ConfigurationSchema('X', scaleSlots('Y'))`, is a spread of
+    // that table.
+    const schema =
       ts.isPropertyAssignment(node) &&
       ts.isIdentifier(node.name) &&
       ts.isCallExpression(node.initializer) &&
       ts.isIdentifier(node.initializer.expression) &&
       node.initializer.expression.text === 'ConfigurationSchema'
-        ? `${prefix}${node.name.text}.`
-        : prefix
+        ? { name: node.name.text, table: node.initializer.arguments[1] }
+        : undefined
+    const nested = schema ? `${prefix}${schema.name}.` : prefix
+    if (schema?.table && !ts.isObjectLiteralExpression(schema.table)) {
+      addPairs(schema.table, nested)
+    }
     ts.forEachChild(node, child => {
       visit(child, nested)
     })
@@ -2134,13 +2142,11 @@ function assertManifestSlotsAreDocumented(
     if (!entry) {
       return []
     }
-    const documented = new Set(
-      [cfg, ...collectBaseConfigs(cfg, index)].flatMap(c =>
-        c.slots.map(s => s.name),
-      ),
-    )
+    const rows = [cfg, ...collectBaseConfigs(cfg, index)].flatMap(c => c.slots)
+    const documented = new Set(rows.map(s => s.name))
+    const paged = new Set(rows.filter(s => s.schemaPage).map(s => s.name))
     const missing = entry.slots.flatMap(slot =>
-      missingSlotNames(slot, documented),
+      missingSlotNames(slot, documented, paged),
     )
     return missing.length
       ? [
@@ -2158,10 +2164,15 @@ function assertManifestSlotsAreDocumented(
 }
 
 // Which of one manifest slot's names the page owes a row for. A container is
-// covered by its own row OR by every child, so a container documented as a
-// single row (`formatDetails`, whose sub-schema has a page of its own) passes
-// while one missing half its children names the halves it is missing.
-export function missingSlotNames(slot: ManifestSlot, documented: Set<string>) {
+// covered by every child, or by its own row when that row links the page
+// documenting its sub-schema (`formatDetails`). A container row linking
+// nothing names the children it is missing: SyntenyColor's `scale` row once
+// stood in for thirteen slots no page showed.
+export function missingSlotNames(
+  slot: ManifestSlot,
+  documented: Set<string>,
+  paged: Set<string>,
+) {
   if (slot.name === 'type' || slot.type === 'identifier') {
     return []
   }
@@ -2169,7 +2180,7 @@ export function missingSlotNames(slot: ManifestSlot, documented: Set<string>) {
     const missing = slot.subSlots
       .map(child => `${slot.name}.${child.name}`)
       .filter(name => !documented.has(name))
-    return documented.has(slot.name) ? [] : missing
+    return paged.has(slot.name) ? [] : missing
   }
   return documented.has(slot.name) ? [] : [slot.name]
 }

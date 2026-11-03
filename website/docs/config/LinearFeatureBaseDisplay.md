@@ -23,7 +23,7 @@ stack overlapping features in rows (pileup-style glyphs).
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-filter">**filter**</span><br><code>fieldPredicateList()</code> | The features the display draws, a list of [](/docs/config/fieldpredicate) entries a feature must all pass: a field of the feature's own (`{ field: "score", gte: 100 }`), a `jexl:` expression that must hold (`"jexl:feature.type == 'gene'"`), or `geneLike`, true for every gene, transcript and RNA type, the `transcripts.types` and `containers.types`, and a top-level CDS. |
+| <span id="slot-filter">**filter**</span><br>[FieldPredicate](../fieldpredicate) | The features the display draws, a list of [](/docs/config/fieldpredicate) entries a feature must all pass: a field of the feature's own (`{ field: "score", gte: 100 }`), a `jexl:` expression that must hold (`"jexl:feature.type == 'gene'"`), or `geneLike`, true for every gene, transcript and RNA type, the `transcripts.types` and `containers.types`, and a top-level CDS. |
 | <span id="slot-tooltip">**tooltip**</span><br>[FeatureTooltip](../featuretooltip) | The box hovering a feature opens, a [](/docs/config/featuretooltip) object. |
 | <span id="slot-legend">**legend**</span><br>[Legend](../legend) | The display's color key, when it has one: the key an `encoding.color` field derives, or a variant track's consequence-impact / SV-type presets. |
 | <span id="slot-encoding">**encoding**</span><br>[FeatureEncoding](../featureencoding) | The channels the features paint through: `encoding.color`, each feature's main fill. |

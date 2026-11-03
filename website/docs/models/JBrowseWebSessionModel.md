@@ -16,7 +16,7 @@ Each section ends with the members a composed model contributes, linked to the p
 ## Properties
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>35 inherited properties from 9 models</summary>
+<summary>25 inherited properties from 9 models</summary>
 
 From [BaseWebSessionModel](../basewebsessionmodel): <span id="property-sessionplugins">[`sessionPlugins`](../basewebsessionmodel#property-sessionplugins)</span>
 
@@ -24,13 +24,13 @@ From [WebSessionConnectionsMixin](../websessionconnectionsmixin): <span id="prop
 
 From [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin): <span id="property-connectioninstances">[`connectionInstances`](../connectionmanagementsessionmixin#property-connectioninstances)</span>, <span id="property-connectiontrackconfigs">[`connectionTrackConfigs`](../connectionmanagementsessionmixin#property-connectiontrackconfigs)</span>
 
-From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="property-id">[`id`](../workspacelayoutmixin#property-id)</span>, <span id="property-viewids">[`viewIds`](../workspacelayoutmixin#property-viewids)</span>, <span id="property-title">[`title`](../workspacelayoutmixin#property-title)</span>, [`id`](../workspacelayoutmixin#property-id), <span id="property-size">[`size`](../workspacelayoutmixin#property-size)</span>, <span id="property-tabs">[`tabs`](../workspacelayoutmixin#property-tabs)</span>, <span id="property-activetabid">[`activeTabId`](../workspacelayoutmixin#property-activetabid)</span>, [`id`](../workspacelayoutmixin#property-id), [`size`](../workspacelayoutmixin#property-size), <span id="property-direction">[`direction`](../workspacelayoutmixin#property-direction)</span>, <span id="property-children">[`children`](../workspacelayoutmixin#property-children)</span>, <span id="property-layout">[`layout`](../workspacelayoutmixin#property-layout)</span>, <span id="property-activepanelid">[`activePanelId`](../workspacelayoutmixin#property-activepanelid)</span>, <span id="property-maximizedpanelid">[`maximizedPanelId`](../workspacelayoutmixin#property-maximizedpanelid)</span>
+From [WorkspaceLayoutMixin](../workspacelayoutmixin): <span id="property-layout">[`layout`](../workspacelayoutmixin#property-layout)</span>, <span id="property-activepanelid">[`activePanelId`](../workspacelayoutmixin#property-activepanelid)</span>, <span id="property-maximizedpanelid">[`maximizedPanelId`](../workspacelayoutmixin#property-maximizedpanelid)</span>
 
 From [AssembliesMixin](../assembliesmixin): <span id="property-sessionassemblies">[`sessionAssemblies`](../assembliesmixin#property-sessionassemblies)</span>, <span id="property-temporaryassemblies">[`temporaryAssemblies`](../assembliesmixin#property-temporaryassemblies)</span>
 
 From [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin): <span id="property-sessiontracks">[`sessionTracks`](../sessiontracksmanagersessionmixin#property-sessiontracks)</span>, <span id="property-trackconfigdeltas">[`trackConfigDeltas`](../sessiontracksmanagersessionmixin#property-trackconfigdeltas)</span>
 
-From [BaseSessionModel](../basesessionmodel): <span id="property-name">[`name`](../basesessionmodel#property-name)</span>, <span id="property-focusedviewid">[`focusedViewId`](../basesessionmodel#property-focusedviewid)</span>, <span id="property-highlights">[`highlights`](../basesessionmodel#property-highlights)</span>, <span id="property-highlightsvisible">[`highlightsVisible`](../basesessionmodel#property-highlightsvisible)</span>, <span id="property-highlightlabelsvisible">[`highlightLabelsVisible`](../basesessionmodel#property-highlightlabelsvisible)</span>, <span id="property-heldformissingplugins">[`heldForMissingPlugins`](../basesessionmodel#property-heldformissingplugins)</span>
+From [BaseSessionModel](../basesessionmodel): <span id="property-id">[`id`](../basesessionmodel#property-id)</span>, <span id="property-name">[`name`](../basesessionmodel#property-name)</span>, <span id="property-focusedviewid">[`focusedViewId`](../basesessionmodel#property-focusedviewid)</span>, <span id="property-highlights">[`highlights`](../basesessionmodel#property-highlights)</span>, <span id="property-highlightsvisible">[`highlightsVisible`](../basesessionmodel#property-highlightsvisible)</span>, <span id="property-highlightlabelsvisible">[`highlightLabelsVisible`](../basesessionmodel#property-highlightlabelsvisible)</span>, <span id="property-heldformissingplugins">[`heldForMissingPlugins`](../basesessionmodel#property-heldformissingplugins)</span>
 
 From [MultipleViewsSessionMixin](../multipleviewssessionmixin): <span id="property-views">[`views`](../multipleviewssessionmixin#property-views)</span>, <span id="property-stickyviewheaders">[`stickyViewHeaders`](../multipleviewssessionmixin#property-stickyviewheaders)</span>
 
