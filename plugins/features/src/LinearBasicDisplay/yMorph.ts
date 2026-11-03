@@ -1,4 +1,5 @@
 import { isPlacedRow } from './rowPlacement.ts'
+import { cloneDrawnYLanes, shiftDrawnYLanes } from './yLanes.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { LabelRoomFactors } from './layoutInputs.ts'
@@ -102,21 +103,8 @@ export function canMorph(
   return moved && rectCount <= MORPH_MAX_RECTS
 }
 
-function shift(
-  ys: Float32Array,
-  featureIndices: Uint32Array,
-  deltas: Float64Array,
-  rem: number,
-) {
-  const out = new Float32Array(ys.length)
-  for (let i = 0; i < ys.length; i++) {
-    out[i] = ys[i]! + deltas[featureIndices[i]!]! * rem
-  }
-  return out
-}
-
-// Non-Y fields pass through from `target`, so hit testing reads the
-// destination layout mid-animation.
+// Only the drawn lanes ease. The hit-test boxes pass through from `target`, so
+// hit testing reads the destination layout mid-animation.
 export function interpolateYData(
   fromTops: FeatureTops,
   target: ReadonlyMap<number, FeatureDataResult>,
@@ -125,16 +113,12 @@ export function interpolateYData(
   const rem = 1 - t
   const out = new Map<number, FeatureDataResult>()
   for (const [regionIdx, data] of target) {
-    const items = data.flatbushItems
-    const deltas = new Float64Array(items.length)
-    const deltaById = new Map<string, number>()
+    const remainingById = new Map<string, number>()
     let moved = false
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i]!
+    for (const item of data.flatbushItems) {
       const d = morphDelta(fromTops, item.featureId, item.topPx)
       if (d !== undefined) {
-        deltas[i] = d
-        deltaById.set(item.featureId, d)
+        remainingById.set(item.featureId, d * rem)
         if (d !== 0) {
           moved = true
         }
@@ -143,28 +127,9 @@ export function interpolateYData(
     if (!moved || rem === 0) {
       out.set(regionIdx, data)
     } else {
-      const floatingLabelsData: FeatureDataResult['floatingLabelsData'] =
-        new Map()
-      for (const [key, label] of data.floatingLabelsData) {
-        const delta = deltaById.get(label.parentFeatureId ?? label.featureId)
-        floatingLabelsData.set(
-          key,
-          delta === undefined
-            ? label
-            : { ...label, topY: label.topY + delta * rem },
-        )
-      }
-      out.set(regionIdx, {
-        ...data,
-        rectYs: shift(data.rectYs, data.rectFeatureIndices, deltas, rem),
-        lineYs: shift(data.lineYs, data.lineFeatureIndices, deltas, rem),
-        arrowYs: shift(data.arrowYs, data.arrowFeatureIndices, deltas, rem),
-        floatingLabelsData,
-        aminoAcidOverlay: data.aminoAcidOverlay?.map(aa => ({
-          ...aa,
-          topPx: aa.topPx + deltas[aa.flatbushIdx]! * rem,
-        })),
-      })
+      const shifted = { ...data, ...cloneDrawnYLanes(data) }
+      shiftDrawnYLanes(shifted, { byFeature: remainingById })
+      out.set(regionIdx, shifted)
     }
   }
   return out

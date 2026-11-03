@@ -1,10 +1,10 @@
 import { featureGroupSections, sectionIdsOf } from './facet.ts'
 import { bodyHeightPx } from './layoutInputs.ts'
 import { OFFSCREEN_Y, isPlacedRow } from './rowPlacement.ts'
+import { cloneDrawnYLanes, shiftYLanes } from './yLanes.ts'
 
 import type {
   FeatureDataResult,
-  FeatureLabelData,
   FlatbushItem,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FeatureFacet } from './facet.ts'
@@ -103,40 +103,6 @@ function chipShiftOf(
   }
 }
 
-// Every y a region carries, moved by a per-feature amount: the same set of
-// fields `applyHeightScale` scales.
-function shiftFeatureYs(
-  data: FeatureDataResult,
-  shiftOf: (featureId: string) => number,
-) {
-  const byIndex = new Float32Array(data.flatbushItems.length)
-  for (const [i, item] of data.flatbushItems.entries()) {
-    byIndex[i] = shiftOf(item.featureId)
-    item.topPx += byIndex[i]
-    item.bottomPx += byIndex[i]
-  }
-  for (const kind of ['rect', 'line', 'arrow'] as const) {
-    const ys = data[`${kind}Ys`]
-    const featureIndices = data[`${kind}FeatureIndices`]
-    for (let i = 0; i < ys.length; i++) {
-      ys[i] = ys[i]! + byIndex[featureIndices[i]!]!
-    }
-  }
-  for (const info of data.subfeatureInfos) {
-    const d = shiftOf(info.parentFeatureId)
-    info.topPx += d
-    info.bottomPx += d
-  }
-  for (const labelData of data.floatingLabelsData.values()) {
-    labelData.topY += shiftOf(labelData.parentFeatureId ?? labelData.featureId)
-  }
-  if (data.aminoAcidOverlay) {
-    for (const aa of data.aminoAcidOverlay) {
-      aa.topPx += byIndex[aa.flatbushIdx]!
-    }
-  }
-}
-
 export function scaleLaidOutData(
   map: ReadonlyMap<number, FeatureDataResult>,
   scale: number,
@@ -162,7 +128,7 @@ export function scaleLaidOutData(
         const shiftById = new Map(
           data.flatbushItems.map(item => [item.featureId, chipShift(item)]),
         )
-        shiftFeatureYs(cloned, id => shiftById.get(id) ?? 0)
+        shiftYLanes(cloned, { byFeature: shiftById })
       }
       out.set(n, cloned)
     }
@@ -190,7 +156,9 @@ export function unplaceBelow(
       out.set(n, data)
     } else {
       const cloned = cloneMutableFields(data)
-      shiftFeatureYs(cloned, id => (below.has(id) ? OFFSCREEN_Y : 0))
+      shiftYLanes(cloned, {
+        byFeature: new Map([...below].map(id => [id, OFFSCREEN_Y])),
+      })
       out.set(n, cloned)
     }
   }
@@ -198,22 +166,14 @@ export function unplaceBelow(
 }
 
 export function cloneMutableFields(raw: FeatureDataResult) {
-  const floatingLabelsData = new Map<string, FeatureLabelData>()
-  for (const [k, v] of raw.floatingLabelsData) {
-    floatingLabelsData.set(k, { ...v })
-  }
   return {
     ...raw,
-    rectYs: new Float32Array(raw.rectYs),
+    ...cloneDrawnYLanes(raw),
     rectHeights: new Float32Array(raw.rectHeights),
     rectDensityFade: new Uint32Array(raw.rectDensityFade),
-    lineYs: new Float32Array(raw.lineYs),
-    arrowYs: new Float32Array(raw.arrowYs),
     arrowHeights: new Float32Array(raw.arrowHeights),
     flatbushItems: raw.flatbushItems.map(item => ({ ...item })),
     subfeatureInfos: raw.subfeatureInfos.map(info => ({ ...info })),
-    floatingLabelsData,
-    aminoAcidOverlay: raw.aminoAcidOverlay?.map(aa => ({ ...aa })),
   }
 }
 
@@ -242,59 +202,33 @@ export function applyLayoutToRegion(
   droppedDescriptionIds: ReadonlySet<string>,
   densityFadeIds: ReadonlySet<string>,
 ) {
-  const featureOffsets = new Float32Array(data.flatbushItems.length)
-  for (let i = 0; i < data.flatbushItems.length; i++) {
-    featureOffsets[i] = layoutMap.get(data.flatbushItems[i]!.featureId)!
-  }
-
   for (let i = 0; i < data.rectDensityFade.length; i++) {
     const featureId = data.flatbushItems[data.rectFeatureIndices[i]!]!.featureId
     data.rectDensityFade[i] = densityFadeIds.has(featureId) ? 1 : 0
   }
 
-  for (const kind of ['rect', 'line', 'arrow'] as const) {
-    const ys = data[`${kind}Ys`]
-    const featureIndices = data[`${kind}FeatureIndices`]
-    for (let i = 0; i < ys.length; i++) {
-      ys[i] = ys[i]! + featureOffsets[featureIndices[i]!]!
-    }
+  for (const item of data.flatbushItems) {
+    item.topPx = 0
+    item.bottomPx = layoutHeights.get(item.featureId)!
   }
 
-  for (let i = 0; i < data.flatbushItems.length; i++) {
-    const item = data.flatbushItems[i]!
-    const offset = featureOffsets[i]!
-    const height = layoutHeights.get(item.featureId)!
-    item.topPx = offset
-    item.bottomPx = offset + height
-  }
-
-  for (const info of data.subfeatureInfos) {
-    const offset = layoutMap.get(info.parentFeatureId) ?? 0
-    info.topPx += offset
-    info.bottomPx += offset
-  }
+  shiftYLanes(data, { byFeature: layoutMap })
 
   // A feature whose labels went unreserved keeps its entry and loses only
-  // those labels.
+  // those labels. An unplaced feature's row is OFFSCREEN_Y, which no label's
+  // own top outweighs, so the shifted top says it without a second layout
+  // lookup per label.
   for (const [key, labelData] of data.floatingLabelsData) {
     const layoutKey = labelData.parentFeatureId ?? labelData.featureId
-    const offset = layoutMap.get(layoutKey)
-    if (offset === undefined || !isPlacedRow(offset)) {
+    if (labelData.topY < OFFSCREEN_Y / 2) {
       data.floatingLabelsData.delete(key)
-      continue
-    }
-    if (droppedNameIds.has(layoutKey)) {
-      delete labelData.nameLabel
-    }
-    if (droppedDescriptionIds.has(layoutKey)) {
-      delete labelData.descriptionLabel
-    }
-    labelData.topY += offset
-  }
-
-  if (data.aminoAcidOverlay) {
-    for (const aa of data.aminoAcidOverlay) {
-      aa.topPx += featureOffsets[aa.flatbushIdx]!
+    } else {
+      if (droppedNameIds.has(layoutKey)) {
+        delete labelData.nameLabel
+      }
+      if (droppedDescriptionIds.has(layoutKey)) {
+        delete labelData.descriptionLabel
+      }
     }
   }
 }

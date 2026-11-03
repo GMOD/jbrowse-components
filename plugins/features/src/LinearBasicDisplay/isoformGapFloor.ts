@@ -2,6 +2,7 @@ import { snapBoxHeightPx } from '@jbrowse/render-core/shaders/hpmath'
 
 import { isoformGapPx } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { ROOT_CHILD_ORDINAL } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import { shiftYLanes } from './yLanes.ts'
 
 import type {
   FeatureDataResult,
@@ -132,46 +133,17 @@ export function applyIsoformGapFloor(
       : 0
   }
 
-  for (const kind of ['rect', 'line', 'arrow'] as const) {
-    const ordinals = data[`${kind}ChildOrdinals`]
-    if (ordinals.length === 0) {
-      continue
-    }
-    const featureIndices = data[`${kind}FeatureIndices`]
-    const ys = data[`${kind}Ys`]
-    for (let i = 0; i < ys.length; i++) {
-      const item = data.flatbushItems[featureIndices[i]!]!
-      ys[i] = ys[i]! + shiftPx(item.featureId, ordinals[i]!)
-    }
-  }
+  shiftYLanes(data, { byFeature: new Map(), ofChild: shiftPx })
 
-  for (const info of data.subfeatureInfos) {
-    const shift = shiftPx(
-      info.parentFeatureId,
-      info.childOrdinal ?? ROOT_CHILD_ORDINAL,
-    )
-    info.topPx += shift
-    info.bottomPx += shift
-  }
-
-  if (data.aminoAcidOverlay) {
-    for (const aa of data.aminoAcidOverlay) {
-      const item = data.flatbushItems[aa.flatbushIdx]!
-      aa.topPx += shiftPx(item.featureId, aa.childOrdinal ?? ROOT_CHILD_ORDINAL)
-    }
-  }
-
+  // The gene's own entry hangs its name off the bottom of the stack, so it
+  // grows by every gap; a transcript's entry rides its row.
   for (const labelData of data.floatingLabelsData.values()) {
-    const geneId = labelData.parentFeatureId ?? labelData.featureId
-    const spread = spreads.get(geneId)
+    const spread =
+      labelData.childOrdinal === undefined
+        ? spreads.get(labelData.parentFeatureId ?? labelData.featureId)
+        : undefined
     if (spread) {
-      // The gene's own entry hangs its name off the bottom of the stack, so
-      // it grows by every gap; a transcript's entry rides its row.
-      if (labelData.childOrdinal === undefined) {
-        labelData.featureHeight += spread.totalPx
-      } else {
-        labelData.topY += shiftPx(geneId, labelData.childOrdinal)
-      }
+      labelData.featureHeight += spread.totalPx
     }
   }
 
