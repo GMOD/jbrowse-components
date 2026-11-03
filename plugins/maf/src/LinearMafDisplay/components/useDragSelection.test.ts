@@ -7,6 +7,8 @@ import { useDragSelection } from './useDragSelection.ts'
 import type React from 'react'
 
 const DATA_LEFT = 80
+const WIDTH = 1000
+const HEIGHT = 400
 
 // The events' container sits at the client origin, so these drive
 // display-relative x/y directly.
@@ -29,7 +31,14 @@ function mouseEvent(
     clientY: y,
     shiftKey: extra?.shiftKey ?? false,
     target: { closest: () => null },
-    currentTarget: { getBoundingClientRect: () => ({ left: 0, top: 0 }) },
+    currentTarget: {
+      getBoundingClientRect: () => ({
+        left: 0,
+        top: 0,
+        width: WIDTH,
+        height: HEIGHT,
+      }),
+    },
     stopPropagation: extra?.stopPropagation ?? (() => {}),
   } as unknown as React.MouseEvent
 }
@@ -44,6 +53,18 @@ function pointerEvent(extra?: { pointerType?: string; shiftKey?: boolean }) {
     stopPropagation,
   } as unknown as React.PointerEvent
   return { event, stopPropagation }
+}
+
+function capturingPointerMove() {
+  const setPointerCapture = jest.fn()
+  const event = {
+    pointerId: 7,
+    currentTarget: {
+      setPointerCapture,
+      hasPointerCapture: () => false,
+    },
+  } as unknown as React.PointerEvent
+  return { event, setPointerCapture }
 }
 
 test('a mouse press is kept from the view, which pans on pointerdown', () => {
@@ -196,4 +217,75 @@ test('a press in a portal is left alone and starts nothing', () => {
   })
   expect(stopPropagation).not.toHaveBeenCalled()
   expect(result.current.isDragging).toBe(false)
+})
+
+test('a live drag captures the pointer so it survives leaving the track', () => {
+  const { result } = setup()
+  act(() => {
+    result.current.handleMouseDown(mouseEvent(200, 50))
+  })
+  const move = capturingPointerMove()
+  act(() => {
+    result.current.handlePointerMove(move.event)
+  })
+  expect(move.setPointerCapture).toHaveBeenCalledWith(7)
+})
+
+test('a plain hover does not capture the pointer', () => {
+  const { result } = setup()
+  const move = capturingPointerMove()
+  act(() => {
+    result.current.handlePointerMove(move.event)
+  })
+  expect(move.setPointerCapture).not.toHaveBeenCalled()
+})
+
+test('a drag released past the bottom edge selects to the edge', () => {
+  const { onClick, result } = setup()
+  act(() => {
+    result.current.handleMouseDown(mouseEvent(200, 50))
+  })
+  act(() => {
+    result.current.handleMouseMove(mouseEvent(300, HEIGHT + 90))
+  })
+  expect(result.current.selectionRect).toMatchObject({ endY: HEIGHT })
+  act(() => {
+    result.current.handleMouseUp(mouseEvent(300, HEIGHT + 90))
+  })
+  expect(onClick).not.toHaveBeenCalled()
+  expect(result.current.contextCoord).toMatchObject({
+    startY: 50,
+    endY: HEIGHT,
+  })
+})
+
+test('a drag released past the top and right edges clamps both', () => {
+  const { result } = setup()
+  act(() => {
+    result.current.handleMouseDown(mouseEvent(200, 50))
+  })
+  act(() => {
+    result.current.handleMouseMove(mouseEvent(WIDTH + 40, -30))
+  })
+  act(() => {
+    result.current.handleMouseUp(mouseEvent(WIDTH + 40, -30))
+  })
+  expect(result.current.contextCoord).toMatchObject({
+    endX: WIDTH,
+    endY: 0,
+  })
+})
+
+test('a cancelled pointer ends the drag without a click', () => {
+  const { onClick, result } = setup()
+  act(() => {
+    result.current.handleMouseDown(mouseEvent(200, 50))
+  })
+  act(() => {
+    result.current.handlePointerCancel()
+  })
+  act(() => {
+    result.current.handleMouseUp(mouseEvent(200, 50))
+  })
+  expect(onClick).not.toHaveBeenCalled()
 })

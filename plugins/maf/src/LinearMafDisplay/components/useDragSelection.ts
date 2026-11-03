@@ -29,6 +29,16 @@ interface DragState {
   showSelectionBox: boolean
 }
 
+function clamp(value: number, max: number) {
+  return Math.min(Math.max(value, 0), max)
+}
+
+function pointInTrack(e: React.MouseEvent) {
+  const { x, y } = eventPoint(e)
+  const { width, height } = e.currentTarget.getBoundingClientRect()
+  return { x: clamp(x, width), y: clamp(y, height) }
+}
+
 export function useDragSelection(
   ref: React.RefObject<HTMLDivElement | null>,
   {
@@ -76,9 +86,23 @@ export function useDragSelection(
     }
   }
 
+  // Captured once the press turns into a drag rather than on pointerdown, so a
+  // plain click on a control inside the display is not retargeted to the
+  // container. The capture keeps move and release events coming when the drag
+  // overshoots the track, and the selection is clamped to the track.
+  function handlePointerMove(e: React.PointerEvent) {
+    if (state.isDragging && !e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.setPointerCapture(e.pointerId)
+    }
+  }
+
+  function handlePointerCancel() {
+    setState(s => ({ ...s, isDragging: false, drag: undefined }))
+  }
+
   function handleMouseDown(e: React.MouseEvent) {
     if (!leavesPressToView(e)) {
-      const { x, y } = eventPoint(e)
+      const { x, y } = pointInTrack(e)
       // the view's range select listens for mousedown on the same container
       e.stopPropagation()
       if (x >= dataLeft) {
@@ -99,7 +123,7 @@ export function useDragSelection(
     // `getBoundingClientRect`. The updater re-tests its own state and returns
     // `s` unchanged without a drag, which React bails out of.
     if (state.isDragging) {
-      const { x, y } = eventPoint(e)
+      const { x, y } = pointInTrack(e)
       setState(s =>
         s.isDragging && s.drag
           ? { ...s, drag: { ...s.drag, endX: x, endY: y } }
@@ -114,7 +138,7 @@ export function useDragSelection(
     const { drag, isDragging } = state
     const draggedFar = isDragging && drag !== undefined && movedFarEnough(drag)
     if (draggedFar) {
-      const { x, y } = eventPoint(e)
+      const { x, y } = pointInTrack(e)
       setContextCoord({
         anchor: { clientX: e.clientX, clientY: e.clientY },
         startX: drag.startX,
@@ -126,7 +150,7 @@ export function useDragSelection(
     } else if (isDragging) {
       // Only a release that this display saw the press for is a click:
       // `handleMouseDown` bails on resize handles and the tree sidebar.
-      const { x, y } = eventPoint(e)
+      const { x, y } = pointInTrack(e)
       onClick(x, y)
       setState(s => ({
         ...s,
@@ -151,7 +175,11 @@ export function useDragSelection(
       }
     }
     const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      if (
+        ref.current &&
+        e.target instanceof Node &&
+        !ref.current.contains(e.target)
+      ) {
         clearSelectionBox()
       }
     }
@@ -177,6 +205,8 @@ export function useDragSelection(
     contextCoord,
     setContextCoord,
     handlePointerDown,
+    handlePointerMove,
+    handlePointerCancel,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
