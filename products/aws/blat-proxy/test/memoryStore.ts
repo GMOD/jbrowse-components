@@ -13,6 +13,7 @@ import type { BlatStore } from '../src/store.ts'
 export function memoryStore() {
   const cache = new Map<string, { body: string; expiresAt: number }>()
   const daily = new Map<string, number>()
+  const clients = new Map<string, number>()
   const calls: string[] = []
   let lastMs: number | undefined
   let notice: string | undefined
@@ -42,6 +43,17 @@ export function memoryStore() {
           ? ({ ok: true, count: count + 1 } as const)
           : ({ ok: false } as const),
       )
+    },
+
+    readClientCount(key) {
+      calls.push('readClientCount')
+      return Promise.resolve(clients.get(key) ?? 0)
+    },
+
+    countClient(key) {
+      calls.push('countClient')
+      clients.set(key, (clients.get(key) ?? 0) + 1)
+      return Promise.resolve()
     },
 
     readCached(key, nowSeconds) {
@@ -74,6 +86,7 @@ export function memoryStore() {
     calls,
     cache,
     daily,
+    clients,
     setNotice(message: string | undefined) {
       notice = message
     },

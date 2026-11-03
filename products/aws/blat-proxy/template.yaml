@@ -40,6 +40,16 @@ Parameters:
       Upstream calls allowed per UTC day. Under UCSC's 5000 on purpose: their
       day boundary is undocumented, so the headroom absorbs a window that does
       not line up with UTC.
+  ClientHourlyMax:
+    Type: Number
+    Default: 60
+    Description: >-
+      Upstream calls one caller address may spend per UTC hour, so a single
+      script cannot take every slot of the shared key.
+  ClientDailyMax:
+    Type: Number
+    Default: 300
+    Description: Upstream calls one caller address may spend per UTC day.
   CacheTtlSeconds:
     Type: Number
     Default: 86400
@@ -118,6 +128,8 @@ Resources:
           BLAT_LIMIT_TABLE: !Ref BlatBudgetTable
           BLAT_SPACING_MS: !Ref SpacingMs
           BLAT_DAILY_MAX: !Ref DailyMax
+          BLAT_CLIENT_HOURLY_MAX: !Ref ClientHourlyMax
+          BLAT_CLIENT_DAILY_MAX: !Ref ClientDailyMax
           BLAT_CACHE_TTL_SECONDS: !Ref CacheTtlSeconds
       # the budget lives in the table, so the function must be able to write it;
       # with BLAT_LIMIT_TABLE unset the proxy runs UNMETERED, which is why this

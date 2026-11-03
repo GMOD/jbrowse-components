@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { cacheKey, reserveUpstreamCall, utcDay } from '../src/budget.ts'
+import {
+  cacheKey,
+  clientId,
+  reserveUpstreamCall,
+  utcDay,
+} from '../src/budget.ts'
 import { memoryStore } from './memoryStore.ts'
 
 const NOON = Date.parse('2026-07-26T12:00:00Z')
@@ -111,5 +116,97 @@ describe('reserveUpstreamCall', () => {
     await reserveUpstreamCall({ store, nowMs: NOON, spacingMs: 15_000 })
     await reserveUpstreamCall({ store, nowMs: NOON + 1, spacingMs: 15_000 })
     expect(daily.get('2026-07-26')).toBe(1)
+  })
+})
+
+describe('a client share of the shared key', () => {
+  const share = { spacingMs: 0, clientHourlyMax: 2, clientDailyMax: 3 }
+
+  it('refuses a client past its hourly share, until the hour turns', async () => {
+    const { store } = memoryStore()
+    for (const offset of [0, 1000]) {
+      expect(
+        await reserveUpstreamCall({
+          store,
+          nowMs: NOON + offset,
+          client: 'a',
+          ...share,
+        }),
+      ).toBeUndefined()
+    }
+
+    const denial = await reserveUpstreamCall({
+      store,
+      nowMs: NOON + 60_000,
+      client: 'a',
+      ...share,
+    })
+
+    expect(denial?.reason).toMatch(/2 queries an hour/)
+    expect(denial?.retryAfterSeconds).toBe(3600 - 60)
+    expect(
+      await reserveUpstreamCall({
+        store,
+        nowMs: NOON + 3_600_000,
+        client: 'a',
+        ...share,
+      }),
+    ).toBeUndefined()
+  })
+
+  it('refuses a client past its daily share across hours', async () => {
+    const { store } = memoryStore()
+    for (const hour of [0, 1, 2]) {
+      await reserveUpstreamCall({
+        store,
+        nowMs: NOON + hour * 3_600_000,
+        client: 'a',
+        ...share,
+      })
+    }
+    const denial = await reserveUpstreamCall({
+      store,
+      nowMs: NOON + 3 * 3_600_000,
+      client: 'a',
+      ...share,
+    })
+    expect(denial?.reason).toMatch(/3 queries a day/)
+  })
+
+  it('leaves the shared slot and day alone for a client past its share', async () => {
+    const { store, calls, daily } = memoryStore()
+    await reserveUpstreamCall({ store, nowMs: NOON, client: 'a', ...share })
+    await reserveUpstreamCall({ store, nowMs: NOON + 1, client: 'a', ...share })
+    calls.length = 0
+
+    await reserveUpstreamCall({ store, nowMs: NOON + 2, client: 'a', ...share })
+
+    expect(calls).toEqual(['readClientCount', 'readClientCount'])
+    expect(daily.get('2026-07-26')).toBe(2)
+    expect(
+      await reserveUpstreamCall({
+        store,
+        nowMs: NOON + 3,
+        client: 'b',
+        ...share,
+      }),
+    ).toBeUndefined()
+  })
+
+  it('spends none of a client share on an attempt the spacing slot refuses', async () => {
+    const { store, clients } = memoryStore()
+    await reserveUpstreamCall({ store, nowMs: NOON, client: 'a' })
+    for (const offset of [1000, 2000, 3000]) {
+      await reserveUpstreamCall({ store, nowMs: NOON + offset, client: 'a' })
+    }
+    expect([...clients.values()]).toEqual([1, 1])
+  })
+
+  it('keys a client by a salted hash, never its address', () => {
+    const id = clientId('203.0.113.7', 'salt')
+    expect(id).not.toContain('203.0.113.7')
+    expect(id).toBe(clientId('203.0.113.7', 'salt'))
+    expect(id).not.toBe(clientId('203.0.113.7', 'other salt'))
+    expect(id).not.toBe(clientId('203.0.113.8', 'salt'))
   })
 })

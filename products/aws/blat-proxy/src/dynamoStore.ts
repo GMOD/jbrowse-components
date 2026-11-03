@@ -8,10 +8,11 @@ import {
 
 import type { BlatStore } from './store.ts'
 
-// One table, three kinds of item, distinguished by key prefix: the single
-// spacing lock, one counter per UTC day, and one entry per cached query. The
-// day and cache items carry `expiresAt` (epoch seconds) so DynamoDB's TTL
-// sweeps them; the lock is a single item that is rewritten forever.
+// One table, four kinds of item, distinguished by key prefix: the single
+// spacing lock, one counter per UTC day, one counter per client window, and one
+// entry per cached query. The counters and cache items carry `expiresAt` (epoch
+// seconds) so DynamoDB's TTL sweeps them; the lock is a single item that is
+// rewritten forever.
 const SLOT_KEY = 'slot'
 const NOTICE_KEY = 'notice'
 
@@ -84,6 +85,31 @@ export function dynamoStore(
         }
         throw error
       }
+    },
+
+    async readClientCount(key) {
+      const result = await client.send(
+        new GetItemCommand({
+          TableName: tableName,
+          Key: { pk: { S: `client#${key}` } },
+        }),
+      )
+      const calls = Number(result.Item?.calls?.N)
+      return Number.isFinite(calls) ? calls : 0
+    },
+
+    async countClient(key, expiresAtSeconds) {
+      await client.send(
+        new UpdateItemCommand({
+          TableName: tableName,
+          Key: { pk: { S: `client#${key}` } },
+          UpdateExpression: 'SET expiresAt = :ttl ADD calls :one',
+          ExpressionAttributeValues: {
+            ':one': num(1),
+            ':ttl': num(expiresAtSeconds),
+          },
+        }),
+      )
     },
 
     async readCached(key, nowSeconds) {

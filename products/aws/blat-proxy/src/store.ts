@@ -27,6 +27,18 @@ export interface BlatStore {
   ): Promise<{ ok: true; count: number } | { ok: false }>
 
   /**
+   * Upstream calls one client has spent in the window `key` names.
+   */
+  readClientCount(key: string): Promise<number>
+
+  /**
+   * Count one upstream call against a client's window, self-expiring. Not
+   * conditional: the limit is checked by {@link readClientCount} before the
+   * spacing slot is taken, so an attempt that is refused spends nothing.
+   */
+  countClient(key: string, expiresAtSeconds: number): Promise<void>
+
+  /**
    * The cached body, if one is stored and not yet expired. DynamoDB's TTL
    * sweeper runs on its own schedule (up to 48h late), so expiry is enforced on
    * read rather than trusted to the sweep.

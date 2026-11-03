@@ -23,6 +23,14 @@ export const DEFAULT_CACHE_TTL_SECONDS = 86_400
 // rather than the repeat-hit case the cache exists for, so skip it.
 export const MAX_CACHEABLE_BODY_BYTES = 350_000
 
+// One client's share of the shared key. Generous, so a workshop behind one
+// address fits, while a script querying every 15 s, which would otherwise take
+// every slot of the day, stops at a fraction of it.
+export const DEFAULT_CLIENT_HOURLY_MAX = 60
+export const DEFAULT_CLIENT_DAILY_MAX = 300
+
+const HOUR_MS = 3_600_000
+
 export function utcDay(nowMs: number) {
   return new Date(nowMs).toISOString().slice(0, 10)
 }
@@ -30,6 +38,45 @@ export function utcDay(nowMs: number) {
 function nextUtcMidnightMs(nowMs: number) {
   const d = new Date(nowMs)
   return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1)
+}
+
+/**
+ * A caller's address, salted and hashed, so the budget table never holds an
+ * address and the hash means nothing without the salt.
+ */
+export function clientId(sourceIp: string, salt: string) {
+  return createHash('sha256')
+    .update(`${salt}\n${sourceIp}`)
+    .digest('hex')
+    .slice(0, 32)
+}
+
+function clientWindows({
+  client,
+  nowMs,
+  hourlyMax,
+  dailyMax,
+}: {
+  client: string
+  nowMs: number
+  hourlyMax: number
+  dailyMax: number
+}) {
+  const hourStartMs = Math.floor(nowMs / HOUR_MS) * HOUR_MS
+  return [
+    {
+      key: `${client}#${new Date(hourStartMs).toISOString().slice(0, 13)}`,
+      max: hourlyMax,
+      endsMs: hourStartMs + HOUR_MS,
+      share: `${hourlyMax} queries an hour`,
+    },
+    {
+      key: `${client}#${utcDay(nowMs)}`,
+      max: dailyMax,
+      endsMs: nextUtcMidnightMs(nowMs),
+      share: `${dailyMax} queries a day`,
+    },
+  ]
 }
 
 /**
@@ -59,6 +106,13 @@ export interface BudgetDenial {
  * Claims the right to make one upstream call, or explains how long the caller
  * has to wait.
  *
+ * The client's share is checked first, and only read: a client over its share
+ * must not take the spacing slot from everyone else, and a refused attempt,
+ * including the retries a waiting client makes, spends none of its share. The
+ * share is counted once the call is allowed. Reading then counting lets a burst
+ * of concurrent calls from one client overshoot by a few, which the generous
+ * limit absorbs.
+ *
  * Spacing is taken before the daily count, because the two failure modes are
  * not symmetric: a spacing slot spent on a call that then fails the daily check
  * only delays the next request by 15 s, and only in the case where the daily
@@ -71,12 +125,67 @@ export async function reserveUpstreamCall({
   nowMs,
   spacingMs = DEFAULT_SPACING_MS,
   dailyMax = DEFAULT_DAILY_MAX,
+  client,
+  clientHourlyMax = DEFAULT_CLIENT_HOURLY_MAX,
+  clientDailyMax = DEFAULT_CLIENT_DAILY_MAX,
 }: {
   store: BlatStore
   nowMs: number
   spacingMs?: number
   dailyMax?: number
+  /** {@link clientId} of the caller; omitted, no share is enforced */
+  client?: string
+  clientHourlyMax?: number
+  clientDailyMax?: number
 }): Promise<BudgetDenial | undefined> {
+  const windows =
+    client === undefined
+      ? []
+      : clientWindows({
+          client,
+          nowMs,
+          hourlyMax: clientHourlyMax,
+          dailyMax: clientDailyMax,
+        })
+  const spent = await Promise.all(
+    windows.map(window => store.readClientCount(window.key)),
+  )
+  const exhausted = windows.find((window, i) => spent[i]! >= window.max)
+  let denial: BudgetDenial | undefined
+  if (exhausted) {
+    denial = {
+      reason:
+        'This network has used its share of the shared BLAT key ' +
+        `(${exhausted.share}).`,
+      retryAfterSeconds: Math.ceil((exhausted.endsMs - nowMs) / 1000),
+    }
+  } else {
+    denial = await reserveSharedKey({ store, nowMs, spacingMs, dailyMax })
+    if (!denial) {
+      await Promise.all(
+        windows.map(window =>
+          store.countClient(
+            window.key,
+            Math.ceil(window.endsMs / 1000) + HOUR_MS / 1000,
+          ),
+        ),
+      )
+    }
+  }
+  return denial
+}
+
+async function reserveSharedKey({
+  store,
+  nowMs,
+  spacingMs,
+  dailyMax,
+}: {
+  store: BlatStore
+  nowMs: number
+  spacingMs: number
+  dailyMax: number
+}) {
   const slot = await store.tryReserveSlot(nowMs, spacingMs)
   let denial: BudgetDenial | undefined
   if (slot.ok) {

@@ -111,6 +111,14 @@ enforced centrally, in DynamoDB, before the upstream call:
   `DailyMax` — **4500**, deliberately under UCSC's 5000, because their day
   boundary isn't documented and a UTC window that doesn't line up with theirs
   would otherwise overlap.
+- **Client share** (`client#<hash>#<UTC hour>` and `client#<hash>#<UTC date>`).
+  Upstream calls per caller address, refused past `ClientHourlyMax` (**60**) or
+  `ClientDailyMax` (**300**). Without it one script querying every 15 s takes
+  every slot of the day. The address is stored only as a hash salted with the
+  apiKey, and the counters expire an hour after their window. Checked before the
+  spacing slot and counted after the call is allowed, so a client past its share
+  cannot hold the slot from anyone else, and a refused attempt costs it nothing.
+  Cached answers are free for everyone.
 
 A refused request gets **429** with `Retry-After` and a message saying which
 limit it hit. `X-Blat-Cache: hit|miss` says whether a 200 cost anything.

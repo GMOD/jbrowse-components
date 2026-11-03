@@ -1,9 +1,12 @@
 import {
   DEFAULT_CACHE_TTL_SECONDS,
+  DEFAULT_CLIENT_DAILY_MAX,
+  DEFAULT_CLIENT_HOURLY_MAX,
   DEFAULT_DAILY_MAX,
   DEFAULT_SPACING_MS,
   MAX_CACHEABLE_BODY_BYTES,
   cacheKey,
+  clientId,
   reserveUpstreamCall,
 } from './budget.ts'
 import { dynamoStore } from './dynamoStore.ts'
@@ -99,6 +102,7 @@ export async function serveQuery({
   store,
   nowMs = Date.now(),
   bypassCache = false,
+  client,
 }: {
   clientBody: string
   apiKey: string
@@ -107,6 +111,8 @@ export async function serveQuery({
   store?: BlatStore
   nowMs?: number
   bypassCache?: boolean
+  /** the caller's {@link clientId}, whose share of the key is enforced */
+  client?: string
 }): Promise<APIGatewayProxyResultV2> {
   // the route is part of the key: the two CGIs take different parameters, but
   // nothing structural stops a body from being valid for both
@@ -138,6 +144,15 @@ export async function serveQuery({
           nowMs,
           spacingMs: envNumber('BLAT_SPACING_MS', DEFAULT_SPACING_MS),
           dailyMax: envNumber('BLAT_DAILY_MAX', DEFAULT_DAILY_MAX),
+          client,
+          clientHourlyMax: envNumber(
+            'BLAT_CLIENT_HOURLY_MAX',
+            DEFAULT_CLIENT_HOURLY_MAX,
+          ),
+          clientDailyMax: envNumber(
+            'BLAT_CLIENT_DAILY_MAX',
+            DEFAULT_CLIENT_DAILY_MAX,
+          ),
         }).catch((error: unknown) => {
           console.error('BLAT budget check failed:', error)
           return {
@@ -236,6 +251,8 @@ export const handler = async (
           route,
           store: storeFromEnv(),
           bypassCache: bypassesCache(event.headers),
+          // the apiKey is the salt: secret, and already on every invocation
+          client: clientId(event.requestContext.http.sourceIp, apiKey),
         })
       } catch (error) {
         console.error('BLAT proxy request failed:', error)

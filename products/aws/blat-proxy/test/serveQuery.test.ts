@@ -17,11 +17,13 @@ function serve({
   store,
   nowMs = NOON,
   bypassCache,
+  client,
 }: {
   clientBody?: string
   store?: BlatStore
   nowMs?: number
   bypassCache?: boolean
+  client?: string
 }) {
   return serveQuery({
     clientBody,
@@ -30,6 +32,7 @@ function serve({
     store,
     nowMs,
     bypassCache,
+    client,
   })
 }
 
@@ -53,6 +56,7 @@ beforeEach(() => {
   delete process.env.BLAT_SPACING_MS
   delete process.env.BLAT_DAILY_MAX
   delete process.env.BLAT_CACHE_TTL_SECONDS
+  delete process.env.BLAT_CLIENT_HOURLY_MAX
 })
 
 afterEach(() => {
@@ -93,6 +97,40 @@ describe('serveQuery budget', () => {
     expect(result.headers?.['X-Blat-Cache']).toBe('miss')
     expect(fetchSpy).toHaveBeenCalledTimes(2)
     expect(cache.size).toBe(1)
+  })
+
+  it('refuses a client past its share, but still serves it a cached answer', async () => {
+    const fetchSpy = stubUpstream()
+    process.env.BLAT_CLIENT_HOURLY_MAX = '1'
+    const { store } = memoryStore()
+    await serve({ store, client: 'a' })
+
+    const refused = structured(
+      await serve({
+        clientBody: OTHER_QUERY,
+        store,
+        nowMs: NOON + 60_000,
+        client: 'a',
+      }),
+    )
+    const cached = structured(
+      await serve({ store, nowMs: NOON + 60_000, client: 'a' }),
+    )
+    const otherClient = structured(
+      await serve({
+        clientBody: OTHER_QUERY,
+        store,
+        nowMs: NOON + 60_000,
+        client: 'b',
+      }),
+    )
+
+    expect(refused.statusCode).toBe(429)
+    expect(refused.headers?.['Retry-After']).toBe(String(3600 - 60))
+    expect(JSON.parse(refused.body ?? '').error).toMatch(/its share/)
+    expect(cached.headers?.['X-Blat-Cache']).toBe('hit')
+    expect(otherClient.statusCode).toBe(200)
+    expect(fetchSpy).toHaveBeenCalledTimes(2)
   })
 
   it('refuses a different query inside the spacing window with a Retry-After', async () => {
