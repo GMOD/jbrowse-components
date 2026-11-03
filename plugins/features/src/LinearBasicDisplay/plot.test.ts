@@ -134,12 +134,13 @@ test('a channel object replaces the setting whole, null clears it, and a facet k
   expect(d.plot.facet).toEqual({ field: 'source' })
 })
 
+// a lone string or number in facet.sort is a list of one, so true stands in
 test('a domain or range that is not a list is refused, and the display keeps what it had', () => {
   const d = display()
   d.applyDisplaySettings({ encoding: { color: 'source' } })
   const refused = {
     encoding: { color: { field: 'source', scale: { range: 'red' } } },
-    facet: { field: 'source', sort: 'a' },
+    facet: { field: 'source', sort: true },
   }
   expect(d.applyDisplaySettings(refused)).toMatchObject({
     applied: [],
