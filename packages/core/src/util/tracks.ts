@@ -571,6 +571,22 @@ export function stripFileExtension(name: string) {
   return dot > 0 ? base.slice(0, dot) : base
 }
 
+function adapterGuesserFor(pluginManager: PluginManager) {
+  return pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint Core-guessAdapterForLocation | sync | Guess an adapter config from a file location */
+    'Core-guessAdapterForLocation',
+    () => undefined,
+  )
+}
+
+function trackTypeGuesserFor(pluginManager: PluginManager) {
+  return pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint Core-guessTrackTypeForLocation | sync | Guess a track type from a file location */
+    'Core-guessTrackTypeForLocation',
+    () => undefined,
+  )
+}
+
 export function guessAdapter(
   file: FileLocation,
   index: FileLocation | undefined,
@@ -579,13 +595,7 @@ export function guessAdapter(
 ) {
   if (model) {
     const { pluginManager } = getEnv(model)
-    const adapterGuesser = pluginManager.evaluateExtensionPoint(
-      /** #extensionPoint Core-guessAdapterForLocation | sync | Guess an adapter config from a file location */
-      'Core-guessAdapterForLocation',
-      () => undefined,
-    )
-
-    const adapter = adapterGuesser(file, index, adapterHint)
+    const adapter = adapterGuesserFor(pluginManager)(file, index, adapterHint)
     if (adapter) {
       return adapter
     }
@@ -607,13 +617,7 @@ export function guessTrackType(
     // has no session ancestor, so guessAdapter above accepted one and this
     // threw on it
     const { pluginManager } = getEnv(model)
-    const trackTypeGuesser = pluginManager.evaluateExtensionPoint(
-      /** #extensionPoint Core-guessTrackTypeForLocation | sync | Guess a track type from a file location */
-      'Core-guessTrackTypeForLocation',
-      () => undefined,
-    )
-
-    const trackType = trackTypeGuesser(adapterType, file)
+    const trackType = trackTypeGuesserFor(pluginManager)(adapterType, file)
     if (trackType) {
       return trackType
     }
@@ -667,24 +671,17 @@ export function guessTrackConfForLocation(
   pluginManager: PluginManager,
   assemblyName?: string,
 ) {
-  const adapterGuesser = pluginManager.evaluateExtensionPoint(
-    'Core-guessAdapterForLocation',
-    () => undefined,
-  )
-  const adapter = adapterGuesser(file, index, undefined)
+  const adapter = adapterGuesserFor(pluginManager)(file, index, undefined)
   const name = getFileName(file)
   if (!adapter || adapter.type === UNKNOWN) {
     throw new Error(
       `could not infer a track type from "${name}"; pass a full track config instead`,
     )
   }
-  const trackTypeGuesser = pluginManager.evaluateExtensionPoint(
-    'Core-guessTrackTypeForLocation',
-    () => undefined,
-  )
   return {
     trackId: `${name}-${objectHash(adapter).slice(0, 8)}`,
-    type: trackTypeGuesser(adapter.type, file) ?? 'FeatureTrack',
+    type:
+      trackTypeGuesserFor(pluginManager)(adapter.type, file) ?? 'FeatureTrack',
     name,
     assemblyNames: assemblyName ? [assemblyName] : [],
     adapter,
@@ -838,6 +835,10 @@ interface ShownTrack {
   applyDisplaySettings?: (settings: Record<string, unknown>) => SettingsReport
 }
 
+interface SettingsShownTrack extends ShownTrack {
+  applyDisplaySettings: NonNullable<ShownTrack['applyDisplaySettings']>
+}
+
 // The display a shown track switches to for a `type` it is not drawn as.
 function displaySwitch(
   self: GenericView,
@@ -866,7 +867,7 @@ function displaySwitch(
 // A switch carries the settings in the new display's snapshot, as a first show
 // does, and hands off to the async launch while that display's state model is
 // still a dynamic import.
-function restyleShown<T>(
+function restyleShown<T extends ShownTrack>(
   self: GenericView,
   trackId: string,
   found: T,
@@ -874,7 +875,7 @@ function restyleShown<T>(
 ): T | undefined {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
-  const track = found as unknown as ShownTrack
+  const track: ShownTrack = found
   const { type, ...settings } = displayInitialSnapshot
   try {
     const target = displaySwitch(self, trackId, track, type)
@@ -1016,15 +1017,27 @@ export function filterTracks<T extends AnyTrackConfig>(
   },
 ) {
   const { view } = self
-  if (!view) {
-    return []
-  }
+  return view
+    ? filterTracksForDisplays(
+        tracks,
+        self.assemblyNames,
+        view,
+        viewDisplayNames(getEnv(view).pluginManager, view.type),
+      )
+    : []
+}
+
+function filterTracksForDisplays<T extends AnyTrackConfig>(
+  tracks: T[],
+  assemblyNames: string[],
+  view: IStateTreeNode,
+  viewDisplays: Set<string>,
+) {
   const { assemblyManager } = getSession(view)
   const { pluginManager } = getEnv(view)
   const canonical = (names: string[]) =>
     canonicalAssemblyNames(names, assemblyManager)
-  const viewAssemblyNames = canonical(self.assemblyNames)
-  const viewDisplays = viewDisplayNames(pluginManager, view.type)
+  const viewAssemblyNames = canonical(assemblyNames)
   return tracks.filter(c => {
     return (
       // a view that declares no assemblies (one still initializing) constrains
@@ -1050,7 +1063,8 @@ export function filterTracks<T extends AnyTrackConfig>(
  */
 function refSeqTrackConf(
   assemblyName: string,
-  view: IStateTreeNode & { type: string },
+  view: IStateTreeNode,
+  viewDisplays: Set<string>,
 ) {
   const { assemblyManager } = getSession(view)
   const { pluginManager } = getEnv(view)
@@ -1060,11 +1074,10 @@ function refSeqTrackConf(
   // the same display-compatibility question filterTracks asks of every other
   // track, so a view that cannot draw a sequence is not offered one
   return conf &&
-    viewCanDisplayTrack(
-      pluginManager,
-      viewDisplayNames(pluginManager, view.type),
-      { type: conf.type, adapter: conf.adapter },
-    )
+    viewCanDisplayTrack(pluginManager, viewDisplays, {
+      type: conf.type,
+      adapter: conf.adapter,
+    })
     ? conf
     : undefined
 }
@@ -1084,9 +1097,10 @@ export function offeredTracks(
   if (!view) {
     return []
   }
+  const viewDisplays = viewDisplayNames(getEnv(view).pluginManager, view.type)
   return [
-    ...assemblyNames.map(name => refSeqTrackConf(name, view)),
-    ...filterTracks(tracks, self),
+    ...assemblyNames.map(name => refSeqTrackConf(name, view, viewDisplays)),
+    ...filterTracksForDisplays(tracks, assemblyNames, view, viewDisplays),
   ].filter(conf => conf !== undefined)
 }
 
@@ -1369,14 +1383,9 @@ export function showTrackGeneric(
     const displaySettings = Object.fromEntries(
       Object.entries(displayInitialSnapshot).filter(([key]) => key !== 'type'),
     )
-    const report = (
-      track as {
-        applyDisplaySettings: (
-          settings: Record<string, unknown>,
-        ) => SettingsReport
-      }
-    ).applyDisplaySettings(displaySettings)
-    const drawn = (track as { displays: Record<string, unknown>[] }).displays[0]
+    const shown: SettingsShownTrack = track
+    const report = shown.applyDisplaySettings(displaySettings)
+    const drawn = shown.displays[0]
     notifySettingsReport(
       session,
       trackId,
