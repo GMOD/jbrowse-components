@@ -8,7 +8,6 @@ import {
 import {
   CANVAS_SEAM_PX,
   CappedPath,
-  getDpr,
   makeBpMapper,
   spanLeft,
   withClip,
@@ -403,6 +402,7 @@ export function drawMinMaxBand(row: RowDraw & { interpolated: boolean }) {
     block,
     rowHeight,
     rowTop,
+    dpr,
     cuts,
     bandColors,
     interpolated,
@@ -486,7 +486,6 @@ export function drawMinMaxBand(row: RowDraw & { interpolated: boolean }) {
     ctx.fillStyle = drawn[0] ?? fills[0]!
     trace()
   } else {
-    const dpr = getDpr()
     const rowBottom = rowTop + rowHeight
     // `wiggleCommon.slang`'s `rowColorYPx`: a cut placed unclamped, so a
     // value the domain excludes keeps its side of every cut rather than

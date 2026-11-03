@@ -24,6 +24,7 @@ import {
   getNiceDomain,
 } from '@jbrowse/wiggle-core'
 
+import { drawMinMaxBand } from './wiggleDrawFunctions.ts'
 import { makeSummaryLayers } from './wiggleLayers.ts'
 import { WIGGLE_MARKS } from './wiggleMarks.ts'
 
@@ -1091,6 +1092,28 @@ describe('the whiskers band', () => {
     expect(ctx.fill.mock.invocationCallOrder[0]).toBeLessThan(
       ctx.stroke.mock.invocationCallOrder[0]!,
     )
+  })
+
+  test('a cut snaps to the row device grid, not the window one', () => {
+    const { ctx, rectCalls } = createMockCanvas()
+    drawMinMaxBand({
+      ctx: ctx,
+      source: bandLayer([9], [1], [0], [1000], RENDERING_TYPE_LINE),
+      block,
+      rowHeight: 40,
+      rowTop: 0,
+      dpr: 2,
+      domainY: [0, 10],
+      scaleType: SCALE_TYPE_LINEAR,
+      symlogConstant: 1,
+      origin: 0,
+      cuts: [3.35],
+      bandColors: [normalizedRgbToABGR(1, 0, 0), normalizedRgbToABGR(0, 0, 1)],
+      rampLut: null,
+      rampMid: undefined,
+      interpolated: false,
+    })
+    expect(rectCalls.map(([, y]) => y)).toContain(26.5)
   })
 })
 
