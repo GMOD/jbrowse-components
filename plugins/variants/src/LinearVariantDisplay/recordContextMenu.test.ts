@@ -141,6 +141,20 @@ describe('right-clicking a record, with no sample rows', () => {
     )
   })
 
+  test('a hit that names no region is found in the loaded region holding its start', () => {
+    const display = sitesOnlyDisplay()
+    const region = display.view.displayedRegions[0]!
+    display.setLoadedRegion(0, { ...region, start: 0, end: 10_000 }, undefined)
+    display.setLoadedRegion(
+      2,
+      { ...region, start: 20_000, end: 100_000 },
+      undefined,
+    )
+    const feature = display.featureById('>7496>7497')!
+    expect(display.recordMenuHit(feature)?.displayedRegionIndex).toBe(2)
+    expect(display.recordMenuHit(feature, 0)?.displayedRegionIndex).toBe(0)
+  })
+
   test('a record the view holds no reads beside offers no read sort', () => {
     const display = sitesOnlyDisplay()
     expect(labels(rightClickRecord(display, '>7494>7499'))).not.toContain(

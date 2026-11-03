@@ -98,7 +98,6 @@ function getHoveredMatrixCell(
           sampleName,
           name: source.name,
           featureId: feature.featureId,
-          displayedRegionIndex: 0,
           insertedBp: placed.cellAltDosage[top.cellIndex]
             ? feature.insertedBp
             : 0,
