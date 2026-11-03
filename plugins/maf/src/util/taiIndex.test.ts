@@ -222,19 +222,34 @@ describe('selectIndexEntries', () => {
     expect(firstEntry).toMatchObject({ start: 1000 })
   })
 
-  test('nextEntry reaches one entry past queryEnd as a read cushion', () => {
+  test('nextEntry is the first entry at or past queryEnd', () => {
     const recs = records(0, 100, 200, 300, 400, 500)
     const { nextEntry } = selectIndexEntries(recs, 110, 120)
-    // first start >= 120 is index 2 (200); +1 -> index 3 (300)
-    expect(nextEntry).toMatchObject({ start: 300 })
+    expect(nextEntry).toMatchObject({ start: 200 })
   })
 
-  test('nextEntry is undefined only when no cushion entry is past queryEnd', () => {
+  test('a queryEnd on an entry start bounds at that entry', () => {
     const recs = records(0, 100, 200, 300)
-    // queryEnd 150 -> first start >= 150 is index 2 (200); cushion index 3 (300)
-    expect(selectIndexEntries(recs, 50, 150).nextEntry).toBeDefined()
-    // queryEnd 250 -> first start >= 250 is index 3 (300); cushion index 4 absent
-    expect(selectIndexEntries(recs, 50, 250).nextEntry).toBeUndefined()
+    expect(selectIndexEntries(recs, 110, 200).nextEntry).toMatchObject({
+      start: 200,
+    })
+    expect(selectIndexEntries(recs, 110, 201).nextEntry).toMatchObject({
+      start: 300,
+    })
+    expect(selectIndexEntries(recs, 110, 199).nextEntry).toMatchObject({
+      start: 200,
+    })
+  })
+
+  test('nextEntry is undefined only when no entry reaches queryEnd', () => {
+    const recs = records(0, 100, 200, 300)
+    expect(selectIndexEntries(recs, 50, 250).nextEntry).toMatchObject({
+      start: 300,
+    })
+    expect(selectIndexEntries(recs, 50, 300).nextEntry).toMatchObject({
+      start: 300,
+    })
+    expect(selectIndexEntries(recs, 50, 301).nextEntry).toBeUndefined()
     expect(selectIndexEntries(recs, 50, 9999).nextEntry).toBeUndefined()
   })
 
@@ -244,14 +259,14 @@ describe('selectIndexEntries', () => {
     expect(firstEntry).toMatchObject({ start: 1000 })
   })
 
-  test('query past the end starts at the last entry with no cushion', () => {
+  test('query past the end starts at the last entry with nothing to bound at', () => {
     const recs = records(0, 100, 200)
     const { firstEntry, nextEntry } = selectIndexEntries(recs, 5000, 6000)
     expect(firstEntry).toMatchObject({ start: 200 })
     expect(nextEntry).toBeUndefined()
   })
 
-  test('single-entry index starts there with no cushion', () => {
+  test('single-entry index starts there and bounds at nothing', () => {
     const { firstEntry, nextEntry } = selectIndexEntries(records(0), 10, 50)
     expect(firstEntry).toMatchObject({ start: 0 })
     expect(nextEntry).toBeUndefined()
@@ -306,7 +321,7 @@ describe('queryBlockSpan', () => {
     virtualOffset: { blockPosition, dataPosition: 0 },
   })
 
-  test('interior query spans to the cushion entry', () => {
+  test('interior query spans to the first entry at or past its end', () => {
     const index: IndexData = new Map([
       [
         'chr1',
@@ -316,8 +331,8 @@ describe('queryBlockSpan', () => {
     const span = queryBlockSpan(index, 'chr1', 50, 120)!
     expect(span.nextEntry).toBeDefined()
     expect(span.startBlock).toBe(0)
-    // first start >= 120 is index 2; cushion index 3 -> block 3000
-    expect(span.endBlock).toBe(3000)
+    // first start >= 120 is index 2 -> block 2000
+    expect(span.endBlock).toBe(2000)
   })
 
   test('past the last sparse entry it bounds at the next chromosome', () => {

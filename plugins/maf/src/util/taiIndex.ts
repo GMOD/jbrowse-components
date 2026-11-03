@@ -149,10 +149,11 @@ export function lowerBound<T>(
 /**
  * The index entries bracketing a query `[queryStart, queryEnd)`. The `.tai` is
  * sparse, so `firstEntry` is the one before the first entry at or past
- * `queryStart` (clamped to 0), and `nextEntry` is one entry past `queryEnd`, a
- * read cushion. `nextEntry` is undefined once the query reaches the
- * chromosome's last entry, which taffy places by genomic distance and so may
- * sit far from the end of its data.
+ * `queryStart` (clamped to 0), and `nextEntry` is the first entry at or past
+ * `queryEnd`: blocks are in reference order, so a block starting there cannot
+ * overlap the query and the read stops at its bgzf block. `nextEntry` is
+ * undefined once no entry reaches `queryEnd`, and the last entry, which taffy
+ * places by genomic distance, may sit far from the end of its data.
  */
 export function selectIndexEntries(
   records: ByteRange[],
@@ -164,7 +165,7 @@ export function selectIndexEntries(
   const endIdx = lowerBound(records, queryEnd, getKey)
   return {
     firstEntry: records[Math.max(startIdx - 1, 0)],
-    nextEntry: records[endIdx + 1],
+    nextEntry: records[endIdx],
   }
 }
 
@@ -242,10 +243,10 @@ const MIN_BLOCK_SIZE = 65536
  * running past a chromosome's last sparse entry estimated 0 bytes for a real
  * 64KB download. That is exactly the case the fetch gate exists to catch.
  *
- * A query past the last sparse entry has no cushion entry to bound at, and
- * taffy gives no guarantee that entry is near the chromosome's data end — so
- * it bounds at the next chromosome's first block, or on the last chromosome
- * runs to the end of the file (`toEnd`).
+ * A query past the last sparse entry has no entry to bound at, and taffy gives
+ * no guarantee that entry is near the chromosome's data end — so it bounds at
+ * the next chromosome's first block, or on the last chromosome runs to the end
+ * of the file (`toEnd`).
  */
 export function queryBlockSpan(
   index: IndexData,

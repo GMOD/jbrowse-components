@@ -121,7 +121,7 @@ export async function readTaiSlice({
 
   const startOffset = firstEntry.virtualOffset.dataPosition
   const nextOffset = nextEntry?.virtualOffset.dataPosition ?? 0
-  // Trim to the cushion entry only for interior reads sharing the start block;
+  // Trim to the bounding entry only for interior reads sharing the start block;
   // a past-the-end read keeps everything decoded to the chromosome end.
   const endOffset =
     nextEntry && endBlock === startBlock && nextOffset > startOffset
