@@ -626,7 +626,8 @@ export default function baseStateModelFactory(
 
       /**
        * #getter
-       * @deprecated read each rpcDataMap entry's `reversed`
+       * Deprecated: read each rpcDataMap entry's `reversed`.
+       * @deprecated
        */
       get reversedRegions() {
         return new Set(
@@ -803,28 +804,32 @@ export default function baseStateModelFactory(
       },
       /**
        * #getter
-       * @deprecated read `renderedLabels.showDescriptions`
+       * Deprecated: read `renderedLabels.showDescriptions`.
+       * @deprecated
        */
       get renderedShowDescriptions() {
         return self.renderedLabels.showDescriptions
       },
       /**
        * #getter
-       * @deprecated read `renderedLabels.showLabels`
+       * Deprecated: read `renderedLabels.showLabels`.
+       * @deprecated
        */
       get renderedShowLabels() {
         return self.renderedLabels.showLabels
       },
       /**
        * #getter
-       * @deprecated read `renderedLabels.showSubfeatureLabels`
+       * Deprecated: read `renderedLabels.showSubfeatureLabels`.
+       * @deprecated
        */
       get renderedShowSubfeatureLabels() {
         return self.renderedLabels.showSubfeatureLabels
       },
       /**
        * #getter
-       * @deprecated read `renderedLabels.fontSize`
+       * Deprecated: read `renderedLabels.fontSize`.
+       * @deprecated
        */
       get renderedLabelFontSize() {
         return self.renderedLabels.fontSize

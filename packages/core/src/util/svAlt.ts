@@ -14,7 +14,8 @@ export const SV_SYMBOLIC_ALLELES = [
 
 /**
  * #api
- * @deprecated use `parseBreakend` from `@gmod/vcf`
+ * Deprecated: use `parseBreakend` from `@gmod/vcf`.
+ * @deprecated
  */
 export function safeParseBreakend(alt: string) {
   return parseBreakend(alt)
