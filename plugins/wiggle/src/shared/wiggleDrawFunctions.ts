@@ -2,8 +2,7 @@ import {
   abgrBlue,
   abgrGreen,
   abgrRed,
-  normalizedRgbToCss,
-  normalizedRgbToCssRgba,
+  abgrToCssRgba,
   setAbgrFill,
 } from '@jbrowse/core/util/colorBits'
 import {
@@ -81,9 +80,9 @@ export interface RowDraw {
   // Where a line's and band's color changes, ascending, and
   // the color of each band between two of them.
   cuts: number[]
-  // Each band's color, lowest first, one more than `cuts`: the row's own
-  // color past the outer cuts, the plot's inner colors between them.
-  bandColors: [number, number, number][]
+  // Each band's packed ABGR color, lowest first, one more than `cuts`: the
+  // row's own color past the outer cuts, the plot's inner colors between them.
+  bandColors: number[]
   // A gradient's table: bars, points and density color through it, matching
   // the LUT texture the GPU samples, and the row's own color goes unused.
   rampLut: Uint8Array | null
@@ -281,7 +280,7 @@ function strokeByBands(
     symlogConstant: row.symlogConstant,
   })
   const cutToY = makeScoreToY(row, { unclamped: true })
-  const styles = bandColors.map(rgb => normalizedRgbToCss(rgb))
+  const styles = bandColors.map(abgr => abgrToCssRgba(abgr))
   const passes = styles.every(style => style === styles[0])
     ? [
         {
@@ -315,10 +314,6 @@ function scaleNameOf(scaleType: ScaleTypeCode): MarkValueScaleType {
     : scaleType === SCALE_TYPE_SYMLOG
       ? 'symlog'
       : 'linear'
-}
-
-function normalizedRgbOf(abgr: number): [number, number, number] {
-  return [abgrRed(abgr) / 255, abgrGreen(abgr) / 255, abgrBlue(abgr) / 255]
 }
 
 /**
@@ -363,7 +358,7 @@ export function rampAsBands<R extends RowDraw>(row: R): R {
   return {
     ...row,
     cuts: [...cuts],
-    bandColors: Array.from(colors, normalizedRgbOf),
+    bandColors: Array.from(colors),
   }
 }
 
@@ -482,8 +477,9 @@ export function drawMinMaxBand(row: RowDraw & { interpolated: boolean }) {
   }
   const lowest = thresholdBandOf(low, cuts)
   const highest = thresholdBandOf(high, cuts)
-  const fills = bandColors.map(rgb =>
-    normalizedRgbToCssRgba(rgb, WHISKER_BAND_OPACITY),
+  const fills = bandColors.map(
+    abgr =>
+      `rgba(${abgrRed(abgr)},${abgrGreen(abgr)},${abgrBlue(abgr)},${WHISKER_BAND_OPACITY})`,
   )
   const drawn = fills.slice(lowest, highest + 1)
   if (drawn.every(fill => fill === drawn[0])) {

@@ -695,7 +695,7 @@ describe('per-instance colors reach every Canvas2D draw fn', () => {
       [lineBlock],
       lineState,
     )
-    expect(mock.strokeStyles).toEqual(['rgb(128,128,128)'])
+    expect(mock.strokeStyles).toEqual(['rgba(128,128,128,1)'])
   })
 })
 
@@ -744,7 +744,7 @@ test('a line on a cut takes the color above it, as the shader does', () => {
     domainY: [0, 1],
     cuts: [0.7],
   })
-  expect(mock.strokeStyles).toEqual(['rgb(128,128,128)'])
+  expect(mock.strokeStyles).toEqual(['rgba(128,128,128,1)'])
 })
 
 // The interpolated line bridges non-adjacent bins on purpose: sporadic gaps in
@@ -1127,7 +1127,7 @@ describe('line plots color by pivot side', () => {
     const { strokeStyles, moves, lines } = paintSigned(
       RENDERING_TYPE_LINE_CENTER,
     )
-    expect(strokeStyles).toEqual(['rgb(0,0,255)', 'rgb(255,0,0)'])
+    expect(strokeStyles).toEqual(['rgba(0,0,255,1)', 'rgba(255,0,0,1)'])
     expect(moves).toEqual([
       [40, 50],
       [80, 100],
@@ -1218,9 +1218,9 @@ describe('line plots color by pivot side', () => {
         Math.round(c[1]! * 1000) / 1000,
       ])
     expect(mock.strokeStyles).toEqual([
-      'rgb(0,0,255)',
-      'rgb(0,255,0)',
-      'rgb(255,0,0)',
+      'rgba(0,0,255,1)',
+      'rgba(0,255,0,1)',
+      'rgba(255,0,0,1)',
     ])
     expect(pts(mock.ctx.moveTo.mock.calls)).toEqual([
       [40, 50],
@@ -1237,7 +1237,7 @@ describe('line plots color by pivot side', () => {
 
   test('the step line splits its vertical steps at the pivot', () => {
     const { strokeStyles, moves, lines } = paintSigned(RENDERING_TYPE_LINE)
-    expect(strokeStyles).toEqual(['rgb(0,0,255)', 'rgb(255,0,0)'])
+    expect(strokeStyles).toEqual(['rgba(0,0,255,1)', 'rgba(255,0,0,1)'])
     expect(moves).toEqual([
       [0, 100],
       [160, 100],
@@ -1270,8 +1270,8 @@ describe('a cut outside the domain parts nothing', () => {
   const starts = [0, 100]
   const ends = [100, 200]
   const cutState = { ...lineState, cuts: [15] }
-  const below = 'rgb(255,0,0)'
-  const above = 'rgb(0,0,255)'
+  const below = 'rgba(255,0,0,1)'
+  const above = 'rgba(0,0,255,1)'
 
   const bandOf = (abgr: number) =>
     abgr === normalizedRgbToABGR(...negColor)

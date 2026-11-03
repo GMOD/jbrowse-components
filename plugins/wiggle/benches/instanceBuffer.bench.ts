@@ -419,13 +419,9 @@ const noopCtx = {
   stroke() {},
   fill() {},
 } as never
-const POS: [number, number, number] = [0, 104 / 255, 209 / 255]
-const NEG: [number, number, number] = [224 / 255, 30 / 255, 38 / 255]
-function rowArgs(
-  c: never,
-  layer: SourceRenderData,
-  bandColors: [number, number, number][],
-) {
+const POS = normalizedRgbToABGR(0, 104 / 255, 209 / 255)
+const NEG = normalizedRgbToABGR(224 / 255, 30 / 255, 38 / 255)
+function rowArgs(c: never, layer: SourceRenderData, bandColors: number[]) {
   return {
     ctx: c,
     source: layer,

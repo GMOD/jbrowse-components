@@ -1,3 +1,4 @@
+import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { RAMP_LINE_BANDS } from '@jbrowse/render-core/marks'
 import { rampMidNorm } from '@jbrowse/render-core/scoreScale'
@@ -18,7 +19,7 @@ import { GLSL_FRAGMENT as LINE_GLSL } from './shaders/wiggleLine.glsl.generated.
 import { WGSL_SOURCE as LINE_WGSL } from './shaders/wiggleLine.wgsl.generated.ts'
 import { GLSL_FRAGMENT as CENTER_GLSL } from './shaders/wiggleLineCenter.glsl.generated.ts'
 import { WGSL_SOURCE as CENTER_WGSL } from './shaders/wiggleLineCenter.wgsl.generated.ts'
-import { rampAsBands } from './wiggleDrawFunctions.ts'
+import { drawLine, rampAsBands } from './wiggleDrawFunctions.ts'
 
 import type { RowDraw } from './wiggleDrawFunctions.ts'
 import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
@@ -37,18 +38,16 @@ function row(
   scaleType: ScaleTypeCode,
   scores: number[],
   rampMid?: number,
+  rampLut = lut,
 ) {
   return {
     domainY,
     scaleType,
     symlogConstant: 1,
-    rampLut: lut,
+    rampLut,
     rampMid,
     cuts: [0],
-    bandColors: [
-      [0, 0, 1],
-      [1, 0, 0],
-    ],
+    bandColors: [0xffff0000, 0xff0000ff],
     source: {
       color: [1, 0, 0],
       negColor: [0, 0, 1],
@@ -58,9 +57,14 @@ function row(
   } as unknown as RowDraw
 }
 
-function bandColorOf(banded: RowDraw, score: number) {
+function bandAbgrOf(banded: RowDraw, score: number) {
   const k = banded.cuts.filter(cut => cut <= score).length
-  return banded.bandColors[k]!.map(c => Math.round(c * 255))
+  return banded.bandColors[k]!
+}
+
+function bandColorOf(banded: RowDraw, score: number) {
+  const abgr = bandAbgrOf(banded, score)
+  return [abgrRed(abgr), abgrGreen(abgr), abgrBlue(abgr)]
 }
 
 function sweep([min, max]: [number, number], scaleType: ScaleTypeCode) {
@@ -159,4 +163,48 @@ test.each([
 test('a row with no ramp passes through', () => {
   const plain = { ...row([0, 1], SCALE_TYPE_LINEAR, [0]), rampLut: null }
   expect(rampAsBands(plain as unknown as RowDraw)).toBe(plain)
+})
+
+test('a line under a translucent ramp strokes each band with its alpha', () => {
+  const fade = Uint8Array.from({ length: 256 * 4 }, (_, i) =>
+    i % 4 === 3 ? Math.floor(i / 4) : 255,
+  )
+  const strokeStyles: string[] = []
+  const ctx = {
+    strokeStyle: '',
+    lineWidth: 1,
+    beginPath: () => {},
+    moveTo: () => {},
+    lineTo: () => {},
+    stroke: () => strokeStyles.push(ctx.strokeStyle),
+  }
+  const scores = [0, 100]
+  drawLine({
+    ...rampAsBands({
+      ...row([0, 100], SCALE_TYPE_LINEAR, scores, undefined, fade),
+      ctx,
+      block: {
+        displayedRegionIndex: 0,
+        start: 0,
+        end: 100,
+        screenStartPx: 0,
+        screenEndPx: 100,
+        reversed: false,
+      },
+      rowHeight: 40,
+      rowTop: 0,
+      source: {
+        featurePositions: new Uint32Array([0, 10, 10, 20]),
+        featureScores: Float32Array.from(scores),
+        numFeatures: 2,
+        gapScore: 0,
+      },
+    } as unknown as RowDraw),
+    lineWidth: 1,
+  })
+  const alphas = strokeStyles.map(style =>
+    Number(style.split(',')[3]!.slice(0, -1)),
+  )
+  expect(alphas.some(a => a < 0.1)).toBe(true)
+  expect(alphas.some(a => a > 0.9)).toBe(true)
 })

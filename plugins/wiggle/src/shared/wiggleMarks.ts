@@ -1,4 +1,7 @@
-import { normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
+import {
+  normalizedRgbToABGR,
+  normalizedRgbToCss,
+} from '@jbrowse/core/util/colorBits'
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import { backingScale, getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { defineMark } from '@jbrowse/render-core/marks'
@@ -216,7 +219,7 @@ function wiggleShape(
             source.negColor ?? source.color,
             ...p.innerColors,
             source.color,
-          ],
+          ].map(rgb => normalizedRgbToABGR(...rgb)),
         })
       }
     },
