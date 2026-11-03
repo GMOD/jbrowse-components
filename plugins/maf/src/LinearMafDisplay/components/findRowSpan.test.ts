@@ -1,4 +1,4 @@
-import { emptyMafCoverage } from './coverageTestFixture.ts'
+import { emptyMafCoverage } from './coverage.fixture.ts'
 import { findRowSpans } from './findRowSpan.ts'
 
 import type {

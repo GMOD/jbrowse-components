@@ -1,4 +1,4 @@
-import { emptyMafCoverage } from './coverageTestFixture.ts'
+import { emptyMafCoverage } from './coverage.fixture.ts'
 import { regionInvertedRows } from './mafRowEvents.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'

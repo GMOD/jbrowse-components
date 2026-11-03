@@ -1,7 +1,7 @@
 import { autorun } from 'mobx'
 
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
-import { emptyMafCoverage } from './components/coverageTestFixture.ts'
+import { emptyMafCoverage } from './components/coverage.fixture.ts'
 import {
   createMafTestEnvironment,
   stageDetailRegion,

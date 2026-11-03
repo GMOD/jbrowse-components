@@ -1,5 +1,5 @@
 import { conservationBarAt, encodeConservation } from './conservationBand.ts'
-import { emptyMafCoverage } from './coverageTestFixture.ts'
+import { emptyMafCoverage } from './coverage.fixture.ts'
 
 function bars(scores: number[], binBp: number, start = 100) {
   const b = encodeConservation(

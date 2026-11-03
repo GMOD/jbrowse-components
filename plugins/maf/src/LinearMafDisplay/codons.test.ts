@@ -10,7 +10,7 @@ import {
   locateRegionCodons,
   orientedTriplet,
 } from './codons.ts'
-import { emptyMafCoverage } from './components/coverageTestFixture.ts'
+import { emptyMafCoverage } from './components/coverage.fixture.ts'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord } from '../types.ts'

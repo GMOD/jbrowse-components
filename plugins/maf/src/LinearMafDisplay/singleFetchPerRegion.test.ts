@@ -1,7 +1,7 @@
 import { waitFor } from '@testing-library/react'
 
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
-import { emptyMafCoverage } from './components/coverageTestFixture.ts'
+import { emptyMafCoverage } from './components/coverage.fixture.ts'
 import { createMafTestEnvironment } from './testEnv.ts'
 
 import type { MafAlignedRow } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'

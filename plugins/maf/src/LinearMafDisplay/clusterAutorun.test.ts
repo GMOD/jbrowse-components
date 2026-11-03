@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { waitFor } from '@testing-library/react'
 
-import { emptyMafWireRegionData } from './components/coverageTestFixture.ts'
+import { emptyMafWireRegionData } from './components/coverage.fixture.ts'
 import { createMafTestEnvironment } from './testEnv.ts'
 
 beforeEach(() => {

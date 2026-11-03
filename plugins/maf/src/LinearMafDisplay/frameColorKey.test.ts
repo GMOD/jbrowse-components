@@ -5,7 +5,7 @@ import {
   getFrameColors,
   getFrameLegendItems,
 } from '../LinearMafRenderer/util.ts'
-import { emptyMafWireRegionData } from './components/coverageTestFixture.ts'
+import { emptyMafWireRegionData } from './components/coverage.fixture.ts'
 import {
   createMafTestEnvironment,
   stageDetailRegion,

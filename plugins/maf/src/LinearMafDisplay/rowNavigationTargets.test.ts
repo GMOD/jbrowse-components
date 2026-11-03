@@ -1,5 +1,5 @@
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
-import { emptyMafCoverage } from './components/coverageTestFixture.ts'
+import { emptyMafCoverage } from './components/coverage.fixture.ts'
 import { rowNavigationTargetsOf } from './rowNavigationTargets.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 

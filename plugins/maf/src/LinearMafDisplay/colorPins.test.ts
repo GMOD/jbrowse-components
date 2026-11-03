@@ -4,7 +4,7 @@ import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixt
 import { identitySpans } from '../LinearMafRenderer/identity.ts'
 import { packMafCellColorConfig } from '../LinearMafRenderer/resolveCellColor.ts'
 import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
-import { emptyMafCoverage } from './components/coverageTestFixture.ts'
+import { emptyMafCoverage } from './components/coverage.fixture.ts'
 import { encodeRefNameRankSpans } from './components/refNameRanks.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 

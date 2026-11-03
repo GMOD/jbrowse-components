@@ -1,4 +1,4 @@
-import { emptyMafCoverage } from './components/coverageTestFixture.ts'
+import { emptyMafCoverage } from './components/coverage.fixture.ts'
 import { orderMafRowsByBaseAt } from './orderMafRowsByBaseAt.ts'
 
 import type { MafRegionData } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'

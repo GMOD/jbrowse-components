@@ -2,7 +2,7 @@ import { setConf } from '@jbrowse/core/configuration'
 import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
-import { emptyMafCoverage } from './components/coverageTestFixture.ts'
+import { emptyMafCoverage } from './components/coverage.fixture.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
 import type { MafFrameRecord } from '../types.ts'

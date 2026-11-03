@@ -1,4 +1,4 @@
-import { emptyMafCoverage } from './coverageTestFixture.ts'
+import { emptyMafCoverage } from './coverage.fixture.ts'
 import { rowRefNameBp } from './rowRefNameBp.ts'
 
 import type {

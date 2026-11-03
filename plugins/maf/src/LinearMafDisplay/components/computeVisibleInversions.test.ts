@@ -2,7 +2,7 @@ import {
   computeVisibleInversions,
   consensusStrandByRowRefName,
 } from './computeVisibleInversions.ts'
-import { emptyMafCoverage } from './coverageTestFixture.ts'
+import { emptyMafCoverage } from './coverage.fixture.ts'
 
 import type {
   MafAlignedRow,

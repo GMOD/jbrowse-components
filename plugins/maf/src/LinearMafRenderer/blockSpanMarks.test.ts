@@ -7,7 +7,7 @@ import {
   rowBandOffsetPx,
 } from '@jbrowse/render-core/shaders/rowRect'
 
-import { emptyMafCoverage } from '../LinearMafDisplay/components/coverageTestFixture.ts'
+import { emptyMafCoverage } from '../LinearMafDisplay/components/coverage.fixture.ts'
 import {
   REF_NAME_RANK_PALETTE,
   encodeRefNameRankSpans,

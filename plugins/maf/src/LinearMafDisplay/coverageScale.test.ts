@@ -5,7 +5,7 @@ import { COVERAGE_AXIS_LABEL } from '@jbrowse/wiggle-core'
 import {
   emptyMafCoverage,
   emptyMafWireRegionData,
-} from './components/coverageTestFixture.ts'
+} from './components/coverage.fixture.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'

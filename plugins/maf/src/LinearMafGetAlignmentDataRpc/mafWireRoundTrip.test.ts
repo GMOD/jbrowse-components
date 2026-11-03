@@ -1,4 +1,4 @@
-import { emptyMafCoverage } from '../LinearMafDisplay/components/coverageTestFixture.ts'
+import { emptyMafCoverage } from '../LinearMafDisplay/components/coverage.fixture.ts'
 import { placeMafRegionData } from '../LinearMafDisplay/placeMafRows.ts'
 import { packTestWire } from './mafWire.fixture.ts'
 

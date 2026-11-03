@@ -1,5 +1,5 @@
 import { computeVisibleEmptyLines } from './computeVisibleEmptyLines.ts'
-import { emptyMafCoverage } from './coverageTestFixture.ts'
+import { emptyMafCoverage } from './coverage.fixture.ts'
 
 import type {
   MafBlock,

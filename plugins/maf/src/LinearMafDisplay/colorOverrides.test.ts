@@ -5,7 +5,7 @@ import { autorun } from 'mobx'
 
 import { testWireRegionData } from '../LinearMafGetAlignmentDataRpc/mafWire.fixture.ts'
 import { identityLut } from '../LinearMafRenderer/identity.ts'
-import { emptyMafCoverage } from './components/coverageTestFixture.ts'
+import { emptyMafCoverage } from './components/coverage.fixture.ts'
 import { refNameRankColors } from './components/refNameRanks.ts'
 import { createMafTestEnvironment, stageDetailRegion } from './testEnv.ts'
 

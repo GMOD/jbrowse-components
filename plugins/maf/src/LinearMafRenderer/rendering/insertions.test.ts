@@ -1,7 +1,7 @@
 import { insertionMark, textWidthForNumber } from '@jbrowse/alignments-core'
 import { recordingContext } from '@jbrowse/render-core/marks/drawAgainstHit'
 
-import { emptyMafCoverage } from '../../LinearMafDisplay/components/coverageTestFixture.ts'
+import { emptyMafCoverage } from '../../LinearMafDisplay/components/coverage.fixture.ts'
 import { mafInsertionParams } from '../mafMarks.ts'
 import { mafInsertionChannels } from './insertions.ts'
 

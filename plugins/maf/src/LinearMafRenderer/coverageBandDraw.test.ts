@@ -4,7 +4,7 @@ import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { UNIFORM_OFFSET_F32 } from '@jbrowse/render-core/shaders/coverageBar'
 import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
 
-import { emptyMafCoverage } from '../LinearMafDisplay/components/coverageTestFixture.ts'
+import { emptyMafCoverage } from '../LinearMafDisplay/components/coverage.fixture.ts'
 import { MAF_MARKS } from './mafMarks.ts'
 
 import type {

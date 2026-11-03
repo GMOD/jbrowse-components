@@ -1,4 +1,4 @@
-import { emptyMafCoverage } from './components/coverageTestFixture.ts'
+import { emptyMafCoverage } from './components/coverage.fixture.ts'
 import { coverageTooltipBinAt } from './coverageTooltipBin.ts'
 
 function coverage(identityScores: number[]) {

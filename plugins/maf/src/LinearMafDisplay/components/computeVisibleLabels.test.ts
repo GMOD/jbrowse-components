@@ -1,5 +1,5 @@
 import { computeVisibleLabels } from './computeVisibleLabels.ts'
-import { emptyMafCoverage } from './coverageTestFixture.ts'
+import { emptyMafCoverage } from './coverage.fixture.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
