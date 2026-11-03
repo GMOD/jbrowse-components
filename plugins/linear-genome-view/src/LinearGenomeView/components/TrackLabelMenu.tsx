@@ -47,7 +47,9 @@ const TrackLabelMenu = observer(function TrackLabelMenu({
         subMenu: orderSubMenu,
       }),
       ...sessionItems,
-      track.saveTrackDataMenuItem,
+      ...(Object.keys(track.saveTrackFileFormatOptions()).length
+        ? [track.saveTrackDataMenuItem]
+        : []),
       ...track.trackMenuItems(),
     ]
   }

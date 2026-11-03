@@ -12,7 +12,15 @@ export default function HicTrackF(pluginManager: PluginManager) {
       name: 'HicTrack',
       displayName: 'Hi-C track',
       configSchema,
-      stateModel: createBaseTrackModel(pluginManager, 'HicTrack', configSchema),
+      stateModel: createBaseTrackModel(
+        pluginManager,
+        'HicTrack',
+        configSchema,
+      ).views(() => ({
+        saveTrackFileFormatOptions() {
+          return {}
+        },
+      })),
     })
   })
 }

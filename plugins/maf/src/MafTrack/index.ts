@@ -14,7 +14,15 @@ export default function MafTrackF(pluginManager: PluginManager) {
       name: 'MafTrack',
       configSchema,
       displayName: 'MAF track',
-      stateModel: createBaseTrackModel(pluginManager, 'MafTrack', configSchema),
+      stateModel: createBaseTrackModel(
+        pluginManager,
+        'MafTrack',
+        configSchema,
+      ).views(() => ({
+        saveTrackFileFormatOptions() {
+          return {}
+        },
+      })),
     })
   })
 }

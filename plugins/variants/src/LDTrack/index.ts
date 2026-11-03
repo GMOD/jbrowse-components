@@ -12,7 +12,13 @@ export default function LDTrackF(pm: PluginManager) {
       name: 'LDTrack',
       displayName: 'LD track',
       configSchema,
-      stateModel: createBaseTrackModel(pm, 'LDTrack', configSchema),
+      stateModel: createBaseTrackModel(pm, 'LDTrack', configSchema).views(
+        () => ({
+          saveTrackFileFormatOptions() {
+            return {}
+          },
+        }),
+      ),
     })
   })
 }

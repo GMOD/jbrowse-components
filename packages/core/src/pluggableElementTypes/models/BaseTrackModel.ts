@@ -547,6 +547,8 @@ export function createBaseTrackModel<SCHEMA extends AnyConfigurationSchemaType>(
       },
       /**
        * #method
+       * The formats "Save track data" offers. A track type whose features no
+       * format describes returns none, and the menu item is not shown.
        */
       saveTrackFileFormatOptions(): Record<string, FileTypeExporter> {
         return {
