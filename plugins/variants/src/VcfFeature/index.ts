@@ -3,7 +3,7 @@ import { svClassOf } from '@jbrowse/core/util/svAlt'
 import { calculateAlleleCountsFast } from '../shared/alleleCounts.ts'
 import { summarizeAlleleCounts } from '../shared/minorAlleleFrequencyUtils.ts'
 import { getVariantImpact } from '../shared/variantConsequence.ts'
-import { getEnd, getSOTermAndDescription } from './util.ts'
+import { getSOTermAndDescription, variantSpan } from './util.ts'
 
 import type { AlleleSummary } from '../shared/minorAlleleFrequencyUtils.ts'
 import type VCFParser from '@gmod/vcf'
@@ -13,8 +13,8 @@ import type { Feature } from '@jbrowse/core/util'
 type FeatureData = ReturnType<typeof dataFromVariant>
 
 function dataFromVariant(variant: Variant, parser: VCFParser) {
-  const { REF = '', ALT, POS, CHROM, ID, INFO } = variant
-  const start = POS - 1
+  const { REF = '', ALT, CHROM, ID, INFO } = variant
+  const { start, end } = variantSpan(variant)
   const [type, description] = getSOTermAndDescription(REF, ALT, parser, INFO)
 
   if (CHROM === undefined) {
@@ -24,7 +24,7 @@ function dataFromVariant(variant: Variant, parser: VCFParser) {
   return {
     refName: CHROM,
     start,
-    end: getEnd(variant, start),
+    end,
     description,
     type,
     name: ID?.join(','),

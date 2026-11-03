@@ -78,6 +78,11 @@ export function getEnd(variant: Variant, start: number) {
   return start + REF.length
 }
 
+export function variantSpan(variant: Variant) {
+  const start = variant.POS - 1
+  return { start, end: getEnd(variant, start) }
+}
+
 // Render an allele sequence verbatim when short enough to read, otherwise a
 // compact base-pair count. Single source of the abbreviation threshold so ref
 // and alt never disagree within one rendered string.
