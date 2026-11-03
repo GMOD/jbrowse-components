@@ -151,7 +151,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           maxRegionBp: cutNear(100_000),
         }),
       ],
-      920,
+      1000,
     ),
     readySelector: GRAPH_DRAWN,
   },
@@ -170,7 +170,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
           maxRegionBp: cutNear(40_000),
         }),
       ],
-      940,
+      1040,
     ),
     readySelector: GRAPH_DRAWN,
     annotations: [

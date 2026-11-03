@@ -1057,7 +1057,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     url: portalLaunch('cfh', 'haplotypes'),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    viewportHeight: 1600,
+    viewportHeight: 1840,
   },
 
   {
@@ -1411,7 +1411,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     url: portalLaunch('gstt1', 'haplotypes'),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
-    viewportHeight: 1550,
+    viewportHeight: 1740,
     // the first label in document order is the topmost lane carrying the gene
     annotations: [
       {

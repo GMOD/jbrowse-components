@@ -490,7 +490,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 240000,
     viewportWidth: 1000,
-    viewportHeight: 1600,
+    viewportHeight: 1850,
     tooltip: 'hide',
   },
   {
@@ -499,8 +499,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     url: portalLaunch('cfh', 'graph'),
     readySelector: `body:has(${displaySettled('variant-display')}) ${GRAPH_DRAWN}`,
     readyTimeout: 240000,
-    viewportWidth: 1000,
-    viewportHeight: 1000,
+    viewportHeight: 1400,
     tooltip: 'hide',
   },
   // pangenome/hprc_repeat_classes is retired. A synteny view of its two windows
