@@ -1,6 +1,7 @@
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import { createBaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
+import { stringifyCoverageBedGraph } from '../saveTrackFormats/coverage.ts'
 import { stringifySAM } from '../saveTrackFormats/sam.ts'
 import configSchemaF from './configSchemaF.ts'
 
@@ -26,6 +27,13 @@ export default function register(pm: PluginManager) {
               callback: stringifySAM,
               helpText:
                 "Note: SAM export rebuilds records from the reads JBrowse loaded. The header lists the assembly's sequences rather than the file's, so read groups and programs are not carried over, and an optional tag's type is the one its value implies: a one-character A tag is written as Z.",
+            },
+            coverage: {
+              name: 'Coverage (bedGraph)',
+              extension: 'bedgraph',
+              callback: stringifyCoverageBedGraph,
+              helpText:
+                'The depth at each base of the reads this track shows, counted as the coverage band counts it: a deletion or a skipped intron adds no depth. Bases no read covers are left out.',
             },
           }
         },

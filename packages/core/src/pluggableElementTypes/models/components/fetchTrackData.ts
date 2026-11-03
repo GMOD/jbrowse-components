@@ -209,6 +209,7 @@ export async function fetchTrackData({
         features: byPosition(features),
         session,
         assemblyName: regions[0]!.assemblyName,
+        regions,
         ...opts,
       })
     : ''
