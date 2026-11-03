@@ -30,8 +30,9 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * (triangular r² heatmap) and by
  * [GWAS Manhattan LD coloring](/docs/config_guides/gwas_track#preparing-the-ld-file)
  * (LocusZoom-style r² to an index SNP). See either guide for generating the
- * table. `--r2-phased` is the statistic the LD display computes from genotypes,
- * so it is the one whose cells compare with a live triangle.
+ * table. The display draws the statistic the file holds as written, whichever
+ * of `--r2-phased`, `--r2-unphased` or `--r2 dprime` produced it, and computes
+ * nothing from genotypes.
  *
  * ```bash
  * plink2 --bfile study --r2-unphased --out study

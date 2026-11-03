@@ -5,7 +5,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config VariantTrack
- * A feature track that also has `ChordDisplayType` registered to it and custom
+ * A feature track that also has `ChordVariantDisplay` registered to it and custom
  * feature details in `LinearVariantDisplay`
  *
  * #example
