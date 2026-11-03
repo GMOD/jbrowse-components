@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react'
 
+import { makeStyles } from '../../../util/tss-react/index.ts'
 import { sequenceFileStem } from '../util.ts'
 import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './SequenceTypeSelector.tsx'
@@ -14,6 +15,13 @@ import type {
   SequenceFeatureDetailsModel,
 } from '../model.ts'
 import type { ReactNode, RefObject } from 'react'
+
+// room above the row for the transcript menu's floating label
+const useStyles = makeStyles()(theme => ({
+  controls: {
+    paddingTop: theme.spacing(1),
+  },
+}))
 
 const SequenceControls = observer(function SequenceControls({
   model,
@@ -36,8 +44,9 @@ const SequenceControls = observer(function SequenceControls({
   transcriptSelector?: ReactNode
   extraItems?: MenuItem[]
 }) {
+  const { classes } = useStyles()
   return (
-    <div>
+    <div className={classes.controls}>
       {transcriptSelector}
       <SequenceTypeSelector model={model} feature={feature} mode={mode} />
       <SequenceFeatureMenu

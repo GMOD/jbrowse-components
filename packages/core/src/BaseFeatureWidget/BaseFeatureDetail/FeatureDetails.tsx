@@ -25,20 +25,12 @@ import type {
   FieldActions,
 } from '../types.tsx'
 
-const useStyles = makeStyles()({
-  subfeaturesHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-    minWidth: 0,
-    '& .MuiSelect-select': {
-      fontSize: 13,
-      paddingTop: 4,
-      paddingBottom: 4,
-    },
+const useStyles = makeStyles()(theme => ({
+  picker: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1.5),
   },
-})
+}))
 
 const SectionHeader = observer(function SectionHeader({
   title,
@@ -159,10 +151,12 @@ const FeatureDetails = observer(function FeatureDetails(
       {depth < maxDepth && subfeatures?.length ? (
         <>
           <Divider />
-          <div className={classes.subfeaturesHeader}>
-            <SectionHeader title="Subfeatures" />
-            {picking ? <TranscriptSelector pick={pick} /> : null}
-          </div>
+          <SectionHeader title="Subfeatures" />
+          {picking ? (
+            <div className={classes.picker}>
+              <TranscriptSelector pick={pick} fullWidth />
+            </div>
+          ) : null}
           {shownCards.map(card => (
             <FeatureDetails
               key={card.feature.uniqueId}

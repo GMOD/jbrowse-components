@@ -80,26 +80,35 @@ function openMenu(combobox: HTMLElement) {
 }
 
 test('a gene shows its best-ranked transcript, picked from a menu in rank order', () => {
-  const { getByTestId, queryByTestId, getByRole } =
+  const { getByTestId, queryByTestId, getByText } =
     renderGene(threeTranscripts())
   expect(getByTestId('BaseCard-EDEN.2 · mRNA')).toBeTruthy()
   expect(queryByTestId('BaseCard-EDEN.1 · mRNA')).toBeNull()
   expect(queryByTestId('BaseCard-EDEN.3 · mRNA')).toBeNull()
 
-  const select = getByRole('combobox', { name: 'Transcript' })
+  const select = within(getByTestId('transcript-select')).getByRole('combobox')
   expect(select.textContent).toBe('EDEN.2')
+  expect(
+    getByText('Transcript (1 of 3)', { selector: '.MuiInputLabel-root' }),
+  ).toBeTruthy()
   expect(openMenu(select)).toEqual(['EDEN.2', 'EDEN.3', 'EDEN.1'])
   fireEvent.click(within(document.body).getByRole('option', { name: 'EDEN.1' }))
 
   expect(getByTestId('BaseCard-EDEN.1 · mRNA')).toBeTruthy()
   expect(queryByTestId('BaseCard-EDEN.2 · mRNA')).toBeNull()
+  expect(
+    getByText('Transcript (3 of 3)', { selector: '.MuiInputLabel-root' }),
+  ).toBeTruthy()
 })
 
 test('the sequence panel reads the same pick as the Subfeatures menu', async () => {
-  const { getByRole, getAllByRole } = renderGene(threeTranscripts())
+  const { getByRole, getAllByTestId } = renderGene(threeTranscripts())
   fireEvent.click(getByRole('button', { name: 'Show feature sequence' }))
   await act(async () => {})
-  const selects = () => getAllByRole('combobox', { name: 'Transcript' })
+  const selects = () =>
+    getAllByTestId('transcript-select').map(el =>
+      within(el).getByRole('combobox'),
+    )
   expect(selects().map(s => s.textContent)).toEqual(['EDEN.2', 'EDEN.2'])
 
   fireEvent.mouseDown(selects()[1]!)
@@ -109,8 +118,8 @@ test('the sequence panel reads the same pick as the Subfeatures menu', async () 
 })
 
 test('a transcript groups its exons into one table, with what each exon has of its own under its row', () => {
-  const { getByTestId, queryByRole } = renderGene([transcript('EDEN.1')])
-  expect(queryByRole('combobox', { name: 'Transcript' })).toBeNull()
+  const { getByTestId, queryByTestId } = renderGene([transcript('EDEN.1')])
+  expect(queryByTestId('transcript-select')).toBeNull()
   const exons = getByTestId('BaseCard-exon (3)')
   fireEvent.click(within(exons).getAllByRole('button')[0]!)
 
