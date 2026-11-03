@@ -180,15 +180,15 @@ export function dropVendoredPlugins(
   return defs.filter(d => !(isUMDPluginDefinition(d) && vendored.has(d.name)))
 }
 
-// The two functions below describe a definition by picking the one url it will
-// be loaded from, so both dispatch in loadPlugin's order — ESM, then UMD. Keep
-// them in step with it: they are what the plugin trust gate (checkPlugins)
-// reads and what the untrusted-plugin prompt shows, so an order that disagrees
-// with the loader's vets one url and executes another. They once did disagree,
-// and a definition naming two loaders was approved on its jbrowse.org url while
-// loadPlugin ran the other. assertSingleKind now rejects such a definition
-// outright; this order is the second half of that guarantee, since the gate
-// runs before the loader does.
+// Everything below describes a definition by picking the one url it will be
+// loaded from, so all of it dispatches in loadPlugin's order — ESM, then UMD —
+// and the loader reads the same pick (`pluginLoadUrl`). They are what the
+// plugin trust gate (checkPlugins) reads and what the untrusted-plugin prompt
+// shows, so an order that disagrees with the loader's vets one url and executes
+// another. They once did disagree, and a definition naming two loaders was
+// approved on its jbrowse.org url while loadPlugin ran the other.
+// assertSingleKind now rejects such a definition outright; reading one pick is
+// the second half of that guarantee, since the gate runs before the loader does.
 export function pluginDescriptionString(d: PluginDefinition) {
   if (isESMPluginDefinition(d)) {
     return `ESM plugin ${'esmUrl' in d ? d.esmUrl : d.esmLoc.uri}`
@@ -204,19 +204,33 @@ export function pluginDescriptionString(d: PluginDefinition) {
 }
 
 /**
+ * The one place a definition's url is chosen: the string it names, and whether
+ * it resolves against its own `baseUri` (`umdLoc`/`esmLoc`, `loc` present, its
+ * `baseUri` possibly absent) or against the instance (every other form).
+ * Undefined when the definition names no loader at all.
+ */
+export function pluginUrlSource(d: PluginDefinition) {
+  if (isESMPluginDefinition(d)) {
+    return 'esmUrl' in d
+      ? { spec: d.esmUrl }
+      : { spec: d.esmLoc.uri, loc: { baseUri: d.esmLoc.baseUri } }
+  } else if (isUMDPluginDefinition(d)) {
+    return 'umdLoc' in d
+      ? { spec: d.umdLoc.uri, loc: { baseUri: d.umdLoc.baseUri } }
+      : { spec: 'umdUrl' in d ? d.umdUrl : d.url }
+  } else {
+    return undefined
+  }
+}
+
+/**
  * The url a definition loads from, or undefined when it names no loader at all.
  * Comparisons between definitions go through this rather than `pluginUrl`, whose
  * 'unknown url' placeholder is display text: two unloadable definitions are not
  * the same plugin just because neither has a url.
  */
 export function maybePluginUrl(d: PluginDefinition) {
-  if (isESMPluginDefinition(d)) {
-    return 'esmUrl' in d ? d.esmUrl : d.esmLoc.uri
-  } else if (isUMDPluginDefinition(d)) {
-    return 'umdLoc' in d ? d.umdLoc.uri : 'umdUrl' in d ? d.umdUrl : d.url
-  } else {
-    return undefined
-  }
+  return pluginUrlSource(d)?.spec
 }
 
 /**
@@ -229,15 +243,11 @@ export function resolvedPluginUrl(
   d: PluginDefinition,
   pageUri = typeof location === 'undefined' ? undefined : location.href,
 ) {
-  const url = maybePluginUrl(d)
-  const base =
-    'umdLoc' in d
-      ? d.umdLoc.baseUri
-      : 'esmLoc' in d
-        ? d.esmLoc.baseUri
-        : pageUri
+  const source = pluginUrlSource(d)
   try {
-    return url === undefined ? undefined : new URL(url, base).href
+    return source === undefined
+      ? undefined
+      : new URL(source.spec, source.loc ? source.loc.baseUri : pageUri).href
   } catch {
     return undefined
   }

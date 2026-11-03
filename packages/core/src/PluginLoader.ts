@@ -10,6 +10,7 @@ import {
   maybePluginUrl,
   pluginDescriptionString,
   pluginLabel,
+  pluginUrlSource,
 } from './pluginDefinitions.ts'
 import { isWebWorker } from './util/isWebWorker.ts'
 
@@ -264,15 +265,20 @@ function addCacheBuster(url: string) {
   return u.href
 }
 
-function umdPluginUrl(
-  def: UMDPluginDefinition | LegacyUMDPluginDefinition,
-  baseUri?: string,
-) {
-  return 'url' in def
-    ? resolvePluginUrl(def.url, baseUri)
-    : 'umdUrl' in def
-      ? resolvePluginUrl(def.umdUrl, baseUri)
-      : resolvePluginUrl(def.umdLoc.uri, def.umdLoc.baseUri, baseUri ?? '')
+/**
+ * The url PluginLoader fetches a definition from, read from the same pick the
+ * trust gate vets (`pluginUrlSource`), with the protocol rules of
+ * `resolvePluginUrl` applied.
+ */
+export function pluginLoadUrl(def: PluginDefinition, baseUri?: string) {
+  assertSingleKind(def)
+  const source = pluginUrlSource(def)
+  if (source === undefined) {
+    throw new Error(`Could not determine plugin type: ${JSON.stringify(def)}`)
+  }
+  return source.loc
+    ? resolvePluginUrl(source.spec, source.loc.baseUri, baseUri ?? '')
+    : resolvePluginUrl(source.spec, baseUri)
 }
 
 /**
@@ -290,7 +296,7 @@ export function preloadUMDBundles(defs: PluginDefinition[], baseUri?: string) {
     for (const def of defs) {
       if (isUMDPluginDefinition(def)) {
         try {
-          prefetchWorkerScript(umdPluginUrl(def, baseUri).href)
+          prefetchWorkerScript(pluginLoadUrl(def, baseUri).href)
         } catch {
           // loadPlugin reports a url it cannot resolve
         }
@@ -311,7 +317,7 @@ export function preloadUMDBundles(defs: PluginDefinition[], baseUri?: string) {
           link.setAttribute('integrity', def.integrity)
           link.setAttribute('crossorigin', 'anonymous')
         }
-        link.href = umdPluginUrl(def, baseUri).href
+        link.href = pluginLoadUrl(def, baseUri).href
         document.head.append(link)
       } catch {
         // loadPlugin reports a url it cannot resolve
@@ -336,10 +342,7 @@ export default class PluginLoader {
   }
 
   async loadESMPlugin(def: ESMPluginDefinition, baseUri?: string) {
-    const parsedUrl =
-      'esmUrl' in def
-        ? resolvePluginUrl(def.esmUrl, baseUri)
-        : resolvePluginUrl(def.esmLoc.uri, def.esmLoc.baseUri, baseUri ?? '')
+    const parsedUrl = pluginLoadUrl(def, baseUri)
     if (!this.fetchESM) {
       throw new Error('No ESM fetcher installed')
     }
@@ -355,7 +358,7 @@ export default class PluginLoader {
     def: UMDPluginDefinition | LegacyUMDPluginDefinition,
     baseUri?: string,
   ) {
-    const parsedUrl = umdPluginUrl(def, baseUri)
+    const parsedUrl = pluginLoadUrl(def, baseUri)
 
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`

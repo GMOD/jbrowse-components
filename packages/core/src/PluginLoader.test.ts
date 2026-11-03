@@ -1,4 +1,7 @@
-import PluginLoader, { workerScriptLoadMessage } from './PluginLoader.ts'
+import PluginLoader, {
+  pluginLoadUrl,
+  workerScriptLoadMessage,
+} from './PluginLoader.ts'
 import {
   dedupePlugins,
   dropVendoredPlugins,
@@ -8,6 +11,7 @@ import {
   pluginDescriptionString,
   pluginLabel,
   pluginUrl,
+  resolvedPluginUrl,
 } from './pluginDefinitions.ts'
 import { stringToJexlExpression } from './util/jexlStrings.ts'
 import SimpleFeature from './util/simpleFeature.ts'
@@ -286,6 +290,71 @@ describe('a relative plugin url', () => {
     ).load('file:///opt/JBrowse/resources/app/index.html')
 
     expect(loaded[0]).toBe('https://hub.example.org/cfg/plugin.js')
+  })
+})
+
+describe('the url the trust gate vets is the url the loader runs', () => {
+  const instance = 'https://jbrowse.org/code/jb2/main/index.html'
+  const configUri = 'https://hub.example.org/cfg/config.json'
+  const definitions: [string, PluginDefinition][] = [
+    ['absolute umdUrl', { name: 'P', umdUrl: 'https://cdn.example.com/p.js' }],
+    ['relative umdUrl', { name: 'P', umdUrl: 'p.js' }],
+    ['absolute legacy url', { name: 'P', url: 'https://cdn.example.com/p.js' }],
+    ['relative legacy url', { name: 'P', url: 'dir/p.js' }],
+    [
+      'absolute umdLoc',
+      {
+        name: 'P',
+        umdLoc: { uri: 'https://cdn.example.com/p.js', baseUri: configUri },
+      },
+    ],
+    [
+      'relative umdLoc',
+      { name: 'P', umdLoc: { uri: 'p.js', baseUri: configUri } },
+    ],
+    ['absolute esmUrl', { esmUrl: 'https://cdn.example.com/p.js' }],
+    ['relative esmUrl', { esmUrl: 'p.js' }],
+    [
+      'absolute esmLoc',
+      { esmLoc: { uri: 'https://cdn.example.com/p.js', baseUri: configUri } },
+    ],
+    ['relative esmLoc', { esmLoc: { uri: '../p.js', baseUri: configUri } }],
+    [
+      'umdLoc beside a legacy url',
+      {
+        name: 'P',
+        url: 'https://jbrowse.org/plugins/innocent.js',
+        umdLoc: { uri: 'https://evil.example.com/pwn.js', baseUri: configUri },
+      },
+    ],
+  ]
+
+  test.each(definitions)('%s', (_label, definition) => {
+    expect(pluginLoadUrl(definition, instance).href).toBe(
+      resolvedPluginUrl(definition, instance),
+    )
+  })
+
+  test('a cjsUrl definition has no gate url and the loader refuses it', async () => {
+    const definition = {
+      name: 'P',
+      cjsUrl: 'https://cdn.example.com/p.cjs',
+    } as unknown as PluginDefinition
+    expect(resolvedPluginUrl(definition, instance)).toBeUndefined()
+    await expect(
+      new PluginLoader().loadPlugin(definition, instance),
+    ).rejects.toThrow(/CJS plugins are no longer loaded/)
+  })
+
+  test('a definition naming two loaders has no load url', () => {
+    const definition = {
+      name: 'P',
+      umdUrl: 'https://jbrowse.org/plugins/innocent.js',
+      esmUrl: 'https://evil.example.com/pwn.js',
+    } as unknown as PluginDefinition
+    expect(() => pluginLoadUrl(definition, instance)).toThrow(
+      /more than one plugin type/,
+    )
   })
 })
 
