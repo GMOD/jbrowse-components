@@ -53,6 +53,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { renderingOf } from '../renderingTypes.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
+import { colorKeyTitleOf } from '../shared/scoreRampScale.ts'
 import {
   declaredCuts,
   paintedWiggleColor,
@@ -210,6 +211,16 @@ export default function stateModelFactory(
        */
       get colorSetting(): ColorSetting {
         return wiggleColorSettingOf(self.configuration.encoding.color)
+      },
+
+      /**
+       * #getter
+       * The heading both color keys carry: `encoding.color.legend.title` as
+       * written (`''` draws none), else the y axis title the key replaces,
+       * else `Score`.
+       */
+      get colorKeyTitle() {
+        return colorKeyTitleOf(this.colorSetting.legend.title, self.scaleTitle)
       },
 
       /**
@@ -620,13 +631,13 @@ export default function stateModelFactory(
         }
         const { posColor, negColor, innerColors } = self.wiggleColor
         const colors = [negColor, ...innerColors, posColor]
-        const { scale, legend } = self.colorSetting
+        const { scale } = self.colorSetting
         const spans = thresholdLabels(cuts)
         const names = keyNames(spans, scale.names ?? [])
         return {
           kind: 'categorical',
           id: 'threshold',
-          title: legend.title ?? 'score',
+          title: self.colorKeyTitle,
           entries: spans.map((span, i) => ({
             value: span,
             label: names.get(span) ?? span,
@@ -653,13 +664,9 @@ export default function stateModelFactory(
        * where no row color shows.
        */
       get colorScales(): ColorScale[] {
-        const { title } = self.colorSetting.legend
         const scales: ColorScale[] = []
         if (self.scoreColorScale) {
-          scales.push({
-            ...self.scoreColorScale,
-            title: title ?? self.scoreColorScale.title,
-          })
+          scales.push(self.scoreColorScale)
         }
         if (this.thresholdColorScale) {
           scales.push(this.thresholdColorScale)

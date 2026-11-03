@@ -35,7 +35,11 @@ import { executeRenderMultiWiggleData } from './RenderMultiWiggleDataRPC/execute
 import { renderingOf } from './renderingTypes.ts'
 import { buildSourceRenderData } from './shared/buildSourceRenderData.ts'
 import { clampResolution } from './shared/resolution.ts'
-import { scoreRampFill, scoreRampScale } from './shared/scoreRampScale.ts'
+import {
+  colorKeyTitleOf,
+  scoreRampFill,
+  scoreRampScale,
+} from './shared/scoreRampScale.ts'
 import { WHISKER_BAND_OPACITY } from './shared/shaders/wiggleBand.consts.generated.ts'
 import {
   paintedWiggleColor,
@@ -389,7 +393,10 @@ export async function wiggleTables(
               scaleType,
               rawConstant,
               scoreRamp,
-              readYMember(conf, WIGGLE_Y_PATHS, 'title') || 'Score',
+              colorKeyTitleOf(
+                setting.legend.title,
+                readYMember(conf, WIGGLE_Y_PATHS, 'title'),
+              ),
             ),
           ),
         ]

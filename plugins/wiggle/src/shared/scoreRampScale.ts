@@ -23,6 +23,17 @@ export interface ScoreRamp {
 const STEPS = 16
 
 /**
+ * The heading of a color key: `encoding.color.legend.title` as written (`''`
+ * draws none), else the y axis title the key replaces, else `Score`.
+ */
+export function colorKeyTitleOf(
+  legendTitle: string | undefined,
+  axisTitle: string | undefined,
+) {
+  return legendTitle ?? (axisTitle || 'Score')
+}
+
+/**
  * The CSS color the gradient paints a score, through the LUT both renderers
  * index. `symlogConstant` is the raw slot, as `scoreRampScale` takes it.
  */

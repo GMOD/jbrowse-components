@@ -1,3 +1,5 @@
+import { setConf } from '@jbrowse/core/configuration'
+
 import { makeWiggleRenderState } from '../shared/wiggleComponentUtils.ts'
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import { createTestEnvironment, makeSource } from './testEnv.ts'
@@ -396,4 +398,26 @@ describe('a heatmap reads the pair as a fade and a written scale as written', ()
       /paints a heatmap flat/,
     )
   })
+})
+
+test('a threshold key is titled by legend title, else the axis title, else Score', () => {
+  const display = makeDisplay(['a'], true)
+  display.applyPlot({
+    encoding: {
+      color: {
+        scale: {
+          type: 'threshold',
+          domain: ['2'],
+          range: ['#2166ac', '#b2182b'],
+        },
+      },
+    },
+  })
+  const titleOf = () =>
+    display.colorScales.find(s => s.id === 'threshold')?.title
+  expect(titleOf()).toBe('Score')
+  setConf(display, ['encoding', 'y', 'axis', 'title'], 'log2 ratio')
+  expect(titleOf()).toBe('log2 ratio')
+  setConf(display, ['encoding', 'color', 'legend', 'title'], 'copy number')
+  expect(titleOf()).toBe('copy number')
 })

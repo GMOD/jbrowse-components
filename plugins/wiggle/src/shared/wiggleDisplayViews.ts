@@ -34,8 +34,8 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
   effectiveExtent: string
   resolution: number
   yField: string
-  /** `encoding.y.axis.title`, empty where it names none. */
-  scaleTitle: string
+  /** The heading of the score key: the color's legend title, else the axis title. */
+  colorKeyTitle: string
 }
 
 /**
@@ -67,7 +67,7 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
             self.scaleType,
             self.symlogConstant,
             { rampLut, rampMid },
-            self.scaleTitle || 'Score',
+            self.colorKeyTitle,
           )
         : undefined
     },

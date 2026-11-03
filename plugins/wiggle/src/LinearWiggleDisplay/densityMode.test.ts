@@ -108,3 +108,12 @@ it('titles the density key with the scale title, the axis it replaces', () => {
   setConf(display, ['encoding', 'y', 'axis', 'title'], 'phyloP')
   expect(display.scoreColorScale?.title).toBe('phyloP')
 })
+
+it("titles the density key with color's legend title over the axis title", () => {
+  const display = makeDisplay()
+  display.setMark('rect')
+  setConf(display, ['encoding', 'y', 'axis', 'title'], 'phyloP')
+  setConf(display, ['encoding', 'color', 'legend', 'title'], 'conservation')
+  expect(display.scoreColorScale?.title).toBe('conservation')
+  expect(display.colorScales[0]?.title).toBe('conservation')
+})
