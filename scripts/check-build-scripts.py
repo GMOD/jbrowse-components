@@ -1472,6 +1472,29 @@ with tempfile.TemporaryDirectory() as d:
           open(out).read().splitlines(),
           ["a1\tb1\tM\t#C23D51\t0.001", "a2\tb2\tM\t#C23D51\t0.4"])
 
+    raw = os.path.join(d, "raw.rbh")
+    with open(raw, "w") as fh:
+        fh.write("rbh\tA_gene\tB_gene\tA_scaf\tA_pos\tB_scaf\tB_pos\tbreak_FET\n"
+                 "r1\ta1\tb1\tA1\t10\tB1\t20\t0.001\n"
+                 "r2\ta9\tb9\tA1\t50\tB1\t60\t0.7\n")
+    joined = os.path.join(d, "joined.blocks")
+    subprocess.run([sys.executable, "scripts/rbh_to_blocks.py", raw, "-o", joined,
+                    "--bed-dir", d, "--species", "A", "B", "--alg", rbh,
+                    "--attributes", "gene_group", "color", "break_FET"],
+                   check=True, capture_output=True)
+    check("--alg joins the group and its color, break_FET still off the table",
+          open(joined).read().splitlines(),
+          ["a1\tb1\tM\t#C23D51\t0.001", "a9\tb9\t.\t.\t0.7"])
+
+    misspelt = subprocess.run(
+        [sys.executable, "scripts/rbh_to_blocks.py", rbh, "-o", out,
+         "--bed-dir", d, "--species", "A", "B",
+         "--attributes", "gene_group", "break_fet"],
+        capture_output=True, text=True)
+    check("an --attributes column the table lacks fails instead of writing '.'",
+          (misspelt.returncode != 0, "break_fet" in misspelt.stderr),
+          (True, True))
+
 # `[ -f x ] || wget -O x url` takes a download the mirror dropped for a finished
 # one: every re-run skips the truncated file and fails reading it. Download to
 # x.part and rename it on success. Ratcheted per script in

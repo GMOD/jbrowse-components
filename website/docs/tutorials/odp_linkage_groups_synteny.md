@@ -162,8 +162,8 @@ A `.blocks` row is the gene ids across the two genomes, then the attribute
 columns:
 
 ```text
-mRNA.RE04286  Em0019g38a  A1a  #C23D51  0.0000
-mRNA.RE14076  Em0019g57a  .    #000000  1.8213
+mRNA.RE04286  Em0019g38a  A1a  #C23D51  4.1411820197020265e-230
+mRNA.RE14076  Em0019g57a  .    #000000  524.9999053847149
 ```
 
 ## Loading the jellyfish and sponge assemblies
@@ -268,11 +268,11 @@ paper's order, two comb jellies over the jellyfish, amphioxus and two sponges,
 and the session below sets what the figure needs.
 
 odp tests each pair of chromosomes for more shared orthologs than chance
-(Fisher's exact test, corrected for the number of pairs, in the `break_FET`
-column). Like the paper's figure, the stack draws orthologs on a chromosome pair
-under 0.05 at opacity 0.8 and the rest at 0.15. That is an `encoding.opacity`
-scale, which maps the `break_FET` field, cut at 0.05, to a `scale.range` of two
-opacities.
+(Fisher's exact test in the `break_FET` column, multiplied by the number of
+chromosome pairs, so a value can pass 1). Like the paper's figure, the stack
+draws orthologs on a chromosome pair under 0.05 at opacity 0.8 and the rest at
+0.15. That is an `encoding.opacity` scale, which maps the `break_FET` field, cut
+at 0.05, to a `scale.range` of two opacities.
 
 Each setting in the session has a menu route except `render` and the
 `encoding.opacity` mapping:
@@ -288,6 +288,11 @@ Each setting in the session has a menu route except `render` and the
   ribbons, since their colors are what the figure shows. It has no menu item.
 - `encoding.opacity` is the scale above. **Opacity** on the sliders button
   scales both opacities together; the mapping itself has no menu item.
+- `levelHeights` is each band's height, which dragging the bar under a band sets
+  for every band.
+- `collapseEmptyRows` draws each genome row, which holds no track of its own, as
+  only its scale bar. **Rows → Compact all views** on the view menu does the
+  same.
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
@@ -338,11 +343,9 @@ Each setting in the session has a menu route except `render` and the
 
 <Figure caption="The genomes in the paper's order, ribbons colored by linkage group, solid on significantly paired chromosomes and faint elsewhere." src="/img/linkage_groups/alg_stack.png" />
 
-Amphioxus and _Ephydatia_ helped build the group database, so the bundles
-running through them are expected. The cladorhizid sponge took no part, and in
-the bottom band the groups still run to it as bundles. The second band is mostly
-faint because _Hormiphora_ spreads each group over several chromosomes, none
-holding even half of it.
+The second band is the faintest: the comb jellies spread most groups over
+several chromosomes, where the jellyfish keeps each on one. Both comb jellies
+spread them the same way, so the band between the two stays solid.
 
 ## Reproduce it end to end
 
@@ -357,7 +360,8 @@ the tools under [Prerequisites](#prerequisites) and works in three steps:
 2. Convert each pair's odp table into a `.blocks` table and two BEDs, taking
    each gene's extent from the `.chrom` files and keeping the group, color and
    `break_FET` columns.
-3. Write the assemblies, one track per pair, and the dotplot session.
+3. Write the assemblies, one track per pair, and a session holding the dotplot
+   and the stack.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_odp_linkage_groups_synteny.sh

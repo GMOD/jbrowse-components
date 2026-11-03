@@ -13,8 +13,9 @@
 # reciprocal best hit between the two proteomes, each row carrying the BCnS
 # linkage group odp's HMM search assigned it and the color the paper draws that
 # group in. A run of odp over any two genomes writes the same files under
-# synteny_analysis/step2-figures/synteny_coloredby_BCnS_LGs/, so the JBrowse
-# half below works unchanged on your own species.
+# odp/step2-figures/synteny_coloredby_BCnS_LGs/ (synteny_analysis/ in the older
+# odp that made the deposit), so the JBrowse half below works unchanged on your
+# own species.
 #
 # Requires: python3, samtools, curl, tar, and node
 #           (JBrowse CLI, via npx unless `jbrowse` is on PATH).
@@ -42,14 +43,14 @@ for f in genomes.tar.gz supplementary_information.tar.gz; do
   }
 done
 
-# Species table: odp code and its directory in genomes.tar.gz
+# Species table: odp code, its directory in genomes.tar.gz, display name
 SPECIES='
-RES rhopilema_li
-EMU ephydatia
-HCA hormiphora
-BIN bolinopsis
-BFL branchiostoma
-CLAa cladorhizid_v0.6_hapA
+RES rhopilema_li Rhopilema (jellyfish)
+EMU ephydatia Ephydatia (sponge)
+HCA hormiphora Hormiphora (comb jelly)
+BIN bolinopsis Bolinopsis (comb jelly)
+BFL branchiostoma Branchiostoma (amphioxus)
+CLAa cladorhizid_v0.6_hapA Cladorhizid (sponge)
 '
 # The pairs to load: the jellyfish against the sponge for the dotplot, then the
 # neighbours of the six-genome stack in the order of the paper's figure 1d
@@ -66,9 +67,6 @@ EMU CLAa
 # the bsdtar macOS ships globs by default and exits on the flag.
 WILDCARDS=
 case "$(tar --version 2>&1)" in *'GNU tar'*) WILDCARDS=--wildcards ;; esac
-
-CODES=()
-while IFS= read -r line; do CODES+=("$line"); done < <(awk 'NF {print $1}' <<<"$SPECIES")
 
 if [ ! -d genomes ]; then
   DIRS=()
@@ -124,7 +122,7 @@ if [ ! -s "$EMU_DIR/EMU.fasta" ]; then
   rm -f "$EMU_DIR/Emu_genome_v1.fa.gz" "$EMU_DIR/rename.sed"
 fi
 
-while read -r code dir; do
+while read -r code dir _; do
   [ -z "$code" ] && continue
   d="genomes/$dir"
   fa=$(ls "$d"/*.fasta | awk 'NR<=1')
@@ -155,21 +153,13 @@ else
   jb() { npx -y @jbrowse/cli "$@"; }
 fi
 APP=jbrowse2
-[ -f "$APP/index.html" ] || jb create "$APP"
-display_name() {
-  case $1 in
-    RES) echo 'Rhopilema (jellyfish)' ;;
-    EMU) echo 'Ephydatia (sponge)' ;;
-    HCA) echo 'Hormiphora (comb jelly)' ;;
-    BIN) echo 'Bolinopsis (comb jelly)' ;;
-    BFL) echo 'Branchiostoma (amphioxus)' ;;
-    CLAa) echo 'Cladorhizid (sponge)' ;;
-  esac
-}
-for code in "${CODES[@]}"; do
-  jb add-assembly "$code.fa" --name "$code" --displayName "$(display_name "$code")" \
+# the latest release is v4, which predates the synteny tracks below
+[ -f "$APP/index.html" ] || jb create "$APP" --branch main
+while read -r code _ name; do
+  [ -z "$code" ] && continue
+  jb add-assembly "$code.fa" --name "$code" --displayName "$name" \
     --load copy --force --out "$APP"
-done
+done <<<"$SPECIES"
 
 while read -r a b; do
   [ -z "$a" ] && continue
@@ -190,8 +180,7 @@ print(json.dumps({
         'type': 'MCScanBlocksAdapter',
         'uri': f'{pair}.blocks.gz',
         'blockAssemblies': [a, b],
-        'bedLocations': [{'uri': f'{pair}.{a}.bed.gz'}, {'uri': f'{pair}.{b}.bed.gz'}],
-        'assemblyNames': [a, b],
+        'bedLocations': [f'{pair}.{a}.bed.gz', f'{pair}.{b}.bed.gz'],
         # the label column and the color odp put beside it, what
         # Color by -> gene_group paints, and the pair's test, what the
         # stack's opacity reads
@@ -202,13 +191,15 @@ PY
   jb add-track-json "$pair.track.json" --update --out "$APP"
 done <<<"$PAIRS"
 
-# autoDiagonalize sorts the sponge chromosomes by where their orthologs land on
-# the jellyfish, which is what turns one block per linkage group into a
-# diagonal. Only the chromosomes with orthologs are drawn: the sponge's
-# unplaced scaffolds would otherwise take a fifth of the axis.
+# The tutorial's two views. In the dotplot, autoDiagonalize sorts the sponge
+# chromosomes by where their orthologs land on the jellyfish, which turns one
+# block per linkage group into a diagonal, and EMU* keeps the sponge's unplaced
+# scaffolds, a fifth of its axis, off it. The stack sorts outward from the
+# jellyfish row, draws only labelled orthologs, and fades those off a
+# significantly paired chromosome pair by break_FET.
 cat > session.json <<'JSON'
 {
-  "name": "Ancestral linkage groups: Rhopilema vs Ephydatia",
+  "name": "Ancestral linkage groups",
   "views": [
     {
       "type": "DotplotView",
@@ -222,6 +213,43 @@ cat > session.json <<'JSON'
       "autoDiagonalize": true,
       "lineWidth": 4,
       "height": 860
+    },
+    {
+      "type": "LinearSyntenyView",
+      "displayName": "Comb jellies, jellyfish, amphioxus, sponges",
+      "views": [
+        { "assembly": "BIN", "displayedRegionNames": ["BIN*"] },
+        { "assembly": "HCA", "displayedRegionNames": ["HCA*"] },
+        { "assembly": "RES", "displayedRegionNames": ["RES*"] },
+        { "assembly": "BFL", "displayedRegionNames": ["BFL*"] },
+        { "assembly": "EMU", "displayedRegionNames": ["EMU*"] },
+        { "assembly": "CLAa", "displayedRegionNames": ["CLA*_hapA"] }
+      ],
+      "tracks": [
+        ["BIN_HCA"],
+        ["RES_HCA"],
+        ["RES_BFL"],
+        ["BFL_EMU"],
+        ["EMU_CLAa"]
+      ],
+      "encoding": {
+        "color": "gene_group",
+        "opacity": {
+          "field": "break_FET",
+          "scale": {
+            "type": "threshold",
+            "domain": [0.05],
+            "range": [0.8, 0.15]
+          }
+        }
+      },
+      "filter": [{ "field": "gene_group", "valid": true }],
+      "autoDiagonalize": true,
+      "diagonalizeAnchorRow": 2,
+      "mark": { "interpolate": "bump" },
+      "render": { "antialias": false },
+      "levelHeights": [130, 130, 130, 130, 130],
+      "collapseEmptyRows": true
     }
   ]
 }
@@ -230,6 +258,7 @@ jb set-default-session --session session.json --out "$APP"
 
 echo
 echo "Built $APP/config.json with every assembly above, one ortholog table per"
-echo "species pair carrying its linkage groups, and a default dotplot session"
-echo "colored by them. Serve it and open in a browser, e.g.:"
+echo "species pair carrying its linkage groups, and a default session with the"
+echo "dotplot and the six-genome stack colored by them. Serve it and open in a"
+echo "browser, e.g.:"
 echo "  npx serve $(pwd)/$APP"

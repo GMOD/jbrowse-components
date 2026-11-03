@@ -14,7 +14,8 @@ the attribute columns after the gene columns, which is what the track's
 output) has neither, so `--alg` joins them in from a colored table that shares
 a species: the ortholog's gene id in that species looks up its group. The
 join rate is printed, and a row with no group gets `.`, which the display
-paints as missing rather than as a group of its own.
+paints as missing rather than as a group of its own. Every other attribute
+column still comes off the table itself, and one the table lacks is an error.
 
 **Gene intervals come from the `.chrom`, not from `_pos`.** `_pos` is one
 coordinate per gene, and a BED made from it alone is a 1 bp feature the
@@ -125,6 +126,10 @@ def main():
     gene_col = {sp: header.index(f"{sp}_gene") for sp in species}
     scaf_col = {sp: header.index(f"{sp}_scaf") for sp in species}
     pos_col = {sp: header.index(f"{sp}_pos") for sp in species}
+    joined_attrs = {"gene_group", "color"} if lookup else set()
+    absent = [a for a in args.attributes if a not in header and a not in joined_attrs]
+    if absent:
+        sys.exit(f"{args.rbh} has no {', '.join(absent)} column for --attributes")
     attr_col = {a: header.index(a) for a in args.attributes if a in header}
 
     os.makedirs(args.bed_dir, exist_ok=True)
@@ -135,13 +140,12 @@ def main():
     with open(args.out, "w") as out:
         for row in rows:
             genes = [cell(row, gene_col[sp]) for sp in species]
+            attrs = {a: cell(row, attr_col[a]) for a in attr_col}
             if lookup:
                 sp, table = lookup
                 group, color = table.get(cell(row, gene_col[sp]), ("", ""))
                 joined += bool(group)
-                attrs = {"gene_group": group, "color": color}
-            else:
-                attrs = {a: cell(row, attr_col[a]) for a in attr_col}
+                attrs.update(gene_group=group, color=color)
             for sp, gene in zip(species, genes):
                 if gene:
                     seen[sp] += 1
