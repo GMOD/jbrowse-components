@@ -13550,6 +13550,26 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             ]
           }
         },
+        "fetchSizeLimit": {
+          "description": "bytes of a tabix LD file a region may read before the display asks first.",
+          "default": 20000000,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "number"
+          }
+        },
+        "forceLoad": {
+          "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
+          "default": false,
+          "if": {
+            "type": "null"
+          },
+          "else": {
+            "type": "boolean"
+          }
+        },
         "connectors": {
           "if": {
             "type": "null"
@@ -13617,10 +13637,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxDisplayedBpPerPx": {
-          "deprecated": true,
-          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
-        },
-        "fetchSizeLimit": {
           "deprecated": true,
           "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
@@ -18781,6 +18797,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "heightMode": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/heightMode"
             },
+            "fetchSizeLimit": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/fetchSizeLimit"
+            },
+            "forceLoad": {
+              "$ref": "#/$defs/LDTrackDisplaySlots/properties/forceLoad"
+            },
             "connectors": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/connectors"
             },
@@ -18807,9 +18829,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "maxDisplayedBpPerPx": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/maxDisplayedBpPerPx"
-            },
-            "fetchSizeLimit": {
-              "$ref": "#/$defs/LDTrackDisplaySlots/properties/fetchSizeLimit"
             },
             "mouseover": {
               "$ref": "#/$defs/LDTrackDisplaySlots/properties/mouseover"

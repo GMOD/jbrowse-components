@@ -509,7 +509,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/organelle_map/
 
 ## Synteny visualization (OrthoFinder orthogroups)
 
-Stack genomes on OrthoFinder orthogroups, built from protein homology, as the synteny table
+Stack genomes on OrthoFinder orthogroups, built from protein homology, and find each genome duplication as one region against two or three copies
 
 Page: https://jbrowse.org/jb2/docs/tutorials/orthofinder_synteny/
 

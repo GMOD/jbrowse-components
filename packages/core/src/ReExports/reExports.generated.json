@@ -1263,6 +1263,7 @@
         "pluginLabel",
         "pluginName",
         "pluginUrl",
+        "pluginUrlSource",
         "pluginsNotIn",
         "resolvedPluginUrl",
         "samePlugin",
@@ -1275,6 +1276,7 @@
       "package": "@jbrowse/core",
       "names": [
         "default",
+        "pluginLoadUrl",
         "preloadUMDBundles",
         "workerScriptLoadMessage"
       ],
@@ -1302,6 +1304,7 @@
         "measuredBytes",
         "measurementPartial",
         "overByteBudget",
+        "perRegionBytes",
         "totalRegionBytes"
       ],
       "worker": "real"
@@ -3640,7 +3643,8 @@
       "names": [
         "groupLinesByRef",
         "makeFeatureIntervalTreeMap",
-        "parseLineByLine"
+        "parseLineByLine",
+        "refNameRecord"
       ],
       "worker": "real"
     },
@@ -4025,6 +4029,7 @@
         "isEditableJBrowseConfig",
         "isFileHandleLocation",
         "isLocalPathLocation",
+        "isProblemHost",
         "isRootModelWithInternetAccounts",
         "isSelectionContainer",
         "isSessionModel",

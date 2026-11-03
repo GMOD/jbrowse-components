@@ -68,7 +68,6 @@ a file, and fails on a key it does not know.
 | `LDTrackDisplay`, `LGVSyntenyDisplay`, `LinearAlignmentsDisplay`, `LinearMafDisplay`, `LinearWiggleDisplay`, `MultiWaySyntenyDisplay` | `jexlFilters` | dropped |
 | `LDTrackDisplay`, `LinearBasicDisplay` | `showLabels` | `labels.name.show` |
 | `LDTrackDisplay`, `LinearBasicDisplay`, `LinearVariantDisplay` | `maxHeight` | dropped |
-| `LDTrackDisplay`, `LinearHicDisplay`, `LinearWiggleDisplay` | `fetchSizeLimit` | dropped |
 | `LGVSyntenyDisplay` | `colorBy` | `encoding.color.field` |
 | `LGVSyntenyDisplay`, `LinearAlignmentsDisplay` | `autoscale` | `coverage.encoding.y.scale.fenceQuantile` |
 |  | `featureHeight` | `pileup.mark.height` |
@@ -124,7 +123,8 @@ a file, and fails on a key it does not know.
 |  | `colorScheme` (session) | `encoding.color.scale.reverse`, `encoding.color.scale.scheme` |
 |  | `useLogScale` (session) | `encoding.color.scale.type` |
 |  | `mode` (session) | dropped |
-| `LinearHicDisplay`, `LinearWiggleDisplay` | `resolution` (session) | `data.resolution` |
+| `LinearHicDisplay`, `LinearWiggleDisplay` | `fetchSizeLimit` | dropped |
+|  | `resolution` (session) | `data.resolution` |
 | `LinearMafDisplay` | `rowHeight` | dropped |
 | `LinearMafDisplay`, `LinearVariantDisplay`, `LinearWiggleDisplay` | `subtreeFilter` (session) | `rows.kept` |
 |  | `treeAreaWidth` (session) | `rows.axis.width` |

@@ -7324,6 +7324,14 @@ export const configManifest: ConfigManifest = {
           "type": "TriangleHeightMode"
         },
         {
+          "name": "fetchSizeLimit",
+          "type": "number"
+        },
+        {
+          "name": "forceLoad",
+          "type": "boolean"
+        },
+        {
           "name": "connectors",
           "type": "LDConnectorsConfigurationSchema",
           "subSlots": [
@@ -7479,7 +7487,6 @@ export const configManifest: ConfigManifest = {
       "legacyKeys": [
         "maxFeatureScreenDensity",
         "maxDisplayedBpPerPx",
-        "fetchSizeLimit",
         "mouseover",
         "jexlFilters",
         "ldMetric",
