@@ -67,6 +67,18 @@ win. Strand matters far more than regime.
 stretch before the window is consumed as a count of its base. `probStart` moves past the
 skipped calls so ML indexing is unchanged. `modWindow.bench.ts` measures it.
 
+## ML length
+
+SAMtags calls ML "optional" but requires its length to equal the calls MM lists,
+one per type, so `C+mh` takes two per call. htslib errors on a mismatch and
+reports an absent ML as `HTS_MOD_UNKNOWN`. `getModPositionsWithMl` returns
+undefined on any mismatch, an absent ML counting as length 0, and
+`extractModifications` then draws no call for the read. Its types still reach the
+menu and simplex detection, which read the header alone. Reading a missing value
+as byte 0 instead would paint every call confidently unmodified in the two-color
+view. No producer we know of writes MM without ML, and every
+`hts-specs/test/SAMtags` file carries both.
+
 ## What htslib validates that we do not
 
 - `MN` against `l_qseq`: htslib errors; `getModTag` drops the MM tag on mismatch.

@@ -303,6 +303,57 @@ function makeMethFeature() {
   })
 }
 
+describe('an ML tag that does not line up with MM draws no call', () => {
+  const cpgRead = (tags: Record<string, unknown>) =>
+    new SimpleFeature({
+      uniqueId: 'ml1',
+      refName: 'ctgA',
+      start: 100,
+      end: 104,
+      strand: 1,
+      CIGAR: '4M',
+      seq: 'CGCG',
+      tags,
+    })
+  const region = { refName: 'ctgA', start: 100, end: 104 } as Region
+  const marks = (tags: Record<string, unknown>, unmodified: boolean) =>
+    drive(cpgRead(tags), { field: 'modifications', unmodified }, region)
+
+  test.each([
+    ['absent', undefined],
+    ['one short', [230]],
+    ['one long', [230, 230, 230]],
+  ])('ML %s', (_, ML) => {
+    const tags = ML ? { MM: 'C+m,0,0;', ML } : { MM: 'C+m,0,0;' }
+    expect(marks(tags, false)).toEqual([])
+    expect(marks(tags, true)).toEqual([])
+  })
+
+  test('a matching ML draws its calls', () => {
+    const tags = { MM: 'C+m,0,0;', ML: [230, 230] }
+    expect(marks(tags, false).map(m => m.position)).toEqual([100, 102])
+    expect(marks(tags, true).map(m => m.noMod)).toEqual([false, false])
+  })
+
+  test('a combined code takes one ML value per call per type', () => {
+    expect(
+      marks({ MM: 'C+mh,0,0;', ML: [230, 5, 230, 5] }, false),
+    ).toHaveLength(2)
+    expect(marks({ MM: 'C+mh,0,0;', ML: [230, 230] }, false)).toEqual([])
+  })
+
+  test('the types still reach the menu', () => {
+    const detected = new Set<string>()
+    drive(
+      cpgRead({ MM: 'C+m,0,0;' }),
+      { field: 'modifications' },
+      region,
+      detected,
+    )
+    expect([...detected]).toEqual(['m'])
+  })
+})
+
 describe('the fill view honours the modification-type filter', () => {
   test('every type ticked draws the same marks as no filter at all', () => {
     const unfiltered = runFill(makeMethFeature(), {

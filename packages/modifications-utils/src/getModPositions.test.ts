@@ -1,4 +1,4 @@
-import { getModPositions } from './getModPositions.ts'
+import { getModPositions, getModPositionsWithMl } from './getModPositions.ts'
 
 test('getModPositions', () => {
   const positions = getModPositions(
@@ -275,5 +275,32 @@ describe('a window keeps the whole walk’s calls and ML offsets', () => {
         )
       }
     }
+  })
+})
+
+describe('getModPositionsWithMl', () => {
+  const seq = 'CGCGCGCGAA'
+
+  test('the ML length counts every listed call, not the windowed ones', () => {
+    expect(getModPositionsWithMl('C+m,0,0,0,0;', 4, seq, 1, 4, 6)).toEqual(
+      getModPositions('C+m,0,0,0,0;', seq, 1, 4, 6),
+    )
+    expect(getModPositionsWithMl('C+m,0,0,0,0;', 1, seq, 1, 4, 6)).toBe(
+      undefined,
+    )
+  })
+
+  test('a group per type and a combined code both sum per type', () => {
+    expect(getModPositionsWithMl('C+m,0;C+h,0;A+a,0;', 3, seq, 1)).toHaveLength(
+      3,
+    )
+    expect(getModPositionsWithMl('C+mh,0,0;', 4, seq, 1)).toHaveLength(2)
+    expect(getModPositionsWithMl('C+mh,0,0;', 2, seq, 1)).toBe(undefined)
+  })
+
+  test('an MM listing no calls needs no ML', () => {
+    expect(getModPositionsWithMl('C+m;', 0, seq, 1)).toEqual(
+      getModPositions('C+m;', seq, 1),
+    )
   })
 })

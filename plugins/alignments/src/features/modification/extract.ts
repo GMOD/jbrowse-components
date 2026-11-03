@@ -7,7 +7,7 @@ import {
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
   getMethBins,
-  getModPositions,
+  getModPositionsWithMl,
   getModProbabilities,
   getModProbabilityBytes,
   getModTag,
@@ -125,13 +125,22 @@ export function extractModifications(
     region.start - featureStart,
     region.end - featureStart,
   )
-  const modifications = getModPositions(
+  // A read whose ML does not line up with its MM draws no call, where reading
+  // a missing probability as 0 painted every call confidently unmodified in
+  // the two-color view. Its types still reached the menu above, since the
+  // header is sound.
+  const mlBytes = getModProbabilityBytes(feature)
+  const modifications = getModPositionsWithMl(
     mmTag,
+    mlBytes?.length ?? 0,
     seq,
     strand,
     window.readStart,
     window.readEnd,
   )
+  if (!modifications) {
+    return
+  }
   const { filter, unmodified: twoColor } = layer
 
   // The 2-color view hands 5mC/5hmC to extractMethylation, which weighs them
@@ -148,15 +157,16 @@ export function extractModifications(
     const { min, strict } = filter.probability
     forEachMaxProbMod(
       drawn,
-      getModProbabilityBytes(feature),
+      mlBytes,
       cigarOps,
       strand,
       window,
       (refPos, { type, base }, prob) => {
         // twoColor renders every call, painting low-confidence ones in the
         // unmethylated color (with prob = 1-prob = the unmodified confidence);
-        // default mode hides calls below the threshold and always paints the mod
-        // color at full prob. `isMeth` unifies both without an intermediate alloc.
+        // default mode hides calls below the threshold and paints the rest in the
+        // mod color at their own prob. `isMeth` unifies both without an
+        // intermediate alloc.
         if (twoColor || (strict ? prob > min : prob >= min)) {
           const isMeth = !twoColor || prob > 0.5
           modificationsData.push({
