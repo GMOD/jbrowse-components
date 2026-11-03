@@ -2,7 +2,7 @@
 // instancing (ADR-005).
 //! targets: wgsl, glsl
 //! coverage: analytic
-//! export-consts: MIN_RECT_WIDTH_PX, MIN_DENSITY_ALPHA
+//! export-consts: MIN_RECT_WIDTH_PX, SPARSE_EXON_MIN_WIDTH_PX, MIN_DENSITY_ALPHA, RECT_FLAG_DENSITY_FADE, RECT_FLAG_SPARSE_EXONS
 //! js-export: rectSpanPx, rectDrawsOutline
 
 import antialias;
@@ -14,6 +14,13 @@ import rectInstance;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 static const float MIN_RECT_WIDTH_PX = 2.0;
+// The floor for an exon of a transcript whose introns have room to give up a
+// pixel (sparseExons.ts); dense transcripts keep MIN_RECT_WIDTH_PX so
+// their 1px intron gaps stay open.
+static const float SPARSE_EXON_MIN_WIDTH_PX = 3.0;
+// Bits of the per-rect `densityFade` lane, both set by the main-thread layout.
+static const uint RECT_FLAG_DENSITY_FADE = 1u;
+static const uint RECT_FLAG_SPARSE_EXONS = 2u;
 // Alpha for a mark the layout flagged `densityFade` (see PILEUP_FADE_DEPTH), so
 // a pile of collapsed marks reads as density rather than a flat fill. The blend
 // accumulates 1-(1-a)^n, and a low `a` keeps that tracking pile depth (0.3: 1
@@ -41,15 +48,15 @@ struct VsOut {
 //     so its min-width mark straddles the coordinate. A one-sided tick would sit
 //     inside the next base's cell and read as "cuts this base".
 //   - A span snaps both ends to a crisp column, then `extendToMinWidthPx` widens
-//     it away from its start.
-public float2 rectSpanPx(float x1Px, float x2Px, bool isPoint) {
+//     it away from its start to `spanMinWidthPx`.
+public float2 rectSpanPx(float x1Px, float x2Px, bool isPoint, float spanMinWidthPx) {
   if (isPoint) {
     float half = MIN_RECT_WIDTH_PX * 0.5;
     return float2(floor(x1Px - half + 0.5), floor(x1Px + half + 0.5));
   }
   float left = floor(x1Px + 0.5);
   return float2(
-    left, extendToMinWidthPx(left, floor(x2Px + 0.5), MIN_RECT_WIDTH_PX));
+    left, extendToMinWidthPx(left, floor(x2Px + 0.5), spanMinWidthPx));
 }
 
 // Whether a box has room for its 1px inset outline. Any smaller and the stroke
@@ -68,7 +75,10 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float2 span = rectSpanPx(
     clipXToPx(bpToClipX(inst.startEnd.x, u), cw),
     clipXToPx(bpToClipX(inst.startEnd.y, u), cw),
-    inst.startEnd.x == inst.startEnd.y
+    inst.startEnd.x == inst.startEnd.y,
+    (inst.densityFade & RECT_FLAG_SPARSE_EXONS) != 0u
+      ? SPARSE_EXON_MIN_WIDTH_PX
+      : MIN_RECT_WIDTH_PX
   );
   float left = min(span.x, span.y);
   float right = max(span.x, span.y);
@@ -86,7 +96,7 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   VsOut o;
   o.position = float4(pxToClipX(x, cw), yPxToClipY(y, u.canvasHeight), 0.0, 1.0);
   o.color = unpackRGBA(inst.color);
-  o.color.a *= inst.densityFade != 0u ? MIN_DENSITY_ALPHA : 1.0;
+  o.color.a *= (inst.densityFade & RECT_FLAG_DENSITY_FADE) != 0u ? MIN_DENSITY_ALPHA : 1.0;
   o.inside = float4(x - left, right - x, y - top, bottom - y);
   return o;
 }

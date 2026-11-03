@@ -5,6 +5,7 @@ import {
 } from '../../../packages/render-core/src/shaders/hpmath.js.generated.ts'
 import * as arrow from '../../../plugins/features/src/LinearBasicDisplay/passes/shaders/arrow.generated.ts'
 import { arrowHeadHalfHeightPx } from '../../../plugins/features/src/LinearBasicDisplay/passes/shaders/arrow.js.generated.ts'
+import { MIN_RECT_WIDTH_PX } from '../../../plugins/features/src/LinearBasicDisplay/passes/shaders/rect.consts.generated.ts'
 import * as rect from '../../../plugins/features/src/LinearBasicDisplay/passes/shaders/rect.generated.ts'
 import { rectSpanPx } from '../../../plugins/features/src/LinearBasicDisplay/passes/shaders/rect.js.generated.ts'
 import { abgr, box, defineFixture, paintOver, rgba } from '../fixture.ts'
@@ -61,7 +62,12 @@ const rectFixture = defineFixture({
   uniforms,
   reference: paintOver(
     RECTS.map(([l, r, y, h]) => {
-      const [left, right] = rectSpanPx(px(bp(l)), px(bp(r)), false)
+      const [left, right] = rectSpanPx(
+        px(bp(l)),
+        px(bp(r)),
+        false,
+        MIN_RECT_WIDTH_PX,
+      )
       const top = snapBoxTopPx(y, h, 0)
       return {
         inside: box(left, top, right, top + snapBoxHeightPx(h)),

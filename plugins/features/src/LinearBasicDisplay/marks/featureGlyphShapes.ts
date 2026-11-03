@@ -35,6 +35,10 @@ import {
   CONT_STROKE_PX,
   CONT_TRI_W_PX,
   MIN_DENSITY_ALPHA,
+  MIN_RECT_WIDTH_PX,
+  RECT_FLAG_DENSITY_FADE,
+  RECT_FLAG_SPARSE_EXONS,
+  SPARSE_EXON_MIN_WIDTH_PX,
   STEM_HALF_H_PX,
   canvasEdgeFlags,
   chevronDrawSlots,
@@ -274,6 +278,9 @@ function placeRectX(c: RectChannels, g: RectFrame, i: number) {
     projectBp(g, startBp),
     projectBp(g, endBp),
     startBp === endBp,
+    c.densityFade[i]! & RECT_FLAG_SPARSE_EXONS
+      ? SPARSE_EXON_MIN_WIDTH_PX
+      : MIN_RECT_WIDTH_PX,
   )
   const width = Math.abs(x2 - x1)
   g.left = spanLeft(x1, x2, width)
@@ -298,7 +305,7 @@ export const rectShape: MarkShape<RectChannels, FeatureGlyphParams> = {
     for (let i = 0; i < count; i++) {
       if (placeRectY(channels, g, i)) {
         placeRectX(channels, g, i)
-        setFill(color[i]!, densityFade[i])
+        setFill(color[i]!, densityFade[i]! & RECT_FLAG_DENSITY_FADE)
         ctx.fillRect(g.left, g.top, g.width, g.height)
         if (outlineStyle !== undefined && rectDrawsOutline(g.width, g.height)) {
           strokeRectInside(ctx, g.left, g.top, g.width, g.height)

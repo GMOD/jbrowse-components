@@ -42,6 +42,9 @@ export function canvasEdgeFlags(
 export {
   MIN_DENSITY_ALPHA,
   MIN_RECT_WIDTH_PX,
+  RECT_FLAG_DENSITY_FADE,
+  RECT_FLAG_SPARSE_EXONS,
+  SPARSE_EXON_MIN_WIDTH_PX,
 } from '../passes/shaders/rect.consts.generated.ts'
 export {
   CHEVRON_H_PX,

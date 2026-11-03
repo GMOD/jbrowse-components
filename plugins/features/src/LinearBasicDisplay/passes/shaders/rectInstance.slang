@@ -11,8 +11,9 @@ public struct RectInstance {
   public float y        : ATTR1;
   public float height   : ATTR2;
   public uint  color    : ATTR3;
-  // 1 for a collapsed row-0 box sharing pixels with others, which fades; 0 for
-  // everything else, which stays opaque.
+  // Bit flags (rect.slang's `RECT_FLAG_*`): DENSITY_FADE for a collapsed row-0
+  // box sharing pixels with others, SPARSE_EXONS for an exon of a transcript
+  // with room to widen it.
   public uint  densityFade : ATTR4;
   // Genomic strand (-1, 0 or +1), which the continuation markers point along; 0
   // points them out of the edge.

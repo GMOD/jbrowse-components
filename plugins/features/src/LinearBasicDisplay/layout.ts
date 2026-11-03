@@ -16,6 +16,7 @@ import { displayModeMetrics } from './layoutInputs.ts'
 import { packedRowsHeight } from './layoutQueries.ts'
 import { packPreparedRef, prepareRefPack, trimPreparedRef } from './packRef.ts'
 import { OFFSCREEN_Y, isPlacedRow } from './rowPlacement.ts'
+import { applySparseExonFlags } from './sparseExons.ts'
 import { captureFeatureTops } from './yMorph.ts'
 
 import type {
@@ -323,6 +324,7 @@ function layoutRefGroups(
         densityFadeIds,
         merged.pileByMemberId,
       )
+      applySparseExonFlags(cloned, inputs.bpPerPx, ref.toDrawnBp)
       out.set(n, cloned)
     }
   }

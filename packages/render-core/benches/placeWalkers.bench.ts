@@ -70,7 +70,10 @@
 import { execSync } from 'node:child_process'
 import { performance } from 'node:perf_hooks'
 
-import { MIN_DENSITY_ALPHA } from '../../../plugins/features/src/LinearBasicDisplay/components/sharedRendererConstants.ts'
+import {
+  MIN_DENSITY_ALPHA,
+  MIN_RECT_WIDTH_PX,
+} from '../../../plugins/features/src/LinearBasicDisplay/components/sharedRendererConstants.ts'
 import { rectShape } from '../../../plugins/features/src/LinearBasicDisplay/marks/featureGlyphShapes.ts'
 import {
   rectDrawsOutline,
@@ -518,7 +521,12 @@ function paintedRectSpanRetired(
   endBp: number,
   toX: (bp: number) => number,
 ): [xLeft: number, width: number] {
-  const [sx1, sx2] = rectSpanPx(toX(startBp), toX(endBp), startBp === endBp)
+  const [sx1, sx2] = rectSpanPx(
+    toX(startBp),
+    toX(endBp),
+    startBp === endBp,
+    MIN_RECT_WIDTH_PX,
+  )
   const width = Math.abs(sx2 - sx1)
   return [spanLeft(sx1, sx2, width), width]
 }
@@ -587,7 +595,12 @@ function paintedRectSpanControl(
   endBp: number,
   toX: (bp: number) => number,
 ): [xLeft: number, width: number] {
-  const [sx1, sx2] = rectSpanPx(toX(startBp), toX(endBp), startBp === endBp)
+  const [sx1, sx2] = rectSpanPx(
+    toX(startBp),
+    toX(endBp),
+    startBp === endBp,
+    MIN_RECT_WIDTH_PX,
+  )
   const width = Math.abs(sx2 - sx1)
   return [spanLeft(sx1, sx2, width), width]
 }

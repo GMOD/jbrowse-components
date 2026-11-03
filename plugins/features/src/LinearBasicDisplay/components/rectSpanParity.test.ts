@@ -1,7 +1,10 @@
 import { extendToMinWidthPx } from '@jbrowse/render-core/shaders/hpmath'
 
 import { rectSpanPx } from '../passes/shaders/rect.js.generated.ts'
-import { MIN_RECT_WIDTH_PX } from './sharedRendererConstants.ts'
+import {
+  MIN_RECT_WIDTH_PX,
+  SPARSE_EXON_MIN_WIDTH_PX,
+} from './sharedRendererConstants.ts'
 
 function retiredPaintedSpan(
   isPoint: boolean,
@@ -32,9 +35,9 @@ const zeroNormalized = ([a, b]: [number, number]) => [a + 0, b + 0]
 test('rectSpanPx matches the hand-written twin it replaced, on spans', () => {
   for (const x1 of XS) {
     for (const dx of DXS) {
-      expect(zeroNormalized(rectSpanPx(x1, x1 + dx, false))).toStrictEqual(
-        zeroNormalized(retiredPaintedSpan(false, x1, x1 + dx)),
-      )
+      expect(
+        zeroNormalized(rectSpanPx(x1, x1 + dx, false, MIN_RECT_WIDTH_PX)),
+      ).toStrictEqual(zeroNormalized(retiredPaintedSpan(false, x1, x1 + dx)))
     }
   }
 })
@@ -43,21 +46,23 @@ test('rectSpanPx matches the hand-written twin it replaced, on points', () => {
   for (const x1 of XS) {
     // A point's second argument is its own x — start === end selects the branch
     // — so it is passed and ignored exactly as the caller does.
-    expect(zeroNormalized(rectSpanPx(x1, x1, true))).toStrictEqual(
-      zeroNormalized(retiredPaintedSpan(true, x1, x1)),
-    )
+    expect(
+      zeroNormalized(rectSpanPx(x1, x1, true, MIN_RECT_WIDTH_PX)),
+    ).toStrictEqual(zeroNormalized(retiredPaintedSpan(true, x1, x1)))
   }
 })
 
 test('the snap is the shader’s floor(x + 0.5), not Math.round', () => {
-  expect(Object.is(rectSpanPx(-0.5, 40, false)[0], 0)).toBe(true)
+  expect(Object.is(rectSpanPx(-0.5, 40, false, MIN_RECT_WIDTH_PX)[0], 0)).toBe(
+    true,
+  )
   expect(Object.is(retiredPaintedSpan(false, -0.5, 40)[0], -0)).toBe(true)
 })
 
 test('a point straddles its coordinate rather than growing off one side', () => {
   // An interbase cut site sits between two bases, so a one-sided tick reads as
   // "cuts this base" once zoomed in far enough to see them.
-  const [left, right] = rectSpanPx(100, 100, true)
+  const [left, right] = rectSpanPx(100, 100, true, MIN_RECT_WIDTH_PX)
   expect(right - left).toBe(MIN_RECT_WIDTH_PX)
   expect((left + right) / 2).toBe(100)
 })
@@ -67,19 +72,25 @@ test('a point stays a centered, min-width mark wherever it falls', () => {
   // straddles its coordinate is the part that carries meaning.
   for (const frac of [0, 0.25, 0.5, 0.75]) {
     const x = 100 + frac
-    const [left, right] = rectSpanPx(x, x, true)
+    const [left, right] = rectSpanPx(x, x, true, MIN_RECT_WIDTH_PX)
     expect(right - left).toBe(MIN_RECT_WIDTH_PX)
     expect(Math.abs((left + right) / 2 - x)).toBeLessThanOrEqual(0.5)
   }
 })
 
 test('a span is anchored at its start edge in both orientations', () => {
-  expect(rectSpanPx(100, 100.3, false)).toStrictEqual([100, 102])
+  expect(rectSpanPx(100, 100.3, false, MIN_RECT_WIDTH_PX)).toStrictEqual([
+    100, 102,
+  ])
   // Reversed, the render axis runs leftward and x1 is still the START, its right
   // edge, so the mark grows leftward; anchoring the leftmost edge would slide
   // every narrow mark a full min-width on flipped regions.
-  expect(rectSpanPx(100, 98.7, false)).toStrictEqual([100, 98])
-  expect(rectSpanPx(100.4, 140.6, false)).toStrictEqual([100, 141])
+  expect(rectSpanPx(100, 98.7, false, MIN_RECT_WIDTH_PX)).toStrictEqual([
+    100, 98,
+  ])
+  expect(rectSpanPx(100.4, 140.6, false, MIN_RECT_WIDTH_PX)).toStrictEqual([
+    100, 141,
+  ])
 })
 
 test('a span whose ends snap together widens rightward, on both backends', () => {
@@ -87,8 +98,21 @@ test('a span whose ends snap together widens rightward, on both backends', () =>
   // direction left to preserve and grows in +x whichever way the block runs. It
   // looks like the reversed-anchoring case above and is not one: the shader
   // reaches it by the identical route, so the backends agree.
-  expect(rectSpanPx(100, 99.7, false)).toStrictEqual([100, 102])
-  expect(rectSpanPx(100, 99.7, false)).toStrictEqual(
+  expect(rectSpanPx(100, 99.7, false, MIN_RECT_WIDTH_PX)).toStrictEqual([
+    100, 102,
+  ])
+  expect(rectSpanPx(100, 99.7, false, MIN_RECT_WIDTH_PX)).toStrictEqual(
     retiredPaintedSpan(false, 100, 99.7),
   )
+})
+
+test('a sparse exon widens a sub-floor span to its own floor, points keep theirs', () => {
+  expect(rectSpanPx(100, 100.3, false, SPARSE_EXON_MIN_WIDTH_PX)).toStrictEqual(
+    [100, 103],
+  )
+  expect(
+    rectSpanPx(100.4, 140.6, false, SPARSE_EXON_MIN_WIDTH_PX),
+  ).toStrictEqual([100, 141])
+  const [left, right] = rectSpanPx(100, 100, true, SPARSE_EXON_MIN_WIDTH_PX)
+  expect(right - left).toBe(MIN_RECT_WIDTH_PX)
 })

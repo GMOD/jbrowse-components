@@ -3,9 +3,11 @@
 // both. A browser has to tile: the alternating 2-0-2-0 base grid shows on every
 // read at 1 px/bp, while the mirror disagreement is one column.
 import { rectSpanPx } from '../passes/shaders/rect.js.generated.ts'
+import { MIN_RECT_WIDTH_PX } from './sharedRendererConstants.ts'
 
 // Reached through the shipped generated code rather than restated here.
-const shippedSnap = (x: number) => rectSpanPx(x, x + 1000, false)[0]
+const shippedSnap = (x: number) =>
+  rectSpanPx(x, x + 1000, false, MIN_RECT_WIDTH_PX)[0]
 
 const roundHalfEven = (x: number) => {
   const f = Math.floor(x)
