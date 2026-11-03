@@ -2,7 +2,7 @@ import { getConf } from '../../../configuration/getConf.ts'
 import { getSession } from '../../../util/mstUtils.ts'
 import SimpleFeature from '../../../util/simpleFeature.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
-import { fetchTrackData, roundRegions } from './fetchTrackData.ts'
+import { exportRegions, fetchTrackData } from './fetchTrackData.ts'
 
 import type { Feature, Region } from '../../../util/index.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
@@ -91,9 +91,9 @@ beforeEach(() => {
 
 // what an LGV block looks like: whole-base bounds plus the screen geometry and
 // `reversed` flag the dialog's region label picked up as a stray "[rev]"
-test('roundRegions widens to whole bases and drops the view geometry', () => {
+test('exportRegions widens to whole bases and drops the view geometry', () => {
   expect(
-    roundRegions([
+    exportRegions([
       {
         assemblyName: 'volvox',
         refName: 'ctgA',
@@ -106,6 +106,29 @@ test('roundRegions widens to whole bases and drops the view geometry', () => {
       } as Region,
     ]),
   ).toEqual([{ assemblyName: 'volvox', refName: 'ctgA', start: 100, end: 201 }])
+})
+
+// two LGV blocks side by side: widened, they share base 200
+test('exportRegions joins regions of one sequence that touch or overlap', () => {
+  const region = (refName: string, start: number, end: number) => ({
+    assemblyName: 'volvox',
+    refName,
+    start,
+    end,
+  })
+  expect(
+    exportRegions([
+      region('ctgB', 0, 50),
+      region('ctgA', 300, 400),
+      region('ctgA', 100.5, 200.5),
+      region('ctgA', 200.5, 250),
+      region('ctgB', 40, 60),
+    ]),
+  ).toEqual([
+    region('ctgB', 0, 60),
+    region('ctgA', 100, 250),
+    region('ctgA', 300, 400),
+  ])
 })
 
 test('an adapter that exports the format returns its raw lines', async () => {
@@ -249,4 +272,26 @@ test('an empty export stays empty rather than becoming one newline', async () =>
   const res = await fetchTrackData({ model, regions, type: 'bed', options })
 
   expect(res.str).toBe('')
+})
+
+test('a writer handed no features is not run', async () => {
+  setup()
+  respond({ CoreGetFeatures: [] })
+
+  await fetchTrackData({ model, regions, type: 'bed', options })
+
+  expect(writer).not.toHaveBeenCalled()
+})
+
+// a collapsed-introns view asks for one region per exon, and the gene
+// overlapping all of them comes back from each
+test('a feature returned for several regions is written once', async () => {
+  setup()
+  respond({
+    CoreGetFeatures: [feature('gene1'), feature('gene2'), feature('gene1')],
+  })
+
+  const res = await fetchTrackData({ model, regions, type: 'bed', options })
+
+  expect(res.str).toBe('gene1,gene2\n')
 })

@@ -31,7 +31,7 @@ import {
 } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 import { useFetch } from '../../../util/useFetch.ts'
-import { fetchTrackData, roundRegions } from './fetchTrackData.ts'
+import { exportRegions, fetchTrackData } from './fetchTrackData.ts'
 
 import type { Region } from '../../../util/index.ts'
 import type { RpcStatus } from '../../../util/progress.ts'
@@ -171,13 +171,15 @@ const FormatSelector = observer(function FormatSelector({
 
 /**
  * What the preview pane says — the export itself only once there is one, and
- * before that whichever of the four other states the dialog is in. In
+ * before that whichever of the other states the dialog is in, the error's
+ * own banner standing above an empty pane. In
  * precedence order, because more than one can hold at a time.
  */
 function previewText({
   regions,
   loading,
   status,
+  error,
   tooLarge,
   regionStr,
   str,
@@ -185,6 +187,7 @@ function previewText({
   regions: Region[]
   loading: boolean
   status: RpcStatus | undefined
+  error: unknown
   tooLarge: { bytes: number; limit: number } | undefined
   regionStr: string
   str: string
@@ -195,8 +198,14 @@ function previewText({
   if (loading) {
     return statusProgressLabel(status) || 'Loading...'
   }
+  if (error) {
+    return ''
+  }
   if (tooLarge) {
     return `${regionStr} is an estimated ${getDisplayStr(tooLarge.bytes)} on this track, over the ${getDisplayStr(tooLarge.limit)} this export asks about. Nothing has been downloaded — click "Download anyway" to fetch it.`
+  }
+  if (!str) {
+    return `This track has no data in ${regionStr}.`
   }
   return str.length > MAX_PREVIEW_CHARS ? TOO_BIG_TO_PREVIEW : str
 }
@@ -218,7 +227,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
 }) {
   const { classes } = useStyles()
   const options = model.saveTrackFileFormatOptions()
-  // every track type declaring this view declares at least one format
+  // the menu item that opens this dialog is only offered with a format
   const [type, setType] = useState(Object.keys(options)[0]!)
 
   // Captured once rather than read live. The dialog is modal, so the user
@@ -227,7 +236,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   // the fetch key and restart a long export from zero. Captured, they are also
   // what the Region field can name, so the label always describes the bytes.
   const [regions] = useState(() =>
-    roundRegions(visibleRegionsOf(getContainingView(model))),
+    exportRegions(visibleRegionsOf(getContainingView(model))),
   )
   const regionStr = assembleLocStrings(regions)
 
@@ -240,9 +249,10 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   })
   const tooLarge = result?.tooLarge
   const str = result?.str ?? ''
-  // no regions means no fetch ran at all — without that term Copy and Download
-  // stayed live over the empty string and saved a plausible-looking empty file
-  const noResult = loading || !!error || !!tooLarge || !regions.length
+  // no regions means no fetch ran at all, and an empty string is a region with
+  // nothing in it — without those terms Copy and Download stayed live over the
+  // empty string and saved a plausible-looking empty file
+  const noResult = loading || !!error || !!tooLarge || !str
 
   return (
     <InfoDialog
@@ -310,6 +320,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
             regions,
             loading,
             status,
+            error,
             tooLarge,
             regionStr,
             str,

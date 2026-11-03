@@ -1,4 +1,5 @@
 import { getConf } from '../../../configuration/index.ts'
+import { dedupe } from '../../../util/dedupe.ts'
 import { getSession } from '../../../util/index.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
 
@@ -27,14 +28,37 @@ export interface ExportableTrack extends IStateTreeNode {
  * `visibleRegions` blocks also carry screen geometry and a `reversed` flag, and
  * `reversed` is what put a stray "[rev]" on the region the dialog says it is
  * exporting — the export itself is in reference order either way.
+ *
+ * Regions of one sequence that overlap or touch become one, in reference
+ * order, the sequences in the order they first appear. Widening to whole bases
+ * makes two neighbouring blocks share a base, and a fetch per region returned
+ * a feature on that base twice.
  */
-export function roundRegions(regions: Region[]): Region[] {
-  return regions.map(({ assemblyName, refName, start, end }) => ({
-    assemblyName,
-    refName,
-    start: Math.floor(start),
-    end: Math.ceil(end),
-  }))
+export function exportRegions(regions: Region[]): Region[] {
+  const bySequence = new Map<string, Region[]>()
+  for (const { assemblyName, refName, start, end } of regions) {
+    const key = `${assemblyName}\t${refName}`
+    const list = bySequence.get(key) ?? []
+    list.push({
+      assemblyName,
+      refName,
+      start: Math.floor(start),
+      end: Math.ceil(end),
+    })
+    bySequence.set(key, list)
+  }
+  return [...bySequence.values()].flatMap(list => {
+    const merged: Region[] = []
+    for (const region of list.toSorted((a, b) => a.start - b.start)) {
+      const last = merged.at(-1)
+      if (last && region.start <= last.end) {
+        last.end = Math.max(last.end, region.end)
+      } else {
+        merged.push({ ...region })
+      }
+    }
+    return merged
+  })
 }
 
 /**
@@ -123,16 +147,25 @@ export async function fetchTrackData({
     }
   }
 
-  const feats = await session.rpcManager.call(sessionId, 'CoreGetFeatures', {
-    adapterConfig,
-    regions,
-    ...opts,
-  })
-  const str = await options[type]!.callback({
-    features: feats,
-    session,
-    assemblyName: regions[0]!.assemblyName,
-    ...opts,
-  })
+  // A feature crossing from one region into the next comes back once per
+  // region; a collapsed-introns view is one region per exon of the same gene.
+  const features = dedupe(
+    await session.rpcManager.call(sessionId, 'CoreGetFeatures', {
+      adapterConfig,
+      regions,
+      ...opts,
+    }),
+    f => f.id(),
+  )
+  // Empty rather than a header with no records under it, so the dialog can
+  // say the region holds nothing instead of offering that file for download.
+  const str = features.length
+    ? await options[type]!.callback({
+        features,
+        session,
+        assemblyName: regions[0]!.assemblyName,
+        ...opts,
+      })
+    : ''
   return { str: endWithNewline(str), usedAdapterExport: false }
 }
