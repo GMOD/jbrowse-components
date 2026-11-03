@@ -52,6 +52,7 @@ import type {
   SizeEncoding,
   SizeRef,
   SizeScaleTable,
+  ThresholdRef,
   LaneName,
 } from './markEncodingTypes.ts'
 import type { ProgressReporter } from './progress.ts'
@@ -928,6 +929,289 @@ function glyphLane(
   return shapeScale ? { glyph, shapeScale } : { glyph }
 }
 
+interface ColorWants {
+  color: boolean
+  colorValue: boolean
+  colorKey: boolean
+}
+
+interface YLane {
+  y: Float32Array | undefined
+  field: string | undefined
+}
+
+type ColorEntries = ReturnType<typeof paintColorCategories>
+
+function colorLaneAsked(
+  colorEncoding: MarkColorEncoding | ChannelReader<number>,
+  wants: ColorWants,
+) {
+  return typeof colorEncoding !== 'object'
+    ? wants.color
+    : colorEncoding.scale === 'identity' || colorEncoding.scale === 'ordinal'
+      ? wants.color || wants.colorKey
+      : wants.color || wants.colorValue
+}
+
+function colorLanes(
+  walk: LaneContext,
+  colorEncoding: MarkColorEncoding | ChannelReader<number>,
+  wants: ColorWants,
+  yLane: YLane,
+) {
+  return colorLaneAsked(colorEncoding, wants)
+    ? typeof colorEncoding !== 'object'
+      ? plainColors(walk, colorEncoding)
+      : colorEncoding.scale === 'identity'
+        ? identityColors(walk, colorEncoding, wants.colorKey)
+        : colorEncoding.scale === 'ordinal'
+          ? ordinalColors(walk, colorEncoding, wants.colorKey)
+          : colorEncoding.scale === 'threshold'
+            ? thresholdColors(walk, colorEncoding, wants, yLane)
+            : rampColors(walk, colorEncoding, wants, yLane)
+    : undefined
+}
+
+function fillColor(walk: LaneContext, colorOf: RowReader<number>) {
+  const { report, count, rowAt } = walk
+  const color = new Uint32Array(count)
+  for (let k = 0; k < count; k++) {
+    report?.(k)
+    color[k] = colorOf(rowAt(k))
+  }
+  return color
+}
+
+function plainColors(
+  walk: LaneContext,
+  colorEncoding: string | ChannelReader<number>,
+) {
+  const unscaled = unscaledColor(walk.table, colorEncoding, walk.jexl)
+  return {
+    color: typeof unscaled === 'number' ? unscaled : fillColor(walk, unscaled),
+  }
+}
+
+function categoryColors(
+  walk: LaneContext,
+  ref: FieldRef,
+  categories: CategoricalField,
+  keyed: boolean,
+  colorOf: (key: string) => number,
+  scaleOf: (entries: ColorEntries) => ColorScaleTable,
+) {
+  const lane = new Uint32Array(walk.count)
+  const scale = scaleOf(
+    paintColorCategories(walk, ref, categories, lane, keyed, colorOf),
+  )
+  return keyed ? { colorKey: lane, scale } : { color: lane, scale }
+}
+
+function identityColors(
+  walk: LaneContext,
+  identity: Extract<MarkColorEncoding, { scale: 'identity' }>,
+  keyed: boolean,
+) {
+  const { table, jexl, kept, count } = walk
+  const { field, labelField } = identity
+  const colorRef = field ?? bedColorFieldOf(table)
+  const categories = field === undefined ? ownColorField() : cssColorField()
+  return categoryColors(
+    walk,
+    colorRef,
+    categories,
+    keyed,
+    key => (key === '' ? DEFAULT_MARK_ABGR : cssColorToABGR(key)),
+    entries => {
+      const labels = labelField
+        ? colorLabels(
+            table,
+            colorRef,
+            labelField,
+            categories,
+            { kept, count },
+            jexl,
+          )
+        : undefined
+      return {
+        kind: 'identity',
+        field: '',
+        domain: [],
+        entries: entries.map(e => {
+          const named = labels?.get(e.value)
+          return named
+            ? { value: e.value, color: e.entry.color, labels: [...named] }
+            : { value: e.value, color: e.entry.color }
+        }),
+      }
+    },
+  )
+}
+
+function ordinalColors(
+  walk: LaneContext,
+  ordinal: Extract<MarkColorEncoding, { scale: 'ordinal' }>,
+  keyed: boolean,
+) {
+  const colorField = categoricalField(ordinal.field, {
+    domain: ordinal.domain?.map(String),
+    range: ordinal.range,
+  })
+  return categoryColors(
+    walk,
+    ordinal.field,
+    colorField,
+    keyed,
+    key => cssColorToABGR(colorField.color(key)),
+    entries => ({
+      kind: 'categorical',
+      field: ordinal.field,
+      domain: [...colorField.domain],
+      ...(ordinal.range ? { range: [...ordinal.range] } : {}),
+      ...(keysAreNumeric(entries) ? { numericKeys: true } : {}),
+      entries: entries.map(e => ({ value: e.value, color: e.entry.color })),
+    }),
+  )
+}
+
+// Which side of the wire a quantitative color resolves on is the caller's
+// lane choice: a mark that reads the scale itself names `colorValue` and
+// gets the raw values, so a ramp's domain unions over the regions and a
+// threshold's cuts move as uniforms. Anything else names `color` and the
+// encoder resolves per region. A color over the field `y` plots is the `y`
+// lane itself, aliased rather than copied.
+function quantitativeLanes(
+  walk: LaneContext,
+  field: FieldRef,
+  wants: ColorWants,
+  yLane: YLane,
+) {
+  const aliasedY =
+    wants.colorValue && yLane.y && field === yLane.field ? yLane.y : undefined
+  const colorValue = wants.colorValue
+    ? (aliasedY ?? new Float32Array(walk.count))
+    : undefined
+  const color =
+    wants.color && !colorValue ? new Uint32Array(walk.count) : undefined
+  return { aliasedY, colorValue, color }
+}
+
+function quantitativeResult(
+  color: Uint32Array | undefined,
+  colorValue: Float32Array | undefined,
+  scale: ColorScaleTable,
+) {
+  return {
+    ...(color ? { color } : undefined),
+    ...(colorValue ? { colorValue } : undefined),
+    scale,
+  }
+}
+
+// The raw values, where they are kept: a ramp's always, a threshold's where
+// the caller resolves it; the encoder resolves a threshold into packed colors
+// only for a caller naming `color` alone.
+function readRawValues(
+  walk: LaneContext,
+  read: RowReader,
+  values: Float32Array,
+) {
+  const { report, count, rowAt } = walk
+  const bits = new Uint32Array(values.buffer, values.byteOffset, count)
+  let missingMet = false
+  let notNumberMet = false
+  for (let k = 0; k < count; k++) {
+    report?.(k)
+    const v = read(rowAt(k))
+    if (isMissing(v)) {
+      bits[k] = RAMP_NO_VALUE_BITS
+      missingMet = true
+    } else {
+      values[k] = numericValue(v)
+      notNumberMet ||= Number.isNaN(values[k])
+    }
+  }
+  return { missingMet, notNumberMet }
+}
+
+function rampColors(
+  walk: LaneContext,
+  ramp: ContinuousRef,
+  wants: ColorWants,
+  yLane: YLane,
+) {
+  const { table, jexl, count } = walk
+  const { aliasedY, colorValue, color } = quantitativeLanes(
+    walk,
+    ramp.field,
+    wants,
+    yLane,
+  )
+  const values = colorValue ?? new Float32Array(count)
+  const read = channelReader(table, ramp.field, jexl)
+  const met = aliasedY
+    ? { missingMet: false, notNumberMet: false }
+    : readRawValues(walk, read, values)
+  return quantitativeResult(
+    color,
+    colorValue,
+    rampScale(ramp, values, count, color, met),
+  )
+}
+
+function thresholdColors(
+  walk: LaneContext,
+  threshold: ThresholdRef,
+  wants: ColorWants,
+  yLane: YLane,
+) {
+  const { table, jexl, report, count, rowAt } = walk
+  const { aliasedY, colorValue, color } = quantitativeLanes(
+    walk,
+    threshold.field,
+    wants,
+    yLane,
+  )
+  const read = channelReader(table, threshold.field, jexl)
+  const raw =
+    colorValue && !aliasedY
+      ? readRawValues(walk, read, colorValue)
+      : { missingMet: false, notNumberMet: false }
+  let { missingMet, notNumberMet } = raw
+  const cuts = thresholdCuts(threshold.domain ?? [])
+  if (color) {
+    const binColors = Uint32Array.from(
+      thresholdPalette(cuts.length + 1, threshold.range),
+      c => cssColorToABGR(c),
+    )
+    // in float32 on both sides, as the shader and the key compare, so a
+    // value off a float32 lane sits at a cut like 0.7 rather than under it
+    const cuts32 = cuts.map(cut => Math.fround(cut))
+    for (let k = 0; k < count; k++) {
+      report?.(k)
+      const v = read(rowAt(k))
+      const bin = thresholdIndex(Math.fround(numericValue(v)), cuts32)
+      if (bin >= 0) {
+        color[k] = binColors[bin]!
+      } else if (isMissing(v)) {
+        color[k] = NO_VALUE_ABGR
+        missingMet = true
+      } else {
+        color[k] = FALLBACK_COLOR
+        notNumberMet = true
+      }
+    }
+  }
+  return quantitativeResult(color, colorValue, {
+    kind: 'threshold',
+    field: threshold.field,
+    domain: cuts,
+    ...(threshold.range ? { range: [...threshold.range] } : {}),
+    ...(missingMet ? { missing: true } : {}),
+    ...(notNumberMet ? { notNumber: true } : {}),
+  })
+}
+
 /**
  * #api
  * Evaluate one encoding over a feature list into dense channel arrays for
@@ -1004,191 +1288,16 @@ export function encodeFeatures<L extends LaneName>(
     ? glyphLane(walk, shapeEncoding)
     : undefined
 
-  const colorEncoding = encoding.color ?? DEFAULT_MARK_COLOR
-  const identity =
-    typeof colorEncoding === 'object' && colorEncoding.scale === 'identity'
-      ? colorEncoding
-      : undefined
-  const ownColor = identity !== undefined
-  const declaredScale =
-    typeof colorEncoding === 'object' && colorEncoding.scale !== 'identity'
-      ? colorEncoding
-      : undefined
-  const rampEncoding =
-    declaredScale &&
-    (declaredScale.scale === 'linear' ||
-      declaredScale.scale === 'log' ||
-      declaredScale.scale === 'symlog')
-      ? declaredScale
-      : undefined
-  const thresholdEncoding =
-    declaredScale?.scale === 'threshold' ? declaredScale : undefined
-  // Which side of the wire a quantitative color resolves on is the caller's
-  // lane choice: a mark that reads the scale itself names `colorValue` and
-  // gets the raw values, so a ramp's domain unions over the regions and a
-  // threshold's cuts move as uniforms. Anything else names `color` and the
-  // encoder resolves per region. A color over the field `y` plots is the `y`
-  // lane itself, aliased rather than copied.
-  const quantitative = rampEncoding ?? thresholdEncoding
-  const colorReadsY =
-    quantitative !== undefined &&
-    has('colorValue') &&
-    y !== undefined &&
-    typeof yEncoding === 'string' &&
-    quantitative.field === yEncoding
-  const colorValue =
-    quantitative && has('colorValue')
-      ? colorReadsY
-        ? y
-        : new Float32Array(count)
-      : undefined
-  const colorKey =
-    (declaredScale?.scale === 'ordinal' || ownColor) && has('colorKey')
-      ? new Uint32Array(count)
-      : undefined
-  const paintsColor = has('color') && !colorValue && !colorKey
-  const unscaled =
-    paintsColor &&
-    !ownColor &&
-    declaredScale?.scale !== 'ordinal' &&
-    !quantitative
-      ? unscaledColor(
-          table,
-          colorEncoding as string | ChannelReader<number>,
-          jexl,
-        )
-      : undefined
-  const color =
-    paintsColor && typeof unscaled !== 'number'
-      ? new Uint32Array(count)
-      : undefined
-  const scaled =
-    paintsColor || colorValue || colorKey ? declaredScale : undefined
-  const categoryLane = colorKey ?? color
-  let scale: ColorScaleTable | undefined
-  let missingMet = false
-  let notNumberMet = false
-  if (ownColor && categoryLane) {
-    const field = identity.field
-    const colorRef = field ?? bedColorFieldOf(table)
-    const entries = paintColorCategories(
-      { table, jexl, kept, count, report },
-      colorRef,
-      field === undefined ? ownColorField() : cssColorField(),
-      categoryLane,
-      colorKey !== undefined,
-      key => (key === '' ? DEFAULT_MARK_ABGR : cssColorToABGR(key)),
-    )
-    const labels = identity.labelField
-      ? colorLabels(
-          table,
-          colorRef,
-          identity.labelField,
-          field === undefined ? ownColorField() : cssColorField(),
-          { kept, count },
-          jexl,
-        )
-      : undefined
-    scale = {
-      kind: 'identity',
-      field: '',
-      domain: [],
-      entries: entries.map(e => {
-        const named = labels?.get(e.value)
-        return named
-          ? { value: e.value, color: e.entry.color, labels: [...named] }
-          : { value: e.value, color: e.entry.color }
-      }),
-    }
-  } else if (scaled?.scale === 'ordinal' && categoryLane) {
-    const colorField = categoricalField(scaled.field, {
-      domain: scaled.domain?.map(String),
-      range: scaled.range,
-    })
-    const entries = paintColorCategories(
-      { table, jexl, kept, count, report },
-      scaled.field,
-      colorField,
-      categoryLane,
-      colorKey !== undefined,
-      key => cssColorToABGR(colorField.color(key)),
-    )
-    scale = {
-      kind: 'categorical',
-      field: scaled.field,
-      domain: [...colorField.domain],
-      ...(scaled.range ? { range: [...scaled.range] } : {}),
-      ...(keysAreNumeric(entries) ? { numericKeys: true } : {}),
-      entries: entries.map(e => ({ value: e.value, color: e.entry.color })),
-    }
-  } else if (scaled && quantitative) {
-    // The raw values, where they are kept: a ramp's always, a threshold's
-    // where the caller resolves it; the encoder resolves a threshold into
-    // packed colors only for a caller naming `color` alone.
-    const values =
-      colorValue ?? (rampEncoding ? new Float32Array(count) : undefined)
-    const read = channelReader(table, quantitative.field, jexl)
-    if (values && !colorReadsY) {
-      const bits = new Uint32Array(values.buffer, values.byteOffset, count)
-      for (let k = 0; k < count; k++) {
-        report?.(k)
-        const v = read(rowAt(k))
-        if (isMissing(v)) {
-          bits[k] = RAMP_NO_VALUE_BITS
-          missingMet = true
-        } else {
-          values[k] = numericValue(v)
-          notNumberMet ||= Number.isNaN(values[k])
-        }
-      }
-    }
-    if (thresholdEncoding) {
-      const cuts = thresholdCuts(thresholdEncoding.domain ?? [])
-      if (color) {
-        const binColors = Uint32Array.from(
-          thresholdPalette(cuts.length + 1, thresholdEncoding.range),
-          c => cssColorToABGR(c),
-        )
-        // in float32 on both sides, as the shader and the key compare, so a
-        // value off a float32 lane sits at a cut like 0.7 rather than under it
-        const cuts32 = cuts.map(cut => Math.fround(cut))
-        for (let k = 0; k < count; k++) {
-          report?.(k)
-          const v = read(rowAt(k))
-          const bin = thresholdIndex(Math.fround(numericValue(v)), cuts32)
-          if (bin >= 0) {
-            color[k] = binColors[bin]!
-          } else if (isMissing(v)) {
-            color[k] = NO_VALUE_ABGR
-            missingMet = true
-          } else {
-            color[k] = FALLBACK_COLOR
-            notNumberMet = true
-          }
-        }
-      }
-      scale = {
-        kind: 'threshold',
-        field: thresholdEncoding.field,
-        domain: cuts,
-        ...(thresholdEncoding.range
-          ? { range: [...thresholdEncoding.range] }
-          : {}),
-        ...(missingMet ? { missing: true } : {}),
-        ...(notNumberMet ? { notNumber: true } : {}),
-      }
-    } else if (rampEncoding && values) {
-      scale = rampScale(rampEncoding, values, count, color, {
-        missingMet,
-        notNumberMet,
-      })
-    }
-  } else if (color && typeof unscaled === 'function') {
-    for (let k = 0; k < count; k++) {
-      report?.(k)
-      color[k] = unscaled(rowAt(k))
-    }
-  }
+  const colorChannels = colorLanes(
+    walk,
+    encoding.color ?? DEFAULT_MARK_COLOR,
+    {
+      color: has('color'),
+      colorValue: has('colorValue'),
+      colorKey: has('colorKey'),
+    },
+    { y, field: typeof yEncoding === 'string' ? yEncoding : undefined },
+  )
 
   const x = xs.subarray(0, count)
   const x2 = x2s.subarray(0, count)
@@ -1207,10 +1316,7 @@ export function encodeFeatures<L extends LaneName>(
     ...rootChannels,
     ...(y ? { y } : undefined),
     ...rowChannels,
-    ...(typeof unscaled === 'number' ? { color: unscaled } : undefined),
-    ...(typeof unscaled !== 'number' && color ? { color } : undefined),
-    ...(colorValue ? { colorValue } : undefined),
-    ...(colorKey ? { colorKey } : undefined),
+    ...colorChannels,
     ...glyphChannels,
     ...seriesChannels,
     ...textChannels,
@@ -1218,7 +1324,6 @@ export function encodeFeatures<L extends LaneName>(
     ...x2RefChannels,
     ...(feet ? { feet } : undefined),
     ...(flatbushData ? { flatbushData } : undefined),
-    ...(scale ? { scale } : undefined),
   }
   return encoded as Encoded<L>
 }
