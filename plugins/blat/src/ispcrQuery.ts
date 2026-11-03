@@ -19,11 +19,8 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 const AMPLICON_HEADER =
   />[^\S\n]*(\S+):(\d+)([+-])(\d+)\s+(\d+)bp\s+(\S+)\s+(\S+)/g
 
-export const UCSC_ISPCR_URL = 'https://genome.ucsc.edu/cgi-bin/hgPcr'
-
 // The jbrowse.org proxy, for the same reasons as DEFAULT_BLAT_URL: it holds the
-// apiKey, so a first query costs neither a key nor a CAPTCHA, and desktop keeps
-// UCSC_ISPCR_URL in reserve for when the proxy cannot serve.
+// apiKey, so a query costs neither a key nor a CAPTCHA.
 export const DEFAULT_ISPCR_URL = 'https://api.jbrowse.org/ucsc/v1/ispcr'
 
 // hgPcr's default cap; also the server-side max the CGI accepts without error
@@ -175,15 +172,13 @@ export function buildIsPcrBody({
   forwardPrimer,
   reversePrimer,
   maxProductSize = DEFAULT_MAX_PRODUCT_SIZE,
-  apiKey,
 }: {
   db: string
   forwardPrimer: string
   reversePrimer: string
   maxProductSize?: number
-  apiKey?: string
 }) {
-  const params = new URLSearchParams({
+  return new URLSearchParams({
     db,
     wp_target: 'genome',
     wp_f: forwardPrimer,
@@ -192,10 +187,5 @@ export function buildIsPcrBody({
     wp_perfect: '15',
     wp_good: '15',
     'boolshad.wp_flipReverse': '0',
-  })
-  // as with hgBlat, an account apiKey bypasses the Cloudflare Turnstile
-  if (apiKey) {
-    params.set('apiKey', apiKey)
-  }
-  return params.toString()
+  }).toString()
 }

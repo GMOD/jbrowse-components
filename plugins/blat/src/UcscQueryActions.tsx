@@ -1,13 +1,10 @@
-import { isElectron } from '@jbrowse/core/util'
 import { Button, DialogActions } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { UcscQuery } from './useUcscQuery.ts'
 
-// The Cancel / Solve CAPTCHA / Submit footer shared by the BLAT and in-silico
-// PCR dialogs. Each dialog supplies its own submit-disabled predicate; the
-// challenge-solve affordance only appears on desktop, where a window can be
-// opened to clear the Cloudflare Turnstile.
+// The Cancel / Submit footer shared by the BLAT and in-silico PCR dialogs. Each
+// dialog supplies its own submit-disabled predicate.
 const UcscQueryActions = observer(function UcscQueryActions({
   query,
   submitDisabled,
@@ -19,7 +16,7 @@ const UcscQueryActions = observer(function UcscQueryActions({
   onSubmit: () => void
   onCancel: () => void
 }) {
-  const { loading, challenged } = query
+  const { loading } = query
   return (
     <DialogActions>
       <Button
@@ -31,19 +28,6 @@ const UcscQueryActions = observer(function UcscQueryActions({
       >
         Cancel
       </Button>
-      {challenged && isElectron ? (
-        <Button
-          variant="outlined"
-          disabled={loading}
-          onClick={() =>
-            void query.solveChallenge(() => {
-              onSubmit()
-            })
-          }
-        >
-          Solve CAPTCHA
-        </Button>
-      ) : null}
       <Button
         variant="contained"
         disabled={loading || submitDisabled}

@@ -10,7 +10,6 @@ import UcscQueryFields from './UcscQueryFields.tsx'
 import UcscQueryStatus from './UcscQueryStatus.tsx'
 import {
   DEFAULT_BLAT_URL,
-  UCSC_BLAT_URL,
   MINIMUM_BLAT_LENGTH,
   blatQueryProblem,
   blatResidueCount,
@@ -42,10 +41,9 @@ const BlatDialog = observer(function BlatDialog({
     session,
     handleClose,
     defaultUrl: DEFAULT_BLAT_URL,
-    directUrl: UCSC_BLAT_URL,
     initialAssembly,
   })
-  const { db, apiKey } = query
+  const { db } = query
   const [seq, setSeq] = useState(initialSequence)
 
   const records = parseFastaRecords(seq)
@@ -66,7 +64,7 @@ const BlatDialog = observer(function BlatDialog({
       // sequence is right here — its mismatches against the reference.
       fetchResult: async fetchUcsc => {
         const rows = await fetchUcsc({
-          body: buildBlatBody({ db, seq: seq.trim(), apiKey }),
+          body: buildBlatBody({ db, seq: seq.trim() }),
           parse: parseBlatResponse,
         })
         return {

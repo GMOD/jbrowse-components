@@ -1,4 +1,3 @@
-import { BlatChallengeError } from './blatQuery.ts'
 import { buildIsPcrBody, parseIsPcrResponse } from './ispcrQuery.ts'
 
 // hgPcr wraps FASTA amplicons in an HTML <PRE> block; a plus-strand and a
@@ -118,17 +117,17 @@ test.each([0, 1])('the footprints of product %i point inward', index => {
   expect(high!.strand).toBe(-1)
 })
 
-test('throws BlatChallengeError on a Cloudflare turnstile page', () => {
+test('names a Cloudflare turnstile page as a CAPTCHA challenge', () => {
   expect(() =>
     parseIsPcrResponse('<html><div class="cf-turnstile"></div></html>'),
-  ).toThrow(BlatChallengeError)
+  ).toThrow(/CAPTCHA challenge/)
   // UCSC's own interstitial, which mounts the widget by hand
   expect(() =>
     parseIsPcrResponse(
       "<html><script>turnstile.render('#myWidget', {sitekey: 'x'})</script>" +
         "<div id='myWidget'></div></html>",
     ),
-  ).toThrow(BlatChallengeError)
+  ).toThrow(/CAPTCHA challenge/)
 })
 
 test('returns no features when there are no products', () => {

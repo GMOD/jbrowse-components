@@ -13,10 +13,11 @@
  * UCSC rate-limits a key to one hgBlat hit per 15s, so all four queries go in
  * one multi-record FASTA — the same path a user pasting a multi-FASTA takes.
  */
-import { UCSC_BLAT_URL, buildBlatBody, parseBlatResponse } from './blatQuery.ts'
+import { buildBlatBody, parseBlatResponse } from './blatQuery.ts'
 import { parseQuerySequences, pslToSam } from './pslToSam.ts'
 
 const apiKey = process.env.UCSC_API_KEY
+const UCSC_BLAT_URL = 'https://genome.ucsc.edu/cgi-bin/hgBlat'
 
 // hg38 ACTB intron 1, a locus with one good placement
 const DB = 'hg38'
@@ -99,7 +100,7 @@ describe.skip('live UCSC BLAT round-trip', () => {
     const res = await fetch(UCSC_BLAT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: buildBlatBody({ db: DB, seq: query, apiKey }),
+      body: `${buildBlatBody({ db: DB, seq: query })}&apiKey=${apiKey}`,
     })
     const rows = parseBlatResponse(await res.text())
     const sam = pslToSam(rows, parseQuerySequences(query))

@@ -14,7 +14,7 @@ import type { UcscQuery } from './useUcscQuery.ts'
 
 // The UCSC connection fields shared by the BLAT and in-silico PCR dialogs. The
 // assembly picker is the only thing most users touch, so it stays visible; the
-// resolved db id, server URL, and apiKey collapse behind a toggle.
+// resolved db id and server URL collapse behind a toggle.
 const UcscQueryFields = observer(function UcscQueryFields({
   session,
   query,
@@ -24,7 +24,7 @@ const UcscQueryFields = observer(function UcscQueryFields({
   query: UcscQuery
   urlLabel: string
 }) {
-  const { assembly, db, urlBase, apiKey } = query
+  const { assembly, db, urlBase } = query
   const [showAdvanced, setShowAdvanced] = useState(false)
   // the query is only as good as the db behind it, and nothing about a locally
   // opened genome says UCSC has never heard of it until the request comes back
@@ -79,14 +79,6 @@ const UcscQueryFields = observer(function UcscQueryFields({
               query.setUrlBase(event.target.value)
             }}
             helperText="Point at a mirror or self-hosted proxy if the default is unavailable"
-          />
-          <TextField
-            label="UCSC apiKey (optional)"
-            value={apiKey}
-            onChange={event => {
-              query.changeApiKey(event.target.value)
-            }}
-            helperText="Bypasses the UCSC CAPTCHA. Generate one at a UCSC Genome Browser account → Hub Development → API key. Not needed when the server URL is a proxy that injects a key."
           />
         </>
       ) : null}

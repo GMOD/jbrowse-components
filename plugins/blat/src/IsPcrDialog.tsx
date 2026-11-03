@@ -10,7 +10,6 @@ import UcscQueryFields from './UcscQueryFields.tsx'
 import UcscQueryStatus from './UcscQueryStatus.tsx'
 import {
   DEFAULT_ISPCR_URL,
-  UCSC_ISPCR_URL,
   DEFAULT_MAX_PRODUCT_SIZE,
   MINIMUM_PRIMER_LENGTH,
   buildIsPcrBody,
@@ -38,10 +37,9 @@ const IsPcrDialog = observer(function IsPcrDialog({
     session,
     handleClose,
     defaultUrl: DEFAULT_ISPCR_URL,
-    directUrl: UCSC_ISPCR_URL,
     initialAssembly: viewedAssembly(session),
   })
-  const { db, apiKey } = query
+  const { db } = query
   const [forwardPrimer, setForwardPrimer] = useState('')
   const [reversePrimer, setReversePrimer] = useState('')
   // NumberTextField emits undefined for an empty or out-of-bounds entry, which
@@ -74,7 +72,6 @@ const IsPcrDialog = observer(function IsPcrDialog({
               forwardPrimer: fwd,
               reversePrimer: rev,
               maxProductSize,
-              apiKey,
             }),
             parse: parseIsPcrProducts,
           })

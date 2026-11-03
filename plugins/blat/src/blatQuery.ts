@@ -286,35 +286,15 @@ export function queryLabel(records: FastaRecord[]) {
   return name ?? residues.slice(0, 12) + (residues.length > 12 ? '…' : '')
 }
 
-export function buildBlatBody({
-  db,
-  seq,
-  apiKey,
-}: {
-  db: string
-  seq: string
-  apiKey?: string
-}) {
-  const params = new URLSearchParams({
+// No apiKey: the proxy injects its own, which is what gets a query past the
+// Cloudflare Turnstile that fronts hgBlat
+export function buildBlatBody({ db, seq }: { db: string; seq: string }) {
+  return new URLSearchParams({
     userSeq: seq,
     type: 'DNA',
     db,
     output: 'json',
-  })
-  // UCSC removed open programmatic BLAT access in 2025; an account apiKey
-  // (Genome Browser account → Hub Development → API key) bypasses the
-  // Cloudflare Turnstile that otherwise fronts hgBlat
-  if (apiKey) {
-    params.set('apiKey', apiKey)
-  }
-  return params.toString()
-}
-
-// thrown when the server returns its CAPTCHA challenge page instead of results
-// — the caller surfaces a "solve challenge" affordance for this case (and, when
-// available, an apiKey avoids the challenge entirely)
-export class BlatChallengeError extends Error {
-  name = 'BlatChallengeError'
+  }).toString()
 }
 
 // Markers on a Cloudflare Turnstile challenge page. Every marker has to name
@@ -337,11 +317,12 @@ export function isChallengePage(text: string) {
   return CHALLENGE_MARKERS.test(text)
 }
 
+// what a server that relays UCSC's challenge page instead of results gets;
+// the jbrowse.org proxy injects a key and never relays one
 export function challengeError() {
-  return new BlatChallengeError(
-    'The UCSC server returned a CAPTCHA challenge instead of results. ' +
-      'Solve it in the window, or supply a UCSC apiKey (Genome Browser ' +
-      'account → Hub Development → API key) to avoid it.',
+  return new Error(
+    'The BLAT server returned a UCSC CAPTCHA challenge instead of results. ' +
+      'A proxy has to send a UCSC apiKey with each query to get past it.',
   )
 }
 
@@ -382,23 +363,15 @@ export function parseBlatResponse(text: string): PslRow[] {
   return parsePslRows(data)
 }
 
-export const UCSC_BLAT_URL = 'https://genome.ucsc.edu/cgi-bin/hgBlat'
-
 /**
  * Where the dialog points when the user has not typed a server of their own:
  * the jbrowse.org proxy, which injects a UCSC apiKey server-side and meters the
  * budget everyone using it shares (`products/aws/blat-proxy`). That is what makes
- * a first BLAT work with no key and no CAPTCHA.
+ * a first BLAT work with no key and no CAPTCHA. Web and Desktop both go through
+ * it: genome.ucsc.edu sends no CORS headers, and a public bundle must not carry
+ * a key.
  *
- * A browser has nowhere else to go — it cannot call genome.ucsc.edu at all (no
- * CORS headers) and must not carry a key in a public bundle. Desktop can reach
- * UCSC itself, since `blatFetch` runs in the main process, so it keeps
- * {@link UCSC_BLAT_URL} in reserve two ways: as the fallback when the proxy is
- * out of budget or down, and as where the server field moves outright once the
- * user supplies an apiKey of their own. The proxy overwrites a client key with
- * its own, so a key only ever spends against UCSC direct.
- *
- * Either way this is only a default — the dialog's server field overrides it,
- * which is how someone runs their own proxy or their own gfServer.
+ * Only a default — the dialog's server field overrides it, which is how someone
+ * runs their own proxy or their own gfServer.
  */
 export const DEFAULT_BLAT_URL = 'https://api.jbrowse.org/ucsc/v1/blat'

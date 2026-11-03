@@ -20,7 +20,6 @@
 import { revcom } from '@jbrowse/core/util'
 
 import {
-  UCSC_ISPCR_URL,
   buildIsPcrBody,
   parseIsPcrProducts,
   parseIsPcrResponse,
@@ -30,6 +29,7 @@ import { ispcrToSam } from './ispcrToSam.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 const apiKey = process.env.UCSC_API_KEY
+const UCSC_ISPCR_URL = 'https://genome.ucsc.edu/cgi-bin/hgPcr'
 
 // hg38 TP53, the locus the desktop BLAT figure uses in hg19. Its edges make a
 // specific 22bp pair; picking a window whose edges happen to be low-complexity
@@ -52,7 +52,7 @@ async function runIsPcrRaw(forwardPrimer: string, reversePrimer: string) {
   const res = await fetch(UCSC_ISPCR_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: buildIsPcrBody({ db: DB, forwardPrimer, reversePrimer, apiKey }),
+    body: `${buildIsPcrBody({ db: DB, forwardPrimer, reversePrimer })}&apiKey=${apiKey}`,
   })
   return res.text()
 }
