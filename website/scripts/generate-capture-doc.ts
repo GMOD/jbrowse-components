@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { checkOrWrite } from './check-utils.ts'
+import { writeUnformatted } from './api-docs/format.ts'
 import { docsDir, repoRoot } from './paths.ts'
 import { linkRelativeToGithub, readmeMirrorPage } from './readmeMirror.ts'
 
@@ -13,22 +13,22 @@ const productDir = join(repoRoot, 'products', 'jbrowse-capture')
 const readmePath = join(productDir, 'README.md')
 const outPath = join(docsDir, 'jbrowse-capture.md')
 
-checkOrWrite({
-  path: outPath,
+export function writeCaptureDoc() {
   // The frontmatter title supplies the page heading, so the README's H1 goes.
-  content: readmeMirrorPage({
-    readmePath,
+  return writeUnformatted(
     outPath,
-    title: 'Screenshot a live view (@jbrowse/capture)',
-    description:
-      'Drive a live JBrowse 2 instance with Puppeteer and screenshot it once it ' +
-      'has actually finished rendering',
-    editHint: 'edit the README, then run `pnpm autogen`',
-    body: linkRelativeToGithub(
-      readFileSync(readmePath, 'utf8').replace(/^# @jbrowse\/capture\n+/, ''),
-      productDir,
-    ),
-  }),
-  label: 'jbrowse-capture.md',
-  staleHint: 'run `pnpm autogen`',
-})
+    readmeMirrorPage({
+      readmePath,
+      outPath,
+      title: 'Screenshot a live view (@jbrowse/capture)',
+      description:
+        'Drive a live JBrowse 2 instance with Puppeteer and screenshot it once it ' +
+        'has actually finished rendering',
+      editHint: 'edit the README, then run `pnpm autogen`',
+      body: linkRelativeToGithub(
+        readFileSync(readmePath, 'utf8').replace(/^# @jbrowse\/capture\n+/, ''),
+        productDir,
+      ),
+    }),
+  )
+}

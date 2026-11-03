@@ -12,23 +12,16 @@
 // visible in the table rather than silent — the same allowance the
 // cross-cutting-mixin column already makes.
 //
-// Only the block between the markers is generated. Run: `pnpm autogen`
-// (or `--check` in CI).
+// Only the block between the markers is generated, by
+// `website/scripts/api-docs/markers.ts`.
 import { readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 import * as ts from 'typescript'
 
-import {
-  checkOrWrite,
-  isTsSource,
-  markdownTableLines,
-  sourceFiles,
-  spliceGeneratedBlock,
-} from './check-utils.ts'
+import { rewriteMarkerBlock } from './api-docs/util.ts'
+import { isTsSource, markdownTableLines, sourceFiles } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
-
-const docPath = join(repoRoot, 'agent-docs', 'reference', 'DISPLAY_HOOKS.md')
 
 interface Hook {
   /** Member name, as a display declares it. */
@@ -285,7 +278,7 @@ function declaredMembers(file: string, text: string): Set<string> {
   return found
 }
 
-function main() {
+export function writeDisplayHookOverrides() {
   const declarers = new Map<string, { files: Set<string> }>()
   for (const hook of HOOKS) {
     declarers.set(hook.name, { files: new Set() })
@@ -328,13 +321,12 @@ function main() {
     ownersOf(hook).some(owner => !declarers.get(hook.name)!.files.has(owner)),
   )
   if (orphaned.length > 0) {
-    console.error(
+    throw new Error(
       `display hook table: these hooks are no longer declared by the file that owns their default.\n` +
         `Either the hook was renamed (update HOOKS) or the default moved (update \`owner\`):\n${orphaned
           .map(h => `  ${h.name} — expected in ${ownersOf(h).join(', ')}`)
           .join('\n')}`,
     )
-    process.exit(1)
   }
 
   const rows = HOOKS.map(hook => {
@@ -363,16 +355,5 @@ function main() {
     ),
   ]
 
-  checkOrWrite({
-    path: docPath,
-    content: spliceGeneratedBlock({
-      path: docPath,
-      marker: 'DISPLAY_HOOK_OVERRIDES',
-      body,
-    }),
-    label: 'display hook override table',
-    staleHint: 'run `pnpm autogen`',
-  })
+  return rewriteMarkerBlock('DISPLAY_HOOK_OVERRIDES', body.join('\n'))
 }
-
-main()

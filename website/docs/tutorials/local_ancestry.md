@@ -39,7 +39,7 @@ the wolfdogs, held-out wolves and other breeds, we:
 - htslib (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-<!-- TUTORIAL_INSTALL bcftools,htslib,node,jbrowse-cli START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL bcftools,htslib,node,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
@@ -50,7 +50,7 @@ conda install -c bioconda -c conda-forge bcftools htslib nodejs
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL bcftools,htslib,node,jbrowse-cli END -->
+<!-- END GENERATED TUTORIAL_INSTALL bcftools,htslib,node,jbrowse-cli -->
 
 `flare.jar` is a single download from FLARE's
 [releases page](https://github.com/browning-lab/flare/releases). The painted BED

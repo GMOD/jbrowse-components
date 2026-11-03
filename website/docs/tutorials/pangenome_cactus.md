@@ -45,7 +45,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI, `bedGraphToBigWig` (UCSC kentUtils), `samtools`, `unzip` and `wget`
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix -->
 
 ```bash
 # Debian/Ubuntu
@@ -64,7 +64,7 @@ cargo install gfa-to-tabix
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix -->
 
 ## The data
 

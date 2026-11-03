@@ -37,7 +37,7 @@ _CYP1A2_ on chr30, we:
 - `samtools` built with libcurl, for the build script's CRAM cross-check on the
   copy-number track, which is not a step on this page
 
-<!-- TUTORIAL_INSTALL samtools,bcftools,htslib START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,bcftools,htslib -->
 
 ```bash
 # Debian/Ubuntu
@@ -46,7 +46,7 @@ sudo apt install samtools bcftools tabix
 conda install -c bioconda -c conda-forge samtools bcftools htslib
 ```
 
-<!-- TUTORIAL_INSTALL samtools,bcftools,htslib END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,bcftools,htslib -->
 
 The scripts write local files, which [JBrowse Desktop](/docs/quickstart_desktop)
 opens by path and JBrowse Web takes through **Add track**.

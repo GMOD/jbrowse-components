@@ -140,7 +140,7 @@ it names itself.
 
 The display types, grouped by the track type they attach to:
 
-<!-- DISPLAY_TYPES START -->
+<!-- BEGIN GENERATED DISPLAY_TYPES -->
 
 <!-- prettier-ignore -->
 | Track type | Display types |
@@ -158,7 +158,7 @@ The display types, grouped by the track type they attach to:
 | [](/docs/config/syntenytrack) | [](/docs/config/chordsyntenydisplay)<br/>[](/docs/config/dotplotdisplay)<br/>[](/docs/config/lgvsyntenydisplay)<br/>[](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearsyntenydisplay)<br/>[](/docs/config/multiwaysyntenydisplay) |
 | [](/docs/config/varianttrack) | [](/docs/config/chordvariantdisplay)<br/>[](/docs/config/linearmarkdisplay)<br/>[](/docs/config/linearvariantdisplay) |
 
-<!-- DISPLAY_TYPES END -->
+<!-- END GENERATED DISPLAY_TYPES -->
 
 ## Copying a track's config out of the app
 

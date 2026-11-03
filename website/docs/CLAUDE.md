@@ -5,9 +5,9 @@ Prose rules: `website/CLAUDE.md`.
 ## Generated
 
 `pnpm autogen` writes `config/`, `models/`, `api/`, the guide indexes, `cli.md`,
-`jbrowse-img.md` and every `<!-- NAME START/END -->` block from JSDoc tags,
-registrations and manifests. Never hand-edit them; tag the definition site.
-Markers: `agent-docs/reference/GENERATED_DOC_BLOCKS.md`.
+`jbrowse-img.md` and every `<!-- BEGIN/END GENERATED NAME -->` block from JSDoc
+tags, registrations and manifests. Never hand-edit them; tag the definition
+site. Markers: `agent-docs/reference/GENERATED_DOC_BLOCKS.md`.
 
 - **A table a reader could check against the code is a generator waiting to be
   written.** Every hand-written table that later got a generator had already

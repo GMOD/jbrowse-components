@@ -36,7 +36,7 @@ as arrays, so `feature.INFO.SVTYPE[0]` is the first value; the
 
 The variants plugin registers these for `encoding.color` and `filter`:
 
-<!-- JEXL_CATEGORY variant-functions START -->
+<!-- BEGIN GENERATED JEXL_CATEGORY variant-functions -->
 
 ```js
 jexl: maf(feature) // minor allele frequency over the called alleles
@@ -51,7 +51,7 @@ jexl: nAlt(feature) == 1 // ALT alleles the record declares, i.e. biallelic-only
 jexl: genotypeCount(feature, 'het') > 0 // samples in a genotype class — ref, alt, hom, het or mis (bcftools N_PASS(GT="het"))
 ```
 
-<!-- JEXL_CATEGORY variant-functions END -->
+<!-- END GENERATED JEXL_CATEGORY variant-functions -->
 
 With those functions available, a track colors by allele frequency with no
 preprocessing. A `jexl:` expression as the `encoding.color` object's `field`

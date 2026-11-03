@@ -292,9 +292,17 @@ for how one is detected.
 Further generators inject tables/catalogs into the **hand-written** guides
 (rather than writing whole pages like config/model/api). Each reads a JSDoc tag
 at the definition site so the docs can't drift from the code, and rewrites only
-the region between a `<!-- MARKER START -->` / `<!-- MARKER END -->` pair — a
-guide opts in by dropping that pair, and editing between the markers is
-pointless since regen overwrites it.
+the region between a `<!-- BEGIN GENERATED MARKER -->` /
+`<!-- END GENERATED MARKER -->` pair — a guide opts in by dropping that pair,
+and editing between the markers is pointless since regen overwrites it. A
+grouped marker names its table after the name
+(`<!-- BEGIN GENERATED COLOR_TABLE alignments-indicators -->`). The spelling,
+the scan (which skips code fences) and the splice are
+`website/scripts/markerBlocks.ts`; a generator registers in
+`markerGenerators.ts` and writes through `rewriteMarkerBlock` or
+`rewriteGroupedMarkerBlocks`, which is what lets `assertMarkersAndDocsAgree`
+fail a block nobody writes and a table no doc renders. A block that may
+legitimately render empty passes `allowEmpty`.
 
 **The complete list of markers, and which docs render each, is generated**: the
 `MARKER_INDEX` table in `agent-docs/reference/GENERATED_DOC_BLOCKS.md`. A list

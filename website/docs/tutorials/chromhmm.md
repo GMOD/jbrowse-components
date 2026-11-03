@@ -23,7 +23,7 @@ enhancer, heterochromatin and so on, once per cell type. We:
 - `python3`, for the [Roadmap build](#reproduce-it-end-to-end) only
 - `jq`, for the Roadmap tissue groups only
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
@@ -34,7 +34,7 @@ conda install -c bioconda -c conda-forge htslib nodejs
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli -->
 
 ## The data
 

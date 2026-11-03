@@ -41,7 +41,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - [`minigraph`](https://github.com/lh3/minigraph), to build a graph like this
   one
 
-<!-- TUTORIAL_INSTALL htslib,minigraph START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,minigraph -->
 
 ```bash
 # Debian/Ubuntu
@@ -50,7 +50,7 @@ sudo apt install tabix
 conda install -c bioconda -c conda-forge htslib minigraph
 ```
 
-<!-- TUTORIAL_INSTALL htslib,minigraph END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,minigraph -->
 
 ## The data
 

@@ -73,7 +73,7 @@ score, which neither shared shape does, so it defines a new shape
 (`scoreMark.ts` and `shaders/`); a display on `spanMark` or `pointMark` has
 neither file:
 
-<!-- EXAMPLE_PLUGIN_TREE START -->
+<!-- BEGIN GENERATED EXAMPLE_PLUGIN_TREE -->
 
 ```text
 src/
@@ -98,7 +98,7 @@ src/
     rpcTypes.ts                  ScoreRegionData and the RPC arg types
 ```
 
-<!-- EXAMPLE_PLUGIN_TREE END -->
+<!-- END GENERATED EXAMPLE_PLUGIN_TREE -->
 
 ## Step 1: Define the data the worker returns
 

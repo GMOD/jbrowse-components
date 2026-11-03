@@ -16,7 +16,7 @@ owns the drawing, state, and menus.
 
 ## Adapter types
 
-<!-- ADAPTER_BASES START -->
+<!-- BEGIN GENERATED ADAPTER_BASES -->
 
 <!-- prettier-ignore -->
 | Extend | You supply | It returns |
@@ -28,7 +28,7 @@ owns the drawing, state, and menus.
 | `CytobandAdapter` | `getData()` | cytoband features for the ideogram |
 | `RegionsAdapter` | `getRegions()` | which regions an assembly has, and how long each is |
 
-<!-- ADAPTER_BASES END -->
+<!-- END GENERATED ADAPTER_BASES -->
 
 Two have a separate guide: [](/docs/developer_guides/refname_aliasing) and
 [](/docs/developer_guides/creating_text_search_adapter).

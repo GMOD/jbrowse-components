@@ -101,9 +101,9 @@ const GENERATORS: Generator[] = [
     // The runtime plugin ABI — ReExports/list.ts, the generated module maps
     // in core and each product, and the manifest the checkers read — from the
     // served packages' exports maps.
-    // Not `independent`: the ABI removal tables and the marker tables read
-    // reExports.generated.json and name this in their `needs`, which is what
-    // `--fix-stale` follows downstream.
+    // Not `independent`: the marker tables read reExports.generated.json and
+    // name this in their `needs`, which is what `--fix-stale` follows
+    // downstream.
     name: 'runtime re-exports',
     argv: rootScript('generateReExports.ts'),
     needs: ['core exports'],
@@ -145,40 +145,6 @@ const GENERATORS: Generator[] = [
   },
   // Writes one file under website/src/lib and reads no doc.
   { name: 'live links', argv: web('gen-live-links.ts'), independent: true },
-  { name: 'guide indexes', argv: web('generate-guide-indexes.ts') },
-  { name: 'ADR index', argv: web('generate-adr-index.ts') },
-  {
-    // Reads the <Figure> lines guide indexes writes into developer_guide.md.
-    name: 'diagram usage table',
-    argv: web('gen-diagram-usage.ts'),
-    needs: ['guide indexes'],
-  },
-  {
-    // The v5 ABI-removal tables in upgrading_v5.md and PLUGIN_ABI_STABILITY.md,
-    // from the two ABI baselines, core's published `exports` map and
-    // publishedPluginBreaks.json.
-    name: 'ABI removal tables',
-    argv: web('generate-abi-removals.ts'),
-    needs: ['runtime re-exports', 'publishConfig exports'],
-  },
-  { name: 'doc indexes', argv: web('generate-doc-indexes.ts') },
-  { name: 'backlog index', argv: web('generate-todo-index.ts') },
-  {
-    name: 'DisplayChrome adoption map',
-    argv: web('generate-display-chrome-adoption.ts'),
-  },
-  {
-    name: 'display hook override table',
-    argv: web('generate-display-hook-overrides.ts'),
-  },
-  {
-    name: 'display state census',
-    argv: web('generate-display-state-census.ts'),
-  },
-  {
-    name: 'freshness signature census',
-    argv: web('generate-freshness-census.ts'),
-  },
   // Before the README is mirrored into the docs site, since this rewrites it.
   {
     name: 'jbrowse-img README commands',
@@ -193,8 +159,6 @@ const GENERATORS: Generator[] = [
     figureDependent: true,
     figureRoot: 'products/jbrowse-img/img',
   },
-  { name: 'CLI doc', argv: web('generate-cli-doc.ts') },
-  { name: 'jbrowse-capture doc', argv: web('generate-capture-doc.ts') },
   {
     // Rendered from tracked sources (wordmark outlines, logo paths) into the
     // figure corpus and checked against figures.lock, so it is stale exactly
@@ -206,40 +170,6 @@ const GENERATORS: Generator[] = [
     independent: true,
     figureDependent: true,
     figureRoot: 'website/static/img',
-  },
-  {
-    // Its fence ratchet counts the mirrored jbrowse-capture.md.
-    name: 'doc snippets',
-    argv: web('sync-doc-snippets.ts'),
-    needs: ['jbrowse-capture doc'],
-  },
-  {
-    // The tables in the agent-docs that own each measurement, from
-    // agent-docs/measurements/<id>.json.
-    name: 'measurement tables',
-    argv: web('generate-measurement-tables.ts'),
-  },
-  {
-    // The public optimizations page's copy of those tables. Reads what the
-    // entry above writes.
-    name: 'published measurement tables',
-    argv: web('sync-measurements.ts'),
-    needs: ['measurement tables'],
-  },
-  {
-    // Single values a sentence quotes out of one of those tables.
-    name: 'inline figures',
-    argv: web('sync-inline-figures.ts'),
-  },
-  {
-    // The marker-block tables that need no TypeScript program, in one process.
-    // gendocs writes them too; this entry is what names the stale table, and
-    // `markers.ts <label>` narrows a development loop to one.
-    name: 'marker tables',
-    argv: api('markers.ts'),
-    // REEXPORT_MODULES reads reExports.generated.json.
-    needs: ['runtime re-exports'],
-    redundantWith: 'config/model/api docs',
   },
   {
     // packages/add-track-core/src/trackTypes.generated.ts, from the #trackType
@@ -282,15 +212,6 @@ const GENERATORS: Generator[] = [
     needs: ['config schema manifest'],
   },
   {
-    // agent-docs/reference/CONFIG_SPELLINGS.md: every display setting's
-    // spelling, where a shared path differs between displays, and the retired
-    // keys.
-    name: 'config spellings',
-    argv: rootScript('generateConfigSpellings.ts'),
-    independent: true,
-    needs: ['config schema manifest'],
-  },
-  {
     // Writes nothing: the schema above still admits every slot path and enum
     // member in scripts/configSlotPaths.v<major>.txt, which a stable release
     // freezes.
@@ -310,6 +231,27 @@ const GENERATORS: Generator[] = [
     needs: ['live links', 'config schema manifest'],
   },
   {
+    // Every doc block and page that needs no TypeScript program, in one
+    // process and in markerGenerators.ts's order: the guide indexes, the
+    // agent-docs indexes and censuses, the CLI and jbrowse-capture mirrors, the
+    // doc snippets, the measurement tables and the marker-block tables. gendocs
+    // writes them too; this entry is what names the stale table, and
+    // `markers.ts <label>` narrows a development loop to one.
+    name: 'marker tables',
+    argv: api('markers.ts'),
+    // REEXPORT_MODULES and the ABI removal tables read
+    // reExports.generated.json and core's publishConfig exports, the config
+    // spellings the committed config schema, and the diagram usage table every
+    // doc's <Figure> lines, jbrowse-img.md's included.
+    needs: [
+      'runtime re-exports',
+      'publishConfig exports',
+      'config schema manifest',
+      'jbrowse-img doc',
+    ],
+    redundantWith: 'config/model/api docs',
+  },
+  {
     // The generated pages under website/docs/{config,models,api}, the marker
     // blocks that need the whole-repo program (DISPLAY_TYPES, GOTCHA,
     // SPEC_KEYS, ...), each package's API_DOCS README block, the
@@ -319,7 +261,12 @@ const GENERATORS: Generator[] = [
     // specifier out of reExports.generated.json.
     name: 'config/model/api docs',
     argv: api('generate.ts'),
-    needs: ['config schema manifest', 'runtime re-exports'],
+    needs: [
+      'config schema manifest',
+      'runtime re-exports',
+      'publishConfig exports',
+      'jbrowse-img doc',
+    ],
     wholeRepoProgram: true,
   },
   {

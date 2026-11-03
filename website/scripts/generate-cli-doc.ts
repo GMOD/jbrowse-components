@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { checkOrWrite } from './check-utils.ts'
+import { writeUnformatted } from './api-docs/format.ts'
 import { docsDir, repoRoot } from './paths.ts'
 import { readmeMirrorPage } from './readmeMirror.ts'
 
@@ -38,17 +38,17 @@ function stripFrontmatter(md: string) {
   return md.replace(/^---\n[\s\S]*?\n---\n+/, '')
 }
 
-checkOrWrite({
-  path: outPath,
-  content: readmeMirrorPage({
-    readmePath,
+export function writeCliDoc() {
+  return writeUnformatted(
     outPath,
-    title,
-    description,
-    editHint:
-      'edit the CLI (or its preamble.md), regenerate the README, then run `pnpm autogen`',
-    body: rewriteImgLink(stripFrontmatter(readFileSync(readmePath, 'utf8'))),
-  }),
-  label: 'cli.md',
-  staleHint: 'run `pnpm autogen`',
-})
+    readmeMirrorPage({
+      readmePath,
+      outPath,
+      title,
+      description,
+      editHint:
+        'edit the CLI (or its preamble.md), regenerate the README, then run `pnpm autogen`',
+      body: rewriteImgLink(stripFrontmatter(readFileSync(readmePath, 'utf8'))),
+    }),
+  )
+}

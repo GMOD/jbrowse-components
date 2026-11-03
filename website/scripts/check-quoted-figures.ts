@@ -66,12 +66,9 @@ import {
   walkFiles,
 } from './check-utils.ts'
 import { FENCE } from './docFenceRegions.ts'
+import { markerBlocks, withoutMarkerBlocks } from './markerBlocks.ts'
 import { docsDir, repoRoot } from './paths.ts'
 import { figuresIn } from './quotedFigures.ts'
-
-const MEASUREMENT_PAGE = /<!--\s*BEGIN GENERATED MEASUREMENT\s+[\w-]+\s*-->/
-const GENERATED_START = /^<!--\s*BEGIN GENERATED\b[^>]*-->$/
-const GENERATED_END = /^<!--\s*END GENERATED\b[^>]*-->$/
 
 /**
  * A page's prose: no frontmatter, no code fences, no generated blocks, no link
@@ -81,41 +78,33 @@ const GENERATED_END = /^<!--\s*END GENERATED\b[^>]*-->$/
  * — a commit sha, an anchor a heading slugified, `adr-022`. Their *text* stays,
  * since that is prose a reader reads.
  */
-function proseOf(text: string) {
+function proseOf(text: string, file: string) {
   const out: string[] = []
   let inFence = false
-  let inGenerated = false
   let inFrontmatter = false
-  text.split('\n').forEach((line, i) => {
-    const trimmed = line.trim()
-    if (i === 0 && trimmed === '---') {
-      inFrontmatter = true
-      return
-    }
-    if (inFrontmatter) {
-      inFrontmatter = trimmed !== '---'
-      return
-    }
-    if (FENCE.test(line)) {
-      inFence = !inFence
-      return
-    }
-    if (inFence) {
-      return
-    }
-    if (GENERATED_START.test(trimmed)) {
-      inGenerated = true
-      return
-    }
-    if (GENERATED_END.test(trimmed)) {
-      inGenerated = false
-      return
-    }
-    if (inGenerated) {
-      return
-    }
-    out.push(line.replaceAll(/\]\([^)]*\)/g, ']').replaceAll(/`[^`]*`/g, '``'))
-  })
+  withoutMarkerBlocks(text, file)
+    .split('\n')
+    .forEach((line, i) => {
+      const trimmed = line.trim()
+      if (i === 0 && trimmed === '---') {
+        inFrontmatter = true
+        return
+      }
+      if (inFrontmatter) {
+        inFrontmatter = trimmed !== '---'
+        return
+      }
+      if (FENCE.test(line)) {
+        inFence = !inFence
+        return
+      }
+      if (inFence) {
+        return
+      }
+      out.push(
+        line.replaceAll(/\]\([^)]*\)/g, ']').replaceAll(/`[^`]*`/g, '``'),
+      )
+    })
   return out.join('\n')
 }
 
@@ -250,13 +239,13 @@ let checked = 0
 
 for (const path of docFiles(docsDir)) {
   const text = readFileSync(path, 'utf8')
-  if (!MEASUREMENT_PAGE.test(text)) {
+  if (!markerBlocks(text, path).some(({ name }) => name === 'MEASUREMENT')) {
     continue
   }
   pages++
   const cited = citedDocFigures(text)
   const citedSource = citedSourceFigures(text, bySymbol)
-  for (const [key, written] of figuresIn(proseOf(text))) {
+  for (const [key, written] of figuresIn(proseOf(text, path))) {
     checked++
     if (cited.has(key) || citedSource.has(key) || OWNED_ELSEWHERE.has(key)) {
       continue

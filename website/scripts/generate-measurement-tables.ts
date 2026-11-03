@@ -13,97 +13,49 @@
 // behind after a doc drops its table looks like a maintained measurement and is
 // read by nobody.
 //
-// Run `pnpm measurement-tables`, or `--check` in CI (`pnpm autogen`).
-import { readFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
-
-import {
-  check,
-  checkOrWriteAll,
-  docFiles,
-  formatMarkdown,
-  spliceGeneratedBlock,
-} from './check-utils.ts'
+// Runs in `website/scripts/api-docs/markers.ts` (`pnpm measurement-tables`).
+import { markerDocBlocks, rewriteGroupedMarkerBlocks } from './api-docs/util.ts'
 import { loadMeasurements, renderTable } from './measurements.ts'
-import { repoRoot } from './paths.ts'
 
-const BLOCK = /^<!--\s*BEGIN GENERATED MEASUREMENT\s+([\w-]+)\s*-->$/
-
-const agentDocsDir = join(repoRoot, 'agent-docs')
-
-const records = loadMeasurements()
-const problems: string[] = []
-const published = new Set<string>()
-
-const generated = docFiles(agentDocsDir)
-  .map(path => {
-    const text = readFileSync(path, 'utf8')
-    const ids = text
-      .split('\n')
-      .map(line => BLOCK.exec(line.trim())?.[1])
-      .filter(id => id !== undefined)
-    if (ids.length === 0) {
-      return undefined
+export function writeMeasurementTables() {
+  const records = loadMeasurements()
+  const problems: string[] = []
+  const published = new Set<string>()
+  const owners = markerDocBlocks('MEASUREMENT', 'agent-docs/')
+  for (const { file, group } of owners) {
+    if (!records.has(group)) {
+      problems.push(`${file}: no agent-docs/measurements/${group}.json`)
+    } else if (published.has(group)) {
+      problems.push(
+        `${file}: publishes "${group}", which another doc also publishes`,
+      )
     }
-    const rel = relative(repoRoot, path)
-    let content = text
-    for (const id of ids) {
-      const record = records.get(id)
-      if (!record) {
-        problems.push(`${rel}: no agent-docs/measurements/${id}.json`)
-        continue
-      }
-      if (published.has(id)) {
-        problems.push(
-          `${rel}: publishes "${id}", which another doc also publishes`,
-        )
-        continue
-      }
-      published.add(id)
-      content = spliceGeneratedBlock({
-        path,
-        marker: `MEASUREMENT ${id}`,
-        // The trailing blank is the one `spliceGeneratedBlock` does not add:
-        // it joins the body straight onto the END marker, so without this the
-        // table's last row and the comment share a paragraph.
-        body: [...renderTable(record), ''],
-        // A doc with two blocks needs the previous splice's output rather than
-        // what is still on disk.
-        text: content,
-      })
-    }
-    return {
-      path,
-      content: formatMarkdown(content, path),
-      label: `${rel} measurement tables`,
-    }
-  })
-  .filter(g => g !== undefined)
+    published.add(group)
+  }
 
-for (const id of records.keys()) {
-  if (!published.has(id)) {
-    problems.push(
-      `agent-docs/measurements/${id}.json is published by no doc — add a BEGIN/END GENERATED MEASUREMENT ${id} block, or delete the record`,
+  for (const id of records.keys()) {
+    if (!published.has(id)) {
+      problems.push(
+        `agent-docs/measurements/${id}.json is published by no doc — add a BEGIN/END GENERATED MEASUREMENT ${id} block, or delete the record`,
+      )
+    }
+  }
+
+  if (problems.length > 0) {
+    throw new Error(
+      `${problems.length} measurement record problem(s):\n${problems.map(p => `  ${p}`).join('\n')}`,
     )
   }
-}
 
-if (problems.length > 0) {
-  console.error(`${problems.length} measurement record problem(s):`)
-  for (const p of problems) {
-    console.error(`  ${p}`)
-  }
-  process.exit(1)
-}
+  const { changed } = rewriteGroupedMarkerBlocks(
+    'MEASUREMENT',
+    // The trailing blank is the one the splice does not add: it joins the body
+    // straight onto the END marker, so without this the table's last row and
+    // the comment share a paragraph.
+    id => [...renderTable(records.get(id)!), ''].join('\n'),
+    { files: [...new Set(owners.map(o => o.file))] },
+  )
 
-if (generated.length === 0) {
-  console.error('no measurement blocks found — did the marker spelling change?')
-  process.exit(1)
-}
-
-checkOrWriteAll(generated, 'run `pnpm autogen` and commit the result')
-
-if (!check) {
   // The count that should go down. `hand` means a human typed the values in and
   // only a human can refresh them, which is the state every one of these was in
   // before it had a record at all — the record makes it visible rather than
@@ -112,7 +64,5 @@ if (!check) {
   console.log(
     `${records.size} measurement(s) published, ${byHand.length} still hand-recorded`,
   )
-  for (const m of byHand) {
-    console.log(`  hand: ${m.id} (${m.measured})`)
-  }
+  return changed
 }

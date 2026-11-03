@@ -35,7 +35,7 @@ allele they share would predate domestication. We:
 - `bcftools` built with libcurl, and htslib (`tabix`)
 - `curl`
 
-<!-- TUTORIAL_INSTALL bcftools,htslib START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL bcftools,htslib -->
 
 ```bash
 # Debian/Ubuntu
@@ -44,7 +44,7 @@ sudo apt install bcftools tabix
 conda install -c bioconda -c conda-forge bcftools htslib
 ```
 
-<!-- TUTORIAL_INSTALL bcftools,htslib END -->
+<!-- END GENERATED TUTORIAL_INSTALL bcftools,htslib -->
 
 ## The data
 

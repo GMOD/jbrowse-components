@@ -4,8 +4,8 @@ import { rewriteGroupedMarkerBlocks } from './util.ts'
 
 // The install fence under a tutorial's `## Prerequisites`, from one registry.
 //
-// A page names its tools in the marker, `<!-- TUTORIAL_INSTALL samtools,vg
-// START -->`, and this writes the commands that install them: apt for
+// A page names its tools in the marker, `<!-- BEGIN GENERATED TUTORIAL_INSTALL
+// samtools,vg -->`, and this writes the commands that install them: apt for
 // Debian/Ubuntu, conda (bioconda) for everything it carries, and one line each
 // for the language package managers. `tutorialInstall.json` holds a tool's
 // package name under each manager that has one, so a rename changes every page

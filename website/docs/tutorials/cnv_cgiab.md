@@ -48,7 +48,7 @@ Building your own instance needs:
   - `bedGraphToBigWig` from the
     [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/)
 
-<!-- TUTORIAL_INSTALL bcftools,htslib,bedGraphToBigWig,megadepth,hificnv START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL bcftools,htslib,bedGraphToBigWig,megadepth,hificnv -->
 
 ```bash
 # Debian/Ubuntu
@@ -62,7 +62,7 @@ wget -P ~/.local/bin \
 chmod +x ~/.local/bin/bedGraphToBigWig
 ```
 
-<!-- TUTORIAL_INSTALL bcftools,htslib,bedGraphToBigWig,megadepth,hificnv END -->
+<!-- END GENERATED TUTORIAL_INSTALL bcftools,htslib,bedGraphToBigWig,megadepth,hificnv -->
 
 ## The data
 

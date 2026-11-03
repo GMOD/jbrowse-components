@@ -6,6 +6,7 @@
 // against what the page already held, so a slice that stops early rewrites the
 // page and then agrees with itself — both `--check` runs pass, and the only
 // evidence is on the published page.
+import { withoutMarkerBlocks } from './markerBlocks.ts'
 
 export const REGION_MARKER = /^\s*(\/\/|#)\s*#(end)?region\b/
 
@@ -99,10 +100,6 @@ export const CODE_FENCE_LANGS = new Set([
 export const FENCE = /^\s*```(\S*)/
 
 const INCLUDE_MARKER = /^<!--\s*include:\s*(\S+?)\s*-->$/
-// The other generator families — COLOR_TABLE, JEXL_CATALOG, PALETTE_KEYS and
-// friends — bracket their output with `<!-- NAME … START -->` / `END`.
-const GENERATED_START = /^<!--\s*[A-Z_]+[^>]*\bSTART\b[^>]*-->$/
-const GENERATED_END = /^<!--\s*[A-Z_]+[^>]*\bEND\b[^>]*-->$/
 
 /**
  * Count the hand-written TS/JS fences in one page: the ratchet's unit of debt.
@@ -112,21 +109,11 @@ const GENERATED_END = /^<!--\s*[A-Z_]+[^>]*\bEND\b[^>]*-->$/
  * `include:` marker because it is not that kind of generated. Counting those
  * would have booked eight generated fences as debt no one could ever pay down.
  */
-export function countUnIncludedFences(text: string) {
-  const lines = text.split('\n')
+export function countUnIncludedFences(text: string, file: string) {
+  const lines = withoutMarkerBlocks(text, file).split('\n')
   let inFence = false
-  let inGenerated = false
   let count = 0
   lines.forEach((line, i) => {
-    const trimmed = line.trim()
-    if (!inFence && GENERATED_START.test(trimmed)) {
-      inGenerated = true
-      return
-    }
-    if (!inFence && GENERATED_END.test(trimmed)) {
-      inGenerated = false
-      return
-    }
     const fence = FENCE.exec(line)
     if (!fence) {
       return
@@ -136,9 +123,6 @@ export function countUnIncludedFences(text: string) {
       return
     }
     inFence = true
-    if (inGenerated) {
-      return
-    }
     // The marker sits above the fence with a formatter-inserted blank line, and
     // sometimes a `<!-- prettier-ignore -->` in between (see sync-doc-snippets
     // for why a generated fence ever needs one), so walk back over blanks and

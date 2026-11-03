@@ -47,7 +47,7 @@ properties (`feature.type`); in the plugin's JavaScript the same feature is a
 `SimpleFeature`, read with `feature.get('type')`
 ([property access vs `get()`](/docs/config_guides/jexl#property-access-vs-get)).
 
-<!-- GOTCHA BedAdapter START -->
+<!-- BEGIN GENERATED GOTCHA BedAdapter -->
 
 :::caution Gotcha
 
@@ -59,7 +59,7 @@ them generically as `field6`, `field7`, ... and `feature.itemRgb` reads as
 
 :::
 
-<!-- GOTCHA BedAdapter END -->
+<!-- END GENERATED GOTCHA BedAdapter -->
 
 An unset [`encoding.color`](/docs/config/featureencoding/#slot-color) paints
 each feature from the colors a BED has, under whichever of those names they

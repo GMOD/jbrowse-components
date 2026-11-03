@@ -32,8 +32,8 @@ import type { Node } from 'typescript'
 // `#trackType`, so neither is restated here. A guide opts a group in with a
 // marker pair, regenerated on `pnpm autogen`:
 //
-//   <!-- FILE_TYPES variants START -->
-//   <!-- FILE_TYPES variants END -->
+//   <!-- BEGIN GENERATED FILE_TYPES variants -->
+//   <!-- END GENERATED FILE_TYPES variants -->
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 
@@ -139,7 +139,7 @@ export function writeFileTypeDocs(corpus: SourceCorpus) {
   for (const group of Object.keys(groups)) {
     if (!seen.has(group)) {
       throw new Error(
-        `#fileFormat group "${group}" is not rendered by any doc — no <!-- FILE_TYPES ${group} START --> marker found`,
+        `#fileFormat group "${group}" is not rendered by any doc — no <!-- BEGIN GENERATED FILE_TYPES ${group} --> marker found`,
       )
     }
   }
@@ -233,8 +233,8 @@ export function writeDisplayViewTypeDocs(
 
 // A hand-written guide pulls in a type's `#gotcha` text with a marker pair:
 //
-//   <!-- GOTCHA PAFAdapter START -->
-//   <!-- GOTCHA PAFAdapter END -->
+//   <!-- BEGIN GENERATED GOTCHA PAFAdapter -->
+//   <!-- END GENERATED GOTCHA PAFAdapter -->
 //
 // so the warning is authored once, at the definition site, and appears both on
 // the generated config page and in the guide. Restating it by hand is how the

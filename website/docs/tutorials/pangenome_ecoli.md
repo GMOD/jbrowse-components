@@ -44,7 +44,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - the GraphGenomeView plugin, for the same track. In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store)
 
-<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix -->
 
 ```bash
 # Debian/Ubuntu
@@ -63,7 +63,7 @@ cargo install gfa-to-tabix
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig,datasets,gfa-to-tabix -->
 
 ## The data
 

@@ -35,7 +35,7 @@ chr10 and chr12 in the COLO829 melanoma cell line. We:
 - `python3`
 - a GRCh38 FASTA, and roughly 40 GB of free disk
 
-<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig -->
 
 ```bash
 # Debian/Ubuntu
@@ -51,7 +51,7 @@ chmod +x ~/.local/bin/bedGraphToBigWig
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,bedGraphToBigWig -->
 
 ## The data
 

@@ -37,7 +37,7 @@ each over several. We:
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-<!-- TUTORIAL_INSTALL samtools,node,jbrowse-cli START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,node,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
@@ -48,7 +48,7 @@ conda install -c bioconda -c conda-forge samtools nodejs
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,node,jbrowse-cli END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,node,jbrowse-cli -->
 
 ## Download the data
 

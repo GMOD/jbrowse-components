@@ -31,12 +31,23 @@ const docText = new Map<string, string>()
 // it. Only for files a run may also write — a source file read through this
 // would never be invalidated.
 export function readDoc(file: string) {
-  let text = docText.get(file)
+  const key = docKey(file)
+  let text = docText.get(key)
   if (text === undefined) {
-    text = fs.readFileSync(file, 'utf8')
-    docText.set(file, text)
+    text = fs.readFileSync(path.join(repoRoot, key), 'utf8')
+    docText.set(key, text)
   }
   return text
+}
+
+// Repo-relative, so a generator passing an absolute path and one passing a
+// relative path share one cache entry rather than overwriting each other.
+export function docKey(file: string) {
+  return path.relative(repoRoot, path.resolve(repoRoot, file))
+}
+
+function currentText(key: string) {
+  return docText.get(key) ?? onDisk(key)
 }
 
 // A splice into a file a person also edits: a marker block in a guide, an
@@ -46,14 +57,19 @@ export function readDoc(file: string) {
 // Nothing reaches disk until `flushDocs`: the content goes into the cache, so a
 // later splice into the same doc builds on it, and a run that throws partway
 // leaves the tree as it found it rather than spliced and unformatted.
+// Returns the doc's key when the content moved, so a generator can report what
+// it changed.
 export function writeDoc(file: string, content: string) {
-  docText.set(file, content)
-  written.add(file)
+  const key = docKey(file)
+  const moved = currentText(key) !== content
+  docText.set(key, content)
+  written.add(key)
+  return moved ? [key] : []
 }
 
 export function writeUnformatted(file: string, content: string) {
-  writeDoc(file, content)
-  unformatted.add(file)
+  unformatted.add(docKey(file))
+  return writeDoc(file, content)
 }
 
 // A page this run owns outright. Not formatted, and not `pnpm format`'s to
@@ -65,7 +81,7 @@ export function writeUnformatted(file: string, content: string) {
 // So the emitter owes what the formatter used to repair: `blankLinesAroundFences`
 // is the one thing oxfmt did to these pages that was not wrapping.
 export function writePage(file: string, content: string) {
-  writeUnformatted(file, blankLinesAroundFences(content))
+  return writeUnformatted(file, blankLinesAroundFences(content))
 }
 
 // A fenced block reads as its own paragraph, and the `#example` blocks quoted
@@ -110,9 +126,9 @@ export function writtenDocs() {
   return [...written]
 }
 
-function onDisk(file: string) {
+function onDisk(key: string) {
   try {
-    return fs.readFileSync(file, 'utf8')
+    return fs.readFileSync(path.join(repoRoot, key), 'utf8')
   } catch {
     return undefined
   }
@@ -146,8 +162,9 @@ export async function flushDocs() {
     file => onDisk(file) !== docText.get(file),
   )
   for (const file of changed) {
-    fs.mkdirSync(path.dirname(file), { recursive: true })
-    writeFileAtomic(file, docText.get(file)!)
+    const target = path.join(repoRoot, file)
+    fs.mkdirSync(path.dirname(target), { recursive: true })
+    writeFileAtomic(target, docText.get(file)!)
   }
   await formatWithOxfmt(changed.filter(file => !unformatted.has(file)))
   return changed

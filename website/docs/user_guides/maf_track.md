@@ -153,7 +153,7 @@ share is flagged, and conserved codons, including the gene's stop, show the
 fill. The residue is drawn on each codon once you zoom in far enough to read it,
 and the layer draws only at base level.
 
-<!-- COLOR_TABLE maf START -->
+<!-- BEGIN GENERATED COLOR_TABLE maf -->
 
 <!-- prettier-ignore -->
 | Color | Name | Value | Description |
@@ -162,7 +162,7 @@ and the layer draws only at base level.
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#3a7bd5;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#3a7bd5"></span> | Synonymous codon | `#3a7bd5` | MAF codon view: the codon differs from the reference but the amino acid is unchanged (silent) |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#cc2222;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#cc2222"></span> | Stop gained | `#cc2222` | MAF codon view: a stop the reference codon is not |
 
-<!-- COLOR_TABLE maf END -->
+<!-- END GENERATED COLOR_TABLE maf -->
 
 On a large alignment, narrowing to a focused set of species first (see
 [Selecting a subtree](#selecting-a-subtree)) keeps the per-codon columns

@@ -173,13 +173,16 @@ test('a whole-file include drops every marker and the trailing blank', () => {
 const page = (...lines: string[]) => lines.join('\n')
 
 test('a plain TS fence counts', () => {
-  expect(countUnIncludedFences(page('```ts', 'const a = 1', '```'))).toBe(1)
+  expect(
+    countUnIncludedFences(page('```ts', 'const a = 1', '```'), 'page.md'),
+  ).toBe(1)
 })
 
 test('a fence carrying an include marker does not count', () => {
   expect(
     countUnIncludedFences(
       page('<!-- include: src/a.ts -->', '', '```ts', 'const a = 1', '```'),
+      'page.md',
     ),
   ).toBe(0)
 })
@@ -190,6 +193,7 @@ test('json and bash fences are not debt', () => {
   expect(
     countUnIncludedFences(
       page('```json', '{}', '```', '```bash', 'ls', '```', '```', 'x', '```'),
+      'page.md',
     ),
   ).toBe(0)
 })
@@ -201,15 +205,16 @@ test('a fence inside another generator block does not count', () => {
   expect(
     countUnIncludedFences(
       page(
-        '<!-- JEXL_CATALOG START -->',
+        '<!-- BEGIN GENERATED JEXL_CATALOG -->',
         '```js',
         'jexl: max(0, 2)',
         '```',
-        '<!-- JEXL_CATALOG END -->',
+        '<!-- END GENERATED JEXL_CATALOG -->',
         '```js',
         'const handWritten = 1',
         '```',
       ),
+      'page.md',
     ),
   ).toBe(1)
 })
@@ -221,12 +226,13 @@ test('a marker-looking line inside a fence is content', () => {
     countUnIncludedFences(
       page(
         '```ts',
-        '// <!-- COLOR_TABLE START -->',
+        '<!-- BEGIN GENERATED COLOR_TABLE x -->',
         '```',
         '```ts',
         'const a = 1',
         '```',
       ),
+      'page.md',
     ),
   ).toBe(2)
 })

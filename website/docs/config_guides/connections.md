@@ -83,7 +83,7 @@ JBrowse 2 equivalent leaves a placeholder track naming it. Check the result with
 
 ## How connections are stored in a session
 
-<!-- GOTCHA BaseConnection START -->
+<!-- BEGIN GENERATED GOTCHA BaseConnection -->
 
 :::caution Gotcha
 
@@ -94,7 +94,7 @@ stores only the tracks you open (under `connectionTrackConfigs`, keyed by
 
 :::
 
-<!-- GOTCHA BaseConnection END -->
+<!-- END GENERATED GOTCHA BaseConnection -->
 
 ## See also
 

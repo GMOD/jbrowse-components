@@ -149,7 +149,7 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
 `MenuItem` is a discriminated union. Every menu-producing view returns
 `MenuItem[]`.
 
-<!-- MENU_ITEM_TYPES START -->
+<!-- BEGIN GENERATED MENU_ITEM_TYPES -->
 
 <!-- prettier-ignore -->
 | `type` | Own fields | Description |
@@ -162,11 +162,11 @@ export default function DotplotReadVsRefMenuItem(pluginManager: PluginManager) {
 | `subHeader` | `priority`, `label` | a text label for a section of a menu; not clickable |
 | `subMenu` | `subMenu` | nests another `MenuItem[]`, or a function building one, to any depth |
 
-<!-- MENU_ITEM_TYPES END -->
+<!-- END GENERATED MENU_ITEM_TYPES -->
 
 Every variant except `divider` and `subHeader` also takes these:
 
-<!-- MENU_ITEM_FIELDS START -->
+<!-- BEGIN GENERATED MENU_ITEM_FIELDS -->
 
 <!-- prettier-ignore -->
 | Field | Type | Description |
@@ -182,7 +182,7 @@ Every variant except `divider` and `subHeader` also takes these:
 | `keepMenuOpen` | `boolean` | override the dismiss-on-click rule; see `staysOpenOnClick` |
 | `endAdornment` | `React.ReactNode` | arbitrary trailing content |
 
-<!-- MENU_ITEM_FIELDS END -->
+<!-- END GENERATED MENU_ITEM_FIELDS -->
 
 Clicking a row dismisses the menu unless it is a `checkbox` or `radio`, which
 are settings and stay open. `staysOpenOnClick` is that rule, exported so a test
@@ -200,7 +200,7 @@ Build rows with these. Import them from `@jbrowse/core/ui/menuItems`, a
 React-free entry, so a state model or plugin `menuItems` module does not pull
 the Material UI barrel into every host that installs the plugin.
 
-<!-- MENU_ITEM_BUILDERS START -->
+<!-- BEGIN GENERATED MENU_ITEM_BUILDERS -->
 
 <!-- prettier-ignore -->
 | Builder | Description |
@@ -217,7 +217,7 @@ the Material UI barrel into every host that installs the plugin.
 | `withHint` | a row label with an aside that is only sometimes there |
 | `withSubHeader` | a section heading, present only if the section is |
 
-<!-- MENU_ITEM_BUILDERS END -->
+<!-- END GENERATED MENU_ITEM_BUILDERS -->
 
 ## Root model menu API
 
@@ -235,7 +235,7 @@ give it a `priority` instead; the renderer sorts rows by it, higher first, and
 it holds however the rest of the menu changes. `insertMenu` is the exception: a
 top-level menu has no priority, so its position is the only ordering there is.
 
-<!-- MENU_ACTIONS START -->
+<!-- BEGIN GENERATED MENU_ACTIONS -->
 
 <!-- prettier-ignore -->
 | Action | Description |
@@ -247,7 +247,7 @@ top-level menu has no priority, so its position is the only ordering there is.
 | [`appendToSubMenu(menuPath, menuItem)`](/docs/models/rootappmenumixin#action-appendtosubmenu) | Add a menu item to a sub-menu, creating any part of the path that does not exist. |
 | [`insertInSubMenu(menuPath, menuItem, position)`](/docs/models/rootappmenumixin#action-insertinsubmenu) | Insert a menu item into a sub-menu, creating any part of the path that does not exist. |
 
-<!-- MENU_ACTIONS END -->
+<!-- END GENERATED MENU_ACTIONS -->
 
 ## See also
 

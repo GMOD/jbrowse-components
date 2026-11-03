@@ -30,7 +30,7 @@ than a browser fetches at once. We:
   `make-density` runs
 - htslib (`bgzip`, `tabix`), for the build script
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig -->
 
 ```bash
 # Debian/Ubuntu
@@ -45,7 +45,7 @@ chmod +x ~/.local/bin/bedGraphToBigWig
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig -->
 
 ## The data
 

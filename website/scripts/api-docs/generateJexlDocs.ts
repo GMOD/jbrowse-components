@@ -25,13 +25,13 @@ import type { SourceCorpus } from './util.ts'
 // tags to show multiple examples (e.g. getTag). A guide opts the catalog in with
 // a single marker pair, regenerated on `pnpm autogen`:
 //
-//   <!-- JEXL_CATALOG START -->
-//   <!-- JEXL_CATALOG END -->
+//   <!-- BEGIN GENERATED JEXL_CATALOG -->
+//   <!-- END GENERATED JEXL_CATALOG -->
 //
 // or pulls in one category, by the slug of its name:
 //
-//   <!-- JEXL_CATEGORY variant-functions START -->
-//   <!-- JEXL_CATEGORY variant-functions END -->
+//   <!-- BEGIN GENERATED JEXL_CATEGORY variant-functions -->
+//   <!-- END GENERATED JEXL_CATEGORY variant-functions -->
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 //
@@ -113,7 +113,7 @@ function renderCatalog(groups: Map<string, Entry[]>) {
 }
 
 // The marker names a category by slug, since a marker's group cannot carry a
-// space: `<!-- JEXL_CATEGORY variant-functions START -->`.
+// space: `<!-- BEGIN GENERATED JEXL_CATEGORY variant-functions -->`.
 function slug(category: string) {
   return category.toLowerCase().replaceAll(/\s+/g, '-')
 }

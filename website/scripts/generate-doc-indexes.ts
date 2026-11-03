@@ -38,16 +38,12 @@
 // "Why it is parked" paragraph states.
 //
 // Only the block between the markers is generated; the prose above it is
-// hand-maintained. Run: `pnpm autogen` (or `--check` in CI).
+// hand-maintained. Runs in `website/scripts/api-docs/markers.ts`.
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-import {
-  checkOrWriteAll,
-  markdownTableLines,
-  parseFrontmatter,
-  spliceGeneratedBlock,
-} from './check-utils.ts'
+import { rewriteMarkerBlock } from './api-docs/util.ts'
+import { markdownTableLines, parseFrontmatter } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 
 // The index is the one file in each of these directories that isn't a doc in
@@ -97,16 +93,14 @@ const MAX_DESCRIPTION_WORDS = 45
 const INDEXES = [
   {
     dir: 'reference',
-    marker: 'REFERENCE INDEX',
-    label: 'Reference index',
+    marker: 'REFERENCE_INDEX',
     heading: 'Read when',
     groups: KIND_GROUPS,
     maxDescriptionWords: MAX_DESCRIPTION_WORDS,
   },
   {
     dir: 'ideas',
-    marker: 'IDEAS INDEX',
-    label: 'Ideas index',
+    marker: 'IDEAS_INDEX',
     // Not "Read when": these are proposals to pick up, and the description is
     // written as the hook you pick one up by.
     heading: 'What it covers',
@@ -120,8 +114,7 @@ const INDEXES = [
     // and every citation has to know which context it is in. Here they are one
     // string.
     dir: 'mechanisms',
-    marker: 'MECHANISMS INDEX',
-    label: 'Mechanisms index',
+    marker: 'MECHANISMS_INDEX',
     // Not "Read when": a mechanism is looked up by the idea it carries, by
     // someone who may not know which subsystem demonstrates it.
     heading: 'The idea it carries',
@@ -134,8 +127,7 @@ const INDEXES = [
     // still moving, so it goes stale faster than anything in reference/, and
     // seven of the eight that existed on 2026-08-19 closed in a day.
     dir: 'handoffs',
-    marker: 'HANDOFFS INDEX',
-    label: 'Handoffs index',
+    marker: 'HANDOFFS_INDEX',
     heading: 'What it is waiting on',
   },
 ]
@@ -238,50 +230,44 @@ const tableFor = (docs: Doc[], heading: string) =>
     ]),
   )
 
-const indexes = INDEXES.map(
-  ({
-    dir,
-    marker,
-    label,
-    heading,
-    slugFilenames,
-    groups,
-    maxDescriptionWords,
-    subfolders,
-  }) => {
-    const indexPath = join(repoRoot, 'agent-docs', dir, SELF)
-    const docs = collectDocs(
+export function writeDocIndexes() {
+  return INDEXES.flatMap(
+    ({
       dir,
+      marker,
+      heading,
       slugFilenames,
+      groups,
       maxDescriptionWords,
       subfolders,
-    )
-    const filled = groups?.filter(g => docs.some(g.match))
-    const ungrouped = groups
-      ? docs.filter(d => !groups.some(g => g.match(d)))
-      : []
-    if (ungrouped.length) {
-      throw new Error(
-        `agent-docs/${dir}/: ${ungrouped.map(d => d.file).join(', ')} match no group of the index, so they would be invisible on it. Each needs what the groups split on — the \`kind:\` frontmatter in reference/, one of the subfolders in ideas/ — named in website/scripts/generate-doc-indexes.ts`,
+    }) => {
+      const docs = collectDocs(
+        dir,
+        slugFilenames,
+        maxDescriptionWords,
+        subfolders,
       )
-    }
-    return {
-      path: indexPath,
-      content: spliceGeneratedBlock({
-        path: indexPath,
+      const filled = groups?.filter(g => docs.some(g.match))
+      const ungrouped = groups
+        ? docs.filter(d => !groups.some(g => g.match(d)))
+        : []
+      if (ungrouped.length) {
+        throw new Error(
+          `agent-docs/${dir}/: ${ungrouped.map(d => d.file).join(', ')} match no group of the index, so they would be invisible on it. Each needs what the groups split on — the \`kind:\` frontmatter in reference/, one of the subfolders in ideas/ — named in website/scripts/generate-doc-indexes.ts`,
+        )
+      }
+      return rewriteMarkerBlock(
         marker,
-        body: filled
+        (filled
           ? filled.flatMap((group, i) => [
               ...(i ? [''] : []),
               `## ${group.title}`,
               '',
               ...tableFor(docs.filter(group.match), heading),
             ])
-          : tableFor(docs, heading),
-      }),
-      label,
-    }
-  },
-)
-
-checkOrWriteAll(indexes, 'run `pnpm autogen`')
+          : tableFor(docs, heading)
+        ).join('\n'),
+      )
+    },
+  )
+}

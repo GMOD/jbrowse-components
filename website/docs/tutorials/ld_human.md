@@ -37,7 +37,7 @@ of every pair of variants as a triangle. Across the _LCT_ block on chr2, we:
   [PLINK 2.0](https://www.cog-genomics.org/plink/2.0/) for the Fst track and the
   frequency filter[^plink19]
 
-<!-- TUTORIAL_INSTALL bcftools,htslib,node,jbrowse-cli,bedGraphToBigWig,plink,plink2 START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL bcftools,htslib,node,jbrowse-cli,bedGraphToBigWig,plink,plink2 -->
 
 ```bash
 # Debian/Ubuntu
@@ -53,7 +53,7 @@ chmod +x ~/.local/bin/bedGraphToBigWig
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL bcftools,htslib,node,jbrowse-cli,bedGraphToBigWig,plink,plink2 END -->
+<!-- END GENERATED TUTORIAL_INSTALL bcftools,htslib,node,jbrowse-cli,bedGraphToBigWig,plink,plink2 -->
 
 ## The data
 

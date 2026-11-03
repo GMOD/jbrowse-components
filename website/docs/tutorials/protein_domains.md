@@ -34,7 +34,7 @@ whose isoforms encode two different proteins. We:
 - samtools, for the FASTA index the [build script](#reproduce-it-end-to-end)
   writes
 
-<!-- TUTORIAL_INSTALL gffread,hmmer,htslib,samtools,node START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL gffread,hmmer,htslib,samtools,node -->
 
 ```bash
 # Debian/Ubuntu
@@ -44,7 +44,7 @@ conda install -c bioconda -c conda-forge gffread hmmer htslib samtools \
   nodejs
 ```
 
-<!-- TUTORIAL_INSTALL gffread,hmmer,htslib,samtools,node END -->
+<!-- END GENERATED TUTORIAL_INSTALL gffread,hmmer,htslib,samtools,node -->
 
 ## The data
 

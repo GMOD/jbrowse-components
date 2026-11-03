@@ -13,8 +13,8 @@ import {
 // sentence a reader gets. A rule with no JSDoc fails the run, since a blank
 // cell reads as a rule that reports nothing.
 //
-//   <!-- MARK_RULES START -->
-//   <!-- MARK_RULES END -->
+//   <!-- BEGIN GENERATED MARK_RULES -->
+//   <!-- END GENERATED MARK_RULES -->
 
 const RULES_SOURCE = 'plugins/marks/src/LinearMarkDisplay/markProblems.ts'
 

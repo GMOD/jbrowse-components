@@ -26,13 +26,13 @@ We:
 - a JBrowse for [the last section](#opening-a-call-in-the-browser)
   ([Web](/docs/quickstart_web) or [Desktop](/docs/quickstart_desktop))
 
-<!-- TUTORIAL_INSTALL jbrowse-img START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL jbrowse-img -->
 
 ```bash
 npm install -g @jbrowse/img@next
 ```
 
-<!-- TUTORIAL_INSTALL jbrowse-img END -->
+<!-- END GENERATED TUTORIAL_INSTALL jbrowse-img -->
 
 ## The data
 

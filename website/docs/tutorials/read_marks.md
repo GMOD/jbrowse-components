@@ -31,7 +31,7 @@ experimental and its config shape may change.
 - [Node.js](https://nodejs.org/) and the [JBrowse CLI](/docs/cli), for the build
   script
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
@@ -42,7 +42,7 @@ conda install -c bioconda -c conda-forge samtools htslib nodejs
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli -->
 
 ## The data
 

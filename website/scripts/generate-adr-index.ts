@@ -15,20 +15,15 @@
 // rejected, which the title doesn't say.
 //
 // Only the table between the BEGIN/END markers is generated; the prose above it
-// is hand-maintained. Run: `pnpm autogen ADR` (or `--check` in CI).
+// is hand-maintained. Runs in `website/scripts/api-docs/markers.ts`.
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-import {
-  checkOrWrite,
-  markdownTableLines,
-  parseFrontmatter,
-  spliceGeneratedBlock,
-} from './check-utils.ts'
+import { rewriteMarkerBlock } from './api-docs/util.ts'
+import { markdownTableLines, parseFrontmatter } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 
 const adrDir = join(repoRoot, 'agent-docs', 'architecture-decision-records')
-const indexPath = join(adrDir, 'README.md')
 
 const STATUSES = [
   'Accepted',
@@ -104,16 +99,12 @@ function collectAdrs() {
   return adrs.sort((a, b) => a.sortKey - b.sortKey)
 }
 
-checkOrWrite({
-  path: indexPath,
-  content: spliceGeneratedBlock({
-    path: indexPath,
-    marker: 'ADR INDEX',
-    body: markdownTableLines(
+export function writeAdrIndex() {
+  return rewriteMarkerBlock(
+    'ADR_INDEX',
+    markdownTableLines(
       ['ADR', 'Status', 'Decision'],
       collectAdrs().map(a => a.row),
-    ),
-  }),
-  label: 'ADR index',
-  staleHint: 'run `pnpm autogen`',
-})
+    ).join('\n'),
+  )
+}

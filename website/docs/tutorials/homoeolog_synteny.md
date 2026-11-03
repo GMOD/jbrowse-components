@@ -31,7 +31,7 @@ that hybridized to make it, so most of its genes exist three times. We:
 [Selection pressure between two genomes](/docs/tutorials/selection_pressure)
 covers installing jcvi and what dN/dS measures.
 
-<!-- TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython -->
 
 ```bash
 # Debian/Ubuntu
@@ -43,7 +43,7 @@ pip install jcvi biopython
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython END -->
+<!-- END GENERATED TUTORIAL_INSTALL diamond,node,jbrowse-cli,jcvi,biopython -->
 
 ## The data
 

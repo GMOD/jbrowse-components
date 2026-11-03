@@ -27,7 +27,7 @@ it expresses between two conditions, here skeletal muscle and liver. We:
 - htslib (`bgzip`, `tabix`)
 - R with satuRn, SummarizedExperiment, edgeR and limma, all Bioconductor
 
-<!-- TUTORIAL_INSTALL htslib START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib -->
 
 ```bash
 # Debian/Ubuntu
@@ -36,7 +36,7 @@ sudo apt install tabix
 conda install -c bioconda -c conda-forge htslib
 ```
 
-<!-- TUTORIAL_INSTALL htslib END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib -->
 
 ## The data
 

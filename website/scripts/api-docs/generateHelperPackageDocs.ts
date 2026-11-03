@@ -31,8 +31,8 @@ import type { SourceCorpus } from './util.ts'
 //
 // The guide opts in with a marker pair, regenerated on `pnpm autogen`:
 //
-//   <!-- HELPER_PACKAGES START -->
-//   <!-- HELPER_PACKAGES END -->
+//   <!-- BEGIN GENERATED HELPER_PACKAGES -->
+//   <!-- END GENERATED HELPER_PACKAGES -->
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 

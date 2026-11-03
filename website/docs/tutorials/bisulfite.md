@@ -36,7 +36,7 @@ cytosine contexts are methylated. With an _Arabidopsis thaliana_ WGBS run we:
   optional aggregate track
 - UCSC's `bedGraphToBigWig`, for the optional aggregate track only
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets -->
 
 ```bash
 # Debian/Ubuntu
@@ -54,7 +54,7 @@ chmod +x ~/.local/bin/bedGraphToBigWig ~/.local/bin/datasets ~/.local/bin/datafo
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,bedGraphToBigWig,datasets -->
 
 ## The data
 

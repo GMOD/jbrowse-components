@@ -31,7 +31,7 @@ every pair. On arm 2L in Cameroon and Gabon, we:
 - `python3`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,plink2 START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,plink2 -->
 
 ```bash
 # Debian/Ubuntu
@@ -42,7 +42,7 @@ conda install -c bioconda -c conda-forge samtools htslib nodejs plink2
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,plink2 END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli,plink2 -->
 
 ## The data
 

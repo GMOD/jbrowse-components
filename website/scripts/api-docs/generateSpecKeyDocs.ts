@@ -30,8 +30,8 @@ import type { SourceCorpus } from './util.ts'
 //
 // A view type opts in with a marker pair, regenerated on `pnpm autogen`:
 //
-//   <!-- SPEC_KEYS LinearGenomeView START -->
-//   <!-- SPEC_KEYS LinearGenomeView END -->
+//   <!-- BEGIN GENERATED SPEC_KEYS LinearGenomeView -->
+//   <!-- END GENERATED SPEC_KEYS LinearGenomeView -->
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 //
@@ -548,7 +548,7 @@ export function writeSpecKeyDocs(
   ].filter(v => !seen.has(v))
   if (undocumented.length) {
     throw new Error(
-      `${undocumented.join(', ')} — a session spec can launch these, but no doc has a \`<!-- SPEC_KEYS <type> START -->\` marker for them, so what they accept is documented nowhere.`,
+      `${undocumented.join(', ')} — a session spec can launch these, but no doc has a \`<!-- BEGIN GENERATED SPEC_KEYS <type> -->\` marker for them, so what they accept is documented nowhere.`,
     )
   }
   return changed

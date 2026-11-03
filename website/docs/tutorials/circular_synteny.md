@@ -29,7 +29,7 @@ the autosomes have been shuffled and where the X has not. We:
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/), and `node` for
   the [JBrowse CLI](/docs/cli)
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig -->
 
 ```bash
 # Debian/Ubuntu
@@ -44,7 +44,7 @@ chmod +x ~/.local/bin/bedGraphToBigWig
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig -->
 
 ## The data
 

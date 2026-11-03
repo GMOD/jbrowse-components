@@ -20,8 +20,8 @@ import type { SourceCorpus } from './util.ts'
 //
 // The doc opts in with a marker pair, regenerated on `pnpm autogen`:
 //
-//   <!-- BGZF_POOL_SITES START -->
-//   <!-- BGZF_POOL_SITES END -->
+//   <!-- BEGIN GENERATED BGZF_POOL_SITES -->
+//   <!-- END GENERATED BGZF_POOL_SITES -->
 
 const CALL = /\bsharedBgzfWorkerPool\(\)/
 

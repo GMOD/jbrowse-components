@@ -59,24 +59,10 @@
 // exact. This page consumes THIS file, so the missing link is a fact about the
 // page; over there it could only ever be inferred from a number that failed to
 // match, which is the same evidence a typo produces.
-import { readFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
-
-import {
-  check,
-  checkOrWriteAll,
-  docFiles,
-  formatMarkdown,
-  linkedAgentDocs,
-  spliceGeneratedBlock,
-} from './check-utils.ts'
+import { readDoc } from './api-docs/format.ts'
+import { markerDocBlocks, rewriteGroupedMarkerBlocks } from './api-docs/util.ts'
+import { linkedAgentDocs } from './check-utils.ts'
 import { loadMeasurements } from './measurements.ts'
-import { docsDir, releaseDraftsDir, repoRoot } from './paths.ts'
-
-const BEGIN = /^<!--\s*BEGIN GENERATED MEASUREMENT\s+([\w-]+)\s*-->$/
-const END = /^<!--\s*END GENERATED MEASUREMENT\s+([\w-]+)\s*-->$/
-
-const agentDocsDir = join(repoRoot, 'agent-docs')
 
 interface Source {
   id: string
@@ -98,81 +84,57 @@ const TABLE_ROW = /^\s*\|.*\|\s*$/
  */
 function collectSources(problems: string[]) {
   const byId = new Map<string, Source>()
-  for (const file of docFiles(agentDocsDir)) {
-    const lines = readFileSync(file, 'utf8').split('\n')
-    const rel = relative(repoRoot, file)
-    lines.forEach((line, i) => {
-      const begin = BEGIN.exec(line.trim())
-      if (!begin) {
-        return
-      }
-      const id = begin[1]!
-      const rows: string[] = []
-      let k = i + 1
-      for (; k < lines.length && !END.test(lines[k]!.trim()); k++) {
-        if (TABLE_ROW.test(lines[k]!)) {
-          rows.push(lines[k]!.trimEnd())
-        }
-      }
-      if (k === lines.length) {
-        problems.push(
-          `${rel}: BEGIN GENERATED MEASUREMENT ${id} has no END — the block would swallow the rest of the doc`,
-        )
-        return
-      }
-      // Two rows is a header and its delimiter with no data under it, which is
-      // what a block placed one table too high produces.
-      if (rows.length < 3) {
-        problems.push(`${rel}: the "${id}" block holds no markdown table`)
-        return
-      }
-      const seen = byId.get(id)
-      if (seen) {
-        problems.push(
-          `measurement "${id}" is defined twice: ${seen.file} and ${rel}`,
-        )
-        return
-      }
-      byId.set(id, { id, file: rel, rows })
-    })
+  for (const { file, group, begin, end } of markerDocBlocks(
+    'MEASUREMENT',
+    'agent-docs/',
+  )) {
+    const rows = readDoc(file)
+      .split('\n')
+      .slice(begin + 1, end)
+      .filter(line => TABLE_ROW.test(line))
+      .map(line => line.trimEnd())
+    const seen = byId.get(group)
+    // Two rows is a header and its delimiter with no data under it, which is
+    // what a block placed one table too high produces.
+    if (rows.length < 3) {
+      problems.push(`${file}: the "${group}" block holds no markdown table`)
+    } else if (seen) {
+      problems.push(
+        `measurement "${group}" is defined twice: ${seen.file} and ${file}`,
+      )
+    } else {
+      byId.set(group, { id: group, file, rows })
+    }
   }
   return byId
 }
 
-// Collected rather than thrown, all of them, so one run names every authoring
-// mistake: these arrive in batches when a page is written or a doc is split,
-// and a script that dies on the first turns that into one round trip each.
-const problems: string[] = []
-const sources = collectSources(problems)
-const consumed = new Set<string>()
+export function writePublishedMeasurements() {
+  // Collected rather than thrown, all of them, so one run names every authoring
+  // mistake: these arrive in batches when a page is written or a doc is split,
+  // and a script that dies on the first turns that into one round trip each.
+  const problems: string[] = []
+  const sources = collectSources(problems)
+  const consumed = new Set<string>()
 
-// The docs site and the pending release announcement drafts. A draft is the
-// most exposed consumer there is: `pnpm release` renders, commits, tags and
-// pushes it in one run, so a table typed into one by hand publishes before
-// anyone can re-read it — which is how the v5.0.0 draft came to carry a pan
-// column no record holds beside a zoom column that is exact.
-const generated = [...docFiles(docsDir), ...docFiles(releaseDraftsDir)]
-  .map(path => {
-    const text = readFileSync(path, 'utf8')
-    const ids = text
-      .split('\n')
-      .map(l => BEGIN.exec(l.trim())?.[1])
-      .filter(id => id !== undefined)
-    if (ids.length === 0) {
-      return undefined
-    }
-    let content = text
-    const linked = linkedAgentDocs(text)
-    for (const id of ids) {
-      const source = sources.get(id)
-      if (!source) {
-        problems.push(
-          `${relative(repoRoot, path)}: no agent-doc carries <!-- BEGIN GENERATED MEASUREMENT ${id} --> for this table to copy`,
-        )
-        continue
-      }
+  // The docs site and the pending release announcement drafts. A draft is the
+  // most exposed consumer there is: `pnpm release` renders, commits, tags and
+  // pushes it in one run, so a table typed into one by hand publishes before
+  // anyone can re-read it — which is how the v5.0.0 draft came to carry a pan
+  // column no record holds beside a zoom column that is exact.
+  const pages = [
+    ...markerDocBlocks('MEASUREMENT', 'website/docs/'),
+    ...markerDocBlocks('MEASUREMENT', 'website/release_announcement_drafts/'),
+  ]
+  for (const { file, group: id } of pages) {
+    const source = sources.get(id)
+    if (!source) {
+      problems.push(
+        `${file}: no agent-doc carries <!-- BEGIN GENERATED MEASUREMENT ${id} --> for this table to copy`,
+      )
+    } else {
       consumed.add(id)
-      if (!linked.has(source.file)) {
+      if (!linkedAgentDocs(readDoc(file)).has(source.file)) {
         // A page that publishes a doc's table and never links the doc leaves the
         // reader with a figure and no way to reach what produced it. The check
         // is here rather than in `check-quoted-figures` because here it is
@@ -185,61 +147,40 @@ const generated = [...docFiles(docsDir), ...docFiles(releaseDraftsDir)]
         // or a page satisfies this one by naming the file in prose and still
         // gives the other no cited doc to search.
         problems.push(
-          `${relative(repoRoot, path)}: publishes "${id}" but links no ${source.file} — a reader gets the table and no route to the measurement`,
+          `${file}: publishes "${id}" but links no ${source.file} — a reader gets the table and no route to the measurement`,
         )
       }
-      content = spliceGeneratedBlock({
-        path,
-        marker: `MEASUREMENT ${id}`,
-        body: source.rows,
-        // spliceGeneratedBlock reads the file itself, so a page with two blocks
-        // needs the previous splice's output rather than what is on disk.
-        text: content,
-      })
     }
-    return {
-      path,
-      // The two docs trees are formatted independently, so a source table's
-      // column padding is whatever oxfmt made of the widths around it *there*
-      // and will not survive being pasted under different neighbours here.
-      // Format the whole page the way `pnpm format` will, or that pass and this
-      // one rewrite each other and `--check` never settles.
-      content: formatMarkdown(content, path),
-      label: `${relative(repoRoot, path)} measurement tables`,
+  }
+
+  // A doc table no page publishes. Still an error by default — a page quietly
+  // losing its block looks exactly like this — but no longer necessarily one: the
+  // doc's table is generated from its record either way, so a measurement can be
+  // internal on purpose. The record says which, and `"published": false` is that
+  // decision written down rather than inferred from an absence.
+  const records = loadMeasurements()
+  for (const [id, source] of sources) {
+    if (consumed.has(id) || records.get(id)?.published === false) {
+      continue
     }
-  })
-  .filter(g => g !== undefined)
-
-// A doc table no page publishes. Still an error by default — a page quietly
-// losing its block looks exactly like this — but no longer necessarily one: the
-// doc's table is generated from its record either way, so a measurement can be
-// internal on purpose. The record says which, and `"published": false` is that
-// decision written down rather than inferred from an absence.
-const records = loadMeasurements()
-for (const [id, source] of sources) {
-  if (consumed.has(id) || records.get(id)?.published === false) {
-    continue
+    problems.push(
+      `${source.file}: "${id}" is published by no page — add a block to the page that should carry it, or set "published": false on agent-docs/measurements/${id}.json`,
+    )
   }
-  problems.push(
-    `${source.file}: "${id}" is published by no page — add a block to the page that should carry it, or set "published": false on agent-docs/measurements/${id}.json`,
-  )
-}
 
-if (problems.length > 0) {
-  console.error(`${problems.length} measurement problem(s):`)
-  for (const p of problems) {
-    console.error(`  ${p}`)
+  if (problems.length > 0) {
+    throw new Error(
+      `${problems.length} measurement problem(s):\n${problems.map(p => `  ${p}`).join('\n')}`,
+    )
   }
-  process.exit(1)
-}
 
-if (generated.length === 0) {
-  console.error('no measurement blocks found — did the marker spelling change?')
-  process.exit(1)
-}
-
-checkOrWriteAll(generated, 'run `pnpm autogen` and commit the result')
-
-if (!check) {
-  console.log(`${sources.size} measurement(s) published`)
+  // The two docs trees are formatted independently, so a source table's
+  // column padding is whatever oxfmt made of the widths around it *there* and
+  // will not survive being pasted under different neighbours here. `writeDoc`
+  // formats the whole page the way `pnpm format` will.
+  return rewriteGroupedMarkerBlocks(
+    'MEASUREMENT',
+    id => sources.get(id)!.rows.join('\n'),
+    { files: [...new Set(pages.map(p => p.file))] },
+  ).changed
 }

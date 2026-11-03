@@ -38,7 +38,7 @@ some strains lack, and IAI39's inversions, we:
 - `unzip`
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,datasets START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,datasets -->
 
 ```bash
 # Debian/Ubuntu
@@ -55,7 +55,7 @@ chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,datasets END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,minimap2,node,jbrowse-cli,datasets -->
 
 ## The data
 

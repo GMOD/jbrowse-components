@@ -46,7 +46,7 @@ The track menu's **Color by** offers several schemes.
 
 ### Strand
 
-<!-- COLOR_TABLE alignments-strand START -->
+<!-- BEGIN GENERATED COLOR_TABLE alignments-strand -->
 
 <!-- prettier-ignore -->
 | Color | Name | Value | Description |
@@ -54,7 +54,7 @@ The track menu's **Color by** offers several schemes.
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#EC8B8B;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#EC8B8B"></span> | Forward strand | `#EC8B8B` | Read maps to the forward strand |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#8F8FD8;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#8F8FD8"></span> | Reverse strand | `#8F8FD8` | Read maps to the reverse strand |
 
-<!-- COLOR_TABLE alignments-strand END -->
+<!-- END GENERATED COLOR_TABLE alignments-strand -->
 
 ### Read quality and bases
 
@@ -267,7 +267,7 @@ The coverage row shows an upside-down histogram of insertions and clips, with a
 colored triangle wherever an event exceeds a depth-dependent fraction of the
 reads at that base.
 
-<!-- COLOR_TABLE alignments-indicators START -->
+<!-- BEGIN GENERATED COLOR_TABLE alignments-indicators -->
 
 <!-- prettier-ignore -->
 | Color | Name | Value | Description |
@@ -278,7 +278,7 @@ reads at that base.
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#555555;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#555555"></span> | Split segments overlap | `#555555` | Two segments of one molecule, at least one of them a split or supplementary alignment, both align here — so the breakpoint between them is this span rather than a point |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#b4b4b4;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#b4b4b4"></span> | Mates overlap | `#b4b4b4` | The two reads of a pair both align here: the fragment is shorter than two reads, and these bases are read twice from one molecule |
 
-<!-- COLOR_TABLE alignments-indicators END -->
+<!-- END GENERATED COLOR_TABLE alignments-indicators -->
 
 <Figure caption="Clip indicators above the coverage track: blue marks soft clips, red marks hard clips." src="/img/alignment_clipping_indicators.png" />
 

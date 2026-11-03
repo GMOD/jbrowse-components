@@ -36,7 +36,7 @@ have diverged too far to align base by base. We:
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-<!-- TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last -->
 
 ```bash
 # Debian/Ubuntu
@@ -53,7 +53,7 @@ chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 pip install jcvi
 ```
 
-<!-- TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last -->
 
 ## The data
 

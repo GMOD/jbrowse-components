@@ -42,7 +42,7 @@ Building your own instance needs:
   - [samtools](http://www.htslib.org/) (v1.21 or later)
   - [minimap2](https://github.com/lh3/minimap2)
 
-<!-- TUTORIAL_INSTALL samtools,minimap2,node,jbrowse-cli START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,minimap2,node,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
@@ -53,7 +53,7 @@ conda install -c bioconda -c conda-forge samtools minimap2 nodejs
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,minimap2,node,jbrowse-cli END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,minimap2,node,jbrowse-cli -->
 
 ## The data
 

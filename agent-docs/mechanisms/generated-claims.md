@@ -45,15 +45,16 @@ it actually bites:
 A generated region is bracketed in the doc:
 
 ```
-<!-- BEGIN GENERATED REFERENCE INDEX -->
+<!-- BEGIN GENERATED REFERENCE_INDEX -->
 …generated…
-<!-- END GENERATED REFERENCE INDEX -->
+<!-- END GENERATED REFERENCE_INDEX -->
 ```
 
-`spliceGeneratedBlock` in `website/scripts/check-utils.ts` owns that splice and
-`checkOrWrite` owns the `--check`/write dance, so a new generator is a query
-plus a table and never its own file-rewriting logic. Three properties of that
-pair are load-bearing and each was paid for:
+`website/scripts/markerBlocks.ts` owns that spelling, its scan and its splice,
+and `website/scripts/api-docs/markers.ts` runs every generator in one process
+through one doc cache that owns the `--check`/write dance, so a new generator
+is a query plus a table and never its own file-rewriting logic. Three properties
+of that pair are load-bearing and each was paid for:
 
 - **The prose around the block stays hand-written.** A doc is not a generated
   artifact; one region of it is. That is what makes the convention adoptable one
@@ -63,10 +64,10 @@ pair are load-bearing and each was paid for:
   between them; a second marker pair is simply never regenerated while `--check`
   agrees the file is current. Both produce a plausible file, so both are errors.
 - **Every artifact is judged before anything exits**, so one run names all of
-  them (`checkOrWriteAll`). Exiting on the first stale file turns "regenerate
-  and commit" into fix, push, discover the next one — and it was live: three
-  guide indexes generate in one loop, so a stale `user_guide.md` hid a stale
-  `developer_guide.md` behind it.
+  them. Exiting on the first stale file turns "regenerate and commit" into fix,
+  push, discover the next one — and it was live: three guide indexes generate in
+  one loop, so a stale `user_guide.md` hid a stale `developer_guide.md` behind
+  it.
 
 **One entry point over all of them.** `pnpm autogen` runs every generator and
 `--check` verifies every one, which gives any "X is out of date" failure a
@@ -85,10 +86,10 @@ So the value has exactly one home and every appearance is rendered from it:
 
 ```
 agent-docs/measurements/<id>.json     the record — values, date, how to re-take
-  │  generate-measurement-tables
+  │  writeMeasurementTables
   ▼
 agent-docs/…/DOC.md                   the doc that owns the measurement
-  │  sync-measurements
+  │  writePublishedMeasurements
   ▼
 website/docs/…/page.md                the public copy
 ```

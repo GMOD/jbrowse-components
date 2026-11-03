@@ -11,7 +11,7 @@ minimap2). The one thing to get right is that `assemblyNames` is
 
 ## Choosing an adapter
 
-<!-- FILE_TYPES synteny START -->
+<!-- BEGIN GENERATED FILE_TYPES synteny -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
@@ -29,7 +29,7 @@ minimap2). The one thing to get right is that `assemblyNames` is
 | PAF | [](/docs/config/pafadapter) | [](/docs/config/syntenytrack) | Loaded entirely into memory; convert to PIF for large alignments |
 | Several pairwise alignments sharing one genome | [](/docs/config/multipairwisesyntenyadapter) | [](/docs/config/syntenytrack) | One anchor genome aligned to each of N others, as N pairwise files |
 
-<!-- FILE_TYPES synteny END -->
+<!-- END GENERATED FILE_TYPES synteny -->
 
 ## Alignment format glossary
 
@@ -95,7 +95,7 @@ records where `asm20` gives 278.
 The query draws on the dotplot's horizontal axis and the top row in linear
 synteny; the target on the vertical axis and the bottom row.
 
-<!-- GOTCHA PAFAdapter START -->
+<!-- BEGIN GENERATED GOTCHA PAFAdapter -->
 
 :::caution Gotcha
 
@@ -107,7 +107,7 @@ instead and the ordering can't be misread.
 
 :::
 
-<!-- GOTCHA PAFAdapter END -->
+<!-- END GENERATED GOTCHA PAFAdapter -->
 
 ## Adapter reference
 
@@ -139,7 +139,7 @@ Each adapter's config page lists its slots. Across all of them:
 The MCScan adapters place a feature by looking its gene id up in a BED, so the
 two files have to agree on those ids byte for byte.
 
-<!-- GOTCHA MCScanAnchorsAdapter START -->
+<!-- BEGIN GENERATED GOTCHA MCScanAnchorsAdapter -->
 
 :::caution Gotcha
 
@@ -154,9 +154,9 @@ the assembly does not have draws nothing at all.
 
 :::
 
-<!-- GOTCHA MCScanAnchorsAdapter END -->
+<!-- END GENERATED GOTCHA MCScanAnchorsAdapter -->
 
-<!-- GOTCHA MCScanSimpleAnchorsAdapter START -->
+<!-- BEGIN GENERATED GOTCHA MCScanSimpleAnchorsAdapter -->
 
 :::caution Gotcha
 
@@ -170,9 +170,9 @@ sequence names too, and a name the assembly does not have draws nothing at all.
 
 :::
 
-<!-- GOTCHA MCScanSimpleAnchorsAdapter END -->
+<!-- END GENERATED GOTCHA MCScanSimpleAnchorsAdapter -->
 
-<!-- GOTCHA MCScanBlocksAdapter START -->
+<!-- BEGIN GENERATED GOTCHA MCScanBlocksAdapter -->
 
 :::caution Gotcha
 
@@ -190,7 +190,7 @@ erroring.
 
 :::
 
-<!-- GOTCHA MCScanBlocksAdapter END -->
+<!-- END GENERATED GOTCHA MCScanBlocksAdapter -->
 
 The [MCScan anchors](/docs/tutorials/mcscan_synteny_grape_peach) and
 [OrthoFinder orthogroups](/docs/tutorials/orthofinder_synteny) tutorials build

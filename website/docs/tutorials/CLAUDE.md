@@ -92,7 +92,7 @@ ratchet's backlog. What follows is what no check sees.
 
 - `## Prerequisites` comes under the opening paragraph: a bulleted list, then
   the install fence, generated from a
-  `<!-- TUTORIAL_INSTALL tool,tool START -->` marker pair out of
+  `<!-- BEGIN GENERATED TUTORIAL_INSTALL tool,tool -->` marker pair out of
   `website/scripts/api-docs/tutorialInstall.json` (apt and conda lines, a Linux
   wget line for binaries apt lacks, plus cargo, pip and npm). A tool with no
   packaged install stays a bullet with a link. The intro gets its own heading.

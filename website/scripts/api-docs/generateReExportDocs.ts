@@ -17,8 +17,8 @@ import { markdownTable, rewriteMarkerBlock } from './util.ts'
 //
 // The guide opts in with a marker pair, regenerated on `pnpm autogen`:
 //
-//   <!-- REEXPORT_MODULES START -->
-//   <!-- REEXPORT_MODULES END -->
+//   <!-- BEGIN GENERATED REEXPORT_MODULES -->
+//   <!-- END GENERATED REEXPORT_MODULES -->
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 

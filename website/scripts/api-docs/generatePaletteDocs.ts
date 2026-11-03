@@ -25,8 +25,8 @@ import {
 //
 // The guide opts in with a marker pair, regenerated on `pnpm autogen`:
 //
-//   <!-- PALETTE_KEYS START -->
-//   <!-- PALETTE_KEYS END -->
+//   <!-- BEGIN GENERATED PALETTE_KEYS -->
+//   <!-- END GENERATED PALETTE_KEYS -->
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 //

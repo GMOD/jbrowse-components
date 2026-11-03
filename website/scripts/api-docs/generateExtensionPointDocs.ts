@@ -14,8 +14,8 @@ import type { SourceCorpus } from './util.ts'
 // i.e. `#extensionPoint <id> | <sync|async> | <description>`. The guide opts the
 // table in by dropping a marker pair, regenerated on `pnpm autogen`:
 //
-//   <!-- EXTENSION_POINTS_INDEX START -->
-//   <!-- EXTENSION_POINTS_INDEX END -->
+//   <!-- BEGIN GENERATED EXTENSION_POINTS_INDEX -->
+//   <!-- END GENERATED EXTENSION_POINTS_INDEX -->
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 

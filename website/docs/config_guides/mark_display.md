@@ -947,7 +947,7 @@ chip in its corner naming the slot, and the mark when the slot is a mark's. A
 `bar`, `point` or `rule` naming no `y` draws nothing, and the rest are these,
 each reported under its id:
 
-<!-- MARK_RULES START -->
+<!-- BEGIN GENERATED MARK_RULES -->
 
 <!-- prettier-ignore -->
 | Rule | Level | Reports |
@@ -989,7 +989,7 @@ each reported under its id:
 | `rows-beside-facet` | warning | `rows` beside a `facet` on another field, where the facet draws alone. |
 | `packing-under-rows` | warning | A `pileup` or a `row` field under `rows`, where the packed rows share one row per value. |
 
-<!-- MARK_RULES END -->
+<!-- END GENERATED MARK_RULES -->
 
 `jbrowse validate` reports the same list over a config file, which has none of
 the half-written states an editor passes through, at the level the table lists:

@@ -1,5 +1,4 @@
 import {
-  generatedBlocksInDocs,
   markdownTable,
   markerBlocksInDocs,
   rewriteMarkerBlock,
@@ -14,9 +13,6 @@ import {
 // (`DISPLAY_HOOK_OVERRIDES`) was not one of the six. A reader checking whether
 // the block in front of them is generated got "no" for most of them.
 //
-// Both spellings are listed: a reader asking whether the block in front of them
-// is generated does not care which writer spliced it.
-//
 // The list is the docs' own marker pairs rather than a registry of what the
 // generators asked for, which is what makes it complete and self-including:
 // this table lists its own row. `assertMarkersAndDocsAgree` is the other half —
@@ -24,7 +20,7 @@ import {
 // generated table with no page nor a page with an ungenerated block can survive
 // a run.
 export function writeMarkerIndexDocs() {
-  const rows = [...markerBlocksInDocs(), ...generatedBlocksInDocs()]
+  const rows = [...markerBlocksInDocs()]
     .sort(([a], [b]) => a.localeCompare(b, 'en'))
     .map(
       ([marker, docs]) =>

@@ -42,7 +42,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - [`vg`](https://github.com/vgteam/vg), to
   [deconstruct](#hspa1a-in-the-graph-and-the-callset) the graph into a callset
 
-<!-- TUTORIAL_INSTALL htslib,vg START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,vg -->
 
 ```bash
 # Debian/Ubuntu
@@ -51,7 +51,7 @@ sudo apt install tabix
 conda install -c bioconda -c conda-forge htslib vg
 ```
 
-<!-- TUTORIAL_INSTALL htslib,vg END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,vg -->
 
 ## The data
 

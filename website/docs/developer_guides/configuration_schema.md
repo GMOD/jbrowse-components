@@ -125,7 +125,7 @@ the MST type the value is built from, what a `getConf` read of it is typed as,
 and which control the configuration editor renders for it. Because the system is
 typed, a slot can be edited graphically without an author writing any UI.
 
-<!-- SLOT_TYPES START -->
+<!-- BEGIN GENERATED SLOT_TYPES -->
 
 <!-- prettier-ignore -->
 | `type` | MST model | Reads as | Config editor renders |
@@ -155,7 +155,7 @@ typed, a slot can be edited graphically without an author writing any UI.
 | <code>stringMap</code> | <code>types.map(types.string)</code> | <code>Record&lt;string, string&gt;</code> | one card per key, each holding that key's text field |
 | <code>text</code> | <code>types.string</code> | <code>string</code> | multi-line textarea |
 
-<!-- SLOT_TYPES END -->
+<!-- END GENERATED SLOT_TYPES -->
 
 A name outside this set is rejected at schema construction. That check exists
 because such a slot otherwise still _works_ — the value round-trips as long as

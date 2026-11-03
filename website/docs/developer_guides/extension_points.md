@@ -483,7 +483,7 @@ The names don't show this: `Desktop-StartScreenMenuItems` accumulates and
 registering — a `single` point is a slot, and taking it hides whatever the
 plugin before you put there.
 
-<!-- EXTENSION_POINTS_INDEX START -->
+<!-- BEGIN GENERATED EXTENSION_POINTS_INDEX -->
 
 <!-- prettier-ignore -->
 | Extension point | Type | Shape | Description |
@@ -526,7 +526,7 @@ plugin before you put there.
 | `TrackSelector-folderDialog` | sync | ComponentSlot | Replace the dialog shown when a folder category is clicked |
 | `TrackSelector-multiTrackMenuItems` | sync | list | Add items to the multi-track (shopping cart) menu |
 
-<!-- EXTENSION_POINTS_INDEX END -->
+<!-- END GENERATED EXTENSION_POINTS_INDEX -->
 
 ### Core-extendPluggableElement
 
@@ -1192,7 +1192,7 @@ Each launcher's args are that view type's spec fields, documented once in the
 URL parameter guide and typed by the `Launch*Args` interface exported beside the
 registration:
 
-<!-- LAUNCH_VIEW_POINTS START -->
+<!-- BEGIN GENERATED LAUNCH_VIEW_POINTS -->
 
 <!-- prettier-ignore -->
 | Extension point | Spec fields | Args type |
@@ -1205,7 +1205,7 @@ registration:
 | `LaunchView-SpreadsheetView` | [Spreadsheet view](/docs/urlparams#spreadsheet-view) | [`LaunchSpreadsheetViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/LaunchSpreadsheetView/index.ts) |
 | `LaunchView-SvInspectorView` | [SV inspector](/docs/urlparams#sv-inspector) | [`LaunchSvInspectorViewArgs`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/LaunchSvInspectorView/index.ts) |
 
-<!-- LAUNCH_VIEW_POINTS END -->
+<!-- END GENERATED LAUNCH_VIEW_POINTS -->
 
 Two spec keys never reach a launcher:
 

@@ -42,7 +42,7 @@ lineage with one copy. We:
 - A running JBrowse instance ([web](/docs/quickstart_web) or
   [desktop](/docs/quickstart_desktop))
 
-<!-- TUTORIAL_INSTALL htslib,diamond,gffread,node,jbrowse-cli,datasets,mcscanx,orthofinder START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,diamond,gffread,node,jbrowse-cli,datasets,mcscanx,orthofinder -->
 
 ```bash
 # Debian/Ubuntu
@@ -59,7 +59,7 @@ chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib,diamond,gffread,node,jbrowse-cli,datasets,mcscanx,orthofinder END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,diamond,gffread,node,jbrowse-cli,datasets,mcscanx,orthofinder -->
 
 ## The data
 
@@ -516,7 +516,7 @@ npx --yes serve orthofinder_wheat_build/jbrowse2  # then open the printed URL
 
 The sets the script accepts, and what each costs to build:
 
-<!-- ORTHOFINDER_SETS START -->
+<!-- BEGIN GENERATED ORTHOFINDER_SETS -->
 
 <!-- prettier-ignore -->
 | Set | Genomes | DIAMOND runs | NCBI annotation |
@@ -527,11 +527,11 @@ The sets the script accepts, and what each costs to build:
 | <code>drosophila</code> | melanogaster, simulans, yakuba, pseudoobscura, virilis | 25 | RefSeq |
 | <code>solanaceae</code> | tomato, potato, pepper, tobacco, coffee | 25 | RefSeq and GenBank |
 
-<!-- ORTHOFINDER_SETS END -->
+<!-- END GENERATED ORTHOFINDER_SETS -->
 
 Two cuts are environment variables:
 
-<!-- ORTHOFINDER_CUTS START -->
+<!-- BEGIN GENERATED ORTHOFINDER_CUTS -->
 
 <!-- prettier-ignore -->
 | Variable | Default | What it cuts |
@@ -539,7 +539,7 @@ Two cuts are environment variables:
 | <code>MAXSEQ</code> | 30 | sequence regions kept per genome, the ones with the most genes |
 | <code>MAXCOPIES</code> | 4 | genes in one orthogroup cell past which it is a gene family rather than a set of copies |
 
-<!-- ORTHOFINDER_CUTS END -->
+<!-- END GENERATED ORTHOFINDER_CUTS -->
 
 ```bash
 MAXSEQ=60 MAXCOPIES=6 bash build_orthofinder_synteny.sh wheat

@@ -26,11 +26,12 @@
 // un-included TS/JS fences in the hand-written docs and fails if that total rises
 // above DOC_FENCE_BASELINE, so the debt can only shrink.
 //
-// Run `pnpm sync-doc-snippets` to update, `--check` to fail on drift (CI).
+// Runs in `website/scripts/api-docs/markers.ts` (`pnpm sync-doc-snippets`).
 import { readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-import { check, docFiles, writeFileAtomic } from './check-utils.ts'
+import { readDoc, writeDoc } from './api-docs/format.ts'
+import { docFiles } from './check-utils.ts'
 import {
   countUnIncludedFences,
   extractRegion,
@@ -51,9 +52,6 @@ function resolve(spec: string) {
   // docs can pull a slice, and they'd read as noise here.
   return stripRegionMarkers(source)
 }
-
-const problems: string[] = []
-const stale: string[] = []
 
 // Ratchet: the docs still carry hand-written TS/JS fences that predate this
 // script, and nothing stops a new one being added. Counting the un-included
@@ -84,138 +82,120 @@ const stale: string[] = []
 // Raise the baseline only for one of these, and say which in the commit. A
 // tested `jb` example fixture would let the agent pages include most of theirs.
 const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '43')
-let unIncluded = 0
-const byPage: [string, number][] = []
+export function writeDocSnippets() {
+  let unIncluded = 0
+  const byPage: [string, number][] = []
 
-const rewrites: { path: string; content: string }[] = []
-for (const path of docFiles(docsDir)) {
-  const text = readFileSync(path, 'utf8')
-  const lines = text.split('\n')
-  const out: string[] = []
-  let changed = false
+  const problems: string[] = []
+  const rewrites: { path: string; content: string }[] = []
+  for (const path of docFiles(docsDir)) {
+    const text = readDoc(path)
+    const lines = text.split('\n')
+    const out: string[] = []
+    let changed = false
 
-  const rel = relative(docsDir, path)
-  if (!isGeneratedDocPath(rel)) {
-    const fences = countUnIncludedFences(text)
-    unIncluded += fences
-    if (fences > 0) {
-      byPage.push([rel, fences])
+    const rel = relative(docsDir, path)
+    if (!isGeneratedDocPath(rel)) {
+      const fences = countUnIncludedFences(text, path)
+      unIncluded += fences
+      if (fences > 0) {
+        byPage.push([rel, fences])
+      }
     }
-  }
 
-  for (let i = 0; i < lines.length; i++) {
-    const marker = MARKER.exec(lines[i]!.trim())
-    out.push(lines[i]!)
-    if (!marker) {
-      continue
-    }
-    // prettier puts a blank line between the marker and the fence, so skip
-    // blanks rather than silently ignoring the marker (which would leave a
-    // stale fence passing --check — the exact drift this script prevents).
-    // Other HTML comments are skipped for the same reason, and one of them is
-    // load-bearing: a region's body is dedented, so a source line that only
-    // wrapped because of its indentation fits on one line in the fence, and
-    // oxfmt formats fenced code. That reflow then fails `--check` here, and
-    // undoing it fails check-format — the two cannot both pass without
-    // `<!-- prettier-ignore -->` sitting between the marker and the fence.
-    let openAt = i + 1
-    while (
-      lines[openAt]?.trim() === '' ||
-      lines[openAt]?.trim().startsWith('<!--')
-    ) {
-      openAt++
-    }
-    if (!lines[openAt]?.startsWith('```')) {
-      problems.push(
-        `${path}: include marker for ${marker[1]} has no code fence`,
+    for (let i = 0; i < lines.length; i++) {
+      const marker = MARKER.exec(lines[i]!.trim())
+      out.push(lines[i]!)
+      if (!marker) {
+        continue
+      }
+      // prettier puts a blank line between the marker and the fence, so skip
+      // blanks rather than silently ignoring the marker (which would leave a
+      // stale fence passing --check — the exact drift this script prevents).
+      // Other HTML comments are skipped for the same reason, and one of them is
+      // load-bearing: a region's body is dedented, so a source line that only
+      // wrapped because of its indentation fits on one line in the fence, and
+      // oxfmt formats fenced code. That reflow then fails `--check` here, and
+      // undoing it fails check-format — the two cannot both pass without
+      // `<!-- prettier-ignore -->` sitting between the marker and the fence.
+      let openAt = i + 1
+      while (
+        lines[openAt]?.trim() === '' ||
+        lines[openAt]?.trim().startsWith('<!--')
+      ) {
+        openAt++
+      }
+      if (!lines[openAt]?.startsWith('```')) {
+        problems.push(
+          `${path}: include marker for ${marker[1]} has no code fence`,
+        )
+        continue
+      }
+      const fenceOpen = lines[openAt]!
+      // Match the opener's backtick run rather than assuming three. Most config
+      // schemas carry a JSDoc `#example` containing its own ``` fence, so a doc
+      // that includes one gets escalated to ```` by prettier — and emitting a
+      // hardcoded ``` closer against that opener leaves the fence unterminated,
+      // swallowing the rest of the page into one code block.
+      const delim = /^`+/.exec(fenceOpen)![0]
+      const closeAt = lines.indexOf(delim, openAt + 1)
+      if (closeAt === -1) {
+        problems.push(`${path}: unterminated fence after ${marker[1]}`)
+        continue
+      }
+      let body: string
+      try {
+        body = resolve(marker[1]!)
+      } catch (e) {
+        problems.push(`${path}: ${String(e)}`)
+        continue
+      }
+      const current = lines.slice(openAt + 1, closeAt).join('\n')
+      if (current !== body) {
+        changed = true
+      }
+      out.push(
+        ...lines.slice(i + 1, openAt),
+        fenceOpen,
+        ...body.split('\n'),
+        delim,
       )
-      continue
+      i = closeAt
     }
-    const fenceOpen = lines[openAt]!
-    // Match the opener's backtick run rather than assuming three. Most config
-    // schemas carry a JSDoc `#example` containing its own ``` fence, so a doc
-    // that includes one gets escalated to ```` by prettier — and emitting a
-    // hardcoded ``` closer against that opener leaves the fence unterminated,
-    // swallowing the rest of the page into one code block.
-    const delim = /^`+/.exec(fenceOpen)![0]
-    const closeAt = lines.indexOf(delim, openAt + 1)
-    if (closeAt === -1) {
-      problems.push(`${path}: unterminated fence after ${marker[1]}`)
-      continue
+
+    if (changed) {
+      rewrites.push({ path, content: out.join('\n') })
     }
-    let body: string
-    try {
-      body = resolve(marker[1]!)
-    } catch (e) {
-      problems.push(`${path}: ${String(e)}`)
-      continue
-    }
-    const current = lines.slice(openAt + 1, closeAt).join('\n')
-    if (current !== body) {
-      changed = true
-    }
-    out.push(
-      ...lines.slice(i + 1, openAt),
-      fenceOpen,
-      ...body.split('\n'),
-      delim,
+  }
+
+  // A page with a broken marker stops the run before any page is written, so a
+  // failed run leaves no half-synced set behind.
+  if (problems.length > 0) {
+    throw new Error(problems.join('\n'))
+  }
+
+  if (unIncluded > FENCE_BASELINE) {
+    // Smallest page first and the verdict last, because a reader downstream of
+    // this often keeps only the tail: `pnpm autogen` repeats a failed generator's
+    // last lines under its name, and the post-merge marker carries that summary
+    // alone. Truncated there, what survives is the verdict and the worst pages.
+    const pages = byPage
+      .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0], 'en'))
+      .map(([page, fences]) => `  ${String(fences).padStart(3)}  ${page}`)
+      .join('\n')
+    throw new Error(
+      `un-included TS/JS fences, by page:\n${pages}\n\n` +
+        `${unIncluded} hand-written TS/JS fences in the docs exceeds the ` +
+        `baseline of ${FENCE_BASELINE}. Point the new fence at real source with ` +
+        `an <!-- include: --> marker (see example-plugins/score-example), or ` +
+        `raise DOC_FENCE_BASELINE if it genuinely can't be.`,
     )
-    i = closeAt
   }
-
-  if (changed) {
-    stale.push(path.replace(`${repoRoot}/`, ''))
-    rewrites.push({ path, content: out.join('\n') })
-  }
-}
-
-// A page with a broken marker stops the run before any page is written, so a
-// failed run leaves no half-synced set behind.
-if (problems.length > 0) {
-  console.error(problems.join('\n'))
-  process.exit(1)
-}
-if (!check) {
-  for (const { path, content } of rewrites) {
-    writeFileAtomic(path, content)
-  }
-}
-if (stale.length > 0) {
-  if (check) {
-    console.error(
-      `Doc snippets are out of date with their source:\n${stale
-        .map(s => `  ${s}`)
-        .join('\n')}\nRun 'pnpm autogen' and commit the result.`,
+  if (unIncluded < FENCE_BASELINE) {
+    console.log(
+      `${unIncluded} hand-written TS/JS fences remain in the docs ` +
+        `(baseline ${FENCE_BASELINE}) — lower DOC_FENCE_BASELINE to ${unIncluded} to hold the gain.`,
     )
-    process.exit(1)
   }
-  for (const s of stale) {
-    console.log(`  updated: ${s}`)
-  }
-} else {
-  console.log('All doc snippet includes match their source.')
-}
-
-if (unIncluded > FENCE_BASELINE) {
-  // Smallest page first and the verdict last, because a reader downstream of
-  // this often keeps only the tail: `pnpm autogen` repeats a failed generator's
-  // last lines under its name, and the post-merge marker carries that summary
-  // alone. Truncated there, what survives is the verdict and the worst pages.
-  const pages = byPage
-    .sort((a, b) => a[1] - b[1] || a[0].localeCompare(b[0], 'en'))
-    .map(([page, fences]) => `  ${String(fences).padStart(3)}  ${page}`)
-    .join('\n')
-  console.error(
-    `\nun-included TS/JS fences, by page:\n${pages}\n\n` +
-      `${unIncluded} hand-written TS/JS fences in the docs exceeds the ` +
-      `baseline of ${FENCE_BASELINE}. Point the new fence at real source with ` +
-      `an <!-- include: --> marker (see example-plugins/score-example), or ` +
-      `raise DOC_FENCE_BASELINE if it genuinely can't be.`,
-  )
-  process.exit(1)
-} else if (unIncluded < FENCE_BASELINE) {
-  console.log(
-    `${unIncluded} hand-written TS/JS fences remain in the docs ` +
-      `(baseline ${FENCE_BASELINE}) — lower DOC_FENCE_BASELINE to ${unIncluded} to hold the gain.`,
-  )
+  return rewrites.flatMap(({ path, content }) => writeDoc(path, content))
 }

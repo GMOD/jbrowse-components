@@ -9,7 +9,7 @@
     "index": "pnpm figures:pull && pnpm gen:derived-figures && astro build && pagefind --site dist --output-path static/pagefind",
     "preview": "astro preview",
     "typecheck": "astro check && node ../node_modules/typescript7/bin/tsc --noEmit -p scripts/api-docs",
-    "lint-docs": "node scripts/generate-guide-indexes.ts",
+    "lint-docs": "node scripts/api-docs/markers.ts 'guide indexes'",
     "check-doc-imports": "node scripts/check-doc-imports.ts",
     "check-handoff-pointers": "node scripts/check-handoff-pointers.ts",
     "check-rename-archaeology": "node scripts/check-rename-archaeology.ts",

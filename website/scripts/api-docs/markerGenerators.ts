@@ -1,3 +1,20 @@
+import { writeConfigSpellings } from '../../../scripts/generateConfigSpellings.ts'
+import { writeDiagramUsage } from '../gen-diagram-usage.ts'
+import { writeAbiRemovals } from '../generate-abi-removals.ts'
+import { writeAdrIndex } from '../generate-adr-index.ts'
+import { writeCaptureDoc } from '../generate-capture-doc.ts'
+import { writeCliDoc } from '../generate-cli-doc.ts'
+import { writeDisplayChromeAdoption } from '../generate-display-chrome-adoption.ts'
+import { writeDisplayHookOverrides } from '../generate-display-hook-overrides.ts'
+import { writeDisplayStateCensus } from '../generate-display-state-census.ts'
+import { writeDocIndexes } from '../generate-doc-indexes.ts'
+import { writeFreshnessCensus } from '../generate-freshness-census.ts'
+import { writeGuideIndexes } from '../generate-guide-indexes.ts'
+import { writeMeasurementTables } from '../generate-measurement-tables.ts'
+import { writeTodoIndex } from '../generate-todo-index.ts'
+import { writeDocSnippets } from '../sync-doc-snippets.ts'
+import { writeInlineFigures } from '../sync-inline-figures.ts'
+import { writePublishedMeasurements } from '../sync-measurements.ts'
 import { writeAdapterBaseDocs } from './generateAdapterBaseDocs.ts'
 import { writeBgzfPoolSiteDocs } from './generateBgzfPoolSiteDocs.ts'
 import { writeColorDocs } from './generateColorDocs.ts'
@@ -52,7 +69,43 @@ export interface MarkerGenerator {
   write: (corpus: SourceCorpus) => string[]
 }
 
+// The markers generate.ts writes from the whole-repo TypeScript program, which
+// markers.ts does not build. Named so a markers.ts run can tell a block nobody
+// writes from one gendocs writes; generate.ts fails when one goes unwritten.
+export const PROGRAM_MARKERS = [
+  'DISPLAY_TYPES',
+  'DISPLAY_VIEW_TYPES',
+  'GOTCHA',
+  'SPEC_KEYS',
+] as const
+
+// In order: a generator reading a doc another one writes comes after it, and
+// reads it through `readDoc`, so it sees this run's text rather than disk's.
 export const MARKER_GENERATORS: MarkerGenerator[] = [
+  { label: 'Guide indexes', write: writeGuideIndexes },
+  // Reads the <Figure> lines the guide indexes write into developer_guide.md.
+  { label: 'Diagram usage table', write: writeDiagramUsage },
+  { label: 'CLI doc', write: writeCliDoc },
+  { label: 'jbrowse-capture doc', write: writeCaptureDoc },
+  // Its fence ratchet counts the mirrored jbrowse-capture.md.
+  { label: 'Doc snippets', write: writeDocSnippets },
+  { label: 'ADR index', write: writeAdrIndex },
+  { label: 'Doc indexes', write: writeDocIndexes },
+  { label: 'Backlog index', write: writeTodoIndex },
+  // From the two ABI baselines, core's published `exports` map,
+  // reExports.generated.json and publishedPluginBreaks.json.
+  { label: 'ABI removal tables', write: writeAbiRemovals },
+  { label: 'DisplayChrome adoption map', write: writeDisplayChromeAdoption },
+  { label: 'Display hook override table', write: writeDisplayHookOverrides },
+  { label: 'Display state census', write: writeDisplayStateCensus },
+  { label: 'Freshness signature census', write: writeFreshnessCensus },
+  // From the committed config JSON schema the config schema manifest writes.
+  { label: 'Config spellings', write: writeConfigSpellings },
+  // The tables in the agent-docs owning each measurement, then the public
+  // pages' copies of them, then single values a sentence quotes out of one.
+  { label: 'Measurement tables', write: writeMeasurementTables },
+  { label: 'Published measurement tables', write: writePublishedMeasurements },
+  { label: 'Inline figures', write: writeInlineFigures },
   { label: 'Color tables', write: writeColorDocs },
   { label: 'Jexl catalog', write: writeJexlDocs },
   { label: 'Adapter base table', write: writeAdapterBaseDocs },

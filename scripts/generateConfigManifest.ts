@@ -39,8 +39,8 @@ import {
   checkOrWriteAll,
   formatMarkdown,
   markdownTableLines,
-  spliceGeneratedBlock,
 } from '../website/scripts/check-utils.ts'
+import { spliceMarkerBlocks } from '../website/scripts/markerBlocks.ts'
 import { migrationTableLines } from './configMigrationTable.ts'
 
 import type { Migration } from './configMigrationTable.ts'
@@ -1505,18 +1505,22 @@ function writeCoreArtifacts() {
     'website/docs/user_guides/edit_plot.md',
   )
   const editPlotGuide = formatMarkdown(
-    spliceGeneratedBlock({
-      path: EDIT_PLOT_GUIDE,
-      marker: 'PLOT_SETTINGS',
-      body: markdownTableLines(
-        ['Display', 'Settings'],
-        plotSettings
-          .toSorted((a, b) => a.displayName.localeCompare(b.displayName, 'en'))
-          .map(({ name, displayName, keys }) => [
-            `${displayName} (\`${name}\`)`,
-            keys.map(key => `\`${key}\``).join(', '),
-          ]),
-      ),
+    spliceMarkerBlocks({
+      text: readFileSync(EDIT_PLOT_GUIDE, 'utf8'),
+      file: EDIT_PLOT_GUIDE,
+      name: 'PLOT_SETTINGS',
+      render: () =>
+        markdownTableLines(
+          ['Display', 'Settings'],
+          plotSettings
+            .toSorted((a, b) =>
+              a.displayName.localeCompare(b.displayName, 'en'),
+            )
+            .map(({ name, displayName, keys }) => [
+              `${displayName} (\`${name}\`)`,
+              keys.map(key => `\`${key}\``).join(', '),
+            ]),
+        ).join('\n'),
     }),
     EDIT_PLOT_GUIDE,
   )
@@ -1525,16 +1529,18 @@ function writeCoreArtifacts() {
     'website/docs/config_guides/v4_config_migration.md',
   )
   const migrationGuide = formatMarkdown(
-    spliceGeneratedBlock({
-      path: MIGRATION_GUIDE,
-      marker: 'V4_CONFIG_MIGRATION',
-      body: [
-        '<!-- prettier-ignore -->',
-        ...markdownTableLines(
-          ['Type', 'v4.3.0 key', 'v5'],
-          migrationTableLines(migration),
-        ),
-      ],
+    spliceMarkerBlocks({
+      text: readFileSync(MIGRATION_GUIDE, 'utf8'),
+      file: MIGRATION_GUIDE,
+      name: 'V4_CONFIG_MIGRATION',
+      render: () =>
+        [
+          '<!-- prettier-ignore -->',
+          ...markdownTableLines(
+            ['Type', 'v4.3.0 key', 'v5'],
+            migrationTableLines(migration),
+          ),
+        ].join('\n'),
     }),
     MIGRATION_GUIDE,
   )

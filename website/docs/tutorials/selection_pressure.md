@@ -35,7 +35,7 @@ jcvi compiles C extensions at install time, and the compile fails on some Python
 versions. If `pip install jcvi` fails, `uv venv --python 3.12` followed by
 `uv pip install jcvi biopython` gives an interpreter it builds on.
 
-<!-- TUTORIAL_INSTALL htslib,diamond,datasets,node,jbrowse-cli,jcvi,biopython START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,diamond,datasets,node,jbrowse-cli,jcvi,biopython -->
 
 ```bash
 # Debian/Ubuntu
@@ -53,7 +53,7 @@ pip install jcvi biopython
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib,diamond,datasets,node,jbrowse-cli,jcvi,biopython END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,diamond,datasets,node,jbrowse-cli,jcvi,biopython -->
 
 ## The data
 

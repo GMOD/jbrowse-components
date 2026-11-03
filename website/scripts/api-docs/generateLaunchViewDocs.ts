@@ -1,5 +1,6 @@
 import fs from 'fs'
 
+import { markerBlocks } from '../markerBlocks.ts'
 import { scanLaunchArgs } from './generateSpecKeyDocs.ts'
 import { markdownTable, rewriteMarkerBlock, tableCell } from './util.ts'
 
@@ -56,22 +57,24 @@ function slugify(heading: string) {
 
 /** viewType -> the `###` heading its `SPEC_KEYS` block sits under. */
 function specKeySections() {
-  const lines = fs.readFileSync(URLPARAMS, 'utf8').split('\n')
-  const sections = new Map<string, string>()
-  let heading = ''
-  for (const line of lines) {
-    // level 3 only: each view type's section is a `###`, and the `####` under
-    // it ("<view> properties") is where the marker actually sits
-    const h = /^### (.+)$/.exec(line)
-    if (h) {
-      heading = h[1]!.trim()
-    }
-    const marker = /^<!-- SPEC_KEYS (\w+) START -->$/.exec(line)
-    if (marker && heading) {
-      sections.set(marker[1]!, heading)
-    }
-  }
-  return sections
+  const text = fs.readFileSync(URLPARAMS, 'utf8')
+  const lines = text.split('\n')
+  // level 3 only: each view type's section is a `###`, and the `####` under it
+  // ("<view> properties") is where the marker actually sits
+  const headingAbove = (line: number) =>
+    lines
+      .slice(0, line)
+      .findLast(l => /^### /.test(l))
+      ?.slice(4)
+      .trim()
+  return new Map(
+    markerBlocks(text, URLPARAMS).flatMap(({ name, group, begin }) => {
+      const heading = headingAbove(begin)
+      return name === 'SPEC_KEYS' && group !== undefined && heading
+        ? [[group, heading] as const]
+        : []
+    }),
+  )
 }
 
 /** `Launch*Args` name -> the repo-relative file exporting it. */
@@ -119,7 +122,7 @@ export function collectLaunchViews(corpus: SourceCorpus): LaunchViewRow[] {
 
   if (noSection.length > 0) {
     throw new Error(
-      `these launchable view types have no \`<!-- SPEC_KEYS <type> START -->\` block under a \`###\` heading in ${URLPARAMS}, so the extension-points guide has no section to link their spec fields to: ${noSection.join(', ')}`,
+      `these launchable view types have no \`<!-- BEGIN GENERATED SPEC_KEYS <type> -->\` block under a \`###\` heading in ${URLPARAMS}, so the extension-points guide has no section to link their spec fields to: ${noSection.join(', ')}`,
     )
   }
   if (noArgsFile.length > 0) {

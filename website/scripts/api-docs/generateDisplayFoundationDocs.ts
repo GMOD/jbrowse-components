@@ -21,8 +21,8 @@ import type { SourceCorpus } from './util.ts'
 //
 // Two markers, both regenerated on `pnpm autogen`, over the same collected data:
 //
-//   <!-- DISPLAY_FOUNDATIONS START -->        the public guide's table
-//   <!-- DISPLAY_FOUNDATION_STACKS START -->  the architecture spec's
+//   <!-- BEGIN GENERATED DISPLAY_FOUNDATIONS -->        the public guide's table
+//   <!-- BEGIN GENERATED DISPLAY_FOUNDATION_STACKS -->  the architecture spec's
 //
 // They differ in one column. The guide says what a foundation brings as prose
 // (the `#displayFoundationDef` tag); the spec names the mixins it composes,

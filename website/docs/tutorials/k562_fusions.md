@@ -38,7 +38,7 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/lift_bnd_vcf.py
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,jbrowse-cli,bedGraphToBigWig,liftOver START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,jbrowse-cli,bedGraphToBigWig,liftOver -->
 
 ```bash
 # Debian/Ubuntu
@@ -55,7 +55,7 @@ chmod +x ~/.local/bin/bedGraphToBigWig ~/.local/bin/liftOver
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,jbrowse-cli,bedGraphToBigWig,liftOver END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,jbrowse-cli,bedGraphToBigWig,liftOver -->
 
 ## The data
 

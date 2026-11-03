@@ -452,7 +452,7 @@ property the state model declares.
 
 #### Linear genome view properties
 
-<!-- SPEC_KEYS LinearGenomeView START -->
+<!-- BEGIN GENERATED SPEC_KEYS LinearGenomeView -->
 
 **Launch keys**, resolved once on attach and then discarded, because they have
 no direct representation in the view's state — `assembly`,
@@ -484,7 +484,7 @@ restores natively:
 | [`windowStartBp`](/docs/models/lineargenomeview#property-windowstartbp) | Left edge of the viewport, in linearized bp — the concatenated `displayedRegions` space that `offsetPx` indexes, which has no inter-region padding, so the two differ only by `bpPerPx`. May be negative when the view is scrolled past the left end.<br><br>The view stores the genomic window it frames rather than the pixels that framed it, because pixels mean nothing without the width they were measured at and a snapshot does not include one. A session authored in a 1000px window therefore shows the same region when opened at 500px, as the same location given as a `&loc=` does: both ways to share a view store intent. |
 | [`windowWidthBp`](/docs/models/lineargenomeview#property-windowwidthbp) | Width of the viewport in bp. Zero means "not established yet": no width has been measured, so there is nothing to divide by. The first measure fills it in, and `bpPerPx` is `windowWidthBp / width` from then on. |
 
-<!-- SPEC_KEYS LinearGenomeView END -->
+<!-- END GENERATED SPEC_KEYS LinearGenomeView -->
 
 - `bpPerPx` and `offsetPx` are the zoom and the horizontal scroll, and they are
   the exception to the typo rule above: the view stores its viewport as a
@@ -625,7 +625,7 @@ drawing since the circle auto-fits its container.
 
 #### Circular view properties
 
-<!-- SPEC_KEYS CircularView START -->
+<!-- BEGIN GENERATED SPEC_KEYS CircularView -->
 
 **Launch keys**, which name something to do on load rather than state the view
 holds:
@@ -664,7 +664,7 @@ restores natively:
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `encoding.color: 'track'`. Absent means the track takes an automatic slot from the palette. |
 | [`trackSelectorType`](/docs/models/circularview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared because saved sessions and share links carry it. |
 
-<!-- SPEC_KEYS CircularView END -->
+<!-- END GENERATED SPEC_KEYS CircularView -->
 
 `bpPerPx` and `offsetRadians` are the circle's zoom and rotation; pairing them
 with `autoFit: false` stops the first resize refitting over them.
@@ -699,7 +699,7 @@ with `autoFit: false` stops the first resize refitting over them.
 
 #### Dotplot view properties
 
-<!-- SPEC_KEYS DotplotView START -->
+<!-- BEGIN GENERATED SPEC_KEYS DotplotView -->
 
 **Launch keys**, which name something to do on load rather than state the view
 holds:
@@ -734,7 +734,7 @@ restores natively:
 | [`trackSelectorType`](/docs/models/dotplotview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared because saved sessions and share links carry it. |
 | [`vview`](/docs/models/dotplotview#property-vview) | the vertical axis, the counterpart to `hview`. A spec writes `views[1]`. |
 
-<!-- SPEC_KEYS DotplotView END -->
+<!-- END GENERATED SPEC_KEYS DotplotView -->
 
 #### Dotplot highlights
 
@@ -817,7 +817,7 @@ strand, with curved ribbons and stronger opacity:
 The v4 spellings `colorBy` and `alpha` still open, as `encoding.color` and
 `encoding.opacity`, and the dotplot's `drawCigar` as `indels`.
 
-<!-- SPEC_KEYS LinearSyntenyView START -->
+<!-- BEGIN GENERATED SPEC_KEYS LinearSyntenyView -->
 
 **Launch keys**, which name something to do on load rather than state the view
 holds:
@@ -855,7 +855,7 @@ restores natively:
 | [`trackColors`](/docs/models/trackcolorsmixin#property-trackcolors) | trackId -> explicit color under `encoding.color: 'track'`. Absent means the track takes an automatic slot from the palette. |
 | [`trackSelectorType`](/docs/models/linearsyntenyview#property-trackselectortype) | ignored: the hierarchical selector is the only one. Declared because saved sessions and share links carry it. |
 
-<!-- SPEC_KEYS LinearSyntenyView END -->
+<!-- END GENERATED SPEC_KEYS LinearSyntenyView -->
 
 `levels` is accepted because the view declares it; `tracks` fills it and
 `levelHeights` sizes them, so use `levels` only to author a band's full state.
@@ -916,7 +916,7 @@ and one multi-genome track covers the whole stack:
 each with a location, an assembly and tracks. Beside `views`, the spec accepts
 every setting the view's menu offers:
 
-<!-- SPEC_KEYS BreakpointSplitView START -->
+<!-- BEGIN GENERATED SPEC_KEYS BreakpointSplitView -->
 
 <!-- prettier-ignore -->
 | Property | What it does |
@@ -927,7 +927,7 @@ every setting the view's menu offers:
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 | [`showHeader`](/docs/models/breakpointsplitview#property-showheader) | show the view's own header bar, above the panels' own |
 
-<!-- SPEC_KEYS BreakpointSplitView END -->
+<!-- END GENERATED SPEC_KEYS BreakpointSplitView -->
 
 ### Spreadsheet view
 
@@ -943,7 +943,7 @@ every setting the view's menu offers:
 }
 ```
 
-<!-- SPEC_KEYS SpreadsheetView START -->
+<!-- BEGIN GENERATED SPEC_KEYS SpreadsheetView -->
 
 **Launch keys**, which name something to do on load rather than state the view
 holds:
@@ -970,7 +970,7 @@ restores natively:
 | [`hideVerticalResizeHandle`](/docs/models/spreadsheetview#property-hideverticalresizehandle) | chrome switch, for an embed that sizes the view itself |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar and keep it in the session |
 
-<!-- SPEC_KEYS SpreadsheetView END -->
+<!-- END GENERATED SPEC_KEYS SpreadsheetView -->
 
 `fileType` is one of `VCF`, `BED`, `BEDPE` or `STAR-Fusion`, for a URL with no
 extension or a STAR-Fusion file, which has no extension.
@@ -992,7 +992,7 @@ extension or a STAR-Fusion file, which has no extension.
 The circular half draws the rows the spreadsheet half's filter leaves, so
 `filterText` makes a chord subset reachable from a link.
 
-<!-- SPEC_KEYS SvInspectorView START -->
+<!-- BEGIN GENERATED SPEC_KEYS SvInspectorView -->
 
 **Launch keys**, which name something to do on load rather than state the view
 holds:
@@ -1020,7 +1020,7 @@ restores natively:
 | [`onlyDisplayRelevantRegionsInCircularView`](/docs/models/svinspectorview#property-onlydisplayrelevantregionsincircularview) | draw only the chromosomes the visible rows touch |
 | [`spreadsheetWidthFraction`](/docs/models/svinspectorview#property-spreadsheetwidthfraction) | share of the view's width given to the spreadsheet |
 
-<!-- SPEC_KEYS SvInspectorView END -->
+<!-- END GENERATED SPEC_KEYS SvInspectorView -->
 
 ### Plugin-provided view types
 

@@ -31,7 +31,7 @@ config names it with the entry below, where `storePlugin` picks the build for
 the JBrowse reading the config and `esmUrl` is the fallback when the store
 cannot be read ([configuring plugins](/docs/config_guides/plugins)).
 
-<!-- GRAPH_PLUGIN_CONFIG START -->
+<!-- BEGIN GENERATED GRAPH_PLUGIN_CONFIG -->
 
 ```json
 {
@@ -45,7 +45,7 @@ cannot be read ([configuring plugins](/docs/config_guides/plugins)).
 }
 ```
 
-<!-- GRAPH_PLUGIN_CONFIG END -->
+<!-- END GENERATED GRAPH_PLUGIN_CONFIG -->
 
 `RgfaTabixAdapter` and `MinigraphBubbleAdapter` ship in the same plugin. The
 plugin needs a JBrowse 5 build (v5.0.0-beta.9 or later). A JBrowse 4 host does

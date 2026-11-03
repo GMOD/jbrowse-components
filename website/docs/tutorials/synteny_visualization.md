@@ -33,7 +33,7 @@ every genome against every other in one run, which
 - `python3`, which the build script uses to copy the hub configs
 - `node`, for the [JBrowse CLI](/docs/cli)
 
-<!-- TUTORIAL_INSTALL minimap2,node,jbrowse-cli START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL minimap2,node,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
@@ -44,7 +44,7 @@ conda install -c bioconda -c conda-forge minimap2 nodejs
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL minimap2,node,jbrowse-cli END -->
+<!-- END GENERATED TUTORIAL_INSTALL minimap2,node,jbrowse-cli -->
 
 ## The data
 

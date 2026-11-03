@@ -34,7 +34,7 @@ one, since its authors publish a chain for every pair of genomes in it. We:
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-<!-- TUTORIAL_INSTALL htslib,jbrowse-cli START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
@@ -45,7 +45,7 @@ conda install -c bioconda -c conda-forge htslib
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib,jbrowse-cli END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,jbrowse-cli -->
 
 ## The data
 

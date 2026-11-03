@@ -169,7 +169,7 @@ normal outcome.
 
 ## BaseResult fields
 
-<!-- SEARCH_RESULT_FIELDS START -->
+<!-- BEGIN GENERATED SEARCH_RESULT_FIELDS -->
 
 <!-- prettier-ignore -->
 | Field | Type | Purpose |
@@ -182,7 +182,7 @@ normal outcome.
 | `results` | `BaseResult[]` | nested hits, shown as a disambiguation dialog instead of navigating |
 | `exact` | `boolean` | this hit matched the query exactly, as the adapter judges it |
 
-<!-- SEARCH_RESULT_FIELDS END -->
+<!-- END GENERATED SEARCH_RESULT_FIELDS -->
 
 On Enter, the exact hits win if there are any and everything that matched is the
 fallback; the winning set navigates when it holds one result and opens a picker

@@ -24,7 +24,7 @@ import {
 } from './generateFileTypeDocs.ts'
 import { writeSpecKeyDocs } from './generateSpecKeyDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
-import { MARKER_GENERATORS } from './markerGenerators.ts'
+import { MARKER_GENERATORS, PROGRAM_MARKERS } from './markerGenerators.ts'
 import {
   assertEveryDisplayTypeIsDocumented,
   assertMarkersAndDocsAgree,
@@ -34,6 +34,7 @@ import {
   getAllFiles,
   sourceCorpus,
   unreadableSignature,
+  unwrittenMarkers,
 } from './util.ts'
 
 import type { ApiGroup } from './generateApiDocs.ts'
@@ -294,6 +295,12 @@ async function main() {
   // Before anything reaches disk, so a marker no doc renders fails the run with
   // the tree untouched.
   assertMarkersAndDocsAgree()
+  const unwritten = unwrittenMarkers(PROGRAM_MARKERS)
+  if (unwritten.length > 0) {
+    throw new Error(
+      `markerGenerators.ts's PROGRAM_MARKERS names ${unwritten.join(', ')}, which this run did not write`,
+    )
+  }
   if (stale.length > 0) {
     process.exit(1)
   }

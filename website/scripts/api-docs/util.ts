@@ -3,19 +3,18 @@ import path from 'path'
 
 import * as ts from 'typescript'
 
+import { isDocFile, isTsSource, repoFiles } from '../check-utils.ts'
 import {
-  GENERATED_NOTICE,
-  docFiles,
-  isDocFile,
-  isTsSource,
-  escapeRegExp,
-  isWebsiteDoc,
-  replaceMarkerRegions,
-  repoFiles,
-} from '../check-utils.ts'
+  markerBlocks,
+  markerLine,
+  spliceMarkerBlocks,
+} from '../markerBlocks.ts'
+import { repoRoot } from '../paths.ts'
 import { firstParagraph } from './agentText.ts'
 import { slotSpreadPairs, slotSpreadPart } from './enumConstants.ts'
 import { readDoc, writeDoc } from './format.ts'
+
+import type { MarkerBlock } from '../markerBlocks.ts'
 
 const cwd = `${process.cwd()}/`
 
@@ -474,9 +473,11 @@ function isConfigurationSchemaCall(node: ts.Node): node is ts.CallExpression {
 // slot injection) are skipped too.
 function collectUntaggedSlots(node: ts.Node, gaps: ConfigSlotGap[]) {
   if (isConfigurationSchemaCall(node)) {
-    const schema = ts.isStringLiteralLike(node.arguments[0])
-      ? node.arguments[0].text
-      : '(anonymous)'
+    const [name] = node.arguments
+    const schema =
+      name !== undefined && ts.isStringLiteralLike(name)
+        ? name.text
+        : '(anonymous)'
     const slots = node.arguments[1]
     if (slots && ts.isObjectLiteralExpression(slots)) {
       for (const prop of slots.properties) {
@@ -3045,7 +3046,7 @@ export function exampleSection(
   }
   const levelMatch = /^(#+)/.exec(heading)
   const subPrefix = levelMatch
-    ? '#'.repeat(levelMatch[1].length + 1)
+    ? '#'.repeat(levelMatch[1]!.length + 1)
     : undefined
   const labelHeading = (label: string) =>
     label ? (subPrefix ? `${subPrefix} Example: ${label}` : `_${label}_`) : ''
@@ -3067,7 +3068,7 @@ export function parsePipeTags(
   const re = new RegExp(`#${tag}\\s+([^\\n]*)`, 'g')
   const out: [string, string, string][] = []
   for (const m of (comment ?? '').matchAll(re)) {
-    const parts = m[1].split('|').map(s => s.trim())
+    const parts = m[1]!.split('|').map(s => s.trim())
     const [a, b] = parts
     if (!a || !b) {
       throw new Error(`${where}: malformed #${tag} tag "${m[0].trim()}"`)
@@ -3158,110 +3159,92 @@ export function sourceCorpus(
   }
 }
 
-// The docs both marker sweeps walk. agent-docs is swept alongside the published
+// The docs the marker sweeps walk. agent-docs is swept alongside the published
 // guides: the architecture spec restates several of the same tables the guides
 // do, and hand-mirroring one into the other is the drift these generators exist
 // to remove — the spec used to carry an explicit "then mirror it here"
 // instruction for exactly that. A file is only touched if it holds the marker
 // pair, so widening the sweep costs nothing to the docs that don't opt in.
 //
-// Each marker generator sweeps the whole tree for its own pair, so a run
-// relists and rereads these once per marker — 30 sweeps in `markers.ts`, not the
-// eight the note here used to be measured against. The relisting stays uncached
-// at 1ms a sweep; the rereading is `readDoc`'s, and format.ts says what it cost.
 // From the same listing as the sources, so under the pre-push hook another
 // agent's untracked doc is neither spliced nor indexed.
+const MARKER_DOC_ROOTS = [
+  'website/docs/',
+  'agent-docs/',
+  'website/diagrams/',
+  'website/release_announcement_drafts/',
+]
+
 function markerDocs() {
   return repoFiles().filter(
     f =>
-      (f.startsWith('website/docs/') || f.startsWith('agent-docs/')) &&
+      MARKER_DOC_ROOTS.some(root => f.startsWith(root)) &&
       isDocFile(path.basename(f)),
   )
 }
 
-// Which docs carry each `<!-- MARKER … START -->` pair, and which markers a
-// generator asked to render. The two are checked against each other by
-// `assertMarkersAndDocsAgree`; the doc side is also what the MARKER_INDEX table
-// renders, so the index is read off the docs rather than off this registry and
-// therefore lists itself.
-const markersWritten = new Set<string>()
+// Each doc's blocks. Every generator sweeps the whole tree for its own marker,
+// so a doc is rescanned only when a splice changed its text.
+const scanned = new Map<string, { text: string; blocks: MarkerBlock[] }>()
 
-// A marker at the start of a line, which is the only place one can be a block:
-// `<!-- NAME START -->` inside a sentence is a doc *about* the convention (that
-// is how ARCHITECTURE.md names the pair), and CommonMark reads an HTML comment
-// mid-paragraph as inline text, so nothing is spliced there.
-const MARKER_BLOCK = /^<!-- ([A-Z][A-Z0-9_]*)(?: (\S+))? START -->$/gm
-
-// The marker names one doc opens a block for. A grouped marker
-// (`COLOR_TABLE alignments-indicators`) counts under its base name — the group's
-// own existence check is `rewriteGroupedMarkerBlocks`'s `seen`.
-export function markerBlockNames(text: string) {
-  return [...text.matchAll(MARKER_BLOCK)].map(([, marker]) => marker!)
+function blocksOf(file: string) {
+  const text = readDoc(file)
+  let entry = scanned.get(file)
+  if (entry?.text !== text) {
+    entry = {
+      text,
+      blocks: text.includes('<!-- BEGIN GENERATED ')
+        ? markerBlocks(text, file)
+        : [],
+    }
+    scanned.set(file, entry)
+  }
+  return entry.blocks
 }
 
-// Every marker pair the docs carry, marker name to the docs carrying it.
+// Every grouped `name` block in the docs under `prefix`, for a generator that
+// validates its groups before it renders them.
+export function markerDocBlocks(name: string, prefix: string) {
+  return markerDocs()
+    .filter(file => file.startsWith(prefix))
+    .flatMap(file =>
+      blocksOf(file).flatMap(block =>
+        block.name === name && block.group !== undefined
+          ? [{ ...block, file, group: block.group }]
+          : [],
+      ),
+    )
+}
+
+// The markers a generator asked to render, checked against the docs' own pairs
+// by `assertMarkersAndDocsAgree`. The doc side is also what the MARKER_INDEX
+// table renders, so the index is read off the docs rather than off this
+// registry and therefore lists itself.
+const markersWritten = new Set<string>()
+
+// Blocks a generator outside this process splices, with the script that does:
+// generateConfigManifest bundles the live source tree, which a doc generator
+// cannot. Named here so the both-directions check stays exact.
+const WRITTEN_ELSEWHERE = new Map([
+  ['PLOT_SETTINGS', 'scripts/generateConfigManifest.ts'],
+  ['V4_CONFIG_MIGRATION', 'scripts/generateConfigManifest.ts'],
+])
+
+// Every marker pair the docs carry, marker name to the docs carrying it. A
+// grouped marker (`COLOR_TABLE alignments-indicators`) counts under its name.
 export function markerBlocksInDocs() {
   const found = new Map<string, Set<string>>()
   for (const file of markerDocs()) {
-    for (const marker of markerBlockNames(readDoc(file))) {
-      const docs = found.get(marker)
+    for (const { name } of blocksOf(file)) {
+      const docs = found.get(name)
       if (docs) {
         docs.add(file)
       } else {
-        found.set(marker, new Set([file]))
+        found.set(name, new Set([file]))
       }
     }
   }
   return found
-}
-
-// The other spelling, `spliceGeneratedBlock`'s. A `MEASUREMENT <id>` block
-// counts under `MEASUREMENT`, as a grouped marker does under its base name.
-const GENERATED_BLOCK = /^<!-- BEGIN GENERATED (.+?) -->$/gm
-
-export function generatedBlocksInDocs() {
-  const found = new Map<string, Set<string>>()
-  for (const file of [...markerDocs(), ...docFiles('website/diagrams')]) {
-    // A fence quoting the convention is a doc about a block, not one.
-    const prose = readDoc(file).replaceAll(/^```[\s\S]*?^```/gm, '')
-    for (const [, name] of prose.matchAll(GENERATED_BLOCK)) {
-      const marker = name!.startsWith('MEASUREMENT ') ? 'MEASUREMENT' : name!
-      const docs = found.get(marker)
-      if (docs) {
-        docs.add(file)
-      } else {
-        found.set(marker, new Set([file]))
-      }
-    }
-  }
-  return found
-}
-
-// A `BEGIN GENERATED` block is spliced by a standalone generator in its own
-// process, so no run here wrote it and `markersWritten` cannot vouch for it.
-// What can: the generator spells the block's name as a string. A block whose
-// name no script under website/scripts spells keeps whatever was committed,
-// which is what renaming or deleting its generator leaves behind.
-const GENERATOR_DIRS = ['website/scripts', 'scripts']
-
-function generatedBlocksNobodyWrites() {
-  const scripts = GENERATOR_DIRS.flatMap(dir =>
-    fs
-      .readdirSync(dir)
-      .filter(isTsSource)
-      .map(name => fs.readFileSync(`${dir}/${name}`, 'utf8')),
-  )
-  return [...generatedBlocksInDocs()]
-    .filter(
-      ([marker]) =>
-        !scripts.some(
-          text => text.includes(`'${marker}'`) || text.includes(`\`${marker} `),
-        ),
-    )
-    .map(
-      ([marker, docs]) =>
-        `  ${marker} — ${[...docs].join(', ')} carries a \`<!-- BEGIN GENERATED ${marker} -->\` pair, but no script in website/scripts or scripts names it. The block keeps whatever was committed.`,
-    )
 }
 
 // Both halves of "a generated table and the doc that renders it still know
@@ -3278,26 +3261,55 @@ function generatedBlocksNobodyWrites() {
 //     nowhere and the old block freezes.
 //
 // `markersWritten` is what the run actually asked for, so a partial run
-// (`markers.ts <filter>`) checks only its own markers; pass `both: false` there,
-// since a marker the run never invoked is not evidence of an ungenerated block.
-export function assertMarkersAndDocsAgree({ both = true } = {}) {
+// (`markers.ts <filter>`) checks only its own markers; pass `both: false`
+// there, since a marker the run never invoked is not evidence of an
+// ungenerated block. `writtenElsewhere` names the markers another process
+// writes, which a run counts as written.
+export function assertMarkersAndDocsAgree({
+  both = true,
+  writtenElsewhere = [],
+}: {
+  both?: boolean
+  writtenElsewhere?: readonly string[]
+} = {}) {
   const inDocs = markerBlocksInDocs()
   const problems = [
-    ...[...markersWritten]
+    ...writtenElsewhere
       .filter(marker => !inDocs.has(marker))
       .map(
         marker =>
-          `  ${marker} — generated, but no doc carries a \`<!-- ${marker} START -->\` pair. Render it in a doc, or delete the generator.`,
+          `  ${marker} — written by another process, but no doc carries a \`${markerLine('BEGIN', marker)}\` pair.`,
+      ),
+    ...[...markersWritten, ...WRITTEN_ELSEWHERE.keys()]
+      .filter(marker => !inDocs.has(marker))
+      .map(
+        marker =>
+          `  ${marker} — generated, but no doc carries a \`${markerLine('BEGIN', marker)}\` pair. Render it in a doc, or delete the generator.`,
+      ),
+    ...[...WRITTEN_ELSEWHERE]
+      .filter(
+        ([marker, writer]) =>
+          !fs
+            .readFileSync(path.join(repoRoot, writer), 'utf8')
+            .includes(`'${marker}'`),
+      )
+      .map(
+        ([marker, writer]) =>
+          `  ${marker} — util.ts says ${writer} writes it, and ${writer} no longer names it.`,
       ),
     ...(both
       ? [...inDocs.keys()]
-          .filter(marker => !markersWritten.has(marker))
+          .filter(
+            marker =>
+              !markersWritten.has(marker) &&
+              !WRITTEN_ELSEWHERE.has(marker) &&
+              !writtenElsewhere.includes(marker),
+          )
           .map(
             marker =>
               `  ${marker} — ${[...inDocs.get(marker)!].join(', ')} carries the pair, but no generator writes it. The block keeps whatever was committed.`,
           )
       : []),
-    ...generatedBlocksNobodyWrites(),
   ]
   if (problems.length > 0) {
     throw new Error(
@@ -3306,12 +3318,22 @@ export function assertMarkersAndDocsAgree({ both = true } = {}) {
   }
 }
 
-// Rewrite the region between every `<!-- MARKER START -->`/`<!-- MARKER END -->`
-// pair in every doc that contains it, returning the docs whose block content
-// changed. `writeDoc` keeps them off disk under `--check`, so the list is then
-// the stale docs.
-// Shared by the single-marker generators (jexl catalog, extension-point index);
-// the color tables use a per-group variant of the same idea.
+// The named markers no generator in this run wrote, for a run that owes them.
+export function unwrittenMarkers(markers: readonly string[]) {
+  return markers.filter(marker => !markersWritten.has(marker))
+}
+
+interface SweepOptions {
+  // The block may render nothing, and an empty one is an answer rather than a
+  // source parse that stopped matching.
+  allowEmpty?: boolean
+  // Only these docs; every doc by default.
+  files?: string[]
+}
+
+// Rewrite every `marker` block in the docs that carry one, returning the docs
+// whose block content changed. `writeDoc` keeps them off disk under `--check`,
+// so the list is then the stale docs.
 //
 // The --check comparison is byte-exact, and has to stay that way. It used to
 // normalize whitespace and hyphen runs first, from a time when the committed
@@ -3323,77 +3345,77 @@ export function assertMarkersAndDocsAgree({ both = true } = {}) {
 // doc whose only change was a hyphen run. Renaming a documented flag from
 // `--force` to `-force`, or an em-dash `--` to `-`, regenerated the table and
 // reported it up to date.
-export function rewriteMarkerBlock(marker: string, block: string): string[] {
-  const startMarker = `<!-- ${marker} START -->`
-  const endMarker = `<!-- ${marker} END -->`
-  const changed: string[] = []
+function sweep(
+  marker: string,
+  render: (block: MarkerBlock, file: string) => string,
+  { allowEmpty = false, files = markerDocs() }: SweepOptions,
+) {
   markersWritten.add(marker)
-  for (const file of markerDocs()) {
+  return files.flatMap(file => {
     const original = readDoc(file)
-    if (original.split('\n').includes(startMarker)) {
-      const updated = replaceMarkerRegions({
-        text: original,
-        startMarker,
-        endMarker,
-        block,
-        file,
-      })
-      if (updated !== original) {
-        writeDoc(file, updated)
-        changed.push(file)
+    const updated = blocksOf(file).some(b => b.name === marker)
+      ? spliceMarkerBlocks({
+          text: original,
+          file,
+          name: marker,
+          allowEmpty,
+          render: block => render(block, file),
+        })
+      : original
+    return updated === original ? [] : writeDoc(file, updated)
+  })
+}
+
+function wrongShape(file: string, block: MarkerBlock, expected: string) {
+  return new Error(
+    `${file}:${block.begin + 1}: ${markerLine('BEGIN', block.name, block.group)} — ${block.name} ${expected}`,
+  )
+}
+
+export function rewriteMarkerBlock(
+  marker: string,
+  block: string,
+  options: SweepOptions = {},
+) {
+  return sweep(
+    marker,
+    (found, file) => {
+      if (found.group !== undefined) {
+        throw wrongShape(file, found, 'takes no group')
       }
-    }
-  }
-  return changed
+      return block
+    },
+    options,
+  )
 }
 
 // The grouped sibling of rewriteMarkerBlock, for markers that name which group
-// they render (`<!-- COLOR_TABLE alignments-indicators START -->`) so one
-// generator can feed many blocks across many docs. `render` returns a group's
-// block body, and throws when the group is unknown — the message belongs to the
-// caller, since an unrecognized group is always an authoring typo.
+// they render (`<!-- BEGIN GENERATED COLOR_TABLE alignments-indicators -->`) so
+// one generator can feed many blocks across many docs. `render` returns a
+// group's block body, and throws when the group is unknown — the message
+// belongs to the caller, since an unrecognized group is always an authoring
+// typo.
 //
 // Returns the docs whose block content changed (the stale ones, under
 // `--check`) and the groups some doc actually rendered, so a caller can catch a
 // tagged group that no page pulls in.
-//
-// Sweeps the same docs as `rewriteMarkerBlock`, agent-docs included. It used to
-// walk website/docs alone, which made a grouped block in agent-docs worse than
-// unsupported: the block silently kept whatever was committed, and — because
-// `seen` is what tells a caller a tagged group reached some page — the group it
-// rendered read as rendered by nothing, so `writeColorDocs`/`writeFileTypeDocs`
-// would abort the whole run over a group that was in fact in use.
 export function rewriteGroupedMarkerBlocks(
   marker: string,
   render: (group: string, file: string) => string,
+  options: SweepOptions = {},
 ) {
-  const markerRe = new RegExp(`^<!-- ${marker} (\\S+) START -->$`, 'gm')
-  const changed: string[] = []
   const seen = new Set<string>()
-  markersWritten.add(marker)
-  for (const file of markerDocs()) {
-    const original = readDoc(file)
-    let updated = original
-    // A group repeated in one doc matches twice; rendering it twice is
-    // wasted work, not a wrong answer, and dropping the duplicate keeps the
-    // per-group replace from running over text it already rewrote.
-    for (const group of new Set(
-      [...original.matchAll(markerRe)].map(m => m[1]!),
-    )) {
-      seen.add(group)
-      updated = replaceMarkerRegions({
-        text: updated,
-        startMarker: `<!-- ${marker} ${group} START -->`,
-        endMarker: `<!-- ${marker} ${group} END -->`,
-        block: render(group, file),
-        file,
-      })
-    }
-    if (updated !== original) {
-      writeDoc(file, updated)
-      changed.push(file)
-    }
-  }
+  const changed = sweep(
+    marker,
+    (found, file) => {
+      if (found.group === undefined) {
+        throw wrongShape(file, found, 'names a group')
+      }
+      seen.add(found.group)
+      return render(found.group, file)
+    },
+    options,
+  )
   return { changed, seen }
 }
 

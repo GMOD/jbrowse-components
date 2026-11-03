@@ -35,7 +35,7 @@ _FGF4_ retrogene leaves at its parent gene. We:
 - the UCSC `liftOver` binary for the OMIA track, which the build script fetches
   itself
 
-<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,minimap2 START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,bcftools,htslib,minimap2 -->
 
 ```bash
 # Debian/Ubuntu
@@ -44,7 +44,7 @@ sudo apt install samtools bcftools tabix minimap2
 conda install -c bioconda -c conda-forge samtools bcftools htslib minimap2
 ```
 
-<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,minimap2 END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,bcftools,htslib,minimap2 -->
 
 The scripts write local files, which [JBrowse Desktop](/docs/quickstart_desktop)
 opens by path and JBrowse Web takes through **Add track**.

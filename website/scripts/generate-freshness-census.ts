@@ -12,18 +12,11 @@
 // **A caller is a call to `isDataCurrent`**, the rule itself rather than a name
 // pattern, so a display joins by calling it and leaves by not.
 import { readFileSync } from 'node:fs'
-import { join, relative, sep } from 'node:path'
+import { relative, sep } from 'node:path'
 
-import {
-  checkOrWrite,
-  isTsSource,
-  markdownTableLines,
-  sourceFiles,
-  spliceGeneratedBlock,
-} from './check-utils.ts'
+import { rewriteMarkerBlock } from './api-docs/util.ts'
+import { isTsSource, markdownTableLines, sourceFiles } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
-
-const docPath = join(repoRoot, 'agent-docs', 'reference', 'SVG_EXPORT.md')
 
 const SCAN_ROOTS = ['plugins', 'packages', 'products']
 
@@ -88,7 +81,7 @@ function callers() {
         `would be missing rather than wrong: ${unreadable.join(', ')}`,
     )
   }
-  // `spliceGeneratedBlock` lets a block render empty, and a renamed
+  // A renamed
   // `isDataCurrent` would publish "0 calls" and pass its check.
   if (rows.length === 0) {
     throw new Error(
@@ -98,7 +91,7 @@ function callers() {
   return rows.sort((a, b) => a.file.localeCompare(b.file, 'en'))
 }
 
-function main() {
+export function writeFreshnessCensus() {
   const rows = callers()
   const packages = new Set(
     rows.map(r => r.file.split('/').slice(0, 2).join('/')),
@@ -117,16 +110,5 @@ function main() {
     ),
   ]
 
-  checkOrWrite({
-    path: docPath,
-    content: spliceGeneratedBlock({
-      path: docPath,
-      marker: 'FRESHNESS_SIGNATURE_CENSUS',
-      body,
-    }),
-    label: 'freshness signature census',
-    staleHint: 'run `pnpm autogen`',
-  })
+  return rewriteMarkerBlock('FRESHNESS_SIGNATURE_CENSUS', body.join('\n'))
 }
-
-main()

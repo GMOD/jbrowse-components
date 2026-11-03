@@ -19,7 +19,7 @@ how configuration fits together, start with the
 The table below lists each display's color channels, the `scale.type` values
 each takes, and the fields with presets of their own.
 
-<!-- COLOR_CHANNELS START -->
+<!-- BEGIN GENERATED COLOR_CHANNELS -->
 
 <!-- prettier-ignore -->
 | Display | Setting | Page | `scale.type` | Preset fields |
@@ -43,6 +43,6 @@ each takes, and the fields with presets of their own.
 | [](/docs/config/multiwaysyntenydisplay) | `ribbons.encoding.color` | [](/docs/config/ribboncolor#preset-fields) | linear, threshold, ordinal | `mapq`, `identity`, `dnds`, `syntenicDepth` |
 | [](/docs/config/multiwaysyntenydisplay) | `laneLayers.marks.encoding.color` | [](/docs/config/markcolor#preset-fields) | ordinal, linear, log, symlog, threshold, identity | `strand`, `svType`, `impact`, `score` |
 
-<!-- COLOR_CHANNELS END -->
+<!-- END GENERATED COLOR_CHANNELS -->
 
 <!-- doclist:config grouped -->

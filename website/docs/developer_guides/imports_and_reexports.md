@@ -69,7 +69,7 @@ a subpath the worker serves for real. The last column shows how much of each
 package that is; an adapter, an RPC method or a state-model mixin is always real
 in both realms.
 
-<!-- REEXPORT_MODULES START -->
+<!-- BEGIN GENERATED REEXPORT_MODULES -->
 
 <!-- prettier-ignore -->
 | Package | What it provides | Subpaths | Real in the RPC worker |
@@ -79,7 +79,7 @@ in both realms.
 | [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | 5 | 3 of 5 subpaths; the rest stubbed |
 | `@jbrowse/render-core` | GPU/Canvas2D rendering primitives for JBrowse displays: the HAL, the draw-lifecycle mixin, per-region/global backend bases, and the React backend hooks | 40 | all of it |
 
-<!-- REEXPORT_MODULES END -->
+<!-- END GENERATED REEXPORT_MODULES -->
 
 ## What is _not_ re-exported
 
@@ -100,7 +100,7 @@ JBrowse publishes several helper packages to npm alongside `@jbrowse/core`, so
 the parsing and scale math is already written. The third column says whether the
 host serves a package or your build bundles it.
 
-<!-- HELPER_PACKAGES START -->
+<!-- BEGIN GENERATED HELPER_PACKAGES -->
 
 <!-- prettier-ignore -->
 | Package | What it provides | How to use it |
@@ -112,7 +112,7 @@ host serves a package or your build bundles it.
 | [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | Bundled into your plugin; its imports of `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react`, `react-dom` stay external and resolve to the host's copies |
 | [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays | Bundled into your plugin; its imports of `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react`, `react-dom` stay external and resolve to the host's copies |
 
-<!-- HELPER_PACKAGES END -->
+<!-- END GENERATED HELPER_PACKAGES -->
 
 A bundled helper package keeps one copy of core: its own imports of
 `@jbrowse/core` and the React/MobX stack are served keys, so the plugin build

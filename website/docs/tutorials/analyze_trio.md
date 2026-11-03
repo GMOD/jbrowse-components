@@ -33,7 +33,7 @@ along a chromosome. On chr1 of a 1000 Genomes trio, we:
 - `node`, for the [JBrowse CLI](/docs/cli)
 - htslib (`bgzip`, `tabix`)
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
@@ -44,7 +44,7 @@ conda install -c bioconda -c conda-forge htslib nodejs
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli -->
 
 On Debian/Ubuntu, `apt install default-jre` installs Java. `hap-ibd.jar` is a
 single download from its

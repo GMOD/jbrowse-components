@@ -30,7 +30,7 @@ duplications, where they break into many blocks. We:
   [chain2paf](https://github.com/AndreaGuarracino/chain2paf) and the
   [JBrowse CLI](/docs/cli), for `jbrowse make-pif`
 
-<!-- TUTORIAL_INSTALL htslib,jbrowse-cli START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
@@ -41,7 +41,7 @@ conda install -c bioconda -c conda-forge htslib
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib,jbrowse-cli END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,jbrowse-cli -->
 
 ## The data
 

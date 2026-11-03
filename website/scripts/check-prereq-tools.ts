@@ -34,6 +34,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { reportProblems } from './check-utils.ts'
+import { withoutMarkerBlocks } from './markerBlocks.ts'
 import { docsDir } from './paths.ts'
 
 // Runtimes, fetchers, installers, and the file-prep tools whose own tutorial is
@@ -182,10 +183,7 @@ for (const file of readdirSync(tutorials).sort()) {
   pages++
   // The generated install fence shows no tool running, so the fences come from
   // the page without it
-  const shown = src.replaceAll(
-    /<!-- TUTORIAL_INSTALL \S+ START -->[\s\S]*?<!-- TUTORIAL_INSTALL \S+ END -->/g,
-    '',
-  )
+  const shown = withoutMarkerBlocks(src, file, 'TUTORIAL_INSTALL')
   const fences = [...shown.matchAll(/```(\w+)[^\n]*\n([\s\S]*?)```/g)]
   const runnable = fences
     .filter(f => /^(bash|python|r)$/i.test(f[1]!))

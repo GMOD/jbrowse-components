@@ -1,4 +1,3 @@
-import { GENERATED_NOTICE, replaceMarkerRegions } from '../check-utils.ts'
 import {
   categoryLabel,
   collectTransitive,
@@ -8,7 +7,6 @@ import {
   filterUnseenByName,
   lastTaggedLine,
   markdownTable,
-  markerBlockNames,
   nameTypes,
   overviewSection,
   parseTaggedComment,
@@ -326,67 +324,6 @@ describe('markdownTable', () => {
   })
 })
 
-describe('replaceMarkerRegions', () => {
-  const splice = (text: string, block = 'BODY') =>
-    replaceMarkerRegions({
-      text,
-      startMarker: '<!-- T START -->',
-      endMarker: '<!-- T END -->',
-      block,
-      file: 'doc.md',
-    })
-
-  // The notice comes from `GENERATED_NOTICE` rather than being spelled again
-  // here: rewording it is what staled this assertion, and a restated copy would
-  // only do it a second time.
-  test('rewrites the region between a pair, under the generated notice', () => {
-    expect(splice('a\n<!-- T START -->\n\nold\n\n<!-- T END -->\nb')).toBe(
-      `a\n<!-- T START -->\n\n${GENERATED_NOTICE}\n\nBODY\n\n<!-- T END -->\nb`,
-    )
-  })
-
-  test('refuses to publish an empty block', () => {
-    expect(() => splice('<!-- T START -->\n\n<!-- T END -->', ' \n')).toThrow(
-      /rendered nothing/,
-    )
-  })
-
-  test('rewrites EVERY pair, not just the first', () => {
-    // A non-global replace left the second block on the previous run's content
-    // forever, and `--check` could not see it: the text it compares is the same
-    // whether or not that block was regenerated.
-    const doc = [
-      '<!-- T START -->\n\nBODY\n\n<!-- T END -->',
-      '<!-- T START -->\n\nstale\n\n<!-- T END -->',
-    ].join('\n\nprose\n\n')
-    expect(splice(doc)).not.toContain('stale')
-  })
-
-  test('leaves a doc with no marker alone', () => {
-    expect(splice('nothing to see')).toBe('nothing to see')
-  })
-
-  test('throws on a START with no matching END', () => {
-    // Silently a no-op before: the doc rendered nothing between the markers and
-    // the generator still reported it up to date.
-    expect(() => splice('<!-- T START -->\n\nold\n')).toThrow(
-      /no matching .*T END/,
-    )
-  })
-
-  test('throws on a second START before the END closes the first', () => {
-    expect(() =>
-      splice('<!-- T START -->\n<!-- T START -->\n<!-- T END -->'),
-    ).toThrow(/no matching/)
-  })
-
-  test('keeps a $-sequence in the rendered block literal', () => {
-    expect(splice('<!-- T START -->\n<!-- T END -->', "$' and $&")).toContain(
-      "$' and $&",
-    )
-  })
-})
-
 describe('repoRelative', () => {
   test('strips the repo-root prefix', () => {
     expect(repoRelative(`${process.cwd()}/plugins/foo/src/x.ts`)).toBe(
@@ -613,30 +550,5 @@ describe('nameTypes', () => {
     expect(nameTypes([config], `(name: string) => (${config.body})[]`)).toBe(
       '(name: string) => BaseAssemblyConfig[]',
     )
-  })
-})
-
-describe('markerBlockNames', () => {
-  test('finds a plain and a grouped block, the group under its base name', () => {
-    expect(
-      markerBlockNames(
-        '<!-- JEXL_CATALOG START -->\n\n<!-- JEXL_CATALOG END -->\n<!-- COLOR_TABLE alignments-indicators START -->',
-      ),
-    ).toEqual(['JEXL_CATALOG', 'COLOR_TABLE'])
-  })
-
-  test('ignores a marker named inside a sentence', () => {
-    // ARCHITECTURE.md documents the convention by naming the pair in prose.
-    // CommonMark reads an HTML comment mid-paragraph as inline text, so nothing
-    // is spliced there and counting it would report a block no generator owes.
-    expect(
-      markerBlockNames("Don't hand-edit between a `<!-- NAME START -->` pair"),
-    ).toEqual([])
-  })
-
-  test('ignores an END, and a START carrying trailing text', () => {
-    expect(
-      markerBlockNames('<!-- JEXL_CATALOG END -->\n<!-- X START --> and more'),
-    ).toEqual([])
   })
 })

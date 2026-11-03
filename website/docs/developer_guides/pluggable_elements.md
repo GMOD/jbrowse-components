@@ -22,7 +22,7 @@ a page, even if multiple products use it.**
 Pluggable elements are pieces of functionality a plugin can add to JBrowse, in
 the order the plugin manager creates them:
 
-<!-- ELEMENT_PHASES START -->
+<!-- BEGIN GENERATED ELEMENT_PHASES -->
 
 <!-- prettier-ignore -->
 | Phase | Element type | Registered with |
@@ -38,7 +38,7 @@ the order the plugin manager creates them:
 | 9 | Internet account types | <code>pluginManager.addInternetAccountType()</code> |
 | 10 | Add track workflow types | <code>pluginManager.addAddTrackWorkflowType()</code> |
 
-<!-- ELEMENT_PHASES END -->
+<!-- END GENERATED ELEMENT_PHASES -->
 
 The order is a real dependency: your `install` runs before any of them are
 built, and the plugin manager then creates each group in turn, so a track type

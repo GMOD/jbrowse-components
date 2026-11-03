@@ -18,7 +18,7 @@ for which foundation each in-tree display uses.
 
 ## The fetch autoruns
 
-<!-- FETCH_AUTORUNS START -->
+<!-- BEGIN GENERATED FETCH_AUTORUNS -->
 
 `installPerRegionFetchAutoruns` installs four autoruns:
 
@@ -30,7 +30,7 @@ for which foundation each in-tree display uses.
 | `ClearBlockingStateOnViewportChange` | `view.visibleRegions` | `clearAllRpcData()` when `error` or `fetchCanceled` is set, so the fetch autorun retries. Not `regionTooLarge`, which is derived and re-measured by the fetch autorun itself |
 | `FetchVisibleRegions` | the viewport, `fetchGeneration` after a fetch ends, or `reloadCounter` on a user retry (immediate, or debounced 600 ms within 600 ms of the last run) | `fetchNeeded(needed)` for the visible blocks loaded data doesn't cover. While `regionTooLarge` holds it runs that same fetch once per settled viewport — the fetch stops at whichever gate rejected it, and there is no measurement-only path. Skipped while `error` / `fetchCanceled` is set, while a fetch is in flight, and while the track is minimized |
 
-<!-- FETCH_AUTORUNS END -->
+<!-- END GENERATED FETCH_AUTORUNS -->
 
 `clearAllRpcData()`:
 

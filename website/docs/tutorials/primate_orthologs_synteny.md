@@ -33,7 +33,7 @@ what the join does with them. We:
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
 
-<!-- TUTORIAL_INSTALL htslib,datasets START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,datasets -->
 
 ```bash
 # Debian/Ubuntu
@@ -47,7 +47,7 @@ wget -P ~/.local/bin \
 chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 ```
 
-<!-- TUTORIAL_INSTALL htslib,datasets END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,datasets -->
 
 ## The data
 

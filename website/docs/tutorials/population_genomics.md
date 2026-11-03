@@ -44,7 +44,7 @@ statistics, packed into bigWigs, we:
 - [`bedGraphToBigWig`](https://hgdownload.soe.ucsc.edu/admin/exe/), to pack a
   bedGraph into a bigWig
 
-<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,vcftools,node,jbrowse-cli,bedGraphToBigWig START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,bcftools,htslib,vcftools,node,jbrowse-cli,bedGraphToBigWig -->
 
 ```bash
 # Debian/Ubuntu
@@ -60,7 +60,7 @@ chmod +x ~/.local/bin/bedGraphToBigWig
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,bcftools,htslib,vcftools,node,jbrowse-cli,bedGraphToBigWig END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,bcftools,htslib,vcftools,node,jbrowse-cli,bedGraphToBigWig -->
 
 ## The data
 

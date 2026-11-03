@@ -38,23 +38,16 @@
 // authoritative and be short. A new idiom fails and names the file, which is
 // the signal to teach it the idiom.
 //
-// Only the block between the markers is generated. Run: `pnpm autogen`
-// (or `--check` in CI).
+// Only the block between the markers is generated, by
+// `website/scripts/api-docs/markers.ts`.
 import { readFileSync } from 'node:fs'
 import { dirname, join, resolve as resolvePath } from 'node:path'
 
 import * as ts from 'typescript'
 
-import {
-  checkOrWrite,
-  isFile,
-  markdownTableLines,
-  sourceFiles,
-  spliceGeneratedBlock,
-} from './check-utils.ts'
+import { rewriteMarkerBlock } from './api-docs/util.ts'
+import { isFile, markdownTableLines, sourceFiles } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
-
-const docPath = join(repoRoot, 'agent-docs', 'reference', 'DISPLAYCHROME.md')
 
 const CHROMES = new Set(['DisplayChrome'])
 
@@ -1037,20 +1030,18 @@ function collectAdoption(): Row[] {
   })
 }
 
-const rows = collectAdoption()
-const counts = new Map<string, number>()
-for (const r of rows) {
-  const k = r.chrome ?? 'none'
-  counts.set(k, (counts.get(k) ?? 0) + 1)
-}
-const onSvgChrome = rows.filter(r => r.svgChrome).length
+export function writeDisplayChromeAdoption() {
+  const rows = collectAdoption()
+  const counts = new Map<string, number>()
+  for (const r of rows) {
+    const k = r.chrome ?? 'none'
+    counts.set(k, (counts.get(k) ?? 0) + 1)
+  }
+  const onSvgChrome = rows.filter(r => r.svgChrome).length
 
-checkOrWrite({
-  path: docPath,
-  content: spliceGeneratedBlock({
-    path: docPath,
-    marker: 'DISPLAY_CHROME_ADOPTION',
-    body: [
+  return rewriteMarkerBlock(
+    'DISPLAY_CHROME_ADOPTION',
+    [
       `${rows.length} display types are registered for \`${LGV}\`: ${[...counts]
         .sort((a, b) => b[1] - a[1])
         .map(([k, n]) =>
@@ -1072,8 +1063,6 @@ checkOrWrite({
           r.svgVia,
         ]),
       ),
-    ],
-  }),
-  label: 'DisplayChrome adoption map',
-  staleHint: 'run `pnpm autogen`',
-})
+    ].join('\n'),
+  )
+}

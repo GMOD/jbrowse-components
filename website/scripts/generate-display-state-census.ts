@@ -32,21 +32,14 @@
 //     are in nobody's row. They belong to whichever schemas splice them in,
 //     which is a compose-graph question this table does not ask.
 //
-// Only the block between the markers is generated. Run: `pnpm autogen`
-// (or `--check` in CI).
+// Only the block between the markers is generated, by
+// `website/scripts/api-docs/markers.ts`.
 import { readFileSync } from 'node:fs'
-import { basename, dirname, join, relative, sep } from 'node:path'
+import { basename, dirname, relative, sep } from 'node:path'
 
-import {
-  checkOrWrite,
-  isTsSource,
-  markdownTableLines,
-  sourceFiles,
-  spliceGeneratedBlock,
-} from './check-utils.ts'
+import { rewriteMarkerBlock } from './api-docs/util.ts'
+import { isTsSource, markdownTableLines, sourceFiles } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
-
-const docPath = join(repoRoot, 'agent-docs', 'ARCHITECTURE.md')
 
 const SCAN_ROOTS = ['plugins', 'packages', 'products']
 
@@ -94,7 +87,7 @@ function displayDirs() {
       }
     }
   }
-  // `spliceGeneratedBlock` lets a block render empty, and a renamed
+  // A renamed
   // registration would publish "0 registered displays" and pass its check.
   if (dirs.length === 0) {
     throw new Error(
@@ -104,7 +97,7 @@ function displayDirs() {
   return dirs
 }
 
-function main() {
+export function writeDisplayStateCensus() {
   const rows: Census[] = displayDirs()
     .map(dir => {
       const parts = relative(repoRoot, dir).split(sep)
@@ -141,16 +134,5 @@ function main() {
     ),
   ]
 
-  checkOrWrite({
-    path: docPath,
-    content: spliceGeneratedBlock({
-      path: docPath,
-      marker: 'DISPLAY_STATE_CENSUS',
-      body,
-    }),
-    label: 'display state census',
-    staleHint: 'run `pnpm autogen`',
-  })
+  return rewriteMarkerBlock('DISPLAY_STATE_CENSUS', body.join('\n'))
 }
-
-main()

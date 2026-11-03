@@ -25,13 +25,13 @@ breast tumors we:
   [desktop quickstart](/docs/quickstart_desktop)) and the
   [JBrowse CLI](/docs/cli)
 
-<!-- TUTORIAL_INSTALL jbrowse-cli START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL jbrowse-cli -->
 
 ```bash
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL jbrowse-cli END -->
+<!-- END GENERATED TUTORIAL_INSTALL jbrowse-cli -->
 
 ## The data
 

@@ -38,7 +38,7 @@ The custom palette properties extend MUI's standard
 `primary`/`secondary`/`error`/etc. Every key below is optional in a config
 theme; anything you don't set keeps its preset value.
 
-<!-- PALETTE_KEYS START -->
+<!-- BEGIN GENERATED PALETTE_KEYS -->
 
 <!-- prettier-ignore -->
 | Key | Type | Used for |
@@ -88,7 +88,7 @@ theme; anything you don't set keeps its preset value.
 | `framesCDS` | `Frames` | Reading-frame coloring within CDS, indexed 1..3 and -1..-3 |
 | `alignmentFill` | `AlignmentFill` | Read fills keyed by the `insertSizeAndOrientation` levels they paint: `read`, `RL`, `LL`, `RR`, `mateUnmapped` |
 
-<!-- PALETTE_KEYS END -->
+<!-- END GENERATED PALETTE_KEYS -->
 
 The `frames` / `framesCDS` tuples are indexed by reading frame — `1`/`2`/`3`
 forward and `-1`/`-2`/`-3` reverse, which is why slot 0 is unused.
@@ -98,7 +98,7 @@ Defaults for the `string`-valued feature colors, generated from the
 `insertion`/`softclip`/`hardclip` indicators are tagged under a separate
 `alignments-indicators` group):
 
-<!-- COLOR_TABLE theme-colors START -->
+<!-- BEGIN GENERATED COLOR_TABLE theme-colors -->
 
 <!-- prettier-ignore -->
 | Color | Name | Value | Description |
@@ -113,7 +113,7 @@ Defaults for the `string`-valued feature colors, generated from the
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#c8dcc8;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#c8dcc8"></span> | Base modification (rev) | `#c8dcc8` | Base modifications on the reverse strand |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#888;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#888"></span> | Muted SNP base | `#888` | SNP bases muted when show-modifications coloring is on |
 
-<!-- COLOR_TABLE theme-colors END -->
+<!-- END GENERATED COLOR_TABLE theme-colors -->
 
 ## Exported color constants
 
@@ -132,7 +132,7 @@ Import them from `@jbrowse/core/ui/palette`, which has no toolkit in its module
 graph, or from `@jbrowse/core/ui/theme`, which re-exports the same values
 alongside Material UI.
 
-<!-- COLOR_TABLE theme-methylation START -->
+<!-- BEGIN GENERATED COLOR_TABLE theme-methylation -->
 
 <!-- prettier-ignore -->
 | Color | Name | Value | Description |
@@ -141,7 +141,7 @@ alongside Material UI.
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#0000ff;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#0000ff"></span> | unmethylated5mC | `#0000ff` | 5-methylcytosine, unmethylated |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ff00ff;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ff00ff"></span> | methylated5hmC | `#ff00ff` | 5-hydroxymethylcytosine |
 
-<!-- COLOR_TABLE theme-methylation END -->
+<!-- END GENERATED COLOR_TABLE theme-methylation -->
 
 The palette has no such key, so the worker, the legend and an SVG export all
 read the same constant.

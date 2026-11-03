@@ -52,7 +52,7 @@ and a normal one by its insert size, below. The colors follow
 and assume a standard `fr` (Illumina) library. SOLiD-style orientations are not
 supported.
 
-<!-- COLOR_TABLE alignments-pair-orientation START -->
+<!-- BEGIN GENERATED COLOR_TABLE alignments-pair-orientation -->
 
 <!-- prettier-ignore -->
 | Color | Name | Value | Description |
@@ -65,7 +65,7 @@ supported.
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#000000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#000000"></span> | Mate unmapped | `#000000` | Mate aligned nowhere |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#9b30b0;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#9b30b0"></span> | Split read (inverted) | `#9b30b0` | Supplementary segment on the opposite strand to its primary |
 
-<!-- COLOR_TABLE alignments-pair-orientation END -->
+<!-- END GENERATED COLOR_TABLE alignments-pair-orientation -->
 
 Colored this way, an inversion is a green LL bundle and a navy RR bundle
 spanning the same stretch, with magenta split reads at the breakpoints, in a
@@ -139,7 +139,7 @@ than expected, pink for smaller, light grey for normal. Expected is a band
 around the median insert.[^mad] Under **Insert size and orientation** a pair of
 abnormal orientation takes its orientation's color instead.
 
-<!-- COLOR_TABLE alignments-insert-size START -->
+<!-- BEGIN GENERATED COLOR_TABLE alignments-insert-size -->
 
 <!-- prettier-ignore -->
 | Color | Name | Value | Description |
@@ -149,7 +149,7 @@ abnormal orientation takes its orientation's color instead.
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#f582c0;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#f582c0"></span> | Insert smaller than expected | `#f582c0` | Insertion between the mates |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#000000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#000000"></span> | Mate unmapped | `#000000` | Mate aligned nowhere |
 
-<!-- COLOR_TABLE alignments-insert-size END -->
+<!-- END GENERATED COLOR_TABLE alignments-insert-size -->
 
 **Color by → Insert size and orientation** combines both. A short insert paints
 pink whatever its orientation, an abnormal orientation wins over a normal

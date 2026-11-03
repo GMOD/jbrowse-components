@@ -95,7 +95,7 @@ The files are the same `example-plugins/score-example/` that the plotting guide
 builds. Every file serves both backends. The shape and its shader get more
 detail in the steps below:
 
-<!-- EXAMPLE_PLUGIN_TREE START -->
+<!-- BEGIN GENERATED EXAMPLE_PLUGIN_TREE -->
 
 ```text
 src/
@@ -120,7 +120,7 @@ src/
     rpcTypes.ts                  ScoreRegionData and the RPC arg types
 ```
 
-<!-- EXAMPLE_PLUGIN_TREE END -->
+<!-- END GENERATED EXAMPLE_PLUGIN_TREE -->
 
 ## Step 1: Define data types
 
@@ -322,7 +322,7 @@ The table below lists the exports a plugin imports from `score.generated.ts`.
 That module re-exports the interface and consts modules, so the table is the
 union of all three, plus the three strings the text modules hold:
 
-<!-- SHADER_EXPORTS START -->
+<!-- BEGIN GENERATED SHADER_EXPORTS -->
 
 <!-- prettier-ignore -->
 | Export | What it is |
@@ -359,7 +359,7 @@ union of all three, plus the three strings the text modules hold:
 | `TEXTURES` | texture bindings the shader declares |
 | `(your shader's consts)` | every other `public static const` in the shader, lifted by name |
 
-<!-- SHADER_EXPORTS END -->
+<!-- END GENERATED SHADER_EXPORTS -->
 
 The generator emits only what a given shader needs: no compute entry point for a
 render-only shader, and an `*_OFFSET_*` map only for the typed-array views its

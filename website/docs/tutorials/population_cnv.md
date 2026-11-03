@@ -33,7 +33,7 @@ _UGT2B17_, and two nested deletions on chr3. We:
   [samples of your own](#your-own-samples)
 - `samtools` and `bedGraphToBigWig`, to turn QuicK-mer2's output into a bigWig
 
-<!-- TUTORIAL_INSTALL samtools,node,bedGraphToBigWig START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,node,bedGraphToBigWig -->
 
 ```bash
 # Debian/Ubuntu
@@ -47,7 +47,7 @@ wget -P ~/.local/bin \
 chmod +x ~/.local/bin/bedGraphToBigWig
 ```
 
-<!-- TUTORIAL_INSTALL samtools,node,bedGraphToBigWig END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,node,bedGraphToBigWig -->
 
 ## The data
 

@@ -43,7 +43,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - for [the walks as PAF](#walks-as-paf): `python3` and the
   [JBrowse CLI](/docs/cli) for `make-pif`
 
-<!-- TUTORIAL_INSTALL htslib,bcftools,gfa-to-tabix,gfatools,minigraph,vg,jbrowse-cli START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,bcftools,gfa-to-tabix,gfatools,minigraph,vg,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
@@ -56,7 +56,7 @@ cargo install gfa-to-tabix
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib,bcftools,gfa-to-tabix,gfatools,minigraph,vg,jbrowse-cli END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,bcftools,gfa-to-tabix,gfatools,minigraph,vg,jbrowse-cli -->
 
 ## Download the data
 
@@ -91,7 +91,7 @@ writes names it with the `plugins` entry below, in which `storePlugin` picks the
 build for the JBrowse reading the config, and `esmUrl` is the fallback when the
 store cannot be read ([configuring plugins](/docs/config_guides/plugins)).
 
-<!-- GRAPH_PLUGIN_CONFIG START -->
+<!-- BEGIN GENERATED GRAPH_PLUGIN_CONFIG -->
 
 ```json
 {
@@ -105,7 +105,7 @@ store cannot be read ([configuring plugins](/docs/config_guides/plugins)).
 }
 ```
 
-<!-- GRAPH_PLUGIN_CONFIG END -->
+<!-- END GENERATED GRAPH_PLUGIN_CONFIG -->
 
 ## Indexing a graph with gfa-to-tabix build {#what-your-graph-can-produce}
 

@@ -54,7 +54,7 @@ real object, read with `feature.get('start')`.
 Beyond the feature's own properties, jexl has these functions. `getTag` smooths
 over the differences between BAM and CRAM features to reach their tags.
 
-<!-- JEXL_CATALOG START -->
+<!-- BEGIN GENERATED JEXL_CATALOG -->
 
 **Feature operations - getInherited**
 
@@ -155,7 +155,7 @@ jexl: nAlt(feature) == 1 // ALT alleles the record declares, i.e. biallelic-only
 jexl: genotypeCount(feature, 'het') > 0 // samples in a genotype class — ref, alt, hom, het or mis (bcftools N_PASS(GT="het"))
 ```
 
-<!-- JEXL_CATALOG END -->
+<!-- END GENERATED JEXL_CATALOG -->
 
 The catalog is generated from the registrations themselves, core's in
 [`packages/core/src/util/jexl.ts`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/jexl.ts)

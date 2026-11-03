@@ -35,7 +35,7 @@ or GenArk hub config, has a RepeatMasker track to try the first step on.
   conversion
 - `node`, for the [JBrowse CLI](/docs/cli), which both of those need too
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
@@ -46,7 +46,7 @@ conda install -c bioconda -c conda-forge samtools htslib nodejs
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli -->
 
 ## The data
 

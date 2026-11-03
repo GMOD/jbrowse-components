@@ -21,8 +21,8 @@ import {
 // dropping a marker pair, and the block between is regenerated on `pnpm
 // autogen`:
 //
-//   <!-- COLOR_TABLE alignments-indicators START -->
-//   <!-- COLOR_TABLE alignments-indicators END -->
+//   <!-- BEGIN GENERATED COLOR_TABLE alignments-indicators -->
+//   <!-- END GENERATED COLOR_TABLE alignments-indicators -->
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 
@@ -131,7 +131,7 @@ export function writeColorDocs() {
   for (const group of Object.keys(groups)) {
     if (!seen.has(group)) {
       throw new Error(
-        `#color group "${group}" is not rendered by any doc — no <!-- COLOR_TABLE ${group} START --> marker found`,
+        `#color group "${group}" is not rendered by any doc — no <!-- BEGIN GENERATED COLOR_TABLE ${group} --> marker found`,
       )
     }
   }

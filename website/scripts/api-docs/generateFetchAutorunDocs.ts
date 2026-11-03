@@ -33,8 +33,8 @@ import {
 //
 // Both docs opt in with a marker pair, regenerated on `pnpm autogen`:
 //
-//   <!-- FETCH_AUTORUNS START -->
-//   <!-- FETCH_AUTORUNS END -->
+//   <!-- BEGIN GENERATED FETCH_AUTORUNS -->
+//   <!-- END GENERATED FETCH_AUTORUNS -->
 //
 // Editing between the markers is pointless — it is overwritten on regen.
 

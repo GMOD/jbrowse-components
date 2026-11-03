@@ -17,7 +17,7 @@
 // case where it bites, since one source edit routinely staleness two of them at
 // once (a `#color` tag renders into both a guide and the spec).
 import { flushDocs, staleDocs } from './format.ts'
-import { MARKER_GENERATORS } from './markerGenerators.ts'
+import { MARKER_GENERATORS, PROGRAM_MARKERS } from './markerGenerators.ts'
 import { assertMarkersAndDocsAgree, getAllFiles, sourceCorpus } from './util.ts'
 
 const args = process.argv.slice(2)
@@ -40,10 +40,17 @@ if (!selected.length) {
 }
 
 const corpus = sourceCorpus(await getAllFiles())
-const touched = selected.map(({ label, write }) => ({
-  label,
-  docs: write(corpus),
-}))
+// A generator that throws is reported under its label and the rest still run,
+// for the same reason no stale table stops the run.
+const failed = new Map<string, unknown>()
+const touched = selected.map(({ label, write }) => {
+  try {
+    return { label, docs: [...new Set(write(corpus))] }
+  } catch (e) {
+    failed.set(label, e)
+    return { label, docs: [] }
+  }
+})
 // The raw splice differs from the committed doc whenever the formatter would
 // reflow the block, so a doc counts as stale only if it still differs once
 // formatted, the way the write run below commits it.
@@ -59,14 +66,22 @@ for (const { label, docs } of touched) {
   )
 }
 
-// Only the generated-but-rendered-nowhere half: this run invokes the
-// program-independent generators alone, so a marker pair it never wrote is not
-// evidence that nothing writes it. `generate.ts` runs them all and checks both
-// directions.
+// Both directions on a whole run, the program's markers counted as written;
+// only the generated-but-rendered-nowhere half on a filtered one, since a
+// marker pair it never wrote is not evidence that nothing writes it.
+for (const [label, e] of failed) {
+  console.error(`\n${label} failed:\n${e instanceof Error ? e.message : e}`)
+}
 try {
-  assertMarkersAndDocsAgree({ both: false })
+  assertMarkersAndDocsAgree({
+    both: !filters.length,
+    writtenElsewhere: PROGRAM_MARKERS,
+  })
 } catch (e) {
   console.error(`\n${e instanceof Error ? e.message : e}`)
+  process.exit(1)
+}
+if (failed.size) {
   process.exit(1)
 }
 if (!check) {

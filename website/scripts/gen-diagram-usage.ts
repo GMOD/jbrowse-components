@@ -3,7 +3,7 @@
 // figure.
 //
 //   pnpm gen-diagram-usage           rewrite the table
-//   pnpm gen-diagram-usage --check   CI gate, through `pnpm autogen`
+//   pnpm gen-diagram-usage --check   verify it
 //
 // The table was hand-maintained, which made it the one place in the diagram
 // pipeline nothing checked. `diagrams.ts` ties a source to the figure it
@@ -24,21 +24,15 @@
 // which is what tells two diagrams on one page apart. It is derived rather than
 // written for the reason the whole table is: a heading gets reworded, and a
 // hand-written note beside it does not.
-import { readFileSync, readdirSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-import {
-  checkOrWrite,
-  docFiles,
-  figureTags,
-  formatMarkdown,
-  markdownTableLines,
-  spliceGeneratedBlock,
-} from './check-utils.ts'
+import { readDoc } from './api-docs/format.ts'
+import { rewriteMarkerBlock } from './api-docs/util.ts'
+import { docFiles, figureTags, markdownTableLines } from './check-utils.ts'
 import { docsDir, repoRoot } from './paths.ts'
 
 const diagramsDir = join(repoRoot, 'website', 'diagrams')
-const readmePath = join(diagramsDir, 'README.md')
 
 // The same two extensions diagrams.ts renders, and the same `<name>.png`
 // mapping. Kept in step by the check below rather than by an import: this file
@@ -62,7 +56,7 @@ function collectUses(): Map<string, Use[]> {
   const uses = new Map<string, Use[]>()
   for (const file of docFiles(docsDir)) {
     const doc = relative(docsDir, file)
-    const text = readFileSync(file, 'utf8')
+    const text = readDoc(file)
     const headings = [...text.matchAll(HEADING_RE)]
     for (const { attrs, index } of figureTags(text)) {
       const name = /^\/img\/(.*)\.png$/.exec(attrs.src ?? '')?.[1]
@@ -111,16 +105,9 @@ function rows(): string[][] {
   return out.sort(([a], [b]) => (a! < b! ? -1 : a! > b! ? 1 : 0))
 }
 
-checkOrWrite({
-  path: readmePath,
-  content: formatMarkdown(
-    spliceGeneratedBlock({
-      path: readmePath,
-      marker: 'DIAGRAM USAGE',
-      body: markdownTableLines(['Source', 'Used in'], rows()),
-    }),
-    readmePath,
-  ),
-  label: 'diagram usage table',
-  staleHint: 'run `pnpm autogen`',
-})
+export function writeDiagramUsage() {
+  return rewriteMarkerBlock(
+    'DIAGRAM_USAGE',
+    markdownTableLines(['Source', 'Used in'], rows()).join('\n'),
+  )
+}

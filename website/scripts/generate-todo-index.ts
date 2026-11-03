@@ -23,35 +23,34 @@
 // had already drifted to "Nine are blocked on a visual call" against seven
 // entries, which is what got the old checker its one derived-prose check.
 //
-// Run: `pnpm autogen` (or `--check` in CI).
+// Runs in `website/scripts/api-docs/markers.ts`.
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { rewriteMarkerBlock } from './api-docs/util.ts'
 import {
-  checkOrWrite,
   markdownTableLines,
   parseFrontmatter,
   parseMetadata,
-  spliceGeneratedBlock,
 } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 
 const TABLES = [
   {
     category: 'ready',
-    marker: 'TODO READY INDEX',
+    marker: 'TODO_READY_INDEX',
     verb: ['is', 'are'],
     clause: 'ordinary work someone can pick up',
   },
   {
     category: 'visual-call',
-    marker: 'TODO VISUAL-CALL INDEX',
+    marker: 'TODO_VISUAL_CALL_INDEX',
     verb: ['is', 'are'],
     clause: "blocked on a visual call that is not the implementer's to make",
   },
   {
     category: 'measure-first',
-    marker: 'TODO MEASURE-FIRST INDEX',
+    marker: 'TODO_MEASURE_FIRST_INDEX',
     verb: ['opens', 'open'],
     clause:
       'with an instruction to go measure something, because the premise is not established and building first would be guessing',
@@ -115,7 +114,6 @@ interface Entry {
 }
 
 const todoDir = join(repoRoot, 'agent-docs', 'todo')
-const todoPath = join(repoRoot, 'agent-docs', 'TODO.md')
 
 function readEntry(file: string): Entry {
   const rel = `agent-docs/todo/${file}`
@@ -158,40 +156,36 @@ function readEntry(file: string): Entry {
   }
 }
 
-const entries = (existsSync(todoDir) ? readdirSync(todoDir) : [])
-  .filter(f => f.endsWith('.md'))
-  .map(readEntry)
-  .sort((a, b) => a.order - b.order || a.file.localeCompare(b.file, 'en'))
+export function writeTodoIndex() {
+  const entries = (existsSync(todoDir) ? readdirSync(todoDir) : [])
+    .filter(f => f.endsWith('.md'))
+    .map(readEntry)
+    .sort((a, b) => a.order - b.order || a.file.localeCompare(b.file, 'en'))
 
-const byCategory = (category: string) =>
-  entries.filter(e => e.category === category)
+  const byCategory = (category: string) =>
+    entries.filter(e => e.category === category)
 
-// A tie sorts by filename, which renders a plausible table in an order nobody
-// chose — the one way `order` can be wrong without looking wrong. Gaps stay
-// legal: a closed entry leaves one, and renumbering the survivors is churn.
-for (const { category } of TABLES) {
-  const seen = new Map<number, string>()
-  for (const entry of byCategory(category)) {
-    const other = seen.get(entry.order)
-    if (other) {
-      throw new Error(
-        `agent-docs/todo/${entry.file} and ${other} both declare \`order: ${entry.order}\` in the ${category} table, so which one comes first is the filenames rather than a decision. Give one of them another number.`,
-      )
+  // A tie sorts by filename, which renders a plausible table in an order nobody
+  // chose — the one way `order` can be wrong without looking wrong. Gaps stay
+  // legal: a closed entry leaves one, and renumbering the survivors is churn.
+  for (const { category } of TABLES) {
+    const seen = new Map<number, string>()
+    for (const entry of byCategory(category)) {
+      const other = seen.get(entry.order)
+      if (other) {
+        throw new Error(
+          `agent-docs/todo/${entry.file} and ${other} both declare \`order: ${entry.order}\` in the ${category} table, so which one comes first is the filenames rather than a decision. Give one of them another number.`,
+        )
+      }
+      seen.set(entry.order, entry.file)
     }
-    seen.set(entry.order, entry.file)
   }
-}
 
-let content = readFileSync(todoPath, 'utf8')
-
-for (const { category, marker } of TABLES) {
-  content = spliceGeneratedBlock({
-    path: todoPath,
-    marker,
-    text: content,
-    body:
+  const tables = TABLES.flatMap(({ category, marker }) =>
+    rewriteMarkerBlock(
+      marker,
       byCategory(category).length === 0
-        ? ['_No entries._']
+        ? '_No entries._'
         : markdownTableLines(
             ['Item', 'Area', 'First move'],
             byCategory(category).map(e => [
@@ -199,32 +193,26 @@ for (const { category, marker } of TABLES) {
               e.area,
               e.firstMove,
             ]),
-          ),
+          ).join('\n'),
+    ),
+  )
+
+  const clauses = TABLES.map(({ category, verb, clause }) => {
+    const n = byCategory(category).length
+    return `${numberWord(n)} ${verb[n === 1 ? 0 : 1]} ${clause}`
   })
+  const counts = rewriteMarkerBlock(
+    'TODO_COUNTS',
+    // Wrapped, because this block is prose in a hand-wrapped file rather than a
+    // table — an 80-column paragraph among 80-column paragraphs.
+    wrap(
+      entries.length === 0
+        ? 'The list is empty.'
+        : `${numberWord(entries.length, true)} ${entries.length === 1 ? 'entry is' : 'entries are'} on the list: ${clauses
+            .slice(0, -1)
+            .join(', ')}, and ${clauses.at(-1)}.`,
+    ).join('\n'),
+  )
+
+  return [...tables, ...counts]
 }
-
-const clauses = TABLES.map(({ category, verb, clause }) => {
-  const n = byCategory(category).length
-  return `${numberWord(n)} ${verb[n === 1 ? 0 : 1]} ${clause}`
-})
-content = spliceGeneratedBlock({
-  path: todoPath,
-  marker: 'TODO COUNTS',
-  text: content,
-  // Wrapped, because this block is prose in a hand-wrapped file rather than a
-  // table — an 80-column paragraph among 80-column paragraphs.
-  body: wrap(
-    entries.length === 0
-      ? 'The list is empty.'
-      : `${numberWord(entries.length, true)} ${entries.length === 1 ? 'entry is' : 'entries are'} on the list: ${clauses
-          .slice(0, -1)
-          .join(', ')}, and ${clauses.at(-1)}.`,
-  ),
-})
-
-checkOrWrite({
-  path: todoPath,
-  content,
-  label: 'Backlog index',
-  staleHint: 'run `pnpm autogen`',
-})

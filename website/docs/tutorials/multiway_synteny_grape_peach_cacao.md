@@ -32,7 +32,7 @@ genomes at once, into one wide table with a column per species. We:
 - [gffread](https://github.com/gpertea/gffread)
 - `samtools`
 
-<!-- TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last -->
 
 ```bash
 # Debian/Ubuntu
@@ -49,7 +49,7 @@ chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 pip install jcvi
 ```
 
-<!-- TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,gffread,jcvi,datasets,last -->
 
 ## The data
 

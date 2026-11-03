@@ -16,7 +16,8 @@ import {
   USER_CATEGORIES,
   guideRank,
 } from '../src/lib/guide-categories.ts'
-import { checkOrWriteAll, parseFrontmatter } from './check-utils.ts'
+import { writeUnformatted } from './api-docs/format.ts'
+import { parseFrontmatter } from './check-utils.ts'
 import { docsDir } from './paths.ts'
 
 interface Page {
@@ -56,10 +57,6 @@ interface Guide {
 function guide(urlDir: string, categories: readonly string[]): Guide {
   return { urlDir, categories, pages: pagesIn(join(docsDir, urlDir)) }
 }
-
-const userGuides = guide('user_guides', USER_CATEGORIES)
-const configGuides = guide('config_guides', CONFIG_CATEGORIES)
-const developerGuides = guide('developer_guides', DEVELOPER_CATEGORIES)
 
 function buildTocSection(
   { urlDir, categories, pages }: Guide,
@@ -162,7 +159,7 @@ function buildTutorialSection(): string[] {
   return lines.length ? ['## Tutorials', '', ...lines] : []
 }
 
-function buildUserGuide(): string {
+function buildUserGuide(userGuides: Guide): string {
   const lines: string[] = [
     '---',
     'title: User guide',
@@ -184,7 +181,7 @@ function buildUserGuide(): string {
   return lines.join('\n')
 }
 
-function buildConfigGuide(): string {
+function buildConfigGuide(configGuides: Guide): string {
   const lines: string[] = [
     '---',
     'title: Config guide',
@@ -204,7 +201,7 @@ function buildConfigGuide(): string {
   return lines.join('\n')
 }
 
-function buildDeveloperGuide(): string {
+function buildDeveloperGuide(developerGuides: Guide): string {
   const preamble = `---
 title: Developer guide
 sidebar_label: All developer guides
@@ -300,17 +297,6 @@ function frontmatterProblems({ urlDir, categories, pages }: Guide) {
   })
 }
 
-const problems = [userGuides, configGuides, developerGuides].flatMap(
-  frontmatterProblems,
-)
-if (problems.length) {
-  console.error(problems.join('\n'))
-  console.error(
-    '\nFix the frontmatter so these pages appear in the guide indexes.',
-  )
-  process.exit(1)
-}
-
 // These frontmatter blocks are assembled line by line rather than serialized, so
 // a `description` is a plain multi-line YAML scalar. An indented continuation
 // line containing `: ` parses as an implicit mapping key instead of text, which
@@ -345,33 +331,45 @@ function markGenerated(content: string, from: string): string {
 ${content.slice(end)}`
 }
 
-const guides = [
-  {
-    file: 'user_guide.md',
-    content: markGenerated(buildUserGuide(), 'the pages it indexes'),
-  },
-  {
-    file: 'config_guide.md',
-    content: markGenerated(buildConfigGuide(), 'the pages it indexes'),
-  },
-  {
-    file: 'developer_guide.md',
-    content: markGenerated(
-      buildDeveloperGuide(),
-      "buildDeveloperGuide's preamble and the pages it indexes",
-    ),
-  },
-]
-for (const { file, content } of guides) {
-  assertScalarContinuations(content, file)
+export function writeGuideIndexes() {
+  const userGuides = guide('user_guides', USER_CATEGORIES)
+  const configGuides = guide('config_guides', CONFIG_CATEGORIES)
+  const developerGuides = guide('developer_guides', DEVELOPER_CATEGORIES)
+  const problems = [userGuides, configGuides, developerGuides].flatMap(
+    frontmatterProblems,
+  )
+  if (problems.length) {
+    throw new Error(
+      `${problems.join('\n')}\n\nFix the frontmatter so these pages appear in the guide indexes.`,
+    )
+  }
+  const guides = [
+    {
+      file: 'user_guide.md',
+      content: markGenerated(
+        buildUserGuide(userGuides),
+        'the pages it indexes',
+      ),
+    },
+    {
+      file: 'config_guide.md',
+      content: markGenerated(
+        buildConfigGuide(configGuides),
+        'the pages it indexes',
+      ),
+    },
+    {
+      file: 'developer_guide.md',
+      content: markGenerated(
+        buildDeveloperGuide(developerGuides),
+        "buildDeveloperGuide's preamble and the pages it indexes",
+      ),
+    },
+  ]
+  for (const { file, content } of guides) {
+    assertScalarContinuations(content, file)
+  }
+  return guides.flatMap(({ file, content }) =>
+    writeUnformatted(join(docsDir, file), content),
+  )
 }
-// All three at once, so a stale user_guide.md doesn't hide a stale
-// developer_guide.md behind it.
-checkOrWriteAll(
-  guides.map(({ file, content }) => ({
-    path: join(docsDir, file),
-    content,
-    label: file,
-  })),
-  'run `pnpm autogen`',
-)

@@ -31,13 +31,13 @@ and the other's is not. In HG002 nanopore reads there we:
 - [WhatsHap](https://whatshap.readthedocs.io/), to haplotag reads of your own
   that have no `HP` tag
 
-<!-- TUTORIAL_INSTALL whatshap START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL whatshap -->
 
 ```bash
 pip install whatshap
 ```
 
-<!-- TUTORIAL_INSTALL whatshap END -->
+<!-- END GENERATED TUTORIAL_INSTALL whatshap -->
 
 ## The data
 

@@ -83,7 +83,7 @@ form, and so does a file whose extension names one format while it holds another
 Sequence adapters go in an [assembly](/docs/config_guides/assemblies), not a
 track.
 
-<!-- FILE_TYPES sequence START -->
+<!-- BEGIN GENERATED FILE_TYPES sequence -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
@@ -94,7 +94,7 @@ track.
 | Plain FASTA (.fa, no index) | [](/docs/config/unindexedfastaadapter) | assembly `sequence` | Read entirely into memory; prefer an indexed form for large genomes |
 | UCSC 2bit | [](/docs/config/twobitadapter) | assembly `sequence` |  |
 
-<!-- FILE_TYPES sequence END -->
+<!-- END GENERATED FILE_TYPES sequence -->
 
 Most configs name no sequence adapter: give the assembly a `name` and a
 sequence-file `uri`, and JBrowse picks the adapter from the extension and
@@ -112,7 +112,7 @@ derives the index siblings.
 Read alignments are an `AlignmentsTrack`
 ([alignments track config](/docs/config_guides/alignments_track)).
 
-<!-- FILE_TYPES alignments START -->
+<!-- BEGIN GENERATED FILE_TYPES alignments -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
@@ -122,7 +122,7 @@ Read alignments are an `AlignmentsTrack`
 | Htsget BAM | [](/docs/config/htsgetbamadapter) | [](/docs/config/alignmentstrack) | Less exercised than plain BAM/CRAM; prefer an indexed file where possible |
 | SAM | [](/docs/config/samadapter) | [](/docs/config/alignmentstrack) | Unindexed, so the whole file is loaded into memory; prefer BAM or CRAM for sequencing-scale data |
 
-<!-- FILE_TYPES alignments END -->
+<!-- END GENERATED FILE_TYPES alignments -->
 
 ## Feature / annotation
 
@@ -130,7 +130,7 @@ Gene models, repeats, and other interval features are a `FeatureTrack`. The
 plain (non-tabix) GFF3, GTF and BED adapters load the whole file into memory, so
 prefer the tabix or BigBed forms past small files.
 
-<!-- FILE_TYPES feature START -->
+<!-- BEGIN GENERATED FILE_TYPES feature -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
@@ -143,7 +143,7 @@ prefer the tabix or BigBed forms past small files.
 | GTF (plain) | [](/docs/config/gtfadapter) | [](/docs/config/featuretrack) | Loaded entirely into memory; for small files |
 | GTF (tabix) | [](/docs/config/gtftabixadapter) | [](/docs/config/featuretrack) |  |
 
-<!-- FILE_TYPES feature END -->
+<!-- END GENERATED FILE_TYPES feature -->
 
 ### GTF gene models
 
@@ -160,7 +160,7 @@ Coverage and other numeric signals are a `QuantitativeTrack`, or a
 `MultiQuantitativeTrack` for several of them at once
 ([track config](/docs/config_guides/quantitative_track)).
 
-<!-- FILE_TYPES quantitative START -->
+<!-- BEGIN GENERATED FILE_TYPES quantitative -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
@@ -171,7 +171,7 @@ Coverage and other numeric signals are a `QuantitativeTrack`, or a
 | GC content | [](/docs/config/gccontentadapter) | [](/docs/config/gccontenttrack) | Computed from the assembly sequence, no data file |
 | Multiple BigWigs | [](/docs/config/multiwiggleadapter) | [](/docs/config/multiquantitativetrack) |  |
 
-<!-- FILE_TYPES quantitative END -->
+<!-- END GENERATED FILE_TYPES quantitative -->
 
 ## Variants
 
@@ -179,7 +179,7 @@ VCF and other variant-like data is a `VariantTrack`
 ([variant track config](/docs/config_guides/variant_track) for SVTYPE coloring
 and sample rows).
 
-<!-- FILE_TYPES variants START -->
+<!-- BEGIN GENERATED FILE_TYPES variants -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
@@ -190,7 +190,7 @@ and sample rows).
 | VCF (plain) | [](/docs/config/vcfadapter) | [](/docs/config/varianttrack) | Loaded entirely into memory; for small files |
 | VCF (tabix) | [](/docs/config/vcftabixadapter) | [](/docs/config/varianttrack) |  |
 
-<!-- FILE_TYPES variants END -->
+<!-- END GENERATED FILE_TYPES variants -->
 
 ## Synteny / comparative
 
@@ -201,7 +201,7 @@ which fetches only the alignments in view
 ([large alignments](/docs/cookbook#synteny-large-alignments),
 [PIF format](/docs/developer_guides/pif_format)).
 
-<!-- FILE_TYPES synteny START -->
+<!-- BEGIN GENERATED FILE_TYPES synteny -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
@@ -219,7 +219,7 @@ which fetches only the alignments in view
 | PAF | [](/docs/config/pafadapter) | [](/docs/config/syntenytrack) | Loaded entirely into memory; convert to PIF for large alignments |
 | Several pairwise alignments sharing one genome | [](/docs/config/multipairwisesyntenyadapter) | [](/docs/config/syntenytrack) | One anchor genome aligned to each of N others, as N pairwise files |
 
-<!-- FILE_TYPES synteny END -->
+<!-- END GENERATED FILE_TYPES synteny -->
 
 ## Multiple alignment (MAF)
 
@@ -227,7 +227,7 @@ Multiple-species alignments are a `MafTrack`
 ([MAF track config](/docs/config_guides/maf_track) for the samples array and the
 zoom-out tier).
 
-<!-- FILE_TYPES maf START -->
+<!-- BEGIN GENERATED FILE_TYPES maf -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
@@ -237,18 +237,18 @@ zoom-out tier).
 | MAF (tabix) | [](/docs/config/maftabixadapter) | [](/docs/config/maftrack) |  |
 | TAF (bgzipped Taffy) | [](/docs/config/bgziptaffyadapter) | [](/docs/config/maftrack) |  |
 
-<!-- FILE_TYPES maf END -->
+<!-- END GENERATED FILE_TYPES maf -->
 
 ## Hi-C
 
-<!-- FILE_TYPES hic START -->
+<!-- BEGIN GENERATED FILE_TYPES hic -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type |
 | --- | --- | --- |
 | .hic contact matrix | [](/docs/config/hicadapter) | [](/docs/config/hictrack) |
 
-<!-- FILE_TYPES hic END -->
+<!-- END GENERATED FILE_TYPES hic -->
 
 See [Hi-C track config](/docs/config_guides/hic_track). Loop and interaction
 calls are BEDPE, which loads as a `VariantTrack` (see [Variants](#variants)).
@@ -257,7 +257,7 @@ calls are BEDPE, which loads as a `VariantTrack` (see [Variants](#variants)).
 
 See [GWAS track config](/docs/config_guides/gwas_track).
 
-<!-- FILE_TYPES gwas START -->
+<!-- BEGIN GENERATED FILE_TYPES gwas -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
@@ -266,14 +266,14 @@ See [GWAS track config](/docs/config_guides/gwas_track).
 | PLINK LD (plain .ld) | [](/docs/config/plinkldadapter) | [](/docs/config/ldtrack) | PLINK LD table; for regional analyses |
 | PLINK LD (tabix-indexed .ld.gz) | [](/docs/config/plinkldtabixadapter) | [](/docs/config/ldtrack) | For chromosome-scale or genome-wide LD |
 
-<!-- FILE_TYPES gwas END -->
+<!-- END GENERATED FILE_TYPES gwas -->
 
 ## Text searching
 
 Text-search adapters power the location search box
 ([text searching](/docs/config_guides/text_searching)).
 
-<!-- FILE_TYPES textsearch START -->
+<!-- BEGIN GENERATED FILE_TYPES textsearch -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
@@ -281,14 +281,14 @@ Text-search adapters power the location search box
 | JBrowse 1 names index | [](/docs/config/jbrowse1textsearchadapter) | `aggregateTextSearchAdapters` / `textSearching` | From JBrowse 1 `generate-names.pl` |
 | Trix index (.ix/.ixx) | [](/docs/config/trixtextsearchadapter) | `aggregateTextSearchAdapters` / `textSearching` | Built by `jbrowse text-index` |
 
-<!-- FILE_TYPES textsearch END -->
+<!-- END GENERATED FILE_TYPES textsearch -->
 
 ## Inline data
 
 A FromConfig adapter embeds a small dataset directly in `config.json`
 ([](/docs/config_guides/from_config)).
 
-<!-- FILE_TYPES inline START -->
+<!-- BEGIN GENERATED FILE_TYPES inline -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
@@ -297,7 +297,7 @@ A FromConfig adapter embeds a small dataset directly in `config.json`
 | Inline regions | [](/docs/config/fromconfigregionsadapter) | assembly `sequence` | refNames and sizes only, no sequence |
 | Inline sequence | [](/docs/config/fromconfigsequenceadapter) | assembly `sequence` | Each feature's `seq` holds the bases for its region |
 
-<!-- FILE_TYPES inline END -->
+<!-- END GENERATED FILE_TYPES inline -->
 
 ## Computed from the reference
 

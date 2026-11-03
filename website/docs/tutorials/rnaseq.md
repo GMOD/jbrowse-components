@@ -27,7 +27,7 @@ extra files or configuration. We:
 - for your own reads, a spliced aligner such as
   [STAR](https://github.com/alexdobin/STAR), and samtools to index its output
 
-<!-- TUTORIAL_INSTALL samtools START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools -->
 
 ```bash
 # Debian/Ubuntu
@@ -36,7 +36,7 @@ sudo apt install samtools
 conda install -c bioconda -c conda-forge samtools
 ```
 
-<!-- TUTORIAL_INSTALL samtools END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools -->
 
 ## The data
 

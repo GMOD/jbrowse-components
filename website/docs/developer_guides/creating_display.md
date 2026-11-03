@@ -21,7 +21,7 @@ Tracks are deliberately thin. Every in-tree registration, with the view each
 display renders in — `SyntenyTrack` and `VariantTrack` are the two that reach
 past `LinearGenomeView`:
 
-<!-- DISPLAY_VIEW_TYPES START -->
+<!-- BEGIN GENERATED DISPLAY_VIEW_TYPES -->
 
 <!-- prettier-ignore -->
 | Track type | Display type | Renders in |
@@ -55,7 +55,7 @@ past `LinearGenomeView`:
 |  | [](/docs/config/linearmarkdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearvariantdisplay) | LinearGenomeView |
 
-<!-- DISPLAY_VIEW_TYPES END -->
+<!-- END GENERATED DISPLAY_VIEW_TYPES -->
 
 Add a track type only when you need a new conceptual track category, a custom
 config schema for that category, or behavior shared across multiple displays.
@@ -95,7 +95,7 @@ LGV (LinearGenomeView) displays compose one **foundation mixin** on
 `BaseDisplay`, all sharing `baseLinearDisplayConfigSchema`. The foundation
 answers how the display _fetches_; how it _renders_ is a separate axis on top.
 
-<!-- DISPLAY_FOUNDATIONS START -->
+<!-- BEGIN GENERATED DISPLAY_FOUNDATIONS -->
 
 <!-- prettier-ignore -->
 | Foundation | Brings | Used by |
@@ -104,7 +104,7 @@ answers how the display _fetches_; how it _renders_ is a separate axis on top.
 | `GlobalFetchMixin()` | One non-regional dataset with no per-region partitioning, plus the render lifecycle. Installs no fetch autoruns; the display installs them with `installGlobalFetchAutorun`. | `LDTrackDisplay`, `LinearHicDisplay`, `MultiWaySyntenyDisplay` |
 | `ComparativeFetchMixin()` | One single-payload fetch keyed on both views' state, drawn onto a canvas the containing view owns — no render lifecycle and no byte gate here. Installs no fetch autoruns; the display adds its own via `installComparativeFetchAutorun`. | `DotplotDisplay`, `LinearSyntenyDisplay` |
 
-<!-- DISPLAY_FOUNDATIONS END -->
+<!-- END GENERATED DISPLAY_FOUNDATIONS -->
 
 The two walkthroughs below use `MultiRegionDisplayMixin`, the common case. The
 [architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAY_PIPELINE.md#display-stacks)
@@ -125,7 +125,7 @@ cost. Reach for one before writing the behavior yourself; **Composed by** is
 read off the `types.compose(...)` calls, so it also answers "does anything else
 already do this?"
 
-<!-- CROSS_CUTTING_MIXINS START -->
+<!-- BEGIN GENERATED CROSS_CUTTING_MIXINS -->
 
 <!-- prettier-ignore -->
 | Mixin | The display supplies | Composed by |
@@ -146,7 +146,7 @@ already do this?"
 | `TriangleMatrixMixin()` | A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payload (`rpcData`), the canvas box (`canvasWidth`, `matrixHeight` under the `matrixTop` hook), the rotate-and-squash transform and its inverse (`cellToScreen`, `screenToCell`), the frame the marks read (`triangleFrame`), the one-cell region map and canvas-wide block the mark backend draws (`matrixRegions`, `matrixBlocks`), and the `heightMode` slot. Composes after `TrackHeightMixin`, `GlobalFetchMixin` and `LegendMixin` | `LDTrackDisplay`, `LinearHicDisplay` |
 | `PointerHoverMixin()` | A hover derived from the pointer. The hit type, as the type parameter. Brings the `pointer` volatile, `setPointer` for the chrome's `onPointerPosition`, the `hoverHitAt` hook a display overrides, and the `hoveredFeature` getter `BaseDisplay` declares as a hook | `LinearHicDisplay` |
 
-<!-- CROSS_CUTTING_MIXINS END -->
+<!-- END GENERATED CROSS_CUTTING_MIXINS -->
 
 `HeightModeMixin()` composes `TrackHeightMixin()` itself, so a display takes one
 or the other, never both.

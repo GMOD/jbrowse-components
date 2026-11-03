@@ -34,7 +34,7 @@ and its README documents every option.
 - to build a portal over your own genome: Node 23.6 or newer, pnpm, htslib
   (`bgzip`, `tabix`), `samtools`, and the JBrowse CLI
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli -->
 
 ```bash
 # Debian/Ubuntu
@@ -45,7 +45,7 @@ conda install -c bioconda -c conda-forge samtools htslib nodejs
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli END -->
+<!-- END GENERATED TUTORIAL_INSTALL samtools,htslib,node,jbrowse-cli -->
 
 ## The data
 

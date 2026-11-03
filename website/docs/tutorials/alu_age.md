@@ -37,7 +37,7 @@ where along chromosome 1 the young copies sit. We:
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/), which
   `make-density` runs
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig -->
 
 ```bash
 # Debian/Ubuntu
@@ -52,7 +52,7 @@ chmod +x ~/.local/bin/bedGraphToBigWig
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig END -->
+<!-- END GENERATED TUTORIAL_INSTALL htslib,node,jbrowse-cli,bedGraphToBigWig -->
 
 ## The data
 

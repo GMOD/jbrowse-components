@@ -46,25 +46,16 @@
 // is an error rather than the first of them, since a marker that quietly quotes
 // a row nobody chose is exactly the unverified figure this exists to catch.
 //
-// Run `pnpm inline-figures`, or `--check` in CI (`pnpm autogen`), AFTER the two
+// Runs in `website/scripts/api-docs/markers.ts` (`pnpm inline-figures`), AFTER the two
 // table generators — it reads the same records they do, so the order only
 // matters for the report reading sensibly.
-import { readFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
-import {
-  check,
-  checkOrWriteAll,
-  docFiles,
-  formatMarkdown,
-} from './check-utils.ts'
+import { readDoc, writeDoc } from './api-docs/format.ts'
+import { docFiles } from './check-utils.ts'
 import { spliceInlineFigures } from './inlineFigures.ts'
 import { loadMeasurements } from './measurements.ts'
 import { docsDir, releaseDraftsDir, repoRoot } from './paths.ts'
-
-const records = loadMeasurements()
-const problems: string[] = []
-let spliced = 0
 
 // The release announcement drafts are in here with the docs, and they are the
 // tree with the least slack: `pnpm release` renders, commits, tags and pushes a
@@ -74,43 +65,33 @@ let spliced = 0
 // the same bargain `normalizeDraftImages` makes for a repo-relative figure path.
 const trees = [join(repoRoot, 'agent-docs'), docsDir, releaseDraftsDir]
 
-const generated = trees
-  .flatMap(tree => docFiles(tree))
-  .map(path => {
-    const text = readFileSync(path, 'utf8')
-    if (!text.includes('<!--m:')) {
-      return undefined
-    }
-    const rel = relative(repoRoot, path)
-    const {
-      text: content,
-      problems: found,
-      count,
-    } = spliceInlineFigures(text, records)
-    problems.push(...found.map(p => `${rel}: ${p}`))
-    spliced += count
-    // A website page is formatted with `proseWrap: always`, so a wider value
-    // has to reflow its paragraph here or `check-format` fails on the
-    // rewrite. `formatMarkdown` leaves agent-docs, which nothing formats,
-    // as written.
-    return {
-      path,
-      content: content === text ? text : formatMarkdown(content, path),
-      label: `${rel} inline figures`,
-    }
-  })
-  .filter(g => g !== undefined)
+export function writeInlineFigures() {
+  const records = loadMeasurements()
+  const problems: string[] = []
+  const generated = trees
+    .flatMap(tree => docFiles(tree))
+    .map(path => {
+      const text = readDoc(path)
+      if (!text.includes('<!--m:')) {
+        return undefined
+      }
+      const rel = relative(repoRoot, path)
+      const { text: content, problems: found } = spliceInlineFigures(
+        text,
+        records,
+      )
+      problems.push(...found.map(p => `${rel}: ${p}`))
+      // A website page is formatted with `proseWrap: always`, and `writeDoc`
+      // reflows a wider value's paragraph at the end of the run.
+      return writeDoc(path, content)
+    })
+    .filter(g => g !== undefined)
 
-if (problems.length > 0) {
-  console.error(`${problems.length} inline figure problem(s):`)
-  for (const p of problems) {
-    console.error(`  ${p}`)
+  if (problems.length > 0) {
+    throw new Error(
+      `${problems.length} inline figure problem(s):\n${problems.map(p => `  ${p}`).join('\n')}`,
+    )
   }
-  process.exit(1)
-}
 
-checkOrWriteAll(generated, 'run `pnpm autogen` and commit the result')
-
-if (!check) {
-  console.log(`${spliced} inline figure(s) across ${generated.length} doc(s)`)
+  return generated.flat()
 }

@@ -30,7 +30,7 @@ and:
   align them, and `bgzip` (htslib) and `samtools` to compress and index the
   FASTA
 
-<!-- TUTORIAL_INSTALL minimap2,htslib,samtools START -->
+<!-- BEGIN GENERATED TUTORIAL_INSTALL minimap2,htslib,samtools -->
 
 ```bash
 # Debian/Ubuntu
@@ -39,7 +39,7 @@ sudo apt install minimap2 tabix samtools
 conda install -c bioconda -c conda-forge minimap2 htslib samtools
 ```
 
-<!-- TUTORIAL_INSTALL minimap2,htslib,samtools END -->
+<!-- END GENERATED TUTORIAL_INSTALL minimap2,htslib,samtools -->
 
 ## The data
 

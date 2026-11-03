@@ -13,7 +13,7 @@ species with a `samples` array, an `nhLocation` Newick tree, or both.
 
 ## Adapters
 
-<!-- FILE_TYPES maf START -->
+<!-- BEGIN GENERATED FILE_TYPES maf -->
 
 <!-- prettier-ignore -->
 | Format | Adapter | Track type | Notes |
@@ -23,7 +23,7 @@ species with a `samples` array, an `nhLocation` Newick tree, or both.
 | MAF (tabix) | [](/docs/config/maftabixadapter) | [](/docs/config/maftrack) |  |
 | TAF (bgzipped Taffy) | [](/docs/config/bgziptaffyadapter) | [](/docs/config/maftrack) |  |
 
-<!-- FILE_TYPES maf END -->
+<!-- END GENERATED FILE_TYPES maf -->
 
 The UCSC ce11 26-way as a tabix BED, ordered by its phylogenetic tree.
 `MafTabixAdapter` takes the

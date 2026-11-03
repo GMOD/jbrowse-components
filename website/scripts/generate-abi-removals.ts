@@ -15,18 +15,11 @@
 // checked against the diff both ways, so a group naming a name that is still
 // served fails here rather than in a doc nobody re-derives.
 import { readFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { join } from 'node:path'
 
-import {
-  checkOrWriteAll,
-  formatMarkdown,
-  markdownTableLines,
-  spliceGeneratedBlock,
-} from './check-utils.ts'
+import { rewriteMarkerBlock } from './api-docs/util.ts'
+import { markdownTableLines } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
-
-const guide = join(repoRoot, 'website/docs/developer_guides/upgrading_v5.md')
-const reference = join(repoRoot, 'agent-docs/reference/PLUGIN_ABI_STABILITY.md')
 
 interface NameGroup {
   /** First column: what the group is, in a noun phrase. */
@@ -324,7 +317,7 @@ function assertCovers(kind: string, removed: string[], described: string[]) {
   const extra = described.filter(n => !removed.includes(n))
   const duplicated = described.filter((n, i) => described.indexOf(n) !== i)
   if (missing.length + extra.length + duplicated.length > 0) {
-    console.error(
+    throw new Error(
       `abi removals: the ${kind} table disagrees with the baselines it is derived from.\n${[
         missing.length > 0 &&
           `  removed but described nowhere: ${missing.join(', ')}`,
@@ -334,7 +327,6 @@ function assertCovers(kind: string, removed: string[], described: string[]) {
         .filter(Boolean)
         .join('\n')}`,
     )
-    process.exit(1)
   }
 }
 
@@ -396,32 +388,10 @@ function breaksBody() {
   ]
 }
 
-const names = namesBody()
-const subpaths = subpathsBody()
-
-function spliceBoth(path: string, blocks: [string, string[]][]) {
-  let text = readFileSync(path, 'utf8')
-  for (const [marker, body] of blocks) {
-    text = spliceGeneratedBlock({ path, marker, body, text })
-  }
-  return {
-    path,
-    content: formatMarkdown(text, path),
-    label: relative(repoRoot, path),
-  }
+export function writeAbiRemovals() {
+  return [
+    ...rewriteMarkerBlock('ABI_REMOVED_NAMES', namesBody().join('\n')),
+    ...rewriteMarkerBlock('ABI_PLUGIN_BREAKS', breaksBody().join('\n')),
+    ...rewriteMarkerBlock('ABI_REMOVED_SUBPATHS', subpathsBody().join('\n')),
+  ]
 }
-
-checkOrWriteAll(
-  [
-    spliceBoth(guide, [
-      ['ABI_REMOVED_NAMES', names],
-      ['ABI_PLUGIN_BREAKS', breaksBody()],
-      ['ABI_REMOVED_SUBPATHS', subpaths],
-    ]),
-    spliceBoth(reference, [
-      ['ABI_REMOVED_NAMES', names],
-      ['ABI_REMOVED_SUBPATHS', subpaths],
-    ]),
-  ],
-  'run `pnpm autogen`',
-)
