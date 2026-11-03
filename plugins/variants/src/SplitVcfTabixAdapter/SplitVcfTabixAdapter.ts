@@ -136,18 +136,29 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     return contig
   }
 
-  // every file in the map, in map order, which opens each one's header
+  // every file in the map, in map order, which opens each one's header. A file
+  // that will not open is reported rather than failing the rest; it fails the
+  // call only when none opens
   private async allContigs(opts?: BaseOptions) {
-    const contigs = await Promise.all(
-      Object.keys(this.locationMap()).map(refName =>
-        this.configure(refName, opts),
-      ),
+    const refNames = Object.keys(this.locationMap())
+    const settled = await Promise.allSettled(
+      refNames.map(refName => this.configure(refName, opts)),
     )
-    const opened = contigs.filter(contig => contig !== undefined)
+    opts?.signal?.throwIfAborted()
+    const opened = settled.flatMap(result =>
+      result.status === 'fulfilled' && result.value ? [result.value] : [],
+    )
+    const failures: { refName: string; reason: unknown }[] = settled.flatMap(
+      (result, i) =>
+        result.status === 'rejected'
+          ? [{ refName: refNames[i]!, reason: result.reason }]
+          : [],
+    )
+    const [firstFailure] = failures
     if (opened.length === 0) {
-      throw this.emptyMapError()
+      throw firstFailure ? firstFailure.reason : this.emptyMapError()
     }
-    return opened
+    return { opened, failures }
   }
 
   public async getRefNames() {
@@ -217,13 +228,23 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
   // See VcfTabixAdapter: `getSources` is the base-class contract, this is the
   // one that keeps the samples-metadata warnings.
   async getSourcesAndWarnings(opts?: BaseOptions) {
-    const parsers = (await this.allContigs(opts)).map(c => c.parser)
-    return vcfSourcesAndWarnings({
-      parsers,
+    const { opened, failures } = await this.allContigs(opts)
+    const result = await vcfSourcesAndWarnings({
+      parsers: opened.map(contig => contig.parser),
       samplesTsvLocation: this.getConf('samplesTsvLocation'),
       pluginManager: this.pluginManager,
       opts,
     })
+    return {
+      sources: result.sources,
+      warnings: [
+        ...failures.map(
+          ({ refName, reason }) =>
+            `Could not open the VCF for ${refName}, so its samples are left out: ${reason instanceof Error ? reason.message : String(reason)}`,
+        ),
+        ...result.warnings,
+      ],
+    }
   }
 
   async getSources(_regions: Region[], opts?: BaseOptions) {

@@ -247,6 +247,65 @@ describe('files whose headers list different samples', () => {
     expect(await sourceNames(adapter)).toEqual(['onlyA', 'shared', 'onlyB'])
   })
 
+  const makeWithMissing = (missing: string[]) =>
+    new Adapter(
+      configSchema.create({
+        vcfGzLocationMap: {
+          ...(missing.includes('ctgA')
+            ? {}
+            : {
+                ctgA: {
+                  localPath: file('ctgA'),
+                  locationType: 'LocalPathLocation',
+                },
+              }),
+          chrM: {
+            localPath: file('ctgA').replace('ctgA', 'noSuchFile'),
+            locationType: 'LocalPathLocation',
+          },
+        },
+        indexLocationMap: {
+          ctgA: {
+            localPath: `${file('ctgA')}.tbi`,
+            locationType: 'LocalPathLocation',
+          },
+          chrM: {
+            localPath: `${file('ctgA').replace('ctgA', 'noSuchFile')}.tbi`,
+            locationType: 'LocalPathLocation',
+          },
+        },
+        indexType: 'TBI',
+      }),
+    )
+
+  test('a file that will not open warns instead of failing the sources', async () => {
+    const { sources, warnings } = await makeWithMissing(
+      [],
+    ).getSourcesAndWarnings()
+    expect(sources.map(s => s.name)).toEqual(['onlyA', 'shared'])
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toMatch(/chrM/)
+  })
+
+  test('the contigs that did open still serve features', async () => {
+    const adapter = makeWithMissing([])
+    const feats = await firstValueFrom(
+      adapter
+        .getFeatures({
+          assemblyName: 'x',
+          refName: 'ctgA',
+          start: 0,
+          end: 1000,
+        })
+        .pipe(toArray()),
+    )
+    expect(feats).toHaveLength(1)
+  })
+
+  test('sources fail when no file opens', async () => {
+    await expect(makeWithMissing(['ctgA']).getSources([])).rejects.toThrow()
+  })
+
   test('getFeatures opens only its own contig', async () => {
     const adapter = makeSplit(['ctgA', 'ctgB'])
     const configure = jest.spyOn(adapter, 'configure')
