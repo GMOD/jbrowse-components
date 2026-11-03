@@ -19,6 +19,7 @@ loadedRegion
 loadedTrackId
 maxRegionBp
 paneHeight
+pileup.mismatches
 records
 render
 repeatKey
