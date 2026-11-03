@@ -29,6 +29,7 @@ function regionData(blocks: MafBlock[]): MafRegionData {
 
 const view = {
   bpPerPx: 1,
+  displayedRegions: [{ start: 100, end: 200 }],
   visibleRegions: [
     {
       displayedRegionIndex: 0,
@@ -94,6 +95,7 @@ test('mirrors x for reversed regions', () => {
   const segs = computeVisibleEmptyLines({
     view: {
       bpPerPx: 1,
+      displayedRegions: [{ start: 100, end: 200 }],
       visibleRegions: [
         {
           displayedRegionIndex: 0,
@@ -144,9 +146,38 @@ describe('the rows area', () => {
   })
 })
 
+test('a line crossing the screen edge runs on past it, within the region', () => {
+  const data = regionData([
+    {
+      startBp: 120,
+      endBp: 190,
+      refSeqBytes: enc.encode('A'.repeat(70)),
+      rows: [],
+      empties: [emptyRow(0, 'C')],
+    },
+  ])
+  const [seg] = computeVisibleEmptyLines({
+    view: {
+      ...view,
+      visibleRegions: [{ ...view.visibleRegions[0]!, end: 150 }],
+    },
+    rpcDataMap: { get: () => data },
+    rowHeight: 15,
+    rowProportion: 0.8,
+    viewportHeight: 1000,
+  })
+  expect(seg!.x).toBe(20)
+  expect(seg!.x + seg!.width).toBeGreaterThan(50)
+  expect(seg!.x + seg!.width).toBeLessThanOrEqual(100)
+})
+
 describe('two visible regions', () => {
   const twoRegions = (reversed: boolean) => ({
     bpPerPx: 1,
+    displayedRegions: [
+      { start: 100, end: 200 },
+      { start: 5000, end: 5100 },
+    ],
     visibleRegions: [
       {
         displayedRegionIndex: 0,

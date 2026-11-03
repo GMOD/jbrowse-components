@@ -497,8 +497,8 @@ export function computeVisibleCodonGlyphs(
     data: codons,
     bpToPx,
     overlaps,
-    pxLo,
-    pxHi,
+    regionPxLo,
+    regionPxHi,
   } of eachVisibleRegion(view, codonsByRegion)) {
     for (const { codon, runs, calls } of codons) {
       if (overlaps(codon.positions[0], codon.positions[2] + 1)) {
@@ -511,8 +511,8 @@ export function computeVisibleCodonGlyphs(
         }
         if (
           widest.width >= CHAR_SIZE_WIDTH &&
-          widest.x >= pxLo &&
-          widest.x < pxHi
+          widest.x >= regionPxLo &&
+          widest.x < regionPxHi
         ) {
           for (const call of calls) {
             if (call.rowIndex >= firstRow && call.rowIndex < endRow) {

@@ -84,6 +84,8 @@ export function computeVisibleInversions(
     overlaps,
     pxLo,
     pxHi,
+    regionPxLo,
+    regionPxHi,
   } of eachVisibleRegion(view, rpcDataMap)) {
     const invertedRows = regionInvertedRows(regionData, consensus)
     const { blocks } = regionData
@@ -104,8 +106,8 @@ export function computeVisibleInversions(
             visibleWidth:
               Math.max(visibleLeft, Math.min(span.left + span.width, pxHi)) -
               visibleLeft,
-            regionLeft: pxLo,
-            regionRight: pxHi,
+            regionLeft: regionPxLo,
+            regionRight: regionPxHi,
             rowTop: offset + rowHeight * row,
             h,
           })

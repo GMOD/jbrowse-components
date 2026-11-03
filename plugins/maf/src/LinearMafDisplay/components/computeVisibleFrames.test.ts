@@ -10,6 +10,7 @@ const rowIndexBySrc = new Map([
 
 const view = {
   bpPerPx: 1,
+  displayedRegions: [{ start: 100, end: 200 }],
   visibleRegions: [
     {
       displayedRegionIndex: 0,
@@ -113,6 +114,7 @@ test('mirrors x for reversed regions', () => {
   const markers = computeVisibleFrames({
     view: {
       bpPerPx: 1,
+      displayedRegions: [{ start: 100, end: 200 }],
       visibleRegions: [
         {
           displayedRegionIndex: 0,
@@ -141,6 +143,7 @@ test('widens a sub-pixel strip away from its start edge on a reversed region', (
   const markers = computeVisibleFrames({
     view: {
       bpPerPx: 10,
+      displayedRegions: [{ start: 100, end: 200 }],
       visibleRegions: [
         {
           displayedRegionIndex: 0,
@@ -158,6 +161,47 @@ test('widens a sub-pixel strip away from its start edge on a reversed region', (
     viewportHeight: 1000,
   })
   expect(markers[0]).toMatchObject({ xLeft: 9, width: 1 })
+})
+
+describe('a region scrolled partly off screen', () => {
+  const frameXs = (reversed: boolean, start: number, end: number) =>
+    computeVisibleFrames({
+      view: {
+        ...view,
+        visibleRegions: [
+          reversed
+            ? { ...view.visibleRegions[0]!, start: 150, reversed }
+            : { ...view.visibleRegions[0]!, end: 150 },
+        ],
+      },
+      framesDataMap: { get: () => [rec({ src: 'panTro6', start, end })] },
+      rowIndexBySrc,
+      rowHeight: 15,
+      rowProportion: 0.8,
+      viewportHeight: 1000,
+    })[0]
+
+  test('a segment crossing the screen edge runs on to the region edge', () => {
+    expect(frameXs(false, 140, 180)).toMatchObject({ xLeft: 40, width: 40 })
+  })
+
+  test('so does one in a reversed region', () => {
+    expect(frameXs(true, 120, 160)).toMatchObject({ xLeft: 40, width: 40 })
+  })
+
+  test('a segment is still bounded by the region itself', () => {
+    const [marker] = computeVisibleFrames({
+      view,
+      framesDataMap: {
+        get: () => [rec({ src: 'panTro6', start: 190, end: 230 })],
+      },
+      rowIndexBySrc,
+      rowHeight: 15,
+      rowProportion: 0.8,
+      viewportHeight: 1000,
+    })
+    expect(marker).toMatchObject({ xLeft: 90, width: 10 })
+  })
 })
 
 test('emits nothing when a region has no fetched frames', () => {
@@ -222,6 +266,10 @@ test('skips frame records outside the visible span', () => {
 describe('two visible regions', () => {
   const twoRegions = (reversed: boolean) => ({
     bpPerPx: 1,
+    displayedRegions: [
+      { start: 100, end: 200 },
+      { start: 5000, end: 5100 },
+    ],
     visibleRegions: [
       {
         displayedRegionIndex: 0,
@@ -265,6 +313,10 @@ describe('a sub-pixel CDS box next to a region edge', () => {
     computeVisibleFrames({
       view: {
         bpPerPx: 10,
+        displayedRegions: [
+          { start: 100, end: 200 },
+          { start: 5000, end: 5100 },
+        ],
         visibleRegions: [
           {
             displayedRegionIndex: 0,

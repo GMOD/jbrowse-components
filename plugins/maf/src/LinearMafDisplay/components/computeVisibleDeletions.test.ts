@@ -24,6 +24,7 @@ function regionData(refSeq: string, alignment: string): MafRegionData {
 // length and the label-fit threshold is easy to straddle.
 function view(bpPerPx = 1) {
   return {
+    displayedRegions: [{ start: 100, end: 140 }],
     visibleRegions: [
       {
         displayedRegionIndex: 0,
@@ -66,6 +67,7 @@ test('a run wider than the viewport marks the part on screen', () => {
   const data = regionData('A'.repeat(30), `AAAAA${'-'.repeat(20)}AAAAA`)
   const markers = computeVisibleDeletions({
     view: {
+      displayedRegions: [{ start: 110, end: 118 }],
       visibleRegions: [
         {
           displayedRegionIndex: 0,
@@ -217,6 +219,10 @@ test('a bound filled at a zoom where nothing labelled admits a closer one', () =
 describe('two visible regions', () => {
   const twoRegions = (reversed: boolean) => ({
     bpPerPx: 1,
+    displayedRegions: [
+      { start: 100, end: 130 },
+      { start: 5000, end: 5030 },
+    ],
     visibleRegions: [
       {
         displayedRegionIndex: 0,

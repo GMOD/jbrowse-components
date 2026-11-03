@@ -30,12 +30,14 @@ export function computeVisibleEmptyLines(
     data: regionData,
     bpToPx,
     overlaps,
-    visibleStart,
-    visibleEnd,
+    bpLo,
+    bpHi,
+    regionStart,
+    regionEnd,
   } of eachVisibleRegion(view, rpcDataMap)) {
     for (const block of regionData.blocks) {
-      const lo = Math.max(block.startBp, visibleStart)
-      const hi = Math.min(block.endBp, visibleEnd)
+      const lo = Math.max(block.startBp, regionStart, bpLo)
+      const hi = Math.min(block.endBp, regionEnd, bpHi)
       if (
         block.empties.length > 0 &&
         overlaps(block.startBp, block.endBp) &&

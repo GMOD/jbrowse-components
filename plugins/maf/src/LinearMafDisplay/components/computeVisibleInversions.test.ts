@@ -32,6 +32,7 @@ function region(blocks: MafRegionData['blocks']): MafRegionData {
 }
 
 const view = {
+  displayedRegions: [{ start: 100, end: 400 }],
   visibleRegions: [
     {
       displayedRegionIndex: 0,
@@ -170,9 +171,48 @@ test('a block straddling the visible start still draws', () => {
   ])
 })
 
+describe('a region scrolled partly off screen', () => {
+  const scrolled = (reversed: boolean) => ({
+    ...view,
+    visibleRegions: [
+      { ...view.visibleRegions[0]!, start: 200, end: 400, reversed },
+    ],
+  })
+  const rpcDataMap = new Map([
+    [
+      0,
+      region([
+        block(150, 100, [{ srcRefName: 'chrA', strand: -1 }]),
+        block(300, 300, [{ srcRefName: 'chrA', strand: 1 }]),
+      ]),
+    ],
+  ])
+
+  it('bounds the outline to the region and the hatch to the screen', () => {
+    expect(visibleInversions(rpcDataMap, scrolled(false))).toMatchObject([
+      {
+        visibleLeft: 0,
+        visibleWidth: 50,
+        regionLeft: -100,
+        regionRight: 200,
+      },
+    ])
+  })
+
+  it('does the same for a reversed region', () => {
+    expect(visibleInversions(rpcDataMap, scrolled(true))).toMatchObject([
+      { regionLeft: 0, regionRight: 300 },
+    ])
+  })
+})
+
 describe('two visible regions', () => {
   const twoRegions = (reversed: boolean) => ({
     bpPerPx: 1,
+    displayedRegions: [
+      { start: 100, end: 200 },
+      { start: 5000, end: 5100 },
+    ],
     visibleRegions: [
       {
         displayedRegionIndex: 0,

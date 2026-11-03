@@ -39,11 +39,13 @@ export function computeVisibleLabels(
       data,
       bpToPx,
       overlaps,
-      visibleStart,
-      visibleEnd,
+      bpLo,
+      bpHi,
+      regionStart,
+      regionEnd,
     } of eachVisibleRegion(view, rpcDataMap)) {
-      const firstCellBp = visibleStart - 0.5
-      const endCellBp = visibleEnd - 0.5
+      const firstCellBp = Math.max(regionStart, bpLo) - 0.5
+      const endCellBp = Math.min(regionEnd, bpHi) - 0.5
       for (const block of data.blocks) {
         if (!overlaps(block.startBp, block.endBp)) {
           continue
@@ -66,8 +68,8 @@ export function computeVisibleLabels(
             if (refCode !== DASH) {
               const bp = block.startBp + genomicOffset
               // The region clamp applied per column, since one TAF/bigMaf stanza
-              // can span the whole buffered region. A letter sits on its cell's
-              // center, so the cell center must be inside the region. `bp` only
+              // can span the whole buffered region: the cell center must be
+              // inside the displayed region and near the screen. `bp` only
               // increases, so the right edge ends the row's walk.
               if (bp >= endCellBp) {
                 break

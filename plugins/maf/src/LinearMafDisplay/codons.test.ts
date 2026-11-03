@@ -405,6 +405,7 @@ test('a codon stitched across an exon boundary is two runs, resolved from both',
 
 describe('the letters', () => {
   const view = {
+    displayedRegions: [{ start: 100, end: 130 }],
     visibleRegions: [
       {
         displayedRegionIndex: 0,
@@ -437,7 +438,11 @@ describe('the letters', () => {
   test('a stitched codon draws its letter once, on the wider run', () => {
     const { region, frames: stitch } = stitchFixture()
     const glyphs = computeVisibleCodonGlyphs(
-      { ...view, visibleRegions: [{ ...view.visibleRegions[0]!, end: 210 }] },
+      {
+        ...view,
+        displayedRegions: [{ start: 100, end: 210 }],
+        visibleRegions: [{ ...view.visibleRegions[0]!, end: 210 }],
+      },
       new Map([[0, locate(region, stitch)]]),
       geometry,
     )
@@ -449,6 +454,10 @@ describe('the letters', () => {
   describe('two visible regions', () => {
     const twoRegions = (reversed: boolean) => ({
       bpPerPx: 0.1,
+      displayedRegions: [
+        { start: 100, end: 112 },
+        { start: 5000, end: 5012 },
+      ],
       visibleRegions: [
         {
           displayedRegionIndex: 0,
@@ -493,6 +502,36 @@ describe('the letters', () => {
     test('letters stay inside a reversed region', () => {
       expect(glyphsIn(true).map(g => g.x)).toEqual([105, 75, 45, 15])
     })
+  })
+
+  test('a codon half scrolled off the screen edge keeps its letter', () => {
+    const wide = regionData('ATG'.repeat(100), ['ATG'.repeat(100)])
+    const frames = [
+      {
+        refName: 'chr',
+        start: 100,
+        end: 400,
+        src: 'ref',
+        frame: 0,
+        strand: 1,
+        name: 'g',
+      },
+    ]
+    const xsAt = (reversed: boolean) =>
+      computeVisibleCodonGlyphs(
+        {
+          ...view,
+          visibleRegions: [
+            reversed
+              ? { ...view.visibleRegions[0]!, start: 101.8, end: 130, reversed }
+              : { ...view.visibleRegions[0]!, end: 110.2 },
+          ],
+        },
+        new Map([[0, locate(wide, frames)]]),
+        geometry,
+      ).map(g => Math.round(g.x))
+    expect(xsAt(false)).toContain(105)
+    expect(xsAt(true)).toContain(285)
   })
 
   test('skip the codons off the view', () => {

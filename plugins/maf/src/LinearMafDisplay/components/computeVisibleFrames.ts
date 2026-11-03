@@ -72,10 +72,10 @@ export function computeVisibleFrames(
     data: records,
     bpToPx,
     overlaps,
-    visibleStart,
-    visibleEnd,
-    pxLo,
-    pxHi,
+    regionStart,
+    regionEnd,
+    regionPxLo,
+    regionPxHi,
   } of eachVisibleRegion(view, framesDataMap)) {
     for (const r of records) {
       // Culled before the `src` lookup: the buffered region holds a record per
@@ -83,8 +83,8 @@ export function computeVisibleFrames(
       if (!overlaps(r.start, r.end)) {
         continue
       }
-      const lo = Math.max(r.start, visibleStart)
-      const hi = Math.min(r.end, visibleEnd)
+      const lo = Math.max(r.start, regionStart)
+      const hi = Math.min(r.end, regionEnd)
       const rowIndex = rowIndexBySrc.get(r.src)
       if (
         hi > lo &&
@@ -94,7 +94,7 @@ export function computeVisibleFrames(
       ) {
         // >=1px so a single-base CDS segment still reads
         const { left, width } = spanRect(bpToPx, lo, hi, 1)
-        const xLeft = Math.max(pxLo, Math.min(left, pxHi - width))
+        const xLeft = Math.max(regionPxLo, Math.min(left, regionPxHi - width))
         markers.push({
           xLeft,
           width,

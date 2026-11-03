@@ -14,9 +14,11 @@ import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendT
 
 /**
  * The slice of the LGV model the overlay helpers read: the visible regions
- * (each with its screen-px origin and orientation) plus the zoom level.
+ * (each with its screen-px origin and orientation), the displayed regions they
+ * are the on-screen part of, plus the zoom level.
  */
 export interface VisibleRegionsView {
+  displayedRegions: { start: number; end: number }[]
   visibleRegions: {
     displayedRegionIndex: number
     start: number
@@ -129,14 +131,20 @@ export function bpCull(bpLo: number, bpHi: number) {
 /**
  * Walk the visible regions that have data in `dataMap`, yielding each region's
  * data with its `bpToPx` mapper, `displayedRegionIndex` (for correlating a
- * second per-region map), and the region's clamp: the visible bp span
- * `[visibleStart, visibleEnd)` and its screen extent `[pxLo, pxHi]`
- * (orientation-free, so `pxLo <= pxHi` for a reversed region too). What an
- * overlay draws stays inside the clamp, since blocks and records reach past
- * the region and a neighbouring region's cells sit just beyond its edge.
+ * second per-region map), and two bounds, each as a bp span and a screen extent
+ * (orientation-free, so `pxLo <= pxHi` for a reversed region too):
  *
- * `bpCull` is the clamp padded by `CULL_SLACK_PX`: it picks which blocks to
- * walk, not what they draw. The marker-side twin of `paintedBpRange`.
+ * - the displayed region's own extent, `[regionStart, regionEnd)` and
+ *   `[regionPxLo, regionPxHi]`, which may run past either screen edge. What an
+ *   overlay draws stays inside it, since blocks and records reach past the
+ *   region and a neighbouring region's cells sit just beyond its edge. The
+ *   canvas clips at the screen edge, so a cell half scrolled off keeps its mark.
+ * - its on-screen part, `[visibleStart, visibleEnd)` and `[pxLo, pxHi]`, for
+ *   what is only worth drawing where it can be seen: the inversion hatch, or a
+ *   label centered on the visible part of a long run.
+ *
+ * `bpCull` is the visible span padded by `CULL_SLACK_PX`: it picks which blocks
+ * to walk, not what they draw. The marker-side twin of `paintedBpRange`.
  */
 export function* eachVisibleRegion<T>(
   view: VisibleRegionsView,
@@ -146,20 +154,26 @@ export function* eachVisibleRegion<T>(
   const slack = CULL_SLACK_PX * view.bpPerPx + 1
   for (const vr of view.visibleRegions) {
     const data = dataMap.get(vr.displayedRegionIndex)
-    if (data === undefined) {
-      continue
-    }
-    const bpToPx: BpToPx = bp =>
-      vr.screenStartPx + bpOffsetInRegion(vr, bp) * scale
-    yield {
-      data,
-      bpToPx,
-      displayedRegionIndex: vr.displayedRegionIndex,
-      visibleStart: vr.start,
-      visibleEnd: vr.end,
-      pxLo: vr.screenStartPx,
-      pxHi: vr.screenStartPx + (vr.end - vr.start) * scale,
-      ...bpCull(vr.start - slack, vr.end + slack),
+    const region = view.displayedRegions[vr.displayedRegionIndex]
+    if (data !== undefined && region !== undefined) {
+      const bpToPx: BpToPx = bp =>
+        vr.screenStartPx + bpOffsetInRegion(vr, bp) * scale
+      const regionStartPx = bpToPx(region.start)
+      const regionEndPx = bpToPx(region.end)
+      yield {
+        data,
+        bpToPx,
+        displayedRegionIndex: vr.displayedRegionIndex,
+        regionStart: region.start,
+        regionEnd: region.end,
+        regionPxLo: Math.min(regionStartPx, regionEndPx),
+        regionPxHi: Math.max(regionStartPx, regionEndPx),
+        visibleStart: vr.start,
+        visibleEnd: vr.end,
+        pxLo: vr.screenStartPx,
+        pxHi: vr.screenStartPx + (vr.end - vr.start) * scale,
+        ...bpCull(vr.start - slack, vr.end + slack),
+      }
     }
   }
 }

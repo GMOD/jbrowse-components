@@ -21,6 +21,7 @@ function regionData(refSeq: string, alignment: string): MafRegionData {
 }
 
 const view = {
+  displayedRegions: [{ start: 100, end: 110 }],
   visibleRegions: [
     {
       displayedRegionIndex: 0,
@@ -114,9 +115,46 @@ test('columns outside the visible span emit no label', () => {
   expect(labels.at(-1)!.x).toBe(190)
 })
 
+describe('a region scrolled partly off screen', () => {
+  const rpcDataMap = new Map<number, MafRegionData>([
+    [0, regionData('A'.repeat(30), 'A'.repeat(30))],
+  ])
+  const labelXs = (reversed: boolean) =>
+    computeVisibleLabels({
+      view: {
+        ...view,
+        displayedRegions: [{ start: 100, end: 130 }],
+        visibleRegions: [
+          { ...view.visibleRegions[0]!, start: 100, end: 104.4, reversed },
+        ],
+      },
+      rpcDataMap,
+      rowHeight: 15,
+      rowProportion: 0.8,
+      viewportHeight: 1000,
+      paints: { mismatches: true, everyBase: true },
+    }).map(l => Math.round(l.x))
+
+  test('a half-visible cell at the screen edge keeps its letter', () => {
+    expect(labelXs(false)).toContain(90)
+  })
+
+  test('so does one in a reversed region', () => {
+    expect(labelXs(true)).toContain(-2)
+  })
+
+  test('the cull still stops the walk near the screen', () => {
+    expect(labelXs(false).length).toBeLessThan(10)
+  })
+})
+
 describe('two visible regions', () => {
   const twoRegions = (reversed: boolean) => ({
     bpPerPx: 0.05,
+    displayedRegions: [
+      { start: 100, end: 105 },
+      { start: 5000, end: 5005 },
+    ],
     visibleRegions: [
       {
         displayedRegionIndex: 0,
