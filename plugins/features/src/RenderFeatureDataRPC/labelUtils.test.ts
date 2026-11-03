@@ -1,5 +1,11 @@
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
+import {
+  FEATURE_DESCRIPTION_FIELD,
+  FEATURE_NAME_FIELD,
+} from './featureNameField.ts'
+import { DEFAULT_TOOLTIP } from './featureTooltip.ts'
 import {
   getFeatureName,
   readFeatureLabels,
@@ -275,4 +281,13 @@ describe('subfeatureLabelText', () => {
     const mRNA = featureWith({ type: 'mRNA', name: 'NM_1', product: 'actin' })
     expect(subfeatureLabelText(mRNA, config, jexl)).toBe('NM_1')
   })
+})
+
+describe('the default label and tooltip fields', () => {
+  it.each([FEATURE_NAME_FIELD, FEATURE_DESCRIPTION_FIELD, DEFAULT_TOOLTIP])(
+    'read natively, with no jexl instance: %s',
+    field => {
+      expect(() => fieldReader(field, undefined)).not.toThrow()
+    },
+  )
 })

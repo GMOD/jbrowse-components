@@ -19,33 +19,42 @@ export function fieldReader(
   ref: string,
   jexl: JexlInstance | undefined,
 ): (feature: Feature) => unknown {
-  const path = ref.includes('.') ? ref.split('.') : undefined
-  const rests = path?.map((_, i) => path.slice(i).join('.'))
   const name = plainFieldName(ref)
   const chain = name === undefined ? plainFieldChain(ref) : undefined
-  if (name !== undefined) {
-    return feature => feature.get(name)
-  }
-  if (chain) {
-    return feature => {
-      let value: unknown
-      for (const field of chain) {
-        value = feature.get(field)
-        if (value) {
-          break
-        }
+  return name !== undefined
+    ? (feature: Feature) => feature.get(name)
+    : chain
+      ? firstTruthyFieldReader(chain)
+      : isJexl(ref)
+        ? jexlFieldReader(ref, jexl)
+        : pathFieldReader(ref)
+}
+
+function firstTruthyFieldReader(fields: readonly string[]) {
+  return (feature: Feature) => {
+    let value: unknown
+    for (const field of fields) {
+      value = feature.get(field)
+      if (value) {
+        break
       }
-      return value
     }
+    return value
   }
-  if (isJexl(ref)) {
-    if (!jexl) {
-      throw new Error(`a jexl: field needs a jexl instance (${ref})`)
-    }
-    const expr = stringToJexlExpression(ref, jexl)
-    return feature => expr.eval(buildJexlContext({ feature }))
+}
+
+function jexlFieldReader(ref: string, jexl: JexlInstance | undefined) {
+  if (!jexl) {
+    throw new Error(`a jexl: field needs a jexl instance (${ref})`)
   }
-  return feature => {
+  const expr = stringToJexlExpression(ref, jexl)
+  return (feature: Feature) => expr.eval(buildJexlContext({ feature }))
+}
+
+function pathFieldReader(ref: string) {
+  const path = ref.includes('.') ? ref.split('.') : undefined
+  const rests = path?.map((_, i) => path.slice(i).join('.'))
+  return (feature: Feature) => {
     const value: unknown = feature.get(ref)
     return value === undefined && path && rests
       ? readPath(feature.get(path[0]!), path, rests)
@@ -97,10 +106,7 @@ export function plainFieldName(ref: string) {
 // term's value, as jexl's `||` answers.
 function plainFieldChain(ref: string) {
   const ast = isJexl(ref) ? parseJexl(ref) : undefined
-  const names =
-    ast?.type === 'BinaryExpression'
-      ? orTerms(ast).map(term => plainFieldOfAst(term))
-      : []
+  const names = ast ? orTerms(ast).map(term => plainFieldOfAst(term)) : []
   return names.length > 1 && names.every(name => name !== undefined)
     ? names
     : undefined
