@@ -1243,6 +1243,33 @@ describe('MultiWiggleAdapter with samplesTsvLocation', () => {
     expect(result.map(r => r.source)).toEqual(['a', 'c'])
     expect(getFeatureArrays).toHaveBeenCalledTimes(2)
   })
+
+  it('reports the table download to the fetch that triggers it', async () => {
+    const { adapter } = adapterWithTsv()
+    const statuses: unknown[] = []
+    await adapter.getMultiSourceFeatureArraysMulti(
+      [{ refName: 'chr1', start: 0, end: 100, assemblyName: 'hg38' }],
+      {
+        bpPerPx: 1,
+        resolution: 1,
+        statusCallback: status => statuses.push(status),
+      },
+    )
+    expect(JSON.stringify(statuses)).toContain('Downloading sample metadata')
+  })
+
+  it('stops waiting on the table when the fetch is aborted', async () => {
+    const { adapter, getFeatureArrays } = adapterWithTsv()
+    const controller = new AbortController()
+    controller.abort()
+    await expect(
+      adapter.getMultiSourceFeatureArraysMulti(
+        [{ refName: 'chr1', start: 0, end: 100, assemblyName: 'hg38' }],
+        { bpPerPx: 1, resolution: 1, signal: controller.signal },
+      ),
+    ).rejects.toThrow()
+    expect(getFeatureArrays).not.toHaveBeenCalled()
+  })
 })
 
 test("a subadapter's row metadata stays off the config its adapter is created from", async () => {

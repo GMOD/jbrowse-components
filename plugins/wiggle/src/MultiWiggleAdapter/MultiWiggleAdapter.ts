@@ -250,11 +250,11 @@ export default class MultiWiggleAdapter
     })
   }
 
-  private async getFilteredAdapters(sources?: { name: string }[]) {
+  private async getFilteredAdapters(opts: WiggleOptions) {
     const adapters = await this.getAdapters()
-    const wanted = sources?.length
-      ? sources
-      : (await this.getSourcesAndWarnings()).sources
+    const wanted = opts.sources?.length
+      ? opts.sources
+      : (await this.getSourcesAndWarnings(opts)).sources
     const sourceNames = new Set(wanted.map(s => s.name))
     return adapters.filter(adp => sourceNames.has(adp.source))
   }
@@ -284,7 +284,7 @@ export default class MultiWiggleAdapter
     opts: WiggleOptions = {},
   ): Promise<ZoomRange | undefined> {
     const ranges = await this.eachSource(
-      await this.getFilteredAdapters(opts.sources),
+      await this.getFilteredAdapters(opts),
       opts,
       (adp, o) => adp.dataAdapter.getZoomRange(o),
     )
@@ -304,7 +304,7 @@ export default class MultiWiggleAdapter
 
   public async getRegionByteSize(regions: Region[], opts: WiggleOptions = {}) {
     const sizes = await this.eachSource(
-      await this.getFilteredAdapters(opts.sources),
+      await this.getFilteredAdapters(opts),
       opts,
       (adp, o) => adp.dataAdapter.getRegionByteSize(regions, o),
     )
@@ -325,7 +325,7 @@ export default class MultiWiggleAdapter
   // interleave them differently; `getFeaturesArray` is the ordered list.
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const adapters = await this.getFilteredAdapters(opts.sources)
+      const adapters = await this.getFilteredAdapters(opts)
       const slot = createStatusFanOut(opts.statusCallback)
       merge(
         ...adapters.map(adp =>
@@ -344,7 +344,7 @@ export default class MultiWiggleAdapter
   // the instance, so arrival order would open another file's feature.
   public async getFeaturesArray(region: Region, opts: WiggleOptions = {}) {
     const perSource = await this.eachSource(
-      await this.getFilteredAdapters(opts.sources),
+      await this.getFilteredAdapters(opts),
       opts,
       (adp, o) =>
         firstValueFrom(this.sourceFeatures(adp, region, o).pipe(toArray())),
@@ -360,7 +360,7 @@ export default class MultiWiggleAdapter
     opts: WiggleOptions = {},
   ): Promise<{ source: string; raws: RawFeatureArrays[] }[]> {
     return this.sourceArrays(
-      await this.getFilteredAdapters(opts.sources),
+      await this.getFilteredAdapters(opts),
       regions,
       opts,
     )
@@ -389,7 +389,7 @@ export default class MultiWiggleAdapter
   // Typed only where every subtrack serves arrays: a feature subadapter's
   // arrays keep just its score, and `y` may name any of its fields.
   override async getFeatureTable(region: Region, opts: WiggleOptions = {}) {
-    const adapters = await this.getFilteredAdapters(opts.sources)
+    const adapters = await this.getFilteredAdapters(opts)
     if (!adapters.every(adp => servesArrays(adp.dataAdapter))) {
       return super.getFeatureTable(region, opts)
     }
