@@ -1,6 +1,6 @@
 import fs from 'fs'
 
-import { scanSpecKeys } from './generateSpecKeyDocs.ts'
+import { scanLaunchArgs } from './generateSpecKeyDocs.ts'
 import { markdownTable, rewriteMarkerBlock, tableCell } from './util.ts'
 
 import type { SourceCorpus } from './util.ts'
@@ -19,7 +19,7 @@ import type { SourceCorpus } from './util.ts'
 // So all three come off the source now:
 //
 // - the ids and the `Launch*Args` name from the `'LaunchView-<type>': {args: X}`
-//   entries the launchers add to `ExtensionPointRegistry` (`scanSpecKeys`
+//   entries the launchers add to `ExtensionPointRegistry` (`scanLaunchArgs`
 //   already collects these — one scan, not two);
 // - the args type's file from wherever that name is exported;
 // - the link text and anchor from the `###` heading standing over that view
@@ -91,7 +91,7 @@ function argsTypeFiles(corpus: SourceCorpus) {
 }
 
 export function collectLaunchViews(corpus: SourceCorpus): LaunchViewRow[] {
-  const { launchArgs } = scanSpecKeys(corpus)
+  const launchArgs = scanLaunchArgs(corpus)
   const sections = specKeySections()
   const files = argsTypeFiles(corpus)
 

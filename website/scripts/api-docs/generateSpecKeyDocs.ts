@@ -182,12 +182,54 @@ function stringArrayOf(decl: ts.VariableDeclaration) {
     : undefined
 }
 
-// Two generators ask for this scan off the same corpus — the URL parameters
-// tables here and the LaunchView point table, which wants `launchArgs` alone —
-// and it syntactically parses all ~3,900 sources, which cost a run 2.8s the
-// second time. Keyed on the corpus because that is what the answer is a
-// function of, and a corpus is built once per run and never written to.
+// Keyed on the corpus because that is what the answer is a function of, and a
+// corpus is built once per run and never written to.
 const scans = new WeakMap<SourceCorpus, Scan>()
+const launchArgScans = new WeakMap<SourceCorpus, Map<string, string>>()
+
+/**
+ * Each `'LaunchView-<type>': { args: LaunchXViewArgs; result: ... }` inside a
+ * `declare module '@jbrowse/core/PluginManager'` ExtensionPointRegistry
+ * augmentation, as view type to args type. Matched on the key, not on the
+ * enclosing interface name, so it does not care how a launcher spells its
+ * augmentation. Its own scan, since the LaunchView point table needs only this
+ * and only a few dozen sources spell the key, where the full scan below parses
+ * every source declaring an interface.
+ */
+export function scanLaunchArgs(corpus: SourceCorpus) {
+  let launchArgs = launchArgScans.get(corpus)
+  if (!launchArgs) {
+    const found = new Map<string, string>()
+    for (const file of corpus.files.filter(f =>
+      corpus.read(f).includes('LaunchView-'),
+    )) {
+      const walk = (node: ts.Node) => {
+        const viewType =
+          ts.isPropertySignature(node) &&
+          /^LaunchView-(.+)$/.exec(
+            node.name.getText().replaceAll(/['"]/g, ''),
+          )?.[1]
+        if (viewType && node.type && ts.isTypeLiteralNode(node.type)) {
+          for (const m of node.type.members) {
+            if (
+              ts.isPropertySignature(m) &&
+              m.name.getText() === 'args' &&
+              m.type &&
+              ts.isTypeReferenceNode(m.type)
+            ) {
+              found.set(viewType, m.type.typeName.getText())
+            }
+          }
+        }
+        ts.forEachChild(node, walk)
+      }
+      walk(corpus.parse(file))
+    }
+    launchArgs = found
+    launchArgScans.set(corpus, launchArgs)
+  }
+  return launchArgs
+}
 
 /**
  * Walk every source file once, collecting the tagged buckets, every interface
@@ -204,14 +246,13 @@ export function scanSpecKeys(corpus: SourceCorpus): Scan {
 
 // Everything the walk below matches spells one of these, and two thirds of the
 // sources spell none: parsing those was most of a `markers.ts` run.
-const SCANNED = /LaunchView-|ViewInit|\binterface\s|#launchKeys|#valueList/
+const SCANNED = /ViewInit|\binterface\s|#launchKeys|#valueList/
 
 function walkSpecKeys(corpus: SourceCorpus): Scan {
   const buckets: TaggedBucket[] = []
   const interfaces = new Map<string, SpecKey[]>()
   const valueLists = new Map<string, string[]>()
   const commandTypes = new Set<string>()
-  const launchArgs = new Map<string, string>()
   const omitted = new Map<string, Set<string>>()
 
   for (const file of corpus.files) {
@@ -221,26 +262,6 @@ function walkSpecKeys(corpus: SourceCorpus): Scan {
     const source = corpus.parse(file)
     const text = source.getFullText()
     const walk = (node: ts.Node) => {
-      // `'LaunchView-<type>': { args: LaunchXViewArgs; result: ... }` inside a
-      // `declare module '@jbrowse/core/PluginManager'` ExtensionPointRegistry
-      // augmentation. Matched on the key, not on the enclosing interface name,
-      // so it does not care how a launcher spells its augmentation.
-      if (ts.isPropertySignature(node) && node.name) {
-        const key = node.name.getText().replaceAll(/['"]/g, '')
-        const viewType = /^LaunchView-(.+)$/.exec(key)?.[1]
-        if (viewType && node.type && ts.isTypeLiteralNode(node.type)) {
-          for (const m of node.type.members) {
-            if (
-              ts.isPropertySignature(m) &&
-              m.name?.getText() === 'args' &&
-              m.type &&
-              ts.isTypeReferenceNode(m.type)
-            ) {
-              launchArgs.set(viewType, m.type.typeName.getText())
-            }
-          }
-        }
-      }
       // `export type XViewInit = ViewInit<XViewStateModel, XViewCommands>`
       if (
         ts.isTypeReferenceNode(node) &&
@@ -343,7 +364,14 @@ function walkSpecKeys(corpus: SourceCorpus): Scan {
       `${untagged.join(', ')} — used as the Commands half of a \`ViewInit<>\`, so a session spec can set these keys, but carrying no \`#launchKeys <ViewType>\` tag. The URL parameters page would render that view's table from its model properties alone and silently omit every launcher key. Tag the interface.`,
     )
   }
-  return { buckets, interfaces, valueLists, commandTypes, launchArgs, omitted }
+  return {
+    buckets,
+    interfaces,
+    valueLists,
+    commandTypes,
+    launchArgs: scanLaunchArgs(corpus),
+    omitted,
+  }
 }
 
 // The model properties this view's launcher builds itself, so a spec cannot set
