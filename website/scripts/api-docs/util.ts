@@ -1765,7 +1765,7 @@ function configurationSchemaName(decl: ts.Declaration) {
 // Three shapes all count as correctly attached, and the middle one is why this
 // can't just look for a `types.*` call: a factory may build its model by chaining
 // `.views()/.actions()` onto ANOTHER factory's result and never mention `types`
-// itself (LinearBasicDisplay, WiggleCommonMixin, the OAuth accounts).
+// itself (LinearBasicDisplay, the OAuth accounts).
 //   - a function returning a call: `function F() { return Base().views(…) }`
 //   - a variable initialized from a call: `const M = someFactory(…)`
 //   - anything containing a literal `types.compose(…)` / `types.model(…)`, or

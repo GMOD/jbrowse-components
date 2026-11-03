@@ -286,18 +286,20 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Asked of the display's OWN adapter, which for the GC display is the
-       * synthesized GCContentAdapter rather than the track's raw sequence
-       * adapter — the two diverged when the adapter config moved onto the
-       * shared model. It answers the same today, since only BigWigAdapter and
-       * MultiWiggleAdapter declare the capability, and the display's adapter is
-       * the honest subject: the resolution slot it gates is passed to whatever
+       * Asked of the display's own adapter, for the GC track the synthesized
+       * GCContentAdapter: the resolution slot it gates is passed to whatever
        * this display fetches from.
        */
       get hasResolution() {
-        return getEnv(self)
-          .pluginManager.getAdapterType(String(self.adapterConfig.type))
-          .adapterCapabilities.includes('hasResolution')
+        const { type } = self.adapterConfig
+        const { pluginManager } = getEnv(self)
+        return (
+          typeof type === 'string' &&
+          pluginManager.hasAdapterType(type) &&
+          pluginManager
+            .getAdapterType(type)
+            .adapterCapabilities.includes('hasResolution')
+        )
       },
       /**
        * #getter
@@ -673,7 +675,7 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Overrides WiggleCommonMixin's empty base, so the axis reaches a
+       * Overrides the empty base above, so the axis reaches a
        * rule of `encoding.y.rules` even where the visible data does not.
        *
        * Empty in density, where no rule is drawn: the domain is spent on the

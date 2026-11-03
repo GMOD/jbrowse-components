@@ -67,8 +67,8 @@ function writeAxis(
  * row and its drawer widget consume.
  *
  * Deliberately just the scale and the guides it owns. Colors, `resolution`
- * and the autoscale *computation* stay in `WiggleScoreConfigMixin` /
- * `WiggleCommonMixin` — the alignments coverage band shares this scale but
+ * and the autoscale *computation* stay in `WiggleScoreConfigMixin` and
+ * `LinearWiggleDisplay` — the alignments coverage band shares this scale but
  * none of the rest.
  */
 export function ScoreScaleMixin(paths: YScalePaths) {
