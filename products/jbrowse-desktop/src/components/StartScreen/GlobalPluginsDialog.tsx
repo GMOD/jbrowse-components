@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import {
-  desktopVendoredPluginNames,
   pluginLabel,
   pluginName,
   vendoredPluginNames,
@@ -134,10 +133,7 @@ const InstalledGlobalPlugins = observer(function InstalledGlobalPlugins({
 
 function isBundled(plugin: PluginDefinition) {
   const name = pluginName(plugin)
-  return (
-    name !== undefined &&
-    (vendoredPluginNames.has(name) || desktopVendoredPluginNames.includes(name))
-  )
+  return name !== undefined && vendoredPluginNames.has(name)
 }
 
 const AvailablePlugins = observer(function AvailablePlugins({
@@ -158,11 +154,11 @@ const AvailablePlugins = observer(function AvailablePlugins({
     </div>
   ) : plugins ? (
     // installablePlugins, not a bare filter: this dialog is a second install
-    // surface for the same manifest, and it used to offer the plugins Desktop's
-    // own core bundle already vendors — Blat, plus the shared MafViewer/GWAS.
-    // The loader drops those definitions, but the global list keeps them, so the
-    // card then read "Installed" for a plugin that never loaded.
-    installablePlugins(plugins, true)
+    // surface for the same manifest, and it used to offer the plugins the core
+    // bundle already vendors. The loader drops those definitions, but the global
+    // list keeps them, so the card then read "Installed" for a plugin that never
+    // loaded.
+    installablePlugins(plugins)
       .filter(p => p.name.toLowerCase().includes(filter.toLowerCase()))
       .map(plugin => {
         // resolved against the running JBrowse the same way the in-session

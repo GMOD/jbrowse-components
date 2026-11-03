@@ -539,9 +539,10 @@ describe('deleteSavedSessions', () => {
   })
 })
 
-// A desktop "export to web" carries the drawer as the sender left it, and
-// desktop registers widgets web does not (blat's UcscResultsWidget, left behind
-// by every BLAT / in-silico PCR search). `widgets` is a bare union with no
+// A shared session carries the drawer as the sender left it, including widgets
+// a runtime plugin registered there (BLAT's UcscResultsWidget, left behind by
+// every BLAT / in-silico PCR search, where a hub config loads BLAT) that the
+// recipient's config never loads. `widgets` is a bare union with no
 // dispatcher, so one entry web cannot build used to throw out of `cast` — past
 // the filter that handles unloadable tracks — and cost the recipient the whole
 // session, under a message telling them to ask for a Share link they had

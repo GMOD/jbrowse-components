@@ -1,7 +1,7 @@
 // The three app products' `corePlugins.ts` lists stand in an exact relation to
 // each other, and nothing else checks it:
 //
-//   desktop   = web ∪ { blat }
+//   desktop   = web
 //   react-app = web
 //
 // Each is a hand-maintained list of ~30 imports, so a plugin added to web for a
@@ -33,11 +33,11 @@ const BASE = 'jbrowse-web'
 const DIFFS: Record<string, { adds: string[]; drops: string[]; why: string }> =
   {
     'jbrowse-desktop': {
-      adds: ['blat'],
+      adds: [],
       drops: [],
       why:
-        'Blat is desktop-only because web pays cold-load bundle size and BLAT is niche ' +
-        '(see desktopVendoredPluginNames).',
+        'desktop carries every plugin web does; BLAT is in neither, and loads ' +
+        'from the hub configs that name it.',
     },
     'jbrowse-react-app': {
       adds: [],

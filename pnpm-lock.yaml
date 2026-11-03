@@ -2256,9 +2256,6 @@ importers:
       '@jbrowse/plugin-bed':
         specifier: workspace:^
         version: link:../../plugins/bed
-      '@jbrowse/plugin-blat':
-        specifier: workspace:^
-        version: link:../../plugins/blat
       '@jbrowse/plugin-breakpoint-split-view':
         specifier: workspace:^
         version: link:../../plugins/breakpoint-split-view

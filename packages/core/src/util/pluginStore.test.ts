@@ -151,8 +151,8 @@ describe('resolvePlugin', () => {
 // loader will accept. Every miss here is silent: an entry that vanishes with no
 // diagnostic, or one that installs and does nothing.
 describe('installablePlugins', () => {
-  const names = (plugins: JBrowsePlugin[], isElectron: boolean) =>
-    installablePlugins(plugins, isElectron).map(p => p.name)
+  const names = (plugins: JBrowsePlugin[]) =>
+    installablePlugins(plugins).map(p => p.name)
 
   it('keeps an entry whose only web build is per-version', () => {
     // resolvePlugin installs from versions[] and treats the top-level url as the
@@ -168,32 +168,32 @@ describe('installablePlugins', () => {
         },
       ],
     })
-    expect(names([p], false)).toEqual(['PerVersion'])
+    expect(names([p])).toEqual(['PerVersion'])
   })
 
-  // both products load the same two formats, so an entry publishing neither is
-  // hidden on both rather than offered on one and dropped by the other's loader
-  it('drops an entry that publishes no build, on either product', () => {
+  it('drops an entry that publishes no build', () => {
     const p = plugin({
       name: 'NoBuild',
       versions: [{ pluginVersion: '1.0.0', jbrowseRange: '*' }],
     })
-    expect(names([p], false)).toEqual([])
-    expect(names([p], true)).toEqual([])
+    expect(names([p])).toEqual([])
   })
 
   it('drops the plugins both products vendor', () => {
     const shared = [plugin({ name: 'MafViewer' }), plugin({ name: 'GWAS' })]
-    expect(names(shared, false)).toEqual([])
-    expect(names(shared, true)).toEqual([])
+    expect(names(shared)).toEqual([])
   })
 
-  // the half that was missing from both surfaces: desktop bundles Blat, so
-  // installing it there writes an entry dropVendoredPlugins then drops at load
-  it('drops Blat on desktop only, since web has to load it to have BLAT', () => {
-    const blat = [plugin({ name: 'Blat', umdUrl: 'https://x/blat.js' })]
-    expect(names(blat, true)).toEqual([])
-    expect(names(blat, false)).toEqual(['Blat'])
+  // hosted for the configs that name it, as BLAT is for UCSC-hosted genomes,
+  // and useless installed anywhere else
+  it('drops an unlisted entry', () => {
+    const blat = plugin({
+      name: 'Blat',
+      umdUrl: 'https://x/blat.js',
+      unlisted: true,
+    })
+    const listed = plugin({ name: 'Listed', umdUrl: 'https://x/listed.js' })
+    expect(names([blat, listed])).toEqual(['Listed'])
   })
 })
 

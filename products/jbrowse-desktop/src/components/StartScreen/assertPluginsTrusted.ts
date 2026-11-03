@@ -1,5 +1,4 @@
 import {
-  desktopVendoredPluginNames,
   dropVendoredPlugins,
   pluginDescriptionString,
   pluginUrl,
@@ -46,10 +45,7 @@ export async function assertPluginsTrusted(
 ) {
   // vendored plugins are dropped before PluginLoader ever sees them, so they
   // must not trip the prompt either — jbrowse.org demo configs still list some
-  const untrusted = dropVendoredPlugins(
-    plugins ?? [],
-    desktopVendoredPluginNames,
-  )
+  const untrusted = dropVendoredPlugins(plugins ?? [])
   // A packaged Desktop loads a umdLoc/esmLoc that resolves to a local file,
   // for a config the user opened from disk. One from outside could aim that at
   // a file it planted, so it gets no prompt to misread: http(s) or nothing.

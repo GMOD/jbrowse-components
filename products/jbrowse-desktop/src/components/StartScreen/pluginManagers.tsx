@@ -2,7 +2,6 @@ import PluginLoader from '@jbrowse/core/PluginLoader'
 import PluginManager, { corePluginRecords } from '@jbrowse/core/PluginManager'
 import {
   dedupePlugins,
-  desktopVendoredPluginNames,
   dropVendoredPlugins,
   pluginDefinitionMetadata,
   samePlugin,
@@ -64,7 +63,7 @@ import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 // undefined where there is nothing to load — see `initializeWorker` for what a
 // loader costs
 function makePluginLoader(definitions: PluginDefinition[]) {
-  const toLoad = dropVendoredPlugins(definitions, desktopVendoredPluginNames)
+  const toLoad = dropVendoredPlugins(definitions)
   return toLoad.length
     ? new PluginLoader(toLoad, {
         fetchESM: url => import(/* webpackIgnore:true */ url),

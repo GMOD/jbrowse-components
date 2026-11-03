@@ -4,7 +4,6 @@ import { pathToFileURL } from 'node:url'
 import { BrowserWindow, Menu, app, clipboard, dialog, shell } from 'electron'
 
 import { checkForUpdatesManually } from './autoUpdater.ts'
-import { BLAT_PARTITION } from './blatSession.ts'
 import {
   claudeCodeAddCommand,
   mcpClientConfigJson,
@@ -240,88 +239,6 @@ export async function createMainWindow(
   await mainWindow.loadURL(appUrl.href)
 
   return mainWindow
-}
-
-/**
- * Open genome.ucsc.edu (or any BLAT server) in a window so the user can solve
- * the Cloudflare Turnstile CAPTCHA that now fronts hgBlat. The window runs on
- * the BLAT partition rather than the app's default jar, so the cf_clearance
- * cookie a solve leaves behind is visible to `blatFetch` (which uses the same
- * partition) and to nothing else. Resolves true when the clearance cookie
- * appears, false if the user closes the window first.
- */
-export function createChallengeWindow(url: string): Promise<boolean> {
-  const win = new BrowserWindow({
-    width: 900,
-    height: 700,
-    title: 'Solve CAPTCHA to enable BLAT',
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      partition: BLAT_PARTITION,
-    },
-  })
-
-  // A challenge page is a whole third-party site the user is looking at, so it
-  // navigates freely — a Turnstile solve is a redirect chain. What it may not
-  // do is leave the web: a file:// or custom-scheme navigation reaches for the
-  // machine rather than the server. Popups go to the real browser, as they do
-  // from the main window.
-  win.webContents.setWindowOpenHandler(edata => {
-    openExternal(edata.url)
-    return { action: 'deny' }
-  })
-  win.webContents.on('will-navigate', (event, target) => {
-    if (!isWebUrl(target)) {
-      event.preventDefault()
-      console.error(`Refusing to navigate the BLAT window to: ${target}`)
-    }
-  })
-
-  // The window only opens once the server has challenged a request, so a
-  // clearance already in the jar is one it just refused. Left there, the poll
-  // below found it within a second and closed the window before the user could
-  // solve anything, and the retry was challenged again.
-  const { cookies } = win.webContents.session
-  const cleared = cookies.remove(url, 'cf_clearance').catch(logError)
-  void cleared.then(() => {
-    if (!win.isDestroyed()) {
-      win.loadURL(url).catch(logError)
-    }
-  })
-
-  return new Promise(resolve => {
-    let settled = false
-    const finish = (ok: boolean) => {
-      if (!settled) {
-        settled = true
-        resolve(ok)
-        if (!win.isDestroyed()) {
-          win.close()
-        }
-      }
-    }
-    // scope the cookie lookup to the challenge host: cf_clearance is
-    // domain-bound, and an unfiltered lookup would match a cf_clearance left by
-    // any other Cloudflare site and finish(true) before the user solves this one
-    const timer = setInterval(() => {
-      cleared
-        .then(() => cookies.get({ url, name: 'cf_clearance' }))
-        .then(found => {
-          if (found.length) {
-            finish(true)
-          }
-        })
-        .catch(logError)
-    }, 1000)
-    win.on('closed', () => {
-      clearInterval(timer)
-      if (!settled) {
-        settled = true
-        resolve(false)
-      }
-    })
-  })
 }
 
 export function createAuthWindow(

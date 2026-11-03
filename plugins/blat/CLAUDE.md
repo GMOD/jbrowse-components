@@ -1,11 +1,16 @@
 # BLAT plugin
 
-Bundled in **jbrowse-desktop only**: BLAT is niche, and web would pay for it in
-cold-load bundle size. Moving it to jb2plugins was declined: desktop bundles it,
-and no product bundles an outside plugin. Its UMD build
-(`plugins/blat/scripts/umdBuild.ts`, loaded by
-`plugins/blat/src/umdBundle.test.ts`) is also the repo's only runtime-plugin
-build.
+Bundled in **no product**. It loads from a config's `plugins` entry, which
+jb2hubs writes into every genomes.jbrowse.org config, because a search only
+works on a UCSC-hosted assembly and a hosted bundle takes a UCSC-side fix
+without a JBrowse release. Its UMD build (`plugins/blat/scripts/umdBuild.ts`,
+loaded by `plugins/blat/src/umdBundle.test.ts`) is the repo's only
+runtime-plugin build.
+
+Every query goes to the server in the dialog, the jbrowse.org proxy
+(`products/aws/blat-proxy`) by default, on web and Desktop alike; there is no
+direct-to-UCSC path, apiKey field or CAPTCHA window. The bundle must keep
+booting v4.3.0, where it installs nothing, since hub configs are loaded there.
 
 Facts not in the source:
 

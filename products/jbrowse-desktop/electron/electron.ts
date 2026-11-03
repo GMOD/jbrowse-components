@@ -10,7 +10,6 @@ import { registerDevToolsShortcuts } from './devToolsShortcuts.ts'
 import { registerDownloadHandler } from './downloads.ts'
 import { initializeFileSystem } from './fileSystemInit.ts'
 import { registerAuthHandlers } from './ipc/authHandlers.ts'
-import { registerBlatHandlers } from './ipc/blatHandlers.ts'
 import { ipcHandle, ipcSend } from './ipc/channels.ts'
 import { registerFileHandlers } from './ipc/fileHandlers.ts'
 import { registerGlobalPluginHandlers } from './ipc/globalPluginHandlers.ts'
@@ -351,7 +350,6 @@ function runApp() {
       registerFileHandlers(paths)
       registerGlobalPluginHandlers(paths)
       registerAuthHandlers()
-      registerBlatHandlers()
       registerPluginHandlers()
       registerDownloadHandler()
       // window.ts sets a native menu on macOS alone, so on the other two

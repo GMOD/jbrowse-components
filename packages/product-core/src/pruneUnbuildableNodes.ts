@@ -34,12 +34,11 @@ import type { IAnyModelType, IAnyType } from '@jbrowse/mobx-state-tree'
  * for a link made with the Share button, which is often exactly what they were
  * sent.
  *
- * Two routes reach it and neither is exotic. A desktop export carries session
- * state built from desktop's own core plugins — `blat` registers
+ * Two routes reach it and neither is exotic. A session carries state built
+ * from the runtime plugins its config loaded — BLAT registers
  * `UcscResultsWidget`, and every BLAT or in-silico PCR search leaves one in the
- * drawer — which jbrowse-web does not have (see
- * `scripts/check-core-plugin-sets.ts` for the exact relation between the
- * products' lists). And a runtime plugin that fails to load is already
+ * drawer — and it can be opened where no config loads that plugin. And a
+ * runtime plugin that fails to load is already
  * tolerated: `notifyPluginLoadFailures` says the session opens without it, which
  * was untrue for any session actually using its types.
  *

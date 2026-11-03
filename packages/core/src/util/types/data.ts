@@ -180,4 +180,7 @@ export interface JBrowsePlugin {
   // jbrowse-plugin-list's plugins.json, so the store discovers whatever tags are
   // actually published rather than needing a release here to learn a new one.
   tags?: string[]
+  // Hosted for the configs that name it by `storePlugin`, never offered for
+  // install: it does nothing outside the setup those configs carry.
+  unlisted?: boolean
 }

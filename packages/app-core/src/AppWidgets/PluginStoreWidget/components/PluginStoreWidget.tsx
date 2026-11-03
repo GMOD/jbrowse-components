@@ -72,8 +72,8 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
   const { adminMode } = session
   const { pluginManager } = getEnv(model)
 
-  const textMatched = installablePlugins(plugins ?? [], isElectron).filter(
-    plugin => plugin.name.toLowerCase().includes(filterText.toLowerCase()),
+  const textMatched = installablePlugins(plugins ?? []).filter(plugin =>
+    plugin.name.toLowerCase().includes(filterText.toLowerCase()),
   )
   // Offer a tag if something surviving the text filter carries it, plus any tag
   // already selected — otherwise the last chip in a narrow result set vanishes

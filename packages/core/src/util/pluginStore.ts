@@ -2,7 +2,6 @@ import { compareVersions, satisfies } from 'compare-versions'
 
 import { fetchPlugins } from '../checkPlugins.ts'
 import {
-  desktopVendoredPluginNames,
   isStorePluginDefinition,
   maybePluginUrl,
   samePlugin,
@@ -30,28 +29,22 @@ function publishedBuilds(plugin: JBrowsePlugin): UrlFields[] {
  * says Installed (or stays live, and every click appends another dead entry) and
  * nothing about the running app changes.
  *
- * Two independent reasons to hide an entry:
+ * Three independent reasons to hide an entry:
  *
  * - **No build at all.** Asked of every build the entry publishes rather than
  *   only the top-level urls — an entry that pins urls per version, which
  *   `resolvePlugin`'s fallback exists to accommodate, used to vanish from the
- *   list with no diagnostic. Both products load the same two formats, so this
- *   half no longer differs between them.
- * - **Already vendored into this product's core bundle**, where installing does
- *   nothing because `dropVendoredPlugins` drops the definition at load. Desktop's
- *   half of that list counts too, and is the half both surfaces were missing.
+ *   list with no diagnostic.
+ * - **Already vendored into the core bundle**, where installing does nothing
+ *   because `dropVendoredPlugins` drops the definition at load.
+ * - **Unlisted.** The store hosts it for the configs that name it, as BLAT is
+ *   for UCSC-hosted genomes, but it does nothing installed anywhere else.
  */
-export function installablePlugins(
-  plugins: JBrowsePlugin[],
-  isElectron: boolean,
-) {
-  const vendored = new Set([
-    ...vendoredPluginNames,
-    ...(isElectron ? desktopVendoredPluginNames : []),
-  ])
+export function installablePlugins(plugins: JBrowsePlugin[]) {
   return plugins.filter(
     plugin =>
-      !vendored.has(plugin.name) &&
+      !plugin.unlisted &&
+      !vendoredPluginNames.has(plugin.name) &&
       publishedBuilds(plugin).some(b => b.esmUrl ?? b.url ?? b.umdUrl),
   )
 }

@@ -2,7 +2,6 @@ import { AppWidgetsPlugin } from '@jbrowse/app-core'
 import Alignments from '@jbrowse/plugin-alignments'
 import Authentication from '@jbrowse/plugin-authentication'
 import Bed from '@jbrowse/plugin-bed'
-import Blat from '@jbrowse/plugin-blat'
 import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
 import CircularView from '@jbrowse/plugin-circular-view'
 import ComparativeAdapters from '@jbrowse/plugin-comparative-adapters'
@@ -60,7 +59,6 @@ const corePlugins = [
   ComparativeAdapters,
   Gwas,
   Marks,
-  Blat,
 ]
 
 export default corePlugins

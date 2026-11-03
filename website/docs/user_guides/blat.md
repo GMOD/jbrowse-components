@@ -10,9 +10,25 @@ sequence in the genome", **BLAT search** and **In-silico PCR**. Both query
 UCSC-style sequence-search servers and turn the hits into a track built on the
 fly, with every hit listed so you can go to the one you want.
 
-The plugin ships with JBrowse Desktop, where both items are in the Tools menu.
-JBrowse Web does not bundle it yet, so the menu items are absent there; shipping
-it on Web is planned.
+Neither JBrowse Web nor JBrowse Desktop bundles it. It loads from a config's
+`plugins` entry, and every genome on
+[genomes.jbrowse.org](https://genomes.jbrowse.org) names it, in either app.
+Another JBrowse offers the two items once its config carries the same entry:
+
+```json
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "plugins": [
+    {
+      "name": "Blat",
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-blat/dist/v1/jbrowse-plugin-blat.umd.production.min.js"
+    }
+  ]
+}
+```
+
+A search only finds something on an assembly UCSC hosts, which is why the
+genomes.jbrowse.org configs are where it is switched on.
 
 ## BLAT search
 
@@ -86,26 +102,24 @@ settings. These dialogs have no local aligner behind them;
 [](/docs/user_guides/sequence_search) scans the reference for an exact pattern
 without involving UCSC.
 
-### CAPTCHA and apiKeys
+### The shared server
 
-The UCSC BLAT server is length-limited, and public requests to it are gated
-behind a CAPTCHA. Both dialogs default to a jbrowse.org proxy that supplies an
-apiKey server-side, so an ordinary search meets neither the CAPTCHA nor a key —
-at the cost of a request budget every user of that proxy shares.
+UCSC answers programmatic BLAT only with an apiKey, and only one query at a time
+per key. Both dialogs send their query to a jbrowse.org server that holds a key,
+so a search needs no account, and every user of that server shares its budget. A
+search made while another holds the slot waits its turn, with a line in the
+dialog saying how long. Each network gets a share of the budget per hour and per
+day, and a search past it says when the share renews.
 
-You meet the CAPTCHA by pointing the server field at UCSC yourself, or on
-desktop when the shared budget is spent and the search falls back to UCSC. Solve
-it in the window that opens, or paste a UCSC apiKey (generate one from a UCSC
-Genome Browser account under Hub Development → API key) to skip it. On desktop,
-entering a key moves the server field to UCSC, because the proxy replaces a key
-you send with the proxy's key — so a key only spends against UCSC directly.
+**Show advanced settings** has the server field, for pointing the dialogs at a
+mirror or a server of your own.
 
 ## In-silico PCR
 
 Choose **Tools → In-silico PCR...** to find where a primer pair amplifies. Enter
 a forward and reverse primer and an optional maximum product size. This uses
-UCSC's `hgPcr` service and follows the same database-selection and apiKey/proxy
-options as BLAT search.
+UCSC's `hgPcr` service, through the same shared server, and picks the database
+the same way as BLAT search.
 
 Predicted amplicons are added as a track, with the same **Search results** panel
 listing every product with its size and primer pair. As with BLAT, clicking a
