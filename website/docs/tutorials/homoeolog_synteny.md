@@ -48,19 +48,20 @@ npm install -g @jbrowse/cli@next
 ## The data
 
 Oat cultivar Williams
-([Peng et al. 2022](https://doi.org/10.1038/s41588-022-01127-7)), annotated by
-Ensembl Plants release 63 as
-[GCA_951802345.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_951802345.1/).
+([GCA_951802345.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_951802345.1/)),
+assembled and annotated by the PanOat consortium
+([Avni et al. 2025](https://doi.org/10.1038/s41586-025-09676-7)), from its
+release on [GrainGenes](https://graingenes.org/GG3/PanOat).
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-run _Producing the homoeolog table_ on the gene models, proteome and chromosome
-sizes of a genome of your own. The script fetches everything itself.
+run _Producing the homoeolog table_ on the gene models, CDS and chromosome sizes
+of a genome of your own. The script fetches everything itself, about 3.3 GB.
 
-| What it is                                | File                                                                                                                                                                                                                                            |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The annotation the self-alignment runs on | [Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.63.gff3.gz](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/gff3/avena_sativa_gca951802345v1cm/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.63.gff3.gz)            |
-| The CDS the proteome is translated from   | [Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.cds.all.fa.gz](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/fasta/avena_sativa_gca951802345v1cm/cds/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.cds.all.fa.gz) |
+| What it is                                                    | File                                                                                                                                                                                         |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The annotation the self-alignment runs on (GFF3 and proteins) | [williams.tgz](https://graingenes.org/ggds/graingenes_downloads/panoat/williams.tgz)                                                                                                         |
+| The genome each CDS and the chromosome lengths are read from  | [230404_williams_pseudomolecules_v1+unanchored_contigs.fasta.gz](https://graingenes.org/GG3/sites/default/files/panoat-fasta/230404_williams_pseudomolecules_v1+unanchored_contigs.fasta.gz) |
 
 ## Oat subgenomes and homoeologs
 
@@ -79,17 +80,19 @@ per gene:
 <!-- from: scripts/build_oat_homoeologs.sh -->
 
 ```bash
-python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
+python -m jcvi.formats.gff bed --type=mRNA --key=ID \
   --primary_only oat.gff3.gz -o oat.all.bed
 awk -F'\t' '$1 ~ /^[1-7][ACD]$/' oat.all.bed > oat.bed
 ```
 
-The [end-to-end script](#reproduce-it-end-to-end) translates the proteome from
-the CDS, keeping the transcript ids the BED uses.
+The release has no CDS file, so the
+[end-to-end script](#reproduce-it-end-to-end) cuts each transcript's CDS out of
+the genome, then translates the proteome from it, keeping the transcript ids the
+BED uses.
 
-The assembly needs no sequence, so we'll load it from the chromosome lengths in
-the GFF3's `##sequence-region` header, written to `oat.chrom.sizes` (a name and
-a length per line):
+The assembly needs no sequence, so we'll load it from the chromosome lengths the
+script reads off the genome, written to `oat.chrom.sizes` (a name and a length
+per line):
 
 ```json addassembly
 { "name": "oat", "uri": "oat.chrom.sizes" }
@@ -150,8 +153,7 @@ awk 'NR == FNR {chrom[$4] = $1; next}
 
 ### Measuring dN and dS on each homoeolog pair
 
-Ensembl declares `dn` and `ds` in every homology export and leaves both empty in
-every division, so the script computes them:
+`kaks_from_pairs.py` measures dN and dS on each pair from its two CDS:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/kaks_from_pairs.py
@@ -274,8 +276,9 @@ color means one dS wherever the view goes; the menu has no field for them:
 runs everything above and writes a `config.json` with the assembly, the track
 and a dotplot session:
 
-1. Turn the GFF3 into a BED of one primary transcript per gene on the 21
-   chromosomes, and translate the CDS into a proteome keyed on the same ids.
+1. Cut each transcript's CDS out of the genome, turn the GFF3 into a BED of one
+   primary transcript per gene on the 21 chromosomes, and translate the CDS into
+   a proteome keyed on the same ids.
 2. Align the proteome against itself with DIAMOND and chain the hits with jcvi,
    with `--self_remove 100` so the A-D homoeologs survive.
 3. Keep the chained anchors whose two genes sit on different subgenomes, and
@@ -298,8 +301,8 @@ npx --yes serve oat_homoeologs_build/jbrowse2  # then open the printed URL
 
 ## Citations
 
-- Peng et al. (2022).
-  [Reference genome assemblies reveal the origin and evolution of allohexaploid oat](https://doi.org/10.1038/s41588-022-01127-7)
+- Avni et al. (2025).
+  [A pangenome and pantranscriptome of hexaploid oat](https://doi.org/10.1038/s41586-025-09676-7)
 - Nei and Gojobori (1986).
   [Simple methods for estimating the numbers of synonymous and nonsynonymous nucleotide substitutions](https://doi.org/10.1093/oxfordjournals.molbev.a040410)
 - Tang et al. (2024).

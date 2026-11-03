@@ -16,18 +16,17 @@
 # a handful of chromosome pairs and in oat is dozens. That is the mosaic
 # karyotype the assembly paper describes, recovered from the gene order.
 #
-# Nothing is taken from a homology database. Ensembl Compara curates homoeolog
-# calls, but only for the assemblies it hosts, which for oat is one and not the
-# newest; running jcvi here means the same figure can be built on whatever
-# assembly is current. The assembly used is the most contiguous oat available:
-# Williams v1.0 has a contig N50 of 200 Mb against chromosomes of ~500 Mb, where
-# the Compara-covered Sang assembly is two orders of magnitude more fragmented.
-# No oat assembly is telomere-to-telomere, and no annotated one is newer.
+# Nothing is taken from a homology database: running jcvi here means the same
+# figure can be built on whatever assembly is current. The assembly used is the
+# most contiguous oat available: Williams v1.0 from the PanOat consortium, with a
+# contig N50 of 200 Mb against chromosomes of ~500 Mb. No oat assembly is
+# telomere-to-telomere, and no annotated one is newer. NCBI holds the assembly
+# (GCA_951802345.1) but no annotation of it, so both come from the consortium's
+# own release on GrainGenes.
 #
-# dN/dS is computed too. Ensembl declares `dn` and `ds` in every homology export
-# and fills neither, in any division, so `kaks_from_pairs.py` aligns each pair
-# in codon space and runs Nei-Gojobori. Pairs are anchors, which are TRANSCRIPT
-# ids, so each rate is measured on the exact pair the synteny was called on.
+# dN/dS is computed too: `kaks_from_pairs.py` aligns each pair in codon space
+# and runs Nei-Gojobori. Pairs are anchors, which are TRANSCRIPT ids, so each
+# rate is measured on the exact pair the synteny was called on.
 #
 # The control is dS, printed per subgenome pair. Oat's A and D subgenomes come
 # from closely related diploids and its C subgenome from a more distant one, so
@@ -35,17 +34,18 @@
 # If all three land together, the numbers are measuring the pipeline rather than
 # the polyploidy.
 #
-# No genome FASTA is downloaded: the assembly is a ChromSizesAdapter built from
-# the `##sequence-region` header of the GFF3, which is all a gene-level view
-# needs. Oat as sequence is over 11 GB; as names and lengths it is a few hundred
-# bytes.
+# The release carries a GFF3 and proteins but no CDS, and the rates need CDS,
+# so the genome is downloaded once and each CDS cut out of it. The JBrowse
+# assembly is still a ChromSizesAdapter, its lengths read off that FASTA, which
+# is all a gene-level view needs: oat as sequence is over 11 GB, as names and
+# lengths a few hundred bytes.
 #
 # Requires: jcvi (it builds C extensions and does not install against every
 #           python; `uv venv --python 3.12 && uv pip install jcvi biopython`
 #           gets one it does), diamond, python3 with biopython, wget, and node
 #           (JBrowse CLI, via npx unless `jbrowse` is on PATH). Downloads
-#           ~120 MB. Budget over an hour for the self-alignment: Ensembl's
-#           annotation of this assembly calls ~189k transcripts, and a proteome
+#           ~3.3 GB, nearly all of it the genome. Budget over an hour for the
+#           self-alignment: the annotation calls ~189k genes, and a proteome
 #           that size against itself is a long job even on every core.
 # Usage:    bash scripts/build_oat_homoeologs.sh [outdir]
 #
@@ -84,54 +84,135 @@ jb() {
 }
 
 APP=jbrowse2
-REL=63
-BASE=https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-$REL
-SPECIES=avena_sativa_gca951802345v1cm
-PREFIX=Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0
+GG=https://graingenes.org
+PANOAT=./williams/AVESA.Williams.AVESA00021a.pgsb.r1
 
-fetch oat.gff3.gz "$BASE/gff3/$SPECIES/$PREFIX.$REL.gff3.gz"
-fetch oat.cds.fa.gz "$BASE/fasta/$SPECIES/cds/$PREFIX.cds.all.fa.gz"
+# The PanOat consortium's release of Williams v1.0: one archive holding the
+# GFF3 and the proteins, and the pseudomolecules the annotation is placed on.
+fetch oat.panoat.tgz "$GG/ggds/graingenes_downloads/panoat/williams.tgz"
+fetch oat.genome.fa.gz \
+  "$GG/GG3/sites/default/files/panoat-fasta/230404_williams_pseudomolecules_v1+unanchored_contigs.fasta.gz"
+for part in gff protein.fasta; do
+  if [ ! -f "oat.panoat.$part" ]; then
+    tar -xzOf oat.panoat.tgz "$PANOAT.$part" > "oat.panoat.$part.part"
+    mv "oat.panoat.$part.part" "oat.panoat.$part"
+  fi
+done
 
-# ── chrom.sizes from the GFF3's own header, so no genome FASTA is needed ──────
-# Read in python rather than piped through awk: stopping at the first feature
-# line closes the pipe on gunzip, and under `set -o pipefail` that SIGPIPE fails
-# the script. Only the 21 chromosomes are kept - the assembly carries ~2700
-# unplaced contigs besides, and an anchor with one end on one of those places
-# nowhere on the plot.
-if [ ! -f oat.chrom.sizes ]; then
-  python3 - oat.gff3.gz <<'PY' > oat.chrom.sizes.part
+# ── One pass over the genome: chrom.sizes, the CDS, a renamed GFF3 ───────────
+# Only the 21 chromosomes are kept, under the names the gene ids use (`chr1A`
+# becomes `1A`): the assembly carries ~2700 unplaced contigs besides, and an
+# anchor with one end on one of those places nowhere on the plot.
+#
+# Each CDS is its CDS rows joined in transcript order, reverse-complemented on
+# the minus strand, with the first row's phase trimmed so the frame starts at
+# base one. The consortium's proteins are the check: the run prints how many of
+# these CDS translate to exactly the protein it published for that transcript.
+if [ ! -f oat.cds.fa.gz ]; then
+  python3 - oat.panoat.gff oat.genome.fa.gz oat.panoat.protein.fasta <<'PY'
 import gzip
+import os
 import re
 import sys
 
-chromosome = re.compile(r"^[1-7][ACD]$")
-with gzip.open(sys.argv[1], "rt") as fh:
+from Bio.Seq import Seq
+
+gff, genome, proteins = sys.argv[1:]
+chromosome = re.compile(r"^chr([1-7][ACD])$")
+complement = str.maketrans("ACGTNacgtn", "TGCANtgcan")
+
+segments = {}
+with open(gff) as fh, gzip.open("oat.gff3.gz.part", "wt") as out:
+    out.write("##gff-version 3\n")
     for line in fh:
-        if line.startswith("##sequence-region"):
-            fields = line.split()
-            if chromosome.match(fields[1]):
-                print(f"{fields[1]}\t{fields[3]}")
-        elif not line.startswith("#"):
-            break
+        f = line.rstrip("\n").split("\t")
+        named = chromosome.match(f[0]) if len(f) == 9 else None
+        if named:
+            f[0] = named.group(1)
+            out.write("\t".join(f) + "\n")
+            if f[2] == "CDS":
+                parent = re.search(r"Parent=([^;]+)", f[8]).group(1)
+                phase = int(f[7]) if f[7] in ("0", "1", "2") else 0
+                segments.setdefault(parent, []).append(
+                    (f[0], int(f[3]), int(f[4]), f[6], phase))
+
+on_chrom = {}
+for tx, parts in segments.items():
+    on_chrom.setdefault(parts[0][0], []).append(tx)
+
+sizes = []
+written = 0
+with gzip.open(genome, "rt") as fh, gzip.open("oat.cds.fa.gz.part", "wt") as out:
+
+    def cut(name, chunks):
+        global written
+        named = chromosome.match(name)
+        if named:
+            seq = "".join(chunks)
+            sizes.append((named.group(1), len(seq)))
+            for tx in on_chrom.get(named.group(1), []):
+                parts = sorted(segments[tx], key=lambda p: p[1])
+                cds = "".join(seq[s - 1:e] for _, s, e, _, _ in parts)
+                if parts[0][3] == "-":
+                    cds = cds.translate(complement)[::-1]
+                    phase = parts[-1][4]
+                else:
+                    phase = parts[0][4]
+                out.write(f">{tx}\n{cds[phase:].upper()}\n")
+                written += 1
+
+    name, chunks = None, []
+    for line in fh:
+        if line.startswith(">"):
+            if name:
+                cut(name, chunks)
+            name, chunks = line[1:].split()[0], []
+        else:
+            chunks.append(line.strip())
+    if name:
+        cut(name, chunks)
+
+with open("oat.chrom.sizes.part", "w") as out:
+    for name, length in sorted(sizes):
+        out.write(f"{name}\t{length}\n")
+
+published = {}
+with open(proteins) as fh:
+    name = None
+    for line in fh:
+        if line.startswith(">"):
+            name = line[1:].split()[0]
+            published[name] = []
+        else:
+            published[name].append(line.strip())
+same = 0
+with gzip.open("oat.cds.fa.gz.part", "rt") as fh:
+    for header, seq in zip(fh, fh):
+        tx = header[1:].strip()
+        protein = str(Seq(seq.strip()[: len(seq.strip()) // 3 * 3]).translate())
+        same += protein.rstrip("*") == "".join(published.get(tx, [])).rstrip("*")
+
+for part in ("gff3.gz", "cds.fa.gz", "chrom.sizes"):
+    os.rename(f"oat.{part}.part", f"oat.{part}")
+print(f"{written} CDS cut from {len(sizes)} chromosomes; {same} translate to "
+      f"the consortium's protein exactly", file=sys.stderr)
 PY
-  mv oat.chrom.sizes.part oat.chrom.sizes
 fi
 
 # ── jcvi: GFF3 -> BED (one primary isoform per gene) + a matching proteome ────
 # The BED names TRANSCRIPTS, and so do the anchors and the proteome, which is
 # what lets the dN/dS step align the exact pair the synteny was called on
-# instead of the longest isoform of each end.
+# instead of the longest isoform of each end. The release writes a transcript's
+# id as its `ID` and carries no `transcript_id` attribute.
 if [ ! -f oat.bed ]; then
-  python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
+  python -m jcvi.formats.gff bed --type=mRNA --key=ID \
     --primary_only oat.gff3.gz -o oat.all.bed
   awk -F'\t' '$1 ~ /^[1-7][ACD]$/' oat.all.bed > oat.bed.part
   mv oat.bed.part oat.bed
 fi
 
-# The proteome is translated from the CDS rather than downloaded, which is not
-# a shortcut: Ensembl's protein FASTA is keyed on PROTEIN ids, and every id in
-# this pipeline - the BED, the anchors, the CDS the rates are measured on - is a
-# transcript id. Translating keeps one namespace throughout.
+# The proteome is translated from the CDS rather than taken from the release,
+# so the alignment and the rates read one set of sequences.
 if [ ! -f oat.pep ]; then
   python3 - oat.cds.fa.gz <<'PY' > oat.pep.part
 import gzip
