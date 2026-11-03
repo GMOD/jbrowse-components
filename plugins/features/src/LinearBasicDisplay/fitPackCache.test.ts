@@ -269,7 +269,6 @@ describe('the pack cache', () => {
     bpPerPx: 1,
     showLabels: true,
     showDescriptions: false,
-    reversedRegions: new Set<number>(),
     displayMode: 'normal',
     pinnedFeatureIds: new Set<string>(),
     labelDecimation: 'fitWidth',
@@ -380,7 +379,6 @@ describe('the fit-only memos', () => {
       bpPerPx: 1,
       showLabels: true,
       showDescriptions: false,
-      reversedRegions: new Set<number>(),
       displayMode: 'normal',
       pinnedFeatureIds: new Set<string>(),
     }
@@ -409,7 +407,6 @@ describe('the fit-only memos', () => {
       bpPerPx: 1,
       showLabels: true,
       showDescriptions: false,
-      reversedRegions: new Set<number>(),
       displayMode: 'normal',
       pinnedFeatureIds: new Set<string>(),
     }
@@ -438,7 +435,6 @@ describe('the fit-only memos', () => {
       bpPerPx: 1,
       showLabels: true,
       showDescriptions: false,
-      reversedRegions: new Set<number>(),
       displayMode: 'normal',
       pinnedFeatureIds: new Set<string>(),
     }

@@ -84,7 +84,6 @@ function layoutAt(
     bpPerPx: 1,
     showLabels: true,
     showDescriptions: false,
-    reversedRegions: new Set<number>(),
     displayMode: 'normal',
     pinnedFeatureIds: new Set<string>(),
     maxIsoformsPerGene,

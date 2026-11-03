@@ -1561,12 +1561,12 @@ describe('region identity is stored with the data it describes', () => {
         d.regionKey,
         d.regionStart,
         d.regionEnd,
+        d.reversed,
       ]),
     ).toEqual([
-      [0, 'volvox:ctgA', 0, 100],
-      [1, 'volvox:ctgB', 200, 300],
+      [0, 'volvox:ctgA', 0, 100, false],
+      [1, 'volvox:ctgB', 200, 300, true],
     ])
-    expect([...display.reversedRegions]).toEqual([1])
   })
 })
 

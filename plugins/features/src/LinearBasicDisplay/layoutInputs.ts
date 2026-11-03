@@ -13,14 +13,15 @@ import type { FeatureFacet } from './facet.ts'
 
 export type LabelDecimation = 'all' | 'fitWidth'
 
-// `regionKey` and the bounds ride on the region, not in a parallel map:
-// grouping is by the key and the packer cuts the bp between the bounds, and
-// reading them off the region makes a missing one a type error instead of a
-// silent mis-stack.
+// `regionKey`, the bounds and the flip ride on the region, not in a parallel
+// map: grouping is by the key, the packer cuts the bp between the bounds and
+// packs label overhang toward the flip, and reading them off the region makes
+// a missing one a type error instead of a silent mis-stack.
 export type LayoutRegionData = FeatureDataResult & {
   regionKey: string
   regionStart: number
   regionEnd: number
+  reversed: boolean
 }
 
 // The assembly is part of the key: two displayed regions can spell one refName
@@ -37,7 +38,6 @@ export interface LayoutInputs {
   bpPerPx: number
   showLabels: boolean
   showDescriptions: boolean
-  reversedRegions: ReadonlySet<number>
   displayMode: DisplayMode
   // Inserted first into the greedy packer, and the always-keep set for
   // `fitWidth` label decimation.

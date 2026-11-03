@@ -498,13 +498,7 @@ function groupRawByRef(
 
 // Exhaustive by construction: a cache key compared in one place and forgotten
 // in another serves a stale layout with nothing to catch it.
-// `reversedRegions` is excluded because it spans every region, so comparing
-// it would re-pack every group whenever any region flips; `groupUnchanged`
-// compares the per-group set.
-const LAYOUT_CACHE_KEYS_RECORD: Record<
-  Exclude<keyof LayoutInputs, 'reversedRegions'>,
-  true
-> = {
+const LAYOUT_CACHE_KEYS_RECORD: Record<keyof LayoutInputs, true> = {
   bpPerPx: true,
   showLabels: true,
   showDescriptions: true,
@@ -522,10 +516,9 @@ const LAYOUT_CACHE_KEYS_RECORD: Record<
   bodyScale: true,
 }
 
-const LAYOUT_CACHE_KEYS = Object.keys(LAYOUT_CACHE_KEYS_RECORD) as Exclude<
-  keyof LayoutInputs,
-  'reversedRegions'
->[]
+const LAYOUT_CACHE_KEYS = Object.keys(
+  LAYOUT_CACHE_KEYS_RECORD,
+) as (keyof LayoutInputs)[]
 
 const PACK_KNOBS: Record<keyof PackKnobs, true> = {
   bodyScale: true,
@@ -534,13 +527,9 @@ const PACK_KNOBS: Record<keyof PackKnobs, true> = {
   geneLabelRoomFactor: true,
 }
 
-const PROBE_CONFIG_KEYS: (keyof PackKnobFreeInputs)[] = [
-  'reversedRegions',
-  ...LAYOUT_CACHE_KEYS.filter(
-    (key): key is Exclude<keyof PackKnobFreeInputs, 'reversedRegions'> =>
-      !(key in PACK_KNOBS),
-  ),
-]
+const PROBE_CONFIG_KEYS = LAYOUT_CACHE_KEYS.filter(
+  (key): key is keyof PackKnobFreeInputs => !(key in PACK_KNOBS),
+)
 
 // Two settles of the largest solve: two tiers of label-room factors at ~11
 // packs each, then ~7 body scales.
@@ -592,7 +581,6 @@ export type PackHeightCache = ReturnType<typeof createPackHeightCache>
 interface GroupCache {
   inputs: LayoutInputs
   members: Map<number, LayoutRegionData>
-  reversed: Set<number>
   output: Map<number, FeatureDataResult>
   collapsedIds: ReadonlySet<string>
   // Its rows were packed beside a region since evicted, so only a seed now.
@@ -604,16 +592,11 @@ function groupUnchanged(
   members: Map<number, LayoutRegionData>,
   inputs: LayoutInputs,
 ) {
-  const { reversedRegions } = inputs
   return (
     !prev.seedOnly &&
     LAYOUT_CACHE_KEYS.every(key => prev.inputs[key] === inputs[key]) &&
     prev.members.size === members.size &&
-    [...members].every(
-      ([idx, raw]) =>
-        prev.members.get(idx) === raw &&
-        prev.reversed.has(idx) === reversedRegions.has(idx),
-    )
+    [...members].every(([idx, raw]) => prev.members.get(idx) === raw)
   )
 }
 
@@ -650,8 +633,6 @@ export function createIncrementalLayout({
     rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
     inputs: LayoutInputs,
   ): Map<number, FeatureDataResult> {
-    const { reversedRegions } = inputs
-
     // Unlike `groupRawByRef`, an empty region still needs a cache entry, or
     // its group re-packs every time it is present.
     const groups = new Map<string, Map<number, LayoutRegionData>>()
@@ -683,19 +664,12 @@ export function createIncrementalLayout({
           inputs,
           seedPriorRows && prev ? seedRowsFrom(prev) : undefined,
         )
-        const reversed = new Set<number>()
-        for (const idx of members.keys()) {
-          if (reversedRegions.has(idx)) {
-            reversed.add(idx)
-          }
-        }
         for (const [idx, result] of output) {
           out.set(idx, result)
         }
         nextCache.set(key, {
           inputs,
           members: new Map(members),
-          reversed,
           output,
           collapsedIds,
           seedOnly: false,
@@ -726,9 +700,6 @@ export function createIncrementalLayout({
                 ...group,
                 seedOnly: true,
                 members,
-                reversed: new Set(
-                  [...group.reversed].filter(idx => members.has(idx)),
-                ),
                 output: new Map(
                   [...group.output].filter(([idx]) => members.has(idx)),
                 ),

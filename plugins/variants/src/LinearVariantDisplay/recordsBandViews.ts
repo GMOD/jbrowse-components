@@ -439,16 +439,8 @@ export function recordsRenderViews(self: RecordsRenderHost) {
      * frame of a zoom.
      */
     get recordsLayoutInputs(): FitLadderHost['layoutInputs'] {
-      const reversedRegions = new Set<number>()
-      const { displayedRegions } = self.view
-      for (let i = 0; i < displayedRegions.length; i++) {
-        if (displayedRegions[i]!.reversed) {
-          reversedRegions.add(i)
-        }
-      }
       return {
         bpPerPx: self.view.coarseBpPerPx,
-        reversedRegions,
         displayMode: this.recordsPackMode,
         pinnedFeatureIds: NO_FEATURE_IDS,
         expandedGeneIds: NO_FEATURE_IDS,
@@ -821,7 +813,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      */
     get recordsFlatbushIndexes() {
       const { showLabels, showDescriptions } = this.recordsRenderedLabels
-      const { reversedRegions } = self.recordsLayoutInputs
+      const rawMap = self.recordsRenderDataMap
       const bpPerPx = self.view.coarseBpPerPx
       const out = new Map<number, FlatbushRegionIndexes>()
       for (const [idx, data] of this.recordsLaidOutDataMap) {
@@ -830,7 +822,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
             data.flatbushItems,
             data.floatingLabelsData,
             bpPerPx,
-            reversedRegions.has(idx),
+            rawMap.get(idx)?.reversed === true,
             {
               showLabels,
               showDescriptions,

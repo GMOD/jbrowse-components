@@ -17,7 +17,6 @@ const INPUTS: LayoutInputs = {
   bpPerPx: 1,
   showLabels: false,
   showDescriptions: false,
-  reversedRegions: new Set<number>(),
   displayMode: 'normal',
   pinnedFeatureIds: new Set<string>(),
 }

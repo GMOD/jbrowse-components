@@ -14,9 +14,10 @@ export function packedContentHeight(
   )(inputs.labelRoomFactor ?? 1)
 }
 
-// Bounds wide enough to hold any fixture, so a fixture's regions hide no bp
-// from each other and pack on genomic bp.
+// A forward region with bounds wide enough to hold any fixture, so a
+// fixture's regions hide no bp from each other and pack on genomic bp.
 export const WHOLE_REF = {
   regionStart: 0,
   regionEnd: Number.MAX_SAFE_INTEGER,
+  reversed: false,
 }

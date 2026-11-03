@@ -185,7 +185,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 type LoadedFeatureData = LayoutRegionData & {
   assemblyName: string
   refName: string
-  reversed: boolean
 }
 
 function loadedFeatureData(
@@ -643,19 +642,6 @@ export default function baseStateModelFactory(
         const view = containingLgv(self)
         return view.showAminoAcids
       },
-
-      /**
-       * #getter
-       */
-      get reversedRegions() {
-        const set = new Set<number>()
-        for (const [num, data] of self.rpcDataMap) {
-          if (data.reversed) {
-            set.add(num)
-          }
-        }
-        return set
-      },
     }))
     .views(featureSetViews)
     .views(featureHighlightViews)
@@ -730,7 +716,6 @@ export default function baseStateModelFactory(
         const view = containingLgv(self)
         return {
           bpPerPx: view.coarseBpPerPx,
-          reversedRegions: self.reversedRegions,
           displayMode: self.displayMode,
           pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
           expandedGeneIds: self.expandedGeneIdSet,
@@ -1160,12 +1145,12 @@ export default function baseStateModelFactory(
             renderedShowDescriptions: showDescriptions,
             renderedLabelFontSize: fontSize,
             laidOutDataMap,
-            reversedRegions,
+            rpcDataMap,
           } = self
           const labels = { showLabels, showDescriptions, fontSize }
           const result = new Map<number, FlatbushRegionIndexes>()
           for (const [idx, data] of laidOutDataMap) {
-            const reversed = reversedRegions.has(idx)
+            const reversed = rpcDataMap.get(idx)?.reversed === true
             const inputs = [
               data,
               bpPerPx,

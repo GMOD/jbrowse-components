@@ -37,7 +37,6 @@ const baseInputs: LayoutInputs = {
   bpPerPx: 20,
   showLabels: true,
   showDescriptions: false,
-  reversedRegions: new Set(),
   displayMode: 'normal',
   pinnedFeatureIds: new Set(),
   expandedGeneIds: new Set(),
@@ -62,6 +61,7 @@ function regionMap(name: string, count: number) {
         regionKey: 'volvox:ctgA',
         regionStart: 0,
         regionEnd: Number.MAX_SAFE_INTEGER,
+        reversed: false,
       },
     ],
   ])

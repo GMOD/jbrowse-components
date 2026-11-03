@@ -40,6 +40,7 @@ import type {
   DisplayModeMetrics,
   LabelRoomFactorFreeInputs,
   LayoutInputs,
+  LayoutRegionData,
   PackPrepInputs,
 } from './layoutInputs.ts'
 
@@ -163,15 +164,14 @@ function gatherLabelInfo(
 // A feature spanning a reversed and a non-reversed region packs once and
 // reserves overhang on both sides.
 function gatherFeatureGeometry(
-  regions: [number, FeatureDataResult][],
-  reversedRegions: ReadonlySet<number>,
+  regions: [number, LayoutRegionData][],
   metrics: DisplayModeMetrics,
   featureIds: ReadonlySet<string> | undefined,
   toDrawnBp: DrawnAxis,
 ) {
   const features = new Map<string, FeatureGeometry>()
-  for (const [displayedRegionIndex, data] of regions) {
-    const reversed = reversedRegions.has(displayedRegionIndex)
+  for (const [, data] of regions) {
+    const { reversed } = data
     for (const item of data.flatbushItems) {
       if (featureIds && !featureIds.has(item.featureId)) {
         continue
@@ -216,7 +216,7 @@ function gatherFeatureGeometry(
 // `featureIds` narrows the pack to one group's section; the density collapse
 // and the label overhang are then decided among that section's own features.
 export function prepareRefPack(
-  regions: [number, FeatureDataResult][],
+  regions: [number, LayoutRegionData][],
   inputs: PackPrepInputs,
   metrics: DisplayModeMetrics,
   toDrawnBp: DrawnAxis,
@@ -226,7 +226,6 @@ export function prepareRefPack(
     bpPerPx,
     showLabels,
     showDescriptions,
-    reversedRegions,
     labelDecimation = 'all',
   } = inputs
 
@@ -241,7 +240,6 @@ export function prepareRefPack(
   )
   const features = gatherFeatureGeometry(
     regions,
-    reversedRegions,
     metrics,
     featureIds,
     toDrawnBp,

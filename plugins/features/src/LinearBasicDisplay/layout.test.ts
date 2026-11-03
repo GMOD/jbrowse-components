@@ -41,6 +41,7 @@ function makeFeatureData(opts: {
   }[]
   regionKey?: string
   bounds?: [number, number]
+  reversed?: boolean
 }): LayoutRegionData {
   const { features } = opts
   const [regionStart, regionEnd] = opts.bounds ?? [
@@ -51,6 +52,7 @@ function makeFeatureData(opts: {
     regionKey: opts.regionKey ?? 'v:ctgA',
     regionStart,
     regionEnd,
+    reversed: opts.reversed === true,
     ...makeBaseFeatureData({
       flatbushItems: features.map(f =>
         makeFlatbushItem({
@@ -85,14 +87,16 @@ function layout(
   bpPerPx: number,
   showLabels = true,
   showDescriptions = true,
-  reversedRegions = new Set<number>(),
+  reversed = false,
   displayMode: 'normal' | 'compact' | 'superCompact' | 'collapsed' = 'normal',
 ) {
-  return computeLaidOutData(raw, {
+  const stamped = new Map(
+    [...raw].map(([idx, data]) => [idx, { ...data, reversed }]),
+  )
+  return computeLaidOutData(stamped, {
     bpPerPx,
     showLabels,
     showDescriptions,
-    reversedRegions,
     displayMode,
     pinnedFeatureIds: new Set<string>(),
   })
@@ -135,7 +139,6 @@ describe('fitWidth label decimation', () => {
       bpPerPx: 1,
       showLabels: true,
       showDescriptions: false,
-      reversedRegions: new Set<number>(),
       displayMode: 'normal',
       pinnedFeatureIds,
       labelDecimation: 'fitWidth',
@@ -258,7 +261,6 @@ describe('fitWidth label decimation', () => {
             bpPerPx: 1,
             showLabels: true,
             showDescriptions: false,
-            reversedRegions: new Set<number>(),
             displayMode: 'normal',
             pinnedFeatureIds: new Set<string>(),
             labelDecimation: 'fitWidth',
@@ -281,7 +283,6 @@ describe('fitWidth label decimation', () => {
       bpPerPx: 1,
       showLabels: true,
       showDescriptions: false,
-      reversedRegions: new Set<number>(),
       displayMode: 'normal',
       pinnedFeatureIds: new Set(['crowded']),
       labelDecimation: 'fitWidth',
@@ -295,17 +296,19 @@ describe('fitWidth label decimation', () => {
       new Map([
         [
           0,
-          labeledFeatureData([
-            { featureId: 'edge', startBp: 100, endBp: 110, height: 20 },
-            { featureId: 'blockerL', startBp: 60, endBp: 105, height: 20 }, // ends 5 left of edge
-          ]),
+          {
+            ...labeledFeatureData([
+              { featureId: 'edge', startBp: 100, endBp: 110, height: 20 },
+              { featureId: 'blockerL', startBp: 60, endBp: 105, height: 20 }, // ends 5 left of edge
+            ]),
+            reversed: true,
+          },
         ],
       ]),
       {
         bpPerPx: 1,
         showLabels: true,
         showDescriptions: false,
-        reversedRegions: new Set([0]),
         displayMode: 'normal',
         pinnedFeatureIds: new Set<string>(),
         labelDecimation: 'fitWidth',
@@ -335,7 +338,6 @@ describe('fitWidth label decimation', () => {
       bpPerPx: 1,
       showLabels: true,
       showDescriptions: false,
-      reversedRegions: new Set<number>(),
       displayMode: 'normal' as const,
       pinnedFeatureIds: new Set<string>(),
       labelDecimation: 'fitWidth' as const,
@@ -358,18 +360,20 @@ describe('fitWidth label decimation', () => {
       new Map([
         [
           0,
-          labeledFeatureData([
-            { featureId: 'a', startBp: 900, endBp: 1000, height: 20 },
-            { featureId: 'b', startBp: 950, endBp: 1000, height: 20 },
-            { featureId: 'lone', startBp: 100, endBp: 110, height: 20 },
-          ]),
+          {
+            ...labeledFeatureData([
+              { featureId: 'a', startBp: 900, endBp: 1000, height: 20 },
+              { featureId: 'b', startBp: 950, endBp: 1000, height: 20 },
+              { featureId: 'lone', startBp: 100, endBp: 110, height: 20 },
+            ]),
+            reversed: true,
+          },
         ],
       ]),
       {
         bpPerPx: 1,
         showLabels: true,
         showDescriptions: false,
-        reversedRegions: new Set([0]),
         displayMode: 'normal',
         pinnedFeatureIds: new Set<string>(),
         labelDecimation: 'fitWidth',
@@ -421,14 +425,7 @@ test('collapsed mode stacks overlapping features onto a single row', () => {
       { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
     ],
   })
-  const out = layout(
-    new Map([[0, data]]),
-    1,
-    false,
-    false,
-    new Set<number>(),
-    'collapsed',
-  )
+  const out = layout(new Map([[0, data]]), 1, false, false, false, 'collapsed')
 
   const r = out.get(0)!
   expect(r.flatbushItems[0]!.topPx).toBe(0)
@@ -436,14 +433,9 @@ test('collapsed mode stacks overlapping features onto a single row', () => {
 })
 
 const collapsedModeLayout = (data: LayoutRegionData, bpPerPx: number) =>
-  layout(
-    new Map([[0, data]]),
-    bpPerPx,
-    false,
-    false,
-    new Set<number>(),
-    'collapsed',
-  ).get(0)!
+  layout(new Map([[0, data]]), bpPerPx, false, false, false, 'collapsed').get(
+    0,
+  )!
 
 test('collapsed mode fades sub-pixel marks piled on one pixel', () => {
   const data = makeFeatureData({
@@ -718,7 +710,6 @@ describe('labels and trims across a seam between regions of one ref', () => {
       bpPerPx,
       showLabels: true,
       showDescriptions: true,
-      reversedRegions: new Set<number>(),
       displayMode: 'normal',
       pinnedFeatureIds: new Set(pinned),
     }).get(1)!.floatingLabelsData
@@ -840,6 +831,7 @@ describe('labels and trims across a seam between regions of one ref', () => {
       regionKey: 'v:ctgA',
       regionStart: 1000,
       regionEnd: 2000,
+      reversed: false,
       ...packStackedGenes([
         {
           featureId: 'gene',
@@ -863,7 +855,6 @@ describe('labels and trims across a seam between regions of one ref', () => {
         bpPerPx: 1,
         showLabels: false,
         showDescriptions: false,
-        reversedRegions: new Set<number>(),
         displayMode: 'normal',
         pinnedFeatureIds: new Set<string>(),
         maxIsoformsPerGene: 1,
@@ -1132,11 +1123,11 @@ test('arrow padding is directional: forward features just past the arrow share a
 })
 
 test.each([
-  ['forward', new Set<number>()],
-  ['flipped', new Set([0])],
+  ['forward', false],
+  ['flipped', true],
 ])(
   'a %s region reserves each arrow past its own 3′ end',
-  (_label, reversedRegions) => {
+  (_label, reversed) => {
     const tops = (a: 1 | -1, b: 1 | -1) =>
       layout(
         new Map([
@@ -1165,7 +1156,7 @@ test.each([
         1,
         true,
         true,
-        reversedRegions,
+        reversed,
       )
         .get(0)!
         .flatbushItems.map(f => f.topPx)
@@ -1286,7 +1277,7 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
   expect(fwd.get(0)!.flatbushItems[0]!.topPx).toBe(0)
   expect(fwd.get(0)!.flatbushItems[1]!.topPx).toBe(0)
 
-  const rev = layout(new Map([[0, mk()]]), 1, true, true, new Set([0]))
+  const rev = layout(new Map([[0, mk()]]), 1, true, true, true)
   const rLeft = rev.get(0)!.flatbushItems[0]!
   const rLabel = rev.get(0)!.flatbushItems[1]!
   expect(rLeft.topPx).not.toBe(rLabel.topPx)
@@ -1294,11 +1285,11 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
 
 // The arrow paints past the body's end, which a longer name already covers.
 test.each([
-  ['forward', new Set<number>(), 1, { startBp: 100, endBp: 130 }, 168],
-  ['flipped', new Set([0]), -1, { startBp: 200, endBp: 230 }, 100],
+  ['forward', false, 1, { startBp: 100, endBp: 130 }, 168],
+  ['flipped', true, -1, { startBp: 200, endBp: 230 }, 100],
 ])(
   'a %s name reaching past its arrow reserves nothing more for it',
-  (_label, reversedRegions, strand, span, neighbourStart) => {
+  (_label, reversed, strand, span, neighbourStart) => {
     const data = makeFeatureData({
       features: [
         { featureId: 'named', ...span, height: 10, strand },
@@ -1320,7 +1311,7 @@ test.each([
         nameLabel: { text: 'named', textWidth: 60 },
       },
     })
-    const tops = layout(new Map([[0, data]]), 1, true, false, reversedRegions)
+    const tops = layout(new Map([[0, data]]), 1, true, false, reversed)
       .get(0)!
       .flatbushItems.map(f => f.topPx)
     expect(tops).toEqual([0, 0])
@@ -1331,9 +1322,9 @@ test.each([
 // pixel before RBM33 starts and reaches down past RBM33's one row, so the name
 // under that row sat a pixel from the neighbour's exons.
 describe.each([
-  ['forward', new Set<number>(), { startBp: 100, endBp: 199 }],
-  ['flipped', new Set([0]), { startBp: 401, endBp: 500 }],
-])('in a %s region, a name', (_label, reversedRegions, neighbourSpan) => {
+  ['forward', false, { startBp: 100, endBp: 199 }],
+  ['flipped', true, { startBp: 401, endBp: 500 }],
+])('in a %s region, a name', (_label, reversed, neighbourSpan) => {
   const laidOut = (neighbourHeight: number) => {
     const data = makeFeatureData({
       features: [
@@ -1356,7 +1347,7 @@ describe.each([
       1,
       true,
       false,
-      reversedRegions,
+      reversed,
     ).get(0)!.flatbushItems
     return { neighbour: neighbour!, named: named! }
   }
@@ -1402,7 +1393,6 @@ describe('gene names claim the height first', () => {
     bpPerPx: 6.6,
     showLabels: true,
     showDescriptions: false,
-    reversedRegions: new Set<number>(),
     displayMode: 'normal' as const,
     pinnedFeatureIds: new Set<string>(),
     labelDecimation: 'fitWidth' as const,
@@ -1691,7 +1681,7 @@ describe("a part's label is reserved from the part, not the feature", () => {
       1,
       true,
       true,
-      new Set([0]),
+      true,
     ).get(0)!.flatbushItems
     expect(gene!.topPx).not.toBe(next!.topPx)
   })
@@ -1703,14 +1693,12 @@ const NO_PINNED: ReadonlySet<string> = new Set<string>()
 
 function incInputs(
   bpPerPx = 1,
-  reversedRegions = new Set<number>(),
   pinnedFeatureIds: ReadonlySet<string> = NO_PINNED,
 ) {
   return {
     bpPerPx,
     showLabels: true,
     showDescriptions: true,
-    reversedRegions,
     displayMode: 'normal' as const,
     pinnedFeatureIds,
   }
@@ -1814,8 +1802,8 @@ test('incremental memo: flipping a region reversed recomputes its group', () => 
   const a = makeFeatureData({
     features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
   })
-  const first = memo(new Map([[0, a]]), incInputs(1, new Set()))
-  const second = memo(new Map([[0, a]]), incInputs(1, new Set([0])))
+  const first = memo(new Map([[0, a]]), incInputs())
+  const second = memo(new Map([[0, { ...a, reversed: true }]]), incInputs())
   expect(second.get(0)).not.toBe(first.get(0))
 })
 
@@ -1977,7 +1965,7 @@ test('a pinned feature claims the top row over its overlappers', () => {
 
   const pinnedB = computeLaidOutData(
     new Map([[0, mk()]]),
-    incInputs(1, new Set<number>(), new Set(['B'])),
+    incInputs(1, new Set(['B'])),
   )
   expect(topOf(pinnedB, 'B')).toBe(0)
   expect(topOf(pinnedB, 'A')).toBeGreaterThan(0)
@@ -1999,10 +1987,7 @@ test('incremental memo busts when the pinned set reference changes', () => {
   const beforeOut = before.get(0)
   expect(topOf(before, 'A')).toBe(0)
 
-  const after = memo(
-    new Map([[0, mk()]]),
-    incInputs(1, new Set<number>(), new Set(['B'])),
-  )
+  const after = memo(new Map([[0, mk()]]), incInputs(1, new Set(['B'])))
   expect(after.get(0)).not.toBe(beforeOut)
   expect(topOf(after, 'B')).toBe(0)
 })
@@ -2224,7 +2209,6 @@ test('a collapsed pack plans no density collapse', () => {
     bpPerPx: 100,
     showLabels: false,
     showDescriptions: false,
-    reversedRegions: new Set<number>(),
     displayMode: 'normal' as const,
     pinnedFeatureIds: new Set<string>(),
   }
@@ -2266,7 +2250,6 @@ test('a collapsed pack seeds no rows into the pack after it', () => {
     bpPerPx: 1,
     showLabels: false,
     showDescriptions: false,
-    reversedRegions: new Set<number>(),
     displayMode: 'normal' as const,
     pinnedFeatureIds: new Set<string>(),
   }
@@ -2407,7 +2390,7 @@ test('a compact mode reserves label overhang at its own smaller font size', () =
     g2: label('g2', 2470, 2540, 55),
   })
   const topIn = (mode: 'normal' | 'superCompact', id: string) =>
-    layout(new Map([[0, data]]), 26, true, false, new Set(), mode)
+    layout(new Map([[0, data]]), 26, true, false, false, mode)
       .get(0)!
       .flatbushItems.find(f => f.featureId === id)!.topPx
 
@@ -2687,14 +2670,7 @@ test('compact mode scales aminoAcidOverlay height alongside its top', () => {
       ],
     }),
   }
-  const out = layout(
-    new Map([[0, data]]),
-    0.02,
-    false,
-    false,
-    new Set<number>(),
-    'compact',
-  )
+  const out = layout(new Map([[0, data]]), 0.02, false, false, false, 'compact')
   const aa = out.get(0)!.aminoAcidOverlay![0]!
   expect(aa.heightPx).toBeCloseTo(12)
   expect(aa.topPx).toBeCloseTo(3)
@@ -2754,11 +2730,10 @@ describe('packedContentHeight matches the committed layout', () => {
         bpPerPx: 1,
         showLabels: true,
         showDescriptions: false,
-        reversedRegions: reversed ? new Set([0]) : new Set<number>(),
         displayMode,
         pinnedFeatureIds: new Set<string>(),
       }
-      const data = new Map([[0, overlapping(6, 20)]])
+      const data = new Map([[0, { ...overlapping(6, 20), reversed }]])
       expect(packedContentHeight(data, inputs)).toBe(
         maxBottom(computeLaidOutData(data, inputs)),
       )
@@ -2770,7 +2745,6 @@ describe('packedContentHeight matches the committed layout', () => {
       bpPerPx: 1,
       showLabels: true,
       showDescriptions: false,
-      reversedRegions: new Set<number>(),
       pinnedFeatureIds: new Set<string>(),
     }
     const laid = computeLaidOutData(new Map([[0, overlapping(3, 20)]]), {
@@ -2858,7 +2832,6 @@ describe('group by strand', () => {
     bpPerPx: 1,
     showLabels: false,
     showDescriptions: false,
-    reversedRegions: new Set<number>(),
     displayMode: 'normal' as const,
     pinnedFeatureIds: new Set<string>(),
     facet: { field: 'strand', sort: [] },

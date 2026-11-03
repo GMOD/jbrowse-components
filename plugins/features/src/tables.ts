@@ -448,7 +448,13 @@ export async function featureTables(
       const { refName, start, end } = regions[i]!
       return [
         i,
-        { ...raw, regionKey: refName, regionStart: start, regionEnd: end },
+        {
+          ...raw,
+          regionKey: refName,
+          regionStart: start,
+          regionEnd: end,
+          reversed: false,
+        },
       ]
     }),
   )
@@ -458,7 +464,6 @@ export async function featureTables(
     layoutReady: true,
     layoutInputs: {
       bpPerPx,
-      reversedRegions: new Set(),
       displayMode,
       pinnedFeatureIds: new Set(),
       expandedGeneIds: new Set(),

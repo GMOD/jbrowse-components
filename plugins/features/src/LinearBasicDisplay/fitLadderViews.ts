@@ -60,7 +60,6 @@ export interface FitLadderHost {
   layoutInputs: Pick<
     LayoutInputs,
     | 'bpPerPx'
-    | 'reversedRegions'
     | 'displayMode'
     | 'pinnedFeatureIds'
     | 'facet'

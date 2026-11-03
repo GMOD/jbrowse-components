@@ -1149,13 +1149,13 @@ describe('feature display fit escalation ladder', () => {
   it('solves and commits consistently in a reversed region', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    // `reversedRegions` is derived from the region each fetch was loaded
-    // with, not from the view, so the flag rides in on setRpcData.
+    // The flip is stamped from the region each fetch was loaded with, not
+    // read off the view, so it rides in on setRpcData.
     display.setRpcData(0, mixedWidthRegionData(60), {
       ...ctgA,
       reversed: true,
     })
-    expect(display.reversedRegions.has(0)).toBe(true)
+    expect(display.rpcDataMap.get(0)!.reversed).toBe(true)
     display.setHeightMode('fit')
 
     const labelsH = maxBottom(display.fitLabelsOnlyLayout)
@@ -1182,7 +1182,7 @@ describe('feature display fit escalation ladder', () => {
         ...ctgA,
         reversed,
       })
-      expect(display.reversedRegions.has(0)).toBe(reversed)
+      expect(display.rpcDataMap.get(0)!.reversed).toBe(reversed)
       const heights = [0, 0.25, 0.5, 1, 2, 4, 8].map(f =>
         packedContentHeight(
           display.rpcDataMap,

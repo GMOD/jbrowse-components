@@ -46,6 +46,7 @@ interface RecordsRegion {
   refName: string
   start: number
   end: number
+  reversed?: boolean
 }
 
 /**
@@ -224,5 +225,6 @@ export function buildRecordsRenderData({
     regionKey: layoutRegionKey(region),
     regionStart: region.start,
     regionEnd: region.end,
+    reversed: region.reversed === true,
   }
 }

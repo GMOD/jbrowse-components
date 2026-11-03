@@ -1347,10 +1347,10 @@ describe('bufferedVisibleRegions — the fetch-path contract', () => {
 
   // Orientation has to ride along with the fetch region, not just with the
   // render blocks: canvas stamps it onto its rpcDataMap entry
-  // (`reversedRegions`), which flips label-overhang packing in layout and in
-  // the Flatbush hit index. It went missing when this getter was rewritten from
-  // a `{...block}` spread into an explicit object literal, and nothing caught
-  // it — every canvas test hands `setRpcData` a region by hand.
+  // (`LayoutRegionData.reversed`), which flips label-overhang packing in layout
+  // and in the Flatbush hit index. It went missing when this getter was
+  // rewritten from a `{...block}` spread into an explicit object literal, and
+  // nothing caught it — every canvas test hands `setRpcData` a region by hand.
   it('carries reversed, which canvas records as the fetch orientation', () => {
     const fwd = viewOn([{ refName: 'ctgA', start: 1000, end: 2000 }], 'buf-5')
     expect(fwd.bufferedVisibleRegions.every(b => !b.region.reversed)).toBe(true)

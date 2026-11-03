@@ -113,7 +113,6 @@ function layoutAt(
     bpPerPx: 1,
     showLabels: true,
     showDescriptions: false,
-    reversedRegions: new Set<number>(),
     displayMode,
     pinnedFeatureIds: new Set<string>(),
   }).get(0)!

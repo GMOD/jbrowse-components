@@ -66,7 +66,6 @@ const base: LayoutInputs = {
   bpPerPx: 1,
   showLabels: true,
   showDescriptions: false,
-  reversedRegions: new Set<number>(),
   displayMode: 'normal',
   pinnedFeatureIds: new Set<string>(),
   facet: { field: 'strand', sort: [] },

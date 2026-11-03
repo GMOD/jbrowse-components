@@ -47,7 +47,6 @@ const INPUTS: LayoutInputs = {
   bpPerPx: BP_PER_PX,
   showLabels: true,
   showDescriptions: false,
-  reversedRegions: new Set<number>(),
   displayMode: 'normal',
   pinnedFeatureIds: new Set<string>(),
 }
