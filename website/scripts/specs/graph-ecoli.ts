@@ -96,9 +96,6 @@ const PGGB_TIER_REGION = {
   end: 1307500,
 }
 const PGGB_TIER_TRACK = 'ecoli_pggb_tier50'
-// `gfa-to-tabix build` keeps the element's segment whole, so the id is the
-// fine graph's.
-const PGGB_TIER_IS5_NODE = '160195'
 
 // Variants under 50 bp folded into K12's segments; the IS5 element survives.
 const PGGB_TIER_SESSION_TRACK = ecoliPageTrack(ECOLI_DOC, PGGB_TIER_TRACK)
@@ -644,7 +641,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
               coverage: { show: false },
               height: 110,
             },
-            { ...pggbTierCut, geneTrackId: 'K12_genes', height: 190 },
+            { ...pggbTierCut, geneTrackId: 'K12_genes', height: 240 },
           ],
         },
       ],
@@ -652,18 +649,8 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readySelector: graphCutDrawn('coarse'),
     readyTimeout: 120000,
     viewportWidth: 1000,
-    viewportHeight: 730,
+    viewportHeight: 780,
     tooltip: 'hide',
-    // No legend: a pill covered the Reference row's label.
-    annotations: [
-      {
-        type: 'box',
-        color: SAME_SEGMENT_COLOR,
-        strokeWidth: 3,
-        pad: 8,
-        anchor: { graphNode: PGGB_TIER_IS5_NODE },
-      },
-    ],
   },
   // The depth lane is the carriage lane's control. Needs the fixture's plugin
   // bundle at 0093d998d280 or later, or `sampleCount` is absent and the lane

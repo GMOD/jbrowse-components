@@ -609,7 +609,7 @@ To set the tier beside the strains:
 - Add a second copy of the K12 genes and keep the insertion sequences with
   **Filter by → Edit filters...** and `startsWith(feature.name || '','ins')`.
 
-<Figure caption="K12 around two insertion sequences: the bubble tier, the MAF's strain rows and the graph track. The highlight and boxed node are insH21." src="/img/pangenome/pggb_bubble_tier.png" />
+<Figure caption="K12 around two insertion sequences: the bubble tier, the MAF's strain rows and the graph track. The highlight is insH21." src="/img/pangenome/pggb_bubble_tier.png" />
 
 A segment K12 lacks has coordinates on the strain that has it, and its
 right-click menu opens that strain's genome there. Type
