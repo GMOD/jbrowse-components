@@ -59,14 +59,15 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
   }
 
   // `vcfGzLocationMap` is a frozen slot, so nothing validates its keys at load
-  private locationMap(): Record<string, FileLocation | undefined> {
-    return this.getConf('vcfGzLocationMap')
+  private locationMap(
+    slot: 'vcfGzLocationMap' | 'indexLocationMap' = 'vcfGzLocationMap',
+  ): Record<string, FileLocation | undefined> {
+    return this.getConf(slot)
   }
 
   private openContig(refName: string, vcfGzLocation: FileLocation) {
     const indexType = this.getConf('indexType')
-    const named: FileLocation | undefined =
-      this.getConf('indexLocationMap')[refName]
+    const named = this.locationMap('indexLocationMap')[refName]
     const derived =
       'uri' in vcfGzLocation
         ? {
@@ -148,7 +149,7 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     const opened = settled.flatMap(result =>
       result.status === 'fulfilled' && result.value ? [result.value] : [],
     )
-    const failures: { refName: string; reason: unknown }[] = settled.flatMap(
+    const failures = settled.flatMap<{ refName: string; reason: unknown }>(
       (result, i) =>
         result.status === 'rejected'
           ? [{ refName: refNames[i]!, reason: result.reason }]

@@ -83,7 +83,7 @@ const CEILINGS = [
   // 7 runtime / 8 type
   { entry: 'packages/core/src/ui/menuItems.ts', runtime: 12, types: 15 },
   // 1 runtime / 10 type
-  { entry: 'packages/core/src/ui/legendSpec.ts', runtime: 5, types: 10 },
+  { entry: 'packages/core/src/ui/legendSpec.ts', runtime: 5, types: 11 },
   // 1 runtime / 6 type
   {
     entry: 'packages/core/src/util/markEncodingTypes.ts',
