@@ -109,7 +109,7 @@
       "name": "GFF3Tabix genes",
       "formatDetails": {
         "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',extrafield:'Field added with custom callback:' + feature.name,phase:undefined,type:undefined}",
-        "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>Subfeature: '+(!feature.name?'No name':feature.name)+'</a>'}"
+        "subfeatures": "jexl:{name:feature.name?'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>':undefined}"
       },
       "category": ["Miscellaneous"],
       "adapter": {

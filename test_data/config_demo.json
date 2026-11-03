@@ -211,7 +211,7 @@
       "trackId": "ncbi_gff_hg19",
       "name": "NCBI RefSeq genes (hg19)",
       "formatDetails": {
-        "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
+        "subfeatures": "jexl:{name:feature.name?'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>':undefined}"
       },
       "assemblyNames": ["hg19"],
       "category": ["Annotation", "NCBI RefSeq"],
