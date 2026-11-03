@@ -473,12 +473,12 @@ const NoSequenceWarning = observer(function NoSequenceWarning() {
 const AddGenomePane = observer(function AddGenomePane({
   form,
   setForm,
-  loading = '',
+  loading = false,
   onStageAnother,
 }: {
   form: FormState
   setForm: (update: (prev: FormState) => FormState) => void
-  loading?: string
+  loading?: boolean
   onStageAnother?: () => Promise<boolean>
 }) {
   const { classes } = useStyles()
@@ -598,7 +598,7 @@ const AddGenomePane = observer(function AddGenomePane({
                     // the same gate the caller's submit button uses: staging a
                     // form the config builder will refuse only reports its
                     // internal "FASTA, FAI, and GZI locations are all required"
-                    disabled={!!loading || !isFormReady(form)}
+                    disabled={loading || !isFormReady(form)}
                     onClick={() => {
                       void stageAnother()
                     }}

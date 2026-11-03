@@ -2,10 +2,12 @@ import {
   createContext,
   use,
   useCallback,
-  useEffect,
   useRef,
+  useState,
   useSyncExternalStore,
 } from 'react'
+
+import { useEventCallback } from '../util/useEventCallback.ts'
 
 export interface MouseState {
   x: number
@@ -91,15 +93,9 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
   const rafRef = useRef<ReturnType<typeof requestAnimationFrame> | undefined>(
     undefined,
   )
-  const storeRef = useRef<MouseStore | undefined>(undefined)
-  storeRef.current ??= createMouseStore()
-  const store = storeRef.current
-  // Reached through a ref so `handleMouseLeave` is identity-stable (an effect
-  // depends on it), and written in an effect so a render React discards cannot
-  // leave it pointing at that render's callback.
-  const onMoveRef = useRef(onMove)
-  useEffect(() => {
-    onMoveRef.current = onMove
+  const [store] = useState(createMouseStore)
+  const notifyMove = useEventCallback((state: MouseState | undefined) => {
+    onMove?.(state)
   })
 
   /**
@@ -117,8 +113,8 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
       rafRef.current = undefined
     }
     store.set(undefined)
-    onMoveRef.current?.(undefined)
-  }, [store])
+    notifyMove(undefined)
+  }, [store, notifyMove])
 
   const handleMouseMove = (event: React.MouseEvent) => {
     // On a resize handle the pointer is no longer over the data: a crosshair
@@ -159,7 +155,7 @@ export function useMouseTracking(onMove?: (state?: MouseState) => void) {
           clientY,
         }
         store.set(state)
-        onMoveRef.current?.(state)
+        notifyMove(state)
       }
     })
   }

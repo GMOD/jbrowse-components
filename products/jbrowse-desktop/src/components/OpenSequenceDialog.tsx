@@ -146,7 +146,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
 
         <AddGenomePane
           form={form}
-          loading={loading}
+          loading={!!loading}
           // editing the form is the user acting on whatever the last error
           // said, so the message goes as soon as they do — it otherwise sits
           // under a form they have already fixed

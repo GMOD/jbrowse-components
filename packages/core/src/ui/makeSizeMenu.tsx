@@ -22,23 +22,6 @@ const SizeSliderRow = lazy(() =>
 
 const sizeRowFallbackHeight = 46
 
-// One inline menu row: the live value/slider with a reset button.
-//
-// `getValue` is a thunk, read inside `SizeSliderRow`'s own observer, so the
-// slider tracks the model while the menu stays open. Not because the built row
-// is never rebuilt — `CascadingMenu` calls a `MenuItemsGetter` inside its own
-// observer render, so a menu built from a getter does rebuild on the write —
-// but because `menuItems` may equally be a plain `MenuItem[]`, which nothing
-// rebuilds, and a captured number would then go stale mid-drag.
-//
-// `commitOnRelease` is for callers whose onChange is expensive (e.g. the
-// alignments modification threshold fires a tier-1 worker refetch, GC-content
-// window size triggers a reload): the thumb follows a local drag value and only
-// calls onChange when the drag ends. While not dragging, dragValue is undefined
-// so the row still reflects the model (including external resets).
-// Everything a size row needs that doesn't depend on where its "is this the
-// default?" answer comes from — the one axis the two entry points below differ
-// on.
 interface SizeMenuOptions {
   label: string
   title: string
@@ -57,6 +40,7 @@ interface SizeMenuOptions {
   commitOnRelease?: boolean
   onChange: (n: number) => void
   onReset: () => void
+  isDefault: boolean
 }
 
 // Shared inline "size" control as a single menu row (was a submenu of
@@ -66,37 +50,16 @@ interface SizeMenuOptions {
 // modification threshold and GC-content window/step sizes, so the
 // slider/reset behavior can't drift. Pass `scale: 'log'` for values spanning
 // orders of magnitude, and `format` to label non-`px` units.
-export function makeSizeMenu(
-  opts: SizeMenuOptions & { isDefault: boolean },
-): MenuItem {
-  return sizeMenu(opts, opts.isDefault)
-}
-
-// The same control one hop down: a plain submenu row whose only child is the
-// size row above.
 //
-// For a menu where a slider drawn inline is the odd one out. Every other row
-// there is `label + [?] + (checkbox | chevron)` and a size row is a two-line
-// block with a widget of its own, so a menu holding several reads as a form to
-// fill in rather than a list to pick from — and the comparative views' settings
-// menus hold three each. Behind a chevron the row shape is uniform top to
-// bottom, and the value moves inside next to the slider that sets it, which is
-// where the radio submenus already keep their state.
+// `getValue` is a thunk read inside `SizeSliderRow`'s own observer, so the slider
+// tracks the model while the menu stays open: `menuItems` may be a plain
+// `MenuItem[]` that nothing rebuilds, and a captured number would go stale
+// mid-drag.
 //
-// `help` lands on the submenu row, which is the row a reader sees: the size row
-// behind the chevron never reaches the menu's shared trailing column, and a "?"
-// of its own would only be a second one for the same setting, a hover away.
-export function makeSizeSubMenu(
-  opts: SizeMenuOptions & { isDefault: boolean },
-): SubMenuItem {
-  return {
-    label: opts.title,
-    helpText: opts.help,
-    subMenu: [makeSizeMenu(opts)],
-  }
-}
-
-function sizeMenu(opts: SizeMenuOptions, isDefault: boolean): MenuItem {
+// `commitOnRelease` is for an expensive `onChange` (a worker refetch, a
+// reload): the thumb follows a local drag value and `onChange` fires only when
+// the drag ends.
+export function makeSizeMenu(opts: SizeMenuOptions): MenuItem {
   const {
     label,
     title,
@@ -108,6 +71,7 @@ function sizeMenu(opts: SizeMenuOptions, isDefault: boolean): MenuItem {
     scale = 'linear',
     format = (n: number) => `${n}${unit}`,
     commitOnRelease,
+    isDefault,
     onChange,
     onReset,
   } = opts
@@ -140,5 +104,27 @@ function sizeMenu(opts: SizeMenuOptions, isDefault: boolean): MenuItem {
         />
       </Suspense>
     ),
+  }
+}
+
+// The same control one hop down: a plain submenu row whose only child is the
+// size row above.
+//
+// For a menu where a slider drawn inline is the odd one out. Every other row
+// there is `label + [?] + (checkbox | chevron)` and a size row is a two-line
+// block with a widget of its own, so a menu holding several reads as a form to
+// fill in rather than a list to pick from — and the comparative views' settings
+// menus hold three each. Behind a chevron the row shape is uniform top to
+// bottom, and the value moves inside next to the slider that sets it, which is
+// where the radio submenus already keep their state.
+//
+// `help` lands on the submenu row, which is the row a reader sees: the size row
+// behind the chevron never reaches the menu's shared trailing column, and a "?"
+// of its own would only be a second one for the same setting, a hover away.
+export function makeSizeSubMenu(opts: SizeMenuOptions): SubMenuItem {
+  return {
+    label: opts.title,
+    helpText: opts.help,
+    subMenu: [makeSizeMenu(opts)],
   }
 }
