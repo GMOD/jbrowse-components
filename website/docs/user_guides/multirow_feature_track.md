@@ -144,6 +144,7 @@ mean copy number, with `scale.names` naming each interval in the key:
   "trackId": "tcga_brca_cnv",
   "name": "TCGA-BRCA copy number",
   "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz",
+  "index": "https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz.csi",
   "assemblyNames": ["hg38"],
   "displays": [
     {

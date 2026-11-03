@@ -194,7 +194,7 @@ compress and index the output:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/hapibd_to_bed.py
 python3 hapibd_to_bed.py trio.ibd.gz HG02024 HG02026 HG02025 trio.hapibd.bed
 jbrowse sort-bed trio.hapibd.bed | bgzip > trio.hapibd.bed.gz
-tabix -p bed trio.hapibd.bed.gz
+tabix -f -C -p bed trio.hapibd.bed.gz
 ```
 
 [`sort-bed`](/docs/cli#jbrowse-sort-bed) keeps the `#`-header line on top and
@@ -218,7 +218,8 @@ already name the four categories:
   "adapter": {
     "type": "BedTabixAdapter",
     "disableGeneHeuristic": true,
-    "uri": "trio.hapibd.bed.gz"
+    "uri": "trio.hapibd.bed.gz",
+    "csi": true
   },
   "displays": [
     {

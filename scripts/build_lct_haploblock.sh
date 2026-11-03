@@ -123,7 +123,7 @@ echo "subsample: $(wc -l < sub.samples) samples, $(( $(wc -l < sub.samples) * 2 
 if [ ! -f "$OUT" ]; then
   bcftools view -S sub.samples --force-samples -Oz -o "$OUT" "$POOLED"
 fi
-tabix -f -p vcf "$OUT"
+tabix -f -C -p vcf "$OUT"
 echo "wrote $OUT ($(bcftools index -n "$OUT") records, $(du -h "$OUT" | cut -f1))"
 
 # ── The arithmetic that decides whether this can render at all ───────────────
@@ -174,8 +174,9 @@ the hosted copy rather than uploading over it:
 
 If you did change what this builds, upload the new cut and its index:
 
-  aws s3 cp $OUT s3://jbrowse.org/demos/popgen/
-  aws s3 cp $OUT.tbi s3://jbrowse.org/demos/popgen/
+  scripts/deploy-demo.sh $(pwd)/$OUT popgen/$OUT
+  scripts/deploy-demo.sh $(pwd)/$OUT.csi popgen/$OUT.csi
 
-The bucket has no versioning, so an overwrite is not recoverable.
+The bucket has no versioning, so an overwrite is not recoverable. deploy-demo.sh
+also invalidates each CloudFront path.
 EOF

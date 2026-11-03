@@ -157,7 +157,7 @@ fi
 # hg19, so it is lifted. Both of a breakend's coordinates move, not just POS --
 # see lift_bnd_vcf.py, which is where that is done and explained.
 K562_10X_SV=ENCFF863MPP
-if [ ! -f "$DEMO/K562.10x-large-sv.vcf.gz.tbi" ]; then
+if [ ! -f "$DEMO/K562.10x-large-sv.vcf.gz.csi" ]; then
   [ -f "$K562_10X_SV.vcf.gz" ] ||
     fetch "https://www.encodeproject.org/files/$K562_10X_SV/@@download/$K562_10X_SV.vcf.gz" \
       "$K562_10X_SV.vcf.gz" -fL
@@ -182,7 +182,7 @@ if [ ! -f "$DEMO/K562.10x-large-sv.vcf.gz.tbi" ]; then
   python3 "$HERE/lift_bnd_vcf.py" "$K562_10X_SV.vcf.gz" hg19ToHg38.over.chain.gz \
     ./liftOver K562.10x-large-sv.hg38.vcf liftwork
   bgzip -f -c K562.10x-large-sv.hg38.vcf > "$DEMO/K562.10x-large-sv.vcf.gz"
-  tabix -f -p vcf "$DEMO/K562.10x-large-sv.vcf.gz"
+  tabix -f -C -p vcf "$DEMO/K562.10x-large-sv.vcf.gz"
   rm -f K562.10x-large-sv.hg38.vcf
 fi
 
@@ -237,6 +237,7 @@ jb add-track "$DEMO/K562_cn.bw" --load copy \
   --config '{"displayDefaults":{"encoding":{"y":{"scale":{"domainMin":0,"domainMax":8},"axis":{"title":"copy ratio (DepMap)"}}}}}' \
   --assemblyNames hg38 --out "$APP" --force
 jb add-track "$DEMO/K562.10x-large-sv.vcf.gz" --load copy \
+  --indexFile "$DEMO/K562.10x-large-sv.vcf.gz.csi" \
   --name 'K562 DNA breakpoints (10X linked reads, lifted to hg38)' \
   --trackId K562_10x_sv --assemblyNames hg38 --out "$APP" --force
 

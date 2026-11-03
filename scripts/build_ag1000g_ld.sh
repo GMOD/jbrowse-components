@@ -260,7 +260,7 @@ build_track() { # pop minmaf grid tag
   # data row as a comment.
   #
   jb sort-bed < "$4.vcor" | bgzip > "$4.vcor.gz"
-  tabix -s 1 -b 2 -e 2 -f "$4.vcor.gz"
+  tabix -C -s 1 -b 2 -e 2 -f "$4.vcor.gz"
   echo "  $4: $(wc -l < "grid.$4.snplist") SNPs, $(( $(gzip -dc "$4.vcor.gz" | wc -l) - 1 )) pairs, $(du -h "$4.vcor.gz" | cut -f1)"
 }
 
@@ -404,7 +404,7 @@ emit_karyotype_track() { # pop
         print CHROM, FROM, "2La", "N", "<INV>", ".", "PASS",
           "SVTYPE=INV;END=" TO, "GT" gt}' "$calls"
   } | bgzip > "ag1000g_2La_$pop.vcf.gz"
-  tabix -f -p vcf "ag1000g_2La_$pop.vcf.gz"
+  tabix -f -C -p vcf "ag1000g_2La_$pop.vcf.gz"
 
   # The sample attribute table the display orders and colors rows by. Within one
   # population the karyotype is the only useful key, and it sorts standard, het,
@@ -436,10 +436,10 @@ if [ -n "$FROM_RELEASE" ]; then
   samtools faidx AgamP4.fa.bgz
   gzip -dc AgamP4.gff3.gz > AgamP4.gff3
   jb sort-gff AgamP4.gff3 | bgzip > AgamP4.sorted.gff3.gz
-  tabix -f -p gff AgamP4.sorted.gff3.gz
+  tabix -f -C -p gff AgamP4.sorted.gff3.gz
 else
   for f in AgamP4.fa.bgz AgamP4.fa.bgz.fai AgamP4.fa.bgz.gzi \
-           AgamP4.sorted.gff3.gz AgamP4.sorted.gff3.gz.tbi; do
+           AgamP4.sorted.gff3.gz AgamP4.sorted.gff3.gz.csi; do
     fetch "$DERIVED/$f" "$f"
   done
 fi
@@ -450,11 +450,12 @@ fi
 # does not recognize .bgz (it wants .fa.gz), so it cannot guess this one
 jb add-assembly AgamP4.fa.bgz --type bgzipFasta --name AgamP4 \
   --load copy --force --out jbrowse2
-jb add-track AgamP4.sorted.gff3.gz --name "AgamP4.12 genes" --trackId agamp4_genes \
+jb add-track AgamP4.sorted.gff3.gz --indexFile AgamP4.sorted.gff3.gz.csi \
+  --name "AgamP4.12 genes" --trackId agamp4_genes \
   --load copy --force --out jbrowse2
-cp ld_cmgam.vcor.gz ld_cmgam.vcor.gz.tbi ld_gagam.vcor.gz ld_gagam.vcor.gz.tbi jbrowse2/
+cp ld_cmgam.vcor.gz ld_cmgam.vcor.gz.csi ld_gagam.vcor.gz ld_gagam.vcor.gz.csi jbrowse2/
 for pop in $PANEL_POPS; do
-  cp "ag1000g_2La_$pop.vcf.gz" "ag1000g_2La_$pop.vcf.gz.tbi" \
+  cp "ag1000g_2La_$pop.vcf.gz" "ag1000g_2La_$pop.vcf.gz.csi" \
      "ag1000g_2La_${pop}_samples.tsv" jbrowse2/
 done
 
@@ -490,6 +491,7 @@ for trackId, name in names.items():
         'adapter': {
             'type': 'PlinkLDTabixAdapter',
             'uri': f'{trackId}.vcor.gz',
+            'csi': True,
         },
         'displays': [{
             'type': 'LDTrackDisplay',
@@ -517,6 +519,7 @@ for pop, (trackId, name) in karyo.items():
         'adapter': {
             'type': 'VcfTabixAdapter',
             'uri': f'{trackId}.vcf.gz',
+            'csi': True,
             'samplesTsvLocation': {'uri': f'ag1000g_2La_{pop}_samples.tsv'},
         },
         'displays': [{

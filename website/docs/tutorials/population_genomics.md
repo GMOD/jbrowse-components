@@ -437,6 +437,7 @@ bar:
   "adapter": {
     "type": "VcfTabixAdapter",
     "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_sv.vcf.gz",
+    "csi": true,
     "samplesTsvLocation": {
       "uri": "https://jbrowse.org/demos/popgen/dgrp_In2Lt_samples.tsv"
     }

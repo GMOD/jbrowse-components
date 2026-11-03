@@ -128,7 +128,7 @@ if [ ! -f "$POOLED" ]; then
   bcftools view -r "$REGION" -S unrelated.samples "$CHR2" \
     | bcftools view -e 'ALT[0]~"<"' -Oz -o "$POOLED"
 fi
-tabix -f -p vcf "$POOLED"
+tabix -f -C -p vcf "$POOLED"
 echo "wrote $POOLED ($(bcftools index -n "$POOLED") records, $(du -h "$POOLED" | cut -f1))"
 
 # The panel is cut from the pooled slice rather than re-queried, so the two files
@@ -137,7 +137,7 @@ echo "wrote $POOLED ($(bcftools index -n "$POOLED") records, $(du -h "$POOLED" |
 if [ ! -f "$OUT" ]; then
   bcftools view -S panel.samples -Oz -o "$OUT" "$POOLED"
 fi
-tabix -f -p vcf "$OUT"
+tabix -f -C -p vcf "$OUT"
 echo "wrote $OUT ($(bcftools index -n "$OUT") records, $(du -h "$OUT" | cut -f1))"
 
 # ── Fst: this panel against the rest of the release ──────────────────────────
@@ -282,7 +282,7 @@ ld_table() {
   # spaces to align them, which is not the same thing.
   awk 'NR==1{$1=$1; print "#" $0; next} {$1=$1; print}' OFS='\t' "$out.ld" \
     | bgzip > "$out.ld.gz"
-  tabix -s 1 -b 2 -e 2 -f "$out.ld.gz"
+  tabix -C -s 1 -b 2 -e 2 -f "$out.ld.gz"
   echo "  $out.ld.gz  $(wc -l < "$out.ld") rows  $(du -h "$out.ld.gz" | cut -f1)"
 }
 
@@ -306,11 +306,14 @@ APP=jbrowse2
 # rebuilt: scripts/build_lct_haploblock.sh re-derives it from the release, and
 # choosing its 150 samples is that script's subject rather than this one's.
 HAP=lct_1kg38_chr2_6pop.vcf.gz
-for f in "$HAP" "$HAP.tbi"; do
+for f in "$HAP" "$HAP.csi"; do
   [ -f "$f" ] || curl -fsSL -o "$f" "https://jbrowse.org/demos/popgen/$f"
 done
 
-cp "$OUT" "$OUT.tbi" "$POOLED" "$POOLED.tbi" "$FST_BW" "$HAP" "$HAP.tbi" "$APP"/
+PANEL_LD=lct_1kg38_chr2_${PANEL_CODE,,}.ld.gz
+POOLED_LD=lct_1kg38_chr2_pooled.ld.gz
+cp "$OUT" "$OUT.csi" "$POOLED" "$POOLED.csi" "$FST_BW" "$HAP" "$HAP.csi" \
+  "$PANEL_LD" "$PANEL_LD.csi" "$POOLED_LD" "$POOLED_LD.csi" "$APP"/
 
 # The three context lanes the figures carry, taken from the hub by id rather
 # than rebuilt: RefSeq genes for what the block sits on, ClinVar for where the
@@ -326,7 +329,7 @@ python3 "$SCRIPT_DIR/hosted_assembly.py" "$APP/config.json" hg38 \
   hg38-ncbiRefSeqCurated hg38-clinvarMain hg38-recombAvg
 
 python3 - "$APP/config.json" "$FST_BW" "$HAP" "$MAF" \
-  "lct_1kg38_chr2_${PANEL_CODE,,}.ld.gz" lct_1kg38_chr2_pooled.ld.gz <<'PY'
+  "$PANEL_LD" "$POOLED_LD" <<'PY'
 import json, sys
 
 path, fst, hap, maf, panel_ld, pooled_ld = sys.argv[1:7]
@@ -343,6 +346,7 @@ def ld_track(track_id, name, uri):
         'adapter': {
             'type': 'PlinkLDTabixAdapter',
             'uri': uri,
+            'csi': True,
         },
         'displays': [{
             'type': 'LDTrackDisplay',
@@ -383,6 +387,7 @@ cfg['tracks'] += [
         'adapter': {
             'type': 'VcfTabixAdapter',
             'uri': hap,
+            'csi': True,
             # sample id -> population, which is assembly-independent; it is
             # hosted under genomes/hg19/ only because that is where it was
             # first needed.
@@ -443,9 +448,10 @@ or open $(pwd)/$APP/config.json in JBrowse Desktop via
 File -> Session -> Open config.json or .jbrowse file...
 
 Maintainers: the hosted figure reads $OUT, so a change to what this builds needs
-it and its .tbi uploaded beside the other popgen demo assets. The bucket has no
-versioning, so an overwrite is not recoverable.
+it and its .csi uploaded beside the other popgen demo assets. The bucket has no
+versioning, so an overwrite is not recoverable. deploy-demo.sh also invalidates
+each CloudFront path.
 
-  aws s3 cp $OUT s3://jbrowse.org/demos/popgen/
-  aws s3 cp $OUT.tbi s3://jbrowse.org/demos/popgen/
+  scripts/deploy-demo.sh $(pwd)/$OUT popgen/$OUT
+  scripts/deploy-demo.sh $(pwd)/$OUT.csi popgen/$OUT.csi
 EOF

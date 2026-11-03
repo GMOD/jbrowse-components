@@ -91,7 +91,7 @@ if [ ! -f "$SLICE" ]; then
   bcftools view -r "$REGION" -S unrelated.samples "$CHR2" \
     | bcftools view -e 'ALT[0]~"<"' -Oz -o "$SLICE"
 fi
-tabix -f -p vcf "$SLICE"
+tabix -f -C -p vcf "$SLICE"
 echo "sliced $REGION: $(bcftools index -n "$SLICE") records, $(du -h "$SLICE" | cut -f1)"
 
 # ── Fst ──────────────────────────────────────────────────────────────────────

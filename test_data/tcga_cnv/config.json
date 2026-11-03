@@ -62,7 +62,8 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "BedGraphTabixAdapter",
-        "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz"
+        "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz",
+        "csi": true
       },
       "displayDefaults": {
         "height": 120,

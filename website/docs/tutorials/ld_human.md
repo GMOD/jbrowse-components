@@ -102,10 +102,10 @@ panel, where the sweep happened). `*.samples` files list one ID per line.
 bcftools view -r chr2:133800000-137200000 -S unrelated.samples \
   -e 'ALT[0]~"<"' -Oz -o pooled.vcf.gz \
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
-tabix -p vcf pooled.vcf.gz
+tabix -f -C -p vcf pooled.vcf.gz
 
 bcftools view -S panel.samples -Oz -o panel.vcf.gz pooled.vcf.gz
-tabix -p vcf panel.vcf.gz
+tabix -f -C -p vcf panel.vcf.gz
 ```
 
 ## Correlating the LCT variants with PLINK
@@ -145,7 +145,7 @@ plink --vcf panel.snvs.vcf.gz --double-id --allow-extra-chr --output-chr chrM \
 # spaces
 awk 'NR==1{$1=$1; print "#" $0; next} {$1=$1; print}' OFS='\t' \
   lct_1kg38_chr2_eur.ld | bgzip > lct_1kg38_chr2_eur.ld.gz
-tabix -s 1 -b 2 -e 2 -f lct_1kg38_chr2_eur.ld.gz
+tabix -C -s 1 -b 2 -e 2 -f lct_1kg38_chr2_eur.ld.gz
 ```
 
 ## Drawing the LCT LD triangle from a PLINK table
@@ -165,7 +165,8 @@ per variant pair) PLINK wrote:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "PlinkLDTabixAdapter",
-    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur.ld.gz"
+    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_eur.ld.gz",
+    "csi": true
   },
   "displayDefaults": {
     "variantLayout": "genomic",
@@ -179,7 +180,7 @@ In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 `encoding.color` is a color scale, and
 [`encoding.color.field`](/docs/config/ldcolor/#slot-field) sets its input to r²
 or D' (a second LD measure). This table has both. For your own table, swap `uri`
-for the `.ld.gz` that `tabix` indexed, with its `.tbi` beside it.
+for the `.ld.gz` that `tabix` indexed, with its `.csi` beside it.
 
 ## Computing Fst per variant with plink2
 
@@ -293,7 +294,8 @@ The pooled triangle is a second `LDTrack` over the table PLINK wrote for
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "PlinkLDTabixAdapter",
-    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled.ld.gz"
+    "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_pooled.ld.gz",
+    "csi": true
   },
   "displayDefaults": {
     "variantLayout": "genomic",
@@ -331,6 +333,7 @@ columns, one row per chromosome:
   "name": "1000 Genomes haplotypes across LCT (one row per haplotype)",
   "assemblyNames": ["hg38"],
   "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz",
+  "index": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz.csi",
   "displays": [
     {
       "type": "LinearVariantDisplay",

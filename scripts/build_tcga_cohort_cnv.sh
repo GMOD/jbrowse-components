@@ -28,9 +28,9 @@
 # repeating the GDC download.
 #
 # Requires: curl, python3, bgzip + tabix (htslib)
-# Output:   tcga_<project>_cnv.bed.gz (+ .tbi)
-#           tcga_<project>_cnv_recurrence.bedGraph.gz (+ .tbi)
-#           tcga_<project>_cnv_recurrence_by_<groupby>.bedGraph.gz (+ .tbi)
+# Output:   tcga_<project>_cnv.bed.gz (+ .csi)
+#           tcga_<project>_cnv_recurrence.bedGraph.gz (+ .csi)
+#           tcga_<project>_cnv_recurrence_by_<groupby>.bedGraph.gz (+ .csi)
 #           tcga_<project>_clinical.tsv
 # Runtime:  ~15-25 min for BRCA (1106 tumors), dominated by the GDC downloads
 #
@@ -181,7 +181,7 @@ PY
 # already sorted: python sorts (chrom, start) bytewise-then-numeric, which is
 # exactly what tabix wants (and what LC_COLLATE=C sort -k1,1 -k2,2n would give)
 bgzip -f "$OUT.bed"
-tabix -f -p bed "$OUT.bed.gz"
+tabix -f -C -p bed "$OUT.bed.gz"
 
 # The stacked track shows where events are; at 1000+ rows in a few hundred pixels
 # it cannot show how many tumors carry them. This collapses the same file into
@@ -189,7 +189,7 @@ tabix -f -p bed "$OUT.bed.gz"
 echo "== summarizing cohort recurrence"
 python3 "$SCRIPT_DIR/cnv_recurrence.py" "$OUT.bed.gz" "${OUT}_recurrence.bedGraph"
 bgzip -f "${OUT}_recurrence.bedGraph"
-tabix -f -p bed "${OUT}_recurrence.bedGraph.gz"
+tabix -f -C -p bed "${OUT}_recurrence.bedGraph.gz"
 
 # The same clinical table the mutation cohort groups its matrix rows by, built
 # by the same helper with the same arguments, so one hosted copy serves both
@@ -207,7 +207,7 @@ BY="${OUT}_recurrence_by_${GROUPBY}.bedGraph"
 python3 "$SCRIPT_DIR/cnv_recurrence.py" "$OUT.bed.gz" "$BY" \
   --groups "$CLINICAL:$GROUPBY" --min-group "$MIN_GROUP"
 bgzip -f "$BY"
-tabix -f -p bed "$BY.gz"
+tabix -f -C -p bed "$BY.gz"
 
 echo "== done: $OUT.bed.gz ($(du -h "$OUT.bed.gz" | cut -f1))"
 echo "         ${OUT}_recurrence.bedGraph.gz ($(du -h "${OUT}_recurrence.bedGraph.gz" | cut -f1))"
@@ -224,9 +224,9 @@ if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then jb() { j
 else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
 APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
-cp "$OUT.bed.gz" "$OUT.bed.gz.tbi" \
-   "${OUT}_recurrence.bedGraph.gz" "${OUT}_recurrence.bedGraph.gz.tbi" \
-   "$BY.gz" "$BY.gz.tbi" "$CLINICAL" "$APP"/
+cp "$OUT.bed.gz" "$OUT.bed.gz.csi" \
+   "${OUT}_recurrence.bedGraph.gz" "${OUT}_recurrence.bedGraph.gz.csi" \
+   "$BY.gz" "$BY.gz.csi" "$CLINICAL" "$APP"/
 
 python3 "$SCRIPT_DIR/hosted_assembly.py" "$APP/config.json" hg38 \
   hg38-ncbiRefSeqCurated
@@ -266,6 +266,7 @@ cfg['tracks'] += [
         'adapter': {
             'type': 'BedTabixAdapter',
             'uri': f'{out}.bed.gz',
+            'csi': True,
             'disableGeneHeuristic': True,
         },
         'displays': [{
@@ -284,6 +285,7 @@ cfg['tracks'] += [
         'adapter': {
             'type': 'BedGraphTabixAdapter',
             'uri': f'{out}_recurrence.bedGraph.gz',
+            'csi': True,
         },
     },
     {
@@ -295,6 +297,7 @@ cfg['tracks'] += [
         'adapter': {
             'type': 'BedGraphTabixAdapter',
             'uri': f'{by}.gz',
+            'csi': True,
         },
         # One row per group, gain above the line and loss below: the columns
         # are "<group> gain" and "<group> loss", losses negative.
@@ -358,9 +361,12 @@ File -> Session -> Open config.json or .jbrowse file...
 
 Maintainers: the hosted figures read these files, so a change to what this
 builds needs them uploaded. The bucket has no versioning, so an overwrite is not
-recoverable.
+recoverable. deploy-demo.sh also invalidates each CloudFront path.
 
-  aws s3 cp $OUT.bed.gz{,.tbi} s3://jbrowse.org/demos/tcga/
-  aws s3 cp ${OUT}_recurrence.bedGraph.gz{,.tbi} s3://jbrowse.org/demos/tcga/
-  aws s3 cp $BY.gz{,.tbi} s3://jbrowse.org/demos/tcga/
+  scripts/deploy-demo.sh $(pwd)/$OUT.bed.gz tcga/$OUT.bed.gz
+  scripts/deploy-demo.sh $(pwd)/$OUT.bed.gz.csi tcga/$OUT.bed.gz.csi
+  scripts/deploy-demo.sh $(pwd)/${OUT}_recurrence.bedGraph.gz tcga/${OUT}_recurrence.bedGraph.gz
+  scripts/deploy-demo.sh $(pwd)/${OUT}_recurrence.bedGraph.gz.csi tcga/${OUT}_recurrence.bedGraph.gz.csi
+  scripts/deploy-demo.sh $(pwd)/$BY.gz tcga/$BY.gz
+  scripts/deploy-demo.sh $(pwd)/$BY.gz.csi tcga/$BY.gz.csi
 EOF

@@ -161,7 +161,7 @@ gts=$(tail -n +2 dgrp_In2Lt_samples.tsv \
   printf '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t%s\n' "$samples"
   printf '2L\t2225744\tIn2Lt\tN\t<INV>\t.\tPASS\tSVTYPE=INV;END=13154180\tGT\t%s\n' "$gts"
 } | bgzip > dgrp_In2Lt_sv.vcf.gz
-tabix -f -p vcf dgrp_In2Lt_sv.vcf.gz
+tabix -f -C -p vcf dgrp_In2Lt_sv.vcf.gz
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ────────
 if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
@@ -171,7 +171,7 @@ else
 fi
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
 cp fst_In2Lt.bw pi_all.bw pi_INV.bw pi_STD.bw pi_ratio_In2Lt.bw tajimad_all.bw sites_all.bw \
-   dgrp_In2Lt_sv.vcf.gz dgrp_In2Lt_sv.vcf.gz.tbi dgrp_In2Lt_samples.tsv "$APP"/
+   dgrp_In2Lt_sv.vcf.gz dgrp_In2Lt_sv.vcf.gz.csi dgrp_In2Lt_samples.tsv "$APP"/
 
 # ── config.json: dm6 from UCSC + the scan tracks ─────────────────────────────
 # The VCF names arms 2L/2R (FlyBase-style); dm6 from UCSC names them chr2L/chr2R.
@@ -292,6 +292,7 @@ cat > "$APP"/config.json <<'JSON'
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dgrp_In2Lt_sv.vcf.gz",
+        "csi": true,
         "samplesTsvLocation": { "uri": "dgrp_In2Lt_samples.tsv" }
       },
       "displays": [

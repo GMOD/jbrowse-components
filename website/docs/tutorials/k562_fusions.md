@@ -111,7 +111,7 @@ moves both:
 ```bash
 python3 lift_bnd_vcf.py calls.hg19.vcf.gz hg19ToHg38.over.chain.gz \
   ./liftOver calls.hg38.vcf liftwork
-bgzip calls.hg38.vcf && tabix -p vcf calls.hg38.vcf.gz
+bgzip calls.hg38.vcf && tabix -f -C -p vcf calls.hg38.vcf.gz
 ```
 
 ## Loading hg38 and the merged Iso-Seq reads
@@ -269,7 +269,10 @@ The build script lifts the breakends to hg38 and adds both as tracks:
   "adapter": {
     "type": "VcfTabixAdapter",
     "vcfGzLocation": { "uri": "K562.10x-large-sv.vcf.gz" },
-    "index": { "location": { "uri": "K562.10x-large-sv.vcf.gz.tbi" } }
+    "index": {
+      "location": { "uri": "K562.10x-large-sv.vcf.gz.csi" },
+      "indexType": "CSI"
+    }
   }
 }
 ```

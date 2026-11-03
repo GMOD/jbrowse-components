@@ -226,8 +226,9 @@
           "uri": "K562.10x-large-sv.vcf.gz"
         },
         "index": {
+          "indexType": "CSI",
           "location": {
-            "uri": "K562.10x-large-sv.vcf.gz.tbi"
+            "uri": "K562.10x-large-sv.vcf.gz.csi"
           }
         }
       }

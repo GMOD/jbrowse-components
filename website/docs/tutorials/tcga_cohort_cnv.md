@@ -106,7 +106,8 @@ The segments themselves are a `FeatureTrack` whose
   "category": ["TCGA"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz"
+    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv.bed.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -192,7 +193,8 @@ in the other.
   "category": ["TCGA"],
   "adapter": {
     "type": "BedGraphTabixAdapter",
-    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz"
+    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence.bedGraph.gz",
+    "csi": true
   },
   "displayDefaults": {
     "height": 120,
@@ -244,7 +246,8 @@ signal's column name:
   "category": ["TCGA"],
   "adapter": {
     "type": "BedGraphTabixAdapter",
-    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz"
+    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_cnv_recurrence_by_subtype.bedGraph.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -335,7 +338,7 @@ added as a column. Sort, compress and index the result:
 
 ```bash
 jbrowse sort-bed cohort.bed | bgzip > cohort.bed.gz
-tabix cohort.bed.gz
+tabix -C -p bed cohort.bed.gz
 ```
 
 Add the segment track config from

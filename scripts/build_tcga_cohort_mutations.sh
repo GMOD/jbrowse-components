@@ -14,7 +14,7 @@
 # density between genes, and every figure built on it is a gene-scale figure.
 #
 # Requires: curl, python3, samtools + bgzip + tabix (htslib)
-# Output:   tcga_<project>_mutations.vcf.gz (+ .tbi)
+# Output:   tcga_<project>_mutations.vcf.gz (+ .csi)
 #           tcga_<project>_clinical.tsv
 # Runtime:  ~10 min for BRCA (979 tumors), dominated by the GDC downloads
 #
@@ -104,7 +104,7 @@ echo "== merging to one multi-sample VCF"
 python3 "$SCRIPT_DIR/maf_to_vcf.py" "$WORK/maf" "$OUT.vcf" --sample-types 01
 
 bgzip -f "$OUT.vcf"
-tabix -f -p vcf "$OUT.vcf.gz"
+tabix -f -C -p vcf "$OUT.vcf.gz"
 
 # The clinical columns are what make the cohort groupable: without them the rows
 # are 979 barcodes in alphabetical order.
@@ -120,11 +120,11 @@ echo "== tallying per-gene recurrence"
 python3 "$SCRIPT_DIR/mutation_recurrence.py" "$OUT.vcf.gz" "$RECURRENCE" \
   --groups "$CLINICAL:$GROUP_COLUMN"
 bgzip -f "$RECURRENCE"
-tabix -f -p bed "$RECURRENCE.gz"
+tabix -f -C -p bed "$RECURRENCE.gz"
 
 python3 "$SCRIPT_DIR/mutation_recurrence.py" "$OUT.vcf.gz" "$RECURRENCE_ALL"
 bgzip -f "$RECURRENCE_ALL"
-tabix -f -p bed "$RECURRENCE_ALL.gz"
+tabix -f -C -p bed "$RECURRENCE_ALL.gz"
 
 echo "== done: $OUT.vcf.gz ($(du -h "$OUT.vcf.gz" | cut -f1))"
 echo "         $CLINICAL ($(du -h "$CLINICAL" | cut -f1))"
@@ -141,8 +141,8 @@ if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then jb() { j
 else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
 APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
-cp "$OUT.vcf.gz" "$OUT.vcf.gz.tbi" "$CLINICAL" "$APP"/
-cp "$RECURRENCE.gz" "$RECURRENCE.gz.tbi" "$APP"/
+cp "$OUT.vcf.gz" "$OUT.vcf.gz.csi" "$CLINICAL" "$APP"/
+cp "$RECURRENCE.gz" "$RECURRENCE.gz.csi" "$APP"/
 
 # genes, so a mutation column has something to be read against
 python3 "$SCRIPT_DIR/hosted_assembly.py" "$APP/config.json" hg38 \
@@ -164,6 +164,7 @@ cfg['tracks'].append({
     'adapter': {
         'type': 'VcfTabixAdapter',
         'uri': f'{out}.vcf.gz',
+        'csi': True,
         # what makes the clinical columns available to group and color rows by
         'samplesTsvLocation': {'uri': clinical},
     },
@@ -189,6 +190,7 @@ cfg['tracks'].append({
     'adapter': {
         'type': 'BedGraphTabixAdapter',
         'uri': recurrence,
+        'csi': True,
     },
     'displayDefaults': {
         'height': 260,
@@ -227,10 +229,13 @@ File -> Session -> Open config.json or .jbrowse file...
 
 Maintainers: the hosted figures read these files, so a change to what this
 builds needs them uploaded. The bucket has no versioning, so an overwrite is not
-recoverable.
+recoverable. deploy-demo.sh also invalidates each CloudFront path.
 
-  aws s3 cp $OUT.vcf.gz{,.tbi} s3://jbrowse.org/demos/tcga/
-  aws s3 cp $CLINICAL s3://jbrowse.org/demos/tcga/
-  aws s3 cp $RECURRENCE.gz{,.tbi} s3://jbrowse.org/demos/tcga/
-  aws s3 cp $RECURRENCE_ALL.gz{,.tbi} s3://jbrowse.org/demos/tcga/
+  scripts/deploy-demo.sh $(pwd)/$OUT.vcf.gz tcga/$OUT.vcf.gz
+  scripts/deploy-demo.sh $(pwd)/$OUT.vcf.gz.csi tcga/$OUT.vcf.gz.csi
+  scripts/deploy-demo.sh $(pwd)/$CLINICAL tcga/$CLINICAL
+  scripts/deploy-demo.sh $(pwd)/$RECURRENCE.gz tcga/$RECURRENCE.gz
+  scripts/deploy-demo.sh $(pwd)/$RECURRENCE.gz.csi tcga/$RECURRENCE.gz.csi
+  scripts/deploy-demo.sh $(pwd)/$RECURRENCE_ALL.gz tcga/$RECURRENCE_ALL.gz
+  scripts/deploy-demo.sh $(pwd)/$RECURRENCE_ALL.gz.csi tcga/$RECURRENCE_ALL.gz.csi
 EOF

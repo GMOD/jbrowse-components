@@ -86,7 +86,8 @@ so we load that assembly and its `AgamP4.12` gene models first.
   "assemblyNames": ["AgamP4"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/demos/ag1000g/AgamP4.sorted.gff3.gz"
+    "uri": "https://jbrowse.org/demos/ag1000g/AgamP4.sorted.gff3.gz",
+    "csi": true
   }
 }
 ```
@@ -134,7 +135,7 @@ plink2 --bfile common --allow-extra-chr --keep keep.CMgam.txt \
 # top; this table sorts on the same first two columns
 jbrowse sort-bed < ag1000g_2L_CMgam.vcor |
   bgzip > ag1000g_2L_CMgam.vcor.gz
-tabix -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.vcor.gz
+tabix -C -s 1 -b 2 -e 2 -f ag1000g_2L_CMgam.vcor.gz
 ```
 
 The track over that file is an [`LDTrack`](/docs/config/ldtrack). In
@@ -150,7 +151,8 @@ the two metric columns, as its input:
   "assemblyNames": ["AgamP4"],
   "adapter": {
     "type": "PlinkLDTabixAdapter",
-    "uri": "https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.vcor.gz"
+    "uri": "https://jbrowse.org/demos/popgen/ag1000g_2L_CMgam.vcor.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -193,6 +195,7 @@ with a `LinearVariantDisplay`:
   "adapter": {
     "type": "VcfTabixAdapter",
     "uri": "https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam.vcf.gz",
+    "csi": true,
     "samplesTsvLocation": {
       "uri": "https://jbrowse.org/demos/popgen/ag1000g_2La_CMgam_samples.tsv"
     }

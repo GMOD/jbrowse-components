@@ -133,6 +133,7 @@ the multi-sample matrix display:
   "adapter": {
     "type": "VcfTabixAdapter",
     "uri": "https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz",
+    "csi": true,
     "samplesTsvLocation": {
       "uri": "https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv"
     }
@@ -184,6 +185,7 @@ row's label bar, so it puts the matching color strip in the gutter.
   "adapter": {
     "type": "VcfTabixAdapter",
     "uri": "https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz",
+    "csi": true,
     "samplesTsvLocation": {
       "uri": "https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv"
     }
@@ -231,6 +233,7 @@ band first in `sort`:
   "adapter": {
     "type": "VcfTabixAdapter",
     "uri": "https://jbrowse.org/demos/tcga/tcga_brca_mutations.vcf.gz",
+    "csi": true,
     "samplesTsvLocation": {
       "uri": "https://jbrowse.org/demos/tcga/tcga_brca_clinical.tsv"
     }
@@ -296,7 +299,8 @@ per group.
   "category": ["TCGA"],
   "adapter": {
     "type": "BedGraphTabixAdapter",
-    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz"
+    "uri": "https://jbrowse.org/demos/tcga/tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz",
+    "csi": true
   },
   "displayDefaults": {
     "height": 260,
@@ -332,7 +336,7 @@ cBioPortal study downloads, your own caller) into the cohort VCF:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/maf_to_vcf.py
 # --sample-types 01: keep primary tumors, read off each Tumor_Sample_Barcode
 python3 maf_to_vcf.py mafs/ cohort.vcf --sample-types 01
-bgzip cohort.vcf && tabix -p vcf cohort.vcf.gz
+bgzip cohort.vcf && tabix -f -C -p vcf cohort.vcf.gz
 ```
 
 Each MAF row needs `Chromosome`, `Start_Position`, the two allele columns,

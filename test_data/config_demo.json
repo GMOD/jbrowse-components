@@ -5092,8 +5092,9 @@
           "locationType": "UriLocation"
         },
         "index": {
+          "indexType": "CSI",
           "location": {
-            "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.hapibd.bed.gz.tbi",
+            "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.hapibd.bed.gz.csi",
             "locationType": "UriLocation"
           }
         }

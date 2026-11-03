@@ -73,7 +73,7 @@ fi
 # the caller's locale.
 python3 "$SCRIPT_DIR/hapibd_to_bed.py" trio.ibd.gz "$CHILD" "$FATHER" "$MOTHER" trio.hapibd.bed
 jb sort-bed trio.hapibd.bed | bgzip > trio.hapibd.bed.gz
-tabix -f -p bed trio.hapibd.bed.gz
+tabix -f -C -p bed trio.hapibd.bed.gz
 
 APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
@@ -88,7 +88,7 @@ jb add-track "$VCF_URL" \
 
 # hap-ibd track: copy the BED in, then add the FeatureTrack with the multi-row
 # display (the CLI can't set `rows`, so patch config.json).
-cp trio.hapibd.bed.gz trio.hapibd.bed.gz.tbi "$APP"/
+cp trio.hapibd.bed.gz trio.hapibd.bed.gz.csi "$APP"/
 python3 - "$APP/config.json" <<'PY'
 import json, sys
 path = sys.argv[1]
@@ -104,7 +104,7 @@ track = {
         "columnNames": ["chrom", "chromStart", "chromEnd", "name", "score",
                         "strand", "thickStart", "thickEnd", "itemRgb", "parenthap"],
         "bedGzLocation": {"uri": "trio.hapibd.bed.gz"},
-        "index": {"location": {"uri": "trio.hapibd.bed.gz.tbi"}},
+        "index": {"location": {"uri": "trio.hapibd.bed.gz.csi"}, "indexType": "CSI"},
     },
     "displays": [{
         "type": "LinearMultiRowFeatureDisplay",
