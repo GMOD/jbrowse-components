@@ -72,10 +72,15 @@ export async function readToEnd(
  *
  * Shared rather than copied specifically because of the trimming below.
  * `queryBlockSpan`'s own comment records two bugs from the read and the byte
- * estimate drifting apart, and a second copy of `nextEntry && endBlock ===
- * startBlock && nextOffset > startOffset` is how a third would arrive: it is
- * four conditions with no obvious symptom when wrong, since a slice trimmed one
- * bracket short still parses and still draws.
+ * estimate drifting apart, and a trim that is wrong still parses and still
+ * draws.
+ *
+ * The slice always ends at the bounding entry's virtual offset when there is
+ * one, wherever its bgzf block sits in the read. A TAF block has no terminator,
+ * so the last block overlapping the query is complete only once the bounding
+ * coordinate line arrives or the slice ends on a line break; a slice that kept
+ * everything decoded ended wherever the read's last bgzf block did, cut that
+ * line, and dropped the block before it with no error.
  *
  * Returns undefined when the chromosome is not in the index — no span, nothing
  * to read.
@@ -103,8 +108,7 @@ export async function readTaiSlice({
   if (!span) {
     return undefined
   }
-  const { firstEntry, nextEntry, startBlock, endBlock, readLength, toEnd } =
-    span
+  const { firstEntry, nextEntry, startBlock, readLength, toEnd } = span
 
   const file = openLocation(location, pluginManager)
   const compressed = await updateStatus(
@@ -119,13 +123,17 @@ export async function readTaiSlice({
   const buffer = await unzip(compressed)
   const blocks = scanBgzfBlocks(compressed, startBlock, Infinity)
 
+  const starts = decompressedStarts(blocks)
+
   const startOffset = firstEntry.virtualOffset.dataPosition
-  const nextOffset = nextEntry?.virtualOffset.dataPosition ?? 0
-  // Trim to the bounding entry only for interior reads sharing the start block;
-  // a past-the-end read keeps everything decoded to the chromosome end.
+  const boundBlock = nextEntry
+    ? blocks.findIndex(
+        block => block.filePosition === nextEntry.virtualOffset.blockPosition,
+      )
+    : -1
   const endOffset =
-    nextEntry && endBlock === startBlock && nextOffset > startOffset
-      ? nextOffset
+    nextEntry && boundBlock !== -1
+      ? starts[boundBlock]! + nextEntry.virtualOffset.dataPosition
       : buffer.length
 
   // subarray (not slice) — TextDecoder.decode handles either, and subarray
@@ -135,7 +143,12 @@ export async function readTaiSlice({
     endOffset === buffer.length && (toEnd || compressed.length < readLength)
   const bytes = atFileEnd ? endingInNewline(slice) : slice
   const text = new TextDecoder().decode(bytes)
-  const virtualOffsetAt = virtualOffsetIds(blocks, startBlock, startOffset)
+  const virtualOffsetAt = virtualOffsetIds(
+    blocks,
+    starts,
+    startBlock,
+    startOffset,
+  )
   const byteOffsetAt = byteOffsetsOf(text, bytes)
   return {
     text,
@@ -144,18 +157,24 @@ export async function readTaiSlice({
   }
 }
 
-/** A tabix line's file offset is its id; this is the bgzf equivalent. */
-function virtualOffsetIds(
-  blocks: BgzfBlockInfo[],
-  startBlock: number,
-  sliceStart: number,
-) {
+/** Where each block's bytes start in the decompressed buffer. */
+function decompressedStarts(blocks: BgzfBlockInfo[]) {
   const starts: number[] = []
   let decompressed = 0
   for (const block of blocks) {
     starts.push(decompressed)
     decompressed += block.decompressedSize
   }
+  return starts
+}
+
+/** A tabix line's file offset is its id; this is the bgzf equivalent. */
+function virtualOffsetIds(
+  blocks: BgzfBlockInfo[],
+  starts: number[],
+  startBlock: number,
+  sliceStart: number,
+) {
   return (offset: number) => {
     const at = sliceStart + offset
     const i = lowerBound(starts, at + 1, start => start) - 1

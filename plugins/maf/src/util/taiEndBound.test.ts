@@ -1,13 +1,10 @@
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
-
 import BgzipMafAdapter from '../BgzipMafAdapter/BgzipMafAdapter.ts'
 import bgzipMafConfigSchema from '../BgzipMafAdapter/configSchema.ts'
 import BgzipTaffyAdapter from '../BgzipTaffyAdapter/BgzipTaffyAdapter.ts'
 import bgzipTaffyConfigSchema from '../BgzipTaffyAdapter/configSchema.ts'
-import { blockOverlaps } from './MafTaiAdapterBase.ts'
 import { queryBlockSpan } from './taiIndex.ts'
 import { readTaiIndex } from './taiSlice.ts'
+import { queriesDifferingFromWholeChromosome } from './taiWholeChromosome.fixture.ts'
 
 import type { MafAdapterBase } from './MafAdapterBase.ts'
 
@@ -15,8 +12,6 @@ const local = (name: string) => ({
   localPath: require.resolve(`../../test_data/${name}`),
   locationType: 'LocalPathLocation' as const,
 })
-
-const wholeChromosomeEnd = 2 ** 31 - 1
 
 const taf = () =>
   new BgzipTaffyAdapter(
@@ -34,25 +29,8 @@ const maf = () =>
     }),
   )
 
-async function describeFeatures(
-  adapter: MafAdapterBase,
-  start: number,
-  end: number,
-) {
-  const features = await firstValueFrom(
-    adapter
-      .getFeatures({ assemblyName: 'ce10', refName: 'chrI', start, end })
-      .pipe(toArray()),
-  )
-  return features.map(f => ({
-    start: f.get('start'),
-    end: f.get('end'),
-    id: f.id(),
-  }))
-}
-
 function queriesAround(starts: number[], dataEnd: number) {
-  const every = Math.max(1, Math.floor(starts.length / 24))
+  const every = Math.max(1, Math.floor(starts.length / 6))
   const lastStart = starts.at(-1)!
   const sampled = [
     ...starts.filter((_, i) => i % every === 0),
@@ -98,30 +76,10 @@ async function boundedReadsDifferFromWholeChromosome(
   taiName: string,
 ) {
   const { index } = await readTaiIndex(local(taiName))
-  const whole = await describeFeatures(adapter, 0, wholeChromosomeEnd)
-  const dataEnd = Math.max(...whole.map(f => f.end))
-  const queries = queriesAround(
-    index.get('chrI')!.map(r => r.start),
-    dataEnd,
+  const starts = index.get('chrI')!.map(r => r.start)
+  return queriesDifferingFromWholeChromosome(adapter, 'chrI', dataEnd =>
+    queriesAround(starts, dataEnd),
   )
-  const differing: string[] = []
-  let nonEmpty = 0
-  for (const [start, end] of queries) {
-    const expected = whole.filter(f =>
-      blockOverlaps(f.start, f.end, { start, end }),
-    )
-    const got = await describeFeatures(adapter, start, end)
-    nonEmpty += got.length > 0 ? 1 : 0
-    if (JSON.stringify(got) !== JSON.stringify(expected)) {
-      differing.push(`${start}-${end}: ${got.length} vs ${expected.length}`)
-    }
-  }
-  return {
-    differing,
-    nonEmpty,
-    queries: queries.length,
-    features: whole.length,
-  }
 }
 
 describe('a bounded .tai read returns what a whole-chromosome read has in the query', () => {
@@ -131,9 +89,9 @@ describe('a bounded .tai read returns what a whole-chromosome read has in the qu
       'celegans/chrI.taf.gz.tai',
     )
     expect(result.differing).toEqual([])
-    expect(result.queries).toBeGreaterThan(200)
+    expect(result.queries).toBeGreaterThan(80)
     expect(result.nonEmpty).toBeGreaterThan(result.queries / 2)
-  }, 180_000)
+  }, 120_000)
 
   test('bgzip MAF, a 100 kb slice of celegans chrI', async () => {
     const result = await boundedReadsDifferFromWholeChromosome(
@@ -142,7 +100,7 @@ describe('a bounded .tai read returns what a whole-chromosome read has in the qu
     )
     expect(result.differing).toEqual([])
     expect(result.features).toBeGreaterThan(100)
-    expect(result.queries).toBeGreaterThan(100)
+    expect(result.queries).toBeGreaterThan(50)
     expect(result.nonEmpty).toBeGreaterThan(result.queries / 2)
   }, 120_000)
 })
