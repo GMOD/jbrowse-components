@@ -17,6 +17,8 @@ export default abstract class LazyStateModelElement extends PluggableElementBase
 
   private stateModelPromise?: Promise<IAnyModelType>
 
+  private stateModelListeners = new Set<() => void>()
+
   private pendingStateModelExtensions: ((
     stateModel: IAnyModelType,
   ) => IAnyModelType)[] = []
@@ -51,7 +53,19 @@ export default abstract class LazyStateModelElement extends PluggableElementBase
   }
 
   set stateModel(stateModel: IAnyModelType) {
+    this.assignStateModel(stateModel)
+  }
+
+  private assignStateModel(stateModel: IAnyModelType) {
     this.loadedStateModel = stateModel
+    for (const listener of this.stateModelListeners) {
+      listener()
+    }
+  }
+
+  /** Called whenever the loaded state model is set, loaded or extended. */
+  onStateModelChange(listener: () => void) {
+    this.stateModelListeners.add(listener)
   }
 
   get isStateModelLoaded() {
@@ -88,7 +102,7 @@ export default abstract class LazyStateModelElement extends PluggableElementBase
           stateModel = extend(stateModel)
         }
         this.pendingStateModelExtensions = []
-        this.loadedStateModel = stateModel
+        this.assignStateModel(stateModel)
         this.onStateModelLoaded?.()
         return this.stateModel
       },
@@ -103,7 +117,7 @@ export default abstract class LazyStateModelElement extends PluggableElementBase
 
   extendStateModel(extend: (stateModel: IAnyModelType) => IAnyModelType) {
     if (this.loadedStateModel !== undefined) {
-      this.loadedStateModel = extend(this.loadedStateModel)
+      this.assignStateModel(extend(this.loadedStateModel))
     } else {
       this.pendingStateModelExtensions.push(extend)
     }

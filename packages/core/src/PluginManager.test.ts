@@ -317,6 +317,29 @@ describe('an unloaded lazy state model', () => {
     await pm.getViewType('LazyView').loadStateModel()
     expect(members()).toEqual(['EagerView', 'LazyView'])
   })
+
+  test('a model extended after it loads replaces the old one in the union', async () => {
+    const pm = lazyViewPlugin(() => {})
+      .createPluggableElements()
+      .configure()
+    const union = pm.pluggableMstType('view', 'stateModel')
+    const members = () => getUnionSubtypes(union)
+    await pm.getViewType('LazyView').loadStateModel()
+    const before = members()
+    const extended = types.model('LazyViewExtended', { type: 'LazyView' })
+    pm.getViewType('LazyView').extendStateModel(() => extended)
+    expect(members()).not.toEqual(before)
+    expect(members()).toContain(extended)
+  })
+
+  test('the member list is not rebuilt while nothing changed', async () => {
+    const pm = lazyViewPlugin(() => {})
+      .createPluggableElements()
+      .configure()
+    const union = pm.pluggableMstType('view', 'stateModel')
+    await pm.getViewType('LazyView').loadStateModel()
+    expect(getUnionSubtypes(union)).toBe(getUnionSubtypes(union))
+  })
 })
 
 // A display that reads a field every feature adapter serves belongs to more

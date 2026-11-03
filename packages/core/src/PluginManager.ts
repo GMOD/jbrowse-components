@@ -164,12 +164,21 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   registeredTypes: Record<string, ElementClass> = {}
   typeName: string
 
+  /** Moves whenever the record's membership, or a lazy member's state model, changes. */
+  version = 0
+
   constructor(typeName: string) {
     this.typeName = typeName
   }
 
   add(name: string, t: ElementClass) {
     this.registeredTypes[name] = t
+    this.version++
+    if (t instanceof LazyStateModelElement) {
+      t.onStateModelChange(() => {
+        this.version++
+      })
+    }
   }
 
   has(name: string) {
@@ -1066,14 +1075,14 @@ export default class PluginManager {
         .all()
         .map(t => loadedFieldOf(t))
         .filter(t => isType(t) && isModelType(t)) as IAnyType[]
-    let members = modelsOf()
+    let members = { version: record.version, models: modelsOf() }
     return types.union({
       name: pluggableUnionName(groupName, fieldName),
       members: () => {
-        if (members.length !== modelsOf().length) {
-          members = modelsOf()
+        if (members.version !== record.version) {
+          members = { version: record.version, models: modelsOf() }
         }
-        return members
+        return members.models
       },
     })
   }
