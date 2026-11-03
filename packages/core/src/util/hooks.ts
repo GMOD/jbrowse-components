@@ -387,6 +387,23 @@ export function useLocalStorage<T>(
  */
 export const SCROLL_PORT_HEIGHT_VAR = '--jbrowse-scrollport-height'
 
+function observeSize(targets: Element[], onChange: () => void) {
+  if ('ResizeObserver' in window) {
+    onChange()
+    const observer = new ResizeObserver(() => {
+      onChange()
+    })
+    for (const target of targets) {
+      observer.observe(target)
+    }
+    return () => {
+      observer.disconnect()
+    }
+  } else {
+    return () => {}
+  }
+}
+
 /**
  * Publishes {@link SCROLL_PORT_HEIGHT_VAR} on the element the returned ref is
  * attached to. Put it on the element that actually scrolls; the property
@@ -401,20 +418,13 @@ export function useScrollPortHeightVar() {
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const el = ref.current
-    if (!el || !('ResizeObserver' in window)) {
-      return
-    }
     // clientHeight, not the border box: it is the visible content area net of a
     // horizontal scrollbar, which is the box a sticky child is bounded by
-    const publish = () => {
-      el.style.setProperty(SCROLL_PORT_HEIGHT_VAR, `${el.clientHeight}px`)
-    }
-    publish()
-    const observer = new ResizeObserver(publish)
-    observer.observe(el)
-    return () => {
-      observer.disconnect()
-    }
+    return el
+      ? observeSize([el], () => {
+          el.style.setProperty(SCROLL_PORT_HEIGHT_VAR, `${el.clientHeight}px`)
+        })
+      : undefined
   }, [])
   return ref
 }
@@ -463,19 +473,11 @@ export function useScrollPortOverflow(
   useLayoutEffect(() => {
     const el = ref.current
     const port = el ? scrollPortOf(el) : undefined
-    if (!el || !port || !('ResizeObserver' in window)) {
-      return
-    }
-    const check = () => {
-      setOverflowing(el.getBoundingClientRect().height > port.clientHeight)
-    }
-    check()
-    const observer = new ResizeObserver(check)
-    observer.observe(el)
-    observer.observe(port)
-    return () => {
-      observer.disconnect()
-    }
+    return el && port
+      ? observeSize([el, port], () => {
+          setOverflowing(el.getBoundingClientRect().height > port.clientHeight)
+        })
+      : undefined
   }, [ref])
   return overflowing
 }
@@ -523,23 +525,21 @@ export function useChromeHeightVar(
   useEffect(() => {
     const el = ref.current
     const parent = el?.parentElement
-    if (!el || !parent || !('ResizeObserver' in window)) {
-      return
-    }
     // the border box, since this is a distance a sibling below has to clear
     // rather than a content area — and read off the rect, not `offsetHeight`,
     // which rounds to whole pixels and so left the box below up to half a pixel
     // off a header that had grown to 29.28
-    const publish = () => {
-      const { height } = el.getBoundingClientRect()
-      parent.style.setProperty(varName, `${height}px`)
-    }
-    publish()
-    const observer = new ResizeObserver(publish)
-    observer.observe(el)
-    return () => {
-      observer.disconnect()
-      parent.style.removeProperty(varName)
+    if (el && parent) {
+      const stopObserving = observeSize([el], () => {
+        const { height } = el.getBoundingClientRect()
+        parent.style.setProperty(varName, `${height}px`)
+      })
+      return () => {
+        stopObserving()
+        parent.style.removeProperty(varName)
+      }
+    } else {
+      return undefined
     }
   }, [ref, varName])
 }
