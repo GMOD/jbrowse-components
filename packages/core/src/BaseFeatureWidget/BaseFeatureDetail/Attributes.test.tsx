@@ -248,3 +248,33 @@ describe('fieldActions', () => {
     expect(queryByRole('button')).toBeNull()
   })
 })
+
+describe('transl_except', () => {
+  test('each exception is a line with a link to its codon and the amino acid', () => {
+    const go = jest.fn()
+    const locateSpan = jest.fn(() => go)
+    const { getAllByTitle, getByText } = renderWithTheme(
+      <Attributes
+        attributes={{
+          transl_except: [
+            '(pos:complement(42808177..42808179),aa:Sec)',
+            '(pos:complement(42800966..42800968),aa:Sec)',
+          ],
+        }}
+        locateSpan={locateSpan}
+      />,
+    )
+    expect(getByText('42,808,177-42,808,179 (-)')).toBeTruthy()
+    expect(getByText('42,800,966-42,800,968 (-)')).toBeTruthy()
+    fireEvent.click(getAllByTitle('Show in view')[0]!)
+    expect(locateSpan).toHaveBeenCalledWith({ start: 42808177, end: 42808179 })
+    expect(go).toHaveBeenCalled()
+  })
+
+  test('a value that does not parse is shown as written', () => {
+    const { getByText } = renderWithTheme(
+      <Attributes attributes={{ transl_except: 'selenocysteine at 3600' }} />,
+    )
+    expect(getByText('selenocysteine at 3600')).toBeTruthy()
+  })
+})

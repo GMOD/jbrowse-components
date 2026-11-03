@@ -84,3 +84,24 @@ export function featureNavigator(model: FeatureDetailsModel) {
       }
     : undefined
 }
+
+/**
+ * What moves the view onto a 1-based span of a feature's own sequence, a
+ * `transl_except` codon say, from the feature's locator.
+ */
+export function spanLocator(
+  locate:
+    | ((feature: SimpleFeatureSerialized) => (() => void) | undefined)
+    | undefined,
+  feature: SimpleFeatureSerialized,
+) {
+  return locate
+    ? ({ start, end }: { start: number; end: number }) =>
+        locate({
+          ...feature,
+          uniqueId: `${feature.uniqueId}-span`,
+          start: start - 1,
+          end,
+        })
+    : undefined
+}

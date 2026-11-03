@@ -7,9 +7,13 @@ import { makeStyles } from '../../util/tss-react/index.ts'
 import Attributes from './Attributes.tsx'
 import BaseCard from './BaseCard.tsx'
 import { ValueText, valueText } from './BasicValue.tsx'
+import TranslExceptList from './TranslExceptList.tsx'
+import { spanLocator } from './featureNavigator.ts'
+import { parseTranslExcept } from './translExcept.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { Descriptors, FeatureFormatter } from '../types.tsx'
+import type { LocateSpan } from './TranslExceptList.tsx'
 import type { PartsGroup } from './subfeatureGroups.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -59,13 +63,33 @@ function cellText(value: unknown) {
     : valueText(value)
 }
 
+const OwnValue = observer(function OwnValue({
+  name,
+  value,
+  locateSpan,
+}: {
+  name: string
+  value: unknown
+  locateSpan?: LocateSpan
+}) {
+  const exceptions =
+    name === 'transl_except' ? parseTranslExcept(value) : undefined
+  return exceptions ? (
+    <TranslExceptList exceptions={exceptions} locate={locateSpan} />
+  ) : (
+    <ValueText text={cellText(value)} />
+  )
+})
+
 // every part's keys share one column width, so values align down the card
 const OwnAttributes = observer(function OwnAttributes({
   attributes,
   keyWidth,
+  locateSpan,
 }: {
   attributes: Record<string, unknown>
   keyWidth: number
+  locateSpan?: LocateSpan
 }) {
   const { classes } = useStyles()
   return (
@@ -78,7 +102,7 @@ const OwnAttributes = observer(function OwnAttributes({
           {key}
         </span>,
         <span key={`${key}-value`} className={classes.ownValue}>
-          <ValueText text={cellText(value)} />
+          <OwnValue name={key} value={value} locateSpan={locateSpan} />
         </span>,
       ])}
     </div>
@@ -93,6 +117,7 @@ const OwnAttributes = observer(function OwnAttributes({
 const SubfeatureParts = observer(function SubfeatureParts({
   group,
   owner,
+  parent,
   locate,
   descriptions,
   formatter,
@@ -100,6 +125,7 @@ const SubfeatureParts = observer(function SubfeatureParts({
   group: PartsGroup
   /** the readable name of the feature these are parts of */
   owner?: string
+  parent: SimpleFeatureSerialized
   locate?: (feature: SimpleFeatureSerialized) => (() => void) | undefined
   descriptions?: Descriptors
   formatter?: FeatureFormatter
@@ -119,6 +145,7 @@ const SubfeatureParts = observer(function SubfeatureParts({
         attributes={shared}
         descriptions={descriptions}
         formatter={formatter}
+        locateSpan={spanLocator(locate, parent)}
       />
       <Table size="small" className={classes.table}>
         <TableHead>
@@ -170,7 +197,11 @@ const SubfeatureParts = observer(function SubfeatureParts({
                     colSpan={2 + Number(phased)}
                     className={classes.ownCell}
                   >
-                    <OwnAttributes attributes={own} keyWidth={keyWidth} />
+                    <OwnAttributes
+                      attributes={own}
+                      keyWidth={keyWidth}
+                      locateSpan={spanLocator(locate, part)}
+                    />
                   </TableCell>
                 </TableRow>
               ) : null,

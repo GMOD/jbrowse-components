@@ -10,10 +10,13 @@ import {
 } from '../../util/index.ts'
 import ArrayValue, { isObjectArray } from './ArrayValue.tsx'
 import SimpleField from './SimpleField.tsx'
+import TranslExceptList from './TranslExceptList.tsx'
 import UriField from './UriField.tsx'
+import { parseTranslExcept } from './translExcept.ts'
 import { accessNested } from './util.ts'
 
 import type { Descriptors, FeatureFormatter, FieldActions } from '../types.tsx'
+import type { LocateSpan } from './TranslExceptList.tsx'
 
 // Lazy: reaches @mui/x-data-grid, and this module sits on the eager startup
 // path via product-core's ui barrel (AboutDialog -> AboutDialogContents).
@@ -45,18 +48,22 @@ function isHomogeneousObjectArray(
 // The one place a value is sorted into the shape that decides how it is drawn,
 // measured and counted: the render, `measureLabels` and `hasAttributeRows` all
 // switch on this, so none of them can disagree about what a value is.
-function classify(value: unknown) {
-  return Array.isArray(value)
-    ? isHomogeneousObjectArray(value)
-      ? ({ kind: 'grid', value } as const)
-      : isObjectArray(value)
-        ? ({ kind: 'objectArray', value } as const)
-        : ({ kind: 'array', value } as const)
-    : isObject(value)
-      ? isUriLocation(value)
-        ? ({ kind: 'uri', value } as const)
-        : ({ kind: 'object', value } as const)
-      : ({ kind: 'scalar', value } as const)
+function classify(key: string, value: unknown) {
+  const exceptions =
+    key === 'transl_except' ? parseTranslExcept(value) : undefined
+  return exceptions
+    ? ({ kind: 'translExcept', value: exceptions } as const)
+    : Array.isArray(value)
+      ? isHomogeneousObjectArray(value)
+        ? ({ kind: 'grid', value } as const)
+        : isObjectArray(value)
+          ? ({ kind: 'objectArray', value } as const)
+          : ({ kind: 'array', value } as const)
+      : isObject(value)
+        ? isUriLocation(value)
+          ? ({ kind: 'uri', value } as const)
+          : ({ kind: 'object', value } as const)
+        : ({ kind: 'scalar', value } as const)
 }
 
 // these are always omitted as too detailed
@@ -132,11 +139,12 @@ function measureLabels(
     if (value == null || omits.has(key)) {
       continue
     }
-    const classified = classify(value)
+    const classified = classify(key, value)
     switch (classified.kind) {
       case 'grid':
       case 'objectArray':
         break
+      case 'translExcept':
       case 'array':
       case 'uri':
       case 'scalar':
@@ -165,7 +173,7 @@ export function hasAttributeRows(
   const omits = new Set([...omit, ...globalOmit])
   return Object.entries(attributes).some(
     ([key, value]) =>
-      value != null && !omits.has(key) && hasRows(classify(value), omit),
+      value != null && !omits.has(key) && hasRows(classify(key, value), omit),
   )
 }
 
@@ -176,6 +184,7 @@ function hasRows(classified: ReturnType<typeof classify>, omit: string[]) {
     case 'object':
       return hasAttributeRows(classified.value, omit)
     case 'grid':
+    case 'translExcept':
     case 'array':
     case 'uri':
     case 'scalar':
@@ -199,6 +208,8 @@ const Attributes = observer(function Attributes(props: {
   descriptions?: Descriptors
   prefix?: string[]
   hideUris?: boolean
+  /** moves the view onto a span of the feature's sequence, as a link does */
+  locateSpan?: LocateSpan
   /**
    * The label column's width, measured once for the whole card and threaded
    * down the recursion. Set by `Attributes` itself; a caller leaves it alone.
@@ -214,6 +225,7 @@ const Attributes = observer(function Attributes(props: {
     hideUris,
     prefix = [],
     labelWidth,
+    locateSpan,
   } = props
   const attributes = hideUris
     ? withoutLocations(props.attributes)
@@ -246,8 +258,24 @@ const Attributes = observer(function Attributes(props: {
     <>
       {shown.map(([key, value]) => {
         const description = accessNested([...prefix, key], descriptions)
-        const classified = classify(value)
+        const classified = classify(key, value)
         switch (classified.kind) {
+          case 'translExcept':
+            return (
+              <SimpleField
+                key={key}
+                name={key}
+                value={
+                  <TranslExceptList
+                    exceptions={classified.value}
+                    locate={locateSpan}
+                  />
+                }
+                description={description}
+                prefix={prefix}
+                width={width}
+              />
+            )
           case 'grid':
             return (
               <Suspense key={key} fallback={null}>
@@ -293,6 +321,7 @@ const Attributes = observer(function Attributes(props: {
                 fieldActions={fieldActions}
                 prefix={[...prefix, key]}
                 labelWidth={width}
+                locateSpan={locateSpan}
               />
             )
           case 'scalar':

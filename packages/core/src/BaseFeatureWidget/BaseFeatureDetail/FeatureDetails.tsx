@@ -13,7 +13,7 @@ import Attributes from './Attributes.tsx'
 import BaseCard from './BaseCard.tsx'
 import CoreDetails from './CoreDetails.tsx'
 import SubfeatureParts from './SubfeatureParts.tsx'
-import { featureNavigator } from './featureNavigator.ts'
+import { featureNavigator, spanLocator } from './featureNavigator.ts'
 import { subfeatureGroups } from './subfeatureGroups.ts'
 import { generateTitle, readableName } from './util.ts'
 
@@ -125,6 +125,7 @@ const FeatureDetails = observer(function FeatureDetails(
         descriptions={descriptions}
         formatter={formatter}
         fieldActions={fieldActions}
+        locateSpan={spanLocator(locate, feature)}
       />
 
       {depth === 0 ? (
@@ -171,6 +172,7 @@ const FeatureDetails = observer(function FeatureDetails(
               key={group.type}
               group={group}
               owner={readableName(feature)}
+              parent={feature}
               locate={locate}
               descriptions={descriptions}
               formatter={formatter}
