@@ -473,8 +473,10 @@ export function buildBatchHelp(scriptName: string) {
     'event_<n>_<label>, when the event visits more than two loci, its contigs',
     'in the order the VCF header lists them.',
     '',
-    "A manifest row's spec redraws its image on its own: pass it as --spec",
-    'beside the same genome and track files.',
+    "A manifest row's spec opens its view as a session spec: its windows,",
+    'its band, and the --track tracks with the settings they were drawn with.',
+    'Passed as --spec beside the same genome and track files it opens that',
+    'view, without the sort and arcs a batch gives the file-flag tracks.',
   ].join('\n')
 }
 

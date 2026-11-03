@@ -355,6 +355,9 @@ describe('resolveMode', () => {
     )
     expect(resolveMode('linear', { type: 'LinearGenomeView' })).toBe('linear')
     expect(resolveMode(undefined, { type: 'LinearGenomeView' })).toBe('linear')
+    expect(() =>
+      resolveMode(undefined, { type: 'LinearGenomeView' }, true),
+    ).toThrow(/a linear view opens one genome/)
   })
 })
 

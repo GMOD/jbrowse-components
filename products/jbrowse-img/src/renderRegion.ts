@@ -486,6 +486,7 @@ const renderLinear: ModeRenderer = async ctx => {
           assembly: data.assembly.name,
           loc,
           tracks: opened.slice(0, flagTracks.length),
+          ...(highlight ? { highlight: [highlight] } : {}),
         }
       : undefined,
     links: joined
@@ -718,21 +719,19 @@ export function resolveMode(
   spec: ViewSpec | undefined,
   comparative = false,
 ) {
-  if (spec) {
-    const specsMode = specMode(spec)
-    if (mode !== undefined && mode !== specsMode) {
-      throw new Error(
-        `--spec describes a ${spec.type}; render it with "jb2export ${modeDescriptors[specsMode].subcommand}" (not "jb2export ${modeDescriptors[mode].subcommand}")`,
-      )
-    }
-    return specsMode
-  } else if (mode === 'linear' && comparative) {
+  const specsMode = spec && specMode(spec)
+  if (spec && specsMode && mode !== undefined && mode !== specsMode) {
     throw new Error(
-      'a linear view opens one genome, and this command line has a second genome or a comparison file; drop "lgv" to render a synteny view',
+      `--spec describes a ${spec.type}; render it with "jb2export ${modeDescriptors[specsMode].subcommand}" (not "jb2export ${modeDescriptors[mode].subcommand}")`,
     )
-  } else {
-    return mode ?? (comparative ? 'synteny' : 'linear')
   }
+  const resolved = specsMode ?? mode ?? (comparative ? 'synteny' : 'linear')
+  if (resolved === 'linear' && comparative) {
+    throw new Error(
+      `a linear view opens one genome, and this command line has a second genome or a comparison file; ${spec ? 'drop them, or pass a spec of a synteny view' : 'drop "lgv" to render a synteny view'}`,
+    )
+  }
+  return resolved
 }
 
 const modeRenderers: Record<ViewMode, ModeRenderer> = {
