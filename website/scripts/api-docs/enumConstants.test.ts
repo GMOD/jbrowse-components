@@ -255,6 +255,44 @@ describe('slotFieldConstantPairs', () => {
     expect(pairs?.[1]?.[1]).toContain(`description: 'the default sentence'`)
   })
 
+  test('a table of nothing but slot tables by name is one', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'spread-only.ts',
+        `export const TITLE_T18 = { title: { type: 'maybeString' } } as const
+         export const DESC_T18 = { descending: { type: 'maybeBoolean' } } as const
+         export const LEGEND_T18 = { ...TITLE_T18, ...DESC_T18 }
+         export const NOT_SLOTS_T18 = { ...RENDER_OPTS_UNKNOWN_T18 }`,
+      ),
+    ])
+    expect(slotFieldConstantPairs('LEGEND_T18')?.map(([n]) => n)).toEqual([
+      'title',
+      'descending',
+    ])
+    expect(slotFieldConstantPairs('NOT_SLOTS_T18')).toBeUndefined()
+  })
+
+  // colorDiscreteSchemeSlots rewrites colorRampSlots.scheme's prose and
+  // nothing else, so its `type` and `model` arrive through the spread
+  test("a slot spreading another table's slot reads as the merged object", () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'member-spread.ts',
+        `export const RAMP_T19 = {
+           scheme: { type: 'maybeStringEnum', description: 'ramp prose' },
+         } as const
+         export const DISCRETE_T19 = {
+           scheme: { ...RAMP_T19.scheme, description: 'discrete prose' },
+         } as const`,
+      ),
+    ])
+    const [[name, source] = []] = slotFieldConstantPairs('DISCRETE_T19') ?? []
+    expect(name).toBe('scheme')
+    expect(source).toContain(`type: 'maybeStringEnum'`)
+    expect(source).toContain(`description: 'discrete prose'`)
+    expect(source).not.toContain('ramp prose')
+  })
+
   test('a table calling something that is not a slot factory is left alone', () => {
     buildEnumConstantIndex([
       sourceFile(
@@ -383,6 +421,35 @@ describe('slotFieldFactoryPairs', () => {
     expect(slotFieldFactoryPairs('notATable_T14', new Map())).toBeUndefined()
     // more than the single destructured parameter the substitution understands
     expect(slotFieldFactoryPairs('twoParams_T14', new Map())).toBeUndefined()
+  })
+
+  test('a positional factory takes its arguments by position', () => {
+    buildEnumConstantIndex([
+      sourceFile(
+        'positional.ts',
+        `export function scaleFields_T20(scaleName: string, prose = 'default prose') {
+           return {
+             type: {
+               type: 'maybeStringEnum',
+               model: types.enumeration(scaleName, ['linear']),
+               description: prose,
+             },
+           } as const
+         }`,
+      ),
+    ])
+    const [[, source] = []] =
+      slotFieldFactoryPairs('scaleFields_T20', new Map([[0, `'ScaleType'`]])) ??
+      []
+    expect(source).toContain(`types.enumeration('ScaleType',`)
+    expect(source).toContain(`description: 'default prose'`)
+  })
+
+  test('an argument no parameter takes resolves nothing', () => {
+    buildEnumConstantIndex([sourceFile('factory.ts', factory)])
+    expect(
+      slotFieldFactoryPairs('rowFields_T12', new Map([[0, `someObject`]])),
+    ).toBeUndefined()
   })
 
   test('a name defined twice is dropped rather than guessed at', () => {

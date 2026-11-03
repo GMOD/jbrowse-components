@@ -110,6 +110,9 @@ interface ConfigHeader {
   // the #config sits on a `ConfigurationSchemaUnion`, whose rows are each
   // prefixed with the member type they belong to
   union?: boolean
+  // the name the documented `ConfigurationSchema(...)` call gives its schema,
+  // which is how the manifest names a sub-schema it nests under a slot
+  schemaName?: string
 }
 export interface Config {
   header?: ConfigHeader
@@ -207,6 +210,27 @@ function spreadSlots(configNode: string): Item[] {
   return slots
 }
 
+// The first `ConfigurationSchema('Name', …)` in source order, the outermost
+export function outerSchemaName(configNode: string) {
+  const sf = ts.createSourceFile(
+    'config.ts',
+    configNode,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const find = (node: ts.Node): string | undefined => {
+    const [name] = ts.isCallExpression(node) ? node.arguments : []
+    return ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'ConfigurationSchema' &&
+      name &&
+      ts.isStringLiteralLike(name)
+      ? name.text
+      : ts.forEachChild(node, find)
+  }
+  return find(sf)
+}
+
 // Fold each config's spread-in slots into its slot list, after accumulation so a
 // `#slot` the schema declares itself always wins over the shared table's version
 // of the same name. Idempotent, so both writers below can call it.
@@ -271,6 +295,7 @@ export function accumulateConfig(
       category: item.category,
       trackType: item.trackType,
       union: obj.node.includes('ConfigurationSchemaUnion('),
+      schemaName: outerSchemaName(obj.node),
     }
     file.spreadSlots = spreadSlots(obj.node)
   } else if (obj.type === 'baseConfiguration') {
@@ -2136,16 +2161,21 @@ function assertManifestSlotsAreDocumented(
   configs: ConfigWithHeader[],
   index: ConfigIndex,
 ) {
-  const manifest = configManifest()
+  const pages = manifestPages(configManifest())
   const problems = configs.flatMap(cfg => {
-    const entry = manifest[cfg.header.name]
-    if (!entry) {
-      return []
-    }
+    const page =
+      pages.get(cfg.header.name) ??
+      (cfg.header.schemaName ? pages.get(cfg.header.schemaName) : undefined)
     const rows = [cfg, ...collectBaseConfigs(cfg, index)].flatMap(c => c.slots)
-    const documented = new Set(rows.map(s => s.name))
-    const paged = new Set(rows.filter(s => s.schemaPage).map(s => s.name))
-    const missing = entry.slots.flatMap(slot =>
+    const documented = rowNamesUnder(
+      rows.map(s => s.name),
+      page?.keys,
+    )
+    const paged = rowNamesUnder(
+      rows.filter(s => s.schemaPage ?? s.subSchema?.page).map(s => s.name),
+      page?.keys,
+    )
+    const missing = (page?.slots ?? []).flatMap(slot =>
       missingSlotNames(slot, documented, paged),
     )
     return missing.length
@@ -2161,6 +2191,52 @@ function assertManifestSlotsAreDocumented(
       `${problems.length} config page(s) leave out a slot the live schema carries. The commonest cause is a \`baseConfiguration:\` with no \`#baseConfiguration\` JSDoc tag above it, which drops every inherited slot from the page at once; otherwise the slot needs a \`#slot\` tag of its own:\n${problems.join('\n')}`,
     )
   }
+}
+
+// The slots each page owes a row: a type's are its manifest entry's, and a
+// sub-schema's, which no entry names, are what the manifest lists under that
+// schema where a slot first nests it. `keys` are the slot names that nest it,
+// since a sub-schema page may name its rows from there (`formatAbout.config`).
+export function manifestPages(
+  manifest: Record<string, { slots: ManifestSlot[] }>,
+) {
+  const pages = new Map<string, { slots: ManifestSlot[]; keys: Set<string> }>()
+  const visit = (slots: ManifestSlot[]) => {
+    for (const slot of slots) {
+      if (slot.schema && slot.subSlots) {
+        const page = pages.get(slot.schema)
+        if (page) {
+          page.keys.add(slot.name)
+        } else {
+          pages.set(slot.schema, {
+            slots: slot.subSlots,
+            keys: new Set([slot.name]),
+          })
+        }
+      }
+      visit(slot.subSlots ?? [])
+    }
+  }
+  for (const [name, entry] of Object.entries(manifest)) {
+    pages.set(name, { slots: entry.slots, keys: new Set() })
+  }
+  for (const entry of Object.values(manifest)) {
+    visit(entry.slots)
+  }
+  return pages
+}
+
+// A page's row names, each also under the path from a slot nesting its schema
+export function rowNamesUnder(names: string[], keys = new Set<string>()) {
+  const prefixes = [...keys].map(key => `${key}.`)
+  return new Set(
+    names.flatMap(name => [
+      name,
+      ...prefixes
+        .filter(prefix => name.startsWith(prefix))
+        .map(prefix => name.slice(prefix.length)),
+    ]),
+  )
 }
 
 // Which of one manifest slot's names the page owes a row for. A container is

@@ -45,6 +45,10 @@ filter: [{ field: 'gene_group', valid: true }]
 filter: ['jexl:feature.end - feature.start > 1000']
 ```
 
+## Related links
+
+- **Extended by:** [RowPredicate](../rowpredicate)
+
 ## Config slots
 
 Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.

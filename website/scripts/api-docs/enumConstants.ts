@@ -109,12 +109,13 @@ const slotFieldsIndex = new Map<string, [string, string][] | null>()
 // arguments are substituted in — hence the separate index and
 // `slotFieldFactoryPairs` rather than an entry in `slotFieldsIndex`.
 
-// One property of a factory's destructured parameter, keyed in `params` by the
-// name the slot bodies reference (the binding), since a call site supplies it
-// under a name that can differ (`{ tree: t }` is passed `tree` and read as `t`).
+// One property of a factory's destructured parameter, or one positional
+// parameter, keyed in `params` by the name the slot bodies reference (the
+// binding), since a call site supplies it under a name that can differ
+// (`{ tree: t }` is passed `tree` and read as `t`).
 interface SlotFieldParam {
-  /** the name a call site's argument object uses */
-  prop: string
+  /** the name a call site's argument object uses, or the argument's position */
+  argument: string | number
   /**
    * Source of the parameter's default, where it declares one. A default is a
    * real answer rather than a fallback: `rowHeightConfigSchemaFields`'s
@@ -137,14 +138,18 @@ const slotFieldFactoryIndex = new Map<string, SlotFieldFactory | null>()
 type SlotPart =
   | { pair: [string, string] }
   | { spread: string }
-  | { call: string; args: Map<string, string> }
+  | { call: string; args: SlotCallArgs }
+
+// A call's arguments by property name for a single object-literal argument,
+// else by position
+type SlotCallArgs = Map<string | number, string>
 
 /**
  * The spread a schema or a slot table writes: a table by name
- * (`...wiggleConfigSchemaFields`) or a factory call with at most one
- * object-literal argument (`...trackHeightConfigSchemaFields({ … })`), the
- * single destructured parameter the factory index accepts. Anything else is
- * undefined rather than a half-read part.
+ * (`...wiggleConfigSchemaFields`) or a factory call, its one object-literal
+ * argument read by property (`...trackHeightConfigSchemaFields({ … })`) and
+ * any other arguments by position (`syntenyColorScaleSlots('ScaleType')`).
+ * Anything else is undefined rather than a half-read part.
  *
  * No argument at all is one of those shapes, not a rejection: a factory whose
  * every parameter has a default is spread as a bare
@@ -165,13 +170,19 @@ export function slotSpreadPart(
     return undefined
   }
   const [arg, ...rest] = expr.arguments
-  if (rest.length || (arg && !ts.isObjectLiteralExpression(arg))) {
-    return undefined
-  }
-  const args = new Map<string, string>()
-  for (const p of arg?.properties ?? []) {
+  const named =
+    arg && !rest.length && ts.isObjectLiteralExpression(arg) ? arg : undefined
+  const args: SlotCallArgs = new Map()
+  for (const p of named?.properties ?? []) {
     if (ts.isPropertyAssignment(p) && ts.isIdentifier(p.name)) {
       args.set(p.name.text, p.initializer.getText(sf))
+    } else if (ts.isShorthandPropertyAssignment(p)) {
+      args.set(p.name.text, p.name.text)
+    }
+  }
+  if (!named) {
+    for (const [position, a] of expr.arguments.entries()) {
+      args.set(position, a.getText(sf))
     }
   }
   return { call: expr.expression.text, args }
@@ -185,7 +196,9 @@ export function slotSpreadPairs(
   part: SlotPart,
 ): [string, string][] | undefined {
   if ('pair' in part) {
-    return [part.pair]
+    const [name, source] = part.pair
+    const inlined = inlineMemberSpreads(source)
+    return inlined === undefined ? undefined : [[name, inlined]]
   }
   if ('spread' in part) {
     return slotFieldConstantPairs(part.spread)
@@ -227,20 +240,63 @@ function slotFieldParts(
       ts.isObjectLiteralExpression(p.initializer) &&
       p.initializer.properties.some(
         s =>
-          ts.isPropertyAssignment(s) &&
-          ts.isIdentifier(s.name) &&
-          s.name.text === 'type',
+          (ts.isPropertyAssignment(s) &&
+            ts.isIdentifier(s.name) &&
+            s.name.text === 'type') ||
+          (ts.isSpreadAssignment(s) &&
+            ts.isPropertyAccessExpression(s.expression)),
       )
       ? { pair: [p.name.text, p.initializer.getText(sf)] }
       : undefined
   })
-  // A table of nothing but spreads by name is not evidence of a slot table —
-  // every property has to be recognized, and at least one has to be a slot or
-  // a factory call, which resolves only against a factory this index knows.
-  return parts.every(part => part !== undefined) &&
-    parts.some(part => !('spread' in part))
-    ? parts
-    : undefined
+  // Every property has to be recognized. A table of nothing but spreads by
+  // name is a slot table only once each of them resolves to one, which
+  // resolveSlotParts requires (`syntenyColorLegendSlots`).
+  return parts.every(part => part !== undefined) ? parts : undefined
+}
+
+// A slot written over another table's slot, `scheme: { ...colorRampSlots.scheme,
+// description }`, as the one object it is: the member's properties, then the
+// slot's own, a repeated name taking the later value. Undefined when a spread
+// names nothing this index can read.
+function inlineMemberSpreads(source: string) {
+  const sf = ts.createSourceFile(
+    'slot.ts',
+    `const __slot = ${source}`,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const init = sf.statements.find(ts.isVariableStatement)?.declarationList
+    .declarations[0]?.initializer
+  if (
+    !init ||
+    !ts.isObjectLiteralExpression(init) ||
+    !init.properties.some(ts.isSpreadAssignment)
+  ) {
+    return source
+  }
+  const props = new Map<string, string>()
+  for (const p of init.properties) {
+    const spread = ts.isSpreadAssignment(p)
+      ? referencedSource(p.expression)
+      : undefined
+    const object = spread && unwrapAssertion(spread.node)
+    if (ts.isSpreadAssignment(p)) {
+      if (!spread || !object || !ts.isObjectLiteralExpression(object)) {
+        return undefined
+      }
+      for (const member of object.properties) {
+        props.set(propertyKey(member, spread.sf), member.getText(spread.sf))
+      }
+    } else {
+      props.set(propertyKey(p, sf), p.getText(sf))
+    }
+  }
+  return `{\n${[...props.values()].map(text => `  ${text},`).join('\n')}\n}`
+}
+
+function propertyKey(p: ts.ObjectLiteralElementLike, sf: ts.SourceFile) {
+  return p.name ? p.name.getText(sf) : p.getText(sf)
 }
 
 // Flatten a table's parts against the resolved tables and factories, in source
@@ -277,10 +333,14 @@ function slotFieldFactory(
   sf: ts.SourceFile,
 ): SlotFieldFactory | undefined {
   const [param, ...rest] = fn.parameters
+  const destructured =
+    param && !rest.length && ts.isObjectBindingPattern(param.name)
+      ? param.name
+      : undefined
+  const positional = fn.parameters.every(p => ts.isIdentifier(p.name))
   if (
     !param ||
-    rest.length ||
-    !ts.isObjectBindingPattern(param.name) ||
+    (!destructured && !positional) ||
     fn.body?.statements.length !== 1
   ) {
     return undefined
@@ -299,13 +359,24 @@ function slotFieldFactory(
     return undefined
   }
   const params = new Map<string, SlotFieldParam>()
-  for (const el of param.name.elements) {
+  for (const el of destructured?.elements ?? []) {
     if (ts.isIdentifier(el.name)) {
-      const prop =
+      const argument =
         el.propertyName && ts.isIdentifier(el.propertyName)
           ? el.propertyName.text
           : el.name.text
-      params.set(el.name.text, { prop, fallback: el.initializer?.getText(sf) })
+      params.set(el.name.text, {
+        argument,
+        fallback: el.initializer?.getText(sf),
+      })
+    }
+  }
+  for (const [argument, p] of destructured ? [] : fn.parameters.entries()) {
+    if (ts.isIdentifier(p.name)) {
+      params.set(p.name.text, {
+        argument,
+        fallback: p.initializer?.getText(sf),
+      })
     }
   }
   return params.size ? { parts, params } : undefined
@@ -329,7 +400,7 @@ function slotFieldFactory(
 function substituteParams(
   source: string,
   params: Map<string, SlotFieldParam>,
-  args: Map<string, string>,
+  args: SlotCallArgs,
 ) {
   const sf = ts.createSourceFile(
     'slot.ts',
@@ -349,7 +420,7 @@ function substituteParams(
     }
     const param = ts.isIdentifier(node) ? params.get(node.text) : undefined
     if (param) {
-      const text = args.get(param.prop) ?? param.fallback
+      const text = args.get(param.argument) ?? param.fallback
       if (text !== undefined) {
         edits.push({
           start: node.getStart(sf) - offset,
@@ -764,7 +835,8 @@ export function slotFieldConstantPairs(name: string) {
  * call's own arguments substituted for the factory's parameters, so each slot
  * carries the description this display passed rather than the parameter name.
  *
- * `args` maps a parameter name to the argument's source text. A parameter the
+ * `args` maps a parameter name, or a position, to the argument's source text,
+ * and an argument no parameter takes resolves nothing. A parameter the
  * call omits falls back to the default the factory declares; one with neither
  * keeps its reference, which renders as a bare identifier — visible in the page
  * and caught by the blank-description gap check, rather than silently dropping
@@ -772,10 +844,13 @@ export function slotFieldConstantPairs(name: string) {
  */
 export function slotFieldFactoryPairs(
   name: string,
-  args: Map<string, string>,
+  args: SlotCallArgs,
 ): [string, string][] | undefined {
   const factory = slotFieldFactoryIndex.get(name)
-  if (!factory) {
+  const taken = new Set(
+    [...(factory?.params.values() ?? [])].map(p => p.argument),
+  )
+  if (!factory || [...args.keys()].some(key => !taken.has(key))) {
     return undefined
   }
   const pairs = resolveSlotParts(factory.parts)

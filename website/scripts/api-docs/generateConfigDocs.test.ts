@@ -8,8 +8,11 @@ import {
   exampleObjects,
   linkedConfigs,
   looseTrackExample,
+  manifestPages,
   mergeSpreadSlots,
   missingSlotNames,
+  outerSchemaName,
+  rowNamesUnder,
   slotRow,
   unknownExampleKeys,
 } from './generateConfigDocs.ts'
@@ -87,6 +90,75 @@ describe('a container sub-schema', () => {
       'index.indexType',
       'index.location',
     ])
+  })
+})
+
+// A sub-schema page has no manifest entry of its own, so the check reads the
+// slots the manifest nests under that schema's name: without this, RibbonColor
+// went unchecked while it showed none of its thirteen scale and legend rows.
+describe('the slots a sub-schema page owes', () => {
+  const colorSlot: ManifestSlot = {
+    name: 'color',
+    type: 'RibbonColor',
+    schema: 'RibbonColor',
+    subSlots: [
+      slot('value'),
+      {
+        name: 'scale',
+        type: 'X',
+        schema: 'RibbonColorScale',
+        subSlots: [slot('type')],
+      },
+    ],
+  }
+  const pages = manifestPages({
+    MultiWaySyntenyDisplay: {
+      slots: [{ name: 'encoding', type: 'X', subSlots: [colorSlot] }],
+    },
+  })
+
+  test('are found by the schema name, at any depth', () => {
+    expect(pages.get('RibbonColor')?.slots.map(s => s.name)).toEqual([
+      'value',
+      'scale',
+    ])
+    expect(pages.get('RibbonColorScale')?.slots.map(s => s.name)).toEqual([
+      'type',
+    ])
+  })
+
+  test('are owed by a page whose rows show none of them', () => {
+    const owed = pages
+      .get('RibbonColor')!
+      .slots.flatMap(s => missingSlotNames(s, page('value', 'scale'), page()))
+    expect(owed).toEqual(['scale.type'])
+  })
+
+  test('may be named from the slot that nests the schema', () => {
+    const keys = manifestPages({
+      FeatureTrack: {
+        slots: [
+          {
+            name: 'formatAbout',
+            type: 'X',
+            schema: 'FormatAbout',
+            subSlots: [slot('config')],
+          },
+        ],
+      },
+    }).get('FormatAbout')?.keys
+    expect([...rowNamesUnder(['formatAbout.config'], keys)]).toEqual([
+      'formatAbout.config',
+      'config',
+    ])
+  })
+
+  test("a page's schema name is its outermost ConfigurationSchema", () => {
+    expect(
+      outerSchemaName(
+        `export const x = ConfigurationSchema('Outer', { inner: ConfigurationSchema('Inner', {}) })`,
+      ),
+    ).toBe('Outer')
   })
 })
 
@@ -378,6 +450,98 @@ ${spreadDoc.map(line => `   * ${line}`).join('\n')}
     expect(() => slotsOf(['Whose?', '#slot alpha', 'Alpha.'])).toThrow(
       /schema\.ts: .*prose before its first `#slot`/,
     )
+  })
+})
+
+// SyntenyColor's and RibbonColor's `scale` is a slot table a factory builds
+// from a positional argument, and `legend` a table of nothing but spreads by
+// name; neither page showed a row of either.
+describe('a sub-schema whose slot table is passed whole', () => {
+  let dir: string
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb-whole-table-'))
+  })
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true })
+  })
+
+  const KIT = `
+export function scaleTypeSlotT3({ scaleName, type = 'kit type' }: { scaleName: string; type?: string }) {
+  return {
+    type: {
+      type: 'maybeStringEnum',
+      model: types.enumeration(scaleName, ['linear', 'ordinal']),
+      description: type,
+    },
+  } as const
+}
+export const rampSlotsT3 = {
+  scheme: { type: 'maybeString', description: 'kit scheme' },
+} as const
+export const titleSlotT3 = {
+  title: { type: 'maybeString', description: 'kit title' },
+} as const
+export function scaleSlotsT3(scaleName: string) {
+  return {
+    ...scaleTypeSlotT3({ scaleName, type: 'how a value paints' }),
+    ...rampSlotsT3,
+  }
+}
+export const legendSlotsT3 = { ...titleSlotT3 }
+`
+
+  const SCHEMA = `
+/**
+ * #config WholeTableFixture
+ */
+export const wholeTableFixture = ConfigurationSchema('WholeTableFixture', {
+  /**
+   * #slot scale
+   * The scale.
+   */
+  scale: ConfigurationSchema('WholeTableScale', scaleSlotsT3('WholeTableScaleType')),
+  /**
+   * #slot legend
+   * The key.
+   */
+  legend: ConfigurationSchema('WholeTableLegend', legendSlotsT3),
+})
+`
+
+  function slots() {
+    const files = ['kit.ts', 'schema.ts'].map(name => path.join(dir, name))
+    fs.writeFileSync(files[0]!, KIT)
+    fs.writeFileSync(files[1]!, SCHEMA)
+    const program = createDocProgram(files)
+    buildEnumConstantIndex(program.sources)
+    const byFile: Record<string, Config> = {}
+    extractWithComment(
+      program,
+      obj => {
+        accumulateConfig(byFile, obj)
+      },
+      () => {},
+    )
+    mergeSpreadSlots(byFile)
+    return Object.values(byFile).flatMap(c => c.slots)
+  }
+
+  test('renders a row for each slot the table brings in', () => {
+    expect(slots().map(s => s.name)).toEqual([
+      'scale',
+      'legend',
+      'scale.type',
+      'scale.scheme',
+      'legend.title',
+    ])
+  })
+
+  test('substitutes the positional argument through the inner call', () => {
+    const type = slots().find(s => s.name === 'scale.type')
+    expect(type?.code).toContain(`types.enumeration('WholeTableScaleType',`)
+    expect(type?.code).toContain(`description: 'how a value paints'`)
   })
 })
 

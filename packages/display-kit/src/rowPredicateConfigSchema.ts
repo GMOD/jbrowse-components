@@ -58,6 +58,9 @@ export const rowPredicateConfigSchema = ConfigurationSchema(
   'RowPredicate',
   {},
   {
+    /**
+     * #baseConfiguration
+     */
     baseConfiguration: fieldPredicateConfigSchema,
     refuses: [
       {
