@@ -9,6 +9,14 @@ export const LAUNCH_LABEL = 'Launch'
 
 const ADVANCED_LABEL = 'Advanced'
 
+// `'subMenu' in i`, not `i.type === 'subMenu'`: `type` is OPTIONAL on a submenu
+// row and most of the tree omits it, so the type test would miss an existing
+// group and push a second top-level row under the same label — two rows that
+// then share a React key and an open/closed state.
+function subMenuLabeled(label: string) {
+  return (i: MenuItem): i is SubMenuItem => 'subMenu' in i && i.label === label
+}
+
 // Add `item` under the `label` submenu of `items`, creating that submenu the
 // first time. What makes several plugins' contributions collect in one place
 // instead of each becoming its own top-level row, whatever order they ran in.
@@ -17,13 +25,7 @@ export function pushIntoSubMenu(
   label: string,
   item: MenuItem,
 ) {
-  // `'subMenu' in i`, not `i.type === 'subMenu'`: `type` is OPTIONAL on a
-  // submenu row and most of the tree omits it, so the type test would miss an
-  // existing group and push a second top-level row under the same label — two
-  // rows that then share a React key and an open/closed state.
-  const existing = items.find(
-    (i): i is SubMenuItem => 'subMenu' in i && i.label === label,
-  )
+  const existing = items.find(subMenuLabeled(label))
   if (existing) {
     const { subMenu } = existing
     if (typeof subMenu === 'function') {
@@ -43,10 +45,8 @@ export function pushIntoSubMenu(
  * without an Advanced row keeps Launch where it is.
  */
 export function nestLaunchInAdvanced(items: MenuItem[]): MenuItem[] {
-  const isSub = (label: string) => (i: MenuItem) =>
-    'subMenu' in i && i.label === label
-  const launch = items.find(isSub(LAUNCH_LABEL))
-  const advanced = items.find(isSub(ADVANCED_LABEL)) as SubMenuItem | undefined
+  const launch = items.find(subMenuLabeled(LAUNCH_LABEL))
+  const advanced = items.find(subMenuLabeled(ADVANCED_LABEL))
   if (!launch || !advanced) {
     return items
   }

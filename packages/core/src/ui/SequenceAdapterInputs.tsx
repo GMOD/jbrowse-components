@@ -35,7 +35,10 @@ const AdapterTypeSelector = observer(function AdapterTypeSelector({
       select
       fullWidth
       onChange={event => {
-        setAdapterSelection(event.target.value as AdapterType)
+        const selected = adapterTypes.find(type => type === event.target.value)
+        if (selected) {
+          setAdapterSelection(selected)
+        }
       }}
     >
       {adapterTypes.map(type => (

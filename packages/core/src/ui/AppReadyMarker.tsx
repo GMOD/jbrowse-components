@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react'
 
+import { readConfObject } from '../configuration/index.ts'
 import { openTracks, openViews } from '../util/openViews.ts'
 
 import type {
@@ -10,7 +11,7 @@ import type {
 
 /**
  * The per-view flags and per-display phase the marker reads beyond the census
- * contract. Duck-typed because they are view- and display-family specifics
+ * contract. Read with `in` checks because they are view- and display-family specifics
  * (`showLoading` is the LGV's), not part of AbstractViewModel — absent means
  * not loading, the same rule the phase attributes follow.
  *
@@ -21,19 +22,20 @@ import type {
  * without knowing the view. Before it, an agent driving that view waited on
  * guessed timers.
  */
-interface ViewFlags {
-  showLoading?: boolean
-  initialized?: boolean
-  error?: unknown
-  pendingLaunch?: unknown
-  showImportForm?: boolean
-}
-interface DisplayLike {
-  displayPhase?: string
+function viewFlags(view: AbstractViewModel) {
+  return {
+    showLoading: 'showLoading' in view ? view.showLoading : undefined,
+    initialized: 'initialized' in view ? view.initialized : undefined,
+    error: 'error' in view ? view.error : undefined,
+    pendingLaunch: 'pendingLaunch' in view ? view.pendingLaunch : undefined,
+    showImportForm: 'showImportForm' in view ? view.showImportForm : undefined,
+  }
 }
 
 function trackLoading(track: AbstractTrackModel) {
-  return track.displays.some(d => (d as DisplayLike).displayPhase === 'loading')
+  return track.displays.some(
+    d => 'displayPhase' in d && d.displayPhase === 'loading',
+  )
 }
 
 /**
@@ -64,7 +66,7 @@ function trackLoading(track: AbstractTrackModel) {
  * yields to, and `showImportForm` is already false while a launch is pending.
  */
 function viewLoading(view: AbstractViewModel) {
-  const flags = view as ViewFlags
+  const flags = viewFlags(view)
   return (
     flags.error === undefined &&
     (flags.showLoading === true ||
@@ -142,9 +144,7 @@ const AppReadyMarker = observer(function AppReadyMarker({
         ...new Set(views.flatMap(v => v.assemblyNames ?? [])),
       ])}
       data-app-tracks={JSON.stringify(
-        tracks.map(
-          t => (t.configuration as { trackId?: string }).trackId ?? '(unnamed)',
-        ),
+        tracks.map(t => readConfObject(t.configuration, 'trackId')),
       )}
     />
   )

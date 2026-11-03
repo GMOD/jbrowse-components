@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react'
 
-import type PluginManager from '../PluginManager'
 import type {
   ExtensionPointArgs,
   ExtensionPointName,
   ExtensionPointProps,
   ExtensionPointPropsArgs,
 } from '../PluginManager'
+import type PluginManager from '../PluginManager.ts'
 import type React from 'react'
 
 // A point rendered here is a single-component fold: its registry entry declares

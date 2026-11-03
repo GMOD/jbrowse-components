@@ -36,6 +36,7 @@ const SnackbarContents = observer(function SnackbarContents({
 }) {
   const { classes } = useStyles()
   const { actions } = contents
+  const level = contents.level ?? 'warning'
   return (
     <MUISnackbar
       open
@@ -66,12 +67,12 @@ const SnackbarContents = observer(function SnackbarContents({
             </>
           ) : null
         }
-        severity={contents.level || 'warning'}
+        severity={level}
         // Names the severity for anything asserting on it from outside React:
         // the screenshot harness fails a capture that still shows an error, and
         // matching MUI's own `MuiAlert-standardError` class would tie that gate
         // to a MUI internal that changes with the variant and the major version.
-        data-testid={`snackbar-${contents.level || 'warning'}`}
+        data-testid={`snackbar-${level}`}
       >
         <div className={classes.message}>{contents.message}</div>
       </Alert>
