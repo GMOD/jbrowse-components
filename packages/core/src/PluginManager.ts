@@ -149,6 +149,10 @@ export function pluggableStateModelGroup(type: IAnyType) {
   )
 }
 
+function fieldOf(element: PluggableElementBase, name: string): unknown {
+  return Reflect.get(element, name)
+}
+
 function isUnloadedLazyElement(
   element: PluggableElementBase,
 ): element is LazyStateModelElement {
@@ -683,6 +687,22 @@ export default class PluginManager {
     'InternetAccountType',
   )
 
+  #typeRecords: Record<
+    PluggableElementTypeGroup,
+    TypeRecord<PluggableElementBase>
+  > = {
+    adapter: this.adapterTypes,
+    'text search adapter': this.textSearchAdapterTypes,
+    connection: this.connectionTypes,
+    widget: this.widgetTypes,
+    display: this.displayTypes,
+    track: this.trackTypes,
+    view: this.viewTypes,
+    'rpc method': this.rpcMethods,
+    'internet account': this.internetAccountTypes,
+    'add track workflow': this.addTrackWidgets,
+  }
+
   configured = false
 
   rootModel?: AbstractRootModel
@@ -889,30 +909,10 @@ export default class PluginManager {
   getElementTypeRecord(
     groupName: PluggableElementTypeGroup,
   ): TypeRecord<PluggableElementBase> {
-    switch (groupName) {
-      case 'adapter':
-        return this.adapterTypes
-      case 'text search adapter':
-        return this.textSearchAdapterTypes
-      case 'connection':
-        return this.connectionTypes
-      case 'widget':
-        return this.widgetTypes
-      case 'display':
-        return this.displayTypes
-      case 'track':
-        return this.trackTypes
-      case 'view':
-        return this.viewTypes
-      case 'rpc method':
-        return this.rpcMethods
-      case 'internet account':
-        return this.internetAccountTypes
-      case 'add track workflow':
-        return this.addTrackWidgets
-      default:
-        throw new Error(`invalid element type '${groupName}'`)
+    if (!Object.hasOwn(this.#typeRecords, groupName)) {
+      throw new Error(`invalid element type '${groupName}'`)
     }
+    return this.#typeRecords[groupName]
   }
 
   addElementType(
@@ -1049,17 +1049,13 @@ export default class PluginManager {
     fallback: IAnyType = types.maybe(types.null),
   ): IAnyType {
     const record = this.getElementTypeRecord(groupName)
-    const fieldOf = (t: PluggableElementBase) =>
-      isUnloadedLazyElement(t)
-        ? undefined
-        : (t as unknown as Record<string, unknown>)[fieldName]
+    const loadedFieldOf = (t: PluggableElementBase) =>
+      isUnloadedLazyElement(t) ? undefined : fieldOf(t, fieldName)
     const anyMember = record.all().some(t => {
-      const field = fieldOf(t)
+      const field = loadedFieldOf(t)
       return (
         (isType(field) && isModelType(field)) ||
-        typeof (t as unknown as Record<string, unknown>)[
-          `${fieldName}Loader`
-        ] === 'function'
+        typeof fieldOf(t, `${fieldName}Loader`) === 'function'
       )
     })
     if (!anyMember) {
@@ -1068,7 +1064,7 @@ export default class PluginManager {
     const modelsOf = () =>
       record
         .all()
-        .map(t => fieldOf(t))
+        .map(t => loadedFieldOf(t))
         .filter(t => isType(t) && isModelType(t)) as IAnyType[]
     let members = modelsOf()
     return types.union({
@@ -1099,7 +1095,7 @@ export default class PluginManager {
   ): PluggableConfigSchemaType {
     const pluggableTypes = this.getElementTypeRecord(typeGroup)
       .all()
-      .map(t => (t as unknown as Record<string, unknown>)[fieldName])
+      .map(t => fieldOf(t, fieldName))
       .filter(t => isBareConfigurationSchemaType(t)) as IAnyType[]
 
     if (pluggableTypes.length === 0) {
