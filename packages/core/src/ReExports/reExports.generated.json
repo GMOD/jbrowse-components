@@ -4939,7 +4939,8 @@
       "names": [
         "ROW_ARRANGEMENT_MEMBERS",
         "ROW_ARRANGEMENT_WRITES",
-        "rowArrangementConfigSchema"
+        "rowArrangementConfigSchema",
+        "stringList"
       ],
       "worker": "real"
     },

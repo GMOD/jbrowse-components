@@ -32,16 +32,16 @@ the way in is required exactly where the `height` getter is content-derived
 and wrong where it is the slot itself.
 
 `effectiveRowHeight` is overridable, and one display overrides it: the mark
-display honours a pinned `rowHeight` only while it draws rows.
+display honours a px `rows.step` only while it draws rows.
 
 ## Getters
 
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-rowheight">**rowHeight**</span><br><code>number</code> | Raw per-row height setting: `0` is fit-to-display-height, any positive value is a fixed px height. The resolved value is `effectiveRowHeight` — consumers read that, never this. On the config rather than the display snapshot for the same reason `height` is: the config node outlives the display instance, so a fixed height survives unticking and reticking the track. |
+| <span id="getter-rowheight">**rowHeight**</span><br><code>number</code> | `rows.step` as a number: `0` while it is `"fit"`, else its fixed px height. The resolved value is `effectiveRowHeight` — consumers read that, never this. On the config rather than the display snapshot for the same reason `height` is: the config node outlives the display instance, so a fixed height survives unticking and reticking the track. |
 | <span id="getter-autorowheight">**autoRowHeight**</span><br><code>number</code> | The height fit mode divides between the rows, declared here and **overridden by every display** — the quantity differs in each, so this stub is a slot for the answer rather than an answer. Declaring it lets `effectiveRowHeight` below read a member with a declared type instead of one asserted onto `self`.<br><br>A display that composes the mixin and supplies no override resolves to a 1px row, the same as when the read finds `undefined`: `resolveRowHeight` floors both.<br><br>Supply it as a **getter**, the way all three displays do. Mobx refuses to write a volatile over a computed, so a `.volatile` of this name throws at `create` — loudly, and before any row is drawn. |
-| <span id="getter-effectiverowheight">**effectiveRowHeight**</span><br><code>number</code> | Resolved per-row height. `rowHeight === 0` divides the display's own `autoRowHeight` across the rows; any positive value is the fixed px height, used as-is however many rows there are.<br><br>Sub-pixel is legitimate and deliberately not floored here — a cohort with more rows than the track has pixels has a genuinely fractional row height, and flooring it makes the content taller than the height it was asked to fit inside. `resolveRowHeight` floors only a **non-positive** result, which consumers divide by. |
+| <span id="getter-effectiverowheight">**effectiveRowHeight**</span><br><code>number</code> | Resolved per-row height. `rows.step: "fit"` divides the display's own `autoRowHeight` across the rows; a px step is the fixed height, used as-is however many rows there are.<br><br>Sub-pixel is legitimate and deliberately not floored here — a cohort with more rows than the track has pixels has a genuinely fractional row height, and flooring it makes the content taller than the height it was asked to fit inside. `resolveRowHeight` floors only a **non-positive** result, which consumers divide by. |
 
 ## Actions
 

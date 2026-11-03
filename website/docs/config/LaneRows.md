@@ -15,7 +15,8 @@ so a ribbon chain through adjacent lanes is cut as late as possible; `kept`
 names the lanes drawn, empty drawing the track's lanes or every lane.
 Haplotype lanes read off a graph follow by structure instead, below any
 lanes `sort` pins, so lanes whose deletions and insertions against the
-anchor match sit together, in an order worked out once per window.
+anchor match sit together, in an order worked out once per window. Lanes
+take no tree.
 
 ## Example usage
 
@@ -26,20 +27,14 @@ anchor match sit together, in an order worked out once per window.
 }
 ```
 
-## Related links
-
-- **Base config:** [RowArrangement](../rowarrangement)
-
 ## Config slots
 
-A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. One that changes `field` first clears `sort`, `labels`, `tree`, `kept`, which name the old values, except those it states. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
+A setting written to it names members one by one: a member left out stays as it is, and `null` resets one. One that changes `field` first clears `sort`, `labels`, `kept`, which name the old values, except those it states. Slot types (`fileLocation`, `frozen`, ...) are explained in the [config slot types reference](/docs/config_guides/slot_types). Slots a base configuration contributes are listed here too, so this table is the whole surface.
 
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
+| <span id="slot-sort">**sort**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | The lanes that stack first, by assembly name, in this order; the rest follow densest-first. |
+| <span id="slot-labels">**labels**</span><br>[`stringMap`](/docs/config_guides/slot_types#stringmap) = <code>{}</code> | A label drawn for a lane in place of its assembly name, by assembly name. Where the lane labels draw is `labels.lanes`. |
 | <span id="slot-kept">**kept**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) of strings or numbers = <code>[]</code> | The lanes drawn, by assembly name: it selects rather than narrows, replacing the track's lanes and able to add a lane the track does not configure. Empty draws the track's lanes, or every lane where it configures none. |
 | <span id="slot-field">**field**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (assembly) = <code>'assembly'</code> | `assembly`, the one field a lane can be. |
-| <span class="slot-group">Inherited from [RowArrangement](../rowarrangement)</span> | <span class="slot-group-count">3 slots</span> |
-| <span id="slot-sort">**sort**</span><br>[`stringArray`](/docs/config_guides/slot_types#stringarray) = <code>[]</code> | The row order, as Vega-Lite's `sort` lists it: the rows listed lead, in this order, and none is dropped. The rest keep the order their source lists them in (a VCF's samples, a multi-BigWig's subtracks), or sort, digits by magnitude, where the rows are values found on features. A clustering run, the arrangement dialog and "Sort rows here" all write it, and a run rotates its dendrogram towards it rather than discarding it. |
-| <span id="slot-labels">**labels**</span><br>[`stringMap`](/docs/config_guides/slot_types#stringmap) = <code>{}</code> | A label drawn beside a row in place of its name, by name. Whether any label draws is `rows.axis.labels`. |
-| <span id="slot-tree">**tree**</span><br>[RowTree](../rowtree) | The dendrogram beside the rows, a [RowTree](../rowtree): newick, or `{ newick, provenance }` where a clustering run wrote it beside the order it produced. A reorder that moves a row drops it. Whether it draws is `rows.axis.tree`. |
