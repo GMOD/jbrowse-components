@@ -327,6 +327,22 @@ describe('the url the trust gate vets is the url the loader runs', () => {
         umdLoc: { uri: 'https://evil.example.com/pwn.js', baseUri: configUri },
       },
     ],
+    [
+      'umdUrl beside a legacy url',
+      {
+        name: 'P',
+        umdUrl: 'https://jbrowse.org/plugins/innocent.js',
+        url: 'https://evil.example.com/pwn.js',
+      },
+    ],
+    [
+      'umdLoc beside a umdUrl',
+      {
+        name: 'P',
+        umdUrl: 'https://jbrowse.org/plugins/innocent.js',
+        umdLoc: { uri: 'https://evil.example.com/pwn.js', baseUri: configUri },
+      },
+    ],
   ]
 
   test.each(definitions)('%s', (_label, definition) => {

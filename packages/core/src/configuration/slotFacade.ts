@@ -6,6 +6,7 @@ import { getEnv } from '../util/mstUtils.ts'
 import { slotDefinitionRefusal } from './configurationSlot.ts'
 import { setConf } from './getConf.ts'
 import {
+  declaredMember,
   getConfigurationSchemaDefinition,
   getConfigurationSchemaMetadata,
 } from './schemaRegistry.ts'
@@ -62,7 +63,7 @@ export function slotValueRefusal(
   value: unknown,
 ): string | undefined {
   const meta = getConfigurationSchemaMetadata(schema)
-  const entry = meta?.definition[key]
+  const entry = meta && declaredMember(meta.definition, key)
   if (!meta || entry === undefined) {
     return undefined
   }

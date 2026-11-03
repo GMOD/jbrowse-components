@@ -150,8 +150,8 @@ export function declaresMemberPath(
 ): boolean {
   const [head, ...rest] = members
   const entry =
-    head !== undefined && schema && Object.hasOwn(schema.definition, head)
-      ? schema.definition[head]
+    head !== undefined && schema
+      ? declaredMember(schema.definition, head)
       : undefined
   return (
     entry !== undefined &&
