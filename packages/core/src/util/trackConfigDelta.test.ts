@@ -646,7 +646,7 @@ describe('an object the display keys by its field', () => {
     ])
   })
 
-  test("a base that changes field drops the user's stale order", () => {
+  test("a base that changes field keeps the user's field and order, and drops its own arrangement", () => {
     const delta = diffTrackConfig(
       track({ field: 'source' }),
       track({ field: 'source', sort: ['b', 'a'] }),

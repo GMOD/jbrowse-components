@@ -173,7 +173,9 @@ no `axis.show`: turning off `axis.tree` and `axis.labels` leaves no sidebar.
   the drawn rows (`treeDescribesRows`), so no writer has to clear it.
 - `setConf` on a keyed object's `field` path applies the rule, as a bag does.
 - The share-link delta emits `field` beside any keyed member it emits, so a
-  base that later changes field drops the user's stale arrangement.
+  base that later changes field still shows the user's arrangement on the
+  field it names: the user's field and order win, and the base's new field
+  and its arrangement drop.
 - In user docs: writing `rows` changes only the members stated, and `null`
   clears one; a write that changes `field` first clears what names the old
   rows (`sort`, `labels`, `colors`, `tree`, `kept`) except
