@@ -18,7 +18,7 @@ import ErrorBanner from './ErrorBanner.tsx'
 import { ErrorBoundary } from './ErrorBoundary.tsx'
 import SanitizedHTML from './SanitizedHTML.tsx'
 
-import type { DialogProps } from '@mui/material'
+import type { DialogProps, DialogTitleProps } from '@mui/material'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {
@@ -49,6 +49,7 @@ const DialogError = observer(function DialogError({
 export interface Props extends Omit<DialogProps, 'onClose'> {
   header?: React.ReactNode
   titleNode?: React.ReactNode
+  titleProps?: DialogTitleProps
   onClose?:
     | {
         bivarianceHack(
@@ -61,7 +62,7 @@ export interface Props extends Omit<DialogProps, 'onClose'> {
 
 const Dialog = observer(function Dialog(props: Props) {
   const { classes } = useStyles()
-  const { titleNode, header, title, ...rest } = props
+  const { titleNode, titleProps, header, title, ...rest } = props
   const { children, onClose } = rest
   const theme = useTheme()
   // content-box override xref https://github.com/GMOD/jbrowse-components/pull/3666
@@ -87,7 +88,7 @@ const Dialog = observer(function Dialog(props: Props) {
         {header ? (
           header
         ) : (
-          <DialogTitle>
+          <DialogTitle {...titleProps}>
             {titleNode ?? <SanitizedHTML html={title ?? ''} />}
             {onClose ? (
               <IconButton

@@ -1,98 +1,60 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 
-import CloseIcon from '@mui/icons-material/Close'
-import { DialogTitle, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
+import { usePointerDrag } from '../util/usePointerDrag.ts'
 import Dialog from './Dialog.tsx'
 
 import type { Props as DialogProps } from './Dialog.tsx'
 
-const useStyles = makeStyles()(theme => ({
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
+const useStyles = makeStyles()({
   title: {
     cursor: 'move',
+    touchAction: 'none',
   },
-}))
+})
 
 // A drag-repositionable dialog. Renders the shared Dialog so it inherits the
-// content-box input fix and the error boundary, and supplies a draggable title
-// bar as Dialog's `header`. `slotProps` is not offered: the paper slot carries
-// the drag transform, so a caller's would be dropped rather than merged.
+// content-box input fix, the error boundary and the close button, and makes
+// Dialog's title bar the drag handle. `slotProps` is not offered: the paper
+// slot carries the drag transform, so a caller's would be dropped rather than
+// merged.
 const DraggableDialog = observer(function DraggableDialog(
   props: Omit<DialogProps, 'slotProps'> & { title: string },
 ) {
   const { classes } = useStyles()
-  const { title, children, onClose, ...rest } = props
+  const { title, ...rest } = props
   const [pos, setPos] = useState({ x: 0, y: 0 })
-  const [dragging, setDragging] = useState(false)
-  const originRef = useRef({ mouseX: 0, mouseY: 0, x: 0, y: 0 })
-
-  useEffect(() => {
-    if (dragging) {
-      function move(event: MouseEvent) {
-        event.preventDefault()
-        const { mouseX, mouseY, x, y } = originRef.current
-        setPos({
-          x: x + event.clientX - mouseX,
-          y: y + event.clientY - mouseY,
-        })
-      }
-      function up() {
-        setDragging(false)
-      }
-      window.addEventListener('mousemove', move)
-      window.addEventListener('mouseup', up)
-      return () => {
-        window.removeEventListener('mousemove', move)
-        window.removeEventListener('mouseup', up)
-      }
-    }
-    return undefined
-  }, [dragging])
+  const [grab, setGrab] = useState({ x: 0, y: 0 })
+  const drag = usePointerDrag({
+    onDragStart: event => {
+      setGrab({ x: event.clientX - pos.x, y: event.clientY - pos.y })
+    },
+    onDrag: event => {
+      setPos({ x: event.clientX - grab.x, y: event.clientY - grab.y })
+    },
+  })
 
   return (
     <Dialog
       {...rest}
-      onClose={onClose}
+      titleNode={title}
+      titleProps={{
+        ...drag,
+        className: classes.title,
+        onPointerDown: event => {
+          if (
+            !(event.target instanceof Element && event.target.closest('button'))
+          ) {
+            drag.onPointerDown(event)
+          }
+        },
+      }}
       slotProps={{
         paper: { style: { transform: `translate(${pos.x}px, ${pos.y}px)` } },
       }}
-      header={
-        <DialogTitle
-          className={classes.title}
-          onMouseDown={event => {
-            originRef.current = {
-              mouseX: event.clientX,
-              mouseY: event.clientY,
-              x: pos.x,
-              y: pos.y,
-            }
-            setDragging(true)
-          }}
-        >
-          {title}
-          {onClose ? (
-            <IconButton
-              className={classes.closeButton}
-              onClick={event => {
-                onClose(event, 'closeButtonClick')
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          ) : null}
-        </DialogTitle>
-      }
-    >
-      {children}
-    </Dialog>
+    />
   )
 })
 
