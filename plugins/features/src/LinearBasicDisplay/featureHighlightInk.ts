@@ -13,7 +13,10 @@ import { glyphMarkIndex } from './marks/featureGlyphMarks.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { RenderState } from './components/featureRenderingBackendTypes.ts'
-import type { PlacedLabel } from './components/labelPositioning.ts'
+import type {
+  LabelPlacementContext,
+  PlacedLabel,
+} from './components/labelPositioning.ts'
 import type { NamedFeature } from '@jbrowse/display-kit/floatingLabelHost'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { MarkInstance } from '@jbrowse/render-core/marks'
@@ -97,10 +100,7 @@ export interface FeatureInkHost {
   renderDataMap: ReadonlyMap<number, FeatureDataResult>
   renderState: RenderState
   regionInstanceIndexes: ReadonlyMap<number, RegionInstanceIndex>
-  renderedShowLabels: boolean
-  renderedShowDescriptions: boolean
-  renderedShowSubfeatureLabels: boolean
-  renderedLabelFontSize: number
+  renderedLabels: LabelPlacementContext
 }
 
 function regionIndices(blocks: readonly RenderBlock[]) {
@@ -132,12 +132,7 @@ function placedLabels(
   if (!labelData) {
     return []
   }
-  const context = {
-    showLabels: self.renderedShowLabels,
-    showDescriptions: self.renderedShowDescriptions,
-    showSubfeatureLabels: self.renderedShowSubfeatureLabels,
-    fontSize: self.renderedLabelFontSize,
-  }
+  const context = self.renderedLabels
   const block = blocks.find(b =>
     labelsReachRegion(
       labelData,
@@ -164,7 +159,7 @@ function labelRects(
   const { scrollY } = self.renderState
   return placedLabels(self, data, featureId, blocks).map(placed => {
     const size =
-      placed.kind === 'more' ? self.renderedLabelFontSize : placed.fontSize
+      placed.kind === 'more' ? self.renderedLabels.fontSize : placed.fontSize
     return {
       left: placed.labelX,
       top: placed.labelY - scrollY,

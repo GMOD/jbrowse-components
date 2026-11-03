@@ -20,6 +20,7 @@ import { BASIC_FEATURE_MARKS } from './marks/basicFeatureMarks.ts'
 import type { FieldPalette } from '../RenderFeatureDataRPC/colorClasses.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { RenderState } from './components/featureRenderingBackendTypes.ts'
+import type { LabelPlacementContext } from './components/labelPositioning.ts'
 import type { FeatureGroupSection } from './facet.ts'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type {
@@ -35,10 +36,7 @@ export interface RenderSvgModel extends LgvSvgExportable {
   // Drawn by the shell, over this body — not here. Declared so the export's
   // model still names every guide the figure carries.
   pinnedInk: HighlightRect[]
-  renderedShowLabels: boolean
-  renderedShowDescriptions: boolean
-  renderedShowSubfeatureLabels: boolean
-  renderedLabelFontSize: number
+  renderedLabels: LabelPlacementContext
   showsGroupLabels: boolean
   groupSections: FeatureGroupSection[]
 }
@@ -69,14 +67,8 @@ function FeaturesSvgBody({
   // what is on screen.
   const { renderState } = model
   const { scrollY } = renderState
-  const fontSize = model.renderedLabelFontSize
-  const labelContext = {
-    showLabels: model.renderedShowLabels,
-    showDescriptions: model.renderedShowDescriptions,
-    showSubfeatureLabels: model.renderedShowSubfeatureLabels,
-    fontSize,
-    colors: labelColors(palette),
-  }
+  const { fontSize } = model.renderedLabels
+  const labelContext = { ...model.renderedLabels, colors: labelColors(palette) }
   const dataMap = resolveMapColors(
     model.laidOutDataMap,
     palette,

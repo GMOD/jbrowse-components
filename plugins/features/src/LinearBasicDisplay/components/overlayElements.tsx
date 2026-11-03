@@ -26,6 +26,7 @@ import type { LinearFeatureBaseDisplayModel } from '../baseModel.ts'
 import type { FeatureContextMenuInfo } from '../featureContextMenu.ts'
 import type { HitFeatureResult, VisibleRegion } from './hitTesting.ts'
 import type {
+  LabelPlacementContext,
   MoreResolvedLabel,
   PlainResolvedLabel,
 } from './labelPositioning.ts'
@@ -39,11 +40,8 @@ type LGV = LinearGenomeViewModel
 type AssignableTo<A extends B, B> = A
 
 interface FloatingLabelsModel {
-  renderedShowLabels: boolean
-  renderedShowDescriptions: boolean
-  renderedShowSubfeatureLabels: boolean
+  renderedLabels: LabelPlacementContext
   canvasWidthPx: number
-  renderedLabelFontSize: number
   height: number
   contentHeight: number
   labelScrollBucket: number
@@ -220,9 +218,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   const { classes, cx } = useStyles()
   const palette = usePalette()
   const {
-    renderedShowLabels,
-    renderedShowDescriptions,
-    renderedLabelFontSize,
+    renderedLabels,
     height,
     labelScrollBucket,
     featureIdIndex,
@@ -255,13 +251,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   }
 
   const elements: React.ReactElement[] = []
-  const context = {
-    showLabels: renderedShowLabels,
-    showDescriptions: renderedShowDescriptions,
-    showSubfeatureLabels: model.renderedShowSubfeatureLabels,
-    fontSize: renderedLabelFontSize,
-    colors: labelColors(palette),
-  }
+  const context = { ...renderedLabels, colors: labelColors(palette) }
   const cullBand = labelCullBand(labelScrollBucket, height)
 
   // emotion's cx re-serializes and re-hashes the combined style on every call, and
@@ -302,7 +292,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
               resolved={resolved}
               featureId={featureId}
               displayedRegionIndex={displayedRegionIndex}
-              renderedLabelFontSize={renderedLabelFontSize}
+              renderedLabelFontSize={renderedLabels.fontSize}
               className={moreBadgeClass}
             />
           ) : (

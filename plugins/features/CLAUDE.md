@@ -31,6 +31,6 @@ Two asymmetries in it are deliberate:
 - A subfeature label is ungated: the worker bakes it. `collapsed` mode
   suppresses it by forcing `effectiveSubfeatureLabels` to `'none'`.
 
-Measure label width at `renderedLabelFontSize`, not `labelFontSize`; they differ
-on the `bare` rung. What a rung reserved is `FitRung.reserved`; nothing
+Measure label width at `renderedLabels.fontSize`, not `labelFontSize`; they
+differ on the `bare` rung. What a rung reserved is `FitRung.reserved`; nothing
 re-derives it from the rung's name.

@@ -104,7 +104,7 @@ import {
   featureHighlightViews,
 } from './featureHighlightViews.ts'
 import { featureSetActions, featureSetViews } from './featureSetViews.ts'
-import { showsSubfeatureLabels } from './fitLadder.ts'
+import { renderedLabelContext } from './fitLadder.ts'
 import { fitLadderViews } from './fitLadderViews.ts'
 import { fitDrops, fitLadderNote, labelFitHints } from './fitNotes.ts'
 import { heightViews } from './heightViews.ts'
@@ -150,6 +150,7 @@ import type {
 import type { LinearFeatureBaseDisplayConfigModel } from './baseConfigSchema.ts'
 import type { FeatureRenderingBackend } from './components/featureRenderingBackendTypes.ts'
 import type { FlatbushRegionIndexes } from './components/hitTesting.ts'
+import type { LabelPlacementContext } from './components/labelPositioning.ts'
 import type { FeatureFacet, FeatureGroupSection } from './facet.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type {
@@ -858,39 +859,44 @@ export default function baseStateModelFactory(
       },
       /**
        * #getter
-       * Descriptions are painted where the kept rung reserved room for
-       * them.
+       * The labels the kept rung reserved room for, and the size it priced
+       * them at: what the canvas, the DOM layer, the hit test, the highlight
+       * and the SVG export all draw or measure.
+       */
+      get renderedLabels(): LabelPlacementContext {
+        return renderedLabelContext(
+          self.fitStage,
+          self.reservesBelowLabelRows,
+          self.labelFontSize,
+        )
+      },
+      /**
+       * #getter
+       * @deprecated read `renderedLabels.showDescriptions`
        */
       get renderedShowDescriptions() {
-        return self.fitStage.showDescriptions
+        return this.renderedLabels.showDescriptions
       },
       /**
        * #getter
-       * Names are painted where the kept rung reserved row height +
-       * overhang for them.
+       * @deprecated read `renderedLabels.showLabels`
        */
       get renderedShowLabels() {
-        return self.fitStage.showLabels
+        return this.renderedLabels.showLabels
       },
       /**
        * #getter
-       * A subfeature label is worker-baked, so the fit decides only whether
-       * the kept rung left a `below` label its row.
+       * @deprecated read `renderedLabels.showSubfeatureLabels`
        */
       get renderedShowSubfeatureLabels() {
-        return showsSubfeatureLabels(self.fitStage, self.reservesBelowLabelRows)
+        return this.renderedLabels.showSubfeatureLabels
       },
       /**
        * #getter
-       * The size the kept rung priced its labels at, and so the size they
-       * draw at.
+       * @deprecated read `renderedLabels.fontSize`
        */
-      // Zero at the `bare` rung, which spends the below-label rows at no
-      // height and so reserves no label width; a hit box or highlight
-      // measuring at the mode's size overhangs its neighbour by an ungated
-      // subfeature label nothing drew.
       get renderedLabelFontSize() {
-        return self.fitStage.dropBelowLabelRows ? 0 : self.labelFontSize
+        return this.renderedLabels.fontSize
       },
       /**
        * #getter
@@ -940,18 +946,11 @@ export default function baseStateModelFactory(
        * control, not a label, and stays out.
        */
       floatingLabels(palette: JBrowsePalette): FloatingLabel[] {
-        const fontSize = self.renderedLabelFontSize
         const labels: FloatingLabel[] = []
         forEachDisplayLabel(
           containingLgv(self).visibleRegions,
           self.renderDataMap,
-          {
-            showLabels: self.renderedShowLabels,
-            showDescriptions: self.renderedShowDescriptions,
-            showSubfeatureLabels: self.renderedShowSubfeatureLabels,
-            fontSize,
-            colors: labelColors(palette),
-          },
+          { ...self.renderedLabels, colors: labelColors(palette) },
           (featureId, resolved, region) => {
             for (const r of resolved) {
               if (r.kind !== 'more') {
@@ -1146,9 +1145,9 @@ export default function baseStateModelFactory(
         () =>
           sameHitInputs({
             bpPerPx: containingLgv(self).coarseBpPerPx,
-            showLabels: self.renderedShowLabels,
-            showDescriptions: self.renderedShowDescriptions,
-            fontSize: self.renderedLabelFontSize,
+            showLabels: self.renderedLabels.showLabels,
+            showDescriptions: self.renderedLabels.showDescriptions,
+            fontSize: self.renderedLabels.fontSize,
           }),
         (data, { bpPerPx, ...labels }, idx): FlatbushRegionIndexes => ({
           feature: buildFeatureFlatbushIndex(

@@ -28,7 +28,7 @@ import {
   featureGroupSections,
   sectionIdsOf,
 } from './LinearBasicDisplay/facet.ts'
-import { showsSubfeatureLabels } from './LinearBasicDisplay/fitLadder.ts'
+import { renderedLabelContext } from './LinearBasicDisplay/fitLadder.ts'
 import { fitLadderViews } from './LinearBasicDisplay/fitLadderViews.ts'
 import { resolvedGeneGlyphMode } from './LinearBasicDisplay/geneGlyphMode.ts'
 import {
@@ -509,13 +509,7 @@ export async function featureTables(
   const key = colorKeyTables(scales)
   const hideChevrons = !readConfObject(conf, ['chevrons', 'show'])
   const labels = {
-    showLabels: stage.showLabels,
-    showDescriptions: stage.showDescriptions,
-    showSubfeatureLabels: showsSubfeatureLabels(
-      stage,
-      subfeatureLabels === 'below',
-    ),
-    fontSize: stage.dropBelowLabelRows ? 0 : fontSize,
+    ...renderedLabelContext(stage, subfeatureLabels === 'below', fontSize),
     colors: labelColors(palette),
   }
   const regionLabels = displayLabels(regions, resolved, labels, bpPerPx)

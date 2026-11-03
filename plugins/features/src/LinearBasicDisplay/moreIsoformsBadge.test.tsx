@@ -399,11 +399,13 @@ function renderLabelLayer(
   } = {},
 ) {
   const model = {
-    renderedShowLabels: true,
-    renderedShowSubfeatureLabels: true,
-    renderedShowDescriptions: false,
+    renderedLabels: {
+      showLabels: true,
+      showSubfeatureLabels: true,
+      showDescriptions: false,
+      fontSize: 11,
+    },
     canvasWidthPx: 1000,
-    renderedLabelFontSize: 11,
     height: 100,
     contentHeight: 100,
     labelScrollBucket: 0,
@@ -496,7 +498,14 @@ describe('the badge in the label layer', () => {
   })
 
   it('goes wherever the name goes', () => {
-    const { queryByTestId } = renderLabelLayer({ renderedShowLabels: false })
+    const { queryByTestId } = renderLabelLayer({
+      renderedLabels: {
+        showLabels: false,
+        showSubfeatureLabels: true,
+        showDescriptions: false,
+        fontSize: 11,
+      },
+    })
     expect(queryByTestId('feature-more-isoforms-gene1')).toBeNull()
   })
 })

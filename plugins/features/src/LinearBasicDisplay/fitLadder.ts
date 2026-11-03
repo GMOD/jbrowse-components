@@ -2,6 +2,7 @@ import { PILE_LEADER_MAX_ROOM_FACTOR } from './labelReservation.ts'
 import { maxBottom } from './layoutQueries.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LabelPlacementContext } from './components/labelPositioning.ts'
 import type { LabelRoomFactors } from './layoutInputs.ts'
 
 // Past 8x only pinned and isolated names survive, so the search covers 0-8
@@ -226,6 +227,26 @@ export function showsSubfeatureLabels(
   return (
     !reservesBelowLabelRows || (stage.scale === 1 && !stage.dropBelowLabelRows)
   )
+}
+
+// The labels the kept rung draws, at the size it priced them at. The size is
+// zero at the `bare` rung, which spends the below-label rows at no height and
+// so reserves no label width; a hit box or highlight measuring at the mode's
+// size overhangs its neighbour by an ungated subfeature label nothing drew.
+export function renderedLabelContext(
+  stage: Pick<
+    FitStage,
+    'showLabels' | 'showDescriptions' | 'scale' | 'dropBelowLabelRows'
+  >,
+  reservesBelowLabelRows: boolean,
+  labelFontSize: number,
+): LabelPlacementContext {
+  return {
+    showLabels: stage.showLabels,
+    showDescriptions: stage.showDescriptions,
+    showSubfeatureLabels: showsSubfeatureLabels(stage, reservesBelowLabelRows),
+    fontSize: stage.dropBelowLabelRows ? 0 : labelFontSize,
+  }
 }
 
 export function fittedHeight(

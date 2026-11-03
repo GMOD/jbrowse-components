@@ -83,10 +83,12 @@ export function recordsHighlightViews(self: RecordsHighlightHost) {
           outlineColor: 0,
         },
         regionInstanceIndexes: this.recordsRegionInstanceIndexes,
-        renderedShowLabels: showLabels,
-        renderedShowDescriptions: showDescriptions,
-        renderedShowSubfeatureLabels: false,
-        renderedLabelFontSize: self.recordsFontSize,
+        renderedLabels: {
+          showLabels,
+          showDescriptions,
+          showSubfeatureLabels: false,
+          fontSize: self.recordsFontSize,
+        },
       }
     },
     /**

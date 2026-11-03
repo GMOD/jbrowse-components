@@ -21,6 +21,7 @@ import {
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { LabelPlacementContext } from './components/labelPositioning.ts'
 import type { FitStage } from './fitLadder.ts'
 import type { LabelRoomFactors } from './layoutInputs.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -44,8 +45,7 @@ export interface YMorphAutorunHost extends YMorphState, IStateTreeNode {
   fitDecimatedFactors: LabelRoomFactors | undefined
   geneNamesOnly: boolean
   displayMode: DisplayMode
-  renderedShowLabels: boolean
-  renderedShowDescriptions: boolean
+  renderedLabels: Pick<LabelPlacementContext, 'showLabels' | 'showDescriptions'>
   offScreen: boolean
   beginYMorph: (fromTops: Map<string, number>, fromMaxY: number) => void
   endAnimation: () => void
@@ -165,8 +165,8 @@ export function installYMorphAutorun(self: YMorphAutorunHost) {
       const { level, maxIsoforms, bodyScale } = self.fitStage
       const geometry = rowGeometrySignature({
         displayMode: self.displayMode,
-        renderedShowLabels: self.renderedShowLabels,
-        renderedShowDescriptions: self.renderedShowDescriptions,
+        renderedShowLabels: self.renderedLabels.showLabels,
+        renderedShowDescriptions: self.renderedLabels.showDescriptions,
         fitScale: self.fitScale,
         bodyScale,
         fitLevel: level,

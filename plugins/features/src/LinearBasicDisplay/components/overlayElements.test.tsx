@@ -37,12 +37,16 @@ const DATA = makeFeatureData({
   }),
 })
 
+const LABELS = {
+  showLabels: true,
+  showSubfeatureLabels: true,
+  showDescriptions: false,
+  fontSize: 11,
+}
+
 const MODEL = {
-  renderedShowLabels: true,
-  renderedShowSubfeatureLabels: true,
-  renderedShowDescriptions: false,
+  renderedLabels: LABELS,
   canvasWidthPx: 1000,
-  renderedLabelFontSize: 11,
   height: 100,
   contentHeight: 100,
   labelScrollBucket: 0,
@@ -165,17 +169,19 @@ function renderLabels(overrides: Partial<typeof MODEL>) {
 // while the text keeps its font size.
 test('the label layer keeps a subfeature label past the flags that hide names', () => {
   const { queryByText } = renderLabels({
-    renderedShowLabels: false,
-    renderedShowDescriptions: false,
+    renderedLabels: { ...LABELS, showLabels: false, showDescriptions: false },
   })
   expect(queryByText('TX1')).not.toBeNull()
 })
 
 test('the label layer drops a subfeature label the fit squeeze has shrunk', () => {
   const { queryByText } = renderLabels({
-    renderedShowLabels: false,
-    renderedShowDescriptions: false,
-    renderedShowSubfeatureLabels: false,
+    renderedLabels: {
+      ...LABELS,
+      showLabels: false,
+      showDescriptions: false,
+      showSubfeatureLabels: false,
+    },
   })
   expect(queryByText('TX1')).toBeNull()
 })
