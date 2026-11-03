@@ -147,26 +147,10 @@ exports[`open up a widget 1`] = `
                     class="MuiFormControl-root MuiFormControl-marginDense css-HASH-MuiFormControl-root"
                   >
                     <button
-                      aria-expanded="false"
-                      class="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-sizeSmall MuiButton-colorPrimary css-HASH-MuiButtonBase-root-MuiButton-root"
+                      class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-sizeSmall MuiButton-colorPrimary css-HASH-MuiButtonBase-root-MuiButton-root"
                       tabindex="0"
                       type="button"
                     >
-                      <span
-                        class="MuiButton-icon MuiButton-startIcon css-HASH-MuiButton-startIcon"
-                      >
-                        <svg
-                          aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-HASH-MuiSvgIcon-root"
-                          data-testid="ExpandMoreIcon"
-                          focusable="false"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z"
-                          />
-                        </svg>
-                      </span>
                       Show feature sequence
                     </button>
                   </div>

@@ -12,9 +12,6 @@ import { makeStyles } from '../../util/tss-react/index.ts'
 import type { BaseCardProps } from '../types.tsx'
 
 const useStyles = makeStyles()(theme => ({
-  title: {
-    textTransform: 'none',
-  },
   expansionPanelDetails: {
     display: 'block',
     padding: theme.spacing(1),
@@ -34,9 +31,7 @@ const BaseCard = observer(function BaseCard({
       data-testid={`BaseCard-${title}`}
     >
       <AccordionSummary expandIcon={<ExpandMore />}>
-        <Typography variant="button" className={classes.title}>
-          {title}
-        </Typography>
+        <Typography variant="button">{title}</Typography>
       </AccordionSummary>
       <AccordionDetails className={classes.expansionPanelDetails}>
         {children}

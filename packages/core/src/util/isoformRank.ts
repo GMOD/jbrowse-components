@@ -81,7 +81,7 @@ export function isCodingIsoform<T>(
 // genomic footprint an isoform with a large intron could win. A duplicated CDS
 // row is a real GFF3 quirk that would otherwise inflate one isoform past a
 // genuinely longer protein, so equal spans count once.
-export function codingLength<T>(read: IsoformReader<T>, feature: T) {
+function codingLength<T>(read: IsoformReader<T>, feature: T) {
   const spans: [number, number][] = []
   const walk = (f: T) => {
     for (const sub of read.subfeatures(f)) {
