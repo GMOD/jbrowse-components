@@ -12,6 +12,9 @@
 //
 //   emit             the emitters' walk, which reads the tooltip once per
 //                    feature record, the whole the share is taken of
+//   emit-labels      the same walk with the default name and description
+//                    label fields on, the jexl defaults `fieldReader` reads
+//                    natively as chains of `||`
 //   jexl             the default slot through jexl per record, which `emit`
 //                    paid before `fieldReader` read a chain of `||` natively
 //   jexl-control     the same call through a second driver, the floor
@@ -25,6 +28,10 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { tooltipReader } from '../src/RenderFeatureDataRPC/collect/glyphColors.ts'
 import { processFeatureRecord } from '../src/RenderFeatureDataRPC/collect/glyphEmitters.ts'
 import { createCollector } from '../src/RenderFeatureDataRPC/collect/renderContext.ts'
+import {
+  FEATURE_DESCRIPTION_FIELD,
+  FEATURE_NAME_FIELD,
+} from '../src/RenderFeatureDataRPC/featureNameField.ts'
 import { DEFAULT_TOOLTIP } from '../src/RenderFeatureDataRPC/featureTooltip.ts'
 import { findGlyph } from '../src/RenderFeatureDataRPC/glyphs/findGlyph.ts'
 import { getFeatureName } from '../src/RenderFeatureDataRPC/labelUtils.ts'
@@ -106,6 +113,21 @@ const ctx = {
 const layouts: FeatureLayout[] = features.map(feature =>
   findGlyph(feature, config)({ feature, config, jexl }),
 )
+const labelledConfig = {
+  ...config,
+  labels: {
+    name: FEATURE_NAME_FIELD,
+    description: FEATURE_DESCRIPTION_FIELD,
+  },
+}
+const labelledCtx = {
+  ...ctx,
+  config: labelledConfig,
+  tooltipOf: tooltipReader(labelledConfig, jexl),
+}
+const labelledLayouts: FeatureLayout[] = features.map(feature =>
+  findGlyph(feature, labelledConfig)({ feature, config: labelledConfig, jexl }),
+)
 
 // The records the emitters evaluate a tooltip for: one flatbush item each.
 const records = (() => {
@@ -147,6 +169,16 @@ const drivers = [
       const collector = createCollector()
       for (const layout of layouts) {
         processFeatureRecord(layout, ctx, collector)
+      }
+      return collector.flatbushItems.length
+    },
+  },
+  {
+    name: 'emit-labels',
+    run: () => {
+      const collector = createCollector()
+      for (const layout of labelledLayouts) {
+        processFeatureRecord(layout, labelledCtx, collector)
       }
       return collector.flatbushItems.length
     },
