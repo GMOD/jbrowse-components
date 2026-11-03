@@ -91,7 +91,10 @@ export const rowArrangementConfigSchema = ConfigurationSchema(
      * The dendrogram beside the rows, a [RowTree](../rowtree): newick, or
      * `{ newick, provenance }` where a clustering run wrote it beside the
      * order it produced. A reorder that moves a row drops it. Whether it
-     * draws is `rows.axis.tree`.
+     * draws is `rows.axis.tree`. The rows follow `rows.sort`, which a
+     * clustering run writes beside it, not the tree: with no `sort` they keep
+     * their source's order, and the tree draws only where its leaves list
+     * them in that order, except on MAF, whose rows follow its leaves.
      */
     tree: rowTreeConfigSchema,
     /**
