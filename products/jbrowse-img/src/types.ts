@@ -69,7 +69,7 @@ export interface Opts {
   fasta?: string
   defaultSession?: boolean
   trackList?: Entry[]
-  tracks?: string
+  trackConfigs?: string
   themeName?: (typeof themeNames)[number]
   themeMode?: (typeof themeModes)[number]
   // Font family applied to the whole SVG root so every <text> (ruler, track

@@ -46,7 +46,7 @@ function baseDirOf(file: string) {
 // The `--multiwig` argument is either a path/URL list (comma-separated BigWig
 // URLs → the `bigWigs` shorthand) or a `.json` file holding an array of BigWig
 // URLs or full subadapter objects. A JSON file's `localPath`s resolve relative
-// to that file, matching how --tracks/--config paths resolve.
+// to that file, matching how --trackConfigs/--config paths resolve.
 function readMultiWiggleSources(file: string): unknown[] {
   if (file !== STDIN_ARG && !file.toLowerCase().endsWith('.json')) {
     return file
@@ -85,7 +85,7 @@ function resolveLocalPaths(value: unknown, baseDir: string) {
   }
 }
 
-// --tracks names a JSON array of track configs, whose localPaths resolve relative
+// --trackConfigs names a JSON array of track configs, whose localPaths resolve relative
 // to it (or to the cwd when piped)
 function readTrackArray(file: string): Track[] {
   const data = read(file)
@@ -125,7 +125,7 @@ export function readData(
     session,
     fasta,
     defaultSession,
-    tracks,
+    trackConfigs,
     trackList = [],
     argv = [],
   }: Opts,
@@ -142,7 +142,7 @@ export function readData(
     (fasta ? ['fasta', [fasta]] : undefined) ??
     trackList.find(isGenome)
 
-  const tracksData = tracks ? readTrackArray(tracks) : undefined
+  const tracksData = trackConfigs ? readTrackArray(trackConfigs) : undefined
   const configData: Partial<Config> & Record<string, unknown> = configObject
     ? configObject
     : config
@@ -280,7 +280,10 @@ export function readData(
   const openTracks: OpenTrack[] = []
   for (const [type, opts] of trackList) {
     const [file, ...rest] = opts
-    if (!comparativeRole([type, opts])) {
+    const consumed = comparative
+      ? !!comparativeRole([type, opts])
+      : isGenome([type, opts]) && file === genome?.[1][0]
+    if (!consumed) {
       if (!file) {
         throw new Error(`--${type} requires a file argument`)
       }

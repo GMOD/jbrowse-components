@@ -63,10 +63,10 @@ test('validates trackLabels against the allowed modes', () => {
 test('warns on an invalid enum value instead of silently defaulting', () => {
   const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
   try {
-    expect(getThemeName(parse('--themeName darkStock'))).toBe('darkStock')
+    expect(getThemeName(parse('--themeName stock'))).toBe('stock')
     expect(warn).not.toHaveBeenCalled()
 
-    expect(getThemeName(parse('--themeName drakStock'))).toBeUndefined()
+    expect(getThemeName(parse('--themeName darkStock'))).toBeUndefined()
     expect(getTrackLabels(parse('--trackLabels lft'))).toBeUndefined()
     expect(warn).toHaveBeenCalledTimes(2)
   } finally {

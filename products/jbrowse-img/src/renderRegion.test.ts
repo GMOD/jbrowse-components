@@ -196,7 +196,7 @@ describe('readData', () => {
 
   test('loads tracks from tracks JSON file', () => {
     const tracksFile = path.join(dataDir, 'tracks.json')
-    const result = readData({ config: configFile, tracks: tracksFile })
+    const result = readData({ config: configFile, trackConfigs: tracksFile })
     expect(Array.isArray(result.tracks)).toBe(true)
     expect(result.tracks.length).toBeGreaterThan(0)
   })
@@ -204,7 +204,7 @@ describe('readData', () => {
   test('throws when tracks file is not a JSON array', () => {
     const assemblyAsTrack = assemblyFile
     expect(() =>
-      readData({ config: configFile, tracks: assemblyAsTrack }),
+      readData({ config: configFile, trackConfigs: assemblyAsTrack }),
     ).toThrow(/expected a JSON array of tracks/)
   })
 
@@ -250,7 +250,7 @@ describe('readData', () => {
     warn.mockRestore()
   })
 
-  test('a file basename colliding with a --tracks trackId is suffixed too', () => {
+  test('a file basename colliding with a --trackConfigs trackId is suffixed too', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jbimg-'))
     const tracksFile = path.join(dir, 'tracks.json')
@@ -260,7 +260,7 @@ describe('readData', () => {
     )
     const result = readData({
       fasta: '/ref.fa',
-      tracks: tracksFile,
+      trackConfigs: tracksFile,
       trackList: [['bam', ['a/reads.bam']]],
     })
     expect(result.tracks.map(t => t.trackId)).toEqual([
@@ -307,7 +307,7 @@ describe('readData', () => {
         },
       ]),
     )
-    const result = readData({ fasta: '/ref.fa', tracks: tracksFile })
+    const result = readData({ fasta: '/ref.fa', trackConfigs: tracksFile })
     const adapter = result.tracks[0]!.adapter as {
       bigBedLocation: { localPath: string }
     }

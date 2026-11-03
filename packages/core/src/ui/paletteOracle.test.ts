@@ -12,7 +12,7 @@ import { createJBrowseThemeFromArgs, defaultThemes } from './theme.ts'
  */
 // Named rather than read off `defaultThemes`, because the retired names are
 // exactly what a shrinking `defaultThemes` would stop covering — and a stored
-// selection, a share link and `jbrowse-img --theme` still carry them.
+// selection and a share link still carry them.
 const NAMES = [
   ...Object.keys(defaultThemes),
   'lightStock',

@@ -591,8 +591,7 @@ jb2export --genome hg38 \
 ### Themes
 
 `--themeName` selects a palette (`default`, `stock` or `minimal`) and
-`--themeMode` draws it `light` or `dark`. The combined names `darkStock`,
-`lightMinimal` and the rest still work.
+`--themeMode` draws it `light` or `dark`.
 
 <!-- jb2export: dark_theme -->
 
@@ -1407,7 +1406,7 @@ A data file (local path or URL) opens as a track of the type its name says, e.g.
 ### Config file params (optional)
 
 - `--assembly` — the name of an assembly in `--config` or `--genome` to open
-- `--tracks` — path to a JSON file containing an array of JBrowse 2 track
+- `--trackConfigs` — path to a JSON file containing an array of JBrowse 2 track
   configs (e.g. [data/tracks.json](data/tracks.json))
 - `--session` — path to a JBrowse 2 session JSON exported from File → Export
   session
@@ -1429,8 +1428,8 @@ A data file (local path or URL) opens as a track of the type its name says, e.g.
 
 ### Appearance params
 
-- `--themeName` — theme to use for rendering: `default`, `lightStock`,
-  `lightMinimal`, `darkStock`, or `darkMinimal`
+- `--themeName` — palette: `default`, `stock`, or `minimal`
+- `--themeMode` — draw the palette `light` or `dark`
 - `--showGridlines` — draw genomic coordinate gridlines
 - `--trackLabels` — label position: `offset`, `overlapping`, `left`, or `hidden`
 
@@ -1462,7 +1461,7 @@ Options:
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
-  --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
+  --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --themeName       Palette for rendering: default, stock, or minimal
   --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
@@ -1482,7 +1481,7 @@ Examples:
       Custom track height and strand coloring
   jb2export --genome hg19 --track hg19-ncbiRefSeqCurated --loc chr1:1-100000 --out out.svg
       Pull the hg19 config from genomes.jbrowse.org and show a hosted track
-  jb2export --config jbrowse.json --assembly hg38 --tracks tracks.json --loc chr1:1-100000 --out out.svg
+  jb2export --config jbrowse.json --assembly hg38 --trackConfigs tracks.json --loc chr1:1-100000 --out out.svg
       Render from config with a JSON tracks file
   jb2export ref.fa.gz cytobands:cytobands.bed signal.bw --loc chr1 --out out.svg
       Render BigWig with cytobands
@@ -1511,7 +1510,7 @@ Options:
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
-  --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
+  --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --themeName       Palette for rendering: default, stock, or minimal
   --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
@@ -1550,7 +1549,7 @@ Options:
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
-  --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
+  --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --themeName       Palette for rendering: default, stock, or minimal
   --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
@@ -1589,7 +1588,7 @@ Options:
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
-  --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
+  --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --themeName       Palette for rendering: default, stock, or minimal
   --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
@@ -1618,7 +1617,7 @@ Options:
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
-  --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
+  --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --themeName       Palette for rendering: default, stock, or minimal
   --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]
@@ -1676,7 +1675,7 @@ Options:
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
   --defaultSession  Use default session from config [default: false]
-  --tracks          Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
+  --trackConfigs    Path to JSON file with an array of track configs (or "-" for stdin); added to the config's tracks, replacing any with the same trackId
   --themeName       Palette for rendering: default, stock, or minimal
   --themeMode       Draw that palette light or dark
   --fontFamily      Font family for all text (serif, sans-serif, monospace, or a named family) [default: serif]

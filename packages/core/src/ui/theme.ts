@@ -160,8 +160,8 @@ export const defaultThemes = {
 
 /**
  * Every theme name JBrowse answers to: the palettes above, plus the names from
- * before light and dark were an axis. `jbrowse-img --theme` and the SVG export
- * picker enumerate this, so a palette added or renamed fails their builds
+ * before light and dark were an axis. The SVG export
+ * picker enumerates this, so a palette added or renamed fails its build
  * rather than leaving a name that silently resolves to the default.
  */
 export type ThemeSelectionName =

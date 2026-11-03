@@ -99,8 +99,12 @@ describe('readData with a config', () => {
     fs.writeFileSync(
       tracksFile,
       JSON.stringify([
-        { trackId: 'genes', type: 'FeatureTrack', name: 'from --tracks' },
-        { trackId: 'variants', type: 'VariantTrack', name: 'from --tracks' },
+        { trackId: 'genes', type: 'FeatureTrack', name: 'from --trackConfigs' },
+        {
+          trackId: 'variants',
+          type: 'VariantTrack',
+          name: 'from --trackConfigs',
+        },
       ]),
     )
   })
@@ -109,8 +113,8 @@ describe('readData with a config', () => {
     fs.rmSync(tmpDir, { recursive: true, force: true })
   })
 
-  test('--tracks adds to the config tracks rather than replacing them', () => {
-    const data = readData({ config: configFile, tracks: tracksFile })
+  test('--trackConfigs adds to the config tracks rather than replacing them', () => {
+    const data = readData({ config: configFile, trackConfigs: tracksFile })
     expect(data.tracks.map(t => t.trackId)).toEqual([
       'genes',
       'coverage',
@@ -118,10 +122,10 @@ describe('readData with a config', () => {
     ])
   })
 
-  test('a --tracks entry overrides the config track with the same id', () => {
-    const data = readData({ config: configFile, tracks: tracksFile })
+  test('a --trackConfigs entry overrides the config track with the same id', () => {
+    const data = readData({ config: configFile, trackConfigs: tracksFile })
     expect(data.tracks.find(t => t.trackId === 'genes')?.name).toBe(
-      'from --tracks',
+      'from --trackConfigs',
     )
     expect(data.tracks.find(t => t.trackId === 'coverage')?.name).toBe(
       'from config',

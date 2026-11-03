@@ -117,7 +117,7 @@ async function main() {
       width,
       noRasterize: getBoolean(rest, 'noRasterize'),
       defaultSession: getBoolean(rest, 'defaultSession'),
-      tracks: getString(rest, 'tracks'),
+      trackConfigs: getString(rest, 'trackConfigs'),
       themeName: getThemeName(rest),
       themeMode: getThemeMode(rest),
       fontFamily: getString(rest, 'fontFamily'),

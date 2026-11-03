@@ -183,7 +183,7 @@ test('--track routes a GCContentTrack to the wiggle modifiers', async () => {
   const render = mods =>
     renderRegion({
       fasta,
-      tracks,
+      trackConfigs: tracks,
       loc: 'ctgA:1-2000',
       noRasterize: true,
       showTracks: [['track', ['gc', 'height:100', ...mods]]],

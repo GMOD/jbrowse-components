@@ -977,7 +977,7 @@ export const palettePresets = {
 /**
  * The theme names from before light and dark were an axis, as the palette and
  * mode each one meant. A stored selection, a share link, an admin's
- * `configuration.theme`, `jbrowse-img --theme` and a saved figure spec all
+ * `configuration.theme` and a saved figure spec all
  * carry these, so they keep resolving rather than falling back to the default.
  */
 export const legacyThemeNames = {

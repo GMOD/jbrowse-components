@@ -78,7 +78,7 @@ test('a track of an unregistered type is skipped, not fatal', async () => {
     mode: 'circular',
     fasta: volvoxFasta,
     trackList: [['vcf', [sv]]],
-    tracks: path.join(__dirname, '../data/unknownTrackType.json'),
+    trackConfigs: path.join(__dirname, '../data/unknownTrackType.json'),
   })
   const paths = svg.match(/<path/g) ?? []
   assert.ok(paths.length >= 2, `expected an ideogram, got ${paths.length}`)

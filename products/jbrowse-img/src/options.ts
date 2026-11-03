@@ -2,6 +2,7 @@ import { modeDescriptors, viewModes } from './modes.ts'
 
 import type { ViewMode } from './modes.ts'
 import type { AssertTrue, Covers } from './types.ts'
+import type { LegacyThemeName } from '@jbrowse/core/ui/palette'
 import type { ThemeSelectionName } from '@jbrowse/core/ui/theme'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
@@ -41,23 +42,13 @@ const trackLabelModes = [
   'hidden',
 ] as const satisfies readonly TrackLabelMode[]
 
-// The theme names, pinned to core's own registry so a palette added or renamed
-// there fails the build here rather than leaving the CLI silently rejecting (or
-// offering) a name that no longer matches. Light and dark are `--mode`; the
-// four names that spelled a mode still resolve, for a script that passes one.
-type ThemeName = ThemeSelectionName
+type PaletteName = Exclude<ThemeSelectionName, LegacyThemeName>
 
-export const paletteNames = ['default', 'stock', 'minimal'] as const
-
-// the retired names still render, for a script that passes one, but the help
-// offers the palettes and `--themeMode`
 export const themeNames = [
-  ...paletteNames,
-  'lightStock',
-  'lightMinimal',
-  'darkStock',
-  'darkMinimal',
-] as const satisfies readonly ThemeName[]
+  'default',
+  'stock',
+  'minimal',
+] as const satisfies readonly PaletteName[]
 
 export const themeModes = ['light', 'dark'] as const
 
@@ -66,7 +57,7 @@ export const themeModes = ['light', 'dark'] as const
 // from applyTrackOpts.ts.
 export type AssertEnumListsCoverUpstream = [
   AssertTrue<Covers<TrackLabelMode, typeof trackLabelModes>>,
-  AssertTrue<Covers<ThemeName, typeof themeNames>>,
+  AssertTrue<Covers<PaletteName, typeof themeNames>>,
 ]
 
 const optionDefs: OptionDef[] = [
@@ -130,13 +121,13 @@ const optionDefs: OptionDef[] = [
     default: false,
   },
   {
-    name: 'tracks',
+    name: 'trackConfigs',
     description:
       'Path to JSON file with an array of track configs (or "-" for stdin); added to the config\'s tracks, replacing any with the same trackId',
   },
   {
     name: 'themeName',
-    description: `Palette for rendering: ${orList(paletteNames)}`,
+    description: `Palette for rendering: ${orList(themeNames)}`,
   },
   {
     name: 'themeMode',
@@ -187,7 +178,7 @@ const examples: [string, string][] = [
     'Pull the hg19 config from genomes.jbrowse.org and show a hosted track',
   ],
   [
-    '--config jbrowse.json --assembly hg38 --tracks tracks.json --loc chr1:1-100000 --out out.svg',
+    '--config jbrowse.json --assembly hg38 --trackConfigs tracks.json --loc chr1:1-100000 --out out.svg',
     'Render from config with a JSON tracks file',
   ],
   [
