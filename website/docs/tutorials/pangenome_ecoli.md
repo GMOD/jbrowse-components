@@ -39,7 +39,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 - the NCBI
   [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
   CLI
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.1.0 or later, for
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.3.0 or later, for
   [the graph track](#opening-the-graph-in-the-graph-genome-view)
 - the GraphGenomeView plugin, for the same track. In your own JBrowse,
   [install it from the plugin store](/docs/user_guides/plugin_store)
@@ -542,10 +542,9 @@ gfa-to-tabix build pggb/*.smooth.final.gfa -o ecoli_pggb --reference K12 --snarl
 ```
 
 The command writes the segments and links, a coarse tier with variants under 50
-bp folded into the reference, and `ecoli_pggb.config.json`. The `uri`s below are
-our hosted copy. A local build reads the contig layout instead, since the
-anchored layout at the bare prefix draws multi-megabase rows across every
-window, so set the top-level `uri` to `ecoli_pggb.contig`.
+bp folded into the reference, and `ecoli_pggb.config.json`, whose graph track
+reads the contig layout, `ecoli_pggb.contig`. The `uri`s below are our hosted
+copy.
 
 ```json addtrack
 {

@@ -33,7 +33,7 @@ The graph view is a beta plugin. We welcome your [feedback](/contact).
 
 - [the GraphGenomeView plugin](#the-graphgenomeview-plugin)
 - htslib (`bgzip`, `tabix`) and `bcftools`
-- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.1.0 or later, for the
+- [`gfa-to-tabix`](https://github.com/GMOD/gfa-to-tabix) 2.3.0 or later, for the
   graph's files in format 2, which the configs below read, and the walk index
   (walk format 5, the only one the plugin reads)
 - [`gfatools`](https://github.com/lh3/gfatools), for an rGFA's bubbles
@@ -215,10 +215,11 @@ JBrowse otherwise ignores. Without a config, **Open track... → Add pangenome
 graph track** reads `hprc.graph.json` beside `hprc.graph.bed.gz`, so a track
 opened from that url gets the coarse tier too.
 
-A plain GFA's anchored layout, at the bare prefix, files a segment under every
-reference position its branch spans. On the _E. coli_ pggb and Minigraph-Cactus
-graphs that draws multi-megabase rows across every window, so their graph tracks
-read the contig layout: set the top-level `uri` to `<prefix>.contig`.
+For a plain GFA the config's graph track reads the contig layout,
+`<prefix>.contig`, and the tier is folded the same way. The anchored layout at
+the bare prefix files a segment under every reference position its branch spans,
+which on the _E. coli_ pggb and Minigraph-Cactus graphs draws multi-megabase
+rows across every window.
 
 Turned on, the track draws as a graph. **Display types → Feature display** in
 its track menu draws the same segments as a row.
