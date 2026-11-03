@@ -925,6 +925,19 @@ export function colorForValue(
 }
 
 /**
+ * The color object an itemRgb pick writes over `current`: a fieldless
+ * identity scale, so each feature paints its file's own color. The field and
+ * the constant go, and a fieldless scale's domain and key names stay.
+ */
+export function colorForIdentity(current: ColorSlots): ColorSlots {
+  const { value: _value, ...kept } = withoutField(current)
+  return definedColor({
+    ...kept,
+    scale: { ...kept.scale, type: IDENTITY_SCALE },
+  })
+}
+
+/**
  * An ordinal encoding's field as every ordinal channel keys, orders, names
  * and paints it, dealing its colors into `held` (`heldColorSlots`), or
  * `undefined` for any other encoding.

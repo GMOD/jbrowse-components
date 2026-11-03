@@ -4,7 +4,7 @@ import { getSnapshot, onPatch, types } from '@jbrowse/mobx-state-tree'
 
 import ColorWritesMixin from './ColorWritesMixin.ts'
 import {
-  COLOR_SCALES,
+  FEATURE_COLOR_SCALES,
   colorChannelOptions,
   colorDomainSlot,
   colorFieldSlot,
@@ -31,7 +31,7 @@ const TestColor = ConfigurationSchema(
       'TestWritesColorScale',
       {
         ...colorScaleTypeSlot({
-          scales: COLOR_SCALES,
+          scales: FEATURE_COLOR_SCALES,
           scaleName: 'TestWritesColorScaleType',
         }),
         ...colorDomainSlot({}),
@@ -180,6 +180,37 @@ test('Default clears the constant and the field together', () => {
   kept.pickDefaultColor()
   expect(colorOf(kept)).toEqual({})
   expect(kept.parkedColor).toEqual({ field: 'type' })
+})
+
+test("Default after a solid color over the file's own colors clears the identity scale too", () => {
+  const d = display({ scale: { type: 'identity' } })
+  d.setColorValue('#123456')
+  d.pickDefaultColor()
+  expect(colorOf(d)).toEqual({})
+})
+
+// The feature display's Reset reads a kept identity scale as itemRgb on.
+test("a solid color's reset returns to the file's own colors", () => {
+  const d = display({ scale: { type: 'identity' } })
+  d.setColorValue('#123456')
+  d.setColorValue(undefined)
+  expect(colorOf(d)).toEqual({ scale: { type: 'identity' } })
+})
+
+test("the file's own colors park the field, and re-picking it keeps its scale", () => {
+  const tint = { field: 'tint', scale: { domain: ['x'], range: ['#f00'] } }
+  const d = display({ ...tint, value: 'red' })
+  d.colorByIdentity()
+  expect(colorOf(d)).toEqual({ scale: { type: 'identity' } })
+  d.colorByField('tint')
+  expect(colorOf(d)).toEqual(tint)
+})
+
+test("the file's own colors keep a fieldless key's domain and names", () => {
+  const key = { domain: ['rgb(227,26,28)'], names: ['Maternal'] }
+  const d = display({ scale: key })
+  d.colorByIdentity()
+  expect(colorOf(d)).toEqual({ scale: { ...key, type: 'identity' } })
 })
 
 test('Solid color paints the constant kept beside a painting field, and opens the picker', () => {

@@ -9,17 +9,11 @@ import {
 import { groupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
 import TableRowsIcon from '@mui/icons-material/TableRows'
 
+import { rowsFieldChoices } from './multiRowPlot.ts'
+
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const BED_COLOR = new Set<string>(BED_COLOR_FIELDS)
-
-// Values a block paints by, never names a row stands for.
-const NON_ROW_FIELDS = new Set(['strand', 'score', 'phase', ...BED_COLOR])
-
-/** The attributes "One row per..." offers. */
-export function rowsFieldChoices(attributes: readonly string[]) {
-  return attributes.filter(name => !NON_ROW_FIELDS.has(name))
-}
 
 /** The attributes Color by lists beside its Strand and itemRgb rows. */
 export function colorFieldChoices(attributes: readonly string[]) {
@@ -39,7 +33,7 @@ export interface MultiRowMenuModel {
   setRowsField: (field: string) => void
   colorField: string | undefined
   colorByMode: 'default' | 'solid' | 'strand' | 'itemRgb' | 'attribute'
-  colorByItemRgb: () => void
+  colorByIdentity: () => void
   colorByField: (field: string) => void
   pickDefaultColor: () => void
   pickSolidColor: () => void
@@ -51,6 +45,12 @@ export interface MultiRowMenuModel {
 
 // A `jexl:` field checks no radio and lists a disabled row naming it:
 // nothing here could write one back once a pick replaced it.
+function customExpressionItems(field: string | undefined): MenuItem[] {
+  return field !== undefined && isJexl(field)
+    ? [{ label: 'Custom expression', disabled: true, onClick: () => {} }]
+    : []
+}
+
 function rowsFieldMenuItems(self: MultiRowMenuModel): MenuItem[] {
   const current = self.rowsField
   const choices = rowsFieldChoices(self.attributes)
@@ -64,15 +64,7 @@ function rowsFieldMenuItems(self: MultiRowMenuModel): MenuItem[] {
           label: 'One row per...',
           icon: TableRowsIcon,
           subMenu: [
-            ...(isJexl(current)
-              ? [
-                  {
-                    label: 'Custom expression',
-                    disabled: true,
-                    onClick: () => {},
-                  },
-                ]
-              : []),
+            ...customExpressionItems(current),
             ...radioItems(
               fields.map(value => ({ value, label: value })),
               isJexl(current) ? undefined : current,
@@ -95,6 +87,7 @@ function colorByMenuItems(self: MultiRowMenuModel): MenuItem[] {
   const fields =
     current === undefined ||
     current === STRAND_FIELD ||
+    isJexl(current) ||
     choices.includes(current)
       ? choices
       : [...choices, current]
@@ -102,30 +95,33 @@ function colorByMenuItems(self: MultiRowMenuModel): MenuItem[] {
     colorByMenuItem({
       blocks: [
         {
-          rows: colorFieldMenuItems(self, [
-            {
-              label: 'Strand',
-              field: STRAND_FIELD,
-              checked: self.colorByMode === 'strand',
-            },
-            ...(carriesBedColor(self.attributes) ||
-            self.colorByMode === 'itemRgb'
-              ? [
-                  {
-                    label: 'itemRgb',
-                    checked: self.colorByMode === 'itemRgb',
-                    onClick: () => {
-                      self.colorByItemRgb()
+          rows: [
+            ...customExpressionItems(current),
+            ...colorFieldMenuItems(self, [
+              {
+                label: 'Strand',
+                field: STRAND_FIELD,
+                checked: self.colorByMode === 'strand',
+              },
+              ...(carriesBedColor(self.attributes) ||
+              self.colorByMode === 'itemRgb'
+                ? [
+                    {
+                      label: 'itemRgb',
+                      checked: self.colorByMode === 'itemRgb',
+                      onClick: () => {
+                        self.colorByIdentity()
+                      },
                     },
-                  },
-                ]
-              : []),
-            ...fields.map(field => ({
-              label: field,
-              field,
-              checked: current === field,
-            })),
-          ]),
+                  ]
+                : []),
+              ...fields.map(field => ({
+                label: field,
+                field,
+                checked: current === field,
+              })),
+            ]),
+          ],
         },
       ],
     }),

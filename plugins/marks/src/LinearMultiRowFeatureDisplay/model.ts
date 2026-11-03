@@ -2,8 +2,9 @@ import { ConfigurationReference, setConf } from '@jbrowse/core/configuration'
 import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import { getSession } from '@jbrowse/core/util'
 import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
-import { isJexl } from '@jbrowse/core/util/jexlStrings'
-import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
+import ColorWritesMixin, {
+  solidColorOf,
+} from '@jbrowse/display-kit/ColorWritesMixin'
 import SolidColorDialog from '@jbrowse/display-kit/SolidColorDialog'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -80,8 +81,7 @@ export function stateModelFactory(
        * callback.
        */
       get solidColor(): string | undefined {
-        const { value } = self.writtenColor
-        return typeof value === 'string' && !isJexl(value) ? value : undefined
+        return solidColorOf(self.writtenColor)
       },
       /**
        * #getter
@@ -117,16 +117,6 @@ export function stateModelFactory(
        */
       setRowsField(field: string) {
         setConf(self.conf, ['rows', 'field'], field)
-      },
-      /**
-       * #action
-       * Color by's itemRgb: each feature its file's color, through a
-       * fieldless identity `encoding.color`, so a black triple paints black.
-       */
-      colorByItemRgb() {
-        if (self.colorByMode !== 'itemRgb') {
-          setConf(self, ['encoding', 'color'], { scale: { type: 'identity' } })
-        }
       },
       /**
        * #action

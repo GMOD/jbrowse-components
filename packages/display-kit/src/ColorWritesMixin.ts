@@ -7,6 +7,7 @@ import { compareStructural } from 'mobx'
 import ParkedColorMixin from './ParkedColorMixin.ts'
 import {
   colorForField,
+  colorForIdentity,
   colorForValue,
   impliedFieldOf,
 } from './colorConfigSchema.ts'
@@ -43,9 +44,11 @@ export function writtenColorOf(color: AnyConfigurationModel): ColorSlots {
     : withImpliedField(written, impliedFieldOf(color))
 }
 
-// The constant `value` holds, painting or kept beside a field; undefined for
-// none or a `jexl:` expression.
-function solidColorOf({ value }: ColorSlots): string | undefined {
+/**
+ * The constant `value` holds, painting or kept beside a field; undefined for
+ * none or a `jexl:` expression.
+ */
+export function solidColorOf({ value }: ColorSlots): string | undefined {
   return typeof value === 'string' && !isJexl(value) ? value : undefined
 }
 
@@ -95,15 +98,27 @@ export default function ColorWritesMixin() {
         },
         /**
          * #action
-         * Color by's Default: no field and no constant, so the track's own
-         * color paints, a `jexl:` expression included.
+         * Paint each feature its file's own color through a fieldless
+         * identity scale, parking the field.
+         */
+        colorByIdentity() {
+          write(colorForIdentity(self.writtenColor))
+        },
+        /**
+         * #action
+         * Color by's Default: no field, no constant and no identity scale, so
+         * the track's own color paints, a `jexl:` expression included.
          */
         pickDefaultColor() {
-          if (solidColorOf(self.writtenColor) === undefined) {
-            this.colorByField(undefined)
-          } else {
-            this.setColorValue(undefined)
-          }
+          const written = self.writtenColor
+          write(
+            colorForField(
+              solidColorOf(written) === undefined
+                ? written
+                : colorForValue(written, undefined),
+              undefined,
+            ),
+          )
         },
         /**
          * #action

@@ -45,16 +45,43 @@ function labels(items: MenuItem[]) {
   return items.flatMap(i => ('label' in i ? [i.label] : []))
 }
 
-test('a painting rows on repClass where the features carry it, else name, unless the adapter lists sources', () => {
+test('a painting rows on repClass or name where the features carry it, unless the adapter lists sources', () => {
   expect(
-    multiRowPlot({ numeric: [], categorical: [], attributes: ['repClass'] }),
+    multiRowPlot({
+      numeric: [],
+      categorical: [],
+      attributes: ['name', 'repClass'],
+    }),
   ).toEqual({ marks: RECT_MARKS, rows: 'repClass' })
   expect(
-    multiRowPlot({ numeric: [], categorical: [], attributes: ['sample'] }),
-  ).toEqual({ marks: RECT_MARKS, rows: 'name' })
+    multiRowPlot({
+      numeric: [],
+      categorical: ['sample'],
+      attributes: ['name', 'sample'],
+    }).rows,
+  ).toBe('name')
   expect(
     multiRowPlot({ numeric: [], categorical: [], rows: 'source' }).rows,
   ).toBe('source')
+})
+
+test('nameless features row on the first attribute few values apart, else draw one lane', () => {
+  expect(
+    multiRowPlot({
+      numeric: [],
+      categorical: ['sample', 'strand'],
+      attributes: ['sample', 'score', 'strand'],
+    }).rows,
+  ).toBe('sample')
+  const bed3 = multiRowPlot({
+    numeric: ['score'],
+    categorical: ['strand'],
+    attributes: ['score', 'strand'],
+  })
+  expect(bed3.rows).toBeUndefined()
+  const model = display({})
+  model.applyDefaultPlot(bed3)
+  expect(model.drawsRows).toBe(false)
 })
 
 test('spliced features draw their blocks joined by a line, and a file stating colors paints them', () => {
@@ -179,10 +206,28 @@ test('One row per... and Color by offer the scanned attributes and write the dis
 
   model.setRowsField('name')
   expect(model.rowsField).toBe('name')
-  model.colorByItemRgb()
+  model.colorByIdentity()
   expect(model.colorByMode).toBe('itemRgb')
   model.colorByField('strand')
   expect(model.colorByMode).toBe('strand')
+})
+
+test('Color by a `jexl:` field ticks nothing and names it a custom expression', () => {
+  const expr = 'jexl:get(feature,"tint")'
+  const model = display({
+    rows: 'sample',
+    marks: RECT_MARKS,
+    encoding: { color: { field: expr } },
+  })
+  model.setPlotFields({
+    numeric: [],
+    categorical: [],
+    attributes: ['sample', 'tint'],
+  })
+  const colorBy = subMenu(multiRowMenuItems(model), 'Color by')
+  expect(labels(colorBy)).toContain('Custom expression')
+  expect(labels(colorBy)).not.toContain(expr)
+  expect(labels(colorBy.filter(i => 'checked' in i && i.checked))).toEqual([])
 })
 
 test('One row per... another field drops the arrangement, and the field in force keeps it', () => {
