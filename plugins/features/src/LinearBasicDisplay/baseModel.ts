@@ -1628,33 +1628,38 @@ export default function baseStateModelFactory(
       },
       /**
        * #method
-       * The Group by dialog's choice of field as plot settings, which its
-       * Apply writes and its Edit plot button shows: the facet, keeping its
-       * domain while the field is the one already set; a color by the field
-       * when ticked, left alone while it already paints through any scale;
-       * and unticked over a categorical color that was the facet's own, no
-       * field. Both colors keep a written constant, as Color by does.
+       * The color the Group by dialog's choice of field writes: a color by
+       * the field when ticked, left alone while it already paints through any
+       * scale; and unticked over a categorical color that was the facet's own,
+       * no field. Both keep a written constant, as Color by does. Undefined
+       * where the color stays as it is.
        */
-      groupByPlot(field: string | undefined, colorByGroup: boolean): Plot {
+      groupByColor(field: string | undefined, colorByGroup: boolean) {
         const groupColor = self.categoricalColorField?.field
         const current = facetOf(self.facet, getConf(self, ['facet', 'hidden']))
         const written = self.writtenColor
         const wasGroupColor =
           groupColor !== undefined &&
           (groupColor === current?.field || groupColor === field)
+        return colorByGroup && field
+          ? field === self.colorField
+            ? undefined
+            : colorForField(written, field, self.parkedColor)
+          : wasGroupColor
+            ? colorForField(written, undefined)
+            : undefined
+      },
+      /**
+       * #method
+       * The Group by dialog's choice of field as plot settings, which its
+       * Apply writes and its Edit plot button shows: the facet, keeping its
+       * domain while the field is the one already set, and `groupByColor`.
+       */
+      groupByPlot(field: string | undefined, colorByGroup: boolean): Plot {
+        const color = this.groupByColor(field, colorByGroup)
         return {
           facet: field ? facetForField(self.writtenFacet, field) : null,
-          ...(colorByGroup && field
-            ? field === self.colorField
-              ? {}
-              : {
-                  encoding: {
-                    color: colorForField(written, field, self.parkedColor),
-                  },
-                }
-            : wasGroupColor
-              ? { encoding: { color: colorForField(written, undefined) } }
-              : {}),
+          ...(color ? { encoding: { color } } : {}),
         }
       },
       /**
@@ -1706,12 +1711,11 @@ export default function baseStateModelFactory(
        * plot button shows.
        */
       applyGroupBy(field: string | undefined, colorByGroup: boolean) {
-        const plot = self.groupByPlot(field, colorByGroup)
-        const { color } = (plot.encoding ?? {}) as { color?: unknown }
+        const color = self.groupByColor(field, colorByGroup)
         if (color) {
           self.parkColor('color', self.writtenColor, color)
         }
-        self.applyPlot(plot)
+        self.applyPlot(self.groupByPlot(field, colorByGroup))
       },
       /**
        * #action
