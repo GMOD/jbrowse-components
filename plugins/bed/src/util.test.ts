@@ -126,6 +126,20 @@ describe('makeParser', () => {
     expect(parsed.pValue).toBe('1e-4')
   })
 
+  it('names the coordinate columns by position, whatever the header calls them', () => {
+    const parsed = makeParser({
+      columnNames: ['id', 'genoName', 'genoStart', 'genoEnd'],
+      coordinateColumns: [1, 2, 3],
+    }).parseLine('x\tchr1\t1000\t2000')
+    expect(parsed).toMatchObject({
+      id: 'x',
+      chrom: 'chr1',
+      chromStart: 1000,
+      chromEnd: 2000,
+    })
+    expect(parsed.genoName).toBeUndefined()
+  })
+
   it('uses the column names over a configured autoSql', () => {
     const autoSql = `table t
 "d"
@@ -217,6 +231,26 @@ describe('featureData', () => {
     expect(types).not.toContain('three_prime_UTR')
     // should still have block subfeatures
     expect(types).toEqual(['block', 'block', 'block'])
+  })
+
+  it("leaves a UCSC header's coordinate columns out of the attributes", () => {
+    const names = [
+      ...['genoName', 'genoStart', 'genoEnd', 'name', 'strand'],
+      ...['repFamily', 'repClass'],
+    ]
+    const result = featureData({
+      ...withNames(names),
+      splitLine: ['chr1', '1000', '1300', 'AluY', '+', 'Alu', 'SINE'],
+      refName: 'chr1',
+      start: 1000,
+      end: 1300,
+      uniqueId: 'rmsk-1',
+      scoreColumn: '',
+    })
+    expect(result).toMatchObject({ refName: 'chr1', repClass: 'SINE' })
+    expect(
+      ['genoName', 'genoStart', 'genoEnd'].filter(key => key in result),
+    ).toEqual([])
   })
 
   it('skips the heuristic for a BED whose header names protein columns', () => {

@@ -12,6 +12,8 @@ export default function LinearManhattanDisplayF(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearManhattanDisplay',
       displayName: 'Manhattan plot display',
+      helpText:
+        'A point per feature at its score, such as a GWAS variant at its -log10 p-value.',
       configSchema,
       stateModel: () =>
         import('./stateModelFactory.ts').then(f =>

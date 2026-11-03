@@ -143,14 +143,28 @@ export async function resolveColumnNames(
 // splits `blockSizes` into numbers and leaves an unrecognized column a string.
 // Names win over a configured autoSql, as they did when this file parsed the
 // named case itself.
+// The locus is read by position, so the columns holding it take the standard
+// names whatever a header calls them (UCSC's rmsk says genoName, genoStart,
+// genoEnd), and `featureData` leaves them out of the feature's attributes.
+const COORDINATE_NAMES = ['chrom', 'chromStart', 'chromEnd']
+
 export function makeParser({
   autoSql,
   columnNames,
+  coordinateColumns = [0, 1, 2],
 }: {
   autoSql?: string
   columnNames?: string[]
+  coordinateColumns?: [ref: number, start: number, end: number]
 }) {
-  return columnNames?.length ? new BED({ columnNames }) : new BED({ autoSql })
+  return columnNames?.length
+    ? new BED({
+        columnNames: columnNames.map((name, i) => {
+          const coordinate = coordinateColumns.indexOf(i)
+          return coordinate === -1 ? name : COORDINATE_NAMES[coordinate]!
+        }),
+      })
+    : new BED({ autoSql })
 }
 
 // Decode a BED line's locus (0-based half-open) from its column layout, so the

@@ -183,6 +183,30 @@ test('adapter reads point features from an index with no end column', async () =
   expect(f0.get('start')).toBe(999)
   expect(f0.get('end')).toBe(1000)
   expect(f0.get('score')).toBe(5.5)
+  expect(f0.get('rsid')).toBe('rsA')
+})
+
+// UCSC's RepeatMasker table names its coordinate columns genoName, genoStart
+// and genoEnd, which locate the feature and are no attributes of it.
+test("a UCSC header's coordinate columns locate the feature and are not its attributes", async () => {
+  const adapter = makeAdapter('./test_data/rmsk-ucsc-header.bed.gz')
+  const features = await firstValueFrom(
+    adapter
+      .getFeatures({
+        refName: 'ctgA',
+        start: 0,
+        end: 10_000,
+        assemblyName: 'volvox',
+      })
+      .pipe(toArray()),
+  )
+  expect(features.map(f => [f.get('start'), f.get('repClass')])).toEqual([
+    [1000, 'SINE'],
+    [2000, 'LINE'],
+    [3100, 'Simple_repeat'],
+  ])
+  const keys = Object.keys(features[0]!.toJSON())
+  expect(keys.filter(key => key.startsWith('geno'))).toEqual([])
 })
 
 test('adapter can use gwas header', async () => {

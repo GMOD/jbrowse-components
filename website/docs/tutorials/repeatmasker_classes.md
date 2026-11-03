@@ -63,8 +63,7 @@ the track:
 
 - Turn on **RepeatMasker** and type `chr17:45,700,000-45,750,000` into the
   location box.
-- Choose **Display types → Multi-row feature display (painting)** in the track
-  menu.
+- Choose **Display types → Feature rows by attribute** in the track menu.
 
 The display partitions on `repClass` whenever the file has that column, and
 **One row per...** in the same menu lists every column the features carry,

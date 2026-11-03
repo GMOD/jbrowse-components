@@ -34,6 +34,11 @@ export default class BedAdapter extends BaseFeatureDataAdapter<BedAdapterConfig>
       makeParser({
         autoSql: this.getConf('autoSql'),
         columnNames: await this.getNames(),
+        coordinateColumns: [
+          this.getConf('colRef'),
+          this.getConf('colStart'),
+          this.getConf('colEnd'),
+        ],
       }),
   })
 

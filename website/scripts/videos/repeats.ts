@@ -47,8 +47,8 @@ export const repeatVideos: VideoSpec[] = [
       },
       { type: 'waitForText', text: 'Display types' },
       { type: 'click', text: 'Display types', hold: 1200 },
-      { type: 'waitForText', text: 'Multi-row feature display (painting)' },
-      { type: 'click', text: 'Multi-row feature display (painting)' },
+      { type: 'waitForText', text: 'Feature rows by attribute' },
+      { type: 'click', text: 'Feature rows by attribute' },
       // The switch re-fetches through the multi-row RPC, which packs the
       // features into rows on the way back.
       { type: 'waitForAppSettled', timeout: 120000, cut: true },

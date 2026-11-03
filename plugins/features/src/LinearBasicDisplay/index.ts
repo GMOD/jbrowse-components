@@ -18,7 +18,7 @@ export default function register(pluginManager: PluginManager) {
       name: 'LinearBasicDisplay',
       displayName: 'Feature display',
       helpText:
-        'GPU-accelerated feature display with smooth zoom/pan. Data is uploaded once to GPU, enabling instant navigation.',
+        'Each feature as a box with its label, a gene as its transcripts with their exons and coding parts, stacked so none overlap.',
       configSchema,
       // Nothing eager may hold a static edge into './model.ts' or
       // './baseModel.ts'; the subpath exports in package.json are how a

@@ -25,11 +25,21 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
   // the parser needs the column names, which come from the file's header, so
   // it cannot be built in the constructor
   private getParser = cachedSetup({
-    setup: async (): Promise<BED> =>
-      makeParser({
+    setup: async (): Promise<BED> => {
+      const [names, { columnNumbers }] = await Promise.all([
+        this.getNames(),
+        this.getMetadata(),
+      ])
+      return makeParser({
         autoSql: readConfObject(this.config, 'autoSql'),
-        columnNames: await this.getNames(),
-      }),
+        columnNames: names,
+        coordinateColumns: [
+          columnNumbers.ref - 1,
+          columnNumbers.start - 1,
+          columnNumbers.end - 1,
+        ],
+      })
+    },
   })
 
   private readonly bedGzLoc: FileLocation

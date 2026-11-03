@@ -34,9 +34,9 @@ export default function LinearMultiRowFeatureDisplayF(
     const configSchema = configSchemaFactory()
     return new DisplayType({
       name: 'LinearMultiRowFeatureDisplay',
-      displayName: 'Multi-row feature display (painting)',
+      displayName: 'Feature rows by attribute',
       helpText:
-        'Paints interval features as colored blocks on stacked rows, one row per value of a feature attribute: chromosome or ancestry painting.',
+        'One row per value of a feature attribute, such as repeat class, sample or cell type, with each feature a colored block: repeat classes, chromatin states, copy number, chromosome and ancestry paintings.',
       configSchema,
       stateModel: () =>
         import('./model.ts').then(f =>
