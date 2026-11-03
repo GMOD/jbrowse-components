@@ -49,6 +49,9 @@ export const HG002_NANOPORE_HP_TRACK = {
   assemblyNames: ['hg19'],
   adapter: HG002_NANOPORE_ADAPTER,
 }
+// ONTrel2 is 2019-era nanopore: its bases sit near Q12, real SNVs included, so
+// the default quality fade dims the columns a SNV figure is about
+export const HG002_NANOPORE_OPAQUE_MISMATCHES = { encoding: { opacity: 1 } }
 // HG00151 Oxford Nanopore reads from the 1000 Genomes ONT Sequencing Consortium
 // (s3://1000g-ont), minimap2-aligned to hg38. Deliberately the MINIMAP2_ALIGNED_BAMS
 // file, NOT the NAPU/PMDV_FINAL.haplotagged.bam — the DeepVariant-haplotagged

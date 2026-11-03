@@ -8,6 +8,7 @@ import { FIT_TO_TRACK_LABEL } from '../../../plugins/alignments/src/LinearAlignm
 import {
   DEMO_CONFIG,
   HG002_NANOPORE_HP_TRACK,
+  HG002_NANOPORE_OPAQUE_MISMATCHES,
   PARK_CURSOR,
   VOLVOX,
   lgvSession,
@@ -363,6 +364,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               pileup: {
                 // ~12 reads a strand: at 3 px each pileup draws as a solid stripe
                 mark: { height: 9 },
+                mismatches: HG002_NANOPORE_OPAQUE_MISMATCHES,
               },
               coverage: { height: 110 },
               height: 480,
@@ -816,6 +818,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               forceLoad: true,
               facet: 'tags.HP',
               encoding: { color: 'tags.HP' },
+              pileup: { mismatches: HG002_NANOPORE_OPAQUE_MISMATCHES },
             },
           ],
         },
@@ -842,6 +845,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               height: 300,
               forceLoad: true,
               // ungrouped and uncolored until the dialog submits
+              pileup: { mismatches: HG002_NANOPORE_OPAQUE_MISMATCHES },
             },
           ],
         },
