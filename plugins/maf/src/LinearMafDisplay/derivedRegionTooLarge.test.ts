@@ -1,3 +1,4 @@
+import { getDisplayStr } from '@jbrowse/core/util/numericUtils'
 import { stageByteEstimate } from '@jbrowse/display-test-utils'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 
@@ -110,7 +111,7 @@ describe('MAF gating below the force-load floor', () => {
     expect(display.gateActive).toBe(true)
     expect(display.regionTooLarge).toBe(true)
     expect(display.regionTooLargeReason).toBe(
-      `Requested too much data (${over(display) / 1_000_000} Mb)`,
+      `Requested too much data (${getDisplayStr(over(display))})`,
     )
   })
 
@@ -314,7 +315,9 @@ describe('MAF measures the tier it is about to fetch', () => {
     expect(display.coarseTierActive).toBe(true)
     stageByteEstimate(display, 20_000_000)
     expect(display.regionTooLarge).toBe(true)
-    expect(display.regionTooLargeReason).toBe('Requested too much data (20 Mb)')
+    expect(display.regionTooLargeReason).toBe(
+      'Requested too much data (20.0 MB)',
+    )
   })
 
   // The estimate is about a fetch, and past the swap it is about a fetch nobody
