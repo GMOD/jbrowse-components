@@ -1,5 +1,7 @@
 import { observer } from 'mobx-react'
 
+import { focalArmColumns } from './focalArms.ts'
+
 import type { LDDisplayModel } from '../model.ts'
 
 // Emphasizes the focal SNP's LD row+column: every pairwise cell involving the
@@ -12,22 +14,29 @@ const FocalSnpHighlight = observer(function FocalSnpHighlight({
   model: LDDisplayModel
 }) {
   const { rpcData, viewTransform, focalSnpIndex: f, height } = model
-  const boundaries = rpcData?.boundaries
-  if (!boundaries || f < 0 || f + 1 >= boundaries.length) {
+  if (!rpcData || f < 0 || f + 1 >= rpcData.boundaries.length) {
     return null
   }
+  const { boundaries, band } = rpcData
   const n = boundaries.length - 1
+  const { first, last } = focalArmColumns(f, n, band)
 
   const fCenter = (boundaries[f]! + boundaries[f + 1]!) / 2
   const apex = model.cellToScreen(fCenter, fCenter)
   // Row cells (f, j<f) fan down-left; column cells (i>f, f) fan down-right.
   const rowEnd =
-    f > 0
-      ? model.cellToScreen((boundaries[0]! + boundaries[1]!) / 2, fCenter)
+    first < f
+      ? model.cellToScreen(
+          (boundaries[first]! + boundaries[first + 1]!) / 2,
+          fCenter,
+        )
       : apex
   const colEnd =
-    f < n - 1
-      ? model.cellToScreen(fCenter, (boundaries[n - 1]! + boundaries[n]!) / 2)
+    last > f
+      ? model.cellToScreen(
+          fCenter,
+          (boundaries[last]! + boundaries[last + 1]!) / 2,
+        )
       : apex
   const strokeWidth = Math.min(
     40,
