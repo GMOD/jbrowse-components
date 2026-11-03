@@ -58,7 +58,7 @@ export interface ModificationEntry {
   base: string // canonical base (e.g., 'C' for 5mC)
   modType: string // modification type code (e.g., 'm', 'h')
   strand: number // -1=reverse, 1=forward
-  color: number // packed ABGR (opaque); alpha is applied per-draw from `prob`
+  color: number // packed ABGR (opaque); buildModificationArrays bakes alpha from `prob`
   prob: number // probability (0-1)
   // The "no modification" / unmethylated bucket (IGV's NONE_<base>). modType
   // stays the canonical mod ('m'/'h') so the coverage denominator and simplex

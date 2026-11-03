@@ -24,8 +24,9 @@ const identity = (packed: number) => packed
 // modification cell widened about its midpoint sat a column left of the mismatch
 // cell on the same base.
 //
-// Opaque on both backends: packedColorQuad.slang has no fade of any kind, and
-// the call's confidence is carried in the COLOR the worker packed. Its hit test
+// No zoom fade on either backend: the call's confidence is the alpha byte
+// `buildModificationArrays` packs into its color, and the pass blends it, so
+// calls sharing a pixel column composite rather than overwrite. Its hit test
 // is NOT this shape's: `hitTestModification` is a Flatbush nearest-neighbour
 // query, which answers out of Hilbert order and picks by distance where every
 // mark scan walks rows backwards. That query answers to the mark's gate all the
