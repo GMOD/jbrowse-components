@@ -6,10 +6,7 @@ import {
   stepsOutput,
 } from '@jbrowse/core/util/stepOutputs'
 import { facetForField } from '@jbrowse/display-kit/FacetWritesMixin'
-import {
-  ROWS_WRITES,
-  rowsForField,
-} from '@jbrowse/display-kit/rowsConfigSchema'
+import { rowsForField } from '@jbrowse/display-kit/rowsConfigSchema'
 
 import { AUTO_BIN } from './autoBin.ts'
 import {
@@ -72,9 +69,11 @@ export function splitOrder(plot: MarkPlot, key: 'facet' | 'rows'): string {
 }
 
 /**
- * The plot with its `facet` or `rows` splitting by `field`: an empty field
- * clears the setting, as `null` does in the JSON box. `base` is the plot as
- * it stood when the edit began, and the field is judged against it, since
+ * The plot with its `facet` or `rows` splitting by `field`. An empty field
+ * clears `facet`, as `null` does in the JSON box, and takes the field off
+ * `rows`, keeping the rest, as `"field": ""` typed there does: a write to an
+ * empty field resets nothing (ADR-257). `base` is the plot as it stood when
+ * the edit began, and the field is judged against it, since
  * every keystroke writes: retyping the base's field keeps its order, hidden
  * sections, arrangement and row colors, and another field drops what names
  * the old field's values, as a menu pick does (`facetForField`,
@@ -99,15 +98,8 @@ export function withSplitField(
   return { ...plot, rows: rowsForField(held, field) }
 }
 
-// No rows field: the field and the arrangement naming its values go, and what
-// is not about the values, the row axis, stays.
 function rowsWithoutField(rows: MarkPlot['rows']) {
-  const dropped = new Set<string>(['field', ...ROWS_WRITES.keyed])
-  const kept = Object.fromEntries(
-    Object.entries(channelObject(rows) ?? {}).filter(
-      ([member]) => !dropped.has(member),
-    ),
-  )
+  const { field: _field, ...kept } = channelObject(rows) ?? {}
   return Object.keys(kept).length > 0 ? kept : null
 }
 

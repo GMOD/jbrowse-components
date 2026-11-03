@@ -1,3 +1,7 @@
+import { plotOf, plotWrites, setConf } from '@jbrowse/core/configuration'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+
+import { configSchemaFactory } from './configSchema.ts'
 import { withChannel } from './markEdit.ts'
 import {
   splitOrder,
@@ -124,14 +128,48 @@ describe('the split field, typed a keystroke at a time', () => {
   })
 })
 
-test('emptying the rows field keeps the row axis and drops the arrangement', () => {
-  const rows = { field: 'sample', sort: ['b', 'a'], axis: { grid: true } }
+test('emptying the rows field keeps the row axis and the arrangement', () => {
+  const rows = {
+    field: 'sample',
+    sort: ['b', 'a'],
+    labels: { a: 'A' },
+    axis: { grid: true },
+  }
   expect(withSplitField({ marks: [], rows }, 'rows', '').rows).toEqual({
+    sort: ['b', 'a'],
+    labels: { a: 'A' },
     axis: { grid: true },
   })
   expect(
     withSplitField({ marks: [], rows: { field: 'sample' } }, 'rows', '').rows,
   ).toBeNull()
+})
+
+test('emptying the rows field in the box writes what the JSON text does', () => {
+  const arrangement = {
+    sort: ['b', 'a'],
+    labels: { a: 'A' },
+    axis: { grid: true },
+  }
+  const written = (edit: (plot: MarkPlot) => MarkPlot) => {
+    const conf = configSchemaFactory().create({
+      type: 'LinearMarkDisplay',
+      displayId: 'emptied',
+      rows: { field: 'source', ...arrangement },
+    })
+    const writes = plotWrites(conf, edit(plotOf(conf)), { whole: true })
+    for (const [key, value] of Object.entries(writes)) {
+      setConf(conf, key, value)
+    }
+    return getSnapshot(conf.rows)
+  }
+  const box = written(plot => withSplitField(plot, 'rows', ''))
+  const text = written(plot => ({
+    ...plot,
+    rows: { field: '', ...arrangement },
+  }))
+  expect(box).toEqual(text)
+  expect(box).toEqual(arrangement)
 })
 
 test('the order box edits sort, and a rows order typed by hand drops the tree', () => {
