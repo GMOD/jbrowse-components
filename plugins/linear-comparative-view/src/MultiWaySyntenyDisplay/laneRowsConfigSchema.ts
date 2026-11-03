@@ -1,9 +1,12 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import {
-  ROW_ARRANGEMENT_WRITES,
-  rowArrangementConfigSchema,
-} from '@jbrowse/display-kit/rowArrangementConfigSchema'
+import { stringList } from '@jbrowse/display-kit/rowArrangementConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
+
+/** How the lanes' `rows` is written: its keyed members name the lanes. */
+export const LANE_ROWS_WRITES = {
+  keyedBy: 'field',
+  keyed: ['sort', 'labels', 'kept'],
+} as const
 
 /**
  * #config LaneRows
@@ -16,7 +19,8 @@ import { types } from '@jbrowse/mobx-state-tree'
  * names the lanes drawn, empty drawing the track's lanes or every lane.
  * Haplotype lanes read off a graph follow by structure instead, below any
  * lanes `sort` pins, so lanes whose deletions and insertions against the
- * anchor match sit together, in an order worked out once per window.
+ * anchor match sit together, in an order worked out once per window. Lanes
+ * take no tree.
  *
  * #example
  * ```js
@@ -29,6 +33,28 @@ import { types } from '@jbrowse/mobx-state-tree'
 export const laneRowsConfigSchema = ConfigurationSchema(
   'LaneRows',
   {
+    /**
+     * #slot sort
+     * The lanes that stack first, by assembly name, in this order; the rest
+     * follow densest-first.
+     */
+    sort: {
+      type: 'stringArray',
+      defaultValue: [],
+      description:
+        'the lanes that stack first, by assembly name, in this order; the rest follow densest-first',
+    },
+    /**
+     * #slot labels
+     * A label drawn for a lane in place of its assembly name, by assembly
+     * name. Where the lane labels draw is `labels.lanes`.
+     */
+    labels: {
+      type: 'stringMap',
+      defaultValue: {},
+      description:
+        'a label drawn for a lane in place of its assembly name, by assembly name; labels.lanes says where lane labels draw',
+    },
     /**
      * #slot kept
      * The lanes drawn, by assembly name: it selects rather than narrows,
@@ -54,12 +80,14 @@ export const laneRowsConfigSchema = ConfigurationSchema(
     },
   },
   {
-    /**
-     * #baseConfiguration
-     */
-    baseConfiguration: rowArrangementConfigSchema,
+    closed: true,
     shorthand: 'field',
-    writes: ROW_ARRANGEMENT_WRITES,
+    writes: LANE_ROWS_WRITES,
     plot: true,
+    preProcessSnapshot: (snap = {}) => ({
+      ...snap,
+      ...stringList(snap, 'sort'),
+      ...stringList(snap, 'kept'),
+    }),
   },
 )

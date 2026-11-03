@@ -16,7 +16,8 @@ export const ROW_ARRANGEMENT_WRITES = {
   keyed: ROW_ARRANGEMENT_MEMBERS,
 } as const
 
-function stringList(snap: Record<string, unknown>, key: string) {
+/** `snap[key]`, a list, with each entry as a string, as the member it fills. */
+export function stringList(snap: Record<string, unknown>, key: string) {
   const value = snap[key]
   if (value === undefined) {
     return {}

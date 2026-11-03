@@ -1000,8 +1000,6 @@ exports[`every registered schema slot default 1`] = `
     "rows.kept": "stringArray = []",
     "rows.labels": "stringMap = {}",
     "rows.sort": "stringArray = []",
-    "rows.tree.newick": "maybeString = undefined",
-    "rows.tree.provenance": "maybeFrozen = undefined",
     "utrs.encoding.color.value": "maybeColor = undefined",
   },
   "text search adapter: BigBedTextSearchAdapter": {

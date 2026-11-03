@@ -1,4 +1,5 @@
-import { readConfObject, setConf } from '@jbrowse/core/configuration'
+import { applyConfSettings, readConfObject } from '@jbrowse/core/configuration'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { FEATURE_NAME_FIELD } from '@jbrowse/plugin-features'
 
 import { configSchemaFactory } from './configSchema.ts'
@@ -21,18 +22,13 @@ test('gene labels read the name, else the ID, and show by default', () => {
   expect(readConfObject(config, ['labels', 'name', 'show'])).toBe(true)
 })
 
-test('the lanes take rows.tree as newick or { newick, provenance }, and a sort keeps it', () => {
-  const bare = make({ rows: { sort: ['b', 'a'], tree: '(b,a);' } })
-  expect(readConfObject(bare, ['rows', 'tree', 'newick'])).toBe('(b,a);')
-  expect(readConfObject(bare, ['rows', 'tree', 'provenance'])).toBeUndefined()
-
-  const full = make({
-    rows: { tree: { newick: '(b,a);', provenance: { regions: [] } } },
-  })
-  setConf(full, ['rows', 'sort'], ['a', 'b'])
-  expect(readConfObject(full, ['rows', 'sort'])).toEqual(['a', 'b'])
-  expect(readConfObject(full, ['rows', 'tree', 'newick'])).toBe('(b,a);')
-  expect(readConfObject(full, ['rows', 'tree', 'provenance'])).toEqual({
-    regions: [],
-  })
+test('the lanes take no rows.tree: a config loads without it, naming it, and a write refuses it', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const loaded = make({ rows: { sort: ['b', 'a'], tree: '(b,a);' } })
+  expect(getSnapshot(loaded.rows)).toEqual({ sort: ['b', 'a'] })
+  expect(warn.mock.calls.flat().join(' ')).toMatch(/tree/)
+  warn.mockRestore()
+  expect(
+    applyConfSettings(make(), { rows: { tree: '(b,a);' } }).failed,
+  ).toEqual([expect.objectContaining({ key: 'rows' })])
 })
