@@ -137,9 +137,8 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
   // one that keeps the samples-metadata warnings.
   async getSourcesAndWarnings(opts?: BaseOptions) {
     const { parser } = await this.setup(opts)
-    const parsers = [parser]
     return vcfSourcesAndWarnings({
-      parsers,
+      parsers: [parser],
       samplesTsvLocation: this.getConf('samplesTsvLocation'),
       pluginManager: this.pluginManager,
       opts,

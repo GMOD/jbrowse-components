@@ -134,9 +134,8 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
   // report them.
   async getSourcesAndWarnings(opts?: BaseOptions) {
     const { parser } = await this.headerAndParser(opts)
-    const parsers = [parser]
     return vcfSourcesAndWarnings({
-      parsers,
+      parsers: [parser],
       samplesTsvLocation: this.getConf('samplesTsvLocation'),
       pluginManager: this.pluginManager,
       opts,
