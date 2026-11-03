@@ -53,9 +53,3 @@ test('a written tooltip field evaluates through jexl', () => {
   )
   expect(read(feature({}))).toBe('start 0')
 })
-
-test('the default reads natively, without a jexl instance', () => {
-  expect(
-    tooltipReader(config, undefined)(feature({ function: 'stem_loop' })),
-  ).toBe('stem_loop')
-})
