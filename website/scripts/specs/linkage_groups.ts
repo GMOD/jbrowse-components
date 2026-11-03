@@ -64,11 +64,11 @@ export const linkageGroupsSpecs: ScreenshotSpec[] = [
           views: [
             {
               assembly: 'RES',
-              displayedRegionNames: ['RES4', 'RES13', 'RES6'],
+              displayedRegionNames: ['RES4', 'RES11', 'RES15'],
             },
             {
               assembly: 'EMU',
-              displayedRegionNames: ['EMU4', 'EMU7', 'EMU14'],
+              displayedRegionNames: ['EMU4', 'EMU7', 'EMU23'],
             },
           ],
           tracks: ['RES_EMU'],

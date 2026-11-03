@@ -21,7 +21,7 @@ each over several. We:
   its set
 - open it as a dotplot, with one genome's chromosomes sorted by where their
   orthologs sit on the other
-- narrow the dotplot to the chromosomes of two fusions, RES4 and EMU14
+- narrow the dotplot to three chromosomes of each genome, around RES4 and EMU23
 - stack the genomes in a linear synteny view, with ribbons colored by set
 
 ## Prerequisites
@@ -114,6 +114,13 @@ conda create -n odp -c conda-forge -c bioconda python=3.11 \
   seaborn biopython pyyaml diamond blast hmmer
 ```
 
+odp runs from a directory beside its clone, the one holding `config.yaml`:
+
+```bash
+conda activate odp
+git clone https://github.com/conchoecia/odp.git
+```
+
 For an NCBI annotation, a script in odp writes the `.chrom` from the GFF:
 
 ```bash
@@ -121,12 +128,13 @@ python3 odp/scripts/NCBIgff2chrom.py genomic.gff > SP.chrom
 ```
 
 The colored tables come only from a linkage-group database unpacked in the
-clone. Building the BCnS one takes about a minute:
+clone. Building the BCnS one takes about a minute on 16 cores:
 
 ```bash
 # odp refuses an LG_db directory whose name has '_', and a bare make also
-# unpacks BCnS_LGs, so build this database alone
-cd odp && make BCnSSimakov2022 seqtk fainfo
+# unpacks BCnS_LGs, so build this database alone; seqtk and fainfo compile
+# from source, which needs a C compiler and the zlib headers
+make -C odp BCnSSimakov2022 seqtk fainfo
 ```
 
 ```yaml
@@ -147,7 +155,6 @@ species:
 ```
 
 ```bash
-# from the directory holding config.yaml, with odp cloned beside it
 odp/bin/odp run --config config.yaml
 ```
 
@@ -283,11 +290,12 @@ chromosome has shuffled. Each gene stays on its chromosome.
 
 ## Two fusions, mixed and unmixed
 
-Two groups on one chromosome in one genome and on two in the other have fused in
-the first. A fusion starts with the two groups end to end, and the shuffling
-inside the chromosome then interleaves their genes.[^mixing] The jellyfish's
-RES4 carries B1 and B2, and the sponge's EMU14 carries A1b and Eb. We'll draw
-those two chromosomes and the four they pair with.
+The jellyfish's RES4 carries both B1 and B2, and the sponge's EMU23 carries both
+J2 and K. Every other genome on this page keeps each pair on separate
+chromosomes, so each is a fusion in one lineage. A fusion starts with the two
+groups end to end, and rearrangement inside the chromosome then interleaves
+their genes.[^mixing] We'll draw those two chromosomes and the four they pair
+with.
 
 `displayedRegionNames` lists the chromosomes on each axis, in the order drawn,
 and the session leaves `autoDiagonalize` off so that order holds. `filter` keeps
@@ -304,11 +312,11 @@ the orthologs that have a group, so the legend names only the four drawn:
         "views": [
           {
             "assembly": "RES",
-            "displayedRegionNames": ["RES4", "RES13", "RES6"]
+            "displayedRegionNames": ["RES4", "RES11", "RES15"]
           },
           {
             "assembly": "EMU",
-            "displayedRegionNames": ["EMU4", "EMU7", "EMU14"]
+            "displayedRegionNames": ["EMU4", "EMU7", "EMU23"]
           }
         ],
         "tracks": ["RES_EMU"],
@@ -325,12 +333,13 @@ the orthologs that have a group, so the legend names only the four drawn:
 <Figure caption="Three jellyfish chromosomes against three sponge chromosomes, orthologs colored by linkage group." src="/img/linkage_groups/alg_fusions.png" />
 
 Along RES4, the B1 and B2 orthologs each run the chromosome's full length. On
-EMU14, Eb holds one end and A1b the other.
+EMU23, J2 holds one end and K the rest.
 
 [^mixing]:
-    Schultz et al. 2023 count the mixed fusions two genomes share, which
-    rearrangement does not undo, to place the comb jellies at the base of the
-    animal tree.
+    The fusion-with-mixing model is from Simakov et al. 2022. Schultz et al.
+    2023 find fusions that sponges, cnidarians and bilaterians share, four of
+    them mixed, which comb jellies and three unicellular outgroups lack, and so
+    place the comb jellies as sister to all other animals.
 
 ## Stacking the genomes, ribbons colored by linkage group
 
