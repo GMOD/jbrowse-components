@@ -23,7 +23,7 @@ import {
   omittedForMember,
   subfeatureGroups,
   subfeatureSummary,
-} from './subfeatureGroups.ts'
+} from './subfeatureGrouping.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type {
@@ -31,7 +31,7 @@ import type {
   FeatureDetailsModel,
   FeatureFormatter,
 } from '../types.tsx'
-import type { SubfeatureGroup, SubfeatureMember } from './subfeatureGroups.ts'
+import type { SubfeatureGroup, SubfeatureMember } from './subfeatureGrouping.ts'
 
 const useStyles = makeStyles()(theme => ({
   disclosure: {

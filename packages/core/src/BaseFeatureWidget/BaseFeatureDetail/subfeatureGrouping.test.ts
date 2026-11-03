@@ -2,7 +2,7 @@ import {
   omittedForMember,
   subfeatureGroups,
   subfeatureSummary,
-} from './subfeatureGroups.ts'
+} from './subfeatureGrouping.ts'
 
 import type { SimpleFeatureSerializedNoId } from '../../util/index.ts'
 
