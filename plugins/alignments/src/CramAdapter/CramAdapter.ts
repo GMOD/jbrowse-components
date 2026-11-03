@@ -197,7 +197,6 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
 
       const refId = this.refNameToId(refName)
       if (refId === undefined) {
-        console.warn('Unknown refName', refName)
         observer.complete()
         return
       }
