@@ -118,7 +118,7 @@ Press **Open in JBrowse**. Under the genes:
   degeneration hits sit one on either side of the deletion
 - the matrix under the graph marks the deletion in each carrier's row
 
-<Figure caption="The CFH / CFHR Graph launch: the Known alleles and GWAS Catalog rows under the genes, the graph track, and the variant matrix, one row per haplotype." src="/img/pangenome/hprc_cfh_graph_launch.png" />
+<Figure caption="The CFH / CFHR Graph launch: the Known alleles and GWAS Catalog rows under the genes, the graph track, and the variant matrix, one row per haplotype. The red block at the foot of the matrix is the deletion's carriers." src="/img/pangenome/hprc_cfh_graph_launch.png" />
 
 ## Overview of chr1 with one node per variant region {#a-chromosome-and-back}
 

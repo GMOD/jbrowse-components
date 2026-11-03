@@ -495,17 +495,18 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   pangenome_mouse: {
     // The Dock2 superbubble, the graph pane only, right of the two callouts.
     src: 'pangenome/mouse_dock2.png',
-    band: [0.66, 0.88],
+    band: [0.55, 0.8],
     xband: [0.42, 1],
     position: 'center',
   },
   pangenome_hprc_haplotypes: {
-    // The CFH lanes with their own contig names and coordinates in the row
-    // labels, which is the whole of what this page is about. Cropped from the
-    // left so those labels survive the 5:3 cover-crop -- a centre crop keeps
-    // ribbons and loses the names.
+    // The CFH lanes where the commonest form gives way to the deletion's, with
+    // their own contig names and coordinates in the row labels, which is the
+    // whole of what this page is about. Cropped from the left so those labels
+    // survive the 5:3 cover-crop -- a centre crop keeps ribbons and loses the
+    // names.
     src: 'pangenome/hprc_cfhr_lanes.png',
-    band: [0.34, 0.95],
+    band: [0.6, 0.97],
     position: 'left',
   },
   // The HAL projected onto K12 as a MAF: the coverage band and one colored row
@@ -522,9 +523,9 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // row on the page that names which assembly carries an allele rather than
     // just where the graph varies, and it reads as a matrix only with the
     // breed labels beside it. The band drops the app chrome above the tracks
-    // and stops above the allele-inventory callout.
+    // and stops at the graph track.
     src: 'pangenome/bovine_bola.png',
-    band: [0.108, 0.5],
+    band: [0.108, 0.6],
     position: 'left',
   },
   pangenome_cactus: {
