@@ -23,7 +23,7 @@ function aluTrack(trackId: string, name: string, display: object) {
     trackId,
     name,
     assemblyNames: ['hg38'],
-    adapter: { type: 'BedTabixAdapter', uri: ALU_BED },
+    adapter: { type: 'BedTabixAdapter', uri: ALU_BED, csi: true },
     displays: [
       {
         type: 'LinearMarkDisplay',
@@ -171,7 +171,7 @@ const TRACKS = {
     trackId: 'pair_links',
     name: 'NA12878 pairs over 1 kb, as arcs',
     assemblyNames: ['hg38'],
-    adapter: { type: 'BedTabixAdapter', uri: PAIRS_BED },
+    adapter: { type: 'BedTabixAdapter', uri: PAIRS_BED, csi: true },
     displays: [
       {
         type: 'LinearMarkDisplay',

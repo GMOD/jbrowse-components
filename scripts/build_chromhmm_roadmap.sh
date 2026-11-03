@@ -53,7 +53,7 @@
 #
 # Requires: curl, tar, awk, sort, python3, htslib (bgzip, tabix), and node
 #           (JBrowse CLI, fetched via npx unless `jbrowse` is on PATH).
-# Output:   roadmap.multirow.bed.gz plus its .tbi
+# Output:   roadmap.multirow.bed.gz plus its .csi
 #           jbrowse2/config.json, hg19 plus that track
 # Runtime:  ~20 min for all 127, most of it the download and the sort
 # Disk:     ~12GB peak (300MB tarball, 3GB of segmentations, 5.3GB merged BED
@@ -225,9 +225,9 @@ else
 fi
 
 jb sort-bed roadmap.multirow.bed | bgzip -@ 4 > roadmap.multirow.bed.gz
-tabix -f -p bed roadmap.multirow.bed.gz
+tabix -f -C -p bed roadmap.multirow.bed.gz
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
-cp roadmap.multirow.bed.gz roadmap.multirow.bed.gz.tbi "$APP"/
+cp roadmap.multirow.bed.gz roadmap.multirow.bed.gz.csi "$APP"/
 
 # ── config.json: hg19 + the multi-row Roadmap track ──────────────────────────
 # The color is an identity scale whose `scale.names` name the file's own itemRgb
@@ -308,6 +308,7 @@ config = {
             'adapter': {
                 'type': 'BedTabixAdapter',
                 'uri': 'roadmap.multirow.bed.gz',
+                'csi': True,
             },
             'displays': [
                 {

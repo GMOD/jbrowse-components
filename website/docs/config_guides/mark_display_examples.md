@@ -26,7 +26,8 @@ the config whose shape matches your file and change the field names.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -54,7 +55,8 @@ categorical scale over `strand`, whose values are `1` and `-1`, so
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -103,7 +105,8 @@ the same in every window. `scale.scheme` names the ramp.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -148,7 +151,8 @@ old.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -192,7 +196,8 @@ it.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -228,7 +233,8 @@ The histogram's bins show `mean` over the column in place of the count.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -268,7 +274,8 @@ draws the packing, colored by strand.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -307,7 +314,8 @@ chip. A `pileup` in the facet's `transform` packs each section separately.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -337,7 +345,8 @@ overlap. `maxBpPerPx` stops the labels once the view is too wide to read them.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -374,7 +383,8 @@ chosen values, and `title`, the caption beside the axis.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -408,7 +418,8 @@ pair, stroked by its mapping quality.
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz"
+    "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz",
+    "csi": true
   },
   "displays": [
     {

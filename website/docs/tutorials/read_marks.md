@@ -204,7 +204,7 @@ samtools view -q 20 -F 0x904 --input-fmt-option required_fields=0x1DF NA12878.fi
   awk 'BEGIN { OFS = "\t"; print "#chrom", "chromStart", "chromEnd", "name", "score", "strand", "tlen" }
     $7 == "=" && $9 > 1000 { print $3, $4 - 1, $4 - 1 + $9, $1, $5, "+", $9 }' |
   bgzip > NA12878.chr20.discordant_pairs.bed.gz
-tabix -p bed NA12878.chr20.discordant_pairs.bed.gz
+tabix -f -C -p bed NA12878.chr20.discordant_pairs.bed.gz
 ```
 
 The BED holds few enough rows to fetch whole at any zoom, and two tracks read
@@ -221,6 +221,7 @@ it:
   "trackId": "na12878_chr20_pairs",
   "name": "NA12878 chr20, pairs over 1 kb",
   "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz",
+  "index": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz.csi",
   "assemblyNames": ["hg38"],
   "displays": [
     {
@@ -258,6 +259,7 @@ it:
   "trackId": "na12878_chr20_pair_counts",
   "name": "NA12878 chr20, pairs of 2 to 10 kb per bin",
   "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz",
+  "index": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz.csi",
   "assemblyNames": ["hg38"],
   "displays": [
     {

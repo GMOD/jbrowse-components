@@ -73,10 +73,10 @@ fi
   done
 } > wgEncodeBroadHmm.multirow.bed
 jb sort-bed wgEncodeBroadHmm.multirow.bed | bgzip > wgEncodeBroadHmm.multirow.bed.gz
-tabix -f -p bed wgEncodeBroadHmm.multirow.bed.gz
+tabix -f -C -p bed wgEncodeBroadHmm.multirow.bed.gz
 
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
-cp wgEncodeBroadHmm.multirow.bed.gz wgEncodeBroadHmm.multirow.bed.gz.tbi "$APP"/
+cp wgEncodeBroadHmm.multirow.bed.gz wgEncodeBroadHmm.multirow.bed.gz.csi "$APP"/
 
 # ── config.json: hg19 + the multi-row ChromHMM track ─────────────────────────
 # The assembly is sourced entirely from UCSC (hgdownload), the same host the
@@ -121,7 +121,8 @@ sed "s|\"@ROW_ORDER@\"|${ROW_ORDER%, }|" > "$APP"/config.json <<'JSON'
       "category": ["ENCODE", "Chromatin state"],
       "adapter": {
         "type": "BedTabixAdapter",
-        "uri": "wgEncodeBroadHmm.multirow.bed.gz"
+        "uri": "wgEncodeBroadHmm.multirow.bed.gz",
+        "csi": true
       },
       "displays": [
         {

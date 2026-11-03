@@ -126,7 +126,7 @@ tabix indexes the GFF3, so JBrowse reads only the region on screen:
 <!-- from: scripts/build_protein_domains.sh -->
 
 ```bash
-tabix -f -p gff pfam.gff3.gz
+tabix -f -C -p gff pfam.gff3.gz
 ```
 
 - A `protein_match`'s `Name` is the Pfam family, its source column the analysis
@@ -155,7 +155,8 @@ a key naming the families on screen.
   "assemblyNames": ["GCF_003254395.2"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/demos/protein_domains/pfam.gff3.gz"
+    "uri": "https://jbrowse.org/demos/protein_domains/pfam.gff3.gz",
+    "csi": true
   },
   "displays": [
     {

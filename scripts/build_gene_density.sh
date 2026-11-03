@@ -54,7 +54,7 @@ UCSC=https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips
 # The file is already sorted, so it only needs its own index. make-density
 # counts a GFF3's top-level features, so a gene is one count however many
 # transcripts and exons hang under it.
-tabix -f -p gff genes.gff.gz
+tabix -f -C -p gff genes.gff.gz
 # the bigWig is named for the file without its .gz: genes.gff.density.bw
 [ -f genes.gff.density.bw ] || jb make-density genes.gff.gz --chrom-sizes hg38.chrom.sizes
 
@@ -67,16 +67,16 @@ for family in Alu L1 Simple_repeat; do
   [ -f "$family.bed.gz" ] || gzip -dc rmsk.bed.gz |
     awk -F'\t' -v fam="$family" '/^#/ || $6 == fam' |
     bgzip >"$family.bed.gz"
-  tabix -f -p bed "$family.bed.gz"
+  tabix -f -C -p bed "$family.bed.gz"
   [ -f "$family.bed.density.bw" ] || jb make-density "$family.bed.gz" --chrom-sizes hg38.chrom.sizes
 done
 
 # ── JBrowse ─────────────────────────────────────────────────────────────────
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
 jb add-assembly "$UCSC/hg38.2bit" --name hg38 --type twoBit --force --out "$APP"
-cp -f genes.gff.gz genes.gff.gz.tbi genes.gff.density.bw "$APP"/
+cp -f genes.gff.gz genes.gff.gz.csi genes.gff.density.bw "$APP"/
 for family in Alu L1 Simple_repeat; do
-  cp -f "$family.bed.gz" "$family.bed.gz.tbi" "$family.bed.density.bw" "$APP"/
+  cp -f "$family.bed.gz" "$family.bed.gz.csi" "$family.bed.density.bw" "$APP"/
 done
 
 jb add-track genes.gff.gz --trackId hg38_genes --name "RefSeq curated genes" \

@@ -335,9 +335,9 @@ print('wrote dtu_muscle_vs_liver.gff3')
 PY
 
 bgzip -f dtu_muscle_vs_liver.gff3
-tabix -f -p gff dtu_muscle_vs_liver.gff3.gz
+tabix -f -C -p gff dtu_muscle_vs_liver.gff3.gz
 
 echo
 echo "Built in $PWD:"
-echo "  dtu_muscle_vs_liver.gff3.gz(.tbi)  the track demos/dtu/config.json loads"
+echo "  dtu_muscle_vs_liver.gff3.gz(.csi)  the track demos/dtu/config.json loads"
 echo "  *.bigWig                           the four coverage tracks beside it"

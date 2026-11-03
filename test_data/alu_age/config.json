@@ -41,7 +41,7 @@
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz.tbi"
+            "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz.csi"
           }
         }
       },
@@ -120,7 +120,8 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "BedTabixAdapter",
-        "uri": "Alu.young_share.bed.gz"
+        "uri": "Alu.young_share.bed.gz",
+        "csi": true
       },
       "displays": [
         {
@@ -160,7 +161,8 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "BedTabixAdapter",
-        "uri": "Alu.young_share.bed.gz"
+        "uri": "Alu.young_share.bed.gz",
+        "csi": true
       },
       "displays": [
         {

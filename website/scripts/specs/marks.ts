@@ -21,7 +21,7 @@ const ALU_MARKS_TRACK = {
     type: 'BedTabixAdapter',
     bedGzLocation: { uri: ALU_BED, locationType: 'UriLocation' },
     index: {
-      location: { uri: `${ALU_BED}.tbi`, locationType: 'UriLocation' },
+      location: { uri: `${ALU_BED}.csi`, locationType: 'UriLocation' },
     },
   },
   displays: [

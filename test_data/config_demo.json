@@ -4519,6 +4519,7 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "uri": "https://jbrowse.org/demos/rnaseq/rnaseq_junctions.bed.gz",
+        "csi": true,
         "columnNames": [
           "chrom",
           "chromStart",

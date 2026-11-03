@@ -203,10 +203,10 @@ fi
 # MAF-informed, and depth comes from the BAM. The figures plot the unfolded BAF
 # track built below rather than maf.bw, so nothing downstream of here depends on
 # this choice -- it is pinned so the emitted maf.bw is at least not misleading.
-# Clair3 tumor calls from the Wakhan run pinned above; no .tbi is published.
+# Clair3 tumor calls from the Wakhan run pinned above; no index is published.
 MAF_VCF=merge_output_tumor.vcf.gz
 [ -f "$MAF_VCF" ] || curl -fL -O "$FTP/data_somatic/HG008/Liss_lab/analysis/$WAKHAN_RUN/vcf_inputs/$MAF_VCF"
-[ -f "$MAF_VCF.tbi" ] || tabix -p vcf "$MAF_VCF"
+[ -f "$MAF_VCF.csi" ] || tabix -f -C -p vcf "$MAF_VCF"
 
 if ! ls hificnv.*.depth.bw >/dev/null 2>&1; then
   "$HIFICNV" --bam "$TUMOR" --ref "$REF" --maf "$MAF_VCF" \
@@ -216,7 +216,7 @@ for f in hificnv.*.depth.bw hificnv.*.maf.bw; do
   jb add-track "$f" --category "CNV" --load copy --force --out "$APP"
 done
 for v in hificnv.*.vcf.gz; do
-  [ -f "$v.tbi" ] || tabix -p vcf "$v"
+  [ -f "$v.csi" ] || tabix -f -C -p vcf "$v"
   jb add-track "$v" --category "CNV" --load copy --force --out "$APP"
 done
 
@@ -257,7 +257,7 @@ BAF_BW=HG008-T_baf.bcftools.bw
 if [ ! -f "$BAF_BW" ]; then
   GERMLINE_VCF=HG008-N-P.GRCh38.deepvariant.phased.vcf.gz
   [ -f "$GERMLINE_VCF" ] || curl -fL -O "$FTP/data_somatic/HG008/Liss_lab/analysis/$PB_RUN/pacbio-wgs-wdl_germline_20240206/$GERMLINE_VCF"
-  [ -f hets.vcf.gz ] || { bcftools view -g het -Oz -o hets.vcf.gz "$GERMLINE_VCF"; tabix -f -p vcf hets.vcf.gz; }
+  [ -f hets.vcf.gz ] || { bcftools view -g het -Oz -o hets.vcf.gz "$GERMLINE_VCF"; tabix -f -C -p vcf hets.vcf.gz; }
   [ -f "$REF.chrom.sizes" ] || cut -f1,2 "$REF.fai" > "$REF.chrom.sizes"
   # -q 1 drops multi-mapped reads; -Q 0 keeps HiFi base qualities as-is. The
   # >=10x floor keeps a thin-coverage site from painting a spurious 0 or 1.

@@ -109,7 +109,7 @@ CELL_TYPES=(
 # `sort-bed` is `sort -k1,1 -k2,2n` with the #-defline kept on top, and pins
 # LC_ALL=C so nine files' worth of refnames group the same way everywhere
 jbrowse sort-bed multirow.bed | bgzip > multirow.bed.gz
-tabix -p bed multirow.bed.gz
+tabix -f -C -p bed multirow.bed.gz
 ```
 
 A [`BigBedAdapter`](/docs/config/bigbedadapter) reads the hosted bigBed copies
@@ -144,8 +144,8 @@ RefSeq gene track:
 ```
 
 The track config below opens the merged file in a multi-row feature display
-partitioned on `cellType`. For your own segmentations, swap `uri` for the
-bgzipped, tabix-indexed BED from the merge above:
+partitioned on `cellType`. For your own segmentations, point `uri` at the
+bgzipped BED from the merge above and `index` at its `.csi`:
 
 ```json addtrack
 {
@@ -153,6 +153,7 @@ bgzipped, tabix-indexed BED from the merge above:
   "trackId": "broad_chromhmm_multirow_hg19",
   "name": "ChromHMM chromatin state (Broad ENCODE, 9 cell types)",
   "uri": "wgEncodeBroadHmm.multirow.bed.gz",
+  "index": "wgEncodeBroadHmm.multirow.bed.gz.csi",
   "assemblyNames": ["hg19"],
   "category": ["ENCODE", "Chromatin state"],
   "displays": [
@@ -178,8 +179,7 @@ bgzipped, tabix-indexed BED from the merge above:
 }
 ```
 
-JBrowse finds the `.bed.gz.tbi` beside the file. In
-[grammar-of-graphics](/docs/config_guides/mark_display) terms,
+In [grammar-of-graphics](/docs/config_guides/mark_display) terms,
 [`rows`](/docs/config/linearmultirowfeaturedisplay/#slot-rows) assigns the rows:
 
 - `field` is the attribute to split rows by, so every distinct `cellType`

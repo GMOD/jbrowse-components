@@ -198,7 +198,7 @@ The rows come out in coordinate order, so indexing is the ordinary pair:
 
 ```bash
 bgzip -f dtu_muscle_vs_liver.gff3
-tabix -f -p gff dtu_muscle_vs_liver.gff3.gz
+tabix -f -C -p gff dtu_muscle_vs_liver.gff3.gz
 ```
 
 ### The statistics in the attribute column
@@ -262,6 +262,7 @@ muscle-preferred above. A value on a cut takes the interval above it.
   "trackId": "dtu_muscle_vs_liver",
   "name": "Transcript usage: skeletal muscle vs liver (satuRn)",
   "uri": "https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz",
+  "index": "https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz.csi",
   "assemblyNames": ["hg38"],
   "displayDefaults": {
     "encoding": {
@@ -379,7 +380,7 @@ bash build_dtu_demo.sh dtu_build   # writes ./dtu_build/
 ```
 
 The script needs the [Prerequisites](#prerequisites) on your `PATH` and writes
-`dtu_muscle_vs_liver.gff3.gz` with its `.tbi` index, a local build of the file
+`dtu_muscle_vs_liver.gff3.gz` with its `.csi` index, a local build of the file
 the track configuration above loads from jbrowse.org. Point the track's `uri` at
 the local copy to open your own run.
 

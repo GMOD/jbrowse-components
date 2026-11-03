@@ -176,12 +176,11 @@ turns the `.out` into a file of the same shape as the one the track above reads:
 
 # `sort-bed` is `sort -k1,1 -k2,2n` under LC_ALL=C, header kept on top
 jbrowse sort-bed rmsk.bed | bgzip > rmsk.bed.gz
-tabix -p bed rmsk.bed.gz
+tabix -f -C -p bed rmsk.bed.gz
 ```
 
-Serve `rmsk.bed.gz` and its `.tbi` together. In the track config above, put its
-path or URL in `uri`, drop `"csi": true` (the hosted copy is CSI-indexed and
-yours is TBI), and put your assembly's name in `assemblyNames`.
+Serve `rmsk.bed.gz` and its `.csi` together. In the track config above, put its
+path or URL in `uri` and your assembly's name in `assemblyNames`.
 
 ## Reproduce it end to end
 

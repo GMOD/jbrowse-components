@@ -36,6 +36,7 @@ const aluTrack = (
   adapter: {
     type: 'BedTabixAdapter',
     uri: 'https://jbrowse.org/demos/gene_density/Alu.bed.gz',
+    csi: true,
   },
   displays: [
     {

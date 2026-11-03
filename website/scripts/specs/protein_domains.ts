@@ -16,6 +16,7 @@ const PFAM_TRACK = {
   adapter: {
     type: 'Gff3TabixAdapter',
     uri: 'https://jbrowse.org/demos/protein_domains/pfam.gff3.gz',
+    csi: true,
   },
   displays: [
     {

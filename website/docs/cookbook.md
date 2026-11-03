@@ -232,7 +232,7 @@ which otherwise follow the loaded features. `scale.names` names the
   "trackId": "rmsk_hg38",
   "name": "RepeatMasker",
   "assemblyNames": ["hg38"],
-  "adapter": { "type": "BedTabixAdapter", "uri": "rmsk.bed.gz" },
+  "adapter": { "type": "BedTabixAdapter", "uri": "rmsk.bed.gz", "csi": true },
   "displayDefaults": {
     "encoding": {
       "color": {

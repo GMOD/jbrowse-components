@@ -105,7 +105,7 @@ BED="$FAMILY.bed.gz"
 gzip -dc rmsk.bed.gz |
   awk -F'\t' -v fam="$FAMILY" '/^#/ || $6 == fam' |
   bgzip >"$BED"
-tabix -f -p bed "$BED"
+tabix -f -C -p bed "$BED"
 
 # ── Copies per kilobase ─────────────────────────────────────────────────────
 # Counts feature starts per 1 kb bin into <file>.density.bw beside the input.
@@ -125,7 +125,7 @@ fi
 SHARE="${BED%.bed.gz}.young_share.bed"
 python3 "$SCRIPT_DIR/alu_young_share.py" "$BED" "$SHARE" "$YOUNG"
 bgzip -f "$SHARE"
-tabix -f -p bed "$SHARE.gz"
+tabix -f -C -p bed "$SHARE.gz"
 
 # ── JBrowse ─────────────────────────────────────────────────────────────────
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
@@ -134,7 +134,7 @@ if [ -n "$FA" ]; then
 else
   jb add-assembly "$UCSC/hg38.2bit" --name hg38 --type twoBit --force --out "$APP"
 fi
-cp -f "$BED" "$BED.tbi" "${BED%.gz}.density.bw" "$SHARE.gz" "$SHARE.gz.tbi" "$APP"/
+cp -f "$BED" "$BED.csi" "${BED%.gz}.density.bw" "$SHARE.gz" "$SHARE.gz.csi" "$APP"/
 
 # The CLI cannot write a marks list, so the track is JSON. @PLACEHOLDERS@ are
 # real JSON strings, so the heredoc parses on its own.
@@ -154,7 +154,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
   "adapter": {
     "type": "BedTabixAdapter",
     "bedGzLocation": { "uri": "@BED@" },
-    "index": { "location": { "uri": "@BED@.tbi" } }
+    "index": { "location": { "uri": "@BED@.csi" } }
   },
   "displays": [
     {
@@ -236,7 +236,7 @@ for lane in young:youngLog2 strand:strandLog2; do
   "trackId": "@FAMILY@_@KIND@_share",
   "name": "@FAMILY@ @KIND@ share per Mb (log2)",
   "assemblyNames": ["@ASSEMBLY@"],
-  "adapter": { "type": "BedTabixAdapter", "uri": "@SHARE@" },
+  "adapter": { "type": "BedTabixAdapter", "uri": "@SHARE@", "csi": true },
   "displays": [
     {
       "type": "LinearMarkDisplay",

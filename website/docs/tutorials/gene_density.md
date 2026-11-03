@@ -138,7 +138,7 @@ shape:
 
 # `sort-bed` is `sort -k1,1 -k2,2n` under LC_ALL=C, header kept on top
 jbrowse sort-bed rmsk.bed | bgzip > rmsk.bed.gz
-tabix -p bed rmsk.bed.gz
+tabix -f -C -p bed rmsk.bed.gz
 ```
 
 We cut that table into one BED per `repFamily`, so the Alu bigWig counts only
@@ -151,7 +151,7 @@ indexes each cut file as it is:
 # rmsk.bed.gz is a RepeatMasker BED whose header names repFamily as the sixth
 # column; swap Alu for L1 or Simple_repeat for the other two
 gzip -dc rmsk.bed.gz | awk -F'\t' -v fam=Alu '/^#/ || $6 == fam' | bgzip > Alu.bed.gz
-tabix -p bed Alu.bed.gz
+tabix -f -C -p bed Alu.bed.gz
 ```
 
 The same `make-density` line, run on `Alu.bed.gz`, writes `Alu.bed.density.bw`:
@@ -210,7 +210,8 @@ gene:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/genes.gff.gz"
+    "uri": "https://jbrowse.org/demos/gene_density/genes.gff.gz",
+    "csi": true
   }
 }
 ```

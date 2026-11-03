@@ -75,7 +75,7 @@ case "$GENES" in
   *) cat "$GENES" ;;
 esac >genes.gff3
 jb sort-gff genes.gff3 | bgzip >genes.gff3.gz
-tabix -f -p gff genes.gff3.gz
+tabix -f -C -p gff genes.gff3.gz
 
 # ── Proteins, then Pfam domains on them ──────────────────────────────────────
 # -y writes each transcript's CDS translated, named by the transcript ID;
@@ -106,7 +106,7 @@ cat chunk.*.domtblout >pfam.domtblout
 rm -f chunk.*.fa chunk.*.domtblout
 
 npx -y 'domains2genome@>=2.4.0' genes.gff3 pfam.domtblout --gff3 | bgzip >pfam.gff3.gz
-tabix -f -p gff pfam.gff3.gz
+tabix -f -C -p gff pfam.gff3.gz
 
 # ── JBrowse ──────────────────────────────────────────────────────────────────
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main

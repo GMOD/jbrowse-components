@@ -3,7 +3,7 @@
 The Pfam domain track the
 [protein domains tutorial](../../website/docs/tutorials/protein_domains.md) and
 `website/scripts/specs/protein_domains.ts` read, at
-`https://jbrowse.org/demos/protein_domains/pfam.gff3.gz` (and `.tbi`). The
+`https://jbrowse.org/demos/protein_domains/pfam.gff3.gz` (and `.csi`). The
 genome and genes come from the honey bee GenArk hub, `GCF_003254395.2`, so there
 is no config here.
 
@@ -22,4 +22,4 @@ nine `chunk*.domtblout` that finished it).
 
 Deploy it with
 `DEPLOY_DEMO_ALLOW_UNTRACKED=1 scripts/deploy-demo.sh pfam.gff3.gz protein_domains/pfam.gff3.gz`,
-then the `.tbi` the same way.
+then the `.csi` the same way.

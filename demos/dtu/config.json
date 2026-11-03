@@ -31,7 +31,8 @@
       "category": ["Differential transcript usage"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz"
+        "uri": "https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz",
+        "csi": true
       },
       "displays": [
         {

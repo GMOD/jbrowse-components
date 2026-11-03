@@ -333,7 +333,7 @@ and index all three the same way:
 
 ```bash
 sort -k1,1 -k2,2n junctions.bed | bgzip > junctions.bed.gz
-tabix -p bed junctions.bed.gz
+tabix -C -p bed junctions.bed.gz
 ```
 
 **STAR** writes `SJ.out.tab` with the intron as 1-based inclusive coordinates,
@@ -400,6 +400,7 @@ can read them:
   "adapter": {
     "type": "BedTabixAdapter",
     "uri": "https://jbrowse.org/demos/rnaseq/rnaseq_junctions.bed.gz",
+    "csi": true,
     "columnNames": [
       "chrom",
       "chromStart",

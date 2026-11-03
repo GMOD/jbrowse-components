@@ -82,7 +82,7 @@ samtools view -q 20 -F 0x904 --input-fmt-option required_fields=0x1DF "$READS" "
   awk 'BEGIN { OFS = "\t"; print "#chrom", "chromStart", "chromEnd", "name", "score", "strand", "tlen" }
     $7 == "=" && $9 > 1000 { print $3, $4 - 1, $4 - 1 + $9, $1, $5, "+", $9 }' |
   bgzip >"$PAIRS"
-tabix -f -p bed "$PAIRS"
+tabix -f -C -p bed "$PAIRS"
 
 # ── JBrowse ─────────────────────────────────────────────────────────────────
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
@@ -107,7 +107,7 @@ else
   ' "$APP/config.json" https://jbrowse.org/genomes/GRCh38/cytoBand.txt
   READS_URI="$READS"
 fi
-cp -f "$PAIRS" "$PAIRS.tbi" "$APP"/
+cp -f "$PAIRS" "$PAIRS.csi" "$APP"/
 
 case "$READS_URI" in
   *.cram) ADAPTER="{ \"type\": \"CramAdapter\", \"cramLocation\": { \"uri\": \"$READS_URI\" }, \"craiLocation\": { \"uri\": \"$READS_URI.crai\" } }" ;;
@@ -196,7 +196,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -
   "adapter": {
     "type": "BedTabixAdapter",
     "bedGzLocation": { "uri": "@PAIRS@" },
-    "index": { "location": { "uri": "@PAIRS@.tbi" } }
+    "index": { "location": { "uri": "@PAIRS@.csi" } }
   },
   "displays": [
     {
@@ -235,7 +235,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@SAMPLE@|$SAMPLE|g" -e "s|@CHROM@|$CHROM|g" -
   "adapter": {
     "type": "BedTabixAdapter",
     "bedGzLocation": { "uri": "@PAIRS@" },
-    "index": { "location": { "uri": "@PAIRS@.tbi" } }
+    "index": { "location": { "uri": "@PAIRS@.csi" } }
   },
   "displays": [
     {

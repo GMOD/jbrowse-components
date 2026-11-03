@@ -109,7 +109,7 @@ shape:
 
 # `sort-bed` is `sort -k1,1 -k2,2n` under LC_ALL=C, header kept on top
 jbrowse sort-bed rmsk.bed | bgzip > rmsk.bed.gz
-tabix -p bed rmsk.bed.gz
+tabix -f -C -p bed rmsk.bed.gz
 ```
 
 An `awk` filter on the `repFamily` column keeps the header line and the sort
@@ -120,10 +120,10 @@ order, so `tabix` indexes the cut file as it is:
 ```bash
 # the header line names the columns, repFamily the sixth
 gzip -dc rmsk.bed.gz | awk -F'\t' -v fam=Alu '/^#/ || $6 == fam' | bgzip > Alu.bed.gz
-tabix -p bed Alu.bed.gz
+tabix -f -C -p bed Alu.bed.gz
 ```
 
-The track reads any BED-like file, bgzipped and tabix-indexed, with a `#` header
+The track reads any BED-like file, bgzipped and CSI-indexed, with a `#` header
 line naming the columns, and a mark refers to a column by name. In
 [grammar-of-graphics](/docs/config_guides/mark_display) terms, `encoding` maps
 columns to a mark's channels, and `color` is a color scale from a `field`
@@ -144,7 +144,8 @@ through `scale.domain` to `scale.range`. The track below lists three marks:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
+    "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -263,7 +264,7 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 # of each share against copies per bin
 python3 alu_young_share.py Alu.bed.gz Alu.young_share.bed AluY
 bgzip -f Alu.young_share.bed
-tabix -f -p bed Alu.young_share.bed.gz
+tabix -f -C -p bed Alu.young_share.bed.gz
 ```
 
 **Advanced → Edit plot...** in the track menu applies edits to the cut, colors
@@ -275,6 +276,7 @@ and key names live. The config below sets them in the track:
   "trackId": "alu_young_share",
   "name": "AluY share per Mb, against the genome",
   "uri": "https://jbrowse.org/code/jb2/main/test_data/alu_age/Alu.young_share.bed.gz",
+  "index": "https://jbrowse.org/code/jb2/main/test_data/alu_age/Alu.young_share.bed.gz.csi",
   "assemblyNames": ["hg38"],
   "displays": [
     {

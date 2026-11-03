@@ -112,14 +112,14 @@ fi
     }'
 } >rmsk.bed
 jb sort-bed rmsk.bed | bgzip >rmsk.bed.gz
-tabix -f -p bed rmsk.bed.gz
+tabix -f -C -p bed rmsk.bed.gz
 
 CLASSES=$(gzip -dc rmsk.bed.gz | awk -F'\t' '!/^#/ { c[$7]++ } END { print length(c) }')
 echo "converted $(basename "$REPEATS") to rmsk.bed.gz, $CLASSES repeat classes"
 
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
 jb add-assembly "$FA" --name "$ASM" --load copy --force --out "$APP"
-cp -f rmsk.bed.gz rmsk.bed.gz.tbi "$APP"/
+cp -f rmsk.bed.gz rmsk.bed.gz.csi "$APP"/
 
 # The CLI cannot set `rows`, so the track is written as JSON. The
 # multi-row entry is listed first, which is what makes it the display the track
@@ -138,7 +138,8 @@ sed "s|@ASSEMBLY@|$ASM|" >track.json <<'JSON'
   "assemblyNames": ["@ASSEMBLY@"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "rmsk.bed.gz"
+    "uri": "rmsk.bed.gz",
+    "csi": true
   },
   "displays": [
     {

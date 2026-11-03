@@ -67,7 +67,7 @@ samtools faidx hsv1.fa.gz
 # parse TBX_GENERIC ... The offending line was: ''").
 (grep '^#' hsv1.gff3; grep -v '^#' hsv1.gff3 | awk 'NF' | sort -k1,1 -k4,4n) \
   | bgzip -f > hsv1.gff3.gz
-tabix -f -p gff hsv1.gff3.gz
+tabix -f -C -p gff hsv1.gff3.gz
 
 # ---------------------------------------------------------------- alignments
 [ -f ERR2379735.fastq.gz ] || curl -fsSL -O "$RUN"
@@ -109,7 +109,8 @@ cat > config.json <<'JSON'
       "assemblyNames": ["hsv1"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "hsv1.gff3.gz"
+        "uri": "hsv1.gff3.gz",
+        "csi": true
       }
     },
     {
@@ -126,4 +127,4 @@ cat > config.json <<'JSON'
 }
 JSON
 
-echo "built in $(pwd) — upload with scripts/deploy-demo.sh (config) + aws s3 cp (data)"
+echo "built in $(pwd); upload each file with scripts/deploy-demo.sh"

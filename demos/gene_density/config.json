@@ -28,7 +28,7 @@
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/demos/gene_density/genes.gff.gz.tbi"
+            "uri": "https://jbrowse.org/demos/gene_density/genes.gff.gz.csi"
           }
         }
       }
@@ -58,7 +58,7 @@
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz.tbi"
+            "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz.csi"
           }
         }
       }
@@ -88,7 +88,7 @@
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/demos/gene_density/L1.bed.gz.tbi"
+            "uri": "https://jbrowse.org/demos/gene_density/L1.bed.gz.csi"
           }
         }
       }
@@ -118,7 +118,7 @@
         },
         "index": {
           "location": {
-            "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.gz.tbi"
+            "uri": "https://jbrowse.org/demos/gene_density/Simple_repeat.bed.gz.csi"
           }
         }
       }
