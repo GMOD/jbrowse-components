@@ -10,6 +10,7 @@ import { STRAND_FIELD } from '@jbrowse/core/util/categoricalField'
 import { abgrToHex, cssColorToHex } from '@jbrowse/core/util/colorBits'
 import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
+import { runInAction } from 'mobx'
 
 import { labelColors } from './LinearBasicDisplay/components/labelColors.ts'
 import { forEachDisplayLabel } from './LinearBasicDisplay/components/labelPositioning.ts'
@@ -27,7 +28,7 @@ import {
   featureGroupSections,
   sectionIdsOf,
 } from './LinearBasicDisplay/facet.ts'
-import { featureBandViews } from './LinearBasicDisplay/featureBandViews.ts'
+import { hostFeatureBand } from './LinearBasicDisplay/featureBandViews.ts'
 import { resolvedGeneGlyphMode } from './LinearBasicDisplay/geneGlyphMode.ts'
 import {
   ARROW_LENGTH_PX,
@@ -453,7 +454,7 @@ export async function featureTables(
       ]
     }),
   )
-  const band = featureBandViews({
+  const band = hostFeatureBand({
     rpcDataMap,
     layoutReady: true,
     layoutInputs: {
@@ -480,7 +481,11 @@ export async function featureTables(
     labelFontSize: fontSize,
     hidesOverflow: false,
   })
-  const laid = band.laidOutDataMap
+  // One batch, so both reads share one fit solve.
+  const { laid, renderedLabels } = runInAction(() => ({
+    laid: band.laidOutDataMap,
+    renderedLabels: band.renderedLabels,
+  }))
   const palette = resolvePalette()
   const colors = featureColorViews({
     conf: { encoding: { color: conf.encoding.color } },
@@ -501,7 +506,7 @@ export async function featureTables(
   const key = colorKeyTables(scales)
   const hideChevrons = !readConfObject(conf, ['chevrons', 'show'])
   const labels = {
-    ...band.renderedLabels,
+    ...renderedLabels,
     colors: labelColors(palette),
   }
   const regionLabels = displayLabels(regions, resolved, labels, bpPerPx)

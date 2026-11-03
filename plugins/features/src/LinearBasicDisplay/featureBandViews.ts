@@ -1,6 +1,7 @@
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
+import { observable } from 'mobx'
 
 import { scaleLaidOutData, unplaceBelow } from './applyLayout.ts'
 import { indexById } from './baseModelHelpers.ts'
@@ -183,6 +184,9 @@ export function featureBandViews(self: FeatureBandHost) {
         out: ReadonlyMap<number, FeatureDataResult>
       }
     | undefined
+  // A settle re-resolves the fit stage onto the same labels, and a fresh
+  // context would re-run every label layer and ink reading it.
+  const sameLabels = sameAsLast<LabelPlacementContext>()
   // Built on the first read, off the band as hosted: an MST node or a MobX
   // observable, which the memos must read through to see its computeds.
   let hitIndexes: ReturnType<typeof createHitIndexes> | undefined
@@ -739,10 +743,12 @@ export function featureBandViews(self: FeatureBandHost) {
      * and the SVG export all draw or measure.
      */
     get renderedLabels(): LabelPlacementContext {
-      return renderedLabelContext(
-        this.fitStage,
-        self.reservesBelowLabelRows,
-        self.labelFontSize,
+      return sameLabels(
+        renderedLabelContext(
+          this.fitStage,
+          self.reservesBelowLabelRows,
+          self.labelFontSize,
+        ),
       )
     },
     /**
@@ -805,4 +811,19 @@ export function featureBandViews(self: FeatureBandHost) {
       return hitIndexes.instances()
     },
   }
+}
+
+/**
+ * The band on a plain host, for a host that is no MST model: `observable`
+ * caches each getter as a computed, as mixing it into a model's views does,
+ * and leaves its methods plain.
+ */
+export function hostFeatureBand(host: FeatureBandHost) {
+  return observable(featureBandViews(host), {
+    fitLayoutAt: false,
+    decimatedLayoutInputs: false,
+    solveLabelRoomFactors: false,
+    bodyScaleHeightProbe: false,
+    searchFeatureByID: false,
+  })
 }

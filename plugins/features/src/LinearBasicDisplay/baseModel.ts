@@ -623,6 +623,18 @@ export default function baseStateModelFactory(
         const view = containingLgv(self)
         return view.showAminoAcids
       },
+
+      /**
+       * #getter
+       * @deprecated read each rpcDataMap entry's `reversed`
+       */
+      get reversedRegions() {
+        return new Set(
+          [...self.rpcDataMap]
+            .filter(([, data]) => data.reversed)
+            .map(([idx]) => idx),
+        )
+      },
     }))
     .views(featureSetViews)
     .views(featureHighlightViews)

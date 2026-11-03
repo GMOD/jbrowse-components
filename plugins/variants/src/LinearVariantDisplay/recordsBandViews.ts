@@ -22,14 +22,14 @@ import {
   MIN_GROW_HEIGHT,
   countTruncatedFeatures,
   createMembershipMemo,
-  featureBandViews,
   featureIdsTouchingBlocks,
   hiddenSectionFeatureIds,
+  hostFeatureBand,
   labelFontSize,
   labelVisibility,
   maxBottom,
 } from '@jbrowse/plugin-features/band'
-import { computed, observable } from 'mobx'
+import { computed } from 'mobx'
 
 import { cellHueField } from '../shared/cellHue.ts'
 import { PHASE_SET_FIELD } from '../shared/getPhasedColor.ts'
@@ -636,8 +636,7 @@ interface RecordsLayoutHost extends RecordsRenderHost, RecordsRender {
 export function recordsLayoutViews(self: RecordsLayoutHost) {
   // LinearBasicDisplay's own feature band, hosted for the records. Its host
   // is a plain object and not this model, whose `facet` is the sample
-  // facet and not a feature one; `observable` caches each band getter as a
-  // computed, as spreading it into a model's views would.
+  // facet and not a feature one.
   const host: FeatureBandHost = {
     get rpcDataMap() {
       return self.recordsRenderDataMap
@@ -680,13 +679,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
       return !self.recordsOnly
     },
   }
-  const band = observable(featureBandViews(host), {
-    fitLayoutAt: false,
-    decimatedLayoutInputs: false,
-    solveLabelRoomFactors: false,
-    bodyScaleHeightProbe: false,
-    searchFeatureByID: false,
-  })
+  const band = hostFeatureBand(host)
   const fullStackHeight = computed(() =>
     maxBottom(band.baseLaidOutDataMap, self.recordsMeasureIds),
   )

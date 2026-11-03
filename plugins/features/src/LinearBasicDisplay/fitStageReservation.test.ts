@@ -1,4 +1,5 @@
 import { setConf } from '@jbrowse/core/configuration'
+import { autorun } from 'mobx'
 
 import {
   makeFeatureData,
@@ -217,6 +218,26 @@ function reservationByLevel(
       }
   }
 }
+
+test('a resolve that keeps the rung hands back the same label context', () => {
+  const display = standUp(
+    { heightMode: 'fit', everyIsoform: false, below: false, labels: true },
+    geneStack(6),
+  )
+  const fullHeight = maxBottom(display.baseLaidOutDataMap)
+  display.setHeight(Math.ceil(fullHeight) + 40)
+  const contexts: unknown[] = []
+  const dispose = autorun(() => {
+    contexts.push(display.renderedLabels)
+  })
+  const stage = display.fitStage
+  display.setHeight(Math.ceil(fullHeight) + 80)
+  expect(display.fitStage).not.toBe(stage)
+  expect(display.fitStage.level).toBe(stage.level)
+  expect(contexts).toHaveLength(1)
+  expect(display.renderedLabels).toBe(contexts[0])
+  dispose()
+})
 
 describe('the rung that packed a layout says what it reserved', () => {
   const reached = new Map<HeightMode, Set<FitStage['level']>>(
