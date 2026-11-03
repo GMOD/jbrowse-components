@@ -418,7 +418,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "sequenceAdapter": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -527,11 +527,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "sequenceAdapter": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "chunkSizeLimit": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -648,7 +648,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "sequenceAdapter": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -1223,7 +1223,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "featureClass": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -1274,7 +1274,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "featureClass": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -1325,7 +1325,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "featureClass": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -3514,7 +3514,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "resolutionMultiplier": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -4211,7 +4211,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "subadapters": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -5242,6 +5242,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                         }
                       ]
                     }
+                  },
+                  {
+                    "type": "string"
                   }
                 ]
               }
@@ -5265,6 +5268,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                         }
                       ]
                     }
+                  },
+                  {
+                    "type": "string"
                   }
                 ]
               }
@@ -5806,7 +5812,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxDisplayedBpPerPx": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "mouseover": {
           "deprecated": true,
@@ -5822,7 +5828,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "color2": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "color3": {
           "deprecated": true,
@@ -5854,15 +5860,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "outline": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxHeight": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "impliedUTRs": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "renderer": {
           "deprecated": true,
@@ -7609,19 +7615,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxFeatureScreenDensity": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxDisplayedBpPerPx": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "mouseover": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "jexlFilters": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "colorBy": {
           "deprecated": true,
@@ -7637,11 +7643,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "defaultRendering": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "colorScheme": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "scaleType": {
           "deprecated": true,
@@ -7661,19 +7667,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numStdDev": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "inverted": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "multiTicks": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "jitter": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "lineWidth": {
           "deprecated": true,
@@ -7689,7 +7695,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "hideSmallIndels": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "hideMismatches": {
           "deprecated": true,
@@ -7701,11 +7707,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "hideLargeIndels": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "minSubfeatureWidth": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "renderers": {
           "deprecated": true,
@@ -8092,11 +8098,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "strokeColorSelected": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "strokeColorHover": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "renderer": {
           "deprecated": true,
@@ -8172,7 +8178,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "renderer": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -8206,11 +8212,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "renderer": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "middle": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -8758,19 +8764,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxFeatureScreenDensity": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxDisplayedBpPerPx": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "mouseover": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "jexlFilters": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "colorBy": {
           "deprecated": true,
@@ -8786,11 +8792,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "defaultRendering": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "colorScheme": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "scaleType": {
           "deprecated": true,
@@ -8810,19 +8816,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numStdDev": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "inverted": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "multiTicks": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "jitter": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "lineWidth": {
           "deprecated": true,
@@ -8838,7 +8844,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "hideSmallIndels": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "hideMismatches": {
           "deprecated": true,
@@ -8850,11 +8856,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "hideLargeIndels": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "minSubfeatureWidth": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "renderers": {
           "deprecated": true,
@@ -9187,48 +9193,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
-    "RowTree": {
-      "title": "RowTree",
-      "x-meaning": "the dendrogram as newick, or { newick, provenance }; whether it draws is rows.axis.tree",
-      "anyOf": [
-        {
-          "description": "Shorthand for \`{ \\"newick\\": ... }\`.",
-          "$ref": "#/$defs/PlainString",
-          "type": "string"
-        },
-        {
-          "title": "RowTree",
-          "type": "object",
-          "x-closed": true,
-          "properties": {
-            "newick": {
-              "description": "the tree as newick, its leaves the row names.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/PlainString"
-              }
-            },
-            "provenance": {
-              "description": "the locus and settings a clustering run computed the tree from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "not": {
-                  "$ref": "#/$defs/JexlString"
-                }
-              }
-            }
-          },
-          "patternProperties": {
-            "^_+comment": {}
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
     "LaneRows": {
       "title": "LaneRows",
       "anyOf": [
@@ -9244,7 +9208,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "x-closed": true,
           "properties": {
             "sort": {
-              "description": "the row order: the rows listed lead, in this order; the rest keep their source's order (a VCF's samples, a multi-BigWig's subtracks), or sort where the rows are values found on features.",
+              "description": "the lanes that stack first, by assembly name, in this order; the rest follow densest-first.",
               "if": {
                 "type": "null"
               },
@@ -9262,12 +9226,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                         }
                       ]
                     }
+                  },
+                  {
+                    "type": "string"
                   }
                 ]
               }
             },
             "labels": {
-              "description": "a label drawn beside a row in place of its name, by name; rows.axis.labels says whether labels draw.",
+              "description": "a label drawn for a lane in place of its assembly name, by assembly name; labels.lanes says where lane labels draw.",
               "if": {
                 "type": "null"
               },
@@ -9276,14 +9243,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                 "additionalProperties": {
                   "type": "string"
                 }
-              }
-            },
-            "tree": {
-              "if": {
-                "type": "null"
-              },
-              "else": {
-                "$ref": "#/$defs/RowTree"
               }
             },
             "kept": {
@@ -9305,6 +9264,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                         }
                       ]
                     }
+                  },
+                  {
+                    "type": "string"
                   }
                 ]
               }
@@ -11639,15 +11601,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxFeatureScreenDensity": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxDisplayedBpPerPx": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "mouseover": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "jexlFilters": {
           "deprecated": true,
@@ -11801,7 +11763,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "renderer": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -11860,6 +11822,48 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "additionalProperties": false
+    },
+    "RowTree": {
+      "title": "RowTree",
+      "x-meaning": "the dendrogram as newick, or { newick, provenance }; whether it draws is rows.axis.tree",
+      "anyOf": [
+        {
+          "description": "Shorthand for \`{ \\"newick\\": ... }\`.",
+          "$ref": "#/$defs/PlainString",
+          "type": "string"
+        },
+        {
+          "title": "RowTree",
+          "type": "object",
+          "x-closed": true,
+          "properties": {
+            "newick": {
+              "description": "the tree as newick, its leaves the row names.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "$ref": "#/$defs/PlainString"
+              }
+            },
+            "provenance": {
+              "description": "the locus and settings a clustering run computed the tree from; unset for a tree that arrived as data. Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "not": {
+                  "$ref": "#/$defs/JexlString"
+                }
+              }
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "RowAxisWithGrid": {
       "title": "RowAxisWithGrid",
@@ -12261,6 +12265,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                         }
                       ]
                     }
+                  },
+                  {
+                    "type": "string"
                   }
                 ]
               }
@@ -12304,6 +12311,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                         }
                       ]
                     }
+                  },
+                  {
+                    "type": "string"
                   }
                 ]
               }
@@ -12751,6 +12761,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                         }
                       ]
                     }
+                  },
+                  {
+                    "type": "string"
                   }
                 ]
               }
@@ -13107,7 +13120,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxDisplayedBpPerPx": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "mouseover": {
           "deprecated": true,
@@ -13139,7 +13152,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxHeight": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "renderingMode": {
           "deprecated": true,
@@ -13167,31 +13180,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "autoscale": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "minScore": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxScore": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "scaleType": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "inverted": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "numStdDev": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "minimalTicks": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "minorAlleleFrequencyFilter": {
           "deprecated": true,
@@ -13601,19 +13614,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxFeatureScreenDensity": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxDisplayedBpPerPx": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "fetchSizeLimit": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "mouseover": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "jexlFilters": {
           "deprecated": true,
@@ -13645,43 +13658,43 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxHeight": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "colorScheme": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "signedLD": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "showLDTriangle": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "showRecombination": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "recombinationZoneHeight": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "minorAlleleFrequencyFilter": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "lengthCutoffFilter": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "hweFilterThreshold": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "callRateFilter": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "showLabels": {
           "deprecated": true,
@@ -13818,6 +13831,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                         }
                       ]
                     }
+                  },
+                  {
+                    "type": "string"
                   }
                 ]
               }
@@ -13861,6 +13877,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                         }
                       ]
                     }
+                  },
+                  {
+                    "type": "string"
                   }
                 ]
               }
@@ -14456,19 +14475,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxFeatureScreenDensity": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxDisplayedBpPerPx": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "fetchSizeLimit": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "mouseover": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "jexlFilters": {
           "deprecated": true,
@@ -14480,7 +14499,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minimalTicks": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "scaleType": {
           "deprecated": true,
@@ -14500,11 +14519,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numStdDev": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "inverted": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "renderers": {
           "deprecated": true,
@@ -14914,6 +14933,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     }
                   ]
                 }
+              },
+              {
+                "type": "string"
               }
             ]
           }
@@ -14957,6 +14979,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                     }
                   ]
                 }
+              },
+              {
+                "type": "string"
               }
             ]
           }
@@ -15380,15 +15405,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxFeatureScreenDensity": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxDisplayedBpPerPx": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "mouseover": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "jexlFilters": {
           "deprecated": true,
@@ -15396,7 +15421,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rowHeight": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -15736,19 +15761,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxFeatureScreenDensity": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxDisplayedBpPerPx": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "fetchSizeLimit": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "mouseover": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "jexlFilters": {
           "deprecated": true,
@@ -15756,7 +15781,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "renderer": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -15828,6 +15853,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                         }
                       ]
                     }
+                  },
+                  {
+                    "type": "string"
                   }
                 ]
               }
@@ -15851,6 +15879,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                         }
                       ]
                     }
+                  },
+                  {
+                    "type": "string"
                   }
                 ]
               }
@@ -15938,6 +15969,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                         }
                       ]
                     }
+                  },
+                  {
+                    "type": "string"
                   }
                 ]
               }
@@ -15981,6 +16015,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
                         }
                       ]
                     }
+                  },
+                  {
+                    "type": "string"
                   }
                 ]
               }
@@ -16328,15 +16365,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxFeatureScreenDensity": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxDisplayedBpPerPx": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "mouseover": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "jexlFilters": {
           "deprecated": true,
@@ -16479,15 +16516,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxFeatureScreenDensity": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxDisplayedBpPerPx": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "mouseover": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "jexlFilters": {
           "deprecated": true,
@@ -16495,11 +16532,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "renderer": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "color": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -16642,15 +16679,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxFeatureScreenDensity": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "maxDisplayedBpPerPx": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "mouseover": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "jexlFilters": {
           "deprecated": true,
@@ -16779,7 +16816,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "tracks": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -16854,15 +16891,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "textSearchAdapterId": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "metaFilePath": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "tracks": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -17112,7 +17149,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rpcDriverName": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "textSearchAdapter": {
           "deprecated": true,
@@ -17676,7 +17713,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rpcDriverName": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "textSearchAdapter": {
           "deprecated": true,
@@ -18071,11 +18108,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rpcDriverName": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "rendering": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -18268,7 +18305,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rpcDriverName": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "textSearchAdapter": {
           "deprecated": true,
@@ -18691,7 +18728,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rpcDriverName": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "textSearchAdapter": {
           "deprecated": true,
@@ -18964,7 +19001,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rpcDriverName": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "textSearchAdapter": {
           "deprecated": true,
@@ -19302,7 +19339,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rpcDriverName": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "textSearchAdapter": {
           "deprecated": true,
@@ -19640,7 +19677,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rpcDriverName": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "textSearchAdapter": {
           "deprecated": true,
@@ -19886,7 +19923,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rpcDriverName": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "textSearchAdapter": {
           "deprecated": true,
@@ -20200,7 +20237,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rpcDriverName": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "textSearchAdapter": {
           "deprecated": true,
@@ -20416,7 +20453,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rpcDriverName": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "textSearchAdapter": {
           "deprecated": true,
@@ -20428,7 +20465,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "trackIds": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         }
       }
     },
@@ -20898,7 +20935,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rpcDriverName": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "textSearchAdapter": {
           "deprecated": true,
@@ -23608,7 +23645,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rpcDriverName": {
           "deprecated": true,
-          "description": "Legacy key: a migration rewrites it into current slots when the config loads."
+          "description": "Legacy key: dropped when the config loads, since nothing reads it now."
         },
         "textSearchAdapter": {
           "deprecated": true,

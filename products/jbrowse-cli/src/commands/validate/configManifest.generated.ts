@@ -3351,11 +3351,13 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
               "name": "hidden",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             }
           ],
@@ -3654,11 +3656,13 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
               "name": "hidden",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             }
           ],
@@ -4842,11 +4846,13 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
               "name": "hidden",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             }
           ],
@@ -5758,6 +5764,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -5765,33 +5772,9 @@ export const configManifest: ConfigManifest = {
               "type": "Map<string, string>"
             },
             {
-              "name": "tree",
-              "type": "RowTreeConfigurationSchema",
-              "subSlots": [
-                {
-                  "name": "newick",
-                  "type": "(string | undefined)"
-                },
-                {
-                  "name": "provenance",
-                  "type": "(frozen | undefined)"
-                }
-              ],
-              "schema": "RowTree",
-              "writes": {
-                "keyedBy": "newick",
-                "keyed": [
-                  "provenance"
-                ],
-                "emptyChanges": true
-              },
-              "shorthand": {
-                "string": "newick"
-              }
-            },
-            {
               "name": "kept",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -5805,15 +5788,11 @@ export const configManifest: ConfigManifest = {
             "keyed": [
               "sort",
               "labels",
-              "tree",
               "kept"
             ]
           },
           "shorthand": {
             "string": "field"
-          },
-          "misnamed": {
-            "treeProvenance": "tree.provenance"
           }
         },
         {
@@ -6754,6 +6733,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -6788,6 +6768,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "kept",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -7083,6 +7064,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             }
           ],
@@ -7140,11 +7122,13 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "sort",
                   "type": "string[]",
+                  "liftsString": true,
                   "liftsNumbers": true
                 },
                 {
                   "name": "hidden",
                   "type": "string[]",
+                  "liftsString": true,
                   "liftsNumbers": true
                 }
               ],
@@ -7579,6 +7563,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -7613,6 +7598,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "kept",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -8214,6 +8200,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -8248,6 +8235,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "kept",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -9363,11 +9351,13 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
               "name": "hidden",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -9394,6 +9384,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -9428,6 +9419,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "kept",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -10295,11 +10287,13 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
               "name": "hidden",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -10326,6 +10320,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -10360,6 +10355,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "kept",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -11234,11 +11230,13 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
               "name": "hidden",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -11265,6 +11263,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "sort",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
@@ -11299,6 +11298,7 @@ export const configManifest: ConfigManifest = {
             {
               "name": "kept",
               "type": "string[]",
+              "liftsString": true,
               "liftsNumbers": true
             },
             {
