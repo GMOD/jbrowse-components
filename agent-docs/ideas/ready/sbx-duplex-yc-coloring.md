@@ -1,6 +1,6 @@
 ---
 name: sbx-duplex-yc-coloring
-description: Roche SBX duplex reads carry a YC tag recording, per base, whether the two strands agreed, disagreed (and what each read) or only one covered. A per-base color scheme off a YC decoder, the decode in the feature detail panel, and optionally discordant positions as mismatch-style marks labeled by strand pair.
+description: Roche SBX duplex reads carry a YC tag recording, per base, whether the two strands agreed, disagreed (and what each read) or only one covered. Released BAMs keep it, and their binned QUAL already shows the three classes under base-quality coloring, so the gap is the R1/R2 pair, decoded in the feature detail panel and as labeled mismatch-style marks.
 ---
 
 # SBX duplex reads: `YC`-tag coloring
@@ -35,9 +35,18 @@ Spec: XOOS `docs/interpreting-sbx-d-reads.md`. Reference decoder:
   means R1 supplied that end's tail (also the default when there is no tail),
   `-` means R2. Tails are bare counts.
 - In the duplex segment a number is a run of concordant bases and a letter is
-  one discordant position. The letter encodes the R1→R2 pair from a 5×5 table
-  over `ACGT-`: `I P J X` are bases only in R1, `L Q O Z` bases only in R2, so
-  a discordant position need not consume a consensus base on both sides.
+  one discordant position. **Uppercase consumes one consensus base, lowercase
+  is a consensus gap** (R1 or R2 had a base the consensus dropped). Both cases
+  index the same 26-entry pair table (`N` and `U` unused):
+
+  ```
+  kDecodingR1 = "ACCGTTGTAGG-A--C-ACT-GATC-"
+  kDecodingR2 = "AACACGGA--TAC-G-CGGT-CT-TT"
+  ```
+
+  So `Z` is R1 `-` / R2 `T` with a `T` in the consensus, and `X` is R1 `T` /
+  R2 `-`. Reverse complement maps codes through `kComplement` /
+  `kGapComplement`, not by complementing the decoded pair.
 - **Read orientation, not reference orientation.** A reverse-strand record's
   tag must be reverse-complemented, and soft clips trimmed off it, before it
   maps onto the reference. The XOOS decoder's `ReverseComplement()` and
@@ -51,35 +60,46 @@ Roche's released GIAB BAMs carry it: their error-rate tutorial
 Giraffe-aligned HG001 BAM with `samtools bam2fq -T YC` and keeps it through
 `bwa mem -C`, and the read collapser and small variant caller (`YcDecodeMethod`
 `consensus` / `split`) both read it off aligned records. Third-party pipelines
-that skip `-T YC` / `-C` drop it. Not yet confirmed by opening a downloaded BAM.
+that skip `-T YC` / `-C` drop it.
 
-## QUAL is not a substitute
+Confirmed on the released Giraffe-aligned, non-downsampled HG002 SBX-D BAM
+(`@PG` chain: vg, samtools sort, `read_collapser markdup --preset wgs-duplex`,
+`read_collapser_rescue_secondary`): the first 1M records all carry a non-empty
+`YC`, and for all of the first 20k, tails + runs + uppercase codes equals
+`SEQ` length. No lowercase codes and no `-` (R2) tails appeared in 1M
+records. Other tags: `AS`, `RG`, `DI:Z` / `DS:i` (markdup cluster id and
+size), rarely `YF:i`.
 
-Demux writes the three classes into QUAL as fixed values (concordant Q39,
-discordant Q5, simplex tail Q22), so **Color by → Base quality**
-(`features/perBaseQuality`) shows the duplex layout on raw demux output today,
-unlabeled. The read collapser, the next XOOS stage, rewrites QUAL with a
-calibrated model (Q5–Q50) and the bins are gone. Whether `YC` survives the
-collapser is not stated in its docs.
+## QUAL already shows the three classes, unlabeled
+
+Demux writes the classes into QUAL as fixed values (concordant Q39 `H`,
+discordant Q5 `&`, simplex tail Q22 `7`), and the released BAM still has only
+those three values: `markdup` does not recalibrate. QUAL is a pure function of
+`YC` there (all 20k records match, reversing the class string for flag 16). So
+**Color by → Base quality** (`features/perBaseQuality`) already draws the
+duplex layout on Roche's own data. A calibrated QUAL (Q5–Q50) is a separate
+read collapser mode; that output would lose the bins.
 
 ## Proposed, ranked
 
-- **A `YC` decoder plus an "SBX duplex" per-base color scheme.**
+- **A `YC` decoder and its decode in the feature detail panel**
+  (`AlignmentsFeatureDetail/tagInfo.ts`). Today `YC` is a raw string; render
+  the tail lengths and owning strand, the concordant count, and each
+  discordant position as its R1/R2 pair. The pair is the only thing `YC`
+  carries that QUAL does not.
+- **Discordant positions as mismatch-style marks**, labeled by the R1/R2
+  pair, so a reviewer sees at a glance whether an alt base is on both strands
+  or one. Shares the decoder.
+- **(Only for calibrated-QUAL data) an "SBX duplex" per-base color scheme.**
+  Base-quality coloring already shows the classes on binned data, so this
+  earns its shader path only once calibrated-QUAL BAMs are in circulation.
   `features/perBaseQuality` and `features/perBaseLetter` are the template: an
   `extract.ts` reading the tag (`getTagAlt(feature, 'YC')`, the MM/ML idiom),
   orienting it to the record, and walking `forEachAlignedBaseInRegion`
-  (`features/alignedBaseWalk.ts`) to emit per-ref-base classes, plus the
-  overlay over the `normal` body. Register in `COLOR_FIELD_DEFS`
-  (`shared/colorFieldDefs.ts`) and the `ColorFieldKind` union
-  (`shared/types.ts`), which fails to compile until it has a shader path and
-  menu placement. Legend: concordant, discordant, simplex tail.
-- **The decode in the feature detail panel**
-  (`AlignmentsFeatureDetail/tagInfo.ts`). Today `YC` is a raw string; render
-  the tail lengths and owning strand, the concordant count, and each
-  discordant position as its R1/R2 pair. Shares the decoder.
-- **(Optional) Discordant positions as mismatch-style marks**, labeled by the
-  R1/R2 pair, so they show without switching color schemes. Only if per-base
-  coloring proves too subtle at genome scale.
+  (`features/alignedBaseWalk.ts`) to emit per-ref-base classes. Register in
+  `COLOR_FIELD_DEFS` (`shared/colorFieldDefs.ts`) and the `ColorFieldKind`
+  union (`shared/types.ts`), which fails to compile until it has a shader
+  path and menu placement.
 
 Not in scope: drawing R1 and R2 as two reads (the variant caller's `split`
 mode). Pairs with the concordant/discordant partition in
