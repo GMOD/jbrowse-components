@@ -1,3 +1,4 @@
+import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -73,6 +74,33 @@ test('an explicitly configured slot wins over the built-with reference', async (
   expect(features).toHaveLength(1)
   // the slot's sequence has the site at 0, the assembly's at 6
   expect(features[0]!.get('start')).toBe(0)
+})
+
+test('the region-too-large gate refuses a chromosome-wide scan before fetching sequence', async () => {
+  const getSequence = jest.spyOn(FakeSequenceAdapter.prototype, 'getSequence')
+  const adapter = makeAdapter({}, { type: 'fromAssembly' })
+  const region = (end: number) => ({
+    assemblyName: 'volvox',
+    refName: 'chr1',
+    start: 0,
+    end,
+  })
+
+  const wide = await measureRegionBytes({
+    dataAdapter: adapter,
+    regions: [region(248_956_422)],
+    byteLimit: 5_000_000,
+  })
+  const narrow = await measureRegionBytes({
+    dataAdapter: adapter,
+    regions: [region(50_000)],
+    byteLimit: 5_000_000,
+  })
+
+  expect(wide.tooLarge?.regionTooLarge).toBe(true)
+  expect(narrow.tooLarge).toBeUndefined()
+  expect(getSequence).not.toHaveBeenCalled()
+  getSequence.mockRestore()
 })
 
 test('throws a directive error when neither source is available', async () => {

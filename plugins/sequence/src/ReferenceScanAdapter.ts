@@ -56,6 +56,16 @@ export abstract class ReferenceScanAdapter<
   /** find hits in the fetched window and hand each one to `emit` */
   protected abstract scan(window: ScanWindow): void
 
+  /**
+   * One byte per residue fetched, so a zoomed-out scan meets the display's
+   * region-too-large gate. Without it a rare pattern never trips the density
+   * gate, and the probe and then the full fetch scan the whole chromosome.
+   */
+  public async getRegionByteSize(regions: Region[]) {
+    const pad = 2 * this.scanPadding()
+    return regions.reduce((bytes, r) => bytes + r.end - r.start + pad, 0)
+  }
+
   public getFeatures(query: Region, opts: BaseOptions) {
     return ObservableCreate<Feature>(async observer => {
       const sequenceAdapter = await this.configure()

@@ -7,10 +7,14 @@ guide_category: Sequence tools
 
 The linear genome view's **Sequence search** menu item searches the reference
 sequence itself and adds the hits as a new track, whether or not a sequence
-track is displayed. Three modes:
+track is displayed. The track scans the region in view, so zoomed out past the
+display's
+[fetch size limit](/docs/config/linearbasicdisplay/#slot-fetchsizelimit) it
+shows a "region too large" message with a **Force load** button instead of
+scanning. Three modes:
 
-- Sequence pattern - find every occurrence of a single DNA motif or regex across
-  the reference.
+- Sequence pattern - find every occurrence of a single DNA motif or regex in the
+  region in view.
 - CRISPR guide RNAs - discover candidate guides and their PAM sites directly
   against the reference.
 - Motif list - search many named motifs at once, pasted as one per line. This is
