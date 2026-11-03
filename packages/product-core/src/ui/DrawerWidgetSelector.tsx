@@ -25,6 +25,12 @@ const useStyles = makeStyles()(theme => ({
   dropDownIcon: {
     color: theme.palette.secondary.contrastText,
   },
+  selectedHeading: {
+    '& > *': {
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+    },
+  },
 }))
 
 const DrawerWidgetSelector = observer(function DrawerWidgetSelector({
@@ -41,7 +47,10 @@ const DrawerWidgetSelector = observer(function DrawerWidgetSelector({
         value={visibleWidget?.id ?? ''}
         data-testid="widget-drawer-selects"
         className={classes.drawerSelect}
-        classes={{ icon: classes.dropDownIcon }}
+        classes={{
+          icon: classes.dropDownIcon,
+          select: classes.selectedHeading,
+        }}
         renderValue={widgetId => {
           const widget = session.activeWidgets.get(widgetId)
           return widget ? (
