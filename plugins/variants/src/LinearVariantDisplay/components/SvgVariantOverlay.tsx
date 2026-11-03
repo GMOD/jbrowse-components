@@ -31,7 +31,8 @@ const SvgVariantOverlay = ({
   width: number
   // false for a reader that samples only the display's canvas: the records
   // band over rows, the connector zone, the separators and the sidebar are
-  // drawn over it. A records-only display's band is that canvas, so it draws
+  // drawn over it. A records-only display's band is that canvas, so it is
+  // drawn either way
   overlays: boolean
   text?: ExportTextStyle
   // each drawn from its band's top
