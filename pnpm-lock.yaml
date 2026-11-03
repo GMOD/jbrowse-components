@@ -120,6 +120,9 @@ importers:
       acorn:
         specifier: 8.19.0
         version: 8.19.0
+      babel-jest:
+        specifier: ^30.5.2
+        version: 30.5.2(@babel/core@8.1.0)
       babel-loader:
         specifier: ^10.1.1
         version: 10.1.1(@babel/core@8.1.0)(webpack@5.112.2)
