@@ -1321,8 +1321,18 @@ test('a region wider than the GPU coverage bar cap keeps its per-base depths and
   const rows = ({ coverage, mismatches }: AlignmentTables, start: number) => {
     const inside = (p: number) => p >= start && p < start + 5000
     return {
-      depths: coverage.start.flatMap((s, i) =>
-        inside(s) ? [[s, coverage.depth[i]]] : [],
+      coverage: coverage.start.flatMap((s, i) =>
+        inside(s)
+          ? [
+              [
+                s,
+                coverage.end[i],
+                coverage.depth[i],
+                coverage.forward[i],
+                coverage.reverse[i],
+              ],
+            ]
+          : [],
       ),
       frequencies: mismatches.position.flatMap((p, i) =>
         inside(p) ? [[p, mismatches.base[i], mismatches.frequency[i]]] : [],
@@ -1330,6 +1340,7 @@ test('a region wider than the GPU coverage bar cap keeps its per-base depths and
     }
   }
   const wide = await engine.alignments(WIDE_RNASEQ)
+  expect(wide.coverage.start.length).toBeGreaterThan(262144)
   for (const start of [0, 10000, 30000]) {
     const narrow = rows(
       await engine.alignments({
@@ -1338,7 +1349,7 @@ test('a region wider than the GPU coverage bar cap keeps its per-base depths and
       }),
       start,
     )
-    expect(narrow.depths).toHaveLength(5000)
+    expect(narrow.coverage).toHaveLength(5000)
     expect(narrow.frequencies.length).toBeGreaterThan(0)
     expect(rows(wide, start)).toEqual(narrow)
   }

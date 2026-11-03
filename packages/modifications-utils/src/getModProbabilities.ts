@@ -38,8 +38,8 @@ export function getModProbabilities(feature: Feature) {
   }
   // BAM returns ML:B:C as a Uint8Array; mapping with TypedArray.prototype.map
   // would coerce each float result back to a uint8 (truncating every value to
-  // 0). Array.from(values, fn) always produces a plain number[]. A string ML
-  // (htsget/SAM text) is split on commas first.
+  // 0). Array.from(values, fn) always produces a plain number[]. A string ML is
+  // comma-separated text, split first.
   const values =
     typeof ml === 'string' ? ml.split(',') : (ml as ArrayLike<number | string>)
   return Array.from(values, v => (+v + 0.5) / 256)
@@ -65,8 +65,8 @@ export function getModProbabilityBytes(feature: Feature) {
   if (typeof ml !== 'string') {
     return ml as ArrayLike<number>
   }
-  // htsget/SAM text gives a comma-separated string; parse it once into bytes
-  // rather than making every read of it coerce.
+  // A comma-separated string is parsed once into bytes rather than making every
+  // read of it coerce.
   const parts = ml.split(',')
   const out = new Uint8Array(parts.length)
   for (let i = 0; i < parts.length; i++) {

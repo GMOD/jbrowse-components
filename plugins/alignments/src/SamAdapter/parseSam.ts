@@ -8,8 +8,6 @@ import type { SamHeaderLine } from '../shared/util.ts'
  * rather than carrying a sentinel, so `get()` reports them as absent the way
  * BAM/CRAM do.
  */
-export type SamTagValue = string | number | number[]
-
 export interface SamRecordData {
   name: string
   flags: number
@@ -23,7 +21,7 @@ export interface SamRecordData {
   template_length: number
   seq: string
   qual?: Uint8Array
-  tags: Record<string, SamTagValue>
+  tags: Record<string, string | number | number[]>
 }
 
 // A tag reads `TAG:TYPE:VALUE`. i/f are numbers; A/Z/H stay strings; a `B`
@@ -81,7 +79,7 @@ export function parseSamLine(line: string): SamRecordData {
     qual = '*',
   ] = cols
 
-  const tags: Record<string, SamTagValue> = {}
+  const tags: SamRecordData['tags'] = {}
   for (let i = 11; i < cols.length; i++) {
     const { tag, value } = parseTag(cols[i]!)
     tags[tag] = value

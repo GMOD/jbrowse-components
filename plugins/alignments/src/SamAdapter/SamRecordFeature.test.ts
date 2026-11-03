@@ -10,10 +10,8 @@ function feature(tags: string) {
   )
 }
 
-// A `B` array that kept its subtype letter once parsed as a leading NaN: every
-// probability was read one call late and the last was dropped. The parse-level
-// test pins the value; this pins the consequence, through the accessor the
-// render path calls.
+// The ML probabilities a SAM record's `B` array holds, without its subtype
+// letter, read through the accessor the render path calls.
 test('ML probabilities survive the SAM text round trip', () => {
   const bytes = getModProbabilityBytes(
     feature('MM:Z:C+m?,0;\tML:B:C,251,0,128'),
