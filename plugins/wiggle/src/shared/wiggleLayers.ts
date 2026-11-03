@@ -39,7 +39,7 @@ function darkenColor(
 // buildSourceRenderData stamps — `rowIndex`, so row-placement lives in a single
 // spot, and `renderingType`, so the rendering a layer is encoded for is decided
 // once alongside which layers there are at all.
-export type WiggleLayer = Omit<SourceRenderData, 'rowIndex' | 'renderingType'>
+type WiggleLayer = Omit<SourceRenderData, 'rowIndex' | 'renderingType'>
 
 // Each feature takes the color of the band between two cuts its score is
 // in, with the tint `summaryBands` gives its side of the pivot. Undefined
@@ -68,7 +68,7 @@ function bandColorsAbgr(
  * Where the color changes, ascending, and the color of each band: one more
  * color than cuts, the lowest band first.
  */
-export interface ColorBands {
+interface ColorBands {
   cuts: number[]
   colors: [number, number, number][]
 }

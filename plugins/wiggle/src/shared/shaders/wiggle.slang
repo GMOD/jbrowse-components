@@ -3,8 +3,8 @@
 // `wiggleLineCenter.slang` stroke the two line renderings off wider records of
 // their own, and `wiggleDensity.slang` draws density off this same fill buffer
 // by composing the shared `rowRect` shape. All import `wiggleCommon` for the
-// uniform block and the score math. Bound to PASS_FILL, which draws 6-vert
-// quads.
+// uniform block and the score math. Bound to PASS_FILL, which draws 12 vertices
+// per instance: the bar or point quad, then its clip strip.
 //
 // Neither rendering here reads a neighbouring feature, which is why the
 // instance record (`WiggleFillInstance`, declared in wiggleCommon so the

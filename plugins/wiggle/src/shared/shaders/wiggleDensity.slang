@@ -54,7 +54,7 @@ struct DensityVsOut {
 [shader("vertex")]
 DensityVsOut vs_main(WiggleFillInstance inst, uint vid : SV_VertexID) {
   // The shape's uniform bundle, derived from the wiggle family's own block: one
-  // UBO write per region serves all three wiggle entry shaders. `minCellPx`
+  // UBO write per region serves all five wiggle entry shaders. `minCellPx`
   // takes MIN_FILL_WIDTH_PX — the same floor the Canvas2D twin reads back as
   // WIGGLE_MIN_PX, anchored at the bin start by `extendToMinWidthX` inside the
   // shape — so the min-width behavior is one decision, not two.
