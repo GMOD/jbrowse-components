@@ -561,8 +561,8 @@ export const utrDefaultColor = '#357089'
 export const methylated5mC = '#ff0000'
 /** #color theme-methylation | unmethylated5mC | 5-methylcytosine, unmethylated */
 export const unmethylated5mC = '#0000ff'
-/** #color theme-methylation | methylated5hmC | 5-hydroxymethylcytosine, methylated */
-export const methylated5hmC = '#ffc0cb'
+/** #color theme-methylation | methylated5hmC | 5-hydroxymethylcytosine */
+export const methylated5hmC = '#ff00ff'
 
 // ---------------------------------------------------------------------------
 // Theme-varying colors

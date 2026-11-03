@@ -644,8 +644,8 @@ describe('getReadDisplayLegendItems', () => {
       detectedModifications: mods,
     })
     expect(items).toEqual([
-      { color: '#ff0000', label: '5mC methylated' },
-      { color: '#ffc0cb', label: '5hmC methylated' },
+      { color: '#ff0000', label: '5mC' },
+      { color: '#ff00ff', label: '5hmC' },
       { color: '#0000ff', label: 'Unmethylated' },
     ])
   })
@@ -657,7 +657,7 @@ describe('getReadDisplayLegendItems', () => {
     // unmodified is off by default in every mode, so a default bisulfite track
     // paints methylated (red) only, and must not key a blue swatch it never
     // draws.
-    expect(labels('bisulfite', [], new Map())).toEqual(['5mC methylated'])
+    expect(labels('bisulfite', [], new Map())).toEqual(['5mC'])
   })
 
   test('bisulfite keys the unmethylated swatch once it paints unmodified calls', () => {
@@ -665,7 +665,7 @@ describe('getReadDisplayLegendItems', () => {
       legendFor({ field: 'bisulfite', unmodified: true }, [], {
         detectedModifications: new Map(),
       }).map(i => i.label),
-    ).toEqual(['5mC methylated', 'Unmethylated'])
+    ).toEqual(['5mC', 'Unmethylated'])
   })
 
   // Two-color over a non-cytosine mod paints blue low-probability calls
@@ -714,7 +714,7 @@ describe('getReadDisplayLegendItems', () => {
         detectedModifications: new Map(),
         presentModifications: new Set(),
       }).map(i => i.label),
-    ).toEqual(['5mC methylated'])
+    ).toEqual(['5mC'])
   })
 
   // The map is filled in RPC-resolution order, so listing it as-is let two
@@ -744,7 +744,7 @@ describe('getReadDisplayLegendItems', () => {
       legendFor({ field: 'modifications', unmodified: true }, [], {
         detectedModifications: mods,
       }).map(i => i.label),
-    ).toEqual(['5mC methylated', 'Unmethylated'])
+    ).toEqual(['5mC', 'Unmethylated'])
   })
 
   test('swatch colors come from the live palette when provided', () => {
@@ -1194,13 +1194,13 @@ describe('getAlignmentsColorScales', () => {
       shown(
         getAlignmentsColorScales(
           model(
-            [{ color: '#e00', label: '5mC methylated' }],
+            [{ color: '#e00', label: '5mC' }],
             [{ color: '#f00', label: 'Long insert' }],
           ),
         ),
       ),
     ).toEqual([
-      ['Read colors', ['5mC methylated']],
+      ['Read colors', ['5mC']],
       ['Arc colors', ['Long insert']],
     ])
   })
@@ -1306,11 +1306,7 @@ describe('the fill view keys the types drawn beside the methylation states', () 
     const items = legendFor({ field: 'modifications', unmodified: true }, [], {
       detectedModifications: fiberseq,
     })
-    expect(items.map(i => i.label)).toEqual([
-      '5mC methylated',
-      '6mA',
-      'Unmodified',
-    ])
+    expect(items.map(i => i.label)).toEqual(['5mC', '6mA', 'Unmodified'])
     // the mark's own color: extractModifications packs a 6mA call through
     // getColorForModification, which is where this swatch comes from too
     expect(items.find(i => i.label === '6mA')?.color).toBe('rgb(51,0,111)')
@@ -1349,7 +1345,7 @@ describe('the fill view keys the types drawn beside the methylation states', () 
         [],
         { detectedModifications: fiberseq },
       ).map(i => i.label),
-    ).toEqual(['5mC methylated', 'Unmethylated'])
+    ).toEqual(['5mC', 'Unmethylated'])
   })
 
   // Bisulfite parses no tags at all, so it has no such remainder to key and
@@ -1359,7 +1355,7 @@ describe('the fill view keys the types drawn beside the methylation states', () 
       legendFor({ field: 'bisulfite' }, [], {
         detectedModifications: new Map([['a', 'rgb(51,0,111)']]),
       }).map(i => i.label),
-    ).toEqual(['5mC methylated'])
+    ).toEqual(['5mC'])
   })
 })
 

@@ -192,7 +192,7 @@ describe('extractModifications', () => {
     // ML byte -> prob = (v+0.5)/256.
     //   CpG0: m=230(.90) h=10(.04)  -> 5mC methylated (red)
     //   CpG1: m=10(.04)  h=10(.04)  -> unmodified     (blue)
-    //   CpG2: m=20(.08)  h=220(.86) -> 5hmC           (pink)
+    //   CpG2: m=20(.08)  h=220(.86) -> 5hmC           (magenta)
     //   CpG3: m=200(.78) h=5(.02)   -> 5mC methylated (red)
     const feature = new SimpleFeature({
       uniqueId: 'meth1',
@@ -232,6 +232,26 @@ describe('extractModifications', () => {
     // unmethylated cytosine reports the no-mod confidence, not 1-hProb purple
     expect(out[1]!.modType).toBe('m')
     expect(out[1]!.prob).toBeCloseTo(1 - (10.5 + 10.5) / 256, 5)
+  })
+
+  test('5hmC packs one color in the by-type and the two-color views', () => {
+    const feature = new SimpleFeature({
+      uniqueId: 'hmc1',
+      refName: 'ctgA',
+      start: 100,
+      end: 102,
+      strand: 1,
+      CIGAR: '2M',
+      seq: 'CG',
+      tags: { MM: 'C+m?,0;C+h?,0;', ML: [20, 220] },
+    })
+    const region = { refName: 'ctgA', start: 100, end: 102 } as Region
+    const colorAt100 = (unmodified: boolean) =>
+      drive(feature, { field: 'modifications', unmodified }, region).find(
+        m => m.position === 100,
+      )?.color
+    expect(colorAt100(false)).toBe(colorAt100(true))
+    expect(colorAt100(true)).toBe(cssColorToABGR(methylated5hmC))
   })
 
   test('twoColor renders every call, painting low-confidence ones blue', () => {

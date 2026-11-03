@@ -1,3 +1,5 @@
+import { methylated5hmC, methylated5mC } from '@jbrowse/core/ui/palette'
+
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
 export interface ModificationData {
@@ -24,8 +26,8 @@ export const cytosineContextOptions: {
 // Adapted from IGV
 // https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/resources/org/broad/igv/prefs/preferences.tab#L230-L242
 export const modificationData: Record<string, ModificationData> = {
-  m: { color: 'rgb(255,0,0)', name: '5mC', base: 'C' },
-  h: { color: 'rgb(255,0,255)', name: '5hmC', base: 'C' },
+  m: { color: methylated5mC, name: '5mC', base: 'C' },
+  h: { color: methylated5hmC, name: '5hmC', base: 'C' },
   o: { color: 'rgb(111, 78, 129)', name: '8oxoG', base: 'G' },
   f: { color: 'rgb(246, 200, 95)', name: '5fC', base: 'C' },
   c: { color: 'rgb(157, 216, 102)', name: '5cac', base: 'C' },

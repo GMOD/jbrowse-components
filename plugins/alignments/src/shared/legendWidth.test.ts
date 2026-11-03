@@ -126,8 +126,8 @@ test('the sweep reaches the modification rows', () => {
     expect.arrayContaining([
       'Read, forward strand',
       'Read, reverse strand',
-      '5mC methylated',
-      '5hmC methylated',
+      '5mC',
+      '5hmC',
       'Unmethylated',
       'Unmodified',
       'inosine',

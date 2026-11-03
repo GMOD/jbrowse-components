@@ -583,13 +583,12 @@ const BASE_LEGEND: { key: PaletteColorKey; label: string }[] = [
 const STRAND_TAGS = new Set(['XS', 'TS', 'ts'])
 
 // The methylation views key exactly what extractMethylation/extractBisulfite
-// paint: 5mC red and 5hmC pink (the blue unmodified swatch is appended by the
-// shared path below). The by-type MM palette — a magenta 5hmC — would mismatch
-// the reads. Listed in this order rather than in the keyed map's, which is why
-// the map is only asked which types survived.
+// paint (the blue unmodified swatch is appended by the shared path below).
+// Listed in this order rather than in the keyed map's, which is why the map is
+// only asked which types survived.
 const METHYLATION_STATES = [
-  { type: 'm', color: methylated5mC, label: '5mC methylated' },
-  { type: 'h', color: methylated5hmC, label: '5hmC methylated' },
+  { type: 'm', color: methylated5mC, label: '5mC' },
+  { type: 'h', color: methylated5hmC, label: '5hmC' },
 ]
 
 // `detectedModifications` is populated only from parsed MM/ML tags, so it is
@@ -603,7 +602,7 @@ function methylationLegend(
   keyed: ReadonlyMap<string, string>,
 ): LegendItem[] {
   if (layer.field === 'bisulfite') {
-    return [{ color: methylated5mC, label: '5mC methylated' }]
+    return [{ color: methylated5mC, label: '5mC' }]
   }
   return [
     ...METHYLATION_STATES.filter(({ type }) => keyed.has(type)).map(

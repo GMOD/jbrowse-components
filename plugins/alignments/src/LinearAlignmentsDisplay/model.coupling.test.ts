@@ -1748,7 +1748,7 @@ describe('modification detection follows the loaded regions', () => {
     expect(display.modificationsReady).toBe(true)
     expect(display.detectedModificationTypes).toEqual(['m'])
     // the color the legend and the marks both resolve from the type code
-    expect(display.detectedModifications.get('m')).toBe('rgb(255,0,0)')
+    expect(display.detectedModifications.get('m')).toBe('#ff0000')
   })
 
   // The reason for the change: pan off the locus carrying 6mA and the menu
