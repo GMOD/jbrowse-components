@@ -25,6 +25,7 @@ export interface VariantTooltipFields {
   featureId: string
   displayedRegionIndex?: number
   carriers?: string
+  pile?: string
 }
 
 // Hover-dedup identity for a hovered cell — same feature+sample+genotype in the
@@ -103,12 +104,15 @@ export function buildRecordHit({
   featureId,
   displayedRegionIndex,
   carriers,
+  pileSize,
 }: {
   info: VariantFeatureInfo
   line?: string
   featureId: string
   displayedRegionIndex?: number
   carriers?: RecordCarriers
+  // Set on a record folded with others onto one row and one name.
+  pileSize?: number
 }): VariantTooltipFields {
   return {
     genotype: '',
@@ -122,6 +126,7 @@ export function buildRecordHit({
     length: spanText(info.length),
     insertion: info.insertedBp > 0 ? `${info.insertedBp}bp` : '',
     carriers: carriers ? carrierSummary(carriers) : '',
+    pile: pileSize === undefined ? '' : `one of ${pileSize}`,
     featureId,
     displayedRegionIndex,
   }

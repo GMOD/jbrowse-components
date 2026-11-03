@@ -158,7 +158,7 @@ interface RoomSpan {
   gene?: boolean
 }
 
-function outranks(a: RoomSpan, b: RoomSpan) {
+export function outranks(a: RoomSpan, b: RoomSpan) {
   return a.gene !== b.gene
     ? !!a.gene
     : a.endBp - a.startBp > b.endBp - b.startBp

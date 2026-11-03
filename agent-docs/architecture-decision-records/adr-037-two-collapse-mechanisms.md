@@ -41,9 +41,31 @@ not any display-mode setting. The chain:
   `isSubPixelFade(ext, bpPerPx)` (i.e. `densityFade && renderedWidthPx <
   MIN_RECT_WIDTH_PX`) **and** it has no rendered label. A labeled sub-pixel
   feature (e.g. a miRNA gene at whole-arm zoom) still stacks so its name doesn't
-  overprint. A wide feature overlapping the mark does not disqualify it:
-  `collapsedSpansPx` books the pile on row 0 before anything is placed, so the
-  wide feature stacks on a row below the pile instead of under its paint.
+  overprint. A wide feature overlapping an unlabeled pile does not disqualify
+  it: `collapsedSpansPx` books the pile on row 0 before anything is placed, so
+  the wide feature stacks on a row below the pile instead of under its paint.
+
+  **A pile of named marks folds at the fit ladder's `decimated` rung**
+  (`labelDecimation: 'fitWidth'`), where names go anyway, and keeps one name:
+  its leader's, by the decimation's own `outranks` (a gene, else the longer
+  span), then the lowest start. The pile packs as one box, the leader's widened
+  over every member, before the stacking pass and after the unlabeled bookings,
+  so a hotspot keeps the top rows a wide feature would otherwise take, and two
+  piles stack instead of printing their names over each other. The leader's
+  room is measured from the pile's edge. A pinned mark, or one carrying a
+  subfeature label, never folds. Each folded mark carries `pileSize`, which the
+  hover tooltip reads, and `foldedName` where the fold left its name undrawn,
+  which the fit note reads.
+
+  Without it, 28 insertions at one site in a 60 px variant track stacked 836 px
+  deep on every labeled rung, the ladder fell to `bodies`, and every name in the
+  view went, the isolated variants' included. Folding at
+  `decimated` only keeps the ladder's order: `thinned` still shows every name
+  wherever shortening bodies is enough (from ~600 px in that view), and a
+  `fixed` or `grow` track, whose height the user chose, stacks the whole pile.
+  "Free names" (re-admitting, after the ladder lands on `bodies`, any name whose
+  strip is empty) was tried first and declined: it recovered one name per pair
+  and broke the rule that a rung renders what it reserved.
 
   Candidacy once also excluded any mark overlapping a wide or labeled ("solid")
   feature. That guard predates the pile booking, from when a collapsed mark took

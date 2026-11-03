@@ -94,6 +94,8 @@ const flatbushLanes = {
   gene: 'other',
   collapsibleIntrons: 'other',
   isoformStack: 'other',
+  pileSize: 'other',
+  foldedName: 'other',
   featureId: 'other',
 } satisfies Record<keyof FlatbushItem, Lane>
 

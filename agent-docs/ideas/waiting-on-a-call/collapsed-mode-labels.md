@@ -57,6 +57,12 @@ it (ADR-250), kept a record's name where its label strip cleared every strip
 already kept, in pack order, and dropped the rest, so a pile of records kept
 one name. It needed no solver.
 
+The automatic density collapse now does this for the one case with no
+placement question: at the fit ladder's `decimated` rung, a pile of named
+sub-pixel marks too deep for any track folds and keeps its leader's name
+(ADR-037). What stays open here is the explicit `collapsed` mode, where wide
+features compete for one strip and the solver is still the problem.
+
 ## What not to re-propose
 
 Drawing the names at the row anyway and letting them overlap: that is what

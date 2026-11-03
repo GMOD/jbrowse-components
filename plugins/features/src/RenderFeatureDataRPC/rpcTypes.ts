@@ -291,6 +291,11 @@ export interface FlatbushItem extends HitItemBase {
   collapsibleIntrons?: boolean
   // Present on a gene stacking more than one child.
   isoformStack?: IsoformStack
+  // Set by the main-thread layout on each mark of a pile folded onto one row
+  // with one name: how many marks the pile holds, and whether this mark's own
+  // name was one the fold left undrawn.
+  pileSize?: number
+  foldedName?: boolean
 }
 
 // Never an isoform slot, so a trim always keeps the primitives carrying it.

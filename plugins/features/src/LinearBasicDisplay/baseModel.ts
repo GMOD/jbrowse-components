@@ -92,7 +92,12 @@ import {
   featureHighlightViews,
 } from './featureHighlightViews.ts'
 import { featureSetActions, featureSetViews } from './featureSetViews.ts'
-import { fitDrops, fitLadderNote, labelFitHints } from './fitNotes.ts'
+import {
+  fitDrops,
+  fitLadderNote,
+  foldsNames,
+  labelFitHints,
+} from './fitNotes.ts'
 import { heightViews } from './heightViews.ts'
 import { layoutRegionKey } from './layoutInputs.ts'
 import {
@@ -871,6 +876,8 @@ export default function baseStateModelFactory(
           self.fitStage.level === 'decimated'
             ? self.fitDecimatedFactors
             : undefined,
+          self.fitStage.level === 'decimated' &&
+            foldsNames(self.fitStage.layout),
         )
       },
     }))

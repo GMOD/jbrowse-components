@@ -17,6 +17,7 @@ const VARIANT_FIELD_LABELS: Record<string, string> = {
   insertion: 'Insertion',
   description: 'Description',
   carriers: 'Carriers',
+  pile: 'Drawn here',
 }
 
 // VariantTooltipFields entries that exist only to carry hit-test/click identity

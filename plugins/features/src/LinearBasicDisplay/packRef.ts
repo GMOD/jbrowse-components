@@ -33,6 +33,7 @@ import type {
   IsoformStack,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Span } from '../shared/mergeSpans.ts'
+import type { NamedPile } from './densityCollapse.ts'
 import type { DrawnAxis } from './drawnAxis.ts'
 import type { IsoformTrimPlan } from './isoformTrim.ts'
 import type { LabelWidths } from './labelReservation.ts'
@@ -99,6 +100,8 @@ export interface PackPrep {
   // Booked out of row 0 before anything stacks, so a feature overlapping a
   // pile stacks above it rather than being handed the pile's row.
   collapsedSpansPx: readonly Span[]
+  // Piles holding a named mark, each placed as one box before anything else.
+  namedPiles: readonly NamedPile[]
   // Each piece of a feature cut at a circular origin to the other, both ways.
   // The two meet there on a ring, so they share a row.
   originPartners: ReadonlyMap<string, string>
@@ -226,6 +229,7 @@ export function prepareRefPack(
     bpPerPx,
     showLabels,
     showDescriptions,
+    pinnedFeatureIds,
     labelDecimation = 'all',
   } = inputs
 
@@ -246,9 +250,24 @@ export function prepareRefPack(
   )
 
   const labeledFeatureIds = new Set<string>()
+  const namedFeatureIds = new Set<string>()
+  // A subfeature label draws whatever the fit drops, so a mark carrying one
+  // keeps its row; a pinned mark keeps its row and its name.
+  const foldableLabeledIds = new Set<string>()
   for (const [id, info] of labelInfoByFeatureId) {
     if (anyLabelRenders(info.widths) || info.partLabelReach) {
       labeledFeatureIds.add(id)
+      if (
+        labelDecimation === 'fitWidth' &&
+        info.widths.subfeature === 0 &&
+        !info.partLabelReach &&
+        !pinnedFeatureIds.has(id)
+      ) {
+        foldableLabeledIds.add(id)
+      }
+    }
+    if (info.hasName) {
+      namedFeatureIds.add(id)
     }
   }
 
@@ -265,6 +284,15 @@ export function prepareRefPack(
     }
   }
 
+  const fold = planDensityCollapse({
+    features,
+    labeledFeatureIds,
+    foldableLabeledIds,
+    namedFeatureIds,
+    bpPerPx,
+    singleRow: metrics.singleRow,
+  })
+
   return {
     toDrawnBp,
     labelInfoByFeatureId,
@@ -273,18 +301,39 @@ export function prepareRefPack(
     originPartners,
     overhangRoom:
       labelDecimation === 'fitWidth'
-        ? labelOverhangRoomPx(features, bpPerPx, id => {
-            const info = labelInfoByFeatureId.get(id)
-            return info?.hasName ? info.widths.name : 0
-          })
+        ? labelOverhangRoomPx(
+            foldedView(features, fold.namedPiles),
+            bpPerPx,
+            id => {
+              const info = labelInfoByFeatureId.get(id)
+              return info?.hasName ? info.widths.name : 0
+            },
+          )
         : undefined,
-    ...planDensityCollapse(
-      features,
-      labeledFeatureIds,
-      bpPerPx,
-      metrics.singleRow,
-    ),
+    ...fold,
   }
+}
+
+// Each named pile as the one feature its leader names, spanning the pile, so
+// the leader's room is measured from the pile's edge and not from the member
+// beside it.
+function foldedView(
+  features: ReadonlyMap<string, FeatureGeometry>,
+  namedPiles: readonly NamedPile[],
+) {
+  const view = new Map(features)
+  for (const { leaderId, memberIds, startBp, endBp } of namedPiles) {
+    for (const id of memberIds) {
+      view.delete(id)
+    }
+    if (leaderId !== undefined) {
+      const leader = features.get(leaderId)
+      if (leader) {
+        view.set(leaderId, { ...leader, startBp, endBp })
+      }
+    }
+  }
+  return view
 }
 
 interface TrimmedBody {
@@ -397,7 +446,14 @@ function decideLabelReservations(
     geneNamesOnly = false,
   } = inputs
   const { labelFontPx, rowPadding } = metrics
-  const { labelInfoByFeatureId, features, overhangRoom } = prep
+  const {
+    labelInfoByFeatureId,
+    features,
+    overhangRoom,
+    collapsedFeatureIds,
+    namedPiles,
+  } = prep
+  const leaderIds = new Set(namedPiles.map(pile => pile.leaderId))
   const packed = new Map<string, PackedExtent>()
   const droppedNameIds = new Set<string>()
   const droppedDescriptionIds = new Set<string>()
@@ -406,6 +462,8 @@ function decideLabelReservations(
     const labelInfo = labelInfoByFeatureId.get(id)
     const body = trims.bodies.get(id)
     const { bodyHeightPx, startBp, endBp } = body ?? geom
+    // A member of a named pile its leader names for it.
+    const folded = collapsedFeatureIds.has(id) && !leaderIds.has(id)
     const badgeWidthPx = body ? body.badgeWidthPx : 0
     const availableRoomPx = availableOverhangRoomPx(overhangRoom, geom, id)
     // Both the keep decision and the dropped-name record hang off this term,
@@ -421,6 +479,7 @@ function decideLabelReservations(
     const keepName =
       hasDrawableName &&
       !sliver &&
+      !folded &&
       (geom.gene || !geneNamesOnly || pinnedFeatureIds.has(id)) &&
       keepFeatureLabel(
         labelDecimation,
@@ -436,7 +495,7 @@ function decideLabelReservations(
     // row; a sliver loses both.
     const hasDrawableDescription =
       showDescriptions && !!labelInfo?.hasDescription
-    const keepDescription = hasDrawableDescription && !sliver
+    const keepDescription = hasDrawableDescription && !sliver && !folded
     if (hasDrawableDescription && !keepDescription) {
       droppedDescriptionIds.add(id)
     }
@@ -618,9 +677,6 @@ export function packPreparedRef(
     pitchX: 1,
     pitchY: Math.max(1, Math.round(10 * heightMultiplier)),
   })
-  bookPileReservations(layout, packed, collapsedFeatureIds, collapsedSpansPx)
-  const sorted = byPackPriority(packed, pinnedFeatureIds, prevYByFeatureId)
-
   const boxOf = (id: string) => {
     const ext = packed.get(id)!
     const box = reservedBoxPx(ext, features.get(id)!, bpPerPx)
@@ -632,6 +688,33 @@ export function packPreparedRef(
       lower: box.labelRows,
     }
   }
+  const namedPileIds = new Set(prep.namedPiles.flatMap(pile => pile.memberIds))
+  bookPileReservations(
+    layout,
+    packed,
+    new Set([...collapsedFeatureIds].filter(id => !namedPileIds.has(id))),
+    collapsedSpansPx,
+  )
+  // Before the stacking pass, as the unnamed piles are booked, so a hotspot
+  // keeps the top rows whatever wide feature starts left of it. One box per
+  // pile: the leader's, widened over every member, at the tallest member's
+  // height.
+  for (const { leaderId, memberIds, startBp } of prep.namedPiles) {
+    const boxes = memberIds.map(boxOf)
+    const top = layout.addRect(
+      `${PILE_RESERVATION_ID}named:${startBp}`,
+      Math.min(...boxes.map(box => box.left)),
+      Math.max(...boxes.map(box => box.right)),
+      Math.max(...boxes.map(box => box.height)),
+      boxes.find(box => box.id === leaderId)?.lower,
+    )
+    for (const box of boxes) {
+      layoutMap.set(box.id, top === null ? OFFSCREEN_Y : top)
+      layoutHeights.set(box.id, box.height)
+    }
+  }
+  const sorted = byPackPriority(packed, pinnedFeatureIds, prevYByFeatureId)
+
   for (const [id, ext] of sorted) {
     if (layoutMap.has(id)) {
       continue

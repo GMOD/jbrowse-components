@@ -187,7 +187,13 @@ function mergeSections(
   const gapSpreads = new Map<string, IsoformGapSpread>()
   const features: PackPrep['features'] = new Map()
   const collapsedFeatureIds = new Set<string>()
+  const pileSizes = new Map<string, number>()
   for (const { id, prep, pack } of sections) {
+    for (const { memberIds } of prep.namedPiles) {
+      for (const fid of memberIds) {
+        pileSizes.set(fid, memberIds.length)
+      }
+    }
     for (const [fid, y] of offsetLayoutMap(pack.layoutMap, tops.get(id.key)!)) {
       layoutMap.set(fid, y)
     }
@@ -233,6 +239,7 @@ function mergeSections(
     gapSpreads,
     features,
     collapsedFeatureIds,
+    pileSizes,
   }
 }
 
@@ -316,6 +323,13 @@ function layoutRefGroups(
         merged.droppedDescriptionIds,
         densityFadeIds,
       )
+      for (const item of cloned.flatbushItems) {
+        const pileSize = merged.pileSizes.get(item.featureId)
+        if (pileSize !== undefined) {
+          item.pileSize = pileSize
+          item.foldedName = merged.droppedNameIds.has(item.featureId)
+        }
+      }
       out.set(n, cloned)
     }
   }

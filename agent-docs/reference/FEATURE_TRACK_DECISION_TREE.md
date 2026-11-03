@@ -54,6 +54,11 @@ those name a meaning rather than a shape.
   so no name goes while a body could shrink instead, then grows the bodies back
   into the room the dropped names freed. A `decimated` pack that keeps no name
   hands on to `bodies`.
+- **At `decimated`, a pile of named sub-pixel marks too deep for any track
+  folds onto one row and keeps one name**, so the same data unfolds to every
+  name once the track is tall enough for `thinned`. Below that, a 28-mark pile
+  stacked on every labelled rung, and the ladder gave up every name in the view
+  for it. Rule and rationale: ADR-037's candidacy paragraph.
 - **An overlay subfeature label is sized to its body**, at most the body's
   height plus 1 px, and dropped below 7 px (`placeFeatureLabels`), so the rungs
   shrink bodies under it like any other. At a fixed 11 px a shortened
