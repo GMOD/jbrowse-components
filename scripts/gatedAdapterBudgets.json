@@ -6,13 +6,16 @@
   "BigBedAdapter": "display",
   "BigMafAdapter": "display",
   "CramAdapter": "own:5000000",
+  "CrisprGuideAdapter": "display",
   "GWASAdapter": "display",
   "Gff3TabixAdapter": "display",
   "GtfTabixAdapter": "display",
   "HtsgetBamAdapter": "display",
   "MafTabixAdapter": "display",
+  "MotifListAdapter": "display",
   "MultiWiggleAdapter": "display",
   "PlinkLDAdapter": "display",
+  "SequenceSearchAdapter": "display",
   "SplitVcfTabixAdapter": "own:5000000",
   "VcfTabixAdapter": "own:5000000"
 }
