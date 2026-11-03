@@ -292,7 +292,6 @@ describe('files whose headers list different samples', () => {
     const feats = await firstValueFrom(
       adapter
         .getFeatures({
-          assemblyName: 'x',
           refName: 'ctgA',
           start: 0,
           end: 1000,
