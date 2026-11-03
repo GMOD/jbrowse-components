@@ -115,7 +115,12 @@ bugs already fixed in source.
 no content-stable gate, so it is all that keeps a regen from re-encoding every
 other figure. **Bundled data first, network last**: opening a genome after an
 hg19 session was torn down hangs the import form with the assembly stuck
-`initialized: false` and no error.
+`initialized: false` and no error. The same report came from the run's first
+volvox open in 3 of 5 runs under load ~24 (2026-11-03), with MST dead-node
+warnings at `/assemblyManager/assemblies/0` and a failure screenshot showing
+volvox loaded, so the harness was reading a replaced root; 7 runs passed once
+the load fell. `openVolvoxGenome` logs whether `window.JBrowseRootModel` and
+`window.JBrowseSession` are alive and agree when it fails.
 
 - **`desktop-cli-config.png`** runs the real `@jbrowse/cli` (build it first) and
   opens that `config.json`. **It launches through a wrapper script**
