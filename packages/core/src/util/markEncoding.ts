@@ -753,6 +753,181 @@ export function withHitIndex<T extends EncodedChannels>(
   }
 }
 
+interface LaneContext extends PaintContext {
+  rowAt: (k: number) => number
+}
+
+function rootLane(walk: LaneContext, root: FeatureTable) {
+  const { table, count, rowAt } = walk
+  const rows = new Uint32Array(count)
+  for (let k = 0; k < count; k++) {
+    rows[k] = rootRowOf(table, rowAt(k), root) ?? NO_ROOT
+  }
+  return { root: rows }
+}
+
+function yExtentOf(y: Float32Array | undefined) {
+  let yMin = Infinity
+  let yMax = -Infinity
+  if (y) {
+    for (let k = 0; k < y.length; k++) {
+      const v = y[k]!
+      if (v < yMin) {
+        yMin = v
+      }
+      if (v > yMax) {
+        yMax = v
+      }
+    }
+  }
+  return { yMin, yMax }
+}
+
+function x2RefLane(walk: LaneContext, x2Locus: LocusRef | undefined) {
+  const { table, jexl, report, count, rowAt } = walk
+  const x2Ref = new Uint32Array(count)
+  const x2RefNames: string[] = []
+  const readChrom = x2Locus
+    ? channelReader(table, x2Locus.refName, jexl)
+    : undefined
+  const readRefName = readerOf(table.column('refName'))
+  const refIndex = new Map<string, number>()
+  for (let k = 0; k < count; k++) {
+    report?.(k)
+    const r = rowAt(k)
+    const there = readChrom
+      ? valueText(readChrom(r))
+      : (readRefName(r) as string)
+    let ref = refIndex.get(there)
+    if (ref === undefined) {
+      ref = x2RefNames.length
+      refIndex.set(there, ref)
+      x2RefNames.push(there)
+    }
+    x2Ref[k] = ref
+  }
+  return { x2Ref, x2RefNames }
+}
+
+function sizeLane(walk: LaneContext, sizeEncoding: SizeEncoding | undefined) {
+  const sizeRef: SizeRef | undefined =
+    sizeEncoding !== undefined && typeof sizeEncoding !== 'number'
+      ? typeof sizeEncoding === 'string'
+        ? { field: sizeEncoding }
+        : sizeEncoding
+      : undefined
+  return sizeRef ? sizeLaneOf(walk, sizeRef) : undefined
+}
+
+function sizeLaneOf(walk: LaneContext, sizeRef: SizeRef) {
+  const { table, jexl, kept, count } = walk
+  const size = new Float32Array(count)
+  fillNumbers(size, numberSource(table, sizeRef.field, jexl), kept, count)
+  const scale = sizeRef.scale ?? 'linear'
+  const extent = scaleExtent(size, count, scale)
+  const { domainMin, domainMax } = sizeRef
+  const sizeScale: SizeScaleTable = {
+    field: sizeRef.field,
+    scale,
+    domain: rampDomain(domainMin, domainMax, extent),
+    pinned: [domainMin !== undefined, domainMax !== undefined],
+    range: sizeRef.range ?? DEFAULT_SIZE_RANGE_PX,
+    extent,
+  }
+  return { size, sizeScale }
+}
+
+function rowLane(walk: LaneContext, rowEncoding: MarkEncodingInput['row']) {
+  const { table, jexl, kept, count, rowAt } = walk
+  const row = new Uint32Array(count)
+  if (typeof rowEncoding === 'object') {
+    if (rowEncoding instanceof Uint32Array && !kept) {
+      row.set(rowEncoding.subarray(0, count))
+    } else {
+      for (let k = 0; k < count; k++) {
+        const rv = rowEncoding[rowAt(k)]!
+        row[k] = rv > 0 ? rv : 0
+      }
+    }
+  } else if (rowEncoding !== undefined) {
+    fillNumbers(row, rowSource(table, rowEncoding, jexl), kept, count)
+  }
+  return { row }
+}
+
+function seriesLane(walk: LaneContext, seriesOf: MarkEncodingInput['series']) {
+  const { count, rowAt } = walk
+  const series = new Uint32Array(count)
+  if (seriesOf) {
+    for (let k = 0; k < count; k++) {
+      series[k] = seriesOf[rowAt(k)]!
+    }
+  }
+  return { series }
+}
+
+function textLane(walk: LaneContext, textEncoding: MarkEncodingInput['text']) {
+  const { table, jexl, report, count, rowAt } = walk
+  const text = new Array<string>(count)
+  if (textEncoding === undefined) {
+    text.fill('')
+  } else {
+    const read = textChannelReader(table, textEncoding, jexl)
+    for (let k = 0; k < count; k++) {
+      report?.(k)
+      text[k] = read(rowAt(k))
+    }
+  }
+  return { text }
+}
+
+function glyphLane(
+  walk: LaneContext,
+  shapeEncoding: MarkEncodingInput['shape'],
+) {
+  const { table, jexl, report, kept, count, rowAt } = walk
+  const glyph = new Uint8Array(count)
+  let shapeScale: ShapeScaleTable | undefined
+  if (typeof shapeEncoding === 'object') {
+    const shapeField = categoricalField(shapeEncoding.field, {
+      domain: shapeEncoding.domain?.map(String),
+    })
+    const range = shapeEncoding.range ?? DEFAULT_SHAPE_RANGE
+    const shapeOf = categoricalScale(shapeField.domain, range, {
+      fallback:
+        range.length > shapeField.domain.length ? [] : DEFAULT_SHAPE_RANGE,
+    })
+    const entries = paintCategories(
+      table,
+      shapeEncoding.field,
+      jexl,
+      shapeField,
+      { kept, count, report },
+      glyph,
+      (key): ShapeName => (key === '' ? 'circle' : shapeOf(key)),
+      name => SHAPE_CODES[name],
+    )
+    shapeScale = {
+      kind: 'shape',
+      field: shapeEncoding.field,
+      domain: [...shapeField.domain],
+      ...(shapeEncoding.range ? { range: [...shapeEncoding.range] } : {}),
+      entries: entries.map(e => ({ value: e.value, shape: e.entry })),
+    }
+  } else {
+    const shape = shapeReader(table, shapeEncoding, jexl)
+    if (typeof shape === 'number') {
+      glyph.fill(shape)
+    } else {
+      for (let k = 0; k < count; k++) {
+        report?.(k)
+        glyph[k] = shape(rowAt(k))
+      }
+    }
+  }
+  return shapeScale ? { glyph, shapeScale } : { glyph }
+}
+
 /**
  * #api
  * Evaluate one encoding over a feature list into dense channel arrays for
@@ -810,149 +985,24 @@ export function encodeFeatures<L extends LaneName>(
     report,
   )
   const rowAt = (k: number) => (kept ? kept[k]! : k)
+  const walk: LaneContext = { table, jexl, report, kept, count, rowAt }
   const y = ys?.subarray(0, count)
-  let rootRows: Uint32Array | undefined
-  if (has('root')) {
-    rootRows = new Uint32Array(count)
-    for (let k = 0; k < count; k++) {
-      rootRows[k] = rootRowOf(table, rowAt(k), root ?? table) ?? NO_ROOT
-    }
-  }
-
-  let yMin = Infinity
-  let yMax = -Infinity
-  if (ySource && y) {
-    for (let k = 0; k < count; k++) {
-      const v = y[k]!
-      if (v < yMin) {
-        yMin = v
-      }
-      if (v > yMax) {
-        yMax = v
-      }
-    }
-  }
-
-  let x2Ref: Uint32Array | undefined
-  const x2RefNames: string[] = []
-  if (has('x2Ref')) {
-    x2Ref = new Uint32Array(count)
-    const readChrom = x2Locus
-      ? channelReader(table, x2Locus.refName, jexl)
-      : undefined
-    const readRefName = readerOf(table.column('refName'))
-    const refIndex = new Map<string, number>()
-    for (let k = 0; k < count; k++) {
-      report?.(k)
-      const r = rowAt(k)
-      const there = readChrom
-        ? valueText(readChrom(r))
-        : (readRefName(r) as string)
-      let ref = refIndex.get(there)
-      if (ref === undefined) {
-        ref = x2RefNames.length
-        refIndex.set(there, ref)
-        x2RefNames.push(there)
-      }
-      x2Ref[k] = ref
-    }
-  }
+  const rootChannels = has('root') ? rootLane(walk, root ?? table) : undefined
+  const { yMin, yMax } = yExtentOf(ySource ? y : undefined)
+  const x2RefChannels = has('x2Ref') ? x2RefLane(walk, x2Locus) : undefined
   const feet =
-    x2Ref && x2Locus
+    x2RefChannels && x2Locus
       ? feetLane(table, x2Locus.pos, count, rowAt, jexl)
       : undefined
-
-  const sizeRef: SizeRef | undefined =
-    has('size') &&
-    sizeEncoding !== undefined &&
-    typeof sizeEncoding !== 'number'
-      ? typeof sizeEncoding === 'string'
-        ? { field: sizeEncoding }
-        : sizeEncoding
-      : undefined
-  const size = sizeRef ? new Float32Array(count) : undefined
-  if (sizeRef && size) {
-    fillNumbers(size, numberSource(table, sizeRef.field, jexl), kept, count)
-  }
-
-  const row = has('row') ? new Uint32Array(count) : undefined
-  if (row && typeof rowEncoding === 'object') {
-    if (rowEncoding instanceof Uint32Array && !kept) {
-      row.set(rowEncoding.subarray(0, count))
-    } else {
-      for (let k = 0; k < count; k++) {
-        const rv = rowEncoding[rowAt(k)]!
-        row[k] = rv > 0 ? rv : 0
-      }
-    }
-  } else if (
-    row &&
-    rowEncoding !== undefined &&
-    typeof rowEncoding !== 'object'
-  ) {
-    fillNumbers(row, rowSource(table, rowEncoding, jexl), kept, count)
-  }
-
-  const seriesOf = encoding.series
-  const series = has('series') ? new Uint32Array(count) : undefined
-  if (series && seriesOf) {
-    for (let k = 0; k < count; k++) {
-      series[k] = seriesOf[rowAt(k)]!
-    }
-  }
-
-  const text = has('text') ? new Array<string>(count) : undefined
-  if (text) {
-    if (textEncoding === undefined) {
-      text.fill('')
-    } else {
-      const read = textChannelReader(table, textEncoding, jexl)
-      for (let k = 0; k < count; k++) {
-        report?.(k)
-        text[k] = read(rowAt(k))
-      }
-    }
-  }
-
-  const glyph = has('glyph') ? new Uint8Array(count) : undefined
-  let shapeScale: ShapeScaleTable | undefined
-  if (glyph && typeof shapeEncoding === 'object') {
-    const shapeField = categoricalField(shapeEncoding.field, {
-      domain: shapeEncoding.domain?.map(String),
-    })
-    const range = shapeEncoding.range ?? DEFAULT_SHAPE_RANGE
-    const shapeOf = categoricalScale(shapeField.domain, range, {
-      fallback:
-        range.length > shapeField.domain.length ? [] : DEFAULT_SHAPE_RANGE,
-    })
-    const entries = paintCategories(
-      table,
-      shapeEncoding.field,
-      jexl,
-      shapeField,
-      { kept, count, report },
-      glyph,
-      (key): ShapeName => (key === '' ? 'circle' : shapeOf(key)),
-      name => SHAPE_CODES[name],
-    )
-    shapeScale = {
-      kind: 'shape',
-      field: shapeEncoding.field,
-      domain: [...shapeField.domain],
-      ...(shapeEncoding.range ? { range: [...shapeEncoding.range] } : {}),
-      entries: entries.map(e => ({ value: e.value, shape: e.entry })),
-    }
-  } else if (glyph && typeof shapeEncoding !== 'object') {
-    const shape = shapeReader(table, shapeEncoding, jexl)
-    if (typeof shape === 'number') {
-      glyph.fill(shape)
-    } else {
-      for (let k = 0; k < count; k++) {
-        report?.(k)
-        glyph[k] = shape(rowAt(k))
-      }
-    }
-  }
+  const sizeChannels = has('size') ? sizeLane(walk, sizeEncoding) : undefined
+  const rowChannels = has('row') ? rowLane(walk, rowEncoding) : undefined
+  const seriesChannels = has('series')
+    ? seriesLane(walk, encoding.series)
+    : undefined
+  const textChannels = has('text') ? textLane(walk, textEncoding) : undefined
+  const glyphChannels = has('glyph')
+    ? glyphLane(walk, shapeEncoding)
+    : undefined
 
   const colorEncoding = encoding.color ?? DEFAULT_MARK_COLOR
   const identity =
@@ -1140,21 +1190,6 @@ export function encodeFeatures<L extends LaneName>(
     }
   }
 
-  let sizeScale: SizeScaleTable | undefined
-  if (sizeRef && size) {
-    const scale = sizeRef.scale ?? 'linear'
-    const extent = scaleExtent(size, count, scale)
-    const { domainMin, domainMax } = sizeRef
-    sizeScale = {
-      field: sizeRef.field,
-      scale,
-      domain: rampDomain(domainMin, domainMax, extent),
-      pinned: [domainMin !== undefined, domainMax !== undefined],
-      range: sizeRef.range ?? DEFAULT_SIZE_RANGE_PX,
-      extent,
-    }
-  }
-
   const x = xs.subarray(0, count)
   const x2 = x2s.subarray(0, count)
   const flatbushData =
@@ -1168,61 +1203,22 @@ export function encodeFeatures<L extends LaneName>(
     x2,
     yMin,
     yMax,
-  }
-  if (kept) {
-    encoded.featureIndex = kept
-  }
-  if (rootRows) {
-    encoded.root = rootRows
-  }
-  if (y) {
-    encoded.y = y
-  }
-  if (row) {
-    encoded.row = row
-  }
-  if (typeof unscaled === 'number') {
-    encoded.color = unscaled
-  } else if (color) {
-    encoded.color = color
-  }
-  if (colorValue) {
-    // the y view itself where the color reads y, so a reader can tell
-    encoded.colorValue = colorValue
-  }
-  if (colorKey) {
-    encoded.colorKey = colorKey
-  }
-  if (glyph) {
-    encoded.glyph = glyph
-  }
-  if (series) {
-    encoded.series = series
-  }
-  if (text) {
-    encoded.text = text
-  }
-  if (size) {
-    encoded.size = size
-  }
-  if (x2Ref) {
-    encoded.x2Ref = x2Ref
-    encoded.x2RefNames = x2RefNames
-  }
-  if (feet) {
-    encoded.feet = feet
-  }
-  if (sizeScale) {
-    encoded.sizeScale = sizeScale
-  }
-  if (flatbushData) {
-    encoded.flatbushData = flatbushData
-  }
-  if (scale) {
-    encoded.scale = scale
-  }
-  if (shapeScale) {
-    encoded.shapeScale = shapeScale
+    ...(kept ? { featureIndex: kept } : undefined),
+    ...rootChannels,
+    ...(y ? { y } : undefined),
+    ...rowChannels,
+    ...(typeof unscaled === 'number' ? { color: unscaled } : undefined),
+    ...(typeof unscaled !== 'number' && color ? { color } : undefined),
+    ...(colorValue ? { colorValue } : undefined),
+    ...(colorKey ? { colorKey } : undefined),
+    ...glyphChannels,
+    ...seriesChannels,
+    ...textChannels,
+    ...sizeChannels,
+    ...x2RefChannels,
+    ...(feet ? { feet } : undefined),
+    ...(flatbushData ? { flatbushData } : undefined),
+    ...(scale ? { scale } : undefined),
   }
   return encoded as Encoded<L>
 }
