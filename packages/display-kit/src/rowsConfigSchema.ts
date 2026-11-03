@@ -7,12 +7,6 @@ import {
 import { rowAxisWithGridConfigSchema } from './rowAxisWithGridConfigSchema.ts'
 import { rowColorConfigSchema } from './rowColorConfigSchema.ts'
 
-/** The `rows` object as read: the field, and the row order. */
-export interface RowsSetting {
-  field: string
-  sort: readonly string[]
-}
-
 /**
  * The members of `rows` naming a row by its value of `field`: the
  * arrangement, and the colors pinned on rows.
@@ -121,14 +115,4 @@ export function rowsForField(
   return field === (current.field ?? '')
     ? current
     : { ...keyedBase(ROWS_WRITES, current, { field }), field }
-}
-
-/** The rows as read back: undefined while nothing is on rows. */
-export function rowsSettingOf(snapshot: {
-  field: string
-  sort: readonly string[]
-}): RowsSetting | undefined {
-  return snapshot.field
-    ? { field: snapshot.field, sort: snapshot.sort }
-    : undefined
 }

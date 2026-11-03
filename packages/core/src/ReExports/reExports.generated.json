@@ -4989,8 +4989,7 @@
         "ROWS_KEYED_MEMBERS",
         "ROWS_WRITES",
         "rowsConfigSchema",
-        "rowsForField",
-        "rowsSettingOf"
+        "rowsForField"
       ],
       "worker": "real"
     },

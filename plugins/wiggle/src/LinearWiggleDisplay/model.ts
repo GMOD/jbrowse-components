@@ -24,7 +24,6 @@ import {
   editPlotMenuItems,
   openPlotDialog as queuePlotDialog,
 } from '@jbrowse/display-kit/plotMenu'
-import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { stableIdentityComputed } from '@jbrowse/display-kit/stableIdentityComputed'
 import { leftAxisGutterWidth } from '@jbrowse/display-ui'
@@ -88,7 +87,6 @@ import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorSetting } from '@jbrowse/display-kit/colorConfigSchema'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
-import type { RowsSetting } from '@jbrowse/display-kit/rowsConfigSchema'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { SvgSidebarProps } from '@jbrowse/tree-sidebar'
@@ -225,24 +223,12 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The `rows` object's field and order, or undefined while every source
-       * shares one plot. `source` is the only field the config admits here.
-       */
-      get rows(): RowsSetting | undefined {
-        return rowsSettingOf({
-          field: getConf(self, ['rows', 'field']),
-          sort: self.rowSort,
-        })
-      },
-
-      /**
-       * #getter
        * Whether each source is drawn in a separate row, which is all that
-       * `rows` decides here: the tree sidebar, the row labels, the separators,
+       * `rows.field` decides here: the tree sidebar, the row labels, the separators,
        * the clustering menu and the row-order sort all hang off it.
        */
       get isRowLayout() {
-        return !!this.rows
+        return getConf(self, ['rows', 'field']) !== ''
       },
 
       /**
@@ -741,7 +727,6 @@ export default function stateModelFactory(
       setRowLayout(on: boolean) {
         setConf(self, ['rows', 'field'], on ? 'source' : '')
       },
-
       /**
        * #action
        * A Plot type leaf whole, so the regions encode once and never as the

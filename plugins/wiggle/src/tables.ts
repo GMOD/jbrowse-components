@@ -6,7 +6,6 @@ import {
   normalizedRgbToHex,
 } from '@jbrowse/core/util/colorBits'
 import { predicatesOf } from '@jbrowse/core/util/fieldPredicate'
-import { rowsSettingOf } from '@jbrowse/display-kit/rowsConfigSchema'
 import { DEFAULT_RULE_COLOR } from '@jbrowse/display-ui/yAxisConstants'
 import { thresholdBandOf } from '@jbrowse/render-core/marks'
 import { arrangeRows } from '@jbrowse/tree-sidebar/arrangeRows'
@@ -210,10 +209,7 @@ export async function wiggleTables(
     rawConstant,
   )
 
-  const rowLayout = !!rowsSettingOf({
-    field: readConfObject(conf.rows, 'field'),
-    sort: readConfObject(conf.rows, 'sort'),
-  })
+  const rowLayout = readConfObject(conf.rows, 'field') !== ''
   const sources = narrowRows(
     arrangeRows(
       data.sources,
