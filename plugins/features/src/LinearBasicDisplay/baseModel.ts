@@ -48,8 +48,10 @@ import { facetSettingOf } from '@jbrowse/display-kit/facetConfigSchema'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { openPlotDialog as queuePlotDialog } from '@jbrowse/display-kit/plotMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
+import { sameAsLast } from '@jbrowse/display-kit/stableIdentityComputed'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
+import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -91,7 +93,7 @@ import {
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
-  createRegionInstanceIndexMemo,
+  buildRegionInstanceIndex,
   drawnLabelTexts,
   featureHighlightInk,
   featuresNamedInk,
@@ -1023,7 +1025,11 @@ export default function baseStateModelFactory(
       },
     }))
     .views(self => {
-      const instanceIndexOf = createRegionInstanceIndexMemo()
+      const instanceIndexOf = createEncodeMemo(
+        () => self.laidOutDataMap,
+        undefined,
+        data => buildRegionInstanceIndex(data),
+      )
       return {
         /**
          * #getter
@@ -1033,7 +1039,7 @@ export default function baseStateModelFactory(
          * per-region memo outlives the computed that MobX drops between hovers.
          */
         get regionInstanceIndexes(): ReadonlyMap<number, RegionInstanceIndex> {
-          return instanceIndexOf(self.laidOutDataMap)
+          return instanceIndexOf()
         },
       }
     })
@@ -1127,62 +1133,41 @@ export default function baseStateModelFactory(
       },
     }))
     .views(self => {
-      const heldIndexes = new Map<
-        number,
-        { inputs: unknown[]; indexes: FlatbushRegionIndexes }
-      >()
+      const sameHitInputs = sameAsLast<{
+        bpPerPx: number
+        showLabels: boolean
+        showDescriptions: boolean
+        fontSize: number
+      }>()
+      // `coarseBpPerPx`, not live `bpPerPx`, matching the geometry the rows
+      // were packed at. Per region, since the incremental layout keeps an
+      // unchanged region's object and a rebuild costs a Hilbert sort.
+      const indexesOf = createEncodeMemo(
+        () => self.laidOutDataMap,
+        () =>
+          sameHitInputs({
+            bpPerPx: containingLgv(self).coarseBpPerPx,
+            showLabels: self.renderedShowLabels,
+            showDescriptions: self.renderedShowDescriptions,
+            fontSize: self.renderedLabelFontSize,
+          }),
+        (data, { bpPerPx, ...labels }, idx): FlatbushRegionIndexes => ({
+          feature: buildFeatureFlatbushIndex(
+            data.flatbushItems,
+            data.floatingLabelsData,
+            bpPerPx,
+            self.rpcDataMap.get(idx)?.reversed === true,
+            labels,
+          ),
+          subfeature: buildSubfeatureFlatbushIndex(data.subfeatureInfos),
+        }),
+      )
       return {
         /**
          * #getter
          */
-        // `coarseBpPerPx`, not live `bpPerPx`, matching the geometry the rows
-        // were packed at. Held per region, since the incremental layout keeps
-        // an unchanged region's object and a rebuild costs a Hilbert sort.
         get flatbushIndexes() {
-          const bpPerPx = containingLgv(self).coarseBpPerPx
-          const {
-            renderedShowLabels: showLabels,
-            renderedShowDescriptions: showDescriptions,
-            renderedLabelFontSize: fontSize,
-            laidOutDataMap,
-            rpcDataMap,
-          } = self
-          const labels = { showLabels, showDescriptions, fontSize }
-          const result = new Map<number, FlatbushRegionIndexes>()
-          for (const [idx, data] of laidOutDataMap) {
-            const reversed = rpcDataMap.get(idx)?.reversed === true
-            const inputs = [
-              data,
-              bpPerPx,
-              reversed,
-              showLabels,
-              showDescriptions,
-              fontSize,
-            ]
-            const held = heldIndexes.get(idx)
-            if (held?.inputs.every((v, i) => v === inputs[i])) {
-              result.set(idx, held.indexes)
-              continue
-            }
-            const indexes = {
-              feature: buildFeatureFlatbushIndex(
-                data.flatbushItems,
-                data.floatingLabelsData,
-                bpPerPx,
-                reversed,
-                labels,
-              ),
-              subfeature: buildSubfeatureFlatbushIndex(data.subfeatureInfos),
-            }
-            heldIndexes.set(idx, { inputs, indexes })
-            result.set(idx, indexes)
-          }
-          for (const idx of heldIndexes.keys()) {
-            if (!laidOutDataMap.has(idx)) {
-              heldIndexes.delete(idx)
-            }
-          }
-          return result
+          return indexesOf()
         },
         /**
          * #method

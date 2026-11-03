@@ -37,6 +37,7 @@ import {
   scaleLaidOutData,
   unplaceBelow,
 } from '@jbrowse/plugin-features/band'
+import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { computed, observable } from 'mobx'
 
 import { cellHueField } from '../shared/cellHue.ts'
@@ -709,6 +710,45 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
       connectorsHeight: self.connectorsHeight,
     }),
   )
+  const sameHitInputs = sameAsLast<{
+    bpPerPx: number
+    showLabels: boolean
+    showDescriptions: boolean
+    fontSize: number
+  }>()
+  const laidOut = computed(() => {
+    const { layout, scale } = ladder.fitStage
+    const facet = self.recordsFacet
+    return !self.recordsOnly
+      ? unplaceBelow(layout, bands.get().reserved.records)
+      : scale === 1
+        ? layout
+        : scaleLaidOutData(
+            layout,
+            scale,
+            facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
+          )
+  })
+  const flatbushIndexes = createEncodeMemo(
+    () => laidOut.get(),
+    () =>
+      sameHitInputs({
+        bpPerPx: self.view.coarseBpPerPx,
+        showLabels: ladder.fitStage.showLabels,
+        showDescriptions: ladder.fitStage.showDescriptions,
+        fontSize: self.recordsFontSize,
+      }),
+    (data, { bpPerPx, ...labels }, idx): FlatbushRegionIndexes => ({
+      feature: buildFeatureFlatbushIndex(
+        data.flatbushItems,
+        data.floatingLabelsData,
+        bpPerPx,
+        self.recordsRenderDataMap.get(idx)?.reversed === true,
+        labels,
+      ),
+      subfeature: null,
+    }),
+  )
   return {
     /**
      * #getter
@@ -749,17 +789,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * last rung a record that does not fit the band hides.
      */
     get recordsLaidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
-      const { layout, scale } = this.recordsFitStage
-      const facet = self.recordsFacet
-      return !self.recordsOnly
-        ? unplaceBelow(layout, this.topBands.reserved.records)
-        : scale === 1
-          ? layout
-          : scaleLaidOutData(
-              layout,
-              scale,
-              facet && { facet, chipPx: GROUP_LABEL_HEIGHT },
-            )
+      return laidOut.get()
     },
     /**
      * #getter
@@ -812,27 +842,7 @@ export function recordsLayoutViews(self: RecordsLayoutHost) {
      * across pointer frames.
      */
     get recordsFlatbushIndexes() {
-      const { showLabels, showDescriptions } = this.recordsRenderedLabels
-      const rawMap = self.recordsRenderDataMap
-      const bpPerPx = self.view.coarseBpPerPx
-      const out = new Map<number, FlatbushRegionIndexes>()
-      for (const [idx, data] of this.recordsLaidOutDataMap) {
-        out.set(idx, {
-          feature: buildFeatureFlatbushIndex(
-            data.flatbushItems,
-            data.floatingLabelsData,
-            bpPerPx,
-            rawMap.get(idx)?.reversed === true,
-            {
-              showLabels,
-              showDescriptions,
-              fontSize: self.recordsFontSize,
-            },
-          ),
-          subfeature: null,
-        })
-      }
-      return out
+      return flatbushIndexes()
     },
     /**
      * #getter

@@ -5,10 +5,8 @@
 //   node plugins/features/benches/highlightIndex.bench.ts --features=60000 --regions=3 --exons=8
 import { performance } from 'node:perf_hooks'
 
-import {
-  buildRegionInstanceIndex,
-  createRegionInstanceIndexMemo,
-} from '../src/LinearBasicDisplay/featureHighlightInk.ts'
+import { createEncodeMemo } from '../../../packages/render-core/src/encodeMemo.ts'
+import { buildRegionInstanceIndex } from '../src/LinearBasicDisplay/featureHighlightInk.ts'
 import { arg, makeDenseRegion } from './denseRegion.ts'
 
 const features = arg('features', 60_000)
@@ -45,13 +43,17 @@ for (let r = 0; r < rounds; r++) {
 }
 console.log(`one region: min ${Math.min(...one).toFixed(1)}ms`)
 
-const indexesOf = createRegionInstanceIndexMemo()
 const regionMap = new Map(data.entries())
+const indexesOf = createEncodeMemo(
+  () => regionMap,
+  undefined,
+  d => buildRegionInstanceIndex(d),
+)
 const t0 = performance.now()
-indexesOf(regionMap)
+indexesOf()
 const firstEnter = performance.now() - t0
 const t1 = performance.now()
-indexesOf(regionMap)
+indexesOf()
 const nextEnter = performance.now() - t1
 console.log(
   `memo: first hover-enter ${firstEnter.toFixed(1)}ms, ` +

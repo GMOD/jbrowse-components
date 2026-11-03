@@ -92,24 +92,6 @@ export function buildRegionInstanceIndex(
   return { byFeatureId, bySubfeatureId }
 }
 
-export function createRegionInstanceIndexMemo(
-  build: typeof buildRegionInstanceIndex = buildRegionInstanceIndex,
-) {
-  const built = new WeakMap<FeatureDataResult, RegionInstanceIndex>()
-  return (dataMap: ReadonlyMap<number, FeatureDataResult>) => {
-    const indexes = new Map<number, RegionInstanceIndex>()
-    for (const [idx, data] of dataMap) {
-      let index = built.get(data)
-      if (index === undefined) {
-        index = build(data)
-        built.set(data, index)
-      }
-      indexes.set(idx, index)
-    }
-    return indexes
-  }
-}
-
 export interface FeatureInkHost {
   renderBlocks: readonly RenderBlock[]
   renderDataMap: ReadonlyMap<number, FeatureDataResult>

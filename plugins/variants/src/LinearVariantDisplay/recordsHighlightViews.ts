@@ -5,13 +5,14 @@ import {
 } from '@jbrowse/core/util'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import {
+  buildRegionInstanceIndex,
   createMembershipMemo,
-  createRegionInstanceIndexMemo,
   drawnLabelTexts,
   featureHighlightInk,
   featuresNamedInk,
   resolveFeatureHighlights,
 } from '@jbrowse/plugin-features/band'
+import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 
 import type { VariantTopBands } from './variantTopBands.ts'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
@@ -47,19 +48,23 @@ interface RecordsHighlightHost extends IStateTreeNode {
  */
 export function recordsHighlightViews(self: RecordsHighlightHost) {
   const sameBoxed = createMembershipMemo()
-  const instanceIndexOf = createRegionInstanceIndexMemo()
+  const instanceIndexOf = createEncodeMemo(
+    () => self.recordsLaidOutDataMap,
+    undefined,
+    data => buildRegionInstanceIndex(data),
+  )
   return {
     /**
      * #getter
-     * The band's record ids to the primitives they painted, per region,
-     * held alive beside the hit indexes (`afterAttach`), since a hover asks
-     * from an untracked pointer handler.
+     * The band's record ids to the primitives they painted, per region.
+     * Held by no autorun, as a feature track's: built when a hover or a
+     * highlight first asks, and the per-region memo outlives the computed.
      */
     get recordsRegionInstanceIndexes(): ReadonlyMap<
       number,
       RegionInstanceIndex
     > {
-      return instanceIndexOf(self.recordsLaidOutDataMap)
+      return instanceIndexOf()
     },
     /**
      * #getter

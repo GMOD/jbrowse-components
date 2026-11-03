@@ -2435,7 +2435,6 @@ export function stateModelFactory(
             self,
             () => {
               void self.recordsFlatbushIndexes
-              void self.recordsRegionInstanceIndexes
             },
             { name: 'RecordsHitIndexes' },
           )
