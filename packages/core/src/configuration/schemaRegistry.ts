@@ -102,3 +102,12 @@ export function getConfigurationSchemaDefinition(
 ) {
   return getConfigurationSchemaMetadata(nodeOrType)?.definition
 }
+
+/**
+ * The entry a schema's definition declares under `key`, undefined for a key it
+ * does not declare. An own-property read: a bare `definition[key]` would find
+ * `toString` or `constructor` on a user-supplied key.
+ */
+export function declaredMember<T>(table: Record<string, T>, key: string) {
+  return Object.hasOwn(table, key) ? table[key] : undefined
+}

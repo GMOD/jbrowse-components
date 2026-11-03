@@ -110,6 +110,38 @@ describe('collectDisplayOverrides', () => {
     expect(overrides.size).toBe(0)
     expect(unknownKeys).toEqual(['colour'])
   })
+
+  test.each(['toString', 'constructor', 'hasOwnProperty', 'valueOf'])(
+    'treats the inherited name %s like any other unknown key',
+    key => {
+      const { overrides, unknownKeys, refused } = collectDisplayOverrides(
+        { [key]: 'green' },
+        displaySchemas,
+      )
+      expect(overrides.size).toBe(0)
+      expect(refused).toEqual([])
+      expect(unknownKeys).toEqual([key])
+    },
+  )
+
+  test('an inherited name is unknown to a display with retired spellings too', () => {
+    const schemas = new Map<string, AnyConfigurationSchemaType>([
+      [
+        'RetiringDisplay',
+        ConfigurationSchema(
+          'RetiringDisplay',
+          { color: { type: 'color', defaultValue: 'red' } },
+          { retired: { colour: value => ({ color: value }) } },
+        ),
+      ],
+    ])
+    const { overrides, unknownKeys } = collectDisplayOverrides(
+      { constructor: 'green', colour: 'green' },
+      schemas,
+    )
+    expect(unknownKeys).toEqual(['constructor'])
+    expect(overrides.get('RetiringDisplay')).toEqual({ color: 'green' })
+  })
 })
 
 const Axis = ConfigurationSchema(

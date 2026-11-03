@@ -1,5 +1,8 @@
 import { isPlainObject } from '../util/objectUtils.ts'
-import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
+import {
+  declaredMember,
+  getConfigurationSchemaMetadata,
+} from './schemaRegistry.ts'
 import {
   isBareConfigurationSchemaType,
   isSlotDefinitionEntry,
@@ -42,10 +45,6 @@ export interface RequirementProblem {
   message: string
 }
 
-function memberOf(definition: ConfigurationSchemaDefinition, name: string) {
-  return Object.hasOwn(definition, name) ? definition[name] : undefined
-}
-
 function subSchemaOf(entry: unknown) {
   return isBareConfigurationSchemaType(entry)
     ? getConfigurationSchemaMetadata(entry)
@@ -58,7 +57,7 @@ function requiredPathProblem(
   path: string[],
 ): string | undefined {
   const [head = '', ...rest] = path
-  const entry = memberOf(definition, head)
+  const entry = declaredMember(definition, head)
   const sub = subSchemaOf(entry)
   return entry === undefined
     ? `${modelName} declares no "${head}"`
@@ -83,7 +82,7 @@ export function checkRequirements(
 ) {
   for (const { when, slots } of requires) {
     for (const [slot, values = []] of Object.entries(when)) {
-      const entry = memberOf(definition, slot)
+      const entry = declaredMember(definition, slot)
       if (!isSlotDefinitionEntry(entry)) {
         throw new Error(
           `${modelName} requires something when "${slot}" holds a value, and declares no such slot`,
@@ -119,7 +118,7 @@ function namesAValue(
     typeof snapshot === 'object' && snapshot !== null
       ? (snapshot as Record<string, unknown>)[head]
       : undefined
-  const sub = subSchemaOf(memberOf(definition, head))
+  const sub = subSchemaOf(declaredMember(definition, head))
   const named = sub && shorthandTargets(sub).string
   return rest.length > 0
     ? sub !== undefined && namesAValue(sub.definition, value, rest)
@@ -161,7 +160,7 @@ function refusedPathProblem(
   path: string[],
 ): string | undefined {
   const [head = '', ...rest] = path
-  const entry = memberOf(definition, head)
+  const entry = declaredMember(definition, head)
   const sub = subSchemaOf(entry)
   return entry === undefined
     ? `${modelName} declares no "${head}"`
@@ -212,7 +211,7 @@ function whenHolds(
   snapshot: Record<string, unknown>,
 ) {
   return Object.entries(when).every(([slot, values]) => {
-    const entry = memberOf(definition, slot)
+    const entry = declaredMember(definition, slot)
     const held =
       snapshot[slot] ??
       (isSlotDefinitionEntry(entry) ? entry.defaultValue : undefined)

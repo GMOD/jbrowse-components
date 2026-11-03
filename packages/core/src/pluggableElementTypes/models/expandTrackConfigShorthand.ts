@@ -2,7 +2,10 @@ import {
   mergeConfSettings,
   writesByMember,
 } from '../../configuration/getConf.ts'
-import { getConfigurationSchemaMetadata } from '../../configuration/schemaRegistry.ts'
+import {
+  declaredMember,
+  getConfigurationSchemaMetadata,
+} from '../../configuration/schemaRegistry.ts'
 import { isBareConfigurationSchemaType } from '../../configuration/schemaTypes.ts'
 import { slotValueRefusal } from '../../configuration/slotFacade.ts'
 import {
@@ -89,7 +92,8 @@ function namespaceMembers(
   key: string,
   value: unknown,
 ) {
-  const entry = getConfigurationSchemaMetadata(schema)?.definition[key]
+  const definition = getConfigurationSchemaMetadata(schema)?.definition
+  const entry = definition && declaredMember(definition, key)
   return isNamespace(entry) && isPlainObject(value)
     ? declaredPaths(entry, value)
     : undefined
@@ -108,7 +112,7 @@ function verdictOf(
   value: unknown,
 ) {
   const meta = getConfigurationSchemaMetadata(schema)
-  const retired = meta?.options.retired?.[key]
+  const retired = declaredMember(meta?.options.retired ?? {}, key)
   const declares = retired ? undefined : namespaceMembers(schema, key, value)
   if (declares?.length === 0) {
     return { declares }
@@ -119,7 +123,7 @@ function verdictOf(
   try {
     members = retired
       ? retired(value)
-      : meta?.definition[key]
+      : meta && declaredMember(meta.definition, key)
         ? { [key]: placed }
         : undefined
   } catch (e) {
@@ -215,7 +219,7 @@ function misnamedTargetOf(schema: AnyConfigurationSchemaType, key: string) {
   const last = members.pop() ?? ''
   let meta = getConfigurationSchemaMetadata(schema)
   for (const member of members) {
-    const entry = meta?.definition[member]
+    const entry = meta && declaredMember(meta.definition, member)
     meta =
       entry !== undefined && isBareConfigurationSchemaType(entry)
         ? getConfigurationSchemaMetadata(entry)

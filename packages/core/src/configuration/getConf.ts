@@ -17,6 +17,7 @@ import { isPlainObject } from '../util/objectUtils.ts'
 import { readConfObject } from './readConfObject.ts'
 import { refusalProblems } from './requirements.ts'
 import {
+  declaredMember,
   getConfigurationSchemaDefinition,
   getConfigurationSchemaMetadata,
 } from './schemaRegistry.ts'
@@ -239,8 +240,7 @@ function writesAt(schema: unknown, path: readonly string[]) {
     const definition = isType(member)
       ? getConfigurationSchemaMetadata(member)?.definition
       : undefined
-    member =
-      definition && Object.hasOwn(definition, key) ? definition[key] : undefined
+    member = definition && declaredMember(definition, key)
   }
   return path.length > 0 && isType(member)
     ? getConfigurationSchemaMetadata(member)?.options.writes
@@ -293,7 +293,7 @@ export function mergeConfSettings(
   const definition = meta?.definition ?? {}
   const out = { ...lift(under) }
   for (const [key, value] of Object.entries(lift(over))) {
-    const member = Object.hasOwn(definition, key) ? definition[key] : undefined
+    const member = declaredMember(definition, key)
     const namespace = namespaceMetadata(member)
     const prior = namespace ? liftShorthand(namespace, out[key]) : out[key]
     const next = namespace ? liftShorthand(namespace, value) : value
@@ -371,9 +371,7 @@ export function applyConfSettings(
     : settings
   const report: ConfSettingsReport = { applied: [], undeclared: {}, failed: [] }
   for (const [key, value] of Object.entries(values)) {
-    const declared = Object.hasOwn(meta?.definition ?? {}, key)
-      ? meta!.definition[key]
-      : undefined
+    const declared = meta && declaredMember(meta.definition, key)
     if (declared === undefined || isConstantEntry(declared)) {
       report.undeclared[key] = value
       continue

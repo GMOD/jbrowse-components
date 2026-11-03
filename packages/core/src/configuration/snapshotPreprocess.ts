@@ -16,7 +16,10 @@ import {
   slotWriteRefusal,
 } from './configurationSlot.ts'
 import { refusalProblems, withoutPath } from './requirements.ts'
-import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
+import {
+  declaredMember,
+  getConfigurationSchemaMetadata,
+} from './schemaRegistry.ts'
 import {
   bareFormOf,
   isBareConfigurationSchemaType,
@@ -304,7 +307,7 @@ function misshapenMaps(
 ) {
   let out = snapshot
   for (const key in snapshot) {
-    const entry = Object.hasOwn(definition, key) ? definition[key] : undefined
+    const entry = declaredMember(definition, key)
     const value = snapshot[key]
     if (
       isSlotDefinitionEntry(entry) &&
@@ -485,7 +488,7 @@ function membersInCanonicalSpelling(
 ) {
   let out = snapshot
   for (const [key, value] of Object.entries(snapshot)) {
-    const member = Object.hasOwn(definition, key) ? definition[key] : undefined
+    const member = declaredMember(definition, key)
     const meta = isBareConfigurationSchemaType(member)
       ? getConfigurationSchemaMetadata(member)
       : undefined
