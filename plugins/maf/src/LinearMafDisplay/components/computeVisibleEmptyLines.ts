@@ -26,17 +26,22 @@ export function computeVisibleEmptyLines(
   const segments: EmptyLineSegment[] = []
   const { h, offset, firstRow, endRow } = rowViewport(params)
 
-  for (const { data: regionData, bpToPx, overlaps } of eachVisibleRegion(
-    view,
-    rpcDataMap,
-  )) {
+  for (const {
+    data: regionData,
+    bpToPx,
+    overlaps,
+    visibleStart,
+    visibleEnd,
+  } of eachVisibleRegion(view, rpcDataMap)) {
     for (const block of regionData.blocks) {
-      if (block.empties.length > 0 && overlaps(block.startBp, block.endBp)) {
-        const { left: xLeft, width } = spanRect(
-          bpToPx,
-          block.startBp,
-          block.endBp,
-        )
+      const lo = Math.max(block.startBp, visibleStart)
+      const hi = Math.min(block.endBp, visibleEnd)
+      if (
+        block.empties.length > 0 &&
+        overlaps(block.startBp, block.endBp) &&
+        hi > lo
+      ) {
+        const { left: xLeft, width } = spanRect(bpToPx, lo, hi)
         for (const e of block.empties) {
           if (e.rowIndex >= firstRow && e.rowIndex < endRow) {
             segments.push({

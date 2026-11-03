@@ -10,7 +10,7 @@ import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 export interface InversionMarker {
   xLeft: number
   width: number
-  /** the part of the block on screen, which is all the hatch covers */
+  /** the part of the block inside its region, which is all that draws */
   visibleLeft: number
   visibleWidth: number
   rowTop: number
@@ -79,15 +79,11 @@ export function computeVisibleInversions(
     data: regionData,
     bpToPx,
     overlaps,
-    visibleStart,
-    visibleEnd,
+    pxLo,
+    pxHi,
   } of eachVisibleRegion(view, rpcDataMap)) {
     const invertedRows = regionInvertedRows(regionData, consensus)
     const { blocks } = regionData
-    const edgeA = bpToPx(visibleStart)
-    const edgeB = bpToPx(visibleEnd)
-    const visibleLo = Math.min(edgeA, edgeB)
-    const visibleHi = Math.max(edgeA, edgeB)
     for (let b = 0; b < blocks.length; b++) {
       const block = blocks[b]!
       if (!overlaps(block.startBp, block.endBp)) {
@@ -97,19 +93,14 @@ export function computeVisibleInversions(
       for (const row of invertedRows(b)) {
         if (row >= firstRow && row < endRow) {
           span ??= spanRect(bpToPx, block.startBp, block.endBp)
-          const visibleLeft = Math.min(
-            Math.max(span.left, visibleLo),
-            visibleHi,
-          )
+          const visibleLeft = Math.min(Math.max(span.left, pxLo), pxHi)
           markers.push({
             xLeft: span.left,
             width: span.width,
             visibleLeft,
             visibleWidth:
-              Math.max(
-                visibleLeft,
-                Math.min(span.left + span.width, visibleHi),
-              ) - visibleLeft,
+              Math.max(visibleLeft, Math.min(span.left + span.width, pxHi)) -
+              visibleLeft,
             rowTop: offset + rowHeight * row,
             h,
           })

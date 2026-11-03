@@ -35,10 +35,15 @@ export function computeVisibleLabels(
   if (1 / view.bpPerPx >= CHAR_SIZE_WIDTH && h >= MIN_HEIGHT_FOR_TEXT) {
     const hp2 = h / 2
 
-    for (const { data, bpToPx, bpLo, bpHi, overlaps } of eachVisibleRegion(
-      view,
-      rpcDataMap,
-    )) {
+    for (const {
+      data,
+      bpToPx,
+      overlaps,
+      visibleStart,
+      visibleEnd,
+    } of eachVisibleRegion(view, rpcDataMap)) {
+      const firstCellBp = visibleStart - 0.5
+      const endCellBp = visibleEnd - 0.5
       for (const block of data.blocks) {
         if (!overlaps(block.startBp, block.endBp)) {
           continue
@@ -60,15 +65,16 @@ export function computeVisibleLabels(
             const refCode = refSeqBytes[i]!
             if (refCode !== DASH) {
               const bp = block.startBp + genomicOffset
-              // The block cull applied per column, since one TAF/bigMaf stanza
-              // can span the whole buffered region. `bp` only increases, so the
-              // right edge ends the row's walk.
-              if (bp >= bpHi) {
+              // The region clamp applied per column, since one TAF/bigMaf stanza
+              // can span the whole buffered region. A letter sits on its cell's
+              // center, so the cell center must be inside the region. `bp` only
+              // increases, so the right edge ends the row's walk.
+              if (bp >= endCellBp) {
                 break
               }
               const alnCode = alignmentBytes[i]!
               if (
-                bp >= bpLo &&
+                bp >= firstCellBp &&
                 !isGapByte(alnCode) &&
                 paintsOwnColor(refCode, alnCode, paints)
               ) {

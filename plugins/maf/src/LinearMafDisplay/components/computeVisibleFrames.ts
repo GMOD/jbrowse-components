@@ -68,20 +68,30 @@ export function computeVisibleFrames(
   const stripH = Math.min(h / 2, Math.max(2, Math.round(h * 0.25)))
   const stripOffset = offset + h - stripH
 
-  for (const { data: records, bpToPx, overlaps } of eachVisibleRegion(
-    view,
-    framesDataMap,
-  )) {
+  for (const {
+    data: records,
+    bpToPx,
+    overlaps,
+    visibleStart,
+    visibleEnd,
+  } of eachVisibleRegion(view, framesDataMap)) {
     for (const r of records) {
       // Culled before the `src` lookup: the buffered region holds a record per
       // CDS exon per species, about half off screen.
       if (!overlaps(r.start, r.end)) {
         continue
       }
+      const lo = Math.max(r.start, visibleStart)
+      const hi = Math.min(r.end, visibleEnd)
       const rowIndex = rowIndexBySrc.get(r.src)
-      if (rowIndex !== undefined && rowIndex >= firstRow && rowIndex < endRow) {
+      if (
+        hi > lo &&
+        rowIndex !== undefined &&
+        rowIndex >= firstRow &&
+        rowIndex < endRow
+      ) {
         // >=1px so a single-base CDS segment still reads
-        const { left: xLeft, width } = spanRect(bpToPx, r.start, r.end, 1)
+        const { left: xLeft, width } = spanRect(bpToPx, lo, hi, 1)
         markers.push({
           xLeft,
           width,

@@ -129,8 +129,14 @@ export function bpCull(bpLo: number, bpHi: number) {
 /**
  * Walk the visible regions that have data in `dataMap`, yielding each region's
  * data with its `bpToPx` mapper, `displayedRegionIndex` (for correlating a
- * second per-region map), visible span, and its `bpCull` over that span padded
- * by `CULL_SLACK_PX`. The marker-side twin of `paintedBpRange`.
+ * second per-region map), and the region's clamp: the visible bp span
+ * `[visibleStart, visibleEnd)` and its screen extent `[pxLo, pxHi]`
+ * (orientation-free, so `pxLo <= pxHi` for a reversed region too). What an
+ * overlay draws stays inside the clamp, since blocks and records reach past
+ * the region and a neighbouring region's cells sit just beyond its edge.
+ *
+ * `bpCull` is the clamp padded by `CULL_SLACK_PX`: it picks which blocks to
+ * walk, not what they draw. The marker-side twin of `paintedBpRange`.
  */
 export function* eachVisibleRegion<T>(
   view: VisibleRegionsView,
@@ -151,6 +157,8 @@ export function* eachVisibleRegion<T>(
       displayedRegionIndex: vr.displayedRegionIndex,
       visibleStart: vr.start,
       visibleEnd: vr.end,
+      pxLo: vr.screenStartPx,
+      pxHi: vr.screenStartPx + (vr.end - vr.start) * scale,
       ...bpCull(vr.start - slack, vr.end + slack),
     }
   }

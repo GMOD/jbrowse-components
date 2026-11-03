@@ -446,6 +446,55 @@ describe('the letters', () => {
     expect(m[0]!.x).toBe(40)
   })
 
+  describe('two visible regions', () => {
+    const twoRegions = (reversed: boolean) => ({
+      bpPerPx: 0.1,
+      visibleRegions: [
+        {
+          displayedRegionIndex: 0,
+          start: 100,
+          end: 112,
+          screenStartPx: 0,
+          reversed,
+        },
+        {
+          displayedRegionIndex: 1,
+          start: 5000,
+          end: 5012,
+          screenStartPx: 122,
+          reversed,
+        },
+      ],
+    })
+    const glyphsIn = (reversed: boolean) => {
+      const wide = regionData('ATG'.repeat(100), ['ATG'.repeat(100)])
+      const frames = [
+        {
+          refName: 'chr',
+          start: 100,
+          end: 400,
+          src: 'ref',
+          frame: 0,
+          strand: 1,
+          name: 'g',
+        },
+      ]
+      return computeVisibleCodonGlyphs(
+        twoRegions(reversed),
+        new Map([[0, locate(wide, frames)]]),
+        geometry,
+      )
+    }
+
+    test('letters stay inside the region they belong to', () => {
+      expect(glyphsIn(false).map(g => g.x)).toEqual([15, 45, 75, 105])
+    })
+
+    test('letters stay inside a reversed region', () => {
+      expect(glyphsIn(true).map(g => g.x)).toEqual([105, 75, 45, 15])
+    })
+  })
+
   test('skip the codons off the view', () => {
     const wide = regionData('ATG'.repeat(100), ['ATG'.repeat(100)])
     const glyphs = computeVisibleCodonGlyphs(

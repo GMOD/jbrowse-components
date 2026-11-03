@@ -493,10 +493,13 @@ export function computeVisibleCodonGlyphs(
   if (h < MIN_HEIGHT_FOR_TEXT) {
     return glyphs
   }
-  for (const { data: codons, bpToPx, overlaps } of eachVisibleRegion(
-    view,
-    codonsByRegion,
-  )) {
+  for (const {
+    data: codons,
+    bpToPx,
+    overlaps,
+    pxLo,
+    pxHi,
+  } of eachVisibleRegion(view, codonsByRegion)) {
     for (const { codon, runs, calls } of codons) {
       if (overlaps(codon.positions[0], codon.positions[2] + 1)) {
         let widest = { width: 0, x: 0 }
@@ -506,7 +509,11 @@ export function computeVisibleCodonGlyphs(
             widest = { width, x: bpToPx((start + end) / 2) }
           }
         }
-        if (widest.width >= CHAR_SIZE_WIDTH) {
+        if (
+          widest.width >= CHAR_SIZE_WIDTH &&
+          widest.x >= pxLo &&
+          widest.x < pxHi
+        ) {
           for (const call of calls) {
             if (call.rowIndex >= firstRow && call.rowIndex < endRow) {
               glyphs.push({

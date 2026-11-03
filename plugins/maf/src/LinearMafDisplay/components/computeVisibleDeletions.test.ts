@@ -213,3 +213,51 @@ test('a bound filled at a zoom where nothing labelled admits a closer one', () =
   expect(frame(data, { bpPerPx: 3 })).toEqual([])
   expect(frame(data, { bpPerPx: 1 }).map(m => m.length)).toEqual([20])
 })
+
+describe('two visible regions', () => {
+  const twoRegions = (reversed: boolean) => ({
+    bpPerPx: 1,
+    visibleRegions: [
+      {
+        displayedRegionIndex: 0,
+        start: 100,
+        end: 130,
+        screenStartPx: 0,
+        reversed,
+      },
+      {
+        displayedRegionIndex: 1,
+        start: 5000,
+        end: 5030,
+        screenStartPx: 32,
+        reversed,
+      },
+    ],
+  })
+  const markersIn = (reversed: boolean) =>
+    computeVisibleDeletions({
+      view: twoRegions(reversed),
+      rpcDataMap: new Map([
+        [
+          0,
+          regionData(
+            'A'.repeat(70),
+            `${'A'.repeat(10)}${'-'.repeat(40)}${'A'.repeat(20)}`,
+          ),
+        ],
+      ]),
+      rowHeight: 15,
+      rowProportion: 0.8,
+      viewportHeight: 1000,
+    })
+
+  it('stops a deletion at its region edge', () => {
+    expect(markersIn(false)).toMatchObject([
+      { xLeft: 10, width: 20, length: 40 },
+    ])
+  })
+
+  it('stops a deletion at the edge of a reversed region', () => {
+    expect(markersIn(true)).toMatchObject([{ xLeft: 0, width: 20, length: 40 }])
+  })
+})

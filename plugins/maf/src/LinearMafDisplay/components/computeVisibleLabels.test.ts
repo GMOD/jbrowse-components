@@ -95,9 +95,9 @@ test('space chars in alignment are treated as gaps, not labeled', () => {
 
 test('columns outside the visible span emit no label', () => {
   // One stanza can span the whole buffered region — three canvases wide — so
-  // the block-level cull the sibling overlays use isn't enough here. bpPerPx
-  // 0.05 makes the marker slack 16 * 0.05 + 1 = 1.8bp, so the visible
-  // [100, 110) admits bp 100..111 out of the block's 100..129.
+  // the block-level cull the sibling overlays use isn't enough here. The
+  // visible [100, 110) keeps the cells whose centers fall inside it, bp
+  // 100..109 out of the block's 100..129.
   const rpcDataMap = new Map<number, MafRegionData>([
     [0, regionData('A'.repeat(30), 'A'.repeat(30))],
   ])
@@ -109,9 +109,50 @@ test('columns outside the visible span emit no label', () => {
     viewportHeight: 1000,
     paints: { mismatches: true, everyBase: true },
   })
-  expect(labels).toHaveLength(12)
+  expect(labels).toHaveLength(10)
   expect(labels[0]!.x).toBe(10)
-  expect(labels.at(-1)!.x).toBe(230)
+  expect(labels.at(-1)!.x).toBe(190)
+})
+
+describe('two visible regions', () => {
+  const twoRegions = (reversed: boolean) => ({
+    bpPerPx: 0.05,
+    visibleRegions: [
+      {
+        displayedRegionIndex: 0,
+        start: 100,
+        end: 105,
+        screenStartPx: 0,
+        reversed,
+      },
+      {
+        displayedRegionIndex: 1,
+        start: 5000,
+        end: 5005,
+        screenStartPx: 102,
+        reversed,
+      },
+    ],
+  })
+  const labelsIn = (reversed: boolean) =>
+    computeVisibleLabels({
+      view: twoRegions(reversed),
+      rpcDataMap: new Map([[0, regionData('A'.repeat(30), 'A'.repeat(30))]]),
+      rowHeight: 15,
+      rowProportion: 0.8,
+      viewportHeight: 1000,
+      paints: { mismatches: true, everyBase: true },
+    })
+
+  test('letters stay inside the region they belong to', () => {
+    const xs = labelsIn(false).map(l => l.x)
+    expect(xs).toEqual([10, 30, 50, 70, 90])
+  })
+
+  test('letters stay inside a reversed region', () => {
+    const xs = labelsIn(true).map(l => l.x)
+    expect(xs).toEqual([90, 70, 50, 30, 10])
+  })
 })
 
 test('dashes in alignment are treated as gaps', () => {

@@ -218,3 +218,44 @@ test('skips frame records outside the visible span', () => {
   expect(markers).toHaveLength(1)
   expect(markers[0]!.xLeft).toBe(20)
 })
+
+describe('two visible regions', () => {
+  const twoRegions = (reversed: boolean) => ({
+    bpPerPx: 1,
+    visibleRegions: [
+      {
+        displayedRegionIndex: 0,
+        start: 100,
+        end: 200,
+        screenStartPx: 0,
+        reversed,
+      },
+      {
+        displayedRegionIndex: 1,
+        start: 5000,
+        end: 5100,
+        screenStartPx: 102,
+        reversed,
+      },
+    ],
+  })
+  const markersIn = (reversed: boolean) =>
+    computeVisibleFrames({
+      view: twoRegions(reversed),
+      framesDataMap: {
+        get: i => (i === 0 ? [rec({ start: 150, end: 600 })] : undefined),
+      },
+      rowIndexBySrc,
+      rowHeight: 15,
+      rowProportion: 0.8,
+      viewportHeight: 1000,
+    })
+
+  it('stops a CDS box at its region edge', () => {
+    expect(markersIn(false)).toMatchObject([{ xLeft: 50, width: 50 }])
+  })
+
+  it('stops a CDS box at the edge of a reversed region', () => {
+    expect(markersIn(true)).toMatchObject([{ xLeft: 0, width: 50 }])
+  })
+})

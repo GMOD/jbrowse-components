@@ -6,12 +6,19 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 function makeCtx() {
   const hatch: number[] = []
   const inked: { y: number; y2: number }[] = []
+  const outlines: { clipped: boolean }[] = []
+  const fills: { x: number; x2: number }[] = []
+  let clipDepth = 0
   const ctx = {
     lineWidth: 1,
     strokeStyle: '',
     fillStyle: '',
-    save() {},
-    restore() {},
+    save() {
+      clipDepth++
+    },
+    restore() {
+      clipDepth--
+    },
     beginPath() {},
     rect() {},
     clip() {},
@@ -21,14 +28,16 @@ function makeCtx() {
     },
     lineTo() {},
     strokeRect(_x: number, y: number, _w: number, h: number) {
+      outlines.push({ clipped: clipDepth > 0 })
       const half = this.lineWidth / 2
       inked.push({ y: y - half, y2: y + h + half })
     },
-    fillRect(_x: number, y: number, _w: number, h: number) {
+    fillRect(x: number, y: number, w: number, h: number) {
+      fills.push({ x, x2: x + w })
       inked.push({ y, y2: y + h })
     },
   }
-  return { ctx: ctx as unknown as Ctx2D, hatch, inked }
+  return { ctx: ctx as unknown as Ctx2D, hatch, inked, outlines, fills }
 }
 
 const marker = (m: Partial<InversionMarker>): InversionMarker => ({
@@ -88,4 +97,28 @@ test.each([1, 2, 3, 4])('a %ipx row inks only itself, unhatched', h => {
   expect(inked).toHaveLength(1)
   expect(inked[0]!.y).toBeGreaterThanOrEqual(20)
   expect(inked[0]!.y2).toBeLessThanOrEqual(20 + h)
+})
+
+test("the outline is clipped to the block's region", () => {
+  const { ctx, outlines } = makeCtx()
+  drawInversions(ctx, [marker({ width: 500, visibleWidth: 100 })], 'red')
+  expect(outlines).toEqual([{ clipped: true }])
+})
+
+test("a short row's ink stops at the region edge", () => {
+  const { ctx, fills } = makeCtx()
+  drawInversions(
+    ctx,
+    [
+      marker({
+        h: 3,
+        xLeft: 50,
+        width: 500,
+        visibleLeft: 50,
+        visibleWidth: 50,
+      }),
+    ],
+    'red',
+  )
+  expect(fills).toEqual([{ x: 50, x2: 100 }])
 })

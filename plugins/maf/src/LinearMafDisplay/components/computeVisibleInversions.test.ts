@@ -169,3 +169,46 @@ test('a block straddling the visible start still draws', () => {
     { xLeft: -50, width: 100, visibleLeft: 0, visibleWidth: 50 },
   ])
 })
+
+describe('two visible regions', () => {
+  const twoRegions = (reversed: boolean) => ({
+    bpPerPx: 1,
+    visibleRegions: [
+      {
+        displayedRegionIndex: 0,
+        start: 100,
+        end: 200,
+        screenStartPx: 0,
+        reversed,
+      },
+      {
+        displayedRegionIndex: 1,
+        start: 5000,
+        end: 5100,
+        screenStartPx: 102,
+        reversed,
+      },
+    ],
+  })
+  const rpcDataMap = new Map([
+    [
+      0,
+      region([
+        block(150, 450, [{ srcRefName: 'chrA', strand: -1 }]),
+        block(700, 900, [{ srcRefName: 'chrA', strand: 1 }]),
+      ]),
+    ],
+  ])
+
+  it('clamps the visible part to the region', () => {
+    expect(visibleInversions(rpcDataMap, twoRegions(false))).toMatchObject([
+      { xLeft: 50, width: 450, visibleLeft: 50, visibleWidth: 50 },
+    ])
+  })
+
+  it('clamps the visible part to a reversed region', () => {
+    expect(visibleInversions(rpcDataMap, twoRegions(true))).toMatchObject([
+      { xLeft: -400, width: 450, visibleLeft: 0, visibleWidth: 50 },
+    ])
+  })
+})
