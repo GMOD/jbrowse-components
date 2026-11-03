@@ -14,7 +14,7 @@ import * as ReactDomClient from 'react-dom/client'
 import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
 import { DataGridEntries } from './MuiDataGridReExports.ts'
 import { Entries } from './MuiReExports.ts'
-import { MUIStyles } from './MuiStylesReExports.ts'
+import { MUIStyles } from './MuiStylesReExports.generated.ts'
 import frameworkShared from './frameworkShared.ts'
 import { lazyMap } from './lazify.tsx'
 
