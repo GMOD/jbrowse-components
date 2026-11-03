@@ -41,6 +41,8 @@ const connections = {
     { field: 'connection.offscreen', equal: false },
   ],
   coverage: { height: 60 },
+  // the read arcs below already draw each split junction
+  sashimi: { show: false },
   forceLoad: true,
 }
 
