@@ -15,6 +15,7 @@ import {
 import {
   BandPen,
   interleavedSpans,
+  makeAbgrFill,
   rampAsThreshold,
   rowLineFrame,
   thresholdBandOf,
@@ -89,9 +90,6 @@ export interface RowDraw {
   rampMid: number | undefined
 }
 
-// Every painter honours a layer's per-instance colors, or Canvas2D and the
-// SVG export diverge from the shader. A band holds one packed value per color
-// band, so switching fill only on a change batches the features into runs.
 // `-1` can't collide with a u32 ABGR value.
 const NO_COLOR = -1
 
@@ -144,7 +142,7 @@ export function drawXYPlot(row: RowDraw & { rgb: string }) {
   const scores = source.featureScores
   const rampFill = makeRampFill(row)
   const colorsAbgr = rampFill ? undefined : source.colorsAbgr
-  let lastAbgr = NO_COLOR
+  const setAbgrFillOnChange = makeAbgrFill(ctx)
   let lastFill = ''
   if (!colorsAbgr && !rampFill) {
     ctx.fillStyle = rgb
@@ -160,11 +158,7 @@ export function drawXYPlot(row: RowDraw & { rgb: string }) {
         lastFill = fill
       }
     } else if (colorsAbgr) {
-      const c = colorsAbgr[i]!
-      if (c !== lastAbgr) {
-        setAbgrFill(ctx, c)
-        lastAbgr = c
-      }
+      setAbgrFillOnChange(colorsAbgr[i]!)
     }
     const x1 = toX(positions[i * 2]!)
     const x2 = toX(positions[i * 2 + 1]!)
@@ -208,7 +202,7 @@ export function drawDensity(row: RowDraw & { rgb: string }) {
   const { ctx, source, block, rowHeight, dpr, rgb } = row
   const rampFill = makeRampFill(row)
   const colorsAbgr = rampFill ? undefined : source.colorsAbgr
-  let lastAbgr = NO_COLOR
+  const setAbgrFillOnChange = makeAbgrFill(ctx)
   let lastFill = ''
   if (!colorsAbgr && !rampFill) {
     ctx.fillStyle = rgb
@@ -239,11 +233,7 @@ export function drawDensity(row: RowDraw & { rgb: string }) {
         lastFill = fill
       }
     } else if (colorsAbgr) {
-      const c = colorsAbgr[i]!
-      if (c !== lastAbgr) {
-        setAbgrFill(ctx, c)
-        lastAbgr = c
-      }
+      setAbgrFillOnChange(colorsAbgr[i]!)
     }
     const x1 = toX(positions[i * 2]!)
     const x2 = toX(positions[i * 2 + 1]!)
