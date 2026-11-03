@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url'
 import { fetchHostNames, hostShim } from '@jbrowse/core/ReExports/hostShim'
 import * as esbuild from 'esbuild'
 
-import { umdBuildOptions } from './umdBuild.ts'
+import { iconsDrawThroughHostUtils, umdBuildOptions } from './umdBuild.ts'
 
 const RELEASE = /^v(\d+)\.(\d+)\.(\d+)(?:-(.+))?$/
 
@@ -60,7 +60,10 @@ const names = await fetchHostNames(floor)
 try {
   await esbuild.build({
     ...umdBuildOptions(pluginRoot),
-    plugins: [hostShim({ pluginName: 'Blat', names, host: floor })],
+    plugins: [
+      iconsDrawThroughHostUtils,
+      hostShim({ pluginName: 'Blat', names, host: floor }),
+    ],
     write: false,
     logLevel: 'silent',
   })

@@ -44,20 +44,36 @@ test('the UMD bundle loads and installs against the host it was built for', asyn
   ).toBeDefined()
 })
 
-// Hub configs load this bundle on v4.3.0 as well, which serves neither menu
-// helper, and a plugin whose install throws fails the whole config there. The
-// launch items are what such a host goes without; the dialogs are not.
-test('the UMD bundle still installs on a host without the menu helpers', async () => {
-  const { bundle } = await buildBundle()
-  const key = '@jbrowse/core/pluggableElementTypes'
+// Hub configs load this bundle on v4.3.0 as well, and a plugin whose load or
+// install throws fails the whole config there. What v4.3.0 serves differently
+// from the host this bundle is built against, as far as the bundle reaches.
+function v430Host() {
+  const {
+    '@jbrowse/core/util/lazyWithPreload': _lazy,
+    '@jbrowse/core/util/electron': _electron,
+    '@jbrowse/core/data_adapters/dataAdapterCache': _cache,
+    ...served
+  } = hostModules
   const {
     addDisplayMenuItems: _display,
     addViewMenuItems: _view,
-    ...older
-  } = hostModules[key] as Record<string, unknown>
-  expect(
-    install(bundle, { ...hostModules, [key]: older }).getWidgetType(
-      'UcscResultsWidget',
-    ),
-  ).toBeDefined()
+    ...elementTypes
+  } = served['@jbrowse/core/pluggableElementTypes'] as Record<string, unknown>
+  // MUI 7's SvgIcon module exports the component but not `createSvgIcon`
+  const { createSvgIcon: _create, ...svgIcon } = served[
+    '@mui/material/SvgIcon'
+  ] as Record<string, unknown>
+  return {
+    ...served,
+    '@jbrowse/core/pluggableElementTypes': elementTypes,
+    '@mui/material/SvgIcon': svgIcon,
+  }
+}
+
+test('the UMD bundle loads on a v4.3.0 host and installs nothing there', async () => {
+  const { bundle } = await buildBundle()
+  const pluginManager = install(bundle, v430Host())
+  expect(() => pluginManager.getWidgetType('UcscResultsWidget')).toThrow(
+    /not registered/,
+  )
 })

@@ -18,7 +18,25 @@ import { join } from 'node:path'
 
 import { hostShim } from '@jbrowse/core/ReExports/hostShim'
 
-import type { BuildOptions } from 'esbuild'
+import type { BuildOptions, Plugin } from 'esbuild'
+
+// MUI 9's icons take `createSvgIcon` from `@mui/material/SvgIcon`, which MUI 7
+// does not export there, and they call it as the bundle loads, so on v4.3.0 the
+// whole bundle threw before defining its global. Every host's
+// `@mui/material/utils` exports it.
+export const iconsDrawThroughHostUtils = {
+  name: 'icons-draw-through-host-utils',
+  setup(build) {
+    build.onResolve({ filter: /^\.\/utils\/createSvgIcon(\.m?js)?$/ }, args =>
+      args.importer.includes('@mui/icons-material')
+        ? { path: 'createSvgIcon', namespace: 'mui-icons-utils' }
+        : undefined,
+    )
+    build.onLoad({ filter: /.*/, namespace: 'mui-icons-utils' }, () => ({
+      contents: `export { createSvgIcon as default } from '@mui/material/utils'`,
+    }))
+  },
+} satisfies Plugin
 
 export const umdBuildOptions = (pluginRoot: string) =>
   ({
@@ -32,7 +50,7 @@ export const umdBuildOptions = (pluginRoot: string) =>
     // without this, bundled MUI code keeps its dev-only propType and warning
     // branches, which both bloat the bundle and log into a production console
     define: { 'process.env.NODE_ENV': '"production"' },
-    plugins: [hostShim({ pluginName: 'Blat' })],
+    plugins: [iconsDrawThroughHostUtils, hostShim({ pluginName: 'Blat' })],
     metafile: true,
   }) satisfies BuildOptions
 
