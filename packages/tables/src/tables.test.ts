@@ -15,7 +15,10 @@ import {
   READ_GROUPS,
   SIGNED_BIGWIG,
   SPLICED,
+  WIDE_RNASEQ,
 } from './volvox.fixture.ts'
+
+import type { AlignmentTables } from './index.ts'
 
 const engine = createTablesEngine()
 
@@ -1310,6 +1313,35 @@ test('a region of the reference reads as its bases', async () => {
     region: { refName: 'ctgA', start: 1000, end: 1010 },
   })
   expect(bases).toMatch(/^[ACGTNacgtn]{10}$/)
+})
+
+// The worker packs the coverage bars for the GPU at most 262,144 to a region,
+// so a 450 kb window draws 2 bp bars while its depths stay per base.
+test('a region wider than the GPU coverage bar cap keeps its per-base depths and frequencies', async () => {
+  const rows = ({ coverage, mismatches }: AlignmentTables, start: number) => {
+    const inside = (p: number) => p >= start && p < start + 5000
+    return {
+      depths: coverage.start.flatMap((s, i) =>
+        inside(s) ? [[s, coverage.depth[i]]] : [],
+      ),
+      frequencies: mismatches.position.flatMap((p, i) =>
+        inside(p) ? [[p, mismatches.base[i], mismatches.frequency[i]]] : [],
+      ),
+    }
+  }
+  const wide = await engine.alignments(WIDE_RNASEQ)
+  for (const start of [0, 10000, 30000]) {
+    const narrow = rows(
+      await engine.alignments({
+        ...WIDE_RNASEQ,
+        region: { refName: 'ctgA', start, end: start + 5000 },
+      }),
+      start,
+    )
+    expect(narrow.depths).toHaveLength(5000)
+    expect(narrow.frequencies.length).toBeGreaterThan(0)
+    expect(rows(wide, start)).toEqual(narrow)
+  }
 })
 
 test('a region over the byte limit is refused before any read is fetched', async () => {

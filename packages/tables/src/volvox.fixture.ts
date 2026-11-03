@@ -44,6 +44,19 @@ export const READ_GROUPS = {
   region: { refName: 'ctgA', start: 0, end: 50000 },
 } satisfies AlignmentTablesArgs
 
+/**
+ * Yeast RNA-seq reads over 1-448 kb of a 1.08 Mb `ctgA`, wider than the GPU
+ * coverage bar cap. Not volvox's `ctgA`, so read with no sequence adapter.
+ */
+export const WIDE_RNASEQ = {
+  adapterConfig: {
+    type: 'BamAdapter',
+    bamLocation: uri('paired_rnaseq.bam'),
+    index: { location: uri('paired_rnaseq.bam.bai'), indexType: 'BAI' },
+  },
+  region: { refName: 'ctgA', start: 0, end: 450000 },
+} satisfies AlignmentTablesArgs
+
 export const SPLICED = {
   adapterConfig: {
     type: 'BamAdapter',

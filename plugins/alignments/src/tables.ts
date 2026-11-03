@@ -377,8 +377,7 @@ function alleleFrequencies(d: WorkerPileupData) {
     counts.set(key(i), (counts.get(key(i)) ?? 0) + 1)
   }
   return Array.from(d.mismatchPositions, (position, i) => {
-    const bin = Math.floor((position - d.coverageStartPos) / d.coverageBinSize)
-    const depth = d.coverageDepths[bin] ?? 0
+    const depth = d.coverageDepths[position - d.coverageStartPos] ?? 0
     return depth > 0 ? Math.min(1, counts.get(key(i))! / depth) : 0
   })
 }
@@ -1138,10 +1137,11 @@ function sectionTables(
 }
 
 /**
- * The coverage band's tables over the region alone. The worker counts depth
- * and stacks wherever its reads reach, which past the region's ends is a
- * partial count of the reads that also cross into it. A bin straddling an end
- * is cut at it.
+ * The coverage band's tables over the region alone, one row per base:
+ * `coverageDepths` is per-bp whatever `coverageBinSize`, the GPU bar width,
+ * says. The worker counts depth and stacks wherever its reads reach, which
+ * past the region's ends is a partial count of the reads that also cross into
+ * it.
  */
 function coverageBand(
   d: WorkerPileupData,
@@ -1149,20 +1149,15 @@ function coverageBand(
   paint: MarkColors,
   minAlleleFraction: number,
 ) {
-  const bin = d.coverageBinSize
-  const first = Math.max(
-    0,
-    Math.floor((region.start - d.coverageStartPos) / bin),
-  )
+  const first = Math.max(0, region.start - d.coverageStartPos)
   const last = Math.min(
     d.coverageDepths.length,
-    Math.ceil((region.end - d.coverageStartPos) / bin),
+    region.end - d.coverageStartPos,
   )
-  const bins = Array.from(
+  const bases = Array.from(
     { length: Math.max(0, last - first) },
     (_, i) => first + i,
   )
-  const binStart = (i: number) => d.coverageStartPos + i * bin
   const inside = (position: number) =>
     position >= region.start && position < region.end
   const stacks = {
@@ -1171,12 +1166,12 @@ function coverageBand(
   }
   return {
     coverage: {
-      start: bins.map(i => Math.max(region.start, binStart(i))),
-      end: bins.map(i => Math.min(region.end, binStart(i) + bin)),
-      depth: bins.map(i => d.coverageDepths[i]!),
-      forward: bins.map(i => d.coverageFwdDepths[i]!),
-      reverse: bins.map(i => d.coverageRevDepths[i]!),
-      color: bins.map(() => paint.coverage),
+      start: bases.map(i => d.coverageStartPos + i),
+      end: bases.map(i => d.coverageStartPos + i + 1),
+      depth: bases.map(i => d.coverageDepths[i]!),
+      forward: bases.map(i => d.coverageFwdDepths[i]!),
+      reverse: bases.map(i => d.coverageRevDepths[i]!),
+      color: bases.map(() => paint.coverage),
     },
     alleleCoverage: rowsWhere(stacks.alleleCoverage, inside),
     modificationCoverage: rowsWhere(stacks.modificationCoverage, inside),
