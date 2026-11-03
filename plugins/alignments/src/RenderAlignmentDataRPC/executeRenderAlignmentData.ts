@@ -336,6 +336,7 @@ export async function executeRenderAlignmentData({
       sequenceAdapter,
       region,
       featuresArray: inputFeatures,
+      signal,
     })
     regionSequence = result.regionSequence?.toLowerCase()
     regionSequenceStart = result.regionSequenceStart
@@ -416,6 +417,7 @@ export async function executeRenderAlignmentData({
       sequenceAdapter,
       region,
       featuresArray: inputFeatures,
+      signal,
     })
     regionSequence = result.regionSequence
     regionSequenceStart = result.regionSequenceStart

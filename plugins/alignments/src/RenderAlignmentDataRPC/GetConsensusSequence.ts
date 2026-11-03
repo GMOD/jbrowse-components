@@ -86,6 +86,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
         sequenceAdapter,
         region,
         featuresArray,
+        signal,
       })
 
     if (!regionSequence) {

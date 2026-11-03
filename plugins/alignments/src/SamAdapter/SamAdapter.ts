@@ -140,11 +140,14 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
       const sequenceAdapter = span ? await this.getSequenceAdapter() : undefined
       const regionSeq =
         sequenceAdapter && span
-          ? await sequenceAdapter.getSequence({
-              refName: originalRefName ?? refName,
-              start: span.start,
-              end: span.end,
-            })
+          ? await sequenceAdapter.getSequence(
+              {
+                refName: originalRefName ?? refName,
+                start: span.start,
+                end: span.end,
+              },
+              { signal, statusCallback },
+            )
           : undefined
       // Packed once for the whole fetch, not per read: the walk then compares
       // two bases per byte against the read's own packed SEQ.

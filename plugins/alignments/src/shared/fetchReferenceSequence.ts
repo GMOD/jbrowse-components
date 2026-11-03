@@ -25,6 +25,7 @@ export async function fetchReferenceSequence({
   sequenceAdapter,
   region,
   featuresArray,
+  signal,
 }: {
   pluginManager: PluginManager
   sessionId: string
@@ -37,6 +38,7 @@ export async function fetchReferenceSequence({
     end: number
   }
   featuresArray: Feature[]
+  signal?: AbortSignal
 }) {
   const { start: regionStart, end: regionEnd } = region
   let seqFetchStart = regionStart
@@ -60,12 +62,15 @@ export async function fetchReferenceSequence({
   const fetchStart = Math.max(0, seqFetchStart - SPLICE_SITE_MARGIN)
   const seqFeats = await firstValueFrom(
     seqAdapter
-      .getFeatures({
-        ...region,
-        refName: region.originalRefName || region.refName,
-        start: fetchStart,
-        end: seqFetchEnd + SPLICE_SITE_MARGIN,
-      })
+      .getFeatures(
+        {
+          ...region,
+          refName: region.originalRefName || region.refName,
+          start: fetchStart,
+          end: seqFetchEnd + SPLICE_SITE_MARGIN,
+        },
+        { signal },
+      )
       .pipe(toArray()),
   )
   return {
