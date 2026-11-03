@@ -26,8 +26,8 @@
 # Requires: jcvi (it builds C extensions and does not install against every
 #           python; `uv venv --python 3.12 && uv pip install jcvi biopython`
 #           gets one it does), diamond, python3 with biopython, htslib
-#           (bgzip/tabix), wget, and node (JBrowse CLI, via npx unless
-#           `jbrowse` is on PATH). Downloads ~180 MB.
+#           (bgzip/tabix), the NCBI datasets CLI, and node (JBrowse CLI, via
+#           npx unless `jbrowse` is on PATH). Downloads ~170 MB.
 # Usage:    bash scripts/build_primate_selection.sh [outdir]
 #
 set -euo pipefail
@@ -46,13 +46,6 @@ cd "$OUTDIR"
 # Every file lands under a .part name and is renamed only once its producer
 # returns clean, which is what makes the `[ -f ]` guards sound: an interrupted
 # run leaves nothing that looks finished.
-fetch() {
-  local dest=$1 url=$2
-  if [ ! -f "$dest" ]; then
-    wget -c -O "$dest.part" "$url"
-    mv "$dest.part" "$dest"
-  fi
-}
 
 jb() {
   if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
@@ -63,74 +56,147 @@ jb() {
 }
 
 APP=jbrowse2
-REL=116
-BASE=https://ftp.ensembl.org/pub/release-$REL
 CPUS=$(getconf _NPROCESSORS_ONLN)
 
-fetch human.gff3.gz "$BASE/gff3/homo_sapiens/Homo_sapiens.GRCh38.$REL.gff3.gz"
-fetch human.cds.fa.gz \
-  "$BASE/fasta/homo_sapiens/cds/Homo_sapiens.GRCh38.cds.all.fa.gz"
-fetch rhesus.gff3.gz \
-  "$BASE/gff3/macaca_mulatta/Macaca_mulatta.Mmul_10.$REL.gff3.gz"
-fetch rhesus.cds.fa.gz \
-  "$BASE/fasta/macaca_mulatta/cds/Macaca_mulatta.Mmul_10.cds.all.fa.gz"
+# name, RefSeq accession: GRCh38.p14 and the T2T macaque, each with a current
+# RefSeq annotation
+SPECIES=$(cat <<'EOF'
+human GCF_000001405.40
+rhesus GCF_049350105.2
+EOF
+)
 
-# ── Per species: chrom.sizes, a BED, and a proteome keyed the same way ───────
-for sp in human rhesus; do
-  # chrom.sizes from the GFF3's own header, so no genome FASTA is needed. Read
-  # in python rather than piped through awk: stopping at the first feature line
-  # closes the pipe on gunzip, and under `set -o pipefail` that SIGPIPE fails
-  # the script. Only the assembled chromosomes are kept, since an ortholog on a
-  # patch or an alt haplotype places nowhere useful.
-  if [ ! -f "$sp.chrom.sizes" ]; then
-    python3 - "$sp.gff3.gz" <<'PY' > "$sp.chrom.sizes.part"
-import gzip
+# ── Per species: one NCBI download, reshaped into four files ─────────────────
+# GFF3, CDS and sequence report come from one `datasets` call, so the assembly
+# and the annotation are one build. The reshape writes, per species:
+#
+#   NAME.chrom.sizes   the assembled chromosomes, under the report's chrName
+#   NAME.bed           one row per protein-coding gene: its longest-CDS mRNA
+#   NAME.cds.fa        that mRNA's coding sequence
+#   NAME.genes.gff3    the gene, that mRNA and its exons and CDS, for the track
+#
+# Every row is keyed on the mRNA's RefSeq accession (NM_/XM_), which is unique
+# across species, so the two CDS files concatenate into one with no collision.
+# NCBI's CDS FASTA is keyed on the PROTEIN accession instead; the GFF3's CDS rows
+# carry both, and that is the join. Only assembled chromosomes are kept, since
+# an ortholog on a patch or an alt haplotype places nowhere useful.
+echo "$SPECIES" | while read -r name acc; do
+  if [ ! -f "$name.ncbi.zip" ]; then
+    datasets download genome accession "$acc" --include gff3,cds,seq-report \
+      --filename "$name.ncbi.zip.part" --no-progressbar
+    mv "$name.ncbi.zip.part" "$name.ncbi.zip"
+  fi
+
+  [ -f "$name.genes.gff3" ] || python3 - "$name.ncbi.zip" "$acc" "$name" <<'PY'
+import json
+import os
 import re
 import sys
+import zipfile
 
+src, acc, name = sys.argv[1:]
+data = f"ncbi_dataset/data/{acc}"
 chromosome = re.compile(r"^([0-9]+|X|Y)$")
-with gzip.open(sys.argv[1], "rt") as fh:
-    for line in fh:
-        if line.startswith("##sequence-region"):
-            f = line.split()
-            if chromosome.match(f[1]):
-                print(f"{f[1]}\t{f[3]}")
-        elif not line.startswith("#"):
-            break
+
+
+def attrs(col9):
+    return dict(kv.split("=", 1) for kv in col9.split(";") if "=" in kv)
+
+
+with zipfile.ZipFile(src) as z:
+    with z.open(f"{data}/sequence_report.jsonl") as raw:
+        report = [json.loads(b) for b in raw if b.strip()]
+    report = [
+        r for r in report
+        if r.get("role") == "assembled-molecule"
+        and chromosome.match(r.get("chrName", ""))
+    ]
+    report.sort(key=lambda r: r["sortOrder"])
+    rename = {r["refseqAccession"]: r["chrName"] for r in report}
+
+    # keyed on (sequence, protein): a pseudoautosomal gene is annotated on X
+    # and on Y under one protein accession
+    cds = {}
+    with z.open(f"{data}/cds_from_genomic.fna") as raw:
+        key = None
+        for line in (b.decode() for b in raw):
+            if line.startswith(">"):
+                protein = re.search(r"\[protein_id=([^\]]+)\]", line)
+                seqid = line[5:].split("_cds_")[0]
+                key = (seqid, protein.group(1)) if protein else None
+                if key:
+                    cds[key] = []
+            elif key:
+                cds[key].append(line.strip())
+
+    genes, mrnas, children, coding = {}, {}, {}, {}
+    with z.open(f"{data}/genomic.gff") as raw:
+        for line in (b.decode() for b in raw):
+            f = line.rstrip("\n").split("\t")
+            if len(f) == 9 and f[0] in rename:
+                a = attrs(f[8])
+                if f[2] == "gene" and a.get("gene_biotype") == "protein_coding":
+                    genes[a["ID"]] = f
+                elif f[2] == "mRNA":
+                    mrnas[a["ID"]] = (f, a)
+                elif f[2] in ("exon", "CDS") and "Parent" in a:
+                    children.setdefault(a["Parent"], []).append(f)
+                    if f[2] == "CDS" and "protein_id" in a:
+                        coding[a["Parent"]] = (f[0], a["protein_id"])
+
+longest = {}
+for mrna_id, (f, a) in mrnas.items():
+    gene = a.get("Parent")
+    seq = "".join(cds.get(coding.get(mrna_id), []))
+    if gene in genes and len(seq) > len(longest.get(gene, ("", ""))[1]):
+        longest[gene] = (mrna_id, seq)
+
+with open(f"{name}.chrom.sizes.part", "w") as out:
+    for r in report:
+        out.write(f"{r['chrName']}\t{r['length']}\n")
+
+rows = []
+# a pseudoautosomal gene's Y copy repeats its X copy's transcript accession, and
+# the BED and the CDS need each name once; X comes first in report order
+written = set()
+with open(f"{name}.bed.part", "w") as bed, open(f"{name}.cds.fa.part", "w") as fa:
+    for gene, (mrna_id, seq) in longest.items():
+        f, a = mrnas[mrna_id]
+        tx = a["transcript_id"]
+        if tx in written:
+            continue
+        written.add(tx)
+        chrom = rename[f[0]]
+        bed.write(f"{chrom}\t{int(f[3]) - 1}\t{f[4]}\t{tx}\t0\t{f[6]}\n")
+        fa.write(f">{tx} gene_symbol:{a.get('gene', tx)}\n{seq}\n")
+        for row in [genes[gene], f, *children[mrna_id]]:
+            rows.append((chrom, int(row[3]), [chrom, *row[1:]]))
+rows.sort(key=lambda r: (r[0], r[1]))
+with open(f"{name}.genes.gff3.part", "w") as out:
+    out.write("##gff-version 3\n")
+    for _, _, row in rows:
+        out.write("\t".join(row) + "\n")
+
+for part in ("chrom.sizes", "bed", "cds.fa", "genes.gff3"):
+    os.rename(f"{name}.{part}.part", f"{name}.{part}")
+print(f"{name} ({acc}): {len(written)} of {len(genes)} protein-coding genes "
+      f"kept, on {len(report)} chromosomes", file=sys.stderr)
 PY
-    mv "$sp.chrom.sizes.part" "$sp.chrom.sizes"
-  fi
 
-  if [ ! -f "$sp.bed" ]; then
-    python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
-      --primary_only "$sp.gff3.gz" -o "$sp.all.bed"
-    awk -F'\t' '$1 ~ /^([0-9]+|X|Y)$/' "$sp.all.bed" > "$sp.bed.part"
-    mv "$sp.bed.part" "$sp.bed"
-  fi
-
-  # The proteome is translated from the CDS rather than downloaded, and it is
-  # cut to the transcripts the BED names. Two reasons, both of which cost a run
-  # to learn: Ensembl's protein FASTA is keyed on PROTEIN ids where every other
-  # id here is a transcript id, and the CDS FASTA carries every isoform, which
-  # is an order of magnitude more sequence than the primary set jcvi chains.
-  #
-  # The version suffix comes off. Ensembl VERSIONS transcript ids in its FASTA
-  # (`ENST00000641515.7`) and not in its GFF3, so without this the proteome and
-  # the BED share no id at all and the run ends with zero anchors.
-  if [ ! -f "$sp.pep" ]; then
-    python3 - "$sp.cds.fa.gz" "$sp.bed" <<'PY' > "$sp.pep.part"
-import gzip
+  # The proteome is translated from the same CDS, so it shares every id with
+  # the BED and with the rates step.
+  if [ ! -f "$name.pep" ]; then
+    python3 - "$name.cds.fa" <<'PY' > "$name.pep.part"
 import sys
 
 from Bio.Seq import Seq
 
-keep = {line.split("\t")[3] for line in open(sys.argv[2])}
 name = None
 seq = []
 
 
 def flush():
-    if not name or name not in keep:
+    if not name:
         return
     cds = "".join(seq)
     if len(cds) < 6 or len(cds) % 3:
@@ -142,17 +208,16 @@ def flush():
         print(f">{name}\n{protein}")
 
 
-with gzip.open(sys.argv[1], "rt") as fh:
-    for line in fh:
-        if line.startswith(">"):
-            flush()
-            name = line[1:].split()[0].rsplit(".", 1)[0]
-            seq = []
-        else:
-            seq.append(line.strip())
+for line in open(sys.argv[1]):
+    if line.startswith(">"):
+        flush()
+        name = line[1:].split()[0]
+        seq = []
+    else:
+        seq.append(line.strip())
 flush()
 PY
-    mv "$sp.pep.part" "$sp.pep"
+    mv "$name.pep.part" "$name.pep"
   fi
 done
 
@@ -188,9 +253,9 @@ if [ ! -f pairs.tsv ]; then
 fi
 
 # ── dN and dS per pair ───────────────────────────────────────────────────────
-# One CDS file for both species: the pairs cross them, and the id namespaces
-# (ENST..., ENSMMUT...) do not collide.
-[ -f both.cds.fa.gz ] || cat human.cds.fa.gz rhesus.cds.fa.gz > both.cds.fa.gz
+# One CDS file for both species: the pairs cross them, and RefSeq accessions do
+# not collide between genomes.
+[ -f both.cds.fa ] || cat human.cds.fa rhesus.cds.fa > both.cds.fa
 #
 # Both ends of the dS range are cut, and a run prints the quartiles these were
 # picked from.
@@ -202,76 +267,39 @@ fi
 # `--min-syn-subs 3` is the guard that matters for a figure, and it counts
 # substitutions rather than thresholding a rate. Sorting an unfiltered table by
 # dN/dS returns the pairs with nothing to divide by rather than the selected
-# ones: HBA1, about as strongly conserved as a gene gets, came out at 2.29 off a
-# SINGLE synonymous difference, as did CAST at 3.27 and COX20 at 2.76. Every
-# credible pair here clears three - YEATS4 has 3, LYZ 4, ACTB 30 - so the floor
-# separates them, and unlike a floor on dS it does not punish a short gene for
-# being short.
+# ones: FDCSP came out at 4.18 and COX20 at 2.76, each off a SINGLE synonymous
+# difference, and 20 of the top 50 have fewer than three. Every credible pair
+# here clears three - YEATS4 has 3, LYZ 3.5, ACTB 27 - so the floor separates
+# them, and unlike a floor on dS it does not punish a short gene for being
+# short.
 if [ ! -f primate.blocks ]; then
-  python3 "$SCRIPT_DIR/kaks_from_pairs.py" pairs.tsv both.cds.fa.gz \
-    --key record --strip-version --min-syn-subs 3 --max-ds 0.3 \
-    -o primate.blocks.part
+  python3 "$SCRIPT_DIR/kaks_from_pairs.py" pairs.tsv both.cds.fa \
+    --key record --min-syn-subs 3 --max-ds 0.3 -o primate.blocks.part
   mv primate.blocks.part primate.blocks
 fi
 
 gzip -kf primate.blocks human.bed rhesus.bed
 
 # ── Gene tracks, so a ribbon's color has a gene name beside it ──────────────
-# Cut to the same primary transcripts as the BED, which is what keeps a 100 MB
-# annotation down to a few MB and makes the track name exactly what the ribbons
-# connect.
+# Cut to the same mRNAs as the BED, which keeps a 1.6 GB annotation down to a
+# few MB and makes the track name exactly what the ribbons connect.
 for sp in human rhesus; do
-  if [ ! -f "$sp.genes.gff3.gz.tbi" ]; then
-    python3 - "$sp.gff3.gz" "$sp.bed" <<'PY' > "$sp.genes.gff3.part"
-import gzip
-import sys
-
-keep = {line.split("\t")[3] for line in open(sys.argv[2])}
-chromosomes = {str(i) for i in range(1, 40)} | {"X", "Y"}
-rows = []
-with gzip.open(sys.argv[1], "rt") as fh:
-    for line in fh:
-        if line.startswith("#"):
-            continue
-        f = line.split("\t")
-        if len(f) < 9 or f[0] not in chromosomes:
-            continue
-        if f[2] == "gene":
-            rows.append((f[0], int(f[3]), line))
-        elif f[2] == "mRNA":
-            tid = [a for a in f[8].split(";") if a.startswith("transcript_id=")]
-            if tid and tid[0][14:].strip() in keep:
-                rows.append((f[0], int(f[3]), line))
-        elif f[2] in ("exon", "CDS"):
-            par = [a for a in f[8].split(";")
-                   if a.startswith("Parent=transcript:")]
-            if par and par[0][18:].strip() in keep:
-                rows.append((f[0], int(f[3]), line))
-rows.sort(key=lambda r: (r[0], r[1]))
-for _, _, line in rows:
-    sys.stdout.write(line)
-PY
-    mv "$sp.genes.gff3.part" "$sp.genes.gff3"
-    bgzip -f "$sp.genes.gff3"
-    tabix -f -p gff "$sp.genes.gff3.gz"
+  if [ ! -f "$sp.genes.gff3.gz.csi" ]; then
+    bgzip -kf "$sp.genes.gff3"
+    tabix -f -C -p gff "$sp.genes.gff3.gz"
   fi
 done
 
 # ── What the table says, printed rather than asserted ────────────────────────
-python3 - human.bed primate.blocks human.cds.fa.gz <<'PY'
-import gzip
+python3 - human.bed primate.blocks human.cds.fa <<'PY'
 import statistics
 import sys
 
 symbol = {}
-with gzip.open(sys.argv[3], "rt") as fh:
-    for line in fh:
-        if not line.startswith(">"):
-            continue
-        f = line.split()
-        tag = [x for x in f if x.startswith("gene_symbol:")]
-        if tag:
-            symbol[f[0][1:].rsplit(".", 1)[0]] = tag[0][12:]
+for line in open(sys.argv[3]):
+    if line.startswith(">"):
+        f = line[1:].split()
+        symbol[f[0]] = f[1].removeprefix("gene_symbol:")
 
 placed = {}
 with open(sys.argv[1]) as fh:
@@ -307,8 +335,8 @@ PY
 # ── Set up JBrowse ───────────────────────────────────────────────────────────
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
 cp primate.blocks.gz human.bed.gz rhesus.bed.gz "$APP"/
-cp human.genes.gff3.gz human.genes.gff3.gz.tbi "$APP"/
-cp rhesus.genes.gff3.gz rhesus.genes.gff3.gz.tbi "$APP"/
+cp human.genes.gff3.gz human.genes.gff3.gz.csi "$APP"/
+cp rhesus.genes.gff3.gz rhesus.genes.gff3.gz.csi "$APP"/
 jb add-assembly human.chrom.sizes --name human --load copy --force --out "$APP"
 jb add-assembly rhesus.chrom.sizes --name rhesus --load copy --force --out "$APP"
 
@@ -332,18 +360,26 @@ cat > human_genes.json <<'JSON'
 {
   "type": "FeatureTrack",
   "trackId": "human_genes",
-  "name": "Human genes (GRCh38, Ensembl 116)",
+  "name": "Human genes (GRCh38.p14, NCBI RefSeq)",
   "assemblyNames": ["human"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "human.genes.gff3.gz" }
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "human.genes.gff3.gz",
+    "csi": true
+  }
 }
 JSON
 cat > rhesus_genes.json <<'JSON'
 {
   "type": "FeatureTrack",
   "trackId": "rhesus_genes",
-  "name": "Rhesus macaque genes (Mmul_10, Ensembl 116)",
+  "name": "Rhesus macaque genes (T2T-MMU8v2.0, NCBI RefSeq)",
   "assemblyNames": ["rhesus"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "rhesus.genes.gff3.gz" }
+  "adapter": {
+    "type": "Gff3TabixAdapter",
+    "uri": "rhesus.genes.gff3.gz",
+    "csi": true
+  }
 }
 JSON
 jb add-track-json human_genes.json --update --out "$APP"
@@ -367,7 +403,7 @@ cat > session.json <<'JSON'
         },
         {
           "assembly": "rhesus",
-          "loc": "11:68,330,000-69,390,000",
+          "loc": "11:75,927,000-77,010,000",
           "tracks": ["rhesus_genes"]
         }
       ],

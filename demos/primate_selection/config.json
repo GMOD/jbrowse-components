@@ -27,21 +27,23 @@
     {
       "type": "FeatureTrack",
       "trackId": "human_genes",
-      "name": "Human genes (GRCh38, Ensembl 116)",
+      "name": "Human genes (GRCh38.p14, NCBI RefSeq)",
       "assemblyNames": ["human"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "human.pc.gff3.gz"
+        "uri": "human.genes.gff3.gz",
+        "csi": true
       }
     },
     {
       "type": "FeatureTrack",
       "trackId": "rhesus_genes",
-      "name": "Rhesus macaque genes (Mmul_10, Ensembl 116)",
+      "name": "Rhesus macaque genes (T2T-MMU8v2.0, NCBI RefSeq)",
       "assemblyNames": ["rhesus"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "rhesus.pc.gff3.gz"
+        "uri": "rhesus.genes.gff3.gz",
+        "csi": true
       }
     },
     {
@@ -80,7 +82,7 @@
           },
           {
             "assembly": "rhesus",
-            "loc": "11:68,330,000-69,390,000",
+            "loc": "11:75,927,000-77,010,000",
             "tracks": ["rhesus_genes"]
           }
         ],

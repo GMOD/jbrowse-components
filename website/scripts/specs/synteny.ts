@@ -1564,8 +1564,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 700,
   },
 
-  // The rhesus window is the human span scaled by 1.06/1.09, the assemblies'
-  // local length ratio, on the same centre; otherwise the ribbons shear. The
+  // The rhesus window is the human span scaled by 0.994, the assemblies' local
+  // length ratio, on LYZ's partner; otherwise the ribbons shear. The
   // 0.2 default alpha washes out a dozen ribbons.
   {
     mode: 'url',
@@ -1590,7 +1590,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
               {
                 assembly: 'rhesus',
-                loc: '11:67,401,000-70,319,000',
+                loc: '11:74,978,000-77,959,000',
                 tracks: [
                   {
                     trackId: 'rhesus_genes',
@@ -1645,7 +1645,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           loc: '12:69,351,000',
           fracY: 1,
           dy: 52,
-          dx: 8,
+          dx: 3,
         },
       },
     ],

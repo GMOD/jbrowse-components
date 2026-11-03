@@ -27,7 +27,8 @@ the selection pressure on a protein-coding gene between two species. We:
 - [DIAMOND](https://github.com/bbuchfink/diamond)
 - python3 with [biopython](https://biopython.org/)
 - htslib (`bgzip`, `tabix`)
-- `wget`
+- the
+  [NCBI datasets CLI](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/download-and-install/)
 - `node`, for the [JBrowse CLI](/docs/cli)
 
 jcvi compiles C extensions at install time, and the compile fails on some Python
@@ -50,25 +51,18 @@ npm install -g @jbrowse/cli@next
 
 ## The data
 
-The assemblies are
-[GCA_000001405.29](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_000001405.29/)
-(human GRCh38) and
-[GCA_003339765.3](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_003339765.3/)
-(rhesus macaque Mmul_10), with gene models and coding sequence from Ensembl
-release 116.
+Each genome is an NCBI RefSeq assembly, and the script fetches its GFF3, CDS
+FASTA and sequence report together with `datasets download genome accession`.
 
 The tracks below read local files that the
 [build script](#reproduce-it-end-to-end) writes from these, so run it first, or
-run _Producing the human-rhesus ortholog table and its rates_ on a GFF3, a
-protein FASTA and a CDS FASTA per genome of your own. The script fetches
-everything itself.
+run _Producing the human-rhesus ortholog table and its rates_ on a GFF3 and a
+CDS FASTA per genome of your own. The script fetches everything itself.
 
-| What it is                     | File                                                                                                                                          |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Human gene models              | [Homo_sapiens.GRCh38.116.gff3.gz](https://ftp.ensembl.org/pub/release-116/gff3/homo_sapiens/Homo_sapiens.GRCh38.116.gff3.gz)                  |
-| Human coding sequence          | [Homo_sapiens.GRCh38.cds.all.fa.gz](https://ftp.ensembl.org/pub/release-116/fasta/homo_sapiens/cds/Homo_sapiens.GRCh38.cds.all.fa.gz)         |
-| Rhesus macaque gene models     | [Macaca_mulatta.Mmul_10.116.gff3.gz](https://ftp.ensembl.org/pub/release-116/gff3/macaca_mulatta/Macaca_mulatta.Mmul_10.116.gff3.gz)          |
-| Rhesus macaque coding sequence | [Macaca_mulatta.Mmul_10.cds.all.fa.gz](https://ftp.ensembl.org/pub/release-116/fasta/macaca_mulatta/cds/Macaca_mulatta.Mmul_10.cds.all.fa.gz) |
+| What it is                   | File                                                                               |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| Human, GRCh38.p14            | [GCF_000001405.40](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/) |
+| Rhesus macaque, T2T-MMU8v2.0 | [GCF_049350105.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_049350105.2/)   |
 
 ## What dN/dS says
 
@@ -90,20 +84,20 @@ macaque sits in that window against human.[^chimp]
 ### Calling human-rhesus orthologs with jcvi
 
 jcvi takes a BED and a proteome per genome under one set of ids. The BED comes
-from the GFF3, one primary transcript per gene on the assembled chromosomes, and
-the adapter reads the same file:
-
-<!-- from: scripts/build_primate_selection.sh -->
+from the GFF3, one transcript per gene on the assembled chromosomes, and the
+adapter reads the same file. jcvi writes one from any GFF3:
 
 ```bash
+# --primary_only keeps one mRNA per gene
 python -m jcvi.formats.gff bed --type=mRNA --key=transcript_id \
-  --primary_only human.gff3.gz -o human.all.bed
-awk -F'\t' '$1 ~ /^([0-9]+|X|Y)$/' human.all.bed > human.bed
+  --primary_only genes.gff3 -o genes.bed
 ```
 
-The [end-to-end script](#reproduce-it-end-to-end) translates each CDS into
-`human.pep` and `rhesus.pep`, keeping the transcripts the BED names under the
-same ids. DIAMOND aligns human against rhesus, and jcvi chains the hits:
+The [end-to-end script](#reproduce-it-end-to-end) does the same for each NCBI
+download in Python, keeping each protein-coding gene's longest-CDS mRNA under
+its RefSeq accession, renaming each chromosome to the sequence report's name,
+and translating each CDS into `human.pep` and `rhesus.pep` under the same ids.
+DIAMOND aligns human against rhesus, and jcvi chains the hits:
 
 <!-- from: scripts/build_primate_selection.sh -->
 
@@ -120,9 +114,9 @@ Two input mistakes leave jcvi with no orthologs:
 - the alignment file has to be **query = the first species, subject = the
   second**. Reversed, jcvi looks up every id in the wrong BED and the run ends
   with `A total of 0 anchor was found`
-- Ensembl **versions transcript ids in its FASTA and not in its GFF3**
-  (`ENST00000641515.7` against `ENST00000641515`), so nothing matches. The
-  script strips the version, and `kaks_from_pairs.py` takes `--strip-version`
+- NCBI's CDS FASTA is keyed on the **protein** accession (`XP_`, `NP_`) and the
+  BED on the transcript (`XM_`, `NM_`), so nothing matches until the two are
+  joined. A CDS row in the GFF3 carries both, and the script joins on it
 
 ### Measuring dN and dS on each pair {#dn-and-ds}
 
@@ -136,8 +130,8 @@ pairs, which marks them as paralogs.
 ```bash
 # skip the ### lines that separate blocks
 awk '!/^#/ && NF >= 2 {print $1 "\t" $2}' human.rhesus.anchors > pairs.tsv
-# one CDS file for both genomes, whose ids (ENST, ENSMMUT) are distinct
-cat human.cds.fa.gz rhesus.cds.fa.gz > both.cds.fa.gz
+# one CDS file for both genomes, whose RefSeq accessions are distinct
+cat human.cds.fa rhesus.cds.fa > both.cds.fa
 ```
 
 ```bash
@@ -147,8 +141,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 <!-- from: scripts/build_primate_selection.sh -->
 
 ```bash
-python3 kaks_from_pairs.py pairs.tsv both.cds.fa.gz \
-  --key record --strip-version --min-syn-subs 3 --max-ds 0.3 -o primate.blocks
+python3 kaks_from_pairs.py pairs.tsv both.cds.fa \
+  --key record --min-syn-subs 3 --max-ds 0.3 -o primate.blocks
 gzip -kf primate.blocks human.bed rhesus.bed
 ```
 
@@ -163,9 +157,9 @@ well above the cluster is a paralog the aligner preferred, and `--max-ds` drops
 every pair whose dS exceeds its value.
 
 The top of a table sorted by dN/dS is the pairs with almost nothing to divide
-by: _HBA1_ lands there off a single synonymous difference. `--min-syn-subs` is a
-floor on that count, and drops every pair with fewer synonymous differences than
-its value.
+by: _COX20_ lands there off a single synonymous difference. `--min-syn-subs` is
+a floor on that count, and drops every pair with fewer synonymous differences
+than its value.
 
 Every row also has that count and a two-sided Fisher exact p, the test
 [MEGA](https://www.megasoftware.net/web_help_12/Analysis_Preferences_Fisher_s_Exact_Test.htm)
@@ -176,15 +170,15 @@ prescribes for small substitution counts. The track config below exposes both as
 
 A gene-level synteny view reads no sequence, so each assembly is a
 `.chrom.sizes` file (a name and a length per line) that the script writes from
-the GFF3's `##sequence-region` header. We load human here and rhesus the same
-way under the name `rhesus`:
+the sequence report. We load human here and rhesus the same way under the name
+`rhesus`:
 
 ```json addassembly
 { "name": "human", "uri": "human.chrom.sizes" }
 ```
 
 Each panel draws genes from a track under its assembly. The script writes
-`human.genes.gff3.gz` and `rhesus.genes.gff3.gz`, bgzipped and tabix-indexed
+`human.genes.gff3.gz` and `rhesus.genes.gff3.gz`, bgzipped and CSI-indexed
 ([prep](/docs/quickstart_web)). For your own annotation the GFF3 needs the same
 refNames as the assembly:
 
@@ -196,7 +190,8 @@ refNames as the assembly:
   "assemblyNames": ["human"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "uri": "human.genes.gff3.gz"
+    "uri": "human.genes.gff3.gz",
+    "csi": true
   }
 }
 ```
@@ -260,7 +255,7 @@ dN/dS. In your own build, pick **Color by value → dN/dS**.
           },
           {
             "assembly": "rhesus",
-            "loc": "11:67,401,000-70,319,000",
+            "loc": "11:74,978,000-77,959,000",
             "tracks": ["rhesus_genes"]
           }
         ],
@@ -296,8 +291,8 @@ the low end too.
 runs everything above and writes a `config.json` with both assemblies, both gene
 tracks, the ortholog track and a session opening the locus:
 
-1. Turn each GFF3 into a BED and each CDS into a proteome keyed the same way,
-   stripping Ensembl's transcript versions so the ids match.
+1. Download each genome's annotation from NCBI, and turn it into a BED, a CDS
+   file and a proteome keyed on one transcript per gene.
 2. Align human against rhesus with DIAMOND and chain the hits with jcvi, keeping
    the chained anchors and not the lifted ones.
 3. Measure dN and dS on each pair, dropping pairs with too few synonymous
