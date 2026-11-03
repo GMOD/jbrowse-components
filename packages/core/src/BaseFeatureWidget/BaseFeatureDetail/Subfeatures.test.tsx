@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
-import { fireEvent, render, within } from '@testing-library/react'
+import { act, fireEvent, render, within } from '@testing-library/react'
 
 import PluginManager from '../../PluginManager.ts'
 import { ConfigurationSchema } from '../../configuration/index.ts'
@@ -8,32 +8,39 @@ import { createJBrowseTheme } from '../../ui/index.ts'
 import { stateModelFactory } from '../index.ts'
 import BaseFeatureDetails from './index.tsx'
 
-function exon(start: number, id: string) {
+function exon(start: number, n: number) {
   return {
     refName: 'ctgA',
     start,
     end: start + 10,
     type: 'exon',
-    ID: id,
+    ID: `e${n}`,
     Parent: 'tx1',
+    source: 'test',
+    exon_number: n,
   }
 }
 
-function renderGene(transcripts: number) {
-  const pluginManager = new PluginManager([])
-  const Session = types.model({
-    rpcManager: types.optional(types.frozen(), {}),
-    configuration: ConfigurationSchema('test', {}),
-    widget: stateModelFactory(pluginManager),
-  })
-  const transcript = (name: string) => ({
+function transcript(name: string, extra = {}) {
+  return {
     name,
     refName: 'ctgA',
     start: 0,
     end: 100,
     strand: -1,
     type: 'mRNA',
-    subfeatures: [exon(0, 'e1'), exon(40, 'e2'), exon(80, 'e3')],
+    source: 'test',
+    subfeatures: [exon(0, 3), exon(40, 2), exon(80, 1)],
+    ...extra,
+  }
+}
+
+function renderGene(transcripts: ReturnType<typeof transcript>[]) {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
   })
   const model = Session.create(
     {
@@ -46,9 +53,7 @@ function renderGene(transcripts: number) {
           start: 0,
           end: 100,
           type: 'gene',
-          subfeatures: Array.from({ length: transcripts }, (_, i) =>
-            transcript(`EDEN.${i + 1}`),
-          ),
+          subfeatures: transcripts,
         },
       },
     },
@@ -61,28 +66,64 @@ function renderGene(transcripts: number) {
   )
 }
 
-test('a gene lists its transcripts collapsed, and a transcript groups its exons into one table', () => {
-  const { getByTestId, queryByTestId } = renderGene(2)
-  expect(getByTestId('BaseCard-EDEN.2 - mRNA')).toBeTruthy()
-  expect(queryByTestId('BaseCard-exon (3)')).toBeNull()
+const threeTranscripts = () => [
+  transcript('EDEN.1'),
+  transcript('EDEN.2', { tag: 'MANE Select' }),
+  transcript('EDEN.3', { end: 200 }),
+]
 
-  fireEvent.click(
-    within(getByTestId('BaseCard-EDEN.1 - mRNA')).getAllByRole('button')[0]!,
-  )
+function openMenu(combobox: HTMLElement) {
+  fireEvent.mouseDown(combobox)
+  return within(document.body)
+    .getAllByRole('option')
+    .map(option => option.textContent)
+}
+
+test('a gene shows its best-ranked transcript, picked from a menu in rank order', () => {
+  const { getByTestId, queryByTestId, getByRole } =
+    renderGene(threeTranscripts())
+  expect(getByTestId('BaseCard-EDEN.2 · mRNA')).toBeTruthy()
+  expect(queryByTestId('BaseCard-EDEN.1 · mRNA')).toBeNull()
+  expect(queryByTestId('BaseCard-EDEN.3 · mRNA')).toBeNull()
+
+  const select = getByRole('combobox', { name: 'Transcript' })
+  expect(select.textContent).toBe('EDEN.2')
+  expect(openMenu(select)).toEqual(['EDEN.2', 'EDEN.3', 'EDEN.1'])
+  fireEvent.click(within(document.body).getByRole('option', { name: 'EDEN.1' }))
+
+  expect(getByTestId('BaseCard-EDEN.1 · mRNA')).toBeTruthy()
+  expect(queryByTestId('BaseCard-EDEN.2 · mRNA')).toBeNull()
+})
+
+test('the sequence panel reads the same pick as the Subfeatures menu', async () => {
+  const { getByRole, getAllByRole } = renderGene(threeTranscripts())
+  fireEvent.click(getByRole('button', { name: 'Show feature sequence' }))
+  await act(async () => {})
+  const selects = () => getAllByRole('combobox', { name: 'Transcript' })
+  expect(selects().map(s => s.textContent)).toEqual(['EDEN.2', 'EDEN.2'])
+
+  fireEvent.mouseDown(selects()[1]!)
+  fireEvent.click(within(document.body).getByRole('option', { name: 'EDEN.3' }))
+  await act(async () => {})
+  expect(selects().map(s => s.textContent)).toEqual(['EDEN.3', 'EDEN.3'])
+})
+
+test('a transcript groups its exons into one table, with what each exon has of its own under its row', () => {
+  const { getByTestId, queryByRole } = renderGene([transcript('EDEN.1')])
+  expect(queryByRole('combobox', { name: 'Transcript' })).toBeNull()
   const exons = getByTestId('BaseCard-exon (3)')
   fireEvent.click(within(exons).getAllByRole('button')[0]!)
 
   const rows = within(exons).getAllByRole('row')
   expect(rows.map(row => row.textContent)).toEqual([
-    '#PositionLengthID',
-    '181-9010e3',
-    '241-5010e2',
-    '31-1010e1',
+    '#PositionLength',
+    '181-9010',
+    'exon_number1',
+    '241-5010',
+    'exon_number2',
+    '31-1010',
+    'exon_number3',
   ])
-  expect(within(exons).getByText('Parent')).toBeTruthy()
-})
-
-test('a gene with one transcript opens it', () => {
-  const { getByTestId } = renderGene(1)
-  expect(getByTestId('BaseCard-exon (3)')).toBeTruthy()
+  expect(within(exons).queryByText('Parent')).toBeNull()
+  expect(within(exons).queryByText('source')).toBeNull()
 })

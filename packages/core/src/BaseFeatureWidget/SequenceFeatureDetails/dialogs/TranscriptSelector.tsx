@@ -1,53 +1,47 @@
 import { FormControl, MenuItem, Select } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { coarseStripHTML } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
+import { featureLabel } from '../../BaseFeatureDetail/util.ts'
 
-import type { SimpleFeatureSerialized } from '../../../util/index.ts'
+import type { TranscriptPick } from '../useTranscriptPick.ts'
 
 const useStyles = makeStyles()({
   formControl: {
     margin: 0,
     marginRight: 4,
+    minWidth: 0,
+    maxWidth: '100%',
   },
 })
 
 // Only rendered when a container feature (a gene) has more than one
-// transcript child — picks which transcript's exon/CDS structure the
-// sequence-type selector and body compute from.
+// transcript child. The details panel's Subfeatures header and the sequence
+// toolbar each draw one, bound to the same pick, listed best first
 const TranscriptSelector = observer(function TranscriptSelector({
-  transcripts,
-  transcriptIndex,
-  setTranscriptIndex,
+  pick,
 }: {
-  transcripts: SimpleFeatureSerialized[]
-  transcriptIndex: number
-  setTranscriptIndex: (index: number) => void
+  pick: TranscriptPick
 }) {
   const { classes } = useStyles()
-
+  const { ranked, index, setIndex } = pick
   return (
     <FormControl className={classes.formControl}>
       <Select
         size="small"
-        value={transcriptIndex}
+        value={index}
         onChange={event => {
-          setTranscriptIndex(Number(event.target.value))
+          setIndex(Number(event.target.value))
         }}
         aria-label="Transcript"
       >
-        {transcripts.map((transcript, idx) => (
+        {ranked.map(({ transcript, index: idx }) => (
           <MenuItem
             key={transcript.uniqueId}
             value={idx}
             data-testid={`transcript_${idx}`}
           >
-            {/* a subfeature carries no guaranteed name or id, and neither a
-                blank row nor a literal "undefined" names a transcript the user
-                is being asked to choose between */}
-            {coarseStripHTML(`${transcript.name || transcript.id || ''}`) ||
-              `Transcript ${idx + 1}`}
+            {featureLabel(transcript) ?? `Transcript ${idx + 1}`}
           </MenuItem>
         ))}
       </Select>

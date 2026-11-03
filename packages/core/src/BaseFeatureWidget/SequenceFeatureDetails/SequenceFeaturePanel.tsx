@@ -11,6 +11,7 @@ import { panelAssemblyName } from './panelAssemblyName.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { FeatureDetailsModel } from '../types.tsx'
+import type { TranscriptPick } from './useTranscriptPick.ts'
 
 // lazies
 const SequenceFeatureDetails = lazy(
@@ -35,9 +36,11 @@ const useStyles = makeStyles()(theme => ({
 const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
   model,
   feature,
+  transcriptPick,
 }: {
   model: FeatureDetailsModel
   feature: SimpleFeatureSerialized
+  transcriptPick?: TranscriptPick
 }) {
   const { classes } = useStyles()
   const [shown, setShown] = useState(false)
@@ -80,6 +83,7 @@ const SequenceFeaturePanel = observer(function SequenceFeaturePanel({
             feature={feature}
             hoverTarget={model}
             canonicalTranscripts={model.canonicalTranscripts}
+            transcriptPick={transcriptPick}
           />
         </Suspense>
       ) : null}

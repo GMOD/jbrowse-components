@@ -7,9 +7,12 @@ import type { SimpleFeatureSerialized } from '../../../util/index.ts'
 function openedLabels(transcripts: SimpleFeatureSerialized[]) {
   const { container } = render(
     <TranscriptSelector
-      transcripts={transcripts}
-      transcriptIndex={0}
-      setTranscriptIndex={() => {}}
+      pick={{
+        transcripts,
+        ranked: transcripts.map((transcript, index) => ({ transcript, index })),
+        index: 0,
+        setIndex: () => {},
+      }}
     />,
   )
   fireEvent.mouseDown(within(container).getByRole('combobox'))
@@ -41,4 +44,20 @@ test('numbers a transcript that carries no name or id', () => {
       { ...base, uniqueId: 'b' },
     ]),
   ).toEqual(['Transcript 1', 'Transcript 2'])
+})
+
+test('names a transcript by the label rule its card title uses', () => {
+  expect(
+    openedLabels([
+      {
+        ...base,
+        uniqueId: 'a',
+        type: 'transcript',
+        id: 'ENST00000413465.6',
+        transcript_id: 'ENST00000413465.6',
+        transcript_name: 'TP53-203',
+      },
+      { ...base, uniqueId: 'b', id: 'rna-NM_000518.5', name: 'NM_000518.5' },
+    ]),
+  ).toEqual(['TP53-203 · ENST00000413465.6', 'NM_000518.5'])
 })

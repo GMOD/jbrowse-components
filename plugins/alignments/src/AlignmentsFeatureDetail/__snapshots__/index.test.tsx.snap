@@ -12,7 +12,7 @@ exports[`open up a widget 1`] = `
     >
       <div
         class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-HASH-MuiPaper-root-MuiAccordion-root"
-        data-testid="BaseCard-ctgA_3_555_0:0:0_2:0... - match"
+        data-testid="BaseCard-ctgA_3_555_0:0:0_2:0:0_102d · match"
         style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
       >
         <h3
@@ -28,9 +28,10 @@ exports[`open up a widget 1`] = `
               class="MuiAccordionSummary-content Mui-expanded css-HASH-MuiAccordionSummary-content"
             >
               <span
-                class="MuiTypography-root MuiTypography-button css-HASH-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-subtitle2 MuiTypography-noWrap css-HASH-MuiTypography-root"
+                title="ctgA_3_555_0:0:0_2:0:0_102d · match"
               >
-                ctgA_3_555_0:0:0_2:0... - match
+                ctgA_3_555_0:0:0_2:0:0_102d · match
               </span>
             </span>
             <span

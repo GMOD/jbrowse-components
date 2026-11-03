@@ -1,18 +1,36 @@
 import { coarseStripHTML, isObject } from '../../util/index.ts'
 
-function ellipses(slug: string) {
-  return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
-}
-
 export function isEmpty(obj: Record<string, unknown>) {
   return Object.keys(obj).length === 0
 }
 
-export function generateTitle(name: unknown, id: unknown, type: unknown) {
-  const label = coarseStripHTML(`${name || id || ''}`)
-  return [label ? ellipses(label) : '', type ? `${type}` : '']
-    .filter(Boolean)
-    .join(' - ')
+function plainText(value: unknown) {
+  const text = value == null ? '' : coarseStripHTML(String(value)).trim()
+  return text === '' ? undefined : text
+}
+
+/**
+ * What names a feature to a reader: its readable name (`name`, else e.g.
+ * `transcript_name`), then its accession (e.g. `transcript_id`, else `id`)
+ * when the accession does not already spell the name out
+ */
+export function featureLabel(feature: Record<string, unknown>) {
+  const { type } = feature
+  const readable =
+    plainText(feature.name) ?? plainText(feature[`${String(type)}_name`])
+  const accession =
+    plainText(feature[`${String(type)}_id`]) ?? plainText(feature.id)
+  return readable !== undefined &&
+    accession !== undefined &&
+    !accession.includes(readable)
+    ? `${readable} · ${accession}`
+    : (readable ?? accession)
+}
+
+export function generateTitle(feature: Record<string, unknown>) {
+  return [featureLabel(feature), plainText(feature.type)]
+    .filter(part => part !== undefined)
+    .join(' · ')
 }
 
 // the description at `arr` in a descriptions tree: a string there, or the

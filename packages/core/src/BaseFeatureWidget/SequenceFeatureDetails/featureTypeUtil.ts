@@ -38,37 +38,40 @@ export function featureHasExonOrCDS(feature: SimpleFeatureSerializedNoId) {
   return featureHasExon(feature) || featureHasCDS(feature)
 }
 
-// A container feature's (e.g. a gene's) direct subfeatures that are
-// themselves transcripts (have their own exon/CDS). An actual transcript's
-// exon/CDS children don't have exon/CDS of their own, so this bottoms out
-// one level down without a type-name allowlist. Synthesizes a uniqueId the
-// same way FeatureDetails does for nested subfeature cards, since a
-// subfeature isn't guaranteed one by its type.
+// A container feature's (e.g. a gene's) subfeatures that have children of
+// their own: the transcripts the details panel draws as cards. A pick without
+// exon or CDS of its own leaves the sequence panel on the container. Each takes
+// the uniqueId the details panel gives the same subfeature's card.
 export function getTranscripts(
   feature: SimpleFeatureSerialized,
 ): SimpleFeatureSerialized[] {
-  return (
-    feature.subfeatures
-      ?.filter(sub => featureHasExonOrCDS(sub))
-      .map((sub, idx) => ({
-        ...sub,
-        uniqueId: `${feature.uniqueId}_${idx}`,
-      })) ?? []
+  return (feature.subfeatures ?? []).flatMap((sub, idx) =>
+    sub.subfeatures?.length
+      ? [{ ...sub, uniqueId: `${feature.uniqueId}_${idx}` }]
+      : [],
   )
 }
 
-// The isoform the canvas gene glyph draws first, so the panel opens on the
-// transcript the track showed. A feature that is itself a transcript has no
-// nested transcripts to pick from.
-export function pickDefaultTranscriptIndex(
+// `transcripts` best first, each with its index: the isoform the canvas gene
+// glyph draws first leads, so the panel opens on the transcript the track
+// showed
+export function rankTranscripts(
   transcripts: SimpleFeatureSerialized[],
   canonical: CanonicalTranscripts = DEFAULT_CANONICAL_TRANSCRIPTS,
 ) {
-  const [best] = rankIsoforms(
-    transcripts,
-    isoformScorer(serializedIsoformReader, canonical),
+  const score = isoformScorer(serializedIsoformReader, canonical)
+  return rankIsoforms(
+    transcripts.map((transcript, index) => ({ transcript, index })),
+    entry => score(entry.transcript),
   )
-  return best ? transcripts.indexOf(best) : 0
+}
+
+export function pickDefaultTranscriptIndex(
+  transcripts: SimpleFeatureSerialized[],
+  canonical?: CanonicalTranscripts,
+) {
+  const [best] = rankTranscripts(transcripts, canonical)
+  return best?.index ?? 0
 }
 
 // the sequence types the selector offers, the first being the default

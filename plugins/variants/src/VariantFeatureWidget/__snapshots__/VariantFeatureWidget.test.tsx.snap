@@ -28,7 +28,8 @@ exports[`renders with just the required model elements 1`] = `
               class="MuiAccordionSummary-content Mui-expanded css-HASH-MuiAccordionSummary-content"
             >
               <span
-                class="MuiTypography-root MuiTypography-button css-HASH-MuiTypography-root"
+                class="MuiTypography-root MuiTypography-subtitle2 MuiTypography-noWrap css-HASH-MuiTypography-root"
+                title="rs123"
               >
                 rs123
               </span>

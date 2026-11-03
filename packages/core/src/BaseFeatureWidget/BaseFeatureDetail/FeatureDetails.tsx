@@ -5,7 +5,10 @@ import { ErrorBoundary } from '../../ui/ErrorBoundary.tsx'
 import PluggableComponents from '../../ui/PluggableComponents.tsx'
 import { ErrorBanner } from '../../ui/index.ts'
 import { getEnv } from '../../util/index.ts'
+import { makeStyles } from '../../util/tss-react/index.ts'
+import TranscriptSelector from '../SequenceFeatureDetails/dialogs/TranscriptSelector.tsx'
 import SequenceFeatureDetails from '../SequenceFeatureDetails/index.tsx'
+import { useTranscriptPick } from '../SequenceFeatureDetails/useTranscriptPick.ts'
 import Attributes from './Attributes.tsx'
 import BaseCard from './BaseCard.tsx'
 import CoreDetails from './CoreDetails.tsx'
@@ -21,6 +24,21 @@ import type {
   FeatureFormatter,
   FieldActions,
 } from '../types.tsx'
+
+const useStyles = makeStyles()({
+  subfeaturesHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    minWidth: 0,
+    '& .MuiSelect-select': {
+      fontSize: 13,
+      paddingTop: 4,
+      paddingBottom: 4,
+    },
+  },
+})
 
 const SectionHeader = observer(function SectionHeader({
   title,
@@ -66,17 +84,23 @@ const FeatureDetails = observer(function FeatureDetails(
     formatter,
     fieldActions,
   } = props
+  const { classes } = useStyles()
   const maxDepth = model.maxDepth ?? Infinity
-  const { mate, name = '', id = '', type = '', subfeatures, uniqueId } = feature
+  const { mate, name, subfeatures, uniqueId } = feature
   // a panel selecting on `depth === 0` has to see the default, not undefined
   const panelProps = { ...props, depth }
   const locate = featureNavigator(model)
-  const groups = subfeatureGroups(feature, unformatted)
+  const { cards, groups } = subfeatureGroups(feature, unformatted)
+  const pick = useTranscriptPick(unformatted, model.canonicalTranscripts)
+  // the clicked feature shows one of its transcripts, picked from a menu
+  // shared with the sequence panel; a deeper card shows all of its own
+  const picking = depth === 0 && cards.length > 1
+  const shownCards = picking
+    ? cards.filter((_, idx) => idx === pick.index)
+    : cards
+  const openCards = depth === 0 || cards.length + groups.length === 1
   return (
-    <BaseCard
-      title={generateTitle(name, id, type)}
-      defaultExpanded={defaultExpanded}
-    >
+    <BaseCard title={generateTitle(feature)} defaultExpanded={defaultExpanded}>
       <SectionHeader title="Core details" />
       <CoreDetails {...props} locate={locate} />
       {mate ? (
@@ -117,7 +141,11 @@ const FeatureDetails = observer(function FeatureDetails(
 
       {depth === 0 ? (
         <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
-          <SequenceFeatureDetails {...props} feature={unformatted} />
+          <SequenceFeatureDetails
+            {...props}
+            feature={unformatted}
+            transcriptPick={pick}
+          />
         </ErrorBoundary>
       ) : null}
 
@@ -131,30 +159,32 @@ const FeatureDetails = observer(function FeatureDetails(
       {depth < maxDepth && subfeatures?.length ? (
         <>
           <Divider />
-          <SectionHeader title="Subfeatures" />
-          {groups.map(group =>
-            group.kind === 'feature' ? (
-              <FeatureDetails
-                key={group.feature.uniqueId}
-                feature={group.feature}
-                unformatted={group.unformatted}
-                model={model}
-                depth={depth + 1}
-                defaultExpanded={groups.length === 1}
-                descriptions={descriptions}
-                formatter={formatter}
-                omit={omit}
-              />
-            ) : (
-              <SubfeatureParts
-                key={group.type}
-                group={group}
-                locate={locate}
-                descriptions={descriptions}
-                formatter={formatter}
-              />
-            ),
-          )}
+          <div className={classes.subfeaturesHeader}>
+            <SectionHeader title="Subfeatures" />
+            {picking ? <TranscriptSelector pick={pick} /> : null}
+          </div>
+          {shownCards.map(card => (
+            <FeatureDetails
+              key={card.feature.uniqueId}
+              feature={card.feature}
+              unformatted={card.unformatted}
+              model={model}
+              depth={depth + 1}
+              defaultExpanded={openCards}
+              descriptions={descriptions}
+              formatter={formatter}
+              omit={omit}
+            />
+          ))}
+          {groups.map(group => (
+            <SubfeatureParts
+              key={group.type}
+              group={group}
+              locate={locate}
+              descriptions={descriptions}
+              formatter={formatter}
+            />
+          ))}
         </>
       ) : null}
     </BaseCard>

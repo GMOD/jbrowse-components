@@ -5,12 +5,9 @@ import { observer } from 'mobx-react'
 import { LoadingEllipses } from '../../ui/index.ts'
 import SequenceControls from './dialogs/SequenceControls.tsx'
 import TranscriptSelector from './dialogs/TranscriptSelector.tsx'
-import {
-  getTranscripts,
-  pickDefaultTranscriptIndex,
-  resolveMode,
-} from './featureTypeUtil.ts'
+import { featureHasExonOrCDS, resolveMode } from './featureTypeUtil.ts'
 import { useSequenceFetch } from './useSequenceFetch.ts'
+import { useTranscriptPick } from './useTranscriptPick.ts'
 
 import type {
   AbstractSessionModel,
@@ -21,6 +18,7 @@ import type {
   SequenceFeatureDetailsModel,
   SequenceHoverTarget,
 } from './model.ts'
+import type { TranscriptPick } from './useTranscriptPick.ts'
 
 // lazies
 const SequenceBody = lazy(() => import('./SequenceBody.tsx'))
@@ -34,6 +32,8 @@ interface SequenceFeatureDetailsProps {
   hoverTarget?: SequenceHoverTarget
   showOpenInDialog?: boolean
   canonicalTranscripts?: CanonicalTranscripts
+  /** a pick the caller shares with its own transcript menu */
+  transcriptPick?: TranscriptPick
 }
 
 const SequenceFeatureDetailsPanel = observer(
@@ -45,6 +45,7 @@ const SequenceFeatureDetailsPanel = observer(
     hoverTarget,
     showOpenInDialog = true,
     canonicalTranscripts,
+    transcriptPick,
   }: SequenceFeatureDetailsProps) {
     const { upDownBp } = model
     const seqPanelRef = useRef<HTMLDivElement>(null)
@@ -53,11 +54,11 @@ const SequenceFeatureDetailsPanel = observer(
     // transcript children does. Default to the transcript the track draws first
     // so CDS and Protein sequence types work without an extra click into
     // Subfeatures, with a selector to switch when the gene has more than one.
-    const transcripts = getTranscripts(feature)
-    const [transcriptIndex, setTranscriptIndex] = useState(() =>
-      pickDefaultTranscriptIndex(transcripts, canonicalTranscripts),
-    )
-    const effectiveFeature = transcripts[transcriptIndex] ?? feature
+    const ownPick = useTranscriptPick(feature, canonicalTranscripts)
+    const pick = transcriptPick ?? ownPick
+    const picked = pick.transcripts[pick.index]
+    const effectiveFeature =
+      picked && featureHasExonOrCDS(picked) ? picked : feature
 
     const mode = resolveMode(model.recentModes, effectiveFeature)
     const [revcomp, setRevcomp] = useState(false)
@@ -73,18 +74,11 @@ const SequenceFeatureDetailsPanel = observer(
       upDownBp,
     })
 
-    // handed to the dialog as well, which renders the same controls: the
-    // transcript lives in this component's state, so a dialog without the
-    // selector strands a multi-transcript gene on whichever one was picked
+    // handed to the dialog as well, which renders the same controls: a dialog
+    // without the selector strands a multi-transcript gene on whichever one was picked
     // before it opened (the inline copy is behind the modal and unclickable)
     const transcriptSelector =
-      transcripts.length > 1 ? (
-        <TranscriptSelector
-          transcripts={transcripts}
-          transcriptIndex={transcriptIndex}
-          setTranscriptIndex={setTranscriptIndex}
-        />
-      ) : null
+      pick.transcripts.length > 1 ? <TranscriptSelector pick={pick} /> : null
 
     return (
       <>

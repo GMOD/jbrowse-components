@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
-import { act, render } from '@testing-library/react'
+import { act, fireEvent, render, within } from '@testing-library/react'
 
 import PluginManager from '../../PluginManager.ts'
 import {
@@ -163,12 +163,15 @@ test('a raw attribute that is just a URL renders as a link', async () => {
 // the same fields, so the caller's descriptions and value formatter (which ride
 // the same props) have to reach them too
 test('subfeature cards get the caller formatter', async () => {
-  const { findAllByText } = setupWithDescriptions({
+  const { findAllByText, getByTestId } = setupWithDescriptions({
     ...base,
     subfeatures: [
       { refName: 'ctgA', start: 2, end: 52, type: 'exon', score: 9 },
     ],
   })
+  fireEvent.click(
+    within(getByTestId('BaseCard-exon (1)')).getAllByRole('button')[0]!,
+  )
   // the parent's own score plus the subfeature's, both run through formatter
   expect((await findAllByText('fmt:37')).length).toBe(1)
   expect((await findAllByText('fmt:9')).length).toBe(1)

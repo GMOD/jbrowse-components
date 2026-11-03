@@ -23,7 +23,8 @@ exports[`open up a widget 1`] = `
             class="MuiAccordionSummary-content Mui-expanded css-HASH-MuiAccordionSummary-content"
           >
             <span
-              class="MuiTypography-root MuiTypography-button css-HASH-MuiTypography-root"
+              class="MuiTypography-root MuiTypography-subtitle2 MuiTypography-noWrap css-HASH-MuiTypography-root"
+              title=""
             />
           </span>
           <span
