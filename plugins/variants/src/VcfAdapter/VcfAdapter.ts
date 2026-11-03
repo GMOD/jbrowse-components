@@ -11,7 +11,7 @@ import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 
 import VcfFeature from '../VcfFeature/index.ts'
 import { getEnd } from '../VcfFeature/util.ts'
-import { vcfContigs } from '../shared/vcfAdapterUtils.ts'
+import { overlapsRegion, vcfContigs } from '../shared/vcfAdapterUtils.ts'
 
 import type { VcfAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -93,7 +93,9 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
         // the tree's search is closed at both ends; a record ending exactly at
         // `start` touches the region without overlapping it
         for (const f of tree(opts.statusCallback).search([start, end])) {
-          if (f.get('end') > start && f.get('start') < end) {
+          if (
+            overlapsRegion({ start: f.get('start'), end: f.get('end') }, region)
+          ) {
             observer.next(f)
           }
         }
@@ -121,9 +123,8 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
         const variant = parser.parseLine(line)
         const featureStart = variant.POS - 1
         const featureEnd = getEnd(variant, featureStart)
-        if (
-          refRegions.some(r => featureStart < r.end && featureEnd > r.start)
-        ) {
+        const span = { start: featureStart, end: featureEnd }
+        if (refRegions.some(r => overlapsRegion(span, r))) {
           exportLines.push(line)
         }
       }

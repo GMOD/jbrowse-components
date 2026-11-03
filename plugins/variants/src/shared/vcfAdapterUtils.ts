@@ -1,12 +1,23 @@
 import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 
 import VcfFeature from '../VcfFeature/index.ts'
+import { getEnd } from '../VcfFeature/util.ts'
 
 import type { TabixIndexedFile } from '@gmod/tabix'
 import type VcfParser from '@gmod/vcf'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Observer } from 'rxjs'
+
+// The index answers by the extent @gmod/tabix reads off a line, which is not
+// always the span the feature draws (a breakend's END names its mate), and a
+// record ending exactly at the region's start touches it without overlapping.
+export function overlapsRegion(
+  span: { start: number; end: number },
+  region: { start: number; end: number },
+) {
+  return span.end > region.start && span.start < region.end
+}
 
 // Stream tabix VCF lines for a region as VcfFeatures onto an observer, wrapping
 // the download in a determinate progress bar. Shared by VcfTabixAdapter and
@@ -34,13 +45,19 @@ export async function streamVcfFeatures(
     p: VcfParser,
     { line, fileOffset }: { line: string; fileOffset: number },
   ) => {
-    observer.next(
-      new VcfFeature({
-        variant: p.parseLine(line),
-        parser: p,
-        id: `${idPrefix}-vcf-${fileOffset}`,
-      }),
-    )
+    const feature = new VcfFeature({
+      variant: p.parseLine(line),
+      parser: p,
+      id: `${idPrefix}-vcf-${fileOffset}`,
+    })
+    if (
+      overlapsRegion(
+        { start: feature.get('start'), end: feature.get('end') },
+        query,
+      )
+    ) {
+      observer.next(feature)
+    }
   }
   const parsed = Promise.resolve(parser).then(resolved => {
     ready = resolved
@@ -70,11 +87,13 @@ export async function streamVcfFeatures(
 }
 
 /**
- * Append the lines overlapping each region, a line spanning two of them once.
+ * Append the lines whose span overlaps each region, a line spanning two of
+ * them once.
  */
 export async function appendVcfLines(
   lines: string[],
   vcf: TabixIndexedFile,
+  parser: VcfParser,
   regions: { refName: string; start: number; end: number }[],
   opts?: BaseOptions,
 ) {
@@ -84,8 +103,16 @@ export async function appendVcfLines(
       vcf.getLines(refName, start, end, {
         lineCallback: (line, fileOffset) => {
           if (!seen.has(fileOffset)) {
-            seen.add(fileOffset)
-            lines.push(line)
+            const variant = parser.parseLine(line)
+            const featureStart = variant.POS - 1
+            const span = {
+              start: featureStart,
+              end: getEnd(variant, featureStart),
+            }
+            if (overlapsRegion(span, { start, end })) {
+              seen.add(fileOffset)
+              lines.push(line)
+            }
           }
         },
         ...opts,

@@ -180,7 +180,13 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     for (const [refName, refRegions] of Map.groupBy(regions, r => r.refName)) {
       const contig = await this.configure(refName, opts)
       if (contig) {
-        await appendVcfLines(exportLines, contig.vcf, refRegions, opts)
+        await appendVcfLines(
+          exportLines,
+          contig.vcf,
+          contig.parser,
+          refRegions,
+          opts,
+        )
       }
     }
     return exportLines.join('\n')

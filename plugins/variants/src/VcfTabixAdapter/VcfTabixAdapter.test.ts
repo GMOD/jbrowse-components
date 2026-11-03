@@ -165,6 +165,58 @@ describe('a symbolic record with no usable END', () => {
   })
 })
 
+describe('records the index returns that the region does not overlap', () => {
+  const vcfGz = require.resolve('./test_data/overlap.vcf.gz')
+  const makeAdapter = () =>
+    new Adapter(
+      configSchema.create({
+        vcfGzLocation: { localPath: vcfGz, locationType: 'LocalPathLocation' },
+        index: {
+          indexType: 'TBI',
+          location: {
+            localPath: `${vcfGz}.tbi`,
+            locationType: 'LocalPathLocation',
+          },
+        },
+      }),
+    )
+  const names = async (start: number, end: number) => {
+    const features = await firstValueFrom(
+      makeAdapter()
+        .getFeatures({ refName: 'ctgA', start, end })
+        .pipe(toArray()),
+    )
+    return features.map(f => f.get('name'))
+  }
+  const exportedNames = async (start: number, end: number) => {
+    const exported = await makeAdapter().getExportData(
+      [{ refName: 'ctgA', start, end }],
+      'vcf',
+    )
+    return exported!
+      .split('\n')
+      .filter(line => line && !line.startsWith('#'))
+      .map(line => line.split('\t')[2])
+  }
+
+  test('a breakend whose END names its mate is not in a window inside that END', async () => {
+    expect(await names(2000, 3000)).toEqual(['del1'])
+  })
+
+  test('the export agrees with the features', async () => {
+    expect(await exportedNames(2000, 3000)).toEqual(['del1'])
+  })
+
+  test('a record touching either edge of the region is not in it', async () => {
+    expect(await names(100, 999)).toEqual([])
+    expect(await exportedNames(100, 999)).toEqual([])
+  })
+
+  test('a record overlapping the region is kept', async () => {
+    expect(await names(1400, 1600)).toEqual(['del1', 'bnd1'])
+  })
+})
+
 // dataAdapterCache calls this when the last session lets go of the adapter. A
 // chunk cache nobody clears stays alive on its idle sweep for three minutes.
 test('an evicted adapter hands its chunks back to the shared budget', async () => {
