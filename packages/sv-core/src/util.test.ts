@@ -1,3 +1,4 @@
+import { parseBreakend } from '@gmod/vcf'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -11,7 +12,6 @@ import {
   pairedEndsLocString,
   parseSvAlt,
   readTranslocationMate,
-  safeParseBreakend,
   splitRegionAtPosition,
 } from './util.ts'
 
@@ -197,7 +197,7 @@ describe('getBreakendCoveringRegions', () => {
 
 describe('getBreakendMateLocString', () => {
   const locStringOf = (alt: string) =>
-    getBreakendMateLocString(safeParseBreakend(alt))
+    getBreakendMateLocString(parseBreakend(alt))
 
   test('bracket notation yields the mate locString', () => {
     expect(locStringOf('N[chr2:201[')).toBe('chr2:201')
@@ -455,7 +455,7 @@ describe('breakendTickPx', () => {
   test.each(TICK_FORMS)(
     '$alt points each end at the side it keeps',
     ({ alt, thisKeeps, mateKeeps }) => {
-      const bnd = safeParseBreakend(alt)!
+      const bnd = parseBreakend(alt)!
       const { joinDirection, mateDirection } = breakendKeepsDirections(bnd)
 
       for (const [dir, keeps] of [
@@ -477,7 +477,7 @@ describe('breakendTickPx', () => {
     for (const { alt } of TICK_FORMS) {
       const feature = createMockFeature({ ALT: [alt], start: 1, refName: '13' })
       const parsed = parseSvAlt(feature as any, alt)!
-      expect(breakendKeepsDirections(safeParseBreakend(alt)!)).toEqual({
+      expect(breakendKeepsDirections(parseBreakend(alt)!)).toEqual({
         joinDirection: parsed.joinDirection,
         mateDirection: parsed.mateDirection,
       })

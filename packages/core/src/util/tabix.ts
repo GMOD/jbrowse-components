@@ -190,35 +190,7 @@ interface TabixHeaderSource {
   getHeaderLines(opts?: { signal?: AbortSignal }): Promise<string[]>
 }
 
-/**
- * The header lines of a tabix-indexed file, however that file kept them.
- *
- * `getHeader()` alone is not that: it returns only lines beginning with the
- * index's meta character (`#`). A header that is a plain row — which is what
- * `tabix -S N` exists for, and what PLINK `.ld`, bedGraph and BED deflines
- * routinely are — comes back as the empty string, even though the index records
- * N in `skipLines`.
- *
- * Reading both is not backwards compatibility, and does not become unnecessary
- * once our own files are written with commented headers. A bare header is the
- * shape the data's publisher chose: Pan-UKB's TSVs and PLINK's `.ld` are
- * distributed that way, and `-S N` is the only way to index one without
- * rewriting a file the user did not write. Advice about how to generate a file
- * reaches the files we generate; this reaches the rest.
- *
- * An adapter that stops at `getHeader()` therefore cannot tell "this file has
- * no header" from "this file's header is not commented", and quietly falls back
- * to an assumed column layout. That has cost real information more than once: a
- * PLINK LD file lost its D' column, so `color.field: 'dprime'` silently served r²,
- * and a bedGraph loses the names of its value columns. Nothing errors, because
- * the assumed layout parses.
- *
- * That policy now lives in @gmod/tabix 3.5.4 as getHeaderLines, next to the
- * index metadata that decides it, so this is a delegate. Deciding it there also
- * costs one read of the file's leading blocks rather than two: asking for the
- * commented block and then the counted rows used to fetch and decompress the
- * same bytes twice, which every bare-header file did on every call.
- */
+/** @deprecated call `getHeaderLines` on the tabix file directly */
 export function readTabixHeaderLines(
   file: TabixHeaderSource,
   opts?: { signal?: AbortSignal },

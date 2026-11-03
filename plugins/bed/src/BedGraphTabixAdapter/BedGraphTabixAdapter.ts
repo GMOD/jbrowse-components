@@ -8,7 +8,6 @@ import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { readTabixHeaderLines } from '@jbrowse/core/util/tabix'
 
 import { makeBedGraphFeature } from '../bedGraphUtil.ts'
 import { parseNamesFromHeader } from '../util.ts'
@@ -52,7 +51,7 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
     // file whose header is a plain row skipped via `tabix -S 1` reported none
     // and quietly lost the names of its value columns.
     const header = (
-      await readTabixHeaderLines(bedGraph, { signal: opts.signal })
+      await bedGraph.getHeaderLines({ signal: opts.signal })
     ).join('\n')
     return {
       columnNames,

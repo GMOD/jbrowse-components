@@ -128,8 +128,7 @@ export function isActivelyZooming(now: number, lastZoomTime: number | null) {
   return lastZoomTime !== null && now - lastZoomTime < ZOOM_ACTIVE_WINDOW_MS
 }
 
-// apply an accumulated zoom amount to bpPerPx, rate-limited so a burst of wheel
-// events can't zoom faster than MAX_ZOOM_RATE_PER_MS over the frame's elapsed
+/** @deprecated use `createWheelZoomController`, which eases the zoom backlog itself */
 export function applyZoomAccum(
   bpPerPx: number,
   zoomAccum: number,

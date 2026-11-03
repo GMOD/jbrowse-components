@@ -2,7 +2,6 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
-import { readTabixHeaderLines } from '@jbrowse/core/util/tabix'
 import {
   DEFAULT_PLINK_LD_HEADER,
   parsePlinkLDHeader,
@@ -48,13 +47,13 @@ export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
     // The column layout decides whether the file's D' column is found at all,
     // so `encoding.color.field: 'dprime'` lives or dies here.
     //
-    // Every line readTabixHeaderLines returns is a header by declaration —
+    // Every line getHeaderLines returns is a header by declaration —
     // either the index's meta character marked it, or the index's skipLines
     // counted it — so it is parsed as one rather than pattern-matched. Content
     // matching is a guess, and it is one that misfires on a headerless file
     // whose chromosome column reads `CHR1`. The last line is the column
     // defline; a commented preamble may sit above it.
-    const defline = (await readTabixHeaderLines(ld)).at(-1)
+    const defline = (await ld.getHeaderLines()).at(-1)
     let header = DEFAULT_PLINK_LD_HEADER
     if (defline) {
       try {

@@ -100,6 +100,7 @@ export const SHARE_PREFIX = 'share-'
 export const ENCODED_PREFIX = 'encoded-'
 export const JSON_PREFIX = 'json-'
 export const SPEC_PREFIX = 'spec-'
+/** @deprecated use `sessionParamKind(value) === 'local'` */
 export const LOCAL_PREFIX = 'local-'
 
 export function sessionParamKind(value: string): SessionParamKind | undefined {

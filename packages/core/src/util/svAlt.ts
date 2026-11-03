@@ -14,8 +14,7 @@ export const SV_SYMBOLIC_ALLELES = [
 
 /**
  * #api
- * parseBreakend, which returns undefined for a malformed breakend. Kept under
- * this name for plugins written when @gmod/vcf <=7.0.10 threw instead.
+ * @deprecated use `parseBreakend` from `@gmod/vcf`
  */
 export function safeParseBreakend(alt: string) {
   return parseBreakend(alt)
@@ -81,7 +80,7 @@ export function parseSvAlt(
       joinDirection?: number
     }
   | undefined {
-  const bnd = alt !== undefined ? safeParseBreakend(alt) : undefined
+  const bnd = alt !== undefined ? parseBreakend(alt) : undefined
   const mateLocString = getBreakendMateLocString(bnd)
   const refName = feature.get('refName')
 

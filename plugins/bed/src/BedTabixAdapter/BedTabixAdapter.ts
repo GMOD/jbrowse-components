@@ -10,7 +10,6 @@ import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { readTabixHeaderLines } from '@jbrowse/core/util/tabix'
 
 import { featureData, makeParser, parseNamesFromHeader } from '../util.ts'
 
@@ -108,11 +107,11 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
     if (columnNames.length) {
       return columnNames
     }
-    // readTabixHeaderLines covers both ways a tabix file keeps a header: a
+    // getHeaderLines covers both ways a tabix file keeps a header: a
     // `#`-commented block, which getHeader() returns, and a plain row skipped
     // via `tabix -S N`, which it does not.
     return parseNamesFromHeader(
-      (await readTabixHeaderLines(this.bed, { signal })).join('\n'),
+      (await this.bed.getHeaderLines({ signal })).join('\n'),
     )
   }
 

@@ -48,6 +48,7 @@ export interface DensityProbeOptions extends BaseOptions {
   gate?: DensityProbeGate
 }
 
+/** @deprecated use `scoresToStats` */
 export function aggregateQuantitativeStats(
   stats: RectifiedQuantitativeStats[],
 ) {

@@ -1,5 +1,6 @@
 import { Suspense, lazy, useMemo, useState } from 'react'
 
+import { parseBreakend } from '@gmod/vcf'
 import {
   FeatureDetailsFrame,
   filterByValueItems,
@@ -11,7 +12,7 @@ import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatt
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { assembleLocString, notEmpty } from '@jbrowse/core/util'
-import { getBreakendMateLocString, safeParseBreakend } from '@jbrowse/sv-core'
+import { getBreakendMateLocString } from '@jbrowse/sv-core'
 import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -56,9 +57,9 @@ const LaunchBreakendWidgetArea = observer(function LaunchBreakendWidgetArea({
   const locStrings = type.includes('breakend')
     ? [
         ...new Set(
-          ALT.map(alt =>
-            getBreakendMateLocString(safeParseBreakend(alt)),
-          ).filter(notEmpty),
+          ALT.map(alt => getBreakendMateLocString(parseBreakend(alt))).filter(
+            notEmpty,
+          ),
         ),
       ]
     : type.includes('translocation') && traMate !== undefined

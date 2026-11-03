@@ -57,6 +57,7 @@ interface UseFetchResponse<Data> extends FetchState<Data> {
    * only resolve before the refetch it schedules had run.
    */
   mutate: () => void
+  /** @deprecated use `isLoading` */
   isValidating: boolean
   /**
    * Latest progress the in-flight fetcher reported through its status callback,
