@@ -1,3 +1,4 @@
+import { isRegionTooLargeError } from '@jbrowse/core/rpc/byteBudget'
 import { getMembers } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
@@ -50,4 +51,26 @@ test('force load sends no byte budget, so nothing is refused', async () => {
   const call = mockRpcCall.mock.calls.find(c => c[1] === 'RenderLDData')!
   expect(call[2].byteLimit).toBeUndefined()
   expect(display.regionTooLarge).toBe(false)
+})
+
+test('a thrown cell-cap refusal lands as a no-Retry error, not a force-loadable banner', async () => {
+  class CellCapError extends Error {
+    regionTooLarge = true
+  }
+  const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const { display, view, mockRpcCall } = createTestEnvironment().createDisplay()
+  mockRpcCall.mockImplementation((_sessionId: string, method: string) =>
+    method === 'RenderLDData'
+      ? Promise.reject(
+          new CellCapError('12 variants would need 99 LD cells; zoom in'),
+        )
+      : Promise.resolve(undefined),
+  )
+
+  view.zoomTo(view.maxBpPerPx)
+  await waitFor(() => {
+    expect(isRegionTooLargeError(display.error)).toBe(true)
+  })
+  expect(display.regionTooLarge).toBe(false)
+  reported.mockRestore()
 })

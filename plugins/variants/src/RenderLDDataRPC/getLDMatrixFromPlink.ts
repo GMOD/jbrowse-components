@@ -16,6 +16,16 @@ import type { PlinkLDRecord } from '@jbrowse/ld-core'
  */
 export const MAX_LD_CELLS = 10_000_000
 
+/**
+ * A memory cap, not a budget: force load does not lift it, so it travels as the
+ * thrown refusal (an error bar with no Retry) rather than as a `regionTooLarge`
+ * result, whose banner offers Force load.
+ */
+class LDCellCapError extends Error {
+  override name = 'LDCellCapError'
+  regionTooLarge = true
+}
+
 // The id is part of the key because two variants can share a position: a site
 // split into one record per allele, or a SNP beside an indel.
 function snpKey(refName: string, bp: number, id = '') {
@@ -158,7 +168,7 @@ export async function getLDMatrixFromPlink({
 
   const numCells = bandCellCount(snps.length, band)
   if (numCells > MAX_LD_CELLS) {
-    throw new Error(
+    throw new LDCellCapError(
       `${snps.length.toLocaleString()} variants in view would need ${numCells.toLocaleString()} LD cells; zoom in`,
     )
   }

@@ -1,4 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { isRegionTooLargeError } from '@jbrowse/core/rpc/byteBudget'
 import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 import { DEFAULT_PLINK_LD_HEADER, LD_NOT_COMPUTED } from '@jbrowse/ld-core'
 
@@ -225,6 +226,17 @@ test('a view past the cell cap refuses rather than allocates', async () => {
       loci.map(l => record(index, l)),
     ),
   ).rejects.toThrow(/zoom in/)
+})
+
+test('the cell cap refusal is marked as a region-too-large error, so the error bar offers no Retry', async () => {
+  const n = 4500
+  const index = at('a', 1)
+  const loci = Array.from({ length: n - 1 }, (_, i) => at('a', i + 2))
+  const refusal = await run(
+    [{ ...region('a', false), end: n + 1 }],
+    loci.map(l => record(index, l)),
+  ).catch((error: unknown) => error)
+  expect(isRegionTooLargeError(refusal)).toBe(true)
 })
 
 test('the end columns do not move with the fetched block', async () => {
