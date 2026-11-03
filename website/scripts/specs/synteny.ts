@@ -505,17 +505,14 @@ const GRASSES_RICE_LANES = sessionSpec(
         type: 'LinearGenomeView',
         assembly: 'rice',
         loc: '3:31,590,000-31,775,000',
+        // no separate rice gene track: the display's anchor lane draws the
+        // same genes
         tracks: [
-          {
-            trackId: 'rice_genes',
-            filter: ['geneLike'],
-            displayMode: 'compact',
-          },
           {
             trackId: 'grasses_orthogroups',
             type: 'MultiWaySyntenyDisplay',
             rows: { sort: ['sorghum', 'brachypodium', 'setaria', 'maize'] },
-            height: 320,
+            height: 480,
           },
         ],
       },
@@ -1122,15 +1119,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
             loc: '2:176,090,000-176,290,000',
             tracks: [
               {
-                trackId: 'human_genes',
-                filter: ['geneLike'],
-                displayMode: 'compact',
-              },
-              {
                 trackId: 'vertebrates_orthogroups',
                 type: 'MultiWaySyntenyDisplay',
                 rows: { sort: ['chicken', 'frog', 'gar', 'zebrafish'] },
-                height: 320,
+                height: 480,
               },
             ],
           },
@@ -1139,7 +1131,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    viewportHeight: 660,
+    viewportHeight: 700,
   },
 
   {
@@ -1190,17 +1182,12 @@ export const syntenySpecs: ScreenshotSpec[] = [
             loc: '3L:5,789,000-5,931,000',
             tracks: [
               {
-                trackId: 'melanogaster_genes',
-                filter: ['geneLike'],
-                displayMode: 'compact',
-              },
-              {
                 trackId: 'drosophila_orthogroups',
                 type: 'MultiWaySyntenyDisplay',
                 rows: {
                   sort: ['simulans', 'yakuba', 'pseudoobscura', 'virilis'],
                 },
-                height: 320,
+                height: 480,
               },
             ],
           },
@@ -1209,7 +1196,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ),
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    viewportHeight: 660,
+    viewportHeight: 700,
   },
 
   // Strand color is what shows siamang's lane as inverted, since the flipped
@@ -1609,7 +1596,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     url: GRASSES_RICE_LANES,
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
-    viewportHeight: 660,
+    viewportHeight: 700,
   },
 
   // The rhesus window is the human span scaled by 1.06/1.09, the assemblies'

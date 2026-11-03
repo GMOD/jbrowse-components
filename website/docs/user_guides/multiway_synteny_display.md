@@ -111,8 +111,8 @@ same items.
 Two routes open a [linear synteny view](/docs/user_guides/linear_synteny_view)
 with a row per genome:
 
-- **Launch → Linear synteny view (visible region)** in the track menu offers a
-  row to every genome that aligns to the window.
+- **Advanced → Launch → Linear synteny view (visible region)** in the track menu
+  offers a row to every genome that aligns to the window.
 - **Launch → Linear synteny view** appears once you drag-select a region on the
   scale bar. The dialog lists a row per genome, with arrows to reorder them.
 

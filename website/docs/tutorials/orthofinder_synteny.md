@@ -212,10 +212,12 @@ name:
 ### Gene tracks, one per genome
 
 The multi-way display draws a lane per genome, with gene models from a gene
-track on that genome's assembly. The grasses session below names a hosted one
-(`rice_genes`). For your own annotation, add one per genome from a bgzipped,
-tabix-indexed GFF3 ([prep](/docs/quickstart_web)) that uses the assembly's
-refNames:
+track on that genome's assembly in the config, open or not
+([`laneGeneTracks`](/docs/config/multiwaysyntenydisplay/#slot-lanegenetracks)
+picks one when a genome has several). For your own annotation, add one per
+genome from a bgzipped, sorted GFF3 ([prep](/docs/quickstart_web)) that uses the
+assembly's refNames, indexed with `tabix -C`, since wheat chromosomes run past
+the length a `.tbi` index can address:
 
 ```json addtrack
 {
@@ -225,10 +227,15 @@ refNames:
   "assemblyNames": ["wheat"],
   "adapter": {
     "type": "Gff3TabixAdapter",
-    "uri": "wheat.gff.gz"
+    "uri": "wheat.sorted.gff3.gz",
+    "csi": true
   }
 }
 ```
+
+A gene with no `Name` is labelled by its `ID`, which an Ensembl GFF3 writes as
+`gene:TraesCS1A02G000100`. The build script names such genes by their `gene_id`
+before sorting.
 
 ## Stacking tauschii over wheat {#stacking-the-wheat-genomes}
 
@@ -311,8 +318,8 @@ Sorghum is the control: it shares the ancestry and lacks the duplication.
 ### A rice window against four grasses
 
 Open the same five grasses as a
-[multi-way synteny track](/docs/user_guides/multiway_synteny_display), under the
-rice gene track:
+[multi-way synteny track](/docs/user_guides/multiway_synteny_display) on rice.
+Its top lane draws the rice genes, so no separate gene track is needed:
 
 ```json session config=https://jbrowse.org/demos/orthofinder_grasses/config.json
 {
@@ -325,18 +332,12 @@ rice gene track:
         "loc": "3:31,590,000-31,775,000",
         "tracks": [
           {
-            "trackId": "rice_genes",
-            "type": "LinearBasicDisplay",
-            "filter": ["geneLike"],
-            "displayMode": "compact"
-          },
-          {
             "trackId": "grasses_orthogroups",
             "type": "MultiWaySyntenyDisplay",
             "rows": {
               "sort": ["sorghum", "brachypodium", "setaria", "maize"]
             },
-            "height": 320
+            "height": 480
           }
         ]
       }
@@ -347,8 +348,9 @@ rice gene track:
 
 <Figure caption="A rice window over four grass lanes from one orthogroups track, each drawing its own gene models." src="/img/multiway_synteny/grasses_rice_lanes.png" />
 
-A stacked view shows both maize copies at once. **Launch → Linear synteny view
-(visible region)** in the lane track menu offers a full row per grass.
+A stacked view shows both maize copies at once. **Advanced → Launch → Linear
+synteny view (visible region)** in the lane track menu offers a full row per
+grass.
 
 <Video src="/media/synteny/multiway_launch_stack.mp4" caption="Launching a stack from the lane track: the track menu entry, the dialog's row checkboxes, and Replace current view." />
 
@@ -370,10 +372,10 @@ Then:
 ### The human HOXD cluster against four vertebrates
 
 Open human at `2:176,090,000-176,290,000`, the _HOXD_ cluster of body-axis
-patterning genes, with **human genes** and the orthogroups track on the
+patterning genes, with the orthogroups track on the
 [multi-way synteny display](/docs/user_guides/multiway_synteny_display). A lane
 (one horizontal strip per genome) for each of chicken, frog, gar and zebrafish
-draws under it.
+draws under the human genes.
 
 <Figure caption="The human HOXD cluster over four vertebrate lanes from one orthogroups track, each lane with its genome's genes." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
 
