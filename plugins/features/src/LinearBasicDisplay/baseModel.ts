@@ -91,7 +91,7 @@ import {
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
-  buildRegionInstanceIndex,
+  createRegionInstanceIndexMemo,
   drawnLabelTexts,
   featureHighlightInk,
   featuresNamedInk,
@@ -1037,21 +1037,21 @@ export default function baseStateModelFactory(
         return info ? info.subfeature : self.hoveredSubfeature
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * Feature and subfeature ids to the primitives they painted, per
-       * laid-out region. Deliberately held by no autorun: nothing builds it
-       * until a hover or a selection asks which instances to light.
-       */
-      get regionInstanceIndexes(): ReadonlyMap<number, RegionInstanceIndex> {
-        const map = new Map<number, RegionInstanceIndex>()
-        for (const [idx, data] of self.laidOutDataMap) {
-          map.set(idx, buildRegionInstanceIndex(data))
-        }
-        return map
-      },
-    }))
+    .views(self => {
+      const instanceIndexOf = createRegionInstanceIndexMemo()
+      return {
+        /**
+         * #getter
+         * Feature and subfeature ids to the primitives they painted, per
+         * laid-out region. Deliberately held by no autorun: nothing builds it
+         * until a hover or a selection asks which instances to light, and the
+         * per-region memo outlives the computed that MobX drops between hovers.
+         */
+        get regionInstanceIndexes(): ReadonlyMap<number, RegionInstanceIndex> {
+          return instanceIndexOf(self.laidOutDataMap)
+        },
+      }
+    })
     .views(self => ({
       /**
        * #getter

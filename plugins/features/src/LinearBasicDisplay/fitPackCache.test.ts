@@ -5,7 +5,11 @@ import {
   makeFlatbushItem,
   packStackedGenes,
 } from '../RenderFeatureDataRPC/testUtils.ts'
-import { createPackHeightCache, createPackHeightProbe } from './layout.ts'
+import {
+  createIncrementalLayout,
+  createPackHeightCache,
+  createPackHeightProbe,
+} from './layout.ts'
 import { WHOLE_REF } from './layoutTestUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -40,7 +44,9 @@ jest.mock('./layout.ts', () => {
   return {
     ...actual,
     createPackHeightCache: () =>
-      mockUncached.value ? () => new Map() : actual.createPackHeightCache(),
+      mockUncached.value
+        ? Object.assign(() => new Map(), { clear: () => {} })
+        : actual.createPackHeightCache(),
   }
 })
 
@@ -305,4 +311,63 @@ describe('the pack cache', () => {
       )
     })
   }
+})
+
+describe('the fit-only memos', () => {
+  const packsToEnterFit = (d: ReturnType<typeof fitDisplay>) => {
+    mockPackCount.value = 0
+    d.display.setHeightMode('fit')
+    void d.display.fitStage
+    return mockPackCount.value
+  }
+
+  it('hold their packs while the display stays in fit mode', () => {
+    const d = fitDisplay(labelled(spaced(500, 20), 60, taller(25)), 108)
+    expect(d.display.fitStage.level).toBe('thinned')
+    expect(packsToEnterFit(d)).toBe(0)
+    d.dispose()
+  })
+
+  it('are emptied on leaving fit mode, so returning repacks', () => {
+    const d = fitDisplay(labelled(spaced(500, 20), 60, taller(25)), 108)
+    expect(d.display.fitStage.level).toBe('thinned')
+    d.display.setHeightMode('fixed')
+    expect(d.display.fitStage.level).not.toBe('thinned')
+    expect(packsToEnterFit(d)).toBeGreaterThan(0)
+    expect(d.display.fitStage.level).toBe('thinned')
+    d.dispose()
+  })
+
+  it('empty a layout memo and a pack cache on clear', () => {
+    const memo = createIncrementalLayout()
+    const regions = new Map<number, LayoutRegionData>([
+      [
+        0,
+        {
+          ...labelled(spaced(10, 20), 10, () => 10),
+          regionKey: 'k',
+          ...WHOLE_REF,
+        },
+      ],
+    ])
+    const inputs: LayoutInputs = {
+      bpPerPx: 1,
+      showLabels: true,
+      showDescriptions: false,
+      reversedRegions: new Set<number>(),
+      displayMode: 'normal',
+      pinnedFeatureIds: new Set<string>(),
+    }
+    const first = memo(regions, inputs)
+    expect(memo(regions, inputs).get(0)).toBe(first.get(0))
+    memo.clear()
+    expect(memo(regions, inputs).get(0)).not.toBe(first.get(0))
+
+    const cache = createPackHeightCache()
+    const packs = cache(regions, inputs)
+    packs.set('k', { ids: [], bottoms: [] })
+    expect(cache(regions, inputs)).toBe(packs)
+    cache.clear()
+    expect(cache(regions, inputs)).not.toBe(packs)
+  })
 })

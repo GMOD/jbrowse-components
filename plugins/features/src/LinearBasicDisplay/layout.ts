@@ -557,20 +557,27 @@ interface PackHeightCacheEntry {
 // an instance holds one config, so each probe site takes its own.
 export function createPackHeightCache() {
   let entry: PackHeightCacheEntry | undefined
-  return (
-    rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
-    inputs: PackKnobFreeInputs,
-  ) => {
-    const prev = entry
-    if (
-      prev?.rpcDataMap === rpcDataMap &&
-      PROBE_CONFIG_KEYS.every(key => prev.inputs[key] === inputs[key])
-    ) {
-      return prev.packs
-    }
-    entry = { rpcDataMap, inputs, packs: new Map() }
-    return entry.packs
-  }
+  return Object.assign(
+    (
+      rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
+      inputs: PackKnobFreeInputs,
+    ) => {
+      const prev = entry
+      if (
+        prev?.rpcDataMap === rpcDataMap &&
+        PROBE_CONFIG_KEYS.every(key => prev.inputs[key] === inputs[key])
+      ) {
+        return prev.packs
+      }
+      entry = { rpcDataMap, inputs, packs: new Map() }
+      return entry.packs
+    },
+    {
+      clear: () => {
+        entry = undefined
+      },
+    },
+  )
 }
 
 export type PackHeightCache = ReturnType<typeof createPackHeightCache>
@@ -629,7 +636,7 @@ export function createIncrementalLayout({
 }: { seedPriorRows?: boolean } = {}) {
   let cache = new Map<string, GroupCache>()
 
-  return function computeLaidOutDataIncremental(
+  function computeLaidOutDataIncremental(
     rpcDataMap: ReadonlyMap<number, LayoutRegionData>,
     inputs: LayoutInputs,
   ): Map<number, FeatureDataResult> {
@@ -687,4 +694,10 @@ export function createIncrementalLayout({
     cache = nextCache
     return out
   }
+
+  return Object.assign(computeLaidOutDataIncremental, {
+    clear: () => {
+      cache = new Map()
+    },
+  })
 }

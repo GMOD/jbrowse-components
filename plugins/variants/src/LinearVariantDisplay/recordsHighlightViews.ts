@@ -5,8 +5,8 @@ import {
 } from '@jbrowse/core/util'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import {
-  buildRegionInstanceIndex,
   createMembershipMemo,
+  createRegionInstanceIndexMemo,
   drawnLabelTexts,
   featureHighlightInk,
   featuresNamedInk,
@@ -47,6 +47,7 @@ interface RecordsHighlightHost extends IStateTreeNode {
  */
 export function recordsHighlightViews(self: RecordsHighlightHost) {
   const sameBoxed = createMembershipMemo()
+  const instanceIndexOf = createRegionInstanceIndexMemo()
   return {
     /**
      * #getter
@@ -58,11 +59,7 @@ export function recordsHighlightViews(self: RecordsHighlightHost) {
       number,
       RegionInstanceIndex
     > {
-      const map = new Map<number, RegionInstanceIndex>()
-      for (const [idx, data] of self.recordsLaidOutDataMap) {
-        map.set(idx, buildRegionInstanceIndex(data))
-      }
-      return map
+      return instanceIndexOf(self.recordsLaidOutDataMap)
     },
     /**
      * #getter

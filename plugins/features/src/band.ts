@@ -60,6 +60,7 @@ export { paintFeatureBand } from './LinearBasicDisplay/components/paintFeatureBa
 export { htmlToPlainText } from './LinearBasicDisplay/components/hoverReadout.ts'
 export {
   buildRegionInstanceIndex,
+  createRegionInstanceIndexMemo,
   drawnLabelTexts,
   featureHighlightInk,
   featuresNamedInk,
