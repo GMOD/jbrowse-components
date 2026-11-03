@@ -878,6 +878,20 @@ export async function openVolvoxGenome(
   )
   const failed = assemblies.filter(a => !a.initialized)
   if (assemblies.length === 0 || failed.length > 0) {
+    const globals = await driver.executeScript<string>(`
+      const root = window.JBrowseRootModel
+      const session = window.JBrowseSession
+      const read = f => { try { return f() } catch (e) { return 'THREW ' + String(e).slice(0, 80) } }
+      return JSON.stringify({
+        rootAlive: read(() => root.$treenode.isAlive),
+        sessionAlive: read(() => session.$treenode.isAlive),
+        sessionIsRootSession: read(() => root.session === session),
+        sessionManagerIsRootManager: read(() => session.assemblyManager === root.assemblyManager),
+        sessionSideAssemblies: read(() => session.assemblyManager.assemblies.map(a => ({ name: a.name, initialized: a.initialized }))),
+        views: read(() => session.views.length),
+      })
+    `)
+    console.log(`    DEBUG: published globals at failure: ${globals}`)
     throw new Error(
       `assembly never loaded: ${JSON.stringify(assemblies.length ? failed : 'none registered')}`,
     )
