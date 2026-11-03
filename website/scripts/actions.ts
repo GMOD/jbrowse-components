@@ -2,6 +2,7 @@ import {
   delay,
   featurePoint,
   graphNodePoint,
+  rowPoint,
   waitForAppSettled,
 } from '@jbrowse/browser-test-utils'
 
@@ -388,9 +389,11 @@ async function anchorPoint(
         ? await graphNodePoint(page, anchor)
         : anchor.feature
           ? await featurePoint(page, anchor)
-          : anchor.selector
-            ? await selectorPoint(page, anchor)
-            : await locusPoint(page, anchor)
+          : anchor.row
+            ? await rowPoint(page, anchor)
+            : anchor.selector
+              ? await selectorPoint(page, anchor)
+              : await locusPoint(page, anchor)
   if (!point) {
     throw new Error(
       `${action.type} anchor did not resolve: ${JSON.stringify(anchor)}`,

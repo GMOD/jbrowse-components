@@ -31,19 +31,7 @@ export const trioVcfRows = {
     TRIO_HAPLOTYPES.map(h => [`${h.sample} HP${h.hp}`, h.label]),
   ),
 }
-// The display auto-fits its body across the 6 rows, so the pitch is 43.33; a
-// round 44 drifts the bottom-row frames ~3px low.
 export const TRIO_VCF_DISPLAY_H = 260
-export const TRIO_VCF_ROW_PITCH = TRIO_VCF_DISPLAY_H / TRIO_HAPLOTYPES.length
-// The rows end at the track's bottom edge whatever draws above them (the
-// records band, its chip strip), so a row's top is measured up from there.
-export const trioRowTop = (label: string) => ({
-  fracY: 1,
-  dy:
-    -(
-      TRIO_HAPLOTYPES.length - TRIO_HAPLOTYPES.findIndex(h => h.label === label)
-    ) * TRIO_VCF_ROW_PITCH,
-})
 
 export const TRIO_HL_FILL = 0.16
 export const TRIO_MATERNAL_COLORS = { left: '#15a01a', right: '#ff6f00' }
@@ -69,9 +57,7 @@ function crossoverHalves(loc: string, crossover: string) {
 }
 
 // Frames each side of a crossover in the color of the parental copy matched
-// there, on both the parent's row and the child's. A box needs an explicit
-// height: a `fracY` anchor is a line, and a box with no height falls back to
-// 2*pad.
+// there, on both the parent's row and the child's.
 export interface TrioCrossover {
   loc: string
   crossover: string
@@ -110,13 +96,8 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
       type: 'box',
       color,
       fillOpacity: TRIO_HL_FILL,
-      anchor: {
-        trackId: TRIO_VCF_TRACK,
-        loc: locus,
-        ...trioRowTop(row),
-      },
+      anchor: { trackId: TRIO_VCF_TRACK, loc: locus, row },
       pad: 0,
-      height: TRIO_VCF_ROW_PITCH,
     }) satisfies Annotation
   const caption = (color: string, anchor: AnnotationAnchor, text: string) =>
     ({
@@ -140,7 +121,8 @@ export function crossoverHighlights(opts: TrioCrossover): Annotation[] {
       anchor: {
         trackId: TRIO_VCF_TRACK,
         loc: crossover,
-        ...trioRowTop(child),
+        row: child,
+        fracY: 0,
       },
     },
     frame(palette.left, half.left, leftSource),

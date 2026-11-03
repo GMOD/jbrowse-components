@@ -7,6 +7,7 @@ import { assertValidAnnotations } from './annotationSpec.ts'
 import { dotplotAnchorRect } from './dotplotAnchor.ts'
 import { featureRect } from './featureAnchor.ts'
 import { graphNodeRect } from './graphAnchor.ts'
+import { rowRect } from './rowAnchor.ts'
 import { residueRect } from './structureAnchor.ts'
 
 import type {
@@ -48,11 +49,13 @@ async function withRegion(
       ? await graphNodeRect(page, anchor, wantBounds)
       : anchor.feature
         ? await featureRect(page, anchor)
-        : isDotplot
-          ? await dotplotAnchorRect(page, anchor)
-          : anchor.residue
-            ? await residueRect(page, anchor, wantBounds)
-            : undefined,
+        : anchor.row
+          ? await rowRect(page, anchor, wantBounds)
+          : isDotplot
+            ? await dotplotAnchorRect(page, anchor)
+            : anchor.residue
+              ? await residueRect(page, anchor, wantBounds)
+              : undefined,
   }
 }
 

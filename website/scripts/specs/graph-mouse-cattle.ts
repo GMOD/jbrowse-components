@@ -182,7 +182,7 @@ export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
         anchor: {
           trackId: 'bovine_pangenome_vcf',
           loc: 'chr5:98,600,000',
-          fracY: 0.84,
+          row: 'Gaur',
         },
         dx: 60,
         dy: -120,

@@ -51,6 +51,15 @@ export interface AnnotationAnchor {
   // nowhere. A common label (`C -> T <1%`) wants its `loc`. Resolved by the caller
   // (`featureAnchor.ts`) through the display's own `featuresNamed`.
   feature?: string
+  // a row the `trackId` row display drew, by its name or the label its
+  // sidebar shows (`Gaur`, `Child hap1`), or a band of rows by its label
+  // (`In(2L)t`). The resolved rect is the strip the row or band takes, across
+  // the `loc` where one is given, so it holds when a band is added above the
+  // rows. A name matching more than one row or band is a miss, as is a row
+  // not drawn: narrowed away, hidden or scrolled out of sight. With `fracY`
+  // the strip collapses to a line at that fraction of its height. Resolved by
+  // the caller (`rowAnchor.ts`) through the display's own row geometry.
+  row?: string
   // the two axes of a DotplotView, as `4A` (the whole chromosome) or
   // `4A:1-5,000,000`. The resolved rect is the grid cell the pair makes, which
   // for two bare refNames is the box an off-diagonal block sits in. Naming one
@@ -479,6 +488,7 @@ export function drawAnnotationOverlay(
     const preResolved =
       anchor.graphNode !== undefined ||
       anchor.feature !== undefined ||
+      anchor.row !== undefined ||
       anchor.hLoc !== undefined ||
       anchor.vLoc !== undefined ||
       anchor.residue !== undefined
