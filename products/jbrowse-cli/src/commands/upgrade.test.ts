@@ -6,6 +6,7 @@ import fs, { mkdirSync } from 'node:fs'
 import path from 'node:path'
 
 import { mockFetch, runCommand, runInTmpDir } from '../testUtil.ts'
+import { version } from '../version.ts'
 
 jest.mock('../cliFetch')
 
@@ -23,6 +24,23 @@ const testZipPath = path.join(
 function readZipAsArrayBuffer() {
   const buf = fs.readFileSync(testZipPath)
   return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
+}
+
+// the release `create` and `upgrade` take with no --tag: one of the CLI's own
+// major, on the first page of GitHub's list and none after it
+const currentRelease = {
+  tag_name: `v${version.split('.')[0]}.0.0`,
+  prerelease: false,
+  assets: [
+    {
+      browser_download_url: 'https://example.com/jbrowse-web-current.zip',
+      name: 'jbrowse-web-current.zip',
+    },
+  ],
+}
+
+function releasesPage(url: string) {
+  return new URL(url).searchParams.get('page') === '1' ? [currentRelease] : []
 }
 
 const releaseArray = [
@@ -66,7 +84,7 @@ test('upgrades the current directory', async () => {
   await runInTmpDir(async ctx => {
     mockFetch(url => {
       if (new URL(url).host === 'api.github.com') {
-        return { json: releaseArray }
+        return { json: releasesPage(url) }
       }
       return {
         headers: { 'content-type': 'application/zip' },

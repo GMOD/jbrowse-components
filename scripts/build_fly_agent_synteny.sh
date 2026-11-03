@@ -32,7 +32,7 @@ MAU_ACC=GCF_004382145.1
 SIM_HUB=https://jbrowse.org/hubs/genark/GCF/016/746/395/$SIM_ACC/config.json
 MAU_HUB=https://jbrowse.org/hubs/genark/GCF/004/382/145/$MAU_ACC/config.json
 
-if command -v jbrowse >/dev/null 2>&1; then
+if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
   jb() { jbrowse "$@"; }
 else
   jb() { npx -y @jbrowse/cli@next "$@"; }

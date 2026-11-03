@@ -57,8 +57,7 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 APP=jbrowse2
 
-# beta.18 is the first CLI whose `create` installs a JBrowse that draws the
-# domain track's spliced rows
+# beta.18 is the first CLI with make-protein-features
 jb() { npx -y '@jbrowse/cli@>=5.0.0-beta.18' "$@"; }
 
 # ── The FASTA, uncompressed and indexed ──────────────────────────────────────

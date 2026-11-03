@@ -55,7 +55,7 @@ done
 if [ -n "${JBROWSE_CLI:-}" ]; then
   # shellcheck disable=SC2086
   jb() { $JBROWSE_CLI "$@"; }
-elif command -v jbrowse >/dev/null 2>&1; then
+elif [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
   jb() { jbrowse "$@"; }
 else
   jb() { npx -y @jbrowse/cli@next "$@"; }

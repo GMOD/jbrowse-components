@@ -297,7 +297,7 @@ ld_table "$POOLED" lct_1kg38_chr2_pooled
 # hub's own entry copied in, so the 3 GB reference is never downloaded. Its
 # relative uris are resolved against the hub before they are written into a
 # config that no longer sits beside it.
-if command -v jbrowse >/dev/null; then jb() { jbrowse "$@"; }
+if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then jb() { jbrowse "$@"; }
 else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
 APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main

@@ -147,7 +147,7 @@ while read -r a b; do
   gzip -kf "blocks/$pair/$a.bed" "blocks/$pair/$b.bed"
 done <<<"$PAIRS"
 
-if command -v jbrowse >/dev/null 2>&1; then
+if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
   jb() { jbrowse "$@"; }
 else
   jb() { npx -y @jbrowse/cli@next "$@"; }

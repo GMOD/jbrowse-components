@@ -186,15 +186,25 @@ function findWebAssetUrl(release: GithubRelease) {
     ?.browser_download_url
 }
 
-// A prerelease CLI writes config spellings the last release cannot read, so it
-// installs the newest prerelease, and a release CLI the newest release
+// The app a CLI installs shares its major version, since a CLI writes that
+// major's config spellings: a v4 patch published after the v5 betas is newer
+// on GitHub's list and still wrong for a v5 CLI. A prerelease CLI takes
+// prereleases of its major too, as there may be no release of it yet.
+const cliMajor = version.split('.')[0]
 const takesPrereleases = version.includes('-')
+
+function isInstallable(release: GithubRelease) {
+  return (
+    !release.draft &&
+    (takesPrereleases || !release.prerelease) &&
+    release.tag_name.startsWith(`v${cliMajor}.`) &&
+    !!release.assets?.length
+  )
+}
 
 async function getLatest() {
   for await (const versions of fetchVersions()) {
-    const release = versions.find(
-      r => !r.draft && (takesPrereleases || !r.prerelease) && r.assets?.length,
-    )
+    const release = versions.find(r => isInstallable(r))
     if (release) {
       const file = findWebAssetUrl(release)
       if (file) {

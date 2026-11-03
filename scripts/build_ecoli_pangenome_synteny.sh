@@ -84,7 +84,7 @@ done > all.fa
 minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ────────
-if command -v jbrowse >/dev/null 2>&1; then
+if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
   jb() { jbrowse "$@"; }
 else
   jb() { npx -y @jbrowse/cli@next "$@"; }
@@ -101,20 +101,11 @@ for strain in $STRAINS; do
 done
 
 # ── One all-vs-all synteny track backing every band of the stacked view ──────
-# The adapter is spelled out in --config because a `.paf` extension alone is
-# inferred as the PAIRWISE PAFAdapter, which reads only the first two assembly
-# names and drops every other strain's blocks. Note --config REPLACES the
-# inferred adapter rather than merging into it, so pafLocation has to be
-# restated here; naming only the type would leave an adapter with no file.
-# This is DELIBERATELY behind the tutorial, which now shows the one-line
-# `--adapterType MultiGenomePAFAdapter` form. That flag landed after the v4.3.0
-# tag, and this script runs against whatever `npx @jbrowse/cli` resolves to, so
-# it stays on --config until --adapterType is in a published release. Collapse
-# the two once it is.
+# --adapterType because a `.paf` extension alone is inferred as the PAIRWISE
+# PAFAdapter, which reads only the first two assembly names and drops every
+# other strain's blocks
 CSV="$(echo $STRAINS | tr ' ' ,)"
-JSON_NAMES="$(echo $STRAINS | tr ' ' '\n' | sed 's/.*/"&"/' | paste -sd, -)"
-jb add-track all_vs_all.paf \
-  --config "{\"adapter\":{\"type\":\"MultiGenomePAFAdapter\",\"pafLocation\":{\"uri\":\"all_vs_all.paf\",\"locationType\":\"UriLocation\"},\"assemblyNames\":[$JSON_NAMES]}}" \
+jb add-track all_vs_all.paf --adapterType MultiGenomePAFAdapter \
   --trackId ecoli_ava --name "E. coli pangenome (all-vs-all PAF)" \
   -a "$CSV" --load copy --force --out "$APP"
 

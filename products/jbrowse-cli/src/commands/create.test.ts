@@ -26,6 +26,23 @@ function readZipAsArrayBuffer() {
   return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
 }
 
+// the release `create` and `upgrade` take with no --tag: one of the CLI's own
+// major, on the first page of GitHub's list and none after it
+const currentRelease = {
+  tag_name: `v${version.split('.')[0]}.0.0`,
+  prerelease: false,
+  assets: [
+    {
+      browser_download_url: 'https://example.com/jbrowse-web-current.zip',
+      name: 'jbrowse-web-current.zip',
+    },
+  ],
+}
+
+function releasesPage(url: string) {
+  return new URL(url).searchParams.get('page') === '1' ? [currentRelease] : []
+}
+
 const releaseArray = [
   {
     tag_name: 'v0.0.1',
@@ -146,7 +163,7 @@ test('download and unzips to new directory', async () => {
   await runInTmpDir(async ctx => {
     mockFetch(url => {
       if (new URL(url).host === 'api.github.com') {
-        return { json: releaseArray }
+        return { json: releasesPage(url) }
       }
       return {
         headers: { 'content-type': 'application/zip' },
@@ -160,10 +177,12 @@ test('download and unzips to new directory', async () => {
   })
 })
 
-test('installs the newest release in its own channel, never a draft', async () => {
+test('installs the newest release of its own major and channel, never a draft', async () => {
   await runInTmpDir(async () => {
+    const major = Number(version.split('.')[0])
     const release = (tag: string, flags: object) => ({
       tag_name: tag,
+      prerelease: false,
       ...flags,
       assets: [
         {
@@ -172,14 +191,20 @@ test('installs the newest release in its own channel, never a draft', async () =
         },
       ],
     })
+    // newest first, as GitHub lists them
     const fetchMock = mockFetch(url =>
       new URL(url).host === 'api.github.com'
         ? new URL(url).searchParams.get('page') === '1'
           ? {
               json: [
-                release('v9.0.0-beta.2', { prerelease: true, draft: true }),
-                release('v9.0.0-beta.1', { prerelease: true }),
-                release('v8.0.0', { prerelease: false }),
+                release(`v${major - 1}.99.0`, {}),
+                release(`v${major}.99.0-beta.2`, {
+                  prerelease: true,
+                  draft: true,
+                }),
+                release(`v${major}.98.0`, { draft: true }),
+                release(`v${major}.99.0-beta.1`, { prerelease: true }),
+                release(`v${major}.0.0`, {}),
               ],
             }
           : { json: [] }
@@ -193,10 +218,11 @@ test('installs the newest release in its own channel, never a draft', async () =
     const downloads = fetchMock.mock.calls
       .map(([url]) => url.toString())
       .filter(url => new URL(url).host === 'example.com')
+    const expected = version.includes('-')
+      ? `v${major}.99.0-beta.1`
+      : `v${major}.0.0`
     expect(downloads).toEqual([
-      version.includes('-')
-        ? 'https://example.com/jbrowse-web-v9.0.0-beta.1.zip'
-        : 'https://example.com/jbrowse-web-v8.0.0.zip',
+      `https://example.com/jbrowse-web-${expected}.zip`,
     ])
   })
 })
@@ -255,7 +281,7 @@ test('fails because this directory is already set up', async () => {
   await runInTmpDir(async () => {
     mockFetch(url => {
       if (new URL(url).host === 'api.github.com') {
-        return { json: releaseArray }
+        return { json: releasesPage(url) }
       }
       return {
         headers: { 'content-type': 'application/zip' },

@@ -47,7 +47,7 @@ HELPERS=(reroot_maf.py maf_to_bed.py gfa_nodes_to_bed.py
 # setup section far below, because `make-pif` runs during the projections and a
 # bare `jbrowse` there kills the script under `set -e` on an npx-only machine —
 # right after pggb has finished, which is the most expensive place to fail.
-if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
+if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli@next "$@"; }; fi
 
 # Checked up front, since the graph track is built after pggb has run.
 G2T_VERSION=$(gfa-to-tabix --version 2>/dev/null | awk '{print $2}')

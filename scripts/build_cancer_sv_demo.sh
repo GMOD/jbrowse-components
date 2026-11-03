@@ -46,7 +46,7 @@ DEMO=demo
 mkdir -p "$DEMO"
 
 jb() {
-  if command -v jbrowse >/dev/null 2>&1; then jbrowse "$@"; else npx -y @jbrowse/cli@next "$@"; fi
+  if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then jbrowse "$@"; else npx -y @jbrowse/cli@next "$@"; fi
 }
 
 # drops rows for the alt/decoy contigs bedGraphToBigWig would otherwise reject

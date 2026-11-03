@@ -265,22 +265,25 @@ for f in scripts:
                   f"`{ln.strip()}`; a re-run fails on the existing trackId")
             failed = True
 
-    # A bare `jb create` installs the newest release a CLI's channel offers, and
-    # the CLI is whatever `jbrowse` the reader has on PATH: a stable one gives
-    # v4.3.0, which has no MCScanBlocksAdapter and reads no v5 config spelling,
-    # so the script's own config fails to load in the app it just made. The
-    # scripts write main's spellings, so they create main's build. The npx
-    # fallback names the beta CLI for the same reason.
-    for i, ln in enumerate(lines):
-        code = ln.split("#", 1)[0]
-        if re.search(r"\bjb create\b", code) and not re.search(
-                r"--(branch|nightly|tag|url)\b", code):
-            print(f"FAIL jb create without --branch main in {f}:{i + 1}: "
-                  f"`{ln.strip()}` installs the CLI's channel, v4 on a stable CLI")
+    # The scripts write main's config spellings, so every CLI they run must be
+    # v5 or later. A stable `jbrowse` on PATH is v4.3.0: its `create` installs
+    # an app with no MCScanBlocksAdapter, and it has no make-density or
+    # --adapterType. So `create` takes main's build, a local `jbrowse` is used
+    # only when `--version` says 5 or later, and npx names the beta CLI.
+    for ln in src.replace("\\\n", " ").splitlines():
+        code = re.sub(r"(^|\s)#.*", "", ln)
+        if re.search(r"\b(jb|jbrowse) create\b", code) and not re.search(
+                r"--branch main\b", code):
+            print(f"FAIL create without --branch main in {f}: `{ln.strip()}` "
+                  "installs v4.3.0 from a stable CLI")
             failed = True
-        if re.search(r"npx -y @jbrowse/cli(\s|\"|$)", code):
-            print(f"FAIL npx fetches the v4 CLI in {f}:{i + 1}: "
-                  f"`{ln.strip()}`; name @jbrowse/cli@next")
+        if re.search(r"@jbrowse/cli(?!@next\b|@>=)", code) and "npx" in code:
+            print(f"FAIL npx without @jbrowse/cli@next in {f}: `{ln.strip()}` "
+                  "fetches the v4 CLI")
+            failed = True
+        if re.search(r"command -v jbrowse\b", code):
+            print(f"FAIL a local jbrowse taken without its version in {f}: "
+                  f"`{ln.strip()}`; test `jbrowse --version` for 5 or later")
             failed = True
 
     # each quoted heredoc: <<'TAG' ... TAG. Validate the JSON/PY ones (skip data
