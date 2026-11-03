@@ -12,6 +12,8 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+const GAP = '-'
+
 interface SequenceTooltipProps {
   x: number
   y: number
@@ -32,9 +34,8 @@ const SequenceTooltip = observer(function SequenceTooltip({
 }: SequenceTooltipProps) {
   const { classes } = useStyles()
 
-  // An insertion is when we have a base but no genomic position (the reference
-  // has a gap at this column).
-  const isInsertion = base !== undefined && genomicPos === undefined
+  const isInsertion =
+    base !== undefined && base !== GAP && genomicPos === undefined
 
   return (
     <BaseTooltip clientPoint={{ x, y }}>
