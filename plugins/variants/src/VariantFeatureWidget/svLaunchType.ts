@@ -15,7 +15,8 @@ export function isSvLaunchType(type: string) {
 }
 
 // The SO term alone calls a 2 bp `ATG -> A` a deletion; a structural variant is
-// a symbolic or declared SV allele, or a sequence allele 50 bp or more from REF.
+// a symbolic or declared SV allele, or a sequence allele 50 bp or more shorter
+// than REF. An insertion allele never counts, as its card would zoom to one base.
 export function isSvLaunchFeature({
   type = '',
   REF,
@@ -25,9 +26,9 @@ export function isSvLaunchFeature({
   return (
     isSvLaunchType(type) &&
     (ALT.length === 0 ||
-      ALT.some(
-        (alt, alleleIndex) =>
-          svClassOfAlt(alt, { ref: REF, info: INFO, alleleIndex }) !== '',
-      ))
+      ALT.some((alt, alleleIndex) => {
+        const svClass = svClassOfAlt(alt, { ref: REF, info: INFO, alleleIndex })
+        return svClass !== '' && svClass !== 'INS'
+      }))
   )
 }

@@ -69,6 +69,16 @@ describe('a launch card needs a real structural variant', () => {
     ).toBe(true)
   })
 
+  test('a small deletion beside a long insertion allele has no card', () => {
+    expect(
+      isSvLaunchFeature({
+        type: 'deletion,insertion',
+        REF: 'ATG',
+        ALT: ['A', `ATG${bases(60)}`],
+      }),
+    ).toBe(false)
+  })
+
   test('a record declaring SVTYPE keeps its card', () => {
     expect(
       isSvLaunchFeature({
