@@ -80,11 +80,11 @@ export function breakpointLocs(argv: Entry[] | undefined, loc?: string) {
  * configured one: `writeFilter` writes it by field once each panel opens.
  */
 export function breakpointTracks(
-  openTracks: OpenTrack[] | undefined,
+  openTracks: OpenTrack[],
   showTracks: OpenTrack[],
   displayTypeOf: DisplayTypeOf = () => undefined,
 ): TrackInit[] {
-  return [...showTracks, ...(openTracks ?? [])].map(({ trackId, opts }) => {
+  return [...showTracks, ...openTracks].map(({ trackId, opts }) => {
     const opensAs = displayTypeOf(trackId, opts)
     const {
       snap: { filter: _filter, ...snap },

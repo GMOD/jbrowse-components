@@ -174,3 +174,16 @@ test('a bare genome file is the genome when the track list holds a modified copy
   expect(data.assembly.name).toBe('ref.fa')
   expect(data.tracks.map(t => t.trackId)).toEqual(['reads.bam'])
 })
+
+test('a fetched config is read, not changed, so a batch can hand it to every record', () => {
+  const fetched = {
+    assemblies: [{ name: 'hg38', sequence: {} }],
+    tracks: [{ trackId: 'genes', type: 'FeatureTrack' }],
+  }
+  const before = structuredClone(fetched)
+  const opts = { trackList: [['bam', ['reads.bam']]] as [string, string[]][] }
+  readData(opts, fetched)
+  const second = readData(opts, fetched)
+  expect(fetched).toEqual(before)
+  expect(second.tracks.map(t => t.trackId)).toEqual(['genes', 'reads.bam'])
+})

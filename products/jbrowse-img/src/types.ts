@@ -116,19 +116,28 @@ export interface OpenTrack {
   opts: string[]
 }
 
+/** A config.json as read or fetched, unvalidated */
+export interface ConfigFile {
+  assemblies?: Assembly[]
+  tracks?: Track[]
+  aggregateTextSearchAdapters?: TextSearchAdapter[]
+  defaultSession?: Record<string, unknown>
+  [key: string]: unknown
+}
+
+/** What readData resolves a run's inputs to */
 export interface Config {
   assemblies: Assembly[]
   assembly: Assembly
   tracks: Track[]
-  // Tracks to open in a linear view, in argv order. Undefined for a config that
-  // readData didn't build from track flags.
-  openTracks?: OpenTrack[]
-  // Trix (or other) text-search adapters, e.g. from a --genome config, that let
-  // --loc navigate by gene name. Passed through to createViewState.
+  /** the tracks the file flags built, to open in argv order */
+  openTracks: OpenTrack[]
+  /** lets --loc navigate by gene name */
   aggregateTextSearchAdapters?: TextSearchAdapter[]
-  // A comparative view's rows when built from CLI args, each at its `loc:` or
-  // whole; one genome twice is two rows of one assembly. Undefined stacks
-  // `assemblies` whole.
+  /**
+   * A comparative view's rows when built from CLI args, each at its `loc:` or
+   * whole. Undefined stacks `assemblies` whole.
+   */
   comparativeRows?: ComparativeRow[]
-  [key: string]: unknown
+  defaultSession?: Record<string, unknown>
 }

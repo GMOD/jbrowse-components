@@ -371,10 +371,8 @@ async function renderRows(
   report: (result: RowResult) => void,
 ) {
   const { outDir, flank } = opts
-  // Fetched ONCE for the whole run, where it used to be once per record: a
-  // --genome or a URL --config is a network round trip, and re-resolving it per
-  // junction is the cost this subcommand exists to avoid. Copied per record
-  // because readData mutates what it is handed.
+  // once for the whole run: a --genome or a URL --config is a network round
+  // trip, and a --genome's chromAlias fetch can fail transiently
   const configObject = await resolveConfigObject(opts)
   const width = opts.width ?? DEFAULT_WIDTH
   // Imported here, where a row is about to be drawn: a --dryRun and the process
@@ -425,7 +423,7 @@ async function renderRows(
               ],
               loc: undefined,
             },
-        configObject && structuredClone(configObject),
+        configObject,
       )
       // under another name until whole, so an interrupted write is not an
       // image --resume skips

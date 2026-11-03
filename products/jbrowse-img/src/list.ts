@@ -1,6 +1,6 @@
 import { trackMatches, trackName, trackType } from '@jbrowse/launch-args'
 
-import { FETCH_TIMEOUT_MS, resolveConfigObject } from './resolveHub.ts'
+import { fetchJson, resolveConfigObject } from './resolveHub.ts'
 
 import type { Track } from './types.ts'
 
@@ -52,16 +52,6 @@ export function formatTracks(genome: string, tracks: Track[], filter?: string) {
     '',
     `Show one: jb2export --genome ${genome} --track <trackId> --loc <region> --out out.svg`,
   ].join('\n')
-}
-
-async function fetchJson(url: string, context: string) {
-  const res = await fetch(url, {
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-  })
-  if (!res.ok) {
-    throw new Error(`${context}: HTTP ${res.status} from ${url}`)
-  }
-  return res.json() as Promise<unknown>
 }
 
 // `jb2export list` -> assemblies; `jb2export list <genome> [filter]` -> that genome's

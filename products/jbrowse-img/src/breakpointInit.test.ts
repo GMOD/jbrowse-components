@@ -8,12 +8,14 @@ import {
 import type { Config, Opts } from './types.ts'
 import type { Entry } from '@jbrowse/launch-args'
 
-function config(openTracks?: { trackId: string; opts: string[] }[]): Config {
+function config(
+  openTracks: { trackId: string; opts: string[] }[] = [],
+): Config {
   return {
     assemblies: [{ name: 'hg38', sequence: {} }],
     assembly: { name: 'hg38', sequence: {} },
     tracks: [],
-    ...(openTracks ? { openTracks } : {}),
+    openTracks,
   }
 }
 
@@ -76,8 +78,8 @@ describe('breakpointTracks', () => {
     ).toEqual([{ trackId: 'hosted_genes' }, { trackId: 'file_bam' }])
   })
 
-  it('is empty rather than undefined when nothing was opened', () => {
-    expect(breakpointTracks(undefined, [])).toEqual([])
+  it('is empty when nothing was opened', () => {
+    expect(breakpointTracks([], [])).toEqual([])
   })
 
   // Every other mode routes --track modifiers through applyDisplayOpts, which
@@ -87,7 +89,7 @@ describe('breakpointTracks', () => {
   it('folds the track modifiers into the panel TrackInit', () => {
     expect(
       breakpointTracks(
-        undefined,
+        [],
         [{ trackId: 'tumor_bam', opts: ['height:240', 'force:true'] }],
         () => 'LinearAlignmentsDisplay',
       ),
@@ -105,7 +107,7 @@ describe('breakpointTracks', () => {
   it('keeps every track’s filter out of the panel TrackInit', () => {
     expect(
       breakpointTracks(
-        undefined,
+        [],
         [{ trackId: 'v', opts: ['{"filter":[{"field":"QUAL","gte":30}]}'] }],
         () => 'variant',
       ),
@@ -118,7 +120,7 @@ describe('breakpointTracks', () => {
     const sortOf = (opts: string[], displayType: string) =>
       (
         breakpointTracks(
-          undefined,
+          [],
           [{ trackId: 't', opts }],
           () => displayType,
         )[0] as { sort?: string }

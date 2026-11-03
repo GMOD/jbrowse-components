@@ -18,8 +18,16 @@ import { findAssembly } from './assemblyName.ts'
 import { makeMultiWiggleTrackConfig } from './makeConfigs.ts'
 import { STDIN_ARG, readTextInput } from './util.ts'
 
-import type { Assembly, Config, OpenTrack, Opts, Track } from './types.ts'
-import type { Entry, HostedConfig } from '@jbrowse/launch-args'
+import type {
+  Assembly,
+  Config,
+  ConfigFile,
+  OpenTrack,
+  Opts,
+  TextSearchAdapter,
+  Track,
+} from './types.ts'
+import type { ComparativeRow, Entry, HostedConfig } from '@jbrowse/launch-args'
 
 // how to name an input in an error message
 function inputName(file: string) {
@@ -112,12 +120,116 @@ function uniqueTrackId(used: Set<string>, base: string) {
   return id
 }
 
-// `configObject` is a config already fetched off the network (from --genome or a
-// URL --config, see resolveHub.ts); when present it stands in for the local
-// --config file read. Its adapters use remote `uri`s, so no localPath rewriting
-// applies. A --config file is the other way about: a `uri` in it relative to
-// the file, as a config a web server hosts beside its data writes them, is a
-// file beside it.
+function readConfigFile(file: string) {
+  const config = read(file) as ConfigFile
+  const baseDir = baseDirOf(file)
+  resolveLocalPaths(config, baseDir)
+  addRelativeUris(config, pathToFileURL(`${baseDir}${path.sep}`))
+  return config
+}
+
+// A session file is a raw session or File → Export session's `{ session }`.
+// Its first view is the one exported; a session from the LGV-only host holds
+// that one view as `view`.
+function readSession(file: string) {
+  const raw = read(file) as Record<string, unknown>
+  const session = (raw.session ?? raw) as Record<string, unknown>
+  const { view, ...rest } = session
+  const views: unknown[] = Array.isArray(session.views)
+    ? session.views
+    : view
+      ? [view]
+      : []
+  if (views.length > 1) {
+    console.warn(
+      `Warning: the session has ${views.length} views; only the first is exported`,
+    )
+  }
+  return views.length > 0 ? { ...rest, views: views.slice(0, 1) } : session
+}
+
+interface ResolvedAssemblies {
+  assemblies: Assembly[]
+  assembly: Assembly
+  comparativeRows?: ComparativeRow[]
+  aggregateTextSearchAdapters?: TextSearchAdapter[]
+  syntenyTracks: Track[]
+}
+
+function configAssemblies(
+  file: ConfigFile,
+  asm: string | undefined,
+): ResolvedAssemblies | undefined {
+  const assemblies = (file.assemblies ?? []).map(expandAssemblySequence)
+  const assembly = asm ? findAssembly(assemblies, asm) : assemblies[0]
+  if (asm && assemblies.length > 0 && !assembly) {
+    throw new Error(`assembly ${asm} not found in config`)
+  }
+  return assembly
+    ? {
+        assemblies,
+        assembly,
+        aggregateTextSearchAdapters: file.aggregateTextSearchAdapters,
+        syntenyTracks: [],
+      }
+    : undefined
+}
+
+function comparativeAssemblies(
+  argv: Entry[],
+  hostedConfigs: ReadonlyMap<string, HostedConfig<Assembly>>,
+): ResolvedAssemblies {
+  const comparative = buildComparative(argv)
+  const hosted = hostedComparative(
+    comparative.rows,
+    comparative.syntenyTracks,
+    hostedConfigs,
+  )
+  const assemblies = [
+    ...comparative.assemblies,
+    ...hosted.assemblies.map(expandAssemblySequence),
+  ]
+  return {
+    assemblies,
+    assembly:
+      assemblies.find(a => a.name === comparative.rows[0]?.assembly) ??
+      assemblies[0]!,
+    comparativeRows: comparative.rows,
+    aggregateTextSearchAdapters: hosted.textSearchAdapters,
+    syntenyTracks: [...comparative.syntenyTracks, ...hosted.tracks],
+  }
+}
+
+function genomeFileAssemblies([flag, values]: Entry): ResolvedAssemblies {
+  const { assembly, unused } = genomeAssembly(flag, values, 'refseq')
+  if (unused.length) {
+    throw new Error(
+      `${values[0]} takes aliases: and cytobands:, not ${unused.join(' ')}`,
+    )
+  }
+  return { assemblies: [assembly], assembly, syntenyTracks: [] }
+}
+
+/** `base`'s tracks with `added` over them, a same-id track replaced in place */
+function withTracks(base: Track[], added: Track[]) {
+  const tracks = [...base]
+  for (const track of added) {
+    const existing = tracks.findIndex(t => t.trackId === track.trackId)
+    if (existing === -1) {
+      tracks.push(track)
+    } else {
+      tracks[existing] = track
+    }
+  }
+  return tracks
+}
+
+/**
+ * The run's inputs as one config. `configObject` is a config already fetched
+ * off the network (--genome, or a URL --config), standing in for the --config
+ * file read; it is read and not changed, so a batch hands the same one to
+ * every record. A `uri` in a --config file is relative to that file.
+ */
 export function readData(
   {
     assembly: asm,
@@ -129,154 +241,61 @@ export function readData(
     trackList = [],
     argv = [],
   }: Opts,
-  configObject?: Config,
+  configObject?: ConfigFile,
   hostedConfigs: ReadonlyMap<string, HostedConfig<Assembly>> = new Map(),
-) {
-  // the genome a linear view opens on: --fasta (a library caller passes it bare),
-  // or a bare genome file
+): Config {
   const comparative = hasComparativeArgs(argv)
   const isGenome = (entry: Entry) =>
     entry[0] !== 'genome' && comparativeRole(entry) === 'genome'
+  // the genome a linear view opens on: --fasta (a library caller passes it
+  // bare), or a bare genome file
   const genome: Entry | undefined =
     argv.find(isGenome) ??
     (fasta ? ['fasta', [fasta]] : undefined) ??
     trackList.find(isGenome)
 
-  const tracksData = trackConfigs ? readTrackArray(trackConfigs) : undefined
-  const configData: Partial<Config> & Record<string, unknown> = configObject
-    ? configObject
-    : config
-      ? (read(config) as Config)
-      : {}
-
-  let sessionData = session
-    ? (read(session) as Record<string, unknown>)
-    : undefined
-
-  if (config && !configObject) {
-    const baseDir = baseDirOf(config)
-    resolveLocalPaths(configData, baseDir)
-    addRelativeUris(configData, pathToFileURL(`${baseDir}${path.sep}`))
-  }
-
-  // the session.json can be a raw session or a json file with a "session"
-  // attribute, which is what is exported via the "File->Export session" in
-  // jbrowse-web
-  if (sessionData?.session) {
-    sessionData = sessionData.session as Record<string, unknown>
-  }
-
-  // A session saved against the LGV-only react2 host — which jb2export used
-  // before react-app2 — holds a single `view` rather than a `views` array. Its
-  // one view is what react-app2 wants as views[0]; left alone it is an unknown
-  // key that the session model drops, and the export came out blank with
-  // nothing reported.
-  if (sessionData?.view && !sessionData.views) {
-    sessionData.views = [sessionData.view]
-    delete sessionData.view
-  }
-
-  // only export first view (react-app2 sessions hold a `views` array). Guard on
-  // a non-empty array so an empty `views: []` isn't rewritten to `[undefined]`,
-  // which would crash createViewState downstream.
-  if (Array.isArray(sessionData?.views) && sessionData.views.length > 0) {
-    if (sessionData.views.length > 1) {
-      console.warn(
-        `Warning: the session has ${sessionData.views.length} views; only the first is exported`,
-      )
-    }
-    sessionData.views = [sessionData.views[0]]
-  }
-
-  // The synteny tracks of a comparative view built from CLI args; pushed once
-  // configData.tracks exists below.
-  let syntenyTracks: Track[] = []
-
-  if (configData.assemblies?.length) {
-    configData.assemblies = configData.assemblies.map(expandAssemblySequence)
-  }
-  if (configData.assemblies?.length) {
-    // --config/--genome and the CLI assembly flags are alternatives, not
-    // additive: the config's assemblies would win, dropping the genome file and
-    // every comparison file that binds to it
-    if (genome) {
-      throw new Error(
-        `${genome[1][0]} is a genome, and the config (--config or --genome) names its own; pass one or the other, and --assembly <name> to choose among the config's`,
-      )
-    } else if (comparative) {
-      throw new Error(
-        "a comparative view stacks genome files and --genome names, and --config names its own genomes; pass those, or a --spec naming the config's comparison tracks",
-      )
-    }
-    if (asm) {
-      const assembly = findAssembly(configData.assemblies, asm)
-      if (!assembly) {
-        throw new Error(`assembly ${asm} not found in config`)
-      }
-      configData.assembly = assembly
-    } else {
-      configData.assembly = configData.assemblies[0]!
-    }
-  }
-  // else build the assemblies from CLI args: a comparative view's stacked
-  // assemblies + per-level synteny tracks (--fasta/--chromSizes/--paf/…), or a
-  // single linear assembly from the genome (trackId 'refseq' for --refseq).
-  else if (comparative) {
-    const comparative = buildComparative(argv)
-    const hosted = hostedComparative(
-      comparative.rows,
-      comparative.syntenyTracks,
-      hostedConfigs,
+  const file = configObject ?? (config ? readConfigFile(config) : {})
+  const fromConfig = configAssemblies(file, asm)
+  // the config's assemblies and the CLI's genome files are alternatives: the
+  // config's would win, dropping the genome file and every comparison file
+  // that binds to it
+  if (fromConfig && genome) {
+    throw new Error(
+      `${genome[1][0]} is a genome, and the config (--config or --genome) names its own; pass one or the other, and --assembly <name> to choose among the config's`,
     )
-    const assemblies = [
-      ...comparative.assemblies,
-      ...hosted.assemblies.map(expandAssemblySequence),
-    ]
-    configData.assemblies = assemblies
-    configData.assembly =
-      assemblies.find(a => a.name === comparative.rows[0]?.assembly) ??
-      assemblies[0]
-    configData.comparativeRows = comparative.rows
-    configData.aggregateTextSearchAdapters = hosted.textSearchAdapters
-    syntenyTracks = [...comparative.syntenyTracks, ...hosted.tracks]
-  } else if (genome) {
-    const { assembly, unused } = genomeAssembly(genome[0], genome[1], 'refseq')
-    if (unused.length) {
-      throw new Error(
-        `${genome[1][0]} takes aliases: and cytobands:, not ${unused.join(' ')}`,
-      )
-    }
-    configData.assembly = assembly
+  } else if (fromConfig && comparative) {
+    throw new Error(
+      "a comparative view stacks genome files and --genome names, and --config names its own genomes; pass those, or a --spec naming the config's comparison tracks",
+    )
   }
-
-  if (!configData.assembly) {
+  const resolved =
+    fromConfig ??
+    (comparative
+      ? comparativeAssemblies(argv, hostedConfigs)
+      : genome
+        ? genomeFileAssemblies(genome)
+        : undefined)
+  if (!resolved) {
     throw new Error(
       'no assembly specified: pass a genome file (an indexed FASTA from samtools faidx, a 2bit, or a .chrom.sizes), --fasta, --genome, or --config',
     )
   }
+  const { assembly, syntenyTracks, ...assemblies } = resolved
 
-  if (!configData.tracks) {
-    configData.tracks = []
-  }
-  const configTracks = configData.tracks
-  for (const track of tracksData ?? []) {
-    const existing = configTracks.findIndex(t => t.trackId === track.trackId)
-    if (existing === -1) {
-      configTracks.push(track)
-    } else {
-      configTracks[existing] = track
-    }
-  }
-  const usedTrackIds = new Set(configData.tracks.map(t => t.trackId))
+  const tracks = withTracks(
+    file.tracks ?? [],
+    trackConfigs ? readTrackArray(trackConfigs) : [],
+  )
+  const usedTrackIds = new Set(tracks.map(t => t.trackId))
   for (const track of syntenyTracks) {
-    track.trackId = uniqueTrackId(usedTrackIds, track.trackId)
-    configData.tracks.push(track)
+    tracks.push({
+      ...track,
+      trackId: uniqueTrackId(usedTrackIds, track.trackId),
+    })
   }
 
-  // Other tracks attach to the primary assembly; the genomes and comparisons
-  // went into buildComparative above. Each one is recorded in `openTracks`
-  // under the id it actually got, so the renderer opens exactly what was built
-  // instead of recomputing the id from the filename.
+  // every other file is a track on the primary assembly, recorded under the
+  // id it actually got so the renderer opens exactly what was built
   const openTracks: OpenTrack[] = []
   for (const [type, opts] of trackList) {
     const [file, ...rest] = opts
@@ -287,39 +306,32 @@ export function readData(
       if (!file) {
         throw new Error(`--${type} requires a file argument`)
       }
-      const trackConfig =
+      const built =
         type === 'multiwig'
           ? makeMultiWiggleTrackConfig(
               readMultiWiggleSources(file),
               file,
-              configData.assembly,
+              assembly,
               modifierValue(rest, 'name'),
             )
-          : fileTrack(type, opts, configData.assembly.name)
-      trackConfig.trackId = uniqueTrackId(usedTrackIds, trackConfig.trackId)
-      configData.tracks.push(trackConfig)
-      openTracks.push({ trackId: trackConfig.trackId, opts: rest })
+          : fileTrack(type, opts, assembly.name)
+      const trackId = uniqueTrackId(usedTrackIds, built.trackId)
+      tracks.push({ ...built, trackId })
+      openTracks.push({ trackId, opts: rest })
     }
   }
-  configData.openTracks = openTracks
 
-  if (!defaultSession) {
-    // don't use defaultSession from config.json file, can result in assembly
-    // name confusion
-    configData.defaultSession = undefined
+  return {
+    ...assemblies,
+    assembly,
+    tracks,
+    openTracks,
+    // a config's own defaultSession can name assemblies other than the one
+    // opened, so it is read only when asked for
+    defaultSession: session
+      ? readSession(session)
+      : defaultSession
+        ? file.defaultSession
+        : undefined,
   }
-
-  // only allow an external manually specified session
-  if (sessionData) {
-    configData.defaultSession = sessionData
-  }
-
-  // Normalize to a non-empty assemblies array so downstream code (and the
-  // react-app2 config) never has to special-case the single-assembly path.
-  if (!configData.assemblies?.length) {
-    configData.assemblies = [configData.assembly]
-  }
-
-  // assembly and tracks are guaranteed set above (throw otherwise)
-  return configData as Config
 }

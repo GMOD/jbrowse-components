@@ -16,6 +16,7 @@ const synteny = (trackId: string, assemblyNames: string[]): Track => ({
 const threeWay: Config = {
   assemblies: [asm('hg38'), asm('hs1'), asm('mm39')],
   assembly: asm('hg38'),
+  openTracks: [],
   tracks: [
     synteny('hg38_hs1', ['hg38', 'hs1']),
     synteny('hs1_mm39', ['mm39', 'hs1']),
@@ -101,6 +102,7 @@ describe('stackSyntenyTrackIds', () => {
     const data: Config = {
       assemblies: [asm('wheat')],
       assembly: asm('wheat'),
+      openTracks: [],
       comparativeRows: [{ assembly: 'wheat' }, { assembly: 'wheat' }],
       tracks: [
         synteny('wheat_sorghum', ['wheat', 'sorghum']),

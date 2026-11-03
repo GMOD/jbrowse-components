@@ -15,7 +15,7 @@ function syntenyTrack(trackId: string, assemblyNames: string[]): Track {
 }
 
 function config(assemblies: Assembly[], tracks: Track[] = []): Config {
-  return { assemblies, assembly: assemblies[0]!, tracks }
+  return { assemblies, assembly: assemblies[0]!, tracks, openTracks: [] }
 }
 
 describe('comparativeViews', () => {

@@ -54,7 +54,7 @@ import {
 
 import type { ViewMode } from './modes.ts'
 import type { ViewSpec } from './spec.ts'
-import type { Config, OpenTrack, Opts, Track } from './types.ts'
+import type { Config, ConfigFile, OpenTrack, Opts, Track } from './types.ts'
 import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { AbstractViewModel } from '@jbrowse/core/util'
@@ -596,7 +596,7 @@ const renderLinear: ModeRenderer = async ctx => {
   // same path: the display type comes from the display the view opens the
   // track as, so modifiers (height:, color:, …) route to the right display slots
   // whichever way the track got there.
-  const toOpen = [...flagTracks, ...(data.openTracks ?? [])]
+  const toOpen = [...flagTracks, ...data.openTracks]
   const opened = []
   for (const { trackId, opts } of toOpen) {
     opened.push(
@@ -736,7 +736,7 @@ function circularInit(ctx: ModeContext): CircularViewCommands {
   const { model, data, opts } = ctx
   const named = [
     ...resolvedShowTracks(opts.showTracks, data),
-    ...(data.openTracks ?? []),
+    ...data.openTracks,
   ]
   const open = named.length
     ? named
@@ -786,12 +786,12 @@ const renderBreakpoint: ModeRenderer = async ctx => {
     'BreakpointSplitView',
     () => {
       const showTracks = resolvedShowTracks(opts.showTracks, data)
-      flagTracks = [...showTracks, ...(data.openTracks ?? [])]
+      flagTracks = [...showTracks, ...data.openTracks]
       const panels = (from: Config) =>
         breakpointInit(from, opts, showTracks, (trackId, modifiers) =>
           openedDisplayType(model.session, trackId, modifiers),
         )
-      specPanels = panels({ ...data, openTracks: undefined })
+      specPanels = panels({ ...data, openTracks: [] })
       return { views: panels(data) }
     },
     spec => ({ views: breakpointPanelsFromSpec(spec) }),
@@ -931,16 +931,9 @@ const modeRenderers: Record<ViewMode, ModeRenderer> = {
 
 /**
  * `configObject` is an already-fetched config standing in for this call's own
- * `resolveConfigObject`. Only a batch passes it: `--genome`/a URL `--config` is one
- * fetch per call otherwise, so a 400-junction run made 400 requests for the same
- * file — and for a `--genome` that includes 400 chromAlias fetches from UCSC, which
- * is 400 chances to hit the transient failure `navToLocOrGene` describes rather
- * than one.
- *
- * `readData` MUTATES what it is given (tracks, assembly, openTracks), so a
- * caller reusing one across calls has to hand over a copy each time.
+ * `resolveConfigObject`, which a batch fetches once for every record.
  */
-export async function renderRegion(opts: Opts, configObject?: Config) {
+export async function renderRegion(opts: Opts, configObject?: ConfigFile) {
   const { svg } = await renderRegionReport(opts, configObject)
   return svg
 }
@@ -948,7 +941,7 @@ export async function renderRegion(opts: Opts, configObject?: Config) {
 /** `renderRegion`, with what can be counted off the image beside it. */
 export async function renderRegionReport(
   opts: Opts,
-  configObject?: Config,
+  configObject?: ConfigFile,
 ): Promise<Rendered> {
   const argv = opts.argv ?? []
   const spec = opts.spec ? parseSpec(opts.spec) : undefined

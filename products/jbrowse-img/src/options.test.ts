@@ -259,8 +259,8 @@ describe('batch options', () => {
     }
     // --outDir replaces --out and the junction file replaces --loc; --spec and
     // --session fix the view, which in a batch is N identical images
-    for (const flag of ['--out ', '--loc ', '--spec', '--session']) {
-      expect(help).not.toContain(flag)
+    for (const name of ['out', 'loc', 'spec', 'session']) {
+      expect(help).not.toMatch(new RegExp(`^  --${name}\\s`, 'm'))
     }
   })
 })
