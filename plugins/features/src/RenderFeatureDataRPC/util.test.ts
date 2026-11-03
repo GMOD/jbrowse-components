@@ -243,6 +243,22 @@ describe('truncateLabel', () => {
     expect(result.length).toBe(50)
     expect(result.endsWith('…')).toBe(true)
   })
+
+  it('cuts between characters rather than inside a surrogate pair', () => {
+    const result = truncateLabel(`${'a'.repeat(48)}😀${'b'.repeat(20)}`)
+    expect(result).toBe(`${'a'.repeat(48)}😀…`)
+  })
+
+  it('keeps a joined emoji sequence whole at the cut', () => {
+    const family = '👨‍👩‍👧'
+    const result = truncateLabel(`${'a'.repeat(48)}${family}${'b'.repeat(20)}`)
+    expect(result).toBe(`${'a'.repeat(48)}${family}…`)
+  })
+
+  it('leaves a label of 50 characters alone even when it is longer in UTF-16 units', () => {
+    const label = '😀'.repeat(50)
+    expect(truncateLabel(label)).toBe(label)
+  })
 })
 
 describe('truncateToWidth', () => {

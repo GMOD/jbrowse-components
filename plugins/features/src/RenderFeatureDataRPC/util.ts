@@ -5,16 +5,22 @@ import type { Feature } from '@jbrowse/core/util'
 const MAX_LABEL_LENGTH = 50
 const UTR_REGEX = /(\bUTR|_UTR|untranslated[_\s]region)\b/i
 
-export function truncateLabel(text: string) {
-  return text.length > MAX_LABEL_LENGTH
-    ? `${text.slice(0, MAX_LABEL_LENGTH - 1)}…`
-    : text
-}
-
 // The unit `truncateToWidth` cuts on. Not UTF-16 units, which split a surrogate
 // pair, and not code points, which split a combining sequence or an emoji ZWJ
 // join.
 const GRAPHEMES = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+
+// A string of 50 or fewer UTF-16 units has at most 50 graphemes, so only a
+// longer one pays for segmenting.
+export function truncateLabel(text: string) {
+  if (text.length > MAX_LABEL_LENGTH) {
+    const chars = [...GRAPHEMES.segment(text)].map(g => g.segment)
+    return chars.length > MAX_LABEL_LENGTH
+      ? `${chars.slice(0, MAX_LABEL_LENGTH - 1).join('')}…`
+      : text
+  }
+  return text
+}
 
 // The result measures no wider than maxWidthPx, so a caller's stored textWidth
 // is bounded by construction. A budget too small for the ellipsis itself yields
