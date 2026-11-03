@@ -1798,9 +1798,9 @@ export const uiSpecs: ScreenshotSpec[] = [
     viewportHeight: 560,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Display types', 'Feature rows by attribute']),
+      ...menuCascade(['Display types', 'Multi-row display']),
     ],
-    annotations: cascadeBoxes(['Display types', 'Feature rows by attribute']),
+    annotations: cascadeBoxes(['Display types', 'Multi-row display']),
   },
 
   // Same window and viewport width as display_types_pick: a vertical compose

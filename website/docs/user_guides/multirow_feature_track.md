@@ -13,8 +13,8 @@ type, copy number per tumor, ancestry per haplotype, genotype per strain)
 becomes a single track with one config, one adapter, and one fetch.
 
 Any BED, BigBed, GFF3, or GTF track can be switched to it from the track menu:
-**Display types → Feature rows by attribute**. It draws the features as a plot
-of marks, a `rect` per feature, so
+**Display types → Multi-row display**. It draws the features as a plot of marks,
+a `rect` per feature, so
 [**Advanced → Edit plot...**](/docs/user_guides/edit_plot) and **Edit marks...**
 reach every mark, scale, filter and facet setting.
 

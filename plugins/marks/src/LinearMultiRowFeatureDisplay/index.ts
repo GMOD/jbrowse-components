@@ -34,7 +34,7 @@ export default function LinearMultiRowFeatureDisplayF(
     const configSchema = configSchemaFactory()
     return new DisplayType({
       name: 'LinearMultiRowFeatureDisplay',
-      displayName: 'Feature rows by attribute',
+      displayName: 'Multi-row display',
       helpText:
         'One row per value of a feature attribute, such as repeat class, sample or cell type, with each feature a colored block: repeat classes, chromatin states, copy number, chromosome and ancestry paintings.',
       configSchema,
