@@ -144,7 +144,7 @@ SVI=$Z/Dog10k_manta_paragraph.vcf.gz.tbi/content
 # --force-samples: skip names in sv.samples that the VCF lacks
 bcftools view -r chr37:25500000-25620000 -S sv.samples --force-samples \
   -Oz -o dog10k_nhej1_svs.vcf.gz "$SV##idx##$SVI"
-tabix -p vcf dog10k_nhej1_svs.vcf.gz
+tabix -C -p vcf dog10k_nhej1_svs.vcf.gz
 ```
 
 `sv.samples` comes from the Dog10K sample table and lists:
@@ -176,6 +176,7 @@ block. The track below also:
   "adapter": {
     "type": "VcfTabixAdapter",
     "uri": "dog10k_nhej1_svs.vcf.gz",
+    "csi": true,
     "samplesTsvLocation": { "uri": "dog10k_nhej1_samples.tsv" }
   },
   "displayDefaults": {
@@ -241,6 +242,7 @@ wc -l < unmapped.bed   # records the chain could not place
   "trackId": "omia_dog_variants",
   "name": "OMIA causal variants (dog)",
   "uri": "omia_dog_variants.gff3.gz",
+  "index": "omia_dog_variants.gff3.gz.csi",
   "assemblyNames": ["UU_Cfam_GSD_1.0"],
   "displayDefaults": {
     "labels": { "description": "jexl:feature.inheritance" }
@@ -292,6 +294,7 @@ so the two tracks line up row for row:
   "adapter": {
     "type": "VcfTabixAdapter",
     "uri": "dog10k_amy2b_svs.vcf.gz",
+    "csi": true,
     "samplesTsvLocation": { "uri": "dog10k_amy2b_samples.tsv" }
   },
   "displays": [
@@ -360,7 +363,7 @@ SV=$SHARE/Manta-SV_2022-03-28/SV-genotype-v2.merge.agg_only.08032022.vcf.gz
 bcftools view -r chr18:48865000-48876000 -S fgf4.samples --force-samples \
   -i 'POS=48869782 || POS=48870417' \
   -Oz -o dog10k_fgf4_svs.vcf.gz "$SV"
-tabix -p vcf dog10k_fgf4_svs.vcf.gz
+tabix -C -p vcf dog10k_fgf4_svs.vcf.gz
 ```
 
 `fgf4.samples` holds whole breeds: three breeds whose short legs are the trait
@@ -377,6 +380,7 @@ its `group` column, a breed's body proportions.
   "adapter": {
     "type": "VcfTabixAdapter",
     "uri": "dog10k_fgf4_svs.vcf.gz",
+    "csi": true,
     "samplesTsvLocation": { "uri": "dog10k_fgf4_samples.tsv" }
   },
   "displays": [
@@ -447,6 +451,7 @@ annotation track on its assembly:
   "trackId": "dog10k_fgf4_retro_cfa12_genes",
   "name": "FGF4 CFA12 retrocopy: GenBank annotation (MF040221)",
   "uri": "FGF4retro-CFA12.gff3.gz",
+  "index": "FGF4retro-CFA12.gff3.gz.csi",
   "assemblyNames": ["FGF4retro-CFA12"]
 }
 ```
@@ -456,6 +461,7 @@ annotation track on its assembly:
   "trackId": "dog10k_fgf4_retro_cfa18_genes",
   "name": "FGF4 CFA18 retrocopy: GenBank annotation (MF040222)",
   "uri": "FGF4retro-CFA18.gff3.gz",
+  "index": "FGF4retro-CFA18.gff3.gz.csi",
   "assemblyNames": ["FGF4retro-CFA18"]
 }
 ```

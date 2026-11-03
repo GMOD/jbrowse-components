@@ -140,6 +140,7 @@ draws.
   "adapter": {
     "type": "GWASAdapter",
     "uri": "dog10k_size_fst.bed.gz",
+    "csi": true,
     "columnNames": ["chrom", "chromStart", "chromEnd", "name", "fst", "sites"],
     "scoreColumn": "fst"
   },
@@ -210,7 +211,7 @@ SNVS=https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/Au
 bcftools view -r chr15:41350000-41750000 -S igf1.samples --force-samples \
   -f PASS "$SNVS" \
   | bcftools view -q 0.05:minor -Oz -o dog10k_igf1.vcf.gz
-tabix -p vcf dog10k_igf1.vcf.gz
+tabix -C -p vcf dog10k_igf1.vcf.gz
 ```
 
 A site that is reference in every animal draws an empty column, so the second
@@ -241,6 +242,7 @@ column that paints the swatch:
   "adapter": {
     "type": "VcfTabixAdapter",
     "uri": "dog10k_igf1.vcf.gz",
+    "csi": true,
     "samplesTsvLocation": { "uri": "dog10k_igf1_samples.tsv" }
   },
   "displays": [

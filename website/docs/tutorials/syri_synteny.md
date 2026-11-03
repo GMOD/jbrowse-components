@@ -281,7 +281,7 @@ name. The rows against Col-0 concatenate into one track:
     tail -n +2 Col-0_$name.regions.bed
   done | sort -k1,1 -k2,2n
 } | bgzip >syri_regions.bed.gz
-tabix -p bed syri_regions.bed.gz
+tabix -C -p bed syri_regions.bed.gz
 ```
 
 In [grammar-of-graphics](/docs/config_guides/mark_display) terms, `rows` assigns
@@ -297,6 +297,7 @@ orders them:
   "adapter": {
     "type": "BedTabixAdapter",
     "uri": "syri_regions.bed.gz",
+    "csi": true,
     "disableGeneHeuristic": true
   },
   "displays": [

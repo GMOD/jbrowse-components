@@ -71,7 +71,8 @@
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "omia_dog_variants.gff3.gz"
+        "uri": "omia_dog_variants.gff3.gz",
+        "csi": true
       },
       "displayDefaults": {
         "labels": {
@@ -87,6 +88,7 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_nhej1_svs.vcf.gz",
+        "csi": true,
         "samplesTsvLocation": {
           "uri": "dog10k_nhej1_samples.tsv"
         }
@@ -99,7 +101,8 @@
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "dog10k_denr_svs.vcf.gz"
+        "uri": "dog10k_denr_svs.vcf.gz",
+        "csi": true
       }
     },
     {
@@ -109,7 +112,8 @@
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "dog10k_denr_svs.vcf.gz"
+        "uri": "dog10k_denr_svs.vcf.gz",
+        "csi": true
       }
     },
     {
@@ -120,6 +124,7 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_amy2b_svs.vcf.gz",
+        "csi": true,
         "samplesTsvLocation": {
           "uri": "dog10k_amy2b_samples.tsv"
         }
@@ -139,7 +144,8 @@
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "dog10k_amy2b_svs.vcf.gz"
+        "uri": "dog10k_amy2b_svs.vcf.gz",
+        "csi": true
       }
     },
     {
@@ -150,6 +156,7 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_rnase1_svs.vcf.gz",
+        "csi": true,
         "samplesTsvLocation": {
           "uri": "dog10k_amy2b_samples.tsv"
         }
@@ -169,7 +176,8 @@
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "dog10k_rnase1_svs.vcf.gz"
+        "uri": "dog10k_rnase1_svs.vcf.gz",
+        "csi": true
       }
     },
     {
@@ -180,6 +188,7 @@
       "adapter": {
         "type": "GWASAdapter",
         "uri": "dog10k_size_fst.bed.gz",
+        "csi": true,
         "columnNames": [
           "chrom",
           "chromStart",
@@ -200,6 +209,7 @@
       "adapter": {
         "type": "GWASAdapter",
         "uri": "dog10k_size_fst_igf1_20kb.bed.gz",
+        "csi": true,
         "columnNames": [
           "chrom",
           "chromStart",
@@ -220,6 +230,7 @@
       "adapter": {
         "type": "GWASAdapter",
         "uri": "dog10k_igf1_fst.bed.gz",
+        "csi": true,
         "columnNames": [
           "chrom",
           "chromStart",
@@ -241,6 +252,7 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_fgf4_svs.vcf.gz",
+        "csi": true,
         "samplesTsvLocation": {
           "uri": "dog10k_fgf4_samples.tsv"
         }
@@ -265,6 +277,7 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_fgf4_cohort_svs.vcf.gz",
+        "csi": true,
         "samplesTsvLocation": {
           "uri": "dog10k_fgf4_cohort_samples.tsv"
         }
@@ -301,7 +314,8 @@
       "assemblyNames": ["FGF4retro-CFA18"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "FGF4retro-CFA18.gff3.gz"
+        "uri": "FGF4retro-CFA18.gff3.gz",
+        "csi": true
       }
     },
     {
@@ -311,7 +325,8 @@
       "assemblyNames": ["FGF4retro-CFA12"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "FGF4retro-CFA12.gff3.gz"
+        "uri": "FGF4retro-CFA12.gff3.gz",
+        "csi": true
       }
     },
     {
@@ -321,7 +336,8 @@
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "dog10k_cyp1a2_snvs.vcf.gz"
+        "uri": "dog10k_cyp1a2_snvs.vcf.gz",
+        "csi": true
       }
     },
     {
@@ -331,7 +347,8 @@
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "dog10k_cyp1a2_snvs.vcf.gz"
+        "uri": "dog10k_cyp1a2_snvs.vcf.gz",
+        "csi": true
       }
     },
     {
@@ -355,7 +372,8 @@
           "sample",
           "copyNumber"
         ],
-        "uri": "dog10k_cyp1a2_cn.bed.gz"
+        "uri": "dog10k_cyp1a2_cn.bed.gz",
+        "csi": true
       },
       "displays": [
         {
@@ -421,7 +439,8 @@
           "sample",
           "copyNumber"
         ],
-        "uri": "dog10k_cyp1a2_cohort_cn.bed.gz"
+        "uri": "dog10k_cyp1a2_cohort_cn.bed.gz",
+        "csi": true
       },
       "displays": [
         {
@@ -477,7 +496,8 @@
           "obsExpCpG",
           "length"
         ],
-        "uri": "dog10k_cyp1a2_cpg.bed.gz"
+        "uri": "dog10k_cyp1a2_cpg.bed.gz",
+        "csi": true
       },
       "displayDefaults": {
         "encoding": { "color": { "value": "#2e7d32" } }
@@ -504,7 +524,8 @@
           "sample",
           "copyNumber"
         ],
-        "uri": "dog10k_cyp1a2_breed_cn.bed.gz"
+        "uri": "dog10k_cyp1a2_breed_cn.bed.gz",
+        "csi": true
       },
       "displays": [
         {
@@ -577,7 +598,8 @@
           "sample",
           "copyNumber"
         ],
-        "uri": "dog10k_slc28a3_cohort_cn.bed.gz"
+        "uri": "dog10k_slc28a3_cohort_cn.bed.gz",
+        "csi": true
       },
       "displays": [
         {
@@ -626,7 +648,8 @@
           "sample",
           "copyNumber"
         ],
-        "uri": "dog10k_slc28a3_breed_cn.bed.gz"
+        "uri": "dog10k_slc28a3_breed_cn.bed.gz",
+        "csi": true
       },
       "displays": [
         {
@@ -677,7 +700,8 @@
       "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "dog10k_wolfdog_chr1_block.vcf.gz"
+        "uri": "dog10k_wolfdog_chr1_block.vcf.gz",
+        "csi": true
       }
     },
     {
@@ -688,7 +712,8 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
-        "uri": "dog10k_wolfdog_ancestry.chr1.bed.gz"
+        "uri": "dog10k_wolfdog_ancestry.chr1.bed.gz",
+        "csi": true
       },
       "displays": [
         {
@@ -716,7 +741,8 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "disableGeneHeuristic": true,
-        "uri": "dog10k_wolfdog_named.chr1.bed.gz"
+        "uri": "dog10k_wolfdog_named.chr1.bed.gz",
+        "csi": true
       },
       "displays": [
         {
@@ -812,6 +838,7 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "dog10k_igf1.vcf.gz",
+        "csi": true,
         "samplesTsvLocation": {
           "uri": "dog10k_igf1_samples.tsv"
         }

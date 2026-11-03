@@ -183,7 +183,8 @@
       "assemblyNames": ["bosTau9"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "omia_cattle_variants.gff3.gz"
+        "uri": "omia_cattle_variants.gff3.gz",
+        "csi": true
       },
       "displayDefaults": {
         "labels": {

@@ -105,6 +105,7 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "uri": "syri_regions.bed.gz",
+        "csi": true,
         "disableGeneHeuristic": true
       },
       "displays": [

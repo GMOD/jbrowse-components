@@ -41,9 +41,8 @@ test('the first load reads the names beside the region', async () => {
         locationType: 'LocalPathLocation',
       },
       index: {
-        indexType: 'TBI',
         location: {
-          localPath: require.resolve(`${file}.tbi`),
+          localPath: require.resolve(`${file}.csi`),
           locationType: 'LocalPathLocation',
         },
       },

@@ -232,7 +232,7 @@ inline to run without node:
 
 ```bash
 jbrowse sort-bed ancestry.chr1.bed | bgzip > ancestry.chr1.bed.gz
-tabix -p bed ancestry.chr1.bed.gz
+tabix -C -p bed ancestry.chr1.bed.gz
 ```
 
 Each output line looks like this:
@@ -267,7 +267,8 @@ the key.
   "adapter": {
     "type": "BedTabixAdapter",
     "disableGeneHeuristic": true,
-    "uri": "dog10k_wolfdog_named.chr1.bed.gz"
+    "uri": "dog10k_wolfdog_named.chr1.bed.gz",
+    "csi": true
   },
   "displays": [
     {

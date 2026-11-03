@@ -135,7 +135,8 @@ The figures also show NCBI's RefSeq genes and UCSC's CpG islands:
       "obsExpCpG",
       "length"
     ],
-    "uri": "https://jbrowse.org/code/jb2/main/test_data/dog10k/dog10k_cyp1a2_cpg.bed.gz"
+    "uri": "https://jbrowse.org/code/jb2/main/test_data/dog10k/dog10k_cyp1a2_cpg.bed.gz",
+    "csi": true
   },
   "displayDefaults": {
     "encoding": {
@@ -194,7 +195,7 @@ SNVS=https://kiddlabshare.med.umich.edu/dog10K/SNP_and_indel_calls_2021-10-17/Au
 # sample list, instead of exiting
 bcftools view -r chr30:38258000-38265000 -S cyp.samples --force-samples \
   -Oz -o dog10k_cyp1a2_snvs.vcf.gz "$SNVS"
-tabix -p vcf dog10k_cyp1a2_snvs.vcf.gz
+tabix -C -p vcf dog10k_cyp1a2_snvs.vcf.gz
 ```
 
 `cyp.samples` holds breeds that have the allele, two that do not, and four Greek
@@ -209,6 +210,7 @@ An SNV VCF loads as an ordinary `VariantTrack`:
   "trackId": "dog10k_cyp1a2_snvs",
   "name": "Dog10K SNVs at CYP1A2",
   "uri": "dog10k_cyp1a2_snvs.vcf.gz",
+  "index": "dog10k_cyp1a2_snvs.vcf.gz.csi",
   "assemblyNames": ["UU_Cfam_GSD_1.0"]
 }
 ```
@@ -237,6 +239,7 @@ the stop site is the one column drawn. Dropping the filter shows them.
   "trackId": "dog10k_cyp1a2_snvs",
   "name": "Dog10K SNVs at CYP1A2",
   "uri": "dog10k_cyp1a2_snvs.vcf.gz",
+  "index": "dog10k_cyp1a2_snvs.vcf.gz.csi",
   "assemblyNames": ["UU_Cfam_GSD_1.0"],
   "displays": [
     {
@@ -348,6 +351,7 @@ to get a key on this track:
   "adapter": {
     "type": "BedTabixAdapter",
     "uri": "dog10k_cyp1a2_cohort_cn.bed.gz",
+    "csi": true,
     "disableGeneHeuristic": true,
     "columnNames": [
       "chrom",

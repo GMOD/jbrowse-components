@@ -185,7 +185,7 @@ export const DOG_VCF = {
   adapterConfig: {
     type: 'VcfTabixAdapter',
     vcfGzLocation: uri('dog10k_cyp1a2_snvs.vcf.gz', DOG10K),
-    index: { location: uri('dog10k_cyp1a2_snvs.vcf.gz.tbi', DOG10K) },
+    index: { location: uri('dog10k_cyp1a2_snvs.vcf.gz.csi', DOG10K) },
   },
   region: { refName: 'chr30', start: 38258000, end: 38265000 },
 } satisfies VariantTablesArgs
@@ -195,7 +195,7 @@ export const DOG_SV = {
   adapterConfig: {
     type: 'VcfTabixAdapter',
     vcfGzLocation: uri('dog10k_amy2b_svs.vcf.gz', DOG10K),
-    index: { location: uri('dog10k_amy2b_svs.vcf.gz.tbi', DOG10K) },
+    index: { location: uri('dog10k_amy2b_svs.vcf.gz.csi', DOG10K) },
     samplesTsvLocation: uri('dog10k_amy2b_samples.tsv', DOG10K),
   },
   region: { refName: 'chr6', start: 47340000, end: 47420000 },

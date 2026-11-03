@@ -39,9 +39,8 @@ test('the first load reads the header beside the region', async () => {
         locationType: 'LocalPathLocation',
       },
       index: {
-        indexType: 'TBI',
         location: {
-          localPath: require.resolve(`${dir}.tbi`),
+          localPath: require.resolve(`${dir}.csi`),
           locationType: 'LocalPathLocation',
         },
       },
