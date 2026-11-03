@@ -264,13 +264,13 @@ for painting in "dog10k_wolfdog_ancestry.$CHROM" "dog10k_wolfdog_named.$CHROM"; 
     grep -v '^#' "$painting.bed" \
       | LC_ALL=C sort -t"$(printf '\t')" -k1,1 -k2,2n
   } | bgzip > "$painting.bed.gz"
-  tabix -f -p bed "$painting.bed.gz"
+  tabix -f -C -p bed "$painting.bed.gz"
 done
 
 echo
 echo "Wrote $(pwd)/dog10k_wolfdog_ancestry.$CHROM.bed.gz (243 animals) and"
 echo "      $(pwd)/dog10k_wolfdog_named.$CHROM.bed.gz (the named subset),"
-echo "plus their .tbi. Load them with the track JSON in the local ancestry"
+echo "plus their .csi. Load them with the track JSON in the local ancestry"
 echo "tutorial; the subset track's domain is named.tsv, in that order."
 
 # Wolf-block length distribution per animal. The tutorial's claim that the
@@ -378,13 +378,13 @@ if [ "$CHROM" = chr1 ]; then
   cut -f1 named.tsv > block.samples
   { awk '{print $1"\twolf"}' wolves.txt
     awk '{print $1"\tdog"}' dogs.txt; } > afgroups.txt
-  tabix -f -p vcf "$CHROM.subset.vcf.gz"
+  tabix -f -C -p vcf "$CHROM.subset.vcf.gz"
   bcftools view -r "chr1:$BLOCK_START-$BLOCK_END" -Ou "$CHROM.subset.vcf.gz" \
     | bcftools +fill-tags -Ou -- -S afgroups.txt -t AF \
     | bcftools view -S block.samples --force-samples -Ou \
     | bcftools annotate -x INFO/AC,INFO/AF,INFO/AN,INFO/NS \
       -Oz -o dog10k_wolfdog_chr1_block.vcf.gz
-  tabix -f -p vcf dog10k_wolfdog_chr1_block.vcf.gz
+  tabix -f -C -p vcf dog10k_wolfdog_chr1_block.vcf.gz
   echo
   echo "Wrote $(pwd)/dog10k_wolfdog_chr1_block.vcf.gz (the marker figure's window)."
 

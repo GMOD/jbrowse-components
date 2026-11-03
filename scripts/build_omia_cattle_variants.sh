@@ -32,7 +32,7 @@ python3 "$HERE/omia_sql_to_bed.py" cattle omia.sql.gz native.bed lift.bed varian
 python3 "$HERE/omia_bed_to_gff.py" variants.tsv native.bed lift.bed omia_cattle_variants.gff3
 
 bgzip -f omia_cattle_variants.gff3
-tabix -f -p gff omia_cattle_variants.gff3.gz
+tabix -f -C -p gff omia_cattle_variants.gff3.gz
 
 echo
 echo "wrote $OUTDIR/omia_cattle_variants.gff3.gz ($(gzip -dc omia_cattle_variants.gff3.gz | grep -cv '^#') records)"

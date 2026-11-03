@@ -95,7 +95,7 @@ PY
 bcftools view -r "$REGION" -S amy2b.samples --force-samples \
   -i "POS=$DUP_POS" \
   -Oz -o dog10k_amy2b_svs.vcf.gz "$SV"
-tabix -f -p vcf dog10k_amy2b_svs.vcf.gz
+tabix -f -C -p vcf dog10k_amy2b_svs.vcf.gz
 
 # The sample metadata TSV. The panel is whole breeds rather than a handful of
 # named animals, so the rows are labelled through the adapter rather than
@@ -193,7 +193,7 @@ RNASE1_POS=18164072
 bcftools view -r "$RNASE1_REGION" -S amy2b.samples --force-samples \
   -i "POS=$RNASE1_POS" \
   -Oz -o dog10k_rnase1_svs.vcf.gz "$PARAGRAPH##idx##$PARAGRAPH_IDX"
-tabix -f -p vcf dog10k_rnase1_svs.vcf.gz
+tabix -f -C -p vcf dog10k_rnase1_svs.vcf.gz
 
 echo
 echo "Genotypes at the RNASE1 insertion (chr15:$RNASE1_POS), whole collection:"
@@ -234,6 +234,6 @@ PY
 
 echo
 echo "Wrote $(pwd)/dog10k_amy2b_svs.vcf.gz and $(pwd)/dog10k_rnase1_svs.vcf.gz"
-echo "      (plus their .tbi) and $(pwd)/dog10k_amy2b_samples.tsv, which labels"
+echo "      (plus their .csi) and $(pwd)/dog10k_amy2b_samples.tsv, which labels"
 echo "      both: the two slices carry the same panel in the same order."
 echo "Load them with the track JSON in the structural-variant tutorial."

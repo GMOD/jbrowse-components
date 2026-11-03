@@ -29,8 +29,8 @@
 #
 #   FGF4retro-CFA18.fa{,.fai}      the retrocopy as a one-contig assembly
 #   FGF4retro-CFA12.fa{,.fai}
-#   FGF4retro-CFA18.gff3.gz{,.tbi} its GenBank feature table, as an annotation
-#   FGF4retro-CFA12.gff3.gz{,.tbi} track on that assembly
+#   FGF4retro-CFA18.gff3.gz{,.csi} its GenBank feature table, as an annotation
+#   FGF4retro-CFA12.gff3.gz{,.csi} track on that assembly
 #   dog10k_fgf4_retro_cfa18.paf    its alignment to chr18, in absolute canFam4
 #   dog10k_fgf4_retro_cfa12.paf    coordinates
 set -euo pipefail
@@ -141,7 +141,7 @@ print('%-16s %s  gene 1..%d, single CDS %d..%d (%d codons), protein %s'
          (cds_end - cds_start + 1) // 3, protein))
 PY
     bgzip -f "$2.gff3"
-    tabix -f -p gff "$2.gff3.gz"
+    tabix -f -C -p gff "$2.gff3.gz"
     rm -f "$2.gb"
   }
 }
@@ -266,7 +266,7 @@ rm -f ./*.window.paf parent.json
 
 echo
 echo "Wrote $(pwd):"
-echo "  FGF4retro-CFA18.fa + .fai   .gff3.gz + .tbi   dog10k_fgf4_retro_cfa18.paf"
-echo "  FGF4retro-CFA12.fa + .fai   .gff3.gz + .tbi   dog10k_fgf4_retro_cfa12.paf"
+echo "  FGF4retro-CFA18.fa + .fai   .gff3.gz + .csi   dog10k_fgf4_retro_cfa18.paf"
+echo "  FGF4retro-CFA12.fa + .fai   .gff3.gz + .csi   dog10k_fgf4_retro_cfa12.paf"
 echo "Load them with the assembly, FeatureTrack and SyntenyTrack JSON in the"
 echo "retrogene tutorial."

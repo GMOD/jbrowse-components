@@ -101,7 +101,7 @@ PY
 # The callset is 397 GB; bcftools reads only this gene over HTTP.
 bcftools view -r "$REGION" -S cyp.samples --force-samples \
   -Oz -o dog10k_cyp1a2_snvs.vcf.gz "$SNVS"
-tabix -f -p vcf dog10k_cyp1a2_snvs.vcf.gz
+tabix -f -C -p vcf dog10k_cyp1a2_snvs.vcf.gz
 
 echo
 echo "Genotypes at the stop codon:"
@@ -118,7 +118,7 @@ echo
 echo "The same site over every canid in the callset:"
 bcftools view -r chr30:38261635 -i 'POS=38261635' \
   -Oz -o dog10k_cyp1a2_stop_site.vcf.gz "$SNVS"
-tabix -f -p vcf dog10k_cyp1a2_stop_site.vcf.gz
+tabix -f -C -p vcf dog10k_cyp1a2_stop_site.vcf.gz
 bcftools query -f '[%SAMPLE=%GT\n]' dog10k_cyp1a2_stop_site.vcf.gz > cyp_all.gt
 
 python3 - <<'PY'
@@ -155,4 +155,4 @@ PY
 
 echo
 echo "Wrote $(pwd)/dog10k_cyp1a2_snvs.vcf.gz and dog10k_cyp1a2_stop_site.vcf.gz"
-echo "(each with its .tbi), and dog10k_sample_table.tsv."
+echo "(each with its .csi), and dog10k_sample_table.tsv."

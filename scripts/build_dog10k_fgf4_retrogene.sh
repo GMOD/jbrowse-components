@@ -137,7 +137,7 @@ PY
 bcftools view -r "$REGION" -S fgf4.samples --force-samples \
   -i "POS=$INTRON1_POS || POS=$INTRON2_POS" \
   -Oz -o dog10k_fgf4_svs.vcf.gz "$SV" 2>/dev/null
-tabix -f -p vcf dog10k_fgf4_svs.vcf.gz
+tabix -f -C -p vcf dog10k_fgf4_svs.vcf.gz
 
 # ── The whole collection ────────────────────────────────────────────────────
 # The same two records with no sample subset. The grouping is the sample table's
@@ -145,7 +145,7 @@ tabix -f -p vcf dog10k_fgf4_svs.vcf.gz
 # comes out homozygous reference is the question, not an input to it.
 bcftools view -r "$REGION" -i "POS=$INTRON1_POS || POS=$INTRON2_POS" \
   -Oz -o dog10k_fgf4_cohort_svs.vcf.gz "$SV" 2>/dev/null
-tabix -f -p vcf dog10k_fgf4_cohort_svs.vcf.gz
+tabix -f -C -p vcf dog10k_fgf4_cohort_svs.vcf.gz
 
 bcftools query -l dog10k_fgf4_cohort_svs.vcf.gz 2>/dev/null > cohort.samples
 python3 - <<'PY'

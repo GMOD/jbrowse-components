@@ -73,7 +73,7 @@ PY
 # named explicitly with ##idx## rather than guessed from the data URL.
 bcftools view -r "$REGION" -S sv.samples --force-samples \
   -Oz -o dog10k_nhej1_svs.vcf.gz "$SV##idx##$SVI"
-tabix -f -p vcf dog10k_nhej1_svs.vcf.gz
+tabix -f -C -p vcf dog10k_nhej1_svs.vcf.gz
 
 echo
 echo "Genotypes of the Collie eye anomaly deletion (chr37:25,574,005):"
@@ -81,7 +81,7 @@ bcftools query -r chr37:25574005-25574006 -f '[%SAMPLE=%GT ]\n' \
   dog10k_nhej1_svs.vcf.gz | tr ' ' '\n' | grep -v '=0/0' || true
 
 echo
-echo "Wrote $(pwd)/dog10k_nhej1_svs.vcf.gz (plus its .tbi) and dog10k_nhej1_samples.tsv."
+echo "Wrote $(pwd)/dog10k_nhej1_svs.vcf.gz (plus its .csi) and dog10k_nhej1_samples.tsv."
 echo "Load it with the track JSON in the structural-variant tutorial."
 
 # ── The DENR SINE dimorphisms ───────────────────────────────────────────────
@@ -122,7 +122,7 @@ PY
 bcftools view -r "$DENR_REGION" -S denr.samples --force-samples \
   -i 'POS=6931055 || POS=6933974' \
   -Oz -o dog10k_denr_svs.vcf.gz "$SV##idx##$SVI"
-tabix -f -p vcf dog10k_denr_svs.vcf.gz
+tabix -f -C -p vcf dog10k_denr_svs.vcf.gz
 
 echo
 echo "Wrote $(pwd)/dog10k_denr_svs.vcf.gz (the two DENR SINE deletions)."

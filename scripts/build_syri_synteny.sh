@@ -112,7 +112,7 @@ for p in "${PAIRS[@]}"; do cat "${p/ /_}.paf"; done >syri_pangenome.paf
     tail -n +2 "${REFERENCE}_$name.regions.bed"
   done | sort -k1,1 -k2,2n
 } | bgzip >syri_regions.bed.gz
-tabix -f -p bed syri_regions.bed.gz
+tabix -f -C -p bed syri_regions.bed.gz
 
 echo "== config.json"
 NAMES="${NAMES[*]}" python3 - <<'PY'
@@ -169,6 +169,7 @@ config = {
             'adapter': {
                 'type': 'BedTabixAdapter',
                 'uri': 'syri_regions.bed.gz',
+                'csi': True,
                 'disableGeneHeuristic': True,
             },
             'displays': [

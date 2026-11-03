@@ -378,7 +378,7 @@ print('%d painted segments across %d dogs' % (len(rows), len(paths)))
 PY
 
 bgzip -f dog10k_cyp1a2_cn.bed
-tabix -f -p bed dog10k_cyp1a2_cn.bed.gz
+tabix -f -C -p bed dog10k_cyp1a2_cn.bed.gz
 
 # ── The whole collection ────────────────────────────────────────────────────
 # The same estimate from the callset's own per-sample DP, which exists for all
@@ -572,7 +572,7 @@ print(json.dumps({'scale': {'type': 'identity',
 PY
 
 bgzip -f dog10k_cyp1a2_cohort_cn.bed
-tabix -f -p bed dog10k_cyp1a2_cohort_cn.bed.gz
+tabix -f -C -p bed dog10k_cyp1a2_cohort_cn.bed.gz
 
 # ── A few named animals, whole groups at a time ─────────────────────────────
 # The paper's presentation of the neighbouring SLC28A3 expansion (Meadows et al.
@@ -683,7 +683,7 @@ print(json.dumps(order, indent=2))
 PY
 
 bgzip -f dog10k_cyp1a2_breed_cn.bed
-tabix -f -p bed dog10k_cyp1a2_breed_cn.bed.gz
+tabix -f -C -p bed dog10k_cyp1a2_breed_cn.bed.gz
 
 # ── CpG islands ─────────────────────────────────────────────────────────────
 # Drawn beside the paintings so the widest hole in them has its cause on screen
@@ -707,7 +707,7 @@ print('%d CpG islands over the window' % len(items))
 PY
 
 bgzip -f dog10k_cyp1a2_cpg.bed
-tabix -f -p bed dog10k_cyp1a2_cpg.bed.gz
+tabix -f -C -p bed dog10k_cyp1a2_cpg.bed.gz
 
 echo
 echo "Wrote $(pwd)/dog10k_cyp1a2_cn.bed.gz, one painted row per CRAM dog,"

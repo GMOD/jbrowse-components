@@ -59,7 +59,7 @@ echo "liftOver: $(wc -l < lifted.bed) of $(wc -l < canFam3.bed) CanFam3.1 record
 python3 "$HERE/omia_bed_to_gff.py" variants.tsv native.bed lifted.bed omia_dog_variants.gff3
 
 bgzip -f omia_dog_variants.gff3
-tabix -f -p gff omia_dog_variants.gff3.gz
+tabix -f -C -p gff omia_dog_variants.gff3.gz
 
 echo
 echo "wrote $OUTDIR/omia_dog_variants.gff3.gz ($(gzip -dc omia_dog_variants.gff3.gz | grep -cv '^#') records)"

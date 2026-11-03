@@ -90,7 +90,7 @@ PY
 # The callset is 397 GB across 1,987 canids; bcftools reads only this window.
 bcftools view -r "$REGION" -S igf1.samples --force-samples -f PASS "$SNVS" \
   | bcftools view -q "$MINOR_AF:minor" -Oz -o dog10k_igf1.vcf.gz
-tabix -f -p vcf dog10k_igf1.vcf.gz
+tabix -f -C -p vcf dog10k_igf1.vcf.gz
 
 echo
 echo "Sites kept: $(bcftools view -H dog10k_igf1.vcf.gz | wc -l)"
@@ -104,7 +104,7 @@ echo "Sites kept: $(bcftools view -H dog10k_igf1.vcf.gz | wc -l)"
 python3 "$HERE/igf1_site_fst.py" \
   dog10k_igf1.vcf.gz dog10k_igf1_samples.tsv dog10k_igf1_fst.bed
 bgzip -f dog10k_igf1_fst.bed
-tabix -f -p bed dog10k_igf1_fst.bed.gz
+tabix -f -C -p bed dog10k_igf1_fst.bed.gz
 
 # ── Check it against the numbers ────────────────────────────────────────────
 # Report the quantity the figure shows: per size class, the alt-allele dosage
@@ -186,6 +186,6 @@ for size, group in by_size.items():
 PY
 
 echo
-echo "Wrote $(pwd)/dog10k_igf1.vcf.gz (plus its .tbi),"
-echo "      $(pwd)/dog10k_igf1_fst.bed.gz (plus its .tbi) and"
+echo "Wrote $(pwd)/dog10k_igf1.vcf.gz (plus its .csi),"
+echo "      $(pwd)/dog10k_igf1_fst.bed.gz (plus its .csi) and"
 echo "      $(pwd)/dog10k_igf1_samples.tsv"

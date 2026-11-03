@@ -179,7 +179,7 @@ for region in $REGIONS; do
 done > "$OUTBED"
 
 bgzip -f "$OUTBED"
-tabix -f -p bed "$OUTBED.gz"
+tabix -f -C -p bed "$OUTBED.gz"
 
 # ── Check it against the numbers ────────────────────────────────────────────
 # Print the ranked windows rather than asserting anything about them: which loci
@@ -209,4 +209,4 @@ gzip -dc "$OUTBED.gz" | sort -k5,5gr |
   awk 'BEGIN{OFS="\t"} NR<=20 {print NR, $1":"$2"-"$3, $5, $6" sites"}'
 
 echo
-echo "Wrote $(pwd)/$OUTBED.gz (plus its .tbi)"
+echo "Wrote $(pwd)/$OUTBED.gz (plus its .csi)"

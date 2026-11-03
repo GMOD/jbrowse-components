@@ -265,7 +265,7 @@ PY
 
 for part in cohort breed; do
   bgzip -f "dog10k_slc28a3_${part}_cn.bed"
-  tabix -f -p bed "dog10k_slc28a3_${part}_cn.bed.gz"
+  tabix -f -C -p bed "dog10k_slc28a3_${part}_cn.bed.gz"
 done
 
 echo
