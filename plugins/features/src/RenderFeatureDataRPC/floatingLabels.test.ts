@@ -35,8 +35,8 @@ describe('floatingLabels', () => {
       })
       // The name→description gap comes from the display mode's font size at
       // render time, so the worker bakes no vertical offset.
-      expect(result.nameLabel!.relativeY).toBe(0)
-      expect(result.descriptionLabel!.relativeY).toBe(0)
+      expect(result.nameLabel).not.toHaveProperty('relativeY')
+      expect(result.descriptionLabel).not.toHaveProperty('relativeY')
     })
 
     it('includes textWidth for each label', () => {
@@ -82,7 +82,6 @@ describe('floatingLabels', () => {
       })
       expect(result.nameLabel).toBeUndefined()
       expect(result.descriptionLabel).toBeDefined()
-      expect(result.descriptionLabel!.relativeY).toBe(0)
     })
   })
 
@@ -93,8 +92,8 @@ describe('floatingLabels', () => {
         'Test Transcript',
         'overlay',
       )
-      expect(below).toMatchObject({ isOverlay: false, relativeY: 0 })
-      expect(overlay).toMatchObject({ isOverlay: true, relativeY: 0 })
+      expect(below).toMatchObject({ isOverlay: false })
+      expect(overlay).toMatchObject({ isOverlay: true })
     })
 
     it('truncates long labels', () => {

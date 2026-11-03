@@ -48,7 +48,7 @@ test('a feature the packer could not place leaves every table and is counted', (
         maxX: 100,
         topY: 0,
         featureHeight: 10,
-        nameLabel: { text: 'KEPT', relativeY: 0, textWidth: 30 },
+        nameLabel: { text: 'KEPT', textWidth: 30 },
       },
     }),
   })

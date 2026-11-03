@@ -94,7 +94,7 @@ test('floating label tops follow their feature', () => {
       maxX: 10,
       topY: 0,
       featureHeight: 10,
-      nameLabel: { text: 'a', relativeY: 0, textWidth: 20 },
+      nameLabel: { text: 'a', textWidth: 20 },
     },
   })
   const mid = interpolateYData(fromTops, target, 0.5).get(0)!

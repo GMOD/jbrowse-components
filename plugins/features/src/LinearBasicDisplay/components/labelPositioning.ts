@@ -164,7 +164,6 @@ export interface FeatureBoundsPx {
 }
 
 export interface LabelMetrics {
-  relativeY: number
   textWidth: number
 }
 
@@ -198,7 +197,7 @@ export function computeLabelPosition(
       renderedTextWidth(label.textWidth, fontSize),
       bounds,
     ),
-    labelY: bounds.featureBottomPx + label.relativeY + padding,
+    labelY: bounds.featureBottomPx + padding,
   }
 }
 
@@ -309,10 +308,11 @@ export function placeFeatureLabels(
     padding: number,
     kind: PlainPlacedLabel['kind'],
     size = fontSize,
+    offsetY = 0,
   ) => {
     const placed = {
       label,
-      ...computeLabelPosition(label, padding, bounds, size),
+      ...computeLabelPosition(label, offsetY + padding, bounds, size),
       fontSize: size,
       kind,
       color: colors && plainLabelColor(label, kind, colors),
@@ -339,18 +339,22 @@ export function placeFeatureLabels(
     }
   }
   if (descriptionLabel) {
-    // Taken from the mode's fontSize rather than the baked relativeY, so the gap
-    // tracks compact-shrunk text and the description collapses into the row a
-    // hidden or absent name vacated.
-    const relativeY = nameLabel ? fontSize : 0
-    add({ ...descriptionLabel, relativeY }, LABEL_TOP_GAP_PX, 'desc')
+    // Offset by the mode's fontSize so the gap tracks compact-shrunk text and
+    // the description collapses into the row a hidden or absent name vacated.
+    add(
+      descriptionLabel,
+      LABEL_TOP_GAP_PX,
+      'desc',
+      fontSize,
+      nameLabel ? fontSize : 0,
+    )
   }
   if (subfeatureLabel?.isOverlay) {
     // Sized to the body it sits on, so its backing never reaches the next row
     const { featureHeight } = labelData
     const size = Math.min(fontSize, featureHeight + 1)
     if (size >= OVERLAY_LABEL_MIN_FONT_PX) {
-      add({ ...subfeatureLabel, relativeY: -featureHeight }, 0, 'sub', size)
+      add(subfeatureLabel, 0, 'sub', size, -featureHeight)
     }
   } else if (subfeatureLabel) {
     add(subfeatureLabel, 0, 'sub')

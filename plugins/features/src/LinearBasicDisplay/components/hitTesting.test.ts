@@ -545,7 +545,6 @@ function makeDataWithLabel(
           featureHeight: item.bottomPx - item.topPx,
           nameLabel: {
             text: 'longname',
-            relativeY: 0,
             color: '#000',
             textWidth: labelTextWidth,
           },
@@ -648,7 +647,6 @@ test('subfeature label hit area is reserved when the label is present', () => {
             featureHeight: item.bottomPx - item.topPx,
             subfeatureLabel: {
               text: 'subname',
-              relativeY: 0,
               color: '#000',
               textWidth: 200,
               isOverlay: false,

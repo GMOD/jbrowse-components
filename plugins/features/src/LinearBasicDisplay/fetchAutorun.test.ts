@@ -1466,8 +1466,8 @@ describe('label density gate', () => {
         maxX: 1,
         topY: 0,
         featureHeight: 10,
-        nameLabel: { text: featureId, relativeY: 0, textWidth: 20 },
-        descriptionLabel: { text: 'desc', relativeY: 0, textWidth: 20 },
+        nameLabel: { text: featureId, textWidth: 20 },
+        descriptionLabel: { text: 'desc', textWidth: 20 },
       })
     }
     display.setRpcData(0, data, {

@@ -92,7 +92,7 @@ function geneData() {
         maxX: 2000,
         topY: 0,
         featureHeight: 25,
-        nameLabel: { text: 'GENE1', relativeY: 0, textWidth: 200 },
+        nameLabel: { text: 'GENE1', textWidth: 200 },
       },
     }),
     labelKinds: { name: true, description: false, subfeature: false },
@@ -404,7 +404,6 @@ test('a floating label record carries its own overlay size', () => {
     parentFeatureId: 'g1',
     subfeatureLabel: {
       text: 'VP1',
-      relativeY: 0,
       textWidth: 20,
       isOverlay: true,
     },

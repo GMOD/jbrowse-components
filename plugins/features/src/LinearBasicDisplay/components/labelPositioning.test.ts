@@ -28,7 +28,6 @@ import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 function makeLabel(overrides: Partial<LabelItem> = {}): LabelItem {
   return {
     text: 'NAME',
-    relativeY: 4,
     textWidth: 30,
     ...overrides,
   }
@@ -195,11 +194,11 @@ describe('forEachRenderedLabel', () => {
     expect(result).toHaveLength(0)
   })
 
-  test('emits name + description with original relativeY when both shown', () => {
+  test('places the description one label-line below the name when both shown', () => {
     const data = makeData({
       f1: makeLabelData('f1', {
         nameLabel: makeLabel({ text: 'name' }),
-        descriptionLabel: makeLabel({ text: 'desc', relativeY: 12 }),
+        descriptionLabel: makeLabel({ text: 'desc' }),
       }),
     })
     const [emitted] = collect(data, FULL_REGION, {
@@ -207,34 +206,39 @@ describe('forEachRenderedLabel', () => {
       showDescriptions: true,
     })
     expect(emitted!.labels.map(l => l.kind)).toEqual(['name', 'desc'])
-    // One label-line below the name, whatever relativeY the worker supplied.
-    expect(emitted!.labels[1]!.label.relativeY).toBe(LABEL_FONT)
+    expect(emitted!.labels[1]!.labelY - emitted!.labels[0]!.labelY).toBe(
+      LABEL_FONT,
+    )
   })
 
-  test('collapses description relativeY to 0 when name is hidden', () => {
+  test('lifts the description into the name row when the name is hidden', () => {
     const data = makeData({
       f1: makeLabelData('f1', {
         nameLabel: makeLabel({ text: 'name' }),
-        descriptionLabel: makeLabel({ text: 'desc', relativeY: 12 }),
+        descriptionLabel: makeLabel({ text: 'desc' }),
       }),
     })
     const [emitted] = collect(data, FULL_REGION, {
       showLabels: false,
       showDescriptions: true,
     })
+    const [named] = collect(data, FULL_REGION, {
+      showLabels: true,
+      showDescriptions: true,
+    })
     expect(emitted!.labels.map(l => l.kind)).toEqual(['desc'])
-    expect(emitted!.labels[0]!.label.relativeY).toBe(0)
+    expect(emitted!.labels[0]!.labelY).toBe(named!.labels[0]!.labelY)
   })
 
   test('does not mutate the source descriptionLabel when collapsing', () => {
-    const description = makeLabel({ text: 'desc', relativeY: 12 })
+    const description = makeLabel({ text: 'desc' })
     const data = makeData({
       f1: makeLabelData('f1', {
         descriptionLabel: description,
       }),
     })
     collect(data, FULL_REGION, { showLabels: false, showDescriptions: true })
-    expect(description.relativeY).toBe(12)
+    expect(description).toEqual(makeLabel({ text: 'desc' }))
   })
 
   test('passes through subfeature label with isOverlay flag', () => {
@@ -540,14 +544,12 @@ describe('computeLabelExtraWidth', () => {
     if (texts[0] !== undefined) {
       data.nameLabel = makeLabel({
         text: texts[0],
-        relativeY: 0,
         textWidth: measureText(texts[0], LABEL_FONT),
       })
     }
     if (texts[1] !== undefined) {
       data.descriptionLabel = makeLabel({
         text: texts[1],
-        relativeY: 0,
         textWidth: measureText(texts[1], LABEL_FONT),
       })
     }

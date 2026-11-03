@@ -65,7 +65,7 @@ function geneStack(count: number) {
   for (const [id, label] of data.floatingLabelsData) {
     floatingLabelsData.set(id, {
       ...label,
-      descriptionLabel: { text: `about ${id}`, relativeY: 0, textWidth: 90 },
+      descriptionLabel: { text: `about ${id}`, textWidth: 90 },
     })
   }
   return makeFeatureData({
@@ -91,10 +91,9 @@ function crowdedNames(count: number) {
       maxX: f.endBp,
       topY: 0,
       featureHeight: 10,
-      nameLabel: { text: f.featureId, relativeY: 0, textWidth: 40 },
+      nameLabel: { text: f.featureId, textWidth: 40 },
       descriptionLabel: {
         text: `about ${f.featureId}`,
-        relativeY: 0,
         textWidth: 80,
       },
     })

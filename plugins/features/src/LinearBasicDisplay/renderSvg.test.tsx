@@ -326,7 +326,6 @@ describe('renderSvg', () => {
           featureHeight: 10,
           nameLabel: {
             text: 'GENE1',
-            relativeY: 0,
             textWidth: 40,
           },
         },
@@ -356,12 +355,10 @@ describe('renderSvg', () => {
             featureHeight: 10,
             nameLabel: {
               text: 'GENE1',
-              relativeY: 0,
               textWidth: 40,
             },
             moreIsoformsLabel: {
               text: expanded ? 'show fewer' : '+3 more',
-              relativeY: 0,
               textWidth: 30,
               hidden: 3,
               expanded,
@@ -385,7 +382,6 @@ describe('renderSvg', () => {
   it('omits labels whose feature is scrolled far outside the exported viewport', async () => {
     const label = (text: string) => ({
       text,
-      relativeY: 0,
       textWidth: 40,
     })
     const data = makeFeatureData({

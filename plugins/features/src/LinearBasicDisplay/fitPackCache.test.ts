@@ -89,7 +89,7 @@ function labelled(
           maxX: f.endBp,
           topY: 0,
           featureHeight: f.height,
-          nameLabel: { text: f.featureId, relativeY: 0, textWidth: 40 },
+          nameLabel: { text: f.featureId, textWidth: 40 },
         },
       ]),
     ),

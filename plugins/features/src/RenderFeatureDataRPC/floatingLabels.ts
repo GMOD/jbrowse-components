@@ -17,14 +17,9 @@ import type {
 // Single constructor for a LabelItem, so textWidth is always the measured width
 // of `text` at the base size the label DRAWS at — the invariant every layout
 // and hit-test reservation converts from.
-function labelItem(
-  text: string,
-  relativeY = 0,
-  fontSize = LABEL_FONT_SIZE,
-): LabelItem {
+function labelItem(text: string, fontSize = LABEL_FONT_SIZE): LabelItem {
   return {
     text,
-    relativeY,
     textWidth: measureText(text, fontSize),
   }
 }
@@ -47,7 +42,7 @@ export function createFeatureFloatingLabels({
   const shouldShowDescription = hasVisibleText(description)
 
   // The name→description gap depends on the display mode's label font size,
-  // which only the main thread knows, so relativeY stays 0 here.
+  // which only the main thread knows, so the offset is placed there.
   const nameLabel = shouldShowLabel ? labelItem(name) : undefined
   const descriptionLabel = shouldShowDescription
     ? labelItem(description)
@@ -63,7 +58,6 @@ export function createMoreIsoformsLabel(hidden: number, expanded: boolean) {
   return {
     ...labelItem(
       expanded ? 'show fewer' : `+${hidden} more`,
-      0,
       LABEL_FONT_SIZE * MORE_ISOFORMS_FONT_SCALE,
     ),
     hidden,

@@ -59,12 +59,10 @@ function labeledStackedRegionData(rows: number, heightPx: number) {
       featureHeight: heightPx,
       nameLabel: {
         text: `name${i}`,
-        relativeY: 0,
         textWidth: 40,
       },
       descriptionLabel: {
         text: `description ${i}`,
-        relativeY: 0,
         textWidth: 80,
       },
     })
@@ -99,7 +97,6 @@ function mixedWidthRegionData(count: number) {
       featureHeight: f.height,
       nameLabel: {
         text: f.featureId,
-        relativeY: 0,
         textWidth: 40,
       },
     })
@@ -755,7 +752,7 @@ describe('feature display fit escalation ladder', () => {
           maxX: f.endBp,
           topY: 0,
           featureHeight: 10,
-          nameLabel: { text: f.featureId, relativeY: 0, textWidth: 40 },
+          nameLabel: { text: f.featureId, textWidth: 40 },
         },
       ]),
     )
@@ -1246,7 +1243,6 @@ function genesOver(
       featureHeight: height,
       nameLabel: {
         text: f.featureId,
-        relativeY: 0,
         textWidth: 60,
       },
     })

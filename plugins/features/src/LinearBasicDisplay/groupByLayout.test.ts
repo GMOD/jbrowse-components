@@ -32,7 +32,7 @@ function regionData(
         maxX: 500,
         topY: 0,
         featureHeight: HEIGHT,
-        nameLabel: { text: f.featureId, relativeY: 0, textWidth: 40 },
+        nameLabel: { text: f.featureId, textWidth: 40 },
       })
     }
   }

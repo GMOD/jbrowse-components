@@ -11,7 +11,6 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 export interface LabelItem {
   text: string
-  relativeY: number
   textWidth: number
 }
 
