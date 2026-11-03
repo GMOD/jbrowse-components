@@ -100,10 +100,25 @@ display-mode toggle.
 Measured over the same fixture at N=60k, per committed layout:
 `buildFeatureFlatbushIndex` 168ms, `buildSubfeatureFlatbushIndex` 169ms,
 `interpolateYData` 41ms. Each is comparable to the entire clone, and the two
-Flatbush builds run on every layout because `FeatureHitIndexes` keeps them
-observed. Whether a region's subfeature index can be built lazily — nothing
-reads it until a hover — is a separate and probably larger win than anything
-above.
+Flatbush builds run on every layout because the `FeatureHitIndexes` autorun in
+`baseModel.ts` keeps them observed. Whether a region's subfeature index can be
+built lazily — nothing reads it until a hover — is a separate win from anything
+above, and the smaller one the numbers below leave it.
+
+**Where a lazy member would go.** The hit indexes of `LinearBasicDisplay` and of
+the variants display (through `recordsBandViews.ts`) now come from one place:
+`createHitIndexes` in `plugins/features/src/LinearBasicDisplay/featureBandViews.ts`
+holds them on `createEncodeMemo`, per region, so an unchanged region keeps its
+index across a layout. `FlatbushRegionIndexes` (`hitTesting.ts`, exported from
+`plugins/features/src/index.ts`, so an ABI type) is `{feature, subfeature}`, both
+built in that one callback. A lazy subfeature needs that type split, or its
+`subfeature` member turned into a memoised thunk the hit test calls.
+
+**The jest number overstates the cost.** A node run of the repo's Flatbush at
+60k features measured 20–70 ms per subfeature index build, against the 169 ms
+above under jest. Going lazy therefore trades that per-committed-layout cost for
+a first-hover hitch of the same size, paid on the main thread at the moment the
+cursor reaches a feature. Measure first-hover latency at 60k before taking it.
 
 ### `pileupFadeIds` is fast to fix and needs a figure re-checked first
 

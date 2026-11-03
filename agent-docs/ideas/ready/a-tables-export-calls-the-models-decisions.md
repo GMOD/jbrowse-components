@@ -21,8 +21,11 @@ disagree today.
 
 - Autoscale glue in wiggle's and alignments coverage's tables, which ignores
   `encoding.y.scale.group`.
-- Variants row colors (`variants/src/tables.ts:726-756`) and four canvas
-  carry-overs (`canvas/src/tables.ts:377, 402-404, 465-471`).
+- Variants row colors (`rowColorsOf` in `plugins/variants/src/tables.ts`) and
+  the features carry-overs in `plugins/features/src/tables.ts`: the collapsed
+  mode's forced `subfeatureLabels` of `'none'`, the `resolvedGeneGlyphMode`
+  call in the fetch args, and the hand-built `layoutInputs` handed to
+  `hostFeatureBand`.
 
 ## Not a defect
 
