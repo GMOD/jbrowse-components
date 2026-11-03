@@ -11,9 +11,11 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 export async function executeRenderLDData({
   pluginManager,
   args,
+  bytes,
 }: {
   pluginManager: PluginManager
   args: RpcExecuteArgs<'RenderLDData'>
+  bytes?: number
 }) {
   const { regions, originBp, spanBp, layout, statusCallback } = args
 
@@ -41,7 +43,7 @@ export async function executeRenderLDData({
   return rpcResultWithArrayBuffers<LDDataResult>({
     ldValues,
     boundaries,
-    numCells: ldValues.length,
+    bytes,
     band,
     uniformW,
     originBp,

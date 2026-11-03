@@ -13,6 +13,12 @@ export interface LDRecordSource {
   ): Promise<PlinkLDRecord[]>
   // Resolved column layout — `dprimeIdx >= 0` iff the file carries a D' column.
   getHeader(opts?: object): Promise<PlinkLDHeader>
+  // Index-only compressed-byte estimate of the pairs a query would read, for
+  // the region-too-large gate; absent when the source has no index to ask.
+  getRegionByteSize?(
+    regions: { refName: string; start: number; end: number }[],
+    opts?: object,
+  ): Promise<number | undefined>
 }
 
 // Runtime narrowing at the RPC boundary, where getAdapter yields an untyped

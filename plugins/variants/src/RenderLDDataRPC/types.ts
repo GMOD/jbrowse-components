@@ -12,7 +12,8 @@ export interface LDDataResult {
   ldValues: Float32Array
   // n+1 column edges (`computeBoundaries`), empty when there are no SNPs
   boundaries: Float32Array
-  numCells: number
+  // index-estimated bytes the gate measured, absent when no budget applied
+  bytes?: number
   // the band `ldValues` is laid out at (`ldBand.ts`)
   band: number
   uniformW: number

@@ -47,7 +47,7 @@ import type React from 'react'
 /** The RPC's settings, derived from its args so a field cannot be misnamed. */
 export type LDRpcProps = Omit<
   RenderLDDataArgs,
-  'adapterConfig' | 'regions' | 'originBp' | 'spanBp'
+  'adapterConfig' | 'regions' | 'originBp' | 'spanBp' | 'byteLimit'
 >
 
 function upperBoundFloat32(arr: Float32Array, val: number) {
@@ -339,6 +339,14 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        */
       locusViewportX(refName: string, coord: number): number | undefined {
         return locusViewportXFor(self)(refName, coord)
+      },
+      /**
+       * #getter
+       * Opt into RegionTooLargeMixin's byte gate: a tabix LD file's index
+       * says how much a region reads before any of it is downloaded.
+       */
+      get gateEnabled() {
+        return true
       },
       /**
        * #method

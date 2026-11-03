@@ -72,6 +72,11 @@ export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
     return ld.getReferenceSequenceNames(opts)
   }
 
+  async getRegionByteSize(regions: NoAssemblyRegion[], opts?: BaseOptions) {
+    const { ld } = await this.configure(opts)
+    return ld.bytesForRegions(regions, opts)
+  }
+
   public async getLDRecords(
     query: NoAssemblyRegion,
     opts: BaseOptions = {},

@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { triangleMatrixConfigSchemaFields } from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { retiredBaseDisplaySpellings } from '@jbrowse/display-kit/configSchema'
 import { hiddenLegendConfigSchema } from '@jbrowse/display-kit/hiddenLegendConfigSchema'
+import { regionTooLargeConfigSchemaFields } from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -47,6 +48,20 @@ export default function ldTrackDisplayConfigSchema() {
           'default height of the display, the band above the triangle included',
       }),
       ...triangleMatrixConfigSchemaFields,
+      ...regionTooLargeConfigSchemaFields,
+      /**
+       * #slot
+       * A pair costs about 11 compressed bytes, so 20 MB is some 1.8 million
+       * pairs, and the 790k pairs of a 1,258-variant triangle fit with room.
+       * The estimate is read from the tabix index, before any pair downloads.
+       */
+      fetchSizeLimit: {
+        type: 'number',
+        defaultValue: 20_000_000,
+        description:
+          'bytes of a tabix LD file a region may read before the display asks first',
+        advanced: true,
+      },
       /**
        * #slot connectors
        * The band above the triangle holding the connector lines that tie

@@ -218,11 +218,13 @@ export function collectGateOptInSites(): string[] {
  * new opt-in site fails until its display's budget is recorded, which is the
  * question nobody asked of `LinearMafDisplay`.
  *
- * Only displays whose budget can actually bind need a row. Alignments, LD and
- * the two multi-sample-variant displays read adapters that declare their own
+ * Only displays whose budget can actually bind need a row. Alignments and the
+ * two multi-sample-variant displays read adapters that declare their own
  * (BAM/CRAM/VcfTabix/SplitVcfTabix, all 5 Mb), and an adapter limit outranks the
  * display, so theirs is unreachable — noted in `applies` rather than omitted,
- * since "it can't bind" is itself the decision.
+ * since "it can't bind" is itself the decision. LD is the opposite case: the
+ * PLINK LD tabix adapter declares no limit, so its display's number is the whole
+ * budget.
  */
 export const DISPLAY_TIERS = [
   {
@@ -240,6 +242,12 @@ export const DISPLAY_TIERS = [
     file: 'plugins/maf/src/LinearMafDisplay/configSchema.ts',
     applies:
       'every MAF adapter, none of which declares its own, so this is the whole budget',
+  },
+  {
+    name: 'LDTrackDisplay',
+    file: 'plugins/variants/src/LDDisplay/configSchemaLDTrack.ts',
+    applies:
+      'PlinkLDTabixAdapter, which declares none, so this is the whole budget',
   },
   {
     name: 'baseLinearDisplayConfigSchema',
@@ -265,6 +273,7 @@ export const GATE_OPT_IN_SITES: Record<string, string> = {
     'baseLinearDisplayConfigSchema: the mark display spreads regionTooLargeConfigSchemaFields and declares no limit of its own, so a tabix feature adapter is read at the base 1 Mb and BAM/CRAM/VCF at the 5 Mb they declare',
   'plugins/features/src/shared/FeatureGateMixin.ts': 'LinearBasicDisplay',
   'plugins/maf/src/LinearMafDisplay/stateModel.ts': 'LinearMafDisplay',
+  'plugins/variants/src/LDDisplay/model.ts': 'LDTrackDisplay',
   'plugins/variants/src/LinearVariantDisplay/model.ts':
     'VcfTabixAdapter/SplitVcfTabixAdapter declare 5 Mb',
 }

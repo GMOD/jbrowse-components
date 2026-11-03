@@ -30,11 +30,14 @@ test('keeps what its mixins read, and its identifier', () => {
   expect(make().displayId).toBe('ld-test')
 })
 
-// An LD file serves no features and the display takes no byte gate.
-test.each(['mouseover', 'fetchSizeLimit', 'forceLoad'])(
-  'publishes no %s slot, which it never reads',
+test('publishes no mouseover slot, which it never reads', () => {
+  expect(slots()).not.toContain('mouseover')
+})
+
+test.each(['fetchSizeLimit', 'forceLoad'])(
+  'publishes the %s slot the byte gate reads',
   slot => {
-    expect(slots()).not.toContain(slot)
+    expect(slots()).toContain(slot)
   },
 )
 
