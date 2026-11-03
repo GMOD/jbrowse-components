@@ -1,5 +1,5 @@
+import { configManifestTables } from './configManifest.ts'
 import { writeDoc, writtenDocs } from './format.ts'
-import { configManifestTables } from './generateConfigDocs.ts'
 
 // The jbrowse-authoring skill's index of every registered type: the manifest's
 // type tables, each name linked to the config page this run wrote for it.
