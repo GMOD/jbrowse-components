@@ -201,6 +201,12 @@ function previewText({
   return str.length > MAX_PREVIEW_CHARS ? TOO_BIG_TO_PREVIEW : str
 }
 
+function visibleRegionsOf(view: object): Region[] {
+  return 'visibleRegions' in view && Array.isArray(view.visibleRegions)
+    ? view.visibleRegions
+    : []
+}
+
 const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   model,
   handleClose,
@@ -218,10 +224,9 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   // its width — and a window resize behind the dialog would otherwise change
   // the fetch key and restart a long export from zero. Captured, they are also
   // what the Region field can name, so the label always describes the bytes.
-  const view = getContainingView(model) as unknown as {
-    visibleRegions?: Region[]
-  }
-  const [regions] = useState(() => roundRegions(view.visibleRegions ?? []))
+  const [regions] = useState(() =>
+    roundRegions(visibleRegionsOf(getContainingView(model))),
+  )
   const regionStr = assembleLocStrings(regions)
 
   const { result, error, loading, status, setForce } = useTrackDataExport({

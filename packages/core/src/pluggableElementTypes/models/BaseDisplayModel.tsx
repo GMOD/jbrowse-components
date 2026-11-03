@@ -34,6 +34,13 @@ import type { UnappliedSetting } from '../../util/unknownSnapshotKeys.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
 
+// configuration is the reference every concrete display adds at instantiation
+// (see DisplayModel below); the base model composes before it exists, hence
+// the cast rather than a prop
+function configurationOf(self: object) {
+  return (self as unknown as DisplayModel).configuration
+}
+
 /**
  * #stateModel BaseDisplay
  * #category display
@@ -313,10 +320,7 @@ function stateModelFactory() {
         settings: Record<string, unknown>,
         options?: { allowSetters?: boolean },
       ) {
-        // configuration is the reference every concrete display adds at
-        // instantiation (see DisplayModel below); the base model composes
-        // before it exists, hence the cast rather than a prop
-        const { configuration } = self as unknown as DisplayModel
+        const configuration = configurationOf(self)
         const { applied, undeclared, failed } = applyConfSettings(
           configuration,
           settings,
@@ -354,7 +358,7 @@ function stateModelFactory() {
        * none, which then offers no editor.
        */
       get plotKeys(): string[] {
-        return plotKeysOf((self as unknown as DisplayModel).configuration)
+        return plotKeysOf(configurationOf(self))
       },
       /**
        * #getter
@@ -363,16 +367,14 @@ function stateModelFactory() {
        * checks it with `plotProblems` and hands it to `applyPlot`.
        */
       get plot(): Plot {
-        return plotOf((self as unknown as DisplayModel).configuration)
+        return plotOf(configurationOf(self))
       },
       /**
        * #getter
        * `configProblemsOf` the live config.
        */
       get configNotices(): string[] {
-        return self.configProblemsOf(
-          (self as unknown as DisplayModel).configuration,
-        )
+        return self.configProblemsOf(configurationOf(self))
       },
     }))
     .views(self => ({
@@ -410,9 +412,7 @@ function stateModelFactory() {
        * setting it takes.
        */
       get configDocsUrl(): string {
-        const name = getConfigurationSchemaMetadata(
-          (self as unknown as DisplayModel).configuration,
-        )?.name
+        const name = getConfigurationSchemaMetadata(configurationOf(self))?.name
         return name
           ? `https://jbrowse.org/jb2/docs/config/${name.toLowerCase()}/`
           : 'https://jbrowse.org/jb2/docs/config_guide/'
@@ -423,11 +423,7 @@ function stateModelFactory() {
        * a config file would be refused for. It leaves the display unchanged.
        */
       liftPlot(draft: Plot, options?: PlotWriteOptions): AnyConfigurationModel {
-        return liftPlotDraft(
-          (self as unknown as DisplayModel).configuration,
-          draft,
-          options,
-        )
+        return liftPlotDraft(configurationOf(self), draft, options)
       },
       /**
        * #method
@@ -437,11 +433,7 @@ function stateModelFactory() {
        */
       plotProblems(draft: Plot, options?: PlotWriteOptions): string[] {
         return self.configProblemsOf(
-          liftPlotDraft(
-            (self as unknown as DisplayModel).configuration,
-            draft,
-            options,
-          ),
+          liftPlotDraft(configurationOf(self), draft, options),
         )
       },
       /**
@@ -453,11 +445,7 @@ function stateModelFactory() {
         draft: Plot,
         options?: PlotWriteOptions,
       ): Record<string, unknown> {
-        return plotWritesOf(
-          (self as unknown as DisplayModel).configuration,
-          draft,
-          options,
-        )
+        return plotWritesOf(configurationOf(self), draft, options)
       },
     }))
     .actions(self => ({
@@ -473,7 +461,7 @@ function stateModelFactory() {
        * is written.
        */
       applyPlot(draft: Plot, options?: PlotWriteOptions) {
-        const { configuration } = self as unknown as DisplayModel
+        const configuration = configurationOf(self)
         for (const [key, value] of Object.entries(
           self.plotWrites(draft, options),
         )) {
