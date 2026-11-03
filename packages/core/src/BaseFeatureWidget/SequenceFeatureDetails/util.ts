@@ -232,3 +232,19 @@ export function getSequenceFasta(el: HTMLElement) {
     .map(line => (line.startsWith('>') ? line : line.replaceAll(/\s/g, '')))
     .join('\n')
 }
+
+/**
+ * What a sequence export saves itself as: the feature's name and the sequence
+ * type, so a second download neither overwrites the first nor lands beside it
+ * as `sequence (1).fa`.
+ */
+export function sequenceFileStem(
+  feature: SimpleFeatureSerialized,
+  mode: string,
+) {
+  const { name, id, refName, start, end } = feature
+  const label =
+    [name, id].find(s => typeof s === 'string' && s !== '') ??
+    `${refName}_${start + 1}-${end}`
+  return `${label}_${mode}`.replaceAll(/[^\w.-]+/g, '_')
+}

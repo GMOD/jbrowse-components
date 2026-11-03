@@ -5,14 +5,17 @@ import { cx, makeStyles } from '../../util/tss-react/index.ts'
 
 const useStyles = makeStyles()(theme => ({
   fieldDescription: {
-    '&:hover': {
-      background: theme.palette.mode === 'dark' ? '#e65100' : 'yellow',
+    textDecoration: 'underline dotted',
+    textUnderlineOffset: 2,
+    cursor: 'help',
+    '&:hover, &:focus-visible': {
+      background: theme.palette.action.selected,
     },
   },
   fieldName: {
     wordBreak: 'break-all',
     minWidth: 90,
-    borderBottom: '1px solid #0003',
+    borderBottom: `1px solid ${theme.palette.divider}`,
     fontSize: 12,
     background: theme.palette.action.disabledBackground,
     marginRight: theme.spacing(1),
@@ -36,6 +39,7 @@ const FieldName = observer(function FieldName({
   return description ? (
     <Tooltip title={description} placement="left">
       <div
+        tabIndex={0}
         className={cx(classes.fieldDescription, classes.fieldName)}
         style={{ width }}
       >

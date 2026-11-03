@@ -32,6 +32,7 @@ interface Props {
   // whoever mounted the panel supplies one.
   session: Pick<AbstractSessionModel, 'notify' | 'notifyError'>
   ref: RefObject<HTMLDivElement | null>
+  fileStem: string
   mode: SequenceDisplayMode
   revcomp: boolean
   setRevcomp: (arg: boolean) => void
@@ -41,6 +42,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
   model,
   session,
   ref,
+  fileStem,
   mode,
   revcomp,
   setRevcomp,
@@ -89,7 +91,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
                 new Blob([getSequenceFasta(panel)], {
                   type: 'text/plain;charset=utf-8',
                 }),
-                'sequence.fa',
+                `${fileStem}.fa`,
               )
             }),
           },
@@ -100,7 +102,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
                 new Blob([panel.outerHTML], {
                   type: 'text/html;charset=utf-8',
                 }),
-                'sequence.html',
+                `${fileStem}.html`,
               )
             }),
           },

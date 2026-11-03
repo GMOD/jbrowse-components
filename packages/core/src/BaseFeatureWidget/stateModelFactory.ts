@@ -166,7 +166,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
             { cause: e },
           )
           console.error(error)
-          return { error }
+          return { feature: unformattedFeatureData, error }
         }
       },
       /**
@@ -192,7 +192,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * the feature with every `formatDetails` callback applied
+       * the feature with every `formatDetails` callback applied, or the raw
+       * feature when a callback throws
        */
       get featureData() {
         return self.formatted.feature

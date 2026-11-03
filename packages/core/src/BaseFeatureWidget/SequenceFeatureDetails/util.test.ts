@@ -1,4 +1,29 @@
-import { splitRegionByCds, splitString, transcriptRegions } from './util.ts'
+import {
+  sequenceFileStem,
+  splitRegionByCds,
+  splitString,
+  transcriptRegions,
+} from './util.ts'
+
+describe('sequenceFileStem', () => {
+  const base = { uniqueId: 'u', refName: 'ctgA', start: 999, end: 2000 }
+  test('names the feature and the sequence type', () => {
+    expect(sequenceFileStem({ ...base, name: 'EDEN.1' }, 'cds')).toBe(
+      'EDEN.1_cds',
+    )
+  })
+  test('swaps characters a filesystem may refuse', () => {
+    expect(sequenceFileStem({ ...base, name: 'gene:BRCA2 v2' }, 'cds')).toBe(
+      'gene_BRCA2_v2_cds',
+    )
+  })
+  test('falls back to the id, then the locus', () => {
+    expect(sequenceFileStem({ ...base, name: '', id: 'g1' }, 'cds')).toBe(
+      'g1_cds',
+    )
+    expect(sequenceFileStem(base, 'genomic')).toBe('ctgA_1000-2000_genomic')
+  })
+})
 
 describe('transcriptRegions', () => {
   test('uses the exons when the transcript has them', () => {

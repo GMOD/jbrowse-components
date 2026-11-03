@@ -154,6 +154,7 @@ exports[`renders with just the required model elements 1`] = `
                       class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 62px;"
+                      tabindex="0"
                     >
                       REF
                     </div>
@@ -179,6 +180,7 @@ exports[`renders with just the required model elements 1`] = `
                       class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 62px;"
+                      tabindex="0"
                     >
                       ALT
                     </div>
@@ -202,6 +204,7 @@ exports[`renders with just the required model elements 1`] = `
                       class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 62px;"
+                      tabindex="0"
                     >
                       QUAL
                     </div>

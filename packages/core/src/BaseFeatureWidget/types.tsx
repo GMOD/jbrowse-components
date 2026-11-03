@@ -38,6 +38,7 @@ export interface BaseProps extends BaseCardProps {
   feature: SimpleFeatureSerialized
   formatter?: FeatureFormatter
   descriptions?: Descriptors
+  fieldActions?: FieldActions
 }
 
 export interface BaseCardProps {

@@ -38,6 +38,7 @@ function renderDetachedMenu() {
         },
       }}
       ref={{ current: panel }}
+      fileStem="EDEN_genomic"
       mode="genomic"
       revcomp={false}
       setRevcomp={() => {}}

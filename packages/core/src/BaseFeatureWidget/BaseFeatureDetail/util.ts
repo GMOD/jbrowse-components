@@ -29,3 +29,17 @@ export function accessNested(arr: string[], obj: Record<string, unknown> = {}) {
       ? obj2.Description
       : undefined
 }
+
+// the value at `path` in a feature, with a one-element array read as its
+// element, as a details row draws it
+export function valueAt(path: string[], obj: Record<string, unknown>) {
+  let value: unknown = obj
+  for (const elt of path) {
+    value = isObject(value) ? value[elt] : undefined
+  }
+  return Array.isArray(value) ? onlyElement(value) : value
+}
+
+function onlyElement(arr: readonly unknown[]) {
+  return arr.length === 1 ? arr[0] : arr
+}

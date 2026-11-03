@@ -2,7 +2,7 @@ import { render } from '@testing-library/react'
 
 import FeatureDetailsFrame from './FeatureDetailsFrame.tsx'
 
-test('a formatDetails error replaces the panel', () => {
+test('a formatDetails error with no feature replaces the panel', () => {
   const { getByText, queryByText } = render(
     <FeatureDetailsFrame model={{ error: new Error('bad callback') }}>
       body
@@ -10,6 +10,21 @@ test('a formatDetails error replaces the panel', () => {
   )
   expect(getByText(/bad callback/)).toBeTruthy()
   expect(queryByText('body')).toBeNull()
+})
+
+test('a formatDetails error shows above the feature it fell back to', () => {
+  const { getByText } = render(
+    <FeatureDetailsFrame
+      model={{
+        error: new Error('bad callback'),
+        featureData: { uniqueId: 'f', refName: 'ctgA', start: 0, end: 1 },
+      }}
+    >
+      body
+    </FeatureDetailsFrame>,
+  )
+  expect(getByText(/bad callback/)).toBeTruthy()
+  expect(getByText('body')).toBeTruthy()
 })
 
 test('no feature says so rather than drawing an empty panel', () => {

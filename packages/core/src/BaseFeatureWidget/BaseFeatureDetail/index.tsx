@@ -3,6 +3,8 @@ import { observer } from 'mobx-react'
 import FeatureDetails from './FeatureDetails.tsx'
 import FeatureDetailsFrame from './FeatureDetailsFrame.tsx'
 import ParentFeatureLine from './ParentFeatureLine.tsx'
+import { filterByValueItems, jexlFilterDisplay } from './jexlFilterActions.ts'
+import { valueAt } from './util.ts'
 
 import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
 import type { Descriptors } from '../types.tsx'
@@ -15,6 +17,9 @@ const BaseFeatureDetail = observer(function BaseFeatureDetail({
   const { featureData, unformattedFeatureData, parentFeature } = model
   // annotated to shed the MST node brand types.frozen() carries on the instance
   const descriptions: Descriptors | undefined = model.descriptions
+  // a track's filter tests its top-level features, so a panel opened on a
+  // transcript inside a gene offers none
+  const display = parentFeature ? undefined : jexlFilterDisplay(model.track)
   return (
     <FeatureDetailsFrame model={model}>
       {featureData ? (
@@ -27,6 +32,16 @@ const BaseFeatureDetail = observer(function BaseFeatureDetail({
             feature={featureData}
             unformatted={unformattedFeatureData}
             descriptions={descriptions}
+            fieldActions={
+              display && unformattedFeatureData
+                ? path =>
+                    filterByValueItems(
+                      display,
+                      path,
+                      valueAt(path, unformattedFeatureData),
+                    )
+                : undefined
+            }
           />
         </>
       ) : null}

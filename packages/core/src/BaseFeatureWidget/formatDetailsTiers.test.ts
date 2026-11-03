@@ -332,7 +332,7 @@ test('a callback returning something other than an object is an error', () => {
   })
   model.widget.setFeatureData(feature)
   expect(`${model.widget.error}`).toContain('returned a string')
-  expect(model.widget.featureData).toBeUndefined()
+  expect(model.widget.featureData).toBe(feature)
   reported.mockRestore()
 })
 

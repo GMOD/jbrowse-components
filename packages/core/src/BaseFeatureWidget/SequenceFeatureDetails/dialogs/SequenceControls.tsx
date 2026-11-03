@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react'
 
+import { sequenceFileStem } from '../util.ts'
 import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './SequenceTypeSelector.tsx'
 
@@ -41,6 +42,7 @@ const SequenceControls = observer(function SequenceControls({
       <SequenceTypeSelector model={model} feature={feature} mode={mode} />
       <SequenceFeatureMenu
         ref={seqPanelRef}
+        fileStem={sequenceFileStem(feature, mode)}
         model={model}
         session={session}
         mode={mode}

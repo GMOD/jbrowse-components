@@ -76,6 +76,7 @@ const FeatureDetails = observer(function FeatureDetails(
           <CoreDetails
             {...props}
             feature={{ ...mate, uniqueId: `${uniqueId}-mate` }}
+            fieldActions={undefined}
           />
           <Attributes
             attributes={mate}
@@ -99,9 +100,11 @@ const FeatureDetails = observer(function FeatureDetails(
         fieldActions={fieldActions}
       />
 
-      <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
-        <SequenceFeatureDetails {...props} feature={unformatted} />
-      </ErrorBoundary>
+      {depth === 0 ? (
+        <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
+          <SequenceFeatureDetails {...props} feature={unformatted} />
+        </ErrorBoundary>
+      ) : null}
 
       <PluggableComponents
         pluginManager={getEnv(model).pluginManager}
@@ -135,7 +138,6 @@ const FeatureDetails = observer(function FeatureDetails(
               depth={depth + 1}
               descriptions={descriptions}
               formatter={formatter}
-              fieldActions={fieldActions}
               omit={omit}
             />
           ))}

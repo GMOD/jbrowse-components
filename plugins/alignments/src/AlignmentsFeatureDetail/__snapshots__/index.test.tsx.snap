@@ -176,6 +176,7 @@ exports[`open up a widget 1`] = `
                       class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 96px;"
+                      tabindex="0"
                     >
                       seq
                     </div>
@@ -201,6 +202,7 @@ exports[`open up a widget 1`] = `
                       class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 96px;"
+                      tabindex="0"
                     >
                       score
                     </div>
@@ -226,6 +228,7 @@ exports[`open up a widget 1`] = `
                       class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 96px;"
+                      tabindex="0"
                     >
                       qual
                     </div>
@@ -284,6 +287,7 @@ exports[`open up a widget 1`] = `
                       class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 96px;"
+                      tabindex="0"
                     >
                       CIGAR
                     </div>
@@ -332,6 +336,7 @@ exports[`open up a widget 1`] = `
                       class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 96px;"
+                      tabindex="0"
                     >
                       template_length
                     </div>
@@ -357,6 +362,7 @@ exports[`open up a widget 1`] = `
                       class="css-HASH css-HASH"
                       data-mui-internal-clone-element="true"
                       style="width: 96px;"
+                      tabindex="0"
                     >
                       seq_length
                     </div>
