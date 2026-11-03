@@ -10,6 +10,7 @@ import {
   paletteFromSpec,
   set1,
 } from './colors.ts'
+import { getContrastRatio } from './palette.ts'
 
 // the deal's own sense of two colors reading as one
 const dealtAlike = (a: string, b: string) =>
@@ -47,6 +48,13 @@ const BIOTYPES = [
   'RNase_MRP_RNA',
   'RNase_P_RNA',
 ]
+
+test('every palette color reads against a white background', () => {
+  const faint = categoricalPalette.filter(
+    color => getContrastRatio(color, '#ffffff') < 1.5,
+  )
+  expect(faint).toEqual([])
+})
 
 test('a non-negative integer takes the palette slot it names, anchored at 1', () => {
   expect(categoricalValueColor('1')).toBe(categoricalPalette[0])
@@ -158,9 +166,10 @@ describe('categoricalColorScale', () => {
 describe('a dealt scale', () => {
   it('paints the values the hash puts on one color each its own', () => {
     const hashed = categoricalColorScale(undefined)
-    expect(new Set(['protein_coding', 'snRNA', 'TEC'].map(hashed)).size).toBe(1)
+    const sameSlot = ['snRNA', 'processed_pseudogene', 'TEC']
+    expect(new Set(sameSlot.map(hashed)).size).toBe(1)
     const dealt = categoricalColorScale(undefined, [], new Map())
-    expect(new Set(['protein_coding', 'snRNA', 'TEC'].map(dealt)).size).toBe(3)
+    expect(new Set(sameSlot.map(dealt)).size).toBe(3)
   })
 
   it('keeps a value its hashed color while no value met before has it', () => {
@@ -178,7 +187,9 @@ describe('a dealt scale', () => {
         expect(dealt(value)).not.toBe(hashed(value))
       }
     }
-    expect(kept).toBeGreaterThanOrEqual(5)
+    // both branches run, so neither assertion above passes vacuously
+    expect(kept).toBeGreaterThan(0)
+    expect(kept).toBeLessThan(BIOTYPES.length)
   })
 
   it('deals a dozen values colors none of which read alike', () => {

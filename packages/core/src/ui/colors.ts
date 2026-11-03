@@ -89,6 +89,12 @@ const NEUTRALS = new Set([
   '#7f7f7f',
 ])
 
+// set1's and set2's yellows sit within 1.4:1 of a white background, so a point
+// or a thin line in one all but vanishes. Darkened until they read, each lands
+// on a yellow the palette already holds (tableau10's, dark2's, category10's
+// olive), so they go rather than change.
+const NEAR_WHITES = new Set(['#ffff33', '#ffd92f'])
+
 export const paletteColors = {
   category10,
   dark2,
@@ -103,7 +109,7 @@ export const paletteColors = {
 
 /**
  * The wide qualitative palette: every scheme above, in order, deduped and with
- * the neutrals dropped. ~40 entries.
+ * the neutrals and near-whites dropped. 38 entries.
  *
  * A feature's categorical color deals from it; a row's deals from
  * `rowPaletteColorAt`, which re-lights tableau10 rather than reaching for
@@ -118,7 +124,7 @@ export const paletteColors = {
  * on purpose: an attribute palette-by hashes the VALUE (stable across
  * re-palettes), while a by-position painter has no value to hash and wraps.
  *
- * **It holds 59 pairs within `DEAL_COLOR_DIFFERENCE`**, nine of its entries
+ * **It holds 54 pairs within `DEAL_COLOR_DIFFERENCE`**, nine of its entries
  * greens or teals. A dealt scale (`categoricalScale`'s `held`) steps over a
  * twin of a color dealt in the same batch, so about 15 values on screen
  * together take colors that read apart, and past that each takes the entry
@@ -134,7 +140,8 @@ export const paletteColors = {
 export const categoricalPalette = [
   ...new Set(
     [...tableau10, ...set1, ...dark2, ...set2, ...category10].filter(
-      hex => !NEUTRALS.has(hex.toLowerCase()),
+      hex =>
+        !NEUTRALS.has(hex.toLowerCase()) && !NEAR_WHITES.has(hex.toLowerCase()),
     ),
   ),
 ]
