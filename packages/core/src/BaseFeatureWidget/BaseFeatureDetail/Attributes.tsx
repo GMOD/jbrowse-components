@@ -42,6 +42,23 @@ function isHomogeneousObjectArray(
   return unionKeyCount < firstKeyCount + DATAGRID_SCHEMA_TOLERANCE
 }
 
+// The one place a value is sorted into the shape that decides how it is drawn,
+// measured and counted: the render, `measureLabels` and `hasAttributeRows` all
+// switch on this, so none of them can disagree about what a value is.
+function classify(value: unknown) {
+  return Array.isArray(value)
+    ? isHomogeneousObjectArray(value)
+      ? ({ kind: 'grid', value } as const)
+      : isObjectArray(value)
+        ? ({ kind: 'objectArray', value } as const)
+        : ({ kind: 'array', value } as const)
+    : isObject(value)
+      ? isUriLocation(value)
+        ? ({ kind: 'uri', value } as const)
+        : ({ kind: 'object', value } as const)
+      : ({ kind: 'scalar', value } as const)
+}
+
 // these are always omitted as too detailed
 const globalOmit = [
   'length',
@@ -92,9 +109,10 @@ function valueWithoutLocations(value: unknown): unknown {
  * The widest label `Attributes` will actually render under `attributes`, in
  * text units — the padding is added once by `widestLabel`, not per level.
  *
- * Follows the same branches the render below does: a flat array is one labelled
- * row, an array of objects renders each element as its own block with no label
- * at this level, a data grid heads its own grid rather than sharing a row, a
+ * Follows the same `classify` branches the render below does: a flat array is one
+ * labelled row, an array of objects renders each element as its own block with
+ * no label at this level, a data grid heads its own grid rather than sharing a
+ * row (its FieldName is a heading above the grid, not a cell beside a value), a
  * `UriLocation` is one field, any other object recurses. `Attributes.test.tsx`
  * fails if the two stop agreeing.
  */
@@ -114,25 +132,26 @@ function measureLabels(
     if (value == null || omits.has(key)) {
       continue
     }
-    if (Array.isArray(value)) {
-      // a data grid's FieldName is a heading above the grid, not a cell beside
-      // a value, so it takes no part in the column either
-      if (!isHomogeneousObjectArray(value) && !isObjectArray(value)) {
+    const classified = classify(value)
+    switch (classified.kind) {
+      case 'grid':
+      case 'objectArray':
+        break
+      case 'array':
+      case 'uri':
+      case 'scalar':
         widest = Math.max(widest, measure(key))
-      }
-    } else if (isObject(value)) {
-      widest = Math.max(
-        widest,
-        isUriLocation(value)
-          ? measure(key)
-          : measureLabels(value, {
-              omits: deepOmits,
-              deepOmits,
-              prefix: [...prefix, key],
-            }),
-      )
-    } else {
-      widest = Math.max(widest, measure(key))
+        break
+      case 'object':
+        widest = Math.max(
+          widest,
+          measureLabels(classified.value, {
+            omits: deepOmits,
+            deepOmits,
+            prefix: [...prefix, key],
+          }),
+        )
+        break
     }
   }
   return widest
@@ -144,17 +163,24 @@ export function hasAttributeRows(
   omit: string[] = [],
 ): boolean {
   const omits = new Set([...omit, ...globalOmit])
-  return Object.entries(attributes).some(([key, value]) =>
-    value == null || omits.has(key)
-      ? false
-      : Array.isArray(value)
-        ? isHomogeneousObjectArray(value) ||
-          !isObjectArray(value) ||
-          value.some(entry => hasAttributeRows(entry))
-        : isObject(value)
-          ? isUriLocation(value) || hasAttributeRows(value, omit)
-          : true,
+  return Object.entries(attributes).some(
+    ([key, value]) =>
+      value != null && !omits.has(key) && hasRows(classify(value), omit),
   )
+}
+
+function hasRows(classified: ReturnType<typeof classify>, omit: string[]) {
+  switch (classified.kind) {
+    case 'objectArray':
+      return classified.value.some(entry => hasAttributeRows(entry))
+    case 'object':
+      return hasAttributeRows(classified.value, omit)
+    case 'grid':
+    case 'array':
+    case 'uri':
+    case 'scalar':
+      return true
+  }
 }
 
 function widestLabel(
@@ -220,60 +246,68 @@ const Attributes = observer(function Attributes(props: {
     <>
       {shown.map(([key, value]) => {
         const description = accessNested([...prefix, key], descriptions)
-        if (Array.isArray(value)) {
-          // Only use the data grid when schemas are homogeneous enough;
-          // heterogeneous arrays fall through to ArrayValue which renders
-          // each object as individual field sections instead of disappearing
-          return isHomogeneousObjectArray(value) ? (
-            <Suspense key={key} fallback={null}>
-              <DataGridDetails name={key} prefix={prefix} value={value} />
-            </Suspense>
-          ) : (
-            <ArrayValue
-              key={key}
-              name={key}
-              value={value}
-              formatter={formatter}
-              fieldActions={fieldActions}
-              description={description}
-              prefix={prefix}
-              width={width}
-            />
-          )
-        } else if (isObject(value)) {
-          return isUriLocation(value) ? (
-            <UriField
-              key={key}
-              name={key}
-              prefix={prefix}
-              value={value}
-              width={width}
-            />
-          ) : (
-            <Attributes
-              key={key}
-              attributes={value}
-              omit={omit}
-              descriptions={descriptions}
-              formatter={formatter}
-              fieldActions={fieldActions}
-              prefix={[...prefix, key]}
-              labelWidth={width}
-            />
-          )
-        } else {
-          return (
-            <SimpleField
-              key={key}
-              name={key}
-              formatter={formatter}
-              fieldActions={fieldActions}
-              value={value}
-              description={description}
-              prefix={prefix}
-              width={width}
-            />
-          )
+        const classified = classify(value)
+        switch (classified.kind) {
+          case 'grid':
+            return (
+              <Suspense key={key} fallback={null}>
+                <DataGridDetails
+                  name={key}
+                  prefix={prefix}
+                  value={classified.value}
+                />
+              </Suspense>
+            )
+          case 'objectArray':
+          case 'array':
+            return (
+              <ArrayValue
+                key={key}
+                name={key}
+                value={classified.value}
+                formatter={formatter}
+                fieldActions={fieldActions}
+                description={description}
+                prefix={prefix}
+                width={width}
+              />
+            )
+          case 'uri':
+            return (
+              <UriField
+                key={key}
+                name={key}
+                prefix={prefix}
+                value={classified.value}
+                width={width}
+              />
+            )
+          case 'object':
+            return (
+              <Attributes
+                key={key}
+                attributes={classified.value}
+                omit={omit}
+                descriptions={descriptions}
+                formatter={formatter}
+                fieldActions={fieldActions}
+                prefix={[...prefix, key]}
+                labelWidth={width}
+              />
+            )
+          case 'scalar':
+            return (
+              <SimpleField
+                key={key}
+                name={key}
+                formatter={formatter}
+                fieldActions={fieldActions}
+                value={classified.value}
+                description={description}
+                prefix={prefix}
+                width={width}
+              />
+            )
         }
       })}
     </>
