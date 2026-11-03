@@ -4,6 +4,11 @@ import path from 'path'
 
 import { agentSlotLine } from './configAgentText.ts'
 import {
+  manifestPages,
+  missingSlotNames,
+  rowNamesUnder,
+} from './configCoverage.ts'
+import {
   exampleObjects,
   looseTrackExample,
   unknownExampleKeys,
@@ -13,11 +18,8 @@ import { buildEnumConstantIndex } from './enumConstants.ts'
 import {
   accumulateConfig,
   linkedConfigs,
-  manifestPages,
   mergeSpreadSlots,
-  missingSlotNames,
   outerSchemaName,
-  rowNamesUnder,
   slotRecord,
   slotRow,
 } from './generateConfigDocs.ts'

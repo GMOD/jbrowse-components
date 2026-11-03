@@ -1,19 +1,21 @@
 import { renderAgentConfig } from './configAgentText.ts'
-import { assertExamplesValidate } from './configExamples.ts'
-import { writePage } from './format.ts'
 import {
   adaptersMissingTrackType,
   assertManifestSlotsAreDocumented,
   assertNoBlankSlotDescriptions,
+  slotsMissingDescription,
+  unresolvedBases,
+} from './configCoverage.ts'
+import { assertExamplesValidate } from './configExamples.ts'
+import { writePage } from './format.ts'
+import {
   collectBaseConfigs,
   configCategory,
   extendedByMap,
   isBaseSchema,
   linkedConfigs,
   renderConfig,
-  slotsMissingDescription,
   stripNameTautology,
-  unresolvedBases,
 } from './generateConfigDocs.ts'
 import { assertUniquePages, headerGaps } from './util.ts'
 
