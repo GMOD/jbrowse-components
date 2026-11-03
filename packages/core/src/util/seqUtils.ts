@@ -36,35 +36,60 @@ export const complementTable: Record<string, string> = {
   G: 'C',
 }
 
-export function revcom(str: string) {
-  const n = str.length
-  const arr = new Array<string>(n)
-  for (let i = 0; i < n; i++) {
-    const c = str[n - 1 - i]!
-    arr[i] = complementTable[c] ?? c
+const ASCII_CODES = 128
+const ASCII_MASK = ASCII_CODES - 1
+
+function codeTable(pairs: Record<string, string>) {
+  const table = new Uint8Array(ASCII_CODES)
+  for (let i = 0; i < ASCII_CODES; i++) {
+    table[i] = i
   }
-  return arr.join('')
+  for (const [from, to] of Object.entries(pairs)) {
+    table[from.charCodeAt(0)] = to.charCodeAt(0)
+  }
+  return table
+}
+
+const COMPLEMENT_CODES = codeTable(complementTable)
+const SAME_CODES = codeTable({})
+
+// Below this length string concatenation beats allocating a byte buffer
+const SHORT_STRING = 256
+
+const latin1 = new TextDecoder('latin1')
+
+// Sequences are ASCII; a wider character comes out masked to 7 bits
+function mapCodes(str: string, table: Uint8Array, reversed: boolean) {
+  const n = str.length
+  const first = reversed ? n - 1 : 0
+  const step = reversed ? -1 : 1
+  let out = ''
+  if (n < SHORT_STRING) {
+    for (let i = 0; i < n; i++) {
+      out += String.fromCharCode(
+        table[str.charCodeAt(first + step * i) & ASCII_MASK]!,
+      )
+    }
+  } else {
+    const buf = new Uint8Array(n)
+    for (let i = 0; i < n; i++) {
+      buf[i] = table[str.charCodeAt(first + step * i) & ASCII_MASK]!
+    }
+    out = latin1.decode(buf)
+  }
+  return out
+}
+
+export function revcom(str: string) {
+  return mapCodes(str, COMPLEMENT_CODES, true)
 }
 
 export function reverse(str: string) {
-  // index loop rather than [...str] spread: sequences can be large and the
-  // spread's code-point iterator is markedly slower than raw UTF-16 access
-  const n = str.length
-  const arr = new Array<string>(n)
-  for (let i = 0; i < n; i++) {
-    arr[i] = str[n - 1 - i]!
-  }
-  return arr.join('')
+  return mapCodes(str, SAME_CODES, true)
 }
 
 export function complement(str: string) {
-  const n = str.length
-  const arr = new Array<string>(n)
-  for (let i = 0; i < n; i++) {
-    const c = str[i]!
-    arr[i] = complementTable[c] ?? c
-  }
-  return arr.join('')
+  return mapCodes(str, COMPLEMENT_CODES, false)
 }
 
 export type Frame = 1 | 2 | 3 | -1 | -2 | -3
