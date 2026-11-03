@@ -5,7 +5,7 @@
 import { getConfigurationSchemaMetadata } from '../../configuration/schemaRegistry.ts'
 import { liftRetiredSpellings } from '../../configuration/snapshotPreprocess.ts'
 
-import type PluginManager from '../../PluginManager'
+import type PluginManager from '../../PluginManager.ts'
 
 // #region registry
 interface DisplayConfigSnapshot {
