@@ -2,6 +2,11 @@ import fs from 'fs'
 
 import { check } from '../check-utils.ts'
 import { assertMarkersAndDocsAgree, unwrittenMarkers } from '../markerDocs.ts'
+import {
+  assertEveryDisplayTypeIsDocumented,
+  createDocProgram,
+  extractWithComment,
+} from './docProgram.ts'
 import { buildEnumConstantIndex } from './enumConstants.ts'
 import {
   flushDocs,
@@ -28,16 +33,11 @@ import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 import { MARKER_GENERATORS, PROGRAM_MARKERS } from './markerGenerators.ts'
 import { corpusFiles, getAllFiles, sourceCorpus } from './sourceCorpus.ts'
 import { unreadableSignature } from './typeSignatures.ts'
-import {
-  assertEveryDisplayTypeIsDocumented,
-  createDocProgram,
-  extractWithComment,
-} from './util.ts'
 
+import type { DisplayTrackLink } from './docProgram.ts'
 import type { ApiGroup } from './generateApiDocs.ts'
 import type { Config } from './generateConfigDocs.ts'
 import type { StateModel } from './generateStateModelDocs.ts'
-import type { DisplayTrackLink } from './util.ts'
 
 // Build the TypeScript program over the whole repo ONCE and route each tagged
 // node into the config, state-model, and API accumulators. Previously the

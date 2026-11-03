@@ -7,8 +7,8 @@ import { parseTaggedComment } from './jsDocTags.ts'
 import { codeBlock, exampleSection, section } from './markdown.ts'
 import { repoRelative } from './util.ts'
 
+import type { ExtractedNode } from './docProgram.ts'
 import type { Example } from './jsDocTags.ts'
-import type { ExtractedNode } from './util.ts'
 
 interface ApiExport {
   name: string

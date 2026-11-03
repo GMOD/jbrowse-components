@@ -2,7 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { createDocProgram, extractWithComment } from './util.ts'
+import { createDocProgram, extractWithComment } from './docProgram.ts'
 
 // A member's type reads as the source writes it only where the checker's print
 // is worse. Driven through a real `ts.Program`: what is under test is the

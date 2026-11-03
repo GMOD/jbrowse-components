@@ -2,12 +2,12 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
+import { createDocProgram, extractWithComment } from './docProgram.ts'
 import { modelAnchor } from './generateSpecKeyDocs.ts'
 import { MEMBER_KINDS, accumulateModel } from './generateStateModelDocs.ts'
-import { createDocProgram, extractWithComment } from './util.ts'
 
+import type { ExtractedNode } from './docProgram.ts'
 import type { StateModel } from './generateStateModelDocs.ts'
-import type { ExtractedNode } from './util.ts'
 
 // Which untagged MST members a #stateModel page lists, driven through a real
 // ts.Program since the rule is about which declarations the model reaches.

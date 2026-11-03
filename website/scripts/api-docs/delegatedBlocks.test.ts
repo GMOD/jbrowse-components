@@ -2,9 +2,9 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { createDocProgram, extractWithComment } from './util.ts'
+import { createDocProgram, extractWithComment } from './docProgram.ts'
 
-import type { ExtractedNode } from './util.ts'
+import type { ExtractedNode } from './docProgram.ts'
 
 // A model file's members are bucketed by the FILE they are written in, and a
 // bucket with no #stateModel header is dropped without a word. So moving a

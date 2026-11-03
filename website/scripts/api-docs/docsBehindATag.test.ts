@@ -2,7 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
-import { createDocProgram, extractWithComment } from './util.ts'
+import { createDocProgram, extractWithComment } from './docProgram.ts'
 
 // TypeScript splits a JSDoc block at its first `@tag`, so a docstring that opens
 // with `@deprecated` hands the generator an empty comment and files the prose

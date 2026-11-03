@@ -10,6 +10,7 @@ import {
   memberLine,
   pluginOf,
 } from './agentText.ts'
+import { parseNode } from './docProgram.ts'
 import { writePage } from './format.ts'
 import { startsWithTag } from './jsDocTags.ts'
 import {
@@ -31,15 +32,14 @@ import {
   headerGaps,
   lookupByIdOrName,
   mapByKey,
-  parseNode,
   repoRelative,
   stripPropertyName,
   suffixCategory,
   withHeaders,
 } from './util.ts'
 
+import type { ComposedRef, ExtractedNode } from './docProgram.ts'
 import type { Example, TagType } from './jsDocTags.ts'
-import type { ComposedRef, ExtractedNode } from './util.ts'
 
 interface Member {
   name: string

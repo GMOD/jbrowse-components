@@ -6,8 +6,8 @@ import { jsDocText, parsePipeTags } from './jsDocTags.ts'
 import { markdownTable, tableCell } from './markdown.ts'
 import { parseSourceFileSyntactic } from './sourceCorpus.ts'
 
+import type { DisplayTrackLink } from './docProgram.ts'
 import type { SourceCorpus } from './sourceCorpus.ts'
-import type { DisplayTrackLink } from './util.ts'
 import type { Node } from 'typescript'
 
 // Render the format -> adapter -> track type tables into the "Supported file

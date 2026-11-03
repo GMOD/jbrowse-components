@@ -24,6 +24,7 @@ import {
   memberLine,
   pluginOf,
 } from './agentText.ts'
+import { parseNode } from './docProgram.ts'
 import {
   enumConstantValues,
   literalConstantValue,
@@ -55,7 +56,6 @@ import {
   headerGaps,
   lookupByIdOrName,
   mapByKey,
-  parseNode,
   repoRelative,
   stripPropertyName,
   suffixCategory,
@@ -64,8 +64,8 @@ import {
 
 import type { KeyedWrites } from '../../../packages/add-track-core/src/keyedWrites.ts'
 import type { FieldPresets } from '../../../packages/core/src/util/colorScale.ts'
+import type { ExtractedNode, ReachedSchema } from './docProgram.ts'
 import type { Example } from './jsDocTags.ts'
-import type { ExtractedNode, ReachedSchema } from './util.ts'
 
 interface Item {
   name: string

@@ -2,6 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
+import { createDocProgram, extractWithComment } from './docProgram.ts'
 import { buildEnumConstantIndex } from './enumConstants.ts'
 import {
   accumulateConfig,
@@ -18,7 +19,6 @@ import {
   slotRow,
   unknownExampleKeys,
 } from './generateConfigDocs.ts'
-import { createDocProgram, extractWithComment } from './util.ts'
 
 import type {
   Config,
