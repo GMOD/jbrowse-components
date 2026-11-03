@@ -67,3 +67,26 @@ test('addTrackFromWidget shows a track whose assembly the container names by an 
   expect(shown).toEqual(['t1'])
   expect(notifications).toEqual([])
 })
+
+test('addTrackFromWidget reports a launchTrack failure instead of leaving it unhandled', async () => {
+  const { session } = fakeSession()
+  const failure = new Error('launch failed')
+  const notifyError = jest.fn()
+
+  addTrackFromWidget({
+    model: {
+      trackContainer: {
+        assemblyNames: ['volvox'],
+        launchTrack: async () => {
+          throw failure
+        },
+      },
+      clearData: () => {},
+    } as never,
+    session: { ...session, notifyError } as never,
+    conf: { trackId: 't1', type: 'FeatureTrack', assemblyNames: ['volvox'] },
+  })
+
+  await new Promise(resolve => setTimeout(resolve, 0))
+  expect(notifyError).toHaveBeenCalledWith('Could not show track "t1"', failure)
+})

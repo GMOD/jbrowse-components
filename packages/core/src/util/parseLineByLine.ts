@@ -22,7 +22,7 @@ export function groupLinesByRef(
   statusCallback?: StatusCallback,
 ): { headerLines: string[]; linesByRef: Record<string, string[]> } {
   const headerLines: string[] = []
-  const linesByRef: Record<string, string[]> = {}
+  const linesByRef: Record<string, string[]> = Object.create(null)
   parseLineByLine(
     buffer,
     line => {
@@ -60,33 +60,36 @@ export function makeFeatureIntervalTreeMap<
   parse: (lines: string[], refName: string) => T[],
   parsingStatusMessage: string,
 ) {
-  const cache: Record<string, IntervalTree<T>> = {}
-  return Object.fromEntries(
-    Object.entries(linesByRef).map(([refName, refLines]) => {
-      let lines: string[] | null = refLines
-      return [
-        refName,
-        (statusCallback?: StatusCallback) => {
-          if (!cache[refName]) {
-            statusCallback?.(parsingStatusMessage)
-            const intervalTree = new IntervalTree<T>()
-            try {
-              for (const feature of parse(lines!, refName)) {
-                intervalTree.insert([feature.start, feature.end], feature)
-              }
-            } finally {
-              // a status fan-out keeps a slot's last word, which would leave
-              // the region reading as still parsing
-              statusCallback?.('')
-            }
-            lines = null
-            cache[refName] = intervalTree
+  const cache = new Map<string, IntervalTree<T>>()
+  const factories: Record<
+    string,
+    (statusCallback?: StatusCallback) => IntervalTree<T>
+  > = Object.create(null)
+  for (const [refName, refLines] of Object.entries(linesByRef)) {
+    let lines: string[] | null = refLines
+    factories[refName] = (statusCallback?: StatusCallback) => {
+      const cached = cache.get(refName)
+      if (cached) {
+        return cached
+      } else {
+        statusCallback?.(parsingStatusMessage)
+        const intervalTree = new IntervalTree<T>()
+        try {
+          for (const feature of parse(lines!, refName)) {
+            intervalTree.insert([feature.start, feature.end], feature)
           }
-          return cache[refName]
-        },
-      ]
-    }),
-  )
+        } finally {
+          // a status fan-out keeps a slot's last word, which would leave
+          // the region reading as still parsing
+          statusCallback?.('')
+        }
+        lines = null
+        cache.set(refName, intervalTree)
+        return intervalTree
+      }
+    }
+  }
+  return factories
 }
 
 // Decode window. Deliberately small: the win over per-line decoding is in

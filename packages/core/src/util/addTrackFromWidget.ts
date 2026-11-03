@@ -202,5 +202,13 @@ export function addTrackFromWidget({
   session: AbstractSessionModel
   conf: WidgetTrackConf
 }) {
-  return addTracksFromWidget({ model, session, confs: [conf] }).added[0]
+  const { added, shown } = addTracksFromWidget({
+    model,
+    session,
+    confs: [conf],
+  })
+  shown.catch((error: unknown) => {
+    session.notifyError(`Could not show track "${conf.trackId}"`, error)
+  })
+  return added[0]
 }

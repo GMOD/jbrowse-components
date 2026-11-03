@@ -60,7 +60,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
           )
 
       const headerLines: string[] = []
-      const linesByRef: Record<string, string[]> = {}
+      const linesByRef: Record<string, string[]> = Object.create(null)
       parseLineByLine(
         buffer,
         line => {

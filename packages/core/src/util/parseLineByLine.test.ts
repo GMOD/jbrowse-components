@@ -296,6 +296,14 @@ describe('groupLinesByRef', () => {
     const { linesByRef } = group('ctgA\tsrc\tgene\ngarbage\n')
     expect(Object.keys(linesByRef)).toEqual(['ctgA'])
   })
+
+  it('keeps a contig named like an Object.prototype member', () => {
+    const { linesByRef } = group(
+      'constructor\tsrc\tgene\ntoString\tsrc\tgene\nconstructor\tsrc\texon\n',
+    )
+    expect(Object.keys(linesByRef)).toEqual(['constructor', 'toString'])
+    expect(linesByRef.constructor).toHaveLength(2)
+  })
 })
 
 describe('makeFeatureIntervalTreeMap', () => {
@@ -318,6 +326,17 @@ describe('makeFeatureIntervalTreeMap', () => {
       { start: 20, end: 30 },
     ])
     expect(map.ctgB!().search([0, 1])).toEqual([])
+  })
+
+  it('builds a tree for a ref named like an Object.prototype member', () => {
+    const map = makeFeatureIntervalTreeMap(
+      { constructor: ['0\t10'] },
+      parse,
+      'Parsing',
+    )
+
+    expect(map.constructor().search([5, 6])).toEqual([{ start: 0, end: 10 }])
+    expect(map.toString).toBeUndefined()
   })
 
   it('parses lazily once per ref, and clears the status it set', () => {
