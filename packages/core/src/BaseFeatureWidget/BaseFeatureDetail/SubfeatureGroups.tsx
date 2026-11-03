@@ -4,6 +4,7 @@ import ExpandMore from '@mui/icons-material/ExpandMore'
 import {
   ButtonBase,
   IconButton,
+  Link,
   Table,
   TableBody,
   TableCell,
@@ -20,6 +21,7 @@ import Attributes, { hasAttributeRows } from './Attributes.tsx'
 import { ValueText } from './BasicValue.tsx'
 import {
   cdsLength,
+  memberLabel,
   omittedForMember,
   subfeatureGroups,
   subfeatureSummary,
@@ -86,6 +88,10 @@ const useStyles = makeStyles()(theme => ({
     paddingBottom: theme.spacing(1),
   },
 }))
+
+// rows a group draws before offering the rest: a long-read alignment's
+// match parts run to thousands
+const MAX_ROWS = 100
 
 interface SharedProps {
   model: FeatureDetailsModel
@@ -188,7 +194,7 @@ const MemberRow = observer(function MemberRow({
   const position = `${toLocale(feature.start + 1)}-${toLocale(feature.end)}`
   const go = locate?.(feature)
   const span = 4 + Number(columns.name)
-  const label = feature.name ?? feature.id
+  const label = memberLabel(feature)
   const summary = subfeatureSummary(feature)
   return (
     <>
@@ -205,7 +211,7 @@ const MemberRow = observer(function MemberRow({
         <TableCell>{index + 1}</TableCell>
         {columns.name ? (
           <TableCell>
-            {label != null ? <ValueText text={String(label)} /> : null}
+            {label !== undefined ? <ValueText text={label} /> : null}
             {summary ? <div className={classes.summary}>{summary}</div> : null}
           </TableCell>
         ) : null}
@@ -279,14 +285,18 @@ const Group = observer(function Group({
 }) {
   const { classes } = useStyles()
   const [open, setOpen] = useState(defaultOpen)
-  const { type, members, shared } = group
+  const [showAll, setShowAll] = useState(false)
+  const { type, members, shared, named } = group
   const { model, descriptions, formatter } = props
-  const isCds = type.toLowerCase() === 'cds'
+  // a sum of the parent's coding bases reads as one protein's length only when
+  // these are its segments, not whole CDS of their own (a virus's
+  // alternative polyproteins)
+  const codingSegments =
+    type.toLowerCase() === 'cds' &&
+    members.every(m => !m.feature.subfeatures?.length)
+  const shown = showAll ? members : members.slice(0, MAX_ROWS)
   const columns = {
-    name: members.some(
-      ({ feature: f }) =>
-        f.name != null || f.id != null || !!f.subfeatures?.length,
-    ),
+    name: named,
     openable:
       getEnv(model).pluginManager.extensionPointCallbackCount(
         'Core-extraFeaturePanel',
@@ -303,7 +313,7 @@ const Group = observer(function Group({
         {type}
         <span className={classes.count}>
           {members.length}
-          {isCds ? ` · ${toLocale(cdsLength(parent))} bp` : ''}
+          {codingSegments ? ` · ${toLocale(cdsLength(parent))} bp` : ''}
         </span>
       </Disclosure>
       {open ? (
@@ -324,7 +334,7 @@ const Group = observer(function Group({
               </TableRow>
             </TableHead>
             <TableBody>
-              {members.map((member, index) => (
+              {shown.map((member, index) => (
                 <MemberRow
                   key={member.feature.uniqueId}
                   {...props}
@@ -337,6 +347,17 @@ const Group = observer(function Group({
               ))}
             </TableBody>
           </Table>
+          {shown.length < members.length ? (
+            <Link
+              component="button"
+              variant="caption"
+              onClick={() => {
+                setShowAll(true)
+              }}
+            >
+              Show all {toLocale(members.length)}
+            </Link>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -345,8 +366,9 @@ const Group = observer(function Group({
 
 /**
  * A feature's subfeatures, one group per type, each a table of its members
- * that open in place. A group opens by itself when it is the only one: a
- * gene's transcripts, but not a transcript's exons beside its CDS.
+ * that open in place. A group opens by itself when it is the only one, or when
+ * its members hold subfeatures of their own: a gene's mRNAs beside its
+ * misc_RNA, but not a transcript's exons beside its CDS.
  */
 const SubfeatureGroups = observer(function SubfeatureGroups({
   feature,
@@ -365,7 +387,10 @@ const SubfeatureGroups = observer(function SubfeatureGroups({
           {...props}
           group={group}
           parent={feature}
-          defaultOpen={groups.length === 1}
+          defaultOpen={
+            groups.length === 1 ||
+            group.members.some(m => !!m.feature.subfeatures?.length)
+          }
         />
       ))
     : null

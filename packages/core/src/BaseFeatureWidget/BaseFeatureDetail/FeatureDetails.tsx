@@ -97,7 +97,11 @@ const FeatureDetails = observer(function FeatureDetails(
       <Attributes
         attributes={feature}
         omit={omit}
-        omitSingleLevel={[...shownByCoreDetails, 'mate']}
+        omitSingleLevel={[
+          ...shownByCoreDetails,
+          'mate',
+          ...(feature.id === name ? ['id'] : []),
+        ]}
         descriptions={descriptions}
         formatter={formatter}
         fieldActions={fieldActions}

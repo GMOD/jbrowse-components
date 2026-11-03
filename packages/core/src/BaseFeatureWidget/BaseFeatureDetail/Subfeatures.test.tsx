@@ -71,8 +71,8 @@ test('a gene opens on a table of its transcripts, each summarising what it holds
   const rows = within(getByTestId('subfeature-group-mRNA')).getAllByRole('row')
   expect(rows.map(row => row.textContent)).toEqual([
     '#NamePositionLength',
-    '1EDEN.13 exon1-100100',
-    '2EDEN.23 exon1-100100',
+    '1EDEN.13 exons1-100100',
+    '2EDEN.23 exons1-100100',
   ])
 })
 
@@ -93,4 +93,12 @@ test("opening a transcript row shows its exons 5′ to 3′, without the parent'
     within(exons).getAllByRole('button', { name: 'Show details' })[0]!,
   )
   expect(within(exons).getByText('ENSE_e3')).toBeTruthy()
+})
+
+test('a group draws its first hundred rows and offers the rest', () => {
+  const { getByTestId, getByText } = renderGene(150)
+  const group = getByTestId('subfeature-group-mRNA')
+  expect(within(group).getAllByRole('row')).toHaveLength(101)
+  fireEvent.click(getByText('Show all 150'))
+  expect(within(group).getAllByRole('row')).toHaveLength(151)
 })

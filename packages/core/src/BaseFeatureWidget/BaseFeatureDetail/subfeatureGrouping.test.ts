@@ -103,7 +103,27 @@ test('the summary counts each type and sums the coding bases', () => {
         part('CDS', 55),
       ]),
     ),
-  ).toBe('2 exon · CDS 20 bp')
+  ).toBe('2 exons · CDS 20 bp')
+})
+
+test("the summary leaves a GENCODE transcript's UTRs and codons for its groups", () => {
+  expect(
+    subfeatureSummary(
+      transcript([
+        part('exon', 0),
+        part('five_prime_UTR', 0),
+        part('five_prime_UTR', 20),
+        part('exon', 20),
+        part('exon', 40),
+        part('CDS', 45),
+        part('start_codon', 45),
+        part('stop_codon', 50),
+      ]),
+    ),
+  ).toBe('3 exons · CDS 10 bp')
+  expect(subfeatureSummary(transcript([part('match_part', 0)]))).toBe(
+    '1 match_part',
+  )
 })
 
 test('unformatted members pair with their formatted subfeature by position', () => {
@@ -112,4 +132,40 @@ test('unformatted members pair with their formatted subfeature by position', () 
   const [group] = subfeatureGroups(formatted, raw)
   expect(group!.members[0]!.unformatted?.name).toBe('raw')
   expect(group!.members[0]!.unformatted?.uniqueId).toBe('t_0')
+})
+
+test("a shared value naming the group's own type is left out", () => {
+  const [group] = subfeatureGroups(
+    transcript([
+      part('CDS', 0, { gbkey: 'CDS', protein_id: 'NP_1' }),
+      part('CDS', 50, { gbkey: 'CDS', protein_id: 'NP_1' }),
+    ]),
+  )
+  expect(group!.shared).toEqual({ protein_id: 'NP_1' })
+})
+
+test('one name on every member is shared, and the table names none', () => {
+  const [group] = subfeatureGroups(
+    transcript([
+      part('CDS', 0, { name: 'NP_1' }),
+      part('CDS', 50, { name: 'NP_1' }),
+    ]),
+  )
+  expect(group).toMatchObject({ named: false, shared: { name: 'NP_1' } })
+})
+
+test('differing names, or a member holding subfeatures, name each row', () => {
+  const [exons] = subfeatureGroups(
+    transcript([
+      part('exon', 0, { name: 'e1' }),
+      part('exon', 50, { name: 'e2' }),
+    ]),
+  )
+  expect(exons).toMatchObject({ named: true, shared: {} })
+  const [mrna] = subfeatureGroups(
+    transcript([
+      { ...part('mRNA', 0, { name: 'tx' }), subfeatures: [part('exon', 0)] },
+    ]),
+  )
+  expect(mrna!.named).toBe(true)
 })
