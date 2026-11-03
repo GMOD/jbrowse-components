@@ -2,35 +2,51 @@ import { ROOT_CHILD_ORDINAL } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
-export interface YShifts {
-  // A feature with no entry does not move.
-  byFeature: ReadonlyMap<string, number>
-  // Present where an isoform row moves on its own; absent, every child rides
-  // its feature.
-  ofChild?: (featureId: string, childOrdinal: number) => number
-}
+/**
+ * Either every lane rides its feature's entry in `byFeature` (a feature with
+ * none does not move), or `ofChild` prices each isoform row on its own, the
+ * root row included, and nothing else is consulted. `byIndex`, where a caller
+ * already holds it, is `byFeature` laid out by flatbush index.
+ */
+export type YShifts =
+  | {
+      byFeature: ReadonlyMap<string, number>
+      byIndex?: Float64Array
+    }
+  | { ofChild: (featureId: string, childOrdinal: number) => number }
 
 const PRIMITIVE_KINDS = ['rect', 'line', 'arrow'] as const
 
 function featureShifts(data: FeatureDataResult, shifts: YShifts) {
   const items = data.flatbushItems
-  const byFeature = new Float64Array(items.length)
-  for (let i = 0; i < items.length; i++) {
-    byFeature[i] = shifts.byFeature.get(items[i]!.featureId) ?? 0
+  if ('ofChild' in shifts) {
+    const out = new Float64Array(items.length)
+    for (let i = 0; i < items.length; i++) {
+      out[i] = shifts.ofChild(items[i]!.featureId, ROOT_CHILD_ORDINAL)
+    }
+    return out
+  } else if (shifts.byIndex) {
+    return shifts.byIndex
+  } else {
+    const out = new Float64Array(items.length)
+    for (let i = 0; i < items.length; i++) {
+      out[i] = shifts.byFeature.get(items[i]!.featureId) ?? 0
+    }
+    return out
   }
-  return byFeature
 }
 
 function shiftPrimitiveYs(
   data: FeatureDataResult,
   kind: (typeof PRIMITIVE_KINDS)[number],
   byFeature: Float64Array,
-  ofChild: YShifts['ofChild'],
+  shifts: YShifts,
 ) {
   const ys = data[`${kind}Ys`]
   const featureIndices = data[`${kind}FeatureIndices`]
   const ordinals = data[`${kind}ChildOrdinals`]
-  if (ofChild && ordinals.length > 0) {
+  if ('ofChild' in shifts && ordinals.length > 0) {
+    const { ofChild } = shifts
     for (let i = 0; i < ys.length; i++) {
       ys[i] =
         ys[i]! +
@@ -48,7 +64,7 @@ function childShift(
   featureId: string,
   childOrdinal: number | undefined,
 ) {
-  return shifts.ofChild
+  return 'ofChild' in shifts
     ? shifts.ofChild(featureId, childOrdinal ?? ROOT_CHILD_ORDINAL)
     : (shifts.byFeature.get(featureId) ?? 0)
 }
@@ -62,7 +78,7 @@ function childShift(
 export function shiftDrawnYLanes(data: FeatureDataResult, shifts: YShifts) {
   const byFeature = featureShifts(data, shifts)
   for (const kind of PRIMITIVE_KINDS) {
-    shiftPrimitiveYs(data, kind, byFeature, shifts.ofChild)
+    shiftPrimitiveYs(data, kind, byFeature, shifts)
   }
   for (const labelData of data.floatingLabelsData.values()) {
     labelData.topY += childShift(
@@ -73,12 +89,13 @@ export function shiftDrawnYLanes(data: FeatureDataResult, shifts: YShifts) {
   }
   if (data.aminoAcidOverlay) {
     for (const aa of data.aminoAcidOverlay) {
-      aa.topPx += shifts.ofChild
-        ? shifts.ofChild(
-            data.flatbushItems[aa.flatbushIdx]!.featureId,
-            aa.childOrdinal ?? ROOT_CHILD_ORDINAL,
-          )
-        : byFeature[aa.flatbushIdx]!
+      aa.topPx +=
+        'ofChild' in shifts
+          ? shifts.ofChild(
+              data.flatbushItems[aa.flatbushIdx]!.featureId,
+              aa.childOrdinal ?? ROOT_CHILD_ORDINAL,
+            )
+          : byFeature[aa.flatbushIdx]!
     }
   }
   return byFeature

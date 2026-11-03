@@ -147,18 +147,17 @@ export function unplaceBelow(
 ): Map<number, FeatureDataResult> {
   const out = new Map<number, FeatureDataResult>()
   for (const [n, data] of map) {
-    const below = new Set(
-      data.flatbushItems
-        .filter(item => isPlacedRow(item.topPx) && item.bottomPx > heightPx)
-        .map(item => item.featureId),
-    )
+    const below = new Map<string, number>()
+    for (const item of data.flatbushItems) {
+      if (isPlacedRow(item.topPx) && item.bottomPx > heightPx) {
+        below.set(item.featureId, OFFSCREEN_Y)
+      }
+    }
     if (below.size === 0) {
       out.set(n, data)
     } else {
       const cloned = cloneMutableFields(data)
-      shiftYLanes(cloned, {
-        byFeature: new Map([...below].map(id => [id, OFFSCREEN_Y])),
-      })
+      shiftYLanes(cloned, { byFeature: below })
       out.set(n, cloned)
     }
   }
@@ -215,12 +214,10 @@ export function applyLayoutToRegion(
   shiftYLanes(data, { byFeature: layoutMap })
 
   // A feature whose labels went unreserved keeps its entry and loses only
-  // those labels. An unplaced feature's row is OFFSCREEN_Y, which no label's
-  // own top outweighs, so the shifted top says it without a second layout
-  // lookup per label.
+  // those labels.
   for (const [key, labelData] of data.floatingLabelsData) {
     const layoutKey = labelData.parentFeatureId ?? labelData.featureId
-    if (labelData.topY < OFFSCREEN_Y / 2) {
+    if (!isPlacedRow(layoutMap.get(layoutKey) ?? OFFSCREEN_Y)) {
       data.floatingLabelsData.delete(key)
     } else {
       if (droppedNameIds.has(layoutKey)) {

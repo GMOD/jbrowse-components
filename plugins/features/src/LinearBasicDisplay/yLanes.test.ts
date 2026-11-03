@@ -418,7 +418,6 @@ test('shiftYLanes moves every y lane by its owner', () => {
 test('shiftYLanes moves one isoform row on its own', () => {
   const data = cloneMutableFields(fixture())
   shiftYLanes(data, {
-    byFeature: new Map(),
     ofChild: (featureId, ordinal) =>
       featureId === 'g0' && ordinal === 1 ? 7 : 0,
   })
@@ -426,6 +425,32 @@ test('shiftYLanes moves one isoform row on its own', () => {
     const entry = before.get(key)!
     expect(delta).toBe(entry.owner === 'g0' && entry.ordinal === 1 ? 7 : 0)
   }
+})
+
+test('shiftYLanes with ofChild prices the root rows through it too', () => {
+  const data = cloneMutableFields(fixture())
+  shiftYLanes(data, {
+    ofChild: (_featureId, ordinal) => (ordinal === ROOT_CHILD_ORDINAL ? 3 : 0),
+  })
+  for (const [key, delta] of deltaBetween(before, entryMap(data))) {
+    expect(delta).toBe(before.get(key)!.ordinal === ROOT_CHILD_ORDINAL ? 3 : 0)
+  }
+})
+
+test('applyLayoutToRegion drops the labels of an unplaced or unlaid feature', () => {
+  const data = cloneMutableFields(fixture())
+  applyLayoutToRegion(
+    data,
+    new Map([['g0', -1e6]]),
+    new Map([
+      ['g0', 10],
+      ['g1', 10],
+    ]),
+    new Set(),
+    new Set(),
+    new Set(),
+  )
+  expect([...data.floatingLabelsData.keys()]).toEqual([])
 })
 
 test('shiftDrawnYLanes leaves the hit-test boxes where they are', () => {

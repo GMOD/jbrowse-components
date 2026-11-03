@@ -133,7 +133,7 @@ export function applyIsoformGapFloor(
       : 0
   }
 
-  shiftYLanes(data, { byFeature: new Map(), ofChild: shiftPx })
+  shiftYLanes(data, { ofChild: shiftPx })
 
   // The gene's own entry hangs its name off the bottom of the stack, so it
   // grows by every gap; a transcript's entry rides its row.

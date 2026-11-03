@@ -113,11 +113,15 @@ export function interpolateYData(
   const rem = 1 - t
   const out = new Map<number, FeatureDataResult>()
   for (const [regionIdx, data] of target) {
+    const items = data.flatbushItems
     const remainingById = new Map<string, number>()
+    const remainingByIndex = new Float64Array(items.length)
     let moved = false
-    for (const item of data.flatbushItems) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]!
       const d = morphDelta(fromTops, item.featureId, item.topPx)
       if (d !== undefined) {
+        remainingByIndex[i] = d * rem
         remainingById.set(item.featureId, d * rem)
         if (d !== 0) {
           moved = true
@@ -128,7 +132,10 @@ export function interpolateYData(
       out.set(regionIdx, data)
     } else {
       const shifted = { ...data, ...cloneDrawnYLanes(data) }
-      shiftDrawnYLanes(shifted, { byFeature: remainingById })
+      shiftDrawnYLanes(shifted, {
+        byFeature: remainingById,
+        byIndex: remainingByIndex,
+      })
       out.set(regionIdx, shifted)
     }
   }
