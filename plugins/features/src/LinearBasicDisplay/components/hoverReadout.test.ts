@@ -7,7 +7,6 @@ import {
   hgvsHitLabel,
   hoverTooltipRows,
   hoverTooltipText,
-  labelTooltipText,
 } from './hoverReadout.ts'
 
 import type { TranscriptCoords } from '../../RenderFeatureDataRPC/rpcTypes.ts'
@@ -155,18 +154,6 @@ test('hoverTooltipRows shows a nameless feature its function once', () => {
       }),
     ),
   ).toEqual(['frameshift element'])
-})
-
-test('labelTooltipText copies the name and description a name label stands for', () => {
-  const item = makeItem('gene1', 0, 100, 0, 20)
-  expect(
-    labelTooltipText({
-      ...item,
-      tooltip: 'TP53',
-      description: 'tumor protein p53',
-    }),
-  ).toBe('TP53\ntumor protein p53')
-  expect(labelTooltipText({ ...item, tooltip: 'TP53' })).toBe('TP53')
 })
 
 test('hoverTooltipRows puts the gene description between gene and isoform', () => {

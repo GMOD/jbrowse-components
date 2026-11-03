@@ -4,7 +4,6 @@ import { isBaseResolved } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 import { transcriptPosition } from '../transcriptPosition.ts'
 import { residueLabel } from './peptidePositioning.ts'
 
-import type { FlatbushItem } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { HitFeatureResult } from './hitTesting.ts'
 
 // An HGVS name pairs a name with coordinates, so a subfeature wins only when it
@@ -98,9 +97,4 @@ function plainText(rows: string[]) {
 
 export function hoverTooltipText(result: HitFeatureResult) {
   return plainText(hoverTooltipRows(result))
-}
-
-// A name label marks no base, so the feature's own rows are all it can copy.
-export function labelTooltipText({ tooltip, description }: FlatbushItem) {
-  return plainText(distinctRows([tooltip, description]))
 }

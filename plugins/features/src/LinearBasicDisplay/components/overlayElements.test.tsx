@@ -7,9 +7,11 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../../RenderFeatureDataRPC/testUtils.ts'
+import { hgvsHitLabel, hoverTooltipText } from './hoverReadout.ts'
 import { FloatingLabelsLayer } from './overlayElements.tsx'
 
-import type { VisibleRegion } from './hitTesting.ts'
+import type { FeatureContextMenuInfo } from '../featureContextMenu.ts'
+import type { HitFeatureResult, VisibleRegion } from './hitTesting.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const VR: VisibleRegion = {
@@ -184,4 +186,52 @@ test('the label layer drops a subfeature label the fit squeeze has shrunk', () =
     },
   })
   expect(queryByText('TX1')).toBeNull()
+})
+
+const TRANSCRIPT_ITEM = makeFlatbushItem({
+  featureId: 'f1',
+  startBp: 100,
+  endBp: 200,
+  name: 'TX-1',
+  tooltip: 'TX-1',
+  transcript: { exons: [100, 140, 160, 200], strand: 1, coding: [110, 190] },
+})
+
+function renderTranscriptLayer(overrides: {
+  openContextMenu?: (info: FeatureContextMenuInfo) => void
+  onLabelMouseOver?: (hit: HitFeatureResult) => void
+}) {
+  return render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <FloatingLabelsLayer
+        model={{
+          ...MODEL,
+          featureIdIndex: new Map([['f1', TRANSCRIPT_ITEM]]),
+          openContextMenu: overrides.openContextMenu ?? (() => {}),
+        }}
+        view={VIEW}
+        onLabelMouseOver={overrides.onLabelMouseOver}
+      />
+    </ThemeProvider>,
+  )
+}
+
+test('right-clicking a name offers the HGVS position that hovering the same point shows', () => {
+  const openContextMenu = jest.fn<void, [FeatureContextMenuInfo]>()
+  const onLabelMouseOver = jest.fn<void, [HitFeatureResult]>()
+  const { getByTestId } = renderTranscriptLayer({
+    openContextMenu,
+    onLabelMouseOver,
+  })
+  const label = getByTestId('feature-name-NAME')
+  const point = { clientX: 120, clientY: 5 }
+
+  fireEvent.mouseMove(label, point)
+  fireEvent.contextMenu(label, point)
+
+  const [hovered] = onLabelMouseOver.mock.calls[0]!
+  const [info] = openContextMenu.mock.calls[0]!
+  expect(hgvsHitLabel(hovered)).toMatch(/^TX-1:c\.\d+$/)
+  expect(info.hgvsLabel).toBe(hgvsHitLabel(hovered))
+  expect(info.tooltipText).toBe(hoverTooltipText(hovered))
 })

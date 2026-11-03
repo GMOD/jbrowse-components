@@ -11,7 +11,7 @@ import {
 } from '../../RenderFeatureDataRPC/constants.ts'
 import PeptideCanvas from './PeptideCanvas.tsx'
 import { labelHit } from './hitTesting.ts'
-import { labelTooltipText } from './hoverReadout.ts'
+import { hgvsHitLabel, hoverTooltipText } from './hoverReadout.ts'
 import { labelColors } from './labelColors.ts'
 import { forEachDisplayLabel, labelCullBand } from './labelPositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'
@@ -342,6 +342,18 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
         }
       : undefined
   }
+
+  // The hover and the context menu read one hit, so a name offers on a click
+  // what it showed on the hover.
+  const resolveHit = (e: React.MouseEvent) => {
+    const t = resolveTarget(e)
+    const vr =
+      t &&
+      visibleRegions.find(
+        r => r.displayedRegionIndex === t.displayedRegionIndex,
+      )
+    return t && vr ? labelHit(t.item, vr, eventPoint(e).x) : undefined
+  }
   return (
     <div
       className={classes.labelLayer}
@@ -369,17 +381,16 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
         }
       }}
       onContextMenu={e => {
-        const t = resolveTarget(e)
-        if (t) {
+        const hit = resolveHit(e)
+        if (hit) {
           e.preventDefault()
-          // A click on a name gives no base to read a transcript off, so the
-          // menu gets no HGVS position.
           openContextMenu({
-            item: t.item,
-            displayedRegionIndex: t.displayedRegionIndex,
+            item: hit.feature,
+            displayedRegionIndex: hit.displayedRegionIndex,
             clientX: e.clientX,
             clientY: e.clientY,
-            tooltipText: labelTooltipText(t.item),
+            hgvsLabel: hgvsHitLabel(hit),
+            tooltipText: hoverTooltipText(hit),
           })
         }
       }}
@@ -391,14 +402,9 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
           onLabelMouseLeave?.()
           return
         }
-        const t = resolveTarget(e)
-        const vr =
-          t &&
-          visibleRegions.find(
-            r => r.displayedRegionIndex === t.displayedRegionIndex,
-          )
-        if (t && vr && onLabelMouseOver) {
-          onLabelMouseOver(labelHit(t.item, vr, eventPoint(e).x))
+        const hit = resolveHit(e)
+        if (hit && onLabelMouseOver) {
+          onLabelMouseOver(hit)
         }
       }}
       // Leaving a label for anywhere but the canvas — off the track edge, out of
