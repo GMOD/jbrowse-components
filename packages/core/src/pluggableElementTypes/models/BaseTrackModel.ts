@@ -528,11 +528,7 @@ export function createBaseTrackModel<SCHEMA extends AnyConfigurationSchemaType>(
        * falls back when the adapter declines the one that was asked for.
        */
       get exportsDataViaAdapter(): boolean {
-        return getEnv(self)
-          .pluginManager.getAdapterType(
-            readConfObject(baseConfOf(self), 'adapter').type,
-          )
-          .adapterCapabilities.includes('exportData')
+        return self.adapterType.adapterCapabilities.includes('exportData')
       },
       /**
        * #getter
