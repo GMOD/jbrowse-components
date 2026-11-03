@@ -3,6 +3,8 @@ import { render } from '@testing-library/react'
 import PeptideCanvas from './PeptideCanvas.tsx'
 
 const region = {
+  refName: 'ctgA',
+  assemblyName: 'volvox',
   displayedRegionIndex: 0,
   start: 0,
   end: 1000,
