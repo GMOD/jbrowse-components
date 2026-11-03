@@ -4,6 +4,7 @@ import { MenuItem, Popover, Select, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { colord } from '../util/colord.ts'
+import { isCssColor } from '../util/cssColorParse.ts'
 import { useDebounce, useLocalStorage } from '../util/hooks.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 import { swatchStyle } from './colorSwatchStyle.ts'
@@ -89,7 +90,9 @@ const ColorPicker = observer(function ColorPicker({
 
   const handleChange = (val: string) => {
     setText(val)
-    onChange(colord(val).toRgbString())
+    if (isCssColor(val)) {
+      onChange(colord(val).toRgbString())
+    }
   }
   return (
     <div className={classes.root}>
