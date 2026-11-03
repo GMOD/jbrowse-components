@@ -1,18 +1,17 @@
 /**
  * @jest-environment node
  */
-import { legacyKeySchema } from './configJsonSchema.ts'
+import { dropsRetiredKey, legacyKeySchema } from './configJsonSchema.ts'
 
-test('a retired key whose lift writes nothing is described as dropped', () => {
-  expect(legacyKeySchema(() => ({})).description).toMatch(/dropped/)
+test('a retired lift writing nothing drops its key, and says so', () => {
+  expect(dropsRetiredKey(() => ({}))).toBe(true)
+  expect(legacyKeySchema(true).description).toMatch(/dropped/)
 })
 
-test('a retired key whose lift writes a slot is described as rewritten', () => {
-  expect(
-    legacyKeySchema(value => ({ rows: { step: value } })).description,
-  ).toMatch(/rewrites it into current slots/)
-  expect(
-    legacyKeySchema(value => (value === 1 ? { height: value } : {}))
-      .description,
-  ).toMatch(/rewrites/)
+test('a retired lift writing a slot rewrites its key, and says so', () => {
+  expect(dropsRetiredKey(value => ({ rows: { step: value } }))).toBe(false)
+  expect(dropsRetiredKey(() => ({ height: 100 }))).toBe(false)
+  expect(legacyKeySchema(false).description).toMatch(
+    /rewrites it into current slots/,
+  )
 })

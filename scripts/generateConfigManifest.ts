@@ -137,6 +137,7 @@ import corePlugins from './src/corePlugins.ts'
 import sessionModelFactory from './src/sessionModel/index.ts'
 import {
   buildConfigJsonSchema,
+  dropsRetiredKey,
   slotLifts,
 } from '../../scripts/configJsonSchema.ts'
 import { migrationRows } from '../../scripts/configMigrationTable.ts'
@@ -520,10 +521,7 @@ function undeclaredKeysRead(adapterType, normalize) {
 function droppedKeysOf(configSchema) {
   const retired =
     getConfigurationSchemaMetadata(configSchema)?.options.retired ?? {}
-  return Object.keys(retired).filter(
-    key =>
-      retired[key].length === 0 && Object.keys(retired[key]()).length === 0,
-  )
+  return Object.keys(retired).filter(key => dropsRetiredKey(retired[key]))
 }
 
 // A probe hands a schema keys it does not declare, each of which a closed one
@@ -978,6 +976,7 @@ const schema = buildConfigJsonSchema({
   sessionModel: sessionModelFactory({ pluginManager: pm, assemblyConfigSchema }),
   migratedDisplayKeys: manifest.migratedDisplayKeys,
   legacyKeysOf: (group, name) => groupOf(group)[name]?.legacyKeys ?? [],
+  droppedKeysOf: (group, name) => groupOf(group)[name]?.droppedKeys ?? [],
   legacyValuesOf: (group, name) => groupOf(group)[name]?.legacyValues ?? {},
   shorthandKeysOf: (group, name) => groupOf(group)[name]?.shorthandKeys ?? [],
   droppedDisplaysOf: name => manifest.tracks[name]?.droppedDisplays ?? [],

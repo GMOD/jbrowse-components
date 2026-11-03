@@ -154,6 +154,8 @@ export interface Deps {
   sessionModel: MstType
   migratedDisplayKeys: Record<string, string[]>
   legacyKeysOf: (group: string, name: string) => string[]
+  /** The legacy keys a config loading drops, writing nothing. */
+  droppedKeysOf: (group: string, name: string) => string[]
   legacyValuesOf: (group: string, name: string) => Record<string, unknown[]>
   shorthandKeysOf: (group: string, name: string) => string[]
   /** The display types a track's preprocessing removes from its `displays`. */
@@ -332,24 +334,22 @@ function typeHint(names: string[]): JsonSchema {
 }
 
 /**
- * The JSON schema of a key a schema's `retired` lifts: dropped where the
- * lift writes nothing for any value, as MAF's `rowHeight` is now its rows
- * always fit, and rewritten into current slots otherwise.
+ * Whether a schema's `retired` lift drops its key, writing nothing whatever
+ * the key held, as MAF's `rowHeight` is now its rows always fit.
  */
-export function legacyKeySchema(lift: (value: unknown) => unknown): JsonSchema {
-  const writesNothing = ['probe', 1, true, ['probe'], { probe: 1 }].every(
-    value => {
-      try {
-        const out = lift(value)
-        return isRecord(out) && Object.keys(out).length === 0
-      } catch {
-        return false
-      }
-    },
-  )
+export function dropsRetiredKey(lift: (value: unknown) => unknown) {
+  return lift.length === 0 && isEmptyRecord(lift(undefined))
+}
+
+function isEmptyRecord(value: unknown) {
+  return isRecord(value) && Object.keys(value).length === 0
+}
+
+/** The JSON schema of a key a schema's `retired` lifts or drops. */
+export function legacyKeySchema(dropped: boolean): JsonSchema {
   return {
     deprecated: true,
-    description: writesNothing
+    description: dropped
       ? 'Legacy key: dropped when the config loads, since nothing reads it now.'
       : 'Legacy key: a migration rewrites it into current slots when the config loads.',
   }
@@ -1004,7 +1004,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       ...Object.fromEntries(
         Object.entries(meta.options.retired ?? {}).map(([key, lift]) => [
           key,
-          legacyKeySchema(lift),
+          legacyKeySchema(dropsRetiredKey(lift)),
         ]),
       ),
       ...identityOf(meta, name),
@@ -1105,8 +1105,9 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       for (const key of deps.shorthandKeysOf(group, entry.name)) {
         slots[key] ??= shorthandSchema(key)
       }
+      const dropped = deps.droppedKeysOf(group, entry.name)
       for (const key of deps.legacyKeysOf(group, entry.name)) {
-        slots[key] ??= LEGACY
+        slots[key] ??= legacyKeySchema(dropped.includes(key))
       }
       defs[`${entry.name}Slots`] = { type: 'object', properties: slots }
       const identity = identityOf(meta, entry.name)
