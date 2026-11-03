@@ -53,7 +53,8 @@ dominates. Check which shape a profile came from before ranking work off it.
 graded 2-20% across species**, because a uniform rate gets the mismatch count, and
 so the profile, wrong.
 
-Shipped levers: columnar wire rehydrated at placement; the packer fed from the
+Shipped levers: columnar wire rehydrated at placement (`postMessage` 3.3 s to
+0.03 ms on one region); the packer fed from the
 adapter's subscription with no buffered sizing pass (`mafWirePacker.ts` has why);
 adapters parsing straight into the packer
 ([ADR-195](../architecture-decision-records/adr-195-a-maf-adapter-parses-its-blocks-into-the-packer.md)).
