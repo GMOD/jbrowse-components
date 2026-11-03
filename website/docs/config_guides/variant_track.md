@@ -253,6 +253,37 @@ reads of the same block, `r2` on a red ramp and `dprime` on a blue one unless
   the two to be at similar frequency, so it draws the sharper boundary. It shows
   whether one marker can stand in for another
 
+A `threshold` scale cuts the statistic into intervals, each one color. These are
+LocusZoom's r² bins, the ones a GWAS track colors its points by
+([](/docs/config_guides/gwas_track)), so a triangle under a Manhattan plot
+shares its key:
+
+```json addtrack
+{
+  "trackId": "ld_plink_bins",
+  "name": "Linkage disequilibrium, r² bins",
+  "uri": "https://yourhost/study.ld.gz",
+  "assemblyNames": ["hg38"],
+  "displayDefaults": {
+    "encoding": {
+      "color": {
+        "field": "r2",
+        "scale": {
+          "type": "threshold",
+          "domain": ["0.2", "0.4", "0.6", "0.8"],
+          "range": ["#357ebd", "#46b8da", "#5cb85c", "#eea236", "#d43f3a"]
+        },
+        "legend": { "descending": true }
+      }
+    }
+  }
+}
+```
+
+Clicking a cell makes its SNP the index SNP: its row and column of the triangle
+light up, its LD to every other variant. Click empty space, or use **Clear index
+SNP** in the track menu, to let it go.
+
 Thinning is plink's `--maf`, decided when the table is written: it holds the
 dense callset down to the common, block-tagging variants. High enough it reaches
 the tagging variants themselves, and the block fades. Several haplotypes at one

@@ -1,8 +1,15 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
+import { cssColorToRgba } from '@jbrowse/core/util/colorBits'
 import { rampLutOf, stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { continuousColorScale } from '@jbrowse/core/util/markEncoding'
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import {
+  thresholdCuts,
+  thresholdKeyEntries,
+} from '@jbrowse/core/util/thresholdScale'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
+import {
+  SCALE_TYPE_LINEAR,
   denormalizeScore,
   scaleTypeCode,
 } from '@jbrowse/render-core/scoreScale'
@@ -13,6 +20,7 @@ import {
   matrixColorEncodingOf,
 } from './colorConfigSchema.ts'
 
+import type { ColorLegendSetting } from './colorConfigSchema.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ColorSlots, FieldPreset } from '@jbrowse/core/util/colorScale'
@@ -55,10 +63,75 @@ const confNode = (self: object) =>
 
 const UNIT_EXTENT = [0, 1] as const
 
+/** A threshold scale's intervals: the cuts ascending, and one color more than cuts. */
+export interface MatrixColorBins {
+  cuts: readonly number[]
+  colors: readonly string[]
+}
+
+function thresholdBins(
+  domain: readonly string[],
+  range: readonly string[],
+  ramp: Uint8Array,
+): MatrixColorBins {
+  const cuts = thresholdCuts(domain)
+  const sampled = stopsFromRampLut(ramp, cuts.length + 1)
+  return { cuts, colors: sampled.map((stop, i) => range[i] ?? stop.color) }
+}
+
+/**
+ * Equal bands, one per color. Entry i is the color at `i / (N - 1)`, so while
+ * there are fewer than 128 bands a band's centre sits more than one entry
+ * inside it, and the GPU's linear sample there blends only that band's
+ * entries.
+ */
+function bandedLut(colors: readonly string[]) {
+  const rgba = colors.map(c => cssColorToRgba(c))
+  const last = COLOR_RAMP_LUT_ENTRIES - 1
+  const lut = new Uint8Array(COLOR_RAMP_LUT_ENTRIES * 4)
+  for (let i = 0; i < COLOR_RAMP_LUT_ENTRIES; i++) {
+    lut.set(
+      rgba[Math.min(rgba.length - 1, Math.floor((i / last) * rgba.length))]!,
+      i * 4,
+    )
+  }
+  return lut
+}
+
+/** A threshold's key rows, the highest interval first under `descending`. */
+function thresholdKey(bins: MatrixColorBins, descending: boolean | undefined) {
+  const entries = thresholdKeyEntries(bins.cuts, bins.colors, {})
+  return descending ? entries.toReversed() : entries
+}
+
+/**
+ * Each value as the painters read it under `bins`: the centre of its
+ * interval's band of the banded table, so the bin a value falls in is decided
+ * here, exactly, and not by where a 256-entry table rounds it. A value
+ * `isValue` refuses, a matrix's no-data sentinel, stays as it is.
+ */
+export function binnedColorValues(
+  values: Float32Array,
+  { cuts, colors }: MatrixColorBins,
+  isValue: (v: number) => boolean,
+) {
+  const out = new Float32Array(values.length)
+  const n = colors.length
+  for (let k = 0; k < values.length; k++) {
+    const v = values[k]!
+    let bin = 0
+    while (bin < cuts.length && v >= cuts[bin]!) {
+      bin++
+    }
+    out[k] = isValue(v) ? (bin + 0.5) / n : v
+  }
+  return out
+}
+
 /**
  * #stateModel MatrixRampMixin
  * #category display
- * #crossCuttingMixin A matrix display's `encoding.color` as it paints: the painted field through its preset's ramp (`colorEncoding`), that ramp's scheme, direction and 256-entry table (`colorScheme`, `colorReverse`, `colorRamp`), the domain and middle stop it spans over the display's `colorExtent` (`colorDomain`, `colorMidNorm`), all four as the painters read them (`matrixColor`), the legend's ramp (`rampColorScales`), and the scheme pick (`setColorScheme`). A display that may paint a field other than the written one, because the file could not serve it, answers `paintedColorField`; one whose values follow the data, rather than a statistic's fixed range, answers `colorExtent`
+ * #crossCuttingMixin A matrix display's `encoding.color` as it paints: the painted field through its preset's ramp (`colorEncoding`), that ramp's scheme, direction and 256-entry table (`colorScheme`, `colorReverse`, `colorRamp`), the domain and middle stop it spans over the display's `colorExtent` (`colorDomain`, `colorMidNorm`), all four as the painters read them (`matrixColor`), the legend's ramp (`rampColorScales`), and the scheme pick (`setColorScheme`). Under a `threshold` scale the intervals (`colorBins`) paint through a table of one band each, the display handing the painters each value at its interval's centre (`binnedColorValues`), and the key lists the intervals. A display that may paint a field other than the written one, because the file could not serve it, answers `paintedColorField`; one whose values follow the data, rather than a statistic's fixed range, answers `colorExtent`
  */
 export default function MatrixRampMixin<F extends string>(
   presets: MatrixFieldPresets<F>,
@@ -86,6 +159,15 @@ export default function MatrixRampMixin<F extends string>(
     .views(self => ({
       /**
        * #getter
+       * `encoding.color`'s painted members as written.
+       */
+      get paintedColorSetting() {
+        return colorSettingOf(confNode(self).configuration.encoding.color)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * The color channel under the painted field's preset, with an unset
        * `scale.reverse` turning round a scheme dark at its low end, since an
        * unpainted cell is the page behind the matrix. The preset's scheme,
@@ -96,16 +178,20 @@ export default function MatrixRampMixin<F extends string>(
        */
       get colorEncoding(): MatrixColorEncoding<F> {
         const field = self.paintedColorField
-        const written = colorSettingOf(
-          confNode(self).configuration.encoding.color,
-        )
+        const written = self.paintedColorSetting
         const preset = presets[field].scale
+        // a threshold paints through `colorBins`; the ramp under it stays the
+        // field's, which an unwritten `range` samples
         return matrixColorEncodingOf(
           {
             ...written,
             field,
             scale: {
               ...written.scale,
+              type:
+                written.scale.type === 'threshold'
+                  ? undefined
+                  : written.scale.type,
               scheme: written.scale.scheme ?? preset.scheme,
               reverse:
                 written.scale.reverse ??
@@ -143,15 +229,39 @@ export default function MatrixRampMixin<F extends string>(
     .views(self => ({
       /**
        * #getter
-       * The ramp's 256 entries: the GPU's texture, the Canvas2D fill and the
-       * legend read this one table. It reads `colorScheme` and `colorReverse`
+       * The scheme's 256 entries, read off `colorScheme` and `colorReverse`
        * rather than the encoding, so a domain edit re-uploads no texture.
        */
-      get colorRamp(): Uint8Array {
+      get schemeRamp(): Uint8Array {
         return rampLutOf({
           scheme: self.colorScheme,
           reverse: self.colorReverse,
         })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Under a `threshold` scale, its intervals: the `domain` cuts and a
+       * `range` color each, an interval `range` leaves unnamed sampling the
+       * scheme evenly from its low end.
+       */
+      get colorBins(): MatrixColorBins | undefined {
+        const { scale } = self.paintedColorSetting
+        return scale.type === 'threshold'
+          ? thresholdBins(scale.domain, scale.range, self.schemeRamp)
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The 256 entries the GPU's texture, the Canvas2D fill and the legend
+       * read: the scheme's ramp, or under a threshold one band per interval.
+       */
+      get colorRamp(): Uint8Array {
+        const bins = self.colorBins
+        return bins ? bandedLut(bins.colors) : self.schemeRamp
       },
     }))
     .views(self => ({
@@ -184,12 +294,19 @@ export default function MatrixRampMixin<F extends string>(
        * #getter
        */
       get matrixColor(): MatrixColorState {
-        return {
-          domain: self.colorScale.domain,
-          scaleType: scaleTypeCode(self.colorScaleType),
-          midNorm: self.colorScale.midNorm,
-          ramp: self.colorRamp,
-        }
+        return self.colorBins
+          ? {
+              domain: UNIT_EXTENT,
+              scaleType: SCALE_TYPE_LINEAR,
+              midNorm: 0.5,
+              ramp: self.colorRamp,
+            }
+          : {
+              domain: self.colorScale.domain,
+              scaleType: scaleTypeCode(self.colorScaleType),
+              midNorm: self.colorScale.midNorm,
+              ramp: self.colorRamp,
+            }
       },
       /**
        * #getter
@@ -202,7 +319,8 @@ export default function MatrixRampMixin<F extends string>(
        * #method
        * The legend's ramp, once there is a domain to span: its bottom where
        * the scale paints it, a log scale's floor included, titled by
-       * `encoding.color.legend.title` where written, else `title`. An end of
+       * `encoding.color.legend.title` where written, else `title`; under a
+       * threshold, its intervals, highest first under `legend.descending`. An end of
        * the domain the loaded values run past reads `≤` or `≥`; an unset
        * `min` is the key's own bottom.
        */
@@ -224,24 +342,34 @@ export default function MatrixRampMixin<F extends string>(
           scaleTypeCode(self.colorScaleType),
           1,
         )
-        const written: string | undefined = getConf(confNode(self), [
+        // the key's own members, which nothing that paints reads
+        const legend: ColorLegendSetting = getConf(confNode(self), [
           'encoding',
           'color',
           'legend',
-          'title',
         ])
-        return hi > bottom
+        const bins = self.colorBins
+        return bins
           ? [
               {
-                kind: 'ramp',
+                kind: 'categorical',
                 id,
-                title: written ?? title,
-                domain: [bottom, hi],
-                stops: stopsFromRampLut(self.colorRamp, 11, midNorm),
-                extent: [min ?? bottom, max],
+                title: legend.title ?? title,
+                entries: thresholdKey(bins, legend.descending),
               },
             ]
-          : []
+          : hi > bottom
+            ? [
+                {
+                  kind: 'ramp',
+                  id,
+                  title: legend.title ?? title,
+                  domain: [bottom, hi],
+                  stops: stopsFromRampLut(self.colorRamp, 11, midNorm),
+                  extent: [min ?? bottom, max],
+                },
+              ]
+            : []
       },
     }))
     .actions(self => ({

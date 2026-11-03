@@ -32,7 +32,7 @@ function LdSvgBody({
     <>
       <TriangleMatrixSvgLayer
         marks={LD_MARKS}
-        regions={model.matrixRegions}
+        regions={model.paintedCells}
         state={model.renderState}
         width={canvasWidth}
         height={height}

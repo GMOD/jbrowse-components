@@ -2,9 +2,13 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { COLOR_SCHEMES } from '@jbrowse/core/util/colorSchemes'
 import {
   colorChannelOptions,
+  colorDescendingSlot,
+  colorDomainSlot,
   colorLegendOptions,
   colorRampSlots,
+  colorRangeSlot,
   colorScaleOptions,
+  colorScaleTypeSlot,
   colorTitleSlot,
 } from '@jbrowse/display-kit/colorConfigSchema'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -24,6 +28,9 @@ export const LD_FIELD_PRESETS = {
 /** The domain every LD statistic spans, and an unset end of `encoding.color`'s. */
 export const LD_VALUE_EXTENT = [0, 1] as const
 
+/** The scales LD's color paints: the statistic along a ramp, or in intervals. */
+export const LD_COLOR_SCALES = ['linear', 'threshold'] as const
+
 /**
  * #config LDColor
  * #category display
@@ -32,9 +39,11 @@ export const LD_VALUE_EXTENT = [0, 1] as const
  * unset scheme is the metric's own, reds for r² and blues for D'. The domain
  * is the statistic's 0 to 1 rather than the loaded values', so one r² paints
  * one color on every track; `scale.domainMin` and `scale.domainMax` narrow
- * it. The slots are the shared color channel's, so `jbrowse validate` and
- * "Edit plot..." judge them as they judge any other display's. A string is
- * the field.
+ * it. A `threshold` scale paints each interval between its `domain` cuts one
+ * `range` color instead, so the triangle can take the bins a GWAS track's LD
+ * coloring uses. The slots are the shared color channel's, so
+ * `jbrowse validate` and "Edit plot..." judge them as they judge any other
+ * display's. A string is the field.
  *
  * #example
  * ```js
@@ -42,6 +51,25 @@ export const LD_VALUE_EXTENT = [0, 1] as const
  *   type: 'LDTrackDisplay',
  *   encoding: {
  *     color: { field: 'dprime', scale: { scheme: 'viridis', domainMin: 0.2 } },
+ *   },
+ * }
+ * ```
+ *
+ * #example
+ * LocusZoom's r² bins, the GWAS track's, highest first in the key:
+ * ```js
+ * {
+ *   type: 'LDTrackDisplay',
+ *   encoding: {
+ *     color: {
+ *       field: 'r2',
+ *       scale: {
+ *         type: 'threshold',
+ *         domain: ['0.2', '0.4', '0.6', '0.8'],
+ *         range: ['#357ebd', '#46b8da', '#5cb85c', '#eea236', '#d43f3a'],
+ *       },
+ *       legend: { descending: true },
+ *     },
  *   },
  * }
  * ```
@@ -64,12 +92,34 @@ export const ldColorConfigSchema = ConfigurationSchema(
     },
     /**
      * #slot scale
-     * The ramp the statistic runs along, Vega-Lite's scale object. Each
-     * statistic runs along a linear ramp, so the object names no type.
+     * The ramp the statistic runs along, or the intervals it is cut into,
+     * Vega-Lite's scale object.
      */
     scale: ConfigurationSchema(
       'LDColorScale',
       {
+        /**
+         * #slot scale.type
+         */
+        ...colorScaleTypeSlot({
+          scales: LD_COLOR_SCALES,
+          scaleName: 'LDColorScaleType',
+          type: "linear, the default, runs the statistic along the scheme; threshold paints each interval between the domain's cuts one range color",
+        }),
+        /**
+         * #slot scale.domain
+         */
+        ...colorDomainSlot({
+          domain:
+            "a threshold scale's cuts, each the lowest value of the interval above it",
+        }),
+        /**
+         * #slot scale.range
+         */
+        ...colorRangeSlot({
+          range:
+            "a threshold scale's colors, one per interval from the lowest; an interval left unnamed samples the scheme",
+        }),
         /**
          * #slot scale.scheme
          */
@@ -118,11 +168,18 @@ export const ldColorConfigSchema = ConfigurationSchema(
     /**
      * #slot legend
      * The key this channel draws: `title` replaces the metric's name, and
-     * `""` draws none.
+     * `""` draws none; `descending` lists a threshold's intervals highest
+     * first.
      */
     legend: ConfigurationSchema(
       'LDColorLegend',
-      { ...colorTitleSlot },
+      {
+        ...colorTitleSlot,
+        /**
+         * #slot legend.descending
+         */
+        ...colorDescendingSlot,
+      },
       colorLegendOptions,
     ),
   },

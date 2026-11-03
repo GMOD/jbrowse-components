@@ -9,7 +9,9 @@ import { canonicalizeViewRefName } from '@jbrowse/core/util'
 import ColorWritesMixin from '@jbrowse/display-kit/ColorWritesMixin'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
-import MatrixRampMixin from '@jbrowse/display-kit/MatrixRampMixin'
+import MatrixRampMixin, {
+  binnedColorValues,
+} from '@jbrowse/display-kit/MatrixRampMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import TriangleMatrixMixin from '@jbrowse/display-kit/TriangleMatrixMixin'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
@@ -39,7 +41,10 @@ import type {
   LDRenderState,
   LDRenderingBackend,
 } from './components/ldRenderingBackendTypes.ts'
-import type { LDDisplayConfigSchema } from './configSchemaLDTrack.ts'
+import type {
+  LDDisplayConfig,
+  LDDisplayConfigSchema,
+} from './configSchemaLDTrack.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -393,17 +398,44 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
             }
       },
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * The payload as the painters read it: under a threshold scale each
+       * value at its interval's centre (`binnedColorValues`), while the hit
+       * test and the tooltip read the file's own.
+       */
+      get paintedCells(): ReadonlyMap<number, LDDataResult> {
+        const data = self.rpcData
+        const bins = self.colorBins
+        return data && bins
+          ? new Map([
+              [
+                0,
+                {
+                  ...data,
+                  ldValues: binnedColorValues(
+                    data.ldValues,
+                    bins,
+                    ldValueComputed,
+                  ),
+                },
+              ],
+            ])
+          : self.matrixRegions
+      },
+    }))
     .actions(self => ({
       /**
        * #action
        */
       startRenderingBackend(backend: LDRenderingBackend) {
         installUpload(self, backend, {
-          cells: () => self.matrixRegions,
+          cells: () => self.paintedCells,
           render: b =>
             b.renderBlocks(
               self.matrixBlocks,
-              self.matrixRegions,
+              self.paintedCells,
               self.renderState,
             ),
         })
@@ -420,9 +452,10 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
          * The schema's rules, then names asked for with no band to draw in.
          */
         configProblemsOf(conf: AnyConfigurationModel): string[] {
+          const ld = conf as LDDisplayConfig
           const namesWithoutBand =
-            readConfObject(conf, ['labels', 'name', 'show']) &&
-            !readConfObject(conf, ['connectors', 'show'])
+            readConfObject(ld, ['labels', 'name', 'show']) &&
+            !readConfObject(ld, ['connectors', 'show'])
           return [
             ...superConfigProblemsOf(conf),
             ...(namesWithoutBand
