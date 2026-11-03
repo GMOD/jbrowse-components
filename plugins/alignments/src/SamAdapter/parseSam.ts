@@ -8,6 +8,8 @@ import type { SamHeaderLine } from '../shared/util.ts'
  * rather than carrying a sentinel, so `get()` reports them as absent the way
  * BAM/CRAM do.
  */
+export type SamTagValue = string | number | number[]
+
 export interface SamRecordData {
   name: string
   flags: number
@@ -21,26 +23,28 @@ export interface SamRecordData {
   template_length: number
   seq: string
   qual?: Uint8Array
-  tags: Record<string, string | number>
+  tags: Record<string, SamTagValue>
 }
 
-// A tag reads `TAG:TYPE:VALUE`. i/f are numbers; A/Z/H stay strings.
-//
-// A `B` array opens its value with a subtype letter — `ML:B:C,251,0,128` — and
-// that letter is not data. Consumers read the comma-joined list and coerce each
-// element (`getModProbabilityBytes` names SAM text as one of its two inputs), so
-// a leading `C,` parsed as a NaN element: every ML probability landed one call
-// late and the last was dropped, silently, on every read of a SAM track.
+// A tag reads `TAG:TYPE:VALUE`. i/f are numbers; A/Z/H stay strings; a `B`
+// array is its numbers, as BAM and CRAM records hand theirs out, so a SAM
+// export writes it back as an array. Its subtype letter (`ML:B:C,251,0,128`)
+// is not data.
 function parseTag(field: string) {
   const tag = field.slice(0, 2)
   const type = field[3]
-  if (type === 'B') {
-    return { tag, value: field.slice(7) } as const
-  }
   const value = field.slice(5)
+  const list = field.slice(7)
   return {
     tag,
-    value: type === 'i' || type === 'f' ? Number(value) : value,
+    value:
+      type === 'B'
+        ? list === ''
+          ? []
+          : list.split(',').map(Number)
+        : type === 'i' || type === 'f'
+          ? Number(value)
+          : value,
   } as const
 }
 
@@ -77,7 +81,7 @@ export function parseSamLine(line: string): SamRecordData {
     qual = '*',
   ] = cols
 
-  const tags: Record<string, string | number> = {}
+  const tags: Record<string, SamTagValue> = {}
   for (let i = 11; i < cols.length; i++) {
     const { tag, value } = parseTag(cols[i]!)
     tags[tag] = value

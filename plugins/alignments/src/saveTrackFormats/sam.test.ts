@@ -80,6 +80,6 @@ test('optional tags follow the eleven columns, typed by their values', () => {
     'MD:Z:46T30T4A17',
     'RG:Z:1',
     'XS:f:1.5',
-    'ML:B:i,255,0,12',
+    'ML:B:C,255,0,12',
   ])
 })

@@ -16,10 +16,17 @@ function numberType(values: number[]) {
   return values.every(v => Number.isInteger(v)) ? 'i' : 'f'
 }
 
+function arraySubtype(values: number[]) {
+  return values.every(v => Number.isInteger(v) && v >= 0 && v <= 255)
+    ? 'C'
+    : numberType(values)
+}
+
 // A serialized read keeps a tag's value but not its type, so the type is the
 // one the value implies: text is Z (an A tag comes back as Z, since a one-letter
 // Z such as RG:Z:1 must stay Z), a whole number i, any other number f, and an
-// array B over the same two. A value of no SAM type is left out.
+// array B over the same two, or C when every element is a byte, since htslib
+// reads an ML tag only as B:C. A value of no SAM type is left out.
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value)
 }
@@ -40,7 +47,7 @@ function samTag(key: string, value: unknown) {
       : isFiniteNumber(value)
         ? `${key}:${numberType([value])}:${value}`
         : isNumberArray(value)
-          ? `${key}:B:${numberType(value)},${value.join(',')}`
+          ? `${key}:B:${arraySubtype(value)},${value.join(',')}`
           : undefined
 }
 

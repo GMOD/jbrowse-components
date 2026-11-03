@@ -10,8 +10,7 @@ function feature(tags: string) {
   )
 }
 
-// The ML bytes reach the modification path as the comma-joined text SAM stores,
-// so a `B` array that kept its subtype letter parsed as a leading NaN: every
+// A `B` array that kept its subtype letter once parsed as a leading NaN: every
 // probability was read one call late and the last was dropped. The parse-level
 // test pins the value; this pins the consequence, through the accessor the
 // render path calls.

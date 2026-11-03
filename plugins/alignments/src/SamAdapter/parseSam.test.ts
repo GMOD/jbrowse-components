@@ -70,15 +70,14 @@ test('a comment header line yields no pairs', () => {
   expect(parseSamHeaderLine('@CO\tconverted from PSL').tag).toBe('CO')
 })
 
-// A `B` array's subtype letter is not part of its value. Carrying it through
-// made the first element NaN in every consumer that splits on commas, which is
-// how ML probabilities ended up shifted one call late on a SAM track.
-test('a B array tag drops its subtype letter', () => {
+// A `B` array is its numbers, as a BAM record's is, so a SAM export writes it
+// back as an array rather than as Z text. Its subtype letter is not data.
+test('a B array tag is its numbers, without its subtype letter', () => {
   const { tags } = parseSamLine(`${READ}\tML:B:C,251,0,128\tMM:Z:C+m?,0,1;`)
-  expect(tags.ML).toBe('251,0,128')
+  expect(tags.ML).toEqual([251, 0, 128])
   expect(tags.MM).toBe('C+m?,0,1;')
 })
 
-test('an empty B array parses to an empty value', () => {
-  expect(parseSamLine(`${READ}\tML:B:C`).tags.ML).toBe('')
+test('an empty B array parses to an empty array', () => {
+  expect(parseSamLine(`${READ}\tML:B:C`).tags.ML).toEqual([])
 })
