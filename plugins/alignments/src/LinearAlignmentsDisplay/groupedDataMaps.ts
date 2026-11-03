@@ -249,3 +249,29 @@ export function buildReadIdIndex(
   }
   return { byId, copies }
 }
+
+/**
+ * The ids of the reads in the sections `hidden` names, across every fetched
+ * region: what Save track data leaves out for a lane the user hid.
+ */
+export function hiddenGroupReadIds(
+  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+  hidden: ReadonlySet<string>,
+) {
+  const ids = new Set<string>()
+  if (hidden.size > 0) {
+    for (const grouped of rpcDataMap.values()) {
+      for (const { key, data } of grouped.groups) {
+        if (hidden.has(key)) {
+          for (let i = 0; i < data.readKeys.length; i++) {
+            const id = readIdAt(data, i)
+            if (id !== undefined) {
+              ids.add(id)
+            }
+          }
+        }
+      }
+    }
+  }
+  return ids
+}

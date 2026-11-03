@@ -216,7 +216,7 @@ function previewText({
   }
   if (!str) {
     return hidden
-      ? `This track's filter hides everything it holds in ${regionStr}.`
+      ? `This track hides everything it holds in ${regionStr}.`
       : `This track has no data in ${regionStr}.`
   }
   return str.length > MAX_PREVIEW_CHARS ? TOO_BIG_TO_PREVIEW : str
@@ -224,7 +224,7 @@ function previewText({
 
 function filteredOutText(count: number, noun: string) {
   return count
-    ? `Leaves out ${toLocale(count)} ${pluralize(count, noun)} this track's filter hides.`
+    ? `Leaves out ${toLocale(count)} ${pluralize(count, noun)} this track hides.`
     : ''
 }
 

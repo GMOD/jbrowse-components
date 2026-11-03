@@ -705,19 +705,20 @@ export default function baseStateModelFactory(
        * #method
        * The fetched features the worker's admission lets through: the
        * `filter`, the isolated and hidden features, and the NCBI source
-       * records the track never draws.
+       * records the track never draws; then whatever sits in a section the
+       * user hid.
        */
       exportedFeatures(features: Feature[]) {
         const { displayConfig, soloFeatureIds, hiddenFeatureIds } =
           self.rpcProps()
-        return features.filter(
-          buildFeatureAdmission({
-            config: displayConfig,
-            jexl: getEnv(self).pluginManager.jexl,
-            soloFeatureIds,
-            hiddenFeatureIds,
-          }),
-        )
+        const admits = buildFeatureAdmission({
+          config: displayConfig,
+          jexl: getEnv(self).pluginManager.jexl,
+          soloFeatureIds,
+          hiddenFeatureIds,
+        })
+        const inHiddenSection = self.hiddenGroupFeatureIds
+        return features.filter(f => admits(f) && !inHiddenSection?.has(f.id()))
       },
     }))
     .views(self => ({

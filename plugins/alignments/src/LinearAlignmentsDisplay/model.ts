@@ -166,6 +166,7 @@ import {
   buildReadIdIndex,
   buildSashimiDownKeys,
   hasNamedGroups,
+  hiddenGroupReadIds,
   orderedGroups,
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
@@ -2755,11 +2756,17 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #method
-         * The exported reads this pileup draws, under the same `filter` the
-         * worker applies.
+         * The exported reads this pileup draws: under the same `filter` the
+         * worker applies, and outside the lanes the user hid.
          */
         exportedFeatures(features: Feature[]) {
-          return exportedReads(features, self.readPredicates)
+          const hidden = hiddenGroupReadIds(
+            self.rpcDataMap,
+            self.hiddenGroupKeys,
+          )
+          return exportedReads(features, self.readPredicates).filter(
+            f => !hidden.has(f.id()),
+          )
         },
         /**
          * #method

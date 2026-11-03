@@ -12,6 +12,7 @@ import {
   buildRawDataByGroup,
   buildReadIdIndex,
   hasNamedGroups,
+  hiddenGroupReadIds,
   orderedGroups,
 } from './groupedDataMaps.ts'
 
@@ -336,6 +337,23 @@ test('buildReadIdIndex drops the reads of a hidden lane', () => {
   )
   expect(map.get('a')?.groupKey).toBe('peach')
   expect(map.get('b')).toBeUndefined()
+})
+
+test('hiddenGroupReadIds names the reads of the hidden lanes in every region', () => {
+  const ids = hiddenGroupReadIds(
+    new Map([
+      [
+        0,
+        grouped([
+          { key: 'peach', data: data(['a']) },
+          { key: 'self', data: data(['b']) },
+        ]),
+      ],
+      [1, grouped([{ key: 'self', data: data(['c']) }])],
+    ]),
+    new Set(['self']),
+  )
+  expect([...ids]).toEqual(['b', 'c'])
 })
 
 // This map is what `findFeatureInRpcData` resolves a hover or a click through,
