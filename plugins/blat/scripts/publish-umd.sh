@@ -22,6 +22,8 @@
 # Uploading with `aws s3 cp` alone is not enough: CloudFront (E13LGELJOT4GQO,
 # fronting jbrowse.org) serves the previously-cached object for hours, so the
 # invalidation is part of publishing rather than a thing to remember after.
+# The invalidation does not reach a browser's own cache, so the objects go up
+# `no-cache` as well, like the other hosted plugins' `latest/` bundles.
 #
 # Usage: plugins/blat/scripts/publish-umd.sh [version]   (default v1)
 set -euo pipefail
@@ -38,8 +40,11 @@ if [[ -z "${SKIP_FLOOR_CHECK:-}" ]]; then
 fi
 pnpm build:umd
 
-aws s3 cp "dist/${bundle}" "${s3_dir}/" --content-type application/javascript
-aws s3 cp "dist/${bundle}.map" "${s3_dir}/" --content-type application/json
+cache_control="no-cache, must-revalidate"
+aws s3 cp "dist/${bundle}" "${s3_dir}/" --content-type application/javascript \
+  --cache-control "$cache_control"
+aws s3 cp "dist/${bundle}.map" "${s3_dir}/" --content-type application/json \
+  --cache-control "$cache_control"
 aws cloudfront create-invalidation \
   --distribution-id "$distribution_id" \
   --paths "/plugins/jbrowse-plugin-blat/dist/${version}/*" \
