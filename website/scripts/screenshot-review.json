@@ -2367,13 +2367,6 @@
     "reviewedAt": "2026-09-14T03:36:57.045Z",
     "hash": "e0a42f1d34458276fa333af7a8634d240175b8f6"
   },
-  "orthofinder_synteny/grasses": {
-    "name": "orthofinder_synteny/grasses",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T03:52:03.591Z",
-    "hash": "62b715239979fa381ac490640f566f23dff72ab2"
-  },
   "orthofinder_synteny/vertebrates": {
     "name": "orthofinder_synteny/vertebrates",
     "status": "good",

@@ -386,11 +386,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.152, 0.86],
   },
   orthofinder_synteny: {
-    // Almost the whole figure: five genomes and four ribbon fans is the card's
-    // point, not any one band of it. The source is already close to 5:3, so
-    // dropping just the app chrome top and bottom gets there at full width.
-    src: 'orthofinder_synteny/vertebrates.png',
-    band: [0.05, 0.95],
+    // The band between the two rows, past the app chrome and the location
+    // boxes: each tauschii color fanning into its three wheat chromosomes. The
+    // cover-crop keeps the middle groups, where 4A's crossing links sit.
+    src: 'orthofinder_synteny/wheat.png',
+    band: [0.21, 0.95],
+    position: 'center',
   },
   primate_orthologs_synteny: {
     // The human lane and the first four ape lanes with their ribbons, past

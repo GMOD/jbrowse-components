@@ -30,6 +30,14 @@ inferred over all genomes at once, so a group can hold peach and cacao and no
 grape (`scripts/orthogroups_to_blocks.py`;
 `docs/tutorials/orthofinder_synteny.md`).
 
+**An orthogroup cannot say which subgenome a donor gave.** A polyploid's
+homoeologs share one orthogroup, so tauschii (the D donor) links to wheat's A, B
+and D chromosomes in near-equal numbers, and coloring a wheat stack by subgenome
+to show "tauschii lands on D" draws nothing true. What orthogroups do show is
+copy number: one region against two or three copies, which the OrthoFinder
+tutorial is built on. Subgenome origin needs sequence identity (a PAF track),
+not a gene-id table.
+
 **Two answer shapes, one join.** A query with no `targetAssemblyName` fans out to
 every pair anchored on the queried assembly, one `mate`-carrying feature per
 (anchor gene × mate assembly). `MultiWaySyntenyDisplay` regroups per anchor, so

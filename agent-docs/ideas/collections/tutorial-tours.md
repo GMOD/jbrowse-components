@@ -39,16 +39,11 @@ on a respine, 19 on the frame.
 
 18) **`orthofinder_synteny/same_scale`** (`orthofinder_synteny.md`) — the view
     menu's **Show all regions - each row fit to width** → **Show all regions -
-    same bp per pixel**, one radio, six rows visibly re-scaling from
-    equal-length to genome-length, which is what `:82-85` describes and no
-    figure holds. `keepMenuOpen: false` on both rows, so it is the one radio
-    tour that needs no Escape-and-blur. **Blocked twice**: the target is the
-    heaviest figure in `specs/synteny.ts` by its own comment (269,656 gene
-    links, a 300s ready gate, the sole synteny failure on the first CI sweeps),
-    and `tutorial-corpus-audit.md` §5 condemns the page as three datasets
-    with the dependency arrow running backwards through half of it. Re-rank it
-    after the respine and after the re-render `TODO.md` has queued for those
-    figures.
+    same bp per pixel**, one radio, the fly stack's rows visibly re-scaling
+    from equal-length to genome-length, which the drosophila section's bullet
+    describes and no figure holds. `keepMenuOpen: false` on both rows, so it
+    is the one radio tour that needs no Escape-and-blur. The fly stack is the
+    page's one whole-genome stack, so it is the tour's target.
 
 19. **`local_ancestry/cluster_painting`** (`local_ancestry.md`) — `Clustering →
     Cluster rows by similarity` on the ancestry painting. The prose at

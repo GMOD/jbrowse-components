@@ -1730,6 +1730,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportWidth: 900,
   },
 
+  // Re-derive the partner counts with
+  //   python3 scripts/orthofinder_window_stats.py vertebrates \
+  //     --row 'gar LG11' --row 'zebrafish 16 19' --query gar
+  // The whole zebrafish genome is the negative: every chromosome but the two
+  // copies of LG11 stays empty.
   {
     mode: 'url',
     name: 'orthofinder_synteny/vertebrates',
@@ -1740,44 +1745,40 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearSyntenyView',
             views: [
-              { assembly: 'human' },
-              { assembly: 'chicken' },
-              { assembly: 'frog' },
-              { assembly: 'gar' },
+              { assembly: 'gar', loc: 'LG11' },
               { assembly: 'zebrafish' },
             ],
             tracks: ['vertebrates_orthogroups'],
-            encoding: { color: 'reference', opacity: 0.3 },
-            // The gar-zebrafish band stays scrambled whatever the ordering:
-            // past the teleost duplication a gar chromosome maps to two.
+            // 'target' paints each link by the zebrafish copy it lands on
+            encoding: { color: 'target', opacity: 0.4 },
             autoDiagonalize: true,
-            coord: { ratio: 1 },
             collapseEmptyRows: true,
-            levelHeights: [180, 180, 180, 180],
-            // Alpha follows collinearity: these scattered links vanish at the
-            // grasses' 0.15.
+            levelHeights: [430],
             mark: { interpolate: 'linear' },
+            // the marks name gar chromosomes other than LG11 in a stack of
+            // labels along the zebrafish edge
+            offscreen: { show: false },
           },
         ],
       },
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    viewportHeight: 1000,
-    // pushed into the left of the gar band, where no ribbons run
-    annotations: [
-      {
-        type: 'text',
-        text: 'teleost duplication:\neach gar chromosome lands on two in zebrafish',
-        fontSize: 20,
-        maxWidth: 380,
-        anchor: { text: 'gar', alignX: 'left' },
-        dx: 10,
-        dy: 60,
-      },
-    ],
+    viewportHeight: 640,
   },
 
+  // Re-derive the partner counts with
+  //   python3 scripts/orthofinder_window_stats.py solanaceae \
+  //     --row 'tomato CM001070.4:63,900,000-67,900,000' \
+  //     --row 'coffee 5:24,200,000-28,800,000' \
+  //     --row 'tomato CM001073.4:300,000-1,950,000[rev] CM001075.4:4,300,000-6,510,000' \
+  //     --query coffee
+  // The script reads the BED's accessions; the app shows their SL4.0 aliases.
+  // The three tomato windows are the collinear blocks MCScanX chains against
+  // this coffee window (solanaceae.blocks.paf.gz). All three on one row send
+  // every coffee gene's links to three places and the band knots; one copy
+  // above and two below leaves one crossing, as in grasses_maize_wgd. ch10
+  // runs backwards against coffee and draws as an hourglass unflipped.
   {
     mode: 'url',
     name: 'orthofinder_synteny/solanaceae',
@@ -1788,26 +1789,29 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearSyntenyView',
             views: [
-              { assembly: 'tomato' },
-              { assembly: 'potato' },
-              { assembly: 'pepper' },
-              { assembly: 'tobacco' },
-              { assembly: 'coffee' },
+              { assembly: 'tomato', loc: 'SL4.0ch07:63,900,000-67,900,000' },
+              { assembly: 'coffee', loc: '5:24,200,000-28,800,000' },
+              {
+                assembly: 'tomato',
+                loc: 'SL4.0ch10:300,000-1,950,000[rev] SL4.0ch12:4,300,000-6,510,000',
+              },
             ],
             tracks: ['solanaceae_orthogroups'],
-            encoding: { color: 'reference', opacity: 0.2 },
-            autoDiagonalize: true,
-            coord: { ratio: 1 },
-            collapseEmptyRows: true,
-            levelHeights: [180, 180, 180, 180],
+            // tomato ties coffee on bands bordered and wins as the topmost, so
+            // 'reference' paints each link by its tomato copy
+            encoding: { color: 'reference', opacity: 0.5 },
             mark: { interpolate: 'linear' },
+            // the marks name coffee genes whose other partners sit off-window
+            offscreen: { show: false },
+            collapseEmptyRows: true,
+            levelHeights: [260, 360],
           },
         ],
       },
     ),
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
-    viewportHeight: 1000,
+    viewportHeight: 860,
   },
 
   // melanogaster repeats between the others so every band touches it and
@@ -1845,6 +1849,18 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     viewportHeight: 1240,
+    // pseudoobscura's X is the one row label carrying [rev]; a bare 'X'
+    // matches melanogaster's first
+    annotations: [
+      {
+        type: 'text',
+        text: 'XR = 3L',
+        fontSize: 20,
+        anchor: { text: 'X [rev]', alignX: 'left' },
+        dy: -70,
+        leader: true,
+      },
+    ],
   },
 
   {
@@ -1880,40 +1896,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     viewportHeight: 1240,
-  },
-
-  {
-    mode: 'url',
-    name: 'orthofinder_synteny/grasses',
-    url: sessionSpec(
-      'https://jbrowse.org/demos/orthofinder_grasses/config.json',
-      {
-        views: [
-          {
-            type: 'LinearSyntenyView',
-            views: [
-              { assembly: 'rice' },
-              { assembly: 'sorghum' },
-              { assembly: 'maize' },
-              { assembly: 'brachypodium' },
-              { assembly: 'setaria' },
-            ],
-            tracks: ['grasses_orthogroups'],
-            encoding: { color: 'reference', opacity: 0.15 },
-            autoDiagonalize: true,
-            coord: { ratio: 1 },
-            collapseEmptyRows: true,
-            levelHeights: [180, 180, 180, 180],
-            // at the 0.2 default the hairline links saturate into one wash
-            // curved bundles braid mid-band and stop pointing at a partner
-            mark: { interpolate: 'linear' },
-          },
-        ],
-      },
-    ),
-    readySelector: displayPainted('synteny_canvas'),
-    readyTimeout: 120000,
-    viewportHeight: 1000,
   },
 
   // Re-derive the window's counts with
@@ -2029,7 +2011,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The row order follows the evolutionary chain, so each band is a real step.
+  // One orthogroup holds a gene's A, B and D homoeologs together, so each
+  // tauschii chromosome draws to all three of its wheat group. Fit-to-width
+  // puts each tauschii chromosome over its group; coord.ratio would squeeze
+  // tauschii into the middle third and cross every fan. Unplaced Un is left
+  // off: its links converge on one point mid-row.
   {
     mode: 'url',
     name: 'orthofinder_synteny/wheat',
@@ -2041,20 +2027,19 @@ export const syntenySpecs: ScreenshotSpec[] = [
             type: 'LinearSyntenyView',
             views: [
               { assembly: 'tauschii' },
-              { assembly: 'wheat' },
-              { assembly: 'durum' },
-              { assembly: 'emmer' },
-              { assembly: 'urartu' },
-              { assembly: 'timopheevii' },
+              {
+                assembly: 'wheat',
+                loc: '1A 1B 1D 2A 2B 2D 3A 3B 3D 4A 4B 4D 5A 5B 5D 6A 6B 6D 7A 7B 7D',
+              },
             ],
-            tracks: ['wheat_orthogroups'],
-            encoding: { color: 'reference', opacity: 0.15 },
-            autoDiagonalize: true,
-            // fit-to-width stretches tauschii's 7 chromosomes over wheat's 21
-            // and fans a clean 1:1 D-genome map
-            coord: { ratio: 1 },
+            tracks: [['wheat_orthogroups']],
+            // 'query' paints each link by its tauschii chromosome
+            encoding: { color: 'query', opacity: 0.15 },
+            // the group order along wheat is the finding; diagonalizing
+            // interleaves the groups
+            autoDiagonalize: false,
             collapseEmptyRows: true,
-            levelHeights: [170, 170, 170, 170, 170],
+            levelHeights: [430],
             mark: { interpolate: 'linear' },
           },
         ],
@@ -2063,28 +2048,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('synteny_canvas'),
     // 120s times out on a GPU-less CI runner
     readyTimeout: 300000,
-    // any shorter cuts the bottom row's scalebar in half
-    viewportHeight: 1140,
-    // A pill dropped below its row lands in the band, which names a pair of
-    // genomes; on the row's own line it names one.
-    annotations: [
-      {
-        type: 'text',
-        text: 'D genome donor',
-        fontSize: 20,
-        anchor: { text: 'tauschii', alignX: 'left' },
-        dx: 90,
-      },
-      { type: 'box', anchor: { text: 'tauschii' } },
-      {
-        type: 'text',
-        text: 'A genome donor',
-        fontSize: 20,
-        anchor: { text: 'urartu', alignX: 'left' },
-        dx: 90,
-      },
-      { type: 'box', anchor: { text: 'urartu' } },
-    ],
+    viewportHeight: 640,
   },
 
   // Re-derive the counts with

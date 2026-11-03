@@ -2,8 +2,8 @@
 title: Synteny visualization (OrthoFinder orthogroups)
 sidebar_label: Synteny (OrthoFinder)
 description:
-  Stack genomes on OrthoFinder orthogroups, built from protein homology, as the
-  synteny table
+  Stack genomes on OrthoFinder orthogroups, built from protein homology, and
+  find each genome duplication as one region against two or three copies
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 tutorial_subcategory: Ortholog tables
@@ -11,14 +11,19 @@ tutorial_subcategory: Ortholog tables
 
 Genomes too far apart to align base by base still keep their genes in order
 along the chromosomes. OrthoFinder infers orthogroups, sets of genes descended
-from one ancestral gene, from protein similarity alone. We:
+from one ancestral gene, from protein similarity alone. An orthogroup keeps
+every copy of a gene, so where a genome doubled or tripled, one region of a
+relative without that duplication pairs with two or three regions of it: bread
+wheat's three subgenomes, maize, zebrafish and tomato, and the fruit flies as a
+lineage with one copy. We:
 
 - run OrthoFinder and convert the orthogroups to a `.blocks` table that JBrowse
   reads
-- load the `wheat` orthogroups as a synteny track, stack the genomes in a linear
-  synteny view, and color wheat 4A by the tauschii chromosomes it pairs with
-- open four more sets the same way (vertebrates, drosophila, nightshades and
-  grasses), three of them also as multi-way lanes under one genome
+- load the `wheat` orthogroups as a synteny track, stack tauschii over bread
+  wheat, and color each link by its tauschii chromosome
+- open four more sets the same way (grasses, vertebrates, nightshades and
+  drosophila) at one locus each, three of them also as multi-way lanes under one
+  genome
 - chain the drosophila orthogroups into collinear blocks with MCScanX and load
   them as a PAF track
 
@@ -225,75 +230,142 @@ refNames:
 }
 ```
 
-## Stacking the wheat genomes
+## Stacking tauschii over wheat {#stacking-the-wheat-genomes}
 
-**Add → Linear synteny view**, pick `wheat_orthogroups` and add the genomes in
-the order tauschii, wheat, durum, emmer, urartu, timopheevii; the
+We'll stack the D-genome donor over bread wheat: **Add → Linear synteny view**,
+pick `wheat_orthogroups` and add tauschii above wheat; the
 [all-vs-all tutorial](/docs/tutorials/allvsall_synteny#from-the-ui) walks the
-dialog. Two view-menu items shape the stack, and the session below sets both:
+dialog. Then:
 
-- **Show all regions - same bp per pixel** (`coord: { ratio: 1 }` in a session
-  spec) puts the rows on one bp/px, so row length on screen matches genome size.
-- **Rows → Re-order chromosomes** (`autoDiagonalize` in a session spec) sorts
-  each row's chromosomes against its neighbour so the links run along a
-  diagonal.
+- Navigate the wheat row to
+  `1A 1B 1D 2A 2B 2D 3A 3B 3D 4A 4B 4D 5A 5B 5D 6A 6B 6D 7A 7B 7D`, the seven
+  homoeologous groups side by side, with the unplaced `Un` left out.
+- Pick **Query** in the palette button menu. The palette sets the view's
+  `encoding.color`, a color scale from a field to colors, and **Query** paints
+  each link by its tauschii chromosome.
 
-The wheat stack as a session over the hosted wheat config, the page's heaviest,
-so the bands take a while to draw:
+The same view as a session over the hosted wheat config:
 
 ```json session config=https://jbrowse.org/demos/orthofinder_wheat/config.json
 {
   "defaultSession": {
-    "name": "Wheat lineage stack",
+    "name": "Tauschii over wheat",
     "views": [
       {
         "type": "LinearSyntenyView",
         "views": [
           { "assembly": "tauschii" },
-          { "assembly": "wheat" },
-          { "assembly": "durum" },
-          { "assembly": "emmer" },
-          { "assembly": "urartu" },
-          { "assembly": "timopheevii" }
+          {
+            "assembly": "wheat",
+            "loc": "1A 1B 1D 2A 2B 2D 3A 3B 3D 4A 4B 4D 5A 5B 5D 6A 6B 6D 7A 7B 7D"
+          }
         ],
         "tracks": ["wheat_orthogroups"],
-        "coord": { "ratio": 1 },
-        "autoDiagonalize": true,
-        "collapseEmptyRows": true,
-        "encoding": { "opacity": 0.15 }
+        "encoding": { "color": "query", "opacity": 0.15 }
       }
     ]
   }
 }
 ```
 
-<Figure caption="Six wheat-lineage genomes stacked on OrthoFinder orthogroups, all rows on one genomic scale." src="/img/orthofinder_synteny/wheat.png" />
+<Figure caption="Aegilops tauschii over bread wheat on the wheat orthogroups track, each link colored by its tauschii chromosome." src="/img/orthofinder_synteny/wheat.png" />
 
-### Coloring wheat 4A by its tauschii chromosomes
+An orthogroup holds a gene's A, B and D copies (homoeologs) together, and
+`--pick expand` draws a link to each, so every tauschii chromosome fans out to
+the three wheat chromosomes of its group.
 
-We'll open tauschii over wheat from **Add → Linear synteny view**, with
-`wheat_orthogroups` between them. Then:
+### Wheat 4A against the D genome
 
-- Navigate the wheat row to `4A`.
-- Pick **Query** in the palette button menu. The palette sets the view's
-  `encoding.color`, a color scale from a field to colors, and **Query** paints
-  each link by its tauschii chromosome.
+Navigate the wheat row to `4A` alone, keeping **Query**:
 
 <Figure caption="Aegilops tauschii's D-genome chromosomes over wheat 4A. Color by → Query gives each chromosome its own color." src="/img/orthofinder_synteny/wheat_4a.png" />
 
 Other chromosomes appear on 4A only as single genes. The 5D and 7D runs are the
 4AL/5AL and 4AL/7BS translocations (Devos et al. 1995; Dvorak et al. 2018).
 
-## Vertebrates: runs of conserved genes out to zebrafish {#vertebrates}
+## Grasses: one rice region in two maize copies {#grasses}
 
 The other four sets build with `bash build_orthofinder_synteny.sh <set>`
 ([Reproduce it end to end](#reproduce-it-end-to-end)), and each has a hosted
-config at `https://jbrowse.org/demos/orthofinder_<set>/config.json`. Open the
-`vertebrates` config and stack human over chicken, frog, gar and zebrafish as
-for [wheat](#stacking-the-wheat-genomes), with `vertebrates_orthogroups` in each
-band, and pick **Reference** in the palette button menu.
+config at `https://jbrowse.org/demos/orthofinder_<set>/config.json`.
 
-<Figure caption="Five vertebrate genomes stacked from one vertebrates_orthogroups track." src="/img/orthofinder_synteny/vertebrates.png" />
+Maize went through a whole-genome duplication after it split from sorghum
+(Schnable et al. 2009), so one rice region pairs with one sorghum region and two
+maize regions.
+
+### One rice locus against both maize copies
+
+Open the `grasses` config and stack sorghum over rice over maize, with
+`grasses_orthogroups` in each band. Then:
+
+- Turn on **sorghum genes**, **rice genes** and **maize genes**.
+- Navigate the rows to `1:5,934,000-6,126,000[rev]`, `3:31,590,000-31,775,000`
+  and `1:286,676,000-287,665,000 5:6,261,000-6,790,000[rev]`.
+- Pick **Target** in the palette button menu to paint each link by the
+  chromosome it lands on.
+
+Sorghum is the control: it shares the ancestry and lacks the duplication.
+
+<Figure caption="One rice locus between sorghum and maize from the grasses orthogroups track, a gene track under each row." src="/img/orthofinder_synteny/grasses_maize_wgd.png" />
+
+### A rice window against four grasses
+
+Open the same five grasses as a
+[multi-way synteny track](/docs/user_guides/multiway_synteny_display), under the
+rice gene track:
+
+```json session config=https://jbrowse.org/demos/orthofinder_grasses/config.json
+{
+  "defaultSession": {
+    "name": "Grasses multi-way synteny track",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "rice",
+        "loc": "3:31,590,000-31,775,000",
+        "tracks": [
+          {
+            "trackId": "rice_genes",
+            "type": "LinearBasicDisplay",
+            "filter": ["geneLike"],
+            "displayMode": "compact"
+          },
+          {
+            "trackId": "grasses_orthogroups",
+            "type": "MultiWaySyntenyDisplay",
+            "rows": {
+              "sort": ["sorghum", "brachypodium", "setaria", "maize"]
+            },
+            "height": 320
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+<Figure caption="A rice window over four grass lanes from one orthogroups track, each drawing its own gene models." src="/img/multiway_synteny/grasses_rice_lanes.png" />
+
+A stacked view shows both maize copies at once. **Launch → Linear synteny view
+(visible region)** in the lane track menu offers a full row per grass.
+
+<Video src="/media/synteny/multiway_launch_stack.mp4" caption="Launching a stack from the lane track: the track menu entry, the dialog's row checkboxes, and Replace current view." />
+
+## Vertebrates: one gar chromosome in two zebrafish copies {#vertebrates}
+
+The teleost fishes, zebrafish among them, descend from a genome duplication that
+spotted gar branched off before (Braasch et al. 2016). Open the `vertebrates`
+config and stack gar over zebrafish, with `vertebrates_orthogroups` in the band.
+Then:
+
+- Navigate the gar row to `LG11` and leave zebrafish whole.
+- Pick **Target** in the palette button menu to paint each link by its zebrafish
+  chromosome.
+- Uncheck **Off-screen mates** in the settings menu, which otherwise labels the
+  zebrafish genes whose gar partners sit on other gar chromosomes.
+
+<Figure caption="Gar LG11 over the whole zebrafish genome from the vertebrates orthogroups track, each link colored by its zebrafish chromosome." src="/img/orthofinder_synteny/vertebrates.png" />
 
 ### The human HOXD cluster against four vertebrates
 
@@ -305,18 +377,48 @@ draws under it.
 
 <Figure caption="The human HOXD cluster over four vertebrate lanes from one orthogroups track, each lane with its genome's genes." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
 
-## Drosophila: chromosome arms keep their genes while gene order changes {#drosophila}
+## Nightshades: one coffee region in three tomato copies {#nightshades}
+
+Tomato, potato and pepper share a whole-genome triplication that coffee lacks
+(Tomato Genome Consortium 2012; Denoeud et al. 2014). Open the `solanaceae`
+config and stack tomato over coffee over tomato, with `solanaceae_orthogroups`
+in both bands. Then:
+
+- Navigate the rows to `SL4.0ch07:63,900,000-67,900,000`,
+  `5:24,200,000-28,800,000` and
+  `SL4.0ch10:300,000-1,950,000[rev] SL4.0ch12:4,300,000-6,510,000`: one tomato
+  copy above coffee and the other two below.
+- Pick **Reference** in the palette button menu to paint each link by its tomato
+  chromosome.
+- Uncheck **Off-screen mates** in the settings menu, which otherwise marks the
+  coffee genes whose other partners fall outside the windows.
+
+<Figure caption="One coffee window between three tomato windows from the solanaceae orthogroups track, links colored by tomato chromosome." src="/img/orthofinder_synteny/solanaceae.png" />
+
+Each copy has lost genes since the triplication, so most coffee genes draw to
+one of the three.
+
+## Drosophila: one copy, rearranged {#drosophila}
 
 The `drosophila` set stacks _D. melanogaster_ with close relatives _D. simulans_
-and _D. yakuba_ and the distant _D. pseudoobscura_ and _D. virilis_. Across
-these flies the chromosome arms (Muller elements) keep their gene content, while
-inversions reorder the genes inside each arm.
+and _D. yakuba_ and the distant _D. pseudoobscura_ and _D. virilis_, which share
+no genome duplication since they split. The chromosome arms (Muller elements)
+keep their gene content, while inversions reorder the genes inside each arm. In
+_D. pseudoobscura_ melanogaster's 3L arm (Muller D) is the right arm of the X
+(Richards et al. 2005).
 
-In the `drosophila` config, stack the flies as simulans, melanogaster, yakuba,
-melanogaster, pseudoobscura, melanogaster, virilis, so every band sets one fly
-against melanogaster, with `drosophila_orthogroups` in each band. Pick
-**Reference** in the palette button menu to paint each ribbon by the
-melanogaster arm it leaves.
+Open the `drosophila` config and stack the flies as simulans, melanogaster,
+yakuba, melanogaster, pseudoobscura, melanogaster, virilis, so every band sets
+one fly against melanogaster, with `drosophila_orthogroups` in each band. Then:
+
+- Pick **Show all regions - same bp per pixel** in the view menu
+  (`coord: { ratio: 1 }` in a session spec), which puts the rows on one bp/px,
+  so row length on screen matches genome size.
+- Pick **Rows → Re-order chromosomes** (`autoDiagonalize` in a session spec),
+  which sorts each row's chromosomes against its neighbour so the links run
+  along a diagonal.
+- Pick **Reference** in the palette button menu to paint each ribbon by the
+  melanogaster arm it leaves.
 
 <Figure caption="Four flies stacked with melanogaster between each pair, ribbons colored by melanogaster arm." src="/img/orthofinder_synteny/drosophila.png" />
 
@@ -406,77 +508,6 @@ Stack the flies in the same order as above and pick `drosophila_blocks` for
 every band:
 
 <Figure caption="The same stack from the drosophila_blocks track, one ribbon per collinear block." src="/img/orthofinder_synteny/drosophila_blocks.png" />
-
-## Nightshades: the same genes over genomes of very different sizes {#nightshades}
-
-The `solanaceae` set is tomato, potato, pepper and _Nicotiana attenuata_ (the
-row labelled tobacco), with coffee as the outgroup. Open the `solanaceae` config
-and stack them as for [wheat](#stacking-the-wheat-genomes), with
-`solanaceae_orthogroups` in each band and **Show all regions - same bp per
-pixel**, so row length matches genome size.
-
-<Figure caption="Four nightshades over coffee, stacked on OrthoFinder orthogroups at one bp per pixel." src="/img/orthofinder_synteny/solanaceae.png" />
-
-## Grasses: the maize whole-genome duplication {#grasses}
-
-Open the `grasses` config and stack the five grasses as for
-[wheat](#stacking-the-wheat-genomes), with `grasses_orthogroups` in each band.
-
-<Figure caption="Five grass genomes stacked on OrthoFinder orthogroups." src="/img/orthofinder_synteny/grasses.png" />
-
-### One rice locus against both maize copies
-
-Stack sorghum over rice over maize, with **sorghum genes**, **rice genes** and
-**maize genes** on, and navigate the rows to `1:5,934,000-6,126,000[rev]`,
-`3:31,590,000-31,775,000` and
-`1:286,676,000-287,665,000 5:6,261,000-6,790,000[rev]`. Sorghum is the control:
-it shares the ancestry and lacks the duplication.
-
-<Figure caption="One rice locus between sorghum and maize from the grasses orthogroups track, a gene track under each row." src="/img/orthofinder_synteny/grasses_maize_wgd.png" />
-
-### A rice window against four grasses
-
-Open the same five grasses as a
-[multi-way synteny track](/docs/user_guides/multiway_synteny_display), under the
-rice gene track:
-
-```json session config=https://jbrowse.org/demos/orthofinder_grasses/config.json
-{
-  "defaultSession": {
-    "name": "Grasses multi-way synteny track",
-    "views": [
-      {
-        "type": "LinearGenomeView",
-        "assembly": "rice",
-        "loc": "3:31,590,000-31,775,000",
-        "tracks": [
-          {
-            "trackId": "rice_genes",
-            "type": "LinearBasicDisplay",
-            "filter": ["geneLike"],
-            "displayMode": "compact"
-          },
-          {
-            "trackId": "grasses_orthogroups",
-            "type": "MultiWaySyntenyDisplay",
-            "rows": {
-              "sort": ["sorghum", "brachypodium", "setaria", "maize"]
-            },
-            "height": 320
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-<Figure caption="A rice window over four grass lanes from one orthogroups track, each drawing its own gene models." src="/img/multiway_synteny/grasses_rice_lanes.png" />
-
-A stacked view shows both maize copies at once. **Launch → Linear synteny view
-(visible region)** in the lane track menu offers a full row per grass.
-
-<Video src="/media/synteny/multiway_launch_stack.mp4" caption="Launching a stack from the lane track: the track menu entry, the dialog's row checkboxes, and Replace current view." />
 
 ## Reproduce it end to end
 
@@ -577,6 +608,16 @@ npx --yes serve orthofinder_my_genomes_build/jbrowse2  # then open the printed U
   [OrthoFinder: phylogenetic orthology inference for comparative genomics](https://doi.org/10.1186/s13059-019-1832-y)
 - Wang et al. (2012).
   [MCScanX: a toolkit for detection and evolutionary analysis of gene synteny and collinearity](https://doi.org/10.1093/nar/gkr1293)
+- Schnable et al. (2009).
+  [The B73 maize genome: complexity, diversity, and dynamics](https://doi.org/10.1126/science.1178534)
+- Braasch et al. (2016).
+  [The spotted gar genome illuminates vertebrate evolution and facilitates human-teleost comparisons](https://doi.org/10.1038/ng.3526)
+- Tomato Genome Consortium (2012).
+  [The tomato genome sequence provides insights into fleshy fruit evolution](https://doi.org/10.1038/nature11119)
+- Denoeud et al. (2014).
+  [The coffee genome provides insight into the convergent evolution of caffeine biosynthesis](https://doi.org/10.1126/science.1255274)
+- Richards et al. (2005).
+  [Comparative genome sequencing of Drosophila pseudoobscura: chromosomal, gene, and cis-element evolution](https://doi.org/10.1101/gr.3059305)
 - Devos et al. (1995).
   [Structural evolution of wheat chromosomes 4A, 5A, and 7B and its impact on recombination](https://doi.org/10.1007/BF00220890)
 - Dvorak et al. (2018).
