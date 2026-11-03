@@ -45,12 +45,14 @@ export function ringStripCanvas(strip: ParentNode) {
 const OverlayCanvas = observer(function OverlayCanvas({
   width,
   height,
+  top = 0,
   draw,
   ringStrip = false,
   'data-testid': testId,
 }: {
   width: number
   height: number
+  top?: number
   draw: (ctx: CanvasRenderingContext2D) => void
   /**
    * This overlay is the display's picture, the canvas a ring samples
@@ -75,7 +77,7 @@ const OverlayCanvas = observer(function OverlayCanvas({
       {...(ringStrip ? { [RING_STRIP_ATTRIBUTE]: '' } : {})}
       style={{
         position: 'absolute',
-        top: 0,
+        top,
         left: 0,
         width,
         height,

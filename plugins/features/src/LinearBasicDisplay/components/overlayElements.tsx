@@ -243,7 +243,9 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
       visibleRegions={visibleRegions}
       viewInitialized={viewInitialized}
       width={width}
-      height={model.contentHeight}
+      contentHeight={model.contentHeight}
+      viewportHeight={height}
+      scrollBucket={labelScrollBucket}
       bpPerPx={bpPerPx}
     />
   )
