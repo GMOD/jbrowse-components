@@ -5,7 +5,7 @@ import { colorFieldOptions } from '../../shared/colorFieldOptions.ts'
 import {
   BISULFITE_LABEL,
   MODIFICATIONS_LABEL,
-  UNMODIFIED_IN_BLUE_LABEL,
+  UNMETHYLATED_IN_BLUE_LABEL,
 } from './baseLayerLabels.ts'
 import { getColorByMenuItem, getReadsColorByMenuItem } from './colorBy.ts'
 
@@ -174,7 +174,7 @@ function isChecked(model: Model, label: string) {
 }
 
 const BY_TYPE = MODIFICATIONS_LABEL
-const IN_BLUE = UNMODIFIED_IN_BLUE_LABEL
+const IN_BLUE = UNMETHYLATED_IN_BLUE_LABEL
 
 describe('color by modifications radios', () => {
   test.each([false, true])(

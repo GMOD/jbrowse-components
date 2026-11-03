@@ -3,7 +3,7 @@ import { displayPainted } from '@jbrowse/browser-test-utils'
 
 import {
   MODIFICATIONS_LABEL,
-  UNMODIFIED_IN_BLUE_LABEL,
+  UNMETHYLATED_IN_BLUE_LABEL,
 } from '../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
 import { methylationVideoFixtures } from '../specs/methylation.ts'
 import { cascade, leaveMenu, openTrackByUrlSteps, trackMenu } from './shared.ts'
@@ -18,7 +18,7 @@ const { ungrouped, readsTrackId, bamUrl, readsAbsent } =
 const OPENED_READS_MENU =
   '[data-testid="track_menu_icon"][data-trackid^="hg002_snrpn_5mc_haplotagged.bam-"]'
 const MODIFICATIONS = cascade('menuitem', MODIFICATIONS_LABEL)
-const IN_BLUE = cascade('menuitem', UNMODIFIED_IN_BLUE_LABEL)
+const IN_BLUE = cascade('menuitem', UNMETHYLATED_IN_BLUE_LABEL)
 
 export const methylationVideos: VideoSpec[] = [
   // The page's modBAM opened by URL and colored the way its next sentence says,
@@ -26,7 +26,7 @@ export const methylationVideos: VideoSpec[] = [
   {
     name: 'methylation/open_modbam',
     description:
-      'The haplotagged modBAM opened by URL and painted with its 5mC calls: File, Open track..., the URL pasted in, then Color by → Modifications and Show unmodified in blue from the new track menu',
+      'The haplotagged modBAM opened by URL and painted with its 5mC calls: File, Open track..., the URL pasted in, then Color by → Modifications and Show unmethylated in blue from the new track menu',
     goal: 'Open a modBAM by URL and paint its reads by methylation',
     url: readsAbsent,
     viewportHeight: 740,

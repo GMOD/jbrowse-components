@@ -131,7 +131,7 @@ track. For your own reads, swap `uri` for a sorted modBAM or CRAM with the
 calls:
 
 - On its own it paints red each position the `MM` tag lists as modified
-- **Show unmodified in blue** (IGV's "2-color" scheme) marks every CpG,
+- **Show unmethylated in blue** (IGV's "2-color" scheme) marks every CpG,
   including the ones the tag leaves implicit, and paints blue each one more
   likely unmodified than modified, so an unmethylated region is solid blue
 
@@ -139,7 +139,7 @@ The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
 covers both modes and the probability and cytosine-context filters.
 
-<Video src="/media/methylation/open_modbam.mp4" caption="The modBAM opened by URL and colored from its track menu with Color by → Modifications and Show unmodified in blue." />
+<Video src="/media/methylation/open_modbam.mp4" caption="The modBAM opened by URL and colored from its track menu with Color by → Modifications and Show unmethylated in blue." />
 
 <Figure caption="HG002 ONT reads over the SNRPN CpG island in both modification color modes. The bottom mode fills every unmarked CpG in blue." src="/img/methylation/hg002_snrpn_mod_modes.png" links="Modified only=methylation/hg002_snrpn_marked_only,Every CpG=methylation/hg002_snrpn_fill_unmarked" />
 

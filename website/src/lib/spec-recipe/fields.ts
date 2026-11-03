@@ -19,7 +19,7 @@ import {
   BISULFITE_LABEL,
   CYTOSINE_CONTEXT_LABEL,
   MODIFICATIONS_LABEL,
-  UNMODIFIED_IN_BLUE_LABEL,
+  UNMETHYLATED_IN_BLUE_LABEL,
 } from '../../../../plugins/alignments/src/LinearAlignmentsDisplay/menus/baseLayerLabels.ts'
 import { isJexl } from '../../../../packages/core/src/util/jexlStrings.ts'
 // Straight from core, not through plugins/variants' re-export of it: that
@@ -249,7 +249,7 @@ const basesStep: FieldRecipe = value => {
           : undefined,
     },
     ...(isMethylation && unmodified
-      ? [{ path: `${TRACK_MENU} → Color by → ${UNMODIFIED_IN_BLUE_LABEL}` }]
+      ? [{ path: `${TRACK_MENU} → Color by → ${UNMETHYLATED_IN_BLUE_LABEL}` }]
       : []),
     ...(field === 'modifications' && filter.some(p => p?.field === 'code')
       ? [{ path: `${MORE_FILTERS} → Modifications → Modification types` }]

@@ -329,7 +329,7 @@ test('a per-base methylation layer is one Color by radio, its filter Filter by r
     ),
   ).toEqual([
     'Track menu → Color by → Modifications',
-    'Track menu → Color by → Show unmodified in blue',
+    'Track menu → Color by → Show unmethylated in blue',
     'Track menu → Filter by → More filters... → Modifications → Modification types',
   ])
   expect(

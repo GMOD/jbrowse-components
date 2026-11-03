@@ -2,5 +2,5 @@
 // the menu builders, so the website's figure recipes spell the same rows.
 export const MODIFICATIONS_LABEL = 'Modifications'
 export const BISULFITE_LABEL = 'Bisulfite / EM-seq'
-export const UNMODIFIED_IN_BLUE_LABEL = 'Show unmodified in blue'
+export const UNMETHYLATED_IN_BLUE_LABEL = 'Show unmethylated in blue'
 export const CYTOSINE_CONTEXT_LABEL = 'Cytosine context'

@@ -289,7 +289,7 @@ cytosines red. Two more rows refine it:
 
 - **Color by → Cytosine context** picks **CpG**, **CHG**, **CHH** or **All
   cytosines**
-- **Color by → Show unmodified in blue** also paints converted sites blue,
+- **Color by → Show unmethylated in blue** also paints converted sites blue,
   separating an unmethylated cytosine from a position with no cytosine. The
   figure and clip further down leave it off
 

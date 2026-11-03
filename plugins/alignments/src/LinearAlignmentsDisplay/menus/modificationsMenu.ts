@@ -12,7 +12,7 @@ import { cytosineContextOptions } from '../../shared/modificationData.ts'
 import {
   CYTOSINE_CONTEXT_LABEL,
   MODIFICATIONS_LABEL,
-  UNMODIFIED_IN_BLUE_LABEL,
+  UNMETHYLATED_IN_BLUE_LABEL,
 } from './baseLayerLabels.ts'
 
 import type { BaseLayer, BasesFilter, BasesPatch } from '../../shared/types.ts'
@@ -40,9 +40,9 @@ export function modificationsRadio(model: ModificationsMenuModel): MenuItem {
 }
 
 /**
- * The not-modified side in blue (IGV's "2-color") for whichever methylation
- * layer draws: unmodified calls under Modifications, unconverted cytosines
- * under bisulfite. Offered only while one of them draws.
+ * Unmethylated cytosines in blue (IGV's "2-color") for whichever methylation
+ * layer draws, Modifications or bisulfite. Offered only while one of them
+ * draws.
  */
 export function unmodifiedInBlueItems(model: {
   baseLayer: BaseLayer | undefined
@@ -51,7 +51,7 @@ export function unmodifiedInBlueItems(model: {
   const layer = model.baseLayer
   return layer?.field === 'modifications' || layer?.field === 'bisulfite'
     ? [
-        checkboxItem(UNMODIFIED_IN_BLUE_LABEL, layer.unmodified, () => {
+        checkboxItem(UNMETHYLATED_IN_BLUE_LABEL, layer.unmodified, () => {
           model.setBases({ unmodified: !layer.unmodified })
         }),
       ]
