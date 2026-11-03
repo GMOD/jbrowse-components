@@ -7,7 +7,7 @@ import {
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import {
   getMethBins,
-  getModPositionsWithMl,
+  getModPositions,
   getModProbabilities,
   getModProbabilityBytes,
   getModTag,
@@ -125,22 +125,13 @@ export function extractModifications(
     region.start - featureStart,
     region.end - featureStart,
   )
-  // A read whose ML does not line up with its MM draws no call, where reading
-  // a missing probability as 0 painted every call confidently unmodified in
-  // the two-color view. Its types still reached the menu above, since the
-  // header is sound.
-  const mlBytes = getModProbabilityBytes(feature)
-  const modifications = getModPositionsWithMl(
+  const modifications = getModPositions(
     mmTag,
-    mlBytes?.length ?? 0,
     seq,
     strand,
     window.readStart,
     window.readEnd,
   )
-  if (!modifications) {
-    return
-  }
   const { filter, unmodified: twoColor } = layer
 
   // The 2-color view hands 5mC/5hmC to extractMethylation, which weighs them
@@ -157,7 +148,7 @@ export function extractModifications(
     const { min, strict } = filter.probability
     forEachMaxProbMod(
       drawn,
-      mlBytes,
+      getModProbabilityBytes(feature),
       cigarOps,
       strand,
       window,

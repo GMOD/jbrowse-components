@@ -267,37 +267,6 @@ export function getModPositions(
   readStart = 0,
   readEnd = fseq.length,
 ) {
-  return parseModPositions(mm, fseq, fstrand, readStart, readEnd).modifications
-}
-
-/**
- * #api
- * `getModPositions`, or undefined when the ML tag's length is not the number
- * of probabilities the MM tag implies: one per listed call per type, so a
- * combined code like `C+mh` gives each call two. SAMtags requires the two to
- * match and htslib rejects the read when they do not, since no call of such a
- * read can be paired with its probability. An absent ML tag has length 0,
- * which only an MM tag listing no calls matches.
- */
-export function getModPositionsWithMl(
-  mm: string,
-  mlLength: number,
-  fseq: string,
-  fstrand: number,
-  readStart = 0,
-  readEnd = fseq.length,
-) {
-  const parsed = parseModPositions(mm, fseq, fstrand, readStart, readEnd)
-  return parsed.mlLength === mlLength ? parsed.modifications : undefined
-}
-
-function parseModPositions(
-  mm: string,
-  fseq: string,
-  fstrand: number,
-  readStart: number,
-  readEnd: number,
-) {
   const isRev = fstrand === -1
   const windowStart = Math.max(0, readStart)
   const windowEnd = Math.min(fseq.length, readEnd)
@@ -420,5 +389,5 @@ function parseModPositions(
     mlBase += nPositions * nTypes
   }
 
-  return { modifications: result, mlLength: mlBase }
+  return result
 }

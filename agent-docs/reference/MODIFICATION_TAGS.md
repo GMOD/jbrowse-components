@@ -67,21 +67,18 @@ win. Strand matters far more than regime.
 stretch before the window is consumed as a count of its base. `probStart` moves past the
 skipped calls so ML indexing is unchanged. `modWindow.bench.ts` measures it.
 
-## ML length
-
-SAMtags calls ML "optional" but requires its length to equal the calls MM lists,
-one per type, so `C+mh` takes two per call. htslib errors on a mismatch and
-reports an absent ML as `HTS_MOD_UNKNOWN`. `getModPositionsWithMl` returns
-undefined on any mismatch, an absent ML counting as length 0, and
-`extractModifications` then draws no call for the read. Its types still reach the
-menu and simplex detection, which read the header alone. Reading a missing value
-as byte 0 instead would paint every call confidently unmodified in the two-color
-view. No producer we know of writes MM without ML, and every
-`hts-specs/test/SAMtags` file carries both.
-
 ## What htslib validates that we do not
 
+We trust the data here: no producer we know of writes these shapes, and a check
+for them is code every read pays for.
+
 - `MN` against `l_qseq`: htslib errors; `getModTag` drops the MM tag on mismatch.
-- A run-over: htslib warns; we clamp silently.
+- A run-over: htslib errors on a reverse read and warns on a forward one; we clamp
+  silently. Rejecting the read was built and declined on 2026-11-03: catching a
+  run-over past the window needs a count of the base beyond it, and counting
+  the whole read measured 0.62x at a 1 kb view in `modWindow.bench.ts`.
+- ML length against MM's call count, including an absent ML: htslib errors on a
+  mismatch; we read a missing value as byte 0, which the two-color view paints
+  as a confident unmodified call. A check was built and declined the same day.
 - `HTS_MOD_REPORT_UNCHECKED` (explicit `?` tags, "not looked for" vs "not found"): we carry
   `unknownSkip` but nothing exposes the third state.
