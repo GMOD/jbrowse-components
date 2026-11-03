@@ -10,6 +10,44 @@ function qualToPhred(qual: string | undefined): string {
     .join('')
 }
 
+const SAM_TAG = /^[A-Za-z][A-Za-z0-9]$/
+
+function numberType(values: number[]) {
+  return values.every(v => Number.isInteger(v)) ? 'i' : 'f'
+}
+
+// A serialized read keeps a tag's value but not its type, so the type is the
+// one the value implies: text is Z (an A tag comes back as Z, since a one-letter
+// Z such as RG:Z:1 must stay Z), a whole number i, any other number f, and an
+// array B over the same two. A value of no SAM type is left out.
+function samTag(key: string, value: unknown) {
+  if (!SAM_TAG.test(key)) {
+    return undefined
+  }
+  if (typeof value === 'string') {
+    return `${key}:Z:${value.replaceAll(/[\t\r\n]/g, ' ')}`
+  }
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return `${key}:${numberType([value])}:${value}`
+  }
+  if (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every(v => typeof v === 'number' && Number.isFinite(v))
+  ) {
+    return `${key}:B:${numberType(value)},${value.join(',')}`
+  }
+  return undefined
+}
+
+function samTags(feature: Feature) {
+  const tags = feature.get('tags') as Record<string, unknown> | undefined
+  return Object.entries(tags ?? {}).flatMap(([key, value]) => {
+    const tag = samTag(key, value)
+    return tag === undefined ? [] : [tag]
+  })
+}
+
 export function stringifySAM({
   features,
   session,
@@ -41,7 +79,6 @@ export function stringifySAM({
   for (const feature of features) {
     const start = feature.get('start')
     const nextPos = feature.get('next_pos') as number | undefined
-    // TODO: optional tags not yet output
     lines.push(
       [
         feature.get('name') || '*',
@@ -55,6 +92,7 @@ export function stringifySAM({
         (feature.get('template_length') as number | undefined) ?? 0,
         (feature.get('seq') as string | undefined) || '*',
         qualToPhred(feature.get('qual') as string | undefined),
+        ...samTags(feature),
       ].join('\t'),
     )
   }

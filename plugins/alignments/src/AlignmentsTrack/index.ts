@@ -25,7 +25,7 @@ export default function register(pm: PluginManager) {
               extension: 'sam',
               callback: stringifySAM,
               helpText:
-                'Note: SAM format export is experimental and does not currently output optional tags. The output may not fully conform to the SAM specification and should be validated before use in production workflows.',
+                "Note: SAM export rebuilds records from the reads JBrowse loaded. The header lists the assembly's sequences rather than the file's, so read groups and programs are not carried over, and an optional tag's type is the one its value implies: a one-character A tag is written as Z.",
             },
           }
         },
