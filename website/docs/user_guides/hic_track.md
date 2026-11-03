@@ -158,7 +158,7 @@ back to different normalizations for a region pair, both read raw counts.
 ## Fitting the triangle to the track height
 
 The triangle's natural height is half the view width, so on a wide view it is
-taller than the track and the lower half is cut off. **Layout → Fit to display
+taller than the track and the lower half is cut off. **Layout → Fit to track
 height** squashes it vertically to whatever height the track is dragged to,
 trading square bins for seeing the whole triangle.
 
