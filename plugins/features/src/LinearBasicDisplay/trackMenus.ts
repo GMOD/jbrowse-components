@@ -188,11 +188,8 @@ export function labelCheckboxItems(self: LabelToggleSelf): MenuItem[] {
   ]
 }
 
-// A divider keeps the legend from reading as the last radio group's option.
 export function showSubmenuLegendItems(self: ShowSubmenuSelf): MenuItem[] {
-  return self.hasLegendKey
-    ? [{ type: 'divider' }, legendCheckboxItem(self)]
-    : []
+  return self.hasLegendKey ? [legendCheckboxItem(self)] : []
 }
 
 // Collapsed wins over the fit note, since collapsed mode strips labels before

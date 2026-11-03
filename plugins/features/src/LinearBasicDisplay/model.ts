@@ -357,7 +357,6 @@ export default function stateModelFactory(
                 // mode radio on every ordinary track.
                 ...(self.expandedGeneIds.length > 0
                   ? [
-                      { type: 'divider' as const },
                       {
                         label: `Collapse ${self.expandedGeneIds.length} expanded ${pluralize(self.expandedGeneIds.length, 'gene')}`,
                         icon: UnfoldLessIcon,
