@@ -21,7 +21,7 @@ import AltFormatter from './AltFormatter.tsx'
 import { tandemRepeatOf } from './TandemRepeatPanel/tandemRepeat.ts'
 import { consequencePanels } from './VariantConsequence/parseConsequences.ts'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
-import { isSvLaunchType } from './svLaunchType.ts'
+import { isSvLaunchFeature } from './svLaunchType.ts'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
 
 import type { VariantFeatureWidgetModel } from './stateModelFactory.ts'
@@ -70,7 +70,7 @@ const LaunchBreakendWidgetArea = observer(function LaunchBreakendWidgetArea({
 
   return locStrings.length ? (
     <LaunchBreakendPanel feature={feat} model={model} locStrings={locStrings} />
-  ) : isSvLaunchType(type) ? (
+  ) : isSvLaunchFeature(feat) ? (
     <LaunchSvPanel feature={feat} model={model} />
   ) : null
 })
