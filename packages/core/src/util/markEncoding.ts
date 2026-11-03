@@ -520,6 +520,14 @@ function admitLanes(
   return { count, skippedPosition }
 }
 
+interface PaintContext {
+  table: FeatureTable
+  jexl: JexlInstance | undefined
+  kept: Kept
+  count: number
+  report: ProgressReporter | undefined
+}
+
 // The categorical arm `color` and `shape` share: `out[k]` the lane value of
 // the entry instance `k`'s key takes, `''` the key of none, and the keys met
 // with their entries in the field's order. A key's entry is its own whatever
@@ -579,6 +587,34 @@ function paintCategories<T>(
   return [...met]
     .sort(categories.compare)
     .map(value => ({ value, entry: resolved.get(value)!.entry }))
+}
+
+// The categorical arm `color` and `colorKey` share: `out` holds each
+// instance's packed color, or with `keyed` its entry's index in the returned
+// list, which is the order of the field's keys rather than of first meeting.
+function paintColorCategories(
+  within: PaintContext,
+  ref: FieldRef | ChannelReader,
+  categories: CategoricalField,
+  out: Uint32Array,
+  keyed: boolean,
+  colorOf: (key: string) => number,
+) {
+  let resolved = 0
+  const entries = paintCategories(
+    within.table,
+    ref,
+    within.jexl,
+    categories,
+    within,
+    out,
+    key => ({ color: colorOf(key), order: resolved++ }),
+    entry => (keyed ? entry.order : entry.color),
+  )
+  if (keyed) {
+    keysToEntryOrder(out, entries, resolved, within.count)
+  }
+  return entries
 }
 
 // The BED color column a table holds, under the first of its names any row
@@ -983,28 +1019,20 @@ export function encodeFeatures<L extends LaneName>(
   let missingMet = false
   let notNumberMet = false
   if (ownColor && categoryLane) {
-    let resolved = 0
     const field = identity.field
-    const entries = paintCategories(
-      table,
-      field ?? bedColorFieldOf(table),
-      jexl,
+    const colorRef = field ?? bedColorFieldOf(table)
+    const entries = paintColorCategories(
+      { table, jexl, kept, count, report },
+      colorRef,
       field === undefined ? ownColorField() : cssColorField(),
-      { kept, count, report },
       categoryLane,
-      key => ({
-        color: key === '' ? DEFAULT_MARK_ABGR : cssColorToABGR(key),
-        order: resolved++,
-      }),
-      entry => (colorKey ? entry.order : entry.color),
+      colorKey !== undefined,
+      key => (key === '' ? DEFAULT_MARK_ABGR : cssColorToABGR(key)),
     )
-    if (colorKey) {
-      keysToEntryOrder(colorKey, entries, resolved, count)
-    }
     const labels = identity.labelField
       ? colorLabels(
           table,
-          field ?? bedColorFieldOf(table),
+          colorRef,
           identity.labelField,
           field === undefined ? ownColorField() : cssColorField(),
           { kept, count },
@@ -1027,23 +1055,14 @@ export function encodeFeatures<L extends LaneName>(
       domain: scaled.domain?.map(String),
       range: scaled.range,
     })
-    let resolved = 0
-    const entries = paintCategories(
-      table,
+    const entries = paintColorCategories(
+      { table, jexl, kept, count, report },
       scaled.field,
-      jexl,
       colorField,
-      { kept, count, report },
       categoryLane,
-      key => ({
-        color: cssColorToABGR(colorField.color(key)),
-        order: resolved++,
-      }),
-      entry => (colorKey ? entry.order : entry.color),
+      colorKey !== undefined,
+      key => cssColorToABGR(colorField.color(key)),
     )
-    if (colorKey) {
-      keysToEntryOrder(colorKey, entries, resolved, count)
-    }
     scale = {
       kind: 'categorical',
       field: scaled.field,
