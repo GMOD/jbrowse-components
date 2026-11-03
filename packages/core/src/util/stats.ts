@@ -98,9 +98,8 @@ export async function scoresToStats(
 ) {
   const { start, end } = region
   const seed = {
-    // Number.MAX_VALUE not Infinity: precautionary, since Infinity serializes
-    // as null in JSON and these stats cross the RPC boundary. In practice the
-    // sentinels are always replaced before return (found===false → blankStats).
+    // Number.MAX_VALUE not Infinity: Infinity serializes as null in JSON and
+    // these stats cross the RPC boundary. Replaced by blankStats when empty.
     scoreMin: Number.MAX_VALUE,
     scoreMax: -Number.MAX_VALUE,
     scoreMeanMin: Number.MAX_VALUE,
@@ -109,7 +108,6 @@ export async function scoresToStats(
     scoreSumSquares: 0,
     featureCount: 0,
   }
-  let found = false
 
   const {
     scoreMin,
@@ -138,14 +136,12 @@ export async function scoresToStats(
         acc.scoreSum += s
         acc.scoreSumSquares += s * s
         acc.featureCount += 1
-        found = true
 
         return acc
       }, seed),
     ),
   )
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  return found
+  return featureCount > 0
     ? rectifyStats({
         scoreMax,
         scoreMin,

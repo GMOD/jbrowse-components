@@ -1,7 +1,7 @@
 // from bioperl: tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/
 // generated with:
 // perl -MJSON -E '@l = split "","acgtrymkswhbvdnxACGTRYMKSWHBVDNX"; print to_json({ map { my $in = $_; tr/acgtrymkswhbvdnxACGTRYMKSWHBVDNX/tgcayrkmswdvbhnxTGCAYRKMSWDVBHNX/; $in => $_ } @l})'
-export const complementTable = {
+export const complementTable: Record<string, string> = {
   S: 'S',
   w: 'w',
   T: 'A',
@@ -34,7 +34,7 @@ export const complementTable = {
   b: 'v',
   R: 'Y',
   G: 'C',
-} as Record<string, string>
+}
 
 export function revcom(str: string) {
   const n = str.length

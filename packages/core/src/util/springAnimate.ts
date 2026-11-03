@@ -36,7 +36,6 @@ export function springAnimate({
   friction = 20,
   clamp = true,
 }: SpringAnimateOptions) {
-  const mass = 1
   // ?? not ||, so an explicit precision of 0 (converge only on overshoot) is
   // honored rather than silently replaced by the derived default
   const eps = precision ?? Math.abs(to - from) / 1000
@@ -82,9 +81,9 @@ export function springAnimate({
     for (let i = 0; i < numSteps; ++i) {
       const force = -tension * (position - to)
       const damping = -friction * velocity
-      const acceleration = (force + damping) / mass
-      velocity += (acceleration * 1) / 1000
-      position += (velocity * 1) / 1000
+      const acceleration = force + damping
+      velocity += acceleration / 1000
+      position += velocity / 1000
     }
     const isVelocity = Math.abs(velocity) <= eps
     const isDisplacement = tension !== 0 ? Math.abs(to - position) <= eps : true

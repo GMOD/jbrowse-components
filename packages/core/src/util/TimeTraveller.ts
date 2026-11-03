@@ -8,11 +8,7 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 
-import type {
-  IAnyStateTreeNode,
-  IDisposer,
-  IStateTreeNode,
-} from '@jbrowse/mobx-state-tree'
+import type { IDisposer, IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const MAX_HISTORY_LENGTH = 20
 
@@ -59,7 +55,7 @@ const TimeTraveller = types
     },
   }))
   .actions(self => {
-    let targetStore: IAnyStateTreeNode | undefined
+    let targetStore: SnapshotTarget | undefined
     let snapshotDisposer: IDisposer | undefined
     let skipNextUndoState = false
     let debounceTimer: ReturnType<typeof setTimeout> | undefined
@@ -122,8 +118,7 @@ const TimeTraveller = types
         // a detach patches the tree, and outside the bracket it would be
         // recorded as an undoable step of its own and shift the history under
         // the index we are applying.
-        const target = targetStore as SnapshotTarget
-        target.takeOutViewsMissingFrom?.(snapshot)
+        targetStore.takeOutViewsMissingFrom?.(snapshot)
         applySnapshot(targetStore, snapshot)
       } finally {
         skipNextUndoState = false

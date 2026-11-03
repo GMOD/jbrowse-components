@@ -47,7 +47,7 @@ export function createTimeGate() {
   let stride = 1
   let sinceClockRead = 0
   let callsSinceFire = 0
-  let lastFire = 0
+  let lastFire: number | undefined
   return (intervalMs: number) => {
     callsSinceFire++
     if (++sinceClockRead < stride) {
@@ -55,10 +55,9 @@ export function createTimeGate() {
     }
     sinceClockRead = 0
     const now = Date.now()
-    // lastFire 0 is the first call ever — `now - 0` is the epoch, not an
-    // elapsed time, and there is no rate to measure yet. Fire (so an initial
+    // The first call ever has no rate to measure yet. Fire (so an initial
     // 0% tick is never swallowed) and start the window here.
-    if (lastFire === 0) {
+    if (lastFire === undefined) {
       lastFire = now
       callsSinceFire = 0
       return true

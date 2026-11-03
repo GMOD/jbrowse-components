@@ -18,39 +18,33 @@ import type { RegisteredCache } from '@emotion/serialize'
 // an unbounded per-cache Map. If you ever `cx()` together a class containing a
 // media query, re-introduce it from upstream.
 
-export const { createCssAndCx } = (() => {
-  function merge(registered: RegisteredCache, css: Css, className: string) {
-    const registeredStyles: string[] = []
+function merge(registered: RegisteredCache, css: Css, className: string) {
+  const registeredStyles: string[] = []
 
-    const rawClassName = getRegisteredStyles(
-      registered,
-      registeredStyles,
-      className,
-    )
+  const rawClassName = getRegisteredStyles(
+    registered,
+    registeredStyles,
+    className,
+  )
 
-    if (registeredStyles.length < 2) {
-      return className
-    }
+  return registeredStyles.length < 2
+    ? className
+    : rawClassName + css(registeredStyles)
+}
 
-    return rawClassName + css(registeredStyles)
+export function createCssAndCx(params: { cache: EmotionCache }) {
+  const { cache } = params
+
+  const css: Css = (...args) => {
+    const serialized = serializeStyles(args, cache.registered)
+    insertStyles(cache, serialized, false)
+    return `${cache.key}-${serialized.name}`
   }
 
-  function createCssAndCx(params: { cache: EmotionCache }) {
-    const { cache } = params
+  const cx: Cx = (...args) => merge(cache.registered, css, classnames(args))
 
-    const css: Css = (...args) => {
-      const serialized = serializeStyles(args, cache.registered)
-      insertStyles(cache, serialized, false)
-      return `${cache.key}-${serialized.name}`
-    }
-
-    const cx: Cx = (...args) => merge(cache.registered, css, classnames(args))
-
-    return { css, cx }
-  }
-
-  return { createCssAndCx }
-})()
+  return { css, cx }
+}
 
 export function createUseCssAndCx(params: { useCache: () => EmotionCache }) {
   const { useCache } = params

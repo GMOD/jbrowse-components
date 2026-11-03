@@ -7,6 +7,7 @@ import {
   misnamedPointer,
 } from '../configuration/snapshotPreprocess.ts'
 import { getNotificationSink } from './sessionServices.ts'
+import { capitalizeFirst } from './stringUtils.ts'
 
 import type { ConfigurationSchemaMetadata } from '../configuration/schemaRegistry.ts'
 import type { Misnamed } from '../configuration/snapshotPreprocess.ts'
@@ -43,7 +44,7 @@ export interface UnappliedSetting {
 
 /** The action `setter-only` names: `height` -> `setHeight`. */
 export function displaySetterName(key: string) {
-  return `set${key[0]!.toUpperCase()}${key.slice(1)}`
+  return `set${capitalizeFirst(key)}`
 }
 
 /**

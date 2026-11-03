@@ -31,74 +31,55 @@ export function useFeatureSequence({
     isLoading: loading,
     status,
   } = useFetch(
-    guard
-      ? ([
-          'featureSequence',
-          guard.assemblyName,
-          refName,
-          start,
-          end,
-          upDownBp,
-          forceLoad,
-        ] as const)
-      : null,
-    guard
-      ? async (
-          _name,
-          _asm,
-          _ref,
-          _start,
-          _end,
-          _upDown,
-          _force,
-          signal,
-          statusCallback,
-        ) => {
-          const { session: s, assemblyName: asmName } = guard
-          if (!forceLoad && end - start > BPLIMIT) {
-            return {
-              error: `Genomic sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
-            }
+    guard &&
+      ([
+        'featureSequence',
+        guard.assemblyName,
+        refName,
+        start,
+        end,
+        upDownBp,
+        forceLoad,
+      ] as const),
+    guard &&
+      (async (
+        _name,
+        asmName,
+        ref,
+        from,
+        to,
+        flankBp,
+        force,
+        signal,
+        statusCallback,
+      ) => {
+        if (!force && to - from > BPLIMIT) {
+          return {
+            error: `Genomic sequence larger than ${BPLIMIT}bp, use "force load" button to display`,
           }
-          // three concurrent reads sharing one status field, so each gets its
-          // own slot and they aggregate into one bar
-          const slot = createStatusFanOut(statusCallback)
-          const [seq, upstream, downstream] = await Promise.all([
-            fetchSeq({
-              start,
-              end,
-              refName,
-              assemblyName: asmName,
-              session: s,
-              signal,
-              statusCallback: slot(),
-            }),
-            upDownBp > 0
-              ? fetchSeq({
-                  start: Math.max(0, start - upDownBp),
-                  end: start,
-                  refName,
-                  assemblyName: asmName,
-                  session: s,
-                  signal,
-                  statusCallback: slot(),
-                })
-              : Promise.resolve(''),
-            upDownBp > 0
-              ? fetchSeq({
-                  start: end,
-                  end: end + upDownBp,
-                  refName,
-                  assemblyName: asmName,
-                  session: s,
-                  signal,
-                  statusCallback: slot(),
-                })
-              : Promise.resolve(''),
-          ] as const)
-          return { seq, upstream, downstream }
         }
-      : null,
+        // three concurrent reads sharing one status field, so each gets its
+        // own slot and they aggregate into one bar
+        const slot = createStatusFanOut(statusCallback)
+        const read = (readStart: number, readEnd: number) =>
+          fetchSeq({
+            start: readStart,
+            end: readEnd,
+            refName: ref,
+            assemblyName: asmName,
+            session: guard.session,
+            signal,
+            statusCallback: slot(),
+          })
+        const flank = (flankStart: number, flankEnd: number) =>
+          flankBp > 0 ? read(flankStart, flankEnd) : Promise.resolve('')
+        const [seq, upstream, downstream] = await Promise.all([
+          read(from, to),
+          flank(Math.max(0, from - flankBp), from),
+          flank(to, to + flankBp),
+        ] as const)
+        return { seq, upstream, downstream }
+      }),
   )
 
   return { sequence, loading, error, status }

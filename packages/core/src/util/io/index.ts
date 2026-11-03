@@ -24,17 +24,17 @@ import type {
 } from '../types/data.ts'
 import type { Fetcher, GenericFilehandle } from 'generic-filehandle2'
 
-function isLocalPathLocation(
+function hasLocalPathKey(
   location: FileLocation,
 ): location is LocalPathLocation {
   return 'localPath' in location
 }
 
-function isBlobLocation(location: FileLocation): location is BlobLocation {
+function hasBlobIdKey(location: FileLocation): location is BlobLocation {
   return 'blobId' in location
 }
 
-function isFileHandleLocationLocal(
+function hasHandleIdKey(
   location: FileLocation,
 ): location is FileHandleLocation {
   return 'handleId' in location
@@ -51,7 +51,7 @@ export function openLocation(
   location: FileLocation,
   pluginManager?: PluginManager,
 ): GenericFilehandle {
-  if (isLocalPathLocation(location)) {
+  if (hasLocalPathKey(location)) {
     if (!location.localPath) {
       throw new Error('No local path provided')
     }
@@ -68,7 +68,7 @@ export function openLocation(
       throw new Error("can't use local files in the browser")
     }
   }
-  if (isBlobLocation(location)) {
+  if (hasBlobIdKey(location)) {
     // special case where blob is not directly stored on the model, use a getter
     const blob = getBlob(location.blobId)
     if (!blob) {
@@ -81,7 +81,7 @@ export function openLocation(
     // unrelated blobs must not
     return new CachedFilehandle(new BlobFile(blob), `blob://${location.blobId}`)
   }
-  if (isFileHandleLocationLocal(location)) {
+  if (hasHandleIdKey(location)) {
     // FileHandleLocation uses an in-memory cache of File objects
     // The cache is populated asynchronously via ensureFileHandleReady
     const file = getFileFromCache(location.handleId)

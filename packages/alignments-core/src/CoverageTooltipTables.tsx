@@ -1,3 +1,4 @@
+import { capitalizeFirst } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -96,8 +97,6 @@ export const CoverageTooltipTable = observer(function CoverageTooltipTable({
   )
 })
 
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
-
 /**
  * The interbase events at one band boundary, per type. Separate from the
  * depth table so an insertion is never counted into a column it sits beside.
@@ -107,7 +106,7 @@ export const InterbaseTooltipTable = observer(function InterbaseTooltipTable({
   total,
   location,
   unit = 'Reads',
-  typeLabel = capitalize,
+  typeLabel = capitalizeFirst,
 }: {
   interbase: CoverageTooltipBin['interbase']
   total: number
