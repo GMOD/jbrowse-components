@@ -20,7 +20,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 
-import { bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
+import { bandDepthFraction, bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
 import {
   clampConnectorsHeight,
   connectorsBandStack,
@@ -313,6 +313,15 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        */
       get matrixTop(): number {
         return this.connectorsStack.bottom
+      },
+      /**
+       * #getter
+       * A file listing only nearby pairs draws a strip of the triangle's depth,
+       * so fit mode stretches that strip over the display.
+       */
+      get depthFraction(): number {
+        const data = self.rpcData
+        return data ? bandDepthFraction(data.boundaries, data.band) : 1
       },
       /**
        * #method

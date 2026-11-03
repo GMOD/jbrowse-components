@@ -62,19 +62,22 @@ export function triangleViewTransform(
 
 /**
  * The fit-to-height squash: the natural apex height is half the base, and a
- * squashed triangle stretches that into `displayHeight`. 1 for a zero-width
- * base.
+ * squashed triangle stretches that into `displayHeight`. `depthFraction` is the
+ * share of the full triangle's depth the data reaches, 1 for a matrix that
+ * fills it, so a banded one fills the display too. 1 for a zero-width base.
  */
 export function computeTriangleYScalar({
   squashToHeight,
   displayHeight,
   triangleWidth,
+  depthFraction,
 }: {
   squashToHeight: boolean
   displayHeight: number
   triangleWidth: number
+  depthFraction: number
 }) {
-  const triangleHeight = triangleWidth / 2
+  const triangleHeight = (triangleWidth / 2) * depthFraction
   return squashToHeight && triangleHeight > 0
     ? displayHeight / triangleHeight
     : 1

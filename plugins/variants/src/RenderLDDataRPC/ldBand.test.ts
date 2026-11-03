@@ -1,5 +1,6 @@
 import {
   bandCellCount,
+  bandDepthFraction,
   bandPairIndex,
   bandRowFirstColumn,
   bandRowStart,
@@ -114,5 +115,27 @@ describe('the band is what makes the cost linear', () => {
     expect(bandCellCount(65_538, 65_537)).toBe(2_147_581_953)
     expect(bandCellCount(1_000_000, 500)).toBe(499_874_750)
     expect(bandCellCount(8_000_000, 500)).toBe(3_999_874_750)
+  })
+})
+
+describe('bandDepthFraction', () => {
+  const uniform = Float32Array.from({ length: 21 }, (_, i) => i * 10)
+
+  test('uniform columns reach (k + 1) of n columns deep', () => {
+    expect(bandDepthFraction(uniform, 2)).toBeCloseTo(3 / 20, 6)
+  })
+
+  test('a window covering the triangle is the whole depth', () => {
+    expect(bandDepthFraction(uniform, 19)).toBe(1)
+    expect(bandDepthFraction(uniform, 1_000_000)).toBe(1)
+  })
+
+  test('genomic columns follow the widest span, not the column count', () => {
+    const boundaries = Float32Array.from([0, 10, 20, 120, 130, 140])
+    expect(bandDepthFraction(boundaries, 1)).toBeCloseTo(110 / 140, 6)
+  })
+
+  test('no columns is the whole depth', () => {
+    expect(bandDepthFraction(new Float32Array(0), 0)).toBe(1)
   })
 })

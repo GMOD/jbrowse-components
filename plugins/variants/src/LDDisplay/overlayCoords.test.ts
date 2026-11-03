@@ -1,7 +1,7 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { LD_NOT_COMPUTED } from '@jbrowse/ld-core'
 
-import { bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
+import { bandCellCount, bandPairIndex } from '../RenderLDDataRPC/ldBand.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
 import type { LDDataResult } from '../RenderLDDataRPC/types.ts'
@@ -41,13 +41,17 @@ function ldData(
 
 // `zoomedOut` shrinks the region to less than the viewport, which centers it and
 // leaves a gap to its left, the only state the view scrolls left of the start
-function loadedDisplay({ zoomedOut = false, data = {} } = {}) {
+function loadedDisplay({
+  zoomedOut = false,
+  n = 4,
+  data = {},
+}: { zoomedOut?: boolean; n?: number; data?: Partial<LDDataResult> } = {}) {
   const { display, view } = createTestEnvironment().createDisplay()
   view.zoomTo(zoomedOut ? view.maxBpPerPx : 10)
   view.scrollTo(zoomedOut ? view.minOffset : 0)
   const width = view.dynamicBlocks.totalWidthPxWithoutBorders
   display.setRpcData(
-    ldData(4, width * view.bpPerPx, {
+    ldData(n, width * view.bpPerPx, {
       originBp: view.dynamicBlocks.contentBlocks[0]?.start ?? 0,
       ...data,
     }),
@@ -248,4 +252,60 @@ describe('the SNP labels draw only in a band that reserves them', () => {
       expect(display.drawsLabels).toBe(false)
     })
   }
+})
+
+describe('a banded file fills the display height in fit mode', () => {
+  const n = 20
+  const band = 2
+
+  const bandedDisplay = (bandWidth: number) => {
+    const loaded = loadedDisplay({ n })
+    const { boundaries } = loaded.display.rpcData!
+    loaded.display.setRpcData({
+      ...loaded.display.rpcData!,
+      band: bandWidth,
+      ldValues: new Float32Array(bandCellCount(n, bandWidth)).fill(0.5),
+    })
+    loaded.display.setHeightMode('fit')
+    return { ...loaded, boundaries }
+  }
+
+  const bottom = (display: ReturnType<typeof bandedDisplay>['display']) =>
+    display.matrixTop + display.matrixHeight
+
+  test('the deepest listed pair reaches the bottom of the display', () => {
+    const { display, boundaries } = bandedDisplay(band)
+    const deepest = display.cellToScreen(boundaries[0]!, boundaries[band + 1]!)
+    expect(deepest.y).toBeCloseTo(bottom(display), 3)
+  })
+
+  test('a file listing every pair fits the full triangle as before', () => {
+    const { display, view } = bandedDisplay(n - 1)
+    expect(display.yScalar).toBe(
+      display.matrixHeight /
+        (view.dynamicBlocks.totalWidthPxWithoutBorders / 2),
+    )
+  })
+
+  test('natural height keeps square cells whatever the band', () => {
+    const { display } = bandedDisplay(band)
+    display.setHeightMode('fixed')
+    expect(display.yScalar).toBe(1)
+  })
+
+  test('a point just inside the strip bottom hits the pair, one just past it hits nothing', () => {
+    const { display, boundaries } = bandedDisplay(band)
+    const edge = 1e-3
+    const inside = display.cellToScreen(
+      boundaries[0]! + edge,
+      boundaries[band + 1]! - edge,
+    )
+    const past = display.cellToScreen(
+      boundaries[0]! + edge,
+      boundaries[band + 1]! + edge,
+    )
+    const hit = display.hitTest(inside.x, inside.y)
+    expect([hit?.i, hit?.j]).toEqual([band, 0])
+    expect(display.hitTest(past.x, past.y)).toBeUndefined()
+  })
 })

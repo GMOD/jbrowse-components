@@ -46,3 +46,19 @@ export function bandPairIndex(i: number, j: number, k: number) {
   const lo = i > j ? j : i
   return hi - lo > k ? -1 : bandRowStart(hi, k) + lo - bandRowFirstColumn(hi, k)
 }
+
+/**
+ * The share of the full triangle's depth a matrix of window `k` reaches. A pair
+ * `k` apart hangs its cell's bottom corner `boundaries[j + k + 1] - boundaries[j]`
+ * below the base, so the deepest corner is the widest such span, over the
+ * span of the whole base. 1 once the band covers the triangle.
+ */
+export function bandDepthFraction(boundaries: Float32Array, k: number) {
+  const n = boundaries.length - 1
+  const base = n > 0 ? boundaries[n]! - boundaries[0]! : 0
+  let deepest = 0
+  for (let j = 0; j + k + 1 <= n; j++) {
+    deepest = Math.max(deepest, boundaries[j + k + 1]! - boundaries[j]!)
+  }
+  return k >= n - 1 || base <= 0 ? 1 : deepest / base
+}

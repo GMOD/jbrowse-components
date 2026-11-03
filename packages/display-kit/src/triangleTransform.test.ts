@@ -7,6 +7,7 @@ describe('computeTriangleYScalar', () => {
         squashToHeight: false,
         displayHeight: 100,
         triangleWidth: 800,
+        depthFraction: 1,
       }),
     ).toBe(1)
   })
@@ -18,6 +19,7 @@ describe('computeTriangleYScalar', () => {
         squashToHeight: true,
         displayHeight: 100,
         triangleWidth: 800,
+        depthFraction: 1,
       }),
     ).toBe(0.25)
   })
@@ -29,8 +31,20 @@ describe('computeTriangleYScalar', () => {
         squashToHeight: true,
         displayHeight: 600,
         triangleWidth: 800,
+        depthFraction: 1,
       }),
     ).toBe(1.5)
+  })
+
+  test('a strip of a quarter the triangle depth stretches four times as far', () => {
+    expect(
+      computeTriangleYScalar({
+        squashToHeight: true,
+        displayHeight: 100,
+        triangleWidth: 800,
+        depthFraction: 0.25,
+      }),
+    ).toBe(1)
   })
 
   test('zero-width triangle → identity, never divides by zero', () => {
@@ -39,6 +53,7 @@ describe('computeTriangleYScalar', () => {
         squashToHeight: true,
         displayHeight: 300,
         triangleWidth: 0,
+        depthFraction: 1,
       }),
     ).toBe(1)
   })

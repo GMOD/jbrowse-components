@@ -97,6 +97,15 @@ export default function TriangleMatrixMixin<D extends TrianglePayload>() {
       },
       /**
        * #getter
+       * Overridable hook (default 1): the share of the full triangle's depth
+       * the payload reaches, which a banded matrix sets below 1 so fit mode
+       * stretches its strip over the display.
+       */
+      get depthFraction(): number {
+        return 1
+      },
+      /**
+       * #getter
        * The canvas spans the scrolled content, boundary padding included.
        */
       get canvasWidth(): number {
@@ -142,6 +151,7 @@ export default function TriangleMatrixMixin<D extends TrianglePayload>() {
           squashToHeight: self.heightMode === 'fit',
           displayHeight: self.matrixHeight,
           triangleWidth: hostOf(self).host.totalWidthPxWithoutBorders,
+          depthFraction: self.depthFraction,
         })
       },
     }))
