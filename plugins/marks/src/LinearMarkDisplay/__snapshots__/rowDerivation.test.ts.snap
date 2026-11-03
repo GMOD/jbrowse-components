@@ -88,11 +88,11 @@ exports[`a facet domain leads the bands and the key 1`] = `
     [
       {
         "color": [
-          4289175039,
-          4289949813,
-          4289949813,
-          4280833702,
-          4284045281,
+          4283750566,
+          4291804695,
+          4291804695,
+          4283025901,
+          4281110258,
         ],
         "count": 5,
         "row": [
@@ -129,22 +129,22 @@ exports[`a facet domain leads the bands and the key 1`] = `
   "legend": [
     [
       {
-        "color": "rgba(225,87,89,1)",
+        "color": "rgba(242,142,44,1)",
         "label": "s10",
         "value": "s10",
       },
       {
-        "color": "rgba(117,112,179,1)",
+        "color": "rgba(23,190,207,1)",
         "label": "mom",
         "value": "mom",
       },
       {
-        "color": "rgba(255,157,167,1)",
+        "color": "rgba(166,216,84,1)",
         "label": "dad",
         "value": "dad",
       },
       {
-        "color": "rgba(166,86,40,1)",
+        "color": "rgba(237,201,73,1)",
         "label": "s2",
         "value": "s2",
       },
@@ -229,11 +229,11 @@ exports[`bars faceted by source draw a band per source under its chip 1`] = `
     [
       {
         "color": [
-          4289175039,
-          4289949813,
-          4289949813,
-          4280833702,
-          4284045281,
+          4283750566,
+          4291804695,
+          4291804695,
+          4283025901,
+          4281110258,
         ],
         "count": 5,
         "row": [
@@ -270,22 +270,22 @@ exports[`bars faceted by source draw a band per source under its chip 1`] = `
   "legend": [
     [
       {
-        "color": "rgba(255,157,167,1)",
+        "color": "rgba(166,216,84,1)",
         "label": "dad",
         "value": "dad",
       },
       {
-        "color": "rgba(117,112,179,1)",
+        "color": "rgba(23,190,207,1)",
         "label": "mom",
         "value": "mom",
       },
       {
-        "color": "rgba(166,86,40,1)",
+        "color": "rgba(237,201,73,1)",
         "label": "s2",
         "value": "s2",
       },
       {
-        "color": "rgba(225,87,89,1)",
+        "color": "rgba(242,142,44,1)",
         "label": "s10",
         "value": "s10",
       },

@@ -279,13 +279,13 @@ describe('a categorical attribute', () => {
           group: { labels, colors: fetchLabels.colors, domain },
         },
       })
-    const fn = paint(['C1', 'B1', 'A1a'])
+    const fn = paint(['E', 'B1', 'A1a'])
     expect(fn(0)).toBe(cssColorToABGR(categoricalColor('B1')))
-    expect(paint(['B1', 'C1', 'A1a'])(0)).toBe(fn(0))
+    expect(paint(['B1', 'E', 'A1a'])(0)).toBe(fn(0))
     expect(fn(1)).toBe(cssColorToABGR('#4DB5E3'))
     expect(fn(2)).toBe(UNLABELLED_COLOR)
-    expect(paint(['B1', 'C1', 'A1a'], ['C1', 'B1'])(0)).toBe(
-      cssColorToABGR(categoricalColor('B1', ['C1', 'B1'])),
+    expect(paint(['B1', 'E', 'A1a'], ['E', 'B1'])(0)).toBe(
+      cssColorToABGR(categoricalColor('B1', ['E', 'B1'])),
     )
   })
 
