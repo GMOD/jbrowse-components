@@ -131,11 +131,11 @@ Files
                                                   substitutions; 6,336 nested)
 
   bovine-arsucd12-minigraph.bubbles.bed.gz        50,466,192   gfatools bubble
-                                    .tbi             771,214   output
+                                    .csi             687,513   output
                                                  153,719 bubbles
 
   bovine-arsucd12-minigraph.vcf.gz             88,349,570   the variant route:
-                                    .tbi          786,027   the graph
+                                    .csi          667,797   the graph
                                                             deconstructed onto
                                                             ARS-UCD1.2
                                                  164,813 records, 11 samples
@@ -204,7 +204,7 @@ How they were built
   # bubbles
   gzip -dc bovine-arsucd12-minigraph.rgfa.gz | gfatools bubble - \
     | sort -k1,1 -k2,2n | bgzip > bovine-arsucd12-minigraph.bubbles.bed.gz
-  tabix -p bed bovine-arsucd12-minigraph.bubbles.bed.gz
+  tabix -C -p bed bovine-arsucd12-minigraph.bubbles.bed.gz
 
   # coarse tier
   gfa-to-tabix fold bovine-arsucd12-minigraph.rgfa.gz --below 10000 \
@@ -212,7 +212,8 @@ How they were built
 
   gfatools: https://github.com/lh3/gfatools
   Built 2026-09-02 with gfatools 0.5-r296 (git HEAD, reported as 0.5-r296-dirty),
-  htslib bgzip/tabix 1.13.
+  htslib bgzip/tabix 1.13. The bubbles and VCF .csi indexes were added
+  2026-11-03 with tabix 1.24 over the same bytes.
 
 Using them
 ----------

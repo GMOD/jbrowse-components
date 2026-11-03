@@ -121,7 +121,7 @@ Files
                                              under "The graph view from the
                                              GBZ, for a chosen set"
 
-  hprc-v2.1-mc-grch38.summary.bed.gz{,.tbi}  the MAF summary, by
+  hprc-v2.1-mc-grch38.summary.bed.gz{,.csi}  the MAF summary, by
                                              scripts/build_hprc_maf_summary.sh
                                              over the v2.1 MAF, in one
                                              streaming pass. 396,363 rows, 464

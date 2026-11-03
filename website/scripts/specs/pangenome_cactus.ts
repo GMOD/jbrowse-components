@@ -55,7 +55,10 @@ const K12_GENES_SESSION_TRACK = {
   adapter: {
     type: 'Gff3TabixAdapter',
     gffGzLocation: { uri: `${ECOLI_DEMO_BASE}/K12.gff.gz` },
-    index: { location: { uri: `${ECOLI_DEMO_BASE}/K12.gff.gz.tbi` } },
+    index: {
+      location: { uri: `${ECOLI_DEMO_BASE}/K12.gff.gz.csi` },
+      indexType: 'CSI',
+    },
   },
 }
 

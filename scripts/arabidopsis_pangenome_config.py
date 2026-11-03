@@ -174,7 +174,7 @@ def graph_tracks(names):
             'trackId': 'arabidopsis_minigraph_bubbles',
             'name': '1001G+ minigraph pangenome bubbles',
             'assemblyNames': ['TAIR10'],
-            'adapter': {'type': 'MinigraphBubbleAdapter', 'uri': f'{GRAPH}.bubbles.bed.gz', **PANSN},
+            'adapter': {'type': 'MinigraphBubbleAdapter', 'uri': f'{GRAPH}.bubbles.bed.gz', 'csi': True, **PANSN},
             'displayDefaults': {'encoding': {'color': {'value': 'rgb(130,130,130)'}}},
         },
         {
@@ -182,7 +182,7 @@ def graph_tracks(names):
             'trackId': 'arabidopsis_bubble_score',
             'name': '1001G+ minigraph pangenome: variability (segments per bubble)',
             'assemblyNames': ['TAIR10'],
-            'adapter': {'type': 'MinigraphBubbleAdapter', 'uri': f'{GRAPH}.bubbles.bed.gz', **PANSN},
+            'adapter': {'type': 'MinigraphBubbleAdapter', 'uri': f'{GRAPH}.bubbles.bed.gz', 'csi': True, **PANSN},
         },
         {
             'type': 'AlignmentsTrack',
@@ -261,7 +261,7 @@ def main():
                 'trackId': 'TAIR10_genes',
                 'name': 'TAIR10 genes (NCBI RefSeq)',
                 'assemblyNames': ['TAIR10'],
-                'adapter': {'type': 'Gff3TabixAdapter', 'uri': 'TAIR10.genes.gff.gz'},
+                'adapter': {'type': 'Gff3TabixAdapter', 'uri': 'TAIR10.genes.gff.gz', 'csi': True},
             },
             {
                 'type': 'FeatureTrack',
@@ -310,7 +310,7 @@ def main():
                 'trackId': 'syri_regions_on_TAIR10',
                 'name': 'SyRI regions on TAIR10, one row per accession',
                 'assemblyNames': ['TAIR10'],
-                'adapter': {'type': 'BedTabixAdapter', 'uri': 'syri_regions.bed.gz', 'disableGeneHeuristic': True},
+                'adapter': {'type': 'BedTabixAdapter', 'uri': 'syri_regions.bed.gz', 'csi': True, 'disableGeneHeuristic': True},
                 'displays': [
                     {
                         'type': 'LinearMultiRowFeatureDisplay',

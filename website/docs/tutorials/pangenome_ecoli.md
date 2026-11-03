@@ -159,7 +159,7 @@ synteny track once `jbrowse make-pif` indexes it:
 
 ```bash
 cp pggb/*.alignments.wfmash.paf ecoli_pggb_ava.paf
-jbrowse make-pif ecoli_pggb_ava.paf
+jbrowse make-pif ecoli_pggb_ava.paf --csi
 ```
 
 ```json addtrack
@@ -171,6 +171,7 @@ jbrowse make-pif ecoli_pggb_ava.paf
   "adapter": {
     "type": "MultiGenomeIndexedPAFAdapter",
     "uri": "ecoli_pggb_ava.pif.gz",
+    "csi": true,
     "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
   }
 }
@@ -205,7 +206,7 @@ printf 'Sakai#1#chr\nCFT073#1#chr\nNCTC86#1#chr\nIAI39#1#chr\n' > query.txt
 in_pggb odgi untangle -i "/data/$og" \
   -R /data/target.txt -Q /data/query.txt -m 1000 -j 0.5 -e 5000 -p -t "$(getconf _NPROCESSORS_ONLN)" \
   > ecoli_pggb_untangle.paf
-jbrowse make-pif ecoli_pggb_untangle.paf
+jbrowse make-pif ecoli_pggb_untangle.paf --csi
 ```
 
 ```json addtrack
@@ -217,6 +218,7 @@ jbrowse make-pif ecoli_pggb_untangle.paf
   "adapter": {
     "type": "MultiGenomeIndexedPAFAdapter",
     "uri": "ecoli_pggb_untangle.pif.gz",
+    "csi": true,
     "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
   }
 }
@@ -235,7 +237,7 @@ runs inverted:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/untangle_to_bed.py
 python3 untangle_to_bed.py ecoli_pggb_untangle.paf chr > ecoli_pggb_untangle_rows.bed
 jbrowse sort-bed ecoli_pggb_untangle_rows.bed | bgzip > ecoli_pggb_untangle_rows.bed.gz
-tabix -p bed ecoli_pggb_untangle_rows.bed.gz
+tabix -C -p bed ecoli_pggb_untangle_rows.bed.gz
 ```
 
 ```json addtrack
@@ -244,6 +246,7 @@ tabix -p bed ecoli_pggb_untangle_rows.bed.gz
   "trackId": "ecoli_pggb_untangle_rows",
   "name": "pggb graph: untangle per strain (orientation, vs K12)",
   "uri": "ecoli_pggb_untangle_rows.bed.gz",
+  "index": "ecoli_pggb_untangle_rows.bed.gz.csi",
   "assemblyNames": ["K12"],
   "displays": [
     {
@@ -278,7 +281,7 @@ path, genotyped in the other four strains. Its `CHROM` is the PanSN path,
 printf 'K12#1#chr\tchr\n' > rename_chrs.tsv
 in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
   /data/pggb/*.smooth.final.K12.decomposed.vcf \
-  | bcftools sort -Oz -o /data/ecoli_pggb.vcf.gz && tabix -p vcf /data/ecoli_pggb.vcf.gz"
+  | bcftools sort -Oz -o /data/ecoli_pggb.vcf.gz && tabix -C -p vcf /data/ecoli_pggb.vcf.gz"
 ```
 
 Each strain is one haplotype, so `rows: "haplotype"` draws one row per strain,
@@ -292,7 +295,8 @@ colored by that strain's allele:
   "assemblyNames": ["K12"],
   "adapter": {
     "type": "VcfTabixAdapter",
-    "uri": "ecoli_pggb.vcf.gz"
+    "uri": "ecoli_pggb.vcf.gz",
+    "csi": true
   },
   "displays": [{ "type": "LinearVariantDisplay", "rows": "haplotype" }]
 }
@@ -311,7 +315,7 @@ paths split and rejoin) for the
 
 `pggb -M` wrote the multiple alignment as a MAF. Re-root every block on K12,
 rename the rows to `sample.chr`, and blank the padding smoothxg writes around
-each row, then convert the MAF to the tabix-indexed BED that
+each row, then convert the MAF to the CSI-indexed BED that
 [`MafTabixAdapter`](/docs/config/maftabixadapter) reads:
 
 <!-- from: scripts/build_ecoli_pangenome_graph.sh -->
@@ -329,7 +333,7 @@ python3 reroot_maf.py pggb/*.smooth.maf ecoli_pggb.maf all.fa.gz K12#1#chr
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/maf_to_bed.py
 python3 maf_to_bed.py ecoli_pggb.maf ecoli_pggb.maf.bed
 bgzip ecoli_pggb.maf.bed
-tabix -p bed ecoli_pggb.maf.bed.gz
+tabix -C -p bed ecoli_pggb.maf.bed.gz
 ```
 
 To order the rows by how much graph each pair of strains shares, build a tree
@@ -355,7 +359,8 @@ python3 odgi_similarity_to_newick.py ecoli_pggb_similarity.tsv ecoli_pggb.nh
     "type": "MafTabixAdapter",
     "samples": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
     "nhLocation": { "uri": "ecoli_pggb.nh" },
-    "uri": "ecoli_pggb.maf.bed.gz"
+    "uri": "ecoli_pggb.maf.bed.gz",
+    "csi": true
   }
 }
 ```
@@ -532,7 +537,7 @@ renamed like the decomposed one:
 ```bash
 in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
   /data/pggb/*.smooth.final.K12.vcf \
-  | bcftools sort -Oz -o /data/ecoli_pggb_snarls.vcf.gz && tabix -p vcf /data/ecoli_pggb_snarls.vcf.gz"
+  | bcftools sort -Oz -o /data/ecoli_pggb_snarls.vcf.gz && tabix -C -p vcf /data/ecoli_pggb_snarls.vcf.gz"
 gfa-to-tabix build pggb/*.smooth.final.gfa -o ecoli_pggb --reference K12 --snarls ecoli_pggb_snarls.vcf.gz
 ```
 

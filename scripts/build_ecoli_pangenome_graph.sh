@@ -239,7 +239,7 @@ OG=$(ls pggb/*.smooth.final.og)
 # pggb's input, not a readout of the graph, and it is here because it is free
 # and because it is what the all-vs-all synteny tutorial loads.
 cp pggb/*.alignments.wfmash.paf ecoli_pggb_ava.paf
-jb make-pif ecoli_pggb_ava.paf   # -> ecoli_pggb_ava.pif.gz (+ .tbi)
+jb make-pif ecoli_pggb_ava.paf --csi   # -> ecoli_pggb_ava.pif.gz (+ .csi)
 
 # (b) `odgi untangle`, which IS a readout of the graph: it walks each query path
 # and reports, segment by segment, which stretch of the reference path that
@@ -291,7 +291,7 @@ if [ ! -f ecoli_pggb_untangle.paf ]; then
     > ecoli_pggb_untangle.paf.tmp
   mv ecoli_pggb_untangle.paf.tmp ecoli_pggb_untangle.paf
 fi
-jb make-pif ecoli_pggb_untangle.paf
+jb make-pif ecoli_pggb_untangle.paf --csi
 
 # The same file as one lane per strain on REF's own axis, rather than as ribbons
 # between two genome rows. Two things a ribbon cannot show become readable there:
@@ -304,7 +304,7 @@ python3 "$SCRIPT_DIR/untangle_to_bed.py" ecoli_pggb_untangle.paf chr \
   > ecoli_pggb_untangle_rows.bed
 # the writer's header line is `#`-prefixed, so sort-bed keeps it on top
 jb sort-bed ecoli_pggb_untangle_rows.bed | bgzip > ecoli_pggb_untangle_rows.bed.gz
-tabix -f -p bed ecoli_pggb_untangle_rows.bed.gz
+tabix -f -C -p bed ecoli_pggb_untangle_rows.bed.gz
 
 # ── Projection 2: pangenome variants (rename the REF path to the assembly chr) ─
 # pggb writes the VCF CHROM as the PanSN reference path (K12#1#chr); JBrowse needs
@@ -320,7 +320,7 @@ tabix -f -p bed ecoli_pggb_untangle_rows.bed.gz
 printf '%s#1#chr\tchr\n' "$REF" > rename_chrs.tsv
 vcf_tier() {   # <output-basename> <pggb vcf>
   in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv '/data/$2' \
-    | bcftools sort -T /data/tmp -Oz -o '/data/$1.vcf.gz' && tabix -f -p vcf '/data/$1.vcf.gz'"
+    | bcftools sort -T /data/tmp -Oz -o '/data/$1.vcf.gz' && tabix -f -C -p vcf '/data/$1.vcf.gz'"
 }
 vcf_tier ecoli_pggb "$(ls pggb/*.smooth.final."$REF".decomposed.vcf)"
 vcf_tier ecoli_pggb_snarls "$(ls pggb/*.smooth.final."$REF".vcf)"
@@ -337,7 +337,7 @@ vcf_tier ecoli_pggb_snarls "$(ls pggb/*.smooth.final."$REF".vcf)"
 python3 "$SCRIPT_DIR/reroot_maf.py" "$(ls pggb/*.smooth.maf)" ecoli_pggb.maf all.fa.gz "${REF}#1#chr"
 python3 "$SCRIPT_DIR/maf_to_bed.py" ecoli_pggb.maf ecoli_pggb.maf.bed
 bgzip -f ecoli_pggb.maf.bed
-tabix -f -p bed ecoli_pggb.maf.bed.gz
+tabix -f -C -p bed ecoli_pggb.maf.bed.gz
 
 # The order the MAF rows are drawn in, from the graph rather than from this
 # script's strain list. `odgi similarity -D '#' -p 1` reports how much of the
@@ -413,7 +413,7 @@ in_pggb bash -c "odgi extract -i /data/$OG -r ${REF}#1#chr:1004500-1004900 -E -o
 # coordinate, which is why the strip is the backbone only.
 python3 "$SCRIPT_DIR/gfa_nodes_to_bed.py" ecoli_pggb_subgraph.gfa "${REF}#1#chr" chr \
   | sort -k1,1 -k2,2n | bgzip > ecoli_pggb_subgraph_nodes.bed.gz
-tabix -f -p bed ecoli_pggb_subgraph_nodes.bed.gz
+tabix -f -C -p bed ecoli_pggb_subgraph_nodes.bed.gz
 
 # The same walk over the WHOLE pggb graph, so it is browsable by locus: the
 # node and link index RgfaTabixAdapter reads, with each segment's haplotypes
@@ -474,15 +474,15 @@ for strain in $STRAINS; do
   acc=$(awk '/^>/{print substr($1, 2); exit}' "$strain"/ncbi_dataset/data/*/*.fna)
   awk -F'\t' -v acc="$acc" -v OFS='\t' '$1 == acc {$1 = "chr"; print}' \
     "$strain"/ncbi_dataset/data/*/genomic.gff > "$strain.gff"
-  jb sort-gff "$strain.gff" | bgzip > "$strain.gff.gz"; tabix -f "$strain.gff.gz"
+  jb sort-gff "$strain.gff" | bgzip > "$strain.gff.gz"; tabix -f -C -p gff "$strain.gff.gz"
   jb add-track "$strain.gff.gz" --trackId "${strain}_genes" -a "$strain" \
-    --name "$strain genes" --load copy --force --out "$APP"
+    --name "$strain genes" --indexFile "$strain.gff.gz.csi" --load copy --force --out "$APP"
 done
 
 # projection 1: all-vs-all synteny. Written as add-track-json (not
 # `add-track --adapterType`, which the released @jbrowse/cli rejects) so the
 # script runs on any CLI version; drop the pif beside config.json for the uris.
-cp ecoli_pggb_ava.pif.gz ecoli_pggb_ava.pif.gz.tbi "$APP/"
+cp ecoli_pggb_ava.pif.gz ecoli_pggb_ava.pif.gz.csi "$APP/"
 cat > ava_track.json <<JSON
 {
   "type": "SyntenyTrack",
@@ -492,7 +492,7 @@ cat > ava_track.json <<JSON
   "adapter": {
     "type": "MultiGenomeIndexedPAFAdapter",
     "pifGzLocation": { "uri": "ecoli_pggb_ava.pif.gz" },
-    "index": { "location": { "uri": "ecoli_pggb_ava.pif.gz.tbi" } },
+    "index": { "location": { "uri": "ecoli_pggb_ava.pif.gz.csi" }, "indexType": "CSI" },
     "assemblyNames": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')]
   }
 }
@@ -503,7 +503,7 @@ jb add-track-json ava_track.json --update --out "$APP"
 # input, from odgi untangle. Same adapter and same shape as the track above, so
 # the two stack in one synteny view and disagree visibly where the graph
 # resolved a repeat the pairwise alignment did not.
-cp ecoli_pggb_untangle.pif.gz ecoli_pggb_untangle.pif.gz.tbi "$APP/"
+cp ecoli_pggb_untangle.pif.gz ecoli_pggb_untangle.pif.gz.csi "$APP/"
 cat > untangle_track.json <<JSON
 {
   "type": "SyntenyTrack",
@@ -513,7 +513,7 @@ cat > untangle_track.json <<JSON
   "adapter": {
     "type": "MultiGenomeIndexedPAFAdapter",
     "pifGzLocation": { "uri": "ecoli_pggb_untangle.pif.gz" },
-    "index": { "location": { "uri": "ecoli_pggb_untangle.pif.gz.tbi" } },
+    "index": { "location": { "uri": "ecoli_pggb_untangle.pif.gz.csi" }, "indexType": "CSI" },
     "assemblyNames": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')]
   }
 }
@@ -525,7 +525,7 @@ jb add-track-json untangle_track.json --update --out "$APP"
 # each block by orientation, so the color paints as the file says and the
 # identity scale only names the two colors, since the category lives only in the
 # color.
-cp ecoli_pggb_untangle_rows.bed.gz ecoli_pggb_untangle_rows.bed.gz.tbi "$APP/"
+cp ecoli_pggb_untangle_rows.bed.gz ecoli_pggb_untangle_rows.bed.gz.csi "$APP/"
 cat > untangle_rows_track.json <<JSON
 {
   "type": "FeatureTrack",
@@ -534,7 +534,8 @@ cat > untangle_rows_track.json <<JSON
   "assemblyNames": ["$REF"],
   "adapter": {
     "type": "BedTabixAdapter",
-    "uri": "ecoli_pggb_untangle_rows.bed.gz"
+    "uri": "ecoli_pggb_untangle_rows.bed.gz",
+    "csi": true
   },
   "displays": [
     {
@@ -562,16 +563,16 @@ jb add-track-json untangle_rows_track.json --update --out "$APP"
 # projection 2: pangenome variants, the decomposed tier (matrix display by
 # default), plus the raw snarl tree as a second track for the LV/PS discussion.
 jb add-track ecoli_pggb.vcf.gz --trackId ecoli_pggb_variants \
-  --name "pggb graph: pangenome variants (vs $REF)" -a "$REF" --load copy --force --out "$APP"
+  --name "pggb graph: pangenome variants (vs $REF)" -a "$REF" --indexFile ecoli_pggb.vcf.gz.csi --load copy --force --out "$APP"
 jb add-track ecoli_pggb_snarls.vcf.gz --trackId ecoli_pggb_snarls \
-  --name "pggb graph: raw snarl tree (nested, vs $REF)" -a "$REF" --load copy --force --out "$APP"
+  --name "pggb graph: raw snarl tree (nested, vs $REF)" -a "$REF" --indexFile ecoli_pggb_snarls.vcf.gz.csi --load copy --force --out "$APP"
 
 # projection 3: whole-genome MAF (MafTabixAdapter carries the sample list).
 # add-track-json takes a file/inline JSON (no --load copy), so drop the bed files
 # beside config.json where the relative uris point. `nhLocation` is the odgi
 # similarity tree built above, which orders and groups the rows; `samples` still
 # names them, so a tree that fails to build leaves the track working.
-cp ecoli_pggb.maf.bed.gz ecoli_pggb.maf.bed.gz.tbi ecoli_pggb.nh "$APP/"
+cp ecoli_pggb.maf.bed.gz ecoli_pggb.maf.bed.gz.csi ecoli_pggb.nh "$APP/"
 cat > maf_track.json <<JSON
 {
   "type": "MafTrack",
@@ -582,7 +583,8 @@ cat > maf_track.json <<JSON
     "type": "MafTabixAdapter",
     "samples": [$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')],
     "nhLocation": { "uri": "ecoli_pggb.nh" },
-    "uri": "ecoli_pggb.maf.bed.gz"
+    "uri": "ecoli_pggb.maf.bed.gz",
+    "csi": true
   }
 }
 JSON
@@ -677,7 +679,7 @@ jb add-track-json alleles_track.json --update --out "$APP"
 # itemRgb is the graph view's Depth ramp, so the strip paints in the graph's
 # colors, and `collapsed` keeps it one
 # row of color rather than 36 numbered boxes.
-cp ecoli_pggb_subgraph_nodes.bed.gz ecoli_pggb_subgraph_nodes.bed.gz.tbi "$APP/"
+cp ecoli_pggb_subgraph_nodes.bed.gz ecoli_pggb_subgraph_nodes.bed.gz.csi "$APP/"
 cat > subgraph_nodes_track.json <<'JSON'
 {
   "type": "FeatureTrack",
@@ -687,6 +689,7 @@ cat > subgraph_nodes_track.json <<'JSON'
   "adapter": {
     "type": "BedTabixAdapter",
     "uri": "ecoli_pggb_subgraph_nodes.bed.gz",
+    "csi": true,
     "columnNames": ["chrom", "start", "end", "name", "depth", "strand", "thickStart", "thickEnd", "itemRgb"]
   },
   "displays": [{ "type": "LinearBasicDisplay", "displayMode": "collapsed" }]

@@ -423,7 +423,8 @@
       "assemblyNames": ["TAIR10"],
       "adapter": {
         "type": "Gff3TabixAdapter",
-        "uri": "TAIR10.genes.gff.gz"
+        "uri": "TAIR10.genes.gff.gz",
+        "csi": true
       }
     },
     {
@@ -492,6 +493,7 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "uri": "syri_regions.bed.gz",
+        "csi": true,
         "disableGeneHeuristic": true
       },
       "displays": [
@@ -699,6 +701,7 @@
       "adapter": {
         "type": "MinigraphBubbleAdapter",
         "uri": "arabidopsis-tair10-minigraph.bubbles.bed.gz",
+        "csi": true,
         "assemblyNameToPanSN": {
           "TAIR10": "TAIR10"
         }
@@ -715,6 +718,7 @@
       "adapter": {
         "type": "MinigraphBubbleAdapter",
         "uri": "arabidopsis-tair10-minigraph.bubbles.bed.gz",
+        "csi": true,
         "assemblyNameToPanSN": {
           "TAIR10": "TAIR10"
         }

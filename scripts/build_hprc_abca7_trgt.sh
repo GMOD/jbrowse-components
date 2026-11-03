@@ -8,7 +8,7 @@
 # Requires: curl, tar, duckdb, python3, bgzip, tabix
 # Usage:    bash scripts/build_hprc_abca7_trgt.sh [outdir]
 #
-# Writes hprc_abca7_trgt.vcf.gz{,.tbi}
+# Writes hprc_abca7_trgt.vcf.gz{,.csi}
 set -euo pipefail
 
 OUTDIR="${1:-hprc_abca7_trgt_build}"
@@ -86,4 +86,4 @@ print('\t'.join([chrom, str(start), '.', anchor + refseq, alt, '.', '.', info, '
 PY
 
 bgzip -f hprc_abca7_trgt.vcf
-tabix -f -p vcf hprc_abca7_trgt.vcf.gz
+tabix -f -C -p vcf hprc_abca7_trgt.vcf.gz

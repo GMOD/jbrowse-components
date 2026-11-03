@@ -7,7 +7,7 @@ track has only the too-large prompt past a gene.
 
 **Hosted, not committed** —
 `https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.summary.bed.gz` and its
-`.tbi`, which `test_data/hprc_maf_summary.json` points at. 1.72 MB, 396,363
+`.csi`, which `test_data/hprc_maf_summary.json` points at. 1.72 MB, 396,363
 rows, 464 haplotypes, whole genome. Rebuild it with
 `scripts/build_hprc_maf_summary.sh`, whose header carries the failure mode worth
 knowing before touching it.

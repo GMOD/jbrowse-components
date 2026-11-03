@@ -633,10 +633,10 @@
         },
         "index": {
           "location": {
-            "uri": "MG1655.gff.gz.tbi",
+            "uri": "MG1655.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -653,10 +653,10 @@
         },
         "index": {
           "location": {
-            "uri": "DH10B.gff.gz.tbi",
+            "uri": "DH10B.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -673,10 +673,10 @@
         },
         "index": {
           "location": {
-            "uri": "Sakai.gff.gz.tbi",
+            "uri": "Sakai.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -693,10 +693,10 @@
         },
         "index": {
           "location": {
-            "uri": "EDL933.gff.gz.tbi",
+            "uri": "EDL933.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -713,10 +713,10 @@
         },
         "index": {
           "location": {
-            "uri": "CFT073.gff.gz.tbi",
+            "uri": "CFT073.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -733,10 +733,10 @@
         },
         "index": {
           "location": {
-            "uri": "UTI89.gff.gz.tbi",
+            "uri": "UTI89.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -753,10 +753,10 @@
         },
         "index": {
           "location": {
-            "uri": "S88.gff.gz.tbi",
+            "uri": "S88.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -773,10 +773,10 @@
         },
         "index": {
           "location": {
-            "uri": "UMN026.gff.gz.tbi",
+            "uri": "UMN026.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -793,10 +793,10 @@
         },
         "index": {
           "location": {
-            "uri": "IAI39.gff.gz.tbi",
+            "uri": "IAI39.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -813,10 +813,10 @@
         },
         "index": {
           "location": {
-            "uri": "IAI1.gff.gz.tbi",
+            "uri": "IAI1.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -833,10 +833,10 @@
         },
         "index": {
           "location": {
-            "uri": "55989.gff.gz.tbi",
+            "uri": "55989.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -853,10 +853,10 @@
         },
         "index": {
           "location": {
-            "uri": "ED1a.gff.gz.tbi",
+            "uri": "ED1a.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -873,10 +873,10 @@
         },
         "index": {
           "location": {
-            "uri": "2011C-3493.gff.gz.tbi",
+            "uri": "2011C-3493.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -893,10 +893,10 @@
         },
         "index": {
           "location": {
-            "uri": "E24377A.gff.gz.tbi",
+            "uri": "E24377A.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -913,10 +913,10 @@
         },
         "index": {
           "location": {
-            "uri": "HS.gff.gz.tbi",
+            "uri": "HS.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -933,10 +933,10 @@
         },
         "index": {
           "location": {
-            "uri": "SE11.gff.gz.tbi",
+            "uri": "SE11.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -953,10 +953,10 @@
         },
         "index": {
           "location": {
-            "uri": "ATCC_8739.gff.gz.tbi",
+            "uri": "ATCC_8739.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -973,10 +973,10 @@
         },
         "index": {
           "location": {
-            "uri": "SMS-3-5.gff.gz.tbi",
+            "uri": "SMS-3-5.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -993,10 +993,10 @@
         },
         "index": {
           "location": {
-            "uri": "BL21_DE3.gff.gz.tbi",
+            "uri": "BL21_DE3.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1013,10 +1013,10 @@
         },
         "index": {
           "location": {
-            "uri": "APEC_O1.gff.gz.tbi",
+            "uri": "APEC_O1.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1033,10 +1033,10 @@
         },
         "index": {
           "location": {
-            "uri": "Nissle_1917.gff.gz.tbi",
+            "uri": "Nissle_1917.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1053,10 +1053,10 @@
         },
         "index": {
           "location": {
-            "uri": "NCTC86.gff.gz.tbi",
+            "uri": "NCTC86.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1073,10 +1073,10 @@
         },
         "index": {
           "location": {
-            "uri": "Sflexneri_301.gff.gz.tbi",
+            "uri": "Sflexneri_301.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1093,10 +1093,10 @@
         },
         "index": {
           "location": {
-            "uri": "Sdysenteriae_Sd197.gff.gz.tbi",
+            "uri": "Sdysenteriae_Sd197.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1113,10 +1113,10 @@
         },
         "index": {
           "location": {
-            "uri": "Sboydii_Sb227.gff.gz.tbi",
+            "uri": "Sboydii_Sb227.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1133,10 +1133,10 @@
         },
         "index": {
           "location": {
-            "uri": "Ssonnei_53G.gff.gz.tbi",
+            "uri": "Ssonnei_53G.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1153,10 +1153,10 @@
         },
         "index": {
           "location": {
-            "uri": "ST540.gff.gz.tbi",
+            "uri": "ST540.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1173,10 +1173,10 @@
         },
         "index": {
           "location": {
-            "uri": "ST2747.gff.gz.tbi",
+            "uri": "ST2747.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1193,10 +1193,10 @@
         },
         "index": {
           "location": {
-            "uri": "BL21_TaKaRa.gff.gz.tbi",
+            "uri": "BL21_TaKaRa.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1213,10 +1213,10 @@
         },
         "index": {
           "location": {
-            "uri": "HMS174.gff.gz.tbi",
+            "uri": "HMS174.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1233,10 +1233,10 @@
         },
         "index": {
           "location": {
-            "uri": "MG1655_TMP32XR1.gff.gz.tbi",
+            "uri": "MG1655_TMP32XR1.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1253,10 +1253,10 @@
         },
         "index": {
           "location": {
-            "uri": "2009C-3133.gff.gz.tbi",
+            "uri": "2009C-3133.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1273,10 +1273,10 @@
         },
         "index": {
           "location": {
-            "uri": "SaT040.gff.gz.tbi",
+            "uri": "SaT040.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1293,10 +1293,10 @@
         },
         "index": {
           "location": {
-            "uri": "SRCC_1675.gff.gz.tbi",
+            "uri": "SRCC_1675.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1313,10 +1313,10 @@
         },
         "index": {
           "location": {
-            "uri": "644-PT8.gff.gz.tbi",
+            "uri": "644-PT8.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1333,10 +1333,10 @@
         },
         "index": {
           "location": {
-            "uri": "M19.gff.gz.tbi",
+            "uri": "M19.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1353,10 +1353,10 @@
         },
         "index": {
           "location": {
-            "uri": "S30.gff.gz.tbi",
+            "uri": "S30.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1373,10 +1373,10 @@
         },
         "index": {
           "location": {
-            "uri": "S56.gff.gz.tbi",
+            "uri": "S56.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1393,10 +1393,10 @@
         },
         "index": {
           "location": {
-            "uri": "tolC.gff.gz.tbi",
+            "uri": "tolC.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1413,10 +1413,10 @@
         },
         "index": {
           "location": {
-            "uri": "WCHEC050613.gff.gz.tbi",
+            "uri": "WCHEC050613.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1433,10 +1433,10 @@
         },
         "index": {
           "location": {
-            "uri": "MGY.gff.gz.tbi",
+            "uri": "MGY.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1453,10 +1453,10 @@
         },
         "index": {
           "location": {
-            "uri": "C43_DE3.gff.gz.tbi",
+            "uri": "C43_DE3.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1473,10 +1473,10 @@
         },
         "index": {
           "location": {
-            "uri": "C3026.gff.gz.tbi",
+            "uri": "C3026.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },
@@ -1493,10 +1493,10 @@
         },
         "index": {
           "location": {
-            "uri": "G749.gff.gz.tbi",
+            "uri": "G749.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       }
     },

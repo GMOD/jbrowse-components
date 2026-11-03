@@ -104,7 +104,7 @@ Files
                                                the reference, 16,697 segments,
                                                so a whole chromosome draws
 
-  mouse-mm39-minigraph.bubbles.bed.gz       gfatools bubble output (+ .tbi),
+  mouse-mm39-minigraph.bubbles.bed.gz       gfatools bubble output (+ .csi),
                                             read both as a feature track and as
                                             the segments-per-bubble curve
 

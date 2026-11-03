@@ -47,7 +47,7 @@
 #   hprc_multiway_gfa.pif.gz{,.csi}    make-pif's two-tier index of it
 #   contig_lengths.fai                 the eight assemblies' .fai, joined
 #   <sample>.<hap>.gfa.chrom.sizes     every contig walked, .fai length
-#   <sample>.<hap>.genes.gff3.gz{,.tbi}  HPRC's CAT annotation, whole assembly
+#   <sample>.<hap>.genes.gff3.gz{,.csi}  HPRC's CAT annotation, whole assembly
 #   config.json                        the demo config, relative URIs; the
 #                                      checked-in copy is demos/hprc_multiway/
 #   README_gfa.txt                     provenance, to host beside the data
@@ -162,7 +162,7 @@ echo "   coarse seqids: $(tabix -l "$PIF" | grep -c '^[TQ]')"
 
 fetch_cat_annotation() {
   local hap=$1 name=$2 url=$3
-  if [ -f "$name.genes.gff3.gz" ]; then
+  if [ -f "$name.genes.gff3.gz.csi" ]; then
     echo "   reusing $name.genes.gff3.gz"
   else
     if [ ! -f "$name.cat.gff3.gz" ]; then
@@ -190,7 +190,7 @@ fetch_cat_annotation() {
     } > "$name.genes.gff3.part"
     mv "$name.genes.gff3.part" "$name.genes.gff3"
     bgzip -f "$name.genes.gff3"
-    tabix -f -p gff "$name.genes.gff3.gz"
+    tabix -f -C -p gff "$name.genes.gff3.gz"
     echo "   $name: $(wc -l < "$name.dropped_genes.txt" | tr -d ' ') gene(s) over $GENE_LIMIT bp dropped, $(gzip -dc "$name.genes.gff3.gz" | awk -F'\t' '$3=="gene"' | wc -l | tr -d ' ') genes kept"
   fi
 }
@@ -262,6 +262,7 @@ config = {
         'adapter': {
             'type': 'Gff3TabixAdapter',
             'uri': f'{name}.genes.gff3.gz',
+            'csi': True,
         },
     } for name in names] + [{
         'type': 'SyntenyTrack',
@@ -362,4 +363,4 @@ if [ "${UPLOAD:-}" = 1 ]; then
 fi
 
 echo
-echo "Wrote $(pwd)/$PIF{,.csi}, *.$SIZES, *.genes.gff3.gz{,.tbi}, config.json, $README"
+echo "Wrote $(pwd)/$PIF{,.csi}, *.$SIZES, *.genes.gff3.gz{,.csi}, config.json, $README"

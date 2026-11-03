@@ -129,7 +129,8 @@ The bubbles track reads the same build's bubble index:
   "assemblyNames": ["mm39"],
   "adapter": {
     "type": "MinigraphBubbleAdapter",
-    "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz"
+    "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz",
+    "csi": true
   }
 }
 ```

@@ -185,6 +185,7 @@ table's `lineage` column through `domain` to `range`. The config also sets:
   "adapter": {
     "type": "VcfTabixAdapter",
     "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.vcf.gz",
+    "csi": true,
     "samplesTsvLocation": {
       "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.samples.tsv"
     }

@@ -503,7 +503,8 @@
       "assemblyNames": ["hg38"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz"
+        "uri": "https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz",
+        "csi": true
       }
     }
   ]

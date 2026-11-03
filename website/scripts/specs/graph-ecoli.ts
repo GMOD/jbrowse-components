@@ -180,7 +180,7 @@ const K12_GENES_SESSION_TRACK = {
   adapter: {
     type: 'Gff3TabixAdapter',
     gffGzLocation: { uri: `${DATA}/K12.gff.gz` },
-    index: { location: { uri: `${DATA}/K12.gff.gz.tbi` } },
+    index: { location: { uri: `${DATA}/K12.gff.gz.csi` }, indexType: 'CSI' },
   },
 }
 

@@ -194,7 +194,7 @@ NAMES=$(cut -f1 strains.tsv)
 # dropped: a lane follows one contig, and a plasmid lane would draw on
 # whichever one the window's placements happened to favour.
 while IFS=$'\t' read -r name acc _; do
-  if [ -f "$name.gff.gz.tbi" ]; then
+  if [ -f "$name.gff.gz.csi" ]; then
     echo "reusing $name"
     continue
   fi
@@ -218,7 +218,7 @@ PY
     "$name.chrom.sizes" "$DATA/$acc/genomic.gff" \
     | LC_ALL=C sort -t "$(printf '\t')" -k1,1 -k4,4n > "$name.gff"
   bgzip -f "$name.gff"
-  tabix -f -p gff "$name.gff.gz"
+  tabix -f -C -p gff "$name.gff.gz"
   # the screen from the header, printed per genome so a strain that joins
   # nothing is visible here rather than as an empty lane
   named=$(gzip -dc "$name.gff.gz" | awk -F'\t' '$3 == "gene" && $9 ~ /;gene=/' | wc -l)
@@ -276,7 +276,7 @@ config = {
         'adapter': {
             'type': 'Gff3TabixAdapter',
             'gffGzLocation': uri(f'{n}.gff.gz'),
-            'index': {'location': uri(f'{n}.gff.gz.tbi'), 'indexType': 'TBI'},
+            'index': {'location': uri(f'{n}.gff.gz.csi'), 'indexType': 'CSI'},
         },
     } for n in order] + [{
         'type': 'SyntenyTrack',
@@ -324,7 +324,7 @@ built in $OUTDIR:
   strains.tsv                 lane name, accession, organism and strain per genome
   ecoli.blocks{,.gz}          the ortholog table, $(wc -l < ecoli.blocks | tr -d ' ') rows
   <strain>.bed{,.gz}          gene placements, one per genome
-  <strain>.gff.gz{,.tbi}      the annotation each lane draws
+  <strain>.gff.gz{,.csi}      the annotation each lane draws
   <strain>.chrom.sizes        the chromosome and its length
 
 serve this directory and open config.json.

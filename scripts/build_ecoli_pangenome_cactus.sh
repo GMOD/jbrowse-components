@@ -180,7 +180,7 @@ done
 in_cactus hal2maf --refGenome "$REF" --noAncestors /data/mc/ecoli.full.hal /data/ecoli_cactus.maf
 python3 "$SCRIPT_DIR/maf_to_bed.py" ecoli_cactus.maf ecoli_cactus.maf.bed
 bgzip -f ecoli_cactus.maf.bed
-tabix -f -p bed ecoli_cactus.maf.bed.gz
+tabix -f -C -p bed ecoli_cactus.maf.bed.gz
 
 # ── Projection 4: pangenome depth (core vs accessory) as a bigWig ─────────────
 # odgi depth counts how many path-steps traverse the graph nodes under each K12
@@ -390,17 +390,17 @@ for strain in $STRAINS; do
   acc=$(awk '/^>/{print substr($1, 2); exit}' "$strain"/ncbi_dataset/data/*/*.fna)
   awk -F'\t' -v acc="$acc" -v OFS='\t' '$1 == acc {$1 = "chr"; print}' \
     "$strain"/ncbi_dataset/data/*/genomic.gff > "$strain.gff"
-  jb sort-gff "$strain.gff" | bgzip > "$strain.gff.gz"; tabix -f "$strain.gff.gz"
+  jb sort-gff "$strain.gff" | bgzip > "$strain.gff.gz"; tabix -f -C -p gff "$strain.gff.gz"
   jb add-track "$strain.gff.gz" --trackId "${strain}_genes" -a "$strain" \
-    --name "$strain genes" --load copy --force --out "$APP"
+    --name "$strain genes" --indexFile "$strain.gff.gz.csi" --load copy --force --out "$APP"
 done
 
 AN=$(echo "$STRAINS" | sed 's/ /", "/g; s/^/"/; s/$/"/')
 
 # projection 1: all-vs-all synteny. make-pif tabix-indexes the PAF so a range
 # query fetches only the region in view; drop the pif beside config.json.
-jb make-pif ecoli_cactus_ava.paf
-cp ecoli_cactus_ava.pif.gz ecoli_cactus_ava.pif.gz.tbi "$APP/"
+jb make-pif ecoli_cactus_ava.paf --csi
+cp ecoli_cactus_ava.pif.gz ecoli_cactus_ava.pif.gz.csi "$APP/"
 cat > ava_track.json <<JSON
 {
   "type": "SyntenyTrack",
@@ -410,7 +410,7 @@ cat > ava_track.json <<JSON
   "adapter": {
     "type": "MultiGenomeIndexedPAFAdapter",
     "pifGzLocation": { "uri": "ecoli_cactus_ava.pif.gz" },
-    "index": { "location": { "uri": "ecoli_cactus_ava.pif.gz.tbi" } },
+    "index": { "location": { "uri": "ecoli_cactus_ava.pif.gz.csi" }, "indexType": "CSI" },
     "assemblyNames": [$AN]
   }
 }
@@ -419,7 +419,7 @@ jb add-track-json ava_track.json --update --out "$APP"
 
 # projection 2: pangenome variants (matrix display by default)
 cp mc/ecoli.vcf.gz "$APP/ecoli_cactus.vcf.gz"
-cp mc/ecoli.vcf.gz.tbi "$APP/ecoli_cactus.vcf.gz.tbi"
+tabix -f -C -p vcf "$APP/ecoli_cactus.vcf.gz"
 cat > variants_track.json <<'JSON'
 {
   "type": "VariantTrack",
@@ -429,7 +429,7 @@ cat > variants_track.json <<'JSON'
   "adapter": {
     "type": "VcfTabixAdapter",
     "vcfGzLocation": { "uri": "ecoli_cactus.vcf.gz" },
-    "index": { "location": { "uri": "ecoli_cactus.vcf.gz.tbi" } }
+    "index": { "location": { "uri": "ecoli_cactus.vcf.gz.csi" }, "indexType": "CSI" }
   },
   "displays": [{ "type": "LinearVariantDisplay", "variantLayout": "columns", "displayId": "ecoli_cactus_variants-matrix", "height": 250 }]
 }
@@ -437,7 +437,7 @@ JSON
 jb add-track-json variants_track.json --update --out "$APP"
 
 # projection 3: whole-genome MAF (MafTabixAdapter carries the sample list)
-cp ecoli_cactus.maf.bed.gz ecoli_cactus.maf.bed.gz.tbi "$APP/"
+cp ecoli_cactus.maf.bed.gz ecoli_cactus.maf.bed.gz.csi "$APP/"
 cat > maf_track.json <<'JSON'
 {
   "type": "MafTrack",
@@ -447,7 +447,8 @@ cat > maf_track.json <<'JSON'
   "adapter": {
     "type": "MafTabixAdapter",
     "samples": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
-    "uri": "ecoli_cactus.maf.bed.gz"
+    "uri": "ecoli_cactus.maf.bed.gz",
+    "csi": true
   }
 }
 JSON

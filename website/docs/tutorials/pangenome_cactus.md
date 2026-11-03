@@ -205,7 +205,7 @@ Index the combined PAF so a range query fetches only the region in view:
 <!-- from: scripts/build_ecoli_pangenome_cactus.sh -->
 
 ```bash
-jbrowse make-pif ecoli_cactus_ava.paf   # -> ecoli_cactus_ava.pif.gz (+ .tbi)
+jbrowse make-pif ecoli_cactus_ava.paf --csi   # -> ecoli_cactus_ava.pif.gz (+ .csi)
 ```
 
 Load it with an
@@ -222,6 +222,7 @@ strain:
   "adapter": {
     "type": "MultiGenomeIndexedPAFAdapter",
     "uri": "ecoli_cactus_ava.pif.gz",
+    "csi": true,
     "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
   }
 }
@@ -305,7 +306,7 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 in_cactus hal2maf --refGenome K12 --noAncestors /data/mc/ecoli.full.hal /data/ecoli_cactus.maf
 python3 maf_to_bed.py ecoli_cactus.maf ecoli_cactus.maf.bed
 bgzip ecoli_cactus.maf.bed
-tabix -p bed ecoli_cactus.maf.bed.gz
+tabix -C -p bed ecoli_cactus.maf.bed.gz
 ```
 
 [`maf_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_bed.py)
@@ -323,7 +324,8 @@ writes one line per block, which a
   "adapter": {
     "type": "MafTabixAdapter",
     "samples": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
-    "uri": "ecoli_cactus.maf.bed.gz"
+    "uri": "ecoli_cactus.maf.bed.gz",
+    "csi": true
   }
 }
 ```

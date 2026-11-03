@@ -166,10 +166,10 @@
         },
         "index": {
           "location": {
-            "uri": "K12.gff.gz.tbi",
+            "uri": "K12.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["K12"]
@@ -186,10 +186,10 @@
         },
         "index": {
           "location": {
-            "uri": "Sakai.gff.gz.tbi",
+            "uri": "Sakai.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["Sakai"]
@@ -206,10 +206,10 @@
         },
         "index": {
           "location": {
-            "uri": "CFT073.gff.gz.tbi",
+            "uri": "CFT073.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["CFT073"]
@@ -226,10 +226,10 @@
         },
         "index": {
           "location": {
-            "uri": "NCTC86.gff.gz.tbi",
+            "uri": "NCTC86.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["NCTC86"]
@@ -246,10 +246,10 @@
         },
         "index": {
           "location": {
-            "uri": "IAI39.gff.gz.tbi",
+            "uri": "IAI39.gff.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["IAI39"]
@@ -280,8 +280,9 @@
         },
         "index": {
           "location": {
-            "uri": "ecoli_pggb_ava.pif.gz.tbi"
-          }
+            "uri": "ecoli_pggb_ava.pif.gz.csi"
+          },
+          "indexType": "CSI"
         },
         "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
       }
@@ -298,8 +299,9 @@
         },
         "index": {
           "location": {
-            "uri": "ecoli_pggb_untangle.pif.gz.tbi"
-          }
+            "uri": "ecoli_pggb_untangle.pif.gz.csi"
+          },
+          "indexType": "CSI"
         },
         "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
       }
@@ -311,7 +313,8 @@
       "assemblyNames": ["K12"],
       "adapter": {
         "type": "BedTabixAdapter",
-        "uri": "ecoli_pggb_untangle_rows.bed.gz"
+        "uri": "ecoli_pggb_untangle_rows.bed.gz",
+        "csi": true
       },
       "displays": [
         {
@@ -344,10 +347,10 @@
         },
         "index": {
           "location": {
-            "uri": "ecoli_pggb.vcf.gz.tbi",
+            "uri": "ecoli_pggb.vcf.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["K12"]
@@ -364,10 +367,10 @@
         },
         "index": {
           "location": {
-            "uri": "ecoli_pggb_snarls.vcf.gz.tbi",
+            "uri": "ecoli_pggb_snarls.vcf.gz.csi",
             "locationType": "UriLocation"
           },
-          "indexType": "TBI"
+          "indexType": "CSI"
         }
       },
       "assemblyNames": ["K12"]
@@ -383,7 +386,8 @@
         "nhLocation": {
           "uri": "ecoli_pggb.nh"
         },
-        "uri": "ecoli_pggb.maf.bed.gz"
+        "uri": "ecoli_pggb.maf.bed.gz",
+        "csi": true
       }
     },
     {
@@ -477,6 +481,7 @@
       "adapter": {
         "type": "BedTabixAdapter",
         "uri": "ecoli_pggb_subgraph_nodes.bed.gz",
+        "csi": true,
         "columnNames": [
           "chrom",
           "start",
@@ -615,8 +620,9 @@
         },
         "index": {
           "location": {
-            "uri": "ecoli_cactus_ava.pif.gz.tbi"
-          }
+            "uri": "ecoli_cactus_ava.pif.gz.csi"
+          },
+          "indexType": "CSI"
         },
         "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
       }
@@ -633,8 +639,9 @@
         },
         "index": {
           "location": {
-            "uri": "ecoli_cactus.vcf.gz.tbi"
-          }
+            "uri": "ecoli_cactus.vcf.gz.csi"
+          },
+          "indexType": "CSI"
         }
       },
       "displays": [
@@ -654,7 +661,8 @@
       "adapter": {
         "type": "MafTabixAdapter",
         "samples": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"],
-        "uri": "ecoli_cactus.maf.bed.gz"
+        "uri": "ecoli_cactus.maf.bed.gz",
+        "csi": true
       }
     },
     {

@@ -172,7 +172,7 @@ if [ ! -s "$PREFIX.bubbles.bed.gz" ]; then
   gzip -dc "$PREFIX.rgfa.gz" | gfatools bubble - | sort -k1,1 -k2,2n |
     bgzip > "$PREFIX.bubbles.bed.gz.tmp"
   mv "$PREFIX.bubbles.bed.gz.tmp" "$PREFIX.bubbles.bed.gz"
-  tabix -f -p bed "$PREFIX.bubbles.bed.gz"
+  tabix -f -C -p bed "$PREFIX.bubbles.bed.gz"
 fi
 
 echo "=== coarse tier: variants under 10 kb folded into the reference ==="
@@ -240,7 +240,7 @@ if [ ! -s "$PREFIX.vcf.gz" ]; then
     for k in $(seq 1 29); do awk '!/^#/' "vcf/chr$k.vcf"; done
   } | bgzip -@ 8 > "$PREFIX.vcf.gz.tmp"
   mv "$PREFIX.vcf.gz.tmp" "$PREFIX.vcf.gz"
-  tabix -f -p vcf "$PREFIX.vcf.gz"
+  tabix -f -C -p vcf "$PREFIX.vcf.gz"
 fi
 echo "  $(tabix -l "$PREFIX.vcf.gz" | wc -l) chromosomes indexed"
 

@@ -99,7 +99,7 @@ if [ ! -s $REF.fa.gz ]; then
     /^#/ { next }
     ($1 in m) { $1=m[$1]; print }' tair10.ncbi/ncbi_dataset/data/GCF_000001735.4/genomic.gff |
     sort -k1,1 -k4,4n -S 1G | bgzip >$REF.genes.gff.gz
-  tabix -f -p gff $REF.genes.gff.gz
+  tabix -f -C -p gff $REF.genes.gff.gz
   rm -rf tair10.ncbi tair10.zip
 fi
 samtools faidx $REF.fa
@@ -148,7 +148,7 @@ while read -r _ name _ _; do cat "${REF}_$name.paf"; done <accessions.tsv >syri_
   head -n1 "${REF}_Col-0.6909.regions.bed"
   while read -r _ name _ _; do tail -n +2 "${REF}_$name.regions.bed"; done <accessions.tsv | sort -k1,1 -k2,2n
 } | bgzip >syri_regions.bed.gz
-tabix -f -p bed syri_regions.bed.gz
+tabix -f -C -p bed syri_regions.bed.gz
 
 echo "== the 1135-accession Fst and OmegaPlus scans as bigWigs"
 [ -s fst.txt ] || curl -fsSL -o fst.txt "$SCANS/adm_global.combined.fst.max.win10000.scores.txt"
@@ -179,7 +179,7 @@ bad=$(awk '$1=="S"' "$GRAPH.rgfa" | grep -oP 'SN:Z:\K\S+' | sort -u | grep -vcE 
 [ -s "$GRAPH.alleles.bed.gz" ] || gfa-to-tabix alleles "$GRAPH"
 if [ ! -s "$GRAPH.bubbles.bed.gz" ]; then
   gzip -dc "$GRAPH.rgfa.gz" | gfatools bubble - | sort -k1,1 -k2,2n | bgzip >"$GRAPH.bubbles.bed.gz"
-  tabix -f -p bed "$GRAPH.bubbles.bed.gz"
+  tabix -f -C -p bed "$GRAPH.bubbles.bed.gz"
 fi
 [ -s "$GRAPH.fold10000.graph.bed.gz" ] ||
   gfa-to-tabix fold "$GRAPH.rgfa.gz" --below 10000 --layout contig -o "$GRAPH.fold10000"
@@ -194,7 +194,7 @@ for fa in "${PANSN_FASTAS[@]}"; do
 done
 [ -s "$GRAPH.paths.bed.gz" ] || gfa-to-tabix paths -o "$GRAPH.paths" "${CALLS[@]}"
 cd ..
-for f in graph/"$GRAPH".*.bed.gz graph/"$GRAPH".*.tbi graph/"$GRAPH".rgfa.gz; do cp "$f" .; done
+for f in graph/"$GRAPH".*.bed.gz graph/"$GRAPH".*.tbi graph/"$GRAPH".*.csi graph/"$GRAPH".rgfa.gz; do cp "$f" .; done
 
 echo "== config.json"
 python3 "$SCRIPT_DIR/arabidopsis_pangenome_config.py"

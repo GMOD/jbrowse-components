@@ -106,10 +106,10 @@ union() {
 printf '#chrom\tchromStart\tchromEnd\tsrc\tscore\n' > "$work/genome.bed"
 tail -n +2 "$raw" | union | sort "${sort_opts[@]}" -k1,1 -k2,2n >> "$work/genome.bed"
 bgzip -f -c "$work/genome.bed" > "$prefix.bed.gz"
-tabix -f -p bed "$prefix.bed.gz"
+tabix -f -C -p bed "$prefix.bed.gz"
 
 echo
 echo "raw rows=$(tail -n +2 "$raw" | wc -l)"
 echo "rows=$(tail -n +2 "$work/genome.bed" | wc -l) haplotypes=$(tail -n +2 "$work/genome.bed" | cut -f4 | sort -u | wc -l)"
 echo "contigs=$(tail -n +2 "$work/genome.bed" | cut -f1 | sort -u | wc -l)"
-ls -l "$prefix.bed.gz" "$prefix.bed.gz.tbi"
+ls -l "$prefix.bed.gz" "$prefix.bed.gz.csi"

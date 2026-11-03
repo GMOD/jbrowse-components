@@ -257,6 +257,7 @@ call as this track:
   "trackId": "hprc_abca7_trgt",
   "name": "TRGT repeat genotypes at ABCA7, 94 HPRC samples",
   "uri": "https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz",
+  "index": "https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz.csi",
   "assemblyNames": ["hg38"]
 }
 ```

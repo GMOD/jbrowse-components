@@ -134,6 +134,7 @@
       "adapter": {
         "type": "MinigraphBubbleAdapter",
         "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz",
+        "csi": true,
         "assemblyNameToPanSN": {
           "mm39": "mm39"
         }
@@ -150,6 +151,7 @@
       "adapter": {
         "type": "MinigraphBubbleAdapter",
         "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz",
+        "csi": true,
         "assemblyNameToPanSN": {
           "mm39": "mm39"
         }
@@ -267,6 +269,7 @@
       "adapter": {
         "type": "MinigraphBubbleAdapter",
         "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz",
+        "csi": true,
         "assemblyNameToPanSN": {
           "bosTau9": "bosTau9"
         }
@@ -283,6 +286,7 @@
       "adapter": {
         "type": "MinigraphBubbleAdapter",
         "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz",
+        "csi": true,
         "assemblyNameToPanSN": {
           "bosTau9": "bosTau9"
         }
@@ -306,6 +310,7 @@
       "adapter": {
         "type": "VcfTabixAdapter",
         "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.vcf.gz",
+        "csi": true,
         "samplesTsvLocation": {
           "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.samples.tsv"
         }
