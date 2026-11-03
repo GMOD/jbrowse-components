@@ -4,7 +4,7 @@
 import { setConf } from '../configuration/getConf.ts'
 import { baseDisplayConfig } from './baseDisplayConfig.ts'
 import { isExpressionEntry, predicatesOf } from './fieldPredicate.ts'
-import { ensureJexlPrefix } from './jexlStrings.ts'
+import { JEXL_PREFIX, ensureJexlPrefix, isJexl } from './jexlStrings.ts'
 
 import type { AnyConfigurationModel } from '../configuration/types.ts'
 import type { RetiredDisplayState } from '../pluggableElementTypes/DisplayType.ts'
@@ -94,15 +94,17 @@ export function filterFieldNarrowing(
   const written = predicatesOf(self.configuration.filter)
   const base = predicatesOf(baseDisplayConfig(self).filter)
   // the `jexl:` expressions count as one filter, as the dialog edits them
-  const keyOf = (p: FieldPredicate) =>
-    p.field.startsWith('jexl:') ? 'jexl:' : p.field
-  const entriesOn = (list: FieldPredicate[], key: string) =>
+  const keyOf = (p: FieldPredicate) => (isJexl(p.field) ? JEXL_PREFIX : p.field)
+  const serializedEntriesOn = (list: FieldPredicate[], key: string) =>
     JSON.stringify(list.filter(p => selects(p.field) && keyOf(p) === key))
   const moved = new Set(
     [...written, ...base]
       .filter(p => selects(p.field))
       .map(keyOf)
-      .filter(key => entriesOn(written, key) !== entriesOn(base, key)),
+      .filter(
+        key =>
+          serializedEntriesOn(written, key) !== serializedEntriesOn(base, key),
+      ),
   )
   const isMoved = (p: FieldPredicate) => selects(p.field) && moved.has(keyOf(p))
   return {

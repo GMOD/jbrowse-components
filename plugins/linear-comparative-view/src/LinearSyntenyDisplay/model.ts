@@ -5,6 +5,7 @@ import {
   getContainingView,
   getSession,
 } from '@jbrowse/core/util'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import { types } from '@jbrowse/mobx-state-tree'
 import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
@@ -445,7 +446,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
             : []),
           ...unread.map(field => ({
             message: `The view's filter tests "${field}", which no alignment in this track carries`,
-            effect: field.startsWith('jexl:')
+            effect: isJexl(field)
               ? 'Every alignment is hidden: a synteny filter takes fields, not jexl: expressions.'
               : 'Every alignment is hidden. Check the field name, or remove the entry.',
           })),

@@ -557,14 +557,9 @@ export function predicatesOf(list: unknown): FieldPredicate[] {
  */
 export function isExpressionEntry(p: FieldPredicate) {
   return (
-    p.field.startsWith('jexl:') &&
+    isJexl(p.field) &&
     p.equal === true &&
-    p.lt === undefined &&
-    p.lte === undefined &&
-    p.gt === undefined &&
-    p.gte === undefined &&
-    p.oneOf === undefined &&
-    p.valid === undefined
+    !testsSomething({ ...p, equal: undefined })
   )
 }
 

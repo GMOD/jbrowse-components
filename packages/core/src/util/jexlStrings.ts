@@ -10,8 +10,13 @@ export interface JexlInstance {
 /** The `jexl:` prefix marks a config value as a deferred callback expression. */
 export const JEXL_PREFIX = 'jexl:'
 
-export function isJexl(str: unknown): str is string {
+export function isJexl(str: unknown): str is `${typeof JEXL_PREFIX}${string}` {
   return typeof str === 'string' && str.startsWith(JEXL_PREFIX)
+}
+
+/** The expression after its `jexl:` prefix, or the string itself without one. */
+export function stripJexlPrefix(str: string) {
+  return isJexl(str) ? str.slice(JEXL_PREFIX.length) : str
 }
 
 /**
@@ -47,5 +52,5 @@ export function stringToJexlExpression(str: string, jexl: JexlInstance) {
   if (!isJexl(str)) {
     throw new Error('string does not appear to be in jexl format')
   }
-  return jexl.compile(str.slice(JEXL_PREFIX.length))
+  return jexl.compile(stripJexlPrefix(str))
 }

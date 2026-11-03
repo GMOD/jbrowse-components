@@ -2,7 +2,7 @@ import {
   compilePredicates,
   isExpressionEntry,
 } from '../../../util/fieldPredicate.ts'
-import { stringToJexlExpression } from '../../../util/jexlStrings.ts'
+import { isJexl, stringToJexlExpression } from '../../../util/jexlStrings.ts'
 import { buildJexlContext } from '../../../util/simpleFeature.ts'
 
 import type { FieldPredicate } from '../../../util/fieldPredicate.ts'
@@ -61,7 +61,7 @@ export default class SerializableFilterChain {
           typeof f !== 'string' && !isExpressionEntry(f),
       ),
       field => {
-        if (field.startsWith('jexl:')) {
+        if (isJexl(field)) {
           const expr = stringToJexlExpression(field, jexl)
           return {
             kind: 'get',

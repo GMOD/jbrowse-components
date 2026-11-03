@@ -329,7 +329,7 @@ describe('nextByteEstimate', () => {
 describe('bytesTooLargeReason', () => {
   it('formats a human-readable byte size', () => {
     expect(bytesTooLargeReason(5_000_000)).toBe(
-      'Requested too much data (5 Mb)',
+      'Requested too much data (5.0 MB)',
     )
   })
 })

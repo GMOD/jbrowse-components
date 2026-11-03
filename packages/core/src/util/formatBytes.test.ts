@@ -1,4 +1,5 @@
 import { formatBytes } from './formatBytes.ts'
+import { getDisplayStr } from './numericUtils.ts'
 
 test('bytes stay whole and every step above gets one decimal', () => {
   expect(formatBytes(0)).toBe('0 bytes')
@@ -25,4 +26,9 @@ test('a value that rounds up to 1000 advances the unit', () => {
   expect(formatBytes(999_950)).toBe('1.0 MB')
   expect(formatBytes(999_999)).toBe('1.0 MB')
   expect(formatBytes(999_950_000)).toBe('1.0 GB')
+})
+
+test('getDisplayStr words a byte estimate in SI units', () => {
+  expect(getDisplayStr(5_000_000)).toBe('5.0 MB')
+  expect(getDisplayStr(12.7)).toBe('12 bytes')
 })

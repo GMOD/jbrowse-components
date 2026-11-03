@@ -1,6 +1,6 @@
 import { analyze } from '@jbrowse/jexl'
 
-import { JEXL_PREFIX, isJexl, stringToJexlExpression } from './jexlStrings.ts'
+import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { FEATURE_ROW, parseJexl } from './jexlSyntax.ts'
 import { PROXY_NAMES, buildJexlContext } from './simpleFeature.ts'
 
@@ -71,7 +71,7 @@ export function isConstantJexl(ref: string) {
  * columnar path.
  */
 export function plainFieldName(ref: string) {
-  if (!ref.startsWith(JEXL_PREFIX)) {
+  if (!isJexl(ref)) {
     return ref.includes('.') ? undefined : ref
   }
   const ast = parseJexl(ref)
@@ -124,7 +124,7 @@ function readWholeRest(
     }
     const whole: unknown = Reflect.get(value, rests[i]!)
     if (whole !== undefined) {
-      return whole ?? undefined
+      return whole === null ? undefined : whole
     }
     value = Reflect.get(value, path[i]!)
   }

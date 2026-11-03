@@ -1,3 +1,5 @@
+import { formatBytes } from './formatBytes.ts'
+
 export function clamp(num: number, min: number, max: number) {
   if (num < min) {
     return min
@@ -138,17 +140,7 @@ export function formatScore(n: number) {
  * otherwise word the same number two ways.
  */
 export function getDisplayStr(totalBytes: number) {
-  // pick the unit from the rounded value so e.g. 999,999 bytes reads "1 Mb"
-  // rather than "1000 Kb"
-  const mb = toPrecision(totalBytes / 1_000_000)
-  const kb = toPrecision(totalBytes / 1000)
-  if (mb >= 1) {
-    return `${mb} Mb`
-  } else if (kb >= 1) {
-    return `${kb} Kb`
-  } else {
-    return `${Math.floor(totalBytes)} bytes`
-  }
+  return formatBytes(Math.floor(totalBytes))
 }
 
 const oneEightyOverPi = 180 / Math.PI

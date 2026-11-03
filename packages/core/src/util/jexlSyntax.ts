@@ -1,6 +1,6 @@
 import { Jexl } from '@jbrowse/jexl'
 
-import { JEXL_PREFIX } from './jexlStrings.ts'
+import { stripJexlPrefix } from './jexlStrings.ts'
 
 /**
  * How a JBrowse expression reads a feature, for jexl's `analyze`, `check` and
@@ -17,11 +17,7 @@ const parser = new Jexl()
 export function parseJexl(text: string) {
   const code = text.trim()
   try {
-    return (
-      parser.parse(
-        code.startsWith(JEXL_PREFIX) ? code.slice(JEXL_PREFIX.length) : code,
-      ) ?? undefined
-    )
+    return parser.parse(stripJexlPrefix(code)) ?? undefined
   } catch {
     return undefined
   }

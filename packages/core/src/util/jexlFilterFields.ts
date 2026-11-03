@@ -1,7 +1,5 @@
 import { callSubject, pathSubject, print } from '@jbrowse/jexl'
 
-import { JEXL_PREFIX, isJexl } from './jexlStrings.ts'
-
 import type { Cardinality, FieldSchema } from '@jbrowse/jexl'
 
 export type JexlFilterField = {
@@ -80,6 +78,4 @@ export function describedColumns(
     : []
 }
 
-export function stripJexlPrefix(line: string) {
-  return isJexl(line) ? line.slice(JEXL_PREFIX.length) : line
-}
+export { stripJexlPrefix } from './jexlStrings.ts'

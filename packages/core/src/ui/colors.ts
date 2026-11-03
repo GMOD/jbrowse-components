@@ -3,6 +3,7 @@ import { NO_CATEGORY_COLOR, relight } from '../util/color/index.ts'
 import { cssColorToNormalizedRgb } from '../util/colorBits.ts'
 import { isCssColor } from '../util/cssColorParse.ts'
 import { valueText } from '../util/groupKeys.ts'
+import { hashCode } from '../util/hashCode.ts'
 
 const category10 = [
   '#1f77b4',
@@ -550,13 +551,7 @@ export function categoricalColor(
  * Deterministic non-negative 32-bit hash of a string.
  */
 export function hashString(str: string) {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash |= 0
-  }
-  return Math.abs(hash)
+  return Math.abs(hashCode(str))
 }
 
 /**
