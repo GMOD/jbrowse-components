@@ -91,7 +91,7 @@ export default function ldTrackDisplayConfigSchema() {
               "height of the connector band in pixels, taken from the triangle's; its seam drag writes it",
           },
         },
-        { closed: true },
+        { closed: true, plot: true },
       ),
       /**
        * #slot encoding
@@ -105,27 +105,6 @@ export default function ldTrackDisplayConfigSchema() {
        * The color ramp's key, off until asked for.
        */
       legend: hiddenLegendConfigSchema,
-      /**
-       * #slot guides
-       * The guides a hovered cell draws across the view at its pair's
-       * genomic positions.
-       */
-      guides: ConfigurationSchema(
-        'LDGuides',
-        {
-          /**
-           * #slot guides.show
-           */
-          show: {
-            type: 'boolean',
-            defaultValue: true,
-            description:
-              "on hover, draw guides across the view at the pair's genomic positions",
-            advanced: true,
-          },
-        },
-        { closed: true },
-      ),
       /**
        * #slot labels
        * The text drawn at each variant's tick mark.
@@ -157,15 +136,6 @@ export default function ldTrackDisplayConfigSchema() {
       ),
       /**
        * #slot
-       */
-      tickHeight: {
-        type: 'number',
-        defaultValue: 6,
-        description: 'height of the tick marks at the genomic positions',
-        advanced: true,
-      },
-      /**
-       * #slot
        * `'columns'` draws every SNP one uniform square wide; `'genomic'` sizes
        * the cells by the genomic distance between SNPs. `LinearVariantDisplay`
        * takes the same slot for the same choice.
@@ -189,7 +159,8 @@ export default function ldTrackDisplayConfigSchema() {
         ...retiredBaseDisplaySpellings,
         ldMetric: field => ({ encoding: { color: { field } } }),
         showLegend: show => ({ legend: { show } }),
-        showVerticalGuides: show => ({ guides: { show } }),
+        showVerticalGuides: () => ({}),
+        tickHeight: () => ({}),
         lineZoneHeight: height =>
           height === 0
             ? { connectors: { show: false } }

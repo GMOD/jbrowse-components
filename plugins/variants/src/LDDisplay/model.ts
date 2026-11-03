@@ -1,6 +1,7 @@
 import {
   ConfigurationReference,
   getConf,
+  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
@@ -39,6 +40,7 @@ import type {
   LDRenderingBackend,
 } from './components/ldRenderingBackendTypes.ts'
 import type { LDDisplayConfigSchema } from './configSchemaLDTrack.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -103,14 +105,14 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
        * Key (`refName:start:id`) of the SNP whose row and column are
        * emphasized. A key rather than an index, so it survives a refetch.
        */
-      focalSnpLocus: undefined as string | undefined,
+      indexSnpLocus: undefined as string | undefined,
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setFocalSnp(snp: LDSnp | undefined) {
-        self.focalSnpLocus = snp ? snpKey(snp) : undefined
+      setIndexSnp(snp: LDSnp | undefined) {
+        self.indexSnpLocus = snp ? snpKey(snp) : undefined
       },
       /**
        * #action
@@ -125,12 +127,6 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
             n,
           ),
         )
-      },
-      /**
-       * #action
-       */
-      setShowGuides(show: boolean) {
-        setConf(self, ['guides', 'show'], show)
       },
       /**
        * #action
@@ -165,20 +161,8 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       /**
        * #getter
        */
-      get showGuides(): boolean {
-        return getConf(self, ['guides', 'show'])
-      },
-      /**
-       * #getter
-       */
       get showNames(): boolean {
         return getConf(self, ['labels', 'name', 'show'])
-      },
-      /**
-       * #getter
-       */
-      get tickHeight(): number {
-        return getConf(self, 'tickHeight')
       },
       /**
        * #getter
@@ -230,10 +214,10 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
       /**
        * #getter
-       * Index of the focal SNP in `snps`, or -1.
+       * Index of the index SNP in `snps`, or -1.
        */
-      get focalSnpIndex(): number {
-        const locus = self.focalSnpLocus
+      get indexSnpColumn(): number {
+        const locus = self.indexSnpLocus
         return locus === undefined
           ? -1
           : this.snps.findIndex(s => snpKey(s) === locus)
@@ -426,8 +410,28 @@ export default function stateModelFactory(configSchema: LDDisplayConfigSchema) {
       },
     }))
     .views(self => {
-      const { trackMenuItems: superTrackMenuItems } = self
+      const {
+        trackMenuItems: superTrackMenuItems,
+        configProblemsOf: superConfigProblemsOf,
+      } = self
       return {
+        /**
+         * #method
+         * The schema's rules, then names asked for with no band to draw in.
+         */
+        configProblemsOf(conf: AnyConfigurationModel): string[] {
+          const namesWithoutBand =
+            readConfObject(conf, ['labels', 'name', 'show']) &&
+            !readConfObject(conf, ['connectors', 'show'])
+          return [
+            ...superConfigProblemsOf(conf),
+            ...(namesWithoutBand
+              ? [
+                  'labels.name.show: the names draw in the connectors band, which connectors.show turns off',
+                ]
+              : []),
+          ]
+        },
         /**
          * #method
          */

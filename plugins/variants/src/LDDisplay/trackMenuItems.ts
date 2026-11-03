@@ -16,18 +16,16 @@ export interface LDMenuSelf extends IStateTreeNode {
   colorScheme: ColorSchemeName
   r2Available: boolean
   dprimeAvailable: boolean
-  focalSnpIndex: number
+  indexSnpColumn: number
   showLegend: boolean
   showNames: boolean
-  showGuides: boolean
   heightMode: TriangleHeightMode
   variantLayout: 'genomic' | 'columns'
-  setFocalSnp: (snp: LDSnp | undefined) => void
+  setIndexSnp: (snp: LDSnp | undefined) => void
   colorByField: (metric: LDMetric) => void
   setColorScheme: (scheme: ColorSchemeName) => void
   setShowLegend: (arg: boolean) => void
   setShowNames: (arg: boolean) => void
-  setShowGuides: (arg: boolean) => void
   setHeightMode: (mode: TriangleHeightMode) => void
   setVariantLayout: (arg: 'genomic' | 'columns') => void
 }
@@ -66,7 +64,6 @@ function metricMenuItem(self: LDMenuSelf): MenuItem {
 function showMenuItems(self: LDMenuSelf): MenuItem[] {
   return [
     toggleItem('Variant labels', self.showNames, self.setShowNames),
-    toggleItem('Vertical guides on hover', self.showGuides, self.setShowGuides),
     legendCheckboxItem(self),
   ]
 }
@@ -94,12 +91,12 @@ function layoutMenuItem(self: LDMenuSelf): MenuItem {
 
 export function buildLDTrackMenuItems(self: LDMenuSelf): MenuItem[] {
   return [
-    ...(self.focalSnpIndex >= 0
+    ...(self.indexSnpColumn >= 0
       ? [
           {
-            label: 'Clear focal SNP highlight',
+            label: 'Clear index SNP',
             onClick: () => {
-              self.setFocalSnp(undefined)
+              self.setIndexSnp(undefined)
             },
           },
         ]

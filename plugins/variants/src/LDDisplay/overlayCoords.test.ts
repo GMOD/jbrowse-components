@@ -227,15 +227,15 @@ test('columnX agrees with the x half of cellToScreen', () => {
   }
 })
 
-test('the focal SNP is the one clicked where two share a position', () => {
+test('the index SNP is the one clicked where two share a position', () => {
   const { display } = loadedDisplay()
   const snps = display.snps.map((snp, i) => ({
     ...snp,
     start: i < 2 ? 0 : snp.start,
   }))
   display.setRpcData({ ...display.rpcData!, snps })
-  display.setFocalSnp(snps[1])
-  expect(display.focalSnpIndex).toBe(1)
+  display.setIndexSnp(snps[1])
+  expect(display.indexSnpColumn).toBe(1)
 })
 
 // The labels draw in the `connectors` band, so they follow what it reserves:

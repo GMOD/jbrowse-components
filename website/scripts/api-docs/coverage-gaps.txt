@@ -531,7 +531,7 @@ LDTrackDisplay.renderState
 LDTrackDisplay.renderSvg
 LDTrackDisplay.rpcProps
 LDTrackDisplay.setConnectorsHeight
-LDTrackDisplay.setFocalSnp
+LDTrackDisplay.setIndexSnp
 LDTrackDisplay.setShowGuides
 LDTrackDisplay.setShowNames
 LDTrackDisplay.setVariantLayout

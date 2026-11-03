@@ -3,6 +3,8 @@ import { observer } from 'mobx-react'
 import type { LDCellHit } from '../../RenderLDDataRPC/types.ts'
 import type { LDDisplayModel } from '../model.ts'
 
+const TICK_HEIGHT = 6
+
 /**
  * The hovered cell tied to its two SNPs: along the diagonals to their columns'
  * apexes, then up to the ticks at their genomic x (`xJ`, `xI`). At genomic
@@ -19,14 +21,7 @@ const Crosshairs = observer(function Crosshairs({
   xJ: number
   xI: number
 }) {
-  const {
-    rpcData,
-    matrixTop,
-    tickHeight,
-    atGenomicPositions,
-    canvasWidth,
-    height,
-  } = model
+  const { rpcData, matrixTop, atGenomicPositions, canvasWidth, height } = model
   const boundaries = rpcData?.boundaries
   const { i, j } = hoveredItem
   if (!boundaries || i + 1 >= boundaries.length || j + 1 >= boundaries.length) {
@@ -63,12 +58,12 @@ const Crosshairs = observer(function Crosshairs({
       <g stroke="#e00" strokeWidth="1.5" fill="none">
         {atGenomicPositions ? null : (
           <>
-            <path d={`M ${snpJ.x} ${snpJ.y} L ${xJ} ${tickHeight}`} />
-            <path d={`M ${snpI.x} ${snpI.y} L ${xI} ${tickHeight}`} />
+            <path d={`M ${snpJ.x} ${snpJ.y} L ${xJ} ${TICK_HEIGHT}`} />
+            <path d={`M ${snpI.x} ${snpI.y} L ${xI} ${TICK_HEIGHT}`} />
           </>
         )}
-        <path d={`M ${xJ} 0 L ${xJ} ${tickHeight}`} />
-        <path d={`M ${xI} 0 L ${xI} ${tickHeight}`} />
+        <path d={`M ${xJ} 0 L ${xJ} ${TICK_HEIGHT}`} />
+        <path d={`M ${xI} 0 L ${xI} ${TICK_HEIGHT}`} />
       </g>
     </svg>
   )

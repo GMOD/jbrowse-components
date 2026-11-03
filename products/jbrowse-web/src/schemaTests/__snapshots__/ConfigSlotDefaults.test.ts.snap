@@ -392,12 +392,10 @@ exports[`every registered schema slot default 1`] = `
     "encoding.color.scale.scheme": "maybeStringEnum = undefined of ["viridis","magma","inferno","cividis","juicebox","fall","reds","blues","redblue","purpleorange","redgreyblue","redyellowblue"]",
     "fetchSizeLimit": "number = 20000000",
     "forceLoad": "boolean = false",
-    "guides.show": "boolean = true",
     "height": "number = 400",
     "heightMode": "stringEnum = "fixed" of ["fixed","fit"]",
     "labels.name.show": "boolean = false",
     "legend.show": "boolean = false",
-    "tickHeight": "number = 6",
     "variantLayout": "stringEnum = "columns" of ["genomic","columns"]",
   },
   "display: LGVSyntenyDisplay": {

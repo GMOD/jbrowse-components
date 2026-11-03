@@ -16,18 +16,16 @@ function makeSelf(overrides: Partial<LDMenuSelf> = {}) {
     colorScheme: 'reds' as const,
     r2Available: true,
     dprimeAvailable: true,
-    focalSnpIndex: -1,
+    indexSnpColumn: -1,
     showLegend: false,
     showNames: false,
-    showGuides: true,
     heightMode: 'fixed' as const,
     useGenomicPositions: false,
-    setFocalSnp: jest.fn(),
+    setIndexSnp: jest.fn(),
     colorByField: jest.fn(),
     setColorScheme: jest.fn(),
     setShowLegend: jest.fn(),
     setShowNames: jest.fn(),
-    setShowGuides: jest.fn(),
     setHeightMode: jest.fn(),
     setVariantLayout: jest.fn(),
     ...overrides,
@@ -61,24 +59,24 @@ test('the menu is metric, scheme, show and layout', () => {
   ])
 })
 
-// The clear row is the only way back out of a pinned focal SNP, so it appears
+// The clear row is the only way back out of a pinned index SNP, so it appears
 // exactly when there is one to clear.
-test('the focal-SNP row appears only while a SNP is pinned, and clears it', () => {
+test('the index-SNP row appears only while a SNP is pinned, and clears it', () => {
   expect(labels(buildLDTrackMenuItems(makeSelf()))).not.toContain(
-    'Clear focal SNP highlight',
+    'Clear index SNP',
   )
 
-  const setFocalSnp = jest.fn()
+  const setIndexSnp = jest.fn()
   const items = buildLDTrackMenuItems(
-    makeSelf({ focalSnpIndex: 3, setFocalSnp }),
+    makeSelf({ indexSnpColumn: 3, setIndexSnp }),
   )
   const first = items[0]!
 
-  expect(labelOf(first)).toBe('Clear focal SNP highlight')
+  expect(labelOf(first)).toBe('Clear index SNP')
   if ('onClick' in first) {
     first.onClick()
   }
-  expect(setFocalSnp).toHaveBeenCalledWith(undefined)
+  expect(setIndexSnp).toHaveBeenCalledWith(undefined)
 })
 
 test('a file with no DP column offers D-prime disabled, and says why', () => {
@@ -126,7 +124,6 @@ test('Show carries the visibility toggles, legend last, and Layout the rest', ()
   const items = buildLDTrackMenuItems(makeSelf())
   expect(labels(subMenuOf(items, 'Show')!)).toEqual([
     'Variant labels',
-    'Vertical guides on hover',
     'Legend',
   ])
   expect(labels(subMenuOf(items, 'Layout')!)).toEqual([

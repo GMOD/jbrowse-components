@@ -9,7 +9,7 @@ import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import Crosshairs from './Crosshairs.tsx'
-import FocalSnpHighlight from './FocalSnpHighlight.tsx'
+import IndexSnpHighlight from './IndexSnpHighlight.tsx'
 import LDColumnZone from './LDColumnZone.tsx'
 import { LDRenderer } from './LDRenderer.ts'
 import { ldMetricLabel, ldValueText } from './ldValueLabel.ts'
@@ -94,7 +94,7 @@ const LDPointer = observer(function LDPointer({
       const xJ = snp2 && model.locusViewportX(snp2.refName, snp2.start)
       const xI = snp1 && model.locusViewportX(snp1.refName, snp1.start)
       view.setVolatileGuides(
-        xJ !== undefined && xI !== undefined && model.showGuides
+        xJ !== undefined && xI !== undefined
           ? [{ xPos: xJ }, { xPos: xI }]
           : [],
       )
@@ -151,7 +151,7 @@ const LDBody = observer(function LDBody({
           cursor: 'crosshair',
         }}
       />
-      {model.focalSnpIndex >= 0 ? <FocalSnpHighlight model={model} /> : null}
+      {model.indexSnpColumn >= 0 ? <IndexSnpHighlight model={model} /> : null}
       <PointerLayer mouseTracker={mouseTracker}>
         {mouseState => <LDPointer model={model} mouseState={mouseState} />}
       </PointerLayer>
@@ -174,11 +174,11 @@ const LDDisplayComponent = observer(function LDDisplayComponent({
       testid="ld-display"
       style={{ width, overflow: 'hidden' }}
       onClick={event => {
-        // Click a cell to make its row SNP focal, empty space to clear.
+        // Click a cell to make its row SNP the index, empty space to clear.
         // Hit-tested from the click, since the hover can be a frame stale.
         if (!model.isLoadingOrCanceled) {
           const { x, y } = eventPoint(event)
-          model.setFocalSnp(model.hitTest(x, y)?.snp1)
+          model.setIndexSnp(model.hitTest(x, y)?.snp1)
         }
       }}
     >

@@ -157,7 +157,7 @@ export default function configSchemaFactory() {
               "height of the connector band in pixels, taken from the genotype rows'; its seam drag writes it",
           },
         },
-        { closed: true },
+        { closed: true, plot: true },
       ),
       /**
        * #slot filter

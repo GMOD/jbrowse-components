@@ -21,3 +21,14 @@ test('inverted domain ends reach the corner and the plot editor as one line', ()
   expect(display.plotProblems(display.plot)).toEqual(display.notices)
   expect(display.colorDomain).toEqual([0.2, 0.8])
 })
+
+test('names asked for with the connectors band off say why none draw', () => {
+  const { display } = createDisplay()
+  setConf(display.configuration, ['labels', 'name', 'show'], true)
+  expect(display.notices).toEqual([])
+  setConf(display.configuration, ['connectors', 'show'], false)
+  expect(display.notices).toEqual([
+    'labels.name.show: the names draw in the connectors band, which connectors.show turns off',
+  ])
+  expect(display.drawsLabels).toBe(false)
+})
