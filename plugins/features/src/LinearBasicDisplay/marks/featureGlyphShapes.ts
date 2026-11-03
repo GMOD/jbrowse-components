@@ -367,14 +367,14 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
             totalChevrons,
             CHEVRON_HALF_W,
           )
+          ctx.beginPath()
           for (let c = firstC; c <= lastC; c++) {
             const cx = minX + chevronOffset(lineWidthPx, totalChevrons, c)
-            ctx.beginPath()
             ctx.moveTo(cx - CHEVRON_HALF_W * dir, y - CHEVRON_HALF_H)
             ctx.lineTo(cx + CHEVRON_HALF_W * dir, y)
             ctx.lineTo(cx - CHEVRON_HALF_W * dir, y + CHEVRON_HALF_H)
-            ctx.stroke()
           }
+          ctx.stroke()
         }
       }
     }

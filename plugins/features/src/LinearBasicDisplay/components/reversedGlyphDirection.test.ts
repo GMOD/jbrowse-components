@@ -20,10 +20,11 @@ interface Pt {
   y: number
 }
 
-// Point counts identify the shape: 2 is an intron line, 3 a chevron or arrowhead.
+// Each moveTo opens a subpath, since one stroke can carry many chevrons. Point
+// counts identify the shape: 2 is an intron line, 3 a chevron or arrowhead.
 function recordingCtx() {
   const paths: Pt[][] = []
-  let current: Pt[] = []
+  let strokeCount = 0
   const ctx = {
     save() {},
     restore() {},
@@ -31,17 +32,16 @@ function recordingCtx() {
     rect() {},
     fillRect() {},
     closePath() {},
-    stroke() {},
-    fill() {},
-    beginPath() {
-      current = []
-      paths.push(current)
+    stroke() {
+      strokeCount++
     },
+    fill() {},
+    beginPath() {},
     moveTo(x: number, y: number) {
-      current.push({ x, y })
+      paths.push([{ x, y }])
     },
     lineTo(x: number, y: number) {
-      current.push({ x, y })
+      paths.at(-1)?.push({ x, y })
     },
     strokeStyle: '',
     fillStyle: '',
@@ -50,6 +50,7 @@ function recordingCtx() {
   return {
     ctx: ctx as unknown as Ctx2D,
     triangles: () => paths.filter(p => p.length === 3),
+    strokes: () => strokeCount,
   }
 }
 
@@ -77,7 +78,7 @@ const EMPTY: RegionRenderData = {
 // Forward maps bp→(bp-50), reversed bp→(150-bp), so the same feature runs the
 // opposite way on screen.
 function draw(region: RegionRenderData, reversed: boolean) {
-  const { ctx, triangles } = recordingCtx()
+  const { ctx, triangles, strokes } = recordingCtx()
   const block: RenderBlock = {
     displayedRegionIndex: 0,
     start: 50,
@@ -92,13 +93,13 @@ function draw(region: RegionRenderData, reversed: boolean) {
     canvasHeight: 50,
     outlineColor: 0,
   })
-  return triangles()
+  return { triangles: triangles(), strokes: strokes() }
 }
 
 // The apex is the middle point and the two base corners share an x, so
 // apex-minus-base is positive pointing right and negative pointing left.
 function chevronApexOffsets(region: RegionRenderData, reversed: boolean) {
-  return draw(region, reversed).map(([base, apex, back]) => {
+  return draw(region, reversed).triangles.map(([base, apex, back]) => {
     expect(base!.x).toBeCloseTo(back!.x)
     return apex!.x - base!.x
   })
@@ -125,6 +126,19 @@ test('intron chevrons follow the screen axis', () => {
   }
 })
 
+test('an intron strokes all its chevrons in one path', () => {
+  const region: RegionRenderData = {
+    ...EMPTY,
+    linePositions: new Uint32Array([60, 140]),
+    lineYs: new Float32Array([20]),
+    lineColors: new Uint32Array([0xff_00_00_00]),
+    lineDirections: new Int8Array([1]),
+  }
+  const { triangles, strokes } = draw(region, false)
+  expect(triangles).toHaveLength(2)
+  expect(strokes).toBe(2)
+})
+
 test('strand arrowheads follow the screen axis', () => {
   const region: RegionRenderData = {
     ...EMPTY,
@@ -139,7 +153,7 @@ test('strand arrowheads follow the screen axis', () => {
   }
   // The head's first two points share an x and the third is the tip.
   const tipOffset = (reversed: boolean) => {
-    const [head] = draw(region, reversed)
+    const [head] = draw(region, reversed).triangles
     const [back, backAgain, tip] = head!
     expect(back!.x).toBeCloseTo(backAgain!.x)
     return tip!.x - back!.x
@@ -206,7 +220,7 @@ test('continuation markers sit a margin, then a gap per pair, in from the edge',
         rectDensityFade: new Uint32Array([0]),
       },
       reversed,
-    ).map(([, apex]) => apex!.x)
+    ).triangles.map(([, apex]) => apex!.x)
   // A marker pointing inward sits a triangle-width further in, base to anchor.
   const inset = (pair: number, inward: boolean) =>
     CONT_EDGE_MARGIN_PX + CONT_TRI_GAP_PX * pair + (inward ? CONT_TRI_W_PX : 0)
