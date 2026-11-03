@@ -158,9 +158,8 @@ test('emptying the rows field in the box writes what the JSON text does', () => 
       rows: { field: 'source', ...arrangement },
     })
     const writes = plotWrites(conf, edit(plotOf(conf)), { whole: true })
-    for (const [key, value] of Object.entries(writes)) {
-      setConf(conf, key, value)
-    }
+    expect(Object.keys(writes)).toEqual(['rows'])
+    setConf(conf, 'rows', writes.rows)
     return getSnapshot(conf.rows)
   }
   const box = written(plot => withSplitField(plot, 'rows', ''))
