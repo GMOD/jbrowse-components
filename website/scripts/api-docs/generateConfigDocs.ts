@@ -62,7 +62,8 @@ import {
 
 import type { KeyedWrites } from '../../../packages/add-track-core/src/keyedWrites.ts'
 import type { FieldPresets } from '../../../packages/core/src/util/colorScale.ts'
-import type { Example, ExtractedNode, ReachedSchema } from './util.ts'
+import type { Example } from './jsDocTags.ts'
+import type { ExtractedNode, ReachedSchema } from './util.ts'
 
 interface Item {
   name: string

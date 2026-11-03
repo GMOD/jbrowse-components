@@ -2,8 +2,9 @@ import {
   rewriteGroupedMarkerBlocks,
   rewriteMarkerBlock,
 } from '../markerDocs.ts'
+import { jsDocText, parsePipeTags } from './jsDocTags.ts'
 import { parseSourceFileSyntactic } from './sourceCorpus.ts'
-import { jsDocText, markdownTable, parsePipeTags, tableCell } from './util.ts'
+import { markdownTable, tableCell } from './util.ts'
 
 import type { SourceCorpus } from './sourceCorpus.ts'
 import type { DisplayTrackLink } from './util.ts'

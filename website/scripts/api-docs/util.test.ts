@@ -1,3 +1,4 @@
+import { lastTaggedLine, parseTaggedComment } from './jsDocTags.ts'
 import {
   categoryLabel,
   collectTransitive,
@@ -5,11 +6,9 @@ import {
   elideSignature,
   exampleSection,
   filterUnseenByName,
-  lastTaggedLine,
   markdownTable,
   nameTypes,
   overviewSection,
-  parseTaggedComment,
   proseCell,
   removeComments,
   repoRelative,

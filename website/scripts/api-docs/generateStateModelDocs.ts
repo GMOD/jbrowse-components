@@ -11,6 +11,7 @@ import {
   pluginOf,
 } from './agentText.ts'
 import { writePage } from './format.ts'
+import { startsWithTag } from './jsDocTags.ts'
 import {
   assertSingleHeader,
   assertUniquePages,
@@ -30,14 +31,14 @@ import {
   proseCell,
   repoRelative,
   section,
-  startsWithTag,
   stripPropertyName,
   suffixCategory,
   withHeaders,
   unreadableSignature,
 } from './util.ts'
 
-import type { ComposedRef, Example, ExtractedNode, TagType } from './util.ts'
+import type { Example, TagType } from './jsDocTags.ts'
+import type { ComposedRef, ExtractedNode } from './util.ts'
 
 interface Member {
   name: string

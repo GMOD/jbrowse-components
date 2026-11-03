@@ -3,15 +3,11 @@ import fs from 'fs'
 import slugify from 'slugify'
 
 import { writeDoc, writePage } from './format.ts'
-import {
-  codeBlock,
-  exampleSection,
-  parseTaggedComment,
-  repoRelative,
-  section,
-} from './util.ts'
+import { parseTaggedComment } from './jsDocTags.ts'
+import { codeBlock, exampleSection, repoRelative, section } from './util.ts'
 
-import type { Example, ExtractedNode } from './util.ts'
+import type { Example } from './jsDocTags.ts'
+import type { ExtractedNode } from './util.ts'
 
 interface ApiExport {
   name: string

@@ -1,8 +1,9 @@
 import * as ts from 'typescript'
 
 import { rewriteMarkerBlock } from '../markerDocs.ts'
+import { jsDocText } from './jsDocTags.ts'
 import { parseSourceFileSyntactic } from './sourceCorpus.ts'
-import { jsDocText, markdownTable } from './util.ts'
+import { markdownTable } from './util.ts'
 
 // Render the custom-palette-key table into the hand-written theming guide from
 // the `Palette` module augmentation itself, so the set of keys a config theme

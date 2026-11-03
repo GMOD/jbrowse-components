@@ -4,8 +4,8 @@ import {
   rewriteGroupedMarkerBlocks,
   rewriteMarkerBlock,
 } from '../markerDocs.ts'
+import { jsDocText, parsePipeTags } from './jsDocTags.ts'
 import { parseSourceFileSyntactic } from './sourceCorpus.ts'
-import { jsDocText, parsePipeTags } from './util.ts'
 
 import type { SourceCorpus } from './sourceCorpus.ts'
 
