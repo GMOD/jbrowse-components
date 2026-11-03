@@ -17,12 +17,17 @@ export type LineCallback = (
  * Stops at an embedded FASTA section (`>`). Lines starting with `#` are
  * collected as header lines.
  */
+/** A record keyed by refName with no prototype, so a refName like `constructor` is just a key. */
+export function refNameRecord<T>() {
+  return Object.create(null) as Record<string, T>
+}
+
 export function groupLinesByRef(
   buffer: Uint8Array,
   statusCallback?: StatusCallback,
 ): { headerLines: string[]; linesByRef: Record<string, string[]> } {
   const headerLines: string[] = []
-  const linesByRef: Record<string, string[]> = Object.create(null)
+  const linesByRef = refNameRecord<string[]>()
   parseLineByLine(
     buffer,
     line => {
@@ -61,10 +66,8 @@ export function makeFeatureIntervalTreeMap<
   parsingStatusMessage: string,
 ) {
   const cache = new Map<string, IntervalTree<T>>()
-  const factories: Record<
-    string,
-    (statusCallback?: StatusCallback) => IntervalTree<T>
-  > = Object.create(null)
+  const factories =
+    refNameRecord<(statusCallback?: StatusCallback) => IntervalTree<T>>()
   for (const [refName, refLines] of Object.entries(linesByRef)) {
     let lines: string[] | null = refLines
     factories[refName] = (statusCallback?: StatusCallback) => {

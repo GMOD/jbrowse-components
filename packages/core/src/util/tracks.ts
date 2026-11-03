@@ -1346,7 +1346,7 @@ export function showTrackGeneric(
       return undefined
     }
 
-    const track = trackType.stateModel.create({
+    const track: SettingsShownTrack = trackType.stateModel.create({
       ...initialSnapshot,
       type: conf.type,
       // `rawConf`, not the caller's `inlineConf`: the loose `{ trackId, uri }`
@@ -1383,9 +1383,8 @@ export function showTrackGeneric(
     const displaySettings = Object.fromEntries(
       Object.entries(displayInitialSnapshot).filter(([key]) => key !== 'type'),
     )
-    const shown: SettingsShownTrack = track
-    const report = shown.applyDisplaySettings(displaySettings)
-    const drawn = shown.displays[0]
+    const report = track.applyDisplaySettings(displaySettings)
+    const drawn = track.displays[0]
     notifySettingsReport(
       session,
       trackId,

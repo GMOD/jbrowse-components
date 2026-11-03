@@ -6,6 +6,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import {
   makeFeatureIntervalTreeMap,
   parseLineByLine,
+  refNameRecord,
 } from '@jbrowse/core/util/parseLineByLine'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -60,7 +61,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
           )
 
       const headerLines: string[] = []
-      const linesByRef: Record<string, string[]> = Object.create(null)
+      const linesByRef = refNameRecord<string[]>()
       parseLineByLine(
         buffer,
         line => {
