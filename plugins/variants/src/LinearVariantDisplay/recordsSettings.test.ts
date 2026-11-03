@@ -227,6 +227,21 @@ describe('encoding.color phaseSet', () => {
     expect(key?.kind === 'categorical' && key.entries.length).toBe(2)
   })
 
+  test('with no rows drawn the key names the records alone, not a genotype or phase set', () => {
+    const { display } = recordsDisplayAt(svTypes, 51, {}, false, {
+      encoding: { color: 'phaseSet' },
+    })
+    expect(display.cellColorKeyed).toBe(false)
+    expect(display.colorScales.map(s => s.id)).toEqual(['records'])
+  })
+
+  test('with no rows drawn a record field still keys the values the records paint', () => {
+    const { display } = recordsDisplayAt(svTypes, 51, {}, false, {
+      encoding: { color: 'INFO.CLNSIG' },
+    })
+    expect(display.cellColorKeyed).toBe(true)
+  })
+
   test('a record field paints the records as it paints the cells', () => {
     const { display } = recordsDisplayAt(svTypes, 51, {}, true, {
       encoding: { color: 'INFO.CLNSIG' },

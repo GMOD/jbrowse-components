@@ -229,12 +229,15 @@ export function recordsSettingsViews(self: RecordsSettingsHost) {
     /**
      * #getter
      * Whether the cells' coloring is keyed: always while rows draw; with
-     * none only under a picked `encoding.color` field, whose values the
-     * records paint. A constant paints every record alike, so keys nothing.
+     * none only under a picked `encoding.color` field whose values the
+     * records paint. A constant paints every record alike, and `phaseSet`
+     * paints them by SV class, so neither keys a cell nothing draws.
      */
     get cellColorKeyed() {
+      const field = cellHueField(self.colorEncoding)
       return (
-        self.drawsGenotypeRows || cellHueField(self.colorEncoding) !== undefined
+        self.drawsGenotypeRows ||
+        (field !== undefined && field !== PHASE_SET_FIELD)
       )
     },
     /**
