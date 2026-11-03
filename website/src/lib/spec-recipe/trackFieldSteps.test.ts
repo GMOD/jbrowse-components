@@ -239,15 +239,15 @@ test('read connections are the Pair band radios', () => {
   ).toEqual(['Track menu → Read connections → None'])
 })
 
-test('alignments fit is a Read height radio and autogrow an Advanced → Track height radio', () => {
+test('alignments fit is a Read height radio and grow an Advanced → Track height radio', () => {
   expect(stepPaths('heightMode', 'fit', 'LinearAlignmentsDisplay')).toEqual([
     'Track menu → Row height → Fit to track height',
   ])
   expect(stepPaths('heightMode', 'grow', 'LinearAlignmentsDisplay')).toEqual([
-    'Track menu → Advanced → Track height → Autogrow',
+    'Track menu → Advanced → Track height → Grow the track',
   ])
   expect(stepPaths('heightMode', 'fit', 'LinearBasicDisplay')).toEqual([
-    'Track menu → Feature height → Track sizing → Fit row height to track height',
+    'Track menu → Feature height → When features overflow → Fit to track height',
   ])
 })
 

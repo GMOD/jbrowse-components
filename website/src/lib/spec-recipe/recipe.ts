@@ -123,7 +123,7 @@ const IMPORT_FORM_VIEWS: Record<string, ImportFormView> = {
 }
 
 // Labels that name what a track holds read naturally only if the noun matches
-// the track ('Fixed read height' for a pileup, 'Fixed feature height' otherwise).
+// the track ('Read height' for a pileup, 'Feature height' otherwise).
 //
 // The DISPLAY settles this where the track config cannot. A hosted config is
 // not readable at build time, so `lookupTrack` returns nothing for most figures

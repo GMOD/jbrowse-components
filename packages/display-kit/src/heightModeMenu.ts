@@ -5,32 +5,25 @@ import { getHeightModeOptions } from './heightMode.ts'
 import type { HeightMode } from './heightMode.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// The minimal display surface the "Track sizing" radio group drives: the
-// resolved mode (for the radio's `checked`) and the setter (for `onClick`).
+// The minimal display surface the overflow radio group drives: the resolved
+// mode (for the radio's `checked`) and the setter (for `onClick`).
 export interface HeightModeMenuModel {
   heightMode: HeightMode
   setHeightMode: (mode: HeightMode) => void
 }
 
-// The "Track sizing" radio group (fixed/grow/fit), built identically for every
-// display that exposes the `heightMode` slot. Sharing the whole builder — not
-// just the labels — makes the canvas and alignments menus identical by
-// construction rather than by two call sites that happen to agree. `noun` is
-// the singular of what the track holds ('feature', 'read').
-//
-// Callers render these under a "Track sizing" subHeader inside the per-feature
-// size menu ("Feature height" / "Read height"), so one menu holds both halves
-// of the diametric split: the size radios are how tall each feature is drawn,
-// these are how the TRACK responds to more content than fits.
-export function heightModeMenuItems(
-  model: HeightModeMenuModel,
-  noun: string,
-): MenuItem[] {
+// The overflow radio group (scroll/grow/fit) for a display whose size presets
+// and overflow policy are independent, as the feature display's are: its fit
+// starts from the chosen preset and gives up labels before boxes. The caller
+// renders these under a "When features overflow" subheader inside its size
+// menu. Alignments' fit replaces the read height, so it is a Read height radio
+// there instead.
+export function heightModeMenuItems(model: HeightModeMenuModel): MenuItem[] {
   // The rows keep the menu open, like every other radio that only writes a
   // setting (`radioItems` states nothing, so `CascadingMenu` decides by type).
   // These render directly below the size presets, which already stay open, so
   // dismissing here made one submenu behave two ways.
-  return radioItems(getHeightModeOptions(noun), model.heightMode, mode => {
+  return radioItems(getHeightModeOptions(), model.heightMode, mode => {
     model.setHeightMode(mode)
   })
 }

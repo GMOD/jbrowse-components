@@ -248,10 +248,11 @@ A pileup taller than the track scrolls. Two settings change that:
 - **Read height → Fit to track height** derives the read height from the track
   height so the whole pileup fits, shrinking as coverage deepens. Picking a
   preset drops back to it
-- **Advanced → Track height → Autogrow** grows the track to hold the reads, up
-  to [growMaxHeight](/docs/config/linearalignmentsdisplay#slot-growmaxheight),
-  past which it scrolls again. Real sequencing depth passes that ceiling
-  quickly, so raise the slot to keep growing
+- **Advanced → Track height → Grow the track** grows the track to hold the
+  reads, up to
+  [growMaxHeight](/docs/config/linearalignmentsdisplay#slot-growmaxheight), past
+  which it scrolls again. Real sequencing depth passes that ceiling quickly, so
+  raise the slot to keep growing
 
 <Figure src="/img/alignments/height_mode_fit.png" caption="The Read height submenu with Fit to track height selected." />
 

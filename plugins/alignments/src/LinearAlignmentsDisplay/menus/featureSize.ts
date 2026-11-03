@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { radioItem, radioItems } from '@jbrowse/core/ui/menuItems'
 import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
+import { GROW_THE_TRACK_LABEL } from '@jbrowse/display-kit/heightMode'
 import HeightIcon from '@mui/icons-material/Height'
 
 import {
@@ -122,7 +123,7 @@ export const TRACK_HEIGHT_LABEL = 'Track height'
 
 const TRACK_HEIGHT_OPTIONS: { value: HeightMode; label: string }[] = [
   { value: 'fixed', label: 'Fixed' },
-  { value: 'grow', label: 'Autogrow' },
+  { value: 'grow', label: GROW_THE_TRACK_LABEL },
 ]
 
 /**

@@ -31,7 +31,7 @@ function radio(subMenu: MenuItem[], label: string) {
 }
 
 describe('Feature height submenu', () => {
-  it('holds the size presets, then a Track sizing subheader, then the modes', () => {
+  it('holds the size presets, then a When features overflow subheader, then the modes', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const subMenu = featureHeightSubMenu(display)
@@ -44,13 +44,13 @@ describe('Feature height submenu', () => {
       'Compact',
       'Super-compact',
       'Collapsed',
-      'Fixed feature height + fixed track height',
-      'Fixed feature height + autogrow track height',
-      'Fit feature height to track height',
+      'Scroll',
+      'Grow the track',
+      'Fit to track height',
     ])
     expect(
       subMenu.filter(
-        i => i.type === 'subHeader' && hasLabel(i, 'Track sizing'),
+        i => i.type === 'subHeader' && hasLabel(i, 'When features overflow'),
       ),
     ).toHaveLength(1)
   })
@@ -84,25 +84,19 @@ describe('Feature height submenu', () => {
     expect(display.effectiveShowDescriptions).toBe(true)
   })
 
-  it('the track-sizing radios track heightMode, orthogonal to the size presets', () => {
+  it('the overflow radios track heightMode, orthogonal to the size presets', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setDisplayMode('compact')
     const sizing = featureHeightSubMenu(display)
 
     expect(sizing.some(i => i.type === 'checkbox')).toBe(false)
-    expect(radio(sizing, 'Fit feature height to track height').checked).toBe(
-      true,
-    )
+    expect(radio(sizing, 'Fit to track height').checked).toBe(true)
 
     display.setHeightMode('grow')
     const sizing2 = featureHeightSubMenu(display)
-    expect(
-      radio(sizing2, 'Fixed feature height + autogrow track height').checked,
-    ).toBe(true)
-    expect(radio(sizing2, 'Fit feature height to track height').checked).toBe(
-      false,
-    )
+    expect(radio(sizing2, 'Grow the track').checked).toBe(true)
+    expect(radio(sizing2, 'Fit to track height').checked).toBe(false)
     expect(display.displayMode).toBe('compact')
     expect(radio(sizing2, 'Compact').checked).toBe(true)
   })

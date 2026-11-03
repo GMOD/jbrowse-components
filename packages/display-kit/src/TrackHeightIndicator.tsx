@@ -9,9 +9,10 @@ import type { HeightMode } from './heightMode.ts'
 // Persistent bottom-right track-sizing switcher (fixed / autogrow / fit),
 // shared by every display that exposes the `heightMode` slot so the fixed/grow/
 // fit choice is discoverable on-screen, not only buried in the track menu. Opens
-// the same options as the track menu's "Track sizing" radio group (labels from
-// the shared getHeightModeOptions, so the two can't drift); `noun` is the
-// singular of what the track holds ('feature', 'read'). The tooltip surfaces the
+// the same options as the feature track menu's "When features overflow" radios
+// (labels from the shared getHeightModeOptions, so the two can't drift); `noun`
+// is the singular of what the track holds ('feature', 'read'). The tooltip
+// surfaces the
 // scroll hint while content overflows under scrollZoom — where a plain wheel
 // zooms the view, so scrolling the overflow needs shift+wheel.
 //
@@ -62,7 +63,7 @@ const TrackHeightIndicator = observer(function TrackHeightIndicator({
       icon="height"
       tooltip={tooltip}
       warning={truncatedCount > 0}
-      options={getHeightModeOptions(noun).map(option => ({
+      options={getHeightModeOptions().map(option => ({
         label: option.label,
         selected: heightMode === option.value,
         onSelect: () => {

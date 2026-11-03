@@ -36,9 +36,9 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       ...heightModeConfigSchemaFields({
         defaultHeightMode: 'fit',
         heightMode:
-          'Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). `fit` (the default) keeps the track height and gives up descriptions, then isoforms, then names, then squeezes boxes down to 2px, and scrolls only what still overflows; `fixed` keeps a scrollable fixed height; `grow` expands the track to show all features. Orthogonal to the per-feature size set by `displayMode`, which fit never enlarges.',
+          'Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed under "Feature height → When features overflow"). `fit` (the default) keeps the track height and gives up descriptions, then isoforms, then names, then squeezes boxes down to 2px, and scrolls only what still overflows; `fixed` keeps a scrollable fixed height; `grow` expands the track to show all features. Orthogonal to the per-feature size set by `displayMode`, which fit never enlarges.',
         growMaxHeight:
-          'Ceiling in pixels for the "autogrow track height" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes',
+          'Ceiling in pixels for the "Grow the track" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes',
       }),
       /**
        * #slot filter

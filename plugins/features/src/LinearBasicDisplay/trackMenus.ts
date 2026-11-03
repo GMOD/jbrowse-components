@@ -256,10 +256,12 @@ export function featureHeightMenuItem({
   }
 }
 
+export const OVERFLOW_HEADER = 'When features overflow'
+
 export function trackSizingItems(self: HeightModeMenuModel): MenuItem[] {
   return [
-    { type: 'subHeader' as const, label: 'Track sizing' },
-    ...heightModeMenuItems(self, 'feature'),
+    { type: 'subHeader' as const, label: OVERFLOW_HEADER },
+    ...heightModeMenuItems(self),
   ]
 }
 

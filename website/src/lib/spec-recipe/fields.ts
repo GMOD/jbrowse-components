@@ -48,7 +48,10 @@ import {
   DISPLAY_MODE_OPTIONS,
   SUBFEATURE_LABEL_OPTIONS,
 } from '../../../../plugins/features/src/RenderFeatureDataRPC/displayModes.ts'
-import { getHeightModeOptions } from '../../../../packages/display-kit/src/heightMode.ts'
+import {
+  GROW_THE_TRACK_LABEL,
+  getHeightModeOptions,
+} from '../../../../packages/display-kit/src/heightMode.ts'
 import {
   WIGGLE_PLOTS,
   renderingOf,
@@ -1865,9 +1868,9 @@ export const trackFields: Record<string, FieldRecipe> = {
   // names its preset without a second table to keep in sync
   'pileup.mark': (value, context) =>
     readSizeStep(asRecord(value)?.height, context),
-  // The feature display's 'Track sizing' radios sit under a subheader in its
-  // size submenu; the alignments display's fit is a Read height radio and its
-  // autogrow a checkbox in Advanced. A triangle display's `heightMode` is the one shared fitToHeightCheckboxItem
+  // The feature display's overflow radios sit under a 'When features overflow'
+  // subheader in its size submenu; the alignments display's fit is a Read
+  // height radio and its grow a radio in Advanced → Track height. A triangle display's `heightMode` is the one shared fitToHeightCheckboxItem
   // in a Layout submenu, so the path is the same for each.
   heightMode: (value, { noun, displayType }) => {
     if (displayType && TRIANGLE_DISPLAYS.has(displayType)) {
@@ -1883,19 +1886,19 @@ export const trackFields: Record<string, FieldRecipe> = {
         ? { path: `${heightMenu(noun, displayType)} → ${FIT_TO_TRACK_LABEL}` }
         : value === 'grow' || value === 'fixed'
           ? {
-              path: `${TRACK_MENU} → Advanced → Track height → ${value === 'grow' ? 'Autogrow' : 'Fixed'}`,
+              path: `${TRACK_MENU} → Advanced → Track height → ${value === 'grow' ? GROW_THE_TRACK_LABEL : 'Fixed'}`,
             }
           : undefined
     }
-    const option = getHeightModeOptions(noun).find(o => o.value === value)
+    const option = getHeightModeOptions().find(o => o.value === value)
     return option
       ? {
-          path: `${heightMenu(noun, displayType)} → Track sizing → ${option.label}`,
+          path: `${heightMenu(noun, displayType)} → When features overflow → ${option.label}`,
         }
       : undefined
   },
   // Both radios sit directly in the feature display's size submenu, above the
-  // 'Track sizing' subheader that heightMode lands under.
+  // 'When features overflow' subheader that heightMode lands under.
   displayMode: (value, { displayType }) => {
     if (typeof value !== 'string') {
       return undefined

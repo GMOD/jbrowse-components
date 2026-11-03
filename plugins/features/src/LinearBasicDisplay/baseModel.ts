@@ -1702,7 +1702,7 @@ export default function baseStateModelFactory(
       /**
        * #method
        * One "Feature height" menu with two independent radio groups: the
-       * size presets and, under a "Track sizing" subheader, how the track
+       * size presets and, under a "When features overflow" subheader, how the track
        * responds when there are more features than fit.
        */
       featureHeightMenuItems(): MenuItem[] {

@@ -278,7 +278,7 @@ describe('the track menu', () => {
     ])
     const noSamples = recordsDisplayAt(FEW, 10, {}, false).display
     expect(subMenuLabels(menu(noSamples), 'Feature height')).toContain(
-      'Track sizing',
+      'When features overflow',
     )
   })
 
