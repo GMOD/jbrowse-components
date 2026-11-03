@@ -29,12 +29,13 @@ Capture races and callout anchoring: `agent-docs/reference/FIGURE_CAPTURE.md`.
   menu or dialog ending an action list needs none, nor does a click or type,
   which waits for its target.
 - **Every annotation `anchor`s** by locus, cell, graph node, element, chord
-  label (`{ chord: 'SV_20' }`), ideogram band or drawn feature
-  (`{ trackId, feature: 'rs334' }`, the text its label shows), never by a
-  measured pixel. A click on a feature or record names it rather than a `fracY`,
-  which lands on another row once a band is added above it. A chord's feature id
-  is parse order and drifts; its label does not. A pointing label is
-  `leader: true` on the text, never a pill plus an `arrow`.
+  label (`{ chord: 'SV_20' }`), ideogram band, drawn feature
+  (`{ trackId, feature: 'rs334' }`, the text its label shows) or drawn row
+  (`{ trackId, row: 'Gaur' }`, a row's name or label, or a band's label), never
+  by a measured pixel. A callout or click on a feature, record or row names it
+  rather than a `fracY`, which lands on another row once a band is added above
+  it. A chord's feature id is parse order and drifts; its label does not. A
+  pointing label is `leader: true` on the text, never a pill plus an `arrow`.
 - Prefer a session `highlights` entry to a callout: its `label` lands in every
   linked view, on the genome band, the alignment's column and the structure's
   residue, and the figure's live link carries it.

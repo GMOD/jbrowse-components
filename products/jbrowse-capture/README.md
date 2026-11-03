@@ -219,6 +219,13 @@ session, so none of them is a pixel measured off an earlier capture:
 - `loc`, with an optional `trackId` and `fracY` (0 is the track's top, 1 its
   bottom), lands on a genomic position in a linear genome view. A `view` index
   picks the view, and an array (`[0, 1]`) descends into a synteny view's rows.
+- `feature`, with a `trackId`, names a feature or record that track drew by the
+  text its label shows (`rs334`, `CYP1A2`). Where the label repeats, a `loc`
+  picks the copy.
+- `row`, with a `trackId`, names a row of a multi-row track (a sample, a
+  haplotype, a species) by its name or the label beside it, or a band of rows by
+  its label. With a `loc` the callout lands on that row at that position, and
+  `fracY` is then a fraction of the row's height.
 - `graphNode` names a GFA segment in a graph view or graph track.
 - `hLoc` and `vLoc` name a dotplot's cell, as a whole chromosome (`chr4`) or a
   span (`chr4:1-5,000,000`).
