@@ -52,6 +52,48 @@ export function isObjectArray(
   return value.every(isObject)
 }
 
+/** Each item of a list in a box of its own, in the order the feature lists them. */
+export const ArrayItems = observer(function ArrayItems({
+  name,
+  value,
+  formatter,
+}: {
+  name: string
+  value: unknown[]
+  formatter?: FeatureFormatter
+}) {
+  const { classes } = useStyles()
+  const [showAll, setShowAll] = useState(false)
+  const limit = value.every(v => typeof v === 'number')
+    ? MAX_NUMERIC_ARRAY_LENGTH
+    : MAX_ARRAY_LENGTH
+  const needsTruncation = value.length > limit
+  const displayedValues =
+    needsTruncation && !showAll ? value.slice(0, limit) : value
+  return (
+    <div className={classes.fieldSubvalues}>
+      {displayedValues.map((val, i) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- static positional list of primitive values, no unique field available
+        <div key={`${String(val)}-${i}`} className={classes.fieldSubvalue}>
+          <BasicValue value={formatter ? formatter(val, name, i) : val} />
+        </div>
+      ))}
+      {needsTruncation ? (
+        <button
+          type="button"
+          onClick={() => {
+            setShowAll(v => !v)
+          }}
+        >
+          {showAll
+            ? 'Show less'
+            : `Showing ${limit} of ${value.length}. Show all...`}
+        </button>
+      ) : null}
+    </div>
+  )
+})
+
 const ArrayValue = observer(function ArrayValue({
   name,
   value,
@@ -71,14 +113,6 @@ const ArrayValue = observer(function ArrayValue({
 }) {
   const { classes, cx } = useStyles()
   const reveal = useRevealFieldActions()
-  const [showAll, setShowAll] = useState(false)
-  const limit = value.every(v => typeof v === 'number')
-    ? MAX_NUMERIC_ARRAY_LENGTH
-    : MAX_ARRAY_LENGTH
-  const needsTruncation = value.length > limit
-  const displayedValues =
-    needsTruncation && !showAll ? value.slice(0, limit) : value
-
   return isObjectArray(value) ? (
     value.length === 1 ? (
       <Attributes
@@ -119,26 +153,7 @@ const ArrayValue = observer(function ArrayValue({
           />
         </>
       ) : (
-        <div className={classes.fieldSubvalues}>
-          {displayedValues.map((val, i) => (
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- static positional list of primitive values, no unique field available
-            <div key={`${String(val)}-${i}`} className={classes.fieldSubvalue}>
-              <BasicValue value={formatter ? formatter(val, name, i) : val} />
-            </div>
-          ))}
-          {needsTruncation ? (
-            <button
-              type="button"
-              onClick={() => {
-                setShowAll(v => !v)
-              }}
-            >
-              {showAll
-                ? 'Show less'
-                : `Showing ${limit} of ${value.length}. Show all...`}
-            </button>
-          ) : null}
-        </div>
+        <ArrayItems name={name} value={value} formatter={formatter} />
       )}
     </div>
   )

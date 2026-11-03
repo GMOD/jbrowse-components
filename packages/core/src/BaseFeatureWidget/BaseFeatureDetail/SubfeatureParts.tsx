@@ -4,6 +4,7 @@ import { observer } from 'mobx-react'
 import ActionLink from '../../ui/ActionLink.tsx'
 import { toLocale } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
+import { ArrayItems } from './ArrayValue.tsx'
 import Attributes from './Attributes.tsx'
 import BaseCard from './BaseCard.tsx'
 import { ValueText, valueText } from './BasicValue.tsx'
@@ -57,12 +58,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function cellText(value: unknown) {
-  return Array.isArray(value)
-    ? value.map(valueText).join(', ')
-    : valueText(value)
-}
-
 const OwnValue = observer(function OwnValue({
   name,
   value,
@@ -76,8 +71,10 @@ const OwnValue = observer(function OwnValue({
     name === 'transl_except' ? parseTranslExcept(value) : undefined
   return exceptions ? (
     <TranslExceptList exceptions={exceptions} locate={locateSpan} />
+  ) : Array.isArray(value) ? (
+    <ArrayItems name={name} value={value} />
   ) : (
-    <ValueText text={cellText(value)} />
+    <ValueText text={valueText(value)} />
   )
 })
 

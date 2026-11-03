@@ -118,7 +118,10 @@ test('the sequence panel reads the same pick as the Subfeatures menu', async () 
 })
 
 test('a transcript groups its exons into one table, with what each exon has of its own on aligned lines under its row', () => {
-  const exonWithNote = { ...exon(40, 2), experimental_evidence: 'CAGE' }
+  const exonWithNote = {
+    ...exon(40, 2),
+    experimental_evidence: ['RNA-seq', 'CAGE'],
+  }
   const { getByTestId, queryByTestId } = renderGene([
     transcript('EDEN.1', {
       subfeatures: [exon(0, 3), exonWithNote, exon(80, 1)],
@@ -134,7 +137,7 @@ test('a transcript groups its exons into one table, with what each exon has of i
     '181-9010',
     'exon_number1',
     '241-5010',
-    'exon_number2experimental_evidenceCAGE',
+    'exon_number2experimental_evidenceRNA-seqCAGE',
     '31-1010',
     'exon_number3',
   ])
@@ -146,6 +149,13 @@ test('a transcript groups its exons into one table, with what each exon has of i
     .getAllByText('exon_number')
     .map(key => key.parentElement!.style.gridTemplateColumns)
   expect(new Set(grids)).toEqual(new Set(['21ch minmax(0, 1fr)']))
+
+  const evidence = within(exons).getByText(
+    'experimental_evidence',
+  ).nextElementSibling!
+  expect(
+    [...evidence.firstElementChild!.children].map(el => el.textContent),
+  ).toEqual(['RNA-seq', 'CAGE'])
 })
 
 test('parts with nothing of their own get no lines under their rows', () => {
