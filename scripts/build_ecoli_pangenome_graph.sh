@@ -681,6 +681,9 @@ jb add-track-json subgraph_nodes_track.json --update --out "$APP"
 gfa-to-tabix "$GFA" --layout contig --reference "$REF" -o ecoli_pggb.fine
 cp ecoli_pggb.fine.graph.bed.gz "$APP/ecoli_pggb.graph.bed.gz"
 cp ecoli_pggb.fine.graph.bed.gz.tbi "$APP/ecoli_pggb.graph.bed.gz.tbi"
+# The tier `build` wrote is in the anchored layout too, so a 15 kb window cut 628
+# segments carrying 715 kb; refolded in the contig layout it cuts 17.
+gfa-to-tabix fold "$GFA" --below 50 --reference "$REF" --layout contig -o ecoli_pggb.fold50
 cp ecoli_pggb.fold50.graph.bed.gz ecoli_pggb.fold50.graph.bed.gz.tbi "$APP/"
 cat > pggb_segments_track.json <<'JSON'
 {
