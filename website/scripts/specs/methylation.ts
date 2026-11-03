@@ -237,8 +237,8 @@ export const methylationSpecs: ScreenshotSpec[] = [
     readyText: 'MethylDackel',
     readyTimeout: 90000,
     viewportHeight: 995,
-    // The aggregate lane's three rows sit ~57px apart in its 170px container;
-    // dx -690 puts each pill near the data area's left edge.
+    // The aggregate track names its own CpG/CHG/CHH rows, so only the per-read
+    // copies, which have no row labels, carry a context pill.
     annotations: [
       // TAIR10_Transposable_Elements.txt names the element AT1TE14315
       // (META1, LTR/Copia). Ensembl Plants' AT4TE22180 is a chr4 id, so take
@@ -268,17 +268,6 @@ export const methylationSpecs: ScreenshotSpec[] = [
           dy: -16,
         },
       },
-      ...(['CpG', 'CHG', 'CHH'] as const).map((text, i) => ({
-        type: 'text' as const,
-        anchor: {
-          selector:
-            '[data-testid^="trackRenderingContainer-"][data-testid$="-arabidopsis_methyldackel"]',
-        },
-        dx: -690,
-        dy: (i - 1) * 57,
-        fontSize: 22,
-        text,
-      })),
       ...(
         [
           ['cg', 'CpG'],
