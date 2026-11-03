@@ -19,11 +19,23 @@ const childOfType = (type: string): StepSnapshot[] => [
   { type: 'filter', expr: `jexl:feature.type == '${type}'` },
 ]
 
+// one scale for the exon and CDS marks, so the key lists both greys under
+// one title; an exon shows only where no CDS covers it, which is the UTR
+const TRANSCRIPT_PART_COLOR = {
+  field: 'type',
+  scale: {
+    domain: ['exon', 'CDS'],
+    range: ['#c4c4c4', '#9a9a9a'],
+    names: ['UTR', 'coding'],
+  },
+  legend: { title: 'Transcript' },
+}
+
 /**
- * A transcript as a gene track draws one, its exons thin under its coding
- * exons, with the protein matches placed on it over the top: the transcript
- * marks state their own greys, so the display's color reaches the matches
- * alone.
+ * A transcript as a gene track draws one, its UTR thin and its coding exons
+ * full height, with the protein matches placed over its coding exons at the
+ * same height: the transcript marks state their own greys, keyed as UTR and
+ * coding, so the display's color reaches the matches alone.
  */
 export const TRANSCRIPT_PROTEIN_MARKS: MarkSnapshot[] = [
   {
@@ -33,12 +45,12 @@ export const TRANSCRIPT_PROTEIN_MARKS: MarkSnapshot[] = [
   {
     mark: { type: 'rect', height: { band: 0.25 } },
     transform: childOfType('exon'),
-    encoding: { color: { value: '#c4c4c4' } },
+    encoding: { color: TRANSCRIPT_PART_COLOR },
   },
   {
-    mark: { type: 'rect', height: { band: 0.45 } },
+    mark: { type: 'rect', height: { band: NORMAL_ROW_PROPORTION } },
     transform: childOfType('CDS'),
-    encoding: { color: { value: '#9a9a9a' } },
+    encoding: { color: TRANSCRIPT_PART_COLOR },
   },
   {
     mark: { type: 'rect', height: { band: NORMAL_ROW_PROPORTION } },

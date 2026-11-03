@@ -5,6 +5,7 @@ import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
 import { paintedColorNode } from '../LinearMarkDisplay/inheritedColor.ts'
+import { keySettingOf } from '../LinearMarkDisplay/legend.ts'
 import { SPLICED_MARKS } from '../LinearMarkDisplay/markPlot.ts'
 import { NORMAL_ROW_PROPORTION } from '../LinearMarkDisplay/markVocabulary.ts'
 import { REGION, features, workerResult } from '../LinearMarkDisplay/testEnv.ts'
@@ -111,7 +112,7 @@ test('a transcript carrying protein matches draws as the transcript with its mat
   ).toBe(SPLICED_MARKS)
 })
 
-test("a match's family colors only the matches, and Color by still reaches them", () => {
+test("a match's family colors only the matches, the transcript's greys key as UTR and coding, and Color by still reaches the matches", () => {
   const model = display({ marks: TRANSCRIPT_PROTEIN_MARKS })
   model.applyDefaultPlot(
     multiRowPlot({
@@ -126,9 +127,14 @@ test("a match's family colors only the matches, and Color by still reaches them"
     model.conf.marks.map(m =>
       colorSettingOf(paintedColorNode(m, model.conf.encoding.color)),
     )
-  expect(painted().map(c => c.field)).toEqual(['', '', '', 'name'])
+  expect(painted().map(c => c.field)).toEqual(['', 'type', 'type', 'name'])
+  const [, exon, cds] = model.conf.marks
+  expect([keySettingOf(exon, 'color'), keySettingOf(cds, 'color')]).toEqual([
+    expect.objectContaining({ title: 'Transcript', names: ['UTR', 'coding'] }),
+    expect.objectContaining({ title: 'Transcript', names: ['UTR', 'coding'] }),
+  ])
   model.colorByField('accession')
-  expect(painted().map(c => c.field)).toEqual(['', '', '', 'accession'])
+  expect(painted().map(c => c.field)).toEqual(['', 'type', 'type', 'accession'])
 })
 
 test('the default plot writes its rows and color, and leaves a declared color alone', () => {

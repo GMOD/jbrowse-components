@@ -30,27 +30,26 @@ const PFAM_TRACK = {
 }
 
 export const proteinDomainsSpecs: ScreenshotSpec[] = [
-  // vav's four isoforms; one's coding sequence starts past the CH exon
+  // Su(var)3-9's curated isoforms carry either SET or the eIF2 gamma domains.
+  // At 1600 wide the window clears the row labels on the left and the key on
+  // the right, and stops short of the next gene's transcript past the key
   {
     mode: 'url',
-    name: 'protein_domains/vav',
+    name: 'protein_domains/suvar39',
     url: sessionSpec(`${HUB}/config.json`, {
       sessionTracks: [PFAM_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: ASSEMBLY,
-          loc: 'NC_037640.1:1,971,640-1,976,800',
-          tracks: [
-            { trackId: `${ASSEMBLY}-ncbiGff` },
-            { trackId: 'pfam_domains', height: 120 },
-          ],
+          loc: 'NC_037653.1:4,839,300-4,850,050',
+          tracks: [{ trackId: 'pfam_domains', height: 225 }],
         },
       ],
     }),
     readyText: 'Pfam family',
     readyTimeout: 60000,
-    viewportWidth: 1200,
-    viewportHeight: 505,
+    viewportWidth: 1600,
+    viewportHeight: 430,
   },
 ]

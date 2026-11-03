@@ -13,8 +13,8 @@ encode, such as a kinase or a DNA-binding fold. Domain callers report each
 domain in residues along the protein, so the domains need placing back on the
 exons before JBrowse can draw them under the genes. Done for every transcript,
 the placement shows which exons encode each domain and which isoforms leave one
-out. We work through the honey bee RefSeq annotation and the _vav_ gene
-(LOC413488), whose isoforms differ at their first domain. We:
+out. We work through the honey bee RefSeq annotation and the _Su(var)3-9_ gene,
+whose isoforms encode two different proteins. We:
 
 - translate the gene models and call Pfam domains on the proteins with `hmmscan`
 - place each domain on the exons that encode it with `domains2genome`
@@ -143,11 +143,11 @@ tabix -f -C -p gff pfam.gff3.gz
 ## Drawing the domains on their transcripts
 
 JBrowse loads the file as a track in the multi-row feature display, which gives
-each transcript a row: its exons in light grey, its coding exons darker, and its
-domains over them. `encoding.color` colors each domain by its Pfam family, with
-a key naming the families on screen.
+each transcript a row: its UTR thin and light grey, its coding exons full height
+and darker, and its domains over them. `encoding.color` colors each domain by
+its Pfam family, and the key names both greys and the families on screen.
 
-```json addtrack loc=NC_037640.1:1,971,640-1,976,800
+```json addtrack loc=NC_037653.1:4,839,300-4,850,050
 {
   "type": "FeatureTrack",
   "trackId": "pfam_domains",
@@ -172,13 +172,21 @@ a key naming the families on screen.
 
 For your own data, point `uri` at your `pfam.gff3.gz` and `assemblyNames` at
 your assembly. To follow along on genomes.jbrowse.org, open the honey bee
-genome, add the track above, turn on the gene track, **NCBI RefSeq - RefSeq All
-(GFF)**, and go to `NC_037640.1:1,971,640-1,976,800`.
+genome, add the track above, and go to `NC_037653.1:4,839,300-4,850,050`.
 
-<Figure src="/img/protein_domains/vav.png" caption="Honey bee vav: the gene track, and each RefSeq isoform on a row of its own, its exons grey and its Pfam domains over them, colored by family." />
+<Figure src="/img/protein_domains/suvar39.png" caption="Honey bee Su(var)3-9: each RefSeq transcript on a row of its own, its UTR and coding exons grey and its Pfam domains over them, colored by family." />
 
-XM_006568479.2 carries part of the exon that encodes CH as 5′ UTR, drawn thin,
-and its coding sequence starts past it, so its row has no CH.
+The two curated transcripts (NM_) encode different proteins from the same first
+three exons. NM_001040277.1 goes on into the exon that encodes Chromo, Pre-SET
+and SET, the Su(var)3-9 histone methyltransferase. NM_001171169.1 skips that
+exon and joins the exons of eIF2γ, the GTP-binding subunit of translation
+initiation factor 2, whose GTP_EFTU, GTP_EFTU_D2 and eIF2_C domains it carries.
+XM_006561307.3 and XM_006561308.3, which differ only at their 5′ ends, leave the
+Su(var)3-9 exon partway through SET and continue into the eIF2γ exons, so each
+encodes Chromo and Pre-SET and the eIF2γ domains in one protein. The two genes
+share one transcription unit across the insects that undergo complete
+metamorphosis (Krauss and Reuter, 2000). XM_001121123.5 is a transcript of the
+neighboring gene.
 
 ## Reproduce it end to end
 
@@ -214,6 +222,8 @@ The script reads `genome.fa` and `genes.gff3` plain or gzipped, and
   [Pfam: The protein families database in 2021](https://doi.org/10.1093/nar/gkaa913)
 - Eddy (2011).
   [Accelerated profile HMM searches](https://doi.org/10.1371/journal.pcbi.1002195)
+- Krauss and Reuter (2000).
+  [Two genes become one: the genes encoding heterochromatin protein Su(var)3-9 and translation initiation factor subunit eIF-2gamma are joined to a dicistronic unit in holometabolic insects](https://doi.org/10.1093/genetics/156.3.1157)
 - Pertea and Pertea (2020).
   [GFF utilities: GffRead and GffCompare](https://doi.org/10.12688/f1000research.23297.2)
 - Wallberg et al. (2019).

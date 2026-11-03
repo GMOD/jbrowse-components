@@ -57,8 +57,11 @@ mkdir -p "$OUTDIR"
 cd "$OUTDIR"
 APP=jbrowse2
 
-# beta.18 is the first CLI with make-protein-features
-jb() { npx -y '@jbrowse/cli@>=5.0.0-beta.18' "$@"; }
+if [[ "$(jbrowse --version 2>/dev/null)" == *"version "[5-9].* ]]; then
+  jb() { jbrowse "$@"; }
+else
+  jb() { npx -y @jbrowse/cli@next "$@"; }
+fi
 
 # ── The FASTA, uncompressed and indexed ──────────────────────────────────────
 # gffread cannot read a gzipped FASTA, so both it and JBrowse read a plain one
