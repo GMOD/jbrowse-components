@@ -117,8 +117,13 @@ test('the sequence panel reads the same pick as the Subfeatures menu', async () 
   expect(selects().map(s => s.textContent)).toEqual(['EDEN.3', 'EDEN.3'])
 })
 
-test('a transcript groups its exons into one table, with what each exon has of its own under its row', () => {
-  const { getByTestId, queryByTestId } = renderGene([transcript('EDEN.1')])
+test('a transcript groups its exons into one table, with what each exon has of its own on aligned lines under its row', () => {
+  const exonWithNote = { ...exon(40, 2), experimental_evidence: 'CAGE' }
+  const { getByTestId, queryByTestId } = renderGene([
+    transcript('EDEN.1', {
+      subfeatures: [exon(0, 3), exonWithNote, exon(80, 1)],
+    }),
+  ])
   expect(queryByTestId('transcript-select')).toBeNull()
   const exons = getByTestId('BaseCard-EDEN.1 · exon (3)')
   fireEvent.click(within(exons).getAllByRole('button')[0]!)
@@ -129,12 +134,35 @@ test('a transcript groups its exons into one table, with what each exon has of i
     '181-9010',
     'exon_number1',
     '241-5010',
-    'exon_number2',
+    'exon_number2experimental_evidenceCAGE',
     '31-1010',
     'exon_number3',
   ])
   expect(within(exons).queryByText('Parent')).toBeNull()
   expect(within(exons).queryByText('source')).toBeNull()
+
+  // one key column width for every part, so values line up down the card
+  const grids = within(exons)
+    .getAllByText('exon_number')
+    .map(key => key.parentElement!.style.gridTemplateColumns)
+  expect(new Set(grids)).toEqual(new Set(['21ch minmax(0, 1fr)']))
+})
+
+test('parts with nothing of their own get no lines under their rows', () => {
+  const plain = transcript('EDEN.1', {
+    subfeatures: [
+      { refName: 'ctgA', start: 0, end: 10, type: 'exon' },
+      { refName: 'ctgA', start: 40, end: 50, type: 'exon' },
+    ],
+  })
+  const { getByTestId } = renderGene([plain])
+  const exons = getByTestId('BaseCard-EDEN.1 · exon (2)')
+  fireEvent.click(within(exons).getAllByRole('button')[0]!)
+  expect(
+    within(exons)
+      .getAllByRole('row')
+      .map(r => r.textContent),
+  ).toEqual(['#PositionLength', '141-5010', '21-1010'])
 })
 
 test('a card shows its id as the data states it, even when it equals the name', () => {

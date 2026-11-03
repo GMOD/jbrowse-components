@@ -26,6 +26,9 @@ const useStyles = makeStyles()(theme => ({
   position: {
     whiteSpace: 'nowrap',
   },
+  number: {
+    width: '2.5em',
+  },
   followed: {
     '& td': {
       borderBottom: 'none',
@@ -33,20 +36,20 @@ const useStyles = makeStyles()(theme => ({
   },
   ownCell: {
     paddingTop: 0,
+    paddingBottom: theme.spacing(0.75),
   },
   own: {
-    display: 'flex',
-    flexWrap: 'wrap',
+    display: 'grid',
     columnGap: theme.spacing(1.5),
-    fontSize: 11,
-    wordBreak: 'break-word',
+    rowGap: 1,
+    fontSize: 12,
+    lineHeight: 1.4,
   },
   ownKey: {
     color: theme.palette.text.secondary,
-    marginRight: theme.spacing(0.5),
   },
   ownValue: {
-    color: theme.palette.text.primary,
+    wordBreak: 'break-word',
   },
 }))
 
@@ -56,30 +59,36 @@ function cellText(value: unknown) {
     : valueText(value)
 }
 
+// every part's keys share one column width, so values align down the card
 const OwnAttributes = observer(function OwnAttributes({
   attributes,
+  keyWidth,
 }: {
   attributes: Record<string, unknown>
+  keyWidth: number
 }) {
   const { classes } = useStyles()
   return (
-    <div className={classes.own}>
-      {Object.entries(attributes).map(([key, value]) => (
-        <span key={key}>
-          <span className={classes.ownKey}>{key}</span>
-          <span className={classes.ownValue}>
-            <ValueText text={cellText(value)} />
-          </span>
-        </span>
-      ))}
+    <div
+      className={classes.own}
+      style={{ gridTemplateColumns: `${keyWidth}ch minmax(0, 1fr)` }}
+    >
+      {Object.entries(attributes).map(([key, value]) => [
+        <span key={`${key}-key`} className={classes.ownKey}>
+          {key}
+        </span>,
+        <span key={`${key}-value`} className={classes.ownValue}>
+          <ValueText text={cellText(value)} />
+        </span>,
+      ])}
     </div>
   )
 })
 
 /**
  * One type of a feature's leaf subfeatures — its exons, say — as one card: the
- * attributes they all share once, then a row per part, numbered 5′ to 3′, with
- * what a part carries of its own on a line under its row.
+ * attributes they all share once, then a row per part, numbered 5′ to 3′. What
+ * a part carries of its own is listed key by key under its row.
  */
 const SubfeatureParts = observer(function SubfeatureParts({
   group,
@@ -97,14 +106,15 @@ const SubfeatureParts = observer(function SubfeatureParts({
 }) {
   const { classes } = useStyles()
   const { type, parts, shared, phased } = group
-  const columns = 3 + Number(phased)
+  const keyWidth = Math.max(
+    0,
+    ...parts.flatMap(part => Object.keys(part.own).map(key => key.length)),
+  )
+  const title = [owner, `${type} (${parts.length})`]
+    .filter(part => part !== undefined)
+    .join(' · ')
   return (
-    <BaseCard
-      title={[owner, `${type} (${parts.length})`]
-        .filter(part => part !== undefined)
-        .join(' · ')}
-      defaultExpanded={false}
-    >
+    <BaseCard title={title} defaultExpanded={false}>
       <Attributes
         attributes={shared}
         descriptions={descriptions}
@@ -113,7 +123,7 @@ const SubfeatureParts = observer(function SubfeatureParts({
       <Table size="small" className={classes.table}>
         <TableHead>
           <TableRow>
-            <TableCell>#</TableCell>
+            <TableCell className={classes.number}>#</TableCell>
             <TableCell>Position</TableCell>
             <TableCell align="right">Length</TableCell>
             {phased ? <TableCell align="right">Phase</TableCell> : null}
@@ -155,8 +165,12 @@ const SubfeatureParts = observer(function SubfeatureParts({
               </TableRow>,
               hasOwn ? (
                 <TableRow key={`${part.uniqueId}-own`}>
-                  <TableCell colSpan={columns} className={classes.ownCell}>
-                    <OwnAttributes attributes={own} />
+                  <TableCell />
+                  <TableCell
+                    colSpan={2 + Number(phased)}
+                    className={classes.ownCell}
+                  >
+                    <OwnAttributes attributes={own} keyWidth={keyWidth} />
                   </TableCell>
                 </TableRow>
               ) : null,
