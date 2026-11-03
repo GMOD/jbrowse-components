@@ -10,6 +10,7 @@ import {
   exactCullBand,
   forEachRenderedLabel,
   labelCullBand,
+  labelScrollBucket,
   labelStackHeightPx,
   viewportBand,
 } from './labelPositioning.ts'
@@ -441,10 +442,20 @@ describe('exactCullBand', () => {
   })
 
   test('is narrower than the bucketed band at every scrollTop', () => {
-    const exact = exactCullBand(450, 300, LABEL_FONT)
-    const bucketed = labelCullBand(1, 300)
-    expect(exact.top).toBeGreaterThan(bucketed.top)
-    expect(exact.bottom).toBeLessThan(bucketed.bottom)
+    const bucket = 1
+    const bucketed = labelCullBand(bucket, 300)
+    const first = bucket * LABEL_CULL_BUCKET_PX
+    for (const scrollTop of [
+      first,
+      first + 1,
+      first + LABEL_CULL_BUCKET_PX / 2,
+      first + LABEL_CULL_BUCKET_PX - 1,
+    ]) {
+      expect(labelScrollBucket(scrollTop)).toBe(bucket)
+      const exact = exactCullBand(scrollTop, 300, LABEL_FONT)
+      expect(exact.top).toBeGreaterThan(bucketed.top)
+      expect(exact.bottom).toBeLessThan(bucketed.bottom)
+    }
   })
 })
 

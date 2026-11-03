@@ -433,7 +433,7 @@ describe('renderSvg', () => {
   })
 
   it('writes only the labels and peptide letters the exported viewport shows', async () => {
-    const label = (text: string) => ({ text, relativeY: 0, textWidth: 40 })
+    const label = (text: string) => ({ text, textWidth: 40 })
     const at = (featureId: string, topY: number, text: string) => ({
       featureId,
       minX: 1400,
