@@ -54,5 +54,4 @@ scripts/build_t2t_apes_cactus_multiway.sh 2
 scripts/build_tcga_cohort_cnv.sh 1
 scripts/build_tcga_cohort_cnv_zarr.sh 1
 scripts/build_tcga_cohort_mutations.sh 1
-scripts/build_wheat_homoeologs.sh 1
 scripts/bxd_build_demo.sh 4

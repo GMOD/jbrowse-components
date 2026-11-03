@@ -33,18 +33,10 @@ Once it is hosted the figure is ordinary: a spec in `website/scripts/specs/`,
 
 ## Parked on a cost or a decision
 
-Three items surfaced and then left, each because the next move is expensive or
-is not the implementer's to make. The first two came out of the screenshot
+Two items surfaced and then left, each because the next move is expensive or
+is not the implementer's to make. The first came out of the screenshot
 review, the last out of the 2026-08 tutorial-focus pass.
 
-- **Wheat homoeologs are Compara-derived and Colin does not want that.**
-  `scripts/build_wheat_homoeologs.sh` pulls
-  `Compara.*.protein_default.homologies.tsv.gz`, where
-  `scripts/build_oat_homoeologs.sh` computes its own anchors (DIAMOND
-  self-alignment + jcvi + `kaks_from_pairs.py`) and so depends on no external
-  ortholog table. Rebuilding wheat the oat way means a *hexaploid* DIAMOND
-  self-alignment and a demo-bucket upload. That cost has never been measured,
-  which is the first move.
 - **"Consistent genomic scale per level" across a dotplot set** — the obvious
   lever doesn't work. `squareView()` averages `bpPerPx`, so on the wheat/oat
   pair the hexaploid overflows while the diploid leaves whitespace, and

@@ -95,7 +95,7 @@ test('syntenic depth bins a one-to-one link apart from a shared ortholog', () =>
   })
 })
 
-// demos/wheat_homoeologs declares a `copies` column (homoeologs per reference
+// A homoeolog table declares a `copies` column (homoeologs per reference
 // gene) and opens colored by it, reading below 3 as a lost homoeolog.
 test('a declared copies column paints its own ramp', () => {
   expect(ramp('copies', { copies: { min: 1, max: 6 } }).attribute).toBe(
