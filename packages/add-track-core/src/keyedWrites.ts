@@ -110,18 +110,21 @@ export function staleKeyedMembers(
 }
 
 /**
- * `prior` as a write of `next` leaves it before its members merge in: the
- * keyed members gone when the write changes the field.
+ * `prior` as a write of `next` leaves it before its members merge in: every
+ * keyed member gone when the write changes the field, the ones `next` states
+ * included, so a stated member lands over nothing rather than merging into
+ * the old field's value (a `tree: { provenance }` keeps no old newick).
  */
 export function keyedBase<V>(
   writes: KeyedWrites,
   prior: Record<string, V>,
   next: Record<string, unknown>,
 ): Record<string, V> {
-  const stale = new Set(staleKeyedMembers(writes, prior, next))
-  return stale.size > 0
+  return changesKeyedField(writes, prior, next)
     ? Object.fromEntries(
-        Object.entries(prior).filter(([member]) => !stale.has(member)),
+        Object.entries(prior).filter(
+          ([member]) => !writes.keyed.includes(member),
+        ),
       )
     : prior
 }

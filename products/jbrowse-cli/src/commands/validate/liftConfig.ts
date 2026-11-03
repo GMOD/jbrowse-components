@@ -64,9 +64,9 @@ export function liftToSnapshot(value: unknown, slots: SlotEntry[]): unknown {
  * Two settings bags as one, `over` written after `under` as the app folds
  * them (core's `mergeConfSettings`): a sub-schema writing its members one by
  * one merges member by member, a bare value its shorthand lifts included, a
- * keyed one first dropping the keyed members a change of its field leaves
- * stale (ADR-257), and
- * any other slot or a channel takes `over`'s value whole. A key no slot
+ * keyed one first dropping every keyed member when the write changes its
+ * field (ADR-257), and any other slot or a channel takes `over`'s value
+ * whole. A key no slot
  * declares, a plugin's, merges as plain JSON. A value merged with nothing
  * keeps its written spelling.
  */

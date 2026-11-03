@@ -50,77 +50,15 @@ function rowsOf(conf: { rows: object }) {
   return getSnapshot(conf.rows)
 }
 
+// The rows every consumer shares are products/jbrowse-web's
+// KeyedWritesParity.test.ts table; these need a field the registered
+// refining displays cannot take
 const cases: {
   name: string
   base: Record<string, unknown>
   write: Record<string, unknown>
   rows: Record<string, unknown>
 }[] = [
-  {
-    name: 'a new field unsets the keyed members and keeps the rest',
-    base: arranged,
-    write: { rows: 'tissue' },
-    rows: { field: 'tissue', step: 8 },
-  },
-  {
-    name: 'a new field keeps the keyed members it states',
-    base: arranged,
-    write: { rows: { field: 'tissue', sort: ['x'] } },
-    rows: { field: 'tissue', sort: ['x'], step: 8 },
-  },
-  {
-    name: 'a new field keeps the pins it states, and only those',
-    base: arranged,
-    write: { rows: { field: 'tissue', colors: { liver: '#0f0' } } },
-    rows: { field: 'tissue', colors: { liver: '#0f0' }, step: 8 },
-  },
-  {
-    name: 'a new field stated after a keyed member still keeps that member',
-    base: arranged,
-    write: { rows: { sort: ['x'], field: 'tissue' } },
-    rows: { field: 'tissue', sort: ['x'], step: 8 },
-  },
-  {
-    name: 'restating the field in force keeps the arrangement',
-    base: arranged,
-    write: { rows: 'source' },
-    rows: arranged.rows,
-  },
-  {
-    name: 'a write over an empty field resets nothing',
-    base: { rows: { sort: ['b', 'a'] } },
-    write: { rows: 'sample' },
-    rows: { field: 'sample', sort: ['b', 'a'] },
-  },
-  {
-    name: 'a write to an empty field resets nothing',
-    base: arranged,
-    write: { rows: { field: '' } },
-    rows: {
-      sort: ['b', 'a'],
-      labels: { a: 'A' },
-      colors: { a: '#f00' },
-      step: 8,
-    },
-  },
-  {
-    name: 'a member write without the field merges',
-    base: arranged,
-    write: { rows: { sort: ['a', 'b'] } },
-    rows: { ...arranged.rows, sort: ['a', 'b'] },
-  },
-  {
-    name: 'a write to the field a field refines keeps the arrangement',
-    base: phased,
-    write: { rows: 'sample' },
-    rows: { ...phased.rows, field: 'sample' },
-  },
-  {
-    name: 'a write to a field refining the one in force keeps the arrangement',
-    base: { rows: { ...phased.rows, field: 'sample' } },
-    write: { rows: { field: 'haplotype' } },
-    rows: phased.rows,
-  },
   {
     name: 'a write from a refining field to an unrelated one still resets',
     base: phased,
@@ -132,12 +70,6 @@ const cases: {
     base: { rows: { ...phased.rows, field: 'sample' } },
     write: { rows: 'tissue' },
     rows: { field: 'tissue', step: 8 },
-  },
-  {
-    name: 'null resets one member',
-    base: arranged,
-    write: { rows: { labels: null } },
-    rows: { field: 'source', sort: ['b', 'a'], colors: { a: '#f00' }, step: 8 },
   },
 ]
 

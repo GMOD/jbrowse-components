@@ -663,24 +663,6 @@ describe('an object the display keys by its field', () => {
     })
   })
 
-  test('a delta on the base field keeps the base arrangement it leaves', () => {
-    const merged = mergeTrackConfig(
-      track({ field: 'source', sort: ['b', 'a'], labels: { a: 'A' } }),
-      {
-        trackId: 't',
-        displays: [
-          { displayId: 't-wig', rows: { field: 'source', sort: ['a'] } },
-        ],
-      },
-      forms,
-    )
-    expect(merged.displays[0]!.rows).toEqual({
-      field: 'source',
-      sort: ['a'],
-      labels: { a: 'A' },
-    })
-  })
-
   test("a field change leaves the base's arrangement to the merge", () => {
     const delta = diffTrackConfig(
       track({ field: 'source', sort: ['b', 'a'] }),

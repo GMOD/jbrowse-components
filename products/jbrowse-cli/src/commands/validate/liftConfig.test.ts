@@ -128,14 +128,11 @@ test.each(cases.map(c => [`${c.name} ${c.path.join('.')}`, c] as const))(
   },
 )
 
-// core's keyedWrites.test.ts table, on the rows a quantitative track's
-// displays declare
+// The rows every consumer shares are products/jbrowse-web's
+// KeyedWritesParity.test.ts table, over one display's slots; these are the
+// merged slots of a quantitative track's displays, and the CLI's raw output
 describe('mergeBySlots over a keyed rows object', () => {
   const slots = displayDefaultSlots('QuantitativeTrack')
-  const CLUSTERED = {
-    newick: '(a,b);',
-    provenance: { regions: [{ refName: 'chr1', start: 0, end: 100 }] },
-  }
   const arranged = {
     rows: {
       field: 'source',
@@ -152,87 +149,10 @@ describe('mergeBySlots over a keyed rows object', () => {
     })
   })
 
-  test.each([
-    {
-      name: 'a new field unsets the keyed members',
-      base: arranged,
-      write: { rows: 'tissue' },
-      rows: { field: 'tissue' },
-    },
-    {
-      name: 'a new field keeps the keyed members it states',
-      base: arranged,
-      write: { rows: { field: 'tissue', sort: ['x'] } },
-      rows: { field: 'tissue', sort: ['x'] },
-    },
-    {
-      name: 'a new field keeps the pins it states, and only those',
-      base: arranged,
-      write: { rows: { field: 'tissue', colors: { liver: '#0f0' } } },
-      rows: { field: 'tissue', colors: { liver: '#0f0' } },
-    },
-    {
-      name: 'a new field stated after a keyed member still keeps that member',
-      base: arranged,
-      write: { rows: { sort: ['x'], field: 'tissue' } },
-      rows: { field: 'tissue', sort: ['x'] },
-    },
-    {
-      name: 'restating the field in force keeps the arrangement',
-      base: arranged,
-      write: { rows: 'source' },
-      rows: arranged.rows,
-    },
-    {
-      name: 'a write over an empty field resets nothing',
-      base: { rows: { sort: ['b', 'a'] } },
-      write: { rows: 'sample' },
-      rows: { field: 'sample', sort: ['b', 'a'] },
-    },
-    {
-      name: 'a write over a bare field unsets nothing it did not hold',
-      base: { rows: 'source' },
-      write: { rows: 'tissue' },
-      rows: { field: 'tissue' },
-    },
-    {
-      name: 'a member write without the field merges',
-      base: arranged,
-      write: { rows: { sort: ['a', 'b'] } },
-      rows: { ...arranged.rows, sort: ['a', 'b'] },
-    },
-    {
-      name: 'null resets one member, left for the app to read',
-      base: arranged,
-      write: { rows: { labels: null } },
-      rows: { ...arranged.rows, labels: null },
-    },
-    {
-      name: 'a new field drops the tree with its provenance',
-      base: { rows: { field: 'source', tree: CLUSTERED } },
-      write: { rows: 'tissue' },
-      rows: { field: 'tissue' },
-    },
-    {
-      name: 'a tree written as newick drops the clustered provenance',
-      base: { rows: { field: 'source', tree: CLUSTERED } },
-      write: { rows: { tree: '(b,a);' } },
-      rows: { field: 'source', tree: { newick: '(b,a);' } },
-    },
-    {
-      name: 'emptying the newick drops the clustered provenance',
-      base: { rows: { field: 'source', tree: CLUSTERED } },
-      write: { rows: { tree: { newick: '' } } },
-      rows: { field: 'source', tree: { newick: '' } },
-    },
-    {
-      name: 'a newick member write drops the clustered provenance',
-      base: { rows: { field: 'source', tree: CLUSTERED } },
-      write: { rows: { tree: { newick: '(b,a);' } } },
-      rows: { field: 'source', tree: { newick: '(b,a);' } },
-    },
-  ])('$name', ({ base, write, rows }) => {
-    expect(mergeBySlots(base, write, slots).rows).toEqual(rows)
+  test('null resets one member, left for the app to read', () => {
+    expect(
+      mergeBySlots(arranged, { rows: { labels: null } }, slots).rows,
+    ).toEqual({ ...arranged.rows, labels: null })
   })
 })
 
@@ -331,7 +251,7 @@ describe('displayDefaultSlots folds writes across displays', () => {
   const refining = (refines: Record<string, string>) =>
     rowsOn({ keyedBy: 'field', keyed: ['sort'], refines }, ['sort'])
 
-  // core's keyedWrites.test.ts refinement rows, through the CLI's merge
+  // the refinement rows of KeyedWritesParity.test.ts, over merged slots
   test.each([
     ['sample', 'haplotype'],
     ['haplotype', 'sample'],

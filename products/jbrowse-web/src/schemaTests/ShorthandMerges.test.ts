@@ -19,7 +19,7 @@ import type { IAnyType } from '@jbrowse/mobx-state-tree'
 // by member and that takes a bare value is found by walking the registered
 // displays, so a new one is covered the day it registers, and each merge path
 // the app has is held to it. A keyed object's keyed members go with a new
-// field (ADR-257, `keyedWrites.test.ts`), so the member kept is another.
+// field (ADR-257, `KeyedWritesParity.test.ts`), so the member kept is another.
 
 interface Case {
   display: string
