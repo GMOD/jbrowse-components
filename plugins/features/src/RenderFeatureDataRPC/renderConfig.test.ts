@@ -4,6 +4,12 @@ import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import configSchemaFactory from '../LinearBasicDisplay/configSchema.ts'
 import {
+  FEATURE_DESCRIPTION_FIELD,
+  FEATURE_NAME_FIELD,
+} from './featureNameField.ts'
+import { DEFAULT_TOOLTIP } from './featureTooltip.ts'
+import {
+  DEFAULT_FEATURE_HEIGHT,
   GENE_GLYPH_DEFAULTS,
   isDisplayMode,
   pickDisplayConfig,
@@ -89,9 +95,30 @@ describe('pickDisplayConfig', () => {
 
   it('lets a declared gene slot win over its default', () => {
     const picked = pickDisplayConfig({
-      transcriptTypes: ['mRNA'],
+      transcripts: { types: ['mRNA'] },
     })
     expect(picked.transcriptTypes).toEqual(['mRNA'])
+  })
+
+  it('gives a snapshot declaring no labels, mark or filter the schema defaults', () => {
+    const picked = pickDisplayConfig({})
+    expect(picked.labels).toEqual({
+      name: FEATURE_NAME_FIELD,
+      description: FEATURE_DESCRIPTION_FIELD,
+    })
+    expect(picked.featureHeight).toBe(DEFAULT_FEATURE_HEIGHT)
+    expect(picked.filter).toEqual([])
+    expect(picked.tooltip).toBe(DEFAULT_TOOLTIP)
+  })
+
+  it('keeps a declared label field and drops a filter entry naming no field', () => {
+    const picked = pickDisplayConfig({
+      labels: { name: { field: 'gene_name' } },
+      filter: [{ field: 'type', equal: 'gene' }, { equal: 'x' }, 'junk'],
+    })
+    expect(picked.labels.name).toBe('gene_name')
+    expect(picked.labels.description).toBe(FEATURE_DESCRIPTION_FIELD)
+    expect(picked.filter).toEqual([{ field: 'type', equal: 'gene' }])
   })
 
   it("sends mark.height as the worker's flat featureHeight", () => {

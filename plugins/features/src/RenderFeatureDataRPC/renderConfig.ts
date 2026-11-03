@@ -2,12 +2,17 @@ import { readConfigValue as coreReadConfigValue } from '@jbrowse/core/configurat
 import { IDENTITY_SCALE } from '@jbrowse/core/util/colorScale'
 import { DEFAULT_CANONICAL_TRANSCRIPTS } from '@jbrowse/core/util/isoformRank'
 
-import { subfeatureLabelsOf } from './displayModes.ts'
-
-import type {
-  SubfeatureLabelPlacementSetting,
-  SubfeatureLabels,
+import {
+  SUBFEATURE_LABEL_PLACEMENTS,
+  subfeatureLabelsOf,
 } from './displayModes.ts'
+import {
+  FEATURE_DESCRIPTION_FIELD,
+  FEATURE_NAME_FIELD,
+} from './featureNameField.ts'
+import { DEFAULT_TOOLTIP } from './featureTooltip.ts'
+
+import type { SubfeatureLabels } from './displayModes.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -120,26 +125,6 @@ export type SettingsDisplayConfig = Omit<
   'geneGlyphMode' | 'facetField'
 >
 
-// A `Record<keyof SettingsDisplayConfig, true>` is exhaustive in both
-// directions, so this list cannot drift from the interface.
-const WORKER_READS: Record<keyof SettingsDisplayConfig, true> = {
-  subfeatureLabels: true,
-  transcriptTypes: true,
-  canonicalTranscriptField: true,
-  canonicalTranscriptTags: true,
-  containerTypes: true,
-  tooltip: true,
-  filter: true,
-  featureHeight: true,
-  color: true,
-  utrColor: true,
-  labels: true,
-}
-
-const DISPLAY_CONFIG_KEYS = Object.keys(
-  WORKER_READS,
-) as (keyof SettingsDisplayConfig)[]
-
 /**
  * The half of the worker's settings that shapes a multi-part glyph. Only the
  * feature display declares these as slots; a display drawing single records
@@ -172,62 +157,128 @@ export const GENE_GLYPH_DEFAULTS: GeneGlyphSettings = {
   utrColor: undefined,
 }
 
+export const DEFAULT_FEATURE_HEIGHT = 10
+
+function member(source: unknown, key: string): unknown {
+  return typeof source === 'object' && source !== null
+    ? Reflect.get(source, key)
+    : undefined
+}
+
+function memberAt(source: unknown, path: string[]) {
+  return path.reduce(member, source)
+}
+
+function stringAt(source: unknown, path: string[], fallback: string) {
+  const value = memberAt(source, path)
+  return typeof value === 'string' ? value : fallback
+}
+
+function optionalStringAt(source: unknown, path: string[]) {
+  const value = memberAt(source, path)
+  return typeof value === 'string' ? value : undefined
+}
+
+function numberAt(source: unknown, path: string[], fallback: number) {
+  const value = memberAt(source, path)
+  return typeof value === 'number' ? value : fallback
+}
+
+function stringsAt(source: unknown, path: string[], fallback: string[]) {
+  const value = memberAt(source, path)
+  return Array.isArray(value) && value.every(v => typeof v === 'string')
+    ? value
+    : fallback
+}
+
+function isFieldPredicate(value: unknown): value is FieldPredicate {
+  return typeof member(value, 'field') === 'string'
+}
+
+function placementOf(value: unknown) {
+  return SUBFEATURE_LABEL_PLACEMENTS.find(p => p === value)
+}
+
+function subfeatureLabelsAt(snapshot: unknown) {
+  const show = memberAt(snapshot, ['labels', 'subfeatures', 'show'])
+  const placement = placementOf(
+    memberAt(snapshot, ['labels', 'subfeatures', 'placement']),
+  )
+  return typeof show === 'boolean' && placement !== undefined
+    ? subfeatureLabelsOf({ show, placement })
+    : GENE_GLYPH_DEFAULTS.subfeatureLabels
+}
+
+function filterAt(snapshot: unknown) {
+  const value = memberAt(snapshot, ['filter'])
+  return Array.isArray(value) ? value.filter(isFieldPredicate) : []
+}
+
 /**
- * Picks exactly the slots `DisplayConfig` declares out of the
- * everything-snapshot, the gene half from `GENE_GLYPH_DEFAULTS` where the
- * display declares none. Picking rather than excluding keeps an unrelated slot
- * write — `height` on every resize-drag frame — out of the RPC cache key.
+ * Picks exactly the slots `SettingsDisplayConfig` declares out of the
+ * everything-snapshot. A slot the display does not declare takes the schema's
+ * default, the gene half from `GENE_GLYPH_DEFAULTS`. Picking rather than
+ * excluding keeps an unrelated slot write — `height` on every resize-drag
+ * frame — out of the RPC cache key. The label fields alone: the `show`
+ * switches are the main thread's, so a label toggle never refetches.
  */
-export function pickDisplayConfig(snapshot: Record<string, unknown>) {
-  const source: Record<string, unknown> = {
-    ...GENE_GLYPH_DEFAULTS,
-    ...snapshot,
+export function pickDisplayConfig(
+  snapshot: Record<string, unknown>,
+): SettingsDisplayConfig {
+  return {
+    subfeatureLabels: subfeatureLabelsAt(snapshot),
+    transcriptTypes: stringsAt(
+      snapshot,
+      ['transcripts', 'types'],
+      GENE_GLYPH_DEFAULTS.transcriptTypes,
+    ),
+    canonicalTranscriptField: stringAt(
+      snapshot,
+      ['transcripts', 'field'],
+      GENE_GLYPH_DEFAULTS.canonicalTranscriptField,
+    ),
+    canonicalTranscriptTags: stringsAt(
+      snapshot,
+      ['transcripts', 'sort'],
+      GENE_GLYPH_DEFAULTS.canonicalTranscriptTags,
+    ),
+    containerTypes: stringsAt(
+      snapshot,
+      ['containers', 'types'],
+      GENE_GLYPH_DEFAULTS.containerTypes,
+    ),
+    tooltip: stringAt(snapshot, ['tooltip', 'field'], DEFAULT_TOOLTIP),
+    filter: filterAt(snapshot),
+    featureHeight: numberAt(
+      snapshot,
+      ['mark', 'height'],
+      DEFAULT_FEATURE_HEIGHT,
+    ),
+    color: workerColorOf({
+      value: optionalStringAt(snapshot, ['encoding', 'color', 'value']),
+      field: optionalStringAt(snapshot, ['encoding', 'color', 'field']),
+      scale: {
+        type: optionalStringAt(snapshot, [
+          'encoding',
+          'color',
+          'scale',
+          'type',
+        ]),
+      },
+    }),
+    utrColor: optionalStringAt(snapshot, [
+      'utrs',
+      'encoding',
+      'color',
+      'value',
+    ]),
+    labels: {
+      name: stringAt(snapshot, ['labels', 'name', 'field'], FEATURE_NAME_FIELD),
+      description: stringAt(
+        snapshot,
+        ['labels', 'description', 'field'],
+        FEATURE_DESCRIPTION_FIELD,
+      ),
+    },
   }
-  const picked: Record<string, unknown> = {}
-  for (const key of DISPLAY_CONFIG_KEYS) {
-    picked[key] = source[key]
-  }
-  const encoding = source.encoding as { color?: object } | undefined
-  picked.color = workerColorOf(encoding?.color ?? {})
-  picked.tooltip = (source.tooltip as { field?: unknown } | undefined)?.field
-  picked.utrColor = (
-    source.utrs as { encoding?: { color?: { value?: unknown } } } | undefined
-  )?.encoding?.color?.value
-  // The fields alone: the `show` switches are the main thread's, so a label
-  // toggle never refetches.
-  const labels = source.labels as
-    | Partial<
-        Record<'name' | 'description', { field?: string }> & {
-          subfeatures: {
-            show: boolean
-            placement: SubfeatureLabelPlacementSetting
-          }
-        }
-      >
-    | undefined
-  if (labels) {
-    picked.labels = {
-      name: labels.name?.field,
-      description: labels.description?.field,
-    }
-    if (labels.subfeatures) {
-      picked.subfeatureLabels = subfeatureLabelsOf(labels.subfeatures)
-    }
-  }
-  picked.featureHeight = (
-    source.mark as { height?: unknown } | undefined
-  )?.height
-  const transcripts = source.transcripts as
-    | { types?: string[]; field?: string; sort?: string[] }
-    | undefined
-  if (transcripts) {
-    picked.transcriptTypes = transcripts.types
-    picked.canonicalTranscriptField = transcripts.field
-    picked.canonicalTranscriptTags = transcripts.sort
-  }
-  const containers = source.containers as { types?: string[] } | undefined
-  if (containers) {
-    picked.containerTypes = containers.types
-  }
-  return picked as unknown as SettingsDisplayConfig
 }

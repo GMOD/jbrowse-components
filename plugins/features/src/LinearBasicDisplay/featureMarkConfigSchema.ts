@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { DEFAULT_FEATURE_HEIGHT } from '../RenderFeatureDataRPC/renderConfig.ts'
+
 /**
  * #config FeatureMark
  * #category display
@@ -22,7 +24,7 @@ export const featureMarkConfigSchema = ConfigurationSchema(
      */
     height: {
       type: 'number',
-      defaultValue: 10,
+      defaultValue: DEFAULT_FEATURE_HEIGHT,
       description: 'height of each feature body in pixels',
     },
   },

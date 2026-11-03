@@ -175,8 +175,8 @@ Every `rpcProps()` field is an RPC cache key, so a change fires
 callbacks only the worker can evaluate, so editing one re-downloads and
 re-parses every region. Theme
 colors leave as color classes and the color scale resolves on the main thread
-(ADR-167). `pickDisplayConfig` reads `WORKER_READS`, so a slot reaches the worker
-only by joining the type.
+(ADR-167). `pickDisplayConfig` builds a `SettingsDisplayConfig` literal, so a slot reaches
+the worker only by joining the type.
 
 Two rules when auditing it:
 
