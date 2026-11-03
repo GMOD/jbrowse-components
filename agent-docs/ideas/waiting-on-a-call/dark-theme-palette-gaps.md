@@ -1,6 +1,6 @@
 ---
 name: dark-theme-palette-gaps
-description: Two color sets in packages/core/src/ui/palette.ts resolve to one light value in both themes — the modification fills and the categorical tag laps — so a dark track paints light-theme color under the modifications and tag schemes. Each is a palette decision rather than a defect, and the same decision twice.
+description: Several data color sets resolve to one light value in both themes — the alignments modification fills and tag laps, the variant matrix's reference and unphased cells, the wiggle heatmap's white midpoint, synteny's CIGAR colors — so a dark track paints light-theme color under them. Each is a palette decision rather than a defect, and the same decision asked per set.
 ---
 
 # The palette's dark-theme gaps
@@ -31,3 +31,18 @@ What deciding it involves:
   three laps for distinguishability and a dark set would be three more;
 - the legend swatches follow whichever answer, since they composite the same
   fills.
+
+## The same question outside alignments
+
+Each of these is a fixed light value with no palette home, so one answer
+above should reach them too:
+
+- the variant matrix: `REFERENCE_COLOR` `#ccc` and `UNPHASED_COLOR` black
+  (`plugins/variants/src/shared/constants.ts`), bright and invisible cells on a
+  dark ground;
+- the wiggle heatmap's `WIGGLE_RECT_MIDDLE` `#ffffff`, the color the density
+  ramp fades from at the origin (`plugins/wiggle/src/shared/wiggleColor.ts`);
+- synteny's `defaultCigarColors` (`packages/synteny-core/src/colorUtils.ts`),
+  which already names a dark variant as its follow-up. The synteny band itself
+  stays light by design (`bandGround.ts`), so this one only matters if that
+  does.
