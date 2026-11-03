@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { writeUnformatted } from './api-docs/format.ts'
+import { writeDoc } from './api-docs/format.ts'
 import { docsDir, repoRoot } from './paths.ts'
-import { readmeMirrorPage } from './readmeMirror.ts'
+import { readmeMirrorText } from './readmeMirror.ts'
 
 // Mirrors products/jbrowse-cli/README.md into website/docs/cli.md. That README
 // is itself generated from the CLI (products/jbrowse-cli/generate_readme.sh
@@ -39,9 +39,9 @@ function stripFrontmatter(md: string) {
 }
 
 export function writeCliDoc() {
-  return writeUnformatted(
+  return writeDoc(
     outPath,
-    readmeMirrorPage({
+    readmeMirrorText({
       readmePath,
       outPath,
       title,

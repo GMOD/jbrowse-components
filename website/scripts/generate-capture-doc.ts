@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { writeUnformatted } from './api-docs/format.ts'
+import { writeDoc } from './api-docs/format.ts'
 import { docsDir, repoRoot } from './paths.ts'
-import { linkRelativeToGithub, readmeMirrorPage } from './readmeMirror.ts'
+import { linkRelativeToGithub, readmeMirrorText } from './readmeMirror.ts'
 
 // Mirrors products/jbrowse-capture/README.md into website/docs/jbrowse-capture.md,
 // the same way generate-img-doc.ts handles jbrowse-img. The README is the
@@ -15,9 +15,9 @@ const outPath = join(docsDir, 'jbrowse-capture.md')
 
 export function writeCaptureDoc() {
   // The frontmatter title supplies the page heading, so the README's H1 goes.
-  return writeUnformatted(
+  return writeDoc(
     outPath,
-    readmeMirrorPage({
+    readmeMirrorText({
       readmePath,
       outPath,
       title: 'Screenshot a live view (@jbrowse/capture)',

@@ -4,12 +4,12 @@ import { formatMarkdown } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 
 // A product README mirrored into a website/docs page: the site's frontmatter,
-// a do-not-edit notice naming the README, then the README's body, formatted the
-// way `pnpm format` formats the page so `--check` compares like with like.
+// a do-not-edit notice naming the README, then the README's body. Unformatted;
+// `writeDoc` formats it, and `readmeMirrorPage` for a caller writing it itself.
 //
 // The frontmatter values are plain YAML scalars, so a `: ` in one would start a
 // mapping key and fail the content-collection parse.
-export function readmeMirrorPage({
+export function readmeMirrorText({
   readmePath,
   outPath,
   title,
@@ -35,7 +35,7 @@ export function readmeMirrorPage({
       )
     }
   }
-  const raw = [
+  return [
     '---',
     `title: ${title}`,
     `description: ${description}`,
@@ -46,7 +46,12 @@ export function readmeMirrorPage({
     '',
     body,
   ].join('\n')
-  return formatMarkdown(raw, outPath)
+}
+
+// The same page formatted the way `pnpm format` formats it, so a `--check`
+// comparing it byte for byte compares like with like.
+export function readmeMirrorPage(page: Parameters<typeof readmeMirrorText>[0]) {
+  return formatMarkdown(readmeMirrorText(page), page.outPath)
 }
 
 // Repo-relative links only resolve inside the repo, so point them at GitHub.
