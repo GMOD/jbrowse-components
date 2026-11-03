@@ -126,6 +126,7 @@ import {
   keyedVariantsFetched,
   keyedVariantsInWindows,
 } from './keyedVariants.ts'
+import { loadedRegionIndexOverlapping } from './loadedRegionIndexOverlapping.ts'
 import { VARIANT_MATRIX_MARKS } from './matrix/variantMatrixMarks.ts'
 import { colorKeysOf, paintCellColors } from './paintCells.ts'
 import { mapPayloadRegions } from './payloadRegions.ts'
@@ -794,7 +795,7 @@ export function stateModelFactory(
          * #method
          * The right-clicked record as the hit plugin-features's feature menu
          * rows act on, in the displayed region the hit was drawn in, else the
-         * one holding its first base.
+         * first loaded one it overlaps.
          */
         recordMenuHit(
           feature: Feature,
@@ -804,10 +805,11 @@ export function stateModelFactory(
           const displayedRegionIndex =
             drawnIn !== undefined
               ? drawnIn
-              : loadedRegionIndexAt(
+              : loadedRegionIndexOverlapping(
                   self.loadedRegions,
                   canonicalizeViewRefName(self, feature.get('refName')),
                   start,
+                  feature.get('end'),
                 )
           return displayedRegionIndex === undefined
             ? undefined

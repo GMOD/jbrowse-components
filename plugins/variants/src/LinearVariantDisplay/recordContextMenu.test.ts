@@ -155,6 +155,19 @@ describe('right-clicking a record, with no sample rows', () => {
     expect(display.recordMenuHit(feature, 0)?.displayedRegionIndex).toBe(0)
   })
 
+  test('a hit that names no region finds the loaded region a record starting before it overlaps', () => {
+    const display = sitesOnlyDisplay(30_000)
+    const feature = display.featureById('>7494>7499')!
+    expect(feature.get('start')).toBeLessThan(30_000)
+    expect(display.recordMenuHit(feature)?.displayedRegionIndex).toBe(0)
+  })
+
+  test('a hit that names no region finds none for a record clear of every loaded region', () => {
+    const display = sitesOnlyDisplay(30_000)
+    const feature = display.featureById('>7493>7494')!
+    expect(display.recordMenuHit(feature)).toBeUndefined()
+  })
+
   test('a record the view holds no reads beside offers no read sort', () => {
     const display = sitesOnlyDisplay()
     expect(labels(rightClickRecord(display, '>7494>7499'))).not.toContain(
