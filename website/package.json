@@ -76,7 +76,7 @@
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.3.5",
-    "astro": "^7.4.4",
+    "astro": "^7.4.5",
     "astro-icon": "^1.2.0",
     "github-slugger": "2.0.0",
     "rehype-raw": "^7.0.0",
@@ -86,7 +86,7 @@
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
     "sharp": "^0.35.5",
-    "shiki": "^4.5.0",
+    "shiki": "^4.6.0",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.2.0"
   },
@@ -98,7 +98,7 @@
     "@types/mdast": "^4.0.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "pagefind": "^1.5.2",
+    "pagefind": "^1.6.0",
     "prettier-plugin-astro": "1.1.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

@@ -4,8 +4,14 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@babel/core':
+      specifier: ^8.1.0
+      version: 8.1.0
+
 overrides:
-  '@babel/core': ^8.0.10
+  '@babel/core': ^8.1.0
   nwsapi: 2.2.25
 
 importers:
@@ -13,17 +19,17 @@ importers:
   .:
     devDependencies:
       '@babel/core':
-        specifier: ^8.0.10
-        version: 8.0.10
+        specifier: 'catalog:'
+        version: 8.1.0
       '@babel/preset-env':
         specifier: ^8.0.7
-        version: 8.0.7(@babel/core@8.0.10)
+        version: 8.0.7(@babel/core@8.1.0)
       '@babel/preset-react':
         specifier: ^8.0.1
-        version: 8.0.1(@babel/core@8.0.10)
+        version: 8.0.1(@babel/core@8.1.0)
       '@babel/preset-typescript':
         specifier: ^8.0.7
-        version: 8.0.7(@babel/core@8.0.10)
+        version: 8.0.7(@babel/core@8.1.0)
       '@electron/notarize':
         specifier: ^3.1.2
         version: 3.1.2(supports-color@8.1.1)
@@ -47,7 +53,7 @@ importers:
         version: 12.2.0
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/web':
         specifier: workspace:^
         version: link:products/jbrowse-web
@@ -122,7 +128,7 @@ importers:
         version: 8.19.0
       babel-loader:
         specifier: ^10.1.1
-        version: 10.1.1(@babel/core@8.0.10)(webpack@5.112.2)
+        version: 10.1.1(@babel/core@8.1.0)(webpack@5.112.2)
       babel-plugin-react-compiler:
         specifier: ^1.0.0
         version: 1.0.0
@@ -181,8 +187,8 @@ importers:
         specifier: ^2.5.1
         version: 2.5.1
       globals:
-        specifier: ^17.13.0
-        version: 17.13.0
+        specifier: ^17.14.0
+        version: 17.14.0
       html-webpack-plugin:
         specifier: ^5.6.8
         version: 5.6.8(webpack@5.112.2)
@@ -199,11 +205,11 @@ importers:
         specifier: ^2.10.2
         version: 2.10.2(webpack@5.112.2)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       oxfmt:
         specifier: ^0.75.0
         version: 0.75.0(@astrojs/compiler-rs@0.5.2)
@@ -287,7 +293,7 @@ importers:
         version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
@@ -295,11 +301,11 @@ importers:
         specifier: workspace:^
         version: link:../../packages/render-core
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -327,11 +333,11 @@ importers:
         specifier: workspace:^
         version: link:../wiggle-core
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -346,7 +352,7 @@ importers:
         version: link:../core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../product-core
@@ -366,11 +372,11 @@ importers:
         specifier: ^9.17.0
         version: 9.17.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@mui/system@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -387,11 +393,11 @@ importers:
         specifier: ^0.28.2
         version: 0.28.2
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       puppeteer:
         specifier: ^25.16.0
         version: 25.16.0(yauzl@2.10.0)
@@ -454,7 +460,7 @@ importers:
         version: 7.2.0
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/quick-lru':
         specifier: ^8.0.0
         version: 8.0.0
@@ -492,11 +498,11 @@ importers:
         specifier: ^8.0.4
         version: 8.0.4
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -520,7 +526,7 @@ importers:
         version: link:../display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
@@ -531,11 +537,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -553,7 +559,7 @@ importers:
         version: link:../display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
@@ -561,8 +567,8 @@ importers:
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -577,13 +583,13 @@ importers:
         version: link:../core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -628,7 +634,7 @@ importers:
         version: link:../core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
@@ -639,11 +645,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -655,13 +661,13 @@ importers:
     dependencies:
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -682,7 +688,7 @@ importers:
         version: link:../core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
@@ -690,11 +696,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -718,7 +724,7 @@ importers:
         version: link:../display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
@@ -729,11 +735,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -827,7 +833,7 @@ importers:
         version: link:../display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
@@ -847,11 +853,11 @@ importers:
         specifier: ^9.17.0
         version: 9.17.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@mui/system@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -872,7 +878,7 @@ importers:
         version: link:../display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../render-core
@@ -883,11 +889,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -920,7 +926,7 @@ importers:
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/modifications-utils':
         specifier: workspace:^
         version: link:../../packages/modifications-utils
@@ -946,11 +952,11 @@ importers:
         specifier: ^2.5.1
         version: 2.5.1
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -972,7 +978,7 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@mui/material':
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -980,11 +986,11 @@ importers:
         specifier: ^2.5.1
         version: 2.5.1
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1011,10 +1017,10 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1032,7 +1038,7 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@mui/icons-material':
         specifier: ^9.5.0
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
@@ -1040,11 +1046,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1072,7 +1078,7 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1086,11 +1092,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1115,7 +1121,7 @@ importers:
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
@@ -1132,11 +1138,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1157,7 +1163,7 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/synteny-core':
         specifier: workspace:^
         version: link:../../packages/synteny-core
@@ -1168,11 +1174,11 @@ importers:
         specifier: ^2.5.1
         version: 2.5.1
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1190,7 +1196,7 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@mui/icons-material':
         specifier: ^9.5.0
         version: 9.5.0(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
@@ -1198,11 +1204,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1223,7 +1229,7 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-config':
         specifier: workspace:^
         version: link:../config
@@ -1240,11 +1246,11 @@ importers:
         specifier: ^9.17.0
         version: 9.17.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@mui/system@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1284,7 +1290,7 @@ importers:
         version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
@@ -1304,11 +1310,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1329,7 +1335,7 @@ importers:
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1346,11 +1352,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1372,7 +1378,7 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1386,8 +1392,8 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1411,10 +1417,10 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1435,10 +1441,10 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1468,7 +1474,7 @@ importers:
         version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-bed':
         specifier: workspace:^
         version: link:../bed
@@ -1482,11 +1488,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1520,7 +1526,7 @@ importers:
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
@@ -1534,11 +1540,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1566,13 +1572,13 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       generic-filehandle2:
         specifier: ^2.5.1
         version: 2.5.1
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1602,7 +1608,7 @@ importers:
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../alignments
@@ -1631,11 +1637,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1669,7 +1675,7 @@ importers:
         version: link:../../packages/launch-args
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
@@ -1680,11 +1686,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1712,7 +1718,7 @@ importers:
         version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1732,11 +1738,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1767,7 +1773,7 @@ importers:
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1787,11 +1793,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1813,10 +1819,10 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1846,7 +1852,7 @@ importers:
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1857,11 +1863,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1886,7 +1892,7 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -1909,11 +1915,11 @@ importers:
         specifier: ^9.17.0
         version: 9.17.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@mui/system@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -1928,7 +1934,7 @@ importers:
         version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../circular-view
@@ -1948,11 +1954,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -2000,7 +2006,7 @@ importers:
         version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-features':
         specifier: workspace:^
         version: link:../features
@@ -2029,11 +2035,11 @@ importers:
         specifier: ^9.17.0
         version: 9.17.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@mui/system@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -2067,7 +2073,7 @@ importers:
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
@@ -2093,11 +2099,11 @@ importers:
         specifier: ^9.17.0
         version: 9.17.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@mui/material@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(@mui/system@9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -2151,14 +2157,14 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       astro:
-        specifier: ^7.4.4
-        version: 7.4.4(@astrojs/markdown-remark@7.3.5(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
+        specifier: ^7.4.5
+        version: 7.4.5(@astrojs/markdown-remark@7.3.5(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -2243,7 +2249,7 @@ importers:
         version: link:../../packages/launch-args
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2353,11 +2359,11 @@ importers:
         specifier: ^6.8.11
         version: 6.8.11(supports-color@8.1.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -2415,7 +2421,7 @@ importers:
         version: link:../../packages/launch-args
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-breakpoint-split-view':
         specifier: workspace:^
         version: link:../../plugins/breakpoint-split-view
@@ -2441,11 +2447,11 @@ importers:
         specifier: ^30.1.3
         version: 30.1.3(@noble/hashes@1.8.0)(canvas@3.2.3)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -2500,7 +2506,7 @@ importers:
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2592,11 +2598,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -2620,14 +2626,14 @@ importers:
         specifier: workspace:*
         version: link:..
       astro:
-        specifier: ^7.4.4
-        version: 7.4.4(@astrojs/markdown-remark@7.3.5(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
+        specifier: ^7.4.5
+        version: 7.4.5(@astrojs/markdown-remark@7.3.5(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -2667,7 +2673,7 @@ importers:
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-authentication':
         specifier: workspace:^
         version: link:../../plugins/authentication
@@ -2708,11 +2714,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -2736,14 +2742,14 @@ importers:
         specifier: workspace:*
         version: link:..
       astro:
-        specifier: ^7.4.4
-        version: 7.4.4(@astrojs/markdown-remark@7.3.5(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
+        specifier: ^7.4.5
+        version: 7.4.5(@astrojs/markdown-remark@7.3.5(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -2783,7 +2789,7 @@ importers:
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2848,11 +2854,11 @@ importers:
         specifier: ^9.5.0
         version: 9.5.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.1)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: '>=19.0.0'
         version: 19.3.1
@@ -2880,7 +2886,7 @@ importers:
         version: link:../../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-wiggle':
         specifier: workspace:*
         version: link:../../../plugins/wiggle
@@ -2891,14 +2897,14 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       astro:
-        specifier: ^7.4.4
-        version: 7.4.4(@astrojs/markdown-remark@7.3.5(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
+        specifier: ^7.4.5
+        version: 7.4.5(@astrojs/markdown-remark@7.3.5(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -2938,7 +2944,7 @@ importers:
         version: link:../../packages/display-ui
       '@jbrowse/mobx-state-tree':
         specifier: ^6.10.0
-        version: 6.10.0(mobx@7.1.3)
+        version: 6.10.0(mobx@7.1.4)
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -3042,11 +3048,11 @@ importers:
         specifier: ^8.0.4
         version: 8.0.4
       mobx:
-        specifier: ^7.1.3
-        version: 7.1.3
+        specifier: ^7.1.4
+        version: 7.1.4
       mobx-react:
         specifier: ^10.0.3
-        version: 10.0.3(mobx@7.1.3)(react@19.3.1)
+        version: 10.0.3(mobx@7.1.4)(react@19.3.1)
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -3082,8 +3088,8 @@ importers:
         specifier: ^7.3.5
         version: 7.3.5(supports-color@8.1.1)
       astro:
-        specifier: ^7.4.4
-        version: 7.4.4(@astrojs/markdown-remark@7.3.5(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
+        specifier: ^7.4.5
+        version: 7.4.5(@astrojs/markdown-remark@7.3.5(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1)
       astro-icon:
         specifier: ^1.2.0
         version: 1.2.0
@@ -3112,8 +3118,8 @@ importers:
         specifier: ^0.35.5
         version: 0.35.5(@types/node@26.6.6)
       shiki:
-        specifier: ^4.5.0
-        version: 4.5.0
+        specifier: ^4.6.0
+        version: 4.6.0
       unified:
         specifier: ^11.0.5
         version: 11.0.5
@@ -3143,8 +3149,8 @@ importers:
         specifier: ^19.3.0
         version: 19.3.0(@types/react@19.3.0)
       pagefind:
-        specifier: ^1.5.2
-        version: 1.5.2
+        specifier: ^1.6.0
+        version: 1.6.0
       prettier-plugin-astro:
         specifier: 1.1.2
         version: 1.1.2(prettier@3.9.10)
@@ -3312,8 +3318,8 @@ packages:
     resolution: {integrity: sha512-YLsYoQMvL8l8WrGpN3Zj7O1wK5LEBN+cQtux7BcuHyxIXve724XG+zuJ1n3U1cUweRtTzQOA4IHbuQw3N34SZw==}
     engines: {node: ^22.18.0 || >=24.11.0}
 
-  '@babel/core@8.0.10':
-    resolution: {integrity: sha512-T6dEcoMJ3L1hyLuNfRXcVlqQrN79kU/SB5bDygVgQNIOUgStdyEGzigtRA9K+9Coh7SZUSt543oWRBxvqYdyuQ==}
+  '@babel/core@8.1.0':
+    resolution: {integrity: sha512-3jqm7xh3kJCmIeOK8sk6/EvOWdSzvOqvjt0tJEDOHHmzWjcQSvIh2/tq1I9RA741tl0QZdMzPJWCulWE+Dy5ww==}
     engines: {node: ^22.18.0 || >=24.11.0}
 
   '@babel/generator@7.29.12':
@@ -3322,6 +3328,10 @@ packages:
 
   '@babel/generator@8.0.10':
     resolution: {integrity: sha512-iC9p3U4Y3vp0qKjRcfFeNzpj+kkK8BVYZTbQepBWVD7vOBLH6ji0drNzKPTPtumFd2w2r/hbEKYjG4pscKa4bg==}
+    engines: {node: ^22.18.0 || >=24.11.0}
+
+  '@babel/generator@8.1.0':
+    resolution: {integrity: sha512-7fiBJ61wDV3AHbg7n/EfLBv3RU+lsdRP8QNJnydkKWA7e48FnnvKQWbVHsJQCBE7JHTj4xlzZL9fvQYsBUip2A==}
     engines: {node: ^22.18.0 || >=24.11.0}
 
   '@babel/helper-annotate-as-pure@7.29.7':
@@ -3458,8 +3468,8 @@ packages:
     resolution: {integrity: sha512-Qpm8+wi5xfDkBfollanwriCcKniFfBmMmaKB01GVM6VGzKXo1fdxosZp04qEr5HM+LKhwr3hG1yRy8+ORsficA==}
     engines: {node: ^22.18.0 || >=24.11.0}
 
-  '@babel/helpers@8.0.10':
-    resolution: {integrity: sha512-tBG9yuaR26JJWFafcl/Dk4eib6bkRJ9H5e6lENcwZqFudA9ImNCuMXLjB3/t+Ub7/DOZv2Rmi5LCOi8q2DCekQ==}
+  '@babel/helpers@8.1.0':
+    resolution: {integrity: sha512-949bjw10dhaRdtQeCpfVShFA4jIcto97BkqmWnRjpzyQuHVZ7EDriaoCn/4D8h1NqSKlmI20xPU0vHf3jQbQRg==}
     engines: {node: ^22.18.0 || >=24.11.0}
 
   '@babel/parser@7.29.12':
@@ -3469,6 +3479,11 @@ packages:
 
   '@babel/parser@8.0.10':
     resolution: {integrity: sha512-h+ah2Kg0ne1Vii892dShj9gky9I5jPzkd8x4s/3xgN/P2bMWmHS3qq59tum3mCVjCBXI8uqfYyYtrfp1Mz6+1w==}
+    engines: {node: ^22.18.0 || >=24.11.0}
+    hasBin: true
+
+  '@babel/parser@8.1.0':
+    resolution: {integrity: sha512-fpqZYAC+Tthr19JbEKxXhCGutvfm/+roMe+ULrgUKI+GVyzkQiTMTSheORcWIAzW8T3Oo3W5UavWSvAWmsp7fA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     hasBin: true
 
@@ -4000,12 +4015,20 @@ packages:
     resolution: {integrity: sha512-t5DaGzMi9WlhMSFT2YavI8gl8yGihoQymSQUkIq9+MUh5tO3Vx9KHwr5gMCzeBdYkvs00xNvr18PxtQTRayucA==}
     engines: {node: ^22.18.0 || >=24.11.0}
 
+  '@babel/traverse@8.1.0':
+    resolution: {integrity: sha512-oQ0QI6MR4cm6bOR/Ua5HLPxvO7vborT7Le5HNt9GmZUKpNsaPl2yj4gsQ440lXaZjc4vmUbSeVgEcK4cHuCL2A==}
+    engines: {node: ^22.18.0 || >=24.11.0}
+
   '@babel/types@7.29.11':
     resolution: {integrity: sha512-WCsemW40Cpc6gouC1SrY6PBaZ+oLRlEVY9XBvZBI7il/HyUrb2nJ505wE1MHEFyDZNnrWDEuy4jL50WVHfTTSQ==}
     engines: {node: '>=6.9.0'}
 
   '@babel/types@8.0.10':
     resolution: {integrity: sha512-KV8Y+teoRsmXeEPS4sCJY1kwV+hcPzHP1qQqgCxrjKOehLdBaxpsFBfoJ8MXWFV80y6Jw56+TM95wR0Per8dYw==}
+    engines: {node: ^22.18.0 || >=24.11.0}
+
+  '@babel/types@8.1.0':
+    resolution: {integrity: sha512-8V8aSTDx012YPmDQF30vrokyxVFdRAU2YBS2VzrnfLAGkP8floVnjckwgFcD0Jrvf6GWMSRdCrYVsk3tyMwZRg==}
     engines: {node: ^22.18.0 || >=24.11.0}
 
   '@base-ui/utils@0.5.0':
@@ -5597,38 +5620,38 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@pagefind/darwin-arm64@1.5.2':
-    resolution: {integrity: sha512-MXpI+7HsAdPkvJ0gk9xj9g541BCqBZOBbdwj9g6lB5LCj6kSV6nqDSjzcAJwvOsfu0fjwvC8hQU+ecfhp+MpiQ==}
+  '@pagefind/darwin-arm64@1.6.0':
+    resolution: {integrity: sha512-611gl64aqN12UcMyKPtZ8+vRWBKlJFSh2JgO8uScxa1Eyjo1dXz9r4wZuRno0yCUE/KN0FauEoKZ3KEwUYHCCg==}
     cpu: [arm64]
     os: [darwin]
 
-  '@pagefind/darwin-x64@1.5.2':
-    resolution: {integrity: sha512-IojxFWMEJe0RQ7PQ3KXQsPIImNsbpPYpoZ+QUDrL8fAl/O27IX+LVLs74/UzEZy5uA2LD8Nz1AiwKr72vrkZQw==}
+  '@pagefind/darwin-x64@1.6.0':
+    resolution: {integrity: sha512-rd3ZbtuxyYqjASKZAPuIV7eeQQHJ7VYpoNKKG8CvglaD3g30eT5Nb7XGNLYwVReBsCccpkURwrGwWjSwr8nyQQ==}
     cpu: [x64]
     os: [darwin]
 
-  '@pagefind/freebsd-x64@1.5.2':
-    resolution: {integrity: sha512-7EVzo9+0w+2cbe671BtMj10UlNo83I+HrLVLfRxO731svHRJKUfJ/mo05gU14pe9PCfpKNQT8FS3Xc/oDN6pOA==}
+  '@pagefind/freebsd-x64@1.6.0':
+    resolution: {integrity: sha512-d+sXqsaThszmPWGVDSRKqIz9GpZcj/bAksNZfg19asSxU0ogNPOMND4kV4giQvOjPFMsltUFf6hQJfoHQ6+hSQ==}
     cpu: [x64]
     os: [freebsd]
 
-  '@pagefind/linux-arm64@1.5.2':
-    resolution: {integrity: sha512-Ovt9+K35sqzn8H3ZMXGwls4TD/wMJuvRtShHIsmUQREmaxjrDEX7gHckRCrwYJ4XE1H1p6HkLz3wukrAnsfXQw==}
+  '@pagefind/linux-arm64@1.6.0':
+    resolution: {integrity: sha512-SLB2I+XqCZma8NvIGIH8nyKblgKIxw5PmqsVtofWOKxNHhEtOEsddbqU+hsrNcT3EV0faM6UmKDHVIxcPYq29w==}
     cpu: [arm64]
     os: [linux]
 
-  '@pagefind/linux-x64@1.5.2':
-    resolution: {integrity: sha512-V+tFqHKXhQKq/WqPBD67AFy7scn1/aZID00ws4fSDd+1daSi5UHR9VVlRrOUYKxn3VuFQYRD7lYXdZK1WED1YA==}
+  '@pagefind/linux-x64@1.6.0':
+    resolution: {integrity: sha512-IbMSx/+Vr/Xk0TTBlLkjgK+rvnbOXGmmb2/MKxQu99AR5DsqQoV3NKEA9PQz2tAhuCZjeD5xJBp4w5N5DHIC7Q==}
     cpu: [x64]
     os: [linux]
 
-  '@pagefind/windows-arm64@1.5.2':
-    resolution: {integrity: sha512-hN9Nh90fNW61nNRCW9ZyQrAj/mD0eRvmJ8NlTUzkbuW8kIzGJUi3cxjFkEcMZ5h/8FsKWD/VcouZl4yo1F7B6g==}
+  '@pagefind/windows-arm64@1.6.0':
+    resolution: {integrity: sha512-wUrniW3REr7VWJHz6xE6F/p/AQgHDFpGZiY9sbWT71KfEijDE5Jnc37V8zc7cilV9h/QkwJGXoEP2+ZLwDmhtw==}
     cpu: [arm64]
     os: [win32]
 
-  '@pagefind/windows-x64@1.5.2':
-    resolution: {integrity: sha512-Fa2Iyw7kaDRzGMfNYNUXNW2zbL5FQVDgSOcbDHdzBrDEdpqOqg8TcZ68F22ol6NJ9IGzvUdmeyZypLW5dyhqsg==}
+  '@pagefind/windows-x64@1.6.0':
+    resolution: {integrity: sha512-cUA2+yXfbymdJllyMjY5YTBwuOgh0/H53Pn5fYKjDnDjk154Ft4U5RVj3TenWySPL/jG6zJfARUWSlyUyXHlZw==}
     cpu: [x64]
     os: [win32]
 
@@ -5900,28 +5923,56 @@ packages:
     resolution: {integrity: sha512-6CIgwq+bt2JZ3OSjb/nBkkwEf/CfpHcbam+Mg5Pllco7HAGRQ2/EFhZrrJtbyNTgKwknfVS+llsXGygiDGwJWw==}
     engines: {node: '>=20'}
 
+  '@shikijs/core@4.6.0':
+    resolution: {integrity: sha512-bfd4OKgvoyXYiYmMRuleA656P4V7M/Du9lcTl38Ngm6KszMj7bq4J1IGZwSYR4c95Tv5UQALtYNWUwaI9UT3xw==}
+    engines: {node: '>=20'}
+
   '@shikijs/engine-javascript@4.5.0':
     resolution: {integrity: sha512-Ed6UdEj84LyYkwnxM5CvSMWAD+id9ExTYri0/+x41U9zrgNifPSS9lZm0JqBP0VfYI8yr8tY5nbNq9+p9R0kFA==}
+    engines: {node: '>=20'}
+
+  '@shikijs/engine-javascript@4.6.0':
+    resolution: {integrity: sha512-K0oqxFoL+kEMdz89mHLFO15Tsbv3kFZ6WR1cXZKMvLSc+oqaM00A6pyga1qSeXB22dP0tTiSApRcGBaKWsEccg==}
     engines: {node: '>=20'}
 
   '@shikijs/engine-oniguruma@4.5.0':
     resolution: {integrity: sha512-dKVmbJecVdB9recl8a/CU4jdpNXyjJQrIcesIkpS70s5HS02ohpnCSpMUbotPnEUzbAcLQ+S4hwZYbkBBiTcJw==}
     engines: {node: '>=20'}
 
+  '@shikijs/engine-oniguruma@4.6.0':
+    resolution: {integrity: sha512-aggd6Q7SuJOXNnsUbfG2XesxBJKBMAw/PDTUo9PyRjMaaJJ2dNrI+q0C+25ARXAK9yLHAlwxc9oRT2u68YKZ7w==}
+    engines: {node: '>=20'}
+
   '@shikijs/langs@4.5.0':
     resolution: {integrity: sha512-wwBTqwduXSz0X4v9Qa2EWeFaYJEw1clCncWjoRNQRbVDu3SPRTRWucnouYapKj3b8Q+sk/41Vbc4B5c8nuYzLA==}
+    engines: {node: '>=20'}
+
+  '@shikijs/langs@4.6.0':
+    resolution: {integrity: sha512-1yMEX3oCVV54LUq/ovfpRkDQoYDkcvjSWFFa/YLUDMiSoRzMi2uxLJYbv41ahT8Lu9lFMaa7hecd3Q39trqUyg==}
     engines: {node: '>=20'}
 
   '@shikijs/primitive@4.5.0':
     resolution: {integrity: sha512-UM7ShlA8oz0OWxLLO8BmO9Ip6fVqdkt8yF0EH7nOCqHfrx1eEAzF0ZUVK7L+I8NEgeu1PEWSRlxaiPPeCb4iDg==}
     engines: {node: '>=20'}
 
+  '@shikijs/primitive@4.6.0':
+    resolution: {integrity: sha512-c54+TQEo9ToqgfL/AU8FpjnV09+GA9Oa7M5ROkkXteZfp5XzpAJGXjjvZQFQioJOwm/w/6Z3lIzQstAkl8coag==}
+    engines: {node: '>=20'}
+
   '@shikijs/themes@4.5.0':
     resolution: {integrity: sha512-zGb87H3UBbpuI4yoh5UguB1XbU+2BDU3kflM7UfZ+Cy2hWo9lBtqjSVK20gmLY6ukYl040hAypGXMgud9vul8Q==}
     engines: {node: '>=20'}
 
+  '@shikijs/themes@4.6.0':
+    resolution: {integrity: sha512-qHAVAs80RiGD+IRuH9G+JPDOEc9A/kHsng4EzCUCwB9bLzW6Z0y9WETh2YyCcADJBmfrIaJ1Jp7KBNP6FHkgtQ==}
+    engines: {node: '>=20'}
+
   '@shikijs/types@4.5.0':
     resolution: {integrity: sha512-drtPrtD8N0DENyD2cyt6Ajy+IWsiCLgMxODwLTpvH1UsN6a9jf90tNTPjqwHvA+0Lzu9e0txk8DjfqH1p9UJRw==}
+    engines: {node: '>=20'}
+
+  '@shikijs/types@4.6.0':
+    resolution: {integrity: sha512-+ENG1adsKt/X7cRYw1Nl7BEpBmPOjmQ7bR/eGmHuMlT8gtOFf3KEi5l31DJYyAWhW6Y6bjP1plU7FmaxWGENFw==}
     engines: {node: '>=20'}
 
   '@shikijs/vscode-textmate@10.1.0':
@@ -6704,8 +6755,8 @@ packages:
     resolution: {integrity: sha512-0848V2WZuTPhqGSqLeZimLJZ5wmamMtWYzvA2kvg8s2DrUPZ3/nrTcHJWN0eJHt62jy7uvNxgTNiUJGIr7JNxg==}
     engines: {node: '>=22.12.0'}
 
-  astro@7.4.4:
-    resolution: {integrity: sha512-e+BzhGCaIY/H1tV/BQPTbOPZVZ8wuu6+bbpc+3oSMH2UgoB1l9peSGASk6nswtYra9PO9OoMREhldKtQkZ5TVw==}
+  astro@7.4.5:
+    resolution: {integrity: sha512-n5lET11/qnrOWn4wNpXxD9g2VKkTIa162hHgrkMPChMQC5q/xh2lY2OerK5mpsEAFCNmXsYA7NISE+9Uo7Cxxg==}
     engines: {node: '>=22.23.4', npm: '>=9.6.5', pnpm: '>=7.1.0'}
     hasBin: true
     peerDependencies:
@@ -7947,8 +7998,8 @@ packages:
     resolution: {integrity: sha512-PT6XReJ+D07JvGoxQMkT6qji/jVNfX/h364XHZOWeRzy64sSFr+xJ5OX7LI3b4MPQzdL4H8Y8M0xzPpsVMwA8Q==}
     engines: {node: '>=10.0'}
 
-  globals@17.13.0:
-    resolution: {integrity: sha512-RwMTC61u7hrG3ZJMkZQOK4JLJrKS8QtoTii63EmWvFXHqycY9FObBJQCbsLxSO8kjKhWE5kV1GC+Vb1g3RI0Zg==}
+  globals@17.14.0:
+    resolution: {integrity: sha512-UtdkTVyAJePQv0J2M9Xe4L0ruNSDV314XiIJsADI2Zf40bcdAonE/D/OhAU8AT99oij9mhLByb+NvA3QWZYgCg==}
     engines: {node: '>=18'}
 
   globalthis@1.0.4:
@@ -7994,9 +8045,6 @@ packages:
   hast-util-from-html@2.0.3:
     resolution: {integrity: sha512-CUSRHXyKjzHov8yKsQjGOElXy/3EKpyX56ELnkHH34vDVw1N1XSQ1ZcAvTyAPtGqLTuKP/uxM+aLkSPqF/EtMw==}
 
-  hast-util-from-parse5@8.0.3:
-    resolution: {integrity: sha512-3kxEVkEKt0zvcZ3hCRYI8rqrgwtlIOFMWkbclACvjlDw8Li9S2hk/d51OI0nr/gIpdMHNepwgOKqZ/sy0Clpyg==}
-
   hast-util-from-parse5@8.0.4:
     resolution: {integrity: sha512-Yq7XlXor0Cpb71sI2E0zpv8QxQ5a6rfhDEETk4bcgrFX2SvJAY2PHocWwFtL6U9qyfiyByW3wZ6sZEfP2kW81g==}
 
@@ -8015,9 +8063,6 @@ packages:
   hast-util-to-estree@3.1.3:
     resolution: {integrity: sha512-48+B/rJWAp0jamNbAAf9M7Uf//UVqAoMmgXhBdxTDJLGKY+LRnZ99qcG+Qjl5HfMpYNzS5v4EAwVEF34LeAj7w==}
 
-  hast-util-to-html@9.0.5:
-    resolution: {integrity: sha512-OguPdidb+fbHQSU4Q4ZiLKnzWo8Wwsf5bZfbvu7//a9oTYoqD/fWpe96NuHkoS9h0ccGOTe0C4NGXdtS0iObOw==}
-
   hast-util-to-html@9.0.6:
     resolution: {integrity: sha512-1SZUxCN3TtJAE7e2BQN2MBHsoZ1gnmi9GoCP5Di59CSWptIezSAW09yDZyVbanb78V9eCwrKqdQsjtfVTxYHWA==}
 
@@ -8035,9 +8080,6 @@ packages:
 
   hast-util-whitespace@3.0.0:
     resolution: {integrity: sha512-88JUN06ipLwsnv+dVn+OIYOvAuvBMy/Qoi6O7mQHxdPXpjy+Cd6xRkWwux7DKO+4sYILtLBRIKgsdpS2gQc7qw==}
-
-  hastscript@9.0.1:
-    resolution: {integrity: sha512-g7df9rMFX/SPi34tyGCyUBREQoKkapwdY/T04Qn9TDWfHhAYt4/I0gMVirzK5wEzeUqIjEB+LXC/ypb7Aqno5w==}
 
   hastscript@9.0.3:
     resolution: {integrity: sha512-1ALZXSmCGmW3h8AMz4R4+QKSKFi7sNgXLVwmwB8FYVtl1CwQ3WDkSAEY/d5tp1g/vbQgq2s1WlHgfO3jbw1TsA==}
@@ -9053,8 +9095,8 @@ packages:
       mobx: ^7.0.0
       react: ^18 || ^19
 
-  mobx@7.1.3:
-    resolution: {integrity: sha512-H2NcS5ylMsqYn7v4WpSdzv5YWPmw5XTV6pG2NvY0qYbh95FXbswZJ7pn7wU0rOtUvRzk+3t4AOX2eircoN+vBg==}
+  mobx@7.1.4:
+    resolution: {integrity: sha512-2G9WcLqXGKe4e5usnMabjz06mqO5hQmad3qagY7/n5MmKS7t281+XtmYxnPYqVmSnCEGAKJkrdRfDhOjn3UNJg==}
 
   modern-tar@0.8.6:
     resolution: {integrity: sha512-LYSks0tNVqbtez/9OB0YFP6qLRSqkdAxJWOQpVaR67lNTbj2zNLyYpowkRMia5lXLCZKzxwoxkxH2MbbBR2aEg==}
@@ -9277,8 +9319,8 @@ packages:
   package-manager-detector@1.9.0:
     resolution: {integrity: sha512-zAMfbta9nPA8AKkA4WdmNAT8R8s6Dk0/xwPsqNnRidMFcLo1YkLuPDTgs2f64XdzS8vbLNnoJ+uUIkgbz7oRHA==}
 
-  pagefind@1.5.2:
-    resolution: {integrity: sha512-XTUaK0hXMCu2jszWE584JGQT7y284TmMV9l/HX3rnG5uo3rHI/uHU56XTyyyPFjeWEBxECbAi0CaFDJOONtG0Q==}
+  pagefind@1.6.0:
+    resolution: {integrity: sha512-yeOd9EA0TUE1PUfbQIluBxzPadBG5/0BV48FAxwMVLkhZcOvwCz6TX4/a/Ofz97pF9/FwwT7CVbTC97BfmI+LQ==}
     hasBin: true
 
   pako-esm2@2.0.2:
@@ -9923,6 +9965,10 @@ packages:
 
   shiki@4.5.0:
     resolution: {integrity: sha512-OcRW72ngQvc+MSVWBRIovC/BTW589iUE/Vxav7VeM4RcY9MUjqB+IR6ILG1k9nuW6LiG/nct9uma4/MBtnZbmQ==}
+    engines: {node: '>=20'}
+
+  shiki@4.6.0:
+    resolution: {integrity: sha512-imjLsVHgPuWhvpU3P+zOekvMYqnel7QmKsFC4Sn0fCuAvaaalBsxwKEsrU8Ko5BdFnZA6Go/8a0RzahS634UgA==}
     engines: {node: '>=20'}
 
   side-channel-list@1.0.1:
@@ -11013,7 +11059,7 @@ snapshots:
       estree-util-visit: 2.0.0
       github-slugger: 2.0.0
       hast-util-from-html: 2.0.3
-      hast-util-to-html: 9.0.5
+      hast-util-to-html: 9.0.6
       hast-util-to-text: 4.0.2
       mdast-util-definitions: 6.0.0
       rehype-raw: 7.0.0
@@ -11093,16 +11139,16 @@ snapshots:
 
   '@babel/compat-data@8.0.5': {}
 
-  '@babel/core@8.0.10':
+  '@babel/core@8.1.0':
     dependencies:
       '@babel/code-frame': 8.0.6
-      '@babel/generator': 8.0.10
+      '@babel/generator': 8.1.0
       '@babel/helper-compilation-targets': 8.0.7
-      '@babel/helpers': 8.0.10
-      '@babel/parser': 8.0.10
+      '@babel/helpers': 8.1.0
+      '@babel/parser': 8.1.0
       '@babel/template': 8.0.0
-      '@babel/traverse': 8.0.10
-      '@babel/types': 8.0.10
+      '@babel/traverse': 8.1.0
+      '@babel/types': 8.1.0
       '@types/gensync': 1.0.5
       convert-source-map: 2.0.0
       empathic: 2.1.0
@@ -11129,6 +11175,15 @@ snapshots:
       '@types/jsesc': 2.5.1
       jsesc: 3.1.0
 
+  '@babel/generator@8.1.0':
+    dependencies:
+      '@babel/parser': 8.1.0
+      '@babel/types': 8.1.0
+      '@jridgewell/gen-mapping': 0.4.0-beta.0
+      '@jridgewell/trace-mapping': 0.3.31
+      '@types/jsesc': 2.5.1
+      jsesc: 3.1.0
+
   '@babel/helper-annotate-as-pure@7.29.7':
     dependencies:
       '@babel/types': 7.29.11
@@ -11145,42 +11200,42 @@ snapshots:
       flru: 1.0.2
       verkit: 0.5.0
 
-  '@babel/helper-create-class-features-plugin@7.29.12(@babel/core@8.0.10)(supports-color@8.1.1)':
+  '@babel/helper-create-class-features-plugin@7.29.12(@babel/core@8.1.0)(supports-color@8.1.1)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-annotate-as-pure': 7.29.7
       '@babel/helper-member-expression-to-functions': 7.29.7(supports-color@8.1.1)
       '@babel/helper-optimise-call-expression': 7.29.7
-      '@babel/helper-replace-supers': 7.29.7(@babel/core@8.0.10)(supports-color@8.1.1)
+      '@babel/helper-replace-supers': 7.29.7(@babel/core@8.1.0)(supports-color@8.1.1)
       '@babel/helper-skip-transparent-expression-wrappers': 7.29.7(supports-color@8.1.1)
       '@babel/traverse': 7.29.12(supports-color@8.1.1)
       semver: 6.3.1
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/helper-create-class-features-plugin@8.0.10(@babel/core@8.0.10)':
+  '@babel/helper-create-class-features-plugin@8.0.10(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-annotate-as-pure': 8.0.0
       '@babel/helper-member-expression-to-functions': 8.0.5
       '@babel/helper-optimise-call-expression': 8.0.0
-      '@babel/helper-replace-supers': 8.0.1(@babel/core@8.0.10)
+      '@babel/helper-replace-supers': 8.0.1(@babel/core@8.1.0)
       '@babel/helper-skip-transparent-expression-wrappers': 8.0.0
       '@babel/traverse': 8.0.10
       verkit: 0.5.0
 
-  '@babel/helper-create-regexp-features-plugin@8.0.7(@babel/core@8.0.10)':
+  '@babel/helper-create-regexp-features-plugin@8.0.7(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-annotate-as-pure': 8.0.0
       regexpu-core: 6.5.3
       verkit: 0.5.0
 
-  '@babel/helper-define-polyfill-provider@1.0.0(@babel/core@8.0.10)':
+  '@babel/helper-define-polyfill-provider@1.0.0(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-compilation-targets': 8.0.7
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
       lodash.debounce: 4.0.8
 
   '@babel/helper-globals@7.29.7': {}
@@ -11211,9 +11266,9 @@ snapshots:
       '@babel/traverse': 8.0.10
       '@babel/types': 8.0.10
 
-  '@babel/helper-module-transforms@8.0.6(@babel/core@8.0.10)':
+  '@babel/helper-module-transforms@8.0.6(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-module-imports': 8.0.0
       '@babel/helper-validator-identifier': 8.0.6
       '@babel/traverse': 8.0.10
@@ -11228,29 +11283,29 @@ snapshots:
 
   '@babel/helper-plugin-utils@7.29.7': {}
 
-  '@babel/helper-plugin-utils@8.0.1(@babel/core@8.0.10)':
+  '@babel/helper-plugin-utils@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
 
-  '@babel/helper-remap-async-to-generator@8.0.1(@babel/core@8.0.10)':
+  '@babel/helper-remap-async-to-generator@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-annotate-as-pure': 8.0.0
       '@babel/helper-wrap-function': 8.0.0
       '@babel/traverse': 8.0.10
 
-  '@babel/helper-replace-supers@7.29.7(@babel/core@8.0.10)(supports-color@8.1.1)':
+  '@babel/helper-replace-supers@7.29.7(@babel/core@8.1.0)(supports-color@8.1.1)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-member-expression-to-functions': 7.29.7(supports-color@8.1.1)
       '@babel/helper-optimise-call-expression': 7.29.7
       '@babel/traverse': 7.29.12(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/helper-replace-supers@8.0.1(@babel/core@8.0.10)':
+  '@babel/helper-replace-supers@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-member-expression-to-functions': 8.0.5
       '@babel/helper-optimise-call-expression': 8.0.0
       '@babel/traverse': 8.0.10
@@ -11283,10 +11338,10 @@ snapshots:
       '@babel/traverse': 8.0.10
       '@babel/types': 8.0.10
 
-  '@babel/helpers@8.0.10':
+  '@babel/helpers@8.1.0':
     dependencies:
       '@babel/template': 8.0.0
-      '@babel/types': 8.0.10
+      '@babel/types': 8.1.0
 
   '@babel/parser@7.29.12':
     dependencies:
@@ -11296,561 +11351,565 @@ snapshots:
     dependencies:
       '@babel/types': 8.0.10
 
-  '@babel/plugin-bugfix-firefox-class-in-computed-class-key@8.0.1(@babel/core@8.0.10)':
+  '@babel/parser@8.1.0':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/types': 8.1.0
 
-  '@babel/plugin-bugfix-safari-class-field-initializer-scope@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-bugfix-firefox-class-in-computed-class-key@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-bugfix-safari-id-destructuring-collision-in-function-expression@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-bugfix-safari-class-field-initializer-scope@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-bugfix-safari-rest-destructuring-rhs-array@8.0.6(@babel/core@8.0.10)':
+  '@babel/plugin-bugfix-safari-id-destructuring-collision-in-function-expression@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
+
+  '@babel/plugin-bugfix-safari-rest-destructuring-rhs-array@8.0.6(@babel/core@8.1.0)':
+    dependencies:
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
       '@babel/helper-skip-transparent-expression-wrappers': 8.0.0
 
-  '@babel/plugin-bugfix-v8-spread-parameters-in-optional-chaining@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-bugfix-v8-spread-parameters-in-optional-chaining@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
       '@babel/helper-skip-transparent-expression-wrappers': 8.0.0
-      '@babel/plugin-transform-optional-chaining': 8.0.5(@babel/core@8.0.10)
+      '@babel/plugin-transform-optional-chaining': 8.0.5(@babel/core@8.1.0)
 
-  '@babel/plugin-bugfix-v8-static-class-fields-redefine-readonly@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-bugfix-v8-static-class-fields-redefine-readonly@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-proposal-private-methods@7.18.6(@babel/core@8.0.10)(supports-color@8.1.1)':
+  '@babel/plugin-proposal-private-methods@7.18.6(@babel/core@8.1.0)(supports-color@8.1.1)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-create-class-features-plugin': 7.29.12(@babel/core@8.0.10)(supports-color@8.1.1)
+      '@babel/core': 8.1.0
+      '@babel/helper-create-class-features-plugin': 7.29.12(@babel/core@8.1.0)(supports-color@8.1.1)
       '@babel/helper-plugin-utils': 7.29.7
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/plugin-syntax-async-generators@7.8.4(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-async-generators@7.8.4(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-bigint@7.8.3(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-bigint@7.8.3(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-class-properties@7.12.13(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-class-properties@7.12.13(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-class-static-block@7.14.5(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-class-static-block@7.14.5(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-import-attributes@7.29.7(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-import-attributes@7.29.7(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-import-meta@7.10.4(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-import-meta@7.10.4(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-json-strings@7.8.3(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-json-strings@7.8.3(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-jsx@7.29.7(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-jsx@7.29.7(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-jsx@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-jsx@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-syntax-logical-assignment-operators@7.10.4(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-logical-assignment-operators@7.10.4(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-nullish-coalescing-operator@7.8.3(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-nullish-coalescing-operator@7.8.3(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-numeric-separator@7.10.4(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-numeric-separator@7.10.4(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-object-rest-spread@7.8.3(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-object-rest-spread@7.8.3(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-optional-catch-binding@7.8.3(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-optional-catch-binding@7.8.3(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-optional-chaining@7.8.3(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-optional-chaining@7.8.3(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-private-property-in-object@7.14.5(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-private-property-in-object@7.14.5(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-top-level-await@7.14.5(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-top-level-await@7.14.5(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-typescript@7.29.7(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-typescript@7.29.7(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-plugin-utils': 7.29.7
 
-  '@babel/plugin-syntax-typescript@8.0.3(@babel/core@8.0.10)':
+  '@babel/plugin-syntax-typescript@8.0.3(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-arrow-functions@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-arrow-functions@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-async-generator-functions@8.0.6(@babel/core@8.0.10)':
+  '@babel/plugin-transform-async-generator-functions@8.0.6(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
-      '@babel/helper-remap-async-to-generator': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
+      '@babel/helper-remap-async-to-generator': 8.0.1(@babel/core@8.1.0)
       '@babel/traverse': 8.0.10
 
-  '@babel/plugin-transform-async-to-generator@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-async-to-generator@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-module-imports': 8.0.0
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
-      '@babel/helper-remap-async-to-generator': 8.0.1(@babel/core@8.0.10)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
+      '@babel/helper-remap-async-to-generator': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-block-scoped-functions@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-block-scoped-functions@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-block-scoping@8.0.10(@babel/core@8.0.10)':
+  '@babel/plugin-transform-block-scoping@8.0.10(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-class-properties@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-class-properties@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-create-class-features-plugin': 8.0.10(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-create-class-features-plugin': 8.0.10(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-class-static-block@8.0.5(@babel/core@8.0.10)':
+  '@babel/plugin-transform-class-static-block@8.0.5(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-create-class-features-plugin': 8.0.10(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-create-class-features-plugin': 8.0.10(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-classes@8.0.10(@babel/core@8.0.10)':
+  '@babel/plugin-transform-classes@8.0.10(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-annotate-as-pure': 8.0.0
       '@babel/helper-compilation-targets': 8.0.7
       '@babel/helper-globals': 8.0.6
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
-      '@babel/helper-replace-supers': 8.0.1(@babel/core@8.0.10)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
+      '@babel/helper-replace-supers': 8.0.1(@babel/core@8.1.0)
       '@babel/traverse': 8.0.10
 
-  '@babel/plugin-transform-computed-properties@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-computed-properties@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-destructuring@8.0.5(@babel/core@8.0.10)':
+  '@babel/plugin-transform-destructuring@8.0.5(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-dotall-regex@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-dotall-regex@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-duplicate-keys@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-duplicate-keys@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-duplicate-named-capturing-groups-regex@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-duplicate-named-capturing-groups-regex@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-dynamic-import@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-dynamic-import@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-explicit-resource-management@8.0.5(@babel/core@8.0.10)':
+  '@babel/plugin-transform-explicit-resource-management@8.0.5(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-destructuring': 8.0.5(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-destructuring': 8.0.5(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-exponentiation-operator@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-exponentiation-operator@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-export-namespace-from@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-export-namespace-from@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-for-of@8.0.7(@babel/core@8.0.10)':
+  '@babel/plugin-transform-for-of@8.0.7(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
       '@babel/helper-skip-transparent-expression-wrappers': 8.0.0
 
-  '@babel/plugin-transform-function-name@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-function-name@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-compilation-targets': 8.0.7
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-json-strings@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-json-strings@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-literals@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-literals@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-logical-assignment-operators@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-logical-assignment-operators@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-member-expression-literals@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-member-expression-literals@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-modules-amd@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-modules-amd@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-module-transforms': 8.0.6(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-module-transforms': 8.0.6(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-modules-commonjs@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-modules-commonjs@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-module-transforms': 8.0.6(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-module-transforms': 8.0.6(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-modules-systemjs@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-modules-systemjs@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-module-transforms': 8.0.6(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-module-transforms': 8.0.6(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
       '@babel/helper-validator-identifier': 8.0.6
 
-  '@babel/plugin-transform-modules-umd@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-modules-umd@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-module-transforms': 8.0.6(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-module-transforms': 8.0.6(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-named-capturing-groups-regex@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-named-capturing-groups-regex@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-new-target@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-new-target@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-nullish-coalescing-operator@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-nullish-coalescing-operator@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-numeric-separator@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-numeric-separator@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-object-rest-spread@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-object-rest-spread@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-compilation-targets': 8.0.7
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-destructuring': 8.0.5(@babel/core@8.0.10)
-      '@babel/plugin-transform-parameters': 8.0.5(@babel/core@8.0.10)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-destructuring': 8.0.5(@babel/core@8.1.0)
+      '@babel/plugin-transform-parameters': 8.0.5(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-object-super@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-object-super@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
-      '@babel/helper-replace-supers': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
+      '@babel/helper-replace-supers': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-optional-catch-binding@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-optional-catch-binding@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-optional-chaining@8.0.5(@babel/core@8.0.10)':
+  '@babel/plugin-transform-optional-chaining@8.0.5(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
       '@babel/helper-skip-transparent-expression-wrappers': 8.0.0
 
-  '@babel/plugin-transform-parameters@8.0.5(@babel/core@8.0.10)':
+  '@babel/plugin-transform-parameters@8.0.5(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-private-methods@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-private-methods@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-create-class-features-plugin': 8.0.10(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-create-class-features-plugin': 8.0.10(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-private-property-in-object@8.0.5(@babel/core@8.0.10)':
+  '@babel/plugin-transform-private-property-in-object@8.0.5(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-annotate-as-pure': 8.0.0
-      '@babel/helper-create-class-features-plugin': 8.0.10(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/helper-create-class-features-plugin': 8.0.10(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-property-literals@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-property-literals@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-react-display-name@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-react-display-name@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-react-jsx-development@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-react-jsx-development@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/plugin-transform-react-jsx': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/plugin-transform-react-jsx': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-react-jsx@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-react-jsx@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-annotate-as-pure': 8.0.0
       '@babel/helper-module-imports': 8.0.0
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-syntax-jsx': 8.0.1(@babel/core@8.0.10)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-syntax-jsx': 8.0.1(@babel/core@8.1.0)
       '@babel/types': 8.0.10
 
-  '@babel/plugin-transform-react-pure-annotations@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-react-pure-annotations@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-annotate-as-pure': 8.0.0
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-regenerator@8.0.6(@babel/core@8.0.10)':
+  '@babel/plugin-transform-regenerator@8.0.6(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-regexp-modifiers@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-regexp-modifiers@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-reserved-words@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-reserved-words@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-shorthand-properties@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-shorthand-properties@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-spread@8.0.8(@babel/core@8.0.10)':
+  '@babel/plugin-transform-spread@8.0.8(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
       '@babel/helper-skip-transparent-expression-wrappers': 8.0.0
 
-  '@babel/plugin-transform-sticky-regex@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-sticky-regex@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-template-literals@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-template-literals@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-typeof-symbol@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-typeof-symbol@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-typescript@8.0.6(@babel/core@8.0.10)':
+  '@babel/plugin-transform-typescript@8.0.6(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-annotate-as-pure': 8.0.0
-      '@babel/helper-create-class-features-plugin': 8.0.10(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/helper-create-class-features-plugin': 8.0.10(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
       '@babel/helper-skip-transparent-expression-wrappers': 8.0.0
-      '@babel/plugin-syntax-typescript': 8.0.3(@babel/core@8.0.10)
+      '@babel/plugin-syntax-typescript': 8.0.3(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-unicode-escapes@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-unicode-escapes@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-unicode-property-regex@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-unicode-property-regex@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-unicode-regex@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-unicode-regex@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/plugin-transform-unicode-sets-regex@8.0.1(@babel/core@8.0.10)':
+  '@babel/plugin-transform-unicode-sets-regex@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.0.10)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-create-regexp-features-plugin': 8.0.7(@babel/core@8.1.0)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/preset-env@8.0.7(@babel/core@8.0.10)':
+  '@babel/preset-env@8.0.7(@babel/core@8.1.0)':
     dependencies:
       '@babel/compat-data': 8.0.5
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/helper-compilation-targets': 8.0.7
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
       '@babel/helper-validator-option': 8.0.0
-      '@babel/plugin-bugfix-firefox-class-in-computed-class-key': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-bugfix-safari-class-field-initializer-scope': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-bugfix-safari-id-destructuring-collision-in-function-expression': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-bugfix-safari-rest-destructuring-rhs-array': 8.0.6(@babel/core@8.0.10)
-      '@babel/plugin-bugfix-v8-spread-parameters-in-optional-chaining': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-bugfix-v8-static-class-fields-redefine-readonly': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-arrow-functions': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-async-generator-functions': 8.0.6(@babel/core@8.0.10)
-      '@babel/plugin-transform-async-to-generator': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-block-scoped-functions': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-block-scoping': 8.0.10(@babel/core@8.0.10)
-      '@babel/plugin-transform-class-properties': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-class-static-block': 8.0.5(@babel/core@8.0.10)
-      '@babel/plugin-transform-classes': 8.0.10(@babel/core@8.0.10)
-      '@babel/plugin-transform-computed-properties': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-destructuring': 8.0.5(@babel/core@8.0.10)
-      '@babel/plugin-transform-dotall-regex': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-duplicate-keys': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-duplicate-named-capturing-groups-regex': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-dynamic-import': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-explicit-resource-management': 8.0.5(@babel/core@8.0.10)
-      '@babel/plugin-transform-exponentiation-operator': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-export-namespace-from': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-for-of': 8.0.7(@babel/core@8.0.10)
-      '@babel/plugin-transform-function-name': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-json-strings': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-literals': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-logical-assignment-operators': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-member-expression-literals': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-modules-amd': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-modules-commonjs': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-modules-systemjs': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-modules-umd': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-named-capturing-groups-regex': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-new-target': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-nullish-coalescing-operator': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-numeric-separator': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-object-rest-spread': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-object-super': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-optional-catch-binding': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-optional-chaining': 8.0.5(@babel/core@8.0.10)
-      '@babel/plugin-transform-parameters': 8.0.5(@babel/core@8.0.10)
-      '@babel/plugin-transform-private-methods': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-private-property-in-object': 8.0.5(@babel/core@8.0.10)
-      '@babel/plugin-transform-property-literals': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-regenerator': 8.0.6(@babel/core@8.0.10)
-      '@babel/plugin-transform-regexp-modifiers': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-reserved-words': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-shorthand-properties': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-spread': 8.0.8(@babel/core@8.0.10)
-      '@babel/plugin-transform-sticky-regex': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-template-literals': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-typeof-symbol': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-unicode-escapes': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-unicode-property-regex': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-unicode-regex': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-unicode-sets-regex': 8.0.1(@babel/core@8.0.10)
-      '@babel/preset-modules': 0.2.0(@babel/core@8.0.10)
-      babel-plugin-polyfill-corejs3: 1.0.0(@babel/core@8.0.10)
+      '@babel/plugin-bugfix-firefox-class-in-computed-class-key': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-bugfix-safari-class-field-initializer-scope': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-bugfix-safari-id-destructuring-collision-in-function-expression': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-bugfix-safari-rest-destructuring-rhs-array': 8.0.6(@babel/core@8.1.0)
+      '@babel/plugin-bugfix-v8-spread-parameters-in-optional-chaining': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-bugfix-v8-static-class-fields-redefine-readonly': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-arrow-functions': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-async-generator-functions': 8.0.6(@babel/core@8.1.0)
+      '@babel/plugin-transform-async-to-generator': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-block-scoped-functions': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-block-scoping': 8.0.10(@babel/core@8.1.0)
+      '@babel/plugin-transform-class-properties': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-class-static-block': 8.0.5(@babel/core@8.1.0)
+      '@babel/plugin-transform-classes': 8.0.10(@babel/core@8.1.0)
+      '@babel/plugin-transform-computed-properties': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-destructuring': 8.0.5(@babel/core@8.1.0)
+      '@babel/plugin-transform-dotall-regex': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-duplicate-keys': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-duplicate-named-capturing-groups-regex': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-dynamic-import': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-explicit-resource-management': 8.0.5(@babel/core@8.1.0)
+      '@babel/plugin-transform-exponentiation-operator': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-export-namespace-from': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-for-of': 8.0.7(@babel/core@8.1.0)
+      '@babel/plugin-transform-function-name': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-json-strings': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-literals': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-logical-assignment-operators': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-member-expression-literals': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-modules-amd': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-modules-commonjs': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-modules-systemjs': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-modules-umd': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-named-capturing-groups-regex': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-new-target': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-nullish-coalescing-operator': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-numeric-separator': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-object-rest-spread': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-object-super': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-optional-catch-binding': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-optional-chaining': 8.0.5(@babel/core@8.1.0)
+      '@babel/plugin-transform-parameters': 8.0.5(@babel/core@8.1.0)
+      '@babel/plugin-transform-private-methods': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-private-property-in-object': 8.0.5(@babel/core@8.1.0)
+      '@babel/plugin-transform-property-literals': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-regenerator': 8.0.6(@babel/core@8.1.0)
+      '@babel/plugin-transform-regexp-modifiers': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-reserved-words': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-shorthand-properties': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-spread': 8.0.8(@babel/core@8.1.0)
+      '@babel/plugin-transform-sticky-regex': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-template-literals': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-typeof-symbol': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-unicode-escapes': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-unicode-property-regex': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-unicode-regex': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-unicode-sets-regex': 8.0.1(@babel/core@8.1.0)
+      '@babel/preset-modules': 0.2.0(@babel/core@8.1.0)
+      babel-plugin-polyfill-corejs3: 1.0.0(@babel/core@8.1.0)
       core-js-compat: 3.51.0
       verkit: 0.5.0
 
-  '@babel/preset-modules@0.2.0(@babel/core@8.0.10)':
+  '@babel/preset-modules@0.2.0(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-dotall-regex': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-unicode-property-regex': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-dotall-regex': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-unicode-property-regex': 8.0.1(@babel/core@8.1.0)
       '@babel/types': 8.0.10
       esutils: 2.0.3
 
-  '@babel/preset-react@8.0.1(@babel/core@8.0.10)':
+  '@babel/preset-react@8.0.1(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
       '@babel/helper-validator-option': 8.0.0
-      '@babel/plugin-transform-react-display-name': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-react-jsx': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-react-jsx-development': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-react-pure-annotations': 8.0.1(@babel/core@8.0.10)
+      '@babel/plugin-transform-react-display-name': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-react-jsx': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-react-jsx-development': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-react-pure-annotations': 8.0.1(@babel/core@8.1.0)
 
-  '@babel/preset-typescript@8.0.7(@babel/core@8.0.10)':
+  '@babel/preset-typescript@8.0.7(@babel/core@8.1.0)':
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-plugin-utils': 8.0.1(@babel/core@8.1.0)
       '@babel/helper-validator-option': 8.0.0
-      '@babel/plugin-transform-modules-commonjs': 8.0.1(@babel/core@8.0.10)
-      '@babel/plugin-transform-typescript': 8.0.6(@babel/core@8.0.10)
+      '@babel/plugin-transform-modules-commonjs': 8.0.1(@babel/core@8.1.0)
+      '@babel/plugin-transform-typescript': 8.0.6(@babel/core@8.1.0)
 
   '@babel/runtime@7.29.10': {}
 
@@ -11865,8 +11924,8 @@ snapshots:
   '@babel/template@8.0.0':
     dependencies:
       '@babel/code-frame': 8.0.6
-      '@babel/parser': 8.0.10
-      '@babel/types': 8.0.10
+      '@babel/parser': 8.1.0
+      '@babel/types': 8.1.0
 
   '@babel/traverse@7.29.12(supports-color@8.1.1)':
     dependencies:
@@ -11890,12 +11949,27 @@ snapshots:
       '@babel/types': 8.0.10
       obug: 3.0.0
 
+  '@babel/traverse@8.1.0':
+    dependencies:
+      '@babel/code-frame': 8.0.6
+      '@babel/generator': 8.1.0
+      '@babel/helper-globals': 8.0.6
+      '@babel/parser': 8.1.0
+      '@babel/template': 8.0.0
+      '@babel/types': 8.1.0
+      obug: 3.0.0
+
   '@babel/types@7.29.11':
     dependencies:
       '@babel/helper-string-parser': 7.29.11
       '@babel/helper-validator-identifier': 7.29.7
 
   '@babel/types@8.0.10':
+    dependencies:
+      '@babel/helper-string-parser': 8.0.8
+      '@babel/helper-validator-identifier': 8.0.6
+
+  '@babel/types@8.1.0':
     dependencies:
       '@babel/helper-string-parser': 8.0.8
       '@babel/helper-validator-identifier': 8.0.6
@@ -12715,9 +12789,9 @@ snapshots:
 
   '@jbrowse/jexl@7.2.0': {}
 
-  '@jbrowse/mobx-state-tree@6.10.0(mobx@7.1.3)':
+  '@jbrowse/mobx-state-tree@6.10.0(mobx@7.1.4)':
     dependencies:
-      mobx: 7.1.3
+      mobx: 7.1.4
 
   '@jbrowse/quick-lru@8.0.0': {}
 
@@ -12882,7 +12956,7 @@ snapshots:
 
   '@jest/transform@30.5.2':
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@jest/types': 30.5.1
       '@jridgewell/trace-mapping': 0.3.31
       babel-plugin-istanbul: 8.0.0
@@ -13438,25 +13512,25 @@ snapshots:
   '@oxlint/binding-win32-x64-msvc@1.90.0':
     optional: true
 
-  '@pagefind/darwin-arm64@1.5.2':
+  '@pagefind/darwin-arm64@1.6.0':
     optional: true
 
-  '@pagefind/darwin-x64@1.5.2':
+  '@pagefind/darwin-x64@1.6.0':
     optional: true
 
-  '@pagefind/freebsd-x64@1.5.2':
+  '@pagefind/freebsd-x64@1.6.0':
     optional: true
 
-  '@pagefind/linux-arm64@1.5.2':
+  '@pagefind/linux-arm64@1.6.0':
     optional: true
 
-  '@pagefind/linux-x64@1.5.2':
+  '@pagefind/linux-x64@1.6.0':
     optional: true
 
-  '@pagefind/windows-arm64@1.5.2':
+  '@pagefind/windows-arm64@1.6.0':
     optional: true
 
-  '@pagefind/windows-x64@1.5.2':
+  '@pagefind/windows-x64@1.6.0':
     optional: true
 
   '@parcel/watcher-android-arm64@2.6.0':
@@ -13688,9 +13762,23 @@ snapshots:
       '@types/hast': 3.0.5
       hast-util-to-html: 9.0.6
 
+  '@shikijs/core@4.6.0':
+    dependencies:
+      '@shikijs/primitive': 4.6.0
+      '@shikijs/types': 4.6.0
+      '@shikijs/vscode-textmate': 10.1.0
+      '@types/hast': 3.0.5
+      hast-util-to-html: 9.0.6
+
   '@shikijs/engine-javascript@4.5.0':
     dependencies:
       '@shikijs/types': 4.5.0
+      '@shikijs/vscode-textmate': 10.1.0
+      oniguruma-to-es: 4.3.6
+
+  '@shikijs/engine-javascript@4.6.0':
+    dependencies:
+      '@shikijs/types': 4.6.0
       '@shikijs/vscode-textmate': 10.1.0
       oniguruma-to-es: 4.3.6
 
@@ -13699,9 +13787,18 @@ snapshots:
       '@shikijs/types': 4.5.0
       '@shikijs/vscode-textmate': 10.1.0
 
+  '@shikijs/engine-oniguruma@4.6.0':
+    dependencies:
+      '@shikijs/types': 4.6.0
+      '@shikijs/vscode-textmate': 10.1.0
+
   '@shikijs/langs@4.5.0':
     dependencies:
       '@shikijs/types': 4.5.0
+
+  '@shikijs/langs@4.6.0':
+    dependencies:
+      '@shikijs/types': 4.6.0
 
   '@shikijs/primitive@4.5.0':
     dependencies:
@@ -13709,11 +13806,26 @@ snapshots:
       '@shikijs/vscode-textmate': 10.1.0
       '@types/hast': 3.0.5
 
+  '@shikijs/primitive@4.6.0':
+    dependencies:
+      '@shikijs/types': 4.6.0
+      '@shikijs/vscode-textmate': 10.1.0
+      '@types/hast': 3.0.5
+
   '@shikijs/themes@4.5.0':
     dependencies:
       '@shikijs/types': 4.5.0
 
+  '@shikijs/themes@4.6.0':
+    dependencies:
+      '@shikijs/types': 4.6.0
+
   '@shikijs/types@4.5.0':
+    dependencies:
+      '@shikijs/vscode-textmate': 10.1.0
+      '@types/hast': 3.0.5
+
+  '@shikijs/types@4.6.0':
     dependencies:
       '@shikijs/vscode-textmate': 10.1.0
       '@types/hast': 3.0.5
@@ -14488,7 +14600,7 @@ snapshots:
       '@iconify/types': 2.0.0
       '@iconify/utils': 3.1.7
 
-  astro@7.4.4(@astrojs/markdown-remark@7.3.5(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1):
+  astro@7.4.5(@astrojs/markdown-remark@7.3.5(supports-color@8.1.1))(@types/node@26.6.6)(esbuild@0.28.2)(terser@5.51.2)(yaml@2.9.1):
     dependencies:
       '@astrojs/compiler-rs': 0.5.2
       '@astrojs/internal-helpers': 0.13.0
@@ -14526,7 +14638,7 @@ snapshots:
       piccolore: 0.1.3
       picomatch: 4.0.7
       rolldown: 1.2.16
-      shiki: 4.5.0
+      shiki: 4.6.0
       smol-toml: 1.9.1
       svgo: 4.1.0
       tinyclip: 1.0.3
@@ -14580,20 +14692,20 @@ snapshots:
 
   axobject-query@4.1.0: {}
 
-  babel-jest@30.5.2(@babel/core@8.0.10):
+  babel-jest@30.5.2(@babel/core@8.1.0):
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@jest/transform': 30.5.2
       '@types/babel__core': 7.20.5
       babel-plugin-istanbul: 8.0.0
-      babel-preset-jest: 30.5.0(@babel/core@8.0.10)
+      babel-preset-jest: 30.5.0(@babel/core@8.1.0)
       chalk: 4.1.2
       graceful-fs: 4.2.11
       slash: 3.0.0
 
-  babel-loader@10.1.1(@babel/core@8.0.10)(webpack@5.112.2):
+  babel-loader@10.1.1(@babel/core@8.1.0)(webpack@5.112.2):
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       find-up: 5.0.0
     optionalDependencies:
       webpack: 5.112.2(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.2)(html-minifier-terser@6.1.0)(lightningcss@1.33.0)(postcss@8.5.32)(sharp@0.35.5(@types/node@26.6.6))(svgo@4.1.0)(webpack-cli@7.3.1)
@@ -14616,40 +14728,40 @@ snapshots:
       cosmiconfig: 7.1.0
       resolve: 1.22.13
 
-  babel-plugin-polyfill-corejs3@1.0.0(@babel/core@8.0.10):
+  babel-plugin-polyfill-corejs3@1.0.0(@babel/core@8.1.0):
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/helper-define-polyfill-provider': 1.0.0(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/helper-define-polyfill-provider': 1.0.0(@babel/core@8.1.0)
       core-js-compat: 3.51.0
 
   babel-plugin-react-compiler@1.0.0:
     dependencies:
       '@babel/types': 7.29.11
 
-  babel-preset-current-node-syntax@1.2.0(@babel/core@8.0.10):
+  babel-preset-current-node-syntax@1.2.0(@babel/core@8.1.0):
     dependencies:
-      '@babel/core': 8.0.10
-      '@babel/plugin-syntax-async-generators': 7.8.4(@babel/core@8.0.10)
-      '@babel/plugin-syntax-bigint': 7.8.3(@babel/core@8.0.10)
-      '@babel/plugin-syntax-class-properties': 7.12.13(@babel/core@8.0.10)
-      '@babel/plugin-syntax-class-static-block': 7.14.5(@babel/core@8.0.10)
-      '@babel/plugin-syntax-import-attributes': 7.29.7(@babel/core@8.0.10)
-      '@babel/plugin-syntax-import-meta': 7.10.4(@babel/core@8.0.10)
-      '@babel/plugin-syntax-json-strings': 7.8.3(@babel/core@8.0.10)
-      '@babel/plugin-syntax-logical-assignment-operators': 7.10.4(@babel/core@8.0.10)
-      '@babel/plugin-syntax-nullish-coalescing-operator': 7.8.3(@babel/core@8.0.10)
-      '@babel/plugin-syntax-numeric-separator': 7.10.4(@babel/core@8.0.10)
-      '@babel/plugin-syntax-object-rest-spread': 7.8.3(@babel/core@8.0.10)
-      '@babel/plugin-syntax-optional-catch-binding': 7.8.3(@babel/core@8.0.10)
-      '@babel/plugin-syntax-optional-chaining': 7.8.3(@babel/core@8.0.10)
-      '@babel/plugin-syntax-private-property-in-object': 7.14.5(@babel/core@8.0.10)
-      '@babel/plugin-syntax-top-level-await': 7.14.5(@babel/core@8.0.10)
+      '@babel/core': 8.1.0
+      '@babel/plugin-syntax-async-generators': 7.8.4(@babel/core@8.1.0)
+      '@babel/plugin-syntax-bigint': 7.8.3(@babel/core@8.1.0)
+      '@babel/plugin-syntax-class-properties': 7.12.13(@babel/core@8.1.0)
+      '@babel/plugin-syntax-class-static-block': 7.14.5(@babel/core@8.1.0)
+      '@babel/plugin-syntax-import-attributes': 7.29.7(@babel/core@8.1.0)
+      '@babel/plugin-syntax-import-meta': 7.10.4(@babel/core@8.1.0)
+      '@babel/plugin-syntax-json-strings': 7.8.3(@babel/core@8.1.0)
+      '@babel/plugin-syntax-logical-assignment-operators': 7.10.4(@babel/core@8.1.0)
+      '@babel/plugin-syntax-nullish-coalescing-operator': 7.8.3(@babel/core@8.1.0)
+      '@babel/plugin-syntax-numeric-separator': 7.10.4(@babel/core@8.1.0)
+      '@babel/plugin-syntax-object-rest-spread': 7.8.3(@babel/core@8.1.0)
+      '@babel/plugin-syntax-optional-catch-binding': 7.8.3(@babel/core@8.1.0)
+      '@babel/plugin-syntax-optional-chaining': 7.8.3(@babel/core@8.1.0)
+      '@babel/plugin-syntax-private-property-in-object': 7.14.5(@babel/core@8.1.0)
+      '@babel/plugin-syntax-top-level-await': 7.14.5(@babel/core@8.1.0)
 
-  babel-preset-jest@30.5.0(@babel/core@8.0.10):
+  babel-preset-jest@30.5.0(@babel/core@8.1.0):
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       babel-plugin-jest-hoist: 30.5.0
-      babel-preset-current-node-syntax: 1.2.0(@babel/core@8.0.10)
+      babel-preset-current-node-syntax: 1.2.0(@babel/core@8.1.0)
 
   bail@2.0.2: {}
 
@@ -15373,7 +15485,7 @@ snapshots:
       astro-eslint-parser: 3.2.0(supports-color@8.1.1)
       eslint: 10.14.0(supports-color@8.1.1)
       espree: 11.2.0
-      globals: 17.13.0
+      globals: 17.14.0
       postcss: 8.5.32
       postcss-selector-parser: 7.1.7
       synckit: 0.11.13
@@ -15402,9 +15514,9 @@ snapshots:
 
   eslint-plugin-react-compiler@19.1.0-rc.2(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/parser': 7.29.12
-      '@babel/plugin-proposal-private-methods': 7.18.6(@babel/core@8.0.10)(supports-color@8.1.1)
+      '@babel/plugin-proposal-private-methods': 7.18.6(@babel/core@8.1.0)(supports-color@8.1.1)
       eslint: 10.14.0(supports-color@8.1.1)
       hermes-parser: 0.25.1
       zod: 3.25.76
@@ -15529,7 +15641,7 @@ snapshots:
       entities: 8.1.0
       eslint: 10.14.0(supports-color@8.1.1)
       find-up-simple: 1.0.1
-      globals: 17.13.0
+      globals: 17.14.0
       identifier-regex: 1.1.0
       indent-string: 5.0.0
       is-builtin-module: 5.0.0
@@ -15939,7 +16051,7 @@ snapshots:
       serialize-error: 7.0.1
     optional: true
 
-  globals@17.13.0: {}
+  globals@17.14.0: {}
 
   globalthis@1.0.4:
     dependencies:
@@ -16000,21 +16112,10 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.5
       devlop: 1.1.0
-      hast-util-from-parse5: 8.0.3
+      hast-util-from-parse5: 8.0.4
       parse5: 7.3.0
       vfile: 6.0.3
       vfile-message: 4.0.3
-
-  hast-util-from-parse5@8.0.3:
-    dependencies:
-      '@types/hast': 3.0.5
-      '@types/unist': 3.0.3
-      devlop: 1.1.0
-      hastscript: 9.0.1
-      property-information: 7.2.0
-      vfile: 6.0.3
-      vfile-location: 5.0.3
-      web-namespaces: 2.0.1
 
   hast-util-from-parse5@8.0.4:
     dependencies:
@@ -16076,20 +16177,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  hast-util-to-html@9.0.5:
-    dependencies:
-      '@types/hast': 3.0.5
-      '@types/unist': 3.0.3
-      ccount: 2.0.1
-      comma-separated-tokens: 2.0.3
-      hast-util-whitespace: 3.0.0
-      html-void-elements: 3.0.0
-      mdast-util-to-hast: 13.2.1
-      property-information: 7.2.0
-      space-separated-tokens: 2.0.2
-      stringify-entities: 4.0.4
-      zwitch: 2.0.4
-
   hast-util-to-html@9.0.6:
     dependencies:
       '@types/hast': 3.0.5
@@ -16148,14 +16235,6 @@ snapshots:
   hast-util-whitespace@3.0.0:
     dependencies:
       '@types/hast': 3.0.5
-
-  hastscript@9.0.1:
-    dependencies:
-      '@types/hast': 3.0.5
-      comma-separated-tokens: 2.0.3
-      hast-util-parse-selector: 4.0.0
-      property-information: 7.2.0
-      space-separated-tokens: 2.0.2
 
   hastscript@9.0.3:
     dependencies:
@@ -16396,7 +16475,7 @@ snapshots:
 
   istanbul-lib-instrument@6.0.3:
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/parser': 7.29.12
       '@istanbuljs/schema': 0.1.6
       istanbul-lib-coverage: 3.2.2
@@ -16483,12 +16562,12 @@ snapshots:
 
   jest-config@30.5.2(@types/node@26.6.6)(babel-plugin-macros@3.1.0):
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@jest/get-type': 30.5.0
       '@jest/pattern': 30.5.0
       '@jest/test-sequencer': 30.5.2
       '@jest/types': 30.5.1
-      babel-jest: 30.5.2(@babel/core@8.0.10)
+      babel-jest: 30.5.2(@babel/core@8.1.0)
       chalk: 4.1.2
       ci-info: 4.4.0
       deepmerge: 4.3.1
@@ -16669,17 +16748,17 @@ snapshots:
 
   jest-snapshot@30.5.2:
     dependencies:
-      '@babel/core': 8.0.10
+      '@babel/core': 8.1.0
       '@babel/generator': 7.29.12
-      '@babel/plugin-syntax-jsx': 7.29.7(@babel/core@8.0.10)
-      '@babel/plugin-syntax-typescript': 7.29.7(@babel/core@8.0.10)
+      '@babel/plugin-syntax-jsx': 7.29.7(@babel/core@8.1.0)
+      '@babel/plugin-syntax-typescript': 7.29.7(@babel/core@8.1.0)
       '@babel/types': 7.29.11
       '@jest/expect-utils': 30.5.2
       '@jest/get-type': 30.5.0
       '@jest/snapshot-utils': 30.5.1
       '@jest/transform': 30.5.2
       '@jest/types': 30.5.1
-      babel-preset-current-node-syntax: 1.2.0(@babel/core@8.0.10)
+      babel-preset-current-node-syntax: 1.2.0(@babel/core@8.1.0)
       chalk: 4.1.2
       expect: 30.5.2
       graceful-fs: 4.2.11
@@ -17518,18 +17597,18 @@ snapshots:
 
   mkdirp-classic@0.5.3: {}
 
-  mobx-react-lite@5.1.2(mobx@7.1.3)(react@19.3.1):
+  mobx-react-lite@5.1.2(mobx@7.1.4)(react@19.3.1):
     dependencies:
-      mobx: 7.1.3
+      mobx: 7.1.4
       react: 19.3.1
 
-  mobx-react@10.0.3(mobx@7.1.3)(react@19.3.1):
+  mobx-react@10.0.3(mobx@7.1.4)(react@19.3.1):
     dependencies:
-      mobx: 7.1.3
-      mobx-react-lite: 5.1.2(mobx@7.1.3)(react@19.3.1)
+      mobx: 7.1.4
+      mobx-react-lite: 5.1.2(mobx@7.1.4)(react@19.3.1)
       react: 19.3.1
 
-  mobx@7.1.3: {}
+  mobx@7.1.4: {}
 
   modern-tar@0.8.6: {}
 
@@ -17750,15 +17829,15 @@ snapshots:
 
   package-manager-detector@1.9.0: {}
 
-  pagefind@1.5.2:
+  pagefind@1.6.0:
     optionalDependencies:
-      '@pagefind/darwin-arm64': 1.5.2
-      '@pagefind/darwin-x64': 1.5.2
-      '@pagefind/freebsd-x64': 1.5.2
-      '@pagefind/linux-arm64': 1.5.2
-      '@pagefind/linux-x64': 1.5.2
-      '@pagefind/windows-arm64': 1.5.2
-      '@pagefind/windows-x64': 1.5.2
+      '@pagefind/darwin-arm64': 1.6.0
+      '@pagefind/darwin-x64': 1.6.0
+      '@pagefind/freebsd-x64': 1.6.0
+      '@pagefind/linux-arm64': 1.6.0
+      '@pagefind/linux-x64': 1.6.0
+      '@pagefind/windows-arm64': 1.6.0
+      '@pagefind/windows-x64': 1.6.0
 
   pako-esm2@2.0.2: {}
 
@@ -18573,6 +18652,17 @@ snapshots:
       '@shikijs/langs': 4.5.0
       '@shikijs/themes': 4.5.0
       '@shikijs/types': 4.5.0
+      '@shikijs/vscode-textmate': 10.1.0
+      '@types/hast': 3.0.5
+
+  shiki@4.6.0:
+    dependencies:
+      '@shikijs/core': 4.6.0
+      '@shikijs/engine-javascript': 4.6.0
+      '@shikijs/engine-oniguruma': 4.6.0
+      '@shikijs/langs': 4.6.0
+      '@shikijs/themes': 4.6.0
+      '@shikijs/types': 4.6.0
       '@shikijs/vscode-textmate': 10.1.0
       '@types/hast': 3.0.5
 
