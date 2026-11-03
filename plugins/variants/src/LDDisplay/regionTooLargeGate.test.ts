@@ -35,3 +35,19 @@ test('the fetch carries the byte budget and a refusal raises the banner', async 
   expect(call[2].byteLimit).toBe(20_000_000)
   expect(display.rpcData).toBeNull()
 })
+
+test('force load sends no byte budget, so nothing is refused', async () => {
+  const { display, view, mockRpcCall } = createTestEnvironment({
+    displayConfig: { forceLoad: true },
+  }).createDisplay()
+  mockRpcCall.mockImplementation(() => new Promise(() => {}))
+
+  view.zoomTo(view.maxBpPerPx)
+  await waitFor(() => {
+    expect(mockRpcCall.mock.calls.some(c => c[1] === 'RenderLDData')).toBe(true)
+  })
+
+  const call = mockRpcCall.mock.calls.find(c => c[1] === 'RenderLDData')!
+  expect(call[2].byteLimit).toBeUndefined()
+  expect(display.regionTooLarge).toBe(false)
+})
