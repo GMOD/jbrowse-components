@@ -595,7 +595,8 @@ export function variantContextMenuItems(
   self: LinearVariantDisplayModel,
 ): MenuItem[] {
   const feat = self.contextMenuInfo?.feature
-  const hit = feat && self.recordMenuHit(feat)
+  const hit =
+    feat && self.recordMenuHit(feat, self.contextMenuInfo?.displayedRegionIndex)
   const recordRows =
     hit &&
     featureRecordMenuItems(self, {

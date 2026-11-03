@@ -786,15 +786,22 @@ export function stateModelFactory(
         /**
          * #method
          * The right-clicked record as the hit plugin-features's feature menu
-         * rows act on, in the displayed region holding its first base.
+         * rows act on, in the displayed region the hit was drawn in, else the
+         * one holding its first base.
          */
-        recordMenuHit(feature: Feature): FeatureMenuHit | undefined {
+        recordMenuHit(
+          feature: Feature,
+          drawnIn?: number,
+        ): FeatureMenuHit | undefined {
           const start: number = feature.get('start')
-          const displayedRegionIndex = loadedRegionIndexAt(
-            self.loadedRegions,
-            canonicalizeViewRefName(self, feature.get('refName')),
-            start,
-          )
+          const displayedRegionIndex =
+            drawnIn !== undefined
+              ? drawnIn
+              : loadedRegionIndexAt(
+                  self.loadedRegions,
+                  canonicalizeViewRefName(self, feature.get('refName')),
+                  start,
+                )
           return displayedRegionIndex === undefined
             ? undefined
             : {

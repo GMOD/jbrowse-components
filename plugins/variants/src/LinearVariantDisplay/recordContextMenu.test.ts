@@ -8,10 +8,14 @@ import type { LinearVariantDisplayModel } from './model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // the fetch that brought the records marks their region loaded
-function sitesOnlyDisplay() {
+function sitesOnlyDisplay(loadedStart = 0) {
   const { display } = recordsDisplayAt(KIT, 51, {}, false)
   const region = display.view.displayedRegions[0]!
-  display.setLoadedRegion(0, { ...region, start: 0, end: 100_000 }, undefined)
+  display.setLoadedRegion(
+    0,
+    { ...region, start: loadedStart, end: 100_000 },
+    undefined,
+  )
   return display
 }
 
@@ -128,6 +132,13 @@ describe('right-clicking a record, with no sample rows', () => {
     expect(region!.start).toBeLessThanOrEqual(24561)
     expect(region!.end).toBeGreaterThanOrEqual(24562)
     expect(region!.end - region!.start).toBeLessThan(100)
+  })
+
+  test('a record starting before the loaded span keeps its record rows', () => {
+    const display = sitesOnlyDisplay(30_000)
+    expect(labels(rightClickThroughSurface(display, '>7494>7499'))).toEqual(
+      expect.arrayContaining(['Zoom to variant', 'Copy to clipboard']),
+    )
   })
 
   test('a record the view holds no reads beside offers no read sort', () => {

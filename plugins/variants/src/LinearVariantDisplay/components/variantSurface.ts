@@ -97,12 +97,14 @@ export function variantSurfaceHandlers<H>(
       if (found) {
         e.preventDefault()
         model.clearHoveredFeature()
+        const tooltip = surface.getTooltip(found.hit)
         model.openContextMenu({
           clientX: e.clientX,
           clientY: e.clientY,
           feature: found.feature,
           bandRecordId: surface.bandRecordId?.(found.hit),
-          tooltipText: model.tooltipTextOf(surface.getTooltip(found.hit)),
+          displayedRegionIndex: tooltip.displayedRegionIndex,
+          tooltipText: model.tooltipTextOf(tooltip),
         })
       }
     },

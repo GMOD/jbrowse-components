@@ -30,6 +30,8 @@ export type ProcessedSource = Source & { sampleName: string }
 export interface VariantContextMenuInfo extends ContextMenuAnchor {
   feature: Feature
   bandRecordId?: string
+  /** The displayed region the hit was drawn in, which the record may start before. */
+  displayedRegionIndex?: number
   /** The tooltip at the click, resolved there as the feature track does. */
   tooltipText?: string
 }
