@@ -92,6 +92,7 @@ describe('the first layout keeps the height it has', () => {
 
   test('over genotype rows, and after genotypes go off', () => {
     const { display } = recordsDisplayAt(SPARSE, 10)
+    display.setSources([{ name: 'S0' }, { name: 'S1' }])
     expect(display.recordsOnly).toBe(false)
     expect(display.availableHeight).toBe(200)
     display.setShowGenotypes(false)
@@ -185,6 +186,16 @@ describe('an opening height writes nothing', () => {
   })
 })
 
+test('hiding the rows of a cohort writes false and showing them clears it', () => {
+  const { display } = recordsDisplayAt(SPARSE, 10, {}, true, { genotypes: {} })
+  display.setSources([{ name: 'S0' }, { name: 'S1' }])
+  display.setShowGenotypes(false)
+  expect(display.genotypesShowWritten).toBe(true)
+  display.setShowGenotypes(true)
+  expect(display.genotypesShowWritten).toBe(false)
+  expect(display.drawsGenotypeRows).toBe(true)
+})
+
 describe('a one-sample VCF opening as its records', () => {
   test('gives its row the default height once the row is asked for', () => {
     const { display } = recordsDisplayAt(SPARSE, 10, {}, true, {
@@ -195,5 +206,17 @@ describe('a one-sample VCF opening as its records', () => {
     display.setShowGenotypes(true)
     expect(display.recordsOnly).toBe(false)
     expect(display.availableHeight).toBe(200)
+  })
+
+  test('asking for the row and then not returns to the opening state', () => {
+    const { display } = recordsDisplayAt(SPARSE, 10, {}, true, {
+      genotypes: {},
+    })
+    const opening = display.height
+    display.setShowGenotypes(true)
+    display.setShowGenotypes(false)
+    expect(display.genotypesShowWritten).toBe(false)
+    expect(display.recordsOnly).toBe(true)
+    expect(display.height).toBe(opening)
   })
 })

@@ -687,13 +687,20 @@ export function stateModelFactory(
         },
         /**
          * #getter
+         * What an unset `genotypes.show` resolves to: every VCF but a
+         * one-sample one draws its rows.
+         */
+        get genotypesShowDefault(): boolean {
+          return self.adapterSamples?.length !== 1
+        },
+        /**
+         * #getter
          * `genotypes.show`: whether the display reads genotypes and draws a
-         * row per sample. Unset, every VCF but a one-sample one does.
+         * row per sample. Unset, `genotypesShowDefault`.
          */
         get showGenotypes(): boolean {
           return (
-            getConf(self, ['genotypes', 'show']) ??
-            self.adapterSamples?.length !== 1
+            getConf(self, ['genotypes', 'show']) ?? this.genotypesShowDefault
           )
         },
         /**
@@ -1141,10 +1148,16 @@ export function stateModelFactory(
            * #action
            * Draw the genotype rows, or the records alone. In columns this
            * swaps the backend as `setVariantLayout` does, so it clears the
-           * render error the same way.
+           * render error the same way. A value the slot resolves to unset is
+           * cleared rather than written, since a written `false` keeps the
+           * band's look over rows (ADR-254).
            */
           setShowGenotypes(arg: boolean) {
-            setConf(self, ['genotypes', 'show'], arg)
+            setConf(
+              self,
+              ['genotypes', 'show'],
+              arg === self.genotypesShowDefault ? undefined : arg,
+            )
             self.setRenderError(undefined)
           },
           /**
