@@ -11,11 +11,7 @@ import {
   pluginOf,
 } from './agentText.ts'
 import { colorChannelsSection, presetFieldsSection } from './colorChannels.ts'
-import {
-  assertExamplesValidate,
-  looseTrackExample,
-  wrapAdapterExample,
-} from './configExamples.ts'
+import { looseTrackExample, wrapAdapterExample } from './configExamples.ts'
 import {
   configManifest,
   liftsNumbers,
@@ -25,7 +21,6 @@ import {
 } from './configManifest.ts'
 import { parseNode } from './docProgram.ts'
 import { slotSpreadPairs, slotSpreadPart } from './enumConstants.ts'
-import { writePage } from './format.ts'
 import { collectSlotTypes } from './generateSlotTypeDocs.ts'
 import {
   codeBlock,
@@ -48,10 +43,8 @@ import {
 } from './slotSource.ts'
 import {
   assertSingleHeader,
-  assertUniquePages,
   collectTransitive,
   filterUnseenByName,
-  headerGaps,
   lookupByIdOrName,
   mapByKey,
   repoRelative,
@@ -283,7 +276,10 @@ function resolveBase(config: Config, index: ConfigIndex) {
 }
 
 // The transitive base chain (direct base first), via the shared graph walk.
-function collectBaseConfigs(config: ConfigWithHeader, index: ConfigIndex) {
+export function collectBaseConfigs(
+  config: ConfigWithHeader,
+  index: ConfigIndex,
+) {
   return collectTransitive(
     config,
     c => c.header.id,
@@ -366,7 +362,7 @@ const CONFIG_CATEGORIES: [string, string][] = [
   ['InternetAccount', 'Internet Account'],
 ]
 
-function configCategory(name: string, explicit?: string): string {
+export function configCategory(name: string, explicit?: string): string {
   return suffixCategory(name, explicit, CONFIG_CATEGORIES)
 }
 
@@ -389,7 +385,7 @@ function pageCategory(header: ConfigHeader, links: DisplayLinkContext) {
 // name into a page, and which Displays also have a documented state model.
 // displayToTrackType/adaptersByTrack additionally link a display or track to the
 // data adapters that feed it (see compatibleAdaptersSection).
-interface DisplayLinkContext {
+export interface DisplayLinkContext {
   displayTypesByTrack: Map<string, string[]>
   displayToTrackType: Map<string, string>
   adaptersByTrack: Map<string, string[]>
@@ -409,7 +405,7 @@ interface DisplayLinkContext {
 // That is deterministic for a given tree AND install and stable across neither,
 // so the list permuted whenever the package graph moved and the churn landed on
 // whoever next added a dependency, reading as theirs.
-function extendedByMap(configs: ConfigWithHeader[], index: ConfigIndex) {
+export function extendedByMap(configs: ConfigWithHeader[], index: ConfigIndex) {
   const map = new Map<string, string[]>()
   for (const config of configs) {
     const base = resolveBase(config, index)
@@ -513,7 +509,7 @@ function extendedByLines(name: string, links: DisplayLinkContext) {
 // links), or an authored #example. Extended by others with neither is a base.
 // This is what keeps `"type": "BaseLinearDisplay"` — the one string a reader
 // arriving from a `#slot-` link would copy — out of the slot table.
-function isBaseSchema(header: ConfigHeader, links: DisplayLinkContext) {
+export function isBaseSchema(header: ConfigHeader, links: DisplayLinkContext) {
   return (
     links.extendedBy.has(header.name) &&
     !links.displayToTrackType.has(header.name) &&
@@ -607,7 +603,7 @@ function stateModelLine(name: string, id: string, links: DisplayLinkContext) {
 // real overview. Anchored on the exact name, so it can never eat an authored
 // description that happens to start similarly (e.g. "used to load bgzip-
 // compressed, tabix-indexed VCF files" survives — it names no config).
-function stripNameTautology(docs: string, name: string) {
+export function stripNameTautology(docs: string, name: string) {
   const esc = escapeRegExp(name)
   const re = new RegExp(
     `^\\s*(?:configuration(?: schema)? (?:for|of)(?: the)? ${esc}|${esc} configuration(?: schema)?)\\.?[^\\S\\n]*(?:\\n|$)`,
@@ -616,7 +612,7 @@ function stripNameTautology(docs: string, name: string) {
   return docs.replace(re, '').trim()
 }
 
-function renderConfig(
+export function renderConfig(
   { header, derives, identifier, slots, filename }: ConfigWithHeader,
   bases: ConfigWithHeader[],
   links: DisplayLinkContext,
@@ -1065,7 +1061,10 @@ export function slotRow(item: Item, schema: string) {
 // base chains, so each unresolved derivation is listed exactly once and always
 // attributed to the config that actually declares it (not a page that inherits
 // it transitively).
-function unresolvedBases(configs: ConfigWithHeader[], index: ConfigIndex) {
+export function unresolvedBases(
+  configs: ConfigWithHeader[],
+  index: ConfigIndex,
+) {
   return configs
     .filter(config => config.derives && !resolveBase(config, index))
     .map(
@@ -1078,7 +1077,7 @@ function unresolvedBases(configs: ConfigWithHeader[], index: ConfigIndex) {
 // Without the tag we fall back to FeatureTrack, which is wrong for e.g.
 // alignments/variant/sequence adapters, so the page shows a config that would
 // not work — list it so the author adds the tag.
-function adaptersMissingTrackType(configs: ConfigWithHeader[]) {
+export function adaptersMissingTrackType(configs: ConfigWithHeader[]) {
   return configs
     .filter(config => {
       const isAdapter =
@@ -1105,7 +1104,7 @@ function adaptersMissingTrackType(configs: ConfigWithHeader[]) {
 // surfaces a row whose Type cell is a dumped `ConfigurationSchema(...)`. Asking
 // for a description there sends the next author hunting for a sentence that
 // makes the page worse.
-function slotsMissingDescription(configs: ConfigWithHeader[]) {
+export function slotsMissingDescription(configs: ConfigWithHeader[]) {
   return configs.flatMap(c =>
     c.slots
       .filter(s => {
@@ -1128,7 +1127,9 @@ function slotsMissingDescription(configs: ConfigWithHeader[]) {
 // sentence at a definition site the error names exactly, so it can be held
 // there. Gaps with a real backlog (a missing #example) stay in the coverage
 // list; this one graduates.
-function assertNoBlankSlotDescriptions(gaps: { file: string; name: string }[]) {
+export function assertNoBlankSlotDescriptions(
+  gaps: { file: string; name: string }[],
+) {
   if (gaps.length) {
     const byFile = new Map<string, string[]>()
     for (const gap of gaps) {
@@ -1168,7 +1169,7 @@ function assertNoBlankSlotDescriptions(gaps: { file: string; name: string }[]) {
 //     `#slot` and render as the page's identity, not a row.
 //   - a container sub-schema, whose own row `slotsTable` hides (isContainerSlot)
 //     and whose children render as `index.*` rows.
-function assertManifestSlotsAreDocumented(
+export function assertManifestSlotsAreDocumented(
   configs: ConfigWithHeader[],
   index: ConfigIndex,
 ) {
@@ -1272,29 +1273,6 @@ export function missingSlotNames(
   return documented.has(slot.name) ? [] : [slot.name]
 }
 
-// Group every documented adapter by the track type it declares via #trackType,
-// so a track/display page can list the adapters that supply it.
-//
-// Sorted, because the input order is a source scan and the output is a committed
-// page. Unsorted, the "Related links" block on a track page reorders whenever
-// the scan does — an unrelated new export in a plugin's `index.ts` was enough —
-// and the diff flips back and forth with nothing behind it. No page's list was
-// in a meaningful order to lose: they were grouped by declaring adapter, which
-// says nothing about which format a reader should reach for first.
-function adaptersByTrackType(configs: ConfigWithHeader[]) {
-  const map = new Map<string, string[]>()
-  for (const config of configs) {
-    const trackType = config.header.trackType
-    if (trackType) {
-      map.set(trackType, [...(map.get(trackType) ?? []), config.header.name])
-    }
-  }
-  for (const names of map.values()) {
-    names.sort((a, b) => a.localeCompare(b, 'en'))
-  }
-  return map
-}
-
 // Where the slots of this config are written, as one plain sentence — the
 // website's slotNesting with its links and its base-schema redirect removed.
 const AGENT_SLOT_NESTING: Record<string, (name: string) => string> = {
@@ -1327,7 +1305,7 @@ export function agentSlotLine(record: SlotRecord) {
   return memberLine(record.name, type && `: ${type}`, docs)
 }
 
-function renderAgentConfig(
+export function renderAgentConfig(
   cfg: ConfigWithHeader,
   bases: ConfigWithHeader[],
   links: DisplayLinkContext,
@@ -1459,73 +1437,5 @@ function linkSlotSchemas(configs: ConfigWithHeader[], index: ConfigIndex) {
         }
       }
     }
-  }
-}
-
-export function writeConfigDocs(
-  byFile: Record<string, Config>,
-  displayTypesByTrack: Map<string, string[]>,
-  displayToTrackType: Map<string, string>,
-  modelNames: Set<string>,
-) {
-  const dir = 'website/docs/config'
-  const { withHeader, index } = linkedConfigs(byFile)
-  const { byName } = index
-  // All before the write loop, so a run that would emit a blank cell, drop a
-  // slot, or write one page for two types fails without having rewritten
-  // anything.
-  assertNoBlankSlotDescriptions(slotsMissingDescription(withHeader))
-  assertExamplesValidate(withHeader, displayTypesByTrack)
-  assertManifestSlotsAreDocumented(withHeader, index)
-  assertUniquePages(
-    '#config',
-    withHeader.map(c => ({
-      name: c.header.name,
-      slug: c.header.id,
-      filename: c.filename,
-    })),
-  )
-  const extendedBy = extendedByMap(withHeader, index)
-  const links: DisplayLinkContext = {
-    displayTypesByTrack,
-    displayToTrackType,
-    adaptersByTrack: adaptersByTrackType(withHeader),
-    byName,
-    modelNames,
-    extendedBy,
-  }
-  const agentPages: Record<string, { category: string; text: string }> = {}
-  for (const cfg of withHeader) {
-    const bases = collectBaseConfigs(cfg, index)
-    writePage(`${dir}/${cfg.header.name}.md`, renderConfig(cfg, bases, links))
-    agentPages[cfg.header.name] = renderAgentConfig(cfg, bases, links)
-  }
-  // A base/shared schema is exempt from the #example gap: it is never named in
-  // a config, so an example on it would teach a type nobody can write. Listing
-  // them made the list a 40-name wall that read as noise, which is how ~17
-  // genuinely pasteable adapters and displays stayed bare. Their route to a
-  // usable shape is the Extended by links, not an example of their own.
-  //
-  // isBaseSchema, not a bare `extendedBy.has()`: a config that others derive
-  // from but that *is* itself writable — it carries a DisplayType registration —
-  // is a real gap, and exempting it would hide the one thing this list exists to
-  // surface.
-  return {
-    agentPages,
-    ...headerGaps({
-      items: withHeader,
-      getName: c => c.header.name,
-      getDocs: c => stripNameTautology(c.header.docs, c.header.name),
-      hasExample: c => c.header.examples.length > 0,
-      // Was a filter on `items`, which also dropped these from the General gap —
-      // a base schema that fell out of every category is still a real gap, and
-      // that one was silently unreportable. Zero either way today; see the
-      // headerGaps comment.
-      wantsExample: c => !isBaseSchema(c.header, links),
-      isGeneralCategory: c =>
-        configCategory(c.header.name, c.header.category) === 'General',
-    }),
-    unresolvedBase: unresolvedBases(withHeader, index),
-    adapterNoTrackType: adaptersMissingTrackType(withHeader),
   }
 }

@@ -20,7 +20,7 @@ import {
   writeApiDocs,
   writeApiReadmes,
 } from './generateApiDocs.ts'
-import { accumulateConfig, writeConfigDocs } from './generateConfigDocs.ts'
+import { accumulateConfig } from './generateConfigDocs.ts'
 import { writeConfigTypeIndex } from './generateConfigTypeIndex.ts'
 import {
   assertEveryDisplayDeclaresAViewType,
@@ -33,6 +33,7 @@ import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 import { MARKER_GENERATORS, PROGRAM_MARKERS } from './markerGenerators.ts'
 import { corpusFiles, getAllFiles, sourceCorpus } from './sourceCorpus.ts'
 import { unreadableSignature } from './typeSignatures.ts'
+import { writeConfigDocs } from './writeConfigDocs.ts'
 
 import type { Config } from './configTypes.ts'
 import type { DisplayTrackLink } from './docProgram.ts'
