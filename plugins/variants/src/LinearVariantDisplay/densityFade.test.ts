@@ -54,6 +54,24 @@ test('long records overlapping each other share no pixel to fade', () => {
   ).toBe(undefined)
 })
 
+test('one record spanning megabases leaves the short records around it faded', () => {
+  const alpha = recordDensityAlpha(
+    Uint32Array.from([...stacked(20), 0, 3_000_000_000]),
+    1,
+  )!
+  expect(composite(alpha[0]!, 20)).toBeCloseTo(DENSE_OPACITY)
+  expect(alpha[20]).toBe(1)
+})
+
+test('only long records leave nothing to fade', () => {
+  expect(
+    recordDensityAlpha(
+      Uint32Array.from([0, 3_000_000_000, 5, 3_000_000_000]),
+      1,
+    ),
+  ).toBe(undefined)
+})
+
 test('a faded cell keeps its color and scales its alpha', () => {
   const colors = Uint32Array.from([0xff123456, 0x80abcdef])
   const out = fadeCellColors(colors, [0, 1], 2, Float32Array.from([0.5, 1]))

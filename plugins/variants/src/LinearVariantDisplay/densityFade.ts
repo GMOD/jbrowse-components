@@ -32,18 +32,20 @@ export function recordDensityAlpha(
   if (n < 2 || !(bpPerPx > 0)) {
     return undefined
   }
+  const floored = (f: number) =>
+    featurePositions[2 * f + 1]! - featurePositions[2 * f]! < FLOOR_PX * bpPerPx
   let min = Infinity
   let max = 0
   for (let f = 0; f < n; f++) {
-    min = Math.min(min, featurePositions[2 * f]!)
-    max = Math.max(max, featurePositions[2 * f + 1]!)
+    if (floored(f)) {
+      min = Math.min(min, featurePositions[2 * f]!)
+      max = Math.max(max, featurePositions[2 * f + 1]!)
+    }
   }
   const columns = Math.ceil((max - min) / bpPerPx) + 3
-  if (columns > MAX_COLUMNS) {
+  if (!Number.isFinite(columns) || columns > MAX_COLUMNS) {
     return undefined
   }
-  const floored = (f: number) =>
-    featurePositions[2 * f + 1]! - featurePositions[2 * f]! < FLOOR_PX * bpPerPx
   const spanOf = (f: number) => {
     const x1 = Math.floor((featurePositions[2 * f]! - min) / bpPerPx)
     return [x1, x1 + FLOOR_PX] as const
