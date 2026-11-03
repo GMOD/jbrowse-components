@@ -10,6 +10,7 @@ import { isRegionRefused } from '@jbrowse/core/rpc/byteBudget'
 import {
   assembleLocString,
   getDialogHost,
+  getEnv,
   getSession,
   pluralize,
 } from '@jbrowse/core/util'
@@ -107,6 +108,7 @@ import {
 } from '@jbrowse/wiggle-core'
 import { autorun } from 'mobx'
 
+import { exportedMarkFeatures } from './exportedFeatures.ts'
 import {
   facetLayout,
   rowsLayout,
@@ -213,6 +215,7 @@ import type {
 } from '@jbrowse/core/data_adapters/BaseAdapter/rowSources'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
+import type { Feature } from '@jbrowse/core/util'
 import type { AdapterRead } from '@jbrowse/core/util/installPrerequisiteFetch'
 import type {
   EncodedLayersResult,
@@ -725,6 +728,22 @@ export function stateModelFactory(
          */
         get showRowSeparators(): boolean {
           return getConf(self, ['rows', 'axis', 'grid'])
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
+         * The exported features this display draws: those its `filter`
+         * keeps, outside the sections the user hid.
+         */
+        exportedFeatures(features: Feature[]) {
+          return exportedMarkFeatures({
+            features,
+            filterSteps: self.filterSteps,
+            facetField: self.facet?.field,
+            hidden: self.hiddenGroupKeys,
+            jexl: getEnv(self).pluginManager.jexl,
+          })
         },
       }))
       .views(self => ({
