@@ -41,22 +41,24 @@ function isSymbolic(alt: string) {
   return alt.startsWith('<') || isBreakend(alt)
 }
 
-// Symbolic (angle-bracket) ALTs carry their span in INFO.END / INFO.SVLEN
-// rather than in REF. Breakends (which use `[`/`]`, not `<`) and translocations
-// are single-breakpoint, so they intentionally fall through to REF.length.
+// A record's INFO.END states its span, as htslib and tabix read it, unless the
+// record is a translocation or all breakends. Those are single-breakpoint and
+// callers put the mate's position, possibly on another contig, in END, so they
+// stay at REF.length. The SVLEN fallback is for symbolic (angle-bracket) ALTs.
 export function getEnd(variant: Variant, start: number) {
   const { REF = '', ALT = [], INFO } = variant
   const hasSymbolic = ALT.some(a => a.startsWith('<'))
   const hasTRA = ALT.includes('<TRA>')
-  if (hasSymbolic && !hasTRA) {
+  const statesSpan = ALT.length === 0 || ALT.some(a => !isBreakend(a))
+  if (!hasTRA) {
     // an END at or before POS describes no span on this contig; real SV
     // callsets do emit them, and trusting one inserts an inverted interval into
     // the adapter's IntervalTree. Treat it as absent and keep falling back.
     const end = firstNumericInfo(INFO, 'END')
-    if (end !== undefined && end > start) {
+    if (statesSpan && end !== undefined && end > start) {
       return end
     }
-    if (Array.isArray(INFO.SVLEN)) {
+    if (hasSymbolic && Array.isArray(INFO.SVLEN)) {
       // the END the spec computes, |SVLEN| bases past POS, as core's
       // spannedEnd places the mate; an insertion consumes no reference, so its
       // END is POS. Missing ('.') and zero lengths drop out.

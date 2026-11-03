@@ -79,6 +79,46 @@ test('DEL feature with SVLEN when END not available', () => {
   expect(f.get('description')).toEqual('<DEL> 500bp')
 })
 
+describe('INFO.END on a record without a symbolic ALT', () => {
+  test('a gVCF reference block with no ALT spans to END', () => {
+    const f = createFeature(
+      'chr1\t10001\t.\tT\t.\t0\tLowGQX\tEND=10003\tGT\t0/0',
+    )
+    expect(f.get('start')).toEqual(10000)
+    expect(f.get('end')).toEqual(10003)
+  })
+
+  test('a plain sequence ALT spans to END', () => {
+    const f = createFeature('chr1\t100\t.\tA\tG\t.\t.\tEND=150')
+    expect(f.get('end')).toEqual(150)
+  })
+
+  test('an END at or before POS is ignored', () => {
+    const f = createFeature('chr1\t100\t.\tAC\t.\t.\t.\tEND=50')
+    expect(f.get('end')).toEqual(101)
+  })
+
+  test('a breakend whose END names the mate stays at REF length', () => {
+    const f = createFeature('chr1\t100\t.\tN\tN]chr2:5000]\t.\t.\tEND=5000')
+    expect(f.get('end')).toEqual(100)
+  })
+
+  test('a single breakend keeps REF length', () => {
+    const f = createFeature('chr1\t100\t.\tN\t.N\t.\t.\tEND=5000')
+    expect(f.get('end')).toEqual(100)
+  })
+
+  test('a <TRA> stays at POS whatever END says', () => {
+    const f = createFeature('chr1\t100\t.\tN\t<TRA>\t.\t.\tEND=5000;CHR2=chr2')
+    expect(f.get('end')).toEqual(100)
+  })
+
+  test('a breakend beside a sequence allele takes END from the sequence allele', () => {
+    const f = createFeature('chr1\t100\t.\tN\tG,N]chr2:5000]\t.\t.\tEND=500')
+    expect(f.get('end')).toEqual(500)
+  })
+})
+
 test('SVLEN alone spans what the END the spec computes from it would', () => {
   const svlen = createFeature(
     'chr2\t321682\t.\tT\t<DEL>\t6\tPASS\tSVTYPE=DEL;SVLEN=-205',
