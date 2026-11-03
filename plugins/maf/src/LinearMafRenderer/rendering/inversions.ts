@@ -27,9 +27,8 @@ export function drawInversions(
     if (m.h <= 2 * OUTLINE_PX) {
       // The outline alone would cover a band this short, and its 2px stroke
       // would overhang one shorter still.
-      const regionRight = m.visibleLeft + m.visibleWidth
-      const left = Math.max(m.xLeft - 1, m.visibleLeft)
-      const inkRight = Math.min(m.xLeft + outlineWidth + 1, regionRight)
+      const left = Math.max(m.xLeft - 1, m.regionLeft)
+      const inkRight = Math.min(m.xLeft + outlineWidth + 1, m.regionRight)
       if (inkRight > left) {
         ctx.fillStyle = color
         ctx.fillRect(left, m.rowTop, inkRight - left, m.h)
@@ -62,8 +61,10 @@ export function drawInversions(
         ctx.lineTo(x + m.h, m.rowTop)
       }
       ctx.stroke()
-      // Full-opacity outline marks the block extent (visible even when
-      // narrow), clipped with the hatch to the block's own region.
+    })
+    // Full-opacity outline marks the block extent (visible even when narrow),
+    // so it is clipped to the block's region, not to its visible part.
+    const strokeOutline = () => {
       ctx.strokeStyle = color
       ctx.lineWidth = OUTLINE_PX
       ctx.strokeRect(
@@ -72,6 +73,20 @@ export function drawInversions(
         outlineWidth,
         m.h - OUTLINE_PX,
       )
-    })
+    }
+    const inkLeft = m.xLeft - OUTLINE_PX / 2
+    const inkRight = m.xLeft + outlineWidth + OUTLINE_PX / 2
+    if (inkLeft >= m.regionLeft && inkRight <= m.regionRight) {
+      strokeOutline()
+    } else {
+      withClip(
+        ctx,
+        m.regionLeft,
+        m.rowTop,
+        m.regionRight - m.regionLeft,
+        m.h,
+        strokeOutline,
+      )
+    }
   }
 }

@@ -259,3 +259,43 @@ describe('two visible regions', () => {
     expect(markersIn(true)).toMatchObject([{ xLeft: 0, width: 50 }])
   })
 })
+
+describe('a sub-pixel CDS box next to a region edge', () => {
+  const markersIn = (reversed: boolean, start: number, end: number) =>
+    computeVisibleFrames({
+      view: {
+        bpPerPx: 10,
+        visibleRegions: [
+          {
+            displayedRegionIndex: 0,
+            start: 100,
+            end: 200,
+            screenStartPx: 0,
+            reversed,
+          },
+          {
+            displayedRegionIndex: 1,
+            start: 5000,
+            end: 5100,
+            screenStartPx: 12,
+            reversed,
+          },
+        ],
+      },
+      framesDataMap: {
+        get: i => (i === 0 ? [rec({ start, end })] : undefined),
+      },
+      rowIndexBySrc,
+      rowHeight: 15,
+      rowProportion: 0.8,
+      viewportHeight: 1000,
+    })
+
+  it('keeps its 1px width inside the region', () => {
+    expect(markersIn(false, 199, 200)).toMatchObject([{ xLeft: 9, width: 1 }])
+  })
+
+  it('keeps its 1px width inside a reversed region', () => {
+    expect(markersIn(true, 100, 101)).toMatchObject([{ xLeft: 9, width: 1 }])
+  })
+})

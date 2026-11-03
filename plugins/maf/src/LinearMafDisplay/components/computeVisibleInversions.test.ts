@@ -202,13 +202,27 @@ describe('two visible regions', () => {
 
   it('clamps the visible part to the region', () => {
     expect(visibleInversions(rpcDataMap, twoRegions(false))).toMatchObject([
-      { xLeft: 50, width: 450, visibleLeft: 50, visibleWidth: 50 },
+      {
+        xLeft: 50,
+        width: 450,
+        visibleLeft: 50,
+        visibleWidth: 50,
+        regionLeft: 0,
+        regionRight: 100,
+      },
     ])
   })
 
   it('clamps the visible part to a reversed region', () => {
     expect(visibleInversions(rpcDataMap, twoRegions(true))).toMatchObject([
-      { xLeft: -400, width: 450, visibleLeft: 0, visibleWidth: 50 },
+      {
+        xLeft: -400,
+        width: 450,
+        visibleLeft: 0,
+        visibleWidth: 50,
+        regionLeft: 0,
+        regionRight: 100,
+      },
     ])
   })
 })

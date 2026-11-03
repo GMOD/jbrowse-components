@@ -6,34 +6,49 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 function makeCtx() {
   const hatch: number[] = []
   const inked: { y: number; y2: number }[] = []
-  const outlines: { clipped: boolean }[] = []
+  const outlines: { x: number; x2: number }[] = []
   const fills: { x: number; x2: number }[] = []
-  let clipDepth = 0
+  const saved: [number, number][] = []
+  let clipped: [number, number] = [-Infinity, Infinity]
+  let pending: [number, number] = [-Infinity, Infinity]
   const ctx = {
     lineWidth: 1,
     strokeStyle: '',
     fillStyle: '',
     save() {
-      clipDepth++
+      saved.push(clipped)
     },
     restore() {
-      clipDepth--
+      clipped = saved.pop()!
     },
     beginPath() {},
-    rect() {},
-    clip() {},
+    rect(x: number, _y: number, w: number) {
+      pending = [x, x + w]
+    },
+    clip() {
+      clipped = [
+        Math.max(clipped[0], pending[0]),
+        Math.min(clipped[1], pending[1]),
+      ]
+    },
     stroke() {},
     moveTo(x: number) {
       hatch.push(x)
     },
     lineTo() {},
-    strokeRect(_x: number, y: number, _w: number, h: number) {
-      outlines.push({ clipped: clipDepth > 0 })
+    strokeRect(x: number, y: number, w: number, h: number) {
+      outlines.push({
+        x: Math.max(x - this.lineWidth / 2, clipped[0]),
+        x2: Math.min(x + w + this.lineWidth / 2, clipped[1]),
+      })
       const half = this.lineWidth / 2
       inked.push({ y: y - half, y2: y + h + half })
     },
     fillRect(x: number, y: number, w: number, h: number) {
-      fills.push({ x, x2: x + w })
+      fills.push({
+        x: Math.max(x, clipped[0]),
+        x2: Math.min(x + w, clipped[1]),
+      })
       inked.push({ y, y2: y + h })
     },
   }
@@ -45,6 +60,8 @@ const marker = (m: Partial<InversionMarker>): InversionMarker => ({
   width: 100,
   visibleLeft: 0,
   visibleWidth: 100,
+  regionLeft: 0,
+  regionRight: 100,
   rowTop: 20,
   h: 12,
   ...m,
@@ -56,6 +73,8 @@ const WIDE = {
   width: 500000,
   visibleLeft: 0,
   visibleWidth: 800,
+  regionLeft: 0,
+  regionRight: 800,
 }
 
 test('hatches only the part of a block on screen', () => {
@@ -99,26 +118,48 @@ test.each([1, 2, 3, 4])('a %ipx row inks only itself, unhatched', h => {
   expect(inked[0]!.y2).toBeLessThanOrEqual(20 + h)
 })
 
-test("the outline is clipped to the block's region", () => {
-  const { ctx, outlines } = makeCtx()
-  drawInversions(ctx, [marker({ width: 500, visibleWidth: 100 })], 'red')
-  expect(outlines).toEqual([{ clipped: true }])
-})
+describe('the ink a block leaves in its region', () => {
+  const inside = { xLeft: 40, width: 20, visibleLeft: 40, visibleWidth: 20 }
+  const tiny = { xLeft: 40, width: 0.2, visibleLeft: 40, visibleWidth: 0.2 }
+  const flushRight = {
+    xLeft: 98,
+    width: 2,
+    visibleLeft: 98,
+    visibleWidth: 2,
+  }
+  const flushLeft = { xLeft: 0, width: 2, visibleLeft: 0, visibleWidth: 2 }
 
-test("a short row's ink stops at the region edge", () => {
-  const { ctx, fills } = makeCtx()
-  drawInversions(
-    ctx,
-    [
-      marker({
-        h: 3,
-        xLeft: 50,
-        width: 500,
-        visibleLeft: 50,
-        visibleWidth: 50,
-      }),
-    ],
-    'red',
-  )
-  expect(fills).toEqual([{ x: 50, x2: 100 }])
+  const outlineOf = (m: Partial<InversionMarker>) => {
+    const { ctx, outlines } = makeCtx()
+    drawInversions(ctx, [marker(m)], 'red')
+    return outlines
+  }
+  const fillOf = (m: Partial<InversionMarker>) => {
+    const { ctx, fills } = makeCtx()
+    drawInversions(ctx, [marker({ h: 3, ...m })], 'red')
+    return fills
+  }
+
+  test('a block in mid-region keeps its whole 2px outline', () => {
+    expect(outlineOf(inside)).toEqual([{ x: 39, x2: 61 }])
+    expect(fillOf(inside)).toEqual([{ x: 39, x2: 61 }])
+  })
+
+  test('a sub-pixel block still inks the minimum outline width', () => {
+    expect(outlineOf(tiny)).toEqual([{ x: 39, x2: 43 }])
+    expect(fillOf(tiny)).toEqual([{ x: 39, x2: 43 }])
+  })
+
+  test('a block flush with the region edge does not ink past it', () => {
+    expect(outlineOf(flushRight)).toEqual([{ x: 97, x2: 100 }])
+    expect(fillOf(flushRight)).toEqual([{ x: 97, x2: 100 }])
+    expect(outlineOf(flushLeft)).toEqual([{ x: 0, x2: 3 }])
+    expect(fillOf(flushLeft)).toEqual([{ x: 0, x2: 3 }])
+  })
+
+  test('a block in the gap beside its region inks nothing', () => {
+    const beside = { xLeft: 101, width: 20, visibleLeft: 100, visibleWidth: 0 }
+    expect(outlineOf(beside).every(o => o.x2 <= o.x)).toBe(true)
+    expect(fillOf(beside)).toEqual([])
+  })
 })

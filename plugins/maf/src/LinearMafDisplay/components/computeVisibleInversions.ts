@@ -10,9 +10,12 @@ import type { MafOverlayParams } from './visibleRegionGeometry.ts'
 export interface InversionMarker {
   xLeft: number
   width: number
-  /** the part of the block inside its region, which is all that draws */
+  /** the part of the block inside its region, which is all the hatch covers */
   visibleLeft: number
   visibleWidth: number
+  /** the block's region, which nothing the marker inks leaves */
+  regionLeft: number
+  regionRight: number
   rowTop: number
   h: number
 }
@@ -101,6 +104,8 @@ export function computeVisibleInversions(
             visibleWidth:
               Math.max(visibleLeft, Math.min(span.left + span.width, pxHi)) -
               visibleLeft,
+            regionLeft: pxLo,
+            regionRight: pxHi,
             rowTop: offset + rowHeight * row,
             h,
           })
