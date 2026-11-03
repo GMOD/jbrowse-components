@@ -42,6 +42,14 @@ test('a BLAT hit summarizes as identity and query coverage', () => {
   )
 })
 
+test('a hit listed under its query header leaves the query name off', () => {
+  expect(
+    hitSummary(pslToFeatures(parseBlatResponse(BLAT_JSON))[0]!, {
+      showQuery: false,
+    }),
+  ).toBe('98.7% identity, 100% of query')
+})
+
 // hgPcr products carry no identity or coverage, so a summary written for BLAT
 // would print two blanks here
 test('an in-silico PCR product summarizes as size and primer pair', () => {

@@ -16,7 +16,11 @@ function text(value: unknown) {
  * pair that made it. Built from the fields the feature actually carries, so it
  * can't claim a number the hit doesn't have.
  */
-export function hitSummary(feature: SimpleFeatureSerialized) {
+export function hitSummary(
+  feature: SimpleFeatureSerialized,
+  // off under a header that already names the query
+  { showQuery = true }: { showQuery?: boolean } = {},
+) {
   const identity = num(feature.identity)
   const coverage = num(feature.coverage)
   const forward = text(feature.forwardPrimer)
@@ -26,7 +30,7 @@ export function hitSummary(feature: SimpleFeatureSerialized) {
         .filter(Boolean)
         .join(', ')
     : [
-        text(feature.queryName),
+        showQuery ? text(feature.queryName) : '',
         `${identity}% identity`,
         coverage === undefined ? '' : `${coverage}% of query`,
       ]

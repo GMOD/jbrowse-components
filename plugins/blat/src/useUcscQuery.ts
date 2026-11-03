@@ -192,6 +192,7 @@ export function useUcscQuery({
     trackName,
     emptyMessage,
     resultNoun,
+    queries,
   }: {
     fetchResult: () => Promise<{
       features: SimpleFeatureSerialized[]
@@ -202,6 +203,7 @@ export function useUcscQuery({
     emptyMessage: string
     // what the results panel calls one of these; hgPcr's are products, not hits
     resultNoun?: 'hit' | 'product'
+    queries?: string[]
   }) {
     setLoading(true)
     setError(undefined)
@@ -218,6 +220,7 @@ export function useUcscQuery({
           trackName,
           trackConf,
           resultNoun,
+          queries,
         })
         handleClose()
       } else {

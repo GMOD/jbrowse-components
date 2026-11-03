@@ -97,6 +97,7 @@ const BlatDialog = observer(function BlatDialog({
         }
       },
       trackIdPrefix: 'blat',
+      queries: [...parseQuerySequences(seq).keys()],
       trackName:
         queryCount > 1 ? `BLAT ${label} +${queryCount - 1}` : `BLAT ${label}`,
       emptyMessage: `No BLAT hits found in ${db}`,

@@ -41,6 +41,13 @@ export function stateModelFactory() {
      * and "2 hits" understates what two of them mean for a PCR run
      */
     resultNoun: types.optional(types.enumeration(['hit', 'product']), 'hit'),
+    /**
+     * #property
+     * the submitted FASTA records' names, in order. With more than one, the
+     * list groups hits under the record they came from, and names a record
+     * that found nothing
+     */
+    queries: types.frozen<string[]>([]),
   })
 }
 

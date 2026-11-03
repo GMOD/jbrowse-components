@@ -1,4 +1,8 @@
-import { softClippedQueries, toFasta } from './launchQueries.ts'
+import {
+  regionQueryName,
+  softClippedQueries,
+  toFasta,
+} from './launchQueries.ts'
 
 const bases = (n: number, base = 'A') => base.repeat(n)
 
@@ -44,4 +48,11 @@ test('the dialog gets one FASTA record per sequence', () => {
       { name: 'b', seq: 'TTTT' },
     ]),
   ).toBe('>a\nACGT\n>b\nTTTT')
+})
+
+// the header becomes the hits' query name, which the results panel groups by
+test('a selected region is named by its 1-based span, with no assembly prefix', () => {
+  expect(regionQueryName({ refName: 'ctgA', start: 34363, end: 34912 })).toBe(
+    'ctgA:34364-34912',
+  )
 })

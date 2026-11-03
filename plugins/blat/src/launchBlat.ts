@@ -13,7 +13,11 @@ import SearchIcon from '@mui/icons-material/Search'
 
 import BlatDialog from './BlatDialog.tsx'
 import { blatLengthsProblem } from './blatQuery.ts'
-import { softClippedQueries, toFasta } from './launchQueries.ts'
+import {
+  regionQueryName,
+  softClippedQueries,
+  toFasta,
+} from './launchQueries.ts'
 
 import type { NamedSequence } from './launchQueries.ts'
 import type { UcscHost } from './ucscShared.ts'
@@ -61,7 +65,7 @@ async function regionSequences(
       if (typeof seq !== 'string') {
         throw new Error(`No sequence found for ${assembleLocString(region)}`)
       }
-      return { name: assembleLocString(region), seq }
+      return { name: regionQueryName(region), seq }
     }),
   )
 }

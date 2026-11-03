@@ -44,7 +44,9 @@ best hit's row.
 Pasting FASTA searches each record separately, up to 25 records, 25 kb in any
 one record and 50 kb across the submission. Each record keeps its name, so hits
 from different queries stay attributable in the track. A bare sequence with no
-header is named `YourSeq` by the server.
+header is named `YourSeq` by the server. With more than one record, the **Search
+results** panel lists the hits under the record they came from, in the order the
+records were pasted, and names any record that found nothing.
 
 ### Starting from a read or a selection
 

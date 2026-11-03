@@ -162,6 +162,7 @@ export async function addResultTrack({
   trackName,
   trackConf,
   resultNoun,
+  queries,
 }: {
   session: UcscHost
   assembly: string
@@ -171,6 +172,8 @@ export async function addResultTrack({
   trackConf?: ResultTrackConf
   // what the results panel calls one of these; hgPcr's are products, not hits
   resultNoun?: 'hit' | 'product'
+  // the submitted records' names, which the results panel groups hits under
+  queries?: string[]
 }) {
   if (!isSessionWithAddSessionTrack(session)) {
     throw new Error("Can't add tracks to this session")
@@ -209,6 +212,7 @@ export async function addResultTrack({
       assembly,
       trackName,
       resultNoun,
+      queries,
     })
   }
   // #endregion

@@ -35,6 +35,20 @@ export function softClippedQueries({
   )
 }
 
+// A record named by the bases it holds, bare: assembleLocString's
+// `{assembly}` prefix and digit grouping would become the hits' query name
+export function regionQueryName({
+  refName,
+  start,
+  end,
+}: {
+  refName: string
+  start: number
+  end: number
+}) {
+  return `${refName}:${start + 1}-${end}`
+}
+
 // hgBlat names each hit by its record's header, so a launched query arrives in
 // the dialog as FASTA whose headers say where it came from
 export function toFasta(sequences: NamedSequence[]) {
