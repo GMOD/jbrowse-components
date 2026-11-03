@@ -51,6 +51,26 @@ function collect(data: FeatureDataResult, vr: BpRegionBounds) {
   return out
 }
 
+describe('forEachRenderedPeptide band', () => {
+  test('emits only the rows that intersect the band', () => {
+    const data = makeData([
+      makeItem({ aminoAcid: 'A', topPx: 0 }),
+      makeItem({ aminoAcid: 'B', topPx: 95 }),
+      makeItem({ aminoAcid: 'C', topPx: 200 }),
+    ])
+    const emitted: string[] = []
+    forEachRenderedPeptide(
+      data,
+      FULL_REGION,
+      item => {
+        emitted.push(item.aminoAcid)
+      },
+      { top: 90, bottom: 150 },
+    )
+    expect(emitted).toEqual(['B'])
+  })
+})
+
 describe('forEachRenderedPeptide', () => {
   test('emits nothing when there is no amino acid overlay', () => {
     expect(collect(makeData(undefined), FULL_REGION)).toHaveLength(0)

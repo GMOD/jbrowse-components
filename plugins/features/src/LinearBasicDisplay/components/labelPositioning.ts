@@ -47,6 +47,28 @@ export function labelCullBand(
   }
 }
 
+export function viewportBand(scrollY: number, viewportHeight: number) {
+  return { top: scrollY, bottom: scrollY + viewportHeight }
+}
+
+// The name line and the description line under a feature, which is as far below
+// `featureBottomPx` as any label reaches.
+export function labelStackHeightPx(fontSize: number) {
+  return LABEL_TOP_GAP_PX + 2 * fontSize
+}
+
+// For painters that redraw every frame anyway, where the bucketed band's margin
+// only writes labels nothing shows. Padded above by the label stack, since a
+// feature scrolled just off the top can still have a label line in view.
+export function exactCullBand(
+  scrollY: number,
+  viewportHeight: number,
+  fontSize: number,
+): LabelCullBand {
+  const { top, bottom } = viewportBand(scrollY, viewportHeight)
+  return { top: top - labelStackHeightPx(fontSize), bottom }
+}
+
 // The one place that decides which of a feature's labels render — three callers
 // read it, and they have to agree or the space reserved for a label disagrees
 // with the label drawn in it. The description is gated on `showDescriptions`
@@ -392,13 +414,13 @@ export function forEachRenderedLabel(
     ) {
       continue
     }
-    // Every label of a feature sits within a couple of line-heights of
-    // featureBottomPx, inside the band's one-bucket margin, so this single Y is
-    // enough. topY is region-independent, so the cull answers the same for a
-    // span-crossing feature in every region and cannot undo the dedup above.
+    // Labels hang below featureBottomPx, except an overlay label, which sits
+    // inside the feature from topY. topY is region-independent, so the cull
+    // answers the same for a span-crossing feature in every region and cannot
+    // undo the dedup above.
     if (cullBand) {
       const featureBottomPx = labelData.topY + labelData.featureHeight
-      if (featureBottomPx < cullBand.top || featureBottomPx > cullBand.bottom) {
+      if (featureBottomPx < cullBand.top || labelData.topY > cullBand.bottom) {
         continue
       }
     }

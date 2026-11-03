@@ -75,10 +75,16 @@ function peptideRow(fontSize: number, codonPx: number): PeptideRow {
   }
 }
 
+export interface PeptideBand {
+  top: number
+  bottom: number
+}
+
 export function forEachRenderedPeptide(
   data: FeatureDataResult,
   vr: BpRegionBounds,
   emit: (item: AminoAcidOverlayItem, cell: PeptideCell) => void,
+  band?: PeptideBand,
 ) {
   const { aminoAcidOverlay } = data
   if (!aminoAcidOverlay) {
@@ -91,6 +97,12 @@ export function forEachRenderedPeptide(
   let row: PeptideRow | undefined
   for (const item of aminoAcidOverlay) {
     if (item.endBp <= vr.start || item.startBp >= vr.end) {
+      continue
+    }
+    if (
+      band &&
+      (item.topPx + item.heightPx < band.top || item.topPx > band.bottom)
+    ) {
       continue
     }
     const fontSize = Math.min(item.heightPx, PEPTIDE_MAX_FONT_SIZE)
@@ -119,6 +131,7 @@ export function drawPeptides(
   ctx: Ctx2D,
   data: FeatureDataResult,
   vr: BpRegionBounds,
+  band?: PeptideBand,
 ) {
   // The SVG export hands over a layer other painters have already used, so every
   // field is set and restored here: a leftover 'middle' baseline would slide each
@@ -149,6 +162,7 @@ export function drawPeptides(
       }
       ctx.fillText(text, centerPx, y)
     },
+    band,
   )
   ctx.restore()
 }
@@ -160,11 +174,12 @@ export function drawPeptidesForRegions(
   ctx: Ctx2D,
   dataMap: ReadonlyMap<number, FeatureDataResult>,
   regions: readonly (BpRegionBounds & { displayedRegionIndex: number })[],
+  band?: PeptideBand,
 ) {
   for (const vr of regions) {
     const data = dataMap.get(vr.displayedRegionIndex)
     if (data) {
-      drawPeptides(ctx, data, vr)
+      drawPeptides(ctx, data, vr, band)
     }
   }
 }

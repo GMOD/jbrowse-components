@@ -8,9 +8,9 @@ import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { labelColors } from './components/labelColors.ts'
 import {
+  exactCullBand,
   forEachDisplayLabel,
-  labelCullBand,
-  labelScrollBucket,
+  viewportBand,
 } from './components/labelPositioning.ts'
 import { paintLabels } from './components/paintLabels.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
@@ -82,10 +82,8 @@ function FeaturesSvgBody({
     palette,
     model.fieldPalette,
   )
-  // Culled with the DOM overlay's own band so the export emits exactly the
-  // labels on screen; anything outside the clip would be written and then
-  // clipped away.
-  const cullBand = labelCullBand(labelScrollBucket(scrollY), height)
+  const labelBand = exactCullBand(scrollY, height, fontSize)
+  const peptideBand = viewportBand(scrollY, height)
 
   return (
     <>
@@ -121,12 +119,17 @@ function FeaturesSvgBody({
               (_, labels) => {
                 paintLabels(ctx, labels, fontSize)
               },
-              cullBand,
+              labelBand,
             )
             // Peptides need no cross-region dedup, unlike labels: codons
             // straddling a boundary overstrike identically.
             if (renderPeptidesFlag) {
-              drawPeptidesForRegions(ctx, model.laidOutDataMap, visibleRegions)
+              drawPeptidesForRegions(
+                ctx,
+                model.laidOutDataMap,
+                visibleRegions,
+                peptideBand,
+              )
             }
           }}
         />

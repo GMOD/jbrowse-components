@@ -7,8 +7,11 @@ import {
   LABEL_CULL_BUCKET_PX,
   computeLabelExtraWidth,
   forEachDisplayLabel,
+  exactCullBand,
   forEachRenderedLabel,
   labelCullBand,
+  labelStackHeightPx,
+  viewportBand,
 } from './labelPositioning.ts'
 
 const TEST_LABEL_COLORS = labelColors(resolvePalette())
@@ -426,6 +429,22 @@ describe('labelCullBand', () => {
     const maxScroll = (bucket + 1) * LABEL_CULL_BUCKET_PX
     expect(band.top).toBeLessThanOrEqual(minScroll)
     expect(band.bottom).toBeGreaterThanOrEqual(maxScroll + viewportHeight)
+  })
+})
+
+describe('exactCullBand', () => {
+  test('is the viewport, padded above by the label stack only', () => {
+    const band = exactCullBand(500, 300, LABEL_FONT)
+    expect(band.top).toBe(500 - labelStackHeightPx(LABEL_FONT))
+    expect(band.bottom).toBe(800)
+    expect(viewportBand(500, 300)).toEqual({ top: 500, bottom: 800 })
+  })
+
+  test('is narrower than the bucketed band at every scrollTop', () => {
+    const exact = exactCullBand(450, 300, LABEL_FONT)
+    const bucketed = labelCullBand(1, 300)
+    expect(exact.top).toBeGreaterThan(bucketed.top)
+    expect(exact.bottom).toBeLessThan(bucketed.bottom)
   })
 })
 

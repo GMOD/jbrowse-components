@@ -2,11 +2,7 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import { BASIC_FEATURE_MARKS } from '../marks/basicFeatureMarks.ts'
 import { labelColors } from './labelColors.ts'
-import {
-  forEachDisplayLabel,
-  labelCullBand,
-  labelScrollBucket,
-} from './labelPositioning.ts'
+import { exactCullBand, forEachDisplayLabel } from './labelPositioning.ts'
 import { paintLabels } from './paintLabels.ts'
 import { resolveMapColors } from './resolveRegionColors.ts'
 
@@ -75,7 +71,7 @@ export function paintFeatureBand(
     (_, labels) => {
       paintLabels(ctx, labels, fontSize)
     },
-    labelCullBand(labelScrollBucket(scrollY), bandHeight),
+    exactCullBand(scrollY, bandHeight, fontSize),
   )
   ctx.restore()
 }

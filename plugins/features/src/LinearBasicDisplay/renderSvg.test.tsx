@@ -16,6 +16,7 @@ import {
   makeFlatbushItem,
   packFixtureRects,
 } from '../RenderFeatureDataRPC/testUtils.ts'
+import { PEPTIDE_TEXT_MAX_BP_PER_PX } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { renderSvg } from './renderSvg.tsx'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -52,6 +53,10 @@ jest.mock('@jbrowse/core/util', () => ({
   getContainingView: () => mockView,
   measureText: (str: unknown, fontSize = 10) =>
     String(str).length * fontSize * 0.6,
+  measuredFont: (fontSize: number, family: string) => ({
+    css: `${fontSize}px ${family}`,
+    measure: (str: string) => str.length * fontSize * 0.6,
+  }),
 }))
 // foundationView.ts resolves `getContainingView` through this leaf module,
 // not the barrel above, so it needs its own mock.
@@ -423,5 +428,62 @@ describe('renderSvg', () => {
     )
     expect(scrolled).toContain('OFF-VIEWPORT')
     expect(scrolled).not.toContain('IN-VIEWPORT')
+  })
+
+  it('writes only the labels and peptide letters the exported viewport shows', async () => {
+    const label = (text: string) => ({ text, relativeY: 0, textWidth: 40 })
+    const at = (featureId: string, topY: number, text: string) => ({
+      featureId,
+      minX: 1400,
+      maxX: 1600,
+      topY,
+      featureHeight: 10,
+      nameLabel: label(text),
+    })
+    const peptide = (aminoAcid: string, topPx: number) => ({
+      startBp: 1400,
+      endBp: 1403,
+      aminoAcid,
+      proteinIndex: 0,
+      topPx,
+      heightPx: 10,
+      isStopOrNonTriplet: false,
+      isTranslExcept: false,
+      flatbushIdx: 0,
+    })
+    mockView = { ...mockView, bpPerPx: PEPTIDE_TEXT_MAX_BP_PER_PX }
+    const data = {
+      ...makeFeatureData({
+        ...packFixtureRects([{ startBp: 1400, endBp: 1600 }]),
+        flatbushItems: ['a', 'b', 'c'].map(featureId =>
+          makeFlatbushItem({ featureId, startBp: 1400, endBp: 1600 }),
+        ),
+        floatingLabelsData: labelsMap({
+          a: at('a', 90, 'AT-EDGE'),
+          b: at('b', 300, 'BELOW-FOLD'),
+          c: at('c', 1000, 'FAR-BELOW'),
+        }),
+        featureCount: 3,
+      }),
+      aminoAcidOverlay: [peptide('W', 20), peptide('Q', 300)],
+    }
+    const html = renderResult(
+      await renderSvg(makeModel({ laidOutDataMap: new Map([[0, data]]) })),
+    )
+    expect(html).toContain('AT-EDGE')
+    expect(html).not.toContain('BELOW-FOLD')
+    expect(html).not.toContain('FAR-BELOW')
+    expect(html).toContain('>W<')
+    expect(html).not.toContain('>Q<')
+
+    const scrolled = renderResult(
+      await renderSvg(
+        makeModel({ laidOutDataMap: new Map([[0, data]]), scrollTop: 280 }),
+      ),
+    )
+    expect(scrolled).toContain('BELOW-FOLD')
+    expect(scrolled).not.toContain('AT-EDGE')
+    expect(scrolled).toContain('>Q<')
+    expect(scrolled).not.toContain('>W<')
   })
 })
