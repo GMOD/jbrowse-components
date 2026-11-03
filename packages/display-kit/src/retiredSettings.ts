@@ -1,14 +1,21 @@
+import { mergeConfSettings } from '@jbrowse/core/configuration'
+
 type Snapshot = Record<string, unknown>
 
 /**
  * `snap` with the `keys` its `displayDefaults` spells moved onto its
  * `displayType` entry, added where the track lists none, so the shorthand
- * router sends them to that display alone. A value the entry spells wins.
+ * router sends them to that display alone. A value the entry spells wins,
+ * member by member under `schema`, the display's config schema, as every
+ * other `displayDefaults` fold writes (`mergeConfSettings`): an entry's
+ * `rows.sort` keeps the moved `rows.axis`. Without a schema the entry's
+ * key wins whole.
  */
 export function moveDisplayDefaults(
   snap: Snapshot,
   displayType: string,
   keys: readonly string[],
+  schema?: unknown,
 ): Snapshot {
   const written = snap.displayDefaults as Snapshot | undefined
   const moving = keys.filter(key => written?.[key] !== undefined)
@@ -26,7 +33,7 @@ export function moveDisplayDefaults(
       Object.entries(written).filter(([key]) => !moving.includes(key)),
     ),
     displays: own
-      ? displays.map(d => (d === own ? { ...moved, ...d } : d))
+      ? displays.map(d => (d === own ? mergeConfSettings(schema, moved, d) : d))
       : [
           ...displays,
           {

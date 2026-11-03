@@ -30,14 +30,69 @@ describe('displayDefaults.rows on a quantitative track', () => {
     })
   })
 
-  it('leaves an entry spelling its own rows as it is', () => {
+  it("keeps the field an entry spells over the track's", () => {
     expect(
       wiggleEntryShorthand({
         ...quantitative,
         displayDefaults: { rows: 'source' },
         displays: [{ type: 'LinearWiggleDisplay', displayId: 'w', rows: '' }],
       }).displays,
-    ).toEqual([{ type: 'LinearWiggleDisplay', displayId: 'w', rows: '' }])
+    ).toEqual([
+      { type: 'LinearWiggleDisplay', displayId: 'w', rows: { field: '' } },
+    ])
+  })
+
+  it.each(['QuantitativeTrack', 'MultiQuantitativeTrack'])(
+    "folds under the rows a %s's entry spells, member by member",
+    type => {
+      expect(
+        wiggleEntryShorthand({
+          type,
+          trackId: 'q',
+          displayDefaults: {
+            rows: { axis: { grid: true }, colors: { tumor: 'red' } },
+          },
+          displays: [
+            {
+              type: 'LinearWiggleDisplay',
+              displayId: 'w',
+              rows: { sort: ['normal', 'tumor'] },
+            },
+          ],
+        }).displays,
+      ).toEqual([
+        {
+          type: 'LinearWiggleDisplay',
+          displayId: 'w',
+          rows: {
+            axis: { grid: true },
+            colors: { tumor: 'red' },
+            sort: ['normal', 'tumor'],
+          },
+        },
+      ])
+    },
+  )
+
+  it("keeps the track's arrangement under an entry emptying the field", () => {
+    expect(
+      wiggleEntryShorthand({
+        type: 'MultiQuantitativeTrack',
+        trackId: 'q',
+        displayDefaults: {
+          rows: { field: 'source', sort: ['b', 'a'], axis: { grid: true } },
+        },
+        displays: [
+          { type: 'LinearWiggleDisplay', displayId: 'w', rows: { field: '' } },
+        ],
+      }).displays,
+    ).toEqual([
+      {
+        type: 'LinearWiggleDisplay',
+        displayId: 'w',
+        rows: { field: '', sort: ['b', 'a'], axis: { grid: true } },
+      },
+    ])
   })
 })
 

@@ -1,5 +1,8 @@
 import { moveDisplayDefaults } from '@jbrowse/display-kit/retiredSettings'
 
+import linearWiggleDisplayConfigSchema from './LinearWiggleDisplay/configSchema.ts'
+import { multiQuantitativeWiggleConfigSchema } from './MultiQuantitativeTrack/displaySchema.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const QUANTITATIVE_TRACK_TYPES = new Set([
@@ -9,12 +12,20 @@ const QUANTITATIVE_TRACK_TYPES = new Set([
 
 /**
  * `displayDefaults.rows` on a quantitative track goes onto its
- * quantitative-display entry, which keeps any it spells. The shorthand router
- * would send it to every display declaring it, and a `rows` written for the
- * plot would give the mark display rows no config wrote for it.
+ * quantitative-display entry, folded under any `rows` the entry spells
+ * member by member, as the shorthand router folds every other display's. The
+ * router would send it to every display declaring it, and a `rows` written
+ * for the plot would give the mark display rows no config wrote for it.
  */
 export function wiggleEntryShorthand(snap: Record<string, unknown>) {
-  return moveDisplayDefaults(snap, 'LinearWiggleDisplay', ['rows'])
+  return moveDisplayDefaults(
+    snap,
+    'LinearWiggleDisplay',
+    ['rows'],
+    snap.type === 'MultiQuantitativeTrack'
+      ? multiQuantitativeWiggleConfigSchema
+      : linearWiggleDisplayConfigSchema,
+  )
 }
 
 export default function registerRowsShorthand(pluginManager: PluginManager) {
