@@ -53,7 +53,10 @@ const Display = types
       return [{ domain: [0, 300], scaleType: 'linear', height: 100 }]
     },
     get autoscaleRange(): [number, number] {
-      return [27.55, 285.17]
+      return [122.4, 285.17]
+    },
+    get valuesInView(): [number, number] {
+      return [20, 285.17]
     },
   }))
 
@@ -146,9 +149,9 @@ test('Reset to defaults returns to the base config, not past it', () => {
   mockBase = {}
 })
 
-test('shows the values in view the axis is drawn from', () => {
+test('shows the values in view, not the fenced range the axis follows', () => {
   open()
-  screen.getByText('Values in view: 27.55 – 285.2')
+  screen.getByText('Values in view: 20 – 285.2')
 })
 
 // Typing 190 would redraw at 1 and 19 on the way.

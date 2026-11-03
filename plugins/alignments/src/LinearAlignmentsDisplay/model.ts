@@ -63,7 +63,7 @@ import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import {
   ScoreScaleMixin,
   resolveSymlogConstant,
-  visibleStatsRange,
+  visibleStats,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import { autorun, computed, observable } from 'mobx'
@@ -819,12 +819,12 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * The depth every SHOWN group spans, so stacked sections share a
-           * scale; hidden lanes are excluded.
+           * The depth stats of every SHOWN group in the settled blocks;
+           * hidden lanes are excluded.
            */
-          get autoscaleRange(): [number, number] | undefined {
+          get statsInView() {
             const hidden = self.hiddenGroupKeys
-            return visibleStatsRange({
+            return visibleStats({
               active: self.showCoverage,
               view: self.view,
               payloadFor: index => self.rpcDataMap.get(index),
@@ -833,16 +833,35 @@ export default function stateModelFactory(
                   .filter(({ key }) => !hidden.has(key))
                   .map(({ data }) => data),
               accumulate: entries => computeVisibleCoverageStats(entries),
-              range: (stats, entries) =>
-                widenRangeToRules(
+            })
+          },
+          /**
+           * #getter
+           * The depth every SHOWN group spans, so stacked sections share a
+           * scale.
+           */
+          get autoscaleRange(): [number, number] | undefined {
+            const walked = this.statsInView
+            return walked
+              ? widenRangeToRules(
                   computeVisibleCoverageDomain({
-                    stats,
+                    stats: walked.stats,
                     quantile: self.fenceQuantile,
-                    entries,
+                    entries: walked.entries,
                   }),
                   self.scoreRules.map(rule => rule.value),
-                ),
-            })
+                )
+              : undefined
+          },
+          /**
+           * #getter
+           * The least and greatest depth in view, unfenced.
+           */
+          get valuesInView(): [number, number] | undefined {
+            const walked = this.statsInView
+            return walked
+              ? [walked.stats.scoreMin, walked.stats.scoreMax]
+              : undefined
           },
 
           /**

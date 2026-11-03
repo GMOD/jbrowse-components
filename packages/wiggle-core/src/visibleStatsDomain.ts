@@ -31,13 +31,12 @@ export interface SettledBlocksView {
 }
 
 /**
- * How one display gets from its per-region fetch results to a score domain. The
- * walk, the readiness guard and the bounded nice-rounding are the same for all
- * of them; what differs is where a region's payload lives, which pieces of it
- * are in scope, how those pieces reduce to stats, and what an autoscale mode
- * makes of the stats.
+ * How one display gets from its per-region fetch results to the stats of what
+ * it shows. The walk and the readiness guard are the same for all of them;
+ * what differs is where a region's payload lives, which pieces of it are in
+ * scope, and how those pieces reduce to stats.
  */
-export interface VisibleStatsRangeSpec<Payload, Item, Stats> {
+export interface VisibleStatsSpec<Payload, Item, Stats> {
   /** false when the band this domain scales is not drawn: nothing is walked */
   active: boolean
   view: SettledBlocksView
@@ -45,8 +44,22 @@ export interface VisibleStatsRangeSpec<Payload, Item, Stats> {
   /** the payload's stats-bearing pieces, already filtered to what is shown */
   itemsFor: (payload: Payload) => Item[]
   accumulate: (entries: VisibleEntry<Item>[]) => Stats | undefined
+}
+
+/** {@link VisibleStatsSpec} and what an autoscale mode makes of the stats. */
+export interface VisibleStatsRangeSpec<
+  Payload,
+  Item,
+  Stats,
+> extends VisibleStatsSpec<Payload, Item, Stats> {
   /** stats to a raw `[min, max]`, before bounds and nice-rounding */
   range: (stats: Stats, entries: VisibleEntry<Item>[]) => [number, number]
+}
+
+/** What {@link visibleStats} walked: the stats and the entries they reduce. */
+export interface VisibleStats<Item, Stats> {
+  stats: Stats
+  entries: VisibleEntry<Item>[]
 }
 
 /** {@link VisibleStatsRangeSpec} and what nice-rounds its range into a domain. */
@@ -64,21 +77,20 @@ export interface VisibleStatsDomainSpec<
 
 /**
  * #api
- * The raw autoscaled range the displays with a value scale derive
- * identically: walk the settled blocks, accumulate the stats of what each one
- * shows, and reduce them to `[min, max]` before any bound or nice-rounding.
+ * The stats of what the settled blocks show, walked once so a display can
+ * read both its autoscaled range and the values in view off one getter.
  * `undefined` while there is nothing to scale against — no data, a hidden
- * band, or a view that has not initialized — which every caller distinguishes
- * from a range.
+ * band, or a view that has not initialized.
  */
-export function visibleStatsRange<Payload, Item, Stats>({
+export function visibleStats<Payload, Item, Stats>({
   active,
   view,
   payloadFor,
   itemsFor,
   accumulate,
-  range,
-}: VisibleStatsRangeSpec<Payload, Item, Stats>): [number, number] | undefined {
+}: VisibleStatsSpec<Payload, Item, Stats>):
+  | VisibleStats<Item, Stats>
+  | undefined {
   if (!active || !view.initialized) {
     return undefined
   }
@@ -94,7 +106,21 @@ export function visibleStatsRange<Payload, Item, Stats>({
       : []
   })
   const stats = accumulate(entries)
-  return stats ? range(stats, entries) : undefined
+  return stats ? { stats, entries } : undefined
+}
+
+/**
+ * #api
+ * The raw autoscaled range the displays with a value scale derive
+ * identically: {@link visibleStats} reduced to `[min, max]` before any bound
+ * or nice-rounding. `undefined` where {@link visibleStats} is.
+ */
+export function visibleStatsRange<Payload, Item, Stats>({
+  range,
+  ...spec
+}: VisibleStatsRangeSpec<Payload, Item, Stats>): [number, number] | undefined {
+  const walked = visibleStats(spec)
+  return walked ? range(walked.stats, walked.entries) : undefined
 }
 
 /**

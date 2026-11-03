@@ -46,7 +46,7 @@ export default observer(function RangeFields({
 }: {
   display: ScoreAxisDisplay
 }) {
-  const { domainMin, domainMax, scaleType, autoscaleRange } = display
+  const { domainMin, domainMax, scaleType, valuesInView } = display
   const [text, setText] = useState({
     min: domainMin === undefined ? '' : `${domainMin}`,
     max: domainMax === undefined ? '' : `${domainMax}`,
@@ -109,9 +109,9 @@ export default observer(function RangeFields({
       </div>
       {error ? (
         <FormHelperText error>{error}</FormHelperText>
-      ) : autoscaleRange ? (
+      ) : valuesInView ? (
         <Typography variant="body2" color="text.secondary">
-          Values in view: {formatRange(autoscaleRange)}
+          Values in view: {formatRange(valuesInView)}
         </Typography>
       ) : null}
     </>

@@ -29,6 +29,7 @@ export type {
   MarkSnapshot,
   StepSnapshot,
 } from './LinearMarkDisplay/markProblems.ts'
+export type { RegionLayer } from './LinearMarkDisplay/markAutoscale.ts'
 export type { DefaultPlot } from './LinearMarkDisplay/plotDefault.ts'
 export type { SharedKey } from './LinearMarkDisplay/pinDistinct.ts'
 export type {

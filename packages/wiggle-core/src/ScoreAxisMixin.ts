@@ -114,6 +114,14 @@ export function ScoreAxisMixin() {
       get autoscaleRange(): [number, number] | undefined {
         return undefined
       },
+      /**
+       * #getter
+       * Overridable: the least and greatest value this display draws in view,
+       * before any fence, rule or bound; what the axis panel reports.
+       */
+      get valuesInView(): [number, number] | undefined {
+        return undefined
+      },
     }))
     .views(self => ({
       /**

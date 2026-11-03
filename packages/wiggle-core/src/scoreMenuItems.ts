@@ -30,6 +30,7 @@ export interface ScoreScaleModel extends IStateTreeNode {
   resolvedDomainMax: number | undefined
   pinsDomain: boolean
   autoscaleRange: [number, number] | undefined
+  valuesInView: [number, number] | undefined
   autoscaledDomain: [number, number] | undefined
   setScaleType: (v: string) => void
   setScaleZero: (zero: boolean) => void

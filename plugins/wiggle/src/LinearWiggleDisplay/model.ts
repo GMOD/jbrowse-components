@@ -53,7 +53,7 @@ import {
   axisPlotBox,
   computeScoreStats,
   makeScoreAxisMenuItem,
-  visibleStatsRange,
+  visibleStats,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -351,14 +351,12 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * What the sources visible in the settled blocks span, under the
-       * autoscale mode. `undefined` until the view and the data are ready,
-       * which is not the `[0, 1]` a caller falls back to — see
-       * `visibleStatsRange`.
+       * The stats of the sources visible in the settled blocks, `undefined`
+       * until the view and the data are ready.
        */
-      get autoscaleRange() {
+      get statsInView() {
         const names = self.autoscaleSourceNames
-        return visibleStatsRange({
+        return visibleStats({
           active: true,
           view: self.host,
           payloadFor: index => self.rpcDataMap.get(index),
@@ -368,19 +366,42 @@ export default function stateModelFactory(
             ),
           accumulate: entries =>
             computeScoreStats(self.summaryField, entries, self.effectiveExtent),
-          range: (stats, entries) =>
-            widenRangeToRules(
+        })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * What the sources visible in the settled blocks span, under the
+       * autoscale mode. `undefined` until the view and the data are ready,
+       * which is not the `[0, 1]` a caller falls back to — see
+       * `visibleStats`.
+       */
+      get autoscaleRange(): [number, number] | undefined {
+        const walked = self.statsInView
+        return walked
+          ? widenRangeToRules(
               autoscaleDomainFromStats({
-                stats,
+                stats: walked.stats,
                 quantile: self.fenceQuantile,
                 zero: self.axisReachesZero,
                 field: self.summaryField,
                 extent: self.effectiveExtent,
-                visibleEntries: entries,
+                visibleEntries: walked.entries,
               }),
               self.scoreRuleValues,
-            ),
-        })
+            )
+          : undefined
+      },
+      /**
+       * #getter
+       * The least and greatest value the visible sources draw, unfenced.
+       */
+      get valuesInView(): [number, number] | undefined {
+        const walked = self.statsInView
+        return walked
+          ? [walked.stats.scoreMin, walked.stats.scoreMax]
+          : undefined
       },
     }))
     .views(self => ({

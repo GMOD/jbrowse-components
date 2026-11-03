@@ -103,7 +103,7 @@ import {
   computeSpanStats,
   resolveRenderState,
   resolveSymlogConstant,
-  visibleStatsRange,
+  visibleStats,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import { autorun } from 'mobx'
@@ -1183,21 +1183,14 @@ export function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * [min, max] over the `y` of every mark drawing at this zoom, through
-         * the fence `encoding.y.scale` names, widened to every rule the scale
-         * declares and to the origin whenever a bar mark draws, or undefined
+         * The `y` stats of every mark drawing at this zoom, or undefined
          * before any valued mark loads
          */
-        get autoscaleRange() {
+        get statsInView() {
           const indices = self.drawingMarkIndices
           const folded = new Set(indices)
-          const types = indices.map(i => self.markTypes[i]!)
-          const { origin, fenceQuantile, drawnKeys, scaleType } = self
-          const reached = [
-            ...self.scoreRules.map(rule => rule.value),
-            ...(types.includes('bar') ? [origin] : []),
-          ].filter(value => baselineReached(value, scaleType))
-          return visibleStatsRange({
+          const { drawnKeys } = self
+          return visibleStats({
             active: indices.some(i => self.markEntries[i]!.valued),
             view: self.host,
             payloadFor: index => {
@@ -1213,17 +1206,44 @@ export function stateModelFactory(
                 .map((layer): RegionLayer => ({ index, layer })),
             accumulate: entries =>
               computeSpanStats(layerSpans(entries, drawnKeys)),
-            range: (stats, entries) =>
-              widenRangeToRules(
+          })
+        },
+        /**
+         * #getter
+         * [min, max] over the `y` of every mark drawing at this zoom, through
+         * the fence `encoding.y.scale` names, widened to every rule the scale
+         * declares and to the origin whenever a bar mark draws, or undefined
+         * before any valued mark loads
+         */
+        get autoscaleRange(): [number, number] | undefined {
+          const walked = this.statsInView
+          const types = self.drawingMarkIndices.map(i => self.markTypes[i]!)
+          const { origin, fenceQuantile, drawnKeys, scaleType } = self
+          const reached = [
+            ...self.scoreRules.map(rule => rule.value),
+            ...(types.includes('bar') ? [origin] : []),
+          ].filter(value => baselineReached(value, scaleType))
+          return walked
+            ? widenRangeToRules(
                 autoscaleDomainFromSpans({
-                  stats,
+                  stats: walked.stats,
                   quantile: fenceQuantile,
                   zero: self.axisReachesZero,
-                  spans: layerSpans(entries, drawnKeys),
+                  spans: layerSpans(walked.entries, drawnKeys),
                 }),
                 reached,
-              ),
-          })
+              )
+            : undefined
+        },
+        /**
+         * #getter
+         * The least and greatest `y` drawing in view, unfenced.
+         */
+        get valuesInView(): [number, number] | undefined {
+          const walked = this.statsInView
+          return walked
+            ? [walked.stats.scoreMin, walked.stats.scoreMax]
+            : undefined
         },
         /**
          * #getter

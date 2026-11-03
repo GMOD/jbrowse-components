@@ -68,12 +68,18 @@ export { computeYTicks } from './computeYTicks.ts'
 
 export { resolveRenderState } from './resolveRenderState.ts'
 
-export { visibleStatsDomain, visibleStatsRange } from './visibleStatsDomain.ts'
+export {
+  visibleStats,
+  visibleStatsDomain,
+  visibleStatsRange,
+} from './visibleStatsDomain.ts'
 export type {
   SettledBlocksView,
   VisibleEntry,
+  VisibleStats,
   VisibleStatsDomainSpec,
   VisibleStatsRangeSpec,
+  VisibleStatsSpec,
 } from './visibleStatsDomain.ts'
 
 export { scoreRuleMarks, widenRangeToRules } from './scoreRuleMarks.ts'

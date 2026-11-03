@@ -21,6 +21,7 @@ function menu(
       state.showCoverageAlleles = show
     },
     autoscaleRange: undefined,
+    valuesInView: undefined,
     autoscaledDomain: undefined,
     coverageMinAlleleFraction: minAlleleFraction,
     setCoverageMinAlleleFraction: fraction => {

@@ -122,10 +122,12 @@ test('a focus leaves the hidden rows out of the legend and the axis, as a hidden
   const rows = loaded({ rows: 'source' })
   expect(legendValues(rows)).toEqual(['brain', 'heart', 'liver'])
   expect(rows.autoscaleRange![1]).toBe(40)
+  expect(rows.valuesInView![1]).toBe(40)
 
   rows.setRowFocus(['dad', 'mom'])
   expect(legendValues(rows)).toEqual(['brain', 'liver'])
   expect(rows.autoscaleRange![1]).toBe(9)
+  expect(rows.valuesInView![1]).toBe(9)
 
   const facet = loaded({ facet: 'source' })
   facet.hideGroup('s2')

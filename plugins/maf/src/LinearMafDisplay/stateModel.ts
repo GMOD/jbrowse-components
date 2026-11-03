@@ -61,7 +61,7 @@ import {
 import {
   ScoreScaleMixin,
   resolveSymlogConstant,
-  visibleStatsRange,
+  visibleStats,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -1088,27 +1088,45 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * `ScoreScaleMixin`'s hook: the depth range over the visible content
-         * blocks, from the worker-shipped `coverage.coverageDepths`, widened
-         * to the `coverage.encoding.y` rules.
+         * The depth stats over the visible content blocks, from the
+         * worker-shipped `coverage.coverageDepths`.
          */
-        get autoscaleRange(): [number, number] | undefined {
-          return visibleStatsRange({
+        get statsInView() {
+          return visibleStats({
             active: self.coverageBandActive,
             view: self.view,
             payloadFor: index => self.rpcDataMap.get(index)?.coverage,
             itemsFor: coverage => [coverage],
             accumulate: entries => computeVisibleCoverageStats(entries),
-            range: (stats, entries) =>
-              widenRangeToRules(
+          })
+        },
+        /**
+         * #getter
+         * `ScoreScaleMixin`'s hook: the depth range over the visible content
+         * blocks, widened to the `coverage.encoding.y` rules.
+         */
+        get autoscaleRange(): [number, number] | undefined {
+          const walked = this.statsInView
+          return walked
+            ? widenRangeToRules(
                 computeVisibleCoverageDomain({
-                  stats,
+                  stats: walked.stats,
                   quantile: self.fenceQuantile,
-                  entries,
+                  entries: walked.entries,
                 }),
                 self.scoreRules.map(rule => rule.value),
-              ),
-          })
+              )
+            : undefined
+        },
+        /**
+         * #getter
+         * The least and greatest depth in view, unfenced.
+         */
+        get valuesInView(): [number, number] | undefined {
+          const walked = this.statsInView
+          return walked
+            ? [walked.stats.scoreMin, walked.stats.scoreMax]
+            : undefined
         },
         /**
          * #getter
