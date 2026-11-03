@@ -16,6 +16,7 @@ import CDNASequence from './seqtypes/CDNASequence.tsx'
 import CDSSequence from './seqtypes/CDSSequence.tsx'
 import GenomicSequence from './seqtypes/GenomicSequence.tsx'
 import ProteinSequence from './seqtypes/ProteinSequence.tsx'
+import { sequenceModes } from './sequenceModes.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type {
@@ -95,8 +96,6 @@ const SequenceContents = observer(function SequenceContents({
       )
     }
 
-    // cdna and the gene_* variants all render the spliced transcript; introns
-    // and up/downstream flanks are toggled by the mode name
     case 'cdna':
     case 'gene':
     case 'gene_collapsed_intron':
@@ -111,8 +110,8 @@ const SequenceContents = observer(function SequenceContents({
           sequence={seq}
           upstream={withUpDown ? upstream : undefined}
           downstream={withUpDown ? downstream : undefined}
-          includeIntrons={mode.startsWith('gene')}
-          collapseIntron={mode.includes('collapsed_intron')}
+          includeIntrons={sequenceModes[mode].introns}
+          collapseIntron={sequenceModes[mode].collapsedIntrons}
           useGenomicCoords={useGenomicCoords}
           revcomp={rc}
           onHoverBase={onHoverBase}

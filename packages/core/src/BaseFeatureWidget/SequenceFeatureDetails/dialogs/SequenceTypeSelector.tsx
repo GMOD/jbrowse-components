@@ -3,6 +3,7 @@ import { observer } from 'mobx-react'
 
 import { makeStyles } from '../../../util/tss-react/index.ts'
 import { getAvailableModes } from '../featureTypeUtil.ts'
+import { sequenceModes } from '../sequenceModes.ts'
 
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
 import type {
@@ -28,18 +29,6 @@ const SequenceTypeSelector = observer(function SequenceTypeSelector({
 }) {
   const { classes } = useStyles()
   const { intronBp, upDownBp } = model
-  const labels: Record<SequenceDisplayMode, string> = {
-    cds: 'CDS',
-    protein: 'Protein',
-    cdna: 'cDNA',
-    gene: 'Genomic w/ full introns',
-    gene_updownstream: `Genomic w/ full introns +/- ${upDownBp}bp up+down stream`,
-    gene_collapsed_intron: `Genomic w/ ${intronBp}bp intron`,
-    gene_updownstream_collapsed_intron: `Genomic w/ ${intronBp}bp intron +/- ${upDownBp}bp up+down stream`,
-    genomic: 'Genomic',
-    genomic_sequence_updownstream: `Genomic +/- ${upDownBp}bp up+down stream`,
-  }
-
   return (
     <FormControl className={classes.formControl}>
       <Select
@@ -52,7 +41,7 @@ const SequenceTypeSelector = observer(function SequenceTypeSelector({
       >
         {getAvailableModes(feature).map(key => (
           <MenuItem key={key} value={key} data-testid={`sequence_type_${key}`}>
-            {labels[key]}
+            {sequenceModes[key].label({ intronBp, upDownBp })}
           </MenuItem>
         ))}
       </Select>

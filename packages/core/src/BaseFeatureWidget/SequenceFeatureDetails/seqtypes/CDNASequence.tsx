@@ -26,7 +26,7 @@ const CDNASequence = observer(function CDNASequence({
   downstream,
   feature,
   includeIntrons,
-  collapseIntron,
+  collapseIntron = false,
   useGenomicCoords,
   revcomp,
   onHoverBase,
@@ -57,6 +57,8 @@ const CDNASequence = observer(function CDNASequence({
   // else; otherwise every stretch keeps the reference genome's own casing
   const caseCoding = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
   const caseNoncoding = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
+  const intronDisplay = (intron: string) =>
+    caseNoncoding(getIntronDisplayStr(intron, intronBp, collapseIntron))
 
   const { mult, coordStart } = computeCoordProps({
     feature,
@@ -94,9 +96,7 @@ const CDNASequence = observer(function CDNASequence({
       if (intron) {
         middle.push({
           key: `${region.start}-${region.end}-intron`,
-          str: caseNoncoding(
-            getIntronDisplayStr(intron, intronBp, collapseIntron ?? false),
-          ),
+          str: intronDisplay(intron),
         })
       }
     }
@@ -121,9 +121,7 @@ const CDNASequence = observer(function CDNASequence({
       ? [
           {
             key,
-            str: caseNoncoding(
-              getIntronDisplayStr(str, intronBp, collapseIntron ?? false),
-            ),
+            str: intronDisplay(str),
           },
         ]
       : []

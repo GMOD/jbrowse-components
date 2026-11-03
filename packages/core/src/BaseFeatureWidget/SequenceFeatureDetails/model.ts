@@ -53,7 +53,7 @@ const sequenceDisplayModes = [
 export type SequenceDisplayMode = (typeof sequenceDisplayModes)[number]
 
 function isSequenceDisplayMode(val: string): val is SequenceDisplayMode {
-  return (sequenceDisplayModes as readonly string[]).includes(val)
+  return sequenceDisplayModes.includes(val)
 }
 
 const p = 'sequenceFeatureDetails'

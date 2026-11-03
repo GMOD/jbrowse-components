@@ -4,6 +4,7 @@ import {
   rankIsoforms,
   serializedIsoformReader,
 } from '../../util/isoformRank.ts'
+import { sequenceModes } from './sequenceModes.ts'
 
 import type {
   SimpleFeatureSerialized,
@@ -102,10 +103,9 @@ export function resolveMode(
 
 // whether the mode renders up/downstream flanks. shared by the sequence body
 // (which fetches+renders the flanks) and the FASTA header (which annotates
-// them) so the two can't drift, e.g. gene_updownstream_collapsed_intron
-// contains 'updownstream' but does not end with it
+// them) so the two can't drift
 export function modeHasUpDownstream(mode: SequenceDisplayMode) {
-  return mode.includes('updownstream')
+  return sequenceModes[mode].upDownstream
 }
 
 // reverse complement reads the opposite strand of the genome, so it is offered
@@ -114,25 +114,13 @@ export function modeHasUpDownstream(mode: SequenceDisplayMode) {
 // Shared by the menu (which offers it) and the panel (which applies it) so a
 // toggle left on in a genomic mode can't silently flip a cDNA readout.
 export function modeSupportsRevcomp(mode: SequenceDisplayMode) {
-  return [
-    'gene',
-    'gene_collapsed_intron',
-    'gene_updownstream',
-    'gene_updownstream_collapsed_intron',
-    'genomic',
-    'genomic_sequence_updownstream',
-  ].includes(mode)
+  return sequenceModes[mode].revcomp
 }
 
 // genomic coordinates only make sense for continuous genome-based sequence
 // types (not collapsed-intron or spliced views)
 export function showGenomicCoordsOption(mode: SequenceDisplayMode) {
-  return [
-    'gene',
-    'gene_updownstream',
-    'genomic',
-    'genomic_sequence_updownstream',
-  ].includes(mode)
+  return sequenceModes[mode].genomicCoords
 }
 
 // The coordinate mode a given sequence type actually renders. The setting is

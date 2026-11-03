@@ -3,8 +3,7 @@ import { Suspense, lazy, useRef, useState } from 'react'
 import { observer } from 'mobx-react'
 
 import { LoadingEllipses } from '../../ui/index.ts'
-import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu.tsx'
-import SequenceTypeSelector from './dialogs/SequenceTypeSelector.tsx'
+import SequenceControls from './dialogs/SequenceControls.tsx'
 import TranscriptSelector from './dialogs/TranscriptSelector.tsx'
 import {
   getTranscripts,
@@ -89,34 +88,28 @@ const SequenceFeatureDetailsPanel = observer(
 
     return (
       <>
-        <div>
-          {transcriptSelector}
-          <SequenceTypeSelector
-            model={model}
-            feature={effectiveFeature}
-            mode={mode}
-          />
-          <SequenceFeatureMenu
-            ref={seqPanelRef}
-            model={model}
-            session={session}
-            mode={mode}
-            revcomp={revcomp}
-            setRevcomp={setRevcomp}
-            extraItems={
-              showOpenInDialog
-                ? [
-                    {
-                      label: 'Open in dialog',
-                      onClick: () => {
-                        setOpenInDialog(true)
-                      },
+        <SequenceControls
+          model={model}
+          session={session}
+          feature={effectiveFeature}
+          mode={mode}
+          revcomp={revcomp}
+          setRevcomp={setRevcomp}
+          seqPanelRef={seqPanelRef}
+          transcriptSelector={transcriptSelector}
+          extraItems={
+            showOpenInDialog
+              ? [
+                  {
+                    label: 'Open in dialog',
+                    onClick: () => {
+                      setOpenInDialog(true)
                     },
-                  ]
-                : []
-            }
-          />
-        </div>
+                  },
+                ]
+              : []
+          }
+        />
         {openInDialog ? (
           <Suspense fallback={<LoadingEllipses />}>
             <SequenceDialog

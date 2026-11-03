@@ -5,8 +5,7 @@ import { observer } from 'mobx-react'
 import { InfoDialog } from '../../../ui/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 import SequenceBody from '../SequenceBody.tsx'
-import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
-import SequenceTypeSelector from './SequenceTypeSelector.tsx'
+import SequenceControls from './SequenceControls.tsx'
 
 import type {
   AbstractSessionModel,
@@ -74,22 +73,16 @@ const SequenceDialog = observer(function SequenceDialog({
       }}
     >
       <div className={classes.content}>
-        <div>
-          {transcriptSelector}
-          <SequenceTypeSelector
-            model={sequenceFeatureDetails}
-            feature={feature}
-            mode={mode}
-          />
-          <SequenceFeatureMenu
-            ref={seqPanelRef}
-            model={sequenceFeatureDetails}
-            session={session}
-            mode={mode}
-            revcomp={revcomp}
-            setRevcomp={setRevcomp}
-          />
-        </div>
+        <SequenceControls
+          model={sequenceFeatureDetails}
+          session={session}
+          feature={feature}
+          mode={mode}
+          revcomp={revcomp}
+          setRevcomp={setRevcomp}
+          seqPanelRef={seqPanelRef}
+          transcriptSelector={transcriptSelector}
+        />
         <SequenceBody
           error={error}
           sequence={sequence}
