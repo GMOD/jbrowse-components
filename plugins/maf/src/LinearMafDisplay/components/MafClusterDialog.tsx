@@ -23,7 +23,9 @@ const MafClusterDialog = observer(function MafClusterDialog({
   return (
     <ClusterDialog
       model={model}
-      handleClose={handleClose}
+      handleClose={() => {
+        handleClose()
+      }}
       title="Cluster rows by identity"
       description="This procedure will cluster the alignment rows by how much of the window each one aligns and matches at, using hierarchical clustering"
       matrixLabel="identity matrix"

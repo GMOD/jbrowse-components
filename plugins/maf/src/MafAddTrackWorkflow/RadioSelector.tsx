@@ -26,7 +26,10 @@ const RadioSelector = observer(function RadioSelector<T extends string>({
       <RadioGroup
         value={value}
         onChange={event => {
-          onChange(event.target.value as T)
+          const picked = options.find(o => o === event.target.value)
+          if (picked !== undefined) {
+            onChange(picked)
+          }
         }}
       >
         {options.map(option => (

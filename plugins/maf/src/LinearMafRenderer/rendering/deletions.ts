@@ -1,4 +1,3 @@
-import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 import { getContrastText } from '@jbrowse/core/ui/palette'
 
 import { LABEL_FONT } from './types.ts'
@@ -31,12 +30,10 @@ export function drawMafDeletionLabels(
   // effect, right after React committed a frame of dirty inline styles. At the
   // zoom levels where the rows are too short for a letter that was the single
   // most expensive thing in a wheel-zoom profile, spent to draw nothing. Same
-  // gate the insertion counts keep, and the cheap height test comes first so a
-  // culled marker never reaches the measurement.
+  // gate the insertion counts keep. Markers arrive only on rows tall enough
+  // for text, which `computeVisibleDeletions` decides.
   const labeled = markers.filter(
-    m =>
-      m.h >= MIN_HEIGHT_FOR_TEXT &&
-      m.width >= LABEL_FONT.measure(String(m.length)) + 2,
+    m => m.width >= LABEL_FONT.measure(String(m.length)) + 2,
   )
   if (labeled.length > 0) {
     ctx.font = LABEL_FONT.css

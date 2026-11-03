@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
@@ -28,7 +26,7 @@ const MafRowOverlays = observer(function MafRowOverlays({
   height: number
 }) {
   const palette = usePalette()
-  const theme = useMemo(() => getMafOverlayTheme(palette), [palette])
+  const theme = getMafOverlayTheme(palette)
   const { encodedUpload, renderState } = model
   const overlays: Overlays = {
     emptyLines: model.visibleEmptyLines,

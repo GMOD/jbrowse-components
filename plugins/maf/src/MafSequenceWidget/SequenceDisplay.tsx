@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { alpha } from '@jbrowse/core/ui/palette'
@@ -102,25 +102,22 @@ const SequenceDisplay = observer(function SequenceDisplay({
   const totalSeqWidth = seqLength * CHAR_WIDTH
   const totalHeight = samples ? samples.length * ROW_HEIGHT : 0
 
-  const handleHover = useCallback(
-    (
-      col: number | undefined,
-      row: number | undefined,
-      clientX: number,
-      clientY: number,
-    ) => {
-      if (regions) {
-        setHover({ col, row, x: clientX, y: clientY })
-        model.setHoverHighlight(colToHighlight(col, colToGenomePos, regions[0]))
-      }
-    },
-    [colToGenomePos, model, regions],
-  )
+  function handleHover(
+    col: number | undefined,
+    row: number | undefined,
+    clientX: number,
+    clientY: number,
+  ) {
+    if (regions) {
+      setHover({ col, row, x: clientX, y: clientY })
+      model.setHoverHighlight(colToHighlight(col, colToGenomePos, regions[0]))
+    }
+  }
 
-  const handleLeave = useCallback(() => {
+  function handleLeave() {
     setHover(undefined)
     model.setHoverHighlight(undefined)
-  }, [model])
+  }
 
   if (!samples || !regions || sequences.length === 0) {
     return <div>No sequence data</div>

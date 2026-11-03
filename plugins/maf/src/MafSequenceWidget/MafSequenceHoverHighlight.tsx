@@ -8,11 +8,13 @@ function isConnectedMafSequenceWidget(
   w: unknown,
   viewId: string,
 ): w is MafSequenceWidgetModel {
-  const candidate = w as Partial<MafSequenceWidgetModel> | null
   return (
-    !!candidate &&
-    candidate.type === 'MafSequenceWidget' &&
-    candidate.connectedViewId === viewId
+    typeof w === 'object' &&
+    w !== null &&
+    'type' in w &&
+    w.type === 'MafSequenceWidget' &&
+    'connectedViewId' in w &&
+    w.connectedViewId === viewId
   )
 }
 

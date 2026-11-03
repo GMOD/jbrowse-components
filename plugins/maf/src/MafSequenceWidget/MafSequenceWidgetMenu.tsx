@@ -101,7 +101,6 @@ const MafSequenceWidgetMenu = observer(function MafSequenceWidgetMenu({
             setShowSampleNames(!showSampleNames)
           },
         },
-        { type: 'divider' },
         {
           label: 'Copy to clipboard',
           icon: ContentCopy,

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { virtualRange } from '@jbrowse/core/util/virtualRange'
@@ -95,23 +95,20 @@ const SequenceCanvas = observer(function SequenceCanvas({
     palette,
   ])
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLCanvasElement>) => {
-      const canvas = canvasRef.current
-      if (canvas) {
-        const rect = canvas.getBoundingClientRect()
-        const col = startCol + Math.floor((e.clientX - rect.left) / CHAR_WIDTH)
-        const row = startRow + Math.floor((e.clientY - rect.top) / ROW_HEIGHT)
-        onHover(
-          col >= 0 && col < seqLength ? col : undefined,
-          row >= 0 && row < samples.length ? row : undefined,
-          e.clientX,
-          e.clientY,
-        )
-      }
-    },
-    [seqLength, samples.length, startRow, startCol, onHover],
-  )
+  function handleMouseMove(e: React.MouseEvent<HTMLCanvasElement>) {
+    const canvas = canvasRef.current
+    if (canvas) {
+      const rect = canvas.getBoundingClientRect()
+      const col = startCol + Math.floor((e.clientX - rect.left) / CHAR_WIDTH)
+      const row = startRow + Math.floor((e.clientY - rect.top) / ROW_HEIGHT)
+      onHover(
+        col >= 0 && col < seqLength ? col : undefined,
+        row >= 0 && row < samples.length ? row : undefined,
+        e.clientX,
+        e.clientY,
+      )
+    }
+  }
 
   return (
     <canvas

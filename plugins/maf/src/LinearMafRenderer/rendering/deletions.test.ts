@@ -49,12 +49,9 @@ test('the deleted-base count reads against the run it sits in, in both themes', 
   ])
 })
 
-// The two gates the label is subject to, kept here so a geometry change can't
-// silently stop the color above from ever being exercised.
-test('draws nothing where the run is too short or too narrow for the text', () => {
+test('draws nothing where the run is too narrow for the text', () => {
   const { ctx, texts } = mockCtx()
   const palette = getMafColorPalette(resolvePalette())
-  drawMafDeletionLabels(ctx, [{ ...marker, h: 2 }], palette)
   drawMafDeletionLabels(ctx, [{ ...marker, width: 1 }], palette)
   expect(texts).toEqual([])
 })

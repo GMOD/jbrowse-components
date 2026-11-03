@@ -1,4 +1,4 @@
-import { insertionBarWidth } from '@jbrowse/alignments-core'
+import { EMPTY_INSERTIONS, insertionInk } from '@jbrowse/alignments-core'
 import { DASH, isGapByte } from '@jbrowse/core/util/alignedBytes'
 
 import { blockIndexAtBp } from '../../LinearMafRenderer/blockAtBp.ts'
@@ -159,11 +159,12 @@ function cellHitInRow(
   }
 }
 
+const INSERTION_HIT_SLOP_PX = 2
+
 // Resolve an insertion marker under the cursor from the channel the painter
-// draws (each row's insertions merged per `binBp` bin). The hit test measures
-// genomic distance to the marker anchor, mirroring plugin-alignments
-// (insertionBarWidth+4px box); the nearest marker whose box holds the cursor
-// wins.
+// draws (each row's insertions merged per `binBp` bin). The box is the ink the
+// mark reports, measured in px on a block that puts bp 0 at px 0, with a small
+// slop around it; the nearest marker whose box holds the cursor wins.
 function insertionHitInRow(
   region: MafRegionData,
   rowIndex: number,
@@ -172,23 +173,42 @@ function insertionHitInRow(
   rowBandPx: number,
   binBp: number,
 ): InsertionHit | undefined {
-  const { x, row, length, count } = mergedInsertions(region, binBp)
+  const placed = mergedInsertions(region, binBp)
+  const channels = { ...placed, color: EMPTY_INSERTIONS.color }
+  const block = { start: 0, end: 1, screenStartPx: 0, screenEndPx: 1 / bpPerPx }
+  const params = {
+    rowHeight: rowBandPx,
+    rowOffsetPx: 0,
+    bandHeightPx: rowBandPx,
+    spanFloorPx: 0,
+    outline: false,
+  }
+  const cursorPx = gposFrac / bpPerPx
   let nearest = -1
   let nearestDist = Infinity
-  for (let i = 0; i < count; i++) {
-    if (row[i] === rowIndex) {
-      const dist = Math.abs(gposFrac - x[i]!)
-      const rectWidthPx =
-        insertionBarWidth(length[i]!, 1 / bpPerPx, rowBandPx) + 4
-      if (dist < (rectWidthPx / 2) * bpPerPx && dist < nearestDist) {
-        nearest = i
-        nearestDist = dist
+  for (let i = 0; i < placed.count; i++) {
+    if (placed.row[i] === rowIndex) {
+      const ink = insertionInk(channels, block, params, i)
+      if (ink) {
+        const dist = Math.abs(cursorPx - (ink.left + ink.width / 2))
+        if (
+          dist < ink.width / 2 + INSERTION_HIT_SLOP_PX &&
+          dist < nearestDist
+        ) {
+          nearest = i
+          nearestDist = dist
+        }
       }
     }
   }
   return nearest === -1
     ? undefined
-    : describeInsertion(region, rowIndex, x[nearest]!, length[nearest]!)
+    : describeInsertion(
+        region,
+        rowIndex,
+        placed.x[nearest]!,
+        placed.length[nearest]!,
+      )
 }
 
 // The marker the hit test named, by its anchor and drawn length: the run in

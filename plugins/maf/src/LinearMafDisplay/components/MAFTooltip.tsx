@@ -6,7 +6,6 @@ import {
 } from '@jbrowse/alignments-core/CoverageTooltipTables'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { assembleLocString } from '@jbrowse/core/util'
-import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import { bandAt } from '@jbrowse/core/util/bandLayout'
 import { observer } from 'mobx-react'
 
@@ -52,11 +51,13 @@ const ConservationBandTooltip = observer(function ConservationBandTooltip({
 const CoverageBandTooltip = observer(function CoverageBandTooltip({
   model,
   pos,
+  baseBp,
   mouseState,
   clientPoint,
 }: {
   model: LinearMafDisplayModel
   pos: PxToBpResult
+  baseBp: number
   mouseState: MouseState
   clientPoint: { x: number; y: number }
 }) {
@@ -81,10 +82,10 @@ const CoverageBandTooltip = observer(function CoverageBandTooltip({
     )
   }
   // The bin is per-base, so it needs the base drawn under the cursor, which
-  // `coord0` is not on a reversed region (see basePaintedAt).
+  // `coord0` is not on a reversed region (see `HoverBp`).
   const bin = model.coverageTooltipBin(
     pos.index,
-    basePaintedAt(pos, pos.offset),
+    baseBp,
     view.bpPerPx,
     pos.reversed,
   )
@@ -152,6 +153,7 @@ const MAFTooltip = observer(function MAFTooltip({
       <CoverageBandTooltip
         model={model}
         pos={p2}
+        baseBp={baseBp}
         mouseState={mouseState}
         clientPoint={clientPoint}
       />

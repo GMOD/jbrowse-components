@@ -115,7 +115,7 @@ function placedInsertions(region: MafRegionData): Placed {
  * per marker. A row's insertions arrive in ascending bp, so a bin's are
  * adjacent and the merge needs only each row's last bin.
  */
-export function mergeInsertionsPerBin(placed: Placed, binBp: number): Placed {
+function mergeInsertionsPerBin(placed: Placed, binBp: number): Placed {
   const { x, row, length, count } = placed
   if (binBp <= 1 || count === 0) {
     return placed
