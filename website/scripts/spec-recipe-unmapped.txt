@@ -10,6 +10,7 @@ colorScheme
 connectedView
 encoding.color
 encoding.opacity
+geneGlyphMode
 geneTrackId
 genotypes.show
 height
