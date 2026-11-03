@@ -2,6 +2,7 @@ import {
   mergeSortedSpans,
   overlapIntervals,
   packedOverlapIntervals,
+  subtractSortedSpans,
 } from './spanOverlaps.ts'
 
 describe('overlapIntervals', () => {
@@ -218,5 +219,35 @@ describe('packedOverlapIntervals', () => {
     expect(
       packedOverlapIntervals(Uint32Array.from([0, 100, 100, 200]), 2).length,
     ).toBe(0)
+  })
+})
+
+describe('subtractSortedSpans', () => {
+  const span = (start: number, end: number) => ({ start, end })
+
+  test('nothing removed keeps every span', () => {
+    expect(subtractSortedSpans([span(0, 10)], [])).toEqual([span(0, 10)])
+  })
+
+  test('a removal inside a span splits it', () => {
+    expect(subtractSortedSpans([span(0, 100)], [span(40, 60)])).toEqual([
+      span(0, 40),
+      span(60, 100),
+    ])
+  })
+
+  test('removals over either edge trim it, and a covered span is dropped', () => {
+    expect(
+      subtractSortedSpans(
+        [span(0, 100), span(200, 300), span(400, 500)],
+        [span(-10, 20), span(90, 150), span(190, 310), span(480, 600)],
+      ),
+    ).toEqual([span(20, 90), span(400, 480)])
+  })
+
+  test('one removal can cut two spans', () => {
+    expect(
+      subtractSortedSpans([span(0, 50), span(60, 100)], [span(40, 70)]),
+    ).toEqual([span(0, 40), span(70, 100)])
   })
 })

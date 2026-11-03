@@ -2,6 +2,7 @@ import {
   cloneWithLayout,
   withoutLayout,
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
+import { OVERLAP_SEGMENTS } from '../shaders/slang/overlap.consts.generated.ts'
 import { packedOverlapIntervals } from './spanOverlaps.ts'
 
 import type {
@@ -53,9 +54,11 @@ function collapsedOverlaps({
   numSegments,
 }: WorkerPileupData) {
   const overlapPositions = packedOverlapIntervals(segmentPositions, numSegments)
+  const count = overlapPositions.length / 2
   return {
     overlapPositions,
-    overlapYs: new Uint16Array(overlapPositions.length / 2),
+    overlapYs: new Uint16Array(count),
+    overlapKinds: new Uint8Array(count).fill(OVERLAP_SEGMENTS),
   }
 }
 

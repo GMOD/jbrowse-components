@@ -159,6 +159,7 @@ const EMPTY_PILEUP_STUBS = {
   numLinkedReadLines: 0,
   overlapPositions: new Uint32Array(),
   overlapYs: new Uint16Array(),
+  overlapKinds: new Uint8Array(),
   perBaseQualPositions: new Uint32Array(),
   perBaseQualYs: new Uint16Array(),
   perBaseQualScores: new Uint8Array(),
@@ -471,6 +472,7 @@ describe('GPU sync rebuild transaction', () => {
       ...makeMinimalPileupResult(cov),
       overlapPositions: new Uint32Array([REGION_START, REGION_START + 5]),
       overlapYs: new Uint16Array([0]),
+      overlapKinds: new Uint8Array([0]),
     })
 
     gpu.upload('sources', oneRegion(withOverlap))

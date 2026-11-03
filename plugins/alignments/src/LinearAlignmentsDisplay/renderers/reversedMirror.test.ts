@@ -203,6 +203,7 @@ function pileupData(): PileupDataResult {
     // in the linked-reads config below (shouldDrawOverlaps).
     overlapPositions: new Uint32Array([1016, 1019]),
     overlapYs: new Uint16Array([0]),
+    overlapKinds: new Uint8Array([0]),
 
     // Connecting line between the two reads, and a linked-read line spanning
     // rows. Both paint as paths (moveTo/lineTo), and both are linked-reads-only.

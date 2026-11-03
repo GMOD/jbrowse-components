@@ -114,6 +114,7 @@ import {
   getArcLegendItems,
   getReadDisplayLegendItems,
   insertSizeBandLabels,
+  overlapLegendRows,
   readCategoryLabelOverrides,
   readColorCategoryLabel,
   sashimiLegend,
@@ -170,10 +171,10 @@ import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
   arcSlotsInWindows,
   connectorSlotsInWindows,
-  hasOverlapInWindows,
   insertSizeBandInWindows,
   junctionInWindows,
   modificationTypesInWindows,
+  overlapKindsInWindows,
   readCategoriesInWindows,
   readMapqsInWindows,
   readTagValuesInWindows,
@@ -226,6 +227,7 @@ import type { LaneJunction } from '../features/sashimi/supportingReads.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
 import type { DeclaredReadLabels } from '../shared/alignmentsColor.ts'
+import type { OverlapLegendRow } from '../shared/legendUtils.ts'
 import type { ReadSlot } from '../shared/readSlot.ts'
 import type {
   BasesPatch,
@@ -997,26 +999,23 @@ export default function stateModelFactory(
 
           /**
            * #getter
-           * Which overlap mark the legend row names, undefined when none. The
-           * row needs the pass to be DRAWING (`shouldDrawOverlaps`, shared with
-           * both renderers) and some region to hold an interval, so no row
-           * explains an off-screen mark. O(regions).
+           * The overlap rows the legend names: a chain's split-segment and
+           * mate overlaps, or the collapsed rows' tint. A row needs the pass to
+           * be DRAWING (`shouldDrawOverlaps`, shared with both renderers) and
+           * some region to hold an interval of its kind, so no row explains an
+           * off-screen mark. O(regions).
            */
-          get overlapLegendKind(): 'chain' | 'collapsed' | undefined {
-            if (
-              !shouldDrawOverlaps({
-                unit: self.unit,
-                collapseSections: this.collapseSections,
-                featureHeight: this.featureHeight,
-              })
-            ) {
-              return undefined
-            }
-            return hasOverlapInWindows(this.laidOutByGroup, this.keyWindows)
-              ? self.unit === 'chain'
-                ? 'chain'
-                : 'collapsed'
-              : undefined
+          get overlapLegendRows(): readonly OverlapLegendRow[] {
+            return shouldDrawOverlaps({
+              unit: self.unit,
+              collapseSections: this.collapseSections,
+              featureHeight: this.featureHeight,
+            })
+              ? overlapLegendRows(
+                  self.unit === 'chain',
+                  overlapKindsInWindows(this.laidOutByGroup, this.keyWindows),
+                )
+              : []
           },
 
           /**
@@ -1036,7 +1035,7 @@ export default function stateModelFactory(
            */
           legendItems(palette: ColorPalette) {
             return getReadDisplayLegendItems({
-              overlaps: this.overlapLegendKind,
+              overlaps: this.overlapLegendRows,
               colorField: self.colorField,
               baseLayer: self.baseLayer,
               presentCategories: this.colorLegendCategories,
@@ -3595,6 +3594,7 @@ export default function stateModelFactory(
 // Re-exported so LGVSyntenyDisplay's emitted .d.ts can name every type the
 // inferred model mentions; without it the ESM build reports TS2883.
 export type { ArcCategory } from '../shaders/palettes.ts'
+export type { OverlapLegendRow } from '../shared/legendUtils.ts'
 export type { DeclaredFilters } from './dialogs/layerFilters.ts'
 export type { GroupSize } from './groupLayout.ts'
 

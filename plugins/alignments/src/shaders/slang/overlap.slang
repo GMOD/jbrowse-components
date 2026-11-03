@@ -14,6 +14,13 @@
 // the arms are opposite-strand red and blue, and a 40% wash over whichever drew
 // last reads as a stronger version of that one arm.
 //
+// A chain span is one of two kinds (`inst.kind`): OVERLAP_SEGMENTS, where a
+// split or supplementary segment is one of the two and the span is a
+// breakpoint's, keeps that neutral; OVERLAP_MATES, the two reads of a pair, is
+// only a fragment shorter than two reads, which a short-fragment library shows
+// on nearly every pair, so it takes `u.colorMateOverlap`, one step from the
+// read fill.
+//
 // COLLAPSED GROUP ROWS: several unrelated reads sharing a row on purpose, where
 // the count is the point. Spans are deliberately not merged upstream, so the
 // tint STACKS and depth reads as weight. That is why this is a branch rather
@@ -26,7 +33,7 @@
 // generated `overlapFade`/`overlapAlpha` below, so the two paths cannot drift.
 //! targets: wgsl, glsl
 //! js-export: overlapAlpha, overlapFade
-//! export-consts: OVERLAP_ALPHA, FADE_LO_PX, FADE_HI_PX
+//! export-consts: OVERLAP_ALPHA, FADE_LO_PX, FADE_HI_PX, OVERLAP_SEGMENTS, OVERLAP_MATES
 
 import alignmentsUniforms;
 // for unpackRGBA — an import does not re-export through alignmentsUniforms
@@ -43,6 +50,9 @@ static const float OVERLAP_ALPHA = 0.4;
 // On-screen width (CSS px) where the mark starts to appear / reaches full alpha.
 static const float FADE_LO_PX = 1.5;
 static const float FADE_HI_PX = 12.0;
+
+static const uint OVERLAP_SEGMENTS = 0u;
+static const uint OVERLAP_MATES    = 1u;
 
 // How much of the mark an overlap of this on-screen width gets, 0..1. Chain mode
 // spends it as the opacity of an opaque fill (so a narrow overlap fades in over
@@ -62,6 +72,7 @@ struct Instance {
   uint  startOff : ATTR0;
   uint  endOff   : ATTR1;
   float y        : ATTR2;
+  uint  kind     : ATTR3;
 };
 
 [shader("vertex")]
@@ -81,8 +92,9 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   // both branches spelled through the js-exported helpers, which is also what
   // keeps them exported: slangc drops a function no entry point reaches
   bool chain = u.chainMode != 0;
-  float3 tint =
-    unpackRGBA(chain ? u.colorOverlap : u.colorOverlapTint).xyz;
+  uint chainColor =
+    inst.kind == OVERLAP_MATES ? u.colorMateOverlap : u.colorOverlap;
+  float3 tint = unpackRGBA(chain ? chainColor : u.colorOverlapTint).xyz;
   float alpha = chain ? fade : overlapAlpha(pxW);
 
   float2 yy = pileupY(inst.y, u);

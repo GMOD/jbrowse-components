@@ -49,6 +49,10 @@ export interface PaletteColors {
   // reason the span is marked. `palette.readOverlap` states why it inverts
   // between themes instead of dimming.
   colorOverlap: RGBColor
+  // The same span when it is only the two mates of a pair overlapping, which a
+  // short-fragment library does on nearly every pair: one step from the read
+  // fill rather than the far end of the scale (`palette.readMateOverlap`).
+  colorMateOverlap: RGBColor
   // The hairline joining a chain's two mates across the pileup: `text.primary`,
   // the theme's foreground, so "neutral" against a dark track background is
   // light rather than the hard black both renderers once spelled.

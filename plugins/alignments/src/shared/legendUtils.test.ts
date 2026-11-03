@@ -10,6 +10,10 @@ import {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import { qualityRampCss } from '../features/perBaseQuality/colors.ts'
+import {
+  OVERLAP_MATES,
+  OVERLAP_SEGMENTS,
+} from '../shaders/slang/overlap.consts.generated.ts'
 import { alignmentsColorEncoding } from './alignmentsColor.ts'
 import { basesFilterOf } from './basesFilter.ts'
 import { colorSettingOf } from './colorSettingFixture.ts'
@@ -22,6 +26,7 @@ import {
   getAlignmentsColorScales,
   getArcLegendItems,
   getReadDisplayLegendItems,
+  overlapLegendRows,
   sashimiLegend,
   sashimiLegendItems,
 } from './legendUtils.ts'
@@ -32,6 +37,7 @@ import type { BakedColorScale } from '../LinearAlignmentsDisplay/bakedColorScale
 import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ArcCategory } from '../shaders/palettes.ts'
+import type { OverlapLegendRow } from './legendUtils.ts'
 import type { LayerSpec } from './splitFieldForTest.ts'
 import type { BaseLayer } from './types.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
@@ -1200,39 +1206,54 @@ describe('getAlignmentsColorScales', () => {
   })
 })
 
-// The row that names the overlap mark. Its shape is the argument: chain mode
-// paints ONE color that is no read category, collapsed rows tint whatever is
-// underneath. What the cases below are really pinning is that the swatch is
+// The rows that name the overlap mark. Their shape is the argument: chain mode
+// paints one color per kind that is no read category, collapsed rows tint
+// whatever is underneath. What the cases below are really pinning is that the swatch is
 // SHARED with the ink rather than derived from it — the form this replaced
 // computed "the LR grey darkened by OVERLAP_ALPHA" and so kept describing a
 // black-over-grey tint after the pass had been changed to paint something else.
-describe('the overlap row', () => {
-  const items = (overlaps?: 'chain' | 'collapsed') =>
+describe('the overlap rows', () => {
+  const items = (overlaps?: readonly OverlapLegendRow[]) =>
     getReadDisplayLegendItems({
       colorField: undefined,
       presentCategories: new Set<ReadColorCategory>(['normalInsert']),
       palette: makeTestPalette({
         colorPairLR: [1, 1, 1],
         colorOverlap: [0.2, 0.2, 0.2],
+        colorMateOverlap: [0.6, 0.6, 0.6],
         colorOverlapTint: [0, 0, 1],
       }),
       overlaps,
     })
 
-  test('is absent when the pass is not drawing one', () => {
+  test('are absent when the pass is not drawing one', () => {
     expect(items().some(i => /overlap/i.test(i.label))).toBe(false)
+    expect(items([]).some(i => /overlap/i.test(i.label))).toBe(false)
   })
 
-  test('chain mode names the color the pass fills with', () => {
-    const row = items('chain').at(-1)!
-    expect(row).toEqual({
+  test('a split-segment overlap names the strong neutral the pass fills with', () => {
+    expect(items(['segments']).at(-1)).toEqual({
       color: 'rgb(51,51,51)',
-      label: 'Pair/chain reads overlap here',
+      label: 'Split segments overlap here',
     })
   })
 
+  test('a mate overlap names the faint neutral, under its own label', () => {
+    expect(items(['mates']).at(-1)).toEqual({
+      color: 'rgb(153,153,153)',
+      label: 'Mates overlap here',
+    })
+  })
+
+  test('a chain drawing both kinds keys both, each in its own color', () => {
+    expect(items(['segments', 'mates']).slice(-2)).toEqual([
+      { color: 'rgb(51,51,51)', label: 'Split segments overlap here' },
+      { color: 'rgb(153,153,153)', label: 'Mates overlap here' },
+    ])
+  })
+
   test('collapsed rows name a modifier, in two swatches', () => {
-    const row = items('collapsed').at(-1)!
+    const row = items(['collapsed']).at(-1)!
     expect(row.color).toBeUndefined()
     // the read color, then that color 0.4 of the way to `colorOverlapTint` —
     // the pass's own tint, not black, and opaque because a legend swatch is one
@@ -1244,8 +1265,31 @@ describe('the overlap row', () => {
     expect(row.label).toBe('Overlapping reads (tint = depth)')
   })
 
-  test('sits last, after the colors it modifies', () => {
-    expect(items('chain')).toHaveLength(items().length + 1)
+  test('sit last, after the colors they modify', () => {
+    expect(items(['segments', 'mates'])).toHaveLength(items().length + 2)
+  })
+})
+
+describe('overlapLegendRows', () => {
+  test('a chain keys each kind drawn, segments first', () => {
+    expect(
+      overlapLegendRows(true, new Set([OVERLAP_MATES, OVERLAP_SEGMENTS])),
+    ).toEqual(['segments', 'mates'])
+    expect(overlapLegendRows(true, new Set([OVERLAP_MATES]))).toEqual(['mates'])
+    expect(overlapLegendRows(true, new Set([OVERLAP_SEGMENTS]))).toEqual([
+      'segments',
+    ])
+  })
+
+  test('collapsed rows key one tint whatever the kinds', () => {
+    expect(overlapLegendRows(false, new Set([OVERLAP_SEGMENTS]))).toEqual([
+      'collapsed',
+    ])
+  })
+
+  test('nothing drawn keys nothing', () => {
+    expect(overlapLegendRows(true, new Set())).toEqual([])
+    expect(overlapLegendRows(false, new Set())).toEqual([])
   })
 })
 

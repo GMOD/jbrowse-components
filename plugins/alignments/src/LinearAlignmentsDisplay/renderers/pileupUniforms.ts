@@ -56,6 +56,7 @@ export const PALETTE_UNIFORM_FIELDS = {
   colorHardclip: 'colorHardclip',
   colorConnectingLine: 'colorConnectingLine',
   colorOverlap: 'colorOverlap',
+  colorMateOverlap: 'colorMateOverlap',
   colorOverlapTint: 'colorOverlapTint',
 } satisfies Record<string, PaletteColorKey>
 

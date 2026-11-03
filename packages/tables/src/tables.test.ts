@@ -958,8 +958,8 @@ test('pileup.collapsed on a faceted display is dropped with a warning, as the ta
   expect(plain.warnings).toEqual([])
 })
 
-test('a chain’s overlaps and their key row come back only where the display draws them, from a 3 px read', async () => {
-  const label = 'Pair/chain reads overlap here'
+test('a chain’s overlaps and their key rows come back only where the display draws them, from a 3 px read', async () => {
+  const labels = ['Split segments overlap here', 'Mates overlap here']
   const plain = await engine.alignments(OVERLAP)
   const chained = await engine.alignments({
     ...OVERLAP,
@@ -969,13 +969,16 @@ test('a chain’s overlaps and their key row come back only where the display dr
     ...OVERLAP,
     display: { unit: 'chain', pileup: { mark: { height: 2 } } },
   })
-  expect(plain.legend.label).not.toContain(label)
-  const row = chained.legend.label.indexOf(label)
-  expect(row).toBe(chained.legend.label.length - 1)
-  expect(chained.legend.color[row]).toBe(chained.overlaps.color[0])
+  for (const label of labels) {
+    expect(plain.legend.label).not.toContain(label)
+    expect(thin.legend.label).not.toContain(label)
+  }
+  expect(chained.legend.label.slice(-2)).toEqual(labels)
+  const keyed = chained.legend.color.slice(-2)
+  expect(new Set(keyed).size).toBe(2)
+  expect(new Set(chained.overlaps.color)).toEqual(new Set(keyed))
   expect(thin.overlaps.start).toHaveLength(0)
   expect(thin.chains.start).toEqual(chained.chains.start)
-  expect(thin.legend.label).not.toContain(label)
 })
 
 test('a chain over split reads paints a read by its strand against its chain’s', async () => {

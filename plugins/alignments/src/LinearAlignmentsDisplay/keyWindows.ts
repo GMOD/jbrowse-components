@@ -141,12 +141,15 @@ export function modificationTypesInWindows(
   return present
 }
 
-/** Whether a chain or collapsed-row overlap interval touches a window. */
-export function hasOverlapInWindows(
-  byGroup: ByGroup<Pick<PileupLayoutArrays, 'overlapPositions'>>,
+/** The kinds of the chain or collapsed-row overlap intervals touching a window. */
+export function overlapKindsInWindows(
+  byGroup: ByGroup<
+    Pick<PileupLayoutArrays, 'overlapPositions' | 'overlapKinds'>
+  >,
   windows: readonly KeyWindow[],
 ) {
   const regions = windowsByRegion(windows)
+  const present = new Set<number>()
   for (const map of byGroup.values()) {
     for (const [regionIndex, d] of map) {
       const ranges = regions.get(regionIndex)
@@ -154,13 +157,13 @@ export function hasOverlapInWindows(
         const pos = d.overlapPositions
         for (let i = 0; i < pos.length; i += 2) {
           if (touchesAny(ranges, pos[i]!, pos[i + 1]!)) {
-            return true
+            present.add(d.overlapKinds[i / 2]!)
           }
         }
       }
     }
   }
-  return false
+  return present
 }
 
 /**

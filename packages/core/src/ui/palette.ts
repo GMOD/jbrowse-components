@@ -594,8 +594,10 @@ export interface StringColors {
   deletion: string
   /** MAF alignment-gap cells, where a species has no base */
   mafGap: string
-  /** Span where two segments of one molecule both align (view-as-pairs / chains) */
+  /** Span where two segments of one molecule both align (view-as-pairs / chains), at least one of them a split or supplementary segment */
   readOverlap: string
+  /** Span where the two mates of a pair both align (view-as-pairs / chains): the fragment is shorter than two reads */
+  readMateOverlap: string
   /** Base modifications on the forward strand */
   modificationFwd: string
   /** Base modifications on the reverse strand */
@@ -662,7 +664,7 @@ const hardclip = '#f00'
 /** #color theme-colors | Skip (intron) | Skipped regions such as introns in RNA-seq reads */
 const skip = '#009a8a'
 /**
- * #color alignments-indicators | Overlapping segments of one molecule | Both reads of a pair, or both arms of a split read, align here — so the junction between them is this span rather than a point
+ * #color alignments-indicators | Split segments overlap | Two segments of one molecule, at least one of them a split or supplementary alignment, both align here — so the breakpoint between them is this span rather than a point
  *
  * Deliberately NOT a hue, and deliberately outside the categorical greys.
  * Without a mark the two segments paint over each other and the display shows a
@@ -681,6 +683,20 @@ const skip = '#009a8a'
  * should be.
  */
 const readOverlap = '#555555'
+/**
+ * #color alignments-indicators | Mates overlap | The two reads of a pair both align here: the fragment is shorter than two reads, and these bases are read twice from one molecule
+ *
+ * The same statement as `readOverlap`, one step from the read fill instead of
+ * at the far end of the scale. A short-fragment library (exome, cfDNA) overlaps
+ * nearly every pair, so the strong neutral turned the whole pileup into dark
+ * blocks; the overlap is real but ordinary there, and a breakpoint span is not.
+ *
+ * Picked on NA12878 exome and 30x WGS captures at BRCA1, against `colorPairLR`
+ * #d3d3d3 (L* 84.6): #a0a0a0 (65.9) still weighed down every exome row,
+ * #c4c4c4 (79.2) could not be found at a 7 px row, and this (73.3) reads as a
+ * quiet step that leaves the mismatches on top of it legible.
+ */
+const readMateOverlap = '#b4b4b4'
 /** #color theme-colors | Base modification (fwd) | Base modifications on the forward strand */
 const modificationFwd = '#c8c8c8'
 /** #color theme-colors | Base modification (rev) | Base modifications on the reverse strand */
@@ -701,6 +717,7 @@ const lightStringColors: StringColors = {
   deletion,
   mafGap: deletion,
   readOverlap,
+  readMateOverlap,
   softclip,
   hardclip,
   skip,
@@ -763,6 +780,10 @@ const darkStringColors: Partial<StringColors> = {
   // has to be the one neutral no read category paints, and on a dark track that
   // is the light end, clear of `colorPairLRDark` #b0b0b0
   readOverlap: '#e4e4e4',
+  // toward the strong neutral, as the light value is: L* 80.6 over
+  // `colorPairLRDark`'s 71.8. #d4d4d4 glared like the #e4e4e4 it replaced, and
+  // #bcbcbc (76.2) vanished into the reads on the same captures
+  readMateOverlap: '#c8c8c8',
 }
 
 const lightAlignmentFill: AlignmentFill = {

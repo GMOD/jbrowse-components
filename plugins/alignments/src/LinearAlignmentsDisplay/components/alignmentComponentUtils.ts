@@ -105,6 +105,7 @@ export function buildColorPaletteFromPalette(
     colorUnmappedMate: toRgb(palette.alignmentFill.mateUnmapped),
     colorInterchrom: toRgb(colorInterchrom),
     colorOverlap: toRgb(palette.readOverlap),
+    colorMateOverlap: toRgb(palette.readMateOverlap),
     // The neutral overlays, on the foreground token. Two slots rather than one
     // shared `colorNeutral`, because what makes them equal is a fact about
     // this theme and not about the marks —

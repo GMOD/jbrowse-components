@@ -147,10 +147,13 @@ copied.
   (`featureSpacingForHeight`). Under `heightMode: 'fit'` the browser
   squeezes the pitch to the track's height, which is the host's.
 - Under `unit: 'chain'`, `chains` holds each chain's line and `overlaps` the
-  spans where two of its reads both align. The display draws no overlap
+  spans where two of its reads both align, each in its kind's color: the
+  strong neutral where a split or supplementary segment is one of the two,
+  the faint one where only two mates are. The display draws no overlap
   below a 3 px read (`shouldDrawOverlaps`), so there `overlaps` comes back
   empty. Where the tables return an overlap, `legend` ends with the
-  display's row for it, "Pair/chain reads overlap here".
+  display's row for each kind drawn, "Split segments overlap here" and
+  "Mates overlap here".
 - The tables lay each facet section out as a stack and ignore
   `pileup.collapsed`, so they return none of the overlap tint the display
   draws over a collapsed section. Where a faceted config sets it, `warnings`

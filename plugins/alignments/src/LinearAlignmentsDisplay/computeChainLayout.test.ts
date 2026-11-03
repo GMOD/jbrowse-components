@@ -1,5 +1,15 @@
 import { namesToBlock } from '@jbrowse/alignments-core'
+import {
+  SAM_FLAG_FIRST_IN_PAIR,
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_SECOND_IN_PAIR,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '@jbrowse/cigar-utils'
 
+import {
+  OVERLAP_MATES,
+  OVERLAP_SEGMENTS,
+} from '../shaders/slang/overlap.consts.generated.ts'
 import { emptyModTooltipIndex } from '../shared/modTooltipIndex.ts'
 import { nextRefsToTable } from '../shared/readNextRefs.ts'
 import {
@@ -144,6 +154,7 @@ function makeChainData(opts: {
     connectingLineYs: new Uint16Array(0),
     overlapPositions: new Uint32Array(0),
     overlapYs: new Uint16Array(0),
+    overlapKinds: new Uint8Array(0),
     linkedReadLinePositions: new Uint32Array(0),
     linkedReadLineYs: new Uint16Array(0),
     linkedReadLineColorTypes: new Uint16Array(0),
@@ -659,11 +670,13 @@ describe('buildChainConnectingData', () => {
   })
 
   // The tint marks where a chain's reads paint over each other on their shared
-  // row, and what a read covers is its exons.
+  // row, and what a read covers is its exons. Which of the two fills it takes
+  // is what the two reads are: two primary mates, or a split segment.
   describe('intra-chain overlap tint', () => {
     function withSegments(
       data: PileupDataResult,
       segments: [number, number, number][],
+      readFlags: number[],
     ): PileupDataResult {
       const segmentPositions = new Uint32Array(segments.length * 2)
       const segmentReadIndices = new Uint32Array(segments.length)
@@ -674,13 +687,14 @@ describe('buildChainConnectingData', () => {
       }
       return {
         ...data,
+        readFlags: Uint16Array.from(readFlags),
         segmentPositions,
         segmentReadIndices,
         numSegments: segments.length,
       }
     }
 
-    const twoReadChain = () =>
+    const chainOf = (numReads: number) =>
       makeChainData({
         regionStart: 1000,
         chains: [
@@ -689,33 +703,108 @@ describe('buildChainConnectingData', () => {
             minStart: 1000,
             maxEnd: 2000,
             distance: 1000,
-            numReads: 2,
+            numReads,
           },
         ],
       })
 
-    test('overlapping mates are tinted on the chain row', () => {
+    const R1 = SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR
+    const R2 = SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR
+
+    function overlapsOf(
+      segments: [number, number, number][],
+      readFlags: number[],
+    ) {
       const out = buildChainConnectingData(
-        withSegments(twoReadChain(), [
-          [1000, 1600, 0],
-          [1400, 2000, 1],
-        ]),
-        new Uint16Array([4, 4]),
+        withSegments(chainOf(readFlags.length), segments, readFlags),
+        new Uint16Array(readFlags.length).fill(4),
       )
-      expect([...out.overlapPositions]).toEqual([1400, 1600])
-      expect([...out.overlapYs]).toEqual([4])
+      return {
+        spans: [...out.overlapPositions],
+        ys: [...out.overlapYs],
+        kinds: [...out.overlapKinds],
+      }
+    }
+
+    test('two overlapping primary mates take the mate kind on the chain row', () => {
+      expect(
+        overlapsOf(
+          [
+            [1000, 1600, 0],
+            [1400, 2000, 1],
+          ],
+          [R1, R2],
+        ),
+      ).toEqual({ spans: [1400, 1600], ys: [4], kinds: [OVERLAP_MATES] })
+    })
+
+    test('a primary and its supplementary take the segment kind', () => {
+      expect(
+        overlapsOf(
+          [
+            [1000, 1600, 0],
+            [1400, 2000, 1],
+          ],
+          [0, SAM_FLAG_SUPPLEMENTARY],
+        ).kinds,
+      ).toEqual([OVERLAP_SEGMENTS])
+    })
+
+    test('a mate with a supplementary over the other mate is a segment overlap', () => {
+      expect(
+        overlapsOf(
+          [
+            [1000, 1600, 0],
+            [1400, 2000, 1],
+          ],
+          [R1 | SAM_FLAG_SUPPLEMENTARY, R2],
+        ).kinds,
+      ).toEqual([OVERLAP_SEGMENTS])
+    })
+
+    test('two reads with no pair flags, as a PAF chain has, are segments', () => {
+      expect(
+        overlapsOf(
+          [
+            [1000, 1600, 0],
+            [1400, 2000, 1],
+          ],
+          [0, 0],
+        ).kinds,
+      ).toEqual([OVERLAP_SEGMENTS])
+    })
+
+    test('a mixed chain keeps the breakpoint span strong and the rest faint', () => {
+      // R1 [1000,1600) and R2 [1400,2000) overlap over [1400,1600); R1's own
+      // supplementary [1500,1800) overlaps both, so [1500,1800) is a segment
+      // span and the mates keep only what it does not cover
+      expect(
+        overlapsOf(
+          [
+            [1000, 1600, 0],
+            [1400, 2000, 1],
+            [1500, 1800, 2],
+          ],
+          [R1, R2, R1 | SAM_FLAG_SUPPLEMENTARY],
+        ),
+      ).toEqual({
+        spans: [1500, 1800, 1400, 1500],
+        ys: [4, 4],
+        kinds: [OVERLAP_SEGMENTS, OVERLAP_MATES],
+      })
     })
 
     test('a mate sitting inside the other read intron is not tinted', () => {
-      const out = buildChainConnectingData(
-        withSegments(twoReadChain(), [
-          [1000, 1100, 0],
-          [1900, 2000, 0],
-          [1400, 1600, 1],
-        ]),
-        new Uint16Array([4, 4]),
-      )
-      expect(out.overlapPositions.length).toBe(0)
+      expect(
+        overlapsOf(
+          [
+            [1000, 1100, 0],
+            [1900, 2000, 0],
+            [1400, 1600, 1],
+          ],
+          [R1, R2],
+        ).spans,
+      ).toEqual([])
     })
   })
 })

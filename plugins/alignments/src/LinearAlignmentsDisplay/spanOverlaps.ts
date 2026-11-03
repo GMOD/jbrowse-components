@@ -64,6 +64,30 @@ export function packedOverlapIntervals(
 
 // Collapse spans already in start order (as `overlapIntervals` emits them) into
 // their disjoint union, merging any that overlap or touch.
+// The parts of `kept` that no span of `removed` covers. Both sorted by start
+// and disjoint, as `mergeSortedSpans` returns them.
+export function subtractSortedSpans(kept: Span[], removed: Span[]): Span[] {
+  const out: Span[] = []
+  let r = 0
+  for (const span of kept) {
+    let start = span.start
+    while (r < removed.length && removed[r]!.end <= start) {
+      r++
+    }
+    for (let k = r; k < removed.length && removed[k]!.start < span.end; k++) {
+      const cut = removed[k]!
+      if (cut.start > start) {
+        out.push({ start, end: cut.start })
+      }
+      start = Math.max(start, cut.end)
+    }
+    if (start < span.end) {
+      out.push({ start, end: span.end })
+    }
+  }
+  return out
+}
+
 export function mergeSortedSpans(sorted: Span[]): Span[] {
   const out: Span[] = []
   for (const span of sorted) {

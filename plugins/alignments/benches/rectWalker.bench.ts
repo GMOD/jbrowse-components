@@ -527,6 +527,7 @@ function pileupState(): RenderState {
       colorDeletion: [0.5, 0.5, 0.5],
       colorSkip: [0, 0, 1],
       colorOverlap: [0.3, 0.3, 0.3],
+      colorMateOverlap: [0.7, 0.7, 0.7],
       colorOverlapTint: [0, 0, 0],
       colorBaseA: [0, 0.8, 0],
       colorBaseC: [0, 0, 0.9],

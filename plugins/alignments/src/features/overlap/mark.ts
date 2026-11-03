@@ -16,13 +16,14 @@ import {
   pileupShape,
   pileupChannels,
 } from '../pileupShape.ts'
+import { byOverlapKind } from './types.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { PileupChannels } from '../pileupShape.ts'
 import type { OverlapsUploadData } from './types.ts'
 
 function packOverlaps(c: PileupChannels) {
-  const { positions, rows, kinds, kind, end } = c
+  const { positions, rows, kinds, kind, keys, end } = c
   const F_F32 = overlapShader.INSTANCE_OFFSET_F32
   const F_U32 = overlapShader.INSTANCE_OFFSET_U32
   const s32 = overlapShader.INSTANCE_STRIDE_WORDS
@@ -37,6 +38,7 @@ function packOverlaps(c: PileupChannels) {
       u32[o + F_U32.startOff] = positions[i * 2]!
       u32[o + F_U32.endOff] = positions[i * 2 + 1]!
       f32[o + F_F32.y] = rows[i]!
+      u32[o + F_U32.kind] = keys![i]!
       o += s32
     }
   }
@@ -49,7 +51,9 @@ function packOverlaps(c: PileupChannels) {
 // — and the branch is only the paint, which is why the geometry here has none:
 // chain mode fills the span with a theme neutral that is no read color (both
 // segments of one molecule are there, so neither segment's color is honest),
-// collapsed rows keep the stacking dark tint that makes depth readable.
+// collapsed rows keep the stacking dark tint that makes depth readable. In
+// chain mode the instance's kind picks which neutral: a split segment's span
+// takes the strong one, two mates' the faint one.
 //
 // `Fade.overlap` reaches 0 at FADE_LO_PX, which is what makes the shape's
 // sub-pixel widening unreachable here: a bar narrow enough to be widened has
@@ -70,14 +74,15 @@ export const OVERLAP_MARK = defineMark({
     // Overlaps stack on a collapsed row and never abut along one, so no seam.
     contiguous: false,
     paint: state => {
-      const tint =
+      const { colorOverlap, colorMateOverlap, colorOverlapTint } = state.colors
+      const byKind =
         state.unit === 'chain'
-          ? state.colors.colorOverlap
-          : state.colors.colorOverlapTint
+          ? byOverlapKind(colorOverlap, colorMateOverlap)
+          : byOverlapKind(colorOverlapTint, colorOverlapTint)
       return {
         rule: Paint.palette,
-        opaqueCss: [rgb255(tint)],
-        fadedCss: [rgbaPrefix255(tint)],
+        opaqueCss: byKind.map(c => rgb255(c)),
+        fadedCss: byKind.map(c => rgbaPrefix255(c)),
       }
     },
   }),
@@ -86,6 +91,7 @@ export const OVERLAP_MARK = defineMark({
       positions: data.overlapPositions,
       stride: 2,
       rows: data.overlapYs,
+      keys: data.overlapKinds,
     }),
   params: (state: RenderState) => state,
   enabled: shouldDrawOverlaps,

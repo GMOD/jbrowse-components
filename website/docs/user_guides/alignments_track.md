@@ -275,7 +275,8 @@ reads at that base.
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#800080;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#800080"></span> | Insertion | `#800080` | Reads with an insertion relative to the reference |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#00f;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#00f"></span> | Soft clip | `#00f` | Reads are soft-clipped (clipped bases retained in the read) |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#f00;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#f00"></span> | Hard clip | `#f00` | Reads are hard-clipped (clipped bases removed from the read) |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#555555;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#555555"></span> | Overlapping segments of one molecule | `#555555` | Both reads of a pair, or both arms of a split read, align here — so the junction between them is this span rather than a point |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#555555;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#555555"></span> | Split segments overlap | `#555555` | Two segments of one molecule, at least one of them a split or supplementary alignment, both align here — so the breakpoint between them is this span rather than a point |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#b4b4b4;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#b4b4b4"></span> | Mates overlap | `#b4b4b4` | The two reads of a pair both align here: the fragment is shorter than two reads, and these bases are read twice from one molecule |
 
 <!-- COLOR_TABLE alignments-indicators END -->
 

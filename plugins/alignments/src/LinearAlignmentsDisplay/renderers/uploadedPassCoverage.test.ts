@@ -98,6 +98,7 @@ function fullyPopulated() {
 
     overlapPositions: new Uint32Array([START + 96, START + 98]),
     overlapYs: new Uint16Array([0]),
+    overlapKinds: new Uint8Array([0]),
 
     linkedReadLinePositions: new Uint32Array([START + 10, START + 90]),
     linkedReadLineYs: new Uint16Array([0, 0]),

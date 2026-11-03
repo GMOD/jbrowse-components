@@ -361,6 +361,7 @@ function overlapCase(
     region: {
       overlapPositions: Uint32Array.from(spans.flatMap(s => [s[0], s[1]])),
       overlapYs: Uint16Array.from(spans, s => s[2]),
+      overlapKinds: new Uint8Array(spans.length),
     },
     rows: r => r.overlapYs,
     withRows: (r, overlapYs) => ({ ...r, overlapYs }),

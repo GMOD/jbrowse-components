@@ -13,6 +13,7 @@ import {
 import { modificationData } from './modificationData.ts'
 import { splitFieldForTest } from './splitFieldForTest.ts'
 
+import type { OverlapLegendRow } from './legendUtils.ts'
 import type { LayerSpec } from './splitFieldForTest.ts'
 
 type LayerSettings = Omit<LayerSpec, 'field'>
@@ -80,8 +81,12 @@ const DETECTED_MODIFICATIONS = [
 
 // The overlap row is appended by the same builder and is the longest label in
 // the vocabulary, so leaving it out of the sweep measured everything except the
-// row most likely to overflow. Both wordings, since they differ per layout.
-const OVERLAPS = [undefined, 'chain', 'collapsed'] as const
+// row most likely to overflow. Every wording, since they differ per kind.
+const OVERLAPS: (readonly OverlapLegendRow[])[] = [
+  [],
+  ['segments', 'mates'],
+  ['collapsed'],
+]
 
 function everyLabel() {
   const out = new Set<string>()

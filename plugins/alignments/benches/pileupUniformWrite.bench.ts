@@ -176,6 +176,7 @@ const NAMED_KEYS = [
   'colorConnectingLine',
   'colorOverlapTint',
   'colorOverlap',
+  'colorMateOverlap',
 ] as const
 
 const LINKED_COUNT = UNIFORM_SLOT_ARRAYS.linkedReadColor.length
@@ -422,6 +423,7 @@ function totalValues(block: Block, top: number): Uniforms {
     colorConnectingLine: packRgb(c.named.colorConnectingLine!),
     colorOverlapTint: packRgb(c.named.colorOverlapTint!),
     colorOverlap: packRgb(c.named.colorOverlap!),
+    colorMateOverlap: packRgb(c.named.colorMateOverlap!),
     linkedReadColor: [
       totalSlot(c.linked[0]!),
       totalSlot(c.linked[1]!),
@@ -521,6 +523,7 @@ function templateValues(): Uniforms {
     colorConnectingLine: packRgb(c.named.colorConnectingLine!),
     colorOverlapTint: packRgb(c.named.colorOverlapTint!),
     colorOverlap: packRgb(c.named.colorOverlap!),
+    colorMateOverlap: packRgb(c.named.colorMateOverlap!),
     linkedReadColor: [
       totalSlot(c.linked[0]!),
       totalSlot(c.linked[1]!),
@@ -744,6 +747,7 @@ function hoistValues(block: Block, top: number): Uniforms {
     colorConnectingLine: c.named.colorConnectingLine!,
     colorOverlapTint: c.named.colorOverlapTint!,
     colorOverlap: c.named.colorOverlap!,
+    colorMateOverlap: c.named.colorMateOverlap!,
     linkedReadColor: c.linked,
     readCategoryColor: c.category,
     pxPerBp: block.canvasW / block.bpLen,

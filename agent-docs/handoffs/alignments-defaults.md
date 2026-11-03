@@ -1,6 +1,6 @@
 ---
 name: alignments-defaults
-description: "Which alignments settings a new user should get without the menu maze: the chain unit (Link mates and supplementary alignments), the read connections band, and insertSizeAndOrientation as the read color. Colin (2026-10-31): the chain unit has outsized value on WGS and long reads, not on RNA-seq, exome unsure; a geneGlyphMode-style `auto` selector is the shape he floated. Nothing built. Open: chain-mode sort, the mate-overlap tint that swamps exome, the `auto` rule and the ADR it needs, then connections over coverage, then the color default and its RNA-seq fix."
+description: "Which alignments settings a new user should get without the menu maze: the chain unit (Link mates and supplementary alignments), the read connections band, and insertSizeAndOrientation as the read color. Colin (2026-10-31): the chain unit has outsized value on WGS and long reads, not on RNA-seq, exome unsure; a geneGlyphMode-style `auto` selector is the shape he floated. Built: only the overlap split, mate overlaps faint and split-segment overlaps at the strong neutral. Open: chain-mode sort, the `auto` rule and the ADR it needs, then connections over coverage, then the color default and its RNA-seq fix."
 ---
 
 # Alignments defaults
@@ -46,11 +46,13 @@ Each verified against the code on 2026-10-31.
   `computeChainLayout.ts` change; tag sort also needs ADR-188's "chain mode
   sends no sort tag" reopened. No ADR or idea declines it. The `auto` rule above
   sidesteps it by dropping to `read` while a sort is set.
-- **The mate-overlap tint swamps short-fragment libraries.** Chain layout tints
-  where two mates overlap (`computeChainLayout.ts`, "intra-chain overlap
-  intervals"). On the NA12878 exome nearly every pair overlaps, and the pileup
-  turns to dark blocks where the per-read view is clean grey. cfDNA would look
-  the same. Fainter or no tint likely removes any need to treat exome apart.
+- **The mate-overlap tint swamped short-fragment libraries; done 2026-11-02.**
+  `chainOverlapsByKind` (`computeChainLayout.ts`) now splits a chain's overlaps:
+  two primary mates (`areOverlappingMates`) fill `readMateOverlap` (#b4b4b4,
+  dark #c8c8c8), anything with a split or supplementary segment keeps
+  `readOverlap` (#555555 / #e4e4e4), and the legend keys each kind drawn
+  ("Mates overlap here", "Split segments overlap here"). Kept rather than
+  dropped: a mate overlap is a real fragment-length signal.
 - **Read connections drawn over coverage cost no height.** `arcsOverlayCoverage`
   (`sectionLayout.ts`) reserves nothing for `placement: 'up'` with coverage
   shown, and the `down` strip is active only for a lane with arcs. So
@@ -95,13 +97,22 @@ vs `unit=chain`).
   at chr17:43,092,000-43,095,000, 61 to 88 at chr1:155,000,000-155,010,000.
   About TLEN over twice the read length. Pairs read cleanly.
 - **NA12878 exome** (`jbrowse.org/genomes/GRCh38/alignments/NA12878/...exome.cram`,
-  2x76, TLEN ~160): 942 to 1016 and 531 to 518. Rows flat; the tint is the cost.
+  2x76, TLEN ~160): 942 to 1016 and 531 to 518. Rows flat; the tint was the
+  cost. Recaptured at chr17:43,093,000-43,094,500 after the split (jb2export
+  built on ada, light and dark): the strong fill covered 177k px of the 1400 px
+  frame, the faint one covers the same spans as a quiet step and the
+  mismatches over it stay legible. #a0a0a0 still weighed down every row and
+  #c4c4c4 vanished; the palette note has the numbers. Every overlap in that
+  window and the WGS one is a mate overlap.
 - **Paired RNA-seq** (hg19 RSeQC 2x51, `Pairend_StrandSpecific_51mer_Human_hg19.bam`):
   2074 to 2050 at ACTB, 2461 to 3030 at chr9:136,214,000-136,229,000. Not
   captured. The `metex14` RNA BAMs are single-end and cannot test pairing.
 - **HG00151 ONT inversion** (`jbrowse.org/demos/ont/...chr1_inversion.bam`): 65 to
   49 rows; each molecule's inverted segment shares a row with its flanks. The
-  clearest win.
+  clearest win. Its capture is pixel-identical with mate overlaps painted at the
+  old strength, but its split segments abut, so it draws no overlap ink at all;
+  `test_data/volvox/volvox-overlap.bam` (a mate pair and an overlapping split
+  read) is what shows both fills and both key rows.
 
 ## Declined in review
 
@@ -111,7 +122,6 @@ multiply that, and switching them automatically is ADR-037's case.
 
 ## Next
 
-- Decide the overlap tint (drop or faint), recapture the exome pair.
 - Chain-mode sort, or confirm the `auto` rule's drop-to-`read` on sort is enough.
 - Write the `auto` unit ADR and build it; capture a paired RNA-seq locus to
   confirm `read` resolves and nothing jumps.

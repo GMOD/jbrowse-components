@@ -96,9 +96,9 @@ import {
 } from './LinearAlignmentsDisplay/groupedDataMaps.ts'
 import {
   arcSlotsInWindows,
-  hasOverlapInWindows,
   insertSizeBandInWindows,
   modificationTypesInWindows,
+  overlapKindsInWindows,
   readCategoriesInWindows,
   readMapqsInWindows,
   readTagValuesInWindows,
@@ -142,6 +142,7 @@ import { computeArcsByGroup } from './features/arcs/compute.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
 import { effectiveBaseColors } from './features/mismatch/baseColors.ts'
 import { qualityOpacityOf } from './features/mismatch/qualityOpacity.ts'
+import { byOverlapKind } from './features/overlap/types.ts'
 import {
   BASE_QUALITY_UNAVAILABLE,
   qualityAbgr,
@@ -210,6 +211,7 @@ import {
   getArcLegendItems,
   getReadDisplayLegendItems,
   insertSizeBandLabels,
+  overlapLegendRows,
   sashimiLegendItems,
   SASHIMI_LEGEND_TITLE,
   sashimiLegend,
@@ -249,6 +251,7 @@ import type {
 import type { ColorPalette } from './shaders/colors.ts'
 import type { ArcCategory } from './shaders/palettes.ts'
 import type { AlignmentsColorEncoding } from './shared/alignmentsColor.ts'
+import type { OverlapLegendRow } from './shared/legendUtils.ts'
 import type {
   BaseLayer,
   InterbaseTypeName,
@@ -465,7 +468,7 @@ function colorReads(
   readColorOpts: ReadColorOpts,
   facet: { field: string; sort?: readonly string[] } | undefined,
   refNamePosition: RefNamePosition | undefined,
-  overlaps: 'chain' | undefined,
+  overlaps: readonly OverlapLegendRow[],
   windows: readonly KeyWindow[],
 ) {
   const setting = alignmentsColorSnapshotOf(node)
@@ -1027,7 +1030,8 @@ function qualities(d: WorkerPileupData, plainRead: string) {
 /**
  * The chains that join more than one read: the span of each, on the row its
  * reads share, with the hairline's color and opacity; and the spans where two
- * of a chain's reads both align, in the neutral the display fills them with.
+ * of a chain's reads both align, in the neutral the display fills each kind
+ * with — the strong one for a split segment, the faint one for two mates.
  * Both are empty unless the display's unit is a chain, and the overlaps also
  * where `drawsOverlaps` is false, as the display draws none below a 3 px read.
  */
@@ -1035,7 +1039,7 @@ function chainTables(
   laid: LaidOutPileupData | undefined,
   drawsOverlaps: boolean,
   color: string,
-  overlapColor: string,
+  overlapColors: readonly string[],
 ) {
   const [start, end] = pairs(laid?.connectingLinePositions ?? new Uint32Array())
   const overlapped = drawsOverlaps ? laid : undefined
@@ -1054,7 +1058,10 @@ function chainTables(
       start: overlapStart,
       end: overlapEnd,
       row: Array.from(overlapped?.overlapYs ?? []),
-      color: Array.from(overlapStart, () => overlapColor),
+      color: Array.from(
+        overlapped?.overlapKinds ?? [],
+        kind => overlapColors[kind]!,
+      ),
     },
   }
 }
@@ -1470,9 +1477,9 @@ export async function alignmentTables(
     colorField === 'mateRefName'
       ? positionIn(refNames ?? (await dataAdapter.getRefNames()))
       : undefined,
-    drawsOverlaps && hasOverlapInWindows(laidByGroup, windows)
-      ? 'chain'
-      : undefined,
+    drawsOverlaps
+      ? overlapLegendRows(chain, overlapKindsInWindows(laidByGroup, windows))
+      : [],
     windows,
   )
   const paint = markColors(colors.palette, baseLayer)
@@ -1509,7 +1516,10 @@ export async function alignmentTables(
                   chain ? laid : undefined,
                   drawsOverlaps,
                   normalizedRgbToHex(colors.palette.colorConnectingLine),
-                  normalizedRgbToHex(colors.palette.colorOverlap),
+                  byOverlapKind(
+                    normalizedRgbToHex(colors.palette.colorOverlap),
+                    normalizedRgbToHex(colors.palette.colorMateOverlap),
+                  ),
                 ),
                 ...sectionTables(
                   dataFor(key, i),

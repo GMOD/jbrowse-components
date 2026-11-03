@@ -106,6 +106,9 @@ public struct Uniforms {
   // (`readOverlap`) where the hairline above, over the track background, takes
   // the foreground.
   public uint colorOverlap;
+  // The same span where only the two mates of a pair overlap
+  // (`readMateOverlap`), one step from the read fill.
+  public uint colorMateOverlap;
   // The connectors' palette, the arcs', looked up by `linkedReadColorSlot`.
   public float4 linkedReadColor[LINKED_READ_COLOR_SLOTS];
   // Read fill color per RC_* category, baked on the CPU.

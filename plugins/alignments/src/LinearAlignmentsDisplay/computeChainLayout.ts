@@ -1,3 +1,10 @@
+import {
+  SAM_FLAG_FIRST_IN_PAIR,
+  SAM_FLAG_PAIRED,
+  SAM_FLAG_SECONDARY,
+  SAM_FLAG_SECOND_IN_PAIR,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '@jbrowse/cigar-utils'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import {
@@ -9,8 +16,12 @@ import {
 } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import { UNCAPPED, isChainData } from '../RenderAlignmentDataRPC/types.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
+import {
+  OVERLAP_MATES,
+  OVERLAP_SEGMENTS,
+} from '../shaders/slang/overlap.consts.generated.ts'
 import { getOrCreate } from '../shared/util.ts'
-import { mergeSortedSpans, overlapIntervals } from './spanOverlaps.ts'
+import { mergeSortedSpans, subtractSortedSpans } from './spanOverlaps.ts'
 
 import type {
   RefNameSpans,
@@ -25,6 +36,10 @@ import type {
 } from '../RenderAlignmentDataRPC/types'
 import type { OverlapsUploadData } from '../features/overlap/types.ts'
 import type { Span } from './spanOverlaps.ts'
+
+interface ReadSpan extends Span {
+  read: number
+}
 
 // Total order over chains: packing distance first, then span, then chain name.
 // The tiebreaks matter for the same reason `compareReadsCanonically`
@@ -299,10 +314,10 @@ function groupMultiReadChains(
 
 // Reads in a chain all share one row, so reads whose genomic spans overlap paint
 // on top of each other and the overlap is invisible. For each chain, find the
-// intervals where its reads overlap; the tint overlay (GPU + Canvas2D)
-// marks them. Reads are grouped per-region because rendering is per-region; a
-// chain's mates in other regions live in their own region's data and never
-// visually overlap these.
+// intervals where its reads overlap, and of which kind; the overlap mark
+// (GPU + Canvas2D) fills them. Reads are grouped per-region because rendering
+// is per-region; a chain's mates in other regions live in their own region's
+// data and never visually overlap these.
 function buildChainOverlaps(
   data: ChainPileupData,
   readYs: Uint16Array,
@@ -310,6 +325,7 @@ function buildChainOverlaps(
 ) {
   const {
     readChainIndices,
+    readFlags,
     segmentPositions,
     segmentReadIndices,
     numSegments,
@@ -317,15 +333,25 @@ function buildChainOverlaps(
 
   const positions: number[] = []
   const ys: number[] = []
+  const kinds: number[] = []
+  const emit = (spans: Span[], y: number, kind: number) => {
+    for (const { start, end } of spans) {
+      positions.push(start, end)
+      ys.push(y)
+      kinds.push(kind)
+    }
+  }
   // Exon spans, not read extents: a spliced read does not cover its own
   // introns, so `readPositions` claimed an overlap across an intron the mate
   // was alone in. One pass over the segments, bucketed straight to the chain,
   // since only multi-read chains have anything to find.
-  const spansByChain = new Map<number, Span[]>()
+  const spansByChain = new Map<number, ReadSpan[]>()
   for (let i = 0; i < numSegments; i++) {
-    const chainIdx = readChainIndices[segmentReadIndices[i]!]!
+    const read = segmentReadIndices[i]!
+    const chainIdx = readChainIndices[read]!
     if (multiReadChains.has(chainIdx)) {
       getOrCreate(spansByChain, chainIdx, () => []).push({
+        read,
         start: segmentPositions[i * 2]!,
         end: segmentPositions[i * 2 + 1]!,
       })
@@ -333,16 +359,61 @@ function buildChainOverlaps(
   }
   for (const [chainIdx, spans] of spansByChain) {
     const y = readYs[multiReadChains.get(chainIdx)![0]!]!
-    // `overlapIntervals` emits in start order, so the sorted merge applies.
-    for (const { start, end } of mergeSortedSpans(overlapIntervals(spans))) {
-      positions.push(start, end)
-      ys.push(y)
-    }
+    const { segments, mates } = chainOverlapsByKind(spans, readFlags)
+    emit(segments, y, OVERLAP_SEGMENTS)
+    emit(mates, y, OVERLAP_MATES)
   }
 
   return {
     overlapPositions: Uint32Array.from(positions),
     overlapYs: Uint16Array.from(ys),
+    overlapKinds: Uint8Array.from(kinds),
+  }
+}
+
+const NOT_PRIMARY = SAM_FLAG_SECONDARY | SAM_FLAG_SUPPLEMENTARY
+const MATE_ENDS = SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_SECOND_IN_PAIR
+
+function areOverlappingMates(flagsA: number, flagsB: number) {
+  return (
+    (flagsA & flagsB & SAM_FLAG_PAIRED) !== 0 &&
+    ((flagsA | flagsB) & NOT_PRIMARY) === 0 &&
+    ((flagsA ^ flagsB) & MATE_ENDS) !== 0
+  )
+}
+
+/**
+ * Where one chain's segments of DIFFERENT reads overlap, split by what the two
+ * reads are: the two primary mates of a pair, or anything with a split or
+ * supplementary segment in it. Each kind merged; where both apply the span is
+ * a segment overlap, so the two lists are disjoint.
+ */
+function chainOverlapsByKind(spans: ReadSpan[], readFlags: ArrayLike<number>) {
+  const sorted = spans.toSorted((a, b) => a.start - b.start)
+  const segments: Span[] = []
+  const mates: Span[] = []
+  for (let i = 0; i < sorted.length; i++) {
+    const a = sorted[i]!
+    for (let j = i + 1; j < sorted.length && sorted[j]!.start < a.end; j++) {
+      const b = sorted[j]!
+      if (a.read !== b.read) {
+        const span = { start: b.start, end: Math.min(a.end, b.end) }
+        if (areOverlappingMates(readFlags[a.read]!, readFlags[b.read]!)) {
+          mates.push(span)
+        } else {
+          segments.push(span)
+        }
+      }
+    }
+  }
+  const byStart = (a: Span, b: Span) => a.start - b.start
+  const mergedSegments = mergeSortedSpans(segments.sort(byStart))
+  return {
+    segments: mergedSegments,
+    mates: subtractSortedSpans(
+      mergeSortedSpans(mates.sort(byStart)),
+      mergedSegments,
+    ),
   }
 }
 

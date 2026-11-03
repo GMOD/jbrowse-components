@@ -405,12 +405,12 @@ export interface PileupLayoutArrays {
   connectingLineYs: Uint16Array // row for each line
 
   // Chain-mode read overlaps: genomic intervals where two reads in the same
-  // chain (and thus the same row) overlap. Drawn as a mild semi-transparent
-  // dark tint so the overlapped span is visible despite the upper read painting
-  // over the lower one. Absolute genomic uint32 like all worker output; per
-  // region, so no cross-region pass.
+  // chain (and thus the same row) overlap, each with its kind (two mates, or a
+  // split segment), which overlap.slang paints. Absolute genomic uint32 like all
+  // worker output; per region, so no cross-region pass.
   overlapPositions: Uint32Array // [start, end] absolute genomic uint32 pairs
   overlapYs: Uint16Array // shared chain row for each overlap
+  overlapKinds: Uint8Array // OVERLAP_SEGMENTS or OVERLAP_MATES
 
   // Linked-read straight-line connections. Sibling pass to `connectingLine*`
   // with a per-endpoint Y (mates can sit on different rows when `sortColumn`

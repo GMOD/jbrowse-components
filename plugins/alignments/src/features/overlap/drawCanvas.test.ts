@@ -4,6 +4,10 @@ import {
   makeTestPalette,
   makeTestRenderState,
 } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import {
+  OVERLAP_MATES,
+  OVERLAP_SEGMENTS,
+} from '../../shaders/slang/overlap.consts.generated.ts'
 import { OVERLAP_MARK } from './mark.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -13,7 +17,10 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 // by an overlap, so this pass draws them differently — and the branch is the
 // thing worth pinning, because both forms are a rect of the same geometry and
 // only the paint says which claim is being made. See overlap.slang.
-const palette = makeTestPalette({ colorOverlap: [0.2, 0.2, 0.2] })
+const palette = makeTestPalette({
+  colorOverlap: [0.2, 0.2, 0.2],
+  colorMateOverlap: [0.6, 0.6, 0.6],
+})
 
 // bpLength 100 over fullBlockWidth px; featureHeight 10 at row 0 puts the rect
 // at y=0, so every assertion below is about the fill and not the geometry.
@@ -21,6 +28,7 @@ function draw(
   spans: [number, number][],
   state: Partial<RenderState>,
   fullBlockWidth = 1000,
+  kinds = new Uint8Array(spans.length).fill(OVERLAP_SEGMENTS),
 ) {
   const ctx = new SvgCanvas()
   const block: RenderBlock = {
@@ -36,6 +44,7 @@ function draw(
     {
       overlapPositions: Uint32Array.from(spans.flat()),
       overlapYs: new Uint16Array(spans.length),
+      overlapKinds: kinds,
     },
     block,
     makeTestRenderState({ colors: palette, featureSpacing: 0, ...state }),
@@ -57,6 +66,36 @@ test('chain mode fills with the neutral, opaquely', () => {
   // back over whichever arm drew last, which is the reading the neutral exists
   // to remove
   expect(svg).not.toContain('fill-opacity')
+})
+
+test('chain mode fills a mate overlap with the faint neutral', () => {
+  const svg = draw(WIDE, { unit: 'chain' }, 1000, Uint8Array.of(OVERLAP_MATES))
+  expect(svg).toContain('fill="rgb(153,153,153)"')
+  expect(svg).not.toContain('fill="rgb(51,51,51)"')
+})
+
+test('each kind in one pass takes its own neutral', () => {
+  const svg = draw(
+    [
+      [10, 30],
+      [60, 90],
+    ],
+    { unit: 'chain' },
+    1000,
+    Uint8Array.of(OVERLAP_SEGMENTS, OVERLAP_MATES),
+  )
+  expect(svg).toContain('fill="rgb(51,51,51)"')
+  expect(svg).toContain('fill="rgb(153,153,153)"')
+})
+
+test('collapsed rows tint a mate kind like any other', () => {
+  const svg = draw(
+    WIDE,
+    { collapseSections: true },
+    1000,
+    Uint8Array.of(OVERLAP_MATES),
+  )
+  expect(svg).toContain('fill="rgb(0,0,0)"')
 })
 
 test('collapsed rows keep the stacking dark tint', () => {

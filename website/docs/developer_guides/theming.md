@@ -55,7 +55,8 @@ theme; anything you don't set keeps its preset value.
 | `hardclip` | `string` | Hard-clipped bases (clipped bases removed from the read) |
 | `deletion` | `string` | Deletion markers in alignments |
 | `mafGap` | `string` | MAF alignment-gap cells, where a species has no base |
-| `readOverlap` | `string` | Span where two segments of one molecule both align (view-as-pairs / chains) |
+| `readOverlap` | `string` | Span where two segments of one molecule both align (view-as-pairs / chains), at least one of them a split or supplementary segment |
+| `readMateOverlap` | `string` | Span where the two mates of a pair both align (view-as-pairs / chains): the fragment is shorter than two reads |
 | `modificationFwd` | `string` | Base modifications on the forward strand |
 | `modificationRev` | `string` | Base modifications on the reverse strand |
 | `mutedSnpBase` | `string` | SNP bases muted when show-modifications coloring is on |

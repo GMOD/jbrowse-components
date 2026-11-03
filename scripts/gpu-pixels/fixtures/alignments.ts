@@ -81,6 +81,7 @@ function pileupUniforms(
     colorConnectingLine: 0,
     colorOverlapTint: 0,
     colorOverlap: 0,
+    colorMateOverlap: 0,
     connectorColorShift: 0,
     linkedReadColor: slots(11, () => zero4) as read.Uniforms['linkedReadColor'],
     readCategoryColor: slots(21, i =>
