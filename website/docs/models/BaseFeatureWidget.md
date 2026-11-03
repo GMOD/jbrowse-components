@@ -45,7 +45,7 @@ config edit and survives its track being closed.
 | <span id="getter-formatted">**formatted**</span><br><code>{ feature?: SimpleFeatureSerialized; error?: Error; }</code> |  |
 | <span id="getter-canonicaltranscripts">**canonicalTranscripts**</span><br><code>CanonicalTranscripts</code> | the isoform tags the open track's display ranks by, so the sequence panel opens on the transcript the track draws first |
 | <span id="getter-maxdepth">**maxDepth**</span><br><code>number &#124; undefined</code> | levels of subfeature card the panel renders; unset means no limit |
-| <span id="getter-featuredata">**featureData**</span><br><code>SimpleFeatureSerialized &#124; undefined</code> | the feature with every `formatDetails` callback applied |
+| <span id="getter-featuredata">**featureData**</span><br><code>SimpleFeatureSerialized &#124; undefined</code> | the feature with every `formatDetails` callback applied, or the raw feature when a callback throws |
 | <span id="getter-error">**error**</span><br><code>Error &#124; undefined</code> |  |
 
 ## Actions

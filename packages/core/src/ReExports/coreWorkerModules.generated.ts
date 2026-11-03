@@ -245,7 +245,7 @@ const libs: Record<string, unknown> = {
   '@jbrowse/core/assemblyManager/expandAssemblyConfigShorthand': m3,
   '@jbrowse/core/assemblyManager/refNameMaps': m4,
   '@jbrowse/core/BaseFeatureWidget': m5,
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': uiNamespace(['BaseAttributes', 'BaseCard', 'BaseCoreDetails', 'FeatureDetails', 'FeatureDetailsFrame', 'FeatureWash', 'default', 'filterByValueItems', 'jexlFilterDisplay'], true),
+  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': uiNamespace(['BaseAttributes', 'BaseCard', 'BaseCoreDetails', 'FeatureDetails', 'FeatureDetailsFrame', 'FeatureWash', 'default', 'filterByValueItems', 'jexlFilterDisplay', 'rawValueFilterActions'], true),
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes': uiNamespace(['default', 'hasAttributeRows', 'withoutLocations'], true),
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard': uiStub,
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails': uiStub,

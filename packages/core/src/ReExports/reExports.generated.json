@@ -787,7 +787,8 @@
         "FeatureWash",
         "default",
         "filterByValueItems",
-        "jexlFilterDisplay"
+        "jexlFilterDisplay",
+        "rawValueFilterActions"
       ],
       "worker": "stub",
       "uiVia": [
@@ -3364,6 +3365,7 @@
       "package": "@jbrowse/core",
       "names": [
         "DEFAULT_CANONICAL_TRANSCRIPTS",
+        "codingLength",
         "featureIsoformReader",
         "isCanonicalTranscriptsHost",
         "isCodingIsoform",
