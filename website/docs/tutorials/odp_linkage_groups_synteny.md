@@ -21,7 +21,7 @@ each over several. We:
   its set
 - open it as a dotplot, with one genome's chromosomes sorted by where their
   orthologs sit on the other
-- narrow the dotplot to three chromosomes of each genome, around RES4 and EMU23
+- narrow the dotplot to three chromosomes of each genome, around RES10 and EMU23
 - stack the genomes in a linear synteny view, with ribbons colored by set
 
 ## Prerequisites
@@ -290,8 +290,8 @@ chromosome has shuffled. Each gene stays on its chromosome.
 
 ## Two fusions, mixed and unmixed
 
-The jellyfish's RES4 carries both B1 and B2, and the sponge's EMU23 carries both
-J2 and K. Every other genome on this page keeps each pair on separate
+The jellyfish's RES10 carries both J1 and Qa, and the sponge's EMU23 carries
+both J2 and K. Every other genome on this page keeps each pair on separate
 chromosomes, so each is a fusion in one lineage. A fusion starts with the two
 groups end to end, and rearrangement inside the chromosome then interleaves
 their genes.[^mixing] We'll draw those two chromosomes and the four they pair
@@ -312,11 +312,11 @@ the orthologs that have a group, so the legend names only the four drawn:
         "views": [
           {
             "assembly": "RES",
-            "displayedRegionNames": ["RES4", "RES11", "RES15"]
+            "displayedRegionNames": ["RES10", "RES11", "RES15"]
           },
           {
             "assembly": "EMU",
-            "displayedRegionNames": ["EMU4", "EMU7", "EMU23"]
+            "displayedRegionNames": ["EMU5", "EMU2", "EMU23"]
           }
         ],
         "tracks": ["RES_EMU"],
@@ -332,7 +332,7 @@ the orthologs that have a group, so the legend names only the four drawn:
 
 <Figure caption="Three jellyfish chromosomes against three sponge chromosomes, orthologs colored by linkage group." src="/img/linkage_groups/alg_fusions.png" />
 
-Along RES4, the B1 and B2 orthologs each run the chromosome's full length. On
+Along RES10, the J1 and Qa orthologs each run the chromosome's full length. On
 EMU23, J2 holds one end and K the rest.
 
 [^mixing]:
