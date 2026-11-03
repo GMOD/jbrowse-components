@@ -19,7 +19,7 @@
  */
 import { resolvePalette } from './palette.ts'
 
-import type { JBrowsePalette, ThemeInput } from './palette.ts'
+import type { JBrowsePalette, PaletteArgs, ThemeInput } from './palette.ts'
 
 /**
  * JBrowse's grid unit, in px. Half Material's 8, because a genome browser packs
@@ -221,9 +221,8 @@ export interface PortalInput {
 export interface StyleThemeInput extends ThemeInput, SizingInput, PortalInput {}
 
 /** What `resolveStyleTheme` reads — `resolvePalette`'s arguments, plus sizing. */
-export interface StyleThemeArgs {
+export interface StyleThemeArgs extends PaletteArgs {
   configTheme?: StyleThemeInput
-  themeName?: string
   extraThemes?: Record<string, StyleThemeInput>
 }
 

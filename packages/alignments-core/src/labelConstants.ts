@@ -36,17 +36,6 @@ export {
 // so the two displays reveal these labels at the same zoom.
 export const MIN_PX_PER_BP_FOR_TEXT = 6.5
 
-export const MISMATCH_COLOR = '#f00'
-export const INSERTION_COLOR = '#c000c0'
-const BASE_A_COLOR = '#00bf00'
-const BASE_C_COLOR = '#4747ff'
-const BASE_G_COLOR = '#d5bb04'
-const BASE_T_COLOR = '#f00'
-// N and other non-A/C/G/T bases: muted brown, matching the theme's
-// `bases.N` (MUI brown). Distinct from the grey coverage histogram so N
-// segments stay visible. This is the theme-agnostic fallback for worker code.
-const BASE_N_COLOR = '#795548'
-
 // The palette a SNP-coverage segment draw reads, and the whole of it: the
 // segments are per-base, so `colorType` resolves to one of these five and to
 // nothing else. This was a `CigarOpDrawColors` carrying `mismatch`, `deletion`
@@ -60,14 +49,6 @@ export interface SnpBaseColors {
   baseG: string
   baseT: string
   baseN: string
-}
-
-export const DEFAULT_SNP_BASE_COLORS: SnpBaseColors = {
-  baseA: BASE_A_COLOR,
-  baseC: BASE_C_COLOR,
-  baseG: BASE_G_COLOR,
-  baseT: BASE_T_COLOR,
-  baseN: BASE_N_COLOR,
 }
 
 // The font a pileup's size labels draw in, for a row `h` px tall: 10px down to

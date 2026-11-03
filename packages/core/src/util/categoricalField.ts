@@ -4,7 +4,7 @@ import { universalPresetOf } from './colorScale.ts'
 import { groupKeyComparator, valueText } from './groupKeys.ts'
 import { isJexl } from './jexlStrings.ts'
 
-import type { CategoricalScale, HeldSlots } from '../ui/colors.ts'
+import type { CategoricalScaleFn, HeldSlots } from '../ui/colors.ts'
 
 /** #api */
 export const STRAND_FIELD = 'strand'
@@ -170,7 +170,7 @@ export function categoricalField(
       : key === missingLevel && invalid
         ? invalid
         : undefined
-  let colorOf: CategoricalScale<string> | undefined
+  let colorOf: CategoricalScaleFn<string> | undefined
   return {
     field,
     domain: order,

@@ -1,13 +1,10 @@
 import { useState } from 'react'
 
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { grey } from '@jbrowse/core/ui/palette'
 import useMeasure from '@jbrowse/core/util/useMeasure'
-import {
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-  useTheme,
-} from '@mui/material'
+import { ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import {
@@ -36,7 +33,7 @@ const UNIT_COLORS = [
   '#9c755f',
   '#bab0ac',
 ]
-const NO_RUNS = '#bdbdbd'
+const NO_RUNS = grey[400]
 const AXIS_PX = 26
 const PAD = 12
 const CHAR_PX = 6.6
@@ -68,7 +65,7 @@ const Legend = observer(function Legend({
   alleles: RepeatAllele[]
   referenceBp: number
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   const unstated = alleles.some(a => !a.runs)
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px' }}>
@@ -107,7 +104,7 @@ const Legend = observer(function Legend({
             x2={9}
             y1={0}
             y2={BAR_PX}
-            stroke={theme.palette.text.secondary}
+            stroke={palette.text.secondary}
             strokeDasharray="3 2"
           />
         </svg>
@@ -258,7 +255,7 @@ const TandemRepeatPanel = observer(function TandemRepeatPanel({
   selectedAlt: number | null
   onSelectAlt: (altIndex: number | null) => void
 }) {
-  const theme = useTheme()
+  const palette = usePalette()
   const [ref, { width = FALLBACK_WIDTH }] = useMeasure('width')
   const { byAllele, refName, start, end } = repeat
   const [chosen, setChosen] = useState<Mode>()
@@ -283,9 +280,9 @@ const TandemRepeatPanel = observer(function TandemRepeatPanel({
   const left = PAD + labelPx
   const X = (bp: number) => left + bp * scale
   const height = AXIS_PX + alleles.length * rowPx + PAD
-  const text = theme.palette.text.primary
-  const faint = theme.palette.text.secondary
-  const gap = theme.palette.background.paper
+  const text = palette.text.primary
+  const faint = palette.text.secondary
+  const gap = palette.background.paper
   const noun = mode === 'sample' && byAllele ? 'haplotype' : 'allele'
   const undrawn =
     mode === 'allele'

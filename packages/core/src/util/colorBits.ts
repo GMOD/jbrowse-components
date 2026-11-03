@@ -16,24 +16,13 @@ export { abgrToCssRgba }
 export { isCssColor, parseCssColorOr } from './cssColorParse.ts'
 
 export {
-  alpha,
-  blend,
-  darken,
   formatHEX,
-  formatHEXA,
-  formatRGBA,
   getAlpha,
   getBlue,
   getGreen,
-  getLuminance,
   getRed,
-  lighten,
   newColor,
-  parse,
-  toHSLA,
-  toRGBA,
 } from './color-bits/index.ts'
-export type { Color } from './color-bits/index.ts'
 
 // Magenta sentinel for invalid input. User-written jexl color callbacks can
 // legitimately return undefined (e.g. when a feature lacks the field they

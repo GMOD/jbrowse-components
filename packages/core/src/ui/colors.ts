@@ -200,7 +200,7 @@ function freeSlot(value: string, size: number, taken: ReadonlySet<number>) {
 export type HeldSlots = Map<string, number>
 
 /** A categorical scale: a value's entry, dealt alone or within a batch */
-export interface CategoricalScale<T> {
+export interface CategoricalScaleFn<T> {
   (value: string): T
   /** `value`'s entry, dealt with `batch`, `dealKeyColors`'s keys */
   among: (value: string, batch: ReadonlySet<string>) => T
@@ -239,7 +239,7 @@ export function categoricalScale<T>(
     distance?: (a: T, b: T) => number
     held?: HeldSlots
   } = {},
-): CategoricalScale<T> {
+): CategoricalScaleFn<T> {
   const base = range.length ? range : fallback
   const listed = [...new Set((domain ?? []).map(String))].filter(v => v !== '')
   if (listed.length === 0 && !held) {
