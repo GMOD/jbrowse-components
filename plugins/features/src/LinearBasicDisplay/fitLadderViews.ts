@@ -151,6 +151,40 @@ export function fitLadderVolatiles() {
 }
 
 export function fitLadderViews(self: FitLadderHost) {
+  // A rung the ladder stops reaching would otherwise keep its cloned layout
+  // and the raw regions it was packed from alive, so each solve empties what
+  // this mode cannot reach and drops what the store has since evicted from the
+  // rest. Closure state only, so it is neither observed nor a model member.
+  const releaseUnreachedMemos = () => {
+    const live = self.rpcDataMap
+    if (!self.fitHeightToDisplay) {
+      self.incrementalLayoutLabelsOnly.clear()
+      self.incrementalLayoutDecimated.clear()
+      self.incrementalLayoutThinned.clear()
+      self.incrementalLayoutBodiesOnly.clear()
+      self.incrementalLayoutBare.clear()
+      self.packHeightsThinned.clear()
+      self.packHeightsDecimated.clear()
+    }
+    if (self.autoHeight || self.showsEveryIsoform) {
+      self.incrementalLayoutIsoforms.clear()
+      self.packHeightsIsoforms.clear()
+    }
+    for (const memo of [
+      self.incrementalLayout,
+      self.incrementalLayoutLabelsOnly,
+      self.incrementalLayoutBodiesOnly,
+      self.incrementalLayoutDecimated,
+      self.incrementalLayoutIsoforms,
+      self.incrementalLayoutThinned,
+      self.incrementalLayoutBare,
+      self.packHeightsIsoforms,
+      self.packHeightsThinned,
+      self.packHeightsDecimated,
+    ]) {
+      memo.prune(live)
+    }
+  }
   return {
     /**
      * #method
@@ -541,21 +575,6 @@ export function fitLadderViews(self: FitLadderHost) {
       return squeezeFloorScale(this.fitSmallestBoxPx, MIN_FIT_BOX_PX)
     },
     /**
-     * #method
-     * Empties the memos only a fit solve reaches, since a rung the ladder no
-     * longer walks otherwise keeps its cloned layout and the raw regions it
-     * was packed from alive until the store evicts them.
-     */
-    releaseFitOnlyMemos() {
-      self.incrementalLayoutLabelsOnly.clear()
-      self.incrementalLayoutDecimated.clear()
-      self.incrementalLayoutThinned.clear()
-      self.incrementalLayoutBodiesOnly.clear()
-      self.incrementalLayoutBare.clear()
-      self.packHeightsThinned.clear()
-      self.packHeightsDecimated.clear()
-    },
-    /**
      * #getter
      * The resolved fit outcome — which reservation `level` survived, its
      * unscaled `layout`, and the vertical `scale` to fill the track — bundled
@@ -564,9 +583,6 @@ export function fitLadderViews(self: FitLadderHost) {
     get fitStage(): FitStage {
       const base = this.baseLaidOutDataMap
       const fit = self.fitHeightToDisplay
-      if (!fit) {
-        this.releaseFitOnlyMemos()
-      }
       // Non-fit mode routes through `resolveFitLadder` too, with minScale =
       // 1, so FitStage is assembled in one place. maxScale is 1 in every
       // mode: a stack with room to spare keeps its display mode's size.
@@ -602,7 +618,7 @@ export function fitLadderViews(self: FitLadderHost) {
             },
           ]
         : []
-      return resolveFitLadder(
+      const stage = resolveFitLadder(
         fit
           ? [
               full,
@@ -651,6 +667,8 @@ export function fitLadderViews(self: FitLadderHost) {
             : 0
         },
       )
+      releaseUnreachedMemos()
+      return stage
     },
   }
 }

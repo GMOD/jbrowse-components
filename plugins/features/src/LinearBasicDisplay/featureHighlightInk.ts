@@ -99,9 +99,11 @@ export function createRegionInstanceIndexMemo(
   return (dataMap: ReadonlyMap<number, FeatureDataResult>) => {
     const indexes = new Map<number, RegionInstanceIndex>()
     for (const [idx, data] of dataMap) {
-      const held = built.get(data)
-      const index = held ?? build(data)
-      built.set(data, index)
+      let index = built.get(data)
+      if (index === undefined) {
+        index = build(data)
+        built.set(data, index)
+      }
       indexes.set(idx, index)
     }
     return indexes

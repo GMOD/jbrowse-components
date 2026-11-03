@@ -5,9 +5,11 @@
 //   node --expose-gc plugins/features/benches/fitLadderRetention.bench.ts --features=60000 --probes=22
 //
 // One display holds seven incremental layouts and three pack caches
-// (`fitLadderVolatiles`). This fills each the way a fit solve does, evicts the
-// raw regions, and reads the heap (plus ArrayBuffers) with the caches kept and
-// then after `clear()` on each.
+// (`fitLadderVolatiles`). A dense locus is solved through every one of them,
+// then the view moves to a sparse locus that only the `full` rung reaches and
+// the dense region is evicted. The heap (plus ArrayBuffers) is read with the
+// memos untouched, after `prune()` to the live regions as every fit solve does,
+// and after `clear()` as leaving fit mode does.
 import {
   createContentHeightProbe,
   createIncrementalLayout,
@@ -51,42 +53,42 @@ const reservations = [
   { bodyScale: 0.5, showLabels: false },
 ]
 
-const baseline = usedMb()
-const holder: {
-  raw: Map<number, LayoutRegionData> | undefined
-  layouts: ReturnType<typeof createIncrementalLayout>[]
-  caches: ReturnType<typeof createPackHeightCache>[]
-} = {
-  raw: new Map([
+function regionMap(name: string, count: number) {
+  return new Map<number, LayoutRegionData>([
     [
       0,
       {
-        ...makeDenseRegion('r', features, exons),
+        ...makeDenseRegion(name, count, exons),
         regionKey: 'volvox:ctgA',
         regionStart: 0,
         regionEnd: Number.MAX_SAFE_INTEGER,
       },
     ],
-  ]),
-  layouts: reservations.map(() => createIncrementalLayout()),
-  caches: [
-    createPackHeightCache(),
-    createPackHeightCache(),
-    createPackHeightCache(),
-  ],
+  ])
 }
-const afterRaw = usedMb()
 
-function fillLayouts() {
-  for (const [i, layout] of holder.layouts.entries()) {
-    layout(holder.raw!, { ...baseInputs, ...reservations[i] })
+const fullLayout = createIncrementalLayout()
+const layouts = [
+  fullLayout,
+  ...reservations.slice(1).map(() => createIncrementalLayout()),
+]
+const caches = [
+  createPackHeightCache(),
+  createPackHeightCache(),
+  createPackHeightCache(),
+]
+
+function solveDenseLocus() {
+  const dense = regionMap('d', features)
+  const t0 = performance.now()
+  for (const [i, layout] of layouts.entries()) {
+    layout(dense, { ...baseInputs, ...reservations[i] })
   }
-}
-
-function fillProbes() {
-  for (const cache of holder.caches) {
+  const layoutMs = performance.now() - t0
+  const t1 = performance.now()
+  for (const cache of caches) {
     const heightAt = createContentHeightProbe(
-      holder.raw!,
+      dense,
       baseInputs,
       undefined,
       cache,
@@ -95,40 +97,33 @@ function fillProbes() {
       heightAt(0.2 + k * 0.05)
     }
   }
+  return { layoutMs, probeMs: performance.now() - t1 }
 }
 
-const t0 = performance.now()
-fillLayouts()
-const layoutMs = performance.now() - t0
-const afterLayouts = usedMb()
+const baseline = usedMb()
+const { layoutMs, probeMs } = solveDenseLocus()
+const afterDense = usedMb()
 
-const t1 = performance.now()
-fillProbes()
-const probeMs = performance.now() - t1
-const afterProbes = usedMb()
+const sparse = regionMap('s', Math.max(10, Math.floor(features / 1000)))
+fullLayout(sparse, baseInputs)
+const sparseOnly = usedMb()
 
-holder.raw = undefined
-const evictedCachesKept = usedMb()
+for (const memo of [...layouts, ...caches]) {
+  memo.prune(sparse)
+}
+const pruned = usedMb()
 
-for (const memo of [...holder.layouts, ...holder.caches]) {
+for (const memo of [...layouts, ...caches]) {
   memo.clear()
 }
-const evictedCachesCleared = usedMb()
+const cleared = usedMb()
 
 const mb = (n: number) => `${n.toFixed(1)}MB`
 console.log(
-  `${features.toLocaleString()} features x ${exons} exons, ${reservations.length} layouts, ` +
-    `${holder.caches.length} pack caches x ${probes} probes (${layoutMs.toFixed(0)}ms + ${probeMs.toFixed(0)}ms to fill)`,
+  `${features.toLocaleString()} features x ${exons} exons, ${layouts.length} layouts, ` +
+    `${caches.length} pack caches x ${probes} probes (${layoutMs.toFixed(0)}ms + ${probeMs.toFixed(0)}ms to fill)`,
 )
-console.log(`raw region                      ${mb(afterRaw - baseline)}`)
-console.log(`7 incremental layouts           ${mb(afterLayouts - afterRaw)}`)
-console.log(`3 pack caches                   ${mb(afterProbes - afterLayouts)}`)
-console.log(
-  `raw evicted, caches kept        ${mb(evictedCachesKept - baseline)} above baseline`,
-)
-console.log(
-  `raw evicted, caches cleared     ${mb(evictedCachesCleared - baseline)} above baseline`,
-)
-console.log(
-  `pinned by the caches            ${mb(evictedCachesKept - evictedCachesCleared)}`,
-)
+console.log(`dense solve, every memo filled      ${mb(afterDense - baseline)}`)
+console.log(`dense evicted, sparse full rung     ${mb(sparseOnly - baseline)}`)
+console.log(`  after prune to the live regions   ${mb(pruned - baseline)}`)
+console.log(`  after clear (left fit mode)       ${mb(cleared - baseline)}`)

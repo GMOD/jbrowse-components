@@ -576,6 +576,13 @@ export function createPackHeightCache() {
       clear: () => {
         entry = undefined
       },
+      // An entry packed from any other map can no longer be hit, since a hit
+      // needs the very same map.
+      prune: (live: ReadonlyMap<number, LayoutRegionData>) => {
+        if (entry?.rpcDataMap !== live) {
+          entry = undefined
+        }
+      },
     },
   )
 }
@@ -588,6 +595,8 @@ interface GroupCache {
   reversed: Set<number>
   output: Map<number, FeatureDataResult>
   collapsedIds: ReadonlySet<string>
+  // Its rows were packed beside a region since evicted, so only a seed now.
+  seedOnly: boolean
 }
 
 function groupUnchanged(
@@ -597,6 +606,7 @@ function groupUnchanged(
 ) {
   const { reversedRegions } = inputs
   return (
+    !prev.seedOnly &&
     LAYOUT_CACHE_KEYS.every(key => prev.inputs[key] === inputs[key]) &&
     prev.members.size === members.size &&
     [...members].every(
@@ -688,6 +698,7 @@ export function createIncrementalLayout({
           reversed,
           output,
           collapsedIds,
+          seedOnly: false,
         })
       }
     }
@@ -698,6 +709,33 @@ export function createIncrementalLayout({
   return Object.assign(computeLaidOutDataIncremental, {
     clear: () => {
       cache = new Map()
+    },
+    // Drops what a region the store evicted left behind while keeping every
+    // live region's rows as the seed for the next layout.
+    prune: (live: ReadonlyMap<number, LayoutRegionData>) => {
+      const kept = new Map<string, GroupCache>()
+      for (const [key, group] of cache) {
+        const members = new Map(
+          [...group.members].filter(([idx, raw]) => live.get(idx) === raw),
+        )
+        kept.set(
+          key,
+          members.size === group.members.size
+            ? group
+            : {
+                ...group,
+                seedOnly: true,
+                members,
+                reversed: new Set(
+                  [...group.reversed].filter(idx => members.has(idx)),
+                ),
+                output: new Map(
+                  [...group.output].filter(([idx]) => members.has(idx)),
+                ),
+              },
+        )
+      }
+      cache = new Map([...kept].filter(([, group]) => group.members.size > 0))
     },
   })
 }

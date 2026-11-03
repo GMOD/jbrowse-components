@@ -32,14 +32,17 @@ jest.mock('./layout.ts', () => {
       opts?: Parameters<typeof actual.createIncrementalLayout>[0],
     ) => {
       const memo = actual.createIncrementalLayout(opts)
-      return (
-        data: Parameters<typeof memo>[0],
-        inputs: Parameters<typeof memo>[1],
-      ) => {
-        const out = memo(data, inputs)
-        mockPackedWith.set(out, inputs)
-        return out
-      }
+      return Object.assign(
+        (
+          data: Parameters<typeof memo>[0],
+          inputs: Parameters<typeof memo>[1],
+        ) => {
+          const out = memo(data, inputs)
+          mockPackedWith.set(out, inputs)
+          return out
+        },
+        { clear: memo.clear, prune: memo.prune },
+      )
     },
   }
 })

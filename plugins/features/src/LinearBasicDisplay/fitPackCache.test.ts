@@ -1,3 +1,6 @@
+import v8 from 'node:v8'
+import vm from 'node:vm'
+
 import { autorun } from 'mobx'
 
 import {
@@ -23,6 +26,14 @@ import type {
 } from './layoutInputs.ts'
 import type * as PackRef from './packRef.ts'
 
+v8.setFlagsFromString('--expose-gc')
+const runGc: () => void = vm.runInNewContext('gc')
+
+const collectGarbage = async () => {
+  await new Promise(resolve => setTimeout(resolve, 0))
+  runGc()
+}
+
 const mockPackCount = { value: 0 }
 // A display built while this is set holds caches that never hand a pack
 // back: the answer the cached solve must reproduce.
@@ -45,7 +56,7 @@ jest.mock('./layout.ts', () => {
     ...actual,
     createPackHeightCache: () =>
       mockUncached.value
-        ? Object.assign(() => new Map(), { clear: () => {} })
+        ? Object.assign(() => new Map(), { clear: () => {}, prune: () => {} })
         : actual.createPackHeightCache(),
   }
 })
@@ -338,6 +349,21 @@ describe('the fit-only memos', () => {
     d.dispose()
   })
 
+  it('free a region the store evicted from a rung the solve no longer reaches', async () => {
+    const d = fitDisplay(labelled(spaced(500, 20), 60, taller(25)), 108)
+    expect(d.display.fitStage.level).toBe('thinned')
+    const evicted = new WeakRef(d.display.rpcDataMap.get(0)!)
+    d.display.setRpcData(
+      0,
+      labelled(spaced(3, 500), 60, () => 10),
+      ctgA,
+    )
+    expect(d.display.fitStage.level).toBe('full')
+    await collectGarbage()
+    expect(evicted.deref()).toBeUndefined()
+    d.dispose()
+  })
+
   it('empty a layout memo and a pack cache on clear', () => {
     const memo = createIncrementalLayout()
     const regions = new Map<number, LayoutRegionData>([
@@ -369,5 +395,57 @@ describe('the fit-only memos', () => {
     expect(cache(regions, inputs)).toBe(packs)
     cache.clear()
     expect(cache(regions, inputs)).not.toBe(packs)
+  })
+
+  it('keeps a live region as a seed but never reuses a group packed beside an evicted one', () => {
+    const memo = createIncrementalLayout()
+    const region = (n: number): LayoutRegionData => ({
+      ...labelled(spaced(n, 20), 10, () => 10),
+      regionKey: 'k',
+      ...WHOLE_REF,
+    })
+    const [a, b] = [region(10), region(12)]
+    const inputs: LayoutInputs = {
+      bpPerPx: 1,
+      showLabels: true,
+      showDescriptions: false,
+      reversedRegions: new Set<number>(),
+      displayMode: 'normal',
+      pinnedFeatureIds: new Set<string>(),
+    }
+    const both = new Map([
+      [0, a],
+      [1, b],
+    ])
+    const first = memo(both, inputs)
+    const live = new Map([[0, a]])
+    memo.prune(live)
+    expect(memo(live, inputs).get(0)).not.toBe(first.get(0))
+    const settled = memo(live, inputs)
+    memo.prune(live)
+    expect(memo(live, inputs).get(0)).toBe(settled.get(0))
+  })
+
+  it('drops a pack cache built from a map other than the live one', () => {
+    const cache = createPackHeightCache()
+    const region: LayoutRegionData = {
+      ...labelled(spaced(10, 20), 10, () => 10),
+      regionKey: 'k',
+      ...WHOLE_REF,
+    }
+    const live = new Map([[0, region]])
+    const inputs: LayoutInputs = {
+      bpPerPx: 1,
+      showLabels: true,
+      showDescriptions: false,
+      reversedRegions: new Set<number>(),
+      displayMode: 'normal',
+      pinnedFeatureIds: new Set<string>(),
+    }
+    const packs = cache(live, inputs)
+    cache.prune(live)
+    expect(cache(live, inputs)).toBe(packs)
+    cache.prune(new Map(live))
+    expect(cache(live, inputs)).not.toBe(packs)
   })
 })
