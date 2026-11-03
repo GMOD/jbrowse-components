@@ -8,8 +8,7 @@ kind: spec
 
 How a display's MST model drives its backend: the two autoruns, the activity
 phase that raises the scrim, recovery from a lost context, and the one upload
-installer. [GPU_RENDERING.md](GPU_RENDERING.md) is the hub and lists the sibling
-docs for backends, the HAL and shaders.
+installer. [GPU_RENDERING.md](GPU_RENDERING.md) is the hub.
 
 ## The core contract
 
@@ -30,9 +29,9 @@ through the `fetchInert` hook, never by overriding `displayPhase`.
 `viewportCurrent` is a **thunk** because it is the only input reading the
 containing view. Parity is pinned in `displayPhase.test.ts` and
 `displayPhaseWiring.test.ts`.
-`installGlobalFetchAutorun` schedules **leading-edge**: MobX's `{ delay }` is
-trailing-only and would stall cold open, so a `primed` flag drives a custom
-`scheduler`.
+
+`installGlobalFetchAutorun` is leading-edge (`leadingEdgeAutorun`): MobX's
+`{ delay }` is trailing-only and would stall cold open.
 
 ## Context-loss recovery
 
@@ -71,14 +70,11 @@ map is keyed by**:
 
 - **A cell keyed on a value reads it from its own computed.** The diff is by
   reference, so a cell built from a per-frame render-state getter re-uploads per
-  frame. Synteny's clicked-outline cell once read `clickedFeatureId` off
-  `renderParams` and re-packed on every pan frame. **No rendering gate sees this**
-  (the picture is identical); a test that pans with a selection live and counts
-  `upload` calls does (`outlineUploadSchedule.test.ts`).
+  frame. **No rendering gate sees this** (the picture is identical); a test that
+  pans with the value live and counts `upload` calls does
+  (`outlineUploadSchedule.test.ts`).
 - **Release is per key, never an active-set prune.** A prune computed from one
-  display's map would wipe its siblings' buffers on a shared canvas (the HAL's
-  old `pruneRegions(active)`). That is why the three installers (ADR-079)
-  collapsed to one.
+  display's map would wipe its siblings' buffers on a shared canvas.
 - **Absence is absence.** A whole-view display with nothing fetched leaves the key
   out (`oneCell(0, self.rpcData)` does), so the key is released and the frame
   clears. A fetch that came back *empty* must stay in the map, so `renderBlocks`
@@ -94,11 +90,14 @@ map is keyed by**:
 
 ### Whole-map synced: skipping a region without leaving stale buffers
 
+Alignments keeps its own per-region skip memo (`GpuAlignmentsRenderer.syncRegion`).
+
 - **Forget a key when it leaves**: delete the HAL buffers and the memo entry
   together, or a returning region with an identical payload skips an upload onto
   destroyed buffers.
-- **The one sub-region exception is the recolor.** `readYs` identity means "same
-  layout run", so same bytes except the two per-read color arrays rewrites the
-  read pass alone. This needs the model to bake color in its own computed
-  downstream of layout (`laidOutByGroupUncolored` → `laidOutByGroupFramed` →
-  `laidOutByGroup`).
+- **Within one layout run only the passes whose inputs moved are rewritten.** An
+  unchanged `readYs` identity means "same layout run", so a color rebake rewrites
+  the read pass alone, and the linked-read lines and band feeds have their own
+  checks. An empty upload is the per-pass delete. Color must be baked in the
+  model's own computed downstream of layout (`laidOutByGroupUncolored` →
+  `laidOutByGroupFramed` → `laidOutByGroup`).

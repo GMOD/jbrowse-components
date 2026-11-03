@@ -1,7 +1,8 @@
 # Agent documentation
 
-Top level is `ARCHITECTURE.md`, `TODO.md` and this file. Everything else is
-filed:
+Top level is `ARCHITECTURE.md`, `TODO.md` and this file. `ARCHITECTURE.md` is
+a map that routes to subsystem docs; depth goes in those, not in it. Everything
+else is filed:
 
 - `reference/`: settled. How a subsystem works or is operated, a measurement,
   the datasets behind the figures.
@@ -47,8 +48,12 @@ filed:
   reaching it, so update both by hand.
 - `creating_display.md`, `plotting_features.md`, `creating_gpu_display.md` and
   `data_fetching.md` under `website/docs/developer_guides/` walk through
-  ARCHITECTURE.md's sections. Change them in the same pass as the lifecycle,
-  mixins or upload patterns; `check-docs` checks their links, not their prose.
+  `reference/DISPLAY_PIPELINE.md`'s sections. Change them in the same pass as
+  the lifecycle, mixins or upload patterns; `check-docs` checks their links,
+  not their prose.
+- `website/docs/config_guides/grammar.md` is the public face of
+  `reference/GRAMMAR_STAGES.md`. A new grammar object or a respelling changes
+  both.
 
 ## Third parties: say what we chose, not how they rank
 

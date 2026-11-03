@@ -8,7 +8,7 @@ kind: spec
 
 What each plugin declares so one mark list becomes both a GPU and a Canvas2D
 backend, and how the two stay pixel-compatible. [GPU_RENDERING.md](GPU_RENDERING.md)
-is the hub; the uploads and lifecycle that call these backends are in
+is the hub; uploads and lifecycle are in
 [GPU_DISPLAY_LIFECYCLE.md](GPU_DISPLAY_LIFECYCLE.md).
 
 ## RenderingBackend interfaces per plugin
@@ -24,17 +24,17 @@ the sectioned frame its pileup needs.
 
 Every canvas-drawing display **must** ship a Canvas2D painter, because SVG export
 goes through it ([SVG_EXPORT.md](SVG_EXPORT.md)). A shape's `paintBlock` is that
-painter. Text dense enough to be per-base (the reference sequence's letters,
-the alignments mismatch letters, MAF's codon letters) is not a shape: an
-`OverlayCanvas` over the backend paints it on every backend, and the export calls
-the same function after `paintMarkBlocks`. `createCanvas2DBackend` remains for a
-third-party display with no shape at all; no in-tree display uses it.
+painter. Text dense enough to be per-base (reference sequence letters, alignments
+mismatch letters, MAF codon letters) is not a shape: an `OverlayCanvas` over the
+backend paints it on every backend, and the export calls the same function after
+`paintMarkBlocks`. `createCanvas2DBackend` remains for a third-party display with
+no shape at all; no in-tree display uses it.
 
 ### Keeping the two backends in parity
 
-A dual-path display renders the same pixels two ways, and SVG export runs the
-Canvas2D path, so a shader-only tweak silently diverges the export. Parity is
-kept by construction. Preserve whichever of these the display uses:
+SVG export runs the Canvas2D path, so a shader-only tweak silently diverges the
+export. Parity is kept by construction. Preserve whichever of these the display
+uses:
 
 - **Constants live in the shader, TS re-exports them.** `//! export-consts:`
   emits the value into the `*.generated.ts`; the Canvas2D side imports it
@@ -42,21 +42,17 @@ kept by construction. Preserve whichever of these the display uses:
 - **One registry, exhaustively keyed.** Multi-layer displays list layers,
   z-order and gating once and map each id per backend through a
   `Record<LayerId, …>`, so a half-added layer is a compile error rather than a
-  layer in one backend only, which also loses it from SVG export. Two bands with
-  different draw signatures warrant a second mark list, never a second backend
-  registry.
+  layer missing from one backend and from SVG export. Two bands with different
+  draw signatures warrant a second mark list, never a second backend registry.
 - **A per-instance vertex budget is a cap the other backend lacks.** Where one
-  instance draws an unbounded number of marks (the feature display's chevron pass), the
-  draw's vertex count fixes how many the shader can address and every instance
-  pays for every slot. Too high and all pay; too low and a large input silently
-  loses marks past it while Canvas2D keeps drawing them. No other mechanism here
-  catches this, so derive the budget from what the frame can show and test it
-  against the window it feeds. `chevronSlotBudget`
-  (`sharedRendererConstants.ts`, walked by `chevronWindow.test.ts`) is the
-  worked example: a fixed 128 chevrons a line dropped them on wide canvases,
-  and the first per-frame budget was one slot short. `chevronDrawSlots` caps
-  each draw further by its block's width and its longest line, which
-  `chevronDrawSlots.test.ts` walks against the canvas-wide budget.
+  instance draws an unbounded number of marks (the feature display's chevron
+  pass), the draw's vertex count fixes how many the shader can address. Too low
+  and a large input silently loses marks past it while Canvas2D keeps drawing
+  them; too high and every instance pays for every slot. Nothing else catches
+  this, so derive the budget from what the frame can show and test it against
+  the window it feeds: `chevronSlotBudget` (`sharedRendererConstants.ts`, walked
+  by `chevronWindow.test.ts`), and `chevronDrawSlots`, walked by
+  `chevronDrawSlots.test.ts`.
 
 **Intentional divergences — do NOT "fix" these into parity.** GPU rasterization
 is watertight while Canvas2D antialiases each primitive independently.
@@ -104,6 +100,6 @@ and save/restore UBO scratch where a pass mutates uniforms. Do NOT keep:
 **The one legal renderer-held region map** is a private `regions` map written
 **exclusively by the upload callback** and never mutated in place:
 `RenderLifecycleMixin` bumps `renderTick` after every upload, so the cache cannot
-stale. Alignments is the one display built that way. Still forbidden: a cache
-populated elsewhere, entries patched in place, and mirroring the HAL's region map.
-
+stale. Alignments (`GpuAlignmentsRenderer`) is the one display built that way.
+Still forbidden: a cache populated elsewhere, entries patched in place, and
+mirroring the HAL's region map.

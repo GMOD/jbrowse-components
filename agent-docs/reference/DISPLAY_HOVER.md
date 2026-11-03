@@ -1,6 +1,6 @@
 ---
 name: display-hover
-description: Why a stored hover goes stale under a still cursor and what clears it, the derived `PointerHoverMixin` that needs no clear, and the `hoveredFeature` hook every display publishes through. Read before storing a hit in a display or a view that owns a shared canvas.
+description: Why does a stored hover go stale under a still cursor, and what clears it? Covers the derived `PointerHoverMixin` that needs no clear and the `hoveredFeature` hook every display publishes through.
 kind: spec
 ---
 
@@ -23,11 +23,10 @@ leaves the other three axes naming what used to be there.
 `installClearHoverOnViewportChange` is a `reaction`, so its effect can read
 hover state without a hover write re-firing it.
 
-- **`MultiRegionDisplayMixin` installs it**, through
-  `BaseDisplay.clearHoveredFeature`, the writing twin of `hoveredFeature`. It
-  defaults to a no-op: a display that stores a hover overrides that one action.
-- **`installGlobalFetchAutorun` installs it too.** A storer outside both
-  foundations owes its own.
+- **`MultiRegionDisplayMixin` and `installGlobalFetchAutorun` install it**,
+  through `BaseDisplay.clearHoveredFeature`, the writing twin of `hoveredFeature`.
+  It defaults to a no-op: a display that stores a hover overrides that one
+  action. A storer outside both foundations owes its own reaction.
 - **A view that owns a shared surface** uses `installClearHoverOnSurfaceMove`
   (`@jbrowse/core/util`): a `reaction` on the model that owns the surface over
   one value carrying every number that moves the picture, plus a `clear`
@@ -69,9 +68,8 @@ declares.
 **A volatile cannot instantiate over a base computed**, so a display that stores
 its hit stores it under another name and answers the hook with a getter over it.
 `StoredHoverMixin<T>` (display-kit) is that trio, plus `setHoveredFeature` and
-`clearHoveredFeature`, composed after `BaseDisplay`. When the chain hits the
-`types.compose` ten-argument ceiling, nest a second `types.compose` inside the
-outer one.
+`clearHoveredFeature`, composed after `BaseDisplay`. The `types.compose` part
+ceiling is lint-enforced; nest a second `types.compose` inside the outer one.
 
 ## Store or derive, never half
 

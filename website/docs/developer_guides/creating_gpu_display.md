@@ -51,7 +51,7 @@ The model keeps two autoruns running at all times (owned by
 The backend is a HAL (Hardware Abstraction Layer) that dispatches to WebGPU,
 WebGL2, or Canvas2D at runtime. Your shape talks to the HAL through its mark,
 never to WebGPU or WebGL2 directly. See the
-[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#gpu-rendering-architecture)
+[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAY_PIPELINE.md#gpu-rendering-architecture)
 for the full lifecycle and `packages/render-core/CLAUDE.md` for HAL invariants.
 
 ## Shapes and marks
@@ -708,7 +708,7 @@ loaded region. Reading the value inside `encode` does not work, because the
 helper invalidates only on `inputs` and on the region's data.
 
 Three settings buckets (see the
-[`rpcProps()` / `gpuProps()` pattern](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern)):
+[`rpcProps()` / `gpuProps()` pattern](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAY_PIPELINE.md#rpcprops--gpuprops-pattern)):
 
 - **`rpcProps()`** refetches in the worker, so scroll and zoom must stay out of
   it.
@@ -958,7 +958,7 @@ lists what each backend refuses to allocate.
   `@jbrowse/render-core/marks/backend`, only from the component.
 
 The
-[What NOT to do](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#what-not-to-do)
+[What NOT to do](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAY_PIPELINE.md#what-not-to-do)
 section of the architecture spec is the full quick-scan list.
 
 ## See also

@@ -343,7 +343,7 @@ export async function executeSyntenyFeaturesAndPositions({
   const strandsArray = new Int8Array(count)
   // These are chromosome-LOCAL feature/mate coords (not cumulative), so they
   // fit in uint32 as long as no single reference sequence exceeds 2^32 = 4.29
-  // Gbp — an assumption we accept (see agent-docs/ARCHITECTURE.md "Genome-size
+  // Gbp — an assumption we accept (see agent-docs/reference/BP_PRECISION.md "Genome-size
   // limits"). Used for the feature-detail panel and the min-length cull; the
   // drawn positions use the Float64 cumBp arrays above, not these.
   const startsArray = new Uint32Array(count)

@@ -11,7 +11,7 @@ kind: operations
 is a correctness oracle needing no golden. The `cross_backend_gate` job in
 `push.yml` runs `pnpm test:browser:gate:ci` (`--ci-gate`): it scopes to
 `CI_GATE_SUITES`, forces remote data off and renders under swiftshader. The job
-blocks, because a check nobody reads is decoration.
+blocks.
 
 **If a heavy full hand run flags a pair, re-run it scoped before believing it.**
 A loaded `pnpm test:browser:gate` degrades captures, and a partial capture is a
@@ -27,8 +27,7 @@ stays authoritative, because it compares no bytes.
 
 ## Declined — don't re-propose
 
-- **`preserveDrawingBuffer` as a fix**: refuted; canvas2d has no drawing buffer
-  and a control arm failed more canvas2d tests than webgl.
+- **`preserveDrawingBuffer` as a fix**: refuted; canvas2d has no drawing buffer.
 - **Compositor double-rAF**: inconclusive and ~1.7 s per capture.
 - **Re-taking the screenshot inside the same page**: "Node is detached from
   document". The whole-test retry shares no page or browser.
@@ -37,7 +36,7 @@ stays authoritative, because it compares no bytes.
 - **`fullPage` screenshots**: never reintroduce.
 - **Ink-scoped drift in place of `diffFraction`**: dividing by inked pixels
   raises the antialiasing floor with the signal, buying at most ~2.4x, and what
-  counts as ink then sets the threshold. `includeAA: true` nets ~1.06x.
+  counts as ink then sets the threshold. Counting AA pixels nets ~1.06x.
 
 ## Traps
 
@@ -77,27 +76,26 @@ drift moves when the rasterizer changes. Render the same build under
 - **moves**: rasterization, and the entry does its job.
 
 An entry needs a measured number from both runs. Re-run the audit after any
-change to a shared draw path. A stale override is worse than none. An override
-whose pair falls under the default is deleted, not lowered, and an override for
-drift nobody intends to fix is not an override: record the finding here instead,
-as the per-base wall does. `thresholdFor` takes the first substring match, so a
-specific entry sits above a broader one.
+change to a shared draw path. An override whose pair falls under the default is
+deleted, not lowered, and an override for drift nobody intends to fix is not an
+override: record the finding here instead, as the per-base wall does.
+`thresholdFor` takes the first substring match, so a specific entry sits above a
+broader one.
 
 One kind of entry fails that test on purpose: a display that draws at one
 sample (`sampleCount: 1`) is hard-edged on the GPU by design, so its drift
 against Canvas2D is identical under `--swiftshader` and `--real-gpu`. The
-alignments display's `insert-size-orientation` entry is that kind: 1.68% on
-both, all of it at read ends and coverage-bar tops. Its comment says so, and
-it is the only such entry.
+alignments display's `insert-size-orientation` entry is the only such entry
+(1.68% on both, all at read ends and coverage-bar tops).
 
 ### What the gate cannot see: geometry on an already-antialiased edge
 
-`comparePngBuffers` (`pngDiff.ts`) calls pixelmatch with `includeAA: false`. On
-an edge already carrying an AA gradient, moved pixels read as antialiasing and
-drop out: removing the GWAS bars' `BAR_OVERDRAW_PX` moved 387 px by plain RGB
-compare and 2 at the gate's settings. The gate is blind to small geometry on
-every analytic-coverage mark. Measure such a change with pixelmatch over two
-captures or `probe-bar-top-aa.ts`.
+`comparePngBuffers` (`pngDiff.ts`) calls pixelmatch with its default, which
+ignores anti-aliased pixels. On an edge already carrying an AA gradient, moved
+pixels read as antialiasing and drop out: removing the GWAS bars'
+`BAR_OVERDRAW_PX` moved 387 px by plain RGB compare and 2 at the gate's
+settings. The gate is blind to small geometry on every analytic-coverage mark.
+Measure such a change with pixelmatch over two captures or `probe-bar-top-aa.ts`.
 
 **A shade-only change will not rebaseline under `-u`**: pixelmatch classifies
 every changed pixel as AA, the suite passes, and `-u` never fires. Delete the
@@ -138,8 +136,8 @@ drawing (`drawCurves`, `autoDiagonalize`) to prove the cause.
 
 ## Alignments under webgpu: it was the harness
 
-Webgpu drift on the alignments suites was the capture: `el.screenshot()` scrolled
-an inner container in Firefox and composited the app header into the canvas
-rectangle. `captureElementPng` clips to the measured rect.
-Add no override for a harness artifact. The heavy suites (CRAM, simulated long
-reads) stay out of the blocking job because they need retries under load.
+`captureElementPng` clips to the measured rect because `el.screenshot()` can
+scroll an inner container in Firefox and composite the app header into the
+canvas rectangle. Add no override for a harness artifact. The heavy suites
+(CRAM, simulated long reads) stay out of the blocking job because they need
+retries under load.

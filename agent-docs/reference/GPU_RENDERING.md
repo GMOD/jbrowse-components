@@ -6,13 +6,12 @@ kind: spec
 
 # GPU rendering architecture
 
-How a display gets bytes onto the GPU and pixels onto the screen.
-[ARCHITECTURE.md](../ARCHITECTURE.md) is the front door: read its **Display
-stacks** and **Data fetching pipeline** first. This doc is the hub for the model
-that has data and needs to draw it; the depth lives in the sibling docs below.
+How a display gets bytes onto the GPU and pixels onto the screen. Read
+[DISPLAY_PIPELINE.md](DISPLAY_PIPELINE.md) §"Display stacks" and §"Data fetching
+pipeline" first. This doc is the hub; the sibling docs below hold the depth.
 
-Everything here applies to displays that draw to a canvas. A display that paints
-JSX SVG on both the on-screen and export paths composes none of it.
+It applies to displays that draw to a canvas. A display that paints JSX SVG on
+both the on-screen and export paths composes none of it.
 
 | Question | Doc |
 |---|---|
@@ -29,11 +28,10 @@ JSX SVG on both the on-screen and export paths composes none of it.
 classes and hooks; it is a leaf package (no `@jbrowse/core`), so a third-party
 display can depend on it directly. `packages/display-kit/src/` holds
 `MultiRegionDisplayMixin`, `GlobalFetchMixin` and `DisplayChrome`; shader codegen
-is `packages/shader-tools/src/build-shaders.ts`. The host serves the GPU API to
-runtime plugins like every bundled `@jbrowse` package
+is `packages/shader-tools/src/build-shaders.ts`. Runtime plugins get the GPU API
+from the host
 ([ADR-128](../architecture-decision-records/adr-128-the-runtime-abi-is-the-exports-maps.md)).
-The frame loop (`useRenderingBackend`, the upload and render autoruns) is
-[GPU_DISPLAY_LIFECYCLE.md](GPU_DISPLAY_LIFECYCLE.md) §"The core contract".
+The frame loop is [GPU_DISPLAY_LIFECYCLE.md](GPU_DISPLAY_LIFECYCLE.md) §"The core contract".
 
 ## `displayedRegionIndex`
 
@@ -43,7 +41,7 @@ displayed region can yield several render blocks that share one GPU buffer and
 draw with different scissor clips. It joins `model.rpcDataMap`,
 `hal.uploadBuffer(regionKey, ...)` and `RenderBlock.displayedRegionIndex`. A
 comparative display keys on `sharedBackendKey(self.id)` instead, and dotplot
-rides that hash on the block's field, so the field is the key a block was
+carries that hash in the block's field, so the field is the key a block was
 uploaded under, not always an index.
 
 ## Adding a new GPU display type
@@ -67,9 +65,8 @@ walks this checklist; keep it in step with any change here.
     synteny). It has **no** fetch autoruns; the display installs its own in
     `afterAttach` via `installGlobalFetchAutorun(self, { prepare, run, commit,
     delay, name })`. `prepare` runs synchronously and returning `undefined` is the
-    display's gate, so what it read to decline stays tracked (HiC declines until
-    `binSize` lands); `run` owns every await and writes nothing;
-    `commit` writes while the fetch is still current.
+    display's gate, so what it read to decline stays tracked; `run` owns every
+    await and writes nothing; `commit` writes while the fetch is still current.
   - `RenderLifecycleMixin()` directly only when neither fetch surface is needed.
   - A cached `renderState` view; `startRenderingBackend` calling `installUpload`
     (never a hand-rolled `attachRenderingBackend`); `rpcProps()`; `gpuProps()`
@@ -80,8 +77,9 @@ walks this checklist; keep it in step with any change here.
   via the render-prop child `({ canvasRef }) => <canvas ref={canvasRef} />`.
 - **Wiggle-style displays** — compose `stateModelFactory` from the
   `LinearWiggleDisplay/stateModel` subpath, or only `WiggleScoreConfigMixin` +
-  `makeScoreAxisMenuItem` and `ScorePlotChrome`. A zoom-independent display needs no
-  cache override: the adapter's `zoomRange` is the zoom rule (ADR-125).
+  `makeScoreAxisMenuItem` and `ScorePlotChrome`. A zoom-independent display needs
+  no cache override: the adapter's `zoomRange` is the zoom rule
+  ([ADR-125](../architecture-decision-records/adr-125-the-adapter-declares-the-zoom-range-its-answer-serves.md)).
 - **Tests** — unit (`MockHal`); browser (Puppeteer,
   `--backend=webgl|webgpu|canvas2d`).
 

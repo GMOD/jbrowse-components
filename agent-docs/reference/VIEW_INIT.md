@@ -2,9 +2,8 @@
 name: view-init
 description:
   How does a view take its launch input, and how does one view open another on
-  a region? Covers the withLaunchInput partition, launch state machine, loading
-  gates and the "open view X for this locus" convention. Read when touching view
-  launch, URL params or createViewState.
+  a region? Covers the withLaunchInput partition, the launch state machine,
+  loading gates and the "open view X for this locus" convention.
 kind: spec
 ---
 
@@ -80,7 +79,7 @@ await whenViewsSettled(self.views, superseded) // rows that carry no launch
 because the blob clears only after `apply` returns.
 
 A fixed timeout is not a substitute: it expires on a slow-but-healthy load and
-silently drops the navigation. **One timer survives deliberately**: LGV's
+silently drops the navigation. One timer survives deliberately: LGV's
 `openTracklist` waits for a width change that never comes in embedded and
 modal-drawer layouts. Use MobX's `when(..., { timeout })`, which disposes its
 timer, never `Promise.race([when(cond), setTimeout])`, whose losing timer
@@ -117,9 +116,7 @@ tolerance and every canvas count exactly.
 
 **Take a locus in a linear view, open a different kind of view on it, sourced
 from some track.** Linear synteny does this in
-`plugins/linear-comparative-view/src/LaunchSyntenyView/`; the graph plugin's
-launcher came first and synteny follows its convention (since plugin 4.0.0 the
-graph is a track of the linear view and launches nothing).
+`plugins/linear-comparative-view/src/LaunchSyntenyView/`.
 
 ### The convention
 
@@ -132,28 +129,26 @@ graph is a track of the linear view and launches nothing).
    tracks count. A display-contributed `regionLaunchItems()` seam was rejected:
    it cannot serve a track with no display. **Scan width is the launcher's
    call.** Synteny is **view-scoped** (`launchableTracks` filters the view's open
-   tracks) because session-wide preselected the first track in *config order*, a
-   choice the user never made. Read `launchableTracks`'s comment before widening
-   it.
+   tracks), because a session-wide scan preselects the first track in *config
+   order*, a choice the user never made. Read `launchableTracks`'s comment before
+   widening it.
 3. **Discover by declared capability, not adapter name**:
    `pluginManager.getAdapterType(t).adapterCapabilities.includes('getSubgraph')`.
-   Hardcoded adapter names left the graph launcher dead when those adapters were
-   removed. Check registration first: `getAdapterType` throws on an unregistered
-   type.
+   Check registration first: `getAdapterType` throws on an unregistered type.
 4. **Take the widest block, never the first.** `dynamicBlocks.contentBlocks` and
    `getSelectedRegions()` return display order, and a rubberband dragged across a
    region boundary puts a sliver first, so `[0]` frames 3 bp of the region the
    user left. `widestRegion` (`regionLaunchMenuItems.ts`) picks the widest by
    bp, ties leftmost. Under a size guard this is silent: the sliver puts an
    illegal window under the cap, so the item renders enabled and opens a
-   degenerate view. **No figure can cover this** (no spec has a multi-region
-   view); the unit tests are the coverage.
+   degenerate view. No figure covers this (no spec has a multi-region view); the
+   unit tests do.
 
 ### Launcher gotchas
 
 - **A CIGAR-less alignment is still clipped to the selection, by
   interpolation.** `resolveSpans` (`resolvePanel.ts`) walks the CIGAR when there
-  is one and interpolates otherwise. Framing on the whole block ignored the
+  is one and interpolates otherwise; framing on the whole block ignores the
   selection. Not an edge case: PAF without `-c`, MashMap, MCScan and the coarse
   PIF tier carry no `cg`.
 - **A mate that is not a declared assembly is dropped from the launch, and the

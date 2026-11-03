@@ -352,7 +352,7 @@ const VALIDATORS: Validator[] = [
     argv: ['python3', 'scripts/check-build-scripts.py'],
   },
   {
-    name: "ARCHITECTURE.md's rule index points somewhere",
+    name: "DISPLAY_PIPELINE.md's rule index points somewhere",
     argv: web('check-architecture-checklist.ts'),
   },
 ]

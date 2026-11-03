@@ -1,6 +1,6 @@
 ---
 name: svg-export
-description: SVG export pipeline covering the renderSvg shape, the svgReady/settled readiness gates, paintLayer, and clip ids. Read when touching a display's renderSvg or export readiness.
+description: What shape must a display's renderSvg take, and what must be terminal for the export to finish? Covers the svgReady gate, paintLayer dispatch, clip ids and serialization.
 kind: spec
 ---
 
@@ -8,13 +8,15 @@ kind: spec
 
 SVG export and on-screen rendering share the same pure Canvas2D draw functions.
 **The GPU shader path is an accelerator; the Canvas2D draw function is the
-source of truth, and SVG export runs it.** See `GPU_BACKENDS.md` §"Keeping the
-two backends in parity".
+source of truth, and SVG export runs it.** See
+[GPU_BACKENDS.md](GPU_BACKENDS.md#keeping-the-two-backends-in-parity). The
+summary is [DISPLAY_PIPELINE.md](DISPLAY_PIPELINE.md#svg-export).
 
 ## The renderSvg.tsx shape (every LGV display)
 
 `renderSvg` is optional. A display without one drops from the export like a
-minimized track, and `notifySkippedSvgTracks` names it.
+minimized track, and `notifySkippedSvgTracks` names it. It is one call,
+`renderDisplaySvg(model, opts, XxxSvgBody)`.
 
 - The body is a **component**, not a callback returning JSX: `SvgChrome` renders
   its terminal box instead of its children, so the body never runs in a terminal
@@ -26,29 +28,26 @@ minimized track, and `notifySkippedSvgTracks` names it.
 - Render empty naturally. Never gate a body on data size: it wrongly drops a
   legitimate empty render.
 - A body draws no key. The exporting view sets each display's `SvgLegend` in a
-  gutter right of the plot, which `renderViewTracks` sizes after the renders
-  from the keys that exist, so a figure with no key has no empty strip.
+  gutter right of the plot, which `renderViewTracks` sizes from the keys that
+  exist, so a figure with no key has no empty strip.
 
 **The export canvas width is `view.width`**, not `renderState.canvasWidth`
-(`view.trackWidthPx`, 2px narrower). Reusing the on-screen width clips the last
+(`view.trackWidthPx`, 2px narrower); reusing the on-screen width clips the last
 column. A body paints a mark list through `MarkSvgLayer` (display-kit), which
 replaces the state's canvas box with the layer's own `width` and `height`; its
 `paint` callback draws the overlays the screen stacks over its canvas, with the
 same framed state.
 
-**Colors come from `usePalette()`**, never `getPaletteHost` or the session:
-the export dialog picks a theme the session need not be showing. A model input
-built from the theme gets a twin taking the palette (`colorPaletteIn`,
-`rowsEncodePropsIn`), and the body calls that. Patching a
-palette into the getter's output re-copies model logic into the export.
+**Colors come from `usePalette()`**, never `getPaletteHost` or the session: the
+export dialog picks a theme the session need not be showing. A model input built
+from the theme gets a twin taking the palette (`colorPaletteIn`,
+`rowsEncodePropsIn`), and the body calls that; patching a palette into the
+getter's output re-copies model logic into the export. Several inputs off one
+palette share one twin: the alignments display's `themedIn(theme)` returns its
+palette, read-connection and junction feeds and the sections joining them, each
+member memoized on its own; `themed` returns the same for the session theme.
 
-**Several inputs off one palette share one twin.** The alignments display's
-`themedIn(theme)` returns its palette, its read-connection and junction feeds
-and the sections joining them, each member memoized on its own; `themed`
-returns the same for the session theme.
-
-The
-exported key draws `legendSpecIn(palette)`, so a display whose key takes
+The exported key draws `legendSpecIn(palette)`, so a display whose key takes
 colors from the theme overrides `LegendMixin`'s `colorScalesIn` (alignments,
 MAF); the default is `colorScales`. A ring's exports run `plotOnly`, so the
 circular view's own key (`CircularView.legendSpecIn`) reads each ring's
@@ -61,10 +60,7 @@ so a `<text>` that writes the theme's family overrides it; measure in
 **A live figure (`useViewSvgFigure`) freezes against one snapshot.** An export
 draws plain components that read the model once, never an on-screen observer:
 an observer follows the view, so a pan slides its labels across layers drawn
-before it. Lint requires `observer` on every other component, and exempts these
-by name (`Svg…`), by home (`svgcomponents/`, `renderSvg.tsx`, core's `svg/`) or,
-for a piece the screen shares, by an inline
-`-- drawn inside a frozen SVG figure`.
+before it. The `observer` lint rule names its exemptions.
 
 **A figure carries the pinned highlight only, never a hover or a selection**:
 both say where the reader's pointer was. A body that hands live render params to
@@ -120,11 +116,17 @@ mid-launch while tracks still attach. Every view's `error` must therefore be
 ### Every resting state that never fetches must be terminal
 
 `dataCurrent` says whether held data is current, not whether data will ever
-arrive. A display that can sit with its fetch trigger false must reach
+arrive. A display that can sit with its fetch trigger false (a user toggle, an
+unmet prerequisite, a standing cancel, a static "zoom in" mode) must reach
 `svgReady` through `error`, `regionTooLarge`, `fetchCanceled` or `fetchInert`.
 `awaitSvgReady`'s only bound is the half-hour `SVG_READY_TIMEOUT_MS`, so one such
-track hangs the whole view's export. Read the display's fetch gate and ask what
-leaves it declining forever:
+track hangs the whole view's export with the dialog spinner up. The loading
+overlay is terminal on the same set, and `fetchInert` is one `FetchMixin` hook
+(default `false`, the strict answer) because a cross-display reader such as
+`displaysSettled` can only read a name the mixin declares
+([ADR-082](../architecture-decision-records/adr-082-one-hook-for-a-display-that-will-not-fetch.md)).
+Read the display's fetch gate, enumerate every way its prerequisite fails (not
+just the throw), and ask what leaves it declining forever:
 
 - **A failed prerequisite fetch** (HiC's `CoreGetInfo`): terminal failures go in
   `setError`, not `notifyError`; retriable ones run from an autorun on

@@ -7,13 +7,12 @@ kind: spec
 
 # GPU glossary: standard terms to our spelling
 
-Which of our identifiers is the thing a graphics programmer already has a word
-for. Two entries are collisions rather than translations: **a "pass" identifier
+Two entries are collisions rather than translations: **a "pass" identifier
 means a PSO**, and **our uniform "ring buffer" does not wrap**.
 
 | Standard term | Our spelling | Owned by |
 |---|---|---|
-| **Pipeline state object (PSO)** | `PipelineDescriptor` — but every identifier around it still says *pass* (`passId`, `drawPass`, `slangPass`, `InstancePass`, `*_PASSES`) | `hal/types.ts`, built by `slangPass()` |
+| **Pipeline state object (PSO)** | `PipelineDescriptor`; identifiers around it still say *pass* (see [GPU_HAL.md](GPU_HAL.md)) | `hal/types.ts`, built by `slangPass()` |
 | **Render pass** (`beginRenderPass`) | the `beginFrame` / `endFrame` bracket — one per frame, not per `drawPass` | `webgpuHal.ts`, `webgl2Hal.ts` |
 | **Draw call** | `hal.drawPass(passId, regionKey)` | `hal/types.ts` |
 | **Instanced rendering** | the whole architecture — `stepMode: 'instance'`, `draw(verticesPerInstance, count)` | `InstancePass`, `uploadPass`, `instanceCache.ts` |
@@ -34,7 +33,7 @@ means a PSO**, and **our uniform "ring buffer" does not wrap**.
 | **Scissor / viewport** | same words | `hal/types.ts` |
 | **Frustum culling** | "cull" — CPU-side over a 1D bp interval; there is no frustum and no camera | `syntenyTypes.slang`, `syntenyFetchWindow.ts` |
 | **Spatial index / BVH** | Flatbush (packed Hilbert R-tree) — **picking and hit-testing only**, never draw culling | `packages/core/src/util/flatbush/` |
-| **Scene graph** | the MST view → track → display tree; we never call it that | `ARCHITECTURE.md` §"Display stacks" |
+| **Scene graph** | the MST view → track → display tree; we never call it that | `ARCHITECTURE.md` §"The state tree" |
 | **Render graph / frame graph** | none: one render pass, one color attachment, no offscreen target, and ordering is a static z-ordered mark list | `PILEUP_MARKS`, `RegionRegistry` |
 | **Indirect drawing** | none: the instance count is `byteLength / instanceStride` of a CPU-packed buffer, so no GPU readback exists to remove. A pass whose instances a compute kernel produces would reopen it | `InstancePass` |
 | **Buffer pooling / sub-allocation** | none — one `GPUBuffer` per `(regionKey, passId)` | [GPU_HAL.md](GPU_HAL.md) §"What this architecture deliberately does not have" |

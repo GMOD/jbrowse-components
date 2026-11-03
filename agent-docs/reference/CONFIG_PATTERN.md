@@ -7,8 +7,7 @@ kind: spec
 # Display Config Pattern
 
 MST stays on the main thread; renderers work on plain objects. A display builds
-its config payload in `rpcProps()` (`ARCHITECTURE.md` §"`rpcProps()` /
-`gpuProps()` pattern"). Canvas sends
+its config payload in `rpcProps()` ([DISPLAY_PIPELINE.md](DISPLAY_PIPELINE.md#rpcprops--gpuprops-pattern)). Canvas sends
 `pickDisplayConfig(fullConfSnapshot(self.configuration))`, a pick off a
 `Record<keyof DisplayConfig, true>` the compiler proves complete, never a
 subtraction. Every other display enumerates its `rpcProps()` fields by hand.

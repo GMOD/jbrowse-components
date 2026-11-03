@@ -53,5 +53,5 @@ TypeScript, and @jbrowse/mobx-state-tree.
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) to get set up, and
-[agent-docs/ARCHITECTURE.md](agent-docs/ARCHITECTURE.md) for the rendering
-pipeline and core architecture.
+[agent-docs/ARCHITECTURE.md](agent-docs/ARCHITECTURE.md) for a map of the code:
+plugins, the state tree, the grammar of graphics and the rendering pipeline.

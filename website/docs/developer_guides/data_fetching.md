@@ -387,7 +387,7 @@ Compose it alongside `BaseDisplay` and `TrackHeightMixin`, then add the
 
 ## See also
 
-- [Architecture spec: data fetching pipeline](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#data-fetching-pipeline)
+- [Architecture spec: data fetching pipeline](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAY_PIPELINE.md#data-fetching-pipeline)
 - [FETCH_KEYS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/FETCH_KEYS.md)
   — what invalidates a fetch, an upload and a frame, what stales a region under
   zoom, and the fetch skeleton

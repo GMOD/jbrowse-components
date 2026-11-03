@@ -189,7 +189,7 @@ interface InstallFetchOptionsBase<TArgs, TResult>
    *
    * A run whose key equals the committed one declines, so a gate flip
    * (minimize→expand, a view initializing) re-runs nothing against unchanged
-   * inputs. The law is ARCHITECTURE.md's: a gate on a freshness signal must
+   * inputs. The law (FETCH_KEYS.md §"The global-fetch trigger list"): a gate on a freshness signal must
    * also be invalidated by `reload()`, or Retry re-runs the body straight into
    * the same decline and the button is dead. Every layer that has one made
    * that pairing structural in the end — the global family after arc shipped

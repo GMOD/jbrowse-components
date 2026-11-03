@@ -41,7 +41,7 @@ test('the message names rpcProps and where to read about it', () => {
   expect(message).toMatch(
     /rpcProps\(\) must read only user-controlled settings/,
   )
-  expect(message).toMatch(/ARCHITECTURE\.md/)
+  expect(message).toMatch(/FETCH_KEYS\.md/)
 })
 
 // 50 is chosen to land inside MobX's own 100-iteration convergence guard, so

@@ -3,11 +3,14 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
-import { checkArchitectureDoc } from './architecture-checklist-rules.ts'
+import {
+  DOC_PATH,
+  checkArchitectureDoc,
+} from './architecture-checklist-rules.ts'
 import { reportProblems } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 
-const archPath = join(repoRoot, 'agent-docs', 'ARCHITECTURE.md')
+const archPath = join(repoRoot, DOC_PATH)
 const archDir = dirname(archPath)
 
 const { entryCount, problems } = checkArchitectureDoc({
@@ -24,5 +27,5 @@ const { entryCount, problems } = checkArchitectureDoc({
 
 reportProblems(
   problems,
-  `${entryCount} "What not to do" entries all name a destination, every link in ARCHITECTURE.md resolves, and every section is indexed or declared to carry no rule`,
+  `${entryCount} "What not to do" entries all name a destination, every link in DISPLAY_PIPELINE.md resolves, and every section is indexed or declared to carry no rule`,
 )

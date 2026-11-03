@@ -9,15 +9,17 @@ kind: spec
 The JS codegen lifts a shader's scalar decision functions into the Canvas2D twin;
 the shape library is the set of shared render-core modules the shaders import; and
 uniform arrays have one declaration rule that slangc enforces only by crashing.
+What the tree currently exports, declines and refuses is
+[SHADER_LIFT_INVENTORY.md](SHADER_LIFT_INVENTORY.md); the scope rule is
+[ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-scalar-only.md).
 The plugin-author guide is [Creating a GPU
 display](https://jbrowse.org/jb2/docs/developer_guides/creating_gpu_display/).
 
 ## The JS codegen: the operating manual
 
-**Exports nothing imports are a line in a report, not a build gate.** A check whose
-findings all end in a suppression teaches people to suppress, and a *new* marginal
-export always has a consumer. What changes a verdict is a shader-side rule that
-stops being shared at all, never "nothing imports it".
+An export nothing imports is a line in the inventory report, not a build gate:
+a check whose findings all end in a suppression teaches people to suppress. What
+changes a verdict is a shader-side rule that stops being shared at all.
 
 **Generated constants have no re-export hops.** Import from
 `<base>.consts.generated.ts`, or from the package a `consts-out`/`js-export-out`
@@ -32,12 +34,12 @@ compiles and puts tens of KB in the always-loaded chunk
 - **A number the user reads** (LD's r²/D' in a tooltip, a coverage depth) and **a
   semantic decision** (chevrons per line, glyph kind, whether a locus is
   polymorphic, that a degenerate span is a *point*) must agree.
-- **Where a mark lands, to the pixel**, is best effort per backend
-  (`CANVAS_SEAM_PX`, the variant matrix's `f2` overdraw, synteny's sub-pixel
-  stroke are AA compensation ARCHITECTURE.md says not to port). Don't add an export
-  to close a sub-pixel gap or write a test that pins one. A hand-written twin
-  drifts *semantically*, and you cannot tell in advance which drift will be
-  cosmetic.
+- **Where a mark lands, to the pixel**, is best effort per backend; the AA
+  compensations are intentional divergences
+  ([GPU_BACKENDS.md](GPU_BACKENDS.md) §"Keeping the two backends in parity").
+  Don't add an export to close a sub-pixel gap or write a test that pins one. A
+  hand-written twin drifts *semantically*, and you cannot tell in advance which
+  drift will be cosmetic.
 
 ## Adding a function to the export set
 
@@ -56,17 +58,14 @@ compiles and puts tens of KB in the always-loaded chunk
 4. Wire the consumer, keeping the hand-written twin **as a test fixture**.
 5. Sweep generated-vs-retired over the inputs where it historically broke, then
    delete the fixture (copy `alphaShaderParity.test.ts`). If the sweep fails,
-   **decide which side is right first**: `scoreToYParity` failed because the twin
-   was wrong, not the generator.
+   **decide which side is right first**: the twin may be the wrong one.
 6. A consumer outside the `js-export-out` package needs an entry in that package's
    hand-maintained `exports` map (`generateExports.mjs` is `@jbrowse/core`-only).
 
-
 **A `.slang` that fails to compile leaves its old artifacts in place**, and `tsc`
-and jest pass against them; `gen:shaders --check`, which `pnpm verify` runs,
-names the shader. The likeliest cause: a pass naming a packed color uniform must
-`import colorPack;` itself, since a plain `import` does not re-export (an
-`__exported import` does).
+and jest pass against them; `gen:shaders --check` names the shader. The likeliest
+cause: a pass naming a packed color uniform must `import colorPack;` itself,
+since a plain `import` does not re-export (an `__exported import` does).
 
 ## Bumping `SLANG_VERSION`
 
@@ -96,8 +95,8 @@ in `wgslToJs.ts`, not the shader, with these exceptions and traps:
 
 - **A parity test can pass against the very form it rejects.** `_mix` is WGSL's
   `a*(1-t) + b*t` because only that returns `b` exactly at `t == 1`; a test at
-  `(0.1, 0.3, 1)` passes both forms. When a test's point is that two formulations
-  differ, *run* the rejected one and watch the test fail.
+  `(0.1, 0.3, 1)` passes both forms. Run the rejected form and watch the test
+  fail.
 - **Slang DCEs anything no entry point reaches.** For a module the wrapper is the
   only way to get WGSL; for a shader with entry points an exported function must be
   called from the draw path.
@@ -161,8 +160,9 @@ diverges from the other two backends.
 
 Both caps take their quad from `capsule.slang`'s `segmentCorner`, which hangs each
 corner off its own endpoint and hands the fragment its distance along from each
-end. A segment with one end on screen and the other 1e7 px away is ordinary, and
-built from its centre its visible corners came out pixels off (ADR-067).
+end. A segment with one end on screen and the other 1e7 px away is ordinary; built
+from the centre its visible corners come out pixels off
+([ADR-067](../architecture-decision-records/adr-067-synteny-dotplot-window-relative-float32.md)).
 
 ### The pad is the other half of every coverage
 
@@ -174,10 +174,10 @@ rasterizer cuts it to 0, giving a hard 50%-alpha edge and a line narrower than
 
 ### Unifying a constant strands its mirrors
 
-**Unifying a constant strands its mirrors.** A test that models a shader's
-   constant copies the value, and a copy checked against itself agrees with itself.
-   Grep for the **old literal** (mirrors spell the value, never the symbol), then
-   make the survivor importable (`//! export-consts`).
+A test that models a shader's constant copies the value, and a copy checked
+against itself agrees with itself. Grep for the **old literal** (mirrors spell the
+value, never the symbol), then make the survivor importable
+(`//! export-consts`).
 
 ### Adding a shape, or a consumer
 
@@ -204,10 +204,10 @@ public float4 linkedReadColor[LINKED_READ_COLOR_SLOTS];  // correct
 public uint   linkedReadColor[LINKED_READ_COLOR_SLOTS];  // segfaults slangc, for WGSL only
 ```
 
-**slangc v2026.5.2 cannot compile a scalar array in a uniform block for WGSL, and
-does not say so.** It exits on signal 11 with no diagnostic. The trigger is passing
-an element to a **cross-module function** (`unpackRGBA(u.linkedReadColor[i])`);
-hoisting the element into a local does not help, `[ForceInline]` on the callee
-emits invalid WGSL, and **GLSL compiles the same source fine**, so everything is
-green until the WebGPU backend.
+**slangc v2026.5.2 (`SLANG_VERSION`) cannot compile a scalar array in a uniform
+block for WGSL, and does not say so.** It exits on signal 11 with no diagnostic.
+The trigger is passing an element to a **cross-module function**
+(`unpackRGBA(u.linkedReadColor[i])`); hoisting the element into a local does not
+help, `[ForceInline]` on the callee emits invalid WGSL, and **GLSL compiles the
+same source fine**, so everything is green until the WebGPU backend.
 

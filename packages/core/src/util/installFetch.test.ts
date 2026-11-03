@@ -364,7 +364,7 @@ test('a failed run retires its status slot', async () => {
 })
 
 // The freshness gate, and the reload that has to override it. This is
-// ARCHITECTURE.md's law — "a gate on a freshness signal must also be invalidated
+// FETCH_KEYS.md's law — "a gate on a freshness signal must also be invalidated
 // by `reload()`" — held by the skeleton rather than by each host, because every
 // layer that left it to the host shipped the dead Retry eventually: arc for the
 // global family, and the multi-way synteny display's two dependent fetches,

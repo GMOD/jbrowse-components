@@ -1,74 +1,73 @@
 ---
 name: variants-display
-description: How the variant display (LinearVariantDisplay) draws records and genotypes: what it retired, cells, the one composition rule, the legend, mixed ploidy, layouts, bands and connectors. Read before touching plugins/variants rendering.
+description: How does the variant display (LinearVariantDisplay) draw records and genotypes? Retired spellings, cells, the one composition rule, the legend, mixed ploidy, layouts, bands and connectors. Read before touching plugins/variants rendering.
 kind: spec
 ---
 
 # The variant display
 
-`plugins/variants/src/CLAUDE.md` points here. Bare paths
-below are relative to `plugins/variants/src/`.
+`plugins/variants/src/CLAUDE.md` points here. Bare paths below are relative to
+`plugins/variants/src/`. Config spellings are
+[CONFIG_SPELLINGS.md](CONFIG_SPELLINGS.md)'s; the grammar objects
+(`encoding.color`, `facet`, `rows`, `filter`) are
+[GRAMMAR_OF_GRAPHICS.md](GRAMMAR_OF_GRAPHICS.md)'s and
+[MARK_ENCODING.md](MARK_ENCODING.md)'s. This doc keeps what is specific to
+variants.
 
 ## One display
 
-`LinearVariantDisplay` (`LinearVariantDisplay/`) is a VariantTrack's one
-linear display: its records band over one genotype row per sample (ADR-255).
-What it replaced is declared in `LinearVariantDisplay/retired.ts` (ADR-168):
+`LinearVariantDisplay` (`LinearVariantDisplay/`) is a VariantTrack's one linear
+display: its records band over one genotype row per sample (ADR-255). What it
+replaced is declared in `LinearVariantDisplay/retired.ts` (ADR-168):
 
-- **`retiredTypes`**: `LinearMultiSampleVariantDisplay`, the betas' name, a
-  `@deprecated` alias while hosted configs write it; v4's
-  `MultiLinearVariantDisplay`; v4's `LinearVariantMatrixDisplay` in
-  `variantLayout: 'columns'`.
+- **`retiredTypes`**: `LinearMultiSampleVariantDisplay` (a `@deprecated` alias
+  while hosted configs write it), v4's `MultiLinearVariantDisplay`, and v4's
+  `LinearVariantMatrixDisplay` in `variantLayout: 'columns'`.
 - **`retiredConfigSpellings`**: the v4 multi-sample spellings, and v4's
-  feature-display `LinearVariantDisplay` keys run through LinearBasicDisplay's
-  own lifts (`basicRetired`) and re-rooted under `records` (`underRecords`):
-  `renderer.*`, `featureHeight`, `showLabels`, `showDescriptions`,
-  `mouseover`, `maxFeatureScreenDensity`, `color1`. v4's `maxHeight`
-  drops. The betas' top-level `displayMode`, `mark`, `labels`, `facet` and
-  `tooltip.field` are not lifted; `facet` and `tooltip` are this display's
-  own names for the sample facet and the hover toggle.
+  feature-display keys run through LinearBasicDisplay's own lifts
+  (`basicRetired`) and re-rooted under `records` (`underRecords`):
+  `renderer.*`, `featureHeight`, `showLabels`, `showDescriptions`, `mouseover`,
+  `maxFeatureScreenDensity`, `color1`. v4's `maxHeight` drops. The betas'
+  top-level `displayMode`, `mark`, `labels`, `facet` and `tooltip.field` are
+  not lifted; `facet` and `tooltip` are this display's own names for the sample
+  facet and the hover toggle.
 - **`retiredState`**: the v4 row arrangement, `jexlFilters`,
-  `renderingModeSetting`, and v4 `LinearVariantDisplay`'s
-  `jexlFiltersSetting`.
+  `renderingModeSetting`, and v4 `LinearVariantDisplay`'s `jexlFiltersSetting`.
 
-**The record menu is plugin-features's.** A right-click resolves a record
-(off the band or a cell) and `recordMenuHit` places it in the displayed
-region holding its first base; `featureRecordMenuItems` builds the feature
-track's zoom to, get sequence and copy rows from it, which read
-`fetchFullFeature` (the adapter's record) and `loadedRegions`. The display's
-own open-details row stays first, since a cell's opens on its sample card.
-`sortReadsMenu.ts` sorts the view's pileups off the clicked record's REF and
-ALT, with no fetch.
+**The record menu is plugin-features's.** A right-click resolves a record (off
+the band or a cell) and `recordMenuHit` places it in the displayed region
+holding its first base; `featureRecordMenuItems` builds the zoom to, get
+sequence and copy rows from it, reading `fetchFullFeature` and `loadedRegions`.
+The display's own open-details row stays first, since a cell's opens on its
+sample card. `sortReadsMenu.ts` sorts the view's pileups off the clicked
+record's REF and ALT, with no fetch.
 
-**Highlights and overlays read the band.** `featureHighlights` (a search
-hit's `setSearchHighlight`, the Highlight row) resolve over the band's
-records and light as `pinnedInk` (`recordsHighlightViews.ts`). Every record
-box (hover, the record a menu is open on, the session's selection, a pin) is
-plugin-features's `featureHighlightInk` over the band (`recordsInkHost`), so
-a record lights over its glyph and labels exactly as a feature track's
-feature does, and its tooltip drops what the labels say (`drawnLabelTexts`).
-`searchFeatureByID` answers the breakpoint split view's overlay off the
-laid-out band, its top shifted by
-`scrollTop - recordsScrollTop` since the overlay subtracts the display's
+**Highlights and overlays read the band.** `featureHighlights` (a search hit's
+`setSearchHighlight`, the Highlight row) resolve over the band's records and
+light as `pinnedInk` (`recordsHighlightViews.ts`). Every record box (hover, the
+record a menu is open on, the session's selection, a pin) is plugin-features's
+`featureHighlightInk` over the band (`recordsInkHost`), and its tooltip drops
+what the labels say (`drawnLabelTexts`). `searchFeatureByID` answers the
+breakpoint split view's overlay off the laid-out band, its top shifted by
+`scrollTop - recordsScrollTop`, since the overlay subtracts the display's
 `scrollTop` and the band scrolls only with no rows.
 
 ## Genotypes
 
-- **Codes, never strings**, and Uint32 — Uint16 capped the dictionary at 65535,
-  past which a genotype interned to 0 = "no call".
+The mechanism is [MULTI_SAMPLE_VARIANTS.md](MULTI_SAMPLE_VARIANTS.md).
+
+- **Codes, never strings**, and Uint32.
 - **Nothing on the per-cell path is keyed by sample NAME.** Index by the column
   the callback already holds.
-- **A code's column is the canonical `sampleNames` position, never
-  `processGenotypes`' `sampleIdx`.** They differ only for
-  `SplitVcfTabixAdapter`, and the disagreement files every genotype against a
-  neighbouring sample in silence. `buildHeaderRemap` translates;
-  `phaseSetReader` needs it too.
+- **A code's column is the canonical `sampleNames` position**, never
+  `processGenotypes`' `sampleIdx` (`buildHeaderRemap` translates;
+  `phaseSetReader` needs it too).
 - **PS reads through `processFormatFields`, not `samples`.**
 - Maps crossing RPC key by `sampleName`, never `name` (HP-suffixed when phased).
-- **`featureInfo` records every genotype, not what got painted** — the cell
-  loop ships the interned per-feature array by reference. With reference
-  cells off, the default, a painted-cells copy makes every hom-ref row
-  decode as MISSING to the anchored sort.
+- **`featureInfo` records every genotype, not what got painted** — the cell loop
+  ships the interned per-feature array by reference. With reference cells off,
+  the default, a painted-cells copy makes every hom-ref row decode as MISSING to
+  the anchored sort.
 - **`NaN` is the only missing marker.** A value-scale sentinel made samples
   cluster by missingness.
 - The `"<sampleName> HP<n>"` convention lives in `getSources.ts` alone:
@@ -85,25 +84,24 @@ laid-out band, its top shifted by
   skipped.
 - Cell arrays stay in the **worker's** row numbering; the hit test converts its
   one query row through `rowUnmap`.
-- **`encoding.color` is the single cell-coloring axis** (`shared/cellHue.ts`).
-  A preset (`impact`, `phaseSet`) and a record field (`svType` among them) are
+- **`encoding.color` is the single cell-coloring axis** (`shared/cellHue.ts`). A
+  preset (`impact`, `phaseSet`) and a record field (`svType` among them) are
   both fields of it, and a record with no value keeps the alt hue. Color never
-  depends on zoom. A purple marker made a variant read as an insertion only at
+  depends on zoom: a purple marker made a variant read as an insertion only at
   the zooms where the marker outgrew its cell.
 - **An insertion draws at its reference span**, as every record does, and the
   hover's "Insertion" row names its bp. A per-cell marker sized by the inserted
-  bp (`showInsertionGlyphs`, cut 2026-10-23) put a zoom-dependent pixel width on
-  the span channel and repeated it down every carrier row as a wall over
-  reference the haplotypes keep; the hosted HPRC launch had turned it off.
+  bp was declined: it put a zoom-dependent pixel width on the span channel and
+  repeated it down every carrier row as a wall over reference the haplotypes
+  keep.
 - **A cell's alpha does depend on zoom, where records share pixels**
-  (`LinearVariantDisplay/densityFade.ts`). At genomic positions each
-  record shorter than the 2 px a cell draws is drawn at `1 - 0.1 ** (1 / n)`,
-  `n` the most such records over any pixel it covers, so a row's pixel reaches
-  90% opacity when every record under it is alt and less when a share are. A
-  record longer than a cell covers its pixels alone and draws at full strength:
-  counted with the SNPs it spans, an 86 kb HLA-DRB deletion faded out along its
-  whole length. Without it every pixel of a 2 Mb HPRC window held some alt
-  record and the rows drew a solid wall; with it the haplotype blocks show.
+  (`LinearVariantDisplay/densityFade.ts`). At genomic positions each record
+  shorter than the 2 px a cell draws is drawn at `1 - 0.1 ** (1 / n)`, `n` the
+  most such records over any pixel it covers, so a row's pixel reaches 90%
+  opacity when every record under it is alt and less when a share are. A record
+  longer than a cell covers its pixels alone and draws at full strength:
+  counted with the SNPs it spans, a long deletion faded out along its whole
+  length.
 
 ## One composition rule: `fill = shade(hue(variant, cell), dosage)`
 
@@ -111,23 +109,22 @@ laid-out band, its top shifted by
 Each channel carries one variable through one scale.
 
 - **`hue` is the mode's per-variant nominal** — the constant alt hue by default,
-  an impact tier, an SV class, a phase-set hue, a plain CSS color, or, in
-  phased mode, the per-haplotype allele identity. Which alt a sample carries is
-  not on it in allele-count mode; the matrix's per-alt columns and phased mode
-  carry that.
+  an impact tier, an SV class, a phase-set hue, a plain CSS color, or, in phased
+  mode, the per-haplotype allele identity. Which alt a sample carries is not on
+  it in allele-count mode; the matrix's per-alt columns and phased mode carry
+  that.
 - **`dosage` is over CALLED alleles**, so `1/2` is a hom and `0/2` a het, and
   `./1` is a full dose on the one haplotype that was called. A wholly uncalled
   genotype is the no-call category, never a blend into it.
 - **One ramp for every mode**, in OKLCH: a lower dosage lifts the hue's
-  lightness by a fixed step, holding hue and chroma, below a pale ceiling.
-  Full dosage is the hue itself, which is also what makes a legend swatch and
-  a hom cell the same color. No setting turns it off: a flat hue would
-  need a lightness channel, which Vega-Lite lacks, and `opacity` would blend
-  a het into the reference grey.
-- **The step is the same for every hue.** An HSL lift
-  toward a ceiling moved the SV classes' hets by OKLab ΔE 0.08 (inversion
-  orange) to 0.31 (insertion purple), and raised the purple's chroma until
-  its het (`#ff0cff`) outshone its hom.
+  lightness by a fixed step, holding hue and chroma, below a pale ceiling. Full
+  dosage is the hue itself, which is also what makes a legend swatch and a hom
+  cell the same color. No setting turns it off: a flat hue would need a
+  lightness channel, which Vega-Lite lacks, and `opacity` would blend a het into
+  the reference grey.
+- **The step is the same for every hue.** An HSL lift toward a ceiling moved the
+  SV classes' hets by very different OKLab distances and raised the purple's
+  chroma until its het outshone its hom.
 - **The main thread paints the hue and the shade (ADR-203).** The worker reads
   what the hue needs off each variant (`cellHueOf`'s `read`: a field's value as
   text, or a `jexl:` callback's color) and ships it beside each cell's
@@ -136,9 +133,8 @@ Each channel carries one variable through one scale.
   is the byte, in the cells and the key's het swatch (`HET_DOSAGE`) alike. A
   phase-set hue is per cell and stays the worker's.
 - **A scale's domain has no gaps**: a record with no structural class files
-  under the SV key's `''`, which core's vocabulary names `SNV/indel`, and an
-  unannotated record is `UNANNOTATED_IMPACT`. Without those the mode was class
-  colors beside the default blue, i.e. two scales at once.
+  under the SV key's `''`, and an unannotated record is `UNANNOTATED_IMPACT`, so
+  a mode never draws class colors beside a second default.
 - **The absent-data colors are off every wheel.** The phase-set hue band is
   saturation/lightness the no-call yellow is not on, or a phase set paints a
   called haplotype the "missing" color.
@@ -148,18 +144,18 @@ Each channel carries one variable through one scale.
 
 ## The legend lists what was painted on screen
 
-`LinearVariantDisplay/variantLegend.ts` builds from the scale in use plus the absent-data
-categories present, and its swatches come from the same functions the cells do.
-The cell loop records, per variant, the `CELL_*` categories its cells painted
-(`featureCategories`, one bit each). `keyedVariants.ts` reads those, the color
-values and the SV classes off the variants whose span touches the view's
-settled window (ADR-093), since the view fetches wider than it shows:
+`LinearVariantDisplay/variantLegend.ts` builds from the scale in use plus the
+absent-data categories present, and its swatches come from the same functions
+the cells do. The cell loop records, per variant, the `CELL_*` categories its
+cells painted (`featureCategories`, one bit each). `keyedVariants.ts` reads
+those, the color values and the SV classes off the variants whose span touches
+the view's settled window (ADR-093), since the view fetches wider than it shows:
 `hasSecondaryAlt`, `hasAltWithoutPhaseSet`, `hasUnphased` and `hasNoCall`, and
-`paintedDomain`, the values a variant on screen with an alt cell carried.
-"The site is multiallelic" is not the same claim as "a secondary-alt cell is
-on screen", and the legend makes the second one. The columns layout fetches
-only the visible span, and the tables their own regions, so both read every
-variant fetched.
+`paintedDomain`, the values a variant on screen with an alt cell carried. "The
+site is multiallelic" is not the same claim as "a secondary-alt cell is on
+screen", and the legend makes the second one. The columns layout fetches only
+the visible span, and the tables their own regions, so both read every variant
+fetched.
 
 ## Mixed ploidy: five consumers, one contract
 
@@ -173,134 +169,97 @@ should mix ploidies.** `readAltDosages` is the fifth and is ploidy-invariant.
 whatever its alleles, so a homozygous `1/1` or `0/0` fills every haplotype row
 black like `0/1`, and is missing to the phased matrix and the anchored sort.
 WhatsHap and HiPhase leave homozygous calls unphased, so on their output that is
-a large share of the cells (41% of the NA12878 WhatsHap demo's records in
-chr1:1-3Mb are `1/1`); reading their haplotypes off the alleles was proposed and
-declined (2026-09-28).
+a large share of the cells. Reading their haplotypes off the alleles was
+proposed and declined.
 
 ## The unphased matrix is one column per ALT, not one per site
 
 A dosage class made `0/1/1` and `0/0/1` identical and couldn't say which alt was
 carried. Each site contributes `ALT.length` columns, summed into `colOffsets` in
 a pre-pass so rows stay one pre-sized Float32Array; a biallelic site is one
-column and bit-identical to the old encoding. The anchored haplotype sort ranks
-by `altDosageByte`, the dosage the cells paint.
+column. The anchored haplotype sort ranks by `altDosageByte`, the dosage the
+cells paint.
 
 ## A split site sorts siblings first and clusters by allele
 
-`bcftools norm -m-` and vcfwave write a multiallelic site as one record per
-ALT, all spanning one reference interval.
+`bcftools norm -m-` and vcfwave write a multiallelic site as one record per ALT,
+all spanning one reference interval.
 
 - **The anchored sort** reads the clicked record, then its siblings
   (`sitesBySpan`, `anchorFirstRecords`), then the sites outward, each record
   apart. A walk outward record by record reached unrelated records before the
-  far siblings and scattered one inversion's carriers. A sort that valued the
-  site as one record mixed the carriers of an insertion and a deletion sharing
-  a span in sample mode, and dropped the clicked allele down its site.
+  far siblings and scattered one inversion's carriers; a sort that valued the
+  site as one record mixed the carriers of an insertion and a deletion sharing a
+  span in sample mode, and dropped the clicked allele down its site.
 - **Both matrices keep one column per record.** Whether two alleles at a site
-  are one event (the HPRC FLNA/EMD inversion's 64) or two (C4's deletion and
-  insertion) is a similarity call the matrix cannot make from the VCF. That
-  call belongs in the data build that writes the callset.
+  are one event or two is a similarity call the matrix cannot make from the VCF.
+  That call belongs in the data build that writes the callset.
 
 ## Settings
 
-- **Row order is not a fetch input** (ARCHITECTURE.md). The row _set_ is
-  (`sampleFilter`, sent **sorted**). **Nothing may wait on the refetch this
+- **Row order is not a fetch input**
+  ([FETCH_KEYS.md](FETCH_KEYS.md#row-order-is-not-a-fetch-input)). The row _set_
+  is (`sampleFilter`, sent **sorted**). **Nothing may wait on the refetch this
   removed** — the cluster tree did and silently drew nothing.
 - **`rpcProps()` must not read fetch-derived state** — `sampleFilter` reads
   `sourcesBase`, not `sources`.
 - **Feature filters are the `filter` config slot alone**
   (`@jbrowse/core/util/jexlFilters`): the dialog, a feature's filter actions and
   "Edit plot..." all write it, and "Clear all filters" returns it to what the
-  track's config declares. A runtime override once shadowed the slot, so a
-  filter written through `applyDisplaySettings` reported success and did
-  nothing.
-- **The tier is per layout, not per setting**: `genotypes.reference.show` is a fetch
-  input at genomic positions and inert in columns, which draw every reference
-  cell, so `rpcProps` sends it only in the first.
+  track's config declares. A runtime override would shadow the slot, so a filter
+  written through `applyDisplaySettings` would report success and do nothing.
+- **The tier is per layout, not per setting**: `genotypes.reference.show` is a
+  fetch input at genomic positions and inert in columns, which draw every
+  reference cell, so `rpcProps` sends it only in the first.
 - A drag-resized dimension goes on a config slot; the node outlives the display.
 
 ## The arrangement is `rows`, by row name
 
-**`rows` (`SampleRows`: `sample` is its one field, since the rows are the
-samples) holds the order, labels, tints, tree, provenance and focus, and
-`rows.color` the attribute the rows are tinted by.** `rows.colors` holds the
-tints set row by row. `rows.color` is display-kit's `RowColor`: a samplesTsv
-attribute whose values each take a palette color, or `name`, the default. It is
-all config, written by a drag, the arrangement dialog, "Sort rows by genotype here"
-and a clustering run, and every product writes them as session deltas (ADR-157).
-Every other channel resolves when the rows are read.
+`rows` (`VariantRows`: `rows.field` is `sample` or `haplotype`) holds the order,
+labels, tints, tree, provenance and focus, all config, written as session deltas
+(ADR-157). The stages that derive the rows from it (`discoveredRows`,
+`expandRows`, `editableSources`, `clusterableSources`, `bandedSources`), the row
+color getter (`resolvedRowColors`), the color key (`rowColorScales`) and the
+reset rules are [TREE_SIDEBAR.md](TREE_SIDEBAR.md)'s. What is specific here:
 
-**Names are at the mode's granularity** — a sample in allele-count mode, a
-haplotype (`<sample> HP1`, `HP2`, the name counting from 1 while the row's `HP`
-stays the 0-based allele index) in phased mode — and a row answers to its own
-name, then to its sample's, for an order, a label, a tint, the tree and the
-focus alike. So a config naming samples still arranges a phased track, and a
-`rows.field` switch keeps the arrangement (`refines: { haplotype: 'sample' }`
-on the rows' `writes`, ADR-257): a row ranks at the earlier of its own and its
-sample's entry, a sample at its first haplotype entry; a haplotype's own label
-shows exactly, else its sample's composes (`Mother HP1`); a sample-keyed tree
-forks over the haplotype rows at zero length, and a per-haplotype tree hides
-in sample mode with `finerTreeHint`. The answering is `rowParent` and
-`finerRows`, the hooks this display gives `TreeSidebarMixin`, read off each
-row's `sampleName` and `HP`, and a run writes names beside its tree,
-re-appending the rows a focus hides after the clade. A sample named as
-another's haplotype row (`X HP1` beside `X`) warns once per listing.
-
-**Named stages, named readers.** `sourcesBase` is the adapter's samples narrowed
-by `rowNarrowing` (`rows.filter` over the samplesTsv attributes, which arrive
-with the sample list, then `rows.kept`), the fetch key's input, so it reads no
-`samplePloidy`: a focus naming a haplotype keeps its sample there (`keptRows`
-with `entryAliasOf`, through `parseRowName`, since no haplotype row is there to
-read). The rest are `TreeSidebarMixin`'s over this display's hooks:
-`discoveredRows`, `expandRows` (`expandPhasedRows`), then `editableSources`,
-ordered, relabelled and tinted with no focus, palette or band — the
-dialog's list and the sort's — `clusterableSources`, narrowed by the same
-`rowNarrowing`,
-which both clustering paths send, and `bandedSources`, stacked in the `facet`'s
-bands. `sources` adds the palette.
-
-**Phased rows are the ploidy `samplePloidy` reports plus any haplotype the order
-names.** Until the ploidy lands, the named haplotypes stand in for it, so an
-arranged track keeps its haplotype rows and its tree across the refetch a
-settings change triggers rather than folding back to samples. `samplePloidy`
-keeps its identity while each fetch reports the same ploidies, so a region
-arrival re-derives no row.
-
-**A row's color is its resolved `rowColor`**, the label bar tree-sidebar's
-`RowLabelsOverlay` and `SvgRowLabels` draw — the cells are colored by genotype,
-so `rowColorPaintsMarks` is false and the bar is the only place it shows. The
-tooltip swatch reads it too, and tree-sidebar's row color key
-(`rowColorScales`) keys it by an attribute, after the genotype key, a pinned
-row by its label; by `name` the labels are the key. A `samplesTsv` `color` column
-is the row's own `color`, which `resolvedRowColors` falls back to.
-
-**A pin in `rows.colors` beats an attribute in `rows.color.field`, which beats
-a `samplesTsv` `color` column**: a channel bound to a variable beats a per-row
-constant, and a color pinned on the row by name beats both. `TreeSidebarMixin` deals
-the attribute's values first seen first over the rows in source order, so a focus
-or the phased expansion recolors nothing, and `rowColorPaintsMarks` is false,
-since the cells paint by genotype. Its `setRowColorChoice` is the mixin's, then a
-warning for a field no sample carries: a pick starts from the colors the current object or the
-config gives that choice (`startingRowColor`), and '' is None,
-`{ field: 'name' }`. The menu's Samples group offers None and the attributes
-and ticks the dialog's choice (`rowColorChoice`), Each row included; the dialog
-picks a value's color under an attribute, and pins a sample's under any
-choice, None included, which a pin never changes (ADR-209). A reset returns `rows.colors` with the arrangement and
-`rows.color` by tree-sidebar's `rowColorResetTarget`,
-which keeps the choice, so a Color by survives it and a mode switch. The
-missing-attribute warning reads the mixin's `rowColorField`.
-The flip ADR-160 names puts the row's own color ahead of the palette here too.
-
-**The `facet` bands win over a cluster tree** (tree-sidebar's "A tree per
-band"): `rowBanding` is the `facet`, each band draws the clade of exactly its
-rows, and a run under bands clusters each band apart into one forest. A run
-never writes the `facet` slot, so a session spec's own `facet` survives it.
+- **Names are at the mode's granularity** — a sample in allele-count mode, a
+  haplotype (`<sample> HP1`, `HP2`, the name counting from 1 while the row's
+  `HP` stays the 0-based allele index) in phased mode — and a row answers to its
+  own name, then to its sample's, for an order, a label, a tint, the tree and
+  the focus alike. So a config naming samples still arranges a phased track, and
+  a `rows.field` switch keeps the arrangement (`refines: { haplotype: 'sample'
+  }` on the rows' `writes`, ADR-257): a row ranks at the earlier of its own and
+  its sample's entry, a sample at its first haplotype entry; a haplotype's own
+  label shows exactly, else its sample's composes (`Mother HP1`); a sample-keyed
+  tree forks over the haplotype rows at zero length, and a per-haplotype tree
+  hides in sample mode with `finerTreeHint`. The hooks this display gives the
+  mixin are `rowParent` and `finerRows`, read off each row's `sampleName` and
+  `HP`; a run writes names beside its tree, re-appending the rows a focus hides
+  after the clade. A sample named as another's haplotype row (`X HP1` beside
+  `X`) warns once per listing.
+- **`sourcesBase` is the fetch key's input**: the adapter's samples narrowed by
+  `rowNarrowing` (`rows.filter` over the samplesTsv attributes, then
+  `rows.kept`). It reads no `samplePloidy`, so a focus naming a haplotype keeps
+  its sample there (`keptRows` with `entryAliasOf`, through `parseRowName`).
+- **Phased rows are the ploidy `samplePloidy` reports plus any haplotype the
+  order names.** Until the ploidy lands, the named haplotypes stand in for it, so
+  an arranged track keeps its haplotype rows and tree across the refetch a
+  settings change triggers. `samplePloidy` keeps its identity while each fetch
+  reports the same ploidies, so a region arrival re-derives no row.
+- **A row's color shows on the label bar only**: the cells are colored by
+  genotype, so `rowColorPaintsMarks` is false. The tooltip swatch reads it too,
+  and the row color key follows the genotype key. A `samplesTsv` `color` column
+  is the row's own `color`.
+- **The `facet` bands win over a cluster tree**
+  ([A tree per band](TREE_SIDEBAR.md#a-tree-per-band)): `rowBanding` is the
+  `facet`, and a run under bands clusters each band apart into one forest. A run
+  never writes the `facet` slot, so a session spec's own `facet` survives it.
 
 ## One display, two layouts: `variantLayout`
 
 The x position is a setting of the one display, `'genomic'` or `'columns'`, the
-choice the LD display makes under the same slot, not a second display type. The
-worker ships one payload shape for both
+choice the LD display makes under the same slot. The worker ships one payload
+shape for both
 ([ADR-210](../architecture-decision-records/adr-210-both-variant-layouts-ship-one-cell-payload.md)):
 at genomic positions a `VariantCellData` per displayed region, in columns one
 under 0 for the whole window, laid out by feature **index** at equal widths,
@@ -314,26 +273,27 @@ model**, so `startRenderingBackend` tags which backend is attached
 draws; across a switch the old backend is sent an empty map until the other
 chrome's backend arrives.
 
-Columns are for genotype PATTERN, not spans: the records band and the reference toggle are genomic-position features and answer off in columns.
+Columns are for genotype PATTERN, not spans: the records band and the reference
+toggle are genomic-position features and answer off in columns.
 
 **Each display names the slot's checkbox for its own picture**, so the two check
 for opposite values: "Layout → Genotype matrix" here (columns), "Size cells by
-genomic distance" in LD's Layout (genomic). One shared label read wrong on one of them,
-and was reverted on 2026-09-30.
+genomic distance" in LD's Layout (genomic). One shared label read wrong on one
+of them.
 
 ## Bands above the rows
 
-`variantTopBands.ts` folds the bands, the records band (genomic positions),
-its chip strip and the connector zone (columns), through `stackBands`, and
-`topBands` is the whole `BandStack`: **the layout reserving a strip, the
-painter filling it and the pointer dispatching on it read that one fold**
+`variantTopBands.ts` folds the bands, the records band (genomic positions), its
+chip strip and the connector zone (columns), through `stackBands`, and
+`topBands` is the whole `BandStack`: **the layout reserving a strip, the painter
+filling it and the pointer dispatching on it read that one fold**
 (`reserved.records`, `top.chips`, `bandAt`).
 
-- `rowsHeaderHeight` is `topBands.bottom`; `rowsTopOffset` adds the focus
-  chip's line and is where rows begin.
-- **The records band and the chips add to the track; the connectors come out
-  of the rows' slot.** `addedHeight` is the first two, which the model's
-  `height` adds to the slot.
+- `rowsHeaderHeight` is `topBands.bottom`; `rowsTopOffset` adds the focus chip's
+  line and is where rows begin.
+- **The records band and the chips add to the track; the connectors come out of
+  the rows' slot.** `addedHeight` is the first two, which the model's `height`
+  adds to the slot.
 - **A band a layout cannot paint answers 0 there** (`connectorsHeight` at
   genomic positions), whatever the config says.
 - A drag-resized height goes on a config slot, clamped via `clampBandHeight`
@@ -347,17 +307,15 @@ painter filling it and the pointer dispatching on it read that one fold**
   and alignments stacks, and the `connectors` band over the variant columns or
   the LD triangle (`connectorsBandStack`) — bind as one stack
   (`boundStackedBands`, top-down) and drag to the room the others leave
-  (`bandDragBounds`), so a band at its ceiling still leaves the plot its
-  floor.
+  (`bandDragBounds`), so a band at its ceiling still leaves the plot its floor.
 
 **The container the rows are offset into is 0x0**, everything in it being
 absolutely positioned. So it is the right parent for a child placed by
-`left`/`top` (the canvas, the hover box, the glyph overlay) and the wrong one
-for a child placed by `right` — `ScrollChrome` mounted in there put the thumb a
-track width off the display's LEFT edge, where `contain: strict` clipped it, and
-gave the edge fade zero width. Anything anchored to the right edge, or that
-applies `rowsTopOffset` itself, goes on the display's own box, where
-`RowsPanel` mounts the scrollbar and the row labels.
+`left`/`top` (the canvas, the hover box, the glyph overlay) and the wrong one for
+a child placed by `right`: `ScrollChrome` mounted there put the thumb a track
+width off the display's LEFT edge, where `contain: strict` clipped it. Anything
+anchored to the right edge, or that applies `rowsTopOffset` itself, goes on the
+display's own box, where `RowsPanel` mounts the scrollbar and the row labels.
 
 **The records band is plugin-features's pipeline, not a painter of ours**
 (ADR-254, amending ADR-250). `buildRecordsRenderData` rebuilds each
@@ -374,148 +332,140 @@ render data, the hosted feature band and the display hooks it decides
 scroll hooks, `densityGateActive`), composed in order as views factories, so
 a `recordsOnly` choice in the model belongs there.
 
-- **On by default, every record.** `records.show` defaults to `true`
-  (ADR-254's third amendment), and the band draws every record the filter
-  admits, over rows as without (its fifth). `VariantFeatureInfo.svType` is
-  the record's `svClassOf` class, set in the worker: it colors and keys the
-  record, and an SV paints after the small records so it lies over them. The
-  worker keeps a sample-less VCF's sites at genomic positions only
-  (`keepSampleLessSites`), since a site test reads called alleles.
-- **Hiding either band is a chip** (`BandChips`, a strip of its own under
-  the band, `BAND_CHIPS_HEIGHT` in `variantTopBands.ts`, since the rows' tree,
-  facet strip and labels draw over the rows' left edge):
-  `Records ×` and `Genotypes ×` while both draw, `Show records` or `Show
-  genotypes` for the one hidden, beside the hidden-records count. With
-  `genotypes.show` off on a VCF with samples (`drawsGenotypeRows` false) the rows
-  take 0 px and the track is the band as it draws over rows plus the chips'
-  strip (`BAND_CHIPS_HEIGHT`), the slot `height` kept for the rows' return;
-  the band can't hide then (`showRecords`). The worker reads no genotype
-  (an empty `sampleFilter`), so no record states carriers. The key sits at
-  the top of the display, beside a track label, over the band.
-- **No samples, or one, makes the band the display** (`recordsOnly`: a
-  sample listing that landed empty, or one sample with `genotypes.show`
-  unset; ADR-254's eighth amendment). The rows take 0 px, the band is
-  `height`, and `HeightModeMixin` sizes it as it sizes a feature track
-  (`heightMode` fit/fixed/grow, `growMaxHeight`; `growTargetHeight` is the
-  `full` stack on screen). It opens at that stack, once: the first layout
-  with a record on screen holds `min(growTargetHeight, 200)` in the
-  `openingHeight` volatile (`settleRecordsOpeningHeight`), which
-  `configuredHeight` reads while `recordsOnly` and no `height` is written,
-  unless `grow` or a ring's host sizes it. Nothing is written, so viewing a
-  track edits no session; `height` has no default, so a written 200 holds.
-  After that a pan never moves it (ADR-255's amendment). Before the listing lands it is not records-only, so
-  a sampled VCF never flashes the records-only height. The records
-  take the one color rule below, and no genotype is keyed unless
-  `encoding.color` is set; the key sits at the top; the seam handle goes, the track's own handle
-  resizing. They letter as a feature track does: `normal` size, the
-  display's `records.labels` fields, the description on its own line under
-  the name. What `fixed` or a capped `grow` cannot show scrolls: the scroll
-  hooks point at the band's drawn stack, the band paints and picks offset by
-  `recordsScrollTop`, its div takes `usePanelVirtualScroll` and the
-  scrollbar. The allele-count filters (MAF, missingness) leave the menu, and
-  Genotype rows and Feature height (with Track sizing) show at genomic
-  positions only.
+- **On by default, every record.** `records.show` defaults to `true` (ADR-254's
+  third amendment), and the band draws every record the filter admits, over rows
+  as without (its fifth). `VariantFeatureInfo.svType` is the record's
+  `svClassOf` class, set in the worker: it colors and keys the record, and an SV
+  paints after the small records so it lies over them. The worker keeps a
+  sample-less VCF's sites at genomic positions only (`keepSampleLessSites`),
+  since a site test reads called alleles.
+- **Hiding either band is a chip** (`BandChips`, a strip of its own under the
+  band, `BAND_CHIPS_HEIGHT`, since the rows' tree, facet strip and labels draw
+  over the rows' left edge): `Records ×` and `Genotypes ×` while both draw,
+  `Show records` or `Show genotypes` for the one hidden, beside the
+  hidden-records count. With `genotypes.show` off on a VCF with samples
+  (`drawsGenotypeRows` false) the rows take 0 px and the track is the band plus
+  the chips' strip, the slot `height` kept for the rows' return; the band can't
+  hide then (`showRecords`). The worker reads no genotype (an empty
+  `sampleFilter`), so no record states carriers. The key sits at the top of the
+  display, over the band.
+- **No samples, or one, makes the band the display** (`recordsOnly`: a sample
+  listing that landed empty, or one sample with `genotypes.show` unset; ADR-254's
+  eighth amendment). The rows take 0 px, the band is `height`, and
+  `HeightModeMixin` sizes it as it sizes a feature track (`heightMode`
+  fit/fixed/grow, `growMaxHeight`; `growTargetHeight` is the `full` stack on
+  screen). It opens at that stack, once: the first layout with a record on
+  screen holds `min(growTargetHeight, 200)` in the `openingHeight` volatile
+  (`settleRecordsOpeningHeight`), which `configuredHeight` reads while
+  `recordsOnly` and no `height` is written, unless `grow` or a ring's host sizes
+  it. Nothing is written, so viewing a track edits no session; `height` has no
+  default, so a written 200 holds. After that a pan never moves it (ADR-255's
+  amendment). Before the listing lands it is not records-only, so a sampled VCF
+  never flashes the records-only height. The records take the one color rule
+  below, with no genotype keyed unless `encoding.color` is set, and letter as a
+  feature track does (`normal` size, the `records.labels` fields, the
+  description on its own line). What `fixed` or a capped `grow` cannot show
+  scrolls: the scroll hooks point at the band's drawn stack, the band paints and
+  picks offset by `recordsScrollTop`, its div takes `usePanelVirtualScroll` and
+  the scrollbar. The allele-count filters (MAF, missingness) leave the menu.
 - **The record settings are a feature track's, under `records`** (ADR-254's
-  sub-slice B amendment): `displayMode`, `mark`, `facet` (plugin-features's
-  and display-kit's own sub-schemas) and `tooltip.field`. An unset
-  `displayMode` resolves in one place, `recordsDisplayMode`: `compact` over
-  rows, `normal` with none. `records.facet` is the record sections, through
-  the hosted ladder's `facet` and `layoutInputs.hiddenGroupKeys`, with
-  `RecordsSectionChips` over the band and `GroupLabelBoxes` in the export;
-  the display's top-level `facet` stays the sample facet. A facet field and
-  a non-default tooltip or label field are read in the worker
-  (`recordFields` in `rpcProps`, `shared/recordFields.ts`) onto
-  `VariantFeatureInfo.groupKey`, `.tooltip`, `.labelName` and
-  `.labelDescription`, since the payload carries no INFO; the band's
-  synthetic record carries them as `recordGroup`, `recordTooltip` and
-  `recordLabelName`/`recordLabelDescription` (`labelsReadByWorker`). A
-  default tooltip or label reads nothing extra: over the synthetic record it
-  reads the name or description. A label field is read whether it shows or
-  not, so its checkbox redraws rather than refetches. `tooltip.show` stays the display's one toggle for both bands.
-- **Menus follow the band.** With no rows: Feature height (display mode,
-  then Track sizing), Names and Descriptions in Show, Group by → Field...
-  (`RecordsFacetFieldDialog`), each built from plugin-features's own menu
-  builders (`featureHeightMenuItem`, `labelCheckboxItems`). Over rows the
-  band has no height menu: its seam handle sizes it and the fit ladder
-  shrinks what does not fit, so Row height is the one height row and
-  `records.displayMode` is config only. Group by stays the sample attributes.
-- **No rows gates on density, as a feature track does.** The display
-  composes `FeatureGateMixin` (from `@jbrowse/plugin-features/band`) and
-  overrides `densityGateActive` to act only while `recordsOnly` at genomic
-  positions, so over rows the byte gate alone guards the fetch. The budget is
+  sub-slice B amendment): `displayMode`, `mark`, `facet` (plugin-features's and
+  display-kit's own sub-schemas), `tooltip.field` and `labels`. An unset
+  `displayMode` resolves in one place, `recordsDisplayMode`: `compact` over rows,
+  `normal` with none. `records.facet` is the record sections, through the hosted
+  ladder's `facet` and `layoutInputs.hiddenGroupKeys`, with `RecordsSectionChips`
+  over the band and `GroupLabelBoxes` in the export; the display's top-level
+  `facet` stays the sample facet. A facet field and a non-default tooltip or
+  label field are read in the worker (`recordFields` in `rpcProps`,
+  `shared/recordFields.ts`) onto `VariantFeatureInfo.groupKey`, `.tooltip`,
+  `.labelName` and `.labelDescription`, since the payload carries no INFO; the
+  band's synthetic record carries them as `recordGroup`, `recordTooltip` and
+  `recordLabelName`/`recordLabelDescription` (`labelsReadByWorker`). A default
+  tooltip or label reads nothing extra: over the synthetic record it reads the
+  name or description. A label field is read whether it shows or not, so its
+  checkbox redraws rather than refetches. `tooltip.show` stays the display's one
+  toggle for both bands.
+- **Menus follow the band.** With no rows: Feature height, Names and
+  Descriptions in Show, Group by → Field... (`RecordsFacetFieldDialog`), built
+  from plugin-features's menu builders (`featureHeightMenuItem`,
+  `labelCheckboxItems`). Over rows the band has no height menu, since its seam
+  handle sizes it and the fit ladder shrinks what does not fit: Row height is the
+  one height row, `records.displayMode` is config only, and Group by stays the
+  sample attributes.
+- **No rows gates on density, as a feature track does.** The display composes
+  `FeatureGateMixin` (from `@jbrowse/plugin-features/band`) and overrides
+  `densityGateActive` to act only while `recordsOnly` at genomic positions, so
+  over rows the byte gate alone guards the fetch. The budget is
   `records.maxFeatureScreenDensity` (1 record/px, the mixin's
   `featureGateConfigSchemaFields`, read through the overridable
-  `configuredMaxFeatureScreenDensity`). The worker counts each region's
-  admitted records after the filter (`CellDataResult.recordCounts`, in
-  `regions` order) and, sent a budget, refuses past it before building cells
-  (`RecordsTooDenseResult`, the counts still on it);
-  `fetchRegionsBatched`'s `onComplete` commits them through
-  `commitGateMeasurements` (`recordCountMeasurements`). The banner and Force
-  load are `RegionTooLargeMixin`'s. Unlike the feature RPC there is no
-  pre-fetch sample: a refused window still reads its records once per
-  settled viewport.
-- **Its height over rows holds, and is added.** `records.height` (no
-  default, so a value equal to the default still reads as written) once a
-  drag, `+N hidden` or a config writes it, else the `openingRecordsHeight`
-  volatile the first layout that draws a record holds
-  (`settleRecordsBandHeight`), but not one collapsed past the density
-  budget, whose one row a zoom in would leave the band at, whatever the records in view need, so a pan
-  never resizes the track (`recordsBandHeightOverRows`). Before that, the
-  `full` rung's packed height at compact feature size up to the default
-  (170). With the rows hidden (`rowsHidden`) the track's edge and its double
-  click resize the band. The model's `height` is the rows' slot
-  plus the band, so the rows keep their slot `height` under every
-  `heightMode` (`growMaxHeight` is Infinity over rows). In a circular
-  view's ring (`inRing`) the display is records-only: the ring samples one
-  canvas of its strip, the band's, so no row draws or is fetched there.
+  `configuredMaxFeatureScreenDensity`). The worker counts each region's admitted
+  records after the filter (`CellDataResult.recordCounts`, in `regions` order)
+  and, sent a budget, refuses past it before building cells
+  (`RecordsTooDenseResult`, the counts still on it); `fetchRegionsBatched`'s
+  `onComplete` commits them through `commitGateMeasurements`
+  (`recordCountMeasurements`). The banner and Force load are
+  `RegionTooLargeMixin`'s. There is no pre-fetch sample, so a refused window
+  still reads its records once per settled viewport.
+- **Its height over rows holds, and is added.** `records.height` (no default, so
+  a value equal to the default still reads as written) once a drag, `+N hidden`
+  or a config writes it, else the `openingRecordsHeight` volatile the first
+  layout that draws a record holds (`settleRecordsBandHeight`), but not one
+  collapsed past the density budget, whose one row a zoom in would leave the
+  band at, so a pan never resizes the track (`recordsBandHeightOverRows`).
+  Before that, the `full` rung's packed height at compact feature size up to the
+  default (170). With the rows hidden (`rowsHidden`) the track's edge and its
+  double click resize the band. The model's `height` is the rows' slot plus the
+  band, so the rows keep their slot `height` under every `heightMode`
+  (`growMaxHeight` is Infinity over rows). In a circular view's ring (`inRing`)
+  the display is records-only: the ring samples one canvas of its strip, the
+  band's, so no row draws or is fetched there.
 - **Past its height the record rows decimate, then hide.** The ladder drops
-  descriptions, thins bodies and decimates names, but over rows never scales
-  the boxes: `recordsLaidOutDataMap` leaves a record that still ends below
+  descriptions, thins bodies and decimates names, but over rows never scales the
+  boxes: `recordsLaidOutDataMap` leaves a record that still ends below
   `topBands.reserved.records` unplaced (`unplaceBelow`), so no painter, pick,
   highlight or `searchFeatureByID` sees it, and `BandChips`' `+N hidden` chip
   counts the ones on screen (`recordsHiddenCount`; a click is
   `showAllRecordRows`). Past `records.maxFeatureScreenDensity` on screen the
-  records pack in one row (`recordsPackMode` `collapsed`), where a feature
-  track refuses the window.
+  records pack in one row (`recordsPackMode` `collapsed`), where a feature track
+  refuses the window.
 - **Labels follow the records on screen**, as LinearBasicDisplay's do:
   `recordsOnScreenIds` (`featureIdsTouchingBlocks` over the payload's spans,
   `recordSpans`) is the density `labelVisibility` gates on (names past 0.2
   records/px, descriptions past 0.1), counted off the payload, not the render
   data, whose label text depends on it. **The fit and height measure them only
   with no rows** (`recordsMeasureIds`); over rows they measure the payload.
-  Labelling every record at a dense ClinVar window cost 260 ms of fit per
-  navigation; measuring 99k buffered records with no rows cost 64 s on a pan
-  onto an empty stretch. Unlabelled, sub-pixel records past 25 deep collapse
-  into one faded row (`planDensityCollapse`).
+  Labelling every record, or measuring every buffered record with rows hidden,
+  costs seconds on a dense window
+  ([the measurement](MULTI_SAMPLE_VARIANTS.md#the-records-band-against-linearvariantdisplay)).
+  Unlabelled, sub-pixel records past 25 deep collapse into one faded row
+  (`planDensityCollapse`).
 - **No second fetch to draw.** The payload already carries every record, so
-  `records.show` and `records.height` are render-tier settings. **A click does fetch**:
-  the payload has no INFO, so `fetchFullRecord` reads the record through
-  `GetBasicFeatureDetails`, as LinearBasicDisplay's `fetchFullFeature` does,
-  over its first base (a 5 Mb SV's span would be a 5 Mb read), the next click
-  aborting one in flight. It keeps the record's `samples`, which the widget's
-  sample grid shows, and a genotype cell's sample card (`withClickedSample`);
-  the click's own record opens where the adapter finds none. Dropping the
-  samples where rows draw them left the grid empty and was reverted (c24ee869f4);
-  persistence needs no trim, since the feature widget leaves out a feature over
-  2 MB of JSON.
+  `records.show` and `records.height` are render-tier settings. **A click does
+  fetch**: the payload has no INFO, so `fetchFullRecord` reads the record through
+  `GetBasicFeatureDetails`, as LinearBasicDisplay's `fetchFullFeature` does, over
+  its first base (a 5 Mb SV's span would be a 5 Mb read), the next click aborting
+  one in flight. It keeps the record's `samples`, which the widget's sample grid
+  shows, and a genotype cell's sample card (`withClickedSample`); the click's own
+  record opens where the adapter finds none. Dropping the samples where rows draw
+  them left the grid empty. Persistence needs no trim, since the feature widget
+  leaves out a feature over 2 MB of JSON.
 - **A record takes its SV class's color, otherwise `featureDefaultColor`**
   (`svClassColors`, the `svType` preset), with rows or without, while no
-  `encoding.color` is picked, the SV classes drawn keyed as "SV type" above
-  the genotypes; under a picked `encoding.color`, the cell hue at full dose
-  (`paintFeatureColors`). It crosses over as a per-feature jexl rather than
-  the BED `itemRgb` path, which drops alpha.
-- **One label line over rows**: ID, description, then the share of the shown samples
-  carrying it (`recordCarriers.ts`; the denominator is `recordCarrierSamples`,
-  one line to make it every sample in the payload), as `recordLabel`. The label
-  pipeline places a description under its name, so an inline description is
-  part of the name and the ladder drops it with the name.
+  `encoding.color` is picked, the SV classes drawn keyed as "SV type" above the
+  genotypes; under a picked `encoding.color`, the cell hue at full dose
+  (`paintFeatureColors`). It crosses over as a per-feature jexl rather than the
+  BED `itemRgb` path, which drops alpha.
+- **One label line over rows**: ID, description, then the share of the shown
+  samples carrying it (`recordCarriers.ts`; the denominator is
+  `recordCarrierSamples`, one line to make it every sample in the payload), as
+  `recordLabel`. The label pipeline places a description under its name, so an
+  inline description is part of the name and the ladder drops it with the name.
 - **What is still ours**: the record tooltip (`buildRecordHit`, sample fields
   empty so one `hoveredFeature` slot serves both bands), the gestures
-  (`RecordsBandOverlay`, a div over its `OverlayCanvas`) and the seam drag,
-  which writes `records.height` as the drawn height at the press plus the
-  pointer's whole travel (`RecordsBandOverlay`'s `BandSeamHandle`), past the
-  stack included, so the seam waits at the floor until the pointer comes back
-  to it.
+  (`RecordsBandOverlay`, a div over its `OverlayCanvas`) and the seam drag, which
+  writes `records.height` as the drawn height at the press plus the pointer's
+  whole travel (`RecordsBandOverlay`'s `BandSeamHandle`), past the stack
+  included, so the seam waits at the floor until the pointer comes back to it.
 
 ## How wide a cell draws
 
@@ -548,6 +498,6 @@ duplication: the VCF hot path accumulates into an object because mutating
 captured primitives inside the `processGenotypes` closure forces a V8 deopt. The
 third, `countGenotypeAlleles`, is weighted and runs per distinct genotype off
 `analyzeVariants`' memo, which is how the default fetch counts alleles without a
-second scan (`reference/MULTI_SAMPLE_VARIANTS.md`). MAF is over **called**
-alleles, not genotype classes, so a mixed-ploidy site weights a haploid call
-once. A monomorphic site is not dropped.
+second scan ([MULTI_SAMPLE_VARIANTS.md](MULTI_SAMPLE_VARIANTS.md)). MAF is over
+**called** alleles, not genotype classes, so a mixed-ploidy site weights a
+haploid call once. A monomorphic site is not dropped.

@@ -14,7 +14,7 @@ import type { SourceCorpus } from './util.ts'
 // adoption gap to show up. Sorting most-composed-first puts the outliers at the
 // bottom, which is the row worth asking about.
 //
-// One block, rendered into **both** `agent-docs/ARCHITECTURE.md` and the public
+// One block, rendered into **both** `agent-docs/reference/DISPLAY_PIPELINE.md` and the public
 // `creating_display.md` — not two variants the way the foundations pair is.
 // They differ there because the guide wants prose about what a foundation
 // brings while the spec wants the mixin list; here the useful content is the
@@ -106,7 +106,7 @@ export function collectCrossCuttingMixins(corpus: SourceCorpus) {
         )
       }
       // The rendered cell has to read as a sentence to someone with
-      // ARCHITECTURE.md open and nothing else — that doc is handed to agents
+      // DISPLAY_PIPELINE.md open and nothing else — that doc is handed to agents
       // directly, so a reference in it has to resolve from inside it. A
       // positional one ("see below the table") resolves only until the table
       // moves, and reads as nonsense in the source file the tag lives in.

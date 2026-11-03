@@ -14,7 +14,7 @@
 //   3. Every GitHub `blob/<ref>/<path>#<anchor>` link into this repo, checked so
 //      the file exists and — when it's a markdown target — a heading slugifies
 //      to the anchor. Catches a cross-doc deep link (e.g. the developer guides
-//      pointing at `agent-docs/ARCHITECTURE.md#three-upload-patterns`, and the
+//      pointing at `agent-docs/ARCHITECTURE.md#display-stacks`, and the
 //      reverse) left dangling by a renamed heading.
 //   4. Every relative markdown link between docs (`](../ARCHITECTURE.md#x)`),
 //      the same check as 3 for the way agent-docs actually cross-links itself.
@@ -27,7 +27,7 @@
 //      `AlignmentsFeatureWidget`, or `renderProps` for a method deleted with the
 //      server-side block system) — the fence checks above can't see prose, and
 //      `sync-doc-snippets` only guards fences that opted into an include.
-//   6. Every section citation by quoted title — `ARCHITECTURE.md §"Display
+//   6. Every section citation by quoted title — `DISPLAY_PIPELINE.md §"Display
 //      stacks"` (a real one: this comment is inside the scan) —
 //      checked so a heading still starts with the quoted text. This is the
 //      checker 4 asks for, and the only reference that runs *from* code *into*
@@ -428,11 +428,12 @@ function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
 // it still exists somewhere. That is enough to catch renames, which is the
 // failure that actually happens.
 //
-// Scoped to developer_guides plus agent-docs/ARCHITECTURE.md: the tutorials and
+// Scoped to developer_guides plus the agent docs that state current API
+// (ARCHITECTURE.md, DISPLAY_PIPELINE.md, GRAMMAR_STAGES.md): the tutorials and
 // FAQ are full of gene symbols (`CDKN2A`), accession IDs, and third-party type
 // names that legitimately don't appear in this repo. The rest of agent-docs is
 // exempt because the ADRs deliberately record superseded
-// names — but ARCHITECTURE.md declares itself the canonical *current* spec, so
+// names — but those three declare themselves the canonical *current* spec, so
 // that exemption is the opposite of what it wants. It named `renderProps` as
 // the live precedent for the `rpcProps()`/`gpuProps()` super-capture pattern
 // for however long after the server-side block system that owned `renderProps`
@@ -473,6 +474,8 @@ const SYMBOL_EXEMPT_FILES = new Set([
 ])
 const SYMBOL_FILES = new Set([
   join(repoRoot, 'agent-docs', 'ARCHITECTURE.md'),
+  join(repoRoot, 'agent-docs', 'reference', 'DISPLAY_PIPELINE.md'),
+  join(repoRoot, 'agent-docs', 'reference', 'GRAMMAR_STAGES.md'),
   join(repoRoot, 'agent-docs', 'reference', 'ARCHITECTURAL_LIMITS.md'),
 ])
 // Every CLAUDE.md is symbol-checked too — see claudeDocs() below for why, and
@@ -527,10 +530,6 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // reference/FETCH_KEYS.md §"Theme-derived render inputs are session getters": the
   // volatile-plus-useEffect shape it rules out, contrasted with the getter.
   'setColorPalette',
-  // ARCHITECTURE.md §"`rpcProps()` / `gpuProps()` pattern": names the removed
-  // server-side-block predecessor precisely to stop the next reader grepping
-  // for it. It was a live-precedent claim here until 2026-08.
-  'renderProps',
   // adr-068 §"What this bought" and adr-057, which name the two halves of the
   // dockview seam they respectively removed and defended: the suppression flag
   // that was unenforceable, and the layout-echo comparison. An ADR recording
@@ -550,7 +549,7 @@ const DOC_ABSENT_ON_PURPOSE = new Set([
   // story kept it in the symbol set until `codeOf` stopped collecting from
   // comments.
   'featureUnderMouse',
-  // ARCHITECTURE.md §"Display stacks" and adr-007:
+  // adr-007:
   // the second global foundation, named to say it is gone and why the argument
   // for splitting the family in two did not survive. `GlobalFetchMixin` is the
   // whole family now, so the name must stay unwritten.

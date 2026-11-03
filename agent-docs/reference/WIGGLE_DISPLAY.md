@@ -1,30 +1,29 @@
 ---
 name: wiggle-display
-description: How the wiggle display lays out rows, sizes bars, handles gaps, stored summaries, bands and color. Read before touching plugins/wiggle.
+description: How does the wiggle display lay out rows, size bars, handle gaps, read stored summaries, band and color? Read before touching plugins/wiggle.
 kind: spec
 ---
 
 # plugins/wiggle
 
-`plugins/wiggle/src/CLAUDE.md` points here. Bare paths
-below are relative to `plugins/wiggle/src/`.
+`plugins/wiggle/src/CLAUDE.md` points here. Bare paths below are relative to
+`plugins/wiggle/src/`. Config spellings are
+[CONFIG_SPELLINGS.md](CONFIG_SPELLINGS.md)'s, and the color object and scales
+are [MARK_ENCODING.md](MARK_ENCODING.md)'s; this doc keeps what is specific to
+the wiggle display.
 
 ## Four records, because a module reflects one instance struct
 
-The fill record (20 bytes, `WiggleFillInstance` in `wiggleCommon.slang`) feeds
-`wiggle.slang` (xyplot, scatter) and `wiggleDensity.slang` (density as the
+The fill record (20 bytes, `WiggleFillInstance` in `shared/shaders/wiggleCommon.slang`)
+feeds `wiggle.slang` (xyplot, scatter) and `wiggleDensity.slang` (density as the
 composed render-core `rowRect` shape, drawn off the fill pass's buffer via
 `bufferPassId`). `wiggleLine.slang` strokes the step line on 32 bytes and
 `wiggleLineCenter.slang` the interpolated line on 36, each with a buffer of its
-own. Only stroked renderings read a neighbour, so while every rendering shared a
-shader every fill buffer carried those 20 bytes for nothing — 164MB rather than
-82MB at 1000 sources, against a 256MB `maxBufferSize` floor, which is a zoom
-ceiling rather than waste.
-
-The two line renderings read different neighbours: the step line the previous
-and next scores, the center line the previous bin's span and score. Sharing one
-44-byte record carrying both cost an FST scan's raw section at 1000 sources
-586MiB, against 426MiB (step) and 480MiB (center) split.
+own. Only stroked renderings read a neighbour, so a shared record made every
+fill buffer carry bytes it never read, against the 256MB `maxBufferSize` floor
+that is a zoom ceiling. The two line renderings read different neighbours (the
+step line the previous and next scores, the center line the previous bin's span
+and score), so one record carrying both cost more than the two split.
 `ideas/ready/wiggle-instance-records-carry-per-row-constants.md` has the
 measurements.
 
@@ -35,15 +34,16 @@ compositing operator, so on Canvas2D band layers sort first and the line marks
 paint them. The band packer runs last source first so overlaid bands stack as
 Canvas2D's in-order source-over does.
 
-`wiggleCommon.slang` holds what they must agree on: the uniform struct, the fill
-record, `rowScoreToYPx` (where a score lands in its row, for both lines and the
-band) and `bandColorAt`, the color of the band between two cuts a line is in,
-are shared, the **binding is not**, and each re-imports `colorPack`/`hpmath`.
-The gradient's color parity across GPU / Canvas2D / SVG, for density, bars and
-points, is swept by `densityColorParity.test.ts`; its autoscale-pan cost (one
-uniform write, zero buffer bytes, zero texture uploads) is pinned per rendering
-in `wiggleMarks.test.ts`. The `fill` and `density` passes each bind the LUT
-texture, since a texture binds per pass and not per buffer.
+`wiggleCommon.slang` holds what the passes must agree on: the uniform struct, the
+fill record, `rowScoreToYPx` (where a score lands in its row, for both lines and
+the band) and `bandColorAt` (the color of the band between two cuts a line is
+in). The **binding is not** shared, and each shader re-imports
+`colorPack`/`hpmath`. The gradient's color parity across GPU / Canvas2D / SVG,
+for density, bars and points, is swept by `densityColorParity.test.ts`; its
+autoscale-pan cost (one uniform write, zero buffer bytes, zero texture uploads)
+is pinned per rendering in `wiggleMarks.test.ts`. The `fill` and `density`
+passes each bind the LUT texture, since a texture binds per pass and not per
+buffer.
 
 **The mark that draws, the buffer, the `renderingType` uniform and the Canvas2D
 painter all come off the encoded layers, never off `renderState`** — each of the
@@ -56,8 +56,8 @@ the correct stale.
 The consequence differs by backend and the rule does not: on the GPU the record
 sizes mean a pass reading the wrong one reads past the end of its instances; on
 Canvas2D the layer SET is chosen by the rendering (`filled` splits the min-max
-bands by sign) and so is `gapScore`, so the new painter over the old layers is
-a plot that is neither.
+bands by sign) and so is `gapScore`, so the new painter over the old layers is a
+plot that is neither.
 
 Each pass packs its own buffer and returns **empty** for renderings that are not
 its own — an empty pack is how a pass releases its buffer.
@@ -69,10 +69,10 @@ separators, clustering and the row-order sort all hang off `isRowLayout`.
 `rows: ''` puts every source in one plot box. The five `renderingType` names say
 what a source is drawn as and nothing about the layout, which is why there is
 one table and not nine names. `rows.field` is an enum of `source` alone
-(`quantitativeRowsConfigSchema`), so the JSON schema says so too. The same object holds the reader's arrangement, which
-`TreeSidebarMixin` owns (`agent-docs/reference/TREE_SIDEBAR.md`, ADR-157);
-`setRowLayout` writes the field alone, so the arrangement survives a trip
-through the shared plot.
+(`quantitativeRowsConfigSchema`), so the JSON schema says so too. The same
+object holds the reader's arrangement, which `TreeSidebarMixin` owns
+([TREE_SIDEBAR.md](TREE_SIDEBAR.md), ADR-157); `setRowLayout` writes the field
+alone, so the arrangement survives a trip through the shared plot.
 
 **One plot box takes the `YSCALEBAR_LABEL_OFFSET` inset** so its end labels
 aren't clipped; a stack of rows gives it up, because the axis is drawn per row
@@ -83,47 +83,48 @@ box and the export's clip translate. Wiggle-core's `ScorePlotChrome` and
 `ScorePlotSvgFrame` take it as a prop defaulting to the single-plot box, which
 is what the Manhattan and mark displays (no such getter) draw in.
 
-**`encoding.color` maps `score` or `source`; a subtrack's color is its row's, `rows.colors` or `rows.color`** (ADR-251).
-Unset, `effectiveColor` is the pair about the `origin` a quantitative track has
-always drawn: no `scale.type`, and a `scale.range` of the color below and the
-color above (`wigglePairOf`). Each mark draws the pair in its own idiom —
-bars, points and lines as a threshold, a heatmap as a `linear` ramp through
-white at the origin (`paintedWiggleColor`). That ramp through `rampMidT` is the white fade the
-density shader used to compute, within one LUT step (the white itself lands
-between entries 127 and 128, a channel off), and `densityColorParity.test.ts`
-holds the retired fade's arithmetic as the oracle. A written scale means one
-thing on every mark: `threshold` paints solid bands on a heatmap as on bars,
-and `linear` a ramp.
+**`encoding.color` maps `score` or `source`; a subtrack's color is its row's,
+`rows.colors` or `rows.color`** (ADR-251). Unset, `effectiveColor` is the pair
+about the `origin` a quantitative track has always drawn: no `scale.type`, and a
+`scale.range` of the color below and the color above (`wigglePairOf`). Each mark
+draws the pair in its own idiom — bars, points and lines as a threshold, a
+heatmap as a `linear` ramp through white at the origin (`paintedWiggleColor`,
+through `rampMidT`; `densityColorParity.test.ts` holds the arithmetic of the
+white fade it replaced as the oracle). A written scale means one thing on every
+mark: `threshold` paints solid bands on a heatmap as on bars, and `linear` a
+ramp.
+
 A color over `source`, written or implied by a color writing nothing on bars,
-points and lines (`wiggleColorsBySource`), paints each subtrack its row color
-on both sides of the cut, and a subtrack with none the pair. Several sources
+points and lines (`wiggleColorsBySource`), paints each subtrack its row color on
+both sides of the cut, and a subtrack with none the pair. Several sources
 sharing one plot box (`sharesPanel`) are dealt a tableau10 color each by name
 under it. `colorEncoding` resolves the color through display-kit's
-`colorEncodingOf`, the one resolver every display's color object goes through,
-and `resolveWiggleColor` turns that into
+`colorEncodingOf`, the one resolver every display's color object goes through
+(ADR-153), and `resolveWiggleColor` turns that into
 `{ posColor, negColor, cuts, innerColors, rampLut, rampMid }`, which is the
-whole of what the layers and both backends read. The cuts are where the color
-parts and never where bars grow from: bars read `origin`, and the layers part
-their colors at the cuts. A gradient (`rampLut`, from
-`linear`, through the y scale's type) colors each bar, point and density cell
-by its score's position, `rampMid`, the config's `scale.domainMid`, on its
-middle stop, and a line and its min-max band by the score at each fragment's
-height, and never reads `origin`. The gradient follows the y domain and y
-scale, so the color declares no `scale.domainMin`/`scale.domainMax` and no
-`log`. Over `score`, `threshold`, `linear` and none are the `scale.type`s the schema
-admits; `source` reads no scale, and `paintedWiggleColor` resolves it to the
-pair a subtrack with no color paints, so `resolveWiggleColor`'s `categorical`
-arm paints the misconfiguration grey only to cover the shared encoding union.
-ADR-144, ADR-153.
+whole of what the layers and both backends read (ADR-144).
+
+- The cuts are where the color parts and never where bars grow from: bars read
+  `origin`, and the layers part their colors at the cuts.
+- A gradient (`rampLut`, from `linear`, through the y scale's type) colors each
+  bar, point and density cell by its score's position, `rampMid` (the config's
+  `scale.domainMid`) on its middle stop, and a line and its min-max band by the
+  score at each fragment's height. It never reads `origin`, and follows the y
+  domain and y scale, so the color declares no `scale.domainMin`/`scale.domainMax`
+  and no `log`.
+- Over `score`, `threshold`, `linear` and none are the `scale.type`s the schema
+  admits; `source` reads no scale, and `paintedWiggleColor` resolves it to the
+  pair a subtrack with no color paints, so `resolveWiggleColor`'s `categorical`
+  arm paints the misconfiguration grey only to cover the shared encoding union.
 
 **What reads the geometry is `wiggleDisplayViews`**: `scoreColorScale` and
-`renderState`, as a plain function the display installs as one `.views()`
-layer. Not a mixin — composed beside `TrackHeightMixin` it could not see
-`height` or `canvasWidthPx` without casting to reach them, and `types.compose`
-depth is a real ceiling (ADR-041). The display's other wiggle members
-(`resolution`, `origin`, `renderingType`, `autoscaleRange`, the setters) are
-views and actions on its own chain over `YFieldConfigMixin`, which is the one
-wiggle mixin composed in.
+`renderState`, as a plain function the display installs as one `.views()` layer.
+Not a mixin — composed beside `TrackHeightMixin` it could not see `height` or
+`canvasWidthPx` without casting to reach them, and `types.compose` depth is a
+real ceiling (ADR-041). The display's other wiggle members (`resolution`,
+`origin`, `renderingType`, `autoscaleRange`, the setters) are views and actions
+on its own chain over `YFieldConfigMixin`, which is the one wiggle mixin
+composed in.
 
 ## A BigWig answers in bins below its first zoom level
 
@@ -144,15 +145,14 @@ Each region's payload carries the full source list, entries leave that map only
 via `clearAllRpcData`, so the row set IS the first-seen union over its values —
 `sourcesFromRegionData`, unioned rather than read off the first region because a
 plain fallback adapter discovers its sources per region. There is no second
-store to keep in step, which is what `sourcesVolatile` was.
+store to keep in step.
 
 That getter is a `stableIdentityComputed`
 (`@jbrowse/display-kit/stableIdentityComputed`), which owns why: the list
 reaches `gpuProps()`, whose identity re-encodes every loaded region. What is
 local is that the metadata is stripped off the payload first, so the comparer
 never walks a feature array. MAF's `sourcesVolatile` buys the same property with
-a `deepEqual` before the write; either way it is the property, not the
-mechanism, that matters.
+a `deepEqual` before the write.
 
 ## `viewportWidth` is CSS px — `clip.scissorW`, never `clip.pxW`
 
@@ -174,8 +174,8 @@ and shears the capsule. `wiggleMarks.test.ts` pins it.
 
 It hoists log arithmetic out of a per-feature loop; the generated
 `normalizeScore` is per-call scalar and kept as an **oracle**
-(`normalizeScoreParity.test.ts`). Both floored the log domain at 1 once,
-flattening any domain under 1 — the floor is the domain's own min.
+(`normalizeScoreParity.test.ts`). The log domain floors at the domain's own min,
+not at 1, which would flatten any domain under 1.
 
 **Both halves live in render-core, not here** — `src/shaders/scoreScale.slang`
 and `src/scoreScale.ts` beside it, which wiggle-core re-exports. The coverage
@@ -209,42 +209,39 @@ floored at 1 or the shader seeds the row transform with Infinity.
   carries it as `gapScore` and both backends read it there; the shader draws
   `prevScore`/`nextScore` as plain scores and tests for no sentinel.
 - **`linecenter`** connects every consecutive pair, a hole included (reduced
-  BigWig data is full of non-tiling bins), and so does its min-max band. Only
-  the source start takes `NO_PREV_START`.
-- A hole break on `linecenter`, at a multiple of the series' mean spacing,
-  shipped at 20, went off by default, and was removed with its slot on
-  2026-10-27: a broken line reads as missing data whether or not data is
-  missing there, and nothing wrote the slot.
+  BigWig data is full of non-tiling bins), and so does its min-max band. Only the
+  source start takes `NO_PREV_START`.
+- A hole break on `linecenter`, at a multiple of the series' mean spacing, was
+  tried and removed: a broken line reads as missing data whether or not data is
+  missing there.
 
 ## `y`, `mark.extent`, and the effective extent
 
 `score`, `minScore` and `maxScore` are the three values a zoom bin stores
-(`@jbrowse/wiggle-core/summaryFields`). A `y` naming one picks its array on
-the main thread (`summaryField`, `getEffectiveScores`); nothing computes. A
-BigWig tier and a synthetic tier both carry all three, and a raw record is its
-own bin: `processFeaturesFromArrays` aliases its min and max onto its score,
-and `featuresToRaw` reads `score` for any of the three, so a bedGraph plots
-its score under each. The mark display spells the same pick `y: 'maxScore'`
-(ADR-123), and its `aggregate` transform step is the one that computes; the
-wiggle `aggregate` slot that picked a stored summary was that word's second
-meaning and is gone. A `y` naming another field reads it in the worker,
-ships no min or max, and hides the Bin summary radio, since a click there
-would overwrite it.
+(`@jbrowse/wiggle-core/summaryFields`). A `y` naming one picks its array on the
+main thread (`summaryField`, `getEffectiveScores`); nothing computes. A BigWig
+tier and a synthetic tier both carry all three, and a raw record is its own bin:
+`processFeaturesFromArrays` aliases its min and max onto its score, and
+`featuresToRaw` reads `score` for any of the three, so a bedGraph plots its
+score under each. The mark display spells the same pick `y: 'maxScore'`
+(ADR-123), and its `aggregate` transform step is the one that computes. A `y`
+naming another field reads it in the worker, ships no min or max, and hides the
+Bin summary radio, since a click there would overwrite it.
 
-`mark.extent: 'min-max'` draws the bin's min and max around the plotted
-summary, Vega-Lite's `errorband` `extent`, on the mark as `interpolate` is. `effectiveExtent` resolves to `none` under
-density, and the autoscale domain, the menu, the tooltip and `gpuProps` all
-read it. **`extent` is not a fetch key**: one fetch ships mean, min and max
-together, so a switch re-encodes and refetches nothing. **`y` is one, as
-written**, since a feature adapter reads it in the worker; picking another
-stored summary refetches arrays the worker already shipped. A key folding the
-three summaries into one would be a derived value in the fetch key, and waits
-on a measurement of that refetch.
+`mark.extent: 'min-max'` draws the bin's min and max around the plotted summary,
+Vega-Lite's `errorband` `extent`, on the mark as `interpolate` is.
+`effectiveExtent` resolves to `none` under density, and the autoscale domain, the
+menu, the tooltip and `gpuProps` all read it. **`extent` is not a fetch key**:
+one fetch ships mean, min and max together, so a switch re-encodes and refetches
+nothing. **`y` is one, as written**, since a feature adapter reads it in the
+worker; picking another stored summary refetches arrays the worker already
+shipped. A key folding the three summaries into one would be a derived value in
+the fetch key, and waits on a measurement of that refetch.
 
-**No color setting is a fetch key.** `encoding.color` and `origin` are
-`gpuProps` alone: the worker ships one set of score arrays and the main thread
-colors each instance by its side of the cut, so moving the cut re-encodes and
-refetches nothing. ADR-016, which put the split in the worker, is superseded;
+**No color setting is a fetch key.** `encoding.color` and `origin` are `gpuProps`
+alone: the worker ships one set of score arrays and the main thread colors each
+instance by its side of the cut, so moving the cut re-encodes and refetches
+nothing. ADR-016, which put the split in the worker, is superseded;
 `ideas/ready/wiggle-instance-records-carry-per-row-constants.md` §4 has what the
 split cost.
 
@@ -254,36 +251,34 @@ split cost.
 opposite order on each side of the origin, which a single band order can't
 express. Filled bars split at the origin they grow from and carry `colorsAbgr`
 for the pivot where a threshold cuts elsewhere. Under a gradient bars, points
-and density cells carry no color lane and no min-max tint: the ramp is the
-whole color. Everything else, a threshold heatmap included, keeps each band
-whole and carries `colorsAbgr`, one packed color per instance — or none at all
-where both sides of the pivot come out the same color, which is what a
-solid-color track is.
+and density cells carry no color lane and no min-max tint: the ramp is the whole
+color. Everything else, a threshold heatmap included, keeps each band whole and
+carries `colorsAbgr`, one packed color per instance — or none at all where both
+sides of the pivot come out the same color, which is what a solid-color track
+is.
 
 ## A line plot is one line, colored along itself
 
-Every summary on a `line` draws one layer through all the bins
-(`lineLayers`), with no per-instance color lane. **Color comes from the band
-the line is in, not the bin**: the shader tests each fragment's centre-line y
-against the cut heights its vertex placed (`bandColorAt`), and Canvas2D strokes
-once per band through `BandPen`. Centre line rather than pixel, so capsules
-overlapping at a joint agree under max blend unless the joint lies within half a
-line width of a cut; per-bin colors blended every color-changing joint to
-magenta. Whiskers adds a `band` layer under the line, split the same way.
+Every summary on a `line` draws one layer through all the bins (`lineLayers`),
+with no per-instance color lane. **Color comes from the band the line is in, not
+the bin**: the shader tests each fragment's centre-line y against the cut
+heights its vertex placed (`bandColorAt`), and Canvas2D strokes once per band
+through `BandPen`. Centre line rather than pixel, so capsules overlapping at a
+joint agree under max blend unless the joint lies within half a line width of a
+cut; per-bin colors blended every color-changing joint to magenta. Whiskers adds
+a `band` layer under the line, split the same way.
 
 **Under a gradient the line reads the ramp at its centre-line y**
 (`lineColorAt`), so inside the domain a rise runs through the colors a bar of
 each height would take, and the band colors each pixel by its own height. The
-color y is unclamped, as a threshold's is, so a rise past the domain reaches
-the end color before its clamped geometry reaches the edge. Canvas2D and the
-SVG export stroke the ramp as `RAMP_LINE_BANDS` (32) thin bands through the
-same `BandPen` path (`rampAsBands`), spread over the part of the domain the
-row's values reach, each the LUT entry at its middle, so a line over a sliver
-of the ramp still steps through it finely; a domain with no range strokes the
-GPU's step. `rampAsBands` adapts render-core's `rampAsThreshold`, which
-render-core's line strokes through too. `rampAsBands.test.ts` holds each score
-to its band's color, and `wiggleMarks.test.ts` that the line passes bind the
-ramp.
+color y is unclamped, as a threshold's is, so a rise past the domain reaches the
+end color before its clamped geometry reaches the edge. Canvas2D and the SVG
+export stroke the ramp as `RAMP_LINE_BANDS` (32) thin bands through the same
+`BandPen` path (`rampAsBands`), spread over the part of the domain the row's
+values reach, each the LUT entry at its middle; a domain with no range strokes
+the GPU's step. `rampAsBands` adapts render-core's `rampAsThreshold`.
+`rampAsBands.test.ts` holds each score to its band's color, and
+`wiggleMarks.test.ts` that the line passes bind the ramp.
 
 ## The color key follows the scale
 
@@ -291,15 +286,15 @@ The ramp wherever `scoreGradientPaints` — bars, points and density under
 `linear`, a heatmap's unset color included — a row per interval for a
 `threshold` whose cut the config declared, and none for a string. A threshold
 cutting at the `origin` draws none on bars, points and lines, where the axis
-already shows where the origin is; a heatmap has no axis, so its threshold
-keys that cut too. A gradient ignores row colors, so it is keyed regardless,
-and only density gives the ramp the axis's place.
+already shows where the origin is; a heatmap has no axis, so its threshold keys
+that cut too. A gradient ignores row colors, so it is keyed regardless, and only
+density gives the ramp the axis's place.
 
 **The row colors are keyed by tree-sidebar's one row color key**
-(`rowColorScales`, TREE_SIDEBAR.md): an overlay of several subtracks keys each by
-name, a row per subtrack keys only an attribute such as `group`, and an overlay
-keys them only while its marks paint them, so a written color or a gradient
-keys none.
+(`rowColorScales`, [TREE_SIDEBAR.md](TREE_SIDEBAR.md)): an overlay of several
+subtracks keys each by name, a row per subtrack keys only an attribute such as
+`group`, and an overlay keys them only while its marks paint them, so a written
+color or a gradient keys none.
 
 **`scoreGradientPaints` leaves a row's color on its label bar only.** The
 arrangement dialog's one swatch column edits `rows.colors` whatever paints the
@@ -320,45 +315,40 @@ line above the rows and written back through `plotColorEdit`. Read off
 written whole, because a channel replaces its setting. Three rules it turns on:
 
 - **An undeclared cut stays undeclared.** Writing `scale.domain` would pin at
-  today's `origin` every config that had been following it, and nine shipped
+  today's `origin` every config that had been following it, and shipped
   threshold figures declare a range and no domain.
 - **Two swatches only edit where they can say the whole picture.** A ramp or a
-  threshold past one cut reads out beside the reason; a color per subtrack
-  hides the line, since the grid below is already that control. A heatmap's
-  pair is its two ends, so it edits too, and writes the pair back with no
-  `scale.type`, so the white keeps following the `origin` and the same edit
-  draws bicolor bars (`plotColorOf`).
-  `plotColorLine.test.ts` round-trips every shape a shipped config holds.
+  threshold past one cut reads out beside the reason; a color per subtrack hides
+  the line, since the grid below is already that control. A heatmap's pair is its
+  two ends, so it edits too, and writes the pair back with no `scale.type`, so
+  the white keeps following the `origin` and the same edit draws bicolor bars
+  (`plotColorOf`). `plotColorLine.test.ts` round-trips every shape a shipped
+  config holds.
 - **`Edit plot...` in the dialog is the escape**, on the display's `plot` — a
   ramp, several cut points, hand-written stops, a typed row order. ADR-204.
 
 **The palette deals by name only over a shared box.** `sharesPanel` is an
 overlay of several subtracks, and `rowColorPaintsMarks` holds while no gradient
-and no declared `encoding.color` paints the plot, so a lone BigWig keeps the
-red below its baseline and a row per subtrack draws each in the plot color
-unless `rows.colors`, `rows.color` or the file gives it one.
-
-**A reader's color for a row is `rows.colors`, and its label is `rows.labels`.**
-`TreeSidebarMixin` arranges them over `discoveredRows`, stamps each row's
-resolved `rowColor` and writes the dialog's submit. `group` has no config home,
-so a `group` pasted into the bulk editor is not kept.
+and no declared `encoding.color` paints the plot, so a lone BigWig keeps the red
+below its baseline and a row per subtrack draws each in the plot color unless
+`rows.colors`, `rows.color` or the file gives it one. A `group` has no config
+home, so a `group` pasted into the bulk editor is not kept.
 
 **`markSources` is what the plot paints**, by one rule the model and
-`wiggleTables` share (`wiggleMarkColoring`, `wiggleMarkSources`). A color
-over `score`, written or a gradient, paints every mark, so no source color
-reaches them. Over `source`, a source's marks take its row color. A file's own `color` reaches the
-marks only through the row color, never past a heatmap's ramp, where a fade to
-each row's file color once keyed nothing and spent hue on two variables. The
-encoder and the tooltip read `markSources`; the label bar
-reads the row color always, so a color set on a row stays on its bar when a
-gradient starts painting rather than going into the ramp. A `group` colors
-nothing until `rows.color` names it.
+`wiggleTables` share (`wiggleMarkColoring`, `wiggleMarkSources`). A color over
+`score`, written or a gradient, paints every mark, so no source color reaches
+them. Over `source`, a source's marks take its row color. A file's own `color`
+reaches the marks only through the row color, never past a heatmap's ramp, which
+would spend hue on two variables. The encoder and the tooltip read
+`markSources`; the label bar reads the row color always, so a color set on a row
+stays on its bar when a gradient starts painting rather than going into the
+ramp. A `group` colors nothing until `rows.color` names it.
 
-**A row left uncolored beside dealt ones paints grey** (`UNCOLORED_ROW`,
-`#999`, ggplot's `na.value`): where the palette deals the shared box and some
-row took a color, a subtrack with no value of the `rows.color` field would
-otherwise paint the plot color, which reads as palette color 0. Rows of their
-own keep the plot color, since nothing beside them is dealt.
+**A row left uncolored beside dealt ones paints grey** (`UNCOLORED_ROW`, `#999`,
+ggplot's `na.value`): where the palette deals the shared box and some row took a
+color, a subtrack with no value of the `rows.color` field would otherwise paint
+the plot color, which reads as palette color 0. Rows of their own keep the plot
+color, since nothing beside them is dealt.
 
 ## The shipped arrays are aliased — read, never write
 
@@ -371,5 +361,5 @@ average scores under every other reader, and the throw lands at the
 
 Nothing shares a buffer across regions, because `processFeaturesFromArrays`
 copies its inputs. Keep it that way: aliasing the adapter's arrays instead looks
-free and retains 20 bytes a feature on the main thread where copying retains 12
-— costed and declined.
+free and retains more per feature on the main thread than copying — costed and
+declined.

@@ -122,7 +122,7 @@ A third rate sits between those two. A color scheme, a sort order and a row
 grouping are packed into the instance buffer, so changing one re-encodes and
 re-uploads the regions it touches and stops there. Each leaves the worker's
 output unchanged, so none refetches.
-[`gpuProps()`](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern)
+[`gpuProps()`](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAY_PIPELINE.md#rpcprops--gpuprops-pattern)
 is where a display declares which settings reach the buffer that way, and the
 pair is the whole rule: what `rpcProps()` returns refetches, what `gpuProps()`
 returns re-uploads, and everything else is a frame.

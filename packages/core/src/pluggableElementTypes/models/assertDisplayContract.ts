@@ -62,7 +62,7 @@ export function assertDisplayContract(
         `cause is a superAfterAttach() call in this display's afterAttach — ` +
         `delete it. Otherwise this display composes two fetch foundations, ` +
         `or calls an installer it already gets from a mixin. ` +
-        `See agent-docs/ARCHITECTURE.md §"What not to do".`,
+        `See agent-docs/reference/DISPLAY_PIPELINE.md §"What not to do".`,
     )
   } else {
     attached.add(self)

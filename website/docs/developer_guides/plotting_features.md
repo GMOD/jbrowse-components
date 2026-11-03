@@ -53,7 +53,7 @@ the GPU where there is one, through the shape's Canvas2D painter where there is
 not, and through that same painter for SVG export.
 
 Three terms recur below (the
-[architecture spec's vocabulary](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#vocabulary)
+[architecture spec's vocabulary](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAY_PIPELINE.md#vocabulary)
 is fuller):
 
 - **region**: one entry of `view.displayedRegions`. Your worker fetches and

@@ -17,7 +17,7 @@ export interface SyntenyFeatureLanes {
   /**
    * Chromosome-local feature start (not cumulative), so uint32 holds it as long
    * as no single reference sequence exceeds 2^32 bp — an assumption we accept
-   * (agent-docs/ARCHITECTURE.md "Genome-size limits"). The feature-detail panel
+   * (agent-docs/reference/BP_PRECISION.md "Genome-size limits"). The feature-detail panel
    * and the min-length cull read these; drawn positions come from Float64 cumBp
    * arrays that never leave the worker (ADR-067).
    */

@@ -164,8 +164,9 @@ export function makeSettingsLoopGuard(name: string): () => void {
       throw new Error(
         `${name} re-fired >50× in one synchronous tick — a fetch-derived value ` +
           `is almost certainly in rpcProps(), so invalidating the fetch changes ` +
-          `rpcProps() and re-invalidates it. See ARCHITECTURE.md "rpcProps() ` +
-          `loop trap": rpcProps() must read only user-controlled settings.`,
+          `rpcProps() and re-invalidates it. See agent-docs/reference/` +
+          `FETCH_KEYS.md#rpcprops-loop-trap-and-how-to-break-it: rpcProps() ` +
+          `must read only user-controlled settings.`,
       )
     }
   }

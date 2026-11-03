@@ -1,22 +1,21 @@
 ---
 name: multi-sample-variants
-description: How a VCF's genotypes reach the multi-sample variant cell loops — interned codes, the column rule, and the two encodings that only pay together. Read before adding a consumer of genotype data or reintroducing a name-keyed per-cell path.
+description: How do a VCF's genotypes reach the variant cell loops? Interned codes, the column rule, and the two encodings that only pay together. Read before adding a genotype consumer or a name-keyed per-cell path.
 kind: spec
 ---
 
 # Multi-sample variant genotypes: the code pipeline
 
 The per-feature x per-sample loop in `computeVariantCells.ts` runs 10⁸+ times
-on a real panel. The rules are in `VARIANTS_DISPLAY.md`; this doc
-holds the mechanism behind them.
+on a real panel. The rules are in [VARIANTS_DISPLAY.md](VARIANTS_DISPLAY.md#genotypes);
+this doc holds the mechanism behind them.
 
 ## Genotypes reach the cell loops as codes, never as strings
 
 `analyzeVariants` makes one `processGenotypes` pass per feature and interns
 `genotypeCodes`, accumulates `samplePloidy`, folds the legend flags and counts alleles for
 the MAF and missingness filters. The cell loops index codes by a source's column
-(`buildSourceSampleIndices`) and key style memos by code. A per-feature
-`Record<sampleName, genotype>` from `GENOTYPES()` is the shape this replaced.
+(`buildSourceSampleIndices`) and key style memos by code.
 
 With a MAF or missingness threshold set, the counting pass still runs first: a threshold
 keeps a few percent of a window and analysis costs more per cell than counting, so fusing
@@ -58,8 +57,8 @@ They disagree for `SplitVcfTabixAdapter` when per-contig files order or omit sam
 differently. `buildHeaderRemap` translates and answers `undefined` when they agree.
 
 Writing `codes[sampleIdx]` silently files each genotype and ploidy against a neighbouring
-sample on a multi-contig view, since every row still holds a real genotype.
-`phaseSetReader` reads PS through the same callback and needs the same translation.
+sample, since every row still holds a real genotype. `phaseSetReader` reads PS through the
+same callback and needs the same translation.
 
 ## Phase-set coloring reads PS through `processFormatFields`, not `samples`
 
@@ -89,12 +88,14 @@ not paint.
 
 ## The records band against `LinearVariantDisplay`
 
-Records-only (a sites-only VCF) against `LinearVariantDisplay`, 2026-10-30:
-headed Chrome on the dev server, both on WebGL2, 1600 px wide. Navigation from
-an empty locus to settled paint (the last flip to ready and drawn, or the end
-of the last long task), main-thread long tasks across it, and long tasks across
-a 1600 px pan in 40 frames. Medians of 3, ms. "Rows off" is the multi-sample
-display with the band off, the cell RPC alone.
+Taken on 2026-10-30, before ADR-255 merged the two displays, so
+`LinearVariantDisplay` in the table is the retired plugin-features display and
+"band" is the multi-sample display's records band. Records-only (a sites-only
+VCF): headed Chrome on the dev server, both on WebGL2, 1600 px wide. Navigation
+from an empty locus to settled paint (the last flip to ready and drawn, or the
+end of the last long task), main-thread long tasks across it, and long tasks
+across a 1600 px pan in 40 frames. Medians of 3, ms. "Rows off" is the
+multi-sample display with the band off, the cell RPC alone.
 
 | Window | Arm | Navigation | Its long tasks | Pan long tasks |
 | --- | --- | --- | --- | --- |
@@ -113,11 +114,12 @@ display with the band off, the cell RPC alone.
 
 - **The band's cost was labels**: before it took `labelVisibility`, the fit
   ladder solved label rungs over every record (260 ms of 550 at ClinVar);
-  paint was 8 ms, the RPC handler 11–14 ms in both displays.
-  `LinearVariantDisplay` packs on the main thread too (48–73 ms here).
+  paint was 8 ms, the RPC handler 11–14 ms in both displays. The retired display
+  packs on the main thread too (48–73 ms here).
 - **At 39k records the gap is the cell RPC** ("rows off" is 450 ms over the
   feature track's whole navigation); pan long tasks match.
 - **The 99k pan** runs off the slice's end, so labels come back on an empty
   screen over a payload still holding 99k buffered records; the band packs
-  them all with labels. `LinearVariantDisplay` refuses both wide windows at
-  its default `maxFeatureScreenDensity`; the band has no density gate yet.
+  them all with labels. The retired display refused both wide windows at its
+  default `maxFeatureScreenDensity`; the band had no density gate then. The
+  merged display gates a records-only band on density (VARIANTS_DISPLAY.md).

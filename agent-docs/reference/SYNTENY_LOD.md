@@ -24,19 +24,19 @@ tiers.
 
 A PIF row carries `cg:Z:` and never `cs:Z:`; `make-pif` folds a `cs` into the
 CIGAR. `SyntenyFeature.forEachMismatch` prefers `cs` over the CIGAR, so a `cs`
-that rode through unflipped beside a flipped `cg` drew every indel on the q
-perspective with reversed sense. Don't add a second alignment string without a
-reorienter that reverses op order and reverse-complements the spelled-out bases.
+left unflipped beside a flipped `cg` would draw every indel with reversed sense.
+Don't add a second alignment string without a reorienter that reverses op order
+and reverse-complements the spelled-out bases.
 
 ### Where `auto` resolves: main thread, once
 
 `resolveLodTier` (`packages/synteny-core/src/lodTier.ts`) is the only place
-`auto` becomes a tier. It must run in a display getter that feeds the fetch
-cache key, and `BaseOptions.lodTier` is typed `'fine' | 'coarse'` so it cannot
-drift back. A decision made adapter-side from `bpPerPx` is invisible to the key:
-`bpPerPxBucketKey` is `floor(log2(bpPerPx))`, so zooming across a threshold
-inside a bucket changed no key and left coarse ribbons on screen while
-`dataCurrent` reported fresh.
+`auto` becomes a tier. It must run in a display getter that feeds the fetch cache
+key, and `BaseOptions.lodTier` is typed `'fine' | 'coarse'` so it cannot drift
+back. A decision made adapter-side from `bpPerPx` is invisible to the key:
+`bpPerPxBucketKey` is `floor(log2(bpPerPx))`, so zooming across a threshold inside
+a bucket changes no key and leaves coarse ribbons on screen while `dataCurrent`
+reports fresh.
 
 ### The file has the last word
 
@@ -55,17 +55,16 @@ folded at. `LodTierInfoMixin` and `installLodTierInfoFetch` read the file's
 
 `MultiPairwiseSyntenyAdapter` folds its children's headers: one tierless child
 pins the whole star to fine. The primary fetch is deliberately not gated on the
-info, since gating costs a round trip before every first paint to save one
-refetch for a disagreeing file. A failed info read resolves off the slot.
+info, since gating costs a round trip before every first paint. A failed info
+read resolves off the slot.
 
 ### Identity continuity across the switch
 
 **Nothing user-visible may key off which tier is loaded.** A coarse row is its
 fine row with the CIGAR replaced, so `pafIdentity` (`@jbrowse/cigar-utils`) reads
-the same bytes on both tiers. `make-pif` must not restate the coarse row's
-`de:f:`: a private copy of the chain skipped the `id:f:` rung, and
-`blockLen === 0` wrote `de:f:0` (100%) where `pafIdentity` returns 0. Never
-recompute divergence from the CIGAR; an M-style `cg` folds mismatches into `M`.
+the same bytes on both tiers. `make-pif` must not restate the coarse row's `de:f:`
+through a private copy of the identity chain. Never recompute divergence from the
+CIGAR; an M-style `cg` folds mismatches into `M`.
 
 Read-time binning is declined: reading and parsing N lines is ~66% of the fetch
 (construction and everything after is ~34%), so binning is capped near 1.5x
@@ -153,8 +152,7 @@ degenerate ribbon: the full-height band reads as an alignment to the locus below
 - **A row's strip is complete if and only if that row was queried.** B is never
   requested and D only within the pan buffer, so `laneData` enforces the rule in
   the one place draw, hit test, tooltip count and SVG export all read.
-- Marks are placed from `views[level]`, the level's upper row; the lower row's
-  ruler puts every mark at a wrong offset.
+- Marks are placed from `views[level]`, the level's upper row.
 - **A mark honors the view's whole `filter`, as its ribbon would.** C and D
   read it through the ribbon colors, a refused ribbon painting at zero alpha.
   A and B have no ribbon, so the worker sends each placed mate's strand,
@@ -216,8 +214,8 @@ spans the track height), and a hull is `[min, max]` over corners on BOTH axes, s
 the index discriminates well when alignments are **collinear** and not at all
 when they are not. Fixtures: collinear (two related genomes) and random pairing
 (all-vs-all PAF); `kept` counts entries surviving the pickable-width exclusion.
-Measure in Chrome via an esbuild bundle, never jest, which inflates this code
-6-30x non-uniformly ([BENCHMARKING.md](BENCHMARKING.md)).
+Measure in Chrome via an esbuild bundle, never jest
+([BENCHMARKING.md](BENCHMARKING.md)).
 
 **Collinear: the index works.**
 

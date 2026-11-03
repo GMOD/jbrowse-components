@@ -8,8 +8,7 @@ kind: spec
 
 MultiWaySyntenyDisplay is a per-window, anchor-star, one-frame-per-genome lane
 stack inside an ordinary LinearGenomeView. A frame is affine between the holes it
-opens at the lane's deletions. Unbuilt and undecided work lives
-in
+opens at the lane's deletions. Unbuilt and undecided work lives in
 [../ideas/collections/multiway-synteny-lgv-track.md](../ideas/collections/multiway-synteny-lgv-track.md),
 the design record this file cites by section name.
 
@@ -41,96 +40,80 @@ cost is linear in lanes.
   and either they are one alignment record (`recordId`, stamped by
   `clipFeatureToRegion`) or the lane places the anchor between them nowhere.
   Two records meeting where that stretch went elsewhere in the lane are a
-  rearrangement's breakpoint and open nothing: chains meeting in a duplication
-  region opened holes of 2-7 Mb, which inflated the lane's rung to as much as
-  20x and made it depend on how far the fetch reached past the viewport. The
-  record alone is not the test: `hprc_multiway_gfa.pif.gz` writes the CFHR3–CFHR1
-  deletion as two abutting records, and over chr17:10-25 Mb of the liftOver
-  lanes every cross-record gap of a megabase or more went elsewhere.
-  The frame's `min`/`max` are in the opened coordinate (lane bp plus every hole
-  before it), so what follows the hole sits under its own anchor stretch and every
-  carrier of one deletion draws the same gap, whoever its neighbour is. Before
-  this, rows were the lane's bp end to end: HPRC's CFHR3–CFHR1 carriers showed
-  27 kb of sequence then blank, and only the carrier under a non-carrier drew the
-  deletion, as one slanted ribbon. Holes come off every fetched group
-  (`model.laneOpenings`), not the viewport's, so one opens when both its pieces
-  arrive; the decision's `pivotLaneBp` stays lane bp, so a hole appearing
-  elsewhere moves only what lies beyond it. A lane-pair ribbon crossing a hole is
-  cut there (`addAcrossHoles`), and so are a gene's exons, intron lines and hit
-  boxes (`Lane.spansOf`, `frameSpans`); its label goes on the widest piece.
-  Gene records never open: their spacing
-  is no deletion. An insertion opens nothing; its sequence draws as before.
+  rearrangement's breakpoint and open nothing, which keeps the lane's rung
+  independent of how far the fetch reached past the viewport. The record alone is
+  not the test: `hprc_multiway_gfa.pif.gz` writes the CFHR3–CFHR1 deletion as two
+  abutting records. The frame's `min`/`max` are in the opened coordinate (lane bp
+  plus every hole before it), so what follows the hole sits under its own anchor
+  stretch and every carrier of one deletion draws the same gap. Holes come off
+  every fetched group (`model.laneOpenings`), not the viewport's, so one opens
+  when both its pieces arrive; the decision's `pivotLaneBp` stays lane bp, so a
+  hole appearing elsewhere moves only what lies beyond it. A lane-pair ribbon
+  crossing a hole is cut there (`addAcrossHoles`), and so are a gene's exons,
+  intron lines and hit boxes (`Lane.spansOf`, `frameSpans`); its label goes on the
+  widest piece. Gene records never open: their spacing is no deletion. An
+  insertion opens nothing; its sequence draws as before.
 - **Two lanes join a group's placements only where one source row states the
-  pair** (`statedTogether`, `MultiWayPlacement.row`). A table folding its rows
-  by anchor gene hands over one group with several placements per lane, as
-  K-12's split wbbL has against each strain's two fragments, and every
-  placement joined every placement of the next lane until the mates named their
-  row. A source keeping no rows still joins them all.
+  pair** (`statedTogether`, `MultiWayPlacement.row`). A table folding its rows by
+  anchor gene hands over one group with several placements per lane, and without
+  the row every placement would join every placement of the next lane. A source
+  keeping no rows still joins them all.
 - **A lane draws no mark for sequence the anchor lacks.** The ribbon over an
-  insertion fans open. A purple bar on every carrier lane plus a purple tint on
-  the ribbon between carriers was tried and removed.
+  insertion fans open. Per-carrier bars and a tint on the ribbon between carriers
+  were tried and removed.
 - **A gene-table row the anchor lacks draws between the lanes that carry it**
-  (`anchorlessGroupsOf`, `PlacedGroup` with no `anchor`). Each mate lane reads
-  the table on its own window (`laneGroupsFetchSpecs`); the lanes place and
-  bridge those rows like any group, and the frames, the vote and the holes read
-  only anchored groups. The display reads every row placed in any drawn lane's
-  window: the anchor is one lane among them for the data and the frame
-  reference for the geometry, which is what an alignment source's lane-pair
-  fetch already did. It is the default with no slot; no captured figure read
-  worse for it. Rows sharing a placement merge into one group keyed by its
-  lowest placement, since a table folds a lane query's rows by that lane's gene
-  (a paralog pair reads as two rows from one lane and one from the other) and
-  per-genome gene IDs differ, so no name can key it. Each placement's
-  orientation is its gene's own strand. A star source indexes its anchor alone
-  and gets no such fetch.
+  (`anchorlessGroupsOf`, `PlacedGroup` with no `anchor`). Each mate lane reads the
+  table on its own window (`laneGroupsFetchSpecs`); the lanes place and bridge
+  those rows like any group, and the frames, the vote and the holes read only
+  anchored groups. The anchor is one lane among them for the data and the frame
+  reference for the geometry. It is the default with no slot. Rows sharing a
+  placement merge into one group keyed by its lowest placement, since a table
+  folds a lane query's rows by that lane's gene and per-genome gene IDs differ, so
+  no name can key it. Each placement's orientation is its gene's own strand. A
+  star source indexes its anchor alone and gets no such fetch.
 - **A lane gene draws its representative transcript**, the one the feature
   track's `representative` draws (`representativeIsoform`), ranked by the
-  transcript types and canonical tags the gene track's own feature display
-  reads (`laneIsoformSettings`). A union of every isoform's exons is no molecule
+  transcript types and canonical tags the gene track's own feature display reads
+  (`laneIsoformSettings`). A union of every isoform's exons is no molecule
   (`geneGlyphMode.ts`). The lane places introns, the arrow, the label and the
-  placement claim on that transcript's extent, and draws nothing for a
-  childless transcript beside it, an `lnc_RNA` the feature track draws on its
-  own row.
+  placement claim on that transcript's extent, and draws nothing for a childless
+  transcript beside it.
 - **Strand means the record's strand**, never the drawn twist, in the config
-  schema, the `Color ribbons by` help and `multiwayGeometry.ts`. A mate's
-  `orientation` is the pair's strand, never the mate's transcription strand.
+  schema, its help text and `multiwayGeometry.ts`. A mate's `orientation` is the
+  pair's strand, never the mate's transcription strand.
 - **Lanes sort by their heaviest contig's group weight** (`rowAssembliesOf`), not
   placement count, which rewards a haplotype whose alignment breaks. Ties break on
   first-seen order, so `ComparativeAdapterBase` emits per-region streams in region
-  order and `MultiGenomeIndexedPAFAdapter` sorts reads by `fileOffset`. Tied lanes
-  do not reorder with network arrival.
+  order and `MultiGenomeIndexedPAFAdapter` sorts reads by `fileOffset`, and tied
+  lanes do not reorder with network arrival.
 - **Haplotype lanes read off a graph stack by structure** where nothing pins the
-  order (`holdLaneOrder`, `structureOrder`; sources with `lanePairsOnAnchor`).
-  A ribbon joins neighbours only, and densest-first or the portal's
-  commonest-first panel put two different structures in nearly every pair. The
-  order is worked out when the anchor fetch lands and held until a fetch leaves
-  that window or the lane selection changes, so a pan never reshuffles the
-  stack. Lanes `rows.sort` pins lead and the rest keep that order, which
-  is how the portal's focused launch puts one form on top. Cross-species stacks
-  keep densest-first, the order the grape
-  tutorial's lane-ordering section starts from.
+  order (`holdLaneOrder`, `structureOrder`; sources with `lanePairsOnAnchor`). A
+  ribbon joins neighbours only, and densest-first puts two different structures in
+  nearly every pair. The order is worked out when the anchor fetch lands and held
+  until a fetch leaves that window or the lane selection changes, so a pan never
+  reshuffles the stack. Lanes `rows.sort` pins lead and the rest keep that order.
+  Cross-species stacks keep densest-first.
 - **A star launch seeds from the display's lanes** (`lanePanelsForRegion`) and
   offers **Repeat ⟨anchor⟩ between panels** so every band is a direct pair. A
   stacked view has no notion of "every level anchored on the hub", and mate-vs-mate
   returns nothing from `MultiPairwiseSyntenyAdapter`.
 - **The alignment shift is unclamped** (`alignFrameTo`): a frame may start below
   zero while the header, ticks and gene fetch stop there. The anchor seed
-  `anchorAbsX` is the centre of what the viewport shows of each group; seeding at
-  the whole record's centre slid long-record lanes toward their overhang.
+  `anchorAbsX` is the centre of what the viewport shows of each group, not of the
+  whole record, which slides long-record lanes toward their overhang.
 - **A gutter stacks its ribbons' alpha**, as the pairwise band does. A
-  strongest-ribbon `min` blend flattened overlap shading and drew the first gutter
-  short, so we removed it.
+  strongest-ribbon `min` blend was removed: it flattened overlap shading.
 - **Nothing hands an adapter its sequence**: no RPC passes one, and renaming keeps
   none a caller passes. The display holds a lane's assembly as a temporary one
   (`installLaneAssemblies`) so `loadRefNameMap`'s `CoreGetContigs` primes the
-  adapter with the genome's sequence. We declined per-lane gene adapters written
-  into the star config.
+  adapter with the genome's sequence. Per-lane gene adapters written into the star
+  config were declined.
 - **Never call `assemblyManager.get` for a lane the session lacks.** It fires
   `Core-handleUnrecognizedAssembly` per lane and makes the Hubs plugin connect each
   genome's whole config. The display puts them to `Core-describeAssemblies` in one
   batch (`lanesToDescribe`). Temporary assemblies return through the session
-  captured at attach, since a display is destroyed after its view detaches;
-  "Open in new view" returns one first. A GenArk-backed db draws only through the
+  captured at attach, since a display is destroyed after its view detaches; "Open
+  in new view" returns one first. A GenArk-backed db draws only through the
   aliases (jb2hubs' `defaultGeneTrackId` spelling).
 - **An `{assembly}` entry in `laneGeneTracks` or `laneLayers[].tracks` is filled
   per lane** with the lane's canonical name, then its aliases, and only a held
@@ -163,10 +146,9 @@ cost is linear in lanes.
 - **Lanes decide at the settled view, and draw at the live one.** The decision
   reads the coarse blocks and the zoom and offset they were laid out at
   (`coarseBpPerPx`, `coarseOffsetPx`), so a zoom animation re-decides nothing:
-  tracking the live zoom cost a whole `decideLaneFrames` per frame, 18 ms at 32
-  lanes by 200 groups and 104 ms at 1000 groups (jest, 2026-10-21). The offset
-  picks the viewport the pivot and the hold test are judged in. The stack is
-  laid out against `renderOriginPx` and clips to a screen either side of it
+  tracking the live zoom costs a whole `decideLaneFrames` per frame. The offset
+  picks the viewport the pivot and the hold test are judged in. The stack is laid
+  out against `renderOriginPx` and clips to a screen either side of it
   (`stackReach`), so a reaction lays it out again once the view has moved more
   than a screen away between settles, and decides nothing.
 
@@ -176,67 +158,58 @@ cost is linear in lanes.
   (`rowLabels`); a lane it leaves out shows its assembly's display name, or the
   label a source's header declares (`laneLabel`).
 - **The color key** floats in the gutter under the anchor lane (`legendTop`),
-  since at the top corner it hid the anchor's genes (TP53 in
-  `primate_tp53_lanes`). Where that gutter is shorter than the key, as at
-  hg38 17p's 1.2 Mb window, it covers the second lane's changes chip instead;
-  its close button clears either.
+  since at the top corner it hid the anchor's genes. Where that gutter is shorter
+  than the key it covers the second lane's changes chip instead; its close button
+  clears either.
 - **Lane changes chip**: the header lists what the records state across the gaps
   the shown frame meets, largest first, two then a count, in the HPRC portal's
-  words (`laneIndelsOf`'s `changes`, `laneHeaderRows`). Across each gap
-  between two consecutive pieces of a lane contig cut in one fetch window
-  (`clipWindow`; between two windows lies anchor the fetch never read), the
-  anchor gap and the lane gap each list at their own size once they reach
-  `SPLIT_AT_GAP_BP`, within one record, or across two where the lane places
-  the anchor stretch nowhere. A 935 kb stretch replaced by 900 kb reads "935 kb
-  deletion, 900 kb insertion", and HG00133#1's LRRC37A duplicon at MAPT, two
-  records in the PIF, reads "420 kb deletion, 230 kb insertion". The hole opens
-  at the net of the two, so what follows sits under its own anchor stretch.
-  Netting the chip into one deletion or one shift infers an allele
+  words (`laneIndelsOf`'s `changes`, `laneHeaderRows`). Across each gap between
+  two consecutive pieces of a lane contig cut in one fetch window (`clipWindow`;
+  between two windows lies anchor the fetch never read), the anchor gap and the
+  lane gap each list at their own size once they reach `SPLIT_AT_GAP_BP`, within
+  one record, or across two where the lane places the anchor stretch nowhere. A
+  935 kb stretch replaced by 900 kb reads "935 kb deletion, 900 kb insertion". The
+  hole opens at the net of the two, so what follows sits under its own anchor
+  stretch. Netting the chip into one deletion or one shift infers an allele
   ([ADR-137](../architecture-decision-records/adr-137-jbrowse-shows-sv-evidence-and-does-not-infer-alleles.md)).
 - **The chip names an inversion** by its anchor span where a run of the other
-  strand sits between two runs, inside their outer anchor ends and mostly
-  outside what they cover (`laneInversionsOf`). 8p23.1's breakpoints sit in
-  the REPD/REPP segdups, whose paralog hits make the flanks' inner ends land
-  out of anchor order, so the test reads the outer ends: all seven carriers in
-  `hprc_multiway` name it, at 4 to 5.1 Mb. A reverse hit elsewhere on the
-  anchor, or an inverted copy of a flank, is no inversion, and the vote's
-  `[rev]` plays no part.
-- **A lane draws an inversion as its records state it**: the ribbons cross,
-  and the default ribbon color (strand) paints them blue. Mirroring the
-  inverted run in place (9b652a0199) was reverted on 2026-10-19 (Colin): it
-  drew the lane's sequence in an order its assembly does not have, and with
-  grey ribbons the header chip was the only sign of the inversion.
+  strand sits between two runs, inside their outer anchor ends and mostly outside
+  what they cover (`laneInversionsOf`). Paralog hits in flanking segdups make the
+  flanks' inner ends land out of anchor order, so the test reads the outer ends. A
+  reverse hit elsewhere on the anchor, or an inverted copy of a flank, is no
+  inversion, and the vote's `[rev]` plays no part.
+- **A lane draws an inversion as its records state it**: the ribbons cross, and
+  the default ribbon color (strand) paints them blue. Mirroring the inverted run
+  in place was tried and reverted: it drew the lane's sequence in an order its
+  assembly does not have.
 - **A lane inside a deletion longer than the window**: with `splitAtGapBp`,
   `clipFeatureToRegion` answers a record whose gap between two runs holds the
-  whole window with that gap alone, marked `spansWindow`, and
-  `multiWayFeaturesOf` lifts it off into `deletions` before anything groups,
-  frames or draws it. A lane the window shows nothing else of becomes a row
-  at the foot of the stack, and its header reads "no step on the reference across 1.2 Mb".
-  A deletion two records state is out of reach, since neither record meets
-  the window.
-- **A chosen lane the window places nothing in** (`unalignedChosenLanes`): a
-  lane `rows.kept` names joins the same foot rows, headed "no alignment in this
-  window", once the held fetch has landed and asked for it
-  (`answeredLaneTest`, the gate the picker's `placed: false` reads). An
-  unconstrained stack, or `configuredLanes` alone, adds no row. A pan keeps
-  the held answer until the next fetch lands, as every other lane does.
-- **Graph and PIF lanes read GSTT1 alike.** The graph plugin stamps one
-  `recordId` on every run of a walk record from 7.1.12, and
-  `hprc_multiway_gfa.pif.gz` writes HG00099#1's insertion as a gap between two
-  records; both read "54 kb insertion, 37 kb deletion".
+  whole window with that gap alone, marked `spansWindow`, and `multiWayFeaturesOf`
+  lifts it off into `deletions` before anything groups, frames or draws it. A lane
+  the window shows nothing else of becomes a row at the foot of the stack, headed
+  "no step on the reference across <bp>". A deletion two records state is out of
+  reach, since neither record meets the window.
+- **A chosen lane the window places nothing in** (`unalignedChosenLanes`): a lane
+  `rows.kept` names joins the same foot rows, headed "no alignment in this
+  window", once the held fetch has landed and asked for it (`answeredLaneTest`,
+  the gate the picker's `placed: false` reads). An unconstrained stack, or
+  `configuredLanes` alone, adds no row. A pan keeps the held answer until the next
+  fetch lands, as every other lane does.
+- **Graph and PIF lanes read alike.** The graph plugin stamps one `recordId` on
+  every run of a walk record, and `hprc_multiway_gfa.pif.gz` writes an insertion
+  as a gap between two records; both read the same chip.
 - **Lane links**: `laneLinksFetchSpecs`; `lanePairsOnAnchor` adapters are asked for
-  each adjacent pair on the anchor's merged blocks, and `lanePairBatches` ones
-  for all of them in one call. Only pairs whose gutter is within a screen of the
-  scrolled window are asked for (`gutterNearViewport`): a pair costs a walk
-  lane 20 ms at AMY1 (150 kb) and 80 ms at MHC (1 Mb) on the weighted-subsequence
-  aligner (graph plugin 7.1.13, ada, 2026-10-16), against 0.5-1.9 s per pair at
-  MHC 1 Mb before it, so 463 lanes took minutes.
-- **Composing a lane pair through the anchor** was built and removed. It drew a neighbour comparison the source
-  never states, with a tooltip as its only disclosure: a reversed lane colored
-  both gutters touching it, and sequence two lanes share and the anchor lacks
-  drew as a break between them. Through GRCh38 it also loses the loci picked for
-  being absent from it, which is why a graph adapter's lane pair is the
-  alignment `pairAlignments` reads off the graph:
+  each adjacent pair on the anchor's merged blocks, and `lanePairBatches` ones for
+  all of them in one call. Only pairs whose gutter is within a screen of the
+  scrolled window are asked for (`gutterNearViewport`), since a graph pair costs a
+  walk per lane.
+- **Composing a lane pair through the anchor** was built and removed. It drew a
+  neighbour comparison the source never states, with a tooltip as its only
+  disclosure: a reversed lane colored both gutters touching it, and sequence two
+  lanes share and the anchor lacks drew as a break between them. Through GRCh38 it
+  also loses the loci picked for being absent from it, which is why a graph
+  adapter's lane pair is the alignment `pairAlignments` (graph plugin) reads off
+  the graph:
 
 <!-- BEGIN GENERATED MEASUREMENT multiway-composition-through-grch38 -->
 
@@ -267,39 +240,30 @@ cheaply. The scaling story is two surfaces with a hand-off, not one surface that
 grows.
 
 **Tens of lanes do read, chosen by genotype and stacked by structure.** The HPRC
-portal's Haplotypes launch is that hand-off at one locus. It shares 32 lanes
-over the forms the structural-state sidecar groups haplotypes into, by how many
-carry each, and the display stacks graph haplotype lanes by structure, so each
-form draws as a block of straight ribbons as tall as its share. On 2026-10-17,
-48 and 96 lanes at GSTT1 and 48 at MHC class II read as blocks too, and going
-from 8 lanes to 96 settled in about 4 s against jbrowse.org. At 22 px a lane
-has no room for gene names; the launch draws 40 px lanes to keep them.
+portal's Haplotypes launch is that hand-off at one locus. It shares 32 lanes over
+the forms the structural-state sidecar groups haplotypes into, by how many carry
+each, and the display stacks graph haplotype lanes by structure, so each form
+draws as a block of straight ribbons as tall as its share. At 22 px a lane has no
+room for gene names; the launch draws 40 px lanes to keep them.
 
 ## Lane fit
 
 A lane draws one block of its contig at a time. `blocksOf` clusters the
 placements a quarter window apart, sets aside the strays (a cluster under 5% of
-the lane's vote evidence, or half that for a cluster the lane already draws),
-and links the rest across lane gaps of up to a window, or wider where the two
-still fit 1.5x together, since a gene-scale window parts neighbouring genes at
-one window and showing both costs little; the heaviest block draws,
-the one held keeps its place until another outweighs it by the switch margin,
-and every other block holding a fifth of the drawn one's evidence is named in
-the header, `· also at <locus>`, with a menu item that pins it. The rung rounds
-up the drawn block's extent, which is also `fitMin`/`fitMax`, so the lane fetch
-and a launched panel read what the lane draws. A placement off the frame draws
-no ribbon (`groupRunsOnRow` keeps what meets the frame).
+the lane's vote evidence, or half that for a cluster the lane already draws), and
+links the rest across lane gaps of up to a window, or wider where the two still fit
+1.5x together. The heaviest block draws, the one held keeps its place until
+another outweighs it by the switch margin, and every other block holding a fifth
+of the drawn one's evidence is named in the header, `· also at <locus>`, with a
+menu item that pins it. The rung rounds up the drawn block's extent, which is also
+`fitMin`/`fitMax`, so the lane fetch and a launched panel read what the lane
+draws. A placement off the frame draws no ribbon (`groupRunsOnRow` keeps what
+meets the frame).
 
-Two lanes of one shape, two blocks of the window over a window apart in the
-lane, used to draw two ways: `keepNearMedian` judged pieces by their centres,
-so 17p marmoset kept both blocks at 3x while chimp dropped its far half
-unnamed. Fitting both and zooming out was the other consistent policy, and
-was declined for the fanned ribbons it draws. Before blocks, measured on the
-same walk: a densest q-window stacked a hidden second tolerance on
-`RUNG_TOLERANCE` and left the most off frame; peeling end clusters within a 5%
-budget flipped the rung wherever a cluster sat on the budget. A block gap of 1.5
-windows held the grape walk's orientation flips at main's but drew 117 steps
-at 3x or wider here, against 34.
+Fitting every block and zooming out was declined for the fanned ribbons it draws.
+Judging pieces by their centres, a densest-window fit and peeling end clusters
+within a budget were each measured and replaced by blocks. A block gap of 1.5
+windows was measured and drew more wide steps.
 `multiwayLaneFit.probe.ts` walks the 17p duplication region:
 
 <!-- BEGIN GENERATED MEASUREMENT multiway-lane-fit -->
@@ -344,13 +308,12 @@ _Generated by `pnpm autogen` — edit the source, not this block._
 
 The shipped vote weighs every pair of shared runs by the product of group weights,
 against the lane above, or the anchor where the lane above shares fewer than three
-groups. We measured and rejected three alternatives: the neighbour rule weighted
+groups. Three alternatives were measured and rejected: the neighbour rule weighted
 by the lighter run, the heaviest collinear chain each way, and voting against the
-anchor throughout. None crosses less on any lane; the neighbour rule flipped less
-only because it held lanes the wrong way round. The shipped rule costs
+anchor throughout. None crosses less on any lane. The shipped rule costs
 oscillations that cascade, since an upper lane's flip inverts the vote of lanes
 below; voting against the anchor everywhere leaves lower lanes crossed for as long
-as they are held, while an oscillation is one fold, so the lane-above vote stays.
+as they are held, while an oscillation is one fold.
 
 **What the vote reaches on a pairwise source.** A pairwise record is a group with
 one mate, so below the top lane a lane shares no group with the lane above and
@@ -381,8 +344,7 @@ pushes it out and the slide brings it back, so the lane pins to that placement a
 stops panning with the anchor. A zoom is a scale about the pivot, so a rung change
 re-aligns only when the rescaled frame no longer shows the content.
 
-**What not to reopen**: the orientation vote, the contig choice and the
-hysteresis on each; the cell/layer
-renderer and its parity tests; gene glyph parity with the feature track; per-lane
-staleness on the dependent fetches; the lane picker at its current scale; and the
-E. coli and primate demos as they stand.
+**What not to reopen**: the orientation vote, the contig choice and the hysteresis
+on each; the cell/layer renderer and its parity tests; gene glyph parity with the
+feature track; per-lane staleness on the dependent fetches; the lane picker at its
+current scale; and the E. coli and primate demos as they stand.

@@ -12,25 +12,16 @@ kept honest. [GPU_RENDERING.md](GPU_RENDERING.md) is the hub.
 ## Shaders (Slang codegen)
 
 `packages/shader-tools/src/build-shaders.ts` compiles each `.slang` to WGSL and
-GLSL ES 3.00. slangc has no GLSL ES target, so `vulkanGlslToWebgl2.ts` adapts its
-desktop GLSL down; the SPIRV-Cross alternative was declined in
+GLSL ES 3.00 (its header documents the flags). slangc has no GLSL ES target, so
+`vulkanGlslToWebgl2.ts` adapts its desktop GLSL down; SPIRV-Cross was declined in
 [ADR-061](../architecture-decision-records/adr-061-webgl2-glsl-comes-from-the-regex-adapter.md).
 Authoring conventions: [ADR-005](../architecture-decision-records/adr-005-shader-codegen-slang.md).
 
-**Never hand-edit `*.generated.ts`.** Edit the `.slang` and run `pnpm
-gen:shaders`. CI regenerates with `--no-cache` and diffs, and the build refuses a
-`.generated.ts` no `.slang` produces any more.
-
-- **`gen:shaders` stamps every artifact `// inputs: <hash> <slang path>`**. It
-  hashes the `.slang` and its transitive imports with comments, indentation and
-  blank lines removed, so a comment edit regenerates nothing.
-- **`gen:shaders --check`** rehashes the sources without slangc, in under a
-  second, and names every shader whose artifacts are stale, including one whose
-  compile failed and left the old artifacts in place. `pnpm verify` runs it.
-- **A rebuild compiles only what changed.** `.cache/shaders` keys each file's
-  result on its stamp, the shader-tools source and the validators present: a
-  full build of 75 files takes about 15 s cold and 1.5 s with nothing changed.
-- **`gen:shaders --watch`** rebuilds on every `.slang` save.
+Edit the `.slang` and run `pnpm gen:shaders`, never the `*.generated.ts`. Every
+artifact carries an `// inputs:` stamp over the `.slang` and its imports with
+comments and whitespace removed, so a comment edit regenerates nothing.
+`gen:shaders --check` (run by `pnpm verify`) names every stale shader without
+slangc, including one whose compile failed and left the old artifacts in place.
 
 **One suffix, one meaning: `_BYTES` / `_WORDS` are units; `_F32` / `_U32` /
 `_I32` are typed-array views.** `INSTANCE_OFFSET_F32` / `_U32` / `_I32` each hold
@@ -43,10 +34,10 @@ not compile. A package that cannot import the plugin owning the `.slang`
 A shader can compile for WebGL2 and fail `createShaderModule` on WebGPU.
 `gen:shaders` runs Tint, the validator inside Chrome, through Dawn's node binding
 (the `webgpu` devDependency, on Dawn's null backend, so no GPU is needed). naga
-30 accepts both rules below where Tint refuses the first.
+accepts both violations below where Tint refuses the first.
 `packages/render-core/src/hal/webgpuHalDawn.test.ts` then builds, binds and draws
-every pass through `WebGPUHal` on Dawn, which holds the vertex layout, blend
-state and bind group layout to the same validation a browser applies.
+every pass through `WebGPUHal` on Dawn, holding the vertex layout, blend state
+and bind group layout to the validation a browser applies.
 
 - **Derivatives (`ddx`/`ddy`/`fwidth`) must sit in uniform control flow.**
   Branching on a varying and taking a derivative inside the branch fails. Pick
@@ -60,27 +51,23 @@ state and bind group layout to the same validation a browser applies.
 `node scripts/gpu-pixels/run.ts [fixture…]` draws a pass's generated WGSL at 4
 samples and at 1 and scores both against an ideal scene. It answers whether a
 pass draws at one sample without a visual trade, the question
-`//! coverage: analytic` turns on.
+`//! coverage: analytic` turns on. The header of `run.ts` lists the flags.
 
-- **How it draws:** on Dawn (the repo's `webgpu` package), through the HAL's
-  own `pipelineRecipe`, so layout, blend and topology are production's.
+- **How it draws:** on Dawn, through the HAL's own `pipelineRecipe`, so layout,
+  blend and topology are production's.
 - **The reference:** each fixture in `scripts/gpu-pixels/fixtures/` states its
-  scene as shapes composited in draw order, and the harness supersamples it
-  8×8 per device pixel. Judge one sample against it, not against the 4-sample
-  render: a pass that ramps its own edges still differs under MSAA.
-- **What it reports:** worst and mean per-pixel error, and for a translucent
-  fixture the pixels blended twice and the holes. A fixture's `budget` makes
-  the run exit 1 when its one-sample render regresses.
+  scene as shapes composited in draw order, supersampled 8×8 per device pixel.
+  Judge one sample against it, not against the 4-sample render: a pass that
+  ramps its own edges still differs under MSAA.
+- **A fixture's `budget`** makes the run exit 1 when its one-sample render
+  regresses. The Shaders job in `push.yml` runs `--adapter=llvmpipe` (Mesa
+  software Vulkan) on every push, so a fixture without a `budget` is a
+  measurement and one with a budget is a gate.
 - **`--base=<ref>`** scores the pass's WGSL at a git ref beside today's, read
   through today's buffers, and warns when the interface moved since.
-  **`--png=<dir>`** writes reference, 1x, 4x and the 1x error, stacked.
-- **`--adapter=llvmpipe`** picks Mesa's software Vulkan (lavapipe), which
-  scores every fixture within 0.1 of a percentage point of the Intel GPU here.
-  The Shaders job in `push.yml` runs it on every push, so a fixture without a
-  `budget` is a measurement and one with a budget is a gate.
-- **`--supersample=32`** for a pass that measures its own coverage: the
-  default 8x8 reference rounds a straight edge as 4x MSAA does, which reads
-  such a pass up to ~5 points worse than it is.
+- **`--supersample=32`** for a pass that measures its own coverage: the default
+  8x8 reference rounds a straight edge as 4x MSAA does, which reads such a pass
+  up to ~5 points worse than it is.
 
 ## Canvas scaling & hi-DPI
 
@@ -92,18 +79,15 @@ backing store to `round(css × dpr)`. Do not scale by `devicePixelRatio`.
 store and the box and scales the context. Skipping it blurs on Retina.
 
 **The CSS box is the store over the dpr** (`syncCanvasSize`), within half a
-device px of the extent asked for. A box spanning a fractional number of device px (1266 CSS
-px at dpr 1.25 is 1582.5) made Chrome stretch the 1583 px store into it,
-resampling every column; Firefox snaps the box to the store. The box goes in
-`min-`/`max-` too, so a component's own React `width` cannot undo it.
-Renderers still lay out against the extent, so at the far edge Canvas2D
-half-paints the last device px and the GPU spreads the extent over the whole
-store, a drift under half a device px that we accept.
-A box past its extent counts as scrollable overflow: a canvas ending at a scroll
-container's content edge needs an ancestor that clips. Track canvases have
-`contain: strict` and the view roots have `overflow: hidden`. The MAF sequence
-widget had neither, and below dpr 0.9 (browser zoom 80% and less) it gained 1 px
-of scroll, or a scrollbar on content that fits.
+device px of the extent asked for. A box spanning a fractional number of device
+px (1266 CSS px at dpr 1.25 is 1582.5) makes Chrome stretch the 1583 px store
+into it, resampling every column. The box goes in `min-`/`max-` too, so a
+component's own React `width` cannot undo it. Renderers still lay out against the
+extent, so at the far edge Canvas2D half-paints the last device px and the GPU
+spreads the extent over the whole store, a drift under half a device px that we
+accept. A box past its extent counts as scrollable overflow (seen below dpr 0.9),
+so a canvas ending at a scroll container's content edge needs an ancestor that
+clips (track canvases have `contain: strict`, view roots `overflow: hidden`).
 
 ## Antialiasing ramps: how wide, and where the width comes from
 
@@ -112,15 +96,15 @@ whose geometry had no room for it.** `fwidth` is `|ddx| + |ddy|`, overshooting a
 true gradient by up to √2. A too-wide *linear* ramp does not thicken a mark, it
 dilutes it (the half-max contour does not move), so look for dilution, not a fat
 line. The one `fwidth(` call site is `sequenceCell.slang`'s, over an
-axis-aligned px varying, where `fwidth` is the gradient; a second would justify a
-`//! fwidth-ok:` directive.
+axis-aligned px varying, where `fwidth` is the gradient.
 
 The right width depends on what the SDF is measured in:
 
 - **Distance already in pixels** (synteny `perpCoverage`, dotplot capsule, wiggle's
   capsule, the xyplot bar's horizontal cuts, the feature chevrons' arms):
-  `|∇d| = 1`, so the full width is `aaPx(dpr)`. Call `edgeCoverage(signedInkCssPx, dpr)`; a shader reaching it
-  without a `devicePixelRatio` uniform fails `pnpm gen:shaders`
+  `|∇d| = 1`, so the full width is `aaPx(dpr)`. Call
+  `edgeCoverage(signedInkCssPx, dpr)`; a shader reaching it without a
+  `devicePixelRatio` uniform fails `pnpm gen:shaders`
   ([ADR-098](../architecture-decision-records/adr-098-one-ramp-one-unit-and-the-build-checks-it.md)).
   **A varying set from the same screen y the vertex converts to clip is in this
   case** (`vertCoverage`, `barInkPx`).

@@ -1,4 +1,5 @@
-// ARCHITECTURE.md's "What not to do" is the index of its own rules, and it says
+// DISPLAY_PIPELINE.md's "What not to do" (it was ARCHITECTURE.md's until the
+// display half moved out) is the index of its own rules, and it says
 // so: "Every entry is stated flat and argued elsewhere, either in a section
 // above or in the linked reference doc." That was prose, so it drifted — the
 // `effectiveBodyMounted` entry carried six lines of reasoning, linked nothing,
@@ -17,6 +18,7 @@
 // without one on disk.
 
 const CHECKLIST = '## What not to do'
+export const DOC_PATH = 'agent-docs/reference/DISPLAY_PIPELINE.md'
 
 /**
  * GitHub's heading slug: lowercase, drop everything that is not a word
@@ -67,6 +69,7 @@ export function checklistEntries(doc: string) {
 // Keyed by heading slug so a rename fails loudly rather than silently exempting
 // a new section that happens to reuse a title.
 export const STATES_NO_RULES: Record<string, string> = {
+  'the-display-pipeline': 'the title',
   overview: 'the pipeline in one paragraph',
   vocabulary: 'definitions',
   'display-stacks':
@@ -83,14 +86,19 @@ export interface ArchitectureDocInput {
   statesNoRules?: Record<string, string>
 }
 
-/** Every `##`/`###` heading before the checklist — the body it claims to index. */
+/**
+ * Every `##`/`###` heading outside the checklist — the body it claims to index.
+ * The checklist sits near the top, so reading only what precedes it once left
+ * every section below it unchecked.
+ */
 export function bodyHeadings(doc: string) {
-  const end = doc.indexOf(CHECKLIST)
-  return [
-    ...doc
-      .slice(0, end === -1 ? doc.length : end)
-      .matchAll(/^#{2,3}\s+(.*)$/gm),
-  ].map(m => m[1]!.trim())
+  const start = doc.indexOf(CHECKLIST)
+  const end = start === -1 ? -1 : doc.indexOf('\n## ', start + CHECKLIST.length)
+  const body =
+    start === -1
+      ? doc
+      : doc.slice(0, start) + (end === -1 ? '' : doc.slice(end))
+  return [...body.matchAll(/^#{1,3}\s+(.*)$/gm)].map(m => m[1]!.trim())
 }
 
 export function checkArchitectureDoc({
@@ -105,7 +113,7 @@ export function checkArchitectureDoc({
     return {
       entryCount: 0,
       problems: [
-        `agent-docs/ARCHITECTURE.md has no "${CHECKLIST}" section. It is the index of the doc's own rules; if it was renamed, rename it here too.`,
+        `${DOC_PATH} has no "${CHECKLIST}" section. It is the index of the doc's own rules; if it was renamed, rename it here too.`,
       ],
     }
   }
@@ -113,7 +121,7 @@ export function checkArchitectureDoc({
   for (const entry of entries) {
     if (!entry.includes('](')) {
       problems.push(
-        `agent-docs/ARCHITECTURE.md, "What not to do": this entry links nothing, so a reader who needs the argument has nowhere to go:
+        `${DOC_PATH}, "What not to do": this entry links nothing, so a reader who needs the argument has nowhere to go:
     ${entry.split('\n')[0]!.trim()}
   Add a "See [...]" to the section above that argues it, or to the reference doc that does. An entry with no such home is a section that has not been written — see the note at the top of that section.`,
       )
@@ -129,7 +137,7 @@ export function checkArchitectureDoc({
     const key = slug(heading)
     if (!indexed.has(key) && !(key in statesNoRules)) {
       problems.push(
-        `agent-docs/ARCHITECTURE.md: no "What not to do" entry links "${heading}" (#${key}).
+        `${DOC_PATH}: no "What not to do" entry links "${heading}" (#${key}).
   That section either states a rule the checklist is missing — it claims to index every one — or it states none. Add the entry, or add "${key}" to STATES_NO_RULES in website/scripts/architecture-checklist-rules.ts with the reason it carries no rule.`,
       )
     }
@@ -137,7 +145,7 @@ export function checkArchitectureDoc({
   for (const key of Object.keys(statesNoRules)) {
     if (indexed.has(key)) {
       problems.push(
-        `agent-docs/ARCHITECTURE.md: "#${key}" is in STATES_NO_RULES and a "What not to do" entry links it. Drop the exemption — the section grew a rule.`,
+        `${DOC_PATH}: "#${key}" is in STATES_NO_RULES and a "What not to do" entry links it. Drop the exemption — the section grew a rule.`,
       )
     }
   }
@@ -155,7 +163,7 @@ export function checkArchitectureDoc({
     if (path === '') {
       if (anchor && !own.has(anchor)) {
         problems.push(
-          `agent-docs/ARCHITECTURE.md links "#${anchor}", which is not a heading in it. A section was renamed and this link was left behind.`,
+          `${DOC_PATH} links "#${anchor}", which is not a heading in it. A section was renamed and this link was left behind.`,
         )
       }
       continue
@@ -167,12 +175,10 @@ export function checkArchitectureDoc({
     }
     const slugs = linked.get(path)
     if (slugs === undefined) {
-      problems.push(
-        `agent-docs/ARCHITECTURE.md links "${path}", which does not exist.`,
-      )
+      problems.push(`${DOC_PATH} links "${path}", which does not exist.`)
     } else if (anchor && path.endsWith('.md') && !slugs.has(anchor)) {
       problems.push(
-        `agent-docs/ARCHITECTURE.md links "${path}#${anchor}", which is not a heading in that file.`,
+        `${DOC_PATH} links "${path}#${anchor}", which is not a heading in that file.`,
       )
     }
   }

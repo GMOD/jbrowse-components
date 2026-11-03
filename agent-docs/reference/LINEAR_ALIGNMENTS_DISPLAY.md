@@ -1,13 +1,16 @@
 ---
 name: linear-alignments-display
-description: How LinearAlignmentsDisplay is put together, getter by getter. Read before touching its model, layout or overlays.
+description: How is LinearAlignmentsDisplay put together, getter by getter? Which getter a setting invalidates, chain framing, lanes, row caps, hit testing, band layout and the arc band. Read before touching its model, layout or overlays.
 kind: spec
 ---
 
 # LinearAlignmentsDisplay
 
-`plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md` points here. Bare paths
-below are relative to `plugins/alignments/src/LinearAlignmentsDisplay/`.
+`plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md` points here. Bare
+paths below are relative to `plugins/alignments/src/LinearAlignmentsDisplay/`.
+Config spellings are [CONFIG_SPELLINGS.md](CONFIG_SPELLINGS.md)'s; the tier
+rules are [FETCH_KEYS.md](FETCH_KEYS.md)'s. This doc keeps what is specific to
+this display.
 
 ## Which getter decides what a setting invalidates
 
@@ -33,8 +36,8 @@ the display read it and must not recompute on the toggle.
   narrow upload paths (recolor, and arc-only), since layout allocates a fresh
   `readYs` the upload memo keys on. A value the layout only _sometimes_ spends
   goes in as a thunk.
-- **Tier 4 repaints the whole canvas**, so per-mousemove and per-click state
-  must not be there. Hover and selection are the chrome's highlight guide
+- **Tier 4 repaints the whole canvas**, so per-mousemove and per-click state must
+  not be there. Hover and selection are the chrome's highlight guide
   (`hoverInk`, `selectionInk`), never `renderState`.
 
 ## A split segment's color is framed by the chains on screen
@@ -43,9 +46,7 @@ the display read it and must not recompute on the toggle.
 `CHAIN_FRAME_REV` answer a chain-level question (which way does this molecule
 point), `CHAIN_SPLIT_*` a per-mate one (how did this mate leave its own
 primary), and the two are independent. Read them through `chainHasSupp` /
-`chainFrame` / `chainSplitKind`, never by comparing the byte. As consecutive
-integers the split kind could only be written by destroying the frame, and every
-consumer carried a workaround for that.
+`chainFrame` / `chainSplitKind`, never by comparing the byte.
 
 `CHAIN_FRAME_REV` is a **frame**. `attachChainFields` frames each chain on its
 primary's strand from every region at once, and `consensusChainStrandFrames`
@@ -64,23 +65,24 @@ Panning can change a frame, and that is accepted. **Don't re-derive a frame at a
 call site** — read `readChainHasSupp`. `framesUnpairedChainStrand` is the single
 statement of when framing is live: in a chain, under an orientation field
 (`pairOrientation`, `insertSizeAndOrientation`). There a framed segment, a split
-mate's junction, an unmapped mate and an interchromosomal mate are levels of
-the field (`unpairedSplitSameStrand`, `splitInverted`, `mateUnmapped`, ...), so
+mate's junction, an unmapped mate and an interchromosomal mate are levels of the
+field (`unpairedSplitSameStrand`, `splitInverted`, `mateUnmapped`, ...), so
 `encoding.color`'s `scale.domain`, `scale.range` and `scale.names` reach them.
-Under every other field, and under a constant, a read paints its field's
-value: `strand` is the read's own, and a constant fill is one color in a chain
-too.
+Under every other field, and under a constant, a read paints its field's value:
+`strand` is the read's own, and a constant fill is one color in a chain too.
+[ALIGNMENTS_COLOR_PARITY.md](ALIGNMENTS_COLOR_PARITY.md) covers the color
+vocabularies.
 
 ## A lane, not a group key
 
 **`buildLanes` (lanes.ts) is where a group key becomes data** — the raw map, the
 laid-out map, the sashimi sides, and the collapse/override state, per lane, in
-stacking order. The read-connection feeds join in `themed.sourceSections`,
-after layout, because they are colored and the layout must not read the palette. A
+stacking order. The read-connection feeds join in `themed.sourceSections`, after
+layout, because they are colored and the layout must not read the palette. A
 `renderSections` entry IS its lane plus band geometry, so a consumer walking
 sections has every per-lane answer in hand and none of them are optional. Don't
 reach back into a by-key collection from a call site that already has a lane;
-don't add a twelfth keyed collection when a lane field will do.
+add a lane field rather than another keyed collection.
 
 **Ungrouped is the one-lane case** (key `''`), and no-data is the one SYNTHETIC
 lane (`drawnLanes`) — that is why `sections` has no ungrouped branch.
@@ -109,20 +111,19 @@ Answerable only from the fetched lanes:
 - **`showsGroupLabels`** — are the chips and dividers drawn? What anything
   dodging a chip must ask (the coverage scale's `side`): one lane still draws a
   chip.
-- **`isGrouped`** (>1 lane) — the scroll model, and nothing else. Ungrouped
-  keeps coverage sticky; grouped scrolls the whole stack.
+- **`isGrouped`** (>1 lane) — the scroll model, and nothing else. Ungrouped keeps
+  coverage sticky; grouped scrolls the whole stack.
 - **`hasRegionData`** — has data arrived? **Never gate first paint on a laid-out
   map**, since a grouped fetch over an empty region partitions to zero lanes and
   the overlay never clears.
 
 **The same rule one layer down: `renderBlocks` reports paint off the SYNCED
 REGION, never off a band having pixels in it.** A section whose fetch landed
-paints the frame it should paint, and a blank one is a frame. Both backends
-answered "did a band with non-zero height draw" and both wedged a display at
-"Loading": the pileup band alone stranded read-cloud, and coverage-plus-pileup-
-plus-arcs stranded a coverage-off `LGVSyntenyDisplay` — and any alignments track
-with the coverage band off — on every window its file has no records in.
-`coverageParity.test.ts` runs the scenario table against both.
+paints the frame it should paint, and a blank one is a frame. Answering "did a
+band with non-zero height draw" wedged a display at "Loading" on every window
+its file has no records in (read-cloud with only the pileup band, a coverage-off
+`LGVSyntenyDisplay`, any alignments track with coverage off).
+`coverageParity.test.ts` runs the scenario table against both backends.
 
 `hiddenGroupKeys` must be filtered out of the **cross-group** derivations too
 (coverage stats, legend, sashimi, arcs) — for arcs, before `poolArcScale`.
@@ -136,34 +137,32 @@ fit's pitch already holds every lane whole), `'ceiling'`
 (`pileup.maxLayoutHeight`), `'override'` (a cap the user set) or `'collapse'`
 (`pileup.collapsed`).
 
-- `'budget'` and `'collapse'` offer the chip's expand, which banks an override
-  OF `pileup.maxLayoutHeight` — and an override opts the lane out of both.
+- `'budget'` and `'collapse'` offer the chip's expand, which banks an override OF
+  `pileup.maxLayoutHeight` — and an override opts the lane out of both.
 - `'ceiling'` draws `PileupTruncationRule`, deliberately inert and not an alert
-  — reads collapsing onto the bottom row is the cap working. Read that one as
-  the lane's `ceilingClipped`, which folds in the two display-wide suppressions
+  — reads collapsing onto the bottom row is the cap working. Read that one as the
+  lane's `ceilingClipped`, which folds in the two display-wide suppressions
   (`showPileup`, `fitHeightToDisplay`) so the overlay never asks by key.
 - `'override'` fires neither: what a user's own cap hides is their own doing.
 
-**Don't reconstruct which cap it was.** That answer used to come from comparing
-a lane's row count back against the ceiling, which is true whenever the two caps
-merely differ — a single-section grouping sat wholly in that hole. `tighterCap`
-is the one place the budget and the ceiling are compared, and a tie is the
-ceiling, since expanding there hands back the identical cap.
+**Don't reconstruct which cap it was** by comparing a lane's row count back
+against the ceiling: that is true whenever the two caps merely differ.
+`tighterCap` is the one place the budget and the ceiling are compared, and a tie
+is the ceiling, since expanding there hands back the identical cap.
 
-**A sized lane keeps its siblings' equal slice** (declined 2026-10-23).
+**A sized lane keeps its siblings' equal slice** (declined).
 `resolvedFitDefaultCap` still counts an overridden lane in `visibleGroupCount`,
 so dragging one lane never reflows the others (`GroupResizeHandles`). Fit mode
-refuses lane sizing (`canSizeGroupHeights`), so only fixed and grow see this;
-the cost is blank space under a stack whose lane was shrunk.
+refuses lane sizing (`canSizeGroupHeights`), so only fixed and grow see this; the
+cost is blank space under a stack whose lane was shrunk.
 
 ## Read height vs track height
 
 **`fit` is the sole `heightMode` that also drives the read-height axis**; every
 special case follows, including the fit cap using the Normal height.
 `self.featureHeight` is the fit-squeezed value — editors that mutate the size
-read `markHeight`. `fittedHeightPx` is a **pitch**, `featureHeight`
-a **body**; the volatile bridging them breaks a MobX cycle, so don't collapse
-it.
+read `markHeight`. `fittedHeightPx` is a **pitch**, `featureHeight` a **body**;
+the volatile bridging them breaks a MobX cycle, so don't collapse it.
 
 ## Hit-testing: the mark's `enabled` is the hit gate too
 
@@ -178,15 +177,13 @@ is empty with its setting off (`softclipBases`) still declares the setting as
 
 **Zoom is the second gate axis, and a mark cannot see it.** `performHitTest`
 drops the per-base steps above `SNP_HIT_MAX_BP_PER_PX`, so a mark drawn at every
-zoom can still go inert on zoom alone — which `clip` did, drawing a fixed 1px
-bar at every zoom while answering nothing past 25 bp/px. The whole CIGAR
-priority chain therefore lives in `hitTestCigarItem`, which takes `bpPerPx` and
-decides the regime itself; the zoomed-out steps used to be spelled a second time
-at the call site and clips were missing from the copy. The chain also owns which
-candidate set a mark is asked over — `insertionsOfSize` puts a large insertion
-above a mismatch and a small one below, `clipsOfKind` puts a softclip above a
-hardclip — since a priority between two rules is not a thing one mark's scan can
-express.
+zoom can still go inert on zoom alone (`clip` drew a fixed 1px bar at every zoom
+while answering nothing past 25 bp/px). The whole CIGAR priority chain therefore
+lives in `hitTestCigarItem`, which takes `bpPerPx` and decides the regime
+itself. The chain also owns which candidate set a mark is asked over —
+`insertionsOfSize` puts a large insertion above a mismatch and a small one
+below, `clipsOfKind` puts a softclip above a hardclip — since a priority between
+two rules is not a thing one mark's scan can express.
 
 The converse gap is a mark with no hit test: `readPositions` carries the read's
 TRUE aligned extent, so `hitTestFeature` misses what the softclip-bases mark
@@ -217,61 +214,62 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
 
 ## Layout and draw paths
 
-- Chain layout is handed **no `sort`** — its rows are chains. Every ordering control curates itself out in chain mode; a new one
-  that doesn't is a silent no-op, and a tag sort additionally refetches.
-- `placeRect` cannot use a levels / right-edge-only array: features arrive out
-  of start order in both layouts.
+- Chain layout is handed **no `sort`** — its rows are chains. Every ordering
+  control curates itself out in chain mode; a new one that doesn't is a silent
+  no-op, and a tag sort additionally refetches.
+- `placeRect` cannot use a levels / right-edge-only array: features arrive out of
+  start order in both layouts.
 - On-screen and SVG export share `drawAlignmentBlocks`, sashimi arcs and read
-  connectors included: the junctions are link marks (`SASHIMI_MARKS`,
-  ADR-222) and the curved connectors a connector mark (`CONNECTOR_MARK`,
-  ADR-225), both fed in bp, so a pan rebuilds nothing. The sashimi count
-  labels stay an SVG overlay, placed by the marks (`sashimiLabels`, through
-  `linkApex`), never by a second spelling of the band geometry.
-- **Ask `drawsSashimi`, not `showSashimi`, before reading the pan for
-  sashimi.** The setting is on by default on every alignments track, and a
-  track of unspliced reads must not rebuild `renderState` per frame for it.
-- **The worker's `junctions` is `coverage.show || sashimi.show`.** With
-  coverage shown a sashimi toggle changes no fetch key; without it the arcs
-  draw in their own strip (`effectiveSashimiPlacement` is `down`), so the
-  junctions ride with the arcs.
+  connectors included: the junctions are link marks (`SASHIMI_MARKS`, ADR-222)
+  and the curved connectors a connector mark (`CONNECTOR_MARK`, ADR-225), both
+  fed in bp, so a pan rebuilds nothing. The sashimi count labels stay an SVG
+  overlay, placed by the marks (`sashimiLabels`, through `linkApex`), never by a
+  second spelling of the band geometry.
+- **Ask `drawsSashimi`, not `showSashimi`, before reading the pan for sashimi.**
+  The setting is on by default on every alignments track, and a track of
+  unspliced reads must not rebuild `renderState` per frame for it.
+- **The worker's `junctions` is `coverage.show || sashimi.show`.** With coverage
+  shown a sashimi toggle changes no fetch key; without it the arcs draw in their
+  own strip (`effectiveSashimiPlacement` is `down`), so the junctions ride with
+  the arcs.
 - **A per-block pass cannot join two displayed regions**, since it maps bp
   through its own block. The read-connection band's links do, drawing over the
   whole canvas through the view's region table (ADR-170), and so do the pileup
-  connectors (ADR-225). Which pairs those draw is `connectorScope`, the one
-  place deciding between `all`, `crossRegion` and `none`; read the getter,
-  never `showConnectors`.
+  connectors (ADR-225). Which pairs those draw is `connectorScope`, the one place
+  deciding between `all`, `crossRegion` and `none`; read the getter, never
+  `showConnectors`.
 - **Which sub-band a sashimi arc draws in is decided once**, in genomic bp, by
   `sashimiDownKeysByGroup`, read by both the layout reserving the strip and the
   geometry filling it. Junction identity is `junctionKey`, refName included.
 - **A band's height MINUS its reserved margin is floored at 0** where the
   expression is declared, not per consumer. If a shader computes it too, the
   `.slang` is the declaration and the CPU imports the generated twin (adr-051).
-- **The scalebar inset is `YSCALEBAR_LABEL_OFFSET` on both backends and must
-  stay a constant.** The band marks write it into the `covYOffset` uniform
+- **The scalebar inset is `YSCALEBAR_LABEL_OFFSET` on both backends and must stay
+  a constant.** The band marks write it into the `covYOffset` uniform
   themselves, and `coverageLayout` supplies it to the same generated twin for
-  every painter and the y-axis ticks, and `laneBands` anchors up-mode arcs on
-  the same constant; a different value there moves the bars while
+  every painter and the y-axis ticks, and `laneBands` anchors up-mode arcs on the
+  same constant; a different value there moves the bars while
   `interbaseBarHeightPx` and the ticks beside them do not, splitting the band
   against itself inside one frame.
 - **The three band heights are bound as one stack** (`bandHeights`,
   `boundBelowCoverageHeights`): top-down against `fitTargetHeight` less the
-  pileup's floor, over the pooled answer of which strips draw. A lane
-  reserves a subset of that stack, so each grouped lane's stack stays inside
-  the plot too; the fit budget still charges every lane's stack. A drag
-  clamps to the room the other bands leave (`belowCoverageDragBounds`), and a
-  strip bound to 0 px is not reserved (`hasArcsBand`/`hasSashimiBand` false),
-  so it gets no handle on top of the one above it.
+  pileup's floor, over the pooled answer of which strips draw. A lane reserves a
+  subset of that stack, so each grouped lane's stack stays inside the plot too;
+  the fit budget still charges every lane's stack. A drag clamps to the room the
+  other bands leave (`belowCoverageDragBounds`), and a strip bound to 0 px is not
+  reserved (`hasArcsBand`/`hasSashimiBand` false), so it gets no handle on top of
+  the one above it.
 - **`laneBands` is the one statement of a lane's band stack**: which strips it
   reserves, their tops, and where its arcs draw — their own strip, or over the
   coverage histogram in up mode. `computeStackedSections`, the fit budget
-  (`laneBandOverheads`) and the binders all read the same band description.
-  The fit budget reads fetch-tier inputs only, since re-deriving it from
-  `sections` routes the fit volatile back through the layout it feeds.
-- **A display-wide render state carries no section offsets.** The model builds
-  a `DisplayRenderState`; `sectionRenderState` adds a section's
-  `pileupTopOffset` and `coverageTopOffset`, and marks draw and hit-test by
-  that `RenderState` only. `buildSectionRenders` projects each section through
-  `sectionScreen.ts`' two scroll tiers, the same ones the overlays use.
+  (`laneBandOverheads`) and the binders all read the same band description. The
+  fit budget reads fetch-tier inputs only, since re-deriving it from `sections`
+  routes the fit volatile back through the layout it feeds.
+- **A display-wide render state carries no section offsets.** The model builds a
+  `DisplayRenderState`; `sectionRenderState` adds a section's `pileupTopOffset`
+  and `coverageTopOffset`, and marks draw and hit-test by that `RenderState`
+  only. `buildSectionRenders` projects each section through `sectionScreen.ts`'
+  two scroll tiers, the same ones the overlays use.
 - **`readLayoutRecord` answers in content space**, and a view overlaying the
   reads stops at `stickyBandHeight`, which is 0 when grouped — nothing scrolls
   under a sticky band there.
@@ -292,24 +290,24 @@ an `onClick` gets nothing, `closeContextMenu` ran first.
   `arc ?? performHitTest(…)`** — the one place "an arc outranks the band under
   it" is stated, and outranking it means `performHitTest` is skipped rather than
   computed and discarded.
-- **`isFlatArcShape` answers "does this draw as a bar"** and neither of the
-  other two questions the three flat shapes are asked: only `ARC_SHAPE_FLAT` has
-  a TLEN (`isUnplacedArcShape` is the hover's), and only the two ON the axis may
-  size it (`plotsOnInsertSizeAxis`).
+- **`isFlatArcShape` answers "does this draw as a bar"** and neither of the other
+  two questions the three flat shapes are asked: only `ARC_SHAPE_FLAT` has a TLEN
+  (`isUnplacedArcShape` is the hover's), and only the two ON the axis may size it
+  (`plotsOnInsertSizeAxis`).
 - **The read cloud draws a bar only toward somewhere it has data.** A connection
   whose partner is outside every LOADED region — widened by `cloudReachBp`, so a
   real event just off the edge still gets its bars — collapses onto the end the
-  view can place and sits on the zero anchor (`ARC_SHAPE_FLAT_UNPLACED`). It is
-  a placement test and not a span threshold, and `displayedRegions` will not
-  answer it: in an ordinary LGV that is the whole chromosome. ARC_BAND.md has
-  both measurements.
+  view can place and sits on the zero anchor (`ARC_SHAPE_FLAT_UNPLACED`). It is a
+  placement test and not a span threshold, and `displayedRegions` will not answer
+  it: in an ordinary LGV that is the whole chromosome.
+  [ARC_BAND.md](ARC_BAND.md) has both measurements.
 - **The collapse is for DRAWING, so the cluster key still takes the true
   endpoints** (`pushArc`'s `keyFeet`). `arcKey` carries no `spanBp` and an
   unplaced mark's `yBp` is 0, so keying off the drawn feet asks "same foot, same
-  color?" — which at any real depth every read on that outer edge answers yes
-  to. They merged into one mark whose width counted them all and whose hover
-  named one of their partners.
-- **`breakpoint.reads` is gated against the number each mark DRAWS with** —
-  a cluster's size for an arc, the coalesced total for a tick — and split
-  junctions are exempt (`clearsInterchromFloor`). Gating a tick's addends made
-  the hover's count follow the filter.
+  color?" — which at any real depth every read on that outer edge answers yes to,
+  merging them into one mark whose width counted them all and whose hover named
+  one of their partners.
+- **`breakpoint.reads` is gated against the number each mark DRAWS with** — a
+  cluster's size for an arc, the coalesced total for a tick — and split junctions
+  are exempt (`clearsInterchromFloor`). Gating a tick's addends made the hover's
+  count follow the filter.

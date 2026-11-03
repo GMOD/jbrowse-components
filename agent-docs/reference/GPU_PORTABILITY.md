@@ -16,12 +16,11 @@ limits.
 
 - `MAX_CANVAS_DIM_PX` (`canvas2dUtils.ts`) equals the WebGPU floor; on WebGL2 it
   rests on "at least 8192 on essentially all real hardware".
-- Chrome's WebGL drawing-buffer cap is 7680x4320 px of area, measured identical
-  on SwiftShader, Vulkan and GL ANGLE backends in Chrome 155, headed and
-  headless; Firefox 157 never shrank. Chrome applies it only when a canvas
-  resizes after its context exists: one sized to 5172x8192 before `getContext`
-  keeps the whole buffer, and the same canvas resized afterwards gets 4576x7249.
-  The HAL always resizes after, so it always meets the cap, and
+- Chrome's WebGL drawing-buffer cap is 7680x4320 px of area, identical across
+  its rasterizer backends; Firefox never shrank. Chrome applies it only when a
+  canvas resizes after its context exists: one sized to 5172x8192 before
+  `getContext` keeps the whole buffer, and the same canvas resized afterwards
+  gets 4576x7249. The HAL always resizes after, so it always meets the cap, and
   `WebGL2Hal.resize` reports the scale from the drawing buffer.
 - `MAX_VERTEX_BUFFER_BYTES` (`webgl2Hal.ts`) pins WebGPU's spec default because
   WebGL2 exposes no equivalent; the unguarded alternative is a dropped context.
@@ -73,18 +72,17 @@ apart.
 **A pin always wins, because two consumers render on SwiftShader:**
 
 - **The cross-backend gate.** Headless Chrome is SwiftShader with or without
-  `--swiftshader` (see the table in
-  [CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md)), so an unpinned gate would
-  compare canvas2d with canvas2d and pass. `appendGpuParam` sets `renderer=` on
-  every run from `snapshotConfig.backend`, and
-  `createRenderingBackend.test.ts` pins the property.
+  `--swiftshader` ([CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md)), so an
+  unpinned gate would compare canvas2d with canvas2d and pass. `appendGpuParam`
+  (`browser-tests/helpers.ts`) sets `renderer=` on every run from
+  `snapshotConfig.backend`.
 - **The figure corpus.** `pinRenderer` in `website/scripts/screenshot-ready.ts`
   is the one place to move it between backends. Pinning in `sessionSpec` instead
   forces WebGL on the website's gallery links, since `gen-live-links.ts` reads
-  the same builder. Before touching it, enumerate the navigation paths: the
-  mode table in `screenshot-modes.ts` sends an embedded spec to its harness
-  (pinned through `setGpuOverride`) and a url spec to `renderUrlSpecToTemp`,
-  whose `captureStage` re-enters `captureUrl` per stage.
+  the same builder. The mode table in `screenshot-modes.ts` sends an embedded
+  spec to its harness (pinned through `setGpuOverride`) and a url spec to
+  `renderUrlSpecToTemp`, whose `captureStage` re-enters `captureUrl` per stage;
+  enumerate both paths before touching the pin.
 
 ### Fixes measured and eliminated
 

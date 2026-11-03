@@ -12,7 +12,8 @@ one legend box: read fills (`readColorCategory`, `colorUtils.ts`), and the read
 connections (`features/arcs/arcColors.ts`). The arcs and the read cloud take
 `getArcColorType`'s slot, and a connector over the pileup carries the slot
 `classifyPair` gives it. Both paint `insertSizeAndOrientation`, the one
-paired-end color field; a connection has no color field of its own.
+paired-end color field; a connection has no color field of its own. The color
+object and scale vocabulary are [MARK_ENCODING.md](MARK_ENCODING.md)'s.
 
 ## The rule: derive, do not reconcile
 
@@ -55,31 +56,29 @@ mate pair draws it, as the color says only that the connection crosses.
 
 ## Why divergences survive
 
-Every divergence found here agreed in the configuration everybody looks at (light
-mode, clean TLEN, both primaries on screen, slots below 10), and figures are
-captured there, so the figure corpus catches none of them. A comment asserting two
-things match is a derivation waiting to be written.
+Divergences agree in the configuration everybody looks at (light mode, clean
+TLEN, both primaries on screen, slots below 10), and figures are captured there,
+so the figure corpus catches none of them. A comment asserting two things match
+is a derivation waiting to be written.
 
-**Check a themed path with `alignmentFill.read`.** It is the one alignment fill the stock dark
-palette overrides. Arcs land 1/255 under the palette value on a dark ground
-because their alpha is just under 1; that is expected.
+**Check a themed path with `alignmentFill.read`.** It is the one alignment fill
+the stock dark palette overrides. Arcs land 1/255 under the palette value on a
+dark ground because their alpha is just under 1; that is expected.
 
 ## A shared function does not guarantee parity
 
-`mateRefName` coloring once claimed to share `getQueryColor` with the synteny
-view; synteny then moved to positional coloring and the alignments comment kept
-describing a function only one side called. Both sides now call `refNameColor`
-(core), which hashes only without an assembly position. The alignments position
-comes from `paintedRefNamePosition`, **canonicalized first**, because a mate
-reference arrives in the file's spelling ([REFNAME_NAMESPACES.md](REFNAME_NAMESPACES.md)).
+Both sides of `mateRefName` coloring call `refNameColor` (core), which hashes
+only without an assembly position. The alignments position comes from
+`paintedRefNamePosition`, **canonicalized first**, because a mate reference
+arrives in the file's spelling ([REFNAME_NAMESPACES.md](REFNAME_NAMESPACES.md)).
 
 ## Deriving the rule is not the same as calling it
 
-`linkedReadColorSlot` replaced a hand-spelled `colorType % palette.length` at three
-sites, and the linked-reads Canvas2D/SVG painter kept the old spelling while the
-rule's unit test passed. **Test the caller when the rule is shared**, with a
-palette whose slots are all distinct colors, so an index that wraps lands on a
-color of its own.
+`linkedReadColorSlot` is the one spelling of the slot-to-palette index. **Test
+the caller when the rule is shared**, with a palette whose slots are all
+distinct colors, so an index that wraps lands on a color of its own: the
+linked-reads Canvas2D/SVG painter once kept a hand-spelled
+`colorType % palette.length` while the rule's unit test passed.
 
 `mateLinkArc` sources orientation and TLEN from a primary endpoint
 (`pairFieldEntry`), because in chain mode @gmod/bam derives `pair_orientation`
@@ -90,10 +89,8 @@ split with `CHAIN_SPLIT_*` hues.
 
 ## Insert size is TLEN, on both sides
 
-Arc color and read color both classify `|TLEN|` through `pairCategory`;
-`absrad` sets only arc height. Declined: coloring arcs by drawn span past a
-fixed threshold. `classifyInsertSize` sorts TLEN 0 into `normal`, so
-span-colored arcs went red over grey reads on exactly those pairs. The reads
-once handed the classifier the signed TLEN as it stood, so the second mate of a
-long-insert pair painted `normal`; one function takes the absolute value for
-both sides now.
+Arc color and read color both classify `|TLEN|` through `pairCategory`, which
+takes the absolute value for both sides; `absrad` sets only arc height.
+Declined: coloring arcs by drawn span past a fixed threshold.
+`classifyInsertSize` sorts TLEN 0 into `normal`, so span-colored arcs went red
+over grey reads on exactly those pairs.

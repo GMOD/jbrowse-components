@@ -274,7 +274,7 @@ function stateModelFactory() {
        * from the live pointer (Hi-C, LD) owes nothing, and the default
        * costs it nothing. Declared here so the clear can be installed for every
        * display rather than remembered per display — forgetting it is the
-       * failure ARCHITECTURE.md's stored-hover section is about.
+       * failure DISPLAY_PIPELINE.md's stored-hover section is about.
        */
       clearHoveredFeature() {},
 

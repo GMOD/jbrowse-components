@@ -16,15 +16,13 @@ The HAL hides the WebGPU/WebGL2 difference and lives in
 `GPURenderPipeline` (`resolvePipelines`, `webgpuHal.ts`) or one linked program +
 VAO (`link`, `webgl2Hal.ts`). The identifiers around it still say "pass"
 (`passId`, `drawPass`, `slangPass`, `InstancePass`, `*_PASSES`); read each as
-"pipeline". The rename stopped at the type because `passId` is a join key across
-hundreds of call sites. `drawPass` binds a pipeline and a region's buffer and
-issues one instanced draw. WebGPU's render pass is the `beginFrame`/`endFrame`
-bracket, one per frame.
+"pipeline". `drawPass` binds a pipeline and a region's buffer and issues one
+instanced draw. WebGPU's render pass is the `beginFrame`/`endFrame` bracket, one
+per frame.
 
-**`?renderer=webgpu` pins that rung and does not fall past it.** A pinned
-renderer that silently substitutes another makes every comparison wrong, so
-`createGpuHal` raises a `renderError` naming the pin. Prove which backend ran by
-asserting on the HAL, not the URL.
+**`?renderer=webgpu` pins that rung and does not fall past it.** `createGpuHal`
+raises a `renderError` naming the pin rather than substituting another backend.
+Prove which backend ran by asserting on the HAL, not the URL.
 
 **An empty upload IS the release.** Every HAL deletes the pass's prior buffer
 before looking at the count, so `uploadBuffer(key, pass, data, 0)` means "nothing
@@ -45,16 +43,15 @@ shape it has.
 the swap chain is per-element state. Two HALs can share one (a `model` prop swap,
 an init overlapping a cancelled one), and `WebGPUHal.dispose()`'s `unconfigure()`
 then releases the live HAL's. Firefox answers every later frame with
-`InvalidStateError: ... Canvas not configured`, and there is no context-lost
-event, so recovery never runs. `canvasConfiguredBy` (`canvasContext.ts`) lets
+`InvalidStateError: ... Canvas not configured` and fires no context-lost event,
+so recovery never runs. `canvasConfiguredBy` (`canvasContext.ts`) lets
 `dispose()` release only its own configuration, and a frame that finds the swap
 chain gone rebuilds it. Reproduce with
 `products/jbrowse-web/browser-tests/swapchain-steal-probe.ts`.
 
 ## What this architecture deliberately does not have
 
-Each entry is a standard real-time-rendering technique a reader with a
-game-engine background will reach for.
+Standard real-time-rendering techniques a game-engine reader will reach for.
 
 **Depth buffer / early-Z.** Every pass blends, and blending composes correctly
 only in draw order. A depth test rejects exactly the fragment a translucent mark
@@ -63,9 +60,8 @@ behind it should show through.
 **Buffer pooling / sub-allocation.** `uploadBuffer` destroys and recreates one
 `GPUBuffer` per `(regionKey, passId)` per upload. Measured and declined: a pan
 allocates at the fetch cadence, a pan inside loaded blocks allocates none, and
-time inside create calls is a negligible share of the gesture. A display whose
-uploads arrive per frame would reopen it; none does
-([GPU_DISPLAY_LIFECYCLE.md](GPU_DISPLAY_LIFECYCLE.md) §"Upload patterns").
+create time is a negligible share of the gesture. A display whose uploads arrive
+per frame would reopen it; none does.
 
 <!-- BEGIN GENERATED MEASUREMENT buffer-churn-pan -->
 

@@ -8,7 +8,7 @@ kind: spec
 
 Synteny and dotplot are a third display shape beside the two LGV fetch
 foundations in
-[ARCHITECTURE.md § Display stacks](../ARCHITECTURE.md#display-stacks): their
+[DISPLAY_PIPELINE.md § Display stacks](DISPLAY_PIPELINE.md#display-stacks): their
 fetch composes `KeyedFetchMixin`, and their canvas belongs to a container model
 rather than a display. The keying, empty-frame and readiness rules apply to any
 container owning a canvas that several children draw on.
@@ -22,19 +22,20 @@ container owning a canvas that several children draw on.
 kept the separate fetch and
 [ADR-105](../architecture-decision-records/adr-105-the-comparative-displays-compose-fetchmixin.md)
 records why each ground lapsed. `installComparativeFetchAutorun` is a declaration
-over the shared `installFetch` skeleton; each display supplies three
-`FetchPhases`. Its autorun body is synchronous and kicks the awaits into their own
-function, since an async body stops tracking at its first await.
+over the shared `installFetch` skeleton ([FETCH_KEYS.md](FETCH_KEYS.md#the-fetch-skeleton-one-latest-wins-machine-one-phase-contract));
+each display supplies three `FetchPhases`. Its autorun body is synchronous and
+kicks the awaits into their own function, since an async body stops tracking at
+its first await.
 
-**A comparative cancel is durable until Retry**, the one deliberate difference
-from the LGV families: these displays sit on single RPCs that run for minutes, and
-their viewport is their fetch input, so the LGV clear-on-viewport-change would
-un-cancel on every pan.
+**A comparative cancel is durable until Retry**, the one deliberate difference from
+the LGV families: these displays sit on single RPCs that run for minutes, and their
+viewport is their fetch input, so the LGV clear-on-viewport-change would un-cancel
+on every pan.
 
-**Tracked reads.** The autoruns track `currentFetchKey` and read every value
-behind it `untracked`, so a pan inside the buffered window cannot refire the
-fetch. Two more reads are tracked before `prepare()`'s bail-outs, and only a user
-gesture moves either:
+**Tracked reads.** The autoruns track `currentFetchKey` and read every value behind
+it `untracked`, so a pan inside the buffered window cannot refire the fetch. Two
+more reads are tracked before `prepare()`'s bail-outs, and only a user gesture
+moves either:
 
 - `reloadCounter`: after a failure every input is unchanged, so without it Retry
   is inert ([FETCH_KEYS.md](FETCH_KEYS.md#the-global-fetch-trigger-list-must-be-read-unconditionally)).
@@ -44,12 +45,11 @@ gesture moves either:
 
 **Nothing fetch-derived may join those reads, and `error` is the one that will be
 reached for**: the skeleton clears it at every fetch start and sets it on failure,
-so a tracked read turns one failure into an unbounded retry loop against the
-server that just failed.
+so a tracked read turns one failure into an unbounded retry loop.
 
 `syntenyFetchRegions` scopes both fetches (visible blocks widened by a pan buffer
 and snapped to a grid). Synteny's `offscreen` part adds a second query on the
-target axis (SYNTENY_LOD.md § The second synteny fetch, on the target axis).
+target axis ([SYNTENY_LOD.md](SYNTENY_LOD.md), off-screen mate classes B and D).
 
 ## The canvas belongs to the container, not the display
 
@@ -64,8 +64,8 @@ survivor's key names a slot holding another display's bytes.
 **The model that owns a shared canvas lays it out, never the displays drawing on
 it.** The canvas is absolutely positioned and contributes no height, so the band
 reserves its own (`level.height`). Sizing from displays breaks when a band has
-none (an assembly pair with no synteny dataset, or the last track hidden):
-`LinearSyntenyRenderArea` once reserved 0px while the canvas still painted.
+none (an assembly pair with no synteny dataset, or the last track hidden): it
+reserves 0px while the canvas still paints.
 
 ## The empty frame is load-bearing
 
@@ -90,9 +90,7 @@ to this.
 
 Both views publish `settled` as `data-display-drawn`, a required prop on
 `RenderCanvas` (ADR-065). `PENDING_DISPLAYS` (`@jbrowse/browser-test-utils`) waits
-on that attribute. The hand-enumerated list it replaced forgot dotplot, so an
-unpainted dotplot counted as finished and a capture landed blank. A readiness
-signal published as a required prop cannot forget a view; a selector list can.
-`canvasDrawn` means "a block drew"
+on that attribute. A readiness signal published as a required prop cannot forget a
+view; a hand-kept selector list can. `canvasDrawn` means "a block drew"
 ([ADR-009](../architecture-decision-records/adr-009-canvas-drawn-reliability.md));
 data-readiness rides separately through `displaysSettled`.

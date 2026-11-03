@@ -336,7 +336,7 @@ graphics card are genomic coordinates, a pan, a zoom, a recolor, a re-sort and a
 resize are all changes of shader parameter over data that is already there. The
 [GPU display guide](/docs/developer_guides/creating_gpu_display) is the
 walkthrough, and the
-[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#gpu-rendering-architecture)
+[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAY_PIPELINE.md#gpu-rendering-architecture)
 is the reference.
 
 The gain is largest when zooming in, since the new view is a strict subset of

@@ -1,8 +1,8 @@
 # @jbrowse/display-kit
 
 Rules and their why: `agent-docs/reference/DISPLAY_KIT.md`. Composition and
-fetch rules a display must not break: `agent-docs/ARCHITECTURE.md` ("What not to
-do").
+fetch rules a display must not break: `agent-docs/reference/DISPLAY_PIPELINE.md`
+("What not to do").
 
 - Tests needing a real linear genome view live in
   `plugins/linear-genome-view/src/displayKitTests/`, since this package sits

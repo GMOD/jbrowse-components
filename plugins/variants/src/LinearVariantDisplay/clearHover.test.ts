@@ -10,8 +10,8 @@ import { createTestEnvironment } from './testEnv.ts'
 // `scrollTop` is the worst of the three here: the rows move but the tooltip is
 // placed from the pointer, so the two visibly separate.
 //
-// See `installClearHoverOnViewportChange` and ARCHITECTURE.md "Don't **store** a
-// hover without clearing it on viewport change".
+// See `installClearHoverOnViewportChange` and DISPLAY_PIPELINE.md §"A stored hover is a
+// volatile the viewport can invalidate".
 const HOVER = { genotype: '0|1', name: 'HG002' }
 
 function hovering() {

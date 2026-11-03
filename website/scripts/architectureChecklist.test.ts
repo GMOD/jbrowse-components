@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 
 import {
+  DOC_PATH,
   STATES_NO_RULES,
   checkArchitectureDoc,
   slug,
@@ -32,7 +33,10 @@ const links: Record<string, string> = {
 const readLink = (path: string) => links[path]
 // The fixture's own exemption set. Passing the real doc's would judge these
 // headings by another doc's answers.
-const statesNoRules = { prose: 'a fixture heading that states nothing' }
+const statesNoRules = {
+  architecture: 'the title',
+  'see-also': 'a list of links',
+}
 
 test('the doc as written passes', () => {
   const { entryCount, problems } = checkArchitectureDoc({
@@ -117,6 +121,18 @@ test('a section no entry links, and no exemption names, fails', () => {
   expect(problems[0]).toContain('Zoom staleness')
 })
 
+// The checklist sits near the top of the real doc, so a check that read only
+// what precedes it passed every section below.
+test('a section after the checklist is held to the same rule', () => {
+  const doc = GOOD.replace(
+    '## See also',
+    '## Zoom staleness\n\nA rule lives here.\n\n## See also',
+  )
+  const { problems } = checkArchitectureDoc({ doc, readLink, statesNoRules })
+  expect(problems).toHaveLength(1)
+  expect(problems[0]).toContain('Zoom staleness')
+})
+
 test('an exemption lets that section through', () => {
   const doc = GOOD.replace(
     '## What not to do',
@@ -144,22 +160,19 @@ test('a section that is both exempted and indexed fails', () => {
 // An exemption is keyed by slug, so a renamed section loses its exemption
 // rather than keeping it under a heading nobody wrote.
 test('every STATES_NO_RULES key is a heading the real doc still has', () => {
-  const doc = readFileSync(
-    join(repoRoot, 'agent-docs', 'ARCHITECTURE.md'),
-    'utf8',
-  )
+  const doc = readFileSync(join(repoRoot, DOC_PATH), 'utf8')
   const headings = new Set(
-    [...doc.matchAll(/^#{2,3}\s+(.*)$/gm)].map(m => slug(m[1]!.trim())),
+    [...doc.matchAll(/^#{1,3}\s+(.*)$/gm)].map(m => slug(m[1]!.trim())),
   )
   for (const key of Object.keys(STATES_NO_RULES)) {
     expect(headings).toContain(key)
   }
 })
 
-test('the real ARCHITECTURE.md passes its own rules', () => {
-  const archDir = join(repoRoot, 'agent-docs')
+test('the real DISPLAY_PIPELINE.md passes its own rules', () => {
+  const archDir = dirname(join(repoRoot, DOC_PATH))
   const { problems } = checkArchitectureDoc({
-    doc: readFileSync(join(archDir, 'ARCHITECTURE.md'), 'utf8'),
+    doc: readFileSync(join(repoRoot, DOC_PATH), 'utf8'),
     readLink: path => {
       try {
         return path.endsWith('.md')

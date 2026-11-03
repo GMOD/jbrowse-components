@@ -6,10 +6,10 @@ kind: spec
 
 # Fetch keys, zoom staleness and the fetch skeleton
 
-[ARCHITECTURE.md](../ARCHITECTURE.md#rpcprops--gpuprops-pattern) states the three
-tiers; this doc holds the rules behind them: what invalidates a fetch, an upload and a
-frame, how a per-region display decides its cached data is stale under zoom, and the one
-machine every fetch runs on.
+[DISPLAY_PIPELINE.md](DISPLAY_PIPELINE.md#rpcprops--gpuprops-pattern) states the tiers;
+this doc holds the rules behind them: what invalidates a fetch, an upload and a frame,
+how a per-region display decides its cached data is stale under zoom, and the one machine
+every fetch runs on.
 
 ## What each tier costs when it moves, and who is zoom-sensitive
 
@@ -39,12 +39,14 @@ rebuilds and freezes it, so build a fresh class instance rather than mutating on
 
 ## Pick the payload out of the snapshot; never subtract from it
 
-The subtractive spelling (snapshot minus an exclusion list) fails silently: a slot nobody
+The subtractive spelling (snapshot minus an exclusion list) fails silently. A slot nobody
 excluded becomes an RPC cache key (`height`, which the resize handle writes every drag
-frame, once re-ran the worker pipeline); the leaking names come from another package's
-schema, so whoever adds a main-thread slot has no reason to open a display plugin's
-`rpcProps()`; and the superset reaches the typed args through an `as DisplayConfig` cast,
-the assertion that would have caught the extras.
+frame). The leaking names come from another package's schema, so whoever adds a
+main-thread slot has no reason to open a display plugin's `rpcProps()`. And the superset
+reaches the typed args through a cast, the assertion that would have caught the extras.
+Pick the slots the worker reads, off a key list the compiler checks exhaustive against
+the interface it reads them through; a slot present only to invalidate gets its own named
+field.
 
 ## Per-region zoom-staleness
 
@@ -58,15 +60,23 @@ Keep them apart. A rule that is no worker input belongs in `regionHasData`; writ
 fetch input it stamps an argument the worker never reads. An input that changes when data
 arrives is the `rpcProps()` loop again ([loop trap](#rpcprops-loop-trap-and-how-to-break-it)).
 
+`zoomFetchArgs` must read an observable: the foundation reads it inside a computed, so
+args over non-observable state are memoized for the display's life and the first fetch is
+cached forever. A coarse tier is its own store with its own span (`CoarseTierMixin`),
+never a `zoomFetchArgs` field or a second map stamped into `loadedRegions`: an input
+naming the tier reads as stale when the display swaps tiers, and a shared stamp narrows
+the coarse span to the detail's.
+
 ### Export gate, not scrim
 
 `isCacheValid` is a term of `dataCurrent`, the freshness half of `foundationSvgReady`.
 Without it, an export inside the `FetchVisibleRegions` throttle draws the previous zoom's
 bins, columns or amino acids. `displayPhase` does not read `dataCurrent`
 (`MultiRegionDisplayMixin` hands `foundationDisplayPhase` a `viewportWithinLoadedData`
-thunk): folding staleness into the phase raises the scrim into every zoom, which we
+thunk): folding staleness into the phase raises the scrim into every zoom, which was
 declined. The term cannot latch, because `planRegionFetch` refetches a block on
-`!(isBlockCovered && isCacheValid)`.
+`!(isBlockCovered && isCacheValid)`. The live-versus-settled half it cannot see is
+[`dataSuperseded`](DISPLAY_KIT.md#datasuperseded-covers-what-fetchinputs-cannot-state).
 
 ## `gpuProps()` and derived region maps — re-upload without refetch
 
@@ -78,8 +88,9 @@ spares a genuine recolor a full re-pack is a backend concern:
 [GPU_DISPLAY_LIFECYCLE.md § Upload patterns](GPU_DISPLAY_LIFECYCLE.md#upload-patterns).
 
 Use a derived region map when settings change the shape of per-region data, and
-`gpuProps()` for scalars fed to an encoder. The raw `rpcDataMap` is never mutated, which
-fixes its representation: build it with
+`gpuProps()` for scalars fed to an encoder. Split the tier so a recolor doesn't re-run row
+placement, and emit fresh per-region objects rather than mutating entries. The raw
+`rpcDataMap` is never mutated, which fixes its representation: build it with
 [`regionDataMap()`](../../packages/render-core/src/regionDataMap.ts), a **shallow**
 `observable.map` ([ADR-060](../architecture-decision-records/adr-060-region-data-maps-are-shallow-observable.md)).
 A hand-written `observable.map<number, …>()` is the thing to notice in review.
@@ -88,9 +99,11 @@ A hand-written `observable.map<number, …>()` is the thing to notice in review.
 
 A palette is a pure function of the active theme, so derive it in a model getter,
 `<plugin builder>(getPaletteHost(self).palette)`, that `gpuProps()` / `renderState` read
-directly. Do **not** push it into a volatile from a React `useEffect` via
-`setColorPalette`: the effect runs only on mount, so SVG export and RPC, which have no
-component, see a null palette and render blank. A drawing autorun follows the same rule.
+directly. Do **not** push it into a volatile from a React `useEffect`: the effect runs
+only on mount, so SVG export and RPC, which have no component, see a null palette and
+render blank. A drawing autorun follows the same rule. Read `session.palette`, not
+`session.theme`: the palette is the serializable, toolkit-free one that crosses the RPC
+boundary.
 
 ## `rpcProps()` loop trap and how to break it
 
@@ -117,8 +130,7 @@ it puts the order back in through the cache key, which compares arrays in order.
 `runFetchOnce` (`@jbrowse/core/util/installFetch`) is that sequence; `installFetch` adds
 the autorun over it: the abort rotation, the leading edge, the unconditional
 `reloadCounter` read, the durable cancel gate, and the dev-only contract checks
-(`assertDisplayContract`, `makeRetryContractCheck`). Copies of the sequence each missed a
-different rule, so a fetch gets it from here.
+([DISPLAY_KIT.md](DISPLAY_KIT.md#contract-checks)).
 
 Map: `FetchMixin.runFetch` holds `runFetchOnce` for the per-region family (it needs the
 MST flow); keyed families lend `FetchMixin`'s rotation through the `rotation` option;
@@ -128,13 +140,18 @@ contract for the global and comparative families (per-region is deliberately not
 shape, see `RegionFetchContext`); `handleFetchError` swallows an abort and any failure of
 a fetch no longer current.
 
+Every installer's first run is a microtask, not the install call: a model is built and
+configured in the same synchronous block, and a fetch issued between the two runs against
+un-configured state and is reissued. Nothing downstream of a fetch may be correct only
+because the fetch is slower than it; an empty block list is not a stale domain but the
+fallback one, and `settledDynamicBlocks` is the in-tree fix.
+
 ### The global-fetch trigger list must be read unconditionally
 
 `installFetch` reads `reloadCounter` and `fetchCanceled` unconditionally at the top of
 its body, above every gate, and that ordering is load-bearing. MobX rebuilds the
 dependency set on every run, so a read inside the gate drops out on any run that
-declines and can never wake the autorun again. The deleted arc display exposed it: with
-`reloadCounter` under the gate, `reload()` was silently dead.
+declines and can never wake the autorun again: `reload()` is silently dead.
 
 **`prepare` returning `undefined` is the display's gate.** It runs synchronously in the
 autorun body, so whatever it read to decline stays in the dependency set. The skeleton's
@@ -144,7 +161,7 @@ trigger read of its own under a bail-out.
 The general rule: **a gated trigger read is safe only if the gate is itself an
 observable that flips on the transition you want to wake up on.** `if (self.isMinimized)
 return` above the tracked deps is fine; a pure signal like `reloadCounter`, which no gate
-consults, is the dangerous case. `installGlobalFetchAutorun.test.ts` and
-`installPerRegionFetchAutoruns.test.ts` assert `reloadCounter`, `fetchCanceled` and
-`alive` stay visible in the declining states.
-
+consults, is the dangerous case. A `fetchNeeded` override that returns early without
+fetching must supply its own wake path: a fetch bumps `fetchGeneration`, and a skipped
+fetch breaks that chain. `installGlobalFetchAutorun.test.ts` and `installPerRegionFetchAutoruns.test.ts` assert
+`reloadCounter`, `fetchCanceled` and `alive` stay visible in the declining states.

@@ -12,8 +12,8 @@ description: Index of every doc in reference/, with the question each one answer
 > CI on a stale table or a doc carrying no frontmatter.
 
 Everything settled: how a subsystem works, how to operate it, and the datasets
-behind the figures. [ARCHITECTURE.md](../ARCHITECTURE.md) states the rules and
-links here for the argument.
+behind the figures. [ARCHITECTURE.md](../ARCHITECTURE.md) is the map, and its
+"Where to read next" table routes a task to the doc here that owns it.
 
 Every doc carries `name:`, `description:` and `kind:` — `spec`, `measurement`,
 `dataset` or `operations` — and the tables below group on the kind. A

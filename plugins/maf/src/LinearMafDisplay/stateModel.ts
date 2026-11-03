@@ -266,7 +266,7 @@ export default function stateModelFactory(
          * stops drawing; the menu reads this to say so.
          *
          * Never in `rpcProps()`: the fetch writes it, the loop trap
-         * ARCHITECTURE.md names.
+         * FETCH_KEYS.md names.
          */
         framesGateBlocked: false,
         /**

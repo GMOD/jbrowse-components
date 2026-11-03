@@ -107,7 +107,7 @@ answers how the display _fetches_; how it _renders_ is a separate axis on top.
 <!-- DISPLAY_FOUNDATIONS END -->
 
 The two walkthroughs below use `MultiRegionDisplayMixin`, the common case. The
-[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks)
+[architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/DISPLAY_PIPELINE.md#display-stacks)
 goes further into why fetch and render are split.
 
 If your display holds onto what the pointer is over, read
