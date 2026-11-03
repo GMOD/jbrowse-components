@@ -13,11 +13,11 @@ tutorials/genomes_synteny.md 10
 tutorials/hg002_haplotypes.md 3
 tutorials/ld_mosquitoes.md 3
 tutorials/mappability_qc.md 6
-tutorials/pangenome_cattle.md 7
+tutorials/pangenome_cattle.md 6
 tutorials/pangenome_ecoli.md 1
 tutorials/pangenome_hprc_repeats.md 6
-tutorials/pangenome_hprc.md 12
-tutorials/pangenome_mouse.md 4
+tutorials/pangenome_hprc.md 6
+tutorials/pangenome_mouse.md 3
 tutorials/pangenome_prepare_graph.md 6
 tutorials/sv_visualization_cgiab.md 4
 tutorials/synteny_visualization.md 8

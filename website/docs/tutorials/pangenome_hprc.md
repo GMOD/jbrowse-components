@@ -110,13 +110,14 @@ it does, counts its carriers in the panel and cites
 risk of age-related macular degeneration. The map calls the change by the same
 name.
 
-Press **Open in JBrowse**. Under the genes:
+Press **Open in JBrowse**. Under **NCBI RefSeq genes (hg38)**:
 
 - **Known alleles** spans the deletion and names it
 - **GWAS Catalog (NHGRI-EBI)** marks the trait associations in the window. Click
   a hit for its trait, paper and p-value; the two advanced age-related macular
   degeneration hits sit one on either side of the deletion
-- the matrix under the graph marks the deletion in each carrier's row
+- the matrix under **HPRC v2.1 graph (rGFA segments)** marks the deletion in
+  each carrier's row
 
 <Figure caption="The CFH / CFHR Graph launch: the Known alleles and GWAS Catalog rows under the genes, the graph track, and the variant matrix, one row per haplotype. The red block at the foot of the matrix is the deletion's carriers." src="/img/pangenome/hprc_cfh_graph_launch.png" />
 

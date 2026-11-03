@@ -152,7 +152,7 @@ genes across the graph.
 Open the [HPRC page](https://genomes.jbrowse.org/pangenomes/hprc) and click the
 **CFH / CFHR** example, the complement factor H gene cluster. Under **More about
 this window**, click **Haplotypes**, which opens the lanes under the NCBI RefSeq
-genes (hg38) track, the known alleles and the GWAS Catalog's hits:
+genes (hg38), **Known alleles** and **GWAS Catalog (NHGRI-EBI)** tracks:
 
 - **Each structural form gets lanes**, more for a commoner form, and each lane's
   header counts the haplotypes that share its form.
