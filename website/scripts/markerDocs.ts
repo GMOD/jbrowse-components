@@ -1,5 +1,5 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import { readDoc, writeDoc } from './api-docs/format.ts'
 import { isDocFile, repoFiles } from './check-utils.ts'
