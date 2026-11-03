@@ -6,39 +6,36 @@
 #
 # OrthoFinder groups genes by homology and knows nothing about position, so
 # unlike MCScan it needs no collinearity to work and no sequence alignment
-# between the genomes. That is what makes the three species sets here loadable
-# at all:
+# between the genomes. That is what makes the species sets here loadable at
+# all. Each genome is an NCBI assembly, and its protein FASTA, GFF3 and
+# sequence report come from one `datasets` call:
 #
-#   vertebrates  human, chicken, frog, zebrafish, spotted gar (Ensembl 113).
-#                Too diverged for a whole-genome aligner, but the orthologs
-#                still fall into chromosome-scale blocks, and a human
-#                chromosome answers to two zebrafish ones.
-#   grasses      rice, sorghum, maize, brachypodium, foxtail millet (Ensembl
-#                Plants 58). Maize's whole-genome duplication puts two maize
-#                genes against one rice gene, which is the case the .blocks
-#                conversion has to expand rather than resolve.
-#   wheat        wheat's own polyploidy history rather than an abstract
-#                duplication, stacked in evolutionary order: Aegilops tauschii
-#                (the diploid D-genome donor) - bread wheat (hexaploid ABD) -
-#                durum (domesticated tetraploid AB) - wild emmer (durum's wild
-#                tetraploid ancestor) - Triticum urartu (the diploid A-genome
-#                donor) - T. timopheevii (a second, independent tetraploid
-#                lineage (GG, a different genome, plus A) that also traces to
-#                the A-genome donor). Every adjacent band is a real step:
-#                D-donor to hexaploid, hexaploid to durum, durum to its wild
-#                ancestor, wild ancestor to the A-genome donor, and the A-genome
-#                donor to timopheevii's independently-formed tetraploid
-#                (Ensembl Plants 63).
+#   vertebrates  human, chicken, frog, spotted gar, zebrafish. Too diverged for a
+#                whole-genome aligner, but the orthologs still fall into
+#                chromosome-scale blocks, and a gar chromosome answers to two
+#                zebrafish ones.
+#   grasses      rice, sorghum, maize, brachypodium, foxtail millet. Maize's
+#                whole-genome duplication puts two maize genes against one rice
+#                gene, which is the case the .blocks conversion has to expand
+#                rather than resolve.
+#   wheat        wheat's own polyploidy history, stacked in evolutionary order:
+#                Aegilops tauschii (the diploid D-genome donor) - bread wheat
+#                (hexaploid ABD) - durum (domesticated tetraploid AB) - wild
+#                emmer (durum's wild tetraploid ancestor) - Triticum urartu (the
+#                diploid A-genome donor).
+#   drosophila   melanogaster and four relatives, one copy of each genome.
+#   solanaceae   tomato, potato, pepper and Nicotiana attenuata, which share a
+#                whole-genome triplication, with coffee as the outgroup.
 #
 # No genome FASTA is downloaded: each assembly is a ChromSizesAdapter built from
-# the `##sequence-region` header of that species' GFF3, which is all a
-# gene-level synteny view needs and keeps a five-genome demo small.
+# the sequence report's lengths, which is all a gene-level synteny view needs
+# and keeps a five-genome demo small.
 #
 # Requires: orthofinder + diamond, MCScanX_h (bioconda mcscanx=1.0.0), python3,
-#           bgzip/tabix (htslib), wget, and node (JBrowse CLI, fetched via npx
-#           unless `jbrowse` is on PATH).
-#           The wheat set also needs the NCBI datasets CLI (see ALIASES below).
-#           A manifest whose column 2 is a genome rather than a proteome also
+#           bgzip/tabix (htslib), the NCBI datasets CLI (`datasets` and
+#           `dataformat`), and node (JBrowse CLI, fetched via npx unless
+#           `jbrowse` is on PATH). A manifest naming files by URL also needs
+#           wget, and one whose column 2 is a genome rather than a proteome
 #           needs gffread, which is what derives one from the other.
 #
 # Nothing below calls orthofinder by any path other than `orthofinder` on PATH,
@@ -68,12 +65,12 @@
 # Column 2 is the genome the annotation goes with. gffread translates each CDS
 # and prints the transcript-to-gene map, so the proteome and the gene rows come
 # out of one parse of one file and cannot disagree about a gene id. That is the
-# case for a species in neither Ensembl nor NCBI, which is the case this is for:
+# case for a species NCBI does not hold, which is the case this is for:
 # a genome and an annotation is what assembling one leaves you holding.
 #
 # Column 2 also takes a proteome, and the reason is worth stating plainly rather
 # than leaving as a second supported route: the five sets below download one per
-# species, and rebuilding them from genomes would mean fetching 26 genomes, tens
+# species, and rebuilding them from genomes would mean fetching 25 genomes, tens
 # of gigabytes, to translate proteins their sources already publish, for a view
 # that reads no bases. That is the whole of it. A manifest can pass a proteome
 # for the same saving, and pays an agreement the genome route does not need,
@@ -83,9 +80,8 @@
 #
 # Column 4 is optional, and is how a genome whose GFF3 names sequences something
 # a reader would not recognize gets labelled. An INSDC assembly accession
-# (GCA_/GCF_) fetches NCBI's sequence report for it, which is the same route the
-# `wheat`, `solanaceae` and `drosophila` sets take and needs the NCBI datasets
-# CLI. Anything else is read as an alias table you already have: two columns,
+# (GCA_/GCF_) fetches NCBI's sequence report for it and needs the datasets CLI.
+# Anything else is read as an alias table you already have: two columns,
 # reference name and alias, which is what a genome with no accession to fetch
 # one by can still supply.
 #
@@ -121,7 +117,7 @@ SETNAME=$(basename "${SET%.*}")
 OUTDIR="${2:-orthofinder_${SETNAME}_build}"
 MANIFEST=""
 
-# Sequence regions kept per genome, the ones with the most genes: Ensembl
+# Sequence regions kept per genome, the ones with the most genes: an assembly
 # lists every unplaced scaffold, and a row with 30,000 of them is unreadable. 30
 # is tight on a karyotype larger than that (chicken has ~40) or a fragmented
 # assembly, which the chrom.sizes step below reports as a low drawable share.
@@ -132,107 +128,73 @@ MAXSEQ="${MAXSEQ:-30}"
 # included; the conversion counts what it drops.
 MAXCOPIES="${MAXCOPIES:-4}"
 
-# Heredoc columns: short name (= the JBrowse assembly name, and the proteome
-# filename OrthoFinder names its column after), Ensembl species prefix,
-# assembly version. Row order is the row order of the stacked view.
+# Each set is a heredoc of `name accession` rows: the name is the JBrowse
+# assembly name and the proteome filename OrthoFinder names its column after,
+# and the accession is an NCBI assembly whose protein FASTA, GFF3 and sequence
+# report `datasets` fetches in one call, so the annotation and the assembly it
+# sits on are one build. Row order is the row order of the stacked view.
 #
-# ALIASES lists, as "name<space>GenBank accession", the genomes whose Ensembl
-# GFF3 names sequences with INSDC accessions rather than chromosome names. Each
-# gets NCBI's sequence report for the same assembly as a refNameAliases source,
-# which is where the chromosome names live. A set that uses it needs the NCBI
-# datasets CLI (`datasets` and `dataformat`) as well.
+# A GCF_ accession is a RefSeq annotation. Three genomes have none, and carry
+# their submitters' annotation on the GenBank (GCA_) record instead: durum,
+# potato's chromosome-scale haplotype (RefSeq's SolTub_3.0 is scaffolds), and
+# coffee. T. timopheevii has no annotation at NCBI at all, so the wheat set
+# stops at the five genomes that do.
 #
-# Annotation comes from Ensembl rather than `datasets download genome accession
-# <acc> --include gff3,protein`, which would fetch both files a set needs in one
-# call. Availability, checked 2026-08-03 against the exact assemblies below:
-# every vertebrates and grasses assembly has a RefSeq annotation on that same
-# assembly (GCF_000001405.40, GCF_016699485.2, GCF_000004195.4,
-# GCF_000242695.1, GCF_000002035.6; GCF_001433935.1, GCF_000003195.3,
-# GCF_902167145.1, GCF_000005505.3, GCF_000263155.2), so those two sets could
-# switch. Wheat cannot: NCBI holds four of its six assemblies under names other
-# than Ensembl's, and T. timopheevii (GCA_963921465.1) carries no NCBI
-# annotation at all. A switch is also not a swap of download lines: different
-# gene models mean a different OrthoFinder run and a re-upload of every demo
-# file.
 # A mammals set (human, mouse, dog, cow, pig) was scoped and not built: it sits
 # between vertebrates' deep time and drosophila's shallow time and shows
 # nothing either does not.
-ALIASES=""
 case "$SET" in
 vertebrates)
-  BASE=https://ftp.ensembl.org/pub/release-113
-  REL=113
+  # LepOcu1, the gar assembly Braasch et al. (2016) compared against zebrafish,
+  # keeps the LG names that paper uses.
   SPECIES=$(cat <<'EOF'
-human     Homo_sapiens         GRCh38
-chicken   Gallus_gallus        bGalGal1.mat.broiler.GRCg7b
-frog      Xenopus_tropicalis   UCB_Xtro_10.0
-gar       Lepisosteus_oculatus LepOcu1
-zebrafish Danio_rerio          GRCz11
+human     GCF_000001405.40
+chicken   GCF_016699485.2
+frog      GCF_000004195.4
+gar       GCF_000242695.1
+zebrafish GCF_000002035.6
 EOF
   )
   ;;
 grasses)
-  BASE=http://ftp.ensemblgenomes.org/pub/plants/release-63
-  REL=63
   SPECIES=$(cat <<'EOF'
-rice         Oryza_sativa            IRGSP-1.0
-sorghum      Sorghum_bicolor         Sorghum_bicolor_NCBIv3
-maize        Zea_mays                Zm-B73-REFERENCE-NAM-5.0
-brachypodium Brachypodium_distachyon Brachypodium_distachyon_v3.0
-setaria      Setaria_italica         Setaria_italica_v2.0
+rice         GCF_001433935.1
+sorghum      GCF_000003195.3
+maize        GCF_902167145.1
+brachypodium GCF_000005505.3
+setaria      GCF_000263155.2
 EOF
   )
   ;;
 wheat)
-  BASE=http://ftp.ensemblgenomes.org/pub/plants/release-63
-  REL=63
   SPECIES=$(cat <<'EOF'
-tauschii    Aegilops_tauschii    Aet_v4.0
-wheat       Triticum_aestivum    IWGSC
-durum       Triticum_turgidum    Svevo.v1
-emmer       Triticum_dicoccoides WEWSeq_v.1.0
-urartu      Triticum_urartu      IGDB
-timopheevii Triticum_timopheevii WRC_timopheevii_genome_with_organelles
+tauschii GCF_002575655.3
+wheat    GCF_018294505.1
+durum    GCA_900231445.1
+emmer    GCF_002162155.2
+urartu   GCF_003073215.2
 EOF
   )
-  # Ensembl's T. timopheevii GFF3 carries OY997261.1 ... rather than Chr1At ...
-  ALIASES="timopheevii GCA_963921465.1"
   ;;
 drosophila)
-  BASE=http://ftp.ensemblgenomes.org/pub/metazoa/release-63
-  REL=63
   SPECIES=$(cat <<'EOF'
-melanogaster  Drosophila_melanogaster                   BDGP6.54
-simulans      Drosophila_simulans_gca016746395v2rs      Prin_Dsim_3.1
-yakuba        Drosophila_yakuba_gca016746365v2rs        Prin_Dyak_Tai18E2_2.1
-pseudoobscura Drosophila_pseudoobscura_gca009870125v2rs UCI_Dpse_MV25
-virilis       Drosophila_virilis_gca030788295v1rs       Dvir_AGI_RSII_ME
-EOF
-  )
-  # Only melanogaster's annotation is Ensembl's own, and only it names arms 2L,
-  # 2R, 3L, 3R, X. The other four are RefSeq annotations Ensembl imported, whose
-  # sequences are INSDC accessions, and the Muller element a row sits on is the
-  # whole point of the comparison, so each gets its submitter names.
-  ALIASES=$(cat <<'EOF'
-simulans      GCA_016746395.2
-yakuba        GCA_016746365.2
-pseudoobscura GCA_009870125.2
-virilis       GCA_030788295.1
+melanogaster  GCF_000001215.4
+simulans      GCF_016746395.2
+yakuba        GCF_016746365.2
+pseudoobscura GCF_009870125.1
+virilis       GCF_030788295.1
 EOF
   )
   ;;
 solanaceae)
-  BASE=http://ftp.ensemblgenomes.org/pub/plants/release-63
-  REL=63
   SPECIES=$(cat <<'EOF'
-tomato  Solanum_lycopersicum_gca000188115v5cm SL4.0
-potato  Solanum_tuberosum                     SolTub_3.0
-pepper  Capsicum_annuum                       ASM51225v2
-tobacco Nicotiana_attenuata                   NIATTr2
-coffee  Coffea_canephora                      AUK_PRJEB4211_v1
+tomato  GCF_036512215.1
+potato  GCA_020169535.1
+pepper  GCF_002878395.1
+tobacco GCF_001879085.1
+coffee  GCA_900059795.1
 EOF
   )
-  ALIASES="tomato GCA_000188115.5"
   ;;
 *)
   # Not one of the sets above, so it is a manifest of your own genomes, or a
@@ -274,6 +236,9 @@ esac
 # so the alias step at the bottom takes both without knowing which it has.
 if [ -n "$MANIFEST" ]; then
   ALIASES=$(echo "$SPECIES" | awk 'NF > 3 && $4 != "" {print $1, $4}')
+else
+  # a set's sequences already carry their chromosome names (fetch_ncbi)
+  ALIASES=""
 fi
 
 NAMES=$(echo "$SPECIES" | awk '{print $1}')
@@ -300,6 +265,126 @@ fetch() {
     fi
     mv "$dest.part" "$dest"
   fi
+}
+
+# One NCBI assembly gives the three files a set needs: the protein FASTA, the
+# GFF3 those proteins were annotated in, and the sequence report naming and
+# measuring each sequence. They are reshaped into what the genome route below
+# writes, so every later step reads one shape:
+#
+#   name.genes.tsv    gene, gene, sequence, start, end, strand: one row per gene
+#   name.pep.fa.gz    >protein gene:GENE, every isoform
+#   name.lengths.tsv  sequence and length, in the assembly's own order
+#   name.gff3.gz      the GFF3 for the gene track, its whole-sequence `region`
+#                     rows dropped, since a gene track draws them as a bar the
+#                     length of the chromosome
+#
+# Each chromosome takes the report's chrName (1A, 2L, LG11, V) in every file,
+# since the names NCBI displays mix prefixes across genomes of one set (Chr1A,
+# chr1A, Chr01); an accession maps to its chromosome without ambiguity. A
+# sequence with no chromosome of its own, or one whose chrName repeats, keeps
+# its accession.
+#
+# Gene ids drop NCBI's `gene-` prefix. A protein reaches its gene through its
+# CDS: RefSeq hangs a CDS off an mRNA (`rna-...`) whose parent is the gene,
+# while a submitter's GenBank annotation (durum, coffee) hangs it off the gene
+# directly, so both parents are followed.
+fetch_ncbi() {
+  local name=$1 acc=$2
+  if [ ! -f "$name.ncbi.zip" ]; then
+    datasets download genome accession "$acc" --include protein,gff3,seq-report \
+      --filename "$name.ncbi.zip.part"
+    mv "$name.ncbi.zip.part" "$name.ncbi.zip"
+  fi
+  [ -f "$name.pep.fa.gz" ] || python3 - "$name.ncbi.zip" "$acc" "$name" <<'PY'
+import gzip
+import json
+import os
+import sys
+import zipfile
+
+src, acc, name = sys.argv[1:]
+data = f'ncbi_dataset/data/{acc}'
+
+
+def attrs(col9):
+    return dict(kv.split('=', 1) for kv in col9.split(';') if '=' in kv)
+
+
+def strip(gene_id):
+    return gene_id[5:] if gene_id.startswith('gene-') else gene_id
+
+
+parent_gene = {}
+cds_parent = {}
+genes = []
+seqid_key = 'refseqAccession' if acc.startswith('GCF_') else 'genbankAccession'
+with zipfile.ZipFile(src) as z:
+    with z.open(f'{data}/sequence_report.jsonl') as raw:
+        report = [json.loads(b) for b in raw if b.strip()]
+    report = [r for r in report if r.get(seqid_key) not in (None, 'na')]
+    report.sort(key=lambda r: r.get('sortOrder', 1 << 30))
+    chr_names = [
+        r.get('chrName') for r in report if r.get('role') == 'assembled-molecule'
+    ]
+    rename = {
+        r[seqid_key]: r['chrName']
+        for r in report
+        if r.get('role') == 'assembled-molecule'
+        and r.get('chrName') not in (None, '', 'na', 'Un')
+        and chr_names.count(r['chrName']) == 1
+    }
+    with open(f'{name}.lengths.tsv.part', 'w') as out:
+        for r in report:
+            out.write(f"{rename.get(r[seqid_key], r[seqid_key])}\t{r['length']}\n")
+    with z.open(f'{data}/genomic.gff') as raw, \
+            gzip.open(f'{name}.gff3.gz.part', 'wt') as gff:
+        for line in (b.decode() for b in raw):
+            if line.startswith('##sequence-region '):
+                parts = line.split(' ')
+                parts[1] = rename.get(parts[1], parts[1])
+                gff.write(' '.join(parts))
+                continue
+            fields = line.rstrip('\n').split('\t')
+            if len(fields) != 9:
+                gff.write(line)
+                continue
+            # a trans-spliced organelle transcript (maize's mitochondrial nad1)
+            # is written with its end before its start, which tabix refuses
+            if fields[2] == 'region' or int(fields[4]) < int(fields[3]):
+                continue
+            fields[0] = rename.get(fields[0], fields[0])
+            gff.write('\t'.join(fields) + '\n')
+            a = attrs(fields[8])
+            if fields[2] == 'gene' and 'ID' in a:
+                genes.append((strip(a['ID']), fields[0], fields[3], fields[4], fields[6]))
+            elif fields[2] == 'CDS' and 'protein_id' in a and 'Parent' in a:
+                cds_parent[a['protein_id']] = a['Parent']
+            elif 'ID' in a and a.get('Parent', '').startswith('gene-'):
+                parent_gene[a['ID']] = a['Parent']
+    with open(f'{name}.genes.tsv.part', 'w') as out:
+        for gene_id, seq, start, end, strand in genes:
+            out.write(f'{gene_id}\t{gene_id}\t{seq}\t{start}\t{end}\t{strand}\n')
+    kept = orphan = 0
+    with z.open(f'{data}/protein.faa') as raw, \
+            gzip.open(f'{name}.pep.fa.gz.part', 'wt') as out:
+        skip = True
+        for line in (b.decode() for b in raw):
+            if line.startswith('>'):
+                protein = line[1:].split()[0]
+                parent = cds_parent.get(protein, '')
+                gene = parent_gene.get(parent, parent)
+                skip = not gene.startswith('gene-')
+                orphan += skip
+                kept += not skip
+                if not skip:
+                    out.write(f'>{protein} gene:{strip(gene)}\n')
+            elif not skip:
+                out.write(line)
+for part in ('gff3.gz', 'lengths.tsv', 'genes.tsv', 'pep.fa.gz'):
+    os.rename(f'{name}.{part}.part', f'{name}.{part}')
+print(f'{name} ({acc}): {len(genes)} genes, {kept} proteins, {orphan} with no gene to join', file=sys.stderr)
+PY
 }
 
 # Is the first sequence in a gzipped fasta nucleotide? A manifest's column 2 is
@@ -332,24 +417,24 @@ PY
 # transcript-to-gene map that makes those proteins joinable to the gene rows.
 # Both come from gffread's parse of the same GFF3, so the two id spaces cannot
 # drift the way they do when the proteome is a separate download that spells
-# gene ids its own way. It is also what lets a species in neither Ensembl nor
-# NCBI run at all: a genome and an annotation is what anyone who assembled one
-# has, and a published proteome is what they do not.
+# gene ids its own way. It is also what lets a species NCBI does not hold run at
+# all: a genome and an annotation is what anyone who assembled one has, and a
+# published proteome is what they do not.
 #
-# Headers come out as `>transcript gene:GENEID`, which is the Ensembl shape the
-# proteome reducer below already reads, so nothing downstream learns a second
-# spelling.
+# Writes the same three files fetch_ncbi does: genes.tsv (one row per
+# transcript here), pep.fa.gz headed `>transcript gene:GENEID`, and lengths.tsv
+# from the .fai gffread leaves beside the genome.
 derive_proteome() {
   local name=$1
   gzip -dc "$name.genome.fa.gz" > "$name.genome.fa"
   gzip -dc "$name.gff3.gz" > "$name.ann.gff3"
   gffread --table @id,@geneid,@chr,@start,@end,@strand "$name.ann.gff3" \
-    > "$name.gffread.tsv.part"
-  mv "$name.gffread.tsv.part" "$name.gffread.tsv"
-  # -y translates each CDS; the .fai it writes beside the genome is where
-  # chrom.sizes comes from when the GFF3 carries no ##sequence-region header
+    > "$name.genes.tsv.part"
+  mv "$name.genes.tsv.part" "$name.genes.tsv"
+  # -y translates each CDS
   gffread -y "$name.tx.faa" -g "$name.genome.fa" "$name.ann.gff3"
-  python3 - "$name.tx.faa" "$name.gffread.tsv" "$name.pep.fa.gz" <<'PY'
+  cut -f1,2 "$name.genome.fa.fai" > "$name.lengths.tsv"
+  python3 - "$name.tx.faa" "$name.genes.tsv" "$name.pep.fa.gz" <<'PY'
 import gzip
 import sys
 
@@ -381,9 +466,7 @@ print(f'{dest}: {kept} translated, {skipped} with no gene to join')
 PY
   # The decompressed genome is the biggest thing this script ever writes, and
   # once the proteome exists nothing reads it again: bread wheat alone is 14.5
-  # Gb of sequence, so six of them left lying about is most of a disk. Its .fai
-  # stays, because chrom.sizes takes reference lengths from that rather than
-  # from the sequence, and it is a few kilobytes.
+  # Gb of sequence, so six of them left lying about is most of a disk.
   #
   # Only on success. A failure keeps every intermediate where it fell, which is
   # what a re-run and a look at the file both want.
@@ -410,32 +493,23 @@ echo "$SPECIES" | while read -r name col2 col3 _; do
       fi
     fi
   else
-    # a set names the species and its assembly, and the two urls are built from
-    # the release the branch above declared
-    species=$(echo "$col2" | tr '[:upper:]' '[:lower:]')
-    fetch "$name.pep.fa.gz" "$BASE/fasta/$species/pep/$col2.$col3.pep.all.fa.gz"
-    fetch "$name.gff3.gz" "$BASE/gff3/$species/$col2.$col3.$REL.gff3.gz"
+    fetch_ncbi "$name" "$col2"
   fi
 
-  # One BED row per gene, named by the bare Ensembl gene id, the same id the
-  # proteome step below writes into the FASTA headers, which is what makes the
-  # orthogroup table resolve against these BEDs. The trailing .NN strip mirrors
-  # the one the proteome step applies to the FASTA header's gene: tag: most
-  # Ensembl annotations carry no version on the GFF3 ID at all, so this is a
-  # no-op there, but some (Triticum urartu's IGDB annotation) suffix every gene
-  # ID with a constant .01 that isn't a version and isn't on the FASTA side,
-  # which otherwise resolves every id in the column to nothing.
+  # One BED row per gene, named by the gene id the proteome's `gene:` tags
+  # carry, which is what makes the orthogroup table resolve against these BEDs.
+  # A set and a manifest genome both have genes.tsv; a manifest's supplied
+  # proteome does not, and its GFF3 gives the id as `ID=gene:`.
   #
   # `match` in the pattern rather than the body: it returns 0 on a gene line
   # carrying no ID=gene:, where substr($9, 0, -1) is the empty string and the row
   # would go out with an empty name column. Before chrom.sizes, which selects on
   # this file's gene counts.
   if [ ! -f "$name.bed" ]; then
-    if [ -f "$name.gffread.tsv" ]; then
-      # The gene ids here are the ones the proteome was just renamed to, since
-      # both came out of the same gffread parse. Rows are per transcript, so a
-      # gene spans the widest of its own, which is what the awk below gets from
-      # a gene row directly.
+    if [ -f "$name.genes.tsv" ]; then
+      # The gene ids here are the ones the proteome's headers carry, since both
+      # came out of one parse. gffread's rows are per transcript, so a gene
+      # spans the widest of its own; an NCBI row is the gene itself.
       awk -F'\t' -v OFS='\t' '$2 != "." && $2 != "" {
           if (!($2 in lo) || $4 < lo[$2]) lo[$2] = $4
           if (!($2 in hi) || $5 > hi[$2]) hi[$2] = $5
@@ -448,12 +522,11 @@ echo "$SPECIES" | while read -r name col2 col3 _; do
             g = order[i]
             print chr[g], lo[g] - 1, hi[g], g, 0, strand[g]
           }
-        }' "$name.gffread.tsv" > "$name.bed.part"
+        }' "$name.genes.tsv" > "$name.bed.part"
     else
       gunzip -c "$name.gff3.gz" \
         | awk -F'\t' -v OFS='\t' '$3 == "gene" && match($9, /ID=gene:[^;]+/) {
             id = substr($9, RSTART + 8, RLENGTH - 8)
-            sub(/\.[0-9]+$/, "", id)
             print $1, $4 - 1, $5, id, 0, $7
           }' > "$name.bed.part"
     fi
@@ -468,19 +541,19 @@ echo "$SPECIES" | while read -r name col2 col3 _; do
   # and draws nothing, which is the one mismatch MCScanBlocksAdapter cannot
   # report, since by then the assembly simply has no such refName.
   if [ ! -f "$name.chrom.sizes" ]; then
-    python3 - "$name.gff3.gz" "$name.bed" "$MAXSEQ" "$name.genome.fa.fai" <<'PY' > "$name.chrom.sizes.part"
+    python3 - "$name.gff3.gz" "$name.bed" "$MAXSEQ" "$name.lengths.tsv" <<'PY' > "$name.chrom.sizes.part"
 import gzip
 import os
 import sys
 
-src, bed, keep, fai = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
+src, bed, keep, lengths = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
 regions = []
-# The .fai gffread wrote beside a supplied genome is already name and length in
-# its first two columns, and it is there whether or not the annotation carries a
-# ##sequence-region header. An annotation from a reader's own pipeline often
-# does not, and used to leave the assembly with no sequences at all.
-if os.path.exists(fai):
-    with open(fai) as fh:
+# lengths.tsv comes from the sequence report or a supplied genome's .fai, and is
+# there whether or not the annotation carries a ##sequence-region header. An
+# annotation from a reader's own pipeline often does not, and used to leave the
+# assembly with no sequences at all.
+if os.path.exists(lengths):
+    with open(lengths) as fh:
         for line in fh:
             fields = line.split("\t")
             regions.append((fields[0], int(fields[1])))
@@ -505,8 +578,8 @@ with open(bed) as fh:
 withgenes = [r for r in regions if genes.get(r[0])]
 ranked = sorted(withgenes or regions, key=lambda r: (-genes.get(r[0], 0), -r[1]))
 kept = {name for name, _ in ranked[:keep]}
-# ...but written in the GFF3's own order rather than the ranking's. This file's
-# line order is the assembly's region order in JBrowse, and Ensembl lists
+# ...but written in the assembly's own order rather than the ranking's. This
+# file's line order is the region order in JBrowse, and an assembly lists
 # chromosomes naturally (1D 2D 3D ...) where a ranking interleaves them.
 for name, length in regions:
     if name in kept:
@@ -542,8 +615,7 @@ with gzip.open(src, "rt") as fh:
             if gene and len("".join(seq)) > len(best.get(gene, "")):
                 best[gene] = "".join(seq)
             match = re.search(r"gene:(\S+)", line)
-            # the pep header's gene tag carries a version the GFF3 id does not
-            gene = re.sub(r"\.\d+$", "", match.group(1)) if match else None
+            gene = match.group(1) if match else None
             seq = []
         else:
             seq.append(line.strip())
@@ -752,32 +824,14 @@ PY
   done
 fi
 
-# Per-genome gene tracks, so the ribbons can be read down to the gene. CSI, not
-# the default TBI: TBI can't address a region past ~537 Mb, and wheat-family
-# chromosomes commonly run past a billion bp (a plain TBI build fails outright
-# on Aegilops tauschii here, "Region 0..651661114 cannot be stored in a tbi
-# index"). CSI has no such ceiling and costs nothing on the smaller genomes.
-#
-# A gene with no Name= is labelled by its ID, which in an Ensembl GFF3 reads
-# `gene:Os03g0764000`, and every set here has genomes where most genes carry
-# none. Give each its gene_id instead, minus the `gene-` that NCBI-imported ids keep (tomato's
-# `gene-Solyc01g004000.1`). The ID itself is untouched: the BED step joins on it.
-name_unnamed_genes() {
-  awk -F'\t' -v OFS='\t' '
-    $3 ~ /gene$/ && $9 !~ /(^|;)Name=/ && match($9, /(^|;)gene_id=[^;]+/) {
-      id = substr($9, RSTART, RLENGTH)
-      sub(/^;?gene_id=/, "", id)
-      sub(/^gene-/, "", id)
-      $9 = $9 ";Name=" id
-    }
-    { print }'
-}
+# Per-genome gene tracks, so the ribbons can be read down to the gene, indexed
+# CSI like every tabix file here.
 for name in $NAMES; do
   # guarded like every other download/derive step: sorting and indexing a wheat
   # GFF3 is the longest step after OrthoFinder itself, and a re-run redoing it
   # is what "picks up where it stopped" is supposed to avoid
   if [ ! -f "$name.sorted.gff3.gz.csi" ]; then
-    gunzip -c "$name.gff3.gz" | name_unnamed_genes | jb sort-gff \
+    gunzip -c "$name.gff3.gz" | jb sort-gff \
       | bgzip > "$name.sorted.gff3.gz"
     tabix -f -C -p gff "$name.sorted.gff3.gz"
   fi

@@ -1136,41 +1136,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   {
     mode: 'url',
-    name: 'multiway_synteny/solanaceae_lanes',
-    url: sessionSpec(
-      'https://jbrowse.org/demos/orthofinder_solanaceae/config.json',
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'tomato',
-            loc: 'SL4.0ch04:62,880,000-63,037,000',
-            tracks: [
-              {
-                trackId: 'tomato_genes',
-                filter: ['geneLike'],
-                displayMode: 'compact',
-                // Ensembl's tomato GFF3 names every gene by a bare Solyc id
-                labels: { name: { show: false }, description: { show: false } },
-              },
-              {
-                trackId: 'solanaceae_orthogroups',
-                type: 'MultiWaySyntenyDisplay',
-                rows: { sort: ['potato', 'pepper', 'tobacco', 'coffee'] },
-                height: 320,
-              },
-            ],
-          },
-        ],
-      },
-    ),
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 120000,
-    viewportHeight: 660,
-  },
-
-  {
-    mode: 'url',
     name: 'multiway_synteny/drosophila_lanes',
     url: sessionSpec(
       'https://jbrowse.org/demos/orthofinder_drosophila/config.json',
@@ -1756,15 +1721,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   // Re-derive the partner counts with
   //   python3 scripts/orthofinder_window_stats.py solanaceae \
-  //     --row 'tomato CM001070.4:63,900,000-67,900,000' \
-  //     --row 'coffee 5:24,200,000-28,800,000' \
-  //     --row 'tomato CM001073.4:300,000-1,950,000[rev] CM001075.4:4,300,000-6,510,000' \
+  //     --row 'tomato 7:66,700,000-70,550,000' \
+  //     --row 'coffee VII:24,200,000-28,800,000' \
+  //     --row 'tomato 10:850,000-2,400,000[rev] 12:4,600,000-6,900,000' \
   //     --query coffee
-  // The script reads the BED's accessions; the app shows their SL4.0 aliases.
   // The three tomato windows are the collinear blocks MCScanX chains against
   // this coffee window (solanaceae.blocks.paf.gz). All three on one row send
   // every coffee gene's links to three places and the band knots; one copy
-  // above and two below leaves one crossing, as in grasses_maize_wgd. ch10
+  // above and two below leaves one crossing, as in grasses_maize_wgd. Tomato 10
   // runs backwards against coffee and draws as an hourglass unflipped.
   {
     mode: 'url',
@@ -1776,11 +1740,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearSyntenyView',
             views: [
-              { assembly: 'tomato', loc: 'SL4.0ch07:63,900,000-67,900,000' },
-              { assembly: 'coffee', loc: '5:24,200,000-28,800,000' },
+              { assembly: 'tomato', loc: '7:66,700,000-70,550,000' },
+              { assembly: 'coffee', loc: 'VII:24,200,000-28,800,000' },
               {
                 assembly: 'tomato',
-                loc: 'SL4.0ch10:300,000-1,950,000[rev] SL4.0ch12:4,300,000-6,510,000',
+                loc: '10:850,000-2,400,000[rev] 12:4,600,000-6,900,000',
               },
             ],
             tracks: ['solanaceae_orthogroups'],
@@ -2040,7 +2004,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
 
   // Re-derive the counts with
   //   python3 scripts/orthofinder_window_stats.py wheat \
-  //     --row 'tauschii 1D 2D 3D 4D 5D 6D 7D' --row 'wheat 4A' --query wheat
+  //     --row 'tauschii 1 2 3 4 5 6 7' --row 'wheat 4A' --query wheat
   // The bottom row is a bare scalebar, so a locus anchor or `highlight` on it
   // has nowhere to land; the pills anchor on the top row's labels instead.
   {
@@ -2076,20 +2040,20 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     viewportHeight: 640,
-    // by testid: a bare `text: '5D'` matches a tick label under 1D first
+    // by testid: a bare `text: '5'` matches a tick label first
     annotations: [
       {
         type: 'text',
         text: '4AL/5AL',
         fontSize: 20,
-        anchor: { selector: '[data-testid="refLabel-5D"]', alignX: 'left' },
+        anchor: { selector: '[data-testid="refLabel-5"]', alignX: 'left' },
         dy: 54,
       },
       {
         type: 'text',
         text: '4AL/7BS',
         fontSize: 20,
-        anchor: { selector: '[data-testid="refLabel-7D"]', alignX: 'right' },
+        anchor: { selector: '[data-testid="refLabel-7"]', alignX: 'right' },
         dx: -30,
         dy: 150,
       },

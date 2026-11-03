@@ -97,9 +97,13 @@
           }
         ],
         "tracks": ["grasses_orthogroups"],
-        "encoding": { "color": "reference" },
+        "encoding": {
+          "color": "reference"
+        },
         "autoDiagonalize": true,
-        "coord": { "ratio": 1 },
+        "coord": {
+          "ratio": 1
+        },
         "collapseEmptyRows": true
       }
     ]
@@ -237,6 +241,17 @@
             "uri": "sorghum.bed.gz"
           }
         ],
+        "assemblyNames": ["rice", "sorghum", "maize", "brachypodium", "setaria"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "grasses_blocks",
+      "name": "Grasses collinear blocks (MCScanX)",
+      "assemblyNames": ["rice", "sorghum", "maize", "brachypodium", "setaria"],
+      "adapter": {
+        "type": "MultiGenomePAFAdapter",
+        "uri": "grasses.blocks.paf.gz",
         "assemblyNames": ["rice", "sorghum", "maize", "brachypodium", "setaria"]
       }
     }

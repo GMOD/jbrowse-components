@@ -97,9 +97,13 @@
           }
         ],
         "tracks": ["vertebrates_orthogroups"],
-        "encoding": { "color": "reference" },
+        "encoding": {
+          "color": "reference"
+        },
         "autoDiagonalize": true,
-        "coord": { "ratio": 1 },
+        "coord": {
+          "ratio": 1
+        },
         "collapseEmptyRows": true
       }
     ]
@@ -231,6 +235,17 @@
             "uri": "zebrafish.bed.gz"
           }
         ],
+        "assemblyNames": ["human", "chicken", "frog", "gar", "zebrafish"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "vertebrates_blocks",
+      "name": "Vertebrates collinear blocks (MCScanX)",
+      "assemblyNames": ["human", "chicken", "frog", "gar", "zebrafish"],
+      "adapter": {
+        "type": "MultiGenomePAFAdapter",
+        "uri": "vertebrates.blocks.paf.gz",
         "assemblyNames": ["human", "chicken", "frog", "gar", "zebrafish"]
       }
     }

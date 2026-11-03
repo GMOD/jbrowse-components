@@ -26,15 +26,6 @@
             "locationType": "UriLocation"
           }
         }
-      },
-      "refNameAliases": {
-        "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "simulans.sequence_report.tsv",
-            "locationType": "UriLocation"
-          }
-        }
       }
     },
     {
@@ -46,15 +37,6 @@
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
             "uri": "yakuba.chrom.sizes",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "refNameAliases": {
-        "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "yakuba.sequence_report.tsv",
             "locationType": "UriLocation"
           }
         }
@@ -72,15 +54,6 @@
             "locationType": "UriLocation"
           }
         }
-      },
-      "refNameAliases": {
-        "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "pseudoobscura.sequence_report.tsv",
-            "locationType": "UriLocation"
-          }
-        }
       }
     },
     {
@@ -92,15 +65,6 @@
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
             "uri": "virilis.chrom.sizes",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "refNameAliases": {
-        "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "virilis.sequence_report.tsv",
             "locationType": "UriLocation"
           }
         }
@@ -133,9 +97,13 @@
           }
         ],
         "tracks": ["drosophila_orthogroups"],
-        "encoding": { "color": "reference" },
+        "encoding": {
+          "color": "reference"
+        },
         "autoDiagonalize": true,
-        "coord": { "ratio": 1 },
+        "coord": {
+          "ratio": 1
+        },
         "collapseEmptyRows": true
       }
     ]

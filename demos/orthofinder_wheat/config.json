@@ -69,29 +69,6 @@
           }
         }
       }
-    },
-    {
-      "name": "timopheevii",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "timopheevii-ReferenceSequenceTrack",
-        "adapter": {
-          "type": "ChromSizesAdapter",
-          "chromSizesLocation": {
-            "uri": "timopheevii.chrom.sizes",
-            "locationType": "UriLocation"
-          }
-        }
-      },
-      "refNameAliases": {
-        "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "timopheevii.sequence_report.tsv",
-            "locationType": "UriLocation"
-          }
-        }
-      }
     }
   ],
   "configuration": {},
@@ -101,7 +78,7 @@
     "views": [
       {
         "type": "LinearSyntenyView",
-        "displayName": "tauschii - wheat - durum - emmer - urartu - timopheevii (OrthoFinder orthogroups)",
+        "displayName": "tauschii - wheat - durum - emmer - urartu (OrthoFinder orthogroups)",
         "views": [
           {
             "assembly": "tauschii"
@@ -117,15 +94,16 @@
           },
           {
             "assembly": "urartu"
-          },
-          {
-            "assembly": "timopheevii"
           }
         ],
         "tracks": ["wheat_orthogroups"],
-        "encoding": { "color": "reference" },
+        "encoding": {
+          "color": "reference"
+        },
         "autoDiagonalize": true,
-        "coord": { "ratio": 1 },
+        "coord": {
+          "ratio": 1
+        },
         "collapseEmptyRows": true
       }
     ]
@@ -232,48 +210,14 @@
       "assemblyNames": ["urartu"]
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "timopheevii_genes",
-      "name": "timopheevii genes",
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "gffGzLocation": {
-          "uri": "timopheevii.sorted.gff3.gz",
-          "locationType": "UriLocation"
-        },
-        "index": {
-          "location": {
-            "uri": "timopheevii.sorted.gff3.gz.csi",
-            "locationType": "UriLocation"
-          },
-          "indexType": "CSI"
-        }
-      },
-      "assemblyNames": ["timopheevii"]
-    },
-    {
       "type": "SyntenyTrack",
       "trackId": "wheat_orthogroups",
       "name": "Wheat orthogroups (OrthoFinder)",
-      "assemblyNames": [
-        "tauschii",
-        "wheat",
-        "durum",
-        "emmer",
-        "urartu",
-        "timopheevii"
-      ],
+      "assemblyNames": ["tauschii", "wheat", "durum", "emmer", "urartu"],
       "adapter": {
         "type": "MCScanBlocksAdapter",
         "uri": "tauschii.blocks.gz",
-        "blockAssemblies": [
-          "durum",
-          "emmer",
-          "tauschii",
-          "timopheevii",
-          "urartu",
-          "wheat"
-        ],
+        "blockAssemblies": ["durum", "emmer", "tauschii", "urartu", "wheat"],
         "bedLocations": [
           {
             "uri": "durum.bed.gz"
@@ -285,23 +229,24 @@
             "uri": "tauschii.bed.gz"
           },
           {
-            "uri": "timopheevii.bed.gz"
-          },
-          {
             "uri": "urartu.bed.gz"
           },
           {
             "uri": "wheat.bed.gz"
           }
         ],
-        "assemblyNames": [
-          "tauschii",
-          "wheat",
-          "durum",
-          "emmer",
-          "urartu",
-          "timopheevii"
-        ]
+        "assemblyNames": ["tauschii", "wheat", "durum", "emmer", "urartu"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "wheat_blocks",
+      "name": "Wheat collinear blocks (MCScanX)",
+      "assemblyNames": ["tauschii", "wheat", "durum", "emmer", "urartu"],
+      "adapter": {
+        "type": "MultiGenomePAFAdapter",
+        "uri": "wheat.blocks.paf.gz",
+        "assemblyNames": ["tauschii", "wheat", "durum", "emmer", "urartu"]
       }
     }
   ]

@@ -33,10 +33,10 @@ lineage with one copy. We:
   [DIAMOND](https://github.com/bbuchfink/diamond) on `PATH` as `orthofinder`
 - [MCScanX](https://github.com/wyp1125/MCScanX) (`MCScanX_h`), for the
   [collinear blocks](#collinear-blocks)
-- `python3`, htslib (`bgzip`, `tabix`), `wget`
+- `python3`, htslib (`bgzip`, `tabix`)
 - `node`, for the [JBrowse CLI](/docs/cli)
 - [NCBI datasets CLI](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/command-line-tools/)
-  (`datasets`, `dataformat`), for `wheat`, `drosophila` and `solanaceae`
+  (`datasets`, `dataformat`)
 - [gffread](https://github.com/gpertea/gffread), for
   [your own genomes](#your-own-genomes) only
 - A running JBrowse instance ([web](/docs/quickstart_web) or
@@ -63,7 +63,8 @@ npm install -g @jbrowse/cli@next
 
 ## The data
 
-Each set takes its protein FASTA and GFF3 files from one Ensembl division.
+Each genome is an NCBI assembly, and the script fetches its protein FASTA, GFF3
+and sequence report together with `datasets download genome accession`.
 
 The page's commands build local files from these, and the tracks over those read
 them from disk; every other track reads a hosted copy. The
@@ -71,12 +72,13 @@ them from disk; every other track reads a hosted copy. The
 OrthoFinder and building the blocks table_ takes a proteome per genome of your
 own.
 
-| What it is                                                                                                                                                                                                           | File                                                                        |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| **`vertebrates`**, Ensembl release 113                                                                                                                                                                               | [release-113/](https://ftp.ensembl.org/pub/release-113/)                    |
-| **`wheat`**, **`solanaceae`** and **`grasses`**, Ensembl Plants release 63                                                                                                                                           | [release-63/](https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/)  |
-| **`drosophila`**, Ensembl Metazoa release 63                                                                                                                                                                         | [release-63/](https://ftp.ensemblgenomes.ebi.ac.uk/pub/metazoa/release-63/) |
-| **Sequence reports**, fetched from NCBI by accession: _T. timopheevii_ GCA_963921465.1, tomato GCA_000188115.5, and the non-melanogaster flies GCA_016746395.2, GCA_016746365.2, GCA_009870125.2 and GCA_030788295.1 | [GCA/](https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/)                       |
+| What it is                                                               | File                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`vertebrates`**: human, chicken, frog, gar, zebrafish                  | [GCF_000001405.40](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/), [GCF_016699485.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_016699485.2/), [GCF_000004195.4](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000004195.4/), [GCF_000242695.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000242695.1/), [GCF_000002035.6](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000002035.6/) |
+| **`grasses`**: rice, sorghum, maize, brachypodium, setaria               | [GCF_001433935.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_001433935.1/), [GCF_000003195.3](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000003195.3/), [GCF_902167145.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_902167145.1/), [GCF_000005505.3](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000005505.3/), [GCF_000263155.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000263155.2/)   |
+| **`wheat`**: tauschii, wheat, durum, emmer, urartu                       | [GCF_002575655.3](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002575655.3/), [GCF_018294505.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_018294505.1/), [GCA_900231445.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_900231445.1/), [GCF_002162155.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002162155.2/), [GCF_003073215.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_003073215.2/)   |
+| **`drosophila`**: melanogaster, simulans, yakuba, pseudoobscura, virilis | [GCF_000001215.4](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001215.4/), [GCF_016746395.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_016746395.2/), [GCF_016746365.2](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_016746365.2/), [GCF_009870125.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_009870125.1/), [GCF_030788295.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_030788295.1/)   |
+| **`solanaceae`**: tomato, potato, pepper, tobacco, coffee                | [GCF_036512215.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_036512215.1/), [GCA_020169535.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_020169535.1/), [GCF_002878395.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002878395.1/), [GCF_001879085.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_001879085.1/), [GCA_900059795.1](https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_900059795.1/)   |
 
 ## The wheat set: genomes of one polyploid history {#wheat}
 
@@ -87,7 +89,6 @@ The `wheat` set is the genomes of wheat's polyploid history:
 - **durum**, domesticated tetraploid, A+B
 - **wild emmer**, durum's wild tetraploid ancestor
 - **Triticum urartu**, diploid A donor
-- **T. timopheevii**, a second tetraploid also tracing to the A donor
 
 ## Running OrthoFinder and building the blocks table {#producing-the-blocks-table}
 
@@ -113,7 +114,7 @@ next command reduces to one gene id per cell:
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/orthogroups_to_blocks.py
 python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
   --bed tauschii=tauschii.bed --bed wheat=wheat.bed --bed durum=durum.bed \
-  --bed emmer=emmer.bed --bed urartu=urartu.bed --bed timopheevii=timopheevii.bed \
+  --bed emmer=emmer.bed --bed urartu=urartu.bed \
   --max-copies 4
 ```
 
@@ -163,30 +164,15 @@ One track backs each pair of adjacent rows in the stack:
   "type": "SyntenyTrack",
   "trackId": "wheat_orthogroups",
   "name": "Wheat orthogroups (OrthoFinder)",
-  "assemblyNames": [
-    "tauschii",
-    "wheat",
-    "durum",
-    "emmer",
-    "urartu",
-    "timopheevii"
-  ],
+  "assemblyNames": ["tauschii", "wheat", "durum", "emmer", "urartu"],
   "adapter": {
     "type": "MCScanBlocksAdapter",
     "uri": "tauschii.blocks.gz",
-    "blockAssemblies": [
-      "durum",
-      "emmer",
-      "tauschii",
-      "timopheevii",
-      "urartu",
-      "wheat"
-    ],
+    "blockAssemblies": ["durum", "emmer", "tauschii", "urartu", "wheat"],
     "bedLocations": [
       "durum.bed.gz",
       "emmer.bed.gz",
       "tauschii.bed.gz",
-      "timopheevii.bed.gz",
       "urartu.bed.gz",
       "wheat.bed.gz"
     ]
@@ -201,9 +187,8 @@ raises a track error naming both lists.
 
 A gene-level synteny view reads no sequence, so each assembly is a
 [`ChromSizesAdapter`](/docs/config/chromsizesadapter) over a `.chrom.sizes` file
-(a name and a length per line) built from the `##sequence-region` header in its
-GFF3. We'll load wheat; the other genomes repeat the block under each genome's
-name:
+(a name and a length per line) built from its NCBI sequence report. We'll load
+wheat; the other genomes repeat the block under each genome's name:
 
 ```json addassembly
 { "name": "wheat", "uri": "wheat.chrom.sizes" }
@@ -216,8 +201,7 @@ track on that genome's assembly in the config, open or not
 ([`laneGeneTracks`](/docs/config/multiwaysyntenydisplay/#slot-lanegenetracks)
 picks one when a genome has several). For your own annotation, add one per
 genome from a bgzipped, sorted GFF3 ([prep](/docs/quickstart_web)) that uses the
-assembly's refNames, indexed with `tabix -C`, since wheat chromosomes run past
-the length a `.tbi` index can address:
+assembly's refNames, indexed with `tabix -C`:
 
 ```json addtrack
 {
@@ -232,10 +216,6 @@ the length a `.tbi` index can address:
   }
 }
 ```
-
-A gene with no `Name` is labelled by its `ID`, which an Ensembl GFF3 writes as
-`gene:TraesCS1A02G000100`. The build script names such genes by their `gene_id`
-before sorting.
 
 ## Stacking tauschii over wheat {#stacking-the-wheat-genomes}
 
@@ -287,8 +267,9 @@ Navigate the wheat row to `4A` alone, keeping **Query**:
 
 <Figure caption="Aegilops tauschii's D-genome chromosomes over wheat 4A. Color by → Query gives each chromosome its own color." src="/img/orthofinder_synteny/wheat_4a.png" />
 
-Other chromosomes appear on 4A only as single genes. The 5D and 7D runs are the
-4AL/5AL and 4AL/7BS translocations (Devos et al. 1995; Dvorak et al. 2018).
+Other chromosomes appear on 4A only as single genes. The runs from tauschii 5
+and 7 are the 4AL/5AL and 4AL/7BS translocations (Devos et al. 1995; Dvorak et
+al. 2018).
 
 ## Grasses: one rice region in two maize copies {#grasses}
 
@@ -386,10 +367,9 @@ Tomato, potato and pepper share a whole-genome triplication that coffee lacks
 config and stack tomato over coffee over tomato, with `solanaceae_orthogroups`
 in both bands. Then:
 
-- Navigate the rows to `SL4.0ch07:63,900,000-67,900,000`,
-  `5:24,200,000-28,800,000` and
-  `SL4.0ch10:300,000-1,950,000[rev] SL4.0ch12:4,300,000-6,510,000`: one tomato
-  copy above coffee and the other two below.
+- Navigate the rows to `7:66,700,000-70,550,000`, `VII:24,200,000-28,800,000`
+  and `10:850,000-2,400,000[rev] 12:4,600,000-6,900,000`: one tomato copy above
+  coffee and the other two below.
 - Pick **Reference** in the palette button menu to paint each link by its tomato
   chromosome.
 - Uncheck **Off-screen mates** in the settings menu, which otherwise marks the
@@ -517,9 +497,9 @@ every band:
 runs everything above and writes a `config.json` with the assemblies, gene
 tracks, the synteny track and a stacked default session:
 
-1. Download each genome's proteome and GFF3, keeping each gene's longest protein
-   under its gene id so the table and the BEDs agree, and write a gene BED and
-   chrom.sizes per genome.
+1. Download each genome's proteins, GFF3 and sequence report from NCBI, keeping
+   each gene's longest protein under its gene id so the table and the BEDs
+   agree, and write a gene BED and chrom.sizes per genome.
 2. Run OrthoFinder to the orthogroups only.
 3. Convert the orthogroups to a `.blocks` table, dropping cells over `MAXCOPIES`
    as gene families, and print how one-to-one each adjacent pair of genomes is.
@@ -539,13 +519,13 @@ The sets the script accepts, and what each costs to build:
 <!-- ORTHOFINDER_SETS START -->
 
 <!-- prettier-ignore -->
-| Set | Genomes | DIAMOND runs | Annotation source |
+| Set | Genomes | DIAMOND runs | NCBI annotation |
 | --- | --- | --- | --- |
-| <code>vertebrates</code> | human, chicken, frog, gar, zebrafish | 25 | Ensembl 113 |
-| <code>grasses</code> | rice, sorghum, maize, brachypodium, setaria | 25 | Ensembl Plants 63 |
-| <code>wheat</code> | tauschii, wheat, durum, emmer, urartu, timopheevii | 36 | Ensembl Plants 63 |
-| <code>drosophila</code> | melanogaster, simulans, yakuba, pseudoobscura, virilis | 25 | Ensembl Metazoa 63 |
-| <code>solanaceae</code> | tomato, potato, pepper, tobacco, coffee | 25 | Ensembl Plants 63 |
+| <code>vertebrates</code> | human, chicken, frog, gar, zebrafish | 25 | RefSeq |
+| <code>grasses</code> | rice, sorghum, maize, brachypodium, setaria | 25 | RefSeq |
+| <code>wheat</code> | tauschii, wheat, durum, emmer, urartu | 25 | RefSeq and GenBank |
+| <code>drosophila</code> | melanogaster, simulans, yakuba, pseudoobscura, virilis | 25 | RefSeq |
+| <code>solanaceae</code> | tomato, potato, pepper, tobacco, coffee | 25 | RefSeq and GenBank |
 
 <!-- ORTHOFINDER_SETS END -->
 
@@ -570,7 +550,7 @@ each from its [sequence report](/docs/config/ncbisequencereportaliasadapter).
 
 ## Your own genomes
 
-A set name tells the script which Ensembl files to download. Your own genomes
+A set name tells the script which NCBI assemblies to download. Your own genomes
 need a FASTA and a GFF3 per genome.
 [gffread](https://github.com/gpertea/gffread) translates each CDS into the
 proteome and prints the transcript-to-gene map and FASTA index alongside.

@@ -41,37 +41,52 @@ export interface OrthofinderSet {
   name: string
   /** short names, which are also the JBrowse assembly names, in row order */
   genomes: string[]
-  /** the Ensembl division and release the set is pinned to */
-  release: string
+  /** the NCBI assembly accession of each genome, in the same order */
+  accessions: string[]
+}
+
+// A GCF_ accession carries a RefSeq annotation; a GCA_ one in a set is there
+// because the genome has only its submitter's annotation on the GenBank record.
+function annotationSource(accessions: string[]) {
+  const genbank = accessions.some(a => a.startsWith('GCA_'))
+  const refseq = accessions.some(a => a.startsWith('GCF_'))
+  return refseq && genbank
+    ? 'RefSeq and GenBank'
+    : genbank
+      ? 'GenBank'
+      : 'RefSeq'
 }
 
 export function collectOrthofinderSets(): OrthofinderSet[] {
   const text = fs.readFileSync(FILE, 'utf8')
   const sets: OrthofinderSet[] = []
 
-  // `<name>)` … `BASE=<url>` … `REL=<n>` … `SPECIES=$(cat <<'EOF' … EOF`, which
-  // is the shape every branch of the script's `case "$SET" in` has.
-  const branch =
-    /^(\w+)\)$[\s\S]*?BASE=(\S+)[\s\S]*?REL=(\S+)[\s\S]*?SPECIES=\$\(cat <<'EOF'\n([\s\S]*?)\nEOF/gm
+  // `<name>)` … `SPECIES=$(cat <<'EOF'` then `name accession` rows … `EOF`,
+  // which is the shape every branch of the script's `case "$SET" in` has.
+  const branch = /^(\w+)\)$[\s\S]*?SPECIES=\$\(cat <<'EOF'\n([\s\S]*?)\nEOF/gm
   for (const m of text.matchAll(branch)) {
-    const genomes = m[4]!
+    const rows = m[2]!
       .split('\n')
-      .map(line => line.trim().split(/\s+/)[0]!)
-      .filter(Boolean)
-    if (!genomes.length) {
+      .map(line => line.trim().split(/\s+/))
+      .filter(([name]) => name)
+    if (!rows.length) {
       throw new Error(
         `${FILE}: species set '${m[1]}' parsed to no genomes, so the tutorial's set table would render an empty row`,
       )
     }
-    // The plant and metazoa sets come from Ensembl Genomes, whose release
-    // numbering is its own: a bare "63" beside vertebrates' "113" reads as an
-    // older Ensembl.
-    const division = m[2]!.includes('/plants/')
-      ? 'Ensembl Plants'
-      : m[2]!.includes('/metazoa/')
-        ? 'Ensembl Metazoa'
-        : 'Ensembl'
-    sets.push({ name: m[1]!, genomes, release: `${division} ${m[3]!}` })
+    const accessions = rows.map(([name, accession]) => {
+      if (!accession || !/^GC[AF]_\d+\.\d+$/.test(accession)) {
+        throw new Error(
+          `${FILE}: genome '${name}' in set '${m[1]}' names no NCBI assembly accession`,
+        )
+      }
+      return accession
+    })
+    sets.push({
+      name: m[1]!,
+      genomes: rows.map(([name]) => name!),
+      accessions,
+    })
   }
 
   if (!sets.length) {
@@ -98,16 +113,34 @@ export function collectOrthofinderCuts() {
   })
 }
 
+// The tutorial's data section links each accession by hand, since a marker
+// block there would break the section's one-table shape, so the generator holds
+// it to the script instead.
+const TUTORIAL = 'website/docs/tutorials/orthofinder_synteny.md'
+
+function assertTutorialLinksEveryAccession(sets: OrthofinderSet[]) {
+  const page = fs.readFileSync(TUTORIAL, 'utf8')
+  const missing = sets.flatMap(s =>
+    s.accessions.filter(a => !page.includes(`/datasets/genome/${a}/`)),
+  )
+  if (missing.length) {
+    throw new Error(
+      `${TUTORIAL}: "The data" links no NCBI page for ${missing.join(', ')}, which ${FILE} downloads`,
+    )
+  }
+}
+
 export function writeOrthofinderSetDocs() {
   const sets = collectOrthofinderSets()
+  assertTutorialLinksEveryAccession(sets)
   return [
     ...rewriteMarkerBlock(
       'ORTHOFINDER_SETS',
       markdownTable(
-        ['Set', 'Genomes', 'DIAMOND runs', 'Annotation source'],
+        ['Set', 'Genomes', 'DIAMOND runs', 'NCBI annotation'],
         sets.map(
           s =>
-            `| ${codeCell(s.name)} | ${tableCell(s.genomes.join(', '))} | ${s.genomes.length ** 2} | ${tableCell(s.release)} |`,
+            `| ${codeCell(s.name)} | ${tableCell(s.genomes.join(', '))} | ${s.genomes.length ** 2} | ${tableCell(annotationSource(s.accessions))} |`,
         ),
       ),
     ),

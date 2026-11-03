@@ -3423,13 +3423,6 @@
     "reviewedAt": "2026-09-14T13:59:52.128Z",
     "hash": "fe799589013baceddd77819d37c258af5a84f373"
   },
-  "multiway_synteny/solanaceae_lanes": {
-    "name": "multiway_synteny/solanaceae_lanes",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T03:51:37.945Z",
-    "hash": "b9eb9d458d468cbf749a3d157bc907b3a958ebbd"
-  },
   "multiway_synteny/vertebrate_hox_lanes": {
     "name": "multiway_synteny/vertebrate_hox_lanes",
     "status": "good",

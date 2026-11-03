@@ -12,15 +12,6 @@
             "locationType": "UriLocation"
           }
         }
-      },
-      "refNameAliases": {
-        "adapter": {
-          "type": "NcbiSequenceReportAliasAdapter",
-          "location": {
-            "uri": "tomato.sequence_report.tsv",
-            "locationType": "UriLocation"
-          }
-        }
       }
     },
     {
@@ -106,9 +97,13 @@
           }
         ],
         "tracks": ["solanaceae_orthogroups"],
-        "encoding": { "color": "reference" },
+        "encoding": {
+          "color": "reference"
+        },
         "autoDiagonalize": true,
-        "coord": { "ratio": 1 },
+        "coord": {
+          "ratio": 1
+        },
         "collapseEmptyRows": true
       }
     ]
