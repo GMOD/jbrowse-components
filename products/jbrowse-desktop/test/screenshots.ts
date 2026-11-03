@@ -280,7 +280,7 @@ async function collapseGeneGlyph(driver: WebDriver): Promise<void> {
   await driver.executeScript('arguments[0].click();', submenu)
   const option = await driver.wait(
     until.elementLocated(
-      By.css('[data-testid="cascading-menuitem-longest_coding_transcript"]'),
+      By.css('[data-testid="cascading-menuitem-representative_transcript"]'),
     ),
     10000,
   )
