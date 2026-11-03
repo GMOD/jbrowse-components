@@ -2,7 +2,11 @@ import { getConf } from '../../../configuration/getConf.ts'
 import { getSession } from '../../../util/mstUtils.ts'
 import SimpleFeature from '../../../util/simpleFeature.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
-import { exportRegions, fetchTrackData } from './fetchTrackData.ts'
+import {
+  exportFileName,
+  exportRegions,
+  fetchTrackData,
+} from './fetchTrackData.ts'
 
 import type { Feature, Region } from '../../../util/index.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
@@ -315,6 +319,50 @@ test('a feature returned for several regions is written once', async () => {
   const res = await fetchTrackData({ model, regions, type: 'bed', options })
 
   expect(res.str).toBe('gene1,gene2\n')
+})
+
+// a fetch across regions merges per-region streams, so they arrive interleaved
+test('the writer is handed the features in position order', async () => {
+  setup()
+  const at = (name: string, start: number) =>
+    new SimpleFeature({
+      uniqueId: name,
+      refName: 'ctgA',
+      start,
+      end: start + 1,
+      name,
+    })
+  respond({ CoreGetFeatures: [at('late', 500), at('early', 5), at('mid', 50)] })
+
+  const res = await fetchTrackData({ model, regions, type: 'bed', options })
+
+  expect(res.str).toBe('early,mid,late\n')
+})
+
+test('the file is named for the track and the one region it holds', () => {
+  const region = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 4317,
+    end: 4440,
+  }
+  expect(
+    exportFileName({
+      trackName: 'GFF3Tabix genes',
+      regions: [region],
+      extension: 'gff3',
+    }),
+  ).toBe('GFF3Tabix_genes_ctgA_4318-4440.gff3')
+  expect(
+    exportFileName({
+      trackName: 'Reference sequence (volvox)',
+      regions: [region, { ...region, start: 9000, end: 9100 }],
+      extension: 'fa',
+    }),
+  ).toBe('Reference_sequence_volvox_2_regions.fa')
+  expect(
+    exportFileName({ trackName: '', regions: [region], extension: 'bed' }),
+  ).toBe('jbrowse_track_data_ctgA_4318-4440.bed')
 })
 
 test("the display's filter decides what is written, and counts what it left out", async () => {

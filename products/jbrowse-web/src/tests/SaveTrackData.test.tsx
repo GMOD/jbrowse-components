@@ -37,14 +37,24 @@ async function openSaveTrackDataDialog(trackId: string) {
   fireEvent.click(await screen.findByText('Save track data...', ...opts))
 }
 
+// The file is named for the track and the region; the region's bounds are
+// whatever the test view's width makes visible, so only their shape is pinned.
+const named = (stem: string, extension: string) =>
+  new RegExp(`^${stem}_ctgA_\\d+-\\d+\\.${extension}$`)
+
 test.each([
-  ['VCF', 'volvox_filtered_vcf', 'jbrowse_track_data.vcf', 'vcf'],
-  ['BAM', 'volvox_bam', 'jbrowse_track_data.sam', 'sam'],
-  ['CRAM', 'volvox_cram', 'jbrowse_track_data.sam', 'cram.sam'],
-  ['GFF', 'gff3tabix_genes', 'jbrowse_track_data.gff3', 'gff3'],
-  ['BED', 'bedtabix_genes', 'jbrowse_track_data.gff3', 'bed.gff3'],
-  ['BigWig', 'volvox_microarray', 'jbrowse_track_data.bedgraph', 'bedgraph'],
-  ['FASTA', 'volvox_refseq', 'jbrowse_track_data.fa', 'fa'],
+  ['VCF', 'volvox_filtered_vcf', named('volvox_filtered_vcf', 'vcf'), 'vcf'],
+  ['BAM', 'volvox_bam', named('volvox-sorted\\.bam', 'sam'), 'sam'],
+  ['CRAM', 'volvox_cram', named('volvox-sorted\\.cram', 'sam'), 'cram.sam'],
+  ['GFF', 'gff3tabix_genes', named('GFF3Tabix_genes', 'gff3'), 'gff3'],
+  ['BED', 'bedtabix_genes', named('BedTabix_genes', 'gff3'), 'bed.gff3'],
+  [
+    'BigWig',
+    'volvox_microarray',
+    named('wiggle_track_xyplot', 'bedgraph'),
+    'bedgraph',
+  ],
+  ['FASTA', 'volvox_refseq', named('Reference_sequence_\\w+', 'fa'), 'fa'],
 ])(
   'save track data for %s track',
   async (_, trackId, expectedFilename, ext) => {
@@ -96,7 +106,7 @@ test.each([
     // argument. The shim is what lets both idioms work against one realm.
     const content = await blob.text()
 
-    expect(filename).toBe(expectedFilename)
+    expect(filename).toMatch(expectedFilename)
     expect(content).toMatchSnapshot()
 
     // For GFF3 tracks, verify that full gene features are exported even when

@@ -26,14 +26,20 @@ import {
   assembleLocStrings,
   getContainingView,
   getDisplayStr,
+  getSession,
   pluralize,
   saveAs,
   statusProgressLabel,
   toLocale,
 } from '../../../util/index.ts'
+import { getTrackName } from '../../../util/tracks.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 import { useFetch } from '../../../util/useFetch.ts'
-import { exportRegions, fetchTrackData } from './fetchTrackData.ts'
+import {
+  exportFileName,
+  exportRegions,
+  fetchTrackData,
+} from './fetchTrackData.ts'
 
 import type { Region } from '../../../util/index.ts'
 import type { RpcStatus } from '../../../util/progress.ts'
@@ -301,7 +307,14 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
             onClick={() => {
               saveAs(
                 new Blob([str], { type: 'text/plain;charset=utf-8' }),
-                `jbrowse_track_data.${options[type]!.extension}`,
+                exportFileName({
+                  trackName: getTrackName(
+                    model.configuration,
+                    getSession(model),
+                  ),
+                  regions,
+                  extension: options[type]!.extension,
+                }),
               )
             }}
             startIcon={<GetAppIcon />}
@@ -321,6 +334,12 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           />
         </div>
         {hidden && str ? <DialogContentText>{hidden}</DialogContentText> : null}
+        {result?.usedAdapterExport && str ? (
+          <DialogContentText>
+            Written from the file&apos;s own records: a filter set on this track
+            is not applied.
+          </DialogContentText>
+        ) : null}
         <FormatSelector
           options={options}
           type={type}

@@ -55,15 +55,14 @@ test('an empty source is no source', () => {
   ).toBe('ctgA\t0\t10\t1')
 })
 
-// A multi-wiggle's subtracks are read concurrently, so its features arrive
-// interleaved by subtrack and by region.
-test('writes a multi-wiggle export as one sorted table with a source column', () => {
+// sorted, as the export hands every writer its features (core's `byPosition`)
+test('writes a multi-wiggle export as one table with a source column', () => {
   const out = stringifyBedGraph({
     features: [
       feat({ refName: 'ctgB', start: 0, end: 10, score: 4, source: 'a' }),
-      feat({ refName: 'ctgA', start: 10, end: 20, score: 3, source: 'a' }),
       feat({ refName: 'ctgB', start: 0, end: 10, score: 5, source: 'b' }),
       feat({ refName: 'ctgA', start: 0, end: 10, score: 2, source: 'b' }),
+      feat({ refName: 'ctgA', start: 10, end: 20, score: 3, source: 'a' }),
     ],
   })
   expect(out.split('\n')).toEqual([

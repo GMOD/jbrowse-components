@@ -1,3 +1,26 @@
+import type { Feature } from '@jbrowse/core/util'
+
+/**
+ * Sorted by position within each sequence, the sequences in the order their
+ * first feature arrives, so every written file is ready for bgzip and tabix.
+ * Stable, so features at one position keep their order: a multi-wiggle's
+ * subtracks stay in subtrack order.
+ */
+export function byPosition(features: Feature[]) {
+  const sequences = new Map<string, number>()
+  for (const f of features) {
+    const refName = f.get('refName')
+    if (!sequences.has(refName)) {
+      sequences.set(refName, sequences.size)
+    }
+  }
+  return features.toSorted(
+    (a, b) =>
+      sequences.get(a.get('refName'))! - sequences.get(b.get('refName'))! ||
+      a.get('start') - b.get('start'),
+  )
+}
+
 /**
  * The feature fields these writers spend on a column of their own — position,
  * identity, a link to a parent — and therefore do not repeat as an

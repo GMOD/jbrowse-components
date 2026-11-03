@@ -2,6 +2,7 @@ import { getConf } from '../../../configuration/index.ts'
 import { dedupe } from '../../../util/dedupe.ts'
 import { getSession } from '../../../util/index.ts'
 import { getRpcSessionId } from '../../../util/tracks.ts'
+import { byPosition } from '../saveTrackFileTypes/util.ts'
 
 import type { AnyConfigurationModel } from '../../../configuration/index.ts'
 import type { Region } from '../../../util/index.ts'
@@ -65,6 +66,33 @@ export function exportRegions(regions: Region[]): Region[] {
     }
     return merged
   })
+}
+
+function fileNamePart(text: string) {
+  return text.replaceAll(/[^\w.-]+/g, '_').replaceAll(/^_+|_+$/g, '')
+}
+
+/**
+ * The downloaded file's name: the track, then the one region it holds
+ * (`ctgA_4318-4440`, 1-based) or how many, so two saves from one session do
+ * not land as `jbrowse_track_data (1).bed`.
+ */
+export function exportFileName({
+  trackName,
+  regions,
+  extension,
+}: {
+  trackName: string
+  regions: Region[]
+  extension: string
+}) {
+  const [first] = regions
+  const where =
+    regions.length === 1 && first
+      ? `${first.refName}_${first.start + 1}-${first.end}`
+      : `${regions.length}_regions`
+  const parts = [fileNamePart(trackName) || 'jbrowse_track_data', where]
+  return `${parts.map(fileNamePart).join('_')}.${extension}`
 }
 
 /**
@@ -178,7 +206,7 @@ export async function fetchTrackData({
   // say the region holds nothing instead of offering that file for download.
   const str = features.length
     ? await options[type]!.callback({
-        features,
+        features: byPosition(features),
         session,
         assemblyName: regions[0]!.assemblyName,
         ...opts,
