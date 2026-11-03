@@ -757,12 +757,28 @@ fi
 # chromosomes commonly run past a billion bp (a plain TBI build fails outright
 # on Aegilops tauschii here, "Region 0..651661114 cannot be stored in a tbi
 # index"). CSI has no such ceiling and costs nothing on the smaller genomes.
+#
+# A gene with no Name= is labelled by its ID, which in an Ensembl GFF3 reads
+# `gene:Os03g0764000`, and every set here has genomes where most genes carry
+# none. Give each its gene_id instead, minus the `gene-` that NCBI-imported ids keep (tomato's
+# `gene-Solyc01g004000.1`). The ID itself is untouched: the BED step joins on it.
+name_unnamed_genes() {
+  awk -F'\t' -v OFS='\t' '
+    $3 ~ /gene$/ && $9 !~ /(^|;)Name=/ && match($9, /(^|;)gene_id=[^;]+/) {
+      id = substr($9, RSTART, RLENGTH)
+      sub(/^;?gene_id=/, "", id)
+      sub(/^gene-/, "", id)
+      $9 = $9 ";Name=" id
+    }
+    { print }'
+}
 for name in $NAMES; do
   # guarded like every other download/derive step: sorting and indexing a wheat
   # GFF3 is the longest step after OrthoFinder itself, and a re-run redoing it
   # is what "picks up where it stopped" is supposed to avoid
   if [ ! -f "$name.sorted.gff3.gz.csi" ]; then
-    gunzip -c "$name.gff3.gz" | jb sort-gff | bgzip > "$name.sorted.gff3.gz"
+    gunzip -c "$name.gff3.gz" | name_unnamed_genes | jb sort-gff \
+      | bgzip > "$name.sorted.gff3.gz"
     tabix -f -C -p gff "$name.sorted.gff3.gz"
   fi
   # --indexFile: add-track's own index-file inference only looks for .tbi
