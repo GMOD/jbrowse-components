@@ -1,4 +1,5 @@
 import {
+  getNotificationSink,
   getSession,
   isSessionModelWithWidgets,
   resolveNamedRegions,
@@ -156,12 +157,15 @@ async function navigateInit(
   init: InitState,
 ) {
   if (init.loc) {
-    await navToInitLoc(self, session, { ...init, loc: init.loc })
+    await navToInitLoc(self, getNotificationSink(self), {
+      ...init,
+      loc: init.loc,
+    })
   } else {
     try {
       navigateWithoutLoc(self, session, init)
     } catch (e) {
-      reportInitNavError(session, e)
+      reportInitNavError(getNotificationSink(self), e)
     }
   }
 }
@@ -225,6 +229,7 @@ export function applyInitHighlights(
     NotificationSink &
     Pick<AbstractSessionModel, 'addHighlight'>,
   init: Pick<InitState, 'highlight' | 'assembly'>,
+  sink: NotificationSink = session,
 ) {
   for (const h of asArray(init.highlight)) {
     // parseLocString throws on an unknown refName or a malformed locstring, and
@@ -238,10 +243,7 @@ export function applyInitHighlights(
       }
     } catch (e) {
       console.error(e)
-      session.notifyError(
-        `Invalid init highlight ${JSON.stringify(h)}: ${e}`,
-        e,
-      )
+      sink.notifyError(`Invalid init highlight ${JSON.stringify(h)}: ${e}`, e)
     }
   }
 }
@@ -286,7 +288,7 @@ async function applyInit(
   if (init.nav !== undefined) {
     self.setHideHeader(!init.nav)
   }
-  applyInitHighlights(session, init)
+  applyInitHighlights(session, init, getNotificationSink(self))
 }
 
 /**

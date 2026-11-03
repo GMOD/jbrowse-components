@@ -23,7 +23,7 @@ import type { TrackConfigChange } from '../trackConfigDelta.ts'
 import type { UriLocation } from './data.ts'
 import type { JBrowseConfigModel } from './jbrowseConfig.ts'
 import type { RenderingServices } from './renderingServices.ts'
-import type { DialogHost, NotificationSink } from './services.ts'
+import type { DialogHost, NotificationSink, ViewProblem } from './services.ts'
 import type {
   IAnyType,
   IStateTreeNode,
@@ -43,17 +43,19 @@ export type {
   JBrowseConfigModel,
 } from './jbrowseConfig.ts'
 export { editableConfig, isEditableJBrowseConfig } from './jbrowseConfig.ts'
-export { isSessionServices } from './services.ts'
+export { isProblemHost, isSessionServices } from './services.ts'
 export type {
   DialogComponentType,
   DialogHost,
   NotificationLevel,
   NotificationSink,
   PaletteHost,
+  ProblemHost,
   RpcCaller,
   RpcHost,
   SessionServices,
   SnackAction,
+  ViewProblem,
 } from './services.ts'
 export type {
   AssemblyHost,
@@ -823,6 +825,9 @@ export interface AbstractViewModel {
   effectiveBodyMounted: boolean
   /** See `BaseViewModel.rendersDisplays`. */
   rendersDisplays: boolean
+  /** See `BaseViewModel.problems`. */
+  problems: readonly ViewProblem[]
+  addProblem(problem: ViewProblem): void
   setWidth(width: number): void
   setBodyMounted(flag: boolean): void
   setMinimized(flag: boolean): void

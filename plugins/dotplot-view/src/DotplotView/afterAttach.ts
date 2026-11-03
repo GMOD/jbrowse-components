@@ -175,7 +175,7 @@ function applyInitHighlights(self: DotplotViewModel, init: DotplotLaunch) {
     }
     for (const { entry, error } of errors) {
       console.error(error)
-      session.notifyError(
+      getNotificationSink(self).notifyError(
         `Invalid init highlight ${JSON.stringify(entry)}: ${error}`,
         error,
       )
@@ -300,7 +300,10 @@ function navigateInitLocs(self: DotplotViewModel, init: DotplotLaunch) {
         }
       } catch (e) {
         console.error(e)
-        session.notifyError(`Invalid init loc "${v.loc}": ${e}`, e)
+        getNotificationSink(self).notifyError(
+          `Invalid init loc "${v.loc}": ${e}`,
+          e,
+        )
       }
     }
   }

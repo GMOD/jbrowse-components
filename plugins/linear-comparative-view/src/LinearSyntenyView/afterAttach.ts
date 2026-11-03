@@ -149,7 +149,7 @@ function placeRow(
   viewInit: SyntenyLaunch['views'][number],
 ) {
   if (viewInit.loc) {
-    return navToInitLoc(view, getSession(self), {
+    return navToInitLoc(view, getNotificationSink(self), {
       ...viewInit,
       loc: viewInit.loc,
     })
@@ -182,10 +182,14 @@ async function applyInitViewLocsAndTracks(
         // same span on two rows is how a synteny figure says "this object,
         // seen twice" -- and it was being dropped in silence, which is the
         // failure mode the launch partition exists to end everywhere else.
-        applyInitHighlights(getSession(self), {
-          highlight: viewInit.highlight,
-          assembly: viewInit.assembly,
-        })
+        applyInitHighlights(
+          getSession(self),
+          {
+            highlight: viewInit.highlight,
+            assembly: viewInit.assembly,
+          },
+          getNotificationSink(self),
+        )
       }
     }),
   )
@@ -213,11 +217,12 @@ async function applyInitSyntenyTracks(
     },
     assemblyManager: session.assemblyManager,
   })
+  const sink = getNotificationSink(self)
   for (const { level, message } of problems) {
     if (level === 'error') {
-      session.notifyError(message)
+      sink.notifyError(message)
     } else {
-      session.notify(message, 'warning')
+      sink.notify(message, 'warning')
     }
   }
   for (const [i, entries] of levels.entries()) {

@@ -1,5 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { getNotificationSink } from '../../util/sessionServices.ts'
 import BaseViewModel from './BaseViewModel.ts'
 
 // The census contract: what a view declares it holds. Everything outside a view
@@ -64,4 +65,48 @@ test('a `views` property is not a declaration either', () => {
   )
   const view = Dotplotish.create({ views: [{}, {}] })
   expect(view.ownViews).toEqual([])
+})
+
+test('an error reported inside a view is kept on the outermost view, and still reaches the session', () => {
+  const Display = types.model('Display', {}).actions(self => ({
+    fail() {
+      getNotificationSink(self).notifyError('boom', 'cause')
+    },
+    warn() {
+      getNotificationSink(self).notify('careful', 'warning')
+    },
+  }))
+  const Row = types.compose(
+    BaseViewModel,
+    types.model({ type: 'Row', display: Display }),
+  )
+  const Stack = types.compose(
+    BaseViewModel,
+    types.model({ type: 'Stack', rows: types.array(Row) }),
+  )
+  const notified: unknown[][] = []
+  const Session = types
+    .model('Session', {
+      rpcManager: types.frozen({}),
+      configuration: types.frozen({}),
+      views: types.array(Stack),
+    })
+    .actions(() => ({
+      notify(...args: unknown[]) {
+        notified.push(args)
+      },
+      notifyError(...args: unknown[]) {
+        notified.push(args)
+      },
+    }))
+  const session = Session.create({ views: [{ rows: [{ display: {} }] }] })
+  const stack = session.views[0]!
+  stack.rows[0]!.display.fail()
+  stack.rows[0]!.display.warn()
+  expect(stack.problems).toEqual([{ message: 'boom', error: 'cause' }])
+  expect(stack.rows[0]!.problems).toEqual([])
+  expect(notified).toEqual([
+    ['boom', 'cause'],
+    ['careful', 'warning'],
+  ])
 })

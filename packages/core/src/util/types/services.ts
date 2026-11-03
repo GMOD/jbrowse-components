@@ -69,6 +69,25 @@ export interface NotificationSink {
   ) => void
 }
 
+/** An error a view's launch, tracks or displays reported while it was open */
+export interface ViewProblem {
+  message: string
+  error?: unknown
+}
+
+/**
+ * A view keeping the errors reported from inside it, so a caller with no
+ * snackbar to read (a headless export, a script) can ask the view
+ */
+export interface ProblemHost {
+  problems: readonly ViewProblem[]
+  addProblem: (problem: ViewProblem) => void
+}
+
+export function isProblemHost(thing: unknown): thing is ProblemHost {
+  return typeof thing === 'object' && thing !== null && 'addProblem' in thing
+}
+
 export type DialogComponentType =
   | React.LazyExoticComponent<React.FC<any>>
   | React.FC<any>

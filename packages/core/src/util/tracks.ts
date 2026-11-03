@@ -52,6 +52,7 @@ import {
   getSession,
   objectHash,
 } from './mstUtils.ts'
+import { getNotificationSink } from './sessionServices.ts'
 import { isViewModel } from './types/index.ts'
 import {
   displayConfigSchema,
@@ -874,7 +875,6 @@ function restyleShown<T extends ShownTrack>(
   displayInitialSnapshot: DisplayInitialSnapshot,
 ): T | undefined {
   const { pluginManager } = getEnv(self)
-  const session = getSession(self)
   const track: ShownTrack = found
   const { type, ...settings } = displayInitialSnapshot
   try {
@@ -897,7 +897,7 @@ function restyleShown<T extends ShownTrack>(
     if (Object.keys(settings).length && track.applyDisplaySettings) {
       const report = track.applyDisplaySettings(settings)
       notifySettingsReport(
-        session,
+        getNotificationSink(self),
         trackId,
         track.activeDisplay,
         track.activeDisplay.type,
@@ -909,7 +909,7 @@ function restyleShown<T extends ShownTrack>(
     }
     return found
   } catch (e) {
-    session.notifyError(`${e}`, e)
+    getNotificationSink(self).notifyError(`${e}`, e)
     return undefined
   }
 }
@@ -1386,7 +1386,7 @@ export function showTrackGeneric(
     const report = track.applyDisplaySettings(displaySettings)
     const drawn = track.displays[0]
     notifySettingsReport(
-      session,
+      getNotificationSink(self),
       trackId,
       drawn,
       displayType,
@@ -1398,7 +1398,7 @@ export function showTrackGeneric(
     session.captureConnectionTrack?.(trackId)
     return track
   } catch (e) {
-    session.notifyError(`${e}`, e)
+    getNotificationSink(self).notifyError(`${e}`, e)
     return undefined
   }
 }
@@ -1571,7 +1571,6 @@ export async function launchTrackGeneric(
   inlineConf?: Record<string, unknown>,
 ) {
   const { pluginManager } = getEnv(self)
-  const session = getSession(self)
   const found = self.tracks.find(t => t.configuration.trackId === trackId)
   if (found) {
     let target
@@ -1583,7 +1582,7 @@ export async function launchTrackGeneric(
           ?.loadStateModel()
       }
     } catch (e) {
-      session.notifyError(`${e}`, e)
+      getNotificationSink(self).notifyError(`${e}`, e)
       return undefined
     }
     if (!target) {
@@ -1607,7 +1606,7 @@ export async function launchTrackGeneric(
     )
     await pluginManager.resolveDisplayTypeRecord(picked.type)?.loadStateModel()
   } catch (e) {
-    session.notifyError(`${e}`, e)
+    getNotificationSink(self).notifyError(`${e}`, e)
     return undefined
   }
   if (!isAlive(self)) {

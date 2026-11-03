@@ -8,6 +8,7 @@ import type {
   AbstractTrackModel,
   AbstractViewModel,
 } from '../../util/types/index.ts'
+import type { ViewProblem } from '../../util/types/services.ts'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -59,6 +60,12 @@ const BaseViewModel = types
   })
   .volatile(() => ({
     width: 800,
+    /**
+     * Every error reported from inside this view, a nested view's included:
+     * its launch, its tracks, its displays. The app shows each as a snackbar
+     * too; this is what a caller with no snackbar reads.
+     */
+    problems: [] as readonly ViewProblem[],
     /**
      * Whether the container has this view's body in the DOM.
      *
@@ -149,6 +156,13 @@ const BaseViewModel = types
     },
   }))
   .actions(self => ({
+    /**
+     * #action
+     */
+    addProblem(problem: ViewProblem) {
+      self.problems = [...self.problems, problem]
+    },
+
     /**
      * #action
      */

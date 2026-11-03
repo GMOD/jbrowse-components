@@ -1,10 +1,13 @@
+import { getParent, hasParent } from '@jbrowse/mobx-state-tree'
+
 import { cachedParent, findParentThatIs } from './parentWalk.ts'
-import { isSessionServices } from './types/services.ts'
+import { isProblemHost, isSessionServices } from './types/services.ts'
 
 import type {
   DialogHost,
   NotificationSink,
   PaletteHost,
+  ProblemHost,
   RpcHost,
   SessionServices,
 } from './types/services.ts'
@@ -42,12 +45,43 @@ export function getRpcHost(node: IAnyStateTreeNode): RpcHost {
   return getSessionServices(node)
 }
 
+/** The outermost view holding `node`: a synteny row's stack, not the row */
+function outermostProblemHost(node: IAnyStateTreeNode) {
+  let found: ProblemHost | undefined = isProblemHost(node) ? node : undefined
+  let current = node
+  while (hasParent(current)) {
+    current = getParent(current)
+    if (isProblemHost(current)) {
+      found = current
+    }
+  }
+  return found
+}
+
 /**
  * #api core/util
- * Where a display puts a message it cannot draw itself.
+ * Where a display puts a message it cannot draw itself. An error is also kept
+ * on the outermost view holding `node`, as `view.problems`.
  */
 export function getNotificationSink(node: IAnyStateTreeNode): NotificationSink {
-  return getSessionServices(node)
+  const session = getSessionServices(node)
+  const view = outermostProblemHost(node)
+  return view
+    ? {
+        notify: (...args: Parameters<NotificationSink['notify']>) => {
+          const [message, level] = args
+          if (level === 'error') {
+            view.addProblem({ message })
+          }
+          session.notify(...args)
+        },
+        notifyError: (...args: Parameters<NotificationSink['notifyError']>) => {
+          const [message, error] = args
+          view.addProblem({ message, error })
+          session.notifyError(...args)
+        },
+      }
+    : session
 }
 
 /**

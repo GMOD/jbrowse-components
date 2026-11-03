@@ -3,7 +3,7 @@ import {
   mergeConfSettings,
   writesWholeAt,
 } from '@jbrowse/core/configuration'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { getEnv, getNotificationSink, getSession } from '@jbrowse/core/util'
 import { basePaintedAt } from '@jbrowse/core/util/Base1DUtils'
 import {
   predicatesOf,
@@ -338,7 +338,10 @@ export async function launchTrackInit(
     )
   } catch (e) {
     console.error(e)
-    session.notifyError(`"${trackId}" ${modifiers.join(' ')}: ${e}`, e)
+    getNotificationSink(view).notifyError(
+      `"${trackId}" ${modifiers.join(' ')}: ${e}`,
+      e,
+    )
   }
   // launchTrack reports its own failure, such as a display:
   // the track cannot open as
