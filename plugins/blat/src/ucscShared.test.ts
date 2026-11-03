@@ -1,4 +1,9 @@
-import { addResultTrack, featureLocString, navToFeature } from './ucscShared.ts'
+import {
+  addResultTrack,
+  featureLocString,
+  navToFeature,
+  viewedAssembly,
+} from './ucscShared.ts'
 
 import type {
   AbstractSessionModel,
@@ -37,6 +42,7 @@ function fakeSession(viewAssembly = 'hg19') {
     shownTracks: [] as string[],
     navigated: [] as string[],
     widgets: [] as Record<string, unknown>[],
+    widgetIds: [] as string[],
     notifications: [] as string[],
   }
   const session = {
@@ -61,8 +67,10 @@ function fakeSession(viewAssembly = 'hg19') {
       calls.addedTracks.push(conf)
       return conf
     },
-    openWidget: (_type: string, _id: string, args: Record<string, unknown>) =>
-      calls.widgets.push(args),
+    openWidget: (_type: string, id: string, args: Record<string, unknown>) => {
+      calls.widgetIds.push(id)
+      calls.widgets.push(args)
+    },
     notify: (message: string) => calls.notifications.push(message),
   }
   return { session: session as unknown as AbstractSessionModel, calls }
@@ -107,6 +115,39 @@ test('opens the results widget with every result and its noun', async () => {
     resultNoun: 'product',
   })
   expect(calls.widgets[0]!.features).toHaveLength(features.length)
+})
+
+// openWidget replaces a widget of the same id, so one shared id threw the first
+// search's hit list away while its track stayed open
+test('each search gets its own results widget', async () => {
+  const { session, calls } = fakeSession()
+  const now = jest.spyOn(Date, 'now')
+  for (const [time, trackName] of [
+    [1, 'BLAT first'],
+    [2, 'BLAT second'],
+  ] as const) {
+    now.mockReturnValue(time)
+    await addResultTrack({
+      session,
+      assembly: 'hg19',
+      features,
+      trackIdPrefix: 'blat',
+      trackName,
+    })
+  }
+  now.mockRestore()
+  expect(calls.widgetIds).toEqual(['ucscResults-blat-1', 'ucscResults-blat-2'])
+})
+
+test('the dialogs open on the genome the view shows', () => {
+  const { session } = fakeSession('hg38')
+  const withAssemblies = Object.assign(session, {
+    assemblyNames: ['hg19', 'hg38'],
+  })
+  expect(viewedAssembly(withAssemblies)).toBe('hg38')
+  expect(viewedAssembly(Object.assign(withAssemblies, { views: [] }))).toBe(
+    'hg19',
+  )
 })
 
 // hgPcr's products need no display override, so the default stays a feature track

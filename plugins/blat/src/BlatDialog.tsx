@@ -21,7 +21,7 @@ import {
   queryLabel,
 } from './blatQuery.ts'
 import { parseQuerySequences, pslToSam } from './pslToSam.ts'
-import { canRenderAlignments } from './ucscShared.ts'
+import { canRenderAlignments, viewedAssembly } from './ucscShared.ts'
 import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
 
 import type { UcscHost } from './ucscShared.ts'
@@ -29,18 +29,24 @@ import type { UcscHost } from './ucscShared.ts'
 const BlatDialog = observer(function BlatDialog({
   session,
   handleClose,
+  initialSequence = '',
+  initialAssembly = viewedAssembly(session),
 }: {
   session: UcscHost
   handleClose: () => void
+  // what a read, clip or selection launched this with, as FASTA
+  initialSequence?: string
+  initialAssembly?: string
 }) {
   const query = useUcscQuery({
     session,
     handleClose,
     defaultUrl: DEFAULT_BLAT_URL,
     directUrl: UCSC_BLAT_URL,
+    initialAssembly,
   })
   const { db, urlBase, fallbackUrl, apiKey } = query
-  const [seq, setSeq] = useState('')
+  const [seq, setSeq] = useState(initialSequence)
 
   const records = parseFastaRecords(seq)
   const queryCount = records.length

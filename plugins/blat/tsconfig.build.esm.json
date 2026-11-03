@@ -1,4 +1,14 @@
 {
   "extends": "../../tsconfig.base.esm.json",
-  "references": [{ "path": "../../packages/core/tsconfig.build.esm.json" }]
+  "references": [
+    {
+      "path": "../../packages/core/tsconfig.build.esm.json"
+    },
+    {
+      "path": "../alignments/tsconfig.build.esm.json"
+    },
+    {
+      "path": "../linear-genome-view/tsconfig.build.esm.json"
+    }
+  ]
 }

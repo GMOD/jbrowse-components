@@ -132,18 +132,17 @@ export function useUcscQuery({
   handleClose,
   defaultUrl,
   directUrl,
+  initialAssembly,
 }: {
   session: UcscHost
   handleClose: () => void
   defaultUrl: string
   // the UCSC CGI itself, for the desktop paths that bypass the shared proxy
   directUrl: string
+  initialAssembly: string
 }) {
-  const { assemblyNames } = session
-  const [assembly, setAssembly] = useState(assemblyNames[0] ?? '')
-  const [db, setDb] = useState(() =>
-    resolveUcscDb(session, assemblyNames[0] ?? ''),
-  )
+  const [assembly, setAssembly] = useState(initialAssembly)
+  const [db, setDb] = useState(() => resolveUcscDb(session, initialAssembly))
   // mirrors changeApiKey for a key saved by an earlier run: the shared proxy
   // overwrites a client key with its own, so a stored key is only worth
   // anything against UCSC, and starting there is what spends the user's own key

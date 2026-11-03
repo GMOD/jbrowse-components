@@ -93,6 +93,15 @@ export function featureLocString(feature: SimpleFeatureSerialized) {
   return `${feature.refName}:${feature.start + 1}-${feature.end}`
 }
 
+// What the dialogs open on: the genome the user is looking at, not whichever
+// one the session happens to list first, which on a desktop with a second
+// genome opened searches a db the view cannot navigate to
+export function viewedAssembly(session: UcscHost) {
+  const viewed = session.views.find(v => v.type === 'LinearGenomeView')
+    ?.assemblyNames?.[0]
+  return viewed ?? session.assemblyNames[0] ?? ''
+}
+
 function findNavigableView(session: UcscHost, assembly: string) {
   const view = session.views.find(
     v =>
@@ -191,9 +200,11 @@ export async function addResultTrack({
   // addWidget followed by showWidget. The third argument is the initial state,
   // so its keys are the properties UcscResultsWidget's state model declares. Not
   // every session has a drawer — an embedded component may be built without one
-  // — so the guard is not optional.
+  // — so the guard is not optional. One widget per result track: openWidget
+  // replaces a widget of the same id, so a shared id threw away the previous
+  // search's hit list while its track stayed open.
   if (isSessionModelWithWidgets(session)) {
-    session.openWidget('UcscResultsWidget', 'ucscResults', {
+    session.openWidget('UcscResultsWidget', `ucscResults-${trackId}`, {
       features,
       assembly,
       trackName,

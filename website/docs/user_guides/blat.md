@@ -46,6 +46,25 @@ one record and 50 kb across the submission. Each record keeps its name, so hits
 from different queries stay attributable in the track. A bare sequence with no
 header is named `YourSeq` by the server.
 
+### Starting from a read or a selection
+
+The dialog also opens filled in from what is on screen, on the assembly of the
+view it was opened from. Nothing is submitted until you press Submit.
+
+- Right-click a read in an alignments track and open **Launch**. **BLAT read**
+  searches the read's whole sequence, and **BLAT soft-clipped bases** searches
+  each clipped end of 20 bases or more as its own record, named
+  `<read>_left_clip` and `<read>_right_clip` for the side of the pileup it is
+  drawn on. A clip that maps elsewhere marks a breakpoint, a chimeric read or an
+  insertion of sequence from another locus.
+- Drag a selection across the ruler and choose **Launch → BLAT selection** to
+  search the selected reference bases, which finds the region's paralogs and
+  duplicated copies. A selection spanning several displayed regions is sent as
+  one record per region.
+
+An item stays disabled, with the reason in its tooltip, when the sequence is
+over the limits above.
+
 ### Which database gets searched
 
 The assembly picker drives the UCSC database, resolved in this order:

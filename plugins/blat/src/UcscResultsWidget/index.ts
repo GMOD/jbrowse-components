@@ -1,6 +1,7 @@
 import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import { lazyWithPreload } from '@jbrowse/core/util/lazyWithPreload'
 
+import HeadingComponent from './HeadingComponent.tsx'
 import { configSchema } from './configSchema.ts'
 import { stateModelFactory } from './stateModel.ts'
 
@@ -13,6 +14,7 @@ export default function UcscResultsWidgetF(pluginManager: PluginManager) {
         name: 'UcscResultsWidget',
         discardOnClose: true,
         heading: 'Search results',
+        HeadingComponent,
         configSchema,
         stateModel: stateModelFactory(),
         ReactComponent: lazyWithPreload(

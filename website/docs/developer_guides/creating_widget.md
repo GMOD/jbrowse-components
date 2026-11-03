@@ -99,9 +99,11 @@ if (isSessionModelWithWidgets(session)) {
 
 **That second argument is the widget's identity, not a label.**
 `session.widgets` is a map keyed by it, so `addWidget` with an id already in the
-map replaces what was there. BLAT's fixed `'ucscResults'` therefore means every
-search reuses one results widget; pass a fresh id (`createElementId()`, from the
-same module as `ElementId`) where you want instances to coexist.
+map replaces what was there. BLAT builds the id from the result track's id, so
+each search gets its own results widget and the drawer's widget picker switches
+between them. Reuse one id where a new instance should replace the last; use
+`createElementId()`, from the same module as `ElementId`, where nothing
+identifies an instance.
 
 See [](/docs/developer_guides/drawer_widgets) for the rest of the drawer:
 position, width, minimizing, and closing a widget again.

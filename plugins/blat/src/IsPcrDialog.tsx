@@ -18,7 +18,7 @@ import {
   pcrProductsToFeatures,
 } from './ispcrQuery.ts'
 import { ispcrToSam } from './ispcrToSam.ts'
-import { canRenderAlignments } from './ucscShared.ts'
+import { canRenderAlignments, viewedAssembly } from './ucscShared.ts'
 import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
 
 import type { UcscHost } from './ucscShared.ts'
@@ -39,6 +39,7 @@ const IsPcrDialog = observer(function IsPcrDialog({
     handleClose,
     defaultUrl: DEFAULT_ISPCR_URL,
     directUrl: UCSC_ISPCR_URL,
+    initialAssembly: viewedAssembly(session),
   })
   const { db, urlBase, fallbackUrl, apiKey } = query
   const [forwardPrimer, setForwardPrimer] = useState('')

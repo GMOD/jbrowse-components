@@ -251,20 +251,23 @@ export function blatResidueCount(records: FastaRecord[]) {
 // '' when it can. Checked here rather than left to the server so an over-long
 // paste says which cap it broke instead of coming back as a kent error page.
 export function blatQueryProblem(records: FastaRecord[]) {
-  const total = blatResidueCount(records)
+  return blatLengthsProblem(records.map(record => record.residues.length))
+}
+
+// The same caps stated over lengths alone, so a selection or a read can be
+// judged before its bases are fetched
+export function blatLengthsProblem(lengths: number[]) {
+  const total = lengths.reduce((sum, length) => sum + length, 0)
   // reduced rather than spread into Math.max: the record cap is checked below
   // this, so the list reaching here is whatever was pasted
-  const longest = records.reduce(
-    (max, record) => Math.max(max, record.residues.length),
-    0,
-  )
-  const subject = records.length > 1 ? 'Longest sequence' : 'Sequence'
+  const longest = lengths.reduce((max, length) => Math.max(max, length), 0)
+  const subject = lengths.length > 1 ? 'Longest sequence' : 'Sequence'
   if (longest > MAXIMUM_BLAT_SEQUENCE_LENGTH) {
     return `${subject} is ${longest.toLocaleString()} bp; UCSC BLAT is limited to ${MAXIMUM_BLAT_SEQUENCE_LENGTH.toLocaleString()} bp per sequence`
   } else if (total > MAXIMUM_BLAT_TOTAL_LENGTH) {
     return `${total.toLocaleString()} bp in total; UCSC BLAT is limited to ${MAXIMUM_BLAT_TOTAL_LENGTH.toLocaleString()} bp per query`
-  } else if (records.length > MAXIMUM_BLAT_QUERIES) {
-    return `${records.length} sequences; UCSC BLAT is limited to ${MAXIMUM_BLAT_QUERIES} per query`
+  } else if (lengths.length > MAXIMUM_BLAT_QUERIES) {
+    return `${lengths.length} sequences; UCSC BLAT is limited to ${MAXIMUM_BLAT_QUERIES} per query`
   } else if (total > 0 && total < MINIMUM_BLAT_LENGTH) {
     return `Sequence must be at least ${MINIMUM_BLAT_LENGTH} bp`
   } else {

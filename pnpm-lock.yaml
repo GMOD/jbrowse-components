@@ -1052,6 +1052,12 @@ importers:
         specifier: '>=19.0.0'
         version: 19.3.1(react@19.3.1)
     devDependencies:
+      '@jbrowse/plugin-alignments':
+        specifier: workspace:^
+        version: link:../alignments
+      '@jbrowse/plugin-linear-genome-view':
+        specifier: workspace:^
+        version: link:../linear-genome-view
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
