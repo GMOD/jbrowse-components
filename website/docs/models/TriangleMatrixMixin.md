@@ -23,6 +23,7 @@ A matrix drawn as a triangle over the view's axis (Hi-C, LD): the fetched payloa
 | --- | --- |
 | <span id="getter-heightmode">**heightMode**</span><br><code>"fit" &#124; "fixed"</code> |  |
 | <span id="getter-matrixtop">**matrixTop**</span><br><code>number</code> | Overridable hook (default 0): px reserved above the matrix. |
+| <span id="getter-depthfraction">**depthFraction**</span><br><code>number</code> | Overridable hook (default 1): the share of the full triangle's depth the payload reaches, which a banded matrix sets below 1 so fit mode stretches its strip over the display. |
 | <span id="getter-canvaswidth">**canvasWidth**</span><br><code>number</code> | The canvas spans the scrolled content, boundary padding included. |
 | <span id="getter-viewtransform">**viewTransform**</span><br><code>{ viewScale: number; viewOffsetX: number; }</code> |  |
 | <span id="getter-matrixregions">**matrixRegions**</span><br><code>ReadonlyMap&lt;number, D&gt;</code> | The one payload under key 0, absent until the fetch lands. An empty matrix keeps the key: the cleared canvas is its picture. |

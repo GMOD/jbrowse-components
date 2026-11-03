@@ -102,9 +102,9 @@ From [BaseViewModel](../baseviewmodel): <span id="property-displayname">[`displa
 | <span id="volatile-volatileguides">**volatileGuides**</span><br><code>VolatileGuide[]</code> | temporary vertical guides that can be set by displays (e.g., LD display hover) |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>2 inherited volatiles from one model</summary>
+<summary>3 inherited volatiles from one model</summary>
 
-From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../baseviewmodel#volatile-width)</span>, <span id="volatile-bodymounted">[`bodyMounted`](../baseviewmodel#volatile-bodymounted)</span>
+From [BaseViewModel](../baseviewmodel): <span id="volatile-width">[`width`](../baseviewmodel#volatile-width)</span>, <span id="volatile-problems">[`problems`](../baseviewmodel#volatile-problems)</span>, <span id="volatile-bodymounted">[`bodyMounted`](../baseviewmodel#volatile-bodymounted)</span>
 
 </details>
 
@@ -314,8 +314,8 @@ From [BaseViewModel](../baseviewmodel): <span id="getter-effectivebodymounted">[
 | <span id="action-flytofit">**flyToFit**</span><br><code>(centerBp: number, fitWidthBp: number) =&gt; void</code> | A flight to a linear bp centre at the zoom the view is on, or is already flying to, widened where that is narrower than `fitWidthBp`. The current width mid-flight is a point on the arc, so a second flight read from it would land pulled back. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>3 inherited actions from one model</summary>
+<summary>4 inherited actions from one model</summary>
 
-From [BaseViewModel](../baseviewmodel): <span id="action-setdisplayname">[`setDisplayName`](../baseviewmodel#action-setdisplayname)</span>, <span id="action-setbodymounted">[`setBodyMounted`](../baseviewmodel#action-setbodymounted)</span>, <span id="action-setminimized">[`setMinimized`](../baseviewmodel#action-setminimized)</span>
+From [BaseViewModel](../baseviewmodel): <span id="action-addproblem">[`addProblem`](../baseviewmodel#action-addproblem)</span>, <span id="action-setdisplayname">[`setDisplayName`](../baseviewmodel#action-setdisplayname)</span>, <span id="action-setbodymounted">[`setBodyMounted`](../baseviewmodel#action-setbodymounted)</span>, <span id="action-setminimized">[`setMinimized`](../baseviewmodel#action-setminimized)</span>
 
 </details>

@@ -1335,8 +1335,7 @@ import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 
 ## safeParseBreakend
 
-parseBreakend, which returns undefined for a malformed breakend. Kept under
-this name for plugins written when
+Deprecated: use `parseBreakend` from `@gmod/vcf`.
 
 ```js
 import { safeParseBreakend } from '@jbrowse/core/util/svAlt'

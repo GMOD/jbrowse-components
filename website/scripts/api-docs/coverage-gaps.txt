@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1282)
+# model members with no description (1271)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -248,6 +248,7 @@ BaseTrackModel.setPinned
 BaseTrackModel.setResizing
 BaseTrackModel.trackId
 BaseTrackModel.trackMenuItems
+BaseViewModel.addProblem
 BaseViewModel.menuItems
 BaseViewModel.setDisplayName
 BaseViewModel.setMinimized
@@ -653,7 +654,6 @@ LinearFeatureBaseDisplay.featureIdUnderMouse
 LinearFeatureBaseDisplay.fetchFullFeature
 LinearFeatureBaseDisplay.fetchNeeded
 LinearFeatureBaseDisplay.fitBodiesOnlyLayout
-LinearFeatureBaseDisplay.flatbushIndexes
 LinearFeatureBaseDisplay.growTargetHeight
 LinearFeatureBaseDisplay.hasOverflow
 LinearFeatureBaseDisplay.hiddenFeatureCount
@@ -661,13 +661,6 @@ LinearFeatureBaseDisplay.hideFeature
 LinearFeatureBaseDisplay.highlightedFeatureIdSet
 LinearFeatureBaseDisplay.hoveredFeature
 LinearFeatureBaseDisplay.hoveredSubfeature
-LinearFeatureBaseDisplay.incrementalLayout
-LinearFeatureBaseDisplay.incrementalLayoutBare
-LinearFeatureBaseDisplay.incrementalLayoutBodiesOnly
-LinearFeatureBaseDisplay.incrementalLayoutDecimated
-LinearFeatureBaseDisplay.incrementalLayoutIsoforms
-LinearFeatureBaseDisplay.incrementalLayoutLabelsOnly
-LinearFeatureBaseDisplay.incrementalLayoutThinned
 LinearFeatureBaseDisplay.labelFontSize
 LinearFeatureBaseDisplay.labelScrollBucket
 LinearFeatureBaseDisplay.layoutPinnedFeatureIdSet
@@ -682,16 +675,12 @@ LinearFeatureBaseDisplay.onScreenWidthPx
 LinearFeatureBaseDisplay.openColorByAttributeDialog
 LinearFeatureBaseDisplay.openFilterDialog
 LinearFeatureBaseDisplay.openGroupByDialog
-LinearFeatureBaseDisplay.packHeightsDecimated
-LinearFeatureBaseDisplay.packHeightsIsoforms
-LinearFeatureBaseDisplay.packHeightsThinned
 LinearFeatureBaseDisplay.pinnedFeatureCount
 LinearFeatureBaseDisplay.pinnedFeatureIdSet
 LinearFeatureBaseDisplay.renderDataMap
 LinearFeatureBaseDisplay.renderState
 LinearFeatureBaseDisplay.renderSvg
 LinearFeatureBaseDisplay.resolvedHighlights
-LinearFeatureBaseDisplay.reversedRegions
 LinearFeatureBaseDisplay.rpcProps
 LinearFeatureBaseDisplay.scrollContentHeight
 LinearFeatureBaseDisplay.scrollExtentMaxY
@@ -975,12 +964,21 @@ LinearVariantDisplay.svgSidebar
 LinearVariantDisplay.trackMenuItems
 LinearVariantDisplay.view
 LinearWiggleDisplay.autoscaleSourceNames
+LinearWiggleDisplay.domain
+LinearWiggleDisplay.extent
 LinearWiggleDisplay.fetchNeeded
 LinearWiggleDisplay.isDensityMode
 LinearWiggleDisplay.numSources
 LinearWiggleDisplay.renderState
 LinearWiggleDisplay.renderSvg
+LinearWiggleDisplay.renderingType
+LinearWiggleDisplay.selectFeature
+LinearWiggleDisplay.setExtent
+LinearWiggleDisplay.setOrigin
+LinearWiggleDisplay.setPointSize
+LinearWiggleDisplay.setResolution
 LinearWiggleDisplay.setShowRowSeparators
+LinearWiggleDisplay.setStrokeWidth
 LinearWiggleDisplay.showRowSeparators
 LinearWiggleDisplay.startRenderingBackend
 LinearWiggleDisplay.svgSidebar
@@ -1300,15 +1298,6 @@ WebSessionManagementMixin.deleteSavedSessions
 WebSessionManagementMixin.renameSavedSession
 WebSessionManagementMixin.savedSessionMetadata
 WebSessionManagementMixin.setSavedSessionFavorite
-WiggleCommonMixin.domain
-WiggleCommonMixin.extent
-WiggleCommonMixin.renderingType
-WiggleCommonMixin.selectFeature
-WiggleCommonMixin.setExtent
-WiggleCommonMixin.setOrigin
-WiggleCommonMixin.setPointSize
-WiggleCommonMixin.setResolution
-WiggleCommonMixin.setStrokeWidth
 WorkspaceLayoutMixin.activePanelId
 WorkspaceLayoutMixin.activeTabId
 WorkspaceLayoutMixin.addViewToTab

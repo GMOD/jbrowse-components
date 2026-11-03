@@ -60,6 +60,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LDTrackDisplay", .
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
+| <span id="slot-fetchsizelimit">**fetchSizeLimit**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>20000000</code> | A pair costs about 11 compressed bytes, so 20 MB is some 1.8 million pairs, and the 790k pairs of a 1,258-variant triangle fit with room. The estimate is read from the tabix index, before any pair downloads.<br>_advanced_ |
 | <span id="slot-connectors">**connectors**</span><br>[LDConnectors sub-schema](#slot-connectorsshow) | The band above the triangle holding the connector lines that tie each of its columns to a genomic position, and the variant names when they show: `show` and `height`, taken from the display's height. Off, neither the lines nor the names draw. |
 | <span id="slot-connectorsshow">**connectors.show**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>true</code> | draw the connector lines and the names above the triangle |
 | <span id="slot-connectorsheight">**connectors.height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>100</code> | height of the connector band in pixels, taken from the triangle's; its seam drag writes it |
@@ -74,6 +75,7 @@ Display slots go on a display entry: `"displays": [{ "type": "LDTrackDisplay", .
 | <span id="slot-variantlayout">**variantLayout**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (genomic, columns) = <code>'columns'</code> | `'columns'` draws every SNP one uniform square wide; `'genomic'` sizes the cells by the genomic distance between SNPs. `LinearVariantDisplay` takes the same slot for the same choice.<br>_advanced_ |
 | <span id="slot-height">**height**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>400</code> | default height of the display, the band above the triangle included |
 | <span id="slot-heightmode">**heightMode**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) = <code>'fixed'</code> | fixed draws square cells at the triangle's natural half-width height; fit squashes it to fill the display height |
+| <span id="slot-forceload">**forceLoad**</span><br>[`boolean`](/docs/config_guides/slot_types#boolean) = <code>false</code> | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.<br>_advanced_ |
 
 ## Retired keys
 
@@ -84,7 +86,6 @@ An older config may still write these. Each loads without an error, and `jbrowse
 | --- | --- |
 | `maxFeatureScreenDensity` | ignored |
 | `maxDisplayedBpPerPx` | ignored |
-| `fetchSizeLimit` | ignored |
 | `mouseover` | ignored |
 | `jexlFilters` | moved into a current slot |
 | `ldMetric` | moved into a current slot |

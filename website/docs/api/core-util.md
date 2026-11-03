@@ -294,7 +294,8 @@ import { getEnv } from '@jbrowse/core/util'
 
 ## getNotificationSink
 
-Where a display puts a message it cannot draw itself.
+Where a display puts a message it cannot draw itself. An error is also kept
+on the outermost view holding `node`, as `view.problems`.
 
 ```js
 import { getNotificationSink } from '@jbrowse/core/util'

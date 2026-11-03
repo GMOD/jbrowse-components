@@ -1099,7 +1099,8 @@ import { getEnv } from '@jbrowse/core/util'
 
 ### getNotificationSink
 
-Where a display puts a message it cannot draw itself.
+Where a display puts a message it cannot draw itself. An error is also kept on
+the outermost view holding `node`, as `view.problems`.
 
 ```js
 import { getNotificationSink } from '@jbrowse/core/util'
@@ -2165,8 +2166,7 @@ import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 
 ### safeParseBreakend
 
-parseBreakend, which returns undefined for a malformed breakend. Kept under this
-name for plugins written when
+Deprecated: use `parseBreakend` from `@gmod/vcf`.
 
 ```js
 import { safeParseBreakend } from '@jbrowse/core/util/svAlt'
