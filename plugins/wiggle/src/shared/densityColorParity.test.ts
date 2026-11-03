@@ -1,10 +1,12 @@
 import { rampLutOf } from '@jbrowse/core/util/colorRamp'
 import { COLOR_RAMP_LUT_ENTRIES } from '@jbrowse/render-core/colorRampLut'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
-import { rampMidNorm } from '@jbrowse/render-core/scoreScale'
+import { RAMP_LINE_BANDS, paintMarkBlocks } from '@jbrowse/render-core/marks'
+import { denormalizeScore, rampMidNorm } from '@jbrowse/render-core/scoreScale'
 import { rampMidT } from '@jbrowse/render-core/shaders/colorRampLut'
 import { normalizeScore } from '@jbrowse/render-core/shaders/scoreScale'
 import {
+  RENDERING_TYPE_LINE,
+  RENDERING_TYPE_LINE_CENTER,
   RENDERING_TYPE_SCATTER,
   RENDERING_TYPE_XYPLOT,
   SCALE_TYPE_LINEAR,
@@ -51,25 +53,31 @@ function gpuLutChannels(
   const frac = u - i0
   const lo = Math.min(Math.max(i0, 0), 255) * 4
   const hi = Math.min(Math.max(i0 + 1, 0), 255) * 4
-  return [0, 1, 2].map(c => lut[lo + c]! * (1 - frac) + lut[hi + c]! * frac)
+  return [0, 1, 2, 3].map(c => lut[lo + c]! * (1 - frac) + lut[hi + c]! * frac)
 }
 
-function parseRgba(s: string): [number, number, number] {
-  const m = /^rgba\((\d+),(\d+),(\d+),1\.000\)$/.exec(s)
+function parseRgba(s: string) {
+  const m = /^rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/.exec(s)
   if (!m) {
-    throw new Error(`not an opaque rgba string: ${s}`)
+    throw new Error(`not an rgba string: ${s}`)
   }
-  return [Number(m[1]), Number(m[2]), Number(m[3])]
+  return [
+    Number(m[1]),
+    Number(m[2]),
+    Number(m[3]),
+    Math.round(Number(m[4]) * 255),
+  ]
 }
 
 // One LUT bucket, stated as bytes: the GPU's bilinear sample sits between two
 // adjacent entries while the Canvas2D LUT rounds to one of them, so the two
 // backends can differ by at most the ramp's steepest adjacent-entry step (for
-// viridis, a couple of 8-bit units), never by a re-derived ramp's tens.
+// viridis, a couple of 8-bit units), never by a re-derived ramp's tens. Alpha
+// is a channel like the rest, so a translucent stop widens the step.
 function maxAdjacentStep(lut: Uint8Array) {
   let max = 0
   for (let i = 0; i < 255; i++) {
-    for (let c = 0; c < 3; c++) {
+    for (let c = 0; c < 4; c++) {
       max = Math.max(max, Math.abs(lut[(i + 1) * 4 + c]! - lut[i * 4 + c]!))
     }
   }
@@ -268,7 +276,12 @@ describe('named-ramp (LUT) density mode', () => {
       )
       const gpuAt = (score: number) =>
         gpuLutChannels(lut, score, min, max, scaleType, symlogConstant, rampMid)
-      const entry = (i: number) => [lut[i * 4], lut[i * 4 + 1], lut[i * 4 + 2]]
+      const entry = (i: number) => [
+        lut[i * 4],
+        lut[i * 4 + 1],
+        lut[i * 4 + 2],
+        lut[i * 4 + 3],
+      ]
       const withinBucket = (got: number[], want: number[]) => {
         for (const [i, c] of want.entries()) {
           expect(Math.abs(got[i]! - c)).toBeLessThanOrEqual(bucketStep)
@@ -354,15 +367,118 @@ describe('the emitted ramp sample lands entry i on its own texel', () => {
   })
 })
 
+function recordingContext() {
+  const fills: string[] = []
+  const strokes: { style: string; ys: number[] }[] = []
+  let ys: number[] = []
+  const record = () => fills.push(ctx.fillStyle)
+  const ctx = {
+    fillStyle: '',
+    strokeStyle: '',
+    lineWidth: 1,
+    lineJoin: 'miter',
+    lineCap: 'butt',
+    fillRect: record,
+    rect: record,
+    arc: record,
+    save() {},
+    restore() {},
+    beginPath() {
+      ys = []
+    },
+    moveTo(_x: number, y: number) {
+      ys.push(y)
+    },
+    lineTo(_x: number, y: number) {
+      ys.push(y)
+    },
+    closePath() {},
+    fill() {},
+    stroke() {
+      strokes.push({ style: ctx.strokeStyle, ys })
+    },
+    clip() {},
+  }
+  return { ctx: ctx as unknown as MarkContext2D, fills, strokes }
+}
+
+const CANVAS_HEIGHT = 100
+
+function paintScores(
+  ctx: MarkContext2D,
+  renderingType: WiggleRenderingType,
+  scores: number[],
+  domainY: [number, number],
+  rampLut: Uint8Array | null,
+  scaleType: ScaleTypeCode = SCALE_TYPE_LINEAR,
+  rampMid?: number,
+) {
+  const positions = new Uint32Array(
+    scores.flatMap((_, i) => [i * 10, i * 10 + 10]),
+  )
+  paintMarkBlocks(
+    ctx,
+    WIGGLE_MARKS,
+    new Map([
+      [
+        0,
+        [
+          {
+            featurePositions: positions,
+            featureScores: new Float32Array(scores),
+            numFeatures: scores.length,
+            color: [0.5, 0.5, 0.5],
+            rowIndex: 0,
+            renderingType,
+          },
+        ],
+      ],
+    ]),
+    [
+      {
+        displayedRegionIndex: 0,
+        start: 0,
+        end: scores.length * 10,
+        screenStartPx: 0,
+        screenEndPx: 800,
+        reversed: false,
+      },
+    ],
+    {
+      canvasWidth: 800,
+      canvasHeight: CANVAS_HEIGHT,
+      renderingType,
+      scaleType,
+      symlogConstant: 1,
+      domainY,
+      numRows: 1,
+      diameterPx: 4,
+      lineWidth: 1,
+      origin: domainY[1],
+      cuts: [domainY[1]],
+      innerColors: [],
+      rampLut,
+      rampMid,
+    },
+  )
+}
+
+// A user range with a translucent stop: the LUT carries alpha, which the GPU
+// samples and Canvas2D has to paint rather than drop.
+const GRADIENTS = [
+  { name: 'viridis', lut: rampLutOf({ scheme: 'viridis' }) },
+  {
+    name: 'transparent to red',
+    lut: rampLutOf({ range: ['transparent', 'red'] }),
+  },
+]
+
 // Bars and points under a gradient: the fill pass's vertex stage places each
 // instance on the ramp through the same two decisions density does, and its
 // fragment samples the same texture, so the GPU side is the density mirror
 // above. The emitted source is read to hold the shader to that; the Canvas2D
 // side is painted through the mark list, which is also the SVG export.
 describe('bars and points under a gradient', () => {
-  const lut = rampLutOf({ scheme: 'viridis' })
-  const bucketStep = maxAdjacentStep(lut)
-
   test.each([
     ['WGSL', FILL_WGSL_SOURCE],
     ['GLSL', FILL_GLSL_VERTEX],
@@ -388,112 +504,153 @@ describe('bars and points under a gradient', () => {
     domainY: [number, number],
     rampLut: Uint8Array | null,
   ) {
-    const fills: string[] = []
-    const record = () => fills.push(ctx.fillStyle)
-    const ctx = {
-      fillStyle: '',
-      strokeStyle: '',
-      lineWidth: 1,
-      fillRect: record,
-      rect: record,
-      arc: record,
-      save() {},
-      restore() {},
-      beginPath() {},
-      moveTo() {},
-      lineTo() {},
-      closePath() {},
-      fill() {},
-      stroke() {},
-      clip() {},
-    }
-    const positions = new Uint32Array(
-      scores.flatMap((_, i) => [i * 10, i * 10 + 10]),
-    )
-    paintMarkBlocks(
-      ctx as unknown as MarkContext2D,
-      WIGGLE_MARKS,
-      new Map([
-        [
-          0,
-          [
-            {
-              featurePositions: positions,
-              featureScores: new Float32Array(scores),
-              numFeatures: scores.length,
-              color: [0.5, 0.5, 0.5],
-              rowIndex: 0,
-              renderingType,
-            },
-          ],
-        ],
-      ]),
-      [
-        {
-          displayedRegionIndex: 0,
-          start: 0,
-          end: scores.length * 10,
-          screenStartPx: 0,
-          screenEndPx: 800,
-          reversed: false,
-        },
-      ],
-      {
-        canvasWidth: 800,
-        canvasHeight: 100,
-        renderingType,
-        scaleType: SCALE_TYPE_LINEAR,
-        symlogConstant: 1,
-        domainY,
-        numRows: 1,
-        diameterPx: 4,
-        lineWidth: 1,
-        origin: domainY[1],
-        cuts: [domainY[1]],
-        innerColors: [],
-        rampLut,
-      },
-    )
+    const { ctx, fills } = recordingContext()
+    paintScores(ctx, renderingType, scores, domainY, rampLut)
     // the block's clip rect, drawn before any fill is set
     return fills.filter(fill => fill !== '')
   }
 
-  describe.each([
-    ['xyplot', RENDERING_TYPE_XYPLOT],
-    ['scatter', RENDERING_TYPE_SCATTER],
-  ] as const)('%s', (_name, renderingType) => {
-    const domainY: [number, number] = [-900, 0]
-    const scores = [-900, -700, -450, -200, -1, 0]
+  describe.each(GRADIENTS)('$name', ({ lut }) => {
+    const bucketStep = maxAdjacentStep(lut)
 
-    test('both backends land within one LUT bucket for every instance', () => {
-      const fills = paintedFills(renderingType, scores, domainY, lut)
-      expect(fills).toHaveLength(scores.length)
-      for (const [i, score] of scores.entries()) {
-        const gpu = gpuLutChannels(
-          lut,
-          score,
-          domainY[0],
-          domainY[1],
-          SCALE_TYPE_LINEAR,
-          1,
-          undefined,
-        )
-        const canvas = parseRgba(fills[i]!)
-        for (const [c, v] of gpu.entries()) {
-          expect(Math.abs(canvas[c]! - v)).toBeLessThanOrEqual(bucketStep)
+    describe.each([
+      ['xyplot', RENDERING_TYPE_XYPLOT],
+      ['scatter', RENDERING_TYPE_SCATTER],
+    ] as const)('%s', (_name, renderingType) => {
+      const domainY: [number, number] = [-900, 0]
+      const scores = [-900, -700, -450, -200, -1, 0]
+
+      test('both backends land within one LUT bucket for every instance', () => {
+        const fills = paintedFills(renderingType, scores, domainY, lut)
+        expect(fills).toHaveLength(scores.length)
+        for (const [i, score] of scores.entries()) {
+          const gpu = gpuLutChannels(
+            lut,
+            score,
+            domainY[0],
+            domainY[1],
+            SCALE_TYPE_LINEAR,
+            1,
+            undefined,
+          )
+          const canvas = parseRgba(fills[i]!)
+          for (const [c, v] of gpu.entries()) {
+            expect(Math.abs(canvas[c]! - v)).toBeLessThanOrEqual(bucketStep)
+          }
         }
-      }
-      expect(parseRgba(fills[0]!)).toEqual([lut[0], lut[1], lut[2]])
-      expect(parseRgba(fills.at(-1)!)).toEqual([
-        lut[255 * 4],
-        lut[255 * 4 + 1],
-        lut[255 * 4 + 2],
-      ])
-    })
+        expect(parseRgba(fills[0]!)).toEqual(Array.from(lut.slice(0, 4)))
+        expect(parseRgba(fills.at(-1)!)).toEqual(
+          Array.from(lut.slice(255 * 4, 256 * 4)),
+        )
+      })
 
-    test('without a gradient every instance paints the layer color', () => {
-      const fills = paintedFills(renderingType, scores, domainY, null)
-      expect(new Set(fills)).toEqual(new Set(['rgb(128,128,128)']))
+      test('without a gradient every instance paints the layer color', () => {
+        const fills = paintedFills(renderingType, scores, domainY, null)
+        expect(new Set(fills)).toEqual(new Set(['rgb(128,128,128)']))
+      })
+    })
+  })
+})
+
+// Lines under a gradient: Canvas2D and the SVG export stroke the ramp in
+// RAMP_LINE_BANDS bands, each in the LUT entry at its middle, where the GPU
+// samples the ramp at the fragment's own score. A score sits at most half a
+// band from its band's middle, so the two land
+// `ceil((N - 1) * slope / (2 * bands))` entries apart, plus one for the
+// Canvas2D side rounding to an entry while the GPU blends two. `slope` is how
+// fast `rampMidT` runs through t per unit of normalized score: 1 on an
+// unset middle, and steeper on the nearer side of an off-center one.
+describe('lines under a gradient', () => {
+  const LINE_CASES = [
+    {
+      name: 'linear',
+      domain: [0, 100] as [number, number],
+      scaleType: SCALE_TYPE_LINEAR,
+      rampMid: undefined,
+    },
+    {
+      name: 'linear, middle off-center',
+      domain: [0, 100] as [number, number],
+      scaleType: SCALE_TYPE_LINEAR,
+      rampMid: 20,
+    },
+    {
+      name: 'log',
+      domain: [1, 1000] as [number, number],
+      scaleType: SCALE_TYPE_LOG,
+      rampMid: undefined,
+    },
+    {
+      name: 'symlog crossing zero',
+      domain: [-50, 400] as [number, number],
+      scaleType: SCALE_TYPE_SYMLOG,
+      rampMid: 0,
+    },
+  ]
+
+  // Normalized positions inside a band, never on a cut, spanning the domain
+  // so the bands cover all of it.
+  const FRACTIONS = [0, 0.07, 0.18, 0.33, 0.52, 0.71, 0.9, 1]
+
+  function bandToleranceOf(lut: Uint8Array, midNorm: number) {
+    const slope = 0.5 / Math.min(midNorm, 1 - midNorm, 0.5)
+    const entriesPerHalfBand = Math.ceil(
+      ((COLOR_RAMP_LUT_ENTRIES - 1) * slope) / (2 * RAMP_LINE_BANDS),
+    )
+    return maxAdjacentStep(lut) * (entriesPerHalfBand + 1)
+  }
+
+  test('the tolerance is a band, wider than a LUT step', () => {
+    const { lut } = GRADIENTS[0]!
+    expect(bandToleranceOf(lut, 0.5)).toBeGreaterThan(maxAdjacentStep(lut))
+  })
+
+  describe.each(GRADIENTS)('$name', ({ lut }) => {
+    describe.each(LINE_CASES)('$name', ({ domain, scaleType, rampMid }) => {
+      const [min, max] = domain
+      const scores = FRACTIONS.map(f =>
+        Math.fround(denormalizeScore(f, min, max, scaleType, 1)),
+      )
+      const tolerance = bandToleranceOf(
+        lut,
+        rampMidNorm(min, max, scaleType, rampMid, 1),
+      )
+
+      describe.each([
+        ['line', RENDERING_TYPE_LINE],
+        ['linecenter', RENDERING_TYPE_LINE_CENTER],
+      ] as const)('%s', (_name, renderingType) => {
+        const { ctx, strokes } = recordingContext()
+        paintScores(ctx, renderingType, scores, domain, lut, scaleType, rampMid)
+
+        test.each(scores)(
+          'Canvas2D strokes the height of score %p in the color the GPU samples',
+          score => {
+            const y =
+              (1 - normalizeScore(score, min, max, scaleType, 1)) *
+              CANVAS_HEIGHT
+            const styles = new Set(
+              strokes
+                .filter(({ ys }) => ys.some(v => Math.abs(v - y) < 1e-3))
+                .map(({ style }) => style),
+            )
+            expect(styles.size).toBe(1)
+            const gpu = gpuLutChannels(
+              lut,
+              score,
+              min,
+              max,
+              scaleType,
+              1,
+              rampMid,
+            )
+            const canvas = parseRgba([...styles][0]!)
+            for (const [c, v] of gpu.entries()) {
+              expect(Math.abs(canvas[c]! - v)).toBeLessThanOrEqual(tolerance)
+            }
+          },
+        )
+      })
     })
   })
 })
