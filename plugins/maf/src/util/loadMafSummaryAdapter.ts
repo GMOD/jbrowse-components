@@ -17,7 +17,7 @@ import type { Region } from '@jbrowse/core/util'
  * A MAF adapter as its summary readers see it: the `summaryAdapter` slot
  * already resolved and memoized into a `cachedSetup` field.
  */
-export type MafSummarySelf = BaseFeatureDataAdapter & {
+type MafSummarySelf = BaseFeatureDataAdapter & {
   summaryAdapter: (
     opts?: BaseOptions,
   ) => Promise<BaseFeatureDataAdapter | undefined>
@@ -97,8 +97,8 @@ export function mafSummaryFeatures(
           // "this species aligns here". `!` gave `undefined`, and the alpha math
           // then produced `NaN` and an unpaintable color.
           score: f.get('score') ?? 0,
-          leftStatus: toMafStatus(f.get('leftStatus') as string | undefined),
-          rightStatus: toMafStatus(f.get('rightStatus') as string | undefined),
+          leftStatus: toMafStatus(f.get('leftStatus')),
+          rightStatus: toMafStatus(f.get('rightStatus')),
         })
       })
     }

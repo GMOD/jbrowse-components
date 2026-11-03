@@ -2,7 +2,7 @@ import { scanBgzfBlocks, unzip } from '@gmod/bgzf-filehandle'
 import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import { byteOffsetsOf } from './taiBlocks.ts'
+import { NEWLINE, byteOffsetsOf } from './taiBlocks.ts'
 import { lowerBound, parseTaiIndex, queryBlockSpan } from './taiIndex.ts'
 
 import type { IndexData } from './taiIndex.ts'
@@ -165,8 +165,6 @@ function virtualOffsetIds(
       : `${startBlock}-${at}`
   }
 }
-
-const NEWLINE = 10
 
 /**
  * The parsers drop a block whose last line has no newline, as a read cut it.

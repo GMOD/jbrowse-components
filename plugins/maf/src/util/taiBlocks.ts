@@ -14,7 +14,7 @@ export function wholeLines(text: string) {
   return { lines, endsClean }
 }
 
-const NEWLINE = 10
+export const NEWLINE = 10
 
 /**
  * Line starts in `text` as byte offsets into the `bytes` it decoded from, asked

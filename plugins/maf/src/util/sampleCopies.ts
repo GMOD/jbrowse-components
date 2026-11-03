@@ -9,7 +9,7 @@ import type { MafSource } from '../types.ts'
  */
 const COPY_REGEX = /^(.+)~(\d+)$/
 
-export function copyRowId(sampleId: string, copy: number) {
+function copyRowId(sampleId: string, copy: number) {
   return `${sampleId}~${copy}`
 }
 

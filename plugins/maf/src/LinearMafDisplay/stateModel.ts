@@ -1434,7 +1434,7 @@ export default function stateModelFactory(
           // first-paint gate is `hasFetched`.
           return {
             canvasWidth: self.canvasWidthPx,
-            canvasHeight: self.rowsTopOffset + self.rowsHeight,
+            canvasHeight: self.height,
             rowsTop: self.rowsTopOffset,
             rowsHeight: self.rowsHeight,
             coverage: self.coverageBandState,

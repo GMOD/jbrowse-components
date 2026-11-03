@@ -15,7 +15,7 @@ import type {
 import type { Feature, Region } from '@jbrowse/core/util'
 
 /** What parses one sub-adapter feature's packed MAF text into a sink. */
-export interface MafTextBlockReader {
+interface MafTextBlockReader {
   read(
     sink: MafBlockSink,
     id: string,

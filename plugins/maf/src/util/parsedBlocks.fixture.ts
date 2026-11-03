@@ -1,11 +1,10 @@
 // Blocks as plain objects, for tests that assert on a parse: what a reader
 // hands the sink, reassembled through `MafFeatureSink`.
 import { readMafBlocks } from '../BgzipMafAdapter/mafParsing.ts'
-import { readTafBlock } from '../BgzipTaffyAdapter/tafParsing.ts'
+import { readTafBlock, readTafSlice } from '../BgzipTaffyAdapter/tafParsing.ts'
 import { MafFeatureSink } from './mafFeatureSink.ts'
 import { MafStanzaReader } from './mafStanzaReader.ts'
 
-import type BgzipTaffyAdapter from '../BgzipTaffyAdapter/BgzipTaffyAdapter.ts'
 import type { AlignmentBlock } from '../BgzipTaffyAdapter/tafParsing.ts'
 import type MafFeature from '../MafFeature.ts'
 import type { AlignmentRecord, EmptyRecord } from '../types.ts'
@@ -70,14 +69,13 @@ export function tafBlockOf(block: AlignmentBlock, resolve: SourceResolver) {
 
 /** The blocks of a decoded TAF slice, every one kept. */
 export function tafSliceBlocksOf(
-  adapter: BgzipTaffyAdapter,
   bytes: Uint8Array,
   runLengthEncodeBases: boolean,
   resolve: SourceResolver,
 ) {
   const reader = readerOf(resolve)
   return collectBlocks((sink, keep) => {
-    adapter.readTafSlice(
+    readTafSlice(
       {
         text: new TextDecoder().decode(bytes),
         blockIdAt: offset => `${offset}`,

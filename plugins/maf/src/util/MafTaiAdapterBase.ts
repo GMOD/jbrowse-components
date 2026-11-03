@@ -35,8 +35,6 @@ export abstract class MafTaiAdapterBase<
     keep: KeepBlock,
   ): void
 
-  protected decoder = new TextDecoder()
-
   async getRefNames(opts?: BaseOptions) {
     const { index } = await this.configure(opts)
     return [...index.keys()]

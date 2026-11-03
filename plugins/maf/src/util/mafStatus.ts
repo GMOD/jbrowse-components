@@ -24,8 +24,8 @@ const STATUS_BY_CHAR = new Map<string, MafStatus>(
 )
 
 /** The status a character names, or undefined for one MAF does not define. */
-export function toMafStatus(s: string | undefined) {
-  return s === undefined ? undefined : STATUS_BY_CHAR.get(s)
+export function toMafStatus(s: unknown) {
+  return typeof s === 'string' ? STATUS_BY_CHAR.get(s) : undefined
 }
 
 export function encodeMafStatus(status: MafStatus | undefined) {

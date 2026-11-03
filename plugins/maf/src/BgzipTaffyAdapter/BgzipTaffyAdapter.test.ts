@@ -1095,11 +1095,8 @@ describe('BgzipTaffyAdapter RLE detection', () => {
 })
 
 describe('readTafSlice guards a cut tail', () => {
-  // The slice read needs no config, so a bare adapter is enough to reach it.
-  const adapter = new BgzipTaffyAdapter(configSchema.create({}))
   const stream = (taf: string) =>
     tafSliceBlocksOf(
-      adapter,
       new TextEncoder().encode(taf),
       false,
       makeSourceResolver().resolve,
@@ -1162,7 +1159,6 @@ describe('readTafSlice guards a cut tail', () => {
       '',
     ].join('\n')
     const features = tafSliceBlocksOf(
-      adapter,
       new TextEncoder().encode(rle),
       true,
       makeSourceResolver().resolve,
@@ -1184,7 +1180,6 @@ describe('readTafSlice guards a cut tail', () => {
       '',
     ].join('\n')
     const features = tafSliceBlocksOf(
-      adapter,
       new TextEncoder().encode(taf),
       false,
       makeSourceResolver().resolve,
@@ -1285,7 +1280,6 @@ describe('a query near a short contig end does not take the next contig', () => 
       location: adapter.getConf('tafGzLocation'),
     }))!
     const decoded = tafSliceBlocksOf(
-      adapter,
       new TextEncoder().encode(slice.text),
       false,
       makeSourceResolver().resolve,
@@ -1344,7 +1338,6 @@ describe('block ids', () => {
       '',
     ].join('\n')
     const ids = tafSliceBlocksOf(
-      new BgzipTaffyAdapter(configSchema.create({})),
       new TextEncoder().encode(taf),
       false,
       makeSourceResolver().resolve,

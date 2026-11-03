@@ -36,7 +36,7 @@ const BGZF_BLOCK_SIZE = 65536
  * interleave two chromosomes' offsets and break `selectIndexEntries`' ascending
  * binary search.
  */
-export function refNameOfSource(name: string) {
+function refNameOfSource(name: string) {
   const { assemblyName, refName } = parseAssemblyAndRefName(name)
   return refName === '' ? assemblyName : refName
 }
@@ -194,7 +194,7 @@ export function nextRefNameStartBlock(index: IndexData, refName: string) {
 }
 
 /** The index entries and compressed block span one region query resolves to. */
-export interface QueryBlockSpan {
+interface QueryBlockSpan {
   firstEntry: ByteRange
   /** undefined past the chromosome's last sparse entry */
   nextEntry: ByteRange | undefined

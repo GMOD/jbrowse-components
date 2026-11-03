@@ -125,7 +125,7 @@ function alignedBaseUpper(
   return byte === DASH || byte === SPACE ? NO_BASE : byte & ~LOWER_BIT
 }
 
-export interface MafCoverageResult {
+interface MafCoverageResult {
   depths: Float32Array
   maxDepth: number
   startPos: number
@@ -154,8 +154,8 @@ export interface MafCoverageResult {
  * recorded so it renders as a grey segment; columns where the *reference* is
  * `N` are unclassifiable and emit no mismatch.
  *
- * `refSampleId` is the reference assembly's own sample id (resolved from
- * `region.assemblyName`), excluded from the identity numerator/denominator so
+ * `refSampleId` is the reference assembly's own sample id (the row the reader
+ * named as the reference), excluded from the identity numerator/denominator so
  * its trivial self-match doesn't inflate conservation. Undefined (the
  * reference is not one of the rows) leaves identity over all rows.
  *
