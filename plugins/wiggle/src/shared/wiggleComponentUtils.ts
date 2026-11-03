@@ -109,7 +109,7 @@ export function makeWiggleRenderState(
     innerColors: self.wiggleColor.innerColors.map(c =>
       cssColorToNormalizedRgb(c),
     ),
-    rampLut: self.wiggleColor.rampLut ?? undefined,
+    rampLut: self.wiggleColor.rampLut,
     rampMid: self.wiggleColor.rampMid,
   }))
 }

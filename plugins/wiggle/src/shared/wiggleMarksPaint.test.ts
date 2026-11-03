@@ -149,6 +149,7 @@ describe('the wiggle painters', () => {
     origin: 0,
     cuts: [0],
     innerColors: [],
+    rampLut: null,
   }
 
   // A bar the domain cut wears the clip strip on the row edge that cut it
@@ -208,6 +209,7 @@ describe('the wiggle painters', () => {
       origin: 5,
       cuts: [5],
       innerColors: [],
+      rampLut: null,
     })
 
     expect(fillRectCalls.length).toBe(2)
@@ -535,6 +537,7 @@ const lineState = {
   origin: 0,
   cuts: [0],
   innerColors: [] as [number, number, number][],
+  rampLut: null,
 }
 const zeroY = 200
 const score5Y = 100
@@ -807,6 +810,7 @@ describe('a log domain entirely under 1', () => {
     origin: 0,
     cuts: [0],
     innerColors: [],
+    rampLut: null,
   }
 
   function barHeights(scores: number[]) {
@@ -916,6 +920,7 @@ describe('the whiskers band', () => {
     origin: 0,
     cuts: [0],
     innerColors: [] as [number, number, number][],
+    rampLut: null,
   }
   const posColor: [number, number, number] = [0, 0, 1]
   const negColor: [number, number, number] = [1, 0, 0]
@@ -1034,6 +1039,7 @@ describe('the whiskers band', () => {
         domainY: [-10, 10],
         cuts: [-2, 2],
         innerColors: [[0, 1, 0]],
+        rampLut: null,
       },
     )
     expect(fillStyles).toEqual([
@@ -1065,6 +1071,7 @@ describe('the whiskers band', () => {
         domainY: [-10, 10],
         cuts: [-2, 2],
         innerColors: [[0, 1, 0]],
+        rampLut: null,
       },
     )
     expect(fillStyles).toEqual([
@@ -1097,7 +1104,7 @@ describe('the whiskers band', () => {
   test('a cut snaps to the row device grid, not the window one', () => {
     const { ctx, rectCalls } = createMockCanvas()
     drawMinMaxBand({
-      ctx: ctx,
+      ctx,
       source: bandLayer([9], [1], [0], [1000], RENDERING_TYPE_LINE),
       block,
       rowHeight: 40,
@@ -1234,6 +1241,7 @@ describe('line plots color by pivot side', () => {
       renderingType: RENDERING_TYPE_LINE_CENTER,
       cuts: [-2, 2],
       innerColors: [[0, 1, 0]],
+      rampLut: null,
     })
     const pts = (calls: number[][]) =>
       calls.map(c => [

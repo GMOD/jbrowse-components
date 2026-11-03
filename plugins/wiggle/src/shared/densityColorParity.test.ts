@@ -386,7 +386,7 @@ describe('bars and points under a gradient', () => {
     renderingType: WiggleRenderingType,
     scores: number[],
     domainY: [number, number],
-    rampLut: Uint8Array | undefined,
+    rampLut: Uint8Array | null,
   ) {
     const fills: string[] = []
     const record = () => fills.push(ctx.fillStyle)
@@ -492,7 +492,7 @@ describe('bars and points under a gradient', () => {
     })
 
     test('without a gradient every instance paints the layer color', () => {
-      const fills = paintedFills(renderingType, scores, domainY, undefined)
+      const fills = paintedFills(renderingType, scores, domainY, null)
       expect(new Set(fills)).toEqual(new Set(['rgb(128,128,128)']))
     })
   })

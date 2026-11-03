@@ -74,6 +74,7 @@ const DEFAULT_STATE = {
   origin: 0,
   cuts: [0],
   innerColors: [],
+  rampLut: null,
 }
 
 describe('the wiggle mark list', () => {
@@ -643,6 +644,7 @@ describe('the wiggle mark list', () => {
       origin: 5,
       cuts: [5],
       innerColors: [],
+      rampLut: null,
     })
 
     const f32 = hal.getLastUniformsF32()!

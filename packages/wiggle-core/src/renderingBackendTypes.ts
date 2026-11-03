@@ -80,16 +80,14 @@ export interface WiggleGPURenderState {
   // own `negColor` and `color`.
   cuts: number[]
   innerColors: [number, number, number][]
-  // The score at a density ramp's middle stop; absent runs the ramp straight
-  // across the domain.
+  // The score at the ramp's middle stop; absent runs the ramp straight across
+  // the domain.
   rampMid?: number
-  // Density's color ramp, already resolved to its 256 RGBA entries. Absent
-  // is the inline white→track-color fade, which is what a per-row color
-  // needs and one LUT cannot encode; present, both backends color through
-  // these bytes (the GPU as the density pass's texture, Canvas2D/SVG as a
-  // fillStyle LUT). The same cached array each read, so the GPU upload memo
-  // keys on it.
-  rampLut?: Uint8Array
+  // A gradient's color ramp, already resolved to its 256 RGBA entries, or null
+  // when the color is not a gradient. Present, every rendering colors through
+  // these bytes (the GPU as the pass's texture, Canvas2D/SVG as a fillStyle
+  // LUT). The same cached array each read, so the GPU upload memo keys on it.
+  rampLut: Uint8Array | null
 }
 
 export interface SourceRenderData {

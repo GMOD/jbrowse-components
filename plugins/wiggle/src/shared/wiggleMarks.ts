@@ -98,7 +98,7 @@ function wiggleParams(
     cuts: state.cuts,
     innerColors: state.innerColors,
     rampMid: state.rampMid,
-    rampLut: state.rampLut ?? null,
+    rampLut: state.rampLut,
   }
 }
 
@@ -308,9 +308,8 @@ const channels = (sources: SourceRenderData[]) => sources
 
 // Off the render state, per pass: a gradient is one 256×1 texture and a
 // uniform flag, and no gradient binds the inert table the backend keeps.
-const rampTextures = (state: WiggleGPURenderState) => ({
-  colorRamp: state.rampLut,
-})
+const rampTextures = (state: WiggleGPURenderState) =>
+  state.rampLut ? { colorRamp: state.rampLut } : {}
 
 const fill = defineMark({
   shape: fillShape,

@@ -148,6 +148,7 @@ function makeModel(
       origin: 0,
       cuts: [0],
       innerColors: [],
+      rampLut: null,
     },
     gpuProps: () => ({
       sources: [{ name: 'a' }, { name: 'b' }],
