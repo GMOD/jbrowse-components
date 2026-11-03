@@ -213,7 +213,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   model: FloatingLabelsModel
   view: LGV
   onLabelMouseOver?: (hit: HitFeatureResult) => void
-  onLabelMouseLeave?: () => void
+  onLabelMouseLeave?: (relatedTarget: EventTarget | null) => void
 }) {
   const { classes, cx } = useStyles()
   const palette = usePalette()
@@ -399,7 +399,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
         // `title`. It clears rather than returns, because the cursor reached the
         // badge across the name it sits after, which already set the hover.
         if (resolveMoreIsoforms(e) !== undefined) {
-          onLabelMouseLeave?.()
+          onLabelMouseLeave?.(null)
           return
         }
         const hit = resolveHit(e)
@@ -411,8 +411,8 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
       // the window — reaches no canvas handler, so the label's hover would stay
       // lit. React dispatches the leave here even though the layer itself is
       // pointerEvents:none, the labels being its descendants.
-      onMouseLeave={() => {
-        onLabelMouseLeave?.()
+      onMouseLeave={e => {
+        onLabelMouseLeave?.(e.relatedTarget)
       }}
     >
       {elements}

@@ -7,6 +7,7 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../../RenderFeatureDataRPC/testUtils.ts'
+import { isCanvasWithId } from './hoverLeave.ts'
 import { hgvsHitLabel, hoverTooltipText } from './hoverReadout.ts'
 import { FloatingLabelsLayer } from './overlayElements.tsx'
 
@@ -72,7 +73,7 @@ function Harness({
   onLabelMouseLeave,
 }: {
   onLabelMouseOver: () => void
-  onLabelMouseLeave: () => void
+  onLabelMouseLeave: (relatedTarget: EventTarget | null) => void
 }) {
   return (
     <FloatingLabelsLayer
@@ -107,6 +108,52 @@ test('label layer clears hover when the cursor leaves a label', () => {
   // descendant and the new target not.
   fireEvent.mouseOut(label, { relatedTarget: document.body })
   expect(onLabelMouseLeave).toHaveBeenCalledTimes(1)
+})
+
+describe('leaving a name for the display canvas', () => {
+  function renderBesideCanvas() {
+    const clearHover = jest.fn()
+    const utils = render(
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <canvas id="mine" data-testid="mine" />
+        <canvas id="theirs" data-testid="theirs" />
+        <FloatingLabelsLayer
+          model={MODEL}
+          view={VIEW}
+          onLabelMouseLeave={relatedTarget => {
+            if (!isCanvasWithId(relatedTarget, 'mine')) {
+              clearHover()
+            }
+          }}
+        />
+      </ThemeProvider>,
+    )
+    return { clearHover, ...utils }
+  }
+
+  it('keeps the hover for the canvas handler to replace', () => {
+    const { clearHover, getByTestId } = renderBesideCanvas()
+    fireEvent.mouseOut(getByTestId('feature-name-NAME'), {
+      relatedTarget: getByTestId('mine'),
+    })
+    expect(clearHover).not.toHaveBeenCalled()
+  })
+
+  it('clears the hover when another track canvas is entered', () => {
+    const { clearHover, getByTestId } = renderBesideCanvas()
+    fireEvent.mouseOut(getByTestId('feature-name-NAME'), {
+      relatedTarget: getByTestId('theirs'),
+    })
+    expect(clearHover).toHaveBeenCalledTimes(1)
+  })
+
+  it('clears the hover when leaving the window', () => {
+    const { clearHover, getByTestId } = renderBesideCanvas()
+    fireEvent.mouseOut(getByTestId('feature-name-NAME'), {
+      relatedTarget: document.body,
+    })
+    expect(clearHover).toHaveBeenCalledTimes(1)
+  })
 })
 
 // A label sits on top of its own glyph, so both entry points have to read the

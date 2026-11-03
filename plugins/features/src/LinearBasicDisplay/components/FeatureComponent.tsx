@@ -23,6 +23,7 @@ import GeneGlyphControl from './GeneGlyphControl.tsx'
 import GroupLabelsLayer from './GroupLabelsLayer.tsx'
 import SoloSelectionChip from './SoloSelectionChip.tsx'
 import { performMultiRegionHitDetection } from './hitTesting.ts'
+import { isCanvasWithId } from './hoverLeave.ts'
 import {
   hgvsHitLabel,
   hoverTooltipRows,
@@ -258,6 +259,18 @@ const FeatureBody = observer(function FeatureBody({
     model.clearHover()
   })
 
+  // Moving from a name onto this display's own canvas hands the hover to the
+  // canvas's coalesced handler, so clearing here would leave a frame lit by
+  // nothing. Another track's canvas, or the display's other chrome, has no such
+  // handler and still clears.
+  const handleLabelMouseLeave = useEventCallback(
+    (relatedTarget: EventTarget | null) => {
+      if (!isCanvasWithId(relatedTarget, canvasId)) {
+        handleMouseLeave()
+      }
+    },
+  )
+
   // The layer hands over a hit shaped like the canvas path's, so crossing from a
   // feature onto its name keeps the isoform, exon and HGVS rows.
   const onLabelMouseOver = useCallback(
@@ -294,7 +307,7 @@ const FeatureBody = observer(function FeatureBody({
             model={model}
             view={view}
             onLabelMouseOver={onLabelMouseOver}
-            onLabelMouseLeave={handleMouseLeave}
+            onLabelMouseLeave={handleLabelMouseLeave}
           />
         </OverlayScrollLayer>
         {/* Screen-space rather than inside the scrolled layer: a chip pins to
