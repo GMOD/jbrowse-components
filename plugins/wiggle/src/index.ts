@@ -42,8 +42,7 @@ export type { RawFeatureArrays, WiggleHoveredFeature } from './util.ts'
 // The state model factory is deliberately NOT re-exported here: a value edge
 // from this barrel would keep the display model subgraph eager, which is the
 // point of the lazy registration. It is reachable at
-// '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel', which is where a
-// plugin composing the whole display imports it.
+// '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'.
 export {
   ReactComponent as LinearWiggleDisplayReactComponent,
   configSchema as linearWiggleDisplayConfigSchema,

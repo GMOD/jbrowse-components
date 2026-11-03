@@ -11,9 +11,7 @@ import type {
   WiggleRenderingBackend,
 } from '@jbrowse/wiggle-core'
 
-// The model surface installWiggleRenderingBackend needs — LinearWiggleDisplay's
-// and, through it, gccontent's two GC displays', so the per-region wiring lives
-// here once instead of inside each model's startRenderingBackend.
+// The model surface installWiggleRenderingBackend needs from LinearWiggleDisplay.
 interface WiggleLifecycleModel extends LifecycleHost {
   rpcDataMap: ReadonlyMap<number, WiggleDataResult>
   gpuProps: () => WiggleGpuProps

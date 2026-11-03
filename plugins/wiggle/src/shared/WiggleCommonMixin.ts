@@ -63,11 +63,11 @@ const regionStore = (self: object) => self as RegionStoreSelf
  *
  * Extends `YFieldConfigMixin` with the narrowed rpcDataMap, the autoscale
  * domain and the wiggle-specific config: the origin, rendering type,
- * resolution and the line/gap settings. Extended on this chain
+ * resolution and the line width and point size. Extended on this chain
  * with `.props()`/`.views()` rather than a mixin composed in, so no
  * `types.compose` layer is added (ADR-041).
  *
- * Used by LinearWiggleDisplay and gccontent's two GC displays.
+ * Used by LinearWiggleDisplay alone.
  */
 export function WiggleCommonMixin() {
   return YFieldConfigMixin(WIGGLE_Y_PATHS)

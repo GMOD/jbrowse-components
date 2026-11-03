@@ -59,9 +59,9 @@ export function renderingTypeToInt(type: string): WiggleRenderingType {
 }
 
 // Everything in a wiggle-family render state except the canvas box comes off
-// the model, so the two displays supply only what genuinely differs: single
-// wiggle insets by the scalebar label gutter and draws one row, multi stacks
-// rows edge-to-edge over the full height.
+// the model, so a display supplies only what genuinely differs: one plot box
+// insets by the scalebar label gutter and draws one row, a stack of rows goes
+// edge-to-edge over the full height.
 export interface WiggleRenderStateModel {
   domain: [number, number] | undefined
   scaleType: string

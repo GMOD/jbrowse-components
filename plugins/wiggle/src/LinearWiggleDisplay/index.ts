@@ -30,9 +30,9 @@ export default function LinearWiggleDisplayF(pluginManager: PluginManager) {
         configSchema,
         // lazily loaded, for the same reason the component below is: the model
         // reaches the wiggle mixins and the score-scale machinery, and is
-        // needed only once a quantitative track is shown. gccontent composes
-        // this factory from '@jbrowse/plugin-wiggle/LinearWiggleDisplay/
-        // stateModel' — the subpath, so the barrel keeps no value edge to it.
+        // needed only once a quantitative track is shown. The factory is
+        // reachable as '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel'
+        // — the subpath, so the barrel keeps no value edge to it.
         stateModel: () =>
           import('./model.ts').then(f =>
             f.default(pluginManager, configSchema),

@@ -197,7 +197,7 @@ export default function stateModelFactory(
     )
     .views(self => ({
       // overrides WiggleScoreConfigMixin's `false` base, which is what its
-      // effectiveExtent getter keys on
+      // axisReachesZero getter keys on
       get isDensityMode() {
         return self.renderingType === 'density'
       },
@@ -269,7 +269,7 @@ export default function stateModelFactory(
        * always drawn.
        */
       get sharesPanel(): boolean {
-        return wiggleSharesPanel(!self.isOverlay, self.discoveredRows.length)
+        return wiggleSharesPanel(self.isRowLayout, self.discoveredRows.length)
       },
       /**
        * #getter
@@ -491,7 +491,7 @@ export default function stateModelFactory(
        * Overlay draws every source on one row, so it names none.
        */
       get drawsRowLabels() {
-        return self.numSources > 1 && !self.isOverlay && self.showRowLabels
+        return self.numSources > 1 && self.isRowLayout && self.showRowLabels
       },
       /**
        * #getter
@@ -672,7 +672,7 @@ export default function stateModelFactory(
        * menu and WiggleHint.
        */
       get drawsTree(): boolean {
-        return !self.isOverlay
+        return self.isRowLayout
       },
 
       /**
@@ -966,13 +966,6 @@ export default function stateModelFactory(
       },
     }))
 }
-
-// Re-exported off the module the `LinearWiggleDisplay/stateModel` subpath
-// names, because gccontent composes this factory and its emitted `.d.ts` has to
-// name every type the inferred model mentions. Without these the ESM build
-// reports TS2883 against the source paths, which no package can import.
-export type { WiggleContextInfo } from './components/findHit.ts'
-export type { ResolvedWiggleColor } from '../shared/wiggleColor.ts'
 
 export type LinearWiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
 export type LinearWiggleDisplayModel = Instance<LinearWiggleDisplayStateModel>

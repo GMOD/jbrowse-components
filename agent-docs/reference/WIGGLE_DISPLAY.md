@@ -124,8 +124,7 @@ without casting to reach them, and `types.compose` depth is a real ceiling
 (ADR-041). `sharedRpcProps` / `sharedGpuProps` are named apart from the methods
 they feed, deliberately: MST _intersects_ what each `.views()` layer returns, so
 two same-named methods resolve to the **first** at the type level however the
-runtime member behaves. gccontent composes this model, so the names still have
-two hosts.
+runtime member behaves.
 
 ## A BigWig answers in bins below its first zoom level
 
