@@ -21,7 +21,7 @@ import MafBandLabels from './MafBandLabels.tsx'
 import MafRowOverlays from './MafRowOverlays.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import { mafPointerAt, resolveMafPointerHit } from './mafHitTest.ts'
-import { useDragSelection } from './useDragSelection.ts'
+import { showsHoverAt, useDragSelection } from './useDragSelection.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
@@ -158,7 +158,8 @@ const MafBody = observer(function MafBody({
   // the tooltip. Row resolution is off mid-drag so the tooltip keeps the
   // selection's range readout.
   const pointer =
-    mouse && mouse.x >= dataLeft
+    mouse &&
+    showsHoverAt(mouse, { dataLeft, width, height: model.height }, isDragging)
       ? {
           mouse,
           hit: resolveMafPointerHit({
@@ -207,7 +208,7 @@ const MafBody = observer(function MafBody({
             model={model}
             hit={pointer.hit}
             mouseState={pointer.mouse}
-            origMouseX={isDragging ? selectionRect?.startX : undefined}
+            dragRange={isDragging ? selectionRect : undefined}
           />
         </div>
       ) : null}

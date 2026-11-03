@@ -2,7 +2,7 @@ import { createRef } from 'react'
 
 import { act, renderHook } from '@testing-library/react'
 
-import { useDragSelection } from './useDragSelection.ts'
+import { showsHoverAt, useDragSelection } from './useDragSelection.ts'
 
 import type React from 'react'
 
@@ -288,4 +288,26 @@ test('a cancelled pointer ends the drag without a click', () => {
     result.current.handleMouseUp(mouseEvent(200, 50))
   })
   expect(onClick).not.toHaveBeenCalled()
+})
+
+describe('hover while the pointer is captured', () => {
+  const track = { dataLeft: DATA_LEFT, width: WIDTH, height: HEIGHT }
+
+  test('past the track edge a drag shows no crosshair or tooltip', () => {
+    for (const mouse of [
+      { x: WIDTH + 20, y: 100 },
+      { x: 300, y: HEIGHT + 20 },
+      { x: 300, y: -20 },
+    ]) {
+      expect(showsHoverAt(mouse, track, true)).toBe(false)
+    }
+  })
+
+  test('inside the track a drag shows them', () => {
+    expect(showsHoverAt({ x: 300, y: 100 }, track, true)).toBe(true)
+  })
+
+  test('the sidebar never shows them', () => {
+    expect(showsHoverAt({ x: DATA_LEFT - 1, y: 100 }, track, false)).toBe(false)
+  })
 })

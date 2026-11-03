@@ -15,6 +15,7 @@ import { pointerLocation } from './mafHitTest.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { MafPointerHit } from './mafHitTest.ts'
+import type { DragRect } from './useDragSelection.ts'
 import type { MouseState } from '@jbrowse/core/ui'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 
@@ -112,7 +113,7 @@ const MAFTooltip = observer(function MAFTooltip({
   model,
   hit,
   mouseState,
-  origMouseX,
+  dragRange,
 }: {
   /** the cursor already projected + hit-tested by the display body */
   hit: MafPointerHit
@@ -123,17 +124,21 @@ const MAFTooltip = observer(function MAFTooltip({
    */
   mouseState: MouseState
   model: LinearMafDisplayModel
-  origMouseX?: number
+  /**
+   * The clamped selection while dragging, which is also what the drawn box and
+   * the context menu read: the pointer itself can be past the track edge.
+   */
+  dragRange?: Pick<DragRect, 'startX' | 'endX'>
 }) {
   const clientPoint = { x: mouseState.clientX, y: mouseState.clientY }
   const view = model.view
   const { pos: p2, baseBp, rowIndex, inBands, onRow, hover } = hit
   const selection =
-    origMouseX === undefined
+    dragRange === undefined
       ? undefined
       : selectionRegion(
-          view.pxToBp(Math.min(origMouseX, mouseState.x)),
-          view.pxToBp(Math.max(origMouseX, mouseState.x)),
+          view.pxToBp(Math.min(dragRange.startX, dragRange.endX)),
+          view.pxToBp(Math.max(dragRange.startX, dragRange.endX)),
         )
 
   // Over the bands above the rows: the band the fold placed under the pointer

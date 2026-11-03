@@ -130,7 +130,8 @@ const SequenceDisplay = observer(function SequenceDisplay({
       ? sequences[hover.row]?.[hover.col]
       : undefined
   // `-1` sentinel (inserted column with no reference base) → undefined, which
-  // SequenceTooltip renders as "Insertion (not in reference)".
+  // SequenceTooltip renders as "Insertion (not in reference)" when the hovered
+  // base is not a gap.
   const genomicPos = genomePosAt(colToGenomePos, hover?.col)
 
   return (
