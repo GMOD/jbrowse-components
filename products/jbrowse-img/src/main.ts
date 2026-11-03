@@ -83,10 +83,11 @@ async function main() {
     )
     const showTracks = parsed.filter(([key]) => key === 'track')
 
-    for (const key of Object.keys(rest)) {
-      if (!knownOptions.has(key)) {
-        console.warn(`Warning: unknown option "--${key}"`)
-      }
+    const unknown = Object.keys(rest).filter(key => !knownOptions.has(key))
+    if (unknown.length) {
+      throw new Error(
+        `unknown option ${unknown.map(key => `--${key}`).join(', ')}; "${scriptName} --help" lists them`,
+      )
     }
 
     if (first !== 'batch') {

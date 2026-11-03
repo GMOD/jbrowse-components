@@ -148,6 +148,20 @@ describe('readData with a config', () => {
     ).toBe('hg38')
   })
 
+  test('--assembly takes the assembly named so over one aliasing the name', () => {
+    expect(
+      readData(
+        { assembly: 'hg38' },
+        {
+          assemblies: [
+            { name: 'GRCh38', aliases: ['hg38'], sequence: {} },
+            { name: 'hg38', sequence: {} },
+          ],
+        },
+      ).assembly.name,
+    ).toBe('hg38')
+  })
+
   test('an --assembly naming a directory is a name to look up, not JSON to read', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hg38-'))
     try {

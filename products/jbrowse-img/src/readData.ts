@@ -151,7 +151,9 @@ function configAssemblies(
   const assemblies = (file.assemblies ?? []).map(expandAssemblySequence)
   const assembly = asm ? findAssembly(assemblies, asm) : assemblies[0]
   if (asm && assemblies.length > 0 && !assembly) {
-    throw new Error(`assembly ${asm} not found in config`)
+    throw new Error(
+      `assembly ${asm} not found in config, which has ${assemblies.map(a => a.name).join(', ')}`,
+    )
   }
   return assembly
     ? {

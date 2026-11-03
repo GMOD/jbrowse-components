@@ -1,4 +1,4 @@
-import { canonicalAssemblyName } from './assemblyName.ts'
+import { findAssembly } from './assemblyName.ts'
 
 import type { Config, Track } from './types.ts'
 
@@ -15,8 +15,8 @@ export function stackedRows(data: Config) {
 // Order-free, since which side is the query follows the file format, not the
 // stacking order. A self pair needs the assembly named twice.
 function comparesPair(data: Config, track: Track, a: string, b: string) {
-  const names = (track.assemblyNames ?? []).map(name =>
-    canonicalAssemblyName(data.assemblies, name),
+  const names = (track.assemblyNames ?? []).map(
+    name => findAssembly(data.assemblies, name)?.name ?? name,
   )
   return a === b
     ? names.filter(name => name === a).length >= 2
