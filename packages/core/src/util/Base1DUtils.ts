@@ -268,6 +268,38 @@ export function offsetBpToPx(
   )
 }
 
+function locateCoord({
+  refName,
+  coord,
+  displayedRegions,
+  displayedRegionIndex,
+}: {
+  refName: string
+  coord: number
+  displayedRegions: {
+    refName: string
+    start: number
+    end: number
+    reversed?: boolean
+  }[]
+  displayedRegionIndex?: number
+}) {
+  let bpBefore = 0
+  for (let index = 0; index < displayedRegions.length; index++) {
+    const r = displayedRegions[index]!
+    if (
+      refName === r.refName &&
+      coord >= r.start &&
+      coord <= r.end &&
+      (displayedRegionIndex === undefined || displayedRegionIndex === index)
+    ) {
+      return { index, offset: bpOffsetInRegion(r, coord), bpBefore }
+    }
+    bpBefore += r.end - r.start
+  }
+  return undefined
+}
+
 // Accepts a 0-based genomic coord (BED-style feature.start/end). NOT a proper
 // inverse of pxToBp's `coord` field, which is 1-based — for that round-trip,
 // use offsetBpToPx with pxToBp's `offset` field instead.
@@ -283,25 +315,18 @@ export function bpToPx({
   self: Pick<ViewLayout, 'bpPerPx' | 'displayedRegions'>
 }) {
   const { bpPerPx, displayedRegions } = self
-  let bpSoFar = 0
-
-  for (let i = 0; i < displayedRegions.length; i++) {
-    const r = displayedRegions[i]!
-    if (
-      refName === r.refName &&
-      coord >= r.start &&
-      coord <= r.end &&
-      (displayedRegionIndex === undefined || displayedRegionIndex === i)
-    ) {
-      const regionOffset = bpOffsetInRegion(r, coord)
-      return {
-        index: i,
-        offsetPx: Math.round((bpSoFar + regionOffset) / bpPerPx),
+  const hit = locateCoord({
+    refName,
+    coord,
+    displayedRegions,
+    displayedRegionIndex,
+  })
+  return hit
+    ? {
+        index: hit.index,
+        offsetPx: Math.round((hit.bpBefore + hit.offset) / bpPerPx),
       }
-    }
-    bpSoFar += r.end - r.start
-  }
-  return undefined
+    : undefined
 }
 
 /**
@@ -335,17 +360,13 @@ export function bpToOffset({
   }[]
   displayedRegionIndex?: number
 }): BpOffset | undefined {
-  for (const [index, r] of displayedRegions.entries()) {
-    if (
-      refName === r.refName &&
-      coord >= r.start &&
-      coord <= r.end &&
-      (displayedRegionIndex === undefined || displayedRegionIndex === index)
-    ) {
-      return { refName, index, offset: bpOffsetInRegion(r, coord) }
-    }
-  }
-  return undefined
+  const hit = locateCoord({
+    refName,
+    coord,
+    displayedRegions,
+    displayedRegionIndex,
+  })
+  return hit ? { refName, index: hit.index, offset: hit.offset } : undefined
 }
 
 /**
