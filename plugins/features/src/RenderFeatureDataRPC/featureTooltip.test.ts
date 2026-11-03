@@ -4,7 +4,7 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import baseConfigSchema from '../LinearBasicDisplay/baseConfigSchema.ts'
 import { tooltipReader } from './collect/glyphColors.ts'
-import { DEFAULT_TOOLTIP, defaultTooltip } from './featureTooltip.ts'
+import { DEFAULT_TOOLTIP } from './featureTooltip.ts'
 import { readConfigValueSafe } from './renderConfig.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
@@ -26,7 +26,7 @@ const feature = (data: Record<string, unknown>) =>
     ...data,
   })
 
-test('the native default answers what the jexl default answers', () => {
+test('the default reader answers what the jexl default answers', () => {
   for (const data of [
     { _mouseOver: 'custom', name: 'n' },
     { name: 'BRCA1' },
@@ -37,7 +37,7 @@ test('the native default answers what the jexl default answers', () => {
     {},
   ]) {
     const f = feature(data)
-    expect(defaultTooltip(f)).toBe(throughJexl(f))
+    expect(tooltipReader(config, jexl)(f)).toBe(throughJexl(f))
   }
 })
 
@@ -52,5 +52,10 @@ test('a written tooltip field evaluates through jexl', () => {
     jexl,
   )
   expect(read(feature({}))).toBe('start 0')
-  expect(tooltipReader(config, jexl)).toBe(defaultTooltip)
+})
+
+test('the default reads natively, without a jexl instance', () => {
+  expect(
+    tooltipReader(config, undefined)(feature({ function: 'stem_loop' })),
+  ).toBe('stem_loop')
 })

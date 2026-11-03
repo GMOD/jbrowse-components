@@ -13,10 +13,10 @@
 //   emit             the emitters' walk, which reads the tooltip once per
 //                    feature record, the whole the share is taken of
 //   jexl             the default slot through jexl per record, which `emit`
-//                    paid before `defaultTooltip`
+//                    paid before `fieldReader` read a chain of `||` natively
 //   jexl-control     the same call through a second driver, the floor
 //   reader           `tooltipReader`'s answer for the default slot, the
-//                    native function `emit` pays now
+//                    native chain `emit` pays now
 import { performance } from 'node:perf_hooks'
 
 import createJexlInstance from '@jbrowse/core/util/jexl'

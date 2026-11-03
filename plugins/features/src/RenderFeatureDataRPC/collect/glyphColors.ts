@@ -10,7 +10,6 @@ import { fieldReader } from '@jbrowse/core/util/fieldReader'
 import { valueText } from '@jbrowse/core/util/groupKeys'
 
 import { LITERAL, STROKE, cdsFrameClass } from '../colorClasses.ts'
-import { DEFAULT_TOOLTIP, defaultTooltip } from '../featureTooltip.ts'
 import { getFeatureName } from '../labelUtils.ts'
 import { readConfigValueSafe } from '../renderConfig.ts'
 import { isCDS, isUTR } from '../util.ts'
@@ -205,19 +204,15 @@ export function packColor({
 
 /**
  * The hover text of each feature record, evaluated worker-side because the
- * full feature is here: the default field natively (`defaultTooltip`), any
- * other through `fieldReader`, where a field that throws or reads nothing
- * degrades to the feature name rather than failing the render. An empty field
- * reads nothing. Resolved once per walk.
+ * full feature is here: through `fieldReader`, where a field that throws or
+ * reads nothing degrades to the feature name rather than failing the render.
+ * An empty field reads nothing. Resolved once per walk.
  */
 export function tooltipReader(
   config: RenderContext['config'],
   jexl: RenderContext['jexl'],
 ): (feature: Feature) => string {
   const { tooltip } = config
-  if (tooltip === DEFAULT_TOOLTIP) {
-    return defaultTooltip
-  }
   if (!tooltip) {
     return () => ''
   }
