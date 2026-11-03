@@ -112,13 +112,13 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { scoreColumn: string; }</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>10 inherited methods from 3 models</summary>
+<summary>11 inherited methods from 3 models</summary>
 
 From [MultiRegionDisplayMixin](../multiregiondisplaymixin): <span id="method-regionhasdata">[`regionHasData`](../multiregiondisplaymixin#method-regionhasdata)</span>, <span id="method-iscachevalid">[`isCacheValid`](../multiregiondisplaymixin#method-iscachevalid)</span>
 
 From [RegionTooLargeMixin](../regiontoolargemixin): <span id="method-resolvedbytelimit">[`resolvedByteLimit`](../regiontoolargemixin#method-resolvedbytelimit)</span>, <span id="method-gatefetchstate">[`gateFetchState`](../regiontoolargemixin#method-gatefetchstate)</span>
 
-From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-trackmenuitems">[`trackMenuItems`](../basedisplay#method-trackmenuitems)</span>, <span id="method-configproblemsof">[`configProblemsOf`](../basedisplay#method-configproblemsof)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
+From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-trackmenuitems">[`trackMenuItems`](../basedisplay#method-trackmenuitems)</span>, <span id="method-exportedfeatures">[`exportedFeatures`](../basedisplay#method-exportedfeatures)</span>, <span id="method-configproblemsof">[`configProblemsOf`](../basedisplay#method-configproblemsof)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
 
 </details>
 

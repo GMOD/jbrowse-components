@@ -27,7 +27,7 @@ it; each of the three takes the pileup config's default when left out.
   `frequencyFadeGate` over that width squared.
 - A mismatch's `alpha` is `qualityFade` times `frequencyFadeGate` over
   `pxPerBp`, and a clip's that gate alone. `quality` may be left out while
-  `mismatchOpacity` names no field.
+  `mismatchOpacity` is a constant.
 
 ```js
 // type signature

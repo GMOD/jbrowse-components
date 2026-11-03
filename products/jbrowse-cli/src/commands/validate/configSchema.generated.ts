@@ -6707,7 +6707,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "domainMin": {
           "description": "the Phred quality that takes the first opacity in range.",
-          "default": 0,
+          "default": 5,
           "if": {
             "type": "null"
           },
@@ -6717,7 +6717,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "domainMax": {
           "description": "the Phred quality that takes the last opacity in range.",
-          "default": 50,
+          "default": 20,
           "if": {
             "type": "null"
           },
@@ -6728,7 +6728,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "range": {
           "description": "the opacities, 0 to 1, at the two ends of the domain.",
           "default": [
-            "0",
+            "0.1",
             "1"
           ],
           "if": {
@@ -6772,6 +6772,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "title": "PileupMismatchesOpacity",
       "anyOf": [
         {
+          "description": "Shorthand for \`{ \\"value\\": ... }\`.",
+          "type": "number"
+        },
+        {
           "description": "Shorthand for \`{ \\"field\\": ... }\`.",
           "const": "baseQuality",
           "type": "string"
@@ -6781,8 +6785,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "object",
           "x-closed": true,
           "properties": {
+            "value": {
+              "description": "every mismatch's opacity; unset, with no field, fades by baseQuality.",
+              "if": {
+                "type": "null"
+              },
+              "else": {
+                "type": "number"
+              }
+            },
             "field": {
-              "description": "baseQuality fades each mismatched base by its Phred quality; unset draws them opaque.",
+              "description": "baseQuality fades each mismatched base by its Phred quality; unset follows value, and with neither written fades by baseQuality.",
               "if": {
                 "type": "null"
               },

@@ -360,8 +360,7 @@ Draw hexaploid oat against itself from syntenic anchors, colored by the selectio
 
 Page: https://jbrowse.org/jb2/docs/tutorials/homoeolog_synteny/
 
-- https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/fasta/avena_sativa_gca951802345v1cm/cds/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.cds.all.fa.gz
-- https://ftp.ensemblgenomes.ebi.ac.uk/pub/plants/release-63/gff3/avena_sativa_gca951802345v1cm/Avena_sativa_gca951802345v1cm.Asativa_cv_Williams_v1.0.63.gff3.gz
+- https://graingenes.org/GG3/sites/default/files/panoat-fasta/230404_williams_pseudomolecules_v1+unanchored_contigs.fasta.gz
 - https://jbrowse.org/demos/oat_homoeologs/config.json
 
 ## Gene fusion calls and the DNA behind them
@@ -531,7 +530,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_cactus/
 - https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/config.json
 - https://jbrowse.org/demos/ecoli_pangenome/K12.fa.gz
 - https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz
-- https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz.tbi
+- https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz.csi
 - https://jbrowse.org/demos/ecoli_pangenome/config.json
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.graph.bed.gz
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus.maf.bed.gz
@@ -567,7 +566,7 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_ecoli/
 - https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/config.json
 - https://jbrowse.org/demos/ecoli_pangenome/K12.fa.gz
 - https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz
-- https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz.tbi
+- https://jbrowse.org/demos/ecoli_pangenome/K12.gff.gz.csi
 - https://jbrowse.org/demos/ecoli_pangenome/config.json
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.maf.bed.gz
 - https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb_depth.bw
@@ -815,10 +814,6 @@ Color an ortholog track by the ratio of non-synonymous to synonymous substitutio
 
 Page: https://jbrowse.org/jb2/docs/tutorials/selection_pressure/
 
-- https://ftp.ensembl.org/pub/release-116/fasta/homo_sapiens/cds/Homo_sapiens.GRCh38.cds.all.fa.gz
-- https://ftp.ensembl.org/pub/release-116/fasta/macaca_mulatta/cds/Macaca_mulatta.Mmul_10.cds.all.fa.gz
-- https://ftp.ensembl.org/pub/release-116/gff3/homo_sapiens/Homo_sapiens.GRCh38.116.gff3.gz
-- https://ftp.ensembl.org/pub/release-116/gff3/macaca_mulatta/Macaca_mulatta.Mmul_10.116.gff3.gz
 - https://jbrowse.org/demos/primate_selection/config.json
 
 ## Reviewing a whole SV callset

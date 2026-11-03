@@ -159,7 +159,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-rendersvg">**renderSvg**</span><br><code>(opts: ExportSvgDisplayOptions) =&gt; Promise&lt;ReactNode&gt;</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>12 inherited methods from 6 models</summary>
+<summary>13 inherited methods from 6 models</summary>
 
 From [TriangleMatrixMixin](../trianglematrixmixin): <span id="method-celltoscreen">[`cellToScreen`](../trianglematrixmixin#method-celltoscreen)</span>, <span id="method-screentocell">[`screenToCell`](../trianglematrixmixin#method-screentocell)</span>
 
@@ -171,7 +171,7 @@ From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScale
 
 From [RegionTooLargeMixin](../regiontoolargemixin): <span id="method-resolvedbytelimit">[`resolvedByteLimit`](../regiontoolargemixin#method-resolvedbytelimit)</span>, <span id="method-gatefetchstate">[`gateFetchState`](../regiontoolargemixin#method-gatefetchstate)</span>
 
-From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
+From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-exportedfeatures">[`exportedFeatures`](../basedisplay#method-exportedfeatures)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
 
 </details>
 

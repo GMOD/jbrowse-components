@@ -4160,6 +4160,10 @@ export const configManifest: ConfigManifest = {
                       "type": "PileupMismatchesOpacityConfigurationSchema",
                       "subSlots": [
                         {
+                          "name": "value",
+                          "type": "(number | undefined)"
+                        },
+                        {
                           "name": "field",
                           "type": "(PileupMismatchesOpacityField | undefined)"
                         },
@@ -4192,8 +4196,10 @@ export const configManifest: ConfigManifest = {
                       "schema": "PileupMismatchesOpacity",
                       "writes": "whole",
                       "shorthand": {
+                        "number": "value",
                         "string": "field"
-                      }
+                      },
+                      "impliedField": "baseQuality"
                     }
                   ],
                   "schema": "PileupMismatchesEncoding",
@@ -5351,6 +5357,10 @@ export const configManifest: ConfigManifest = {
                       "type": "PileupMismatchesOpacityConfigurationSchema",
                       "subSlots": [
                         {
+                          "name": "value",
+                          "type": "(number | undefined)"
+                        },
+                        {
                           "name": "field",
                           "type": "(PileupMismatchesOpacityField | undefined)"
                         },
@@ -5383,8 +5393,10 @@ export const configManifest: ConfigManifest = {
                       "schema": "PileupMismatchesOpacity",
                       "writes": "whole",
                       "shorthand": {
+                        "number": "value",
                         "string": "field"
-                      }
+                      },
+                      "impliedField": "baseQuality"
                     }
                   ],
                   "schema": "PileupMismatchesEncoding",

@@ -54,7 +54,7 @@ this model, and several shown tracks can use the same configuration.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="method-savetrackfileformatoptions">**saveTrackFileFormatOptions**</span><br><code>() =&gt; Record&lt;string, FileTypeExporter&gt;</code> |  |
+| <span id="method-savetrackfileformatoptions">**saveTrackFileFormatOptions**</span><br><code>() =&gt; Record&lt;string, FileTypeExporter&gt;</code> | The formats "Save track data" offers. A track type whose features no format describes returns none, and the menu item is not shown. |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 ## Actions

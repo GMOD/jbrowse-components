@@ -361,7 +361,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-rendersvg">**renderSvg**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactEl…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(opts?: ExportSvgDisplayOptions &#124; undefined) =&gt; Promise&lt;ReactElement&lt;unknown, string &#124; JSXElementConstructor&lt;any&gt;&gt; &#124; Iterable&lt;ReactNode&gt; &#124; AwaitedReactNode&gt;</code></pre></dialog></span> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>22 inherited methods from 7 models</summary>
+<summary>23 inherited methods from 7 models</summary>
 
 From [TreeSidebarMixin](../treesidebarmixin): <span id="method-rowfoundatsomeloci">[`rowFoundAtSomeLoci`](../treesidebarmixin#method-rowfoundatsomeloci)</span>, <span id="method-narrowrows">[`narrowRows`](../treesidebarmixin#method-narrowrows)</span>, <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-rowband">[`rowBand`](../treesidebarmixin#method-rowband)</span>, <span id="method-unreadfilterfieldnotice">[`unreadFilterFieldNotice`](../treesidebarmixin#method-unreadfilterfieldnotice)</span>, <span id="method-rowcolordeclaredvalues">[`rowColorDeclaredValues`](../treesidebarmixin#method-rowcolordeclaredvalues)</span>, <span id="method-dealtvaluecolorsfor">[`dealtValueColorsFor`](../treesidebarmixin#method-dealtvaluecolorsfor)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-orderdropsrowtree">[`orderDropsRowTree`](../treesidebarmixin#method-orderdropsrowtree)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>
 
@@ -375,7 +375,7 @@ From [MultiRegionDisplayMixin](../multiregiondisplaymixin): <span id="method-isc
 
 From [RegionTooLargeMixin](../regiontoolargemixin): <span id="method-resolvedbytelimit">[`resolvedByteLimit`](../regiontoolargemixin#method-resolvedbytelimit)</span>, <span id="method-gatefetchstate">[`gateFetchState`](../regiontoolargemixin#method-gatefetchstate)</span>
 
-From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-configproblemsof">[`configProblemsOf`](../basedisplay#method-configproblemsof)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
+From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-exportedfeatures">[`exportedFeatures`](../basedisplay#method-exportedfeatures)</span>, <span id="method-configproblemsof">[`configProblemsOf`](../basedisplay#method-configproblemsof)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
 
 </details>
 

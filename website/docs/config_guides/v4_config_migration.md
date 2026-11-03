@@ -76,9 +76,9 @@ a file, and fails on a key it does not know.
 |  | `maxHeight` | `pileup.maxLayoutHeight` |
 |  | `maxScore` | `coverage.encoding.y.scale.domainMax` |
 |  | `minScore` | `coverage.encoding.y.scale.domainMin` |
-|  | `mismatchAlpha` | `pileup.mismatches.encoding.opacity.field` |
+|  | `mismatchAlpha` | `pileup.mismatches.encoding.opacity.field`, `pileup.mismatches.encoding.opacity.value` |
 |  | `pileupDisplay` | `pileup.mark.height`, `pileup.maxLayoutHeight` |
-|  | `renderers` | `pileup.mark.height`, `pileup.maxLayoutHeight`, `pileup.mismatches.encoding.opacity.field`, `pileup.mismatches.show` |
+|  | `renderers` | `pileup.mark.height`, `pileup.maxLayoutHeight`, `pileup.mismatches.encoding.opacity.field`, `pileup.mismatches.encoding.opacity.value`, `pileup.mismatches.show` |
 |  | `scaleType` | `coverage.encoding.y.scale.type` |
 |  | `snpCoverageDisplay` | `coverage.encoding.y.scale.domainMin`, `coverage.height` |
 |  | `defaultRendering`, `hideLargeIndels`, `hideSmallIndels`, `jitter`, `minSubfeatureWidth`, `multiTicks` | dropped |

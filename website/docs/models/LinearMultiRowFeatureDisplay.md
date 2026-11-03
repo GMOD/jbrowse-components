@@ -123,11 +123,11 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>30 inherited methods from 7 models</summary>
+<summary>31 inherited methods from 7 models</summary>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
-From [LinearMarkDisplay](../linearmarkdisplay): <span id="method-resolveadapteroptions">[`resolveAdapterOptions`](../linearmarkdisplay#method-resolveadapteroptions)</span>, <span id="method-expandrows">[`expandRows`](../linearmarkdisplay#method-expandrows)</span>, <span id="method-plotrequest">[`plotRequest`](../linearmarkdisplay#method-plotrequest)</span>, <span id="method-rpcprops">[`rpcProps`](../linearmarkdisplay#method-rpcprops)</span>, <span id="method-floatinglabels">[`floatingLabels`](../linearmarkdisplay#method-floatinglabels)</span>, <span id="method-configproblemsof">[`configProblemsOf`](../linearmarkdisplay#method-configproblemsof)</span>, <span id="method-liftmarkplot">[`liftMarkPlot`](../linearmarkdisplay#method-liftmarkplot)</span>, <span id="method-contextmenuitems">[`contextMenuItems`](../linearmarkdisplay#method-contextmenuitems)</span>
+From [LinearMarkDisplay](../linearmarkdisplay): <span id="method-resolveadapteroptions">[`resolveAdapterOptions`](../linearmarkdisplay#method-resolveadapteroptions)</span>, <span id="method-exportedfeatures">[`exportedFeatures`](../linearmarkdisplay#method-exportedfeatures)</span>, <span id="method-expandrows">[`expandRows`](../linearmarkdisplay#method-expandrows)</span>, <span id="method-plotrequest">[`plotRequest`](../linearmarkdisplay#method-plotrequest)</span>, <span id="method-rpcprops">[`rpcProps`](../linearmarkdisplay#method-rpcprops)</span>, <span id="method-floatinglabels">[`floatingLabels`](../linearmarkdisplay#method-floatinglabels)</span>, <span id="method-configproblemsof">[`configProblemsOf`](../linearmarkdisplay#method-configproblemsof)</span>, <span id="method-liftmarkplot">[`liftMarkPlot`](../linearmarkdisplay#method-liftmarkplot)</span>, <span id="method-contextmenuitems">[`contextMenuItems`](../linearmarkdisplay#method-contextmenuitems)</span>
 
 From [LegendMixin](../legendmixin): <span id="method-colorscalesin">[`colorScalesIn`](../legendmixin#method-colorscalesin)</span>, <span id="method-legendspecin">[`legendSpecIn`](../legendmixin#method-legendspecin)</span>
 

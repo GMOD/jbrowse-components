@@ -37,7 +37,7 @@ A table over a feature list, or the table itself.
 import { asTable } from '@jbrowse/core/util/featureTable'
 
 // type signature
-(input: readonly Feature[] | FeatureTable) => FeatureTable
+(input: FeatureTable | readonly Feature[]) => FeatureTable
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTable.ts)
@@ -500,7 +500,7 @@ column and a categorical over a `category` column per label.
 import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 
 // type signature
-<L extends LaneName>(input: readonly Feature[] | FeatureTable, encoding: MarkEncodingInput, lanes: readonly L[], ctx?: EncodeContext) => Encoded<L>
+<L extends LaneName>(input: FeatureTable | readonly Feature[], encoding: MarkEncodingInput, lanes: readonly L[], ctx?: EncodeContext) => Encoded<L>
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -531,7 +531,7 @@ and one that groups rows groups within a section.
 import { facetLayers } from '@jbrowse/core/util/featureTransforms'
 
 // type signature
-(input: readonly Feature[] | FeatureTable, facet: FacetSpec, layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef; }[], jexl?: JexlInstance | undefined) => { layers: FacetedLayer[]; sections: FacetSection[]; }
+(input: FeatureTable | readonly Feature[], facet: FacetSpec, layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef; }[], jexl?: JexlInstance | undefined) => { layers: FacetedLayer[]; sections: FacetSection[]; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -850,7 +850,7 @@ row, so the steps that follow it read the rows already in section order.
 import { layerTables } from '@jbrowse/core/util/featureTransforms'
 
 // type signature
-(input: readonly Feature[] | FeatureTable, request: { transform?: readonly TransformStep[]; facet?: FacetSpec; layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef; }[]; }, jexl?: JexlInstance | undefined) => { layers: { table: FeatureTable; row: string | Uint32Array<ArrayBufferLike> | undefined; }[]; sections: FacetSection[] | undefined; }
+(input: FeatureTable | readonly Feature[], request: { transform?: readonly TransformStep[]; facet?: FacetSpec; layers: readonly { transform?: readonly TransformStep[]; row?: FieldRef; }[]; }, jexl?: JexlInstance | undefined) => { layers: { table: FeatureTable; row: string | Uint32Array<ArrayBufferLike> | undefined; }[]; sections: FacetSection[] | undefined; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
@@ -1328,7 +1328,7 @@ one is what the encoder walks.
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 
 // type signature
-(input: readonly Feature[] | FeatureTable, steps: readonly TransformStep[], jexl?: JexlInstance | undefined) => FeatureTable
+(input: FeatureTable | readonly Feature[], steps: readonly TransformStep[], jexl?: JexlInstance | undefined) => FeatureTable
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)

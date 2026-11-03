@@ -48,7 +48,7 @@ Dotplot1DView
 LinearSyntenyViewHelper
 TimeTraveller
 
-# model members with no description (1271)
+# model members with no description (1270)
 # fix: write a sentence under the member’s #property/#volatile/#getter/#method/#action tag
 AddTrackModel.adapterHint
 AddTrackModel.altAssemblyName
@@ -242,7 +242,6 @@ BaseTrackModel.minimized
 BaseTrackModel.name
 BaseTrackModel.pinned
 BaseTrackModel.replaceDisplay
-BaseTrackModel.saveTrackFileFormatOptions
 BaseTrackModel.setMinimized
 BaseTrackModel.setPinned
 BaseTrackModel.setResizing

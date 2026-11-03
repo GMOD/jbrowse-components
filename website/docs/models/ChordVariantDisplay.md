@@ -126,13 +126,13 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> | Color by and Advanced → Edit plot..., which the circular view shows under its Tracks menu |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>13 inherited methods from 3 models</summary>
+<summary>14 inherited methods from 3 models</summary>
 
 From [ParkedColorMixin](../parkedcolormixin): <span id="method-parkedcolorof">[`parkedColorOf`](../parkedcolormixin#method-parkedcolorof)</span>
 
 From [BaseChordDisplay](../basechorddisplay): <span id="method-shapefor">[`shapeFor`](../basechorddisplay#method-shapefor)</span>, <span id="method-shapepathfor">[`shapePathFor`](../basechorddisplay#method-shapepathfor)</span>, <span id="method-hitat">[`hitAt`](../basechorddisplay#method-hitat)</span>, <span id="method-assemblyof">[`assemblyOf`](../basechorddisplay#method-assemblyof)</span>, <span id="method-canonicalrefname">[`canonicalRefName`](../basechorddisplay#method-canonicalrefname)</span>, <span id="method-placeend">[`placeEnd`](../basechorddisplay#method-placeend)</span>, <span id="method-axisslice">[`axisSlice`](../basechorddisplay#method-axisslice)</span>
 
-From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-configproblemsof">[`configProblemsOf`](../basedisplay#method-configproblemsof)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
+From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-exportedfeatures">[`exportedFeatures`](../basedisplay#method-exportedfeatures)</span>, <span id="method-configproblemsof">[`configProblemsOf`](../basedisplay#method-configproblemsof)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
 
 </details>
 

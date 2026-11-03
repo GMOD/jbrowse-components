@@ -265,7 +265,7 @@ From [BaseDisplay](../basedisplay): <span id="getter-parenttrack">[`parentTrack`
 | <span id="method-summaryhoverinfo">**summaryHoverInfo**</span><br><code>(rowIndex: number, x: number) =&gt; MafSummaryRecord &#124; undefined</code> | The summary record whose bar is drawn at canvas x `x` on display row `rowIndex`, or undefined: the hover on the summary tier. |
 
 <details class="inherited-members" data-pagefind-ignore>
-<summary>20 inherited methods from 6 models</summary>
+<summary>21 inherited methods from 6 models</summary>
 
 From [TreeSidebarMixin](../treesidebarmixin): <span id="method-expandrows">[`expandRows`](../treesidebarmixin#method-expandrows)</span>, <span id="method-narrowrows">[`narrowRows`](../treesidebarmixin#method-narrowrows)</span>, <span id="method-svgsidebarwidth">[`svgSidebarWidth`](../treesidebarmixin#method-svgsidebarwidth)</span>, <span id="method-rowband">[`rowBand`](../treesidebarmixin#method-rowband)</span>, <span id="method-unreadfilterfieldnotice">[`unreadFilterFieldNotice`](../treesidebarmixin#method-unreadfilterfieldnotice)</span>, <span id="method-rowcolordeclaredvalues">[`rowColorDeclaredValues`](../treesidebarmixin#method-rowcolordeclaredvalues)</span>, <span id="method-dealtvaluecolorsfor">[`dealtValueColorsFor`](../treesidebarmixin#method-dealtvaluecolorsfor)</span>, <span id="method-rowcolorfor">[`rowColorFor`](../treesidebarmixin#method-rowcolorfor)</span>, <span id="method-orderdropsrowtree">[`orderDropsRowTree`](../treesidebarmixin#method-orderdropsrowtree)</span>, <span id="method-roworderwilldroptree">[`rowOrderWillDropTree`](../treesidebarmixin#method-roworderwilldroptree)</span>
 
@@ -277,7 +277,7 @@ From [MultiRegionDisplayMixin](../multiregiondisplaymixin): <span id="method-reg
 
 From [RegionTooLargeMixin](../regiontoolargemixin): <span id="method-resolvedbytelimit">[`resolvedByteLimit`](../regiontoolargemixin#method-resolvedbytelimit)</span>, <span id="method-gatefetchstate">[`gateFetchState`](../regiontoolargemixin#method-gatefetchstate)</span>
 
-From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
+From [BaseDisplay](../basedisplay): <span id="method-renderingprops">[`renderingProps`](../basedisplay#method-renderingprops)</span>, <span id="method-exportedfeatures">[`exportedFeatures`](../basedisplay#method-exportedfeatures)</span>, <span id="method-liftplot">[`liftPlot`](../basedisplay#method-liftplot)</span>, <span id="method-plotproblems">[`plotProblems`](../basedisplay#method-plotproblems)</span>, <span id="method-plotwrites">[`plotWrites`](../basedisplay#method-plotwrites)</span>
 
 </details>
 

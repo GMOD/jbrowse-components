@@ -86,13 +86,16 @@ BLAT opens its results table that way when a search returns hits:
 // addWidget followed by showWidget. The third argument is the initial state,
 // so its keys are the properties UcscResultsWidget's state model declares. Not
 // every session has a drawer — an embedded component may be built without one
-// — so the guard is not optional.
+// — so the guard is not optional. One widget per result track: openWidget
+// replaces a widget of the same id, so a shared id threw away the previous
+// search's hit list while its track stayed open.
 if (isSessionModelWithWidgets(session)) {
-  session.openWidget('UcscResultsWidget', 'ucscResults', {
+  session.openWidget('UcscResultsWidget', `ucscResults-${trackId}`, {
     features,
     assembly,
     trackName,
     resultNoun,
+    queries,
   })
 }
 ```
