@@ -27,7 +27,8 @@
 #           python; `uv venv --python 3.12 && uv pip install jcvi biopython`
 #           gets one it does), diamond, python3 with biopython, htslib
 #           (bgzip/tabix), the NCBI datasets CLI, and node (JBrowse CLI, via
-#           npx unless `jbrowse` is on PATH). Downloads ~170 MB.
+#           npx unless `jbrowse` is on PATH). Downloads ~170 MB; the
+#           reshape holds a whole RefSeq annotation, ~3 GB of memory.
 # Usage:    bash scripts/build_primate_selection.sh [outdir]
 #
 set -euo pipefail

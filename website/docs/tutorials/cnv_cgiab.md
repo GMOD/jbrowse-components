@@ -327,7 +327,7 @@ taking the alt fraction:
 ```bash
 # het sites come from the normal, because LOH sites are homozygous in the tumor
 bcftools view -g het -Oz -o hets.vcf.gz normal.deepvariant.vcf.gz
-tabix -p vcf hets.vcf.gz
+tabix -f -C -p vcf hets.vcf.gz
 cut -f1,2 GRCh38.fa.fai > GRCh38.chrom.sizes
 
 # -q 1 drops multi-mapped reads, -Q 0 leaves HiFi base qualities alone

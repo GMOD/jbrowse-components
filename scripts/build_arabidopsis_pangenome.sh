@@ -99,9 +99,9 @@ if [ ! -s $REF.fa.gz ]; then
     /^#/ { next }
     ($1 in m) { $1=m[$1]; print }' tair10.ncbi/ncbi_dataset/data/GCF_000001735.4/genomic.gff |
     sort -k1,1 -k4,4n -S 1G | bgzip >$REF.genes.gff.gz
-  tabix -f -C -p gff $REF.genes.gff.gz
   rm -rf tair10.ncbi tair10.zip
 fi
+[ -f $REF.genes.gff.gz.csi ] || tabix -f -C -p gff $REF.genes.gff.gz
 samtools faidx $REF.fa
 cut -f1,2 $REF.fa.fai >$REF.chrom.sizes
 printf 'Chr1\tNC_003070.9\t1\tchr1\nChr2\tNC_003071.7\t2\tchr2\nChr3\tNC_003074.8\t3\tchr3\nChr4\tNC_003075.7\t4\tchr4\nChr5\tNC_003076.8\t5\tchr5\n' >$REF.aliases.txt
@@ -179,8 +179,8 @@ bad=$(awk '$1=="S"' "$GRAPH.rgfa" | grep -oP 'SN:Z:\K\S+' | sort -u | grep -vcE 
 [ -s "$GRAPH.alleles.bed.gz" ] || gfa-to-tabix alleles "$GRAPH"
 if [ ! -s "$GRAPH.bubbles.bed.gz" ]; then
   gzip -dc "$GRAPH.rgfa.gz" | gfatools bubble - | sort -k1,1 -k2,2n | bgzip >"$GRAPH.bubbles.bed.gz"
-  tabix -f -C -p bed "$GRAPH.bubbles.bed.gz"
 fi
+[ -f "$GRAPH.bubbles.bed.gz.csi" ] || tabix -f -C -p bed "$GRAPH.bubbles.bed.gz"
 [ -s "$GRAPH.fold10000.graph.bed.gz" ] ||
   gfa-to-tabix fold "$GRAPH.rgfa.gz" --below 10000 --layout contig -o "$GRAPH.fold10000"
 PANSN_FASTAS=()

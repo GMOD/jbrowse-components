@@ -291,8 +291,8 @@ if [ ! -s "$PREFIX.bubbles.bed.gz" ]; then
   gzip -dc "$PREFIX.rgfa.gz" | gfatools bubble - | sort -k1,1 -k2,2n |
     bgzip > "$PREFIX.bubbles.bed.gz.tmp"
   mv "$PREFIX.bubbles.bed.gz.tmp" "$PREFIX.bubbles.bed.gz"
-  tabix -f -C -p bed "$PREFIX.bubbles.bed.gz"
 fi
+[ -f "$PREFIX.bubbles.bed.gz.csi" ] || tabix -f -C -p bed "$PREFIX.bubbles.bed.gz"
 
 echo "=== coarse tier: variants under 10 kb folded into the reference ==="
 [ -s "$PREFIX.fold10000.graph.bed.gz" ] ||

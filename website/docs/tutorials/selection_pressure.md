@@ -35,19 +35,25 @@ jcvi compiles C extensions at install time, and the compile fails on some Python
 versions. If `pip install jcvi` fails, `uv venv --python 3.12` followed by
 `uv pip install jcvi biopython` gives an interpreter it builds on.
 
-<!-- TUTORIAL_INSTALL htslib,diamond,node,jbrowse-cli,jcvi,biopython START -->
+<!-- TUTORIAL_INSTALL htslib,diamond,datasets,node,jbrowse-cli,jcvi,biopython START -->
 
 ```bash
 # Debian/Ubuntu
 sudo apt install tabix diamond-aligner nodejs
 # or conda, which has every tool above
-conda install -c bioconda -c conda-forge htslib diamond nodejs
+conda install -c bioconda -c conda-forge htslib diamond ncbi-datasets-cli \
+  nodejs
+# or Linux x86_64 binaries for the tools apt lacks
+wget -P ~/.local/bin \
+  https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/datasets \
+  https://ftp.ncbi.nlm.nih.gov/pub/datasets/command-line/v2/linux-amd64/dataformat
+chmod +x ~/.local/bin/datasets ~/.local/bin/dataformat
 # any platform
 pip install jcvi biopython
 npm install -g @jbrowse/cli@next
 ```
 
-<!-- TUTORIAL_INSTALL htslib,diamond,node,jbrowse-cli,jcvi,biopython END -->
+<!-- TUTORIAL_INSTALL htslib,diamond,datasets,node,jbrowse-cli,jcvi,biopython END -->
 
 ## The data
 

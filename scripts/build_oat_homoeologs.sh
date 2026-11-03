@@ -44,7 +44,8 @@
 #           python; `uv venv --python 3.12 && uv pip install jcvi biopython`
 #           gets one it does), diamond, python3 with biopython, wget, and node
 #           (JBrowse CLI, via npx unless `jbrowse` is on PATH). Downloads
-#           ~3.3 GB, nearly all of it the genome. Budget over an hour for the
+#           ~3.3 GB, nearly all of it the genome, and cutting the CDS holds
+#           one chromosome at a time, ~2 GB of memory. Budget over an hour for the
 #           self-alignment: the annotation calls ~189k genes, and a proteome
 #           that size against itself is a long job even on every core.
 # Usage:    bash scripts/build_oat_homoeologs.sh [outdir]

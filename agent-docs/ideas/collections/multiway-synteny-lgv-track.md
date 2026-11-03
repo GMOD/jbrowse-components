@@ -42,8 +42,8 @@ follow's refused-spread report, applied to a lane. That is one copy at a time.
 The lane model that shows both is lane-per-REGION rather than lane-per-assembly —
 cluster a lane's placements (`blocksOf` already computes the blocks, and
 names the runners-up on one contig as `alsoAt`; the change is keeping them as
-additional lanes with the same assembly label). That also unlocks the wheat homoeolog case, which is
-today doubly excluded: `wheat_homoeologs` names one assembly twice, and the
+additional lanes with the same assembly label). That also unlocks the homoeolog self-comparison case, which is
+today doubly excluded: `oat_homoeologs` names one assembly twice, and the
 display drops mates whose assembly equals the anchor's (a rule that exists
 because paralogy records in an all-vs-all PAF name the anchor as their own
 mate). A self-comparison mode has to distinguish "this track compares wheat to
