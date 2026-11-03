@@ -5,14 +5,10 @@
  * cannot both reach the other: `MuiReExports.ts` holds the components
  * themselves, and `list.ts` must stay importable by bundler configs and
  * esbuild scripts without pulling MUI in behind it (see that file's header).
- * The names were therefore written out twice — 112 of them — and kept in
- * agreement by a load-time throw in `modules.ts`.
  *
- * Declaring them here instead makes `Entries` a `Record` over this union, so a
+ * Declaring the names here makes `Entries` a `Record` over this union, so a
  * name with no component and a component with no name are both compile errors,
- * and `list.ts` derives its subpaths by mapping. The runtime check in
- * `modules.ts` stays: it still covers the framework and `@jbrowse/core` entries,
- * which are not this list.
+ * and `list.ts` derives its subpaths by mapping.
  */
 export const MUI_COMPONENT_NAMES = [
   'Accordion',

@@ -61,35 +61,47 @@ export default class TextSearchManager {
     maxSize: 15,
   })
 
+  private pendingAdapters = new Map<string, Promise<BaseTextSearchAdapter>>()
+
   constructor(public pluginManager: PluginManager) {}
 
   clearCache() {
     this.adapterCache.clear()
+    this.pendingAdapters.clear()
   }
 
   loadTextSearchAdapters(assemblyName: string) {
     return settle(
-      this.relevantIndexes(assemblyName).map(async ({ conf, trackId }) => {
-        const key = adapterConfigCacheKey(getSnapshot(conf))
-        const cached = this.adapterCache.get(key)
-        if (cached) {
-          return { adapter: cached, trackId }
-        } else {
-          const adapterType = this.pluginManager.getTextSearchAdapterType(
-            conf.type,
-          )
-          const AdapterClass = await adapterType.getAdapterClass()
-          const adapter = new AdapterClass(
-            conf,
-            undefined,
-            this.pluginManager,
-          ) as BaseTextSearchAdapter
-          this.adapterCache.set(key, adapter)
-          return { adapter, trackId }
-        }
-      }),
+      this.relevantIndexes(assemblyName).map(async ({ conf, trackId }) => ({
+        adapter: await this.loadAdapter(conf),
+        trackId,
+      })),
       'failed to load text search adapter',
     )
+  }
+
+  private loadAdapter(conf: AnyConfigurationModel) {
+    const key = adapterConfigCacheKey(getSnapshot(conf))
+    const cached = this.adapterCache.get(key)
+    const pending = this.pendingAdapters.get(key)
+    if (cached) {
+      return cached
+    } else if (pending) {
+      return pending
+    } else {
+      const adapterType = this.pluginManager.getTextSearchAdapterType(conf.type)
+      const loading = adapterType.getAdapterClass().then(AdapterClass => {
+        const adapter = new AdapterClass(
+          conf,
+          undefined,
+          this.pluginManager,
+        ) as BaseTextSearchAdapter
+        this.adapterCache.set(key, adapter)
+        return adapter
+      })
+      this.pendingAdapters.set(key, loading)
+      return loading.finally(() => this.pendingAdapters.delete(key))
+    }
   }
 
   /** @deprecated read `relevantIndexes`, which also names each index's track */
@@ -99,12 +111,8 @@ export default class TextSearchManager {
 
   relevantIndexes(assemblyName: string): SearchIndex[] {
     const { rootModel } = this.pluginManager
-    // jbrowse is typed as a bare state tree node, so its config slots need a
-    // shape assertion; both it and the session are absent until a session is
-    // loaded, which is before anything can search
-    const { aggregateTextSearchAdapters = [] } = (rootModel?.jbrowse ?? {}) as {
-      aggregateTextSearchAdapters?: AnyConfigurationModel[]
-    }
+    const aggregateTextSearchAdapters =
+      rootModel?.jbrowse.aggregateTextSearchAdapters ?? []
     // The caller searches an assembly by the name the session knows it by,
     // while an index names whatever the track it was built from named — so both
     // sides go through the aliases, as every other "does this belong to this

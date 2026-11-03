@@ -299,3 +299,50 @@ describe('getTrackAdaptersWithAssembly', () => {
     ).toEqual(['t1', 'hub1'])
   })
 })
+
+describe('loadTextSearchAdapters', () => {
+  const adapterConfigSchema = ConfigurationSchema(
+    'TrixTextSearchAdapter',
+    { uri: { type: 'string', defaultValue: '' } },
+    { explicitlyTyped: true },
+  )
+
+  function managerCountingConstructions() {
+    const constructed: unknown[] = []
+    class FakeAdapter {
+      constructor() {
+        constructed.push(this)
+      }
+    }
+    const m = new TextSearchManager({
+      getTextSearchAdapterType: () => ({
+        getAdapterClass: async () => FakeAdapter,
+      }),
+    } as never)
+    const conf = adapterConfigSchema.create({
+      type: 'TrixTextSearchAdapter',
+      uri: 'genes.ix',
+    })
+    m.relevantIndexes = () => [{ conf }, { conf, trackId: 'genes' }]
+    return { m, constructed }
+  }
+
+  it('builds one adapter for overlapping calls on the same index', async () => {
+    const { m, constructed } = managerCountingConstructions()
+
+    const [first, second] = await Promise.all([
+      m.loadTextSearchAdapters('hg38'),
+      m.loadTextSearchAdapters('hg38'),
+    ])
+
+    expect(constructed).toHaveLength(1)
+    expect(first.values[0]?.adapter).toBe(second.values[1]?.adapter)
+  })
+
+  it('reuses the adapter on a later call', async () => {
+    const { m, constructed } = managerCountingConstructions()
+    await m.loadTextSearchAdapters('hg38')
+    await m.loadTextSearchAdapters('hg38')
+    expect(constructed).toHaveLength(1)
+  })
+})
