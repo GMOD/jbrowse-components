@@ -1,4 +1,3 @@
-import { getSession } from '@jbrowse/core/util'
 import {
   displayCategory,
   requestedDisplayType,
@@ -7,7 +6,6 @@ import { launchTrackWithModifiers } from '@jbrowse/plugin-linear-genome-view'
 
 import type { AssertNever, AssertTrue, Covers } from './types.ts'
 import type { VariantSortColumn } from '@jbrowse/alignments-core/variantSortColumn'
-import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
@@ -128,23 +126,11 @@ export async function applyDisplayOpts(
     },
   )
   if (!entry) {
-    const reason = lastSessionError(view)
+    const reason = view.problems.at(-1)?.message
     const displayType = requestedDisplayType(opts)
     throw new Error(
       `Failed to open track "${trackId}"${displayType ? ` with display "${displayType}"` : ''}${reason ? `: ${reason}` : ''}`,
     )
   }
   return entry
-}
-
-// launchTrack says why it failed only to the session's snackbar
-function lastSessionError(view: LinearGenomeViewModel) {
-  try {
-    const { snackbarMessages } = getSession(view) as unknown as {
-      snackbarMessages: SnackbarMessage[]
-    }
-    return snackbarMessages.findLast(m => m.level === 'error')?.message
-  } catch {
-    return undefined
-  }
 }

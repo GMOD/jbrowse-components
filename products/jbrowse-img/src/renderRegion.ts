@@ -17,7 +17,7 @@ import {
   buildDisplaySnapshot,
   memberWrites,
 } from '@jbrowse/launch-args/displaySettings'
-import { addDisposer, destroy } from '@jbrowse/mobx-state-tree'
+import { destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderBreakpointToSvg } from '@jbrowse/plugin-breakpoint-split-view'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
 import { renderToSvg as renderDotplotToSvg } from '@jbrowse/plugin-dotplot-view'
@@ -31,7 +31,6 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { createViewStateAsync } from '@jbrowse/react-app2'
 import { createCanvas, loadImage } from '@napi-rs/canvas'
-import { autorun } from 'mobx'
 
 import { applyDisplayOpts } from './applyTrackOpts.ts'
 import { breakpointInit, breakpointPanelsFromSpec } from './breakpointInit.ts'
@@ -56,8 +55,7 @@ import type { ViewMode } from './modes.ts'
 import type { ViewSpec } from './spec.ts'
 import type { Config, ConfigFile, OpenTrack, Opts, Track } from './types.ts'
 import type { ViewSnapshotInput } from '@jbrowse/core/PluginManager'
-import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
-import type { AbstractViewModel } from '@jbrowse/core/util'
+import type { AbstractViewModel, ViewProblem } from '@jbrowse/core/util'
 import type { SettleableView } from '@jbrowse/core/util/whenViewSettled'
 import type { Entry } from '@jbrowse/launch-args'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
@@ -83,25 +81,6 @@ async function createModel(data: Config) {
       configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
     },
   })
-  // Session errors only reach a snackbar. The first one becomes the thrown
-  // error (firstRenderError), so echo only the ones after it.
-  const { session } = model
-  const reported = new Set<string>()
-  addDisposer(
-    session,
-    autorun(() => {
-      // snackbarMessages is typed `any` here, so annotate the element
-      const errors = session.snackbarMessages.filter(
-        (m: SnackbarMessage) => m.level === 'error',
-      )
-      for (const { message } of errors.slice(1)) {
-        if (!reported.has(message)) {
-          reported.add(message)
-          console.error(`jb2export: ${message}`)
-        }
-      }
-    }),
-  )
   return model
 }
 
@@ -190,18 +169,19 @@ function baseSvgOpts(opts: Opts) {
 }
 
 // assembly.error is checked too because CircularView never awaits its
-// assembly, so a failed load reaches no snackbar and the view would hang.
+// assembly, so a failed load is reported nowhere else and the view would hang.
 interface RenderErrorSources {
-  snackbarMessages: { message: string; level?: string }[]
+  views: readonly { problems: readonly ViewProblem[] }[]
   assemblyManager: { assemblies: { error?: unknown }[] }
 }
 
 function firstRenderError(session: RenderErrorSources): unknown {
-  const snackbar = session.snackbarMessages.find(m => m.level === 'error')
-  return (
-    snackbar?.message ??
-    session.assemblyManager.assemblies.find(a => a.error)?.error
+  const messages = session.views.flatMap(view =>
+    view.problems.map(p => p.message),
   )
+  return messages.length > 0
+    ? messages.join('\n  ')
+    : session.assemblyManager.assemblies.find(a => a.error)?.error
 }
 
 function toError(error: unknown) {

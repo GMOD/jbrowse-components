@@ -23,8 +23,10 @@ function fakeView(configured?: Record<string, unknown>) {
     displays: [display],
     activeDisplay: { configuration: configured ?? {} },
   }
+  const problems: { message: string }[] = []
   const view = {
     centerLineInfo: undefined,
+    problems,
     tracks: [] as (typeof track)[],
     showTrack(_id: string, _t: unknown, snap: unknown) {
       calls.push(snap)
@@ -36,7 +38,12 @@ function fakeView(configured?: Record<string, unknown>) {
       return track
     },
   }
-  return { view: view as unknown as LinearGenomeViewModel, calls, filters }
+  return {
+    view: view as unknown as LinearGenomeViewModel,
+    calls,
+    filters,
+    problems,
+  }
 }
 
 // A filter in the open snapshot would replace the configured list, so every
@@ -192,9 +199,14 @@ describe("batch's per-record sort", () => {
 })
 
 test('a track the view could not open names the display it was asked for', async () => {
-  const { view } = fakeView()
-  ;(view as { launchTrack: unknown }).launchTrack = async () => undefined
+  const { view, problems } = fakeView()
+  ;(view as { launchTrack: unknown }).launchTrack = async () => {
+    problems.push({ message: 'no adapter' })
+    return undefined
+  }
   await expect(
     applyDisplayOpts(view, 't', 'LinearAlignmentsDisplay', ['display:marks']),
-  ).rejects.toThrow('Failed to open track "t" with display "LinearMarkDisplay"')
+  ).rejects.toThrow(
+    'Failed to open track "t" with display "LinearMarkDisplay": no adapter',
+  )
 })
