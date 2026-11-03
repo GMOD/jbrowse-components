@@ -115,6 +115,7 @@ const PREFIXES: [string, string][] = [
   ['https://jbrowse.org/demos/tcga', '/tcga_brca_clinical.tsv'],
   ['https://jbrowse.org/demos/popgen', '/lct_1kg38_chr2_6pop.vcf.gz'],
   ['https://jbrowse.org/demos/gwas', '/plink.ld.tab.gz'],
+  ['https://jbrowse.org/demos/gwas', '/fto_eur.ld.gz'],
   ['https://jbrowse.org/demos/scrna_pbmc5k', '/percell.zarr/zarr.json'],
   ['https://jbrowse.org/genomes/potato/', 'config.json'],
   [

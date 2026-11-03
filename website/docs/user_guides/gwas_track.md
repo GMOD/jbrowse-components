@@ -58,7 +58,8 @@ can see which nearby variants are in linkage with the lead signal (see
 
 The embedded
 [LocusZoom-style LD example](https://jbrowse.org/storybook/lgv/locus-zoom-ld/)
-runs this r² coloring live in a React app.
+runs this r² coloring live in a React app, over an LD triangle painted in the
+same bins.
 
 The LD triangle is a separate feature: it draws r² between every pair of nearby
 variants as a heatmap, read from a PLINK LD file. See the
