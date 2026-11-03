@@ -1,4 +1,5 @@
 import { readConfObject, setConf } from '@jbrowse/core/configuration'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import {
   DEFAULT_QUALITY_FADE,
@@ -135,17 +136,35 @@ describe('alignments fit-to-display-height', () => {
 // pileup.mismatches.encoding.opacity fades mismatch bases by their per-base
 // Phred quality, and reaches the renderers via renderState (tier-4 rerender).
 describe('alignments pileup.mismatches.encoding.opacity (fade by base quality)', () => {
-  it('is off by default', () => {
+  it('fades by base quality by default', () => {
     const { display } = createDisplay()
-    expect(display.mismatchOpacityField).toBeUndefined()
-    expect(display.mismatchQualityOpacity).toEqual(OPAQUE_MISMATCHES)
+    expect(display.mismatchOpacityField).toBe('baseQuality')
+    expect(display.mismatchQualityOpacity).toEqual(DEFAULT_QUALITY_FADE)
   })
 
-  it('setMismatchOpacityField turns the fade on and off', () => {
+  it('setMismatchOpacityField turns the fade off and on', () => {
     const { display } = createDisplay()
+    display.setMismatchOpacityField()
+    expect(display.mismatchOpacityField).toBeUndefined()
+    expect(display.mismatchQualityOpacity).toEqual(OPAQUE_MISMATCHES)
     display.setMismatchOpacityField('baseQuality')
     expect(display.mismatchQualityOpacity).toEqual(DEFAULT_QUALITY_FADE)
+  })
+
+  it('turned off, the fade stays off through a saved config', () => {
+    const { display } = createDisplay()
     display.setMismatchOpacityField()
+    const { display: reloaded } = createDisplay(
+      getSnapshot(display.configuration),
+    )
+    expect(reloaded.mismatchQualityOpacity).toEqual(OPAQUE_MISMATCHES)
+  })
+
+  it('a constant draws every mismatch at it', () => {
+    const { display } = createDisplay({
+      pileup: { mismatches: { encoding: { opacity: 1 } } },
+    })
+    expect(display.mismatchOpacityField).toBeUndefined()
     expect(display.mismatchQualityOpacity).toEqual(OPAQUE_MISMATCHES)
   })
 
@@ -170,10 +189,10 @@ describe('alignments pileup.mismatches.encoding.opacity (fade by base quality)',
         },
       },
     })
-    expect(display.mismatchQualityOpacity.slope).toBeCloseTo(1 / 30, 10)
+    expect(display.mismatchQualityOpacity.slope).toBeCloseTo(0.9 / 30, 10)
     display.setMismatchOpacityField()
     display.setMismatchOpacityField('baseQuality')
-    expect(display.mismatchQualityOpacity.slope).toBeCloseTo(1 / 30, 10)
+    expect(display.mismatchQualityOpacity.slope).toBeCloseTo(0.9 / 30, 10)
   })
 
   it('the top-level Show menu exposes the fade-by-quality toggle', () => {
@@ -181,7 +200,7 @@ describe('alignments pileup.mismatches.encoding.opacity (fade by base quality)',
     // Top-level Show item, not nested under Advanced.
     const show = menuSubItems(display.trackMenuItems(), 'Show')
     clickMenuItem(show, 'Fade low-quality mismatches')
-    expect(display.mismatchOpacityField).toBe('baseQuality')
+    expect(display.mismatchOpacityField).toBeUndefined()
   })
 })
 

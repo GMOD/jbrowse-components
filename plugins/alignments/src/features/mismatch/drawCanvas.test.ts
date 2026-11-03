@@ -2,7 +2,11 @@ import { TEST_COVERAGE } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.ts'
 import { arcStrokeScale } from '../arcs/arcLineWidth.ts'
 import { MISMATCH_MARK } from './mark.ts'
-import { DEFAULT_QUALITY_FADE, OPAQUE_MISMATCHES } from './qualityOpacity.ts'
+import {
+  DEFAULT_QUALITY_FADE,
+  OPAQUE_MISMATCHES,
+  qualityOpacityOf,
+} from './qualityOpacity.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { MismatchUploadData } from './types.ts'
@@ -136,16 +140,19 @@ describe('mismatch quality fade', () => {
     )
   })
 
-  test('the default quality fade: low quality fades toward transparent (qual/50)', () => {
-    // Phred 25 => alpha 0.5
+  test('the default quality fade: low quality fades toward the 0.1 floor', () => {
+    // Phred 10, a third of the way from Q5 to Q20 => alpha 0.4
     expect(
-      drawOne(baseState({ qualityOpacity: DEFAULT_QUALITY_FADE }), 25),
-    ).toBe('rgba(255,0,0,0.5)')
+      drawOne(baseState({ qualityOpacity: DEFAULT_QUALITY_FADE }), 10),
+    ).toBe('rgba(255,0,0,0.4)')
+    expect(
+      drawOne(baseState({ qualityOpacity: DEFAULT_QUALITY_FADE }), 0),
+    ).toBe('rgba(255,0,0,0.1)')
   })
 
-  test('the default quality fade: Phred 50+ stays fully opaque', () => {
+  test('the default quality fade: Phred 20+ stays fully opaque', () => {
     expect(
-      drawOne(baseState({ qualityOpacity: DEFAULT_QUALITY_FADE }), 60),
+      drawOne(baseState({ qualityOpacity: DEFAULT_QUALITY_FADE }), 20),
     ).toBe('rgb(255,0,0)')
   })
 
@@ -158,15 +165,18 @@ describe('mismatch quality fade', () => {
     ).toBe('rgb(255,0,0)')
   })
 
-  test('the default quality fade: Phred 0 fades all the way out', () => {
+  test('a fade to zero: Phred 0 fades all the way out', () => {
     // The worst score the file can carry, faded to nothing — and skipped rather
     // than filled at alpha 0, which is the same pixels for one fillStyle set and
     // one fillRect fewer. The pileup shape drops a zero-alpha mark for every
     // feature, as the gap painter always did. It used to share the sentinel's value and so
     // came out fully opaque — see qualityFadeParity.
-    expect(
-      drawOne(baseState({ qualityOpacity: DEFAULT_QUALITY_FADE }), 0),
-    ).toBeUndefined()
+    const toZero = qualityOpacityOf({
+      value: undefined,
+      field: 'baseQuality',
+      scale: { domainMin: 0, domainMax: 50, range: ['0', '1'], clamp: true },
+    })
+    expect(drawOne(baseState({ qualityOpacity: toZero }), 0)).toBeUndefined()
   })
 })
 

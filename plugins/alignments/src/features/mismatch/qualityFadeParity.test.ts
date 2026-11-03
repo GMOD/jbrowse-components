@@ -36,6 +36,7 @@ function scaleOf(
   clamp = true,
 ): QualityOpacity {
   return qualityOpacityOf({
+    value: undefined,
     field: 'baseQuality',
     scale: {
       domainMin: domain[0]!,
@@ -45,6 +46,9 @@ function scaleOf(
     },
   })
 }
+
+// The ramp the twin hard-coded, before the default moved to Q5–20
+const RETIRED_RAMP = scaleOf([0, 50], [0, 1])
 
 // 50 is the threshold; 93 the highest Phred a Sanger-encoded BAM can carry; 255
 // the sentinel.
@@ -56,7 +60,7 @@ test('the generated qualityFade reproduces the hand-written twin it replaced', (
   // other thirteen rather than a fixture rewritten to agree with the code.
   for (const qual of QUALS.filter(q => q !== 0)) {
     expect(fade(qual, OPAQUE_MISMATCHES)).toBe(retiredQualAlpha(qual, false))
-    expect(fade(qual, DEFAULT_QUALITY_FADE)).toBeCloseTo(
+    expect(fade(qual, RETIRED_RAMP)).toBeCloseTo(
       retiredQualAlpha(qual, true),
       9,
     )
@@ -69,10 +73,23 @@ test('no field leaves every quality opaque', () => {
   }
   expect(
     qualityOpacityOf({
+      value: undefined,
       field: undefined,
       scale: { domainMin: 0, domainMax: 30, range: ['0', '1'], clamp: true },
     }),
   ).toBe(OPAQUE_MISMATCHES)
+})
+
+test('a constant value draws every quality at it, and a missing one opaque', () => {
+  const half = qualityOpacityOf({
+    value: 0.5,
+    field: undefined,
+    scale: { domainMin: 5, domainMax: 20, range: ['0.1', '1'], clamp: true },
+  })
+  for (const qual of QUALS.filter(q => q !== QUAL_UNAVAILABLE)) {
+    expect(fade(qual, half)).toBe(0.5)
+  }
+  expect(fade(QUAL_UNAVAILABLE, half)).toBe(1)
 })
 
 test('the sentinel means "no quality" and does not ramp', () => {
@@ -87,16 +104,16 @@ test('Phred 0 is the worst score, not the missing one', () => {
   // The regression this replaced: 0 took the no-quality branch and drew opaque
   // while Phred 1 drew at 0.02, so the ramp inverted across its own first step
   // and the least trustworthy call in the file was the most visible.
-  expect(fade(0, DEFAULT_QUALITY_FADE)).toBe(0)
-  expect(fade(0, DEFAULT_QUALITY_FADE)).toBeLessThan(
-    fade(1, DEFAULT_QUALITY_FADE),
-  )
+  expect(fade(0, RETIRED_RAMP)).toBe(0)
+  expect(fade(0, RETIRED_RAMP)).toBeLessThan(fade(1, RETIRED_RAMP))
 })
 
-test('quality ramps linearly to the opaque threshold', () => {
-  expect(fade(10, DEFAULT_QUALITY_FADE)).toBeCloseTo(0.2, 9)
-  expect(fade(25, DEFAULT_QUALITY_FADE)).toBeCloseTo(0.5, 9)
-  expect(fade(50, DEFAULT_QUALITY_FADE)).toBe(1)
+test('the default ramps from a 0.1 floor at Q5 to opaque at Q20', () => {
+  expect(fade(0, DEFAULT_QUALITY_FADE)).toBeCloseTo(0.1, 9)
+  expect(fade(5, DEFAULT_QUALITY_FADE)).toBeCloseTo(0.1, 9)
+  expect(fade(12.5, DEFAULT_QUALITY_FADE)).toBeCloseTo(0.55, 9)
+  expect(fade(20, DEFAULT_QUALITY_FADE)).toBeCloseTo(1, 9)
+  expect(fade(37, DEFAULT_QUALITY_FADE)).toBe(1)
 })
 
 test('a quality past the threshold clamps rather than over-saturating', () => {
@@ -133,6 +150,7 @@ test('a flat range or an empty domain draws one opacity', () => {
 
 test('a domain end or range that is not a number takes the default', () => {
   const bad = qualityOpacityOf({
+    value: undefined,
     field: 'baseQuality',
     scale: {
       domainMin: Number.NaN,

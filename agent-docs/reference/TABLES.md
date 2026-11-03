@@ -299,12 +299,12 @@ marks' columns, and the engine runs the shaders' generated twins:
 - **Settings:** `featureHeight` (`readPitch.featureHeight`), `fadeLowFrequency`
   (`config.pileup`'s) and `mismatchOpacity`
   (`config.pileup.mismatches.encoding.opacity`, as a config writes it). Each one
-  left out takes the pileup config's default: a 7 px read, `true` and no quality
-  fade.
+  left out takes the pileup config's default: a 7 px read, `true` and the
+  quality fade from 0.1 at Q5 to opaque at Q20.
 - **Columns:** a column may be a number, read as one mark, as R's jsonlite unboxes a
   one-row table. The call refuses a missing column, naming it, and a table whose
   columns differ in length. `mismatches.quality` may be left out while
-  `mismatchOpacity` names no field.
+  `mismatchOpacity` is a constant (`1` draws every mismatch opaque).
 - **Out:** `insertions.widthPx` and `insertions.alpha`, and `alpha` for `deletions`,
   `mismatches` and `clips`, one per mark in the order given. `widthPx` is in px;
   `alpha` runs from 0 (not drawn) to 1.

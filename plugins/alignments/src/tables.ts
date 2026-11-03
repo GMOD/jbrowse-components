@@ -141,7 +141,10 @@ import { arcOpacity } from './features/arcs/bandFeed.ts'
 import { computeArcsByGroup } from './features/arcs/compute.ts'
 import { emptyArcsUploadData } from './features/arcs/types.ts'
 import { effectiveBaseColors } from './features/mismatch/baseColors.ts'
-import { qualityOpacityOf } from './features/mismatch/qualityOpacity.ts'
+import {
+  qualityOpacityOf,
+  resolvedMismatchOpacity,
+} from './features/mismatch/qualityOpacity.ts'
 import { byOverlapKind } from './features/overlap/types.ts'
 import {
   BASE_QUALITY_UNAVAILABLE,
@@ -1929,7 +1932,7 @@ let pileupDefaults: Instance<typeof pileupConfigSchema> | undefined
  *   `frequencyFadeGate` over that width squared.
  * - A mismatch's `alpha` is `qualityFade` times `frequencyFadeGate` over
  *   `pxPerBp`, and a clip's that gate alone. `quality` may be left out
- *   while `mismatchOpacity` names no field.
+ *   while `mismatchOpacity` is a constant.
  */
 export function alignmentMarkAlpha({
   pxPerBp,
@@ -1967,11 +1970,13 @@ export function alignmentMarkAlpha({
     pileupMismatchesOpacityConfigSchema.create(
       typeof mismatchOpacity === 'string'
         ? { field: mismatchOpacity }
-        : mismatchOpacity,
+        : typeof mismatchOpacity === 'number'
+          ? { value: mismatchOpacity }
+          : mismatchOpacity,
     ),
   )
-  const byQuality = readConfObject(opacity, 'field') === 'baseQuality'
-  const { zero, slope, min, max } = qualityOpacityOf({
+  const setting = resolvedMismatchOpacity({
+    value: readConfObject(opacity, 'value'),
     field: readConfObject(opacity, 'field'),
     scale: {
       domainMin: readConfObject(opacity, ['scale', 'domainMin']),
@@ -1980,6 +1985,8 @@ export function alignmentMarkAlpha({
       clamp: readConfObject(opacity, ['scale', 'clamp']),
     },
   })
+  const byQuality = setting.field === 'baseQuality'
+  const { zero, slope, min, max } = qualityOpacityOf(setting)
   const ins = markColumns('insertions', insertions, ['length', 'fade'])
   const del = markColumns('deletions', deletions, ['length', 'fade'])
   const mis = markColumns(

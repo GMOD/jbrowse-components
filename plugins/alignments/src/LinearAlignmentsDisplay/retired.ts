@@ -157,8 +157,16 @@ export function colorSlotsOf(value: unknown): DisplayEntry {
 }
 
 // v4's `mismatchAlpha` switched the fade by base quality
+// Both spellings write both members, so a display's lift and its renderer's
+// still land on the same ones and the first declared wins
 function mismatchFadeOf(on: unknown) {
-  return { encoding: { opacity: { field: on ? 'baseQuality' : null } } }
+  return {
+    encoding: {
+      opacity: on
+        ? { field: 'baseQuality', value: null }
+        : { field: null, value: 1 },
+    },
+  }
 }
 
 // v4's `renderers` block held the pileup renderer's own settings. Its color

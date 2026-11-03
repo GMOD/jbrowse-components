@@ -13,7 +13,10 @@ import {
   strokeWidthWithBase,
 } from '../features/arcs/arcLineWidth.ts'
 import { ordinaryPairsShown } from '../features/arcs/arcTypes.ts'
-import { qualityOpacityOf } from '../features/mismatch/qualityOpacity.ts'
+import {
+  qualityOpacityOf,
+  resolvedMismatchOpacity,
+} from '../features/mismatch/qualityOpacity.ts'
 import {
   ALIGNMENTS_FIELD_PRESETS,
   alignmentsColorEncoding,
@@ -197,6 +200,17 @@ export function configSlotViews(
   const insertSizeBand = stableIdentityComputed(() =>
     pinnedInsertSizeBandOfConf(self.configuration),
   )
+  const mismatchOpacity = () =>
+    resolvedMismatchOpacity({
+      value: getConf(self, [...MISMATCH_OPACITY, 'value']),
+      field: getConf(self, [...MISMATCH_OPACITY, 'field']),
+      scale: {
+        domainMin: getConf(self, [...MISMATCH_OPACITY, 'scale', 'domainMin']),
+        domainMax: getConf(self, [...MISMATCH_OPACITY, 'scale', 'domainMax']),
+        range: getConf(self, [...MISMATCH_OPACITY, 'scale', 'range']),
+        clamp: getConf(self, [...MISMATCH_OPACITY, 'scale', 'clamp']),
+      },
+    })
   return {
     /** #getter */
     get unit(): AlignmentsUnit {
@@ -234,11 +248,12 @@ export function configSlotViews(
     },
     /**
      * #getter
-     * The field `pileup.mismatches.encoding.opacity` fades by, unset for
-     * none: the "Fade low-quality mismatches" checkbox.
+     * The field `pileup.mismatches.encoding.opacity` fades by, its implied
+     * `baseQuality` included, unset for none: the "Fade low-quality
+     * mismatches" checkbox.
      */
     get mismatchOpacityField(): MismatchOpacityField | undefined {
-      return getConf(self, [...MISMATCH_OPACITY, 'field'])
+      return mismatchOpacity().field
     },
     /**
      * #getter
@@ -246,15 +261,7 @@ export function configSlotViews(
      * `qualityFade` reads it.
      */
     get mismatchQualityOpacity(): QualityOpacity {
-      return qualityOpacityOf({
-        field: getConf(self, [...MISMATCH_OPACITY, 'field']),
-        scale: {
-          domainMin: getConf(self, [...MISMATCH_OPACITY, 'scale', 'domainMin']),
-          domainMax: getConf(self, [...MISMATCH_OPACITY, 'scale', 'domainMax']),
-          range: getConf(self, [...MISMATCH_OPACITY, 'scale', 'range']),
-          clamp: getConf(self, [...MISMATCH_OPACITY, 'scale', 'clamp']),
-        },
-      })
+      return qualityOpacityOf(mismatchOpacity())
     },
     /** #getter */
     get fadeLowFrequency(): boolean {
@@ -609,14 +616,16 @@ export function configSlotActions(self: ConfigSlotSelf) {
 
     /**
      * #action
-     * Writes `field` alone, so a written domain and range survive the
-     * fade being turned off and on.
+     * Writes `field` and `value`, so a written domain and range survive the
+     * fade being turned off and on. Unset draws every mismatch opaque, as
+     * the constant `1`, since an unwritten opacity fades by `baseQuality`.
      */
     setMismatchOpacityField(field?: MismatchOpacityField) {
+      setConf(self, [...MISMATCH_OPACITY, 'field'], field)
       setConf(
         self,
-        ['pileup', 'mismatches', 'encoding', 'opacity', 'field'],
-        field,
+        [...MISMATCH_OPACITY, 'value'],
+        field === undefined ? 1 : undefined,
       )
     },
 

@@ -1,7 +1,10 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { indicatorFields } from '../../RenderAlignmentDataRPC/testPileupData.ts'
-import { DEFAULT_QUALITY_FADE } from '../../features/mismatch/qualityOpacity.ts'
+import {
+  DEFAULT_QUALITY_FADE,
+  qualityOpacityOf,
+} from '../../features/mismatch/qualityOpacity.ts'
 import {
   GAP_DELETION,
   GAP_SKIP,
@@ -485,17 +488,38 @@ describe('a mismatch its quality fade leaves unpainted hands the hover to its re
     bpRange: [0, 200] as [number, number],
   }
 
-  it('answers as a mismatch with the fade off', () => {
-    const hit = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
-    expect(hit.type === 'cigar' && hit.hit.type).toBe('mismatch')
-  })
-
-  it('answers as the read with the fade on', () => {
+  it('answers as a mismatch under the default fade, whose floor keeps it painted', () => {
     const hit = performHitTest(
       100,
       60,
       resolved,
       opts({ qualityOpacity: DEFAULT_QUALITY_FADE }),
+    )
+    expect(hit.type === 'cigar' && hit.hit.type).toBe('mismatch')
+  })
+
+  it('answers as a mismatch with the fade off', () => {
+    const hit = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
+    expect(hit.type === 'cigar' && hit.hit.type).toBe('mismatch')
+  })
+
+  it('answers as the read under a fade to zero', () => {
+    const hit = performHitTest(
+      100,
+      60,
+      resolved,
+      opts({
+        qualityOpacity: qualityOpacityOf({
+          value: undefined,
+          field: 'baseQuality',
+          scale: {
+            domainMin: 0,
+            domainMax: 50,
+            range: ['0', '1'],
+            clamp: true,
+          },
+        }),
+      }),
     )
     expect(hit.type === 'feature' && hit.hit).toStrictEqual({
       id: 'read1',

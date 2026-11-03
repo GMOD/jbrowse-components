@@ -1,12 +1,12 @@
 ---
-name: sbx-duplex-yc-coloring
-description: Roche SBX duplex reads carry a YC tag recording, per base, whether the two strands agreed, disagreed (and what each read) or only one covered. Released BAMs keep it, and their binned QUAL already shows the three classes under base-quality coloring, so the gap is the R1/R2 pair, decoded in the feature detail panel and as labeled mismatch-style marks.
+name: sbx-duplex-yc-detail-decode
+description: Roche SBX duplex reads carry a YC tag recording, per base, whether the two strands agreed, disagreed (and what each read) or only one covered. The default quality fade already draws the three classes; what is left is decoding YC in the feature detail panel, so a click shows what each strand read.
 ---
 
-# SBX duplex reads: `YC`-tag coloring
+# SBX duplex reads: decode `YC` in the feature detail panel
 
 Split out of the alignments collection on 2026-09-27; checked against the XOOS
-spec and source on 2026-11-01.
+spec and source, and Roche's released HG002 BAM, on 2026-11-03.
 
 Roche's sequencing-by-expansion (SBX, AXELIOS platform; XOOS analysis tools)
 emits **duplex consensus reads** (SBX-D): one read per molecule, built by
@@ -70,45 +70,51 @@ Confirmed on the released Giraffe-aligned, non-downsampled HG002 SBX-D BAM
 records. Other tags: `AS`, `RG`, `DI:Z` / `DS:i` (markdup cluster id and
 size), rarely `YF:i`.
 
-## QUAL already shows the three classes, unlabeled
+## QUAL already shows the three classes
 
 Demux writes the classes into QUAL as fixed values (concordant Q39 `H`,
 discordant Q5 `&`, simplex tail Q22 `7`), and the released BAM still has only
 those three values: `markdup` does not recalibrate. QUAL is a pure function of
-`YC` there (all 20k records match, reversing the class string for flag 16). So
-**Color by → Base quality** (`features/perBaseQuality`) already draws the
-duplex layout on Roche's own data. A calibrated QUAL (Q5–Q50) is a separate
-read collapser mode; that output would lose the bins.
+`YC` there (all 20k records match, reversing the class string for flag 16), so
+the default mismatch fade (Q5 to Q20) draws a both-strand alt opaque and a
+discordant one at the 0.1 floor, and **Color by → Base quality** paints all
+three classes. A calibrated QUAL (Q5–Q50) is a separate read collapser mode;
+that output would lose the bins.
 
-## Proposed, ranked
+## Proposed
 
-- **A `YC` decoder and its decode in the feature detail panel**
-  (`AlignmentsFeatureDetail/tagInfo.ts`). Today `YC` is a raw string; render
-  the tail lengths and owning strand, the concordant count, and each
-  discordant position as its R1/R2 pair. The pair is the only thing `YC`
-  carries that QUAL does not.
-- **Discordant positions as mismatch-style marks**, labeled by the R1/R2
-  pair, so a reviewer sees at a glance whether an alt base is on both strands
-  or one. Shares the decoder.
-- **(Only for calibrated-QUAL data) an "SBX duplex" per-base color scheme.**
-  Base-quality coloring already shows the classes on binned data, so this
-  earns its shader path only once calibrated-QUAL BAMs are in circulation.
-  `features/perBaseQuality` and `features/perBaseLetter` are the template: an
-  `extract.ts` reading the tag (`getTagAlt(feature, 'YC')`, the MM/ML idiom),
-  orienting it to the record, and walking `forEachAlignedBaseInRegion`
-  (`features/alignedBaseWalk.ts`) to emit per-ref-base classes. Register in
-  `COLOR_FIELD_DEFS` (`shared/colorFieldDefs.ts`) and the `ColorFieldKind`
-  union (`shared/types.ts`), which fails to compile until it has a shader
-  path and menu placement.
+**A `YC` decoder and its decode in the feature detail panel**
+(`AlignmentsFeatureDetail/tagInfo.ts`). Today `YC` is a raw string; render
+the tail lengths and owning strand, the concordant count, and each discordant
+position as its R1/R2 pair. The pair is the only thing `YC` carries that QUAL
+does not. Main thread only: no arrays, no renderer.
 
-Not in scope: drawing R1 and R2 as two reads (the variant caller's `split`
-mode). Pairs with the concordant/discordant partition in
-[ready/coverage-summarization-by-read-attribute.md](coverage-summarization-by-read-attribute.md).
+## Declined
+
+Mocked on 14 HG002 reads at MTHFR C677T and put to a cold review. In a 30 kb
+slice, 6,335 of 11,247 single-strand alt calls draw nothing (R1 read the
+reference), but at most 6 sit at any one position and base, so they are
+artifacts, not hidden variants.
+
+- **Split-strand pileup** (each read drawn as two half-height strands): R1 and
+  R2 were never aligned on their own, so the halves are placed by inference;
+  every read gains a seam and blank tails that read as deletions. Roche's
+  caller in `split` mode writes the strands as reads, which JBrowse draws.
+- **Discordant positions as mismatch-style marks, outlined single-strand
+  bases, read thickness by strand count, a coverage split by strand support,
+  a hover showing the pair**: each needs non-consensus entries in the mismatch
+  arrays, which coverage, sort-by-base, export and MAF read, or a per-instance
+  channel through `pileupShape.ts` and `mismatch.slang`, for a few reads per
+  site. "Strand" would also collide with forward/reverse everywhere else.
+- **An "SBX duplex" per-base color scheme**: base-quality coloring already
+  paints the classes; the scheme would add only a labeled legend, and lie on
+  calibrated-QUAL BAMs.
 
 Example data: Roche's GIAB SBX-D BAMs (HG001/HG002) from
 `sequencing.roche.com/SBXdata` (download portal
-`web.sbxdata.kamino.platform.navify.com`, behind a form). The XOOS repo
-(`github.com/Roche-AXELIOS/XOOS`) ships no small BAM fixtures, so a
-region-sliced GIAB BAM is the path to a test fixture; the spec's worked
-examples (`4+13-3`, `+1WK1I1L+`, `+1KM3L+2`, `9++`) are the decoder's unit
-cases.
+`web.sbxdata.kamino.platform.navify.com`, behind a form). A 30 kb HG002 slice,
+chr1:11,780,000–11,810,000 (MTHFR, 8,835 reads, indexed), is on ada at
+`~/sbx/slices/HG002.chr1_11780000_11810000.bam`. The XOOS repo
+(`github.com/Roche-AXELIOS/XOOS`) ships no small BAM fixtures; the spec's
+worked examples (`4+13-3`, `+1WK1I1L+`, `+1KM3L+2`, `9++`) are the decoder's
+unit cases.

@@ -82,6 +82,9 @@ function softClippingItem(model: ReadsModel) {
   )
 }
 
+// SBX duplex reads write strand agreement into QUAL, so this fade is their
+// duplex view; per-strand marks were declined, see
+// agent-docs/ideas/ready/sbx-duplex-yc-detail-decode.md
 function fadeMismatchesItem(model: ReadsModel) {
   return toggleItem(
     'Fade low-quality mismatches',

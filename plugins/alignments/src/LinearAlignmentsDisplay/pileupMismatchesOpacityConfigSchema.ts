@@ -3,7 +3,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import {
   MISMATCH_OPACITY_FIELDS,
+  MISMATCH_OPACITY_IMPLIED_FIELD,
   QUALITY_OPACITY_DOMAIN,
+  QUALITY_OPACITY_RANGE,
 } from '../features/mismatch/qualityOpacity.ts'
 import { dropEmptyField } from '../shared/dropEmptyField.ts'
 
@@ -12,7 +14,9 @@ import type { MismatchOpacityField } from '../features/mismatch/qualityOpacity.t
 /** `pileup.mismatches.encoding.opacity` as a config writes it. */
 export type PileupMismatchesOpacitySnapshot =
   | MismatchOpacityField
+  | number
   | {
+      value?: number
       field?: MismatchOpacityField
       scale?: {
         domainMin?: number
@@ -25,17 +29,17 @@ export type PileupMismatchesOpacitySnapshot =
 /**
  * #config PileupMismatchesOpacity
  * #category display
- * The pileup's `mismatches.encoding.opacity`: unset, every mismatched base
- * draws opaque; `baseQuality` fades each one by its Phred base quality
- * through a linear scale, by default from transparent at 0 to opaque from 50
- * up. A string is the field. A base whose read carries no qualities draws
- * opaque.
+ * The pileup's `mismatches.encoding.opacity`. Unset, each mismatched base
+ * fades by its Phred base quality through a linear scale, by default from 0.1
+ * at Q5 to opaque from Q20 up. A number is a constant opacity for every
+ * mismatch, written to `value`: `1` draws them all opaque. A string is the
+ * field. A base whose read carries no qualities draws opaque.
  *
  * #example
  * ```js
  * {
  *   type: 'LinearAlignmentsDisplay',
- *   pileup: { mismatches: { encoding: { opacity: 'baseQuality' } } },
+ *   pileup: { mismatches: { encoding: { opacity: 1 } } },
  * }
  * ```
  * ```js
@@ -58,6 +62,17 @@ export const pileupMismatchesOpacityConfigSchema = ConfigurationSchema(
   'PileupMismatchesOpacity',
   {
     /**
+     * #slot value
+     * Every mismatch's opacity, 0 to 1, while no field fades them; a base
+     * whose read carries no qualities still draws opaque. Writing
+     * `opacity: 1` lands here.
+     */
+    value: {
+      type: 'maybeNumber',
+      description:
+        "every mismatch's opacity; unset, with no field, fades by baseQuality",
+    },
+    /**
      * #slot field
      */
     field: {
@@ -66,7 +81,7 @@ export const pileupMismatchesOpacityConfigSchema = ConfigurationSchema(
         ...MISMATCH_OPACITY_FIELDS,
       ]),
       description:
-        'baseQuality fades each mismatched base by its Phred quality; unset draws them opaque',
+        'baseQuality fades each mismatched base by its Phred quality; unset follows value, and with neither written fades by baseQuality',
     },
     /**
      * #slot scale
@@ -97,7 +112,7 @@ export const pileupMismatchesOpacityConfigSchema = ConfigurationSchema(
          */
         range: {
           type: 'stringArray',
-          defaultValue: ['0', '1'],
+          defaultValue: QUALITY_OPACITY_RANGE.map(String),
           description: 'the opacities, 0 to 1, at the two ends of the domain',
         },
         /**
@@ -124,7 +139,8 @@ export const pileupMismatchesOpacityConfigSchema = ConfigurationSchema(
     ),
   },
   {
-    shorthand: 'field',
+    shorthand: ['value', 'field'],
+    impliedField: MISMATCH_OPACITY_IMPLIED_FIELD,
     writes: 'whole',
     closed: true,
     plot: true,

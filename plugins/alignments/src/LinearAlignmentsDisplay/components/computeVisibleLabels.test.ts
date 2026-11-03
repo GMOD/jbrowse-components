@@ -1,6 +1,6 @@
 import {
-  DEFAULT_QUALITY_FADE,
   OPAQUE_MISMATCHES,
+  qualityOpacityOf,
 } from '../../features/mismatch/qualityOpacity.ts'
 import { GAP_DELETION } from '../../shaders/slang/gap.consts.generated.ts'
 import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.ts'
@@ -137,6 +137,11 @@ test('without the insertion all three SNP letters render', () => {
 // mismatch.slang). The letter drawn on top has to fade with it, or the fade
 // is a no-op at the only zoom letters appear at.
 describe('SNP letters carry the per-base quality fade', () => {
+  const qualOver50 = qualityOpacityOf({
+    value: undefined,
+    field: 'baseQuality',
+    scale: { domainMin: 0, domainMax: 50, range: ['0', '1'], clamp: true },
+  })
   const qualLabels = (fade: boolean) =>
     computeVisibleLabels({
       view: {
@@ -175,7 +180,7 @@ describe('SNP letters carry the per-base quality fade', () => {
       featureSpacing: 2,
       showMismatches: true,
       showSoftClips: true,
-      qualityOpacity: fade ? DEFAULT_QUALITY_FADE : OPAQUE_MISMATCHES,
+      qualityOpacity: fade ? qualOver50 : OPAQUE_MISMATCHES,
       scrollTop: 0,
     }).filter(l => l.type === 'mismatch')
 

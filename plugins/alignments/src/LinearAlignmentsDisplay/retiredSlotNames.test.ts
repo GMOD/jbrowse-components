@@ -75,15 +75,20 @@ test('mismatchAlpha lifts onto the mismatches opacity field, top level and rende
       field,
     ),
   ).toBe('baseQuality')
+  const off = create({
+    renderers: { PileupRenderer: { mismatchAlpha: true } },
+    mismatchAlpha: false,
+  })
+  expect(readConfObject(off, field)).toBeUndefined()
   expect(
-    readConfObject(
-      create({
-        renderers: { PileupRenderer: { mismatchAlpha: true } },
-        mismatchAlpha: false,
-      }),
-      field,
-    ),
-  ).toBeUndefined()
+    readConfObject(off, [
+      'pileup',
+      'mismatches',
+      'encoding',
+      'opacity',
+      'value',
+    ]),
+  ).toBe(1)
 })
 
 // v4.3.0's read cloud display declared `featureHeight` and its pileup renderer

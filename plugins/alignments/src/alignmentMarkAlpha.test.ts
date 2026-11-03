@@ -1,5 +1,6 @@
 import { insertionSizeAlpha } from '../../../packages/alignments-core/src/insertionSizeAlpha.generated.ts'
 import { insertionBarWidthPx } from '../../../packages/alignments-core/src/insertionWidth.generated.ts'
+import { DEFAULT_QUALITY_FADE } from './features/mismatch/qualityOpacity.ts'
 import {
   frequencyFadeGate,
   sizeAlpha,
@@ -53,7 +54,7 @@ test('a deletion fades by its width in px, a mismatch by quality and the zoom, a
     fadeLowFrequency: true,
     mismatchOpacity: 'baseQuality',
     deletions: { length: [2, 30], fade: [0.5, 0] },
-    mismatches: { fade: [0, 1], quality: [25, 255] },
+    mismatches: { fade: [0, 1], quality: [10, 255] },
     clips: { fade: [0, 0.5] },
   })
   expect(t.deletions.alpha).toEqual(
@@ -74,11 +75,12 @@ test('a deletion fades by its width in px, a mismatch by quality and the zoom, a
     deletions: { length: [3], fade: [1] },
   })
   expect(under.deletions.alpha).toEqual([0])
+  const { zero, slope, min, max } = DEFAULT_QUALITY_FADE
   expect(t.mismatches.alpha).toEqual([
-    qualityFade(25, 0, 1 / 50, 0, 1) * frequencyFadeGate(0.1, 0, true),
-    qualityFade(255, 0, 1 / 50, 0, 1) * frequencyFadeGate(0.1, 1, true),
+    qualityFade(10, zero, slope, min, max) * frequencyFadeGate(0.1, 0, true),
+    qualityFade(255, zero, slope, min, max) * frequencyFadeGate(0.1, 1, true),
   ])
-  expect(t.mismatches.alpha[0]).toBeCloseTo(0.05, 10)
+  expect(t.mismatches.alpha[0]).toBeCloseTo(0.04, 10)
   expect(t.clips.alpha).toEqual([
     frequencyFadeGate(0.1, 0, true),
     frequencyFadeGate(0.1, 0.5, true),
@@ -99,11 +101,26 @@ test('a written opacity scale fades a mismatch along its own domain and range', 
   expect(mismatches.alpha[2]).toBe(1)
 })
 
+test('a constant opacity draws a mismatch at it, one with no quality opaque', () => {
+  const opaque = alignmentMarkAlpha({
+    pxPerBp: 2,
+    mismatchOpacity: 1,
+    mismatches: { fade: [1, 1] },
+  })
+  expect(opaque.mismatches.alpha).toEqual([1, 1])
+  const half = alignmentMarkAlpha({
+    pxPerBp: 2,
+    mismatchOpacity: { value: 0.5 },
+    mismatches: { fade: [1, 1], quality: [30, 255] },
+  })
+  expect(half.mismatches.alpha).toEqual([0.5, 1])
+})
+
 test('an undeclared opacity member is refused', () => {
   expect(() =>
     alignmentMarkAlpha({
       pxPerBp: 1,
-      mismatchOpacity: { value: 0.5 } as never,
+      mismatchOpacity: { alpha: 0.5 } as never,
     }),
   ).toThrow()
 })
@@ -120,7 +137,7 @@ test('with fadeLowFrequency off only size and quality fade a mark', () => {
   })
   expect(t.insertions.alpha).toEqual([insertionSizeAlpha(3, 0.1)])
   expect(t.deletions.alpha).toEqual([sizeAlpha(0.5)])
-  expect(t.mismatches.alpha).toEqual([1])
+  expect(t.mismatches.alpha[0]).toBeCloseTo(0.4, 10)
   expect(t.clips.alpha).toEqual([1])
 })
 
@@ -129,7 +146,7 @@ test('a column may be one number, and a setting left out takes the pileup defaul
     pxPerBp: 0.5,
     insertions: { length: 3, fade: 0.2 },
     deletions: { length: 2, fade: 0 },
-    mismatches: { fade: 0.5 },
+    mismatches: { fade: 0.5, quality: 255 },
     clips: { fade: 0 },
   })
   const many = alignmentMarkAlpha({
