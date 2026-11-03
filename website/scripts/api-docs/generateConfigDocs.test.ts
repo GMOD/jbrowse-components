@@ -5,6 +5,7 @@ import path from 'path'
 import { buildEnumConstantIndex } from './enumConstants.ts'
 import {
   accumulateConfig,
+  agentSlotLine,
   exampleObjects,
   linkedConfigs,
   looseTrackExample,
@@ -13,6 +14,7 @@ import {
   missingSlotNames,
   outerSchemaName,
   rowNamesUnder,
+  slotRecord,
   slotRow,
   unknownExampleKeys,
 } from './generateConfigDocs.ts'
@@ -542,6 +544,93 @@ export const wholeTableFixture = ConfigurationSchema('WholeTableFixture', {
     const type = slots().find(s => s.name === 'scale.type')
     expect(type?.code).toContain(`types.enumeration('WholeTableScaleType',`)
     expect(type?.code).toContain(`description: 'how a value paints'`)
+  })
+})
+
+// The website row and the agent line render one record, so a slot's type
+// reads the same in both: the agent text printed a sub-schema's raw
+// `ConfigurationSchema(…)` source where the page named it.
+describe('one slot, two renderers', () => {
+  let dir: string
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jb-slot-record-'))
+  })
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true })
+  })
+
+  const SCHEMA = `
+/**
+ * #config Facet
+ */
+export const recordFixture = ConfigurationSchema('Facet', {
+  /**
+   * #slot opaque
+   * A table nothing here can read.
+   */
+  opaque: ConfigurationSchema('OpaqueFixture', unknownTableT4),
+  /**
+   * #slot mode
+   * How it draws.
+   */
+  mode: {
+    type: 'stringEnum',
+    model: types.enumeration('ModeT4', ['a', 'b']),
+    defaultValue: 'a',
+  },
+  /**
+   * #slot sort
+   * The values first.
+   */
+  sort: { type: 'stringArray', defaultValue: [] },
+})
+`
+
+  function renderBoth() {
+    const file = path.join(dir, 'schema.ts')
+    fs.writeFileSync(file, SCHEMA)
+    const program = createDocProgram([file])
+    buildEnumConstantIndex(program.sources)
+    const byFile: Record<string, Config> = {}
+    extractWithComment(
+      program,
+      obj => {
+        accumulateConfig(byFile, obj)
+      },
+      () => {},
+    )
+    const { withHeader } = linkedConfigs(byFile)
+    return withHeader.flatMap(({ header, slots }) =>
+      slots.map(s => ({
+        row: slotRow(s, header.name),
+        line: agentSlotLine(slotRecord(s, header.name)),
+      })),
+    )
+  }
+
+  test('a sub-schema is named, not dumped, in both', () => {
+    const [opaque] = renderBoth()
+    expect(opaque?.row).toContain('OpaqueFixture sub-schema')
+    expect(opaque?.line).toBe(
+      '- `opaque: OpaqueFixture sub-schema`: A table nothing here can read.',
+    )
+  })
+
+  test("an enum's choices and default read the same in both", () => {
+    const [, mode] = renderBoth()
+    expect(mode?.row).toContain("(a, b) = <code>'a'</code>")
+    expect(mode?.line).toBe("- `mode: stringEnum (a, b) = 'a'`: How it draws.")
+  })
+
+  // the manifest says Facet's `sort` reads a number as its string
+  test('a list taking numbers says so in both', () => {
+    const [, , sort] = renderBoth()
+    expect(sort?.row).toContain('of strings or numbers')
+    expect(sort?.line).toBe(
+      '- `sort: stringArray of strings or numbers = []`: The values first.',
+    )
   })
 })
 

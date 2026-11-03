@@ -377,28 +377,49 @@ function collectBaseConfigs(config: ConfigWithHeader, index: ConfigIndex) {
 // superseded history. The override's own row already carries the base's other
 // fields, since `resolveInheritedSlotMeta` merges them the way the runtime does.
 function slotsTable(name: string, ownSlots: Item[], bases: ConfigWithHeader[]) {
+  const rows = pageSlotGroups(name, ownSlots, bases).flatMap(
+    ({ from, records }) => [
+      ...(from
+        ? [
+            slotGroupRow(
+              `[${from.header.name}](../${from.header.id})`,
+              records.length,
+            ),
+          ]
+        : []),
+      ...records.map(r => slotRecordRow(r)),
+    ],
+  )
+  return markdownTable(['Slot', 'Description'], rows)
+}
+
+// The slots a page shows, as one record each, in the groups `slotsTable` heads:
+// the config's own, then each base's that a closer one does not redeclare.
+// Both renderers read these, so the website and the agent text cannot disagree
+// on which slots a page has or what each one is.
+function pageSlotGroups(
+  name: string,
+  ownSlots: Item[],
+  bases: ConfigWithHeader[],
+) {
   const seen = new Set<string>()
   const groups = [
     { slots: filterUnseenByName(seen, ownSlots), from: undefined, name },
     ...bases.map(config => ({
       slots: filterUnseenByName(seen, config.slots),
-      from: `[${config.header.name}](../${config.header.id})`,
+      from: config,
       name: config.header.name,
     })),
   ]
   const all = groups.flatMap(g => g.slots)
-  const rows = groups.flatMap(({ slots, from, name }) => {
-    const visible = slots.filter(
-      s => !isContainerSlot(s, slotMetaFor(s).meta, all),
-    )
-    return visible.length
-      ? [
-          ...(from === undefined ? [] : [slotGroupRow(from, visible.length)]),
-          ...visible.map(s => slotRow(s, name)),
-        ]
-      : []
-  })
-  return markdownTable(['Slot', 'Description'], rows)
+  return groups
+    .map(({ slots, from, name }) => ({
+      from,
+      records: slots
+        .filter(s => !isContainerSlot(s, slotMetaFor(s).meta, all))
+        .map(s => slotRecord(s, name)),
+    }))
+    .filter(g => g.records.length)
 }
 
 // Name-suffix heuristic for a config's sidebar category, checked in order.
@@ -1734,53 +1755,89 @@ function slotKind(item: Item, code: string | undefined) {
   return undefined
 }
 
-// The Type cell: the slot's declared type, linked to the slot-types guide, with
-// a stringEnum's choices after it, else what `slotKind` names, else a
-// sub-schema named by its own name, else the source.
-function slotTypeCell(meta: SlotMeta, item: Item) {
-  const enums = meta.enumValues ? ` (${enumList(meta.enumValues)})` : ''
+// What a slot holds: its declared type, with a stringEnum's choices, else what
+// `slotKind` names, else a sub-schema named by its own name, else the source.
+type SlotType =
+  | { declared: string; enumValues?: readonly string[] }
+  | { kind: string; href?: string }
+  | { code: string | undefined }
+
+// One slot as both renderers show it.
+interface SlotRecord {
+  name: string
+  type: SlotType
+  liftsNumbers: boolean
+  // a default the factory takes as a parameter has no one value to print, and
+  // its parameter name is not a name the reader has; the prose carries what
+  // each display passes
+  default: { perDisplay: true } | { code: string | undefined }
+  docs: string
+  contextVariable: string[]
+  advanced: boolean
+  examples: Example[]
+}
+
+const PARAMETERISED_DEFAULT = 'per display'
+
+function slotTypeOf(item: Item, meta: SlotMeta): SlotType {
   const code = slotSourceCode(meta)
   const kind = slotKind(item, code)
   const schemaName =
     code && /^ConfigurationSchema\(\s*'([^']+)'/.exec(code)?.[1]
   return meta.type
-    ? `${typeLink(meta.type)}${enums}`
+    ? { declared: meta.type, enumValues: meta.enumValues }
     : kind
-      ? kind.href
-        ? `[${kind.name}](${kind.href})`
-        : kind.name
+      ? { kind: kind.name, href: kind.href }
       : schemaName
-        ? `${schemaName} sub-schema`
-        : codeCell(code)
+        ? { kind: `${schemaName} sub-schema` }
+        : { code }
 }
 
-// A default the factory takes as a parameter has no one value to print, and its
-// parameter name is not a name the reader has. The page prose carries what each
-// display passes.
-const PARAMETERISED_DEFAULT = 'per display'
-
-function slotDefaultCell(item: Item, meta: SlotMeta) {
-  return item.parameterisedDefault
-    ? PARAMETERISED_DEFAULT
-    : codeCell(
-        meta.defaultValue !== undefined ? meta.defaultValue : meta.defaultCode,
-      )
+export function slotRecord(item: Item, schema: string): SlotRecord {
+  const { meta } = slotMetaFor(item)
+  return {
+    name: item.name,
+    type: slotTypeOf(item, meta),
+    liftsNumbers: liftsNumbers(schema, item.name),
+    default: item.parameterisedDefault
+      ? { perDisplay: true }
+      : {
+          code:
+            meta.defaultValue !== undefined
+              ? meta.defaultValue
+              : meta.defaultCode,
+        },
+    docs: item.docs || (meta.description ?? ''),
+    contextVariable: meta.contextVariable ?? [],
+    advanced: !!meta.advanced,
+    examples: item.examples,
+  }
 }
 
-// The Description cell: the slot's prose in full (paragraph breaks kept), then
-// the facts that have no column of their own — the jexl callback's arguments,
-// whether the slot is `advanced` (hidden behind "show advanced" in the UI), and
-// any authored `#example`, folded so a snippet doesn't hold the row open.
-function slotDescriptionCell(item: Item, meta: SlotMeta) {
-  return [
-    proseCell(item.docs || meta.description),
-    meta.contextVariable?.length &&
-      `_callback args:_ ${meta.contextVariable.map(v => `\`${v}\``).join(', ')}`,
-    meta.advanced && '_advanced_',
-    exampleCell(item.examples),
-  ]
+// The record's type and default as text, each renderer supplying how a
+// declared type, a link and a code span are spelled
+function slotTypeText(
+  record: SlotRecord,
+  spell: {
+    declared: (type: string) => string
+    kind: (name: string, href?: string) => string
+    code: (code: string | undefined) => string
+  },
+) {
+  const { type } = record
+  const text =
+    'declared' in type
+      ? `${spell.declared(type.declared)}${type.enumValues ? ` (${enumList(type.enumValues)})` : ''}`
+      : 'kind' in type
+        ? spell.kind(type.kind, type.href)
+        : spell.code(type.code)
+  const dflt =
+    'perDisplay' in record.default
+      ? PARAMETERISED_DEFAULT
+      : spell.code(record.default.code)
+  return [`${text}${record.liftsNumbers ? ' of strings or numbers' : ''}`, dflt]
     .filter(Boolean)
-    .join('<br>')
+    .join(' = ')
 }
 
 // A sub-schema slot (`index`, `labels`) is a container: its own row would carry
@@ -1806,20 +1863,36 @@ function slotGroupRow(from: string, count: number) {
 // slot is"), while the description is the column that actually needs the width;
 // as three columns they squeezed a paragraph of prose into a quarter of the
 // table.
-export function slotRow(item: Item, schema: string) {
-  const { meta } = slotMetaFor(item)
-  const type = `${slotTypeCell(meta, item)}${liftsNumbers(schema, item.name) ? ' of strings or numbers' : ''}`
-  const dflt = slotDefaultCell(item, meta)
+//
+// The Description cell is the prose in full (paragraph breaks kept), then the
+// facts that have no column of their own — the jexl callback's arguments,
+// whether the slot is `advanced` (hidden behind "show advanced" in the UI), and
+// any authored `#example`, folded so a snippet doesn't hold the row open.
+function slotRecordRow(record: SlotRecord) {
+  const type = slotTypeText(record, {
+    declared: typeLink,
+    kind: (name, href) => (href ? `[${name}](${href})` : name),
+    code: code => codeCell(code),
+  })
   const cells = [
+    [`<span id="${slotAnchor(record.name)}">**${record.name}**</span>`, type]
+      .filter(Boolean)
+      .join('<br>'),
     [
-      `<span id="${slotAnchor(item.name)}">**${item.name}**</span>`,
-      [type, dflt].filter(Boolean).join(' = '),
+      proseCell(record.docs),
+      record.contextVariable.length &&
+        `_callback args:_ ${record.contextVariable.map(v => `\`${v}\``).join(', ')}`,
+      record.advanced && '_advanced_',
+      exampleCell(record.examples),
     ]
       .filter(Boolean)
       .join('<br>'),
-    slotDescriptionCell(item, meta),
   ]
   return `| ${cells.join(' | ')} |`
+}
+
+export function slotRow(item: Item, schema: string) {
+  return slotRecordRow(slotRecord(item, schema))
 }
 
 // One entry per config that declares a `baseConfiguration` we couldn't link to a
@@ -2299,31 +2372,21 @@ const AGENT_SLOT_NESTING: Record<string, (name: string) => string> = {
     "Slots are top-level fields of the account's entry in internetAccounts.",
 }
 
-function agentSlotLine(item: Item) {
-  const { meta } = slotMetaFor(item)
-  const enums = meta.enumValues ? ` (${enumList(meta.enumValues)})` : ''
-  const code = slotSourceCode(meta)
-  const type = meta.type
-    ? `${meta.type}${enums}`
-    : (slotKind(item, code)?.name ?? flatCode(code))
-  const dflt = item.parameterisedDefault
-    ? PARAMETERISED_DEFAULT
-    : flatCode(
-        meta.defaultValue !== undefined ? meta.defaultValue : meta.defaultCode,
-      )
-  const notes = [
-    meta.contextVariable?.length &&
-      `callback args: ${meta.contextVariable.join(', ')}`,
-    meta.advanced && 'advanced',
-  ].filter(Boolean)
-  const docs = [firstParagraph(item.docs || meta.description), ...notes]
+export function agentSlotLine(record: SlotRecord) {
+  const type = slotTypeText(record, {
+    declared: type => type,
+    kind: name => name,
+    code: code => flatCode(code),
+  })
+  const docs = [
+    firstParagraph(record.docs),
+    record.contextVariable.length &&
+      `callback args: ${record.contextVariable.join(', ')}`,
+    record.advanced && 'advanced',
+  ]
     .filter(Boolean)
     .join(' — ')
-  return memberLine(
-    item.name,
-    `${type ? `: ${type}` : ''}${dflt ? ` = ${dflt}` : ''}`,
-    docs,
-  )
+  return memberLine(record.name, type && `: ${type}`, docs)
 }
 
 function renderAgentConfig(
@@ -2334,12 +2397,9 @@ function renderAgentConfig(
   const { header, slots, filename } = cfg
   const category = pageCategory(header, links)
   const isBase = isBaseSchema(header, links)
-  const seen = new Set<string>()
-  const all = [
-    ...filterUnseenByName(seen, slots),
-    ...bases.flatMap(b => filterUnseenByName(seen, b.slots)),
-  ]
-  const visible = all.filter(s => !isContainerSlot(s, slotMetaFor(s).meta, all))
+  const records = pageSlotGroups(header.name, slots, bases).flatMap(
+    g => g.records,
+  )
   const trackType = relatedTrackType(header.name, links)
   const adapters = trackType ? (links.adaptersByTrack.get(trackType) ?? []) : []
   const displays = links.displayTypesByTrack.get(header.name) ?? []
@@ -2371,7 +2431,7 @@ function renderAgentConfig(
         ...header.gotchas.map(g => `Note: ${firstParagraph(g, 600)}`),
         exampleBlock(header.examples[0]?.content),
       ],
-      [{ heading: 'Slots', lines: visible.map(s => agentSlotLine(s)) }],
+      [{ heading: 'Slots', lines: records.map(r => agentSlotLine(r)) }],
     ),
   }
 }
