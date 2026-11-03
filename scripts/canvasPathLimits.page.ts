@@ -107,10 +107,7 @@ function wiggleRow(ctx: MarkContext2D, n: number) {
     symlogConstant: 1,
     origin: 0,
     cuts: [0],
-    bandColors: [
-      [0, 0, 1],
-      [1, 0, 0],
-    ] as [number, number, number][],
+    bandColors: [0xffff0000, 0xff0000ff],
     rampLut: null,
     rampMid: undefined,
     rgb: 'red',
