@@ -158,16 +158,6 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
-      "trackId": "mouse_minigraph_alleles",
-      "name": "Mouse strain pangenome: allele inventory",
-      "assemblyNames": ["mm39"],
-      "adapter": {
-        "type": "BedTabixAdapter",
-        "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.alleles.bed.gz"
-      }
-    },
-    {
       "type": "FeatureTrack",
       "trackId": "bosTau9_ncbiRefSeq_ucsc",
       "name": "NCBI RefSeq genes (bosTau9)",
@@ -290,16 +280,6 @@
         "assemblyNameToPanSN": {
           "bosTau9": "bosTau9"
         }
-      }
-    },
-    {
-      "type": "AlignmentsTrack",
-      "trackId": "bovine_minigraph_alleles",
-      "name": "Bovine super-pangenome: allele inventory",
-      "assemblyNames": ["bosTau9"],
-      "adapter": {
-        "type": "BedTabixAdapter",
-        "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.alleles.bed.gz"
       }
     },
     {

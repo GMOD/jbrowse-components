@@ -184,13 +184,6 @@ def graph_tracks(names):
             'assemblyNames': ['TAIR10'],
             'adapter': {'type': 'MinigraphBubbleAdapter', 'uri': f'{GRAPH}.bubbles.bed.gz', 'csi': True, **PANSN},
         },
-        {
-            'type': 'AlignmentsTrack',
-            'trackId': 'arabidopsis_minigraph_alleles',
-            'name': '1001G+ minigraph pangenome: allele inventory',
-            'assemblyNames': ['TAIR10'],
-            'adapter': {'type': 'BedTabixAdapter', 'uri': f'{GRAPH}.alleles.bed.gz'},
-        },
     ]
     if os.path.exists(f'{GRAPH}.paths.bed.gz'):
         tracks.append(

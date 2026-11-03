@@ -725,16 +725,6 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
-      "trackId": "arabidopsis_minigraph_alleles",
-      "name": "1001G+ minigraph pangenome: allele inventory",
-      "assemblyNames": ["TAIR10"],
-      "adapter": {
-        "type": "BedTabixAdapter",
-        "uri": "arabidopsis-tair10-minigraph.alleles.bed.gz"
-      }
-    },
-    {
       "type": "FeatureTrack",
       "trackId": "arabidopsis_minigraph_paths",
       "name": "1001G+ minigraph pangenome: each accession's allele at every bubble",

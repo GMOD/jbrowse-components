@@ -71,16 +71,6 @@
       }
     },
     {
-      "type": "AlignmentsTrack",
-      "trackId": "hprc_minigraph_alleles",
-      "name": "HPRC release 2 graph: allele inventory",
-      "assemblyNames": ["hg38"],
-      "adapter": {
-        "type": "BedTabixAdapter",
-        "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.alleles.bed.gz"
-      }
-    },
-    {
       "type": "VariantTrack",
       "trackId": "hprc2_wave_grch38",
       "name": "HPRC release 2 structural variants, same-site alleles merged (464 haplotypes)",

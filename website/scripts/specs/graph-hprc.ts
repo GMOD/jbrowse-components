@@ -957,7 +957,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           tracks: [
             'hprc_minigraph_bubbles',
             'hprc_bubble_score',
-            'hprc_minigraph_alleles',
             // the tutorial's config names no layout; the portal's opens
             // force-directed
             graphTrack(SEGMENTS_TRACK, {

@@ -144,6 +144,14 @@ assembly (`gfa-to-tabix paths`), or a path GFA, where every path
 visiting a segment is stated (the `SM:Z:` tag, which reaches
 `GraphNode.samples`).
 
+**No allele-inventory lane.** A row per allele read out of the links
+(`gfa-to-tabix alleles`, drawn as an `AlignmentsTrack`) credits each allele to
+its first contributor, which reads as carriage it does not state. Colin
+declined it on 2026-11-03 ("not really a fan of allele inventory stuff"):
+gfa-to-tabix 2.2.0's `build` stopped writing it, and the
+linearize-as-alignment-glyphs idea built on it went with it. Who carries an
+allele is a callset's genotype matrix.
+
 **`rank` colors a segment on the linear lane only.** A segments track opened
 as `LinearBasicDisplay` paints rank 0 against the rest through a threshold
 scale keyed "reference" / "other assemblies" (`demos/hprc`,

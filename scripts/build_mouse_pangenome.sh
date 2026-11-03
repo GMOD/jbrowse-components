@@ -22,9 +22,9 @@
 # from the graph rather than reconstructed — the difference from the bovine set.
 # But minigraph writes NO P or W lines, so this graph cannot say which strain
 # carries which allele. A line census of the finished rGFA finds H, S and L
-# only. `firstSeenIn`/`discoveryRank` in the allele file is minigraph's
-# construction order, NOT carriage, and there is no argument that recovers
-# carriage from this file — the information is not in it. Getting carriage for
+# only; a segment's rank is minigraph's construction order, NOT carriage, and
+# there is no argument that recovers carriage from this file — the information
+# is not in it. Getting carriage for
 # mouse means either `minigraph --call` per assembly (bubble resolution, and it
 # also yields a VCF via misc/mgutils.js merge) or rebuilding with
 # minigraph-cactus, which writes per-haplotype walks. See the foot of this file.
@@ -281,10 +281,6 @@ echo "  no duplicate segment ids"
 echo "=== segments + links ==="
 [ -s "$PREFIX.graph.bed.gz" ] ||
   gfa-to-tabix "$PREFIX.rgfa.gz" --layout contig -o "$PREFIX"
-
-echo "=== allele inventory ==="
-[ -s "$PREFIX.alleles.bed.gz" ] ||
-  gfa-to-tabix alleles "$PREFIX"
 
 echo "=== bubbles ==="
 if [ ! -s "$PREFIX.bubbles.bed.gz" ]; then

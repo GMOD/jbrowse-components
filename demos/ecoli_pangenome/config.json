@@ -464,16 +464,6 @@
       ]
     },
     {
-      "type": "AlignmentsTrack",
-      "trackId": "ecoli_minigraph_alleles",
-      "name": "minigraph graph: allele inventory (from the rGFA alone)",
-      "assemblyNames": ["K12"],
-      "adapter": {
-        "type": "BedTabixAdapter",
-        "uri": "ecoli_minigraph.alleles.bed.gz"
-      }
-    },
-    {
       "type": "FeatureTrack",
       "trackId": "ecoli_pggb_subgraph_nodes",
       "name": "pggb subgraph: nodes on K12, colored by depth",

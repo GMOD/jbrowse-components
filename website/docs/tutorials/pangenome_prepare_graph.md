@@ -156,8 +156,7 @@ The command writes these files beside the prefix:
 | `.graph.bed.gz`           | one row per segment and one per link, filed under reference coordinates; a link row states both ends in full                                         |
 | `.bubbles.bed.gz`         | where haplotypes diverge and rejoin, with each bubble's shortest and longest allele                                                                  |
 | `.fold10000.graph.bed.gz` | the graph with variants under 10 kb folded into the reference, so a whole chromosome draws; a plain GFA folds under 50 bp, as `.fold50.graph.bed.gz` |
-| `.contig.graph.bed.gz`    | the segment and link rows under each segment's own coordinate, which the allele inventory reads                                                      |
-| `.alleles.bed.gz`         | one row per allele, with a CIGAR that states its size                                                                                                |
+| `.contig.graph.bed.gz`    | the segment and link rows under each segment's own coordinate                                                                                        |
 | `.graph.json`             | a manifest naming the files above and the tier's fold size                                                                                           |
 | `.config.json`            | the tracks below, with the plugin entry                                                                                                              |
 
@@ -226,11 +225,10 @@ its track menu draws the same segments as a row.
 
 <Figure caption="The HPRC graph's segment index over C4 on hg38." src="/img/pangenome/prepare_graph_segments.png" />
 
-The other three tracks in the config draw the bubbles as a row and as a curve,
-and the allele inventory, one row per alternative path, as an alignments track.
+The other two tracks in the config draw the bubbles as a row and as a curve.
 Turn them on and switch the graph back with **Display types → Graph**.
 
-<Figure caption="The four tracks the command writes, over the C4 region on hg38: the bubbles as a row and as a curve, the allele inventory, and the graph track at the bottom." src="/img/pangenome/host_your_own.png" />
+<Figure caption="The three tracks the command writes, over the C4 region on hg38: the bubbles as a row and as a curve, and the graph track at the bottom." src="/img/pangenome/host_your_own.png" />
 
 A node's right-click menu offers **Open in** the haplotype its rGFA id names
 (`NA20809#2#CM094351.1` opens `NA20809#2`), when the session holds an assembly
@@ -530,8 +528,8 @@ one lane per haplotype under GRCh38.
 
 ## Reproduce it end to end
 
-The one command builds the graph track, the bubbles, the tier and the allele
-inventory, with the tools under [Prerequisites](#prerequisites). It:
+The one command builds the graph track, the bubbles and the tier, with the tools
+under [Prerequisites](#prerequisites). It:
 
 1. places every segment on a genome: an rGFA holds each position in tags on the
    segment, and for a plain GFA the command follows the backbone's paths first,
@@ -539,9 +537,7 @@ inventory, with the tools under [Prerequisites](#prerequisites). It:
    visits it
 2. finds the bubbles, with `gfatools bubble` on an rGFA or from the snarl VCF on
    a plain GFA, and builds the tier from them
-3. reads each allele out of the links, following it from where it leaves the
-   backbone to where it rejoins. The reference between those two points and the
-   sequence the allele passes through give the CIGAR its size
+3. writes the manifest and the config that name those files
 
 ```bash
 gfa-to-tabix build hprc-v2.1-mc-grch38.sv.gfa.gz -o hprc --assembly hg38

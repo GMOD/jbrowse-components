@@ -31,9 +31,8 @@
 # exact for the backbone and CHECKED rather than assumed: the HER path of every
 # chromosome must sum to bosTau9's own length for that chromosome or the script
 # refuses. Rank above 0 is a CONVENTION here, not a measurement — see CAVEAT 1
-# in that helper. `discoveryRank`/`firstSeenIn` in the allele file therefore mean
-# "first of the twelve in the order below that carries this segment", and never
-# carriage.
+# in that helper. A segment's rank therefore means "first of the twelve in the
+# order below that carries this segment", and never carriage.
 #
 # Requires: curl, tar, md5sum, python3, gfatools, vg, gawk (as `awk`), sort,
 #           bgzip/tabix (htslib), node (npx) and gfa-to-tabix 2.0.0 or later,
@@ -160,10 +159,6 @@ echo "=== node and link index (RgfaTabixAdapter reads it by prefix) ==="
 [ -s "$PREFIX.graph.bed.gz" ] ||
   gfa-to-tabix "$PREFIX.rgfa.gz" --layout contig -o "$PREFIX"
 
-echo "=== allele inventory ==="
-[ -s "$PREFIX.alleles.bed.gz" ] ||
-  gfa-to-tabix alleles "$PREFIX"
-
 echo "=== bubbles (feature track and the segments-per-bubble curve) ==="
 # gfatools counts paths through a bubble combinatorially and CLAMPS at
 # 2147483647 rather than overflowing; 22 of the 153,719 bubbles sit at that
@@ -256,10 +251,8 @@ provenance ships beside the data; see agent-docs/reference/HOSTING.md.
 Serving it: website/pangenome-config/bovine-arsucd12.json in GMOD/jb2hubs is the
 config that names these files. RgfaTabixAdapter takes the shared PREFIX with no
 suffix and "format": 2, and appends .graph.bed.gz itself; MinigraphBubbleAdapter takes the bubbles
-file directly; the alleles file is a plain BedTabixAdapter uri on an
-AlignmentsTrack. Stable names are PanSN with bosTau9 as the reference's
-sample, the assembly's own name, so no track needs an assemblyNameToPanSN map;
-the alleles file sits on bosTau9's plain refNames.
+file directly. Stable names are PanSN with bosTau9 as the reference's
+sample, the assembly's own name, so no track needs an assemblyNameToPanSN map.
 
 Published variants the callset reproduces, carriers read off its GT columns:
   chr1:2,429,329     Celtic POLLED 202 bp duplication-insertion  ANG

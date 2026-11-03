@@ -457,11 +457,6 @@ in_cactus gfatools view -R "${REF}#1#chr:1445000-1474500" -r 1 \
 # screen. The same command the HPRC tutorial points at.
 gfa-to-tabix ecoli_minigraph.rgfa --layout contig -o ecoli_minigraph
 
-# What the graph holds, read out of those two indexes alone: one row per allele,
-# anchored on the reference. It needs no assemblies, so it works on someone
-# else's rGFA.
-gfa-to-tabix alleles ecoli_minigraph
-
 # ── Set up JBrowse ────────────────────────────────────────────────────────────
 APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP" --branch main
@@ -653,27 +648,6 @@ cat > rgfa_track.json <<'JSON'
 }
 JSON
 jb add-track-json rgfa_track.json --update --out "$APP"
-
-# The same variation read out of the graph alone, with no assemblies re-mapped:
-# one feature per allele rather than one row per strain. An AlignmentsTrack over
-# a BED is deliberate — each allele carries a CIGAR against the reference span it
-# replaces, so the display packs the (overlapping) alleles into rows and draws
-# each one's insertion marker at its real size. As a plain feature track a 63 kb
-# insertion would be a 1 bp box.
-cp ecoli_minigraph.alleles.bed.gz ecoli_minigraph.alleles.bed.gz.tbi "$APP/"
-cat > alleles_track.json <<'JSON'
-{
-  "type": "AlignmentsTrack",
-  "trackId": "ecoli_minigraph_alleles",
-  "name": "minigraph graph: allele inventory (from the rGFA alone)",
-  "assemblyNames": ["K12"],
-  "adapter": {
-    "type": "BedTabixAdapter",
-    "uri": "ecoli_minigraph.alleles.bed.gz"
-  }
-}
-JSON
-jb add-track-json alleles_track.json --update --out "$APP"
 
 # The pggb subgraph's nodes on the K12 axis. No display config: the file's
 # itemRgb is the graph view's Depth ramp, so the strip paints in the graph's
