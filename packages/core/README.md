@@ -1310,7 +1310,7 @@ direct call, and only a config that writes a path pays for one.
 import { isPlainFieldRef } from '@jbrowse/core/util/fieldReader'
 
 // type signature
-(ref: string) => ref is never
+(ref: string) => boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/fieldReader.ts)

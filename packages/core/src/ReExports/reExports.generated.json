@@ -2786,6 +2786,8 @@
       "package": "@jbrowse/core",
       "names": [
         "BlockSet",
+        "blockKey",
+        "contentOrElidedBlock",
         "wholeBaseRegion",
         "wholeBaseRegions"
       ],
@@ -3409,7 +3411,8 @@
         "ensureJexlPrefix",
         "isBareExpression",
         "isJexl",
-        "stringToJexlExpression"
+        "stringToJexlExpression",
+        "stripJexlPrefix"
       ],
       "worker": "real"
     },
