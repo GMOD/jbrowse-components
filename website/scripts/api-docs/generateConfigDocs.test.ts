@@ -2,14 +2,17 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
+import {
+  exampleObjects,
+  looseTrackExample,
+  unknownExampleKeys,
+} from './configExamples.ts'
 import { createDocProgram, extractWithComment } from './docProgram.ts'
 import { buildEnumConstantIndex } from './enumConstants.ts'
 import {
   accumulateConfig,
   agentSlotLine,
-  exampleObjects,
   linkedConfigs,
-  looseTrackExample,
   manifestPages,
   mergeSpreadSlots,
   missingSlotNames,
@@ -17,7 +20,6 @@ import {
   rowNamesUnder,
   slotRecord,
   slotRow,
-  unknownExampleKeys,
 } from './generateConfigDocs.ts'
 
 import type { ManifestSlot, TypedManifestEntry } from './configManifest.ts'
