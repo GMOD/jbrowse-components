@@ -30,6 +30,7 @@ import type {
 } from '../../configuration/plot.ts'
 import type { MenuItem } from '../../ui/index.ts'
 import type { RpcStatus } from '../../util/progress.ts'
+import type { Feature } from '../../util/simpleFeature.ts'
 import type { UnappliedSetting } from '../../util/unknownSnapshotKeys.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
@@ -225,6 +226,16 @@ function stateModelFactory() {
        */
       trackMenuItems(): MenuItem[] {
         return []
+      },
+
+      /**
+       * #method
+       * Of the features "Save track data" fetched, the ones this display
+       * draws: by default all of them. A display with a filter overrides it,
+       * so the file holds what the track shows.
+       */
+      exportedFeatures(features: Feature[]): Feature[] {
+        return features
       },
 
       /**

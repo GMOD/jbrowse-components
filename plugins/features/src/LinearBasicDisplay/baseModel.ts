@@ -56,6 +56,7 @@ import { toJS } from 'mobx'
 
 import { themedColorTable } from '../RenderFeatureDataRPC/colorClasses.ts'
 import { renderedTextWidth } from '../RenderFeatureDataRPC/constants.ts'
+import { buildFeatureAdmission } from '../RenderFeatureDataRPC/featureAdmission.ts'
 import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { pickDisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
@@ -697,6 +698,26 @@ export default function baseStateModelFactory(
           colorTable: themedColorTable(getPaletteHost(self).palette),
           fieldPalette: self.fieldPalette,
         }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * The fetched features the worker's admission lets through: the
+       * `filter`, the isolated and hidden features, and the NCBI source
+       * records the track never draws.
+       */
+      exportedFeatures(features: Feature[]) {
+        const { displayConfig, soloFeatureIds, hiddenFeatureIds } =
+          self.rpcProps()
+        return features.filter(
+          buildFeatureAdmission({
+            config: displayConfig,
+            jexl: getEnv(self).pluginManager.jexl,
+            soloFeatureIds,
+            hiddenFeatureIds,
+          }),
+        )
       },
     }))
     .views(self => ({

@@ -26,8 +26,10 @@ import {
   assembleLocStrings,
   getContainingView,
   getDisplayStr,
+  pluralize,
   saveAs,
   statusProgressLabel,
+  toLocale,
 } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 import { useFetch } from '../../../util/useFetch.ts'
@@ -183,11 +185,13 @@ function previewText({
   tooLarge,
   regionStr,
   str,
+  hidden,
 }: {
   regions: Region[]
   loading: boolean
   status: RpcStatus | undefined
   error: unknown
+  hidden: string
   tooLarge: { bytes: number; limit: number } | undefined
   regionStr: string
   str: string
@@ -205,9 +209,17 @@ function previewText({
     return `${regionStr} is an estimated ${getDisplayStr(tooLarge.bytes)} on this track, over the ${getDisplayStr(tooLarge.limit)} this export asks about. Nothing has been downloaded — click "Download anyway" to fetch it.`
   }
   if (!str) {
-    return `This track has no data in ${regionStr}.`
+    return hidden
+      ? `This track's filter hides everything it holds in ${regionStr}.`
+      : `This track has no data in ${regionStr}.`
   }
   return str.length > MAX_PREVIEW_CHARS ? TOO_BIG_TO_PREVIEW : str
+}
+
+function filteredOutText(count: number, noun: string) {
+  return count
+    ? `Leaves out ${toLocale(count)} ${pluralize(count, noun)} this track's filter hides.`
+    : ''
 }
 
 function hasVisibleRegions(view: object): view is { visibleRegions: Region[] } {
@@ -249,6 +261,10 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   })
   const tooLarge = result?.tooLarge
   const str = result?.str ?? ''
+  const hidden = filteredOutText(
+    result?.filteredOut ?? 0,
+    model.activeDisplay.featureNoun,
+  )
   // no regions means no fetch ran at all, and an empty string is a region with
   // nothing in it — without those terms Copy and Download stayed live over the
   // empty string and saved a plausible-looking empty file
@@ -304,6 +320,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
             slotProps={{ input: { readOnly: true } }}
           />
         </div>
+        {hidden && str ? <DialogContentText>{hidden}</DialogContentText> : null}
         <FormatSelector
           options={options}
           type={type}
@@ -324,6 +341,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
             tooLarge,
             regionStr,
             str,
+            hidden,
           })}
           slotProps={{
             input: {

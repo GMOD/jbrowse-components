@@ -148,6 +148,7 @@ import {
   requireReadsConf,
 } from './configSlotViews.ts'
 import { filterFieldInEffect, layersInEffect } from './dialogs/layerFilters.ts'
+import { exportedReads } from './exportedReads.ts'
 import {
   applyChainStrandFrames,
   applyReadColorsByGroup,
@@ -2752,6 +2753,14 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #method
+         * The exported reads this pileup draws, under the same `filter` the
+         * worker applies.
+         */
+        exportedFeatures(features: Feature[]) {
+          return exportedReads(features, self.readPredicates)
+        },
         /**
          * #method
          * Fields that invalidate the fetched data, every one worker-bound.

@@ -6,6 +6,7 @@ import { getRpcSessionId } from '../../../util/tracks.ts'
 import type { AnyConfigurationModel } from '../../../configuration/index.ts'
 import type { Region } from '../../../util/index.ts'
 import type { StatusCallback } from '../../../util/progress.ts'
+import type { Feature } from '../../../util/simpleFeature.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -13,13 +14,18 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * What the export needs off the track, duck-typed rather than imported: this
  * module is behind `BaseTrackModel`'s lazy dialog import, so naming that model
  * type here would close the circle. `exportsDataViaAdapter` and
- * `exportByteLimit` are its getters.
+ * `exportByteLimit` are its getters; `activeDisplay` is the display drawing it,
+ * whose filter decides which fetched features the file holds.
  */
 export interface ExportableTrack extends IStateTreeNode {
   configuration: AnyConfigurationModel
   exportsDataViaAdapter: boolean
   exportByteLimit: number
   saveTrackFileFormatOptions: () => Record<string, FileTypeExporter>
+  activeDisplay: {
+    featureNoun: string
+    exportedFeatures: (features: Feature[]) => Feature[]
+  }
 }
 
 /**
@@ -74,6 +80,11 @@ function endWithNewline(str: string) {
 export interface TrackDataResult {
   str: string
   usedAdapterExport: boolean
+  /**
+   * The fetched features the display's filter hides, and so the file leaves
+   * out. Always 0 for an adapter's own export, which writes the file's lines.
+   */
+  filteredOut: number
   /**
    * Set, with an empty `str` and nothing downloaded, when the pre-flight
    * estimate came back over budget and the caller had not passed `force`.
@@ -130,6 +141,7 @@ export async function fetchTrackData({
       return {
         str: '',
         usedAdapterExport: exportsDataViaAdapter,
+        filteredOut: 0,
         tooLarge: { bytes, limit },
       }
     }
@@ -143,13 +155,17 @@ export async function fetchTrackData({
       ...opts,
     })
     if (str !== undefined) {
-      return { str: endWithNewline(str), usedAdapterExport: true }
+      return {
+        str: endWithNewline(str),
+        usedAdapterExport: true,
+        filteredOut: 0,
+      }
     }
   }
 
   // A feature crossing from one region into the next comes back once per
   // region; a collapsed-introns view is one region per exon of the same gene.
-  const features = dedupe(
+  const fetched = dedupe(
     await session.rpcManager.call(sessionId, 'CoreGetFeatures', {
       adapterConfig,
       regions,
@@ -157,6 +173,7 @@ export async function fetchTrackData({
     }),
     f => f.id(),
   )
+  const features = model.activeDisplay.exportedFeatures(fetched)
   // Empty rather than a header with no records under it, so the dialog can
   // say the region holds nothing instead of offering that file for download.
   const str = features.length
@@ -167,5 +184,9 @@ export async function fetchTrackData({
         ...opts,
       })
     : ''
-  return { str: endWithNewline(str), usedAdapterExport: false }
+  return {
+    str: endWithNewline(str),
+    usedAdapterExport: false,
+    filteredOut: fetched.length - features.length,
+  }
 }

@@ -57,13 +57,16 @@ let model: ExportableTrack
 function setup({
   exportsData = false,
   byteLimit = 5_000_000,
+  exportedFeatures = (features: Feature[]) => features,
 }: {
   exportsData?: boolean
   byteLimit?: number
+  exportedFeatures?: (features: Feature[]) => Feature[]
 } = {}) {
   model = {
     exportsDataViaAdapter: exportsData,
     exportByteLimit: byteLimit,
+    activeDisplay: { featureNoun: 'feature', exportedFeatures },
   } as unknown as ExportableTrack
   jest.mocked(getConf).mockReturnValue(adapterConfig)
   jest.mocked(getRpcSessionId).mockReturnValue('session-1')
@@ -140,6 +143,7 @@ test('an adapter that exports the format returns its raw lines', async () => {
   expect(res).toEqual({
     str: '@HD\tVN:1.6\nread1\t0\tctgA\n',
     usedAdapterExport: true,
+    filteredOut: 0,
   })
   expect(callsTo('CoreGetExportData')[0]![2]).toMatchObject({
     adapterConfig,
@@ -160,7 +164,11 @@ test('an adapter declining one format falls through to the features', async () =
 
   const res = await fetchTrackData({ model, regions, type: 'bed', options })
 
-  expect(res).toEqual({ str: 'read1,read2\n', usedAdapterExport: false })
+  expect(res).toEqual({
+    str: 'read1,read2\n',
+    usedAdapterExport: false,
+    filteredOut: 0,
+  })
   expect(callsTo('CoreGetExportData')).toHaveLength(1)
   expect(callsTo('CoreGetFeatures')).toHaveLength(1)
 })
@@ -171,7 +179,11 @@ test('a track with no export capability is never asked to export', async () => {
 
   const res = await fetchTrackData({ model, regions, type: 'bed', options })
 
-  expect(res).toEqual({ str: 'gene1\n', usedAdapterExport: false })
+  expect(res).toEqual({
+    str: 'gene1\n',
+    usedAdapterExport: false,
+    filteredOut: 0,
+  })
   expect(callsTo('CoreGetExportData')).toHaveLength(0)
 })
 
@@ -210,6 +222,7 @@ test('a region over budget downloads nothing and says what it would cost', async
   expect(res).toEqual({
     str: '',
     usedAdapterExport: false,
+    filteredOut: 0,
     tooLarge: { bytes: 4_000_000, limit: 1_000_000 },
   })
   expect(callsTo('CoreGetFeatures')).toHaveLength(0)
@@ -230,7 +243,11 @@ test('force skips the pre-flight entirely', async () => {
     force: true,
   })
 
-  expect(res).toEqual({ str: 'gene1\n', usedAdapterExport: false })
+  expect(res).toEqual({
+    str: 'gene1\n',
+    usedAdapterExport: false,
+    filteredOut: 0,
+  })
   expect(callsTo('CoreGetRegionByteEstimate')).toHaveLength(0)
 })
 
@@ -240,7 +257,11 @@ test('an adapter quoting no estimate does not gate', async () => {
 
   const res = await fetchTrackData({ model, regions, type: 'bed', options })
 
-  expect(res).toEqual({ str: 'gene1\n', usedAdapterExport: false })
+  expect(res).toEqual({
+    str: 'gene1\n',
+    usedAdapterExport: false,
+    filteredOut: 0,
+  })
 })
 
 // GenBank fetches its ORIGIN sequence from inside the writer, so the pair has
@@ -294,4 +315,22 @@ test('a feature returned for several regions is written once', async () => {
   const res = await fetchTrackData({ model, regions, type: 'bed', options })
 
   expect(res.str).toBe('gene1,gene2\n')
+})
+
+test("the display's filter decides what is written, and counts what it left out", async () => {
+  setup({
+    exportedFeatures: features =>
+      features.filter(f => f.get('name') !== 'hidden'),
+  })
+  respond({
+    CoreGetFeatures: [feature('gene1'), feature('hidden'), feature('gene2')],
+  })
+
+  const res = await fetchTrackData({ model, regions, type: 'bed', options })
+
+  expect(res).toEqual({
+    str: 'gene1,gene2\n',
+    usedAdapterExport: false,
+    filteredOut: 1,
+  })
 })
