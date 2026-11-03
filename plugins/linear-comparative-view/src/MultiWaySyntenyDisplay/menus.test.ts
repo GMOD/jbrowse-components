@@ -206,12 +206,12 @@ function trackModel({
   return { model, calls }
 }
 
-test('the track menu is Color by, Lanes and Show', () => {
+test('the track menu is Color by, Show and Lanes', () => {
   const { model } = trackModel()
   expect(labelsOf(multiWayTrackMenuItems(model))).toEqual([
     'Color by',
-    'Lanes',
     'Show',
+    'Lanes',
   ])
   expect(labelsOf(showSubMenuItems(model))).toEqual([
     'Lane ticks',

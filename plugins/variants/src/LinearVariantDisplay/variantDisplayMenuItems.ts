@@ -267,8 +267,6 @@ function variantShowSubmenuItems(self: LinearVariantDisplayModel): MenuItem[] {
       : recordsShowItems(self)),
     {
       label: 'Tooltips',
-      helpText:
-        'Show the hover tooltip naming the genotype, the sample and the record under the pointer. Off, the crosshairs and the highlighted cell still follow the pointer — only the panel covering the rows beside it goes away',
       type: 'checkbox',
       checked: self.showTooltips,
       onClick: () => {
@@ -319,47 +317,6 @@ export function variantTrackMenuItems(
     loaded,
   )
   return [
-    ...makeShowSubMenu(variantShowSubmenuItems(self)),
-    // No presets: a cohort's useful row heights depend on how many samples it
-    // has, so fit and a typed height are the two that mean anything here.
-    ...(self.drawsGenotypeRows
-      ? [layoutMenuItem(self), rowHeightMenuItem(self)]
-      : []),
-    ...recordsHeightMenuItems(self),
-    // the rows' own items, absent while no row draws
-    ...(self.drawsGenotypeRows
-      ? [
-          makeRadioSubMenu({
-            label: 'Rows',
-            icon: SplitscreenIcon,
-            value: self.rowsField,
-            onChange: rowsField => {
-              self.setRowsField(rowsField)
-            },
-            options: [
-              {
-                value: 'sample',
-                label: 'Per sample',
-                helpText:
-                  'One row per sample. The color darkens with each copy of the allele the sample carries, so a homozygous call reads darker than a heterozygous one, at any ploidy',
-              },
-              {
-                value: 'haplotype',
-                // `hasPhasedOrHaploid`, the painter's own predicate: a pangenome
-                // callset is haploid, with no `|` anywhere, and draws per haplotype
-                ...needs(
-                  'Per haplotype',
-                  'phased genotypes',
-                  self.hasPhasedOrHaploid,
-                  loaded,
-                ),
-                helpText:
-                  'One row per haplotype, which needs phased genotypes: a diploid SAMPLE1 becomes rows SAMPLE1 HP1 and SAMPLE1 HP2, and a 1|0 call draws in the first row only. A row holds one allele, so there is no dosage shading. A haploid sample keeps one row, under its own name',
-              },
-            ],
-          }),
-        ]
-      : []),
     // The cell fill and the sample metadata's row color are independent
     // color objects, so each is a block of its own. With no rows the fill
     // paints the records, which a phase set, a dosage or a sample cannot.
@@ -416,10 +373,6 @@ export function variantTrackMenuItems(
                 self.hasConsequence,
                 loaded,
               ),
-              helpText: fieldColorHelp(
-                self,
-                'the variant’s most severe SnpEff (ANN) / VEP (CSQ) consequence impact tier',
-              ),
               type: 'radio',
               checked: self.colorField === IMPACT_FIELD,
               onClick: () => {
@@ -432,10 +385,6 @@ export function variantTrackMenuItems(
                 'structural variants',
                 self.hasSvType,
                 loaded,
-              ),
-              helpText: fieldColorHelp(
-                self,
-                'the variant’s structural-variant class (deletion, duplication, insertion, inversion, ...)',
               ),
               type: 'radio',
               checked: self.colorField === SV_TYPE_FIELD,
@@ -547,6 +496,47 @@ export function variantTrackMenuItems(
             }),
           ],
     }),
+    ...makeShowSubMenu(variantShowSubmenuItems(self)),
+    // the rows' own items, absent while no row draws
+    ...(self.drawsGenotypeRows
+      ? [
+          makeRadioSubMenu({
+            label: 'Rows',
+            icon: SplitscreenIcon,
+            value: self.rowsField,
+            onChange: rowsField => {
+              self.setRowsField(rowsField)
+            },
+            options: [
+              {
+                value: 'sample',
+                label: 'Per sample',
+                helpText:
+                  'One row per sample. The color darkens with each copy of the allele the sample carries, so a homozygous call reads darker than a heterozygous one, at any ploidy',
+              },
+              {
+                value: 'haplotype',
+                // `hasPhasedOrHaploid`, the painter's own predicate: a pangenome
+                // callset is haploid, with no `|` anywhere, and draws per haplotype
+                ...needs(
+                  'Per haplotype',
+                  'phased genotypes',
+                  self.hasPhasedOrHaploid,
+                  loaded,
+                ),
+                helpText:
+                  'One row per haplotype, which needs phased genotypes: a diploid SAMPLE1 becomes rows SAMPLE1 HP1 and SAMPLE1 HP2, and a 1|0 call draws in the first row only. A row holds one allele, so there is no dosage shading. A haploid sample keeps one row, under its own name',
+              },
+            ],
+          }),
+        ]
+      : []),
+    // No presets: a cohort's useful row heights depend on how many samples it
+    // has, so fit and a typed height are the two that mean anything here.
+    ...(self.drawsGenotypeRows
+      ? [rowHeightMenuItem(self), layoutMenuItem(self)]
+      : []),
+    ...recordsHeightMenuItems(self),
     ...(self.drawsGenotypeRows
       ? rowOrderMenuItems(self, {
           arrangement: {

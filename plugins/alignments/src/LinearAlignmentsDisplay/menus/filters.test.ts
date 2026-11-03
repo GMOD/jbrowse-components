@@ -5,8 +5,9 @@ import { getFiltersMenuItems } from './filters.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 
-function mapqRow(written: FieldPredicate[]) {
+function mapqRow(written: FieldPredicate[], featureNoun = 'read') {
   const model = {
+    featureNoun,
     filterPredicates: mergeFilter(written),
     declaredFilters: declaredFiltersOf([], []),
     setFilterFields: jest.fn(),
@@ -24,6 +25,10 @@ function mapqRow(written: FieldPredicate[]) {
   })[]
   return { row, radios, model }
 }
+
+test('the keep-everything row names what the track holds', () => {
+  expect(mapqRow([], 'feature').radios[0]!.label).toBe('All features')
+})
 
 test('the mapping-quality row offers the facet bin edges and writes a mapq floor', () => {
   const { radios, model } = mapqRow([])

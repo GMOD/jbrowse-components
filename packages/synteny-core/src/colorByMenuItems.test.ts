@@ -155,8 +155,9 @@ test('a text column offers its unlabelled toggle and no pin', () => {
 })
 
 // The measurements sit one hop in, so a plain PAF's user meets five radios
-// rather than ten, and the row that opens them names the one in use.
-test('value modes live in one submenu whose row names the active one', () => {
+// rather than ten. The row that opens them is plain: the submenu's own radio
+// shows the one in use.
+test('value modes live in one submenu', () => {
   const top = labels(colorByMenuItems(target()))
   expect(top).not.toContain('Identity')
   expect(top).not.toContain('dN/dS')
@@ -168,7 +169,7 @@ test('value modes live in one submenu whose row names the active one', () => {
     'Syntenic depth',
   ])
   const active = labels(colorByMenuItems(target({ field: 'dnds' })))
-  expect(active).toContain(`${VALUE_MODES_LABEL} — dN/dS`)
+  expect(active).toContain(VALUE_MODES_LABEL)
 })
 
 // A measurement the loaded alignments never carried is a row that paints every
@@ -299,5 +300,4 @@ test('an attribute mode checks like a preset', () => {
   )
   const dn = valueModes(items).find(i => 'label' in i && i.label === 'dn')!
   expect((dn as { checked: boolean }).checked).toBe(true)
-  expect(labels(items)).toContain(`${VALUE_MODES_LABEL} — dn`)
 })

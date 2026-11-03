@@ -267,10 +267,10 @@ export function trackSizingItems(self: HeightModeMenuModel): MenuItem[] {
 // directly, so a subclass override of any of them lands here.
 export function featureTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
   return [
-    ...makeShowSubMenu(self.showSubmenuMenuItems()),
-    ...self.featureHeightMenuItems(),
     ...self.colorMenuItems(),
     ...groupByMenuItems(self),
+    ...makeShowSubMenu(self.showSubmenuMenuItems()),
+    ...self.featureHeightMenuItems(),
     ...editPlotMenuItems(self),
     ...featureSetRecoveryMenuItems(self),
     ...featureFilterMenuItems(self),

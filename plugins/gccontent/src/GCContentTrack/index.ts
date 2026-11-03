@@ -102,7 +102,6 @@ export default function GCContentTrackF(pm: PluginManager) {
                         self.setOp(op)
                       },
                     ),
-                    { type: 'divider' },
                     makeSizeMenu({
                       label: 'Window size',
                       title: 'Window',

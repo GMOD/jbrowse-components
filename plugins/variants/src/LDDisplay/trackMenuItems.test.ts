@@ -130,7 +130,7 @@ test('Show carries the visibility toggles, legend last, and Layout the rest', ()
     'Legend',
   ])
   expect(labels(subMenuOf(items, 'Layout')!)).toEqual([
-    'Fit to display height',
+    'Fit to track height',
     'Size cells by genomic distance',
   ])
 })

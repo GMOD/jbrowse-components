@@ -19,7 +19,7 @@ function makeModel(
   }
 }
 
-// The menu mixes radios, a divider and a checkbox; every assertion below is
+// The menu mixes radios and a checkbox; every assertion below is
 // about the settings rows and several read `checked`, so narrow to those once
 // here.
 function items(model: ReturnType<typeof makeModel>) {

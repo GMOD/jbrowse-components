@@ -50,9 +50,8 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
       model.facetByField('')
     },
   })
-  // Appended after the shared builder's dimension radios, behind a divider so a
-  // checkbox doesn't read as one of them. Synteny-specific: only an all-vs-all
-  // track has a self lane.
+  // Appended after the shared builder's dimension radios. Synteny-specific:
+  // only an all-vs-all track has a self lane.
   //
   // Offered only while mate-assembly grouping is on: the box writes the self
   // lane's keys into `facet.hidden`, which hides a lane only under its field.
@@ -62,7 +61,6 @@ export function getSyntenyGroupByMenuItem(model: GroupByModel) {
       ...resolveSubMenu(item),
       ...(model.facet?.field === 'mateAssembly'
         ? [
-            { type: 'divider' as const },
             toggleItem(
               'Hide self-alignment lane',
               model.selfLaneHidden,
@@ -107,26 +105,14 @@ interface ShowModel
 // menu, which this display also builds.
 export function getSyntenyShowMenuItems(model: ShowModel) {
   return makeShowSubMenu([
-    toggleItem('Coverage', model.showCoverage, model.setShowCoverage, {
-      helpText:
-        'Draw a histogram of how deeply each reference base is covered by ' +
-        'the aligned blocks — the depth of syntenic coverage.',
-    }),
-    toggleItem('Alignments', model.showPileup, model.setShowPileup, {
-      helpText:
-        'Uncheck to collapse the stacked alignment blocks, leaving just ' +
-        'the coverage histogram.',
-    }),
+    toggleItem('Coverage', model.showCoverage, model.setShowCoverage),
+    toggleItem('Alignments', model.showPileup, model.setShowPileup),
     // Only while grouping is in effect — for an all-vs-all track grouped by
     // mate assembly this is the default, one band per mate genome.
     ...collapseSectionsItems(model),
     ...hiddenGroupsItems(model),
     ...sectionOrderResetItems(model),
-    toggleItem('Mismatches', model.showMismatches, model.setShowMismatches, {
-      helpText:
-        'Draw per-base differences between the two assemblies, read from ' +
-        "the alignment's cs tag or CIGAR.",
-    }),
+    toggleItem('Mismatches', model.showMismatches, model.setShowMismatches),
     // Only while the coverage band is drawn. Every interbase mark lives in
     // that band — the coverage marks draw under `showCoverage`, and the
     // hit test gates on `showCoverage && showInterbase` — and this

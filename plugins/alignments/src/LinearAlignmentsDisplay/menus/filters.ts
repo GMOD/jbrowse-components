@@ -23,6 +23,7 @@ import type { FieldsPatch, Floor } from '@jbrowse/core/util/fieldPredicate'
 const MoreFiltersDialog = lazy(() => import('../dialogs/MoreFiltersDialog.tsx'))
 
 interface FiltersModel extends LayerFiltersModel {
+  featureNoun: string
   setFilterFields: (patch: FieldsPatch) => void
   /** How `filter` differs from what the track's config declares. */
   filterNarrowing: (selects?: (field: string) => boolean) => Reversible
@@ -96,7 +97,7 @@ function minMapqItem(model: FiltersModel): MenuItem {
     label: 'Mapping quality',
     value: currentKey,
     options: [
-      ['all', 'All reads'],
+      ['all', `All ${model.featureNoun}s`],
       ...thresholds.map((t): [string, string] => [
         floorKey(t),
         t.strict ? `MAPQ above ${t.min}` : `MAPQ ${t.min}+`,

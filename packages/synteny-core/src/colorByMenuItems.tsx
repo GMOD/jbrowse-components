@@ -1,5 +1,4 @@
 import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
-import { withHint } from '@jbrowse/core/ui/menuItems'
 import { solidColorItem } from '@jbrowse/display-kit/colorByMenu'
 
 import { COLOR_MODES, VALUE_MODES_LABEL } from './colorModes.ts'
@@ -181,11 +180,7 @@ export function colorByMenuItems(target: ColorByMenuTarget): MenuItem[] {
   return [
     ...radios(target, structuralRadios(target)),
     {
-      label: withHint(
-        VALUE_MODES_LABEL,
-        values.find(m => m.value === target.field)?.label,
-      ),
-      helpText: 'A number each alignment carries, on a ramp the legend labels.',
+      label: VALUE_MODES_LABEL,
       subMenu: radios(target, values),
     },
     ...(target.solidColor

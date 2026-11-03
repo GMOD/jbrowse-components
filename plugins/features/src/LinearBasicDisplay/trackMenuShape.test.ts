@@ -88,10 +88,10 @@ describe('feature track menu shape', () => {
       .map(labelOf)
 
     expect(rendered).toEqual([
-      'Show',
-      'Feature height',
       'Color by',
       'Group by',
+      'Show',
+      'Feature height',
       'Gene glyph',
       'Clear 1 highlight',
       'Filter by',

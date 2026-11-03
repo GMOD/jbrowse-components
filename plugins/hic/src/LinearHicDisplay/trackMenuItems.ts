@@ -218,14 +218,14 @@ function normalizationMenuItems(self: HicMenuSelf): MenuItem[] {
 
 export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
-    ...resolutionMenuItems(self),
-    ...makeShowSubMenu(showMenuItems(self)),
-    layoutMenuItem(self),
     fieldMenuItem(self),
     colorSchemeMenuItem(
       self,
       self.paintedColorField === 'observed' ? colorScaleMenuItems(self) : [],
     ),
     ...normalizationMenuItems(self),
+    ...resolutionMenuItems(self),
+    ...makeShowSubMenu(showMenuItems(self)),
+    layoutMenuItem(self),
   ]
 }

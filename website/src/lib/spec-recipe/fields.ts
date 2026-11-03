@@ -1666,7 +1666,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     TREE_SIDEBAR_DISPLAYS.has(displayType)
       ? {
           path: `${TRACK_MENU} → Show → Tree branch lengths (${checked(value)})`,
-          note: 'Checked, tree nodes sit at their branch lengths, as a dendrogram; unchecked, they space evenly by topology. The item is disabled until the tree is showing and carries branch lengths.',
+          note: 'Checked, tree nodes sit at their branch lengths, as a dendrogram; unchecked, they space evenly by topology. The item appears once the tree is showing and carries branch lengths.',
         }
       : undefined,
   featureHighlights: (value, { displayType, noun }) =>
@@ -1873,7 +1873,7 @@ export const trackFields: Record<string, FieldRecipe> = {
     if (displayType && TRIANGLE_DISPLAYS.has(displayType)) {
       return value === 'fit' || value === 'fixed'
         ? {
-            path: `${TRACK_MENU} → Layout → Fit to display height (${value === 'fit' ? 'checked' : 'unchecked'})`,
+            path: `${TRACK_MENU} → Layout → Fit to track height (${value === 'fit' ? 'checked' : 'unchecked'})`,
             note: 'Squashes the triangle vertically to fill the track instead of drawing square bins at its natural half-the-view-width height. Unchecked keeps square bins, which fits when the feature of interest sits nearer the diagonal than the track is tall.',
           }
         : undefined

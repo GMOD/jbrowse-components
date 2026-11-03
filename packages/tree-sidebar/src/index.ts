@@ -110,10 +110,8 @@ export {
   resetRowOrderMenuItems,
   showRowLabelsMenuItem,
   showRowSeparatorsMenuItem,
-  showTreeSidebarMenuItem,
   sortRowsHereMenuItem,
   treeSidebarShowMenuItems,
-  treeBranchLengthMenuItem,
 } from './treeMenuItems.ts'
 export { rowAxisConfigSchema } from './rowAxisConfigSchema.ts'
 export { rowAxisWithGridConfigSchema } from './rowAxisWithGridConfigSchema.ts'

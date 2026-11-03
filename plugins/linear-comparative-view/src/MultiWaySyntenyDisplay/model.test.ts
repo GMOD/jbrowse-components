@@ -491,8 +491,8 @@ test('the track menu ends with the stacked-synteny launcher under Launch', () =>
   const items = display.trackMenuItems()
   expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual([
     'Color by',
-    'Lanes',
     'Show',
+    'Lanes',
     'Advanced',
     'Launch',
   ])

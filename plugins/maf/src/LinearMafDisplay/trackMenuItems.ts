@@ -1,9 +1,6 @@
 import { lazy } from 'react'
 
-import {
-  getCoverageMenuItems,
-  interbaseIndicatorsMenuItem,
-} from '@jbrowse/alignments-core/coverageMenuItems'
+import { interbaseIndicatorsMenuItem } from '@jbrowse/alignments-core/coverageMenuItems'
 import {
   makeRadioSubMenu,
   toggleItem,
@@ -334,11 +331,10 @@ function showMenuItems(self: MafMenuSelf): MenuItem[] {
 
 export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
   return [
-    colorMenuItem(self),
     plotTypeMenuItem(self),
+    colorMenuItem(self),
     ...conservationResolutionMenuItems(self),
     ...makeShowSubMenu(showMenuItems(self)),
-    ...getCoverageMenuItems(self),
     ...rowOrderMenuItems(self, {
       arrangement: { ready: !!self.editableSources.length },
       cluster: {

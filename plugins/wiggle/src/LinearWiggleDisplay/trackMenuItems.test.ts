@@ -71,7 +71,7 @@ function itemIn(items: MenuItem[], label: string) {
 }
 
 describe('the wiggle display Clustering submenu', () => {
-  it('offers the run item, and the tree toggles sit under Show in a row mode', () => {
+  it('offers the run item, and the tree toggles join Show once a tree exists', () => {
     const { display } = makeDisplay()
     const items = display.trackMenuItems()
 
@@ -79,11 +79,17 @@ describe('the wiggle display Clustering submenu', () => {
       'Cluster rows by score...',
     ])
     expect(labels(subMenuOf(items, 'Show'))).toEqual([
-      'Tree',
-      'Tree branch lengths',
       'Row separators',
       'Row labels',
     ])
+    expect(
+      labels(
+        subMenuOf(
+          makeDisplay({ clusterTree: '(b:1,a:1);' }).display.trackMenuItems(),
+          'Show',
+        ),
+      ),
+    ).toEqual(['Tree', 'Tree branch lengths', 'Row separators', 'Row labels'])
   })
 
   it('drops the tree controls where the sources share one plot', () => {

@@ -353,13 +353,10 @@ const GENE_COLOR_FIELDS: RadioOption<string>[] = [
   {
     value: FEATURE_NAME_FIELD,
     label: 'Name',
-    helpText:
-      'Each gene by the name its label prints: its name, or its ID where it has none.',
   },
   {
     value: STRAND_FIELD,
     label: 'Strand',
-    helpText: 'Forward genes red and reverse genes blue.',
   },
 ]
 
@@ -374,8 +371,6 @@ export function geneColorMenuItems(model: MultiWayMenuModel): MenuItem[] {
       label: 'Default',
       type: 'radio',
       checked: field === undefined && model.geneSolidColor === undefined,
-      helpText:
-        "The gene color the track's config sets, goldenrod where it sets none.",
       onClick: () => {
         model.pickDefaultColor()
       },
@@ -476,7 +471,7 @@ export function multiWayTrackMenuItems(model: MultiWayMenuModel): MenuItem[] {
         { header: 'Ribbons', rows: ribbonColorMenuItems(model) },
       ],
     }),
-    lanesMenuItem(model),
     ...makeShowSubMenu(showSubMenuItems(model)),
+    lanesMenuItem(model),
   ]
 }

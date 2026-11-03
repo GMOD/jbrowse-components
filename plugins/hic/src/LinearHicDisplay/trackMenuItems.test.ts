@@ -191,10 +191,10 @@ describe('hic track menu shape', () => {
       }),
     )
     expect(items.map(labelOf)).toEqual([
-      'Show',
-      'Layout',
       'Values',
       'Color scheme',
+      'Show',
+      'Layout',
     ])
 
     expect(

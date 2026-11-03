@@ -11,6 +11,7 @@ import {
   coverageBandSlotViews,
   coverageLayerProblems,
 } from '@jbrowse/alignments-core/coverageBandConfigSchema'
+import { getCoverageMenuItems } from '@jbrowse/alignments-core/coverageMenuItems'
 import {
   ConfigurationReference,
   getConf,
@@ -1706,7 +1707,7 @@ export default function stateModelFactory(
             return [
               ...superTrackMenuItems(),
               ...buildMafTrackMenuItems(self),
-              ...editPlotMenuItems(self),
+              ...editPlotMenuItems(self, getCoverageMenuItems(self)),
               ...mafLaunchMenuItems({
                 session: getSession(self),
                 model: self,

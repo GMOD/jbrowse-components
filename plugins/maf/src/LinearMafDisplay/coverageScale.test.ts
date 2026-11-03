@@ -137,9 +137,14 @@ test('the interbase toggle greys out with the band hidden', () => {
   expect(row && 'disabled' in row && row.disabled).toBe(true)
 })
 
-test('the track menu offers the shared coverage rows', () => {
+test('the track menu offers the shared coverage rows under Advanced, as alignments does', () => {
   const display = displayWith()
-  expect(labels(display.trackMenuItems())).toEqual(
+  const advanced = display
+    .trackMenuItems()
+    .find(i => 'label' in i && i.label === 'Advanced')
+  expect(
+    labels(advanced && 'subMenu' in advanced ? resolveSubMenu(advanced) : []),
+  ).toEqual(
     expect.arrayContaining([
       `${COVERAGE_AXIS_LABEL}...`,
       'Coverage mismatch threshold',

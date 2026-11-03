@@ -210,20 +210,12 @@ export default function TriangleMatrixMixin<D extends TrianglePayload>() {
     }))
 }
 
-/** The "Fit to display height" row both triangle menus list. */
+/** The "Fit to track height" row both triangle menus list. */
 export function fitToHeightCheckboxItem(self: {
   heightMode: TriangleHeightMode
   setHeightMode: (mode: TriangleHeightMode) => void
 }): MenuItem {
-  return toggleItem(
-    'Fit to display height',
-    self.heightMode === 'fit',
-    fit => {
-      self.setHeightMode(fit ? 'fit' : 'fixed')
-    },
-    {
-      helpText:
-        'Squash the triangle vertically to fill the display height instead of drawing square cells at its natural half-width height.',
-    },
-  )
+  return toggleItem('Fit to track height', self.heightMode === 'fit', fit => {
+    self.setHeightMode(fit ? 'fit' : 'fixed')
+  })
 }

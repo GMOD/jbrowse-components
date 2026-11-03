@@ -22,24 +22,18 @@ interface BranchLengthMenuModel {
   setShowBranchLength: (arg: boolean) => void
 }
 
-// Shared "Tree branch lengths" toggle for the tree-sidebar consumers. Disabled
-// when the tree is hidden or carries no merge heights (so it's never a no-op);
-// `treeHasBranchLengths` is false when there's no tree at all, so it also covers
-// the not-yet-clustered case.
-export function treeBranchLengthMenuItem(
-  self: BranchLengthMenuModel,
-): MenuItem {
-  return toggleItem(
-    'Tree branch lengths',
-    self.showBranchLength,
-    self.setShowBranchLength,
-    {
-      disabled: !self.showTree || !self.treeHasBranchLengths,
-      disabledHelpText: self.showTree
-        ? 'This tree has no branch lengths'
-        : 'Show the tree first',
-    },
-  )
+// Shared "Tree branch lengths" toggle, there only while a shown tree carries
+// merge heights, so it is never a no-op.
+function treeBranchLengthMenuItems(self: BranchLengthMenuModel): MenuItem[] {
+  return self.showTree && self.treeHasBranchLengths
+    ? [
+        toggleItem(
+          'Tree branch lengths',
+          self.showBranchLength,
+          self.setShowBranchLength,
+        ),
+      ]
+    : []
 }
 
 interface RowLabelsMenuModel {
@@ -102,15 +96,12 @@ interface TreeSidebarMenuModel extends BranchLengthMenuModel {
   setShowTree: (arg: boolean) => void
 }
 
-// Shared "Tree" toggle. Disabled until there is a tree to show — a
-// clustering run's, or the guide phylogeny a MAF adapter supplies — so it is
-// never a no-op: with no `rowTree`, flipping `showTree` draws nothing either
-// way.
-export function showTreeSidebarMenuItem(self: TreeSidebarMenuModel): MenuItem {
-  return toggleItem(TREE_SIDEBAR_LABEL, self.showTree, self.setShowTree, {
-    disabled: !self.rowTree,
-    disabledHelpText: 'Run clustering first',
-  })
+// Shared "Tree" toggle, there only once there is a tree to show — a
+// clustering run's, or the guide phylogeny a MAF adapter supplies.
+function showTreeSidebarMenuItems(self: TreeSidebarMenuModel): MenuItem[] {
+  return self.rowTree
+    ? [toggleItem(TREE_SIDEBAR_LABEL, self.showTree, self.setShowTree)]
+    : []
 }
 
 /**
@@ -128,7 +119,7 @@ export function showTreeSidebarMenuItem(self: TreeSidebarMenuModel): MenuItem {
 export function treeSidebarShowMenuItems(
   self: TreeSidebarMenuModel,
 ): MenuItem[] {
-  return [showTreeSidebarMenuItem(self), treeBranchLengthMenuItem(self)]
+  return [...showTreeSidebarMenuItems(self), ...treeBranchLengthMenuItems(self)]
 }
 
 interface RowFocusMenuModel {
