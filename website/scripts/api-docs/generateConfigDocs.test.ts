@@ -2,6 +2,7 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
+import { agentSlotLine } from './configAgentText.ts'
 import {
   exampleObjects,
   looseTrackExample,
@@ -11,7 +12,6 @@ import { createDocProgram, extractWithComment } from './docProgram.ts'
 import { buildEnumConstantIndex } from './enumConstants.ts'
 import {
   accumulateConfig,
-  agentSlotLine,
   linkedConfigs,
   manifestPages,
   mergeSpreadSlots,

@@ -2,14 +2,6 @@ import slugify from 'slugify'
 import * as ts from 'typescript'
 
 import { escapeRegExp } from '../check-utils.ts'
-import {
-  agentPage,
-  exampleBlock,
-  firstParagraph,
-  flatCode,
-  memberLine,
-  pluginOf,
-} from './agentText.ts'
 import { colorChannelsSection, presetFieldsSection } from './colorChannels.ts'
 import { looseTrackExample, wrapAdapterExample } from './configExamples.ts'
 import {
@@ -328,7 +320,7 @@ function slotsTable(name: string, ownSlots: Item[], bases: ConfigWithHeader[]) {
 // the config's own, then each base's that a closer one does not redeclare.
 // Both renderers read these, so the website and the agent text cannot disagree
 // on which slots a page has or what each one is.
-function pageSlotGroups(
+export function pageSlotGroups(
   name: string,
   ownSlots: Item[],
   bases: ConfigWithHeader[],
@@ -369,7 +361,7 @@ export function configCategory(name: string, explicit?: string): string {
 // A display-category schema that is neither a display, by registration or by
 // naming its track, nor a base one extends is a value a display's slot holds
 // (`AlignmentsColor`).
-function pageCategory(header: ConfigHeader, links: DisplayLinkContext) {
+export function pageCategory(header: ConfigHeader, links: DisplayLinkContext) {
   const category = configCategory(header.name, header.category)
   return category === 'Display' &&
     !isBaseSchema(header, links) &&
@@ -423,7 +415,7 @@ export function extendedByMap(configs: ConfigWithHeader[], index: ConfigIndex) {
 // The track type a config is associated with: a Track config is its own track
 // type; a Display resolves through its DisplayType registration. Used to find
 // the adapters that supply it.
-function relatedTrackType(name: string, links: DisplayLinkContext) {
+export function relatedTrackType(name: string, links: DisplayLinkContext) {
   return links.adaptersByTrack.has(name) || links.displayTypesByTrack.has(name)
     ? name
     : links.displayToTrackType.get(name)
@@ -529,7 +521,7 @@ function shorthandLine(name: string, category: string, isBase: boolean) {
 }
 
 // How a union's rows are written: `bin.step` is `{ "type": "bin", "step": … }`.
-function unionNesting(name: string, slots: Item[]) {
+export function unionNesting(name: string, slots: Item[]) {
   const [type = 'type', slot = 'slot'] = slots[0]?.name.split('.') ?? []
   return `A ${name} is one of the types its rows begin with, named by its \`type\`, and takes only that type's rows: \`${type}.${slot}\` is written \`{ "type": "${type}", "${slot}": ... }\`, and a key belonging to another type is refused where the config is read.`
 }
@@ -550,7 +542,7 @@ const REGISTERED_AS: Record<string, string> = {
 
 // `displayToTrackType` covers a display the manifest does not bundle, such as
 // an example plugin's.
-function isNamedType(
+export function isNamedType(
   name: string,
   category: string,
   links: DisplayLinkContext,
@@ -924,7 +916,7 @@ type SlotType =
   | { code: string | undefined }
 
 // One slot as both renderers show it.
-interface SlotRecord {
+export interface SlotRecord {
   name: string
   type: SlotType
   liftsNumbers: boolean
@@ -977,7 +969,7 @@ export function slotRecord(item: Item, schema: string): SlotRecord {
 
 // The record's type and default as text, each renderer supplying how a
 // declared type, a link and a code span are spelled
-function slotTypeText(
+export function slotTypeText(
   record: SlotRecord,
   spell: {
     declared: (type: string) => string
@@ -1271,85 +1263,6 @@ export function missingSlotNames(
     return paged.has(slot.name) ? [] : missing
   }
   return documented.has(slot.name) ? [] : [slot.name]
-}
-
-// Where the slots of this config are written, as one plain sentence — the
-// website's slotNesting with its links and its base-schema redirect removed.
-const AGENT_SLOT_NESTING: Record<string, (name: string) => string> = {
-  Adapter: name =>
-    `Slots go inside a track's adapter: "adapter": { "type": "${name}", ... }.`,
-  Display: name =>
-    `Slots go on a display entry: "displays": [{ "type": "${name}", ... }], or in the track's displayDefaults.`,
-  Track: () =>
-    'Slots are top-level fields of the track config, beside trackId and name.',
-  Connection: () =>
-    "Slots are top-level fields of the connection's entry in connections.",
-  'Internet Account': () =>
-    "Slots are top-level fields of the account's entry in internetAccounts.",
-}
-
-export function agentSlotLine(record: SlotRecord) {
-  const type = slotTypeText(record, {
-    declared: type => type,
-    kind: name => name,
-    code: code => flatCode(code),
-  })
-  const docs = [
-    firstParagraph(record.docs),
-    record.contextVariable.length &&
-      `callback args: ${record.contextVariable.join(', ')}`,
-    record.advanced && 'advanced',
-  ]
-    .filter(Boolean)
-    .join(' — ')
-  return memberLine(record.name, type && `: ${type}`, docs)
-}
-
-export function renderAgentConfig(
-  cfg: ConfigWithHeader,
-  bases: ConfigWithHeader[],
-  links: DisplayLinkContext,
-) {
-  const { header, slots, filename } = cfg
-  const category = pageCategory(header, links)
-  const isBase = isBaseSchema(header, links)
-  const records = pageSlotGroups(header.name, slots, bases).flatMap(
-    g => g.records,
-  )
-  const trackType = relatedTrackType(header.name, links)
-  const adapters = trackType ? (links.adaptersByTrack.get(trackType) ?? []) : []
-  const displays = links.displayTypesByTrack.get(header.name) ?? []
-  const shorthand =
-    category === 'Adapter' && !isBase
-      ? (shorthandKeysByAdapter()[header.name]?.shorthandKeys ?? [])
-      : []
-  return {
-    category,
-    text: agentPage(
-      `${header.name} (${category} config, ${pluginOf(filename)})`,
-      [
-        firstParagraph(header.docs, 600),
-        isBase
-          ? `A shared base schema, not a type you write: use one of ${(links.extendedBy.get(header.name) ?? []).join(', ')}.`
-          : header.union
-            ? unionNesting(header.name, slots).replaceAll('`', '')
-            : isNamedType(header.name, category, links) &&
-              AGENT_SLOT_NESTING[category]?.(header.name),
-        shorthand.length > 0 &&
-          `Shorthand: ${shorthand.join(', ')} may replace the location slot.`,
-        trackType && trackType !== header.name && `Track type: ${trackType}.`,
-        adapters.length > 0 &&
-          category !== 'Adapter' &&
-          `Adapters: ${adapters.join(', ')}.`,
-        displays.length > 0 && `Displays: ${displays.join(', ')}.`,
-        links.modelNames.has(header.name) &&
-          `Runtime API: docs topic "model:${header.name}".`,
-        ...header.gotchas.map(g => `Note: ${firstParagraph(g, 600)}`),
-        exampleBlock(header.examples[0]?.content),
-      ],
-      [{ heading: 'Slots', lines: records.map(r => agentSlotLine(r)) }],
-    ),
-  }
 }
 
 export function linkedConfigs(byFile: Record<string, Config>) {

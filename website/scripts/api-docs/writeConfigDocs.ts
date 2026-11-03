@@ -1,3 +1,4 @@
+import { renderAgentConfig } from './configAgentText.ts'
 import { assertExamplesValidate } from './configExamples.ts'
 import { writePage } from './format.ts'
 import {
@@ -9,7 +10,6 @@ import {
   extendedByMap,
   isBaseSchema,
   linkedConfigs,
-  renderAgentConfig,
   renderConfig,
   slotsMissingDescription,
   stripNameTautology,
