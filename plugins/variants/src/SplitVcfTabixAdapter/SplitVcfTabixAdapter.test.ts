@@ -314,6 +314,15 @@ describe('files whose headers list different samples', () => {
     expect(chromLine!.split('\t').slice(9)).toEqual(['shared', 'onlyB'])
   })
 
+  test('an export across files with different samples is refused', async () => {
+    await expect(
+      makeSplit(['ctgA', 'ctgB']).getExportData(
+        [{ ...ctgBRegion, refName: 'ctgA' }, ctgBRegion],
+        'vcf',
+      ),
+    ).rejects.toThrow(/ctgA and ctgB list different samples/)
+  })
+
   test('getFeatures opens only its own contig', async () => {
     const adapter = makeSplit(['ctgA', 'ctgB'])
     const configure = jest.spyOn(adapter, 'configure')

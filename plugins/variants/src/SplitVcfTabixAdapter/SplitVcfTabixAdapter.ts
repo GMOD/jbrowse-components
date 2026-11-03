@@ -209,23 +209,29 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     if (formatType !== 'vcf') {
       return undefined
     }
-    const [firstRegion] = regions
-    const firstContig = firstRegion
-      ? await this.configure(firstRegion.refName, opts)
-      : undefined
-    const { header } = firstContig ?? (await this.anyContig(opts))
-    const exportLines = header.split('\n').filter(Boolean)
+    const contigs = []
     for (const [refName, refRegions] of Map.groupBy(regions, r => r.refName)) {
       const contig = await this.configure(refName, opts)
       if (contig) {
-        await appendVcfLines(
-          exportLines,
-          contig.vcf,
-          contig.parser,
-          refRegions,
-          opts,
-        )
+        contigs.push({ refName, refRegions, ...contig })
       }
+    }
+    const [first] = contigs
+    const sampleColumns = (parser: VcfParser) => parser.samples.join('\t')
+    const differing = first
+      ? contigs.find(
+          c => sampleColumns(c.parser) !== sampleColumns(first.parser),
+        )
+      : undefined
+    if (first && differing) {
+      throw new Error(
+        `The VCFs for ${first.refName} and ${differing.refName} list different samples, so one export cannot hold both: export each separately`,
+      )
+    }
+    const { header } = first ?? (await this.anyContig(opts))
+    const exportLines = header.split('\n').filter(Boolean)
+    for (const { vcf, parser, refRegions } of contigs) {
+      await appendVcfLines(exportLines, vcf, parser, refRegions, opts)
     }
     return exportLines.join('\n')
   }
