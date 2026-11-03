@@ -123,6 +123,8 @@ const FALLBACK_COLOR = MISCONFIGURED_ABGR
 
 const DEFAULT_MARK_ABGR = cssColorToABGR(DEFAULT_MARK_COLOR)
 
+const INVALID_COLOR_ABGR = cssColorToABGR('')
+
 /**
  * #api
  * A channel read per feature: the compiled form of a {@link FieldRef}, and
@@ -521,12 +523,13 @@ function admitLanes(
   return { count, skippedPosition }
 }
 
-interface PaintContext {
+interface LaneContext {
   table: FeatureTable
   jexl: JexlInstance | undefined
   kept: Kept
   count: number
   report: ProgressReporter | undefined
+  rowAt: (k: number) => number
 }
 
 // The categorical arm `color` and `shape` share: `out[k]` the lane value of
@@ -588,34 +591,6 @@ function paintCategories<T>(
   return [...met]
     .sort(categories.compare)
     .map(value => ({ value, entry: resolved.get(value)!.entry }))
-}
-
-// The categorical arm `color` and `colorKey` share: `out` holds each
-// instance's packed color, or with `keyed` its entry's index in the returned
-// list, which is the order of the field's keys rather than of first meeting.
-function paintColorCategories(
-  within: PaintContext,
-  ref: FieldRef | ChannelReader,
-  categories: CategoricalField,
-  out: Uint32Array,
-  keyed: boolean,
-  colorOf: (key: string) => number,
-) {
-  let resolved = 0
-  const entries = paintCategories(
-    within.table,
-    ref,
-    within.jexl,
-    categories,
-    within,
-    out,
-    key => ({ color: colorOf(key), order: resolved++ }),
-    entry => (keyed ? entry.order : entry.color),
-  )
-  if (keyed) {
-    keysToEntryOrder(out, entries, resolved, within.count)
-  }
-  return entries
 }
 
 // The BED color column a table holds, under the first of its names any row
@@ -754,10 +729,6 @@ export function withHitIndex<T extends EncodedChannels>(
   }
 }
 
-interface LaneContext extends PaintContext {
-  rowAt: (k: number) => number
-}
-
 function rootLane(walk: LaneContext, root: FeatureTable) {
   const { table, count, rowAt } = walk
   const rows = new Uint32Array(count)
@@ -811,31 +782,33 @@ function x2RefLane(walk: LaneContext, x2Locus: LocusRef | undefined) {
 }
 
 function sizeLane(walk: LaneContext, sizeEncoding: SizeEncoding | undefined) {
+  const { table, jexl, kept, count } = walk
   const sizeRef: SizeRef | undefined =
     sizeEncoding !== undefined && typeof sizeEncoding !== 'number'
       ? typeof sizeEncoding === 'string'
         ? { field: sizeEncoding }
         : sizeEncoding
       : undefined
-  return sizeRef ? sizeLaneOf(walk, sizeRef) : undefined
-}
-
-function sizeLaneOf(walk: LaneContext, sizeRef: SizeRef) {
-  const { table, jexl, kept, count } = walk
-  const size = new Float32Array(count)
-  fillNumbers(size, numberSource(table, sizeRef.field, jexl), kept, count)
-  const scale = sizeRef.scale ?? 'linear'
-  const extent = scaleExtent(size, count, scale)
-  const { domainMin, domainMax } = sizeRef
-  const sizeScale: SizeScaleTable = {
-    field: sizeRef.field,
-    scale,
-    domain: rampDomain(domainMin, domainMax, extent),
-    pinned: [domainMin !== undefined, domainMax !== undefined],
-    range: sizeRef.range ?? DEFAULT_SIZE_RANGE_PX,
-    extent,
+  let channels: { size: Float32Array; sizeScale: SizeScaleTable } | undefined
+  if (sizeRef) {
+    const size = new Float32Array(count)
+    fillNumbers(size, numberSource(table, sizeRef.field, jexl), kept, count)
+    const scale = sizeRef.scale ?? 'linear'
+    const extent = scaleExtent(size, count, scale)
+    const { domainMin, domainMax } = sizeRef
+    channels = {
+      size,
+      sizeScale: {
+        field: sizeRef.field,
+        scale,
+        domain: rampDomain(domainMin, domainMax, extent),
+        pinned: [domainMin !== undefined, domainMax !== undefined],
+        range: sizeRef.range ?? DEFAULT_SIZE_RANGE_PX,
+        extent,
+      },
+    }
   }
-  return { size, sizeScale }
+  return channels
 }
 
 function rowLane(walk: LaneContext, rowEncoding: MarkEncodingInput['row']) {
@@ -886,7 +859,7 @@ function glyphLane(
   walk: LaneContext,
   shapeEncoding: MarkEncodingInput['shape'],
 ) {
-  const { table, jexl, report, kept, count, rowAt } = walk
+  const { table, jexl, report, count, rowAt } = walk
   const glyph = new Uint8Array(count)
   let shapeScale: ShapeScaleTable | undefined
   if (typeof shapeEncoding === 'object') {
@@ -903,7 +876,7 @@ function glyphLane(
       shapeEncoding.field,
       jexl,
       shapeField,
-      { kept, count, report },
+      walk,
       glyph,
       (key): ShapeName => (key === '' ? 'circle' : shapeOf(key)),
       name => SHAPE_CODES[name],
@@ -940,36 +913,47 @@ interface YLane {
   field: string | undefined
 }
 
-type ColorEntries = ReturnType<typeof paintColorCategories>
-
-function colorLaneAsked(
-  colorEncoding: MarkColorEncoding | ChannelReader<number>,
-  wants: ColorWants,
-) {
-  return typeof colorEncoding !== 'object'
-    ? wants.color
-    : colorEncoding.scale === 'identity' || colorEncoding.scale === 'ordinal'
-      ? wants.color || wants.colorKey
-      : wants.color || wants.colorValue
-}
-
 function colorLanes(
   walk: LaneContext,
   colorEncoding: MarkColorEncoding | ChannelReader<number>,
   wants: ColorWants,
   yLane: YLane,
 ) {
-  return colorLaneAsked(colorEncoding, wants)
-    ? typeof colorEncoding !== 'object'
+  return typeof colorEncoding === 'object'
+    ? scaledColorLanes(walk, colorEncoding, wants, yLane)
+    : wants.color
       ? plainColors(walk, colorEncoding)
-      : colorEncoding.scale === 'identity'
+      : undefined
+}
+
+function scaledColorLanes(
+  walk: LaneContext,
+  colorEncoding: Exclude<MarkColorEncoding, string>,
+  wants: ColorWants,
+  yLane: YLane,
+) {
+  switch (colorEncoding.scale) {
+    case 'identity':
+      return wants.color || wants.colorKey
         ? identityColors(walk, colorEncoding, wants.colorKey)
-        : colorEncoding.scale === 'ordinal'
-          ? ordinalColors(walk, colorEncoding, wants.colorKey)
-          : colorEncoding.scale === 'threshold'
-            ? thresholdColors(walk, colorEncoding, wants, yLane)
-            : rampColors(walk, colorEncoding, wants, yLane)
-    : undefined
+        : undefined
+    case 'ordinal':
+      return wants.color || wants.colorKey
+        ? ordinalColors(walk, colorEncoding, wants.colorKey)
+        : undefined
+    case 'threshold':
+      return wants.color || wants.colorValue
+        ? thresholdColors(walk, colorEncoding, wants, yLane)
+        : undefined
+    case 'linear':
+    case 'log':
+    case 'symlog':
+      return wants.color || wants.colorValue
+        ? rampColors(walk, colorEncoding, wants, yLane)
+        : undefined
+    default:
+      return wants.color ? { color: INVALID_COLOR_ABGR } : undefined
+  }
 }
 
 function fillColor(walk: LaneContext, colorOf: RowReader<number>) {
@@ -992,19 +976,32 @@ function plainColors(
   }
 }
 
+// Paints the categories of `ref` into a lane of packed colors, or with `keyed`
+// into each instance's index in the returned entries, which are in the order of
+// the field's keys rather than of first meeting.
 function categoryColors(
   walk: LaneContext,
   ref: FieldRef,
   categories: CategoricalField,
   keyed: boolean,
   colorOf: (key: string) => number,
-  scaleOf: (entries: ColorEntries) => ColorScaleTable,
 ) {
   const lane = new Uint32Array(walk.count)
-  const scale = scaleOf(
-    paintColorCategories(walk, ref, categories, lane, keyed, colorOf),
+  let resolved = 0
+  const entries = paintCategories(
+    walk.table,
+    ref,
+    walk.jexl,
+    categories,
+    walk,
+    lane,
+    key => ({ color: colorOf(key), order: resolved++ }),
+    entry => (keyed ? entry.order : entry.color),
   )
-  return keyed ? { colorKey: lane, scale } : { color: lane, scale }
+  if (keyed) {
+    keysToEntryOrder(lane, entries, resolved, walk.count)
+  }
+  return { entries, channel: keyed ? { colorKey: lane } : { color: lane } }
 }
 
 function identityColors(
@@ -1012,40 +1009,31 @@ function identityColors(
   identity: Extract<MarkColorEncoding, { scale: 'identity' }>,
   keyed: boolean,
 ) {
-  const { table, jexl, kept, count } = walk
   const { field, labelField } = identity
-  const colorRef = field ?? bedColorFieldOf(table)
+  const colorRef = field ?? bedColorFieldOf(walk.table)
   const categories = field === undefined ? ownColorField() : cssColorField()
-  return categoryColors(
+  const { entries, channel } = categoryColors(
     walk,
     colorRef,
     categories,
     keyed,
     key => (key === '' ? DEFAULT_MARK_ABGR : cssColorToABGR(key)),
-    entries => {
-      const labels = labelField
-        ? colorLabels(
-            table,
-            colorRef,
-            labelField,
-            categories,
-            { kept, count },
-            jexl,
-          )
-        : undefined
-      return {
-        kind: 'identity',
-        field: '',
-        domain: [],
-        entries: entries.map(e => {
-          const named = labels?.get(e.value)
-          return named
-            ? { value: e.value, color: e.entry.color, labels: [...named] }
-            : { value: e.value, color: e.entry.color }
-        }),
-      }
-    },
   )
+  const labels = labelField
+    ? colorLabels(walk.table, colorRef, labelField, categories, walk, walk.jexl)
+    : undefined
+  const scale: ColorScaleTable = {
+    kind: 'identity',
+    field: '',
+    domain: [],
+    entries: entries.map(e => {
+      const named = labels?.get(e.value)
+      return named
+        ? { value: e.value, color: e.entry.color, labels: [...named] }
+        : { value: e.value, color: e.entry.color }
+    }),
+  }
+  return { ...channel, scale }
 }
 
 function ordinalColors(
@@ -1057,21 +1045,22 @@ function ordinalColors(
     domain: ordinal.domain?.map(String),
     range: ordinal.range,
   })
-  return categoryColors(
+  const { entries, channel } = categoryColors(
     walk,
     ordinal.field,
     colorField,
     keyed,
     key => cssColorToABGR(colorField.color(key)),
-    entries => ({
-      kind: 'categorical',
-      field: ordinal.field,
-      domain: [...colorField.domain],
-      ...(ordinal.range ? { range: [...ordinal.range] } : {}),
-      ...(keysAreNumeric(entries) ? { numericKeys: true } : {}),
-      entries: entries.map(e => ({ value: e.value, color: e.entry.color })),
-    }),
   )
+  const scale: ColorScaleTable = {
+    kind: 'categorical',
+    field: ordinal.field,
+    domain: [...colorField.domain],
+    ...(ordinal.range ? { range: [...ordinal.range] } : {}),
+    ...(keysAreNumeric(entries) ? { numericKeys: true } : {}),
+    entries: entries.map(e => ({ value: e.value, color: e.entry.color })),
+  }
+  return { ...channel, scale }
 }
 
 // Which side of the wire a quantitative color resolves on is the caller's
@@ -1096,21 +1085,6 @@ function quantitativeLanes(
   return { aliasedY, colorValue, color }
 }
 
-function quantitativeResult(
-  color: Uint32Array | undefined,
-  colorValue: Float32Array | undefined,
-  scale: ColorScaleTable,
-) {
-  return {
-    ...(color ? { color } : undefined),
-    ...(colorValue ? { colorValue } : undefined),
-    scale,
-  }
-}
-
-// The raw values, where they are kept: a ramp's always, a threshold's where
-// the caller resolves it; the encoder resolves a threshold into packed colors
-// only for a caller naming `color` alone.
 function readRawValues(
   walk: LaneContext,
   read: RowReader,
@@ -1152,11 +1126,11 @@ function rampColors(
   const met = aliasedY
     ? { missingMet: false, notNumberMet: false }
     : readRawValues(walk, read, values)
-  return quantitativeResult(
-    color,
-    colorValue,
-    rampScale(ramp, values, count, color, met),
-  )
+  return {
+    ...(color ? { color } : undefined),
+    ...(colorValue ? { colorValue } : undefined),
+    scale: rampScale(ramp, values, count, color, met),
+  }
 }
 
 function thresholdColors(
@@ -1202,14 +1176,19 @@ function thresholdColors(
       }
     }
   }
-  return quantitativeResult(color, colorValue, {
+  const scale: ColorScaleTable = {
     kind: 'threshold',
     field: threshold.field,
     domain: cuts,
     ...(threshold.range ? { range: [...threshold.range] } : {}),
     ...(missingMet ? { missing: true } : {}),
     ...(notNumberMet ? { notNumber: true } : {}),
-  })
+  }
+  return {
+    ...(color ? { color } : undefined),
+    ...(colorValue ? { colorValue } : undefined),
+    scale,
+  }
 }
 
 /**

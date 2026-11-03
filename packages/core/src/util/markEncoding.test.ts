@@ -1602,6 +1602,21 @@ test('an identity color asked for as a color lane paints each feature its own', 
   ])
 })
 
+test.each(['{"field":"score"}', '{"field":"score","scale":"sqrt"}'])(
+  'a color object with no known scale paints the invalid-color magenta and has no scale: %s',
+  json => {
+    const r = encodeFeatures(
+      [feature(0, { score: 1 }), feature(1, { score: 2 })],
+      { color: JSON.parse(json) },
+      ['color', 'colorValue'],
+      { jexl },
+    )
+    expect(r.color).toBe(0xffff00ff)
+    expect(r.colorValue).toBeUndefined()
+    expect(r.scale).toBeUndefined()
+  },
+)
+
 test('a jexl color that reads nothing is evaluated once', () => {
   let evals = 0
   const counting = {
