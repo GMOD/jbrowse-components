@@ -26,10 +26,18 @@ export function exportedMarkFeatures({
 }) {
   const kept = runTransforms(features, filterSteps, jexl)
   const shown = Array.from({ length: kept.length }, (_, i) => kept.row(i))
-  if (facetField === undefined || hidden.size === 0) {
-    return shown
-  }
+  return facetField === undefined || hidden.size === 0
+    ? shown
+    : withoutHiddenSections(shown, facetField, hidden, jexl)
+}
+
+function withoutHiddenSections(
+  features: Feature[],
+  facetField: string,
+  hidden: ReadonlySet<string>,
+  jexl: JexlInstance,
+) {
   const read = fieldReader(facetField, jexl)
   const { key } = categoricalField(facetField)
-  return shown.filter(f => !hidden.has(key(read(f))))
+  return features.filter(f => !hidden.has(key(read(f))))
 }

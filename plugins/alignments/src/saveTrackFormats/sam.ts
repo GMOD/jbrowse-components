@@ -20,24 +20,28 @@ function numberType(values: number[]) {
 // one the value implies: text is Z (an A tag comes back as Z, since a one-letter
 // Z such as RG:Z:1 must stay Z), a whole number i, any other number f, and an
 // array B over the same two. A value of no SAM type is left out.
-function samTag(key: string, value: unknown) {
-  if (!SAM_TAG.test(key)) {
-    return undefined
-  }
-  if (typeof value === 'string') {
-    return `${key}:Z:${value.replaceAll(/[\t\r\n]/g, ' ')}`
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return `${key}:${numberType([value])}:${value}`
-  }
-  if (
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value)
+}
+
+function isNumberArray(value: unknown): value is number[] {
+  return (
     Array.isArray(value) &&
     value.length > 0 &&
-    value.every(v => typeof v === 'number' && Number.isFinite(v))
-  ) {
-    return `${key}:B:${numberType(value)},${value.join(',')}`
-  }
-  return undefined
+    value.every((v: unknown) => isFiniteNumber(v))
+  )
+}
+
+function samTag(key: string, value: unknown) {
+  return !SAM_TAG.test(key)
+    ? undefined
+    : typeof value === 'string'
+      ? `${key}:Z:${value.replaceAll(/[\t\r\n]/g, ' ')}`
+      : isFiniteNumber(value)
+        ? `${key}:${numberType([value])}:${value}`
+        : isNumberArray(value)
+          ? `${key}:B:${numberType(value)},${value.join(',')}`
+          : undefined
 }
 
 function samTags(feature: Feature) {
