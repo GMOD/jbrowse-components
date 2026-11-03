@@ -76,6 +76,74 @@ function ucscFetch(url: string, body: string) {
     : browserUcscFetch(url, body)
 }
 
+// The proxy's refusal says how long until it would answer. One that clears
+// this soon is the shared key's one-query-per-15-s slot, taken by someone else,
+// and worth waiting out; a longer one is a spent share or day, which waiting in
+// a dialog will not fix.
+const SLOT_WAIT_MAX_SECONDS = 30
+const TOTAL_WAIT_MAX_SECONDS = 120
+
+function slotWaitSeconds({ status, text }: { status: number; text: string }) {
+  let seconds: number | undefined
+  if (status === 429) {
+    try {
+      const parsed: unknown = JSON.parse(text)
+      const retry =
+        parsed !== null &&
+        typeof parsed === 'object' &&
+        'retryAfterSeconds' in parsed
+          ? parsed.retryAfterSeconds
+          : undefined
+      seconds =
+        typeof retry === 'number' && retry > 0 && retry <= SLOT_WAIT_MAX_SECONDS
+          ? retry
+          : undefined
+    } catch {
+      // not the proxy's JSON refusal, so there is nothing to wait for
+    }
+  }
+  return seconds
+}
+
+function sleep(ms: number, signal?: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(resolve, ms)
+    signal?.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer)
+        reject(new Error('BLAT search cancelled'))
+      },
+      { once: true },
+    )
+  })
+}
+
+async function fetchWaitingForSlot({
+  urlBase,
+  body,
+  onWait,
+  signal,
+}: {
+  urlBase: string
+  body: string
+  onWait?: (seconds: number | undefined) => void
+  signal?: AbortSignal
+}) {
+  let waited = 0
+  let response = await ucscFetch(urlBase, body)
+  let wait = slotWaitSeconds(response)
+  while (wait !== undefined && waited + wait <= TOTAL_WAIT_MAX_SECONDS) {
+    onWait?.(wait)
+    await sleep(wait * 1000, signal)
+    waited += wait
+    response = await ucscFetch(urlBase, body)
+    wait = slotWaitSeconds(response)
+  }
+  onWait?.(undefined)
+  return response
+}
+
 // Runs one UCSC query, routing through the desktop main process (to bypass the
 // renderer's CORS restriction and reuse a solved-challenge cookie) or a direct
 // browser fetch that expects a CORS-enabled proxy. The mode-specific pieces are
@@ -86,17 +154,22 @@ function ucscFetch(url: string, body: string) {
 // client can reach UCSC itself, so a proxy that is out of budget or down
 // degrades to the direct path (and its CAPTCHA) instead of failing. A browser
 // has nowhere to fall back to, and an explicitly chosen server is not
-// second-guessed.
+// second-guessed. Without a fallback, a query refused only because the shared
+// key's slot is busy waits it out, reporting each wait through `onWait`.
 export async function runUcscFetch<T>({
   urlBase,
   fallbackUrl,
   body,
   parse,
+  onWait,
+  signal,
 }: {
   urlBase: string
   fallbackUrl?: string
   body: string
   parse: (text: string) => T
+  onWait?: (seconds: number | undefined) => void
+  signal?: AbortSignal
 }) {
   // an unreachable proxy throws rather than answering, and that is exactly the
   // case the fallback exists for — but with no fallback the throw carries the
@@ -107,7 +180,7 @@ export async function runUcscFetch<T>({
         status: 0,
         text: '',
       }))
-    : await ucscFetch(urlBase, body)
+    : await fetchWaitingForSlot({ urlBase, body, onWait, signal })
   const { ok, status, text } =
     fallbackUrl && !first.ok && worthRetryingDirect(first.status)
       ? await ucscFetch(fallbackUrl, body)
@@ -159,6 +232,16 @@ export function useUcscQuery({
   // a query that ran fine and matched nothing is an answer, not a failure, so
   // it stays out of `error` (which renders as a red ErrorMessage)
   const [notFound, setNotFound] = useState('')
+  // seconds until a query waiting out the shared key's slot retries
+  const [slotWait, setSlotWait] = useState<number>()
+  // the query in flight, so closing the dialog stops it rather than letting it
+  // land a track after the dialog is gone
+  const [pending, setPending] = useState<AbortController>()
+
+  function close() {
+    pending?.abort()
+    handleClose()
+  }
 
   // The shared proxy overwrites whatever apiKey a client sends with its own, so
   // a key typed here only means anything against UCSC directly. On desktop we
@@ -183,9 +266,11 @@ export function useUcscQuery({
   const fallbackUrl =
     isElectron && urlBase === defaultUrl ? directUrl : undefined
 
-  // `fetchResult` returns the hit list (which the results widget lists) and,
-  // optionally, how to display it — a BLAT query returns a SAM alignments track
-  // rather than the default feature track.
+  // `fetchResult` is handed the fetch to run its query with, already pointed at
+  // the server, the fallback and this query's cancellation, and returns the hit
+  // list (which the results widget lists) and, optionally, how to display it —
+  // a BLAT query returns a SAM alignments track rather than the default feature
+  // track.
   async function runQuery({
     fetchResult,
     trackIdPrefix,
@@ -194,7 +279,7 @@ export function useUcscQuery({
     resultNoun,
     queries,
   }: {
-    fetchResult: () => Promise<{
+    fetchResult: (fetchUcsc: FetchUcsc) => Promise<{
       features: SimpleFeatureSerialized[]
       trackConf?: ResultTrackConf
     }>
@@ -205,35 +290,54 @@ export function useUcscQuery({
     resultNoun?: 'hit' | 'product'
     queries?: string[]
   }) {
+    const controller = new AbortController()
+    const { signal } = controller
+    setPending(controller)
     setLoading(true)
     setError(undefined)
     setChallenged(false)
     setNotFound('')
     try {
-      const { features, trackConf } = await fetchResult()
-      if (features.length) {
-        await addResultTrack({
-          session,
-          assembly,
-          features,
-          trackIdPrefix,
-          trackName,
-          trackConf,
-          resultNoun,
-          queries,
-        })
-        handleClose()
-      } else {
-        setNotFound(emptyMessage)
+      const { features, trackConf } = await fetchResult(request =>
+        runUcscFetch({
+          ...request,
+          urlBase,
+          fallbackUrl,
+          signal,
+          onWait: seconds => {
+            setSlotWait(seconds)
+          },
+        }),
+      )
+      if (!signal.aborted) {
+        if (features.length) {
+          await addResultTrack({
+            session,
+            assembly,
+            features,
+            trackIdPrefix,
+            trackName,
+            trackConf,
+            resultNoun,
+            queries,
+          })
+          handleClose()
+        } else {
+          setNotFound(emptyMessage)
+        }
       }
     } catch (e) {
-      console.error(e)
-      if (e instanceof BlatChallengeError) {
-        setChallenged(true)
+      if (!signal.aborted) {
+        console.error(e)
+        if (e instanceof BlatChallengeError) {
+          setChallenged(true)
+        }
+        setError(e)
       }
-      setError(e)
     } finally {
       setLoading(false)
+      setSlotWait(undefined)
+      setPending(undefined)
     }
   }
 
@@ -264,13 +368,20 @@ export function useUcscQuery({
     challenged,
     error,
     notFound,
+    slotWait,
     setDb,
     setUrlBase,
     changeApiKey,
     changeAssembly,
     runQuery,
     solveChallenge,
+    close,
   }
 }
 
 export type UcscQuery = ReturnType<typeof useUcscQuery>
+
+export type FetchUcsc = <T>(request: {
+  body: string
+  parse: (text: string) => T
+}) => Promise<T>

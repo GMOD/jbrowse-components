@@ -22,7 +22,7 @@ import {
 } from './blatQuery.ts'
 import { parseQuerySequences, pslToSam } from './pslToSam.ts'
 import { canRenderAlignments, viewedAssembly } from './ucscShared.ts'
-import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
+import { useUcscQuery } from './useUcscQuery.ts'
 
 import type { UcscHost } from './ucscShared.ts'
 
@@ -45,7 +45,7 @@ const BlatDialog = observer(function BlatDialog({
     directUrl: UCSC_BLAT_URL,
     initialAssembly,
   })
-  const { db, urlBase, fallbackUrl, apiKey } = query
+  const { db, apiKey } = query
   const [seq, setSeq] = useState(initialSequence)
 
   const records = parseFastaRecords(seq)
@@ -64,10 +64,8 @@ const BlatDialog = observer(function BlatDialog({
       // alignments track draws the hit's exon-like blocks, its indels, the
       // unaligned ends of the query as soft clips, and — since the submitted
       // sequence is right here — its mismatches against the reference.
-      fetchResult: async () => {
-        const rows = await runUcscFetch({
-          urlBase,
-          fallbackUrl,
+      fetchResult: async fetchUcsc => {
+        const rows = await fetchUcsc({
           body: buildBlatBody({ db, seq: seq.trim(), apiKey }),
           parse: parseBlatResponse,
         })
@@ -114,7 +112,7 @@ const BlatDialog = observer(function BlatDialog({
       fullWidth
       title="BLAT search (UCSC)"
       onClose={() => {
-        handleClose()
+        query.close()
       }}
     >
       <DialogContent
@@ -149,7 +147,7 @@ const BlatDialog = observer(function BlatDialog({
         submitDisabled={!submittable || !db}
         onSubmit={() => void handleSubmit()}
         onCancel={() => {
-          handleClose()
+          query.close()
         }}
       />
     </Dialog>

@@ -140,3 +140,79 @@ test('reports the proxy error message when there is no fallback', async () => {
     runUcscFetch({ urlBase: PROXY, body: BODY, parse: identity }),
   ).rejects.toThrow(/shared BLAT budget for today is spent/)
 })
+
+describe('waiting out the shared key slot', () => {
+  function busy(retryAfterSeconds: number): [string, { status: number }] {
+    return [
+      JSON.stringify({ error: 'one query in flight', retryAfterSeconds }),
+      { status: 429 },
+    ]
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  test('waits out a busy slot and retries, saying how long it waits', async () => {
+    fetchMock.mockResponses(busy(5), ['{"ok":1}', { status: 200 }])
+    const waits: (number | undefined)[] = []
+
+    const result = runUcscFetch({
+      urlBase: PROXY,
+      body: BODY,
+      parse: identity,
+      onWait: seconds => {
+        waits.push(seconds)
+      },
+    })
+    await jest.advanceTimersByTimeAsync(5000)
+
+    expect(await result).toBe('{"ok":1}')
+    expect(waits).toEqual([5, undefined])
+    expect(urlsCalled()).toEqual([PROXY, PROXY])
+  })
+
+  test('does not wait on a refusal that lasts longer than a slot', async () => {
+    fetchMock.mockResponses(busy(3540))
+
+    await expect(
+      runUcscFetch({ urlBase: PROXY, body: BODY, parse: identity }),
+    ).rejects.toThrow(/one query in flight/)
+    expect(urlsCalled()).toEqual([PROXY])
+  })
+
+  test('gives up once it has waited two minutes', async () => {
+    fetchMock.mockResponse(...busy(30))
+
+    const failure = runUcscFetch({
+      urlBase: PROXY,
+      body: BODY,
+      parse: identity,
+    }).catch((e: unknown) => e)
+    await jest.advanceTimersByTimeAsync(120_000)
+
+    expect(String(await failure)).toMatch(/one query in flight/)
+    expect(urlsCalled()).toHaveLength(5)
+  })
+
+  test('stops waiting when the search is cancelled', async () => {
+    fetchMock.mockResponses(busy(10), ['{"ok":1}', { status: 200 }])
+    const controller = new AbortController()
+
+    const failure = runUcscFetch({
+      urlBase: PROXY,
+      body: BODY,
+      parse: identity,
+      signal: controller.signal,
+    }).catch((e: unknown) => e)
+    await jest.advanceTimersByTimeAsync(1000)
+    controller.abort()
+
+    expect(String(await failure)).toMatch(/cancelled/)
+    expect(urlsCalled()).toEqual([PROXY])
+  })
+})

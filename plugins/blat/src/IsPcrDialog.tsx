@@ -19,7 +19,7 @@ import {
 } from './ispcrQuery.ts'
 import { ispcrToSam } from './ispcrToSam.ts'
 import { canRenderAlignments, viewedAssembly } from './ucscShared.ts'
-import { runUcscFetch, useUcscQuery } from './useUcscQuery.ts'
+import { useUcscQuery } from './useUcscQuery.ts'
 
 import type { UcscHost } from './ucscShared.ts'
 
@@ -41,7 +41,7 @@ const IsPcrDialog = observer(function IsPcrDialog({
     directUrl: UCSC_ISPCR_URL,
     initialAssembly: viewedAssembly(session),
   })
-  const { db, urlBase, fallbackUrl, apiKey } = query
+  const { db, apiKey } = query
   const [forwardPrimer, setForwardPrimer] = useState('')
   const [reversePrimer, setReversePrimer] = useState('')
   // NumberTextField emits undefined for an empty or out-of-bounds entry, which
@@ -67,10 +67,8 @@ const IsPcrDialog = observer(function IsPcrDialog({
         // template draws as a mismatch rather than being assumed away. The size,
         // which is the band on a gel, is TLEN and is reported by the results panel
         // — the pair glyph itself carries no size label.
-        fetchResult: async () => {
-          const products = await runUcscFetch({
-            urlBase,
-            fallbackUrl,
+        fetchResult: async fetchUcsc => {
+          const products = await fetchUcsc({
             body: buildIsPcrBody({
               db,
               forwardPrimer: fwd,
@@ -118,7 +116,7 @@ const IsPcrDialog = observer(function IsPcrDialog({
       fullWidth
       title="In-silico PCR (UCSC)"
       onClose={() => {
-        handleClose()
+        query.close()
       }}
     >
       <DialogContent
@@ -180,7 +178,7 @@ const IsPcrDialog = observer(function IsPcrDialog({
         submitDisabled={tooShort || maxProductSize === undefined || !db}
         onSubmit={() => void handleSubmit()}
         onCancel={() => {
-          handleClose()
+          query.close()
         }}
       />
     </Dialog>

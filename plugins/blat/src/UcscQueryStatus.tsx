@@ -13,9 +13,14 @@ const UcscQueryStatus = observer(function UcscQueryStatus({
 }: {
   query: UcscQuery
 }) {
-  const { error, challenged, notFound } = query
+  const { error, challenged, notFound, slotWait } = query
   return (
     <>
+      {slotWait ? (
+        <Typography color="textSecondary">
+          {`Another search is using the shared BLAT server, which takes one query at a time. Retrying in ${slotWait} s…`}
+        </Typography>
+      ) : null}
       {notFound ? (
         <Typography color="textSecondary">{notFound}</Typography>
       ) : null}
