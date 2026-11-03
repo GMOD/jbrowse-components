@@ -18,7 +18,7 @@ function lastSegment(path: string) {
 // included, and every caller here either shows the name to someone or matches
 // an extension against the end of it. Stripped for a URI only — `?` is a legal
 // character in a POSIX filename, so a local path keeps whatever it was given.
-function withoutQuery(uri: string) {
+export function withoutQuery(uri: string) {
   return uri.split(/[?#]/, 1)[0]!
 }
 

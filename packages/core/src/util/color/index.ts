@@ -97,11 +97,6 @@ export {
   namedColorToHex,
 } from './cssColorsLevel4.ts'
 
-// The (lightness, chroma) tiers randomColor picks between, in OKLCH. Values are
-// in the band a hand-built categorical palette occupies — bright enough to tell
-// apart, dark enough that black text over one still reads, and never near
-// white/black. The three differ enough to separate two neighbouring hues, and
-// little enough that no tier reads as "the faded ones".
 // What a value-less feature is painted. Neutral and unsaturated on purpose: it
 // has to read as "not in a category" beside a palette whose every member is
 // equally light and equally colorful, so it cannot be one more hue.
@@ -111,6 +106,11 @@ export const NO_CATEGORY_COLOR = '#afafaf'
 // misconfiguration surfaces rather than passing for the no-category grey.
 export const MISCONFIGURED_COLOR = '#808080'
 
+// The (lightness, chroma) tiers randomColor picks between, in OKLCH. Values are
+// in the band a hand-built categorical palette occupies — bright enough to tell
+// apart, dark enough that black text over one still reads, and never near
+// white/black. The three differ enough to separate two neighbouring hues, and
+// little enough that no tier reads as "the faded ones".
 const RANDOM_COLOR_TIERS = [
   { lightness: 0.66, chroma: 0.15 },
   { lightness: 0.56, chroma: 0.14 },

@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { ResizeHandle } from '@jbrowse/core/ui'
 import { alpha } from '@jbrowse/core/ui/palette'
+import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { TrackOverlayPortal } from '@jbrowse/display-ui'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
@@ -153,12 +154,8 @@ const TreeSidebar = observer(function TreeSidebar({
     if (!spatialIndex) {
       return undefined
     }
-    const rect = event.currentTarget.getBoundingClientRect()
-    return pickTreeNode(
-      spatialIndex,
-      event.clientX - rect.left,
-      event.clientY - rect.top + scrollTop,
-    )
+    const { x, y } = eventPoint(event)
+    return pickTreeNode(spatialIndex, x, y + scrollTop)
   }
 
   // Hover a node and answer with its leaf names, which the caller also needs.

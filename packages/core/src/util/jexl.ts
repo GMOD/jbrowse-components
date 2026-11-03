@@ -7,7 +7,7 @@ import { jexlFeatureProxy, unwrapFeature } from './simpleFeature.ts'
 
 import type { Feature } from './simpleFeature.ts'
 
-export default function JexlF(/* config?: any*/) {
+export default function JexlF() {
   const j = new Jexl()
 
   // someday will make sure all of configs callbacks are added in, including

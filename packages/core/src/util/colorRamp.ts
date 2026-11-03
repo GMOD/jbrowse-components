@@ -283,9 +283,11 @@ const luts = new Map<string, Uint8Array>()
  * more often than its ramp.
  */
 export function rampLutOf(ramp: RampDeclaration): Uint8Array {
-  const key = [ramp.scheme ?? '', ramp.range?.join(' ') ?? '', !!ramp.reverse]
-    .map(String)
-    .join('|')
+  const key = [
+    ramp.scheme ?? '',
+    ramp.range?.join(' ') ?? '',
+    !!ramp.reverse,
+  ].join('|')
   let lut = luts.get(key)
   if (!lut) {
     if (luts.size >= MAX_RAMP_LUTS) {

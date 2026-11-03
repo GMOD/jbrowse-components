@@ -3,7 +3,7 @@
 // it started in and not whatever the cursor is now over. For the ordinary case —
 // a handler measuring against its own element — see `eventPoint`.
 export function getRelativeX(
-  event: { clientX: number; target: EventTarget | null },
+  event: { clientX: number },
   element: HTMLElement | null,
 ) {
   return event.clientX - (element?.getBoundingClientRect().left ?? 0)

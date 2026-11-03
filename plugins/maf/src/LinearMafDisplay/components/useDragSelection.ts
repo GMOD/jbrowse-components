@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { isFromPortal } from '@jbrowse/core/util/pressOwner'
 
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
@@ -26,11 +27,6 @@ interface DragState {
   drag?: DragRect
   isDragging: boolean
   showSelectionBox: boolean
-}
-
-function relativeXY(e: React.MouseEvent) {
-  const rect = e.currentTarget.getBoundingClientRect()
-  return { x: e.clientX - rect.left, y: e.clientY - rect.top }
 }
 
 export function useDragSelection(
@@ -82,7 +78,7 @@ export function useDragSelection(
 
   function handleMouseDown(e: React.MouseEvent) {
     if (!leavesPressToView(e)) {
-      const { x, y } = relativeXY(e)
+      const { x, y } = eventPoint(e)
       // the view's range select listens for mousedown on the same container
       e.stopPropagation()
       if (x >= dataLeft) {
@@ -103,7 +99,7 @@ export function useDragSelection(
     // `getBoundingClientRect`. The updater re-tests its own state and returns
     // `s` unchanged without a drag, which React bails out of.
     if (state.isDragging) {
-      const { x, y } = relativeXY(e)
+      const { x, y } = eventPoint(e)
       setState(s =>
         s.isDragging && s.drag
           ? { ...s, drag: { ...s.drag, endX: x, endY: y } }
@@ -118,7 +114,7 @@ export function useDragSelection(
     const { drag, isDragging } = state
     const draggedFar = isDragging && drag !== undefined && movedFarEnough(drag)
     if (draggedFar) {
-      const { x, y } = relativeXY(e)
+      const { x, y } = eventPoint(e)
       setContextCoord({
         anchor: { clientX: e.clientX, clientY: e.clientY },
         startX: drag.startX,
@@ -130,7 +126,7 @@ export function useDragSelection(
     } else if (isDragging) {
       // Only a release that this display saw the press for is a click:
       // `handleMouseDown` bails on resize handles and the tree sidebar.
-      const { x, y } = relativeXY(e)
+      const { x, y } = eventPoint(e)
       onClick(x, y)
       setState(s => ({
         ...s,

@@ -1,3 +1,5 @@
+import { withoutQuery } from './getFileName.ts'
+
 export interface MakeAssemblyOptions {
   /** URL to a FASTA (`.fa`/`.fasta`, optionally bgzipped) or a `.2bit` file */
   fastaUri: string
@@ -12,18 +14,14 @@ export interface MakeAssemblyOptions {
 // sequence extensions core's own guesser recognizes (plugins/sequence)
 const SEQUENCE_EXT_RE = /\.(fa|fasta|fas|fna|mfa|2bit)(\.b?gz)?$/i
 
-function cleanUri(uri: string) {
-  return uri.split(/[?#]/)[0] ?? uri
-}
-
 /** true when a string names a sequence file (vs. a hub name like `hg38`) */
 export function isSequenceUri(uri: string) {
-  return SEQUENCE_EXT_RE.test(cleanUri(uri))
+  return SEQUENCE_EXT_RE.test(withoutQuery(uri))
 }
 
 /** strip path and sequence extension: `.../hg19.fa.gz` -> `hg19` */
 export function assemblyNameFromUri(uri: string) {
-  const file = cleanUri(uri).split('/').at(-1) ?? uri
+  const file = withoutQuery(uri).split('/').at(-1) ?? uri
   return file.replace(SEQUENCE_EXT_RE, '')
 }
 
