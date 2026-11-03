@@ -245,6 +245,23 @@ describe('the Group by dialog applies a plot', () => {
     expect(d.categoricalColorField?.color('lncRNA')).toBe('red')
   })
 
+  it('applies what the dialog previewed after parking the field it leaves', () => {
+    const d = display()
+    d.applyPlot({
+      encoding: {
+        color: {
+          field: 'biotype',
+          scale: { domain: ['lncRNA'], range: ['red'] },
+        },
+      },
+    })
+    d.applyGroupBy('strand', true)
+    const preview = d.groupByPlot('biotype', true)
+    d.applyGroupBy('biotype', true)
+    expect(d.plot.encoding).toEqual(preview.encoding)
+    expect(d.categoricalColorField?.color('lncRNA')).toBe('red')
+  })
+
   it('names no color domain from the facet on either route', () => {
     const viaDialog = display()
     const viaText = display()

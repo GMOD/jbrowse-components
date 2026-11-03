@@ -1712,10 +1712,11 @@ export default function baseStateModelFactory(
        */
       applyGroupBy(field: string | undefined, colorByGroup: boolean) {
         const color = self.groupByColor(field, colorByGroup)
+        const plot = self.groupByPlot(field, colorByGroup)
         if (color) {
           self.parkColor('color', self.writtenColor, color)
         }
-        self.applyPlot(self.groupByPlot(field, colorByGroup))
+        self.applyPlot(plot)
       },
       /**
        * #action
