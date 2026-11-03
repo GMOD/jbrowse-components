@@ -38,7 +38,7 @@ export function fitDrops(
   // above 0 means at least one name went.
   decimated: LabelRoomFactors | undefined,
   // A pile folded onto one row keeps one name at any factor.
-  foldedNames = false,
+  foldedNames: boolean,
 ): FitDrops {
   const names = !showLabels
     ? 'none'

@@ -53,9 +53,10 @@ not any display-mode setting. The chain:
   so a hotspot keeps the top rows a wide feature would otherwise take, and two
   piles stack instead of printing their names over each other. The leader's
   room is measured from the pile's edge. A pinned mark, or one carrying a
-  subfeature label, never folds. Each folded mark carries `pileSize`, which the
-  hover tooltip reads, and `foldedName` where the fold left its name undrawn,
-  which the fit note reads.
+  subfeature label, never folds; a pile whose marks carry only descriptions
+  folds like an unlabeled one. Each mark of a named pile carries `pileSize`,
+  which the hover tooltip reads, and `foldedName` where the fold left its name
+  undrawn, which the fit note reads.
 
   Without it, 28 insertions at one site in a 60 px variant track stacked 836 px
   deep on every labeled rung, the ladder fell to `bodies`, and every name in the

@@ -7,6 +7,7 @@ import type {
   FeatureDataResult,
   FlatbushItem,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { NamedPile } from './densityCollapse.ts'
 import type { FeatureFacet } from './facet.ts'
 
 function scaleFloat32(arr: Float32Array, multiplier: number) {
@@ -200,6 +201,7 @@ export function applyLayoutToRegion(
   droppedNameIds: ReadonlySet<string>,
   droppedDescriptionIds: ReadonlySet<string>,
   densityFadeIds: ReadonlySet<string>,
+  pileByMemberId: ReadonlyMap<string, NamedPile>,
 ) {
   for (let i = 0; i < data.rectDensityFade.length; i++) {
     const featureId = data.flatbushItems[data.rectFeatureIndices[i]!]!.featureId
@@ -209,6 +211,13 @@ export function applyLayoutToRegion(
   for (const item of data.flatbushItems) {
     item.topPx = 0
     item.bottomPx = layoutHeights.get(item.featureId)!
+    const pile = pileByMemberId.get(item.featureId)
+    if (pile) {
+      item.pileSize = pile.memberIds.length
+      if (droppedNameIds.has(item.featureId)) {
+        item.foldedName = true
+      }
+    }
   }
 
   // A feature whose labels went unreserved keeps its entry and loses only

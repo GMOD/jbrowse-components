@@ -28,7 +28,7 @@ const drops = (
   showLabels: boolean,
   showDescriptions: boolean,
   labelRoomFactor = 1,
-) => fitDrops(at, showLabels, showDescriptions, { labelRoomFactor })
+) => fitDrops(at, showLabels, showDescriptions, { labelRoomFactor }, false)
 
 describe('fitDrops', () => {
   it('reports nothing at the full rung', () => {
@@ -54,7 +54,13 @@ describe('fitDrops', () => {
 
   it('reports nothing when a fixed track trims isoforms', () => {
     expect(
-      fitDrops(stage('isoforms', 1, { fixed: true }), true, true, undefined),
+      fitDrops(
+        stage('isoforms', 1, { fixed: true }),
+        true,
+        true,
+        undefined,
+        false,
+      ),
     ).toEqual({
       names: 'none',
       descriptions: false,

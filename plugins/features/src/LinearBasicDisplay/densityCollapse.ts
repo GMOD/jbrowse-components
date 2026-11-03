@@ -156,46 +156,38 @@ function addDeeplyPiledIds(
 // A pile holding a named mark, placed as one box: its leader's name drawn under
 // it, every member at the box's top.
 export interface NamedPile {
-  leaderId: string | undefined
+  leaderId: string
   memberIds: readonly string[]
   startBp: number
   endBp: number
 }
 
-// `outranks` (a gene, else the longer span), then the leftmost, then the id:
-// the same leader whatever order the members arrive in.
-function pickLeader(
-  members: readonly (DensityBox & { id: string })[],
-  namedFeatureIds: ReadonlySet<string>,
-) {
-  return members
-    .filter(m => namedFeatureIds.has(m.id))
-    .sort((a, b) =>
-      outranks(a, b)
-        ? -1
-        : outranks(b, a)
-          ? 1
-          : a.startBp - b.startBp || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
-    )[0]?.id
+type Member = DensityBox & { id: string }
+
+// The same leader whatever order the members arrive in.
+function outranksAsLeader(a: Member, b: Member) {
+  return (
+    outranks(a, b) ||
+    (!outranks(b, a) &&
+      (a.startBp < b.startBp || (a.startBp === b.startBp && a.id < b.id)))
+  )
 }
 
-// A labeled sub-pixel feature stacks so its name doesn't overprint, except
-// one in `foldableLabeledIds`: where the fit gives up names anyway
-// (`labelDecimation: 'fitWidth'`), a pile of them too deep for any track folds
-// and keeps one name. A wide feature overlapping an unnamed pile needs no guard
-// here: `bookPileReservations` books the pile's span on row 0 first, so the
-// packer stacks it on a row below the pile.
+// A labeled sub-pixel feature in `stackingLabeledIds` stacks so its name
+// doesn't overprint; any other folds where its pile reaches the depth bar, and
+// a pile with a name that renders keeps one, its leader's. A wide feature
+// overlapping an unnamed pile needs no guard here: `bookPileReservations`
+// books the pile's span on row 0 first, so the packer stacks it on a row below
+// the pile.
 export function planDensityCollapse({
   features,
-  labeledFeatureIds,
-  foldableLabeledIds,
+  stackingLabeledIds,
   namedFeatureIds,
   bpPerPx,
   singleRow,
 }: {
   features: ReadonlyMap<string, DensityBox>
-  labeledFeatureIds: ReadonlySet<string>
-  foldableLabeledIds: ReadonlySet<string>
+  stackingLabeledIds: ReadonlySet<string>
   namedFeatureIds: ReadonlySet<string>
   bpPerPx: number
   singleRow: boolean
@@ -203,10 +195,7 @@ export function planDensityCollapse({
   const candidates: PaintedMark[] = []
   if (!singleRow) {
     for (const [id, geom] of features) {
-      if (
-        isSubPixelFade(geom, bpPerPx) &&
-        (!labeledFeatureIds.has(id) || foldableLabeledIds.has(id))
-      ) {
+      if (isSubPixelFade(geom, bpPerPx) && !stackingLabeledIds.has(id)) {
         const [startPx, endPx] = renderedSpanPx(geom, bpPerPx)
         candidates.push({ id, startPx, endPx })
       }
@@ -216,7 +205,7 @@ export function planDensityCollapse({
   const collapsedFeatureIds = deeplyPiledIds(candidates, DENSITY_COLLAPSE_DEPTH)
   const collapsed = candidates.filter(mark => collapsedFeatureIds.has(mark.id))
   const collapsedSpansPx: Span[] = []
-  const namedPiles: NamedPile[] = []
+  const pileByMemberId = new Map<string, NamedPile>()
   for (const [startPx, endPx] of mergeSpans(
     collapsed.map(mark => [mark.startPx, mark.endPx] as Span),
   )) {
@@ -226,16 +215,24 @@ export function planDensityCollapse({
         const box = features.get(mark.id)
         return box ? [{ ...box, id: mark.id }] : []
       })
-    if (members.some(m => labeledFeatureIds.has(m.id))) {
-      namedPiles.push({
-        leaderId: pickLeader(members, namedFeatureIds),
+    const named = members.filter(m => namedFeatureIds.has(m.id))
+    const [first, ...rest] = named
+    if (first) {
+      const pile: NamedPile = {
+        leaderId: rest.reduce(
+          (best, m) => (outranksAsLeader(m, best) ? m : best),
+          first,
+        ).id,
         memberIds: members.map(m => m.id),
         startBp: Math.min(...members.map(m => m.startBp)),
         endBp: Math.max(...members.map(m => m.endBp)),
-      })
+      }
+      for (const m of members) {
+        pileByMemberId.set(m.id, pile)
+      }
     } else {
       collapsedSpansPx.push([startPx, endPx])
     }
   }
-  return { collapsedFeatureIds, collapsedSpansPx, namedPiles }
+  return { collapsedFeatureIds, collapsedSpansPx, pileByMemberId }
 }

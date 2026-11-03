@@ -876,8 +876,7 @@ export default function baseStateModelFactory(
           self.fitStage.level === 'decimated'
             ? self.fitDecimatedFactors
             : undefined,
-          self.fitStage.level === 'decimated' &&
-            foldsNames(self.fitStage.layout),
+          foldsNames(self.fitStage.layout),
         )
       },
     }))

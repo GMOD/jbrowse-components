@@ -454,6 +454,7 @@ test('applyLayoutToRegion leaves an unplaced feature at the sentinel and drops i
     new Set(),
     new Set(),
     new Set(),
+    new Map(),
   )
   expect([...data.floatingLabelsData.keys()]).toEqual(['g1'])
   for (const [key, delta] of deltaBetween(before, entryMap(data))) {
@@ -496,6 +497,7 @@ test('applyLayoutToRegion puts every y lane on its feature row', () => {
     new Set(),
     new Set(),
     new Set(),
+    new Map(),
   )
   const after = entryMap(data)
   expect(after.size).toBe(before.size)

@@ -22,6 +22,7 @@ import type {
   FeatureDataResult,
   FlatbushItem,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { NamedPile } from './densityCollapse.ts'
 import type { DrawnAxis } from './drawnAxis.ts'
 import type { IsoformGapSpread } from './isoformGapFloor.ts'
 import type { IsoformBadge, IsoformTrim } from './isoformTrim.ts'
@@ -187,12 +188,10 @@ function mergeSections(
   const gapSpreads = new Map<string, IsoformGapSpread>()
   const features: PackPrep['features'] = new Map()
   const collapsedFeatureIds = new Set<string>()
-  const pileSizes = new Map<string, number>()
+  const pileByMemberId = new Map<string, NamedPile>()
   for (const { id, prep, pack } of sections) {
-    for (const { memberIds } of prep.namedPiles) {
-      for (const fid of memberIds) {
-        pileSizes.set(fid, memberIds.length)
-      }
+    for (const [fid, pile] of prep.pileByMemberId) {
+      pileByMemberId.set(fid, pile)
     }
     for (const [fid, y] of offsetLayoutMap(pack.layoutMap, tops.get(id.key)!)) {
       layoutMap.set(fid, y)
@@ -239,7 +238,7 @@ function mergeSections(
     gapSpreads,
     features,
     collapsedFeatureIds,
-    pileSizes,
+    pileByMemberId,
   }
 }
 
@@ -322,14 +321,8 @@ function layoutRefGroups(
         merged.droppedNameIds,
         merged.droppedDescriptionIds,
         densityFadeIds,
+        merged.pileByMemberId,
       )
-      for (const item of cloned.flatbushItems) {
-        const pileSize = merged.pileSizes.get(item.featureId)
-        if (pileSize !== undefined) {
-          item.pileSize = pileSize
-          item.foldedName = merged.droppedNameIds.has(item.featureId)
-        }
-      }
       out.set(n, cloned)
     }
   }

@@ -18,6 +18,7 @@ interface Mark {
   startBp: number
   endBp?: number
   named?: boolean
+  described?: boolean
   densityFade?: boolean
 }
 
@@ -26,11 +27,12 @@ function marks(features: Mark[]): LayoutRegionData {
     ...f,
     endBp: f.endBp ?? f.startBp + 1,
     named: f.named ?? true,
+    described: f.described ?? false,
     densityFade: f.densityFade ?? true,
   }))
   const floatingLabelsData: FloatingLabelsDataMap = new Map(
     spans
-      .filter(f => f.named)
+      .filter(f => f.named || f.described)
       .map(f => [
         f.featureId,
         {
@@ -39,7 +41,10 @@ function marks(features: Mark[]): LayoutRegionData {
           maxX: f.endBp,
           topY: 0,
           featureHeight: 10,
-          nameLabel: { text: f.featureId, textWidth: 40 },
+          nameLabel: f.named ? { text: f.featureId, textWidth: 40 } : undefined,
+          descriptionLabel: f.described
+            ? { text: `about ${f.featureId}`, textWidth: 60 }
+            : undefined,
         },
       ]),
   )
@@ -89,12 +94,17 @@ const tal1Shaped = [
 
 function laidOut(
   features: Mark[],
-  { decimate = true, labelRoomFactor = 0, pinned = [] as string[] } = {},
+  {
+    decimate = true,
+    labelRoomFactor = 0,
+    pinned = [] as string[],
+    showDescriptions = false,
+  } = {},
 ) {
   return computeLaidOutData(new Map([[0, marks(features)]]), {
     bpPerPx: BP_PER_PX,
     showLabels: true,
-    showDescriptions: false,
+    showDescriptions,
     displayMode: 'normal',
     pinnedFeatureIds: new Set(pinned),
     ...(decimate ? { labelDecimation: 'fitWidth', labelRoomFactor } : {}),
@@ -186,6 +196,20 @@ describe('a pile of named marks too deep for any track', () => {
     ])
     expect(tops(data, 'snv')).toEqual(new Set([0]))
     expect(topOf(data, 'deletion')).toBeGreaterThan(0)
+  })
+
+  it('folds a pile carrying only descriptions like an unlabeled one, on row 0', () => {
+    const described = pile('d', 40_000).map(m => ({
+      ...m,
+      named: false,
+      described: true,
+    }))
+    const data = laidOut(described, { showDescriptions: true })
+    expect(tops(data, 'd')).toEqual(new Set([0]))
+    expect(data.flatbushItems.some(it => it.pileSize !== undefined)).toBe(false)
+    expect(
+      [...data.floatingLabelsData.values()].some(l => l.descriptionLabel),
+    ).toBe(false)
   })
 
   it('marks as folded only the names the fold left undrawn', () => {
