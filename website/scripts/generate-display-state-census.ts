@@ -94,6 +94,13 @@ function displayDirs() {
       }
     }
   }
+  // `spliceGeneratedBlock` lets a block render empty, and a renamed
+  // registration would publish "0 registered displays" and pass its check.
+  if (dirs.length === 0) {
+    throw new Error(
+      `no \`new DisplayType(\` registration found under ${SCAN_ROOTS.join(', ')}; if it was renamed, update this generator`,
+    )
+  }
   return dirs
 }
 

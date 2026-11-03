@@ -167,7 +167,7 @@ const generated = [...docFiles(docsDir), ...docFiles(releaseDraftsDir)]
       const source = sources.get(id)
       if (!source) {
         problems.push(
-          `${relative(repoRoot, path)}: no <!-- measurement: ${id} --> in agent-docs`,
+          `${relative(repoRoot, path)}: no agent-doc carries <!-- BEGIN GENERATED MEASUREMENT ${id} --> for this table to copy`,
         )
         continue
       }

@@ -117,7 +117,9 @@ export const SOURCE_SKIP_DIRS = new Set([
 // the shared checkout an untracked file is another agent's work in progress,
 // and CI never sees it. Deduped, because a rebase with unmerged paths lists each
 // once per index stage, and limited to what is on disk, because a staged
-// deletion is still listed.
+// deletion is still listed. Sorted, because git lists untracked files ahead of
+// tracked ones, so one scratch file would otherwise reorder every program and
+// table built from this list.
 let listedFiles: string[] | undefined
 export function repoFiles(): string[] {
   if (!listedFiles) {
@@ -138,9 +140,9 @@ export function repoFiles(): string[] {
     if (error || status !== 0) {
       throw new Error(`git ls-files failed: ${error ?? stderr}`)
     }
-    listedFiles = [...new Set(stdout.split('\0').filter(Boolean))].filter(f =>
-      existsSync(join(repoRoot, f)),
-    )
+    listedFiles = [...new Set(stdout.split('\0').filter(Boolean))]
+      .filter(f => existsSync(join(repoRoot, f)))
+      .sort()
   }
   return listedFiles
 }

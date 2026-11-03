@@ -3,8 +3,7 @@ import fs from 'fs'
 import { check } from '../check-utils.ts'
 import { buildEnumConstantIndex } from './enumConstants.ts'
 import {
-  formatWithOxfmt,
-  splicedDocs,
+  flushDocs,
   staleDocs,
   writeUnformatted,
   writtenDocs,
@@ -277,7 +276,7 @@ async function main() {
         .map(c => [c.header!.name, c.header!.gotchas]),
     ),
   )
-  const leftover = pruneUnwritten()
+  const leftover = unwrittenPages()
 
   // Under --check the marker assertion below still runs before exiting, so a
   // stale page and a marker nobody renders are reported by the same run.
@@ -290,27 +289,23 @@ async function main() {
     )
   } else if (check) {
     console.log(`${writtenDocs().length} config/model/api docs are up to date`)
-  } else {
-    // Exactly the files spliced into above, not a list of directories to keep
-    // in sync with them: the package READMEs and whichever hand-written guides
-    // a marker block landed in. The tables carry `prettier-ignore` and stay
-    // compact, but the gotcha callouts are prose and must be rewrapped or every
-    // regen would fight `pnpm format`.
-    //
-    // The pages under GENERATED_DIRS are NOT in this list; `writePage` says
-    // why, and .oxfmtrc.json exempts the same three directories so `pnpm
-    // format` agrees.
-    await formatWithOxfmt(splicedDocs())
   }
 
-  // After the formatter, not before it: this fails on marker bookkeeping rather
-  // than on a page's content, and everything above it is already written. A
-  // throw in between leaves those writes on disk unformatted, and the next run
-  // does not repair them — it regenerates the same bytes, sees the file already
-  // holds them, and so never writes (and never formats) it again.
+  // Before anything reaches disk, so a marker no doc renders fails the run with
+  // the tree untouched.
   assertMarkersAndDocsAgree()
   if (stale.length > 0) {
     process.exit(1)
+  }
+  if (!check) {
+    // The pages under GENERATED_DIRS are written unformatted; `writePage` says
+    // why, and .oxfmtrc.json exempts the same three directories so `pnpm
+    // format` agrees.
+    await flushDocs()
+    for (const file of leftover) {
+      fs.rmSync(file)
+      console.log(`pruned ${file}`)
+    }
   }
 }
 
@@ -323,28 +318,21 @@ const GENERATED_DIRS = [
   'website/docs/api',
 ]
 
-// Delete pages this run didn't write, or under `--check` name them. `pnpm
-// gendocs` used to `rm -rf` these directories before generating, which left
-// them missing for the whole ~15s a run takes — long enough for a dev server or
-// a second agent in the same worktree to read a half-built tree, and long
-// enough to lose all three if the run then threw. Pruning after the write is
-// the same guarantee with no window: a page only disappears once the set that
-// replaces it is already on disk.
-function pruneUnwritten() {
+// The pages this run didn't write, which document a type that no longer exists.
+// `pnpm gendocs` used to `rm -rf` these directories before generating, which
+// left them missing for the whole run — long enough for a dev server or a
+// second agent in the same worktree to read a half-built tree, and long enough
+// to lose all three if the run then threw. Pruning after the flush is the same
+// guarantee with no window: a page only disappears once the set that replaces
+// it is already on disk.
+function unwrittenPages() {
   const written = new Set(writtenDocs())
-  const leftover = GENERATED_DIRS.flatMap(dir =>
+  return GENERATED_DIRS.flatMap(dir =>
     fs
       .readdirSync(dir)
       .filter(name => name.endsWith('.md') && !written.has(`${dir}/${name}`))
       .map(name => `${dir}/${name}`),
   )
-  if (!check) {
-    for (const file of leftover) {
-      fs.rmSync(file)
-      console.log(`pruned ${file}`)
-    }
-  }
-  return leftover
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

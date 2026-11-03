@@ -3,12 +3,8 @@ import fs from 'fs'
 import path from 'path'
 import { promisify } from 'util'
 
-import {
-  check,
-  formatMarkdown,
-  oxfmtBin,
-  writeFileAtomic,
-} from '../check-utils.ts'
+import { formatMarkdown, oxfmtBin, writeFileAtomic } from '../check-utils.ts'
+import { repoRoot } from '../paths.ts'
 
 // Every path written this run, whether spliced into a doc or written whole.
 const written = new Set<string>()
@@ -47,14 +43,10 @@ export function readDoc(file: string) {
 // API_DOCS section in a README. Formatted at the end of the run, because the
 // rest of the file is hand-written and stays under `pnpm check-format`.
 //
-// Under `--check` nothing reaches disk: the content goes into the cache, so a
-// later splice into the same doc builds on it exactly as a write run would, and
-// `staleDocs` compares the final text against what is committed.
+// Nothing reaches disk until `flushDocs`: the content goes into the cache, so a
+// later splice into the same doc builds on it, and a run that throws partway
+// leaves the tree as it found it rather than spliced and unformatted.
 export function writeDoc(file: string, content: string) {
-  if (!check) {
-    fs.mkdirSync(path.dirname(file), { recursive: true })
-    writeFileAtomic(file, content)
-  }
   docText.set(file, content)
   written.add(file)
 }
@@ -118,11 +110,6 @@ export function writtenDocs() {
   return [...written]
 }
 
-// The written docs a person also owns, which is what the format sweep gets.
-export function splicedDocs() {
-  return [...written].filter(file => !unformatted.has(file))
-}
-
 function onDisk(file: string) {
   try {
     return fs.readFileSync(file, 'utf8')
@@ -148,11 +135,24 @@ export function staleDocs() {
   })
 }
 
-// Run the repo formatter over the docs a run spliced into. Their marker blocks
-// arrive as raw tables and prose callouts, and nothing else re-wraps them —
-// while the rest of each file is hand-written, so leaving one unformatted puts
-// `pnpm check-format` and the next hand edit at odds.
-//
+// Write every doc whose bytes this run changed, then format the spliced ones
+// among them. Their marker blocks arrive as raw tables and prose callouts, and
+// nothing else re-wraps them — while the rest of each file is hand-written, so
+// leaving one unformatted puts `pnpm check-format` and the next hand edit at
+// odds. An unchanged doc is not touched, so a dev server watching the tree sees
+// only what moved.
+export async function flushDocs() {
+  const changed = [...written].filter(
+    file => onDisk(file) !== docText.get(file),
+  )
+  for (const file of changed) {
+    fs.mkdirSync(path.dirname(file), { recursive: true })
+    writeFileAtomic(file, docText.get(file)!)
+  }
+  await formatWithOxfmt(changed.filter(file => !unformatted.has(file)))
+  return changed
+}
+
 // oxfmt is the repo's formatter (`pnpm format`), so running it is what actually
 // decides the committed bytes. This used to be prettier — per page as it was
 // written, then over every doc again, re-run until it stopped changing anything.
@@ -163,10 +163,16 @@ export function staleDocs() {
 // `oxfmtBin` resolves the binary through node's resolver rather than by name;
 // its comment says why, and the one-file-at-a-time counterpart lives beside it
 // as `formatMarkdown`.
-export async function formatWithOxfmt(paths: string[]) {
+//
+// Every path may be one oxfmt ignores (anything under `agent-docs/`), and a
+// list holding only those is an error to it without the unmatched flag.
+async function formatWithOxfmt(paths: string[]) {
   // oxfmt given no path formats the whole tree
-  if (paths.length === 0) {
-    return
+  if (paths.length > 0) {
+    await promisify(execFile)(
+      process.execPath,
+      [oxfmtBin(), '--no-error-on-unmatched-pattern', ...paths],
+      { cwd: repoRoot },
+    )
   }
-  await promisify(execFile)(process.execPath, [oxfmtBin(), ...paths])
 }

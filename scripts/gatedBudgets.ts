@@ -8,8 +8,10 @@
 // hand-transcribed and went stale the moment CRAM's own limit moved from 3 Mb to
 // 5 Mb — in two docs at once, one of them generated from a source comment that
 // restated the number.
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { basename, dirname, join, relative } from 'node:path'
+
+import { sourceFiles } from '../website/scripts/check-utils.ts'
 
 export const root = join(import.meta.dirname, '..')
 
@@ -41,24 +43,13 @@ const gateMixin = join(
   'RegionTooLargeMixin.ts',
 )
 
-function* sourceFiles(dir: string): Generator<string> {
-  let entries: string[]
-  try {
-    entries = readdirSync(dir)
-  } catch {
-    return
-  }
-  for (const entry of entries) {
-    if (entry === 'node_modules' || entry === 'esm' || entry === 'dist') {
-      continue
-    }
-    const path = join(dir, entry)
-    if (statSync(path).isDirectory()) {
-      yield* sourceFiles(path)
-    } else if (entry.endsWith('.ts') && !entry.endsWith('.test.ts')) {
-      yield path
-    }
-  }
+// The repo's own listing, so under the pre-push hook another agent's untracked
+// adapter is not read, and an ignored build directory never is.
+function workspaceSources() {
+  return sourceFiles(
+    workspaceDirs,
+    name => name.endsWith('.ts') && !name.endsWith('.test.ts'),
+  )
 }
 
 function declaredLimit(file: string) {
@@ -90,15 +81,13 @@ const classDecl =
 export function collectGatedAdapterBudgets(): Record<string, string> {
   const declaringFiles: string[] = []
   const classes: { name: string; parent: string; file: string }[] = []
-  for (const workspaceDir of workspaceDirs) {
-    for (const file of sourceFiles(join(root, workspaceDir))) {
-      const text = readFileSync(file, 'utf8')
-      if (relative(root, file) !== baseDefault && declaration.test(text)) {
-        declaringFiles.push(file)
-      }
-      for (const m of text.matchAll(classDecl)) {
-        classes.push({ name: m[1]!, parent: m[2]!, file })
-      }
+  for (const file of workspaceSources()) {
+    const text = readFileSync(file, 'utf8')
+    if (relative(root, file) !== baseDefault && declaration.test(text)) {
+      declaringFiles.push(file)
+    }
+    for (const m of text.matchAll(classDecl)) {
+      classes.push({ name: m[1]!, parent: m[2]!, file })
     }
   }
   const declaringNames = new Set(
@@ -153,15 +142,13 @@ const literalGateHook =
  */
 export function collectNonLiteralGateOverrides(): string[] {
   const found: string[] = []
-  for (const workspaceDir of workspaceDirs) {
-    for (const file of sourceFiles(join(root, workspaceDir))) {
-      if (/testenv\.ts$/i.test(file)) {
-        continue
-      }
-      const text = readFileSync(file, 'utf8')
-      if (gateHook.test(text) && !literalGateHook.test(text)) {
-        found.push(relative(root, file))
-      }
+  for (const file of workspaceSources()) {
+    if (/testenv\.ts$/i.test(file)) {
+      continue
+    }
+    const text = readFileSync(file, 'utf8')
+    if (gateHook.test(text) && !literalGateHook.test(text)) {
+      found.push(relative(root, file))
     }
   }
   return found.sort()
@@ -189,18 +176,16 @@ export function collectNonLiteralGateOverrides(): string[] {
  */
 export function collectGateOptInSites(): string[] {
   const found: string[] = []
-  for (const workspaceDir of workspaceDirs) {
-    for (const file of sourceFiles(join(root, workspaceDir))) {
-      const rel = relative(root, file)
-      // The mixin's own defaults are `return false`, so they don't match — but
-      // exclude it outright rather than relying on that, since it is the one
-      // file where these names are declared rather than overridden.
-      if (rel === gateMixin) {
-        continue
-      }
-      if (displayOptIn.test(readFileSync(file, 'utf8'))) {
-        found.push(rel)
-      }
+  for (const file of workspaceSources()) {
+    const rel = relative(root, file)
+    // The mixin's own defaults are `return false`, so they don't match — but
+    // exclude it outright rather than relying on that, since it is the one
+    // file where these names are declared rather than overridden.
+    if (rel === gateMixin) {
+      continue
+    }
+    if (displayOptIn.test(readFileSync(file, 'utf8'))) {
+      found.push(rel)
     }
   }
   return found.sort()

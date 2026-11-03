@@ -88,6 +88,13 @@ function callers() {
         `would be missing rather than wrong: ${unreadable.join(', ')}`,
     )
   }
+  // `spliceGeneratedBlock` lets a block render empty, and a renamed
+  // `isDataCurrent` would publish "0 calls" and pass its check.
+  if (rows.length === 0) {
+    throw new Error(
+      `no isDataCurrent( call found under ${SCAN_ROOTS.join(', ')}; if it was renamed, update this generator`,
+    )
+  }
   return rows.sort((a, b) => a.file.localeCompare(b.file, 'en'))
 }
 

@@ -16,7 +16,7 @@
 // next loop that scripts/autogen.ts exists to end — and these are exactly the
 // case where it bites, since one source edit routinely staleness two of them at
 // once (a `#color` tag renders into both a guide and the spec).
-import { formatWithOxfmt, splicedDocs, staleDocs } from './format.ts'
+import { flushDocs, staleDocs } from './format.ts'
 import { MARKER_GENERATORS } from './markerGenerators.ts'
 import { assertMarkersAndDocsAgree, getAllFiles, sourceCorpus } from './util.ts'
 
@@ -58,9 +58,6 @@ for (const { label, docs } of touched) {
     `${label}: ${moved.length ? `${moved.length} ${check ? 'stale' : 'rewritten'}` : 'up to date'}`,
   )
 }
-if (!check) {
-  await formatWithOxfmt(splicedDocs())
-}
 
 // Only the generated-but-rendered-nowhere half: this run invokes the
 // program-independent generators alone, so a marker pair it never wrote is not
@@ -71,6 +68,9 @@ try {
 } catch (e) {
   console.error(`\n${e instanceof Error ? e.message : e}`)
   process.exit(1)
+}
+if (!check) {
+  await flushDocs()
 }
 
 if (stale.size) {
