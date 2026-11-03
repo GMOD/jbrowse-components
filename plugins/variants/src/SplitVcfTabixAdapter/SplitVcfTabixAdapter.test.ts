@@ -305,6 +305,15 @@ describe('files whose headers list different samples', () => {
     await expect(makeWithMissing(['ctgA']).getSources([])).rejects.toThrow()
   })
 
+  test('an export writes the #CHROM line of the contig it exports', async () => {
+    const exported = await makeSplit(['ctgA', 'ctgB']).getExportData(
+      [ctgBRegion],
+      'vcf',
+    )
+    const chromLine = exported!.split('\n').find(l => l.startsWith('#CHROM'))
+    expect(chromLine!.split('\t').slice(9)).toEqual(['shared', 'onlyB'])
+  })
+
   test('getFeatures opens only its own contig', async () => {
     const adapter = makeSplit(['ctgA', 'ctgB'])
     const configure = jest.spyOn(adapter, 'configure')

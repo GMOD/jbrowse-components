@@ -208,7 +208,11 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     if (formatType !== 'vcf') {
       return undefined
     }
-    const { header } = await this.anyContig(opts)
+    const [firstRegion] = regions
+    const firstContig = firstRegion
+      ? await this.configure(firstRegion.refName, opts)
+      : undefined
+    const { header } = firstContig ?? (await this.anyContig(opts))
     const exportLines = header.split('\n').filter(Boolean)
     for (const [refName, refRegions] of Map.groupBy(regions, r => r.refName)) {
       const contig = await this.configure(refName, opts)
