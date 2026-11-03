@@ -41,7 +41,7 @@ export interface SchemaMetadata {
     explicitIdentifier?: string
     shorthand?: string | readonly string[]
     closed?: boolean
-    retired?: Record<string, unknown>
+    retired?: Record<string, (value: unknown) => unknown>
     shorthandWith?: Record<string, unknown>
     fieldPresets?: Record<string, unknown>
     preProcessSnapshot?: (snap: unknown) => unknown
@@ -69,6 +69,10 @@ interface SchemaRequirement {
 // schema already declares instead of adding one. So nothing saw it, and
 // `jbrowse validate` reported HtsgetBamAdapter's own documented example as an
 // error.
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 export function slotLifts(meta: SchemaMetadata, slot: string) {
   const lifted = (input: unknown) => {
     try {
@@ -324,6 +328,30 @@ function typeHint(names: string[]): JsonSchema {
     description:
       'Which registered type this is. A name the core plugins do not register (one a plugin adds) passes with its keys unchecked.',
     anyOf: [{ enum: names }, { type: 'string' }],
+  }
+}
+
+/**
+ * The JSON schema of a key a schema's `retired` lifts: dropped where the
+ * lift writes nothing for any value, as MAF's `rowHeight` is now its rows
+ * always fit, and rewritten into current slots otherwise.
+ */
+export function legacyKeySchema(lift: (value: unknown) => unknown): JsonSchema {
+  const writesNothing = ['probe', 1, true, ['probe'], { probe: 1 }].every(
+    value => {
+      try {
+        const out = lift(value)
+        return isRecord(out) && Object.keys(out).length === 0
+      } catch {
+        return false
+      }
+    },
+  )
+  return {
+    deprecated: true,
+    description: writesNothing
+      ? 'Legacy key: dropped when the config loads, since nothing reads it now.'
+      : 'Legacy key: a migration rewrites it into current slots when the config loads.',
   }
 }
 
@@ -950,12 +978,6 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     return ref(name)
   }
 
-  const LEGACY: JsonSchema = {
-    deprecated: true,
-    description:
-      'Legacy key: a migration rewrites it into current slots when the config loads.',
-  }
-
   // An unregistered ConfigurationSchema, i.e. a sub-schema slot. Every track
   // schema builds its own `textSearching` and `formatDetails`, so identical
   // ones share one definition, named after the sub-schema.
@@ -980,7 +1002,10 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     }
     const properties = {
       ...Object.fromEntries(
-        Object.keys(meta.options.retired ?? {}).map(key => [key, LEGACY]),
+        Object.entries(meta.options.retired ?? {}).map(([key, lift]) => [
+          key,
+          legacyKeySchema(lift),
+        ]),
       ),
       ...identityOf(meta, name),
       ...slots,

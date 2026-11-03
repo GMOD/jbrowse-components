@@ -420,7 +420,7 @@ export default function stateModelFactory(
       /**
        * #getter
        * Resolved per-row height. This display is always fit-to-display-height —
-       * there is no pinned-height setting and so no `rowHeight` sentinel to
+       * its rows declare no `step`, so there is no pinned height to
        * resolve — but it uses the same name every row display exposes its
        * resolved height under (see agent-docs/reference/ROW_HEIGHT_AND_FIT),
        * which is also what tree-sidebar's `TreeDrawingModel` reads.

@@ -256,7 +256,7 @@ function retiredKeyRows(
   prefix: string,
   rows: MigrationRow[],
 ) {
-  const retired = (meta.options.retired ?? {}) as Record<string, Lift>
+  const retired = meta.options.retired ?? {}
   for (const [key, lift] of Object.entries(retired)) {
     if (!Object.hasOwn(meta.definition, key)) {
       collect(rows, {

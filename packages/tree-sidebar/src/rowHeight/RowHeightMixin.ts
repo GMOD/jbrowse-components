@@ -64,7 +64,7 @@ const confNode = (self: object) => self as RowHeightHost
  * and wrong where it is the slot itself.
  *
  * `effectiveRowHeight` is overridable, and one display overrides it: the mark
- * display honours a pinned `rowHeight` only while it draws rows.
+ * display honours a px `rows.step` only while it draws rows.
  */
 export function RowHeightMixin() {
   return types
@@ -72,8 +72,8 @@ export function RowHeightMixin() {
     .views(self => ({
       /**
        * #getter
-       * Raw per-row height setting: `0` is fit-to-display-height, any positive
-       * value is a fixed px height. The resolved value is
+       * `rows.step` as a number: `0` while it is `"fit"`, else its fixed px
+       * height. The resolved value is
        * `effectiveRowHeight` — consumers read that, never this. On the config
        * rather than the display snapshot for the same reason `height` is: the
        * config node outlives the display instance, so a fixed height survives
@@ -105,9 +105,9 @@ export function RowHeightMixin() {
     .views(self => ({
       /**
        * #getter
-       * Resolved per-row height. `rowHeight === 0` divides the display's own
-       * `autoRowHeight` across the rows; any positive value is the fixed px
-       * height, used as-is however many rows there are.
+       * Resolved per-row height. `rows.step: "fit"` divides the display's own
+       * `autoRowHeight` across the rows; a px step is the fixed height, used
+       * as-is however many rows there are.
        *
        * Sub-pixel is legitimate and deliberately not floored here — a cohort
        * with more rows than the track has pixels has a genuinely fractional row

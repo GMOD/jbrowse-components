@@ -1853,7 +1853,7 @@ export function stateModelFactory(
          * #getter
          * The px each row is drawn in, the band every shape gets:
          * `RowHeightMixin`'s under `rows`, pinned or fit. Elsewhere the bands
-         * fit the plot whatever `rowHeight` holds, since a facet's rows and
+         * fit the plot whatever `rows.step` holds, since a facet's rows
          * have no scroll to reach past the plot's foot.
          */
         get effectiveRowHeight(): number {
@@ -1865,7 +1865,7 @@ export function stateModelFactory(
         /**
          * #getter
          * `TrackHeightMixin`'s hook: the rows under `rows`, taller than the
-         * plot wherever a pinned `rowHeight` asks for more than it holds.
+         * plot wherever a px `rows.step` asks for more than it holds.
          */
         get scrollContentHeight(): number {
           return self.drawsRows ? self.rowCount * self.effectiveRowHeight : 0
