@@ -21,6 +21,7 @@ each over several. We:
   its set
 - open it as a dotplot, with one genome's chromosomes sorted by where their
   orthologs sit on the other
+- narrow the dotplot to the chromosomes of two fusions, RES4 and EMU14
 - stack the genomes in a linear synteny view, with ribbons colored by set
 
 ## Prerequisites
@@ -258,6 +259,57 @@ session's `encoding.color` is a color scale, a `field` mapped to colors:
 
 Inside a block the points fill the square, because gene order along each
 chromosome has shuffled. Each gene stays on its chromosome.
+
+## Two fusions, mixed and unmixed
+
+Two groups on one chromosome in one genome and on two in the other have fused in
+the first. A fusion starts with the two groups end to end, and the shuffling
+inside the chromosome then interleaves their genes.[^mixing] The jellyfish's
+RES4 carries B1 and B2, and the sponge's EMU14 carries A1b and Eb. We'll draw
+those two chromosomes and the four they pair with.
+
+`displayedRegionNames` lists the chromosomes on each axis, in the order drawn,
+and the session leaves `autoDiagonalize` off so that order holds. `filter` keeps
+the orthologs that have a group, so the legend names only the four drawn:
+
+```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
+{
+  "defaultSession": {
+    "name": "Two fusions",
+    "views": [
+      {
+        "type": "DotplotView",
+        "displayName": "Two fusions, one in each genome",
+        "views": [
+          {
+            "assembly": "RES",
+            "displayedRegionNames": ["RES4", "RES13", "RES6"]
+          },
+          {
+            "assembly": "EMU",
+            "displayedRegionNames": ["EMU4", "EMU7", "EMU14"]
+          }
+        ],
+        "tracks": ["RES_EMU"],
+        "encoding": { "color": "gene_group" },
+        "filter": [{ "field": "gene_group", "valid": true }],
+        "lineWidth": 6,
+        "height": 700
+      }
+    ]
+  }
+}
+```
+
+<Figure caption="Three jellyfish chromosomes against three sponge chromosomes, orthologs colored by linkage group." src="/img/linkage_groups/alg_fusions.png" />
+
+Along RES4, the B1 and B2 orthologs each run the chromosome's full length. On
+EMU14, Eb holds one end and A1b the other.
+
+[^mixing]:
+    Schultz et al. 2023 count the mixed fusions two genomes share, which
+    rearrangement does not undo, to place the comb jellies at the base of the
+    animal tree.
 
 ## Stacking the genomes, ribbons colored by linkage group
 

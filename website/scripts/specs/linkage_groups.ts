@@ -55,6 +55,37 @@ export const linkageGroupsSpecs: ScreenshotSpec[] = [
   },
   {
     mode: 'url',
+    name: 'linkage_groups/alg_fusions',
+    url: sessionSpec(ODP_CONFIG, {
+      views: [
+        {
+          type: 'DotplotView',
+          displayName: 'Two fusions, one in each genome',
+          views: [
+            {
+              assembly: 'RES',
+              displayedRegionNames: ['RES4', 'RES13', 'RES6'],
+            },
+            {
+              assembly: 'EMU',
+              displayedRegionNames: ['EMU4', 'EMU7', 'EMU14'],
+            },
+          ],
+          tracks: ['RES_EMU'],
+          encoding: { color: 'gene_group' },
+          filter: [{ field: 'gene_group', valid: true }],
+          lineWidth: 6,
+          height: 700,
+        },
+      ],
+    }),
+    readySelector: displayPainted('dotplot_webgl_canvas'),
+    readyTimeout: 120000,
+    viewportWidth: 900,
+    viewportHeight: 870,
+  },
+  {
+    mode: 'url',
     name: 'linkage_groups/alg_stack',
     url: sessionSpec(ODP_CONFIG, {
       views: [
