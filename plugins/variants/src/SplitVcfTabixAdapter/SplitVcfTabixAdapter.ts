@@ -9,9 +9,12 @@ import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 
-import { appendVcfLines, streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
+import {
+  appendVcfLines,
+  streamVcfFeatures,
+  vcfSourcesAndWarnings,
+} from '../shared/vcfAdapterUtils.ts'
 
 import type { SplitVcfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -113,8 +116,13 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     return setup(opts)
   }
 
-  // every file in the map shares one header, so any of them answers for it,
-  // an open one first
+  private emptyMapError() {
+    return new Error('SplitVcfTabixAdapter has an empty vcfGzLocationMap')
+  }
+
+  // the files share their metadata lines, so any of them answers for the
+  // header's text, an open one first; their sample columns can differ, which
+  // is what allContigs is for
   private async anyContig(opts?: BaseOptions) {
     const [refName] = [
       ...this.setups.keys(),
@@ -123,9 +131,23 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     const contig =
       refName === undefined ? undefined : await this.configure(refName, opts)
     if (!contig) {
-      throw new Error('SplitVcfTabixAdapter has an empty vcfGzLocationMap')
+      throw this.emptyMapError()
     }
     return contig
+  }
+
+  // every file in the map, in map order, which opens each one's header
+  private async allContigs(opts?: BaseOptions) {
+    const contigs = await Promise.all(
+      Object.keys(this.locationMap()).map(refName =>
+        this.configure(refName, opts),
+      ),
+    )
+    const opened = contigs.filter(contig => contig !== undefined)
+    if (opened.length === 0) {
+      throw this.emptyMapError()
+    }
+    return opened
   }
 
   public async getRefNames() {
@@ -195,11 +217,10 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
   // See VcfTabixAdapter: `getSources` is the base-class contract, this is the
   // one that keeps the samples-metadata warnings.
   async getSourcesAndWarnings(opts?: BaseOptions) {
-    const { parser } = await this.anyContig(opts)
-    return getSamplesTsvSources({
-      location: this.getConf('samplesTsvLocation'),
-      names: parser.samples,
-      namesLabel: 'the VCF',
+    const parsers = (await this.allContigs(opts)).map(c => c.parser)
+    return vcfSourcesAndWarnings({
+      parsers,
+      samplesTsvLocation: this.getConf('samplesTsvLocation'),
       pluginManager: this.pluginManager,
       opts,
     })

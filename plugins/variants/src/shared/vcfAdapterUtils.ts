@@ -1,12 +1,15 @@
 import { downloadStatus, updateStatus } from '@jbrowse/core/util'
+import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 
 import VcfFeature from '../VcfFeature/index.ts'
 import { getEnd } from '../VcfFeature/util.ts'
 
 import type { TabixIndexedFile } from '@gmod/tabix'
 import type VcfParser from '@gmod/vcf'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
+import type { FileLocation } from '@jbrowse/core/util/types'
 import type { Observer } from 'rxjs'
 
 // The index answers by the extent @gmod/tabix reads off a line, which is not
@@ -119,6 +122,34 @@ export async function appendVcfLines(
       }),
     )
   }
+}
+
+/**
+ * The sources of one VCF, or of several whose headers list different samples
+ * (a chrY file holds only the males): the first header's samples in its order,
+ * then each name a later header adds, merged with the samples table when the
+ * adapter has one. `getSources` is the base-class contract and drops the
+ * warnings, `MultiSampleVariantGetSources` takes this one so the display can
+ * report them.
+ */
+export function vcfSourcesAndWarnings({
+  parsers,
+  samplesTsvLocation,
+  pluginManager,
+  opts,
+}: {
+  parsers: readonly VcfParser[]
+  samplesTsvLocation: FileLocation | undefined
+  pluginManager: PluginManager | undefined
+  opts?: BaseOptions
+}) {
+  return getSamplesTsvSources({
+    location: samplesTsvLocation,
+    names: [...new Set(parsers.flatMap(parser => parser.samples))],
+    namesLabel: 'the VCF',
+    pluginManager,
+    opts,
+  })
 }
 
 /**

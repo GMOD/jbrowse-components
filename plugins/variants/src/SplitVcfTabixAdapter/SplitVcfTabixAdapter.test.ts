@@ -200,3 +200,57 @@ test('a record spanning two exported regions is exported once', async () => {
   const twice = await adapter.getExportData([region, region], 'vcf')
   expect(twice).toBe(once)
 })
+
+describe('files whose headers list different samples', () => {
+  const file = (name: string) => require.resolve(`./test_data/${name}.vcf.gz`)
+  const makeSplit = (contigs: ('ctgA' | 'ctgB')[]) =>
+    new Adapter(
+      configSchema.create({
+        vcfGzLocationMap: Object.fromEntries(
+          contigs.map(c => [
+            c,
+            { localPath: file(c), locationType: 'LocalPathLocation' },
+          ]),
+        ),
+        indexLocationMap: Object.fromEntries(
+          contigs.map(c => [
+            c,
+            {
+              localPath: `${file(c)}.tbi`,
+              locationType: 'LocalPathLocation',
+            },
+          ]),
+        ),
+        indexType: 'TBI',
+      }),
+    )
+  const sourceNames = async (adapter: Adapter) =>
+    (await adapter.getSources([])).map(s => s.name)
+  const ctgBRegion = { assemblyName: 'x', refName: 'ctgB', start: 0, end: 1000 }
+
+  test('the sources are every file’s samples, in file order', async () => {
+    expect(await sourceNames(makeSplit(['ctgA', 'ctgB']))).toEqual([
+      'onlyA',
+      'shared',
+      'onlyB',
+    ])
+    expect(await sourceNames(makeSplit(['ctgB', 'ctgA']))).toEqual([
+      'shared',
+      'onlyB',
+      'onlyA',
+    ])
+  })
+
+  test('the sources do not depend on which contig was opened first', async () => {
+    const adapter = makeSplit(['ctgA', 'ctgB'])
+    await firstValueFrom(adapter.getFeatures(ctgBRegion).pipe(toArray()))
+    expect(await sourceNames(adapter)).toEqual(['onlyA', 'shared', 'onlyB'])
+  })
+
+  test('getFeatures opens only its own contig', async () => {
+    const adapter = makeSplit(['ctgA', 'ctgB'])
+    const configure = jest.spyOn(adapter, 'configure')
+    await firstValueFrom(adapter.getFeatures(ctgBRegion).pipe(toArray()))
+    expect(configure.mock.calls.map(([refName]) => refName)).toEqual(['ctgB'])
+  })
+})

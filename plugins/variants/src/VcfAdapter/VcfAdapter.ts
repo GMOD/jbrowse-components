@@ -7,11 +7,14 @@ import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { groupLinesByRef } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { getSamplesTsvSources } from '@jbrowse/core/util/samplesTsv'
 
 import VcfFeature from '../VcfFeature/index.ts'
 import { getEnd } from '../VcfFeature/util.ts'
-import { overlapsRegion, vcfContigs } from '../shared/vcfAdapterUtils.ts'
+import {
+  overlapsRegion,
+  vcfContigs,
+  vcfSourcesAndWarnings,
+} from '../shared/vcfAdapterUtils.ts'
 
 import type { VcfAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -137,10 +140,10 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
   // one that keeps the samples-metadata warnings.
   async getSourcesAndWarnings(opts?: BaseOptions) {
     const { parser } = await this.setup(opts)
-    return getSamplesTsvSources({
-      location: this.getConf('samplesTsvLocation'),
-      names: parser.samples,
-      namesLabel: 'the VCF',
+    const parsers = [parser]
+    return vcfSourcesAndWarnings({
+      parsers,
+      samplesTsvLocation: this.getConf('samplesTsvLocation'),
       pluginManager: this.pluginManager,
       opts,
     })
