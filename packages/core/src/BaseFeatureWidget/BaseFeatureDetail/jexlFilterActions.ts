@@ -2,9 +2,11 @@ import { pathSubject, printCondition } from '@jbrowse/jexl'
 
 import { ensureJexlPrefix } from '../../util/jexlStrings.ts'
 import { getNotificationSink } from '../../util/sessionServices.ts'
+import { valueAt } from './util.ts'
 
 import type { MenuItem } from '../../ui/MenuTypes.ts'
 import type { JexlFilterModel } from '../../util/jexlFilters.ts'
+import type { FieldActions } from '../types.tsx'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface JexlFilterDisplay extends JexlFilterModel, IStateTreeNode {}
@@ -66,4 +68,17 @@ export function filterByValueItems(
       ? [{ label: `Show only ${field} ≥ ${shown}`, onClick: add('>=') }]
       : []),
   ]
+}
+
+/**
+ * Filter items for each row, built from the value at the row's path in the
+ * feature as the worker holds it. A `formatDetails` callback may have
+ * rewritten what the row shows, and a row only a callback adds has nothing
+ * to filter on.
+ */
+export function rawValueFilterActions(
+  display: JexlFilterDisplay,
+  raw: Record<string, unknown>,
+): FieldActions {
+  return path => filterByValueItems(display, path, valueAt(path, raw))
 }

@@ -1,5 +1,5 @@
 import { ThemeProvider } from '@mui/material'
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 
 import { createJBrowseTheme } from '../../ui/index.ts'
 import CoreDetails from './CoreDetails.tsx'
@@ -27,6 +27,18 @@ test('offers actions on the name and type rows, by the field they read', () => {
     [['name'], 'EDEN'],
     [['type'], 'gene'],
   ])
+})
+
+test('the position moves the view onto the feature when the view can', () => {
+  const navigate = jest.fn()
+  const feature = { uniqueId: 'f', refName: 'ctgA', start: 0, end: 100 }
+  const { getByTitle } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <CoreDetails feature={feature} navigate={navigate} />
+    </ThemeProvider>,
+  )
+  fireEvent.click(getByTitle('Show in view'))
+  expect(navigate).toHaveBeenCalledWith(feature)
 })
 
 test('valueAt reads a nested path and unwraps a one-element array', () => {

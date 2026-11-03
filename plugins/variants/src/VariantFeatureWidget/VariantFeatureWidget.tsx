@@ -3,8 +3,8 @@ import { Suspense, lazy, useMemo, useState } from 'react'
 import { parseBreakend } from '@gmod/vcf'
 import {
   FeatureDetailsFrame,
-  filterByValueItems,
   jexlFilterDisplay,
+  rawValueFilterActions,
 } from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
@@ -114,9 +114,14 @@ const FeatDefined = observer(function FeatDefined({
   const [selectedAlt, setSelectedAlt] = useState<number | null>(null)
   const consequences = consequencePanels(INFO, descriptions)
   const display = jexlFilterDisplay(model.track)
-  const fieldActions = display
+  const { unformattedFeatureData } = model
+  const filterActions =
+    display && unformattedFeatureData
+      ? rawValueFilterActions(display, unformattedFeatureData)
+      : undefined
+  const fieldActions = filterActions
     ? (path: string[], value: unknown) =>
-        isFilterable(path) ? filterByValueItems(display, path, value) : []
+        isFilterable(path) ? filterActions(path, value) : []
     : undefined
 
   return (

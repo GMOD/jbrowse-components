@@ -9,6 +9,9 @@ import SequenceFeatureDetails from '../SequenceFeatureDetails/index.tsx'
 import Attributes from './Attributes.tsx'
 import BaseCard from './BaseCard.tsx'
 import CoreDetails from './CoreDetails.tsx'
+import SubfeatureParts from './SubfeatureParts.tsx'
+import { featureNavigator } from './featureNavigator.ts'
+import { subfeatureGroups } from './subfeatureGroups.ts'
 import { generateTitle } from './util.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
@@ -42,6 +45,7 @@ interface FeatureDetailsProps {
   feature: SimpleFeatureSerialized
   unformatted?: SimpleFeatureSerialized
   depth?: number
+  defaultExpanded?: boolean
   omit?: string[]
   descriptions?: Descriptors
   formatter?: FeatureFormatter
@@ -57,6 +61,7 @@ const FeatureDetails = observer(function FeatureDetails(
     feature,
     unformatted = feature,
     depth = 0,
+    defaultExpanded = true,
     descriptions,
     formatter,
     fieldActions,
@@ -65,10 +70,15 @@ const FeatureDetails = observer(function FeatureDetails(
   const { mate, name = '', id = '', type = '', subfeatures, uniqueId } = feature
   // a panel selecting on `depth === 0` has to see the default, not undefined
   const panelProps = { ...props, depth }
+  const navigate = featureNavigator(model)
+  const groups = subfeatureGroups(feature)
   return (
-    <BaseCard title={generateTitle(name, id, type)}>
+    <BaseCard
+      title={generateTitle(name, id, type)}
+      defaultExpanded={defaultExpanded}
+    >
       <SectionHeader title="Core details" />
-      <CoreDetails {...props} />
+      <CoreDetails {...props} navigate={navigate} />
       {mate ? (
         <>
           <Divider />
@@ -77,6 +87,7 @@ const FeatureDetails = observer(function FeatureDetails(
             {...props}
             feature={{ ...mate, uniqueId: `${uniqueId}-mate` }}
             fieldActions={undefined}
+            navigate={navigate}
           />
           <Attributes
             attributes={mate}
@@ -114,34 +125,32 @@ const FeatureDetails = observer(function FeatureDetails(
       />
 
       {depth < maxDepth && subfeatures?.length ? (
-        <BaseCard
-          title="Subfeatures"
-          defaultExpanded={depth === 0 && subfeatures.length <= 20}
-        >
-          {subfeatures.map((sub, idx) => (
-            <FeatureDetails
-              // eslint-disable-next-line @eslint-react/no-array-index-key -- subfeature list order is fixed per feature, no unique field guaranteed by type
-              key={`${uniqueId}_${idx}`}
-              feature={{
-                ...sub,
-                uniqueId: `${uniqueId}_${idx}`,
-              }}
-              unformatted={
-                unformatted.subfeatures?.[idx]
-                  ? {
-                      ...unformatted.subfeatures[idx],
-                      uniqueId: `${uniqueId}_${idx}`,
-                    }
-                  : undefined
-              }
-              model={model}
-              depth={depth + 1}
-              descriptions={descriptions}
-              formatter={formatter}
-              omit={omit}
-            />
-          ))}
-        </BaseCard>
+        <>
+          <Divider />
+          <SectionHeader title="Subfeatures" />
+          {groups.map(group =>
+            group.kind === 'feature' ? (
+              <FeatureDetails
+                key={group.feature.uniqueId}
+                feature={group.feature}
+                model={model}
+                depth={depth + 1}
+                defaultExpanded={groups.length === 1}
+                descriptions={descriptions}
+                formatter={formatter}
+                omit={omit}
+              />
+            ) : (
+              <SubfeatureParts
+                key={group.type}
+                group={group}
+                navigate={navigate}
+                descriptions={descriptions}
+                formatter={formatter}
+              />
+            ),
+          )}
+        </>
       ) : null}
     </BaseCard>
   )

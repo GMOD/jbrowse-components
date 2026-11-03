@@ -3,8 +3,10 @@ import { observer } from 'mobx-react'
 import FeatureDetails from './FeatureDetails.tsx'
 import FeatureDetailsFrame from './FeatureDetailsFrame.tsx'
 import ParentFeatureLine from './ParentFeatureLine.tsx'
-import { filterByValueItems, jexlFilterDisplay } from './jexlFilterActions.ts'
-import { valueAt } from './util.ts'
+import {
+  jexlFilterDisplay,
+  rawValueFilterActions,
+} from './jexlFilterActions.ts'
 
 import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
 import type { Descriptors } from '../types.tsx'
@@ -34,12 +36,7 @@ const BaseFeatureDetail = observer(function BaseFeatureDetail({
             descriptions={descriptions}
             fieldActions={
               display && unformattedFeatureData
-                ? path =>
-                    filterByValueItems(
-                      display,
-                      path,
-                      valueAt(path, unformattedFeatureData),
-                    )
+                ? rawValueFilterActions(display, unformattedFeatureData)
                 : undefined
             }
           />
@@ -57,4 +54,8 @@ export { default as BaseCoreDetails } from './BaseCoreDetails.tsx'
 export { default as FeatureDetails } from './FeatureDetails.tsx'
 export { default as FeatureDetailsFrame } from './FeatureDetailsFrame.tsx'
 export { default as FeatureWash } from './FeatureWash.tsx'
-export { filterByValueItems, jexlFilterDisplay } from './jexlFilterActions.ts'
+export {
+  filterByValueItems,
+  jexlFilterDisplay,
+  rawValueFilterActions,
+} from './jexlFilterActions.ts'

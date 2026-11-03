@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react'
 
+import ActionLink from '../../ui/ActionLink.tsx'
 import { assembleLocString, toLocale } from '../../util/index.ts'
 import { getStrandStr } from '../util.ts'
 import SimpleField from './SimpleField.tsx'
@@ -9,11 +10,15 @@ import type { BaseProps } from '../types.tsx'
 const CoreDetails = observer(function CoreDetails({
   feature,
   fieldActions,
+  navigate,
 }: BaseProps) {
   const { name, description, type, start, end, strand } = feature
   // only a formatDetails callback sets `length`, to rewrite or hide the row:
   // an adapter's own field of that name is in Attributes' globalOmit
   const length = 'length' in feature ? feature.length : end - start
+  const position = [assembleLocString(feature), getStrandStr(strand)]
+    .filter(Boolean)
+    .join(' ')
   const rows: { label: string; value: unknown; field?: string }[] = [
     { label: 'Name', value: name, field: 'name' },
     { label: 'Description', value: description },
@@ -27,9 +32,20 @@ const CoreDetails = observer(function CoreDetails({
     <>
       <SimpleField
         name="Position"
-        value={[assembleLocString(feature), getStrandStr(strand)]
-          .filter(Boolean)
-          .join(' ')}
+        value={
+          navigate ? (
+            <ActionLink
+              title="Show in view"
+              onClick={() => {
+                navigate(feature)
+              }}
+            >
+              {position}
+            </ActionLink>
+          ) : (
+            position
+          )
+        }
       />
       {rows.map(({ label, value, field }) => (
         <SimpleField
