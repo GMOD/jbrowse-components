@@ -57,7 +57,9 @@ config:
 
 `rows` names the feature attribute whose value assigns a feature to a row.
 Features sharing a value stack into the same row, and the value becomes the row
-label.
+label. The display picks `rows`, its marks and its color from the features only
+while the config states no `marks`, so a config that writes its own `marks`
+writes `rows` too, or every feature lands in one row.
 
 A feature whose children have none of their own, such as a BED12 row or a GFF
 transcript at the top of its file, draws them as blocks joined by a line, as a
