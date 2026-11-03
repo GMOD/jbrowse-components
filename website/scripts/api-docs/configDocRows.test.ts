@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { schemaJsonPath } from './generateConfigDocs.ts'
+import { schemaJsonPath } from './colorChannels.ts'
 
 // Every row a config page prints names a path the published JSON schema
 // declares. The generator reads JSDoc tags, which can name a nested slot by
