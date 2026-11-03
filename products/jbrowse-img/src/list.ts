@@ -27,7 +27,7 @@ export function formatAssemblies(genomes: Record<string, UcscGenome>) {
     return `  ${name.padEnd(pad)}  ${about}`
   })
   return [
-    `Assemblies on genomes.jbrowse.org (${names.length}):`,
+    `UCSC assemblies on genomes.jbrowse.org (${names.length}); a GenArk accession (GCA_/GCF_...) works as --genome too:`,
     ...lines,
     '',
     'Render one:      jb2export --genome <name> --loc <region> --out out.svg',

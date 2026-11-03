@@ -130,36 +130,41 @@ async function navToLocOrGene(
   view: LinearGenomeViewModel,
   session: Model['session'],
   input: string,
-  assemblyName: string,
+  assembly: LoadedAssembly,
   hasSearchIndex: boolean,
 ) {
-  // Load the assembly up front and report a load failure as itself.
-  // waitForAssembly resolves only once regions AND refNameAliases are in, but
-  // navToLocString swallows its rejection and falls through to the locstring
-  // parse — so a chromAlias fetch that fails (hg19's comes from
-  // hgdownload.soe.ucsc.edu, and does fail under a concurrent regen) surfaced as
-  // `UnknownRefNameError: unknown reference sequence name in location "1:..."`,
-  // which reads as a broken alias table rather than the transient fetch it is.
-  const assembly = await session.assemblyManager
-    .waitForAssembly(assemblyName)
-    .catch((e: unknown) => {
-      throw new Error(
-        `Failed to load assembly "${assemblyName}" (sequence, regions or refName aliases)`,
-        { cause: e },
-      )
-    })
   const hit = hasSearchIndex
     ? (
         await fetchResults({
           queryString: input,
           searchType: 'exact',
-          assemblyName,
+          assemblyName: assembly.name,
           textSearchManager: session.textSearchManager,
           assembly,
         })
       ).find(r => r.hasLocation())
     : undefined
-  await view.navToLocString(hit?.getLocation() ?? input, assemblyName)
+  await view.navToLocString(hit?.getLocation() ?? input, assembly.name)
+}
+
+type LoadedAssembly = NonNullable<
+  Awaited<ReturnType<Model['session']['assemblyManager']['waitForAssembly']>>
+>
+
+// Loaded up front so a failed load is reported as itself: navToLocString
+// swallows the rejection, and a failed chromAlias fetch then reads as an
+// unknown refName.
+async function loadAssembly(session: Model['session'], name: string) {
+  const message = `Failed to load assembly "${name}" (sequence, regions or refName aliases)`
+  const assembly = await session.assemblyManager
+    .waitForAssembly(name)
+    .catch((e: unknown) => {
+      throw new Error(message, { cause: e })
+    })
+  if (!assembly) {
+    throw new Error(message)
+  }
+  return assembly
 }
 
 // Per-mode render context. `width` is resolved once so each renderer doesn't
@@ -544,24 +549,15 @@ const renderLinear: ModeRenderer = async ctx => {
   )
 
   if (loc) {
-    const { name } = data.assembly
+    const assembly = await loadAssembly(session, data.assembly.name)
     if (loc === 'all') {
-      // showAllRegionsInAssembly reads assemblyManager.get(name).regions
-      // synchronously and no-ops if the assembly hasn't loaded yet, so wait for
-      // it first (navToLocString does this internally for the single-loc case).
-      const asm = await session.assemblyManager.waitForAssembly(name)
-      if (!asm) {
-        throw new Error(
-          `assembly "${name}" failed to load (check --fasta/--assembly/--config inputs)`,
-        )
-      }
-      view.showAllRegionsInAssembly(name)
+      view.showAllRegionsInAssembly(assembly.name)
     } else {
       await navToLocOrGene(
         view,
         session,
         loc,
-        name,
+        assembly,
         !!data.aggregateTextSearchAdapters?.length,
       )
     }

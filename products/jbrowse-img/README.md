@@ -148,7 +148,7 @@ in the index and the view jumps to the top hit.
 The `list` subcommand prints genome names and trackIds:
 
 ```bash
-## every assembly on genomes.jbrowse.org (name — organism — description)
+## the UCSC assemblies on genomes.jbrowse.org (name — organism — description)
 jb2export list
 
 ## every track in a genome (trackId, type, name)

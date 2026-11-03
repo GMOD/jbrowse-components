@@ -7,6 +7,7 @@ import { launchTrackWithModifiers } from '@jbrowse/plugin-linear-genome-view'
 
 import type { AssertNever, AssertTrue, Covers } from './types.ts'
 import type { VariantSortColumn } from '@jbrowse/alignments-core/variantSortColumn'
+import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { ColorSchemeName } from '@jbrowse/core/util/colorSchemes'
 import type { FieldPredicate } from '@jbrowse/core/util/fieldPredicate'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
@@ -148,10 +149,13 @@ export async function applyDisplayOpts(
 // launchTrack says why it failed only to the session's snackbar
 function lastSessionError(view: LinearGenomeViewModel) {
   try {
-    const { snackbarMessages } = getSession(view) as unknown as {
-      snackbarMessages: { message: string; level?: string }[]
-    }
-    return snackbarMessages.findLast(m => m.level === 'error')?.message
+    const session = getSession(view)
+    return 'snackbarMessages' in session &&
+      Array.isArray(session.snackbarMessages)
+      ? session.snackbarMessages.findLast(
+          (m: SnackbarMessage) => m.level === 'error',
+        )?.message
+      : undefined
   } catch {
     return undefined
   }
