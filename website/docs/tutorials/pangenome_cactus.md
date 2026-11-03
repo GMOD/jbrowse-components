@@ -638,7 +638,6 @@ Past the flagellar operon, K12 has an IS1 element (a short insertion sequence)
 the other four skip. To see it:
 
 - Type `chr:1,978,100-1,979,700`.
-- Pick **Force-directed** under the **Layout** row of the graph track's menu.
 - Turn on the strains-per-segment track.
 - Show the [MAF track](#whole-genome-alignment-maf-projection) above the graph:
   the strains-per-segment track counts the strains, and the MAF's rows name

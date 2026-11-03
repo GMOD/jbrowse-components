@@ -957,12 +957,8 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           tracks: [
             'hprc_minigraph_bubbles',
             'hprc_bubble_score',
-            // the tutorial's config names no layout; the portal's opens
-            // force-directed
-            graphTrack(SEGMENTS_TRACK, {
-              color: { field: 'position' },
-              layoutMode: 'auto',
-            }),
+            // the tutorial's config names no layout, so this is the default
+            graphTrack(SEGMENTS_TRACK, { color: { field: 'position' } }),
           ],
         },
       ],

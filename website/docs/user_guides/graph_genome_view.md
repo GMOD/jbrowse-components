@@ -65,10 +65,10 @@ the graph. [Route 1](#route-1-a-graph-track-browsable-by-locus) builds the
 index. Skip to [Seven layouts](#three-layouts) if you just need to know what the
 track menu's items do.
 
-The graph opens in the **Anchored** layout, on the view's coordinates, so typing
-in the location box, a gene search, a click on the cytoband and a drag-zoom move
-it as they move every other track. When the view moves past the stretch the
-graph was cut from, the track cuts the new window.
+The graph opens force-directed, its backbone running left to right in reference
+order under the other tracks. Typing in the location box, a gene search, a click
+on the cytoband and a drag-zoom move the view, and the track cuts the new window
+and lays it out again, keeping the drawing it had.
 
 A graph track can also name a coarse tier, the same graph with one node per
 bubble. Zoomed out past the handover the track names, the track cuts the tier,
@@ -326,15 +326,15 @@ start screen with the graph as long as the files stay where they were.
 The track menu's **Layout** submenu draws the same subgraph seven ways, and the
 axes mean something different in each:
 
-| Layout                | x               | y                       |
-| --------------------- | --------------- | ----------------------- |
-| Anchored              | reference bp    | one row per stable rank |
-| Sample rows           | reference bp    | one row per assembly    |
-| Walk rows             | per-walk bp     | one bar per haplotype   |
-| Ordered               | reference order | a lane per allele       |
-| Tube map              | node order      | a tube per path         |
-| Tube map on reference | reference bp    | a tube per path         |
-| **Force-directed**    | nothing (FMMM)  | nothing                 |
+| Layout                | x                                        | y                       |
+| --------------------- | ---------------------------------------- | ----------------------- |
+| Anchored              | reference bp                             | one row per stable rank |
+| Sample rows           | reference bp                             | one row per assembly    |
+| Walk rows             | per-walk bp                              | one bar per haplotype   |
+| Ordered               | reference order                          | a lane per allele       |
+| Tube map              | node order                               | a tube per path         |
+| Tube map on reference | reference bp                             | a tube per path         |
+| **Force-directed**    | reference order (stress), nothing (FMMM) | nothing                 |
 
 **Ordered** keeps x monotone in reference order, ignoring bp. A SNP allele gets
 the same room as the kilobase segment beside it, and a bubble draws as a lens.
@@ -342,22 +342,24 @@ the same room as the kilobase segment beside it, and a bubble draws as a lens.
 bar. **Tube map** and **Tube map on reference** need P or W lines, and draw each
 path as a colored tube through boxed nodes.
 
-The track opens in **Anchored**, whose x is the view's coordinate, so the graph
-lines up under the other tracks and pans and zooms with them. **Ordered** and
-**Force-directed** give x another meaning, so the track draws them in
-coordinates fitted to the track, the way a variant matrix does, and adds **Zoom
-in**, **Zoom out** and **Zoom to fit** to its menu; moving the view still cuts
-the new window.
+The track opens in **Force-directed (stress)**: the stress engine lays the
+backbone out in reference order and keeps the drawing steady as the view moves,
+with each allele as a loop off it. **Force-directed (FMMM)** is Bandage's own
+layout, which can turn the drawing between cuts; a track config picks it with
+`"layoutEngine": "fmmm"` on its `LinearGraphDisplay`. Force-directed and
+**Ordered** draw in coordinates fitted to the track, the way a variant matrix
+does, and add **Zoom in**, **Zoom out** and **Zoom to fit** to the track menu;
+moving the view still cuts the new window. **Anchored** keeps x on the view's
+coordinate, so the graph lines up column for column under the other tracks.
 
 A strip along the top of such a track draws each reference segment at its bp in
 the view, in the color its node has below, so under the **Reference position**
 scheme you can match a hue on the strip to its node in the drawing. A triangle
 at either end of the strip marks reference the graph draws past that edge of the
-window, and **Reference strip at bp** in the track menu turns the strip off. Use
-**Force-directed** when the structure of a locus matters: an anchored drawing
-flattens both routes through a locus onto the reference axis, and an allele then
-looks like a stub hanging under a line. A graph opened from a file starts in the
-force layout.
+window, and **Reference strip at bp** in the track menu turns the strip off. An
+anchored drawing flattens both routes through a locus onto the reference axis,
+and an allele then looks like a stub hanging under a line. A graph opened from a
+file starts in the force layout, drawn by FMMM.
 
 Anchored and Sample rows both need a backbone, from rGFA tags or from a
 reference path, and a graph with neither greys them out. Force-directed is then
