@@ -23,7 +23,12 @@ const MAX_NUMERIC_ARRAY_LENGTH = 5
 const useStyles = makeStyles()(theme => ({
   field: {
     display: 'flex',
+  },
+  fieldSubvalues: {
+    display: 'flex',
     flexWrap: 'wrap',
+    flex: 1,
+    minWidth: 0,
   },
 
   fieldSubvalue: {
@@ -114,7 +119,7 @@ const ArrayValue = observer(function ArrayValue({
           />
         </>
       ) : (
-        <>
+        <div className={classes.fieldSubvalues}>
           {displayedValues.map((val, i) => (
             // eslint-disable-next-line @eslint-react/no-array-index-key -- static positional list of primitive values, no unique field available
             <div key={`${String(val)}-${i}`} className={classes.fieldSubvalue}>
@@ -133,7 +138,7 @@ const ArrayValue = observer(function ArrayValue({
                 : `Showing ${limit} of ${value.length}. Show all...`}
             </button>
           ) : null}
-        </>
+        </div>
       )}
     </div>
   )

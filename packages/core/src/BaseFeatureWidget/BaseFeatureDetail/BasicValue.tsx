@@ -15,6 +15,7 @@ const useStyles = makeStyles()(theme => ({
     wordBreak: 'break-word',
     fontSize: 12,
     padding: theme.spacing(0.5),
+    flex: 1,
     minWidth: 0,
   },
   clip: {
