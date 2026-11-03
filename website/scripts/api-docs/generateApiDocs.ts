@@ -4,7 +4,8 @@ import slugify from 'slugify'
 
 import { writeDoc, writePage } from './format.ts'
 import { parseTaggedComment } from './jsDocTags.ts'
-import { codeBlock, exampleSection, repoRelative, section } from './util.ts'
+import { codeBlock, exampleSection, section } from './markdown.ts'
+import { repoRelative } from './util.ts'
 
 import type { Example } from './jsDocTags.ts'
 import type { ExtractedNode } from './util.ts'

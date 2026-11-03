@@ -1,5 +1,5 @@
 import { markerBlocksInDocs, rewriteMarkerBlock } from '../markerDocs.ts'
-import { markdownTable } from './util.ts'
+import { markdownTable } from './markdown.ts'
 
 // Which docs render each generated marker block, read off the docs themselves.
 //

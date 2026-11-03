@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { rewriteMarkerBlock } from '../markerDocs.ts'
-import { markdownTable } from './util.ts'
+import { markdownTable } from './markdown.ts'
 
 // Which shared `.slang` module in render-core each shader imports, rendered
 // into SHADER_JS_CODEGEN.md from the import lines themselves.

@@ -6,7 +6,7 @@ import {
   modelPageId,
   resolvedProperties,
 } from './generateStateModelDocs.ts'
-import { markdownTable, proseCell } from './util.ts'
+import { markdownTable, proseCell } from './markdown.ts'
 
 import type { StateModel } from './generateStateModelDocs.ts'
 import type { SourceCorpus } from './sourceCorpus.ts'

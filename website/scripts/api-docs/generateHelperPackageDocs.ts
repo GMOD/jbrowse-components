@@ -3,7 +3,7 @@ import path from 'path'
 
 import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { servedPackages } from './generateReExportDocs.ts'
-import { markdownTable } from './util.ts'
+import { markdownTable } from './markdown.ts'
 
 import type { SourceCorpus } from './sourceCorpus.ts'
 

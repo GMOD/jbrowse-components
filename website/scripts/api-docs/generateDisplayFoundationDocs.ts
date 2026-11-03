@@ -1,5 +1,6 @@
 import { rewriteMarkerBlock } from '../markerDocs.ts'
-import { composeCalls, markdownTable } from './util.ts'
+import { markdownTable } from './markdown.ts'
+import { composeCalls } from './util.ts'
 
 import type { SourceCorpus } from './sourceCorpus.ts'
 

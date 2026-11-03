@@ -1,18 +1,20 @@
 import { lastTaggedLine, parseTaggedComment } from './jsDocTags.ts'
 import {
+  exampleSection,
+  markdownTable,
+  overviewSection,
+  proseCell,
+  section,
+} from './markdown.ts'
+import {
   categoryLabel,
   collectTransitive,
   dropNodeTails,
   elideSignature,
-  exampleSection,
   filterUnseenByName,
-  markdownTable,
   nameTypes,
-  overviewSection,
-  proseCell,
   removeComments,
   repoRelative,
-  section,
   sortUnionMembers,
   stripPropertyName,
   unreadableSignature,

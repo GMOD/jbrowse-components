@@ -3,7 +3,7 @@ import {
   collectGatedAdapterBudgets,
 } from '../../../scripts/gatedBudgets.ts'
 import { rewriteMarkerBlock } from '../markerDocs.ts'
-import { markdownTable } from './util.ts'
+import { markdownTable } from './markdown.ts'
 
 // The byte budget each gated adapter is measured against, rendered into
 // REGION_TOO_LARGE.md from the two schemas that decide it.

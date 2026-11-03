@@ -3,7 +3,7 @@ import fs from 'fs'
 import { markerBlocks } from '../markerBlocks.ts'
 import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { scanLaunchArgs } from './generateSpecKeyDocs.ts'
-import { markdownTable, tableCell } from './util.ts'
+import { markdownTable, tableCell } from './markdown.ts'
 
 import type { SourceCorpus } from './sourceCorpus.ts'
 

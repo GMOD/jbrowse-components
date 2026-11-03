@@ -2,8 +2,8 @@ import * as ts from 'typescript'
 
 import { rewriteMarkerBlock } from '../markerDocs.ts'
 import { jsDocText } from './jsDocTags.ts'
+import { markdownTable, proseCell } from './markdown.ts'
 import { parseSourceFileSyntactic } from './sourceCorpus.ts'
-import { markdownTable, proseCell } from './util.ts'
 
 // The mark display's rule list, as the mark display guide lists it: every
 // entry of `MARK_RULES`, its level, and the JSDoc on the entry, which is the

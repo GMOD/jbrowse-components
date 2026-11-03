@@ -2,8 +2,8 @@ import * as ts from 'typescript'
 
 import { rewriteGroupedMarkerBlocks } from '../markerDocs.ts'
 import { jsDocText, parsePipeTags } from './jsDocTags.ts'
+import { markdownTable } from './markdown.ts'
 import { parseSourceFileSyntactic } from './sourceCorpus.ts'
-import { markdownTable } from './util.ts'
 
 // Render small color-swatch tables into the hand-written guides, sourced from
 // the actual color constants so the docs can never drift from the code (the

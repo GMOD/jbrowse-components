@@ -1,7 +1,7 @@
 import fs from 'fs'
 
 import { rewriteMarkerBlock } from '../markerDocs.ts'
-import { markdownTable } from './util.ts'
+import { markdownTable } from './markdown.ts'
 
 // What `gen:shaders` writes into a `*.generated.ts`, rendered into the GPU
 // display guide from the emitter itself.
