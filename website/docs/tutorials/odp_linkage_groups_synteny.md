@@ -31,8 +31,8 @@ each over several. We:
 - `samtools`
 - `curl` and `tar`
 - `node`, for the [JBrowse CLI](/docs/cli)
-- [odp](https://github.com/conchoecia/odp) and its
-  [snakemake](https://snakemake.readthedocs.io/), for
+- [odp](https://github.com/conchoecia/odp), with
+  [conda](https://conda-forge.org/download/) for its environment, for
   [your own genomes](#running-odp-on-your-own-genomes) only
 - A running JBrowse instance (the [web quickstart](/docs/quickstart_web) or the
   [desktop quickstart](/docs/quickstart_desktop))
@@ -101,20 +101,40 @@ The deposit holds odp's output for the page's genomes. For your own, odp takes a
 protein FASTA, a genome FASTA and a `.chrom` file per genome. A `.chrom` line is
 a protein id, the scaffold it sits on, the strand, and the least and greatest
 CDS coordinates, tab-separated. Name each genome by a short code, which becomes
-its assembly name in JBrowse:
+its assembly name in JBrowse.
 
-odp's linkage-group databases ship as tarballs, and the colored tables come only
-from an unpacked one, so build them once in the clone:
+odp runs under snakemake 7 or 8 and pandas 2, which a fresh environment does not
+pick by default:
 
 ```bash
-# unpacks and indexes the linkage-group databases under odp/LG_db/
-cd odp && make
+# odp breaks under pandas 3 and snakemake 9; diamond, blast and hmmer are the
+# searches it runs
+conda create -n odp -c conda-forge -c bioconda python=3.11 \
+  'snakemake-minimal>=7,<9' 'pandas<3' numpy matplotlib networkx scipy \
+  seaborn biopython pyyaml diamond blast hmmer
+```
+
+For an NCBI annotation, a script in odp writes the `.chrom` from the GFF:
+
+```bash
+python3 odp/scripts/NCBIgff2chrom.py genomic.gff > SP.chrom
+```
+
+The colored tables come only from a linkage-group database unpacked in the
+clone. Building the BCnS one takes about a minute:
+
+```bash
+# odp refuses an LG_db directory whose name has '_', and a bare make also
+# unpacks BCnS_LGs, so build this database alone
+cd odp && make BCnSSimakov2022 seqtk fainfo
 ```
 
 ```yaml
 # config.yaml; plot_LGs adds the gene_group and color columns from each
-# installed linkage-group database
+# installed linkage-group database, and diamond searches faster than blastp,
+# odp's default
 plot_LGs: True
+diamond_or_blastp: diamond
 species:
   EMU:
     proteins: EMU.pep
@@ -128,14 +148,15 @@ species:
 
 ```bash
 # from the directory holding config.yaml, with odp cloned beside it
-snakemake -r -p --snakefile odp/scripts/odp
+odp/bin/odp run --config config.yaml
 ```
 
-odp writes the colored tables under
-`odp/step2-figures/synteny_coloredby_<database>/`, one per pair, where
-`<database>` is the name of the unpacked database directory. The deposit was
-made by an older odp that wrote the same tables under `synteny_analysis/`. The
-conversion below reads either.
+Two RefSeq genomes, _Nematostella_ and amphioxus, took about 20 minutes on 16
+cores. odp writes the colored tables under
+`odp/step2-figures/synteny_coloredby_BCnSSimakov2022/`, one per pair. An older
+odp made the deposit, with a database named `BCnS_LGs` and the tables under
+`synteny_analysis/`. The conversion below reads either. The group names are the
+same, and the palette in `color` differs.
 
 ### Converting a table to a `.blocks` file
 
