@@ -685,6 +685,8 @@ cp ecoli_pggb.fine.graph.bed.gz.tbi "$APP/ecoli_pggb.graph.bed.gz.tbi"
 # segments carrying 715 kb; refolded in the contig layout it cuts 17.
 gfa-to-tabix fold "$GFA" --below 50 --reference "$REF" --layout contig -o ecoli_pggb.fold50
 cp ecoli_pggb.fold50.graph.bed.gz ecoli_pggb.fold50.graph.bed.gz.tbi "$APP/"
+# Open track reads the tier from this manifest beside ecoli_pggb.graph.bed.gz
+cp ecoli_pggb.graph.json "$APP/"
 cat > pggb_segments_track.json <<'JSON'
 {
   "type": "GraphTrack",

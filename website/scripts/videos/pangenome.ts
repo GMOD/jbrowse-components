@@ -91,7 +91,7 @@ function addGraphTrackSteps(json: string): VideoStep[] {
     {
       type: 'type',
       selector: URL_INPUT,
-      value: `${conf.adapter.uri}.segs.bed.gz`,
+      value: `${conf.adapter.uri}.graph.bed.gz`,
     },
     ...(sample
       ? [{ type: 'type', selector: SAMPLE_INPUT, value: sample } as VideoStep]
