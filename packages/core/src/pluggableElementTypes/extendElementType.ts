@@ -1,3 +1,5 @@
+import LazyStateModelElement from './LazyStateModelElement.ts'
+
 import type PluginManager from '../PluginManager.ts'
 import type {
   DisplayTypeName,
@@ -19,6 +21,28 @@ function widen<T>(extend: (stateModel: T) => IAnyModelType) {
 // for each one.
 function namesOf(name: string | readonly string[]) {
   return new Set(typeof name === 'string' ? [name] : name)
+}
+
+function extendStateModelsOf(
+  pluginManager: PluginManager,
+  group: 'view' | 'display',
+  name: string | readonly string[],
+  extend: (stateModel: IAnyModelType) => IAnyModelType,
+) {
+  const names = namesOf(name)
+  pluginManager.addToExtensionPoint(
+    'Core-extendPluggableElement',
+    (element, props) => {
+      if (
+        props.group === group &&
+        names.has(element.name) &&
+        element instanceof LazyStateModelElement
+      ) {
+        element.extendStateModel(extend)
+      }
+      return element
+    },
+  )
 }
 
 /**
@@ -46,35 +70,7 @@ export function extendViewType<N extends ViewTypeName>(
   name: N | readonly N[],
   extend: (stateModel: ViewTypeRegistry[N]) => IAnyModelType,
 ) {
-  const names = namesOf(name)
-  pluginManager.addToExtensionPoint(
-    'Core-extendPluggableElement',
-    (element, props) => {
-      if (props.group === 'view' && names.has(element.name)) {
-        // The group check established this element is a ViewType, and the
-        // registry says which one, so the read is proven. The body still works
-        // in `IAnyModelType`: `ViewTypeRegistry` is declared empty here and
-        // filled by module augmentation, so inside this package `ViewTypeName`
-        // is `never` and `ViewTypeRegistry[N]` with it — a value of that type
-        // cannot be produced or consumed, and compiling core alone fails on
-        // both. The precise type is what the *caller* gets, which is the whole
-        // point of the signature; widening it once here costs nothing, since
-        // the only operation is handing the model to `extend` and storing what
-        // comes back.
-        //
-        // Routed through extendStateModel rather than assigning `.stateModel`
-        // directly so a view registered with a lazy loader queues the
-        // extension and composes it when the loader resolves.
-        const view = element as {
-          extendStateModel: (
-            extend: (stateModel: IAnyModelType) => IAnyModelType,
-          ) => void
-        }
-        view.extendStateModel(widen(extend))
-      }
-      return element
-    },
-  )
+  extendStateModelsOf(pluginManager, 'view', name, widen(extend))
 }
 
 /**
@@ -86,21 +82,5 @@ export function extendDisplayType<N extends DisplayTypeName>(
   name: N | readonly N[],
   extend: (stateModel: DisplayTypeRegistry[N]) => IAnyModelType,
 ) {
-  const names = namesOf(name)
-  pluginManager.addToExtensionPoint(
-    'Core-extendPluggableElement',
-    (element, props) => {
-      if (props.group === 'display' && names.has(element.name)) {
-        // widened for the reason in extendViewType; routed through
-        // extendStateModel so a lazy registration queues the extension
-        const display = element as {
-          extendStateModel: (
-            extend: (stateModel: IAnyModelType) => IAnyModelType,
-          ) => void
-        }
-        display.extendStateModel(widen(extend))
-      }
-      return element
-    },
-  )
+  extendStateModelsOf(pluginManager, 'display', name, widen(extend))
 }
