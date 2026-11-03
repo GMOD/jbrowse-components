@@ -88,9 +88,16 @@ describe('INFO.END on a record without a symbolic ALT', () => {
     expect(f.get('end')).toEqual(10003)
   })
 
-  test('a plain sequence ALT spans to END', () => {
+  test('a plain sequence ALT keeps REF length whatever END says', () => {
     const f = createFeature('chr1\t100\t.\tA\tG\t.\t.\tEND=150')
-    expect(f.get('end')).toEqual(150)
+    expect(f.get('end')).toEqual(100)
+  })
+
+  test('a record never draws shorter than its REF', () => {
+    const reference = createFeature('chr1\t100\t.\tACG\t.\t.\t.\tEND=101')
+    const symbolic = createFeature('chr1\t100\t.\tACG\t<INS>\t.\t.\tEND=101')
+    expect(reference.get('end')).toEqual(102)
+    expect(symbolic.get('end')).toEqual(102)
   })
 
   test('an END at or before POS is ignored', () => {
@@ -113,9 +120,9 @@ describe('INFO.END on a record without a symbolic ALT', () => {
     expect(f.get('end')).toEqual(100)
   })
 
-  test('a breakend beside a sequence allele takes END from the sequence allele', () => {
+  test('a breakend beside a sequence allele keeps REF length', () => {
     const f = createFeature('chr1\t100\t.\tN\tG,N]chr2:5000]\t.\t.\tEND=500')
-    expect(f.get('end')).toEqual(500)
+    expect(f.get('end')).toEqual(100)
   })
 })
 
