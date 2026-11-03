@@ -242,7 +242,7 @@ wc -l < unmapped.bed   # records the chain could not place
   "trackId": "omia_dog_variants",
   "name": "OMIA causal variants (dog)",
   "uri": "omia_dog_variants.gff3.gz",
-  "index": "omia_dog_variants.gff3.gz.csi",
+  "csi": true,
   "assemblyNames": ["UU_Cfam_GSD_1.0"],
   "displayDefaults": {
     "labels": { "description": "jexl:feature.inheritance" }
@@ -451,7 +451,7 @@ annotation track on its assembly:
   "trackId": "dog10k_fgf4_retro_cfa12_genes",
   "name": "FGF4 CFA12 retrocopy: GenBank annotation (MF040221)",
   "uri": "FGF4retro-CFA12.gff3.gz",
-  "index": "FGF4retro-CFA12.gff3.gz.csi",
+  "csi": true,
   "assemblyNames": ["FGF4retro-CFA12"]
 }
 ```
@@ -461,7 +461,7 @@ annotation track on its assembly:
   "trackId": "dog10k_fgf4_retro_cfa18_genes",
   "name": "FGF4 CFA18 retrocopy: GenBank annotation (MF040222)",
   "uri": "FGF4retro-CFA18.gff3.gz",
-  "index": "FGF4retro-CFA18.gff3.gz.csi",
+  "csi": true,
   "assemblyNames": ["FGF4retro-CFA18"]
 }
 ```

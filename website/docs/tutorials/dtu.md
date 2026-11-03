@@ -262,7 +262,7 @@ muscle-preferred above. A value on a cut takes the interval above it.
   "trackId": "dtu_muscle_vs_liver",
   "name": "Transcript usage: skeletal muscle vs liver (satuRn)",
   "uri": "https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz",
-  "index": "https://jbrowse.org/demos/dtu/dtu_muscle_vs_liver.gff3.gz.csi",
+  "csi": true,
   "assemblyNames": ["hg38"],
   "displayDefaults": {
     "encoding": {

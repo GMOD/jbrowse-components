@@ -17201,6 +17201,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string",
           "description": "The index file beside \`uri\`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
+        },
         "displayDefaults": {
           "title": "FeatureTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
@@ -17765,6 +17769,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string",
           "description": "The index file beside \`uri\`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
+        },
         "displayDefaults": {
           "title": "AlignmentsTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
@@ -18156,6 +18164,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string",
           "description": "The index file beside \`uri\`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
+        },
         "displayDefaults": {
           "title": "ReferenceSequenceTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
@@ -18356,6 +18368,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "index": {
           "type": "string",
           "description": "The index file beside \`uri\`, when it is not at the conventional name."
+        },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
         },
         "displayDefaults": {
           "title": "VariantTrackDisplayDefaults",
@@ -18780,6 +18796,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string",
           "description": "The index file beside \`uri\`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
+        },
         "displayDefaults": {
           "title": "LDTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
@@ -19055,6 +19075,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "index": {
           "type": "string",
           "description": "The index file beside \`uri\`, when it is not at the conventional name."
+        },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
         },
         "displayDefaults": {
           "title": "QuantitativeTrackDisplayDefaults",
@@ -19394,6 +19418,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string",
           "description": "The index file beside \`uri\`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
+        },
         "displayDefaults": {
           "title": "MultiQuantitativeTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
@@ -19732,6 +19760,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string",
           "description": "The index file beside \`uri\`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
+        },
         "displayDefaults": {
           "title": "GCContentTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
@@ -19977,6 +20009,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "index": {
           "type": "string",
           "description": "The index file beside \`uri\`, when it is not at the conventional name."
+        },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
         },
         "displayDefaults": {
           "title": "MafTrackDisplayDefaults",
@@ -20292,6 +20328,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "type": "string",
           "description": "The index file beside \`uri\`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
+        },
         "displayDefaults": {
           "title": "HicTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the \`displays\` array.",
@@ -20511,6 +20551,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "index": {
           "type": "string",
           "description": "The index file beside \`uri\`, when it is not at the conventional name."
+        },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
         },
         "displayDefaults": {
           "title": "SyntenyTrackDisplayDefaults",
@@ -20989,6 +21033,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "index": {
           "type": "string",
           "description": "The index file beside \`uri\`, when it is not at the conventional name."
+        },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
         },
         "displayDefaults": {
           "title": "GWASTrackDisplayDefaults",
@@ -23579,6 +23627,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "index": {
           "type": "string"
+        },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside \`uri\` is a \`.csi\` rather than a \`.tbi\`/\`.bai\`."
         },
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",

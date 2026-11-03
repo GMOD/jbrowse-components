@@ -1055,6 +1055,7 @@ describe('the schema and the manifest agree', () => {
     if (group === 'tracks') {
       slots.add('uri')
       slots.add('index')
+      slots.add('csi')
       slots.add('displayDefaults')
     }
     const properties = {

@@ -333,7 +333,7 @@ columns, one row per chromosome:
   "name": "1000 Genomes haplotypes across LCT (one row per haplotype)",
   "assemblyNames": ["hg38"],
   "uri": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz",
-  "index": "https://jbrowse.org/demos/popgen/lct_1kg38_chr2_6pop.vcf.gz.csi",
+  "csi": true,
   "displays": [
     {
       "type": "LinearVariantDisplay",

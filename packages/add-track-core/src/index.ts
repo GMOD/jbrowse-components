@@ -14,7 +14,11 @@ export {
   resolveIndexType,
   sidecarCandidateNames,
 } from './indexCandidates.ts'
-export { type LooseTrackInput, isLooseTrackConfig } from './looseTrackConfig.ts'
+export {
+  type LooseTrackInput,
+  isLooseTrackConfig,
+  looseIndexUri,
+} from './looseTrackConfig.ts'
 export { adapterTypesToTrackTypeMap } from './trackTypes.generated.ts'
 export {
   type IndexableFormat,

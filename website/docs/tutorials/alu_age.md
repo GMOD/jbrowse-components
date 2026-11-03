@@ -276,7 +276,7 @@ and key names live. The config below sets them in the track:
   "trackId": "alu_young_share",
   "name": "AluY share per Mb, against the genome",
   "uri": "https://jbrowse.org/code/jb2/main/test_data/alu_age/Alu.young_share.bed.gz",
-  "index": "https://jbrowse.org/code/jb2/main/test_data/alu_age/Alu.young_share.bed.gz.csi",
+  "csi": true,
   "assemblyNames": ["hg38"],
   "displays": [
     {

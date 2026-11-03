@@ -1,6 +1,7 @@
 export interface LooseTrackInput {
   uri: string
   index?: string
+  csi?: boolean
   baseUri?: string
   [key: string]: unknown
 }
@@ -19,4 +20,16 @@ export function isLooseTrackConfig(
     typeof (snap as { uri?: unknown }).uri === 'string' &&
     !('adapter' in snap)
   )
+}
+
+/**
+ * The index a loose track names: its `index`, or with `csi: true` the `.csi`
+ * beside `uri`, the same switch an adapter's `uri` shorthand takes.
+ */
+export function looseIndexUri({
+  uri,
+  index,
+  csi,
+}: Pick<LooseTrackInput, 'uri' | 'index' | 'csi'>) {
+  return csi && !index ? `${uri}.csi` : index
 }

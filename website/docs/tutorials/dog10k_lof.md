@@ -210,7 +210,7 @@ An SNV VCF loads as an ordinary `VariantTrack`:
   "trackId": "dog10k_cyp1a2_snvs",
   "name": "Dog10K SNVs at CYP1A2",
   "uri": "dog10k_cyp1a2_snvs.vcf.gz",
-  "index": "dog10k_cyp1a2_snvs.vcf.gz.csi",
+  "csi": true,
   "assemblyNames": ["UU_Cfam_GSD_1.0"]
 }
 ```
@@ -239,7 +239,7 @@ the stop site is the one column drawn. Dropping the filter shows them.
   "trackId": "dog10k_cyp1a2_snvs",
   "name": "Dog10K SNVs at CYP1A2",
   "uri": "dog10k_cyp1a2_snvs.vcf.gz",
-  "index": "dog10k_cyp1a2_snvs.vcf.gz.csi",
+  "csi": true,
   "assemblyNames": ["UU_Cfam_GSD_1.0"],
   "displays": [
     {

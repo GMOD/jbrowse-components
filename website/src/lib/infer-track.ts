@@ -1,6 +1,7 @@
 import {
   adapterTypesToTrackTypeMap,
   isLooseTrackConfig,
+  looseIndexUri,
   trackTypeForAdapter,
 } from '../../../packages/add-track-core/src/index.ts'
 import { guessTrackConfFromTable } from '../../../packages/core/src/util/formatGuessers.ts'
@@ -8,7 +9,7 @@ import { getFileName } from '../../../packages/core/src/util/getFileName.ts'
 
 import type { FileLocation } from '../../../packages/core/src/util/types/data.ts'
 
-export { isLooseTrackConfig }
+export { isLooseTrackConfig, looseIndexUri }
 
 function uriLocation(uri: string, baseUri?: unknown): FileLocation {
   return {
@@ -41,10 +42,11 @@ export function expandTrackShorthand(
   if (!isLooseTrackConfig(config)) {
     return config
   }
-  const { uri, index, baseUri, ...extra } = config
+  const { uri, index, csi, baseUri, ...extra } = config
+  const indexUri = looseIndexUri({ uri, index, csi })
   const guess = guessTrackConfFromTable(
     uriLocation(uri, baseUri),
-    index === undefined ? undefined : uriLocation(index, baseUri),
+    indexUri === undefined ? undefined : uriLocation(indexUri, baseUri),
   )
   return guess ? { ...guess, ...extra } : config
 }

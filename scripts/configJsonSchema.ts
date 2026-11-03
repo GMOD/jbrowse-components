@@ -1318,6 +1318,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       description:
         'The index file beside `uri`, when it is not at the conventional name.',
     }
+    properties.csi = shorthandSchema('csi')
     // One schema per key: the slot of every display declaring it, any of
     // which may take the value, as the loader routes it
     const declared = new Map<string, JsonSchema[]>()
@@ -1378,6 +1379,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         trackId: { type: 'string' },
         uri: { type: 'string' },
         index: { type: 'string' },
+        csi: shorthandSchema('csi'),
         ...Object.fromEntries(
           Object.entries(baseTrackSlots).filter(
             ([k]) => !['adapter', 'displays'].includes(k),

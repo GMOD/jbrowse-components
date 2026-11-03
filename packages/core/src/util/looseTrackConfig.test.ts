@@ -87,6 +87,23 @@ test('a baseUri beside uri lands on the adapter locations, not the track', () =>
   })
 })
 
+test('csi: true beside a whole-track uri names the .csi beside the file', () => {
+  const pm = withBamGuessers()
+  const conf = guessTrackConf({ uri: 'reads.bam', csi: true }, pm)
+  expect(conf.adapter).toMatchObject({
+    index: { location: uri('reads.bam.csi') },
+  })
+  expect(conf).not.toHaveProperty('csi')
+
+  const named = guessTrackConf(
+    { uri: 'reads.bam', index: 'elsewhere.csi', csi: true },
+    pm,
+  )
+  expect(named.adapter).toMatchObject({
+    index: { location: uri('elsewhere.csi') },
+  })
+})
+
 test('no baseUri adds no baseUri key', () => {
   const conf = guessTrackConf({ uri: 'reads.bam' }, withBamGuessers())
   expect(conf.adapter).toMatchObject({ bamLocation: uri('reads.bam') })

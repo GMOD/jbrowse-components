@@ -221,7 +221,7 @@ it:
   "trackId": "na12878_chr20_pairs",
   "name": "NA12878 chr20, pairs over 1 kb",
   "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz",
-  "index": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz.csi",
+  "csi": true,
   "assemblyNames": ["hg38"],
   "displays": [
     {
@@ -259,7 +259,7 @@ it:
   "trackId": "na12878_chr20_pair_counts",
   "name": "NA12878 chr20, pairs of 2 to 10 kb per bin",
   "uri": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz",
-  "index": "https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz.csi",
+  "csi": true,
   "assemblyNames": ["hg38"],
   "displays": [
     {

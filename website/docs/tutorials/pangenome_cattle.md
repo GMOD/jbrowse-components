@@ -280,7 +280,7 @@ Add the records as a track:
   "trackId": "omia_cattle_variants",
   "name": "OMIA causal variants (cattle)",
   "uri": "omia_cattle_variants.gff3.gz",
-  "index": "omia_cattle_variants.gff3.gz.csi",
+  "csi": true,
   "assemblyNames": ["bosTau9"],
   "displayDefaults": {
     "labels": {

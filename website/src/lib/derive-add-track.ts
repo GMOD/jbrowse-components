@@ -24,6 +24,7 @@ import {
   guessAdapterType,
   guessTrackType,
   isLooseTrackConfig,
+  looseIndexUri,
   syntenyAdapterTypes,
 } from './infer-track.ts'
 
@@ -65,7 +66,9 @@ export function deriveAddTrackArgs(config: unknown): string[] | null {
         ...(source.baseUri === undefined ? {} : { baseUri: source.baseUri }),
       }
     : asRecord(adapter)
-  const index = loose ? nonEmpty(source.index) : undefined
+  const index = isLooseTrackConfig(source)
+    ? nonEmpty(looseIndexUri(source))
+    : undefined
   const defaults = asRecord(displayDefaults)
 
   const id = nonEmpty(trackId)

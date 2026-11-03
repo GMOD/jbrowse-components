@@ -191,7 +191,7 @@ tiers rather than alphabetical order:
   "trackId": "broad_chromhmm_multirow_hg19",
   "name": "ChromHMM chromatin state (Broad ENCODE, 9 cell types)",
   "uri": "wgEncodeBroadHmm.multirow.bed.gz",
-  "index": "wgEncodeBroadHmm.multirow.bed.gz.csi",
+  "csi": true,
   "assemblyNames": ["hg19"],
   "category": ["ENCODE", "Chromatin state"],
   "displays": [

@@ -53,6 +53,12 @@ test('a shorthand naming its index passes it as --indexFile', () => {
   ).toEqual(expect.arrayContaining(['--indexFile', 'https://example.com/r.csi']))
 })
 
+test('a shorthand with csi: true passes the .csi beside it as --indexFile', () => {
+  expect(deriveAddTrackArgs({ ...SHORTHAND, csi: true })).toEqual(
+    expect.arrayContaining(['--indexFile', `${SHORTHAND.uri}.csi`]),
+  )
+})
+
 test('a shorthand with a baseUri has no add-track equivalent', () => {
   expect(
     deriveAddTrackArgs({ ...SHORTHAND, baseUri: 'https://example.com/' }),

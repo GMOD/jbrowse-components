@@ -246,7 +246,7 @@ tabix -C -p bed ecoli_pggb_untangle_rows.bed.gz
   "trackId": "ecoli_pggb_untangle_rows",
   "name": "pggb graph: untangle per strain (orientation, vs K12)",
   "uri": "ecoli_pggb_untangle_rows.bed.gz",
-  "index": "ecoli_pggb_untangle_rows.bed.gz.csi",
+  "csi": true,
   "assemblyNames": ["K12"],
   "displays": [
     {

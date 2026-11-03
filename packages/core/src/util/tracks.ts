@@ -19,6 +19,7 @@ export {
 
 import {
   isLooseTrackConfig,
+  looseIndexUri,
   type LooseTrackInput,
 } from '@jbrowse/add-track-core'
 import {
@@ -628,7 +629,8 @@ export function guessTrackType(
 
 /**
  * Expand a loose track description — a bare data-file URI, or an object with
- * `uri` (and optional `index`) plus any extra config keys — into a full track
+ * `uri` (and optional `index`, or `csi: true` for the `.csi` beside it) plus
+ * any extra config keys — into a full track
  * config, the same inference the "Add track" flow does: the adapter and track
  * type are guessed from the file via the format plugins, a stable `trackId` and
  * a `name` are derived from the filename, and the assembly is stamped on. Extra
@@ -642,13 +644,16 @@ export function guessTrackConf(
   pluginManager: PluginManager,
   assemblyName?: string,
 ) {
-  const { uri, index, baseUri, ...extra } =
+  const { uri, index, csi, baseUri, ...extra } =
     typeof input === 'string' ? { uri: input } : input
   const base = baseUri ? { baseUri } : {}
+  const indexUri = looseIndexUri({ uri, index, csi })
   return {
     ...guessTrackConfForLocation(
       { uri, locationType: 'UriLocation', ...base },
-      index ? { uri: index, locationType: 'UriLocation', ...base } : undefined,
+      indexUri
+        ? { uri: indexUri, locationType: 'UriLocation', ...base }
+        : undefined,
       pluginManager,
       assemblyName,
     ),

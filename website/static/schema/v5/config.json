@@ -16666,6 +16666,10 @@
           "type": "string",
           "description": "The index file beside `uri`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside `uri` is a `.csi` rather than a `.tbi`/`.bai`."
+        },
         "displayDefaults": {
           "title": "FeatureTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the `displays` array.",
@@ -17222,6 +17226,10 @@
           "type": "string",
           "description": "The index file beside `uri`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside `uri` is a `.csi` rather than a `.tbi`/`.bai`."
+        },
         "displayDefaults": {
           "title": "AlignmentsTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the `displays` array.",
@@ -17599,6 +17607,10 @@
           "type": "string",
           "description": "The index file beside `uri`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside `uri` is a `.csi` rather than a `.tbi`/`.bai`."
+        },
         "displayDefaults": {
           "title": "ReferenceSequenceTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the `displays` array.",
@@ -17789,6 +17801,10 @@
         "index": {
           "type": "string",
           "description": "The index file beside `uri`, when it is not at the conventional name."
+        },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside `uri` is a `.csi` rather than a `.tbi`/`.bai`."
         },
         "displayDefaults": {
           "title": "VariantTrackDisplayDefaults",
@@ -18205,6 +18221,10 @@
           "type": "string",
           "description": "The index file beside `uri`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside `uri` is a `.csi` rather than a `.tbi`/`.bai`."
+        },
         "displayDefaults": {
           "title": "LDTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the `displays` array.",
@@ -18470,6 +18490,10 @@
         "index": {
           "type": "string",
           "description": "The index file beside `uri`, when it is not at the conventional name."
+        },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside `uri` is a `.csi` rather than a `.tbi`/`.bai`."
         },
         "displayDefaults": {
           "title": "QuantitativeTrackDisplayDefaults",
@@ -18798,6 +18822,10 @@
           "type": "string",
           "description": "The index file beside `uri`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside `uri` is a `.csi` rather than a `.tbi`/`.bai`."
+        },
         "displayDefaults": {
           "title": "MultiQuantitativeTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the `displays` array.",
@@ -19125,6 +19153,10 @@
           "type": "string",
           "description": "The index file beside `uri`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside `uri` is a `.csi` rather than a `.tbi`/`.bai`."
+        },
         "displayDefaults": {
           "title": "GCContentTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the `displays` array.",
@@ -19360,6 +19392,10 @@
         "index": {
           "type": "string",
           "description": "The index file beside `uri`, when it is not at the conventional name."
+        },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside `uri` is a `.csi` rather than a `.tbi`/`.bai`."
         },
         "displayDefaults": {
           "title": "MafTrackDisplayDefaults",
@@ -19664,6 +19700,10 @@
           "type": "string",
           "description": "The index file beside `uri`, when it is not at the conventional name."
         },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside `uri` is a `.csi` rather than a `.tbi`/`.bai`."
+        },
         "displayDefaults": {
           "title": "HicTrackDisplayDefaults",
           "description": "Display settings routed to whichever of this track's displays takes each value, so the track need not name a display or write the `displays` array.",
@@ -19873,6 +19913,10 @@
         "index": {
           "type": "string",
           "description": "The index file beside `uri`, when it is not at the conventional name."
+        },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside `uri` is a `.csi` rather than a `.tbi`/`.bai`."
         },
         "displayDefaults": {
           "title": "SyntenyTrackDisplayDefaults",
@@ -20343,6 +20387,10 @@
         "index": {
           "type": "string",
           "description": "The index file beside `uri`, when it is not at the conventional name."
+        },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside `uri` is a `.csi` rather than a `.tbi`/`.bai`."
         },
         "displayDefaults": {
           "title": "GWASTrackDisplayDefaults",
@@ -22714,6 +22762,10 @@
         },
         "index": {
           "type": "string"
+        },
+        "csi": {
+          "type": "boolean",
+          "description": "Shorthand: the index beside `uri` is a `.csi` rather than a `.tbi`/`.bai`."
         },
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
