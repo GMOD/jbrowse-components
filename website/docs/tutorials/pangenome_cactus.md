@@ -229,24 +229,31 @@ strain:
 ```
 
 To stack the strains, a linear synteny view takes one panel per strain and names
-the track once in `tracks`, which puts it on every band. Put this in the
-session's `views`, or use **Add → Linear synteny view**, whose Quick start fills
-in a row per assembly the track lists.
+the track once in `tracks`, which puts it on every band. **Add → Linear synteny
+view**, whose Quick start fills in a row per assembly the track lists, opens the
+same view as this session:
 
-```json
+```json session config=https://jbrowse.org/demos/ecoli_pangenome/config.json
 {
-  "type": "LinearSyntenyView",
-  "views": [
-    { "assembly": "K12" },
-    { "assembly": "Sakai" },
-    { "assembly": "CFT073" },
-    { "assembly": "NCTC86" },
-    { "assembly": "IAI39" }
-  ],
-  "tracks": ["ecoli_cactus_ava"],
-  "filter": [{ "field": "length", "gte": 10000 }],
-  "levelHeights": [110, 110, 110, 110],
-  "encoding": { "color": "strand" }
+  "defaultSession": {
+    "name": "Minigraph-Cactus strains stacked",
+    "views": [
+      {
+        "type": "LinearSyntenyView",
+        "views": [
+          { "assembly": "K12" },
+          { "assembly": "Sakai" },
+          { "assembly": "CFT073" },
+          { "assembly": "NCTC86" },
+          { "assembly": "IAI39" }
+        ],
+        "tracks": ["ecoli_cactus_ava"],
+        "filter": [{ "field": "length", "gte": 10000 }],
+        "levelHeights": [110, 110, 110, 110],
+        "encoding": { "color": "strand" }
+      }
+    ]
+  }
 }
 ```
 
@@ -391,11 +398,44 @@ for strain in Sakai CFT073 NCTC86 IAI39; do
 done
 ```
 
-Each strain's presence bigWig loads as one row of a
-[`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track#many-signals-in-one-track),
-the
-[pggb page's presence track](/docs/tutorials/pangenome_ecoli#per-strain-presence)
-with `ecoli_cactus_pav_` in each `uri`.
+The four bigWigs load as one heatmap track, a
+[`MultiQuantitativeTrack`](/docs/config_guides/quantitative_track#many-signals-in-one-track)
+with a row per strain, where a white column is a stretch that strain lacks:
+
+```json addtrack
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "ecoli_cactus_pav",
+  "name": "MC graph: per-strain presence (odgi pav, vs K12)",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      {
+        "type": "BigWigAdapter",
+        "name": "Sakai",
+        "uri": "ecoli_cactus_pav_Sakai.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "CFT073",
+        "uri": "ecoli_cactus_pav_CFT073.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "NCTC86",
+        "uri": "ecoli_cactus_pav_NCTC86.bw"
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "IAI39",
+        "uri": "ecoli_cactus_pav_IAI39.bw"
+      }
+    ]
+  },
+  "displayDefaults": { "mark": "rect" }
+}
+```
 
 Depth counts path **steps**, so a repeat the graph folded onto one run of nodes
 reads above the strain count. seqwish, pggb's graph builder, folds the rrnC and
@@ -556,14 +596,50 @@ types → Feature display** in its menu draws the segments as a row.
 
 <Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="Adding the graph track to an empty K12 session with Open track... → Add pangenome graph track." />
 
+The index records which strains pass through each segment as an `SB:H:` bitmask,
+and a feature track over the same files colors each segment by that count:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "ecoli_cactus_carriage",
+  "name": "MC graph: strains per segment",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "RgfaTabixAdapter",
+    "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus",
+    "format": 2
+  },
+  "displayDefaults": {
+    "displayMode": "collapsed",
+    "labels": { "name": { "show": false }, "description": { "show": false } },
+    "encoding": {
+      "color": {
+        "field": "sampleCount",
+        "scale": {
+          "domain": ["5", "4", "3", "2", "1"],
+          "range": ["#bdbdbd", "#fed976", "#feb24c", "#fd8d3c", "#e31a1c"],
+          "names": [
+            "All 5 strains (core)",
+            "4 strains",
+            "3 strains",
+            "2 strains",
+            "1 strain (private)"
+          ]
+        },
+        "legend": { "title": "Strains" }
+      }
+    }
+  }
+}
+```
+
 Past the flagellar operon, K12 has an IS1 element (a short insertion sequence)
 the other four skip. To see it:
 
 - Type `chr:1,978,100-1,979,700`.
 - Pick **Force-directed** under the **Layout** row of the graph track's menu.
-- Add a second copy of the segments track, colored by how many strains the
-  index's `SB:H:` bits mark for each segment
-  ([config on the pggb page](/docs/tutorials/pangenome_ecoli#strains-per-segment-as-a-track)).
+- Turn on the strains-per-segment track.
 - Show the [MAF track](#whole-genome-alignment-maf-projection) above the graph:
   the strains-per-segment track counts the strains, and the MAF's rows name
   them.
