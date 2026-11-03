@@ -108,12 +108,6 @@ How to drive JBrowse once it is running. New here? Start with the
 
 ### Pangenomes
 
-#### Building a graph
-
-- [](/docs/tutorials/pangenome_ecoli)
-- [](/docs/tutorials/pangenome_cactus)
-- [](/docs/tutorials/pangenome_prepare_graph)
-
 #### HPRC release 2
 
 - [](/docs/tutorials/pangenome_hprc)
@@ -124,6 +118,12 @@ How to drive JBrowse once it is running. New here? Start with the
 
 - [](/docs/tutorials/pangenome_mouse)
 - [](/docs/tutorials/pangenome_cattle)
+
+#### Building a graph
+
+- [](/docs/tutorials/pangenome_prepare_graph)
+- [](/docs/tutorials/pangenome_ecoli)
+- [](/docs/tutorials/pangenome_cactus)
 
 ### Structural variation
 

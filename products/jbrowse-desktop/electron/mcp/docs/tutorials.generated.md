@@ -550,7 +550,6 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_cattle/
 
 - https://hgdownload.soe.ucsc.edu/goldenPath/bosTau9/bigZips/bosTau9.2bit
 - https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/pangenome_nonhuman.json
-- https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.alleles.bed.gz
 - https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz
 - https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.fold10000.graph.bed.gz
 - https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.graph.bed.gz
@@ -581,6 +580,10 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc/
 - https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.bubbles.bed.gz
 - https://jbrowse.org/pangenome/hprc-grch38/NA20809.2.chrom.sizes
 - https://jbrowse.org/pangenome/hprc-grch38/config.json
+- https://jbrowse.org/pangenome/hprc-grch38/known-alleles.gff3
+- https://jbrowse.org/pangenome/hprc-grch38/sv-callset/hprc-v2.1-mc-grch38.sv.v4.vcf.gz
+- https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz
+- https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz.csi
 - https://jbrowse.org/ucsc/hg38/hg38.gff.gz
 - https://jbrowse.org/ucsc/hg38/hg38.gff.gz.csi
 - https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz
@@ -594,6 +597,9 @@ Draw HPRC haplotypes as lanes in assembly coordinates, aligned to each other by 
 Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_hprc_haplotypes/
 
 - https://jbrowse.org/pangenome/hprc-grch38/config.json
+- https://jbrowse.org/pangenome/hprc-grch38/known-alleles.gff3
+- https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz
+- https://jbrowse.org/ucsc/hg38/gwasCatalog.bed.gz.csi
 - https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
 
 ## Pangenome (HPRC) part 3: repeat lengths across haplotypes
@@ -622,7 +628,6 @@ Page: https://jbrowse.org/jb2/docs/tutorials/pangenome_mouse/
 - https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.2bit
 - https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.fa.gz
 - https://jbrowse.org/code/jb2/main/test_data/graphgenomeview/pangenome_nonhuman.json
-- https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.alleles.bed.gz
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.fold10000.graph.bed.gz
 - https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.graph.bed.gz
