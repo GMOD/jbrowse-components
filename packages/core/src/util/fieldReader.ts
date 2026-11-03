@@ -6,6 +6,7 @@ import { PROXY_NAMES, buildJexlContext } from './simpleFeature.ts'
 
 import type { JexlInstance } from './jexlStrings.ts'
 import type { Feature } from './simpleFeature.ts'
+import type { AstNode } from '@jbrowse/jexl'
 
 /**
  * #api
@@ -21,8 +22,21 @@ export function fieldReader(
   const path = ref.includes('.') ? ref.split('.') : undefined
   const rests = path?.map((_, i) => path.slice(i).join('.'))
   const name = plainFieldName(ref)
+  const chain = name === undefined ? plainFieldChain(ref) : undefined
   if (name !== undefined) {
     return feature => feature.get(name)
+  }
+  if (chain) {
+    return feature => {
+      let value: unknown
+      for (const field of chain) {
+        value = feature.get(field)
+        if (value) {
+          break
+        }
+      }
+      return value
+    }
   }
   if (isJexl(ref)) {
     if (!jexl) {
@@ -75,9 +89,30 @@ export function plainFieldName(ref: string) {
     return ref.includes('.') ? undefined : ref
   }
   const ast = parseJexl(ref)
-  if (!ast) {
-    return undefined
-  }
+  return ast ? plainFieldOfAst(ast) : undefined
+}
+
+// A chain of `||` over plain field reads, as `get(feature,'name') ||
+// get(feature,'id')` is, read natively: the first truthy field, else the last
+// term's value, as jexl's `||` answers.
+function plainFieldChain(ref: string) {
+  const ast = isJexl(ref) ? parseJexl(ref) : undefined
+  const names =
+    ast?.type === 'BinaryExpression'
+      ? orTerms(ast).map(term => plainFieldOfAst(term))
+      : []
+  return names.length > 1 && names.every(name => name !== undefined)
+    ? names
+    : undefined
+}
+
+function orTerms(ast: AstNode): AstNode[] {
+  return ast.type === 'BinaryExpression' && ast.operator === '||'
+    ? [...orTerms(ast.left), ...orTerms(ast.right)]
+    : [ast]
+}
+
+function plainFieldOfAst(ast: AstNode) {
   const viaGet = ast.type === 'FunctionCall' && ast.name === 'get'
   const { bare, reads } = analyze(ast, FEATURE_ROW)
   const [read] = reads
