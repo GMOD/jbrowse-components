@@ -210,8 +210,7 @@ promote-every-16 pattern and a parity test built on fractional input. All on an 
 Declined, with the test they fail: coverage and pileup on the GPU (linear, and a
 coverage GPU pass that compiled clean cost correctness); per-site population statistics (linear; Fst between user-chosen
 groups is a worker feature, the partition being a runtime choice); genome-wide
-sequence search (`local-sequence-search.md` lands it as bandwidth-bound on
-fetching the FASTA); Hi-C balancing (elementwise, files ship normalization
+sequence search (bandwidth-bound on fetching the FASTA); Hi-C balancing (elementwise, files ship normalization
 vectors); a local LLM (fails the first test outright, and a remote model is the
 better experience).
 

@@ -34,6 +34,10 @@ export interface ScanWindow {
  * A subclass's registration declares `READS_REFERENCE` itself: the capability
  * lives on the adapter type, so it is not inherited, and a scan registered
  * without it answers every genome from the first one's sequence.
+ *
+ * A genome-wide mode was declined: on hg38 it downloads the 835 MB .2bit and
+ * finds only exact matches, while BLAT (`plugins/blat`) answers "where is this
+ * sequence" server-side and tolerates mismatches and introns.
  */
 export abstract class ReferenceScanAdapter<
   CONF extends AnyConfigurationModel = AnyConfigurationModel,

@@ -135,8 +135,8 @@ completing against NCBI's own 22-second estimate. A link-out that prefills the
 search page costs a URL and is honest about what BLAST answers. Note the premise
 to avoid: "BLAST hits have nowhere to go in a genome view" is wrong — SGD,
 FlyBase via the Alliance, and Ensembl all wire per-species BLAST into their own
-browsers. What they built is BLAST scoped to one assembly, which is
-[local-sequence-search.md](local-sequence-search.md)'s shape.
+browsers. What they built is BLAST scoped to one assembly, the shape the BLAT
+plugin already has for UCSC and GenArk assemblies.
 
 ## Demand
 
