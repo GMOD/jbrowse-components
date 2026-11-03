@@ -292,6 +292,33 @@ describe('runBatch', () => {
     ])
   })
 
+  it('keeps an interrupted run’s counts for --resume', async () => {
+    let manifestMidRun = ''
+    mockRenderRegion
+      .mockResolvedValueOnce({ svg: '<svg/>', links: [29, 0] })
+      .mockImplementationOnce(() => {
+        manifestMidRun = fs.readFileSync(
+          path.join(dir, 'out', 'manifest.tsv'),
+          'utf8',
+        )
+        return Promise.reject(new Error('killed'))
+      })
+    await runBatch(opts({ manifest: true, progress: steps().progress }))
+    expect(manifestMidRun).toContain('29,0')
+
+    fs.writeFileSync(path.join(dir, 'out', 'manifest.tsv'), manifestMidRun)
+    mockRenderRegion.mockResolvedValueOnce({ svg: '<svg/>', links: [3] })
+    await runBatch(
+      opts({ manifest: true, resume: true, progress: steps().progress }),
+    )
+    const linksAt = manifestRows()[0]!.indexOf('links')
+    expect(manifestRows().map(r => [r[linksAt], r.at(-1)])).toEqual([
+      ['links', 'status'],
+      ['29,0', 'exists'],
+      ['3', 'ok'],
+    ])
+  })
+
   it('sorts and marks a small variant’s panel, and reports the reads with its ALT', async () => {
     const vcf = path.join(dir, 'snvs.vcf')
     fs.writeFileSync(

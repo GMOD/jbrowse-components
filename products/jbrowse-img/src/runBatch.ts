@@ -263,9 +263,25 @@ export async function runBatch(opts: BatchOpts) {
         process.stderr.write(s)
       },
     })
-  const report = (result: RowResult) => {
-    results.set(result.file, result)
+  const manifestFile = path.join(outDir, MANIFEST_FILE)
+  const prior = opts.resume
+    ? priorResults(manifestFile)
+    : new Map<string, ReportedCounts>()
+  const plannedByFile = new Map(planned.map(row => [row.file, row]))
+  if (opts.manifest && !(opts.resume && fs.existsSync(manifestFile))) {
+    fs.writeFileSync(manifestFile, `${MANIFEST_COLUMNS.join('\t')}\n`)
+  }
+  const report = (reported: RowResult) => {
+    const result: RowResult =
+      reported.status === 'exists'
+        ? { ...prior.get(reported.file), ...reported }
+        : reported
     const { file, status, error } = result
+    results.set(file, result)
+    const row = plannedByFile.get(file)
+    if (opts.manifest && row) {
+      fs.appendFileSync(manifestFile, `${manifestLine(row, result)}\n`)
+    }
     progress.step(
       status === 'exists' ? `${file} (exists)` : file,
       status === 'failed' ? `FAILED ${file}: ${error}` : undefined,
@@ -279,35 +295,22 @@ export async function runBatch(opts: BatchOpts) {
     ? renderInWorkers(planned, opts.respawn, jobs, report)
     : renderRows(planned, opts, report))
 
-  // a reused image keeps the counts the run that drew it reported
-  const counts = Object.fromEntries(
-    REPORTED_COLUMNS.map(column => {
-      const byFile = opts.resume
-        ? priorColumn(outDir, column)
-        : new Map<string, string>()
-      for (const result of results.values()) {
-        const counted = result[column]
-        if (counted !== undefined) {
-          byFile.set(result.file, counted)
-        }
-      }
-      return [column, byFile]
-    }),
-  ) as Record<ReportedColumn, Map<string, string>>
-  const status = planned.map(
-    ({ file }) => results.get(file)?.status ?? 'failed',
+  const finished = planned.map(
+    ({ file }): RowResult => results.get(file) ?? { file, status: 'failed' },
   )
-  const failures = planned
-    .map(({ file }) => results.get(file))
-    .filter(r => r?.status === 'failed')
-    .map(r => ({ name: r!.file, error: r!.error }))
-  const done = status.filter(st => st === 'ok').length
+  const failures = finished
+    .filter(r => r.status === 'failed')
+    .map(r => ({ name: r.file, error: r.error }))
+  const done = finished.filter(r => r.status === 'ok').length
   if (opts.manifest) {
-    writeManifest(outDir, planned, status, counts)
+    fs.writeFileSync(
+      manifestFile,
+      `${[MANIFEST_COLUMNS.join('\t'), ...planned.map((row, i) => manifestLine(row, finished[i]!))].join('\n')}\n`,
+    )
   }
   // The reused count is named, or a fully-resumed run reports "wrote 0/400" and
   // reads as a run in which nothing worked.
-  const reused = status.filter(st => st === 'exists').length
+  const reused = finished.filter(r => r.status === 'exists').length
   progress.finish(
     `wrote ${done}/${planned.length} images to ${outDir}${
       reused ? `, ${reused} already there` : ''
@@ -424,7 +427,11 @@ async function renderRows(
             },
         configObject && structuredClone(configObject),
       )
-      writeRendered(rendered.svg, out, width)
+      // under another name until whole, so an interrupted write is not an
+      // image --resume skips
+      const partial = path.join(outDir, `.partial-${file}`)
+      writeRendered(rendered.svg, partial, width)
+      fs.renameSync(partial, out)
       report({
         file,
         status: 'ok',
@@ -474,44 +481,45 @@ const MANIFEST_COLUMNS = [
   'status',
 ]
 
-function priorColumn(outDir: string, column: ReportedColumn) {
-  const file = path.join(outDir, 'manifest.tsv')
-  const [head = '', ...rows] = fs.existsSync(file)
-    ? fs.readFileSync(file, 'utf8').split('\n')
+const MANIFEST_FILE = 'manifest.tsv'
+
+type ReportedCounts = Partial<Record<ReportedColumn, string>>
+
+/**
+ * The counts an earlier run wrote for each image it drew, the last row per
+ * file winning: rows are appended as records finish, so an interrupted run's
+ * manifest holds them too.
+ */
+function priorResults(manifestFile: string) {
+  const [head = '', ...lines] = fs.existsSync(manifestFile)
+    ? fs.readFileSync(manifestFile, 'utf8').split('\n')
     : []
   const columns = head.split('\t')
-  const fileAt = columns.indexOf('file')
-  const countAt = columns.indexOf(column)
-  return new Map(
-    fileAt === -1 || countAt === -1
-      ? []
-      : rows.map(row => {
-          const f = row.split('\t')
-          return [f[fileAt] ?? '', f[countAt] ?? ''] as const
-        }),
-  )
+  const prior = new Map<string, ReportedCounts>()
+  for (const line of lines) {
+    const fields = line.split('\t')
+    const field = (name: string) => fields[columns.indexOf(name)]
+    const file = field('file')
+    if (file && (field('status') === 'ok' || field('status') === 'exists')) {
+      prior.set(
+        file,
+        Object.fromEntries(
+          REPORTED_COLUMNS.map(column => [column, field(column) ?? '']),
+        ),
+      )
+    }
+  }
+  return prior
 }
 
-function writeManifest(
-  outDir: string,
-  planned: PlannedRow[],
-  // index-aligned with `planned`: the loop pushes exactly one per record
-  status: RecordStatus[],
-  counts: Record<ReportedColumn, Map<string, string>>,
-) {
-  const rows = planned.map(({ rec, file, rows: windows }, i) =>
-    [
-      file,
-      windows.flat().join(' '),
-      rec.name ?? '',
-      rec.line ?? '',
-      rec.event ?? '',
-      ...REPORTED_COLUMNS.map(column => counts[column].get(file) ?? ''),
-      status[i],
-    ].join('\t'),
-  )
-  fs.writeFileSync(
-    path.join(outDir, 'manifest.tsv'),
-    `${MANIFEST_COLUMNS.join('\t')}\n${rows.join('\n')}\n`,
-  )
+function manifestLine({ rec, file, rows }: PlannedRow, result: RowResult) {
+  return [
+    file,
+    rows.flat().join(' '),
+    rec.name ?? '',
+    rec.line ?? '',
+    rec.event ?? '',
+    ...REPORTED_COLUMNS.map(column => result[column] ?? ''),
+    result.status,
+  ].join('\t')
 }
